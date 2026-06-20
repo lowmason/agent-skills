@@ -1,0 +1,10 @@
+# macOS
+.DS_Store
+
+# Claude Code per-machine settings (not shared)
+.claude/settings.local.json
+
+# Python verification venvs and caches
+**/.verify_venv/
+**/__pycache__/
+*.pyc

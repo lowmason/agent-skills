@@ -1,0 +1,6 @@
+[project]
+name = "bayesian-workflow"
+version = "0.2.0"
+description = "Your best bud to build, sample and diagnose probabilistic models with NumPyro (JAX) and ArviZ"
+requires-python = ">=3.13"
+dependencies = []
