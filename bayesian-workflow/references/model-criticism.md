@@ -144,18 +144,19 @@ A NumPyro sketch (roll your own; `simuk` from arviz-devs can also help):
 from numpyro.infer import Predictive, MCMC, NUTS
 import jax, numpy as np
 
-def sbc_rank(key, model, param, *model_args, L=100):
+def sbc_rank(key, model, param, *model_args, L=100, idx=0):
     k_prior, k_fit = jax.random.split(key)
     # 1. draw one ground-truth parameter set + simulated data from the prior
     sim = Predictive(model, num_samples=1)(k_prior, *model_args)
-    theta_true = sim[param][0]
+    theta_true = np.asarray(sim[param][0])   # np.asarray needed to index a JAX array
     y_sim = sim["y_obs"][0]
     # 2. fit the model to the simulated data
     mcmc = MCMC(NUTS(model), num_warmup=500, num_samples=L, num_chains=1, progress_bar=False)
     mcmc.run(k_fit, *model_args, y=y_sim)
     draws = np.asarray(mcmc.get_samples()[param])
-    # 3. rank of the truth within the posterior draws
-    return int((draws < theta_true).sum())
+    # 3. rank of the truth within the posterior draws — pick one scalar component (idx)
+    #    so the rank stays in [0, L]; a vector param would otherwise sum over all components
+    return int((draws[..., idx] < theta_true[idx]).sum())
 
 ranks = [sbc_rank(jax.random.PRNGKey(i), model, "beta", x) for i in range(200)]
 # histogram `ranks`; compare to the uniform expectation (with a binomial variation band)
@@ -214,9 +215,13 @@ def expected_calibration_error(pred_probs, actuals, n_bins=10):
     predictions = np.argmax(pred_probs, axis=1)
     accuracies = (predictions == actuals).astype(float)
     bin_edges = np.linspace(0, 1, n_bins + 1)
+    # np.digitize assigns every point a bin; passing only the interior edges keeps
+    # confidence == 1.0 in the last bin instead of dropping it (a strict `< 1.0` upper
+    # edge would silently exclude perfectly-confident predictions).
+    bin_idx = np.digitize(confidences, bin_edges[1:-1])
     ece = 0
     for i in range(n_bins):
-        in_bin = (confidences >= bin_edges[i]) & (confidences < bin_edges[i + 1])
+        in_bin = bin_idx == i
         if in_bin.sum() > 0:
             avg_confidence = confidences[in_bin].mean()
             avg_accuracy = accuracies[in_bin].mean()

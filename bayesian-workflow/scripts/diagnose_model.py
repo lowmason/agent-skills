@@ -79,12 +79,18 @@ def check_convergence(idata):
     Both code paths emit the SAME serializable schema so ``check_diagnostics.py``
     has a single contract to consume: ``rhat`` / ``ess_bulk`` / ``ess_tail`` /
     ``divergences`` each carry ``ok`` and ``problematic_params``; the
-    ``arviz_stats.diagnose`` path additionally reports ``bfmi`` and ``treedepth``.
+    ``arviz_stats.diagnose`` path additionally reports ``bfmi`` and ``treedepth``
+    (the ``treedepth`` block is populated only when ``sample_stats`` carries
+    ``reached_max_treedepth``; NumPyro idata uses ``tree_depth`` instead, so on
+    that path treedepth stays ``ok``/0).
     No numpy scalars, numpy arrays, or xarray objects leak into the dict — those
     are not JSON-serializable and would crash the report writer.
     """
     # Use arviz_stats.diagnose() if available — it covers R-hat, ESS,
-    # divergences, tree depth saturation, and E-BFMI in one call.
+    # divergences, and E-BFMI in one call. (It only reports tree-depth
+    # saturation when sample_stats carries CmdStan-style
+    # "reached_max_treedepth"; NumPyro idata uses "tree_depth", so the
+    # treedepth block stays ok/0 on that path.)
     if HAS_DIAGNOSE:
         # show_diagnostics=False keeps stdout clean so the JSON report can be
         # piped there when --output is omitted.
@@ -92,7 +98,19 @@ def check_convergence(idata):
             idata, return_diagnostics=True, show_diagnostics=False
         )
         rhat_bad = [str(p) for p in d.get("rhat", {}).get("bad_params", [])]
-        ess_bad = [str(p) for p in d.get("ess", {}).get("bad_params", [])]
+        # diagnose()'s d['ess']['bad_params'] keys off ess_min_ratio (ESS/N<0.001),
+        # NOT the ~100*chains threshold its printed report / has_errors use. Recompute
+        # ESS the same way the manual fallback does so failing param NAMES surface.
+        ess_bulk_vals = az.ess(idata, method="bulk")
+        ess_tail_vals = az.ess(idata, method="tail")
+        num_chains = int(idata.posterior.sizes["chain"])
+        thresh = 100 * num_chains
+        bad_bulk = [str(v) for v in ess_bulk_vals.data_vars
+                    if float(ess_bulk_vals[v].min()) < thresh]
+        bad_tail = [str(v) for v in ess_tail_vals.data_vars
+                    if float(ess_tail_vals[v].min()) < thresh]
+        min_bulk = int(min(float(ess_bulk_vals[v].min()) for v in ess_bulk_vals.data_vars))
+        min_tail = int(min(float(ess_tail_vals[v].min()) for v in ess_tail_vals.data_vars))
         div = d.get("divergent", {})
         n_div = int(div.get("n_divergent", 0))
         td = d.get("treedepth", {})
@@ -106,10 +124,8 @@ def check_convergence(idata):
                 "max": _max_from_dataset(d.get("rhat", {}).get("rhat_values")),
                 "problematic_params": rhat_bad,
             },
-            # diagnose() reports a single ESS check; mirror it into bulk/tail so
-            # the downstream schema matches the manual fallback path exactly.
-            "ess_bulk": {"ok": len(ess_bad) == 0, "problematic_params": ess_bad},
-            "ess_tail": {"ok": len(ess_bad) == 0, "problematic_params": ess_bad},
+            "ess_bulk": {"ok": len(bad_bulk) == 0, "problematic_params": bad_bulk, "min": min_bulk},
+            "ess_tail": {"ok": len(bad_tail) == 0, "problematic_params": bad_tail, "min": min_tail},
             "divergences": {
                 "count": n_div,
                 "pct": round(float(div.get("pct", 0.0)), 2),

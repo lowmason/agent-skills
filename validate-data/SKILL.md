@@ -85,6 +85,7 @@ missing = set(expected) - set(schema.names())
 extra = set(schema.names()) - set(expected)
 wrong = {c: (schema[c], expected[c]) for c in expected if c in schema and schema[c] != expected[c]}
 assert not missing, f"missing columns: {missing}"
+assert not extra, f"unexpected columns: {extra}"
 assert not wrong, f"dtype drift: {wrong}"   # e.g. employment read as Float64 / String from a bad parse
 ```
 
@@ -107,6 +108,7 @@ checks = lf.select(
 
 assert checks["unique_keys"].item() == checks["rows"].item(), "key is not unique — table double-counts"
 assert checks["null_employment"].item() == 0, "unexpected nulls in employment"
+assert checks["null_fips"].item() == 0, "unexpected nulls in area_fips"
 assert checks["negative_employment"].item() == 0, "negative employment — sign/parse error"
 
 # Fully-duplicated rows are distinct from key collisions — check both.

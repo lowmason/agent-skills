@@ -264,7 +264,7 @@ half": demand the second alternative, the negative consequence, or the reversibi
 `scripts/new_adr.py` automates the next-number-plus-slug step so numbering stays consistent:
 
 ```bash
-# Writes specs/adr/0009-use-numpyro-jax-over-pymc.md (or docs/adr/ — pass --dir)
+# Writes specs/adr/0009-use-numpyro-jax-over-pymc-for-nowcasting.md (or docs/adr/ — pass --dir)
 python scripts/new_adr.py "Use NumPyro/JAX over PyMC for nowcasting"
 python scripts/new_adr.py "Store parquet levels only" --dir docs/adr --status Proposed
 ```

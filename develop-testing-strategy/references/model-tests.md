@@ -115,8 +115,9 @@ class TestPosteriorLayout:
     def test_deterministic_matches_its_sites(self, fit):
         """A deterministic must equal the formula it is built from — catches reshape/broadcast bugs."""
         post = fit.posterior
-        recomputed = post["phi_0"][:, :, None] + post["sigma_bd"][:, :, None] * post["xi_bd"]
-        np.testing.assert_allclose(np.asarray(recomputed), np.asarray(post["bd"]),
+        recomputed = (np.asarray(post["phi_0"])[:, :, None]
+                      + np.asarray(post["sigma_bd"])[:, :, None] * np.asarray(post["xi_bd"]))
+        np.testing.assert_allclose(recomputed, np.asarray(post["bd"]),
                                    rtol=1e-10, atol=1e-12)
 ```
 

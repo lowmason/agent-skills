@@ -57,11 +57,17 @@ Refresh fixtures deliberately (when the canary fires), with a one-liner kept out
 ```python
 # scripts/refresh_fixtures.py  — run by hand, not in CI
 import httpx, pathlib
+# bls.gov is fronted by Akamai, which 403s default httpx (no UA). Send a browser-like
+# UA. Reuse this same dict in the layout canary so both fetches behave identically.
+BLS_HEADERS = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+               "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"}
 PAGES = {"ces/empsit_schedule": "https://www.bls.gov/schedule/news_release/empsit.htm"}
 for stem, url in PAGES.items():
     p = pathlib.Path("tests/fixtures") / f"{stem}.html"
     p.parent.mkdir(parents=True, exist_ok=True)
-    p.write_text(httpx.get(url, timeout=30).raise_for_status().text, encoding="utf-8")
+    html = httpx.get(url, timeout=30, follow_redirects=True,
+                     headers=BLS_HEADERS).raise_for_status().text
+    p.write_text(html, encoding="utf-8")
 ```
 
 ## 2. Parse edge cases — parametrized, tiny, inline
@@ -143,6 +149,13 @@ def test_scrape_raises_on_500():
 Recorded fixtures cannot detect that the site changed. The canary fetches live and asserts the
 *anchors the parser depends on still exist*. When it fails, refresh the fixtures.
 
+bls.gov is fronted by Akamai: a bare httpx request (no User-Agent) gets a 403 "Access Denied",
+so the canary must send a browser-like UA — the same one `refresh_fixtures.py` uses. (If you want a
+single source of truth, hang the header dict off the import-safe `scraper.py` from section 0, not off
+the refresh script, whose top-level code does I/O.) Akamai may also throttle (403/429) even *with* a
+UA. A transient block is not a layout change, so skip on it rather than firing the alert; only
+structural-anchor failures should fire.
+
 ```python
 import os
 import httpx
@@ -152,7 +165,13 @@ import pytest
 def test_ces_schedule_layout_canary():
     """Fires when BLS relayouts the CES schedule page. Run on a schedule, not per-push."""
     url = "https://www.bls.gov/schedule/news_release/empsit.htm"
-    html = httpx.get(url, timeout=30).raise_for_status().text
+    # browser-like UA — bls.gov/Akamai 403s the default httpx UA (see refresh_fixtures.py)
+    headers = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+               "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"}
+    resp = httpx.get(url, timeout=30, follow_redirects=True, headers=headers)
+    if resp.status_code in (403, 429):
+        pytest.skip(f"BLS/Akamai throttled the canary ({resp.status_code}) — transient, not a relayout")
+    html = resp.raise_for_status().text
     soup = BeautifulSoup(html, "lxml")
     # the structural anchors parse_schedule() relies on:
     table = soup.find("table", id="release-schedule")     # the id the parser selects

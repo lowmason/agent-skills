@@ -55,7 +55,7 @@ would trigger a revisit (a superseding ADR).
 """
 
 _SLUG_STRIP = re.compile(r"[^a-z0-9]+")
-_NNNN = re.compile(r"^(\d{4})-")
+_NNNN = re.compile(r"^(\d{4,})-")
 VALID_STATUS = {"Proposed", "Accepted", "Deprecated"}
 
 

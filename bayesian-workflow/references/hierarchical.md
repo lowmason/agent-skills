@@ -79,7 +79,7 @@ Each group has its own baseline, partially pooled toward a global mean.
 with numpyro.plate("group", n_groups):
     mu_group = numpyro.sample("mu_group", dist.Normal(mu_global, sigma_global))
 with numpyro.plate("obs", group_idx.shape[0]):
-    numpyro.sample("obs", dist.Normal(mu_group[group_idx], sigma_obs), obs=y)
+    numpyro.sample("y_obs", dist.Normal(mu_group[group_idx], sigma_obs), obs=y)
 ```
 
 ### Varying intercepts and slopes

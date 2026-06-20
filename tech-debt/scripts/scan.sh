@@ -31,7 +31,8 @@ SEARCH -e 'random_state\s*=\s*42' -e 'seed\s*=\s*42' -e 'PRNGKey\(42\)' -e 'np\.
 SEARCH -e 'random_state *= *42' -e 'seed *= *42' -e 'PRNGKey(42)' -e 'np.random.seed('
 
 section "Hardcoded absolute / home paths (breaks on every other machine)"
-SEARCH -e '/Users/' -e '/home/' -e 'C:\\\\' -e 'read_parquet\("/' -e 'read_csv\("/' || true
+SEARCH -e '/Users/' -e '/home/' -e 'C:\\\\' -e 'read_parquet\("/' -e 'read_csv\("/' 2>/dev/null \
+  || SEARCH -e '/Users/' -e '/home/' -e 'read_parquet("/' -e 'read_csv("/'
 
 section "as-of / vintage correctness (wall-clock time leaking into a pipeline)"
 # Wall-clock calls inside an ETL/model make the same code produce different output on
@@ -65,7 +66,7 @@ SEARCH --include='*.py' -e 'raise NotImplementedError' -e 'TODO' -e 'FIXME' -e '
 section "Empty or placeholder READMEs"
 while IFS= read -r f; do
   [ -f "$f" ] || continue
-  if [ ! -s "$f" ]; then echo "$f: EMPTY"; fi
+  if [ ! -s "$f" ] || ! grep -q '[^[:space:]]' "$f"; then echo "$f: EMPTY/placeholder"; fi
 done < <(FILES | grep -iE 'readme(\.md|\.rst|\.txt)?$')
 
 section "Placeholder pyproject descriptions"
@@ -76,17 +77,21 @@ section "Committed secrets / credentials (verify against .gitignore!)"
 FILES | grep -iE '(\.env$|\.env\.|secrets?\.|credentials|\.pem$|\.key$|id_rsa)' | grep -vE '\.env\.example|\.env\.template' || true
 SEARCH -e 'api_key\s*=\s*["'"'"']' -e 'API_KEY\s*=\s*["'"'"']' -e 'password\s*=\s*["'"'"']' \
        -e 'token\s*=\s*["'"'"']' -e 'aws_secret' -e 'BLS_API_KEY\s*=\s*["'"'"']' \
-       -g '!**/*.example' 2>/dev/null || true
+       -g '!**/*.example' 2>/dev/null \
+  || SEARCH -e 'api_key[[:space:]]*=[[:space:]]*["'"'"']' -e 'API_KEY[[:space:]]*=[[:space:]]*["'"'"']' \
+       -e 'password[[:space:]]*=[[:space:]]*["'"'"']' -e 'token[[:space:]]*=[[:space:]]*["'"'"']' \
+       -e 'aws_secret' -e 'BLS_API_KEY[[:space:]]*=[[:space:]]*["'"'"']'
 
 # --- Test coverage gaps ---------------------------------------------------
 section "Source modules with no obvious test (heuristic — confirm manually)"
 mods=$(FILES | grep -E '\.py$' | grep -ivE '(/tests?/|test_|conftest|__init__|/archive/|/scratch/)')
 tests=$(FILES | grep -E '\.py$' | grep -E '(/tests?/|test_)')
-for m in $mods; do
+while IFS= read -r m; do
+  [ -n "$m" ] || continue
   base=$(basename "$m" .py)
-  if ! echo "$tests" | grep -q "test_${base}\|${base}_test"; then
-    echo "$m"
+  if ! printf '%s\n' "$tests" | grep -q "test_${base}\|${base}_test"; then
+    printf '%s\n' "$m"
   fi
-done | sort -u
+done <<< "$mods" | sort -u
 
 printf '\nDone. Each hit is a candidate — triage DELETE vs HARDEN per SKILL.md.\n'

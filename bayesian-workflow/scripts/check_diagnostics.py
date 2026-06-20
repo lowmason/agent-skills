@@ -135,15 +135,20 @@ def _rate_psense(ps: dict) -> tuple[str, list[str]]:
     if not ps:
         return "not computed", []
 
-    # Expected: dict of {param: {"prior": <cjs>, "likelihood": <cjs>}}
+    # psense_summary(idata).to_dict() is column-oriented:
+    #   {"prior": {param: cjs, ...}, "likelihood": {...}, "diagnosis": {...}}
     flagged: list[str] = []
     max_prior_cjs = 0.0
 
-    for param, vals in ps.items():
-        if isinstance(vals, dict):
-            prior = float(vals.get("prior", 0.0))
+    prior_map = ps.get("prior", ps)
+    if isinstance(prior_map, dict):
+        for param, prior in prior_map.items():
+            try:
+                prior = float(prior)
+            except (TypeError, ValueError):
+                continue
             max_prior_cjs = max(max_prior_cjs, prior)
-            if prior > PSENSE_FAIR:
+            if prior > PSENSE_OK:
                 flagged.append(param)
 
     if max_prior_cjs <= PSENSE_OK:
@@ -225,10 +230,14 @@ def _build_summary(report: dict) -> dict:
         elif r["rating"] == "good":
             s["convergence"] = "Convergence diagnostics broadly pass; minor flags worth noting."
         elif r["rating"] == "fair":
-            params = ", ".join(r["problematic_params"][:3]) or "some parameters"
+            _np = ("divergence", "e-bfmi", "treedepth", "=")
+            named = [p for p in r["problematic_params"] if not any(tok in str(p).lower() for tok in _np)]
+            params = ", ".join(named[:3]) or "some parameters"
             s["convergence"] = f"Convergence is fair — flags on {params}. Inspect before trusting the posterior."
         else:
-            params = ", ".join(r["problematic_params"][:3]) or "multiple parameters"
+            _np = ("divergence", "e-bfmi", "treedepth", "=")
+            named = [p for p in r["problematic_params"] if not any(tok in str(p).lower() for tok in _np)]
+            params = ", ".join(named[:3]) or "multiple parameters"
             s["convergence"] = f"Poor convergence on {params}. Posterior should not be interpreted until resolved."
 
     if "loo" in report:

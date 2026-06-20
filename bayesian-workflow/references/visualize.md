@@ -43,6 +43,7 @@ models.
 ArviZ focuses on the *model* side, so EDA is mostly plain matplotlib/seaborn plus a few ArviZ helpers:
 
 ```python
+import numpy as np
 import matplotlib.pyplot as plt
 import arviz as az
 

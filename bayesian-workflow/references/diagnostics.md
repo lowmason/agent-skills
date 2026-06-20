@@ -30,17 +30,22 @@ has_errors = azs.diagnose(idata)
 
 # 2. If you need the detailed breakdown programmatically:
 has_errors, diagnostics = azs.diagnose(idata, return_diagnostics=True, show_diagnostics=False)
-# diagnostics contains: "divergent", "ess", "rhat"
+# diagnostics contains: "divergent", "ess", "rhat", "bfmi"  (bfmi present because the flow above requested energy)
 
 # 3. Visual check — pass var_names; ArviZ 1.x caps the subplot count
 az.plot_trace(idata, var_names=["param1", "param2"])
 ```
 
-`arviz_stats.diagnose` (>= 1.0.0) checks **R-hat, ESS, and divergences** in one call. (Earlier
-PyMC-stack guidance mentioned tree-depth and E-BFMI here; the current `arviz_stats.diagnose`
-returns the `rhat`/`ess`/`divergent` triple. Inspect tree-depth/energy separately — see Energy
-diagnostics below and `idata.sample_stats["tree_depth"]` / `reached_max_tree_depth`.) If
-`azs.diagnose` is not available (arviz-stats < 1.0.0), fall back to the manual checks below.
+`arviz_stats.diagnose` (>= 1.0.0) checks **R-hat, ESS, divergences, AND E-BFMI (energy)** in one
+call whenever the `energy` sample stat is present — which our sampling flow guarantees via
+`extra_fields=("energy", ...)`. So you do NOT need a separate manual E-BFMI inspection on this
+path; a clean `azs.diagnose` result already covers energy. (Earlier PyMC-stack guidance also
+mentioned tree-depth here. Tree-depth is the one check `diagnose` skips on the
+numpyro/`az.from_numpyro` path: it looks for a `reached_max_treedepth` sample stat, but
+`az.from_numpyro` emits `reached_max_tree_depth` instead, so the tree-depth branch never fires.
+Inspect tree-depth separately via `idata.sample_stats["tree_depth"]` — see Energy diagnostics
+below.) If `azs.diagnose` is not available (arviz-stats < 1.0.0), fall back to the manual checks
+below.
 
 ## R-hat
 

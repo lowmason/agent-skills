@@ -179,7 +179,12 @@ layout, consult the `bls-data-context` skill.)
 
 ```python
 # Per-period vintage spread and the clean-key check
-chk = (lf.group_by(["series_id", "ref_date"])
+# Exclude null/placeholder keys first: a null series_id collides under group-by, so two distinct
+# aggregate-geography snapshot rows would fuse into one "series" with multiple vintages and inflate
+# the revision count. Aggregate geographies carry null series_id — check their revisions on their
+# own key (geographic_code, ref_date), not here.
+chk = (lf.filter(pl.col("series_id").is_not_null())
+         .group_by(["series_id", "ref_date"])
          .agg(pl.col("vintage_date").n_unique().alias("n_vint")).collect())
 revised = chk.filter(pl.col("n_vint") > 1).height        # periods with revisions
 full_key_dups = (lf.group_by(["series_id", "ref_date", "vintage_date"])

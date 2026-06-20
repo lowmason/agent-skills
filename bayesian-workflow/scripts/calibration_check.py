@@ -108,10 +108,11 @@ def assess_calibration(dt, var_name, use_loo, ci_prob=0.99):
         )
         coverage_inside, mean_cov_delta = _extract_ecdf_results(ds_cov, var_name)
 
-    if mean_cov_delta > 0.02:
-        calibration_diagnosis = "under-confident (predictions too uncertain)"
-    elif mean_cov_delta < -0.02:
-        calibration_diagnosis = "over-confident (predictions too certain)"
+    if not coverage_inside:
+        if mean_cov_delta > 0:
+            calibration_diagnosis = "under-confident (predictions too uncertain)"
+        else:
+            calibration_diagnosis = "over-confident (predictions too certain)"
     else:
         calibration_diagnosis = "well-calibrated"
 

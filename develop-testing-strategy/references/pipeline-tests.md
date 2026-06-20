@@ -13,8 +13,8 @@ import polars as pl
 
 
 def assert_schema(df: pl.DataFrame, expected: dict[str, pl.DataType]) -> None:
-    """Exact columns AND dtypes. Catches renames, drops, adds, and silent dtype drift."""
-    assert dict(df.schema) == expected, f"schema drift:\n got {dict(df.schema)}\n want {expected}"
+    """Exact columns AND dtypes, in order. Catches renames, drops, adds, reorders, and silent dtype drift."""
+    assert list(df.schema.items()) == list(expected.items()), f"schema drift:\n got {dict(df.schema)}\n want {expected}"
 
 
 def assert_unique_keys(df: pl.DataFrame, keys: list[str]) -> None:

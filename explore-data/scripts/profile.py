@@ -38,7 +38,9 @@ NUMERIC_SENTINELS = [-1.0, -9.0, -99.0, -999.0, -9999.0, 9999.0, 99999.0, 999999
 def scan(path: str) -> pl.LazyFrame:
     """Lazily scan parquet/csv/ndjson by extension; supports glob patterns for partitioned data."""
     lower = path.lower()
-    if ".parquet" in lower or lower.endswith(".pq"):
+    # Match parquet by suffix (or a glob, for partitioned data) — not a loose substring, which would
+    # misroute e.g. /data/snapshot.parquet.d/file.csv into scan_parquet.
+    if lower.endswith((".parquet", ".pq")) or "*" in path or "?" in path:
         return pl.scan_parquet(path)
     if lower.endswith((".csv", ".tsv", ".txt")):
         sep = "\t" if lower.endswith(".tsv") else ","
@@ -88,9 +90,11 @@ def numeric_summary(lf: pl.LazyFrame, schema: pl.Schema) -> pl.DataFrame | None:
         col = pl.col(c)
         aggs += [
             col.min().alias(f"{c}__min"),
-            col.quantile(0.25).alias(f"{c}__p25"),
-            col.median().alias(f"{c}__p50"),
-            col.quantile(0.75).alias(f"{c}__p75"),
+            # Explicit interpolation="linear" for all three quartiles: the default ("nearest") would
+            # disagree with the .median()-based p50 and with the numpy/pandas convention analysts expect.
+            col.quantile(0.25, interpolation="linear").alias(f"{c}__p25"),
+            col.quantile(0.5, interpolation="linear").alias(f"{c}__p50"),
+            col.quantile(0.75, interpolation="linear").alias(f"{c}__p75"),
             col.max().alias(f"{c}__max"),
             col.mean().alias(f"{c}__mean"),
             col.std().alias(f"{c}__std"),
@@ -116,13 +120,14 @@ def top_categoricals(lf: pl.LazyFrame, schema: pl.Schema, k: int = 5) -> dict[st
     for c in cats:
         vc = (
             lf.select(pl.col(c))
+            .drop_nulls()  # null is not a "top value": skip it so an all-null column reports nothing
             .group_by(c)
             .agg(pl.len().alias("count"))
             .sort("count", descending=True)
             .head(k)
             .collect()
         )
-        if vc["count"].n_unique() == 0:
+        if vc.height == 0:  # no non-null values (e.g. an all-null or empty column): nothing to report
             continue
         out[c] = [(str(v), int(n)) for v, n in zip(vc[c], vc["count"])]
     return out

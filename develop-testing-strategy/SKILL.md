@@ -210,10 +210,15 @@ tests for:
 ## Step 6 — Marker conventions and CI exclusions
 
 Mirror the marker vocabulary already in use across these repos and declare it in
-`pyproject.toml` so unmarked usage errors instead of silently passing:
+`pyproject.toml`. Registering the names alone does *not* catch typos — an unregistered
+`@pytest.mark.netork` still passes (only a `PytestUnknownMarkWarning`) and, worse, leaks
+into CI because `-m "not network"` cannot deselect a misspelled tag. Promote that warning
+to an error with `filterwarnings` so a typoed marker fails at collection instead of
+silently passing:
 
 ```toml
 [tool.pytest.ini_options]
+filterwarnings = ["error::pytest.PytestUnknownMarkWarning"]
 markers = [
     "network: hits the network (live site / canary); deselect with '-m \"not network\"'",
     "slow: MCMC/sampling tests measured in tens of seconds, not milliseconds",

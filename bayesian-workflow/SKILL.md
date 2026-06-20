@@ -58,30 +58,37 @@ pip install funsor               # only if you enumerate discrete latents
 
 ## Stack compatibility (NumPyro + ArviZ)
 
-This skill teaches the **latest** NumPyro + ArviZ 1.x idioms and stays runnable on the older
-classic-ArviZ (0.23) plotting/stats API during the transition (regulated/corporate
-environments can't always upgrade freely). The scripts are verified on the modern stack and
-fall back gracefully.
+The inline examples here target the **modern ArviZ ≥ 1.0 stack**: the `arviz` 1.x umbrella plus
+the split packages `arviz-base` (data), `arviz-stats` (statistics), and `arviz-plots` (plotting).
+Install them in one line — `pip install "arviz>=1.0" arviz-base arviz-stats arviz-plots` — and they
+coexist with a classic `arviz` 0.23 install (they even read 0.23-written netCDF), so you do not
+have to uninstall an existing 0.23 environment to use this skill.
 
-Most code is identical across ArviZ versions. Where an API genuinely diverges, prefer the
-form that runs on **both**:
+The **NumPyro modeling code is version-independent** — only the ArviZ analysis/plotting layer
+differs. The right column below is a **porting reference**, not a promise that the inline code runs
+unchanged on 0.23: the examples assume ArviZ 1.x, and the 1.x idioms here *will raise* on a
+0.23-only environment unless you apply these translations.
 
-| Task | Modern (ArviZ 1.x: `arviz_stats` / `arviz_plots`) | Legacy (classic ArviZ 0.23) |
+| Task | Modern (ArviZ 1.x: `arviz_stats` / `arviz_plots`) | Classic ArviZ 0.23 equivalent (for porting) |
 |---|---|---|
-| NumPyro → InferenceData | `az.from_numpyro(mcmc, prior=..., posterior_predictive=..., log_likelihood=True, coords=..., dims=...)` — same call on both | same |
-| Posterior-predictive plot | `arviz_plots.plot_ppc_dist(idata)` (imported as `azp`) | `az.plot_ppc(idata)` (removed in ArviZ 1.x) |
+| NumPyro → InferenceData | `az.from_numpyro(...)` returns an xarray **`DataTree`** | same call, but returns an **`InferenceData`** |
+| JAX→NumPy conversion | `idata.map_over_datasets(lambda ds: ds.as_numpy())` (DataTree method) | `idata.map(lambda ds: ds.as_numpy())` — and it is unnecessary: 0.23 `from_numpyro` already returns NumPy-backed arrays |
+| Posterior-predictive plot | `arviz_plots.plot_ppc_dist(idata)` (imported as `azp`) | `az.plot_ppc(idata)` (removed from the ArviZ 1.x umbrella) |
 | Calibration (PPC-PIT / LOO-PIT) | `azp.plot_ppc_pit(idata)` and **separately** `azp.plot_loo_pit(idata)` | `az.plot_loo_pit(idata, ecdf=True)` |
 | Test-statistic PPC | `azp.plot_ppc_tstat(idata, t_stat="median")` | `az.plot_ppc(idata, ...)` + manual |
-| Trace / rank plot | `az.plot_trace(idata, var_names=[...])`; rank `az.plot_rank(idata, var_names=[...])` — both run on both, but **pass `var_names`**: ArviZ 1.x errors when the auto-selected set exceeds its subplot cap (e.g. a vector `Deterministic` like `mu` over an `obs` dim) | `az.plot_trace(idata, kind="rank_vlines")` (the `kind=` arg is 0.23-only) |
-| Summary interval | `az.summary(idata, ci_prob=0.94, ci_kind="hdi")` (ArviZ 1.x) | `az.summary(idata, hdi_prob=0.94)` (ArviZ 0.23) |
+| Trace / rank plot | `az.plot_trace(idata, var_names=[...])`; rank `az.plot_rank(idata, var_names=[...])` — **pass `var_names`** (ArviZ 1.x errors when the auto-selected set exceeds its subplot cap, e.g. a vector `Deterministic` like `mu` over an `obs` dim). Returns a `PlotCollection` — `.savefig(...)` to save | `az.plot_trace(idata, kind="rank_vlines")` (the `kind=` arg is 0.23-only); returns a NumPy array of Matplotlib `Axes` — save via `plt.gcf().savefig(...)`, not `.savefig` on the return |
+| Summary interval | `az.summary(idata, ci_prob=0.94, ci_kind="hdi")` | `az.summary(idata, hdi_prob=0.94)` |
+| Prior sensitivity | `az.psense_summary(idata)` (on the 1.x umbrella) | not on the 0.23 umbrella — use `arviz_stats.psense_summary(idata)` |
+| Pointwise LOO field | `loo.elpd_i` (and `loo.elpd` / `loo.p`) | `loo.loo_i` (and `loo.elpd_loo` / `loo.p_loo`) |
+| Groups accessor | `idata.groups` is a tuple of paths | `idata.groups()` is a **method** — call it |
 | Model comparison | `az.loo`, `az.compare` — unchanged. **WAIC was removed from ArviZ 1.x** — use LOO | `az.waic` exists on 0.23 only |
 | Sampler output type | xarray `DataTree` | `InferenceData` |
 
-`arviz_plots` (the ArviZ 1.x plotting package, `azp`) and `arviz_stats` (`azs`) install on
-**both** stacks, so leading with `azp.*` / `azs.*` is the most portable choice. `az.from_numpyro`,
-`arviz_stats.diagnose`, `az.loo`, `az.compare`, `az.plot_forest/energy/pair/khat/parallel`,
-and `idata.to_netcdf()` are unchanged on both; `InferenceData` and `DataTree` are both
-xarray-backed, so downstream `.sel()` / `az.*` calls are identical.
+`arviz_plots` (`azp`) and `arviz_stats` (`azs`) install alongside either umbrella, so leading with
+`azp.*` / `azs.*` is the most portable plotting/stats choice. The genuinely version-stable calls are
+`az.summary` (modulo the `ci_prob`/`hdi_prob` kwarg above), `az.compare`, and `idata.to_netcdf()`;
+everything else in the table differs by version, so run the inline examples on the modern stack they
+are written for.
 
 ## NumPyro model template
 
@@ -236,7 +243,7 @@ low-memory fallback.
 - **Always run calibration checks** (PIT / coverage). Use `arviz_plots.plot_ppc_pit` (and `plot_loo_pit` for the LOO version) — they handle all data types (continuous, binary, count) correctly. See [references/model-criticism.md](references/model-criticism.md).
 - **Document every prior choice** with a brief justification in a code comment.
 - **Never report point estimates alone**. Always include credible intervals — a 94% HDI is a fine default, but no interval width is magic (see [references/reporting.md](references/reporting.md)).
-- **Use `arviz_stats.diagnose(idata)` as the first diagnostic on every model** (arviz-stats >= 1.0.0). It checks R-hat, ESS, and divergences in one call. Follow up with `az.plot_trace(idata, var_names=[...])` for visual inspection, or `az.plot_rank(idata, var_names=[...])` for rank-based convergence views (both run on both stacks). Pass `var_names` to focus on the parameters — ArviZ 1.x errors if the auto-selected set (e.g. a vector `Deterministic` over an `obs` dim) exceeds its subplot cap. For energy diagnostics you must request `extra_fields=("energy", ...)` in `mcmc.run(...)` (see gotchas).
+- **Use `arviz_stats.diagnose(idata)` as the first diagnostic on every model** (arviz-stats >= 1.0.0). It checks R-hat, ESS, and divergences in one call. Follow up with `az.plot_trace(idata, var_names=[...])` for visual inspection, or `az.plot_rank(idata, var_names=[...])` for rank-based convergence views (both available on either stack — see **Stack compatibility** for the return-type/save differences). Pass `var_names` to focus on the parameters — ArviZ 1.x errors if the auto-selected set (e.g. a vector `Deterministic` over an `obs` dim) exceeds its subplot cap. For energy diagnostics you must request `extra_fields=("energy", ...)` in `mcmc.run(...)` (see gotchas).
 - **Set `num_chains` to at least 4** and call `numpyro.set_host_device_count(num_chains)`. NumPyro defaults to a single chain — one chain cannot diagnose convergence. This is the NumPyro counterpart to PyMC's "let the sampler pick"; here you pick, and 4 is the floor.
 - **Use reproducible, descriptive seeds.** Never use magic numbers like `42`. Derive a seed from the analysis name: `RANDOM_SEED = sum(map(ord, "my-analysis-name"))`. Feed it through JAX: `rng_key = jax.random.PRNGKey(RANDOM_SEED)`, split with `jax.random.split`, and seed NumPy via `rng = np.random.default_rng(RANDOM_SEED)`. Every `Predictive(...)` call and `mcmc.run(...)` takes a `PRNGKey`.
 - **Save InferenceData immediately after sampling** with `idata.to_netcdf("model_output.nc")`. Late crashes or kernel restarts can destroy valid MCMC results — save before any post-processing. (Needs an h5netcdf+h5py or netcdf4 backend installed.)
@@ -252,7 +259,7 @@ low-memory fallback.
 ```python
 # After fitting the model, predict for new predictors:
 predictive = Predictive(model, posterior_samples=mcmc.get_samples())
-oos = predictive(jax.random.PRNGKey(0), x_new)          # same model fn, new args
+oos = predictive(jax.random.split(rng_key)[1], x_new)   # same model fn, new args; derived key, not a magic number
 oos_pred = az.from_numpyro(posterior_predictive=oos, coords=coords_new, dims=dims_new)
 ```
 
