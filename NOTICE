@@ -9,6 +9,15 @@ bayesian-workflow/
     Bayesian-workflow skill. Ported to NumPyro + JAX with expanded
     visualization guidance. MIT licensed.
 
+The following skills are original works by Lowell Mason, MIT licensed:
+
+    develop-testing-strategy/
+    validate-data/
+    explore-data/
+    tech-debt/
+    design-architecture/
+    bls-data-context/   (including its nine BLS program references)
+
 The following skills are adapted from the "superpowers" project
 (https://github.com/obra/superpowers), MIT licensed, Copyright (c) 2025
 Jesse Vincent. The full upstream license text is in LICENSE-superpowers;
