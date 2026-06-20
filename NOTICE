@@ -1,0 +1,37 @@
+NOTICE
+======
+
+This repository bundles agent skills from more than one source. Attribution
+and licensing, by skill:
+
+bayesian-workflow/
+    Adapted by Lowell Mason from Alexandre Andorra's original PyMC
+    Bayesian-workflow skill. Ported to NumPyro + JAX with expanded
+    visualization guidance. MIT licensed.
+
+The following skills are adapted from the "superpowers" project
+(https://github.com/obra/superpowers), MIT licensed, Copyright (c) 2025
+Jesse Vincent. The full upstream license text is in LICENSE-superpowers;
+modifications are by Lowell Mason and released under the same MIT terms.
+
+Changes from upstream:
+  - Cross-skill references rewritten from the `superpowers:` plugin
+    namespace to bare skill names (these install as standalone personal
+    skills, not as a namespaced plugin).
+  - Skill-authoring scaffolding removed (creation log, pressure-test
+    transcripts) where it was not referenced at runtime.
+  - The `using-superpowers` plugin-bootstrap skill was dropped.
+
+    brainstorming/
+    dispatching-parallel-agents/
+    executing-plans/
+    finishing-a-development-branch/
+    receiving-code-review/
+    requesting-code-review/
+    subagent-driven-development/
+    systematic-debugging/
+    test-driven-development/
+    using-git-worktrees/
+    verification-before-completion/
+    writing-plans/
+    writing-skills/
