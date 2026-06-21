@@ -8,3 +8,7 @@
 **/.verify_venv/
 **/__pycache__/
 *.pyc
+
+# Build-time scratch for recommend-probabilistic-model: extracted CC-BY-NC-ND
+# book text (pdftotext dumps) used only to build/verify citations — never commit.
+recommend-probabilistic-model/.build-scratch/
