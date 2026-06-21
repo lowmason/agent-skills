@@ -17,6 +17,19 @@ The following skills are original works by Lowell Mason, MIT licensed:
     tech-debt/
     design-architecture/
     bls-data-context/   (including its nine BLS program references)
+    recommend-probabilistic-model/
+
+recommend-probabilistic-model/ is an original work by Lowell Mason (MIT), but
+it CITES and SUMMARIZES external material it does not redistribute:
+
+  - Kevin P. Murphy, "Probabilistic Machine Learning" (Book 1: An Introduction,
+    (c) 2022 Massachusetts Institute of Technology; Book 2: Advanced Topics,
+    (c) 2023 Kevin P. Murphy) are licensed CC-BY-NC-ND. The skill summarizes
+    methods in original wording and cites section numbers only; it reproduces
+    no book prose and bundles no PDFs (the CC-BY-NC-ND NoDerivatives clause).
+  - pyprobml (https://github.com/probml/pyprobml) and dynamax
+    (https://github.com/probml/dynamax) are MIT licensed (Copyright (c) 2020,
+    2022 Probabilistic machine learning); the skill links to them.
 
 The following skills are adapted from the "superpowers" project
 (https://github.com/obra/superpowers), MIT licensed, Copyright (c) 2025
