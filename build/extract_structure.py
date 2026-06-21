@@ -64,6 +64,21 @@ def _sortkey(item):
     return [int(p) for p in item[0].split(".")]
 
 
+def extract_fulltext() -> dict[str, int]:
+    """Dump full book text to scratch so build agents can grep a section's content for
+    accurate (original-wording) summaries and for Gate B's semantic verification — robust
+    to the TOC's page-number mangling. Gitignored; CC-BY-NC-ND own-use extraction only."""
+    # Start at the body (skip front matter + TOC) so a section heading's first match in the
+    # dump is its real occurrence, not its table-of-contents line. Body starts: B1 p31, B2 p36.
+    body_start = {"1": 31, "2": 36}
+    sizes = {}
+    for book, pdf in (("1", BOOK1), ("2", BOOK2)):
+        out = SCRATCH / f"book{book}_full.txt"
+        subprocess.run(["pdftotext", "-f", str(body_start[book]), str(pdf), str(out)], check=True)
+        sizes[book] = out.stat().st_size
+    return sizes
+
+
 def extract_pyprobml() -> int:
     js = subprocess.run(
         ["gh", "api", "repos/probml/pyprobml/git/trees/master?recursive=1"],
@@ -81,4 +96,6 @@ if __name__ == "__main__":
     SCRATCH.mkdir(exist_ok=True)
     for book, (pdf, first, last) in TOC.items():
         print(f"book{book}: {extract_book(book, pdf, first, last)} numbered entries")
+    ft = extract_fulltext()
+    print(f"full text: book1 {ft['1'] // 1024} KB, book2 {ft['2'] // 1024} KB")
     print(f"pyprobml: {extract_pyprobml()} notebooks")
