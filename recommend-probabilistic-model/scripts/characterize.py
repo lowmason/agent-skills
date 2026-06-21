@@ -40,17 +40,22 @@ def n_over_p(n_rows: int, n_predictors: int):
 
 
 def class_balance(s: pl.Series):
-    """For a categorical/low-cardinality target: class count + min/max frequency + imbalance."""
+    """For a categorical / low-cardinality target: class count + min/max frequency + imbalance.
+
+    Returns None when the target is not categorical-like (float dtype, or > 20 distinct values) —
+    "class balance" is meaningless for a continuous or high-cardinality outcome.
+    """
     s = s.drop_nulls()
-    if s.len() == 0:
+    if s.len() == 0 or s.dtype.is_float() or s.n_unique() > 20:
         return None
-    vc = s.value_counts(sort=True)
-    fr = [c / s.len() for c in vc[vc.columns[-1]].to_list()]
+    # rename first so value_counts' "count" column can't clash with a target literally named "count"
+    vc = s.rename("_v").value_counts(sort=True)
+    fr = [c / s.len() for c in vc[vc.columns[-1]].to_list()]  # last column is the count
     return {
         "n_classes": len(fr),
         "min_class_frac": round(min(fr), 4),
         "max_class_frac": round(max(fr), 4),
-        "imbalance_ratio": round(max(fr) / min(fr), 2) if min(fr) else None,
+        "imbalance_ratio": round(max(fr) / min(fr), 2),  # min freq is always > 0 from value_counts
     }
 
 
@@ -71,6 +76,17 @@ def stationarity_hint(s: pl.Series):
         else None
     )
     return {"split_half_mean_shift_sd": shift, "lag1_autocorr": ac1}
+
+
+def stationarity_report(df: pl.DataFrame, time_col: str, preds: list[str]) -> dict:
+    """Sort by `time_col` (so the positional split-half / lag-1 in stationarity_hint is chronological),
+    then report a hint for each numeric predictor — excluding the time column itself."""
+    df = df.sort(time_col)
+    return {
+        c: stationarity_hint(df[c])
+        for c in preds
+        if c != time_col and c in df.columns and df[c].dtype.is_numeric()
+    }
 
 
 def _read(path: str) -> pl.DataFrame:
@@ -99,10 +115,8 @@ def main():
             "zero_fraction": zero_fraction(t),
             "class_balance": class_balance(t),
         }
-    if a.time:
-        out["stationarity"] = {
-            c: stationarity_hint(df[c]) for c in preds if c in df.columns and df[c].dtype.is_numeric()
-        }
+    if a.time and a.time in df.columns:
+        out["stationarity"] = stationarity_report(df, a.time, preds)
     js = json.dumps(out, indent=2)
     if a.json:
         with open(a.json, "w") as fh:

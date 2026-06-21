@@ -1,6 +1,6 @@
 """Tests for the Gate A citation verifier. The true-negative test is the important one:
 a verifier that passes everything is worse than none."""
-from verify_citations import verify_text
+from verify_citations import fallback_sections, verify_text
 
 
 def test_true_negative_flags_bad_refs():
@@ -17,3 +17,11 @@ def test_true_positive_passes_real_refs(real_ref):
 
 def test_empty_text_has_no_failures():
     assert verify_text("no citations here") == []
+
+
+def test_chapter_fallback_passes_gate_a_but_is_flagged():
+    # chapter 11 exists in Book 1; §11.99.99 does not — Gate A passes on the chapter (documented
+    # leniency), but fallback_sections surfaces it as a Gate-B worklist item.
+    text = "See PML1 §11.99.99."
+    assert verify_text(text) == []
+    assert "PML1 §11.99.99" in fallback_sections(text)

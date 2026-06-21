@@ -6,6 +6,7 @@ from characterize import (
     n_over_p,
     overdispersion,
     stationarity_hint,
+    stationarity_report,
     zero_fraction,
 )
 
@@ -43,3 +44,23 @@ def test_stationarity_hint_detects_trend():
 
 def test_stationarity_hint_none_when_too_short():
     assert stationarity_hint(pl.Series([1.0, 2.0, 3.0])) is None
+
+
+def test_stationarity_report_sorts_by_time():
+    # rows are in DESCENDING time order; sorting by t must recover the upward trend (sign flips)
+    t = list(range(40))
+    df = pl.DataFrame({"t": t[::-1], "x": [float(i) for i in t[::-1]]})
+    rep = stationarity_report(df, "t", ["x"])
+    assert rep["x"]["split_half_mean_shift_sd"] > 1.0  # after sort: ascending → positive shift
+    raw = stationarity_hint(df["x"])  # without the sort, the hint has the opposite sign
+    assert raw["split_half_mean_shift_sd"] < -1.0
+
+
+def test_stationarity_report_excludes_time_column():
+    df = pl.DataFrame({"t": [float(i) for i in range(40)], "x": [1.0] * 40})
+    assert "t" not in stationarity_report(df, "t", ["t", "x"])
+
+
+def test_class_balance_none_for_non_categorical():
+    assert class_balance(pl.Series(list(range(50)))) is None          # high cardinality
+    assert class_balance(pl.Series([float(i) for i in range(5)])) is None  # float dtype
