@@ -268,7 +268,9 @@ oos_pred = az.from_numpyro(posterior_predictive=oos, coords=coords_new, dims=dim
 ## Common model families
 
 NumPyro uses scipy-style distribution arguments (`loc`/`scale`, `concentration`/`rate`). See
-[references/priors.md](references/priors.md) for the full PyMC→NumPyro distribution map.
+[references/priors.md](references/priors.md) for the full PyMC→NumPyro distribution map. For
+time-series / state-space models, settle **marginalize the latent path vs. sample it** first — see
+[references/state-space.md](references/state-space.md).
 
 | Problem | Data model (`numpyro.distributions`) | Typical priors | Reference |
 |---|---|---|---|
@@ -282,7 +284,8 @@ NumPyro uses scipy-style distribution arguments (`loc`/`scale`, `concentration`/
 | Truncated data | `TruncatedNormal(loc, scale, low, high)` / `TruncatedDistribution(base, low, high)` | Same as underlying distribution | [references/priors.md](references/priors.md) |
 | High-dimensional / sparse regression | `Normal` / `StudentT` with sparsity prior on coefficients | Regularized Horseshoe or R2-D2 on coeffs | [references/priors.md](references/priors.md) |
 | Hierarchical / multilevel | Varies | See partial pooling + `LocScaleReparam` | [references/hierarchical.md](references/hierarchical.md) |
-| Time series | state space models / Gaussian Processes | Problem-specific | [references/priors.md](references/priors.md) |
+| Time series / state space | Latent path via `scan` (non-Gaussian/non-linear) or Kalman marginalization (linear-Gaussian) | Non-centered innovations; stationary init | [references/state-space.md](references/state-space.md) |
+| Gaussian processes | GP prior over the latent function | Kernel hyperpriors (lengthscale, amplitude) | [references/priors.md](references/priors.md) |
 
 ## Utility scripts
 
