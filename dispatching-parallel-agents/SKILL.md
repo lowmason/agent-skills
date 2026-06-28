@@ -62,15 +62,20 @@ Each agent gets:
 - **Clear goal:** Make these tests pass
 - **Constraints:** Don't change other code
 - **Expected output:** Summary of what you found and fixed
+- **An explicit model:** set it per subagent-driven-development's Model Selection,
+  scaled to that domain's difficulty, passed as the tier's dispatch alias
+  (`haiku` / `sonnet` / `opus`) — an omitted model silently inherits your
+  session's model, usually the most capable and most expensive.
 
 ### 3. Dispatch in Parallel
 
-Issue all three subagent dispatches in the same response — they run in parallel:
+Issue all three subagent dispatches in the same response — they run in parallel.
+Set each agent's `model` explicitly (see above):
 
 ```text
-Subagent (general-purpose): "Fix agent-tool-abort.test.ts failures"
-Subagent (general-purpose): "Fix batch-completion-behavior.test.ts failures"
-Subagent (general-purpose): "Fix tool-approval-race-conditions.test.ts failures"
+Subagent (general-purpose, model=<haiku|sonnet|opus>): "Fix agent-tool-abort.test.ts failures"
+Subagent (general-purpose, model=<haiku|sonnet|opus>): "Fix batch-completion-behavior.test.ts failures"
+Subagent (general-purpose, model=<haiku|sonnet|opus>): "Fix tool-approval-race-conditions.test.ts failures"
 # All three run concurrently.
 ```
 
