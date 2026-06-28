@@ -1,5 +1,7 @@
 # Refine subagent-driven-development (Model Selection + dedup) — Implementation Plan
 
+> **Status:** ✅ Completed — all tasks shipped and merged to `main` 2026-06-28 (PRs #2/#4, merge `1ef2950`).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Make the skill's model-selection logic concrete and self-explaining (named tier lineup + explicit precedence + a reconciling principle + a default) and dedup repeated guidance — without regressing the decision behavior a RED baseline proved already works.

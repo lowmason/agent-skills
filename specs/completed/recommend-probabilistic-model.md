@@ -1,5 +1,7 @@
 # Design — `recommend-probabilistic-model` skill
 
+> **Status:** ✅ Completed — shipped and merged to `main` 2026-06-21 (PR #1, merge `466a9d2`).
+
 -   **Date:** 2026-06-21
 -   **Status:** Approved (brainstorm) — pending spec review → `writing-plans`
 -   **Author:** Lowell Mason

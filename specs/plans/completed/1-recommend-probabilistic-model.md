@@ -1,5 +1,7 @@
 # recommend-probabilistic-model Implementation Plan
 
+> **Status:** ✅ Completed — all tasks shipped and merged to `main` 2026-06-21 (PR #1, merge `466a9d2`).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Build the `recommend-probabilistic-model` skill — a PML-grounded advisor that turns a modeling problem + its data into a recommendation memo with verified citations into Murphy's books and pyprobml.

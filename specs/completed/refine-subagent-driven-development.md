@@ -1,5 +1,7 @@
 # Design: Refine `subagent-driven-development` (Model Selection + dedup)
 
+> **Status:** ✅ Completed — shipped and merged to `main` 2026-06-28 (PRs #2/#4, merge `1ef2950`).
+
 **Date:** 2026-06-27
 **Skill:** `subagent-driven-development/SKILL.md` (this repo; a namespace-stripped fork of obra/superpowers, MIT)
 **Status:** spec — awaiting user review before writing the implementation plan
