@@ -237,7 +237,9 @@ A profiling pass produces three things, in this order:
 3. **Suggested next steps** — what to fix or drop, which columns are usable dimensions vs metrics,
    and what's safe to feed into analysis or `bayesian-workflow`. To turn the issues you find into
    a pre-ship gate, hand off to `validate-data`; to lock the invariants in as permanent tests, use
-   `develop-testing-strategy`.
+   `develop-testing-strategy`. Once the data is clean, the two profile-driven next steps are
+   `recommend-probabilistic-model` (which model fits) and `recommend-visualization` (which chart
+   fits) — both consume this profile (`--json`) directly.
 
 `scripts/profile.py --json profile.json` writes a machine-readable version of all three so you can
 diff two vintages of the same dataset or attach the profile to a report.

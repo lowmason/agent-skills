@@ -18,6 +18,12 @@ The following skills are original works by Lowell Mason, MIT licensed:
     design-architecture/
     bls-data-context/   (including its nine BLS program references)
     recommend-probabilistic-model/
+    recommend-visualization/
+
+recommend-visualization/ is an original work by Lowell Mason (MIT). It CITES
+standard visualization literature by author-year only (Cleveland & McGill 1984;
+Tufte 1983; Munzner 2014; Wilke 2019; Satyanarayan et al. 2017) — summarizing in
+original wording, reproducing no text and bundling no copies.
 
 recommend-probabilistic-model/ is an original work by Lowell Mason (MIT), but
 it CITES and SUMMARIZES external material it does not redistribute:
