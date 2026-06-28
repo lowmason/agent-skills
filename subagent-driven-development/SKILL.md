@@ -98,42 +98,43 @@ conflicts that only emerge from implementation.
 
 ## Model Selection
 
-Use the least powerful model that can handle each role to conserve cost and increase speed.
+Pick the **cheapest tier that can one-shot the task without a re-loop** — but
+on a genuine toss-up between two tiers, **err toward the stronger one.** A model
+that takes 2-3× the turns, or comes back wrong and needs a re-dispatch, costs
+more than the tier above it; turn count and rework dominate sticker price.
 
-**Mechanical implementation tasks** (isolated functions, clear specs, 1-2 files): use a fast, cheap model. Most implementation tasks are mechanical when the plan is well-specified.
+**Tiers** (update these IDs when the lineup changes):
+- **cheap** — Haiku 4.5 (`claude-haiku-4-5`)
+- **standard** — Sonnet 4.6 (`claude-sonnet-4-6`)
+- **capable** — Opus 4.6 (`claude-opus-4-6`)
 
-**Integration and judgment tasks** (multi-file coordination, pattern matching, debugging): use a standard model.
+**Always specify the model explicitly when dispatching.** An omitted model
+inherits your session's model — usually the most capable and most expensive —
+silently defeating this section.
 
-**Architecture and design tasks**: use the most capable available model.
-The final whole-branch review is one of these — dispatch it on the most
-capable available model, not the session default.
+**Choosing the tier — read the signals in order; the first that fires wins:**
+1. **Risk / subtlety** — concurrency, security, data-loss, broad blast radius,
+   or debugging from symptoms → **capable**, regardless of file count or diff size.
+2. **Source of the work** — the complete code is in the brief (transcription +
+   testing) → **cheap**; behavior is described in prose → **standard floor**
+   (prose implementers never get the cheap tier).
+3. **Spread** — 1-2 files with a clear spec → **cheap**; multiple files /
+   integration / pattern-matching → **standard**; open design judgment or
+   broad-codebase understanding → **capable**.
 
-**Review tasks**: choose the model with the same judgment, scaled to the
-diff's size, complexity, and risk. A small mechanical diff does not need the
-most capable model; a subtle concurrency change does.
+When nothing clearly fires, default to **standard** — the floor that absorbs the
+cost of one wrong cheap pick.
 
-**Always specify the model explicitly when dispatching a subagent.** An
-omitted model inherits your session's model — often the most capable and
-most expensive — which silently defeats this section.
-
-**Turn count beats token price.** Wall-clock and context cost scale with how
-many turns a subagent takes, and the cheapest models routinely take 2-3× the
-turns on multi-step work — costing more overall. Use a mid-tier model as the
-floor for reviewers and for implementers working from prose descriptions.
-When the task's plan text contains the complete code to write, the
-implementation is transcription plus testing: use the cheapest tier for
-that implementer. Single-file mechanical fixes also take the cheapest tier.
-
-**Task complexity signals (implementation tasks):**
-- Touches 1-2 files with a complete spec → cheap model
-- Touches multiple files with integration concerns → standard model
-- Requires design judgment or broad codebase understanding → most capable model
+**Reviews** floor at **standard** and scale up with the diff: a small mechanical
+diff reviews at **standard**, a subtle or risky change at **capable**. The
+**final whole-branch review is always capable** — dispatch it explicitly, not on
+the session default.
 
 ## Handling Implementer Status
 
 Implementer subagents report one of four statuses. Handle each appropriately:
 
-**DONE:** Generate the review package (`scripts/review-package BASE HEAD`, from this skill's directory — it prints the unique file path it wrote; BASE is the commit you recorded before dispatching the implementer — never `HEAD~1`, which silently drops all but the last commit of a multi-commit task), then dispatch the task reviewer with the printed path.
+**DONE:** Generate the review package (`scripts/review-package BASE HEAD` — see **File Handoffs** for the BASE rule), then dispatch the task reviewer with the printed path.
 
 **DONE_WITH_CONCERNS:** The implementer completed the work but flagged doubts. Read the concerns before proceeding. If the concerns are about correctness or scope, address them before review. If they're observations (e.g., "this file is getting large"), note them and proceed to review.
 
@@ -178,14 +179,7 @@ final whole-branch review. When you fill a reviewer template:
   Y"). The reviewer's template already carries the process rules (YAGNI,
   test hygiene, review method) — the constraints block is for what THIS
   project's spec demands.
-- Hand the reviewer its diff as a file: run this skill's
-  `scripts/review-package BASE HEAD` and pass the reviewer the file path
-  it prints (or, without bash: `git log --oneline`, `git diff --stat`,
-  and `git diff -U10` for the range, redirected to one uniquely named
-  file). The output never enters your own context, and the reviewer sees
-  the commit list, stat summary, and full diff with context in one Read
-  call. Use the BASE you recorded before dispatching the implementer —
-  never `HEAD~1`, which silently truncates multi-commit tasks.
+- Hand the reviewer its diff as a file — see **File Handoffs** for the review-package contract.
 - A dispatch prompt describes one task, not the session's history. Do not
   paste accumulated prior-task summaries ("state after Tasks 1-3") into
   later dispatches — a real session's dispatch hit 42k chars of which 99%
@@ -200,11 +194,6 @@ final whole-branch review. When you fill a reviewer template:
   contradiction: present the finding and the plan text, ask which governs.
   Do not dismiss the finding because the plan mandates it, and do not
   dispatch a fix that contradicts the plan without asking.
-- The final whole-branch review gets a package too: run
-  `scripts/review-package MERGE_BASE HEAD` (MERGE_BASE = the commit the
-  branch started from, e.g. `git merge-base main HEAD`) and include the
-  printed path in the final review dispatch, so the final reviewer reads
-  one file instead of re-deriving the branch diff with git commands.
 - Every fix dispatch carries the implementer contract: the fix subagent
   re-runs the tests covering its change and reports the results. Name the
   covering test files in the dispatch — a one-line fix does not need the
@@ -233,6 +222,15 @@ and is re-read on every later turn. Hand artifacts over as files:
   any ambiguity you noticed in the brief; (5) the report-file path and
   report contract. Exact values (numbers, magic strings, signatures, test
   cases) appear only in the brief.
+- **Review package (diffs):** generate every reviewer's diff as a file — run
+  this skill's `scripts/review-package BASE HEAD` and pass the printed path (or,
+  without bash: `git log --oneline`, `git diff --stat`, and `git diff -U10` for
+  the range, redirected to one uniquely named file). The output never enters
+  your context; the reviewer sees the commit list, stat summary, and full diff
+  in one Read. **Use the BASE you recorded before dispatching the implementer —
+  never `HEAD~1`, which silently drops all but the last commit of a multi-commit
+  task.** For the final whole-branch review, BASE is the branch's merge base
+  (e.g. `git merge-base main HEAD`).
 - **Report file:** name the implementer's report file after the brief
   (brief `…/task-N-brief.md` → report `…/task-N-report.md`) and put it in
   the dispatch prompt. The implementer writes the full report there and
@@ -378,9 +376,7 @@ Done!
 - Accept "close enough" on spec compliance (reviewer found spec issues = not done)
 - Skip review loops (reviewer found issues = implementer fixes = review again)
 - Let implementer self-review replace actual review (both are needed)
-- Tell a reviewer what not to flag, or pre-rate a finding's severity in the
-  dispatch prompt ("treat it as Minor at most") — the plan's example code is
-  a starting point, not evidence that its weaknesses were chosen
+- Tell a reviewer what not to flag, or pre-rate a finding's severity — see **Constructing Reviewer Prompts**
 - Dispatch a task reviewer without a diff file — generate it first
   (`scripts/review-package BASE HEAD`) and name the printed path in the
   prompt
