@@ -98,36 +98,37 @@ conflicts that only emerge from implementation.
 
 ## Model Selection
 
-Use the least powerful model that can handle each role to conserve cost and increase speed.
+Pick the **cheapest tier that can one-shot the task without a re-loop.** A model
+that takes 2-3× the turns, or comes back wrong and needs a re-dispatch, costs
+more than the tier above it — so when a task sits between tiers, go up one.
+Turn count and rework dominate sticker price.
 
-**Mechanical implementation tasks** (isolated functions, clear specs, 1-2 files): use a fast, cheap model. Most implementation tasks are mechanical when the plan is well-specified.
+**Tiers** (update these IDs when the lineup changes):
+- **cheap** — Haiku 4.5 (`claude-haiku-4-5`)
+- **standard** — Sonnet 4.6 (`claude-sonnet-4-6`)
+- **capable** — Opus 4.6 (`claude-opus-4-6`)
 
-**Integration and judgment tasks** (multi-file coordination, pattern matching, debugging): use a standard model.
+**Always specify the model explicitly when dispatching.** An omitted model
+inherits your session's model — usually the most capable and most expensive —
+silently defeating this section.
 
-**Architecture and design tasks**: use the most capable available model.
-The final whole-branch review is one of these — dispatch it on the most
-capable available model, not the session default.
+**Choosing the tier — read the signals in order; the first that fires wins:**
+1. **Risk / subtlety** — concurrency, security, data-loss, broad blast radius,
+   or debugging from symptoms → **capable**, regardless of file count or diff size.
+2. **Source of the work** — the complete code is in the brief (transcription +
+   testing) → **cheap**; behavior is described in prose → **standard floor**
+   (prose implementers never get the cheap tier).
+3. **Spread** — 1-2 files with a clear spec → **cheap**; multiple files /
+   integration / pattern-matching → **standard**; open design judgment or
+   broad-codebase understanding → **capable**.
 
-**Review tasks**: choose the model with the same judgment, scaled to the
-diff's size, complexity, and risk. A small mechanical diff does not need the
-most capable model; a subtle concurrency change does.
+When nothing clearly fires, default to **standard** — the floor that absorbs the
+cost of one wrong cheap pick.
 
-**Always specify the model explicitly when dispatching a subagent.** An
-omitted model inherits your session's model — often the most capable and
-most expensive — which silently defeats this section.
-
-**Turn count beats token price.** Wall-clock and context cost scale with how
-many turns a subagent takes, and the cheapest models routinely take 2-3× the
-turns on multi-step work — costing more overall. Use a mid-tier model as the
-floor for reviewers and for implementers working from prose descriptions.
-When the task's plan text contains the complete code to write, the
-implementation is transcription plus testing: use the cheapest tier for
-that implementer. Single-file mechanical fixes also take the cheapest tier.
-
-**Task complexity signals (implementation tasks):**
-- Touches 1-2 files with a complete spec → cheap model
-- Touches multiple files with integration concerns → standard model
-- Requires design judgment or broad codebase understanding → most capable model
+**Reviews** floor at **standard** and scale up with the diff: a small mechanical
+diff reviews at **standard**, a subtle or risky change at **capable**. The
+**final whole-branch review is always capable** — dispatch it explicitly, not on
+the session default.
 
 ## Handling Implementer Status
 
