@@ -104,13 +104,15 @@ that takes 2-3× the turns, or comes back wrong and needs a re-dispatch, costs
 more than the tier above it; turn count and rework dominate sticker price.
 
 **Tiers** (update these IDs when the lineup changes):
-- **cheap** — Haiku 4.5 (`claude-haiku-4-5`)
-- **standard** — Sonnet 4.6 (`claude-sonnet-4-6`)
-- **capable** — Opus 4.6 (`claude-opus-4-6`)
+- **cheap** — Haiku 4.5 (`claude-haiku-4-5`; dispatch alias `haiku`)
+- **standard** — Sonnet 4.6 (`claude-sonnet-4-6`; dispatch alias `sonnet`)
+- **capable** — Opus 4.6 (`claude-opus-4-6`; dispatch alias `opus`)
 
-**Always specify the model explicitly when dispatching.** An omitted model
-inherits your session's model — usually the most capable and most expensive —
-silently defeating this section.
+**Always specify the model explicitly when dispatching** — pass the tier's
+dispatch alias (`haiku` / `sonnet` / `opus`), not the version ID, which the
+dispatch tool's model parameter does not accept. An omitted model inherits your
+session's model — usually the most capable and most expensive — silently
+defeating this section.
 
 **Choosing the tier — read the signals in order; the first that fires wins:**
 1. **Risk / subtlety** — concurrency, security, data-loss, broad blast radius,

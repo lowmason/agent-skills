@@ -6,6 +6,12 @@ Use this template when dispatching a code reviewer subagent.
 
 ```
 Subagent (general-purpose):
+  # Choose the model explicitly — an omitted model inherits the session default,
+  # usually the most capable and most expensive. Pick the tier per
+  # subagent-driven-development's Model Selection: a small mechanical diff reviews
+  # at standard, a subtle or risky change at capable, and the final whole-branch
+  # review is always capable.
+  model: <haiku | sonnet | opus>   # the chosen tier's dispatch alias (see Model Selection)
   description: "Review code changes"
   prompt: |
     You are a Senior Code Reviewer with expertise in software architecture,
