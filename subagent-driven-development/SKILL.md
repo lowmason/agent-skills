@@ -98,10 +98,10 @@ conflicts that only emerge from implementation.
 
 ## Model Selection
 
-Pick the **cheapest tier that can one-shot the task without a re-loop.** A model
+Pick the **cheapest tier that can one-shot the task without a re-loop** — but
+on a genuine toss-up between two tiers, **err toward the stronger one.** A model
 that takes 2-3× the turns, or comes back wrong and needs a re-dispatch, costs
-more than the tier above it — so when a task sits between tiers, go up one.
-Turn count and rework dominate sticker price.
+more than the tier above it; turn count and rework dominate sticker price.
 
 **Tiers** (update these IDs when the lineup changes):
 - **cheap** — Haiku 4.5 (`claude-haiku-4-5`)
