@@ -31,7 +31,13 @@ HEAD_SHA=$(git rev-parse HEAD)
 
 **2. Dispatch code reviewer subagent:**
 
-Dispatch a `general-purpose` subagent, filling the template at [code-reviewer.md](code-reviewer.md)
+Dispatch a `general-purpose` subagent, filling the template at [code-reviewer.md](code-reviewer.md).
+
+**Set its model explicitly.** Choose the tier per subagent-driven-development's
+Model Selection: a small mechanical diff reviews at **standard**; a subtle or
+risky change — and the final whole-branch review — at **capable**. An omitted
+model silently inherits your session's model, usually the most capable and most
+expensive.
 
 **Placeholders:**
 - `{DESCRIPTION}` - Brief summary of what you built
