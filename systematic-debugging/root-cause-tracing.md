@@ -38,55 +38,53 @@ Error: git init failed in ~/project/packages/core
 
 ### 2. Find Immediate Cause
 **What code directly causes this?**
-```typescript
-await execFileAsync('git', ['init'], { cwd: projectDir });
+```python
+subprocess.run(["git", "init"], cwd=project_dir, check=True)
 ```
 
 ### 3. Ask: What Called This?
-```typescript
-WorktreeManager.createSessionWorktree(projectDir, sessionId)
-  → called by Session.initializeWorkspace()
+```python
+WorktreeManager.create_session_worktree(project_dir, session_id)
+  → called by Session.initialize_workspace()
   → called by Session.create()
   → called by test at Project.create()
 ```
 
 ### 4. Keep Tracing Up
 **What value was passed?**
-- `projectDir = ''` (empty string!)
-- Empty string as `cwd` resolves to `process.cwd()`
+- `project_dir = ""` (empty string!)
+- Empty string as `cwd` resolves to `os.getcwd()`
 - That's the source code directory!
 
 ### 5. Find Original Trigger
 **Where did empty string come from?**
-```typescript
-const context = setupCoreTest(); // Returns { tempDir: '' }
-Project.create('name', context.tempDir); // Accessed before beforeEach!
+```python
+context = setup_core_test()  # returns {"temp_dir": ""}
+Project.create("name", context["temp_dir"])  # read before the fixture populated it!
 ```
 
 ## Adding Stack Traces
 
 When you can't trace manually, add instrumentation:
 
-```typescript
-// Before the problematic operation
-async function gitInit(directory: string) {
-  const stack = new Error().stack;
-  console.error('DEBUG git init:', {
-    directory,
-    cwd: process.cwd(),
-    nodeEnv: process.env.NODE_ENV,
-    stack,
-  });
-
-  await execFileAsync('git', ['init'], { cwd: directory });
-}
+```python
+# Before the problematic operation
+def git_init(directory):
+    stack = "".join(traceback.format_stack())
+    print(
+        "DEBUG git init:",
+        {"directory": directory, "cwd": os.getcwd(),
+         "test": os.environ.get("PYTEST_CURRENT_TEST"), "stack": stack},
+        file=sys.stderr,
+    )
+    subprocess.run(["git", "init"], cwd=directory, check=True)
 ```
 
-**Critical:** Use `console.error()` in tests (not logger - may not show)
+**Critical:** Print to `sys.stderr` and run `pytest -s` — pytest captures stdout/stderr otherwise, and a configured logger may be filtered out
 
 **Run and capture:**
 ```bash
-npm test 2>&1 | grep 'DEBUG git init'
+pytest -s 2>&1 | grep 'DEBUG git init'
 ```
 
 **Analyze stack traces:**
@@ -101,30 +99,30 @@ If something appears during tests but you don't know which test:
 Use the bisection script `find-polluter.sh` in this directory:
 
 ```bash
-./find-polluter.sh '.git' 'src/**/*.test.ts'
+./find-polluter.sh '.git' '*/test_*.py'
 ```
 
 Runs tests one-by-one, stops at first polluter. See script for usage.
 
-## Real Example: Empty projectDir
+## Real Example: Empty project_dir
 
 **Symptom:** `.git` created in `packages/core/` (source code)
 
 **Trace chain:**
-1. `git init` runs in `process.cwd()` ← empty cwd parameter
-2. WorktreeManager called with empty projectDir
+1. `git init` runs in `os.getcwd()` ← empty cwd parameter
+2. WorktreeManager called with empty project_dir
 3. Session.create() passed empty string
-4. Test accessed `context.tempDir` before beforeEach
-5. setupCoreTest() returns `{ tempDir: '' }` initially
+4. Test read `context.temp_dir` before the fixture populated it
+5. setup_core_test() returns `{"temp_dir": ""}` initially
 
 **Root cause:** Top-level variable initialization accessing empty value
 
-**Fix:** Made tempDir a getter that throws if accessed before beforeEach
+**Fix:** Made temp_dir a property that raises if read before the fixture runs
 
 **Also added defense-in-depth:**
 - Layer 1: Project.create() validates directory
 - Layer 2: WorkspaceManager validates not empty
-- Layer 3: NODE_ENV guard refuses git init outside tmpdir
+- Layer 3: test-context guard refuses git init outside tmpdir
 - Layer 4: Stack trace logging before git init
 
 ## Key Principle
@@ -155,10 +153,10 @@ digraph principle {
 
 ## Stack Trace Tips
 
-**In tests:** Use `console.error()` not logger - logger may be suppressed
+**In tests:** Print to `sys.stderr` and run `pytest -s` - captured output is hidden otherwise
 **Before operation:** Log before the dangerous operation, not after it fails
 **Include context:** Directory, cwd, environment variables, timestamps
-**Capture stack:** `new Error().stack` shows complete call chain
+**Capture stack:** `traceback.format_stack()` shows the complete call chain
 
 ## Real-World Impact
 

@@ -10,19 +10,19 @@ Flaky tests often guess at timing with arbitrary delays. This creates race condi
 
 ```dot
 digraph when_to_use {
-    "Test uses setTimeout/sleep?" [shape=diamond];
+    "Test uses time.sleep()?" [shape=diamond];
     "Testing timing behavior?" [shape=diamond];
     "Document WHY timeout needed" [shape=box];
     "Use condition-based waiting" [shape=box];
 
-    "Test uses setTimeout/sleep?" -> "Testing timing behavior?" [label="yes"];
+    "Test uses time.sleep()?" -> "Testing timing behavior?" [label="yes"];
     "Testing timing behavior?" -> "Document WHY timeout needed" [label="yes"];
     "Testing timing behavior?" -> "Use condition-based waiting" [label="no"];
 }
 ```
 
 **Use when:**
-- Tests have arbitrary delays (`setTimeout`, `sleep`, `time.sleep()`)
+- Tests have arbitrary delays (`time.sleep()`)
 - Tests are flaky (pass sometimes, fail under load)
 - Tests timeout when run in parallel
 - Waiting for async operations to complete
@@ -33,57 +33,50 @@ digraph when_to_use {
 
 ## Core Pattern
 
-```typescript
-// ❌ BEFORE: Guessing at timing
-await new Promise(r => setTimeout(r, 50));
-const result = getResult();
-expect(result).toBeDefined();
+```python
+# ❌ BEFORE: guessing at timing
+time.sleep(0.05)
+result = get_result()
+assert result is not None
 
-// ✅ AFTER: Waiting for condition
-await waitFor(() => getResult() !== undefined);
-const result = getResult();
-expect(result).toBeDefined();
+# ✅ AFTER: waiting for the condition
+wait_for(lambda: get_result() is not None, "result")
+result = get_result()
+assert result is not None
 ```
 
 ## Quick Patterns
 
 | Scenario | Pattern |
 |----------|---------|
-| Wait for event | `waitFor(() => events.find(e => e.type === 'DONE'))` |
-| Wait for state | `waitFor(() => machine.state === 'ready')` |
-| Wait for count | `waitFor(() => items.length >= 5)` |
-| Wait for file | `waitFor(() => fs.existsSync(path))` |
-| Complex condition | `waitFor(() => obj.ready && obj.value > 10)` |
+| Wait for event | `wait_for(lambda: any(e.type == "DONE" for e in events), "DONE")` |
+| Wait for state | `wait_for(lambda: machine.state == "ready", "ready")` |
+| Wait for count | `wait_for(lambda: len(items) >= 5, "5 items")` |
+| Wait for file | `wait_for(lambda: path.exists(), "file")` |
+| Complex condition | `wait_for(lambda: obj.ready and obj.value > 10, "obj ready")` |
 
 ## Implementation
 
 Generic polling function:
-```typescript
-async function waitFor<T>(
-  condition: () => T | undefined | null | false,
-  description: string,
-  timeoutMs = 5000
-): Promise<T> {
-  const startTime = Date.now();
-
-  while (true) {
-    const result = condition();
-    if (result) return result;
-
-    if (Date.now() - startTime > timeoutMs) {
-      throw new Error(`Timeout waiting for ${description} after ${timeoutMs}ms`);
-    }
-
-    await new Promise(r => setTimeout(r, 10)); // Poll every 10ms
-  }
-}
+```python
+def wait_for(predicate, description, timeout=5.0, interval=0.01):
+    deadline = time.monotonic() + timeout
+    while True:
+        value = predicate()
+        if value:
+            return value
+        if time.monotonic() > deadline:
+            raise TimeoutError(
+                f"Timed out waiting for {description} after {timeout}s"
+            )
+        time.sleep(interval)  # poll every 10ms
 ```
 
-See `condition-based-waiting-example.ts` in this directory for complete implementation with domain-specific helpers (`waitForEvent`, `waitForEventCount`, `waitForEventMatch`) from actual debugging session.
+See `condition_based_waiting_example.py` in this directory for the helper plus thin domain wrappers (`wait_for_event`, `wait_for_event_count`, `wait_for_file`).
 
 ## Common Mistakes
 
-**❌ Polling too fast:** `setTimeout(check, 1)` - wastes CPU
+**❌ Polling too fast:** `time.sleep(0.001)` - wastes CPU
 **✅ Fix:** Poll every 10ms
 
 **❌ No timeout:** Loop forever if condition never met
@@ -94,11 +87,11 @@ See `condition-based-waiting-example.ts` in this directory for complete implemen
 
 ## When Arbitrary Timeout IS Correct
 
-```typescript
-// Tool ticks every 100ms - need 2 ticks to verify partial output
-await waitForEvent(manager, 'TOOL_STARTED'); // First: wait for condition
-await new Promise(r => setTimeout(r, 200));   // Then: wait for timed behavior
-// 200ms = 2 ticks at 100ms intervals - documented and justified
+```python
+# Worker ticks every 100ms — need 2 ticks to verify partial output
+wait_for(lambda: worker.started, "worker started")  # first: wait for condition
+time.sleep(0.2)  # then: wait for timed behavior
+# 200ms = 2 ticks at 100ms intervals — documented and justified
 ```
 
 **Requirements:**

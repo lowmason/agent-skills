@@ -21,12 +21,12 @@ Tests must verify real behavior, not mock behavior. Mocks are a means to isolate
 ## Anti-Pattern 1: Testing Mock Behavior
 
 **The violation:**
-```typescript
-// ❌ BAD: Testing that the mock exists
-test('renders sidebar', () => {
-  render(<Page />);
-  expect(screen.getByTestId('sidebar-mock')).toBeInTheDocument();
-});
+```python
+# ❌ BAD: asserting the mock was called proves nothing about the result
+def test_summary():
+    fetch = Mock(return_value=[1, 2, 3])
+    summarize_series(fetch)
+    fetch.assert_called_once()   # only checks we called our own mock
 ```
 
 **Why this is wrong:**
@@ -37,15 +37,14 @@ test('renders sidebar', () => {
 **your human partner's correction:** "Are we testing the behavior of a mock?"
 
 **The fix:**
-```typescript
-// ✅ GOOD: Test real component or don't mock it
-test('renders sidebar', () => {
-  render(<Page />);  // Don't mock sidebar
-  expect(screen.getByRole('navigation')).toBeInTheDocument();
-});
+```python
+# ✅ GOOD: assert real behavior — the computed result
+def test_summary():
+    summary = summarize_series(lambda: [1, 2, 3])  # real input, no mock
+    assert summary == {"n": 3, "mean": 2.0}
 
-// OR if sidebar must be mocked for isolation:
-// Don't assert on the mock - test Page's behavior with sidebar present
+# OR if a dependency must be mocked for isolation:
+# don't assert on the mock — assert on the output your code produced
 ```
 
 ### Gate Function
@@ -63,17 +62,16 @@ BEFORE asserting on any mock element:
 ## Anti-Pattern 2: Test-Only Methods in Production
 
 **The violation:**
-```typescript
-// ❌ BAD: destroy() only used in tests
-class Session {
-  async destroy() {  // Looks like production API!
-    await this._workspaceManager?.destroyWorkspace(this.id);
-    // ... cleanup
-  }
-}
+```python
+# ❌ BAD: cleanup() only used in tests, lives on the production class
+class Pipeline:
+    def cleanup(self):              # looks like production API!
+        shutil.rmtree(self.workdir)
+        # ... more teardown
 
-// In tests
-afterEach(() => session.destroy());
+# in tests
+def teardown_function():
+    pipeline.cleanup()
 ```
 
 **Why this is wrong:**
@@ -83,20 +81,13 @@ afterEach(() => session.destroy());
 - Confuses object lifecycle with entity lifecycle
 
 **The fix:**
-```typescript
-// ✅ GOOD: Test utilities handle test cleanup
-// Session has no destroy() - it's stateless in production
+```python
+# ✅ GOOD: a fixture handles test cleanup
+# Pipeline has no cleanup() — nothing test-only on the production class
 
-// In test-utils/
-export async function cleanupSession(session: Session) {
-  const workspace = session.getWorkspaceInfo();
-  if (workspace) {
-    await workspaceManager.destroyWorkspace(workspace.id);
-  }
-}
-
-// In tests
-afterEach(() => cleanupSession(session));
+@pytest.fixture
+def pipeline(tmp_path):
+    yield Pipeline(workdir=tmp_path)  # tmp_path is auto-removed by pytest
 ```
 
 ### Gate Function
@@ -118,17 +109,14 @@ BEFORE adding any method to production class:
 ## Anti-Pattern 3: Mocking Without Understanding
 
 **The violation:**
-```typescript
-// ❌ BAD: Mock breaks test logic
-test('detects duplicate server', () => {
-  // Mock prevents config write that test depends on!
-  vi.mock('ToolCatalog', () => ({
-    discoverAndCacheTools: vi.fn().mockResolvedValue(undefined)
-  }));
+```python
+# ❌ BAD: patching away the cache write the test depends on
+def test_detects_duplicate(monkeypatch):
+    # this patch prevents the registry write the duplicate check needs!
+    monkeypatch.setattr(catalog, "discover_and_cache", lambda *_: None)
 
-  await addServer(config);
-  await addServer(config);  // Should throw - but won't!
-});
+    add_server(config)
+    add_server(config)   # should raise DuplicateServerError — but won't!
 ```
 
 **Why this is wrong:**
@@ -137,15 +125,15 @@ test('detects duplicate server', () => {
 - Test passes for wrong reason or fails mysteriously
 
 **The fix:**
-```typescript
-// ✅ GOOD: Mock at correct level
-test('detects duplicate server', () => {
-  // Mock the slow part, preserve behavior test needs
-  vi.mock('MCPServerManager'); // Just mock slow server startup
+```python
+# ✅ GOOD: mock at the correct level
+def test_detects_duplicate(monkeypatch):
+    # mock only the slow startup; keep the registry write
+    monkeypatch.setattr(server_manager, "start", lambda cfg: None)
 
-  await addServer(config);  // Config written
-  await addServer(config);  // Duplicate detected ✓
-});
+    add_server(config)                      # config cached
+    with pytest.raises(DuplicateServerError):
+        add_server(config)                  # duplicate detected ✓
 ```
 
 ### Gate Function
@@ -177,15 +165,15 @@ BEFORE mocking any method:
 ## Anti-Pattern 4: Incomplete Mocks
 
 **The violation:**
-```typescript
-// ❌ BAD: Partial mock - only fields you think you need
-const mockResponse = {
-  status: 'success',
-  data: { userId: '123', name: 'Alice' }
-  // Missing: metadata that downstream code uses
-};
+```python
+# ❌ BAD: partial mock — only the fields you think you need
+mock_response = {
+    "status": "success",
+    "data": {"user_id": "123", "name": "Alice"},
+    # Missing: metadata that downstream code reads
+}
 
-// Later: breaks when code accesses response.metadata.requestId
+# Later: breaks when code reads response["metadata"]["request_id"]
 ```
 
 **Why this is wrong:**
@@ -197,14 +185,14 @@ const mockResponse = {
 **The Iron Rule:** Mock the COMPLETE data structure as it exists in reality, not just fields your immediate test uses.
 
 **The fix:**
-```typescript
-// ✅ GOOD: Mirror real API completeness
-const mockResponse = {
-  status: 'success',
-  data: { userId: '123', name: 'Alice' },
-  metadata: { requestId: 'req-789', timestamp: 1234567890 }
-  // All fields real API returns
-};
+```python
+# ✅ GOOD: mirror real API completeness
+mock_response = {
+    "status": "success",
+    "data": {"user_id": "123", "name": "Alice"},
+    "metadata": {"request_id": "req-789", "timestamp": 1234567890},
+    # All fields the real API returns
+}
 ```
 
 ### Gate Function
@@ -274,7 +262,7 @@ TDD cycle:
 
 | Anti-Pattern | Fix |
 |--------------|-----|
-| Assert on mock elements | Test real component or unmock it |
+| Assert on the mock itself | Test real output, or don't mock it |
 | Test-only methods in production | Move to test utilities |
 | Mock without understanding | Understand dependencies first, mock minimally |
 | Incomplete mocks | Mirror real API completely |
@@ -283,7 +271,7 @@ TDD cycle:
 
 ## Red Flags
 
-- Assertion checks for `*-mock` test IDs
+- Assertion checks a mock was called, as "proof" the feature works
 - Methods only called in test files
 - Mock setup is >50% of test
 - Test fails when you remove mock
