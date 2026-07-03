@@ -375,7 +375,7 @@ Done!
 - Make a subagent read the whole plan file (hand it its task brief —
   `scripts/task-brief` — instead)
 - Skip scene-setting context (subagent needs to understand where task fits)
-- Ignore subagent questions (answer before letting them proceed)
+- Ignore a NEEDS_CONTEXT report (answer the questions and re-dispatch before moving on)
 - Accept "close enough" on spec compliance (reviewer found spec issues = not done)
 - Skip review loops (reviewer found issues = implementer fixes = review again)
 - Let implementer self-review replace actual review (both are needed)
@@ -387,10 +387,10 @@ Done!
 - Re-dispatch a task the progress ledger already marks complete — check
   the ledger (and `git log`) after any compaction or resume
 
-**If subagent asks questions:**
-- Answer clearly and completely
-- Provide additional context if needed
-- Don't rush them into implementation
+**If subagent reports NEEDS_CONTEXT:**
+- Answer every question clearly and completely
+- Re-dispatch with the same brief plus the answers
+- Add the context the brief was missing so the second run can one-shot it
 
 **If reviewer finds issues:**
 - Dispatch a fix subagent with the findings (per Constructing Reviewer Prompts)
