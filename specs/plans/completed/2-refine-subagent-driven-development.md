@@ -1,5 +1,9 @@
 # Refine subagent-driven-development (Model Selection + dedup) — Implementation Plan
 
+> **Historical note (2026-07):** `superpowers:`-namespaced skill references in
+> this archived plan predate the bare-name convention (see NOTICE). Do not
+> replay them verbatim — use bare skill names.
+
 > **Status:** ✅ Completed — all tasks shipped and merged to `main` 2026-06-28 (PRs #2/#4, merge `1ef2950`).
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

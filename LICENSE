@@ -22,11 +22,8 @@ SOFTWARE.
 
 ---
 
-This repository bundles skills from more than one source. The skills authored
-by Lowell Mason — the original methodology skills and bls-data-context, plus the
-`bayesian-workflow` adaptation — are covered by the MIT license above.
-Third-party and adapted skills retain their own copyright and license: the
-`superpowers`-derived skills are MIT, Copyright (c) 2025 Jesse Vincent (see
-LICENSE-superpowers), and `bayesian-workflow` is an MIT-licensed adaptation of
-Alexandre Andorra's original PyMC skill. Per-skill attribution and licensing are
-recorded in NOTICE.
+This repository bundles skills from more than one source. Per-skill
+attribution and licensing is tracked authoritatively in NOTICE; skills
+authored by Lowell Mason are covered by the MIT license above, and
+third-party/adapted skills retain their own copyright and MIT terms
+(see NOTICE and LICENSE-superpowers).

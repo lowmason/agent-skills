@@ -2,7 +2,7 @@
 .DS_Store
 
 # Claude Code per-machine settings (not shared)
-.claude/settings.local.json
+**/.claude/settings.local.json
 
 # Python verification venvs and caches
 **/.verify_venv/
@@ -15,3 +15,4 @@ build/.scratch/
 
 # pytest
 .pytest_cache/
+.hypothesis/

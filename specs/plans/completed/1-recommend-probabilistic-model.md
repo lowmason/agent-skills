@@ -1,5 +1,9 @@
 # recommend-probabilistic-model Implementation Plan
 
+> **Historical note (2026-07):** `superpowers:`-namespaced skill references in
+> this archived plan predate the bare-name convention (see NOTICE). Do not
+> replay them verbatim — use bare skill names.
+
 > **Status:** ✅ Completed — all tasks shipped and merged to `main` 2026-06-21 (PR #1, merge `466a9d2`).
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
