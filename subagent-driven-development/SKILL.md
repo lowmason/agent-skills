@@ -250,7 +250,8 @@ controllers that lost their place have re-dispatched entire completed task
 sequences — the single most expensive failure observed. Track progress in
 a ledger file, not only in todos.
 
-- At skill start, check for a ledger:
+- At skill start, run this skill's `scripts/sdd-workspace` (it creates the
+  workspace and its self-ignoring .gitignore), then check for a ledger:
   `cat "$(git rev-parse --show-toplevel)/.sdd/progress.md"`. Tasks listed there
   as complete are DONE — do not re-dispatch them; resume at the first task
   not marked complete.
@@ -260,7 +261,7 @@ a ledger file, not only in todos.
 - The ledger is your recovery map: the commits it names exist in git even
   when your context no longer remembers creating them. After compaction,
   trust the ledger and `git log` over your own recollection.
-- `git clean -fdx` will destroy the ledger (it's git-ignored scratch); if
+- `git clean -fdx` will destroy the ledger (the workspace's own .gitignore keeps it out of git); if
   that happens, recover from `git log`.
 
 ## Prompt Templates
