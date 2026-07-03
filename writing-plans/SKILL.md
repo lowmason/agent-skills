@@ -1,6 +1,10 @@
 ---
 name: writing-plans
-description: Use when you have a spec or requirements for a multi-step task, before touching code
+description: >
+  Use when you have a spec, design doc, or requirements for a multi-step task and need an
+  implementation plan before touching code — "write a plan", "plan this feature", "break this
+  into tasks", a finished spec in specs/ awaiting its plan, or before handing work to subagents
+  or a separate execution session.
 ---
 
 # Writing Plans

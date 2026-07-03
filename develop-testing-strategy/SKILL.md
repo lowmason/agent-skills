@@ -1,22 +1,18 @@
 ---
 name: develop-testing-strategy
 description: >
-  Use when designing a test STRATEGY/PLAN for data-science code — web scrapers, Polars
-  pipelines, or Bayesian models — that should start from invariants and properties that must
-  hold, not from line coverage: when a repo has zero or smoke-test-only tests, when adding the
-  first tests to an ETL/scraper/model package, when a scraper silently breaks on a site-layout
-  change, when a
-  Polars pipeline emits a malformed parquet (wrong schema, dropped rows, exploded null rate,
-  duplicate keys, stale data), when a NumPyro/PyMC model needs more than "it ran without
-  crashing", when you need parameter recovery / SBC-lite / golden-master parity / determinism
-  under a fixed seed, when MCMC tests make CI slow, or when as-of/vintage correctness and
-  future-leakage are at stake. Trigger on: "how should we test this", "what tests do we need",
-  "test plan", "test strategy", "add tests to", "this has no tests", flaky/slow test suites,
-  pytest marker design (network/slow/real_store) and CI exclusions, recorded HTML fixtures vs
-  live sites, schema/row-count/null-rate/freshness assertions, reproducibility and seed tests,
-  or mentions of httpx, BeautifulSoup, lxml, Polars, parquet, NumPyro, JAX, PyMC, PRNGKey,
-  golden master, parity, BLS / QCEW / CES / JOLTS data. Consult this BEFORE writing tests so
-  the plan is driven by what must be true, not by chasing a coverage number.
+  Use when designing a test strategy or plan for data-science code — web scrapers, Polars
+  pipelines, or Bayesian models: a repo with zero or smoke-test-only tests, adding the first
+  tests to an ETL/scraper/model package, a scraper that silently breaks on a site relayout, a
+  pipeline emitting malformed parquet (wrong schema, dropped rows, exploded null rate, duplicate
+  keys, stale data), a NumPyro/PyMC model needing more than 'it ran', parameter recovery /
+  SBC-lite / golden-master parity / seed determinism, slow MCMC tests in CI, or as-of/vintage
+  correctness and future leakage. Trigger on: 'how should we test this', 'what tests do we need',
+  'test plan', 'test strategy', 'add tests', 'this has no tests', flaky or slow suites, pytest
+  marker design (network/slow/real_store) and CI exclusions, recorded HTML fixtures vs live
+  sites, schema/row-count/null-rate/freshness assertions, or httpx, BeautifulSoup, lxml, Polars,
+  parquet, NumPyro, JAX, PyMC, PRNGKey, golden master, BLS/QCEW/CES/JOLTS. Consult BEFORE writing
+  tests.
 license: MIT
 metadata:
   author: Lowell Mason

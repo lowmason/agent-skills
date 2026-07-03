@@ -1,19 +1,17 @@
 ---
 name: explore-data
 description: >
-  Profile a new dataset with Polars before you analyze or model it — the disciplined first pass
-  that catches the data problems that would otherwise corrupt downstream work. Use when you've
-  just received a parquet/CSV/scrape and don't yet know its shape, schema, null rates, or
-  cardinality; when you need to check whether a candidate key (series_id + ref_date, client_id +
-  ref_date) is actually unique; when you suspect duplicates, suspicious sentinels (-1, 9999, "",
-  "N/A", "."), constant or high-null columns, mixed types from a raw HTML/CSV ingest, or
-  unexpected category counts; when you must confirm as-of / vintage correctness on revised series
-  (one row per series-period-vintage, no double-counted revisions) before tagging or joining;
-  when you need panel diagnostics — coverage by period/geography/industry, panel balance,
-  entry/exit; or when comparing a provider's microdata against QCEW/CES/JOLTS/BED. This is the
-  pre-flight before bayesian-workflow: profile the data before you build a model on it. Trigger on
-  new microdata, "explore/profile this dataset", null/duplicate/quality checks, schema inspection,
-  scan_parquet, .describe(), value_counts, .null_count(), n_unique, or "is this column a key?".
+  Use when profiling a new dataset with Polars before analysis or modeling — first contact with a
+  parquet/CSV/scrape whose shape, schema, null rates, or cardinality is unknown; when checking
+  whether a candidate key (series_id + ref_date) is actually unique; when you suspect duplicates,
+  sentinel codes (-1, 9999, "", "N/A", "."), constant or high-null columns, or mixed types from a
+  raw ingest; when confirming the as-of/vintage layout on revised series (one row per
+  series-period-vintage) before tagging or joining; when panel diagnostics are needed — coverage
+  by period/geography/industry, balance, entry/exit; or when comparing provider microdata against
+  QCEW/CES/JOLTS/BED. The pre-flight before bayesian-workflow, recommend-probabilistic-model, or
+  recommend-visualization. Trigger on new microdata, "explore/profile this dataset",
+  null/duplicate/quality checks, schema inspection, scan_parquet, .describe(), value_counts,
+  .null_count(), n_unique, or "is this column a key?".
 license: MIT
 metadata:
   author: Lowell Mason

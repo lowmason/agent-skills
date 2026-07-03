@@ -1,18 +1,15 @@
 ---
 name: bayesian-workflow
 description: >
-  Opinionated Bayesian modeling workflow with NumPyro (JAX) and ArviZ. Contains critical
-  guardrails (NUTS in JAX, prior/posterior predictive checks, LOO-PIT calibration, prior
-  sensitivity checks, 94% HDI, non-centered parameterizations via reparam, reproducible
-  PRNGKey seeds) that agents won't apply unprompted — always consult before writing Bayesian
-  model code. Trigger on: building probabilistic/Bayesian models, prior elicitation, MCMC
-  inference, convergence diagnostics (divergences, R-hat, ESS), model comparison (LOO-CV,
-  ELPD, stacking weights), hierarchical/multilevel models, count regressions, logistic
-  regression with uncertainty, prior sensitivity analysis, reporting Bayesian results, or
-  mentions of NumPyro, Pyro, JAX, ArviZ, InferenceData, DataTree, credible intervals,
-  posterior distributions, shrinkage, uncertainty quantification. Also trigger for model
-  comparison, diagnosing sampling problems, choosing priors, or presenting stats to
-  non-technical audiences.
+  Use when building, fitting, diagnosing, comparing, or reporting on Bayesian/probabilistic
+  models with NumPyro (JAX) and ArviZ — consult BEFORE writing any Bayesian model code, not
+  after. Trigger on: prior elicitation or choosing priors, MCMC/NUTS inference, convergence
+  diagnostics (divergences, R-hat, ESS), model comparison (LOO-CV, ELPD, stacking weights),
+  hierarchical/multilevel models, count regressions, logistic regression with uncertainty,
+  state-space or latent time-series models, prior sensitivity analysis, calibration
+  (PIT/LOO-PIT), presenting Bayesian results to non-technical audiences, or mentions of NumPyro,
+  Pyro, JAX, BlackJAX, ArviZ, InferenceData, DataTree, credible intervals, HDI, posterior
+  distributions, shrinkage, or uncertainty quantification.
 license: MIT
 metadata:
   author: "Alexandre Andorra (https://alexandorra.github.io/)"

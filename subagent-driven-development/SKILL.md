@@ -1,6 +1,15 @@
 ---
 name: subagent-driven-development
-description: Use when executing implementation plans with independent tasks in the current session
+description: >
+  Use when executing an implementation plan task-by-task in the current session by dispatching
+  subagents — a fresh implementer per task, a task-scoped spec+quality review after each, and a
+  final whole-branch review. Trigger on: "execute this plan", "implement the plan", a plan header
+  naming subagent-driven-development as the required sub-skill, a specs/plans/*.md handoff from
+  writing-plans, or resuming a partially executed plan (check the progress ledger before
+  re-dispatching anything). Covers model-tier selection per dispatch, file handoffs (task briefs,
+  report files, review packages), fix-subagent loops, and compaction-safe progress tracking. Not
+  for tightly coupled tasks needing one continuous context, or for execution in a separate
+  session (use executing-plans).
 ---
 
 # Subagent-Driven Development

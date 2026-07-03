@@ -1,21 +1,16 @@
 ---
 name: tech-debt
 description: >
-  Use when auditing a research or data codebase for technical debt — the cruft that
-  accretes when exploratory analysis lives next to production pipelines. Identify,
-  categorize, and prioritize that debt: use for a periodic code-health triage, cleaning
-  up before handing a project to someone else, deciding what to refactor next, or asking
-  "what's safe to delete here?". Trigger on: abandoned approaches in archive/
-  or old/ dirs, scratch/scratchpad notebooks sitting beside production modules, duplicated
-  v1/v2/v3 scripts or whole repos (e.g. alt_nfp vs alt-nfp vs alt_nfp_bsts), hardcoded
-  /Users/ or absolute file paths, type-checker-silenced regions (type: ignore, sprawling
-  Optional/Any), complex modules with no tests, empty or placeholder READMEs and
-  "Add your description here" pyproject descriptions, committed .env files with API keys,
-  raise NotImplementedError / TODO / FIXME placeholders, and reproducibility hazards
-  (wall-clock time leaking into a pipeline, missing seeds, as-of/vintage joins without
-  guards). Also trigger when asked to estimate refactor effort, build a maintenance
-  backlog, or distinguish dead exploratory code (DELETE) from load-bearing-but-fragile
-  code (HARDEN). Tuned for a Polars / NumPyro / PyMC / BLS-ETL / Trino stack.
+  Use when auditing a research or data codebase for technical debt — periodic code-health triage,
+  cleaning up before handing a project off, deciding what to refactor or delete next, building a
+  maintenance backlog, or estimating refactor effort. Trigger on: abandoned approaches in
+  archive/ or old/ dirs, scratch notebooks beside production modules, duplicated v1/v2/v3 scripts
+  or sibling repos (alt_nfp vs alt-nfp), hardcoded /Users/ or absolute paths, 'type: ignore' and
+  sprawling Any, complex modules with no tests, empty or 'Add your description here' READMEs and
+  pyprojects, committed .env files or API keys, raise NotImplementedError / TODO / FIXME stubs,
+  and reproducibility hazards (datetime.now() in a pipeline, magic seeds, as-of/vintage joins
+  without guards). Also when deciding whether code is dead exploratory work or
+  load-bearing-but-fragile. Tuned for a Polars / NumPyro / PyMC / BLS-ETL stack.
 license: MIT
 metadata:
   author: Lowell Mason

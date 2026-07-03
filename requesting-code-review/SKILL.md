@@ -1,6 +1,10 @@
 ---
 name: requesting-code-review
-description: Use when completing tasks, implementing major features, or before merging to verify work meets requirements
+description: >
+  Use when completed work needs a code review — after finishing a task or major feature, before
+  merging a branch or opening a PR, when reviewing a commit range (BASE..HEAD) against its plan
+  or requirements, when stuck and wanting a fresh pass on recent commits, or after fixing a
+  complex bug.
 ---
 
 # Requesting Code Review

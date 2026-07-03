@@ -1,6 +1,11 @@
 ---
 name: systematic-debugging
-description: Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes
+description: >
+  Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes —
+  including flaky or intermittent tests, race conditions or arbitrary sleeps/timeouts in tests,
+  test pollution where state leaks between tests, errors deep in a stack trace,
+  works-locally-but-fails-in-CI, a regression after a dependency or config change, or when
+  previous fixes didn't stick and you're tempted to try one more quick change.
 ---
 
 # Systematic Debugging

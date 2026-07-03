@@ -2,19 +2,15 @@
 name: validate-data
 description: >
   Use when QA-ing a dataset or an analysis before it is shared, published, or fed downstream —
-  the last gate before a number leaves your laptop. Covers two entry points: (1) dataset QA
-  (schema/dtype contracts, unexpected nulls, key uniqueness, duplicate rows, cardinality and
-  value-range sanity, parquet round-trip integrity) and (2) analysis QA (re-run determinism,
-  benchmark reconciliation, units/scale/sign, whether the conclusions are actually supported by
-  the data, and coverage/selection/survivorship/revision bias). Polars-first; tuned to BLS
-  pipelines (QCEW/CES/JOLTS), NumPyro/PyMC nowcasts, and as-of/vintage correctness. Trigger on:
-  "is this ready to publish", "sanity-check this dataset/parquet", "review my analysis", "do the
-  numbers reconcile", "why doesn't this match the official total", validating an ETL output,
-  pre-publish review, reproducibility / "I can't reproduce yesterday's run", silent cache or
-  fallback masking a failure, a coverage ratio that looks too clean, a decomposition whose
-  components don't add up, future leakage past a data's knowability boundary, or a claim that a
-  result is "fine" without an independent check. Always consult before signing off on data or an
-  analysis — these checks are the ones agents skip unprompted.
+  the last gate before a number leaves your laptop. Trigger on: "is this ready to publish",
+  "sanity-check this dataset/parquet", "review my analysis", "do the numbers reconcile", "why
+  doesn't this match the official total", validating an ETL output, pre-publish review, "I can't
+  reproduce yesterday's run", a silent cache or fallback masking a failure, a coverage ratio that
+  looks too clean, a decomposition whose components don't add up, unexpected nulls / duplicate
+  keys / dtype drift in a parquet, future leakage past the as-of date on revised series
+  (QCEW/CES/JOLTS vintages), or a claim that a result is "fine" without an independent check.
+  Always consult before signing off on data or an analysis — these checks are the ones agents
+  skip unprompted.
 license: MIT
 metadata:
   author: Lowell Mason

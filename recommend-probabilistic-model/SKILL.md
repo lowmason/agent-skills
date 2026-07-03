@@ -3,15 +3,14 @@ name: recommend-probabilistic-model
 description: >
   Use when choosing a modeling approach for a problem and its data — "which model/method should I
   use", "what approach fits this dataset", "recommend a model", "is this Poisson or negative
-  binomial", "how do I handle overdispersion / zero-inflation / panel data / many predictors". Maps
-  the problem + data signals to candidate methods grounded in Kevin Murphy's *Probabilistic Machine
-  Learning* books (Books 1 & 2), citing exact §refs + pyprobml notebooks, then hands off execution.
+  binomial", "how do I handle overdispersion / zero-inflation / panel data / many predictors".
   Covers regression / GLMs / counts, classification, hierarchical/multilevel, time series &
   state-space, Gaussian processes, dimensionality reduction & (dynamic) factor models, mixtures &
-  clustering, and probabilistic graphical models. Trigger on model selection, "which method for X",
-  recommending an approach before fitting, or deciding between Poisson/NB/zero-inflated, pooled vs
-  hierarchical, GP vs parametric, PCA vs factor model, HMM vs state-space, etc. Produces a
-  recommendation memo; it recommends and points — it does not fit the model.
+  clustering, and probabilistic graphical models, grounded in Kevin Murphy's Probabilistic
+  Machine Learning (PML) books. Trigger on model selection, "which method for X", recommending an
+  approach before fitting, or deciding between Poisson/NB/zero-inflated, pooled vs hierarchical,
+  GP vs parametric, PCA vs factor model, HMM vs state-space. Consult BEFORE fitting a model — not
+  for executing the fit itself.
 license: MIT
 metadata:
   author: Lowell Mason

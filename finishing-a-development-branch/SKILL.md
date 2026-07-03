@@ -1,6 +1,11 @@
 ---
 name: finishing-a-development-branch
-description: Use when implementation is complete, all tests pass, and you need to decide how to integrate the work - guides completion of development work by presenting structured options for merge, PR, or cleanup
+description: >
+  Use when implementation on a development branch is complete and tests pass, and the work needs
+  wrapping up — merge vs. PR vs. keep vs. discard is being decided, or a feature branch's
+  worktree needs cleanup. Trigger on: "the feature is done", "ready to merge", "should I open a
+  PR", "clean up this branch/worktree", deciding how to integrate a completed feature branch, or
+  finishing work started with the using-git-worktrees skill.
 ---
 
 # Finishing a Development Branch

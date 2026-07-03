@@ -1,19 +1,17 @@
 ---
 name: bls-data-context
 description: >
-  Use when working with U.S. Bureau of Labor Statistics employment, wage, or labor-turnover data —
-  QCEW, CES (national and state/area SAE), JOLTS, BED/BDM, OEWS/OES, ECI, ECEC, CPS — or building
-  pipelines over their flat files or API. This is the canonical reference for what each program
-  measures, its establishment-vs-household basis, series-ID anatomy, flat-file schema and lookup
-  codes, reference period, seasonal-adjustment and benchmark/vintage behavior, and how the programs
-  reconcile (the QCEW UI frame underneath CES/JOLTS/BED/OEWS; CES benchmarking to QCEW; JOLTS
-  alignment to CES). Consult BEFORE interpreting a BLS series, constructing or parsing a series ID,
-  joining two BLS sources, reconciling to an official total, or reasoning about revisions / as-of
-  correctness. Trigger on: QCEW, CES, CES-SA, SAE, JOLTS, BED, BDM, OEWS, OES, ECI, ECEC, CPS,
-  NAICS / SOC codes, series_id, M01-M13, download.bls.gov/pub/time.series, vintage / benchmark /
-  revision, place-of-work vs residence, jobs vs persons, thousands-vs-persons units, "pay period
-  including the 12th", UI / UCFE coverage, net birth-death model, or reconciling a payroll-provider
-  or nowcast series to BLS. The detailed program facts that agents otherwise get subtly wrong.
+  Use when working with U.S. Bureau of Labor Statistics employment, wage, or labor-turnover data
+  — QCEW, CES (national or state/area SAE), JOLTS, BED/BDM, OEWS/OES, ECI, ECEC, CPS — or
+  building pipelines over their flat files or API. Consult BEFORE interpreting a BLS series,
+  constructing or parsing a series ID, joining two BLS sources, reconciling to an official total,
+  or reasoning about revisions / as-of correctness. Trigger on: QCEW, CES, CES-SA, SAE, JOLTS,
+  BED, BDM, OEWS, OES, ECI, ECEC, CPS, LAUS, NAICS / SOC codes, series_id, M01–M13,
+  download.bls.gov/pub/time.series, vintage / benchmark / revision, place-of-work vs residence,
+  jobs vs persons, thousands-vs-persons units, "pay period including the 12th", UI / UCFE
+  coverage, net birth-death model, benchmarking CES to QCEW, JOLTS alignment to CES, or
+  reconciling a payroll-provider or nowcast series to BLS. The detailed program facts that agents
+  otherwise get subtly wrong.
 license: MIT
 metadata:
   author: Lowell Mason

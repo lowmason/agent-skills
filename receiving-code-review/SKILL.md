@@ -1,6 +1,10 @@
 ---
 name: receiving-code-review
-description: Use when receiving code review feedback, before implementing suggestions, especially if feedback seems unclear or technically questionable - requires technical rigor and verification, not performative agreement or blind implementation
+description: >
+  Use when receiving code review feedback — from the user, a GitHub PR comment thread, a review
+  bot, or a reviewer agent (e.g. output of the requesting-code-review skill) — before
+  implementing any suggested change, especially when items are unclear, conflict with prior
+  decisions, or seem technically wrong for this codebase.
 ---
 
 # Code Review Reception

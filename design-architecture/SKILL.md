@@ -2,18 +2,17 @@
 name: design-architecture
 description: >
   Use when authoring or evaluating Architecture Decision Records (ADRs) for data and modeling
-  systems — choosing between technologies or approaches (NumPyro/JAX vs PyMC inference, Polars
-  vs pandas, Trino vs DuckDB, one parquet layout vs another), when a design decision spans
-  multiple packages or repos, when reviewing a design proposal or spec for whether its
-  trade-offs are honest, or when you catch yourself re-explaining a past decision. An ADR is the
-  durable, numbered, immutable record of WHY a cross-cutting choice was made, so it isn't
-  silently re-litigated every session. Trigger on: ADR, architecture decision, design record, design
-  doc/spec review, "should we use X or Y", "document this decision", "why did we pick", trade-off
-  analysis, alternatives considered, reversibility / blast radius, superseding a prior decision,
-  parquet store layout & dedup/vintage policy, scraper resilience (retry/backoff/fixtures),
-  as-of / vintage / point-in-time data modeling, multi-package workspace boundaries, inference
-  engine choice, or determinism/seed/parity decisions. Especially when the same problem is being
-  solved more than one way across repos with no recorded rationale.
+  systems — choosing between technologies (NumPyro/JAX vs PyMC, Polars vs pandas, Trino vs
+  DuckDB, one parquet layout vs another), when a design decision spans multiple packages or
+  repos, when reviewing a design proposal or spec for whether its trade-offs are honest, or when
+  a past decision keeps getting re-explained or re-litigated. Trigger on: ADR, architecture
+  decision, design record, design doc/spec review, "should we use X or Y", "document this
+  decision", "why did we pick", trade-off analysis, alternatives considered, reversibility /
+  blast radius, superseding a prior decision, parquet store layout and dedup/vintage policy,
+  scraper resilience (retry/backoff/fixtures), as-of / vintage / point-in-time data modeling,
+  multi-package workspace boundaries, inference engine choice, or determinism/seed/parity
+  decisions — especially when the same problem is solved more than one way across repos with no
+  recorded rationale.
 license: MIT
 metadata:
   author: Lowell Mason

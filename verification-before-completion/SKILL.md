@@ -1,6 +1,10 @@
 ---
 name: verification-before-completion
-description: Use when about to claim work is complete, fixed, or passing, before committing or creating PRs - requires running verification commands and confirming output before making any success claims; evidence before assertions always
+description: >
+  Use when about to claim work is complete, fixed, done, or passing — before committing, pushing,
+  opening a PR, marking a task or todo complete, moving to the next task, or relaying a
+  subagent's success report; also when tempted to say "should work now" or "looks correct", or to
+  wrap up while tired.
 ---
 
 # Verification Before Completion
