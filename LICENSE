@@ -24,6 +24,7 @@ SOFTWARE.
 
 This repository bundles skills from more than one source. Per-skill
 attribution and licensing is tracked authoritatively in NOTICE; skills
-authored by Lowell Mason are covered by the MIT license above, and
-third-party/adapted skills retain their own copyright and MIT terms
-(see NOTICE and LICENSE-superpowers).
+authored by Lowell Mason — including his adaptations of MIT-licensed
+third-party skills — are covered by the MIT license above, and the
+underlying third-party work retains its original copyright and MIT
+terms (see NOTICE and LICENSE-superpowers).
