@@ -103,10 +103,10 @@ on a genuine toss-up between two tiers, **err toward the stronger one.** A model
 that takes 2-3× the turns, or comes back wrong and needs a re-dispatch, costs
 more than the tier above it; turn count and rework dominate sticker price.
 
-**Tiers** (update these IDs when the lineup changes):
-- **cheap** — Haiku 4.5 (`claude-haiku-4-5`; dispatch alias `haiku`)
-- **standard** — Sonnet 4.6 (`claude-sonnet-4-6`; dispatch alias `sonnet`)
-- **capable** — Opus 4.6 (`claude-opus-4-6`; dispatch alias `opus`)
+**Tiers** (update these IDs when the lineup changes; the aliases are the durable part):
+- **cheap** — Haiku 4.5 (dispatch alias `haiku`)
+- **standard** — Sonnet 5 (dispatch alias `sonnet`)
+- **capable** — Opus 4.8 (dispatch alias `opus`)
 
 **Always specify the model explicitly when dispatching** — pass the tier's
 dispatch alias (`haiku` / `sonnet` / `opus`), not the version ID, which the
@@ -219,7 +219,7 @@ and is re-read on every later turn. Hand artifacts over as files:
   brief stays the single source of requirements. Your dispatch should
   contain: (1) one line on where this task fits in the project; (2) the
   brief path, introduced as "read this first — it is your requirements,
-  with the exact values to use verbatim"; (3) interfaces and decisions
+  including the plan's Global Constraints, with the exact values to use verbatim"; (3) interfaces and decisions
   from earlier tasks that the brief cannot know; (4) your resolution of
   any ambiguity you noticed in the brief; (5) the report-file path and
   report contract. Exact values (numbers, magic strings, signatures, test
@@ -282,12 +282,12 @@ Task 1: Hook installation script
 
 [Run task-brief for Task 1; dispatch implementer with brief + report paths + context]
 
-Implementer: "Before I begin - should the hook be installed at user or system level?"
+Implementer (final message): NEEDS_CONTEXT — "Should the hook be installed
+  at user or system level?"
 
-You: "User level (~/.config/superpowers/hooks/)"
+You: [Re-dispatch the implementer with the same brief plus: "User level (~/.claude/hooks/)"]
 
-Implementer: "Got it. Implementing now..."
-[Later] Implementer:
+Implementer (second run):
   - Implemented install-hook command
   - Added tests, 5/5 passing
   - Self-review: Found I missed --force flag, added it
@@ -338,8 +338,8 @@ Done!
 **vs. Manual execution:**
 - Subagents follow TDD naturally
 - Fresh context per task (no confusion)
-- Parallel-safe (subagents don't interfere)
-- Subagent can ask questions (before AND during work)
+- Isolated context per dispatch (no cross-task contamination)
+- Subagent can surface questions (a NEEDS_CONTEXT report; controller answers and re-dispatches)
 
 **vs. Executing Plans:**
 - Same session (no handoff)
@@ -393,7 +393,7 @@ Done!
 - Don't rush them into implementation
 
 **If reviewer finds issues:**
-- Implementer (same subagent) fixes them
+- Dispatch a fix subagent with the findings (per Constructing Reviewer Prompts)
 - Reviewer reviews again
 - Repeat until approved
 - Don't skip the re-review

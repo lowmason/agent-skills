@@ -27,7 +27,9 @@ Subagent (general-purpose):
     - Dependencies or assumptions
     - Anything unclear in the task description
 
-    **Ask them now.** Raise any concerns before starting work.
+    **Do not start work with open questions.** A subagent run is one-shot —
+    nobody can answer mid-run. Make NEEDS_CONTEXT your final message, listing
+    the questions; the controller will answer and re-dispatch you.
 
     ## Your Job
 
@@ -41,8 +43,9 @@ Subagent (general-purpose):
 
     Work from: [directory]
 
-    **While you work:** If you encounter something unexpected or unclear, **ask questions**.
-    It's always OK to pause and clarify. Don't guess or make assumptions.
+    **While you work:** if you hit something unexpected or unclear, don't
+    guess — stop and end your run with status NEEDS_CONTEXT and the specific
+    question. Committed partial work plus a precise question beats a wrong guess.
 
     While iterating, run the focused test for what you're changing; run the
     full suite once before committing, not after every edit.
