@@ -35,6 +35,45 @@ def test_missing_relative_link_is_reported(tmp_path):
     assert 'references/guide.md' in errs
 
 
+def test_nested_fences_do_not_leak_paths(tmp_path):
+    d = make_skill(tmp_path, 'nested-fences', 'name: nested-fences\ndescription: x')
+    (d / 'references').mkdir()
+    (d / 'references' / 'real.md').write_text('# Real\n')
+    body = (
+        '\n'
+        '````markdown\n'
+        'Example teaching snippet:\n'
+        '```bash\n'
+        'run scripts/fake-tool and see [x](references/nope.md)\n'
+        '```\n'
+        '````\n'
+        '\n'
+        'See `references/real.md` for details.\n'
+    )
+    (d / 'SKILL.md').write_text((d / 'SKILL.md').read_text() + body)
+    assert check_skill(d) == []
+
+
+def test_nested_fences_still_report_real_missing_refs(tmp_path):
+    d = make_skill(tmp_path, 'nested-fences-2', 'name: nested-fences-2\ndescription: x')
+    body = (
+        '\n'
+        '````markdown\n'
+        'Example teaching snippet:\n'
+        '```bash\n'
+        'run scripts/fake-tool and see [x](references/nope.md)\n'
+        '```\n'
+        '````\n'
+        '\n'
+        'See `references/missing.md` for details.\n'
+    )
+    (d / 'SKILL.md').write_text((d / 'SKILL.md').read_text() + body)
+    errs = '\n'.join(check_skill(d))
+    assert 'references/missing.md' in errs
+    assert 'references/nope.md' not in errs
+    assert 'scripts/fake-tool' not in errs
+
+
 def test_real_repo_is_clean():
     repo = Path(__file__).resolve().parent.parent
     dirty = [e for d in sorted(repo.iterdir())
