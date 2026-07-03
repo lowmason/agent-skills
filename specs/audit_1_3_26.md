@@ -45,7 +45,7 @@ The upstream superpowers plugin is installed but **disabled** in `~/.claude/sett
 
 Step 6 re-detects the environment *after* Options 1/4 have already `cd`-ed to the main root, so it always concludes "Normal repo, no worktree to clean up," orphaning the worktree and making `git branch -d` fail (reproduced in a sandbox repo). Also: Option 2 "Push and Create PR" pushes but never creates the PR (no `gh pr create`), and Step 3's `git merge-base` heuristic outputs a SHA, not a base branch.
 
-**Fix:** record `WORKTREE_PATH` in Step 2 before any `cd` and have Step 6 consume the recorded value; add `gh pr create` to Option 2 (plus a detached-HEAD recipe: `git push origin HEAD:refs/heads/<branch>`); replace merge-base with `git rev-parse --abbrev-ref origin/HEAD`.
+**Fix:** record `WORKTREE_PATH` in Step 2 before any `cd` and have Step 6 consume the recorded value; add `gh pr create` to Option 2 (plus a detached-HEAD recipe: `git push origin HEAD:refs/heads/<branch>`); replace merge-base with `git symbolic-ref --short refs/remotes/origin/HEAD` (not `rev-parse --abbrev-ref`, which echoes the literal arg to stdout when the ref is unset, defeating any fallback).
 
 ### 1.6 `tech-debt/scripts/scan.sh` — two confirmed defects
 
