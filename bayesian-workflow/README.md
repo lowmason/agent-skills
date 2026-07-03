@@ -24,28 +24,17 @@ Guides your coding agent through the full Bayesian workflow:
 
 The skill enforces guardrails that agents won't apply on their own: credible intervals (a 94% HDI is a fine default — no width is magic), mandatory calibration checks, prior/likelihood sensitivity checks (including the `log_prior` group NumPyro doesn't produce on its own), non-centered parameterizations via `LocScaleReparam`, reproducible descriptive `PRNGKey` seeds, immediate save-to-disk after sampling, JAX→NumPy conversion for downstream ArviZ ops, xarray-first data manipulation, a NUTS sampling-failure escalation ladder, discrete-latent marginalization over soft plug-ins, and a canonical report artifact whose Assessment lines and Suggested Next Steps come from a programmatic harness — not hand-rolled prose. It also ships a dedicated visualization guide (`references/visualize.md`) translating the Gabry et al. (2019) *Visualization in Bayesian workflow* paper into ArviZ.
 
-## Install
+## Installation
 
-### Claude Code
-
-Clone and copy the skill into your personal skills directory:
-
-```bash
-git clone https://github.com/Learning-Bayesian-Statistics/baygent-skills.git /tmp/baygent-skills
-mkdir -p ~/.claude/skills
-cp -r /tmp/baygent-skills/bayesian-workflow ~/.claude/skills/
-```
-
-For project-level installation (available only in that project), copy into `.claude/skills/` at the project root instead.
-
-### Other compatible agents (Kimi Code, Cursor, etc.)
-
-Clone the repo and copy the skill folder into your agent's skills directory:
+This skill installs like every skill in this repo — symlink it into your
+personal skills directory:
 
 ```bash
-git clone https://github.com/Learning-Bayesian-Statistics/baygent-skills.git /tmp/baygent-skills
-cp -r /tmp/baygent-skills/bayesian-workflow/ ~/.config/agents/skills/bayesian-workflow/
+ln -s ~/Projects/agent-skills/bayesian-workflow ~/.claude/skills/bayesian-workflow
 ```
+
+Provenance: adapted from [Alexandre Andorra](https://alexandorra.github.io/)'s
+original PyMC Bayesian-workflow skill (MIT) — see the repo-root NOTICE.
 
 ### NumPyro installation
 
@@ -80,8 +69,6 @@ Once installed, just ask your agent naturally:
 ```
 bayesian-workflow/
 ├── SKILL.md                          # Main workflow instructions
-├── main.py                           # Entrypoint for programmatic use
-├── pyproject.toml                    # Package metadata
 ├── references/
 │   ├── priors.md                     # Prior selection guide + PyMC→NumPyro distribution map
 │   ├── diagnostics.md                # Convergence diagnostics

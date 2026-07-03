@@ -8,6 +8,9 @@ bayesian-workflow/
     Adapted by Lowell Mason from Alexandre Andorra's original PyMC
     Bayesian-workflow skill. Ported to NumPyro + JAX with expanded
     visualization guidance. MIT licensed.
+    The skill cites Gelman et al. 2020 (arXiv:2011.01808), Betancourt 2020
+    (CC BY-NC 4.0), and Gabry et al. 2019 (JRSS-A / arXiv:1709.01449) by
+    author-year only; it reproduces no text and bundles no copies.
 
 The following skills are original works by Lowell Mason, MIT licensed:
 
