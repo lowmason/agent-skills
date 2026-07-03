@@ -58,7 +58,7 @@ digraph brainstorming {
 }
 ```
 
-**The terminal state is invoking writing-plans.** Do NOT invoke frontend-design, mcp-builder, or any other implementation skill. The ONLY skill you invoke after brainstorming is writing-plans.
+**The terminal state is invoking writing-plans.** Do NOT invoke any implementation skill. The ONLY skill you invoke after brainstorming is writing-plans.
 
 ## The Process
 
@@ -106,7 +106,7 @@ digraph brainstorming {
 - Write the validated design (spec) to `specs/<descriptive-name>.md` (a descriptive name, no date prefix)
   - (User preferences for spec location override this default)
   - When the spec's work is complete, mark it complete at the top and retire it to `specs/completed/`
-- Use elements-of-style:writing-clearly-and-concisely skill if available
+- Write the spec clearly and concisely; cut filler
 - Commit the design document to git
 
 **Spec Self-Review:**
@@ -157,4 +157,4 @@ A browser-based companion for showing mockups, diagrams, and visual options duri
 A question about a UI topic is not automatically a visual question. "What does personality mean in this context?" is a conceptual question — use the terminal. "Which wizard layout works better?" is a visual question — use the browser.
 
 If they agree to the companion, read the detailed guide before proceeding:
-`skills/brainstorming/visual-companion.md`
+[visual-companion.md](visual-companion.md) (in this skill's directory)
