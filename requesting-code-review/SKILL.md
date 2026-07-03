@@ -12,7 +12,7 @@ Dispatch a code reviewer subagent to catch issues before they cascade. The revie
 ## When to Request Review
 
 **Mandatory:**
-- The final whole-branch review in subagent-driven development (per-task reviews there use SDO's own task-reviewer-prompt.md)
+- The final whole-branch review in subagent-driven development (per-task reviews there use subagent-driven-development's own task-reviewer-prompt.md)
 - After completing major feature
 - Before merge to main
 
@@ -86,7 +86,7 @@ You: [Fix progress indicators]
 
 **Subagent-Driven Development:**
 - This template serves the FINAL whole-branch review only
-- Per-task reviews use SDO's task-reviewer-prompt.md (task-scoped gate)
+- Per-task reviews use subagent-driven-development's task-reviewer-prompt.md (task-scoped gate)
 
 **Executing Plans:**
 - Review after each task or at natural checkpoints
