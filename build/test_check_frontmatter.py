@@ -46,6 +46,7 @@ def test_nested_fences_do_not_leak_paths(tmp_path):
         '```bash\n'
         'run scripts/fake-tool and see [x](references/nope.md)\n'
         '```\n'
+        'still inside the outer fence: see `scripts/leaky-tool`\n'
         '````\n'
         '\n'
         'See `references/real.md` for details.\n'
@@ -63,6 +64,7 @@ def test_nested_fences_still_report_real_missing_refs(tmp_path):
         '```bash\n'
         'run scripts/fake-tool and see [x](references/nope.md)\n'
         '```\n'
+        'still inside the outer fence: see `scripts/leaky-tool`\n'
         '````\n'
         '\n'
         'See `references/missing.md` for details.\n'
@@ -72,6 +74,7 @@ def test_nested_fences_still_report_real_missing_refs(tmp_path):
     assert 'references/missing.md' in errs
     assert 'references/nope.md' not in errs
     assert 'scripts/fake-tool' not in errs
+    assert 'scripts/leaky-tool' not in errs
 
 
 def test_real_repo_is_clean():
