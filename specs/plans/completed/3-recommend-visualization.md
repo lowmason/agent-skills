@@ -1,5 +1,7 @@
 # Plan 3 — `recommend-visualization` skill
 
+> **Status:** ✅ Completed — all tasks shipped to `main` 2026-06-28 (commit `4e08b37`; direct commit, no PR). Skill, references, `recommend.py` + tests, and the `explore-data`/README/NOTICE integration all landed together.
+
 Execution plan for the kickoff brief (the brief is the spec; not duplicated here). Sibling of
 `recommend-probabilistic-model`: one recommends a *model*, this recommends a *view* — and, unlike
 its sibling, carries through to code, because for a chart the recommendation (mark + encodings keyed
