@@ -36,10 +36,10 @@ the implementation.
 - **`recommend-probabilistic-model`** turns *shape × task* into a **model**; **this** turns
   *shape × intent* into a **view**. Both consume the same `explore-data` profile; one recommends and
   points, this one recommends *and renders*.
-- **`bayesian-workflow`** has its own `references/visualize.md` — that's visualization *inside* a
-  Bayesian analysis (prior/posterior predictive, MCMC diagnostics, LOO-PIT) in ArviZ. This skill is
-  general chart selection for any tabular dataset. Use that one when the thing you're plotting is a
-  fitted model's draws; use this one for the data.
+- **`bayesian-workflow`** has its own `bayesian-workflow/references/visualize.md` — that's
+  visualization *inside* a Bayesian analysis (prior/posterior predictive, MCMC diagnostics, LOO-PIT)
+  in ArviZ. This skill is general chart selection for any tabular dataset. Use that one when the
+  thing you're plotting is a fitted model's draws; use this one for the data.
 - **`validate-data`** *gates* the result downstream.
 
 ## Procedure
