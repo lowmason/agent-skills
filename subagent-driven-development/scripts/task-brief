@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # Extract one task's full text from an implementation plan into a file the
 # implementer reads in one call, so the task text never has to be pasted
-# through the controller's context.
+# through the controller's context. The plan's Global Constraints section
+# (when present) is prepended to every brief — every task's requirements
+# implicitly include it (see writing-plans).
 #
 # Usage: task-brief PLAN_FILE TASK_NUMBER [OUTFILE]
 # Default OUTFILE: <repo-root>/.sdd/task-<N>-brief.md
@@ -24,17 +26,54 @@ else
   out="$dir/task-${n}-brief.md"
 fi
 
-awk -v n="$n" '
-  /^```/ { infence = !infence }
+# The task's section: starts at its own "Task N" heading and ends at the next
+# heading of the same or shallower level — Task heading or not, so trailing
+# plan sections ("## Verification", "## Success Criteria") never leak into
+# the last task's brief. Fences are tracked by backtick count (CommonMark):
+# a ````-fenced block may legally contain ``` lines, and headings inside any
+# fence are content, not boundaries.
+task=$(awk -v n="$n" '
+  function hlevel(s,  i) { i = 0; while (substr(s, i + 1, 1) == "#") i++; return i }
+  /^```/ {
+    flen = 0
+    while (substr($0, flen + 1, 1) == "`") flen++
+    if (!infence) { infence = 1; openlen = flen }
+    else if (flen >= openlen) infence = 0
+  }
   !infence && /^#+[ \t]+Task[ \t]+[0-9]+/ {
     intask = ($0 ~ ("^#+[ \t]+Task[ \t]+" n "([^0-9]|$)"))
+    if (intask) { tlvl = hlevel($0); print; next }
+  }
+  !infence && intask && /^#+[ \t]/ {
+    if (hlevel($0) <= tlvl) { intask = 0; next }
   }
   intask { print }
-' "$plan" > "$out"
+' "$plan")
 
-if [ ! -s "$out" ]; then
+if [ -z "$task" ]; then
   echo "task ${n} not found in ${plan} (no heading matching 'Task ${n}')" >&2
   exit 3
+fi
+
+# The plan-wide Global Constraints section, if present. It is a flat list, so
+# ANY subsequent heading ends it — a level-based terminator would swallow the
+# deeper "### Task N" headings that follow it in the writing-plans template.
+gc=$(awk '
+  /^```/ {
+    flen = 0
+    while (substr($0, flen + 1, 1) == "`") flen++
+    if (!infence) { infence = 1; openlen = flen }
+    else if (flen >= openlen) infence = 0
+  }
+  !infence && /^#+[ \t]+Global Constraints/ { ingc = 1; print; next }
+  !infence && ingc && /^#+[ \t]/ { ingc = 0 }
+  ingc { print }
+' "$plan")
+
+if [ -n "$gc" ]; then
+  printf '%s\n\n%s\n' "$gc" "$task" > "$out"
+else
+  printf '%s\n' "$task" > "$out"
 fi
 
 echo "wrote ${out}: $(wc -l < "$out" | tr -d ' ') lines"
