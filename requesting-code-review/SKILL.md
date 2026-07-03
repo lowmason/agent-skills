@@ -12,7 +12,7 @@ Dispatch a code reviewer subagent to catch issues before they cascade. The revie
 ## When to Request Review
 
 **Mandatory:**
-- After each task in subagent-driven development
+- The final whole-branch review in subagent-driven development (per-task reviews there use SDO's own task-reviewer-prompt.md)
 - After completing major feature
 - Before merge to main
 
@@ -25,8 +25,9 @@ Dispatch a code reviewer subagent to catch issues before they cascade. The revie
 
 **1. Get git SHAs:**
 ```bash
-BASE_SHA=$(git rev-parse HEAD~1)  # or origin/main
+BASE_SHA=<the BASE you recorded before the work began>   # whole branch: $(git merge-base main HEAD)
 HEAD_SHA=$(git rev-parse HEAD)
+# Never HEAD~1 — it silently drops all but the last commit of a multi-commit change.
 ```
 
 **2. Dispatch code reviewer subagent:**
@@ -43,10 +44,10 @@ model silently inherits your session's model, usually the most capable and most
 expensive.
 
 **Placeholders:**
-- `{DESCRIPTION}` - Brief summary of what you built
-- `{PLAN_OR_REQUIREMENTS}` - What it should do
-- `{BASE_SHA}` - Starting commit
-- `{HEAD_SHA}` - Ending commit
+- `[DESCRIPTION]` - Brief summary of what you built
+- `[PLAN_OR_REQUIREMENTS]` - What it should do
+- `[BASE_SHA]` - Starting commit
+- `[HEAD_SHA]` - Ending commit
 
 **3. Act on feedback:**
 - Fix Critical issues immediately
@@ -61,7 +62,7 @@ expensive.
 
 You: Let me request code review before proceeding.
 
-BASE_SHA=$(git log --oneline | grep "Task 1" | head -1 | awk '{print $1}')
+BASE_SHA=<recorded before Task 2 began>  # e.g. a7981ec
 HEAD_SHA=$(git rev-parse HEAD)
 
 [Dispatch code reviewer subagent]
@@ -84,9 +85,8 @@ You: [Fix progress indicators]
 ## Integration with Workflows
 
 **Subagent-Driven Development:**
-- Review after EACH task
-- Catch issues before they compound
-- Fix before moving to next task
+- This template serves the FINAL whole-branch review only
+- Per-task reviews use SDO's task-reviewer-prompt.md (task-scoped gate)
 
 **Executing Plans:**
 - Review after each task or at natural checkpoints
@@ -109,4 +109,4 @@ You: [Fix progress indicators]
 - Show code/tests that prove it works
 - Request clarification
 
-See template at: [code-reviewer.md](code-reviewer.md)
+When the review comes back, process the findings with the receiving-code-review skill — verify before implementing.

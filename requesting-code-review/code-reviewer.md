@@ -11,7 +11,7 @@ Subagent (code-reviewer if defined, else general-purpose):
   # subagent-driven-development's Model Selection: a small mechanical diff reviews
   # at standard, a subtle or risky change at capable, and the final whole-branch
   # review is always capable.
-  model: <haiku | sonnet | opus>   # the chosen tier's dispatch alias (see Model Selection)
+  model: <sonnet | opus>   # reviews floor at standard (sonnet); final whole-branch review is always opus
   description: "Review code changes"
   prompt: |
     You are a Senior Code Reviewer with expertise in software architecture,
@@ -30,6 +30,11 @@ Subagent (code-reviewer if defined, else general-purpose):
 
     **Base:** [BASE_SHA]
     **Head:** [HEAD_SHA]
+    **Diff file (optional):** [DIFF_FILE]
+
+    If a diff file is provided, read it once — it contains the commit list,
+    stat summary, and full diff — and do not re-run git commands. If it is
+    missing, fetch the diff yourself:
 
     ```bash
     git diff --stat [BASE_SHA]..[HEAD_SHA]
@@ -38,7 +43,11 @@ Subagent (code-reviewer if defined, else general-purpose):
 
     ## Read-Only Review
 
-    Your review is read-only on this checkout. Do not mutate the working tree, the index, HEAD, or branch state in any way. Use tools like `git show`, `git diff`, and `git log` to inspect history. If you need a working copy of a different revision, check it out into a separate temporary directory (e.g. `git worktree add /tmp/review-[SHA] [SHA]`) — never move HEAD on this checkout.
+    Your review is read-only on this checkout. Do not mutate the working
+    tree, the index, HEAD, branch state, or the worktree list. Inspect
+    history with `git show`, `git diff`, and `git log`; read a file at a
+    revision with `git show [SHA]:path/to/file` — never check out or
+    create worktrees for review.
 
     ## What to Check
 
