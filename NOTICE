@@ -54,6 +54,9 @@ Changes from upstream:
   - The `using-superpowers` plugin-bootstrap skill was dropped.
   - agents/code-reviewer.md is a read-only agent definition distilled from
     the adapted requesting-code-review reviewer template (same MIT terms).
+  - brainstorming's visual-companion server no longer fetches the upstream
+    remote brand image or carries telemetry toggles; the attribution link
+    to github.com/obra/superpowers remains.
 
     brainstorming/
     dispatching-parallel-agents/
