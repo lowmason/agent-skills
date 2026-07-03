@@ -15,7 +15,7 @@ description: >
   non-technical audiences.
 license: MIT
 metadata:
-  author: [Alexandre Andorra](https://alexandorra.github.io/)
+  author: "Alexandre Andorra (https://alexandorra.github.io/)"
   adapted_by: Lowell Mason
   version: "2.0"
 ---
