@@ -5,7 +5,7 @@ Use this template when dispatching a code reviewer subagent.
 **Purpose:** Review completed work against requirements and code quality standards before it cascades into more work.
 
 ```
-Subagent (general-purpose):
+Subagent (code-reviewer if defined, else general-purpose):
   # Choose the model explicitly — an omitted model inherits the session default,
   # usually the most capable and most expensive. Pick the tier per
   # subagent-driven-development's Model Selection: a small mechanical diff reviews

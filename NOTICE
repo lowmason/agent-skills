@@ -52,6 +52,8 @@ Changes from upstream:
   - Skill-authoring scaffolding removed (creation log, pressure-test
     transcripts) where it was not referenced at runtime.
   - The `using-superpowers` plugin-bootstrap skill was dropped.
+  - agents/code-reviewer.md is a read-only agent definition distilled from
+    the adapted requesting-code-review reviewer template (same MIT terms).
 
     brainstorming/
     dispatching-parallel-agents/
