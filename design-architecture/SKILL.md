@@ -265,8 +265,9 @@ half": demand the second alternative, the negative consequence, or the reversibi
 
 ```bash
 # Writes specs/adr/0009-use-numpyro-jax-over-pymc-for-nowcasting.md (or docs/adr/ — pass --dir)
-python scripts/new_adr.py "Use NumPyro/JAX over PyMC for nowcasting"
-python scripts/new_adr.py "Store parquet levels only" --dir docs/adr --status Proposed
+# (stdlib-only, so plain python3 suffices; absolute path works from any repo cwd)
+python3 ~/.claude/skills/design-architecture/scripts/new_adr.py "Use NumPyro/JAX over PyMC for nowcasting"
+python3 ~/.claude/skills/design-architecture/scripts/new_adr.py "Store parquet levels only" --dir docs/adr --status Proposed
 ```
 
 It scans the target directory for the highest `NNNN-` prefix, increments it, slugifies the title,

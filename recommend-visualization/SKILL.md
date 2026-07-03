@@ -63,9 +63,11 @@ encoding map, which is the input to Phase 2.
 
 ```bash
 # profile -> ranked recommendation (signals like skew computed from the raw frame)
-python explore-data/scripts/profile.py data.parquet --json profile.json
-python recommend-visualization/scripts/recommend.py data.parquet --profile profile.json \
-    --intent correlation
+uv run --python 3.13 --with polars python \
+    ~/.claude/skills/explore-data/scripts/profile.py data.parquet --json profile.json
+uv run --python 3.13 --with polars python \
+    ~/.claude/skills/recommend-visualization/scripts/recommend.py data.parquet \
+    --profile profile.json --intent correlation
 ```
 
 ### Phase 2 — Code (route the library by purpose)

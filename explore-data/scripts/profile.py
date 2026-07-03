@@ -7,11 +7,11 @@ collects the small frames needed for each summary. Pass --candidate-keys to test
 a key, and --vintage-cols to check as-of/vintage correctness on revised time series.
 
 Usage:
-    python profile.py data/qcew/qcew_estimates.parquet
-    python profile.py "data/qcew/*.parquet" --candidate-keys series_id,ref_date,vintage_date
-    python profile.py payroll.parquet --candidate-keys client_id,ref_date \
+    uv run --python 3.13 --with polars python ~/.claude/skills/explore-data/scripts/profile.py data/qcew/qcew_estimates.parquet
+    uv run --python 3.13 --with polars python ~/.claude/skills/explore-data/scripts/profile.py "data/qcew/*.parquet" --candidate-keys series_id,ref_date,vintage_date
+    uv run --python 3.13 --with polars python ~/.claude/skills/explore-data/scripts/profile.py payroll.parquet --candidate-keys client_id,ref_date \
         --panel-entity client_id --panel-period ref_date
-    python profile.py raw_scrape.csv --vintage-cols series_id,ref_date,vintage_date --json out.json
+    uv run --python 3.13 --with polars python ~/.claude/skills/explore-data/scripts/profile.py raw_scrape.csv --vintage-cols series_id,ref_date,vintage_date --json out.json
 
 The output is a concise text profile by default; --json also writes a machine-readable summary
 you can diff between vintages or feed to a report.

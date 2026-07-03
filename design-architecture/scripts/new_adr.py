@@ -6,8 +6,8 @@ title, and writes the standard ADR template with today's date filled in. Never o
 existing file. Numbering is permanent and never reused.
 
 Usage:
-    python new_adr.py "Use NumPyro/JAX over PyMC for nowcasting"
-    python new_adr.py "Store parquet levels only" --dir docs/adr --status Proposed
+    python3 ~/.claude/skills/design-architecture/scripts/new_adr.py "Use NumPyro/JAX over PyMC for nowcasting"
+    python3 ~/.claude/skills/design-architecture/scripts/new_adr.py "Store parquet levels only" --dir docs/adr --status Proposed
 
 The default directory is ``specs/adr`` (the design-record convention in this stack); pass
 ``--dir docs/adr`` for repos that publish ADRs in a MkDocs site.
