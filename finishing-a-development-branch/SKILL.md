@@ -44,7 +44,13 @@ Stop. Don't proceed to Step 2.
 ```bash
 GIT_DIR=$(cd "$(git rev-parse --git-dir)" 2>/dev/null && pwd -P)
 GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)
+WORKTREE_PATH=$(git rev-parse --show-toplevel)
+MAIN_ROOT=$(git -C "$(git rev-parse --git-common-dir)/.." rev-parse --show-toplevel)
 ```
+**Record all four values in the conversation now.** Shell state does not
+persist across tool calls, and Step 6 consumes the values recorded here —
+re-detecting after Options 1/4 have cd-ed to MAIN_ROOT always reports
+"normal repo" and orphans the worktree.
 
 This determines which menu to show and how cleanup works:
 
@@ -57,8 +63,9 @@ This determines which menu to show and how cleanup works:
 ### Step 3: Determine Base Branch
 
 ```bash
-# Try common base branches
-git merge-base HEAD main 2>/dev/null || git merge-base HEAD master 2>/dev/null
+BASE_BRANCH=$(git rev-parse --abbrev-ref origin/HEAD 2>/dev/null | sed 's|^origin/||')
+# Fallback when origin/HEAD is unset (fresh clone or no remote):
+[ -n "$BASE_BRANCH" ] || BASE_BRANCH=$(gh repo view --json defaultBranchRef -q .defaultBranchRef.name 2>/dev/null)
 ```
 
 Or ask: "This branch split from main - is that correct?"
@@ -121,11 +128,21 @@ git branch -d <feature-branch>
 #### Option 2: Push and Create PR
 
 ```bash
-# Push branch
+# Push branch, then create the PR with the gh CLI
 git push -u origin <feature-branch>
+gh pr create --base <base-branch>
 ```
 
+Consider a pre-PR review via the requesting-code-review skill first.
+
 **Do NOT clean up worktree** — user needs it alive to iterate on PR feedback.
+
+**Detached HEAD ("push as new branch") recipe:**
+
+```bash
+git push origin HEAD:refs/heads/<new-branch>
+gh pr create --base <base-branch> --head <new-branch>
+```
 
 #### Option 3: Keep As-Is
 
@@ -162,24 +179,25 @@ git branch -D <feature-branch>
 
 **Only runs for Options 1 and 4.** Options 2 and 3 always preserve the worktree.
 
+**Use the values recorded in Step 2** (GIT_DIR, GIT_COMMON, WORKTREE_PATH,
+MAIN_ROOT). Do NOT re-run detection here — after Options 1/4 cd to
+MAIN_ROOT, re-detection reports a normal repo and skips cleanup, orphaning
+the worktree and making the branch deletion below fail.
+
+**If Step 2 recorded `GIT_DIR == GIT_COMMON`:** Normal repo, no worktree to clean up. Done.
+
+**If the recorded WORKTREE_PATH is under `.worktrees/` or `worktrees/`:** the
+using-git-worktrees skill (or you) created this worktree — we own cleanup.
+
 ```bash
-GIT_DIR=$(cd "$(git rev-parse --git-dir)" 2>/dev/null && pwd -P)
-GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)
-WORKTREE_PATH=$(git rev-parse --show-toplevel)
-```
-
-**If `GIT_DIR == GIT_COMMON`:** Normal repo, no worktree to clean up. Done.
-
-**If worktree path is under `.worktrees/` or `worktrees/`:** Superpowers created this worktree — we own cleanup.
-
-```bash
-MAIN_ROOT=$(git -C "$(git rev-parse --git-common-dir)/.." rev-parse --show-toplevel)
 cd "$MAIN_ROOT"
 git worktree remove "$WORKTREE_PATH"
 git worktree prune  # Self-healing: clean up any stale registrations
 ```
 
-**Otherwise:** The host environment (harness) owns this workspace. Do NOT remove it. If your platform provides a workspace-exit tool, use it. Otherwise, leave the workspace in place.
+**Otherwise:** The host environment (harness) owns this workspace. Do NOT
+remove it. If your platform provides a workspace-exit tool (e.g.
+ExitWorktree), use it. Otherwise, leave the workspace in place.
 
 ## Quick Reference
 
