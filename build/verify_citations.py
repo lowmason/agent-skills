@@ -23,6 +23,18 @@ CITE_RE = re.compile(r"\bPML([12])\s*§\s*(\d+(?:\.\d+)*)")
 NB_RE = re.compile(r"notebooks/book[12]/[^\s)`\"']+\.ipynb")
 
 
+def _iter_md(paths: list[str]) -> list[Path]:
+    """Expand directory arguments to every .md beneath them, recursively."""
+    files: list[Path] = []
+    for p in paths:
+        path = Path(p)
+        if path.is_dir():
+            files += sorted(path.rglob("*.md"))
+        else:
+            files.append(path)
+    return files
+
+
 @lru_cache(maxsize=None)
 def _sections(book: str) -> frozenset[str]:
     f = SCRATCH / f"book{book}_sections.tsv"
@@ -71,12 +83,20 @@ def fallback_sections(text: str) -> list[str]:
 
 
 def main(argv: list[str]) -> int:
+    if not SCRATCH.is_dir():
+        print(
+            "ground truth missing: run "
+            "`uv run --python 3.13 python build/extract_structure.py` "
+            "(requires local PDFs + gh) to rebuild build/.scratch/",
+            file=sys.stderr,
+        )
+        return 2
     all_fail: list[str] = []
     warnings: list[str] = []
-    for p in argv:
-        text = Path(p).read_text()
-        all_fail += [f"{p}: {f}" for f in verify_text(text)]
-        warnings += [f"{p}: {r}" for r in fallback_sections(text)]
+    for path in _iter_md(argv):
+        text = path.read_text()
+        all_fail += [f"{path}: {f}" for f in verify_text(text)]
+        warnings += [f"{path}: {r}" for r in fallback_sections(text)]
     for f in all_fail:
         print(f)
     for w in warnings:

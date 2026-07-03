@@ -25,3 +25,25 @@ def test_chapter_fallback_passes_gate_a_but_is_flagged():
     text = "See PML1 §11.99.99."
     assert verify_text(text) == []
     assert "PML1 §11.99.99" in fallback_sections(text)
+
+
+def test_directory_arg_expands_to_nested_markdown(tmp_path):
+    from verify_citations import _iter_md
+
+    (tmp_path / "a.md").write_text("x")
+    sub = tmp_path / "families"
+    sub.mkdir()
+    (sub / "b.md").write_text("y")
+    (tmp_path / "ignore.txt").write_text("z")
+    found = _iter_md([str(tmp_path)])
+    names = sorted(p.name for p in found)
+    assert names == ["a.md", "b.md"]
+
+
+def test_missing_scratch_exits_2_with_actionable_message(tmp_path, monkeypatch, capsys):
+    import verify_citations
+
+    monkeypatch.setattr(verify_citations, "SCRATCH", tmp_path / "no-such-dir")
+    rc = verify_citations.main(["whatever.md"])
+    assert rc == 2
+    assert "extract_structure.py" in capsys.readouterr().err

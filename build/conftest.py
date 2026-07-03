@@ -9,6 +9,8 @@ SCRATCH = Path(__file__).parent / ".scratch"
 
 @pytest.fixture
 def real_ref():
+    if not SCRATCH.is_dir():
+        pytest.skip("build/.scratch missing — run extract_structure.py (needs local PDFs + gh)")
     sec = next(
         ln.split("\t")[0]
         for ln in (SCRATCH / "book1_sections.tsv").read_text().splitlines()

@@ -60,8 +60,9 @@ cd build && uv run --python 3.13 --with pytest --with numpy --with polars \
 # End-to-end routing smoke test (no PDFs needed)
 uv run --python 3.13 --with numpy --with polars python build/smoke_test.py
 
-# Verify citations in a skill file (Gate A; silent + exit 0 = all resolve)
-uv run --python 3.13 python build/verify_citations.py recommend-probabilistic-model/SKILL.md
+# Verify citations across the whole skill (Gate A; exit 0 = all resolve;
+# chapter-fallback WARNs on stderr are non-fatal — confirm those via Gate B)
+uv run --python 3.13 python build/verify_citations.py recommend-probabilistic-model/
 
 # Rebuild citation ground truth (needs local PDFs + gh; writes gitignored build/.scratch/)
 uv run --python 3.13 python build/extract_structure.py
