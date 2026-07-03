@@ -63,7 +63,7 @@ This determines which menu to show and how cleanup works:
 ### Step 3: Determine Base Branch
 
 ```bash
-BASE_BRANCH=$(git rev-parse --abbrev-ref origin/HEAD 2>/dev/null | sed 's|^origin/||')
+BASE_BRANCH=$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's|^origin/||')
 # Fallback when origin/HEAD is unset (fresh clone or no remote):
 [ -n "$BASE_BRANCH" ] || BASE_BRANCH=$(gh repo view --json defaultBranchRef -q .defaultBranchRef.name 2>/dev/null)
 ```
