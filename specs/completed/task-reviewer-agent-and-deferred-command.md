@@ -1,5 +1,7 @@
 # task-reviewer agent + /deferred command
 
+**Status: COMPLETE (2026-07-04)** — implemented by specs/plans/completed/6-task-reviewer-agent-and-deferred-command.md; nothing deferred
+
 Two additions to the config repo: a dedicated `task-reviewer` subagent
 definition that takes over SDD's per-task reviews from the borrowed
 `code-reviewer` agent, and a global `/deferred` slash command that gives

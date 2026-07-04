@@ -1,5 +1,7 @@
 # task-reviewer Agent + /deferred Command Implementation Plan
 
+**Status: COMPLETE (2026-07-04)** — executed via subagent-driven-development; nothing deferred
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use subagent-driven-development to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add a dedicated `task-reviewer` subagent definition (taking over SDD's per-task reviews with a short dispatch form) and a global `/deferred` slash command that triages `specs/deferred_items.md`.
@@ -31,7 +33,7 @@
 - Consumes: nothing from other tasks.
 - Produces: agent type name `task-reviewer` — Task 2's Short Form dispatches to exactly this name; the output contract ends in `**Task quality:** [Approved | Needs fixes]`, which SDD's SKILL.md already expects from task reviews.
 
-- [ ] **Step 1: Create `agents/task-reviewer.md`** with exactly this content:
+- [x] **Step 1: Create `agents/task-reviewer.md`** with exactly this content:
 
 ````markdown
 ---
@@ -170,7 +172,7 @@ For each issue: file:line, what's wrong, why it matters, how to fix
 **Reasoning:** [1-2 sentence technical assessment]
 ````
 
-- [ ] **Step 2: Add the NOTICE line.** In `NOTICE`, the "Changes from upstream" list currently contains this item:
+- [x] **Step 2: Add the NOTICE line.** In `NOTICE`, the "Changes from upstream" list currently contains this item:
 
 ```
   - agents/code-reviewer.md is a read-only agent definition distilled from
@@ -185,7 +187,7 @@ Insert directly after it, as a new list item with identical indentation:
     MIT terms).
 ```
 
-- [ ] **Step 3: Add the README Agents-table row.** In `README.md`, the Agents table currently has one data row (`code-reviewer`). Add below it:
+- [x] **Step 3: Add the README Agents-table row.** In `README.md`, the Agents table currently has one data row (`code-reviewer`). Add below it:
 
 ```markdown
 | [`task-reviewer`](agents/task-reviewer.md) | Read-only task-scoped reviewer for `subagent-driven-development`'s per-task gate — checks one task's diff against its brief for spec compliance and code quality, returning both verdicts. Carries the full review contract so dispatches only need the task's brief, report, and diff paths. |
@@ -203,7 +205,7 @@ with:
 ├── agents/      # subagent definitions (code-reviewer, task-reviewer — see Agents below)
 ```
 
-- [ ] **Step 4: Update the README Credits sentence.** In the Credits superpowers bullet, replace:
+- [x] **Step 4: Update the README Credits sentence.** In the Credits superpowers bullet, replace:
 
 ```markdown
 The [`code-reviewer`](agents/code-reviewer.md) agent is distilled from the adapted `requesting-code-review` reviewer template, same terms.
@@ -215,7 +217,7 @@ with:
 The [`code-reviewer`](agents/code-reviewer.md) and [`task-reviewer`](agents/task-reviewer.md) agents are distilled from the adapted `requesting-code-review` and `subagent-driven-development` reviewer templates, same terms.
 ```
 
-- [ ] **Step 5: Create the install symlink**
+- [x] **Step 5: Create the install symlink**
 
 ```bash
 mkdir -p ~/.claude/agents
@@ -227,7 +229,7 @@ test -f ~/.claude/agents/task-reviewer.md && echo OK
 
 Expected: `OK`
 
-- [ ] **Step 6: Verify provenance lint passes**
+- [x] **Step 6: Verify provenance lint passes**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills
@@ -236,7 +238,7 @@ uv run --python 3.13 python build/check_provenance.py
 
 Expected: exit 0, no missing-attribution errors.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills
@@ -255,7 +257,7 @@ git commit -m "feat(agents): add task-reviewer agent definition (distilled from 
 - Consumes: agent type name `task-reviewer` (Task 1).
 - Produces: the Short Form dispatch shape — controllers send only `[BRIEF_FILE]`, `[GLOBAL_CONSTRAINTS]`, `[REPORT_FILE]`, `[BASE_SHA]`, `[HEAD_SHA]`, `[DIFF_FILE]`, plus `model`.
 
-- [ ] **Step 1: Replace the template's opening.** The file currently begins:
+- [x] **Step 1: Replace the template's opening.** The file currently begins:
 
 ```markdown
 # Task Reviewer Prompt Template
@@ -318,7 +320,7 @@ Subagent (task-reviewer):
 
 ````
 
-- [ ] **Step 2: Edit the Full Form's routing line.** Inside the existing dispatch-prompt fence (now under `## Full Form (no task-reviewer agent)`), replace the line:
+- [x] **Step 2: Edit the Full Form's routing line.** Inside the existing dispatch-prompt fence (now under `## Full Form (no task-reviewer agent)`), replace the line:
 
 ```
 Subagent (code-reviewer if defined, else general-purpose):
@@ -332,7 +334,7 @@ Subagent (general-purpose):
 
 Everything else inside the fence stays byte-for-byte identical, as do the trailing **Placeholders** / **Reviewer returns** sections.
 
-- [ ] **Step 3: Verify the Full Form survived verbatim.** The diff for this file must show only (a) the new opening/Short Form block and (b) the one routing line. Diff against `HEAD` so staging state cannot mask the change:
+- [x] **Step 3: Verify the Full Form survived verbatim.** The diff for this file must show only (a) the new opening/Short Form block and (b) the one routing line. Diff against `HEAD` so staging state cannot mask the change:
 
 ```bash
 cd /Users/lowell/Projects/agent-skills
@@ -342,7 +344,9 @@ git diff HEAD -- skills/subagent-driven-development/task-reviewer-prompt.md | aw
 
 Expected: the first command prints exactly one line — `Subagent (code-reviewer if defined, else general-purpose):`. **Empty output is a failure** (the routing edit is missing). Any other `-` line means the Full Form was altered. The second command prints exactly one line — `+Subagent (general-purpose):`; any other line means content was inserted inside the Full Form, which also violates the verbatim requirement. Fix before committing.
 
-- [ ] **Step 4: Verify both forms parse and anchors exist**
+> Deviation: cmd 2 printed one extra bare `+` line — the blank line between the inserted `## Full Form` heading and the fence (outside the fence, part of the intended insertion). The plan's expected output missed it; the binding cmd-1 check passed exactly. Implementer flagged via DONE_WITH_CONCERNS; adjudicated not-a-defect.
+
+- [x] **Step 4: Verify both forms parse and anchors exist**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills
@@ -357,7 +361,7 @@ done
 
 Expected: each heading/routing grep prints `1`; every placeholder count is ≥ 2 (once in the Short Form, once or more in the Full Form/Placeholders list).
 
-- [ ] **Step 5: Run the frontmatter lint** (the template lives inside a skill directory; confirm nothing regressed)
+- [x] **Step 5: Run the frontmatter lint** (the template lives inside a skill directory; confirm nothing regressed)
 
 ```bash
 cd /Users/lowell/Projects/agent-skills
@@ -366,7 +370,7 @@ uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
 
 Expected: exit 0.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills
@@ -389,7 +393,7 @@ git commit -m "refactor(sdd): split task-reviewer template into Short/Full dispa
 - Consumes: the `specs/deferred_items.md` conventions defined in writing-plans § Plan Completion Protocol (`## <plan> — <date>` section headers, `- [ ]` items); the brainstorming skill by bare name.
 - Produces: user-invocable `/deferred` in any project.
 
-- [ ] **Step 1: Create `commands/deferred.md`** with exactly this content:
+- [x] **Step 1: Create `commands/deferred.md`** with exactly this content:
 
 ```markdown
 ---
@@ -416,7 +420,7 @@ plans' completion-protocol runs.
    design cycle.
 ```
 
-- [ ] **Step 2: Remove the placeholder**
+- [x] **Step 2: Remove the placeholder**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills
@@ -425,7 +429,7 @@ git rm --ignore-unmatch commands/.gitkeep
 
 (`--ignore-unmatch` keeps the step rerun-safe if a fix loop re-enters this task.)
 
-- [ ] **Step 3: Update the README layout tree.** Replace the line:
+- [x] **Step 3: Update the README layout tree.** Replace the line:
 
 ```
 ├── commands/    # slash commands (scaffolding, empty for now)
@@ -437,7 +441,7 @@ with:
 ├── commands/    # slash commands (/deferred — see Commands below)
 ```
 
-- [ ] **Step 4: Add the README Commands section.** Directly after the `## Agents` section (after its table), insert:
+- [x] **Step 4: Add the README Commands section.** Directly after the `## Agents` section (after its table), insert:
 
 ```markdown
 ## Commands
@@ -449,7 +453,7 @@ Slash commands live in [`commands/`](commands/) and install into `~/.claude/comm
 | [`/deferred`](commands/deferred.md) | Triage `specs/deferred_items.md` in the current project: group unticked items by theme, classify actionable-now vs still-blocked, and propose which deserve promotion to a new spec. Read-only — ticking stays with the plan-completion protocol. |
 ```
 
-- [ ] **Step 5: Add the Installation subsection.** Directly after the `### Agents` subsection at the end of Installation, insert:
+- [x] **Step 5: Add the Installation subsection.** Directly after the `### Agents` subsection at the end of Installation, insert:
 
 ````markdown
 ### Commands
@@ -462,7 +466,7 @@ ln -s ~/agent-skills/commands/deferred.md ~/.claude/commands/deferred.md
 ```
 ````
 
-- [ ] **Step 6: Update CLAUDE.md.** In the "What this repo is" paragraph, replace:
+- [x] **Step 6: Update CLAUDE.md.** In the "What this repo is" paragraph, replace:
 
 ```
 `commands/` (slash commands), `hooks/` (hook scripts), `rules/` (rule files) — the latter three are scaffolding, currently empty.
@@ -474,7 +478,7 @@ with:
 `commands/` (slash commands — `/deferred`), `hooks/` (hook scripts), `rules/` (rule files) — the latter two are scaffolding, currently empty.
 ```
 
-- [ ] **Step 7: Create the install symlink**
+- [x] **Step 7: Create the install symlink**
 
 ```bash
 mkdir -p ~/.claude/commands
@@ -484,7 +488,7 @@ test -f ~/.claude/commands/deferred.md && echo OK
 
 Expected: `OK`
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills
@@ -506,7 +510,7 @@ git commit -m "feat(commands): add /deferred deferred-items triage command"
 
 This task is executed by the controller directly (like plan 5's pressure-test task), because it dispatches evaluation subagents.
 
-- [ ] **Step 1: Run both lints and the full test suites**
+- [x] **Step 1: Run both lints and the full test suites**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills
@@ -517,7 +521,7 @@ cd build && uv run --python 3.13 --with pytest --with numpy --with polars --with
 
 Expected: both lints exit 0; 15 tests pass.
 
-- [ ] **Step 2: Verify discovery.** Confirm both symlinks resolve and the agent frontmatter parses:
+- [x] **Step 2: Verify discovery.** Confirm both symlinks resolve and the agent frontmatter parses:
 
 ```bash
 test -f ~/.claude/agents/task-reviewer.md && test -f ~/.claude/commands/deferred.md && echo LINKS-OK
@@ -536,7 +540,9 @@ confirmable in-session becomes a **gate question at plan completion**: ask
 the human partner to confirm, in a fresh session, that `task-reviewer`
 appears in the agent list and `/deferred` autocompletes.
 
-- [ ] **Step 3: Build the triage fixture.** Create `<scratchpad>/deferred-fixture/specs/deferred_items.md`:
+> Deviation: both discoveries confirmed live mid-session — the agent type resolved immediately after Task 1's commit (and executed all three task reviews), and `/deferred` appeared as an invocable command immediately after Task 3's. The fresh-session gate question became unnecessary.
+
+- [x] **Step 3: Build the triage fixture.** Create `<scratchpad>/deferred-fixture/specs/deferred_items.md`:
 
 ```markdown
 # Deferred items
@@ -556,15 +562,15 @@ appears in the agent list and `/deferred` autocompletes.
 
 Also create an empty project dir `<scratchpad>/deferred-empty/` containing only a `.git` marker (`git init -q`).
 
-- [ ] **Step 4: Fixture rep — populated file.** Record `md5 <fixture>/specs/deferred_items.md`. Dispatch a sonnet subagent whose prompt **begins with an explicit project root** — `Project root: <scratchpad>/deferred-fixture — resolve all relative paths against it.` — followed by the body of `commands/deferred.md` as its instruction (staged neutrally — do not say it is a test). The root declaration is required: subagents inherit the session cwd (the repo), and without it the command body's "at the project root" would resolve against the repo, which has no `specs/deferred_items.md`, spuriously failing every judgment below. Judge the transcript for: (a) the ticked Parquet item is excluded; (b) the three unticked items are grouped with plan/date attribution; (c) each group gets an actionable-now/still-blocked classification with reasoning drawn from the recorded deferral reason; (d) promotion candidates are proposed as a ranked list; (e) no file edit occurred — re-run `md5` and compare.
+- [x] **Step 4: Fixture rep — populated file.** Record `md5 <fixture>/specs/deferred_items.md`. Dispatch a sonnet subagent whose prompt **begins with an explicit project root** — `Project root: <scratchpad>/deferred-fixture — resolve all relative paths against it.` — followed by the body of `commands/deferred.md` as its instruction (staged neutrally — do not say it is a test). The root declaration is required: subagents inherit the session cwd (the repo), and without it the command body's "at the project root" would resolve against the repo, which has no `specs/deferred_items.md`, spuriously failing every judgment below. Judge the transcript for: (a) the ticked Parquet item is excluded; (b) the three unticked items are grouped with plan/date attribution; (c) each group gets an actionable-now/still-blocked classification with reasoning drawn from the recorded deferral reason; (d) promotion candidates are proposed as a ranked list; (e) no file edit occurred — re-run `md5` and compare.
 
 Expected: all five hold; md5 unchanged.
 
-- [ ] **Step 5: Fixture rep — missing file.** Dispatch a sonnet subagent with the same command body, prefixed the same way with `Project root: <scratchpad>/deferred-empty — resolve all relative paths against it.` Judge: it reports nothing is deferred and stops — no invented items, no file creation (`ls <dir>/specs/` fails or is empty).
+- [x] **Step 5: Fixture rep — missing file.** Dispatch a sonnet subagent with the same command body, prefixed the same way with `Project root: <scratchpad>/deferred-empty — resolve all relative paths against it.` Judge: it reports nothing is deferred and stops — no invented items, no file creation (`ls <dir>/specs/` fails or is empty).
 
 Expected: clean "nothing deferred" stop.
 
-- [ ] **Step 6: Short Form completeness check**
+- [x] **Step 6: Short Form completeness check**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills
@@ -575,9 +581,11 @@ awk '/## Short Form/,/## Full Form/' skills/subagent-driven-development/task-rev
 
 Expected: first command — exactly `[BASE_SHA] [BRIEF_FILE] [DIFF_FILE] [GLOBAL_CONSTRAINTS] [HEAD_SHA] [REPORT_FILE]` as a sorted list (`[MODEL]` can't match that grep because its bracket closes after the multi-line comment); second command — `1` (the model placeholder is present); third command — `0` (no contract prose in the Short Form; the `|| true` is deliberate — `grep -c` exits 1 on zero matches, and the printed `0` is the pass signal).
 
-- [ ] **Step 7: Fix anything found, commit fixes**
+- [x] **Step 7: Fix anything found, commit fixes**
 
 Any failed check above is fixed in-place and committed as `fix: <what>` before the plan is declared complete. If all checks pass with no changes, there is nothing to commit.
+
+> Deviation: Steps 1–6 needed no fixes. The final whole-branch review (opus) found one Important — stale "per-task and whole-branch" scope claims for code-reviewer in the README Agents table, plus the same claim in `agents/code-reviewer.md` frontmatter (controller-spotted sibling) — fixed in 213efdf.
 
 ---
 
