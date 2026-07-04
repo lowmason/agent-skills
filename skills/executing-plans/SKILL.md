@@ -32,9 +32,16 @@ For each task:
 3. Run verifications as specified
 4. Mark as completed
 
-### Step 3: Complete Development
+### Step 3: Complete the Plan
 
-After all tasks complete and verified:
+After all tasks are complete and verified, run the plan-completion protocol
+from the writing-plans skill (its "Plan Completion Protocol" section):
+resolve-before-defer gate → plan markup → deferred items → retire the plan
+and (conditionally) its spec.
+
+### Step 4: Complete Development
+
+Once the plan is complete and retired:
 - Announce: "I'm using the finishing-a-development-branch skill to complete this work."
 - **REQUIRED SUB-SKILL:** Use finishing-a-development-branch
 - Follow that skill to verify tests, present options, execute choice

@@ -1,5 +1,7 @@
 # Plan-Completion Protocol Implementation Plan
 
+**Status: COMPLETE (2026-07-04)** — executed via subagent-driven-development; nothing deferred
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use subagent-driven-development to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Operationalize the back half of the spec-driven workflow — a plan-completion protocol (resolve-before-defer gate → plan markup → deferred-items capture → retirement) at the end of both execution skills, plus the `specs/deferred_items.md` standing-doc convention.
@@ -32,7 +34,7 @@
 **Interfaces:**
 - Produces: the pristine fixture tree and the scoring rubric reused verbatim by Task 7 (GREEN).
 
-- [ ] **Step 1: Build the pristine fixture**
+- [x] **Step 1: Build the pristine fixture**
 
 Run (substitute `$SCRATCH` with the session scratchpad path):
 
@@ -120,7 +122,7 @@ echo "FIXTURE OK: $F"
 
 Expected: `FIXTURE OK: …/pcp-fixture`
 
-- [ ] **Step 2: Write the two control briefs**
+- [x] **Step 2: Write the two control briefs**
 
 `$SCRATCH/brief-ep.md` (executing-plans path) — exact content:
 
@@ -141,7 +143,7 @@ complete; Task 3 not implemented — it needs an infrastructure decision (which
 Redis DSN/instance) that was not available), and the final whole-branch
 review is resolved."
 
-- [ ] **Step 3: Snapshot the CONTROL skill texts**
+- [x] **Step 3: Snapshot the CONTROL skill texts**
 
 ```bash
 sed -n '/### Step 3: Complete Development/,/^## /p' \
@@ -150,7 +152,7 @@ sed -n '/^- If the final whole-branch review returns findings/,/^## File Handoff
   ~/Projects/agent-skills/skills/subagent-driven-development/SKILL.md > $SCRATCH/skilltext-sdd-control.md
 ```
 
-- [ ] **Step 4: Dispatch 3 reps × 2 scenarios, judge, record**
+- [x] **Step 4: Dispatch 3 reps × 2 scenarios, judge, record**
 
 Per rep: copy the pristine fixture (`cp -R $SCRATCH/pcp-fixture $SCRATCH/pcp-red-<sc>-<n>`), copy the brief and skill text in as `AGENT_BRIEF.md`/`SKILL_TEXT.md`, dispatch a **sonnet** agent: "Read AGENT_BRIEF.md in <dir> and follow it." Then a judge agent scores the mutated fixture + final message against the rubric:
 
@@ -163,7 +165,9 @@ Per rep: copy the pristine fixture (`cp -R $SCRATCH/pcp-fixture $SCRATCH/pcp-red
 
 Record per-rep scores in the ledger. Expected RED outcome: criteria 2 and 3 fail in ≥5/6 reps (the deferred-items convention and ask-first gate exist nowhere today); criteria 1/4 may partially pass (writing-plans already states the retirement convention).
 
-- [ ] **Step 5: Record the RED verdict in the progress ledger** — table of 6 reps × 4 criteria. If criteria 2 AND 3 unexpectedly pass in ≥4/6 reps, STOP and surface to the human partner (the edit may be unnecessary — writing-skills doctrine).
+- [x] **Step 5: Record the RED verdict in the progress ledger** — table of 6 reps × 4 criteria. If criteria 2 AND 3 unexpectedly pass in ≥4/6 reps, STOP and surface to the human partner (the edit may be unnecessary — writing-skills doctrine).
+
+> Deviation: RED tally c1 1/6, c2 0/6, c4 0/6 as expected, but c3 passed 6/6 (the brief's "list every question" clause invites asks) — c3 was non-discriminative at RED; gate efficacy was instead established by the GREEN round-1→round-2 delta. Stop-rule did not fire.
 
 ### Task 2: Canonical protocol section in writing-plans
 
@@ -173,7 +177,7 @@ Record per-rep scores in the ledger. Expected RED outcome: criteria 2 and 3 fail
 **Interfaces:**
 - Produces: section anchor `## Plan Completion Protocol` — Tasks 3, 4, 6 reference it by this exact name.
 
-- [ ] **Step 1: Convert the retirement sentence to a pointer**
+- [x] **Step 1: Convert the retirement sentence to a pointer**
 
 Find (one occurrence):
 
@@ -187,7 +191,9 @@ Replace the final sentence so the line ends:
 …matches the spec the plan implements. When the plan is fully executed, run the Plan Completion Protocol (below).
 ```
 
-- [ ] **Step 2: Append the canonical section at end of file**
+- [x] **Step 2: Append the canonical section at end of file**
+
+> Deviation: the shipped canonical section carries one sentence beyond the text below — "Unanswered gate questions block the rest of the protocol…" — added by the Task 7 GREEN fix loop (commit e46c281) after 6/6 round-1 agents retired before asking. The spec records the same addition inline.
 
 Insert verbatim after the final line of the "Execution Handoff" section:
 
@@ -249,12 +255,12 @@ PR carries them atomically; a discarded branch takes its completion markup
 with it.
 ````
 
-- [ ] **Step 3: Lint**
+- [x] **Step 3: Lint**
 
 Run: `uv run --python 3.13 --with pyyaml python build/check_frontmatter.py`
 Expected: exit 0, no output.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add skills/writing-plans/SKILL.md
@@ -269,7 +275,7 @@ git commit -m "feat(writing-plans): add canonical Plan Completion Protocol"
 **Interfaces:**
 - Consumes: `## Plan Completion Protocol` anchor from Task 2.
 
-- [ ] **Step 1: Add the flow-chart node and rewire the edge**
+- [x] **Step 1: Add the flow-chart node and rewire the edge**
 
 In the dot graph, after the node line
 `"Dispatch final code reviewer subagent (../requesting-code-review/code-reviewer.md)" [shape=box];`
@@ -288,7 +294,7 @@ with:
     "Run plan-completion protocol (../writing-plans/SKILL.md)" -> "Finish the branch: merge / PR / cleanup";
 ```
 
-- [ ] **Step 2: Insert the prose section**
+- [x] **Step 2: Insert the prose section**
 
 Immediately before the line `## File Handoffs`, insert verbatim:
 
@@ -307,14 +313,14 @@ tasks complete" is a sanctioned stop.
 
 ```
 
-- [ ] **Step 3: Verify graph syntax and lint**
+- [x] **Step 3: Verify graph syntax and lint**
 
 Run: `awk '/^```dot$/,/^```$/' skills/subagent-driven-development/SKILL.md | grep -c '"Run plan-completion protocol (../writing-plans/SKILL.md)"'`
 Expected: `3` (one declaration + two edge occurrences).
 Run: `uv run --python 3.13 --with pyyaml python build/check_frontmatter.py`
 Expected: exit 0.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add skills/subagent-driven-development/SKILL.md
@@ -329,7 +335,7 @@ git commit -m "feat(sdd): run plan-completion protocol after final review"
 **Interfaces:**
 - Consumes: `## Plan Completion Protocol` anchor from Task 2.
 
-- [ ] **Step 1: Insert the new step and renumber**
+- [x] **Step 1: Insert the new step and renumber**
 
 Replace:
 
@@ -350,14 +356,14 @@ and (conditionally) its spec.
 ### Step 4: Complete Development
 ```
 
-- [ ] **Step 2: Lint and verify**
+- [x] **Step 2: Lint and verify**
 
 Run: `grep -c '^### Step' skills/executing-plans/SKILL.md`
 Expected: `4`
 Run: `uv run --python 3.13 --with pyyaml python build/check_frontmatter.py`
 Expected: exit 0.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add skills/executing-plans/SKILL.md
@@ -369,7 +375,7 @@ git commit -m "feat(executing-plans): plan-completion step before finishing the 
 **Files:**
 - Modify: `skills/brainstorming/SKILL.md` (checklist item 1 and the first "Understanding the idea" bullet)
 
-- [ ] **Step 1: Extend the checklist item**
+- [x] **Step 1: Extend the checklist item**
 
 Replace:
 
@@ -383,7 +389,7 @@ with:
 1. **Explore project context** — check files, docs, recent commits, and `specs/deferred_items.md` for previously deferred work the new idea touches
 ```
 
-- [ ] **Step 2: Extend the process bullet**
+- [x] **Step 2: Extend the process bullet**
 
 Replace:
 
@@ -397,12 +403,12 @@ with:
 - Check out the current project state first (files, docs, recent commits — and `specs/deferred_items.md`, if present, for deferred work related to this idea)
 ```
 
-- [ ] **Step 3: Lint**
+- [x] **Step 3: Lint**
 
 Run: `uv run --python 3.13 --with pyyaml python build/check_frontmatter.py`
 Expected: exit 0.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add skills/brainstorming/SKILL.md
@@ -414,7 +420,7 @@ git commit -m "feat(brainstorming): surface specs/deferred_items.md during conte
 **Files:**
 - Modify: `CLAUDE.md` (Conventions § Specs & plans bullet)
 
-- [ ] **Step 1: Extend the bullet**
+- [x] **Step 1: Extend the bullet**
 
 Replace:
 
@@ -428,7 +434,7 @@ with:
 - **Specs & plans**: design records live in `specs/` (retired ones in `specs/completed/`). Implementation plans go to `specs/plans/<id>-<spec-name>.md` where `<id>` is the next integer (max existing id across `specs/plans/` and `specs/plans/completed/`, +1). At completion, the plan-completion protocol (writing-plans § Plan Completion Protocol) gates leftovers past the user, marks up the plan, appends consciously-deferred work to `specs/deferred_items.md`, and retires the plan (and, when no other live plan shares it, the spec) to the `completed/` dirs.
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add CLAUDE.md
@@ -442,7 +448,7 @@ git commit -m "docs(claude-md): document plan-completion protocol and deferred_i
 **Interfaces:**
 - Consumes: fixture + rubric from Task 1; all edits from Tasks 2-6.
 
-- [ ] **Step 1: Snapshot the GREEN skill texts**
+- [x] **Step 1: Snapshot the GREEN skill texts**
 
 As Task 1 Step 3, but from the edited files, and append the canonical section to each:
 
@@ -457,17 +463,19 @@ sed -n '/## Plan Completion Protocol/,$p' \
   > $SCRATCH/skilltext-sdd-green.md
 ```
 
-- [ ] **Step 2: GREEN reps — same fixture, same briefs, same judge, new skill texts**
+- [x] **Step 2: GREEN reps — same fixture, same briefs, same judge, new skill texts**
 
 3 reps × 2 scenarios (ep-green, sdd-green), sonnet, scored on the Task 1 rubric. Expected: all 4 criteria pass in ≥5/6 reps; criterion 3 (ask-first on the Redis-DSN item) passes in 6/6.
 
-- [ ] **Step 3: GREEN clean-path reps**
+- [x] **Step 3: GREEN clean-path reps**
+
+> Deviation: the review-report-only fixture edit specified below proved insufficient twice — sonnet executors audited the fixture and found Task 3 genuinely missing (round 2), then present-but-unwired (round 3), and refused the zero-deferral path both times (correct integrity behavior). The path was finally exercised 4/4 on a deliberately trivial slugify fixture after the human gate-check (commit 7bc7576 carries the accompanying gate-triage wording fixes).
 
 Variant brief (ep wording): "…every task of specs/plans/1-rate-limiter.md is implemented including Task 3; the final review is at review-report.md with no unfixed findings." In the rep's fixture copy, edit `review-report.md` before dispatch: replace the `### Minor…` finding block with `None.` and drop the Assessment sentence about Task 3. Leave the plan file untouched — markup is the agent's job. 3 reps. Expected per rep: status header ends "nothing deferred"; **no** `specs/deferred_items.md` created; plan (and spec) retired.
 
-- [ ] **Step 4: Record GREEN verdicts in the ledger; if any expectation fails, dispatch a fix loop on the responsible skill text and re-run only the failed scenario**
+- [x] **Step 4: Record GREEN verdicts in the ledger; if any expectation fails, dispatch a fix loop on the responsible skill text and re-run only the failed scenario**
 
-- [ ] **Step 5: Full lint + suite sweep**
+- [x] **Step 5: Full lint + suite sweep**
 
 ```bash
 uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
@@ -477,7 +485,9 @@ cd build && uv run --python 3.13 --with pytest --with numpy --with polars --with
 
 Expected: both lints exit 0; `15 passed`.
 
-- [ ] **Step 6: Commit any test-driven wording fixes**
+- [x] **Step 6: Commit any test-driven wording fixes**
+
+> Deviation: two fix commits instead of one — e46c281 (gate-blocking sentence, canonical + spec) and 7bc7576 (gate-triage fixes: executing-plans Step 4 opener, brainstorming "if present" hedge).
 
 ```bash
 git add -u skills/ && git commit -m "fix(skills): wording adjustments from GREEN pressure test" || echo "nothing to fix"

@@ -1,6 +1,6 @@
 # Plan-completion protocol: markup, resolve-before-defer, retire
 
-**Status:** Active (approved 2026-07-04)
+**Status:** Complete (2026-07-04) — implemented by `specs/plans/completed/5-plan-completion-protocol.md`; nothing deferred
 
 ## Context
 
@@ -51,6 +51,11 @@ completed/deferred partition is final:
    - Unblocked by an answer → implement before completing (loop back into execution;
      the protocol restarts after that work lands).
    - Everything else → defer.
+   Unanswered gate questions block the rest of the protocol: the partition is final
+   only once every ask is resolved — in a one-shot run, end the turn with the batched
+   questions and resume when answered. (Added by GREEN fix loop: without this sentence,
+   6/6 pressure-test agents retired the plan first and asked after, making the ask
+   decorative.)
 2. **Markup the plan file.** Tick every completed step (`- [x]`). Under any step that
    deviated from the plan, add a one-line `> Deviation: …` note. Annotate skipped steps
    with `> Skipped: <why> → deferred`. Add a status header at the top of the plan:
