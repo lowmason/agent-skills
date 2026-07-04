@@ -12,7 +12,7 @@ Skills are the center of the repo, but it also carries the other Claude Code use
 agent-skills/
 ├── skills/      # agent skills, one directory per skill (the tables below)
 ├── agents/      # subagent definitions (code-reviewer, task-reviewer — see Agents below)
-├── commands/    # slash commands (scaffolding, empty for now)
+├── commands/    # slash commands (/deferred — see Commands below)
 ├── hooks/       # hook scripts (scaffolding, empty for now)
 ├── rules/       # rule files (scaffolding, empty for now)
 ├── build/       # citation-verification tooling for recommend-probabilistic-model
@@ -67,6 +67,14 @@ Subagent definitions live in [`agents/`](agents/) and install into `~/.claude/ag
 | [`code-reviewer`](agents/code-reviewer.md) | Read-only reviewer for diff-based reviews against a plan, spec, or requirements — dispatched by `requesting-code-review` and `subagent-driven-development` for per-task and whole-branch reviews. No edit tools; inspects history via `git show`/`git diff` and reports Critical/Important/Minor findings with a merge verdict. |
 | [`task-reviewer`](agents/task-reviewer.md) | Read-only task-scoped reviewer for `subagent-driven-development`'s per-task gate — checks one task's diff against its brief for spec compliance and code quality, returning both verdicts. Carries the full review contract so dispatches only need the task's brief, report, and diff paths. |
 
+## Commands
+
+Slash commands live in [`commands/`](commands/) and install into `~/.claude/commands/` (symlink or copy, one file per command):
+
+| Command | Description |
+|---------|-------------|
+| [`/deferred`](commands/deferred.md) | Triage `specs/deferred_items.md` in the current project: group unticked items by theme, classify actionable-now vs still-blocked, and propose which deserve promotion to a new spec. Read-only — ticking stays with the plan-completion protocol. |
+
 ## Installation
 
 These skills install into Claude Code's user-level skills directory, `~/.claude/skills/`, where they're discovered automatically.
@@ -116,6 +124,15 @@ Subagent definitions install the same way, into `~/.claude/agents/` (one symlink
 ```bash
 mkdir -p ~/.claude/agents
 ln -s ~/agent-skills/agents/code-reviewer.md ~/.claude/agents/code-reviewer.md
+```
+
+### Commands
+
+Slash commands install the same way, into `~/.claude/commands/` (one symlink per file):
+
+```bash
+mkdir -p ~/.claude/commands
+ln -s ~/agent-skills/commands/deferred.md ~/.claude/commands/deferred.md
 ```
 
 ## Credits
