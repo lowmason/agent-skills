@@ -2,7 +2,22 @@
 
 My personal collection of [agent skills](https://code.claude.com/docs/en/skills), primarily for **Claude Code**.
 
-Each skill is a self-contained directory under [`skills/`](skills/) with a `SKILL.md` (plus any `references/` and `scripts/` it needs). Claude Code auto-discovers installed skills and loads one into context when it's relevant to what you're doing — or you can invoke it directly as a slash command. Alongside the skills, the repo carries the other Claude Code user-level config types: [`agents/`](agents/) (subagent definitions), plus scaffolding for `commands/`, `hooks/`, and `rules/`.
+Each skill is a self-contained directory under [`skills/`](skills/) with a `SKILL.md` (plus any `references/` and `scripts/` it needs). Claude Code auto-discovers installed skills and loads one into context when it's relevant to what you're doing — or you can invoke it directly as a slash command.
+
+## Layout
+
+Skills are the center of the repo, but it also carries the other Claude Code user-level config types:
+
+```
+agent-skills/
+├── skills/      # agent skills, one directory per skill (the tables below)
+├── agents/      # subagent definitions (code-reviewer — see Agents below)
+├── commands/    # slash commands (scaffolding, empty for now)
+├── hooks/       # hook scripts (scaffolding, empty for now)
+├── rules/       # rule files (scaffolding, empty for now)
+├── build/       # citation-verification tooling for recommend-probabilistic-model
+└── specs/       # design records + implementation plans (retired work under completed/)
+```
 
 ## Skills
 
@@ -42,6 +57,14 @@ Adapted from Jesse Vincent's superpowers skills — process disciplines for plan
 | [`finishing-a-development-branch`](skills/finishing-a-development-branch/) | Decide how to integrate completed work (merge, PR, or cleanup). |
 | [`using-git-worktrees`](skills/using-git-worktrees/) | Create an isolated workspace for feature work. |
 | [`writing-skills`](skills/writing-skills/) | Create, edit, and verify agent skills. |
+
+## Agents
+
+Subagent definitions live in [`agents/`](agents/) and install into `~/.claude/agents/` the same way skills do (symlink or copy):
+
+| Agent | Description |
+|-------|-------------|
+| [`code-reviewer`](agents/code-reviewer.md) | Read-only reviewer for diff-based reviews against a plan, spec, or requirements — dispatched by `requesting-code-review` and `subagent-driven-development` for per-task and whole-branch reviews. No edit tools; inspects history via `git show`/`git diff` and reports Critical/Important/Minor findings with a merge verdict. |
 
 ## Installation
 
@@ -85,12 +108,21 @@ ln -s ~/agent-skills/skills/bayesian-workflow .claude/skills/bayesian-workflow
 
 Inside Claude Code, run `/skills` to list discovered skills and confirm yours shows up (along with the level it loaded from). You can also invoke a skill by name, e.g. `/bayesian-workflow`.
 
+### Agents
+
+Subagent definitions install the same way, into `~/.claude/agents/` (one symlink per file):
+
+```bash
+mkdir -p ~/.claude/agents
+ln -s ~/agent-skills/agents/code-reviewer.md ~/.claude/agents/code-reviewer.md
+```
+
 ## Credits
 
 - **My original skills** — `develop-testing-strategy`, `validate-data`, `explore-data`, `tech-debt`, `design-architecture`, `bls-data-context`, `recommend-probabilistic-model`, and `recommend-visualization` are my own work, MIT licensed (see [`LICENSE`](LICENSE)).
 - **Cited-only sources** — `recommend-probabilistic-model` cites Kevin Murphy's *Probabilistic Machine Learning* books (CC-BY-NC-ND) by section number only, and `bayesian-workflow` cites the Gelman/Betancourt/Gabry workflow papers (Betancourt's under CC BY-NC 4.0) by author-year — no text is reproduced and no copies are bundled (see [`NOTICE`](NOTICE)).
 - **bayesian-workflow** — adapted from [Alexandre Andorra](https://alexandorra.github.io/)'s original **PyMC** Bayesian-workflow skill (MIT licensed). I ported it to **NumPyro + JAX** and expanded the visualization guidance.
-- **superpowers skills** — the 13 process skills are adapted from the [superpowers](https://github.com/obra/superpowers) project by [Jesse Vincent](https://github.com/obra), MIT licensed, © 2025; my modifications under the same MIT terms. See [`LICENSE-superpowers`](LICENSE-superpowers) and [`NOTICE`](NOTICE).
+- **superpowers skills** — the 13 process skills are adapted from the [superpowers](https://github.com/obra/superpowers) project by [Jesse Vincent](https://github.com/obra), MIT licensed, © 2025; my modifications under the same MIT terms. The [`code-reviewer`](agents/code-reviewer.md) agent is distilled from the adapted `requesting-code-review` reviewer template, same terms. See [`LICENSE-superpowers`](LICENSE-superpowers) and [`NOTICE`](NOTICE).
 
 ## License
 
