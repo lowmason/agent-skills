@@ -72,6 +72,7 @@ digraph process {
     "Read plan, note context and global constraints, create todos" [shape=box];
     "More tasks remain?" [shape=diamond];
     "Dispatch final code reviewer subagent (../requesting-code-review/code-reviewer.md)" [shape=box];
+    "Run plan-completion protocol (../writing-plans/SKILL.md)" [shape=box];
     "Finish the branch: merge / PR / cleanup" [shape=box style=filled fillcolor=lightgreen];
 
     "Read plan, note context and global constraints, create todos" -> "Dispatch implementer subagent (./implementer-prompt.md)";
@@ -87,7 +88,8 @@ digraph process {
     "Mark task complete in todo list and progress ledger" -> "More tasks remain?";
     "More tasks remain?" -> "Dispatch implementer subagent (./implementer-prompt.md)" [label="yes"];
     "More tasks remain?" -> "Dispatch final code reviewer subagent (../requesting-code-review/code-reviewer.md)" [label="no"];
-    "Dispatch final code reviewer subagent (../requesting-code-review/code-reviewer.md)" -> "Finish the branch: merge / PR / cleanup";
+    "Dispatch final code reviewer subagent (../requesting-code-review/code-reviewer.md)" -> "Run plan-completion protocol (../writing-plans/SKILL.md)";
+    "Run plan-completion protocol (../writing-plans/SKILL.md)" -> "Finish the branch: merge / PR / cleanup";
 }
 ```
 
@@ -215,6 +217,18 @@ final whole-branch review. When you fill a reviewer template:
   subagent with the complete findings list — not one fixer per finding.
   Per-finding fixers each rebuild context and re-run suites; a real
   session's final-review fix wave cost more than all its tasks combined.
+
+## Plan Completion
+
+After the final whole-branch review resolves, run the plan-completion
+protocol from the writing-plans skill (its "Plan Completion Protocol"
+section): resolve-before-defer gate → plan markup → deferred items →
+retire. The gate's batched questions are this skill's one deliberate human
+checkpoint — fold any question sets already pending (plan-mandated
+findings, deferred-Minor confirmations) into the same batch, so your human
+partner gets at most one round-trip. Review findings the final review left
+unfixed feed the gate. This is compatible with Continuous execution: "all
+tasks complete" is a sanctioned stop.
 
 ## File Handoffs
 
