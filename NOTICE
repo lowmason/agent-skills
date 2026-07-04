@@ -60,6 +60,11 @@ Changes from upstream:
   - brainstorming's visual-companion server no longer fetches the upstream
     remote brand image or carries telemetry toggles; the attribution link
     to github.com/obra/superpowers remains.
+  - The planning/execution skills (brainstorming, writing-plans,
+    executing-plans, subagent-driven-development) were extended with a
+    spec-driven lifecycle not present upstream: specs/ and specs/plans/
+    conventions plus a plan-completion protocol (plan markup, a
+    deferred-items log, spec/plan retirement).
 
     brainstorming/
     dispatching-parallel-agents/
