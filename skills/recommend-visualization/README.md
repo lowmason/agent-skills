@@ -35,4 +35,4 @@ for a chart the recommendation (a mark plus encodings keyed to field types) is n
 
 Original work (MIT). It **cites** standard visualization literature (Cleveland & McGill 1984; Tufte
 1983; Munzner 2014; Wilke 2019; Satyanarayan et al. 2017) by author-year — summarized in original
-wording, nothing reproduced. See the repo [`NOTICE`](../NOTICE).
+wording, nothing reproduced. See the repo [`NOTICE`](../../NOTICE).

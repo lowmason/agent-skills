@@ -113,4 +113,4 @@ viridis for sequential.
 
 Original work (MIT). Cites standard visualization literature by author-year only (Cleveland & McGill
 1984; Tufte 1983; Munzner 2014; Wilke 2019; Satyanarayan et al. 2017) — summarized, never reproduced.
-See the repo [`NOTICE`](../NOTICE).
+See the repo [`NOTICE`](../../NOTICE).

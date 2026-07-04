@@ -30,7 +30,7 @@ This skill installs like every skill in this repo — symlink it into your
 personal skills directory:
 
 ```bash
-ln -s ~/Projects/agent-skills/bayesian-workflow ~/.claude/skills/bayesian-workflow
+ln -s ~/Projects/agent-skills/skills/bayesian-workflow ~/.claude/skills/bayesian-workflow
 ```
 
 Provenance: adapted from [Alexandre Andorra](https://alexandorra.github.io/)'s
@@ -86,4 +86,4 @@ bayesian-workflow/
 
 ## License
 
-MIT - see [LICENSE](../LICENSE).
+MIT - see [LICENSE](../../LICENSE).

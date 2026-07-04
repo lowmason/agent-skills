@@ -96,7 +96,7 @@ def check_skill(skill_dir: Path) -> list[str]:
 
 def main() -> int:
     errs: list[str] = []
-    for d in sorted(REPO.iterdir()):
+    for d in sorted((REPO / 'skills').iterdir()):
         if d.is_dir() and (d / 'SKILL.md').exists():
             errs += check_skill(d)
     for e in errs:

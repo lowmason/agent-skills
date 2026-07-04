@@ -1,8 +1,8 @@
 NOTICE
 ======
 
-This repository bundles agent skills from more than one source. Attribution
-and licensing, by skill:
+This repository bundles agent skills from more than one source; skills live
+under skills/, one directory per skill. Attribution and licensing, by skill:
 
 bayesian-workflow/
     Adapted by Lowell Mason from Alexandre Andorra's original PyMC

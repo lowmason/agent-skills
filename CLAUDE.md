@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repo is
 
-A personal collection of [agent skills](https://code.claude.com/docs/en/skills) for Claude Code. Each top-level directory (except `build/`, `specs/`) is **one self-contained skill**: a `SKILL.md` plus optional `references/` (loaded on demand) and `scripts/` (executable helpers). There is no application here to run — the "product" is the skill text and its bundled scripts.
+A personal collection of Claude Code user-level configuration, centered on [agent skills](https://code.claude.com/docs/en/skills). Skills live under `skills/` — each subdirectory is **one self-contained skill**: a `SKILL.md` plus optional `references/` (loaded on demand) and `scripts/` (executable helpers). Sibling top-level dirs hold the other config types: `agents/` (subagent definitions), `commands/` (slash commands), `hooks/` (hook scripts), `rules/` (rule files) — the latter three are scaffolding, currently empty. There is no application here to run — the "product" is the skill text and its bundled scripts.
 
-Skills install into `~/.claude/skills/` (symlink or copy). This repo *is* the user's symlinked skills source, so edits here are live.
+Skills install into `~/.claude/skills/` (symlink or copy). This repo *is* the user's symlinked source: per-skill symlinks in `~/.claude/skills/` point at `skills/<name>` here (and `~/.claude/agents/` links into `agents/`), so edits here are live.
 
 ## Provenance is load-bearing — preserve it
 
@@ -51,10 +51,10 @@ There is no root test runner or repo-wide `pyproject`, and the scientific deps (
 cd build && uv run --python 3.13 --with pytest --with numpy --with polars --with pyyaml python -m pytest -q
 
 # recommend-probabilistic-model signal-extractor tests — 10 tests
-cd recommend-probabilistic-model/scripts && uv run --python 3.13 --with pytest --with numpy --with polars python -m pytest -q
+cd skills/recommend-probabilistic-model/scripts && uv run --python 3.13 --with pytest --with numpy --with polars python -m pytest -q
 
 # recommend-visualization router tests — 29 tests
-cd recommend-visualization/scripts && uv run --python 3.13 --with pytest --with numpy --with polars python -m pytest -q
+cd skills/recommend-visualization/scripts && uv run --python 3.13 --with pytest --with numpy --with polars python -m pytest -q
 
 # Frontmatter + provenance lints (run before committing skill changes)
 uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
@@ -69,7 +69,7 @@ uv run --python 3.13 --with numpy --with polars python build/smoke_test.py
 
 # Verify citations across the whole skill (Gate A; exit 0 = all resolve;
 # chapter-fallback WARNs on stderr are non-fatal — confirm those via Gate B)
-uv run --python 3.13 python build/verify_citations.py recommend-probabilistic-model/
+uv run --python 3.13 python build/verify_citations.py skills/recommend-probabilistic-model/
 
 # Rebuild citation ground truth (needs local PDFs + gh; writes gitignored build/.scratch/)
 uv run --python 3.13 python build/extract_structure.py

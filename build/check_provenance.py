@@ -17,7 +17,7 @@ BINARY_SUFFIXES = ('.pdf', '.epub', '.docx')
 
 def skill_dirs() -> list[str]:
     return sorted(
-        d.name for d in REPO.iterdir()
+        d.name for d in (REPO / 'skills').iterdir()
         if d.is_dir() and (d / 'SKILL.md').exists()
     )
 

@@ -2,7 +2,7 @@
 
 My personal collection of [agent skills](https://code.claude.com/docs/en/skills), primarily for **Claude Code**.
 
-Each skill is a self-contained directory with a `SKILL.md` (plus any `references/` and `scripts/` it needs). Claude Code auto-discovers installed skills and loads one into context when it's relevant to what you're doing — or you can invoke it directly as a slash command.
+Each skill is a self-contained directory under [`skills/`](skills/) with a `SKILL.md` (plus any `references/` and `scripts/` it needs). Claude Code auto-discovers installed skills and loads one into context when it's relevant to what you're doing — or you can invoke it directly as a slash command. Alongside the skills, the repo carries the other Claude Code user-level config types: [`agents/`](agents/) (subagent definitions), plus scaffolding for `commands/`, `hooks/`, and `rules/`.
 
 ## Skills
 
@@ -10,15 +10,15 @@ Each skill is a self-contained directory with a `SKILL.md` (plus any `references
 
 | Skill | Description |
 |-------|-------------|
-| [`bayesian-workflow`](bayesian-workflow/) | Opinionated Bayesian modeling workflow with NumPyro (JAX) and ArviZ. Encodes guardrails most agents skip — prior/posterior predictive checks, LOO-PIT calibration, prior-sensitivity checks, 94% HDI, non-centered parameterizations, reproducible PRNGKey seeds — and walks the full loop from formulating a model to reporting results. *(adapted from Alexandre Andorra's PyMC skill — see Credits)* |
-| [`recommend-probabilistic-model`](recommend-probabilistic-model/) | Given a problem and its data, recommend a probabilistic-ML method grounded in Kevin Murphy's *Probabilistic Machine Learning* books — a thin decision-map router over 8 deep families (regression/GLMs/counts, hierarchical, time-series/state-space, GPs, factor models, classification, mixtures, graphical models) with **verified** §refs + pyprobml notebooks, a family-conditional regularization/selection step, and a structured handoff to `bayesian-workflow`. Recommends and points; it doesn't fit. |
-| [`recommend-visualization`](recommend-visualization/) | Given an `explore-data` profile and an intent (trend, comparison, distribution, correlation, part-to-whole, ranking, geographic, flow), recommend the right chart by conditioning on the data's *signals* — cardinality, row count, skew, panel shape, null rates — then write the code. A pure, unit-tested `(intent × signal) → ranked candidates` router that ships the **encoding map** (field → channel), grounded in perceptual theory, routing Phase-2 code to **Altair** / **matplotlib** / **plotly**. The visualization sibling of `recommend-probabilistic-model`: one recommends a model, this recommends a view — and carries through to code. |
-| [`develop-testing-strategy`](develop-testing-strategy/) | Design a test strategy from *invariants* (not coverage %) for web scrapers, Polars pipelines, and NumPyro/PyMC models — recorded fixtures, schema/null/key assertions, determinism, SBC-lite, golden-master parity. |
-| [`validate-data`](validate-data/) | QA a dataset or analysis before it ships — schema/integrity, reproducibility, benchmark reconciliation, and methodology/bias checks. Polars-first, tuned to BLS data and as-of/vintage correctness. |
-| [`explore-data`](explore-data/) | Profile a new dataset with Polars before analysis — null rates, key uniqueness, distributions, duplicates, quality flags, panel balance. Bundles a reusable `profile.py`. |
-| [`tech-debt`](tech-debt/) | Audit, categorize, and prioritize tech debt in research/data codebases; the DELETE-vs-HARDEN triage. Bundles a `scan.sh` sweep for debt signals. |
-| [`design-architecture`](design-architecture/) | Author or evaluate Architecture Decision Records (ADRs) for data & modeling systems (e.g. NumPyro/JAX vs PyMC, store layout, vintage data model). Bundles an ADR scaffolder. |
-| [`bls-data-context`](bls-data-context/) | Canonical reference for the BLS employment/wage programs (QCEW, CES, SAE, JOLTS, BED, OEWS, ECI, ECEC, CPS) — program selector, cross-cutting concepts (jobs-vs-persons, place-of-work, vintage/benchmark, units), reconciliation rules, and nine full per-program references loaded on demand. |
+| [`bayesian-workflow`](skills/bayesian-workflow/) | Opinionated Bayesian modeling workflow with NumPyro (JAX) and ArviZ. Encodes guardrails most agents skip — prior/posterior predictive checks, LOO-PIT calibration, prior-sensitivity checks, 94% HDI, non-centered parameterizations, reproducible PRNGKey seeds — and walks the full loop from formulating a model to reporting results. *(adapted from Alexandre Andorra's PyMC skill — see Credits)* |
+| [`recommend-probabilistic-model`](skills/recommend-probabilistic-model/) | Given a problem and its data, recommend a probabilistic-ML method grounded in Kevin Murphy's *Probabilistic Machine Learning* books — a thin decision-map router over 8 deep families (regression/GLMs/counts, hierarchical, time-series/state-space, GPs, factor models, classification, mixtures, graphical models) with **verified** §refs + pyprobml notebooks, a family-conditional regularization/selection step, and a structured handoff to `bayesian-workflow`. Recommends and points; it doesn't fit. |
+| [`recommend-visualization`](skills/recommend-visualization/) | Given an `explore-data` profile and an intent (trend, comparison, distribution, correlation, part-to-whole, ranking, geographic, flow), recommend the right chart by conditioning on the data's *signals* — cardinality, row count, skew, panel shape, null rates — then write the code. A pure, unit-tested `(intent × signal) → ranked candidates` router that ships the **encoding map** (field → channel), grounded in perceptual theory, routing Phase-2 code to **Altair** / **matplotlib** / **plotly**. The visualization sibling of `recommend-probabilistic-model`: one recommends a model, this recommends a view — and carries through to code. |
+| [`develop-testing-strategy`](skills/develop-testing-strategy/) | Design a test strategy from *invariants* (not coverage %) for web scrapers, Polars pipelines, and NumPyro/PyMC models — recorded fixtures, schema/null/key assertions, determinism, SBC-lite, golden-master parity. |
+| [`validate-data`](skills/validate-data/) | QA a dataset or analysis before it ships — schema/integrity, reproducibility, benchmark reconciliation, and methodology/bias checks. Polars-first, tuned to BLS data and as-of/vintage correctness. |
+| [`explore-data`](skills/explore-data/) | Profile a new dataset with Polars before analysis — null rates, key uniqueness, distributions, duplicates, quality flags, panel balance. Bundles a reusable `profile.py`. |
+| [`tech-debt`](skills/tech-debt/) | Audit, categorize, and prioritize tech debt in research/data codebases; the DELETE-vs-HARDEN triage. Bundles a `scan.sh` sweep for debt signals. |
+| [`design-architecture`](skills/design-architecture/) | Author or evaluate Architecture Decision Records (ADRs) for data & modeling systems (e.g. NumPyro/JAX vs PyMC, store layout, vintage data model). Bundles an ADR scaffolder. |
+| [`bls-data-context`](skills/bls-data-context/) | Canonical reference for the BLS employment/wage programs (QCEW, CES, SAE, JOLTS, BED, OEWS, ECI, ECEC, CPS) — program selector, cross-cutting concepts (jobs-vs-persons, place-of-work, vintage/benchmark, units), reconciliation rules, and nine full per-program references loaded on demand. |
 
 ### Adapted from [superpowers](https://github.com/obra/superpowers) (Jesse Vincent, MIT)
 
@@ -29,19 +29,19 @@ Adapted from Jesse Vincent's superpowers skills — process disciplines for plan
 
 | Skill | Description |
 |-------|-------------|
-| [`brainstorming`](brainstorming/) | Explore intent, requirements, and design before any creative or build work. |
-| [`writing-plans`](writing-plans/) | Turn a spec into a written implementation plan before touching code. |
-| [`executing-plans`](executing-plans/) | Execute a written plan in a separate session with review checkpoints. |
-| [`subagent-driven-development`](subagent-driven-development/) | Execute plans with independent tasks in the current session. |
-| [`dispatching-parallel-agents`](dispatching-parallel-agents/) | Fan out 2+ independent tasks with no shared state. |
-| [`test-driven-development`](test-driven-development/) | Write tests before implementation for any feature or bugfix. |
-| [`systematic-debugging`](systematic-debugging/) | Diagnose bugs and test failures methodically before proposing fixes. |
-| [`verification-before-completion`](verification-before-completion/) | Run verification and confirm output before claiming work is done. |
-| [`requesting-code-review`](requesting-code-review/) | Get work reviewed when completing features or before merging. |
-| [`receiving-code-review`](receiving-code-review/) | Handle review feedback with rigor instead of blind agreement. |
-| [`finishing-a-development-branch`](finishing-a-development-branch/) | Decide how to integrate completed work (merge, PR, or cleanup). |
-| [`using-git-worktrees`](using-git-worktrees/) | Create an isolated workspace for feature work. |
-| [`writing-skills`](writing-skills/) | Create, edit, and verify agent skills. |
+| [`brainstorming`](skills/brainstorming/) | Explore intent, requirements, and design before any creative or build work. |
+| [`writing-plans`](skills/writing-plans/) | Turn a spec into a written implementation plan before touching code. |
+| [`executing-plans`](skills/executing-plans/) | Execute a written plan in a separate session with review checkpoints. |
+| [`subagent-driven-development`](skills/subagent-driven-development/) | Execute plans with independent tasks in the current session. |
+| [`dispatching-parallel-agents`](skills/dispatching-parallel-agents/) | Fan out 2+ independent tasks with no shared state. |
+| [`test-driven-development`](skills/test-driven-development/) | Write tests before implementation for any feature or bugfix. |
+| [`systematic-debugging`](skills/systematic-debugging/) | Diagnose bugs and test failures methodically before proposing fixes. |
+| [`verification-before-completion`](skills/verification-before-completion/) | Run verification and confirm output before claiming work is done. |
+| [`requesting-code-review`](skills/requesting-code-review/) | Get work reviewed when completing features or before merging. |
+| [`receiving-code-review`](skills/receiving-code-review/) | Handle review feedback with rigor instead of blind agreement. |
+| [`finishing-a-development-branch`](skills/finishing-a-development-branch/) | Decide how to integrate completed work (merge, PR, or cleanup). |
+| [`using-git-worktrees`](skills/using-git-worktrees/) | Create an isolated workspace for feature work. |
+| [`writing-skills`](skills/writing-skills/) | Create, edit, and verify agent skills. |
 
 ## Installation
 
@@ -61,7 +61,7 @@ Then install whichever skills you want, with **either** of these approaches.
 A symlink means edits in the repo are picked up live, without restarting Claude Code — ideal if you're tracking updates or hacking on the skill yourself:
 
 ```bash
-ln -s ~/agent-skills/bayesian-workflow ~/.claude/skills/bayesian-workflow
+ln -s ~/agent-skills/skills/bayesian-workflow ~/.claude/skills/bayesian-workflow
 ```
 
 ### Copy
@@ -69,7 +69,7 @@ ln -s ~/agent-skills/bayesian-workflow ~/.claude/skills/bayesian-workflow
 A copy gives you a frozen, self-contained install that won't change when the repo does:
 
 ```bash
-cp -r ~/agent-skills/bayesian-workflow ~/.claude/skills/bayesian-workflow
+cp -r ~/agent-skills/skills/bayesian-workflow ~/.claude/skills/bayesian-workflow
 ```
 
 ### Project-level install (optional)
@@ -78,7 +78,7 @@ To make a skill available only inside one project (and shareable with collaborat
 
 ```bash
 mkdir -p .claude/skills
-ln -s ~/agent-skills/bayesian-workflow .claude/skills/bayesian-workflow
+ln -s ~/agent-skills/skills/bayesian-workflow .claude/skills/bayesian-workflow
 ```
 
 ### Verify

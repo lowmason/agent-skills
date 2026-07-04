@@ -93,4 +93,4 @@ goes to `bayesian-workflow` (NumPyro/BlackJAX).
 
 Murphy's books are cited under **CC-BY-NC-ND** (summarized in original wording, never reproduced; PDFs
 not bundled). `pyprobml`, `dynamax`, and `pml-book` materials are **MIT** (linked). See the repo
-[`NOTICE`](../NOTICE).
+[`NOTICE`](../../NOTICE).

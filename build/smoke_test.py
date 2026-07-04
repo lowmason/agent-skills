@@ -13,7 +13,7 @@ import numpy as np
 import polars as pl
 
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT / "recommend-probabilistic-model" / "scripts"))
+sys.path.insert(0, str(ROOT / "skills" / "recommend-probabilistic-model" / "scripts"))
 from characterize import overdispersion, zero_fraction  # noqa: E402
 
 
@@ -27,7 +27,7 @@ def main() -> int:
     assert od is not None and od > 1.5, f"expected overdispersion>1.5, got {od}"
     assert zero_fraction(df["y"]) >= 0.0
 
-    dm = (ROOT / "recommend-probabilistic-model/references/decision-map.md").read_text()
+    dm = (ROOT / "skills/recommend-probabilistic-model/references/decision-map.md").read_text()
     assert "NegativeBinomial" in dm, "decision-map missing the overdispersion→NB route"
     assert "Partial pooling" in dm and "hierarchical" in dm, "decision-map missing the group→hierarchical route"
 

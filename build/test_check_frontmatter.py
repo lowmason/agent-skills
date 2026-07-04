@@ -79,7 +79,7 @@ def test_nested_fences_still_report_real_missing_refs(tmp_path):
 
 def test_real_repo_is_clean():
     repo = Path(__file__).resolve().parent.parent
-    dirty = [e for d in sorted(repo.iterdir())
+    dirty = [e for d in sorted((repo / 'skills').iterdir())
              if d.is_dir() and (d / 'SKILL.md').exists()
              for e in check_skill(d)]
     assert dirty == [], dirty

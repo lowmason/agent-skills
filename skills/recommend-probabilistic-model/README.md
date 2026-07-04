@@ -32,4 +32,4 @@ supports the claim). No citation was written from memory.
 The skill is an original work (MIT). It **cites and summarizes** Murphy's books (Book 1 © 2022 MIT;
 Book 2 © 2023 K. P. Murphy), which are **CC-BY-NC-ND** — summaries are in original wording, no book
 prose is reproduced, and no PDFs are bundled. `pyprobml` and [`dynamax`](https://github.com/probml/dynamax)
-are **MIT** and are linked. See the repo [`NOTICE`](../NOTICE).
+are **MIT** and are linked. See the repo [`NOTICE`](../../NOTICE).
