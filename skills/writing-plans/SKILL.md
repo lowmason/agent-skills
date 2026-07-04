@@ -19,7 +19,7 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 
 **Context:** If working in an isolated worktree, it should have been created via the `using-git-worktrees` skill at execution time.
 
-**Save plans to:** `specs/plans/<id>-<spec-name>.md` — `<id>` is the next integer (check `specs/plans/` and `specs/plans/completed/`, take the highest existing `<id>` + 1); `<spec-name>` matches the spec the plan implements. When the plan is fully executed, mark it complete at the top and retire it to `specs/plans/completed/`.
+**Save plans to:** `specs/plans/<id>-<spec-name>.md` — `<id>` is the next integer (check `specs/plans/` and `specs/plans/completed/`, take the highest existing `<id>` + 1); `<spec-name>` matches the spec the plan implements. When the plan is fully executed, run the Plan Completion Protocol (below).
 - (User preferences for plan location override this default)
 
 ## Scope Check
@@ -176,3 +176,58 @@ After saving the plan, offer execution choice:
 **If Inline Execution chosen:**
 - Execute the tasks in order, pausing at each milestone for review (per your CLAUDE.md engineering-discipline rules)
 - Batch execution with checkpoints for review
+
+## Plan Completion Protocol
+
+Run this after every task is done and the final review is resolved — before
+finishing-a-development-branch. The gate comes first; markup is written only
+once the completed/deferred partition is final.
+
+**1. Resolve-before-defer gate.** Collect the leftovers: plan steps skipped
+or descoped during execution, plus review findings that were not fixed.
+Partition:
+- Stalled because it needed your human partner's input → ask now, as one
+  batched set of questions.
+- Unblocked by an answer → implement it now (the protocol restarts after
+  that work lands).
+- Everything else → defer.
+
+**2. Markup the plan file.** Tick every completed step (`- [x]`). Under any
+step that deviated from the plan, add a one-line `> Deviation: …` note.
+Annotate skipped steps with `> Skipped: <why> → deferred`. Add a status
+header at the top of the plan:
+`**Status: COMPLETE (YYYY-MM-DD)** — executed via <skill>; deferred items in specs/deferred_items.md`
+— or, when the gate deferred nothing:
+`**Status: COMPLETE (YYYY-MM-DD)** — executed via <skill>; nothing deferred`
+Markup happens once, after the gate resolves — per-task progress tracking
+stays in your todo list or ledger.
+
+**3. Append deferred items** to `specs/deferred_items.md`, one section per
+plan, newest last. Create the file on first use with a single
+`# Deferred items` title line, no other preamble. Skip this step entirely
+when nothing was deferred — never append an empty section. Each item is
+self-contained: file paths, why it was deferred, what it would take to do.
+
+```markdown
+## 7-rate-limiter — 2026-07-04
+- [ ] Redis-backed counter store (plan Task 4, skipped): needs prod Redis
+      DSN decision. See specs/plans/completed/7-rate-limiter.md; touches
+      src/limiter/store.py.
+- [ ] Review Minor: retry jitter is fixed-seed in tests only (reviewer
+      report, triaged defer).
+```
+
+When a later plan implements an item, tick its box with a pointer
+(`- [x] … → done in plan 12`). Never delete items — the file doubles as a
+history of consciously-deferred work.
+
+**4. Retire.** `git mv` the plan to `specs/plans/completed/`, in one
+`chore(specs): retire plan <id>` commit. Retire the spec to
+`specs/completed/` (marked complete at top) in the same commit **only if**
+the spec file exists and no other live plan in `specs/plans/` implements it
+(match by the `<spec-name>` suffix in plan filenames). Spec-less plans and
+shared specs leave the spec untouched.
+
+These commits land on the current branch as its final commits — a merge or
+PR carries them atomically; a discarded branch takes its completion markup
+with it.
