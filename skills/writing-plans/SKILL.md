@@ -192,6 +192,11 @@ Partition:
   that work lands).
 - Everything else → defer.
 
+Unanswered gate questions block the rest of the protocol: get the answers
+before marking up, appending, or retiring — in a one-shot run, end your
+turn with the batched questions and resume when your human partner
+answers. The partition is final only once every ask is resolved.
+
 **2. Markup the plan file.** Tick every completed step (`- [x]`). Under any
 step that deviated from the plan, add a one-line `> Deviation: …` note.
 Annotate skipped steps with `> Skipped: <why> → deferred`. Add a status
