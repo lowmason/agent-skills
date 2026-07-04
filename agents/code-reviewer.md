@@ -1,6 +1,6 @@
 ---
 name: code-reviewer
-description: Read-only code reviewer for diff-based reviews against a plan, spec, or requirements. Use for per-task and final whole-branch reviews dispatched by the requesting-code-review and subagent-driven-development skills.
+description: Use for reviews dispatched by the requesting-code-review skill and for subagent-driven-development's final whole-branch review; per-task reviews go to the task-reviewer agent. Read-only code reviewer for diff-based reviews against a plan, spec, or requirements.
 tools: Read, Grep, Glob, Bash
 ---
 

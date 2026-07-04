@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repo is
 
-A personal collection of Claude Code user-level configuration, centered on [agent skills](https://code.claude.com/docs/en/skills). Skills live under `skills/` — each subdirectory is **one self-contained skill**: a `SKILL.md` plus optional `references/` (loaded on demand) and `scripts/` (executable helpers). Sibling top-level dirs hold the other config types: `agents/` (subagent definitions), `commands/` (slash commands), `hooks/` (hook scripts), `rules/` (rule files) — the latter three are scaffolding, currently empty. There is no application here to run — the "product" is the skill text and its bundled scripts.
+A personal collection of Claude Code user-level configuration, centered on [agent skills](https://code.claude.com/docs/en/skills). Skills live under `skills/` — each subdirectory is **one self-contained skill**: a `SKILL.md` plus optional `references/` (loaded on demand) and `scripts/` (executable helpers). Sibling top-level dirs hold the other config types: `agents/` (subagent definitions), `commands/` (slash commands — `/deferred`), `hooks/` (hook scripts), `rules/` (rule files) — the latter two are scaffolding, currently empty. There is no application here to run — the "product" is the skill text and its bundled scripts.
 
 Skills install into `~/.claude/skills/` (symlink or copy). This repo *is* the user's symlinked source: per-skill symlinks in `~/.claude/skills/` point at `skills/<name>` here (and `~/.claude/agents/` links into `agents/`), so edits here are live.
 

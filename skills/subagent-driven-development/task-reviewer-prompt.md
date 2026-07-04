@@ -7,8 +7,44 @@ code quality.
 **Purpose:** Verify one task's implementation matches its requirements (nothing
 more, nothing less) and is well-built (clean, tested, maintainable)
 
+**Routing:** dispatch to the `task-reviewer` agent if it is defined (use the
+Short Form — the agent's definition carries the review contract); otherwise
+dispatch to `general-purpose` (use the Full Form, which carries the contract
+inline). The Placeholders section at the bottom applies to both forms.
+
+## Short Form (task-reviewer agent installed)
+
 ```
-Subagent (code-reviewer if defined, else general-purpose):
+Subagent (task-reviewer):
+  description: "Review Task N (spec + quality)"
+  model: [MODEL — REQUIRED: choose per SKILL.md Model Selection; an omitted
+         model silently inherits the session's most expensive one]
+  prompt: |
+    Review one task's implementation. Your agent definition carries the
+    review contract; this dispatch carries the task.
+
+    ## What Was Requested
+
+    Read the task brief: [BRIEF_FILE]
+
+    Global constraints from the spec/design that bind this task:
+    [GLOBAL_CONSTRAINTS]
+
+    ## What the Implementer Claims They Built
+
+    Read the implementer's report: [REPORT_FILE]
+
+    ## Diff Under Review
+
+    **Base:** [BASE_SHA]
+    **Head:** [HEAD_SHA]
+    **Diff file:** [DIFF_FILE]
+```
+
+## Full Form (no task-reviewer agent)
+
+```
+Subagent (general-purpose):
   description: "Review Task N (spec + quality)"
   model: [MODEL — REQUIRED: choose per SKILL.md Model Selection; an omitted
          model silently inherits the session's most expensive one]

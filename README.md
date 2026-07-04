@@ -11,8 +11,8 @@ Skills are the center of the repo, but it also carries the other Claude Code use
 ```
 agent-skills/
 ├── skills/      # agent skills, one directory per skill (the tables below)
-├── agents/      # subagent definitions (code-reviewer — see Agents below)
-├── commands/    # slash commands (scaffolding, empty for now)
+├── agents/      # subagent definitions (code-reviewer, task-reviewer — see Agents below)
+├── commands/    # slash commands (/deferred — see Commands below)
 ├── hooks/       # hook scripts (scaffolding, empty for now)
 ├── rules/       # rule files (scaffolding, empty for now)
 ├── build/       # citation-verification tooling for recommend-probabilistic-model
@@ -64,7 +64,16 @@ Subagent definitions live in [`agents/`](agents/) and install into `~/.claude/ag
 
 | Agent | Description |
 |-------|-------------|
-| [`code-reviewer`](agents/code-reviewer.md) | Read-only reviewer for diff-based reviews against a plan, spec, or requirements — dispatched by `requesting-code-review` and `subagent-driven-development` for per-task and whole-branch reviews. No edit tools; inspects history via `git show`/`git diff` and reports Critical/Important/Minor findings with a merge verdict. |
+| [`code-reviewer`](agents/code-reviewer.md) | Read-only reviewer for diff-based reviews against a plan, spec, or requirements — dispatched by `requesting-code-review`, and by `subagent-driven-development` for its final whole-branch review (per-task reviews go to `task-reviewer`). No edit tools; inspects history via `git show`/`git diff` and reports Critical/Important/Minor findings with a merge verdict. |
+| [`task-reviewer`](agents/task-reviewer.md) | Read-only task-scoped reviewer for `subagent-driven-development`'s per-task gate — checks one task's diff against its brief for spec compliance and code quality, returning both verdicts. Carries the full review contract so dispatches only need the task's brief, report, and diff paths. |
+
+## Commands
+
+Slash commands live in [`commands/`](commands/) and install into `~/.claude/commands/` (symlink or copy, one file per command):
+
+| Command | Description |
+|---------|-------------|
+| [`/deferred`](commands/deferred.md) | Triage `specs/deferred_items.md` in the current project: group unticked items by theme, classify actionable-now vs still-blocked, and propose which deserve promotion to a new spec. Read-only — ticking stays with the plan-completion protocol. |
 
 ## Installation
 
@@ -117,12 +126,21 @@ mkdir -p ~/.claude/agents
 ln -s ~/agent-skills/agents/code-reviewer.md ~/.claude/agents/code-reviewer.md
 ```
 
+### Commands
+
+Slash commands install the same way, into `~/.claude/commands/` (one symlink per file):
+
+```bash
+mkdir -p ~/.claude/commands
+ln -s ~/agent-skills/commands/deferred.md ~/.claude/commands/deferred.md
+```
+
 ## Credits
 
 - **My original skills** — `develop-testing-strategy`, `validate-data`, `explore-data`, `tech-debt`, `design-architecture`, `bls-data-context`, `recommend-probabilistic-model`, and `recommend-visualization` are my own work, MIT licensed (see [`LICENSE`](LICENSE)).
 - **Cited-only sources** — `recommend-probabilistic-model` cites Kevin Murphy's *Probabilistic Machine Learning* books (CC-BY-NC-ND) by section number only, and `bayesian-workflow` cites the Gelman/Betancourt/Gabry workflow papers (Betancourt's under CC BY-NC 4.0) by author-year — no text is reproduced and no copies are bundled (see [`NOTICE`](NOTICE)).
 - **bayesian-workflow** — adapted from [Alexandre Andorra](https://alexandorra.github.io/)'s original **PyMC** Bayesian-workflow skill (MIT licensed). I ported it to **NumPyro + JAX** and expanded the visualization guidance.
-- **superpowers skills** — the 13 process skills are adapted from the [superpowers](https://github.com/obra/superpowers) project by [Jesse Vincent](https://github.com/obra), MIT licensed, © 2025; my modifications under the same MIT terms. The [`code-reviewer`](agents/code-reviewer.md) agent is distilled from the adapted `requesting-code-review` reviewer template, same terms. See [`LICENSE-superpowers`](LICENSE-superpowers) and [`NOTICE`](NOTICE).
+- **superpowers skills** — the 13 process skills are adapted from the [superpowers](https://github.com/obra/superpowers) project by [Jesse Vincent](https://github.com/obra), MIT licensed, © 2025; my modifications under the same MIT terms. The [`code-reviewer`](agents/code-reviewer.md) and [`task-reviewer`](agents/task-reviewer.md) agents are distilled from the adapted `requesting-code-review` and `subagent-driven-development` reviewer templates, same terms. See [`LICENSE-superpowers`](LICENSE-superpowers) and [`NOTICE`](NOTICE).
 
 ## License
 
