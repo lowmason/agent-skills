@@ -1,6 +1,6 @@
 # Plan-completion protocol: markup, resolve-before-defer, retire
 
-**Status:** Active (approved 2026-07-04)
+**Status:** Complete (2026-07-04) — implemented by `specs/plans/completed/5-plan-completion-protocol.md`; nothing deferred
 
 ## Context
 
