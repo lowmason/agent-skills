@@ -207,11 +207,15 @@ header at the top of the plan:
 Markup happens once, after the gate resolves — per-task progress tracking
 stays in your todo list or ledger.
 
-**3. Append deferred items** to `specs/deferred_items.md`, one section per
-plan, newest last. Create the file on first use with a single
-`# Deferred items` title line, no other preamble. Skip this step entirely
-when nothing was deferred — never append an empty section. Each item is
-self-contained: file paths, why it was deferred, what it would take to do.
+**3. Update deferred items** in `specs/deferred_items.md`. First, if the
+file exists, tick any earlier items this plan implemented
+(`- [x] … → done in plan <id>`) — run this ticking pass even when the
+current plan deferred nothing. Then append this plan's deferred items, one
+section per plan, newest last. Create the file on first use with a single
+`# Deferred items` title line, no other preamble. Skip the append entirely
+when nothing was deferred — never append an empty section; the ticking
+pass above still runs. Each item is self-contained: file paths, why it was
+deferred, what it would take to do.
 
 ```markdown
 ## 7-rate-limiter — 2026-07-04
@@ -231,7 +235,10 @@ history of consciously-deferred work.
 `specs/completed/` (marked complete at top) in the same commit **only if**
 the spec file exists and no other live plan in `specs/plans/` implements it
 (match by the `<spec-name>` suffix in plan filenames). Spec-less plans and
-shared specs leave the spec untouched.
+shared specs leave the spec untouched. Moving a file one directory deeper
+breaks its relative links: as part of retirement, re-point the retiring
+plan's and spec's relative links for their new depth (e.g. `../skills/…`
+becomes `../../skills/…`).
 
 These commits land on the current branch as its final commits — a merge or
 PR carries them atomically; a discarded branch takes its completion markup
