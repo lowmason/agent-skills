@@ -110,7 +110,7 @@ digraph brainstorming {
 
 - Write the validated design (spec) to `specs/<descriptive-name>.md` (a descriptive name, no date prefix)
   - (User preferences for spec location override this default)
-  - When the spec's work is complete, mark it complete at the top and retire it to `specs/completed/`
+  - When the spec's work is complete it is retired to `specs/completed/` by the plan-completion protocol (writing-plans § Plan Completion Protocol), which guards against retiring specs other live plans still implement
 - Write the spec clearly and concisely; cut filler
 - Commit the design document to git
 

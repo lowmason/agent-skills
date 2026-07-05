@@ -52,7 +52,7 @@ Adapted from Jesse Vincent's superpowers skills — process disciplines for plan
 |-------|-------------|
 | [`brainstorming`](skills/brainstorming/) | Explore intent, requirements, and design before any creative or build work. |
 | [`writing-plans`](skills/writing-plans/) | Turn a spec into a written implementation plan before touching code. |
-| [`executing-plans`](skills/executing-plans/) | Execute a written plan in a separate session with review checkpoints. |
+| [`executing-plans`](skills/executing-plans/) | Execute a written plan directly in the current session — for tightly coupled plans or partner-requested direct execution. |
 | [`subagent-driven-development`](skills/subagent-driven-development/) | Execute plans with independent tasks in the current session. |
 | [`dispatching-parallel-agents`](skills/dispatching-parallel-agents/) | Fan out 2+ independent tasks with no shared state. |
 | [`test-driven-development`](skills/test-driven-development/) | Write tests before implementation for any feature or bugfix. |

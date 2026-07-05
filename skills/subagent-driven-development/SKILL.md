@@ -1,15 +1,11 @@
 ---
 name: subagent-driven-development
 description: >
-  Use when executing an implementation plan task-by-task in the current session by dispatching
-  subagents — a fresh implementer per task, a task-scoped spec+quality review after each, and a
-  final whole-branch review. Trigger on: "execute this plan", "implement the plan", a plan header
-  naming subagent-driven-development as the required sub-skill, a specs/plans/*.md handoff from
-  writing-plans, or resuming a partially executed plan (check the progress ledger before
-  re-dispatching anything). Covers model-tier selection per dispatch, file handoffs (task briefs,
-  report files, review packages), fix-subagent loops, and compaction-safe progress tracking. Not
-  for tightly coupled tasks needing one continuous context, or for execution in a separate
-  session (use executing-plans).
+  Use when executing an implementation plan task-by-task in the current session. Trigger on:
+  "execute this plan", "implement the plan", a plan header naming subagent-driven-development
+  as the required sub-skill, a specs/plans/*.md handoff from writing-plans, or resuming a
+  partially executed plan. Not for tightly coupled tasks needing one continuous context, or
+  partner-requested direct execution (use executing-plans).
 ---
 
 # Subagent-Driven Development
@@ -73,7 +69,7 @@ digraph process {
     "More tasks remain?" [shape=diamond];
     "Dispatch final code reviewer subagent (../requesting-code-review/code-reviewer.md)" [shape=box];
     "Run plan-completion protocol (../writing-plans/SKILL.md)" [shape=box];
-    "Finish the branch: merge / PR / cleanup" [shape=box style=filled fillcolor=lightgreen];
+    "Finish the branch (finishing-a-development-branch)" [shape=box style=filled fillcolor=lightgreen];
 
     "Read plan, note context and global constraints, create todos" -> "Dispatch implementer subagent (./implementer-prompt.md)";
     "Dispatch implementer subagent (./implementer-prompt.md)" -> "Implementer subagent asks questions?";
@@ -89,7 +85,7 @@ digraph process {
     "More tasks remain?" -> "Dispatch implementer subagent (./implementer-prompt.md)" [label="yes"];
     "More tasks remain?" -> "Dispatch final code reviewer subagent (../requesting-code-review/code-reviewer.md)" [label="no"];
     "Dispatch final code reviewer subagent (../requesting-code-review/code-reviewer.md)" -> "Run plan-completion protocol (../writing-plans/SKILL.md)";
-    "Run plan-completion protocol (../writing-plans/SKILL.md)" -> "Finish the branch: merge / PR / cleanup";
+    "Run plan-completion protocol (../writing-plans/SKILL.md)" -> "Finish the branch (finishing-a-development-branch)";
 }
 ```
 
@@ -431,8 +427,9 @@ Done!
 - **using-git-worktrees** - Ensures isolated workspace (creates one or verifies existing)
 - **writing-plans** - Creates the plan this skill executes
 - **requesting-code-review** - Code review template for the final whole-branch review
+- **finishing-a-development-branch** - Integrates the branch after the plan-completion protocol
 
-**After all tasks:** finish the branch deliberately — merge, open a PR, or keep it as-is — and clean up the worktree (your CLAUDE.md engineering-discipline rules cover this).
+**After all tasks:** run the plan-completion protocol, then use finishing-a-development-branch to integrate the branch (merge / PR / cleanup) and remove any worktree.
 
 **Subagents follow TDD** (red → green → refactor) for each task.
 

@@ -14,7 +14,7 @@ Load plan, review critically, execute all tasks, report when complete.
 
 **Announce at start:** "I'm using the executing-plans skill to implement this plan."
 
-**Note:** These skills work much better with access to subagents — quality is significantly higher on a platform with subagent support (Claude Code, Codex CLI, Codex App, Copilot CLI, and Gemini CLI all qualify). If subagents are available, use the subagent-driven-development skill instead of this one.
+**Note:** If subagents are available AND the tasks are mostly independent AND your human partner didn't ask for direct execution, use the subagent-driven-development skill instead — fresh per-task subagents with review gates produce significantly higher quality. This skill is the right choice for tightly coupled plans, partner-requested direct execution, or platforms without subagent support.
 
 ## The Process
 

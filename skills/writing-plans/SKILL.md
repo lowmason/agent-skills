@@ -62,7 +62,7 @@ independently testable deliverable.
 ```markdown
 # [Feature Name] Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use subagent-driven-development to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** [One sentence describing what this builds]
 
@@ -165,7 +165,7 @@ After saving the plan, offer execution choice:
 
 **1. Subagent-Driven (recommended)** - I dispatch a fresh subagent per task, review between tasks, fast iteration
 
-**2. Inline Execution** - Execute tasks in this session, in plan order, with a checkpoint at each milestone
+**2. Inline Execution** - I execute the tasks myself in this session, in plan order (executing-plans)
 
 **Which approach?"**
 
@@ -174,8 +174,8 @@ After saving the plan, offer execution choice:
 - Fresh subagent per task + two-stage review
 
 **If Inline Execution chosen:**
-- Execute the tasks in order, pausing at each milestone for review (per your CLAUDE.md engineering-discipline rules)
-- Batch execution with checkpoints for review
+- **REQUIRED SUB-SKILL:** Use executing-plans
+- Direct execution in this session, in plan order — its stop-and-ask rules and completion chain apply
 
 ## Plan Completion Protocol
 
