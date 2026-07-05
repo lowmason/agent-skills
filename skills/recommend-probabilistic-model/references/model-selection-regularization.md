@@ -6,7 +6,9 @@ family's knobs (each `families/<x>.md` has a "Selection & regularization" subsec
 
 Boundary: this skill does the **pre-fit specification** — name the complexity knob and the selection
 criterion. The **post-fit** comparison of fitted models (LOO/ELPD, stacking weights) is
-`bayesian-workflow`'s job. Don't duplicate it here.
+`bayesian-workflow`'s job. Don't duplicate it here. The **operational** tuning loop — running the
+leakage-safe CV search that actually *sets* the knob (embargo/purge splits, Optuna) — is the
+`tune-hyperparameters` skill; this file stays the *what & why*.
 
 ## The one idea
 

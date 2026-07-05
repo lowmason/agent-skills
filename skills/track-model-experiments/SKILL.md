@@ -40,6 +40,9 @@ and stamps the result back into the ledger).
   forking, not after.
 - Deciding which variant to ship and want the decision recorded, not just
   remembered.
+- A hyperparameter search in `tune-hyperparameters` produced a winner worth
+  comparing against structurally different models — graduate it to a variant
+  row here (`what changed` = "tuned `<class>` via Optuna").
 
 Not for:
 - **A single model, no iteration** — follow `bayesian-workflow` alone;
