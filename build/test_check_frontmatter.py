@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from check_frontmatter import check_skill
+from check_frontmatter import check_skill, check_agent_file, check_command_file, REPO
 
 
 def make_skill(tmp_path: Path, name: str, frontmatter: str) -> Path:
@@ -83,3 +83,33 @@ def test_real_repo_is_clean():
              if d.is_dir() and (d / 'SKILL.md').exists()
              for e in check_skill(d)]
     assert dirty == [], dirty
+
+
+def test_agent_file_checked(tmp_path):
+    bad = tmp_path / 'my-agent.md'
+    bad.write_text('---\nname: other-name\ndescription: x\ntools: Read, Bogus\n---\nbody\n')
+    errs = check_agent_file(bad)
+    assert any('does not match filename' in e for e in errs)
+    assert any('unknown tools' in e for e in errs)
+
+
+def test_agent_file_clean(tmp_path):
+    good = tmp_path / 'my-agent.md'
+    good.write_text('---\nname: my-agent\ndescription: Reviews things.\ntools: Read, Grep, Glob, Bash\n---\nbody\n')
+    assert check_agent_file(good) == []
+
+
+def test_command_file_requires_description(tmp_path):
+    bad = tmp_path / 'do-thing.md'
+    bad.write_text('---\nother: x\n---\nbody\n')
+    errs = check_command_file(bad)
+    assert any('missing description' in e for e in errs)
+
+
+def test_real_agents_and_commands_are_clean():
+    errs = []
+    for md in sorted((REPO / 'agents').glob('*.md')):
+        errs += check_agent_file(md)
+    for md in sorted((REPO / 'commands').glob('*.md')):
+        errs += check_command_file(md)
+    assert errs == []

@@ -21,6 +21,9 @@ import yaml
 REPO = Path(__file__).resolve().parent.parent
 ALLOWED_KEYS = {'name', 'description', 'license', 'allowed-tools', 'metadata', 'when_to_use'}
 NAME_RE = re.compile(r'^[a-z0-9]+(-[a-z0-9]+)*$')
+KNOWN_AGENT_TOOLS = {
+    'Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit', 'WebFetch', 'WebSearch',
+}
 # Anchored links (`](path.md#frag)`) are intentionally skipped, not validated —
 # the fragment part isn't checked, only the path before it (see LINK_RE below,
 # which already excludes '#' from the captured group).
@@ -94,11 +97,54 @@ def check_skill(skill_dir: Path) -> list[str]:
     return errs
 
 
+def _parse_frontmatter(md: Path) -> tuple[dict | None, list[str]]:
+    text = md.read_text()
+    m = re.match(r'^---\n(.*?)\n---\n', text, re.S)
+    if not m:
+        return None, [f'{md}: no frontmatter block']
+    try:
+        fm = yaml.safe_load(m.group(1))
+    except yaml.YAMLError as exc:
+        return None, [f'{md}: frontmatter is not valid YAML ({type(exc).__name__})']
+    if not isinstance(fm, dict):
+        return None, [f'{md}: frontmatter is not a mapping']
+    return fm, []
+
+
+def check_agent_file(md: Path) -> list[str]:
+    fm, errs = _parse_frontmatter(md)
+    if fm is None:
+        return errs
+    if fm.get('name') != md.stem:
+        errs.append(f'{md}: name {fm.get("name")!r} does not match filename {md.stem!r}')
+    if not (fm.get('description') or '').strip():
+        errs.append(f'{md}: missing description')
+    tools = fm.get('tools')
+    if tools is not None:
+        unknown = [t.strip() for t in str(tools).split(',') if t.strip() not in KNOWN_AGENT_TOOLS]
+        if unknown:
+            errs.append(f'{md}: unknown tools {unknown}')
+    return errs
+
+
+def check_command_file(md: Path) -> list[str]:
+    fm, errs = _parse_frontmatter(md)
+    if fm is None:
+        return errs
+    if not (fm.get('description') or '').strip():
+        errs.append(f'{md}: missing description')
+    return errs
+
+
 def main() -> int:
     errs: list[str] = []
     for d in sorted((REPO / 'skills').iterdir()):
         if d.is_dir() and (d / 'SKILL.md').exists():
             errs += check_skill(d)
+    for md in sorted((REPO / 'agents').glob('*.md')):
+        errs += check_agent_file(md)
+    for md in sorted((REPO / 'commands').glob('*.md')):
+        errs += check_command_file(md)
     for e in errs:
         print(e)
     return 1 if errs else 0

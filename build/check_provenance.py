@@ -7,6 +7,7 @@ Exit 0 if clean; exit 1 with one line per violation.
 '''
 from __future__ import annotations
 
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -26,12 +27,18 @@ def find_binary_assets(tracked: list[str]) -> list[str]:
     return [f for f in tracked if f.lower().endswith(BINARY_SUFFIXES)]
 
 
+def missing_attributions(names: list[str], notice: str) -> list[str]:
+    return [
+        name for name in names
+        if not re.search(rf'^\s*{re.escape(name)}/(\s|$)', notice, re.M)
+    ]
+
+
 def main() -> int:
     errs: list[str] = []
     notice = (REPO / 'NOTICE').read_text()
-    for name in skill_dirs():
-        if f'{name}/' not in notice:
-            errs.append(f'NOTICE: missing attribution entry for skill {name}/')
+    for name in missing_attributions(skill_dirs(), notice):
+        errs.append(f'NOTICE: missing attribution entry for skill {name}/')
     tracked = subprocess.run(
         ['git', 'ls-files'], cwd=REPO, capture_output=True, text=True, check=True,
     ).stdout.splitlines()
