@@ -6,6 +6,7 @@ for usage.
 '''
 import argparse
 import json
+import math
 import re
 import sys
 from pathlib import Path
@@ -63,18 +64,26 @@ def run_comparison(models: dict):
     return comparison
 
 
+def _diag_str(value) -> str:
+    # ArviZ 1.x diag columns are '' when clean; guard against a NaN float
+    # (str(np.nan) == 'nan' is truthy and would read as a spurious warning).
+    if isinstance(value, float) and math.isnan(value):
+        return ''
+    return str(value)
+
+
 def _has_warning(row) -> bool:
     # Classic ArviZ (<=0.23) exposes a boolean 'warning' column directly.
     # ArviZ 1.x replaced it with two string diagnostic columns ('diag_diff',
     # 'diag_elpd') that are empty strings when there is no issue.
     # Note: this 'warning' is deliberately broader than classic Pareto-k —
     # it also fires on ArviZ 1.2.0's 'diag_diff' (similar predictions / N<100),
-    # not just 'diag_elpd' (the true Pareto-k analog).
+    # not just 'diag_elpd' (the true Pareto-k analog). comparison.json surfaces
+    # the two raw diag strings separately (see build_ranking) for transparency.
     if 'warning' in row.index:
         return bool(row['warning'])
-    diag_diff = row.get('diag_diff', '') or ''
-    diag_elpd = row.get('diag_elpd', '') or ''
-    return bool(str(diag_diff).strip()) or bool(str(diag_elpd).strip())
+    return (bool(_diag_str(row.get('diag_diff', '')).strip())
+            or bool(_diag_str(row.get('diag_elpd', '')).strip()))
 
 
 def build_ranking(comparison) -> list[dict]:
@@ -88,6 +97,8 @@ def build_ranking(comparison) -> list[dict]:
             'dse': float(row.get('dse', 0.0)),
             'weight': float(row.get('weight', float('nan'))),
             'warning': _has_warning(row),
+            'diag_diff': _diag_str(row.get('diag_diff', '')).strip(),
+            'diag_elpd': _diag_str(row.get('diag_elpd', '')).strip(),
         })
     return ranking
 
@@ -170,6 +181,13 @@ _BLOCK_RE = re.compile(r'<!-- COMPARISON:BEGIN -->.*?<!-- COMPARISON:END -->', r
 
 
 def update_ledger(ledger_path: Path, block: str, best_id: str) -> None:
+    '''Rewrite the COMPARISON block in place and toggle the **best** marker.
+
+    Only the region between the COMPARISON markers is replaced (or appended if
+    absent); human prose outside it is preserved. Any Variants-table row this
+    touches to move the **best** marker is re-joined with '| '/' |' spacing, so
+    pre-existing cell padding in those rows is normalized — this is intentional.
+    '''
     text = ledger_path.read_text()
     if _BLOCK_RE.search(text):
         text = _BLOCK_RE.sub(lambda _: block, text)
@@ -198,7 +216,7 @@ def update_ledger(ledger_path: Path, block: str, best_id: str) -> None:
 def compare(analysis_dir: Path, folders: list[Path] | None):
     variants = folders or discover_variants(analysis_dir)
     if len(variants) < 2:
-        raise SystemExit('need at least two variants to compare '
+        raise ValueError('need at least two variants to compare '
                          f'(found {len(variants)} in {analysis_dir}).')
     models, counts = {}, {}
     for folder in variants:
@@ -209,7 +227,7 @@ def compare(analysis_dir: Path, folders: list[Path] | None):
         counts[name] = observation_count(idata)
     distinct = set(counts.values())
     if len(distinct) > 1:
-        raise SystemExit(
+        raise ValueError(
             'variants were fit to different numbers of observations '
             f'{counts}; LOO compares predictions of the SAME observations, '
             'so this comparison is invalid.')

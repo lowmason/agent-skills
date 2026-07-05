@@ -11,6 +11,8 @@ import numpyro.distributions as dist
 import pytest
 from numpyro.infer import MCMC, NUTS
 
+import compare_experiments
+
 SCRIPT = Path(__file__).parent / 'compare_experiments.py'
 
 
@@ -174,3 +176,46 @@ def test_diagnostics_read_interpreted_check_report(data, tmp_path):
     assert rank['m-full']['psense'] == 'ok'            # clean check => 'ok', NOT 'flagged'
     assert rank['m-full']['ppc'] == 'fair'             # interpreted calibration rating
     assert rank['m-intercept']['psense'] == 'flagged'  # flagged_params non-empty
+
+
+def test_compare_raises_valueerror_not_systemexit(tmp_path):
+    # compare() is a reusable interface — a library caller must be able to catch
+    # its guard failures. The <2-variants guard must raise ValueError, not SystemExit.
+    empty = tmp_path / 'empty'
+    empty.mkdir()
+    with pytest.raises(ValueError, match='at least two'):
+        compare_experiments.compare(empty, None)
+
+
+def test_has_warning_nan_guarded():
+    import pandas as pd
+    # ArviZ 1.2.0 emits '' (not NaN) for clean diag columns, but guard anyway:
+    # str(np.nan) == 'nan' is truthy, which would read a NaN as a spurious warning.
+    clean = pd.Series({'diag_diff': float('nan'), 'diag_elpd': float('nan')})
+    assert compare_experiments._has_warning(clean) is False
+    dirty = pd.Series({'diag_diff': '', 'diag_elpd': 'high pareto k'})
+    assert compare_experiments._has_warning(dirty) is True
+
+
+def test_diag_strings_surfaced_in_output(analysis_dir, tmp_path):
+    # comparison.json exposes the raw ArviZ diag strings per variant for
+    # transparency (the single `warning` boolean deliberately over-folds them).
+    out = tmp_path / 'comparison.json'
+    r = _run('--analysis-dir', str(analysis_dir), '--output', str(out))
+    assert r.returncode == 0, r.stderr
+    top = json.loads(out.read_text())['ranking'][0]
+    assert 'diag_diff' in top and 'diag_elpd' in top
+
+
+def test_update_ledger_appends_when_no_markers(analysis_dir, tmp_path):
+    # A ledger with no <!-- COMPARISON --> markers takes update_ledger's append
+    # branch; assert the block is appended and a second run is idempotent.
+    ledger = tmp_path / 'experiments.md'
+    ledger.write_text('# Experiments\n\n| id | status |\n|---|---|\n'
+                      '| m-full | candidate |\n')
+    args = ('--analysis-dir', str(analysis_dir), '--ledger', str(ledger))
+    assert _run(*args).returncode == 0
+    first = ledger.read_text()
+    assert '<!-- COMPARISON:BEGIN -->' in first        # appended
+    assert _run(*args).returncode == 0
+    assert ledger.read_text() == first                 # idempotent on rerun
