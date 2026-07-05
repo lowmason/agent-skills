@@ -1,6 +1,6 @@
 # tune-hyperparameters — Design Spec
 
-**Status: IN PROGRESS** — approved 2026-07-05; plan pending.
+**Status: COMPLETE (2026-07-05)** — implemented via plan 9 (see `specs/plans/completed/9-tune-hyperparameters.md`); skill built, tested (8 tests), reviewed, and installed.
 
 ## Motivation — the gap
 

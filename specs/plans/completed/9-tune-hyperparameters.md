@@ -1,5 +1,7 @@
 # tune-hyperparameters Implementation Plan
 
+**Status: COMPLETE (2026-07-05)** — executed via inline TDD; nothing deferred. Final whole-branch review (opus) landed one Important + one Minor fix in commit `7527ed6` (post-Task-5 hardening); all reconciled.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use subagent-driven-development to implement this plan task-by-task (or executing-plans / inline TDD if subagent dispatch is unavailable — check dispatch health at Task 1). Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Ship a standalone `tune-hyperparameters` skill — a regime-classifying HP-tuning decision skill whose one tested artifact is a purged/embargoed temporal-CV splitter (`PurgedTimeSeriesSplit`) feeding a manual Optuna objective, graduating winners to `track-model-experiments`.
@@ -35,7 +37,7 @@ The leakage-safe splitter and its correctness tests (no-future-leakage, embargo 
   - `.split(X, y=None, groups=None)` → yields `(train_idx, val_idx)` NumPy arrays; train strictly precedes val; `train = [0, s_k - max(embargo, label_horizon))`; val = `[s_k, s_k + test_size)`.
   - `.get_n_splits(X=None, y=None, groups=None)` → `int`.
 
-- [ ] **Step 1: Write the failing unit tests**
+- [x] **Step 1: Write the failing unit tests**
 
 ```python
 # skills/tune-hyperparameters/scripts/test_time_series_cv.py
@@ -94,12 +96,12 @@ def test_rejects_bad_args():
         PurgedTimeSeriesSplit(embargo=-1)
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `cd skills/tune-hyperparameters/scripts && uv run --python 3.13 --with pytest --with numpy python -m pytest -q`
 Expected: FAIL — `time_series_cv.py` does not exist (import error).
 
-- [ ] **Step 3: Implement the splitter**
+- [x] **Step 3: Implement the splitter**
 
 ```python
 # skills/tune-hyperparameters/scripts/time_series_cv.py
@@ -163,12 +165,14 @@ class PurgedTimeSeriesSplit:
             yield train_idx, val_idx
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run: `cd skills/tune-hyperparameters/scripts && uv run --python 3.13 --with pytest --with numpy python -m pytest -q`
 Expected: PASS — 5 tests.
 
-- [ ] **Step 5: Commit**
+> Deviation: the final suite is **8** tests, not 5. Advisor + final review added an over-purge guard (`s-4` survives), a `get_n_splits(X)` realized-count contract assertion, a zero-folds `ValueError` test, and an empirical sklearn `GridSearchCV` integration test. See commits `0b735d4`, `7527ed6`.
+
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/tune-hyperparameters/scripts/time_series_cv.py skills/tune-hyperparameters/scripts/test_time_series_cv.py
@@ -191,7 +195,7 @@ from memory).
 - Consumes: `PurgedTimeSeriesSplit` from Task 1.
 - Produces: the verified `objective(trial)` pattern (manual `suggest_float` + loop over `cv.split(X)` + mean CV score) used verbatim in the SKILL.md.
 
-- [ ] **Step 1: Write the failing integration test**
+- [x] **Step 1: Write the failing integration test**
 
 ```python
 def test_optuna_manual_objective_integration():
@@ -222,14 +226,14 @@ def test_optuna_manual_objective_integration():
     assert 1e-3 <= study.best_params['alpha'] <= 1e3
 ```
 
-- [ ] **Step 2: Run it to verify it fails without the deps, then with**
+- [x] **Step 2: Run it to verify it fails without the deps, then with**
 
 Run (no optuna): `cd skills/tune-hyperparameters/scripts && uv run --python 3.13 --with pytest --with numpy python -m pytest -q -k optuna`
 Expected: SKIPPED (via `importorskip`) — confirms the guard works.
 Run (with deps): `uv run --python 3.13 --with pytest --with numpy --with scikit-learn --with optuna python -m pytest -q -k optuna`
 Expected: PASS. **If the Optuna API differs on the installed version, adapt the test to the installed API (keep the manual-objective shape) and note the exact version + any change in the commit message.**
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add skills/tune-hyperparameters/scripts/test_time_series_cv.py
@@ -250,7 +254,7 @@ regime A with the **verified** Optuna snippet from Task 2; regime B thin table +
 **Interfaces:**
 - Consumes: the splitter API (Task 1) and the verified Optuna objective (Task 2).
 
-- [ ] **Step 1: Write SKILL.md**
+- [x] **Step 1: Write SKILL.md**
 
 Frontmatter (trigger-only; no workflow summary):
 
@@ -296,12 +300,14 @@ Body (house voice — lean, decision-first):
 - `## Boundary` — `model-selection-regularization.md` = what to tune & why; `develop-testing-strategy` = leakage as a permanent test invariant; `bayesian-workflow` = inference diagnostics; **this skill** = the search loop + the CV protocol + regime classification + graduation. Bare names.
 - `## Scope caveat` — one sentence: guards temporal leakage only; for revised series, revision leakage (using a later vintage than was available as-of) is often the bigger leak and belongs to `develop-testing-strategy`.
 
-- [ ] **Step 2: Verify frontmatter lint + trigger-only description**
+- [x] **Step 2: Verify frontmatter lint + trigger-only description**
 
 Run: `uv run --python 3.13 --with pyyaml python build/check_frontmatter.py`
 Expected: exit 0, `tune-hyperparameters` clean. Confirm description ≤ 1024 chars, starts with "Use when", no workflow summary. `wc -w skills/tune-hyperparameters/SKILL.md` — keep prose concise (< ~600 words beyond the tables/snippet).
 
-- [ ] **Step 3: Commit**
+> Deviation: SKILL.md prose is ~884 words, above the soft "< ~600 beyond tables/snippet" guideline. The two-regime scope (leakage taxonomy + regime A search + regime-B table + graduation + revision caveat) needed the room; every section is load-bearing and it's level with its sibling `track-model-experiments`. All hard caps (description 655 ≤ 1024 chars, trigger-only) are satisfied.
+
+- [x] **Step 3: Commit**
 
 ```bash
 git add skills/tune-hyperparameters/SKILL.md
@@ -321,15 +327,15 @@ Two one-line pointers so the skill is discoverable from its neighbors. Pointer-e
 **Interfaces:**
 - Consumes: the skill name `tune-hyperparameters` (Task 3).
 
-- [ ] **Step 1: Edit track-model-experiments**
+- [x] **Step 1: Edit track-model-experiments**
 
 In `skills/track-model-experiments/SKILL.md`, in the "When to use" or graduation-relevant spot, add a bare-name pointer: a tuned winner from the `tune-hyperparameters` skill graduates to a variant row here. Keep it one sentence, bare skill name, no new file link.
 
-- [ ] **Step 2: Edit model-selection-regularization.md**
+- [x] **Step 2: Edit model-selection-regularization.md**
 
 In `skills/recommend-probabilistic-model/references/model-selection-regularization.md`, add one sentence: for the *operational* tuning loop and leakage-safe CV, use the `tune-hyperparameters` skill (this file stays the *what/why*). Bare name.
 
-- [ ] **Step 3: Verify lints + no broken links**
+- [x] **Step 3: Verify lints + no broken links**
 
 Run:
 ```bash
@@ -338,7 +344,7 @@ uv run --python 3.13 python build/check_provenance.py
 ```
 Expected: both exit 0. Confirm no `../` link breakage (bare skill names only). Note: `check_provenance.py` will fail until Task 5 adds the NOTICE entry **if** the SKILL.md already exists — if so, that failure is expected here and resolved in Task 5; re-run provenance after Task 5. (Frontmatter must pass now.)
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add skills/track-model-experiments/SKILL.md skills/recommend-probabilistic-model/references/model-selection-regularization.md
@@ -358,15 +364,15 @@ Register in `NOTICE` + `README`, symlink into `~/.claude/skills/`, run the whole
 **Interfaces:**
 - Consumes: `skills/tune-hyperparameters/` (Tasks 1–3).
 
-- [ ] **Step 1: Add to NOTICE**
+- [x] **Step 1: Add to NOTICE**
 
 Add `tune-hyperparameters/` to the "original works by Lowell Mason, MIT licensed" list in `NOTICE`.
 
-- [ ] **Step 2: Add to README**
+- [x] **Step 2: Add to README**
 
 Add a row to the **Mine** table (`| [`tune-hyperparameters`](skills/tune-hyperparameters/) | … |` — one dense sentence: regime-classifying HP tuning; a purged/embargoed temporal-CV splitter feeding a manual Optuna objective; leakage-safe search that graduates winners to `track-model-experiments`; guards temporal leakage, defers revision leakage to `develop-testing-strategy`), and append `tune-hyperparameters` to the "My original skills" line (~146).
 
-- [ ] **Step 3: Run the provenance + frontmatter lints**
+- [x] **Step 3: Run the provenance + frontmatter lints**
 
 Run:
 ```bash
@@ -375,19 +381,21 @@ uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
 ```
 Expected: both exit 0.
 
-- [ ] **Step 4: Run the skill's test suite (regression)**
+- [x] **Step 4: Run the skill's test suite (regression)**
 
 Run: `cd skills/tune-hyperparameters/scripts && uv run --python 3.13 --with pytest --with numpy --with scikit-learn --with optuna python -m pytest -q`
 Expected: PASS — 6 tests (5 splitter unit + 1 Optuna integration).
 
-- [ ] **Step 5: Install the skill (symlink) + confirm**
+> Deviation: final suite is **8** tests (7 splitter unit + 1 Optuna) after review hardening — see the Task 1 Step 4 note. scikit-learn is now a genuine test dep (the `GridSearchCV` contract test), already in this command.
+
+- [x] **Step 5: Install the skill (symlink) + confirm**
 
 ```bash
 ln -sfn /Users/lowell/Projects/agent-skills/skills/tune-hyperparameters ~/.claude/skills/tune-hyperparameters
 test -f ~/.claude/skills/tune-hyperparameters/SKILL.md && echo INSTALL-OK
 ```
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add NOTICE README.md
