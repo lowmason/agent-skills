@@ -147,3 +147,30 @@ def test_ledger_update_is_idempotent(analysis_dir, tmp_path):
     assert second.count('**best**') == 1
     best_row = [ln for ln in second.splitlines() if ln.startswith('| m-full ')][0]
     assert '**best**' in best_row
+
+
+def test_diagnostics_read_interpreted_check_report(data, tmp_path):
+    # A prior version stamped psense='flagged' on mere psense.json presence and read
+    # a nonexistent 'ppc' key (so the interpreted rating was never honored). Assert the
+    # real check_report.json schema (calibration.rating / psense.flagged_params) is read.
+    x, y = data
+    d = tmp_path / 'interp'
+    _make_variant(d / 'm-full', _full, x, y, seed=1)
+    _make_variant(d / 'm-intercept', _intercept, x, y, seed=2)
+    # m-full: a CLEAN sensitivity check (no flagged params) + a 'fair' calibration.
+    (d / 'm-full' / 'check_report.json').write_text(json.dumps({
+        'posterior_predictive': {'available': True},
+        'calibration': {'rating': 'fair', 'diagnosis': ''},
+        'psense': {'rating': 'low sensitivity', 'flagged_params': []},
+    }))
+    # m-intercept: a genuinely flagged sensitivity check.
+    (d / 'm-intercept' / 'check_report.json').write_text(json.dumps({
+        'psense': {'rating': 'strong sensitivity', 'flagged_params': ['sigma']},
+    }))
+    out = tmp_path / 'comparison.json'
+    r = _run('--analysis-dir', str(d), '--output', str(out))
+    assert r.returncode == 0, r.stderr
+    rank = {e['id']: e for e in json.loads(out.read_text())['ranking']}
+    assert rank['m-full']['psense'] == 'ok'            # clean check => 'ok', NOT 'flagged'
+    assert rank['m-full']['ppc'] == 'fair'             # interpreted calibration rating
+    assert rank['m-intercept']['psense'] == 'flagged'  # flagged_params non-empty

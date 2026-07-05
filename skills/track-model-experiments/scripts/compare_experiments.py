@@ -119,9 +119,30 @@ def extract_diagnostics(idata, folder: Path) -> dict:
         if 'diverging' in ss:
             divergences = int(ss['diverging'].sum())
     check = _read_json(folder, 'check_report.json') or {}
-    ppc = check.get('ppc') if 'ppc' in check else (
-        'ran' if (folder / 'calibration.json').exists() else 'unknown')
-    psense = 'flagged' if _read_json(folder, 'psense.json') else 'unknown'
+    # PPC column: prefer the interpreted calibration rating from check_report.json
+    # (the real predictive-check quality signal — 'excellent'/'fair'/'poor'); fall
+    # back to whether a posterior-predictive check was available, then to raw-file
+    # presence. bayesian-workflow's check_diagnostics.py writes these keys.
+    cal = check.get('calibration') or {}
+    pp = check.get('posterior_predictive')
+    if cal.get('rating') and cal['rating'] != 'not computed':
+        ppc = cal['rating']
+    elif pp is not None:
+        ppc = 'ran' if pp.get('available') else 'unavailable'
+    elif (folder / 'calibration.json').exists():
+        ppc = 'ran'
+    else:
+        ppc = 'unknown'
+    # psense column: 'flagged' ONLY when the interpreted report lists flagged
+    # params. A clean sensitivity check (low sensitivity, no flags) is 'ok' — the
+    # mere presence of psense.json means psense RAN, not that it flagged anything.
+    ps = check.get('psense')
+    if ps is not None:
+        psense = 'flagged' if ps.get('flagged_params') else 'ok'
+    elif _read_json(folder, 'psense.json'):
+        psense = 'ran'
+    else:
+        psense = 'unknown'
     return {
         'max_rhat': None if max_rhat is None else float(max_rhat),
         'min_ess': None if min_ess is None else float(min_ess),
