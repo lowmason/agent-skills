@@ -51,3 +51,31 @@ def test_rejects_bad_args():
         PurgedTimeSeriesSplit(n_splits=0)
     with pytest.raises(ValueError):
         PurgedTimeSeriesSplit(embargo=-1)
+
+
+def test_optuna_manual_objective_integration():
+    optuna = pytest.importorskip('optuna')
+    from sklearn.linear_model import Ridge
+    from sklearn.metrics import mean_squared_error
+
+    rng = np.random.default_rng(0)
+    n = 200
+    X = rng.normal(size=(n, 3))
+    beta = np.array([1.5, -2.0, 0.5])
+    y = X @ beta + rng.normal(scale=0.5, size=n)
+    cv = PurgedTimeSeriesSplit(n_splits=4, embargo=2)
+
+    def objective(trial):
+        alpha = trial.suggest_float('alpha', 1e-3, 1e3, log=True)
+        scores = []
+        for tr, va in cv.split(X):
+            model = Ridge(alpha=alpha).fit(X[tr], y[tr])
+            scores.append(mean_squared_error(y[va], model.predict(X[va])))
+        return float(np.mean(scores))
+
+    optuna.logging.set_verbosity(optuna.logging.WARNING)
+    study = optuna.create_study(direction='minimize',
+                                sampler=optuna.samplers.TPESampler(seed=0))
+    study.optimize(objective, n_trials=15)
+    assert np.isfinite(study.best_value)
+    assert 1e-3 <= study.best_params['alpha'] <= 1e3
