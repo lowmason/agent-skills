@@ -14,7 +14,7 @@ After every full analysis run, generate `report.md` inside a dedicated results f
 
 ### Results folder naming
 
-All artifacts for a single analysis go into `<slug>/`, where `<slug>` is a short lowercase-hyphenated descriptor of the analysis (e.g., `churn-logistic`, `school-funding-hierarchical`). Choose the most informative 1–3 word name. When iterating on the same problem, append a version: `churn-logistic-v2/`.
+All artifacts for a single analysis go into `<slug>/`, where `<slug>` is a short lowercase-hyphenated descriptor of the analysis (e.g., `churn-logistic`, `school-funding-hierarchical`). Choose the most informative 1–3 word name. When iterating on the same problem, append a version: `churn-logistic-v2/`. To index those versions and rank them, use the track-model-experiments skill.
 
 ```python
 import os
