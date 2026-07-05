@@ -71,9 +71,8 @@ The number of independent-equivalent draws. Two flavors matter:
 
 | ESS | Interpretation | Action |
 |---|---|---|
-| ≥ 100 * number of chains per chain | Sufficient for most summaries | Proceed |
-| 100–100 * number of chains | Marginal | Run longer or reparameterize |
-| < 100 | Unreliable | Diagnose autocorrelation, reparameterize |
+| ≥ 100 * number of chains | Sufficient for most summaries | Proceed |
+| < 100 * number of chains | Unreliable | Run longer, reparameterize, or diagnose autocorrelation |
 
 **Improving ESS**:
 - Increase `num_samples` (and run ≥ 4 chains)

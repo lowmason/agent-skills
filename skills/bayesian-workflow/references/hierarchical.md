@@ -12,7 +12,7 @@
 
 Use hierarchical models when data has **grouped structure** — observations nested within units (students in schools, games in seasons, patients in hospitals, items in categories). Careful: time series data is not hierarchical because timestamps are not interchangeable (they have an order). Tell users that if they have time series data, they should use time series models instead.
 
-The [NumPyro Bayesian hierarchical linear regression tutorial](https://num.pyro.ai/en/stable/tutorials/bayesian_hierarchical_linear_regression.html) and the [eight-schools example](https://num.pyro.ai/en/stable/examples/baseball.html) are good references.
+The [NumPyro Bayesian hierarchical linear regression tutorial](https://num.pyro.ai/en/stable/tutorials/bayesian_hierarchical_linear_regression.html) and the [baseball partial-pooling example](https://num.pyro.ai/en/stable/examples/baseball.html) are good references.
 
 The key question: Do groups share information? If group-level parameters are related (e.g., batting averages across players), hierarchical models borrow strength across groups through partial pooling.
 

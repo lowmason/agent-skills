@@ -98,6 +98,8 @@ import numpyro.distributions as dist
 from numpyro.infer import MCMC, NUTS, Predictive
 import arviz as az
 
+numpyro.set_host_device_count(4)   # MUST precede the first JAX op (e.g. PRNGKey) or it silently no-ops
+
 RANDOM_SEED = sum(map(ord, "churn-logistic-v1"))
 rng = np.random.default_rng(RANDOM_SEED)
 rng_key = jax.random.PRNGKey(RANDOM_SEED)
@@ -124,7 +126,6 @@ k_prior, k_mcmc, k_post = jax.random.split(rng_key, 3)
 prior_pred = Predictive(model, num_samples=500)(k_prior, x)         # no y => draws y_obs
 
 # --- Inference (native NUTS; see Samplers for BlackJAX) ---
-numpyro.set_host_device_count(4)                                    # parallel chains on CPU
 mcmc = MCMC(NUTS(model, target_accept_prob=0.9),
             num_warmup=1000, num_samples=1000, num_chains=4, chain_method="parallel")
 mcmc.run(k_mcmc, x, y=y,
@@ -164,7 +165,7 @@ identical once you have an InferenceData.
 **1. Native NumPyro NUTS (default).** Idiomatic, the least code, and already fast.
 
 ```python
-numpyro.set_host_device_count(4)                 # required for parallel CPU chains
+numpyro.set_host_device_count(4)                 # required for parallel CPU chains; MUST precede the first JAX op
 mcmc = MCMC(NUTS(model, target_accept_prob=0.9),
             num_warmup=1000, num_samples=1000, num_chains=4, chain_method="parallel")
 mcmc.run(rng_key, x, y=y, extra_fields=("energy", "diverging", "num_steps", "accept_prob"))
@@ -241,14 +242,14 @@ low-memory fallback.
 - **Document every prior choice** with a brief justification in a code comment.
 - **Never report point estimates alone**. Always include credible intervals — a 94% HDI is a fine default, but no interval width is magic (see [references/reporting.md](references/reporting.md)).
 - **Use `arviz_stats.diagnose(idata)` as the first diagnostic on every model** (arviz-stats >= 1.0.0). It checks R-hat, ESS, and divergences in one call. Follow up with `az.plot_trace(idata, var_names=[...])` for visual inspection, or `az.plot_rank(idata, var_names=[...])` for rank-based convergence views (both available on either stack — see **Stack compatibility** for the return-type/save differences). Pass `var_names` to focus on the parameters — ArviZ 1.x errors if the auto-selected set (e.g. a vector `Deterministic` over an `obs` dim) exceeds its subplot cap. For energy diagnostics you must request `extra_fields=("energy", ...)` in `mcmc.run(...)` (see gotchas).
-- **Set `num_chains` to at least 4** and call `numpyro.set_host_device_count(num_chains)`. NumPyro defaults to a single chain — one chain cannot diagnose convergence. This is the NumPyro counterpart to PyMC's "let the sampler pick"; here you pick, and 4 is the floor.
+- **Set `num_chains` to at least 4** and call `numpyro.set_host_device_count(num_chains)` **before the first JAX operation** — any `PRNGKey` or `jnp` call initializes the XLA backend, after which the call silently no-ops and chains run sequentially. NumPyro defaults to a single chain — one chain cannot diagnose convergence. This is the NumPyro counterpart to PyMC's "let the sampler pick"; here you pick, and 4 is the floor.
 - **Use reproducible, descriptive seeds.** Never use magic numbers like `42`. Derive a seed from the analysis name: `RANDOM_SEED = sum(map(ord, "my-analysis-name"))`. Feed it through JAX: `rng_key = jax.random.PRNGKey(RANDOM_SEED)`, split with `jax.random.split`, and seed NumPy via `rng = np.random.default_rng(RANDOM_SEED)`. Every `Predictive(...)` call and `mcmc.run(...)` takes a `PRNGKey`.
 - **Save InferenceData immediately after sampling** with `idata.to_netcdf("model_output.nc")`. Late crashes or kernel restarts can destroy valid MCMC results — save before any post-processing. (Needs an h5netcdf+h5py or netcdf4 backend installed.)
 - **Convert JAX arrays to NumPy after `az.from_numpyro`** with `idata = idata.map_over_datasets(lambda ds: ds.as_numpy())`. NumPyro stores results as JAX arrays; a few ArviZ routines (notably `az.loo`'s PSIS) do in-place updates that JAX arrays reject. Reloading from netCDF also yields NumPy, so the scripts (which load `.nc`) are unaffected.
 - **Use ArviZ for all plots and calibration.** Don't write custom plotting code when ArviZ already handles it — including for binary data, count data, and calibration. ArviZ developers have thought through edge cases so you don't have to. See [references/visualize.md](references/visualize.md).
 - **Prefer xarray over numpy for InferenceData operations.** `InferenceData` and `DataTree` objects are backed by xarray — use xarray's labeled indexing (`.sel()`, `.mean(dim=...)`, etc.) instead of converting to numpy arrays. This preserves dimension labels, avoids shape bugs, and makes code more readable. Fall back to numpy only when xarray can't do what you need.
 - **Always map the observed variable in `dims`.** When calling `az.from_numpyro(..., dims=...)`, include the likelihood site (e.g. `dims={"y_obs": ["obs"]}`). If you omit it, ArviZ invents an anonymous dimension and posterior-predictive plots (`plot_ppc_dist`, `plot_ppc_pit`) error on dimension inference.
-- **Always generate `<slug>/report.md` after a full analysis run.** Store all artifacts (`inference_data.nc`, `model_graph.png`, `trace.png`, `forest.png`, `posterior_predictive.png`, `pit_ecdf.png`, `summary.csv`, `diagnostics.json`, `calibration.json`) in a slug-named results folder, and produce `report.md` from the canonical template in [references/reporting.md](references/reporting.md). Code without an interpreted, fixed-shape report is incomplete.
+- **Always generate `<slug>/report.md` after a full analysis run.** Store the full artifact set from [references/reporting.md](references/reporting.md) → Output structure (`inference_data.nc`, `trace.png`, `diagnostics.json`, `prior_predictive.png`, `pit_coverage.png`, and the rest — that list is canonical) in a slug-named results folder, and produce `report.md` from the canonical template in [references/reporting.md](references/reporting.md). Code without an interpreted, fixed-shape report is incomplete.
 - **Use `scripts/check_diagnostics.py` to interpret diagnostics, not hand-rolled prose.** Pipe the JSON outputs of `diagnose_model.py` (and optionally `calibration_check.py` and `psense_summary`) into `check_diagnostics.py` to get per-section qualitative ratings and an ordered, actionable Suggested Next Steps list. Use those outputs verbatim in the report's Assessment lines; expand only with problem-specific context.
 - **Always use the posterior mean (not median) for predictive probabilities.** The proper Bayesian predictive distribution averages over the posterior: `P(Y=k|x) = (1/S) Σ P(Y=k|x,θₛ)`. This is the mean, not the median. The median does not correspond to the posterior predictive distribution, can violate probability coherence (probabilities may not sum to 1), and biases calibration due to Jensen's inequality. In code: use `np.mean(probs, axis=sample_axis)`, never `np.median(...)`.
 - **For out-of-sample predictions, re-run `Predictive` with new data arguments.** NumPyro has no `pm.set_data` — the data are just function arguments, so you swap them by calling the model with new inputs. Don't manually extract posterior samples and recompute predictions by hand — let `Predictive` propagate uncertainty:

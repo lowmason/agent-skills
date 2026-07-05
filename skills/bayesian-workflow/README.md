@@ -50,9 +50,9 @@ pip install funsor                 # optional: discrete-latent enumeration
 
 For **GPU/TPU**, install the matching JAX wheel (e.g. `pip install "jax[cuda12]"`); the model code is identical.
 
-The skill teaches the latest NumPyro + ArviZ 1.x idioms and stays runnable on the older
-classic-ArviZ (0.23) plotting/stats API during the transition; its scripts are verified on the
-modern stack. See SKILL.md → "Stack compatibility (NumPyro + ArviZ)" for the handful of APIs that diverge.
+The skill teaches the latest NumPyro + ArviZ 1.x idioms and documents the classic-ArviZ (0.23)
+equivalents as a porting reference — the inline examples target ArviZ >= 1.0 and will raise on a
+0.23-only environment; its scripts are verified on the modern stack. See SKILL.md → "Stack compatibility (NumPyro + ArviZ)" for the handful of APIs that diverge.
 
 ## Example prompts
 
@@ -76,6 +76,8 @@ bayesian-workflow/
 │   ├── model-comparison.md           # LOO-CV, ELPD, stacking weights
 │   ├── hierarchical.md               # Partial pooling, non-centered parameterization (reparam)
 │   ├── sensitivity.md                # Prior/likelihood sensitivity (power-scaling) + log_prior recipe
+│   ├── state-space.md                # State-space / time-series models (marginalize vs sample the path)
+│   ├── publications.md               # Cited workflow papers and further reading
 │   ├── reporting.md                  # Report templates, audience adaptation
 │   └── visualize.md                  # Visualization across the workflow (Gabry et al. 2019 → ArviZ)
 └── scripts/

@@ -58,10 +58,15 @@ def add_log_prior(idata, model, mcmc, *model_args, **model_kwargs):
 
     lp = jax.vmap(per_draw)(flat)
     post = idata["posterior"].dataset
-    data_vars = {
-        name: (post[name].dims, np.asarray(v).reshape((chains, draws) + v.shape[1:]))
-        for name, v in lp.items() if name in post
-    }
+    data_vars = {}
+    for name, v in lp.items():
+        if name not in post:
+            continue
+        arr = np.asarray(v).reshape((chains, draws) + v.shape[1:])
+        # log_prob reduces over event dims, so multivariate sites (MVN, LKJ,
+        # Dirichlet) yield ONE log-prior value per batch element — pair the
+        # array with the leading posterior dims only.
+        data_vars[name] = (post[name].dims[:arr.ndim], arr)
     idata["log_prior"] = xr.DataTree(
         xr.Dataset(data_vars, coords={"chain": post.chain, "draw": post.draw})
     )
@@ -72,7 +77,8 @@ idata = add_log_prior(idata, model, mcmc, x, y=y)
 ```
 
 The recipe is exact: per-site `log_prob` matches `scipy.stats.*.logpdf` to floating-point
-precision. For a BlackJAX run (no `mcmc` object), pass the constrained posterior samples
+precision. For multivariate sites it is the site's joint log-density (reduced over event
+dims) — one value per batch element, which is exactly what psense needs. For a BlackJAX run (no `mcmc` object), pass the constrained posterior samples
 through the same `trace(substitute(...))` loop — the mechanism is identical.
 
 ## Running sensitivity checks
