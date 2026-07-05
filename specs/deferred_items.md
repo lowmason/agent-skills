@@ -23,7 +23,7 @@
       Step 3.
 
 ## 8-track-model-experiments — 2026-07-05
-- [ ] `_has_warning` folds ArviZ 1.2.0's `diag_diff` (similar predictions / N<100)
+- [x] `_has_warning` folds ArviZ 1.2.0's `diag_diff` (similar predictions / N<100)
       and `diag_elpd` (the Pareto-k analog) into one `warning` boolean, so the
       ledger's `warn`/`warning` over-reports (the SAFE direction; a clarifying
       comment is present). Consider surfacing the two diagnostics as separate
@@ -31,18 +31,26 @@
       (skills/track-model-experiments/scripts/compare_experiments.py `_has_warning`)
       has a latent NaN false-positive — `str(np.nan).strip()` → `'nan'` is truthy;
       ArviZ emits `''` not NaN today so it's latent, but harden with a NaN guard.
-- [ ] `compare()` raises `SystemExit` for the <2-variants and mismatched-observation
+      → done in the track-model-experiments hardening batch (commit 6043bf8): NaN
+      guard added (`_diag_str`); raw `diag_diff`/`diag_elpd` surfaced as JSON fields
+      in `comparison.json` (kept the single `warning` boolean for the ledger column
+      rather than widening it).
+- [x] `compare()` raises `SystemExit` for the <2-variants and mismatched-observation
       guards while `main()` catches only `ValueError`
       (skills/track-model-experiments/scripts/compare_experiments.py). Tests pass
       (SystemExit exits nonzero with the message), but `compare()` is documented as
       a reusable interface a library caller can't recover from. Make both guards
       raise `ValueError` and let `main()` own the process exit.
-- [ ] `update_ledger` normalizes cell whitespace on any table row it rewrites
+      → done in commit 6043bf8: both guards now raise `ValueError` (main() already
+      caught it, so CLI behavior is unchanged); new direct-call test pins the contract.
+- [x] `update_ledger` normalizes cell whitespace on any table row it rewrites
       (collapses human cell padding) with no docstring note that this is intentional
       (skills/track-model-experiments/scripts/compare_experiments.py). Add a one-line
       docstring note so a maintainer doesn't read it as accidental.
-- [ ] `update_ledger`'s "no existing COMPARISON block" else-branch (the append path)
+      → done in commit 6043bf8: docstring note added.
+- [x] `update_ledger`'s "no existing COMPARISON block" else-branch (the append path)
       is untested — every fixture ledger already contains the markers
       (skills/track-model-experiments/scripts/test_compare_experiments.py). Traced as
       idempotent (run 2 matches the regex and substitutes at the same position), but
       add a one-line test that starts from a marker-less ledger.
+      → done in commit 6043bf8: test_update_ledger_appends_when_no_markers added.
