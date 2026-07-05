@@ -103,3 +103,47 @@ def test_fewer_than_two_variants_message(data, tmp_path):
     r = _run('--analysis-dir', str(d))
     assert r.returncode != 0
     assert 'at least two' in (r.stderr + r.stdout).lower()
+
+
+def test_diagnostics_in_output(analysis_dir, tmp_path):
+    out = tmp_path / 'comparison.json'
+    r = _run('--analysis-dir', str(analysis_dir), '--output', str(out))
+    assert r.returncode == 0, r.stderr
+    top = json.loads(out.read_text())['ranking'][0]
+    for key in ('max_rhat', 'min_ess', 'divergences'):
+        assert key in top
+    assert top['max_rhat'] < 1.1   # fixture converges
+
+
+LEDGER = '''# Experiments — churn
+
+| id (slug) | parent | what changed | hypothesis | ELPD | ΔELPD | max R̂ | div | PPC | psense | status |
+|---|---|---|---|---|---|---|---|---|---|---|
+| m-full | — | full | slope matters | | | | | | | candidate |
+| m-intercept | m-full | drop slope | slope noise | | | | | | | candidate |
+
+<!-- COMPARISON:BEGIN -->
+old stale content
+<!-- COMPARISON:END -->
+
+## Decision log
+- prior human prose that must survive
+'''
+
+
+def test_ledger_update_is_idempotent(analysis_dir, tmp_path):
+    ledger = tmp_path / 'experiments.md'
+    ledger.write_text(LEDGER)
+    args = ('--analysis-dir', str(analysis_dir), '--ledger', str(ledger))
+    assert _run(*args).returncode == 0
+    first = ledger.read_text()
+    assert _run(*args).returncode == 0
+    second = ledger.read_text()
+    assert first == second                       # idempotent
+    assert 'prior human prose that must survive' in second
+    assert 'old stale content' not in second
+    assert '<!-- COMPARISON:BEGIN -->' in second
+    # best marker lands on the winning row, only once
+    assert second.count('**best**') == 1
+    best_row = [ln for ln in second.splitlines() if ln.startswith('| m-full ')][0]
+    assert '**best**' in best_row

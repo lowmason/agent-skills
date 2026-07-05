@@ -6,6 +6,7 @@ for usage.
 '''
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -66,6 +67,9 @@ def _has_warning(row) -> bool:
     # Classic ArviZ (<=0.23) exposes a boolean 'warning' column directly.
     # ArviZ 1.x replaced it with two string diagnostic columns ('diag_diff',
     # 'diag_elpd') that are empty strings when there is no issue.
+    # Note: this 'warning' is deliberately broader than classic Pareto-k —
+    # it also fires on ArviZ 1.2.0's 'diag_diff' (similar predictions / N<100),
+    # not just 'diag_elpd' (the true Pareto-k analog).
     if 'warning' in row.index:
         return bool(row['warning'])
     diag_diff = row.get('diag_diff', '') or ''
@@ -88,6 +92,88 @@ def build_ranking(comparison) -> list[dict]:
     return ranking
 
 
+def _read_json(folder: Path, name: str):
+    p = folder / name
+    if p.exists():
+        try:
+            return json.loads(p.read_text())
+        except (ValueError, OSError):
+            return None
+    return None
+
+
+def extract_diagnostics(idata, folder: Path) -> dict:
+    diag = _read_json(folder, 'diagnostics.json') or {}
+    summary = az.summary(idata)
+    max_rhat = diag.get('max_rhat')
+    if max_rhat is None and 'r_hat' in summary.columns:
+        max_rhat = float(summary['r_hat'].max())
+    ess_cols = [c for c in summary.columns if c.startswith('ess_')]
+    min_ess = diag.get('min_ess')
+    if min_ess is None and ess_cols:
+        min_ess = float(min(summary[c].min() for c in ess_cols))
+    divergences = diag.get('divergences')
+    names = [g.split('/')[-1] for g in _group_names(idata)]
+    if divergences is None and 'sample_stats' in names:
+        ss = idata.sample_stats
+        if 'diverging' in ss:
+            divergences = int(ss['diverging'].sum())
+    check = _read_json(folder, 'check_report.json') or {}
+    ppc = check.get('ppc') if 'ppc' in check else (
+        'ran' if (folder / 'calibration.json').exists() else 'unknown')
+    psense = 'flagged' if _read_json(folder, 'psense.json') else 'unknown'
+    return {
+        'max_rhat': None if max_rhat is None else float(max_rhat),
+        'min_ess': None if min_ess is None else float(min_ess),
+        'divergences': divergences,
+        'ppc': ppc,
+        'psense': psense,
+    }
+
+
+def render_comparison_block(ranking: list[dict]) -> str:
+    header = '| id | ELPD | ΔELPD | dSE | weight | max R̂ | div | warn |'
+    sep = '|---|---|---|---|---|---|---|---|'
+    rows = []
+    for r in ranking:
+        rhat = '' if r.get('max_rhat') is None else f"{r['max_rhat']:.3f}"
+        rows.append(
+            f"| {r['id']} | {r['elpd']:.1f} | {r['elpd_diff']:.1f} | "
+            f"{r['dse']:.1f} | {r['weight']:.2f} | {rhat} | "
+            f"{r.get('divergences', '')} | {'⚠' if r['warning'] else ''} |")
+    table = '\n'.join([header, sep, *rows])
+    return f'<!-- COMPARISON:BEGIN -->\n{table}\n<!-- COMPARISON:END -->'
+
+
+_BLOCK_RE = re.compile(r'<!-- COMPARISON:BEGIN -->.*?<!-- COMPARISON:END -->', re.S)
+
+
+def update_ledger(ledger_path: Path, block: str, best_id: str) -> None:
+    text = ledger_path.read_text()
+    if _BLOCK_RE.search(text):
+        text = _BLOCK_RE.sub(lambda _: block, text)
+    else:
+        text = text.rstrip() + '\n\n' + block + '\n'
+    lines = []
+    in_block = False
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped == '<!-- COMPARISON:BEGIN -->':
+            in_block = True
+        elif stripped == '<!-- COMPARISON:END -->':
+            in_block = False
+        elif not in_block and line.lstrip().startswith('|'):
+            cells = [c.strip() for c in line.strip().strip('|').split('|')]
+            if cells and cells[-1] == '**best**':
+                cells[-1] = 'candidate'
+                line = '| ' + ' | '.join(cells) + ' |'
+            if cells and cells[0] == best_id:
+                cells[-1] = '**best**'
+                line = '| ' + ' | '.join(cells) + ' |'
+        lines.append(line)
+    ledger_path.write_text('\n'.join(lines) + ('\n' if text.endswith('\n') else ''))
+
+
 def compare(analysis_dir: Path, folders: list[Path] | None):
     variants = folders or discover_variants(analysis_dir)
     if len(variants) < 2:
@@ -107,7 +193,11 @@ def compare(analysis_dir: Path, folders: list[Path] | None):
             f'{counts}; LOO compares predictions of the SAME observations, '
             'so this comparison is invalid.')
     comparison = run_comparison(models)
-    return build_ranking(comparison), comparison
+    ranking = build_ranking(comparison)
+    for entry in ranking:
+        folder = next(f for f in variants if f.name == entry['id'])
+        entry.update(extract_diagnostics(models[entry['id']], folder))
+    return ranking, comparison
 
 
 def main(argv=None):
@@ -123,11 +213,18 @@ def main(argv=None):
                     help='write comparison.json here')
     args = ap.parse_args(argv)
 
-    ranking, comparison = compare(args.analysis_dir, args.folders)
+    try:
+        ranking, comparison = compare(args.analysis_dir, args.folders)
+    except ValueError as exc:
+        print(f'error: {exc}', file=sys.stderr)
+        return 1
     print(comparison.to_string())
     payload = {'ranking': ranking}
     if args.output:
         args.output.write_text(json.dumps(payload, indent=2))
+    if args.ledger:
+        block = render_comparison_block(ranking)
+        update_ledger(args.ledger, block, ranking[0]['id'])
     return 0
 
 
