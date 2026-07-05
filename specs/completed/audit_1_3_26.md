@@ -12,7 +12,7 @@
 
 ### 1.1 `bayesian-workflow` frontmatter is invalid YAML — the skill cannot auto-trigger
 
-[bayesian-workflow/SKILL.md:18](../bayesian-workflow/SKILL.md) has `author: [Alexandre Andorra](https://alexandorra.github.io/)` — the unquoted markdown link breaks YAML parsing, so the entire 977-char description is dropped. **Confirmed live:** in the current session's skill registry, bayesian-workflow lists as bare "Bayesian Workflow" while every sibling shows its full description. The skill effectively triggers on its H1 title only.
+[bayesian-workflow/SKILL.md:18](../../skills/bayesian-workflow/SKILL.md) has `author: [Alexandre Andorra](https://alexandorra.github.io/)` — the unquoted markdown link breaks YAML parsing, so the entire 977-char description is dropped. **Confirmed live:** in the current session's skill registry, bayesian-workflow lists as bare "Bayesian Workflow" while every sibling shows its full description. The skill effectively triggers on its H1 title only.
 
 **Fix (one line):** quote the value — `author: "Alexandre Andorra (https://alexandorra.github.io/)"` — verified this alone makes the frontmatter parse. Then confirm in a fresh session that the registry shows the description.
 
@@ -37,7 +37,7 @@ The upstream superpowers plugin is installed but **disabled** in `~/.claude/sett
 
 ### 1.4 `subagent-driven-development` ledger path contradicts its own scripts
 
-[SKILL.md:254](../subagent-driven-development/SKILL.md) tells the controller to check `.sdd/progress.md`; the bundled scripts create `.superpowers/sdd/` ([scripts/sdd-workspace:19](../subagent-driven-development/scripts/sdd-workspace), also task-brief:7, review-package:8). A controller resuming after compaction finds no ledger and can re-dispatch completed tasks — the exact failure the section calls "the single most expensive failure observed." Also, `.sdd/` is never gitignored, making SKILL.md's "it's git-ignored scratch" claim false.
+[SKILL.md:254](../../skills/subagent-driven-development/SKILL.md) tells the controller to check `.sdd/progress.md`; the bundled scripts create `.superpowers/sdd/` ([scripts/sdd-workspace:19](../../skills/subagent-driven-development/scripts/sdd-workspace), also task-brief:7, review-package:8). A controller resuming after compaction finds no ledger and can re-dispatch completed tasks — the exact failure the section calls "the single most expensive failure observed." Also, `.sdd/` is never gitignored, making SKILL.md's "it's git-ignored scratch" claim false.
 
 **Fix:** standardize on `.sdd/` (also finishes the de-superpowers rename): change `sdd-workspace:19` to `dir="$root/.sdd"`, update the two script header comments, and have the ledger-check step run `scripts/sdd-workspace` first so the self-ignoring directory always exists.
 

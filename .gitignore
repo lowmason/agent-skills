@@ -16,3 +16,6 @@ build/.scratch/
 # pytest
 .pytest_cache/
 .hypothesis/
+
+# SDD workspace — duplicates .sdd/.gitignore's self-ignoring guard on purpose
+.sdd/

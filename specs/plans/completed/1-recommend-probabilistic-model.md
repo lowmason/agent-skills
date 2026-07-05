@@ -16,7 +16,7 @@
 
 ## Global Constraints
 
-Copied verbatim from the spec ([docs/specs/2026-06-21-recommend-probabilistic-model-design.md](../specs/2026-06-21-recommend-probabilistic-model-design.md)). Every task's requirements implicitly include these.
+Copied verbatim from the spec ([docs/specs/2026-06-21-recommend-probabilistic-model-design.md](../../completed/recommend-probabilistic-model.md)). Every task's requirements implicitly include these.
 
 - **C1 — Verified-source rule.** Every §ref and notebook link is verified against the actual source before it ships — never written from recall. Two gates: **Gate A** (mechanical: section number + title exist in the extracted index; notebook path exists in the real listing) and **Gate B** (semantic: an adversarial read of the cited section text confirms it actually supports the claim).
 - **C2 — Book 2 access.** `prob_ml_book.pdf` (144 MB) exceeds the Read 100 MB cap. Use `pdftotext -f N -l M prob_ml_book.pdf out.txt` and `pdftoppm -png -f N -l M -r 120 prob_ml_book.pdf out`. Naive `pdfseparate`+`pdfunite` splitting is **ruled out** (produced a 180 MB file from 20 pages). Book 1 (88 MB) and the supplement (12 MB) read fine via Read or `pdftotext`.

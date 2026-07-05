@@ -13,7 +13,7 @@ protocol leaves open.
 - SDD dispatches a task review after **every task**, sending the full
   ~120-line template as the prompt each time. The stable contract belongs in
   an agent's system prompt; only per-task material belongs in the dispatch.
-  [task-reviewer-prompt.md:11](../skills/subagent-driven-development/task-reviewer-prompt.md)
+  [task-reviewer-prompt.md:11](../../skills/subagent-driven-development/task-reviewer-prompt.md)
   currently routes to `code-reviewer if defined` — a borrowed persona whose
   contract (merge-review framing) doesn't match the task-scoped gate.
 - `specs/deferred_items.md` is append-only and is only ever re-read by
