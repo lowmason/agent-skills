@@ -34,6 +34,7 @@ def test_purge_is_conditional_on_horizon():
         assert (s - 1) in tr0                      # horizon=0: overlapping row present
         for i in range(s - 3, s):
             assert i not in tr3                    # horizon=3: purged
+        assert (s - 4) in tr3                      # exactly h rows purged, NOT more
         assert tr3.max() < va3.min()
 
 
@@ -44,6 +45,9 @@ def test_min_train_size_skips_short_folds():
     assert folds                                   # at least one fold survives
     for tr, _ in folds:
         assert len(tr) >= 25
+    # Documented divergence: split() prunes short early folds, so it yields
+    # FEWER than the requested count; get_n_splits() reports the request.
+    assert len(folds) < cv.get_n_splits()
 
 
 def test_rejects_bad_args():

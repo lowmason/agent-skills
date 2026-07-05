@@ -38,6 +38,14 @@ class PurgedTimeSeriesSplit:
         self.min_train_size = min_train_size
 
     def get_n_splits(self, X=None, y=None, groups=None):
+        '''Return the *requested* number of splits.
+
+        split() may yield FEWER folds than this when min_train_size or a small
+        sample prunes early folds (unlike sklearn's TimeSeriesSplit, which
+        raises instead of pruning). The manual Optuna loop is unaffected — it
+        iterates whatever split() yields — but a sklearn consumer that trusts
+        this count should account for the possible shortfall.
+        '''
         return self.n_splits
 
     def split(self, X, y=None, groups=None):
