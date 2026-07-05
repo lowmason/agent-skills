@@ -47,10 +47,11 @@ sampler that looks good on one metric and is miscalibrated everywhere else.
 
 ## Regime A — leakage-safe predictive search
 
-**The trap.** Naive k-fold shuffles rows, so most folds train on data that
-comes *after* the validation block. For anything time-ordered — a nowcast, a
-panel, any series — that leaks the future into training and every candidate's
-score comes back over-optimistic. You can't compare knobs on a corrupted metric.
+**The trap.** Naive k-fold ignores time order, so most folds train on rows that
+come *after* the validation block (shuffling makes it worse, but plain
+`KFold` already does it). For anything time-ordered — a nowcast, a panel, any
+series — that leaks the future into training and every candidate's score comes
+back over-optimistic. You can't compare knobs on a corrupted metric.
 
 **The CV protocol.** Use forward-chaining (expanding-window) splits where train
 always precedes validation.

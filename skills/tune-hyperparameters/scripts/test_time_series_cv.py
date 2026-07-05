@@ -45,9 +45,39 @@ def test_min_train_size_skips_short_folds():
     assert folds                                   # at least one fold survives
     for tr, _ in folds:
         assert len(tr) >= 25
-    # Documented divergence: split() prunes short early folds, so it yields
-    # FEWER than the requested count; get_n_splits() reports the request.
-    assert len(folds) < cv.get_n_splits()
+    # split() prunes short early folds, yielding FEWER than the requested count.
+    assert len(folds) < cv.get_n_splits()          # no X: reports the request
+    assert cv.get_n_splits(X) == len(folds)        # with X: realized == yielded
+
+
+def test_zero_folds_raises():
+    # A config where the guard swallows every fold must fail loudly, not yield
+    # an empty CV (whose np.mean([]) would be a silent nan best-value).
+    X = np.arange(100).reshape(-1, 1)
+    with pytest.raises(ValueError, match='no folds'):
+        list(PurgedTimeSeriesSplit(n_splits=5, embargo=200).split(X))
+
+
+def test_sklearn_search_contract_with_dropped_folds():
+    # The reviewer's concrete failure: GridSearchCV(cv=splitter) raised
+    # "cv.split and cv.get_n_splits return inconsistent results" when
+    # min_train_size pruned folds. get_n_splits(X) now reports the realized
+    # count, so the sklearn contract holds and the search fits.
+    pytest.importorskip('sklearn')
+    from sklearn.linear_model import Ridge
+    from sklearn.model_selection import GridSearchCV
+
+    rng = np.random.default_rng(0)
+    n = 120
+    X = rng.normal(size=(n, 2))
+    y = X @ np.array([1.0, -1.0]) + rng.normal(scale=0.3, size=n)
+    cv = PurgedTimeSeriesSplit(n_splits=5, embargo=1, min_train_size=40)
+    realized = len(list(cv.split(X)))
+    assert realized < cv.n_splits                  # folds are actually dropped
+    assert cv.get_n_splits(X) == realized          # contract holds with X
+    gs = GridSearchCV(Ridge(), {'alpha': [0.1, 1.0, 10.0]}, cv=cv)
+    gs.fit(X, y)                                    # must NOT raise inconsistent-splits
+    assert gs.best_params_['alpha'] in (0.1, 1.0, 10.0)
 
 
 def test_rejects_bad_args():
