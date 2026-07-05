@@ -1,5 +1,7 @@
 # Audit remediation — 2026-07-05 package review
 
+**Status: COMPLETE (2026-07-05)** — implemented by specs/plans/completed/7-audit_7_5_26.md; deferred items in specs/deferred_items.md
+
 Remediate all 17 distinct findings from the 2026-07-05 whole-package review
 (five-lens workflow review: cross-references, skill quality, tooling,
 data-skill content, process-skill coherence; 21 raw findings deduplicated
