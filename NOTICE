@@ -23,6 +23,7 @@ The following skills are original works by Lowell Mason, MIT licensed:
     recommend-probabilistic-model/
     recommend-visualization/
     track-model-experiments/
+    tune-hyperparameters/
 
 recommend-visualization/ is an original work by Lowell Mason (MIT). It CITES
 standard visualization literature by author-year only (Cleveland & McGill 1984;
