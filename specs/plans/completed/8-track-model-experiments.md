@@ -2,6 +2,16 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use subagent-driven-development to implement this plan task-by-task (or executing-plans if subagent dispatch is unavailable). Steps use checkbox (`- [ ]`) syntax for tracking.
 
+**Status: COMPLETE (2026-07-05)** — executed via subagent-driven-development (Tasks 1–4) with a controller-inline fallback for Task 5 and the final-review fix (Agent dispatch was intermittently classifier-blocked); deferred items in specs/deferred_items.md.
+
+> **Execution deviations (all deliverables landed; these are method/plan-bug notes):**
+> - **Task 1** — plan's `build_ranking` assumed an `az.compare` `warning` column that ArviZ 1.2.0 dropped; implementer added `_has_warning` reading `diag_diff`/`diag_elpd` (the real fix — the plan code would have silently reported no warnings). Discovered `to_netcdf()` needs `--with h5netcdf --with h5py` (added to all documented commands).
+> - **Task 2** — plan's draft `import arviz.stats as azs` is a nonexistent module on 1.2.0 (real: `arviz_stats`) and would have broken all imports; dropped. Plan's `update_ledger` double-stamped `**best**` (the rendered comparison table also matches the winning id); implementer added an `in_block` guard. Folded in two Task-1 review Minors (warning-scope comment; `ValueError`→clean-CLI-exit).
+> - **Task 3** — reviewed by the controller (doc task; controller held the CLI/template/cross-ref context) rather than a subagent. Body 604 words vs the ~500 soft aim (all sections brief-required).
+> - **Task 4** — brief required `check_provenance.py` to pass, but that lint went red at Task 3 (SKILL.md with no NOTICE entry); the implementer correctly added the NOTICE originals entry early (nominally Task 5's), so Task 5's scope shrank to README + install + sweep. A follow-up commit fixed a missing sentence terminator in the Step 9 pointer.
+> - **Task 5** — executed controller-inline (Agent dispatch classifier-blocked ×4): README edits via Edit, verification sweep run by the controller. Build suite reports 22 tests (grew from the plan's stated 15 via plan-7 lint hardening) — not a regression.
+> - **Final review (opus)** — zero Critical; 3 Important, one root cause: `extract_diagnostics` read a nonexistent `'ppc'` key and stamped `psense='flagged'` on mere `psense.json` presence (mislabeling every clean sensitivity check). Fixed inline (commit 1376344) to read the real `check_report.json` schema (`calibration.rating`, `psense.flagged_params`) + a covering test. This was a plan bug invisible to per-task reviews (needs cross-check against bayesian-workflow's writer schema). Five Minors deferred.
+
 **Goal:** Ship a standalone `track-model-experiments` skill — a per-analysis `experiments.md` ledger plus a `compare_experiments.py` comparator that ranks Bayesian model variants from their saved InferenceData and stamps the winner back into the ledger.
 
 **Architecture:** The comparator is a thin CLI over ArviZ: it discovers variant slug folders, loads each `inference_data.nc`, guards the two correctness preconditions (every variant has a `log_likelihood` group; all variants share the same observation count), runs `az.compare`, extracts each variant's convergence diagnostics, and idempotently rewrites a marker-delimited block in the ledger. The SKILL.md documents the ledger schema and the comparator, and defers the ELPD statistics to `bayesian-workflow/references/model-comparison.md`.
@@ -37,7 +47,7 @@ Build the comparator's discovery/load/guard/compare path and the shared NumPyro 
   - `observation_count(idata) -> int` — length of the observed variable.
   - `run_comparison(models: dict[str, object]) -> "pandas.DataFrame"` — `az.compare`, with an `elpd` column normalized across ArviZ versions; index is the variant id, row order is best-first.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 ```python
 # skills/track-model-experiments/scripts/test_compare_experiments.py
@@ -148,12 +158,12 @@ def test_fewer_than_two_variants_message(data, tmp_path):
     assert 'at least two' in (r.stderr + r.stdout).lower()
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `cd skills/track-model-experiments/scripts && uv run --python 3.13 --with pytest --with numpyro --with arviz --with arviz-stats --with numpy python -m pytest -q`
 Expected: FAIL — `compare_experiments.py` does not exist (collection error / all tests error).
 
-- [ ] **Step 3: Write the comparator core**
+- [x] **Step 3: Write the comparator core**
 
 ```python
 # skills/track-model-experiments/scripts/compare_experiments.py
@@ -283,12 +293,12 @@ if __name__ == '__main__':
     sys.exit(main())
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run: `cd skills/track-model-experiments/scripts && uv run --python 3.13 --with pytest --with numpyro --with arviz --with arviz-stats --with numpy python -m pytest -q`
 Expected: PASS — 4 tests (ranking, missing-ll error, mismatched-obs refusal, <2 message).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/track-model-experiments/scripts/compare_experiments.py skills/track-model-experiments/scripts/test_compare_experiments.py
@@ -312,7 +322,7 @@ Extend the comparator to (a) extract each variant's convergence diagnostics and 
   - `render_comparison_block(ranking: list[dict]) -> str` — a markdown table between `<!-- COMPARISON:BEGIN -->` and `<!-- COMPARISON:END -->`.
   - `update_ledger(ledger_path: Path, block: str, best_id: str) -> None` — replace the marker-delimited region (idempotent); set `**best**` in the `status` column of `best_id`'s row and clear any previous `**best**`.
 
-- [ ] **Step 1: Write the failing tests (append)**
+- [x] **Step 1: Write the failing tests (append)**
 
 ```python
 def test_diagnostics_in_output(analysis_dir, tmp_path):
@@ -359,12 +369,12 @@ def test_ledger_update_is_idempotent(analysis_dir, tmp_path):
     assert '**best**' in best_row
 ```
 
-- [ ] **Step 2: Run to verify the new tests fail**
+- [x] **Step 2: Run to verify the new tests fail**
 
 Run: `cd skills/track-model-experiments/scripts && uv run --python 3.13 --with pytest --with numpyro --with arviz --with arviz-stats --with numpy python -m pytest -q -k "diagnostics or ledger"`
 Expected: FAIL — `max_rhat` absent from output; `--ledger` is not written.
 
-- [ ] **Step 3: Implement diagnostics extraction + ledger update**
+- [x] **Step 3: Implement diagnostics extraction + ledger update**
 
 Add to `compare_experiments.py`:
 
@@ -469,12 +479,12 @@ Wire the diagnostics into `compare()` (merge into each ranking entry) and call t
 
 (Adjust `compare()` so it returns the enriched `ranking`; keep `build_ranking` pure so Task 1's tests still pass.)
 
-- [ ] **Step 4: Run the full test file to verify pass**
+- [x] **Step 4: Run the full test file to verify pass**
 
 Run: `cd skills/track-model-experiments/scripts && uv run --python 3.13 --with pytest --with numpyro --with arviz --with arviz-stats --with numpy python -m pytest -q`
 Expected: PASS — all 6 tests (4 from Task 1 + diagnostics + idempotent-ledger).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/track-model-experiments/scripts/compare_experiments.py skills/track-model-experiments/scripts/test_compare_experiments.py
@@ -493,7 +503,7 @@ Write the skill document. Trigger-only frontmatter; inline ledger template; comp
 **Interfaces:**
 - Consumes: the CLI from Tasks 1–2 (`--analysis-dir`, `--ledger`, `--output`).
 
-- [ ] **Step 1: Write SKILL.md**
+- [x] **Step 1: Write SKILL.md**
 
 Frontmatter (trigger-only; no workflow summary):
 
@@ -526,13 +536,13 @@ Body sections (write in the house voice — lean prose, concrete):
 - `## Stopping rule` — `ΔELPD < 2·dSE` → indistinguishable, prefer simpler; conclusions stable across passing models → multiverse view (Gelman et al. 2020, §8). Point to `bayesian-workflow/references/model-comparison.md` for the interpretation thresholds rather than restating them as new doctrine.
 - `## Relationship to bayesian-workflow` — this skill owns the *iteration ledger*; `model-comparison.md` owns the *statistics*; `reporting.md` owns the *per-variant slug folder*. Bare names only.
 
-- [ ] **Step 2: Verify frontmatter lint passes and description is trigger-only**
+- [x] **Step 2: Verify frontmatter lint passes and description is trigger-only**
 
 Run: `uv run --python 3.13 --with pyyaml python build/check_frontmatter.py`
 Expected: exit 0, `track-model-experiments` scanned and clean.
 Then manually confirm: description ≤ 1024 chars, starts with "Use when", no workflow summary. `wc -w skills/track-model-experiments/SKILL.md` — keep the body concise (< ~500 words of prose beyond the template).
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add skills/track-model-experiments/SKILL.md
@@ -552,24 +562,24 @@ Add two one-line pointers so the new skill is discoverable from the workflow tha
 **Interfaces:**
 - Consumes: the skill name `track-model-experiments` (Task 3).
 
-- [ ] **Step 1: Edit bayesian-workflow Step 9**
+- [x] **Step 1: Edit bayesian-workflow Step 9**
 
 In `skills/bayesian-workflow/SKILL.md`, the workflow-overview Step 9 currently reads:
 `9. **Compare models** (if applicable) — See [references/model-comparison.md](references/model-comparison.md)`
 Append a clause:
 `When iterating over many variants, track them with the track-model-experiments skill (ledger + comparator over the slug folders); model-comparison.md remains the statistics.`
 
-- [ ] **Step 2: Edit reporting.md's version note**
+- [x] **Step 2: Edit reporting.md's version note**
 
 In `skills/bayesian-workflow/references/reporting.md`, the "Results folder naming" note says: *"When iterating on the same problem, append a version: `churn-logistic-v2/`."* Append:
 `To index those versions and rank them, use the track-model-experiments skill.`
 
-- [ ] **Step 3: Verify links resolve and lints still pass**
+- [x] **Step 3: Verify links resolve and lints still pass**
 
 Run: `uv run --python 3.13 --with pyyaml python build/check_frontmatter.py && uv run --python 3.13 python build/check_provenance.py`
 Expected: exit 0 for both. Confirm no `../` link breakage introduced (bare skill-name references only — no new file links).
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add skills/bayesian-workflow/SKILL.md skills/bayesian-workflow/references/reporting.md
@@ -589,15 +599,15 @@ Register the skill in `NOTICE` and `README`, symlink it into `~/.claude/skills/`
 **Interfaces:**
 - Consumes: the skill directory `skills/track-model-experiments/` (Tasks 1–3).
 
-- [ ] **Step 1: Add to NOTICE**
+- [x] **Step 1: Add to NOTICE**
 
 In `NOTICE`, add `track-model-experiments/` to the "original works by Lowell Mason, MIT licensed" list (the block beginning at `develop-testing-strategy/`), keeping the list's alphabetical-ish grouping.
 
-- [ ] **Step 2: Add to README**
+- [x] **Step 2: Add to README**
 
 In `README.md`: add a row to the **Mine** table (`| [`track-model-experiments`](skills/track-model-experiments/) | … |` — one dense sentence: a per-analysis ledger + `az.compare` comparator that ranks Bayesian model variants and records what changed and why; the iteration layer above `bayesian-workflow`), and append `track-model-experiments` to the "My original skills" line (~146).
 
-- [ ] **Step 3: Run the provenance + frontmatter lints**
+- [x] **Step 3: Run the provenance + frontmatter lints**
 
 Run:
 ```bash
@@ -606,12 +616,12 @@ uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
 ```
 Expected: both exit 0 (provenance now matches the NOTICE entry; frontmatter clean).
 
-- [ ] **Step 4: Run the skill's test suite once more (regression)**
+- [x] **Step 4: Run the skill's test suite once more (regression)**
 
 Run: `cd skills/track-model-experiments/scripts && uv run --python 3.13 --with pytest --with numpyro --with arviz --with arviz-stats --with numpy python -m pytest -q`
 Expected: PASS — all 6 tests.
 
-- [ ] **Step 5: Install the skill (symlink) and confirm it resolves**
+- [x] **Step 5: Install the skill (symlink) and confirm it resolves**
 
 ```bash
 ln -sfn /Users/lowell/Projects/agent-skills/skills/track-model-experiments ~/.claude/skills/track-model-experiments
@@ -619,7 +629,7 @@ test -f ~/.claude/skills/track-model-experiments/SKILL.md && echo OK
 ```
 Expected: `OK`.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add NOTICE README.md

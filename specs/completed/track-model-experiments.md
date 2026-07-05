@@ -1,6 +1,6 @@
 # track-model-experiments — Design Spec
 
-**Status: IN PROGRESS** — approved 2026-07-05; plan pending.
+**Status: COMPLETE (2026-07-05)** — implemented via plan 8 (retired to specs/plans/completed/8-track-model-experiments.md); shipped skill at skills/track-model-experiments/. Deferred Minors in specs/deferred_items.md.
 
 ## Motivation — the gap
 
