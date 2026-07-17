@@ -112,6 +112,22 @@ Three guardrails, enforced before any ranking happens:
   `warning` flag per variant in `comparison.json` and a `⚠` in the ledger
   table, not silently dropped.
 
+## Fresh session per variant
+
+Each variant wraps a full `bayesian-workflow` fit/diagnose/report loop — long,
+and it accumulates in your session. Once a variant's row is stamped by the
+comparator and its decision-log entry written, the ledger holds everything the
+next variant needs: what every prior variant changed, why, and how it scored.
+Carrying the prior variant's fitting conversation forward re-reads that history
+every turn and buys nothing.
+
+So iterate one variant per session: when a variant's ledger row and decision log
+are current, `/clear` and start the next variant fresh, resuming by reading
+`experiments.md` (and the parent variant's slug folder when forking from it) —
+not the prior conversation. **Update the ledger and decision log BEFORE you
+clear**, in that order: after `/clear` the reasoning in your head is gone, and
+the ledger is the only durable record of what changed and why.
+
 ## Stopping rule
 
 Stop iterating — don't keep chasing ELPD — when either holds:

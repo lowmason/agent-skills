@@ -69,6 +69,13 @@ needs to start cold: **likelihood family, candidate priors (incl. any from exter
 recommendations target **[dynamax](https://github.com/probml/dynamax)** (JAX SSMs); Bayesian fitting
 goes to `bayesian-workflow` (NumPyro/BlackJAX).
 
+Because the memo starts `bayesian-workflow` cold, this recommendation session's
+own context — data profiling, candidate weighing, §ref hunting — is dead weight
+downstream. Once `recommendation.md` is written (Step 8), recommend the user
+`/clear` and invoke `bayesian-workflow` in a fresh session against the memo:
+fitting then carries none of this consult's history and runs on its own model
+default.
+
 ## Reference map
 
 | File | Role |

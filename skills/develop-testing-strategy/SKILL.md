@@ -235,6 +235,25 @@ markers = [
 
 State the exact CI command in the plan so "excluded from CI" is concrete, not aspirational.
 
+## Persist the plan, then hand off
+
+The output of Steps 1–6 is a test *plan*, not test code — this skill consults
+*before* writing tests. Writing the suite is a separate, longer phase (one
+invariant at a time, red→green→refactor via test-driven-development) that does
+not need this planning conversation.
+
+1. **Write the plan to a durable file first** — the enumerated invariants
+   (grouped by code kind), each one's check layer and fixture, the marker
+   assignments, and the exact CI command from Step 6. Put it where the project
+   keeps design docs (e.g. `specs/<name>-test-strategy.md`) or append it to the
+   spec/plan this work implements. This file is the handoff; the chat transcript
+   is not.
+2. **Then `/clear` and implement in a fresh session** against that file, via
+   test-driven-development. A fresh session drops this strategy discussion
+   (re-read every turn otherwise) and lets implementation run on the standard
+   model default. Persist the plan *before* you clear — clearing first would
+   discard the deliverable the handoff depends on.
+
 ## Common mistakes and anti-patterns
 
 - **Chasing a coverage number.** Coverage measures lines executed, not invariants checked. A
