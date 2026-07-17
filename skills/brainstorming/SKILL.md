@@ -34,7 +34,7 @@ You MUST create a task for each of these items and complete them in order:
 6. **Write design doc** — save the spec to `specs/<descriptive-name>.md` and commit
 7. **Spec self-review** — quick inline check for placeholders, contradictions, ambiguity, scope (see below)
 8. **User reviews written spec** — ask user to review the spec file before proceeding
-9. **Transition to implementation** — invoke writing-plans skill to create implementation plan
+9. **Hand off to planning in a fresh session** — the spec is committed and approved; recommend the user `/clear` and invoke writing-plans against the spec file (the committed spec is the handoff — the brainstorming dialogue is not), then stop
 
 ## Process Flow
 
@@ -48,7 +48,7 @@ digraph brainstorming {
     "Write design doc" [shape=box];
     "Spec self-review\n(fix inline)" [shape=box];
     "User reviews spec?" [shape=diamond];
-    "Invoke writing-plans skill" [shape=doublecircle];
+    "Recommend /clear +\nfresh writing-plans session" [shape=doublecircle];
 
     "Explore project context" -> "Ask clarifying questions";
     "Ask clarifying questions" -> "Propose 2-3 approaches";
@@ -59,11 +59,11 @@ digraph brainstorming {
     "Write design doc" -> "Spec self-review\n(fix inline)";
     "Spec self-review\n(fix inline)" -> "User reviews spec?";
     "User reviews spec?" -> "Write design doc" [label="changes requested"];
-    "User reviews spec?" -> "Invoke writing-plans skill" [label="approved"];
+    "User reviews spec?" -> "Recommend /clear +\nfresh writing-plans session" [label="approved"];
 }
 ```
 
-**The terminal state is invoking writing-plans.** Do NOT invoke any implementation skill. The ONLY skill you invoke after brainstorming is writing-plans.
+**The terminal state is handing off to writing-plans in a fresh session.** Once the spec is committed and approved, recommend the user `/clear` and invoke writing-plans against the spec file, then stop — the committed spec is a complete handoff, so planning needs neither this brainstorming dialogue nor its (token-intensive) visual-companion browser session. Do NOT invoke any implementation skill; writing-plans is the only skill after brainstorming, and it belongs in that fresh session.
 
 ## The Process
 
@@ -131,10 +131,18 @@ After the spec review loop passes, ask the user to review the written spec befor
 
 Wait for the user's response. If they request changes, make them and re-run the spec review loop. Only proceed once the user approves.
 
-**Implementation:**
+**Handoff to planning:**
 
-- Invoke the writing-plans skill to create a detailed implementation plan
-- Do NOT invoke any other skill. writing-plans is the next step.
+- The spec is committed and the user has approved it — it is a complete,
+  self-sufficient handoff (that is what the self-review's ambiguity/consistency
+  checks are for). The brainstorming dialogue is not needed downstream.
+- **Recommend the user `/clear` and invoke writing-plans in a fresh session**
+  against the spec file, then stop. A fresh session drops this brainstorming
+  conversation (and any token-intensive visual-companion browser session) that
+  planning would otherwise re-read every turn.
+- Continuing in this session also works but carries the whole dialogue into
+  planning. Either way writing-plans is the only next skill — do NOT invoke any
+  other.
 
 ## Key Principles
 

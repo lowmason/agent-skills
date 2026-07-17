@@ -19,7 +19,7 @@ Execute plan by dispatching a fresh implementer subagent per task, a task review
 **Narration:** between tool calls, narrate at most one short line — the
 ledger and the tool results carry the record.
 
-**Continuous execution:** Do not pause to check in with your human partner between tasks. Execute all tasks from the plan without stopping. The only reasons to stop are: BLOCKED status you cannot resolve, ambiguity that genuinely prevents progress, or all tasks complete. "Should I continue?" prompts and progress summaries waste their time — they asked you to execute the plan, so execute it.
+**Continuous execution:** Do not pause to check in with your human partner between tasks. Execute tasks without stopping for permission. The only reasons to stop are: BLOCKED status you cannot resolve, ambiguity that genuinely prevents progress, a **context checkpoint** (see Context Checkpoints — a durable handoff to a fresh session, not a check-in), or all tasks complete. "Should I continue?" prompts and progress summaries waste their time — they asked you to execute the plan, so execute it.
 
 ## When to Use
 
@@ -274,6 +274,13 @@ a ledger file, not only in todos.
   `cat "$(git rev-parse --show-toplevel)/.sdd/progress.md"`. Tasks listed there
   as complete are DONE — do not re-dispatch them; resume at the first task
   not marked complete.
+- **On resume after a checkpoint, reconcile before dispatching.** Before
+  dispatching the first incomplete task, replay the ledger's `deviation` lines:
+  for any interface a coming task consumes, trust the ledger's actual signature
+  over the plan's `Produces:` block, and if one is still in doubt confirm it
+  with `git show <SHA>:<path>`. This repairs the cross-task context that
+  `/clear` dropped — without it a relaunched controller dispatches stale
+  signatures and the build breaks or the implementer stalls on NEEDS_CONTEXT.
 - When a task's review comes back clean, append one line to the ledger in
   the same message as your other bookkeeping:
   `Task N: complete (commits <base7>..<head7>, review clean)`.
@@ -282,6 +289,39 @@ a ledger file, not only in todos.
   trust the ledger and `git log` over your own recollection.
 - `git clean -fdx` will destroy the ledger (the workspace's own .gitignore keeps it out of git); if
   that happens, recover from `git log`.
+
+## Context Checkpoints
+
+Everything you dispatch and every report you read stays resident in your
+context, re-read on every later turn at cache-read cost. On a long plan this
+recurring cost grows with each task — the controller's accumulated history, not
+the work, becomes the dominant spend. Cap it by resetting context at a task
+boundary and handing off to a fresh session that resumes where this one stopped.
+
+A checkpoint is **not** a "should I continue?" check-in (still banned) and never
+interrupts a task — it is a durable handoff taken only at a clean boundary.
+
+**When:** at a task boundary (never mid-task, never with a review loop open)
+when the harness signals context pressure — a compaction warning, or context
+you notice has grown large. Many tasks since the last fresh start is a weak
+secondary hint, not a trigger by itself; task sizes vary, so read the
+context-pressure signal, not a task count.
+
+**How:**
+1. **Capture cross-task state the ledger lacks.** The plan's `Produces:` blocks
+   carry each task's *planned* interfaces, not what changed during execution.
+   For each task done since the last fresh start, append any plan deviation a
+   later implementer must know — a renamed symbol, a changed signature, or an
+   unanticipated decision (`Task 3: deviation — plan said clearLayers(); shipped
+   clearAll()`). A task that matched its plan needs no line. After `/clear` your
+   memory of these is gone; the ledger is the only carrier.
+2. Confirm the ledger's completion lines are current through the last finished
+   task and that their commits exist in `git log`.
+3. In one line, tell your human partner which tasks are complete, that the
+   ledger is current, and that you recommend `/clear` + relaunching
+   subagent-driven-development on the same plan to resume with fresh context —
+   with the cost reason. Then stop; the relaunch resumes from the ledger via
+   Durable Progress above.
 
 ## Prompt Templates
 
