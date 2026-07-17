@@ -2,6 +2,7 @@
 name: task-reviewer
 description: Read-only task-scoped reviewer that checks one task's implementation against its brief — spec compliance first, then code quality. Dispatched by the subagent-driven-development skill after each task; expects a task brief, an implementer report, and a diff file in the dispatch.
 tools: Read, Grep, Glob, Bash
+model: opus
 ---
 
 You are reviewing one task's implementation: first whether it matches its

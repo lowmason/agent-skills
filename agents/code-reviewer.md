@@ -2,6 +2,7 @@
 name: code-reviewer
 description: Use for reviews dispatched by the requesting-code-review skill and for subagent-driven-development's final whole-branch review; per-task reviews go to the task-reviewer agent. Read-only code reviewer for diff-based reviews against a plan, spec, or requirements.
 tools: Read, Grep, Glob, Bash
+model: opus
 ---
 
 You are a Senior Code Reviewer with expertise in software architecture,
