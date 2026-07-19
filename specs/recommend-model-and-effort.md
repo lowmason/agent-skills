@@ -1,10 +1,56 @@
 # recommend-model-and-effort — Design Spec
 
-**Status: DRAFT (2026-07-19)** — proposed from `specs/model-effort-delegation-plan.md`
-(the Rev. 2 report); **not yet approved**. The report was written without visibility
-into plan 10 (`specs/plans/completed/10-model-routing-setup.md`) or the current
-`settings.json`/`CLAUDE.md`; this spec reconciles its `recommend-model-and-effort`
-proposal to the repo's *actual* routing decision before any build.
+**Status: NO-GO (2026-07-19)** — the go/no-go pre-flight (below) was run under
+`writing-plans`; Gate 2 failed its RED test, so **the skill is not built** and no
+implementation plan was written. This is an explicitly valid outcome of this spec
+("If the honest answer is 'no,' the fallback is to enrich the CLAUDE.md block and
+ship no skill. Record that outcome"). Originally proposed from
+`specs/model-effort-delegation-plan.md` (the Rev. 2 report), reconciled to the
+repo's actual routing decision (plan 10,
+`specs/plans/completed/10-model-routing-setup.md`).
+
+## Gate resolution (2026-07-19 pre-flight)
+
+Both gates were resolved as a planning-time pre-flight (the RED baseline is a
+`writing-skills` input, not an execution task — running it up front is what lets a
+build plan show real content, and it kills a dead-weight plan when the baseline
+already passes).
+
+- **Gate 1 — survives plan 10's objection? PASS (by construction).** Verified via
+  the claude-code-guide agent against the official skills docs:
+  `disable-model-invocation: true` is a valid, honored frontmatter key that makes a
+  skill **user-invocable-only** — the user can run `/recommend-model-and-effort`, but
+  Claude cannot auto-invoke it and its description is removed from context entirely
+  (v2.1.196+ also blocks scheduled-task firing). So the "user-invoked, advisory,
+  never auto-routes" design *is* achievable — Gate 1 is not the blocker.
+
+- **Gate 2 — earns its place beside the CLAUDE.md block? FAIL → NO-GO.** RED baseline
+  per the `writing-skills` Iron Law ("if the no-guidance control doesn't exhibit the
+  failure, there is nothing to fix — stop, don't author the guidance"): 4 subagents,
+  each carrying *only* the current CLAUDE.md routing block and **no** skill, on the
+  two sharpest tempting prompts. All 4 produced the correct recommendation with
+  strong convergence:
+  - **Ceiling prompt (3/3 reps)** — "stuck at opus/xhigh, full context, still
+    failing": every rep recognized opus/xhigh as the ceiling, *refused to reach for a
+    bigger model*, and redirected to `/clear` + fresh context, decompose via
+    `writing-plans`, and `systematic-debugging`.
+  - **Skipped-file prompt (1/1)** — correctly diagnosed an effort/process deficit
+    (not capability), advised *against* jumping to Opus, and pointed at
+    `verification-before-completion` + a Stop hook.
+  - The control did not exhibit the failure, and the baseline agents spontaneously
+    routed to the *right existing repo skills* — evidence the ecosystem + CLAUDE.md
+    already cover this decision space. There is nothing for the skill to teach.
+
+**Decision:** do not build the skill. **Fallback taken (applied 2026-07-19):** the
+spec's named alternative — added the context→effort→model diagnostic order and the
+"opus is the ceiling → go horizontal (/clear, decompose, or an advisor pass), never
+a bigger model" redirect to the `~/.claude/CLAUDE.md` routing block (two
+always-in-context bullets; the block previously named neither the effort lever nor
+the ceiling). This is the global user config, outside this repo — not part of the
+`spec/model-effort-delegation` branch. Everything below is the original design,
+retained for the record.
+
+---
 
 A user-invoked skill that, on demand, diagnoses why a session is underperforming
 or overspending and recommends a **model** (haiku/sonnet/opus) and **effort**
