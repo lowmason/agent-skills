@@ -7,11 +7,12 @@
 made in one place rather than split across two specs that would ship competing
 paths.
 
-Add `model`/`effort` (and, where isolation helps, `context: fork`) delegation
-frontmatter to the compute-heavy skills and the reviewer agents, and give the
-mechanical data skills a Haiku path — so the Sonnet-default session escalates *by
-structure* (the skill you invoked) rather than by per-prompt guessing, and stops
-paying Sonnet/Opus rates for grep-and-profile work.
+Add `model`/`effort` delegation frontmatter to the compute-heavy skills and the
+reviewer agents, and give the genuinely mechanical data skills a Haiku path — so a
+Sonnet-default session gets the right model/effort *by structure* (the skill you
+invoked) rather than by per-prompt guessing. This is primarily task-model **fit**;
+the Haiku pins are a modest, per-turn cost trim, not the main cost lever (that
+remains plan 10's session-boundary work).
 
 ## Motivation — the real gaps
 
@@ -102,27 +103,35 @@ rejected bogus key. No frontmatter edit below can land until this passes.
 
 ### 5. One Haiku path — pick one, name the rejected alternative
 
-The mechanical data skills (`explore-data`, `validate-data`, `bls-data-context`)
-should run cheap. Because Explore no longer forces Haiku (Req 1), the report's
-"`context: fork` + `agent: Explore`" would now run on the **session** model
-(Sonnet), *not* Haiku — it no longer does what the report claims. Options:
+Scope the Haiku pin to **genuinely mechanical** work, not "data skills" as a
+category: **`explore-data`** (its numbers come from the deterministic bundled
+`profile.py`, and it feeds *into* analysis with `validate-data` downstream as the
+net) and **`bls-data-context`** (reference retrieval with facts in-context).
+**Exclude `validate-data`** — it is the ship-gate (benchmark reconciliation,
+methodology/bias, silent-fallback detection), reasoning checks whose whole value is
+catching the subtle problem a weaker model misses, and it is the last line with
+nothing downstream to catch what it lets through; it stays `inherit`. Because Explore
+no longer forces Haiku (Req 1), the report's "`context: fork` + `agent: Explore`"
+would now run on the **session** model (Sonnet), *not* Haiku — it no longer does what
+the report claims. Options:
 
-- **(chosen) `model: haiku` directly on the three skills.** Simplest; guaranteed
-  Haiku; no new agent; no reliance on Explore's changed behavior. Runs in-context
-  (no fork isolation), which is fine for short profiling/lookup bodies. Verify
-  `model: haiku` on a skill behaves as documented (Req 1).
+- **(chosen) `model: haiku` directly on the two mechanical skills.** Simplest;
+  guaranteed Haiku; no new agent; no reliance on Explore's changed behavior. Runs
+  in-context (no fork isolation), fine for short profiling/lookup bodies; the override
+  is per-turn (Req 1). Verify `model: haiku` on a skill behaves as documented.
 - (rejected) **new `data-explorer` haiku agent** (report §c) + fork to it — an extra
   agent and install surface for no gain over the direct pin.
 - (deferred upgrade) a single **haiku-pinned `Explore` override agent** — restores
   fork isolation *and* Haiku, and doubles as the global Explore→Haiku lever the
   report recommends. Add later only if fork isolation proves worth it.
 
-Ship the direct `model: haiku` pin; leave a one-line note pointing at the Explore-
-override upgrade.
+Ship the direct `model: haiku` pin on the two mechanical skills; leave a one-line
+note pointing at the Explore-override upgrade.
 
 ### 6. Watch-outs to encode
 
-- Haiku takes no `effort` — none on the three data skills.
+- Haiku takes no `effort` — none on the two Haiku-pinned skills (`explore-data`,
+  `bls-data-context`).
 - `context: fork` with a reference-only body silently no-ops — not a risk here since
   the chosen path avoids fork, but note it if the deferred upgrade is taken.
 - Cross-skill references stay bare skill names (repo invariant).
@@ -138,7 +147,8 @@ override upgrade.
 - Each pinned skill still triggers on its existing `description` (pins do not touch
   the description) and, when invoked, the active model/effort matches the pin
   (spot-check via `/status` or the model indicator).
-- The three Haiku-pinned data skills demonstrably run on Haiku on a Sonnet session.
+- The two Haiku-pinned skills (`explore-data`, `bls-data-context`) demonstrably run
+  on Haiku on a Sonnet session; `validate-data` stays on the session model.
 - `task-reviewer`'s per-diff escalation still works — an SDD dispatch that requests
   Opus for a risky diff is not overridden by a hard effort pin (because none was
   added).
