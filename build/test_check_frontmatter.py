@@ -113,3 +113,22 @@ def test_real_agents_and_commands_are_clean():
     for md in sorted((REPO / 'commands').glob('*.md')):
         errs += check_command_file(md)
     assert errs == []
+
+
+def test_model_and_effort_keys_allowed(tmp_path):
+    d = make_skill(
+        tmp_path,
+        'pinned-skill',
+        'name: pinned-skill\ndescription: Use when testing pins.\nmodel: haiku\neffort: xhigh',
+    )
+    assert check_skill(d) == []
+
+
+def test_unknown_frontmatter_key_still_rejected(tmp_path):
+    d = make_skill(
+        tmp_path,
+        'bogus-skill',
+        'name: bogus-skill\ndescription: Use when testing.\nbogus-key: nope',
+    )
+    errs = '\n'.join(check_skill(d))
+    assert "unknown frontmatter key 'bogus-key'" in errs
