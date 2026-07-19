@@ -11,6 +11,7 @@ description: >
   Pyro, JAX, BlackJAX, ArviZ, InferenceData, DataTree, credible intervals, HDI, posterior
   distributions, shrinkage, or uncertainty quantification.
 license: MIT
+effort: xhigh
 metadata:
   author: "Alexandre Andorra (https://alexandorra.github.io/)"
   adapted_by: Lowell Mason

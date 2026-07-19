@@ -10,6 +10,7 @@ description: >
   leakage in CV, when NOT to tune, or graduating a tuned model to a compared variant.
   Guards temporal leakage; revision/vintage leakage belongs to develop-testing-strategy.
 license: MIT
+effort: xhigh
 metadata:
   author: Lowell Mason
   version: "1.0"
