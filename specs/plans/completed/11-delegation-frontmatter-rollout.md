@@ -1,5 +1,7 @@
 # Delegation-frontmatter Rollout Implementation Plan
 
+**Status: COMPLETE (2026-07-19)** — executed via executing-plans; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add `model`/`effort` delegation frontmatter to the compute-heavy skills and the reviewer agents, and give the mechanical data skills a Haiku path, so a Sonnet-default session escalates *by structure* (the skill invoked) instead of by per-prompt guessing.
@@ -52,7 +54,7 @@ Consequence of the last row: forking the data skills to `agent: Explore` would r
 - Consumes: nothing.
 - Produces: `ALLOWED_KEYS` now contains `'model'` and `'effort'` — the precondition Tasks 2 and 3 rely on to lint clean.
 
-- [ ] **Step 1: Write the failing test (plus an unknown-key guard)**
+- [x] **Step 1: Write the failing test (plus an unknown-key guard)**
 
 Append to `build/test_check_frontmatter.py` (reuses the existing `make_skill` helper):
 
@@ -76,12 +78,12 @@ def test_unknown_frontmatter_key_still_rejected(tmp_path):
     assert "unknown frontmatter key 'bogus-key'" in errs
 ```
 
-- [ ] **Step 2: Run the tests to verify the new-keys test fails**
+- [x] **Step 2: Run the tests to verify the new-keys test fails**
 
 Run: `cd build && uv run --python 3.13 --with pytest --with numpy --with polars --with pyyaml python -m pytest test_check_frontmatter.py -q`
 Expected: `test_model_and_effort_keys_allowed` **FAILS** — `check_skill` returns `["…/SKILL.md: unknown frontmatter key 'model'", "…: unknown frontmatter key 'effort'"]` instead of `[]`. `test_unknown_frontmatter_key_still_rejected` PASSES (that key is already rejected).
 
-- [ ] **Step 3: Add the two keys to `ALLOWED_KEYS`**
+- [x] **Step 3: Add the two keys to `ALLOWED_KEYS`**
 
 In `build/check_frontmatter.py`, line 22:
 
@@ -89,12 +91,12 @@ In `build/check_frontmatter.py`, line 22:
 ALLOWED_KEYS = {'name', 'description', 'license', 'allowed-tools', 'metadata', 'when_to_use', 'model', 'effort'}
 ```
 
-- [ ] **Step 4: Run the full build suite to verify green**
+- [x] **Step 4: Run the full build suite to verify green**
 
 Run: `cd build && uv run --python 3.13 --with pytest --with numpy --with polars --with pyyaml python -m pytest -q`
 Expected: PASS — all tests green, including the two new ones (`test_real_repo_is_clean` still passes; no skill carries `model`/`effort` yet).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add build/check_frontmatter.py build/test_check_frontmatter.py
@@ -113,7 +115,7 @@ git commit -m "build(lint): allow model/effort skill frontmatter keys"
 - Consumes: Task 1's `ALLOWED_KEYS` extension (`effort` now permitted).
 - Produces: both skills bump to `xhigh` effort while active, composing with the session model.
 
-- [ ] **Step 1: Add `effort: xhigh` to `bayesian-workflow`**
+- [x] **Step 1: Add `effort: xhigh` to `bayesian-workflow`**
 
 In `skills/bayesian-workflow/SKILL.md`, insert the `effort` line after `license: MIT`:
 
@@ -126,7 +128,7 @@ metadata:
   version: "2.0"
 ```
 
-- [ ] **Step 2: Add `effort: xhigh` to `tune-hyperparameters`**
+- [x] **Step 2: Add `effort: xhigh` to `tune-hyperparameters`**
 
 In `skills/tune-hyperparameters/SKILL.md`, same insertion point:
 
@@ -138,12 +140,12 @@ metadata:
   version: "1.0"
 ```
 
-- [ ] **Step 3: Run the frontmatter lint to verify clean**
+- [x] **Step 3: Run the frontmatter lint to verify clean**
 
 Run: `uv run --python 3.13 --with pyyaml python build/check_frontmatter.py`
 Expected: exit 0, no output (both skills lint clean; `effort` is now an allowed key).
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add skills/bayesian-workflow/SKILL.md skills/tune-hyperparameters/SKILL.md
@@ -171,7 +173,7 @@ git commit -m "feat(skills): pin bayesian-workflow + tune-hyperparameters to xhi
 > *into* analysis with `validate-data` as the net; `bls-data-context` is reference
 > retrieval with facts in-context. `validate-data` stays `inherit`. (See spec Req 5.)
 
-- [ ] **Step 1: Add `model: haiku` to `explore-data`**
+- [x] **Step 1: Add `model: haiku` to `explore-data`**
 
 In `skills/explore-data/SKILL.md`, insert after `license: MIT`:
 
@@ -183,7 +185,7 @@ metadata:
   version: "1.0"
 ```
 
-- [ ] **Step 2: Add `model: haiku` to `bls-data-context`** (same insertion point, identical `metadata` block).
+- [x] **Step 2: Add `model: haiku` to `bls-data-context`** (same insertion point, identical `metadata` block).
 
 ```yaml
 license: MIT
@@ -193,12 +195,12 @@ metadata:
   version: "1.0"
 ```
 
-- [ ] **Step 3: Run the frontmatter lint to verify clean**
+- [x] **Step 3: Run the frontmatter lint to verify clean**
 
 Run: `uv run --python 3.13 --with pyyaml python build/check_frontmatter.py`
 Expected: exit 0, no output.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add skills/explore-data/SKILL.md skills/bls-data-context/SKILL.md
@@ -217,7 +219,7 @@ git commit -m "feat(skills): pin explore-data + bls-data-context to haiku"
 - Consumes: nothing (agent files are not `ALLOWED_KEYS`-checked).
 - Produces: `code-reviewer` reviews at `xhigh` effort; `task-reviewer` documents that effort is intentionally per-dispatch.
 
-- [ ] **Step 1: Add `effort: xhigh` to `code-reviewer`**
+- [x] **Step 1: Add `effort: xhigh` to `code-reviewer`**
 
 In `agents/code-reviewer.md`, add the `effort` line after `model: opus`:
 
@@ -228,7 +230,7 @@ effort: xhigh
 ---
 ```
 
-- [ ] **Step 2: Document the intentional no-effort-pin on `task-reviewer`**
+- [x] **Step 2: Document the intentional no-effort-pin on `task-reviewer`**
 
 In `agents/task-reviewer.md`, add a comment line directly below the existing `model:` line (YAML `#` comments are ignored by the lint's `yaml.safe_load`):
 
@@ -238,12 +240,12 @@ model: sonnet  # task-review floor per subagent-driven-development Model Selecti
 # (SDD Model Selection); a fixed pin would fight the scale-with-diff review policy.
 ```
 
-- [ ] **Step 3: Run the frontmatter lint to verify clean**
+- [x] **Step 3: Run the frontmatter lint to verify clean**
 
 Run: `uv run --python 3.13 --with pyyaml python build/check_frontmatter.py`
 Expected: exit 0, no output (agent files still pass name/description/tools checks; `effort` and comments are fine).
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add agents/code-reviewer.md agents/task-reviewer.md
@@ -260,7 +262,7 @@ git commit -m "feat(agents): code-reviewer xhigh effort; document task-reviewer 
 - Consumes: all prior tasks.
 - Produces: confirmation the repo is green and the pins behave.
 
-- [ ] **Step 1: Full build suite + both lints green**
+- [x] **Step 1: Full build suite + both lints green**
 
 Run:
 ```bash
@@ -270,7 +272,7 @@ uv run --python 3.13 python build/check_provenance.py
 ```
 Expected: pytest all-pass; both lint scripts exit 0 with no output.
 
-- [ ] **Step 2: Confirm pins are present and descriptions untouched**
+- [x] **Step 2: Confirm pins are present and descriptions untouched**
 
 Run: `grep -rE '^(model|effort):' skills/*/SKILL.md agents/*.md`
 Expected exactly:
@@ -287,15 +289,17 @@ agents/task-reviewer.md:model: sonnet  # …
 skills — those are intentionally unchanged. `validate-data` in particular stays
 `inherit` because it is a judgment-heavy ship-gate, per Task 3's scope note.)
 
-- [ ] **Step 3: Manual behavioral spot-check (interactive; note results, do not block the plan on tooling)**
+- [x] **Step 3: Manual behavioral spot-check (interactive; note results, do not block the plan on tooling)**
 
 In an interactive session: invoke `explore-data` (or `/explore-data`) and confirm the model indicator / `/status` shows **haiku** for that turn; invoke `bayesian-workflow` and confirm effort shows **xhigh**. If the environment cannot surface the active model/effort, record that and move on — the lint is the enforceable gate; this is confirmation only.
 
-- [ ] **Step 4: Cost check (method, not a pass/fail gate — and expect modest numbers)**
+> Deviation: executed in a non-interactive flow — the live model/effort indicator could not be surfaced. The enforceable gates (build suite, both lints, pins grep) all passed and the keys are documented-honored (claude-code-guide vs the official docs); the live spot-check and the Step 4 cost measurement are deferred to an interactive session (see specs/deferred_items.md).
+
+- [x] **Step 4: Cost check (method, not a pass/fail gate — and expect modest numbers)**
 
 This rollout is primarily **task-model fit** (right model/effort for the work), not a cost lever. Plan 10's own telemetry put cache-reads at 61% of spend and the top-10 *long* sessions at ~85% — profiling/lookup turns are not the spend center, and the skill `model` override only covers the invoking turn. The effort pins (Tasks 2, 4) are justified on **quality**, not cost. So: optionally record `/status` before/after on one exploration-heavy session and note any drop in the completion writeup, but do not expect (or chase) a large number — the real cost lever remains the session-boundary/`/clear` work from plan 10 and commit `af4b252`.
 
-- [ ] **Step 5: No commit** — nothing changed in this task. Proceed to the Plan Completion Protocol.
+- [x] **Step 5: No commit** — nothing changed in this task. Proceed to the Plan Completion Protocol.
 
 ## Out of scope / consciously deferred
 

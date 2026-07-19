@@ -1,11 +1,11 @@
 # delegation-frontmatter rollout — Design Spec
 
-**Status: DRAFT (2026-07-19)** — proposed from `specs/model-effort-delegation-plan.md`
-(Rev. 2 report), reconciled to the repo's Sonnet-default routing decision
-(plan 10). **Not yet approved.** Merges the report's §a (skill frontmatter) and §c
-(agent definitions) into one rollout so the single "which Haiku path" decision is
-made in one place rather than split across two specs that would ship competing
-paths.
+**Status: COMPLETE (2026-07-19)** — implemented by plan 11
+(`specs/plans/completed/11-delegation-frontmatter-rollout.md`) and retired here;
+executed via executing-plans. Reconciled to the repo's Sonnet-default routing
+decision (plan 10); merged the (now-deleted) Rev. 2 report's §a (skill frontmatter)
+and §c (agent definitions) into one rollout so the single "which Haiku path"
+decision was made in one place.
 
 Add `model`/`effort` delegation frontmatter to the compute-heavy skills and the
 reviewer agents, and give the genuinely mechanical data skills a Haiku path — so a
