@@ -259,7 +259,16 @@ low-memory fallback.
 # After fitting the model, predict for new predictors:
 predictive = Predictive(model, posterior_samples=mcmc.get_samples())
 oos = predictive(jax.random.split(rng_key)[1], x_new)   # same model fn, new args; derived key, not a magic number
-oos_pred = az.from_numpyro(posterior_predictive=oos, coords=coords_new, dims=dims_new)
+
+# `Predictive` returns bare arrays with no trace, so `az.from_numpyro(posterior_predictive=oos, ...)`
+# raises `sample_dims must be provided if posterior is None`; passing `mcmc` instead fails whenever
+# `x_new` differs in length from `x`, because the fitted `obs` dim collides with `coords_new`.
+# Assemble the group explicitly, with a leading chain axis for the default sample_dims.
+oos_pred = az.from_dict(
+    {'posterior_predictive': {'y_obs': np.asarray(oos['y_obs'])[None, ...]}},
+    coords=coords_new,
+    dims=dims_new,
+)
 ```
 
 - **Check model identifiability before interpreting components.** If two model components always appear together in the likelihood (e.g., a league intercept and a home advantage term when every observation is from home perspective), their individual posteriors reflect prior assumptions, not data signal — only their sum is identified. Use `az.plot_pair()` to check for strong posterior correlations between components. If correlation is near ±1, the components are not separately identifiable — either merge them or restructure the data.

@@ -70,13 +70,29 @@ could be any dataset you might plausibly see, with some mass on extreme-but-poss
 on the impossible.
 
 ```python
+import arviz as az
 import arviz_plots as azp
+import numpy as np
 from numpyro.infer import Predictive
 
 prior_pred = Predictive(model, num_samples=500)(jax.random.PRNGKey(0), x)   # obs=None => draws y
-idata_prior = az.from_numpyro(prior=prior_pred, coords=coords, dims={"y_obs": ["obs"]})
 
-azp.plot_ppc_dist(idata_prior, group="prior_predictive")   # Fig 4: realizations from the prior
+# Pre-fit there is no model trace, so `az.from_numpyro` cannot separate the observed site from
+# the latent ones and never emits a `prior_predictive` group. Build the groups explicitly; the
+# leading chain axis makes ArviZ 1.x's default `sample_dims=('chain', 'draw')` apply, which is
+# also what lets the flip book below index `.isel(chain=..., draw=...)`.
+pp = {k: np.asarray(v)[None, ...] for k, v in prior_pred.items()}
+idata_prior = az.from_dict(
+    {'prior': {k: v for k, v in pp.items() if k != 'y_obs'},
+     'prior_predictive': {'y_obs': pp['y_obs']}},
+    coords=coords,
+    dims={'y_obs': ['obs']},
+)
+
+# Fig 4: realizations from the prior — one density per simulated dataset. No `observed_data`
+# group is supplied, since plot_ppc_dist would overlay it and the prior is judged against domain
+# knowledge, not the data; ArviZ's "always uses the `observed_data` group" warning is expected.
+azp.plot_ppc_dist(idata_prior, group='prior_predictive')
 ```
 
 The paper contrasts **vague** priors (`β ~ N(0,100)`, `τ² ~ Inv-Gamma(1,100)`), which generate
