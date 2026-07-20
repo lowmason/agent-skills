@@ -54,9 +54,16 @@ frame. Consequences worth internalizing:
 - A quirk or revision in QCEW propagates: a CES/SAE benchmark, a JOLTS denominator, a BED job-flow.
 - "Compare my series to QCEW" is usually the right reconciliation target *because* QCEW is the
   universe — but it lags (~6 months, preliminary until finalized the next year).
-- Coverage gaps in QCEW (the ~3% not UI-covered — self-employed, some agriculture/domestic) are
-  why CES adds **noncovered employment (NCE)** at benchmark, and why a microdata-to-QCEW
-  reconciliation never closes to exactly 100%.
+- **QCEW has two different coverage gaps — do not conflate them.** *Against all U.S. jobs:* QCEW
+  covers **more than 95%**; the miss is proprietors, the unincorporated self-employed, unpaid family
+  workers, certain farm and domestic workers, and active-duty military. That gap is why a
+  microdata-to-QCEW reconciliation never closes to exactly 100% — and those groups are **also out of
+  CES scope**, so they are never added back at benchmark.
+- *Against CES **in-scope** employment:* QCEW covers **~97%**. The residual ~3% is **noncovered
+  employment (NCE)** — in CES scope but outside UI coverage: certain student workers, hospital
+  interns, elected or appointed officials, some nonprofit or religious employment, RRB-covered
+  railroad employment, plus corporate officers (a large noncovered group in states whose UI rules
+  exclude them). CES adds NCE from other sources at the March benchmark.
 
 ## Cross-cutting concepts
 
