@@ -47,7 +47,7 @@ When creating or editing a skill, **follow the `writing-skills` skill** — it's
 There is no root test runner or repo-wide `pyproject`, and the scientific deps (numpy, polars, pytest) aren't installed into the interpreter directly. Run everything through `uv run` pinned to the Homebrew Python 3.13, supplying deps inline. Tests use **bare imports** and are **directory-scoped** — run pytest from inside the relevant directory, not the repo root:
 
 ```bash
-# Build-tooling tests (citation verifier + lints) — 24 tests
+# Build-tooling tests (citation verifier + lints) — 33 tests
 cd build && uv run --python 3.13 --with pytest --with numpy --with polars --with pyyaml python -m pytest -q
 
 # recommend-probabilistic-model signal-extractor tests — 10 tests
