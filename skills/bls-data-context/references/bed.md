@@ -295,7 +295,7 @@ The data files contain:
 |---|---|
 | `series_id` | BLS time-series identifier |
 | `year` | Observation year |
-| `period` | Quarter or annual period code |
+| `period` | Quarter or annual period code. BED is quarterly throughout: period codes are `Q01`, `Q02`, `Q03`, `Q04` for calendar quarters 1-4, including the annual-change series (`periodicity_code = A`), which are 12-month changes reported each quarter. BED emits no `M**` code and no `Q05` annual average - an `M01`-`M12` filter matches zero BED rows and silently drops the whole series. Decode `periodicity_code` via `bd.periodicity` (`Q` quarterly vs `A` annual) rather than inferring cadence from the period column. |
 | `value` | Numeric value; jobs, establishment counts, or rates depending on series |
 | `footnote_codes` | Optional BLS footnote codes |
 

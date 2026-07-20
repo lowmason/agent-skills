@@ -209,13 +209,29 @@ This is mandatory. Never skip it. Run the model through `Predictive` **without**
 ```python
 import arviz as az
 import arviz_plots as azp
+import numpy as np
 from numpyro.infer import Predictive
 
 prior_pred = Predictive(model, num_samples=500)(jax.random.PRNGKey(0), x)   # no y => draws y_obs
-idata_prior = az.from_numpyro(prior=prior_pred, coords=coords, dims={"y_obs": ["obs"]})
 
-# Visualize (group="prior_predictive"); az.plot_ppc was removed from the ArviZ 1.x umbrella
-azp.plot_ppc_dist(idata_prior, group="prior_predictive")
+# `az.from_numpyro` cannot be used here: with no MCMC trace it cannot tell the observed site
+# apart from the latent ones, so it raises `sample_dims must be provided if posterior is None`
+# and — once that is silenced — emits only a `prior` group, never `prior_predictive`. Assemble
+# the groups explicitly, adding a leading chain axis so ArviZ 1.x's default
+# `sample_dims=('chain', 'draw')` applies.
+pp = {k: np.asarray(v)[None, ...] for k, v in prior_pred.items()}
+idata_prior = az.from_dict(
+    {'prior': {k: v for k, v in pp.items() if k != 'y_obs'},
+     'prior_predictive': {'y_obs': pp['y_obs']}},
+    coords=coords,
+    dims={'y_obs': ['obs']},
+)
+
+# Visualize (group='prior_predictive'); az.plot_ppc was removed from the ArviZ 1.x umbrella.
+# Deliberately supply no `observed_data` group: plot_ppc_dist overlays it when present, and a
+# prior check is judged against domain knowledge, not against the data. ArviZ still emits a
+# "This plot always uses the `observed_data` group" UserWarning — expected here, safe to ignore.
+azp.plot_ppc_dist(idata_prior, group='prior_predictive')   # one curve per simulated dataset
 
 # Check: do simulated datasets look plausible?
 # - Are values in a reasonable range?

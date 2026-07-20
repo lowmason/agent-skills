@@ -99,7 +99,8 @@ skills/
 
 **Frontmatter (YAML):**
 - Two required fields: `name` and `description` (see [agentskills.io/specification](https://agentskills.io/specification) for all supported fields)
-- Max 1024 characters total
+- `description`: max 1024 characters — the Agent Skills spec cap, enforced by `build/check_frontmatter.py`. It applies to the description field, **not** to the whole frontmatter block; several shipped skills exceed 1024 chars of total frontmatter and pass the lint correctly.
+- Optional keys the lint accepts: `license`, `metadata`, `allowed-tools`, `when_to_use`, and the two delegation keys `model` and `effort` (per-skill overrides for the model tier and reasoning effort a skill runs at). Any other key fails `build/check_frontmatter.py`.
 - `name`: Use letters, numbers, and hyphens only (no parentheses, special chars)
 - `description`: Third-person, describes ONLY when to use (NOT what it does)
   - Start with "Use when..." to focus on triggering conditions
@@ -217,12 +218,20 @@ Use words an agent would search for:
 
 ### 4. Token Efficiency (Critical)
 
-**Problem:** getting-started and frequently-referenced skills load into EVERY conversation. Every token counts.
+**Problem:** every installed skill's `description` is resident in EVERY conversation — that is the
+cost you always pay. The SKILL.md body is paid only when the skill triggers, and `references/`
+only when the body sends you there. Budget against the tier, not a single number.
 
-**Target word counts:**
-- getting-started workflows: <150 words each
-- Frequently-loaded skills: <200 words total
-- Other skills: <500 words (still be concise)
+**Targets by tier:**
+- `description` (always resident): the hard cap is 1024 chars, enforced by
+  `build/check_frontmatter.py`. Spend it on triggers, not prose — it is the only text that
+  competes for context in conversations where the skill is never used.
+- SKILL.md body (loaded on trigger): keep it to the decision procedure. Observed range in this
+  repo is roughly 450–4,000 words, median ~1,500 — length tracks how much irreducible procedure a skill
+  carries, so treat a body pushing past ~2,000 words as a prompt to ask what belongs in
+  `references/`, not as a violation.
+- `references/*.md` (loaded on demand): no budget. This is where depth goes — `bayesian-workflow`
+  carries 10 and `bls-data-context` 9, keeping their bodies navigational.
 
 **Techniques:**
 
@@ -266,8 +275,9 @@ You: Searching...
 **Verification:**
 ```bash
 wc -w skills/path/SKILL.md
-# getting-started workflows: aim for <150 each
-# Other frequently-loaded: aim for <200 total
+# Body past ~2,000 words? Ask what should move to references/.
+# The number that actually matters is the description's char count, capped at 1024:
+uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
 ```
 
 **Name by what you DO or core insight:**
@@ -640,7 +650,7 @@ Deploying untested skills = deploying untested code. It's a violation of quality
 
 **GREEN Phase - Write Minimal Skill:**
 - [ ] Name uses only letters, numbers, hyphens (no parentheses/special chars)
-- [ ] YAML frontmatter with required `name` and `description` fields (max 1024 chars; see [spec](https://agentskills.io/specification))
+- [ ] YAML frontmatter with required `name` and `description` fields (`description` max 1024 chars — the field, not the whole block; see [spec](https://agentskills.io/specification))
 - [ ] Description starts with "Use when..." and includes specific triggers/symptoms
 - [ ] Description written in third person
 - [ ] Keywords throughout for search (errors, symptoms, tools)

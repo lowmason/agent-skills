@@ -54,9 +54,16 @@ frame. Consequences worth internalizing:
 - A quirk or revision in QCEW propagates: a CES/SAE benchmark, a JOLTS denominator, a BED job-flow.
 - "Compare my series to QCEW" is usually the right reconciliation target *because* QCEW is the
   universe — but it lags (~6 months, preliminary until finalized the next year).
-- Coverage gaps in QCEW (the ~3% not UI-covered — self-employed, some agriculture/domestic) are
-  why CES adds **noncovered employment (NCE)** at benchmark, and why a microdata-to-QCEW
-  reconciliation never closes to exactly 100%.
+- **QCEW has two different coverage gaps — do not conflate them.** *Against all U.S. jobs:* QCEW
+  covers **more than 95%**; the miss is chiefly proprietors, the unincorporated self-employed, unpaid family
+  workers, certain farm and domestic workers, and active-duty military. That gap is why a
+  microdata-to-QCEW reconciliation never closes to exactly 100% — and those groups are **also out of
+  CES scope**, so they are never added back at benchmark.
+- *Against CES **in-scope** employment:* QCEW covers **~97%**. The residual ~3% is **noncovered
+  employment (NCE)** — in CES scope but outside UI coverage: certain student workers, hospital
+  interns, elected or appointed officials, some nonprofit or religious employment, RRB-covered
+  railroad employment, plus corporate officers (a large noncovered group in states whose UI rules
+  exclude them). CES adds NCE from other sources at the March benchmark.
 
 ## Cross-cutting concepts
 
@@ -114,7 +121,17 @@ recoding, not economics. Record the classification vintage for any long series.
 **Flat-file conventions (LABSTAT).** Files live at `download.bls.gov/pub/time.series/<prefix>/`
 (`en`/downloadable for QCEW, `ce`, `jt`, `bd`, `oe`, …). Data files are `series_id | year | period
 | value | footnote_codes`; a `<prefix>.series` file holds metadata; mapping files decode each
-dimension. Periods are `M01`–`M12` monthly, **`M13` = annual average** (never mix with monthly).
+dimension. **Period codes vary by program *and* by datatype within a program** — check the
+program's `<prefix>.period` mapping file, or its `<prefix>.series` begin/end periods, before
+assuming. Monthly (CES, SAE, JOLTS): `M01`–`M12`, with **`M13` = annual average**. Quarterly (BED,
+ECI, ECEC, and the QCEW wage datatypes): `Q01`–`Q04`, plus **`Q05` = annual average** where a
+quarterly program publishes one (BED has none — its series stay `Q01`–`Q04`). Annual-only cells
+carry **`A01`** (QCEW average annual pay, OEWS). QCEW alone spans all three: employment is monthly
+`M01`–`M12`, establishment counts / total wages / average weekly wage are quarterly `Q01`–`Q04`,
+and its annual-only datatype carries `A01`. **Never mix an annual-average code into a periodic series** (drop
+`M13` from monthly work, `Q05` from quarterly), and **never filter a quarterly file with a
+monthly rule** — `M01`–`M12` over a BED, ECI, or ECEC file matches zero rows and silently empties
+the frame instead of erroring.
 **Series IDs have a fixed positional anatomy** (e.g. JOLTS 21 chars, BED 28 chars, CES CEU/CES
 prefix) — parse by position and join the mapping files; do not hand-construct blindly. **Preserve
 all code columns as strings with leading zeros** (`state_code`, `industry_code`, size classes).
@@ -143,7 +160,10 @@ all code columns as strings with leading zeros** (`state_code`, `industry_code`,
 - Treating the latest month/quarter as final; ignoring annual benchmarks (they revise *years*, not
   just the newest point, and are not purely economic — they fold in classification/coverage).
 - A units mismatch (thousands vs persons) read as a real divergence.
-- Losing leading zeros on code columns; mixing `M13` annual into a monthly series.
+- Losing leading zeros on code columns; mixing `M13` annual into a monthly series, or `Q05` annual
+  into a quarterly one.
+- Filtering a quarterly file (BED, ECI, ECEC, QCEW wages) with a monthly `M01`–`M12` rule: it
+  matches zero rows, so the series vanishes silently instead of raising.
 - Treating a suppressed QCEW cell as zero, or expecting suppressed detail to sum to totals.
 - Assuming a series ID's industry/geography from its label instead of decoding via mapping files.
 

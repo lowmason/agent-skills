@@ -259,7 +259,16 @@ low-memory fallback.
 # After fitting the model, predict for new predictors:
 predictive = Predictive(model, posterior_samples=mcmc.get_samples())
 oos = predictive(jax.random.split(rng_key)[1], x_new)   # same model fn, new args; derived key, not a magic number
-oos_pred = az.from_numpyro(posterior_predictive=oos, coords=coords_new, dims=dims_new)
+
+# `Predictive` returns bare arrays with no trace, so `az.from_numpyro(posterior_predictive=oos, ...)`
+# raises `sample_dims must be provided if posterior is None`; passing `mcmc` instead fails whenever
+# `x_new` differs in length from `x`, because the fitted `obs` dim collides with `coords_new`.
+# Assemble the group explicitly, with a leading chain axis for the default sample_dims.
+oos_pred = az.from_dict(   # `np` imported at the top of this workflow
+    {'posterior_predictive': {'y_obs': np.asarray(oos['y_obs'])[None, ...]}},
+    coords=coords_new,
+    dims=dims_new,
+)
 ```
 
 - **Check model identifiability before interpreting components.** If two model components always appear together in the likelihood (e.g., a league intercept and a home advantage term when every observation is from home perspective), their individual posteriors reflect prior assumptions, not data signal — only their sum is identified. Use `az.plot_pair()` to check for strong posterior correlations between components. If correlation is near ±1, the components are not separately identifiable — either merge them or restructure the data.
@@ -315,7 +324,7 @@ These are battle-tested lessons that save hours of debugging:
 - **Divergences are marked automatically in ArviZ 1.x plots.** `az.plot_pair(idata, var_names=[...])` and `az.plot_parallel(idata)` highlight divergent draws by default (control with `visuals={"divergence": ...}`). The old `divergences=True` kwarg is ArviZ-0.23-only.
 - **Convert to NumPy before `az.loo`.** `idata.map_over_datasets(lambda ds: ds.as_numpy())` (or reload from netCDF). PSIS-LOO does in-place array updates that JAX arrays reject.
 - **Python conditionals don't work inside a NumPyro model** (`if x > 0`). Use `jax.numpy.where` (`jnp.where`) — JAX traces the function, so data-dependent Python branches won't execute.
-- **Flat priors on scale parameters** (`HalfCauchy`, improper) cause funnels in hierarchical models. Use `Gamma(2, ...)`, `HalfNormal`, or `Exponential` — these avoid the near-zero region that creates sampling problems. If there's no group-level variation to detect, you don't need the hierarchy.
+- **Heavy-tailed or near-flat priors on scale parameters** worsen funnels in hierarchical models. `HalfCauchy` is *proper* — the classic weakly-informative choice (Gelman 2006), not an improper flat prior — but its heavy tail lets the scale run very large (~6% of its mass sits above 10× the scale, versus effectively none for `HalfNormal`), which stretches the funnel, and its nonzero density at 0 does nothing to exclude the neck. Genuinely improper flat priors are worse still. Use `Gamma(2, ...)`, `HalfNormal`, or `Exponential` — but for the right reason: `HalfNormal`/`Exponential` help by cutting the tail (both actually have *more* mass near 0 than `HalfCauchy`, not less), while `Gamma(2, ...)` is the one that vanishes at 0 and so actively pushes the scale off the neck. If there's no group-level variation to detect, you don't need the hierarchy. (`HalfCauchy` remains correct for horseshoe `tau`/`lam` — see [references/priors.md](references/priors.md).)
 - **Non-centering is one line in NumPyro.** Wrap the model with `numpyro.handlers.reparam(model, config={"a": LocScaleReparam(0)})` instead of hand-coding the offset. The reparameterized site is named `a_decentered` in the trace; the original `a` becomes a deterministic. See [references/hierarchical.md](references/hierarchical.md).
 - **Forgetting to standardize predictors** makes shared priors inappropriate and slows sampling. Always standardize before fitting, then back-transform for interpretation.
 - **Horseshoe priors create a double-funnel geometry** that standard NUTS can struggle with. Always use the **regularized (Finnish) horseshoe** (Piironen & Vehtari, 2017), which adds a slab component that smooths the geometry. Set `target_accept_prob=0.95` or higher. If you see divergences with a horseshoe model, this is almost certainly the cause.

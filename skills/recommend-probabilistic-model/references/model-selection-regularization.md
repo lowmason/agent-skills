@@ -46,7 +46,7 @@ likelihood already penalizes complexity (Occam's razor) — PML1 §5.2.
 | `gaussian-processes` | kernel form; ARD lengthscales | marginal-likelihood (empirical Bayes); compositional-kernel search |
 | `factor-models` | number of factors `L` | ARD on loadings; CV/LOO-ELPD held-out loglik (scree elbow if PCA) — PML1 §20.1.4 |
 | `classification` | features; penalty; tree depth | L1/L2; tree pruning / boosting shrinkage; CV |
-| `mixtures-clustering` | number of components `K` | BIC / LOO; Dirichlet-process mixture auto-selects `K` — PML1 §21.3.7 |
+| `mixtures-clustering` | number of components `K` | BIC / LOO — PML1 §21.3.7; Dirichlet-process mixture auto-selects `K` — PML2 §31 |
 | `graphical-models` | edge count / density | graphical lasso (L1 on precision); CV/IC, or edge-stability if the graph is the deliverable |
 
 ## Output (feeds reporting.md §5 and the C4 handoff)
