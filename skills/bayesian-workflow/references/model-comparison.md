@@ -64,11 +64,20 @@ azp.plot_compare(comparison)
 - `elpd_diff`: Difference from best model
 - `dse`: Standard error of the difference
 - `weight`: Stacking weight (see below)
-- `warning`: True if high Pareto k values exist
+- `diag_elpd` / `diag_diff`: Diagnostic strings — empty when clean, otherwise a short
+  human-readable reason. `diag_elpd` is the ArviZ 1.x successor to the old boolean `warning`
+  column (high Pareto k); `diag_diff` flags conditions that make the *difference* untrustworthy
+  (verified: with 60 observations it reports `N < 100`; empty at 400). Print them rather than
+  testing for a specific string. **ArviZ 0.23 and earlier had `warning` instead — it no longer
+  exists, so don't branch on it.**
 
 **Interpreting differences**:
-- If `elpd_diff` < 2×`dse` → Models are practically indistinguishable. Prefer the simpler one.
-- If `elpd_diff` > 4×`dse` → Strong evidence for the better model.
+
+`elpd_diff` is reported **relative to the top-ranked model, so it is ≤ 0** (the best model's is
+`0.0`). Compare magnitudes — `abs(elpd_diff)` — or the tests below invert:
+
+- If `abs(elpd_diff)` < 2×`dse` → Models are practically indistinguishable. Prefer the simpler one.
+- If `abs(elpd_diff)` > 4×`dse` → Strong evidence for the better model.
 - Between 2–4×`dse` → Moderate evidence. Consider domain knowledge.
 
 ## Stacking weights
@@ -120,7 +129,8 @@ When reporting model comparisons, always include:
 1. Table of ELPD values with standard errors
 2. ELPD differences with their standard errors
 3. Stacking weights
-4. Note any high Pareto k warnings, what they mean, and what to do about it
+4. Note any diagnostics ArviZ surfaced — check the `diag_elpd` and `diag_diff` columns (non-empty
+   means something fired; `diag_elpd` covers high Pareto k) — what they mean, and what to do about it
 5. The substantive interpretation — what does the better model imply about the phenomenon? Be careful to NOT make causal claims based on model comparison -- it only tells us about predictive accuracy.
 
 Template:
