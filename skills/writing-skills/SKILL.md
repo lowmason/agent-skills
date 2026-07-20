@@ -217,12 +217,20 @@ Use words an agent would search for:
 
 ### 4. Token Efficiency (Critical)
 
-**Problem:** getting-started and frequently-referenced skills load into EVERY conversation. Every token counts.
+**Problem:** every installed skill's `description` is resident in EVERY conversation — that is the
+cost you always pay. The SKILL.md body is paid only when the skill triggers, and `references/`
+only when the body sends you there. Budget against the tier, not a single number.
 
-**Target word counts:**
-- getting-started workflows: <150 words each
-- Frequently-loaded skills: <200 words total
-- Other skills: <500 words (still be concise)
+**Targets by tier:**
+- `description` (always resident): the hard cap is 1024 chars, enforced by
+  `build/check_frontmatter.py`. Spend it on triggers, not prose — it is the only text that
+  competes for context in conversations where the skill is never used.
+- SKILL.md body (loaded on trigger): keep it to the decision procedure. Observed range in this
+  repo is ~450–3,900 words, median ~1,500 — length tracks how much irreducible procedure a skill
+  carries, so treat a body pushing past ~2,000 words as a prompt to ask what belongs in
+  `references/`, not as a violation.
+- `references/*.md` (loaded on demand): no budget. This is where depth goes — `bayesian-workflow`
+  carries 10 and `bls-data-context` 9, keeping their bodies navigational.
 
 **Techniques:**
 
@@ -266,8 +274,9 @@ You: Searching...
 **Verification:**
 ```bash
 wc -w skills/path/SKILL.md
-# getting-started workflows: aim for <150 each
-# Other frequently-loaded: aim for <200 total
+# Body past ~2,000 words? Ask what should move to references/.
+# The number that actually matters is the description's char count, capped at 1024:
+uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
 ```
 
 **Name by what you DO or core insight:**
