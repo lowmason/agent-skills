@@ -12,7 +12,7 @@ Skills install into `~/.claude/skills/` (symlink or copy). This repo *is* the us
 
 Skills come from three sources with distinct attribution, all tracked in `NOTICE`. **Read `NOTICE` before moving, renaming, or substantially rewriting any skill**, and keep it in sync:
 
-- **Lowell's originals** (MIT, `LICENSE`): `develop-testing-strategy`, `validate-data`, `explore-data`, `tech-debt`, `design-architecture`, `bls-data-context`, `recommend-probabilistic-model`, `recommend-visualization`.
+- **Lowell's originals** (MIT, `LICENSE`): `develop-testing-strategy`, `validate-data`, `explore-data`, `tech-debt`, `design-architecture`, `bls-data-context`, `recommend-probabilistic-model`, `recommend-visualization`, `track-model-experiments`, `tune-hyperparameters`, `creative-thinking`. (Eleven — keep in sync with `NOTICE`, which is authoritative.)
 - **`bayesian-workflow`** — adapted from Alexandre Andorra's PyMC skill, ported to NumPyro+JAX (MIT).
 - **superpowers skills** (MIT, © 2025 Jesse Vincent, `LICENSE-superpowers`): the 13 process skills (`brainstorming`, `writing-plans`, `test-driven-development`, etc.). These were adapted from the upstream `superpowers` plugin.
 
@@ -47,7 +47,7 @@ When creating or editing a skill, **follow the `writing-skills` skill** — it's
 There is no root test runner or repo-wide `pyproject`, and the scientific deps (numpy, polars, pytest) aren't installed into the interpreter directly. Run everything through `uv run` pinned to the Homebrew Python 3.13, supplying deps inline. Tests use **bare imports** and are **directory-scoped** — run pytest from inside the relevant directory, not the repo root:
 
 ```bash
-# Build-tooling tests (citation verifier + lints) — 15 tests
+# Build-tooling tests (citation verifier + lints) — 24 tests
 cd build && uv run --python 3.13 --with pytest --with numpy --with polars --with pyyaml python -m pytest -q
 
 # recommend-probabilistic-model signal-extractor tests — 10 tests
@@ -55,6 +55,14 @@ cd skills/recommend-probabilistic-model/scripts && uv run --python 3.13 --with p
 
 # recommend-visualization router tests — 29 tests
 cd skills/recommend-visualization/scripts && uv run --python 3.13 --with pytest --with numpy --with polars python -m pytest -q
+
+# tune-hyperparameters CV-splitter tests — 6 passed, 2 skipped
+# (the 2 skips are optional-dep guards: add --with sklearn --with optuna to run all 8)
+cd skills/tune-hyperparameters/scripts && uv run --python 3.13 --with pytest --with numpy --with polars python -m pytest -q
+
+# track-model-experiments ledger/compare tests — 11 tests (~45s; needs the full
+# numpyro + NetCDF-writer chain, since the tests round-trip InferenceData to .nc)
+cd skills/track-model-experiments/scripts && uv run --python 3.13 --with pytest --with numpy --with polars --with arviz --with numpyro --with h5netcdf --with h5py python -m pytest -q
 
 # Frontmatter + provenance lints (run before committing skill changes)
 uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
