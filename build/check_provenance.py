@@ -34,11 +34,62 @@ def missing_attributions(names: list[str], notice: str) -> list[str]:
     ]
 
 
+def notice_originals(notice: str) -> list[str]:
+    '''Skill names NOTICE lists under "original works by Lowell Mason" —
+    the indented `name/` block directly under that heading, up to the
+    next blank-line-terminated paragraph.
+    '''
+    m = re.search(
+        r'original works by Lowell Mason, MIT licensed:\n(.*?)\n\n', notice, re.S,
+    )
+    if not m:
+        return []
+    return re.findall(r'^\s*([a-z0-9][a-z0-9-]*)/', m.group(1), re.M)
+
+
+def claude_md_originals(claude_md: str) -> list[str]:
+    '''Skill names CLAUDE.md's "- **Lowell's originals**" bullet claims.
+
+    The bullet is one line: a lead-in (which itself may contain backticks,
+    e.g. `` `LICENSE` ``), a colon, the backtick-quoted skill list, then a
+    period and trailing prose (e.g. a parenthetical count note) that must
+    be tolerated rather than choked on.
+    '''
+    m = re.search(r"^- \*\*Lowell's originals\*\*.*$", claude_md, re.M)
+    if not m:
+        return []
+    after_colon = m.group(0).split(':', 1)[-1]
+    list_part = after_colon.split('.', 1)[0]
+    return re.findall(r'`([^`]+)`', list_part)
+
+
+def originals_mismatch(
+    claude_md_names: list[str], notice_names: list[str],
+) -> tuple[list[str], list[str]]:
+    '''(missing, extra): missing = in NOTICE but absent from CLAUDE.md;
+    extra = in CLAUDE.md but absent from NOTICE. Order-independent.
+    '''
+    claude_set, notice_set = set(claude_md_names), set(notice_names)
+    return sorted(notice_set - claude_set), sorted(claude_set - notice_set)
+
+
 def main() -> int:
     errs: list[str] = []
     notice = (REPO / 'NOTICE').read_text()
     for name in missing_attributions(skill_dirs(), notice):
         errs.append(f'NOTICE: missing attribution entry for skill {name}/')
+    claude_md = (REPO / 'CLAUDE.md').read_text()
+    missing, extra = originals_mismatch(claude_md_originals(claude_md), notice_originals(notice))
+    if missing:
+        errs.append(
+            "CLAUDE.md: 'Lowell's originals' list is missing skills NOTICE lists: "
+            + ', '.join(missing)
+        )
+    if extra:
+        errs.append(
+            "CLAUDE.md: 'Lowell's originals' list includes skills NOTICE does not: "
+            + ', '.join(extra)
+        )
     tracked = subprocess.run(
         ['git', 'ls-files'], cwd=REPO, capture_output=True, text=True, check=True,
     ).stdout.splitlines()
