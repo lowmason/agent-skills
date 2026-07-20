@@ -214,10 +214,13 @@ azp.plot_loo_pit(idata, coverage=True)  # same idea in coverage units
 azp.plot_ppc_pit(idata)                 # the non-LOO (PPC) version
 ```
 
-**The shape is meaningful** (and the paper reads it directly): a "frown" / ∪ in the deviation means
-the univariate predictive distributions are **too broad** (over-dispersed) — exactly what Models 2
-and 3 show, suggesting further sub-division of regions would help. (Edge effects near 0 and 1 from
-the density estimator can be discounted.) See [references/model-criticism.md](model-criticism.md).
+**The shape is meaningful** (and the paper reads it directly): a "frown" / ∩ in the LOO-PIT
+**density** means the univariate predictive distributions are **too broad** (over-dispersed) —
+exactly what Models 2 and 3 show, suggesting further sub-division of regions would help. (Edge
+effects near 0 and 1 from the density estimator can be discounted.) Note the figure being read is
+Gabry et al.'s Fig 9, a density overlay; the `plot_loo_pit` calls above draw a ΔECDF instead, where
+this same miscalibration reads as a single-signed ∩ only in coverage units (`coverage=True`). See
+[references/model-criticism.md](model-criticism.md).
 
 ## 5. Pointwise plots for predictive model comparison (§6, Fig 10)
 

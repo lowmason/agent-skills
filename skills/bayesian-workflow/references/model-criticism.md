@@ -117,17 +117,28 @@ Refer to [this guide](https://arviz-devs.github.io/EABM/Chapters/Prior_posterior
 - If empirical coverage ≈ nominal → well-calibrated
 - If the difference is positive, the model is under-confident: the predictions have a wider spread than the data – they are too uncertain.
 - If the difference is negative, the model is over-confident: the predictions have a narrower spread than the data – they are too certain.
+- This positive/negative rule holds **only in coverage units** (`coverage=True`, i.e. after the `2|PIT−0.5|` transform), where the deviation is single-signed. The raw PIT ΔECDF has no global sign — see the patterns below.
 
 ### PIT histograms / ECDFs (probability integral transform)
 
 A sharper calibration check. If the model is calibrated, PIT values should be uniform; the ECDF
 should fall within the simultaneous confidence bands. See [this section](https://arviz-devs.github.io/EABM/Chapters/Prior_posterior_predictive_checks.html#pit-ecdfs).
 
-**Patterns** (the shape of the miscalibration is meaningful):
-- U-shaped / "frown" in the ECDF → underdispersed predictive (intervals too narrow / over-confident)
-- Inverted-U → overdispersed (intervals too wide / under-confident)
+**Patterns** (the shape of the miscalibration is meaningful — but it only reads the same way if you
+know which plot you are looking at; the mapping below is verified by simulation):
+- **PIT histogram** — ∪-shaped (spikes at both ends) → underdispersed predictive (intervals too
+  narrow / over-confident). ∩-shaped (mound at 0.5) → overdispersed (too wide / under-confident).
+- **Raw PIT ΔECDF** (what `plot_loo_pit` / `plot_ppc_pit` draw by default) — neither miscalibration
+  is a cup or a cap here; both trace a sign-flipping slope that integrates to ≈0. Read the
+  half-plane sign instead: above the diagonal in the lower half and below it in the upper half →
+  too narrow; the mirror image → too broad.
+- **Coverage ΔECDF** (`coverage=True`) — the deviation becomes single-signed, and only here does a
+  single cup/cap word apply: below zero → over-confident, above zero → under-confident.
 - Skewed → systematic bias in location
-- Uniform → well-calibrated
+- Uniform / inside the simultaneous bands → well-calibrated
+
+Avoid the word "frown" for these plots — it means ∩, which collides with the ∪ of the too-narrow
+histogram case and is the source of a long-standing contradiction in this skill's references.
 
 ## Simulation-based calibration (SBC)
 
