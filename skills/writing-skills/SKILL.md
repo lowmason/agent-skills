@@ -99,7 +99,8 @@ skills/
 
 **Frontmatter (YAML):**
 - Two required fields: `name` and `description` (see [agentskills.io/specification](https://agentskills.io/specification) for all supported fields)
-- Max 1024 characters total
+- `description`: max 1024 characters — the Agent Skills spec cap, enforced by `build/check_frontmatter.py`. It applies to the description field, **not** to the whole frontmatter block; several shipped skills exceed 1024 chars of total frontmatter and pass the lint correctly.
+- Optional keys the lint accepts: `license`, `metadata`, `allowed-tools`, `when_to_use`, and the two delegation keys `model` and `effort` (per-skill overrides for the model tier and reasoning effort a skill runs at). Any other key fails `build/check_frontmatter.py`.
 - `name`: Use letters, numbers, and hyphens only (no parentheses, special chars)
 - `description`: Third-person, describes ONLY when to use (NOT what it does)
   - Start with "Use when..." to focus on triggering conditions
@@ -649,7 +650,7 @@ Deploying untested skills = deploying untested code. It's a violation of quality
 
 **GREEN Phase - Write Minimal Skill:**
 - [ ] Name uses only letters, numbers, hyphens (no parentheses/special chars)
-- [ ] YAML frontmatter with required `name` and `description` fields (max 1024 chars; see [spec](https://agentskills.io/specification))
+- [ ] YAML frontmatter with required `name` and `description` fields (`description` max 1024 chars — the field, not the whole block; see [spec](https://agentskills.io/specification))
 - [ ] Description starts with "Use when..." and includes specific triggers/symptoms
 - [ ] Description written in third person
 - [ ] Keywords throughout for search (errors, symptoms, tools)
