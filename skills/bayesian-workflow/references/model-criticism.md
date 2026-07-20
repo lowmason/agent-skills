@@ -130,7 +130,7 @@ know which plot you are looking at; the mapping below is verified by simulation)
   narrow / over-confident). ∩-shaped (mound at 0.5) → overdispersed (too wide / under-confident).
 - **Raw PIT ΔECDF** (what `plot_loo_pit` / `plot_ppc_pit` draw by default) — neither miscalibration
   is a cup or a cap here; both trace a sign-flipping slope that integrates to ≈0. Read the
-  half-plane sign instead: above the diagonal in the lower half and below it in the upper half →
+  half-plane sign instead: above zero in the lower half and below it in the upper half →
   too narrow; the mirror image → too broad.
 - **Coverage ΔECDF** (`coverage=True`) — the deviation becomes single-signed, and only here does a
   single cup/cap word apply: below zero → over-confident, above zero → under-confident.

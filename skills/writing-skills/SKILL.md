@@ -227,7 +227,7 @@ only when the body sends you there. Budget against the tier, not a single number
   `build/check_frontmatter.py`. Spend it on triggers, not prose — it is the only text that
   competes for context in conversations where the skill is never used.
 - SKILL.md body (loaded on trigger): keep it to the decision procedure. Observed range in this
-  repo is ~450–3,900 words, median ~1,500 — length tracks how much irreducible procedure a skill
+  repo is roughly 450–4,000 words, median ~1,500 — length tracks how much irreducible procedure a skill
   carries, so treat a body pushing past ~2,000 words as a prompt to ask what belongs in
   `references/`, not as a violation.
 - `references/*.md` (loaded on demand): no budget. This is where depth goes — `bayesian-workflow`

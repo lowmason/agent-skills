@@ -28,7 +28,9 @@ region). Keep that framing in mind: visualization is how you *navigate* the netw
 
 Assumes the standard objects from the workflow: an `idata` from `az.from_numpyro(..., log_likelihood=True)`
 (NumPy-converted via `idata.map_over_datasets(lambda ds: ds.as_numpy())`), with `prior`,
-`prior_predictive`, `posterior_predictive`, and `observed_data` groups attached. `azp` is `arviz_plots`.
+`posterior_predictive`, and `observed_data` attached. The `prior_predictive` group is **not** produced
+by `az.from_numpyro` — pre-fit there is no trace to separate the observed site from the latent ones,
+so build it explicitly with `az.from_dict`, as §2 below shows. `azp` is `arviz_plots`.
 
 ---
 

@@ -114,7 +114,7 @@ model_nc = reparam(model, config={"mu": LocScaleReparam(0)})
 # now sample `model_nc`; the trace gains `mu_decentered ~ Normal(0,1)` and `mu` becomes a deterministic.
 ```
 
-3. **Stronger priors on scale parameters**: A tight prior on a group-level SD can eliminate the funnel, especially avoiding the region near 0 (if there is no group-level variation, you don't need to model it). Replace `HalfCauchy`/flat priors with `Gamma(2, ...)`, `HalfNormal`, or `Exponential`.
+3. **Stronger priors on scale parameters**: A tight prior on a group-level SD can eliminate the funnel, (if there is no group-level variation, you don't need to model it). Replace `HalfCauchy` — proper, but heavy-tailed enough to let the scale run very large — or a genuinely improper flat prior with `Gamma(2, ...)`, `HalfNormal`, or `Exponential`. `HalfNormal`/`Exponential` help by cutting the tail rather than by avoiding 0 (both actually carry more mass near 0 than `HalfCauchy`); `Gamma(2, ...)` is the one whose density vanishes at 0.
 4. **Marginalize discrete parameters**: If possible, integrate out discrete variables analytically (use `dist.MixtureSameFamily` for mixtures), since NUTS cannot sample them.
 
 ## When sampling fails: the escalation ladder

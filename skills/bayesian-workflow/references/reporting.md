@@ -159,11 +159,11 @@ The posterior predictive distribution shows what the fitted model implies the da
 
 ![PIT ECDF](pit_ecdf.png)
 
-The PIT-ECDF plot tests whether the model's predictive distribution is calibrated — that is, whether stated credible levels match empirical coverage. The empirical CDF of probability integral transform values should fall within the simultaneous confidence bands. Lines outside the bands above the diagonal indicate under-confident predictions (intervals wider than they should be); lines below indicate over-confident predictions (intervals too narrow).
+The PIT-ECDF plot tests whether the model's predictive distribution is calibrated — that is, whether stated credible levels match empirical coverage. The empirical CDF of probability integral transform values should fall within the simultaneous confidence bands. Read its *shape*, not a global sign: in the raw PIT ECDF neither miscalibration sits wholly above or below the diagonal — both trace a sign-flipping slope that integrates to ≈0. A predictive that is too narrow runs above the diagonal in the lower half and below it in the upper half; one that is too broad mirrors that. The single-signed reading belongs to the coverage plot below. See [references/model-criticism.md](model-criticism.md).
 
 ![Coverage](pit_coverage.png)
 
-The coverage plot tests the same idea in coverage units: it asks whether nominal central credible intervals (50%, 80%, 95%) actually contain the stated fraction of the observed data. A well-calibrated model lies on the diagonal.
+The coverage plot tests the same idea in coverage units: it asks whether nominal central credible intervals (50%, 80%, 95%) actually contain the stated fraction of the observed data. A well-calibrated model lies on the diagonal. Here the deviation *is* single-signed, so it reads directly: above → under-confident (intervals wider than they should be); below → over-confident (intervals too narrow).
 
 **Assessment:** <1–2 sentences from `check_diagnostics()` calibration section — well-calibrated, over-confident, or under-confident, with the mean coverage deviation if available.>
 

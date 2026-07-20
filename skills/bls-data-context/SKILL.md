@@ -55,7 +55,7 @@ frame. Consequences worth internalizing:
 - "Compare my series to QCEW" is usually the right reconciliation target *because* QCEW is the
   universe — but it lags (~6 months, preliminary until finalized the next year).
 - **QCEW has two different coverage gaps — do not conflate them.** *Against all U.S. jobs:* QCEW
-  covers **more than 95%**; the miss is proprietors, the unincorporated self-employed, unpaid family
+  covers **more than 95%**; the miss is chiefly proprietors, the unincorporated self-employed, unpaid family
   workers, certain farm and domestic workers, and active-duty military. That gap is why a
   microdata-to-QCEW reconciliation never closes to exactly 100% — and those groups are **also out of
   CES scope**, so they are never added back at benchmark.
@@ -128,7 +128,7 @@ ECI, ECEC, and the QCEW wage datatypes): `Q01`–`Q04`, plus **`Q05` = annual av
 quarterly program publishes one (BED has none — its series stay `Q01`–`Q04`). Annual-only cells
 carry **`A01`** (QCEW average annual pay, OEWS). QCEW alone spans all three: employment is monthly
 `M01`–`M12`, establishment counts / total wages / average weekly wage are quarterly `Q01`–`Q04`,
-and average annual pay is `A01`. **Never mix an annual-average code into a periodic series** (drop
+and its annual-only datatype carries `A01`. **Never mix an annual-average code into a periodic series** (drop
 `M13` from monthly work, `Q05` from quarterly), and **never filter a quarterly file with a
 monthly rule** — `M01`–`M12` over a BED, ECI, or ECEC file matches zero rows and silently empties
 the frame instead of erroring.
