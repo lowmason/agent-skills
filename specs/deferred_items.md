@@ -54,3 +54,59 @@
       `download.bls.gov` returns 403 from this environment and `references/qcew.md` documents
       no datatype codes. Restore the specific label once BLS is reachable, or add a datatype
       table to `qcew.md` so the hub has a quotable line to derive from.
+
+## 13-llm-wiki — 2026-07-22
+Deferred from the final adversarial linter audit (all in the plan's verbatim regexes;
+the spec author chose to fix the two guard/backstop holes — G1 quarantine bypass, G2
+secret backstop — and defer these). The linter faithfully implements M0 and passes all
+gates; these bite only on real wiki *content*, which does not exist yet (M1+).
+
+Regex-strictness design calls (need a spec decision on how strict the M0 linter should be):
+- [ ] D1 — `BODY_CITE_RE` fires a hard ERROR on ordinary bracketed prose (`[see below]`,
+      `[per the user]`, `[todo …]`): any `[word …]` not immediately followed by `(` is
+      treated as a citation locator. Task 7's reviewer read this as intended strictness;
+      the whole-branch Opus reviewer and the regex breaker read it as a false positive
+      (`SCHEMA.md` does not reserve brackets for locators). Decide the intent; if
+      false-positive, tighten to require a locator sigil (`§`/`p.`/`Table`/`Fig`/`Eq`/a
+      leading digit) after the slug, or require a multi-part slug (hyphen or 4-digit year).
+      `~/research-wiki/scripts/lint_wiki.py` `BODY_CITE_RE`.
+- [ ] D2 — nested brackets in link text break both directions: `MD_LINK_RE` misses a
+      genuinely-broken link like `[the [above] discussion](samplers/none.md)` AND
+      `BODY_CITE_RE` fabricates a citation from the link text. Fix `MD_LINK_RE` to allow one
+      level of balanced nested brackets, and exclude link-text spans from citation matching.
+      Edge case; unlikely in early content.
+- [ ] D3 — citation slugs outside `[a-z0-9-]` are invisible (`[Hoffman2014 §3]`,
+      `[robnik_2022 §4]`, `[robnik.2022 §4]` all pass unchecked, both directions). The
+      lowercase-start anchor also serves as a deliberate prose guard (`[NUTS §3]`,
+      `[Figure 2]` correctly ignored), so widening the charset naively re-introduces prose
+      false-positives. Needs a design separating "is a citation" from "slug charset".
+
+Downgraded-to-minor from the same audit (later hardening pass; none block M0):
+- [ ] `MD_LINK_RE` / `INDEX_LINE_RE` capture a CommonMark link *title* attribute
+      (`[a](x.md "Title")`) as part of the path, breaking resolution/parity if titles are used.
+- [ ] `_index_targets` does not strip a `#fragment` from an index-line target (whereas
+      `check_links` does for body links) — an index deep-link `sources/a.md#background`
+      yields false parity/link errors. Decide whether fragment-bearing index lines are legal.
+- [ ] `DECISION_META_RE` anchors `^kind: decision` with no tolerance for leading whitespace
+      or a markdown list prefix (`  kind: decision`, `- kind: decision`), silently disabling
+      the echo-rule check for indented captures.
+- [ ] `check_links` counts a page's self-link as an inbound reference (silencing its own
+      orphan warning); and on a case-insensitive FS (macOS/APFS) a broken relative link with
+      wrong case (`../Sources/A.MD`) resolves via `.exists()` and escapes the broken-link
+      check. Prefer membership in the discovered page set over `resolved.exists()`.
+
+Adjudicated INTENDED-behavior (recorded so they are not re-litigated — no action):
+- The `assignment` secret pattern fires on compound identifiers like `client_secret` /
+  `csrf_token` (no `\b`). Deliberate: adding `\b` would stop catching real
+  `client_secret = "…"` / `refresh_token = "…"` — a net regression for a backstop.
+- Structural files (`index.md` / `log.md` / `open-questions.md`) are excluded from
+  link/citation scanning. Matches the §10 contract (they are not "pages"); making
+  `open-questions.md` locators machine-checkable would be a spec change.
+
+Per-task report/test-hygiene minors (cosmetic; code always independently verified — noted,
+not tracked as work): several haiku implementer reports miscounted test tallies; and three
+plan-mandated test-coverage gaps exist because the briefs specified exactly the shipped test
+sets — `test_discover_pages_excludes_structural_files`'s exclusion half is vacuous (the
+`wiki/*/*.md` depth-2 glob can't match depth-1 structural files), and neither
+`check_quarantine`'s "target page missing" branch nor `check_index_parity`'s duplicate-line
+branch has a dedicated test.

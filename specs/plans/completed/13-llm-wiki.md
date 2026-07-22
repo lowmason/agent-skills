@@ -59,7 +59,7 @@ Spec §16.1 / §16.7 S0. Claude Code hard-deletes session transcripts older than
 - Consumes: nothing.
 - Produces: nothing other tasks depend on. (Plan 14's distiller will read the tarball and the live `~/.claude/projects/`.)
 
-- [ ] **Step 1: Check the current setting (skip the task if already fixed)**
+- [x] **Step 1: Check the current setting (skip the task if already fixed)**
 
 Run:
 ```bash
@@ -67,7 +67,7 @@ python3 -c "import json,os;p=os.path.expanduser('~/.claude/settings.json');d=jso
 ```
 Expected: `cleanupPeriodDays = <unset>` (if it already prints `3650`, Steps 2 is done — go to Step 3).
 
-- [ ] **Step 2: Set `cleanupPeriodDays: 3650` (never 0)**
+- [x] **Step 2: Set `cleanupPeriodDays: 3650` (never 0)**
 
 Editing the user's global `~/.claude/settings.json` is a persistent-config change — get an explicit go-ahead first. Add the key (preserving all existing keys):
 
@@ -83,7 +83,7 @@ PY
 ```
 Expected: `set cleanupPeriodDays = 3650`. **Never set 0** — a known bug makes 0 disable transcript persistence entirely rather than disable cleanup.
 
-- [ ] **Step 3: Snapshot `~/.claude/projects/` outside the wiki repo**
+- [x] **Step 3: Snapshot `~/.claude/projects/` outside the wiki repo**
 
 Run:
 ```bash
@@ -91,7 +91,7 @@ mkdir -p ~/archives && tar -czf ~/archives/claude-projects-$(date +%F).tar.gz -C
 ```
 Expected: a listed `.tar.gz` of non-trivial size (tens of MB). This dated tarball is the archive of record for raw JSONL; only digests (Plan 14) ever enter the repo.
 
-- [ ] **Step 4: Request the claude.ai data export (manual, user-only)**
+- [x] **Step 4: Request the claude.ai data export (manual, user-only)**
 
 Not automatable — remind the user to do it in the browser: **claude.ai → Settings → Privacy → Export data**. It arrives later as `conversations.json` and feeds Plan 14's S2 track. Note in the handoff that this was requested; there is nothing to commit (all paths are outside both git repos).
 
@@ -112,7 +112,7 @@ Spec §5. Create the repo and its directory tree with seed structural files, so 
 - Consumes: nothing.
 - Produces: the tree the linter treats as ROOT. Pages live one level under `wiki/` (`wiki/sources/`, `wiki/samplers/`, `wiki/nowcasting/`); the three structural files (`index.md`, `log.md`, `open-questions.md`) live directly under `wiki/` and are **not** pages.
 
-- [ ] **Step 1: Create the directory tree and keep-files**
+- [x] **Step 1: Create the directory tree and keep-files**
 
 Run:
 ```bash
@@ -126,7 +126,7 @@ touch raw/samplers/.gitkeep raw/nowcasting/.gitkeep raw/benchmarks/.gitkeep \
 ```
 Expected: no output, exit 0.
 
-- [ ] **Step 2: Write the seed structural files**
+- [x] **Step 2: Write the seed structural files**
 
 `~/research-wiki/wiki/index.md`:
 ```markdown
@@ -171,7 +171,7 @@ the normative contract the `llm-wiki` skill and `scripts/lint_wiki.py` enforce.
 Resolve the root via `$LLM_WIKI_ROOT` (default `~/research-wiki`).
 ```
 
-- [ ] **Step 3: Initialize git and commit the scaffold**
+- [x] **Step 3: Initialize git and commit the scaffold**
 
 Run:
 ```bash
@@ -199,7 +199,7 @@ Spec §6–§9 plus the transcription mandates in §16.3 (epistemic rules) and �
 - Consumes: nothing.
 - Produces: the normative definitions the linter encodes (Tasks 4–10) and the skill dispatches (Task 11). Section anchors referenced later: page frontmatter keys/enums, quarantine rule, index format, log grammar, capture-note grammar.
 
-- [ ] **Step 1: Write `~/research-wiki/SCHEMA.md`**
+- [x] **Step 1: Write `~/research-wiki/SCHEMA.md`**
 
 ````markdown
 # SCHEMA — research-wiki normative formats
@@ -330,7 +330,7 @@ Kinds and id prefixes: `decision` (d), `rejected-approach` (r), `gotcha` (g),
 regex-checkable; lint enforces the echo rule on `decision` captures mechanically.
 ````
 
-- [ ] **Step 2: Sanity-check required sections exist, then commit**
+- [x] **Step 2: Sanity-check required sections exist, then commit**
 
 Run:
 ```bash
@@ -366,7 +366,7 @@ Spec §10. Establish the CLI, the hand-rolled stdlib frontmatter parser, page di
   - `run_checks(root: Path) -> list[tuple[str, str, str]]` — findings as `(severity, path, message)`, `severity ∈ {'ERROR','WARN','INFO'}`.
   - `main(argv: list[str] | None = None) -> int` — prints one line per finding as `f'{sev}  {path}  {msg}'` (two spaces between fields), then a summary line `f'{e} errors, {w} warnings, {i} info'`; returns 1 if any error, or if `--strict` and any warning; else 0.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 `~/research-wiki/scripts/test_lint_wiki.py`:
 ```python
@@ -440,7 +440,7 @@ def test_main_exit_zero_on_clean_scaffold(tmp_path):
   assert lint_wiki.main([str(root)]) == 0
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run:
 ```bash
@@ -448,7 +448,7 @@ cd ~/research-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 ```
 Expected: FAIL — `ModuleNotFoundError: No module named 'lint_wiki'` (or `AttributeError` once the file exists but functions don't).
 
-- [ ] **Step 3: Write the minimal implementation**
+- [x] **Step 3: Write the minimal implementation**
 
 `~/research-wiki/scripts/lint_wiki.py`:
 ```python
@@ -525,7 +525,7 @@ if __name__ == '__main__':
   sys.exit(main())
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run:
 ```bash
@@ -533,7 +533,7 @@ cd ~/research-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 ```
 Expected: PASS (5 passed).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 cd ~/research-wiki && git add scripts/lint_wiki.py scripts/test_lint_wiki.py && \
@@ -557,7 +557,7 @@ Spec §10 row "Frontmatter schema violation". Required keys, enum values, and th
 - Consumes: `parse_frontmatter`, `discover_pages` (Task 4).
 - Produces: `check_frontmatter_schema(root, pages) -> list[tuple]`, wired into `run_checks`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `test_lint_wiki.py`:
 ```python
@@ -611,7 +611,7 @@ def test_valid_pages_are_clean(tmp_path):
           if f[0] == 'ERROR' and 'frontmatter' in f[2].lower()] == []
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run:
 ```bash
@@ -623,7 +623,7 @@ cd ~/research-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 ```
 Expected: FAIL — no errors emitted yet (the checks are unwired).
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 In `lint_wiki.py`, add the constants and function, and wire it into `run_checks`:
 ```python
@@ -672,7 +672,7 @@ def run_checks(root):
   return findings
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run:
 ```bash
@@ -680,7 +680,7 @@ cd ~/research-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 ```
 Expected: PASS (all Task 4 + Task 5 tests green).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 cd ~/research-wiki && git add scripts/lint_wiki.py scripts/test_lint_wiki.py && \
@@ -704,7 +704,7 @@ Spec §10 row "Index/page parity violation, either direction". Every page on dis
 - Consumes: `discover_pages` (Task 4).
 - Produces: `check_index_parity(root, pages) -> list[tuple]`, wired into `run_checks`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `test_lint_wiki.py`:
 ```python
@@ -743,7 +743,7 @@ def test_index_parity_clean(tmp_path):
           if f[0] == 'ERROR' and 'index' in f[2].lower()] == []
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run:
 ```bash
@@ -751,7 +751,7 @@ cd ~/research-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 ```
 Expected: FAIL (parity not implemented).
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 Add to `lint_wiki.py`:
 ```python
@@ -792,7 +792,7 @@ Wire into `run_checks` after the frontmatter check:
   findings += check_index_parity(root, pages)
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run:
 ```bash
@@ -800,7 +800,7 @@ cd ~/research-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 ```
 Expected: PASS (all green).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 cd ~/research-wiki && git add scripts/lint_wiki.py scripts/test_lint_wiki.py && \
@@ -823,7 +823,7 @@ Spec §10 rows "Broken relative links between wiki pages" (error), "Body citatio
 - Consumes: `discover_pages`, `parse_frontmatter` (Task 4).
 - Produces: `_source_slugs`, `_strip_frontmatter`, `MD_LINK_RE`, `BODY_CITE_RE`, and `check_links(root, pages) -> list[tuple]`, wired into `run_checks`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `test_lint_wiki.py`:
 ```python
@@ -869,7 +869,7 @@ def test_strict_flips_warning_to_exit_one(tmp_path):
   assert lint_wiki.main(['--strict', str(root)]) == 1  # unless --strict
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run:
 ```bash
@@ -877,7 +877,7 @@ cd ~/research-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 ```
 Expected: FAIL.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 Add to `lint_wiki.py`:
 ```python
@@ -944,7 +944,7 @@ Wire into `run_checks`:
   findings += check_links(root, pages)
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run:
 ```bash
@@ -954,7 +954,7 @@ Expected: PASS.
 
 > Note: the empty-scaffold test (`test_empty_scaffold_is_clean`) still passes because it has zero pages, so no orphan warnings arise. Pages added in other tests carry their own index lines and, where needed, inbound links.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 cd ~/research-wiki && git add scripts/lint_wiki.py scripts/test_lint_wiki.py && \
@@ -978,7 +978,7 @@ Spec §10 rows "`cites` target not `type: source`" and "`cites` target not `stat
 - Consumes: `parse_frontmatter`, `discover_pages` (Task 4).
 - Produces: `check_quarantine(root, pages) -> list[tuple]`, wired into `run_checks`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `test_lint_wiki.py`:
 ```python
@@ -1020,7 +1020,7 @@ def test_cites_verified_source_is_clean(tmp_path):
           if f[0] == 'ERROR' and 'cites' in f[2].lower()] == []
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run:
 ```bash
@@ -1028,7 +1028,7 @@ cd ~/research-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 ```
 Expected: FAIL.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 Add to `lint_wiki.py`:
 ```python
@@ -1060,7 +1060,7 @@ Wire into `run_checks`:
   findings += check_quarantine(root, pages)
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run:
 ```bash
@@ -1068,7 +1068,7 @@ cd ~/research-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 ```
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 cd ~/research-wiki && git add scripts/lint_wiki.py scripts/test_lint_wiki.py && \
@@ -1092,7 +1092,7 @@ Spec §10 rows "Secret-shaped string anywhere under `raw/sessions/`" and "`kind:
 - Consumes: nothing new.
 - Produces: `SECRET_PATTERNS` (module constant), `check_sessions(root) -> list[tuple]`, wired into `run_checks`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `test_lint_wiki.py`:
 ```python
@@ -1133,7 +1133,7 @@ def test_decision_with_basis_is_clean(tmp_path):
           if f[0] == 'ERROR' and 'basis' in f[2].lower()] == []
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run:
 ```bash
@@ -1141,7 +1141,7 @@ cd ~/research-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 ```
 Expected: FAIL.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 Add to `lint_wiki.py`:
 ```python
@@ -1184,7 +1184,7 @@ Wire into `run_checks`:
   findings += check_sessions(root)
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run:
 ```bash
@@ -1192,7 +1192,7 @@ cd ~/research-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 ```
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 cd ~/research-wiki && git add scripts/lint_wiki.py scripts/test_lint_wiki.py && \
@@ -1216,7 +1216,7 @@ Spec §10 rows "Newest `updated` … newer than last `log.md` entry" (warning), 
 - Consumes: `discover_pages`, `parse_frontmatter` (Task 4).
 - Produces: `check_cadence_and_scale(root, pages) -> list[tuple]`, wired into `run_checks`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `test_lint_wiki.py`:
 ```python
@@ -1237,7 +1237,7 @@ def test_updated_newer_than_log_is_warning(tmp_path):
              for f in lint_wiki.run_checks(root))
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run:
 ```bash
@@ -1245,7 +1245,7 @@ cd ~/research-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 ```
 Expected: FAIL.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 Add to `lint_wiki.py`:
 ```python
@@ -1298,7 +1298,7 @@ Wire into `run_checks`:
   findings += check_cadence_and_scale(root, pages)
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run:
 ```bash
@@ -1306,7 +1306,7 @@ cd ~/research-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 ```
 Expected: PASS (full suite green).
 
-- [ ] **Step 5: M0 acceptance — lint the real empty scaffold**
+- [x] **Step 5: M0 acceptance — lint the real empty scaffold**
 
 Run:
 ```bash
@@ -1314,7 +1314,7 @@ cd ~/research-wiki && uv run --python 3.13 python scripts/lint_wiki.py . ; echo 
 ```
 Expected: prints `0 errors, 0 warnings, 0 info` and `exit=0`. This is **M0 acceptance criterion 1** (`python scripts/lint_wiki.py` exits 0 on the empty scaffold).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 cd ~/research-wiki && git add scripts/lint_wiki.py scripts/test_lint_wiki.py && \
@@ -1340,7 +1340,7 @@ Spec §12. Write the procedure-only skill in the `agent-skills` repo, symlink it
 - Consumes: `SCHEMA.md` (Task 3) — referenced at runtime, read before any operation.
 - Produces: a triggerable skill (M0 acceptance #2).
 
-- [ ] **Step 1: Write `skills/llm-wiki/SKILL.md`** (body ≤150 lines; reference `SCHEMA.md` as inline code, never a markdown link)
+- [x] **Step 1: Write `skills/llm-wiki/SKILL.md`** (body ≤150 lines; reference `SCHEMA.md` as inline code, never a markdown link)
 
 ```markdown
 ---
@@ -1433,7 +1433,7 @@ Pattern from Andrej Karpathy's LLM-wiki idea file; the per-claim citation-audit
 form is simplified from `kfchou/wiki-skills`. This skill is original prose.
 ```
 
-- [ ] **Step 2: Symlink the skill and confirm it resolves**
+- [x] **Step 2: Symlink the skill and confirm it resolves**
 
 Run:
 ```bash
@@ -1442,7 +1442,7 @@ ls -l ~/.claude/skills/llm-wiki && readlink ~/.claude/skills/llm-wiki
 ```
 Expected: the symlink prints, pointing at `…/agent-skills/skills/llm-wiki`.
 
-- [ ] **Step 3: Add the `llm-wiki/` attribution to `NOTICE`**
+- [x] **Step 3: Add the `llm-wiki/` attribution to `NOTICE`**
 
 In `/Users/lowell/Projects/agent-skills/NOTICE`, inside the block under
 `The following skills are original works by Lowell Mason, MIT licensed:`, add
@@ -1460,7 +1460,7 @@ citation-audit form from kfchou/wiki-skills — both by reference to the idea on
 it reproduces no external prose or code and bundles no copies.
 ```
 
-- [ ] **Step 4: Update `CLAUDE.md`'s originals list**
+- [x] **Step 4: Update `CLAUDE.md`'s originals list**
 
 In `/Users/lowell/Projects/agent-skills/CLAUDE.md`, the "Lowell's originals" bullet: append `llm-wiki` to the backtick-quoted list and change the parenthetical count. Exact edit — from:
 ```
@@ -1471,7 +1471,7 @@ to:
 `track-model-experiments`, `tune-hyperparameters`, `creative-thinking`, `llm-wiki`. (Twelve — keep in sync with `NOTICE`, which is authoritative.)
 ```
 
-- [ ] **Step 5: Run the frontmatter and provenance lints (must be clean)**
+- [x] **Step 5: Run the frontmatter and provenance lints (must be clean)**
 
 Run:
 ```bash
@@ -1481,7 +1481,7 @@ uv run --python 3.13 python build/check_provenance.py ; echo "provenance exit=$?
 ```
 Expected: both print nothing and `exit=0`. If frontmatter flags a referenced-path error, confirm the SKILL.md mentions `SCHEMA.md` only as inline code (backticks), not as a `](SCHEMA.md)` markdown link.
 
-- [ ] **Step 6: Confirm the skill body is within budget (≤150 lines)**
+- [x] **Step 6: Confirm the skill body is within budget (≤150 lines)**
 
 Run:
 ```bash
@@ -1489,7 +1489,7 @@ wc -l /Users/lowell/Projects/agent-skills/skills/llm-wiki/SKILL.md
 ```
 Expected: ≤ ~165 (frontmatter + ≤150-line body). If over, tighten prose.
 
-- [ ] **Step 7: Commit (in the `agent-skills` repo)**
+- [x] **Step 7: Commit (in the `agent-skills` repo)**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills && \
@@ -1518,3 +1518,19 @@ Expected: one commit line printed.
 **3. Type consistency:** `parse_frontmatter`, `discover_pages`, `default_root`, `run_checks`, `main` defined in Task 4 and reused unchanged. Findings are `(severity, path, message)` tuples throughout. `check_*` functions each take `(root, pages)` except `check_sessions(root)` (session files aren't wiki pages) — noted at each call site. `run_checks` accumulates them in one list. `_index_targets`, `_source_slugs`, `_strip_frontmatter`, `_last_log_date` are private helpers introduced before first use.
 
 **4. Known follow-ups for Plan 14 (distiller):** the `SECRET_PATTERNS` backstop in Task 9 must remain ≥ the distiller's redaction set; the digest/capture format the distiller emits is already pinned by `SCHEMA.md` (Task 3) and validated by Task 9's checks.
+
+---
+
+## Post-Execution Status — completed 2026-07-22
+
+Executed via **subagent-driven-development**. All 11 tasks complete; every per-task review returned zero Critical/Important. Final verification ran two Opus whole-branch reviews plus a 23-agent adversarial linter audit (five breakers running real fixtures against the linter + a spec-§10 completeness critic + an Opus adversarial-verify pass on every Critical/Important finding).
+
+**Acceptance.** M0 #1 met — `scripts/lint_wiki.py .` on the empty scaffold prints `0 errors, 0 warnings, 0 info`, exit 0 (controller-verified independently). All 12 spec §10 rows are enforced at the specified severity. Linter suite: 30 tests (25 as planned + 5 for the post-review fix below). agent-skills provenance gate green (`check_frontmatter.py` and `check_provenance.py` exit 0; build suite 33 passed). The skill auto-loads/triggers (M0 #2 confirmed to the extent that it appears in the live skills list; a full behavioral pass in a fresh interactive session remains a normal-use check).
+
+**Deviations from the plan's literal text (shipped code differs — recorded per the completion protocol):**
+- **Task 10, Step 3:** the raw-backlog INFO message was changed from the plan's static string to `f'backlog: raw file {f.name} has no source page'`. The plan's own Step-1 test asserts `'newpaper' in f[2]` (the *message* field), which the static string can never satisfy — the plan's snippet and its own test were mutually inconsistent, and the message fix is the only way to green the plan's test.
+- **Task 11, Step 1:** two backtick references `` `scripts/lint_wiki.py` `` in `SKILL.md` were reworded to `` `$LLM_WIKI_ROOT/scripts/lint_wiki.py` ``. The plan warned only that a `](SCHEMA.md)` markdown link would trip `check_frontmatter.py`'s `LINK_RE`; it missed that a backtick `scripts/…` path trips the sibling `TICK_PATH_RE` the same cross-repo way. The reword dodges the regex and is semantically truer (the linter lives at `$LLM_WIKI_ROOT`, not in `agent-skills`).
+- **Task 11 (scope add):** the build-suite guard `test_real_notice_originals_has_eleven_entries` hardcoded the originals count; adding the 12th original (`llm-wiki`) required updating it to `…_twelve_entries` / `== 12`. The plan's Step 5 ran only the two lints, not the build suite, so this fix was outside the plan's stated scope.
+- **Post-review fix (human-approved, `70e690c`):** a follow-up commit closed two robustness holes found in the plan's own verbatim regexes/parser — (G1) a bare/unbracketed `cites:`/`topics:` value bypassing the load-bearing quarantine guard, and (G2) the secret backstop missing current OpenAI (`sk-proj-`) and GitHub (`github_pat_`) key formats. Three further regex-strictness gaps the audit surfaced were deliberately deferred by the spec author — see `specs/deferred_items.md § 13-llm-wiki`.
+
+**Repositories & retirement.** The linter, scaffold, and `SCHEMA.md` live in the **standalone `~/research-wiki` repo** (its own `main`, 11 commits `a81572c`…`70e690c`) — not part of any PR, kept as built. The `llm-wiki` skill + provenance sync + this plan's retirement are on **`agent-skills` branch `feat/llm-wiki`** (`edb149d`, `3b7f61b`, + the completion commit), opened as a PR. This plan (13) is retired to `specs/plans/completed/`; **`specs/llm-wiki-spec.md` stays live** because Plan 14 (the distiller) still implements the same spec (per Plan 14's retirement note).
