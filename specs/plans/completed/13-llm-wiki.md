@@ -16,7 +16,7 @@
 
 ## Global Constraints
 
-Copied verbatim from the spec (`specs/llm-wiki-spec.md` §10, §14); every task's requirements implicitly include these.
+Copied verbatim from the spec (`specs/completed/llm-wiki-spec.md` §10, §14); every task's requirements implicitly include these.
 
 - **Python:** stdlib only; `pathlib` over `os.path`; single quotes; **two-space indentation**; Python ≥ 3.12. `lint_wiki.py` imports only from `pathlib`, `re`, `argparse`, `sys`, `os` (for `$LLM_WIKI_ROOT`). **No `import yaml`** — the frontmatter parser is hand-rolled (the repo's `build/check_frontmatter.py` uses pyyaml; do **not** copy that here).
 - **Dates:** ISO-8601 (`YYYY-MM-DD`) everywhere.
