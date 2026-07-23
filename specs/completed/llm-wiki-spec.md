@@ -1,6 +1,10 @@
 # llm-wiki — implementation spec
 
-**Status:** kickoff brief — hand to Claude Code for M0
+**Status: COMPLETE (2026-07-23)** — both implementing plans shipped: M0 scaffold, `SCHEMA.md`,
+`lint_wiki.py`, and the `llm-wiki` skill (`specs/plans/completed/13-llm-wiki.md`), and the
+session-history distiller (`specs/plans/completed/14-llm-wiki-distiller.md`). §13 M1–M3 and
+§16.7 S1–S3 are content milestones reached through normal wiki use, not code, and remain
+open-ended by design. Deferred items in specs/deferred_items.md.
 **Date:** 2026-07-22 · rev b (adds §16, session-history backfill; §10 lint table +2 rows; §5 layout +`raw/sessions/`)
 **Pattern source:** Karpathy, *LLM Wiki* idea file (gist `karpathy/442a6bf555914893e9891c11519de94f`, 2026-04-04)
 **Adopted extensions:** verification quarantine (per the auditor's comment on the gist); per-claim citation audit, sequential form (simplified from `kfchou/wiki-skills`)
@@ -273,7 +277,7 @@ Behavior:
 - **Noise removal** — tool-use and tool-result blocks are elided to one-line traces (`[tools: bash ×14, str_replace ×3]`) so narrative context survives; file dumps never pass through.
 - **Compaction summaries** — retained, marked `[compaction summary]`; lossy, but all that remains of pre-compaction turns.
 - **Redaction — always on** — key-shaped tokens (`sk-…`, `ghp_…`, `AKIA…`), PEM blocks, `password|token|secret` assignments, and long high-entropy strings become `[REDACTED:<class>]`; per-file counts land in the digest header.
-- **Idempotence** — the output filename embeds the session id; existing digests are skipped, so the distiller can be re-run at will.
+- **Idempotence** — the output filename embeds the session id; existing digests are skipped unless the session has grown, in which case the digest is rewritten (the newly computed turn count is compared against the existing digest's `turns:` header), so the distiller can be re-run at will.
 
 Digest format — one file per session, `raw/sessions/YYYY-MM-DD-<slug>-<sess8>.md`:
 

@@ -25,6 +25,7 @@ The following skills are original works by Lowell Mason, MIT licensed:
     track-model-experiments/
     tune-hyperparameters/
     creative-thinking/
+    llm-wiki/
 
 recommend-visualization/ is an original work by Lowell Mason (MIT). It CITES
 standard visualization literature by author-year only (Cleveland & McGill 1984;
@@ -42,6 +43,12 @@ it CITES and SUMMARIZES external material it does not redistribute:
   - pyprobml (https://github.com/probml/pyprobml) and dynamax
     (https://github.com/probml/dynamax) are MIT licensed (Copyright (c) 2020,
     2022 Probabilistic machine learning); the skill links to them.
+
+llm-wiki/ is an original work by Lowell Mason (MIT). It implements the LLM-wiki
+pattern from Andrej Karpathy's public idea file (gist
+karpathy/442a6bf555914893e9891c11519de94f) and adopts a simplified per-claim
+citation-audit form from kfchou/wiki-skills — both by reference to the idea only;
+it reproduces no external prose or code and bundles no copies.
 
 The following skills are adapted from the "superpowers" project
 (https://github.com/obra/superpowers), MIT licensed, Copyright (c) 2025

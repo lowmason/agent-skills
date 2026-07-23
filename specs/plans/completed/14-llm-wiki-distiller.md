@@ -1,5 +1,7 @@
 # llm-wiki Session Distiller Implementation Plan
 
+**Status: COMPLETE (2026-07-23)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Build `scripts/distill_sessions.py` (spec §16.4): a deterministic, stdlib-only stage-1 distiller that turns Claude Code / claude.ai conversation history into redacted, one-file-per-session markdown digests under `raw/sessions/`, ready to ingest as wiki source pages.
@@ -8,7 +10,7 @@
 
 **Tech Stack:** Python ≥ 3.12 (tested on Homebrew 3.13 via `uv run`), standard library only — `json`, `pathlib`, `re`, `argparse`, `sys` (spec §16.4). No third-party deps.
 
-**Shared spec / relationship to Plan 13:** This plan and [`13-llm-wiki.md`](13-llm-wiki.md) both implement `specs/llm-wiki-spec.md`. Plan 13 built the wiki scaffold, `SCHEMA.md`, `lint_wiki.py`, and the skill; this plan adds the second script into the same `~/research-wiki/scripts/` directory. **Retirement note:** the spec stays live until *both* plans complete — when retiring one, the other is still a live plan implementing the same spec, so leave `specs/llm-wiki-spec.md` in place.
+**Shared spec / relationship to Plan 13:** This plan and [`13-llm-wiki.md`](13-llm-wiki.md) both implement `specs/completed/llm-wiki-spec.md`. Plan 13 built the wiki scaffold, `SCHEMA.md`, `lint_wiki.py`, and the skill; this plan adds the second script into the same `~/research-wiki/scripts/` directory. **Retirement note:** the spec stays live until *both* plans complete — when retiring one, the other is still a live plan implementing the same spec, so leave `specs/llm-wiki-spec.md` in place. (Both plans are now complete; see Post-execution below for the spec's actual retirement.)
 
 ## Repositories referenced by this plan
 
@@ -56,7 +58,7 @@ Spec §16.4 usage line. Establish the argument parser, the dispatch to a source 
   - `main(argv: list[str] | None = None) -> int` — parses `--source {claude-code,claude-ai}`, `--project SUBSTR`, `--since YYYY-MM-DD`, `--include-sidechains`, positional `SRC`, `OUT_DIR`; dispatches; returns 1 if any file failed to parse else 0.
   - `Options` — a plain object/namespace carrying the parsed flags to adapters (use `argparse.Namespace` directly; no custom class).
 
-- [ ] **Step 0: Ensure the wiki repo and script dirs exist (defensive; no-op if Plan 13 ran)**
+- [x] **Step 0: Ensure the wiki repo and script dirs exist (defensive; no-op if Plan 13 ran)**
 
 Run:
 ```bash
@@ -65,7 +67,7 @@ mkdir -p ~/research-wiki/scripts ~/research-wiki/raw/sessions && \
 ```
 Expected: `ok`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 `~/research-wiki/scripts/test_distill_sessions.py`:
 ```python
@@ -90,7 +92,13 @@ def test_main_empty_src_dir_is_ok(tmp_path):
   assert out.exists()  # OUT_DIR is created even with nothing to write
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+> Deviation: `test_main_unknown_source_exits_nonzero` was rewritten to
+> `with pytest.raises(SystemExit) as exc: ds.main(...); assert exc.value.code != 0`
+> (test file gained `import pytest`). The plan's literal version cannot pass: argparse's
+> invalid-choice path calls `parser.error()`, which raises `SystemExit(2)` rather than
+> returning, so `rc = ds.main(...)` never executes. Gate-resolved pre-flight (human).
+
+- [x] **Step 2: Run the test to verify it fails**
 
 Run:
 ```bash
@@ -98,7 +106,7 @@ cd ~/research-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 ```
 Expected: FAIL — `ModuleNotFoundError: No module named 'distill_sessions'`.
 
-- [ ] **Step 3: Write the minimal implementation**
+- [x] **Step 3: Write the minimal implementation**
 
 `~/research-wiki/scripts/distill_sessions.py`:
 ```python
@@ -161,7 +169,7 @@ if __name__ == '__main__':
   sys.exit(main())
 ```
 
-- [ ] **Step 4: Run the test to verify it passes**
+- [x] **Step 4: Run the test to verify it passes**
 
 Run:
 ```bash
@@ -169,7 +177,7 @@ cd ~/research-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 ```
 Expected: PASS (2 passed).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 cd ~/research-wiki && git add scripts/distill_sessions.py scripts/test_distill_sessions.py && \
@@ -192,7 +200,7 @@ Spec §16.4 "Redaction — always on" and §16.3.3. A pure function that replace
 **Interfaces:**
 - Produces: `redact(text: str) -> tuple[str, dict[str, int]]` — redacted text plus `{class: count}` for classes that fired.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `test_distill_sessions.py`:
 ```python
@@ -225,7 +233,7 @@ def test_redact_leaves_normal_prose_and_uuids_alone():
   assert counts == {}
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run:
 ```bash
@@ -233,7 +241,7 @@ cd ~/research-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 ```
 Expected: FAIL — `AttributeError: module has no attribute 'redact'`.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 Add to `distill_sessions.py`:
 ```python
@@ -277,7 +285,7 @@ def redact(text):
   return text, counts
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run:
 ```bash
@@ -287,7 +295,7 @@ Expected: PASS.
 
 > Note on ordering: `sk-…`/`ghp_…`/`AKIA…` run before `high-entropy`, so a key is labeled by its specific class, not the generic one. The `assignment` class catches `token = "…"` forms the specific key patterns miss.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 cd ~/research-wiki && git add scripts/distill_sessions.py scripts/test_distill_sessions.py && \
@@ -313,7 +321,7 @@ Spec §16.4 "Noise removal". Render a message's `content` (str or list of blocks
   - `tool_names(content) -> list[str]` — `name` of each `tool_use` block, in order.
   - `tool_trace(names: list[str]) -> str` — `'[tools: bash ×14, str_replace ×3]'` (counts, first-seen order); `''` if none.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `test_distill_sessions.py`:
 ```python
@@ -335,7 +343,7 @@ def test_tool_names_and_trace():
   assert ds.tool_trace([]) == ''
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run:
 ```bash
@@ -343,7 +351,7 @@ cd ~/research-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 ```
 Expected: FAIL.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 Add to `distill_sessions.py`:
 ```python
@@ -377,7 +385,7 @@ def tool_trace(names):
   return f'[tools: {inner}]'
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run:
 ```bash
@@ -385,7 +393,7 @@ cd ~/research-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 ```
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 cd ~/research-wiki && git add scripts/distill_sessions.py scripts/test_distill_sessions.py && \
@@ -409,7 +417,7 @@ Spec §16.4 "Thread reconstruction" + "Compaction summaries". From a session's r
 - Consumes: `extract_text`, `tool_names` (Task 3).
 - Produces: `Turn` = dict `{n, role, text, tools, compaction}`; `reconstruct(records, include_sidechains) -> list[Turn]` (turns numbered from 1, in order).
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `test_distill_sessions.py`:
 ```python
@@ -461,7 +469,7 @@ def test_reconstruct_include_sidechains_flag():
   assert len(ds.reconstruct(records, include_sidechains=True)) == 2
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run:
 ```bash
@@ -469,7 +477,7 @@ cd ~/research-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 ```
 Expected: FAIL.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 Add to `distill_sessions.py`:
 ```python
@@ -503,7 +511,7 @@ def reconstruct(records, include_sidechains):
   return narrative
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run:
 ```bash
@@ -511,7 +519,7 @@ cd ~/research-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 ```
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 cd ~/research-wiki && git add scripts/distill_sessions.py scripts/test_distill_sessions.py && \
@@ -538,7 +546,7 @@ Spec §16.4 digest format. Given a reconstructed session, write `raw/sessions/YY
   - `Session` = dict `{session_id, source, project, turns}` (turns from `reconstruct`).
   - `write_digest(session: dict, out: Path) -> Path | None` — writes the digest, returns its path, or `None` if skipped (idempotence) or the session has zero turns... (still writes: zero captures is legitimate — write the empty-bodied digest so it is searchable, §16.5).
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `test_distill_sessions.py`:
 ```python
@@ -582,7 +590,7 @@ def test_write_digest_idempotent(tmp_path):
   assert len(list(out.glob('*.md'))) == 1
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run:
 ```bash
@@ -590,7 +598,7 @@ cd ~/research-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 ```
 Expected: FAIL.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 Replace the placeholder `write_digest` in `distill_sessions.py` and add helpers:
 ```python
@@ -648,7 +656,20 @@ def write_digest(session, out):
   return path
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+> Deviation: `slugify` returns `(slug or 'session')[:60]` — the plan's version caps word
+> count but not character length. An uncapped slug (e.g. a 240-char redaction-surviving
+> token, or six ordinary long words) produced filenames over the OS limit, raising an
+> uncaught `OSError` that aborted the whole batch — directly reachable when the distiller
+> is run over real transcript history. Gate-resolved (human), authorized fix F1.
+
+> Deviation: `write_digest` computes `first_date`/`last_date` from **sentinel-filtered**
+> dates (`'0000-00-00'` excluded before sorting, falling back to the sentinel only when
+> every date is missing) rather than the plan's plain `sorted(...) or ['0000-00-00']`.
+> The plan's version lets the `'0000-00-00'` sentinel from a turn with no timestamp sort
+> first and misdate the filename and header even when other turns have real dates.
+> Gate-resolved (human), authorized fix F2.
+
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run:
 ```bash
@@ -656,7 +677,7 @@ cd ~/research-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 ```
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 cd ~/research-wiki && git add scripts/distill_sessions.py scripts/test_distill_sessions.py && \
@@ -680,7 +701,7 @@ Spec §16.2.3, §16.4. Wire the core into the `claude-code` source: SRC is a pro
 - Consumes: `reconstruct` (Task 4), `write_digest` (Task 5).
 - Produces: `iter_claude_code(src, args, failures) -> list[dict]` (Session dicts). Replaces the Task 1 placeholder. `_read_jsonl(path) -> list[dict]` raising on malformed lines (caller records the failure).
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `test_distill_sessions.py`:
 ```python
@@ -737,7 +758,7 @@ def test_claude_code_bad_file_is_reported_not_fatal(tmp_path, capsys):
   assert 'parse-failure' in capsys.readouterr().err
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run:
 ```bash
@@ -745,7 +766,7 @@ cd ~/research-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 ```
 Expected: FAIL (adapter is a placeholder returning `[]`).
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 Replace `iter_claude_code` in `distill_sessions.py`:
 ```python
@@ -796,7 +817,24 @@ def iter_claude_code(src, args, failures):
   return sessions
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+> Deviation: `iter_claude_code`'s `--since` filter uses a sentinel-filtered date floor
+> (`'0000-00-00'` entries excluded before taking `min()`, falling back to the sentinel only
+> when every turn is undated) instead of the plan's plain
+> `min((t['ts'][:10] for t in turns), default=...)`. The plan's version lets one undated
+> turn produce `first_date == '0000-00-00'`, which sorts before any real `--since` cutoff
+> and silently drops an in-window session from the run. Controller-authorized (implements
+> the plan's own defensive-reading constraint; not a new design decision).
+
+> Deviation: the caller now catches `except (ValueError, OSError)` around `_read_jsonl`
+> instead of the plan's `except (json.JSONDecodeError, OSError)`. `UnicodeDecodeError` is a
+> `ValueError` (not an `OSError`), so a non-UTF-8 `.jsonl` escaped the plan's narrower catch,
+> aborted the whole run with an uncaught traceback, and lost every other session in the
+> batch — directly violating this plan's own Global Constraint that "a file that fails to
+> parse is reported on stderr without aborting the run." Controller-fixed without
+> escalating (implements the plan's stated contract; `ValueError` subsumes
+> `json.JSONDecodeError`).
+
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run:
 ```bash
@@ -804,7 +842,7 @@ cd ~/research-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 ```
 Expected: PASS.
 
-- [ ] **Step 5: Smoke-test against real transcripts (read-only; scoped, non-destructive)**
+- [x] **Step 5: Smoke-test against real transcripts (read-only; scoped, non-destructive)**
 
 Run (writes only to a throwaway temp dir, never `raw/sessions/`):
 ```bash
@@ -818,7 +856,14 @@ echo 'clean: no secret-shaped strings in digests'
 ```
 Expected: `exit=0` (or `exit=1` if some old file is unparseable — acceptable, good files still written), at least one digest listed, and `clean: no secret-shaped strings in digests`. Then clear the smoke dir: `rm -rf /tmp/distill-smoke`.
 
-- [ ] **Step 6: Commit**
+> Deviation: run from the session scratchpad
+> (`/private/tmp/claude-501/.../scratchpad`) rather than `/tmp/distill-smoke`, and via
+> `uv run --python 3.13 python distill_sessions.py` rather than a bare `python3` invocation
+> — matching this repo's environment conventions (no bare `/tmp`, no unpinned interpreter).
+> Same command shape and expected output; only the working directory and interpreter
+> invocation differ.
+
+- [x] **Step 6: Commit**
 
 ```bash
 cd ~/research-wiki && git add scripts/distill_sessions.py scripts/test_distill_sessions.py && \
@@ -842,7 +887,7 @@ Spec §16.2.2, §16.4. The claude.ai export is a single `conversations.json` (a 
 - Consumes: `redact`/`reconstruct` indirectly via a normalizer that emits the same `turns` shape.
 - Produces: `iter_claude_ai(src, args, failures) -> list[dict]`; `_claude_ai_turns(conversation) -> list[Turn]`. Replaces the Task 1 placeholder.
 
-- [ ] **Step 1: Write the failing test (synthetic fixture matching the documented shape)**
+- [x] **Step 1: Write the failing test (synthetic fixture matching the documented shape)**
 
 Append to `test_distill_sessions.py`:
 ```python
@@ -872,7 +917,7 @@ def test_claude_ai_adapter(tmp_path):
   assert '**[01] user:** Which sampler for hierarchical models?' in body
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run:
 ```bash
@@ -880,7 +925,7 @@ cd ~/research-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 ```
 Expected: FAIL (placeholder returns `[]`).
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 Replace `iter_claude_ai` in `distill_sessions.py`:
 ```python
@@ -927,7 +972,27 @@ def iter_claude_ai(src, args, failures):
   return sessions
 ```
 
-- [ ] **Step 4: Run the test to verify it passes**
+> Deviation: `_claude_ai_turns` was de-provisionalized against the real 2026-07-23 export
+> instead of shipping on the documented-but-unverified shape. It keys text extraction on
+> `isinstance(content, list) and content -> extract_text(content)`, falling back to the flat
+> `text` field only when `content` is absent — never `extract_text(content) or flat_text`.
+> Measured on the real export: 1070/2236 messages carry both a flat `text` and a
+> content-block text, and in 521 of those the flat field is the assistant's **thinking**
+> prose, not the reply (e.g. flat "The user is asking about..." vs. block "This is a great
+> analytical framework..."). An `or`-fallback would leak thinking into digests for the 16
+> messages whose content-block text is present but empty. Gate-resolved pre-flight (human):
+> pin to the real shape, keep the plan's fixture green, add one new real-shape test.
+
+> Deviation: `iter_claude_ai` received the same three robustness fixes as its
+> `iter_claude_code` sibling (Task 6 deviations): `except (ValueError, OSError)` around the
+> JSON load (not `json.JSONDecodeError, OSError` — `UnicodeDecodeError` is a `ValueError`);
+> the sentinel-filtered `--since` date floor (not a plain `min()` over possibly-empty
+> timestamps); and `m.get('created_at') or ''` in `_claude_ai_turns` (None-safe for the
+> `turns.sort()`, since `created_at` can be present-but-null). Controller-fixed without
+> escalating — character-identical mirrors of the already-adjudicated Task 6 fixes, applying
+> an approved fix to a second instance of the same defect class, not a new design call.
+
+- [x] **Step 4: Run the test to verify it passes**
 
 Run:
 ```bash
@@ -935,7 +1000,7 @@ cd ~/research-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 ```
 Expected: PASS (full suite green).
 
-- [ ] **Step 5: Cross-check the redaction/lint backstop coupling**
+- [x] **Step 5: Cross-check the redaction/lint backstop coupling**
 
 Confirm every class this distiller redacts is covered by the linter's backstop (Plan 13 Task 9). Run:
 ```bash
@@ -954,7 +1019,11 @@ print('OK: backstop covers the distiller')
 ```
 Expected: `OK: backstop covers the distiller`. (If it fails, widen `SECRET_PATTERNS` in `lint_wiki.py` — the lint backstop must be ≥ the redactor for the specific key classes.)
 
-- [ ] **Step 6: Commit**
+> Deviation: run via `uv run --python 3.13 python -c "..."` from the session scratchpad
+> rather than a bare `python3 -c "..."` invocation, matching this repo's environment
+> conventions. Same script and expected output.
+
+- [x] **Step 6: Commit**
 
 ```bash
 cd ~/research-wiki && git add scripts/distill_sessions.py scripts/test_distill_sessions.py && \
@@ -988,3 +1057,98 @@ Ground truth from `~/.claude/projects/*/​*.jsonl`; the format is an implementa
 **3. Type consistency:** `redact` returns `(text, counts)` everywhere; a `Turn` is `{n, role, text, tools, compaction, ts}` produced by `reconstruct` (Task 4) and both `_claude_ai_turns` (Task 7); a `Session` is `{session_id, source, project, turns}` consumed by `write_digest` (Task 5); `iter_claude_code`/`iter_claude_ai` both return `list[Session]` and append to `failures`. `main` (Task 1) wires them unchanged.
 
 **4. Cross-plan coupling:** Task 7 Step 5 asserts the lint backstop (Plan 13 `SECRET_PATTERNS`) covers every specific redactor class — the one hard dependency between the two plans, checked mechanically.
+
+---
+
+## Post-execution
+
+Executed via **subagent-driven-development**. All 7 planned tasks completed with zero
+Critical/Important findings surviving per-task review (one fix loop each on Tasks 5, 6, 7 —
+all controller-adjudicated and folded into the deviation notes above). Corpus figures below
+were measured against the real `~/.claude/projects` transcript history and a 40 MB
+`conversations.json` claude.ai export.
+
+**Task 8 (post-final-review fix set, not in the original plan).** The final whole-branch
+review (opus) found the 7-task output was not yet fit for purpose: 1 Critical + 6 Important,
+covering `--include-sidechains` silently discarding the large majority of its output, tool
+traces that could never aggregate past ×1, a redaction header whose counts were dominated by
+false positives, and three defensive-reading gaps. The human partner authorized a full fix
+pass; its brief is `.sdd/task-8-brief.md` and its five items are:
+
+1. Sidechain transcripts are folded into their **parent session** (not enumerated as
+   standalone sessions keyed on `agent-<hex>`), fixing both the idempotence collision and the
+   `--project` mismatch.
+2. `reconstruct` merges consecutive same-role records sharing a `requestId` into one turn
+   before numbering, so `tool_trace` can finally aggregate across a whole tool-call group
+   (`[tools: bash ×N, str_replace ×M]`) instead of being permanently stuck at ×1.
+3. `high-entropy`'s character class dropped `/`, eliminating file-path false positives while
+   the sole-redactor coupling to `sk-proj-`/`github_pat_`/base64 blobs is preserved and
+   commented in place.
+4. Non-dict JSONL records/conversations and non-list `chat_messages` are now guarded with
+   `isinstance` checks instead of aborting the run with an uncaught `AttributeError`.
+5. A nonexistent `SRC` path is now recorded as a parse failure (exit 1) instead of silently
+   exiting 0 having written nothing; and idempotence rewrites a digest when the session has
+   grown (turn count increased) rather than freezing it forever — this is the behavior change
+   the spec §16.4 Idempotence bullet was amended to describe (see Work item A of this
+   completion).
+
+   **Measured improvement (real corpus, same-hour before/after):** content-free tool-only
+   stub turns fell from 58.7% to 27.2% of all turns (8073/13753 → 1394/5124); the redaction
+   count fell from 558 (100% file-path false positives) to 16 (all genuine); multi-tool traces
+   went from 0 to 147 instances (multiplicity now up to ×33); `--include-sidechains` went from
+   46 digests with 16 orphan `agent-…` digests to 30 digests with 0 orphans.
+
+   A fix pass then closed a regression Task 8 itself introduced (SRC pointed at a single
+   project directory yielded 0 digests because the new enumeration rule assumed SRC was
+   always the projects root — fixed to a depth-independent "no `subagents` path component"
+   rule) plus one pre-existing ingest blocker unrelated to this plan's own code — see item (b)
+   below.
+
+**Corpus structure (correction).** The distiller's own pre-flight brief, and an earlier
+progress-ledger note, stated the `claude-code` corpus as "874 main session files." That figure
+was wrong: it counted nested workflow-subagent transcripts as main sessions because the
+original filter excluded only files whose immediate parent directory was literally
+`subagents`. The corpus actually decomposes as:
+
+- **30** true main sessions (`<project-dir>/<uuid>.jsonl`, depth 2)
+- **424** direct sidechain transcripts (`<project-dir>/<uuid>/subagents/agent-*.jsonl`, depth 4)
+- **844** nested workflow-subagent transcripts
+  (`<project-dir>/<uuid>/subagents/workflows/wf_*/agent-*.jsonl`, depth 6)
+
+Task 8's depth-independent enumeration rule ("no `subagents` path component") correctly
+excludes all 1268 sidechain/workflow files regardless of nesting depth from the main-session
+sweep, and folds both the direct and nested groups into their parent session's digest under
+`--include-sidechains`.
+
+**(b) Authorized change to a retired plan's deliverable.** Task 8's real-corpus run surfaced a
+pre-existing defect in `~/research-wiki/scripts/lint_wiki.py` (Plan 13's deliverable, already
+retired): the `openai-key` backstop pattern (widened by Plan 13's own post-review G2 fix to
+include `_`/`-`) matched `sk-` **mid-word** in ordinary prose — e.g.
+`ta[sk-reviewer-agent-and-deferred-command]`, `ri[sk-adjusted-return-modelling]` — scoring 90
+false positives across the first real batch of produced digests and would have blocked the
+very first ingest into `raw/sessions/` on a corpus containing zero actual secrets. The human
+partner authorized anchoring the pattern with a `(?<![A-Za-z0-9])` lookbehind; verified this
+kills every sampled false positive while still catching `sk-proj-<60 chars>` and legacy
+`sk-AAAA...` keys. `scripts/test_lint_wiki.py` gained a regression test for the fix
+(`test_lint_wiki.py` 30 → 31); this lands in the same fix-pass commit as the Task 8 regression
+close, so it is included in the final counts below.
+
+**(c) Final state.** `~/research-wiki` HEAD = `22fbe6e` (Tasks 1–7 at `70e690c..68dc323`, Task
+8 + its fix pass at `68dc323..649cd87..22fbe6e`). Full suite: **86 tests passing** — 31
+`test_lint_wiki.py` (30 + the openai-key anchor regression test) + 55 `test_distill_sessions.py`
+(`cd ~/research-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest -q`).
+Backstop cross-check still passes (`lint_wiki.SECRET_PATTERNS` covers every distiller class
+except the deliberately distiller-only `high-entropy` heuristic). One residual, deliberately
+deferred rather than fixed: 2 `assignment`-class lint false positives in a single digest,
+**only** under `--include-sidechains`, on pre-existing session text that literally discusses
+that pattern's missing `\b` word boundary (meta-recursion) — confirmed absent from plain
+root/single-project runs, so a normal ingest of this corpus lints fully clean. See
+`specs/deferred_items.md` § `14-llm-wiki-distiller` for this and the rest of the deferred
+list.
+
+**Spec retirement.** `specs/llm-wiki-spec.md` was kept live through Plan 13's retirement
+because this plan (14) still implemented it. With Task 8 and its fix pass complete, both
+plans implementing the spec are now done, so this completion retires the spec alongside this
+plan — `specs/llm-wiki-spec.md` → `specs/completed/llm-wiki-spec.md` (marked complete at top),
+amending §16.4's Idempotence bullet first (Task 8 item 5) to describe the shipped
+grows-then-rewrites behavior rather than the plan's original always-skip rule.
