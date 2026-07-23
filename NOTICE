@@ -48,7 +48,11 @@ llm-wiki/ is an original work by Lowell Mason (MIT). It implements the LLM-wiki
 pattern from Andrej Karpathy's public idea file (gist
 karpathy/442a6bf555914893e9891c11519de94f) and adopts a simplified per-claim
 citation-audit form from kfchou/wiki-skills — both by reference to the idea only;
-it reproduces no external prose or code and bundles no copies.
+it reproduces no external prose or code and bundles no copies. Its bundled
+scripts/ (bootstrap_wiki.py, lint_wiki.py, distill_sessions.py and their tests)
+and scripts/schema-template.md are Lowell Mason's own work under the same MIT
+terms; the bootstrap seeds them into a wiki root, and they carry no third-party
+code.
 
 The following skills are adapted from the "superpowers" project
 (https://github.com/obra/superpowers), MIT licensed, Copyright (c) 2025
