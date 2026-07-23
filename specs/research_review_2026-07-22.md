@@ -1,5 +1,30 @@
 # Claude Code Customization & Cost-Efficient Extension Development: A Practical Report for a Python/Bayesian Stack
 
+> **⚠️ Verified corrections — appended 2026-07-23.** The items below were fact-checked
+> against current official Claude Code / Anthropic docs (live web) and against the actual
+> repo. The report's *conceptual architecture* is sound; several specific *figures* are
+> wrong or stale, and — as its own Caveats admit — it never accessed this repo, so its
+> central "21 skills" premise is inferred from a different project. Rule of thumb when
+> reusing this report: **trust the architecture, re-check every number.**
+
+## ⚠️ Corrections (verified 2026-07-23)
+
+**Wrong / stale — fix before acting on or citing this report:**
+1. **"Haiku ~15× cheaper than Opus" → ~5×.** Current Opus (4.5–4.8) is $5/$25 per MTok; Haiku 4.5 is $1/$5 → 5× on input and output. "15×" is deprecated Opus-4.1-era pricing ($15/MTok). The report contradicts itself here: its own cache-price section ($0.50 Opus read = 0.1×$5) is the *correct* branch. (~6.5× only if you also count Opus 4.7+'s denser tokenizer.)
+2. **Env var `DISABLE_NONESSENTIAL_MODEL_CALLS` is misspelled** → real name is `DISABLE_NON_ESSENTIAL_MODEL_CALLS` (underscore between NON and ESSENTIAL). The other three (`ANTHROPIC_DEFAULT_OPUS_MODEL`, `ANTHROPIC_DEFAULT_SONNET_MODEL`, `CLAUDE_CODE_SUBAGENT_MODEL`) are correct.
+3. **"17+ hook event types" undercounts** — current docs enumerate ~31 (adds SessionStart, Setup, PermissionRequest, PostToolBatch, SubagentStart, TaskCreated/Completed, StopFailure, Pre/PostCompact, SessionEnd, …). Version-dependent.
+4. **Backtick-bang `` !`command` `` injection does NOT require `allowed-tools` approval.** It runs as preprocessing by default; it is gated only by the `disableSkillShellExecution` setting. (`allowed-tools` gating of `!` was legacy *slash-command* behavior.) §2 "Arguments" overstates this.
+5. **"~30–45K tokens before you type" is a loaded-setup figure, not a floor.** A vanilla session is ~9–20K (mostly built-in tool defs); 30–45K needs several MCP servers + custom agents + a large CLAUDE.md/memory also loaded.
+6. **"21 always-on skills → prune to 8–12" is inferred from a different repo** (`addyosmani/agent-skills`, per the Caveats). This repo has **26** skills, all deliberately symlinked live. The real listing-budget pressure is enabled *plugins* — the Airflow `data-engineering` set (~26 skills, ~2.2K tokens) — not the personal skills. Prune plugins, not skills.
+
+**Correct, but treat as version-snapshots (drift-prone):**
+- The description char-limit history (v2.1.86 = 250 → v2.1.105 = 1,536 → v2.1.129 drops-not-truncates; listing budget ~1% of window) is accurate *as of those builds* — but it is the single most version-volatile claim. Re-verify against your installed version.
+- `$ARGUMENTS` **zero-based** indexing (`$0` / `$ARGUMENTS[0]` = first arg) is **confirmed correct** — the report flagged it as uncertain; it needn't have.
+
+**Confirmed solid (no change needed):** progressive-disclosure model; all permission semantics (deny→ask→allow first-match, `:*` trailing-wildcard, word-boundary, compound splitting); hook exit-code semantics (`exit 2` blocks, `stop_hook_active`); commands-merged-into-skills; cache economics (0.1× / 1.25× / 2×); Bayesian numerics (R-hat < 1.01, bulk-ESS > 400, Vehtari et al. 2021 *Bayesian Analysis* 16(2):667–718); Haiku 4.5 = 73.3% SWE-bench Verified. The **"skills raise the floor, not the ceiling"** thesis is correct; its source is real (A. Andorra, *learnbayesstats.com*, 2026-03-23 — a blog post, not peer-reviewed).
+
+---
+
 ## TL;DR
 - **Scale ceremony to task size, not to a fixed pipeline.** Keep only 8–12 always-on skills, gate the full Goal→Brainstorm→Spec→Plan→TDD→Subagents→Review→Verify pipeline behind large/ambiguous work, and collapse it to a two-step "plan-lite → implement-with-verify" path for small changes. This is the single biggest cost lever because, per Anthropic's official best-practices doc, "Most best practices are based on one constraint: Claude's context window fills up fast, and performance degrades as it fills."
 - **Move deterministic rules out of tokens and into hooks; move sometimes-relevant knowledge out of CLAUDE.md and into on-demand skills.** A PostToolUse ruff hook enforces formatting every time for ~0 tokens, where a CLAUDE.md instruction is only advisory and competes for attention. Route models per phase (Opus/opusplan for planning, Sonnet for implementation, Haiku for mechanical review/test-running); teams report 60–80% cost savings versus running Opus for everything, and a per-task breakdown shows three-tier routing at $0.98/session vs $2.02 for uniform Opus 4.6 (a 51% reduction).
