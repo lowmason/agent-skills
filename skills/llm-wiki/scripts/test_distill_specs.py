@@ -251,3 +251,51 @@ def test_punctuation_only_repo_name_falls_back_to_session(tmp_path):
   brief = root / 'reports/harvest-session-2026-07-24.md'
   assert brief.is_file()
   assert 'repo: session\n' in brief.read_text()
+
+
+# --- Task 2: seed grep -------------------------------------------------------
+
+SEED_DOC = '''# Doc
+
+**Decision:** Delta Lake over plain Parquet.
+
+Delta merge/upsert was rejected for idempotent re-runs.
+
+## 10. Alternatives considered (recorded)
+
+## 1. TL;DR
+
+## Global Constraints
+
+**Status: COMPLETE (2026-07-04)** — executed
+
+> Deviation: retry moved to Task 9
+
+- [ ] Redis-backed counter store (deferred)
+'''
+
+
+def test_seed_hits_every_pattern_class():
+  labels = {label for _, label, _ in dsp.seed_hits(SEED_DOC)}
+  assert labels == {'decision', 'rejected', 'recorded', 'tldr', 'policy',
+                    'completion', 'deviation', 'deferred-item'}
+
+
+def test_seed_hits_carry_line_numbers_and_text():
+  hits = dsp.seed_hits(SEED_DOC)
+  assert (3, 'decision', '**Decision:** Delta Lake over plain Parquet.') in hits
+
+
+def test_seed_lines_are_redacted():
+  doc = '**Decision:** use key sk-' + 'A' * 24 + ' for auth.\n'
+  hits = dsp.seed_hits(doc)
+  assert hits and 'sk-' + 'A' * 24 not in hits[0][2]
+  assert '[REDACTED:openai-key]' in hits[0][2]
+
+
+def test_brief_contains_seed_hits_or_none_marker(tmp_path):
+  repo, root = make_repo(tmp_path), make_root(tmp_path)
+  assert inventory(repo, root) == 0
+  text = (root / 'reports/harvest-repo-2026-07-24.md').read_text()
+  assert 'decision: **Decision:** use X over Y.' in text
+  assert 'completion: **Status: COMPLETE (2026-01-01)**' in text

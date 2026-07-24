@@ -75,6 +75,35 @@ WALK_DIRS = ('specs/completed', 'specs/plans/completed', 'specs', 'specs/plans')
 DEFERRED_FILE = 'specs/deferred_items.md'
 
 
+# Seed grep (spec §5.1). Hits are prompts for whole-file agent reading, not
+# recall bounds (pilot: much of the yield was interleaved prose no seed regex
+# can see) — precision here only orders attention.
+SEED_PATTERNS = (
+  ('decision', re.compile(r'^.*\*\*[^*\n]*\bdecision\b[^*\n]*\*\*.*$',
+                          re.I | re.M)),
+  ('rejected', re.compile(r'^.*\b(?:rejected|not taken|set aside)\b.*$',
+                          re.I | re.M)),
+  ('recorded', re.compile(r'^#{1,6} .*\(recorded\).*$', re.I | re.M)),
+  ('tldr', re.compile(r'^#{1,6} .*\btl;?dr\b.*$', re.I | re.M)),
+  ('policy', re.compile(r'^#{1,6} .*\b(?:policy|global constraints)\b.*$',
+                        re.I | re.M)),
+  ('completion', re.compile(r'^\*\*Status: COMPLETE.*$', re.M)),
+  ('deviation', re.compile(r'^\s*> Deviation:.*$', re.M)),
+  ('deferred-item', re.compile(r'^- \[[ x]\] .*$', re.M)),
+)
+
+
+def seed_hits(text):
+  '''(line_no, label, redacted line ≤120 chars) per seed match, line order.
+  Redacting here is belt-and-braces: briefs live in reports/ on disk.'''
+  hits = []
+  for label, pat in SEED_PATTERNS:
+    for m in pat.finditer(text):
+      line_no = text.count('\n', 0, m.start()) + 1
+      hits.append((line_no, label, redact(m.group(0).strip())[0][:120]))
+  return sorted(hits)
+
+
 def walk_specs(repo, only=None):
   '''Return (repo-relative .md paths in harvest order, absent-input notes).'''
   files, notes = [], []
@@ -164,7 +193,8 @@ def cmd_inventory(args):
   if notes:
     body.append('')
   for rel in files:
-    body += render_file_section(rel, [], [], [])
+    text = (repo / rel).read_text()
+    body += render_file_section(rel, [], seed_hits(text), [])
   _atomic_write(path, '\n'.join(body).rstrip('\n') + '\n')
   print(f'wrote {path}')
   return 0
