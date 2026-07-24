@@ -146,3 +146,108 @@ def test_empty_walk_is_hard_error(tmp_path, capsys):
   repo, root = make_repo(tmp_path), make_root(tmp_path)
   assert inventory(repo, root, only='nomatch/*') == 1
   assert 'nothing to walk' in capsys.readouterr().err
+
+
+# --- Review-finding regression tests ----------------------------------------
+
+def test_non_ascii_repo_name_uses_raw_dir_name_not_session_fallback(tmp_path):
+  '''slugify() never returns falsy (it falls back to the literal 'session'),
+  so `slugify(repo.name) or repo.name` can never engage its fallback branch.
+  A repo dir with no ASCII words (e.g. a CJK name) must not silently become
+  "harvest-session-<date>.md" — it should keep the raw dir name.'''
+  root = make_root(tmp_path)
+  repo = tmp_path / '日本語'
+  (repo / 'specs').mkdir(parents=True)
+  (repo / 'specs/only.md').write_text('# Only\n')
+  _git(repo, 'init', '-q', '-b', 'main')
+  _git(repo, 'add', '.')
+  _git(repo, 'commit', '-qm', 'one file')
+  assert inventory(repo, root) == 0
+  brief = root / 'reports/harvest-日本語-2026-07-24.md'
+  assert brief.is_file(), 'brief should be named from the raw dir name'
+  assert not (root / 'reports/harvest-session-2026-07-24.md').is_file()
+  assert 'repo: 日本語' in brief.read_text()
+
+
+def test_subdir_of_parent_repo_is_hard_error(tmp_path, capsys):
+  '''`git -C repo rev-parse HEAD` walks up to an ancestor .git, so a plain
+  (non-repo) subdirectory of some outer git repo would otherwise pass the
+  git-history guard and silently record the *parent's* HEAD. Spec §7: no
+  git history of its own -> hard error, since landing SHAs are load-bearing.'''
+  root = make_root(tmp_path)
+  outer = tmp_path / 'outer'
+  outer.mkdir()
+  _git(outer, 'init', '-q', '-b', 'main')
+  (outer / 'README.md').write_text('# outer\n')
+  _git(outer, 'add', '.')
+  _git(outer, 'commit', '-qm', 'outer init')
+  repo = outer / 'nested'  # specs/-bearing, but not its own git checkout
+  (repo / 'specs').mkdir(parents=True)
+  (repo / 'specs/only.md').write_text('# Only\n')
+  assert inventory(repo, root) == 1
+  err = capsys.readouterr().err
+  assert 'git history' in err and 'load-bearing' in err
+
+
+def test_present_but_empty_dir_gets_no_md_files_note(tmp_path):
+  '''walk_specs distinguishes an absent dir from one that exists but holds no
+  .md files; only the absent-dir note text was previously asserted.'''
+  root = make_root(tmp_path)
+  repo = tmp_path / 'emptydir'
+  (repo / 'specs/completed').mkdir(parents=True)
+  (repo / 'specs/only.md').write_text('# Only\n')
+  _git(repo, 'init', '-q', '-b', 'main')
+  _git(repo, 'add', '.')
+  _git(repo, 'commit', '-qm', 'one file, empty completed dir')
+  assert inventory(repo, root) == 0
+  text = (root / 'reports/harvest-emptydir-2026-07-24.md').read_text()
+  assert 'note: specs/completed/: no .md files' in text
+
+
+def test_linked_worktree_is_accepted(tmp_path):
+  '''A `git worktree add` checkout has no .git *directory* of its own (just a
+  .git *file* pointing at the main checkout's gitdir), but
+  `rev-parse --show-toplevel` still reports the worktree's own root, not the
+  main checkout's. Pin that the new own-toplevel guard (finding 2) doesn't
+  reject this real workflow (this task itself runs inside such a worktree).'''
+  main = make_repo(tmp_path)
+  wt = tmp_path / 'wt'
+  _git(main, 'worktree', 'add', '--detach', '-q', str(wt), 'HEAD')
+  root = make_root(tmp_path)
+  assert inventory(wt, root) == 0
+  assert (root / f'reports/harvest-wt-2026-07-24.md').is_file()
+
+
+def test_yaml_hostile_repo_name_is_sanitized(tmp_path):
+  '''A repo dir name that slugifies to nothing and starts with a YAML-special
+  character must not be embedded raw as `repo: {name}` in the brief's
+  frontmatter — a leading '#' turns the rest of the line into a comment
+  (silently discarding the value); a leading '-' reads as a list marker.'''
+  root = make_root(tmp_path)
+  repo = tmp_path / '#日本語'
+  (repo / 'specs').mkdir(parents=True)
+  (repo / 'specs/only.md').write_text('# Only\n')
+  _git(repo, 'init', '-q', '-b', 'main')
+  _git(repo, 'add', '.')
+  _git(repo, 'commit', '-qm', 'one file')
+  assert inventory(repo, root) == 0
+  brief = root / 'reports/harvest-日本語-2026-07-24.md'
+  assert brief.is_file()
+  assert 'repo: 日本語\n' in brief.read_text()
+
+
+def test_punctuation_only_repo_name_falls_back_to_session(tmp_path):
+  '''A repo dir name that is purely YAML-special punctuation sanitizes to
+  nothing; falling all the way back to 'session' is safer than embedding an
+  empty or corrupt value in the brief header.'''
+  root = make_root(tmp_path)
+  repo = tmp_path / '---'
+  (repo / 'specs').mkdir(parents=True)
+  (repo / 'specs/only.md').write_text('# Only\n')
+  _git(repo, 'init', '-q', '-b', 'main')
+  _git(repo, 'add', '.')
+  _git(repo, 'commit', '-qm', 'one file')
+  assert inventory(repo, root) == 0
+  brief = root / 'reports/harvest-session-2026-07-24.md'
+  assert brief.is_file()
+  assert 'repo: session\n' in brief.read_text()

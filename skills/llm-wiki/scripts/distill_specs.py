@@ -42,6 +42,32 @@ def _git(repo, *args):
   return proc.stdout
 
 
+def _repo_has_own_git_history(repo):
+  '''`git -C repo rev-parse HEAD` still succeeds when repo is a plain
+  subdirectory of some ancestor's git checkout — git walks up to find the
+  nearest .git. Confirm repo is its own toplevel before trusting its HEAD
+  as a landing SHA (spec §7: SHAs are load-bearing, so a borrowed parent
+  HEAD must be rejected, not recorded).'''
+  toplevel = _git(repo, 'rev-parse', '--show-toplevel').strip()
+  return Path(toplevel).resolve() == repo.resolve()
+
+
+def _repo_name(repo):
+  '''slugify() always returns a truthy string — it falls back to the literal
+  'session' when it finds no ASCII words — so `slugify(repo.name) or
+  repo.name` could never engage its fallback branch. Detect that sentinel
+  case (slug collapsed to 'session' but the dir isn't actually named that)
+  and fall back to a sanitized raw dir name instead: strip a leading '#' or
+  '-', since repo_name is embedded unquoted as `repo: {repo_name}` in the
+  brief's YAML frontmatter and those lead characters mean comment / list
+  item there. A name that sanitizes to nothing falls back to 'session'.'''
+  slug = slugify(repo.name)
+  if slug != 'session' or repo.name == 'session':
+    return slug
+  name = repo.name.lstrip('#-').strip()
+  return name or 'session'
+
+
 # Settled strata first (spec §7): completed material is stable ground truth;
 # live drafts are harvested last if at all; deferred_items.md is demoted to
 # the tail (pilot: near-noise, open questions at most).
@@ -118,12 +144,15 @@ def cmd_inventory(args):
           file=sys.stderr)
     return 1
   try:
+    if not _repo_has_own_git_history(repo):
+      raise RuntimeError(f'{repo} is not its own git toplevel '
+                         '(borrowed a parent checkout history)')
     head = _git(repo, 'rev-parse', '--short', 'HEAD').strip()
   except (RuntimeError, OSError) as exc:
     print(f'error: {repo} has no usable git history ({exc}); '
           'landing SHAs are load-bearing', file=sys.stderr)
     return 1
-  repo_name = slugify(repo.name) or repo.name
+  repo_name = _repo_name(repo)
   files, notes = walk_specs(repo, args.only)
   if not files:
     print('error: nothing to walk (check --only)', file=sys.stderr)
