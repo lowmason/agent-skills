@@ -19,11 +19,13 @@ agent-skills/
 ├── skills/      # agent skills, one directory per skill (the tables below)
 ├── agents/      # subagent definitions (code-reviewer, task-reviewer — see Agents below)
 ├── commands/    # slash commands (/deferred — see Commands below)
-├── hooks/       # hook scripts (scaffolding, empty for now)
-├── rules/       # rule files (scaffolding, empty for now)
+├── hooks/       # deterministic gates for Python/uv work repos (see Hooks below)
+├── rules/       # reusable CLAUDE.md convention fragments (see Rules below)
 ├── build/       # citation-verification tooling for recommend-probabilistic-model
 └── specs/       # design records + implementation plans (retired work under completed/)
 ```
+
+Skills, agents, and commands install into `~/.claude/` and are discovered automatically. **Hooks and rules don't** — hooks are copied per work-repo, and rules are imported by path from a project's `CLAUDE.md`. See [Installation](#installation).
 
 ## Skills
 
@@ -43,6 +45,7 @@ agent-skills/
 | [`tech-debt`](skills/tech-debt/) | Audit, categorize, and prioritize tech debt in research/data codebases; the DELETE-vs-HARDEN triage. Bundles a `scan.sh` sweep for debt signals. |
 | [`design-architecture`](skills/design-architecture/) | Author or evaluate Architecture Decision Records (ADRs) for data & modeling systems (e.g. NumPyro/JAX vs PyMC, store layout, vintage data model). Bundles an ADR scaffolder. |
 | [`bls-data-context`](skills/bls-data-context/) | Canonical reference for the BLS employment/wage programs (QCEW, CES, SAE, JOLTS, BED, OEWS, ECI, ECEC, CPS) — program selector, cross-cutting concepts (jobs-vs-persons, place-of-work, vintage/benchmark, units), reconciliation rules, and nine full per-program references loaded on demand. |
+| [`llm-wiki`](skills/llm-wiki/) | Maintain a personal research wiki (the Karpathy LLM-wiki pattern) as a citation-audited knowledge base instead of a folder of unread PDFs. A source is ingested as a `status: unverified` page; claims are promoted onto concept pages carrying inline `[slug §x]` locators; the **quarantine rule** forbids an unverified summary from ever becoming grounds for another page, and a contradiction keeps *both* claims with an entry in `open-questions.md` rather than overwriting. Every mutating operation appends to `log.md`. The wiki root (`$LLM_WIKI_ROOT`) owns its normative `SCHEMA.md`, so the skill stays generic and a second root — work vs. personal, content never crossing — reuses it unchanged. Bundles stdlib-only `bootstrap_wiki.py` (seeds a fresh root, never overwrites content), `lint_wiki.py` (mechanical gate before any status flip), and `distill_sessions.py` (turns Claude Code transcripts into ingestable capture notes), plus an [`INSTALL.md`](skills/llm-wiki/INSTALL.md) for fresh machines. |
 
 ### Adapted from [superpowers](https://github.com/obra/superpowers) (Jesse Vincent, MIT)
 
@@ -83,6 +86,36 @@ Slash commands live in [`commands/`](commands/) and install into `~/.claude/comm
 | Command | Description |
 |---------|-------------|
 | [`/deferred`](commands/deferred.md) | Triage `specs/deferred_items.md` in the current project: group unticked items by theme, classify actionable-now vs still-blocked, and propose which deserve promotion to a new spec. Read-only — ticking stays with the plan-completion protocol. |
+
+## Hooks
+
+Hook scripts live in [`hooks/`](hooks/). They're **templates for your Python/uv work repos**, not config for this one — each is copied into a target repo and registered in *that* repo's `.claude/settings.json`. What they buy you: the advisory prose in a `CLAUDE.md` ("always run ruff", "use uv, not pip") becomes a deterministic gate that fires every time, for ~0 tokens, instead of an instruction the agent may or may not honor.
+
+| Hook | Event | What it does |
+|------|-------|--------------|
+| [`ruff-fix.sh`](hooks/ruff-fix.sh) | `PostToolUse` (`Write`/`Edit`) | Runs `uv run ruff check --fix` + `ruff format` on the edited `*.py`. Best-effort: `PostToolUse` fires *after* the write and can't undo it. |
+| [`ruff-check.sh`](hooks/ruff-check.sh) | `Stop` | Runs `uv run ruff check .`; exit 2 feeds whatever `--fix` couldn't resolve back to Claude. Guarded by `stop_hook_active` against loops. |
+| [`uv-guard.sh`](hooks/uv-guard.sh) | `PreToolUse` (`Bash`) | Blocks `pip install` and bare `python` / `pytest`, injecting the `uv …` form instead. Escape hatch: `no-uv-guard` anywhere in the command. |
+
+All three read the hook JSON payload from stdin with `jq`. Only **exit 2** blocks a tool call and feeds stderr back to Claude — exit 1 merely logs.
+
+> [!WARNING]
+> **Don't install these globally, and don't wire them into this repo.** A hook registered in `~/.claude/settings.json` fires in *every* project, including non-Python ones. And `agent-skills` itself has no root `pyproject.toml` — its bundled scripts run on `uv run --with` inline deps, so `ruff check` would have no config to run against and `uv-guard.sh` would fight the very invocation the repo intends. Install per work-repo instead.
+
+[`hooks/README.md`](hooks/README.md) carries the copy-in procedure, the settings JSON to merge, an optional permission allowlist so the `uv` forms stop prompting, and each script's known limits (notably that `uv-guard.sh` is a first-token heuristic, not a shell parser).
+
+## Rules
+
+Rule files live in [`rules/`](rules/): reusable fragments of standing convention — the *advisory* layer that [`hooks/`](#hooks) enforces mechanically. A rule file is plain markdown holding one coherent set of conventions (Python style, the `specs/` layout, review expectations) kept in one place so it can be pulled into a project rather than copy-pasted into each `CLAUDE.md` and left to drift.
+
+Rules aren't auto-discovered the way skills and commands are. A project opts in by importing the file from its own `CLAUDE.md`:
+
+```markdown
+<!-- in a project's CLAUDE.md -->
+@~/.claude/rules/python-style.md
+```
+
+The import is resolved by path at load time, so an edit here reaches every project that imports the file — which is the point, and also the reason to keep each rule file narrow enough that no importing project is forced to swallow conventions it doesn't want.
 
 ## Installation
 
@@ -144,10 +177,31 @@ mkdir -p ~/.claude/commands
 ln -s ~/agent-skills/commands/deferred.md ~/.claude/commands/deferred.md
 ```
 
+### Hooks
+
+Hooks break the pattern above — **don't symlink them into `~/.claude/`**, or they'll fire in every project you open (see the warning under [Hooks](#hooks)). Copy them into the work repo that wants them:
+
+```bash
+mkdir -p .claude/hooks && cp ~/agent-skills/hooks/{ruff-fix,ruff-check,uv-guard}.sh .claude/hooks/ && chmod +x .claude/hooks/*.sh
+```
+
+Then merge the `hooks` block from [`hooks/README.md`](hooks/README.md) into that repo's `.claude/settings.json`. Prefer `cp` over a symlink here: a copy means editing a template can't silently change the gates in every repo at once — re-copy when you actually want the update.
+
+### Rules
+
+Rules aren't discovered automatically, so installing them is just making them reachable by path. Symlink the directory once:
+
+```bash
+ln -s ~/agent-skills/rules ~/.claude/rules
+```
+
+Then import whichever files a project should follow from its `CLAUDE.md` (`@~/.claude/rules/<name>.md`), one line per rule file.
+
 ## Credits
 
-- **My original skills** — `develop-testing-strategy`, `validate-data`, `explore-data`, `tech-debt`, `design-architecture`, `bls-data-context`, `recommend-probabilistic-model`, `recommend-visualization`, `track-model-experiments`, `tune-hyperparameters`, and `creative-thinking` are my own work, MIT licensed (see [`LICENSE`](LICENSE)).
+- **My original skills** — `develop-testing-strategy`, `validate-data`, `explore-data`, `tech-debt`, `design-architecture`, `bls-data-context`, `recommend-probabilistic-model`, `recommend-visualization`, `track-model-experiments`, `tune-hyperparameters`, `creative-thinking`, and `llm-wiki` are my own work, MIT licensed (see [`LICENSE`](LICENSE)).
 - **Cited-only sources** — `recommend-probabilistic-model` cites Kevin Murphy's *Probabilistic Machine Learning* books (CC-BY-NC-ND) by section number only, and `bayesian-workflow` cites the Gelman/Betancourt/Gabry workflow papers (Betancourt's under CC BY-NC 4.0) by author-year — no text is reproduced and no copies are bundled (see [`NOTICE`](NOTICE)).
+- **llm-wiki** — my own work (MIT). It implements the LLM-wiki pattern from [Andrej Karpathy](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f)'s public idea file, and adopts a simplified per-claim citation-audit form from [kfchou/wiki-skills](https://github.com/kfchou/wiki-skills) — both **by reference to the idea only**; no external prose or code is reproduced and no copies are bundled. Its bundled `scripts/` are my own work under the same terms (see [`NOTICE`](NOTICE)).
 - **bayesian-workflow** — adapted from [Alexandre Andorra](https://alexandorra.github.io/)'s original **PyMC** Bayesian-workflow skill (MIT licensed). I ported it to **NumPyro + JAX** and expanded the visualization guidance.
 - **superpowers skills** — the 13 process skills are adapted from the [superpowers](https://github.com/obra/superpowers) project by [Jesse Vincent](https://github.com/obra), MIT licensed, © 2025; my modifications under the same MIT terms. The [`code-reviewer`](agents/code-reviewer.md) and [`task-reviewer`](agents/task-reviewer.md) agents are distilled from the adapted `requesting-code-review` and `subagent-driven-development` reviewer templates, same terms. See [`LICENSE-superpowers`](LICENSE-superpowers) and [`NOTICE`](NOTICE).
 
