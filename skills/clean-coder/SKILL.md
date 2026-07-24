@@ -120,6 +120,8 @@ Cite every applied fix by rule code; keep proposals separate from applied fixes:
 | "That's already correct, no need to touch it" | Declaring code clean isn't applying the rule. In-scope and rule-flagged means fix it. |
 | "It's just repo hygiene — untracked cruft" | Category doesn't exempt an edit from the Gate. Out-of-scope hygiene fixes still get announced and asked. |
 | "I left it untouched and flagged it for follow-up" | Check the diff before you write that. A claimed restraint the diff contradicts is worse than the edit itself. |
+| "Fixing that in-scope smell would change behavior — safer to leave it" | The tidy/behavior rule sequences work, it never cancels it: a named constant preserves behavior exactly, and a genuinely behavioral cleanup lands as its own step after the fix. Skipping the in-scope pass is not caution. |
+| "There's a literal / a smell, but it's not worth fixing" | In-scope, "worth" is not the test: rule-flagged means fixed and cited. A constant costs one line; re-grading materiality per item is the dodge. |
 
 ## Red flags — STOP
 
@@ -130,6 +132,10 @@ Cite every applied fix by rule code; keep proposals separate from applied fixes:
 - Tidying has gone on for a while and the task itself has not advanced.
 - "While I'm at it…" in your own reasoning — that phrase is the Gate's trigger, never
   permission.
+- Your report cites no rule code for a function you edited — the in-scope pass was
+  skipped. Run the routing table over the lines you touched before reporting.
+- A proposal in your list has no rule code — open the routing table's reference and
+  cite one, or drop the item.
 
 Any of these → stop and re-enter the Gate: announce, list, ask.
 
