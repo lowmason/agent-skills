@@ -39,6 +39,11 @@ The single most important judgment in this whole skill: **DELETE vs HARDEN.** Do
 over-engineer a throwaway, and do not leave a load-bearing thing fragile. Most of the
 workflow below exists to make that one call correctly.
 
+**Boundary with `clean-coder`:** this skill is the batch audit — invoked on a repo,
+producing a prioritized backlog. In-flow, edit-triggered cleanup (fix-as-you-touch,
+gated by consent) is the clean-coder skill; when clean-coder hits something bigger
+than an opportunistic fix, it stops and defers here.
+
 ## Workflow overview
 
 1. **Sweep** — Run `scripts/scan.sh <repo>` to surface candidate signals (grep recipes

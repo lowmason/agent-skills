@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repo is
 
-A personal collection of Claude Code user-level configuration, centered on [agent skills](https://code.claude.com/docs/en/skills). Skills live under `skills/` — each subdirectory is **one self-contained skill**: a `SKILL.md` plus optional `references/` (loaded on demand) and `scripts/` (executable helpers). Sibling top-level dirs hold the other config types: `agents/` (subagent definitions), `commands/` (slash commands — `/deferred`), `hooks/` (reusable hook templates for the user's *work* repos — ruff/uv gates; not wired into this repo, see `hooks/README.md`), `rules/` (rule files, scaffolding, currently empty). There is no application here to run — the "product" is the skill text and its bundled scripts.
+A personal collection of Claude Code user-level configuration, centered on [agent skills](https://code.claude.com/docs/en/skills). Skills live under `skills/` — each subdirectory is **one self-contained skill**: a `SKILL.md` plus optional `references/` (loaded on demand) and `scripts/` (executable helpers). Sibling top-level dirs hold the other config types: `agents/` (subagent definitions), `commands/` (slash commands — `/deferred`), `hooks/` (reusable hook templates for the user's *work* repos — ruff/uv gates; not wired into this repo, see `hooks/README.md`), `rules/` (path-scoped rule files — `clean-code-python.md` loads on `**/*.py` edits via the committed `.claude/rules/` symlink). There is no application here to run — the "product" is the skill text and its bundled scripts.
 
 Skills install into `~/.claude/skills/` (symlink or copy). This repo *is* the user's symlinked source: per-skill symlinks in `~/.claude/skills/` point at `skills/<name>` here (and `~/.claude/agents/` links into `agents/`), so edits here are live.
 
@@ -15,6 +15,7 @@ Skills come from three sources with distinct attribution, all tracked in `NOTICE
 - **Lowell's originals** (MIT, `LICENSE`): `develop-testing-strategy`, `validate-data`, `explore-data`, `tech-debt`, `design-architecture`, `bls-data-context`, `recommend-probabilistic-model`, `recommend-visualization`, `track-model-experiments`, `tune-hyperparameters`, `creative-thinking`, `llm-wiki`. (Twelve — keep in sync with `NOTICE`, which is authoritative.)
 - **`bayesian-workflow`** — adapted from Alexandre Andorra's PyMC skill, ported to NumPyro+JAX (MIT).
 - **superpowers skills** (MIT, © 2025 Jesse Vincent, `LICENSE-superpowers`): the 13 process skills (`brainstorming`, `writing-plans`, `test-driven-development`, etc.). These were adapted from the upstream `superpowers` plugin.
+- **clean-code family** — `clean-coder`, `clean-code`, and `rules/clean-code-python.md` adapt Robert C. Martin's *Clean Code* rule catalog (2008), cited by rule code only, no book prose; `clean-coder` also cites Beck's *Tidy First?*, Fowler's opportunistic refactoring, and Ousterhout's *APOSD* by idea only.
 
 Two invariants from that adaptation that must not silently regress:
 - **Cross-skill references use bare skill names** (`use the writing-plans skill`), never the upstream `superpowers:` plugin namespace.
