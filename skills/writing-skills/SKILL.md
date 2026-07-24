@@ -231,7 +231,7 @@ only when the body sends you there. Budget against the tier, not a single number
   carries, so treat a body pushing past ~2,000 words as a prompt to ask what belongs in
   `references/`, not as a violation.
 - `references/*.md` (loaded on demand): no budget. This is where depth goes — `bayesian-workflow`
-  carries 10 and `bls-data-context` 9, keeping their bodies navigational.
+  and `bls-data-context` each carry 10, keeping their bodies navigational.
 
 **Techniques:**
 
