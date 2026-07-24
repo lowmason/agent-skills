@@ -55,6 +55,26 @@ and scripts/schema-template.md are Lowell Mason's own work under the same MIT
 terms; the bootstrap seeds them into a wiki root, and they carry no third-party
 code.
 
+The clean-code family — the two skills and one rule file listed below —
+adapts the rule-catalog concept and rule codes from Robert C. Martin,
+"Clean Code: A Handbook of Agile Software Craftsmanship" (Prentice Hall,
+2008), Chapter 17 "Smells and Heuristics" (F.I.R.S.T. from Chapter 9).
+Rules are cited by code and short title only; all prose and all code
+examples are original work by Lowell Mason, MIT licensed. No Clean Code
+text is reproduced and nothing from the book is bundled.
+
+    clean-coder/
+    clean-code/
+    rules/clean-code-python.md
+
+clean-coder/ additionally draws on, by citation of the ideas only: Kent
+Beck, "Tidy First?" (O'Reilly, 2023) — the tidy/behavior commit separation
+and the batch-size stopping rule; Martin Fowler's "Opportunistic
+Refactoring" — the litter-pickup framing; and John Ousterhout, "A
+Philosophy of Software Design" (2nd ed., 2021) — deep modules and
+comments-as-design, used to temper the tiny-function and comment-minimalism
+readings. No text from any of these is reproduced.
+
 The following skills are adapted from the "superpowers" project
 (https://github.com/obra/superpowers), MIT licensed, Copyright (c) 2025
 Jesse Vincent. The full upstream license text is in LICENSE-superpowers;

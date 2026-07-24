@@ -20,12 +20,12 @@ agent-skills/
 ├── agents/      # subagent definitions (code-reviewer, task-reviewer — see Agents below)
 ├── commands/    # slash commands (/deferred — see Commands below)
 ├── hooks/       # deterministic gates for Python/uv work repos (see Hooks below)
-├── rules/       # reusable CLAUDE.md convention fragments (see Rules below)
+├── rules/       # path-scoped rule files, loaded via .claude/rules/ (see Rules below)
 ├── build/       # citation-verification tooling for recommend-probabilistic-model
 └── specs/       # design records + implementation plans (retired work under completed/)
 ```
 
-Skills, agents, and commands install into `~/.claude/` and are discovered automatically. **Hooks and rules don't** — hooks are copied per work-repo, and rules are imported by path from a project's `CLAUDE.md`. See [Installation](#installation).
+Skills, agents, and commands install into `~/.claude/` and are discovered automatically. Rules load natively from a project's `.claude/rules/` (this repo commits a symlink into [`rules/`](rules/); a work repo copies the file). **Hooks don't** — they are copied per work-repo. See [Installation](#installation).
 
 ## Skills
 
@@ -46,6 +46,15 @@ Skills, agents, and commands install into `~/.claude/` and are discovered automa
 | [`design-architecture`](skills/design-architecture/) | Author or evaluate Architecture Decision Records (ADRs) for data & modeling systems (e.g. NumPyro/JAX vs PyMC, store layout, vintage data model). Bundles an ADR scaffolder. |
 | [`bls-data-context`](skills/bls-data-context/) | Canonical reference for the BLS employment/wage programs (QCEW, CES, SAE, JOLTS, BED, OEWS, ECI, ECEC, CPS) — program selector, cross-cutting concepts (jobs-vs-persons, place-of-work, vintage/benchmark, units), reconciliation rules, and nine full per-program references loaded on demand. |
 | [`llm-wiki`](skills/llm-wiki/) | Maintain a personal research wiki (the Karpathy LLM-wiki pattern) as a citation-audited knowledge base instead of a folder of unread PDFs. A source is ingested as a `status: unverified` page; claims are promoted onto concept pages carrying inline `[slug §x]` locators; the **quarantine rule** forbids an unverified summary from ever becoming grounds for another page, and a contradiction keeps *both* claims with an entry in `open-questions.md` rather than overwriting. Every mutating operation appends to `log.md`. The wiki root (`$LLM_WIKI_ROOT`) owns its normative `SCHEMA.md`, so the skill stays generic and a second root — work vs. personal, content never crossing — reuses it unchanged. Bundles stdlib-only `bootstrap_wiki.py` (seeds a fresh root, never overwrites content), `lint_wiki.py` (mechanical gate before any status flip), and `distill_sessions.py` (turns Claude Code transcripts into ingestable capture notes), plus an [`INSTALL.md`](skills/llm-wiki/INSTALL.md) for fresh machines. |
+
+### Clean-code family (rule catalog adapted from Robert C. Martin's *Clean Code*)
+
+Proactive-cleanup counterpart to `tech-debt`: standards applied in the flow of normal editing, bounded by consent. The rule *codes* come from Martin's Ch. 17 catalog (cited by code only — no book prose); the curation defers mechanical rules to ruff and keeps the judgment-level ones, tuned to Polars/JAX. A third artifact, the [`clean-code-python`](rules/clean-code-python.md) rule, injects the always-on Python guardrails on every `*.py` edit (see [Rules](#rules)).
+
+| Skill | Description |
+|-------|-------------|
+| [`clean-coder`](skills/clean-coder/) | Opportunistic cleanup with a consent gate: in-scope fixes apply directly; anything adjacent goes through announce → list (`file:line` + rule code) → ask → apply-on-yes. Beck's *Tidy First?* supplies the spine — tidyings and behavior changes never share a commit, and a stopping rule caps the cascade, deferring bigger findings to `tech-debt`. Pressure-tested against a no-skill baseline on six gate scenarios. |
+| [`clean-code`](skills/clean-code/) | The curated standards catalog `clean-coder` applies: Martin's N/F/G/C/T rules dispositioned keep / defer-to-ruff / drop, with stack-tuned examples (Polars fluent chains are not Demeter violations; `jax.lax.switch` is G23's dispatch; comments carrying design intent survive C3). Five per-category references load on demand; every fix cites its rule code. |
 
 ### Adapted from [superpowers](https://github.com/obra/superpowers) (Jesse Vincent, MIT)
 
@@ -106,16 +115,15 @@ All three read the hook JSON payload from stdin with `jq`. Only **exit 2** block
 
 ## Rules
 
-Rule files live in [`rules/`](rules/): reusable fragments of standing convention — the *advisory* layer that [`hooks/`](#hooks) enforces mechanically. A rule file is plain markdown holding one coherent set of conventions (Python style, the `specs/` layout, review expectations) kept in one place so it can be pulled into a project rather than copy-pasted into each `CLAUDE.md` and left to drift.
+Rule files live in [`rules/`](rules/): standing conventions injected automatically, without a skill invocation. Claude Code loads a project's `.claude/rules/*.md` natively — a rule with a `paths:` frontmatter glob loads only when a matching file is read or edited; a rule without frontmatter loads at session start (verified against Claude Code 2.1.218).
 
-Rules aren't auto-discovered the way skills and commands are. A project opts in by importing the file from its own `CLAUDE.md`:
+This repo keeps rule sources in `rules/` and commits a relative symlink from `.claude/rules/` so the rules apply here too:
 
-```markdown
-<!-- in a project's CLAUDE.md -->
-@~/.claude/rules/python-style.md
-```
+| Rule | Scope | What it injects |
+|------|-------|-----------------|
+| [`clean-code-python.md`](rules/clean-code-python.md) | `**/*.py` | Always-on Python guardrails — single quotes, 4-space indent, Polars-over-pandas, method-style Polars expressions, lazy evaluation, NumPyro+JAX, named constants (G25). Cross-references the `clean-code` catalog by rule code. |
 
-The import is resolved by path at load time, so an edit here reaches every project that imports the file — which is the point, and also the reason to keep each rule file narrow enough that no importing project is forced to swallow conventions it doesn't want.
+To use a rule in another project, copy it into that repo's `.claude/rules/` (project-level is the verified mechanism; user-level `~/.claude/rules/` support is version-dependent — see the rule's commit history for probe results).
 
 ## Installation
 
@@ -189,18 +197,20 @@ Then merge the `hooks` block from [`hooks/README.md`](hooks/README.md) into that
 
 ### Rules
 
-Rules aren't discovered automatically, so installing them is just making them reachable by path. Symlink the directory once:
+Project-level, per repo:
 
 ```bash
-ln -s ~/agent-skills/rules ~/.claude/rules
+mkdir -p <target-repo>/.claude/rules
+cp ~/agent-skills/rules/clean-code-python.md <target-repo>/.claude/rules/
 ```
 
-Then import whichever files a project should follow from its `CLAUDE.md` (`@~/.claude/rules/<name>.md`), one line per rule file.
+In this repo the committed `.claude/rules/clean-code-python.md` symlink already wires the rule up — nothing to install.
 
 ## Credits
 
 - **My original skills** — `develop-testing-strategy`, `validate-data`, `explore-data`, `tech-debt`, `design-architecture`, `bls-data-context`, `recommend-probabilistic-model`, `recommend-visualization`, `track-model-experiments`, `tune-hyperparameters`, `creative-thinking`, and `llm-wiki` are my own work, MIT licensed (see [`LICENSE`](LICENSE)).
 - **Cited-only sources** — `recommend-probabilistic-model` cites Kevin Murphy's *Probabilistic Machine Learning* books (CC-BY-NC-ND) by section number only, and `bayesian-workflow` cites the Gelman/Betancourt/Gabry workflow papers (Betancourt's under CC BY-NC 4.0) by author-year — no text is reproduced and no copies are bundled (see [`NOTICE`](NOTICE)).
+- **Clean-code family** — `clean-coder`, `clean-code`, and `rules/clean-code-python.md` adapt the rule-catalog concept from Robert C. Martin's *Clean Code* (Prentice Hall, 2008), cited **by rule code and short title only** — no book prose is reproduced. `clean-coder` additionally cites Kent Beck's *Tidy First?* (O'Reilly, 2023), Martin Fowler's opportunistic-refactoring note, and John Ousterhout's *A Philosophy of Software Design* (2nd ed., 2021) by idea only (see [`NOTICE`](NOTICE)).
 - **llm-wiki** — my own work (MIT). It implements the LLM-wiki pattern from [Andrej Karpathy](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f)'s public idea file, and adopts a simplified per-claim citation-audit form from [kfchou/wiki-skills](https://github.com/kfchou/wiki-skills) — both **by reference to the idea only**; no external prose or code is reproduced and no copies are bundled. Its bundled `scripts/` are my own work under the same terms (see [`NOTICE`](NOTICE)).
 - **bayesian-workflow** — adapted from [Alexandre Andorra](https://alexandorra.github.io/)'s original **PyMC** Bayesian-workflow skill (MIT licensed). I ported it to **NumPyro + JAX** and expanded the visualization guidance.
 - **superpowers skills** — the 13 process skills are adapted from the [superpowers](https://github.com/obra/superpowers) project by [Jesse Vincent](https://github.com/obra), MIT licensed, © 2025; my modifications under the same MIT terms. The [`code-reviewer`](agents/code-reviewer.md) and [`task-reviewer`](agents/task-reviewer.md) agents are distilled from the adapted `requesting-code-review` and `subagent-driven-development` reviewer templates, same terms. See [`LICENSE-superpowers`](LICENSE-superpowers) and [`NOTICE`](NOTICE).
