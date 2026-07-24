@@ -19,7 +19,8 @@ The following skills are original works by Lowell Mason, MIT licensed:
     explore-data/
     tech-debt/
     design-architecture/
-    bls-data-context/   (including its nine BLS program references)
+    bls-data-context/   (including its ten BLS references: nine program
+                        references plus the cross-program ingest reference)
     recommend-probabilistic-model/
     recommend-visualization/
     track-model-experiments/
