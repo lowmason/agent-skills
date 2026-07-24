@@ -304,6 +304,14 @@ Revision pattern:
 - The largest revision usually occurs from initial publication to first revision, as late reports and out-of-business reports arrive.
 - Once final, QCEW data are generally not edited, but corrections can be issued if errors are found.
 
+Year-to-date release structure (the mechanism behind the publication counts above):
+
+- Each quarterly QCEW release is a year-to-date package: the release for quarter q re-carries every earlier quarter of the same reference year, not just the newest quarter.
+- A carried quarter k arrives in the quarter-q release at its (q−k)-th revision: the Q3 release carries Q3 original, Q2 at its first revision, and Q1 at its second.
+- The terminal within-year revision of quarter q is therefore its (4−q)-th, and it arrives only with the Q4 release. Finalization follows with the next year's first-quarter release, completing the publication counts listed above.
+- Prior-year quarters are additionally republished in annual benchmark windows, so even a quarter past its within-year revision cycle can change in a benchmark republication.
+- Consequence for vintage capture: reconstructing any quarter's revision path requires archiving every quarterly release as it appears — the year-to-date files replace one another in place on the server (see references/ingest.md).
+
 Agent guidance:
 
 - Store vintage metadata whenever possible.
@@ -439,6 +447,7 @@ Agent guidance:
 - For recent programmatic access, Open Data Access CSVs are appropriate.
 - For all history, use downloadable data files by year and format.
 - Always capture file layout documentation along with data files.
+- Read `area_fips` as a string, never as a number. The column mixes alphanumeric aggregate codes (`US000` national, MSA codes such as `C1010`) with zero-padded county FIPS codes (`01001`). A numeric parse either errors on the alpha codes or silently strips leading zeros from county codes — both corrupt the join key.
 
 ## Related data programs and comparability
 
@@ -574,6 +583,7 @@ Recommended principles:
 - Mixing adjusted news-release growth with unadjusted full data.
 - Recomputing BLS AWW or OTY changes from rounded public components and expecting exact matches.
 - Treating suppressed cells as zero.
+- Parsing `area_fips` numerically: alpha aggregate codes like `C1010` and leading-zero county codes like `01001` both break.
 - Summing visible detailed cells and assuming they equal higher-level totals.
 - Ignoring NAICS revisions in long histories.
 - Ignoring multi-establishment reporting changes.

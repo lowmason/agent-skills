@@ -7,7 +7,8 @@ description: >
   constructing or parsing a series ID, joining two BLS sources, reconciling to an official total,
   or reasoning about revisions / as-of correctness. Trigger on: QCEW, CES, CES-SA, SAE, JOLTS,
   BED, BDM, OEWS, OES, ECI, ECEC, CPS, LAUS, NAICS / SOC codes, series_id, M01–M13,
-  download.bls.gov/pub/time.series, vintage / benchmark / revision, place-of-work vs residence,
+  download.bls.gov/pub/time.series, BLS API v2 quotas, release feeds, Last-Modified vintages,
+  vintage / benchmark / revision, place-of-work vs residence,
   jobs vs persons, thousands-vs-persons units, "pay period including the 12th", UI / UCFE
   coverage, net birth-death model, benchmarking CES to QCEW, JOLTS alignment to CES, or
   reconciling a payroll-provider or nowcast series to BLS. The detailed program facts that agents
@@ -26,9 +27,12 @@ metadata:
 The canonical reference for the BLS employment and wage programs this work depends on. This
 SKILL.md is the **hub** — program selection, the concepts that cut *across* programs, and
 cross-program reconciliation. Each program has a full, self-contained reference in
-`references/<program>.md`. **Read the one(s) you need; do not load all nine** — that is the whole
-point of the split. Come here first to pick the right program and to get the cross-cutting rules,
-then open the specific reference for series-ID anatomy, flat-file schema, and lookup codes.
+`references/<program>.md`; one cross-program reference,
+[references/ingest.md](references/ingest.md), covers acquisition mechanics (API quotas and error
+semantics, LABSTAT release behavior, release feeds, benchmark detection). **Read the one(s) you
+need; do not load all ten** — that is the whole point of the split. Come here first to pick the
+right program and to get the cross-cutting rules, then open the specific reference for series-ID
+anatomy, flat-file schema, and lookup codes — or ingest.md when building a pipeline.
 
 ## Program selector
 
@@ -105,7 +109,10 @@ clairvoyance in a backtest. Per-program revision behavior (load the reference fo
 | CPS | Annual January population-control updates shift *levels*; SA reestimated 5 yr. |
 
 For real-time/nowcast work: train and evaluate on the **vintage available at prediction time**, not
-today's revised history. Pin inputs by release date / vintage, not "latest."
+today's revised history. Pin inputs by release date / vintage, not "latest." The LABSTAT flat files
+themselves are **overwritten in place** at each release (`Last-Modified` re-stamps at the embargo
+minute), so a vintage not captured at release time is permanently unobservable — archive snapshots;
+see [references/ingest.md](references/ingest.md).
 
 **Units & rounding traps.** CES and JOLTS **levels are in thousands**; QCEW is in **persons/jobs**
 (counts). A reconciliation off by almost exactly 1000× is a units bug, not a data problem. Rates
@@ -121,7 +128,8 @@ recoding, not economics. Record the classification vintage for any long series.
 **Flat-file conventions (LABSTAT).** Files live at `download.bls.gov/pub/time.series/<prefix>/`
 (`en`/downloadable for QCEW, `ce`, `jt`, `bd`, `oe`, …). Data files are `series_id | year | period
 | value | footnote_codes`; a `<prefix>.series` file holds metadata; mapping files decode each
-dimension. **Period codes vary by program *and* by datatype within a program** — check the
+dimension. Headers **and** cell values are space-padded — strip whitespace from both before
+joining, or a padded `series_id` matches nothing and the join empties silently. **Period codes vary by program *and* by datatype within a program** — check the
 program's `<prefix>.period` mapping file, or its `<prefix>.series` begin/end periods, before
 assuming. Monthly (CES, SAE, JOLTS): `M01`–`M12`, with **`M13` = annual average**. Quarterly (BED,
 ECI, ECEC, and the QCEW wage datatypes): `Q01`–`Q04`, plus **`Q05` = annual average** where a
@@ -166,6 +174,9 @@ all code columns as strings with leading zeros** (`state_code`, `industry_code`,
   matches zero rows, so the series vanishes silently instead of raising.
 - Treating a suppressed QCEW cell as zero, or expecting suppressed detail to sum to totals.
 - Assuming a series ID's industry/geography from its label instead of decoding via mapping files.
+- Acquisition-layer traps: trusting an API `REQUEST_SUCCEEDED` status, keying feed entries on a
+  mutable Atom id or year-less title, or assuming a missed release can be re-fetched later —
+  see [references/ingest.md](references/ingest.md).
 
 ## How the method skills use this
 
@@ -188,6 +199,7 @@ it points to the relevant `references/<program>.md`.
 | [references/eci.md](references/eci.md) | ECI | Fixed-weight Laspeyres index; ECI-vs-ECEC; reweighting; seasonality; constant-dollar. |
 | [references/ecec.md](references/ecec.md) | ECEC | Cost-level concepts; benefit-cost-over-all-workers caveat; no state estimates; CPE bands. |
 | [references/cps.md](references/cps.md) | CPS | Household concepts; labor-force classification logic; rates/denominators; weights; CPS-vs-CES. |
+| [references/ingest.md](references/ingest.md) | Cross-program | API v2 quotas, keys, and error semantics; LABSTAT embargo re-stamping and overwrite-in-place; release-feed (Atom) parsing; benchmark-release detection. |
 
 ## Maintenance note
 
