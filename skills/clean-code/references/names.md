@@ -65,7 +65,7 @@ named `normalize` that also writes a parquet is a trap.
 
 ```python
 # Bad — hides a disk write
-def normalize(df): ...
+def normalize(df): ...    # body also writes a parquet; the name never says so
 
 # Good
 def normalize(df): ...            # pure

@@ -201,7 +201,7 @@ Project-level, per repo:
 
 ```bash
 mkdir -p <target-repo>/.claude/rules
-cp ~/Projects/agent-skills/rules/clean-code-python.md <target-repo>/.claude/rules/
+cp ~/agent-skills/rules/clean-code-python.md <target-repo>/.claude/rules/
 ```
 
 In this repo the committed `.claude/rules/clean-code-python.md` symlink already wires the rule up — nothing to install.
