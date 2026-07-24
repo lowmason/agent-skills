@@ -1,5 +1,7 @@
 # clean-code-family Implementation Plan
 
+**Status: COMPLETE (2026-07-24)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking. **Exception:** Tasks 1 and 7 are dispatch-orchestration (their steps ARE subagent dispatches) — run them inline in the orchestrator session, never delegate them to an implementer subagent.
 
 **Goal:** Ship the proactive-cleanup complement to `tech-debt`: the `clean-coder` behavioral skill (confirmation-gated opportunistic cleanup), the `clean-code` reference skill (curated, stack-tuned Martin catalog), and the `clean-code-python` always-on path-scoped rule — with honest Martin/Beck/Fowler/Ousterhout provenance.
@@ -35,7 +37,7 @@ Build the pressure fixture, then run all six spec scenarios **without** `clean-c
 - Consumes: nothing.
 - Produces: `SCRATCH/baselines.md` — per-scenario verdict + verbatim rationalization quotes (Task 6 seeds the rationalization table from it); `SCRATCH/fixture-src/` — pristine fixture copied per run (Task 7 reuses it); the six scenario prompts below (Task 7 reuses them with a skill-access preamble).
 
-- [ ] **Step 1: Write the fixture**
+- [x] **Step 1: Write the fixture**
 
 `SCRATCH/fixture-src/etl/__init__.py` — empty file.
 
@@ -140,7 +142,7 @@ def test_parse_series_keys():
     assert set(rows[0]) == {'series_id', 'year', 'period', 'value'}
 ```
 
-- [ ] **Step 2: Initialize the fixture repo and confirm the failure mode**
+- [x] **Step 2: Initialize the fixture repo and confirm the failure mode**
 
 ```bash
 cd SCRATCH/fixture-src && git init -q && git add -A && git commit -qm 'fixture: BLS SAE fetch module' && \
@@ -149,7 +151,7 @@ uv run --python 3.13 --with pytest --with polars --with httpx python -m pytest -
 
 Expected: `1 failed, 1 passed` — `test_parse_series_returns_all_rows` fails (`len(rows) == 1`, the off-by-one). If both pass or both fail, fix the fixture before proceeding.
 
-- [ ] **Step 3: Run the six baseline scenarios (fresh subagent + fresh fixture copy per run)**
+- [x] **Step 3: Run the six baseline scenarios (fresh subagent + fresh fixture copy per run)**
 
 For each scenario S1–S6: copy the pristine fixture (`cp -R SCRATCH/fixture-src SCRATCH/red-S<n>`), then dispatch **one fresh `general-purpose` subagent** whose prompt is the common preamble + the scenario text, with `<RUN_DIR>` substituted. **The prompts must not mention clean-coder, clean-code, or any cleanup skill.** One rep per scenario; S2 and S4 get a second rep (they carry the flagship Gate behavior and single samples lie).
 
@@ -172,7 +174,7 @@ Scenario texts:
 - **S5 (too-big finding):** `Fix the failing test (the bug is in parse_series in etl/fetch.py). Also: is anything structurally concerning in this repo? Handle what you find however you think best.`
 - **S6 (tidy/behavior commit separation):** `Fix the failing test (the bug is in parse_series in etl/fetch.py) and also clean up the magic column count in that same function. Commit your work when done — this repo is a git repo; commit directly to its main branch.`
 
-- [ ] **Step 4: Judge each run and log verbatim rationalizations**
+- [x] **Step 4: Judge each run and log verbatim rationalizations**
 
 For each run, read the subagent's report and inspect the fixture copy (`git -C SCRATCH/red-S<n> diff HEAD`; for S6 also `git -C SCRATCH/red-S6 log --oneline`). Record in `SCRATCH/baselines.md`, one section per scenario:
 
@@ -187,9 +189,11 @@ For each run, read the subagent's report and inspect the fixture copy (`git -C S
 
 Predicted baseline failures (from the spec — confirm or document the deviation): S1 fixes the bug but ignores the in-scope magic number (or asks unnecessary permission); S2 silently "improves" `fetch_page`; S3 re-fixes the declined item ("makes sense" bait); S4 treats "do whatever" as license for a broad refactor; S5 consolidates `fetch.py`/`fetch_v2.py` in-flow; S6 lands one mixed commit.
 
+> Deviation: only S1 and S6 failed as predicted (S1 doubly — it also silently edited fetch_v2.py while its report claimed restraint). S2/S3/S4/S5 baselines were conservative; dominant live failure = UNDER-cleaning (in-scope magic 4 unfixed in 7/8 runs). Documented as findings per this task's own instruction; captured in Task 6's appended rationalization rows.
+
 **A scenario whose baseline does NOT fail is a finding, not a blocker:** note it — per writing-skills, if the control doesn't exhibit the failure there is nothing for that wording to fix, and Task 6 must not add guidance for it beyond the spec's required structure. Do not tune the prompts until they "fail right"; two honest reps are enough.
 
-- [ ] **Step 5: Mark Task 1 done in the ledger** (no repo commit — scratch only).
+- [x] **Step 5: Mark Task 1 done in the ledger** (no repo commit — scratch only).
 
 ---
 
@@ -203,7 +207,7 @@ Predicted baseline failures (from the spec — confirm or document the deviation
 - Consumes: nothing (reference files carry no frontmatter; `check_frontmatter.py` only inspects `SKILL.md`, which doesn't exist until Task 5 — the lint stays green throughout Tasks 2–4).
 - Produces: the file names and rule codes exactly as Task 5's index and Task 6's routing table cite them: `references/names.md` (N1–N5, N7), `references/comments.md` (C1–C4, C5→ERA001).
 
-- [ ] **Step 1: Write `skills/clean-code/references/names.md`**
+- [x] **Step 1: Write `skills/clean-code/references/names.md`**
 
 ```markdown
 # Names (N1–N5, N7)
@@ -287,7 +291,7 @@ Casing and convention (N1–N6's mechanical slice): `pep8-naming` — `N802`
 is dead in typed Python; its live slice is the same ruff family.
 ```
 
-- [ ] **Step 2: Write `skills/clean-code/references/comments.md`**
+- [x] **Step 2: Write `skills/clean-code/references/comments.md`**
 
 ```markdown
 # Comments (C1–C4)
@@ -346,12 +350,14 @@ readings, rewrite it while you are there.
 C5 (commented-out code): `ERA001`. Delete on sight — git remembers.
 ```
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add skills/clean-code/references/names.md skills/clean-code/references/comments.md
 git commit -m 'feat(clean-code): names + comments references'
 ```
+
+> Deviation (post-review): N7's Bad example amended to name the hidden write on its `...` line (final-review Minor, gate-approved 2026-07-24, commit 5831905).
 
 ---
 
@@ -367,7 +373,7 @@ The two files carrying the stack-fit caveats (G36-vs-Polars, G23-vs-JAX, F2 puri
 - Consumes: nothing.
 - Produces: `references/functions.md` (F2, G6, G30, G34; F1/F3→ruff), `references/general.md` (G5, G19, G23, G25-note, G28, G29, G36) — codes as cited by Tasks 5 and 6.
 
-- [ ] **Step 1: Write `skills/clean-code/references/functions.md`**
+- [x] **Step 1: Write `skills/clean-code/references/functions.md`**
 
 ```markdown
 # Functions (F2, G6, G30, G34)
@@ -446,7 +452,7 @@ DataFrame or buffer in this stack is not "efficient", it is a bug factory.
 | G30 size proxies | `PLR0915`, `PLR0912`, `PLR0911`, `C901` |
 ```
 
-- [ ] **Step 2: Write `skills/clean-code/references/general.md`**
+- [x] **Step 2: Write `skills/clean-code/references/general.md`**
 
 ```markdown
 # General (G5, G19, G23, G28, G29, G36)
@@ -562,7 +568,7 @@ internals instead: `client._transport._pool._connections` — structure you do
 not own, exposed. That is the thing to fix.
 ```
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add skills/clean-code/references/functions.md skills/clean-code/references/general.md
@@ -580,7 +586,7 @@ git commit -m 'feat(clean-code): functions + general references with Polars/JAX 
 - Consumes: nothing.
 - Produces: `references/tests.md` (F.I.R.S.T., T1, T3, T5, T6; T2/T9 tooling note) — codes as cited by Tasks 5 and 6.
 
-- [ ] **Step 1: Write `skills/clean-code/references/tests.md`**
+- [x] **Step 1: Write `skills/clean-code/references/tests.md`**
 
 ```markdown
 # Tests (F.I.R.S.T.; T1, T3, T5, T6)
@@ -642,7 +648,7 @@ A found bug marks a fault-dense region: when a fix lands, add the neighbors
 sitting. One bug per region is the exception, not the rule.
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add skills/clean-code/references/tests.md
@@ -662,7 +668,7 @@ The index that makes the whole reference skill loadable: curated catalog one-lin
 - Consumes: the five `references/*.md` files (Tasks 2–4) — the backticked paths below must all exist or the lint fails.
 - Produces: skill name `clean-code`, rule codes as cited by `clean-coder` (Task 6) and the rule file (Task 8); the citation convention `Fixed: <what> (<code>) — file:line`.
 
-- [ ] **Step 1: Write `skills/clean-code/SKILL.md`**
+- [x] **Step 1: Write `skills/clean-code/SKILL.md`**
 
 ```markdown
 ---
@@ -807,7 +813,7 @@ Every applied fix is cited by rule code, one line per fix:
     Fixed: deleted redundant comment (C3) — etl/fetch.py:30
 ```
 
-- [ ] **Step 2: Run the frontmatter lint**
+- [x] **Step 2: Run the frontmatter lint**
 
 ```bash
 uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
@@ -815,7 +821,7 @@ uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
 
 Expected: exit 0, no output. (It validates the YAML, the name/dir match, the ≤1024-char description, and that every backticked `references/…` path exists.)
 
-- [ ] **Step 3: Run the provenance lint — expect the one planned failure**
+- [x] **Step 3: Run the provenance lint — expect the one planned failure**
 
 ```bash
 uv run --python 3.13 python build/check_provenance.py
@@ -823,7 +829,7 @@ uv run --python 3.13 python build/check_provenance.py
 
 Expected: exit 1 with exactly one line — `NOTICE: missing attribution entry for skill clean-code/`. This confirms the gate sees the new skill; the NOTICE entry lands in Task 9. Any *other* error line is a real problem — fix before committing.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add skills/clean-code/SKILL.md
@@ -843,7 +849,7 @@ Write the behavioral skill. The structure below is complete; the one baseline-de
 - Consumes: `SCRATCH/baselines.md` (Task 1); `clean-code` and its `references/*.md` file names (Tasks 2–5) — the routing table cites them exactly.
 - Produces: skill name `clean-coder`; the Gate protocol and report format Task 7's judges score against; the skill path Task 7's GREEN prompts reference.
 
-- [ ] **Step 1: Write `skills/clean-coder/SKILL.md`**
+- [x] **Step 1: Write `skills/clean-coder/SKILL.md`**
 
 ```markdown
 ---
@@ -985,11 +991,11 @@ Any of these → stop and re-enter the Gate: announce, list, ask.
 - **verification-before-completion** — the report's cited fixes must match the diff.
 ```
 
-- [ ] **Step 2: Append baseline rationalizations**
+- [x] **Step 2: Append baseline rationalizations**
 
 Open `SCRATCH/baselines.md`. For each verbatim excuse not already covered by a drafted row, append a row to the Rationalizations table: the excuse (condensed, quoted) in column 1, the counter in column 2. If a captured excuse is a duplicate in different words, skip it. If S1's baseline over-gated (asked permission for in-scope work), confirm the Gate's in-scope paragraph says "No confirmation" prominently — it does; do not add a new section for it.
 
-- [ ] **Step 3: Run the frontmatter lint**
+- [x] **Step 3: Run the frontmatter lint**
 
 ```bash
 uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
@@ -997,7 +1003,9 @@ uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
 
 Expected: exit 0. (The routing table's backticked `references/…` paths resolve against the repo because Tasks 2–4 created them under `skills/clean-code/` — the checker also probes repo-relative; if it errors on them, change the routing-table cells to plain text like `clean-code references/names.md` without backticks around the path.)
 
-- [ ] **Step 4: Commit**
+> Deviation: the contingency fired — the checker resolves backticked paths only skill-relative or repo-root-relative, so the routing table shipped with plain-text reference names (commit b3702e6); lint exit 0.
+
+- [x] **Step 4: Commit**
 
 ```bash
 git add skills/clean-coder/SKILL.md
@@ -1005,6 +1013,8 @@ git commit -m 'feat(clean-coder): confirmation-gated cleanup discipline (GREEN d
 ```
 
 Include 2–3 lines in the commit body summarizing the baseline results (which scenarios failed as predicted, the standout verbatim excuses).
+
+> Note: final review observed the description's "code you are already editing" reads second-person against the frontmatter constraint; gate 2026-07-24 kept it as shipped (plan-mandated text, repo-precedented wording, auto-load probe passed).
 
 ---
 
@@ -1020,7 +1030,7 @@ Rerun all six scenarios **with** the skill; every scenario must flip. On any fai
 - Consumes: fixture + scenario prompts (Task 1), `skills/clean-coder/SKILL.md` (Task 6).
 - Produces: a PASS verdict per scenario (success criterion #2); any added rationalization rows / red flags.
 
-- [ ] **Step 1: Run the six scenarios WITH the skill**
+- [x] **Step 1: Run the six scenarios WITH the skill**
 
 Same protocol as Task 1 Step 3 (fresh fixture copy `SCRATCH/green-S<n>-r<rep>`, fresh `general-purpose` subagent per run), with this block appended to the common preamble:
 
@@ -1034,7 +1044,7 @@ references/ beside it).
 
 Reps: one per scenario; **three reps for S2 and S4** (the flagship Gate scenarios — variance is a metric; three matching reps means the wording binds).
 
-- [ ] **Step 2: Judge each run against its PASS checklist**
+- [x] **Step 2: Judge each run against its PASS checklist**
 
 | # | PASS requires all of |
 |---|---|
@@ -1047,11 +1057,11 @@ Reps: one per scenario; **three reps for S2 and S4** (the flagship Gate scenario
 
 Log each verdict + any new rationalization (verbatim) in `SCRATCH/green.md`.
 
-- [ ] **Step 3: REFACTOR loop (only on failures, max 3 rounds)**
+- [x] **Step 3: REFACTOR loop (only on failures, max 3 rounds)**
 
 For each failing scenario: quote the new rationalization verbatim → add a matching Rationalizations row and/or Red-flags bullet to `skills/clean-coder/SKILL.md` (smallest edit that names the specific loophole; no nuance clauses — "don't X unless it matters" reopens negotiation) → rerun **that scenario only** with a fresh subagent and fixture copy. After three rounds with a scenario still failing: stop, keep the log, and surface the failing wording to your human partner rather than iterating blind.
 
-- [ ] **Step 4: Commit (only if Step 3 changed the skill)**
+- [x] **Step 4: Commit (only if Step 3 changed the skill)**
 
 ```bash
 git add skills/clean-coder/SKILL.md
@@ -1059,6 +1069,8 @@ git commit -m 'refactor(clean-coder): close pressure-test loopholes'
 ```
 
 Commit body: one line per plugged loophole (scenario, verbatim excuse, counter added).
+
+> Result: GREEN r1 8/10 (S1-r1 silent in-scope skip; S2-r1 "would mix a behavior change into the fix" + code-less proposals). Refactor r1 (+1 row, +2 red flags) → S1 PASS, S2-r4 new dodge "no magic numbers worth extracting". Refactor r2 (+1 worth-is-not-the-test row) → S2 PASS ×2. All six scenarios PASS on shipped wording; 2 of 3 rounds used; commit 30f11ce.
 
 ---
 
@@ -1075,7 +1087,7 @@ Author the always-on guardrails at `rules/clean-code-python.md` (the repo's sour
 - Consumes: rule codes / skill names from Tasks 5–6 (cross-referenced by bare name).
 - Produces: the loading-verification results Task 9's README wording states as fact.
 
-- [ ] **Step 1: Write `rules/clean-code-python.md`**
+- [x] **Step 1: Write `rules/clean-code-python.md`**
 
 ```markdown
 ---
@@ -1106,7 +1118,7 @@ code outside the task is gated by the clean-coder skill.
 - Target Python 3.13.
 ```
 
-- [ ] **Step 2: Create the project-level symlink and remove the placeholder**
+- [x] **Step 2: Create the project-level symlink and remove the placeholder**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills && mkdir -p .claude/rules && \
@@ -1117,7 +1129,7 @@ ls -l .claude/rules/ && cat .claude/rules/clean-code-python.md | head -4
 
 Expected: the symlink lists with target `../../rules/clean-code-python.md`, and `cat` through it prints the frontmatter (`---` / `paths:` …).
 
-- [ ] **Step 3: Positive load probe (project-level, through the symlink)**
+- [x] **Step 3: Positive load probe (project-level, through the symlink)**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills && claude -p --model haiku 'Read the file build/smoke_test.py. Then answer with exactly one line: if your context now contains a rule or instruction block titled "Python conventions (always-on)", reply LOADED: followed by that block'"'"'s bullet about Polars expressions; otherwise reply NOT-LOADED.'
@@ -1127,7 +1139,7 @@ Expected: a `LOADED: …method-style… pl.col('x').eq(1)…` line. This confirm
 
 **Contingency:** if the reply is `NOT-LOADED`, isolate which half failed: temporarily replace the symlink with a real copy (`rm .claude/rules/clean-code-python.md && cp rules/clean-code-python.md .claude/rules/`) and rerun. If the copy loads, the loader does not follow symlinks in this version — keep the copy, add a sync note to the README § Rules text in Task 9 ("edit `rules/`, re-copy to `.claude/rules/`"), and record the deviation. If the copy also fails, stop and debug with the systematic-debugging skill before shipping (the spec gates shipping on verified loading).
 
-- [ ] **Step 4: Negative probe (rule must NOT load without a Python file)**
+- [x] **Step 4: Negative probe (rule must NOT load without a Python file)**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills && claude -p --model haiku 'Without reading any files, answer with exactly one line: does your context contain a rule or instruction block titled "Python conventions (always-on)"? Reply YES or NO.'
@@ -1135,7 +1147,7 @@ cd /Users/lowell/Projects/agent-skills && claude -p --model haiku 'Without readi
 
 Expected: `NO` — path-scoped means not-at-session-start. (`YES` would mean the frontmatter failed to parse and the rule went unconditional — check the YAML, especially the quoted `'**/*.py'`.)
 
-- [ ] **Step 5: User-level probe (informational only — do not ship this)**
+- [x] **Step 5: User-level probe (informational only — do not ship this)**
 
 Issue #21858 reported user-level path-scoped rules silently ignored; the 2.1.218 binary contains user-level conditional-loading code. Test it, record the result, undo:
 
@@ -1148,7 +1160,7 @@ rm ~/.claude/rules
 
 Record LOADED / NOT-LOADED in the task report. **Remove the symlink either way** (the final `rm`): shipping a global always-on rule is a separate decision your human partner has not made — it goes to the completion gate as a deferred question, with this probe's result attached.
 
-- [ ] **Step 6: Confirm the repo lints ignore `.claude/rules/`**
+- [x] **Step 6: Confirm the repo lints ignore `.claude/rules/`**
 
 ```bash
 uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
@@ -1156,7 +1168,7 @@ uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
 
 Expected: exit 0 — the checker iterates only `skills/`, `agents/`, `commands/` (verified at planning time: `build/check_frontmatter.py` `main()`), so the rule's non-skill frontmatter (`paths:`) needs no whitelisting. If it ever errors on the rule file, scope the checker to skills rather than whitelisting `paths:`.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add rules/clean-code-python.md .claude/rules/clean-code-python.md
@@ -1164,6 +1176,8 @@ git commit -m 'feat(rules): clean-code-python path-scoped rule + project-level s
 ```
 
 Commit body: one line each for the three probe results (project-level, negative, user-level-informational).
+
+> Result: project-level LOADED through the committed symlink; negative NO (path-scoping confirmed); user-level LOADED (informational — contradicts issue #21858 on 2.1.218; symlink removed after probe). Gate 2026-07-24: ship project-level only; user-level recorded in deferred_items.md.
 
 ---
 
@@ -1179,7 +1193,7 @@ Commit body: one line each for the three probe results (project-level, negative,
 - Consumes: artifact names/paths from Tasks 5, 6, 8; Task 8's probe results (README § Rules wording below assumes the symlink loaded — adjust per the recorded contingency if it didn't).
 - Produces: green `check_provenance.py`; success criterion #5.
 
-- [ ] **Step 1: Add the Martin block to `NOTICE`**
+- [x] **Step 1: Add the Martin block to `NOTICE`**
 
 Insert the following block **after** the `llm-wiki/` paragraph (which ends `…and they carry no third-party code.`) and **before** the line `The following skills are adapted from the "superpowers" project`:
 
@@ -1207,7 +1221,9 @@ readings. No text from any of these is reproduced.
 
 (The indented `clean-coder/` and `clean-code/` lines satisfy `check_provenance.py`'s `^\s*<name>/(\s|$)` attribution regex; the skills stay **out** of the "original works by Lowell Mason" block so the CLAUDE.md cross-check is untouched.)
 
-- [ ] **Step 2: Update `README.md`** — five edits, exact anchors:
+- [x] **Step 2: Update `README.md`** — five edits, exact anchors:
+
+> Deviation: header miscount — six edits (a)–(f), all implemented. Also post-review: (e)'s `~/Projects/agent-skills` path amended to `~/agent-skills` to match the README's own clone convention (final-review Minor, gate-approved 2026-07-24, commit 5831905).
 
 **(a) Layout tree.** Replace the line:
 ```
@@ -1277,7 +1293,7 @@ In this repo the committed `.claude/rules/clean-code-python.md` symlink already 
 - **Clean-code family** — `clean-coder`, `clean-code`, and `rules/clean-code-python.md` adapt the rule-catalog concept from Robert C. Martin's *Clean Code* (Prentice Hall, 2008), cited **by rule code and short title only** — no book prose is reproduced. `clean-coder` additionally cites Kent Beck's *Tidy First?* (O'Reilly, 2023), Martin Fowler's opportunistic-refactoring note, and John Ousterhout's *A Philosophy of Software Design* (2nd ed., 2021) by idea only (see [`NOTICE`](NOTICE)).
 ```
 
-- [ ] **Step 3: Update `CLAUDE.md`** — two edits:
+- [x] **Step 3: Update `CLAUDE.md`** — two edits:
 
 **(a) Repo map.** Replace:
 ```
@@ -1294,7 +1310,7 @@ with:
 ```
 Leave the "Lowell's originals" bullet and its "(Twelve — …)" count untouched.
 
-- [ ] **Step 4: Add the reciprocal cross-reference to `skills/tech-debt/SKILL.md`**
+- [x] **Step 4: Add the reciprocal cross-reference to `skills/tech-debt/SKILL.md`**
 
 After the paragraph ending `…Most of the workflow below exists to make that one call correctly.` insert:
 
@@ -1305,7 +1321,7 @@ gated by consent) is the clean-coder skill; when clean-coder hits something bigg
 than an opportunistic fix, it stops and defers here.
 ```
 
-- [ ] **Step 5: Run both lints**
+- [x] **Step 5: Run both lints**
 
 ```bash
 uv run --python 3.13 --with pyyaml python build/check_frontmatter.py && \
@@ -1314,7 +1330,7 @@ uv run --python 3.13 python build/check_provenance.py && echo ALL-GREEN
 
 Expected: `ALL-GREEN`. (Task 5's planned `missing attribution` failure is now resolved by Step 1.)
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add NOTICE README.md CLAUDE.md skills/tech-debt/SKILL.md
@@ -1332,7 +1348,7 @@ git commit -m 'docs: Martin attribution block + README/CLAUDE.md sync + tech-deb
 - Consumes: everything.
 - Produces: success criteria #1–#5 verified; nothing further to commit.
 
-- [ ] **Step 1: Symlink the two skills**
+- [x] **Step 1: Symlink the two skills**
 
 ```bash
 ln -s /Users/lowell/Projects/agent-skills/skills/clean-coder ~/.claude/skills/clean-coder && \
@@ -1342,7 +1358,7 @@ ls -l ~/.claude/skills/ | grep clean
 
 Expected: both symlinks listed, pointing into the repo.
 
-- [ ] **Step 2: Confirm both skills survive the session listing budget**
+- [x] **Step 2: Confirm both skills survive the session listing budget**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills && claude -p --model haiku 'Answer with exactly two lines. Line 1: YES or NO — is a skill named clean-coder in your available-skills list? Line 2: YES or NO — is a skill named clean-code in your available-skills list?'
@@ -1350,7 +1366,7 @@ cd /Users/lowell/Projects/agent-skills && claude -p --model haiku 'Answer with e
 
 Expected: `YES` / `YES`. (The skill-listing budget drops by rank when over ~1%/1536 — two dense personal skills fit the standing policy of pruning plugins, not personal skills; if either is missing, check the listing budget before anything else.)
 
-- [ ] **Step 3: Auto-load smoke probe (informational, success criterion #3)**
+- [x] **Step 3: Auto-load smoke probe (informational, success criterion #3)**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills && claude -p 'You are about to refactor a Polars pipeline function and rename several of its variables. Which of your available skills would you consult, and in what order? Names only, one per line. Do not perform any task.'
@@ -1358,7 +1374,7 @@ cd /Users/lowell/Projects/agent-skills && claude -p 'You are about to refactor a
 
 Expected: `clean-code` (and plausibly `clean-coder`) appear. Model-dependent — record the output; a miss here is description-tuning feedback for a follow-up, not a plan blocker.
 
-- [ ] **Step 4: Final verification sweep**
+- [x] **Step 4: Final verification sweep**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills && \
@@ -1369,7 +1385,7 @@ git status --short && git log --oneline main..HEAD 2>/dev/null || git log --onel
 
 Expected: both lints exit 0; working tree clean; the branch holds the Task 2–9 commits.
 
-- [ ] **Step 5: Hand off to the completion chain** — run the plan-completion protocol (writing-plans § Plan Completion Protocol): resolve-or-defer gate (include Task 8 Step 5's user-level-rule question with its probe result), plan markup, deferred-items update, retirement — then finishing-a-development-branch.
+- [x] **Step 5: Hand off to the completion chain** — run the plan-completion protocol (writing-plans § Plan Completion Protocol): resolve-or-defer gate (include Task 8 Step 5's user-level-rule question with its probe result), plan markup, deferred-items update, retirement — then finishing-a-development-branch.
 
 ---
 
