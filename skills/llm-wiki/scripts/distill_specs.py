@@ -387,6 +387,95 @@ def _extend_brief(path, repo, head, files, seen):
   return 0
 
 
+def render_digest_entry(e):
+  '''One ground-truth digest block (pilot format). Redaction on everything
+  that carries source text — the lint extension is only the backstop.'''
+  f = e['fields']
+  lines = [f'[{e["id"]}] {e["title"]}']
+  if e['prefix'] == 'q':
+    lines.append(f'at: {f["at"]}')
+  else:
+    lines.append(f'at: {f["at"]}{SEP}sha: {f["sha"]}')
+  for loc, sha in e['also']:
+    lines.append(f'  (also {loc}{SEP}sha: {sha})' if sha
+                 else f'  (also {loc})')
+  if e['prefix'] == 'q':
+    lines.append(redact(f['claim'])[0])
+  else:
+    lines.append(f'excerpt: "{redact(f["excerpt"])[0]}"')
+    if f.get('note'):
+      lines.append(f'note: {redact(f["note"])[0]}')
+  return '\n'.join(lines)
+
+
+def render_digest(header, entries, brief_name):
+  '''-> (stem, digest text). id8 hashes ONLY the ordered ticked entry
+  blocks — not the header or preamble — so an unchanged brief re-assembles
+  to the identical filename and bytes (spec §5.2).'''
+  ticked = [e for e in entries if e['ticked']]
+  caps = [e for e in ticked if e['prefix'] != 'q']
+  qs = [e for e in ticked if e['prefix'] == 'q']
+  blocks = [render_digest_entry(e) for e in caps + qs]
+  id8 = hashlib.sha256('\n\n'.join(blocks).encode()).hexdigest()[:8]
+  stem = f'{header["date"]}-{header["repo"]}-specs-{id8}'
+  files = [f.strip() for f in header.get('files_walked', '').split(';')
+           if f.strip()]
+  n_total = sum(1 for e in entries if e['prefix'] != 'q')
+  fm = [
+    '---',
+    'source: specs-harvest',
+    f'repo: {header["repo"]}',
+    f'repo_head: {header["repo_head"]}',
+    f'date: {header["date"]}',
+    f'files: {len(files)}',
+    f'captures: {len(caps)}',
+    f'open_questions: {len(qs)}',
+    'note: >',
+    f'  Assembled by distill_specs.py from {brief_name}: {len(caps)} '
+    'ticked of',
+    f'  {n_total} proposed captures; unticked entries remain in the brief as',
+    '  the declined record.',
+    f'brief: reports/{brief_name}',
+    'files_read: >',
+    '  ' + '; '.join(files),
+    '---',
+    '',
+    f'Ground-truth entries for the capture notes in wiki/sources/{stem}.md.',
+    f'Each entry: verbatim excerpt from the {header["repo"]} file at the',
+    'stated location, introducing commit sha.',
+    '',
+  ]
+  # '\n'.join leaves fm's trailing '' as a single newline; add one more so a
+  # blank line separates the preamble from the first entry block.
+  return stem, '\n'.join(fm) + '\n' + '\n\n'.join(blocks) + '\n'
+
+
+def render_source_body(entries, repo_name):
+  '''Capture-note body for the wiki/sources page (stdout; the agent wraps
+  frontmatter and runs the normal ingest op — this script never writes under
+  wiki/). q entries ride in the digest only; positions drop a trailing (L…)
+  detail; (also …) locations are digest-only (spec §5.3, pilot).'''
+  blocks = []
+  for e in entries:
+    if not e['ticked'] or e['prefix'] == 'q':
+      continue
+    f = e['fields']
+    pos = re.sub(r'\s*\(L[0-9–-]+\)$', '', f['at'])
+    blocks.append(f'### [{e["id"]}] {e["title"]}\n'
+                  f'kind: {f["kind"]}{SEP}at: {repo_name} {pos}{SEP}'
+                  f'basis: git:{f["sha"]}\n'
+                  + redact(f['claim'])[0])
+  return '\n\n'.join(blocks) + '\n'
+
+
+def _stamp_brief(brief, stem):
+  lines = brief.read_text().split('\n')
+  lines = [l for l in lines if not l.startswith('assembled: ')]
+  close = lines.index('---', 1)
+  lines.insert(close, f'assembled: {stem}')
+  _atomic_write(brief, '\n'.join(lines))
+
+
 def cmd_inventory(args):
   repo = Path(args.repo).resolve()
   root = Path(args.root).resolve()
@@ -430,7 +519,41 @@ def cmd_inventory(args):
 
 
 def cmd_assemble(args):
-  raise NotImplementedError  # Task 6
+  brief = Path(args.brief).resolve()
+  root = Path(args.root).resolve()
+  if not brief.is_file():
+    print(f'error: brief not found: {brief}', file=sys.stderr)
+    return 1
+  header, entries, errors = parse_brief(brief.read_text())
+  if header.get('root') != str(root):
+    print(f'brief-error: root mismatch: brief says {header.get("root")}, '
+          f'--root is {root} (wrong-wiki protection)', file=sys.stderr)
+    return 1
+  validate_entries(entries, errors)
+  if not any(e['ticked'] for e in entries):
+    errors.append('brief: no ticked entries')
+  if errors:
+    for err in errors:
+      print(f'brief-error: {err}', file=sys.stderr)
+    return 1
+  repo_path = Path(header.get('repo_path', ''))
+  try:
+    head = _git(repo_path, 'rev-parse', '--short', 'HEAD').strip()
+    if head != header.get('repo_head'):
+      print(f'warning: {header["repo"]} HEAD {head} != brief repo_head '
+            f'{header["repo_head"]} — post-inventory edits are the wiki\'s '
+            'dated-claims staleness, not re-harvested here', file=sys.stderr)
+  except (RuntimeError, OSError):
+    print(f'warning: cannot check drift ({repo_path} unavailable)',
+          file=sys.stderr)
+  stem, digest = render_digest(header, entries, brief.name)
+  out = root / 'raw/specs' / f'{stem}.md'
+  out.parent.mkdir(parents=True, exist_ok=True)
+  _atomic_write(out, digest)
+  _stamp_brief(brief, stem)
+  print(render_source_body(entries, header['repo']), end='')
+  print(f'wrote {out.relative_to(root)}', file=sys.stderr)
+  return 0
 
 
 def main(argv=None):

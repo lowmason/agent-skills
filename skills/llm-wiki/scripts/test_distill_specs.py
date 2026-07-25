@@ -1,4 +1,5 @@
 '''Tests for distill_specs.py. Stdlib + pytest only; git fixture repos in tmp.'''
+import hashlib
 import os
 import subprocess
 
@@ -667,3 +668,230 @@ def test_q_entry_needs_only_at_and_claim():
 def test_q_entry_missing_claim_is_reported():
   errors = _validated('- [x] [q-01] Open thing\n  at: specs/a.md §12.3\n')
   assert any('q-01: missing claim' in err for err in errors)
+
+
+# --- Task 6: assemble --------------------------------------------------------
+
+def _write_brief(root, repo, entries_text, date='2026-07-24'):
+  head = _sha(repo)
+  text = (f'---\nharvest: specs\nrepo: repo\nrepo_path: {repo}\n'
+          f'repo_head: {head}\nroot: {root.resolve()}\ndate: {date}\n'
+          f'prior_brief: none\nfiles_walked: >\n'
+          f'  specs/completed/a-spec.md; specs/deferred_items.md\n---\n\n'
+          f'## specs/completed/a-spec.md\n\ncaptures:\n\n{entries_text}')
+  path = root / 'reports' / f'harvest-repo-{date}.md'
+  path.write_text(text)
+  return path
+
+
+def _ticked_pair(repo):
+  sha = _sha(repo)
+  return (f'- [x] [d-01] Use X over Y\n'
+          f'  kind: decision · boundary: transferable\n'
+          f'  at: specs/completed/a-spec.md §1 · sha: {sha}\n'
+          f'  excerpt: "**Decision:** use X over Y."\n'
+          f'  claim: X was chosen over Y.\n'
+          f'- [ ] [g-01] Declined\n'
+          f'  kind: gotcha · boundary: transferable\n'
+          f'  at: specs/completed/a-spec.md §2 · sha: {sha}\n'
+          f'  excerpt: "More prose."\n'
+          f'  claim: Declined claim.\n'
+          f'- [x] [q-01] Open thing\n'
+          f'  at: specs/deferred_items.md L3\n'
+          f'  claim: Whether the later thing matters is unresolved.\n')
+
+
+def assemble(brief, root):
+  return dsp.main(['assemble', str(brief), '--root', str(root)])
+
+
+def _digests(root):
+  return sorted((root / 'raw/specs').glob('*.md'))
+
+
+def test_assemble_golden_digest(tmp_path, capsys):
+  repo, root = make_repo(tmp_path), make_root(tmp_path)
+  sha = _sha(repo)
+  brief = _write_brief(root, repo, _ticked_pair(repo))
+  assert assemble(brief, root) == 0
+  blocks = [(f'[d-01] Use X over Y\n'
+             f'at: specs/completed/a-spec.md §1 · sha: {sha}\n'
+             f'excerpt: "**Decision:** use X over Y."'),
+            (f'[q-01] Open thing\n'
+             f'at: specs/deferred_items.md L3\n'
+             f'Whether the later thing matters is unresolved.')]
+  id8 = hashlib.sha256('\n\n'.join(blocks).encode()).hexdigest()[:8]
+  stem = f'2026-07-24-repo-specs-{id8}'
+  files = _digests(root)
+  assert [p.name for p in files] == [f'{stem}.md']
+  expected = (f'---\n'
+              f'source: specs-harvest\n'
+              f'repo: repo\n'
+              f'repo_head: {sha}\n'
+              f'date: 2026-07-24\n'
+              f'files: 2\n'
+              f'captures: 1\n'
+              f'open_questions: 1\n'
+              f'note: >\n'
+              f'  Assembled by distill_specs.py from '
+              f'harvest-repo-2026-07-24.md: 1 ticked of\n'
+              f'  2 proposed captures; unticked entries remain in the brief '
+              f'as\n'
+              f'  the declined record.\n'
+              f'brief: reports/harvest-repo-2026-07-24.md\n'
+              f'files_read: >\n'
+              f'  specs/completed/a-spec.md; specs/deferred_items.md\n'
+              f'---\n\n'
+              f'Ground-truth entries for the capture notes in '
+              f'wiki/sources/{stem}.md.\n'
+              f'Each entry: verbatim excerpt from the repo file at the\n'
+              f'stated location, introducing commit sha.\n\n'
+              + '\n\n'.join(blocks) + '\n')
+  assert files[0].read_text() == expected
+
+
+def test_assemble_emits_source_page_body_and_stamps_brief(tmp_path, capsys):
+  repo, root = make_repo(tmp_path), make_root(tmp_path)
+  sha = _sha(repo)
+  brief = _write_brief(root, repo, _ticked_pair(repo))
+  assert assemble(brief, root) == 0
+  out = capsys.readouterr().out
+  assert (f'### [d-01] Use X over Y\n'
+          f'kind: decision · at: repo specs/completed/a-spec.md §1 · '
+          f'basis: git:{sha}\n'
+          f'X was chosen over Y.') in out
+  assert '[q-01]' not in out           # q entries ride in the digest only
+  assert '[g-01]' not in out           # unticked stays out
+  stem = _digests(root)[0].stem
+  brief_text = brief.read_text()
+  fm = brief_text.split('---')[1]
+  assert f'assembled: {stem}' in fm
+
+
+def test_source_page_position_drops_line_detail(tmp_path, capsys):
+  repo, root = make_repo(tmp_path), make_root(tmp_path)
+  sha = _sha(repo)
+  entry = (f'- [x] [g-05] Padded headers\n'
+           f'  kind: gotcha · boundary: transferable\n'
+           f'  at: specs/completed/a-spec.md Task 2 (L176) · sha: {sha}\n'
+           f'  excerpt: "x"\n'
+           f'  claim: Headers are padded.\n')
+  brief = _write_brief(root, repo, entry)
+  assert assemble(brief, root) == 0
+  out = capsys.readouterr().out
+  assert 'at: repo specs/completed/a-spec.md Task 2 · basis:' in out
+  # the digest keeps the full position
+  assert 'Task 2 (L176) · sha:' in _digests(root)[0].read_text()
+
+
+def test_reassembly_is_byte_identical(tmp_path, capsys):
+  repo, root = make_repo(tmp_path), make_root(tmp_path)
+  brief = _write_brief(root, repo, _ticked_pair(repo))
+  assert assemble(brief, root) == 0
+  first = _digests(root)[0]
+  before = first.read_bytes()
+  assert assemble(brief, root) == 0
+  assert [p.name for p in _digests(root)] == [first.name]  # no duplicates
+  assert first.read_bytes() == before
+  # stamp is idempotent too
+  assert brief.read_text().count('assembled:') == 1
+
+
+def test_validation_failure_reports_all_writes_nothing(tmp_path, capsys):
+  repo, root = make_repo(tmp_path), make_root(tmp_path)
+  bad = ('- [x] [d-01] No fields at all\n'
+         '- [x] [g-01] Bracketed claim\n'
+         '  kind: gotcha · boundary: transferable\n'
+         f'  at: specs/completed/a-spec.md §1 · sha: {_sha(repo)}\n'
+         '  excerpt: "x"\n'
+         '  claim: Bad [locator] here.\n')
+  brief = _write_brief(root, repo, bad)
+  assert assemble(brief, root) == 1
+  err = capsys.readouterr().err
+  assert 'brief-error: d-01: missing excerpt' in err
+  assert 'brief-error: g-01: square brackets in claim' in err
+  assert _digests(root) == []                       # nothing written
+  assert 'assembled:' not in brief.read_text()      # no stamp either
+
+
+def test_each_validation_class_exits_1_and_writes_nothing(tmp_path, capsys):
+  '''Spec §9: every failure class through the CLI gate — exit 1, no file.
+  (Duplicate-id and duplicate-field are grammar-level classes covered by the
+  Task 5 unit tests; the gate path is identical.)'''
+  repo = make_repo(tmp_path)
+  sha = _sha(repo)
+  ok = dict(ticked='x', eid='d-01', title='T', kind='decision',
+            boundary='transferable', at='specs/a.md §1', sha=sha,
+            excerpt='"x"', claim='A claim.')
+  bad_cases = [
+    dict(ok, excerpt=''),                  # missing field
+    dict(ok, sha=''),                      # missing sha (echo rule)
+    dict(ok, kind='gotcha'),               # kind does not match prefix
+    dict(ok, boundary='global'),           # unknown boundary
+    dict(ok, boundary='code-coupled'),     # ticked code-coupled
+    dict(ok, claim='Bad [locator] ref.'),  # square brackets in claim
+  ]
+  for i, case in enumerate(bad_cases):
+    case_root = make_root(tmp_path / f'case{i}')
+    brief = _write_brief(case_root, repo, _entry(**case))
+    assert assemble(brief, case_root) == 1, case
+    assert _digests(case_root) == [], case
+    assert 'assembled:' not in brief.read_text(), case
+  capsys.readouterr()
+
+
+def test_no_ticked_entries_is_error(tmp_path, capsys):
+  repo, root = make_repo(tmp_path), make_root(tmp_path)
+  unticked = _ticked_pair(repo).replace('- [x]', '- [ ]')
+  brief = _write_brief(root, repo, unticked)
+  assert assemble(brief, root) == 1
+  assert 'no ticked entries' in capsys.readouterr().err
+  assert _digests(root) == []
+
+
+def test_root_mismatch_refused(tmp_path, capsys):
+  repo, root = make_repo(tmp_path), make_root(tmp_path)
+  other = tmp_path / 'other-wiki'
+  (other / 'raw/specs').mkdir(parents=True)
+  brief = _write_brief(root, repo, _ticked_pair(repo))
+  assert assemble(brief, other) == 1
+  assert 'root mismatch' in capsys.readouterr().err
+  assert _digests(other) == [] and _digests(root) == []
+
+
+def test_planted_secret_never_reaches_digest_or_stdout(tmp_path, capsys):
+  repo, root = make_repo(tmp_path), make_root(tmp_path)
+  secret = 'sk-' + 'A' * 24
+  sha = _sha(repo)
+  entry = (f'- [x] [g-01] Leaky\n'
+           f'  kind: gotcha · boundary: transferable\n'
+           f'  at: specs/completed/a-spec.md §1 · sha: {sha}\n'
+           f'  excerpt: "uses {secret} inline"\n'
+           f'  claim: The example key {secret} leaked into the spec.\n'
+           f'  note: also here {secret}\n')
+  brief = _write_brief(root, repo, entry)
+  assert assemble(brief, root) == 0
+  digest = _digests(root)[0].read_text()
+  out = capsys.readouterr().out
+  assert secret not in digest and secret not in out
+  assert '[REDACTED:openai-key]' in digest
+
+
+def test_drift_warns_but_assembles(tmp_path, capsys):
+  repo, root = make_repo(tmp_path), make_root(tmp_path)
+  brief = _write_brief(root, repo, _ticked_pair(repo))
+  (repo / 'specs/drift.md').write_text('# Drift\n')
+  _git(repo, 'add', '.')
+  _git(repo, 'commit', '-qm', 'spec: drift')
+  assert assemble(brief, root) == 0
+  assert 'warning:' in capsys.readouterr().err
+  assert len(_digests(root)) == 1
+
+
+def test_missing_repo_path_warns_but_assembles(tmp_path, capsys):
+  repo, root = make_repo(tmp_path), make_root(tmp_path)
+  brief = _write_brief(root, repo, _ticked_pair(repo))
+  brief.write_text(brief.read_text().replace(
+    f'repo_path: {repo}', 'repo_path: /nonexistent/repo'))
+  assert assemble(brief, root) == 0
+  assert 'cannot check drift' in capsys.readouterr().err
