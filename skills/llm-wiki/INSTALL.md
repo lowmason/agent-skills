@@ -55,9 +55,9 @@ machine). The root is the only required argument:
 python3 ~/.claude/skills/llm-wiki/scripts/bootstrap_wiki.py ~/work-wiki
 ```
 
-This scaffolds the skeleton, seeds `SCHEMA.md`, and installs `lint_wiki.py` and
-`distill_sessions.py` under `~/work-wiki/scripts/`. It is safe to re-run: it
-**never overwrites existing wiki content**.
+This scaffolds the skeleton, seeds `SCHEMA.md`, and installs `lint_wiki.py`,
+`distill_sessions.py`, and `distill_specs.py` under `~/work-wiki/scripts/`. It
+is safe to re-run: it **never overwrites existing wiki content**.
 
 To seed topic folders for this wiki's own subjects (instead of the personal
 default, which starts with no topic folders), add `--topic` once per subject:

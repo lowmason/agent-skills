@@ -1,4 +1,4 @@
-<!-- schema-version: 1 (bump on a breaking contract change; `bootstrap_wiki.py --check` flags a root whose schema is behind the bundle) -->
+<!-- schema-version: 2 (bump on a breaking contract change; `bootstrap_wiki.py --check` flags a root whose schema is behind the bundle) -->
 # SCHEMA — research-wiki normative formats
 
 This file is the machine-readable contract. `scripts/lint_wiki.py` enforces the
@@ -110,7 +110,8 @@ kept with locators, and an entry is appended to `open-questions.md`.
 2. **Staleness.** Every capture carries the session date from its digest header;
    claims about code are dated claims, suspect once the referenced files change.
 3. **Secrets.** Redaction happens at distillation and is not optional; any
-   residual secret-shaped string under `raw/sessions/` is a lint error.
+   residual secret-shaped string under `raw/sessions/` or `raw/specs/` is a
+   lint error.
 
 ## Capture-note format for session-digest source pages (spec §16.5)
 
@@ -125,3 +126,48 @@ One- to three-sentence self-contained statement of the capture.
 Kinds and id prefixes: `decision` (d), `rejected-approach` (r), `gotcha` (g),
 `resolved-confusion` (c), `validated-pattern` (p). The metadata line is
 regex-checkable; lint enforces the echo rule on `decision` captures mechanically.
+
+## Specs-harvest briefs and digests (specs-harvest framework)
+
+`raw/specs/` holds specs-harvest digests: ground truth distilled from a
+repo's `specs/` corpus (specs, completed specs, completed plans, deferred
+items). Digest filename: `<date>-<repo>-specs-<id8>.md`, where `id8` is the
+first 8 hex chars of SHA-256 over the ordered ticked-capture content — an
+unchanged brief re-assembles to the identical file. Digest entries are
+`[<id>]`-keyed ground truth: `at: <path> <position> · sha: <introducing
+commit>` plus a verbatim excerpt; `[q-NN]` open questions carry `at:` and
+prose only and are appended to `open-questions.md` at ingest.
+
+Specs-harvest source pages use the `at:` capture-metadata variant — the
+session-digest `turns:` locator is replaced by a repo locator and the basis
+is always a commit:
+
+```
+### [d-01] Flat files primary; BLS API v2 demoted to utility
+kind: decision · at: bls-stats specs/completed/bls-stats-architecture.md §6.1 · basis: git:1d26d71
+One- to three-sentence self-contained claim (no square brackets).
+```
+
+Briefs (`reports/harvest-<repo>-<date>.md`) are working files, not wiki
+content: `distill_specs.py inventory` writes the skeleton, agents extract
+and adversarially verify capture entries, the human ticks. A capture entry
+is a checkbox line plus 2-space-indented fields; 4-space-indented lines
+continue the previous field, and `(also <path> <pos> · sha: <sha>)` lines
+add secondary locations:
+
+```
+- [x] [d-01] Flat files primary; BLS API v2 demoted to utility
+  kind: decision · boundary: transferable
+  at: specs/completed/bls-stats-architecture.md §6.1 · sha: 1d26d71
+  excerpt: "The BLS API v2 cannot carry full-universe daily increments"
+  claim: One- to three-sentence self-contained claim (no square brackets).
+```
+
+`[q-NN]` open-question entries carry only `at:` and `claim:`. Boundary
+verdicts: `transferable | mixed | code-coupled`; a code-coupled entry is
+never ticked. `[x]` = approved for assembly; unticked entries persist as
+the durable declined record — later inventories dedup against all prior
+entries, approved and declined, keyed on locator + claim hash. The echo
+rule holds: every capture's basis is its introducing commit (`sha:` on the
+`at:` line); a `[d-NN]` digest entry without one is a lint error, as is any
+secret-shaped string under `raw/specs/`.
