@@ -1,7 +1,9 @@
 '''Tests for distill_specs.py. Stdlib + pytest only; git fixture repos in tmp.'''
 import hashlib
 import os
+import re
 import subprocess
+from pathlib import Path
 
 import pytest
 
@@ -895,3 +897,203 @@ def test_missing_repo_path_warns_but_assembles(tmp_path, capsys):
     f'repo_path: {repo}', 'repo_path: /nonexistent/repo'))
   assert assemble(brief, root) == 0
   assert 'cannot check drift' in capsys.readouterr().err
+
+
+# --- Task 7: pilot golden pair (bls-stats) -----------------------------------
+
+PILOT_HEADER = '''---
+harvest: specs
+repo: bls-stats
+repo_path: {repo_path}
+repo_head: ad8abe0
+root: {root}
+date: 2026-07-24
+prior_brief: none
+files_walked: >
+  specs/completed/bls-stats-architecture.md; specs/completed/audit_5-7-26.md; specs/plans/completed/1-bls-stats-architecture.md; specs/plans/completed/2-audit_5-7-26.md; specs/deferred_items.md
+---
+
+## specs/completed/bls-stats-architecture.md
+
+captures:
+
+'''
+# PILOT_ENTRIES: the 22 transcribed entries, in pilot digest order
+# (d-01..d-06, g-01..g-08, c-01, c-02, p-01..p-04, q-01, q-02), all ticked.
+# Raw string: the pilot's literal \" sequences (d-06, g-01, g-02, g-06, p-02)
+# and g-02's literal {feed}_{MMDDYYYY} braces must survive verbatim.
+PILOT_ENTRIES = r'''- [x] [d-01] Flat files primary; BLS API v2 demoted to utility
+  kind: decision · boundary: transferable
+  at: specs/completed/bls-stats-architecture.md §6.1 · sha: 1d26d71
+  excerpt: "The BLS API v2 **cannot** carry full-universe daily increments on one registered key (500 queries/day, 50 series/query, 50 req/10s; one query returns all periods in a <=20-year window, so queries scale with series count only)"
+  claim: BLS API v2 quotas (500 queries/day, 50 series/query, 50 req/10s) cannot carry full-universe daily ingest — the CES+CPS Employment Situation morning alone needs 841 or more queries. LABSTAT flat files are re-stamped at the embargo minute (verified: 08:30 ET for ce/ln, 10:00 ET for jt/sm/bd), so one HTTP GET delivers the same-morning vintage with Last-Modified doubling as vintage verification; the API is only worth keeping for targeted pulls and spot checks.
+- [x] [d-02] Backfill honesty rule: never fabricate unobserved prints
+  kind: decision · boundary: transferable
+  at: specs/completed/bls-stats-architecture.md §4.3 · sha: 1d26d71
+  excerpt: "**Backfill honesty rule:** stage-1 rows get `release_date` = snapshot date and `revision` / `benchmark` = **null** — print history that was never observed is not fabricated."
+  claim: When seeding a vintage store from bulk files, unobserved print history must be stamped null or recorded as explicitly missed, never reconstructed — bulk files contain only the current vintage, so print history is capturable only from the day live tracking starts. Structurally derivable counters (a release's own print slots) are the exception: correct even for periods predating tracking.
+- [x] [d-03] Deny back-dated releases when the source serves only its current file
+  kind: decision · boundary: transferable
+  at: specs/plans/completed/2-audit_5-7-26.md Task 2 (L176) · sha: 1ddff48
+  excerpt: "`_fetch_event` always downloads the *current* LABSTAT file, so an older release gets stamped with its old `release_date` but carries today's revised values — the clairvoyance the vintage model exists to prevent."
+  claim: When a source serves only its current file, a vintage pipeline must refuse to fetch back-dated releases during outage catch-up or bootstrap: stamping today's file with an old release date fabricates a historical print. Record those slots as missed, visible to the gap audit, and recover history only through the dedicated backfill path.
+- [x] [d-04] Deferred slots expire by supersession, not wall-clock
+  kind: decision · boundary: transferable
+  at: specs/plans/completed/1-bls-stats-architecture.md L3815 · sha: 168da46
+  excerpt: "a deferred slot whose live-vintage window closed (a newer release for the same program ingested) transitions to missed — never by wall-clock timeout."
+  claim: A deferred, not-yet-fresh vintage fetch is marked permanently missed only when a newer release of the same source has been ingested — its live-vintage window has provably closed — never by an elapsed-time timeout. Supersession is the event that makes the print unrecoverable; wall-clock deadlines would misclassify slow or shutdown-delayed releases.
+- [x] [d-05] Calendar filter passes pre-coverage periods through
+  kind: decision · boundary: transferable
+  at: specs/completed/bls-stats-architecture.md §5.4 · sha: 6885a5e
+  excerpt: "**Periods predating calendar coverage pass through** — their presence in the bulk file proves publication. Strict membership against the calendar would silently discard decades of history."
+  claim: When filtering historical periods against a release calendar whose coverage is shorter than the data (CES flat files start 1939), periods predating calendar coverage must pass through — presence in the official bulk file is itself proof of publication, and strict calendar membership would silently discard decades of history. Only drop periods later than the latest published reference date or explicitly recorded as cancelled.
+- [x] [d-06] Retain cancelled-then-rescheduled releases in the calendar
+  kind: decision · boundary: transferable
+  at: specs/completed/audit_5-7-26.md §3.1 C-25 · sha: 1ddff48
+  excerpt: "**Decision (human, 2026-07-05): the post-shutdown-seeding case IS in scope.** The lapse overlay / `filter_published` must distinguish \"cancelled and never published\" (stays dropped) from \"rescheduled and later published\" (must be retained)."
+  claim: A release-calendar cancel-drop rule must distinguish cancelled-and-never- published (drop) from cancelled-then-republished-under-a-rescheduled-date (retain) — government shutdowns produce the latter, as with CES October 2025, and a naive null-release-date drop permanently omits such periods from any store first seeded after the shutdown. Decided by human adjudication of a 1-1 verifier split, 2026-07-05.
+- [x] [g-01] BLS API v2 hides errors in HTTP 200 responses
+  kind: gotcha · boundary: transferable
+  at: specs/completed/bls-stats-architecture.md §6.1 · sha: 1d26d71
+  (also specs/plans/completed/1-bls-stats-architecture.md L3204 · sha: 168da46)
+  excerpt: "**must check the response `message` array** — BLS returns errors as HTTP 200 + \"status\": \"REQUEST_SUCCEEDED\" with the failure in `message` (verified live)"
+  claim: The BLS API v2 returns errors as HTTP 200 with status REQUEST_SUCCEEDED and the actual failure buried in the message array (verified live), so clients must inspect the message array — status-code checking alone silently accepts failed requests. Registered keys also expire annually.
+- [x] [g-02] BLS release feeds: Atom despite .rss; link href is the only stable key
+  kind: gotcha · boundary: transferable
+  at: specs/completed/bls-stats-architecture.md §5.2 · sha: 1d26d71
+  (also specs/plans/completed/1-bls-stats-architecture.md L1525 · sha: 168da46)
+  excerpt: "**Stable identity key is the link href** (`…/archives/{feed}_{MMDDYYYY}.htm`, release date embedded). The Atom `id` is **not** stable (observed edited in place on `cewbd`)."
+  claim: BLS release feeds are Atom 1.0 despite the .rss extension, retain only 12 entries, and the only stable entry identity is the archive link href with the release date embedded — Atom ids get edited in place, titles give the reference month but never the year, and timestamps are unreliable. Infer the year as the latest occurrence of that month strictly before the release date; correct even for shutdown-lagged releases.
+- [x] [g-03] Benchmark releases detected structurally, never from wording
+  kind: gotcha · boundary: transferable
+  at: specs/plans/completed/1-bls-stats-architecture.md L1525 · sha: 168da46
+  excerpt: "**no benchmark wording exists** — `is_benchmark` comes from the profile's structural rule (`jan_data`: monthly ref month == 1; `q1_data`: quarterly ref quarter == 1)"
+  claim: BLS feeds and release titles carry no textual marker for benchmark releases; benchmark status must be derived structurally from the reference period per program — CES-style: the release carrying January data is the annual benchmark; quarterly programs: the release carrying Q1 data.
+- [x] [g-04] BLS feeds are hand-edited; flat files flip in place
+  kind: gotcha · boundary: transferable
+  at: specs/completed/audit_5-7-26.md C-2 · sha: fc561ea
+  excerpt: "BLS hand-edits these feeds — the module itself notes ids edited in place — so a typo'd filename is realistic and persists for weeks; vintages missed while the cron is down are permanently unobservable because flat files flip in place."
+  claim: BLS release feeds are manually hand-edited (typo'd entries are realistic and persist for weeks) and retain roughly 12 entries, about a year for monthly programs, while LABSTAT flat files are overwritten in place — so any release missed while ingestion is down is permanently unobservable as a vintage, and feed parsers must tolerate malformed entries by skip-and-warn.
+- [x] [g-05] LABSTAT files: space-padded headers and M13 annual rows
+  kind: gotcha · boundary: transferable
+  at: specs/plans/completed/1-bls-stats-architecture.md L2611 · sha: 50e0f52
+  excerpt: ".rename(lambda c: c.strip())  # LABSTAT headers are space-padded / .with_columns(pl.col(\"series_id\", \"period\", \"value\", \"footnote_codes\").str.strip_chars()) / .filter(pl.col(\"period\") .str.contains(period_re))  # drops M13 (BEH §2.1)"
+  claim: BLS LABSTAT tab-separated flat files have space-padded column headers and cell values — both must be stripped; the padding broke parsing in practice — and they interleave M13 annual-average period rows with monthly data. Monthly-series parsers must drop M13 and annual rows or annual averages contaminate the series.
+  note: sha 50e0f52 is a dedicated fix commit whose message records the empirical failure (padded header silently broke schema_overrides).
+- [x] [g-06] QCEW area_fips has alpha codes and leading zeros
+  kind: gotcha · boundary: transferable
+  at: specs/plans/completed/1-bls-stats-architecture.md L2747 · sha: 168da46
+  excerpt: "def test_area_fips_stays_utf8_with_alpha_codes() -> None:  # BEH §2.2 critical gotcha / assert df.schema[\"area_fips\"] == pl.Utf8 / assert \"C1010\" in df[\"area_fips\"].to_list()"
+  claim: QCEW's area_fips column is not numeric: it mixes alpha aggregate codes such as C1010 for MSAs with zero-padded county FIPS such as 01001, so it — like all BLS code columns — must be read and stored as strings; numeric type inference silently corrupts the keys.
+- [x] [g-07] Catch-up ingest of the current file fabricates historical vintages
+  kind: gotcha · boundary: transferable
+  at: specs/completed/audit_5-7-26.md C-14 · sha: 198325a
+  excerpt: "The result is a vintage row claiming an old release date while carrying today's revised values — exactly the clairvoyance the vintage model exists to prevent."
+  claim: In a point-in-time pipeline over sources that overwrite files in place, catch-up after an outage must never fetch the current latest-revised file and stamp it with a missed release's historical date — that fabricates a first print a backtest would read as what was actually published. Missed vintages are unrecoverable; record them as gaps or as snapshot-dated backfill vintages with null revision counters.
+- [x] [g-08] Calendar cancellation is per-row; rescheduled periods have both rows
+  kind: gotcha · boundary: transferable
+  at: specs/plans/completed/2-audit_5-7-26.md Task 8 (L656) · sha: 1ddff48
+  excerpt: "a period that was cancelled in the schedule but later published under a rescheduled release has *both* a null-`release_date` row and a non-null one, so it lands in `cancelled` and is permanently dropped"
+  claim: In release-calendar data, cancellation and publication are separate rows for the same reference period: a release cancelled then rescheduled yields both a null-release-date row and a published row. Compute dropped periods as the cancelled set minus the ever-published set; treating any null row as cancellation permanently drops rescheduled-then-published periods.
+- [x] [c-01] QCEW year-to-date revision structure per quarterly release
+  kind: resolved-confusion · boundary: transferable
+  at: specs/plans/completed/2-audit_5-7-26.md Task 20 (L1578) · sha: 1ddff48
+  excerpt: "a QCEW release for quarter *q* carries all quarters of the year so far, each at revision `(q − carried quarter)` — the Q3 release carries Q3 at revision 0, Q2 at revision 1, Q1 at revision 2."
+  claim: QCEW publishes year-to-date files: the release for quarter q re-carries every earlier quarter of the year, with carried quarter k at its (q minus k)-th revision, so a quarter reaches its terminal within-year revision only at the year's Q4 release. Prior-year quarters are additionally republished in annual benchmark windows. Records the correction of a wrong documented formula.
+- [x] [c-02] Backfill is the comparator baseline, so it is not gated by validation
+  kind: resolved-confusion · boundary: transferable
+  at: specs/completed/audit_5-7-26.md §3 V4 · sha: 198325a
+  (also specs/plans/completed/2-audit_5-7-26.md Task 6 L516 · sha: 1ddff48)
+  excerpt: "`run_backfill` committing without `validate()` is **spec-mandated** (ARCH §8, §7.3: backfill is the trusted comparator baseline). So the behavior is correct; the only real issue is the docstring/docs claiming validation happens"
+  claim: When validation gates are defined relative to a trusted baseline, the backfill path that seeds that baseline cannot itself run those gates — validating the baseline against itself is circular — so backfill legitimately relies on parse-layer type locks and the store's schema gate only. Adjudicated correct-by-design; the actual defect was documentation claiming validation runs before every commit.
+- [x] [p-01] Freshness check: Last-Modified versus scheduled embargo
+  kind: validated-pattern · boundary: transferable
+  at: specs/plans/completed/1-bls-stats-architecture.md L2662 · sha: 168da46
+  excerpt: "ARCH §6.3 stale-file guard: Last-Modified >= scheduled embargo on the release date."
+  claim: BLS flat files are overwritten in place with no versioning, so on release morning the file at the increment URL can still be the previous vintage. Decide freshness by comparing the file's HTTP Last-Modified header against the release's scheduled embargo time; if the file predates the embargo, defer ingestion rather than committing a stale vintage.
+- [x] [p-02] Three-lens adversarial verification with 2-of-3 quorum
+  kind: validated-pattern · boundary: transferable
+  at: specs/completed/audit_5-7-26.md §1 (L24-28) · sha: fc561ea
+  excerpt: "Every raw finding then faced three adversarial verifiers with distinct lenses — **reachability** (is the failure path real in the code as written), **spec-alignment** (is the \"correct\" behavior actually what ARCH/BEH mandate), and **materiality** (does an existing backstop intercept it)."
+  claim: Adversarial codebase audits work as dimension-scoped finders whose raw findings each face three verifiers with distinct lenses — reachability, spec-alignment, and materiality — with at least 2 of 3 upheld votes required to confirm. On bls-stats this adjudicated 40 raw findings to 25 confirmed with zero left unadjudicated.
+- [x] [p-03] Keep refuted-at-severity findings as recorded sub-threshold items
+  kind: validated-pattern · boundary: transferable
+  at: specs/completed/audit_5-7-26.md §3 (L566-569) · sha: 198325a
+  excerpt: "They are recorded — not dropped — because several are worth a cheap hardening fix and one may be re-raised if assumptions change."
+  claim: When verification reproduces a finding's mechanism but refutes its severity, record it as a downgraded sub-threshold item instead of silently dropping it — several such items justify cheap hardening fixes, and any may be re-raised if the neutralizing assumption changes. In-file proof: contested V15 was later re-raised and became confirmed finding C-25.
+  note: in-file proof of value — contested V15 was later re-raised and became confirmed finding C-25.
+- [x] [p-04] Reconcile human vs agent verification disagreements explicitly
+  kind: validated-pattern · boundary: transferable
+  at: specs/completed/audit_5-7-26.md §1.1 (L47-49) · sha: 198325a
+  excerpt: "Where the second pass disagreed with my own earlier hand-verification, I reconciled it in §3.2 rather than silently trusting either — the agents corrected one of my calls (V14)."
+  claim: When an automated verification pass contradicts your own hand-verification, reconcile the disagreement explicitly in the record rather than silently trusting either side. In the bls-stats audit this caught a human category error on V14 — two different regexes parse release dates versus reference periods — and the finding was downgraded honestly.
+- [x] [q-01] QCEW routine print count and touched-set
+  at: specs/completed/bls-stats-architecture.md §12.3
+  claim: The actual QCEW revision lifecycle (how many routine prints a quarter receives, which prior quarters each release touches) is an unverified BLS-data-source fact any implementation would face again.
+- [x] [q-02] Benchmark revision reach per BLS program
+  at: specs/completed/bls-stats-architecture.md §12.5
+  (also specs/plans/completed/1-bls-stats-architecture.md L398)
+  claim: How far back each program's annual benchmark actually revises is unverified; the configured windows (sae/jolts/cps 5y, bed 2y, qcew 1y) await confirmation against observed benchmark events.
+'''
+PILOT_BRIEF = PILOT_HEADER + PILOT_ENTRIES
+
+
+PILOT_DIGEST = Path('/Users/lowell/research-wiki/raw/specs/'
+                    '2026-07-24-bls-stats-specs-harvest.md')
+PILOT_SOURCE = Path('/Users/lowell/research-wiki/wiki/sources/'
+                    '2026-07-24-bls-stats-specs-harvest.md')
+
+needs_pilot = pytest.mark.skipif(
+  not PILOT_DIGEST.exists(), reason='pilot reference wiki not on this machine')
+
+
+def _norm_blocks(text):
+  '''Entry blocks ([id]-keyed), each whitespace-normalized to one string —
+  the hand-authored pilot digest is reference for CONTENT, not wrapping.'''
+  body = text.split('---', 2)[2]
+  body = body.split('\n[', 1)
+  body = '[' + body[1] if len(body) == 2 else ''
+  blocks = re.split(r'\n\n(?=\[)', body.strip())
+  return [' '.join(b.split()) for b in blocks]
+
+
+def pilot_case(tmp_path):
+  root = make_root(tmp_path)
+  brief = root / 'reports/harvest-bls-stats-2026-07-24.md'
+  # str.replace, not str.format: pilot excerpts contain literal {braces}
+  brief.write_text(PILOT_BRIEF
+                   .replace('{repo_path}', '/nonexistent/bls-stats')
+                   .replace('{root}', str(root.resolve())))
+  return root, brief
+
+
+@needs_pilot
+def test_pilot_brief_round_trips_to_pilot_digest_content(tmp_path, capsys):
+  root, brief = pilot_case(tmp_path)
+  assert assemble(brief, root) == 0
+  got = _digests(root)[0].read_text()
+  assert _norm_blocks(got) == _norm_blocks(PILOT_DIGEST.read_text())
+  # header counts match the pilot's
+  assert 'files: 5' in got
+  assert 'captures: 20' in got
+  assert 'open_questions: 2' in got
+  assert 'repo_head: ad8abe0' in got
+
+
+@needs_pilot
+def test_pilot_source_body_matches_pilot_page(tmp_path, capsys):
+  root, brief = pilot_case(tmp_path)
+  assert assemble(brief, root) == 0
+  out = capsys.readouterr().out
+  want = PILOT_SOURCE.read_text().split('---', 2)[2]
+  norm = lambda t: [' '.join(b.split())
+                    for b in re.split(r'\n(?=### \[)', t.strip())]
+  assert norm(out) == norm(want)
+
+
+@needs_pilot
+def test_pilot_digest_filename_follows_id8_rule(tmp_path, capsys):
+  root, brief = pilot_case(tmp_path)
+  assert assemble(brief, root) == 0
+  name = _digests(root)[0].name
+  assert re.fullmatch(r'2026-07-24-bls-stats-specs-[0-9a-f]{8}\.md', name)
