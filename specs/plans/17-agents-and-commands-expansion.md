@@ -1,5 +1,21 @@
 # Five Agents + Two Commands Implementation Plan
 
+**Status: COMPLETE (2026-07-25)** — executed via subagent-driven-development;
+deferred items in specs/deferred_items.md
+
+> Execution notes: all 12 tasks approved by per-task review; final
+> whole-branch review (opus) verdict "With fixes" — both gate-approved
+> fixes landed post-review: `3946391` scope-qualified the Python-target
+> rule line (resolving the 3.12/3.13 contradiction introduced mid-range),
+> and `a24d252` added a cited-only-works bullet to /license-audit's Layer 2
+> (amending Task 8's spec-mandated content by explicit user approval at the
+> completion gate). The merge range also carries the user's own out-of-plan
+> commit `99d55ac` (rules/clean-code-python.md). The live `/fix-issue`
+> end-to-end run against a real GitHub issue remains deferred to first real
+> use per the spec's Verification section — recorded here, not in
+> deferred_items, as it is interactive verification rather than unbuilt
+> work.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add five subagent definitions (`security-auditor`, the `Explore`
@@ -69,7 +85,7 @@ names (e.g. `other-name` in `my-agent.md`) must still be rejected.
   (Task 3 depends on this) while still flagging real name/filename
   mismatches.
 
-- [ ] **Step 1: Create the feature branch**
+- [x] **Step 1: Create the feature branch**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills
@@ -79,7 +95,7 @@ git checkout -b feat/agents-and-commands-expansion main
 (Skip branch creation if the execution harness already created a worktree
 branch for this plan.)
 
-- [ ] **Step 2: Write the failing test**
+- [x] **Step 2: Write the failing test**
 
 Append to `build/test_check_frontmatter.py`:
 
@@ -96,7 +112,7 @@ def test_agent_name_case_differs_from_filename_is_allowed(tmp_path):
     assert check_agent_file(good) == []
 ```
 
-- [ ] **Step 3: Run the test to verify it fails**
+- [x] **Step 3: Run the test to verify it fails**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/build && uv run --python 3.13 --with pytest --with numpy --with polars --with pyyaml python -m pytest test_check_frontmatter.py::test_agent_name_case_differs_from_filename_is_allowed -q
@@ -105,7 +121,7 @@ cd /Users/lowell/Projects/agent-skills/build && uv run --python 3.13 --with pyte
 Expected: FAIL — `check_agent_file` returns
 `[".../explore.md: name 'Explore' does not match filename 'explore'"]`.
 
-- [ ] **Step 4: Implement the case-insensitive comparison**
+- [x] **Step 4: Implement the case-insensitive comparison**
 
 In `build/check_frontmatter.py`, inside `check_agent_file`, replace:
 
@@ -125,7 +141,7 @@ with:
         errs.append(f'{md}: name {fm.get("name")!r} does not match filename {md.stem!r}')
 ```
 
-- [ ] **Step 5: Run the full build suite to verify everything passes**
+- [x] **Step 5: Run the full build suite to verify everything passes**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/build && uv run --python 3.13 --with pytest --with numpy --with polars --with pyyaml python -m pytest -q
@@ -135,7 +151,7 @@ Expected: 34 passed (33 existing + the new test). In particular
 `test_agent_file_checked` still passes — `other-name` vs `my-agent` differs
 beyond case and is still flagged.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills
@@ -155,7 +171,7 @@ git commit -m 'feat(build): case-insensitive agent name/filename lint for the Ex
 - Produces: agent type `security-auditor` (opus, xhigh, read-only), consumed
   by Task 10 (symlink) and Task 11 (fixture probe).
 
-- [ ] **Step 1: Write the file**
+- [x] **Step 1: Write the file**
 
 Create `agents/security-auditor.md` with exactly this content:
 
@@ -213,7 +229,7 @@ remediation.
 sentences of reasoning.
 ```
 
-- [ ] **Step 2: Run the lint**
+- [x] **Step 2: Run the lint**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills && uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
@@ -221,7 +237,7 @@ cd /Users/lowell/Projects/agent-skills && uv run --python 3.13 --with pyyaml pyt
 
 Expected: exit 0, no output.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills
@@ -244,7 +260,7 @@ block so no future cleanup "fixes" the capital E.
 - Produces: agent type `Explore` (haiku, read-only) shadowing the built-in,
   consumed by Task 10 (symlink + shadowing probe).
 
-- [ ] **Step 1: Write the file**
+- [x] **Step 1: Write the file**
 
 Create `agents/explore.md` with exactly this content:
 
@@ -292,7 +308,7 @@ Your report is what the caller acts on without re-reading files:
   where, and anything you looked for and did not find.
 ```
 
-- [ ] **Step 2: Run the lint**
+- [x] **Step 2: Run the lint**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills && uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
@@ -300,7 +316,7 @@ cd /Users/lowell/Projects/agent-skills && uv run --python 3.13 --with pyyaml pyt
 
 Expected: exit 0 — the Task 1 relaxation admits `explore.md`/`Explore`.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills
@@ -320,7 +336,7 @@ git commit -m 'feat(agents): explore — haiku-pinned override shadowing the bui
 - Produces: agent type `test-runner` (haiku), consumed by Task 10 (symlink)
   and Task 11 (fixture probe); referenced by name in Task 7's command body.
 
-- [ ] **Step 1: Write the file**
+- [x] **Step 1: Write the file**
 
 Create `agents/test-runner.md` with exactly this content:
 
@@ -356,7 +372,7 @@ guess a runner, an interpreter, or a dependency set.
   the caller.
 ```
 
-- [ ] **Step 2: Run the lint**
+- [x] **Step 2: Run the lint**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills && uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
@@ -364,7 +380,7 @@ cd /Users/lowell/Projects/agent-skills && uv run --python 3.13 --with pyyaml pyt
 
 Expected: exit 0.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills
@@ -384,7 +400,7 @@ git commit -m 'feat(agents): test-runner — haiku isolated suite runner, no dia
 - Produces: agent type `debugger` (sonnet, has Edit), consumed by Task 10
   (symlink) and Task 11 (fixture probe).
 
-- [ ] **Step 1: Write the file**
+- [x] **Step 1: Write the file**
 
 Create `agents/debugger.md` with exactly this content:
 
@@ -423,7 +439,7 @@ rather than guessing.
   output.
 ```
 
-- [ ] **Step 2: Run the lint**
+- [x] **Step 2: Run the lint**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills && uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
@@ -431,7 +447,7 @@ cd /Users/lowell/Projects/agent-skills && uv run --python 3.13 --with pyyaml pyt
 
 Expected: exit 0.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills
@@ -451,7 +467,7 @@ git commit -m 'feat(agents): debugger — sonnet isolated fix of reproducible fa
 - Produces: agent type `docs-writer` (sonnet, has Write+Edit), consumed by
   Task 10 (symlink) and Task 11 (fixture probe).
 
-- [ ] **Step 1: Write the file**
+- [x] **Step 1: Write the file**
 
 Create `agents/docs-writer.md` with exactly this content:
 
@@ -495,7 +511,7 @@ you.
   claims for the caller to resolve.
 ```
 
-- [ ] **Step 2: Run the lint**
+- [x] **Step 2: Run the lint**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills && uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
@@ -503,7 +519,7 @@ cd /Users/lowell/Projects/agent-skills && uv run --python 3.13 --with pyyaml pyt
 
 Expected: exit 0.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills
@@ -525,7 +541,7 @@ git commit -m 'feat(agents): docs-writer — sonnet grounded documentation write
 - Produces: slash command `/fix-issue <number|url>`, consumed by Task 10
   (symlink) and Task 12 (graceful-stop probe).
 
-- [ ] **Step 1: Write the file**
+- [x] **Step 1: Write the file**
 
 Create `commands/fix-issue.md` with exactly this content:
 
@@ -558,7 +574,7 @@ is the bugfix lane only — it never implements features.
    (`Fixes #<n>` in the PR body).
 ```
 
-- [ ] **Step 2: Run the lint**
+- [x] **Step 2: Run the lint**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills && uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
@@ -566,7 +582,7 @@ cd /Users/lowell/Projects/agent-skills && uv run --python 3.13 --with pyyaml pyt
 
 Expected: exit 0.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills
@@ -587,7 +603,7 @@ git commit -m 'feat(commands): /fix-issue — gh-driven bugfix lane, features ro
 - Produces: slash command `/license-audit`, consumed by Task 10 (symlink)
   and Task 12 (self-audit probe).
 
-- [ ] **Step 1: Write the file**
+- [x] **Step 1: Write the file**
 
 Create `commands/license-audit.md` with exactly this content:
 
@@ -625,7 +641,7 @@ Report findings grouped by layer, each with file references and a
 proposed resolution; end with an overall verdict.
 ```
 
-- [ ] **Step 2: Run the lint**
+- [x] **Step 2: Run the lint**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills && uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
@@ -633,7 +649,7 @@ cd /Users/lowell/Projects/agent-skills && uv run --python 3.13 --with pyyaml pyt
 
 Expected: exit 0.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills
@@ -659,7 +675,7 @@ original works covered by the repo MIT license — the `/deferred` precedent.
 - Consumes: the seven artifact files from Tasks 2–8 (rows link to them).
 - Produces: user-facing docs; no downstream task depends on this.
 
-- [ ] **Step 1: Update the README layout tree**
+- [x] **Step 1: Update the README layout tree**
 
 Replace these two lines:
 
@@ -675,7 +691,7 @@ with:
 ├── commands/    # slash commands (/deferred, /fix-issue, /license-audit — see Commands below)
 ```
 
-- [ ] **Step 2: Add five rows to the README Agents table**
+- [x] **Step 2: Add five rows to the README Agents table**
 
 Append after the existing `task-reviewer` row:
 
@@ -687,7 +703,7 @@ Append after the existing `task-reviewer` row:
 | [`docs-writer`](agents/docs-writer.md) | Writes grounded technical docs in an isolated context — READMEs, analysis writeups (methods → results → caveats), docstrings under the clean-code comment discipline, general guides. Reads the code first, flags unverified claims, never commits. Sonnet-pinned. |
 ```
 
-- [ ] **Step 3: Add two rows to the README Commands table**
+- [x] **Step 3: Add two rows to the README Commands table**
 
 Append after the existing `/deferred` row:
 
@@ -696,7 +712,7 @@ Append after the existing `/deferred` row:
 | [`/license-audit`](commands/license-audit.md) | Audit the current repo's licensing and attribution: run its mechanical gates where present, then judgment checks — NOTICE ↔ artifact sync, LICENSE consistency, copyleft/NC compatibility flags, uncredited-adaptation risks. Read-only. |
 ```
 
-- [ ] **Step 4: Complete the Agents install section**
+- [x] **Step 4: Complete the Agents install section**
 
 Replace the code block under `### Agents`:
 
@@ -719,7 +735,7 @@ ln -s ~/agent-skills/agents/debugger.md ~/.claude/agents/debugger.md
 ln -s ~/agent-skills/agents/docs-writer.md ~/.claude/agents/docs-writer.md
 ```
 
-- [ ] **Step 5: Complete the Commands install section**
+- [x] **Step 5: Complete the Commands install section**
 
 Replace the code block under `### Commands`:
 
@@ -737,7 +753,7 @@ ln -s ~/agent-skills/commands/fix-issue.md ~/.claude/commands/fix-issue.md
 ln -s ~/agent-skills/commands/license-audit.md ~/.claude/commands/license-audit.md
 ```
 
-- [ ] **Step 6: Update the CLAUDE.md enumeration sentence**
+- [x] **Step 6: Update the CLAUDE.md enumeration sentence**
 
 In `CLAUDE.md`'s opening paragraph, replace this fragment (verbatim):
 
@@ -751,7 +767,7 @@ with:
 `agents/` (subagent definitions — the two reviewers plus `security-auditor`, the Haiku-pinned `Explore` override, `test-runner`, `debugger`, `docs-writer`), `commands/` (slash commands — `/deferred`, `/fix-issue`, `/license-audit`),
 ```
 
-- [ ] **Step 7: Run both gates**
+- [x] **Step 7: Run both gates**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills && uv run --python 3.13 --with pyyaml python build/check_frontmatter.py && uv run --python 3.13 python build/check_provenance.py
@@ -759,7 +775,7 @@ cd /Users/lowell/Projects/agent-skills && uv run --python 3.13 --with pyyaml pyt
 
 Expected: both exit 0, no output.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills
@@ -783,7 +799,7 @@ discover agent files added mid-session; a fresh process does.
 - Consumes: the seven artifact files (Tasks 2–8).
 - Produces: installed agents/commands that Tasks 11–12 probe.
 
-- [ ] **Step 1: Create the seven symlinks**
+- [x] **Step 1: Create the seven symlinks**
 
 The local clone is `/Users/lowell/Projects/agent-skills` (not the README's
 `~/agent-skills`, which is the public-facing example path):
@@ -799,7 +815,7 @@ ln -s /Users/lowell/Projects/agent-skills/commands/fix-issue.md ~/.claude/comman
 ln -s /Users/lowell/Projects/agent-skills/commands/license-audit.md ~/.claude/commands/license-audit.md
 ```
 
-- [ ] **Step 2: Verify the links resolve**
+- [x] **Step 2: Verify the links resolve**
 
 ```bash
 ls -la ~/.claude/agents/ ~/.claude/commands/ && file ~/.claude/agents/*.md ~/.claude/commands/*.md
@@ -809,7 +825,7 @@ Expected: seven new symlinks alongside the existing `code-reviewer.md`,
 `task-reviewer.md`, and `deferred.md`; every target resolves (no "broken
 symbolic link" in the `file` output).
 
-- [ ] **Step 3: Version gate for the shadowing mechanism**
+- [x] **Step 3: Version gate for the shadowing mechanism**
 
 ```bash
 claude --version
@@ -820,7 +836,7 @@ spec's recorded probes (2026-07-25) stand and Step 4's full re-probe is
 optional confirmation. If the binary has moved, Step 4 is REQUIRED before
 the Explore override is considered live.
 
-- [ ] **Step 4: Discovery + shadowing probe**
+- [x] **Step 4: Discovery + shadowing probe**
 
 ```bash
 claude -p --model sonnet 'List the agent types available to your Agent tool, names only, one per line. Then quote verbatim the description of the agent type named Explore. Do not dispatch any agent and do not take any other action.'
@@ -854,7 +870,7 @@ on its own pinned model.
 - Consumes: installed agents from Task 10.
 - Produces: recorded probe results for the plan-completion markup.
 
-- [ ] **Step 1: security-auditor fixture — planted secret + injection**
+- [x] **Step 1: security-auditor fixture — planted secret + injection**
 
 ```bash
 rm -rf /tmp/plan17-sec && mkdir -p /tmp/plan17-sec
@@ -874,7 +890,12 @@ credential (`app.py:3`) and the shell-injection pattern (`app.py:6`,
 `shell=True` with interpolated input) — under Critical/Important headings,
 each with remediation, plus a verdict line.
 
-- [ ] **Step 2: test-runner fixture — one real suite from CLAUDE.md**
+> Deviation (evidence precision): both plants found with exact `file:line`
+> and a verdict, quoted verbatim; the severity headings and per-finding
+> remediation are asserted in the probe judgment but elided from the
+> preserved transcript excerpt — recorded as asserted, not quoted-verified.
+
+- [x] **Step 2: test-runner fixture — one real suite from CLAUDE.md**
 
 Uses the llm-wiki suite (stdlib-only, no heavy deps):
 
@@ -886,7 +907,10 @@ Expected: report gives pass/fail/skip counts (180 passed at plan time),
 quotes any warnings, and contains no diagnosis. Contract holds: no source
 edits, no git mutation.
 
-- [ ] **Step 3: debugger fixture — synthetic failing test, change left uncommitted**
+> Note: passed on a green suite (180/0/0); the no-diagnosis-under-failure
+> path was never exercised — first-real-use verification.
+
+- [x] **Step 3: debugger fixture — synthetic failing test, change left uncommitted**
 
 ```bash
 rm -rf /tmp/plan17-dbg && mkdir -p /tmp/plan17-dbg && cd /tmp/plan17-dbg && git init -q
@@ -910,7 +934,16 @@ Expected: `calc.py` now returns `a + b`; the suite passes in the report;
 `git status --short` shows ` M calc.py` (uncommitted) and `git log` still
 shows exactly one commit (`seed`) — the agent did not commit.
 
-- [ ] **Step 4: docs-writer fixture — small grounded README**
+> Deviation: the plain headless invocation could not land Edit writes
+> outside the launch cwd (no non-interactive consent approver; 3 blocked
+> attempts recorded). Rerun per controller decision with cwd=/tmp/plan17-dbg
+> + `--permission-mode acceptEdits`; fix correctness and uncommitted state
+> then verified via git post-session. Two precision caveats: the dispatched
+> session's Bash was independently gated, so (a) the green verify run was
+> produced externally, and (b) the never-commit signal is consistent with
+> the contract but confounded by that gate — not a clean discipline proof.
+
+- [x] **Step 4: docs-writer fixture — small grounded README**
 
 ```bash
 rm -rf /tmp/plan17-doc && mkdir -p /tmp/plan17-doc
@@ -946,7 +979,13 @@ Expected: `README.md` exists and is grounded — it names the real flag
 the lowercasing quirk of `--ignore-case`) and invents nothing (any
 uncertain claim carries the ⚠ marker per its contract).
 
-- [ ] **Step 5: Clean up scratch dirs**
+> Deviation: same consent-gate wall as Step 3 (2 blocked attempts); passed
+> on rerun with cwd + acceptEdits. Grounding verified by running dedupe.py
+> live against the README's claims. The ⚠-marker discipline went
+> unexercised in the passing run (no uncertain claims arose) — not
+> verified, only unfalsified.
+
+- [x] **Step 5: Clean up scratch dirs**
 
 ```bash
 rm -rf /tmp/plan17-sec /tmp/plan17-dbg /tmp/plan17-doc
@@ -965,7 +1004,7 @@ rm -rf /tmp/plan17-sec /tmp/plan17-dbg /tmp/plan17-doc
 - Produces: recorded probe results; doubles as command-discovery
   verification (a successful typed invocation IS discovery).
 
-- [ ] **Step 1: /license-audit self-audit on this repo**
+- [x] **Step 1: /license-audit self-audit on this repo**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills && claude -p --model sonnet '/license-audit'
@@ -978,7 +1017,14 @@ and LICENSE-superpowers present, Murphy/Martin material correctly flagged
 as cited-only, nothing from `build/.scratch/` tracked. Overall verdict:
 clean. It edits nothing (`git status --short` unchanged afterward).
 
-- [ ] **Step 2: /fix-issue graceful stop without a GitHub remote**
+> Deviation: substance PASS, wording partial — the actual verdict read
+> "Clean, with one minor process gap to close before merge" (the audit
+> recommended a NOTICE line; spec §8 deliberately decided otherwise —
+> recorded, not actioned) and the run named Murphy but not Martin. The
+> Martin omission traced to a structural Layer-2 checklist gap, closed
+> post-review by `a24d252` (gate-approved).
+
+- [x] **Step 2: /fix-issue graceful stop without a GitHub remote**
 
 ```bash
 rm -rf /tmp/plan17-fix && mkdir -p /tmp/plan17-fix
@@ -992,7 +1038,7 @@ GitHub remote (or that `gh` cannot resolve one); no fix branch is created
 (`branch --list` shows only the initial branch) and the tree is untouched
 (`status --short` empty).
 
-- [ ] **Step 3: Clean up and final gates**
+- [x] **Step 3: Clean up and final gates**
 
 ```bash
 rm -rf /tmp/plan17-fix

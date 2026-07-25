@@ -1,13 +1,15 @@
 # Deferred items
 
 ## 11-delegation-frontmatter-rollout — 2026-07-19
-- [ ] Haiku-pinned `Explore` override agent (fork-isolation upgrade; plan "Out of
+- [x] Haiku-pinned `Explore` override agent (fork-isolation upgrade; plan "Out of
       scope"): the direct `model: haiku` pins on `explore-data`/`bls-data-context`
       only cover the *invoking* turn (a skill `model` override is per-turn). A single
       haiku-pinned `agents/Explore.md` would keep a whole multi-turn profiling
       workflow on Haiku via `context: fork` + `agent: Explore`, and double as a global
       Explore→Haiku lever. Add only if the per-turn saving proves insufficient; needs
-      a new agent file + a README Agents-table row.
+      a new agent file + a README Agents-table row. → done in plan 17
+      (`agents/explore.md`, lowercase filename with load-bearing `name: Explore`;
+      shadowing probe-verified on 2.1.219)
 - [ ] Interactive verification (plan Task 5 Steps 3–4, deviation): confirm the live
       model/effort indicator shows haiku/xhigh when the pinned skills load, and take a
       `/status` before/after cost reading on one exploration-heavy session. Could not
@@ -265,3 +267,23 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
 - [ ] Placeholder-less f-string in a test (`f'reports/harvest-wt-2026-07-24.md'`); fold into any future style sweep (test_distill_specs.py).
 - [x] Also-line sha shape gate (`ALSO_RE` swallowed a non-hex `(also … · sha:)` into the location text) → done post-merge in afa9af8.
 - [ ] Renamed spec files lose `previously seen` hinting (prior keys grouped by the old at:-path, looked up by the new walk path); agent-side dedup still reads the whole prior brief, so impact is weaker hints only — decide whether rename-following is worth building (distill_specs.py).
+
+## 17-agents-and-commands-expansion — 2026-07-25
+- [ ] PreToolUse hooks mechanically enforcing the read-only contracts of
+      `security-auditor`, `Explore`, and `test-runner` (spec "Out of scope",
+      recorded deliberately): today the contracts are prose, matching the
+      code-reviewer/task-reviewer precedent. Would need a hook design with
+      per-agent matchers; touches agents/*.md and settings wiring. See
+      specs/completed/agents-and-commands-expansion.md.
+- [ ] `disable-model-invocation` lint (final-review Important, gate-deferred):
+      `check_command_file` in build/check_frontmatter.py validates only
+      `description`, so nothing guards the key the commands' listing-budget
+      motivation rests on — and pre-existing commands/deferred.md lacks the
+      key entirely. TDD a check (Task-1 precedent) and decide /deferred's
+      status as part of the same work: add the key there, or make the check
+      per-file.
+- [ ] Agent description length cap (final-review Minor): `check_skill`
+      enforces the 1024-char cap but `check_agent_file` caps nothing, and
+      all agent descriptions load into the Agent-tool listing (current
+      roster: 261–445 chars each). Add a cap to build/check_frontmatter.py
+      when the roster grows.
