@@ -34,7 +34,7 @@ mid-session.
 **Tech Stack:** Markdown artifact files; Python 3.13 via `uv run` for the
 lint + its pytest suite; `claude -p` headless probes; `ln -s` install.
 
-**Spec:** [specs/agents-and-commands-expansion.md](../agents-and-commands-expansion.md)
+**Spec:** [specs/completed/agents-and-commands-expansion.md](../../completed/agents-and-commands-expansion.md)
 
 ## Global Constraints
 
