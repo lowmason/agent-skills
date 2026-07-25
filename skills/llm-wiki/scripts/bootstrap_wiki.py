@@ -56,8 +56,9 @@ WIKI_DIRS = (
 )
 # Empty leaf dirs need a 0-byte .gitkeep so git carries them; wiki/ is held by
 # its structural files and scripts/ by the three installed scripts.
-GITKEEP_DIRS = ('raw/assets', 'raw/sessions', 'raw/specs', 'reports',
-                 'wiki/sources')
+GITKEEP_DIRS = (
+  'raw/assets', 'raw/sessions', 'raw/specs', 'reports', 'wiki/sources',
+)
 
 # The concrete set self-verification asserts on disk before it trusts a lint.
 REQUIRED_DIRS = (
