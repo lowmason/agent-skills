@@ -356,3 +356,35 @@ def test_deferred_item_restricted_to_deferred_file_end_to_end(tmp_path):
   deferred_section = text[deferred_start:]
   assert 'deferred-item' not in plan_section
   assert 'deferred-item' in deferred_section
+
+
+# --- Task 3: SHA tables ------------------------------------------------------
+
+def test_sha_table_follows_rename_and_classifies(tmp_path):
+  repo = make_repo(tmp_path)
+  rows = dsp.sha_table(repo, 'specs/completed/a-spec.md')
+  # newest first: retirement (pure git mv), v2 edit, v1 creation
+  assert [cls for _, _, cls in rows] == \
+    ['mechanical', 'substantive', 'substantive']
+  assert rows[0][1] == 'chore: retire spec'
+  assert rows[2][1] == 'spec: a v1'
+
+
+def test_rename_with_edit_is_substantive(tmp_path):
+  repo = make_repo(tmp_path)
+  moved = repo / 'specs/plans/completed/1-a-spec.md'
+  target = repo / 'specs/plans/completed/01-a-spec.md'
+  target.write_text(moved.read_text() + '\nEdited during move.\n')
+  moved.unlink()
+  _git(repo, 'add', '-A')
+  _git(repo, 'commit', '-qm', 'chore: renumber plan with edits')
+  rows = dsp.sha_table(repo, 'specs/plans/completed/01-a-spec.md')
+  assert rows[0][2] == 'substantive'
+
+
+def test_brief_contains_sha_table(tmp_path):
+  repo, root = make_repo(tmp_path), make_root(tmp_path)
+  assert inventory(repo, root) == 0
+  text = (root / 'reports/harvest-repo-2026-07-24.md').read_text()
+  assert ' · chore: retire spec · mechanical' in text
+  assert ' · spec: a v2 · substantive' in text

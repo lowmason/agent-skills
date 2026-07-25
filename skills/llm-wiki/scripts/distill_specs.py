@@ -135,6 +135,31 @@ def walk_specs(repo, only=None):
   return files, notes
 
 
+def sha_table(repo, rel):
+  '''Per-commit rows (sha, subject, class) newest first, following renames
+  past retirement/reorg commits. Mechanical = the commit touches this file
+  only as a pure rename/move with no content change (name-status R100);
+  anything else — including a rename with edits (R0xx) — is substantive.'''
+  out = _git(repo, 'log', '--follow', '-M', '--name-status',
+             '--format=%x01%h%x02%s', '--', rel)
+  rows, sha, subject, status = [], None, None, None
+  for line in out.splitlines():
+    if line.startswith('\x01'):
+      if sha is not None:
+        rows.append((sha, subject, _classify(status)))
+      sha, subject = line[1:].split('\x02', 1)
+      status = None
+    elif line.strip():
+      status = line.split('\t', 1)[0]
+  if sha is not None:
+    rows.append((sha, subject, _classify(status)))
+  return rows
+
+
+def _classify(status):
+  return 'mechanical' if status and status.startswith('R100') else 'substantive'
+
+
 def brief_path(root, repo_name, date):
   return root / 'reports' / f'harvest-{repo_name}-{date}.md'
 
@@ -204,7 +229,7 @@ def cmd_inventory(args):
     body.append('')
   for rel in files:
     text = (repo / rel).read_text()
-    body += render_file_section(rel, [], seed_hits(text, rel == DEFERRED_FILE), [])
+    body += render_file_section(rel, sha_table(repo, rel), seed_hits(text, rel == DEFERRED_FILE), [])
   _atomic_write(path, '\n'.join(body).rstrip('\n') + '\n')
   print(f'wrote {path}')
   return 0
