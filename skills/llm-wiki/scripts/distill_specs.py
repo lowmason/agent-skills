@@ -204,10 +204,17 @@ def claim_hash(claim):
 
 def prior_briefs(root, repo_name, date):
   '''Prior briefs for this repo, sorted (ISO dates sort); the same-date
-  brief is the accretion target, not a prior.'''
+  brief is the accretion target, not a prior. glob() alone is an unanchored
+  prefix match: in a shared multi-repo wiki root, repo "wiki" would
+  otherwise pick up another repo's "harvest-wiki-tools-<date>.md" (spec
+  §4.1/§7 wrong-wiki protection) -- filter to an exact
+  harvest-<repo_name>-YYYY-MM-DD.md shape.'''
+  name_re = re.compile(r'harvest-' + re.escape(repo_name)
+                       + r'-\d{4}-\d{2}-\d{2}\.md')
   return [p for p in
           sorted((root / 'reports').glob(f'harvest-{repo_name}-*.md'))
-          if p.name != f'harvest-{repo_name}-{date}.md']
+          if name_re.fullmatch(p.name) and
+          p.name != f'harvest-{repo_name}-{date}.md']
 
 
 def seen_keys_by_file(briefs):

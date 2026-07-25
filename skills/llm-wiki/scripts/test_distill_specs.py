@@ -505,3 +505,49 @@ def test_only_glob_filters_walk(tmp_path):
   text = (root / 'reports/harvest-repo-2026-07-24.md').read_text()
   assert '## specs/plans/completed/1-a-spec.md' in text
   assert '## specs/completed/a-spec.md' not in text
+
+
+WRONG_REPO_PRIOR_BRIEF = '''---
+harvest: specs
+repo: wiki-tools
+repo_path: /old/path
+repo_head: 0000000
+root: /old/root
+date: 2026-07-01
+prior_brief: none
+files_walked: >
+  specs/only.md
+---
+
+## specs/only.md
+
+captures:
+
+- [x] [d-01] Wrong-repo decision
+  kind: decision · boundary: transferable
+  at: specs/only.md §1 · sha: 1111111
+  excerpt: "wrong repo"
+  claim: This belongs to wiki-tools, not wiki.
+'''
+
+
+def test_prior_briefs_does_not_match_prefix_repo_name(tmp_path):
+  '''glob(f'harvest-{repo_name}-*.md') is an unanchored prefix match: in a
+  shared multi-repo wiki root, repo "wiki" would otherwise pick up another
+  repo's brief "harvest-wiki-tools-2026-07-01.md" as a prior (spec §4.1/§7
+  wrong-wiki protection) -- leaking wrong-repo dedup keys into `seen` and
+  pointing `prior_brief:` at the wrong repo's brief.'''
+  root = make_root(tmp_path)
+  repo = tmp_path / 'wiki'
+  (repo / 'specs').mkdir(parents=True)
+  (repo / 'specs/only.md').write_text('# Only\n')
+  _git(repo, 'init', '-q', '-b', 'main')
+  _git(repo, 'add', '.')
+  _git(repo, 'commit', '-qm', 'one file')
+  (root / 'reports/harvest-wiki-tools-2026-07-01.md').write_text(
+    WRONG_REPO_PRIOR_BRIEF)
+  assert inventory(repo, root) == 0
+  text = (root / 'reports/harvest-wiki-2026-07-24.md').read_text()
+  assert 'prior_brief: none' in text
+  assert '- d-01 · specs/only.md §1 · ' not in text
+  assert 'previously seen:\n- none' in text
