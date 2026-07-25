@@ -8,11 +8,10 @@ description: >
   keys, stale data), a NumPyro/PyMC model needing more than 'it ran', parameter recovery /
   SBC-lite / golden-master parity / seed determinism, slow MCMC tests in CI, or as-of/vintage
   correctness and future leakage. Trigger on: 'how should we test this', 'what tests do we need',
-  'test plan', 'test strategy', 'add tests', 'this has no tests', flaky or slow suites, pytest
-  marker design (network/slow/real_store) and CI exclusions, recorded HTML fixtures vs live
-  sites, schema/row-count/null-rate/freshness assertions, or httpx, BeautifulSoup, lxml, Polars,
-  parquet, NumPyro, JAX, PyMC, PRNGKey, golden master, BLS/QCEW/CES/JOLTS. Consult BEFORE writing
-  tests.
+  'test plan', 'add tests', 'this has no tests', flaky or slow suites, pytest marker design
+  (network/slow/real_store) and CI exclusions, recorded HTML fixtures vs live sites,
+  schema/row-count/null-rate/freshness assertions, or httpx, BeautifulSoup, lxml, parquet, JAX,
+  PRNGKey, BLS/QCEW/CES/JOLTS. Consult BEFORE writing tests.
 license: MIT
 metadata:
   author: Lowell Mason
