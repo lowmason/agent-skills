@@ -65,8 +65,8 @@ cd skills/tune-hyperparameters/scripts && uv run --python 3.13 --with pytest --w
 # numpyro + NetCDF-writer chain, since the tests round-trip InferenceData to .nc)
 cd skills/track-model-experiments/scripts && uv run --python 3.13 --with pytest --with numpy --with polars --with arviz --with numpyro --with h5netcdf --with h5py python -m pytest -q
 
-# llm-wiki bundled wiki-script tests (bootstrap + lint + session distiller) —
-# 101 tests (stdlib only; these are the scripts the bootstrap installs to a wiki)
+# llm-wiki bundled wiki-script tests (bootstrap + lint + session + specs distillers) —
+# 180 tests (stdlib only; these are the scripts the bootstrap installs to a wiki)
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest -q
 
 # Frontmatter + provenance lints (run before committing skill changes)
