@@ -610,6 +610,22 @@ def test_parse_collects_also_locations_and_continuations():
   assert e['fields']['claim'] == 'Wrapped claim text.'
 
 
+def test_parse_splits_also_sha_even_when_not_hex():
+  '''ALSO_RE's optional inline hex group silently swallowed a malformed
+  `· sha: TBD` suffix into the LOCATION capture (loc='… · sha: TBD',
+  sha=None), so validate_entries could never see it. Parse must split on
+  the last `· sha: ` marker exactly like the primary at: field and leave
+  shape-checking to validation.'''
+  text = ('- [x] [g-02] Title\n'
+          '  kind: gotcha · boundary: mixed\n'
+          '  at: specs/a.md §1 · sha: 1234567\n'
+          '  (also specs/plans/completed/1-a.md L320 · sha: TBD)\n'
+          '  excerpt: "x"\n'
+          '  claim: A claim.\n')
+  _, entries, _ = dsp.parse_brief(_brief_with(text))
+  assert entries[0]['also'] == [('specs/plans/completed/1-a.md L320', 'TBD')]
+
+
 def test_valid_entry_has_no_errors():
   assert _validated(_entry()) == []
 
@@ -635,6 +651,34 @@ def test_sha_placeholder_is_reported():
   introducing SHA, not a placeholder that would ship as `basis: git:TBD`.'''
   errors = _validated(_entry(sha='TBD'))
   assert any('sha is not a commit hash' in err for err in errors)
+
+
+def test_also_sha_placeholder_is_reported():
+  '''The b5762d4 follow-up gated only the primary sha field (f['sha']);
+  (also …) shas live in e['also'] tuples and would otherwise ship
+  `sha: TBD` in the digest — the same echo-rule hole (spec §4.2), one
+  field over.'''
+  text = ('- [x] [g-01] Title\n'
+          '  kind: gotcha · boundary: transferable\n'
+          '  at: specs/a.md §1 · sha: 1234567\n'
+          '  (also specs/x.md L1 · sha: TBD)\n'
+          '  excerpt: "x"\n'
+          '  claim: A claim.\n')
+  errors = _validated(text)
+  assert any('also sha is not a commit hash' in err for err in errors)
+
+
+def test_also_without_sha_stays_valid():
+  '''Sha-less (also …) lines are legitimate brief grammar (pilot q-02
+  carries one) — the shape gate must fire only on a present-but-malformed
+  sha, never on absence.'''
+  text = ('- [x] [g-01] Title\n'
+          '  kind: gotcha · boundary: transferable\n'
+          '  at: specs/a.md §1 · sha: 1234567\n'
+          '  (also specs/x.md L1)\n'
+          '  excerpt: "x"\n'
+          '  claim: A claim.\n')
+  assert _validated(text) == []
 
 
 def test_kind_prefix_mismatch_is_reported():
@@ -865,6 +909,27 @@ def test_sha_placeholder_end_to_end_reports_and_writes_nothing(tmp_path, capsys)
   assert assemble(brief, root) == 1
   err = capsys.readouterr().err
   assert 'brief-error: g-01: sha is not a commit hash' in err
+  assert _digests(root) == []
+  assert 'assembled:' not in brief.read_text()
+
+
+def test_also_sha_placeholder_end_to_end_reports_and_writes_nothing(
+    tmp_path, capsys):
+  '''A ticked capture whose (also …) line carries `sha: TBD` must fail the
+  CLI gate like the primary-field case above (spec §9) -- ALSO_RE used to
+  swallow the malformed suffix into the location capture (sha=None), so the
+  brief assembled and the digest shipped `(also … · sha: TBD)` unvalidated.'''
+  repo, root = make_repo(tmp_path), make_root(tmp_path)
+  entry = (f'- [x] [g-01] Placeholder also sha\n'
+           f'  kind: gotcha · boundary: transferable\n'
+           f'  at: specs/completed/a-spec.md §1 · sha: {_sha(repo)}\n'
+           f'  (also specs/completed/a-spec.md §2 · sha: TBD)\n'
+           f'  excerpt: "x"\n'
+           f'  claim: A claim.\n')
+  brief = _write_brief(root, repo, entry)
+  assert assemble(brief, root) == 1
+  err = capsys.readouterr().err
+  assert 'brief-error: g-01: also sha is not a commit hash' in err
   assert _digests(root) == []
   assert 'assembled:' not in brief.read_text()
 

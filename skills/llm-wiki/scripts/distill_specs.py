@@ -238,8 +238,14 @@ def seen_keys_by_file(briefs):
 # the full validating parser (same signature, superset behavior).
 ENTRY_RE = re.compile(r'^- \[([ x])\] \[([a-z])-(\d{2,})\] (.+)$')
 FIELD_RE = re.compile(r'^  (kind|at|excerpt|claim|note): ?(.*)$')
-ALSO_RE = re.compile(r'^  \(also (.+?)(?:' + SEP
-                     + r'sha: ([0-9a-f]{7,40}))?\)$')
+# Capture the whole parenthesized body; parse_brief splits off the sha on
+# the LAST `· sha: ` marker, mirroring the at: field's rsplit. An optional
+# inline hex group here couldn't fail loud: a malformed `· sha: TBD` suffix
+# just fell out of the group and was silently swallowed into the location
+# capture (sha=None), so validate_entries never saw it. Shape-checking
+# lives in validate_entries against SHA_RE.
+ALSO_RE = re.compile(r'^  \(also (.+)\)$')
+SHA_RE = re.compile(r'[0-9a-f]{7,40}')  # git hash, short to full; lowercase hex
 
 
 def parse_brief(text):
@@ -273,7 +279,10 @@ def parse_brief(text):
       continue
     am = ALSO_RE.match(line)
     if am:
-      entry['also'].append((am.group(1), am.group(2)))
+      loc, sha = am.group(1), None
+      if SEP + 'sha: ' in loc:
+        loc, sha = loc.rsplit(SEP + 'sha: ', 1)
+      entry['also'].append((loc, sha))
       continue
     fm = FIELD_RE.match(line)
     if fm:
@@ -317,6 +326,15 @@ def validate_entries(entries, errors):
     if not e['ticked']:
       continue
     f = e['fields']
+    # The primary-sha shape gate below can't reach (also …) locations:
+    # their shas live in e['also'] tuples, not f['sha']. Same echo rule
+    # (spec §4.2) for every recorded sha — but sha-less also lines are
+    # legitimate grammar (pilot q-02), so only a present-but-malformed sha
+    # errors. Checked before the q branch: q entries carry also lines
+    # through render_digest_entry too.
+    for loc, sha in e['also']:
+      if sha is not None and not SHA_RE.fullmatch(sha):
+        errors.append(f'{e["id"]}: also sha is not a commit hash')
     if e['prefix'] == 'q':
       for req in ('at', 'claim'):
         if not f.get(req):
@@ -330,9 +348,9 @@ def validate_entries(entries, errors):
         errors.append(f'{e["id"]}: missing {req}')
     # Final-review finding 2: sha presence alone doesn't enforce the echo
     # rule (spec §4.2) -- `sha: TBD` passes the loop above and would ship as
-    # `basis: git:TBD`. Mirror ALSO_RE's hex-sha shape (lowercase: git short
-    # hashes are lowercase hex).
-    if f.get('sha') and not re.fullmatch(r'[0-9a-f]{7,40}', f['sha']):
+    # `basis: git:TBD`. SHA_RE is the one shape both this gate and the
+    # also-line gate above enforce.
+    if f.get('sha') and not SHA_RE.fullmatch(f['sha']):
       errors.append(f'{e["id"]}: sha is not a commit hash')
     if f.get('kind') and f['kind'] != KINDS[e['prefix']]:
       errors.append(f'{e["id"]}: kind {f["kind"]} does not match prefix '
