@@ -3,9 +3,11 @@
 The never-clobber contract is the safety-critical part, so it is what these
 tests pin down: a plain run and a --force run must both leave every piece of
 user content and the seed-once SCHEMA.md byte-for-byte untouched, and --force
-must refresh only the two managed scripts.
+must refresh only the managed scripts.
 '''
 import filecmp
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -190,3 +192,37 @@ def test_incomplete_bundle_refuses_before_writing(tmp_path, monkeypatch):
   root = tmp_path / 'wiki'
   assert bw.main([str(root)]) == 1
   assert not root.exists()
+
+
+# --- specs-harvest extension (specs-harvest framework spec R5/R6) ------------
+
+def test_bootstrap_installs_distill_specs_and_raw_specs_dir(tmp_path):
+  root = tmp_path / 'wiki'
+  assert bw.main([str(root)]) == 0
+  assert (root / 'scripts/distill_specs.py').is_file()
+  assert (root / 'raw/specs/.gitkeep').is_file()
+
+
+def test_seeded_schema_contains_specs_harvest_contract(tmp_path):
+  '''Template parity (spec §9): a bootstrapped root inherits the new
+  sections without hand edits.'''
+  root = tmp_path / 'wiki'
+  assert bw.main([str(root)]) == 0
+  schema = (root / 'SCHEMA.md').read_text()
+  assert 'schema-version: 2' in schema
+  assert '## Specs-harvest briefs and digests' in schema
+  assert 'raw/specs/' in schema
+  assert '`raw/sessions/` or `raw/specs/`' in schema
+  assert '- [x] [d-01]' in schema  # the brief entry grammar is codified
+
+
+def test_installed_distill_specs_runs_beside_its_sibling(tmp_path):
+  '''The sibling import (distill_specs -> distill_sessions) must work from
+  an installed wiki root, not just the bundle dir.'''
+  root = tmp_path / 'wiki'
+  assert bw.main([str(root)]) == 0
+  proc = subprocess.run(
+    [sys.executable, str(root / 'scripts/distill_specs.py'), '--help'],
+    capture_output=True, text=True)
+  assert proc.returncode == 0
+  assert 'inventory' in proc.stdout and 'assemble' in proc.stdout

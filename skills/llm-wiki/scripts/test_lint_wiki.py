@@ -358,3 +358,107 @@ def test_openai_key_anchor_ignores_hyphenated_prose_but_still_catches_keys(tmp_p
                  for f in findings)
   assert any(f[0] == 'ERROR' and f[1] == keys_rel and 'secret' in f[2].lower()
              for f in findings)
+
+
+# --- specs-harvest extension (specs-harvest framework spec R4) ---------------
+
+def write_spec_digest(root, name, text):
+  d = root / 'raw/specs'
+  d.mkdir(parents=True, exist_ok=True)
+  (d / name).write_text(text)
+
+
+PILOTED_DIGEST = '''---
+source: specs-harvest
+repo: bls-stats
+repo_head: ad8abe0
+date: 2026-07-24
+files: 5
+captures: 2
+open_questions: 1
+brief: reports/harvest-bls-stats-2026-07-24.md
+---
+
+Ground-truth entries for the capture notes in wiki/sources/x.md.
+
+[d-01] Flat files primary; BLS API v2 demoted to utility
+at: specs/completed/bls-stats-architecture.md §6.1 · sha: 1d26d71
+excerpt: "The BLS API v2 cannot carry full-universe daily increments"
+
+[g-05] LABSTAT files: space-padded headers and M13 annual rows
+at: specs/plans/completed/1-bls-stats-architecture.md L2611 · sha: 50e0f52
+  (also specs/completed/audit_5-7-26.md C-2 · sha: 168da46)
+excerpt: "rename(lambda c: c.strip())"
+note: dedicated fix commit
+
+[q-01] QCEW routine print count
+at: specs/completed/bls-stats-architecture.md §12.3
+The revision lifecycle is an unverified data-source fact.
+'''
+
+
+def test_piloted_specs_digest_at_lines_pass_clean(tmp_path):
+  root = make_wiki(tmp_path)
+  write_spec_digest(root, '2026-07-24-bls-stats-specs-abcd1234.md',
+                    PILOTED_DIGEST)
+  assert [f for f in lint_wiki.run_checks(root) if f[0] == 'ERROR'] == []
+
+
+def test_secret_in_raw_specs_is_error(tmp_path):
+  root = make_wiki(tmp_path)
+  write_spec_digest(root, 'leak.md', 'tok ghp_' + 'A' * 36 + '\n')
+  assert any(f[0] == 'ERROR' and 'secret' in f[2]
+             and f[1] == 'raw/specs/leak.md'
+             for f in lint_wiki.run_checks(root))
+
+
+def test_decision_entry_without_sha_is_error(tmp_path):
+  root = make_wiki(tmp_path)
+  write_spec_digest(root, 'bad.md',
+                    '[d-01] Missing basis\nat: specs/a.md §1\nexcerpt: "x"\n')
+  assert any(f[0] == 'ERROR' and '[d-01]' in f[2] and 'basis' in f[2]
+             for f in lint_wiki.run_checks(root))
+
+
+def test_non_decision_entry_without_sha_is_not_basis_error(tmp_path):
+  root = make_wiki(tmp_path)
+  write_spec_digest(root, 'q.md',
+                    '[q-01] Open question\nat: specs/a.md §12.3\nProse.\n')
+  assert not any('basis' in f[2] for f in lint_wiki.run_checks(root))
+
+
+def test_kind_decision_line_in_raw_specs_needs_basis(tmp_path):
+  root = make_wiki(tmp_path)
+  write_spec_digest(root, 'k.md', 'kind: decision · turns: 3\n')
+  assert any(f[0] == 'ERROR' and 'basis' in f[2]
+             for f in lint_wiki.run_checks(root))
+
+
+def test_raw_specs_digest_without_source_page_is_backlog_info(tmp_path):
+  root = make_wiki(tmp_path)
+  write_spec_digest(root, '2026-07-24-r-specs-abcd1234.md',
+                    '[g-01] x\nat: specs/a.md §1 · sha: 1234567\n'
+                    'excerpt: "y"\n')
+  assert any(f[0] == 'INFO' and 'backlog' in f[2]
+             for f in lint_wiki.run_checks(root))
+
+
+def test_neighbor_entry_sha_does_not_satisfy_missing_entry(tmp_path):
+  '''Multi-capture digest: [d-01] carries a valid at:/sha: line, [d-02] does
+  not. The basis check must be scoped per-[d-NN]-block -- a neighboring
+  entry's sha must not bleed across and silently satisfy a different entry's
+  requirement.'''
+  root = make_wiki(tmp_path)
+  write_spec_digest(root, 'multi.md',
+                    '[d-01] Has basis\n'
+                    'at: specs/a.md §1 · sha: 1234567\n'
+                    'excerpt: "x"\n'
+                    '\n'
+                    '[d-02] Missing basis\n'
+                    'at: specs/b.md §2\n'
+                    'excerpt: "y"\n')
+  basis_findings = [f for f in lint_wiki.run_checks(root)
+                     if f[0] == 'ERROR' and 'basis' in f[2]]
+  assert len(basis_findings) == 1
+  assert any('[d-02]' in f[2] for f in basis_findings)
+  assert not any('[d-01]' in f[2] for f in basis_findings)

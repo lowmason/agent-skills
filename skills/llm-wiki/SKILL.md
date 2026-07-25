@@ -6,11 +6,13 @@ description: >
   say', 'wiki lint', 'verify <page>', 'file this into the wiki'; any reference
   to the research wiki, sampler literature notes, or nowcasting literature
   notes; a paper dropped into raw/ to process; and 'set up', 'bootstrap', or
-  'install the research wiki' on a new machine or for a second wiki root.
+  'install the research wiki' on a new machine or for a second wiki root; and
+  'harvest', 'harvest the specs', or turning a repo's specs/ corpus (specs,
+  plans, deferred items) into wiki captures.
 license: MIT
 metadata:
   author: Lowell Mason
-  version: "1.1"
+  version: "1.2"
 ---
 
 # llm-wiki
@@ -99,6 +101,36 @@ this skill stays generic — a second wiki can reuse it unchanged.
    capture against its cited turns (and, for `basis: git:<sha>`, the commit).
 3. All confirmed → flip to `status: verified`, append to `log.md`. Anything
    flagged → status unchanged; write flags to `reports/`.
+
+### harvest `<repo-path>` (specs → wiki)
+
+Turn a repo's `specs/` corpus (specs, completed specs, completed plans,
+deferred items) into a `raw/specs/` digest. Supervised; one repo at a time.
+
+1. Inventory (mechanical): `python3 $LLM_WIKI_ROOT/scripts/distill_specs.py
+   inventory <repo-path> --root $LLM_WIKI_ROOT` — walks `specs/`, seed-greps,
+   builds per-file SHA tables, lists previously-seen captures, and writes the
+   skeleton brief to `reports/harvest-<repo>-<date>.md` (`--help` for
+   `--only`, which batches large corpora into one accreting same-date brief).
+2. Extract: read each walked file WHOLE at the brief's pinned `repo_head` —
+   seed hits are prompts, not bounds. Append capture entries per the brief
+   grammar in `SCHEMA.md`. Hard rules: transferable or
+   mixed-with-standalone-claim content only; the proprietary stratum never
+   enters a brief; `deferred_items.md` yields open questions at most.
+3. Verify (independent adversarial pass, per file): excerpt verbatim by grep
+   at `repo_head`; basis sha confirmed as the *introducing* commit (follow
+   past mechanical renames; pickaxe when unsure); kind honest under the echo
+   rule (downgrade where unmet); challenge each boundary verdict. Amend
+   entries in place.
+4. Dedup: merge spec↔plan duplicates into one entry with multi-source `at:`
+   lines; drop items already in prior briefs or existing digests.
+5. Human ticks `[x]` — the `raw/` gate. Unticked entries stay in the brief
+   as the durable declined record.
+6. Assemble: `python3 $LLM_WIKI_ROOT/scripts/distill_specs.py assemble
+   <brief> --root $LLM_WIKI_ROOT` — validates, redacts, writes the digest,
+   stamps the brief, prints the source-page body. Then ingest the digest via
+   the normal flow (capture-note body; `q-NN` entries append to
+   `open-questions.md`).
 
 ## Attribution
 

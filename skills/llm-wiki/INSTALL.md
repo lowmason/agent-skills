@@ -55,9 +55,9 @@ machine). The root is the only required argument:
 python3 ~/.claude/skills/llm-wiki/scripts/bootstrap_wiki.py ~/work-wiki
 ```
 
-This scaffolds the skeleton, seeds `SCHEMA.md`, and installs `lint_wiki.py` and
-`distill_sessions.py` under `~/work-wiki/scripts/`. It is safe to re-run: it
-**never overwrites existing wiki content**.
+This scaffolds the skeleton, seeds `SCHEMA.md`, and installs `lint_wiki.py`,
+`distill_sessions.py`, and `distill_specs.py` under `~/work-wiki/scripts/`. It
+is safe to re-run: it **never overwrites existing wiki content**.
 
 To seed topic folders for this wiki's own subjects (instead of the personal
 default, which starts with no topic folders), add `--topic` once per subject:
@@ -80,7 +80,7 @@ python3 "$LLM_WIKI_ROOT/scripts/lint_wiki.py" "$LLM_WIKI_ROOT"
 
 The lint must print `0 errors, 0 warnings, 0 info` and exit 0 — a freshly
 bootstrapped wiki is clean from the first run. The skill is now operational:
-`ingest`, `query`, `lint`, and `verify` all work against this root.
+`ingest`, `query`, `lint`, `verify`, and `harvest` all work against this root.
 
 > **Export `LLM_WIKI_ROOT` in every session.** Without it the skill falls back
 > to `~/research-wiki`; on a machine that has no such directory the skill will

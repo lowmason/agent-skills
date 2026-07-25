@@ -1,13 +1,13 @@
 '''Scaffold or refresh a research-wiki root and install its runtime scripts.
 
 Creates the wiki skeleton (the directories and structural files lint_wiki.py
-requires), seeds SCHEMA.md from this skill's template, and installs the two
-runtime scripts (lint_wiki.py, distill_sessions.py) into <root>/scripts/. It is
-idempotent and never overwrites or deletes wiki content: only skill-owned code
-is ever refreshed, and only with --force; SCHEMA.md is seeded once and is never
-overwritten. The root is a required argument with no default, so a wiki is only
-ever written where you name it -- personal and work wikis stay separate roots
-whose content never mixes.
+requires), seeds SCHEMA.md from this skill's template, and installs the three
+runtime scripts (lint_wiki.py, distill_sessions.py, distill_specs.py) into
+<root>/scripts/. It is idempotent and never overwrites or deletes wiki content:
+only skill-owned code is ever refreshed, and only with --force; SCHEMA.md is
+seeded once and is never overwritten. The root is a required argument with no
+default, so a wiki is only ever written where you name it -- personal and work
+wikis stay separate roots whose content never mixes.
 
 Usage:
   python3 bootstrap_wiki.py <root>                  # scaffold / top up a wiki
@@ -45,27 +45,30 @@ _SCHEMA_VERSION_RE = re.compile(r'schema-version:\s*(\d+)')
 # Runtime scripts installed into <root>/scripts/. A closed allowlist, never a
 # glob: a glob would drag bootstrap_wiki.py and the test files into the wiki
 # root. These are the only files ever overwritten, and only under --force.
-MANAGED_SCRIPTS = ('lint_wiki.py', 'distill_sessions.py')
+MANAGED_SCRIPTS = ('lint_wiki.py', 'distill_sessions.py', 'distill_specs.py')
 SCHEMA_TEMPLATE = 'schema-template.md'
 
 # Load-bearing directories lint_wiki.py hardcodes: wiki/, wiki/sources/, raw/,
-# raw/sessions/, the special-cased assets dir, reports/, scripts/.
+# raw/sessions/, raw/specs/, the special-cased assets dir, reports/, scripts/.
 WIKI_DIRS = (
-  'raw', 'raw/assets', 'raw/sessions', 'reports', 'scripts', 'wiki',
-  'wiki/sources',
+  'raw', 'raw/assets', 'raw/sessions', 'raw/specs', 'reports', 'scripts',
+  'wiki', 'wiki/sources',
 )
 # Empty leaf dirs need a 0-byte .gitkeep so git carries them; wiki/ is held by
-# its structural files and scripts/ by the two installed scripts.
-GITKEEP_DIRS = ('raw/assets', 'raw/sessions', 'reports', 'wiki/sources')
+# its structural files and scripts/ by the three installed scripts.
+GITKEEP_DIRS = (
+  'raw/assets', 'raw/sessions', 'raw/specs', 'reports', 'wiki/sources',
+)
 
 # The concrete set self-verification asserts on disk before it trusts a lint.
 REQUIRED_DIRS = (
-  'raw', 'raw/assets', 'raw/sessions', 'reports', 'scripts', 'wiki',
-  'wiki/sources',
+  'raw', 'raw/assets', 'raw/sessions', 'raw/specs', 'reports', 'scripts',
+  'wiki', 'wiki/sources',
 )
 REQUIRED_FILES = (
   'wiki/index.md', 'wiki/log.md', 'wiki/open-questions.md', 'SCHEMA.md',
   'scripts/lint_wiki.py', 'scripts/distill_sessions.py',
+  'scripts/distill_specs.py',
 )
 
 # Structural + infra seeds, byte-for-byte from the reference wiki except: the
@@ -318,7 +321,7 @@ def _version_note():
     print(f'WARN: bootstrap is running under Python {sys.version_info.major}.'
           f'{sys.version_info.minor} ({sys.executable}); the installed wiki '
           f'scripts target Python >= 3.12 -- run lint_wiki.py / '
-          f'distill_sessions.py with a 3.12+ interpreter.')
+          f'distill_sessions.py / distill_specs.py with a 3.12+ interpreter.')
 
 
 def _footer(root):
