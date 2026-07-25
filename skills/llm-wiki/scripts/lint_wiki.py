@@ -213,21 +213,45 @@ BASIS_OK_RE = re.compile(r'basis:\s*(user-turn|git:[0-9a-f]{7,40})')
 
 
 def check_sessions(root):
+  '''Secret + decision-basis backstop over the distilled raw classes:
+  raw/sessions/ (session digests, spec §16.3) and raw/specs/ (specs-harvest
+  digests, specs-harvest framework §4.3).'''
   findings = []
-  sess_dir = root / 'raw/sessions'
-  if not sess_dir.exists():
-    return findings
-  for p in sorted(sess_dir.glob('*.md')):
-    rel = p.relative_to(root)
-    text = p.read_text()
-    for cls, pat in SECRET_PATTERNS:
-      if pat.search(text):
-        findings.append(('ERROR', str(rel), f'secret: {cls}-shaped string present'))
-    for m in DECISION_META_RE.finditer(text):
-      if not BASIS_OK_RE.search(m.group(1)):
-        findings.append(
-          ('ERROR', str(rel),
-           'basis: kind: decision needs basis: user-turn or git:<sha>'))
+  for sub in ('raw/sessions', 'raw/specs'):
+    class_dir = root / sub
+    if not class_dir.exists():
+      continue
+    for p in sorted(class_dir.glob('*.md')):
+      rel = p.relative_to(root)
+      text = p.read_text()
+      for cls, pat in SECRET_PATTERNS:
+        if pat.search(text):
+          findings.append(
+            ('ERROR', str(rel), f'secret: {cls}-shaped string present'))
+      for m in DECISION_META_RE.finditer(text):
+        if not BASIS_OK_RE.search(m.group(1)):
+          findings.append(
+            ('ERROR', str(rel),
+             'basis: kind: decision needs basis: user-turn or git:<sha>'))
+      if sub == 'raw/specs':
+        findings += _check_spec_decisions(text, rel)
+  return findings
+
+
+# Specs-harvest echo rule: a [d-NN] ground-truth entry's basis is its
+# introducing commit — its block must carry `· sha: <hex>` on an at: line.
+SPEC_ENTRY_SPLIT_RE = re.compile(r'\n(?=\[[a-z]-\d)')
+SPEC_AT_SHA_RE = re.compile(r'^at: .+ · sha: [0-9a-f]{7,40}(?:\s|$)', re.M)
+
+
+def _check_spec_decisions(text, rel):
+  findings = []
+  for block in SPEC_ENTRY_SPLIT_RE.split(text):
+    m = re.match(r'\[(d-\d+)\]', block)
+    if m and not SPEC_AT_SHA_RE.search(block):
+      findings.append(
+        ('ERROR', str(rel),
+         f'basis: [{m.group(1)}] needs an at: line with sha: <sha>'))
   return findings
 
 
