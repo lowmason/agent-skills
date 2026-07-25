@@ -26,6 +26,9 @@ license.
   committed).
 - Uncredited-adaptation risks: files whose content or git history points
   at an external source absent from NOTICE.
+- Cited-but-not-redistributed works (books, papers): confirm the
+  citation-only invariant holds for each — summaries in original wording,
+  no bundled copies.
 
 Report findings grouped by layer, each with file references and a
 proposed resolution; end with an overall verdict.
