@@ -191,8 +191,14 @@ Two layers, degrading gracefully by repo:
 - **Explore-override probe**: one `claude -p` probe (plan-15 Task 8 style)
   on the installed binary confirming the custom `Explore` shadows the
   built-in (e.g. its dispatch runs on Haiku / uses the custom output
-  contract). This is the spec's riskiest assumption; record the probe
-  result in the plan.
+  contract). **RUN 2026-07-25, positive, on 2.1.219** — a sentinel-bearing
+  `~/.claude/agents/Explore.md` shadowed both the Agent-tool listing (the
+  parent quoted the sentinel description verbatim) and the dispatch path
+  (the dispatched agent's report opened with the sentinel line and used the
+  custom `path:line` output contract); probe file removed afterward. The
+  `model: haiku` pin follows from file resolution and was not independently
+  observed. Mechanism is version-sensitive: re-probe if the binary has
+  moved when the plan executes.
 - Fixtures:
   - `security-auditor` on a scratch diff with a planted secret and an
     injection pattern — must find both, with `file:line`.
