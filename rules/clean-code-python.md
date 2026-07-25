@@ -23,4 +23,4 @@ code outside the task is gated by the clean-coder skill.
   arrays, never mutate inputs (F2).
 - Named constants over magic numbers (G25): HTTP codes, retry counts,
   thresholds. ruff PLR2004 flags these mechanically where configured.
-- Target Python 3.13.
+- Target Python 3.12.
