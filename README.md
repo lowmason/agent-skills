@@ -17,8 +17,8 @@ Skills are the center of the repo, but it also carries the other Claude Code use
 ```
 agent-skills/
 ├── skills/      # agent skills, one directory per skill (the tables below)
-├── agents/      # subagent definitions (code-reviewer, task-reviewer — see Agents below)
-├── commands/    # slash commands (/deferred — see Commands below)
+├── agents/      # subagent definitions (reviewers + security/search/test/debug/docs — see Agents below)
+├── commands/    # slash commands (/deferred, /fix-issue, /license-audit — see Commands below)
 ├── hooks/       # deterministic gates for Python/uv work repos (see Hooks below)
 ├── rules/       # path-scoped rule files, loaded via .claude/rules/ (see Rules below)
 ├── build/       # citation-verification tooling for recommend-probabilistic-model
@@ -87,6 +87,11 @@ Subagent definitions live in [`agents/`](agents/) and install into `~/.claude/ag
 |-------|-------------|
 | [`code-reviewer`](agents/code-reviewer.md) | Read-only reviewer for diff-based reviews against a plan, spec, or requirements — dispatched by `requesting-code-review`, and by `subagent-driven-development` for its final whole-branch review (per-task reviews go to `task-reviewer`). No edit tools; inspects history via `git show`/`git diff` and reports Critical/Important/Minor findings with a merge verdict. |
 | [`task-reviewer`](agents/task-reviewer.md) | Read-only task-scoped reviewer for `subagent-driven-development`'s per-task gate — checks one task's diff against its brief for spec compliance and code quality, returning both verdicts. Carries the full review contract so dispatches only need the task's brief, report, and diff paths. |
+| [`security-auditor`](agents/security-auditor.md) | Read-only security reviewer for a diff, branch, or repo — injection, committed secrets and credential handling, insecure deserialization, TLS verification, dependency risks. Severity-ranked findings with file:line and concrete remediation; Opus-pinned like `code-reviewer`. |
+| [`explore`](agents/explore.md) | ⚠ Haiku-pinned **override of the built-in `Explore` agent** — same read-only fan-out-search contract, plus a structured output contract (`path:line` refs with relevance notes, no file dumps). The frontmatter `name: Explore` (capital E) is what shadows the built-in — resolution keys on the name field, case-sensitively; shadowing is version-sensitive (probed on Claude Code 2.1.219), so re-probe after binary updates. |
+| [`test-runner`](agents/test-runner.md) | Runs one test suite in isolation and reports complete failure output — full tracebacks never truncated, warnings surfaced as findings, no diagnosis. The dispatch supplies the exact command; it never guesses a runner. Haiku-pinned. |
+| [`debugger`](agents/debugger.md) | Fixes one self-contained, reproducible failure in an isolated context — reproduce → isolate the root cause → failing test → minimal fix — and leaves all changes uncommitted for review. Sonnet-pinned. |
+| [`docs-writer`](agents/docs-writer.md) | Writes grounded technical docs in an isolated context — READMEs, analysis writeups (methods → results → caveats), docstrings under the clean-code comment discipline, general guides. Reads the code first, flags unverified claims, never commits. Sonnet-pinned. |
 
 ## Commands
 
@@ -95,6 +100,8 @@ Slash commands live in [`commands/`](commands/) and install into `~/.claude/comm
 | Command | Description |
 |---------|-------------|
 | [`/deferred`](commands/deferred.md) | Triage `specs/deferred_items.md` in the current project: group unticked items by theme, classify actionable-now vs still-blocked, and propose which deserve promotion to a new spec. Read-only — ticking stays with the plan-completion protocol. |
+| [`/fix-issue`](commands/fix-issue.md) | Fix a GitHub issue end-to-end: `gh issue view` → classify (bugs only — feature-shaped issues route to `brainstorming`) → fix branch → systematic-debugging + TDD + verification → PR linking `Fixes #N`. Stops gracefully without `gh` or a GitHub remote. |
+| [`/license-audit`](commands/license-audit.md) | Audit the current repo's licensing and attribution: run its mechanical gates where present, then judgment checks — NOTICE ↔ artifact sync, LICENSE consistency, copyleft/NC compatibility flags, uncredited-adaptation risks. Read-only. |
 
 ## Hooks
 
@@ -174,6 +181,12 @@ Subagent definitions install the same way, into `~/.claude/agents/` (one symlink
 ```bash
 mkdir -p ~/.claude/agents
 ln -s ~/agent-skills/agents/code-reviewer.md ~/.claude/agents/code-reviewer.md
+ln -s ~/agent-skills/agents/task-reviewer.md ~/.claude/agents/task-reviewer.md
+ln -s ~/agent-skills/agents/security-auditor.md ~/.claude/agents/security-auditor.md
+ln -s ~/agent-skills/agents/explore.md ~/.claude/agents/explore.md
+ln -s ~/agent-skills/agents/test-runner.md ~/.claude/agents/test-runner.md
+ln -s ~/agent-skills/agents/debugger.md ~/.claude/agents/debugger.md
+ln -s ~/agent-skills/agents/docs-writer.md ~/.claude/agents/docs-writer.md
 ```
 
 ### Commands
@@ -183,6 +196,8 @@ Slash commands install the same way, into `~/.claude/commands/` (one symlink per
 ```bash
 mkdir -p ~/.claude/commands
 ln -s ~/agent-skills/commands/deferred.md ~/.claude/commands/deferred.md
+ln -s ~/agent-skills/commands/fix-issue.md ~/.claude/commands/fix-issue.md
+ln -s ~/agent-skills/commands/license-audit.md ~/.claude/commands/license-audit.md
 ```
 
 ### Hooks
