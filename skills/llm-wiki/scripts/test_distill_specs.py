@@ -629,6 +629,14 @@ def test_missing_sha_is_reported():
   assert any('missing sha' in err for err in errors)
 
 
+def test_sha_placeholder_is_reported():
+  '''Final-review finding 2: `sha: TBD` is present (passes the missing-field
+  check) but is not a commit hash — the echo rule (spec §4.2) requires a real
+  introducing SHA, not a placeholder that would ship as `basis: git:TBD`.'''
+  errors = _validated(_entry(sha='TBD'))
+  assert any('sha is not a commit hash' in err for err in errors)
+
+
 def test_kind_prefix_mismatch_is_reported():
   errors = _validated(_entry(eid='d-01', kind='gotcha'))
   assert any('does not match prefix' in err for err in errors)
@@ -828,6 +836,7 @@ def test_each_validation_class_exits_1_and_writes_nothing(tmp_path, capsys):
   bad_cases = [
     dict(ok, excerpt=''),                  # missing field
     dict(ok, sha=''),                      # missing sha (echo rule)
+    dict(ok, sha='TBD'),                   # sha present but not a commit hash
     dict(ok, kind='gotcha'),               # kind does not match prefix
     dict(ok, boundary='global'),           # unknown boundary
     dict(ok, boundary='code-coupled'),     # ticked code-coupled
@@ -840,6 +849,24 @@ def test_each_validation_class_exits_1_and_writes_nothing(tmp_path, capsys):
     assert _digests(case_root) == [], case
     assert 'assembled:' not in brief.read_text(), case
   capsys.readouterr()
+
+
+def test_sha_placeholder_end_to_end_reports_and_writes_nothing(tmp_path, capsys):
+  '''Final-review finding 2: a ticked capture with `sha: TBD` must fail the
+  CLI gate like any other validation failure (spec §9) -- today it parses as
+  present and assembles, shipping `basis: git:TBD` on the source page.'''
+  repo, root = make_repo(tmp_path), make_root(tmp_path)
+  entry = (f'- [x] [g-01] Placeholder sha\n'
+           f'  kind: gotcha · boundary: transferable\n'
+           f'  at: specs/completed/a-spec.md §1 · sha: TBD\n'
+           f'  excerpt: "x"\n'
+           f'  claim: A claim.\n')
+  brief = _write_brief(root, repo, entry)
+  assert assemble(brief, root) == 1
+  err = capsys.readouterr().err
+  assert 'brief-error: g-01: sha is not a commit hash' in err
+  assert _digests(root) == []
+  assert 'assembled:' not in brief.read_text()
 
 
 def test_no_ticked_entries_is_error(tmp_path, capsys):
@@ -877,6 +904,45 @@ def test_planted_secret_never_reaches_digest_or_stdout(tmp_path, capsys):
   out = capsys.readouterr().out
   assert secret not in digest and secret not in out
   assert '[REDACTED:openai-key]' in digest
+
+
+def test_planted_secret_in_title_at_and_also_never_reaches_sinks(tmp_path, capsys):
+  '''Final-review finding 1: render_digest_entry/render_source_body redacted
+  excerpt/claim/note but emitted title/at/(also …) raw. The digest has the
+  lint backstop (spec §7); the stdout body becomes wiki/sources/<stem>.md
+  with no mechanical secret check downstream, so a secret in TITLE or an
+  at:/(also …) locator reached the source page unredacted. Plant the secret
+  ONLY in title/at/also (excerpt/claim/note stay clean) so this cannot pass
+  for the wrong reason via the already-working redaction paths.'''
+  repo, root = make_repo(tmp_path), make_root(tmp_path)
+  title_secret = 'sk-' + 'A' * 24
+  at_secret = 'sk-' + 'B' * 24
+  also_secret = 'sk-' + 'C' * 24
+  q_at_secret = 'sk-' + 'D' * 24
+  sha = _sha(repo)
+  entry = (f'- [x] [g-01] Leaky {title_secret}\n'
+           f'  kind: gotcha · boundary: transferable\n'
+           f'  at: specs/completed/a-spec.md {at_secret} §1 · sha: {sha}\n'
+           f'  (also specs/completed/a-spec.md {also_secret} §2 · sha: {sha})\n'
+           f'  excerpt: "clean excerpt"\n'
+           f'  claim: A clean claim.\n'
+           # q entries also carry an `at` locator through render_digest_entry's
+           # q branch (spec §5.2); deferred_items.md is repo-local backlog
+           # text, the file a stray credential is most plausible in.
+           f'- [x] [q-01] Open thing\n'
+           f'  at: specs/deferred_items.md {q_at_secret} L3\n'
+           f'  claim: A clean question.\n')
+  brief = _write_brief(root, repo, entry)
+  assert assemble(brief, root) == 0
+  digest = _digests(root)[0].read_text()
+  out = capsys.readouterr().out
+  assert title_secret not in digest and title_secret not in out
+  assert at_secret not in digest and at_secret not in out
+  assert q_at_secret not in digest  # q entries don't reach stdout either way
+  # (also …) locations are digest-only (render_source_body drops them)
+  assert also_secret not in digest
+  assert digest.count('[REDACTED:openai-key]') == 4
+  assert out.count('[REDACTED:openai-key]') == 2
 
 
 def test_drift_warns_but_assembles(tmp_path, capsys):

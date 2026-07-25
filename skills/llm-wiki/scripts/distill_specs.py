@@ -328,6 +328,12 @@ def validate_entries(entries, errors):
     for req in ('kind', 'boundary', 'at', 'sha', 'excerpt', 'claim'):
       if not f.get(req):
         errors.append(f'{e["id"]}: missing {req}')
+    # Final-review finding 2: sha presence alone doesn't enforce the echo
+    # rule (spec §4.2) -- `sha: TBD` passes the loop above and would ship as
+    # `basis: git:TBD`. Mirror ALSO_RE's hex-sha shape (lowercase: git short
+    # hashes are lowercase hex).
+    if f.get('sha') and not re.fullmatch(r'[0-9a-f]{7,40}', f['sha']):
+      errors.append(f'{e["id"]}: sha is not a commit hash')
     if f.get('kind') and f['kind'] != KINDS[e['prefix']]:
       errors.append(f'{e["id"]}: kind {f["kind"]} does not match prefix '
                     f'{e["prefix"]}')
@@ -389,14 +395,21 @@ def _extend_brief(path, repo, head, files, seen):
 
 def render_digest_entry(e):
   '''One ground-truth digest block (pilot format). Redaction on everything
-  that carries source text — the lint extension is only the backstop.'''
+  that carries source text — the lint extension is only the backstop.
+  Final-review finding 1: title/at/(also …) carry free-text repo content too
+  (a spec section heading can itself embed a secret) -- redact() them here
+  same as excerpt/claim/note (spec §7: redact() at assemble). kind/boundary/
+  sha are left raw: closed vocabulary or shape-validated, never source text.'''
   f = e['fields']
-  lines = [f'[{e["id"]}] {e["title"]}']
+  title = redact(e['title'])[0]
+  at = redact(f['at'])[0]
+  lines = [f'[{e["id"]}] {title}']
   if e['prefix'] == 'q':
-    lines.append(f'at: {f["at"]}')
+    lines.append(f'at: {at}')
   else:
-    lines.append(f'at: {f["at"]}{SEP}sha: {f["sha"]}')
+    lines.append(f'at: {at}{SEP}sha: {f["sha"]}')
   for loc, sha in e['also']:
+    loc = redact(loc)[0]
     lines.append(f'  (also {loc}{SEP}sha: {sha})' if sha
                  else f'  (also {loc})')
   if e['prefix'] == 'q':
@@ -454,14 +467,19 @@ def render_source_body(entries, repo_name):
   '''Capture-note body for the wiki/sources page (stdout; the agent wraps
   frontmatter and runs the normal ingest op — this script never writes under
   wiki/). q entries ride in the digest only; positions drop a trailing (L…)
-  detail; (also …) locations are digest-only (spec §5.3, pilot).'''
+  detail; (also …) locations are digest-only (spec §5.3, pilot). Final-review
+  finding 1: this stdout body has no mechanical secret check downstream (the
+  digest at least has the lint backstop), so title/at need redact() same as
+  claim -- not just the digest side.'''
   blocks = []
   for e in entries:
     if not e['ticked'] or e['prefix'] == 'q':
       continue
     f = e['fields']
     pos = re.sub(r'\s*\(L[0-9–-]+\)$', '', f['at'])
-    blocks.append(f'### [{e["id"]}] {e["title"]}\n'
+    title = redact(e['title'])[0]
+    pos = redact(pos)[0]
+    blocks.append(f'### [{e["id"]}] {title}\n'
                   f'kind: {f["kind"]}{SEP}at: {repo_name} {pos}{SEP}'
                   f'basis: git:{f["sha"]}\n'
                   + redact(f['claim'])[0])
