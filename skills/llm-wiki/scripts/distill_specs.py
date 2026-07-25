@@ -89,15 +89,25 @@ SEED_PATTERNS = (
                         re.I | re.M)),
   ('completion', re.compile(r'^\*\*Status: COMPLETE.*$', re.M)),
   ('deviation', re.compile(r'^\s*> Deviation:.*$', re.M)),
-  ('deferred-item', re.compile(r'^- \[[ x]\] .*$', re.M)),
 )
 
+# deferred-item means deferred_items.md entries (spec §5.1), not any markdown
+# checkbox: plan files under specs/plans/completed/ carry 50-100 step-tracking
+# checkboxes each, which would otherwise drown the signal (finding 1). Kept
+# separate from SEED_PATTERNS so seed_hits can gate it by is_deferred.
+DEFERRED_ITEM_PATTERN = ('deferred-item', re.compile(r'^- \[[ x]\] .*$', re.M))
 
-def seed_hits(text):
+
+def seed_hits(text, is_deferred=False):
   '''(line_no, label, redacted line ≤120 chars) per seed match, line order.
-  Redacting here is belt-and-braces: briefs live in reports/ on disk.'''
+  is_deferred=True (only for DEFERRED_FILE text) additionally applies the
+  deferred-item pattern. Redacting here is belt-and-braces: briefs live in
+  reports/ on disk.'''
+  patterns = SEED_PATTERNS
+  if is_deferred:
+    patterns += (DEFERRED_ITEM_PATTERN,)
   hits = []
-  for label, pat in SEED_PATTERNS:
+  for label, pat in patterns:
     for m in pat.finditer(text):
       line_no = text.count('\n', 0, m.start()) + 1
       hits.append((line_no, label, redact(m.group(0).strip())[0][:120]))
@@ -194,7 +204,7 @@ def cmd_inventory(args):
     body.append('')
   for rel in files:
     text = (repo / rel).read_text()
-    body += render_file_section(rel, [], seed_hits(text), [])
+    body += render_file_section(rel, [], seed_hits(text, rel == DEFERRED_FILE), [])
   _atomic_write(path, '\n'.join(body).rstrip('\n') + '\n')
   print(f'wrote {path}')
   return 0

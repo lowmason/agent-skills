@@ -276,7 +276,8 @@ Delta merge/upsert was rejected for idempotent re-runs.
 
 
 def test_seed_hits_every_pattern_class():
-  labels = {label for _, label, _ in dsp.seed_hits(SEED_DOC)}
+  # deferred-item only fires for deferred_items.md text (finding 1, spec §5.1)
+  labels = {label for _, label, _ in dsp.seed_hits(SEED_DOC, is_deferred=True)}
   assert labels == {'decision', 'rejected', 'recorded', 'tldr', 'policy',
                     'completion', 'deviation', 'deferred-item'}
 
@@ -299,3 +300,59 @@ def test_brief_contains_seed_hits_or_none_marker(tmp_path):
   text = (root / 'reports/harvest-repo-2026-07-24.md').read_text()
   assert 'decision: **Decision:** use X over Y.' in text
   assert 'completion: **Status: COMPLETE (2026-01-01)**' in text
+
+
+def test_seeds_section_renders_none_marker_when_no_hits(tmp_path):
+  '''render_file_section's "- none" branch (finding 2): a walked file with
+  zero seed-pattern matches must render `seeds:\n- none`, not an empty list
+  or no section at all.'''
+  root = make_root(tmp_path)
+  repo = tmp_path / 'quiet-repo'
+  (repo / 'specs').mkdir(parents=True)
+  (repo / 'specs/only.md').write_text('# Only\n\nJust some plain prose.\n')
+  _git(repo, 'init', '-q', '-b', 'main')
+  _git(repo, 'add', '.')
+  _git(repo, 'commit', '-qm', 'quiet file, no seed hits')
+  assert inventory(repo, root) == 0
+  text = (root / 'reports/harvest-quiet-repo-2026-07-24.md').read_text()
+  section = text[text.index('## specs/only.md'):]
+  assert 'seeds:\n- none' in section
+
+
+def test_deferred_item_pattern_ignored_outside_deferred_file():
+  '''spec §5.1: deferred-item means deferred_items.md entries, not any
+  markdown checkbox -- plan files carry dozens of step-tracking checkboxes
+  that would otherwise drown the signal (finding 1).'''
+  text = '# Plan\n\n- [ ] step one\n- [x] step two\n'
+  labels = {label for _, label, _ in dsp.seed_hits(text)}
+  assert 'deferred-item' not in labels
+
+
+def test_deferred_item_pattern_applies_in_deferred_file():
+  text = '# Deferred items\n\n- [ ] later thing\n'
+  labels = {label for _, label, _ in dsp.seed_hits(text, is_deferred=True)}
+  assert 'deferred-item' in labels
+
+
+def test_deferred_item_restricted_to_deferred_file_end_to_end(tmp_path):
+  '''cmd_inventory wiring: a checkbox line in a plan file must not surface as
+  deferred-item, but the same line shape in deferred_items.md must (finding
+  1) -- the seed_hits unit tests alone don't pin the per-file wiring.'''
+  root = make_root(tmp_path)
+  repo = tmp_path / 'checkbox-repo'
+  (repo / 'specs/plans/completed').mkdir(parents=True)
+  (repo / 'specs/plans/completed/1-plan.md').write_text(
+    '# Plan\n\n- [x] step one\n- [ ] step two\n')
+  (repo / 'specs/deferred_items.md').write_text(
+    '# Deferred items\n\n- [ ] later thing\n')
+  _git(repo, 'init', '-q', '-b', 'main')
+  _git(repo, 'add', '.')
+  _git(repo, 'commit', '-qm', 'checkbox fixture')
+  assert inventory(repo, root) == 0
+  text = (root / 'reports/harvest-checkbox-repo-2026-07-24.md').read_text()
+  plan_start = text.index('## specs/plans/completed/1-plan.md')
+  deferred_start = text.index('## specs/deferred_items.md')
+  plan_section = text[plan_start:deferred_start]
+  deferred_section = text[deferred_start:]
+  assert 'deferred-item' not in plan_section
+  assert 'deferred-item' in deferred_section
