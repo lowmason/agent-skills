@@ -1,5 +1,11 @@
 # Five agents + two commands (roster expansion)
 
+**Status: COMPLETE (2026-07-25)** — implemented by
+[plan 17](../plans/completed/17-agents-and-commands-expansion.md); retired
+to `specs/completed/`. One post-approval amendment landed with user
+approval at the completion gate: `/license-audit` gained a Layer-2 bullet
+for cited-but-not-redistributed works (commit `a24d252`), beyond §7 below.
+
 Seven additions to the config repo, filtered from a deep-research pass
 (2026-07-24) over community catalogs and official Claude Code guidance, then
 scoped against the existing 28 skills: five subagent definitions
@@ -191,8 +197,11 @@ Two layers, degrading gracefully by repo:
 
 ## Verification
 
-- `build/check_frontmatter.py` and `build/check_provenance.py` pass; both
-  already lint `agents/*.md` and `commands/*.md`.
+- `build/check_frontmatter.py` and `build/check_provenance.py` pass.
+  (`check_frontmatter.py` lints `agents/*.md` and `commands/*.md`;
+  `check_provenance.py` covers `skills/` attribution and tracked binary
+  assets only — corrected at retirement; the approved original overstated
+  its scope.)
 - Discovery: all five agents resolvable by the Agent tool; `/fix-issue` and
   `/license-audit` appear as slash commands.
 - **Explore-override probe**: one `claude -p` probe (plan-15 Task 8 style)

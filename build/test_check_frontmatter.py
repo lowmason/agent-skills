@@ -132,3 +132,15 @@ def test_unknown_frontmatter_key_still_rejected(tmp_path):
     )
     errs = '\n'.join(check_skill(d))
     assert "unknown frontmatter key 'bogus-key'" in errs
+
+
+def test_agent_name_case_differs_from_filename_is_allowed(tmp_path):
+    # The Explore override: lowercase filename, capitalized frontmatter
+    # name (Claude Code resolves agent types by the name field alone,
+    # case-sensitively — the capital E is what shadows the built-in).
+    good = tmp_path / 'explore.md'
+    good.write_text(
+        '---\nname: Explore\ndescription: Search agent.\n'
+        'tools: Read, Grep, Glob, Bash\n---\nbody\n'
+    )
+    assert check_agent_file(good) == []

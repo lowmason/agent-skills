@@ -115,7 +115,11 @@ def check_agent_file(md: Path) -> list[str]:
     fm, errs = _parse_frontmatter(md)
     if fm is None:
         return errs
-    if fm.get('name') != md.stem:
+    # Case-insensitive: repo filenames stay lowercase, but agents/explore.md
+    # must carry name "Explore" — Claude Code resolves agent types by the
+    # frontmatter name alone, case-sensitively, and only the capitalized
+    # name shadows the built-in Explore agent (probed on 2.1.219).
+    if str(fm.get('name') or '').lower() != md.stem.lower():
         errs.append(f'{md}: name {fm.get("name")!r} does not match filename {md.stem!r}')
     if not (fm.get('description') or '').strip():
         errs.append(f'{md}: missing description')
