@@ -251,3 +251,17 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       7aa454f's body). Revisit if the always-on Python guardrails are wanted across work
       repos; mechanism is version-dependent, so re-probe on the then-current binary first
       (one `claude -p` probe against a scratch `probe.py`, per plan 15 Task 8 Step 5).
+
+## 16-llm-wiki-specs-harvest — 2026-07-25
+- [ ] Script-family hardening pass: unguarded `read_text()` in the walk loops and the unguarded per-file `sha_table()` `_git` call in `cmd_inventory` (skills/llm-wiki/scripts/distill_specs.py; same unguarded convention exists in distill_sessions.py / lint_wiki.py). Wrap in the house stderr+exit-1 style or settle the convention repo-wide.
+- [ ] `_extend_brief` never renders directory-presence `note:` lines — same divergence class as the fixed is_deferred bug; reachable when dir notes change between two same-date runs (distill_specs.py).
+- [ ] `files_walked:` header splice in `_extend_brief` assumes exactly one continuation line; a wrapping walk list would corrupt the header (distill_specs.py).
+- [ ] Ticked q-entries bypass the square-bracket claim check (the q branch `continue`s before the check in `validate_entries`); hoist the check + red test (distill_specs.py).
+- [ ] Brief missing `repo_path:` → `Path('')` → the drift check runs `git -C .` and warns about a foreign HEAD; should report "cannot check drift" instead (distill_specs.py).
+- [ ] Hermetic `(also …)` render test: digest-renders-it / source-body-omits-it is currently pinned only by @needs_pilot tests that skip on machines without /Users/lowell/research-wiki (test_distill_specs.py).
+- [ ] All-q ticked brief edge: stdout body is a bare newline while the digest preamble still points readers at a capture page that would have no captures (distill_specs.py).
+- [ ] Required digest header keys are read with hard `[]` in `cmd_assemble` — a hand-edited brief missing e.g. `date:` raises KeyError instead of a `brief-error:` line (the write-nothing contract still holds) (distill_specs.py).
+- [ ] `_repo_name` YAML-hostile residue: a zero-ASCII-word directory name containing `': '` still lands unquoted in the brief header (distill_specs.py).
+- [ ] Placeholder-less f-string in a test (`f'reports/harvest-wt-2026-07-24.md'`); fold into any future style sweep (test_distill_specs.py).
+- [x] Also-line sha shape gate (`ALSO_RE` swallowed a non-hex `(also … · sha:)` into the location text) → done post-merge in afa9af8.
+- [ ] Renamed spec files lose `previously seen` hinting (prior keys grouped by the old at:-path, looked up by the new walk path); agent-side dedup still reads the whole prior brief, so impact is weaker hints only — decide whether rename-following is worth building (distill_specs.py).

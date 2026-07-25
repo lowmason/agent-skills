@@ -1,5 +1,7 @@
 # llm-wiki specs-harvest framework Implementation Plan
 
+**Status: COMPLETE (2026-07-25)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Build the specs-harvest avenue — a `distill_specs.py` script (subcommands `inventory` and `assemble`), a `harvest` operation in the llm-wiki SKILL.md, and the contract extension (schema template + lint + bootstrap) that codifies the `raw/specs/` class, the `at:` capture locator, and the brief format — per `specs/llm-wiki-specs-harvest.md`.
@@ -178,6 +180,8 @@ The position drops a trailing ` (L…)` parenthetical (pilot: digest `Task 2 (L1
 
 ### Task 1: `distill_specs.py` skeleton — CLI, walk, hard errors, brief creation
 
+> Deviation: plan's dead 'slugify(...) or repo.name' fallback replaced by a local _repo_name() sanitizer; git guard extended to require the repo be its own 'rev-parse --show-toplevel' (parent-repo bypass closed; linked worktrees pinned by test).
+
 **Files:**
 - Create: `skills/llm-wiki/scripts/distill_specs.py`
 - Test: `skills/llm-wiki/scripts/test_distill_specs.py`
@@ -186,7 +190,7 @@ The position drops a trailing ` (L…)` parenthetical (pilot: digest `Task 2 (L1
 - Consumes: `from distill_sessions import redact, slugify` — `redact(text) -> (text, counts)` (note the 2-tuple), `slugify(text, max_words=6) -> str`.
 - Produces (later tasks rely on these exact names): `main(argv=None) -> int`, `cmd_inventory(args) -> int`, `_git(repo, *args) -> str` (raises `RuntimeError` on nonzero), `walk_specs(repo, only=None) -> (files, notes)`, `brief_path(root, repo_name, date) -> Path`, `render_brief_header(...) -> list[str]`, `render_file_section(rel, shas, seeds, prior_keys) -> list[str]`, `_atomic_write(path, text)`, module constants `KINDS`, `BOUNDARIES`, `SEP`, `WALK_DIRS`, `DEFERRED_FILE`. In this task `render_file_section` is called with `shas=[]`, `seeds=[]`, `prior_keys=[]` (Tasks 2–4 fill them in).
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `skills/llm-wiki/scripts/test_distill_specs.py`:
 
@@ -341,7 +345,7 @@ def test_empty_walk_is_hard_error(tmp_path, capsys):
   assert 'nothing to walk' in capsys.readouterr().err
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 ```bash
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest test_distill_specs.py -q
@@ -349,7 +353,7 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 
 Expected: collection error — `ModuleNotFoundError: No module named 'distill_specs'`.
 
-- [ ] **Step 3: Write the skeleton implementation**
+- [x] **Step 3: Write the skeleton implementation**
 
 Create `skills/llm-wiki/scripts/distill_specs.py`:
 
@@ -526,7 +530,7 @@ if __name__ == '__main__':
   sys.exit(main())
 ```
 
-- [ ] **Step 4: Run the new tests — all pass; run the full suite — 101 + new all green**
+- [x] **Step 4: Run the new tests — all pass; run the full suite — 101 + new all green**
 
 ```bash
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest -q
@@ -534,7 +538,7 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 
 Expected: `109 passed` (101 existing + 8 new).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/llm-wiki/scripts/distill_specs.py skills/llm-wiki/scripts/test_distill_specs.py
@@ -545,6 +549,8 @@ git commit -m "feat(llm-wiki): distill_specs skeleton - CLI, specs walk, hard er
 
 ### Task 2: Seed grep
 
+> Deviation: deferred-item seed pattern split into standalone DEFERRED_ITEM_PATTERN applied only to deferred_items.md (spec §5.1); signature is seed_hits(text, is_deferred=False).
+
 **Files:**
 - Modify: `skills/llm-wiki/scripts/distill_specs.py` (add `SEED_PATTERNS`, `seed_hits`; wire into `cmd_inventory`)
 - Test: `skills/llm-wiki/scripts/test_distill_specs.py`
@@ -553,7 +559,7 @@ git commit -m "feat(llm-wiki): distill_specs skeleton - CLI, specs walk, hard er
 - Produces: `SEED_PATTERNS` (tuple of `(label, compiled_regex)`), `seed_hits(text) -> [(line_no, label, line), …]` sorted by line number. `cmd_inventory` now calls `render_file_section(rel, [], seed_hits(text), [])`.
 - Note: seed-hit lines pass through `redact()` before landing in the brief — a hardening beyond the spec's assemble-time redaction (briefs live on disk in `reports/`); deterministic, consistent with the distiller⊆lint containment contract.
 
-- [ ] **Step 1: Write the failing tests** (append to `test_distill_specs.py`)
+- [x] **Step 1: Write the failing tests** (append to `test_distill_specs.py`)
 
 ```python
 # --- Task 2: seed grep -------------------------------------------------------
@@ -604,7 +610,7 @@ def test_brief_contains_seed_hits_or_none_marker(tmp_path):
   assert 'completion: **Status: COMPLETE (2026-01-01)**' in text
 ```
 
-- [ ] **Step 2: Run to verify failure**
+- [x] **Step 2: Run to verify failure**
 
 ```bash
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest test_distill_specs.py -q
@@ -612,7 +618,7 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 
 Expected: 4 FAIL — 3 with `AttributeError: … has no attribute 'seed_hits'`, 1 (`test_brief_contains_seed_hits_or_none_marker`) with an assertion on the brief content.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 Add to `distill_specs.py` directly above `walk_specs` (constants adjacent to consumers):
 
@@ -654,7 +660,7 @@ In `cmd_inventory`, change the section loop to:
     body += render_file_section(rel, [], seed_hits(text), [])
 ```
 
-- [ ] **Step 4: Run the full suite**
+- [x] **Step 4: Run the full suite**
 
 ```bash
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest -q
@@ -662,7 +668,7 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 
 Expected: `113 passed`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/llm-wiki/scripts/distill_specs.py skills/llm-wiki/scripts/test_distill_specs.py
@@ -681,7 +687,7 @@ git commit -m "feat(llm-wiki): specs-harvest seed grep with redacted hit lines"
 - Produces: `sha_table(repo, rel) -> [(sha, subject, 'substantive'|'mechanical'), …]` newest first, following renames; `_classify(status) -> str`.
 - Definition (spec §4.1): mechanical ⇔ the commit's only change to this file is a pure rename/move with no content change — i.e. `git log --follow -M --name-status` reports status `R100` for it. Everything else (`A`, `M`, `R0xx`, missing status) is substantive.
 
-- [ ] **Step 1: Write the failing tests** (append)
+- [x] **Step 1: Write the failing tests** (append)
 
 ```python
 # --- Task 3: SHA tables ------------------------------------------------------
@@ -716,11 +722,11 @@ def test_brief_contains_sha_table(tmp_path):
   assert ' · spec: a v2 · substantive' in text
 ```
 
-- [ ] **Step 2: Run to verify failure**
+- [x] **Step 2: Run to verify failure**
 
 Expected: 3 FAIL — 2 with `AttributeError: … no attribute 'sha_table'`, 1 (`test_brief_contains_sha_table`) with an assertion on the brief content.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 Add to `distill_specs.py` below `walk_specs`:
 
@@ -752,11 +758,11 @@ def _classify(status):
 
 In `cmd_inventory`'s loop: `body += render_file_section(rel, sha_table(repo, rel), seed_hits(text), [])`.
 
-- [ ] **Step 4: Run the full suite**
+- [x] **Step 4: Run the full suite**
 
 Expected: `116 passed`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/llm-wiki/scripts/distill_specs.py skills/llm-wiki/scripts/test_distill_specs.py
@@ -767,6 +773,8 @@ git commit -m "feat(llm-wiki): per-file SHA tables with substantive/mechanical c
 
 ### Task 4: Prior-brief dedup keys, same-date accretion, `--only` batching
 
+> Deviation: per-file section rendering extracted to shared _render_new_sections() used by both cmd_inventory and _extend_brief; prior_briefs matches are anchored with re.fullmatch('harvest-<repo>-YYYY-MM-DD.md').
+
 **Files:**
 - Modify: `skills/llm-wiki/scripts/distill_specs.py`
 - Test: `skills/llm-wiki/scripts/test_distill_specs.py`
@@ -776,7 +784,7 @@ git commit -m "feat(llm-wiki): per-file SHA tables with substantive/mechanical c
 - Produces: `claim_hash(claim) -> str` (8 hex), `prior_briefs(root, repo_name, date) -> [Path]` (prior dates only, sorted), `seen_keys_by_file(briefs) -> {at_path: [key, …]}` with `key = '<id> · <at> · <hash8>'`, `_extend_brief(path, repo, head, files, seen) -> int`, `parse_brief(text) -> (header, entries, errors)`.
 - Dedup rule (spec §5.1): keys come from ALL prior entries, ticked and unticked alike.
 
-- [ ] **Step 1: Write the failing tests** (append)
+- [x] **Step 1: Write the failing tests** (append)
 
 ```python
 # --- Task 4: prior briefs, accretion, --only ---------------------------------
@@ -879,11 +887,11 @@ def test_only_glob_filters_walk(tmp_path):
   assert '## specs/completed/a-spec.md' not in text
 ```
 
-- [ ] **Step 2: Run to verify failure**
+- [x] **Step 2: Run to verify failure**
 
 Expected: 7 FAIL (`AttributeError: … no attribute 'seen_keys_by_file'` etc.).
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 Add to `distill_specs.py` (above `cmd_inventory`):
 
@@ -1028,11 +1036,11 @@ Rewrite the tail of `cmd_inventory` (everything after the `if not files:` block)
   return 0
 ```
 
-- [ ] **Step 4: Run the full suite**
+- [x] **Step 4: Run the full suite**
 
 Expected: `123 passed`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/llm-wiki/scripts/distill_specs.py skills/llm-wiki/scripts/test_distill_specs.py
@@ -1051,7 +1059,7 @@ git commit -m "feat(llm-wiki): prior-brief dedup keys, same-date brief accretion
 - Produces: `parse_brief(text)` (same signature; now also splits `kind:`→`kind`+`boundary`, collects `also` locations and duplicate-field errors), `validate_entries(entries, errors) -> None` (appends one `'<id>: reason'` string per defect in **ticked** entries).
 - Validation classes (spec §9 "each validation failure class red-tested"): missing field (`kind`/`boundary`/`at`/`sha`/`excerpt`/`claim`; q: `at`/`claim`), kind↔prefix mismatch, unknown boundary, ticked `code-coupled`, square brackets in claim (BODY_CITE_RE discipline), duplicate id, duplicate field, unknown prefix. The `sha` requirement IS the echo rule here: every capture's basis is its introducing commit.
 
-- [ ] **Step 1: Write the failing tests** (append)
+- [x] **Step 1: Write the failing tests** (append)
 
 ```python
 # --- Task 5: parser + validation ---------------------------------------------
@@ -1170,11 +1178,11 @@ def test_q_entry_missing_claim_is_reported():
   assert any('q-01: missing claim' in err for err in errors)
 ```
 
-- [ ] **Step 2: Run to verify failure**
+- [x] **Step 2: Run to verify failure**
 
 Expected: FAILs — `also`/duplicate-field/validation asserts fail against the minimal parser (`AttributeError: … no attribute 'validate_entries'` and assertion failures).
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 In `distill_specs.py`, add `ALSO_RE` beside the other regexes and replace `parse_brief`'s entry loop + post-processing:
 
@@ -1269,11 +1277,11 @@ def validate_entries(entries, errors):
                     '(BODY_CITE_RE discipline)')
 ```
 
-- [ ] **Step 4: Run the full suite** — Task 4's tests must still pass against the replaced parser.
+- [x] **Step 4: Run the full suite** — Task 4's tests must still pass against the replaced parser.
 
 Expected: `137 passed`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/llm-wiki/scripts/distill_specs.py skills/llm-wiki/scripts/test_distill_specs.py
@@ -1284,6 +1292,8 @@ git commit -m "feat(llm-wiki): full brief parser and ticked-entry validation"
 
 ### Task 6: `assemble` — redaction, id8, atomic digest write, brief stamp, source-page body
 
+> Deviation: post-final-review hardening in 3d2c62f — title/at/(also …) values redacted at both output sinks; sha shape validated with [0-9a-f]{7,40}. Post-merge, afa9af8 also routes (also …) sha parsing through rsplit so malformed shas hit the validation gate.
+
 **Files:**
 - Modify: `skills/llm-wiki/scripts/distill_specs.py` (replace the `cmd_assemble` stub; add renderers and `_stamp_brief`)
 - Test: `skills/llm-wiki/scripts/test_distill_specs.py`
@@ -1293,7 +1303,7 @@ git commit -m "feat(llm-wiki): full brief parser and ticked-entry validation"
 - Produces: `render_digest_entry(e) -> str`, `render_digest(header, entries, brief_name) -> (stem, text)`, `render_source_body(entries, repo_name) -> str`, `_stamp_brief(brief, stem)`, working `cmd_assemble(args) -> int`.
 - Contract: all failures listed as `brief-error: …` on stderr, exit 1, nothing written; digest written atomically to `<root>/raw/specs/<date>-<repo>-specs-<id8>.md`; brief frontmatter gains `assembled: <stem>`; source-page body on stdout; drift (repo HEAD ≠ `repo_head`) and an unreachable `repo_path` are stderr **warnings**, never fatal (post-`repo_head` edits are the wiki's dated-claims staleness, spec §7).
 
-- [ ] **Step 1: Write the failing tests** (append; also add `import hashlib` to the test file's top import block, under `import os`)
+- [x] **Step 1: Write the failing tests** (append; also add `import hashlib` to the test file's top import block, under `import os`)
 
 ```python
 # --- Task 6: assemble --------------------------------------------------------
@@ -1523,11 +1533,11 @@ def test_missing_repo_path_warns_but_assembles(tmp_path, capsys):
   assert 'cannot check drift' in capsys.readouterr().err
 ```
 
-- [ ] **Step 2: Run to verify failure**
+- [x] **Step 2: Run to verify failure**
 
 Expected: the assemble tests FAIL with `NotImplementedError`.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 Replace the `cmd_assemble` stub in `distill_specs.py`:
 
@@ -1661,11 +1671,11 @@ def cmd_assemble(args):
 
 (The module already imports `hashlib` at top from Task 1 — no new imports needed in `distill_specs.py`.)
 
-- [ ] **Step 4: Run the full suite**
+- [x] **Step 4: Run the full suite**
 
 Expected: `148 passed`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/llm-wiki/scripts/distill_specs.py skills/llm-wiki/scripts/test_distill_specs.py
@@ -1676,6 +1686,8 @@ git commit -m "feat(llm-wiki): assemble - validation gate, redaction, id8 atomic
 
 ### Task 7: Pilot golden pair (bls-stats)
 
+> Deviation: 'import re' added to the test file (the brief's own Step-2 code requires it).
+
 **Files:**
 - Modify: `skills/llm-wiki/scripts/test_distill_specs.py` (fixture module-level constants + 3 tests)
 
@@ -1685,7 +1697,7 @@ git commit -m "feat(llm-wiki): assemble - validation gate, redaction, id8 atomic
 
 **Background (deviation note, record in the PR):** the pilot brief was never materialized — `/Users/lowell/research-wiki/reports/` is empty; the pilot digest is hand-authored and hand-wrapped, and its header `note:`/`source:` free text predates `assemble`. So this golden pair is: (a) a `PILOT_BRIEF` fixture **transcribed** from the two real pilot files, (b) assembled, (c) compared to the real pilot digest **entry-by-entry, whitespace-normalized** (content golden), plus header-count asserts — never byte-golden against the hand-authored file. The byte-golden case is Task 6's.
 
-- [ ] **Step 1: Build the `PILOT_BRIEF` fixture constant**
+- [x] **Step 1: Build the `PILOT_BRIEF` fixture constant**
 
 Transcribe from the two read-only reference files into a module-level string constant near the top of `test_distill_specs.py`. Mapping rule, per capture id (`d-01`…`d-06`, `g-01`…`g-08`, `c-01`, `c-02`, `p-01`…`p-04`, `q-01`, `q-02`):
 
@@ -1727,7 +1739,7 @@ The `{repo_path}`/`{root}` placeholders are filled with `str.replace`, **never `
 
 (The transcription is mechanical but long — 22 entries. Do it by reading the two reference files side by side; do not paraphrase, trim, or "fix" anything in excerpts, claims, titles, positions, or SHAs. Where the digest wraps a line, join with exactly one space.)
 
-- [ ] **Step 2: Write the tests** (append; also add `from pathlib import Path` to the test file's top import block)
+- [x] **Step 2: Write the tests** (append; also add `from pathlib import Path` to the test file's top import block)
 
 ```python
 # --- Task 7: pilot golden pair -----------------------------------------------
@@ -1798,7 +1810,7 @@ Notes for the implementer:
 - If an entry-block mismatch appears, diff the normalized block lists element-wise — the failure is almost always a transcription slip in `PILOT_BRIEF`, not a renderer bug; fix the transcription to match the reference files, never the reference files.
 - `repo_path` is deliberately nonexistent → exercises the drift-check warning path on a realistic corpus; stderr is ignored here.
 
-- [ ] **Step 3: Run the new tests**
+- [x] **Step 3: Run the new tests**
 
 ```bash
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest test_distill_specs.py -q
@@ -1806,11 +1818,11 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 
 Expected: all pass (the 3 new ones live-compare against `/Users/lowell/research-wiki`; on machines without it they skip).
 
-- [ ] **Step 4: Run the full suite**
+- [x] **Step 4: Run the full suite**
 
 Expected: `151 passed` (148 + 3; 3 skipped instead on machines without the reference wiki).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/llm-wiki/scripts/test_distill_specs.py
@@ -1830,7 +1842,7 @@ git commit -m "test(llm-wiki): pilot golden pair - bls-stats brief fixture round
 - Produces: `check_sessions(root)` now scans both `raw/sessions/*.md` and `raw/specs/*.md`; new helper `_check_spec_decisions(text, rel)` enforcing the specs-harvest echo rule: a `[d-NN]` digest entry needs `· sha: <hex>` on an `at:` line. New finding message: `basis: [d-NN] needs an at: line with sha: <sha>`.
 - Free coverage to assert, not build: the backlog INFO check (lint_wiki.py:255-265) already `rglob`s all of `raw/`, so an uningested `raw/specs/` digest queues as `INFO … backlog: …` with no code change — this is spec §6 step 7.
 
-- [ ] **Step 1: Write the failing tests** (append to `test_lint_wiki.py`; touch nothing above)
+- [x] **Step 1: Write the failing tests** (append to `test_lint_wiki.py`; touch nothing above)
 
 ```python
 # --- specs-harvest extension (specs-harvest framework spec R4) ---------------
@@ -1916,7 +1928,7 @@ def test_raw_specs_digest_without_source_page_is_backlog_info(tmp_path):
              for f in lint_wiki.run_checks(root))
 ```
 
-- [ ] **Step 2: Run to verify failure**
+- [x] **Step 2: Run to verify failure**
 
 ```bash
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest test_lint_wiki.py -q
@@ -1924,7 +1936,7 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 
 Expected: `test_secret_in_raw_specs_is_error`, `test_decision_entry_without_sha_is_error`, `test_kind_decision_line_in_raw_specs_needs_basis` FAIL (checks don't cover `raw/specs` yet); the other three already pass (backlog is generic; clean stays clean) — that is expected, keep them as regression guards.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 Replace `check_sessions` (lint_wiki.py:215-231) with:
 
@@ -1974,7 +1986,7 @@ def _check_spec_decisions(text, rel):
 
 The `raw/sessions` behavior is byte-for-byte the old logic (same messages, same scoping) — only the loop wrapper and the `raw/specs` branch are new.
 
-- [ ] **Step 4: Run the full suite**
+- [x] **Step 4: Run the full suite**
 
 ```bash
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest -q
@@ -1982,7 +1994,7 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 
 Expected: all pass — 31 original lint tests untouched and green, 6 new lint tests green, distill/bootstrap suites unaffected.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/llm-wiki/scripts/lint_wiki.py skills/llm-wiki/scripts/test_lint_wiki.py
@@ -1992,6 +2004,8 @@ git commit -m "feat(llm-wiki): lint secret + decision-basis checks extended to r
 ---
 
 ### Task 9: Contract extension — schema template, bootstrap, INSTALL script list
+
+> Deviation: shipped as two commits (feat + a small style follow-up for GITKEEP_DIRS indent idiom); one-line docstring accuracy edit in test_bootstrap_wiki.py ("two managed scripts" → "managed scripts").
 
 **Files:**
 - Modify: `skills/llm-wiki/scripts/schema-template.md` (version→2, secrets rule, new section)
@@ -2003,7 +2017,7 @@ git commit -m "feat(llm-wiki): lint secret + decision-basis checks extended to r
 - Consumes: `MANAGED_SCRIPTS` (bootstrap_wiki.py:48), `REQUIRED_FILES` (:66-69), `WIKI_DIRS` (:53-56), `GITKEEP_DIRS` (:59), `REQUIRED_DIRS` (:62-65), `_SCHEMA_VERSION_RE` (:43).
 - Produces: a bundle whose bootstrap installs `distill_specs.py` beside its import target `distill_sessions.py` (side-by-side install is what makes the sibling import work at a wiki root: `python3 <root>/scripts/distill_specs.py` puts `scripts/` on `sys.path[0]`), creates `raw/specs/`, and seeds a SCHEMA.md carrying the specs-harvest contract at `schema-version: 2`.
 
-- [ ] **Step 1: Write the failing tests** (append to `test_bootstrap_wiki.py`; add `import subprocess` and `import sys` to its import block — currently absent)
+- [x] **Step 1: Write the failing tests** (append to `test_bootstrap_wiki.py`; add `import subprocess` and `import sys` to its import block — currently absent)
 
 ```python
 # --- specs-harvest extension (specs-harvest framework spec R5/R6) ------------
@@ -2040,11 +2054,11 @@ def test_installed_distill_specs_runs_beside_its_sibling(tmp_path):
   assert 'inventory' in proc.stdout and 'assemble' in proc.stdout
 ```
 
-- [ ] **Step 2: Run to verify failure**
+- [x] **Step 2: Run to verify failure**
 
 Expected: 3 FAIL (`distill_specs.py` not installed; schema lacks the section).
 
-- [ ] **Step 3: Edit `bootstrap_wiki.py`** — all six touchpoints:
+- [x] **Step 3: Edit `bootstrap_wiki.py`** — all six touchpoints:
 
 1. `:48` → `MANAGED_SCRIPTS = ('lint_wiki.py', 'distill_sessions.py', 'distill_specs.py')`
 2. `:53-56` `WIKI_DIRS` → add `'raw/specs',` (keep tuple order alphabetical-ish: after `'raw/sessions'`); update the comment above it (`:51-52`) to include `raw/specs/`.
@@ -2053,7 +2067,7 @@ Expected: 3 FAIL (`distill_specs.py` not installed; schema lacks the section).
 5. `:66-69` `REQUIRED_FILES` → add `'scripts/distill_specs.py',`.
 6. Prose: module docstring `:4-5` "the two runtime scripts (lint_wiki.py, distill_sessions.py)" → "the three runtime scripts (lint_wiki.py, distill_sessions.py, distill_specs.py)"; comment `:57-58` "scripts/ by the two installed scripts" → "…the three installed scripts"; warning `:320-321` "run lint_wiki.py / distill_sessions.py with" → "run lint_wiki.py / distill_sessions.py / distill_specs.py with".
 
-- [ ] **Step 4: Edit `schema-template.md`:**
+- [x] **Step 4: Edit `schema-template.md`:**
 
 1. Line 1: bump the marker to `schema-version: 2` (same comment text otherwise) — the contract gained a raw class and a metadata variant; `bootstrap_wiki.py --check` will now flag roots still on v1 as STALE, which is the desired reconcile nudge. (Safe for the existing suite: the version tests in `test_bootstrap_wiki.py:118-135` compare relationally — `0 <` bundle, seeded root `==` bundle — and never pin the literal `1`.)
 2. Secrets rule (line 113): change `any residual secret-shaped string under `raw/sessions/` is a lint error.` to `any residual secret-shaped string under `raw/sessions/` or `raw/specs/` is a lint error.`
@@ -2104,13 +2118,13 @@ secret-shaped string under `raw/specs/`.
 
 (The indented examples above stand in for ``` fences — in the template use real fenced blocks, matching the capture-note section's style.)
 
-- [ ] **Step 5: Edit `INSTALL.md`** — `:58-59`: "installs `lint_wiki.py` and `distill_sessions.py`" → "installs `lint_wiki.py`, `distill_sessions.py`, and `distill_specs.py`". Leave the ops list for Task 10.
+- [x] **Step 5: Edit `INSTALL.md`** — `:58-59`: "installs `lint_wiki.py` and `distill_sessions.py`" → "installs `lint_wiki.py`, `distill_sessions.py`, and `distill_specs.py`". Leave the ops list for Task 10.
 
-- [ ] **Step 6: Run the full suite**
+- [x] **Step 6: Run the full suite**
 
 Expected: all pass, including the 15 original bootstrap tests (they iterate `bw.MANAGED_SCRIPTS` / `bw.REQUIRED_DIRS` dynamically, so they absorb the additions).
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add skills/llm-wiki/scripts/bootstrap_wiki.py skills/llm-wiki/scripts/schema-template.md skills/llm-wiki/scripts/test_bootstrap_wiki.py skills/llm-wiki/INSTALL.md
@@ -2129,7 +2143,7 @@ git commit -m "feat(llm-wiki): contract extension - schema template v2, bootstra
 - Consumes: the installed-script invocation voice (`python3 $LLM_WIKI_ROOT/scripts/<name>.py` with args spelled inline — see the ingest op :57-74); the brief/digest contracts from Tasks 1–6 and the SCHEMA section from Task 9.
 - Budget check: SKILL.md body is currently 731 words; this op adds ~210 — well under the writing-skills ~1,500-word median. Description is 466 of 1,024 chars; the addition below keeps it ≤ 650.
 
-- [ ] **Step 1: Add the operation** — insert after the `### verify` section (ends :101), before `## Attribution`:
+- [x] **Step 1: Add the operation** — insert after the `### verify` section (ends :101), before `## Attribution`:
 
 ```markdown
 ### harvest `<repo-path>` (specs → wiki)
@@ -2163,11 +2177,11 @@ deferred items) into a `raw/specs/` digest. Supervised; one repo at a time.
    `open-questions.md`).
 ```
 
-- [ ] **Step 2: Frontmatter** — in the `description`, after "…'install the research wiki' on a new machine or for a second wiki root", append: `; and 'harvest', 'harvest the specs', or turning a repo's specs/ corpus (specs, plans, deferred items) into wiki captures.` Bump `version: "1.1"` → `"1.2"`.
+- [x] **Step 2: Frontmatter** — in the `description`, after "…'install the research wiki' on a new machine or for a second wiki root", append: `; and 'harvest', 'harvest the specs', or turning a repo's specs/ corpus (specs, plans, deferred items) into wiki captures.` Bump `version: "1.1"` → `"1.2"`.
 
-- [ ] **Step 3: INSTALL.md ops list** (`:82-83`): "`ingest`, `query`, `lint`, and `verify` all work against this root" → "`ingest`, `query`, `lint`, `verify`, and `harvest` all work against this root".
+- [x] **Step 3: INSTALL.md ops list** (`:82-83`): "`ingest`, `query`, `lint`, and `verify` all work against this root" → "`ingest`, `query`, `lint`, `verify`, and `harvest` all work against this root".
 
-- [ ] **Step 4: Run the repo gates and the full suite**
+- [x] **Step 4: Run the repo gates and the full suite**
 
 ```bash
 uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
@@ -2177,7 +2191,7 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 
 Expected: both gates exit 0 (description ≤1024 chars); full suite green.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/llm-wiki/SKILL.md skills/llm-wiki/INSTALL.md
@@ -2188,6 +2202,8 @@ git commit -m "feat(llm-wiki): harvest operation - specs corpus to raw/specs dig
 
 ### Task 11: Root SCHEMA.md amendment — **HUMAN-GATED** — and live-root deployment
 
+> Deviation (human-approved at the completion gate): also added the schema-version 2 marker line so the live root SCHEMA.md is byte-identical to the template and the staleness check works.
+
 **Files (all OUTSIDE this repo — no repo commit in this task):**
 - Modify: `/Users/lowell/research-wiki/SCHEMA.md` (only with explicit approval)
 - Modify: `/Users/lowell/research-wiki/wiki/log.md` (append one line)
@@ -2195,19 +2211,19 @@ git commit -m "feat(llm-wiki): harvest operation - specs corpus to raw/specs dig
 
 The spec (R5) makes the root copy the governing, human-gated contract: the template change (Task 9) reaches only *future* roots; the live research wiki must be amended by hand, past the human.
 
-- [ ] **Step 1: Prepare the amendment.** Build the exact edit for `/Users/lowell/research-wiki/SCHEMA.md`:
+- [x] **Step 1: Prepare the amendment.** Build the exact edit for `/Users/lowell/research-wiki/SCHEMA.md`:
   1. The same two content changes as Task 9's template edit: the secrets-rule line gains `or `raw/specs/``, and the `## Specs-harvest briefs and digests (specs-harvest framework)` section is appended (identical text).
   2. Additionally insert the version marker as line 1: `<!-- schema-version: 2 (bump on a breaking contract change; `bootstrap_wiki.py --check` flags a root whose schema is behind the bundle) -->` — the live root currently has **no** marker at all (it is the single line by which it diverges from the template today); adding it heals that drift and lets `--check` version-compare in the future.
 
-- [ ] **Step 2: STOP — present the diff to your human partner and ask for approval.** Do not touch the live root without an explicit yes in this session. If the human is unavailable, mark this task deferred at the plan-completion gate and finish the rest of the protocol; the framework is fully testable without the live amendment.
+- [x] **Step 2: STOP — present the diff to your human partner and ask for approval.** Do not touch the live root without an explicit yes in this session. If the human is unavailable, mark this task deferred at the plan-completion gate and finish the rest of the protocol; the framework is fully testable without the live amendment.
 
-- [ ] **Step 3 (on approval): apply the edit**, then append the log line to `/Users/lowell/research-wiki/wiki/log.md` (grammar `## [YYYY-MM-DD] <op> | <subject> | <note>`, `schema` is an allowed op; use today's date):
+- [x] **Step 3 (on approval): apply the edit**, then append the log line to `/Users/lowell/research-wiki/wiki/log.md` (grammar `## [YYYY-MM-DD] <op> | <subject> | <note>`, `schema` is an allowed op; use today's date):
 
 ```
 ## [2026-07-24] schema | specs-harvest | raw/specs class, at: capture variant, brief format codified
 ```
 
-- [ ] **Step 4 (on approval): deploy the scripts the harvest op invokes** — the live root still carries the pre-plan `lint_wiki.py` and no `distill_specs.py`:
+- [x] **Step 4 (on approval): deploy the scripts the harvest op invokes** — the live root still carries the pre-plan `lint_wiki.py` and no `distill_specs.py`:
 
 ```bash
 python3 ~/.claude/skills/llm-wiki/scripts/bootstrap_wiki.py /Users/lowell/research-wiki --force
@@ -2215,7 +2231,7 @@ python3 ~/.claude/skills/llm-wiki/scripts/bootstrap_wiki.py /Users/lowell/resear
 
 (`--force` refreshes only managed scripts and creates any missing dirs; it never touches `SCHEMA.md` or wiki content. `raw/specs/` already exists at this root from the pilot.)
 
-- [ ] **Step 5: Verify the live root:**
+- [x] **Step 5: Verify the live root:**
 
 ```bash
 python3 /Users/lowell/research-wiki/scripts/lint_wiki.py /Users/lowell/research-wiki

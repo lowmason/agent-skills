@@ -1,6 +1,7 @@
 # llm-wiki specs-harvest framework
 
-**Status:** design — approved via brainstorming 2026-07-24; awaiting implementation plan
+**Status: COMPLETE (2026-07-25)** — implemented by plan 16 (specs/plans/completed/16-llm-wiki-specs-harvest.md)
+**Original status:** design — approved via brainstorming 2026-07-24
 **Companions:** `skills/llm-wiki/` (skill + bundled scripts); the wiki root's `SCHEMA.md` (root copy governs, human-gated); `specs/completed/llm-wiki-spec.md` (the wiki's own spec, esp. §3 boundary rule, §16 session digests, §13 P2 deferred code-wiki root)
 
 ## 1. TL;DR
