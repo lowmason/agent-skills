@@ -238,6 +238,8 @@ def seen_keys_by_file(briefs):
 # the full validating parser (same signature, superset behavior).
 ENTRY_RE = re.compile(r'^- \[([ x])\] \[([a-z])-(\d{2,})\] (.+)$')
 FIELD_RE = re.compile(r'^  (kind|at|excerpt|claim|note): ?(.*)$')
+ALSO_RE = re.compile(r'^  \(also (.+?)(?:' + SEP
+                     + r'sha: ([0-9a-f]{7,40}))?\)$')
 
 
 def parse_brief(text):
@@ -269,9 +271,15 @@ def parse_brief(text):
       continue
     if entry is None:
       continue
+    am = ALSO_RE.match(line)
+    if am:
+      entry['also'].append((am.group(1), am.group(2)))
+      continue
     fm = FIELD_RE.match(line)
     if fm:
       field = fm.group(1)
+      if field in entry['fields']:
+        errors.append(f'{entry["id"]}: duplicate field {field}')
       entry['fields'][field] = fm.group(2).strip()
       continue
     if line.startswith('    ') and line.strip() and field:
@@ -280,10 +288,57 @@ def parse_brief(text):
     if line.strip():
       entry, field = None, None  # any other content ends the entry
   for e in entries:
+    kind = e['fields'].get('kind', '')
+    if SEP + 'boundary: ' in kind:
+      e['fields']['kind'], e['fields']['boundary'] = \
+        kind.split(SEP + 'boundary: ', 1)
     at = e['fields'].get('at', '')
     if SEP + 'sha: ' in at:
       e['fields']['at'], e['fields']['sha'] = at.rsplit(SEP + 'sha: ', 1)
+    exc = e['fields'].get('excerpt', '')
+    if len(exc) >= 2 and exc[0] == '"' and exc[-1] == '"':
+      # the surrounding quotes are brief syntax, not excerpt content — the
+      # digest renderer re-adds exactly one pair
+      e['fields']['excerpt'] = exc[1:-1]
   return header, entries, errors
+
+
+def validate_entries(entries, errors):
+  '''One error line per defect in TICKED entries (spec §9 failure classes).
+  Unticked entries are the declined record: parsed, never field-validated.
+  Requiring sha on every capture IS the echo rule here — a specs-harvest
+  capture's basis is always its introducing commit (spec §4.2).'''
+  seen_ids = set()
+  for e in entries:
+    if e['id'] in seen_ids:
+      errors.append(f'{e["id"]}: duplicate id')
+    seen_ids.add(e['id'])
+  for e in entries:
+    if not e['ticked']:
+      continue
+    f = e['fields']
+    if e['prefix'] == 'q':
+      for req in ('at', 'claim'):
+        if not f.get(req):
+          errors.append(f'{e["id"]}: missing {req}')
+      continue
+    if e['prefix'] not in KINDS:
+      errors.append(f'{e["id"]}: unknown id prefix')
+      continue
+    for req in ('kind', 'boundary', 'at', 'sha', 'excerpt', 'claim'):
+      if not f.get(req):
+        errors.append(f'{e["id"]}: missing {req}')
+    if f.get('kind') and f['kind'] != KINDS[e['prefix']]:
+      errors.append(f'{e["id"]}: kind {f["kind"]} does not match prefix '
+                    f'{e["prefix"]}')
+    if f.get('boundary') and f['boundary'] not in BOUNDARIES:
+      errors.append(f'{e["id"]}: unknown boundary {f["boundary"]}')
+    if f.get('boundary') == 'code-coupled':
+      errors.append(f'{e["id"]}: code-coupled entries must not be ticked '
+                    '(engineering stratum waits for the code-wiki root)')
+    if re.search(r'[\[\]]', f.get('claim', '')):
+      errors.append(f'{e["id"]}: square brackets in claim '
+                    '(BODY_CITE_RE discipline)')
 
 
 def _render_new_sections(repo, rels, seen):

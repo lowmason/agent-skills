@@ -551,3 +551,119 @@ def test_prior_briefs_does_not_match_prefix_repo_name(tmp_path):
   assert 'prior_brief: none' in text
   assert '- d-01 · specs/only.md §1 · ' not in text
   assert 'previously seen:\n- none' in text
+
+
+# --- Task 5: parser + validation ---------------------------------------------
+
+def _entry(ticked='x', eid='d-01', title='T', kind='decision',
+           boundary='transferable', at='specs/a.md §1', sha='1234567',
+           excerpt='"quoted"', claim='A claim.'):
+  sha_part = f' · sha: {sha}' if sha else ''
+  return (f'- [{ticked}] [{eid}] {title}\n'
+          f'  kind: {kind} · boundary: {boundary}\n'
+          f'  at: {at}{sha_part}\n'
+          f'  excerpt: {excerpt}\n'
+          f'  claim: {claim}\n')
+
+
+def _brief_with(entries_text, root='/w'):
+  return (f'---\nharvest: specs\nrepo: repo\nrepo_path: /r\n'
+          f'repo_head: abc1234\nroot: {root}\ndate: 2026-07-24\n'
+          f'prior_brief: none\nfiles_walked: >\n  specs/a.md\n---\n\n'
+          f'## specs/a.md\n\ncaptures:\n\n{entries_text}')
+
+
+def _validated(entries_text):
+  header, entries, errors = dsp.parse_brief(_brief_with(entries_text))
+  dsp.validate_entries(entries, errors)
+  return errors
+
+
+def test_parse_splits_kind_boundary_and_at_sha():
+  _, entries, errors = dsp.parse_brief(_brief_with(_entry()))
+  assert errors == []
+  e = entries[0]
+  assert e['fields']['kind'] == 'decision'
+  assert e['fields']['boundary'] == 'transferable'
+  assert e['fields']['at'] == 'specs/a.md §1'
+  assert e['fields']['sha'] == '1234567'
+
+
+def test_parse_collects_also_locations_and_continuations():
+  text = ('- [x] [g-02] Title\n'
+          '  kind: gotcha · boundary: mixed\n'
+          '  at: specs/a.md §1 · sha: 1234567\n'
+          '  (also specs/plans/completed/1-a.md L320 · sha: abcdef0)\n'
+          '  excerpt: "first line\n'
+          '    second line"\n'
+          '  claim: Wrapped\n'
+          '    claim text.\n')
+  _, entries, _ = dsp.parse_brief(_brief_with(text))
+  e = entries[0]
+  assert e['also'] == [('specs/plans/completed/1-a.md L320', 'abcdef0')]
+  # surrounding quotes are brief syntax, stripped at parse (the renderer
+  # re-adds exactly one pair)
+  assert e['fields']['excerpt'] == 'first line second line'
+  assert e['fields']['claim'] == 'Wrapped claim text.'
+
+
+def test_valid_entry_has_no_errors():
+  assert _validated(_entry()) == []
+
+
+def test_unticked_entries_skip_field_validation():
+  assert _validated(_entry(ticked=' ', excerpt='', claim='')) == []
+
+
+def test_missing_fields_each_reported():
+  errors = _validated('- [x] [d-01] Bare\n')
+  for req in ('kind', 'boundary', 'at', 'sha', 'excerpt', 'claim'):
+    assert any(f'missing {req}' in err for err in errors), req
+
+
+def test_missing_sha_is_reported():
+  errors = _validated(_entry(sha=''))
+  assert any('missing sha' in err for err in errors)
+
+
+def test_kind_prefix_mismatch_is_reported():
+  errors = _validated(_entry(eid='d-01', kind='gotcha'))
+  assert any('does not match prefix' in err for err in errors)
+
+
+def test_unknown_boundary_is_reported():
+  errors = _validated(_entry(boundary='global'))
+  assert any('unknown boundary' in err for err in errors)
+
+
+def test_ticked_code_coupled_is_reported():
+  errors = _validated(_entry(boundary='code-coupled'))
+  assert any('code-coupled' in err for err in errors)
+
+
+def test_square_brackets_in_claim_are_reported():
+  errors = _validated(_entry(claim='See [pml1 §3.2] for details.'))
+  assert any('square brackets' in err for err in errors)
+
+
+def test_duplicate_id_is_reported():
+  errors = _validated(_entry() + _entry())
+  assert any('duplicate id' in err for err in errors)
+
+
+def test_duplicate_field_is_reported():
+  text = _entry() + '  claim: Second claim line.\n'
+  errors = _validated(text)
+  assert any('duplicate field claim' in err for err in errors)
+
+
+def test_q_entry_needs_only_at_and_claim():
+  text = ('- [x] [q-01] Open thing\n'
+          '  at: specs/a.md §12.3\n'
+          '  claim: Unresolved question prose.\n')
+  assert _validated(text) == []
+
+
+def test_q_entry_missing_claim_is_reported():
+  errors = _validated('- [x] [q-01] Open thing\n  at: specs/a.md §12.3\n')
+  assert any('q-01: missing claim' in err for err in errors)
