@@ -441,3 +441,24 @@ def test_raw_specs_digest_without_source_page_is_backlog_info(tmp_path):
                     'excerpt: "y"\n')
   assert any(f[0] == 'INFO' and 'backlog' in f[2]
              for f in lint_wiki.run_checks(root))
+
+
+def test_neighbor_entry_sha_does_not_satisfy_missing_entry(tmp_path):
+  '''Multi-capture digest: [d-01] carries a valid at:/sha: line, [d-02] does
+  not. The basis check must be scoped per-[d-NN]-block -- a neighboring
+  entry's sha must not bleed across and silently satisfy a different entry's
+  requirement.'''
+  root = make_wiki(tmp_path)
+  write_spec_digest(root, 'multi.md',
+                    '[d-01] Has basis\n'
+                    'at: specs/a.md §1 · sha: 1234567\n'
+                    'excerpt: "x"\n'
+                    '\n'
+                    '[d-02] Missing basis\n'
+                    'at: specs/b.md §2\n'
+                    'excerpt: "y"\n')
+  basis_findings = [f for f in lint_wiki.run_checks(root)
+                     if f[0] == 'ERROR' and 'basis' in f[2]]
+  assert len(basis_findings) == 1
+  assert any('[d-02]' in f[2] for f in basis_findings)
+  assert not any('[d-01]' in f[2] for f in basis_findings)
