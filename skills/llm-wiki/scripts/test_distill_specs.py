@@ -463,6 +463,23 @@ def test_same_date_rerun_appends_only_new_sections(tmp_path):
   assert 'specs/deferred_items.md' in text.split('---')[1]  # files_walked union
 
 
+def test_extend_brief_applies_deferred_item_seed_flag(tmp_path):
+  '''_extend_brief's per-file render loop must gate seed_hits by is_deferred
+  the same way cmd_inventory's first pass does (spec §5.1) -- otherwise
+  deferred_items.md entering the brief only via the same-date extend path
+  (e.g. an --only-scoped run followed by a full re-run) renders "- none" for
+  seeds instead of its deferred-item hits.'''
+  repo, root = make_repo(tmp_path), make_root(tmp_path)
+  assert inventory(repo, root, only='specs/completed/*') == 0
+  brief = root / 'reports/harvest-repo-2026-07-24.md'
+  assert 'specs/deferred_items.md' not in brief.read_text()
+  assert inventory(repo, root) == 0
+  text = brief.read_text()
+  deferred_section = text[text.index('## specs/deferred_items.md'):]
+  assert 'deferred-item:' in deferred_section
+  assert 'seeds:\n- none' not in deferred_section
+
+
 def test_same_date_rerun_with_moved_head_is_error(tmp_path, capsys):
   repo, root = make_repo(tmp_path), make_root(tmp_path)
   assert inventory(repo, root, only='specs/completed/*') == 0

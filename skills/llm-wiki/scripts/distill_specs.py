@@ -279,6 +279,22 @@ def parse_brief(text):
   return header, entries, errors
 
 
+def _render_new_sections(repo, rels, seen):
+  '''Shared per-file section-render loop (cmd_inventory's first pass and
+  _extend_brief's accretion pass): read each file at repo_head, build its
+  SHA table and seed hits, and render its `## ` section. One place for both
+  callers so the is_deferred flag can't drift between them (review finding:
+  the extend path once called seed_hits without it, so deferred_items.md
+  rendered "- none" when it first entered the brief via that path).'''
+  body = []
+  for rel in rels:
+    text = (repo / rel).read_text()
+    body += render_file_section(rel, sha_table(repo, rel),
+                                seed_hits(text, rel == DEFERRED_FILE),
+                                seen.get(rel, []))
+  return body
+
+
 def _extend_brief(path, repo, head, files, seen):
   '''Same-date re-run (spec §7): append sections for files not yet present;
   never overwrite or duplicate. One brief = one repo_head.'''
@@ -294,11 +310,7 @@ def _extend_brief(path, repo, head, files, seen):
   if not new:
     print(f'{path.name}: no new files; brief unchanged')
     return 0
-  body = []
-  for rel in new:
-    file_text = (repo / rel).read_text()
-    body += render_file_section(rel, sha_table(repo, rel),
-                                seed_hits(file_text), seen.get(rel, []))
+  body = _render_new_sections(repo, new, seen)
   walked = [f.strip() for f in header.get('files_walked', '').split(';')
             if f.strip()]
   walked += [f for f in new if f not in walked]
@@ -349,10 +361,7 @@ def cmd_inventory(args):
   body += [f'note: {n}' for n in notes]
   if notes:
     body.append('')
-  for rel in files:
-    text = (repo / rel).read_text()
-    body += render_file_section(rel, sha_table(repo, rel), seed_hits(text, rel == DEFERRED_FILE),
-                                seen.get(rel, []))
+  body += _render_new_sections(repo, files, seen)
   _atomic_write(path, '\n'.join(body).rstrip('\n') + '\n')
   print(f'wrote {path}')
   return 0
