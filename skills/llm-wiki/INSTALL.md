@@ -80,7 +80,7 @@ python3 "$LLM_WIKI_ROOT/scripts/lint_wiki.py" "$LLM_WIKI_ROOT"
 
 The lint must print `0 errors, 0 warnings, 0 info` and exit 0 — a freshly
 bootstrapped wiki is clean from the first run. The skill is now operational:
-`ingest`, `query`, `lint`, and `verify` all work against this root.
+`ingest`, `query`, `lint`, `verify`, and `harvest` all work against this root.
 
 > **Export `LLM_WIKI_ROOT` in every session.** Without it the skill falls back
 > to `~/research-wiki`; on a machine that has no such directory the skill will
