@@ -48,7 +48,14 @@ Body, in the house contract style:
   `file:line` and concrete remediation; acknowledge what is handled well;
   end with an overall verdict.
 
-### 2. `agents/Explore.md` (built-in override)
+### 2. `agents/explore.md` — the `Explore` built-in override
+
+Lowercase filename per repo convention; **the frontmatter `name: Explore`
+is load-bearing** — agent-type resolution keys on the `name` field alone
+(basename not consulted) and is case-sensitive, so a lowercase *name*
+would register a second agent type beside the un-shadowed built-in
+instead of overriding it (both probe-verified, see Verification). Do not
+"fix" the capital E in the name field.
 
 Frontmatter: `name: Explore`, `description` preserving the built-in's
 contract (read-only search agent for broad fan-out searches; caller
@@ -197,8 +204,12 @@ Two layers, degrading gracefully by repo:
   (the dispatched agent's report opened with the sentinel line and used the
   custom `path:line` output contract); probe file removed afterward. The
   `model: haiku` pin follows from file resolution and was not independently
-  observed. Mechanism is version-sensitive: re-probe if the binary has
-  moved when the plan executes.
+  observed. Two follow-up probes (same day, same binary): resolution is
+  **case-sensitive** — a `name: explore` agent registered as a second type
+  beside the un-shadowed built-in — and keys on the **frontmatter `name`
+  alone** — `agents/explore.md` with `name: Explore` shadowed cleanly,
+  licensing the lowercase filename. Mechanism is version-sensitive:
+  re-probe if the binary has moved when the plan executes.
 - Fixtures:
   - `security-auditor` on a scratch diff with a planted secret and an
     injection pattern — must find both, with `file:line`.
