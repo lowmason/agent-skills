@@ -196,6 +196,123 @@ def render_file_section(rel, shas, seeds, prior_keys):
   return lines
 
 
+def claim_hash(claim):
+  '''Dedup-key half (spec §5.1): whitespace-normalized claim, 8 hex chars.'''
+  norm = ' '.join((claim or '').split())
+  return hashlib.sha256(norm.encode()).hexdigest()[:8]
+
+
+def prior_briefs(root, repo_name, date):
+  '''Prior briefs for this repo, sorted (ISO dates sort); the same-date
+  brief is the accretion target, not a prior.'''
+  return [p for p in
+          sorted((root / 'reports').glob(f'harvest-{repo_name}-*.md'))
+          if p.name != f'harvest-{repo_name}-{date}.md']
+
+
+def seen_keys_by_file(briefs):
+  '''{at-path: [id · at · claim-hash8, …]} across ALL prior entries —
+  approved and declined alike, never only what was kept (spec §5.1).'''
+  seen = {}
+  for b in briefs:
+    _, entries, _ = parse_brief(b.read_text())
+    for e in entries:
+      at = e['fields'].get('at')
+      if not at:
+        continue
+      path = at.split(' ', 1)[0]
+      key = (f'{e["id"]}{SEP}{at}{SEP}'
+             f'{claim_hash(e["fields"].get("claim", ""))}')
+      seen.setdefault(path, []).append(key)
+  return seen
+
+
+# Minimal brief reader for prior-brief scanning; Task 5 replaces it with
+# the full validating parser (same signature, superset behavior).
+ENTRY_RE = re.compile(r'^- \[([ x])\] \[([a-z])-(\d{2,})\] (.+)$')
+FIELD_RE = re.compile(r'^  (kind|at|excerpt|claim|note): ?(.*)$')
+
+
+def parse_brief(text):
+  '''-> (header dict, entry list, error list).'''
+  lines = text.split('\n')
+  header, errors, i = {}, [], 0
+  if lines and lines[0] == '---':
+    i, key = 1, None
+    while i < len(lines) and lines[i] != '---':
+      line = lines[i]
+      if line.startswith('  ') and key:
+        header[key] = (header[key] + ' ' + line.strip()).strip()
+      else:
+        m = re.match(r'^([a-z_]+): ?(.*)$', line)
+        if m:
+          key = m.group(1)
+          header[key] = '' if m.group(2) == '>' else m.group(2)
+      i += 1
+    i += 1
+  entries, entry, field = [], None, None
+  for line in lines[i:]:
+    m = ENTRY_RE.match(line)
+    if m:
+      entry = {'ticked': m.group(1) == 'x',
+               'id': f'{m.group(2)}-{m.group(3)}', 'prefix': m.group(2),
+               'title': m.group(4).strip(), 'fields': {}, 'also': []}
+      entries.append(entry)
+      field = None
+      continue
+    if entry is None:
+      continue
+    fm = FIELD_RE.match(line)
+    if fm:
+      field = fm.group(1)
+      entry['fields'][field] = fm.group(2).strip()
+      continue
+    if line.startswith('    ') and line.strip() and field:
+      entry['fields'][field] += ' ' + line.strip()
+      continue
+    if line.strip():
+      entry, field = None, None  # any other content ends the entry
+  for e in entries:
+    at = e['fields'].get('at', '')
+    if SEP + 'sha: ' in at:
+      e['fields']['at'], e['fields']['sha'] = at.rsplit(SEP + 'sha: ', 1)
+  return header, entries, errors
+
+
+def _extend_brief(path, repo, head, files, seen):
+  '''Same-date re-run (spec §7): append sections for files not yet present;
+  never overwrite or duplicate. One brief = one repo_head.'''
+  text = path.read_text()
+  header, _, _ = parse_brief(text)
+  if header.get('repo_head') != head:
+    print(f'error: {path.name} pins repo_head {header.get("repo_head")} but '
+          f'HEAD is {head}; use a fresh --date (or re-run at the pinned head)',
+          file=sys.stderr)
+    return 1
+  have = set(re.findall(r'^## (.+)$', text, re.M))
+  new = [f for f in files if f not in have]
+  if not new:
+    print(f'{path.name}: no new files; brief unchanged')
+    return 0
+  body = []
+  for rel in new:
+    file_text = (repo / rel).read_text()
+    body += render_file_section(rel, sha_table(repo, rel),
+                                seed_hits(file_text), seen.get(rel, []))
+  walked = [f.strip() for f in header.get('files_walked', '').split(';')
+            if f.strip()]
+  walked += [f for f in new if f not in walked]
+  lines = text.rstrip('\n').split('\n')
+  for i, line in enumerate(lines):
+    if line == 'files_walked: >':
+      lines[i + 1] = '  ' + '; '.join(walked)
+      break
+  _atomic_write(path, '\n'.join(lines) + '\n\n'
+                + '\n'.join(body).rstrip('\n') + '\n')
+  print(f'extended {path} (+{len(new)} files)')
+  return 0
+
+
 def cmd_inventory(args):
   repo = Path(args.repo).resolve()
   root = Path(args.root).resolve()
@@ -221,15 +338,21 @@ def cmd_inventory(args):
   if not files:
     print('error: nothing to walk (check --only)', file=sys.stderr)
     return 1
+  priors = prior_briefs(root, repo_name, date)
+  seen = seen_keys_by_file(priors)
+  prior = f'reports/{priors[-1].name}' if priors else 'none'
   path = brief_path(root, repo_name, date)
   path.parent.mkdir(parents=True, exist_ok=True)
-  body = render_brief_header(repo_name, repo, head, root, date, files, 'none')
+  if path.exists():
+    return _extend_brief(path, repo, head, files, seen)
+  body = render_brief_header(repo_name, repo, head, root, date, files, prior)
   body += [f'note: {n}' for n in notes]
   if notes:
     body.append('')
   for rel in files:
     text = (repo / rel).read_text()
-    body += render_file_section(rel, sha_table(repo, rel), seed_hits(text, rel == DEFERRED_FILE), [])
+    body += render_file_section(rel, sha_table(repo, rel), seed_hits(text, rel == DEFERRED_FILE),
+                                seen.get(rel, []))
   _atomic_write(path, '\n'.join(body).rstrip('\n') + '\n')
   print(f'wrote {path}')
   return 0

@@ -388,3 +388,103 @@ def test_brief_contains_sha_table(tmp_path):
   text = (root / 'reports/harvest-repo-2026-07-24.md').read_text()
   assert ' · chore: retire spec · mechanical' in text
   assert ' · spec: a v2 · substantive' in text
+
+
+# --- Task 4: prior briefs, accretion, --only ---------------------------------
+
+PRIOR_BRIEF = '''---
+harvest: specs
+repo: repo
+repo_path: /old/path
+repo_head: 0000000
+root: /old/root
+date: 2026-07-01
+prior_brief: none
+files_walked: >
+  specs/completed/a-spec.md
+---
+
+## specs/completed/a-spec.md
+
+captures:
+
+- [x] [d-01] Kept decision
+  kind: decision · boundary: transferable
+  at: specs/completed/a-spec.md §1 · sha: 1111111
+  excerpt: "kept"
+  claim: This one was approved.
+- [ ] [g-01] Declined gotcha
+  kind: gotcha · boundary: transferable
+  at: specs/completed/a-spec.md §2 · sha: 1111111
+  excerpt: "declined"
+  claim: This one was declined.
+'''
+
+
+def test_seen_keys_include_ticked_and_unticked(tmp_path):
+  b = tmp_path / 'harvest-repo-2026-07-01.md'
+  b.write_text(PRIOR_BRIEF)
+  seen = dsp.seen_keys_by_file([b])
+  keys = seen['specs/completed/a-spec.md']
+  assert len(keys) == 2  # declined entries dedup too (spec §5.1)
+  assert any(k.startswith('d-01 · specs/completed/a-spec.md §1 · ') for k in keys)
+  assert any(k.startswith('g-01 · specs/completed/a-spec.md §2 · ') for k in keys)
+
+
+def test_claim_hash_is_whitespace_normalized():
+  assert dsp.claim_hash('a  b\n c') == dsp.claim_hash('a b c')
+  assert len(dsp.claim_hash('x')) == 8
+
+
+def test_inventory_lists_previously_seen_and_prior_pointer(tmp_path):
+  repo, root = make_repo(tmp_path), make_root(tmp_path)
+  (root / 'reports/harvest-repo-2026-07-01.md').write_text(PRIOR_BRIEF)
+  assert inventory(repo, root) == 0
+  text = (root / 'reports/harvest-repo-2026-07-24.md').read_text()
+  assert 'prior_brief: reports/harvest-repo-2026-07-01.md' in text
+  assert '- d-01 · specs/completed/a-spec.md §1 · ' in text
+  assert '- g-01 · specs/completed/a-spec.md §2 · ' in text
+
+
+def test_same_date_rerun_appends_only_new_sections(tmp_path):
+  repo, root = make_repo(tmp_path), make_root(tmp_path)
+  assert inventory(repo, root, only='specs/completed/*') == 0
+  brief = root / 'reports/harvest-repo-2026-07-24.md'
+  first = brief.read_text()
+  assert '## specs/completed/a-spec.md' in first
+  assert '## specs/plans/completed/1-a-spec.md' not in first
+  # sentinel: hand-added capture entry must survive the re-run untouched
+  brief.write_text(first + '- [x] [d-01] Hand-added\n')
+  assert inventory(repo, root) == 0
+  text = brief.read_text()
+  assert text.count('## specs/completed/a-spec.md') == 1  # never duplicated
+  assert '## specs/plans/completed/1-a-spec.md' in text   # appended
+  assert '- [x] [d-01] Hand-added' in text                # never overwritten
+  assert 'specs/deferred_items.md' in text.split('---')[1]  # files_walked union
+
+
+def test_same_date_rerun_with_moved_head_is_error(tmp_path, capsys):
+  repo, root = make_repo(tmp_path), make_root(tmp_path)
+  assert inventory(repo, root, only='specs/completed/*') == 0
+  (repo / 'specs/new.md').write_text('# New\n')
+  _git(repo, 'add', '.')
+  _git(repo, 'commit', '-qm', 'spec: new')
+  assert inventory(repo, root) == 1
+  assert 'repo_head' in capsys.readouterr().err
+
+
+def test_same_date_rerun_with_no_new_files_is_noop(tmp_path, capsys):
+  repo, root = make_repo(tmp_path), make_root(tmp_path)
+  assert inventory(repo, root) == 0
+  before = (root / 'reports/harvest-repo-2026-07-24.md').read_text()
+  assert inventory(repo, root) == 0
+  assert (root / 'reports/harvest-repo-2026-07-24.md').read_text() == before
+  assert 'no new files' in capsys.readouterr().out
+
+
+def test_only_glob_filters_walk(tmp_path):
+  repo, root = make_repo(tmp_path), make_root(tmp_path)
+  assert inventory(repo, root, only='specs/plans/completed/*') == 0
+  text = (root / 'reports/harvest-repo-2026-07-24.md').read_text()
+  assert '## specs/plans/completed/1-a-spec.md' in text
+  assert '## specs/completed/a-spec.md' not in text
