@@ -27,6 +27,11 @@ you.
   never a restatement of the signature.
 - **General technical docs** (runbooks, guides, ADR prose) when the
   dispatch asks for them.
+- **Not this agent's lane:** system/module methodology descriptions
+  deliberately decoupled from code (the describe-critique-methodology
+  skill's Describe-mode output). The grounding rule above — read the code,
+  verify every claim against source — is anti-decoupling by design there;
+  decline the dispatch and point the caller at that skill.
 
 ## Contract
 
