@@ -34,9 +34,12 @@ turns into staged work.
 reviewer must critique the METHOD; every smuggled identifier pulls the
 critique toward the implementation instead.
 
-**Mode selection:** if `specs/<name>-critique.md` exists beside
-`specs/<name>-methodology.md` in the target repo, you are in Synthesize
-mode. Otherwise, Describe mode.
+**Mode selection:** you are in Synthesize mode when a returned critique sits
+beside its description in the target repo — a file whose name contains
+`methodology` with a sibling whose name contains `critique` or `review`,
+hyphens or underscores either way (`<name>-critique.md` is what this skill's
+own handoff asks for; real critiques predating it will not match). Otherwise,
+Describe mode.
 
 ## Describe mode
 
@@ -94,13 +97,16 @@ mode. Otherwise, Describe mode.
    system since that commit." If it has moved materially, refresh via
    Describe mode before synthesizing — the critique may target a stale
    method.
-2. **Critique triage.** Build the per-point table per
-   `references/spec-synthesis.md` — accept / reject / needs-user-adjudication
-   with a one-line rationale each — and present it as ONE batched question
-   set before writing any spec text.
+2. **Critique triage.** First establish whether the critique was adjudicated
+   or taken as a first pass with no push-back, and say which. Then build the
+   per-point table per `references/spec-synthesis.md` — accept / reject /
+   needs-user-adjudication with a one-line rationale each — and present it as
+   ONE batched question set before writing any spec text.
 3. **Synthesize the spec** at `specs/<name>.md` in the target repo, per
-   `references/spec-synthesis.md`: house skeleton, per-claim locators back
-   to the description (§) and critique (C#).
+   `references/spec-synthesis.md`: house skeleton, a Design provenance
+   paragraph declaring the locator scheme, per-claim locators back to
+   description and critique, and `(open)` on anything only an external check
+   can settle.
 4. **Open the spec with the routing header** (verbatim in
    `references/spec-synthesis.md`) naming derive-roadmap as the required
    next skill.
@@ -121,7 +127,7 @@ mode. Otherwise, Describe mode.
 | You have | Mode | Output |
 |---|---|---|
 | A system/module to describe for external critique | Describe | `specs/<name>-methodology.md` + handoff message |
-| A saved `specs/<name>-critique.md` back from Chat Research | Synthesize | Triage table → `specs/<name>.md` with derive-roadmap header |
+| A returned critique or review beside its methodology description | Synthesize | Triage table → `specs/<name>.md` with derive-roadmap header |
 | A new-functionality idea | — | brainstorming, not this skill |
 | Code or a spec to review | — | code-review skills, not this skill |
 
@@ -142,6 +148,9 @@ mode. Otherwise, Describe mode.
 - **Treating the critique as a to-do list** — it synthesizes into a spec;
   staging and implementation belong to derive-roadmap and the chain after
   it. Never implement critique points directly.
+- **Reading a first-pass critique as adjudicated** — no push-back means no
+  Chat-side rejections, not agreement. Say so, and carry the adjudication
+  yourself in triage.
 - **Drafting spec text before the triage table** — triage first, one
   batched set.
 - **Chasing validator zero** — the checker is advisory; legitimate notation

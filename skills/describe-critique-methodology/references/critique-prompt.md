@@ -6,6 +6,10 @@ interactively — push back, steer, adjudicate — for as long as it earns its
 keep. The closing instruction makes Chat write the critique file; save its
 output as `specs/<name>-critique.md` beside the description and commit it.
 
+Taking the first pass as-is is a legitimate choice. Say so when you hand the
+critique to Synthesize mode: with no push-back there are no Chat-side
+rejections, and that mode carries the adjudication itself instead.
+
 ---
 
 You are conducting a state-of-the-art methodological review. Attached is a
@@ -37,7 +41,8 @@ document for me to save as a file, following these rules exactly:
 
 - Record the ADJUDICATED positions we reached, not your first-pass
   findings. Where I rejected a point, keep it, marked rejected, with the
-  reason.
+  reason. Where we never pushed back on a point, say so — never dress a
+  first-pass finding as adjudicated.
 - Number every critique point (C1, C2, ...) so a downstream triage table
   can cite them.
 - Cite sources for state-of-the-art claims (author-year plus a link).
