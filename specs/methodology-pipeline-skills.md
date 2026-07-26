@@ -298,6 +298,16 @@ wording.
       round-trip spec.
 - [ ] NOTICE, CLAUDE.md bullet + count, and README updated in the same commits as the
       skills they describe.
+- [x] Amendment A2 verified behaviorally (2026-07-26), fresh agents running Synthesize
+      mode stopped at triage: the real no-push-back review read as first-pass 2/2; an
+      adjudicated variant of it read as adjudicated 1/1; a PRE-SKILL critique carrying
+      push-back traces but no routing header and no C-numbers read as adjudicated 2/2,
+      both agents citing push-back as the signal and explicitly discounting the absent
+      header. The third arm is the discriminating one — the first two share a
+      routing-header confound and would have passed a skill keying on the wrong signal.
+- [ ] A1, A3 and A4 have no dedicated behavioral check. A3's fallback was exercised
+      incidentally (both arm-C agents declared a custom locator scheme unprompted); A1
+      and A4 rest on the gold master alone.
 
 ## Out of scope
 

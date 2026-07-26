@@ -320,6 +320,25 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       derive-roadmap handoff. It ships consciously untested. The fixture
       that would test it is the real critique from the user's round-trip;
       fold this into plan #2 rather than synthesizing a strawman critique.
+      **Partially closed 2026-07-26** (spec Amendment A): the real round-trip
+      arrived, and a three-arm subagent check now covers adjudication-status
+      detection. Still untested once entered: locator discipline, the
+      triage-table-before-spec-text ordering, and the derive-roadmap handoff.
+- [ ] **Partial adjudication has no explicit handling.** The skill frames
+      adjudication status as binary — "was the critique adjudicated at all?"
+      — but a real critique can record push-back on a handful of points and
+      none on the rest. Observed in the Amendment A arm-C check: given a
+      fixture with 2 adjudicated points out of ~30, both agents diagnosed the
+      split unprompted, inherited the two recorded rejections, and adjudicated
+      the remainder themselves — the correct behavior, reached without
+      guidance. Deliberately NOT added to the skill text on that evidence
+      (writing-skills: do not add guidance for a failure mode that did not
+      occur). Revisit only if a real critique produces a mishandled split.
+      One genuine hazard the same check surfaced, also handled unprompted: a
+      withdrawn point can survive elsewhere in the document (the fixture's
+      withdrawn X-13 recommendation still stood in the Recommendations block),
+      so a withdrawal must be carried to every site, not just the paragraph
+      recording it. Worth a clause if it recurs.
 - [ ] **`suspicious_notation` false positives on acronym subscripts.** After
       the LaTeX fix, uppercase-acronym math symbols (`NSA_t`, `TOT_c`,
       `NSA_v` — from `G^{\mathrm{NSA}}_t`) are reported as

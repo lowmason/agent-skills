@@ -118,6 +118,29 @@ Recorded as **Amendment A** in the live spec
    `critique`/`review`, hyphens or underscores). Frontmatter description
    deliberately untouched: MT2's 5/5 routing was measured on that wording.
 
+#### Behavioral check on gap 2 (2026-07-26) — PASSED, 3 arms
+
+Fresh agents, Synthesize mode stopped at triage, no file writes:
+
+| Arm | Fixture | Expected | Result |
+|---|---|---|---|
+| A (×2) | the real `_review.md` | first-pass | 2/2 ✓ |
+| B (×1) | same review + routing header + REJECTED-after-push-back markers | adjudicated | 1/1 ✓ |
+| C (×2) | same review + push-back traces ONLY (no routing header, no C-numbers) | adjudicated | 2/2 ✓ |
+
+**Arm C is the one that matters.** A and B share a routing-header confound —
+arm-A agents cited "no routing block, no C1..Cn" as first-pass evidence, but
+those signal only that a critique predates the skill. A skill keying entirely
+on the wrong signal would still have scored 3/3 on A+B. Arm C removes the
+wrong signal and keeps the right one; both agents cited push-back explicitly
+and discounted the missing header, so the corrected wording is load-bearing.
+
+Two fixes came out of reading the arm-A/B output rather than its verdict:
+`spec-synthesis.md` had told the synthesizer both to carry the adjudication
+itself AND to "expect far more needs-user-adjudication" — contradictory, and
+the gold master settles it (14 self-made rejections). Measured counts agreed:
+6/5 in arm A vs 5 in arm B, no real difference. Both fixed in `aec565f`.
+
 #### Next actions
 
 - The artifact is prime input for **plan #2 (derive-roadmap)**: it shows
