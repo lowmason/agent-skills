@@ -83,6 +83,45 @@ def test_whitelist_is_scoped_to_notation_sections():
     assert notation_whitelist(doc) == set()
 
 
+def test_notation_whitelist_normalizes_latex_symbols():
+    doc = '\n'.join([
+        '## Notation',
+        '| Symbol | Meaning |',
+        '| --- | --- |',
+        r'| $\sigma_p$ | provider measurement SD |',
+        r'| $\bar{h}_t$ | smoothed level |',
+        '',
+        '## Procedure',
+        r'the scale $\sigma_p$ and the level $\bar{h}_t$ evolve',
+    ])
+    wl = notation_whitelist(doc)
+    assert 'sigma_p' in wl
+    assert 'h_t' in wl
+    assert harvest(doc, wl) == []
+
+
+def test_notation_whitelist_splits_multi_symbol_cells():
+    doc = '\n'.join([
+        '# Notation',
+        r'| $A_k$, $B_k$ | Fourier coefficients |',
+        r'| $\Delta N_c$ | change in the count |',
+    ])
+    wl = notation_whitelist(doc)
+    assert {'A_k', 'B_k', 'N_c'} <= wl
+
+
+def test_latex_wrapped_identifier_still_flagged_by_counter_check():
+    '''Normalization must not open a laundering hole: a code identifier
+    dressed in LaTeX is still reported by the notation-table counter-check.'''
+    doc = '\n'.join([
+        '## Notation',
+        r'| $\mathrm{target\_accept}$ | sampler acceptance target |',
+    ])
+    wl = notation_whitelist(doc)
+    assert 'target_accept' in wl
+    assert suspicious_notation(wl) == ['target_accept']
+
+
 def test_suspicious_notation_flags_identifier_shaped_symbols():
     assert suspicious_notation({'kalman_ll', 'assembleTotal', 'model.py'}) == [
         'assembleTotal', 'kalman_ll', 'model.py',
@@ -91,6 +130,12 @@ def test_suspicious_notation_flags_identifier_shaped_symbols():
 
 def test_suspicious_notation_exempts_math_shaped_symbols():
     assert suspicious_notation({'y_t', 'g_cont', 'sigma_obs', 'beta', 'T'}) == []
+
+
+def test_suspicious_notation_exempts_latex_greek_variants():
+    '''\\varepsilon_t and friends are Greek names, not code identifiers.'''
+    assert suspicious_notation({'varepsilon_t', 'varrho_r', 'varsigma_k',
+                                'varphi_0', 'vartheta_j', 'ell_i'}) == []
 
 
 def test_cli_always_exits_zero(tmp_path):

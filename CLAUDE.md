@@ -69,7 +69,7 @@ cd skills/track-model-experiments/scripts && uv run --python 3.13 --with pytest 
 # 180 tests (stdlib only; these are the scripts the bootstrap installs to a wiki)
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest -q
 
-# describe-critique-methodology decoupling-check tests — 14 tests
+# describe-critique-methodology decoupling-check tests — 18 tests
 cd skills/describe-critique-methodology/scripts && uv run --python 3.13 --with pytest python -m pytest -q
 
 # Frontmatter + provenance lints (run before committing skill changes)

@@ -33,6 +33,9 @@ GREEK = {
     'alpha', 'beta', 'gamma', 'delta', 'epsilon', 'zeta', 'eta', 'theta',
     'iota', 'kappa', 'lambda', 'mu', 'nu', 'xi', 'omicron', 'pi', 'rho',
     'sigma', 'tau', 'upsilon', 'phi', 'chi', 'psi', 'omega',
+    # LaTeX variant spellings and the script-l, once \-stripped
+    'varepsilon', 'vartheta', 'varkappa', 'varpi', 'varrho', 'varsigma',
+    'varphi', 'ell',
 }
 SNAKE_RE = re.compile(r'\b[A-Za-z][A-Za-z0-9]*(?:_[A-Za-z0-9]+)+\b')
 CAMEL_RE = re.compile(r'\b[a-z][a-z0-9]*[A-Z][A-Za-z0-9]*\b')
@@ -42,6 +45,11 @@ DOTTED_CALL_RE = re.compile(r'\b[a-z_][\w]*(?:\.[\w]+)+\s*\(')
 WORD_RE = re.compile(r'[A-Za-z]+')
 HEADING_RE = re.compile(r'^#+\s+(.*)$')
 TABLE_SEP_CHARS = {'-', ':', ' ', '|'}
+LATEX_DECORATION_RE = re.compile(
+    r'\\(?:mathrm|mathbf|mathcal|mathbb|mathsf|text|operatorname|bar|hat|tilde'
+    r'|widehat|widetilde|overline|underline|vec|dot|ddot)\s*'
+)
+SYMBOL_SPLIT_RE = re.compile(r'[\s,;^]+')
 
 
 @dataclass(frozen=True)
@@ -49,6 +57,25 @@ class Finding:
     line: int
     token: str
     category: str
+
+
+def _symbol_tokens(cell: str) -> list[str]:
+    '''Plain-text symbol tokens from one notation-table cell.
+
+    Descriptions are written in LaTeX ($\\sigma_p$, $\\bar{h}_t$), so a cell
+    is normalized to the token forms that appear in prose before it can
+    whitelist anything: decorations are dropped, symbol commands keep their
+    name, and multi-symbol cells ("$A_k$, $B_k$") split into one token each.
+    Normalizing here — rather than at the point of use — keeps the harvest
+    whitelist and the suspicious_notation counter-check reading the same
+    set, so a LaTeX-dressed identifier cannot slip past the counter-check.
+    '''
+    s = cell.strip().strip('`$ ').strip()
+    s = LATEX_DECORATION_RE.sub('', s)
+    s = s.replace('\\,', ' ').replace('\\;', ' ').replace('\\quad', ' ')
+    s = s.replace('\\', '').replace('{', '').replace('}', '')
+    s = s.replace('$', ' ').replace('`', ' ')
+    return [tok for tok in SYMBOL_SPLIT_RE.split(s) if tok]
 
 
 def notation_whitelist(text: str) -> set[str]:
@@ -64,7 +91,7 @@ def notation_whitelist(text: str) -> set[str]:
         if in_notation and line.startswith('|'):
             first = line.strip('|').split('|', 1)[0].strip().strip('`$ ')
             if first and not set(first) <= TABLE_SEP_CHARS:
-                symbols.add(first)
+                symbols.update(_symbol_tokens(first))
     return symbols
 
 
