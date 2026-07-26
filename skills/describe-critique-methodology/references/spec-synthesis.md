@@ -5,10 +5,13 @@
 **First: was the critique adjudicated at all?** The prompt asks Chat for the
 positions reached after interactive push-back. A critique taken as a first
 pass — no push-back — carries none: no point marked rejected, no record of
-positions reached. Detect that and say so above the table. The adjudication
-did not happen upstream, so it happens here: expect far more
-needs-user-adjudication, and never read the absence of rejections as
-agreement.
+positions reached. Detect that and say so above the table — the signal is the
+absent push-back, not an absent routing header or missing C-numbers, which
+only mean the critique predates this skill. The adjudication then happens
+here: make the calls yourself with a rationale each, rather than forwarding
+the critique to the user as questions. There are no Chat-side rejections to
+inherit, so never read their absence as agreement; reserve
+needs-user-adjudication for what genuinely turns on the user's priorities.
 
 Before any spec text, present ONE batched table covering every critique
 point:
