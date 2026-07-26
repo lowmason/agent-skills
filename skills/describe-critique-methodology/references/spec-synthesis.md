@@ -43,8 +43,9 @@ can settle it.
 
 ## Locators
 
-Open the spec with a **Design provenance** paragraph naming both source
-files and declaring the locator scheme in use. Default scheme:
+After the routing header and the summary paragraph, place a **Design
+provenance** paragraph naming both source files and declaring the locator
+scheme in use. Default scheme:
 `(methodology §N)` and `(critique C7)` — the critique prompt makes Chat
 number its points C1..Cn, so a critique produced through this skill has
 them. A foreign or pre-skill critique may not; declare whatever scheme its

@@ -234,6 +234,50 @@ cases (RAG: no estimation procedure, methodology lives in assembly choices; fine
 classifier: no data-generating story; checkpoint/tokenization/schedule choices need
 slots).
 
+## Amendment A — 2026-07-26: gold-master reconciliation (Reqs 3, 4)
+
+Between plan #1 and plan #2 the user ran a real round-trip and hand-built the
+synthesized spec themselves (alt-nfp `specs/usable_series_methodology.md`,
+`_review.md`, `_roadmap.md`). That artifact is a gold master for Synthesize mode: it
+independently reproduced the Req 4 house skeleton, the Req 4 routing header verbatim,
+dense inline locators with no orphan requirements, and (chosen)/(rejected) markers —
+so the specified design survives contact with reality. Four gaps it exposed amend
+Reqs 3 and 4; all four are landed in the skill.
+
+**A1 — a third inline marker, `(open)` (amends Req 4 step 3).** A decision turning on
+a matter of fact about a system outside the repo is settled by checking, not by
+argument, so it is neither accept nor needs-user-adjudication — that verdict presumes
+the user can settle it. In triage such a point is a plain accept whose requirement
+carries `(open)`, written self-describing (`open — resolved by verification, not
+argument`) and discharged by a named Verification bullet; a blocking one opens the
+Rollout note, as the gold master's likelihood question does. No fourth triage verdict
+(chosen; adding one rejected — it would route an external lookup into a user debate).
+
+**A2 — first-pass critiques (amends Reqs 3 and 4 step 2).** Req 3 has
+`critique-prompt.md` instruct Chat to record adjudications, and Req 4's triage defaults
+rejected-by-Chat points to reject. The user's real review was a first pass with no
+push-back: zero Chat-side rejections, and the synthesis made all fourteen rejections
+itself. Under the rule as specified, that silence would have read as agreement.
+Synthesize mode now establishes and announces adjudicated-vs-first-pass before
+triaging and carries the adjudication itself in the latter case; the Chat prompt gains
+the matching honesty rule ("never dress a first-pass finding as adjudicated") that
+makes the detection reliable.
+
+**A3 — the locator scheme is declared, not fixed (amends Req 4 step 3).** `C1..Cn`
+stays the default, since Req 3's prompt still mandates it for critiques produced
+through this skill. A foreign or pre-skill critique has none — the real one used §1–§10
+plus Recommendations 1–9. The spec now opens with a Design provenance paragraph naming
+both sources and declaring whichever scheme the critique's structure affords (the gold
+master declared **M §n** / **R §n**).
+
+**A4 — mode selection (amends Req 4).** The body rule matched only
+`specs/<name>-critique.md` beside `specs/<name>-methodology.md`; the real pair was
+`usable_series_methodology.md` / `usable_series_methodology_review.md`, which would not
+have fired it. Loosened to a `methodology`-named file with a `critique`- or
+`review`-named sibling, hyphens or underscores either way. Body text only — the Req 1
+description is untouched, because the 5/5 re-entry routing result was measured on that
+wording.
+
 ## Verification — observable outcomes
 
 - [ ] Both lints exit 0; `name` == directory for both skills; descriptions ≤1024 chars.

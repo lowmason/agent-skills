@@ -95,39 +95,34 @@ This is the behavioral verification Synthesize mode never had.
 - **Verification bullets are genuinely observable** — each names its Req
   and a concrete artifact/test/fixture, never "works correctly".
 
-#### GAPS the artifact exposes in the skill — act on these
+#### GAPS the artifact exposed — ALL FOUR LANDED (commit 95c5d76)
 
-1. **A fourth verdict is missing: `(open)`.** The user invented it for
-   "matters of fact about systems outside this repo, resolved by the named
-   verification step, not by argument" (e.g. *is the downstream likelihood
-   Gaussian or Student-t?*). This is genuinely distinct from
-   needs-user-adjudication, which assumes the user can settle it. Add it
-   to the triage vocabulary in `spec-synthesis.md`, with the rule that an
-   `(open)` item MUST be discharged by a named Verification bullet.
-2. **First-pass critiques break an assumption.** The critique prompt is
-   built around interactive adjudication and tells Chat to "Record the
-   ADJUDICATED positions we reached"; `spec-synthesis.md` says
-   "Rejected-by-Chat points default to reject here." With no pushback
-   there are ZERO Chat-side rejections — the synthesis itself made all 14
-   rejections. The skill must handle the first-pass case explicitly:
-   detect it, say so, and shift the adjudication burden into triage
-   (expect far more needs-user-adjudication).
-3. **Generalize the locator scheme.** The skill prescribes
-   `(methodology §N)` / `(critique C7)`; reality used `M §n` / `R §n` with
-   a **legend declared up front** in a "Design provenance" paragraph.
-   Adopt that: require a provenance paragraph naming both source files and
-   declaring the locator scheme, rather than mandating one fixed notation.
-4. **Naming/mode-selection** (see friction 1 above) — still unfixed.
+Recorded as **Amendment A** in the live spec
+`specs/methodology-pipeline-skills.md` (it stays live until plan #2).
+
+1. **`(open)` — a third INLINE REQUIREMENTS MARKER, not a fourth triage
+   verdict.** An earlier draft of this handoff put it in the triage
+   vocabulary; that was wrong. Checked against the artifact: it sits with
+   `(chosen)`/`(rejected)` in the Design-provenance declaration and is used
+   inline as `**(open — resolved by verification, not argument)**`, with
+   its discharge landing in the first Verification bullet and opening the
+   Rollout note. Landed in `spec-synthesis.md` § Spec format, with the
+   triage mapping made explicit (such a point is a plain **accept**).
+2. **First-pass critiques** — detection + announcement added to SKILL.md
+   step 2 and `spec-synthesis.md`; `critique-prompt.md` gained the matching
+   honesty rule so the detection has something to key on.
+3. **Locator scheme** — made additive, not a replacement: `C1..Cn` stays
+   the default (the prompt still mandates it), with a Design provenance
+   paragraph declaring whatever scheme a foreign critique affords.
+4. **Mode selection** — loosened in the BODY only (`methodology` + sibling
+   `critique`/`review`, hyphens or underscores). Frontmatter description
+   deliberately untouched: MT2's 5/5 routing was measured on that wording.
 
 #### Next actions
 
-- Fold gaps 1–4 into the skill (`SKILL.md` Synthesize mode +
-  `references/spec-synthesis.md` + `references/critique-prompt.md`), TDD'd
-  where testable. This is skill-text work on branch
-  `feat/describe-critique-methodology` (or a follow-up branch — plan 18 is
-  already retired, so this is NEW work needing its own spec/plan decision).
-- The artifact is also prime input for **plan #2 (derive-roadmap)**: it
-  shows what the user's hand-built spec→roadmap boundary looks like.
-- Do NOT re-run Synthesize mode on this pair to "verify" it — the user
-  already produced the output; re-deriving it would be theater. Use it as
-  a gold master instead.
+- The artifact is prime input for **plan #2 (derive-roadmap)**: it shows
+  what the user's hand-built spec→roadmap boundary looks like.
+- Do NOT re-run Synthesize mode end-to-end on this pair to "verify" it —
+  the user already produced the output; re-deriving it would be theater.
+  Use it as a gold master instead. (The narrow two-arm check on gap 2's
+  first-pass detection is the exception and was run deliberately.)
