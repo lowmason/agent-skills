@@ -287,3 +287,44 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       all agent descriptions load into the Agent-tool listing (current
       roster: 261–445 chars each). Add a cap to build/check_frontmatter.py
       when the roster grows.
+
+## 18-methodology-pipeline-skills (plan #1, describe-critique-methodology) — 2026-07-26
+- [ ] **DL/NLP domain extension for the methodology templates (spec Req 15,
+      v1 scope boundary — deliberately not built).** v1's templates are
+      statistical/Bayesian/nowcast only and carry no DL/NLP slots. The
+      sketched extension is *conditional* slots rather than new mandatory
+      ones: "if trained → training objective (loss, optimizer, schedule)";
+      "if pipeline-assembled → assembly policy (what calls what, with which
+      prompts/thresholds)". Known breakage cases the current six slots
+      handle badly: a **RAG system** has no estimation procedure at all —
+      its methodology lives in retrieval/chunking/reranking assembly
+      choices, which the "Estimation / inference procedure" slot cannot
+      hold; a **fine-tuned classifier** has no data-generating story in the
+      generative sense (the story is dataset construction + label
+      provenance); and checkpoint / tokenization / schedule details have no
+      slot yet are methodologically load-bearing. Build only when a real
+      DL/NLP target needs describing — speculative slots would dilute the
+      stats-tuned wording that MT1 showed is doing the work.
+- [ ] **In-session SOTA pass as a Chat-Research alternative (spec "Out of
+      scope").** Today Describe mode always hands off to an external Claude
+      Chat session with Research enabled. An in-session variant — WebSearch
+      + paper search + an llm-wiki query — would close the loop without
+      leaving Claude Code, at the cost of the interactive push-back /
+      adjudication that makes the Chat critique valuable. Revisit after the
+      user has run a few real round-trips and can compare critique quality;
+      the spec's Req 13 round-trip is the natural evidence source.
+- [ ] **Synthesize mode has no scenario verification (spec Req 13,
+      gate-deferred).** MT2 proved the mode is *routed to* correctly (5/5
+      across three treatment arms) but nothing tests its *behavior* once
+      entered — triage-table-before-spec-text, locator discipline, the
+      derive-roadmap handoff. It ships consciously untested. The fixture
+      that would test it is the real critique from the user's round-trip;
+      fold this into plan #2 rather than synthesizing a strawman critique.
+- [ ] **`suspicious_notation` false positives on acronym subscripts.** After
+      the LaTeX fix, uppercase-acronym math symbols (`NSA_t`, `TOT_c`,
+      `NSA_v` — from `G^{\mathrm{NSA}}_t`) are reported as
+      identifier-shaped. They are correct-by-the-documented-rule (advisory,
+      human-read) and appeared in both the micro-tests and the full run, so
+      the noise is predictable rather than alarming. If it becomes
+      irritating, exempt all-uppercase segments of ≤4 chars — but only with
+      a test proving a genuine uppercase identifier still warns.

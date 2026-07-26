@@ -1,5 +1,17 @@
 # describe-critique-methodology Implementation Plan (plan #1 of 2 for methodology-pipeline-skills)
 
+> **STATUS: COMPLETE (2026-07-26)** — executed inline via executing-plans on
+> branch `feat/describe-critique-methodology` in the primary checkout.
+> Five commits: `197ce1e` (apparatus), `e64cb11` (GREEN skill + provenance),
+> `05d1631` (LaTeX-aware validator fix), `d44fb78` (neighbor tweaks), plus
+> this markup. All deviations are noted inline below.
+>
+> **Two user gates remain open** — they need a human and could not be
+> answered in-session: Task 7 Step 4 (review/commit the alt-nfp description,
+> leg 1 of the round-trip gating plan #2) and Task 9 Step 3 (`/context`
+> residency check in a fresh session). Both are recorded as *pending user
+> action*, not as satisfied.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 >
 > **Execution note for this plan:** Tasks 2, 4, 5, 6, and 7 dispatch fresh subagents *as test apparatus*. Implementer subagents cannot spawn subagents, so under subagent-driven-development the **orchestrator executes those five tasks itself** (delegate Tasks 1, 3, and 8 normally; in Task 9 delegate only Steps 1–2 — Steps 3–4 are orchestrator/user dialogue). Where an orchestrator-executed task commits (Task 7), still produce the diff file and dispatch the task-reviewer subagent afterward, as for any SDD task. Inline execution via executing-plans avoids the split and is the recommended mode for this plan.
@@ -42,7 +54,7 @@ Implements: Req 5 (validator core built BEFORE RED — micro-test scoring needs 
 - Consumes: nothing (first task).
 - Produces: `harvest(text: str, whitelist: set[str] | frozenset = frozenset()) -> list[Finding]` where `Finding` is a frozen dataclass `(line: int, token: str, category: str)`; `notation_whitelist(text: str) -> set[str]`; `suspicious_notation(whitelist) -> list[str]` (identifier-shaped table entries — the anti-laundering counter-check); CLI `python3 check_decoupling.py <file.md>` printing `path:line: [category] token` lines, `[notation-table]` warnings, and an `ADVISORY: …` summary, **always exit 0**. Tasks 2, 4, and 7 score documents with this CLI.
 
-- [ ] **Step 1: Cut the branch**
+- [x] **Step 1: Cut the branch**
 
 ```bash
 git branch --show-current   # expect: main
@@ -53,7 +65,7 @@ mkdir -p skills/describe-critique-methodology/scripts
 
 (Neither lint looks at a skill directory until `SKILL.md` exists, so the bare `scripts/` dir is lint-safe.)
 
-- [ ] **Step 2: Write the failing tests**
+- [x] **Step 2: Write the failing tests**
 
 Create `skills/describe-critique-methodology/scripts/test_check_decoupling.py`:
 
@@ -165,7 +177,7 @@ def test_cli_always_exits_zero(tmp_path):
     assert 'ADVISORY' in proc.stdout
 ```
 
-- [ ] **Step 3: Run tests to verify they fail**
+- [x] **Step 3: Run tests to verify they fail**
 
 ```bash
 cd skills/describe-critique-methodology/scripts && uv run --python 3.13 --with pytest python -m pytest -q
@@ -173,7 +185,7 @@ cd skills/describe-critique-methodology/scripts && uv run --python 3.13 --with p
 
 Expected: collection error — `ModuleNotFoundError: No module named 'check_decoupling'`.
 
-- [ ] **Step 4: Write the implementation**
+- [x] **Step 4: Write the implementation**
 
 Create `skills/describe-critique-methodology/scripts/check_decoupling.py`:
 
@@ -334,7 +346,7 @@ if __name__ == '__main__':
     sys.exit(main(sys.argv))
 ```
 
-- [ ] **Step 5: Run tests to verify they pass**
+- [x] **Step 5: Run tests to verify they pass**
 
 ```bash
 cd skills/describe-critique-methodology/scripts && uv run --python 3.13 --with pytest python -m pytest -q
@@ -342,7 +354,7 @@ cd skills/describe-critique-methodology/scripts && uv run --python 3.13 --with p
 
 Expected: `14 passed`.
 
-- [ ] **Step 6: Lints + commit**
+- [x] **Step 6: Lints + commit**
 
 ```bash
 uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
@@ -367,7 +379,7 @@ Implements: Req 13 (RED baselines; expected failures documented in advance). No 
 - Consumes: Task 1's CLI (`python3 skills/describe-critique-methodology/scripts/check_decoupling.py <file>`).
 - Produces: `SCRATCH/red/RED-observations.md` — pre-registered expectations + verbatim observed failures + per-transcript flag counts. Task 3 reconciles its draft against this file; Task 4 reuses the five S1 transcripts as its no-guidance control arm.
 
-- [ ] **Step 1: Pre-register expected failures**
+- [x] **Step 1: Pre-register expected failures**
 
 Write `SCRATCH/red/RED-observations.md` opening section BEFORE any dispatch, listing the spec's predicted failure modes verbatim:
 
@@ -388,7 +400,7 @@ E5. Missing slots: no assumptions/limitations section, no evaluation
 ## Observed (verbatim excerpts + counts, filled per rep below)
 ```
 
-- [ ] **Step 2: Dispatch the module-scenario baselines (5 reps)**
+- [x] **Step 2: Dispatch the module-scenario baselines (5 reps)**
 
 Dispatch five FRESH `general-purpose` subagents, one per rep, each with exactly this prompt (substitute `<SCRATCH>` and `<N>` = 1–5; no skill content anywhere in the dispatch):
 
@@ -404,11 +416,11 @@ not from them. Save the document to <SCRATCH>/red/s1-rep<N>.md and reply
 with only the file path.
 ```
 
-- [ ] **Step 3: Dispatch the system-scenario baselines (2 reps)**
+- [x] **Step 3: Dispatch the system-scenario baselines (2 reps)**
 
 Same dispatch, replacing the second sentence's target with "the whole alt-nfp forecasting system (all packages and how their outputs combine)" and the output path with `<SCRATCH>/red/s2-rep<N>.md` (N = 1–2).
 
-- [ ] **Step 4: Score and record verbatim**
+- [x] **Step 4: Score and record verbatim**
 
 For each of the 7 transcripts:
 
@@ -418,7 +430,18 @@ python3 skills/describe-critique-methodology/scripts/check_decoupling.py SCRATCH
 
 Record in `RED-observations.md`, per rep: total flag count, count per category, whether E1–E5 each occurred (with one verbatim quoted excerpt per occurrence), and whether the transcript shows signs of cribbing any of the pre-existing methodology documents (the root notes or the specs/ methodology files named in the dispatch). **Read every flagged match manually** — template echoes and quoted examples are not hits. Close with a summary table: per-rep flag counts (this is Task 4's control distribution) and which expected failures were confirmed / not observed.
 
-- [ ] **Step 5: No commit**
+- [x] **Step 5: No commit**
+
+> **Deviation (Task 2, observed failures):** E1/E3/E5 CONFIRMED 7/7. **E2
+> NOT OBSERVED** in its literal form (no rep mirrored the file/package
+> layout); the adjacent observed failure was implementation-apparatus
+> sections (parity gates, batched-fit machinery, software notes) and a
+> site-name appendix. Nothing was cut — the "code walkthrough" bullet was
+> EXTENDED to the observed form instead, and a new "site-inventory
+> appendix" bullet added. **E4 NOT OBSERVED 0/7** (no stale-doc cribbing);
+> no cribbing-countering guidance existed to cut, so no change. Notation
+> tables: 0/7 reps built one — the single strongest signal for the
+> notation-table-first recipe.
 
 Nothing lands in the repo. The distilled failure list is pasted into Task 3's commit message. If an expected failure did NOT occur in any rep, mark it `NOT OBSERVED` — Task 3 then omits the failure-countering guidance for it under the **scoped cut rule in Global Constraints** (spec-mandated template slots and workflow steps always stay — E5's slots are fixed by spec Req 2 regardless of observation), with a deviation note.
 
@@ -442,7 +465,7 @@ Implements: Reqs 1, 2, 3, 4, 6; Req 14's NOTICE/CLAUDE.md slice. **Reconcile eve
 - Consumes: `SCRATCH/red/RED-observations.md` (Task 2).
 - Produces: the skill's frontmatter description text (Tasks 5–6 embed it verbatim in their harness prompts); the three routing headers (methodology / critique / synthesized-spec) exactly as written below; the scripted re-entry utterance `The critique is back — use describe-critique-methodology (synthesize mode) on specs/<name>-critique.md`; the template + recipe text Task 4 tests.
 
-- [ ] **Step 1: Write SKILL.md**
+- [x] **Step 1: Write SKILL.md**
 
 Create `skills/describe-critique-methodology/SKILL.md` with exactly this content (then apply RED reconciliation with deviation notes):
 
@@ -591,7 +614,7 @@ mode. Otherwise, Describe mode.
   may flag.
 ````
 
-- [ ] **Step 2: Write the methodology templates**
+- [x] **Step 2: Write the methodology templates**
 
 Create `skills/describe-critique-methodology/references/methodology-template.md`:
 
@@ -679,7 +702,7 @@ One section per component, each following the module template's slots.
 ```
 ````
 
-- [ ] **Step 3: Write the critique prompt**
+- [x] **Step 3: Write the critique prompt**
 
 Create `skills/describe-critique-methodology/references/critique-prompt.md`:
 
@@ -729,7 +752,7 @@ document for me to save as a file, following these rules exactly:
 - Cite sources for state-of-the-art claims (author-year plus a link).
 ````
 
-- [ ] **Step 4: Write the synthesis reference**
+- [x] **Step 4: Write the synthesis reference**
 
 Create `skills/describe-critique-methodology/references/spec-synthesis.md`:
 
@@ -780,7 +803,7 @@ fix inline. Then the scripted user gate, then hand off to derive-roadmap by
 bare name in a fresh session — and stop.
 ````
 
-- [ ] **Step 5: Write the wiki touchpoints**
+- [x] **Step 5: Write the wiki touchpoints**
 
 Create `skills/describe-critique-methodology/references/wiki-touchpoints.md`:
 
@@ -804,7 +827,7 @@ into `$LLM_WIKI_ROOT/raw/` for llm-wiki ingest — a Research-mode critique is
 a citation-rich source document. The agent never writes `raw/` itself.
 ````
 
-- [ ] **Step 6: NOTICE + CLAUDE.md + README in the same commit**
+- [x] **Step 6: NOTICE + CLAUDE.md + README in the same commit**
 
 Edit `NOTICE` — in the originals block, insert before its terminating blank line (directly under `    llm-wiki/`):
 
@@ -829,7 +852,7 @@ Edit `README.md` — in the "Mine" table, add directly below the `llm-wiki` row:
 
 Edit `README.md` — Credits, "**My original skills**" bullet (read the current line first): change ``...`creative-thinking`, and `llm-wiki` are my own work`` to ``...`creative-thinking`, `llm-wiki`, and `describe-critique-methodology` are my own work``.
 
-- [ ] **Step 7: Reconcile with RED, verify, commit**
+- [x] **Step 7: Reconcile with RED, verify, commit**
 
 Re-read `SCRATCH/red/RED-observations.md`. Walk the skill files section by section and record an explicit verdict for each: **CONFIRMED** (RED evidence supports it as written), **EXTENDED** (RED observed a failure it does not address — extend it), **CUT** (failure-countering guidance whose failure was NOT OBSERVED, within the scoped cut rule in Global Constraints), or **SPEC-FIXED / UNTESTED** (workflow scaffolding and all Synthesize-mode text — Reqs 1/3/4, untested pending plan #2). Every EXTENDED/CUT change gets a `> Deviation:` note; the verdict list goes into the commit message. Then:
 
@@ -861,7 +884,7 @@ Implements: Req 13 micro-test (a). Control arm = Task 2's five S1 transcripts (R
 - Consumes: Task 2's S1 transcripts + flag counts; Task 3's template + recipe text; Task 1's CLI.
 - Produces: `SCRATCH/mt1/MT1-results.md` — per-arm flag counts, slot compliance, variance verdict, and a KEEP / REVISE decision Task 7 acts on.
 
-- [ ] **Step 1: Dispatch 5 recipe-arm reps**
+- [x] **Step 1: Dispatch 5 recipe-arm reps**
 
 Five FRESH `general-purpose` subagents. Prompt = Task 2 Step 2's S1 prompt verbatim (output path `<SCRATCH>/mt1/rep<N>.md`), plus this suffix:
 
@@ -874,11 +897,38 @@ Follow the attached template and writing rules exactly.
 Describe mode step 2, verbatim>
 ```
 
-- [ ] **Step 2: Score both arms identically**
+- [x] **Step 2: Score both arms identically**
 
 Run the CLI on each `mt1/rep*.md`; record per-rep: flag count (after notation-table whitelisting), whether all 6 module-template slots are present, and read every flagged match manually (a defined-then-used symbol like `y_t` is a whitelist hit, not smuggling). Also read each rep's notation TABLE itself along with the CLI's `[notation-table]` warnings — an identifier "defined" as a symbol is smuggling the whitelist would otherwise hide; count it as a flag.
 
-- [ ] **Step 3: Judge**
+- [x] **Step 3: Judge**
+
+> **Deviation (Task 4, PASS bar input was invalid → checker fixed):** on the
+> as-committed checker the raw-count bar could not be evaluated honestly —
+> `notation_whitelist()` read table entries literally, so a LaTeX table
+> (`| $\sigma_p$ |`) whitelisted `\sigma_p` while prose flagged `sigma_p`.
+> All 5 reps wrote LaTeX, so **the whitelist was silently inert on every
+> recipe document** and the arm was charged for notation it had correctly
+> defined. The same leading backslash made `suspicious_notation()` vacuous
+> (every branch fails on `\`), so the anti-laundering counter-check
+> returned `[]` without inspecting anything.
+>
+> Fixed in the REFACTOR phase (commit `05d1631`, **a code change not in this
+> task's Files list** — recorded as a deviation): normalization applied ONCE
+> in `notation_whitelist()`, feeding both the harvest whitelist and the
+> counter-check, so a LaTeX-dressed identifier cannot be whitelisted while
+> staying invisible to the check —
+> `test_latex_wrapped_identifier_still_flagged_by_counter_check` pins that.
+> LaTeX Greek variants (`varepsilon`, `varrho`, …, `ell`) added to `GREEK`.
+> `harvest()` regexes untouched. 14 → 18 tests; CLAUDE.md count updated in
+> the same commit.
+>
+> **Result after the fix:** control {50, 108, 111, 123, 111} vs recipe
+> {30, 12, 32, 15, 13} — separated, non-overlapping, bar MET. It agrees with
+> the plan's manual-read metric: verified code-identifier smuggling
+> {7, 1, 3, 1, 19} control vs {0, 0, 0, 0, 0} recipe. Notation tables 0/5 vs
+> 5/5; slots 5/5; all five reps converged on one shape. **KEEP, zero
+> skill-text edits.**
 
 Write `SCRATCH/mt1/MT1-results.md`: control (RED S1) counts vs recipe-arm counts; slot compliance ×5; variance check (five reps converging on the template shape = wording binds; five different shapes = tighten the form before adding words). PASS = every recipe rep has all slots AND the recipe-arm flag distribution sits clearly below the control's (separated, not overlapping medians). On FAIL: revise the recipe wording (form-level change first — e.g. move the rule into a REQUIRED slot — per writing-skills "Match the Form to the Failure"), re-run 5 reps, max two revision cycles. If identifier smuggling survives recipe + validator after those cycles, apply the spec's designated escalation (Req 2): add a rationalization table to the template/skill at REFACTOR — then surface to the user. Record the final wording; Task 7 commits it.
 
@@ -895,11 +945,11 @@ Implements: Req 13 micro-test (b): the re-entry utterance and the critique-file 
 - Consumes: Task 3's frontmatter description (verbatim), critique routing header (verbatim from `references/critique-prompt.md`).
 - Produces: `SCRATCH/mt2/MT2-results.md` with per-arm tallies and a KEEP / REVISE decision for Task 7.
 
-- [ ] **Step 1: Build fixtures**
+- [x] **Step 1: Build fixtures**
 
 `SCRATCH/mt2/critique-with-header.md`: the critique routing header block (verbatim from `references/critique-prompt.md`), then the first ~60 lines of `/Users/lowell/Projects/alt-nfp/alt-nfp-methodology-review.md` (a real Research-mode critique — no synthetic strawman). `critique-no-header.md`: same without the header.
 
-- [ ] **Step 2: Dispatch arms (5 reps each)**
+- [x] **Step 2: Dispatch arms (5 reps each)**
 
 Each rep = one FRESH `general-purpose` subagent with this prompt (fill the bracketed slots per arm):
 
@@ -943,7 +993,7 @@ Arms × utterances (5 reps each):
 - **T2** (full listing, no-header fixture) × U2. No pass bar — measures how much the description alone carries (the header is the load-bearing mechanism; record the number).
 - **T3** (full listing, with-header fixture) × U1 `The critique is back — use describe-critique-methodology (synthesize mode) on specs/alt-nfp-critique.md` (the scripted utterance). PASS bar: 5/5.
 
-- [ ] **Step 3: Judge**
+- [x] **Step 3: Judge**
 
 Tally into `SCRATCH/mt2/MT2-results.md`, reading every `why:` line (an agent choosing correctly for the wrong reason is a fragility note). If the control does NOT fail (control reps already pick the right behavior), record it — per writing-skills there is then nothing to fix, but keep the header anyway (spec-mandated mechanism) and note the control result. On T1/T3 misses: strengthen the header/description trigger wording, re-run the failing arm, max two cycles, then surface. Task 7 commits any revisions.
 
@@ -960,7 +1010,7 @@ Implements: Req 13 micro-test (c): the Req 4 spec header holds when someone says
 - Consumes: Task 3's synthesized-spec routing header (verbatim from `references/spec-synthesis.md`); the MT2 harness prompt shape.
 - Produces: `SCRATCH/mt3/MT3-results.md` with tallies and a KEEP / REVISE decision for Task 7.
 
-- [ ] **Step 1: Build fixtures**
+- [x] **Step 1: Build fixtures**
 
 `SCRATCH/mt3/spec-with-header.md`, exactly:
 
@@ -992,13 +1042,13 @@ Synthesized from specs/alt-nfp-methodology.md and specs/alt-nfp-critique.md.
 
 `spec-no-header.md`: identical minus the blockquote.
 
-- [ ] **Step 2: Dispatch arms (5 reps each)**
+- [x] **Step 2: Dispatch arms (5 reps each)**
 
 MT2's harness prompt, with: listing = brainstorming + writing-plans + describe-critique-methodology (all three, both arms); fixture line "The file specs/alt-nfp.md exists in the repo. Its content:"; utterance `Here's a spec — write the implementation plan for specs/alt-nfp.md.`
 - **Control** (no-header fixture). Expected: writing-plans — correct for a normal spec; this arm just establishes the default.
 - **T1** (with-header fixture). PASS bar: 5/5 do NOT proceed to plan — they name derive-roadmap (and, since it is not installed, saying so / stopping counts as a pass — the harness reply format already permits `skill: none — spec requires derive-roadmap, not installed`).
 
-- [ ] **Step 3: Judge**
+- [x] **Step 3: Judge**
 
 Tally into `SCRATCH/mt3/MT3-results.md`, reading every `why:`. On misses: tighten the header wording (it already pre-empts writing-plans' Scope Check escape hatch with "do not split it into per-subsystem plans" — extend along the observed rationalization), re-run, max two cycles, surface if still failing. Task 7 commits revisions.
 
@@ -1016,7 +1066,7 @@ Implements: Req 13 (GREEN verification run), spec Verification bullet 5; closes 
 - Consumes: MT1–MT3 results files; the full skill from Task 3.
 - Produces: final skill wording (Tasks 8–9 build on it); the alt-nfp description that becomes leg 1 of the user's real round-trip (plan #2's gate).
 
-- [ ] **Step 1: Apply micro-test revisions**
+- [x] **Step 1: Apply micro-test revisions**
 
 Fold MT1/MT2/MT3 REVISE outcomes into the skill files. Every change gets a deviation note under the corresponding Task 3 step at completion time. Then lints + commit:
 
@@ -1033,7 +1083,16 @@ MT3 (cold-spec header): <tallies>. Records in session scratch."
 
 (Skip the commit only if all three micro-tests returned KEEP with zero edits.)
 
-- [ ] **Step 2: Dispatch the full run**
+> **Deviation (Task 7 Step 1):** all three micro-tests returned KEEP with
+> zero skill-text edits (MT1 5/5 slots + zero smuggling; MT2 control failed
+> 5/5 to brainstorming while T1/T2/T3 all routed 5/5 correctly; MT3 T1 5/5
+> refused to plan and named derive-roadmap). This commit was therefore
+> **empty and skipped**, per the instruction above. The only REFACTOR-phase
+> change was the validator fix, landed as its own commit (`05d1631`) BEFORE
+> the Step 2 dispatch — a checker drowning in ~100 spurious findings would
+> have made Step 3's manual read unreliable.
+
+- [x] **Step 2: Dispatch the full run**
 
 One FRESH `general-purpose` subagent:
 
@@ -1049,7 +1108,7 @@ skill says to; reply with the output file path followed by the full
 handoff message the skill tells you to deliver.
 ```
 
-- [ ] **Step 3: Verify the artifact**
+- [x] **Step 3: Verify the artifact**
 
 Against `/Users/lowell/Projects/alt-nfp/specs/nfp-model-methodology.md`:
 - All six module-template slots present; notation closed (spot-check: every symbol in the equations appears in the table).
@@ -1059,11 +1118,51 @@ Against `/Users/lowell/Projects/alt-nfp/specs/nfp-model-methodology.md`:
 
 On failure: fix the skill text (not the artifact), delete the artifact, re-dispatch. Max two iterations, then surface to the user with the observed failure.
 
-- [ ] **Step 4: User gate — the artifact and the round-trip**
+> **Deviation (Task 7 Step 3, granularity):** the step anticipated the
+> **module** template, but the run chose **system** — as did 5/5 MT1 reps on
+> this same target, because the package holds three composing components
+> (private-payroll leg, government-wedge leg, nowcast readout). That is the
+> skill's step-1 granularity choice working as designed, not a failure, so
+> it was verified against the system slots. All six present (Component
+> inventory / Composition / Cross-component assumptions / Notation /
+> Per-component descriptions A–C, each carrying the module slots / Open
+> questions ×12). `<name>` was pinned to `nfp-model` in the dispatch so this
+> step's literal path check stayed deterministic (MT1 reps had produced both
+> `nfp-model-…` and `nfp-nowcast-…` names).
+>
+> **PASSED first iteration, no re-dispatch.** Routing header verbatim.
+> Validator: 12 advisory findings + 2 `[notation-table]` warnings, every one
+> read in place — all legitimate LaTeX (`\beta_1`, `\varepsilon_1`,
+> `\sum_n`, `c_u`), the required routing-header path, one prose false
+> positive ("entry/exit."), and the two warnings are `G^{\mathrm{NSA}}_t` /
+> `\sigma^{\mathrm{NSA}}_v` superscript artifacts confirmed absent from
+> `packages/nfp-model/src`. **Zero smuggled identifiers.** The reply ended
+> with the handoff message carrying the scripted re-entry utterance.
+>
+> One honest caveat: under the no-git waiver the handoff message's first
+> line still reads "committed" while the file is uncommitted — an artifact
+> of the waiver, not a skill defect.
+>
+> The run also surfaced a **repo-state finding for the user** (not a skill
+> issue): `alt-nfp/specs/alt-nfp-model-methodology.md` (commit e0f08ef)
+> describes a method that does not match the checkout and cites a
+> `kalman.py` that has never existed in that repo, and the four root
+> `alt-nfp-methodology*.md` files are untracked and dated after the last
+> commit. Worth adjudicating before spending an interactive critique
+> session.
+
+- [x] **Step 4: User gate — the artifact and the round-trip**
+
+> **PENDING USER ACTION (Task 7 Step 4).** The gate text below was delivered
+> verbatim in the execution session's final message. No answer was received
+> in-session (non-interactive), so this is **not** ticked as satisfied: the
+> alt-nfp artifact remains uncommitted and unreviewed, spec Verification
+> bullet 5 stays open, and plan #2 stays gated. Record the alt-nfp commit
+> sha here when the user confirms.
 
 Tell the user, verbatim except the path: "Full Describe-mode run passed on alt-nfp. Please review `/Users/lowell/Projects/alt-nfp/specs/nfp-model-methodology.md` and commit it in alt-nfp if it earns its keep — that commit is leg 1 of the real describe→Chat→critique round-trip that gates plan #2 (spec Req 13). The critique-prompt to paste into Chat Research is in the skill's references/." Do not commit in alt-nfp yourself. When the user confirms, record the alt-nfp commit sha in this plan's markup — it closes spec Verification bullet 5 ("a committed specs/<name>-methodology.md") and is leg 1 of plan #2's gate.
 
-- [ ] **Step 5: Commit any final skill fixes**
+- [x] **Step 5: Commit any final skill fixes**
 
 If Step 3 iterations touched skill files: lints, then commit as `refactor(describe-critique-methodology): full-run fixes — <one line>`.
 
@@ -1081,7 +1180,7 @@ Implements: Req 14's neighbor tweaks (docs-writer exclusion; design-architecture
 - Consumes: final skill wording (Task 7).
 - Produces: nothing downstream in this plan; plan #2 repeats this shape for derive-roadmap.
 
-- [ ] **Step 1: docs-writer out-of-lane note**
+- [x] **Step 1: docs-writer out-of-lane note**
 
 In `agents/docs-writer.md`, append to the Lanes list:
 
@@ -1093,7 +1192,7 @@ In `agents/docs-writer.md`, append to the Lanes list:
   decline the dispatch and point the caller at that skill.
 ```
 
-- [ ] **Step 2: design-architecture headroom check (expected: skip)**
+- [x] **Step 2: design-architecture headroom check (expected: skip)**
 
 ```bash
 uv run --python 3.13 --with pyyaml python -c "
@@ -1104,9 +1203,15 @@ print(1024 - len(fm['description'].strip()))
 "
 ```
 
+> **Deviation (Task 8 Step 2) — conscious skip, as predicted.** Measured
+> **5** characters of headroom, exactly the plan's expectation. No
+> meaningful reciprocal fence fits in 5 chars, so spec Req 14's fence is
+> **deliberately not shipped** and `skills/design-architecture/SKILL.md` is
+> unchanged. Recorded in the Task 8 commit message.
+
 Expected: `5` (verified at plan-writing time; an earlier 2026-07-25 measurement of 4 was off by one). Spec Req 14 ships the reciprocal fence **only if** wording fits the headroom; no meaningful fence fits in 5 characters, so record the conscious skip as a deviation note under this step and change nothing. (If the number is unexpectedly large — the description was trimmed since — add a fence only if it fits without displacing existing triggers, e.g. `; methodology write-ups for external critique go to describe-critique-methodology`, and re-run the frontmatter lint.)
 
-- [ ] **Step 3: Lints + commit**
+- [x] **Step 3: Lints + commit**
 
 ```bash
 uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
@@ -1117,7 +1222,9 @@ git add agents/docs-writer.md
 git commit -m "docs(agents): docs-writer out-of-lane note for methodology descriptions; design-architecture fence skip recorded"
 ```
 
-Expected: lints 0, `14 passed`.
+Expected: lints 0, ~~`14 passed`~~ **`18 passed`** (the Task 4 validator fix
+added 4 tests; CLAUDE.md's documented count was updated in the same commit).
+Actual: both lints exit 0, 18 passed.
 
 ---
 
@@ -1133,7 +1240,7 @@ Implements: Req 12 (listing-budget precondition, residency check), writing-skill
 - Consumes: the completed, committed skill (Tasks 1–8).
 - Produces: a deployed skill; the user's `/context` confirmation is the final verification artifact (record the result in this plan's markup).
 
-- [ ] **Step 1: Raise the listing budget**
+- [x] **Step 1: Raise the listing budget**
 
 Edit `/Users/lowell/.claude/settings.json`: after the `"cleanupPeriodDays": 3650,` line, insert:
 
@@ -1143,7 +1250,7 @@ Edit `/Users/lowell/.claude/settings.json`: after the `"cleanupPeriodDays": 3650
 
 (Read the file first; the user edits it too. Preserve all existing keys. The listing is measured at ~2.11× the default ~2K budget with whole-description drop-by-rank eviction, and a NEW skill is unranked — first to evict. Residency is a correctness precondition, not a cost line.)
 
-- [ ] **Step 2: Install the symlink**
+- [x] **Step 2: Install the symlink**
 
 ```bash
 ln -s /Users/lowell/Projects/agent-skills/skills/describe-critique-methodology /Users/lowell/.claude/skills/describe-critique-methodology
@@ -1152,13 +1259,50 @@ ls -la /Users/lowell/.claude/skills/describe-critique-methodology
 
 The symlink resolves through the primary checkout's working tree, so it works only while `feat/describe-critique-methodology` (or, post-merge, `main`) is checked out there — if the user switches this repo back to `main` before merging, the link dangles and the skill silently vanishes from listings. If (against the plan's recommendation) execution ran in a worktree, defer this step and Step 3 to after branch integration and say so.
 
-- [ ] **Step 3: User verification gate (fresh session, user-run)**
+- [x] **Step 3: User verification gate (fresh session, user-run)**
+
+> **Steps 1–2 DONE.** `skillListingBudgetFraction: 0.025` inserted into
+> `/Users/lowell/.claude/settings.json` after `cleanupPeriodDays` (file
+> re-read first; all existing keys preserved; JSON re-parsed to verify).
+> Symlink created and resolving:
+> `~/.claude/skills/describe-critique-methodology -> …/agent-skills/skills/describe-critique-methodology`
+> (SKILL.md + references + scripts all visible through it). Partial
+> in-session evidence that install worked: the skill appeared in this
+> session's own skill listing after the full-run dispatch.
+>
+> **PENDING USER ACTION (Step 3).** The `/context` residency check needs a
+> NEW session and a human; the gate text below was delivered verbatim in the
+> final message. Not ticked as satisfied — record the answer here. If a
+> pre-existing skill dropped out of the listing, stop and raise the fraction
+> rather than accepting the eviction.
 
 Ask the user, verbatim: "Deployment needs one check I can't run from inside this session: open a NEW Claude Code session and run `/context` — confirm (a) `describe-critique-methodology` appears among the listed skill descriptions and (b) no existing personal skill dropped out of the listing. Settings now carry `skillListingBudgetFraction: 0.025`, which takes effect in that new session. One caveat until the branch merges: keep `feat/describe-critique-methodology` checked out in agent-skills, or the new skill's symlink dangles — and re-run the `/context` check once after integration." Record the user's answer in the plan markup. If a skill did drop out, stop and surface — the fraction may need a further raise; do not silently accept eviction.
 
-- [ ] **Step 4: Close the writing-skills checklist**
+- [x] **Step 4: Close the writing-skills checklist**
 
 Confirm each item and record: RED baselines run before GREEN (Task 2); description "Use when…", third person, ≤1024, trigger-only (Task 3, micro-tested Tasks 4–6); Describe mode re-run WITH the skill (Task 7) — Synthesize-mode scenario verification consciously deferred to the real round-trip / plan #2 (spec Req 13; carry as a deviation note, not a tick); loopholes closed (Tasks 4–7 revision cycles); committed to git (Tasks 1–8). No push — the user pushes/merges explicitly. **STOP here: do not begin derive-roadmap (plan #2) — it is gated on the user's real round-trip (spec Req 13).**
+
+> **writing-skills checklist — recorded:**
+> - RED baselines before GREEN — **yes**, 7 no-skill runs (Task 2) preceded
+>   any skill text; the Iron Law ordering held throughout.
+> - Description "Use when…", third person, ≤1024 chars, triggers only —
+>   **yes**, lint-enforced (`check_frontmatter.py` green on every commit).
+> - Micro-tested wording — **yes**, MT1/MT2/MT3, each with a real
+>   no-guidance control arm; all three KEEP.
+> - Describe mode re-run WITH the skill — **yes**, Task 7, passed first
+>   iteration.
+> - **Synthesize mode: consciously UNTESTED — deviation, not a tick.** No
+>   scenario verification exists for it; it ships on spec-fixed workflow
+>   text pending the real round-trip (spec Req 13) and plan #2. MT2 verified
+>   only that the mode is *routed to* correctly, not that it *behaves*
+>   correctly once entered.
+> - Loopholes closed — **n/a**, no revision cycles were needed (zero
+>   micro-test failures); the one defect found was in the validator, fixed
+>   and pinned by a test.
+> - Committed to git — **yes**, 4 commits + this markup on
+>   `feat/describe-critique-methodology`. **Not pushed, not merged** — the
+>   user decides integration.
+> - **STOP observed: derive-roadmap (plan #2) NOT started.**
 
 ---
 
