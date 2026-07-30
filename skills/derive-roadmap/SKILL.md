@@ -18,7 +18,8 @@ metadata:
 
 Takes a Design Spec and the system it describes, and partitions the distance
 between them into stages. Each stage is one spec→plan→implementation cycle
-producing working, testable software.
+producing working, testable software — or, for a stage that answers a
+question rather than builds, a written finding (§2).
 
 **Core principle:** the roadmap routes; it never designs. Every stage exits
 to brainstorming or writing-plans by bare name. This skill does not plan a
@@ -35,7 +36,8 @@ being one, so resolve by header, not by name:
    safe direction — routing a live roadmap into fresh entry discards the
    reconciliation §5 exists to do.
 2. The document carries the Synthesize-mode routing header ("REQUIRED NEXT
-   SKILL: derive-roadmap", `spec-synthesis.md`) → §1, Gap analysis.
+   SKILL: derive-roadmap", describe-critique-methodology's
+   `spec-synthesis.md`) → §1, Gap analysis.
 3. An explicit request to compare a spec against the implementation, with no
    roadmap header present → §1, Gap analysis.
 
@@ -44,13 +46,14 @@ does not make a document a roadmap — only the header does.
 
 ## 1. Gap analysis — ONCE, at entry
 
-Classify EVERY numbered spec requirement into one of four verdicts using
+Classify EVERY numbered spec requirement into one of five verdicts using
 `references/gap-rubric.md`:
 
 - implemented-as-specified
 - implemented-differently
 - missing
 - in-code-but-not-in-spec
+- out-of-repo
 
 Read `specs/deferred_items.md` if it exists — its unticked entries are
 pre-existing stage candidates. The /deferred command owns promotion logic;
@@ -67,29 +70,28 @@ Rollout note. A roadmap for one stage is overhead with a filename.
 ## 2. Stage partition
 
 One stage = one spec→plan→implementation cycle producing working, testable
-software — writing-plans' Scope Check transposed up a level.
+software — writing-plans' Scope Check transposed up a level. An
+investigation stage is the one exception: its exit artifact is a written
+finding rather than software, but it is still a genuine spec→plan cycle,
+staged and routed like any other.
 
 Sequence by **dependency and information order**, not by spec section order
 and not by the critique's priority tiers. A cheap question whose answer
 changes a later stage's parameters goes first, even when it ranks low on
-value. Say plainly when your order diverges from the spec's own ranking, and
-why.
+value — this is the case an investigation stage exists for. Say plainly
+when your order diverges from the spec's own ranking, and why.
 
 ## 3. The roadmap artifact
 
 `<name>` is the spec's own filename stem (drop the path and `.md`) — used
-whole, never stripped. Do not remove a trailing `roadmap` token to dodge a
-name like `..._roadmap-roadmap.md`: for a spec whose filename already ends
-in `roadmap`, that stripping re-suffixes the stem to within one character of
-the input's own filename (a hyphen where the input has an underscore, or an
-exact match if the input already used a hyphen) — precisely the case this
-rule has to survive. Appending `-roadmap` to the untouched stem is what
-keeps the two paths apart, by construction, every time.
+whole, never stripped, even when the stem already ends in `roadmap`.
 
-Before writing, check whether `specs/<name>-roadmap.md` already exists. If it
-does, STOP — do not write it. Surface the collision to the user instead: if
-the existing file is this spec's own roadmap, the right move is Resume (§5),
-not a fresh Gap analysis.
+Before writing, scan `specs/` for any file carrying the roadmap header
+(condition 1 above) that names this spec as its source. If one exists,
+STOP — do not write — and surface it: the right move is Resume (§5),
+whatever its filename. A user calling a headerless document "the roadmap"
+is the same case: say the header is missing and confirm before treating
+this as fresh entry.
 
 Write `specs/<name>-roadmap.md` in the target repo per
 `references/roadmap-format.md`. Hard brevity budget: cite spec §-refs, never
@@ -161,7 +163,7 @@ When improvement directions are diffuse, route to creative-thinking.
 - **Sequencing by the spec's own priority ranking** — value order is the
   right way to rank recommendations and the wrong way to sequence work.
   Dependencies and cheap information-gathering come first.
-- **Exit criteria that restate the requirement** — an exit criterion names
-  an observable outcome, not an intention.
+- **Exit criteria that restate the requirement** — exit criteria name
+  observable outcomes, not intentions.
 - **Writing a roadmap for one stage** — take the single-stage exit.
 - **Trusting a fuzzy plan-name match over a stage stamp** — the stamp wins.

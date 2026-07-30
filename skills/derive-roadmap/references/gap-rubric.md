@@ -18,6 +18,9 @@ Run ONCE at entry, over EVERY numbered spec requirement. One row each.
 - **in-code-but-not-in-spec** — behavior exists that no requirement covers.
   Not automatically a defect: it may be scope drift to remove, or an
   unrecorded decision to fold back into the spec. Flag, do not assume.
+- **out-of-repo** — the spec's behavior lives outside the search boundary:
+  say where you looked and name the owning repo. Distinct from `missing`,
+  which asserts the behavior should be here and isn't.
 
 ## Batched questions
 

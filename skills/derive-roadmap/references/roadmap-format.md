@@ -1,8 +1,10 @@
 # Roadmap artifact format
 
 `specs/<name>-roadmap.md` in the target repo — `<name>` is the spec's own
-filename stem, used whole, never stripped (SKILL.md §3); confirm that path
-doesn't already exist before writing it. Opens with this header, verbatim:
+filename stem, used whole, never stripped (SKILL.md §3). Before writing,
+scan `specs/` for an existing roadmap header naming this spec as its
+source (SKILL.md §3) — filenames don't establish that on their own. Opens
+with this header, verbatim:
 
 > For agentic workers: REQUIRED SKILL: derive-roadmap — resume via its
 > reconcile step; route each unticked stage per its ROUTING line; never plan
@@ -20,7 +22,7 @@ these fields and nothing else:
       Gap closed: <which rubric rows this stage discharges>
       Consumes: <what this stage assumes already exists from prior stages>
       Produces: <what later stages may assume after this ships>
-      Exit: <one observable outcome>
+      Exit: <one observable outcome per rubric row closed, not an intention>
       ROUTING: brainstorming | writing-plans
 ```
 
