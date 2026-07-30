@@ -10,7 +10,7 @@
 
 **Tech Stack:** Markdown skill text; graphviz dot (SDD flow chart); bash fixtures; subagent dispatches for pressure tests; `build/check_frontmatter.py` + `build/check_provenance.py` lints.
 
-**Spec:** `specs/plan-completion-protocol.md`
+**Spec:** [`specs/completed/plan-completion-protocol.md`](../../completed/plan-completion-protocol.md)
 
 ## Global Constraints
 
