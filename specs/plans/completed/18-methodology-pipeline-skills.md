@@ -22,7 +22,7 @@
 
 **Tech Stack:** Markdown skills per the writing-skills meta-skill; Python 3.13 stdlib script via `uv run`; pytest; repo lints `build/check_frontmatter.py` + `build/check_provenance.py`.
 
-**Spec:** [`specs/methodology-pipeline-skills.md`](../methodology-pipeline-skills.md). This plan implements Reqs 1–6 and the plan-#1 slices of Reqs 12–15. **Skill B (`derive-roadmap`, Reqs 7–11) is OUT of this plan** — plan #2 is gated on the user running one real describe→Chat→critique round-trip on alt-nfp (Req 13); do not start it (writing-skills STOP gate).
+**Spec:** [`specs/completed/methodology-pipeline-skills.md`](../../completed/methodology-pipeline-skills.md). This plan implements Reqs 1–6 and the plan-#1 slices of Reqs 12–15. **Skill B (`derive-roadmap`, Reqs 7–11) is OUT of this plan** — plan #2 is gated on the user running one real describe→Chat→critique round-trip on alt-nfp (Req 13); do not start it (writing-skills STOP gate).
 
 ## Global Constraints
 
