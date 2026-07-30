@@ -144,9 +144,9 @@ When improvement directions are diffuse, route to creative-thinking.
 
 | You have | Do |
 |---|---|
-| A spec with the derive-roadmap header | Gap analysis → partition → roadmap, or single-stage exit |
+| A spec carrying the Synthesize-mode header (`REQUIRED NEXT SKILL`) | Gap analysis → partition → roadmap, or single-stage exit |
 | Gaps that fit one cycle | NO roadmap file — hand to brainstorming or writing-plans |
-| A `specs/*-roadmap.md` and "resume" | Reconcile via stamps, route the next unticked stage |
+| A document carrying the roadmap header (`REQUIRED SKILL … resume via its reconcile step`) | Reconcile via stamps, route the next unticked stage |
 | Every stage ticked | Completion review, then retire |
 | A stage to actually build | Not this skill — brainstorming or writing-plans, by bare name |
 
