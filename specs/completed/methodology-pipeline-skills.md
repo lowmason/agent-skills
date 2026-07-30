@@ -1,5 +1,17 @@
 # methodology-pipeline-skills — Design Spec
 
+**Status: COMPLETE (2026-07-30)** — implemented by
+[plan 18](../plans/completed/18-methodology-pipeline-skills.md) (Skill A,
+`describe-critique-methodology`) and
+[plan 19](../plans/completed/19-methodology-pipeline-skills.md) (Skill B,
+`derive-roadmap`); retired to `specs/completed/` with the second plan, per
+this spec's own Rollout note. Two Verification bullets are genuinely
+outstanding rather than satisfied — see the Verification section below,
+where they are left unticked rather than marked done: the `/context`
+residency check (needs a human, fresh session) and the committed
+Describe-mode artifact (`specs/nfp-model-methodology.md` in `alt-nfp`
+remains uncommitted, the owner's call under that repo's no-git waiver).
+
 Two new Lowell-original skills productionize the recurring methodology-critique-refactor
 loop: `describe-critique-methodology` (write a code-decoupled methodological description;
 after an external Claude Chat Research critique, synthesize description + critique into a
@@ -280,24 +292,52 @@ wording.
 
 ## Verification — observable outcomes
 
-- [ ] Both lints exit 0; `name` == directory for both skills; descriptions ≤1024 chars.
+- [x] Both lints exit 0; `name` == directory for both skills; descriptions ≤1024 chars.
+      Verified repeatedly across both plans (plan 18 Task 3; plan 19 Task 2 Step 2 —
+      description 337 chars — and every commit's pre-commit lint run); re-verified by
+      the plan 19 whole-branch reviewer as part of `fbb2d51..0a37288`.
 - [ ] `/context` in a fresh session shows both descriptions resident; no existing personal
-      skill dropped from the listing.
-- [ ] RED transcripts exist for Describe mode (no-skill baseline on alt-nfp) with the
-      observed failure modes documented verbatim before GREEN was written.
-- [ ] Micro-test records: decoupling wording, re-entry-vs-brainstorming, cold-spec-vs-
+      skill dropped from the listing. **Genuinely outstanding.** Plan 19 Task 7 verified
+      only the mechanical half (30 skills in the repo == 30 installed, zero dangling
+      symlinks) — the human-run `/context` confirmation has not happened. See
+      specs/deferred_items.md §19-methodology-pipeline-skills.
+- [x] RED transcripts exist for Describe mode (no-skill baseline on alt-nfp) with the
+      observed failure modes documented verbatim before GREEN was written. Plan 18
+      Task 2, 7 no-skill reps, E1/E3/E5 confirmed 7/7, documented before any skill text.
+- [x] Micro-test records: decoupling wording, re-entry-vs-brainstorming, cold-spec-vs-
       writing-plans — each with a no-guidance control, ≥5 reps, flagged matches read.
+      Decoupling wording and re-entry-vs-brainstorming: plan 18 Tasks 4–6. The cold-spec-
+      vs-writing-plans check was run twice — once with derive-roadmap absent (plan 18
+      Task 6) and, definitively, with it installed and both live poachers in the listing
+      (plan 19 Task 4: A1 5/5 derive-roadmap, 0/5 writing-plans, 0/5 either poacher).
 - [ ] One full Describe-mode run on alt-nfp produces a committed
       specs/<name>-methodology.md passing the template-slot self-check, with the Req 2
-      routing header.
+      routing header. **Genuinely outstanding.** The real run exists
+      (`/Users/lowell/Projects/alt-nfp/specs/usable_series_methodology.md`) but remains
+      UNCOMMITTED — see specs/deferred_items.md §19-methodology-pipeline-skills.
 - [ ] The real round-trip critique file exists with Chat-written adjudications and the
       Req 3 routing header; Synthesize mode's triage table and house-format spec (with
-      Req 4 header) verified on it.
-- [ ] derive-roadmap's gap rubric, roadmap artifact (Req 9 header, ROUTING lines,
+      Req 4 header) verified on it. Left unticked on inspection: the real critique file
+      (`usable_series_methodology_review.md`) carries NO routing header at all (it
+      predates the skill — confirmed by reading the file), so the Req 3 clause is
+      literally false for it; and no house-format spec was ever produced by RUNNING
+      Synthesize mode on this critique — the artifact used as the gold master
+      (`usable_series_methodology_roadmap.md`) was hand-built by the user. Only the
+      triage-table portion was behaviorally checked (Amendment A2's 3-arm check, which
+      stops at triage with no file writes). See the plan-18 deferred-items entry
+      "Synthesize mode has no scenario verification," which this remains true of.
+- [x] derive-roadmap's gap rubric, roadmap artifact (Req 9 header, ROUTING lines,
       stage-spec Rollout lifecycle lines), and single-stage exit verified against the
-      round-trip spec.
-- [ ] NOTICE, CLAUDE.md bullet + count, and README updated in the same commits as the
-      skills they describe.
+      round-trip spec. Plan 19's core result: Task 3 verified identical stamp wording
+      byte-for-byte; Task 6 ran the skill for real against the gold master and produced a
+      12-stage artifact with the header verbatim, matching ROUTING/Consumes/Produces/Exit
+      fields, graded 7-agree/1-diverge-with-rationale/0-diverge-without against the gold
+      master's own sequencing; Task 5 confirmed the single-stage exit 3/3 against this
+      repo's own spec as fixture.
+- [x] NOTICE, CLAUDE.md bullet + count, and README updated in the same commits as the
+      skills they describe. Plan 18 Task 3 (Skill A) and plan 19 Task 2 Step 9 (Skill B)
+      each landed provenance in the same commit as their SKILL.md; check_provenance.py
+      green throughout.
 - [x] Amendment A2 verified behaviorally (2026-07-26), fresh agents running Synthesize
       mode stopped at triage: the real no-push-back review read as first-pass 2/2; an
       adjudicated variant of it read as adjudicated 1/1; a PRE-SKILL critique carrying
