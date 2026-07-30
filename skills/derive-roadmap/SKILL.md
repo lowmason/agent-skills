@@ -79,7 +79,9 @@ Sequence by **dependency and information order**, not by spec section order
 and not by the critique's priority tiers. A cheap question whose answer
 changes a later stage's parameters goes first, even when it ranks low on
 value — this is the case an investigation stage exists for. Say plainly
-when your order diverges from the spec's own ranking, and why.
+whether your order follows or diverges from the spec's own ranking, and
+why — agreement is itself the most useful signal about the partition, and
+saying nothing reads as if no comparison happened at all.
 
 ## 3. The roadmap artifact
 

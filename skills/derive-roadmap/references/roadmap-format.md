@@ -10,6 +10,19 @@ with this header, verbatim:
 > reconcile step; route each unticked stage per its ROUTING line; never plan
 > this document wholesale.
 
+## Document skeleton
+
+After the header, in order — name a section, don't invent one:
+
+1. **Gap analysis** — the rubric table (`references/gap-rubric.md`).
+2. **Open questions** — only if contradictions or ambiguities from SKILL.md
+   §1's batched question set are still unresolved when the file is written;
+   omit the section otherwise.
+3. **Stages** — the checkbox entries, below.
+4. **Stage-spec stamp** — the Rollout-note text, below.
+5. **Completion** — retirement criteria (SKILL.md §6): re-run the rubric
+   over the accumulated system.
+
 ## Stage entries
 
 Checkbox stages under a hard brevity budget. Each stage carries exactly
