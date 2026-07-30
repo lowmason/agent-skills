@@ -31,10 +31,11 @@ this skill stays generic — a second wiki can reuse it unchanged.
    argument: `python3 ~/.claude/skills/llm-wiki/scripts/bootstrap_wiki.py <root>`.
    The root is required — there is no default, so nothing is written to the
    wrong wiki by accident. It seeds the skeleton and `SCHEMA.md` and installs
-   the lint and session-distiller scripts under `<root>/scripts/`; it never
-   overwrites existing content (`--check` reports stale tooling, `--force`
-   refreshes only the scripts). Then export `LLM_WIKI_ROOT=<root>` and confirm
-   with a clean mechanical lint.
+   the runtime scripts — `lint_wiki.py`, `distill_sessions.py`,
+   `distill_specs.py` — under `<root>/scripts/`; it never overwrites existing
+   content (`--check` reports stale tooling, `--force` refreshes only the
+   scripts). Then export `LLM_WIKI_ROOT=<root>` and confirm with a clean
+   mechanical lint.
 3. **Before any operation, read `SCHEMA.md` at the root.** It is the normative
    contract (page formats, quarantine rule, index/log grammar, capture-note
    format). Do not act from memory of it. The skill's bundled
