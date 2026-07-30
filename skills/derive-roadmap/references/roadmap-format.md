@@ -1,7 +1,8 @@
 # Roadmap artifact format
 
-`specs/<name>-roadmap.md` in the target repo. Opens with this header,
-verbatim:
+`specs/<name>-roadmap.md` in the target repo — `<name>` is the spec's own
+filename stem, used whole, never stripped (SKILL.md §3); confirm that path
+doesn't already exist before writing it. Opens with this header, verbatim:
 
 > For agentic workers: REQUIRED SKILL: derive-roadmap — resume via its
 > reconcile step; route each unticked stage per its ROUTING line; never plan

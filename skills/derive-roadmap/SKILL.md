@@ -24,9 +24,23 @@ producing working, testable software.
 to brainstorming or writing-plans by bare name. This skill does not plan a
 stage, and does not brainstorm one.
 
-**Entry:** a spec carrying the Synthesize-mode routing header; a
-`specs/*-roadmap.md` being resumed; or an explicit request to compare a spec
-against the implementation.
+**Entry, in this order** — a spec's filename can echo a roadmap's without
+being one, so resolve by header, not by name:
+
+1. The document carries the roadmap header ("REQUIRED SKILL: derive-roadmap
+   — resume via its reconcile step", `references/roadmap-format.md`) → §5,
+   Resume. Resume reconciles an artifact that already exists, against stage
+   stamps that are authoritative; fresh entry re-derives the partition from
+   scratch. When a document could be read either way, resuming first is the
+   safe direction — routing a live roadmap into fresh entry discards the
+   reconciliation §5 exists to do.
+2. The document carries the Synthesize-mode routing header ("REQUIRED NEXT
+   SKILL: derive-roadmap", `spec-synthesis.md`) → §1, Gap analysis.
+3. An explicit request to compare a spec against the implementation, with no
+   roadmap header present → §1, Gap analysis.
+
+A filename ending in `_roadmap`, or merely resembling `specs/*-roadmap.md`,
+does not make a document a roadmap — only the header does.
 
 ## 1. Gap analysis — ONCE, at entry
 
@@ -62,6 +76,20 @@ value. Say plainly when your order diverges from the spec's own ranking, and
 why.
 
 ## 3. The roadmap artifact
+
+`<name>` is the spec's own filename stem (drop the path and `.md`) — used
+whole, never stripped. Do not remove a trailing `roadmap` token to dodge a
+name like `..._roadmap-roadmap.md`: for a spec whose filename already ends
+in `roadmap`, that stripping re-suffixes the stem to within one character of
+the input's own filename (a hyphen where the input has an underscore, or an
+exact match if the input already used a hyphen) — precisely the case this
+rule has to survive. Appending `-roadmap` to the untouched stem is what
+keeps the two paths apart, by construction, every time.
+
+Before writing, check whether `specs/<name>-roadmap.md` already exists. If it
+does, STOP — do not write it. Surface the collision to the user instead: if
+the existing file is this spec's own roadmap, the right move is Resume (§5),
+not a fresh Gap analysis.
 
 Write `specs/<name>-roadmap.md` in the target repo per
 `references/roadmap-format.md`. Hard brevity budget: cite spec §-refs, never
