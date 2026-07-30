@@ -347,3 +347,61 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       the noise is predictable rather than alarming. If it becomes
       irritating, exempt all-uppercase segments of ≤4 chars — but only with
       a test proving a genuine uppercase identifier still warns.
+
+## 19-methodology-pipeline-skills — 2026-07-30
+
+- [ ] **The stage-stamp lifecycle carrier is unbacked.**
+      `skills/derive-roadmap/references/roadmap-format.md` and
+      `skills/describe-critique-methodology/references/spec-synthesis.md` both assert
+      that writing-plans copies a spec's Rollout note verbatim into the stage plan's
+      header, and that "that copy is the whole carrier." `grep -rn -i "rollout"
+      skills/writing-plans/` returns zero matches; what writing-plans actually has is a
+      generic rule to copy the spec's project-wide requirements into the plan's Global
+      Constraints block. Req 10 deliberately rejected a writing-plans protocol edit for
+      v1 for this iteration (provenance-touching, needs its own RED cycle), naming the
+      one-line hook as the recorded fallback "if the carrier proves fragile." Owner's
+      decision: defer, and let the first real stage cycle settle it.
+- [ ] **A stranded roadmap artifact.**
+      `/Users/lowell/Projects/alt-nfp/specs/usable-series-selection-roadmap.md` was
+      named from the spec's H1 title, a convention now superseded by the skill's
+      filename-stem `<name>` rule (landed post-review, commit `c818893`). Either rename
+      it to the canonical stem-derived name or consciously accept the divergence. Not a
+      skill defect — the shipped header-based collision guard (`a2d4f1f`) finds this
+      artifact regardless of filename, which a 3-rep behavioral check confirmed 3/3.
+- [ ] **No non-interactive fallback for the batched-question checkpoint**
+      (`skills/derive-roadmap/SKILL.md` §1, `references/gap-rubric.md`). A sub-agent run
+      parked its questions in the artifact instead of asking. Degraded safely, since the
+      §4 human checkpoint still gates before Stage 1. Would take one sentence: when the
+      session cannot ask, the questions go in a clearly-marked block and the artifact is
+      marked provisional.
+- [ ] **The roadmap format cannot express parallel stages**
+      (`skills/derive-roadmap/references/roadmap-format.md`). The gold master's own
+      sequencing wants it ("Req 5 Stage-A audit starts in parallel"). Deferred because
+      `Consumes:` already carries the dependency information, so parallelism is
+      derivable rather than lost.
+- [ ] **Two of the skill's own checkpoints have no behavioural evidence.**
+      `skills/derive-roadmap/SKILL.md` §1's batched question set and §4's human approval
+      before Stage 1 both require an interactive turn; every test in this plan ran
+      non-interactively, so neither was exercised.
+- [ ] **The RED baseline for this skill is confounded and could be re-run cleanly.**
+      Both leak channels are now closed (the fixture is name-neutralisable, and the
+      shared task list no longer names the work). A clean round would settle whether
+      E1–E5 are genuinely unobserved, which is what the kept-as-is SKILL.md guidance
+      rests on. See specs/plans/completed/19-methodology-pipeline-skills.md (Task 1) for
+      the full method.
+- [ ] **Req 12's `/context` residency check is still outstanding.** The mechanical half
+      is verified — 30 skills in the repo, 30 installed, no eviction, every symlink
+      resolving. The remaining half needs the owner to run `/context` in a fresh session
+      with the branch checked out and confirm `derive-roadmap` is listed and nothing was
+      dropped. Req 12 calls residency "a correctness precondition, not a cost line," so
+      this is real outstanding verification, not a cost check.
+- [ ] **The `/deferred` boundary is asserted in only one place.**
+      `skills/derive-roadmap/references/gap-rubric.md` states that live roadmap stages
+      are out of `/deferred`'s scope; `commands/deferred.md` says nothing either way.
+      Spec Req 10 mandates recording the boundary, which is satisfied — but the two
+      could drift.
+- [ ] **Two uncommitted artifacts in `/Users/lowell/Projects/alt-nfp`**, left there
+      deliberately because this work has a standing no-git waiver for that repo:
+      `specs/usable-series-selection-roadmap.md` (this plan's verification output) and
+      `specs/nfp-model-methodology.md` (plan 18's Describe-mode output). Committing them
+      is the owner's call in that repo.
