@@ -44,6 +44,16 @@ the Rollout note. In triage such a point is an **accept** whose requirement
 carries the marker — not a needs-user-adjudication, which assumes the user
 can settle it.
 
+When the spec being synthesized is a STAGE of an existing roadmap, its
+Rollout note carries the stamp line verbatim:
+
+> Roadmap: specs/<name>-roadmap.md, Stage N — on plan completion, tick the
+> stage and re-validate later stages against what shipped.
+
+writing-plans copies the Rollout note verbatim into the stage plan's header,
+which is where the completing session sees it during markup. That copy is
+the whole carrier — there is no hook and no protocol edit behind it.
+
 ## Locators
 
 After the routing header and the summary paragraph, place a **Design
