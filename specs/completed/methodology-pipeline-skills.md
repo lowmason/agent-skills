@@ -5,12 +5,13 @@
 `describe-critique-methodology`) and
 [plan 19](../plans/completed/19-methodology-pipeline-skills.md) (Skill B,
 `derive-roadmap`); retired to `specs/completed/` with the second plan, per
-this spec's own Rollout note. Two Verification bullets are genuinely
-outstanding rather than satisfied — see the Verification section below,
-where they are left unticked rather than marked done: the `/context`
-residency check (needs a human, fresh session) and the committed
-Describe-mode artifact (`specs/nfp-model-methodology.md` in `alt-nfp`
-remains uncommitted, the owner's call under that repo's no-git waiver).
+this spec's own Rollout note. The `/context` residency check was discharged
+later the same day (listing at 12.8K, 1.3% — roughly half of the configured
+budget, nothing evicted). One Verification bullet remains genuinely
+outstanding rather than satisfied, and is left unticked rather than marked
+done: the committed Describe-mode artifact (`specs/nfp-model-methodology.md`
+in `alt-nfp` remains uncommitted, the owner's call under that repo's no-git
+waiver).
 
 Two new Lowell-original skills productionize the recurring methodology-critique-refactor
 loop: `describe-critique-methodology` (write a code-decoupled methodological description;
@@ -296,11 +297,14 @@ wording.
       Verified repeatedly across both plans (plan 18 Task 3; plan 19 Task 2 Step 2 —
       description 337 chars — and every commit's pre-commit lint run); re-verified by
       the plan 19 whole-branch reviewer as part of `fbb2d51..0a37288`.
-- [ ] `/context` in a fresh session shows both descriptions resident; no existing personal
-      skill dropped from the listing. **Genuinely outstanding.** Plan 19 Task 7 verified
-      only the mechanical half (30 skills in the repo == 30 installed, zero dangling
-      symlinks) — the human-run `/context` confirmation has not happened. See
-      specs/deferred_items.md §19-methodology-pipeline-skills.
+- [x] `/context` in a fresh session shows both descriptions resident; no existing personal
+      skill dropped from the listing. Discharged 2026-07-30 after retirement: the owner's
+      `/context` reports the skill listing at **12.8K tokens, 1.3%** of the window, so at
+      `skillListingBudgetFraction: 0.025` (~25K on a ~1M window) it sits at roughly half
+      budget with no drop-by-rank pressure. Both skills' residency is independently
+      confirmed — each appeared in the live available-skills listing on creation — and
+      Task 7's mechanical half holds (30 in the repo == 30 installed, zero dangling
+      symlinks). See specs/deferred_items.md §19-methodology-pipeline-skills.
 - [x] RED transcripts exist for Describe mode (no-skill baseline on alt-nfp) with the
       observed failure modes documented verbatim before GREEN was written. Plan 18
       Task 2, 7 no-skill reps, E1/E3/E5 confirmed 7/7, documented before any skill text.

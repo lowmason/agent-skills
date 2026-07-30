@@ -389,12 +389,16 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       E1–E5 are genuinely unobserved, which is what the kept-as-is SKILL.md guidance
       rests on. See specs/plans/completed/19-methodology-pipeline-skills.md (Task 1) for
       the full method.
-- [ ] **Req 12's `/context` residency check is still outstanding.** The mechanical half
-      is verified — 30 skills in the repo, 30 installed, no eviction, every symlink
-      resolving. The remaining half needs the owner to run `/context` in a fresh session
-      with the branch checked out and confirm `derive-roadmap` is listed and nothing was
-      dropped. Req 12 calls residency "a correctness precondition, not a cost line," so
-      this is real outstanding verification, not a cost check.
+- [x] **Req 12's `/context` residency check** → discharged 2026-07-30, same day. The owner
+      ran `/context`: the skill listing reports **12.8K tokens, 1.3%** of the window. That
+      implies a ~1M-token window, so `skillListingBudgetFraction: 0.025` allows ~25K and
+      the listing uses about half of it — no drop-by-rank pressure, nothing evicted.
+      Residency of `derive-roadmap` itself is separately confirmed: it appeared in the
+      live available-skills listing immediately after creation, and the mechanical half
+      holds (30 skills in the repo == 30 installed, zero dangling symlinks).
+      Note for future budget work: a chars/4 estimate of name+description came to ~5.1K
+      and badly understated the real 12.8K, so the listing carries substantial per-entry
+      overhead beyond the description text — measure with `/context`, don't estimate.
 - [ ] **The `/deferred` boundary is asserted in only one place.**
       `skills/derive-roadmap/references/gap-rubric.md` states that live roadmap stages
       are out of `/deferred`'s scope; `commands/deferred.md` says nothing either way.
