@@ -37,7 +37,7 @@
 
 Every task's requirements implicitly include this section.
 
-- **Spec:** `specs/methodology-pipeline-skills.md` (live; retires with THIS plan under the standard protocol, since no other live plan shares the `methodology-pipeline-skills` suffix). Requirements implemented here: **Req 7–12**, plus Req 14's remaining provenance work.
+- **Spec:** [`specs/completed/methodology-pipeline-skills.md`](../../completed/methodology-pipeline-skills.md) (live at `specs/methodology-pipeline-skills.md` throughout this plan's execution; retired to `specs/completed/` with THIS plan under the standard protocol, since no other live plan shared the `methodology-pipeline-skills` suffix). Requirements implemented here: **Req 7–12**, plus Req 14's remaining provenance work.
 - **Branch:** `feat/derive-roadmap`, cut from `main`. **No pushes and no merges** — the user approves integration explicitly at finishing-a-development-branch time.
 - **Before EVERY commit:** run `git branch --show-current` AND `git status`. The user commits from parallel terminals; a commit once landed on the wrong branch. Both lints green before every commit:
   ```bash
