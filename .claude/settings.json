@@ -1,6 +1,5 @@
 {
     "model": "opus",
-    "effortLevel": "auto",
     "availableModels": ["sonnet", "opus", "haiku", "fable"],
     "enforceAvailableModels": true
 }
