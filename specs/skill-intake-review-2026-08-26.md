@@ -203,6 +203,20 @@ module/package granularity, file-count discipline -> ABSENT from clean-code, cle
 > the HARVEST table below is superseded; the other three harvests and the Polars ADOPT are
 > untouched.
 
+### ADOPT (1) — `polars-data-engineering` → **WITHDRAWN 2026-08-26**
+
+> **This recommendation did not survive measurement.** A two-arm RED baseline
+> (`specs/red-baseline-polars-join-contracts-2026-08-26.md`) planted a silent join fanout and
+> measured the *delivered artifact*: 5/5 agents shipped correct arrays, detecting the duplicate,
+> collapsing before the join, and guarding the row count. The rules describe what agents already
+> do when authoring, so a listing slot would buy nothing.
+>
+> The `54 joins / 0 validate=` finding in `alt-nfp` stands, but it is about **existing** code —
+> an audit gap. Shipped instead as one signal in `tech-debt`'s sweep plus a `scan.sh` check, at
+> zero listing cost. `to_jax()`, Arrow interchange, and streaming sinks were dropped outright.
+>
+> The original recommendation follows, unedited, for the record.
+
 ### ADOPT (1) — `polars-data-engineering` → port as skill #31
 
 The only candidate that is both on a live seam and materially non-duplicative.
