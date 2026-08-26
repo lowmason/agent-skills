@@ -69,6 +69,25 @@ text is reproduced and nothing from the book is bundled.
     clean-code/
     rules/clean-code-python.md
 
+clean-code/ additionally carries a Modules category (rules M1-M4, detail in
+clean-code/references/modules.md) that is NOT from Clean Code. Those four rules
+are adapted by Lowell Mason from the `python-module-design` skill in
+mancusolab/coding-skills (https://github.com/mancusolab/coding-skills), MIT
+licensed, Copyright (c) 2026 Mancuso Lab; the full upstream license text is in
+LICENSE-coding-skills and modifications are released under the same MIT terms.
+The `M` prefix is unused in Martin's C/E/F/G/J/N/T scheme, so the two rule
+families stay distinguishable in citations.
+
+Changes from upstream:
+  - Scope cut from eleven rules to four, on measured evidence: a RED baseline
+    (specs/red-baseline-module-granularity-2026-08-26.md) showed agents already
+    satisfy the dropped rules unprompted, so only the rules they miss were
+    ported.
+  - Reframed from Codex skill frontmatter into this repo's clean-code catalog
+    form (rule-code table plus a references/ detail file).
+  - Examples rewritten to this stack (Polars/httpx BLS ETL); no upstream prose
+    or code is reproduced.
+
 clean-coder/ additionally draws on, by citation of the ideas only: Kent
 Beck, "Tidy First?" (O'Reilly, 2023) — the tidy/behavior commit separation
 and the batch-size stopping rule; Martin Fowler's "Opportunistic

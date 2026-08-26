@@ -8,8 +8,11 @@ description: >
   module; a function doing too many things; dead, obsolete, or redundant comments;
   copy-pasted logic (rule of three); long conditional chains; magic HTTP codes, retry
   counts, or thresholds in ETL code; boundary-condition test gaps; or citing a cleanup by
-  Clean Code rule code (N/F/G/C/T). The curated, stack-tuned (Polars / NumPyro+JAX / httpx
-  ETL) subset of Robert C. Martin's Clean Code catalog; mechanical rules defer to ruff.
+  Clean Code rule code (N/F/G/C/T/M). Also when a package is accumulating seam-named siblings
+  (paired *_io.py / *_parse.py, *_reader.py / *_writer.py) and another is being added, or
+  deciding whether a repeated filename seam should become a subpackage. The curated, stack-tuned (Polars /
+  NumPyro+JAX / httpx ETL) subset of Robert C. Martin's Clean Code catalog; mechanical rules
+  defer to ruff.
 license: MIT
 metadata:
   author: Lowell Mason
@@ -91,6 +94,20 @@ F.I.R.S.T. — Fast, Independent, Repeatable, Self-Validating, Timely — plus:
 | T5 | Test boundary conditions — empty frame, last line, M13, year boundaries |
 | T6 | Exhaustively test near bugs — a found bug marks a fault-dense region |
 
+### Modules — detail: `references/modules.md`
+
+**Not Martin's codes** — adapted from Mancuso Lab's `python-module-design` (MIT; see
+`NOTICE`). `M` is unused in Martin's C/E/F/G/J/N/T scheme, so citations stay unambiguous.
+Deliberately short: a measured baseline found agents already write cohesive modules
+unprompted, so only the rules they actually miss are kept.
+
+| Code | Rule (one line) |
+|---|---|
+| M1 | Repeated seam names are an unnamed subpackage — two `*_reader.py` siblings plus a third means **promote**, not extend |
+| M2 | A promoted subpackage still needs coarse modules — merge tiny siblings; never `io/sub1.py … io/sub22.py` |
+| M3 | "It matches the existing convention" does not justify extending a seam — the convention *is* the smell |
+| M4 | Consolidate before completion — a file created to satisfy the plan is not automatically permanent |
+
 ## Defer to ruff (verified rule codes)
 
 | Martin rule | ruff |
@@ -131,6 +148,9 @@ number is still `(G25)` even though ruff flags it as `PLR2004`.
 | extract 3-line helpers until nothing reads | split by cohesion only | G30 |
 | extract on the second copy | wait for the third | G5 |
 | break up a lazy Polars chain "for Demeter" | leave it — fluent builder, not navigation | G36 |
+| add `csv_writer.py` beside `parquet_writer.py`, `arrow_writer.py` | promote the seam to a subpackage | M1 |
+| extend a seam because "it matches the convention" | the convention is the smell — apply M1 | M3 |
+| ship the eight files eight plan tasks produced | merge what has no real boundary | M4 |
 
 ## Citation convention
 
@@ -138,3 +158,4 @@ Every applied fix is cited by rule code, one line per fix:
 
     Fixed: extracted HTTP_TOO_MANY_REQUESTS (G25) — etl/fetch.py:11
     Fixed: deleted redundant comment (C3) — etl/fetch.py:30
+    Fixed: promoted the _reader/_writer seam to per-format modules (M1) — store/
