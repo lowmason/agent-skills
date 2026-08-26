@@ -94,6 +94,18 @@ text is reproduced and nothing from the book is bundled.
     clean-code/
     rules/clean-code-python.md
 
+tech-debt/ additionally carries one signal — "Unguarded join cardinality"
+(a Polars .join( with no validate=), in the signals table and in
+scripts/scan.sh — whose idea comes from the "Make join contracts
+explicit" rule in the `polars-data-engineering` skill of
+mancusolab/coding-skills (MIT, Copyright (c) 2026 Mancuso Lab; license
+text in LICENSE-coding-skills). Only the idea was taken: the grep
+pattern, the exclusion filter, and the prose are original, and the rest
+of that skill was NOT adopted — a measured baseline
+(specs/red-baseline-polars-join-contracts-2026-08-26.md) found agents
+already write guarded joins unprompted (5/5), so the gap is in existing
+code rather than in authoring.
+
 clean-code/ additionally carries a Modules category (rules M1-M4, detail in
 clean-code/references/modules.md) that is NOT from Clean Code. Those four rules
 are adapted by Lowell Mason from the `python-module-design` skill in

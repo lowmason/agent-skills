@@ -79,6 +79,7 @@ back from `rg` to `grep -r` so they run anywhere.
 | Placeholder docs | empty `README.md`, `description = 'Add your description here'` | Onboarding tax; a sign the repo was never "finished" |
 | Unimplemented stubs | `raise NotImplementedError`, `TODO`, `FIXME` | A gap that may or may not be load-bearing |
 | Committed secrets | `.env`, `*.pem`, `api_key = "..."`, `BLS_API_KEY = "..."` | A live security problem — check it against `.gitignore` |
+| Unguarded join cardinality | Polars `.join(` with no `validate=` | Accepts `m:m` silently; one duplicated key fans rows out and misaligns every downstream array, with no error |
 
 ```bash
 scripts/scan.sh /path/to/repo      # full grouped report, read-only

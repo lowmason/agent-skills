@@ -65,6 +65,21 @@ else
   GREP --include='*.py' -e 'datetime.now(' -e 'date.today(' -e 'join_asof'
 fi
 
+section "Polars joins with no cardinality contract (validate=)"
+# A .join() without validate= accepts m:m silently. When a key that should be
+# unique is duplicated upstream, rows fan out and every downstream array is
+# misaligned -- with no error. Measured 2026-08-26: alt-nfp had 54 Polars join
+# sites, 0 with validate= (the token appears nowhere in the workspace). The filter drops str.join()/os.path.join() false positives.
+# A hit is a candidate, not a verdict: validate= is unnecessary where the
+# cardinality is already guaranteed by construction upstream.
+if [ "$HAVE_RG" = 1 ]; then
+  RG -g '*.py' -e '\.join\(' | grep -vE "os\.path\.join|['\"][^'\"]*['\"]\.join\(|\bstr\.join" \
+    | grep -v 'validate *=' || true
+else
+  GREP --include='*.py' -e '\.join(' | grep -vE "os\.path\.join|['\"][^'\"]*['\"]\.join\(|\bstr\.join" \
+    | grep -v 'validate *=' || true
+fi
+
 # --- Maintainability ------------------------------------------------------
 section "Duplicated v1/v2 scripts & abandoned approaches (DELETE candidates)"
 FILES | grep -iE '(_v[0-9]+|_old|_new|_final|_copy|_backup|_bak|/archive/|/scratch/|/deprecated/|/tmp/|\.bak$)' || true
