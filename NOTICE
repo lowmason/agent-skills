@@ -8,6 +8,18 @@ bayesian-workflow/
     Adapted by Lowell Mason from Alexandre Andorra's original PyMC
     Bayesian-workflow skill. Ported to NumPyro + JAX with expanded
     visualization guidance. MIT licensed.
+    references/jax-numerics.md additionally adapts precision- and
+    stability-rule content from the `jax-equinox-numerics` and
+    `jax-project-engineering` skills in mancusolab/coding-skills
+    (https://github.com/mancusolab/coding-skills), MIT licensed,
+    Copyright (c) 2026 Mancuso Lab; upstream license text is in
+    LICENSE-coding-skills. Scope was cut to four rules plus one
+    untested device rule on measured evidence — a RED baseline
+    (specs/red-baseline-jax-numerics-2026-08-26.md) found agents
+    already apply the control-flow, PRNG, and device-count practices
+    unprompted (5/5 each), so the upstream jit/PyTree/control-flow
+    reference and the Equinox material were not ported. Prose and
+    examples are original.
     The skill cites Gelman et al. 2020 (arXiv:2011.01808), Betancourt 2020
     (CC BY-NC 4.0), and Gabry et al. 2019 (JRSS-A / arXiv:1709.01449) by
     author-year only; it reproduces no text and bundles no copies.

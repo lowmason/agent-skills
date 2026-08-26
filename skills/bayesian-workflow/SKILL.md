@@ -37,6 +37,8 @@ Every Bayesian analysis follows this sequence. Do not skip steps -- especially m
 
 For the visual side of every step above — EDA, prior predictive, MCMC diagnostics, posterior predictive, calibration, model comparison — see [references/visualize.md](references/visualize.md), which translates the Gabry et al. (2019) *Visualization in Bayesian workflow* paper into ArviZ.
 
+Before step 3 (fit), set the numerics policy: JAX defaults to **float32**, and `numpyro.enable_x64()` must run before the first JAX op or a float64 cast at the array boundary is silently discarded. This matters most for latent-process models — filtering recursions, covariance updates, log-determinants — where single precision degrades accuracy without producing a visible error. Division guards, nonfinite checks, and device/platform selection are covered in [references/jax-numerics.md](references/jax-numerics.md).
+
 ## Installation
 
 NumPyro and JAX install cleanly from pip. A typical environment:
