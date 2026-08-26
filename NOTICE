@@ -8,6 +8,19 @@ bayesian-workflow/
     Adapted by Lowell Mason from Alexandre Andorra's original PyMC
     Bayesian-workflow skill. Ported to NumPyro + JAX with expanded
     visualization guidance. MIT licensed.
+    references/model-comparison.md additionally documents four
+    arviz_stats APIs (loo_expectations, loo_metrics, loo_r2,
+    bayes_factor) whose existence was pointed out by the
+    `model-evaluation` skill in pymc-labs/python-analytics-skills
+    (Copyright (c) 2026 Chris Fonnesbeck). That repository declares MIT
+    in its README and .claude-plugin/plugin.json but ships no LICENSE
+    text or copyright notice, so nothing from it is reproduced here:
+    the adoption is by reference to the idea only, in the manner
+    already used for llm-wiki. Every signature, prerequisite, return
+    value, and caveat documented was established by executing the
+    functions against arviz 1.3.0 / arviz-stats 1.3.1, not transcribed
+    -- upstream's own examples do not run as written on that version.
+    Prose and examples are original.
     references/jax-numerics.md additionally adapts precision- and
     stability-rule content from the `jax-equinox-numerics` and
     `jax-project-engineering` skills in mancusolab/coding-skills

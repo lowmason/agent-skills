@@ -6,6 +6,8 @@
 - LOO-CV comparison
 - Stacking weights
 - Pointwise comparison
+- Predictive accuracy on one model: `loo_expectations`, `loo_metrics`, `loo_r2`
+- Bayes factors (and the reference-value trap)
 - WAIC (and why LOO)
 - Reporting comparisons
 
@@ -111,6 +113,75 @@ plt.xlabel("observation"); plt.ylabel("ELPD(m1) − ELPD(m2)")
 
 A few observations dominating the difference is a signal to inspect those points (often outliers
 or high-leverage cases). Pair with `az.plot_khat(loo_a)` to see which points are influential.
+
+## Predictive accuracy on one model: `loo_expectations`, `loo_metrics`, `loo_r2`
+
+`az.compare` ranks models against each other. These three answer a different question —
+*how well does this one model predict?* — on the LOO scale, so the answer is not inflated by
+in-sample fit. All three live in `arviz_stats` and are re-exported by the `arviz` umbrella,
+so `azs.` and `az.` both work (verified on arviz 1.3.0 / arviz-stats 1.3.1).
+
+**All three require a `posterior_predictive` group.** `az.from_numpyro(mcmc,
+log_likelihood=True)` does *not* create one, and the failure is a `ValueError: Can not
+extract posterior_predictive` at call time:
+
+```python
+from numpyro.infer import Predictive
+import arviz as az, arviz_stats as azs
+
+pp = Predictive(model, mcmc.get_samples())(jax.random.PRNGKey(1), x)
+idata = az.from_numpyro(mcmc, posterior_predictive=pp, log_likelihood=True)
+```
+
+```python
+# Pointwise LOO predictive expectation - one value per observation.
+# kind='mean' | 'var' | 'quantile' (with probs=[...])
+azs.loo_expectations(idata, kind='mean')      # -> DataArray, shape (n_obs,)
+
+# Scalar accuracy with a standard error. kind='rmse' | 'mae' | 'mse'
+azs.loo_metrics(idata, kind='rmse')           # -> rmse(mean=0.75, se=0.049)
+
+# LOO R^2 with an interval. NOTE: var_name is REQUIRED and positional-ish.
+azs.loo_r2(idata, var_name='y')               # -> loo_R2(mean=0.87, eti_lb=0.83, eti_ub=0.9)
+```
+
+`loo_r2(idata)` without `var_name` raises `TypeError: missing 1 required positional
+argument`. Pass the name of the observed variable.
+
+Use these to report predictive accuracy in units a reader understands — an RMSE in payroll
+jobs is more legible than an ELPD difference — while keeping `az.compare` for the ranking
+itself.
+
+## Bayes factors (and the reference-value trap)
+
+`azs.bayes_factor` computes a Savage-Dickey density ratio and **requires a `prior` group**,
+which means sampling the prior explicitly:
+
+```python
+prior = Predictive(model, num_samples=2000)(jax.random.PRNGKey(2), x)
+idata = az.from_numpyro(mcmc, prior=prior, log_likelihood=True)
+
+azs.bayes_factor(idata, var_names=['b'], ref_vals=0)
+# -> Dataset with bf_type ('BF10', 'BF01')
+```
+
+**The trap — verified, and it fails silently.** Savage-Dickey needs the *posterior density
+at the reference value*. When the posterior has no mass there, that density is estimated by
+KDE extrapolation into a region containing zero draws, and the returned number is
+meaningless without any warning.
+
+Measured on a fit where the true slope is 2.1 and the posterior is `mean=2.05, sd=0.074`
+with **0 of 1200 draws** within ±0.5 of zero, `bayes_factor(..., ref_vals=0)` returned
+`BF10 = 0.50` — nominally *evidence for* the null. The intercept, equally decisively
+non-zero, returned `BF10 = 0.51`. Near-identical near-1 values for two parameters that the
+data resolves overwhelmingly: the estimator has degenerated, not measured anything.
+
+**Check before trusting it:** count the posterior draws near `ref_val`. If there are
+essentially none, the Bayes factor is not interpretable — and the fact that the posterior
+excludes the reference value is itself the answer you were looking for.
+
+Prefer LOO comparison for model choice. Bayes factors are also far more sensitive to prior
+width than LOO is, which is the deeper reason this workflow does not lead with them.
 
 ## WAIC (and why LOO)
 
