@@ -214,11 +214,13 @@ markers, trilateral six-digit rows, crosswalk markers that disagree with `link_t
 concordance referential integrity). A failed download skips that artifact and records the reason
 in `MANIFEST.md` so the rest still builds.
 
-**bls.gov refuses every scripted download** (an Akamai "Access Denied" 403 regardless of
-User-Agent), so BLS workbooks are fetched once by hand: open the URL in a browser, save the
-file into `sources/` under its original filename without opening it in Excel (a re-save changes
-the bytes and the recorded sha256), then re-run the build; the cached copy is used and bls.gov
-is never contacted again. The three current SOC files are already archived. Commit `data/`,
-`sources/`, and `MANIFEST.md` together: Census and BLS overwrite source files in place, so an
-unarchived source vintage is unrecoverable. Adding a vintage or a concordance is one `Build`
-entry (plus a `REFERENTIAL_PAIRS` row for a concordance).
+**bls.gov admits scripts only with a contact email in the User-Agent** (an Akamai "Access
+Denied" 403 otherwise, and also for any User-Agent containing `github.com` or
+`python-requests`). Export `BLS_CONTACT_EMAIL` — the same variable `bls-stats` uses — before
+building the SOC artifacts; without it the build refuses to contact bls.gov rather than get
+blocked. Fallback: save the workbook from a browser into `sources/` under its original filename
+without opening it in Excel (a re-save changes the bytes and the recorded sha256), and the
+cached copy is used. Commit `data/`, `sources/`, and `MANIFEST.md` together: Census and BLS
+overwrite source files in place, so an unarchived source vintage is unrecoverable. Adding a
+vintage or a concordance is one `Build` entry (plus a `REFERENTIAL_PAIRS` row for a
+concordance).

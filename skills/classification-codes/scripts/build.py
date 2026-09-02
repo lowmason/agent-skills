@@ -29,11 +29,14 @@ Usage:
   uv run skills/classification-codes/scripts/build.py --refresh          # force re-download
   uv run skills/classification-codes/scripts/build.py --list             # show the registry
 
-bls.gov refuses scripted downloads outright (an Akamai "Access Denied" page, HTTP 403, for any
-non-browser client regardless of User-Agent). The SOC workbooks therefore have to be saved once
-from a browser into sources/ under their original filenames; the build then uses the cached copy
-and never needs to contact bls.gov again. A blocked or failed download skips that artifact,
-records the reason as a validation problem, and lets the rest of the build proceed.
+bls.gov admits scripted downloads only when the User-Agent carries a contact email (it answers
+an Akamai "Access Denied" page, HTTP 403, otherwise, and also to any User-Agent containing
+tokens such as "github.com" or "python-requests"). Export BLS_CONTACT_EMAIL — the same variable
+the bls-stats transport layer uses — before building the SOC artifacts; without it the build
+refuses to contact bls.gov and tells you to either set it or save the workbook from a browser
+into sources/ under its original filename, after which the cached copy is used. A blocked or
+failed download skips that artifact, records the reason as a validation problem, and lets the
+rest of the build proceed.
 
 If a download 404s, Census/BLS reorganized their site: find the file on census.gov/naics
 (downloadables) or bls.gov/soc and update BUILDS below — nothing else should need to change.
@@ -43,6 +46,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import os
 import sys
 import urllib.error
 import urllib.parse
@@ -56,7 +60,11 @@ from typing import Callable
 
 import polars as pl
 
-USER_AGENT = 'classification-codes-build/0.1 (github.com/lowmason/agent-skills)'
+# bls.gov's bot filter admits a script only if its User-Agent carries a contact email, and it
+# rejects User-Agents containing "github.com" or "python-requests" even with one (each form
+# verified 2026-09-02). Variable name and UA shape follow the bls-stats transport layer.
+CONTACT_EMAIL_VAR = 'BLS_CONTACT_EMAIL'
+CONTACT_HOSTS = ('bls.gov',)
 
 NAICS_STRUCTURE_RE = r'^(\d{2}(-\d{2})?|\d{3,6})$'
 NAICS_6_RE = r'^\d{6}$'
@@ -77,23 +85,44 @@ def source_filename(url: str) -> str:
   return urllib.parse.unquote(Path(urllib.parse.urlparse(url).path).name)
 
 
+def contact_email() -> str | None:
+  return os.environ.get(CONTACT_EMAIL_VAR, '').strip() or None
+
+
+def user_agent(email: str | None) -> str:
+  base = 'classification-codes-build/0.1 (agent-skills reference data'
+  return f'{base}; contact: {email})' if email else f'{base})'
+
+
+def needs_contact_email(url: str) -> bool:
+  host = urllib.parse.urlparse(url).netloc.lower()
+  return any(host == known or host.endswith(f'.{known}') for known in CONTACT_HOSTS)
+
+
 def fetch(url: str, sources_dir: Path, offline: bool, refresh: bool) -> tuple[Path, str, str]:
   '''Download url into sources_dir (or reuse the cached copy); return (path, sha256, retrieved).'''
   sources_dir.mkdir(parents=True, exist_ok=True)
   dest = sources_dir / source_filename(url)
+  host = urllib.parse.urlparse(url).netloc
   if dest.exists() and not refresh:
     retrieved = datetime.fromtimestamp(dest.stat().st_mtime, tz=timezone.utc).isoformat(timespec='seconds')
   elif offline:
     raise FileNotFoundError(f'--offline set but {dest} is not cached')
   else:
-    request = urllib.request.Request(url, headers={'User-Agent': USER_AGENT})
+    email = contact_email()
+    if needs_contact_email(url) and not email:
+      raise RuntimeError(
+        f'{host} admits scripted downloads only with a contact email in the User-Agent: export '
+        f'{CONTACT_EMAIL_VAR}=you@example.org and re-run, or save {url} from a browser as {dest}.'
+      )
+    request = urllib.request.Request(url, headers={'User-Agent': user_agent(email)})
     try:
       with urllib.request.urlopen(request, timeout=120) as response:
         payload = response.read()
     except urllib.error.HTTPError as error:
       if error.code == 403:
         raise RuntimeError(
-          f'{urllib.parse.urlparse(url).netloc} refused the scripted download (HTTP 403). Save '
+          f'{host} refused the scripted download (HTTP 403) despite the contact User-Agent. Save '
           f'{url} from a browser as {dest} and re-run; the cached copy is used automatically.'
         ) from error
       raise RuntimeError(

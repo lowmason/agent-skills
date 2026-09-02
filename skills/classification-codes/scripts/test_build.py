@@ -476,3 +476,37 @@ def test_every_referential_pair_names_registered_builds():
 def test_source_filename_unquotes_url_path():
   assert build.source_filename('https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx') == '2-6 digit_2022_Codes.xlsx'
   assert build.source_filename('https://www.bls.gov/soc/soc_structure_2010.xls') == 'soc_structure_2010.xls'
+
+
+# --------------------------------------------------------------------------------------------
+# Fetching: bls.gov admits scripts only with a contact email in a crawler-style User-Agent
+# --------------------------------------------------------------------------------------------
+
+
+def test_user_agent_names_the_build_and_carries_the_contact():
+  ua = build.user_agent('someone@example.org')
+  assert ua.startswith('classification-codes-build/')
+  assert 'contact: someone@example.org' in ua
+  assert 'github.com' not in ua  # bls.gov rejects any User-Agent carrying that token
+  assert 'contact' not in build.user_agent(None)
+
+
+def test_needs_contact_email_only_for_bls_hosts():
+  assert build.needs_contact_email('https://www.bls.gov/soc/2018/soc_structure_2018.xlsx')
+  assert build.needs_contact_email('https://download.bls.gov/pub/time.series/oe/oe.occupation')
+  assert not build.needs_contact_email('https://www.census.gov/naics/2022NAICS/2022_NAICS_Structure.xlsx')
+
+
+def test_fetch_refuses_bls_download_without_contact_email(tmp_path, monkeypatch):
+  monkeypatch.delenv('BLS_CONTACT_EMAIL', raising=False)
+  with pytest.raises(RuntimeError, match='BLS_CONTACT_EMAIL'):
+    build.fetch('https://www.bls.gov/soc/2018/soc_structure_2018.xlsx', tmp_path, offline=False, refresh=False)
+  assert not list(tmp_path.iterdir())  # nothing was written and no request was attempted
+
+
+def test_fetch_uses_cached_bls_copy_without_contact_email(tmp_path, monkeypatch):
+  monkeypatch.delenv('BLS_CONTACT_EMAIL', raising=False)
+  cached = tmp_path / 'soc_structure_2018.xlsx'
+  cached.write_bytes(b'not really a workbook')
+  path, sha256, _retrieved = build.fetch('https://www.bls.gov/soc/2018/soc_structure_2018.xlsx', tmp_path, offline=False, refresh=False)
+  assert path == cached and len(sha256) == 64
