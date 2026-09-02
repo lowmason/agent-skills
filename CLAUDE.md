@@ -12,7 +12,7 @@ Skills install into `~/.claude/skills/` (symlink or copy). This repo *is* the us
 
 Skills come from three sources with distinct attribution, all tracked in `NOTICE`. **Read `NOTICE` before moving, renaming, or substantially rewriting any skill**, and keep it in sync:
 
-- **Lowell's originals** (MIT, `LICENSE`): `develop-testing-strategy`, `validate-data`, `explore-data`, `tech-debt`, `design-architecture`, `bls-data-context`, `recommend-probabilistic-model`, `recommend-visualization`, `track-model-experiments`, `tune-hyperparameters`, `creative-thinking`, `derive-roadmap`, `llm-wiki`, `describe-critique-methodology`. (Fourteen — keep in sync with `NOTICE`, which is authoritative.)
+- **Lowell's originals** (MIT, `LICENSE`): `develop-testing-strategy`, `validate-data`, `explore-data`, `tech-debt`, `design-architecture`, `bls-data-context`, `recommend-probabilistic-model`, `recommend-visualization`, `track-model-experiments`, `tune-hyperparameters`, `creative-thinking`, `derive-roadmap`, `llm-wiki`, `describe-critique-methodology`, `classification-codes`, `geographic-codes`. (Sixteen — keep in sync with `NOTICE`, which is authoritative.)
 - **`bayesian-workflow`** — adapted from Alexandre Andorra's PyMC skill, ported to NumPyro+JAX (MIT).
 - **superpowers skills** (MIT, © 2025 Jesse Vincent, `LICENSE-superpowers`): the 13 process skills (`brainstorming`, `writing-plans`, `test-driven-development`, etc.). These were adapted from the upstream `superpowers` plugin.
 - **clean-code family** — `clean-coder`, `clean-code`, and `rules/clean-code-python.md` adapt Robert C. Martin's *Clean Code* rule catalog (2008), cited by rule code only, no book prose; `clean-coder` also cites Beck's *Tidy First?*, Fowler's opportunistic refactoring, and Ousterhout's *APOSD* by idea only.
@@ -67,6 +67,10 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 # describe-critique-methodology decoupling-check tests — 18 tests
 cd skills/describe-critique-methodology/scripts && uv run --python 3.13 --with pytest python -m pytest -q
 
+# geographic-codes build tests (interval synthesizer, readers, referential check) — 38 tests
+# (the 7 per-vintage workbook tests need sources/, which is committed)
+cd skills/geographic-codes/scripts && uv run --python 3.13 --with pytest --with polars --with fastexcel python -m pytest -q
+
 # Frontmatter + provenance lints (run before committing skill changes)
 uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
 uv run --python 3.13 python build/check_provenance.py
@@ -77,6 +81,10 @@ cd build && uv run --python 3.13 --with pytest --with numpy --with polars \
 
 # End-to-end routing smoke test (no PDFs needed)
 uv run --python 3.13 --with numpy --with polars python build/smoke_test.py
+
+# Rebuild geographic-codes data/ from the pinned Census/OMB sources (network) or the sources/ cache
+uv run skills/geographic-codes/scripts/build.py
+uv run skills/geographic-codes/scripts/build.py --offline
 
 # Verify citations across the whole skill (Gate A; exit 0 = all resolve;
 # chapter-fallback WARNs on stderr are non-fatal — confirm those via Gate B)

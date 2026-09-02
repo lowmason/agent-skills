@@ -1,0 +1,58 @@
+state_fips,state_usps,state_name,region_code,region_name,division_code,division_name,entity_type
+01,AL,Alabama,3,South,6,East South Central,state
+02,AK,Alaska,4,West,9,Pacific,state
+04,AZ,Arizona,4,West,8,Mountain,state
+05,AR,Arkansas,3,South,7,West South Central,state
+06,CA,California,4,West,9,Pacific,state
+08,CO,Colorado,4,West,8,Mountain,state
+09,CT,Connecticut,1,Northeast,1,New England,state
+10,DE,Delaware,3,South,5,South Atlantic,state
+11,DC,District of Columbia,3,South,5,South Atlantic,district
+12,FL,Florida,3,South,5,South Atlantic,state
+13,GA,Georgia,3,South,5,South Atlantic,state
+15,HI,Hawaii,4,West,9,Pacific,state
+16,ID,Idaho,4,West,8,Mountain,state
+17,IL,Illinois,2,Midwest,3,East North Central,state
+18,IN,Indiana,2,Midwest,3,East North Central,state
+19,IA,Iowa,2,Midwest,4,West North Central,state
+20,KS,Kansas,2,Midwest,4,West North Central,state
+21,KY,Kentucky,3,South,6,East South Central,state
+22,LA,Louisiana,3,South,7,West South Central,state
+23,ME,Maine,1,Northeast,1,New England,state
+24,MD,Maryland,3,South,5,South Atlantic,state
+25,MA,Massachusetts,1,Northeast,1,New England,state
+26,MI,Michigan,2,Midwest,3,East North Central,state
+27,MN,Minnesota,2,Midwest,4,West North Central,state
+28,MS,Mississippi,3,South,6,East South Central,state
+29,MO,Missouri,2,Midwest,4,West North Central,state
+30,MT,Montana,4,West,8,Mountain,state
+31,NE,Nebraska,2,Midwest,4,West North Central,state
+32,NV,Nevada,4,West,8,Mountain,state
+33,NH,New Hampshire,1,Northeast,1,New England,state
+34,NJ,New Jersey,1,Northeast,2,Middle Atlantic,state
+35,NM,New Mexico,4,West,8,Mountain,state
+36,NY,New York,1,Northeast,2,Middle Atlantic,state
+37,NC,North Carolina,3,South,5,South Atlantic,state
+38,ND,North Dakota,2,Midwest,4,West North Central,state
+39,OH,Ohio,2,Midwest,3,East North Central,state
+40,OK,Oklahoma,3,South,7,West South Central,state
+41,OR,Oregon,4,West,9,Pacific,state
+42,PA,Pennsylvania,1,Northeast,2,Middle Atlantic,state
+44,RI,Rhode Island,1,Northeast,1,New England,state
+45,SC,South Carolina,3,South,5,South Atlantic,state
+46,SD,South Dakota,2,Midwest,4,West North Central,state
+47,TN,Tennessee,3,South,6,East South Central,state
+48,TX,Texas,3,South,7,West South Central,state
+49,UT,Utah,4,West,8,Mountain,state
+50,VT,Vermont,1,Northeast,1,New England,state
+51,VA,Virginia,3,South,5,South Atlantic,state
+53,WA,Washington,4,West,9,Pacific,state
+54,WV,West Virginia,3,South,5,South Atlantic,state
+55,WI,Wisconsin,2,Midwest,3,East North Central,state
+56,WY,Wyoming,4,West,8,Mountain,state
+60,AS,American Samoa,,,,,territory
+66,GU,Guam,,,,,territory
+69,MP,Northern Mariana Islands,,,,,territory
+72,PR,Puerto Rico,,,,,territory
+74,UM,U.S. Minor Outlying Islands,,,,,territory
+78,VI,U.S. Virgin Islands,,,,,territory

@@ -54,6 +54,24 @@ The following skills are original works by Lowell Mason, MIT licensed:
     llm-wiki/
     describe-critique-methodology/
     derive-roadmap/
+    classification-codes/
+    geographic-codes/
+
+classification-codes/ and geographic-codes/ are original works by Lowell
+Mason (MIT) whose bundled data/ tables are derived from U.S. Census Bureau,
+U.S. Bureau of Labor Statistics, and Office of Management and Budget
+publications (NAICS and SOC structure and concordance workbooks; the county
+gazetteer; the "List 1" CBSA delineation workbooks). Those publications are
+works of the United States Government and are in the public domain under
+17 U.S.C. § 105. Each skill's scripts/build.py downloads the exact source
+bytes into sources/ (kept verbatim as the audit copy, with URL, sha256, and
+retrieval time in MANIFEST.md) and derives data/ from them; the parsing
+code, the seed tables, the hand-curated county change log, and all prose
+are Lowell Mason's own work. geographic-codes' seeds/county_changes.csv
+was verified row by row against the Census Bureau's "Substantial Changes
+to Counties and County Equivalent Entities" pages and, for Connecticut,
+87 FR 34235; the OMB bulletin dates were read from the bulletins
+themselves (13-01, 15-01, 17-01, 18-03, 18-04, 20-01, 23-01).
 
 recommend-visualization/ is an original work by Lowell Mason (MIT). It CITES
 standard visualization literature by author-year only (Cleveland & McGill 1984;

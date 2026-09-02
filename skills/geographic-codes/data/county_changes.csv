@@ -1,0 +1,39 @@
+change_group,effective_date,change_type,old_geoid,old_name,new_geoid,new_name,creates_new,status,source_note
+denali_1990,1990-12-07,create,,,02068,Denali Borough,true,verified,Census county changes 1990s: created from part of Yukon-Koyukuk Census Area (02290) and an unpopulated part of Southeast Fairbanks Census Area (02240); both persist
+yakutat_1992,1992-09-22,split,02231,Skagway-Yakutat-Angoon Census Area,02232,Skagway-Hoonah-Angoon Census Area,true,verified,Census county changes 1990s: remainder of 02231 established as 02232
+yakutat_1992,1992-09-22,split,02231,Skagway-Yakutat-Angoon Census Area,02282,Yakutat City and Borough,true,verified,Census county changes 1990s
+south_boston_1995,1995-06-30,merge,51780,South Boston city,51083,Halifax County,false,verified,Census county changes 1990s: independent city changed to town status and added to Halifax County
+dade_1997,1997-07-22,recode,12025,Dade County,12086,Miami-Dade County,true,verified,Census county changes 1990s: renamed with a new code
+yellowstone_1997,1997-11-07,split,30113,Yellowstone National Park,30031,Gallatin County,false,verified,Census county changes 1990s: park-as-county-equivalent annexed to Gallatin and Park counties
+yellowstone_1997,1997-11-07,split,30113,Yellowstone National Park,30067,Park County,false,verified,Census county changes 1990s
+clifton_forge_2001,2001-07-01,merge,51560,Clifton Forge city,51005,Alleghany County,false,verified,Census county changes 2000s: independent city changed to town status and added to Alleghany County
+broomfield_2001,2001-11-15,create,,,08014,Broomfield County,true,verified,Census county changes 2000s: created from parts of Adams (08001) Boulder (08013) Jefferson (08059) and Weld (08123); all four persist
+skagway_2007,2007-06-20,split,02232,Skagway-Hoonah-Angoon Census Area,02105,Hoonah-Angoon Census Area,true,verified,Census county changes 2000s: remainder of 02232 established as 02105
+skagway_2007,2007-06-20,split,02232,Skagway-Hoonah-Angoon Census Area,02230,Skagway Municipality,true,verified,Census county changes 2000s
+pow_2008,2008-05-19,split,02201,Prince of Wales-Outer Ketchikan Census Area,02130,Ketchikan Gateway Borough,false,verified,Census county changes 2000s: Outer Ketchikan part annexed by the existing borough
+pow_2008,2008-05-19,split,02201,Prince of Wales-Outer Ketchikan Census Area,02198,Prince of Wales-Hyder Census Area,true,verified,Census county changes 2000s: remainder of 02201 renamed and recoded 2008-05-19; the Meyers Chuck part then joined the new Wrangell City and Borough (02275) on 2008-06-01 as a boundary change only
+wrangell_2008,2008-06-01,split,02280,Wrangell-Petersburg Census Area,02195,Petersburg Census Area,true,verified,Census county changes 2000s: remainder of 02280 established as 02195
+wrangell_2008,2008-06-01,split,02280,Wrangell-Petersburg Census Area,02275,Wrangell City and Borough,true,verified,Census county changes 2000s: also took the Meyers Chuck part of Prince of Wales-Hyder (02198)
+petersburg_2013,2013-01-03,rename,02195,Petersburg Census Area,02195,Petersburg Borough,false,verified,Census county changes 2010s: borough incorporated with the code retained; took part of Hoonah-Angoon (02105) and ceded part to Prince of Wales-Hyder (02198)
+bedford_2013,2013-07-01,merge,51515,Bedford city,51019,Bedford County,false,verified,Census county changes 2010s: independent city changed to town status and added to Bedford County
+oglala_lakota_2015,2015-05-01,recode,46113,Shannon County,46102,Oglala Lakota County,true,verified,Census county changes 2010s: name and code both changed
+kusilvak_2015,2015-07-01,recode,02270,Wade Hampton Census Area,02158,Kusilvak Census Area,true,verified,Census county changes 2010s: name and code both changed
+valdez_cordova_2019,2019-01-02,split,02261,Valdez-Cordova Census Area,02063,Chugach Census Area,true,verified,Census county changes 2010s
+valdez_cordova_2019,2019-01-02,split,02261,Valdez-Cordova Census Area,02066,Copper River Census Area,true,verified,Census county changes 2010s
+ct_2022,2022-06-06,create,,,09110,Capitol Planning Region,true,verified,87 FR 34235
+ct_2022,2022-06-06,create,,,09120,Greater Bridgeport Planning Region,true,verified,87 FR 34235
+ct_2022,2022-06-06,create,,,09130,Lower Connecticut River Valley Planning Region,true,verified,87 FR 34235
+ct_2022,2022-06-06,create,,,09140,Naugatuck Valley Planning Region,true,verified,87 FR 34235
+ct_2022,2022-06-06,create,,,09150,Northeastern Connecticut Planning Region,true,verified,87 FR 34235
+ct_2022,2022-06-06,create,,,09160,Northwest Hills Planning Region,true,verified,87 FR 34235
+ct_2022,2022-06-06,create,,,09170,South Central Connecticut Planning Region,true,verified,87 FR 34235
+ct_2022,2022-06-06,create,,,09180,Southeastern Connecticut Planning Region,true,verified,87 FR 34235
+ct_2022,2022-06-06,create,,,09190,Western Connecticut Planning Region,true,verified,87 FR 34235
+ct_2022,2022-06-06,dissolve,09001,Fairfield County,,,false,verified,87 FR 34235 (2022-06-06) Change to County-Equivalents in the State of Connecticut; the county<->planning-region bridge is town-level and not bundled
+ct_2022,2022-06-06,dissolve,09003,Hartford County,,,false,verified,87 FR 34235
+ct_2022,2022-06-06,dissolve,09005,Litchfield County,,,false,verified,87 FR 34235
+ct_2022,2022-06-06,dissolve,09007,Middlesex County,,,false,verified,87 FR 34235
+ct_2022,2022-06-06,dissolve,09009,New Haven County,,,false,verified,87 FR 34235
+ct_2022,2022-06-06,dissolve,09011,New London County,,,false,verified,87 FR 34235
+ct_2022,2022-06-06,dissolve,09013,Tolland County,,,false,verified,87 FR 34235
+ct_2022,2022-06-06,dissolve,09015,Windham County,,,false,verified,87 FR 34235
