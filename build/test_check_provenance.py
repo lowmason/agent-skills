@@ -86,12 +86,12 @@ def test_originals_mismatch_clean_when_sets_match_out_of_order():
     assert extra == []
 
 
-def test_real_notice_originals_has_fourteen_entries():
+def test_real_notice_originals_has_sixteen_entries():
     # Guards against a silent vacuous pass: if a future heading rewording ever
     # breaks notice_originals's regex, it would return [] and the drift check
     # would compare empty-to-empty and pass without checking anything.
     notice = (Path(__file__).resolve().parent.parent / 'NOTICE').read_text()
-    assert len(notice_originals(notice)) == 14
+    assert len(notice_originals(notice)) == 16
 
 
 def test_real_repo_originals_are_in_sync():
