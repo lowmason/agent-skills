@@ -27,6 +27,17 @@ def test_chapter_fallback_passes_gate_a_but_is_flagged():
     assert "PML1 §11.99.99" in fallback_sections(text)
 
 
+def test_known_good_fallback_is_not_flagged():
+    # PML2 §2.2.1.4 resolves only via chapter-fallback (the sections index truncates at three
+    # nesting levels) but was Gate-B verified 2026-07-20, so it is recorded as a known-good
+    # exception and must not be re-listed on every run — while an ordinary fallback still is.
+    text = "See PML2 §2.2.1.4 and PML1 §11.99.99."
+    assert verify_text(text) == []
+    flagged = fallback_sections(text)
+    assert "PML2 §2.2.1.4" not in flagged
+    assert "PML1 §11.99.99" in flagged
+
+
 def test_directory_arg_expands_to_nested_markdown(tmp_path):
     from verify_citations import _iter_md
 

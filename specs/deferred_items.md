@@ -15,15 +15,18 @@
       `/status` before/after cost reading on one exploration-heavy session. Could not
       run in the non-interactive execution flow; the enforceable lints/tests passed.
       Run in a normal interactive session — no code needed.
-- [ ] Opt-ins decided against but available (one-line frontmatter adds if revisited):
+- [x] Opt-ins decided against but available (one-line frontmatter adds if revisited):
       `effort: high` on `recommend-probabilistic-model`/`recommend-visualization`
       (no-op at the default `high`); `model: opus` on `bayesian-workflow` (would
       override its fresh-session model choice); `model: haiku` on `validate-data`
       (deliberately excluded — judgment-heavy ship-gate). See
       specs/completed/delegation-frontmatter-rollout.md Req 3/Req 5.
+      → retired 2026-09-02: a record of options deliberately not taken, not work; none
+      of the three keys was ever added, and the decision already lives in
+      specs/completed/delegation-frontmatter-rollout.md Req 3/Req 5.
 
 ## 12-audit_7_20_26 — 2026-07-20
-- [ ] Deep-ensembles notebook mispairing (final-review Minor (h), gate-batch deferred):
+- [x] Deep-ensembles notebook mispairing (final-review Minor (h), gate-batch deferred):
       `skills/recommend-probabilistic-model/references/families/classification.md`'s
       "Deep ensembles" row cites `PML2 §17.3.9` (a Bayesian-NN posterior-approximation
       topic) but links `notebooks/book1/18/bagging_trees.ipynb`, a decision-tree bagging
@@ -34,6 +37,9 @@
       `book2/19/bnn_mnist_sgld_*.ipynb`. Needs the same deliberate judgment call C7 got:
       substitute a near-neighbour and label it a stand-in, or drop the link and let the
       §-ref carry the row. Pre-existing, not introduced by this plan.
+      → done 2026-09-02 (/deferred quick fix): dropped the link — no pyprobml deep-
+      ensembles notebook exists, so the row carries §17.3.9 alone, as other notebook-
+      less rows do; Gate A, the rpm tests and the smoke test pass.
 - [ ] Snippet-execution gate for `bayesian-workflow` (audit Theme 1; offered at the
       completion gate, not selected): `skills/bayesian-workflow/SKILL.md:59` promises "the
       modern ArviZ >= 1.0 stack" and no gate enforces it. C1, C2 and D2 were all executable
@@ -42,13 +48,15 @@
       correctness check when the artifact is a §-ref; nothing equivalent guards inline code.
       Would have caught all three before review. Needs a runner that extracts fenced python
       from the skill and executes it against pinned deps.
-- [ ] `PML2 §2.2.1.4` chapter-fallback WARN (offered at the completion gate, not selected):
+- [x] `PML2 §2.2.1.4` chapter-fallback WARN (offered at the completion gate, not selected):
       Gate A exits 0 but emits a standing WARN on this ref every run. Gate B verified it is
       a false alarm — the section exists ("Negative binomial distribution") and substantiates
       both claims attached to it; the WARN is an artifact of `build/.scratch/book2_sections.tsv`
       truncating at three nesting levels, so it holds `2.2.1` but no `2.2.1.x`. Either record
       it as a known-good exception or deepen `build/extract_structure.py`'s nesting. Until
       then it draws review attention on every pass.
+      → done 2026-09-02 (/deferred quick fix): recorded in KNOWN_GOOD_FALLBACKS in
+      build/verify_citations.py, test-first; Gate A now runs with no stderr.
 - [ ] QCEW datatype-05 label unverified (final-review Minor (f), partially resolved):
       the hub's claim that datatype 05 is "average annual pay" was dropped to the verified
       "its annual-only datatype carries `A01`" (period structure confirmed live via BLS API
@@ -138,32 +146,47 @@ Robustness / edge cases:
       real conversation in the 156-conversation export reproduces it, and turn numbers are
       spec §16.4's locator currency for future captures — renumbering should be batched with
       any other numbering-affecting change, not done piecemeal outside a sequencing window.
-- [ ] `distill_sessions.py::_turn_date` passes a malformed but non-empty timestamp straight
+- [x] `distill_sessions.py::_turn_date` passes a malformed but non-empty timestamp straight
       through unvalidated — e.g. `'not-a-timestamp'` slices to `'not-a-time'`, survives the
       sentinel filter added by the Task 5/6 fixes, and becomes the digest's filename date.
       Fix would validate the sliced prefix looks like `YYYY-MM-DD` (e.g. a small regex check)
       and fall back to the `'0000-00-00'` sentinel otherwise.
-- [ ] `distill_sessions.py::_read_jsonl` and `::iter_claude_ai` call `Path.read_text()` with no
+      → done 2026-09-02 (/deferred quick fix): date-shaped or sentinel, test-first.
+- [x] `distill_sessions.py::_read_jsonl` and `::iter_claude_ai` call `Path.read_text()` with no
       explicit `encoding='utf-8'`. On a non-UTF-8 default locale this could silently
       misclassify good transcripts as parse failures via the (now correctly caught)
       `UnicodeDecodeError` path, rather than reading them correctly. Fix: pass
       `encoding='utf-8'` explicitly at both read sites.
-- [ ] `distill_sessions.py::slugify('')` returns `'session'`; two sessions from the same
+      → done 2026-09-02 (/deferred quick fix): encoding='utf-8' at all three read sites
+      (a third, _digest_turns, was unrecorded) and on the digest write, which carried
+      the same defect; pinned by a C-locale subprocess test.
+- [x] `distill_sessions.py::slugify('')` returns `'session'`; two sessions from the same
       source with no title-bearing text at all (no user-turn text to slugify, no conversation
       `name`) collide on `session-<sess8>` in the output filename, and idempotence silently
       swallows the second. Narrow (requires a genuinely titleless, textless session) but
       unguarded.
-- [ ] Adjudicated INTENDED-behavior, no action (recorded so it is not re-litigated): a
+      → retired 2026-09-02: the premise does not hold — the filename also carries each
+      session's own sess8, so two titleless sessions land in distinct digests; pinned by
+      test_two_titleless_sessions_do_not_collide, which passes on unchanged code. The
+      neighbouring real hazard (the idempotence glob keys on sess8 alone, so two
+      sessions sharing an 8-char id prefix would skip the second) is a separate,
+      unrecorded item.
+- [x] Adjudicated INTENDED-behavior, no action (recorded so it is not re-litigated): a
       generic hex-only high-entropy secret with no key-shaped prefix (no `sk-`, `ghp_`,
       `AKIA`, etc.) is caught by neither the distiller's `redact()` nor the `lint_wiki.py`
       backstop. Deliberate — widening the `high-entropy` class or the backstop to catch
       bare hex would also flag git SHAs, and `lint_wiki.py`'s `BASIS_OK_RE` requires a
       literal, intact SHA for `basis: git:<sha>` decision captures to pass their own lint.
-- [ ] Adjudicated INTENDED-behavior, no action (reviewer explicitly rejected this as a gap):
+      → retired 2026-09-02: an adjudicated no-action record, never work; plan 13 keeps
+      the same class as plain bullets with no checkbox, and this entry stays readable as
+      the not-re-litigated record.
+- [x] Adjudicated INTENDED-behavior, no action (reviewer explicitly rejected this as a gap):
       the `claude-ai` adapter emits no tool-use traces even though the real export contains
       1770 `tool_use` content blocks. `claude-ai` conversations don't carry the same tool-call
       shape as Claude Code transcripts and adding trace synthesis for them was ruled
       deliberately out of this plan's scope, not a missed requirement.
+      → retired 2026-09-02: an adjudicated no-action record (the reviewer rejected it as
+      a gap), never work; kept only as the not-re-litigated record.
 
 DRY / structure:
 - [ ] The sentinel-date-filtering logic (exclude `'0000-00-00'` before taking a date floor,
@@ -203,21 +226,29 @@ Test-coverage gaps:
       only indirectly through `write_digest`'s behavior.
 
 Cosmetic:
-- [ ] A tool-only turn with no narrative text renders with a double space —
+- [x] A tool-only turn with no narrative text renders with a double space —
       `'**[03] assistant:**  [tools: Bash ×1]'` — because `write_digest`'s body-line f-string
       always inserts a space before the trace even when the redacted text is empty.
-- [ ] No blank line separates a digest's closing frontmatter `---` from its first body line.
+      → done 2026-09-02 (/deferred quick fix): non-empty parts joined by one space,
+      test-first.
+- [x] No blank line separates a digest's closing frontmatter `---` from its first body line.
       Cosmetic only: §16.4 imposes no such requirement, and `lint_wiki.py` never parses
       `raw/sessions/*.md` as frontmatter pages (`check_frontmatter_schema` only runs over
       `wiki/*/*.md`), so this cannot fail lint.
-- [ ] `test_distill_sessions.py`'s claude-ai tests are interleaved with a claude-code test
+      → done 2026-09-02 (/deferred quick fix): blank line after the closing ---; a zero-
+      turn digest is unchanged.
+- [x] `test_distill_sessions.py`'s claude-ai tests are interleaved with a claude-code test
       rather than grouped together.
-- [ ] One Task 5 implementer report described its own self-review as "no issues found"
+      → done 2026-09-02 (/deferred quick fix): the claude-code test moved up beside its
+      siblings; 185 tests pass.
+- [x] One Task 5 implementer report described its own self-review as "no issues found"
       immediately before re-review found 2 Important findings in the same task's diff — a
       report-accuracy note; the code was always independently re-verified regardless.
+      → retired 2026-09-02: a report-accuracy observation with no action named; the code
+      was independently re-verified at the time.
 
 Spec/plan wording:
-- [ ] Spec's own §16.4 worked example (now `specs/completed/llm-wiki-spec.md`) shows
+- [x] Spec's own §16.4 worked example (now `specs/completed/llm-wiki-spec.md`) shows
       `session: a3f2c9d1` (8 characters) in the digest frontmatter, but the shipped code
       always writes the full session UUID (`session: 81bf53fc-2687-4b61-80e6-359c50e3f047`),
       and the plan's own Task 5 test pins the full form. The plan deliberately diverged from
@@ -225,14 +256,18 @@ Spec/plan wording:
       form is already in the filename — but nobody has gone back to correct the spec's now-
       stale example to match. Cosmetic; only the Idempotence bullet was amended at this
       completion (see plan 14 Post-execution), not this example.
-- [ ] Plan 14 Task 4's prose says the noise-removal rule drops "USER records that are pure
+      → done 2026-09-02 (/deferred quick fix): the example now shows the full id, with a
+      note that the filename carries its first 8 chars.
+- [x] Plan 14 Task 4's prose says the noise-removal rule drops "USER records that are pure
       tool-result plumbing"; the shipped `reconstruct` code applies the same
       empty-text/no-tools/no-compaction filter to *both* roles. The wider behavior is correct
       (an assistant turn consisting only of `thinking` blocks should also be dropped), so this
       is a wording defect in the retired plan's text, not a logic defect in the code.
+      → done 2026-09-02 (/deferred quick fix): now "records of either role … (no text
+      and no tool calls)".
 
 Residual lint false positive (real corpus, precise, deliberately not chased further):
-- [ ] `lint_wiki.py`'s `assignment` secret pattern still scores 2 false positives on one real
+- [x] `lint_wiki.py`'s `assignment` secret pattern still scores 2 false positives on one real
       digest, and only when `distill_sessions.py` is run with `--include-sidechains`: the
       matched text is pre-existing session prose from a past conversation that literally
       discusses this exact pattern's missing `\b` word-boundary (meta-recursion — the session
@@ -243,6 +278,9 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       compound identifiers like `client_secret`/`refresh_token` must keep matching). The
       false positive here is content-specific (a session about the pattern itself), not
       structural.
+      → retired 2026-09-02: recorded as deliberately not fixed; narrowing the pattern
+      would reopen the plan-13 adjudicated no-`\b` decision, and a normal ingest already
+      lints clean.
 
 ## 15-clean-code-family — 2026-07-24
 
@@ -264,7 +302,8 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
 - [ ] All-q ticked brief edge: stdout body is a bare newline while the digest preamble still points readers at a capture page that would have no captures (distill_specs.py).
 - [ ] Required digest header keys are read with hard `[]` in `cmd_assemble` — a hand-edited brief missing e.g. `date:` raises KeyError instead of a `brief-error:` line (the write-nothing contract still holds) (distill_specs.py).
 - [ ] `_repo_name` YAML-hostile residue: a zero-ASCII-word directory name containing `': '` still lands unquoted in the brief header (distill_specs.py).
-- [ ] Placeholder-less f-string in a test (`f'reports/harvest-wt-2026-07-24.md'`); fold into any future style sweep (test_distill_specs.py).
+- [x] Placeholder-less f-string in a test (`f'reports/harvest-wt-2026-07-24.md'`); fold into any future style sweep (test_distill_specs.py).
+      → done 2026-09-02 (/deferred quick fix).
 - [x] Also-line sha shape gate (`ALSO_RE` swallowed a non-hex `(also … · sha:)` into the location text) → done post-merge in afa9af8.
 - [ ] Renamed spec files lose `previously seen` hinting (prior keys grouped by the old at:-path, looked up by the new walk path); agent-side dedup still reads the whole prior brief, so impact is weaker hints only — decide whether rename-following is worth building (distill_specs.py).
 
@@ -275,13 +314,15 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       code-reviewer/task-reviewer precedent. Would need a hook design with
       per-agent matchers; touches agents/*.md and settings wiring. See
       specs/completed/agents-and-commands-expansion.md.
-- [ ] `disable-model-invocation` lint (final-review Important, gate-deferred):
+- [x] `disable-model-invocation` lint (final-review Important, gate-deferred):
       `check_command_file` in build/check_frontmatter.py validates only
       `description`, so nothing guards the key the commands' listing-budget
       motivation rests on — and pre-existing commands/deferred.md lacks the
       key entirely. TDD a check (Task-1 precedent) and decide /deferred's
       status as part of the same work: add the key there, or make the check
       per-file.
+      → done 2026-09-02 (/deferred quick fix): check_command_file requires the YAML
+      boolean true, test-first; commands/deferred.md carries the key.
 - [ ] Agent description length cap (final-review Minor): `check_skill`
       enforces the 1024-char cap but `check_agent_file` caps nothing, and
       all agent descriptions load into the Agent-tool listing (current
@@ -368,12 +409,17 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       it to the canonical stem-derived name or consciously accept the divergence. Not a
       skill defect — the shipped header-based collision guard (`a2d4f1f`) finds this
       artifact regardless of filename, which a 3-rep behavioral check confirmed 3/3.
-- [ ] **No non-interactive fallback for the batched-question checkpoint**
+- [x] **No non-interactive fallback for the batched-question checkpoint**
       (`skills/derive-roadmap/SKILL.md` §1, `references/gap-rubric.md`). A sub-agent run
       parked its questions in the artifact instead of asking. Degraded safely, since the
       §4 human checkpoint still gates before Stage 1. Would take one sentence: when the
       session cannot ask, the questions go in a clearly-marked block and the artifact is
       marked provisional.
+      → done 2026-09-02 (/deferred quick fix): one sentence at both sites (SKILL.md §1
+      and gap-rubric.md). Checked with 2 unattended Sonnet reps on a neutral greenhouse-
+      log fixture: 2/2 wrote a top PROVISIONAL banner and a marked Open-questions block
+      ahead of any stage text, kept the §4 checkpoint, and read none of this repo's
+      specs.
 - [ ] **The roadmap format cannot express parallel stages**
       (`skills/derive-roadmap/references/roadmap-format.md`). The gold master's own
       sequencing wants it ("Req 5 Stage-A audit starts in parallel"). Deferred because
@@ -399,11 +445,14 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       Note for future budget work: a chars/4 estimate of name+description came to ~5.1K
       and badly understated the real 12.8K, so the listing carries substantial per-entry
       overhead beyond the description text — measure with `/context`, don't estimate.
-- [ ] **The `/deferred` boundary is asserted in only one place.**
+- [x] **The `/deferred` boundary is asserted in only one place.**
       `skills/derive-roadmap/references/gap-rubric.md` states that live roadmap stages
       are out of `/deferred`'s scope; `commands/deferred.md` says nothing either way.
       Spec Req 10 mandates recording the boundary, which is satisfied — but the two
       could drift.
+      → retired 2026-09-02: commands/deferred.md now states the roadmap boundary in its
+      Scope paragraph (same session as this retire), so the two records can no longer
+      silently diverge.
 - [ ] **Two uncommitted artifacts in `/Users/lowell/Projects/alt-nfp`**, left there
       deliberately because this work has a standing no-git waiver for that repo:
       `specs/usable-series-selection-roadmap.md` (this plan's verification output) and

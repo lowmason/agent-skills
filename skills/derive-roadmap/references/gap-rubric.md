@@ -25,7 +25,10 @@ Run ONCE at entry, over EVERY numbered spec requirement. One row each.
 ## Batched questions
 
 Contradictions and ambiguities go in ONE message with the completed table,
-before any roadmap text. Never drip questions across turns.
+before any roadmap text. Never drip questions across turns. When the session
+cannot ask, the questions go in a clearly marked block at the top of the
+artifact and the artifact is labelled provisional; the human checkpoint still
+gates before stage 1.
 
 ## Reading deferred items
 

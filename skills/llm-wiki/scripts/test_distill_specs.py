@@ -218,7 +218,7 @@ def test_linked_worktree_is_accepted(tmp_path):
   _git(main, 'worktree', 'add', '--detach', '-q', str(wt), 'HEAD')
   root = make_root(tmp_path)
   assert inventory(wt, root) == 0
-  assert (root / f'reports/harvest-wt-2026-07-24.md').is_file()
+  assert (root / 'reports/harvest-wt-2026-07-24.md').is_file()
 
 
 def test_yaml_hostile_repo_name_is_sanitized(tmp_path):

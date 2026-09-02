@@ -12,7 +12,7 @@
 | CART (single tree) | Want a readable rule set; mixed feature types | Interpretable baseline only — high variance, prone to overfit | PML1 §18.1 | notebooks/book1/18/dtree_sensitivity.ipynb |
 | Random forest / bagging | Many irrelevant features; tabular; want a strong off-the-shelf classifier | Default strong baseline; parallel, robust, OOB error replaces CV | PML1 §18.3–18.4 | notebooks/book1/18/bagging_trees.ipynb |
 | Gradient boosting | Need top tabular accuracy and can fit sequentially | Best raw accuracy on tabular; tune trees + learning rate, watch overfit | PML1 §18.5 | notebooks/book1/18/spam_tree_ensemble_compare.ipynb |
-| Deep ensembles | Neural-net classifier; need uncertainty + robustness | Train M nets from different seeds; cheap, well-calibrated uncertainty | — / PML2 §17.3.9 | notebooks/book1/18/bagging_trees.ipynb |
+| Deep ensembles | Neural-net classifier; need uncertainty + robustness | Train M nets from different seeds; cheap, well-calibrated uncertainty | — / PML2 §17.3.9 | — |
 
 ## Selection & regularization (Step 6, family-specific)
 Complexity knobs: penalty strength (logreg L1/L2), tree depth / min-leaf, ensemble size + learning rate (boosting). Specializes `references/model-selection-regularization.md`. Use CV for the regularization path; for bagging/forests, **out-of-bag error** substitutes for CV (PML1 §18.3). For Bayesian logreg, prefer **LOO-ELPD** over IC. For hierarchical / multilevel classifiers (GLMMs, PML2 §15.5.1), partial pooling across groups **is** the regularizer — no separate penalty needed.

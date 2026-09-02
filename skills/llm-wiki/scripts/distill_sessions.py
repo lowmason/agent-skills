@@ -105,7 +105,7 @@ def _number(merged):
 
 def _read_jsonl(path):
   records = []
-  for line in path.read_text().split('\n'):
+  for line in path.read_text(encoding='utf-8').split('\n'):
     line = line.strip()
     if not line:
       continue
@@ -232,7 +232,7 @@ def _claude_ai_turns(conversation):
 
 def iter_claude_ai(src, args, failures):
   try:
-    data = json.loads(src.read_text())
+    data = json.loads(src.read_text(encoding='utf-8'))
   except (ValueError, OSError):
     failures.append(str(src))
     return []
@@ -266,8 +266,14 @@ def slugify(text, max_words=6):
   return (slug or 'session')[:60]
 
 
+_DATE_RE = re.compile(r'^\d{4}-\d{2}-\d{2}$')
+
+
 def _turn_date(ts):
-  return ts[:10] if ts and len(ts) >= 10 else '0000-00-00'
+  '''YYYY-MM-DD from an ISO timestamp, or the sentinel for anything that is
+  not date-shaped -- a malformed value must never become a digest's date.'''
+  head = ts[:10] if ts else ''
+  return head if _DATE_RE.match(head) else '0000-00-00'
 
 
 _TURNS_HEADER_RE = re.compile(r'^turns:\s*(\d+)\s*$', re.M)
@@ -277,7 +283,7 @@ def _digest_turns(path):
   '''The turn count recorded in an existing digest's header, or None if it is
   missing/unparseable/unreadable (a hand-edited digest must never crash a run).'''
   try:
-    m = _TURNS_HEADER_RE.search(path.read_text())
+    m = _TURNS_HEADER_RE.search(path.read_text(encoding='utf-8'))
   except (ValueError, OSError):
     return None
   return int(m.group(1)) if m else None
@@ -316,8 +322,9 @@ def write_digest(session, out):
     red_text, counts = redact(t['text'])
     total_redactions += sum(counts.values())
     marker = ' [compaction summary]' if t['compaction'] else ''
-    trace = f' {t["tools"]}' if t['tools'] else ''
-    body_lines.append(f'**[{t["n"]:02d}] {t["role"]}:**{marker} {red_text}{trace}'.rstrip())
+    head = f'**[{t["n"]:02d}] {t["role"]}:**{marker}'
+    # join only the non-empty parts: a tool-only turn gets one space, not two
+    body_lines.append(' '.join(x for x in (head, red_text, t['tools']) if x).rstrip())
 
   fm = [
     '---',
@@ -334,7 +341,8 @@ def write_digest(session, out):
     '',
   ]
   path = out / f'{first_date}-{slug}-{sess8}.md'
-  path.write_text('\n'.join(fm) + '\n'.join(body_lines) + '\n')
+  body = ('\n' + '\n'.join(body_lines) + '\n') if body_lines else ''
+  path.write_text('\n'.join(fm) + body, encoding='utf-8')  # blank line after ---
   # growth can change the date/slug parts of the name, so drop any stale digest
   # for this session: one session must never leave two digests behind.
   for stale in existing:

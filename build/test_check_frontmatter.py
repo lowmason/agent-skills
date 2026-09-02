@@ -106,6 +106,20 @@ def test_command_file_requires_description(tmp_path):
     assert any('missing description' in e for e in errs)
 
 
+def test_command_file_requires_disable_model_invocation(tmp_path):
+    # Every command must opt out of auto-invocation — that is what keeps commands off the
+    # skill-listing budget. Only the YAML boolean counts: a quoted 'true' is a string.
+    missing = tmp_path / 'missing.md'
+    missing.write_text('---\ndescription: Does a thing.\n---\nbody\n')
+    assert any('disable-model-invocation' in e for e in check_command_file(missing))
+    quoted = tmp_path / 'quoted.md'
+    quoted.write_text("---\ndescription: Does a thing.\ndisable-model-invocation: 'true'\n---\nbody\n")
+    assert any('disable-model-invocation' in e for e in check_command_file(quoted))
+    good = tmp_path / 'good.md'
+    good.write_text('---\ndescription: Does a thing.\ndisable-model-invocation: true\n---\nbody\n')
+    assert check_command_file(good) == []
+
+
 def test_real_agents_and_commands_are_clean():
     errs = []
     for md in sorted((REPO / 'agents').glob('*.md')):

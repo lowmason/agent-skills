@@ -309,6 +309,31 @@ def test_claude_code_bad_file_is_reported_not_fatal(tmp_path, capsys):
   assert 'parse-failure' in capsys.readouterr().err
 
 
+def test_claude_code_non_utf8_file_is_reported_not_fatal(tmp_path, capsys):
+  '''F: a .jsonl with a truncated multibyte sequence raises UnicodeDecodeError
+  from path.read_text() (a ValueError subclass, not an OSError) — the handler
+  in iter_claude_code must catch it too, or the whole run aborts and even the
+  well-formed sibling session is lost.'''
+  base = tmp_path / 'projects' / '-p'
+  base.mkdir(parents=True)
+  bad = 'dddd4444-0000-0000-0000-000000000000'
+  # valid JSON structurally, but the trailing byte is a truncated UTF-8
+  # multibyte sequence (b'\xc3' alone is invalid without its continuation byte)
+  (base / f'{bad}.jsonl').write_bytes(
+    b'{"type":"user","uuid":"a","parentUuid":null,'
+    b'"timestamp":"2026-05-14T10:00:00Z","message":'
+    b'{"role":"user","content":"caf\xc3"}}\n')
+  good = 'eeee5555-0000-0000-0000-000000000000'
+  _write_jsonl(base / f'{good}.jsonl', [
+    {'type': 'user', 'uuid': 'a', 'parentUuid': None, 'timestamp': '2026-05-14T10:00:00Z',
+     'message': {'role': 'user', 'content': 'ok'}}])
+  out = tmp_path / 'out'
+  rc = ds.main(['--source', 'claude-code', str(tmp_path / 'projects'), str(out)])
+  assert rc == 1                                   # the bad file failed
+  assert len(list(out.glob('*.md'))) == 1          # the good one still written
+  assert 'parse-failure' in capsys.readouterr().err
+
+
 def test_claude_ai_adapter(tmp_path):
   conv = [{
     'uuid': 'ffffdddd-0000-0000-0000-000000000000',
@@ -405,31 +430,6 @@ def test_claude_ai_real_export_shape_prefers_content_over_flat_text(tmp_path):
   assert 'let me weigh NUTS versus MCLMC before replying' not in body
   assert 'PURPLEOCTOPUS' not in body       # m4's thinking-only content -> flat text unused
   assert 'turns: 2' in body                # m3 (stub) and m4 (thinking-only) both dropped
-
-
-def test_claude_code_non_utf8_file_is_reported_not_fatal(tmp_path, capsys):
-  '''F: a .jsonl with a truncated multibyte sequence raises UnicodeDecodeError
-  from path.read_text() (a ValueError subclass, not an OSError) — the handler
-  in iter_claude_code must catch it too, or the whole run aborts and even the
-  well-formed sibling session is lost.'''
-  base = tmp_path / 'projects' / '-p'
-  base.mkdir(parents=True)
-  bad = 'dddd4444-0000-0000-0000-000000000000'
-  # valid JSON structurally, but the trailing byte is a truncated UTF-8
-  # multibyte sequence (b'\xc3' alone is invalid without its continuation byte)
-  (base / f'{bad}.jsonl').write_bytes(
-    b'{"type":"user","uuid":"a","parentUuid":null,'
-    b'"timestamp":"2026-05-14T10:00:00Z","message":'
-    b'{"role":"user","content":"caf\xc3"}}\n')
-  good = 'eeee5555-0000-0000-0000-000000000000'
-  _write_jsonl(base / f'{good}.jsonl', [
-    {'type': 'user', 'uuid': 'a', 'parentUuid': None, 'timestamp': '2026-05-14T10:00:00Z',
-     'message': {'role': 'user', 'content': 'ok'}}])
-  out = tmp_path / 'out'
-  rc = ds.main(['--source', 'claude-code', str(tmp_path / 'projects'), str(out)])
-  assert rc == 1                                   # the bad file failed
-  assert len(list(out.glob('*.md'))) == 1          # the good one still written
-  assert 'parse-failure' in capsys.readouterr().err
 
 
 def test_claude_ai_non_utf8_file_is_reported_not_fatal(tmp_path, capsys):
@@ -1075,3 +1075,108 @@ def test_write_digest_skips_digest_with_unparseable_turns_header(tmp_path):
   assert ds.write_digest(_grown_session(9), out) is None
   assert stale.read_text() == '---\nsession: ab12cd34ef56\n---\nnotes\n'
   assert len(list(out.glob('*.md'))) == 1
+
+
+def test_turn_date_rejects_malformed_timestamp():
+  '''A malformed but non-empty timestamp must not become the digest's date
+  ("not-a-timestamp" once sliced to "not-a-time" and reached the filename):
+  anything not shaped YYYY-MM-DD falls back to the sentinel.'''
+  assert ds._turn_date('2026-05-14T10:00:00Z') == '2026-05-14'
+  assert ds._turn_date('2026-05-14') == '2026-05-14'
+  assert ds._turn_date('not-a-timestamp') == '0000-00-00'
+  assert ds._turn_date('') == '0000-00-00'
+  assert ds._turn_date(None) == '0000-00-00'
+
+
+def test_tool_only_turn_renders_single_space(tmp_path):
+  '''A turn with no narrative text and only a tool trace renders as
+  "**[02] assistant:** [tools: bash ×1]" -- one space, not two.'''
+  session = {
+    'session_id': 'b4d5e6f7a8b9', 'source': 'claude-code', 'project': None,
+    'turns': [
+      {'n': 1, 'role': 'user', 'text': 'run it',
+       'tools': '', 'compaction': False, 'ts': '2026-05-14T10:00:00Z'},
+      {'n': 2, 'role': 'assistant', 'text': '',
+       'tools': '[tools: bash ×1]', 'compaction': False,
+       'ts': '2026-05-14T10:01:00Z'},
+    ],
+  }
+  text = ds.write_digest(session, tmp_path / 'sessions').read_text()
+  assert '**[02] assistant:** [tools: bash ×1]' in text
+  assert ':**  [' not in text
+
+
+def test_digest_has_blank_line_after_frontmatter(tmp_path):
+  text = ds.write_digest(_session(), tmp_path / 'sessions').read_text()
+  assert '\n---\n\n**[01] user:**' in text
+
+
+def test_reads_and_writes_are_utf8_regardless_of_locale(tmp_path):
+  '''Path.read_text()/write_text() with no encoding follow the process
+  locale. Under a C/ASCII locale with UTF-8 mode off, a well-formed UTF-8
+  transcript is misreported as a parse failure and a digest carrying any
+  non-ASCII text (every tool trace has "×") cannot even be written. Both
+  sources run in a subprocess pinned to that locale; stdio is pinned to
+  UTF-8 separately so only the file paths are under test.'''
+  import os, subprocess, sys
+  env = {**os.environ, 'LC_ALL': 'C', 'LANG': 'C', 'PYTHONIOENCODING': 'utf-8'}
+  script = Path(ds.__file__)
+  # claude-code: _read_jsonl + write_digest
+  base = tmp_path / 'projects' / '-p'
+  base.mkdir(parents=True)
+  sid = 'aaaa1111-0000-0000-0000-000000000000'
+  records = [
+    {'type': 'user', 'uuid': 'a', 'parentUuid': None,
+     'timestamp': '2026-05-14T10:00:00Z',
+     'message': {'role': 'user', 'content': 'summarise the cafe notes'}},
+    {'type': 'assistant', 'uuid': 'b', 'parentUuid': 'a',
+     'timestamp': '2026-05-14T10:00:05Z',
+     'message': {'role': 'assistant', 'content': 'café ✓'}},
+  ]
+  (base / f'{sid}.jsonl').write_text(
+    '\n'.join(json.dumps(r, ensure_ascii=False) for r in records) + '\n',
+    encoding='utf-8')
+  out = tmp_path / 'out-code'
+  r = subprocess.run(
+    [sys.executable, '-X', 'utf8=0', str(script), '--source', 'claude-code',
+     str(tmp_path / 'projects'), str(out)],
+    env=env, capture_output=True, text=True)
+  assert r.returncode == 0, r.stderr
+  digests = list(out.glob('*.md'))
+  assert len(digests) == 1
+  assert 'café ✓' in digests[0].read_text(encoding='utf-8')
+  # claude-ai: iter_claude_ai's read
+  conv = [{
+    'uuid': 'ffffdddd-0000-0000-0000-000000000000', 'name': 'Cafe',
+    'created_at': '2026-04-02T12:00:00Z', 'updated_at': '2026-04-02T12:30:00Z',
+    'chat_messages': [
+      {'sender': 'human', 'created_at': '2026-04-02T12:00:00Z', 'text': 'cafe?'},
+      {'sender': 'assistant', 'created_at': '2026-04-02T12:00:10Z', 'text': 'café'},
+    ],
+  }]
+  src = tmp_path / 'conversations.json'
+  src.write_text(json.dumps(conv, ensure_ascii=False), encoding='utf-8')
+  out = tmp_path / 'out-ai'
+  r = subprocess.run(
+    [sys.executable, '-X', 'utf8=0', str(script), '--source', 'claude-ai',
+     str(src), str(out)],
+    env=env, capture_output=True, text=True)
+  assert r.returncode == 0, r.stderr
+  assert 'café' in next(out.glob('*.md')).read_text(encoding='utf-8')
+
+
+def test_two_titleless_sessions_do_not_collide(tmp_path):
+  '''Premise check for a recorded backlog item: two sessions with no
+  title-bearing text both slugify to the fallback, but the filename also
+  carries each session's own sess8, so they land in two distinct digests.'''
+  out = tmp_path / 'sessions'
+  def sess(sid):
+    return {'session_id': sid, 'source': 'claude-code', 'project': None,
+            'turns': [{'n': 1, 'role': 'assistant', 'text': 'hello',
+                       'tools': '', 'compaction': False,
+                       'ts': '2026-05-14T10:00:00Z'}]}
+  a = ds.write_digest(sess('aaaaaaaa-1111'), out)
+  b = ds.write_digest(sess('bbbbbbbb-2222'), out)
+  assert a is not None and b is not None and a != b
+  assert a.name.endswith('-aaaaaaaa.md') and b.name.endswith('-bbbbbbbb.md')
+  assert len(list(out.glob('*.md'))) == 2

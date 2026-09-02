@@ -21,6 +21,13 @@ from pathlib import Path
 SCRATCH = Path(__file__).parent / ".scratch"
 CITE_RE = re.compile(r"\bPML([12])\s*§\s*(\d+(?:\.\d+)*)")
 NB_RE = re.compile(r"notebooks/book[12]/[^\s)`\"']+\.ipynb")
+# Chapter-fallback refs already confirmed at Gate B, so they are not re-listed as a worklist
+# item on every run. PML2 §2.2.1.4 ("Negative binomial distribution"): Gate-B verified
+# 2026-07-20 that the section exists and substantiates the claims citing it; it shows as a
+# fallback only because book2_sections.tsv truncates at three nesting levels (2.2.1 is
+# indexed, no 2.2.1.x is). Keyed by the same "PML{book} §{ref}" string fallback_sections()
+# emits, so an entry here is greppable against the WARN line it silences.
+KNOWN_GOOD_FALLBACKS: frozenset[str] = frozenset({"PML2 §2.2.1.4"})
 
 
 def _iter_md(paths: list[str]) -> list[Path]:
@@ -74,11 +81,15 @@ def verify_text(text: str) -> list[str]:
 
 def fallback_sections(text: str) -> list[str]:
     """§refs that passed only via chapter-fallback — the exact subsection isn't indexed, so Gate A
-    proved only that the chapter is real. These are the ones to confirm semantically (Gate B)."""
+    proved only that the chapter is real. These are the ones to confirm semantically (Gate B).
+    Refs recorded in KNOWN_GOOD_FALLBACKS have already been confirmed and are skipped."""
     seen: dict[str, None] = {}  # dedupe, preserve order
     for book, ref in CITE_RE.findall(text):
+        key = f"PML{book} §{ref}"
+        if key in KNOWN_GOOD_FALLBACKS:
+            continue
         if _section_status(_sections(book), ref) == "fallback":
-            seen[f"PML{book} §{ref}"] = None
+            seen[key] = None
     return list(seen)
 
 

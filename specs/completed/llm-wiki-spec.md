@@ -283,7 +283,7 @@ Digest format — one file per session, `raw/sessions/YYYY-MM-DD-<slug>-<sess8>.
 
 ```yaml
 ---
-session: a3f2c9d1
+session: a3f2c9d1-4e5b-4c1a-9f0e-2d8b6e5a1c34   # full id; the filename carries its first 8 chars
 source: claude-code          # claude-code | claude-ai
 project: alt-nfp             # claude-code only, from the project dir
 dates: 2026-05-14/2026-05-15

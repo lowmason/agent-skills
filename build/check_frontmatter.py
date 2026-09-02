@@ -137,6 +137,12 @@ def check_command_file(md: Path) -> list[str]:
         return errs
     if not (fm.get('description') or '').strip():
         errs.append(f'{md}: missing description')
+    # Commands stay off the skill-listing budget only because they opt out of
+    # auto-invocation; guard the key that carries that decision. `is not True`
+    # rejects a missing key, `false`, and a quoted 'true' (a string, which
+    # disables nothing) alike.
+    if fm.get('disable-model-invocation') is not True:
+        errs.append(f'{md}: disable-model-invocation must be the YAML boolean true')
     return errs
 
 

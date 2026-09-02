@@ -407,7 +407,7 @@ Expected: one commit line printed.
 
 ### Task 4: Thread reconstruction — main chain, sidechains, compaction summaries
 
-Spec §16.4 "Thread reconstruction" + "Compaction summaries". From a session's records, select the narrative turns in order: drop non-narrative record types and `isMeta` records, drop `isSidechain` records unless `--include-sidechains`, keep `isCompactSummary` records (marked), and drop `user` records that are pure tool-result plumbing (no text). Order by timestamp (the linear main chain; Appendix A notes parent-pointer refinement).
+Spec §16.4 "Thread reconstruction" + "Compaction summaries". From a session's records, select the narrative turns in order: drop non-narrative record types and `isMeta` records, drop `isSidechain` records unless `--include-sidechains`, keep `isCompactSummary` records (marked), and drop records of either role that are pure tool-result plumbing (no text and no tool calls). Order by timestamp (the linear main chain; Appendix A notes parent-pointer refinement).
 
 **Files:**
 - Modify: `~/research-wiki/scripts/distill_sessions.py`

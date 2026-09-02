@@ -60,7 +60,10 @@ pre-existing stage candidates. The /deferred command owns promotion logic;
 read it, never duplicate it.
 
 Surface contradictions and ambiguities as ONE batched question set before
-writing any roadmap text.
+writing any roadmap text. When the session cannot ask (a non-interactive or
+sub-agent run), put the questions in a clearly marked block at the top of
+the artifact and label the artifact provisional; the §4 checkpoint still
+gates before stage 1.
 
 **SINGLE-STAGE EXIT.** If the gaps fit one spec→plan cycle, write NO roadmap
 file. Say so, hand directly to brainstorming (open design space) or
