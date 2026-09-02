@@ -47,6 +47,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import os
+import re
 import sys
 import urllib.error
 import urllib.parse
@@ -137,13 +138,15 @@ def fetch(url: str, sources_dir: Path, offline: bool, refresh: bool) -> tuple[Pa
   return dest, sha256, retrieved
 
 
-def read_sheet(path: Path) -> pl.DataFrame:
-  '''First worksheet with every cell as Utf8 and no header; header detection happens downstream
-  because these workbooks carry preamble, legend, and footnote rows. Reading as strings keeps
-  codes textual at the source ('11', not 11.0) and silences fastexcel's dtype-inference chatter.'''
+def read_sheet(path: Path, sheet: str | None = None) -> pl.DataFrame:
+  '''One worksheet (the first unless named) with every cell as Utf8 and no header; header
+  detection happens downstream because these workbooks carry preamble, legend, and footnote
+  rows. Reading as strings keeps codes textual at the source ('0010', not 10.0) and silences
+  fastexcel's dtype-inference chatter.'''
   with warnings.catch_warnings():
     warnings.simplefilter('ignore', FutureWarning)  # polars-internal from_arrow deprecation
-    raw = pl.read_excel(path, has_header=False, read_options={'dtypes': 'string'})
+    sheet_kwargs = {'sheet_name': sheet} if sheet else {}
+    raw = pl.read_excel(path, has_header=False, read_options={'dtypes': 'string'}, **sheet_kwargs)
   return raw.select(pl.all().cast(pl.Utf8))
 
 
@@ -579,6 +582,156 @@ def validate_soc_crosswalk(frame: pl.DataFrame, source_vintage: int, target_vint
 
 
 # --------------------------------------------------------------------------------------------
+# Census occupation codes — the household-survey (ACS / CPS / SIPP) aggregation of SOC
+# --------------------------------------------------------------------------------------------
+
+CENSUS_OCC_RE = r'^\d{4}$'
+SOC_REMAINDER_RE = r'^\d{2}-\d{1,3}X{1,3}$'
+CENSUS_SOC_LEVELS = ('detailed', 'broad', 'minor', 'major', 'remainder', 'none')
+
+
+def parse_census_occ(raw: pl.DataFrame, vintage: int, **deps: pl.DataFrame) -> pl.DataFrame:
+  '''Census "<vintage> Census Occupation Code List" sheet -> census_occ, title, soc_code, soc_level,
+  one row per four-digit Census code, exactly as published.
+
+  Heading rows carry code ranges ("0010-3550") and are dropped. The SOC cell is one of: a
+  detailed code; a broad or minor group (the Census code aggregates the whole group); a
+  remainder pattern with X placeholders ("15-124X": the codes under that prefix not claimed by
+  any other Census code); or "none" (military rank not specified, never worked). soc_level
+  records which, looked up against the matching SOC structure for real codes.
+  '''
+  soc = deps[f'soc_{vintage}']
+  body = frame_below_header(raw, [str(vintage), 'census code', 'soc code'])
+  census_col = find_col(body.columns, 'census code')
+  soc_col = find_col(body.columns, 'soc code')
+  try:
+    title_col = find_col(body.columns, 'title')
+  except ValueError:
+    title_col = find_col(body.columns, 'description')  # the 2010 list's header wording
+  listed = (
+    body
+    .select(census_occ=code_expr(census_col), title=title_expr(title_col), soc_cell=title_expr(soc_col))
+    .filter(pl.col('census_occ').str.contains(r'^\d{1,4}$'))
+    .with_columns(census_occ=pl.col('census_occ').str.zfill(4))
+  )
+  level_of = dict(zip(soc.get_column('code'), soc.get_column('level')))
+  soc_codes: list[str | None] = []
+  soc_levels: list[str] = []
+  for cell in listed.get_column('soc_cell'):
+    if cell is None or cell.lower() == 'none':
+      soc_codes.append(None)
+      soc_levels.append('none')
+    elif re.fullmatch(r'\d{2}-\d{4}', cell):
+      if cell not in level_of:
+        raise ValueError(f'census_occ_{vintage}: SOC code {cell} is not in soc_{vintage}; the vintages do not match.')
+      soc_codes.append(cell)
+      soc_levels.append(level_of[cell])
+    elif re.fullmatch(SOC_REMAINDER_RE, cell):
+      soc_codes.append(cell)
+      soc_levels.append('remainder')
+    else:
+      raise ValueError(f'census_occ_{vintage}: unrecognized SOC cell {cell!r}; the source layout changed.')
+  return (
+    listed
+    .with_columns(
+      soc_code=pl.Series(soc_codes, dtype=pl.Utf8),
+      soc_level=pl.Series(soc_levels, dtype=pl.Utf8),
+    )
+    .select('census_occ', 'title', 'soc_code', 'soc_level')
+    .sort('census_occ')
+  )
+
+
+def validate_census_occ(frame: pl.DataFrame, vintage: int, **deps: pl.DataFrame) -> list[str]:
+  problems = []
+  if not 450 <= frame.height <= 700:
+    problems.append(f'census_occ_{vintage}: {frame.height} codes is outside the plausible 450-700 band')
+  duplicates = frame.filter(pl.col('census_occ').is_duplicated()).height
+  if duplicates:
+    problems.append(f'census_occ_{vintage}: {duplicates} duplicated Census codes')
+  unknown = frame.filter(pl.col('soc_level').is_in(list(CENSUS_SOC_LEVELS)).not_()).height
+  if unknown:
+    problems.append(f'census_occ_{vintage}: {unknown} rows with a soc_level outside {CENSUS_SOC_LEVELS}')
+  return problems
+
+
+def expand_census_occ(vintage: int, **deps: pl.DataFrame) -> pl.DataFrame:
+  '''Derived: one row per (Census code, detailed SOC code) — the published list expanded so
+  every detailed SOC occupation is claimed by exactly one Census code.
+
+  Precedence follows specificity: exact detailed codes first, then whole broad groups, minor
+  groups, and major groups (a group claims every detailed descendant), and finally remainder
+  patterns, longest prefix first, which take whatever under their prefix is still unclaimed. A
+  detailed code claimed twice means the reading is wrong for this vintage, so it is an error;
+  a detailed code claimed by nobody is reported by validate_census_expansion.
+  '''
+  census = deps[f'census_occ_{vintage}']
+  soc = deps[f'soc_{vintage}']
+  parent_of = dict(zip(soc.get_column('code'), soc.get_column('parent_code')))
+  title_of = dict(zip(soc.get_column('code'), soc.get_column('title')))
+  detailed = [code for code, level in zip(soc.get_column('code'), soc.get_column('level')) if level == 'detailed']
+
+  def ancestors(code: str) -> set[str]:
+    found, parent = set(), parent_of.get(code)
+    while parent:
+      found.add(parent)
+      parent = parent_of.get(parent)
+    return found
+
+  ancestors_of = {code: ancestors(code) for code in detailed}
+  claims: dict[str, tuple[str, str]] = {}  # detailed SOC -> (census code, via)
+
+  def claim(soc_code: str, census_occ: str, via: str) -> None:
+    if soc_code in claims:
+      raise ValueError(
+        f'census_occ_{vintage}: SOC {soc_code} is claimed by both Census {claims[soc_code][0]} and '
+        f'{census_occ}; the group/remainder reading does not partition this vintage.'
+      )
+    claims[soc_code] = (census_occ, via)
+
+  precedence = {'detailed': 0, 'broad': 1, 'minor': 2, 'major': 3, 'remainder': 4}
+  mapped = census.filter(pl.col('soc_level').ne('none')).select('census_occ', 'soc_code', 'soc_level').rows()
+  for census_occ, soc_code, level in sorted(mapped, key=lambda row: (precedence[row[2]], -len(row[1].rstrip('X')))):
+    if level == 'detailed':
+      claim(soc_code, census_occ, 'detailed')
+    elif level == 'remainder':
+      prefix = soc_code.rstrip('X')
+      for code in detailed:
+        if code.startswith(prefix) and code not in claims:
+          claim(code, census_occ, 'remainder')
+    else:
+      for code in detailed:
+        if soc_code in ancestors_of[code]:
+          claim(code, census_occ, level)
+
+  census_title = dict(zip(census.get_column('census_occ'), census.get_column('title')))
+  rows = [
+    (census_occ, census_title[census_occ], soc_code, title_of[soc_code], via)
+    for soc_code, (census_occ, via) in claims.items()
+  ]
+  return pl.DataFrame(
+    rows,
+    schema=[f'census_occ_{vintage}', f'census_title_{vintage}', f'soc_{vintage}', f'soc_title_{vintage}', 'via'],
+    orient='row',
+  ).sort(f'census_occ_{vintage}', f'soc_{vintage}')
+
+
+def validate_census_expansion(frame: pl.DataFrame, vintage: int, **deps: pl.DataFrame) -> list[str]:
+  soc = deps[f'soc_{vintage}']
+  problems = []
+  detailed = set(soc.filter(pl.col('level').eq('detailed')).get_column('code'))
+  claimed = set(frame.get_column(f'soc_{vintage}'))
+  unclaimed = sorted(detailed.difference(claimed))
+  if unclaimed:
+    sample = ', '.join(unclaimed[:10])
+    problems.append(f'census_occ_{vintage}_to_soc_{vintage}: {len(unclaimed)} detailed SOC codes claimed by no Census code (e.g. {sample})')
+  duplicates = frame.filter(pl.col(f'soc_{vintage}').is_duplicated()).height
+  if duplicates:
+    problems.append(f'census_occ_{vintage}_to_soc_{vintage}: {duplicates} detailed SOC codes appear more than once')
+  return problems
+
+
+# --------------------------------------------------------------------------------------------
 # Registry
 # --------------------------------------------------------------------------------------------
 
@@ -586,9 +739,11 @@ def validate_soc_crosswalk(frame: pl.DataFrame, source_vintage: int, target_vint
 @dataclass(frozen=True)
 class Build:
   name: str  # output lands at data/<name>.csv
-  url: str
-  parse: Callable[[pl.DataFrame], pl.DataFrame]  # raw sheet (see read_sheet) -> tidy frame
-  validate: Callable[[pl.DataFrame], list[str]]
+  url: str | None  # None: derived purely from `requires`, no source file
+  parse: Callable[..., pl.DataFrame]  # parse(raw_sheet, **deps), or parse(**deps) when derived
+  validate: Callable[..., list[str]]  # validate(frame, **deps)
+  sheet: str | None = None  # worksheet to read; the first when None
+  requires: tuple[str, ...] = ()  # other artifacts handed in as keyword frames
 
 
 # Pinned source URLs — the canonical Census/BLS locations as of 2026. If one 404s, see the
@@ -645,6 +800,39 @@ BUILDS = [
     parse=partial(parse_soc_crosswalk, source_vintage=2010, target_vintage=2018),
     validate=partial(validate_soc_crosswalk, source_vintage=2010, target_vintage=2018),
   ),
+  # Census occupation code lists (census.gov/topics/employment/industry-occupation/guidance/
+  # code-lists.html). Each workbook's code-list sheet is the published list; the *_to_soc_*
+  # artifact is derived from it and the matching SOC structure.
+  Build(
+    name='census_occ_2018',
+    url='https://www2.census.gov/programs-surveys/demo/guidance/industry-occupation/2018-occupation-code-list-and-crosswalk.xlsx',
+    sheet='2018 Census Occ Code List',
+    parse=partial(parse_census_occ, vintage=2018),
+    validate=partial(validate_census_occ, vintage=2018),
+    requires=('soc_2018',),
+  ),
+  Build(
+    name='census_occ_2018_to_soc_2018',
+    url=None,
+    parse=partial(expand_census_occ, vintage=2018),
+    validate=partial(validate_census_expansion, vintage=2018),
+    requires=('census_occ_2018', 'soc_2018'),
+  ),
+  Build(
+    name='census_occ_2010',
+    url='https://www2.census.gov/programs-surveys/demo/guidance/industry-occupation/2010-occ-codes-with-crosswalk-from-2002-2011.xls',
+    sheet='2010OccCodeList',
+    parse=partial(parse_census_occ, vintage=2010),
+    validate=partial(validate_census_occ, vintage=2010),
+    requires=('soc_2010',),
+  ),
+  Build(
+    name='census_occ_2010_to_soc_2010',
+    url=None,
+    parse=partial(expand_census_occ, vintage=2010),
+    validate=partial(validate_census_expansion, vintage=2010),
+    requires=('census_occ_2010', 'soc_2010'),
+  ),
 ]
 
 # (concordance, code column in it, structure file it must resolve against, leaf level there)
@@ -694,6 +882,21 @@ class Record:
   retrieved: str
 
 
+def resolve_requires(requires: tuple[str, ...], frames: dict[str, pl.DataFrame], data_dir: Path) -> dict[str, pl.DataFrame]:
+  '''The frames a build depends on: what this run built, else the CSV already in data/ (read
+  with every column as Utf8, which is how the dependents consume them).'''
+  deps = {}
+  for name in requires:
+    if name in frames:
+      deps[name] = frames[name]
+      continue
+    path = data_dir / f'{name}.csv'
+    if not path.exists():
+      raise FileNotFoundError(f'{name} is required but was neither built this run nor found at {path}')
+    deps[name] = pl.read_csv(path, infer_schema=False)
+  return deps
+
+
 def manifest_records(builds: list[Build], data_dir: Path, sources_dir: Path) -> list[Record]:
   '''One row per registered build, read from what is on disk right now — so a partial run
   (--only, or a blocked download) documents the whole data/ directory rather than only the
@@ -701,6 +904,11 @@ def manifest_records(builds: list[Build], data_dir: Path, sources_dir: Path) -> 
   records = []
   for build in builds:
     csv_path = data_dir / f'{build.name}.csv'
+    if build.url is None:
+      origin = f'derived from {", ".join(build.requires)}'
+      rows = str(pl.read_csv(csv_path, infer_schema=False).height) if csv_path.exists() else 'NOT BUILT'
+      records.append(Record(build.name, rows, origin, '', ''))
+      continue
     source_path = sources_dir / source_filename(build.url)
     if not csv_path.exists() or not source_path.exists():
       records.append(Record(build.name, 'NOT BUILT', build.url, '', ''))
@@ -753,7 +961,9 @@ def main() -> int:
 
   if args.list:
     for build in BUILDS:
-      print(f'{build.name:24s} {build.url}')
+      origin = build.url if build.url else f'derived from {", ".join(build.requires)}'
+      sheet = f' [sheet: {build.sheet}]' if build.sheet else ''
+      print(f'{build.name:28s} {origin}{sheet}')
     return 0
 
   selected = [build for build in BUILDS if args.only is None or build.name in args.only]
@@ -767,13 +977,17 @@ def main() -> int:
   for build in selected:
     print(f'building {build.name} ...')
     try:
-      source_path, _sha256, _retrieved = fetch(build.url, args.sources_dir, args.offline, args.refresh)
+      deps = resolve_requires(build.requires, frames, args.data_dir)
+      if build.url is None:
+        frame = build.parse(**deps)
+      else:
+        source_path, _sha256, _retrieved = fetch(build.url, args.sources_dir, args.offline, args.refresh)
+        frame = build.parse(read_sheet(source_path, build.sheet), **deps)
     except (RuntimeError, FileNotFoundError) as error:
       problems.append(f'{build.name}: NOT BUILT — {error}')
       print(f'  skipped: {error}')
       continue
-    frame = build.parse(read_sheet(source_path))
-    problems.extend(build.validate(frame))
+    problems.extend(build.validate(frame, **deps))
     frame.write_csv(args.data_dir / f'{build.name}.csv')
     frames[build.name] = frame
     print(f'  {frame.height} rows -> data/{build.name}.csv')

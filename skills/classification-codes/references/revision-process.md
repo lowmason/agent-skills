@@ -206,6 +206,16 @@ All 840 detailed 2010 codes and all 867 detailed 2018 codes appear. BLS also pub
 type-of-change list by detailed occupation and a list of 2010 codes deleted in 2018 on the SOC
 page; those are not bundled.
 
+**Census occupation codes follow each SOC revision with a lag.** The Census Bureau maintains
+its own 4-digit occupation code list for the household surveys (ACS, CPS, SIPP) as an
+aggregation of the current SOC, and reissues it after each SOC revision: the 2010 list (last
+updated August 2011) aggregates the 2010 SOC; the 2018 list (posted September 26, 2019)
+aggregates the 2018 SOC. Each list partitions the detailed SOC of its vintage — the bundled
+build verifies that every detailed SOC code is claimed by exactly one Census code. The Census
+workbooks also carry a Census-to-Census crosswalk sheet, but it lists every code exactly once
+and so cannot express the splits and merges its own "Occ Code Changes" sheet describes in
+prose; it is not bundled. Bridge Census vintages through SOC instead (see SKILL.md).
+
 **A revision can outgrow the code pattern.** The 2018 SOC added enough physician specialties
 that broad group `29-1210` Physicians ran past `29-1219`: `29-1221` through `29-1229` are its
 members too, and no `29-1220` exists. The bundled `parent_code` follows the sheet's nesting, so

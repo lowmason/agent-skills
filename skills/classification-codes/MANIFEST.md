@@ -1,6 +1,6 @@
 # classification-codes data manifest
 
-Generated 2026-09-02T22:02:04+00:00 by scripts/build.py.
+Generated 2026-09-02T22:12:27+00:00 by scripts/build.py.
 sources/ holds the exact bytes each CSV was built from — commit it; Census and BLS overwrite
 files in place, so an unarchived source vintage is unrecoverable. `retrieved` is the time the
 cached source file was written.
@@ -15,5 +15,9 @@ cached source file was written.
 | data/soc_2018.csv | 1447 | https://www.bls.gov/soc/2018/soc_structure_2018.xlsx | ade08af40923266f3a854842e888ca3e93c15b26a147c20a2b12a61f4c4f4077 | 2026-09-02T22:02:03+00:00 |
 | data/soc_2010.csv | 1421 | https://www.bls.gov/soc/soc_structure_2010.xls | 4f39cd2e378e8bac5f73d8f9f90eb12010292d9c397529122b5790fd58183afd | 2026-09-02T22:02:04+00:00 |
 | data/soc_2010_to_2018.csv | 900 | https://www.bls.gov/soc/2018/soc_2010_to_2018_crosswalk.xlsx | f3a847561562d3e5a30eb848f2902a5f7b02e9c48b3d7f2cc8879899fbc242a7 | 2026-09-02T22:02:04+00:00 |
+| data/census_occ_2018.csv | 570 | https://www2.census.gov/programs-surveys/demo/guidance/industry-occupation/2018-occupation-code-list-and-crosswalk.xlsx | fca2818d691c32777a4cd733a9ab77c8c5bd47adcacd7ac3aa149bebd45b5f7f | 2026-09-02T22:10:28+00:00 |
+| data/census_occ_2018_to_soc_2018.csv | 867 | derived from census_occ_2018, soc_2018 |  |  |
+| data/census_occ_2010.csv | 540 | https://www2.census.gov/programs-surveys/demo/guidance/industry-occupation/2010-occ-codes-with-crosswalk-from-2002-2011.xls | ebf7e6f31c0cda16c7c8518a23bfa13ca537105ba41c427f99dff155a68c2cc6 | 2026-09-02T22:10:28+00:00 |
+| data/census_occ_2010_to_soc_2010.csv | 840 | derived from census_occ_2010, soc_2010 |  |  |
 
 No validation problems in the last run.

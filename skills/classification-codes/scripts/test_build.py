@@ -464,7 +464,168 @@ def test_registry_names_are_unique_and_match_output_files():
   names = [b.name for b in build.BUILDS]
   assert len(names) == len(set(names))
   assert {'naics_2022', 'naics_2017', 'naics_2012', 'naics_2017_to_2022', 'naics_2012_to_2017',
-          'soc_2018', 'soc_2010', 'soc_2010_to_2018'} <= set(names)
+          'soc_2018', 'soc_2010', 'soc_2010_to_2018',
+          'census_occ_2018', 'census_occ_2018_to_soc_2018',
+          'census_occ_2010', 'census_occ_2010_to_soc_2010'} <= set(names)
+
+
+def test_registry_requirements_are_registered_and_built_first():
+  order = [b.name for b in build.BUILDS]
+  for b in build.BUILDS:
+    for required in b.requires:
+      assert required in order
+      assert order.index(required) < order.index(b.name)
+  derived = [b for b in build.BUILDS if b.url is None]
+  assert derived and all(b.requires for b in derived)
+
+
+# --------------------------------------------------------------------------------------------
+# Census occupation codes (the ACS/CPS household-survey aggregation of SOC)
+# --------------------------------------------------------------------------------------------
+
+
+@pytest.fixture
+def soc_for_census() -> pl.DataFrame:
+  rows = [
+    ('11-0000', 'major', 'Management Occupations', None),
+    ('11-1000', 'minor', 'Top Executives', '11-0000'),
+    ('11-1010', 'broad', 'Chief Executives', '11-1000'),
+    ('11-1011', 'detailed', 'Chief Executives', '11-1010'),
+    ('11-1020', 'broad', 'General and Operations Managers', '11-1000'),
+    ('11-1021', 'detailed', 'General and Operations Managers', '11-1020'),
+    ('11-1030', 'broad', 'Legislators', '11-1000'),
+    ('11-1031', 'detailed', 'Legislators', '11-1030'),
+    ('11-2000', 'minor', 'Advertising, Marketing, Promotions, Public Relations, and Sales Managers', '11-0000'),
+    ('11-2030', 'broad', 'Public Relations and Fundraising Managers', '11-2000'),
+    ('11-2032', 'detailed', 'Public Relations Managers', '11-2030'),
+    ('11-2033', 'detailed', 'Fundraising Managers', '11-2030'),
+    ('11-3000', 'minor', 'Operations Specialties Managers', '11-0000'),
+    ('11-3010', 'broad', 'Administrative Services and Facilities Managers', '11-3000'),
+    ('11-3012', 'detailed', 'Administrative Services Managers', '11-3010'),
+    ('11-3013', 'detailed', 'Facilities Managers', '11-3010'),
+    ('11-3020', 'broad', 'Computer and Information Systems Managers', '11-3000'),
+    ('11-3021', 'detailed', 'Computer and Information Systems Managers', '11-3020'),
+    ('15-0000', 'major', 'Computer and Mathematical Occupations', None),
+    ('15-1200', 'minor', 'Computer Occupations', '15-0000'),
+    ('15-1240', 'broad', 'Database and Network Administrators and Architects', '15-1200'),
+    ('15-1241', 'detailed', 'Computer Network Architects', '15-1240'),
+    ('15-1242', 'detailed', 'Database Administrators', '15-1240'),
+    ('15-1243', 'detailed', 'Database Architects', '15-1240'),
+    ('15-1244', 'detailed', 'Network and Computer Systems Administrators', '15-1240'),
+    ('15-1250', 'broad', 'Software and Web Developers, Programmers, and Testers', '15-1200'),
+    ('15-1252', 'detailed', 'Software Developers', '15-1250'),
+    ('15-1253', 'detailed', 'Software Quality Assurance Analysts and Testers', '15-1250'),
+    ('15-1290', 'broad', 'Miscellaneous Computer Occupations', '15-1200'),
+    ('15-1299', 'detailed', 'Computer Occupations, All Other', '15-1290'),
+  ]
+  return pl.DataFrame(rows, schema=['code', 'level', 'title', 'parent_code'], orient='row')
+
+
+@pytest.fixture
+def census_occ_raw() -> pl.DataFrame:
+  # Heading rows carry code RANGES; the title header is "Title" in 2018 and "Description" in
+  # 2010; SOC cells are a detailed code, a broad or minor group, a remainder pattern with X
+  # placeholders, or the word none.
+  return raw_sheet([
+    [None, 'U.S. Census Bureau'],
+    [None, '2018 Census Occupation Code List'],
+    [None, 'last updated: September 26, 2019'],
+    [None, '2018 Census Title ', '2018 Census Code', '2018 SOC Code'],
+    [None, 'The 2018 census occupation classification list has been updated ...'],
+    ['Management,  Business, Science, and Arts Occupations:', None, '0010-3550', '11-0000 - 29-0000'],
+    [None, 'Management Occupations:', '0010-0440', '11-0000'],
+    [None, 'Chief executives', '0010', '11-1011'],
+    [None, 'Other top executives', '0015', '11-1XXX'],
+    [None, 'General and operations managers', '0020', '11-1021'],
+    [None, 'Public relations and fundraising managers', '0060', '11-2030'],
+    [None, 'Operations specialties managers', '0100', '11-3000'],
+    [None, 'Computer network architects', '1050', '15-1241'],
+    [None, 'Database administrators and architects', '1065', '15-124X'],
+    [None, 'Network and computer systems administrators', '1108', '15-1244'],
+    [None, 'Software developers', '1021', '15-1252'],
+    [None, 'Other computer occupations', '1240', '15-12XX'],
+    [None, 'Military, rank not specified', '9830', 'none'],
+    [None, 'Legend'],
+  ])
+
+
+def test_parse_census_occ_list_as_published(census_occ_raw, soc_for_census):
+  frame = build.parse_census_occ(census_occ_raw, vintage=2018, soc_2018=soc_for_census)
+  assert frame.columns == ['census_occ', 'title', 'soc_code', 'soc_level']
+  assert frame['census_occ'].to_list() == ['0010', '0015', '0020', '0060', '0100', '1021', '1050', '1065', '1108', '1240', '9830']
+  rows = {r['census_occ']: r for r in frame.iter_rows(named=True)}
+  assert rows['0010'] == {'census_occ': '0010', 'title': 'Chief executives', 'soc_code': '11-1011', 'soc_level': 'detailed'}
+  assert (rows['0060']['soc_code'], rows['0060']['soc_level']) == ('11-2030', 'broad')
+  assert (rows['0100']['soc_code'], rows['0100']['soc_level']) == ('11-3000', 'minor')
+  assert (rows['0015']['soc_code'], rows['0015']['soc_level']) == ('11-1XXX', 'remainder')
+  assert (rows['1065']['soc_code'], rows['1065']['soc_level']) == ('15-124X', 'remainder')
+  assert (rows['9830']['soc_code'], rows['9830']['soc_level']) == (None, 'none')
+
+
+def test_parse_census_occ_accepts_description_header(census_occ_raw, soc_for_census):
+  raw = census_occ_raw.with_columns(
+    pl.when(pl.col('column_1').eq('2018 Census Title ')).then(pl.lit('Occupation 2018 Description')).otherwise(pl.col('column_1')).alias('column_1')
+  )
+  frame = build.parse_census_occ(raw, vintage=2018, soc_2018=soc_for_census)
+  assert frame.filter(pl.col('census_occ').eq('0010'))['title'].item() == 'Chief executives'
+
+
+def test_parse_census_occ_rejects_soc_codes_missing_from_structure(census_occ_raw, soc_for_census):
+  raw = census_occ_raw.with_columns(pl.col('column_3').str.replace('^11-1011$', '11-9999'))
+  with pytest.raises(ValueError, match='11-9999'):
+    build.parse_census_occ(raw, vintage=2018, soc_2018=soc_for_census)
+
+
+def test_parse_census_occ_rejects_unknown_soc_cell_shapes(census_occ_raw, soc_for_census):
+  raw = census_occ_raw.with_columns(pl.col('column_3').str.replace('^15-124X$', '15-1242, 15-1243'))
+  with pytest.raises(ValueError, match='SOC cell'):
+    build.parse_census_occ(raw, vintage=2018, soc_2018=soc_for_census)
+
+
+def test_expand_census_occ_partitions_detailed_soc(census_occ_raw, soc_for_census):
+  census = build.parse_census_occ(census_occ_raw, vintage=2018, soc_2018=soc_for_census)
+  frame = build.expand_census_occ(vintage=2018, census_occ_2018=census, soc_2018=soc_for_census)
+  assert frame.columns == ['census_occ_2018', 'census_title_2018', 'soc_2018', 'soc_title_2018', 'via']
+  pairs = {(r['census_occ_2018'], r['soc_2018']): r['via'] for r in frame.iter_rows(named=True)}
+  assert pairs[('0010', '11-1011')] == 'detailed'
+  assert pairs[('0015', '11-1031')] == 'remainder'        # the rest of 11-1xxx after the exact claims
+  assert pairs[('0060', '11-2032')] == 'broad' and pairs[('0060', '11-2033')] == 'broad'
+  assert pairs[('0100', '11-3012')] == 'minor' and pairs[('0100', '11-3021')] == 'minor'  # a whole minor group
+  assert pairs[('1065', '15-1242')] == 'remainder' and pairs[('1065', '15-1243')] == 'remainder'
+  assert ('1065', '15-1241') not in pairs               # claimed exactly by 1050
+  assert pairs[('1240', '15-1253')] == 'remainder' and pairs[('1240', '15-1299')] == 'remainder'
+  assert ('1240', '15-1242') not in pairs               # the longer 15-124X pattern claims first
+  assert frame.filter(pl.col('census_occ_2018').eq('9830')).height == 0
+  detailed = soc_for_census.filter(pl.col('level').eq('detailed'))['code'].to_list()
+  assert sorted(frame['soc_2018'].to_list()) == sorted(detailed)   # every detailed code exactly once
+  assert frame.filter(pl.col('soc_2018').eq('15-1252'))['soc_title_2018'].item() == 'Software Developers'
+
+
+def test_expand_census_occ_rejects_double_claims(census_occ_raw, soc_for_census):
+  raw = census_occ_raw.with_columns(pl.col('column_3').str.replace('^15-1244$', '15-1240'))  # broad overlaps 1050's exact
+  census = build.parse_census_occ(raw, vintage=2018, soc_2018=soc_for_census)
+  with pytest.raises(ValueError, match='claimed'):
+    build.expand_census_occ(vintage=2018, census_occ_2018=census, soc_2018=soc_for_census)
+
+
+def test_validate_census_expansion_reports_unclaimed_detailed_codes(census_occ_raw, soc_for_census):
+  census = build.parse_census_occ(census_occ_raw, vintage=2018, soc_2018=soc_for_census)
+  frame = build.expand_census_occ(vintage=2018, census_occ_2018=census, soc_2018=soc_for_census)
+  assert build.validate_census_expansion(frame, vintage=2018, soc_2018=soc_for_census) == []
+  extra = pl.concat([soc_for_census, pl.DataFrame([('15-1254', 'detailed', 'Web Developers', '15-1250')], schema=soc_for_census.schema, orient='row')])
+  problems = build.validate_census_expansion(frame, vintage=2018, soc_2018=extra)
+  assert len(problems) == 1 and '15-1254' in problems[0]
+
+
+def test_resolve_requires_prefers_this_runs_frames_then_disk(tmp_path, soc_for_census):
+  soc_for_census.write_csv(tmp_path / 'soc_2018.csv')
+  in_memory = {'soc_2018': soc_for_census.head(3)}
+  assert build.resolve_requires(('soc_2018',), in_memory, tmp_path)['soc_2018'].height == 3
+  from_disk = build.resolve_requires(('soc_2018',), {}, tmp_path)['soc_2018']
+  assert from_disk.height == soc_for_census.height
+  assert from_disk.filter(pl.col('code').eq('11-0000'))['parent_code'].item() is None
+  with pytest.raises(FileNotFoundError, match='soc_2010'):
+    build.resolve_requires(('soc_2010',), {}, tmp_path)
 
 
 def test_every_referential_pair_names_registered_builds():

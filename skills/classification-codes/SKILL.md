@@ -1,17 +1,18 @@
 ---
 name: classification-codes
 description: >
-  Use when a task touches NAICS or SOC codes — mapping a code to its title or a title to its
-  code, listing a sector's, subsector's, or major group's members, converting between vintages
-  (NAICS 2012↔2017↔2022, SOC 2010↔2018), joining datasets coded in different vintages,
-  interpreting a series break at a classification revision, or explaining how industries and
-  occupations are defined, created, and revised (ECPC / SOCPC, NAICS 2027, SOC 2028). Consult
-  BEFORE answering any code↔title question, before joining on an industry or occupation code,
-  and before treating a code as meaning the same thing in two vintages. Trigger on: NAICS, SOC,
-  O*NET, sector, subsector, industry group, six-digit code, occupation code, major group,
-  detailed occupation, concordance, crosswalk, trilateral, change indicator, unclassified /
-  999999, "what industry is X", "what does code X mean", "is code X still valid", "when is the
-  next revision". Codes and titles come from data/, never from model memory.
+  Use when a task touches NAICS, SOC, or Census occupation codes — mapping a code to its title
+  or a title to its code, listing a sector's or major group's members, converting between
+  vintages (NAICS 2012↔2017↔2022, SOC 2010↔2018, Census OCC 2010↔2018), joining datasets coded
+  in different vintages, a series break at a classification revision, or explaining how
+  industries and occupations are defined, created, and revised (ECPC / SOCPC, NAICS 2027, SOC
+  2028). Consult BEFORE answering any code↔title question, before joining on an industry or
+  occupation code, and before treating a code as meaning the same thing in two vintages.
+  Trigger on: NAICS, SOC, O*NET, ACS / CPS OCC variable, sector, subsector, industry group,
+  six-digit code, occupation code, major group, detailed occupation, concordance, crosswalk,
+  trilateral, change indicator, unclassified / 999999, "what industry is X", "what does code X
+  mean", "is code X still valid", "when is the next revision". Codes and titles come from
+  data/, never from model memory.
 license: MIT
 model: haiku
 metadata:
@@ -48,14 +49,22 @@ with Polars for hierarchy, membership, or concordance work. If a file below is m
 | `data/soc_2018.csv` | 1,447 (867 detailed) | `code, level, title, parent_code` |
 | `data/soc_2010.csv` | 1,421 (840 detailed) | same |
 | `data/soc_2010_to_2018.csv` | 900 | `soc_2010, title_2010, soc_2018, title_2018, link_type` |
+| `data/census_occ_2018.csv` | 570 | `census_occ, title, soc_code, soc_level` — the Census list as published |
+| `data/census_occ_2018_to_soc_2018.csv` | 867 | `census_occ_2018, census_title_2018, soc_2018, soc_title_2018, via` — derived, one row per detailed SOC |
+| `data/census_occ_2010.csv` | 540 | same as 2018 |
+| `data/census_occ_2010_to_soc_2010.csv` | 840 | same as 2018 |
 
 `level` is 2–6 for NAICS and `major | minor | broad | detailed` for SOC. `trilateral` marks the
 Census superscript-T rows. `change_indicator` is Census's own marker for what changed at that
 code versus the prior vintage (`*` title only, `**` new code, `***` re-used code with content
 change, `****` content change at a lower level); null means unchanged. `link_type` is derived
 from code multiplicities: `1:1` (unchanged or clean recode), `1:m` (split), `m:1` (merge),
-`m:m` (reshuffle). `MANIFEST.md` records the source URL, sha256, and retrieval time behind every
-file; `sources/` holds the exact source bytes.
+`m:m` (reshuffle). In the Census lists `soc_code` is the single SOC reference Census publishes
+per code and `soc_level` says what it is: a `detailed` code, a whole `broad` or `minor` group, a
+`remainder` pattern such as `15-124X` (everything under that prefix no other Census code
+claims), or `none`. The `_to_soc_` files resolve that into detailed SOC codes; `via` records the
+rule that produced each row. `MANIFEST.md` records the source URL, sha256, and retrieval time
+behind every file; `sources/` holds the exact source bytes.
 
 ## How to query
 
@@ -96,6 +105,24 @@ conc = pl.read_csv(
 bridged = series_2017.join(conc, left_on='naics', right_on='naics_2017', how='left')
 needs_allocation = bridged.filter(pl.col('link_type').ne('1:1'))
 ```
+
+Household-survey occupation codes (the ACS / CPS `OCC` variable) — resolve to detailed SOC
+through the derived file, keeping the code a zero-padded string:
+
+```python
+occ_to_soc = pl.read_csv(
+  'data/census_occ_2018_to_soc_2018.csv',
+  schema_overrides={'census_occ_2018': pl.Utf8, 'soc_2018': pl.Utf8},
+)
+cps = cps.with_columns(occ=pl.col('occ').cast(pl.Utf8).str.zfill(4))
+detailed = cps.join(occ_to_soc, left_on='occ', right_on='census_occ_2018', how='left')
+```
+
+A Census code is coarser than SOC, so this join multiplies rows: a person coded `1065` becomes
+two rows (`15-1242`, `15-1243`). Aggregate back to Census codes for counts; use the expansion
+for *membership* questions. Bridging a 2010-coded panel to 2018 Census codes is a three-hop
+join through SOC — `census_occ_2010_to_soc_2010` → `soc_2010_to_2018` (route by `link_type`)
+→ `census_occ_2018_to_soc_2018` — and stays many-to-many wherever SOC split.
 
 ## NAICS semantics
 
@@ -142,8 +169,16 @@ needs_allocation = bridged.filter(pl.col('link_type').ne('1:1'))
   title-matching goes to die: absence of a specific title does not mean absence of the workers.
 - **Taxonomies that masquerade as SOC:** O*NET-SOC extends detailed SOC with 8-digit `.XX`
   suffixes — not SOC, don't join it raw. OEWS spent transition vintages on hybrid taxonomies.
-  CPS/ACS use 4-digit *Census occupation codes* (leading zeros!) that crosswalk to SOC — that
-  crosswalk is not yet bundled; say so rather than improvising one.
+- **Census occupation codes are the household-survey aggregation of SOC**, not SOC. ACS, CPS,
+  and SIPP code people to 4-digit Census codes (`0010` Chief executives; leading zeros are
+  load-bearing, and PUMS files sometimes store them as integers). Each Census vintage
+  partitions the detailed SOC of its SOC vintage: 570 Census codes cover all 867 detailed 2018
+  codes, 540 cover all 840 of 2010, and no detailed SOC code belongs to two Census codes — the
+  build verifies that partition. Most Census codes are one detailed SOC code (430 in 2018);
+  the rest are whole broad or minor groups or a `remainder` pattern. Two codes map to nothing:
+  `9830` military rank not specified and `9920` never worked. The ACS PUMS ships a further
+  collapsed variant of the list, not bundled — a PUMS `OCCP` value absent from
+  `census_occ_2018.csv` is a PUMS collapse, not an error.
 
 ## Vintages and concordances
 
@@ -208,11 +243,13 @@ cd skills/classification-codes/scripts && uv run --python 3.13 --with pytest --w
 `scripts/build.py` pins the official Census/BLS URLs, handles the known layout quirks (preamble
 and legend rows, ranged sector codes, trilateral markers with trailing spaces, numeric code
 cells, multi-line header cells, one-code-column-per-row SOC sheets nested by row order, BLS
-split/merge title markers), and hard-fails on structural drift (sector/major-group counts,
-hierarchy closure, nesting that contradicts the code pattern, duplicate codes, unknown change
-markers, trilateral six-digit rows, crosswalk markers that disagree with `link_type`,
-concordance referential integrity). A failed download skips that artifact and records the reason
-in `MANIFEST.md` so the rest still builds.
+split/merge title markers, Census heading rows carrying code ranges), and hard-fails on
+structural drift (sector/major-group counts, hierarchy closure, nesting that contradicts the
+code pattern, duplicate codes, unknown change markers, trilateral six-digit rows, crosswalk
+markers that disagree with `link_type`, concordance referential integrity, a Census list that
+does not partition detailed SOC). The `census_occ_*_to_soc_*` files are derived from the list
+and the matching SOC structure, so they have no source URL of their own. A failed download
+skips that artifact and records the reason in `MANIFEST.md` so the rest still builds.
 
 **bls.gov admits scripts only with a contact email in the User-Agent** (an Akamai "Access
 Denied" 403 otherwise, and also for any User-Agent containing `github.com` or
