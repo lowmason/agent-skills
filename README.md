@@ -102,7 +102,7 @@ Slash commands live in [`commands/`](commands/) and install into `~/.claude/comm
 
 | Command | Description |
 |---------|-------------|
-| [`/deferred`](commands/deferred.md) | Triage `specs/deferred_items.md` in the current project: group unticked items by theme, classify actionable-now vs still-blocked, and propose which deserve promotion to a new spec. Read-only — ticking stays with the plan-completion protocol. |
+| [`/deferred`](commands/deferred.md) | Triage `specs/deferred_items.md` in the current project: group unticked items by theme, then sort each into retire / quick fix / plan / design / hold so the ceremony matches the item — brainstorming only for items that record an open design decision. The triage is read-only; on the user's selection it retires or quick-fixes items (ticking them with a dated suffix) and routes the rest to writing-plans or brainstorming. Plan-implemented items are still ticked by the plan-completion protocol. |
 | [`/fix-issue`](commands/fix-issue.md) | Fix a GitHub issue end-to-end: `gh issue view` → classify (bugs only — feature-shaped issues route to `brainstorming`) → fix branch → systematic-debugging + TDD + verification → PR linking `Fixes #N`. Stops gracefully without `gh` or a GitHub remote. |
 | [`/license-audit`](commands/license-audit.md) | Audit the current repo's licensing and attribution: run its mechanical gates where present, then judgment checks — NOTICE ↔ artifact sync, LICENSE consistency, copyleft/NC compatibility flags, uncredited-adaptation risks. Read-only. |
 
