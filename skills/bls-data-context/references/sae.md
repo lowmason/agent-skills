@@ -17,6 +17,12 @@ The most compact mental model is:
 | `BLS-SAE-PRESENTATION` | https://www.bls.gov/opub/hom/sae/presentation.htm | Release schedule, publication products, data access, uses, corrections, confidentiality presentation. |
 | `BLS-SAE-BENCHMARK-2025` | https://www.bls.gov/web/laus/benchmark.htm | Current benchmark article and technical notes for the 2025 benchmark, released with January 2026 SAE data in April 2026. Use for current benchmark-revision facts, discontinued series, and benchmark-specific exceptions. |
 | `BLS-SAE-SEASONAL` | https://www.bls.gov/sae/seasonal-adjustment/ | Dedicated seasonal adjustment explanation: two-step method, concurrent adjustment, variable survey interval adjustment, outliers, prior adjustments, and published SA series. |
+| `BLS-SAE-MSA-DEFS` | https://www.bls.gov/sae/additional-resources/metropolitan-statistical-area-definitions.htm | Which OMB bulletin CES uses now (23-01) and the list of previous bulletins it used (18-03, 17-01, 15-01, 13-01, 10-02). |
+| `BLS-SAE-NOTICE-MSA-2024` | https://www.bls.gov/sae/notices/2024/upcoming-changes-to-metropolitan-statistical-area-delineations.htm | Notice that MSA estimates switch to the 2020 Census-based delineations with January 2025 data in March 2025 and that NECTAs are discontinued. |
+| `BLS-SAE-BENCHMARK-2024` | 2024 benchmark article, "Revisions in State Establishment-based Employment Estimates Effective January 2025" (PDF `archives/annual-benchmark-article-2025.pdf` under `BLS-SAE-BENCHMARK-ARCHIVE`) | "Special notice regarding changes to statistical area delineations": counts of areas added, changed, and dropped; the reconstruction method; the prior bulletin (18-03). |
+| `BLS-SAE-BENCHMARK-ARCHIVE` | https://www.bls.gov/sae/publications/benchmark-article/ | Every benchmark article since 2002, PDFs named by publication year (`archives/annual-benchmark-article-<year>.pdf`); the 2015, 2017, and 2019 articles document the 13-01, 15-01, and 17-01/18-03 adoptions. The PDFs prompt a download in a browser and bls.gov refuses scripted fetches; the Wayback Machine holds copies that `curl` can read. |
+| `BLS-MSA-REDELINEATION-PLANS` | https://www.bls.gov/bls/msa-redelineation-announcement.htm | Cross-program statement that CES, LAUS, OEWS, and QCEW would not adopt Bulletin 18-04 or any later 2010-based update. |
+| `BLS-LAUS-AREAS` | https://www.bls.gov/lau/lausmsa.htm | LAUS adoption dates for every bulletin (13-01 March 2015; 15-01 March 2017; 17-01 and 18-03 March 2019; 23-01 on 2025-03-17) and the labor-market-area concept. |
 
 When answering public-facing questions, cite the BLS source page closest to the claim. Use `BLS-SAE-CALCULATION` for formulas and revision mechanics, `BLS-SAE-DESIGN` for sample design, `BLS-SAE-DATA` for collection/editing, and `BLS-SAE-BENCHMARK-2025` for the most recent benchmark-specific facts.
 
@@ -55,7 +61,7 @@ Agent guidance:
 
 ### Geography
 
-SAE uses state and metropolitan area geographies. Metropolitan areas follow Office of Management and Budget definitions. BLS implemented the 2023 OMB metropolitan area standards in SAE in March 2025. Agents should treat area definitions as vintage-sensitive metadata, especially for long historical comparisons.
+SAE uses state and metropolitan area geographies. Metropolitan areas follow Office of Management and Budget (OMB) delineations, which SAE adopts on its own schedule — with an annual benchmark, not on the bulletin's issue date. SAE adopted the 2020 Census-based delineations (OMB Bulletin 23-01) with the release of January 2025 estimates on March 17, 2025, as part of the 2024 benchmark; the full history is in "OMB delineation adoption" below. Agents should treat area definitions as vintage-sensitive metadata, especially for long historical comparisons.
 
 Agent guidance:
 
@@ -63,6 +69,25 @@ Agent guidance:
 - Do not add MSA estimates together to produce a state estimate unless the requested concept explicitly permits that aggregation and the geography is non-overlapping.
 - Use published state estimates for states and published MSA estimates for metropolitan areas.
 - For current production work, store area-code and area-name metadata with a geography-definition vintage.
+
+### OMB delineation adoption
+
+SAE — and LAUS, which shares the State Employment and Unemployment release and has no separate reference in this skill — adopt a new OMB bulletin with the annual benchmark released in March, never on the bulletin's issue date. Naming key: "benchmark year N" is released with January N+1 data in March N+1, so the 2024 benchmark is a March 2025 event. Adoption by bulletin, with the BLS source for each row:
+
+| OMB bulletin (issued) | SAE adoption | LAUS adoption | What changed for SAE | Source |
+|---|---|---|---|---|
+| 13-01 (2013-02-28; 2010 Census standards) | 2014 benchmark, released with January 2015 data in March 2015. Prior definitions: the December 2009 delineations (OMB Bulletin 10-02). | March 2015 | 373 MSAs, 28 metropolitan divisions, 21 NECTAs, 11 nonstandard areas; 82 MSAs changed composition. AE and non-AE histories were **reconstructed back to 1990** from QCEW/LDB microdata, so published series did not break. | `BLS-SAE-BENCHMARK-ARCHIVE`, article effective January 2015, "Special notice regarding changes to statistical area delineations" |
+| 15-01 (2015-07-15) | 2016 benchmark, released with January 2017 data in March 2017. | March 2017 | Enid, OK (FIPS 21420) added as an MSA (formerly micropolitan); Macon, GA retitled Macon-Bibb County, GA (title only). Bulletin attribution is **inferred**: the article names the changes rather than the bulletin, but they are exactly 15-01's metropolitan changes, and `BLS-SAE-MSA-DEFS` lists 15-01 among the bulletins used. | `BLS-SAE-BENCHMARK-ARCHIVE`, article effective January 2017, "MSA updates" |
+| 17-01 (2017-08-15), as updated by 18-03 (2018-04-10) | 2018 benchmark, released with January 2019 data in March 2019. | March 2019 (LAUS names both bulletins) | Twin Falls, ID added as an MSA (formerly micropolitan; the only metropolitan change in 17-01). 18-03 added one micropolitan area, so it changed nothing SAE publishes, but BLS describes pre-2024 CES definitions as "derived from the delineations in OMB Bulletin 18-03". | `BLS-SAE-BENCHMARK-ARCHIVE`, article effective January 2019, "Metropolitan statistical area (MSA) updates"; `BLS-SAE-BENCHMARK-2024` |
+| 18-04 (2018-09-14), 20-01 (2020-03-06) | **Never adopted.** | Never adopted | BLS announced that the federal-state programs (CES State and Area, LAUS, OEWS, QCEW) would not adopt 18-04 or any later update to the 2010-based delineations, citing workload and comparability costs. | `BLS-MSA-REDELINEATION-PLANS` |
+| 23-01 (2023-07-21; 2020 Census standards) | 2024 benchmark, released with January 2025 data on 2025-03-17. | 2025-03-17; LAUS reconstructed labor force and unemployment back to series beginnings (generally January 1990) | 393 MSAs (80 changed composition, 3 renamed with new FIPS codes, 27 new, 12 dropped); 37 metropolitan divisions (11 new, 2 dropped); all 21 NECTAs and 10 NECTA divisions dropped, replaced in New England by 17 county-based MSAs and 3 divisions; nonstandard areas cut to New York City only. Connecticut coded by its nine planning regions. AE histories again **reconstructed back to 1990** (hours and earnings for new areas from 2011); eight areas stayed NSA-only until the 2025 benchmark, from which every metropolitan area is seasonally adjusted. | `BLS-SAE-NOTICE-MSA-2024`; `BLS-SAE-BENCHMARK-2024`; `BLS-LAUS-AREAS`; `BLS-SAE-BENCHMARK-2025` (seasonal-adjustment follow-up) |
+
+Consequences for agents:
+
+- **An SAE metro series does not break at an adoption date.** BLS restates the whole history on the new delineation, so the discontinuity is *between vintages* (data downloaded before vs. after the benchmark), not inside a series. Pre- and post-adoption downloads of the same `area_code` are different geographies; store the delineation vintage with the data and never splice them.
+- QCEW is the opposite: it does **not** re-tabulate history (references/qcew.md, "OMB delineation adoption"), so a QCEW MSA series breaks at the reference year of adoption. Reconcile SAE to QCEW across an adoption boundary on a common county list, not on the MSA code.
+- NECTA-based New England series (vintages before March 2025) and the county-based MSAs that replaced them are different areas with different codes, not one series with a new label.
+- Which counties belong to which CBSA under each bulletin is the `geographic-codes` skill's job; this reference records only *when each program switched*.
 
 ## 3. Core units and data concepts
 
@@ -844,3 +869,4 @@ Use these source keys for citations or documentation:
 - Release schedule, data access, uses, corrections: `BLS-SAE-PRESENTATION`.
 - Latest benchmark-revision facts and discontinued/current series notes: `BLS-SAE-BENCHMARK-2025`.
 - Detailed seasonal adjustment operations: `BLS-SAE-SEASONAL`.
+- OMB delineation adoption history and area-definition vintages: `BLS-SAE-MSA-DEFS`, `BLS-SAE-BENCHMARK-ARCHIVE`, `BLS-SAE-BENCHMARK-2024`, `BLS-SAE-NOTICE-MSA-2024`, `BLS-LAUS-AREAS`, `BLS-MSA-REDELINEATION-PLANS`.

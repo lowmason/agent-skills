@@ -112,6 +112,26 @@ area_code
 area_name
 ```
 
+### OMB delineation adoption (matters only if `areatype_code = "M"` rows are kept)
+
+Each May vintage is an independent cross-section, so OEWS metro estimates never break *within* a series; instead the set of `area_code`s and their county compositions changes between vintages. The bulletin behind each vintage:
+
+| May vintage (release) | Delineation | How established |
+|---|---|---|
+| May 2012–May 2014 (released 2013–2015) | pre-2013 (2009) delineations | Inferred from the published area lists: the metros that Bulletin 13-01 created (The Villages, FL; Daphne-Fairhope-Foley, AL; Hammond, LA; California-Lexington Park, MD) are absent. |
+| May 2015–May 2016 (released March 2016 and March 2017) | OMB Bulletin 13-01 | Inferred from the area lists: the 13-01 metros appear from May 2015 while Enid, OK is still nonmetropolitan. |
+| May 2017–May 2018 (released March 2018 and March 2019) | OMB Bulletin 15-01 | Inferred: Enid, OK appears as an MSA from May 2017 while Twin Falls, ID is still nonmetropolitan. May 2018 also **dropped all metropolitan-division estimates** and consolidated nonmetropolitan areas from 167 to 134 (BLS notice of 2019-03-29). |
+| May 2019–May 2023 (released 2020 through 2024) | OMB Bulletin 17-01 | BLS-stated: the May 2019 release's technical note says the estimates "use the metropolitan area definitions delineated in OMB Bulletin 17-01, which add a new MSA for Twin Falls, Idaho"; the May 2020–May 2023 technical notes repeat 17-01. Bulletin 18-03 (one micropolitan addition) is invisible to OEWS; 18-04 and 20-01 were never adopted by any BLS federal-state program. |
+| May 2024 onward (released April 2025 onward) | OMB Bulletin 23-01 (2020 Census standards) | BLS-stated: notice of 2025-03-05 and the May 2024 and May 2025 technical notes. New MSAs added, others renamed, recomposed, or dropped; NECTAs discontinued in favor of county-based New England MSAs; nonmetropolitan areas redrawn to match. |
+
+Rules:
+
+- Never join two vintages' metro rows on `area_code` across a boundary in this table without checking composition in each vintage's area-definition list (`https://www.bls.gov/oes/<year>/may/msa_def.htm` for May 2016 onward; earlier lists survive only in the Wayback Machine). Twelve MSAs were dropped and 27 added at May 2024 alone.
+- Nonmetropolitan areas are OEWS-specific groupings set with the state workforce agencies, not OMB geography; they were redrawn at May 2018 and May 2024.
+- Rows marked "inferred" are read off the published area lists, not from a BLS sentence naming the bulletin; the technical notes before May 2019 name none.
+
+Sources: https://www.bls.gov/oes/notices/2024/msa-changes.htm; https://www.bls.gov/oes/notices/2019/areas_2018.htm; https://www.bls.gov/oes/current/oes_tec.htm and the per-year `https://www.bls.gov/oes/<year>/may/oes_tec.htm`; https://www.bls.gov/news.release/archives/ocwage_03312020.htm (May 2019 technical note); https://www.bls.gov/bls/msa-redelineation-announcement.htm.
+
 ---
 
 ## 6. Occupation filter: “at least 4-digit SOC”

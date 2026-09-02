@@ -51,6 +51,8 @@ CES-N excludes some worker groups, including proprietors, the unincorporated sel
 
 CES uses 2022 NAICS in the current structure. CES industry codes mostly correspond to NAICS, but some CES industries combine multiple NAICS industries for estimation or publication.
 
+CES-N publishes national series only. It carries no state, metro, or county geography, so OMB metropolitan-area delineations (Bulletins 13-01 through 23-01) never touch a CES-N series. Which delineation the state and metro program uses and when it switched is recorded in references/sae.md under "OMB delineation adoption" (which also covers LAUS); QCEW's and OEWS's schedules are in their own references.
+
 ## Key CES concepts and data types
 
 Common employee groups:

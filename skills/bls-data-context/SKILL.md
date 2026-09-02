@@ -8,7 +8,7 @@ description: >
   or reasoning about revisions / as-of correctness. Trigger on: QCEW, CES, CES-SA, SAE, JOLTS,
   BED, BDM, OEWS, OES, ECI, ECEC, CPS, LAUS, NAICS / SOC codes, series_id, M01–M13,
   download.bls.gov/pub/time.series, BLS API v2 quotas, release feeds, Last-Modified vintages,
-  vintage / benchmark / revision, place-of-work vs residence,
+  vintage / benchmark / revision, place-of-work vs residence, OMB delineation,
   jobs vs persons, thousands-vs-persons units, "pay period including the 12th", UI / UCFE
   coverage, net birth-death model, benchmarking CES to QCEW, JOLTS alignment to CES, or
   reconciling a payroll-provider or nowcast series to BLS. The detailed program facts that agents
@@ -128,6 +128,15 @@ classification systems themselves — code↔title lookups, hierarchy, and vinta
 are the `classification-codes` skill; this skill carries no code tables, so never answer a
 code↔title question from memory.
 
+**Geography vintages (OMB delineations).** Metro definitions come from OMB bulletins (13-01 in 2013
+through 23-01 in July 2023), but each program adopts them on its own clock and treats history differently:
+SAE and LAUS adopt with the March benchmark and **restate history**; QCEW adopts by reference year (13-01
+for 2013–2023, 23-01 from 2024) and does **not** re-tabulate, so its MSA series break; OEWS adopts per May
+vintage. No program adopted 18-04 or 20-01. Never join two programs' metro data on a CBSA code without
+checking both sit on the same bulletin; the per-program tables are the "OMB delineation adoption"
+subsections of qcew.md, sae.md, and oews.md, and county compositions per bulletin are in the
+`geographic-codes` skill.
+
 **Flat-file conventions (LABSTAT).** Files live at `download.bls.gov/pub/time.series/<prefix>/`
 (`en`/downloadable for QCEW, `ce`, `jt`, `bd`, `oe`, …). Data files are `series_id | year | period
 | value | footnote_codes`; a `<prefix>.series` file holds metadata; mapping files decode each
@@ -177,6 +186,8 @@ all code columns as strings with leading zeros** (`state_code`, `industry_code`,
   matches zero rows, so the series vanishes silently instead of raising.
 - Treating a suppressed QCEW cell as zero, or expecting suppressed detail to sum to totals.
 - Assuming a series ID's industry/geography from its label instead of decoding via mapping files.
+- Joining two programs' metro series on a CBSA code when they sit on different OMB delineations (QCEW stayed
+  on 13-01 through 2023 while SAE, LAUS, and OEWS moved on), or splicing a QCEW metro series across 2023/2024.
 - Acquisition-layer traps: trusting an API `REQUEST_SUCCEEDED` status, keying feed entries on a
   mutable Atom id or year-less title, or assuming a missed release can be re-fetched later —
   see [references/ingest.md](references/ingest.md).
@@ -193,12 +204,12 @@ it points to the relevant `references/<program>.md`.
 
 | File | Program | Read it for |
 |---|---|---|
-| [references/qcew.md](references/qcew.md) | QCEW | The universe/frame; covered-jobs concept; AWW; suppression; downloadable files; the non-time-series cautions. |
+| [references/qcew.md](references/qcew.md) | QCEW | The universe/frame; covered-jobs concept; AWW; suppression; downloadable files; the non-time-series cautions; OMB delineation by reference year (2013 vs 2024 break, Connecticut planning regions). |
 | [references/ces.md](references/ces.md) | CES National | Payroll-jobs estimation; CEU/CES series IDs; net birth-death model; March benchmark; vintages. |
-| [references/sae.md](references/sae.md) | CES State & Area | State/metro estimation; SAM Gen3 small-area model; benchmark windows; SA two-step; ETL schema. |
+| [references/sae.md](references/sae.md) | CES State & Area | State/metro estimation; SAM Gen3 small-area model; benchmark windows; SA two-step; ETL schema; OMB delineation adoption history for SAE and LAUS. |
 | [references/jolts.md](references/jolts.md) | JOLTS | Stock-vs-flow; rate denominators; 21-char series IDs; CES alignment; model-based state estimates. |
 | [references/bed.md](references/bed.md) | BED/BDM | Job-flow definitions; 28-char series IDs; dynamic firm sizing; death lag; flat-file schema. |
-| [references/oews.md](references/oews.md) | OEWS | Occupation×industry×geo scope limits; CES crosswalk; tidy schema; aggregation rules. |
+| [references/oews.md](references/oews.md) | OEWS | Occupation×industry×geo scope limits; CES crosswalk; tidy schema; aggregation rules; OMB delineation per May vintage. |
 | [references/eci.md](references/eci.md) | ECI | Fixed-weight Laspeyres index; ECI-vs-ECEC; reweighting; seasonality; constant-dollar. |
 | [references/ecec.md](references/ecec.md) | ECEC | Cost-level concepts; benefit-cost-over-all-workers caveat; no state estimates; CPE bands. |
 | [references/cps.md](references/cps.md) | CPS | Household concepts; labor-force classification logic; rates/denominators; weights; CPS-vs-CES. |

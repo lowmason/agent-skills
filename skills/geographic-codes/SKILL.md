@@ -64,7 +64,8 @@ bytes.
   for delineations). There are two other clocks that look similar and are not: the date the
   change happened in state law (Connecticut's councils of governments predate Census
   recognition by years), and the date a given BLS/BEA program started publishing on it (SAE
-  implemented the 2023 delineations in March 2025). Program adoption dates live in
+  and LAUS implemented the 2023 delineations on 2025-03-17, QCEW with 2024 Q1 data in August
+  2024, OEWS with the May 2024 estimates in April 2025). Program adoption dates live in
   `bls-data-context`. Do not use `valid_from` as a proxy for either of the other two.
 - The bridge across county intervals is `county_changes.csv`. `change_type` plays the role
   `link_type` plays in the NAICS concordances: `rename` and `recode` bridge mechanically; `split`
@@ -173,7 +174,12 @@ metros_as_of = cbsa_counties.filter(
 - CBSA codes are 5-digit and share a numeric space with county GEOIDs. `35620` is the New York
   MSA, not a county. A bare 5-digit code is ambiguous until you know which table it came from.
 - Delineations change **which counties belong to which metro**, so a metro employment series
-  breaks at the *program's adoption date* of a new delineation, not at the bulletin date.
+  changes meaning at the *program's adoption date* of a new delineation, not at the bulletin
+  date. Whether that is an in-series break depends on the program: QCEW does not re-tabulate
+  history (its MSA series break at reference year 2024), while SAE and LAUS restate the whole
+  history on the new delineation (no in-series break, but pre- and post-adoption downloads are
+  different geographies). Not every bulletin was adopted: no BLS program took 18-04 or 20-01,
+  and QCEW stayed on 13-01 through 2023. Per-program tables are in `bls-data-context`.
 - **NECTAs (New England town-based metros) were discontinued by the 2020 OMB standards.** Older
   BLS New England metro series are NECTA-based and carry different codes and boundaries than the
   county-based CBSAs that replaced them; the two are not the same series with a new label.

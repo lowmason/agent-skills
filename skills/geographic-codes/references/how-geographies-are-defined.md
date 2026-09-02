@@ -129,13 +129,17 @@ so 2013–2020 and 2023 delineations are comparable in concept even though membe
 - **Bulletins take effect immediately** on their issue date. That date is `valid_from` in
   `data/cbsa_counties.csv`. Statistical programs adopt a bulletin later, each on its own
   timetable, usually at an annual benchmark or reference-year rollover, so a metro series
-  breaks at the program's adoption date — `bls-data-context` — not at `valid_from`.
+  changes definition at the program's adoption date — `bls-data-context` — not at
+  `valid_from`. Programs that restate history at adoption (SAE, LAUS) show no in-series break,
+  only a vintage break; QCEW does not re-tabulate, so its metro series break in-series at the
+  adoption reference year. Nor is every bulletin adopted: no BLS program took 18-04 or 20-01,
+  and QCEW stayed on 13-01 through 2023.
 
 ### The bulletins bundled here
 
 | block | bulletin | issued | supersedes | basis |
 |---|---|---|---|---|
-| `2013` | 13-01 | 2013-02-28 | 09-01 (Dec 2009) | 2010 Census; 2010 standards |
+| `2013` | 13-01 | 2013-02-28 | 10-02 (Dec 2009) | 2010 Census; 2010 standards |
 | `2015` | 15-01 | 2015-07-15 | 13-01 | intercensal update |
 | `2017` | 17-01 | 2017-08-15 | 15-01 | intercensal update |
 | `2018-04` | 18-03 | 2018-04-10 | 17-01 | intercensal update |

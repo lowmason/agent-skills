@@ -18,6 +18,12 @@ Additional official BLS QCEW pages consulted for current operational details:
 - QCEW Data Files: https://www.bls.gov/cew/downloadable-data-files.htm
 - QCEW Over-the-Year Change Calculation Details: https://www.bls.gov/cew/about-data/over-the-year-calculations.htm
 - QCEW Imputation Methodology: https://www.bls.gov/cew/additional-resources/imputation-methodology.htm
+- QCEW County-MSA-CSA Crosswalk (states which OMB delineation each reference year uses): https://www.bls.gov/cew/classifications/areas/county-msa-csa-crosswalk.htm
+- QCEW Area Codes and Titles (Connecticut planning-region note): https://www.bls.gov/cew/classifications/areas/qcew-area-titles.htm
+- QCEW notice, New Metropolitan Statistical Area Delineations for 2024: https://www.bls.gov/cew/notices/2024/new-metropolitan-statistical-area-delineations-for-2024.htm
+- County Employment and Wages news release, first quarter 2024 (Connecticut county-equivalents; new MSA definitions): https://www.bls.gov/news.release/archives/cewqtr_08212024.htm
+- QCEW notice, Change in the presentation of MSA data (2025): https://www.bls.gov/cew/notices/2025/change-in-the-presentation-of-metropolitan-statistical-area-data-in-qcew.htm
+- BLS cross-program statement on Bulletin 18-04 and later: https://www.bls.gov/bls/msa-redelineation-announcement.htm
 
 ## Executive summary
 
@@ -154,6 +160,25 @@ Implications:
 - County changes can result from employer address corrections, relocations, or improved reporting.
 - Multi-establishment employers may initially report statewide or unknown county records; improved MWR reporting can later allocate employment and wages across counties.
 - For county-level time series, check whether sudden movements reflect actual local economic shifts or administrative/geocoding changes.
+
+### OMB delineation adoption
+
+QCEW codes its MSA, micropolitan, and CSA aggregates (the `C####` and CSA `area_fips` values) by **reference year**, not by release date, and it skipped every intercensal bulletin between the two decennial ones. The rule BLS states on the County-MSA-CSA Crosswalk page:
+
+| Reference years | Delineation used | Notes |
+|---|---|---|
+| 1990–2012 (NAICS-based data) | December 2003 CBSA delineations | SIC-based MSA data use pre-2003 definitions (BLS's "Pre-2004 MSA Codes"). |
+| 2013–2023 | OMB Bulletin 13-01 (2013-02-28) | Held fixed for eleven years: QCEW did **not** adopt 15-01, 17-01, 18-03, 18-04, or 20-01 (the last two by the cross-program decision at https://www.bls.gov/bls/msa-redelineation-announcement.htm). Enid, OK and Twin Falls, ID therefore stay micropolitan in QCEW through 2023 although SAE and LAUS published them as MSAs from 2017 and 2019. |
+| 2024 onward | OMB Bulletin 23-01 (2023-07-21; 2020 Census standards) | First published with first-quarter 2024 data: the County Employment and Wages news release of 2024-08-21, then the full data update of 2024-09-04. |
+
+Two consequences that differ from SAE and LAUS:
+
+- **History is not re-tabulated.** BLS states that data before 2024 stay on the 2013 delineations, so every QCEW MSA or CSA series has a hard break between 2023 and 2024 wherever the area's composition, title, or existence changed. Rebuild consistent metro histories from county records using the crosswalk (or the `geographic-codes` skill's per-bulletin county lists), not from the `C####` aggregates.
+- **Connecticut's county-equivalents changed at the same time.** QCEW uses the nine planning-region codes (`09110`–`09190`) starting with 2024 data and the eight legacy county codes (`09001`–`09015`) before; the news release makes the switch effective with the first-quarter 2024 release. The two code sets do not nest, so Connecticut county series also break at 2024 Q1.
+
+Related presentation change: beginning with third-quarter 2025 data (released 2026-03-10), QCEW publishes MSA data at the total-covered-employment level only, with no industry detail, matching how CSA and micropolitan data were already presented. Industry detail for a metro must be aggregated from county cells, subject to suppression.
+
+Sources: the County-MSA-CSA Crosswalk page (the reference-year rule), the Area Codes and Titles page (Connecticut note and code list), the 2024 notice on new MSA delineations, the first-quarter 2024 news release ("Change to County-Equivalents in Connecticut" and "New Metropolitan Statistical Area (MSA) definitions"), and the 2025 notice on MSA presentation — all listed under "Source pages reviewed".
 
 ## Industry classification
 
@@ -584,6 +609,7 @@ Recommended principles:
 - Recomputing BLS AWW or OTY changes from rounded public components and expecting exact matches.
 - Treating suppressed cells as zero.
 - Parsing `area_fips` numerically: alpha aggregate codes like `C1010` and leading-zero county codes like `01001` both break.
+- Splicing a QCEW MSA or CSA aggregate, or a Connecticut county, across the 2023/2024 boundary: the 2024 switch to the 2023 OMB delineations and to planning regions is an in-series break, and history was not re-tabulated.
 - Summing visible detailed cells and assuming they equal higher-level totals.
 - Ignoring NAICS revisions in long histories.
 - Ignoring multi-establishment reporting changes.
