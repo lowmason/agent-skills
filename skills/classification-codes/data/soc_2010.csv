@@ -1,0 +1,1422 @@
+code,level,title,parent_code
+11-0000,major,Management Occupations,
+11-1000,minor,Top Executives,11-0000
+11-1010,broad,Chief Executives,11-1000
+11-1011,detailed,Chief Executives,11-1010
+11-1020,broad,General and Operations Managers,11-1000
+11-1021,detailed,General and Operations Managers,11-1020
+11-1030,broad,Legislators,11-1000
+11-1031,detailed,Legislators,11-1030
+11-2000,minor,"Advertising, Marketing, Promotions, Public Relations, and Sales Managers",11-0000
+11-2010,broad,Advertising and Promotions Managers,11-2000
+11-2011,detailed,Advertising and Promotions Managers,11-2010
+11-2020,broad,Marketing and Sales Managers,11-2000
+11-2021,detailed,Marketing Managers,11-2020
+11-2022,detailed,Sales Managers,11-2020
+11-2030,broad,Public Relations and Fundraising Managers,11-2000
+11-2031,detailed,Public Relations and Fundraising Managers,11-2030
+11-3000,minor,Operations Specialties Managers,11-0000
+11-3010,broad,Administrative Services Managers,11-3000
+11-3011,detailed,Administrative Services Managers,11-3010
+11-3020,broad,Computer and Information Systems Managers,11-3000
+11-3021,detailed,Computer and Information Systems Managers,11-3020
+11-3030,broad,Financial Managers,11-3000
+11-3031,detailed,Financial Managers,11-3030
+11-3050,broad,Industrial Production Managers,11-3000
+11-3051,detailed,Industrial Production Managers,11-3050
+11-3060,broad,Purchasing Managers,11-3000
+11-3061,detailed,Purchasing Managers,11-3060
+11-3070,broad,"Transportation, Storage, and Distribution Managers",11-3000
+11-3071,detailed,"Transportation, Storage, and Distribution Managers",11-3070
+11-3110,broad,Compensation and Benefits Managers,11-3000
+11-3111,detailed,Compensation and Benefits Managers,11-3110
+11-3120,broad,Human Resources Managers,11-3000
+11-3121,detailed,Human Resources Managers,11-3120
+11-3130,broad,Training and Development Managers,11-3000
+11-3131,detailed,Training and Development Managers,11-3130
+11-9000,minor,Other Management Occupations,11-0000
+11-9010,broad,"Farmers, Ranchers, and Other Agricultural Managers",11-9000
+11-9013,detailed,"Farmers, Ranchers, and Other Agricultural Managers",11-9010
+11-9020,broad,Construction Managers,11-9000
+11-9021,detailed,Construction Managers,11-9020
+11-9030,broad,Education Administrators,11-9000
+11-9031,detailed,"Education Administrators, Preschool and Childcare Center/Program",11-9030
+11-9032,detailed,"Education Administrators, Elementary and Secondary School",11-9030
+11-9033,detailed,"Education Administrators, Postsecondary",11-9030
+11-9039,detailed,"Education Administrators, All Other",11-9030
+11-9040,broad,Architectural and Engineering Managers,11-9000
+11-9041,detailed,Architectural and Engineering Managers,11-9040
+11-9050,broad,Food Service Managers,11-9000
+11-9051,detailed,Food Service Managers,11-9050
+11-9060,broad,Funeral Service Managers,11-9000
+11-9061,detailed,Funeral Service Managers,11-9060
+11-9070,broad,Gaming Managers,11-9000
+11-9071,detailed,Gaming Managers,11-9070
+11-9080,broad,Lodging Managers,11-9000
+11-9081,detailed,Lodging Managers,11-9080
+11-9110,broad,Medical and Health Services Managers,11-9000
+11-9111,detailed,Medical and Health Services Managers,11-9110
+11-9120,broad,Natural Sciences Managers,11-9000
+11-9121,detailed,Natural Sciences Managers,11-9120
+11-9130,broad,Postmasters and Mail Superintendents,11-9000
+11-9131,detailed,Postmasters and Mail Superintendents,11-9130
+11-9140,broad,"Property, Real Estate, and Community Association Managers",11-9000
+11-9141,detailed,"Property, Real Estate, and Community Association Managers",11-9140
+11-9150,broad,Social and Community Service Managers,11-9000
+11-9151,detailed,Social and Community Service Managers,11-9150
+11-9160,broad,Emergency Management Directors,11-9000
+11-9161,detailed,Emergency Management Directors,11-9160
+11-9190,broad,Miscellaneous Managers,11-9000
+11-9199,detailed,"Managers, All Other",11-9190
+13-0000,major,Business and Financial Operations Occupations,
+13-1000,minor,Business Operations Specialists,13-0000
+13-1010,broad,"Agents and Business Managers of Artists, Performers, and Athletes",13-1000
+13-1011,detailed,"Agents and Business Managers of Artists, Performers, and Athletes",13-1010
+13-1020,broad,Buyers and Purchasing Agents,13-1000
+13-1021,detailed,"Buyers and Purchasing Agents, Farm Products",13-1020
+13-1022,detailed,"Wholesale and Retail Buyers, Except Farm Products",13-1020
+13-1023,detailed,"Purchasing Agents, Except Wholesale, Retail, and Farm Products",13-1020
+13-1030,broad,"Claims Adjusters, Appraisers, Examiners, and Investigators",13-1000
+13-1031,detailed,"Claims Adjusters, Examiners, and Investigators",13-1030
+13-1032,detailed,"Insurance Appraisers, Auto Damage",13-1030
+13-1040,broad,Compliance Officers,13-1000
+13-1041,detailed,Compliance Officers,13-1040
+13-1050,broad,Cost Estimators,13-1000
+13-1051,detailed,Cost Estimators,13-1050
+13-1070,broad,Human Resources Workers,13-1000
+13-1071,detailed,Human Resources Specialists,13-1070
+13-1074,detailed,Farm Labor Contractors,13-1070
+13-1075,detailed,Labor Relations Specialists,13-1070
+13-1080,broad,Logisticians,13-1000
+13-1081,detailed,Logisticians,13-1080
+13-1110,broad,Management Analysts,13-1000
+13-1111,detailed,Management Analysts,13-1110
+13-1120,broad,"Meeting, Convention, and Event Planners",13-1000
+13-1121,detailed,"Meeting, Convention, and Event Planners",13-1120
+13-1130,broad,Fundraisers,13-1000
+13-1131,detailed,Fundraisers,13-1130
+13-1140,broad,"Compensation, Benefits, and Job Analysis Specialists",13-1000
+13-1141,detailed,"Compensation, Benefits, and Job Analysis Specialists",13-1140
+13-1150,broad,Training and Development Specialists,13-1000
+13-1151,detailed,Training and Development Specialists,13-1150
+13-1160,broad,Market Research Analysts and Marketing Specialists,13-1000
+13-1161,detailed,Market Research Analysts and Marketing Specialists,13-1160
+13-1190,broad,Miscellaneous Business Operations Specialists,13-1000
+13-1199,detailed,"Business Operations Specialists, All Other",13-1190
+13-2000,minor,Financial Specialists,13-0000
+13-2010,broad,Accountants and Auditors,13-2000
+13-2011,detailed,Accountants and Auditors,13-2010
+13-2020,broad,Appraisers and Assessors of Real Estate,13-2000
+13-2021,detailed,Appraisers and Assessors of Real Estate,13-2020
+13-2030,broad,Budget Analysts,13-2000
+13-2031,detailed,Budget Analysts,13-2030
+13-2040,broad,Credit Analysts,13-2000
+13-2041,detailed,Credit Analysts,13-2040
+13-2050,broad,Financial Analysts and Advisors,13-2000
+13-2051,detailed,Financial Analysts,13-2050
+13-2052,detailed,Personal Financial Advisors,13-2050
+13-2053,detailed,Insurance Underwriters,13-2050
+13-2060,broad,Financial Examiners,13-2000
+13-2061,detailed,Financial Examiners,13-2060
+13-2070,broad,Credit Counselors and Loan Officers,13-2000
+13-2071,detailed,Credit Counselors,13-2070
+13-2072,detailed,Loan Officers,13-2070
+13-2080,broad,"Tax Examiners, Collectors and Preparers, and Revenue Agents",13-2000
+13-2081,detailed,"Tax Examiners and Collectors, and Revenue Agents",13-2080
+13-2082,detailed,Tax Preparers,13-2080
+13-2090,broad,Miscellaneous Financial Specialists,13-2000
+13-2099,detailed,"Financial Specialists, All Other",13-2090
+15-0000,major,Computer and Mathematical Occupations,
+15-1100,minor,Computer Occupations,15-0000
+15-1110,broad,Computer and Information Research Scientists,15-1100
+15-1111,detailed,Computer and Information Research Scientists,15-1110
+15-1120,broad,Computer and Information Analysts,15-1100
+15-1121,detailed,Computer Systems Analysts,15-1120
+15-1122,detailed,Information Security Analysts,15-1120
+15-1130,broad,Software Developers and Programmers,15-1100
+15-1131,detailed,Computer Programmers,15-1130
+15-1132,detailed,"Software Developers, Applications",15-1130
+15-1133,detailed,"Software Developers, Systems Software",15-1130
+15-1134,detailed,Web Developers,15-1130
+15-1140,broad,Database and Systems Administrators and Network Architects,15-1100
+15-1141,detailed,Database Administrators,15-1140
+15-1142,detailed,Network and Computer Systems Administrators,15-1140
+15-1143,detailed,Computer Network Architects,15-1140
+15-1150,broad,Computer Support Specialists,15-1100
+15-1151,detailed,Computer User Support Specialists,15-1150
+15-1152,detailed,Computer Network Support Specialists,15-1150
+15-1190,broad,Miscellaneous Computer Occupations,15-1100
+15-1199,detailed,"Computer Occupations, All Other",15-1190
+15-2000,minor,Mathematical Science Occupations,15-0000
+15-2010,broad,Actuaries,15-2000
+15-2011,detailed,Actuaries,15-2010
+15-2020,broad,Mathematicians,15-2000
+15-2021,detailed,Mathematicians,15-2020
+15-2030,broad,Operations Research Analysts,15-2000
+15-2031,detailed,Operations Research Analysts,15-2030
+15-2040,broad,Statisticians,15-2000
+15-2041,detailed,Statisticians,15-2040
+15-2090,broad,Miscellaneous Mathematical Science Occupations,15-2000
+15-2091,detailed,Mathematical Technicians,15-2090
+15-2099,detailed,"Mathematical Science Occupations, All Other",15-2090
+17-0000,major,Architecture and Engineering Occupations,
+17-1000,minor,"Architects, Surveyors, and Cartographers",17-0000
+17-1010,broad,"Architects, Except Naval",17-1000
+17-1011,detailed,"Architects, Except Landscape and Naval",17-1010
+17-1012,detailed,Landscape Architects,17-1010
+17-1020,broad,"Surveyors, Cartographers, and Photogrammetrists",17-1000
+17-1021,detailed,Cartographers and Photogrammetrists,17-1020
+17-1022,detailed,Surveyors,17-1020
+17-2000,minor,Engineers,17-0000
+17-2010,broad,Aerospace Engineers,17-2000
+17-2011,detailed,Aerospace Engineers,17-2010
+17-2020,broad,Agricultural Engineers,17-2000
+17-2021,detailed,Agricultural Engineers,17-2020
+17-2030,broad,Biomedical Engineers,17-2000
+17-2031,detailed,Biomedical Engineers,17-2030
+17-2040,broad,Chemical Engineers,17-2000
+17-2041,detailed,Chemical Engineers,17-2040
+17-2050,broad,Civil Engineers,17-2000
+17-2051,detailed,Civil Engineers,17-2050
+17-2060,broad,Computer Hardware Engineers,17-2000
+17-2061,detailed,Computer Hardware Engineers,17-2060
+17-2070,broad,Electrical and Electronics Engineers,17-2000
+17-2071,detailed,Electrical Engineers,17-2070
+17-2072,detailed,"Electronics Engineers, Except Computer",17-2070
+17-2080,broad,Environmental Engineers,17-2000
+17-2081,detailed,Environmental Engineers,17-2080
+17-2110,broad,"Industrial Engineers, Including Health and Safety",17-2000
+17-2111,detailed,"Health and Safety Engineers, Except Mining Safety Engineers and Inspectors",17-2110
+17-2112,detailed,Industrial Engineers,17-2110
+17-2120,broad,Marine Engineers and Naval Architects,17-2000
+17-2121,detailed,Marine Engineers and Naval Architects,17-2120
+17-2130,broad,Materials Engineers,17-2000
+17-2131,detailed,Materials Engineers,17-2130
+17-2140,broad,Mechanical Engineers,17-2000
+17-2141,detailed,Mechanical Engineers,17-2140
+17-2150,broad,"Mining and Geological Engineers, Including Mining Safety Engineers",17-2000
+17-2151,detailed,"Mining and Geological Engineers, Including Mining Safety Engineers",17-2150
+17-2160,broad,Nuclear Engineers,17-2000
+17-2161,detailed,Nuclear Engineers,17-2160
+17-2170,broad,Petroleum Engineers,17-2000
+17-2171,detailed,Petroleum Engineers,17-2170
+17-2190,broad,Miscellaneous Engineers,17-2000
+17-2199,detailed,"Engineers, All Other",17-2190
+17-3000,minor,"Drafters, Engineering Technicians, and Mapping Technicians",17-0000
+17-3010,broad,Drafters,17-3000
+17-3011,detailed,Architectural and Civil Drafters,17-3010
+17-3012,detailed,Electrical and Electronics Drafters,17-3010
+17-3013,detailed,Mechanical Drafters,17-3010
+17-3019,detailed,"Drafters, All Other",17-3010
+17-3020,broad,"Engineering Technicians, Except Drafters",17-3000
+17-3021,detailed,Aerospace Engineering and Operations Technicians,17-3020
+17-3022,detailed,Civil Engineering Technicians,17-3020
+17-3023,detailed,Electrical and Electronics Engineering Technicians,17-3020
+17-3024,detailed,Electro-Mechanical Technicians,17-3020
+17-3025,detailed,Environmental Engineering Technicians,17-3020
+17-3026,detailed,Industrial Engineering Technicians,17-3020
+17-3027,detailed,Mechanical Engineering Technicians,17-3020
+17-3029,detailed,"Engineering Technicians, Except Drafters, All Other",17-3020
+17-3030,broad,Surveying and Mapping Technicians,17-3000
+17-3031,detailed,Surveying and Mapping Technicians,17-3030
+19-0000,major,"Life, Physical, and Social Science Occupations",
+19-1000,minor,Life Scientists,19-0000
+19-1010,broad,Agricultural and Food Scientists,19-1000
+19-1011,detailed,Animal Scientists,19-1010
+19-1012,detailed,Food Scientists and Technologists,19-1010
+19-1013,detailed,Soil and Plant Scientists,19-1010
+19-1020,broad,Biological Scientists,19-1000
+19-1021,detailed,Biochemists and Biophysicists,19-1020
+19-1022,detailed,Microbiologists,19-1020
+19-1023,detailed,Zoologists and Wildlife Biologists,19-1020
+19-1029,detailed,"Biological Scientists, All Other",19-1020
+19-1030,broad,Conservation Scientists and Foresters,19-1000
+19-1031,detailed,Conservation Scientists,19-1030
+19-1032,detailed,Foresters,19-1030
+19-1040,broad,Medical Scientists,19-1000
+19-1041,detailed,Epidemiologists,19-1040
+19-1042,detailed,"Medical Scientists, Except Epidemiologists",19-1040
+19-1090,broad,Miscellaneous Life Scientists,19-1000
+19-1099,detailed,"Life Scientists, All Other",19-1090
+19-2000,minor,Physical Scientists,19-0000
+19-2010,broad,Astronomers and Physicists,19-2000
+19-2011,detailed,Astronomers,19-2010
+19-2012,detailed,Physicists,19-2010
+19-2020,broad,Atmospheric and Space Scientists,19-2000
+19-2021,detailed,Atmospheric and Space Scientists,19-2020
+19-2030,broad,Chemists and Materials Scientists,19-2000
+19-2031,detailed,Chemists,19-2030
+19-2032,detailed,Materials Scientists,19-2030
+19-2040,broad,Environmental Scientists and Geoscientists,19-2000
+19-2041,detailed,"Environmental Scientists and Specialists, Including Health",19-2040
+19-2042,detailed,"Geoscientists, Except Hydrologists and Geographers",19-2040
+19-2043,detailed,Hydrologists,19-2040
+19-2090,broad,Miscellaneous Physical Scientists,19-2000
+19-2099,detailed,"Physical Scientists, All Other",19-2090
+19-3000,minor,Social Scientists and Related Workers,19-0000
+19-3010,broad,Economists,19-3000
+19-3011,detailed,Economists,19-3010
+19-3020,broad,Survey Researchers,19-3000
+19-3022,detailed,Survey Researchers,19-3020
+19-3030,broad,Psychologists,19-3000
+19-3031,detailed,"Clinical, Counseling, and School Psychologists",19-3030
+19-3032,detailed,Industrial-Organizational Psychologists,19-3030
+19-3039,detailed,"Psychologists, All Other",19-3030
+19-3040,broad,Sociologists,19-3000
+19-3041,detailed,Sociologists,19-3040
+19-3050,broad,Urban and Regional Planners,19-3000
+19-3051,detailed,Urban and Regional Planners,19-3050
+19-3090,broad,Miscellaneous Social Scientists and Related Workers,19-3000
+19-3091,detailed,Anthropologists and Archeologists,19-3090
+19-3092,detailed,Geographers,19-3090
+19-3093,detailed,Historians,19-3090
+19-3094,detailed,Political Scientists,19-3090
+19-3099,detailed,"Social Scientists and Related Workers, All Other",19-3090
+19-4000,minor,"Life, Physical, and Social Science Technicians",19-0000
+19-4010,broad,Agricultural and Food Science Technicians,19-4000
+19-4011,detailed,Agricultural and Food Science Technicians,19-4010
+19-4020,broad,Biological Technicians,19-4000
+19-4021,detailed,Biological Technicians,19-4020
+19-4030,broad,Chemical Technicians,19-4000
+19-4031,detailed,Chemical Technicians,19-4030
+19-4040,broad,Geological and Petroleum Technicians,19-4000
+19-4041,detailed,Geological and Petroleum Technicians,19-4040
+19-4050,broad,Nuclear Technicians,19-4000
+19-4051,detailed,Nuclear Technicians,19-4050
+19-4060,broad,Social Science Research Assistants,19-4000
+19-4061,detailed,Social Science Research Assistants,19-4060
+19-4090,broad,"Miscellaneous Life, Physical, and Social Science Technicians",19-4000
+19-4091,detailed,"Environmental Science and Protection Technicians, Including Health",19-4090
+19-4092,detailed,Forensic Science Technicians,19-4090
+19-4093,detailed,Forest and Conservation Technicians,19-4090
+19-4099,detailed,"Life, Physical, and Social Science Technicians, All Other",19-4090
+21-0000,major,Community and Social Service Occupations,
+21-1000,minor,"Counselors, Social Workers, and Other Community and Social Service Specialists",21-0000
+21-1010,broad,Counselors,21-1000
+21-1011,detailed,Substance Abuse and Behavioral Disorder Counselors,21-1010
+21-1012,detailed,"Educational, Guidance, School, and Vocational Counselors",21-1010
+21-1013,detailed,Marriage and Family Therapists,21-1010
+21-1014,detailed,Mental Health Counselors,21-1010
+21-1015,detailed,Rehabilitation Counselors,21-1010
+21-1019,detailed,"Counselors, All Other",21-1010
+21-1020,broad,Social Workers,21-1000
+21-1021,detailed,"Child, Family, and School Social Workers",21-1020
+21-1022,detailed,Healthcare Social Workers,21-1020
+21-1023,detailed,Mental Health and Substance Abuse Social Workers,21-1020
+21-1029,detailed,"Social Workers, All Other",21-1020
+21-1090,broad,Miscellaneous Community and Social Service Specialists,21-1000
+21-1091,detailed,Health Educators,21-1090
+21-1092,detailed,Probation Officers and Correctional Treatment Specialists,21-1090
+21-1093,detailed,Social and Human Service Assistants,21-1090
+21-1094,detailed,Community Health Workers,21-1090
+21-1099,detailed,"Community and Social Service Specialists, All Other",21-1090
+21-2000,minor,Religious Workers,21-0000
+21-2010,broad,Clergy,21-2000
+21-2011,detailed,Clergy,21-2010
+21-2020,broad,"Directors, Religious Activities and Education",21-2000
+21-2021,detailed,"Directors, Religious Activities and Education",21-2020
+21-2090,broad,Miscellaneous Religious Workers,21-2000
+21-2099,detailed,"Religious Workers, All Other",21-2090
+23-0000,major,Legal Occupations,
+23-1000,minor,"Lawyers, Judges, and Related Workers",23-0000
+23-1010,broad,Lawyers and Judicial Law Clerks,23-1000
+23-1011,detailed,Lawyers,23-1010
+23-1012,detailed,Judicial Law Clerks,23-1010
+23-1020,broad,"Judges, Magistrates, and Other Judicial Workers",23-1000
+23-1021,detailed,"Administrative Law Judges, Adjudicators, and Hearing Officers",23-1020
+23-1022,detailed,"Arbitrators, Mediators, and Conciliators",23-1020
+23-1023,detailed,"Judges, Magistrate Judges, and Magistrates",23-1020
+23-2000,minor,Legal Support Workers,23-0000
+23-2010,broad,Paralegals and Legal Assistants,23-2000
+23-2011,detailed,Paralegals and Legal Assistants,23-2010
+23-2090,broad,Miscellaneous Legal Support Workers,23-2000
+23-2091,detailed,Court Reporters,23-2090
+23-2093,detailed,"Title Examiners, Abstractors, and Searchers",23-2090
+23-2099,detailed,"Legal Support Workers, All Other",23-2090
+25-0000,major,"Education, Training, and Library Occupations",
+25-1000,minor,Postsecondary Teachers,25-0000
+25-1010,broad,"Business Teachers, Postsecondary",25-1000
+25-1011,detailed,"Business Teachers, Postsecondary",25-1010
+25-1020,broad,"Math and Computer Teachers, Postsecondary",25-1000
+25-1021,detailed,"Computer Science Teachers, Postsecondary",25-1020
+25-1022,detailed,"Mathematical Science Teachers, Postsecondary",25-1020
+25-1030,broad,"Engineering and Architecture Teachers, Postsecondary",25-1000
+25-1031,detailed,"Architecture Teachers, Postsecondary",25-1030
+25-1032,detailed,"Engineering Teachers, Postsecondary",25-1030
+25-1040,broad,"Life Sciences Teachers, Postsecondary",25-1000
+25-1041,detailed,"Agricultural Sciences Teachers, Postsecondary",25-1040
+25-1042,detailed,"Biological Science Teachers, Postsecondary",25-1040
+25-1043,detailed,"Forestry and Conservation Science Teachers, Postsecondary",25-1040
+25-1050,broad,"Physical Sciences Teachers, Postsecondary",25-1000
+25-1051,detailed,"Atmospheric, Earth, Marine, and Space Sciences Teachers, Postsecondary",25-1050
+25-1052,detailed,"Chemistry Teachers, Postsecondary",25-1050
+25-1053,detailed,"Environmental Science Teachers, Postsecondary",25-1050
+25-1054,detailed,"Physics Teachers, Postsecondary",25-1050
+25-1060,broad,"Social Sciences Teachers, Postsecondary",25-1000
+25-1061,detailed,"Anthropology and Archeology Teachers, Postsecondary",25-1060
+25-1062,detailed,"Area, Ethnic, and Cultural Studies Teachers, Postsecondary",25-1060
+25-1063,detailed,"Economics Teachers, Postsecondary",25-1060
+25-1064,detailed,"Geography Teachers, Postsecondary",25-1060
+25-1065,detailed,"Political Science Teachers, Postsecondary",25-1060
+25-1066,detailed,"Psychology Teachers, Postsecondary",25-1060
+25-1067,detailed,"Sociology Teachers, Postsecondary",25-1060
+25-1069,detailed,"Social Sciences Teachers, Postsecondary, All Other",25-1060
+25-1070,broad,"Health Teachers, Postsecondary",25-1000
+25-1071,detailed,"Health Specialties Teachers, Postsecondary",25-1070
+25-1072,detailed,"Nursing Instructors and Teachers, Postsecondary",25-1070
+25-1080,broad,"Education and Library Science Teachers, Postsecondary",25-1000
+25-1081,detailed,"Education Teachers, Postsecondary",25-1080
+25-1082,detailed,"Library Science Teachers, Postsecondary",25-1080
+25-1110,broad,"Law, Criminal Justice, and Social Work Teachers, Postsecondary",25-1000
+25-1111,detailed,"Criminal Justice and Law Enforcement Teachers, Postsecondary",25-1110
+25-1112,detailed,"Law Teachers, Postsecondary",25-1110
+25-1113,detailed,"Social Work Teachers, Postsecondary",25-1110
+25-1120,broad,"Arts, Communications, and Humanities Teachers, Postsecondary",25-1000
+25-1121,detailed,"Art, Drama, and Music Teachers, Postsecondary",25-1120
+25-1122,detailed,"Communications Teachers, Postsecondary",25-1120
+25-1123,detailed,"English Language and Literature Teachers, Postsecondary",25-1120
+25-1124,detailed,"Foreign Language and Literature Teachers, Postsecondary",25-1120
+25-1125,detailed,"History Teachers, Postsecondary",25-1120
+25-1126,detailed,"Philosophy and Religion Teachers, Postsecondary",25-1120
+25-1190,broad,Miscellaneous Postsecondary Teachers,25-1000
+25-1191,detailed,Graduate Teaching Assistants,25-1190
+25-1192,detailed,"Home Economics Teachers, Postsecondary",25-1190
+25-1193,detailed,"Recreation and Fitness Studies Teachers, Postsecondary",25-1190
+25-1194,detailed,"Vocational Education Teachers, Postsecondary",25-1190
+25-1199,detailed,"Postsecondary Teachers, All Other",25-1190
+25-2000,minor,"Preschool, Primary, Secondary, and Special Education School Teachers",25-0000
+25-2010,broad,Preschool and Kindergarten Teachers,25-2000
+25-2011,detailed,"Preschool Teachers, Except Special Education",25-2010
+25-2012,detailed,"Kindergarten Teachers, Except Special Education",25-2010
+25-2020,broad,Elementary and Middle School Teachers,25-2000
+25-2021,detailed,"Elementary School Teachers, Except Special Education",25-2020
+25-2022,detailed,"Middle School Teachers, Except Special and Career/Technical Education",25-2020
+25-2023,detailed,"Career/Technical Education Teachers, Middle School",25-2020
+25-2030,broad,Secondary School Teachers,25-2000
+25-2031,detailed,"Secondary School Teachers, Except Special and Career/Technical Education",25-2030
+25-2032,detailed,"Career/Technical Education Teachers, Secondary School",25-2030
+25-2050,broad,Special Education Teachers,25-2000
+25-2051,detailed,"Special Education Teachers, Preschool",25-2050
+25-2052,detailed,"Special Education Teachers, Kindergarten and Elementary School",25-2050
+25-2053,detailed,"Special Education Teachers, Middle School",25-2050
+25-2054,detailed,"Special Education Teachers, Secondary School",25-2050
+25-2059,detailed,"Special Education Teachers, All Other",25-2050
+25-3000,minor,Other Teachers and Instructors,25-0000
+25-3010,broad,Adult Basic and Secondary Education and Literacy Teachers and Instructors,25-3000
+25-3011,detailed,Adult Basic and Secondary Education and Literacy Teachers and Instructors,25-3010
+25-3020,broad,Self-Enrichment Education Teachers,25-3000
+25-3021,detailed,Self-Enrichment Education Teachers,25-3020
+25-3090,broad,Miscellaneous Teachers and Instructors,25-3000
+25-3099,detailed,"Teachers and Instructors, All Other",25-3090
+25-4000,minor,"Librarians, Curators, and Archivists",25-0000
+25-4010,broad,"Archivists, Curators, and Museum Technicians",25-4000
+25-4011,detailed,Archivists,25-4010
+25-4012,detailed,Curators,25-4010
+25-4013,detailed,Museum Technicians and Conservators,25-4010
+25-4020,broad,Librarians,25-4000
+25-4021,detailed,Librarians,25-4020
+25-4030,broad,Library Technicians,25-4000
+25-4031,detailed,Library Technicians,25-4030
+25-9000,minor,"Other Education, Training, and Library Occupations",25-0000
+25-9010,broad,Audio-Visual and Multimedia Collections Specialists,25-9000
+25-9011,detailed,Audio-Visual and Multimedia Collections Specialists,25-9010
+25-9020,broad,Farm and Home Management Advisors,25-9000
+25-9021,detailed,Farm and Home Management Advisors,25-9020
+25-9030,broad,Instructional Coordinators,25-9000
+25-9031,detailed,Instructional Coordinators,25-9030
+25-9040,broad,Teacher Assistants,25-9000
+25-9041,detailed,Teacher Assistants,25-9040
+25-9090,broad,"Miscellaneous Education, Training, and Library Workers",25-9000
+25-9099,detailed,"Education, Training, and Library Workers, All Other",25-9090
+27-0000,major,"Arts, Design, Entertainment, Sports, and Media Occupations",
+27-1000,minor,Art and Design Workers,27-0000
+27-1010,broad,Artists and Related Workers,27-1000
+27-1011,detailed,Art Directors,27-1010
+27-1012,detailed,Craft Artists,27-1010
+27-1013,detailed,"Fine Artists, Including Painters, Sculptors, and Illustrators",27-1010
+27-1014,detailed,Multimedia Artists and Animators,27-1010
+27-1019,detailed,"Artists and Related Workers, All Other",27-1010
+27-1020,broad,Designers,27-1000
+27-1021,detailed,Commercial and Industrial Designers,27-1020
+27-1022,detailed,Fashion Designers,27-1020
+27-1023,detailed,Floral Designers,27-1020
+27-1024,detailed,Graphic Designers,27-1020
+27-1025,detailed,Interior Designers,27-1020
+27-1026,detailed,Merchandise Displayers and Window Trimmers,27-1020
+27-1027,detailed,Set and Exhibit Designers,27-1020
+27-1029,detailed,"Designers, All Other",27-1020
+27-2000,minor,"Entertainers and Performers, Sports and Related Workers",27-0000
+27-2010,broad,"Actors, Producers, and Directors",27-2000
+27-2011,detailed,Actors,27-2010
+27-2012,detailed,Producers and Directors,27-2010
+27-2020,broad,"Athletes, Coaches, Umpires, and Related Workers",27-2000
+27-2021,detailed,Athletes and Sports Competitors,27-2020
+27-2022,detailed,Coaches and Scouts,27-2020
+27-2023,detailed,"Umpires, Referees, and Other Sports Officials",27-2020
+27-2030,broad,Dancers and Choreographers,27-2000
+27-2031,detailed,Dancers,27-2030
+27-2032,detailed,Choreographers,27-2030
+27-2040,broad,"Musicians, Singers, and Related Workers",27-2000
+27-2041,detailed,Music Directors and Composers,27-2040
+27-2042,detailed,Musicians and Singers,27-2040
+27-2090,broad,"Miscellaneous Entertainers and Performers, Sports and Related Workers",27-2000
+27-2099,detailed,"Entertainers and Performers, Sports and Related Workers, All Other",27-2090
+27-3000,minor,Media and Communication Workers,27-0000
+27-3010,broad,Announcers,27-3000
+27-3011,detailed,Radio and Television Announcers,27-3010
+27-3012,detailed,Public Address System and Other Announcers,27-3010
+27-3020,broad,"News Analysts, Reporters and Correspondents",27-3000
+27-3021,detailed,Broadcast News Analysts,27-3020
+27-3022,detailed,Reporters and Correspondents,27-3020
+27-3030,broad,Public Relations Specialists,27-3000
+27-3031,detailed,Public Relations Specialists,27-3030
+27-3040,broad,Writers and Editors,27-3000
+27-3041,detailed,Editors,27-3040
+27-3042,detailed,Technical Writers,27-3040
+27-3043,detailed,Writers and Authors,27-3040
+27-3090,broad,Miscellaneous Media and Communication Workers,27-3000
+27-3091,detailed,Interpreters and Translators,27-3090
+27-3099,detailed,"Media and Communication Workers, All Other",27-3090
+27-4000,minor,Media and Communication Equipment Workers,27-0000
+27-4010,broad,Broadcast and Sound Engineering Technicians and Radio Operators,27-4000
+27-4011,detailed,Audio and Video Equipment Technicians,27-4010
+27-4012,detailed,Broadcast Technicians,27-4010
+27-4013,detailed,Radio Operators,27-4010
+27-4014,detailed,Sound Engineering Technicians,27-4010
+27-4020,broad,Photographers,27-4000
+27-4021,detailed,Photographers,27-4020
+27-4030,broad,"Television, Video, and Motion Picture Camera Operators and Editors",27-4000
+27-4031,detailed,"Camera Operators, Television, Video, and Motion Picture",27-4030
+27-4032,detailed,Film and Video Editors,27-4030
+27-4090,broad,Miscellaneous Media and Communication Equipment Workers,27-4000
+27-4099,detailed,"Media and Communication Equipment Workers, All Other",27-4090
+29-0000,major,Healthcare Practitioners and Technical Occupations,
+29-1000,minor,Health Diagnosing and Treating Practitioners,29-0000
+29-1010,broad,Chiropractors,29-1000
+29-1011,detailed,Chiropractors,29-1010
+29-1020,broad,Dentists,29-1000
+29-1021,detailed,"Dentists, General",29-1020
+29-1022,detailed,Oral and Maxillofacial Surgeons,29-1020
+29-1023,detailed,Orthodontists,29-1020
+29-1024,detailed,Prosthodontists,29-1020
+29-1029,detailed,"Dentists, All Other Specialists",29-1020
+29-1030,broad,Dietitians and Nutritionists,29-1000
+29-1031,detailed,Dietitians and Nutritionists,29-1030
+29-1040,broad,Optometrists,29-1000
+29-1041,detailed,Optometrists,29-1040
+29-1050,broad,Pharmacists,29-1000
+29-1051,detailed,Pharmacists,29-1050
+29-1060,broad,Physicians and Surgeons,29-1000
+29-1061,detailed,Anesthesiologists,29-1060
+29-1062,detailed,Family and General Practitioners,29-1060
+29-1063,detailed,"Internists, General",29-1060
+29-1064,detailed,Obstetricians and Gynecologists,29-1060
+29-1065,detailed,"Pediatricians, General",29-1060
+29-1066,detailed,Psychiatrists,29-1060
+29-1067,detailed,Surgeons,29-1060
+29-1069,detailed,"Physicians and Surgeons, All Other",29-1060
+29-1070,broad,Physician Assistants,29-1000
+29-1071,detailed,Physician Assistants,29-1070
+29-1080,broad,Podiatrists,29-1000
+29-1081,detailed,Podiatrists,29-1080
+29-1120,broad,Therapists,29-1000
+29-1122,detailed,Occupational Therapists,29-1120
+29-1123,detailed,Physical Therapists,29-1120
+29-1124,detailed,Radiation Therapists,29-1120
+29-1125,detailed,Recreational Therapists,29-1120
+29-1126,detailed,Respiratory Therapists,29-1120
+29-1127,detailed,Speech-Language Pathologists,29-1120
+29-1128,detailed,Exercise Physiologists,29-1120
+29-1129,detailed,"Therapists, All Other",29-1120
+29-1130,broad,Veterinarians,29-1000
+29-1131,detailed,Veterinarians,29-1130
+29-1140,broad,Registered Nurses,29-1000
+29-1141,detailed,Registered Nurses,29-1140
+29-1150,broad,Nurse Anesthetists,29-1000
+29-1151,detailed,Nurse Anesthetists,29-1150
+29-1160,broad,Nurse Midwives,29-1000
+29-1161,detailed,Nurse Midwives,29-1160
+29-1170,broad,Nurse Practitioners,29-1000
+29-1171,detailed,Nurse Practitioners,29-1170
+29-1180,broad,Audiologists,29-1000
+29-1181,detailed,Audiologists,29-1180
+29-1190,broad,Miscellaneous Health Diagnosing and Treating Practitioners,29-1000
+29-1199,detailed,"Health Diagnosing and Treating Practitioners, All Other",29-1190
+29-2000,minor,Health Technologists and Technicians,29-0000
+29-2010,broad,Clinical Laboratory Technologists and Technicians,29-2000
+29-2011,detailed,Medical and Clinical Laboratory Technologists,29-2010
+29-2012,detailed,Medical and Clinical Laboratory Technicians,29-2010
+29-2020,broad,Dental Hygienists,29-2000
+29-2021,detailed,Dental Hygienists,29-2020
+29-2030,broad,Diagnostic Related Technologists and Technicians,29-2000
+29-2031,detailed,Cardiovascular Technologists and Technicians,29-2030
+29-2032,detailed,Diagnostic Medical Sonographers,29-2030
+29-2033,detailed,Nuclear Medicine Technologists,29-2030
+29-2034,detailed,Radiologic Technologists,29-2030
+29-2035,detailed,Magnetic Resonance Imaging Technologists,29-2030
+29-2040,broad,Emergency Medical Technicians and Paramedics,29-2000
+29-2041,detailed,Emergency Medical Technicians and Paramedics,29-2040
+29-2050,broad,Health Practitioner Support Technologists and Technicians,29-2000
+29-2051,detailed,Dietetic Technicians,29-2050
+29-2052,detailed,Pharmacy Technicians,29-2050
+29-2053,detailed,Psychiatric Technicians,29-2050
+29-2054,detailed,Respiratory Therapy Technicians,29-2050
+29-2055,detailed,Surgical Technologists,29-2050
+29-2056,detailed,Veterinary Technologists and Technicians,29-2050
+29-2057,detailed,Ophthalmic Medical Technicians,29-2050
+29-2060,broad,Licensed Practical and Licensed Vocational Nurses,29-2000
+29-2061,detailed,Licensed Practical and Licensed Vocational Nurses,29-2060
+29-2070,broad,Medical Records and Health Information Technicians,29-2000
+29-2071,detailed,Medical Records and Health Information Technicians,29-2070
+29-2080,broad,"Opticians, Dispensing",29-2000
+29-2081,detailed,"Opticians, Dispensing",29-2080
+29-2090,broad,Miscellaneous Health Technologists and Technicians,29-2000
+29-2091,detailed,Orthotists and Prosthetists,29-2090
+29-2092,detailed,Hearing Aid Specialists,29-2090
+29-2099,detailed,"Health Technologists and Technicians, All Other",29-2090
+29-9000,minor,Other Healthcare Practitioners and Technical Occupations,29-0000
+29-9010,broad,Occupational Health and Safety Specialists and Technicians,29-9000
+29-9011,detailed,Occupational Health and Safety Specialists,29-9010
+29-9012,detailed,Occupational Health and Safety Technicians,29-9010
+29-9090,broad,Miscellaneous Health Practitioners and Technical Workers,29-9000
+29-9091,detailed,Athletic Trainers,29-9090
+29-9092,detailed,Genetic Counselors,29-9090
+29-9099,detailed,"Healthcare Practitioners and Technical Workers, All Other",29-9090
+31-0000,major,Healthcare Support Occupations,
+31-1000,minor,"Nursing, Psychiatric, and Home Health Aides",31-0000
+31-1010,broad,"Nursing, Psychiatric, and Home Health Aides",31-1000
+31-1011,detailed,Home Health Aides,31-1010
+31-1013,detailed,Psychiatric Aides,31-1010
+31-1014,detailed,Nursing Assistants,31-1010
+31-1015,detailed,Orderlies,31-1010
+31-2000,minor,Occupational Therapy and Physical Therapist Assistants and Aides,31-0000
+31-2010,broad,Occupational Therapy Assistants and Aides,31-2000
+31-2011,detailed,Occupational Therapy Assistants,31-2010
+31-2012,detailed,Occupational Therapy Aides,31-2010
+31-2020,broad,Physical Therapist Assistants and Aides,31-2000
+31-2021,detailed,Physical Therapist Assistants,31-2020
+31-2022,detailed,Physical Therapist Aides,31-2020
+31-9000,minor,Other Healthcare Support Occupations,31-0000
+31-9010,broad,Massage Therapists,31-9000
+31-9011,detailed,Massage Therapists,31-9010
+31-9090,broad,Miscellaneous Healthcare Support Occupations,31-9000
+31-9091,detailed,Dental Assistants,31-9090
+31-9092,detailed,Medical Assistants,31-9090
+31-9093,detailed,Medical Equipment Preparers,31-9090
+31-9094,detailed,Medical Transcriptionists,31-9090
+31-9095,detailed,Pharmacy Aides,31-9090
+31-9096,detailed,Veterinary Assistants and Laboratory Animal Caretakers,31-9090
+31-9097,detailed,Phlebotomists,31-9090
+31-9099,detailed,"Healthcare Support Workers, All Other",31-9090
+33-0000,major,Protective Service Occupations,
+33-1000,minor,Supervisors of Protective Service Workers,33-0000
+33-1010,broad,First-Line Supervisors of Law Enforcement Workers,33-1000
+33-1011,detailed,First-Line Supervisors of Correctional Officers,33-1010
+33-1012,detailed,First-Line Supervisors of Police and Detectives,33-1010
+33-1020,broad,First-Line Supervisors of Fire Fighting and Prevention Workers,33-1000
+33-1021,detailed,First-Line Supervisors of Fire Fighting and Prevention Workers,33-1020
+33-1090,broad,"Miscellaneous First-Line Supervisors, Protective Service Workers",33-1000
+33-1099,detailed,"First-Line Supervisors of Protective Service Workers, All Other",33-1090
+33-2000,minor,Fire Fighting and Prevention Workers,33-0000
+33-2010,broad,Firefighters,33-2000
+33-2011,detailed,Firefighters,33-2010
+33-2020,broad,Fire Inspectors,33-2000
+33-2021,detailed,Fire Inspectors and Investigators,33-2020
+33-2022,detailed,Forest Fire Inspectors and Prevention Specialists,33-2020
+33-3000,minor,Law Enforcement Workers,33-0000
+33-3010,broad,"Bailiffs, Correctional Officers, and Jailers",33-3000
+33-3011,detailed,Bailiffs,33-3010
+33-3012,detailed,Correctional Officers and Jailers,33-3010
+33-3020,broad,Detectives and Criminal Investigators,33-3000
+33-3021,detailed,Detectives and Criminal Investigators,33-3020
+33-3030,broad,Fish and Game Wardens,33-3000
+33-3031,detailed,Fish and Game Wardens,33-3030
+33-3040,broad,Parking Enforcement Workers,33-3000
+33-3041,detailed,Parking Enforcement Workers,33-3040
+33-3050,broad,Police Officers,33-3000
+33-3051,detailed,Police and Sheriff's Patrol Officers,33-3050
+33-3052,detailed,Transit and Railroad Police,33-3050
+33-9000,minor,Other Protective Service Workers,33-0000
+33-9010,broad,Animal Control Workers,33-9000
+33-9011,detailed,Animal Control Workers,33-9010
+33-9020,broad,Private Detectives and Investigators,33-9000
+33-9021,detailed,Private Detectives and Investigators,33-9020
+33-9030,broad,Security Guards and Gaming Surveillance Officers,33-9000
+33-9031,detailed,Gaming Surveillance Officers and Gaming Investigators,33-9030
+33-9032,detailed,Security Guards,33-9030
+33-9090,broad,Miscellaneous Protective Service Workers,33-9000
+33-9091,detailed,Crossing Guards,33-9090
+33-9092,detailed,"Lifeguards, Ski Patrol, and Other Recreational Protective Service Workers",33-9090
+33-9093,detailed,Transportation Security Screeners,33-9090
+33-9099,detailed,"Protective Service Workers, All Other",33-9090
+35-0000,major,Food Preparation and Serving Related Occupations,
+35-1000,minor,Supervisors of Food Preparation and Serving Workers,35-0000
+35-1010,broad,Supervisors of Food Preparation and Serving Workers,35-1000
+35-1011,detailed,Chefs and Head Cooks,35-1010
+35-1012,detailed,First-Line Supervisors of Food Preparation and Serving Workers,35-1010
+35-2000,minor,Cooks and Food Preparation Workers,35-0000
+35-2010,broad,Cooks,35-2000
+35-2011,detailed,"Cooks, Fast Food",35-2010
+35-2012,detailed,"Cooks, Institution and Cafeteria",35-2010
+35-2013,detailed,"Cooks, Private Household",35-2010
+35-2014,detailed,"Cooks, Restaurant",35-2010
+35-2015,detailed,"Cooks, Short Order",35-2010
+35-2019,detailed,"Cooks, All Other",35-2010
+35-2020,broad,Food Preparation Workers,35-2000
+35-2021,detailed,Food Preparation Workers,35-2020
+35-3000,minor,Food and Beverage Serving Workers,35-0000
+35-3010,broad,Bartenders,35-3000
+35-3011,detailed,Bartenders,35-3010
+35-3020,broad,Fast Food and Counter Workers,35-3000
+35-3021,detailed,"Combined Food Preparation and Serving Workers, Including Fast Food",35-3020
+35-3022,detailed,"Counter Attendants, Cafeteria, Food Concession, and Coffee Shop",35-3020
+35-3030,broad,Waiters and Waitresses,35-3000
+35-3031,detailed,Waiters and Waitresses,35-3030
+35-3040,broad,"Food Servers, Nonrestaurant",35-3000
+35-3041,detailed,"Food Servers, Nonrestaurant",35-3040
+35-9000,minor,Other Food Preparation and Serving Related Workers,35-0000
+35-9010,broad,Dining Room and Cafeteria Attendants and Bartender Helpers,35-9000
+35-9011,detailed,Dining Room and Cafeteria Attendants and Bartender Helpers,35-9010
+35-9020,broad,Dishwashers,35-9000
+35-9021,detailed,Dishwashers,35-9020
+35-9030,broad,"Hosts and Hostesses, Restaurant, Lounge, and Coffee Shop",35-9000
+35-9031,detailed,"Hosts and Hostesses, Restaurant, Lounge, and Coffee Shop",35-9030
+35-9090,broad,Miscellaneous Food Preparation and Serving Related Workers,35-9000
+35-9099,detailed,"Food Preparation and Serving Related Workers, All Other",35-9090
+37-0000,major,Building and Grounds Cleaning and Maintenance Occupations,
+37-1000,minor,Supervisors of Building and Grounds Cleaning and Maintenance Workers,37-0000
+37-1010,broad,First-Line Supervisors of Building and Grounds Cleaning and Maintenance Workers,37-1000
+37-1011,detailed,First-Line Supervisors of Housekeeping and Janitorial Workers,37-1010
+37-1012,detailed,"First-Line Supervisors of Landscaping, Lawn Service, and Groundskeeping Workers",37-1010
+37-2000,minor,Building Cleaning and Pest Control Workers,37-0000
+37-2010,broad,Building Cleaning Workers,37-2000
+37-2011,detailed,"Janitors and Cleaners, Except Maids and Housekeeping Cleaners",37-2010
+37-2012,detailed,Maids and Housekeeping Cleaners,37-2010
+37-2019,detailed,"Building Cleaning Workers, All Other",37-2010
+37-2020,broad,Pest Control Workers,37-2000
+37-2021,detailed,Pest Control Workers,37-2020
+37-3000,minor,Grounds Maintenance Workers,37-0000
+37-3010,broad,Grounds Maintenance Workers,37-3000
+37-3011,detailed,Landscaping and Groundskeeping Workers,37-3010
+37-3012,detailed,"Pesticide Handlers, Sprayers, and Applicators, Vegetation",37-3010
+37-3013,detailed,Tree Trimmers and Pruners,37-3010
+37-3019,detailed,"Grounds Maintenance Workers, All Other",37-3010
+39-0000,major,Personal Care and Service Occupations,
+39-1000,minor,Supervisors of Personal Care and Service Workers,39-0000
+39-1010,broad,First-Line Supervisors of Gaming Workers,39-1000
+39-1011,detailed,Gaming Supervisors,39-1010
+39-1012,detailed,Slot Supervisors,39-1010
+39-1020,broad,First-Line Supervisors of Personal Service Workers,39-1000
+39-1021,detailed,First-Line Supervisors of Personal Service Workers,39-1020
+39-2000,minor,Animal Care and Service Workers,39-0000
+39-2010,broad,Animal Trainers,39-2000
+39-2011,detailed,Animal Trainers,39-2010
+39-2020,broad,Nonfarm Animal Caretakers,39-2000
+39-2021,detailed,Nonfarm Animal Caretakers,39-2020
+39-3000,minor,Entertainment Attendants and Related Workers,39-0000
+39-3010,broad,Gaming Services Workers,39-3000
+39-3011,detailed,Gaming Dealers,39-3010
+39-3012,detailed,Gaming and Sports Book Writers and Runners,39-3010
+39-3019,detailed,"Gaming Service Workers, All Other",39-3010
+39-3020,broad,Motion Picture Projectionists,39-3000
+39-3021,detailed,Motion Picture Projectionists,39-3020
+39-3030,broad,"Ushers, Lobby Attendants, and Ticket Takers",39-3000
+39-3031,detailed,"Ushers, Lobby Attendants, and Ticket Takers",39-3030
+39-3090,broad,Miscellaneous Entertainment Attendants and Related Workers,39-3000
+39-3091,detailed,Amusement and Recreation Attendants,39-3090
+39-3092,detailed,Costume Attendants,39-3090
+39-3093,detailed,"Locker Room, Coatroom, and Dressing Room Attendants",39-3090
+39-3099,detailed,"Entertainment Attendants and Related Workers, All Other",39-3090
+39-4000,minor,Funeral Service Workers,39-0000
+39-4010,broad,Embalmers,39-4000
+39-4011,detailed,Embalmers,39-4010
+39-4020,broad,Funeral Attendants,39-4000
+39-4021,detailed,Funeral Attendants,39-4020
+39-4030,broad,"Morticians, Undertakers, and Funeral Directors",39-4000
+39-4031,detailed,"Morticians, Undertakers, and Funeral Directors",39-4030
+39-5000,minor,Personal Appearance Workers,39-0000
+39-5010,broad,"Barbers, Hairdressers, Hairstylists and Cosmetologists",39-5000
+39-5011,detailed,Barbers,39-5010
+39-5012,detailed,"Hairdressers, Hairstylists, and Cosmetologists",39-5010
+39-5090,broad,Miscellaneous Personal Appearance Workers,39-5000
+39-5091,detailed,"Makeup Artists, Theatrical and Performance",39-5090
+39-5092,detailed,Manicurists and Pedicurists,39-5090
+39-5093,detailed,Shampooers,39-5090
+39-5094,detailed,Skincare Specialists,39-5090
+39-6000,minor,"Baggage Porters, Bellhops, and Concierges",39-0000
+39-6010,broad,"Baggage Porters, Bellhops, and Concierges",39-6000
+39-6011,detailed,Baggage Porters and Bellhops,39-6010
+39-6012,detailed,Concierges,39-6010
+39-7000,minor,Tour and Travel Guides,39-0000
+39-7010,broad,Tour and Travel Guides,39-7000
+39-7011,detailed,Tour Guides and Escorts,39-7010
+39-7012,detailed,Travel Guides,39-7010
+39-9000,minor,Other Personal Care and Service Workers,39-0000
+39-9010,broad,Childcare Workers,39-9000
+39-9011,detailed,Childcare Workers,39-9010
+39-9020,broad,Personal Care Aides,39-9000
+39-9021,detailed,Personal Care Aides,39-9020
+39-9030,broad,Recreation and Fitness Workers,39-9000
+39-9031,detailed,Fitness Trainers and Aerobics Instructors,39-9030
+39-9032,detailed,Recreation Workers,39-9030
+39-9040,broad,Residential Advisors,39-9000
+39-9041,detailed,Residential Advisors,39-9040
+39-9090,broad,Miscellaneous Personal Care and Service Workers,39-9000
+39-9099,detailed,"Personal Care and Service Workers, All Other",39-9090
+41-0000,major,Sales and Related Occupations,
+41-1000,minor,Supervisors of Sales Workers,41-0000
+41-1010,broad,First-Line Supervisors of Sales Workers,41-1000
+41-1011,detailed,First-Line Supervisors of Retail Sales Workers,41-1010
+41-1012,detailed,First-Line Supervisors of Non-Retail Sales Workers,41-1010
+41-2000,minor,Retail Sales Workers,41-0000
+41-2010,broad,Cashiers,41-2000
+41-2011,detailed,Cashiers,41-2010
+41-2012,detailed,Gaming Change Persons and Booth Cashiers,41-2010
+41-2020,broad,Counter and Rental Clerks and Parts Salespersons,41-2000
+41-2021,detailed,Counter and Rental Clerks,41-2020
+41-2022,detailed,Parts Salespersons,41-2020
+41-2030,broad,Retail Salespersons,41-2000
+41-2031,detailed,Retail Salespersons,41-2030
+41-3000,minor,"Sales Representatives, Services",41-0000
+41-3010,broad,Advertising Sales Agents,41-3000
+41-3011,detailed,Advertising Sales Agents,41-3010
+41-3020,broad,Insurance Sales Agents,41-3000
+41-3021,detailed,Insurance Sales Agents,41-3020
+41-3030,broad,"Securities, Commodities, and Financial Services Sales Agents",41-3000
+41-3031,detailed,"Securities, Commodities, and Financial Services Sales Agents",41-3030
+41-3040,broad,Travel Agents,41-3000
+41-3041,detailed,Travel Agents,41-3040
+41-3090,broad,"Miscellaneous Sales Representatives, Services",41-3000
+41-3099,detailed,"Sales Representatives, Services, All Other",41-3090
+41-4000,minor,"Sales Representatives, Wholesale and Manufacturing",41-0000
+41-4010,broad,"Sales Representatives, Wholesale and Manufacturing",41-4000
+41-4011,detailed,"Sales Representatives, Wholesale and Manufacturing, Technical and Scientific Products",41-4010
+41-4012,detailed,"Sales Representatives, Wholesale and Manufacturing, Except Technical and Scientific Products",41-4010
+41-9000,minor,Other Sales and Related Workers,41-0000
+41-9010,broad,"Models, Demonstrators, and Product Promoters",41-9000
+41-9011,detailed,Demonstrators and Product Promoters,41-9010
+41-9012,detailed,Models,41-9010
+41-9020,broad,Real Estate Brokers and Sales Agents,41-9000
+41-9021,detailed,Real Estate Brokers,41-9020
+41-9022,detailed,Real Estate Sales Agents,41-9020
+41-9030,broad,Sales Engineers,41-9000
+41-9031,detailed,Sales Engineers,41-9030
+41-9040,broad,Telemarketers,41-9000
+41-9041,detailed,Telemarketers,41-9040
+41-9090,broad,Miscellaneous Sales and Related Workers,41-9000
+41-9091,detailed,"Door-to-Door Sales Workers, News and Street Vendors, and Related Workers",41-9090
+41-9099,detailed,"Sales and Related Workers, All Other",41-9090
+43-0000,major,Office and Administrative Support Occupations,
+43-1000,minor,Supervisors of Office and Administrative Support Workers,43-0000
+43-1010,broad,First-Line Supervisors of Office and Administrative Support Workers,43-1000
+43-1011,detailed,First-Line Supervisors of Office and Administrative Support Workers,43-1010
+43-2000,minor,Communications Equipment Operators,43-0000
+43-2010,broad,"Switchboard Operators, Including Answering Service",43-2000
+43-2011,detailed,"Switchboard Operators, Including Answering Service",43-2010
+43-2020,broad,Telephone Operators,43-2000
+43-2021,detailed,Telephone Operators,43-2020
+43-2090,broad,Miscellaneous Communications Equipment Operators,43-2000
+43-2099,detailed,"Communications Equipment Operators, All Other",43-2090
+43-3000,minor,Financial Clerks,43-0000
+43-3010,broad,Bill and Account Collectors,43-3000
+43-3011,detailed,Bill and Account Collectors,43-3010
+43-3020,broad,Billing and Posting Clerks,43-3000
+43-3021,detailed,Billing and Posting Clerks,43-3020
+43-3030,broad,"Bookkeeping, Accounting, and Auditing Clerks",43-3000
+43-3031,detailed,"Bookkeeping, Accounting, and Auditing Clerks",43-3030
+43-3040,broad,Gaming Cage Workers,43-3000
+43-3041,detailed,Gaming Cage Workers,43-3040
+43-3050,broad,Payroll and Timekeeping Clerks,43-3000
+43-3051,detailed,Payroll and Timekeeping Clerks,43-3050
+43-3060,broad,Procurement Clerks,43-3000
+43-3061,detailed,Procurement Clerks,43-3060
+43-3070,broad,Tellers,43-3000
+43-3071,detailed,Tellers,43-3070
+43-3090,broad,Miscellaneous Financial Clerks,43-3000
+43-3099,detailed,"Financial Clerks, All Other",43-3090
+43-4000,minor,Information and Record Clerks,43-0000
+43-4010,broad,Brokerage Clerks,43-4000
+43-4011,detailed,Brokerage Clerks,43-4010
+43-4020,broad,Correspondence Clerks,43-4000
+43-4021,detailed,Correspondence Clerks,43-4020
+43-4030,broad,"Court, Municipal, and License Clerks",43-4000
+43-4031,detailed,"Court, Municipal, and License Clerks",43-4030
+43-4040,broad,"Credit Authorizers, Checkers, and Clerks",43-4000
+43-4041,detailed,"Credit Authorizers, Checkers, and Clerks",43-4040
+43-4050,broad,Customer Service Representatives,43-4000
+43-4051,detailed,Customer Service Representatives,43-4050
+43-4060,broad,"Eligibility Interviewers, Government Programs",43-4000
+43-4061,detailed,"Eligibility Interviewers, Government Programs",43-4060
+43-4070,broad,File Clerks,43-4000
+43-4071,detailed,File Clerks,43-4070
+43-4080,broad,"Hotel, Motel, and Resort Desk Clerks",43-4000
+43-4081,detailed,"Hotel, Motel, and Resort Desk Clerks",43-4080
+43-4110,broad,"Interviewers, Except Eligibility and Loan",43-4000
+43-4111,detailed,"Interviewers, Except Eligibility and Loan",43-4110
+43-4120,broad,"Library Assistants, Clerical",43-4000
+43-4121,detailed,"Library Assistants, Clerical",43-4120
+43-4130,broad,Loan Interviewers and Clerks,43-4000
+43-4131,detailed,Loan Interviewers and Clerks,43-4130
+43-4140,broad,New Accounts Clerks,43-4000
+43-4141,detailed,New Accounts Clerks,43-4140
+43-4150,broad,Order Clerks,43-4000
+43-4151,detailed,Order Clerks,43-4150
+43-4160,broad,"Human Resources Assistants, Except Payroll and Timekeeping",43-4000
+43-4161,detailed,"Human Resources Assistants, Except Payroll and Timekeeping",43-4160
+43-4170,broad,Receptionists and Information Clerks,43-4000
+43-4171,detailed,Receptionists and Information Clerks,43-4170
+43-4180,broad,Reservation and Transportation Ticket Agents and Travel Clerks,43-4000
+43-4181,detailed,Reservation and Transportation Ticket Agents and Travel Clerks,43-4180
+43-4190,broad,Miscellaneous Information and Record Clerks,43-4000
+43-4199,detailed,"Information and Record Clerks, All Other",43-4190
+43-5000,minor,"Material Recording, Scheduling, Dispatching, and Distributing Workers",43-0000
+43-5010,broad,Cargo and Freight Agents,43-5000
+43-5011,detailed,Cargo and Freight Agents,43-5010
+43-5020,broad,Couriers and Messengers,43-5000
+43-5021,detailed,Couriers and Messengers,43-5020
+43-5030,broad,Dispatchers,43-5000
+43-5031,detailed,"Police, Fire, and Ambulance Dispatchers",43-5030
+43-5032,detailed,"Dispatchers, Except Police, Fire, and Ambulance",43-5030
+43-5040,broad,"Meter Readers, Utilities",43-5000
+43-5041,detailed,"Meter Readers, Utilities",43-5040
+43-5050,broad,Postal Service Workers,43-5000
+43-5051,detailed,Postal Service Clerks,43-5050
+43-5052,detailed,Postal Service Mail Carriers,43-5050
+43-5053,detailed,"Postal Service Mail Sorters, Processors, and Processing Machine Operators",43-5050
+43-5060,broad,"Production, Planning, and Expediting Clerks",43-5000
+43-5061,detailed,"Production, Planning, and Expediting Clerks",43-5060
+43-5070,broad,"Shipping, Receiving, and Traffic Clerks",43-5000
+43-5071,detailed,"Shipping, Receiving, and Traffic Clerks",43-5070
+43-5080,broad,Stock Clerks and Order Fillers,43-5000
+43-5081,detailed,Stock Clerks and Order Fillers,43-5080
+43-5110,broad,"Weighers, Measurers, Checkers, and Samplers, Recordkeeping",43-5000
+43-5111,detailed,"Weighers, Measurers, Checkers, and Samplers, Recordkeeping",43-5110
+43-6000,minor,Secretaries and Administrative Assistants,43-0000
+43-6010,broad,Secretaries and Administrative Assistants,43-6000
+43-6011,detailed,Executive Secretaries and Executive Administrative Assistants,43-6010
+43-6012,detailed,Legal Secretaries,43-6010
+43-6013,detailed,Medical Secretaries,43-6010
+43-6014,detailed,"Secretaries and Administrative Assistants, Except Legal, Medical, and Executive",43-6010
+43-9000,minor,Other Office and Administrative Support Workers,43-0000
+43-9010,broad,Computer Operators,43-9000
+43-9011,detailed,Computer Operators,43-9010
+43-9020,broad,Data Entry and Information Processing Workers,43-9000
+43-9021,detailed,Data Entry Keyers,43-9020
+43-9022,detailed,Word Processors and Typists,43-9020
+43-9030,broad,Desktop Publishers,43-9000
+43-9031,detailed,Desktop Publishers,43-9030
+43-9040,broad,Insurance Claims and Policy Processing Clerks,43-9000
+43-9041,detailed,Insurance Claims and Policy Processing Clerks,43-9040
+43-9050,broad,"Mail Clerks and Mail Machine Operators, Except Postal Service",43-9000
+43-9051,detailed,"Mail Clerks and Mail Machine Operators, Except Postal Service",43-9050
+43-9060,broad,"Office Clerks, General",43-9000
+43-9061,detailed,"Office Clerks, General",43-9060
+43-9070,broad,"Office Machine Operators, Except Computer",43-9000
+43-9071,detailed,"Office Machine Operators, Except Computer",43-9070
+43-9080,broad,Proofreaders and Copy Markers,43-9000
+43-9081,detailed,Proofreaders and Copy Markers,43-9080
+43-9110,broad,Statistical Assistants,43-9000
+43-9111,detailed,Statistical Assistants,43-9110
+43-9190,broad,Miscellaneous Office and Administrative Support Workers,43-9000
+43-9199,detailed,"Office and Administrative Support Workers, All Other",43-9190
+45-0000,major,"Farming, Fishing, and Forestry Occupations",
+45-1000,minor,"Supervisors of Farming, Fishing, and Forestry Workers",45-0000
+45-1010,broad,"First-Line Supervisors of Farming, Fishing, and Forestry Workers",45-1000
+45-1011,detailed,"First-Line Supervisors of Farming, Fishing, and Forestry Workers",45-1010
+45-2000,minor,Agricultural Workers,45-0000
+45-2010,broad,Agricultural Inspectors,45-2000
+45-2011,detailed,Agricultural Inspectors,45-2010
+45-2020,broad,Animal Breeders,45-2000
+45-2021,detailed,Animal Breeders,45-2020
+45-2040,broad,"Graders and Sorters, Agricultural Products",45-2000
+45-2041,detailed,"Graders and Sorters, Agricultural Products",45-2040
+45-2090,broad,Miscellaneous Agricultural Workers,45-2000
+45-2091,detailed,Agricultural Equipment Operators,45-2090
+45-2092,detailed,"Farmworkers and Laborers, Crop, Nursery, and Greenhouse",45-2090
+45-2093,detailed,"Farmworkers, Farm, Ranch, and Aquacultural Animals",45-2090
+45-2099,detailed,"Agricultural Workers, All Other",45-2090
+45-3000,minor,Fishing and Hunting Workers,45-0000
+45-3010,broad,Fishers and Related Fishing Workers,45-3000
+45-3011,detailed,Fishers and Related Fishing Workers,45-3010
+45-3020,broad,Hunters and Trappers,45-3000
+45-3021,detailed,Hunters and Trappers,45-3020
+45-4000,minor,"Forest, Conservation, and Logging Workers",45-0000
+45-4010,broad,Forest and Conservation Workers,45-4000
+45-4011,detailed,Forest and Conservation Workers,45-4010
+45-4020,broad,Logging Workers,45-4000
+45-4021,detailed,Fallers,45-4020
+45-4022,detailed,Logging Equipment Operators,45-4020
+45-4023,detailed,Log Graders and Scalers,45-4020
+45-4029,detailed,"Logging Workers, All Other",45-4020
+47-0000,major,Construction and Extraction Occupations,
+47-1000,minor,Supervisors of Construction and Extraction Workers,47-0000
+47-1010,broad,First-Line Supervisors of Construction Trades and Extraction Workers,47-1000
+47-1011,detailed,First-Line Supervisors of Construction Trades and Extraction Workers,47-1010
+47-2000,minor,Construction Trades Workers,47-0000
+47-2010,broad,Boilermakers,47-2000
+47-2011,detailed,Boilermakers,47-2010
+47-2020,broad,"Brickmasons, Blockmasons, and Stonemasons",47-2000
+47-2021,detailed,Brickmasons and Blockmasons,47-2020
+47-2022,detailed,Stonemasons,47-2020
+47-2030,broad,Carpenters,47-2000
+47-2031,detailed,Carpenters,47-2030
+47-2040,broad,"Carpet, Floor, and Tile Installers and Finishers",47-2000
+47-2041,detailed,Carpet Installers,47-2040
+47-2042,detailed,"Floor Layers, Except Carpet, Wood, and Hard Tiles",47-2040
+47-2043,detailed,Floor Sanders and Finishers,47-2040
+47-2044,detailed,Tile and Marble Setters,47-2040
+47-2050,broad,"Cement Masons, Concrete Finishers, and Terrazzo Workers",47-2000
+47-2051,detailed,Cement Masons and Concrete Finishers,47-2050
+47-2053,detailed,Terrazzo Workers and Finishers,47-2050
+47-2060,broad,Construction Laborers,47-2000
+47-2061,detailed,Construction Laborers,47-2060
+47-2070,broad,Construction Equipment Operators,47-2000
+47-2071,detailed,"Paving, Surfacing, and Tamping Equipment Operators",47-2070
+47-2072,detailed,Pile-Driver Operators,47-2070
+47-2073,detailed,Operating Engineers and Other Construction Equipment Operators,47-2070
+47-2080,broad,"Drywall Installers, Ceiling Tile Installers, and Tapers",47-2000
+47-2081,detailed,Drywall and Ceiling Tile Installers,47-2080
+47-2082,detailed,Tapers,47-2080
+47-2110,broad,Electricians,47-2000
+47-2111,detailed,Electricians,47-2110
+47-2120,broad,Glaziers,47-2000
+47-2121,detailed,Glaziers,47-2120
+47-2130,broad,Insulation Workers,47-2000
+47-2131,detailed,"Insulation Workers, Floor, Ceiling, and Wall",47-2130
+47-2132,detailed,"Insulation Workers, Mechanical",47-2130
+47-2140,broad,Painters and Paperhangers,47-2000
+47-2141,detailed,"Painters, Construction and Maintenance",47-2140
+47-2142,detailed,Paperhangers,47-2140
+47-2150,broad,"Pipelayers, Plumbers, Pipefitters, and Steamfitters",47-2000
+47-2151,detailed,Pipelayers,47-2150
+47-2152,detailed,"Plumbers, Pipefitters, and Steamfitters",47-2150
+47-2160,broad,Plasterers and Stucco Masons,47-2000
+47-2161,detailed,Plasterers and Stucco Masons,47-2160
+47-2170,broad,Reinforcing Iron and Rebar Workers,47-2000
+47-2171,detailed,Reinforcing Iron and Rebar Workers,47-2170
+47-2180,broad,Roofers,47-2000
+47-2181,detailed,Roofers,47-2180
+47-2210,broad,Sheet Metal Workers,47-2000
+47-2211,detailed,Sheet Metal Workers,47-2210
+47-2220,broad,Structural Iron and Steel Workers,47-2000
+47-2221,detailed,Structural Iron and Steel Workers,47-2220
+47-2230,broad,Solar Photovoltaic Installers,47-2000
+47-2231,detailed,Solar Photovoltaic Installers,47-2230
+47-3000,minor,"Helpers, Construction Trades",47-0000
+47-3010,broad,"Helpers, Construction Trades",47-3000
+47-3011,detailed,"Helpers--Brickmasons, Blockmasons, Stonemasons, and Tile and Marble Setters",47-3010
+47-3012,detailed,Helpers--Carpenters,47-3010
+47-3013,detailed,Helpers--Electricians,47-3010
+47-3014,detailed,"Helpers--Painters, Paperhangers, Plasterers, and Stucco Masons",47-3010
+47-3015,detailed,"Helpers--Pipelayers, Plumbers, Pipefitters, and Steamfitters",47-3010
+47-3016,detailed,Helpers--Roofers,47-3010
+47-3019,detailed,"Helpers, Construction Trades, All Other",47-3010
+47-4000,minor,Other Construction and Related Workers,47-0000
+47-4010,broad,Construction and Building Inspectors,47-4000
+47-4011,detailed,Construction and Building Inspectors,47-4010
+47-4020,broad,Elevator Installers and Repairers,47-4000
+47-4021,detailed,Elevator Installers and Repairers,47-4020
+47-4030,broad,Fence Erectors,47-4000
+47-4031,detailed,Fence Erectors,47-4030
+47-4040,broad,Hazardous Materials Removal Workers,47-4000
+47-4041,detailed,Hazardous Materials Removal Workers,47-4040
+47-4050,broad,Highway Maintenance Workers,47-4000
+47-4051,detailed,Highway Maintenance Workers,47-4050
+47-4060,broad,Rail-Track Laying and Maintenance Equipment Operators,47-4000
+47-4061,detailed,Rail-Track Laying and Maintenance Equipment Operators,47-4060
+47-4070,broad,Septic Tank Servicers and Sewer Pipe Cleaners,47-4000
+47-4071,detailed,Septic Tank Servicers and Sewer Pipe Cleaners,47-4070
+47-4090,broad,Miscellaneous Construction and Related Workers,47-4000
+47-4091,detailed,Segmental Pavers,47-4090
+47-4099,detailed,"Construction and Related Workers, All Other",47-4090
+47-5000,minor,Extraction Workers,47-0000
+47-5010,broad,"Derrick, Rotary Drill, and Service Unit Operators, Oil, Gas, and Mining",47-5000
+47-5011,detailed,"Derrick Operators, Oil and Gas",47-5010
+47-5012,detailed,"Rotary Drill Operators, Oil and Gas",47-5010
+47-5013,detailed,"Service Unit Operators, Oil, Gas, and Mining",47-5010
+47-5020,broad,"Earth Drillers, Except Oil and Gas",47-5000
+47-5021,detailed,"Earth Drillers, Except Oil and Gas",47-5020
+47-5030,broad,"Explosives Workers, Ordnance Handling Experts, and Blasters",47-5000
+47-5031,detailed,"Explosives Workers, Ordnance Handling Experts, and Blasters",47-5030
+47-5040,broad,Mining Machine Operators,47-5000
+47-5041,detailed,Continuous Mining Machine Operators,47-5040
+47-5042,detailed,Mine Cutting and Channeling Machine Operators,47-5040
+47-5049,detailed,"Mining Machine Operators, All Other",47-5040
+47-5050,broad,"Rock Splitters, Quarry",47-5000
+47-5051,detailed,"Rock Splitters, Quarry",47-5050
+47-5060,broad,"Roof Bolters, Mining",47-5000
+47-5061,detailed,"Roof Bolters, Mining",47-5060
+47-5070,broad,"Roustabouts, Oil and Gas",47-5000
+47-5071,detailed,"Roustabouts, Oil and Gas",47-5070
+47-5080,broad,Helpers--Extraction Workers,47-5000
+47-5081,detailed,Helpers--Extraction Workers,47-5080
+47-5090,broad,Miscellaneous Extraction Workers,47-5000
+47-5099,detailed,"Extraction Workers, All Other",47-5090
+49-0000,major,"Installation, Maintenance, and Repair Occupations",
+49-1000,minor,"Supervisors of Installation, Maintenance, and Repair Workers",49-0000
+49-1010,broad,"First-Line Supervisors of Mechanics, Installers, and Repairers",49-1000
+49-1011,detailed,"First-Line Supervisors of Mechanics, Installers, and Repairers",49-1010
+49-2000,minor,"Electrical and Electronic Equipment Mechanics, Installers, and Repairers",49-0000
+49-2010,broad,"Computer, Automated Teller, and Office Machine Repairers",49-2000
+49-2011,detailed,"Computer, Automated Teller, and Office Machine Repairers",49-2010
+49-2020,broad,Radio and Telecommunications Equipment Installers and Repairers,49-2000
+49-2021,detailed,"Radio, Cellular, and Tower Equipment Installers and Repairs",49-2020
+49-2022,detailed,"Telecommunications Equipment Installers and Repairers, Except Line Installers",49-2020
+49-2090,broad,"Miscellaneous Electrical and Electronic Equipment Mechanics, Installers, and Repairers",49-2000
+49-2091,detailed,Avionics Technicians,49-2090
+49-2092,detailed,"Electric Motor, Power Tool, and Related Repairers",49-2090
+49-2093,detailed,"Electrical and Electronics Installers and Repairers, Transportation Equipment",49-2090
+49-2094,detailed,"Electrical and Electronics Repairers, Commercial and Industrial Equipment",49-2090
+49-2095,detailed,"Electrical and Electronics Repairers, Powerhouse, Substation, and Relay",49-2090
+49-2096,detailed,"Electronic Equipment Installers and Repairers, Motor Vehicles",49-2090
+49-2097,detailed,Electronic Home Entertainment Equipment Installers and Repairers,49-2090
+49-2098,detailed,Security and Fire Alarm Systems Installers,49-2090
+49-3000,minor,"Vehicle and Mobile Equipment Mechanics, Installers, and Repairers",49-0000
+49-3010,broad,Aircraft Mechanics and Service Technicians,49-3000
+49-3011,detailed,Aircraft Mechanics and Service Technicians,49-3010
+49-3020,broad,Automotive Technicians and Repairers,49-3000
+49-3021,detailed,Automotive Body and Related Repairers,49-3020
+49-3022,detailed,Automotive Glass Installers and Repairers,49-3020
+49-3023,detailed,Automotive Service Technicians and Mechanics,49-3020
+49-3030,broad,Bus and Truck Mechanics and Diesel Engine Specialists,49-3000
+49-3031,detailed,Bus and Truck Mechanics and Diesel Engine Specialists,49-3030
+49-3040,broad,Heavy Vehicle and Mobile Equipment Service Technicians and Mechanics,49-3000
+49-3041,detailed,Farm Equipment Mechanics and Service Technicians,49-3040
+49-3042,detailed,"Mobile Heavy Equipment Mechanics, Except Engines",49-3040
+49-3043,detailed,Rail Car Repairers,49-3040
+49-3050,broad,Small Engine Mechanics,49-3000
+49-3051,detailed,Motorboat Mechanics and Service Technicians,49-3050
+49-3052,detailed,Motorcycle Mechanics,49-3050
+49-3053,detailed,Outdoor Power Equipment and Other Small Engine Mechanics,49-3050
+49-3090,broad,"Miscellaneous Vehicle and Mobile Equipment Mechanics, Installers, and Repairers",49-3000
+49-3091,detailed,Bicycle Repairers,49-3090
+49-3092,detailed,Recreational Vehicle Service Technicians,49-3090
+49-3093,detailed,Tire Repairers and Changers,49-3090
+49-9000,minor,"Other Installation, Maintenance, and Repair Occupations",49-0000
+49-9010,broad,Control and Valve Installers and Repairers,49-9000
+49-9011,detailed,Mechanical Door Repairers,49-9010
+49-9012,detailed,"Control and Valve Installers and Repairers, Except Mechanical Door",49-9010
+49-9020,broad,"Heating, Air Conditioning, and Refrigeration Mechanics and Installers",49-9000
+49-9021,detailed,"Heating, Air Conditioning, and Refrigeration Mechanics and Installers",49-9020
+49-9030,broad,Home Appliance Repairers,49-9000
+49-9031,detailed,Home Appliance Repairers,49-9030
+49-9040,broad,"Industrial Machinery Installation, Repair, and Maintenance Workers",49-9000
+49-9041,detailed,Industrial Machinery Mechanics,49-9040
+49-9043,detailed,"Maintenance Workers, Machinery",49-9040
+49-9044,detailed,Millwrights,49-9040
+49-9045,detailed,"Refractory Materials Repairers, Except Brickmasons",49-9040
+49-9050,broad,Line Installers and Repairers,49-9000
+49-9051,detailed,Electrical Power-Line Installers and Repairers,49-9050
+49-9052,detailed,Telecommunications Line Installers and Repairers,49-9050
+49-9060,broad,Precision Instrument and Equipment Repairers,49-9000
+49-9061,detailed,Camera and Photographic Equipment Repairers,49-9060
+49-9062,detailed,Medical Equipment Repairers,49-9060
+49-9063,detailed,Musical Instrument Repairers and Tuners,49-9060
+49-9064,detailed,Watch Repairers,49-9060
+49-9069,detailed,"Precision Instrument and Equipment Repairers, All Other",49-9060
+49-9070,broad,"Maintenance and Repair Workers, General",49-9000
+49-9071,detailed,"Maintenance and Repair Workers, General",49-9070
+49-9080,broad,Wind Turbine Service Technicians,49-9000
+49-9081,detailed,Wind Turbine Service Technicians,49-9080
+49-9090,broad,"Miscellaneous Installation, Maintenance, and Repair Workers",49-9000
+49-9091,detailed,"Coin, Vending, and Amusement Machine Servicers and Repairers",49-9090
+49-9092,detailed,Commercial Divers,49-9090
+49-9093,detailed,"Fabric Menders, Except Garment",49-9090
+49-9094,detailed,Locksmiths and Safe Repairers,49-9090
+49-9095,detailed,Manufactured Building and Mobile Home Installers,49-9090
+49-9096,detailed,Riggers,49-9090
+49-9097,detailed,Signal and Track Switch Repairers,49-9090
+49-9098,detailed,"Helpers--Installation, Maintenance, and Repair Workers",49-9090
+49-9099,detailed,"Installation, Maintenance, and Repair Workers, All Other",49-9090
+51-0000,major,Production Occupations,
+51-1000,minor,Supervisors of Production Workers,51-0000
+51-1010,broad,First-Line Supervisors of Production and Operating Workers,51-1000
+51-1011,detailed,First-Line Supervisors of Production and Operating Workers,51-1010
+51-2000,minor,Assemblers and Fabricators,51-0000
+51-2010,broad,"Aircraft Structure, Surfaces, Rigging, and Systems Assemblers",51-2000
+51-2011,detailed,"Aircraft Structure, Surfaces, Rigging, and Systems Assemblers",51-2010
+51-2020,broad,"Electrical, Electronics, and Electromechanical Assemblers",51-2000
+51-2021,detailed,"Coil Winders, Tapers, and Finishers",51-2020
+51-2022,detailed,Electrical and Electronic Equipment Assemblers,51-2020
+51-2023,detailed,Electromechanical Equipment Assemblers,51-2020
+51-2030,broad,Engine and Other Machine Assemblers,51-2000
+51-2031,detailed,Engine and Other Machine Assemblers,51-2030
+51-2040,broad,Structural Metal Fabricators and Fitters,51-2000
+51-2041,detailed,Structural Metal Fabricators and Fitters,51-2040
+51-2090,broad,Miscellaneous Assemblers and Fabricators,51-2000
+51-2091,detailed,Fiberglass Laminators and Fabricators,51-2090
+51-2092,detailed,Team Assemblers,51-2090
+51-2093,detailed,Timing Device Assemblers and Adjusters,51-2090
+51-2099,detailed,"Assemblers and Fabricators, All Other",51-2090
+51-3000,minor,Food Processing Workers,51-0000
+51-3010,broad,Bakers,51-3000
+51-3011,detailed,Bakers,51-3010
+51-3020,broad,"Butchers and Other Meat, Poultry, and Fish Processing Workers",51-3000
+51-3021,detailed,Butchers and Meat Cutters,51-3020
+51-3022,detailed,"Meat, Poultry, and Fish Cutters and Trimmers",51-3020
+51-3023,detailed,Slaughterers and Meat Packers,51-3020
+51-3090,broad,Miscellaneous Food Processing Workers,51-3000
+51-3091,detailed,"Food and Tobacco Roasting, Baking, and Drying Machine Operators and Tenders",51-3090
+51-3092,detailed,Food Batchmakers,51-3090
+51-3093,detailed,Food Cooking Machine Operators and Tenders,51-3090
+51-3099,detailed,"Food Processing Workers, All Other",51-3090
+51-4000,minor,Metal Workers and Plastic Workers,51-0000
+51-4010,broad,Computer Control Programmers and Operators,51-4000
+51-4011,detailed,"Computer-Controlled Machine Tool Operators, Metal and Plastic",51-4010
+51-4012,detailed,"Computer Numerically Controlled Machine Tool Programmers, Metal and Plastic",51-4010
+51-4020,broad,"Forming Machine Setters, Operators, and Tenders, Metal and Plastic",51-4000
+51-4021,detailed,"Extruding and Drawing Machine Setters, Operators, and Tenders, Metal and Plastic",51-4020
+51-4022,detailed,"Forging Machine Setters, Operators, and Tenders, Metal and Plastic",51-4020
+51-4023,detailed,"Rolling Machine Setters, Operators, and Tenders, Metal and Plastic",51-4020
+51-4030,broad,"Machine Tool Cutting Setters, Operators, and Tenders, Metal and Plastic",51-4000
+51-4031,detailed,"Cutting, Punching, and Press Machine Setters, Operators, and Tenders, Metal and Plastic",51-4030
+51-4032,detailed,"Drilling and Boring Machine Tool Setters, Operators, and Tenders, Metal and Plastic",51-4030
+51-4033,detailed,"Grinding, Lapping, Polishing, and Buffing Machine Tool Setters, Operators, and Tenders, Metal and Plastic",51-4030
+51-4034,detailed,"Lathe and Turning Machine Tool Setters, Operators, and Tenders, Metal and Plastic",51-4030
+51-4035,detailed,"Milling and Planing Machine Setters, Operators, and Tenders, Metal and Plastic",51-4030
+51-4040,broad,Machinists,51-4000
+51-4041,detailed,Machinists,51-4040
+51-4050,broad,"Metal Furnace Operators, Tenders, Pourers, and Casters",51-4000
+51-4051,detailed,Metal-Refining Furnace Operators and Tenders,51-4050
+51-4052,detailed,"Pourers and Casters, Metal",51-4050
+51-4060,broad,"Model Makers and Patternmakers, Metal and Plastic",51-4000
+51-4061,detailed,"Model Makers, Metal and Plastic",51-4060
+51-4062,detailed,"Patternmakers, Metal and Plastic",51-4060
+51-4070,broad,"Molders and Molding Machine Setters, Operators, and Tenders, Metal and Plastic",51-4000
+51-4071,detailed,Foundry Mold and Coremakers,51-4070
+51-4072,detailed,"Molding, Coremaking, and Casting Machine Setters, Operators, and Tenders, Metal and Plastic",51-4070
+51-4080,broad,"Multiple Machine Tool Setters, Operators, and Tenders, Metal and Plastic",51-4000
+51-4081,detailed,"Multiple Machine Tool Setters, Operators, and Tenders, Metal and Plastic",51-4080
+51-4110,broad,Tool and Die Makers,51-4000
+51-4111,detailed,Tool and Die Makers,51-4110
+51-4120,broad,"Welding, Soldering, and Brazing Workers",51-4000
+51-4121,detailed,"Welders, Cutters, Solderers, and Brazers",51-4120
+51-4122,detailed,"Welding, Soldering, and Brazing Machine Setters, Operators, and Tenders",51-4120
+51-4190,broad,Miscellaneous Metal Workers and Plastic Workers,51-4000
+51-4191,detailed,"Heat Treating Equipment Setters, Operators, and Tenders, Metal and Plastic",51-4190
+51-4192,detailed,"Layout Workers, Metal and Plastic",51-4190
+51-4193,detailed,"Plating and Coating Machine Setters, Operators, and Tenders, Metal and Plastic",51-4190
+51-4194,detailed,"Tool Grinders, Filers, and Sharpeners",51-4190
+51-4199,detailed,"Metal Workers and Plastic Workers, All Other",51-4190
+51-5100,minor,Printing Workers,51-0000
+51-5110,broad,Printing Workers,51-5100
+51-5111,detailed,Prepress Technicians and Workers,51-5110
+51-5112,detailed,Printing Press Operators,51-5110
+51-5113,detailed,Print Binding and Finishing Workers,51-5110
+51-6000,minor,"Textile, Apparel, and Furnishings Workers",51-0000
+51-6010,broad,Laundry and Dry-Cleaning Workers,51-6000
+51-6011,detailed,Laundry and Dry-Cleaning Workers,51-6010
+51-6020,broad,"Pressers, Textile, Garment, and Related Materials",51-6000
+51-6021,detailed,"Pressers, Textile, Garment, and Related Materials",51-6020
+51-6030,broad,Sewing Machine Operators,51-6000
+51-6031,detailed,Sewing Machine Operators,51-6030
+51-6040,broad,Shoe and Leather Workers,51-6000
+51-6041,detailed,Shoe and Leather Workers and Repairers,51-6040
+51-6042,detailed,Shoe Machine Operators and Tenders,51-6040
+51-6050,broad,"Tailors, Dressmakers, and Sewers",51-6000
+51-6051,detailed,"Sewers, Hand",51-6050
+51-6052,detailed,"Tailors, Dressmakers, and Custom Sewers",51-6050
+51-6060,broad,"Textile Machine Setters, Operators, and Tenders",51-6000
+51-6061,detailed,Textile Bleaching and Dyeing Machine Operators and Tenders,51-6060
+51-6062,detailed,"Textile Cutting Machine Setters, Operators, and Tenders",51-6060
+51-6063,detailed,"Textile Knitting and Weaving Machine Setters, Operators, and Tenders",51-6060
+51-6064,detailed,"Textile Winding, Twisting, and Drawing Out Machine Setters, Operators, and Tenders",51-6060
+51-6090,broad,"Miscellaneous Textile, Apparel, and Furnishings Workers",51-6000
+51-6091,detailed,"Extruding and Forming Machine Setters, Operators, and Tenders, Synthetic and Glass Fibers",51-6090
+51-6092,detailed,Fabric and Apparel Patternmakers,51-6090
+51-6093,detailed,Upholsterers,51-6090
+51-6099,detailed,"Textile, Apparel, and Furnishings Workers, All Other",51-6090
+51-7000,minor,Woodworkers,51-0000
+51-7010,broad,Cabinetmakers and Bench Carpenters,51-7000
+51-7011,detailed,Cabinetmakers and Bench Carpenters,51-7010
+51-7020,broad,Furniture Finishers,51-7000
+51-7021,detailed,Furniture Finishers,51-7020
+51-7030,broad,"Model Makers and Patternmakers, Wood",51-7000
+51-7031,detailed,"Model Makers, Wood",51-7030
+51-7032,detailed,"Patternmakers, Wood",51-7030
+51-7040,broad,"Woodworking Machine Setters, Operators, and Tenders",51-7000
+51-7041,detailed,"Sawing Machine Setters, Operators, and Tenders, Wood",51-7040
+51-7042,detailed,"Woodworking Machine Setters, Operators, and Tenders, Except Sawing",51-7040
+51-7090,broad,Miscellaneous Woodworkers,51-7000
+51-7099,detailed,"Woodworkers, All Other",51-7090
+51-8000,minor,Plant and System Operators,51-0000
+51-8010,broad,"Power Plant Operators, Distributors, and Dispatchers",51-8000
+51-8011,detailed,Nuclear Power Reactor Operators,51-8010
+51-8012,detailed,Power Distributors and Dispatchers,51-8010
+51-8013,detailed,Power Plant Operators,51-8010
+51-8020,broad,Stationary Engineers and Boiler Operators,51-8000
+51-8021,detailed,Stationary Engineers and Boiler Operators,51-8020
+51-8030,broad,Water and Wastewater Treatment Plant and System Operators,51-8000
+51-8031,detailed,Water and Wastewater Treatment Plant and System Operators,51-8030
+51-8090,broad,Miscellaneous Plant and System Operators,51-8000
+51-8091,detailed,Chemical Plant and System Operators,51-8090
+51-8092,detailed,Gas Plant Operators,51-8090
+51-8093,detailed,"Petroleum Pump System Operators, Refinery Operators, and Gaugers",51-8090
+51-8099,detailed,"Plant and System Operators, All Other",51-8090
+51-9000,minor,Other Production Occupations,51-0000
+51-9010,broad,"Chemical Processing Machine Setters, Operators, and Tenders",51-9000
+51-9011,detailed,Chemical Equipment Operators and Tenders,51-9010
+51-9012,detailed,"Separating, Filtering, Clarifying, Precipitating, and Still Machine Setters, Operators, and Tenders",51-9010
+51-9020,broad,"Crushing, Grinding, Polishing, Mixing, and Blending Workers",51-9000
+51-9021,detailed,"Crushing, Grinding, and Polishing Machine Setters, Operators, and Tenders",51-9020
+51-9022,detailed,"Grinding and Polishing Workers, Hand",51-9020
+51-9023,detailed,"Mixing and Blending Machine Setters, Operators, and Tenders",51-9020
+51-9030,broad,Cutting Workers,51-9000
+51-9031,detailed,"Cutters and Trimmers, Hand",51-9030
+51-9032,detailed,"Cutting and Slicing Machine Setters, Operators, and Tenders",51-9030
+51-9040,broad,"Extruding, Forming, Pressing, and Compacting Machine Setters, Operators, and Tenders",51-9000
+51-9041,detailed,"Extruding, Forming, Pressing, and Compacting Machine Setters, Operators, and Tenders",51-9040
+51-9050,broad,"Furnace, Kiln, Oven, Drier, and Kettle Operators and Tenders",51-9000
+51-9051,detailed,"Furnace, Kiln, Oven, Drier, and Kettle Operators and Tenders",51-9050
+51-9060,broad,"Inspectors, Testers, Sorters, Samplers, and Weighers",51-9000
+51-9061,detailed,"Inspectors, Testers, Sorters, Samplers, and Weighers",51-9060
+51-9070,broad,Jewelers and Precious Stone and Metal Workers,51-9000
+51-9071,detailed,Jewelers and Precious Stone and Metal Workers,51-9070
+51-9080,broad,"Medical, Dental, and Ophthalmic Laboratory Technicians",51-9000
+51-9081,detailed,Dental Laboratory Technicians,51-9080
+51-9082,detailed,Medical Appliance Technicians,51-9080
+51-9083,detailed,Ophthalmic Laboratory Technicians,51-9080
+51-9110,broad,Packaging and Filling Machine Operators and Tenders,51-9000
+51-9111,detailed,Packaging and Filling Machine Operators and Tenders,51-9110
+51-9120,broad,Painting Workers,51-9000
+51-9121,detailed,"Coating, Painting, and Spraying Machine Setters, Operators, and Tenders",51-9120
+51-9122,detailed,"Painters, Transportation Equipment",51-9120
+51-9123,detailed,"Painting, Coating, and Decorating Workers",51-9120
+51-9140,broad,Semiconductor Processors,51-9000
+51-9141,detailed,Semiconductor Processors,51-9140
+51-9150,broad,Photographic Process Workers and Processing Machine Operators,51-9000
+51-9151,detailed,Photographic Process Workers and Processing Machine Operators,51-9150
+51-9190,broad,Miscellaneous Production Workers,51-9000
+51-9191,detailed,Adhesive Bonding Machine Operators and Tenders,51-9190
+51-9192,detailed,"Cleaning, Washing, and Metal Pickling Equipment Operators and Tenders",51-9190
+51-9193,detailed,Cooling and Freezing Equipment Operators and Tenders,51-9190
+51-9194,detailed,Etchers and Engravers,51-9190
+51-9195,detailed,"Molders, Shapers, and Casters, Except Metal and Plastic",51-9190
+51-9196,detailed,"Paper Goods Machine Setters, Operators, and Tenders",51-9190
+51-9197,detailed,Tire Builders,51-9190
+51-9198,detailed,Helpers--Production Workers,51-9190
+51-9199,detailed,"Production Workers, All Other",51-9190
+53-0000,major,Transportation and Material Moving Occupations,
+53-1000,minor,Supervisors of Transportation and Material Moving Workers,53-0000
+53-1010,broad,Aircraft Cargo Handling Supervisors,53-1000
+53-1011,detailed,Aircraft Cargo Handling Supervisors,53-1010
+53-1020,broad,"First-Line Supervisors of Helpers, Laborers, and Material Movers, Hand",53-1000
+53-1021,detailed,"First-Line Supervisors of Helpers, Laborers, and Material Movers, Hand",53-1020
+53-1030,broad,First-Line Supervisors of Transportation and Material-Moving Machine and Vehicle Operators,53-1000
+53-1031,detailed,First-Line Supervisors of Transportation and Material-Moving Machine and Vehicle Operators,53-1030
+53-2000,minor,Air Transportation Workers,53-0000
+53-2010,broad,Aircraft Pilots and Flight Engineers,53-2000
+53-2011,detailed,"Airline Pilots, Copilots, and Flight Engineers",53-2010
+53-2012,detailed,Commercial Pilots,53-2010
+53-2020,broad,Air Traffic Controllers and Airfield Operations Specialists,53-2000
+53-2021,detailed,Air Traffic Controllers,53-2020
+53-2022,detailed,Airfield Operations Specialists,53-2020
+53-2030,broad,Flight Attendants,53-2000
+53-2031,detailed,Flight Attendants,53-2030
+53-3000,minor,Motor Vehicle Operators,53-0000
+53-3010,broad,"Ambulance Drivers and Attendants, Except Emergency Medical Technicians",53-3000
+53-3011,detailed,"Ambulance Drivers and Attendants, Except Emergency Medical Technicians",53-3010
+53-3020,broad,Bus Drivers,53-3000
+53-3021,detailed,"Bus Drivers, Transit and Intercity",53-3020
+53-3022,detailed,"Bus Drivers, School or Special Client",53-3020
+53-3030,broad,Driver/Sales Workers and Truck Drivers,53-3000
+53-3031,detailed,Driver/Sales Workers,53-3030
+53-3032,detailed,Heavy and Tractor-Trailer Truck Drivers,53-3030
+53-3033,detailed,Light Truck or Delivery Services Drivers,53-3030
+53-3040,broad,Taxi Drivers and Chauffeurs,53-3000
+53-3041,detailed,Taxi Drivers and Chauffeurs,53-3040
+53-3090,broad,Miscellaneous Motor Vehicle Operators,53-3000
+53-3099,detailed,"Motor Vehicle Operators, All Other",53-3090
+53-4000,minor,Rail Transportation Workers,53-0000
+53-4010,broad,Locomotive Engineers and Operators,53-4000
+53-4011,detailed,Locomotive Engineers,53-4010
+53-4012,detailed,Locomotive Firers,53-4010
+53-4013,detailed,"Rail Yard Engineers, Dinkey Operators, and Hostlers",53-4010
+53-4020,broad,"Railroad Brake, Signal, and Switch Operators",53-4000
+53-4021,detailed,"Railroad Brake, Signal, and Switch Operators",53-4020
+53-4030,broad,Railroad Conductors and Yardmasters,53-4000
+53-4031,detailed,Railroad Conductors and Yardmasters,53-4030
+53-4040,broad,Subway and Streetcar Operators,53-4000
+53-4041,detailed,Subway and Streetcar Operators,53-4040
+53-4090,broad,Miscellaneous Rail Transportation Workers,53-4000
+53-4099,detailed,"Rail Transportation Workers, All Other",53-4090
+53-5000,minor,Water Transportation Workers,53-0000
+53-5010,broad,Sailors and Marine Oilers,53-5000
+53-5011,detailed,Sailors and Marine Oilers,53-5010
+53-5020,broad,Ship and Boat Captains and Operators,53-5000
+53-5021,detailed,"Captains, Mates, and Pilots of Water Vessels",53-5020
+53-5022,detailed,Motorboat Operators,53-5020
+53-5030,broad,Ship Engineers,53-5000
+53-5031,detailed,Ship Engineers,53-5030
+53-6000,minor,Other Transportation Workers,53-0000
+53-6010,broad,Bridge and Lock Tenders,53-6000
+53-6011,detailed,Bridge and Lock Tenders,53-6010
+53-6020,broad,Parking Lot Attendants,53-6000
+53-6021,detailed,Parking Lot Attendants,53-6020
+53-6030,broad,Automotive and Watercraft Service Attendants,53-6000
+53-6031,detailed,Automotive and Watercraft Service Attendants,53-6030
+53-6040,broad,Traffic Technicians,53-6000
+53-6041,detailed,Traffic Technicians,53-6040
+53-6050,broad,Transportation Inspectors,53-6000
+53-6051,detailed,Transportation Inspectors,53-6050
+53-6060,broad,"Transportation Attendants, Except Flight Attendants",53-6000
+53-6061,detailed,"Transportation Attendants, Except Flight Attendants",53-6060
+53-6090,broad,Miscellaneous Transportation Workers,53-6000
+53-6099,detailed,"Transportation Workers, All Other",53-6090
+53-7000,minor,Material Moving Workers,53-0000
+53-7010,broad,Conveyor Operators and Tenders,53-7000
+53-7011,detailed,Conveyor Operators and Tenders,53-7010
+53-7020,broad,Crane and Tower Operators,53-7000
+53-7021,detailed,Crane and Tower Operators,53-7020
+53-7030,broad,"Dredge, Excavating, and Loading Machine Operators",53-7000
+53-7031,detailed,Dredge Operators,53-7030
+53-7032,detailed,Excavating and Loading Machine and Dragline Operators,53-7030
+53-7033,detailed,"Loading Machine Operators, Underground Mining",53-7030
+53-7040,broad,Hoist and Winch Operators,53-7000
+53-7041,detailed,Hoist and Winch Operators,53-7040
+53-7050,broad,Industrial Truck and Tractor Operators,53-7000
+53-7051,detailed,Industrial Truck and Tractor Operators,53-7050
+53-7060,broad,"Laborers and Material Movers, Hand",53-7000
+53-7061,detailed,Cleaners of Vehicles and Equipment,53-7060
+53-7062,detailed,"Laborers and Freight, Stock, and Material Movers, Hand",53-7060
+53-7063,detailed,Machine Feeders and Offbearers,53-7060
+53-7064,detailed,"Packers and Packagers, Hand",53-7060
+53-7070,broad,Pumping Station Operators,53-7000
+53-7071,detailed,Gas Compressor and Gas Pumping Station Operators,53-7070
+53-7072,detailed,"Pump Operators, Except Wellhead Pumpers",53-7070
+53-7073,detailed,Wellhead Pumpers,53-7070
+53-7080,broad,Refuse and Recyclable Material Collectors,53-7000
+53-7081,detailed,Refuse and Recyclable Material Collectors,53-7080
+53-7110,broad,Mine Shuttle Car Operators,53-7000
+53-7111,detailed,Mine Shuttle Car Operators,53-7110
+53-7120,broad,"Tank Car, Truck, and Ship Loaders",53-7000
+53-7121,detailed,"Tank Car, Truck, and Ship Loaders",53-7120
+53-7190,broad,Miscellaneous Material Moving Workers,53-7000
+53-7199,detailed,"Material Moving Workers, All Other",53-7190
+55-0000,major,Military Specific Occupations,
+55-1000,minor,Military Officer Special and Tactical Operations Leaders,55-0000
+55-1010,broad,Military Officer Special and Tactical Operations Leaders,55-1000
+55-1011,detailed,Air Crew Officers,55-1010
+55-1012,detailed,Aircraft Launch and Recovery Officers,55-1010
+55-1013,detailed,Armored Assault Vehicle Officers,55-1010
+55-1014,detailed,Artillery and Missile Officers,55-1010
+55-1015,detailed,Command and Control Center Officers,55-1010
+55-1016,detailed,Infantry Officers,55-1010
+55-1017,detailed,Special Forces Officers,55-1010
+55-1019,detailed,"Military Officer Special and Tactical Operations Leaders, All Other",55-1010
+55-2000,minor,First-Line Enlisted Military Supervisors,55-0000
+55-2010,broad,First-Line Enlisted Military Supervisors,55-2000
+55-2011,detailed,First-Line Supervisors of Air Crew Members,55-2010
+55-2012,detailed,First-Line Supervisors of Weapons Specialists/Crew Members,55-2010
+55-2013,detailed,First-Line Supervisors of All Other Tactical Operations Specialists,55-2010
+55-3000,minor,Military Enlisted Tactical Operations and Air/Weapons Specialists and Crew Members,55-0000
+55-3010,broad,Military Enlisted Tactical Operations and Air/Weapons Specialists and Crew Members,55-3000
+55-3011,detailed,Air Crew Members,55-3010
+55-3012,detailed,Aircraft Launch and Recovery Specialists,55-3010
+55-3013,detailed,Armored Assault Vehicle Crew Members,55-3010
+55-3014,detailed,Artillery and Missile Crew Members,55-3010
+55-3015,detailed,Command and Control Center Specialists,55-3010
+55-3016,detailed,Infantry,55-3010
+55-3017,detailed,Radar and Sonar Technicians,55-3010
+55-3018,detailed,Special Forces,55-3010
+55-3019,detailed,"Military Enlisted Tactical Operations and Air/Weapons Specialists and Crew Members, All Other",55-3010

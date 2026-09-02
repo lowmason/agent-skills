@@ -123,7 +123,10 @@ values yields small, expected discrepancies.
 **NAICS / SOC and classification breaks.** Industry = NAICS, occupation = SOC, both revised on
 cycles (NAICS ~every 5 yr; CES uses 2022 NAICS, OEWS/CPS have their own adoption dates). A CES/SAE
 "industry code" is not always one NAICS industry. First-quarter discontinuities are often
-recoding, not economics. Record the classification vintage for any long series.
+recoding, not economics. Record the classification vintage for any long series. The
+classification systems themselves — code↔title lookups, hierarchy, and vintage concordances —
+are the `classification-codes` skill; this skill carries no code tables, so never answer a
+code↔title question from memory.
 
 **Flat-file conventions (LABSTAT).** Files live at `download.bls.gov/pub/time.series/<prefix>/`
 (`en`/downloadable for QCEW, `ce`, `jt`, `bd`, `oe`, …). Data files are `series_id | year | period
