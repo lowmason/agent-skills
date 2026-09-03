@@ -1,6 +1,8 @@
 # Skill Intake Review — `review/coding-skills`, `review/python-analytics-skills`
 
-**Date:** 2026-08-26 · **Reviewer:** Claude (Opus 5) · **Status:** recommendation, no changes made
+**Date:** 2026-08-26 · **Reviewer:** Claude (Opus 5) · **Status:** COMPLETE (retired 2026-09-02) — all three recommended adoptions shipped on 2026-08-26 and are recorded in NOTICE: the `python-module-design` rules into `clean-code` (`references/modules.md`), the JAX-generic core into `bayesian-workflow/references/jax-numerics.md`, and the ArviZ API names into `model-comparison.md`. The `polars-data-engineering` port (§5 item 4) was assessed and **not** adopted — see `specs/red-baseline-polars-join-contracts-2026-08-26.md`.
+
+> **The three `specs/red-baseline-*-2026-08-26.md` files stay in `specs/` root, not here.** They are live micro-test fixtures, not finished records: `skills/clean-code/references/modules.md` and `skills/bayesian-workflow/references/jax-numerics.md` cite them by path, and each carries a quarantine banner for future micro-tests of its skill. Moving them would break two shipped skills.
 
 Two cloned repos assessed for additions to `skills/`. Verdict: **one adopt, five harvests,
 six skips.** The binding constraint is not quality — it is the skill-listing budget.
