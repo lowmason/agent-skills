@@ -29,7 +29,8 @@
 - Test: `skills/subagent-driven-development/scripts/test_sdd_scripts.py`
 
 **Interfaces:**
-- Produces: `sdd-workspace PLAN_FILE` → prints the absolute path of `<repo-root>/.sdd/<basename-of-plan-without-.md>/`, creating it. Exits 2 on wrong argument count, a missing plan file, or a slug of `""`, `.`, or `..`.
+- Produces: `sdd-workspace PLAN_FILE` → prints the absolute path of `<repo-root>/.sdd/<basename-of-plan-without-.md>/`, creating it. Exits 2 on wrong argument count and on a plan file that is not a regular file (including a directory).
+- The slug guard rejecting `""`, `.`, and `..` sits after the file test, so it is **defensive and unreachable through normal input** — none of those three names is a regular file, so `[ -f ]` rejects them first. Keep it anyway: it is cheap, it matches upstream, and it bounds `basename` if the file test is ever reordered or relaxed. Do not write a test claiming to exercise it.
 - Produces: `task-brief PLAN_FILE TASK_NUMBER [OUTFILE]` — signature unchanged; only its internal `sdd-workspace` call gains the plan.
 - Produces: `review-package PLAN_FILE BASE HEAD [OUTFILE]` — **breaking change**, `PLAN_FILE` inserted first.
 - Produces: the self-ignoring guard stays at `<repo-root>/.sdd/.gitignore`, the parent of the per-plan directories, so one guard covers every sibling.
@@ -86,6 +87,10 @@ def test_workspace_is_stable_for_one_plan(repo):
         ([], 'usage: sdd-workspace'),
         (['plan.md', 'extra'], 'usage: sdd-workspace'),
         (['nosuch.md'], 'no such plan file'),
+        # A directory reaches the same rejection as a missing file: [ -f ]
+        # is false for both. This is the case that makes the slug guard for
+        # '.' unreachable, and it is the behavior worth pinning — a caller
+        # who passes a directory must not get a workspace named after it.
         (['.'], 'no such plan file'),
     ],
 )
@@ -199,11 +204,19 @@ In the `# ── review-package ──` section, add `repo / 'plan.md'` as the f
     result = run(REVIEW_PACKAGE, repo / 'plan.md', 'HEAD~1', 'HEAD', cwd=repo)
 ```
 
-In `test_review_package_writes_to_and_prints_the_default_workspace_path`, the expected path gains the plan directory. Find the `expected = ` line and make it:
+In `test_review_package_writes_to_and_prints_the_default_workspace_path`, the expected path gains the plan directory. That line currently reads:
+
+```python
+    expected = repo / ".sdd" / f"review-{shortbase}..{shorthead}.diff"
+```
+
+Replace it with:
 
 ```python
     expected = repo / '.sdd' / 'plan' / f'review-{shortbase}..{shorthead}.diff'
 ```
+
+`shortbase` and `shorthead` are already defined a few lines above in the same test; do not redefine them.
 
 Then add one test for the new rejection case:
 
@@ -336,12 +349,12 @@ No tests. This is skill text; per the Global Constraints an assertion that a phr
 Replace with:
 
 ````markdown
-- At skill start, run this skill's `scripts/sdd-workspace <plan-file>` (it
-  creates this plan's workspace and the self-ignoring .gitignore that covers
-  every plan's), then check for a ledger in the directory it prints:
-  `cat "$(scripts/sdd-workspace <plan-file>)/progress.md"`. Tasks listed there
-  as complete are DONE — do not re-dispatch them; resume at the first task
-  not marked complete.
+- At skill start, run this skill's `scripts/sdd-workspace <plan-file>` once and
+  keep the directory it prints — it creates this plan's workspace and the
+  self-ignoring .gitignore that covers every plan's:
+  `WORKSPACE=$(scripts/sdd-workspace <plan-file>)`. Then check for a ledger:
+  `cat "$WORKSPACE/progress.md"`. Tasks listed there as complete are DONE — do
+  not re-dispatch them; resume at the first task not marked complete.
 - The workspace is per plan, so that ledger is always this plan's. Its first
   line names the plan it belongs to; if that name is not the plan in your hand,
   stop and say so rather than resuming against it.
@@ -368,10 +381,10 @@ At the end of the Plan Completion section (`SKILL.md:217-228`), after the existi
 
 ````markdown
 When the plan-completion protocol has finished and the final review's fixes
-are merged, delete this plan's workspace: `rm -rf "$(scripts/sdd-workspace
-<plan-file>)"`. Git history is the record now. Sibling directories under
-`.sdd/` belong to other plans — leave them alone, and never `rm -rf .sdd`
-itself.
+are merged, delete this plan's workspace — the `$WORKSPACE` you resolved at
+skill start: `rm -rf "$WORKSPACE"`. Git history is the record now. Sibling
+directories under `.sdd/` belong to other plans — leave them alone, and never
+`rm -rf .sdd` itself.
 
 Order matters. The delete runs **after** the protocol, never before: the
 resolve-before-defer gate reads this run's leftovers — the ledger, unfixed
