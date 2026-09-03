@@ -8,10 +8,12 @@
 # ///
 '''Build the geographic-codes data files: interval-stamped U.S. statistical geography.
 
-Every row carries [valid_from, valid_to) so the question is always "valid at this reference
-date", never "which vintage file do I open". valid_from means one thing only: the date the code
-became valid for federal statistical products (Census effective date for county-equivalents,
-OMB bulletin date for CBSA delineations). Program adoption dates — when SAE or QCEW started
+Every county-equivalent and CBSA row carries a half-open [valid_from, valid_to) so the question
+is always "valid at this reference date", never "which vintage file do I open". (states.csv is a
+flat lookup and county_changes.csv is an event log keyed by effective_date; neither carries an
+interval, because neither needs one.) valid_from means one thing only: the date the code became
+valid for federal statistical products (Census effective date for county-equivalents, OMB
+bulletin date for CBSA delineations). Program adoption dates — when SAE or QCEW started
 publishing on a delineation — are a different clock and live in bls-data-context.
 
 Artifacts:

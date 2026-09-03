@@ -24,10 +24,12 @@ metadata:
 
 ## What this is
 
-Interval-stamped reference tables for U.S. statistical geography under `data/`. Every row
-carries `valid_from` and `valid_to`; the question is always **"valid at this reference date"**,
-never "which vintage file do I open". Sibling of `classification-codes` (NAICS/SOC), same
-architecture, same prime directive.
+Interval-stamped reference tables for U.S. statistical geography under `data/`. Every
+county-equivalent and CBSA row carries a half-open `[valid_from, valid_to)`; the question is
+always **"valid at this reference date"**, never "which vintage file do I open". (`states.csv`
+is a flat lookup and `county_changes.csv` is an event log keyed by `effective_date` — neither
+carries an interval, because neither needs one.) Sibling of `classification-codes` (NAICS/SOC),
+same architecture, same prime directive.
 
 **Prime directive: never answer a code↔name, membership, or validity question from memory, and
 never answer one without a reference date.** County-equivalents changed code or name on 16
