@@ -87,7 +87,7 @@ cd skills/classification-codes/scripts && uv run --python 3.13 --with pytest --w
 # `profile` module, but that's not why this cd's in — see the repo-wide reason above)
 cd skills/explore-data/scripts && uv run --python 3.13 --with pytest --with polars python -m pytest -q
 
-# design-architecture ADR-scaffolder tests (numbering, slugify, no-clobber) — 8 tests (stdlib only)
+# design-architecture ADR-scaffolder tests (numbering, slugify, no-clobber) — 9 tests (stdlib only)
 cd skills/design-architecture/scripts && uv run --python 3.13 --with pytest python -m pytest -q
 
 # subagent-driven-development dispatch-script tests (workspace, task-brief fences and exit

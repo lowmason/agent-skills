@@ -87,9 +87,11 @@ stack the conventions are `specs/` (active design, e.g. `alt-nfp/specs/`) plus M
   does) — keep ADRs beside the specs and plans they formalize.
 
 Name files `NNNN-kebab-slug.md` with a zero-padded sequence: `0001-record-architecture-decisions.md`,
-`0009-numpyro-jax-over-pymc-for-nowcasting.md`. The number is permanent and never reused, even
-after supersession. The optional `scripts/new_adr.py` scaffolder picks the next number and writes
-the template for you (see **Scaffolder**).
+`0009-numpyro-jax-over-pymc-for-nowcasting.md`. Treat the number as permanent and never
+reuse it, even after supersession — that is a convention you keep, not something the tooling
+enforces. The optional `scripts/new_adr.py` scaffolder picks the next number by scanning the
+directory, so it upholds the convention only while the earlier files are still there (see
+**Scaffolder**).
 
 ## ADR template
 

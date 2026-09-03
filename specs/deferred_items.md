@@ -563,12 +563,20 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       of four failures are `CalledProcessError`, never the contract assertion at
       `:65-70`. A serialization-boundary-only rename would exercise the
       silent-drift tripwire on its own terms.
-- [ ] `skills/design-architecture/scripts/new_adr.py:6` promises numbering
+- [x] `skills/design-architecture/scripts/new_adr.py:6` promises numbering
       "permanent and never reused". `test_new_adr.py` pins the gap case (delete
       `0002-`, next is still 4) but not the full-reset case: delete every file
       and `next_number` returns 1, reusing a number. That is the scenario most
       counter to the docstring's literal claim; closing it means changing
       `new_adr.py` (persist the high-water mark) or narrowing the docstring.
+      → done 2026-09-03 (/deferred quick fix): docstring narrowed rather than adding a
+      persisted counter — a state file is the wrong price for a scenario (deleting every ADR)
+      that contradicts ADR practice. The full-reset case is now pinned by a test named for
+      the real contract, that numbering derives from the directory. Two rounds were needed:
+      the first replacement still overpromised ("never reused while earlier ADRs remain on
+      disk"), which is false when only the *highest* ADR is deleted — 0001–0003 present gives
+      4, deleting just 0003 gives 3. `SKILL.md` keeps its permanence sentence, reworded as a
+      convention the author upholds rather than a guarantee the scaffolder enforces.
 - [x] `skills/subagent-driven-development/scripts/test_sdd_scripts.py` coverage
       gaps: `task-brief`'s level-termination (`hlevel($0) <= tlvl`) is exercised
       only via fenced content, with no deeper-sub-heading case (a `#### Sub`

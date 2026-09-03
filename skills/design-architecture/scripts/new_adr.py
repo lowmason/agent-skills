@@ -3,7 +3,8 @@
 
 Scans the target directory for the highest ``NNNN-`` prefix, increments it, slugifies the
 title, and writes the standard ADR template with today's date filled in. Never overwrites an
-existing file. Numbering is permanent and never reused.
+existing file. Numbering is derived from the directory on every run rather than from a stored
+counter, so deleting the highest-numbered ADR frees its number to be handed out again.
 
 Usage:
     python3 ~/.claude/skills/design-architecture/scripts/new_adr.py "Use NumPyro/JAX over PyMC for nowcasting"

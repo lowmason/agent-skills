@@ -30,10 +30,22 @@ def test_next_number_starts_at_one_for_a_missing_directory(tmp_path):
 
 
 def test_next_number_takes_the_highest_prefix_not_the_count(tmp_path):
-    """Numbering is permanent: deleting 0002 must not let 0003 be reissued."""
+    """The highest prefix wins: deleting 0002 must not let 0003 be reissued."""
     for name in ("0001-a.md", "0003-c.md", "notes.md"):
         (tmp_path / name).write_text("x")
     assert next_number(tmp_path) == 4
+
+
+def test_next_number_derives_from_the_directory_contents(tmp_path):
+    """The number comes from what is on disk, not from a stored counter, so a
+    directory emptied of every ADR restarts at 1. ADR practice keeps superseded
+    records rather than deleting them, so that directory never empties in use."""
+    (tmp_path / "0001-a.md").write_text("x")
+    (tmp_path / "0002-b.md").write_text("x")
+    assert next_number(tmp_path) == 3
+    for entry in tmp_path.iterdir():
+        entry.unlink()
+    assert next_number(tmp_path) == 1
 
 
 def test_main_writes_sequentially_numbered_files(tmp_path):
