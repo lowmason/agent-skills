@@ -89,6 +89,21 @@ digraph process {
 }
 ```
 
+**Batch small same-shape work.** When the plan lists several tasks that are
+each a small, independent edit of the same kind — the same one-line fix,
+constant change, or field addition repeated across files — do not dispatch one
+subagent per task. Compose ONE dispatch brief listing every file and its
+change, send the whole batch to a single implementer, and review its diff as
+one unit. Reserve one-dispatch-per-task for work that needs its own judgment,
+its own tests, or its own review surface.
+
+You write the batch brief yourself; `scripts/task-brief` still extracts exactly
+one task and gains no multi-task mode. That is a deliberate exception to the
+rule that task text stays out of your context: batching applies only to changes
+small enough to state in a line each, so the cost is bounded — and teaching
+`task-brief` to concatenate sections would pull full task text through your
+context for exactly the tasks that need it least.
+
 ## Pre-Flight Plan Review
 
 Before dispatching Task 1, scan the plan once for conflicts:
@@ -304,6 +319,10 @@ a ledger file, not only in todos.
 - When a task's review comes back clean, append one line to the ledger in
   the same message as your other bookkeeping:
   `Task N: complete (commits <base7>..<head7>, review clean)`.
+- A batched dispatch gets ONE ledger entry naming every task number it covered:
+  `Tasks 4-7: complete (batched; commits <base7>..<head7>, review clean)`. A
+  resuming controller reads task numbers from that line, so a batch recorded
+  under only its first task's number re-dispatches the rest.
 - The ledger is your recovery map: the commits it names exist in git even
   when your context no longer remembers creating them. After compaction,
   trust the ledger and `git log` over your own recollection.

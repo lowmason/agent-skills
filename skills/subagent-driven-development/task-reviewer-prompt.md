@@ -55,6 +55,14 @@ Subagent (task-reviewer):
     garbled, report that as a gap for the controller. Re-running the suite to
     regenerate what you failed to read is not verification — illegibility of the
     evidence is not invalidation of it.
+
+    ## Batched Dispatches
+
+    If the brief lists several files each with its own change, check the diff
+    against that list file by file: every listed file must have its corresponding
+    hunk. A listed file the diff never touches is a Missing finding, no matter how
+    clean the rest of the batch looks. Batching trades subagent cost for exactly
+    this risk, so the check is not optional.
 ```
 
 ## Full Form (no task-reviewer agent)
@@ -119,6 +127,14 @@ Subagent (general-purpose):
     garbled, report that as a gap for the controller. Re-running the suite to
     regenerate what you failed to read is not verification — illegibility of the
     evidence is not invalidation of it.
+
+    ## Batched Dispatches
+
+    If the brief lists several files each with its own change, check the diff
+    against that list file by file: every listed file must have its corresponding
+    hunk. A listed file the diff never touches is a Missing finding, no matter how
+    clean the rest of the batch looks. Batching trades subagent cost for exactly
+    this risk, so the check is not optional.
 
     ## Do Not Trust the Report
 
