@@ -28,6 +28,14 @@ fi
 plan=$1
 [ -f "$plan" ] || { echo "no such plan file: $plan" >&2; exit 2; }
 
+# Basename only: the workspace is named for the plan, not for where the plan
+# file happens to sit. Two plans sharing a basename in different directories
+# (specs/plans/7-x.md and an archived or worktree copy) therefore resolve to
+# the same .sdd/<slug>/ and share a ledger. This repo's convention that plan
+# ids are unique across specs/plans/ and specs/plans/completed/ is what makes
+# that safe; nothing here enforces it. The ledger's first line records the
+# plan path so a collision is visible rather than silent (see SKILL.md,
+# Durable Progress).
 slug=$(basename "$plan" .md)
 [ -n "$slug" ] && [ "$slug" != "." ] && [ "$slug" != ".." ] \
   || { echo "cannot derive a workspace name from: $plan" >&2; exit 2; }

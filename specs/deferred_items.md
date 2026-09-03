@@ -159,6 +159,11 @@ Robustness / edge cases:
       real conversation in the 156-conversation export reproduces it, and turn numbers are
       spec §16.4's locator currency for future captures — renumbering should be batched with
       any other numbering-affecting change, not done piecemeal outside a sequencing window.
+      → decided 2026-09-03 (/deferred): renumber now — the owner released the
+      "batch with another numbering-affecting change" condition, and no such
+      change exists among the remaining items. The condition is discharged, so
+      this joins the `distill_sessions.py` plan as ordinary planned work. Still
+      unticked: the decision is made, the work is not.
 - [x] `distill_sessions.py::_turn_date` passes a malformed but non-empty timestamp straight
       through unvalidated — e.g. `'not-a-timestamp'` slices to `'not-a-time'`, survives the
       sentinel filter added by the Task 5/6 fixes, and becomes the digest's filename date.
@@ -530,11 +535,16 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       seed, a hardcoded /Users/ path, an unvalidated join, a committed .env) and
       assertions per section. Highest cost, lowest marginal value of the five
       untested scripts.
-- [ ] Audit H4 — loose files inside skill directories: `README.md` in three
+- [x] Audit H4 — loose files inside skill directories: `README.md` in three
       skills, `writing-skills/`'s five support docs at top level while it
       prescribes `references/` for everyone else, `systematic-debugging/`'s four
       technique files plus `find-polluter.sh`. No behaviour impact; recorded as
       a finding only, confirmed at the 2026-09-03 gate.
+      → retired 2026-09-03: records a no-action finding, not work. `find skills
+      -maxdepth 2 -name '*.md' -not -name SKILL.md -not -path '*/references/*'`
+      returns 18 files across ~10 skills — broader than the three named here, and
+      each is cross-referenced by path from its SKILL.md, so normalizing them is
+      churn with no behaviour change. Accepted as the repo's layout.
 - [ ] Audit H2 — `skills/geographic-codes/scripts/build.py:210` emits 7 polars
       `FutureWarning`s through the fastexcel engine (`pl.read_excel(...).select(...)`;
       polars 2.0 changes the `from_arrow` return type). Harmless until then; the 7
@@ -614,14 +624,19 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       counts were synced in the same pass (this suite 11 → 14, design-architecture 8 → 9).
 
 ## 22-sdd-hardening — 2026-09-03
-- [ ] M1 — `skills/subagent-driven-development/scripts/test_sdd_scripts.py:89-144`:
+- [x] M1 — `skills/subagent-driven-development/scripts/test_sdd_scripts.py:89-144`:
       basename stripping is never exercised. Every workspace test passes a
       root-level plan (`plan.md`), so a bug that resolved a nested plan path
       (e.g. `specs/plans/22-x.md`) into the wrong slug — `.sdd/specs/plans/22-x/`
       instead of `.sdd/22-x/` — would still pass every existing test. Add a case
       that calls `sdd-workspace` with a plan path containing directory
       components and asserts the workspace is named from the basename alone.
-- [ ] M2 — `skills/subagent-driven-development/scripts/sdd-workspace:31`
+      → done 2026-09-03 (/deferred quick fix): added
+      `test_workspace_is_named_from_the_plan_basename_alone`, which passes the
+      relative form a controller actually types. Verified RED against a
+      deliberately broken `slug=${plan%.md}`: it produced exactly the predicted
+      `.sdd/specs/plans/22-sdd-hardening`.
+- [x] M2 — `skills/subagent-driven-development/scripts/sdd-workspace:31`
       (`slug=$(basename "$plan" .md)`): basename slugs collide across
       directories — two different plans sharing a basename in different
       directories (e.g. `specs/plans/7-x.md` and an archived or worktree copy
@@ -630,10 +645,17 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       unique across `specs/plans/` and `specs/plans/completed/`; nothing
       enforces that. Worth a one-line comment recording the assumption, not a
       behavior change.
-- [ ] M3 — `skills/subagent-driven-development/scripts/test_sdd_scripts.py`
+      → done 2026-09-03 (/deferred quick fix): comment added above
+      `sdd-workspace:31`, pointing at the ledger's `Plan:` first line as the
+      mitigation that makes a collision visible.
+- [x] M3 — `skills/subagent-driven-development/scripts/test_sdd_scripts.py`
       mixes quote styles: the lines Task 1 rewrote use single quotes (this
       repo's Python convention, CLAUDE.md), the lines it didn't touch still use
       double. Whole-file normalization pass to single quotes.
+      → done 2026-09-03 (/deferred quick fix): 128 literals converted under an
+      `ast.dump()` equivalence guard. Docstrings keep `"""` per Python
+      convention, and one literal containing an apostrophe stays double-quoted
+      rather than growing an escape.
 - [x] M5 — several sites describe `scripts/review-package` as printing "the
       path" when it actually prints `wrote <path>: N commit(s), M bytes`. Two
       say so explicitly and are confirmed misstatements:
@@ -665,7 +687,7 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       brackets were reworded to match. A grep for `printed path`, `prints it`,
       `prints the unique path`, and `path printed by` across `skills/` and
       `agents/` now returns nothing.
-- [ ] M6 — the Short Form of
+- [x] M6 — the Short Form of
       `skills/subagent-driven-development/task-reviewer-prompt.md` now ships
       the no-nested-subagent ban ("## You Do Not Dispatch Subagents") twice
       per dispatch: once inline in the form itself, once from
@@ -683,7 +705,13 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       Full Form path, used specifically when `agents/task-reviewer.md` is not
       installed and dispatch falls back to `general-purpose` — removing it
       there would silently leave that path with no ban at all.
-- [ ] M7 — `## You Do Not Dispatch Subagents` is Title Case in
+      → retired 2026-09-03: the item's own verdict is "not a defect worth
+      fixing"; it exists to warn, and the warning survives ticked. THE WARNING:
+      the inline ban at task-reviewer-prompt.md:43 (Short Form) and :115 (Full
+      Form) is the ONLY copy on the Full Form path, which runs when
+      agents/task-reviewer.md is absent and dispatch falls back to
+      general-purpose. Do not strip it as duplication.
+- [x] M7 — `## You Do Not Dispatch Subagents` is Title Case in
       `agents/task-reviewer.md` and `agents/code-reviewer.md`, both of which
       otherwise use sentence-case section headings (`## Read-only contract`,
       `## Reading the diff`, `## Do not trust the report`, etc. — single-word
@@ -698,13 +726,24 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       too, so only the two agent files' own local convention is at odds with
       it. One-word-casing fix, or accept Title Case as the convention for
       these two cross-cutting rule headings and move on.
-- [ ] M10 — the batched-dispatch ledger example in
+      → done 2026-09-03 (/deferred quick fix): resolved as per-file convention.
+      `## Batched Dispatches` → `## Batched dispatches` in agents/task-reviewer.md
+      (that file is sentence-case throughout). The ban heading KEEPS Title Case
+      in both agent files: it appears verbatim in six files as a fixed rule name.
+      Also checked and deliberately left alone — task-reviewer-prompt.md carries
+      `## Batched Dispatches` at :59 and :131, and that file is Title Case
+      throughout (`## What Was Requested`, `## Output Format`), so it is already
+      locally consistent.
+- [x] M10 — the batched-dispatch ledger example in
       `skills/subagent-driven-development/SKILL.md`'s Durable Progress section
       shows a contiguous range (`Tasks 4-7: complete (batched; commits
       <base7>..<head7>, review clean)`), but the rule it illustrates
       generalizes to any batch, including a non-contiguous one (e.g. tasks 2,
       5, and 9 batched together). The example doesn't show what notation a
       non-contiguous batch uses. Add a second example or a parenthetical.
+      → done 2026-09-03 (/deferred quick fix): SKILL.md's Durable Progress bullet
+      now states the range is shorthand for a contiguous batch, not the required
+      form, and shows `Tasks 2, 5, 9: complete (batched; …)`.
 - [x] M13 — `.sdd/task-6-report.md`'s rationale for the `review-package`
       argument-order clause claimed the spec was silent on matching
       upstream's argument order; `specs/completed/sdd-hardening.md`'s

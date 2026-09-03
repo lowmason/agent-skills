@@ -379,7 +379,10 @@ a ledger file, not only in todos.
   the same message as your other bookkeeping:
   `Task N: complete (commits <base7>..<head7>, review clean)`.
 - A batched dispatch gets ONE ledger entry naming every task number it covered:
-  `Tasks 4-7: complete (batched; commits <base7>..<head7>, review clean)`. A
+  `Tasks 4-7: complete (batched; commits <base7>..<head7>, review clean)`. The
+  range is shorthand for a contiguous batch, not the required form — a
+  non-contiguous batch lists its numbers:
+  `Tasks 2, 5, 9: complete (batched; commits <base7>..<head7>, review clean)`. A
   resuming controller reads task numbers from that line, so a batch recorded
   under only its first task's number re-dispatches the rest.
 - The ledger is your recovery map: the commits it names exist in git even

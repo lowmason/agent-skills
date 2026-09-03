@@ -53,7 +53,7 @@ garbled, report that as a gap for the controller. Re-running the suite to
 regenerate what you failed to read is not verification — illegibility of the
 evidence is not invalidation of it.
 
-## Batched Dispatches
+## Batched dispatches
 
 If the brief lists several files each with its own change, check the diff
 against that list file by file: every listed file must have its corresponding
