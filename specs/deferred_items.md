@@ -634,7 +634,7 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       mixes quote styles: the lines Task 1 rewrote use single quotes (this
       repo's Python convention, CLAUDE.md), the lines it didn't touch still use
       double. Whole-file normalization pass to single quotes.
-- [ ] M5 — several sites describe `scripts/review-package` as printing "the
+- [x] M5 — several sites describe `scripts/review-package` as printing "the
       path" when it actually prints `wrote <path>: N commit(s), M bytes`. Two
       say so explicitly and are confirmed misstatements:
       `skills/subagent-driven-development/task-reviewer-prompt.md:267`
@@ -654,6 +654,17 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       `wrote ` prefix and `: N commit(s), M bytes` suffix are not part of the
       path), so this should not sit indefinitely. Each fix is a one-line
       wording correction.
+      → done 2026-09-03, on the same branch: the File Handoffs contract now
+      states the format once and authoritatively (`wrote <path>: <N> commit(s),
+      <M> bytes`) with the instruction to take the path out of it rather than
+      paste the line, and the three placeholder definitions that implied a bare
+      path — `task-reviewer-prompt.md`'s `[DIFF_FILE]`, `code-reviewer.md`'s
+      `[DIFF_FILE]`, and `re-review-prompt.md`'s `<DIFF_FILE>` — now say the
+      script reports it in a summary line and that the path alone is passed.
+      `SKILL.md`'s DONE handler, Red Flags bullet, and both Example Workflow
+      brackets were reworded to match. A grep for `printed path`, `prints it`,
+      `prints the unique path`, and `path printed by` across `skills/` and
+      `agents/` now returns nothing.
 - [ ] M6 — the Short Form of
       `skills/subagent-driven-development/task-reviewer-prompt.md` now ships
       the no-nested-subagent ban ("## You Do Not Dispatch Subagents") twice

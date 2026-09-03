@@ -50,9 +50,10 @@ that the fixes introduced nothing new.
 
 **Placeholders:** `<numbered findings, verbatim from the previous reviewer's
 report>` is the previous round's findings, copied over and numbered so each
-can get its own verdict; `<DIFF_FILE>` is the path printed by
-`scripts/review-package <plan-file> <base> <head>`; `<REPORT_FILE>` is the
-implementer's report path.
+can get its own verdict; `<DIFF_FILE>` is the path reported by
+`scripts/review-package <plan-file> <base> <head>` in its
+`wrote <path>: …` summary line — the path alone, not the whole line;
+`<REPORT_FILE>` is the implementer's report path.
 
 **Re-reviewer returns:** per-finding verdicts (ADDRESSED / NOT ADDRESSED) plus
 any new findings.
