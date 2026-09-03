@@ -1,6 +1,6 @@
 # Repo audit and skill scorecard — 2026-09-02
 
-**Status: D1 + D2 RESOLVED 2026-09-02 (uncommitted); everything else findings only** (one live break surfaced, X1). Whole-repo audit of `agent-skills` at `6570701`
+**Status: COMPLETE (retired 2026-09-03)** — remediated by plan 21 (`specs/plans/completed/21-audit_9_2_26.md`): X1 reverted, D1/D2 committed, D3 retired, H3 pinned, the `geographic-codes` interval overstatement corrected, and H1 closed for four of the five untested scripts (26 new tests across three suites). H2, H4, W1, `calibration_check.py`, `scan.sh` and the unratified scorecard weights were consciously deferred to `specs/deferred_items.md` at the 2026-09-03 completion gate. Whole-repo audit of `agent-skills` at `6570701`
 (main, clean tree), followed by a per-skill scorecard of all 32 skills against the rubric
 `writing-skills` sets for this repo. Every number below was measured in this session, not
 transcribed from CLAUDE.md or earlier audits. Precedents: `specs/completed/audit_1_3_26.md`,

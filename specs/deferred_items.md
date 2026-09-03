@@ -476,3 +476,64 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       c707a48, is a recipe that shipped unrun): e.g. `np.atleast_1d` on both, plus the scalar
       case in the prose.
 
+
+## 21-audit_9_2_26 — 2026-09-03
+- [ ] `skills/bayesian-workflow/scripts/calibration_check.py` still has no test
+      (audit H1). Owned by no plan: plan 20's scope fence excluded the file and
+      plan 21 left it out because the suite needs the full
+      arviz/arviz-plots/arviz-stats chain and the script is mostly ArviZ
+      delegation. Would take a fixture InferenceData with a known
+      over-/under-confident posterior plus assertions on
+      `assess_calibration`'s five returned keys. Confirmed at the 2026-09-03
+      gate as a deferral, not an accepted permanent gap.
+- [ ] `skills/tech-debt/scripts/scan.sh` has no test (audit H1). Deferred on
+      cost: it needs fixture repositories with planted debt signals (a magic
+      seed, a hardcoded /Users/ path, an unvalidated join, a committed .env) and
+      assertions per section. Highest cost, lowest marginal value of the five
+      untested scripts.
+- [ ] Audit H4 — loose files inside skill directories: `README.md` in three
+      skills, `writing-skills/`'s five support docs at top level while it
+      prescribes `references/` for everyone else, `systematic-debugging/`'s four
+      technique files plus `find-polluter.sh`. No behaviour impact; recorded as
+      a finding only, confirmed at the 2026-09-03 gate.
+- [ ] Audit H2 — `skills/geographic-codes/scripts/build.py:210` emits 7 polars
+      `FutureWarning`s through the fastexcel engine (`pl.read_excel(...).select(...)`;
+      polars 2.0 changes the `from_arrow` return type). Harmless until then; the 7
+      `test_parse_each_bundled_delineation_workbook[*]` cases are the canary.
+      Re-run the suite when polars 2.0 lands.
+- [ ] Audit W1 — the skill-listing budget is near its cap (32 descriptions
+      ≈ 4,940 est. tokens against ≈ 5,000 at `skillListingBudgetFraction`
+      0.025). All 32 fit today; the next skill likely tips it into
+      drop-by-rank. Standing decision unchanged — the lever is the fraction
+      (≈ 0.03) or per-project scoping, not trimming descriptions. Check
+      `/context` before skill #33.
+- [ ] Audit scorecard rubric weights were never ratified (audit "Decisions for
+      you" item 5): the S dimension's 2,500-word threshold and the V evidence
+      ladder are the auditor's calls. The notes column stands regardless.
+- [ ] `NOTICE`'s superpowers block pins the vendoring date (plan 21 Task 3) but
+      its "Changes from upstream" list is incomplete — `sdd-workspace`,
+      `task-brief` and `review-package` arrived in `2f283ae` and were changed
+      locally afterwards by `c5ff0b5` (`.superpowers/sdd/` → `.sdd/`) and
+      `b8faf9c` (trailing-section leak; Global Constraints prepend), neither of
+      which is listed. Not an attribution defect — the blanket "modifications
+      are by Lowell Mason" clause covers it — but H3's whole purpose was to make
+      drift reviewable, and an incomplete change list undercuts the pin.
+- [ ] `skills/explore-data/scripts/test_profile.py` — the plan's mutation check
+      (Task 5 Step 3) proved the suite detects a renamed `"column"` key, but not
+      the way it claimed: `quality_flags` reads `r["column"]` at
+      `profile.py:261,263` before JSON is written, so the CLI crashes and three
+      of four failures are `CalledProcessError`, never the contract assertion at
+      `:65-70`. A serialization-boundary-only rename would exercise the
+      silent-drift tripwire on its own terms.
+- [ ] `skills/design-architecture/scripts/new_adr.py:6` promises numbering
+      "permanent and never reused". `test_new_adr.py` pins the gap case (delete
+      `0002-`, next is still 4) but not the full-reset case: delete every file
+      and `next_number` returns 1, reusing a number. That is the scenario most
+      counter to the docstring's literal claim; closing it means changing
+      `new_adr.py` (persist the high-water mark) or narrowing the docstring.
+- [ ] `skills/subagent-driven-development/scripts/test_sdd_scripts.py` coverage
+      gaps: `task-brief`'s level-termination (`hlevel($0) <= tlvl`) is exercised
+      only via fenced content, with no deeper-sub-heading case (a `#### Sub`
+      inside a task must be *retained* as content); and two exit-2 arms are
+      untested — `review-package:21` (`bad HEAD`; only `bad BASE` is covered)
+      and `task-brief:13`'s `$# -gt 3` arm (only `$# -lt 2` is covered).
