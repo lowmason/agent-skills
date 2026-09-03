@@ -57,13 +57,26 @@
       then it draws review attention on every pass.
       → done 2026-09-02 (/deferred quick fix): recorded in KNOWN_GOOD_FALLBACKS in
       build/verify_citations.py, test-first; Gate A now runs with no stderr.
-- [ ] QCEW datatype-05 label unverified (final-review Minor (f), partially resolved):
+- [x] QCEW datatype-05 label unverified (final-review Minor (f), partially resolved):
       the hub's claim that datatype 05 is "average annual pay" was dropped to the verified
       "its annual-only datatype carries `A01`" (period structure confirmed live via BLS API
       v1: `ENUUS00050010` returns only `A01`). The *label* remains unconfirmed because
       `download.bls.gov` returns 403 from this environment and `references/qcew.md` documents
       no datatype codes. Restore the specific label once BLS is reachable, or add a datatype
       table to `qcew.md` so the hub has a quotable line to derive from.
+      → done 2026-09-03 (/deferred quick fix): verified and restored. The owner authorised
+      using their contact email in the User-Agent, which cleared the 403. Two independent
+      sources agree that **datatype 5 = Average Annual Pay**: the live CEW classifications
+      table (bls.gov/cew/classifications/datatype/datatype-titles.htm, fetched 2026-09-03)
+      and `en.type` inside the archived `en_meta.zip`. `references/qcew.md` gained a datatype
+      table with both sources, and the hub's reference index advertises it. The hub now names
+      average annual pay as the annual-only datatype, code `5`, whose cells carry `A01` — the
+      datatype and the period code are deliberately kept distinct, since `A01` is a period code
+      and an earlier draft of this fix conflated the two. Two corrections the item did not anticipate:
+      the code is `5`, **one character at series-ID position 9, not the zero-padded `05`**;
+      and the old routes are gone, not merely blocked — `/pub/time.series/en/` 404s (no `en`
+      directory at all, and Wayback has no `en.datatype` capture) and `help/hlpforma.htm` no
+      longer documents the ENU format.
 
 ## 13-llm-wiki — 2026-07-22
 Deferred from the final adversarial linter audit (all in the plan's verbatim regexes;

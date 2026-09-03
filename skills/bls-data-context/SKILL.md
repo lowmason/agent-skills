@@ -148,7 +148,8 @@ ECI, ECEC, and the QCEW wage datatypes): `Q01`–`Q04`, plus **`Q05` = annual av
 quarterly program publishes one (BED has none — its series stay `Q01`–`Q04`). Annual-only cells
 carry **`A01`** (QCEW average annual pay, OEWS). QCEW alone spans all three: employment is monthly
 `M01`–`M12`, establishment counts / total wages / average weekly wage are quarterly `Q01`–`Q04`,
-and its annual-only datatype carries `A01`. **Never mix an annual-average code into a periodic series** (drop
+and average annual pay — the annual-only datatype, code `5` — carries `A01`.
+**Never mix an annual-average code into a periodic series** (drop
 `M13` from monthly work, `Q05` from quarterly), and **never filter a quarterly file with a
 monthly rule** — `M01`–`M12` over a BED, ECI, or ECEC file matches zero rows and silently empties
 the frame instead of erroring.
@@ -204,7 +205,7 @@ it points to the relevant `references/<program>.md`.
 
 | File | Program | Read it for |
 |---|---|---|
-| [references/qcew.md](references/qcew.md) | QCEW | The universe/frame; covered-jobs concept; AWW; suppression; downloadable files; the non-time-series cautions; OMB delineation by reference year (2013 vs 2024 break, Connecticut planning regions). |
+| [references/qcew.md](references/qcew.md) | QCEW | The universe/frame; covered-jobs concept; AWW; suppression; downloadable files; LABSTAT datatype codes (`en.type`, `5` = average annual pay) and series-ID field positions; the non-time-series cautions; OMB delineation by reference year (2013 vs 2024 break, Connecticut planning regions). |
 | [references/ces.md](references/ces.md) | CES National | Payroll-jobs estimation; CEU/CES series IDs; net birth-death model; March benchmark; vintages. |
 | [references/sae.md](references/sae.md) | CES State & Area | State/metro estimation; SAM Gen3 small-area model; benchmark windows; SA two-step; ETL schema; OMB delineation adoption history for SAE and LAUS. |
 | [references/jolts.md](references/jolts.md) | JOLTS | Stock-vs-flow; rate denominators; 21-char series IDs; CES alignment; model-based state estimates. |

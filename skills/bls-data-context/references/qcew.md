@@ -474,6 +474,42 @@ Agent guidance:
 - Always capture file layout documentation along with data files.
 - Read `area_fips` as a string, never as a number. The column mixes alphanumeric aggregate codes (`US000` national, MSA codes such as `C1010`) with zero-padded county FIPS codes (`01001`). A numeric parse either errors on the alpha codes or silently strips leading zeros from county codes — both corrupt the join key.
 
+### LABSTAT time-series datatype codes (`en.type`)
+
+The QCEW LABSTAT time-series directory `download.bls.gov/pub/time.series/en/` ships no loose mapping files, so there is no `en.datatype` path to fetch: its archived directory listing of 2019-11-15 (https://web.archive.org/web/20191115095820/https://download.bls.gov/pub/time.series/en/) shows only three archives — `en_data.zip`, `en_series.zip`, and `en_meta.zip`. The dimension lookups live inside `en_meta.zip`, which carries `en.area`, `en.footnote`, `en.industry`, `en.owner`, `en.size`, `en.state`, and `en.type`. Note the name: QCEW's datatype lookup is **`en.type`**, keyed on **`type_code`** — not `datatype_code` (the spelling OEWS uses) and not `data_type_code` (CES's). It is tab-separated with the columns `type_code`, `type_title`, `display_level`, `selectable`, `sort_sequence`, and defines five measures:
+
+| type_code | type_title                 |
+| --------- | -------------------------- |
+| 1         | All Employees              |
+| 2         | Number of Establishments   |
+| 3         | Total Wages (in thousands) |
+| 4         | Average Weekly Wage        |
+| 5         | Average Annual Pay         |
+
+Codes are single digits in this file, not zero-padded. Source: `en.type` inside `en_meta.zip` as archived at https://web.archive.org/web/20201017142531/https://download.bls.gov/pub/time.series/en/en_meta.zip (snapshot 2020-10-17). The Internet Archive records the same payload digest for every capture from 2020-10-17 through 2022-06-21, so the table was unchanged across that window; it is not evidence of the current vintage, so re-read the file before relying on it for one.
+
+BLS publishes a **second** datatype table, for a **different artifact**: the downloadable QCEW
+data files, not LABSTAT. It is live HTML at
+https://www.bls.gov/cew/classifications/datatype/datatype-titles.htm (reached from
+`bls.gov/cew/downloadable-data-files.htm` → "Documentation Guide"). Fetched 2026-09-03, it carries
+measures 1–5 under the same titles as `en.type` — which is what lets you confirm the label above
+against a current source instead of a 2020 snapshot. It also lists **`0`** (filler, for a flat-file
+record carrying several datatypes at once) and **`6`** (archaic — formerly quarterly average
+monthly employment). Those two are flat-file concepts only: `0` describes a record layout that has
+no counterpart in a series ID, so never build an ENU series ID with datatype `0`. Do not treat the
+two tables as one code system where LABSTAT is merely a subset — they document different files
+that happen to agree on the five real measures.
+
+Two dead ends worth not re-walking (both checked 2026-09-03): `download.bls.gov/pub/time.series/en/`
+now 404s — there is no `en` directory in the time-series tree at all — and
+`bls.gov/help/hlpforma.htm` no longer documents the ENU series-ID format. Field positions come
+from the flat-file layout instead
+(`bls.gov/cew/about-data/downloadable-file-layouts/flat-text/naics-based-flat-file-layouts.htm`):
+prefix 1–3, `area_fips` 4–8, **datatype at position 9, one character**, size 10, ownership 11,
+industry 12+. So `ENUUS00050010` parses as `ENU|US000|5|0|0|10` — datatype `5`, not `05`.
+
+`en.type` supplies labels only; it carries no period information, and `en_meta.zip` ships no `en.period` file. Which of these measures is monthly, quarterly, or annual comes from the series metadata (`en.series` begin/end periods), not from this file. Period-code rules per program are in the hub SKILL.md.
+
 ## Related data programs and comparability
 
 ### CES (Current Employment Statistics)
