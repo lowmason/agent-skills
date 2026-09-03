@@ -174,12 +174,11 @@ skills, adapted for standalone use"). Upstream's newest commit at that
 date was 896224c, "Release v6.0.3: SDD artifacts move out of the .git/
 protected path" (2026-06-18). That is a retrieval-date record, not a
 tree-by-tree comparison. Most vendored files were adapted on the way in
-and so match no upstream commit byte for byte; the three subagent-driven-
-development scripts are the exception -- they came in verbatim from
-896224c and were changed only later, here (see the last two entries
-below). Upstream has
-continued to move since; use the date and commit above as the starting
-point for any drift review.
+and so match no upstream commit byte for byte; the three
+subagent-driven-development scripts are the exception -- they came in
+verbatim from 896224c and were changed only later, here (see the entries
+below). Upstream has continued to move since; use the date and commit
+above as the starting point for any drift review.
 
 Changes from upstream:
   - Cross-skill references rewritten from the `superpowers:` plugin
@@ -210,6 +209,25 @@ Changes from upstream:
     at the next heading of the same or shallower level, so a plan's
     trailing sections no longer leak into the last task's brief, and
     the plan's Global Constraints section is prepended to every brief.
+  - Four changes were later adopted FROM upstream v6.1.0-v6.3.0 (see
+    specs/completed/sdd-hardening.md): the plan-scoped workspace (adopting
+    it gave review-package PLAN_FILE as its first argument, shifting BASE
+    and HEAD); the no-nested-subagent ban — on the implementer and
+    reviewer templates, on skills/requesting-code-review/code-reviewer.md,
+    and on agents/code-reviewer.md and agents/task-reviewer.md — carrying
+    with it the reviewer's illegible-evidence rule, which binds every
+    reviewer seat; same-shape task batching with its file-by-file diff
+    check; and the bounded review loop with re-review-prompt.md. Two of
+    them diverge deliberately. The workspace is .sdd/<plan-basename>/,
+    keeping this repo's .sdd rename rather than upstream's
+    .superpowers/sdd. The fix-round ladder escalates context, then effort,
+    then model, rather than upstream's unconditional "more capable
+    model" — here the model rung is taken only when the failing
+    implementer was dispatched below the capable tier, a property of that
+    dispatch and not of the controller's own session. task-brief's local
+    heading-termination and Global-Constraints rework survives unchanged:
+    upstream's own change to that script was only the workspace call, so
+    the two compose.
 
     brainstorming/
     dispatching-parallel-agents/

@@ -49,6 +49,22 @@ Subagent (code-reviewer if defined, else general-purpose):
     revision with `git show [SHA]:path/to/file` — never check out or
     create worktrees for review.
 
+    ## You Do Not Dispatch Subagents
+
+    Do all of this review yourself. Never spawn a subagent to review part of the
+    diff, and never spawn another reviewer for a second opinion. This process
+    already provides every review seat the work gets; a reviewer you spawn
+    duplicates one of them at full cost, and its verdict counts for nothing. If the
+    diff feels too large for one pass, review it in passes yourself and say so in
+    your report.
+
+    Evidence you cannot see is not evidence that doesn't exist. If any input material
+    this dispatch hands you — a diff file, a report, test output — looks truncated, or
+    you cannot find results it claims, re-read the file at its stated path. If it is
+    genuinely missing or garbled, report that as a gap for the controller. Re-running
+    the suite to regenerate what you failed to read is not verification — illegibility
+    of the evidence is not invalidation of it.
+
     ## What to Check
 
     **Plan alignment:**
@@ -146,7 +162,7 @@ Subagent (code-reviewer if defined, else general-purpose):
 - `[BASE_SHA]` — starting commit
 - `[HEAD_SHA]` — ending commit
 - `[DIFF_FILE]` — the review-package path (subagent-driven-development's
-  `scripts/review-package BASE HEAD` prints it). REQUIRED when dispatched
+  `scripts/review-package PLAN_FILE BASE HEAD` prints it). REQUIRED when dispatched
   from that skill's File Handoffs contract; optional otherwise — without
   it the reviewer falls back to running git itself.
 

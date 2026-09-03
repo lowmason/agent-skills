@@ -1,5 +1,7 @@
 # SDD Hardening Implementation Plan
 
+**Status: COMPLETE (2026-09-03)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Adopt four superpowers v6.1.0–v6.3.0 changes into `skills/subagent-driven-development` — a plan-scoped workspace, a no-nested-subagent ban, same-shape task batching, and a bounded review loop.
@@ -37,7 +39,7 @@
 
 All three scripts must change in this one task. `sdd-workspace` becomes argument-requiring, so its two callers break the moment it lands; a commit that split them would leave the suite red.
 
-- [ ] **Step 1: Write the failing tests for `sdd-workspace`**
+- [x] **Step 1: Write the failing tests for `sdd-workspace`**
 
 Replace the two existing tests in the `# ── sdd-workspace ──` section of `skills/subagent-driven-development/scripts/test_sdd_scripts.py` with these five. The `repo` fixture already writes `plan.md` at the repo root, so the expected slug is `plan`.
 
@@ -100,7 +102,14 @@ def test_workspace_rejects_bad_arguments(repo, argv, message):
     assert message in result.stderr
 ```
 
-- [ ] **Step 2: Run them to verify they fail**
+> Deviation: this step's comment calls the slug guard for `""`/`.`/`..`
+> unreachable, following the plan's own framing. Review showed that framing
+> is wrong: a plan file literally named `..md` is a regular file, passes
+> `[ -f ]`, and `basename "..md" .md` returns `.` — reaching the guard. The
+> guard was kept exactly as specified either way; no test was added
+> claiming to exercise it, per this step's own instruction.
+
+- [x] **Step 2: Run them to verify they fail**
 
 ```bash
 cd skills/subagent-driven-development/scripts && uv run --python 3.13 --with pytest python -m pytest -q -k workspace
@@ -108,7 +117,7 @@ cd skills/subagent-driven-development/scripts && uv run --python 3.13 --with pyt
 
 Expected: FAIL. The current script ignores arguments, so the path assertions report `.sdd` where `.sdd/plan` was expected, and the argument-rejection cases exit 0 instead of 2.
 
-- [ ] **Step 3: Rewrite `sdd-workspace`**
+- [x] **Step 3: Rewrite `sdd-workspace`**
 
 Replace the whole file with:
 
@@ -155,7 +164,7 @@ printf '*\n' > "$base/.gitignore"
 cd "$dir" && pwd
 ```
 
-- [ ] **Step 4: Run the workspace tests to verify they pass**
+- [x] **Step 4: Run the workspace tests to verify they pass**
 
 ```bash
 cd skills/subagent-driven-development/scripts && uv run --python 3.13 --with pytest python -m pytest -q -k workspace
@@ -163,7 +172,7 @@ cd skills/subagent-driven-development/scripts && uv run --python 3.13 --with pyt
 
 Expected: PASS, 8 tests (4 named plus the 4 parametrized argument cases).
 
-- [ ] **Step 5: Update `task-brief` to pass the plan through**
+- [x] **Step 5: Update `task-brief` to pass the plan through**
 
 In `skills/subagent-driven-development/scripts/task-brief`, change the usage comment (lines 8-10) to:
 
@@ -187,7 +196,13 @@ Replace it with:
 
 `task-brief`'s own signature does not change — it already takes `PLAN_FILE` as argument 1.
 
-- [ ] **Step 6: Write the failing tests for `review-package`'s new signature**
+> Deviation: the plan omitted that
+> `test_task_brief_writes_to_and_prints_the_default_workspace_path` also
+> needed its expected path updated to `.sdd/plan/` — `task-brief`'s test
+> still asserted the old flat path. The implementer caught it during this
+> step; required for the 21-test passing state.
+
+- [x] **Step 6: Write the failing tests for `review-package`'s new signature**
 
 In the `# ── review-package ──` section, add `repo / 'plan.md'` as the first argument to all four existing `run(REVIEW_PACKAGE, ...)` calls, and update the default-path expectation. The four calls become:
 
@@ -233,7 +248,7 @@ def test_review_package_rejects_a_missing_plan_file(repo):
     assert 'no such plan file' in result.stderr
 ```
 
-- [ ] **Step 7: Run them to verify they fail**
+- [x] **Step 7: Run them to verify they fail**
 
 ```bash
 cd skills/subagent-driven-development/scripts && uv run --python 3.13 --with pytest python -m pytest -q -k review_package
@@ -241,7 +256,7 @@ cd skills/subagent-driven-development/scripts && uv run --python 3.13 --with pyt
 
 Expected: FAIL. The current script reads the plan path as `BASE` and reports `bad BASE:` for it.
 
-- [ ] **Step 8: Update `review-package`**
+- [x] **Step 8: Update `review-package`**
 
 Change the usage comment (lines 7-8) to:
 
@@ -296,7 +311,7 @@ else
 
 Leave the two `git rev-parse --verify` checks and everything below unchanged.
 
-- [ ] **Step 9: Run the whole suite**
+- [x] **Step 9: Run the whole suite**
 
 ```bash
 cd skills/subagent-driven-development/scripts && uv run --python 3.13 --with pytest python -m pytest -q
@@ -304,7 +319,7 @@ cd skills/subagent-driven-development/scripts && uv run --python 3.13 --with pyt
 
 Expected: PASS. 21 tests — the 14 that existed, minus the 2 replaced workspace tests (12), plus 8 workspace test instances (4 named plus 4 parametrized) and 1 new review-package rejection test.
 
-- [ ] **Step 10: Commit**
+- [x] **Step 10: Commit**
 
 ```bash
 git add skills/subagent-driven-development/scripts/
@@ -334,7 +349,7 @@ guard stays at .sdd/.gitignore, the parent, covering every per-plan sibling."
 
 No tests. This is skill text; per the Global Constraints an assertion that a phrase appears in `SKILL.md` would pass without the behavior existing.
 
-- [ ] **Step 1: Fix the ledger path in Durable Progress**
+- [x] **Step 1: Fix the ledger path in Durable Progress**
 
 `SKILL.md:272-276` currently tells a resuming controller to run `sdd-workspace` bare and then `cat` a hardcoded flat path:
 
@@ -360,7 +375,13 @@ Replace with:
   stop and say so rather than resuming against it.
 ````
 
-- [ ] **Step 2: Add the ledger's plan-naming line**
+> Deviation: the implementer also corrected the Durable Progress
+> `git clean -fdx` bullet, which still described "the workspace's own
+> .gitignore" — stale once Task 1 moved the self-ignoring guard to the
+> `.sdd` parent so it covers every sibling plan. Reviewer confirmed the fix
+> as correct and in scope for this step's section.
+
+- [x] **Step 2: Add the ledger's plan-naming line**
 
 In the same Durable Progress section, the ledger currently gains entries only for completed tasks. Add, immediately before the bullet beginning "When a task's review comes back clean":
 
@@ -371,11 +392,18 @@ In the same Durable Progress section, the ledger currently gains entries only fo
   this line is what makes that visible instead of silent.
 ````
 
-- [ ] **Step 3: Update the `review-package` call sites in File Handoffs**
+- [x] **Step 3: Update the `review-package` call sites in File Handoffs**
 
 Read `SKILL.md:229-264`. Every `review-package` invocation shown there takes the old `BASE HEAD` form. Add the plan file as the first argument to each, so they read `review-package <plan-file> <base> <head>`. Leave the surrounding DIFF_FILE contract prose intact — only the command form changes.
 
-- [ ] **Step 4: Add workspace deletion to Plan Completion**
+> Deviation: scope expanded by the controller from the plan's one SKILL.md
+> range to seven stale call sites across four files (`SKILL.md`,
+> `task-reviewer-prompt.md`, `requesting-code-review/SKILL.md`,
+> `requesting-code-review/code-reviewer.md`), plus `CLAUDE.md`'s test count
+> (14→21, stale after Task 1's suite growth). All seven verified by grep
+> against `review-package`'s new signature before fixing.
+
+- [x] **Step 4: Add workspace deletion to Plan Completion**
 
 At the end of the Plan Completion section (`SKILL.md:217-228`), after the existing paragraph and before the `## File Handoffs` heading, add:
 
@@ -393,7 +421,7 @@ and the `specs/deferred_items.md` entries. Deleting the workspace first
 destroys the protocol's input.
 ````
 
-- [ ] **Step 5: Verify by reading**
+- [x] **Step 5: Verify by reading**
 
 Re-read the three edited sections start to finish. Confirm: no remaining bare `scripts/sdd-workspace` call without a plan argument, no remaining `.sdd/progress.md` flat path, every `review-package` line has four or five whitespace-separated fields, and the deletion paragraph sits after the protocol paragraph rather than before it.
 
@@ -403,7 +431,7 @@ grep -n "sdd-workspace\|review-package\|\.sdd/" skills/subagent-driven-developme
 
 Expected: every `sdd-workspace` occurrence is followed by a plan argument; no occurrence of `.sdd/progress.md`.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add skills/subagent-driven-development/SKILL.md
@@ -434,7 +462,7 @@ The two agent definitions already declare `tools: Read, Grep, Glob, Bash` with n
 
 No tests — skill text.
 
-- [ ] **Step 1: Add the ban to the implementer prompt**
+- [x] **Step 1: Add the ban to the implementer prompt**
 
 In `skills/subagent-driven-development/implementer-prompt.md`, add this section immediately before the self-review instructions:
 
@@ -450,7 +478,7 @@ in the process. If you catch yourself thinking "an independent review would
 strengthen my report" — that review is already scheduled. Report instead.
 ````
 
-- [ ] **Step 2: Add the ban and the evidence rule to both reviewer template forms**
+- [x] **Step 2: Add the ban and the evidence rule to both reviewer template forms**
 
 Add this to `skills/subagent-driven-development/task-reviewer-prompt.md`, in **both** the Short Form (`:15`) and the Full Form (`:44`) bodies:
 
@@ -472,19 +500,19 @@ regenerate what you failed to read is not verification — illegibility of the
 evidence is not invalidation of it.
 ````
 
-- [ ] **Step 3: Add the ban to the whole-branch reviewer template**
+- [x] **Step 3: Add the ban to the whole-branch reviewer template**
 
 Add the same "You Do Not Dispatch Subagents" section from Step 2 to
 `skills/requesting-code-review/code-reviewer.md`. Include the evidence
 paragraph as well — the final reviewer reads the same implementer reports.
 
-- [ ] **Step 4: Add both rules to the two agent definitions**
+- [x] **Step 4: Add both rules to the two agent definitions**
 
 Add the Step 2 text to `agents/task-reviewer.md` and `agents/code-reviewer.md`. The Short Form dispatch relies on the agent definition to carry the review contract, so a rule that lives only in the prompt template applies on one dispatch path and not the other.
 
 Do **not** change either file's `tools:` line. `Read, Grep, Glob, Bash` is what makes spawning impossible; the prose is the belt to that structural brace, and it is what travels when these skills are installed without the agents.
 
-- [ ] **Step 5: Verify by reading**
+- [x] **Step 5: Verify by reading**
 
 ```bash
 grep -c "You Do Not Dispatch Subagents" skills/subagent-driven-development/implementer-prompt.md skills/subagent-driven-development/task-reviewer-prompt.md skills/requesting-code-review/code-reviewer.md agents/task-reviewer.md agents/code-reviewer.md
@@ -492,7 +520,7 @@ grep -c "You Do Not Dispatch Subagents" skills/subagent-driven-development/imple
 
 Expected: `2` for `task-reviewer-prompt.md` (one per form) and `1` for each of the other four. Then read each insertion in place and confirm it reads as instruction to that specific agent, not as narration about the process.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add skills/subagent-driven-development/implementer-prompt.md \
@@ -528,7 +556,7 @@ read: illegibility is not invalidation."
 
 No tests — skill text.
 
-- [ ] **Step 1: Add the batching rule to SKILL.md**
+- [x] **Step 1: Add the batching rule to SKILL.md**
 
 Add to `skills/subagent-driven-development/SKILL.md`, as a subsection of The Process near the dispatch guidance:
 
@@ -549,7 +577,14 @@ small enough to state in a line each, so the cost is bounded — and teaching
 context for exactly the tasks that need it least.
 ````
 
-- [ ] **Step 2: Add the ledger rule for batched dispatches**
+> Deviation: one Important fix round. As drafted, this step's text never
+> said where the composed batch brief should live, but `[BRIEF_FILE]` is a
+> REQUIRED reviewer input — so a batch had no artifact for the reviewer,
+> and the file-by-file safeguard (Task 4 Step 3) could never fire against
+> it. Fixed by adding the `batch-N-M-brief.md` convention (e.g.
+> `batch-4-7-brief.md`, written to this plan's workspace) to this section.
+
+- [x] **Step 2: Add the ledger rule for batched dispatches**
 
 In Durable Progress, after the bullet about appending a completion line, add:
 
@@ -560,7 +595,7 @@ In Durable Progress, after the bullet about appending a completion line, add:
   under only its first task's number re-dispatches the rest.
 ````
 
-- [ ] **Step 3: Add the file-by-file check to both reviewer forms and the agent**
+- [x] **Step 3: Add the file-by-file check to both reviewer forms and the agent**
 
 Add to both forms of `skills/subagent-driven-development/task-reviewer-prompt.md` and to `agents/task-reviewer.md`:
 
@@ -574,7 +609,7 @@ clean the rest of the batch looks. Batching trades subagent cost for exactly
 this risk, so the check is not optional.
 ````
 
-- [ ] **Step 4: Verify by reading**
+- [x] **Step 4: Verify by reading**
 
 Confirm the SKILL.md subsection sits with the dispatch guidance rather than in the review sections, and that the file-by-file rule appears twice in `task-reviewer-prompt.md` and once in `agents/task-reviewer.md`.
 
@@ -584,7 +619,7 @@ grep -c "Batched Dispatches" skills/subagent-driven-development/task-reviewer-pr
 
 Expected: `2`, `1`, and `0` respectively — the whole-branch reviewer must not gain it.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/subagent-driven-development/SKILL.md \
@@ -617,7 +652,7 @@ not re-dispatch the tail of a completed batch."
 
 No tests — skill text.
 
-- [ ] **Step 1: Create the scoped re-review template**
+- [x] **Step 1: Create the scoped re-review template**
 
 Create `skills/subagent-driven-development/re-review-prompt.md`:
 
@@ -675,7 +710,7 @@ implementer's report path.
 any new findings.
 ````
 
-- [ ] **Step 2: Add the round cap and escalation ladder to SKILL.md**
+- [x] **Step 2: Add the round cap and escalation ladder to SKILL.md**
 
 After the Handling Reviewer ⚠️ Items section (`:160-168`), add:
 
@@ -708,7 +743,21 @@ ones as work, and park the rest in the ledger with your reasoning
 human partner only when every path forward is a guess.
 ````
 
-- [ ] **Step 3: Register the new template**
+> Deviation: two fix rounds. Three passages outside this step's literal
+> scope still described the pre-Task-5 unbounded full-review loop — the
+> Process digraph's re-review edge routed to the full template, Example
+> Workflow showed a full verdict, and Red Flags said "Repeat until
+> approved" — and were reconciled to Fix Rounds. `re-review-prompt.md`
+> (Step 1) did not tell the task-reviewer agent to set aside its own
+> full-review contract and report format; live evidence this mattered came
+> from re-reviews earlier in this same execution, which came back in the
+> full report shape until the fix landed. The digraph's rounds-2-5 loop
+> also funnelled every round through one generic fix-dispatch node, hiding
+> the resume-vs-fresh switch this section calls load-bearing; now
+> captioned outside the dot fence. Digraph validity reconfirmed with
+> graphviz after both rounds.
+
+- [x] **Step 3: Register the new template**
 
 In the Prompt Templates list (`:326-331`), add between the task-reviewer and final-review lines:
 
@@ -716,7 +765,7 @@ In the Prompt Templates list (`:326-331`), add between the task-reviewer and fin
 - [re-review-prompt.md](re-review-prompt.md) - Dispatch a scoped re-review after fixes (per-finding ADDRESSED / NOT ADDRESSED)
 ````
 
-- [ ] **Step 4: Verify by reading**
+- [x] **Step 4: Verify by reading**
 
 Confirm the ladder says five attempts with adjudication after, matching the spec — not four attempts, and not adjudication as round 5. Confirm the new file is reachable from the Prompt Templates list and that its link resolves.
 
@@ -726,7 +775,7 @@ ls skills/subagent-driven-development/re-review-prompt.md && grep -n "re-review-
 
 Expected: the file exists and SKILL.md references it at least twice, once in Fix Rounds and once in Prompt Templates.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/subagent-driven-development/re-review-prompt.md \
@@ -753,7 +802,7 @@ model tier these sessions already run at."
 **Interfaces:**
 - Consumes: every preceding task — this records what they changed.
 
-- [ ] **Step 1: Read the current entry**
+- [x] **Step 1: Read the current entry**
 
 ```bash
 grep -n "Vendored on 2026-06-20" -A 60 NOTICE
@@ -761,7 +810,7 @@ grep -n "Vendored on 2026-06-20" -A 60 NOTICE
 
 The last two bullets describe the local script reworks: `c5ff0b5` moving the workspace to `.sdd/`, and `b8faf9c` reworking `task-brief`'s heading termination and Global Constraints prepending. Both remain true and must not be deleted.
 
-- [ ] **Step 2: Extend the change list**
+- [x] **Step 2: Extend the change list**
 
 Add to the "Changes from upstream" list, after the `b8faf9c` bullet:
 
@@ -781,7 +830,14 @@ Add to the "Changes from upstream" list, after the `b8faf9c` bullet:
     workspace call, so the two compose.
 ````
 
-- [ ] **Step 3: Run the provenance and frontmatter lints**
+> Deviation: one fix round. NOTICE's cross-reference pointer ("see the
+> c5ff0b5 and b8faf9c entries below") reached 2 of the 3 change events it
+> needed to — 09a10ee changed the same three scripts again and was missed.
+> Made count-independent: "(see the entries below)". The illegible-evidence
+> rule adopted in Task 3 was also unreachable from any item in this change
+> list; now named explicitly.
+
+- [x] **Step 3: Run the provenance and frontmatter lints**
 
 ```bash
 uv run --python 3.13 --with pyyaml python build/check_frontmatter.py && uv run --python 3.13 python build/check_provenance.py && echo "both lints clean"
@@ -789,7 +845,7 @@ uv run --python 3.13 --with pyyaml python build/check_frontmatter.py && uv run -
 
 Expected: `both lints clean`.
 
-- [ ] **Step 4: Run the full script suite once more**
+- [x] **Step 4: Run the full script suite once more**
 
 ```bash
 cd skills/subagent-driven-development/scripts && uv run --python 3.13 --with pytest python -m pytest -q
@@ -797,7 +853,7 @@ cd skills/subagent-driven-development/scripts && uv run --python 3.13 --with pyt
 
 Expected: PASS, 21 tests.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add NOTICE

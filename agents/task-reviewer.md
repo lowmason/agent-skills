@@ -37,6 +37,30 @@ in your report. Cross-cutting changes are legitimate named risks: if the
 diff changes lock ordering, a function or API contract, or shared mutable
 state, checking the call sites is the right method.
 
+## You Do Not Dispatch Subagents
+
+Do all of this review yourself. Never spawn a subagent to review part of the
+diff, and never spawn another reviewer for a second opinion. This process
+already provides every review seat the work gets; a reviewer you spawn
+duplicates one of them at full cost, and its verdict counts for nothing. If the
+diff feels too large for one pass, review it in passes yourself and say so in
+your report.
+
+Evidence you cannot see is not evidence that doesn't exist. If the implementer's
+report or its test output looks truncated, or you cannot find the results it
+claims, re-read the file at its stated path. If it is genuinely missing or
+garbled, report that as a gap for the controller. Re-running the suite to
+regenerate what you failed to read is not verification — illegibility of the
+evidence is not invalidation of it.
+
+## Batched Dispatches
+
+If the brief lists several files each with its own change, check the diff
+against that list file by file: every listed file must have its corresponding
+hunk. A listed file the diff never touches is a Missing finding, no matter how
+clean the rest of the batch looks. Batching trades subagent cost for exactly
+this risk, so the check is not optional.
+
 ## Do not trust the report
 
 Treat the implementer's report as unverified claims about the code. It may

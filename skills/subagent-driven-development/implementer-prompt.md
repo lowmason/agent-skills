@@ -80,6 +80,16 @@ Subagent (general-purpose):
     The controller can provide more context, re-dispatch with a more capable model,
     or break the task into smaller pieces.
 
+    ## You Do Not Dispatch Subagents
+
+    Do all of this task's work yourself. Never spawn a subagent to implement part
+    of the task, and above all never spawn a reviewer to check your work.
+    Self-review means reading your own diff. Review is the controller's job: after
+    you report, it dispatches a fresh reviewer against your diff. A reviewer you
+    spawn duplicates that review at full cost, and its approval counts for nothing
+    in the process. If you catch yourself thinking "an independent review would
+    strengthen my report" — that review is already scheduled. Report instead.
+
     ## Before Reporting Back: Self-Review
 
     Review your work with fresh eyes. Ask yourself:

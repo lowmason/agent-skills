@@ -89,19 +89,59 @@ def repo(tmp_path):
 def test_workspace_is_created_inside_the_working_tree(repo):
     """Not under .git/ — Claude Code denies agent writes to that protected path,
     which would block an implementer subagent from writing its report."""
-    result = run(WORKSPACE, cwd=repo)
+    result = run(WORKSPACE, repo / 'plan.md', cwd=repo)
     assert result.returncode == 0
     printed = Path(result.stdout.strip())
-    assert printed.resolve() == (repo / ".sdd").resolve()
-    assert ".git" not in printed.parts
+    assert printed.resolve() == (repo / '.sdd' / 'plan').resolve()
+    assert '.git' not in printed.parts
 
 
 def test_workspace_ignores_itself_so_artifacts_never_reach_git_status(repo):
-    run(WORKSPACE, cwd=repo)
-    assert (repo / ".sdd" / ".gitignore").read_text() == "*\n"
-    (repo / ".sdd" / "task-1-brief.md").write_text("scratch")
-    status = run("git", "status", "--short", cwd=repo).stdout
-    assert ".sdd" not in status
+    run(WORKSPACE, repo / 'plan.md', cwd=repo)
+    assert (repo / '.sdd' / '.gitignore').read_text() == '*\n'
+    # The guard sits at the .sdd parent, not inside the per-plan directory,
+    # so one guard covers every sibling plan's workspace.
+    assert not (repo / '.sdd' / 'plan' / '.gitignore').exists()
+    (repo / '.sdd' / 'plan' / 'task-1-brief.md').write_text('scratch')
+    status = run('git', 'status', '--short', cwd=repo).stdout
+    assert '.sdd' not in status
+
+
+def test_workspace_separates_two_plans_in_one_working_tree(repo):
+    """The bug this change exists to fix: a flat workspace let a second plan
+    read the first plan's ledger as its own progress and skip live tasks."""
+    (repo / 'other.md').write_text(PLAN)
+    first = Path(run(WORKSPACE, repo / 'plan.md', cwd=repo).stdout.strip())
+    second = Path(run(WORKSPACE, repo / 'other.md', cwd=repo).stdout.strip())
+    assert first.resolve() != second.resolve()
+    (first / 'progress.md').write_text('Task 1: complete\n')
+    assert not (second / 'progress.md').exists()
+
+
+def test_workspace_is_stable_for_one_plan(repo):
+    """Same plan, same directory — a resuming controller must find its ledger."""
+    first = run(WORKSPACE, repo / 'plan.md', cwd=repo).stdout.strip()
+    second = run(WORKSPACE, repo / 'plan.md', cwd=repo).stdout.strip()
+    assert Path(first).resolve() == Path(second).resolve()
+
+
+@pytest.mark.parametrize(
+    'argv, message',
+    [
+        ([], 'usage: sdd-workspace'),
+        (['plan.md', 'extra'], 'usage: sdd-workspace'),
+        (['nosuch.md'], 'no such plan file'),
+        # A directory reaches the same rejection as a missing file: [ -f ]
+        # is false for both. This is the case that makes the slug guard for
+        # '.' unreachable, and it is the behavior worth pinning — a caller
+        # who passes a directory must not get a workspace named after it.
+        (['.'], 'no such plan file'),
+    ],
+)
+def test_workspace_rejects_bad_arguments(repo, argv, message):
+    result = run(WORKSPACE, *argv, cwd=repo)
+    assert result.returncode == 2
+    assert message in result.stderr
 
 
 # ── task-brief ───────────────────────────────────────────────────────────
@@ -190,7 +230,7 @@ def test_task_brief_writes_to_and_prints_the_default_workspace_path(repo):
     match = re.match(r"^wrote (.+): \d", result.stdout.strip())
     assert match, f"unexpected stdout: {result.stdout!r}"
     printed = Path(match.group(1))
-    expected = repo / ".sdd" / "task-2-brief.md"
+    expected = repo / '.sdd' / 'plan' / 'task-2-brief.md'
     assert printed.resolve() == expected.resolve()
 
     body = expected.resolve().read_text()
@@ -212,7 +252,7 @@ def test_review_package_carries_commits_stat_and_diff(repo):
     git("commit", "-qm", "second", cwd=repo)
 
     out = repo / "package.diff"
-    result = run(REVIEW_PACKAGE, "HEAD~1", "HEAD", out, cwd=repo)
+    result = run(REVIEW_PACKAGE, repo / 'plan.md', 'HEAD~1', 'HEAD', out, cwd=repo)
     assert result.returncode == 0
     assert "1 commit(s)" in result.stdout
     body = out.read_text()
@@ -227,7 +267,7 @@ def test_review_package_rejects_an_unresolvable_revision(repo):
     (repo / "a.txt").write_text("one\n")
     git("add", "a.txt", "plan.md", cwd=repo)
     git("commit", "-qm", "first", cwd=repo)
-    result = run(REVIEW_PACKAGE, "nosuchrev", "HEAD", repo / "p.diff", cwd=repo)
+    result = run(REVIEW_PACKAGE, repo / 'plan.md', 'nosuchrev', 'HEAD', repo / 'p.diff', cwd=repo)
     assert result.returncode == 2
     assert "bad BASE" in result.stderr
 
@@ -238,7 +278,7 @@ def test_review_package_rejects_an_unresolvable_head(repo):
     (repo / "a.txt").write_text("one\n")
     git("add", "a.txt", "plan.md", cwd=repo)
     git("commit", "-qm", "first", cwd=repo)
-    result = run(REVIEW_PACKAGE, "HEAD", "nosuchrev", repo / "p.diff", cwd=repo)
+    result = run(REVIEW_PACKAGE, repo / 'plan.md', 'HEAD', 'nosuchrev', repo / 'p.diff', cwd=repo)
     assert result.returncode == 2
     assert "bad HEAD" in result.stderr
 
@@ -257,13 +297,13 @@ def test_review_package_writes_to_and_prints_the_default_workspace_path(repo):
     shortbase = run("git", "rev-parse", "--short", "HEAD~1", cwd=repo).stdout.strip()
     shorthead = run("git", "rev-parse", "--short", "HEAD", cwd=repo).stdout.strip()
 
-    result = run(REVIEW_PACKAGE, "HEAD~1", "HEAD", cwd=repo)
+    result = run(REVIEW_PACKAGE, repo / 'plan.md', 'HEAD~1', 'HEAD', cwd=repo)
     assert result.returncode == 0
 
     match = re.match(r"^wrote (.+): \d", result.stdout.strip())
     assert match, f"unexpected stdout: {result.stdout!r}"
     printed = Path(match.group(1))
-    expected = repo / ".sdd" / f"review-{shortbase}..{shorthead}.diff"
+    expected = repo / '.sdd' / 'plan' / f'review-{shortbase}..{shorthead}.diff'
     assert printed.resolve() == expected.resolve()
 
     body = expected.resolve().read_text()
@@ -271,3 +311,15 @@ def test_review_package_writes_to_and_prints_the_default_workspace_path(repo):
     assert "second" in body
 
     assert (repo / ".sdd" / ".gitignore").read_text() == "*\n"
+
+
+def test_review_package_rejects_a_missing_plan_file(repo):
+    """PLAN_FILE is argument 1. A caller still passing the old
+    BASE HEAD OUTFILE form must fail loudly, not write a package into the
+    wrong plan's workspace."""
+    (repo / 'a.txt').write_text('one\n')
+    git('add', 'a.txt', 'plan.md', cwd=repo)
+    git('commit', '-qm', 'first', cwd=repo)
+    result = run(REVIEW_PACKAGE, 'HEAD', 'HEAD', repo / 'p.diff', cwd=repo)
+    assert result.returncode == 2
+    assert 'no such plan file' in result.stderr

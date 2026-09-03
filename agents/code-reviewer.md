@@ -19,6 +19,22 @@ worktree list via Bash. Inspect history with `git show`, `git diff`,
 Running a focused test command is allowed when the dispatch names a concrete
 doubt; say what you ran and why in your report.
 
+## You Do Not Dispatch Subagents
+
+Do all of this review yourself. Never spawn a subagent to review part of the
+diff, and never spawn another reviewer for a second opinion. This process
+already provides every review seat the work gets; a reviewer you spawn
+duplicates one of them at full cost, and its verdict counts for nothing. If the
+diff feels too large for one pass, review it in passes yourself and say so in
+your report.
+
+Evidence you cannot see is not evidence that doesn't exist. If any input material
+this dispatch hands you — a diff file, a report, test output — looks truncated, or
+you cannot find results it claims, re-read the file at its stated path. If it is
+genuinely missing or garbled, report that as a gap for the controller. Re-running
+the suite to regenerate what you failed to read is not verification — illegibility
+of the evidence is not invalidation of it.
+
 ## Calibration
 
 Categorize issues by actual severity — not everything is Critical.

@@ -1,5 +1,11 @@
 # SDD hardening
 
+**Status: COMPLETE (2026-09-03)** — implemented by
+[plan 22](../plans/completed/22-sdd-hardening.md); retired to
+`specs/completed/`. Eight Minor findings and one adjudicated duplication
+recommendation were consciously deferred to `specs/deferred_items.md` at
+the 2026-09-03 completion gate.
+
 Adopt four changes from superpowers v6.1.0–v6.3.0 into
 `skills/subagent-driven-development`, its three dispatch scripts, and its two
 reviewer templates. Sources and per-claim verification are in
@@ -211,10 +217,14 @@ working; a fresh one does not. This is the repo's existing "go horizontal —
 fresh context" response to being stuck, applied at a structural trigger.
 
 Escalation follows the repo's own order — context, then effort, then model — and
-stops when there is no headroom. Sessions here already default to Opus, which is
-the stated ceiling, so in practice round 4 escalates effort and context rather
-than model. This spec does not adopt upstream's "dispatch on a more capable
-model" wording, which assumes headroom this repo does not have.
+stops when there is no headroom. The headroom that matters is the tier the
+failing implementer was dispatched at, not the controller's session model, which
+a subagent never inherits: Model Selection requires an explicit model on every
+dispatch and floors prose implementers at standard, so an implementer that has
+failed three rounds is often below capable and still has the model rung. This
+spec does not adopt upstream's unconditional "dispatch on a more capable model"
+wording — the rung is conditional on that tier, and rounds 4-5 buy fresh context
+and higher effort only when the implementer is already capable.
 
 ### E. Workspace lifecycle
 
@@ -246,10 +256,11 @@ environment variable was rejected for hiding a dependency that both sibling
 scripts state positionally.
 
 **Escalation rungs are this repo's, not upstream's** — see § D. Upstream
-escalates to a more capable model at round 4, which conflicts with the local
-ceiling rule. The structural insight is kept: three failed fix rounds on the
-same findings is task structure, not per-prompt self-assessment, and is the
-precondition the repo's routing policy already names for escalation.
+escalates to a more capable model unconditionally at round 4; here that rung is
+taken only when the failing implementer was dispatched below capable. The
+structural insight is kept: three failed fix rounds on the same findings is
+task structure, not per-prompt self-assessment, and is the precondition the
+repo's routing policy already names for escalation.
 
 ## Testing
 
