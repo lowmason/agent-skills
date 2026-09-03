@@ -143,7 +143,7 @@ the session default.
 
 Implementer subagents report one of four statuses. Handle each appropriately:
 
-**DONE:** Generate the review package (`scripts/review-package BASE HEAD` — see **File Handoffs** for the BASE rule), then dispatch the task reviewer with the printed path.
+**DONE:** Generate the review package (`scripts/review-package PLAN_FILE BASE HEAD` — see **File Handoffs** for the BASE rule), then dispatch the task reviewer with the printed path.
 
 **DONE_WITH_CONCERNS:** The implementer completed the work but flagged doubts. Read the concerns before proceeding. If the concerns are about correctness or scope, address them before review. If they're observations (e.g., "this file is getting large"), note them and proceed to review.
 
@@ -226,6 +226,18 @@ partner gets at most one round-trip. Review findings the final review left
 unfixed feed the gate. This is compatible with Continuous execution: "all
 tasks complete" is a sanctioned stop.
 
+When the plan-completion protocol has finished and the final review's fixes
+are merged, delete this plan's workspace — the `$WORKSPACE` you resolved at
+skill start: `rm -rf "$WORKSPACE"`. Git history is the record now. Sibling
+directories under `.sdd/` belong to other plans — leave them alone, and never
+`rm -rf .sdd` itself.
+
+Order matters. The delete runs **after** the protocol, never before: the
+resolve-before-defer gate reads this run's leftovers — the ledger, unfixed
+review findings, deferred-Minor confirmations — to build its batched questions
+and the `specs/deferred_items.md` entries. Deleting the workspace first
+destroys the protocol's input.
+
 ## File Handoffs
 
 Everything you paste into a dispatch prompt — and everything a subagent
@@ -244,7 +256,7 @@ and is re-read on every later turn. Hand artifacts over as files:
   report contract. Exact values (numbers, magic strings, signatures, test
   cases) appear only in the brief.
 - **Review package (diffs):** generate every reviewer's diff as a file — run
-  this skill's `scripts/review-package BASE HEAD` and pass the printed path (or,
+  this skill's `scripts/review-package PLAN_FILE BASE HEAD` and pass the printed path (or,
   without bash: `git log --oneline`, `git diff --stat`, and `git diff -U10` for
   the range, redirected to one uniquely named file). The output never enters
   your context; the reviewer sees the commit list, stat summary, and full diff
@@ -269,11 +281,15 @@ controllers that lost their place have re-dispatched entire completed task
 sequences — the single most expensive failure observed. Track progress in
 a ledger file, not only in todos.
 
-- At skill start, run this skill's `scripts/sdd-workspace` (it creates the
-  workspace and its self-ignoring .gitignore), then check for a ledger:
-  `cat "$(git rev-parse --show-toplevel)/.sdd/progress.md"`. Tasks listed there
-  as complete are DONE — do not re-dispatch them; resume at the first task
-  not marked complete.
+- At skill start, run this skill's `scripts/sdd-workspace <plan-file>` once and
+  keep the directory it prints — it creates this plan's workspace and the
+  self-ignoring .gitignore that covers every plan's:
+  `WORKSPACE=$(scripts/sdd-workspace <plan-file>)`. Then check for a ledger:
+  `cat "$WORKSPACE/progress.md"`. Tasks listed there as complete are DONE — do
+  not re-dispatch them; resume at the first task not marked complete.
+- The workspace is per plan, so that ledger is always this plan's. Its first
+  line names the plan it belongs to; if that name is not the plan in your hand,
+  stop and say so rather than resuming against it.
 - **On resume after a checkpoint, reconcile before dispatching.** Before
   dispatching the first incomplete task, replay the ledger's `deviation` lines:
   for any interface a coming task consumes, trust the ledger's actual signature
@@ -281,14 +297,19 @@ a ledger file, not only in todos.
   with `git show <SHA>:<path>`. This repairs the cross-task context that
   `/clear` dropped — without it a relaunched controller dispatches stale
   signatures and the build breaks or the implementer stalls on NEEDS_CONTEXT.
+- When you create the ledger, write its first line as
+  `Plan: <plan-file-path>`. A workspace is named from the plan's basename, so
+  two plans with the same basename in different directories would collide;
+  this line is what makes that visible instead of silent.
 - When a task's review comes back clean, append one line to the ledger in
   the same message as your other bookkeeping:
   `Task N: complete (commits <base7>..<head7>, review clean)`.
 - The ledger is your recovery map: the commits it names exist in git even
   when your context no longer remembers creating them. After compaction,
   trust the ledger and `git log` over your own recollection.
-- `git clean -fdx` will destroy the ledger (the workspace's own .gitignore keeps it out of git); if
-  that happens, recover from `git log`.
+- `git clean -fdx` will destroy the ledger (the `.sdd` parent's self-ignoring
+  .gitignore keeps every plan's workspace out of git, but `-x` removes ignored
+  files too); if that happens, recover from `git log`.
 
 ## Context Checkpoints
 
@@ -440,7 +461,7 @@ Done!
 - Let implementer self-review replace actual review (both are needed)
 - Tell a reviewer what not to flag, or pre-rate a finding's severity — see **Constructing Reviewer Prompts**
 - Dispatch a task reviewer without a diff file — generate it first
-  (`scripts/review-package BASE HEAD`) and name the printed path in the
+  (`scripts/review-package PLAN_FILE BASE HEAD`) and name the printed path in the
   prompt
 - Move to next task while the review has open Critical/Important issues
 - Re-dispatch a task the progress ledger already marks complete — check
