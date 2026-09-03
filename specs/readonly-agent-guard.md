@@ -287,6 +287,25 @@ from the agent files it enforces, which are themselves symlinked from this repo.
   guard fails open silently. Failing open silently is the one outcome a contract
   guard must not have. The lint recovers the anti-drift property at commit time
   instead.
+- **D7 — `fetch` and `pull` are denied deliberately, not by fall-through.**
+  `git fetch` is the one verb the fail-closed default sweeps in that arguably
+  violates no clause of the quoted contract: it writes `refs/remotes/*` and
+  `FETCH_HEAD`, touching neither the working tree, the index, HEAD, local branch
+  state, nor the worktree list. It is denied anyway, for two reasons. First,
+  reproducibility: a fetch part-way through a review silently changes what a
+  subsequent `git diff origin/main...` shows, so the artifact under review moves
+  while it is being reviewed. Second, architecture: in both review paths the
+  *controller* prepares the diff (`scripts/review-package`) before dispatching, and
+  `agents/task-reviewer.md` already instructs the reviewer not to re-run git
+  commands when a diff file is present — so the reviewer seat has no occasion to
+  fetch. Confirmed against the roster: no guarded agent's definition invokes
+  `git fetch` (`task-reviewer.md:32`'s "fetch the diff yourself" is English, and
+  resolves to `git diff BASE..HEAD`, which is allowed). If a real dispatch ever
+  needs a base ref that is not local, the fix is for the controller to fetch before
+  dispatching, not to widen the guard. `pull` is denied on the stronger ground that
+  it merges into HEAD. **Recorded as a decision so a future reader does not "fix"
+  it as an oversight** — and so that flipping it, if a real case appears, is a
+  one-line change with a known rationale to argue against.
 - **D5 — No escape hatch.** See §1.
 - **D6 — Python rather than bash**, against the local convention of `hooks/`. See
   §1.
@@ -302,7 +321,9 @@ repo on one test runner:
    `worktree list` vs `worktree add`, `branch -v` vs `branch -d x`, `config --get`
    vs `config a b`, `tag -l` vs `tag -a v1`); the fail-closed default, asserted on
    both a real plumbing write (`git update-index`) and an invented verb
-   (`git frobnicate`); global-option skipping (`git -C /x commit` denies,
+   (`git frobnicate`); the D7 network verbs (`git fetch` and `git pull` both deny,
+   asserted as intentional rather than incidental); global-option skipping
+   (`git -C /x commit` denies,
    `git -C /x log` allows); each non-git denylist entry; and compound commands
    where the mutator is not the first subcommand.
 2. *Contract*, driving the script as a subprocess with real payloads on stdin — all
