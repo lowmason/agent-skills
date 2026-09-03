@@ -1,6 +1,11 @@
 # lint_wiki citation-detection contract
 
-**Status: APPROVED (2026-09-03), not yet implemented.** Next skill: `writing-plans`.
+**Status: COMPLETE (2026-09-03)** — implemented by
+[plan 23](../plans/completed/23-lint-wiki-citation-contract.md); retired to
+`specs/completed/`. The two Accepted limitations below were consciously deferred
+to `specs/deferred_items.md`. The live wiki's `SCHEMA.md` stays at version 2
+until the user migrates it by hand — that is exactly what
+`bootstrap_wiki.py --check` reports as STALE.
 
 Amends `specs/completed/llm-wiki-spec.md` §10 (the `scripts/lint_wiki.py`
 contract) and § "Body conventions" of the wiki `SCHEMA.md`. Source: the three
