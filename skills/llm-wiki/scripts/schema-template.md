@@ -1,4 +1,4 @@
-<!-- schema-version: 2 (bump on a breaking contract change; `bootstrap_wiki.py --check` flags a root whose schema is behind the bundle) -->
+<!-- schema-version: 3 (bump on a breaking contract change; `bootstrap_wiki.py --check` flags a root whose schema is behind the bundle) -->
 # SCHEMA — research-wiki normative formats
 
 This file is the machine-readable contract. `scripts/lint_wiki.py` enforces the
@@ -52,6 +52,15 @@ referencing a source-page slug plus a position: `[robnik-2022-mclmc §4.2]`,
 `[hoffman-2014-nuts Table 2]`. Contradictory claims are recorded adjacently with
 both locators and a one-line note, then logged to `open-questions.md`. Session
 digest source pages structure their body as capture notes (below), not prose.
+
+A position opens with `§`, `p.`, `Table`, `Fig`, `Eq`, or a digit — `Table`
+also covers `Tables`, and `Fig` covers `Figure`/`Figs`, while a page range is
+written `p. 3-4` (not `pp.`). A bracketed token whose remainder does not open
+that way is prose, not a citation, and is never checked as one: `[see below]`,
+`[Figure 2]` and `[NUTS §3]` are ordinary text. A citation is recognized only
+when the position matches *and* the token either is multi-part (carries a
+hyphen or a four-digit year) or exactly names an existing source-page slug.
+Extend the position list additively, against real content.
 
 ## index
 

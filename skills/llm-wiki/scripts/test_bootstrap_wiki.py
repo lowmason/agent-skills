@@ -209,7 +209,7 @@ def test_seeded_schema_contains_specs_harvest_contract(tmp_path):
   root = tmp_path / 'wiki'
   assert bw.main([str(root)]) == 0
   schema = (root / 'SCHEMA.md').read_text()
-  assert 'schema-version: 2' in schema
+  assert 'schema-version: 3' in schema
   assert '## Specs-harvest briefs and digests' in schema
   assert 'raw/specs/' in schema
   assert '`raw/sessions/` or `raw/specs/`' in schema
@@ -226,3 +226,15 @@ def test_installed_distill_specs_runs_beside_its_sibling(tmp_path):
     capture_output=True, text=True)
   assert proc.returncode == 0
   assert 'inventory' in proc.stdout and 'assemble' in proc.stdout
+
+
+def test_seeded_schema_documents_locator_vocabulary(tmp_path):
+  '''The linter may only hard-error on what SCHEMA.md reserves, so the
+  citation rule must be stated in the contract a bootstrapped root inherits
+  (spec: lint_wiki citation-detection contract).'''
+  root = tmp_path / 'wiki'
+  assert bw.main([str(root)]) == 0
+  schema = (root / 'SCHEMA.md').read_text()
+  assert 'A position opens with' in schema
+  assert 'is prose, not a citation' in schema
+  assert 'four-digit year' in schema

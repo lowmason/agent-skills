@@ -221,10 +221,11 @@ cases and no existing test may be deleted to make room.
 ## Contract changes
 
 1. **`skills/llm-wiki/scripts/schema-template.md`** — § "Body conventions"
-   gains the normative locator-position vocabulary (`§`, `p.`/`pp.`,
-   `Table(s)`, `Fig`/`Figure(s)`, `Eq`, `Ch`, or a leading digit) and states
-   that a bracketed token failing the rule is prose, not a citation. Bump
-   `<!-- schema-version: 2 -->` to `3`.
+   gains the normative locator-position vocabulary (`§`, `p.`, `Table`, `Fig`,
+   `Eq`, or a leading digit — D1's recorded list, per Design §C; the prefix
+   match makes `Tables`/`Figure`/`Figs` free, while `pp.` and `Ch` are not
+   accepted) and states that a bracketed token failing the rule is prose, not
+   a citation. Bump `<!-- schema-version: 2 -->` to `3`.
 2. **`specs/completed/llm-wiki-spec.md` §10** — the row *"Body citation slug
    with no matching source page | error"* keeps its severity; what changes is
    what counts as a body citation. Add a pointer to this spec rather than

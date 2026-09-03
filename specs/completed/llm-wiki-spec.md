@@ -176,6 +176,12 @@ out:   one line per finding: 'ERROR|WARN|INFO  <path>  <message>', then a summar
 | Raw file with no source page (ingest backlog) | info |
 | Page count > 120 or source count > 100 (soft ceiling — revisit qmd) | info |
 
+> Amended 2026-09-03 by `specs/lint-wiki-citation-contract.md`: the severities
+> above are unchanged, but *what counts as a body citation* is now the
+> recognition rule in that spec (position vocabulary + slug shape or
+> membership), not any bracketed token. Index-line targets may carry a
+> `#fragment`.
+
 ## 11. Scale policy
 
 Index-first navigation is the retrieval system until a soft ceiling of roughly 120 wiki pages or 100 sources, at which point the info-level lint fires and the qmd/hybrid-search question is revisited as a deliberate decision, not an incremental drift. Until then, retrieval is: index, then pages, with `grep -r` over `wiki/` as fallback.
