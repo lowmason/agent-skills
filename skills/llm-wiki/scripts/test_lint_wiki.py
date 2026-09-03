@@ -571,3 +571,26 @@ def test_looks_like_position(position, expected):
 ])
 def test_is_citation(token, position, expected):
   assert lint_wiki._is_citation(token, position, set(CITE_SLUGS)) is expected
+
+
+def test_index_line_with_fragment_resolves(tmp_path):
+  '''A deep-link index line is legal: SCHEMA.md reserves nothing that
+  prohibits it, and check_links already strips fragments from body links.'''
+  root = make_wiki(tmp_path)
+  valid_source(root, 'sources/a.md', 'a')
+  set_index(root,
+            ['- [a](sources/a.md#background) — s · 1 · verified · 2026-07-22'])
+  assert [f for f in lint_wiki.run_checks(root)
+          if f[0] == 'ERROR' and 'index' in f[2].lower()] == []
+
+
+def test_index_lines_differing_only_by_fragment_are_a_duplicate(tmp_path):
+  '''Two lines pointing into the same page collapse to one target, so
+  duplicate detection is fixed by the same strip.'''
+  root = make_wiki(tmp_path)
+  valid_source(root, 'sources/a.md', 'a')
+  set_index(root,
+            ['- [a](sources/a.md#background) — s · 1 · verified · 2026-07-22',
+             '- [a](sources/a.md#method) — s · 1 · verified · 2026-07-22'])
+  assert any(f[0] == 'ERROR' and 'duplicate' in f[2].lower()
+             for f in lint_wiki.run_checks(root))

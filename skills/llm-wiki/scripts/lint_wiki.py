@@ -98,7 +98,11 @@ def check_frontmatter_schema(root, pages):
 
 
 def _index_targets(root):
-  '''Set of index-line targets (paths relative to wiki/, e.g. sources/a.md).'''
+  '''Set of index-line targets (paths relative to wiki/, e.g. sources/a.md).
+  A #fragment is stripped, matching check_links: SCHEMA.md does not prohibit
+  an index deep-link, and the divergence between the two code paths was the
+  bug. Duplicate detection inherits this -- two lines into the same page
+  collapse to one target.'''
   idx = root / 'wiki/index.md'
   if not idx.exists():
     return []
@@ -106,7 +110,7 @@ def _index_targets(root):
   for line in idx.read_text().split('\n'):
     m = INDEX_LINE_RE.match(line.strip())
     if m:
-      out.append(m.group(1))
+      out.append(m.group(1).split('#', 1)[0])
   return out
 
 
