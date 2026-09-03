@@ -209,3 +209,72 @@ def test_git_denial_names_a_read_only_alternative_where_one_exists():
     detail = guard.classify('git checkout main -- src/x.py')
     assert detail is not None
     assert 'git show' in detail
+
+
+MODE_DEPENDENT_PAIRS = [
+    # (allowed command, denied command)
+    ('git stash list', 'git stash'),
+    ('git stash show', 'git stash pop'),
+    ('git worktree list', 'git worktree add ../wt main'),
+    ('git submodule status', 'git submodule update --init'),
+    ('git notes list', 'git notes add -m x'),
+    ('git bisect log', 'git bisect start'),
+    ('git sparse-checkout list', 'git sparse-checkout set src'),
+    ('git remote -v', 'git remote add origin url'),
+    ('git remote show origin', 'git remote remove origin'),
+    ('git remote get-url origin', 'git remote set-url origin url'),
+    ('git reflog', 'git reflog delete HEAD@{0}'),
+    ('git reflog show HEAD', 'git reflog expire --all'),
+    ('git branch', 'git branch new-feature'),
+    ('git branch -v', 'git branch -d old'),
+    ('git branch -a', 'git branch -m old new'),
+    ('git branch --show-current', 'git branch -f main HEAD~1'),
+    ("git branch --list 'f*'", 'git branch --edit-description'),
+    ('git branch --merged main', 'git branch --unset-upstream'),
+    ('git tag -l', 'git tag v1.0'),
+    ("git tag --list 'v*'", 'git tag -a v1 -m x'),
+    ('git tag --points-at HEAD', 'git tag -d v1'),
+    ('git config --get user.name', 'git config user.name Someone'),
+    ('git config --list', 'git config --unset user.name'),
+    ('git config --get-regexp "^remote"', 'git config --add k v'),
+]
+
+
+def test_mode_dependent_verbs_allow_the_read_only_form():
+    for allowed, _ in MODE_DEPENDENT_PAIRS:
+        assert guard.classify(allowed) is None, allowed
+
+
+def test_mode_dependent_verbs_deny_every_other_form():
+    for _, denied in MODE_DEPENDENT_PAIRS:
+        assert guard.classify(denied) is not None, denied
+
+
+def test_bare_stash_is_denied_because_it_mutates():
+    # The one case where the bare verb is the dangerous one: `git stash` with no
+    # subcommand stashes the caller's uncommitted work.
+    detail = guard.classify('git stash')
+    assert detail is not None
+    assert 'stash list' in detail
+
+
+def test_positional_without_a_list_flag_denies_for_branch_and_tag():
+    assert guard.classify('git branch foo') is not None
+    assert guard.classify('git tag v1') is not None
+    assert guard.classify("git branch --list 'f*'") is None
+    assert guard.classify("git tag -l 'v*'") is None
+
+
+def test_config_requires_a_read_mode_flag():
+    assert guard.classify('git config a b') is not None
+    assert guard.classify('git config --get a') is None
+    # Faithful to the spec table: only the five read-mode flags are listed, so a
+    # scope flag denies. Documented in hooks/README.md as a known false positive.
+    assert guard.classify('git config --global --list') is not None
+
+
+def test_value_taking_flags_do_not_look_like_positionals():
+    for command in ('git branch --contains HEAD', 'git branch --no-merged main',
+                    'git branch --sort=-committerdate', 'git tag --sort refname',
+                    'git tag --format="%(refname)"'):
+        assert guard.classify(command) is None, command

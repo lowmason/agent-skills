@@ -104,10 +104,52 @@ GIT_ALTERNATIVES = {
             'yourself.',
 }
 
-# Filled in by the mode-dependent verb rules; consulted by _classify_git before
-# the fail-closed default.
-GIT_SUBCOMMAND_ALLOWED = {}
-GIT_FLAG_ALLOWED = {}
+# Verbs whose read-only forms are named by a subcommand: (allowed subcommands,
+# whether the bare verb is itself read-only). `git stash` bare is NOT — it
+# stashes the caller's uncommitted work, which is the exact damage this guard
+# exists to prevent.
+GIT_SUBCOMMAND_ALLOWED = {
+    'stash': (frozenset({'list', 'show'}), False),
+    'worktree': (frozenset({'list'}), False),
+    'submodule': (frozenset({'status', 'summary'}), False),
+    'notes': (frozenset({'list', 'show'}), False),
+    'bisect': (frozenset({'log', 'view'}), False),
+    'sparse-checkout': (frozenset({'list'}), False),
+    'remote': (frozenset({'show', 'get-url'}), True),
+    'reflog': (frozenset({'show'}), True),
+}
+
+# Verbs whose read-only forms are named by flags. `value_flags` take an argument,
+# which must not be mistaken for a positional. A positional is allowed only
+# alongside a `list_flag`, because `git branch foo` and `git tag v1` create.
+# `required` (config only) means at least one of these must be present.
+GIT_FLAG_ALLOWED = {
+    'branch': {
+        'flags': frozenset({'-l', '--list', '-a', '-r', '-v', '-vv', '--contains',
+                            '--merged', '--no-merged', '--show-current',
+                            '--format', '--sort'}),
+        'value_flags': frozenset({'--contains', '--merged', '--no-merged',
+                                  '--format', '--sort'}),
+        'list_flags': frozenset({'-l', '--list'}),
+        'required': frozenset(),
+    },
+    'tag': {
+        'flags': frozenset({'-l', '--list', '--contains', '--points-at',
+                            '--sort', '--format'}),
+        'value_flags': frozenset({'--contains', '--points-at', '--sort',
+                                  '--format'}),
+        'list_flags': frozenset({'-l', '--list'}),
+        'required': frozenset(),
+    },
+    'config': {
+        'flags': frozenset({'--get', '--get-all', '--get-regexp', '--list', '-l'}),
+        'value_flags': frozenset(),
+        'list_flags': frozenset({'--get', '--get-all', '--get-regexp',
+                                 '--list', '-l'}),
+        'required': frozenset({'--get', '--get-all', '--get-regexp',
+                               '--list', '-l'}),
+    },
+}
 
 
 def split_subcommands(command):
@@ -173,6 +215,68 @@ def classify(command):
         detail = _classify_subcommand(tokens)
         if detail is not None:
             return detail
+    return None
+
+
+def _readable_forms(verb, subcommands):
+    return ' / '.join('`git ' + verb + ' ' + s + '`' for s in sorted(subcommands))
+
+
+def _classify_git_subcommand_verb(verb, rest):
+    allowed, bare_is_readonly = GIT_SUBCOMMAND_ALLOWED[verb]
+    subcommand = None
+    for token in rest:
+        if not token.startswith('-'):
+            subcommand = token
+            break
+    if subcommand is None:
+        if bare_is_readonly:
+            return None
+        return ('bare `git ' + verb + '` mutates state; only '
+                + _readable_forms(verb, allowed) + ' are read-only.')
+    if subcommand in allowed:
+        return None
+    return ('`git ' + verb + ' ' + subcommand + '` is not a read-only form; only '
+            + _readable_forms(verb, allowed) + ' are allowed.')
+
+
+def _classify_git_flag_verb(verb, rest):
+    """Classify a flag-keyed verb (branch / tag / config).
+
+    Two structural notes:
+    * A value flag consumes the next token, so `git branch --contains <ref>` and
+      `git branch --merged <ref>` never register a positional. That is the right
+      resolution for a read-only check — those arguments are commit-ish, not new
+      branch names — but it does mean the positional guard below cannot fire
+      alongside them.
+    * For `config`, `list_flags == required`, so the positional branch is
+      unreachable: anything carrying a positional has already satisfied the
+      required check via the same flag set. Kept uniform with branch/tag rather
+      than special-cased.
+    """
+    rule = GIT_FLAG_ALLOWED[verb]
+    seen = set()
+    has_positional = False
+    i = 0
+    while i < len(rest):
+        token = rest[i]
+        if token.startswith('-'):
+            name, sep, _value = token.partition('=')
+            if name not in rule['flags']:
+                return ('`git ' + verb + ' ' + token + '` is not one of the '
+                        'read-only forms of `git ' + verb + '`.')
+            seen.add(name)
+            i += 1 if sep else (2 if name in rule['value_flags'] else 1)
+            continue
+        has_positional = True
+        i += 1
+    if rule['required'] and not (seen & rule['required']):
+        return ('`git ' + verb + '` is read-only only in its query forms ('
+                + ', '.join('`' + f + '`' for f in sorted(rule['required']))
+                + '); any other form writes.')
+    if has_positional and not (seen & rule['list_flags']):
+        return ('`git ' + verb + '` with a bare argument creates or moves a '
+                + verb + '; use `git ' + verb + ' --list` to read.')
     return None
 
 
