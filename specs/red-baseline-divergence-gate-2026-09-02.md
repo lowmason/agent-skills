@@ -20,12 +20,12 @@ Store-visits Poisson model, 12 regions, centered hierarchical prior (a funnel by
 Fixture and artifact cross-grepped clean for `target_accept|1%|funnel|non-centered|reparam` and
 `sigma_region|promo|store visits` respectively. Prompts assembled from files outside the repo; skill
 symlink, the plan file, the SDD workspace, and every `specs/` file mentioning `target_accept` moved
-aside for the window. Dispatch: Agent tool, general-purpose, opus, opaque description ("Step 5 of 10"),
-5 reps per arm, fresh context each. Dispatch was not one message: the first batch carried A1–A5 and
-B1–B3; B4–B5 went out in a second batch minutes later with the identical prompt file, inside the same
-quarantine window. The two PARTIAL reps fell one in each batch — B3 in the first, B4 in the second —
-so the PARTIAL verdicts do not track the batch they were dispatched in. Arm B inlined the pre-Task-6 SKILL.md + diagnostics.md (post-Task-2
-citations, unchanged rung 1).
+aside for the window. Dispatch: Agent tool, general-purpose, opus, opaque description ("Step 5 of
+10"), 5 reps per arm, fresh context each. Dispatch was not one message: the first batch carried
+A1–A5 and B1–B3; B4–B5 went out in a second batch minutes later with the identical prompt file,
+inside the same quarantine window. The two PARTIAL reps fell one in each batch — B3 in the first, B4
+in the second — so the PARTIAL verdicts do not track the batch they were dispatched in. Arm B
+inlined the pre-Task-6 SKILL.md + diagnostics.md (post-Task-2 citations, unchanged rung 1).
 
 Contamination check: every rep's transcript (`subagents/agent-<id>.jsonl`) was grepped for
 `Read|Grep|Glob|Skill|Bash|WebFetch` — no hits; the harness reported `tool_uses: 0` for all ten.
