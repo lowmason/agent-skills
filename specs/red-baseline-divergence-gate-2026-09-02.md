@@ -2,7 +2,7 @@
 
 **Date:** 2026-09-02 · **Status:** RED complete; GREEN pending (Task 8 of plan 20).
 **Governs:** whether the "raise `target_accept_prob` first" rung in `references/diagnostics.md`
-binds agents to a first action that Gelman et al. 2026 §12.3 says will not help above ~1% divergences.
+binds agents to a first action that Gelman et al. 2026 §12.3 says will not help above ~1% divergences. (§12.3 was read against the PDF in Task 6; this record predates that check.)
 
 > ⚠️ **Quarantine this file during any future micro-test of `bayesian-workflow`.** It names
 > the skill and states the expected failure — Channel 1 per `microtest-isolation-channels`.
@@ -21,14 +21,24 @@ Fixture and artifact cross-grepped clean for `target_accept|1%|funnel|non-center
 `sigma_region|promo|store visits` respectively. Prompts assembled from files outside the repo; skill
 symlink, the plan file, the SDD workspace, and every `specs/` file mentioning `target_accept` moved
 aside for the window. Dispatch: Agent tool, general-purpose, opus, opaque description ("Step 5 of 10"),
-5 reps per arm, fresh context each. Arm B inlined the pre-Task-6 SKILL.md + diagnostics.md (post-Task-2
+5 reps per arm, fresh context each. Dispatch was not one message: the first batch carried A1–A5 and
+B1–B3; B4–B5 went out in a second batch minutes later with the identical prompt file, inside the same
+quarantine window. Arm B inlined the pre-Task-6 SKILL.md + diagnostics.md (post-Task-2
 citations, unchanged rung 1).
 
 Contamination check: every rep's transcript (`subagents/agent-<id>.jsonl`) was grepped for
-`Read|Grep|Glob|Skill|Bash|WebFetch` — no hits; the harness reported `tool_uses: 0` for all ten. Every
-rep's `TOOLS USED:` line names `advisor`, the harness's built-in model-consultation feature (no file
-or skill access; two reps note it was rate-limited and returned nothing). Not treated as a
-contamination channel; recorded here so a future reader is not surprised by it.
+`Read|Grep|Glob|Skill|Bash|WebFetch` — no hits; the harness reported `tool_uses: 0` for all ten.
+**Deviation from the pre-registered VOID rule, disclosed:** every rep's `TOOLS USED:` line names
+`advisor`, and the rubric's letter ("names any tool") would VOID all ten. `advisor` is the harness's
+built-in model-consultation feature for opus subagents: it forwards the rep's own conversation (the
+prompt above) to a second model and returns advice whose content is encrypted in the transcript. It has
+no file, search, or skill access, so it cannot carry quarantined text into a rep — the contamination the
+VOID rule exists to catch — and it was equally available to every rep in every arm (two A reps report it
+rate-limited and empty). Voiding and re-dispatching would reproduce the same condition, so the reps
+stand, with two consequences stated plainly: (1) arm A measures *opus + advisor* without the skill, not
+an unaided model, so "native" below means native to that configuration; (2) arm C (Task 8) runs under
+the same configuration, which keeps the three-arm contrast like-for-like. Because the advisor's content
+is opaque, nothing in this record attributes any specific reasoning to it.
 
 ## Result
 
@@ -50,9 +60,11 @@ contamination channel; recorded here so a future reader is not surprised by it.
 Scoring note on B3/B4: both name non-centering as the step but raise `target_accept_prob` from the
 user's 0.8 default to the skill template's 0.9 in the same code block, and both say so ("0.9 is the
 template baseline, not the fix"; "0.9 bundled in; two changes, not one"). The pre-registered rubric
-scores a combined first step that raises `target_accept_prob` as PARTIAL, so they count as FAIL. Under
-a lenient reading (0.9 is the template default, not a divergence response) they PASS and B_fail = 1/5;
-the rule is applied as written, and ties were pre-registered to go to the stronger form anyway.
+scores a combined first step that raises `target_accept_prob` as PARTIAL, so they count as FAIL. Under a lenient reading (0.9 is the template default, not a divergence response) they PASS and
+B_fail = 1/5, which would cross into the ≤ 1 branch and give the one-line conditional instead — so the
+form decision is load-bearing on the B3/B4 PARTIAL call, not robust to it. The rule is applied as
+written (a rubric that bends after the data are in was never pre-registered); the GREEN run will show
+whether the recipe form was needed.
 
 ## Decision (pre-registered rule applied)
 
@@ -61,7 +73,7 @@ GREEN pass bar: C_fail ≤ 1 and ≥ 4/5 C reps converge on the same first actio
 
 ## Qualitative evidence
 
-- **The failure is skill-caused, not native.** With no guidance, 5/5 reps non-centered first; the only
+- **The failure is skill-caused, not native to the model configuration** (both arms ran opus + advisor — see Fixture). With no guidance, 5/5 reps non-centered first; the only
   outright FAIL cited the skill by name: "That is rung 1 of the escalation ladder, and it hasn't been
   tried." The same rep *knew* the threshold — its own decision rule was "you want divergences under
   ~1% and `sigma_region` ESS clearing 400" — and still raised first because the ladder told it to.
