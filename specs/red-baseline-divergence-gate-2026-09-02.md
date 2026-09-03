@@ -1,6 +1,6 @@
 # RED baseline — divergence-fraction gate in `bayesian-workflow`
 
-**Date:** 2026-09-02 · **Status:** RED complete; GREEN pending (Task 8 of plan 20).
+**Date:** 2026-09-02 · **Status:** RED + GREEN complete (plan 20, Tasks 5 and 8).
 **Governs:** whether the "raise `target_accept_prob` first" rung in `references/diagnostics.md`
 binds agents to a first action that Gelman et al. 2026 §12.3 says will not help above ~1% divergences. (§12.3 was read against the PDF in Task 6; this record predates that check.)
 
@@ -97,3 +97,41 @@ GREEN pass bar: C_fail ≤ 1 and ≥ 4/5 C reps converge on the same first actio
 - **What reps flagged next (candidates for the failure-signatures table):** unmodeled store level
   (48 stores under 12 region intercepts) and Poisson overdispersion — "Clean divergences will mean
   sampling is fixed, not that the model is adequate — check the PPC before believing the posterior."
+
+## GREEN (new wording — Task 6 recipe / one-line form: recipe)
+
+**Round 1** — the Task 6 wording as committed (571a16c). Rung 1's `> 1` branch ended in three destinations ("Go straight to `az.plot_pair(...)` on the flagged scale/location pairs, the Failure signatures table, and rungs 5–7"), and its two sibling passages named different ones first (fix-list step 1: "skip to 2–4"; SKILL.md row: "reparameterize …, center predictors, check `az.plot_pair`").
+
+| rep | first action | verdict | contamination |
+|---|---|---|---|
+| C1 | "Non-center `a_region` and refit." — "past the gate where `target_accept_prob` is the right lever" | PASS | none |
+| C2 | "Do not touch `target_accept_prob`." → "pair-plot the flagged scale/location pair on the log scale" | PASS | none |
+| C3 | "Non-center `a_region` and re-fit." — code comment "leave target_accept_prob at the default" | PASS | none |
+| C4 | "plot the scale–location pair to confirm (or kill) the funnel before changing the model" | PASS | none |
+| C5 | "dispersion check on the data you already have — no refit" (per-store variance-to-mean ratio, within-region spread) | PASS* | none |
+
+**C_fail = 0/5 · convergence: 2/5 named "non-center" first, 2/5 "pair plot", 1/5 "data dispersion check".** Pass bar missed on the convergence half (≥ 4/5 required) → refactor round 2.
+
+\*C5 is none of the rubric's enumerated PASS actions (inspect geometry / reparameterize / center / tighten the scale prior / simplify); it raises nothing and inspects before any refit, so it is scored PASS and flagged here.
+
+What split the reps: four of five cited the funnel row's strong-per-group-likelihood caveat, computed ~104 rows per region, and went to look before non-centering (C2, C4 by pair plot; C5 by a data check); C1 and C3 read the summary as a textbook funnel and went straight to rung 5. The gate itself held in every rep — nobody raised `target_accept_prob` — so the variance came from the rung's *consequent*, not its predicate.
+
+**Refactor** (writing-skills: one observable predicate → one action). The `> 1` branch now names a single next action — the pair plot of the flagged scale against one of its children, before any refit — and routes from the picture to the table row and rung (neck → rung 5, straight ridge → aliasing row, no shape → rung 6). The two sibling passages were rewritten to name the same first action; SKILL.md is outside Task 8's file list and was changed under the plan's sibling-propagation constraint (commit `d47efab` is the precedent this guards against). The funnel row's caveat was left intact — it is book-accurate — and rung 1 now says the plot, not the printed summary, settles it.
+
+**Round 2** — refactored wording, five fresh reps, same fixture, same quarantine window:
+
+| rep | first action | verdict | contamination |
+|---|---|---|---|
+| R1 | "pair-plot `log(sigma_region)` against one of its children — before any refit" | PASS | none |
+| R2 | "plot the flagged scale against one of its children — before any refit, and before touching a sampler setting" | PASS | none |
+| R3 | "Do the diagnostic pair plot — one plot, no refit." | PASS | none |
+| R4 | "don't touch the sampler — plot the funnel" | PASS | none |
+| R5 | "one `az.plot_pair` of the flagged scale against one of its children, before any refit" | PASS | none |
+
+**C_fail = 0/5 · convergence: 5/5 named "pair plot of the flagged scale vs one of its children" first.** Pass bar met (round 2).
+
+Dispatch note: in both rounds the reps went out in batches of 2, 2 and 1 — the ~53 KB prompt does not fit five times in one dispatch message — from the identical prompt file, inside one quarantine window (the round-1 prompt is kept as `promptC-r1.md` beside the round-2 `promptC.md`). Every rep reports `TOOLS USED: advisor` except C3 (`none`); the harness reported `tool_uses: 0` for all ten and every transcript grepped clean for `Read|Grep|Glob|Skill|Bash|WebFetch` — the same configuration as arms A and B (see Fixture).
+
+## Disposition
+
+Three-arm contrast: A (no guidance) 0/5 raised `target_accept_prob`; B (the pre-gate skill) 3/5 raised it or bundled a raise into the fix; C (the gated skill) 0/5 in both rounds. The failure was skill-caused, and the gate removes it. What the wording now makes agents do first, above ~1% divergences, is one thing: pair-plot the flagged scale against one of its children — every round-2 rep chose the worst-ESS child, and four of five put the scale on the log axis up front — and let the picture choose between rung 5, the aliasing row, and rung 6; five of five converged on it, against a three-way split when the rung offered three destinations. Two things the reps did that the Failure signatures table should say and does not: (1) four of five reps in each round read the funnel row's caveat as a rows-per-group rule (~104 per region → "strong" → non-centering may hurt), so the table should say what "strong per-group likelihood" means operationally — the pair plot decides, not n per group, which rung 1 now states but the row itself does not; (2) all five round-1 reps and one round-2 rep named the unmodeled store level (48 stores under 12 region intercepts) with Poisson overdispersion as the structural suspect if the plot shows no neck — the table has no row for a missing nesting level or overdispersion presenting as a funnel — and every one of them deferred that change to the user, as rung 7 asks.

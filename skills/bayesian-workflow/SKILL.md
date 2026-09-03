@@ -338,7 +338,7 @@ These are battle-tested lessons that save hours of debugging:
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| Divergences | Posterior geometry issue | ≤ ~1% of transitions: raise `target_accept_prob` to 0.95–0.99. More than that: don't — reparameterize (non-centered via `LocScaleReparam`), center predictors, check `az.plot_pair`; see diagnostics.md → Failure signatures (Gelman et al. 2026, §12.3) |
+| Divergences | Posterior geometry issue | ≤ ~1% of transitions: raise `target_accept_prob` to 0.95–0.99. More than that: don't — first `az.plot_pair` the flagged scale against one of its children, then apply the matching Failure-signatures fix (funnel → non-centered `LocScaleReparam`; ridge → identifiability; uncentered predictors → center them); see diagnostics.md → Failure signatures (Gelman et al. 2026, §12.3) |
 | Low ESS | High autocorrelation | More warmup/draws, reparameterize, reduce correlations |
 | R-hat > 1.01 | Chains haven't mixed | More draws, better init (`init_strategy=init_to_median`), check for multimodality |
 | Prior pred. looks wrong | Bad priors | Tighten or shift priors, use domain knowledge / PreliZ |
