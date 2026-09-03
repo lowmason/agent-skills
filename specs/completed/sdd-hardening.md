@@ -1,5 +1,11 @@
 # SDD hardening
 
+**Status: COMPLETE (2026-09-03)** — implemented by
+[plan 22](../plans/completed/22-sdd-hardening.md); retired to
+`specs/completed/`. Eight Minor findings and one adjudicated duplication
+recommendation were consciously deferred to `specs/deferred_items.md` at
+the 2026-09-03 completion gate.
+
 Adopt four changes from superpowers v6.1.0–v6.3.0 into
 `skills/subagent-driven-development`, its three dispatch scripts, and its two
 reviewer templates. Sources and per-claim verification are in
