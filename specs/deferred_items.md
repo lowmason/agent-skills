@@ -612,3 +612,127 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       changing `<= tlvl` to `< tlvl` leaves all 14 green, because `### Task 2` is terminated
       by the Task-heading rule before the level comparison is consulted. `CLAUDE.md`'s test
       counts were synced in the same pass (this suite 11 → 14, design-architecture 8 → 9).
+
+## 22-sdd-hardening — 2026-09-03
+- [ ] M1 — `skills/subagent-driven-development/scripts/test_sdd_scripts.py:89-144`:
+      basename stripping is never exercised. Every workspace test passes a
+      root-level plan (`plan.md`), so a bug that resolved a nested plan path
+      (e.g. `specs/plans/22-x.md`) into the wrong slug — `.sdd/specs/plans/22-x/`
+      instead of `.sdd/22-x/` — would still pass every existing test. Add a case
+      that calls `sdd-workspace` with a plan path containing directory
+      components and asserts the workspace is named from the basename alone.
+- [ ] M2 — `skills/subagent-driven-development/scripts/sdd-workspace:31`
+      (`slug=$(basename "$plan" .md)`): basename slugs collide across
+      directories — two different plans sharing a basename in different
+      directories (e.g. `specs/plans/7-x.md` and an archived or worktree copy
+      at another path) would resolve to the same `.sdd/<slug>/` and share a
+      ledger. The script relies on this repo's convention that plan ids are
+      unique across `specs/plans/` and `specs/plans/completed/`; nothing
+      enforces that. Worth a one-line comment recording the assumption, not a
+      behavior change.
+- [ ] M3 — `skills/subagent-driven-development/scripts/test_sdd_scripts.py`
+      mixes quote styles: the lines Task 1 rewrote use single quotes (this
+      repo's Python convention, CLAUDE.md), the lines it didn't touch still use
+      double. Whole-file normalization pass to single quotes.
+- [ ] M5 — several sites describe `scripts/review-package` as printing "the
+      path" when it actually prints `wrote <path>: N commit(s), M bytes`. Two
+      say so explicitly and are confirmed misstatements:
+      `skills/subagent-driven-development/task-reviewer-prompt.md:267`
+      ("`scripts/review-package PLAN_FILE BASE HEAD` prints the unique path
+      it wrote") and `skills/requesting-code-review/code-reviewer.md:165`
+      ("`scripts/review-package PLAN_FILE BASE HEAD` prints it"). Several more
+      sites in `skills/subagent-driven-development/SKILL.md` (File Handoffs
+      at `:330`, Example Workflow at `:452`/`:469`, Red Flags at `:545`) say
+      "pass"/"name the printed path" without stating the format either way —
+      same silent bare-path assumption, softer wording; grep `review-package`
+      across those files to enumerate the full set the original review's
+      "five sites" count referred to before fixing. PRE-EXISTING — plan 22
+      Task 1 did not change the print format, and no task in this plan owned
+      this text; the controller ruled it out of scope at Task 2's review (not
+      in the spec, no task named it). A controller who pastes the raw stdout
+      line verbatim into a dispatch hands the reviewer a malformed path (the
+      `wrote ` prefix and `: N commit(s), M bytes` suffix are not part of the
+      path), so this should not sit indefinitely. Each fix is a one-line
+      wording correction.
+- [ ] M6 — the Short Form of
+      `skills/subagent-driven-development/task-reviewer-prompt.md` now ships
+      the no-nested-subagent ban ("## You Do Not Dispatch Subagents") twice
+      per dispatch: once inline in the form itself, once from
+      `agents/task-reviewer.md`, which the Short Form exists to defer to.
+      ARGUABLY A FEATURE, not a defect worth fixing: this same plan's Task 5
+      fix round found live evidence that a dispatched task-reviewer agent
+      falls back to its own definition's report format when a prompt doesn't
+      explicitly suspend it — re-reviews earlier in this plan's own execution
+      came back in the full report shape until `re-review-prompt.md` was
+      fixed to say so explicitly (see plan 22 Task 5's deviation note).
+      Redundant ban text is cheap insurance against that same failure mode
+      recurring here. Recorded so a future reader does not "fix" the apparent
+      duplication by stripping the inline ban text out of the prompt
+      templates as dead weight: that same inline text is the ONLY copy on the
+      Full Form path, used specifically when `agents/task-reviewer.md` is not
+      installed and dispatch falls back to `general-purpose` — removing it
+      there would silently leave that path with no ban at all.
+- [ ] M7 — `## You Do Not Dispatch Subagents` is Title Case in
+      `agents/task-reviewer.md` and `agents/code-reviewer.md`, both of which
+      otherwise use sentence-case section headings (`## Read-only contract`,
+      `## Reading the diff`, `## Do not trust the report`, etc. — single-word
+      headings like `## Calibration` are case-neutral). `agents/task-reviewer.md`
+      already has one other Title Case heading, `## Batched Dispatches`
+      (added by this same plan's Task 4), so this is now the second
+      exception rather than the only one. The three prompt templates that
+      carry the ban heading
+      (`skills/subagent-driven-development/implementer-prompt.md`,
+      `skills/subagent-driven-development/task-reviewer-prompt.md`,
+      `skills/requesting-code-review/code-reviewer.md`) use Title Case for it
+      too, so only the two agent files' own local convention is at odds with
+      it. One-word-casing fix, or accept Title Case as the convention for
+      these two cross-cutting rule headings and move on.
+- [ ] M10 — the batched-dispatch ledger example in
+      `skills/subagent-driven-development/SKILL.md`'s Durable Progress section
+      shows a contiguous range (`Tasks 4-7: complete (batched; commits
+      <base7>..<head7>, review clean)`), but the rule it illustrates
+      generalizes to any batch, including a non-contiguous one (e.g. tasks 2,
+      5, and 9 batched together). The example doesn't show what notation a
+      non-contiguous batch uses. Add a second example or a parenthetical.
+- [x] M13 — `.sdd/task-6-report.md`'s rationale for the `review-package`
+      argument-order clause claimed the spec was silent on matching
+      upstream's argument order; `specs/completed/sdd-hardening.md`'s
+      Decisions section actually says it matches upstream. Report-accuracy
+      only — the shipped `NOTICE` text itself is correct and needed no change.
+      → no action needed (2026-09-03): a report-accuracy observation with no
+      code or doc defect behind it; recorded so it is not re-litigated.
+- [x] Adjudicated INTENDED-behavior, no action (final whole-branch review
+      recommendation, verified and corrected against the shipped state
+      rather than transcribed as-is): the no-nested-subagent ban
+      ("## You Do Not Dispatch Subagents") was byte-identical prose across
+      five reviewer-seat locations right after Task 3 landed — both forms of
+      `skills/subagent-driven-development/task-reviewer-prompt.md`,
+      `skills/requesting-code-review/code-reviewer.md`,
+      `agents/task-reviewer.md`, and `agents/code-reviewer.md` — which this
+      repo's own pre-flight review rubric would ordinarily flag as verbatim
+      duplication to extract into a shared reference.
+      `implementer-prompt.md` was never part of that set; its ban is
+      implementer-framed prose that always read differently. Checked against
+      the actual current files rather than taken on the recommendation's
+      word, because it is no longer fully byte-identical: the final-review
+      fix round (`e135234`, resolving GATE-Q1) generalized the evidence-rule
+      paragraph's "the implementer's report" wording to "any input material
+      this dispatch hands you" for the two code-reviewer seats only
+      (`agents/code-reviewer.md`, `requesting-code-review/code-reviewer.md`)
+      — plain `requesting-code-review` has no report input to point at, so
+      the original wording risked a spurious missing-artifact finding there.
+      The two task-reviewer seats (`agents/task-reviewer.md`, both forms of
+      `task-reviewer-prompt.md`) kept the original wording, where the report
+      is an established input. Still deliberately not extracted into one
+      shared reference, and the split is itself a reason why: each file is a
+      distinct dispatch path (implementer vs. task reviewer vs. code
+      reviewer, Short Form vs. Full Form vs. agent definition, per-task vs.
+      whole-branch review), these two reviewer-seat wordings have already
+      diverged once for a real reason and may again, and the prose is what
+      travels when the agent definitions are not installed (see M6 above) —
+      a shared reference would go unread on the paths that most need the
+      ban, and would force one wording onto two seats that just proved they
+      need different ones. Recorded so a future reader does not factor this
+      out as cleanup, and does not cite "byte-identical across five files"
+      as current fact — it described the state immediately after Task 3,
+      before the same review cycle's own fix round split it.
