@@ -72,8 +72,9 @@ The following skills are original works by Lowell Mason, MIT licensed:
 classification-codes/ and geographic-codes/ are original works by Lowell
 Mason (MIT) whose bundled data/ tables are derived from U.S. Census Bureau,
 U.S. Bureau of Labor Statistics, and Office of Management and Budget
-publications (NAICS and SOC structure and concordance workbooks; the county
-gazetteer; the "List 1" CBSA delineation workbooks). Those publications are
+publications (NAICS and SOC structure and concordance workbooks; the Census
+occupation code lists; the county gazetteer; the "List 1" CBSA delineation
+workbooks). Those publications are
 works of the United States Government and are in the public domain under
 17 U.S.C. § 105. Each skill's scripts/build.py downloads the exact source
 bytes into sources/ (kept verbatim as the audit copy, with URL, sha256, and

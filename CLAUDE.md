@@ -43,7 +43,7 @@ When creating or editing a skill, **follow the `writing-skills` skill** — it's
 There is no root test runner or repo-wide `pyproject`, and the scientific deps (numpy, polars, pytest) aren't installed into the interpreter directly. Run everything through `uv run` pinned to the Homebrew Python 3.13, supplying deps inline. Tests use **bare imports** and are **directory-scoped** — run pytest from inside the relevant directory, not the repo root:
 
 ```bash
-# Build-tooling tests (citation verifier + lints) — 34 tests
+# Build-tooling tests (citation verifier + lints) — 36 tests
 cd build && uv run --python 3.13 --with pytest --with numpy --with polars --with pyyaml python -m pytest -q
 
 # recommend-probabilistic-model signal-extractor tests — 10 tests
@@ -53,23 +53,34 @@ cd skills/recommend-probabilistic-model/scripts && uv run --python 3.13 --with p
 cd skills/recommend-visualization/scripts && uv run --python 3.13 --with pytest --with numpy --with polars python -m pytest -q
 
 # tune-hyperparameters CV-splitter tests — 6 passed, 2 skipped
-# (the 2 skips are optional-dep guards: add --with sklearn --with optuna to run all 8)
+# (the 2 skips are optional-dep guards: add --with scikit-learn --with optuna to run all 8;
+# the PyPI name is scikit-learn, not sklearn — --with sklearn fails to install)
 cd skills/tune-hyperparameters/scripts && uv run --python 3.13 --with pytest --with numpy --with polars python -m pytest -q
 
-# track-model-experiments ledger/compare tests — 11 tests (~45s; needs the full
+# track-model-experiments ledger/compare tests — 11 tests (~20–50 s depending on the uv cache; needs the full
 # numpyro + NetCDF-writer chain, since the tests round-trip InferenceData to .nc)
 cd skills/track-model-experiments/scripts && uv run --python 3.13 --with pytest --with numpy --with polars --with arviz --with numpyro --with h5netcdf --with h5py python -m pytest -q
 
+# bayesian-workflow script tests (MCSE precision block + divergence-gate next steps) — 9 tests
+# (4 arviz RuntimeWarnings — "invalid value encountered in scalar divide" on the constant-parameter
+# fixture — are expected and not silenced)
+cd skills/bayesian-workflow/scripts && uv run --python 3.13 --with pytest --with arviz --with arviz-stats --with numpy --with xarray python -m pytest -q
+
 # llm-wiki bundled wiki-script tests (bootstrap + lint + session + specs distillers) —
-# 180 tests (stdlib only; these are the scripts the bootstrap installs to a wiki)
+# 185 tests (stdlib only; these are the scripts the bootstrap installs to a wiki)
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest -q
 
 # describe-critique-methodology decoupling-check tests — 18 tests
 cd skills/describe-critique-methodology/scripts && uv run --python 3.13 --with pytest python -m pytest -q
 
-# geographic-codes build tests (interval synthesizer, readers, referential check) — 38 tests
+# geographic-codes build tests (interval synthesizer, readers, referential check) — 42 tests
 # (the 7 per-vintage workbook tests need sources/, which is committed)
 cd skills/geographic-codes/scripts && uv run --python 3.13 --with pytest --with polars --with fastexcel python -m pytest -q
+
+# classification-codes build tests (NAICS/SOC/Census-OCC workbook parsers, concordance link
+# types, referential checks, BLS contact-email fetch guard) — 51 tests
+# (fixtures are in-memory frames, so no workbook reader is needed)
+cd skills/classification-codes/scripts && uv run --python 3.13 --with pytest --with polars python -m pytest -q
 
 # Frontmatter + provenance lints (run before committing skill changes)
 uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
@@ -85,6 +96,11 @@ uv run --python 3.13 --with numpy --with polars python build/smoke_test.py
 # Rebuild geographic-codes data/ from the pinned Census/OMB sources (network) or the sources/ cache
 uv run skills/geographic-codes/scripts/build.py
 uv run skills/geographic-codes/scripts/build.py --offline
+
+# Rebuild classification-codes data/ from the pinned Census/BLS sources (network; the bls.gov
+# workbooks need BLS_CONTACT_EMAIL exported) or the sources/ cache
+uv run skills/classification-codes/scripts/build.py
+uv run skills/classification-codes/scripts/build.py --offline
 
 # Verify citations across the whole skill (Gate A; exit 0 = all resolve;
 # chapter-fallback WARNs on stderr are non-fatal — confirm those via Gate B)
