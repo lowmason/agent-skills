@@ -234,7 +234,7 @@ Use **at least 4** and call `numpyro.set_host_device_count(num_chains)` so `chai
 actually runs them on separate CPU devices. Running more chains is a cheap way to cut Monte
 Carlo variance and to surface multimodality (Gelman et al. 2026, §11.4). `chain_method="vectorized"`
 runs all chains in one `vmap` (fast, single device, no host-count needed); `"sequential"` is the
-low-memory fallback.
+low-memory fallback. Size the run to the phase: exploration fits at `num_warmup=200, num_samples=200` accept R-hat ≤ 1.1; the 1000/1000 template default is the *final* run (Gelman et al. 2026, §11.4, §12.1 — see diagnostics.md → Exploration runs vs. the final run).
 
 ## Critical rules
 
@@ -338,7 +338,7 @@ These are battle-tested lessons that save hours of debugging:
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| Divergences | Posterior geometry issue | Reparameterize (non-centered via `LocScaleReparam`), raise `target_accept_prob` to 0.95-0.99 |
+| Divergences | Posterior geometry issue | ≤ ~1% of transitions: raise `target_accept_prob` to 0.95–0.99. More than that: don't — reparameterize (non-centered via `LocScaleReparam`), center predictors, check `az.plot_pair`; see diagnostics.md → Failure signatures (Gelman et al. 2026, §12.3) |
 | Low ESS | High autocorrelation | More warmup/draws, reparameterize, reduce correlations |
 | R-hat > 1.01 | Chains haven't mixed | More draws, better init (`init_strategy=init_to_median`), check for multimodality |
 | Prior pred. looks wrong | Bad priors | Tighten or shift priors, use domain knowledge / PreliZ |
@@ -349,3 +349,5 @@ These are battle-tested lessons that save hours of debugging:
 | `plot_energy` AttributeError | energy not collected | `mcmc.run(..., extra_fields=("energy", ...))` |
 | Slow / poor warmup | Bad starting point or geometry | Try `init_strategy=init_to_median`, `dense_mass=True`, or warm-start NUTS from an SVI `AutoNormal` fit / `blackjax.pathfinder` |
 | Prior sensitivity flag | Prior-data conflict or strong prior | Check `psense_summary(idata)` — see [references/sensitivity.md](references/sensitivity.md). Justify or revise the flagged prior |
+
+For the fuller catalog of failure signatures — improper posterior, unused parameter, aliasing, uncentered predictors, multimodality, overflow at init, varying curvature, funnel, unconstrained scale — and what each looks like in the diagnostics, see [references/diagnostics.md](references/diagnostics.md) → Failure signatures.
