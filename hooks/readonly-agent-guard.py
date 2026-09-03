@@ -53,6 +53,62 @@ DENIED_COMMANDS = {
     'sudo': '`sudo` escalates privileges and can mutate anything.',
 }
 
+# git's read-only vocabulary is small and enumerable, so this is an allowlist
+# and anything not on it is denied — including verbs git adds in the future.
+GIT_READONLY_VERBS = frozenset({
+    'log', 'show', 'diff', 'diff-tree', 'status', 'grep', 'blame', 'ls-files',
+    'ls-tree', 'ls-remote', 'cat-file', 'rev-parse', 'rev-list', 'describe',
+    'shortlog', 'whatchanged', 'name-rev', 'merge-base', 'for-each-ref',
+    'count-objects', 'verify-commit', 'check-ignore', 'check-attr', 'var',
+    'help', 'version',
+})
+
+# Print-and-exit flags: allow immediately, there is no verb behind them.
+GIT_INFO_FLAGS = frozenset({
+    '--version', '--help', '-h', '--html-path', '--man-path', '--info-path',
+})
+
+# Global options skipped while locating the verb.
+GIT_GLOBAL_FLAGS = frozenset({
+    '-p', '--paginate', '-P', '--no-pager', '--bare', '--literal-pathspecs',
+    '--no-literal-pathspecs', '--glob-pathspecs', '--noglob-pathspecs',
+    '--icase-pathspecs', '--no-replace-objects', '--no-optional-locks',
+    '--no-lazy-fetch', '--no-advice',
+})
+GIT_GLOBAL_WITH_VALUE = frozenset({
+    '-C', '-c', '--git-dir', '--work-tree', '--namespace', '--exec-path',
+    '--config-env', '--attr-source',
+})
+
+# A read-only route to what the denied verb was probably reaching for. Naming it
+# lets the agent report accurately to its controller instead of retrying blind.
+# Only consulted for verbs that reach the fail-closed default, so do NOT add keys
+# for verbs in GIT_SUBCOMMAND_ALLOWED / GIT_FLAG_ALLOWED — those are handled
+# earlier in _classify_git, and an entry here would be dead code.
+GIT_ALTERNATIVES = {
+    'checkout': 'To read a file at another revision use `git show <SHA>:<path>`; '
+                'to compare, `git diff <SHA>..HEAD`.',
+    'switch': 'To read a file at another revision use `git show <SHA>:<path>`.',
+    'restore': 'To read a file at another revision use `git show <SHA>:<path>`.',
+    'reset': 'To compare against another revision use `git diff <SHA>..HEAD`.',
+    'clean': 'To see what is untracked use `git status --porcelain`.',
+    'add': 'Nothing in a read-only review touches the index.',
+    'commit': 'Nothing in a read-only review creates a commit.',
+    'fetch': 'Denied deliberately, not by fall-through: a fetch part-way through a '
+             'review silently changes what a later `git diff origin/main...` shows, '
+             'so the artifact moves while it is being reviewed. If you need a base '
+             'ref that is not local, report that to your controller so it can fetch '
+             'before dispatching.',
+    'pull': 'Denied deliberately, not by fall-through: `git pull` merges into HEAD. '
+            'Report a missing base ref to your controller instead of fetching it '
+            'yourself.',
+}
+
+# Filled in by the mode-dependent verb rules; consulted by _classify_git before
+# the fail-closed default.
+GIT_SUBCOMMAND_ALLOWED = {}
+GIT_FLAG_ALLOWED = {}
+
 
 def split_subcommands(command):
     """Tokenize `command` and split it into subcommands on shell operators.
@@ -120,8 +176,52 @@ def classify(command):
     return None
 
 
+def _locate_git_verb(args):
+    """Return (index of the verb, None), or (None, reason) if we should stop.
+
+    A reason of '' means "allow, there is no verb" — bare `git` or an info flag.
+    An unknown leading option denies rather than being treated as a verb, so
+    `git --wat log` cannot slip a verb past the scan.
+    """
+    i = 0
+    while i < len(args):
+        token = args[i]
+        if token in GIT_INFO_FLAGS:
+            return None, ''
+        if token in GIT_GLOBAL_FLAGS:
+            i += 1
+            continue
+        if token in GIT_GLOBAL_WITH_VALUE:
+            i += 2  # the option's value is the next token
+            continue
+        if '=' in token and token.partition('=')[0] in GIT_GLOBAL_WITH_VALUE:
+            i += 1
+            continue
+        if token.startswith('-'):
+            return None, ('`git ' + token + '` is not a recognized read-only git '
+                          'global option, and this guard fails closed on options '
+                          'it cannot account for.')
+        return i, None
+    return None, ''  # ran out of tokens: bare `git`, which only prints usage
+
+
 def _classify_git(args):
-    return None  # Tasks 3 and 4 replace this
+    index, reason = _locate_git_verb(args)
+    if index is None:
+        return reason or None
+    verb = args[index]
+    rest = args[index + 1:]
+    if verb in GIT_READONLY_VERBS:
+        return None
+    if verb in GIT_SUBCOMMAND_ALLOWED:
+        return _classify_git_subcommand_verb(verb, rest)
+    if verb in GIT_FLAG_ALLOWED:
+        return _classify_git_flag_verb(verb, rest)
+    alternative = GIT_ALTERNATIVES.get(verb)
+    if alternative:
+        return '`git ' + verb + '` is denied by the read-only allowlist. ' + alternative
+    return ('`git ' + verb + '` is not on the read-only allowlist — it either mutates '
+            'git state or is unrecognized, and this guard fails closed on both.')
 
 
 if __name__ == '__main__':

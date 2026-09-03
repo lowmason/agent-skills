@@ -128,3 +128,84 @@ def test_excluded_mutators_still_pass_per_spec_D2():
 def test_mutator_is_caught_when_it_is_not_the_first_subcommand():
     assert guard.classify('git log --oneline && rm -rf .git') is not None
     assert guard.classify('cat f | grep x ; sudo reboot') is not None
+
+
+ALWAYS_ALLOWED_GIT_VERBS = [
+    'log', 'show', 'diff', 'diff-tree', 'status', 'grep', 'blame', 'ls-files',
+    'ls-tree', 'ls-remote', 'cat-file', 'rev-parse', 'rev-list', 'describe',
+    'shortlog', 'whatchanged', 'name-rev', 'merge-base', 'for-each-ref',
+    'count-objects', 'verify-commit', 'check-ignore', 'check-attr', 'var',
+    'help', 'version',
+]
+
+
+def test_every_readonly_git_verb_is_allowed():
+    for verb in ALWAYS_ALLOWED_GIT_VERBS:
+        assert guard.classify('git ' + verb) is None, verb
+    assert guard.classify('git show abc123:src/x.py') is None
+    assert guard.classify('git diff --stat main..HEAD') is None
+
+
+def test_write_verbs_are_denied():
+    for verb in ('commit', 'add', 'checkout', 'switch', 'restore', 'reset',
+                 'revert', 'merge', 'rebase', 'cherry-pick', 'am', 'apply',
+                 'push', 'clone', 'init', 'clean', 'gc', 'prune', 'mv', 'rm'):
+        assert guard.classify('git ' + verb + ' x') is not None, verb
+
+
+def test_mutating_plumbing_is_denied():
+    # No recognizable write verb in the name; caught only by failing closed.
+    for verb in ('update-ref', 'update-index', 'write-tree', 'commit-tree',
+                 'hash-object', 'fast-import', 'filter-branch', 'replace',
+                 'symbolic-ref'):
+        assert guard.classify('git ' + verb + ' x') is not None, verb
+
+
+def test_unknown_verb_fails_closed():
+    detail = guard.classify('git frobnicate --wat')
+    assert detail is not None
+    assert 'frobnicate' in detail
+
+
+def test_fetch_and_pull_are_denied_deliberately_not_incidentally():
+    # Spec D7: fetch touches neither the working tree, the index, HEAD, local
+    # branch state, nor the worktree list — it is denied for reproducibility
+    # (a mid-review fetch moves the artifact under review) and because the
+    # controller prepares the diff before dispatching. The denial message must
+    # say so, or a future reader "fixes" this as an oversight.
+    for verb in ('fetch', 'pull'):
+        detail = guard.classify('git ' + verb + ' origin main')
+        assert detail is not None, verb
+        assert 'deliberate' in detail.lower(), detail
+        assert 'controller' in detail.lower(), detail
+
+
+def test_global_options_are_skipped_when_locating_the_verb():
+    assert guard.classify('git -C /other/repo log --oneline') is None
+    assert guard.classify('git --no-pager diff') is None
+    assert guard.classify('git --git-dir=/x/.git status') is None
+    assert guard.classify('git -c core.pager=cat log') is None
+
+
+def test_global_options_do_not_smuggle_a_write_past_the_guard():
+    # -C is exactly how an agent would step outside a guard that only looked at
+    # the working directory. This case is load-bearing, not incidental.
+    assert guard.classify('git -C /other/repo commit -m x') is not None
+    assert guard.classify('git --git-dir=/x/.git push') is not None
+    assert guard.classify('git -c user.name=x commit -m y') is not None
+
+
+def test_bare_git_and_info_flags_are_allowed():
+    assert guard.classify('git') is None
+    assert guard.classify('git --version') is None
+    assert guard.classify('git --help') is None
+
+
+def test_unknown_global_option_fails_closed():
+    assert guard.classify('git --wat log') is not None
+
+
+def test_git_denial_names_a_read_only_alternative_where_one_exists():
+    detail = guard.classify('git checkout main -- src/x.py')
+    assert detail is not None
+    assert 'git show' in detail
