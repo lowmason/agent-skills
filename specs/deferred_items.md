@@ -312,6 +312,9 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       → done 2026-09-02 (/deferred quick fix).
 - [x] Also-line sha shape gate (`ALSO_RE` swallowed a non-hex `(also … · sha:)` into the location text) → done post-merge in afa9af8.
 - [ ] Renamed spec files lose `previously seen` hinting (prior keys grouped by the old at:-path, looked up by the new walk path); agent-side dedup still reads the whole prior brief, so impact is weaker hints only — decide whether rename-following is worth building (distill_specs.py).
+      → decided 2026-09-03 (/deferred): yes, build it. The open decision is closed, so
+      this is no longer a design item — it joins the `distill_specs.py` hardening pass
+      as ordinary planned work. Still unticked: the decision is made, the work is not.
 
 ## 17-agents-and-commands-expansion — 2026-07-25
 - [ ] PreToolUse hooks mechanically enforcing the read-only contracts of
