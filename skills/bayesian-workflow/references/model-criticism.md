@@ -177,23 +177,25 @@ import arviz as az, arviz_plots as azp
 
 pit = (ranks + 0.5) / (L + 1)                                   # ranks in [0, L] -> PIT in (0, 1)
 sbc_dt = az.from_dict({"prior_sbc": {"beta": pit[None, :]}})     # (chain=1, draw=S)
-azp.plot_ecdf_pit(sbc_dt, var_names=["beta"])                    # Δ-ECDF + simultaneous band + γ p-value
+azp.plot_ecdf_pit(sbc_dt, var_names=["beta"])                    # Δ-ECDF, zero line, uniformity p-value
 ```
 
-| Δ-ECDF shape (band = 95% simultaneous) | Rank histogram equivalent | Meaning |
+**What that call actually draws** (arviz-plots 1.3.1): the Δ-ECDF step line and a dashed zero line — there is no shaded band on the figure. The test is reported as text instead: the p-value of the uniformity test run by the default `method="pot_c"`, annotated in the corner of the panel with the threshold it is judged against (`p=0.16(α=0.01)`). That α is `1 - envelope_prob`, and `envelope_prob` falls back to `rcParams["stats.envelope_prob"] = 0.99`, so α = 0.01 unless you pass your own. When the test rejects, the stretch of the step line contributing most to the departure from uniformity is redrawn in a second colour as *suspicious points*; when it passes, nothing is highlighted. A band-drawing variant does exist — `method="envelope"`, the simultaneous-band construction of Säilynoja, Bürkner & Vehtari 2022 — but it warns that it is slated for replacement by `pot_c` (which stays valid when the PIT values are not independent), and on this stack it raised a `TypeError` on the `from_dict` input above. Read the p-value and the highlighting, not a picture of the band.
+
+| Δ-ECDF shape (default threshold α = 0.01) | Rank histogram equivalent | Meaning |
 |---|---|---|
-| inside the band throughout | flat | pipeline coherent for this quantity |
+| nothing highlighted and p > α | flat | pipeline coherent for this quantity |
 | positive hump (ECDF runs ahead of uniform) | ranks pile at the low end | posterior *overestimates* — truth sits low among the draws |
 | negative hump | ranks pile at the high end | posterior *underestimates* |
 | + then − (crosses zero mid-way) | both ends piled | posterior *too narrow* — over-confident |
 | − then + | middle piled | posterior *too wide* — under-confident |
-| mostly flat, one edge shoots out of the band | a spike at one end | a subset of simulated datasets the model or sampler cannot handle — look at those reps |
+| mostly flat, one edge running away and highlighted as suspicious points | a spike at one end | a subset of simulated datasets the model or sampler cannot handle — look at those reps |
 
 Avoid "cup"/"cap"/"frown" for these shapes; the histogram and the Δ-ECDF invert each other's vocabulary (see the PIT section above).
 
 **Fitting SBC into the workflow** (§14.3):
 
-- **SBC over the whole prior can waste runs.** A prior that is weakly informative for *parameters* is often wild for *data* — a logistic regression with `Normal(0, 100)` coefficients simulates datasets that are all 0s or all 1s, and checking calibration there tells you nothing about the region you care about. Either tighten the prior (joint priors where independent ones are the problem — priors.md → Sparsity priors) or **rejection-sample the prior predictive**: discard a simulated dataset by a criterion that depends only on *data* (a maximum count above some cap, an outcome sd below some floor) and redraw. A data-only criterion leaves the posterior unchanged, so SBC stays valid.
+- **SBC over the whole prior can waste runs.** A prior that is weakly informative for *parameters* is often wild for *data* — a logistic regression with `Normal(0, 100)` coefficients pushes the success probability to one extreme or the other, so a simulated dataset comes back with every response identical, and checking calibration there tells you nothing about the region you care about. Either tighten the prior (joint priors where independent ones are the problem — priors.md → Sparsity priors) or **rejection-sample the prior predictive**: discard a simulated dataset by a criterion that depends only on *data* (a maximum count above some cap, an outcome sd below some floor) and redraw. A data-only criterion leaves the posterior unchanged, so SBC stays valid.
 - **Posterior SBC** (Säilynoja, Schmitt et al. 2026): once you have real data, run SBC with the *posterior* as the generating distribution. It checks the sampler where the posterior mass actually is and catches incoherent Bayesian updating — bugs in the sampler or the log-density — but cannot catch a wrong generative model, because the same code generates and fits.
 - **Too slow for hundreds of replications?** A handful still catch gross bugs: any rank of exactly `0` or `L` is already a red flag; per-rep z-scores of the truth flag the same thing; and SBC on a fast sub-model first localises the problem. A few simulations beat none.
 - **SBC as software testing.** The sketch above uses `Predictive(model)` to simulate, so it tests the *sampler* against the model as coded — it cannot detect a mis-coded likelihood, because the same code generates and fits. When the likelihood is non-trivial, write an independent NumPy simulator from the *equations* and feed its data to the NumPyro model; rank uniformity then also certifies that the two agree.
