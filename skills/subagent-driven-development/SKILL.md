@@ -187,6 +187,33 @@ complete: you hold the plan and cross-task context the reviewer
 lacks. If you confirm an item is a real gap, treat it as a failed spec
 review — send it back to the implementer and re-review.
 
+## Fix Rounds
+
+A task gets at most **five fix attempts**. Adjudication follows the fifth; it
+is not itself an attempt.
+
+| Round | Action |
+|---|---|
+| 1-3 | Resume the same implementer with the findings. It appends a fix report to its existing report file: what changed, the covering tests it ran, the command, and the output. |
+| 4-5 | Dispatch a **fresh** implementer with the task brief and the findings. Raise reasoning effort when the prior rounds show a thorough attempt rather than a missing-context failure. |
+| after 5 | The cap is reached. Adjudicate every still-open finding; dispatch no further fix rounds for this task. |
+
+Re-review each round with the scoped [re-review-prompt.md](re-review-prompt.md),
+not a fresh full review — the task review already happened, and re-reading the
+whole task every round is the cost this cap exists to bound.
+
+Going fresh at round 4 is the load-bearing half. A resumed implementer carries
+its own failed attempts as context, which anchors it to the approach that is not
+working; a fresh one does not. Escalate in the order context, then effort, then
+model, and stop when there is no headroom — sessions here already run at the
+top of the model ladder, so in practice rounds 4-5 buy fresh context and higher
+effort, not a bigger model.
+
+**Adjudicating** means you rule on each open finding: record the load-bearing
+ones as work, and park the rest in the ledger with your reasoning
+(`Ruling: <what you decided> — <why> — <what it costs if wrong>`). Stop for your
+human partner only when every path forward is a guess.
+
 ## Constructing Reviewer Prompts
 
 Per-task reviews are task-scoped gates. The broad review happens once, at the
@@ -373,6 +400,7 @@ context-pressure signal, not a task count.
 
 - [implementer-prompt.md](implementer-prompt.md) - Dispatch implementer subagent
 - [task-reviewer-prompt.md](task-reviewer-prompt.md) - Dispatch task reviewer subagent (spec compliance + code quality)
+- [re-review-prompt.md](re-review-prompt.md) - Dispatch a scoped re-review after fixes (per-finding ADDRESSED / NOT ADDRESSED)
 - Final whole-branch review: use requesting-code-review's [code-reviewer.md](../requesting-code-review/code-reviewer.md)
 
 ## Example Workflow
