@@ -408,13 +408,17 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       v1 for this iteration (provenance-touching, needs its own RED cycle), naming the
       one-line hook as the recorded fallback "if the carrier proves fragile." Owner's
       decision: defer, and let the first real stage cycle settle it.
-- [ ] **A stranded roadmap artifact.**
+- [x] **A stranded roadmap artifact.**
       `/Users/lowell/Projects/alt-nfp/specs/usable-series-selection-roadmap.md` was
       named from the spec's H1 title, a convention now superseded by the skill's
       filename-stem `<name>` rule (landed post-review, commit `c818893`). Either rename
       it to the canonical stem-derived name or consciously accept the divergence. Not a
       skill defect — the shipped header-based collision guard (`a2d4f1f`) finds this
       artifact regardless of filename, which a 3-rep behavioral check confirmed 3/3.
+      → retired 2026-09-03: the artifact is no longer live — it was retired to
+      `alt-nfp/specs/completed/` on 2026-08-02 (f87a134, 89c8b7f), where a stem-named
+      `usable_series_methodology_roadmap.md` now sits beside it. Renaming a retired
+      artifact settles no convention, and the collision guard finds it either way.
 - [x] **No non-interactive fallback for the batched-question checkpoint**
       (`skills/derive-roadmap/SKILL.md` §1, `references/gap-rubric.md`). A sub-agent run
       parked its questions in the artifact instead of asking. Degraded safely, since the
