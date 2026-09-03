@@ -10,9 +10,10 @@
 
 ## Why this file is short
 
-A measured baseline (`specs/red-baseline-jax-numerics-2026-08-26.md`) ran five fresh
-agents on a pooled local-level state-space model in NumPyro and checked which numerics
-practices they applied unprompted. Three were universal and are **not** documented here:
+A measured baseline (`specs/completed/red-baseline-jax-numerics-2026-08-26.md`) ran
+five fresh agents on a pooled local-level state-space model in NumPyro and checked
+which numerics practices they applied unprompted. Three were universal and are
+**not** documented here:
 
 | Behaviour | Result | Disposition |
 |---|---|---|

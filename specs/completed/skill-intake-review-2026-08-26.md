@@ -1,8 +1,8 @@
 # Skill Intake Review — `review/coding-skills`, `review/python-analytics-skills`
 
-**Date:** 2026-08-26 · **Reviewer:** Claude (Opus 5) · **Status:** COMPLETE (retired 2026-09-02) — all three recommended adoptions shipped on 2026-08-26 and are recorded in NOTICE: the `python-module-design` rules into `clean-code` (`references/modules.md`), the JAX-generic core into `bayesian-workflow/references/jax-numerics.md`, and the ArviZ API names into `model-comparison.md`. The `polars-data-engineering` port (§5 item 4) was assessed and **not** adopted — see `specs/red-baseline-polars-join-contracts-2026-08-26.md`.
+**Date:** 2026-08-26 · **Reviewer:** Claude (Opus 5) · **Status:** COMPLETE (retired 2026-09-02) — all three recommended adoptions shipped on 2026-08-26 and are recorded in NOTICE: the `python-module-design` rules into `clean-code` (`references/modules.md`), the JAX-generic core into `bayesian-workflow/references/jax-numerics.md`, and the ArviZ API names into `model-comparison.md`. The `polars-data-engineering` port (§5 item 4) was assessed and **not** adopted — see `specs/completed/red-baseline-polars-join-contracts-2026-08-26.md`.
 
-> **The three `specs/red-baseline-*-2026-08-26.md` files stay in `specs/` root, not here.** They are live micro-test fixtures, not finished records: `skills/clean-code/references/modules.md` and `skills/bayesian-workflow/references/jax-numerics.md` cite them by path, and each carries a quarantine banner for future micro-tests of its skill. Moving them would break two shipped skills.
+> **The three `red-baseline-*-2026-08-26.md` files were retired here on 2026-09-03.** Until then they stayed in `specs/` root, because `skills/clean-code/references/modules.md` and `skills/bayesian-workflow/references/jax-numerics.md` cite them by path and moving them would have broken two shipped skills. Both citations (and the three in `NOTICE`) were repointed at `specs/completed/` in the same commit as the move. The quarantine banners travel with the files: each is still a micro-test fixture that must be moved aside during any future micro-test of its skill.
 
 Two cloned repos assessed for additions to `skills/`. Verdict: **one adopt, five harvests,
 six skips.** The binding constraint is not quality — it is the skill-listing budget.
@@ -208,10 +208,10 @@ module/package granularity, file-count discipline -> ABSENT from clean-code, cle
 ### ADOPT (1) — `polars-data-engineering` → **WITHDRAWN 2026-08-26**
 
 > **This recommendation did not survive measurement.** A two-arm RED baseline
-> (`specs/red-baseline-polars-join-contracts-2026-08-26.md`) planted a silent join fanout and
-> measured the *delivered artifact*: 5/5 agents shipped correct arrays, detecting the duplicate,
-> collapsing before the join, and guarding the row count. The rules describe what agents already
-> do when authoring, so a listing slot would buy nothing.
+> (`specs/completed/red-baseline-polars-join-contracts-2026-08-26.md`) planted a silent join
+> fanout and measured the *delivered artifact*: 5/5 agents shipped correct arrays, detecting
+> the duplicate, collapsing before the join, and guarding the row count. The rules describe
+> what agents already do when authoring, so a listing slot would buy nothing.
 >
 > The `54 joins / 0 validate=` finding in `alt-nfp` stands, but it is about **existing** code —
 > an audit gap. Shipped instead as one signal in `tech-debt`'s sweep plus a `scan.sh` check, at

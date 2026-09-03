@@ -6,11 +6,11 @@ rule catalog is adapted from Mancuso Lab's `python-module-design` (MIT, see
 citations stay unambiguous.
 
 **Scope note — this catalog is deliberately short.** A measured baseline
-(`specs/red-baseline-module-granularity-2026-08-26.md`) found agents already
-write cohesive modules unprompted on greenfield work: 5/5 implemented a config
-object, schema, validation, retry policy, error type, and two readers inside
-one 150–200 line module. Rules telling them to do what they already do were
-dropped. What they missed, 10/10, is everything below.
+(`specs/completed/red-baseline-module-granularity-2026-08-26.md`) found agents
+already write cohesive modules unprompted on greenfield work: 5/5 implemented
+a config object, schema, validation, retry policy, error type, and two readers
+inside one 150–200 line module. Rules telling them to do what they already do
+were dropped. What they missed, 10/10, is everything below.
 
 ## M1 — Repeated seam names are an unnamed subpackage
 

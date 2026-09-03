@@ -28,11 +28,11 @@ bayesian-workflow/
     Copyright (c) 2026 Mancuso Lab; upstream license text is in
     LICENSE-coding-skills. Scope was cut to four rules plus one
     untested device rule on measured evidence — a RED baseline
-    (specs/red-baseline-jax-numerics-2026-08-26.md) found agents
-    already apply the control-flow, PRNG, and device-count practices
-    unprompted (5/5 each), so the upstream jit/PyTree/control-flow
-    reference and the Equinox material were not ported. Prose and
-    examples are original.
+    (specs/completed/red-baseline-jax-numerics-2026-08-26.md) found
+    agents already apply the control-flow, PRNG, and device-count
+    practices unprompted (5/5 each), so the upstream
+    jit/PyTree/control-flow reference and the Equinox material were
+    not ported. Prose and examples are original.
     The skill cites Gelman, Vehtari, McElreath et al. (2026), "Bayesian
     Workflow" (Chapman & Hall/CRC; (c) 2020-2026 by the authors; the
     electronic edition at users.aalto.fi/~ave/Bayesian-Workflow.pdf is
@@ -133,9 +133,9 @@ mancusolab/coding-skills (MIT, Copyright (c) 2026 Mancuso Lab; license
 text in LICENSE-coding-skills). Only the idea was taken: the grep
 pattern, the exclusion filter, and the prose are original, and the rest
 of that skill was NOT adopted — a measured baseline
-(specs/red-baseline-polars-join-contracts-2026-08-26.md) found agents
-already write guarded joins unprompted (5/5), so the gap is in existing
-code rather than in authoring.
+(specs/completed/red-baseline-polars-join-contracts-2026-08-26.md)
+found agents already write guarded joins unprompted (5/5), so the gap
+is in existing code rather than in authoring.
 
 clean-code/ additionally carries a Modules category (rules M1-M4, detail in
 clean-code/references/modules.md) that is NOT from Clean Code. Those four rules
@@ -148,9 +148,9 @@ families stay distinguishable in citations.
 
 Changes from upstream:
   - Scope cut from eleven rules to four, on measured evidence: a RED baseline
-    (specs/red-baseline-module-granularity-2026-08-26.md) showed agents already
-    satisfy the dropped rules unprompted, so only the rules they miss were
-    ported.
+    (specs/completed/red-baseline-module-granularity-2026-08-26.md) showed
+    agents already satisfy the dropped rules unprompted, so only the rules
+    they miss were ported.
   - Reframed from Codex skill frontmatter into this repo's clean-code catalog
     form (rule-code table plus a references/ detail file).
   - Examples rewritten to this stack (Polars/httpx BLS ETL); no upstream prose
