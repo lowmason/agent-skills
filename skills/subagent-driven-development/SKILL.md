@@ -104,6 +104,12 @@ small enough to state in a line each, so the cost is bounded — and teaching
 `task-brief` to concatenate sections would pull full task text through your
 context for exactly the tasks that need it least.
 
+Write the composed brief to `batch-N-M-brief.md` (the covered task numbers,
+e.g. `batch-4-7-brief.md`) in this plan's workspace — the directory this
+skill's `scripts/sdd-workspace <plan-file>` prints. Hand that one path to
+both the implementer and the reviewer as `[BRIEF_FILE]`, the same handoff
+**File Handoffs** gives a single-task brief.
+
 ## Pre-Flight Plan Review
 
 Before dispatching Task 1, scan the plan once for conflicts:
