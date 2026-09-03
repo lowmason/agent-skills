@@ -212,10 +212,16 @@ Test-coverage gaps:
 - [ ] `write_digest`'s `' [compaction summary]'` marker rendering is untested — Task 4 tests
       only that the `compaction` flag reaches `reconstruct`'s output, not that `write_digest`
       actually renders the marker string into a written digest body.
-- [ ] Zero-turn digest writing (a session with no narrative turns still gets an empty-bodied
+- [x] Zero-turn digest writing (a session with no narrative turns still gets an empty-bodied
       digest, per §16.5's "zero is a legitimate outcome") is untested beyond the guard the
       Task 5 fix pass added; no test asserts the empty-bodied file's actual header contents
       (e.g. `turns: 0`).
+      → retired 2026-09-03: the premise no longer holds —
+      `test_write_digest_zero_turns_keeps_sentinel_range_f2_guard`
+      (`skills/llm-wiki/scripts/test_distill_sessions.py:196`) asserts exactly those header
+      contents on a zero-turn session: `turns: 0`, the sentinel `dates: 0000-00-00/0000-00-00`
+      range, `redactions: 0`, and `'**[' not in text` for the empty body. It landed in
+      b0ef660 (2026-07-23), the same day this item was written.
 - [ ] The Task 5 fix-pass regression test for the unbounded-slug fix (F1) asserts
       `len(name) < 255`; the real bound the `slugify(...)[:60]` fix guarantees is 83
       characters (10-char date + up to 60-char slug + hyphens + 8-char sess8 + `.md`) — a
