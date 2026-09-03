@@ -569,9 +569,16 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       and `next_number` returns 1, reusing a number. That is the scenario most
       counter to the docstring's literal claim; closing it means changing
       `new_adr.py` (persist the high-water mark) or narrowing the docstring.
-- [ ] `skills/subagent-driven-development/scripts/test_sdd_scripts.py` coverage
+- [x] `skills/subagent-driven-development/scripts/test_sdd_scripts.py` coverage
       gaps: `task-brief`'s level-termination (`hlevel($0) <= tlvl`) is exercised
       only via fenced content, with no deeper-sub-heading case (a `#### Sub`
       inside a task must be *retained* as content); and two exit-2 arms are
       untested — `review-package:21` (`bad HEAD`; only `bad BASE` is covered)
       and `task-brief:13`'s `$# -gt 3` arm (only `$# -lt 2` is covered).
+      → done 2026-09-03 (/deferred quick fix): all three arms added, 11 tests → 14, each
+      mutation-checked against the bash line it targets and the three scripts confirmed
+      byte-identical afterwards. The `bad HEAD` test pins the message, not just the exit code.
+      Still untested and worth a future item: the *operator* boundary at `task-brief:48` —
+      changing `<= tlvl` to `< tlvl` leaves all 14 green, because `### Task 2` is terminated
+      by the Task-heading rule before the level comparison is consulted. `CLAUDE.md`'s test
+      counts were synced in the same pass (this suite 11 → 14, design-architecture 8 → 9).

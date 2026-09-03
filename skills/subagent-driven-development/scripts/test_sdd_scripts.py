@@ -44,6 +44,10 @@ PLAN = """\
 ### Task 99: this heading is inside a fence and is content, not a boundary
 ```
 
+#### Sub-step detail
+
+A heading deeper than the task's own is content, not a boundary.
+
 ### Task 2: Second thing
 
 - [ ] **Step 1: other**
@@ -122,6 +126,21 @@ def test_task_brief_keeps_a_fenced_task_heading_as_content(repo):
     assert "### Task 2" not in body
 
 
+def test_task_brief_keeps_a_deeper_sub_heading_as_content(repo):
+    """A '#### Sub-step' under a '### Task' is content: only a heading at the
+    task's own level or shallower ends the section. Unlike the fenced
+    '### Task 99', this exercises the heading-level comparison itself, not
+    the fence tracker. The sub-heading's body is asserted alongside the
+    heading and the next task's boundary: a truncation that printed the
+    sub-heading and stopped there would satisfy the other two on its own."""
+    out = repo / "brief.md"
+    run(TASK_BRIEF, repo / "plan.md", 1, out, cwd=repo)
+    body = out.read_text()
+    assert "#### Sub-step detail" in body
+    assert "A heading deeper than the task's own" in body
+    assert "### Task 2" not in body
+
+
 def test_task_brief_excludes_trailing_plan_sections(repo):
     """The last task must not absorb '## Verification' and everything after it.
 
@@ -151,6 +170,14 @@ def test_task_brief_exits_2_on_bad_arguments(repo):
     missing = run(TASK_BRIEF, repo / "nope.md", 1, repo / "b.md", cwd=repo)
     assert missing.returncode == 2
     assert "no such plan file" in missing.stderr
+
+
+def test_task_brief_exits_2_on_too_many_arguments(repo):
+    """The other half of the arity guard: a fourth argument is a caller bug,
+    not something to silently drop on the way to a default OUTFILE."""
+    result = run(TASK_BRIEF, repo / "plan.md", 1, repo / "b.md", "extra", cwd=repo)
+    assert result.returncode == 2
+    assert "usage: task-brief" in result.stderr
 
 
 def test_task_brief_writes_to_and_prints_the_default_workspace_path(repo):
@@ -203,6 +230,17 @@ def test_review_package_rejects_an_unresolvable_revision(repo):
     result = run(REVIEW_PACKAGE, "nosuchrev", "HEAD", repo / "p.diff", cwd=repo)
     assert result.returncode == 2
     assert "bad BASE" in result.stderr
+
+
+def test_review_package_rejects_an_unresolvable_head(repo):
+    """BASE and HEAD are verified separately and report separately: a valid
+    BASE must not excuse an unresolvable HEAD."""
+    (repo / "a.txt").write_text("one\n")
+    git("add", "a.txt", "plan.md", cwd=repo)
+    git("commit", "-qm", "first", cwd=repo)
+    result = run(REVIEW_PACKAGE, "HEAD", "nosuchrev", repo / "p.diff", cwd=repo)
+    assert result.returncode == 2
+    assert "bad HEAD" in result.stderr
 
 
 def test_review_package_writes_to_and_prints_the_default_workspace_path(repo):

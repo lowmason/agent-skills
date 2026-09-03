@@ -91,7 +91,7 @@ cd skills/explore-data/scripts && uv run --python 3.13 --with pytest --with pola
 cd skills/design-architecture/scripts && uv run --python 3.13 --with pytest python -m pytest -q
 
 # subagent-driven-development dispatch-script tests (workspace, task-brief fences and exit
-# codes, review-package, and both scripts' default-workspace output paths) — 11 tests
+# codes, review-package, and both scripts' default-workspace output paths) — 14 tests
 # (stdlib only; drives the three bash scripts as subprocesses)
 cd skills/subagent-driven-development/scripts && uv run --python 3.13 --with pytest python -m pytest -q
 
