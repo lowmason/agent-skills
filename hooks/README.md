@@ -143,13 +143,21 @@ cd hooks && uv run --python 3.13 --with pytest python -m pytest -q
 ```
 
 Gate B is `probe-readonly-guard.sh`, a live check against the installed binary — Gate A
-can pass perfectly against a hook Claude Code never invokes. Two things that probe
-learned the hard way, both now baked into the script: assert on the raw
-`--output-format stream-json` events rather than the agent's final message (a denied
-agent reports the constraint to its controller **in its own words**, paraphrasing the
-marker away), and probe the deny path with `git config --global --list` rather than a
-real mutator (a guarded agent refuses `git stash` on its own prose contract before Bash
-is ever invoked, so the hook never fires and the probe measures nothing).
+can pass perfectly against a hook Claude Code never invokes. Three things that probe
+learned the hard way, all now baked into the script:
+
+- **Assert on the raw `--output-format stream-json` events, not the agent's final
+  message.** A denied agent relays the constraint to its controller **in its own
+  words**, paraphrasing the marker away.
+- **Do not probe with a real mutator.** A guarded agent refuses `git stash` on its own
+  prose contract before Bash is ever invoked, so the hook never fires and the probe
+  measures nothing. (That the prose already stops the blatant cases is the point: the
+  hook's value is the *non-obvious* ones, like a reviewer running `git checkout <base>`
+  to compare.) Both deny probes use commands an agent has no contract reason to refuse.
+- **"Read-only command passed" is not a liveness check.** Marker-absent also holds when
+  the hook never ran at all. Check 2 (`git fetch`, denied by design under D7 and
+  violating no clause of the prose contract) is the assertion that proves the hook is
+  live.
 
 ## Limitations (by design)
 
@@ -167,8 +175,9 @@ Known false positives, accepted rather than widened:
 
 - **`git config --global --list` is denied.** The allowlist carries exactly the five
   read-mode flags from the spec (`--get --get-all --get-regexp --list -l`); a scope
-  flag is not one of them. Widening is a one-line change if it ever bites. Gate B
-  currently relies on this case, so change both together.
+  flag is not one of them. Widening is a one-line change if it ever bites — in which
+  case replace Gate B's check 3, which rides on this case. Gate B's *liveness* proof
+  is check 2 (`git fetch`), which is independent of it.
 - **`git fetch` and `git pull` are denied *deliberately*, not by fall-through.**
   `fetch` mutates no clause of the quoted contract, but a fetch part-way through a
   review silently changes what a later `git diff origin/main...` shows — the artifact
