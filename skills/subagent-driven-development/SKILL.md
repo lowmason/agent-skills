@@ -179,7 +179,7 @@ the session default.
 
 Implementer subagents report one of four statuses. Handle each appropriately:
 
-**DONE:** Generate the review package (`scripts/review-package PLAN_FILE BASE HEAD` — see **File Handoffs** for the BASE rule), then dispatch the task reviewer with the printed path.
+**DONE:** Generate the review package (`scripts/review-package PLAN_FILE BASE HEAD` — see **File Handoffs** for the BASE rule and for the path the script reports), then dispatch the task reviewer with that path.
 
 **DONE_WITH_CONCERNS:** The implementer completed the work but flagged doubts. Read the concerns before proceeding. If the concerns are about correctness or scope, address them before review. If they're observations (e.g., "this file is getting large"), note them and proceed to review.
 
@@ -327,9 +327,12 @@ and is re-read on every later turn. Hand artifacts over as files:
   report contract. Exact values (numbers, magic strings, signatures, test
   cases) appear only in the brief.
 - **Review package (diffs):** generate every reviewer's diff as a file — run
-  this skill's `scripts/review-package PLAN_FILE BASE HEAD` and pass the printed path (or,
-  without bash: `git log --oneline`, `git diff --stat`, and `git diff -U10` for
-  the range, redirected to one uniquely named file). The output never enters
+  this skill's `scripts/review-package PLAN_FILE BASE HEAD` and pass it the path
+  the script reports (or, without bash: `git log --oneline`, `git diff --stat`,
+  and `git diff -U10` for the range, redirected to one uniquely named file).
+  The script does not print a bare path — it prints one summary line,
+  `wrote <path>: <N> commit(s), <M> bytes`, so take the path out of it rather
+  than pasting the line into a dispatch. The output never enters
   your context; the reviewer sees the commit list, stat summary, and full diff
   in one Read. **Use the BASE you recorded before dispatching the implementer —
   never `HEAD~1`, which silently drops all but the last commit of a multi-commit
@@ -449,7 +452,7 @@ Implementer (second run):
   - Self-review: Found I missed --force flag, added it
   - Committed
 
-[Run review-package, dispatch task reviewer with the printed path]
+[Run review-package, dispatch task reviewer with the path it reports]
 Task reviewer: Spec ✅ - all requirements met, nothing extra.
   Strengths: Good test coverage, clean. Issues: None. Task quality: Approved.
 
@@ -466,7 +469,7 @@ Implementer:
   - Self-review: All good
   - Committed
 
-[Run review-package, dispatch task reviewer with the printed path]
+[Run review-package, dispatch task reviewer with the path it reports]
 Task reviewer: Spec ❌:
   - Missing: Progress reporting (spec says "report every 100 items")
   - Extra: Added --json flag (not requested)
@@ -542,8 +545,8 @@ Done!
 - Let implementer self-review replace actual review (both are needed)
 - Tell a reviewer what not to flag, or pre-rate a finding's severity — see **Constructing Reviewer Prompts**
 - Dispatch a task reviewer without a diff file — generate it first
-  (`scripts/review-package PLAN_FILE BASE HEAD`) and name the printed path in the
-  prompt
+  (`scripts/review-package PLAN_FILE BASE HEAD`) and name the path it reports in
+  the prompt, the path alone and not its whole summary line
 - Move to next task while the review has open Critical/Important issues
 - Re-dispatch a task the progress ledger already marks complete — check
   the ledger (and `git log`) after any compaction or resume

@@ -162,7 +162,8 @@ Subagent (code-reviewer if defined, else general-purpose):
 - `[BASE_SHA]` — starting commit
 - `[HEAD_SHA]` — ending commit
 - `[DIFF_FILE]` — the review-package path (subagent-driven-development's
-  `scripts/review-package PLAN_FILE BASE HEAD` prints it). REQUIRED when dispatched
+  `scripts/review-package PLAN_FILE BASE HEAD` reports it in a
+  `wrote <path>: …` summary line; pass the path alone). REQUIRED when dispatched
   from that skill's File Handoffs contract; optional otherwise — without
   it the reviewer falls back to running git itself.
 
