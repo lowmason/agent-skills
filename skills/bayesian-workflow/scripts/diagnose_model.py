@@ -1,8 +1,8 @@
 """
 Automated Bayesian model diagnostics.
 
-Runs convergence checks, posterior predictive checks, and produces
-a structured report.
+Runs convergence checks, posterior predictive checks, LOO, and a Monte Carlo
+precision block (MCSE -> stable digits), and produces a structured report.
 
 Usage:
     python diagnose_model.py --idata path/to/inference_data.nc
@@ -11,6 +11,7 @@ Usage:
 
 import argparse
 import json
+import math
 import sys
 import warnings
 
@@ -292,12 +293,57 @@ def check_posterior_predictive(idata):
     return results
 
 
+def check_precision(idata):
+    """Monte Carlo precision per parameter: how many significant digits of the
+    posterior mean are stable under a re-run with a new seed.
+
+    Follows Gelman et al. 2026, §11.5-11.6: report the Monte Carlo standard error
+    (MCSE) beside the posterior sd and choose reported digits so the rounding
+    unit exceeds ~2 * MCSE. The relative MCSE ``mcse_mean / sd`` maps to stable
+    significant digits as ``floor(-log10(rel))``: 10% -> 1 digit, 1% -> 2.
+    Parameters with a non-positive or non-finite sd or MCSE (deterministic
+    quantities, constants) are skipped. Interval endpoints are usually less
+    precise than the mean; check ``az.mcse(idata, method="quantile", prob=...)``
+    separately before quoting a tail quantile to two digits.
+    """
+    summary = az.summary(idata)  # has sd / mcse_mean / mcse_sd on arviz 0.23 and 1.x alike
+    params = {}
+    for name, row in summary.iterrows():
+        sd = float(row["sd"])
+        mcse = float(row["mcse_mean"])
+        if not (np.isfinite(sd) and np.isfinite(mcse)) or sd <= 0 or mcse <= 0:
+            continue
+        rel = mcse / sd
+        params[str(name)] = {
+            "sd": sd,
+            "mcse_mean": mcse,
+            "mcse_sd": float(row["mcse_sd"]),
+            "rel_mcse": round(rel, 4),
+            "stable_digits": int(max(0, math.floor(-math.log10(rel)))),
+        }
+    if not params:
+        return {
+            "params": {},
+            "max_rel_mcse": 0.0,
+            "max_rel_mcse_param": None,
+            "min_stable_digits": None,
+        }
+    worst = max(params, key=lambda k: params[k]["rel_mcse"])
+    return {
+        "params": params,
+        "max_rel_mcse": params[worst]["rel_mcse"],
+        "max_rel_mcse_param": worst,
+        "min_stable_digits": min(p["stable_digits"] for p in params.values()),
+    }
+
+
 def generate_report(idata):
     """Generate complete diagnostics report."""
     report = {
         "convergence": check_convergence(idata),
         "loo": check_loo(idata),
         "posterior_predictive": check_posterior_predictive(idata),
+        "precision": check_precision(idata),
     }
 
     # Overall assessment
