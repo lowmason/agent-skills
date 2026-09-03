@@ -127,6 +127,7 @@ The prior predictive distribution shows the data the model would generate before
 | Min ESS (bulk) | <e.g., 1840> | ≥ 100 × n_chains | <✓ / ✗> |
 | Min ESS (tail) | <e.g., 1620> | ≥ 100 × n_chains | <✓ / ✗> |
 | Divergences | <e.g., 0> | 0 (or near zero) | <✓ / ✗> |
+| Max relative MCSE | <e.g., 0.02 (β₁)> | ≤ 0.05 (≥ 1 stable digit; from `diagnostics.json → precision`) | <✓ / ✗> |
 
 ![Trace](trace.png)
 
@@ -144,6 +145,8 @@ The forest plot shows posterior medians (points) and credible intervals (lines) 
 |-----------|------|----|---------|-------|
 | <param_1> | <m> | <s> | [<lo>, <hi>] | <prob> |
 | <param_2> | <m> | <s> | [<lo>, <hi>] | <prob> |
+
+Round every cell to the parameter's `stable_digits` from `diagnostics.json → precision` — and usually to fewer, since the posterior sd sets the meaningful digits and the MCSE only sets the *stable* ones (see Reporting principles → 6). Interval endpoints are less precise than the mean: before quoting a tail quantile to two digits, check `az.mcse(idata, method="quantile", prob=0.05)` (and `prob=0.95`).
 
 **Substantive interpretation.** <2–4 sentences on what the posteriors mean in domain terms — effect sizes in original units, practical significance, what the posterior probability of direction implies for the question. Avoid frequentist language ("significant", "rejected").>
 
@@ -226,6 +229,7 @@ Bayesian results are inherently richer than frequentist results -- use that rich
 3. **Show the model**. Include a model specification section -- readers should know exactly what was assumed. Use `numpyro.render_model(model, model_args=..., model_kwargs=...)` to visualize the model graph.
 4. **Report diagnostics**. Convergence and model criticism results build trust.
 5. **Use probability language**, not p-value language. "There is a 94% probability that θ lies in [a, b]" — not "the interval [a, b] is significant."
+6. **Round to what the posterior and the Monte Carlo error support** (Gelman et al. 2026, §11.4–11.6). Two separate limits: the posterior *sd* decides how many digits are *meaningful* — a mean of 1.97 with a 90% interval of [0.7, 3.2] is honestly "about 2", or "1 to 3" — and the *MCSE* decides how many are *stable* under a new seed (rounding unit ≳ 2 × MCSE). `diagnostics.json → precision` carries both per parameter as `rel_mcse` and `stable_digits`; `max_rel_mcse_param` is the parameter that limits the whole table. Never print more significant digits than `stable_digits`; usually print fewer. If you want another digit, halving the MCSE costs four times the draws (§11.4) — it is almost always better to report fewer digits or a rounder interval than to run longer. A fixed seed does not make a number reproducible in the sense that matters (§11.7): the test is whether a *different* seed gives the same *reported* digits, and that is exactly what the MCSE check certifies — so a report built from an exploration-sized run (see diagnostics.md → Exploration runs vs. the final run) must say so.
 
 ## Analysis report template
 
@@ -271,6 +275,7 @@ Use this structure for written reports. Adapt sections as needed.
 - ESS (bulk): minimum [X] ✓
 - ESS (tail): minimum [X] ✓
 - Divergences: [N] [✓ or ✗]
+- Relative MCSE: max [X] on [param] → [N] stable significant digit(s) ✓
 [Figure: trace/rank plots for key parameters]
 
 ### Parameter estimates
