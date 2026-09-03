@@ -51,6 +51,13 @@ def test_few_divergences_suggest_raising_target_accept_first():
     assert "Do not raise" not in step
 
 
+def test_gate_boundary_at_one_percent_still_raises_target_accept():
+    # The gate is a strict `>`, so pct == DIVERGENCE_GATE_PCT is *not* above it.
+    step = _divergence_step(suggest_next_steps(check_diagnostics(diagnostics=_diagnostics(40, 1.0))))
+    assert "raise target_accept_prob to 0.95" in step
+    assert "Do not raise" not in step
+
+
 def test_no_divergences_no_divergence_step():
     diag = _diagnostics(0, 0.0)
     diag["convergence"]["divergences"]["ok"] = True

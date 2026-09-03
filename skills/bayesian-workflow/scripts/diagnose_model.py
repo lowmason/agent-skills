@@ -297,9 +297,11 @@ def check_precision(idata):
     """Monte Carlo precision per parameter: how many significant digits of the
     posterior mean are stable under a re-run with a new seed.
 
-    Follows Gelman et al. 2026, §11.5-11.6: report the Monte Carlo standard error
-    (MCSE) beside the posterior sd and choose reported digits so the rounding
-    unit exceeds ~2 * MCSE. The relative MCSE ``mcse_mean / sd`` maps to stable
+    Follows Gelman et al. 2026, §11.5-11.6 in reporting the Monte Carlo standard
+    error (MCSE) beside the posterior sd. The rounding rule applied here — keep
+    the rounding unit above ~2 * MCSE — is this skill's; the book's own
+    digit-stability reasoning runs in +/-3 * MCSE (the 99.7% range).
+    The relative MCSE ``mcse_mean / sd`` maps to stable
     significant digits as ``floor(-log10(rel))``: 10% -> 1 digit, 1% -> 2.
     Parameters with a non-positive or non-finite sd or MCSE (deterministic
     quantities, constants) are skipped. Interval endpoints are usually less
@@ -317,7 +319,7 @@ def check_precision(idata):
         params[str(name)] = {
             "sd": sd,
             "mcse_mean": mcse,
-            "mcse_sd": float(row["mcse_sd"]),
+            "mcse_sd": float(row["mcse_sd"]) if np.isfinite(row["mcse_sd"]) else None,
             "rel_mcse": round(rel, 4),
             "stable_digits": int(max(0, math.floor(-math.log10(rel)))),
         }

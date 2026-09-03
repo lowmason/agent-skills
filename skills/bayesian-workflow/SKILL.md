@@ -234,7 +234,10 @@ Use **at least 4** and call `numpyro.set_host_device_count(num_chains)` so `chai
 actually runs them on separate CPU devices. Running more chains is a cheap way to cut Monte
 Carlo variance and to surface multimodality (Gelman et al. 2026, §11.4). `chain_method="vectorized"`
 runs all chains in one `vmap` (fast, single device, no host-count needed); `"sequential"` is the
-low-memory fallback. Size the run to the phase: exploration fits at `num_warmup=200, num_samples=200` accept R-hat ≤ 1.1; the 1000/1000 template default is the *final* run (Gelman et al. 2026, §11.4, §12.1 — see diagnostics.md → Exploration runs vs. the final run).
+low-memory fallback. Size the run to the phase: exploration fits at
+`num_warmup=200, num_samples=200` accept R-hat ≤ 1.1 — a threshold for the keep/change/discard
+decision only, never for numbers that get reported; the 1000/1000 template default is the *final*
+run (Gelman et al. 2026, §11.4, §12.1 — see diagnostics.md → Exploration runs vs. the final run).
 
 ## Critical rules
 

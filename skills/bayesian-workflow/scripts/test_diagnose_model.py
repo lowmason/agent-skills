@@ -39,6 +39,28 @@ def test_check_precision_iid_draws_give_one_stable_digit():
     assert prec["min_stable_digits"] == 1
 
 
+def _ar1(n_chains=4, n_draws=500, seed=7, rho=0.97):
+    """Stationary AR(1) draws — unit marginal sd, but ESS far below n_chains * n_draws."""
+    rng = np.random.default_rng(seed)
+    noise = rng.normal(size=(n_chains, n_draws)) * np.sqrt(1 - rho**2)
+    x = np.empty((n_chains, n_draws))
+    x[:, 0] = rng.normal(size=n_chains)
+    for t in range(1, n_draws):
+        x[:, t] = rho * x[:, t - 1] + noise[:, t]
+    return x
+
+
+def test_check_precision_names_the_least_precise_parameter():
+    prec = check_precision(_idata(extra={"sticky": _ar1()}))
+    sticky, mu = prec["params"]["sticky"], prec["params"]["mu"]
+    # rho=0.97 -> relative MCSE ~ 0.2, an order of magnitude worse than the i.i.d. params
+    assert sticky["rel_mcse"] > 0.1 > mu["rel_mcse"]
+    assert sticky["stable_digits"] == 0 and mu["stable_digits"] == 1
+    # the *identity* of the limiting parameter, not just membership in the table
+    assert prec["max_rel_mcse_param"] == "sticky"
+    assert prec["min_stable_digits"] == 0
+
+
 def test_check_precision_skips_constant_params():
     const = {"fixed": np.ones((4, 500))}
     prec = check_precision(_idata(extra=const))

@@ -23,7 +23,8 @@ symlink, the plan file, the SDD workspace, and every `specs/` file mentioning `t
 aside for the window. Dispatch: Agent tool, general-purpose, opus, opaque description ("Step 5 of 10"),
 5 reps per arm, fresh context each. Dispatch was not one message: the first batch carried A1–A5 and
 B1–B3; B4–B5 went out in a second batch minutes later with the identical prompt file, inside the same
-quarantine window. Arm B inlined the pre-Task-6 SKILL.md + diagnostics.md (post-Task-2
+quarantine window. The two PARTIAL reps fell one in each batch — B3 in the first, B4 in the second —
+so the PARTIAL verdicts do not track the batch they were dispatched in. Arm B inlined the pre-Task-6 SKILL.md + diagnostics.md (post-Task-2
 citations, unchanged rung 1).
 
 Contamination check: every rep's transcript (`subagents/agent-<id>.jsonl`) was grepped for
@@ -130,7 +131,7 @@ What split the reps: four of five cited the funnel row's strong-per-group-likeli
 
 **C_fail = 0/5 · convergence: 5/5 named "pair plot of the flagged scale vs one of its children" first.** Pass bar met (round 2).
 
-Dispatch note: in both rounds the reps went out in batches of 2, 2 and 1 — the ~53 KB prompt does not fit five times in one dispatch message — from the identical prompt file, inside one quarantine window (the round-1 prompt is kept as `promptC-r1.md` beside the round-2 `promptC.md`). Every rep reports `TOOLS USED: advisor` except C3 (`none`); the harness reported `tool_uses: 0` for all ten and every transcript grepped clean for `Read|Grep|Glob|Skill|Bash|WebFetch` — the same configuration as arms A and B (see Fixture).
+Dispatch note: the quarantine for arm C moved aside this record itself (it names the expected verdict), the plan file, the skill symlink, every `specs/` file mentioning `target_accept` (four in all, this record among them), and the `.sdd/` workspace — the set is listed in `quarantined.txt` and reported at `.sdd/task-8-report.md:8`. In both rounds the reps went out in batches of 2, 2 and 1 — the ~53 KB prompt does not fit five times in one dispatch message — from the identical prompt file, inside one quarantine window (the round-1 prompt is kept as `promptC-r1.md` beside the round-2 `promptC.md`). Every rep reports `TOOLS USED: advisor` except C3 (`none`); the harness reported `tool_uses: 0` for all ten and every transcript grepped clean for `Read|Grep|Glob|Skill|Bash|WebFetch` — the same configuration as arms A and B (see Fixture).
 
 ## Disposition
 
