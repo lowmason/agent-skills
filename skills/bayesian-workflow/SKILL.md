@@ -15,7 +15,7 @@ effort: xhigh
 metadata:
   author: "Alexandre Andorra (https://alexandorra.github.io/)"
   adapted_by: Lowell Mason
-  version: "2.0"
+  version: "2.1"
 ---
 
 # Bayesian Workflow

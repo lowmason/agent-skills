@@ -33,9 +33,21 @@ bayesian-workflow/
     unprompted (5/5 each), so the upstream jit/PyTree/control-flow
     reference and the Equinox material were not ported. Prose and
     examples are original.
-    The skill cites Gelman et al. 2020 (arXiv:2011.01808), Betancourt 2020
-    (CC BY-NC 4.0), and Gabry et al. 2019 (JRSS-A / arXiv:1709.01449) by
-    author-year only; it reproduces no text and bundles no copies.
+    The skill cites Gelman, Vehtari, McElreath et al. (2026), "Bayesian
+    Workflow" (Chapman & Hall/CRC; (c) 2020-2026 by the authors; the
+    electronic edition at users.aalto.fi/~ave/Bayesian-Workflow.pdf is
+    distributed "for non-commercial purposes only") by chapter and
+    section number only, in original wording; it reproduces no book
+    prose or figures and bundles no PDF. The book's companion repository
+    (github.com/avehtari/Bayesian-Workflow, R + Stan case studies) ships
+    no LICENSE file, so none of its code is ported, translated, or
+    paraphrased -- case studies are cited as worked examples by chapter
+    only. The earlier arXiv preprint (Gelman et al. 2020,
+    arXiv:2011.01808) stays listed in references/publications.md as the
+    open-access fallback. Betancourt 2020 (CC BY-NC 4.0) and Gabry et al.
+    2019 (JRSS-A / arXiv:1709.01449) are likewise cited by author-year
+    only; the skill reproduces no text and bundles no copies of any of
+    them.
 
 The following skills are original works by Lowell Mason, MIT licensed:
 
