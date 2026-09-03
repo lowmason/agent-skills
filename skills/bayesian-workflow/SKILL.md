@@ -24,7 +24,7 @@ metadata:
 
 Every Bayesian analysis follows this sequence. Do not skip steps -- especially model criticism.
 
-1. **Formulate** — Define the generative story. What underlying process, that we're precisely trying to model, created the data? Start from a known template and plan to iterate — most models are throwaway steps toward a useful one (Gelman et al. 2020, §1).
+1. **Formulate** — Define the generative story. What underlying process, that we're precisely trying to model, created the data? Start from a known template and plan to iterate — most models are throwaway steps toward a useful one (Gelman et al. 2026, §2.1).
 2. **Specify priors** — See [references/priors.md](references/priors.md)
 3. **Implement in NumPyro** — Write the model as a Python function with `numpyro.sample` / `numpyro.plate` / `numpyro.deterministic`. Prefer the latest NumPyro. Use `numpyro.plate` for batch dimensions and pass `coords`/`dims` to ArviZ at conversion time.
 4. **Run prior predictive checks** — `numpyro.infer.Predictive(model, num_samples=500)(key, *args)`. Verify priors produce plausible data ranges before fitting. See [references/visualize.md](references/visualize.md)
@@ -232,7 +232,7 @@ already JAX-JIT-compiled, and BlackJAX is the genuine "swap the sampler" alterna
 **Chains.** Unlike PyMC, NumPyro requires you to set `num_chains` explicitly (default is 1).
 Use **at least 4** and call `numpyro.set_host_device_count(num_chains)` so `chain_method="parallel"`
 actually runs them on separate CPU devices. Running more chains is a cheap way to cut Monte
-Carlo variance and to surface multimodality (Gelman et al. 2020, §3.2). `chain_method="vectorized"`
+Carlo variance and to surface multimodality (Gelman et al. 2026, §11.4). `chain_method="vectorized"`
 runs all chains in one `vmap` (fast, single device, no host-count needed); `"sequential"` is the
 low-memory fallback.
 

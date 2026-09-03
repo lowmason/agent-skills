@@ -15,14 +15,14 @@
 
 Compare models when you have genuinely different modeling assumptions — not for variable selection. Bayesian model comparison answers: "Which model predicts unseen data better?" LOO-CV works across different data models — they do not need to share the same observation distribution (see [CV-FAQ](https://users.aalto.fi/~ave/CV-FAQ.html#differentmodels)).
 
-For variable selection, prefer projection-predictive methods or a BART-style model over hard selection by information criterion (Gelman et al. 2020, §8.3).
+For variable selection, prefer projection-predictive methods or a BART-style model over hard selection by information criterion (Gelman et al. 2026, §9.6; worked example in Ch 28).
 
 Common comparison scenarios:
 - Linear vs. nonlinear trend
 - Different hierarchical structures (varying intercepts vs. varying slopes)
 - Different covariate sets guided by domain knowledge
 
-Fit *several* models to **understand** each one, not just to crown a winner; if conclusions are stable across the models that pass your checks, deciding which is "best" matters less (the multiverse view, Gelman et al. 2020, §8).
+Fit *several* models to **understand** each one, not just to crown a winner; if conclusions are stable across the models that pass your checks, deciding which is "best" matters less (the multiverse view, Gelman et al. 2026, §9.3 and §9.5).
 
 ## Getting the log-likelihood for each model
 
@@ -91,7 +91,7 @@ comparison = az.compare(models, method="stacking")
 # The 'weight' column gives optimal combination weights
 ```
 
-Stacking often outperforms selecting a single best model, and it is preferred over Bayesian model averaging (BMA), whose weights can depend strongly on aspects of the model that barely affect predictions (Gelman et al. 2020, §8.2). Heterogeneous stacking weights are also a hint that a *hierarchical* model could combine the components better. Report stacking weights alongside ELPD differences — they give a more nuanced picture.
+Stacking often outperforms selecting a single best model, and it is preferred over Bayesian model averaging (BMA), whose weights can depend strongly on aspects of the model that barely affect predictions (Gelman et al. 2026, §9.6). Heterogeneous stacking weights are also a hint that a *hierarchical* model could combine the components better. Report stacking weights alongside ELPD differences — they give a more nuanced picture.
 
 ## Pointwise comparison
 

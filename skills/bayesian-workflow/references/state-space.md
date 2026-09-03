@@ -31,6 +31,7 @@ Gaussian state space. Marginalize the discrete states with `config_enumerate` /
 `MixtureSameFamily` — the same "marginalize or enumerate, don't plug in" rule the main SKILL.md
 states for discrete latents. The changepoint notebook
 `notebooks/book2/29/supplementary/hmm_poisson_changepoint_jax.ipynb` is a worked JAX example.
+Gelman et al. 2026, Ch 26 is a full case study of the same build-then-decode HMM workflow on animal-movement data (its code is R/Stan and unlicensed — cite it, don't port it).
 
 ## The core decision: marginalize the latent path vs. sample it
 

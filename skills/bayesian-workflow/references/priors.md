@@ -15,7 +15,7 @@ Priors encode domain knowledge and constrain the model to plausible regions of p
 
 Every prior should have a justification. If you cannot articulate why a prior is reasonable, it is not a good prior.
 
-Think of priors as a ladder rather than a binary "informative vs. non-informative": flat (improper) → super-vague proper → very weakly informative → generic weakly informative → specific informative. Choosing a prior is choosing how much subject-matter information to include (Gelman et al. 2020, §7.3). And a prior can only be understood **in the context of the likelihood** — reason about the *joint* prior over all parameters, not one marginal at a time, and as the model grows, tighten priors so a fixed information budget isn't spread too thin.
+Think of priors as a ladder rather than a binary "informative vs. non-informative": flat (improper) → super-vague proper → very weakly informative → generic weakly informative → specific informative. Choosing a prior is choosing how much subject-matter information to include (Gelman et al. 2026, §5.6). And a prior can only be understood **in the context of the likelihood** — reason about the *joint* prior over all parameters, not one marginal at a time, and as the model grows, tighten priors so a fixed information budget isn't spread too thin — independent `Normal(0, 1)` coefficient priors that are weak for two predictors imply a prior on the predicted probability that piles up at 0 and 1 by fifteen predictors (§5.9), which is why joint priors such as the regularized horseshoe or R2-D2 exist (see Sparsity priors below).
 
 ## PyMC → NumPyro distribution map
 
