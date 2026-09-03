@@ -1,5 +1,7 @@
 # Read-only Agent Guard Implementation Plan
 
+**Status: COMPLETE (2026-09-03)** — executed via executing-plans (inline); nothing deferred.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Ship a `PreToolUse(Bash)` hook that mechanically enforces the Bash half of the read-only contract carried by five agents (`code-reviewer`, `task-reviewer`, `security-auditor`, `Explore`, `test-runner`), plus the commit-time lint that keeps its roster from drifting.
@@ -8,7 +10,7 @@
 
 **Tech Stack:** Python (stdlib only: `json`, `shlex`, `sys`, `importlib.util`), pytest via `uv run --python 3.13`, bash for the live probe, Claude Code hooks JSON in `~/.claude/settings.json`.
 
-**Spec:** [specs/readonly-agent-guard.md](../readonly-agent-guard.md) — section references below (§1–§6, D1–D7) point into it.
+**Spec:** [specs/completed/readonly-agent-guard.md](../../completed/readonly-agent-guard.md) — section references below (§1–§6, D1–D7) point into it.
 
 ## Global Constraints
 
@@ -40,7 +42,7 @@ Spec §Verification flags this as an assumption that must be a **finding, not a 
 - Produces: `RECORDED_PAYLOAD` — a module-level `dict` in `hooks/test_readonly_agent_guard.py` holding one verbatim recorded payload from a guarded-agent `Bash` call, and `RECORDED_MAIN_SESSION_PAYLOAD` holding one from a main-session `Bash` call. Tasks 2–5 build every stdin fixture from these.
 - Produces: the confirmed key name for Task 2's `AGENT_TYPE_KEY`, and the confirmed Gate B invocation route for Task 7.
 
-- [ ] **Step 1: Build the recorder outside the repo**
+- [x] **Step 1: Build the recorder outside the repo**
 
 Nothing untracked may land in the working tree, so the recorder lives in `/tmp`.
 
@@ -60,7 +62,7 @@ chmod +x /tmp/rag-probe/recorder.py
 : > /tmp/rag-probe/payloads.jsonl
 ```
 
-- [ ] **Step 2: Back up this repo's local settings, then install the recorder into them**
+- [x] **Step 2: Back up this repo's local settings, then install the recorder into them**
 
 `.claude/settings.local.json` is gitignored and per-machine, and this repo is already a trusted directory — so the probe needs no global mutation. Back it up first; Step 6 restores it.
 
@@ -80,7 +82,7 @@ print('recorder installed')
 PY
 ```
 
-- [ ] **Step 3: Probe the production route — a real Agent-tool dispatch**
+- [x] **Step 3: Probe the production route — a real Agent-tool dispatch**
 
 ```bash
 claude -p --allowedTools "Bash,Task,Agent" 'Use the Agent tool with subagent_type "Explore" to run exactly this command and report its first line: git status --porcelain'
@@ -88,13 +90,13 @@ claude -p --allowedTools "Bash,Task,Agent" 'Use the Agent tool with subagent_typ
 
 Expected: the nested session completes and `/tmp/rag-probe/payloads.jsonl` is non-empty. If the run errors before dispatching, retry once with a simpler prompt; if it still fails, record that and move to Step 4 — the `--agent` route may be the only observable one.
 
-- [ ] **Step 4: Probe the Gate B route — the `--agent` flag**
+- [x] **Step 4: Probe the Gate B route — the `--agent` flag**
 
 ```bash
 claude -p --agent Explore --allowedTools "Bash" 'Run exactly: git status --porcelain'
 ```
 
-- [ ] **Step 5: Read the recorded payloads**
+- [x] **Step 5: Read the recorded payloads**
 
 ```bash
 python3 - <<'PY'
@@ -120,7 +122,7 @@ Expected: at least one record whose agent-ish field equals `Explore`, and at lea
 
 Only after one of these resolves is the field name a finding rather than a guess.
 
-- [ ] **Step 6: Restore the settings file and verify the restore**
+- [x] **Step 6: Restore the settings file and verify the restore**
 
 Do this before anything else, so a failure later in the task cannot leave the recorder installed.
 
@@ -132,7 +134,7 @@ grep -c 'rag-probe' .claude/settings.local.json || echo "recorder gone (grep fou
 
 Expected: `RESTORED`, and the grep reports 0 matches.
 
-- [ ] **Step 7: Freeze the observed payloads as the test fixture**
+- [x] **Step 7: Freeze the observed payloads as the test fixture**
 
 Create `hooks/test_readonly_agent_guard.py`. Replace the two dict literals below with the **verbatim** payloads printed in Step 5 — same keys, same nesting, same types. Trim only fields that are obviously volatile (`session_id`, absolute transcript paths) and leave a comment saying you did.
 
@@ -178,12 +180,12 @@ def test_recorded_payload_carries_the_agent_identity():
     assert isinstance(RECORDED_PAYLOAD['tool_input']['command'], str)
 ```
 
-- [ ] **Step 8: Run the fixture test**
+- [x] **Step 8: Run the fixture test**
 
 Run: `cd hooks && uv run --python 3.13 --with pytest python -m pytest -q`
 Expected: `1 passed`.
 
-- [ ] **Step 9: Record the finding in the README probe log**
+- [x] **Step 9: Record the finding in the README probe log**
 
 Append to the end of `hooks/README.md` (Task 8 restructures the rest of this file and **preserves this section verbatim**):
 
@@ -205,7 +207,7 @@ behaviour end to end.
 
 Correct the table row to what you actually observed. If the `--agent` route did **not** populate the field, say so in the row and record the working route instead — Task 7 builds Gate B on whatever this row names.
 
-- [ ] **Step 10: Commit**
+- [x] **Step 10: Commit**
 
 ```bash
 git add hooks/test_readonly_agent_guard.py hooks/README.md
@@ -235,7 +237,7 @@ Spec §2's non-git half: a denylist of unambiguous mutators, with unlisted comma
 - Produces: `classify(command: str) -> str | None` — `None` allows; a `str` is a one-or-two-sentence reason fragment naming the problem and the read-only alternative. Tasks 3 and 4 extend its git half; Task 5 consumes it.
 - Produces: `_classify_subcommand(tokens: list[str]) -> str | None` — dispatches one subcommand.
 
-- [ ] **Step 1: Write the failing tests — tokenizer facts and the denylist**
+- [x] **Step 1: Write the failing tests — tokenizer facts and the denylist**
 
 The tokenizer assertions pin exact token lists rather than trusting a reading of the `shlex` docs. Append to `hooks/test_readonly_agent_guard.py`:
 
@@ -318,12 +320,12 @@ def test_mutator_is_caught_when_it_is_not_the_first_subcommand():
     assert guard.classify('cat f | grep x ; sudo reboot') is not None
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `cd hooks && uv run --python 3.13 --with pytest python -m pytest -q`
 Expected: collection error — `FileNotFoundError` / `No such file or directory: '.../readonly-agent-guard.py'` from `_load_guard()`.
 
-- [ ] **Step 3: Write the guard skeleton**
+- [x] **Step 3: Write the guard skeleton**
 
 Create `hooks/readonly-agent-guard.py`:
 
@@ -470,17 +472,17 @@ Then make it executable:
 chmod +x hooks/readonly-agent-guard.py
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run: `cd hooks && uv run --python 3.13 --with pytest python -m pytest -q`
 Expected: PASS (all tests in the file).
 
-- [ ] **Step 5: Confirm the file is 3.9-clean under the real hook interpreter**
+- [x] **Step 5: Confirm the file is 3.9-clean under the real hook interpreter**
 
 Run: `/usr/bin/env python3 -m py_compile hooks/readonly-agent-guard.py && echo "3.9 OK"`
 Expected: `3.9 OK` with no `SyntaxError`.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add hooks/readonly-agent-guard.py hooks/test_readonly_agent_guard.py
@@ -507,7 +509,7 @@ Spec §2's git half, first layer. The allowlist fails closed: any verb not expli
 - Consumes: `_classify_git(args: list[str]) -> str | None` from Task 2 (currently a stub returning `None`); `args` is the token list **after** the leading `git`.
 - Produces: `GIT_READONLY_VERBS: frozenset[str]`, `GIT_INFO_FLAGS`, `GIT_GLOBAL_FLAGS`, `GIT_GLOBAL_WITH_VALUE`, `GIT_ALTERNATIVES: dict[str, str]` — Task 4 adds two more tables consulted by the same dispatcher.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `hooks/test_readonly_agent_guard.py`:
 
@@ -593,12 +595,14 @@ def test_git_denial_names_a_read_only_alternative_where_one_exists():
     assert 'git show' in detail
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `cd hooks && uv run --python 3.13 --with pytest python -m pytest -q -k git`
 Expected: FAIL — the stub `_classify_git` returns `None`, so every "denied" assertion fails with `assert None is not None`.
 
-- [ ] **Step 3: Implement the git allowlist**
+> Deviation: `-k git` filters on *test names*, so it under-selected (1 failed, 3 passed, 18 deselected). Ran the full suite instead for the true RED state: 7 failed, 15 passed — all the deny assertions, as intended.
+
+- [x] **Step 3: Implement the git allowlist**
 
 In `hooks/readonly-agent-guard.py`, add these tables below `DENIED_COMMANDS`:
 
@@ -710,12 +714,12 @@ def _classify_git(args):
 
 Note the ordering inside `_locate_git_verb`: an unknown leading option denies rather than being treated as a verb, so `git --wat log` cannot slip a verb past the scan.
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run: `cd hooks && uv run --python 3.13 --with pytest python -m pytest -q`
 Expected: PASS. (`_classify_git_subcommand_verb` and `_classify_git_flag_verb` are referenced but undefined — that is fine at import time because both tables are empty, so neither name is ever looked up. Task 4 defines them.)
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add hooks/readonly-agent-guard.py hooks/test_readonly_agent_guard.py
@@ -746,7 +750,7 @@ Two notes on the rules, so they do not read as drift:
 - Consumes: `GIT_SUBCOMMAND_ALLOWED`, `GIT_FLAG_ALLOWED`, and the `_classify_git` dispatcher from Task 3.
 - Produces: `_classify_git_subcommand_verb(verb: str, rest: list[str]) -> str | None` and `_classify_git_flag_verb(verb: str, rest: list[str]) -> str | None`, both already called by that dispatcher.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `hooks/test_readonly_agent_guard.py`. Every pair asserts both sides, per spec Verification:
 
@@ -820,12 +824,14 @@ def test_value_taking_flags_do_not_look_like_positionals():
         assert guard.classify(command) is None, command
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `cd hooks && uv run --python 3.13 --with pytest python -m pytest -q -k "mode_dependent or stash or positional or config or value_taking"`
 Expected: FAIL — with both tables empty, every mode-dependent verb falls through to the allowlist default, so the *allowed* half fails first (`assert 'reason' is None`).
 
-- [ ] **Step 3: Implement both handlers**
+> Deviation: ran the full suite rather than the `-k` filter, for the same name-matching reason as Task 3. RED was exactly as predicted: 5 failed, 23 passed, the allowed half failing first.
+
+- [x] **Step 3: Implement both handlers**
 
 Replace the two empty-dict placeholders in `hooks/readonly-agent-guard.py`:
 
@@ -940,17 +946,17 @@ def _classify_git_flag_verb(verb, rest):
     return None
 ```
 
-- [ ] **Step 4: Run the full suite**
+- [x] **Step 4: Run the full suite**
 
 Run: `cd hooks && uv run --python 3.13 --with pytest python -m pytest -q`
 Expected: PASS.
 
-- [ ] **Step 5: Confirm 3.9 compatibility still holds**
+- [x] **Step 5: Confirm 3.9 compatibility still holds**
 
 Run: `/usr/bin/env python3 -m py_compile hooks/readonly-agent-guard.py && echo "3.9 OK"`
 Expected: `3.9 OK`.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add hooks/readonly-agent-guard.py hooks/test_readonly_agent_guard.py
@@ -980,7 +986,10 @@ The **`agent_type` absent → allow** row is the property everything else rests 
 - Produces: `build_denial(agent: str, command: str, detail: str) -> dict` — the `hookSpecificOutput` payload.
 - Produces: `main() -> int` — always returns 0; a denial is JSON on stdout.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
+
+> Deviation: the three new imports went into the file's top import block
+> rather than mid-file as sketched here; the test bodies are unchanged.
 
 Append to `hooks/test_readonly_agent_guard.py`:
 
@@ -1104,12 +1113,12 @@ def test_missing_command_does_not_block():
     assert run_guard(p).stdout.strip() == ''
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `cd hooks && uv run --python 3.13 --with pytest python -m pytest -q -k "guard or deny or session or classification or missing_command"`
 Expected: FAIL — the `__main__` stub exits 0 with no output, so every deny assertion fails on `json.loads('')`.
 
-- [ ] **Step 3: Implement the decision layer**
+- [x] **Step 3: Implement the decision layer**
 
 Replace the `if __name__ == '__main__':` stub at the bottom of `hooks/readonly-agent-guard.py`:
 
@@ -1170,12 +1179,12 @@ if __name__ == '__main__':
     sys.exit(main())
 ```
 
-- [ ] **Step 4: Run the full suite**
+- [x] **Step 4: Run the full suite**
 
 Run: `cd hooks && uv run --python 3.13 --with pytest python -m pytest -q`
 Expected: PASS.
 
-- [ ] **Step 5: Sanity-check the real interpreter end to end**
+- [x] **Step 5: Sanity-check the real interpreter end to end**
 
 ```bash
 echo '{"tool_name":"Bash","tool_input":{"command":"git stash"},"agent_type":"Explore"}' \
@@ -1188,7 +1197,7 @@ echo "--- (nothing above this line means the main session passes)"
 
 Expected: a `permissionDecision: deny` JSON object for the first, and no output at all for the second.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add hooks/readonly-agent-guard.py hooks/test_readonly_agent_guard.py
@@ -1218,9 +1227,14 @@ Spec §4. The hardcoded roster is only safe if drift fails a lint at the commit 
 - Consumes: `READONLY_AGENTS` from `hooks/readonly-agent-guard.py` (Task 2), loaded via `importlib`.
 - Produces: `load_readonly_roster(guard_path: Path | None = None) -> frozenset[str]` and `check_readonly_roster(agents_dir: Path | None = None, roster: frozenset[str] | None = None) -> list[str]` in `build/check_frontmatter.py`. Both parameters default to the real repo paths; the tests pass `tmp_path` fixtures so **both** directions of the assert are actually exercised, not just the happy path.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `build/test_check_frontmatter.py`:
+
+> Deviation: `check_readonly_roster` / `load_readonly_roster` /
+> `READONLY_HEADING` were added to the file's existing top-level
+> `from check_frontmatter import ...` (reflowed to parenthesised form) rather
+> than imported mid-file.
 
 ```python
 from check_frontmatter import check_readonly_roster, load_readonly_roster, READONLY_HEADING
@@ -1284,12 +1298,12 @@ def test_real_roster_matches_the_real_agents():
     assert check_readonly_roster() == []
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `cd build && uv run --python 3.13 --with pytest --with numpy --with polars --with pyyaml python -m pytest -q -k readonly`
 Expected: FAIL — `ImportError: cannot import name 'check_readonly_roster' from 'check_frontmatter'`.
 
-- [ ] **Step 3: Implement the lint**
+- [x] **Step 3: Implement the lint**
 
 In `build/check_frontmatter.py`, add `import importlib.util` beside the other imports, then add these constants below `KNOWN_AGENT_TOOLS`:
 
@@ -1358,12 +1372,14 @@ Wire it into `main()`, after the commands loop:
     errs += check_readonly_roster()
 ```
 
-- [ ] **Step 4: Run the tests — the real-roster test must still fail**
+- [x] **Step 4: Run the tests — the real-roster test must still fail**
 
 Run: `cd build && uv run --python 3.13 --with pytest --with numpy --with polars --with pyyaml python -m pytest -q -k readonly`
 Expected: the four `tmp_path` tests PASS; `test_real_roster_matches_the_real_agents` FAILS, reporting that `'test-runner'` has no agents file carrying the heading. That failure is the point — it is the lint catching the un-renamed heading.
 
-- [ ] **Step 5: Rename the heading in `agents/test-runner.md`**
+> Deviation: `-k readonly` deselected `test_real_roster_matches_the_real_agents` (no "readonly" in its name). Ran the full build suite: 6 roster tests pass, and the real-roster test fails with exactly the predicted message naming `'test-runner'`.
+
+- [x] **Step 5: Rename the heading in `agents/test-runner.md`**
 
 ```bash
 sed -i.bak 's/^## Contract$/## Read-only contract/' agents/test-runner.md && rm agents/test-runner.md.bak
@@ -1378,7 +1394,7 @@ grep -l '^## Contract$' agents/*.md
 
 Expected: `agents/debugger.md` and `agents/docs-writer.md` only.
 
-- [ ] **Step 6: Run the full build suite and the lint itself**
+- [x] **Step 6: Run the full build suite and the lint itself**
 
 Run: `cd build && uv run --python 3.13 --with pytest --with numpy --with polars --with pyyaml python -m pytest -q`
 Expected: PASS.
@@ -1386,7 +1402,7 @@ Expected: PASS.
 Run: `uv run --python 3.13 --with pyyaml python build/check_frontmatter.py && echo CLEAN`
 Expected: `CLEAN`.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add build/check_frontmatter.py build/test_check_frontmatter.py agents/test-runner.md
@@ -1416,7 +1432,7 @@ The install is a **symlink**, a deliberate departure from `hooks/README.md`'s "p
 - Consumes: the completed guard from Task 5 and the probe route recorded in `hooks/README.md` by Task 1.
 - Produces: nothing other tasks import. Task 8 documents this install.
 
-- [ ] **Step 1: Write the Gate B probe script**
+- [x] **Step 1: Write the Gate B probe script**
 
 Create `hooks/probe-readonly-guard.sh`:
 
@@ -1477,7 +1493,29 @@ Then make it executable:
 chmod +x hooks/probe-readonly-guard.sh
 ```
 
-- [ ] **Step 2: Install the symlink**
+> Deviation: the shipped `probe-readonly-guard.sh` differs from the script above in
+> three ways, each forced by something execution learned.
+>
+> 1. **Prompt before the flags, and `< /dev/null`.** Task 1 found `--allowedTools`
+>    is variadic, so it swallows a trailing positional prompt (`claude -p` then
+>    errors "Input must be provided..."), and that `claude -p` blocks on a piped
+>    stdin. Both are recorded in the README probe log.
+> 2. **Assert on `--output-format stream-json`, not the final message.** The first
+>    Gate B run showed the guard denying correctly while the probe reported FAIL:
+>    a denied agent relays the constraint to its controller *in its own words*, so
+>    the `readonly-agent-guard:` marker never reaches the final text. It is
+>    reliably present in the raw event stream.
+> 3. **The deny probe is `git config --global --list`, not `git stash`.** A guarded
+>    agent refuses `git stash` on its own prose contract before Bash is ever
+>    invoked — so the hook never fires and the probe measures nothing. This is a
+>    real finding, not a workaround: the prose contract already handles the
+>    blatant cases, which is exactly why the hook's value is the *non-obvious*
+>    ones (`git checkout <base>` to compare). `git config --global --list` is
+>    genuinely read-only, so the agent attempts it, and the guard denies it as the
+>    documented false positive — the one command guaranteed to exercise the deny
+>    path end to end.
+
+- [x] **Step 2: Install the symlink**
 
 ```bash
 mkdir -p ~/.claude/hooks
@@ -1488,7 +1526,7 @@ ls -l ~/.claude/hooks/readonly-agent-guard.py
 
 Expected: a symlink pointing into this repo.
 
-- [ ] **Step 3: Back up and wire `~/.claude/settings.json`**
+- [x] **Step 3: Back up and wire `~/.claude/settings.json`**
 
 `$CLAUDE_PROJECT_DIR` is unusable here — it resolves per-project, and this hook has one global install. Use `$HOME`.
 
@@ -1515,7 +1553,7 @@ Expected: the printed `hooks` block shows exactly one `PreToolUse` entry matchin
 
 The `if entry not in hooks` check compares dicts exactly, so it only prevents an exact-duplicate append — it will not recognise a hand-edited variant of the same hook. If the printed block shows two `Bash` entries, remove one by hand rather than re-running this step.
 
-- [ ] **Step 4: Verify the settings file is still valid and nothing else changed**
+- [x] **Step 4: Verify the settings file is still valid and nothing else changed**
 
 ```bash
 python3 -c "import json,pathlib; json.loads((pathlib.Path.home()/'.claude/settings.json').read_text()); print('valid JSON')"
@@ -1532,14 +1570,14 @@ print(json.dumps(d, indent=2, sort_keys=True))") && echo "only the hooks key was
 
 Expected: `valid JSON` and `only the hooks key was added`.
 
-- [ ] **Step 5: Run Gate B**
+- [x] **Step 5: Run Gate B**
 
 Run: `./hooks/probe-readonly-guard.sh`
 Expected: `ok:` on both checks and exit 0.
 
 If check 2 fails, the guard is not being invoked or the identity field is not arriving. Do **not** work around it by loosening the guard: re-run the Task 1 probe against the current binary, fix `AGENT_TYPE_KEY`, and update the probe log row. If check 1 fails, a read-only command is being denied — that is a classification bug; add the failing command as a unit test in Task 2's file and fix the rule.
 
-- [ ] **Step 6: Confirm the main session is unaffected**
+- [x] **Step 6: Confirm the main session is unaffected**
 
 The hook now fires on every `Bash` call on this machine. Verify it is inert here:
 
@@ -1556,7 +1594,7 @@ Expected: both commands run normally and `main session unblocked` prints.
 > Task 3 or Task 4. Fix it there with a new unit test; do not uninstall the hook
 > or loosen a rule to get the review through.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 The settings file and the symlink live outside the repo; only the probe script is committed.
 
@@ -1584,12 +1622,12 @@ Spec §6. `hooks/README.md` currently says these scripts must never be installed
 **Interfaces:**
 - Consumes: everything built in Tasks 1–7. Produces nothing further tasks use.
 
-- [ ] **Step 1: Get the real test count for the CLAUDE.md entry**
+- [x] **Step 1: Get the real test count for the CLAUDE.md entry**
 
 Run: `cd hooks && uv run --python 3.13 --with pytest python -m pytest -q | tail -3`
 Note the passed count printed — Step 3 uses it verbatim.
 
-- [ ] **Step 2: Restructure `hooks/README.md`**
+- [x] **Step 2: Restructure `hooks/README.md`**
 
 Rewrite the file so it opens with the two categories, keeping the existing install instructions and the `uv-guard.sh` limitations text intact under the first category, and appending the second. The `## Probe log` section added in Task 1 stays at the end, unchanged.
 
@@ -1709,7 +1747,7 @@ imports `READONLY_AGENTS` from the guard and asserts it bidirectionally against 
 unguarded, and a roster entry cannot outlive the agent it names.
 ````
 
-- [ ] **Step 3: Amend `CLAUDE.md`**
+- [x] **Step 3: Amend `CLAUDE.md`**
 
 Replace the `hooks/` clause in the "What this repo is" paragraph (line 7) — currently `hooks/` (reusable hook templates for the user's *work* repos — ruff/uv gates; not wired into this repo, see `hooks/README.md`) — with:
 
@@ -1717,7 +1755,7 @@ Replace the `hooks/` clause in the "What this repo is" paragraph (line 7) — cu
 `hooks/` (two categories: per-repo ruff/uv gate templates for the user's *work* repos, not wired into this repo; and `readonly-agent-guard.py`, a globally-installed `PreToolUse` hook that enforces the five read-only agents' Bash contract — see `hooks/README.md`)
 ```
 
-Then add to the Commands section, immediately before the "Frontmatter + provenance lints" block, substituting the count from Step 1 for `<N>`:
+Then add to the Commands section, immediately before the "Frontmatter + provenance lints" block, substituting the count from Step 1 for `<N>` (it was **40**):
 
 ```bash
 # read-only agent guard tests (Gate A: classifier units + payload contract) — <N> tests
@@ -1726,7 +1764,7 @@ Then add to the Commands section, immediately before the "Frontmatter + provenan
 cd hooks && uv run --python 3.13 --with pytest python -m pytest -q
 ```
 
-- [ ] **Step 4: Verify the docs against reality**
+- [x] **Step 4: Verify the docs against reality**
 
 ```bash
 uv run --python 3.13 --with pyyaml python build/check_frontmatter.py && echo "frontmatter CLEAN"
@@ -1736,7 +1774,7 @@ grep -c 'Probe log' hooks/README.md
 
 Expected: both `CLEAN` lines, and the probe log section still present (count `1`).
 
-- [ ] **Step 5: Run every gate one final time**
+- [x] **Step 5: Run every gate one final time**
 
 ```bash
 cd hooks && uv run --python 3.13 --with pytest python -m pytest -q
@@ -1752,7 +1790,7 @@ cd build && uv run --python 3.13 --with pytest --with numpy --with polars --with
 
 Expected: all three pass.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add hooks/README.md CLAUDE.md
