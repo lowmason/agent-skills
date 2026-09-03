@@ -458,3 +458,21 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       `specs/usable-series-selection-roadmap.md` (this plan's verification output) and
       `specs/nfp-model-methodology.md` (plan 18's Describe-mode output). Committing them
       is the owner's call in that repo.
+
+## 20-bayesian-workflow-book-integration — 2026-09-03
+- [ ] Split the durable Δ-ECDF reading rule from the arviz-plots-1.3.1-specific notes
+      (final-review Minor, triaged defer): the "What that call actually draws" paragraph in
+      `skills/bayesian-workflow/references/model-criticism.md` (SBC section, ~line 189) is one
+      ~10-sentence block of version-pinned detail (the `rcParams["stats.envelope_prob"]` fallback,
+      the `method="envelope"` deprecation warning, a TypeError seen on this stack). Accurate
+      today, and its accuracy is the point; when the pot_c/envelope situation settles upstream,
+      keep the one durable instruction (read the p-value and the highlighted points, not a
+      picture of a band) and shrink the version notes to a clause.
+- [ ] `sbc_rank` sketch breaks on scalar parameters (final-review Minor; pre-existing and
+      re-shipped verbatim by plan 20's own replacement text): in
+      `skills/bayesian-workflow/references/model-criticism.md`, `draws[..., idx]` and
+      `theta_true[idx]` assume a vector site — for a scalar site `draws` is 1-D and
+      `theta_true[idx]` raises on a 0-d array. Fix by running it (this skill's history,
+      c707a48, is a recipe that shipped unrun): e.g. `np.atleast_1d` on both, plus the scalar
+      case in the prose.
+
