@@ -1,5 +1,7 @@
 # lint_wiki Citation-Detection Contract Implementation Plan
 
+**Status: COMPLETE (2026-09-03)** — executed via executing-plans; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Make `lint_wiki.py` hard-error only on bracketed text that `SCHEMA.md` actually reserves as a citation — closing deferred items D1 (prose false positives), D3 (invisible citations, both directions), and the `_index_targets` fragment item.
@@ -61,7 +63,12 @@ Closes D1 and D3.
   - `_is_citation(token: str, position: str, slugs: set[str]) -> bool`
   - `check_links` finding message format is **unchanged**: `f'citation: [{token} …] has no source page'`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
+
+> Deviation: `import pytest` went in its own group between the stdlib block and
+> `import lint_wiki`, matching `test_distill_specs.py`, rather than literally after
+> `import sys` — which would have split `from pathlib import Path` out of the stdlib
+> group. Diff is 109 insertions, 0 deletions: no existing test was touched.
 
 Append to `skills/llm-wiki/scripts/test_lint_wiki.py`. Also add `import pytest` to the import block at the top of the file (it currently imports only `subprocess`, `sys`, `pathlib.Path`, `lint_wiki`) — put it after `import sys`, separated from `import lint_wiki` by a blank line, matching the file's existing stdlib/local grouping.
 
@@ -173,7 +180,7 @@ def test_is_citation(token, position, expected):
   assert lint_wiki._is_citation(token, position, set(CITE_SLUGS)) is expected
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 ```bash
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest -q test_lint_wiki.py
@@ -186,7 +193,7 @@ Expected: `31 failed, 48 passed` (verified 2026-09-03 against the unmodified lin
 - Table cases **11, 12, 13** fail on `no error for …` — the citation is invisible today, in both directions. That is D3.
 - Table cases **1, 2, 3, 4, 8, 9, 15, 16, 17, 18** already pass — they are the no-regression rows. Cases 4 and 18 pass by accident of the old rule (`mclmc` and `well-known` both satisfy the old lowercase-hyphen anchor); they must still pass after the change, for the new reasons.
 
-- [ ] **Step 3: Replace the regex block**
+- [x] **Step 3: Replace the regex block**
 
 In `skills/llm-wiki/scripts/lint_wiki.py`, replace the two commented lines and `BODY_CITE_RE` (currently `:14-17`) with:
 
@@ -208,7 +215,7 @@ SLUG_SHAPE_RE = re.compile(r'-|\d{4}')
 
 Leave `MD_LINK_RE` and its comment above this block untouched.
 
-- [ ] **Step 4: Add the two predicates**
+- [x] **Step 4: Add the two predicates**
 
 Insert immediately after `_strip_frontmatter` and before `def check_links(root, pages):`:
 
@@ -230,7 +237,7 @@ def _is_citation(token, position, slugs):
   return bool(SLUG_SHAPE_RE.search(token)) or token in slugs
 ```
 
-- [ ] **Step 5: Rewire the check_links citation loop**
+- [x] **Step 5: Rewire the check_links citation loop**
 
 In `check_links`, replace:
 
@@ -261,7 +268,7 @@ with:
           ('ERROR', str(rel), f'citation: [{token} …] has no source page'))
 ```
 
-- [ ] **Step 6: Run the full suite**
+- [x] **Step 6: Run the full suite**
 
 ```bash
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest -q
@@ -273,7 +280,7 @@ Confirm specifically that these pre-existing tests are still green and were **no
 - `test_body_citation_without_source_is_error` — `[ghost-2020-none §4.2]`, hyphenated token, passes via the structural clause.
 - `test_valid_pages_are_clean` — body `[a §1]`. Note for the reviewer: under the new rule this passes **only via the membership clause** (`a` is a source stem; it has no hyphen and no year). That is case 4's capability already under test — load-bearing, not incidental.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add skills/llm-wiki/scripts/lint_wiki.py skills/llm-wiki/scripts/test_lint_wiki.py
@@ -313,7 +320,7 @@ Closes the `_index_targets` fragment item.
 - Consumes: `INDEX_LINE_RE` (unchanged), and `check_index_parity`, which reads `_index_targets` for all three parity checks.
 - Produces: `_index_targets(root) -> list[str]` — same signature, targets now fragment-free. All three parity checks (missing-line, missing-page, duplicate) inherit the fix from this one site.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `skills/llm-wiki/scripts/test_lint_wiki.py`:
 
@@ -341,7 +348,7 @@ def test_index_lines_differing_only_by_fragment_are_a_duplicate(tmp_path):
              for f in lint_wiki.run_checks(root))
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 ```bash
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest -q -k fragment
@@ -349,7 +356,7 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 
 Expected: `2 failed`. The first collects two spurious errors — `index: line target missing page: sources/a.md#background` and `index: page has no index line`. The second reports no duplicate, because `sources/a.md#background` and `sources/a.md#method` are distinct strings today.
 
-- [ ] **Step 3: Strip the fragment**
+- [x] **Step 3: Strip the fragment**
 
 In `_index_targets`, replace:
 
@@ -381,7 +388,7 @@ with:
       out.append(m.group(1).split('#', 1)[0])
 ```
 
-- [ ] **Step 4: Run the full suite**
+- [x] **Step 4: Run the full suite**
 
 ```bash
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest -q
@@ -389,7 +396,7 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 
 Expected: `228 passed`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/llm-wiki/scripts/lint_wiki.py skills/llm-wiki/scripts/test_lint_wiki.py
@@ -424,7 +431,7 @@ MSG
 - Consumes: `bootstrap_wiki._schema_version(path) -> int | None`, `bootstrap_wiki.main(argv) -> int`, and the test module's existing `bw` alias and `BUNDLE` constant.
 - Produces: bundle schema version `3`. `_install_schema` is seed-once and never overwrites an existing `SCHEMA.md`, so the bump changes no live root's contents — it only makes `--check` report `STALE` for a root still on 2.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 In `skills/llm-wiki/scripts/test_bootstrap_wiki.py`, change the assertion on line 212 inside `test_seeded_schema_contains_specs_harvest_contract`:
 
@@ -453,7 +460,7 @@ def test_seeded_schema_documents_locator_vocabulary(tmp_path):
   assert 'four-digit year' in schema
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 ```bash
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest -q test_bootstrap_wiki.py
@@ -461,7 +468,7 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 
 Expected: `2 failed, 17 passed` — `test_seeded_schema_contains_specs_harvest_contract` (the template still says `schema-version: 2`) and `test_seeded_schema_documents_locator_vocabulary` (no vocabulary paragraph yet). Verified 2026-09-03 in this task's actual starting state, i.e. with Tasks 1 and 2 already applied to `lint_wiki.py` — these tests bootstrap a tmp root from the live bundle, so they run the modified linter through `_verify`, and it still exits 0 on an empty scaffold.
 
-- [ ] **Step 3: Bump the schema version marker**
+- [x] **Step 3: Bump the schema version marker**
 
 In `skills/llm-wiki/scripts/schema-template.md`, line 1, change `schema-version: 2` to `schema-version: 3`. The line becomes:
 
@@ -469,7 +476,7 @@ In `skills/llm-wiki/scripts/schema-template.md`, line 1, change `schema-version:
 <!-- schema-version: 3 (bump on a breaking contract change; `bootstrap_wiki.py --check` flags a root whose schema is behind the bundle) -->
 ```
 
-- [ ] **Step 4: Add the normative vocabulary to § "Body conventions"**
+- [x] **Step 4: Add the normative vocabulary to § "Body conventions"**
 
 In `skills/llm-wiki/scripts/schema-template.md`, § "Body conventions" currently reads:
 
@@ -499,7 +506,7 @@ Extend the position list additively, against real content.
 
 Do not add `pp.` or `Ch` to the accepted list — the linter rejects both (see Global Constraints).
 
-- [ ] **Step 5: Add the §10 pointer to the retired spec**
+- [x] **Step 5: Add the §10 pointer to the retired spec**
 
 In `specs/completed/llm-wiki-spec.md`, immediately after the §10 severity table's last row (`| Page count > 120 or source count > 100 (soft ceiling — revisit qmd) | info |`) and before the blank line preceding `## 11. Scale policy`, add:
 
@@ -514,7 +521,7 @@ In `specs/completed/llm-wiki-spec.md`, immediately after the §10 severity table
 
 Use the backticked path, **not** a markdown link — a relative link would break when either spec moves directory at retirement.
 
-- [ ] **Step 6: Fix the spec's stale vocabulary sentence**
+- [x] **Step 6: Fix the spec's stale vocabulary sentence**
 
 In `specs/lint-wiki-citation-contract.md`, § "Contract changes", item 1 currently reads:
 
@@ -539,7 +546,7 @@ Replace it with:
 
 This sentence predates commit `1cd448f`, which narrowed Design §C to D1's list; leaving it would enshrine a contradiction when the spec retires.
 
-- [ ] **Step 7: Run the full suite**
+- [x] **Step 7: Run the full suite**
 
 ```bash
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest -q
@@ -547,7 +554,12 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 
 Expected: `229 passed`.
 
-- [ ] **Step 8: Run the repo frontmatter and provenance lints**
+- [x] **Step 8: Run the repo frontmatter and provenance lints**
+
+> Deviation: run this from the repo root explicitly — Step 7 leaves the shell in
+> `skills/llm-wiki/scripts`, and the bare `build/…` paths below resolve against that
+> cwd. Prefix the command with `cd /Users/lowell/Projects/agent-skills &&`. Both lints
+> exit 0.
 
 ```bash
 uv run --python 3.13 --with pyyaml python build/check_frontmatter.py && uv run --python 3.13 python build/check_provenance.py
@@ -555,7 +567,7 @@ uv run --python 3.13 --with pyyaml python build/check_frontmatter.py && uv run -
 
 Expected: both exit 0 with no findings. (Run from the repo root, not the scripts dir.)
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add skills/llm-wiki/scripts/schema-template.md skills/llm-wiki/scripts/test_bootstrap_wiki.py specs/completed/llm-wiki-spec.md specs/lint-wiki-citation-contract.md
@@ -596,7 +608,7 @@ MSG
 - Consumes: `bootstrap_wiki.py --force` (copies `MANAGED_SCRIPTS = ('lint_wiki.py', 'distill_sessions.py', 'distill_specs.py')`, then runs `_verify`, which executes the newly installed linter against the root and fails the run on a nonzero exit) and `--check` (read-only drift report).
 - Produces: a live wiki running the new linter, and a `STALE SCHEMA.md` signal for the user to migrate by hand.
 
-- [ ] **Step 1: Pre-flight — run the new bundle linter against the live wiki**
+- [x] **Step 1: Pre-flight — run the new bundle linter against the live wiki**
 
 This is exactly what `_verify` will execute after the copy, so run it first: a failure here is diagnosable, a failure inside `--force` is not.
 
@@ -614,7 +626,7 @@ exit=0
 
 The live wiki has zero content matching the new recognition rule (verified: every bracketed token there is a capture id with no internal space), so the new linter sees exactly what the old one saw. **If this prints any ERROR, stop and report** — do not run `--force`; `_verify` would fail and the cause needs a decision, not a retry. Warnings do not fail `_verify`, which does not pass `--strict`.
 
-- [ ] **Step 2: Install the updated scripts**
+- [x] **Step 2: Install the updated scripts**
 
 ```bash
 python3 skills/llm-wiki/scripts/bootstrap_wiki.py ~/research-wiki --force
@@ -635,7 +647,7 @@ followed by the `next steps` footer and the `_verify` lint output from Step 1. E
 
 `SCHEMA.md` is **seed-once and never overwritten, even with `--force`** — that is the intended behavior, not a bug to work around.
 
-- [ ] **Step 3: Confirm the drift state**
+- [x] **Step 3: Confirm the drift state**
 
 ```bash
 python3 skills/llm-wiki/scripts/bootstrap_wiki.py ~/research-wiki --check; echo "exit=$?"
@@ -657,7 +669,7 @@ exit=1
 
 **Exit 1 is the expected, correct outcome** — `_run_check` counts STALE as drift, and the STALE signal *is* this task's deliverable. Do not "fix" it by editing `~/research-wiki/SCHEMA.md`: migrating the root contract is the user's hand edit, and seed-once is the design. If any `scripts/*.py` line reads `DIFFERS`, the copy did not land — investigate before reporting done.
 
-- [ ] **Step 4: Report, no commit**
+- [x] **Step 4: Report, no commit**
 
 Nothing under the repo changed in this task, so there is no commit. Paste the verbatim output of Steps 1–3 into the task report, and state explicitly that `~/research-wiki/SCHEMA.md` was left on v2 for the user to migrate.
 

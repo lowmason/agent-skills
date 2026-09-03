@@ -85,7 +85,7 @@ secret backstop — and defer these). The linter faithfully implements M0 and pa
 gates; these bite only on real wiki *content*, which does not exist yet (M1+).
 
 Regex-strictness design calls (need a spec decision on how strict the M0 linter should be):
-- [ ] D1 — `BODY_CITE_RE` fires a hard ERROR on ordinary bracketed prose (`[see below]`,
+- [x] D1 — `BODY_CITE_RE` fires a hard ERROR on ordinary bracketed prose (`[see below]`,
       `[per the user]`, `[todo …]`): any `[word …]` not immediately followed by `(` is
       treated as a citation locator. Task 7's reviewer read this as intended strictness;
       the whole-branch Opus reviewer and the regex breaker read it as a false positive
@@ -93,23 +93,40 @@ Regex-strictness design calls (need a spec decision on how strict the M0 linter 
       false-positive, tighten to require a locator sigil (`§`/`p.`/`Table`/`Fig`/`Eq`/a
       leading digit) after the slug, or require a multi-part slug (hyphen or 4-digit year).
       `~/research-wiki/scripts/lint_wiki.py` `BODY_CITE_RE`.
+      → done in plan 23: adjudicated a false positive. Recognition now requires a
+      position sigil AND (multi-part slug OR membership in the source-slug set), so
+      `[see below]` is prose. Rule written into SCHEMA.md at schema-version 3.
 - [ ] D2 — nested brackets in link text break both directions: `MD_LINK_RE` misses a
       genuinely-broken link like `[the [above] discussion](samplers/none.md)` AND
       `BODY_CITE_RE` fabricates a citation from the link text. Fix `MD_LINK_RE` to allow one
       level of balanced nested brackets, and exclude link-text spans from citation matching.
       Edge case; unlikely in early content.
-- [ ] D3 — citation slugs outside `[a-z0-9-]` are invisible (`[Hoffman2014 §3]`,
+      → REDUCED by plan 23 (still open): the citation-fabrication half is closed — the
+      recognition rule rejects the fabricated token (`the`, position `[above`), verified
+      as acceptance case 14 and observable as a red row in that plan's Task 1 Step 2.
+      What remains is the `MD_LINK_RE` nesting half alone: a genuinely-broken link like
+      `[the [above] discussion](samplers/none.md)` is still missed. No longer needs
+      "exclude link-text spans from citation matching" — write the mechanical plan
+      against the nesting fix only.
+- [x] D3 — citation slugs outside `[a-z0-9-]` are invisible (`[Hoffman2014 §3]`,
       `[robnik_2022 §4]`, `[robnik.2022 §4]` all pass unchecked, both directions). The
       lowercase-start anchor also serves as a deliberate prose guard (`[NUTS §3]`,
       `[Figure 2]` correctly ignored), so widening the charset naively re-introduces prose
       false-positives. Needs a design separating "is a citation" from "slug charset".
+      → done in plan 23: BODY_CITE_RE now captures (token, position) and the charset
+      widened to `[A-Za-z0-9._-]`; the prose guard moved into `_looks_like_position` +
+      `_is_citation`, so widening no longer reintroduces D1. Resolution stays
+      case-sensitive, so a miscased slug errors rather than silently missing.
 
 Downgraded-to-minor from the same audit (later hardening pass; none block M0):
 - [ ] `MD_LINK_RE` / `INDEX_LINE_RE` capture a CommonMark link *title* attribute
       (`[a](x.md "Title")`) as part of the path, breaking resolution/parity if titles are used.
-- [ ] `_index_targets` does not strip a `#fragment` from an index-line target (whereas
+- [x] `_index_targets` does not strip a `#fragment` from an index-line target (whereas
       `check_links` does for body links) — an index deep-link `sources/a.md#background`
       yields false parity/link errors. Decide whether fragment-bearing index lines are legal.
+      → done in plan 23: legal. `_index_targets` strips the fragment, matching
+      `check_links`. All three parity checks read that one site, so duplicate detection
+      was fixed at the same time.
 - [ ] `DECISION_META_RE` anchors `^kind: decision` with no tolerance for leading whitespace
       or a markdown list prefix (`  kind: decision`, `- kind: decision`), silently disabling
       the echo-rule check for indented captures.
@@ -786,3 +803,24 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       out as cleanup, and does not cite "byte-identical across five files"
       as current fact — it described the state immediately after Task 3,
       before the same review cycle's own fix round split it.
+
+## 23-lint-wiki-citation-contract — 2026-09-03
+
+Both items are deliberate design consequences recorded as "Accepted limitations" in
+`specs/completed/lint-wiki-citation-contract.md`, not oversights. The structural clause
+is where the design deliberately concentrates error risk, and these are its two
+residuals. The fix in each case is a new WARN severity, which the spec explicitly
+declined as YAGNI (zero instances in a one-page wiki).
+
+- [ ] A well-formed slug with a malformed position is silently unrecognized —
+      `[robnik-2022-mclmc see this]` is read as prose, so a real citation goes
+      uncounted and unvalidated. The symmetric residual of requiring both predicates.
+      Pinned as a test today (`test_is_citation`, the `shape, bad position` row) so the
+      behavior is deliberate rather than accidental. To fix: add a WARN when the token
+      passes `SLUG_SHAPE_RE` or membership but the position does not parse. Touches
+      `skills/llm-wiki/scripts/lint_wiki.py` `check_links`.
+- [ ] Prose whose first token is hyphenated or year-bearing and whose remainder opens
+      with a position sigil hard-errors — `[well-known Table 2]` (acceptance case 18,
+      pinned as an expected ERROR). Contrived; the escape is to not bracket it. Same
+      file; the fix would be a curated stop-word list or a WARN, both rejected as
+      inventing contract the wiki has no content for.
