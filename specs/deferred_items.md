@@ -520,9 +520,14 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       drop-by-rank. Standing decision unchanged — the lever is the fraction
       (≈ 0.03) or per-project scoping, not trimming descriptions. Check
       `/context` before skill #33.
-- [ ] Audit scorecard rubric weights were never ratified (audit "Decisions for
+- [x] Audit scorecard rubric weights were never ratified (audit "Decisions for
       you" item 5): the S dimension's 2,500-word threshold and the V evidence
       ladder are the auditor's calls. The notes column stands regardless.
+      → retired 2026-09-03: nothing downstream consumes the weights. The rubric exists
+      only inside the retired `specs/completed/audit_9_2_26.md` and
+      `specs/plans/completed/21-audit_9_2_26.md`; no skill, script or lint reads it, and
+      the item's own text concedes the notes column stands whatever the weights are.
+      Ratifying a rubric with no consumer is ceremony, not work.
 - [ ] `NOTICE`'s superpowers block pins the vendoring date (plan 21 Task 3) but
       its "Changes from upstream" list is incomplete — `sdd-workspace`,
       `task-brief` and `review-package` arrived in `2f283ae` and were changed
