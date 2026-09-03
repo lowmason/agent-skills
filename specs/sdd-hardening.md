@@ -65,6 +65,40 @@ Out of scope, and deliberately so:
   directly under the proportional-process rule.
 - Upstream's compression campaign. Not adopted anywhere in this spec.
 
+## Execution constraint: this plan edits its own machinery
+
+**This plan must be executed from a git worktree, not the main checkout.**
+
+`~/.claude/skills/` holds per-skill symlinks into this repo, so edits here are
+live. Verified:
+
+```
+~/.claude/skills/subagent-driven-development
+  -> /Users/lowell/Projects/agent-skills/skills/subagent-driven-development
+~/.claude/agents/task-reviewer.md
+  -> /Users/lowell/Projects/agent-skills/agents/task-reviewer.md
+```
+
+If subagent-driven-development executes this plan from the main checkout, the
+controller's own tools change under it mid-run. Two concrete failures:
+
+- The task that changes `review-package` to require `PLAN_FILE` breaks the
+  controller's very next review call, which still passes `BASE HEAD` and now
+  exits 2.
+- The workspace path moves from `.sdd/` to `.sdd/<plan-slug>/` mid-plan,
+  orphaning the in-flight ledger. A resume after compaction reads the new path,
+  finds no ledger, and re-dispatches completed tasks — the failure `SKILL.md:267`
+  names as the single most expensive one observed.
+
+Both symlinks resolve to the **main checkout's** path, so work done in a
+worktree leaves the live skill pinned to `main` until the branch merges. Use the
+using-git-worktrees skill before starting.
+
+Executing with executing-plans instead also avoids the hazard, since that skill
+never calls the three scripts. The worktree is the better option because these
+changes want per-task review, but either is safe. Executing with
+subagent-driven-development from the main checkout is not.
+
 ## Design
 
 ### A. Plan-scoped workspace
@@ -76,9 +110,13 @@ argument count is not exactly 1, when the plan file does not exist, or when the
 slug is empty, `.`, or `..` — the three basenames that would escape or collapse
 the intended directory.
 
-The self-ignoring `.gitignore` moves **up one level**, to `.sdd/.gitignore`, so
-one guard covers every per-plan sibling directory. The repo-level ignore at
-`.gitignore:21` and its comment about duplicating that guard both stay accurate.
+The self-ignoring `.gitignore` **stays where it is**, at `.sdd/.gitignore`.
+Today `sdd-workspace` writes it into the directory it returns, which is `.sdd`;
+under the new layout it must be written to the `.sdd` parent explicitly rather
+than to the returned per-plan directory, so one guard keeps covering every
+sibling. The path does not change — the code that produces it does. The
+repo-level ignore at `.gitignore:21` and its comment about duplicating that
+guard both stay accurate.
 
 `task-brief` and `review-package` pass the plan through to `sdd-workspace`
 rather than calling it bare. Neither script computes the workspace path itself;
@@ -124,11 +162,22 @@ its change, sends the batch to a single implementer, and reviews the resulting
 diff as one unit. One dispatch per task is reserved for work needing its own
 judgment, its own tests, or its own review surface.
 
+**`task-brief` does not gain a multi-task mode.** It keeps extracting exactly
+one task by number. The controller writes the batch brief itself, listing each
+file and its change inline. This is a deliberate exception to the
+keep-task-text-out-of-the-controller's-context rule that `task-brief` exists to
+serve: batching is only ever applied to changes small enough to state in a line
+each, so the context cost is small and bounded, and the alternative — teaching
+`task-brief` to concatenate task sections — would pull full task text through
+the controller for exactly the tasks that need it least.
+
 The safeguard travels with the feature and is not optional: a batched review
 checks the diff against the brief's file list **file by file**, and a listed
 file the diff never touches is a Missing finding regardless of how clean the
 rest of the batch looks. Without it, batching trades cost for silent omissions.
-This rule goes in both reviewer template forms and in the agent definition.
+This rule goes in both forms of `task-reviewer-prompt.md` and in
+`agents/task-reviewer.md`. It does **not** go in `agents/code-reviewer.md`:
+batching is per-task, and that agent reviews the whole branch.
 
 The ledger records a batched dispatch as one entry naming every task number it
 covered, so a resuming controller does not re-dispatch a task that was completed
@@ -143,15 +192,18 @@ not re-review the whole task.
 
 Fix rounds are capped at five and escalate:
 
+There are **five fix attempts**, and adjudication happens after the fifth comes
+back dirty — it is not itself an attempt.
+
 | Round | Action |
 |---|---|
 | 1–3 | Resume the same implementer with the findings. It appends a fix report to its existing report file: what changed, the covering tests, the command, and the output. |
-| 4 | Dispatch a **fresh** implementer with the task brief and the findings. Escalate reasoning effort if the prior rounds show a thorough attempt rather than a context gap. |
-| 5 | Same as 4, plus the controller adjudicates every still-open finding. |
+| 4–5 | Dispatch a **fresh** implementer with the task brief and the findings. Escalate reasoning effort if the prior rounds show a thorough attempt rather than a context gap. |
+| after 5 | The cap is reached. The controller adjudicates every still-open finding; no further fix rounds are dispatched for this task. |
 
-At round 5 the controller rules on each open finding, recording load-bearing
-ones as work and parking the rest in the ledger with its reasoning. It stops for
-a human only when every path forward is a guess.
+Adjudicating means the controller rules on each open finding, recording
+load-bearing ones as work and parking the rest in the ledger with its reasoning.
+It stops for a human only when every path forward is a guess.
 
 Resume-then-fresh is the load-bearing half. A resumed implementer carries its
 own failed attempts as context, which anchors it to the approach that is not
@@ -210,8 +262,10 @@ surface. Required changes:
   `test_workspace_is_created_inside_the_working_tree` must also assert the
   per-plan directory rather than a flat `.sdd`.
 - In `test_workspace_ignores_itself_so_artifacts_never_reach_git_status` the
-  `.sdd/.gitignore` assertion stays correct, because the guard moves to exactly
-  that path; its invocation and its scratch-file path still change.
+  `.sdd/.gitignore` assertion stays correct, because the guard stays at that
+  path; its invocation and its scratch-file path still change. Add an assertion
+  that the guard sits at the `.sdd` parent and not inside the per-plan
+  directory, since that is the part the new code could get wrong.
 - Both default-workspace-path tests, one for `task-brief` and one for
   `review-package`, assert the per-plan directory.
 - The two `task-brief` argument-error tests keep their current arity; that
