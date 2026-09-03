@@ -30,6 +30,7 @@ import sys
 RHAT_OK = 1.01
 DIVERGENCE_OK = 0
 DIVERGENCE_FAIR = 0.005  # < 0.5% of post-warmup draws
+DIVERGENCE_GATE_PCT = 1.0  # percent; above this, raising target_accept_prob rarely helps (Gelman et al. 2026, §12.3)
 PARETO_K_OK = 0.5
 PARETO_K_FAIR = 0.7
 COVERAGE_DEVIATION_OK = 0.02
@@ -184,10 +185,14 @@ def check_diagnostics(
     report: dict = {}
 
     if diagnostics is not None:
-        conv_rating, conv_issues = _rate_convergence(diagnostics.get("convergence", {}))
+        conv_in = diagnostics.get("convergence", {})
+        conv_rating, conv_issues = _rate_convergence(conv_in)
         report["convergence"] = {
             "rating": conv_rating,
             "problematic_params": conv_issues,
+            # percent of post-warmup transitions that diverged; drives the
+            # target_accept_prob gate in suggest_next_steps
+            "divergence_pct": float((conv_in.get("divergences") or {}).get("pct", 0.0) or 0.0),
         }
         loo_in = diagnostics.get("loo", {})
         report["loo"] = {
@@ -280,12 +285,26 @@ def suggest_next_steps(report: dict) -> list[str]:
         ]
 
         if has_divergences:
-            steps.append(
-                "Divergences detected — reparameterize the affected component "
-                "(non-centered via numpyro.infer.reparam.LocScaleReparam for hierarchical "
-                "scales; replace HalfCauchy with Gamma(2, ...) for scale priors) and increase "
-                "target_accept_prob to 0.95–0.99 on the NUTS kernel."
-            )
+            pct = float(conv.get("divergence_pct", 0.0) or 0.0)
+            if pct > DIVERGENCE_GATE_PCT:
+                steps.append(
+                    f"Divergences are {pct:.1f}% of post-warmup transitions — above the ~1% level "
+                    "at which a smaller step size stops helping (Gelman et al. 2026, §12.3). "
+                    "Do not raise target_accept_prob or max_tree_depth. Inspect the geometry "
+                    "first: az.plot_pair(idata, var_names=[...]) on the flagged scale/location "
+                    "pairs, then reparameterize (non-centered via "
+                    "numpyro.infer.reparam.LocScaleReparam), center predictors, or tighten scale "
+                    "priors (replace HalfCauchy with Gamma(2, ...)). See references/diagnostics.md "
+                    "→ Failure signatures."
+                )
+            else:
+                steps.append(
+                    f"Divergences are {pct:.2f}% of transitions (≤ 1%) — raise target_accept_prob "
+                    "to 0.95–0.99 on the NUTS kernel first; if any remain, reparameterize the "
+                    "affected component (non-centered via numpyro.infer.reparam.LocScaleReparam "
+                    "for hierarchical scales) or replace HalfCauchy with Gamma(2, ...) on scale "
+                    "priors."
+                )
         if named_params:
             preview = ", ".join(named_params[:3])
             steps.append(
