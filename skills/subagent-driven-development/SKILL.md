@@ -94,6 +94,9 @@ digraph process {
 }
 ```
 
+Every round loops back into the same fix-dispatch node above — the diagram
+doesn't show the round cap or the resume-vs-fresh mechanic; see Fix Rounds.
+
 **Batch small same-shape work.** When the plan lists several tasks that are
 each a small, independent edit of the same kind — the same one-line fix,
 constant change, or field addition repeated across files — do not dispatch one
