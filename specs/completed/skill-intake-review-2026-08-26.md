@@ -201,7 +201,8 @@ module/package granularity, file-count discipline -> ABSENT from clean-code, cle
 > (M1–M4 + `references/modules.md`), not into `clean-coder`, and was **cut from eleven rules
 > to four** on measured evidence: a two-arm RED baseline found agents already satisfy seven of
 > them unprompted. Full record and both GREEN arms:
-> `specs/red-baseline-module-granularity-2026-08-26.md`. The `clean-coder` recommendation in
+> `specs/completed/red-baseline-module-granularity-2026-08-26.md`. The `clean-coder`
+> recommendation in
 > the HARVEST table below is superseded; the other three harvests and the Polars ADOPT are
 > untouched.
 
