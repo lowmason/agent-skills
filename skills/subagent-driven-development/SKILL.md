@@ -62,6 +62,8 @@ digraph process {
         "Write diff file, dispatch task reviewer subagent (./task-reviewer-prompt.md)" [shape=box];
         "Task reviewer reports spec ✅ and quality approved?" [shape=diamond];
         "Dispatch fix subagent for Critical/Important findings" [shape=box];
+        "Dispatch scoped re-review (./re-review-prompt.md)" [shape=box];
+        "Re-review reports all findings addressed, no new Critical/Important?" [shape=diamond];
         "Mark task complete in todo list and progress ledger" [shape=box];
     }
 
@@ -79,8 +81,11 @@ digraph process {
     "Implementer subagent implements, tests, commits, self-reviews" -> "Write diff file, dispatch task reviewer subagent (./task-reviewer-prompt.md)";
     "Write diff file, dispatch task reviewer subagent (./task-reviewer-prompt.md)" -> "Task reviewer reports spec ✅ and quality approved?";
     "Task reviewer reports spec ✅ and quality approved?" -> "Dispatch fix subagent for Critical/Important findings" [label="no"];
-    "Dispatch fix subagent for Critical/Important findings" -> "Write diff file, dispatch task reviewer subagent (./task-reviewer-prompt.md)" [label="re-review"];
     "Task reviewer reports spec ✅ and quality approved?" -> "Mark task complete in todo list and progress ledger" [label="yes"];
+    "Dispatch fix subagent for Critical/Important findings" -> "Dispatch scoped re-review (./re-review-prompt.md)" [label="re-review"];
+    "Dispatch scoped re-review (./re-review-prompt.md)" -> "Re-review reports all findings addressed, no new Critical/Important?";
+    "Re-review reports all findings addressed, no new Critical/Important?" -> "Dispatch fix subagent for Critical/Important findings" [label="no"];
+    "Re-review reports all findings addressed, no new Critical/Important?" -> "Mark task complete in todo list and progress ledger" [label="yes"];
     "Mark task complete in todo list and progress ledger" -> "More tasks remain?";
     "More tasks remain?" -> "Dispatch implementer subagent (./implementer-prompt.md)" [label="yes"];
     "More tasks remain?" -> "Dispatch final code reviewer subagent (../requesting-code-review/code-reviewer.md)" [label="no"];
@@ -172,7 +177,7 @@ Implementer subagents report one of four statuses. Handle each appropriately:
 
 **BLOCKED:** The implementer cannot complete the task. Assess the blocker:
 1. If it's a context problem, provide more context and re-dispatch with the same model
-2. If the task requires more reasoning, re-dispatch with a more capable model
+2. If context isn't the issue but the task needs more reasoning, raise reasoning effort before switching model, and escalate to a more capable model only once effort has no headroom left (see Fix Rounds)
 3. If the task is too large, break it into smaller pieces
 4. If the plan itself is wrong, escalate to the human
 
@@ -452,8 +457,12 @@ Task reviewer: Spec ❌:
 [Dispatch fix subagent with all findings]
 Fixer: Removed --json flag, added progress reporting, extracted PROGRESS_INTERVAL constant
 
-[Task reviewer reviews again]
-Task reviewer: Spec ✅. Task quality: Approved.
+[Dispatch scoped re-review (re-review-prompt.md) with the numbered findings]
+Re-reviewer:
+  1. Missing progress reporting — ADDRESSED (reports every PROGRESS_INTERVAL items)
+  2. Extra --json flag — ADDRESSED (removed)
+  3. Magic number (100) — ADDRESSED (extracted to PROGRESS_INTERVAL)
+  No new findings.
 
 [Mark Task 2 complete]
 
@@ -527,8 +536,8 @@ Done!
 
 **If reviewer finds issues:**
 - Dispatch a fix subagent with the findings (per Constructing Reviewer Prompts)
-- Reviewer reviews again
-- Repeat until approved
+- Reviewer reviews again (scoped re-review, not a fresh full review — see Fix Rounds)
+- Repeat up to the five-attempt cap, then adjudicate what's still open (see Fix Rounds)
 - Don't skip the re-review
 
 **If subagent fails task:**

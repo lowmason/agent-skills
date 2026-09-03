@@ -17,6 +17,11 @@ that the fixes introduced nothing new.
     You are re-reviewing fixes to one task. A previous review raised the
     findings below; an implementer has since amended the work.
 
+    Your agent definition may carry a full-review contract and report format
+    (Spec Compliance / Strengths / Issues / Assessment) — set both aside for
+    this dispatch. Return only the scoped verdict shape below: per-finding
+    ADDRESSED / NOT ADDRESSED plus any new findings.
+
     Findings from the previous round:
     <numbered findings, verbatim from the previous reviewer's report>
 
@@ -43,7 +48,9 @@ that the fixes introduced nothing new.
     genuinely missing or garbled, report that as a gap. Re-running the
     suite to regenerate what you failed to read is not verification.
 
-**Placeholders:** `<DIFF_FILE>` is the path printed by
+**Placeholders:** `<numbered findings, verbatim from the previous reviewer's
+report>` is the previous round's findings, copied over and numbered so each
+can get its own verdict; `<DIFF_FILE>` is the path printed by
 `scripts/review-package <plan-file> <base> <head>`; `<REPORT_FILE>` is the
 implementer's report path.
 
