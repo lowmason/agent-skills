@@ -61,7 +61,7 @@ cd skills/tune-hyperparameters/scripts && uv run --python 3.13 --with pytest --w
 # numpyro + NetCDF-writer chain, since the tests round-trip InferenceData to .nc)
 cd skills/track-model-experiments/scripts && uv run --python 3.13 --with pytest --with numpy --with polars --with arviz --with numpyro --with h5netcdf --with h5py python -m pytest -q
 
-# bayesian-workflow script tests (MCSE precision block + divergence-gate next steps) — 9 tests
+# bayesian-workflow script tests (MCSE precision block + divergence-gate next steps) — 11 tests
 # (4 arviz RuntimeWarnings — "invalid value encountered in scalar divide" on the constant-parameter
 # fixture — are expected and not silenced)
 cd skills/bayesian-workflow/scripts && uv run --python 3.13 --with pytest --with arviz --with arviz-stats --with numpy --with xarray python -m pytest -q
@@ -81,6 +81,19 @@ cd skills/geographic-codes/scripts && uv run --python 3.13 --with pytest --with 
 # types, referential checks, BLS contact-email fetch guard) — 51 tests
 # (fixtures are in-memory frames, so no workbook reader is needed)
 cd skills/classification-codes/scripts && uv run --python 3.13 --with pytest --with polars python -m pytest -q
+
+# explore-data profile.py tests (--json handoff contract, duplicate + quality flags) — 7 tests
+# (the --json contract is recommend-visualization's input; run from inside scripts/, since
+# profile.py shadows the stdlib `profile` module and relies on the test dir leading sys.path)
+cd skills/explore-data/scripts && uv run --python 3.13 --with pytest --with polars python -m pytest -q
+
+# design-architecture ADR-scaffolder tests (numbering, slugify, no-clobber) — 8 tests (stdlib only)
+cd skills/design-architecture/scripts && uv run --python 3.13 --with pytest python -m pytest -q
+
+# subagent-driven-development dispatch-script tests (workspace, task-brief fences and exit
+# codes, review-package, and both scripts' default-workspace output paths) — 11 tests
+# (stdlib only; drives the three bash scripts as subprocesses)
+cd skills/subagent-driven-development/scripts && uv run --python 3.13 --with pytest python -m pytest -q
 
 # Frontmatter + provenance lints (run before committing skill changes)
 uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
