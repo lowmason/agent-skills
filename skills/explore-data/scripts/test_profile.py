@@ -14,11 +14,14 @@ import datetime as dt
 import json
 import subprocess
 import sys
+from pathlib import Path
 
 import polars as pl
 import pytest
 
 from profile import column_profile, duplicate_check, quality_flags, scan
+
+SCRIPT = Path(__file__).resolve().parent / "profile.py"
 
 
 @pytest.fixture
@@ -46,7 +49,7 @@ def _run_json(path, tmp_path, *extra):
     """Run the CLI and return the parsed --json payload."""
     out = tmp_path / "out.json"
     subprocess.run(
-        [sys.executable, "profile.py", str(path), "--json", str(out), *extra],
+        [sys.executable, str(SCRIPT), str(path), "--json", str(out), *extra],
         check=True,
         capture_output=True,
     )

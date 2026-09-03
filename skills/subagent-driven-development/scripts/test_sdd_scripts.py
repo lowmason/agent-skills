@@ -8,6 +8,7 @@ asserts on exit code, stdout, and written files. That keeps this repo on one tes
 runner instead of adding bats/shunit2 for three files.
 """
 
+import os
 import re
 import subprocess
 from pathlib import Path
@@ -18,6 +19,12 @@ SCRIPTS = Path(__file__).resolve().parent
 WORKSPACE = SCRIPTS / "sdd-workspace"
 TASK_BRIEF = SCRIPTS / "task-brief"
 REVIEW_PACKAGE = SCRIPTS / "review-package"
+
+# Sanitised so the suite doesn't inherit the user's global/system git config
+# (commit.gpgsign, core.hooksPath, init.templateDir, ...). Without this, a
+# setup `git commit` can fail silently and the real cause surfaces as a
+# confusing downstream assertion on the script under test.
+GIT_ENV = {**os.environ, "GIT_CONFIG_GLOBAL": "/dev/null", "GIT_CONFIG_NOSYSTEM": "1"}
 
 PLAN = """\
 # Demo Plan
@@ -49,16 +56,25 @@ This trailing section must not leak into Task 2's brief.
 
 def run(*argv, cwd=None):
     return subprocess.run(
-        [str(a) for a in argv], cwd=cwd, capture_output=True, text=True
+        [str(a) for a in argv], cwd=cwd, capture_output=True, text=True, env=GIT_ENV
     )
+
+
+def git(*argv, cwd):
+    """Run a git command that arranges test state (not the call under test)
+    and assert it succeeded — a silent failure here must not surface as a
+    confusing assertion failure against sdd-workspace/task-brief/review-package."""
+    result = run("git", *argv, cwd=cwd)
+    assert result.returncode == 0, result.stderr
+    return result
 
 
 @pytest.fixture
 def repo(tmp_path):
     """A throwaway git repo containing the demo plan."""
-    run("git", "init", "-q", tmp_path, cwd=tmp_path)
-    run("git", "config", "user.email", "t@example.invalid", cwd=tmp_path)
-    run("git", "config", "user.name", "T", cwd=tmp_path)
+    git("init", "-q", tmp_path, cwd=tmp_path)
+    git("config", "user.email", "t@example.invalid", cwd=tmp_path)
+    git("config", "user.name", "T", cwd=tmp_path)
     (tmp_path / "plan.md").write_text(PLAN)
     return tmp_path
 
@@ -162,11 +178,11 @@ def test_task_brief_writes_to_and_prints_the_default_workspace_path(repo):
 
 def test_review_package_carries_commits_stat_and_diff(repo):
     (repo / "a.txt").write_text("one\n")
-    run("git", "add", "a.txt", "plan.md", cwd=repo)
-    run("git", "commit", "-qm", "first", cwd=repo)
+    git("add", "a.txt", "plan.md", cwd=repo)
+    git("commit", "-qm", "first", cwd=repo)
     (repo / "a.txt").write_text("one\ntwo\n")
-    run("git", "add", "a.txt", cwd=repo)
-    run("git", "commit", "-qm", "second", cwd=repo)
+    git("add", "a.txt", cwd=repo)
+    git("commit", "-qm", "second", cwd=repo)
 
     out = repo / "package.diff"
     result = run(REVIEW_PACKAGE, "HEAD~1", "HEAD", out, cwd=repo)
@@ -182,8 +198,8 @@ def test_review_package_carries_commits_stat_and_diff(repo):
 
 def test_review_package_rejects_an_unresolvable_revision(repo):
     (repo / "a.txt").write_text("one\n")
-    run("git", "add", "a.txt", "plan.md", cwd=repo)
-    run("git", "commit", "-qm", "first", cwd=repo)
+    git("add", "a.txt", "plan.md", cwd=repo)
+    git("commit", "-qm", "first", cwd=repo)
     result = run(REVIEW_PACKAGE, "nosuchrev", "HEAD", repo / "p.diff", cwd=repo)
     assert result.returncode == 2
     assert "bad BASE" in result.stderr
@@ -194,11 +210,11 @@ def test_review_package_writes_to_and_prints_the_default_workspace_path(repo):
     and the only place review-package actually calls sdd-workspace. Untested
     until now: the other review-package tests pass an explicit OUTFILE."""
     (repo / "a.txt").write_text("one\n")
-    run("git", "add", "a.txt", "plan.md", cwd=repo)
-    run("git", "commit", "-qm", "first", cwd=repo)
+    git("add", "a.txt", "plan.md", cwd=repo)
+    git("commit", "-qm", "first", cwd=repo)
     (repo / "a.txt").write_text("one\ntwo\n")
-    run("git", "add", "a.txt", cwd=repo)
-    run("git", "commit", "-qm", "second", cwd=repo)
+    git("add", "a.txt", cwd=repo)
+    git("commit", "-qm", "second", cwd=repo)
 
     shortbase = run("git", "rev-parse", "--short", "HEAD~1", cwd=repo).stdout.strip()
     shorthead = run("git", "rev-parse", "--short", "HEAD", cwd=repo).stdout.strip()
