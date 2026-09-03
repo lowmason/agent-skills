@@ -459,11 +459,14 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       → retired 2026-09-02: commands/deferred.md now states the roadmap boundary in its
       Scope paragraph (same session as this retire), so the two records can no longer
       silently diverge.
-- [ ] **Two uncommitted artifacts in `/Users/lowell/Projects/alt-nfp`**, left there
+- [x] **Two uncommitted artifacts in `/Users/lowell/Projects/alt-nfp`**, left there
       deliberately because this work has a standing no-git waiver for that repo:
       `specs/usable-series-selection-roadmap.md` (this plan's verification output) and
       `specs/nfp-model-methodology.md` (plan 18's Describe-mode output). Committing them
       is the owner's call in that repo.
+      → retired 2026-09-03: the owner made the call — both files are committed in
+      alt-nfp as of 2026-08-02 (f87a134, 89c8b7f) and now live under
+      `specs/completed/`. `git -C ../alt-nfp status --short -- specs/` is clean.
 
 ## 20-bayesian-workflow-book-integration — 2026-09-03
 - [ ] Split the durable Δ-ECDF reading rule from the arviz-plots-1.3.1-specific notes
