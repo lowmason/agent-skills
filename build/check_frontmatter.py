@@ -12,6 +12,7 @@ Exit 0 if clean; exit 1 with one line per violation.
 '''
 from __future__ import annotations
 
+import importlib.util
 import re
 import sys
 from pathlib import Path
@@ -24,6 +25,11 @@ NAME_RE = re.compile(r'^[a-z0-9]+(-[a-z0-9]+)*$')
 KNOWN_AGENT_TOOLS = {
     'Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit', 'WebFetch', 'WebSearch',
 }
+GUARD_PATH = REPO / 'hooks' / 'readonly-agent-guard.py'
+# Load-bearing marker, not a label: an agents/*.md carrying this heading is
+# asserted to be in the guard's roster, and vice versa. debugger.md and
+# docs-writer.md use a plain '## Contract' because theirs are not read-only.
+READONLY_HEADING = '## Read-only contract'
 # Anchored links (`](path.md#frag)`) are intentionally skipped, not validated —
 # the fragment part isn't checked, only the path before it (see LINK_RE below,
 # which already excludes '#' from the captured group).
@@ -146,6 +152,54 @@ def check_command_file(md: Path) -> list[str]:
     return errs
 
 
+def load_readonly_roster(guard_path: Path | None = None) -> frozenset[str]:
+    '''Import READONLY_AGENTS from the hook script.
+
+    The file is hyphenated (hook-script convention) so it is not importable by
+    name; exec'ing it is safe because its main() sits behind __main__.
+    '''
+    path = guard_path or GUARD_PATH
+    spec = importlib.util.spec_from_file_location('readonly_agent_guard', path)
+    if spec is None or spec.loader is None:
+        raise FileNotFoundError(path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return frozenset(module.READONLY_AGENTS)
+
+
+def check_readonly_roster(agents_dir: Path | None = None,
+                          roster: frozenset[str] | None = None) -> list[str]:
+    '''Assert the guard's roster and the read-only agent files agree, both ways.
+
+    Forward: a sixth read-only agent must not ship unguarded. Reverse: a roster
+    entry must not outlive the agent it names. This is what makes the hook's
+    hardcoded roster safe — drift fails here, at the commit that introduces it.
+    '''
+    d = agents_dir or (REPO / 'agents')
+    if roster is None:
+        try:
+            roster = load_readonly_roster()
+        except (FileNotFoundError, OSError, SyntaxError, AttributeError) as exc:
+            return [f'{GUARD_PATH}: cannot load READONLY_AGENTS '
+                    f'({type(exc).__name__}: {exc})']
+    errs: list[str] = []
+    marked: dict[str, Path] = {}
+    for md in sorted(d.glob('*.md')):
+        if not any(ln.strip() == READONLY_HEADING for ln in md.read_text().splitlines()):
+            continue
+        fm, _ = _parse_frontmatter(md)
+        marked[str((fm or {}).get('name') or md.stem)] = md
+    for name, md in sorted(marked.items()):
+        if name not in roster:
+            errs.append(f'{md}: carries "{READONLY_HEADING}" but {name!r} is not in '
+                        f'READONLY_AGENTS ({GUARD_PATH.name})')
+    for name in sorted(roster):
+        if name not in marked:
+            errs.append(f'{GUARD_PATH}: READONLY_AGENTS entry {name!r} has no '
+                        f'agents/*.md carrying "{READONLY_HEADING}"')
+    return errs
+
+
 def main() -> int:
     errs: list[str] = []
     for d in sorted((REPO / 'skills').iterdir()):
@@ -155,6 +209,7 @@ def main() -> int:
         errs += check_agent_file(md)
     for md in sorted((REPO / 'commands').glob('*.md')):
         errs += check_command_file(md)
+    errs += check_readonly_roster()
     for e in errs:
         print(e)
     return 1 if errs else 0

@@ -10,7 +10,7 @@ the exact command and working directory; run precisely that, nothing
 else. If the dispatch does not name a command, stop and say so — never
 guess a runner, an interpreter, or a dependency set.
 
-## Contract
+## Read-only contract
 
 - Never edit source files; never mutate git state.
 - Run the supplied command once. If it fails to start (missing tool,
