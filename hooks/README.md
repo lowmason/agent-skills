@@ -76,3 +76,23 @@ re-copy when you update a template here.
   `ruff-check.sh` (Stop) is the backstop for anything `--fix` can't resolve.
 - **Exit codes matter:** only exit 2 blocks and feeds stderr to Claude; exit 1 just
   logs. All three follow that convention.
+
+## Probe log
+
+`readonly-agent-guard.py` depends on Claude Code putting the dispatched agent's
+name in the `PreToolUse` payload. That is version-sensitive API surface, so it is
+probed rather than assumed — re-run the probe after a binary update.
+
+| date | Claude Code | finding |
+|---|---|---|
+| 2026-09-03 | 2.1.259 | `agent_type` arrives **top-level** on `PreToolUse(Bash)` payloads and is **absent** for main-session calls. Confirmed on the production path (an Agent-tool dispatch of `Explore`), which additionally carries a per-dispatch `agent_id`. The `claude -p --agent <name>` route populates `agent_type` too, without `agent_id` — so Gate B can use it. |
+
+Two mechanics worth keeping with the row:
+
+- `--allowedTools <tools...>` is **variadic**, so it swallows the positional
+  prompt. Put the prompt first: `claude '<prompt>' -p --allowedTools "Bash"`.
+- `claude -p` waits on stdin when it is a pipe; redirect `< /dev/null` in scripts.
+
+The recorded payloads are frozen as `RECORDED_PAYLOAD` and
+`RECORDED_MAIN_SESSION_PAYLOAD` in `test_readonly_agent_guard.py`;
+`probe-readonly-guard.sh` re-checks the live behaviour end to end.
