@@ -1,6 +1,14 @@
 from pathlib import Path
 
-from check_frontmatter import check_skill, check_agent_file, check_command_file, REPO
+from check_frontmatter import (
+    check_agent_file,
+    check_command_file,
+    check_readonly_roster,
+    check_skill,
+    load_readonly_roster,
+    READONLY_HEADING,
+    REPO,
+)
 
 
 def make_skill(tmp_path: Path, name: str, frontmatter: str) -> Path:
@@ -158,3 +166,61 @@ def test_agent_name_case_differs_from_filename_is_allowed(tmp_path):
         'tools: Read, Grep, Glob, Bash\n---\nbody\n'
     )
     assert check_agent_file(good) == []
+
+
+def _agent(dir_path: Path, filename: str, name: str, heading: str) -> Path:
+    md = dir_path / filename
+    md.write_text(
+        f'---\nname: {name}\ndescription: x\ntools: Read, Grep, Glob, Bash\n---\n'
+        f'\n{heading}\n\nBody.\n'
+    )
+    return md
+
+
+def test_readonly_roster_clean_when_both_sides_agree(tmp_path):
+    _agent(tmp_path, 'alpha.md', 'alpha', READONLY_HEADING)
+    _agent(tmp_path, 'beta.md', 'beta', '## Contract')
+    assert check_readonly_roster(tmp_path, frozenset({'alpha'})) == []
+
+
+def test_readonly_roster_catches_an_unguarded_readonly_agent(tmp_path):
+    # Forward direction: a sixth read-only agent shipping without a roster entry.
+    _agent(tmp_path, 'gamma.md', 'gamma', READONLY_HEADING)
+    errs = '\n'.join(check_readonly_roster(tmp_path, frozenset()))
+    assert 'gamma' in errs
+
+
+def test_readonly_roster_catches_a_stale_roster_entry(tmp_path):
+    # Reverse direction: an entry left behind by a renamed or deleted agent.
+    _agent(tmp_path, 'alpha.md', 'alpha', READONLY_HEADING)
+    errs = '\n'.join(check_readonly_roster(tmp_path, frozenset({'alpha', 'ghost'})))
+    assert 'ghost' in errs
+
+
+def test_readonly_roster_keys_on_frontmatter_name_not_filename(tmp_path):
+    # agents/explore.md carries `name: Explore`, and agent_type is the
+    # frontmatter name — a roster keyed on the filename would never match.
+    _agent(tmp_path, 'explore.md', 'Explore', READONLY_HEADING)
+    assert check_readonly_roster(tmp_path, frozenset({'Explore'})) == []
+    assert check_readonly_roster(tmp_path, frozenset({'explore'})) != []
+
+
+def test_readonly_roster_reports_a_missing_guard_instead_of_raising(tmp_path, monkeypatch):
+    # If the hook file is gone, the lint must print one violation line, not
+    # traceback out of build/check_frontmatter.py and take the whole gate with it.
+    import check_frontmatter
+
+    monkeypatch.setattr(check_frontmatter, 'GUARD_PATH', tmp_path / 'nope.py')
+    errs = check_frontmatter.check_readonly_roster(tmp_path, None)
+    assert len(errs) == 1
+    assert 'cannot load READONLY_AGENTS' in errs[0]
+
+
+def test_load_readonly_roster_reads_the_real_guard():
+    roster = load_readonly_roster()
+    assert 'Explore' in roster and 'test-runner' in roster
+
+
+def test_real_roster_matches_the_real_agents():
+    # The bidirectional assert against the shipped guard and agents/.
+    assert check_readonly_roster() == []

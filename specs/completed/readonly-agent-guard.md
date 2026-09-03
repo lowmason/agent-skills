@@ -1,10 +1,12 @@
 # Read-only agent guard (PreToolUse contract enforcement)
 
+**Status: COMPLETE (2026-09-03)** — implemented by [plan 24](../plans/completed/24-readonly-agent-guard.md).
+
 A `PreToolUse` hook that mechanically enforces the Bash half of the read-only
 contract carried by five agents, replacing prose that nothing checks. Traces to
 the deferred item recorded at plan 17's completion (2026-07-25) and selected for
 design on 2026-09-03 via `/deferred`; the original out-of-scope note is in
-[agents-and-commands-expansion.md](completed/agents-and-commands-expansion.md).
+[agents-and-commands-expansion.md](agents-and-commands-expansion.md).
 
 ## Problem
 

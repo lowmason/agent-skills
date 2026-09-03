@@ -352,12 +352,18 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       as ordinary planned work. Still unticked: the decision is made, the work is not.
 
 ## 17-agents-and-commands-expansion — 2026-07-25
-- [ ] PreToolUse hooks mechanically enforcing the read-only contracts of
+- [x] PreToolUse hooks mechanically enforcing the read-only contracts of
       `security-auditor`, `Explore`, and `test-runner` (spec "Out of scope",
       recorded deliberately): today the contracts are prose, matching the
       code-reviewer/task-reviewer precedent. Would need a hook design with
       per-agent matchers; touches agents/*.md and settings wiring. See
       specs/completed/agents-and-commands-expansion.md.
+      → done in plan 24. Two corrections to the item as recorded: the guard covers
+      all **five** read-only agents, not three — the code-reviewer/task-reviewer
+      precedent carries the same contract and the same tool list, so guarding three
+      of five would ship an unmotivated asymmetry. And "per-agent matchers" are not
+      available: `PreToolUse` `matcher` keys on tool name, so agent discrimination
+      happens inside the script, reading `agent_type` from the payload.
 - [x] `disable-model-invocation` lint (final-review Important, gate-deferred):
       `check_command_file` in build/check_frontmatter.py validates only
       `description`, so nothing guards the key the commands' listing-budget

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repo is
 
-A personal collection of Claude Code user-level configuration, centered on [agent skills](https://code.claude.com/docs/en/skills). Skills live under `skills/` — each subdirectory is **one self-contained skill**: a `SKILL.md` plus optional `references/` (loaded on demand) and `scripts/` (executable helpers). Sibling top-level dirs hold the other config types: `agents/` (subagent definitions — the two reviewers plus `security-auditor`, the Haiku-pinned `Explore` override, `test-runner`, `debugger`, `docs-writer`), `commands/` (slash commands — `/deferred`, `/fix-issue`, `/license-audit`), `hooks/` (reusable hook templates for the user's *work* repos — ruff/uv gates; not wired into this repo, see `hooks/README.md`), `rules/` (path-scoped rule files — `clean-code-python.md` loads on `**/*.py` edits via the committed `.claude/rules/` symlink). There is no application here to run — the "product" is the skill text and its bundled scripts.
+A personal collection of Claude Code user-level configuration, centered on [agent skills](https://code.claude.com/docs/en/skills). Skills live under `skills/` — each subdirectory is **one self-contained skill**: a `SKILL.md` plus optional `references/` (loaded on demand) and `scripts/` (executable helpers). Sibling top-level dirs hold the other config types: `agents/` (subagent definitions — the two reviewers plus `security-auditor`, the Haiku-pinned `Explore` override, `test-runner`, `debugger`, `docs-writer`), `commands/` (slash commands — `/deferred`, `/fix-issue`, `/license-audit`), `hooks/` (two categories: per-repo ruff/uv gate templates for the user's *work* repos, not wired into this repo; and `readonly-agent-guard.py`, a globally-installed `PreToolUse` hook enforcing the five read-only agents' Bash contract — see `hooks/README.md`), `rules/` (path-scoped rule files — `clean-code-python.md` loads on `**/*.py` edits via the committed `.claude/rules/` symlink). There is no application here to run — the "product" is the skill text and its bundled scripts.
 
 Skills install into `~/.claude/skills/` (symlink or copy). This repo *is* the user's symlinked source: per-skill symlinks in `~/.claude/skills/` point at `skills/<name>` here (and `~/.claude/agents/` links into `agents/`), so edits here are live.
 
@@ -94,6 +94,12 @@ cd skills/design-architecture/scripts && uv run --python 3.13 --with pytest pyth
 # codes, review-package, and both scripts' default-workspace output paths) — 21 tests
 # (stdlib only; drives the three bash scripts as subprocesses)
 cd skills/subagent-driven-development/scripts && uv run --python 3.13 --with pytest python -m pytest -q
+
+# read-only agent guard tests (Gate A: classifier units + payload contract) — 40 tests
+# (stdlib only; the contract tests run the hook through its own shebang, which is the
+# system python3 — that is also the regression test for it staying 3.9-compatible.
+# Gate B is the live probe: ./hooks/probe-readonly-guard.sh, which spawns claude -p)
+cd hooks && uv run --python 3.13 --with pytest python -m pytest -q
 
 # Frontmatter + provenance lints (run before committing skill changes)
 uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
