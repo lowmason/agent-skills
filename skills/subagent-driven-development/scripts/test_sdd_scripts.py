@@ -8,6 +8,7 @@ asserts on exit code, stdout, and written files. That keeps this repo on one tes
 runner instead of adding bats/shunit2 for three files.
 """
 
+import re
 import subprocess
 from pathlib import Path
 
@@ -106,11 +107,20 @@ def test_task_brief_keeps_a_fenced_task_heading_as_content(repo):
 
 
 def test_task_brief_excludes_trailing_plan_sections(repo):
-    """The last task must not absorb '## Verification' and everything after it."""
+    """The last task must not absorb '## Verification' and everything after it.
+
+    Also asserts Task 2's own body (not just its heading) survived: a
+    regression that truncated the brief right after printing the heading
+    would otherwise leave this test green. Not hypothetical — task-brief
+    truncated a real 234-line brief to 70 lines earlier during this plan's
+    execution, because a fence nested inside another fence closed the outer
+    fence early.
+    """
     out = repo / "brief.md"
     run(TASK_BRIEF, repo / "plan.md", 2, out, cwd=repo)
     body = out.read_text()
     assert "### Task 2: Second thing" in body
+    assert "Step 1: other" in body
     assert "must not leak" not in body
 
 
@@ -125,6 +135,26 @@ def test_task_brief_exits_2_on_bad_arguments(repo):
     missing = run(TASK_BRIEF, repo / "nope.md", 1, repo / "b.md", cwd=repo)
     assert missing.returncode == 2
     assert "no such plan file" in missing.stderr
+
+
+def test_task_brief_writes_to_and_prints_the_default_workspace_path(repo):
+    """No OUTFILE given — the production path every real invocation takes,
+    and the only place task-brief actually calls sdd-workspace. Untested
+    until now: all other task-brief tests pass an explicit OUTFILE."""
+    result = run(TASK_BRIEF, repo / "plan.md", 2, cwd=repo)
+    assert result.returncode == 0
+
+    match = re.match(r"^wrote (.+): \d", result.stdout.strip())
+    assert match, f"unexpected stdout: {result.stdout!r}"
+    printed = Path(match.group(1))
+    expected = repo / ".sdd" / "task-2-brief.md"
+    assert printed.resolve() == expected.resolve()
+
+    body = expected.resolve().read_text()
+    assert "### Task 2: Second thing" in body
+    assert "Step 1: other" in body
+
+    assert (repo / ".sdd" / ".gitignore").read_text() == "*\n"
 
 
 # ── review-package ───────────────────────────────────────────────────────
@@ -157,3 +187,33 @@ def test_review_package_rejects_an_unresolvable_revision(repo):
     result = run(REVIEW_PACKAGE, "nosuchrev", "HEAD", repo / "p.diff", cwd=repo)
     assert result.returncode == 2
     assert "bad BASE" in result.stderr
+
+
+def test_review_package_writes_to_and_prints_the_default_workspace_path(repo):
+    """No OUTFILE given — the production path every real invocation takes,
+    and the only place review-package actually calls sdd-workspace. Untested
+    until now: the other review-package tests pass an explicit OUTFILE."""
+    (repo / "a.txt").write_text("one\n")
+    run("git", "add", "a.txt", "plan.md", cwd=repo)
+    run("git", "commit", "-qm", "first", cwd=repo)
+    (repo / "a.txt").write_text("one\ntwo\n")
+    run("git", "add", "a.txt", cwd=repo)
+    run("git", "commit", "-qm", "second", cwd=repo)
+
+    shortbase = run("git", "rev-parse", "--short", "HEAD~1", cwd=repo).stdout.strip()
+    shorthead = run("git", "rev-parse", "--short", "HEAD", cwd=repo).stdout.strip()
+
+    result = run(REVIEW_PACKAGE, "HEAD~1", "HEAD", cwd=repo)
+    assert result.returncode == 0
+
+    match = re.match(r"^wrote (.+): \d", result.stdout.strip())
+    assert match, f"unexpected stdout: {result.stdout!r}"
+    printed = Path(match.group(1))
+    expected = repo / ".sdd" / f"review-{shortbase}..{shorthead}.diff"
+    assert printed.resolve() == expected.resolve()
+
+    body = expected.resolve().read_text()
+    assert "## Diff" in body
+    assert "second" in body
+
+    assert (repo / ".sdd" / ".gitignore").read_text() == "*\n"
