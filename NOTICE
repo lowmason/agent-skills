@@ -173,8 +173,11 @@ Vendored on 2026-06-20 (this repo's commit 2f283ae, "Add superpowers
 skills, adapted for standalone use"). Upstream's newest commit at that
 date was 896224c, "Release v6.0.3: SDD artifacts move out of the .git/
 protected path" (2026-06-18). That is a retrieval-date record, not a
-tree-by-tree comparison -- the vendored files were adapted on the way in,
-so they never matched any upstream commit byte for byte. Upstream has
+tree-by-tree comparison. Most vendored files were adapted on the way in
+and so match no upstream commit byte for byte; the three subagent-driven-
+development scripts are the exception -- they came in verbatim from
+896224c and were changed only later, here (see the last two entries
+below). Upstream has
 continued to move since; use the date and commit above as the starting
 point for any drift review.
 
@@ -198,6 +201,15 @@ Changes from upstream:
     spec-driven lifecycle not present upstream: specs/ and specs/plans/
     conventions plus a plan-completion protocol (plan markup, a
     deferred-items log, spec/plan retirement).
+  - subagent-driven-development's three bundled scripts (sdd-workspace,
+    task-brief and review-package, under scripts/) came in with the
+    vendoring at 2f283ae and were changed locally afterwards: c5ff0b5
+    moved the workspace and ledger directory from .superpowers/sdd/ to
+    .sdd/ in all three and in the skill text that documents it.
+  - task-brief alone was reworked further in b8faf9c: a brief now ends
+    at the next heading of the same or shallower level, so a plan's
+    trailing sections no longer leak into the last task's brief, and
+    the plan's Global Constraints section is prepended to every brief.
 
     brainstorming/
     dispatching-parallel-agents/

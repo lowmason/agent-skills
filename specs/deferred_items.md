@@ -541,7 +541,7 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       `specs/plans/completed/21-audit_9_2_26.md`; no skill, script or lint reads it, and
       the item's own text concedes the notes column stands whatever the weights are.
       Ratifying a rubric with no consumer is ceremony, not work.
-- [ ] `NOTICE`'s superpowers block pins the vendoring date (plan 21 Task 3) but
+- [x] `NOTICE`'s superpowers block pins the vendoring date (plan 21 Task 3) but
       its "Changes from upstream" list is incomplete — `sdd-workspace`,
       `task-brief` and `review-package` arrived in `2f283ae` and were changed
       locally afterwards by `c5ff0b5` (`.superpowers/sdd/` → `.sdd/`) and
@@ -549,6 +549,13 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       which is listed. Not an attribution defect — the blanket "modifications
       are by Lowell Mason" clause covers it — but H3's whole purpose was to make
       drift reviewable, and an incomplete change list undercuts the pin.
+      → done 2026-09-03 (/deferred quick fix): the change list gained the three scripts,
+      `c5ff0b5` and `b8faf9c`, after the history was re-checked against the item's account.
+      A second, unrecorded inaccuracy surfaced and was fixed in the same pass: the block
+      claimed the vendored files "never matched any upstream commit byte for byte", which is
+      false for exactly these three — fetching each from `obra/superpowers` at `896224c` and
+      hashing against the as-vendored blobs shows all three identical. Note the gates cannot
+      see any of this: `check_provenance.py` never parses the change list.
 - [ ] `skills/explore-data/scripts/test_profile.py` — the plan's mutation check
       (Task 5 Step 3) proved the suite detects a renamed `"column"` key, but not
       the way it claimed: `quality_flags` reads `r["column"]` at
