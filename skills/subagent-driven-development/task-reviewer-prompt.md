@@ -39,6 +39,22 @@ Subagent (task-reviewer):
     **Base:** [BASE_SHA]
     **Head:** [HEAD_SHA]
     **Diff file:** [DIFF_FILE]
+
+    ## You Do Not Dispatch Subagents
+
+    Do all of this review yourself. Never spawn a subagent to review part of the
+    diff, and never spawn another reviewer for a second opinion. This process
+    already provides every review seat the work gets; a reviewer you spawn
+    duplicates one of them at full cost, and its verdict counts for nothing. If the
+    diff feels too large for one pass, review it in passes yourself and say so in
+    your report.
+
+    Evidence you cannot see is not evidence that doesn't exist. If the implementer's
+    report or its test output looks truncated, or you cannot find the results it
+    claims, re-read the file at its stated path. If it is genuinely missing or
+    garbled, report that as a gap for the controller. Re-running the suite to
+    regenerate what you failed to read is not verification — illegibility of the
+    evidence is not invalidation of it.
 ```
 
 ## Full Form (no task-reviewer agent)
@@ -87,6 +103,22 @@ Subagent (general-purpose):
 
     Your review is read-only on this checkout. Do not mutate the working
     tree, the index, HEAD, or branch state in any way.
+
+    ## You Do Not Dispatch Subagents
+
+    Do all of this review yourself. Never spawn a subagent to review part of the
+    diff, and never spawn another reviewer for a second opinion. This process
+    already provides every review seat the work gets; a reviewer you spawn
+    duplicates one of them at full cost, and its verdict counts for nothing. If the
+    diff feels too large for one pass, review it in passes yourself and say so in
+    your report.
+
+    Evidence you cannot see is not evidence that doesn't exist. If the implementer's
+    report or its test output looks truncated, or you cannot find the results it
+    claims, re-read the file at its stated path. If it is genuinely missing or
+    garbled, report that as a gap for the controller. Re-running the suite to
+    regenerate what you failed to read is not verification — illegibility of the
+    evidence is not invalidation of it.
 
     ## Do Not Trust the Report
 
