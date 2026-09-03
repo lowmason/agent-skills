@@ -328,5 +328,57 @@ def _classify_git(args):
             'git state or is unrecognized, and this guard fails closed on both.')
 
 
+def build_denial(agent, command, detail):
+    reason = (
+        'readonly-agent-guard: the ' + agent + ' agent is read-only on this '
+        'checkout — ' + CONTRACT_CLAUSE + '. Denied: ' + repr(command) + '. '
+        + detail + ' Report this to your controller rather than retrying with a '
+        'variant.'
+    )
+    return {'hookSpecificOutput': {
+        'hookEventName': 'PreToolUse',
+        'permissionDecision': 'deny',
+        'permissionDecisionReason': reason,
+    }}
+
+
+def main():
+    """Always exit 0. A denial is a JSON decision on stdout, not an exit code.
+
+    Fail open before we have identified a guarded agent, fail closed after. A
+    uniform posture is wrong in both directions: fail-closed everywhere means one
+    malformed payload blocks Bash in every project on this machine, and
+    fail-open everywhere means the guard stops guarding exactly when its input
+    gets unusual.
+    """
+    try:
+        payload = json.loads(sys.stdin.read())
+    except Exception:
+        return 0
+    if not isinstance(payload, dict):
+        return 0
+
+    agent = payload.get(AGENT_TYPE_KEY)
+    if not isinstance(agent, str) or agent not in READONLY_AGENTS:
+        return 0  # main session, debugger/docs-writer, every built-in agent
+
+    tool_input = payload.get('tool_input')
+    command = tool_input.get('command') if isinstance(tool_input, dict) else None
+    if not isinstance(command, str) or not command.strip():
+        return 0  # no command to classify; there is nothing here to mutate with
+
+    try:
+        detail = classify(command)
+    except Exception as exc:  # identified agent: fail closed
+        detail = ('the guard could not classify this command ('
+                  + type(exc).__name__ + ': ' + str(exc) + '), and it fails '
+                  'closed for read-only agents.')
+    if detail is None:
+        return 0
+
+    print(json.dumps(build_denial(agent, command, detail)))
+    return 0
+
+
 if __name__ == '__main__':
-    sys.exit(0)  # Task 5 replaces this with main()
+    sys.exit(main())

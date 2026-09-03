@@ -7,7 +7,10 @@ contract tests drive the script as a subprocess with real payloads on stdin.
 Stdlib only, matching the guard itself.
 """
 
+import copy
 import importlib.util
+import json
+import subprocess
 from pathlib import Path
 
 HOOKS = Path(__file__).resolve().parent
@@ -278,3 +281,116 @@ def test_value_taking_flags_do_not_look_like_positionals():
                     'git branch --sort=-committerdate', 'git tag --sort refname',
                     'git tag --format="%(refname)"'):
         assert guard.classify(command) is None, command
+
+
+def run_guard(payload):
+    """Drive the hook exactly as Claude Code does: through its own shebang.
+
+    Not [sys.executable, GUARD] — the shebang resolves to the system python3
+    (3.9 on macOS), so this is also the regression test for the guard staying
+    3.9-compatible.
+    """
+    return subprocess.run(
+        [str(GUARD)], input=json.dumps(payload), capture_output=True, text=True)
+
+
+def payload_for(command, agent='Explore'):
+    p = copy.deepcopy(RECORDED_PAYLOAD)
+    p['tool_input']['command'] = command
+    if agent is None:
+        p.pop('agent_type', None)
+    else:
+        p['agent_type'] = agent
+    return p
+
+
+def test_malformed_stdin_allows():
+    proc = subprocess.run([str(GUARD)], input='not json at all',
+                          capture_output=True, text=True)
+    assert proc.returncode == 0
+    assert proc.stdout.strip() == ''
+
+
+def test_empty_stdin_allows():
+    proc = subprocess.run([str(GUARD)], input='', capture_output=True, text=True)
+    assert proc.returncode == 0
+    assert proc.stdout.strip() == ''
+
+
+def test_main_session_is_never_blocked():
+    # The property everything else rests on.
+    proc = run_guard(payload_for('git stash', agent=None))
+    assert proc.returncode == 0
+    assert proc.stdout.strip() == ''
+    assert run_guard(copy.deepcopy(RECORDED_MAIN_SESSION_PAYLOAD)).stdout.strip() == ''
+
+
+def test_unguarded_agents_are_allowed():
+    for agent in ('debugger', 'docs-writer', 'general-purpose', 'explore'):
+        proc = run_guard(payload_for('git commit -m x', agent=agent))
+        assert proc.stdout.strip() == '', agent
+
+
+def test_guarded_agent_running_a_readonly_command_is_allowed():
+    for agent in sorted(guard.READONLY_AGENTS):
+        proc = run_guard(payload_for('git diff main..HEAD', agent=agent))
+        assert proc.returncode == 0
+        assert proc.stdout.strip() == '', agent
+
+
+def test_guarded_agent_running_a_mutator_is_denied():
+    for agent in sorted(guard.READONLY_AGENTS):
+        proc = run_guard(payload_for('git stash', agent=agent))
+        assert proc.returncode == 0, agent
+        out = json.loads(proc.stdout)
+        assert out['hookSpecificOutput']['permissionDecision'] == 'deny', agent
+
+
+def test_deny_payload_has_the_exact_documented_shape():
+    proc = run_guard(payload_for('git checkout main'))
+    out = json.loads(proc.stdout)
+    assert set(out) == {'hookSpecificOutput'}
+    inner = out['hookSpecificOutput']
+    assert set(inner) == {'hookEventName', 'permissionDecision',
+                          'permissionDecisionReason'}
+    assert inner['hookEventName'] == 'PreToolUse'
+    assert inner['permissionDecision'] == 'deny'
+
+
+def test_denial_reason_names_agent_command_clause_and_alternative():
+    proc = run_guard(payload_for('git checkout main', agent='task-reviewer'))
+    reason = json.loads(proc.stdout)['hookSpecificOutput']['permissionDecisionReason']
+    assert 'task-reviewer' in reason
+    assert 'git checkout main' in reason
+    assert 'worktree list' in reason          # the quoted contract clause
+    assert 'git show' in reason               # the read-only alternative
+
+
+def test_denial_reason_offers_no_escape_hatch():
+    # Spec D5: the constrained party reads this message. A documented bypass
+    # string here would make the guard advisory.
+    proc = run_guard(payload_for('rm -rf build'))
+    reason = json.loads(proc.stdout)['hookSpecificOutput']['permissionDecisionReason']
+    lowered = reason.lower()
+    for word in ('bypass', 'override', 'escape hatch', 'disable', 'skip this'):
+        assert word not in lowered, word
+
+
+def test_classification_failure_fails_closed_for_a_guarded_agent():
+    # Unbalanced quote: shlex raises, and after identification the guard denies.
+    proc = run_guard(payload_for('git log "unterminated'))
+    assert proc.returncode == 0
+    out = json.loads(proc.stdout)
+    assert out['hookSpecificOutput']['permissionDecision'] == 'deny'
+    assert 'ValueError' in out['hookSpecificOutput']['permissionDecisionReason']
+
+
+def test_classification_failure_still_allows_the_main_session():
+    proc = run_guard(payload_for('git log "unterminated', agent=None))
+    assert proc.stdout.strip() == ''
+
+
+def test_missing_command_does_not_block():
+    p = copy.deepcopy(RECORDED_PAYLOAD)
+    p['tool_input'] = {}
+    assert run_guard(p).stdout.strip() == ''
