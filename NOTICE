@@ -176,8 +176,8 @@ protected path" (2026-06-18). That is a retrieval-date record, not a
 tree-by-tree comparison. Most vendored files were adapted on the way in
 and so match no upstream commit byte for byte; the three subagent-driven-
 development scripts are the exception -- they came in verbatim from
-896224c and were changed only later, here (see the last two entries
-below). Upstream has
+896224c and were changed only later, here (see the c5ff0b5 and b8faf9c
+entries below). Upstream has
 continued to move since; use the date and commit above as the starting
 point for any drift review.
 
@@ -210,6 +210,19 @@ Changes from upstream:
     at the next heading of the same or shallower level, so a plan's
     trailing sections no longer leak into the last task's brief, and
     the plan's Global Constraints section is prepended to every brief.
+  - Four changes were later adopted FROM upstream v6.1.0-v6.3.0 (see
+    specs/completed/sdd-hardening.md): the plan-scoped workspace, the
+    no-nested-subagent ban on the implementer and reviewer templates,
+    same-shape task batching with its file-by-file diff check, and the
+    bounded review loop with re-review-prompt.md. Two of them diverge
+    deliberately. The workspace is .sdd/<plan-basename>/, keeping this
+    repo's .sdd rename rather than upstream's .superpowers/sdd. The
+    fix-round ladder escalates context, then effort, then model, rather
+    than upstream's "more capable model" — these sessions already run at
+    the top of the model ladder, so that rung has no headroom here.
+    task-brief's local heading-termination and Global-Constraints rework
+    survives unchanged: upstream's own change to that script was only the
+    workspace call, so the two compose.
 
     brainstorming/
     dispatching-parallel-agents/
