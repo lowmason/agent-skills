@@ -556,13 +556,22 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       false for exactly these three — fetching each from `obra/superpowers` at `896224c` and
       hashing against the as-vendored blobs shows all three identical. Note the gates cannot
       see any of this: `check_provenance.py` never parses the change list.
-- [ ] `skills/explore-data/scripts/test_profile.py` — the plan's mutation check
+- [x] `skills/explore-data/scripts/test_profile.py` — the plan's mutation check
       (Task 5 Step 3) proved the suite detects a renamed `"column"` key, but not
       the way it claimed: `quality_flags` reads `r["column"]` at
       `profile.py:261,263` before JSON is written, so the CLI crashes and three
       of four failures are `CalledProcessError`, never the contract assertion at
       `:65-70`. A serialization-boundary-only rename would exercise the
       silent-drift tripwire on its own terms.
+      → done 2026-09-03 (/deferred quick fix): the tripwire was tested and it works. A
+      serialization-boundary-only rename fails on the contract assertion itself
+      (`AssertionError`, extra item 'column'), not on `CalledProcessError`; the naive rename
+      at `column_profile` reproduces the item's account exactly (3 × `CalledProcessError`
+      plus one `KeyError`). `profile.py` was restored byte-for-byte (`git diff --exit-code`
+      clean), so the code change is nil and only the test's docstring gained the finding.
+      The mechanism is *ordering*, not copying: every internal reader of the key runs before
+      the JSON write. An earlier draft of that docstring asserted a false cause and was
+      corrected before ticking.
 - [x] `skills/design-architecture/scripts/new_adr.py:6` promises numbering
       "permanent and never reused". `test_new_adr.py` pins the gap case (delete
       `0002-`, next is still 4) but not the full-reset case: delete every file

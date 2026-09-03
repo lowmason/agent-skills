@@ -65,7 +65,15 @@ def _run_json(path, tmp_path, *extra):
 def test_json_carries_the_fields_recommend_visualization_consumes(tiny, tmp_path):
     """The handoff contract: recommend-visualization's fields_from_profile reads
     profile['columns'][i] for 'column', 'dtype', 'n_unique' and 'null_pct'.
-    Renaming any of those four silently breaks the sibling skill."""
+    Renaming any of those four silently breaks the sibling skill.
+
+    The subset assert below is that tripwire, and it fires on its own terms: renaming
+    'column' only where the payload is serialized fails here with an AssertionError,
+    not with a CalledProcessError out of _run_json. What keeps the CLI exiting 0 is
+    ordering, not any copy — quality_flags and the per-column print loop both read the
+    key before the JSON is written, so a rename at that boundary cannot reach them.
+    Rename it any earlier (in column_profile) and the CLI dies first, which is why the
+    naive mutation never reaches this assert."""
     payload = _run_json(tiny, tmp_path)
     assert set(payload) >= {"path", "n_rows", "n_cols", "columns", "dates", "flags"}
     assert payload["n_rows"] == 5
