@@ -1,0 +1,159 @@
+"""Tests for the three bundled bash scripts — run from this directory.
+
+cd skills/subagent-driven-development/scripts && uv run --python 3.13 --with pytest \
+  python -m pytest -q
+
+These are bash, not Python, so each test drives the script as a subprocess and
+asserts on exit code, stdout, and written files. That keeps this repo on one test
+runner instead of adding bats/shunit2 for three files.
+"""
+
+import subprocess
+from pathlib import Path
+
+import pytest
+
+SCRIPTS = Path(__file__).resolve().parent
+WORKSPACE = SCRIPTS / "sdd-workspace"
+TASK_BRIEF = SCRIPTS / "task-brief"
+REVIEW_PACKAGE = SCRIPTS / "review-package"
+
+PLAN = """\
+# Demo Plan
+
+## Global Constraints
+
+- Python 3.13 via uv.
+- Single quotes over double.
+
+---
+
+### Task 1: First thing
+
+- [ ] **Step 1: do it**
+
+```markdown
+### Task 99: this heading is inside a fence and is content, not a boundary
+```
+
+### Task 2: Second thing
+
+- [ ] **Step 1: other**
+
+## Verification
+
+This trailing section must not leak into Task 2's brief.
+"""
+
+
+def run(*argv, cwd=None):
+    return subprocess.run(
+        [str(a) for a in argv], cwd=cwd, capture_output=True, text=True
+    )
+
+
+@pytest.fixture
+def repo(tmp_path):
+    """A throwaway git repo containing the demo plan."""
+    run("git", "init", "-q", tmp_path, cwd=tmp_path)
+    run("git", "config", "user.email", "t@example.invalid", cwd=tmp_path)
+    run("git", "config", "user.name", "T", cwd=tmp_path)
+    (tmp_path / "plan.md").write_text(PLAN)
+    return tmp_path
+
+
+# ── sdd-workspace ────────────────────────────────────────────────────────
+
+
+def test_workspace_is_created_inside_the_working_tree(repo):
+    """Not under .git/ — Claude Code denies agent writes to that protected path,
+    which would block an implementer subagent from writing its report."""
+    result = run(WORKSPACE, cwd=repo)
+    assert result.returncode == 0
+    printed = Path(result.stdout.strip())
+    assert printed.resolve() == (repo / ".sdd").resolve()
+    assert ".git" not in printed.parts
+
+
+def test_workspace_ignores_itself_so_artifacts_never_reach_git_status(repo):
+    run(WORKSPACE, cwd=repo)
+    assert (repo / ".sdd" / ".gitignore").read_text() == "*\n"
+    (repo / ".sdd" / "task-1-brief.md").write_text("scratch")
+    status = run("git", "status", "--short", cwd=repo).stdout
+    assert ".sdd" not in status
+
+
+# ── task-brief ───────────────────────────────────────────────────────────
+
+
+def test_task_brief_prepends_global_constraints(repo):
+    out = repo / "brief.md"
+    result = run(TASK_BRIEF, repo / "plan.md", 1, out, cwd=repo)
+    assert result.returncode == 0
+    body = out.read_text()
+    assert body.index("## Global Constraints") < body.index("### Task 1")
+    assert "Single quotes over double." in body
+
+
+def test_task_brief_keeps_a_fenced_task_heading_as_content(repo):
+    """A ```-fenced '### Task 99' is example text, not a section boundary.
+    If fence tracking breaks, Task 1's brief is truncated mid-step."""
+    out = repo / "brief.md"
+    run(TASK_BRIEF, repo / "plan.md", 1, out, cwd=repo)
+    body = out.read_text()
+    assert "Task 99" in body
+    assert "### Task 2" not in body
+
+
+def test_task_brief_excludes_trailing_plan_sections(repo):
+    """The last task must not absorb '## Verification' and everything after it."""
+    out = repo / "brief.md"
+    run(TASK_BRIEF, repo / "plan.md", 2, out, cwd=repo)
+    body = out.read_text()
+    assert "### Task 2: Second thing" in body
+    assert "must not leak" not in body
+
+
+def test_task_brief_exits_3_on_a_missing_task(repo):
+    result = run(TASK_BRIEF, repo / "plan.md", 42, repo / "brief.md", cwd=repo)
+    assert result.returncode == 3
+    assert "task 42 not found" in result.stderr
+
+
+def test_task_brief_exits_2_on_bad_arguments(repo):
+    assert run(TASK_BRIEF, repo / "plan.md", cwd=repo).returncode == 2
+    missing = run(TASK_BRIEF, repo / "nope.md", 1, repo / "b.md", cwd=repo)
+    assert missing.returncode == 2
+    assert "no such plan file" in missing.stderr
+
+
+# ── review-package ───────────────────────────────────────────────────────
+
+
+def test_review_package_carries_commits_stat_and_diff(repo):
+    (repo / "a.txt").write_text("one\n")
+    run("git", "add", "a.txt", "plan.md", cwd=repo)
+    run("git", "commit", "-qm", "first", cwd=repo)
+    (repo / "a.txt").write_text("one\ntwo\n")
+    run("git", "add", "a.txt", cwd=repo)
+    run("git", "commit", "-qm", "second", cwd=repo)
+
+    out = repo / "package.diff"
+    result = run(REVIEW_PACKAGE, "HEAD~1", "HEAD", out, cwd=repo)
+    assert result.returncode == 0
+    assert "1 commit(s)" in result.stdout
+    body = out.read_text()
+    for heading in ("# Review package:", "## Commits", "## Files changed", "## Diff"):
+        assert heading in body
+    assert "second" in body
+    assert "+two" in body
+    assert "first" not in body.split("## Commits")[1].split("## Files changed")[0]
+
+
+def test_review_package_rejects_an_unresolvable_revision(repo):
+    (repo / "a.txt").write_text("one\n")
+    run("git", "add", "a.txt", "plan.md", cwd=repo)
+    run("git", "commit", "-qm", "first", cwd=repo)
+    result = run(REVIEW_PACKAGE, "nosuchrev", "HEAD", repo / "p.diff", cwd=repo)
+    assert result.returncode == 2
+    assert "bad BASE" in result.stderr
