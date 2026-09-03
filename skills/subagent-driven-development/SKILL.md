@@ -118,6 +118,13 @@ skill's `scripts/sdd-workspace <plan-file>` prints. Hand that one path to
 both the implementer and the reviewer as `[BRIEF_FILE]`, the same handoff
 **File Handoffs** gives a single-task brief.
 
+Open that brief with the plan's Global Constraints, copied verbatim.
+`task-brief` prepends them to every brief it writes, which is what lets
+**File Handoffs** promise the implementer its brief carries them; a brief you
+compose yourself inherits the promise with nothing mechanical to keep it, and
+the reviewer's file-by-file check verifies file coverage, not constraint
+carriage — so a batch that drops them fails silently.
+
 ## Pre-Flight Plan Review
 
 Before dispatching Task 1, scan the plan once for conflicts:
@@ -193,7 +200,9 @@ that live in unchanged code or span tasks. These do not block the rest of the
 review, but you must resolve each one yourself before marking the task
 complete: you hold the plan and cross-task context the reviewer
 lacks. If you confirm an item is a real gap, treat it as a failed spec
-review — send it back to the implementer and re-review.
+review — send it back to the implementer and re-review. That send-back is a
+fix round: it uses the scoped [re-review-prompt.md](re-review-prompt.md) and
+counts against the five (see **Fix Rounds**).
 
 ## Fix Rounds
 
@@ -213,9 +222,11 @@ whole task every round is the cost this cap exists to bound.
 Going fresh at round 4 is the load-bearing half. A resumed implementer carries
 its own failed attempts as context, which anchors it to the approach that is not
 working; a fresh one does not. Escalate in the order context, then effort, then
-model, and stop when there is no headroom — sessions here already run at the
-top of the model ladder, so in practice rounds 4-5 buy fresh context and higher
-effort, not a bigger model.
+model, and stop when there is no headroom. Which rungs remain depends on the
+tier **this implementer was dispatched at** — not on your own session's model,
+which it never inherited. An implementer below **capable** still has the model
+rung; one already at **capable** has only fresh context and higher reasoning
+effort left.
 
 **Adjudicating** means you rule on each open finding: record the load-bearing
 ones as work, and park the rest in the ledger with your reasoning
@@ -250,21 +261,23 @@ final whole-branch review. When you fill a reviewer template:
   later dispatches — a real session's dispatch hit 42k chars of which 99%
   was pasted history. A fresh subagent needs its task, the interfaces it
   touches, and the global constraints. Nothing else.
-- Dispatch fix subagents for Critical and Important findings. Record Minor
-  findings in the progress ledger as you go, and point the final
-  whole-branch review at that list so it can triage which must be fixed
-  before merge. A roll-up nobody reads is a silent discard.
+- Dispatch fix subagents for Critical and Important findings — rounds 1-3
+  resume the same implementer, rounds 4-5 dispatch a fresh one (see **Fix
+  Rounds**). Record Minor findings in the progress ledger as you go, and
+  point the final whole-branch review at that list so it can triage which
+  must be fixed before merge. A roll-up nobody reads is a silent discard.
 - A finding labeled plan-mandated — or any finding that conflicts with
   what the plan's text requires — is the human's decision, like any plan
   contradiction: present the finding and the plan text, ask which governs.
   Do not dismiss the finding because the plan mandates it, and do not
   dispatch a fix that contradicts the plan without asking.
-- Every fix dispatch carries the implementer contract: the fix subagent
-  re-runs the tests covering its change and reports the results. Name the
-  covering test files in the dispatch — a one-line fix does not need the
-  whole suite. Before re-dispatching the reviewer, confirm the fix report
-  contains the covering tests, the command run, and the output; dispatch
-  the re-review once all three are present.
+- Every fix dispatch — resumed for rounds 1-3, fresh for 4-5 (see **Fix
+  Rounds**) — carries the implementer contract: the fix subagent re-runs the
+  tests covering its change and reports the results. Name the covering test
+  files in the dispatch — a one-line fix does not need the whole suite.
+  Before re-dispatching the reviewer, confirm the fix report contains the
+  covering tests, the command run, and the output; dispatch the re-review
+  once all three are present.
 - If the final whole-branch review returns findings, dispatch ONE fix
   subagent with the complete findings list — not one fixer per finding.
   Per-finding fixers each rebuild context and re-run suites; a real
@@ -284,7 +297,9 @@ tasks complete" is a sanctioned stop.
 
 When the plan-completion protocol has finished and the final review's fixes
 are merged, delete this plan's workspace — the `$WORKSPACE` you resolved at
-skill start: `rm -rf "$WORKSPACE"`. Git history is the record now. Sibling
+skill start: `rm -rf "$WORKSPACE"`. If a `/clear` and relaunch since then left
+you without that variable, re-run `scripts/sdd-workspace <plan-file>`; it is
+idempotent and reprints the same path. Git history is the record now. Sibling
 directories under `.sdd/` belong to other plans — leave them alone, and never
 `rm -rf .sdd` itself.
 
@@ -457,8 +472,9 @@ Task reviewer: Spec ❌:
   - Extra: Added --json flag (not requested)
   Issues (Important): Magic number (100)
 
-[Dispatch fix subagent with all findings]
-Fixer: Removed --json flag, added progress reporting, extracted PROGRESS_INTERVAL constant
+[Fix round 1: resume the same implementer with all findings]
+Implementer (resumed): Removed --json flag, added progress reporting,
+  extracted PROGRESS_INTERVAL constant
 
 [Dispatch scoped re-review (re-review-prompt.md) with the numbered findings]
 Re-reviewer:
@@ -538,13 +554,15 @@ Done!
 - Add the context the brief was missing so the second run can one-shot it
 
 **If reviewer finds issues:**
-- Dispatch a fix subagent with the findings (per Constructing Reviewer Prompts)
+- Dispatch a fix subagent with the findings — resumed or fresh per **Fix
+  Rounds** (prompt per Constructing Reviewer Prompts)
 - Reviewer reviews again (scoped re-review, not a fresh full review — see Fix Rounds)
 - Repeat up to the five-attempt cap, then adjudicate what's still open (see Fix Rounds)
 - Don't skip the re-review
 
 **If subagent fails task:**
-- Dispatch fix subagent with specific instructions
+- Dispatch a fix subagent with specific instructions — resumed or fresh per
+  **Fix Rounds**
 - Don't try to fix manually (context pollution)
 
 ## Integration

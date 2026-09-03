@@ -28,12 +28,12 @@ duplicates one of them at full cost, and its verdict counts for nothing. If the
 diff feels too large for one pass, review it in passes yourself and say so in
 your report.
 
-Evidence you cannot see is not evidence that doesn't exist. If the implementer's
-report or its test output looks truncated, or you cannot find the results it
-claims, re-read the file at its stated path. If it is genuinely missing or
-garbled, report that as a gap for the controller. Re-running the suite to
-regenerate what you failed to read is not verification — illegibility of the
-evidence is not invalidation of it.
+Evidence you cannot see is not evidence that doesn't exist. If any input material
+this dispatch hands you — a diff file, a report, test output — looks truncated, or
+you cannot find results it claims, re-read the file at its stated path. If it is
+genuinely missing or garbled, report that as a gap for the controller. Re-running
+the suite to regenerate what you failed to read is not verification — illegibility
+of the evidence is not invalidation of it.
 
 ## Calibration
 

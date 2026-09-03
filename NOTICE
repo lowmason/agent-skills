@@ -212,16 +212,19 @@ Changes from upstream:
   - Four changes were later adopted FROM upstream v6.1.0-v6.3.0 (see
     specs/completed/sdd-hardening.md): the plan-scoped workspace (adopting
     it gave review-package PLAN_FILE as its first argument, shifting BASE
-    and HEAD), the no-nested-subagent ban on the implementer and reviewer
-    templates and on agents/code-reviewer.md and agents/task-reviewer.md,
-    same-shape task batching with its file-by-file diff check, and the
-    bounded review loop with re-review-prompt.md plus the reviewer's
-    illegible-evidence rule. Two of them diverge deliberately. The
-    workspace is .sdd/<plan-basename>/, keeping this repo's .sdd rename
-    rather than upstream's .superpowers/sdd. The fix-round ladder
-    escalates context, then effort, then model, rather than upstream's
-    "more capable model" — these sessions already run at the top of the
-    model ladder, so that rung has no headroom here. task-brief's local
+    and HEAD); the no-nested-subagent ban — on the implementer and
+    reviewer templates, on skills/requesting-code-review/code-reviewer.md,
+    and on agents/code-reviewer.md and agents/task-reviewer.md — carrying
+    with it the reviewer's illegible-evidence rule, which binds every
+    reviewer seat; same-shape task batching with its file-by-file diff
+    check; and the bounded review loop with re-review-prompt.md. Two of
+    them diverge deliberately. The workspace is .sdd/<plan-basename>/,
+    keeping this repo's .sdd rename rather than upstream's
+    .superpowers/sdd. The fix-round ladder escalates context, then effort,
+    then model, rather than upstream's unconditional "more capable
+    model" — here the model rung is taken only when the failing
+    implementer was dispatched below the capable tier, a property of that
+    dispatch and not of the controller's own session. task-brief's local
     heading-termination and Global-Constraints rework survives unchanged:
     upstream's own change to that script was only the workspace call, so
     the two compose.

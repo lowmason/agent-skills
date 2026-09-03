@@ -252,7 +252,9 @@ Subagent (general-purpose):
 **Placeholders:**
 - `[MODEL]` — REQUIRED: reviewer model per SKILL.md Model Selection
 - `[BRIEF_FILE]` — REQUIRED: the task brief file (`scripts/task-brief PLAN N`
-  prints the path; same file the implementer worked from)
+  prints the path; same file the implementer worked from) — or, for a batched
+  dispatch, the `batch-N-M-brief.md` the controller composed itself, which
+  that script has no multi-task mode to produce
 - `[GLOBAL_CONSTRAINTS]` — the binding requirements copied verbatim from
   the plan's Global Constraints section or the spec: exact values, formats,
   and stated relationships between components (not process rules — those
