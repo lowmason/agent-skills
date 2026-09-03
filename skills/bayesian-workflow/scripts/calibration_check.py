@@ -132,8 +132,11 @@ def save_pit_plot(
 
     Uses azp.plot_loo_pit (LOO-PIT, avoids double-dipping) or
     azp.plot_ppc_pit (PPC-PIT) with optional coverage=True for the
-    coverage transformation. Both produce ΔECDF plots with simultaneous
-    confidence bands (Säilynoja et al. 2022).
+    coverage transformation. Both produce ΔECDF plots whose simultaneous
+    bounds (Säilynoja et al. 2022) are computed but not drawn — the figure
+    shows the step line, a zero line, highlighted suspicious points, and
+    the p-value with its α; the bounds themselves feed the
+    *_inside_bands values this script writes.
     """
     plot_fn = azp.plot_loo_pit if use_loo else azp.plot_ppc_pit
     # arviz_plots 1.0 names the simultaneous-band probability `envelope_prob`;

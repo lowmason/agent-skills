@@ -207,8 +207,7 @@ The two multilevel models fit the within-group medians markedly better than the 
 
 ### 4d. LOO-PIT calibration (Fig 9) — bayesplot `ppc_loo_pit`
 
-Leave-one-out PIT values are asymptotically uniform for a calibrated model. Compare their ECDF to
-the uniform with simultaneous bands:
+Leave-one-out PIT values are asymptotically uniform for a calibrated model. The call below draws the ECDF difference against a zero line, highlights suspicious points where the ECDF leaves the simultaneous bounds, and prints the uniformity p-value with its α:
 
 ```python
 azp.plot_loo_pit(idata)                 # LOO-PIT ECDF vs uniform (needs log_likelihood)
