@@ -107,7 +107,7 @@ as `mclmc` stays citable).
 # Structural shape of a locator: [token position], not a markdown link.
 BODY_CITE_RE = re.compile(r'\[([A-Za-z0-9][A-Za-z0-9._-]*)\s+([^\]]+)\](?!\()')
 # A position opens with a documented locator sigil, or a digit.
-POSITION_RE = re.compile(r'^(?:§|pp?\.|Tables?|Fig(?:ure)?s?|Eq|Ch|\d)')
+POSITION_RE = re.compile(r'^(?:§|p\.|Table|Fig|Eq|\d)')
 # A slug is multi-part: a hyphen, or a 4-digit run (a year).
 SLUG_SHAPE_RE = re.compile(r'-|\d{4}')
 ```
@@ -123,6 +123,22 @@ def _is_citation(token, position, slugs):
   return bool(SLUG_SHAPE_RE.search(token)) or token in slugs
 ```
 
+The position vocabulary is **exactly the list D1 recorded** (`§`, `p.`,
+`Table`, `Fig`, `Eq`, a leading digit) — not a wider one of this spec's
+invention. `SCHEMA.md` documents only `§4.2` and `Table 2`, so anything beyond
+D1's list would be widening a contract by invention, which is the D1 error in a
+new place. The direction also matters asymmetrically: an unrecognized position
+makes the token **prose**, so a too-narrow vocabulary fails *silently*
+(limitation 1) while a too-wide one adds *error* surface to the structural
+clause (limitation 2). Extend the list additively, with evidence from real
+content — never speculatively.
+
+The entries are **prefix** matches, verified: `Table` also accepts `Tables`,
+and `Fig` accepts `Figure` and `Figs`, at no extra cost. `p.` does **not**
+accept `pp.` — the second `p` breaks the match — so a page range must be
+written `p. 3-4`. `Ch` is not accepted at all. Both are consequences of holding
+to D1's list; add them additively if real content needs them.
+
 The slug charset widens to `[A-Za-z0-9._-]`. That is safe only because the
 conjunction, not the charset, now does the discriminating.
 
@@ -130,6 +146,12 @@ conjunction, not the charset, now does the discriminating.
 changes shape from `for slug in BODY_CITE_RE.findall(body)` to iterating
 `(token, position)` pairs and filtering through `_is_citation`. Only tokens
 that pass are validated or counted as inbound references.
+
+**Consumer audit (verified 2026-09-03).** Each changed global has exactly one
+consumer, so the blast radius is two functions: `BODY_CITE_RE` → `check_links`
+(`lint_wiki.py:158`) and `INDEX_LINE_RE` → `_index_targets` (`:97`, itself read
+only by `check_index_parity`). No other call site iterates the regex, so no
+second site silently receives tuples where it expected strings.
 
 `lint_wiki.py` is stdlib-only, Python ≥ 3.12, **single quotes, two-space
 indentation** (`llm-wiki-spec.md` §10). Match it.
@@ -209,6 +231,16 @@ cases and no existing test may be deleted to make room.
    rewriting the retired spec's table.
 
 ## Rollout
+
+**Why the bump is warranted.** The marker says "bump on a breaking contract
+change," and this qualifies in the direction that matters: content which lints
+clean today can become an ERROR tomorrow (`[Hoffman2014 §3]`). More decisively,
+the *contract text itself* changes — the position vocabulary has to be written
+into `SCHEMA.md`, or the linter enforces a rule no document states, which is the
+D1 sin again. A root carrying the old text is genuinely behind, and STALE is the
+signal that says so. The live wiki has no affected content (every bracketed
+token there is a capture id with no internal space), so the migration is a
+documentation edit, not a content rewrite.
 
 `_install_schema` is **seed-once and never overwrites `SCHEMA.md`, even with
 `--force`**, so the version bump does not touch the live wiki. It makes
