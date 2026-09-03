@@ -12,9 +12,19 @@ STATUSES = ('unverified', 'verified')
 INDEX_LINE_RE = re.compile(r'^- \[[^\]]+\]\(([^)]+)\)')
 # Markdown relative links: [text](target) where target is not a URL/anchor.
 MD_LINK_RE = re.compile(r'\[[^\]]*\]\(([^)]+)\)')
-# Body citation locators: [slug §x] / [slug Table 2] — slug token then a space,
-# and NOT a markdown link (no '(' immediately after the ']').
-BODY_CITE_RE = re.compile(r'\[([a-z0-9][a-z0-9-]*)\s+[^\]]+\](?!\()')
+# Structural shape of a body locator: [token position], and NOT a markdown
+# link (no '(' immediately after the ']'). Shape only -- _is_citation decides
+# whether a matched pair is actually a citation.
+BODY_CITE_RE = re.compile(r'\[([A-Za-z0-9][A-Za-z0-9._-]*)\s+([^\]]+)\](?!\()')
+# A position opens with a documented locator sigil, or a digit (SCHEMA.md
+# "Body conventions"). These are prefix matches, so 'Table' also covers
+# 'Tables' and 'Fig' covers 'Figure'/'Figs'; 'pp.' and 'Ch' are NOT accepted.
+# Extend additively, against real content -- never speculatively: an
+# unrecognized position silently makes the token prose, while a spurious one
+# adds hard-ERROR surface.
+POSITION_RE = re.compile(r'^(?:§|p\.|Table|Fig|Eq|\d)')
+# A slug is multi-part: it carries a hyphen, or a 4-digit run (a year).
+SLUG_SHAPE_RE = re.compile(r'-|\d{4}')
 DATE_RE = re.compile(r'\d{4}-\d{2}-\d{2}')
 LOG_DATE_RE = re.compile(r'^## \[(\d{4}-\d{2}-\d{2})\]', re.M)
 
@@ -126,6 +136,23 @@ def _strip_frontmatter(text):
   return text[m.end():] if m else text
 
 
+def _looks_like_position(rest):
+  '''Is the text after the token a locator position?'''
+  return bool(POSITION_RE.match(rest.strip()))
+
+
+def _is_citation(token, position, slugs):
+  '''Recognition, kept separate from resolution: a [token position] pair is a
+  citation when the position looks like one AND the token either is shaped like
+  a slug or names a known source page. The membership clause lets a single-word
+  slug (`mclmc`) stay citable without loosening the structural clause, and it
+  can never manufacture an error -- a token in `slugs` resolves by
+  construction. All error risk therefore sits in the structural clause.'''
+  if not _looks_like_position(position):
+    return False
+  return bool(SLUG_SHAPE_RE.search(token)) or token in slugs
+
+
 def check_links(root, pages):
   findings = []
   slugs = _source_slugs(root)
@@ -154,13 +181,16 @@ def check_links(root, pages):
         except ValueError:
           pass
     # body citation locators [slug §x] must map to a source page; and count
-    # as an inbound reference to it
-    for slug in BODY_CITE_RE.findall(body):
-      if slug in slugs:
-        referenced.add(f'sources/{slug}.md')
+    # as an inbound reference to it. Bracketed prose is not a citation and is
+    # neither validated nor counted.
+    for token, position in BODY_CITE_RE.findall(body):
+      if not _is_citation(token, position, slugs):
+        continue
+      if token in slugs:
+        referenced.add(f'sources/{token}.md')
       else:
         findings.append(
-          ('ERROR', str(rel), f'citation: [{slug} …] has no source page'))
+          ('ERROR', str(rel), f'citation: [{token} …] has no source page'))
   # orphan warning: a page nothing references (via link, cites, or locator)
   for p in pages:
     relw = str(p.relative_to(root / 'wiki'))

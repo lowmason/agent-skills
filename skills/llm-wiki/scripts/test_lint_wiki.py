@@ -3,6 +3,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 import lint_wiki
 
 
@@ -462,3 +464,110 @@ def test_neighbor_entry_sha_does_not_satisfy_missing_entry(tmp_path):
   assert len(basis_findings) == 1
   assert any('[d-02]' in f[2] for f in basis_findings)
   assert not any('[d-01]' in f[2] for f in basis_findings)
+
+
+# --- citation recognition (spec: lint_wiki citation-detection contract) ---
+
+# `ghost-2020-none` is deliberately absent: that absence is what makes case 3
+# an error and pins test_body_citation_without_source_is_error.
+CITE_SLUGS = ('robnik-2022-mclmc', 'hoffman-2014-nuts', 'mclmc')
+
+
+def cite_fixture(root, body):
+  '''Wiki with the three fixture source slugs plus one concept page carrying
+  `body`. Returns (citation_errors, referenced) where `referenced` is the set
+  of fixture slugs something pointed at -- i.e. those with no orphan WARN. The
+  concept page cites nothing, so a slug lands in `referenced` only via a body
+  locator, which is what makes the three verdicts distinguishable.'''
+  for stem in CITE_SLUGS:
+    valid_source(root, f'sources/{stem}.md', stem)
+  write_page(root, 'samplers/notes.md',
+             {'title': 'Notes', 'type': 'concept', 'status': 'unverified',
+              'topics': '[samplers]', 'cites': '[]',
+              'updated': '2026-07-22'},
+             body=body)
+  set_index(root,
+            [f'- [{s}](sources/{s}.md) — s · 1 · verified · 2026-07-22'
+             for s in CITE_SLUGS]
+            + ['- [notes](samplers/notes.md) — s · 1 · unverified · 2026-07-22'])
+  findings = lint_wiki.run_checks(root)
+  errors = [f[2] for f in findings
+            if f[0] == 'ERROR' and f[2].startswith('citation:')]
+  orphaned = {f[1] for f in findings if f[0] == 'WARN' and 'orphan' in f[2]}
+  referenced = {s for s in CITE_SLUGS
+                if f'wiki/sources/{s}.md' not in orphaned}
+  return errors, referenced
+
+
+# The spec's acceptance table, verbatim. 'cite' = recognized and resolves,
+# 'error' = recognized and unresolved, 'prose' = not a citation at all.
+CITATION_CASES = [
+  (1, '[robnik-2022-mclmc §4.2]', 'cite', 'robnik-2022-mclmc'),
+  (2, '[hoffman-2014-nuts Table 2]', 'cite', 'hoffman-2014-nuts'),
+  (3, '[ghost-2020-none §4.2]', 'error', 'ghost-2020-none'),
+  (4, '[mclmc §4.2]', 'cite', 'mclmc'),
+  (5, '[see below]', 'prose', None),
+  (6, '[per the user]', 'prose', None),
+  (7, '[todo fix this]', 'prose', None),
+  (8, '[Figure 2]', 'prose', None),
+  (9, '[NUTS §3]', 'prose', None),
+  (10, '[see Table 2]', 'prose', None),
+  (11, '[Hoffman2014 §3]', 'error', 'Hoffman2014'),
+  (12, '[robnik_2022 §4]', 'error', 'robnik_2022'),
+  (13, '[robnik.2022 §4]', 'error', 'robnik.2022'),
+  (14, '[the [above] discussion](x.md)', 'prose', None),
+  (15, '[robnik-2022-mclmc §4.2](x.md)', 'prose', None),
+  (16, '### [d-01] Flat files primary', 'prose', None),
+  (17, '## [2026-07-24] log entry', 'prose', None),
+  (18, '[well-known Table 2]', 'error', 'well-known'),
+]
+
+
+@pytest.mark.parametrize('case,body,verdict,token', CITATION_CASES,
+                         ids=[f'case{c}' for c, _, _, _ in CITATION_CASES])
+def test_citation_recognition_table(tmp_path, case, body, verdict, token):
+  errors, referenced = cite_fixture(make_wiki(tmp_path), body)
+  if verdict == 'cite':
+    assert errors == [], f'case {case}: unexpected citation error'
+    assert token in referenced, f'case {case}: did not count as an inbound ref'
+  elif verdict == 'error':
+    assert any(token in e for e in errors), f'case {case}: no error for {token}'
+    assert referenced == set(), f'case {case}: nothing should resolve'
+  else:
+    assert errors == [], f'case {case}: prose treated as a citation'
+    assert referenced == set(), f'case {case}: prose counted as an inbound ref'
+
+
+@pytest.mark.parametrize('position,expected', [
+  ('§4.2', True),
+  ('p. 12', True),
+  ('Table 2', True),
+  ('Tables 3', True),      # prefix match, free
+  ('Fig 1', True),
+  ('Figure 1', True),      # prefix match, free
+  ('Figs 2-3', True),      # prefix match, free
+  ('Eq 7', True),
+  ('12', True),
+  (' §4.2', True),         # leading whitespace is stripped
+  ('below', False),
+  ('the user', False),
+  ('fix this', False),
+  ('pp. 12', False),       # accepted narrowness: D1's list has p., not pp.
+  ('Ch 4', False),         # accepted narrowness: D1's list has no Ch
+  ('see Table 2', False),  # sigil must OPEN the position, not appear in it
+])
+def test_looks_like_position(position, expected):
+  assert lint_wiki._looks_like_position(position) is expected
+
+
+@pytest.mark.parametrize('token,position,expected', [
+  ('robnik-2022-mclmc', '§4.2', True),       # shape: hyphen
+  ('Hoffman2014', '§3', True),               # shape: 4-digit year
+  ('mclmc', '§4.2', True),                   # membership only
+  ('nope', '§4.2', False),                   # neither shape nor membership
+  ('see', 'Table 2', False),                 # position ok, token is prose
+  ('mclmc', 'see this', False),              # membership, bad position
+  ('robnik-2022-mclmc', 'see this', False),  # shape, bad position (limitation 1)
+])
+def test_is_citation(token, position, expected):
+  assert lint_wiki._is_citation(token, position, set(CITE_SLUGS)) is expected
