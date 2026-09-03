@@ -484,13 +484,23 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       today, and its accuracy is the point; when the pot_c/envelope situation settles upstream,
       keep the one durable instruction (read the p-value and the highlighted points, not a
       picture of a band) and shrink the version notes to a clause.
-- [ ] `sbc_rank` sketch breaks on scalar parameters (final-review Minor; pre-existing and
+- [x] `sbc_rank` sketch breaks on scalar parameters (final-review Minor; pre-existing and
       re-shipped verbatim by plan 20's own replacement text): in
       `skills/bayesian-workflow/references/model-criticism.md`, `draws[..., idx]` and
       `theta_true[idx]` assume a vector site — for a scalar site `draws` is 1-D and
       `theta_true[idx]` raises on a 0-d array. Fix by running it (this skill's history,
       c707a48, is a recipe that shipped unrun): e.g. `np.atleast_1d` on both, plus the scalar
       case in the prose.
+      → done 2026-09-03 (/deferred quick fix): fixed and, per the item's own instruction,
+      actually run. **The recorded remedy above is wrong — do not follow it.** `np.atleast_1d`
+      on both is a no-op on a scalar site's `(L,)` draws array, so `draws[..., idx]` still
+      indexes the *draw* axis: 200 replications returned only {0, 1} (chi2 = 1901.9, p = 0.000).
+      Shipping it verbatim would have traded a loud crash for a silently wrong SBC conclusion.
+      The fix needs a second guard, `draws.reshape(draws.shape[0], -1)`, alongside the
+      `atleast_1d`. Verified by extracting the sketch text from the edited file and executing
+      it: scalar and vector sites both return well-spread ints in [0, L]. The 11 bayesian-
+      workflow script tests still pass. Standing gap, not closed: no bundled suite covers this
+      reference file, so the recipe can regress silently again.
 
 
 ## 21-audit_9_2_26 — 2026-09-03

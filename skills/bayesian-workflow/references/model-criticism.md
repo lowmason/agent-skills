@@ -162,19 +162,24 @@ def sbc_rank(key, model, param, *model_args, L=100, idx=0):
     k_prior, k_fit = jax.random.split(key)
     # 1. draw one ground-truth parameter set + simulated data from the prior
     sim = Predictive(model, num_samples=1)(k_prior, *model_args)
-    theta_true = np.asarray(sim[param][0])   # np.asarray needed to index a JAX array
+    # np.asarray to index a JAX array; np.atleast_1d because a scalar site arrives 0-d
+    theta_true = np.atleast_1d(np.asarray(sim[param][0]))
     y_sim = sim["y_obs"][0]
     # 2. fit the model to the simulated data
     mcmc = MCMC(NUTS(model), num_warmup=500, num_samples=L, num_chains=1, progress_bar=False)
     mcmc.run(k_fit, *model_args, y=y_sim)
     draws = np.asarray(mcmc.get_samples()[param])
+    draws = draws.reshape(draws.shape[0], -1)   # scalar site -> (n_draws, 1)
     # 3. rank of the truth within the posterior draws — pick one scalar component (idx)
-    #    so the rank stays in [0, L]; a vector param would otherwise sum over all components
-    return int((draws[..., idx] < theta_true[idx]).sum())
+    #    so the rank stays in [0, L]; a vector param would otherwise sum over all components,
+    #    and a scalar site has only the one column, idx=0
+    return int((draws[:, idx] < theta_true[idx]).sum())
 
 L = 100
 ranks = np.array([sbc_rank(jax.random.PRNGKey(i), model, "beta", x, L=L) for i in range(200)])
 ```
+
+Both shape guards earn their place on a scalar site: the truth arrives 0-d, so `theta_true[idx]` raises without `np.atleast_1d`, and the draws arrive as `(L,)`, so `[..., idx]` would index the *draw* axis — ranking the truth against a single draw and returning only 0 or 1. The reshape makes those draws one column, and `idx` stays at `0`.
 
 **Read the ranks as a Δ-ECDF, not a histogram** — §14.2 presents both as the typical SBC visualizations, and the preference stated here is Säilynoja, Bürkner & Vehtari's (2022). Histogram shapes depend on the binning; the ECDF-difference plot with its simultaneous confidence band is the sharper instrument, and the same band yields a numerical pass/fail — the γ statistic, the tail probability of the most extreme ECDF deviation — for models with too many parameters to inspect by eye. In ArviZ, map ranks to PIT values and use `plot_ecdf_pit`, whose default group is `prior_sbc`:
 
