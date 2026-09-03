@@ -6,7 +6,7 @@ Model criticism answers: "Is this model any good?" Convergence diagnostics (refe
 - Posterior predictive checks (PPC)
 - Leave-one-out cross-validation (LOO-CV)
 - Calibration assessment
-- Simulation-based calibration (SBC)
+- Simulation-based calibration checking (SBC)
 - Residual analysis
 - Classification and ordinal model evaluation
 - Temporal and out-of-sample evaluation
@@ -140,14 +140,11 @@ know which plot you are looking at; the mapping below is verified by simulation)
 Avoid the word "frown" for these plots — it means ∩, which collides with the ∪ of the too-narrow
 histogram case and is the source of a long-standing contradiction in this skill's references.
 
-## Simulation-based calibration (SBC)
+## Simulation-based calibration checking (SBC)
 
-SBC validates that the entire inference pipeline is correct — priors, data model, sampler, and code. It simulates data from the prior, fits the model, and checks that posterior rank statistics are uniform. It is the gold standard for validating a new model implementation; run it once per model specification when you have doubts, since it is computationally expensive.
+SBC checks that the whole pipeline — prior, data model, NumPyro code, and sampler — is *coherent*: draw parameters from the prior, simulate data, fit, and the posterior draws should be exchangeable with the parameter that generated the data, so its rank among the posterior draws is uniform (Gelman et al. 2026, §14.1; Modrák et al. 2025). A single fit to simulated data with one "known truth" cannot do this job: a posterior is calibrated only *on average over the prior*, so one truth landing in a tail — or a bimodal posterior straddling it — proves nothing either way (§14). SBC is the standard for validating a new model implementation; it needs many fits, so run it once per model specification when you have doubts.
 
-**Mechanics** (Talts et al. 2018; Betancourt, *Principled Bayesian Workflow* §1.2): for each of
-many replications, draw a parameter `θ̃` from the prior, simulate data `ỹ` from the likelihood at
-`θ̃`, fit the model to `ỹ` to get `L` (thinned, ~independent) posterior draws, and compute the
-**rank** of `θ̃` among those draws. If computation is correct, the ranks are **uniform**.
+**Mechanics** (Talts et al. 2018; Modrák et al. 2025; Gelman et al. 2026, §14.1): for each of `S` replications, draw `θ̃` from the prior, simulate `ỹ`, fit to get `L` (thinned, ~independent) posterior draws, and record the rank of `θ̃` among them. More generally, rank a *test quantity* `T(θ̃, ỹ)` among `T(θ_l, ỹ)` — functions of parameters *and* data catch bugs a single parameter's rank misses. If everything is correct the ranks are uniform on `{0, …, L}`. When draws can tie the truth exactly (discrete quantities), break ties at random.
 
 A NumPyro sketch (roll your own; `simuk` from arviz-devs can also help):
 
@@ -169,18 +166,39 @@ def sbc_rank(key, model, param, *model_args, L=100, idx=0):
     #    so the rank stays in [0, L]; a vector param would otherwise sum over all components
     return int((draws[..., idx] < theta_true[idx]).sum())
 
-ranks = [sbc_rank(jax.random.PRNGKey(i), model, "beta", x) for i in range(200)]
-# histogram `ranks`; compare to the uniform expectation (with a binomial variation band)
+L = 100
+ranks = np.array([sbc_rank(jax.random.PRNGKey(i), model, "beta", x, L=L) for i in range(200)])
 ```
 
-**Interpretation of the rank histogram**:
-- **Uniform** → inference pipeline is correct
-- **∪-shaped (spikes at both ends)** → posterior too narrow / over-confident (underdispersed)
-- **Spike at one end** → posterior is biased (direction depends on the ranking convention)
-- **∩-shaped / ramp** → over-dispersed or persistently biased (Talts et al. 2018)
-- Systematic patterns → implementation bug, wrong prior, or sampler failure — fix before interpreting results
+**Read the ranks as a Δ-ECDF, not a histogram** (§14.2; Säilynoja, Bürkner & Vehtari 2022). Histogram shapes depend on the binning; the ECDF-difference plot with its simultaneous confidence band is the sharper instrument, and the same band yields a numerical pass/fail — the γ statistic, the tail probability of the most extreme ECDF deviation — for models with too many parameters to inspect by eye. In ArviZ, map ranks to PIT values and use `plot_ecdf_pit`, whose default group is `prior_sbc`:
 
-**When to run SBC**: developing a new model you'll reuse; complex hierarchical models where bugs are easy to introduce; custom likelihoods. Not necessary for routine analyses with standard model families.
+```python
+import arviz as az, arviz_plots as azp
+
+pit = (ranks + 0.5) / (L + 1)                                   # ranks in [0, L] -> PIT in (0, 1)
+sbc_dt = az.from_dict({"prior_sbc": {"beta": pit[None, :]}})     # (chain=1, draw=S)
+azp.plot_ecdf_pit(sbc_dt, var_names=["beta"])                    # Δ-ECDF + simultaneous band + γ p-value
+```
+
+| Δ-ECDF shape (band = 95% simultaneous) | Rank histogram equivalent | Meaning |
+|---|---|---|
+| inside the band throughout | flat | pipeline coherent for this quantity |
+| positive hump (ECDF runs ahead of uniform) | ranks pile at the low end | posterior *overestimates* — truth sits low among the draws |
+| negative hump | ranks pile at the high end | posterior *underestimates* |
+| + then − (crosses zero mid-way) | both ends piled | posterior *too narrow* — over-confident |
+| − then + | middle piled | posterior *too wide* — under-confident |
+| mostly flat, one edge shoots out of the band | a spike at one end | a subset of simulated datasets the model or sampler cannot handle — look at those reps |
+
+Avoid "cup"/"cap"/"frown" for these shapes; the histogram and the Δ-ECDF invert each other's vocabulary (see the PIT section above).
+
+**Fitting SBC into the workflow** (§14.3):
+
+- **SBC over the whole prior can waste runs.** A prior that is weakly informative for *parameters* is often wild for *data* — a logistic regression with `Normal(0, 100)` coefficients simulates datasets that are all 0s or all 1s, and checking calibration there tells you nothing about the region you care about. Either tighten the prior (joint priors where independent ones are the problem — priors.md → Sparsity priors) or **rejection-sample the prior predictive**: discard a simulated dataset by a criterion that depends only on *data* (a maximum count above some cap, an outcome sd below some floor) and redraw. A data-only criterion leaves the posterior unchanged, so SBC stays valid.
+- **Posterior SBC** (Säilynoja, Schmitt et al. 2026): once you have real data, run SBC with the *posterior* as the generating distribution. It checks the sampler where the posterior mass actually is and catches incoherent Bayesian updating — bugs in the sampler or the log-density — but cannot catch a wrong generative model, because the same code generates and fits.
+- **Too slow for hundreds of replications?** A handful still catch gross bugs: any rank of exactly `0` or `L` is already a red flag; per-rep z-scores of the truth flag the same thing; and SBC on a fast sub-model first localises the problem. A few simulations beat none.
+- **SBC as software testing.** The sketch above uses `Predictive(model)` to simulate, so it tests the *sampler* against the model as coded — it cannot detect a mis-coded likelihood, because the same code generates and fits. When the likelihood is non-trivial, write an independent NumPy simulator from the *equations* and feed its data to the NumPyro model; rank uniformity then also certifies that the two agree.
+
+**When to run SBC**: developing a new model you'll reuse; complex hierarchical models where bugs are easy to introduce; custom likelihoods; any hand-written marginalization (state-space.md). Not necessary for routine analyses with standard model families.
 
 ## Residual analysis
 
