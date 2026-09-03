@@ -5,9 +5,15 @@ cd skills/explore-data/scripts && uv run --python 3.13 --with pytest --with pola
 
 Note on the import: this directory's profile.py shadows Python's stdlib `profile`
 module. The bare import below resolves to the local file because pytest puts the
-test file's own directory first on sys.path. That is deliberate and matches every
-other scripts/ suite in this repo — but it is the reason these tests must be run
-from inside this directory, never from the repo root.
+test file's own directory first on sys.path — and it does that from any working
+directory, so the shadowing is not why these tests are run from inside this
+directory.
+
+The directory-scoped convention is repo-wide: each scripts/ suite declares its own
+inline deps (there's no root pyproject or test runner), and a repo-root collection
+fails outright, since geographic-codes and classification-codes both ship a
+test_build.py, whose basenames collide under pytest's prepend import mode with no
+__init__.py.
 """
 
 import datetime as dt

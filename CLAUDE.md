@@ -40,7 +40,7 @@ When creating or editing a skill, **follow the `writing-skills` skill** — it's
 
 ## Commands
 
-There is no root test runner or repo-wide `pyproject`, and the scientific deps (numpy, polars, pytest) aren't installed into the interpreter directly. Run everything through `uv run` pinned to the Homebrew Python 3.13, supplying deps inline. Tests use **bare imports** and are **directory-scoped** — run pytest from inside the relevant directory, not the repo root:
+There is no root test runner or repo-wide `pyproject`, and the scientific deps (numpy, polars, pytest) aren't installed into the interpreter directly. Run everything through `uv run` pinned to the Homebrew Python 3.13, supplying deps inline. Tests use **bare imports** and are **directory-scoped** — run pytest from inside the relevant directory, not the repo root: each suite pins its own inline deps, and a repo-root collection fails outright anyway, since `geographic-codes` and `classification-codes` both ship a `test_build.py` whose basenames collide under pytest's prepend import mode with no `__init__.py`.
 
 ```bash
 # Build-tooling tests (citation verifier + lints) — 36 tests
@@ -83,8 +83,8 @@ cd skills/geographic-codes/scripts && uv run --python 3.13 --with pytest --with 
 cd skills/classification-codes/scripts && uv run --python 3.13 --with pytest --with polars python -m pytest -q
 
 # explore-data profile.py tests (--json handoff contract, duplicate + quality flags) — 7 tests
-# (the --json contract is recommend-visualization's input; run from inside scripts/, since
-# profile.py shadows the stdlib `profile` module and relies on the test dir leading sys.path)
+# (the --json contract is recommend-visualization's input; profile.py shadows the stdlib
+# `profile` module, but that's not why this cd's in — see the repo-wide reason above)
 cd skills/explore-data/scripts && uv run --python 3.13 --with pytest --with polars python -m pytest -q
 
 # design-architecture ADR-scaffolder tests (numbering, slugify, no-clobber) — 8 tests (stdlib only)
