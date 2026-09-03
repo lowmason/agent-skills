@@ -162,7 +162,7 @@ The posterior predictive distribution shows what the fitted model implies the da
 
 ![PIT ECDF](pit_ecdf.png)
 
-The PIT-ECDF plot tests whether the model's predictive distribution is calibrated — that is, whether stated credible levels match empirical coverage. The empirical CDF of probability integral transform values should fall within the simultaneous confidence bands. Read its *shape*, not a global sign: in the raw PIT ECDF neither miscalibration sits wholly above or below the diagonal — both trace a sign-flipping slope that integrates to ≈0. A predictive that is too narrow runs above the diagonal in the lower half and below it in the upper half; one that is too broad mirrors that. The single-signed reading belongs to the coverage plot below. See [references/model-criticism.md](model-criticism.md).
+The PIT-ECDF plot tests whether the model's predictive distribution is calibrated — that is, whether stated credible levels match empirical coverage. It plots the difference between the empirical CDF of the probability integral transform values and the uniform reference, so a calibrated model stays near the dashed zero line; no band is drawn around it — the panel carries a uniformity-test p-value with the α it is judged against, and points are highlighted only when that test rejects. Read its *shape*, not a global sign: in the raw PIT ECDF neither miscalibration sits wholly above or below the diagonal — both trace a sign-flipping slope that integrates to ≈0. A predictive that is too narrow runs above the diagonal in the lower half and below it in the upper half; one that is too broad mirrors that. The single-signed reading belongs to the coverage plot below. See [references/model-criticism.md](model-criticism.md).
 
 ![Coverage](pit_coverage.png)
 

@@ -29,5 +29,5 @@ None are redistributed here (see the repo-root NOTICE).
   "Säilynoja, Schmitt et al. 2026".
 - Talts, Betancourt, Simpson, Vehtari & Gelman (2018), *Validating Bayesian inference
   algorithms with simulation-based calibration* — arXiv:1804.06788. Cited as "Talts et al.
-  2018" after the preprint year; the book's reference list points instead at the authors'
-  2020 revision of the same paper.
+  2018" after the preprint year; the book's reference list dates it 2020 and links the authors'
+  unpublished PDF at sites.stat.columbia.edu/gelman/research/unpublished/sbc.pdf, not arXiv.
