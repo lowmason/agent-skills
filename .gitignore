@@ -20,6 +20,10 @@ build/.scratch/
 # SDD workspace — duplicates .sdd/.gitignore's self-ignoring guard on purpose
 .sdd/
 
+# Claude Code worktrees live inside the repo, so without this an untracked
+# full checkout shows up in the main tree's status and `git add -A` commits it.
+.claude/worktrees/
+
 # Upstream skill repos cloned for review/intake comparison — foreign git
 # histories, never vendored into this tree. See specs/completed/skill-intake-review-*.md.
 review/
