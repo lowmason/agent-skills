@@ -169,6 +169,15 @@ The following skills are adapted from the "superpowers" project
 Jesse Vincent. The full upstream license text is in LICENSE-superpowers;
 modifications are by Lowell Mason and released under the same MIT terms.
 
+Vendored on 2026-06-20 (this repo's commit 2f283ae, "Add superpowers
+skills, adapted for standalone use"). Upstream's newest commit at that
+date was 896224c, "Release v6.0.3: SDD artifacts move out of the .git/
+protected path" (2026-06-18). That is a retrieval-date record, not a
+tree-by-tree comparison -- the vendored files were adapted on the way in,
+so they never matched any upstream commit byte for byte. Upstream has
+continued to move since; use the date and commit above as the starting
+point for any drift review.
+
 Changes from upstream:
   - Cross-skill references rewritten from the `superpowers:` plugin
     namespace to bare skill names (these install as standalone personal
