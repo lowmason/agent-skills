@@ -1278,3 +1278,36 @@ def test_slugify_rules():
   assert ds.slugify(None) == 'session'
   assert ds.slugify('!!! ???') == 'session'
   assert len(ds.slugify('a1b2c3d4' * 30)) == 60
+
+
+def test_reconstruct_drops_meta_records():
+  '''isMeta records are Claude Code's own bookkeeping, not conversation. The
+  drop branch had no test, so an inverted or deleted guard would have leaked
+  bookkeeping into every digest unnoticed.'''
+  records = [
+    _rec('a', None, 'user', 'real question', ts='2026-05-14T10:00:00Z'),
+    _rec('m', 'a', 'user', 'meta bookkeeping', ts='2026-05-14T10:00:01Z',
+         isMeta=True),
+  ]
+  turns = ds.reconstruct(records, include_sidechains=False)
+  assert [t['text'] for t in turns] == ['real question']
+
+
+def test_reconstruct_keeps_a_textless_compaction_record():
+  '''The `not compaction` clause in the tool-plumbing filter. A compaction
+  record with genuinely empty text and no tool calls must survive, where the
+  same record without the flag is dropped as plumbing. Existing coverage only
+  has a compaction record that also carries text, which the text check alone
+  would already keep -- so the clause itself was never exercised.'''
+  kept = ds.reconstruct(
+    [_rec('a', None, 'user', '', ts='2026-05-14T10:00:00Z',
+          isCompactSummary=True)],
+    include_sidechains=False)
+  assert len(kept) == 1
+  assert kept[0]['compaction'] is True
+  assert kept[0]['text'] == ''
+
+  dropped = ds.reconstruct(
+    [_rec('a', None, 'user', '', ts='2026-05-14T10:00:00Z')],
+    include_sidechains=False)
+  assert dropped == []
