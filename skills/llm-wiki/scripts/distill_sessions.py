@@ -41,6 +41,29 @@ def main(argv=None):
   return 1 if failures else 0
 
 
+def _ordered_by_time(turns):
+  '''Sort by timestamp while leaving undated turns where they were.
+
+  A turn with no timestamp inherits the last dated turn before it, so it
+  sorts beside its neighbour instead of jumping to the front on ''. The
+  original index breaks the resulting ties, which also pins the ordering
+  rather than leaning on list.sort's stability. A leading undated turn has
+  nothing to inherit, keeps '', and stays first -- which is where it was.
+
+  NOT a (ts, index) compound key: that was the remedy first recorded for this
+  bug and it is a no-op. Stability already handled equal timestamps, and ''
+  still sorts below every real one.
+  '''
+  keyed = []
+  carried = ''
+  for i, t in enumerate(turns):
+    if t['ts']:
+      carried = t['ts']
+    keyed.append(((carried, i), t))
+  keyed.sort(key=lambda pair: pair[0])
+  return [t for _, t in keyed]
+
+
 def reconstruct(records, include_sidechains):
   '''Ordered narrative turns. See Appendix A for the record schema.'''
   narrative = []
@@ -68,8 +91,7 @@ def reconstruct(records, include_sidechains):
       'ts': r.get('timestamp', ''),
       'req': r.get('requestId') or None,
     })
-  narrative.sort(key=lambda t: t['ts'])
-  return _number(_merge_requests(narrative))
+  return _number(_merge_requests(_ordered_by_time(narrative)))
 
 
 def _merge_requests(narrative):
@@ -224,7 +246,7 @@ def _claude_ai_turns(conversation):
       continue
     turns.append({'role': role, 'text': text, 'tools': '',
                   'compaction': False, 'ts': m.get('created_at') or ''})
-  turns.sort(key=lambda t: t['ts'])
+  turns = _ordered_by_time(turns)
   for i, t in enumerate(turns, start=1):
     t['n'] = i
   return turns

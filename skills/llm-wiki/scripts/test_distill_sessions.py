@@ -116,6 +116,47 @@ def test_reconstruct_include_sidechains_flag():
   assert len(ds.reconstruct(records, include_sidechains=True)) == 2
 
 
+def test_claude_ai_undated_turn_keeps_its_place():
+  '''An undated message must not be renumbered to the front. Turn numbers are
+  spec §16.4's locator currency for future captures, so a mid-conversation
+  message with no created_at has to stay between its neighbours.'''
+  conv = {'chat_messages': [
+    {'sender': 'human', 'text': 'first', 'created_at': '2026-05-14T10:00:00Z'},
+    {'sender': 'assistant', 'text': 'undated middle', 'created_at': ''},
+    {'sender': 'human', 'text': 'third', 'created_at': '2026-05-14T10:01:00Z'},
+  ]}
+  turns = ds._claude_ai_turns(conv)
+  assert [t['text'] for t in turns] == ['first', 'undated middle', 'third']
+  assert [t['n'] for t in turns] == [1, 2, 3]
+
+
+def test_reconstruct_undated_record_keeps_its_place():
+  '''The same defect on the claude-code path: a record with no timestamp must
+  not sort ahead of records that genuinely came first.'''
+  records = [
+    _rec('a', None, 'user', 'first', ts='2026-05-14T10:00:00Z'),
+    _rec('b', 'a', 'assistant', [{'type': 'text', 'text': 'undated middle'}],
+         ts=''),
+    _rec('c', 'b', 'user', 'third', ts='2026-05-14T10:01:00Z'),
+  ]
+  turns = ds.reconstruct(records, include_sidechains=False)
+  assert [t['text'] for t in turns] == ['first', 'undated middle', 'third']
+  assert [t['n'] for t in turns] == [1, 2, 3]
+
+
+def test_leading_undated_turn_stays_first():
+  '''Guard on the fix, not on the bug: an undated turn that really was first
+  has no dated predecessor to inherit from, so it must stay at position 1.
+  This one passes before the fix and must still pass after it.'''
+  records = [
+    _rec('a', None, 'user', 'undated opener', ts=''),
+    _rec('b', 'a', 'assistant', [{'type': 'text', 'text': 'later'}],
+         ts='2026-05-14T10:00:00Z'),
+  ]
+  turns = ds.reconstruct(records, include_sidechains=False)
+  assert [t['text'] for t in turns] == ['undated opener', 'later']
+
+
 def _session():
   return {
     'session_id': 'a3f2c9d1e5b6', 'source': 'claude-code', 'project': 'alt-nfp',
