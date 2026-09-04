@@ -417,7 +417,13 @@ def _extend_brief(path, repo, head, files, seen):
   lines = text.rstrip('\n').split('\n')
   for i, line in enumerate(lines):
     if line == 'files_walked: >':
-      lines[i + 1] = '  ' + '; '.join(walked)
+      # the block is EVERY two-space continuation line, not just the first:
+      # parse_brief folds all of them into one value, so replacing one leaves
+      # a stale tail that re-parses as duplicate walked files.
+      j = i + 1
+      while j < len(lines) and lines[j].startswith('  ') and lines[j].strip():
+        j += 1
+      lines[i + 1:j] = ['  ' + '; '.join(walked)]
       break
   _atomic_write(path, '\n'.join(lines) + '\n\n'
                 + '\n'.join(body).rstrip('\n') + '\n')

@@ -514,6 +514,28 @@ def test_same_date_rerun_with_no_new_files_is_noop(tmp_path, capsys):
   assert 'no new files' in capsys.readouterr().out
 
 
+def test_extend_rewrites_a_wrapped_files_walked_block(tmp_path, capsys):
+  '''parse_brief folds any number of two-space continuation lines into
+  files_walked, so a wrapped walk list is valid input — but the splice
+  replaced exactly lines[i + 1], leaving the stale tail behind and listing
+  files twice on re-parse.'''
+  repo, root = make_repo(tmp_path), make_root(tmp_path)
+  assert inventory(repo, root, only='specs/completed/*.md') == 0
+  brief = root / 'reports/harvest-repo-2026-07-24.md'
+  # hand-wrap the walk list across two continuation lines, as a human editor
+  # or a future wrapping writer would
+  brief.write_text(brief.read_text().replace(
+    '  specs/completed/a-spec.md\n',
+    '  specs/completed/a-spec.md;\n  specs/deferred_items.md\n'))
+  assert inventory(repo, root) == 0
+  lines = brief.read_text().split('\n')
+  i = lines.index('files_walked: >')
+  assert not lines[i + 2].startswith('  ')     # exactly one continuation line
+  header, _, _ = dsp.parse_brief(brief.read_text())
+  walked = [f.strip() for f in header['files_walked'].split(';') if f.strip()]
+  assert len(walked) == len(set(walked))       # no duplicates
+
+
 def test_only_glob_filters_walk(tmp_path):
   repo, root = make_repo(tmp_path), make_root(tmp_path)
   assert inventory(repo, root, only='specs/plans/completed/*') == 0
