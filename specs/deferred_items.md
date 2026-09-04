@@ -174,7 +174,7 @@ are used instead of line numbers because Task 8 rewrote large parts of both file
 every pre-Task-8 line reference.
 
 Robustness / edge cases:
-- [ ] `distill_sessions.py::_claude_ai_turns` sorts turns by `t['ts']` with no tiebreaker, so
+- [x] `distill_sessions.py::_claude_ai_turns` sorts turns by `t['ts']` with no tiebreaker, so
       an undated message (`ts == ''`) sorts to position 1 and gets renumbered ahead of turns
       that actually came first in the conversation. A `(ts, original_index)` compound sort key
       would preserve original order among same-timestamp or undated turns. Deferred because no
@@ -186,6 +186,18 @@ Robustness / edge cases:
       change exists among the remaining items. The condition is discharged, so
       this joins the `distill_sessions.py` plan as ordinary planned work. Still
       unticked: the decision is made, the work is not.
+      → done in plan 26. **The remedy recorded above is wrong — do not follow it.**
+      A `(ts, original_index)` key is a no-op: `list.sort` is already stable, so the
+      index changes nothing for equal timestamps, and `''` still sorts below every
+      real timestamp, so the undated turn still lands at position 1. Applying it
+      verbatim left the RED test failing with the identical wrong order (proved at
+      plan 26 Task 1 Step 3, which exists to make an implementer reproduce that
+      before fixing). The working fix is a forward-fill: `_ordered_by_time` gives an
+      undated turn its last dated predecessor's timestamp, so it sorts beside its
+      neighbour, with the original index breaking the resulting ties. A leading
+      undated turn has nothing to inherit, keeps `''`, and correctly stays first.
+      Landed at **both** sort sites — `reconstruct` (claude-code) carried the
+      byte-identical defect the item did not name.
 - [x] `distill_sessions.py::_turn_date` passes a malformed but non-empty timestamp straight
       through unvalidated — e.g. `'not-a-timestamp'` slices to `'not-a-time'`, survives the
       sentinel filter added by the Task 5/6 fixes, and becomes the digest's filename date.
@@ -229,7 +241,7 @@ Robustness / edge cases:
       a gap), never work; kept only as the not-re-litigated record.
 
 DRY / structure:
-- [ ] The sentinel-date-filtering logic (exclude `'0000-00-00'` before taking a date floor,
+- [x] The sentinel-date-filtering logic (exclude `'0000-00-00'` before taking a date floor,
       falling back to the sentinel only when every date is missing) is now duplicated
       verbatim across three sites — `iter_claude_ai`, `iter_claude_code`, and `write_digest` —
       with the `'0000-00-00'` string literal in all three. Evidence it should be a shared
@@ -237,6 +249,9 @@ DRY / structure:
       bug had to be found and fixed independently at two of the three sites (the Task 5 and
       Task 6 fixes) before the duplication was even noticed. Extracting the helper touches all
       three call sites — treat as one whole-file refactor, not a per-function patch.
+      → done in plan 26: `_real_dates(turns)` plus a `_SENTINEL_DATE` constant; the
+      literal now appears once in the file, at its definition. Behaviour-preserving —
+      the existing suite passed with no assertion edited.
 
 Test-coverage gaps:
 - [x] `test_claude_code_project_filter` asserts the resulting digest *count* (`== 1`), not
@@ -247,16 +262,24 @@ Test-coverage gaps:
       `/x/<encoded-dir-name>`, which no real session records, so `_project_name`'s cwd
       branch returned the encoded name. Mutation-verified: inverting the filter keeps
       `project: bls-stats` and still writes exactly one digest, so the old `== 1` passed.
-- [ ] `_project_name`'s no-`cwd`-fallback branch (deriving the project name from the encoded
+- [x] `_project_name`'s no-`cwd`-fallback branch (deriving the project name from the encoded
       directory name when no record in the session carries `cwd`) executes during real-corpus
       smoke runs but has no dedicated unit test asserting its output.
-- [ ] `reconstruct`'s `isMeta` drop branch (records with `isMeta: true` are skipped) has no
+      → done in plan 26: `test_project_name_falls_back_to_the_encoded_dir_name`, which also
+      pins the branch's designed lossiness (`alt-nfp` arrives as `nfp`) and cwd's precedence.
+      Mutation-checked against `return Path(cwd).name` → `return None`.
+- [x] `reconstruct`'s `isMeta` drop branch (records with `isMeta: true` are skipped) has no
       dedicated test; separately, no test exercises a compaction-flagged record with
       genuinely empty text surviving the tool-plumbing filter via the `not compaction` guard
       clause (as opposed to a compaction record that also carries text).
-- [ ] `write_digest`'s `' [compaction summary]'` marker rendering is untested — Task 4 tests
+      → done in plan 26: both halves, as `test_reconstruct_drops_meta_records` and
+      `test_reconstruct_keeps_a_textless_compaction_record` (which also pins that the same
+      record *without* the flag is dropped). Each mutation-checked against its own guard.
+- [x] `write_digest`'s `' [compaction summary]'` marker rendering is untested — Task 4 tests
       only that the `compaction` flag reaches `reconstruct`'s output, not that `write_digest`
       actually renders the marker string into a written digest body.
+      → done in plan 26: `test_write_digest_renders_the_compaction_marker` asserts the exact
+      rendered line and that an unflagged turn does not get the marker.
 - [x] Zero-turn digest writing (a session with no narrative turns still gets an empty-bodied
       digest, per §16.5's "zero is a legitimate outcome") is untested beyond the guard the
       Task 5 fix pass added; no test asserts the empty-bodied file's actual header contents
@@ -274,10 +297,18 @@ Test-coverage gaps:
       → done 2026-09-04 (/deferred quick fix): now `len(p.name) <= 83`, with the
       arithmetic recorded in the test. Mutation-verified: raising the cap to `[:200]`
       yields `assert 223 <= 83` while the old `< 255` would have passed.
-- [ ] Three Task 5 fix-pass tests construct a session with `project=None` but none asserts
+- [x] Three Task 5 fix-pass tests construct a session with `project=None` but none asserts
       `'project:'` is actually absent from the written digest body.
-- [ ] `slugify` and `_turn_date` have no test that calls them directly; both are exercised
+      → done in plan 26: all three gained the assertion. Mutation-checked by forcing the
+      frontmatter branch on, which failed **five** tests — `test_claude_ai_adapter` already
+      covered this and was not credited when the item was written.
+- [x] `slugify` and `_turn_date` have no test that calls them directly; both are exercised
       only indirectly through `write_digest`'s behavior.
+      → done in plan 26, half of it earlier: `_turn_date` gained a direct test on 2026-09-02
+      (`test_turn_date_rejects_malformed_timestamp`, from the malformed-timestamp quick fix
+      above), so only the `slugify` half was still open. Plan 26 added `test_slugify_rules`,
+      pinning the word cap, the 60-character cap and the `'session'` fallback directly —
+      its contract is cross-module, since `distill_specs.py` imports it.
 
 Cosmetic:
 - [x] A tool-only turn with no narrative text renders with a double space —
@@ -873,3 +904,15 @@ declined as YAGNI (zero instances in a one-page wiki).
       pinned as an expected ERROR). Contrived; the escape is to not bracket it. Same
       file; the fix would be a curated stop-word list or a WARN, both rejected as
       inventing contract the wiki has no content for.
+
+## 26-distill-sessions-hardening — 2026-09-04
+
+- [ ] Refresh the deployed wiki copy of `distill_sessions.py`. `~/research-wiki/scripts/
+      distill_sessions.py` was byte-identical to the repo copy before this plan and is now
+      two commits stale (the `_ordered_by_time` ordering fix and the `_real_dates`
+      extraction). It is a managed install — `bootstrap_wiki.py` `MANAGED_SCRIPTS` — so the
+      refresh is `uv run --python 3.13 skills/llm-wiki/scripts/bootstrap_wiki.py --force`
+      against the wiki root, not a hand edit. Deliberately excluded from plan 26 as a task:
+      execution would have reached outside the repo, and the timing is the owner's call.
+      **Owner-only.** Until it runs, a `lint_wiki.py`/`distill_sessions.py` run from the wiki
+      root still renumbers an undated turn to position 1.

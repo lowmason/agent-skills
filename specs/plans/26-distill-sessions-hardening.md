@@ -2,6 +2,8 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+**Status: COMPLETE (2026-09-04)** — executed via executing-plans; one item deferred in specs/deferred_items.md
+
 **Goal:** Close the seven remaining deferred items against `skills/llm-wiki/scripts/distill_sessions.py` — one ordering defect that silently renumbers turns, one three-site duplication, and five test-coverage gaps.
 
 **Architecture:** Two behavior/structure changes to the script (a shared time-ordering helper, and a shared `_real_dates` helper that retires a literal duplicated across three call sites), then four test-only tasks that pin branches and helpers currently exercised only indirectly. No new module, no new dependency, no CLI change. The digest format on disk is unchanged except for turn *numbering* in the presence of an undated turn — which is the point of Task 1.
@@ -64,7 +66,7 @@ Functions touched, in plan order: new `_ordered_by_time` + `reconstruct` + `_cla
 
 **Adds 3 tests.**
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append these three to `skills/llm-wiki/scripts/test_distill_sessions.py`, next to the other `reconstruct` tests:
 
@@ -110,7 +112,7 @@ def test_leading_undated_turn_stays_first():
   assert [t['text'] for t in turns] == ['undated opener', 'later']
 ```
 
-- [ ] **Step 2: Run the tests to verify the first two fail**
+- [x] **Step 2: Run the tests to verify the first two fail**
 
 ```bash
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest -q -k "keeps_its_place or leading_undated"
@@ -125,7 +127,7 @@ Do **not** filter on `-k "undated"`: two pre-existing tests
 `claude_ai` twin) match that substring and would muddy the count. Both were
 confirmed unaffected by this task's change.
 
-- [ ] **Step 3: Prove the remedy recorded in the backlog is a no-op**
+- [x] **Step 3: Prove the remedy recorded in the backlog is a no-op**
 
 Do not skip this. The deferred item proposes a `(ts, original_index)` compound key. Apply it temporarily at `distill_sessions.py:227`, replacing `turns.sort(key=lambda t: t['ts'])` with:
 
@@ -141,7 +143,7 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 
 Expected: still `1 failed`, with the same assertion and the same wrong order. `''` still sorts below every real timestamp, and `list.sort` was already stable, so the index changes nothing. **Revert this edit** (`git checkout -- distill_sessions.py`) before Step 4 and implement the real fix instead.
 
-- [ ] **Step 4: Write the helper**
+- [x] **Step 4: Write the helper**
 
 Insert immediately above `def reconstruct(...)` in `skills/llm-wiki/scripts/distill_sessions.py`:
 
@@ -169,7 +171,7 @@ def _ordered_by_time(turns):
   return [t for _, t in keyed]
 ```
 
-- [ ] **Step 5: Wire both call sites**
+- [x] **Step 5: Wire both call sites**
 
 In `reconstruct`, replace:
 
@@ -198,7 +200,7 @@ with:
   for i, t in enumerate(turns, start=1):
 ```
 
-- [ ] **Step 6: Run the whole suite**
+- [x] **Step 6: Run the whole suite**
 
 ```bash
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest -q
@@ -206,7 +208,7 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 
 Expected: baseline + 3, all passing. `_merge_requests`'s "only adjacent records (post-sort) merge" contract still holds — the helper returns a list in the same shape, just ordered differently.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add skills/llm-wiki/scripts/distill_sessions.py skills/llm-wiki/scripts/test_distill_sessions.py
@@ -238,7 +240,7 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 
 **Adds 1 test.** This is a behavior-preserving refactor; the existing suite is the real regression net and must stay green with no assertion changes.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `test_distill_sessions.py`:
 
@@ -257,7 +259,7 @@ def test_real_dates_drops_sentinels_and_sorts():
   assert ds._SENTINEL_DATE == '0000-00-00'
 ```
 
-- [ ] **Step 2: Run it to verify it fails**
+- [x] **Step 2: Run it to verify it fails**
 
 ```bash
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest -q -k "real_dates"
@@ -265,7 +267,7 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 
 Expected: FAIL with `AttributeError: module 'distill_sessions' has no attribute '_real_dates'`.
 
-- [ ] **Step 3: Add the constant and the helper**
+- [x] **Step 3: Add the constant and the helper**
 
 In `skills/llm-wiki/scripts/distill_sessions.py`, replace this block:
 
@@ -308,7 +310,7 @@ def _real_dates(turns):
                 if d != _SENTINEL_DATE)
 ```
 
-- [ ] **Step 4: Run the new test to verify it passes**
+- [x] **Step 4: Run the new test to verify it passes**
 
 ```bash
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest -q -k "real_dates"
@@ -316,7 +318,7 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 
 Expected: `1 passed`.
 
-- [ ] **Step 5: Replace the first call site (`iter_claude_code`)**
+- [x] **Step 5: Replace the first call site (`iter_claude_code`)**
 
 Replace:
 
@@ -333,7 +335,7 @@ with:
     first_date = real[0] if real else _SENTINEL_DATE
 ```
 
-- [ ] **Step 6: Replace the second call site (`iter_claude_ai`)**
+- [x] **Step 6: Replace the second call site (`iter_claude_ai`)**
 
 The block there is byte-identical to Step 5's. Replace it with the same two lines:
 
@@ -342,7 +344,7 @@ The block there is byte-identical to Step 5's. Replace it with the same two line
     first_date = real[0] if real else _SENTINEL_DATE
 ```
 
-- [ ] **Step 7: Replace the third call site (`write_digest`)**
+- [x] **Step 7: Replace the third call site (`write_digest`)**
 
 Replace:
 
@@ -365,7 +367,7 @@ with:
     first_date, last_date = _SENTINEL_DATE, _SENTINEL_DATE
 ```
 
-- [ ] **Step 8: Confirm the literal is gone from the logic and the suite is green**
+- [x] **Step 8: Confirm the literal is gone from the logic and the suite is green**
 
 ```bash
 cd skills/llm-wiki/scripts && grep -n "0000-00-00" distill_sessions.py
@@ -379,7 +381,7 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 
 Expected: baseline + 4 (Task 1's 3 plus this one), all passing, **with no existing assertion edited**. `test_write_digest_zero_turns_keeps_sentinel_range_f2_guard` still asserts the literal `dates: 0000-00-00/0000-00-00` in the written digest — that is the rendered output, not the logic, and must not be changed to reference the constant.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add skills/llm-wiki/scripts/distill_sessions.py skills/llm-wiki/scripts/test_distill_sessions.py
@@ -407,7 +409,7 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 
 **Adds 2 tests.** Both helpers are today exercised only indirectly (`_project_name`'s no-`cwd` branch runs on real-corpus smoke runs but has no unit test; `slugify` only through `write_digest`). `_turn_date` needs nothing — it already gained a direct test on 2026-09-02, which is why the source item is only half open.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `test_distill_sessions.py`:
 
@@ -445,7 +447,7 @@ def test_slugify_rules():
   assert len(ds.slugify('a1b2c3d4' * 30)) == 60
 ```
 
-- [ ] **Step 2: Run them**
+- [x] **Step 2: Run them**
 
 ```bash
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest -q -k "project_name_falls_back or slugify_rules"
@@ -453,7 +455,7 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 
 Expected: `2 passed`. These are characterization tests for correct existing code, so they are green on arrival — there is no RED phase to stage. Confirm they are *meaningful* with the mutation check in Step 3 instead.
 
-- [ ] **Step 3: Mutation-check both tests**
+- [x] **Step 3: Mutation-check both tests**
 
 Temporarily make each change, run the two tests, confirm the failure, then revert with `git checkout -- distill_sessions.py`.
 
@@ -462,9 +464,13 @@ Temporarily make each change, run the two tests, confirm the failure, then rever
 2. In `slugify`, change `[:60]` to `[:200]`.
    Expected: `test_slugify_rules` FAILS on `assert len(...) == 60` with `240 == 60`.
 
+   > Deviation: the observed failure is `assert 200 == 60`, not `240 == 60` — `[:200]`
+   > truncates the 240-character slug rather than leaving it whole. The prediction was
+   > wrong about the number only; the assertion bit exactly as intended.
+
 If either mutation leaves both tests green, the test is not pinning what it claims — fix the test before continuing.
 
-- [ ] **Step 4: Confirm the script is untouched and the suite is green**
+- [x] **Step 4: Confirm the script is untouched and the suite is green**
 
 ```bash
 cd skills/llm-wiki/scripts && git diff --exit-code distill_sessions.py && echo "script unchanged"
@@ -478,7 +484,7 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 
 Expected: baseline + 6.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/llm-wiki/scripts/test_distill_sessions.py
@@ -503,7 +509,7 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 
 **Adds 2 tests.** The `isMeta` drop branch has no test at all. The `not compaction` clause in the plumbing filter is only reached today by a compaction record that *also* carries text — which the text check alone would keep, so the clause itself is unexercised.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `test_distill_sessions.py`, beside the other `reconstruct` tests:
 
@@ -541,7 +547,7 @@ def test_reconstruct_keeps_a_textless_compaction_record():
   assert dropped == []
 ```
 
-- [ ] **Step 2: Run them**
+- [x] **Step 2: Run them**
 
 ```bash
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest -q -k "drops_meta or textless_compaction"
@@ -549,7 +555,7 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 
 Expected: `2 passed` — characterization tests for correct code, green on arrival. Step 3 proves they bite.
 
-- [ ] **Step 3: Mutation-check both tests**
+- [x] **Step 3: Mutation-check both tests**
 
 Temporarily make each change, run the two tests, confirm the failure, then revert with `git checkout -- distill_sessions.py`.
 
@@ -562,7 +568,7 @@ Temporarily make each change, run the two tests, confirm the failure, then rever
 2. In `reconstruct`, change `if not text and not names and not compaction:` to `if not text and not names:`.
    Expected: `test_reconstruct_keeps_a_textless_compaction_record` FAILS on `assert len(kept) == 1` with `0 == 1`.
 
-- [ ] **Step 4: Confirm the script is untouched and the suite is green**
+- [x] **Step 4: Confirm the script is untouched and the suite is green**
 
 ```bash
 cd skills/llm-wiki/scripts && git diff --exit-code distill_sessions.py && echo "script unchanged"
@@ -576,7 +582,7 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 
 Expected: baseline + 8.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/llm-wiki/scripts/test_distill_sessions.py
@@ -603,7 +609,7 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 
 **Adds 1 test** and strengthens 3 existing ones (no count change from those). Two source items are closed here: the `' [compaction summary]'` marker was never asserted in a written digest — Task 4 of the original plan only checked the flag reaching `reconstruct`'s output — and the three `project=None` fixtures never asserted `project:` is actually absent from the frontmatter.
 
-- [ ] **Step 1: Write the failing test for the marker**
+- [x] **Step 1: Write the failing test for the marker**
 
 Append to `test_distill_sessions.py`:
 
@@ -631,7 +637,7 @@ def test_write_digest_renders_the_compaction_marker(tmp_path):
   assert 'project:' not in text
 ```
 
-- [ ] **Step 2: Run it**
+- [x] **Step 2: Run it**
 
 ```bash
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest -q -k "renders_the_compaction_marker"
@@ -639,7 +645,7 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 
 Expected: `1 passed` — characterization of correct code. Step 4 proves it bites.
 
-- [ ] **Step 3: Strengthen the three `project=None` tests**
+- [x] **Step 3: Strengthen the three `project=None` tests**
 
 Each of these builds a session with `'project': None` but never checks the frontmatter omits the key. Add one assertion to each.
 
@@ -682,16 +688,20 @@ with:
   assert 'project:' not in text
 ```
 
-- [ ] **Step 4: Mutation-check both changes**
+- [x] **Step 4: Mutation-check both changes**
 
 Temporarily make each change, run the suite, confirm the failure, then revert with `git checkout -- distill_sessions.py`.
 
 1. In `write_digest`, change `if session.get('project'):` to `if True:`.
    Expected: all four tests carrying an `assert 'project:' not in text` FAIL — the frontmatter renders the literal line `project: None`.
+
+   > Deviation: **five** tests failed, not four. `test_claude_ai_adapter` already
+   > asserted on the absent project key — pre-existing coverage this plan did not
+   > credit. A wider net than predicted, not a defect.
 2. In `write_digest`, change `marker = ' [compaction summary]' if t['compaction'] else ''` to `marker = ''`.
    Expected: `test_write_digest_renders_the_compaction_marker` FAILS on the first `in text` assertion.
 
-- [ ] **Step 5: Confirm the script is untouched, the test file still holds its changes, and the suite is green**
+- [x] **Step 5: Confirm the script is untouched, the test file still holds its changes, and the suite is green**
 
 ```bash
 cd skills/llm-wiki/scripts && git diff --exit-code distill_sessions.py && echo "script unchanged"
@@ -711,11 +721,11 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 
 Expected: baseline + 9, all passing.
 
-- [ ] **Step 6: Sync the test count in `CLAUDE.md`**
+- [x] **Step 6: Sync the test count in `CLAUDE.md`**
 
 `CLAUDE.md:73` reads `# 243 tests (stdlib only; these are the scripts the bootstrap installs to a wiki)`. Replace `243` with the number `pytest -q` just reported — do not compute it, copy it from the run in Step 5. Leave the rest of the line alone.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add skills/llm-wiki/scripts/test_distill_sessions.py CLAUDE.md
@@ -772,5 +782,10 @@ cd /Users/lowell/Projects/agent-skills && git diff --stat main...HEAD
 ```
 
 Expected: exactly three files — `skills/llm-wiki/scripts/distill_sessions.py`, `skills/llm-wiki/scripts/test_distill_sessions.py`, `CLAUDE.md`. Anything else means the scope fence was crossed.
+
+> Deviation: `main...HEAD` shows **five** files. The two extra are this plan file and
+> `specs/deferred_items.md`, both committed on this branch as setup before Task 1 —
+> the expectation was written assuming they already sat on `main`. The three
+> implementation files are exactly as predicted; the fence held.
 
 **Deployed copy:** `~/research-wiki/scripts/distill_sessions.py` was byte-identical to the repo copy before this plan and is now stale by Tasks 1–2. Refreshing it is `bootstrap_wiki.py --force` at the owner's discretion, on the owner's machine — it is **not** a task in this plan and must not be done as part of execution.
