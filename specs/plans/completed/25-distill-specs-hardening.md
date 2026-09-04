@@ -1,5 +1,7 @@
 # distill_specs.py Hardening Implementation Plan
 
+**Status: COMPLETE (2026-09-04)** — executed via executing-plans; nothing deferred
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Close the nine remaining deferred hardening items against `skills/llm-wiki/scripts/distill_specs.py` — hand-edited-brief robustness, same-date accretion correctness, unguarded I/O, and rename-following for previously-seen hints.
@@ -18,7 +20,12 @@ Copied from the source items and the repo's standing conventions. Every task's r
   ```bash
   cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest -q
   ```
-  **Record the count `pytest -q` reports before Task 1 and treat it as the baseline** — do not hard-code 231. This plan's baseline assumes the /deferred quick-fix commits from 2026-09-04 are present (they add 2 tests to `test_lint_wiki.py`; the two `test_distill_sessions.py` fixes strengthened existing assertions and added no tests); on a checkout without them the absolute numbers shift. Every task states how many tests it *adds*; the count must only ever grow by exactly that many.
+  **Record the count `pytest -q` reports before Task 1 and treat it as the baseline** — do not hard-code 231. This plan's baseline assumes the /deferred quick-fix commits from 2026-09-04 are present (they add 2 tests to `test_lint_wiki.py`; the two `test_distill_sessions.py` fixes strengthened existing assertions and added no tests); on a checkout without them the absolute numbers shift.
+
+  > Deviation: as written this line named `test_distill_sessions.py` as the file
+  > gaining 2 tests. Corrected before Task 1 — the 2 new tests are in
+  > `test_lint_wiki.py` (43 → 45); the two `test_distill_sessions.py` quick fixes
+  > strengthened existing assertions and added no tests. Baseline confirmed 231. Every task states how many tests it *adds*; the count must only ever grow by exactly that many.
 - **House error style:** a hard failure prints `error: <what> (<why>)` to stderr and returns 1 from the `cmd_*` function; a non-fatal condition prints `warning: …` to stderr and continues; a brief-content defect prints `brief-error: <what>` to stderr and returns 1. Follow the style already in `cmd_inventory` / `cmd_assemble`; do not invent a new one.
 - **Write-nothing contract (framework spec §7):** `assemble` validates everything before writing anything, and `inventory` writes the brief atomically via `_atomic_write` as an all-or-nothing artifact. No task may move a write earlier than its validation gate, or leave a partial brief on disk after an error.
 - **Scope fence — one script.** The Task 8 source item offers "…or settle the convention repo-wide." This plan deliberately takes the narrower reading and guards `distill_specs.py` only. Do **not** touch `distill_sessions.py` or `lint_wiki.py`: their identical unguarded convention is out of scope and stays deferred. If you believe the repo-wide settle is required, stop and ask rather than widening.
@@ -55,7 +62,7 @@ Source item: plan 16 — "Ticked q-entries bypass the square-bracket claim check
 
 **Why this is a real defect:** `q` claims are rendered into the digest by `render_digest_entry` exactly like capture claims. `lint_wiki.py`'s `BODY_CITE_RE` reads `[word …]` in a digest body as a citation locator, so a bracketed `q` claim fabricates a citation the wiki cannot resolve. The `also`-sha gate directly above the `q` branch already carries this exact reasoning in its comment — the bracket check was simply left below the `continue`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append after `test_also_without_sha_stays_valid` (ends near line 682):
 
@@ -73,7 +80,7 @@ def test_ticked_q_entry_claim_brackets_are_reported():
   assert any('square brackets in claim' in err for err in errors)
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 ```bash
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest test_distill_specs.py::test_ticked_q_entry_claim_brackets_are_reported -v
@@ -81,7 +88,7 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 
 Expected: FAIL — `assert any(...)` is False because `errors` is empty (the `q` branch returned before the check). If it fails any other way, fix the test before continuing.
 
-- [ ] **Step 3: Hoist the check above the `q` branch**
+- [x] **Step 3: Hoist the check above the `q` branch**
 
 In `validate_entries`, immediately after the `for loc, sha in e['also']:` loop and **before** `if e['prefix'] == 'q':`, insert:
 
@@ -103,7 +110,7 @@ Then delete the now-duplicated check at the end of the function — these three 
                     '(BODY_CITE_RE discipline)')
 ```
 
-- [ ] **Step 4: Run the test and the full suite**
+- [x] **Step 4: Run the test and the full suite**
 
 ```bash
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest -q
@@ -111,7 +118,7 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 
 Expected: PASS, baseline +1, no warnings. The existing capture-claim bracket test must still pass — it proves the hoist did not lose the original behavior.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/llm-wiki/scripts/distill_specs.py skills/llm-wiki/scripts/test_distill_specs.py
@@ -142,7 +149,7 @@ Source item: plan 16 — "`_repo_name` YAML-hostile residue: a zero-ASCII-word d
 
 **Why this is a real defect:** `render_brief_header` embeds the result unquoted as `repo: {repo_name}` in the brief's YAML frontmatter. `_repo_name` already strips a leading `#` or `-` for exactly this reason. A `': '` anywhere in the name re-parses as a nested key and cannot be fixed by stripping, so it takes the same fallback the empty-after-sanitizing case takes.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append next to the other `_repo_name` tests (search for `_repo_name` in the test file and place it after the last one):
 
@@ -159,7 +166,7 @@ def test_repo_name_falls_back_when_the_raw_name_carries_a_yaml_key_sep(
   assert dsp._repo_name(repo) == 'session'
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 ```bash
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest test_distill_specs.py::test_repo_name_falls_back_when_the_raw_name_carries_a_yaml_key_sep -v
@@ -167,7 +174,7 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 
 Expected: FAIL with `AssertionError: assert 'δ: δ' == 'session'` — the raw-name branch returns the hostile name as-is.
 
-- [ ] **Step 3: Extend the fallback**
+- [x] **Step 3: Extend the fallback**
 
 Replace the last two lines of `_repo_name`:
 
@@ -190,7 +197,7 @@ with:
 
 Also extend the docstring's last sentence from "A name that sanitizes to nothing falls back to 'session'." to "A name that sanitizes to nothing — or that still carries a YAML key separator — falls back to 'session'."
 
-- [ ] **Step 4: Run the test and the full suite**
+- [x] **Step 4: Run the test and the full suite**
 
 ```bash
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest -q
@@ -198,7 +205,7 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 
 Expected: PASS, +1 over Task 1.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/llm-wiki/scripts/distill_specs.py skills/llm-wiki/scripts/test_distill_specs.py
@@ -228,7 +235,7 @@ Source item: plan 16 — "Hermetic `(also …)` render test: digest-renders-it /
 
 **This task is a characterization test, not a red-green cycle.** The behavior is already correct; what is missing is a cover that runs everywhere. So the failure you must witness is a *mutation* failure, not an initial failure. Do not "make it fail" by breaking the test.
 
-- [ ] **Step 1: Write the test**
+- [x] **Step 1: Write the test**
 
 Append after `test_also_sha_placeholder_end_to_end_reports_and_writes_nothing` (ends near line 934):
 
@@ -261,7 +268,7 @@ def test_also_location_is_digest_only(tmp_path, capsys):
   assert 'specs/plans/completed/1-a-spec.md' not in out
 ```
 
-- [ ] **Step 2: Run it and confirm it passes**
+- [x] **Step 2: Run it and confirm it passes**
 
 ```bash
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest test_distill_specs.py::test_also_location_is_digest_only -v
@@ -269,7 +276,7 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 
 Expected: PASS. It characterizes behavior that already holds.
 
-- [ ] **Step 3: Mutation-verify the digest half**
+- [x] **Step 3: Mutation-verify the digest half**
 
 In `render_digest_entry`, comment out the loop that renders also-lines:
 
@@ -282,7 +289,7 @@ In `render_digest_entry`, comment out the loop that renders also-lines:
 
 Re-run the test. Expected: FAIL on the digest assertion. Then **restore the loop** with `git checkout -- skills/llm-wiki/scripts/distill_specs.py` and re-run to confirm PASS.
 
-- [ ] **Step 4: Mutation-verify the source-body half**
+- [x] **Step 4: Mutation-verify the source-body half**
 
 In `render_source_body`, append the also-locations to each block by replacing:
 
@@ -305,7 +312,7 @@ with the same call plus a leaked also-line:
 
 Re-run the test. Expected: FAIL on the stdout assertion. Then **restore** with `git checkout -- skills/llm-wiki/scripts/distill_specs.py` and re-run to confirm PASS.
 
-- [ ] **Step 5: Run the full suite and commit**
+- [x] **Step 5: Run the full suite and commit**
 
 ```bash
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest -q
@@ -343,7 +350,7 @@ Source item: plan 16 — "All-q ticked brief edge: stdout body is a bare newline
 
 **Why this is a real defect:** a harvest yielding only open questions is legitimate grammar (pilot `q-02`). But `render_digest`'s preamble unconditionally says "Ground-truth entries for the capture notes in `wiki/sources/{stem}.md`", and `render_source_body` returns a bare `'\n'` — so the agent is told to create a capture page and handed a blank body for it.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append after `test_no_ticked_entries_is_error`:
 
@@ -367,7 +374,7 @@ def test_all_q_brief_advertises_no_capture_page(tmp_path, capsys):
   assert 'no ticked captures' in cap.err
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 ```bash
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest test_distill_specs.py::test_all_q_brief_advertises_no_capture_page -v
@@ -375,7 +382,7 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 
 Expected: FAIL on `assert 'wiki/sources/' not in digest` — the preamble names the page unconditionally.
 
-- [ ] **Step 3: Make the preamble conditional**
+- [x] **Step 3: Make the preamble conditional**
 
 In `render_digest`, delete these four entries from the end of the `fm` list literal (they sit after `'---', ''`):
 
@@ -407,7 +414,7 @@ so `fm` now ends with `'---',` then `'',` then `]`. Immediately after the `fm = 
     ]
 ```
 
-- [ ] **Step 4: Make the empty source body empty**
+- [x] **Step 4: Make the empty source body empty**
 
 In `render_source_body`, replace the final line:
 
@@ -423,7 +430,7 @@ with:
   return '\n\n'.join(blocks) + '\n' if blocks else ''
 ```
 
-- [ ] **Step 5: Say so on stderr**
+- [x] **Step 5: Say so on stderr**
 
 In `cmd_assemble`, between the source-body print and the `wrote` line, insert the note. The region becomes:
 
@@ -436,7 +443,7 @@ In `cmd_assemble`, between the source-body print and the `wrote` line, insert th
   print(f'wrote {out.relative_to(root)}', file=sys.stderr)
 ```
 
-- [ ] **Step 6: Run the test and the full suite**
+- [x] **Step 6: Run the test and the full suite**
 
 ```bash
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest -q
@@ -444,7 +451,7 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 
 Expected: PASS, +1 over Task 3. `test_assemble_golden_digest` must still pass — it has captures, so it takes the `if caps:` branch and its expected text is unchanged.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add skills/llm-wiki/scripts/distill_specs.py skills/llm-wiki/scripts/test_distill_specs.py
@@ -477,7 +484,7 @@ Both are the same failure mode — `cmd_assemble` trusting a hand-edited header 
 
 **Why these are real defects:** `render_digest` reads `header["date"]`, `header["repo"]` and `header["repo_head"]` with a hard `[]`. The write-nothing contract still holds when one is missing (the KeyError is raised before `_atomic_write`), but the operator gets a traceback where the CLI promises a `brief-error:` line. Separately, `Path('')` is `Path('.')`, so the drift check runs `git -C .` and reports the *current working directory's* HEAD as a mismatch — a foreign-HEAD warning about a repo the brief never named.
 
-- [ ] **Step 1: Write the two failing tests**
+- [x] **Step 1: Write the two failing tests**
 
 Append after the test added in Task 4:
 
@@ -510,7 +517,7 @@ def test_brief_missing_repo_path_reports_cannot_check_drift(
   assert 'post-inventory edits' not in err   # the foreign-HEAD warning
 ```
 
-- [ ] **Step 2: Run them to verify they fail**
+- [x] **Step 2: Run them to verify they fail**
 
 ```bash
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest test_distill_specs.py -k "required_header_key or cannot_check_drift" -v
@@ -518,7 +525,7 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 
 Expected: the first ERRORs with `KeyError: 'date'` raised from `render_digest`; the second FAILs because stderr carries the foreign-HEAD `post-inventory edits` warning instead. Both failures are the defects themselves.
 
-- [ ] **Step 3: Add the required-key constant**
+- [x] **Step 3: Add the required-key constant**
 
 Immediately after the `DEFERRED_FILE = 'specs/deferred_items.md'` line, add:
 
@@ -529,7 +536,7 @@ Immediately after the `DEFERRED_FILE = 'specs/deferred_items.md'` line, add:
 REQUIRED_HEADER_KEYS = ('repo', 'repo_head', 'date')
 ```
 
-- [ ] **Step 4: Check them at the gate**
+- [x] **Step 4: Check them at the gate**
 
 In `cmd_assemble`, immediately after `validate_entries(entries, errors)` and before the `if not any(e['ticked'] ...)` line, insert:
 
@@ -539,7 +546,7 @@ In `cmd_assemble`, immediately after `validate_entries(entries, errors)` and bef
       errors.append(f'brief: missing header key {key}')
 ```
 
-- [ ] **Step 5: Guard the drift check**
+- [x] **Step 5: Guard the drift check**
 
 Replace this block:
 
@@ -578,7 +585,7 @@ with:
             file=sys.stderr)
 ```
 
-- [ ] **Step 6: Run the tests and the full suite**
+- [x] **Step 6: Run the tests and the full suite**
 
 ```bash
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest -q
@@ -586,7 +593,7 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 
 Expected: PASS, +2 over Task 4.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add skills/llm-wiki/scripts/distill_specs.py skills/llm-wiki/scripts/test_distill_specs.py
@@ -618,7 +625,7 @@ Source item: plan 16 — "`files_walked:` header splice in `_extend_brief` assum
 
 **Why this is a real defect:** `parse_brief` folds *every* two-space continuation line into one header value, so a wrapped `files_walked:` block is valid input. The splice replaces exactly `lines[i + 1]`, leaving the remaining continuation lines behind — on re-parse the brief lists those files twice, and `walked += [f for f in new if f not in walked]` then dedups against a list that already contains duplicates.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append near the other extend tests (search for `no new files` to find them):
 
@@ -645,7 +652,7 @@ def test_extend_rewrites_a_wrapped_files_walked_block(tmp_path, capsys):
   assert len(walked) == len(set(walked))       # no duplicates
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 ```bash
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest test_distill_specs.py::test_extend_rewrites_a_wrapped_files_walked_block -v
@@ -653,7 +660,7 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 
 Expected: FAIL on `assert not lines[i + 2].startswith('  ')` — the stale `  specs/deferred_items.md` line survives as a second continuation line.
 
-- [ ] **Step 3: Replace the splice loop**
+- [x] **Step 3: Replace the splice loop**
 
 In `_extend_brief`, replace:
 
@@ -679,7 +686,7 @@ with:
       break
 ```
 
-- [ ] **Step 4: Run the test and the full suite**
+- [x] **Step 4: Run the test and the full suite**
 
 ```bash
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest -q
@@ -687,7 +694,7 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 
 Expected: PASS, +1 over Task 5. The existing single-line extend tests must still pass — the `while` loop consumes exactly one line in that case.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/llm-wiki/scripts/distill_specs.py skills/llm-wiki/scripts/test_distill_specs.py
@@ -720,7 +727,7 @@ Source item: plan 16 — "`_extend_brief` never renders directory-presence `note
 
 **Design note — regeneration, not accretion.** The block is rewritten from the current `notes` list, so a note that stopped being true leaves as well as a newly-true one arriving. The note block is script-generated; nothing else writes `note: ` lines at that position.
 
-- [ ] **Step 1: Write the two failing tests**
+- [x] **Step 1: Write the two failing tests**
 
 Append after the Task 6 test:
 
@@ -752,7 +759,7 @@ def test_extend_drops_a_note_that_stopped_being_true(tmp_path, capsys):
   assert 'note: specs/plans/: no .md files' not in brief.read_text()
 ```
 
-- [ ] **Step 2: Run them to verify they fail**
+- [x] **Step 2: Run them to verify they fail**
 
 ```bash
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest test_distill_specs.py -k "a_directory_that_vanished or stopped_being_true" -v
@@ -760,7 +767,7 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 
 Expected: both FAIL on their final assertion — the note block is untouched by the extend path.
 
-- [ ] **Step 3: Add the `_splice_notes` helper**
+- [x] **Step 3: Add the `_splice_notes` helper**
 
 Insert immediately above `def _extend_brief(...)`:
 
@@ -796,7 +803,7 @@ def _splice_notes(lines, notes):
   return True
 ```
 
-- [ ] **Step 4: Restructure `_extend_brief`**
+- [x] **Step 4: Restructure `_extend_brief`**
 
 Replace the whole function with:
 
@@ -845,7 +852,7 @@ def _extend_brief(path, repo, head, files, notes, seen):
 
 The `files_walked` splice is Task 6's loop verbatim — do not re-derive it. Note that `_splice_notes` inserts only *after* the closing `---`, so the `files_walked` indices found afterwards are unaffected.
 
-- [ ] **Step 5: Pass `notes` at the call site**
+- [x] **Step 5: Pass `notes` at the call site**
 
 In `cmd_inventory`, change:
 
@@ -861,7 +868,7 @@ to:
     return _extend_brief(path, repo, head, files, notes, seen)
 ```
 
-- [ ] **Step 6: Run the tests and the full suite**
+- [x] **Step 6: Run the tests and the full suite**
 
 ```bash
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest -q
@@ -869,7 +876,7 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 
 Expected: PASS, +2 over Task 6. Any existing test asserting the exact `no new files; brief unchanged` string must still pass — that branch is reached whenever the notes are unchanged, which is every prior fixture.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add skills/llm-wiki/scripts/distill_specs.py skills/llm-wiki/scripts/test_distill_specs.py
@@ -902,7 +909,7 @@ Source item: plan 16 — "Script-family hardening pass: unguarded `read_text()` 
 
 **Why this is a real defect:** a brief lists every walked file or none at all (spec §7). An unreadable spec file or a git failure mid-walk currently aborts with a traceback, and the operator cannot tell from it which file failed or whether anything was written.
 
-- [ ] **Step 1: Write the two failing tests**
+- [x] **Step 1: Write the two failing tests**
 
 Append after the Task 7 tests:
 
@@ -942,7 +949,7 @@ def test_unreadable_git_history_is_a_hard_error(tmp_path, capsys,
   assert not (root / 'reports/harvest-repo-2026-07-24.md').exists()
 ```
 
-- [ ] **Step 2: Run them to verify they fail**
+- [x] **Step 2: Run them to verify they fail**
 
 ```bash
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest test_distill_specs.py -k "unreadable_spec_file or unreadable_git_history" -v
@@ -950,7 +957,7 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 
 Expected: the first ERRORs with `PermissionError`, the second with `RuntimeError: fatal: bad object` — both propagating out of `dsp.main` as tracebacks rather than returning 1.
 
-- [ ] **Step 3: Raise a named error from the walk loop**
+- [x] **Step 3: Raise a named error from the walk loop**
 
 Replace the body of `_render_new_sections` (keep its existing docstring and append the new paragraph shown):
 
@@ -983,7 +990,7 @@ def _render_new_sections(repo, rels, seen):
   return body
 ```
 
-- [ ] **Step 4: Catch it at both call sites**
+- [x] **Step 4: Catch it at both call sites**
 
 In `_extend_brief`, replace `body = _render_new_sections(repo, new, seen)` with:
 
@@ -1007,7 +1014,7 @@ In `cmd_inventory`, replace `body += _render_new_sections(repo, files, seen)` wi
     return 1
 ```
 
-- [ ] **Step 5: Run the tests and the full suite**
+- [x] **Step 5: Run the tests and the full suite**
 
 ```bash
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest -q
@@ -1015,7 +1022,7 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 
 Expected: PASS, +2 over Task 7. Confirm `os` and `pytest` are already imported at the top of the test file (they are) — do not add imports.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add skills/llm-wiki/scripts/distill_specs.py skills/llm-wiki/scripts/test_distill_specs.py
@@ -1046,7 +1053,7 @@ Source item: plan 16 — "Renamed spec files lose `previously seen` hinting (pri
 
 **Why this is a real defect:** `seen_keys_by_file` groups prior-brief keys by the `at:` path recorded in those briefs, and `render_file_section` looks them up by the *current* walk path. `make_repo`'s own fixture history is the case: `specs/a-spec.md` retired to `specs/completed/a-spec.md` by a pure `git mv`. A brief harvested before the retirement records `at: specs/a-spec.md …`, so the next harvest renders `previously seen: - none` and the agent re-proposes a capture already declined.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append after the Task 8 tests:
 
@@ -1076,7 +1083,7 @@ def test_previously_seen_follows_a_rename(tmp_path, capsys):
   assert '- none' not in seen
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 ```bash
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest test_distill_specs.py::test_previously_seen_follows_a_rename -v
@@ -1084,7 +1091,7 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 
 Expected: FAIL on `assert 'd-01' in seen` — the section renders `previously seen:\n- none`.
 
-- [ ] **Step 3: Add `renamed_from`**
+- [x] **Step 3: Add `renamed_from`**
 
 Insert immediately after `sha_table` (before `def _classify(status):`):
 
@@ -1105,7 +1112,7 @@ def renamed_from(repo, rel):
   return olds
 ```
 
-- [ ] **Step 4: Union the old paths' keys in the walk loop**
+- [x] **Step 4: Union the old paths' keys in the walk loop**
 
 In `_render_new_sections`, replace the git block and the render call:
 
@@ -1138,7 +1145,7 @@ with:
                                 prior_keys)
 ```
 
-- [ ] **Step 5: Run the test and the full suite**
+- [x] **Step 5: Run the test and the full suite**
 
 ```bash
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest -q
@@ -1146,7 +1153,7 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 
 Expected: PASS, +1 over Task 8.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add skills/llm-wiki/scripts/distill_specs.py skills/llm-wiki/scripts/test_distill_specs.py
