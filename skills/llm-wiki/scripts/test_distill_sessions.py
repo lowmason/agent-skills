@@ -213,6 +213,7 @@ def test_write_digest_caps_long_slug_f1(tmp_path):
   # the real bound the slugify(...)[:60] cap guarantees, not just the OS limit:
   # 10 (date) + 1 + <=60 (slug) + 1 + 8 (sess8) + 3 ('.md') = 83.
   assert len(p.name) <= 83
+  assert 'project:' not in p.read_text(encoding='utf-8')
 
 
 def test_write_digest_ignores_missing_ts_in_date_range_f2(tmp_path):
@@ -234,6 +235,7 @@ def test_write_digest_ignores_missing_ts_in_date_range_f2(tmp_path):
   assert p.name.startswith('2026-05-15-')
   text = p.read_text()
   assert 'dates: 2026-05-15/2026-05-15' in text
+  assert 'project:' not in text
 
 
 def test_write_digest_zero_turns_keeps_sentinel_range_f2_guard(tmp_path):
@@ -252,6 +254,7 @@ def test_write_digest_zero_turns_keeps_sentinel_range_f2_guard(tmp_path):
   assert 'turns: 0' in text
   assert 'redactions: 0' in text
   assert '**[' not in text  # empty body: no turn lines rendered
+  assert 'project:' not in text
 
 
 def _write_jsonl(path, records):
@@ -1311,3 +1314,26 @@ def test_reconstruct_keeps_a_textless_compaction_record():
     [_rec('a', None, 'user', '', ts='2026-05-14T10:00:00Z')],
     include_sidechains=False)
   assert dropped == []
+
+
+def test_write_digest_renders_the_compaction_marker(tmp_path):
+  '''Coverage elsewhere stops at the compaction flag reaching reconstruct's
+  output. This pins the string write_digest actually renders into the body,
+  and that an unflagged turn does not get it.'''
+  out = tmp_path / 'sessions'
+  session = {
+    'session_id': 'facefeed0001', 'source': 'claude-code', 'project': None,
+    'turns': [
+      {'n': 1, 'role': 'user', 'text': 'compacted context', 'tools': '',
+       'compaction': True, 'ts': '2026-05-14T10:00:00Z'},
+      {'n': 2, 'role': 'user', 'text': 'ordinary turn', 'tools': '',
+       'compaction': False, 'ts': '2026-05-14T10:01:00Z'},
+    ],
+  }
+  p = ds.write_digest(session, out)
+  assert p is not None
+  text = p.read_text(encoding='utf-8')
+  assert '**[01] user:** [compaction summary] compacted context' in text
+  assert '**[02] user:** ordinary turn' in text
+  assert text.count('[compaction summary]') == 1
+  assert 'project:' not in text
