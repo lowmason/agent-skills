@@ -43,7 +43,10 @@ When creating or editing a skill, **follow the `writing-skills` skill** — it's
 There is no root test runner or repo-wide `pyproject`, and the scientific deps (numpy, polars, pytest) aren't installed into the interpreter directly. Run everything through `uv run` pinned to the Homebrew Python 3.13, supplying deps inline. Tests use **bare imports** and are **directory-scoped** — run pytest from inside the relevant directory, not the repo root: each suite pins its own inline deps, and a repo-root collection fails outright anyway, since `geographic-codes` and `classification-codes` both ship a `test_build.py` whose basenames collide under pytest's prepend import mode with no `__init__.py`.
 
 ```bash
-# Build-tooling tests (citation verifier + lints) — 36 tests
+# Build-tooling tests (citation verifier + lints) — 43 tests
+# (all 43 collect either way, but 5 in test_verify_citations.py need the build/.scratch/
+# ground truth — without it: 38 passed, 4 failed, 1 skipped. .scratch/ is gitignored, so a
+# fresh clone or worktree lacks it; regenerate with build/extract_structure.py, see build/CLAUDE.md)
 cd build && uv run --python 3.13 --with pytest --with numpy --with polars --with pyyaml python -m pytest -q
 
 # recommend-probabilistic-model signal-extractor tests — 10 tests
