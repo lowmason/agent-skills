@@ -595,17 +595,33 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       returns 18 files across ~10 skills — broader than the three named here, and
       each is cross-referenced by path from its SKILL.md, so normalizing them is
       churn with no behaviour change. Accepted as the repo's layout.
-- [ ] Audit H2 — `skills/geographic-codes/scripts/build.py:210` emits 7 polars
+- [x] Audit H2 — `skills/geographic-codes/scripts/build.py:210` emits 7 polars
       `FutureWarning`s through the fastexcel engine (`pl.read_excel(...).select(...)`;
       polars 2.0 changes the `from_arrow` return type). Harmless until then; the 7
       `test_parse_each_bundled_delineation_workbook[*]` cases are the canary.
       Re-run the suite when polars 2.0 lands.
-- [ ] Audit W1 — the skill-listing budget is near its cap (32 descriptions
+      → retired 2026-09-04: both halves of the premise are gone. `c2a4567` (2026-09-04)
+      added `warnings.filterwarnings('ignore', message='from_arrow', category=FutureWarning)`
+      inside `read_sheet` (`skills/geographic-codes/scripts/build.py:214`), clearing all 7;
+      and that commit's body records the latent-2.0-break the canary existed for as
+      investigated and dismissed — `read_excel` is declared `-> DataFrame` and relies on one
+      internally (it sets `df.columns` and drops null rows/cols two lines later), so polars
+      must fix it upstream and the `data/` rebuilds were never at risk.
+- [x] Audit W1 — the skill-listing budget is near its cap (32 descriptions
       ≈ 4,940 est. tokens against ≈ 5,000 at `skillListingBudgetFraction`
       0.025). All 32 fit today; the next skill likely tips it into
       drop-by-rank. Standing decision unchanged — the lever is the fraction
       (≈ 0.03) or per-project scoping, not trimming descriptions. Check
       `/context` before skill #33.
+      → retired 2026-09-04: the arithmetic is wrong in both terms, against a measurement
+      recorded in this same file. The ticked Req 12 `/context` item in section 19 reports a
+      live reading of **12.8K tokens, 1.3%** — implying a ~1M window, so 0.025 allows ~25K,
+      not the ≈ 5,000 this item compares against. That same entry records a chars/4 estimate
+      coming to ~5.1K against the real 12.8K and "badly understating" it — and chars/4 is
+      exactly this item's ≈ 4,940 numerator. Both corrections push the same way: not near
+      cap. The trigger had not fired either (`skills/` still holds 32). Retired on the
+      owner's call, with the flip condition on the record: a fresh `/context` showing a
+      ~200K window on the model actually in use would restore this item.
 - [x] Audit scorecard rubric weights were never ratified (audit "Decisions for
       you" item 5): the S dimension's 2,500-word threshold and the V evidence
       ladder are the auditor's calls. The notes column stands regardless.
