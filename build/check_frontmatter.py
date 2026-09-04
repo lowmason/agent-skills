@@ -20,7 +20,12 @@ from pathlib import Path
 import yaml
 
 REPO = Path(__file__).resolve().parent.parent
-ALLOWED_KEYS = {'name', 'description', 'license', 'allowed-tools', 'metadata', 'when_to_use', 'model', 'effort'}
+ALLOWED_KEYS = {'name', 'description', 'license', 'allowed-tools', 'metadata',
+                'when_to_use', 'model', 'effort', 'context'}
+# `fork` is the only value Claude Code documents for `context` (run the skill in
+# an isolated subagent). Any other value is a typo that silently no-ops at
+# runtime, so it fails here instead — widen this set if the spec grows one.
+CONTEXT_VALUES = frozenset({'fork'})
 NAME_RE = re.compile(r'^[a-z0-9]+(-[a-z0-9]+)*$')
 KNOWN_AGENT_TOOLS = {
     'Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit', 'WebFetch', 'WebSearch',
@@ -88,6 +93,9 @@ def check_skill(skill_dir: Path) -> list[str]:
         errs.append(f'{sk}: missing description')
     elif len(desc) > 1024:
         errs.append(f'{sk}: description is {len(desc)} chars (spec cap 1024)')
+    ctx = fm.get('context')
+    if ctx is not None and ctx not in CONTEXT_VALUES:
+        errs.append(f'{sk}: context must be one of {sorted(CONTEXT_VALUES)}, got {ctx!r}')
     for key in fm:
         if key not in ALLOWED_KEYS:
             errs.append(f'{sk}: unknown frontmatter key {key!r}')

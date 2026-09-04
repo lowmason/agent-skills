@@ -12,9 +12,10 @@ description: >
   without guards). Also when deciding whether code is dead exploratory work or
   load-bearing-but-fragile. Tuned for a Polars / NumPyro / PyMC / BLS-ETL stack.
 license: MIT
+context: fork
 metadata:
   author: Lowell Mason
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Tech Debt (research & data codebases)
@@ -59,6 +60,10 @@ than an opportunistic fix, it stops and defers here.
 
 Do the sweep mechanically, but never let the grep output *be* the report. The signal is
 cheap; the judgment is the value.
+
+This skill runs forked (`context: fork`): the sweep and triage happen in an isolated
+subagent, so the backlog you return **is** everything the main session sees. Put the full
+table inline — a pointer to reasoning that only existed inside the fork is lost.
 
 ## The sweep: signals to look for
 

@@ -100,7 +100,8 @@ skills/
 **Frontmatter (YAML):**
 - Two required fields: `name` and `description` (see [agentskills.io/specification](https://agentskills.io/specification) for all supported fields)
 - `description`: max 1024 characters — the Agent Skills spec cap, enforced by `build/check_frontmatter.py`. It applies to the description field, **not** to the whole frontmatter block; several shipped skills exceed 1024 chars of total frontmatter and pass the lint correctly.
-- Optional keys the lint accepts: `license`, `metadata`, `allowed-tools`, `when_to_use`, and the two delegation keys `model` and `effort` (per-skill overrides for the model tier and reasoning effort a skill runs at). Any other key fails `build/check_frontmatter.py`.
+- Optional keys the lint accepts: `license`, `metadata`, `allowed-tools`, `when_to_use`, the two delegation keys `model` and `effort` (per-skill overrides for the model tier and reasoning effort a skill runs at), and `context` (sole value `fork`: runs the skill in an isolated subagent, so the main session sees only what the skill returns). Any other key fails `build/check_frontmatter.py`.
+- Fork a skill whose value is a **verdict or artifact** you act on (`tech-debt` returns a prioritized backlog). Do **not** fork a skill whose value is **guidance** — it has to stay resident to shape what the main thread writes next — nor one that dispatches subagents itself, nor one with a mix of artifact and question-answering operations, since `context` is all-or-nothing per skill.
 - `name`: Use letters, numbers, and hyphens only (no parentheses, special chars)
 - `description`: Third-person, describes ONLY when to use (NOT what it does)
   - Start with "Use when..." to focus on triggering conditions

@@ -146,6 +146,27 @@ def test_model_and_effort_keys_allowed(tmp_path):
     assert check_skill(d) == []
 
 
+def test_context_fork_key_allowed(tmp_path):
+    d = make_skill(
+        tmp_path,
+        'forked-skill',
+        'name: forked-skill\ndescription: Use when testing forks.\ncontext: fork',
+    )
+    assert check_skill(d) == []
+
+
+def test_context_rejects_an_undocumented_value(tmp_path):
+    # `fork` is the only value Claude Code documents; a typo would otherwise
+    # sit in frontmatter doing nothing. Widen CONTEXT_VALUES if that changes.
+    d = make_skill(
+        tmp_path,
+        'typo-skill',
+        'name: typo-skill\ndescription: Use when testing forks.\ncontext: forked',
+    )
+    errs = '\n'.join(check_skill(d))
+    assert "context must be one of" in errs
+
+
 def test_unknown_frontmatter_key_still_rejected(tmp_path):
     d = make_skill(
         tmp_path,
