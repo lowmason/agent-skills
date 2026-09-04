@@ -536,6 +536,33 @@ def test_extend_rewrites_a_wrapped_files_walked_block(tmp_path, capsys):
   assert len(walked) == len(set(walked))       # no duplicates
 
 
+def test_extend_adds_a_note_for_a_directory_that_vanished(tmp_path, capsys):
+  '''Directory-presence notes were rendered only on the fresh-brief path, so
+  a same-date re-run left the brief asserting a directory state that no
+  longer held.'''
+  repo, root = make_repo(tmp_path), make_root(tmp_path)
+  assert inventory(repo, root, only='specs/completed/*.md') == 0
+  brief = root / 'reports/harvest-repo-2026-07-24.md'
+  assert 'note: specs/plans/completed/: absent' not in brief.read_text()
+  (repo / 'specs/plans/completed/1-a-spec.md').unlink()
+  (repo / 'specs/plans/completed').rmdir()
+  assert inventory(repo, root) == 0
+  assert 'note: specs/plans/completed/: absent' in brief.read_text()
+
+
+def test_extend_drops_a_note_that_stopped_being_true(tmp_path, capsys):
+  '''The other direction: a WALK_DIRS dir that gained a .md file between two
+  same-date runs must lose its "no .md files" note. The block is regenerated
+  from the current walk, not accreted.'''
+  repo, root = make_repo(tmp_path), make_root(tmp_path)
+  assert inventory(repo, root, only='specs/completed/*.md') == 0
+  brief = root / 'reports/harvest-repo-2026-07-24.md'
+  assert 'note: specs/plans/: no .md files' in brief.read_text()
+  (repo / 'specs/plans/live-plan.md').write_text('# Live plan\n')
+  assert inventory(repo, root) == 0
+  assert 'note: specs/plans/: no .md files' not in brief.read_text()
+
+
 def test_only_glob_filters_walk(tmp_path):
   repo, root = make_repo(tmp_path), make_root(tmp_path)
   assert inventory(repo, root, only='specs/plans/completed/*') == 0

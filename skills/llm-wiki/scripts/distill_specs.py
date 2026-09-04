@@ -395,9 +395,41 @@ def _render_new_sections(repo, rels, seen):
   return body
 
 
-def _extend_brief(path, repo, head, files, seen):
-  '''Same-date re-run (spec §7): append sections for files not yet present;
-  never overwrite or duplicate. One brief = one repo_head.'''
+def _splice_notes(lines, notes):
+  '''Regenerate the header's directory-presence note block in place.
+  Regeneration, not accretion: a note that stopped being true (a WALK_DIRS
+  dir that gained .md files) must leave, exactly as a newly-true one must
+  arrive. -> True if the block changed.
+
+  A brief with no closing '---' is malformed beyond this function's remit:
+  leave it alone rather than raising ValueError out of cmd_inventory. The
+  repo_head check above already rejects every brief this script did not
+  write, so this is a belt-and-braces guard, not a supported input.'''
+  if '---' not in lines[1:]:
+    return False
+  close = lines.index('---', 1)
+  at = close + 1
+  if at < len(lines) and lines[at] == '':
+    at += 1
+  start = at
+  while at < len(lines) and lines[at].startswith('note: '):
+    at += 1
+  end = at
+  if end > start and end < len(lines) and lines[end] == '':
+    end += 1                       # the blank line closing an existing block
+  block = [f'note: {n}' for n in notes]
+  if block:
+    block.append('')
+  if lines[start:end] == block:
+    return False
+  lines[start:end] = block
+  return True
+
+
+def _extend_brief(path, repo, head, files, notes, seen):
+  '''Same-date re-run (spec §7): append sections for files not yet present
+  and refresh the directory-presence notes; never overwrite or duplicate.
+  One brief = one repo_head.'''
   text = path.read_text()
   header, _, _ = parse_brief(text)
   if header.get('repo_head') != head:
@@ -407,14 +439,19 @@ def _extend_brief(path, repo, head, files, seen):
     return 1
   have = set(re.findall(r'^## (.+)$', text, re.M))
   new = [f for f in files if f not in have]
+  lines = text.rstrip('\n').split('\n')
+  notes_changed = _splice_notes(lines, notes)
   if not new:
+    if notes_changed:
+      _atomic_write(path, '\n'.join(lines) + '\n')
+      print(f'{path.name}: no new files; notes refreshed')
+      return 0
     print(f'{path.name}: no new files; brief unchanged')
     return 0
   body = _render_new_sections(repo, new, seen)
   walked = [f.strip() for f in header.get('files_walked', '').split(';')
             if f.strip()]
   walked += [f for f in new if f not in walked]
-  lines = text.rstrip('\n').split('\n')
   for i, line in enumerate(lines):
     if line == 'files_walked: >':
       # the block is EVERY two-space continuation line, not just the first:
@@ -577,7 +614,7 @@ def cmd_inventory(args):
   path = brief_path(root, repo_name, date)
   path.parent.mkdir(parents=True, exist_ok=True)
   if path.exists():
-    return _extend_brief(path, repo, head, files, seen)
+    return _extend_brief(path, repo, head, files, notes, seen)
   body = render_brief_header(repo_name, repo, head, root, date, files, prior)
   body += [f'note: {n}' for n in notes]
   if notes:
