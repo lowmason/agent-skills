@@ -1245,3 +1245,36 @@ def test_real_dates_drops_sentinels_and_sorts():
   assert ds._real_dates([{'ts': ''}]) == []
   assert ds._real_dates([]) == []
   assert ds._SENTINEL_DATE == '0000-00-00'
+
+
+def test_project_name_falls_back_to_the_encoded_dir_name():
+  '''The no-cwd branch. With no record carrying cwd, the project name comes
+  from the encoded directory's last segment. This branch runs on real-corpus
+  sessions but had no unit test, and it is lossy by design -- the encoded name
+  splits a hyphenated project, so alt-nfp arrives as "nfp". Pinned so the loss
+  is a recorded fact rather than a surprise, and so an inverted precedence
+  (dir name winning over cwd) cannot land unnoticed.'''
+  assert ds._project_name([], '-Users-lowell-Projects-alt-nfp') == 'nfp'
+  assert ds._project_name([{'type': 'user'}],
+                          '-Users-lowell-Projects-bls-stats') == 'stats'
+  assert ds._project_name([], 'trailing-') == 'trailing'
+  assert ds._project_name([], '') is None
+  assert ds._project_name([], None) is None
+  # cwd, when present, still wins over the encoded name
+  assert ds._project_name([{'cwd': '/Users/lowell/Projects/alt-nfp'}],
+                          '-Users-lowell-Projects-alt-nfp') == 'alt-nfp'
+
+
+def test_slugify_rules():
+  '''slugify is reached only through write_digest here, and distill_specs.py
+  imports it, so its contract is cross-module. Pin the four rules directly:
+  lowercase alphanumeric runs joined by hyphens, at most max_words words, a
+  60-character cap, and the "session" fallback when nothing survives.'''
+  assert ds.slugify('Plan the LLM wiki!') == 'plan-the-llm-wiki'
+  assert ds.slugify('one two three four five six seven') == \
+      'one-two-three-four-five-six'
+  assert ds.slugify('one two three', max_words=2) == 'one-two'
+  assert ds.slugify('') == 'session'
+  assert ds.slugify(None) == 'session'
+  assert ds.slugify('!!! ???') == 'session'
+  assert len(ds.slugify('a1b2c3d4' * 30)) == 60
