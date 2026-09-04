@@ -681,6 +681,19 @@ def test_also_without_sha_stays_valid():
   assert _validated(text) == []
 
 
+def test_ticked_q_entry_claim_brackets_are_reported():
+  '''The square-bracket claim check applies to every ticked entry: q claims
+  are rendered into the digest by render_digest_entry too, so brackets there
+  fabricate a lint_wiki BODY_CITE_RE citation exactly like a capture claim
+  would. The q branch continue'd before the check.'''
+  text = ('- [x] [q-01] Open thing\n'
+          '  at: specs/x.md L1\n'
+          '  claim: Whether [the thing] matters is unresolved.\n')
+  _, entries, errors = dsp.parse_brief(text)
+  dsp.validate_entries(entries, errors)
+  assert any('square brackets in claim' in err for err in errors)
+
+
 def test_kind_prefix_mismatch_is_reported():
   errors = _validated(_entry(eid='d-01', kind='gotcha'))
   assert any('does not match prefix' in err for err in errors)

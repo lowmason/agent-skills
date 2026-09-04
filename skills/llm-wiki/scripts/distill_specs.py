@@ -335,6 +335,13 @@ def validate_entries(entries, errors):
     for loc, sha in e['also']:
       if sha is not None and not SHA_RE.fullmatch(sha):
         errors.append(f'{e["id"]}: also sha is not a commit hash')
+    # Hoisted above the q branch for the same reason the also-sha gate is:
+    # q claims are rendered into the digest by render_digest_entry too, so a
+    # bracketed q claim fabricates a BODY_CITE_RE citation just like a
+    # bracketed capture claim.
+    if re.search(r'[\[\]]', f.get('claim', '')):
+      errors.append(f'{e["id"]}: square brackets in claim '
+                    '(BODY_CITE_RE discipline)')
     if e['prefix'] == 'q':
       for req in ('at', 'claim'):
         if not f.get(req):
@@ -360,9 +367,6 @@ def validate_entries(entries, errors):
     if f.get('boundary') == 'code-coupled':
       errors.append(f'{e["id"]}: code-coupled entries must not be ticked '
                     '(engineering stratum waits for the code-wiki root)')
-    if re.search(r'[\[\]]', f.get('claim', '')):
-      errors.append(f'{e["id"]}: square brackets in claim '
-                    '(BODY_CITE_RE discipline)')
 
 
 def _render_new_sections(repo, rels, seen):
