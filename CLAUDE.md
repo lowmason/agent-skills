@@ -70,7 +70,7 @@ cd skills/track-model-experiments/scripts && uv run --python 3.13 --with pytest 
 cd skills/bayesian-workflow/scripts && uv run --python 3.13 --with pytest --with arviz --with arviz-stats --with numpy --with xarray python -m pytest -q
 
 # llm-wiki bundled wiki-script tests (bootstrap + lint + session + specs distillers) —
-# 185 tests (stdlib only; these are the scripts the bootstrap installs to a wiki)
+# 243 tests (stdlib only; these are the scripts the bootstrap installs to a wiki)
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest -q
 
 # describe-critique-methodology decoupling-check tests — 18 tests
@@ -94,7 +94,7 @@ cd skills/explore-data/scripts && uv run --python 3.13 --with pytest --with pola
 cd skills/design-architecture/scripts && uv run --python 3.13 --with pytest python -m pytest -q
 
 # subagent-driven-development dispatch-script tests (workspace, task-brief fences and exit
-# codes, review-package, and both scripts' default-workspace output paths) — 21 tests
+# codes, review-package, and both scripts' default-workspace output paths) — 22 tests
 # (stdlib only; drives the three bash scripts as subprocesses)
 cd skills/subagent-driven-development/scripts && uv run --python 3.13 --with pytest python -m pytest -q
 
