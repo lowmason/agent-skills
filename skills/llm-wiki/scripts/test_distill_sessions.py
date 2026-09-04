@@ -169,7 +169,9 @@ def test_write_digest_caps_long_slug_f1(tmp_path):
   }
   p = ds.write_digest(session, out)
   assert p is not None
-  assert len(p.name) < 255
+  # the real bound the slugify(...)[:60] cap guarantees, not just the OS limit:
+  # 10 (date) + 1 + <=60 (slug) + 1 + 8 (sess8) + 3 ('.md') = 83.
+  assert len(p.name) <= 83
 
 
 def test_write_digest_ignores_missing_ts_in_date_range_f2(tmp_path):
@@ -284,14 +286,22 @@ def test_claude_code_since_still_excludes_fully_prior_session(tmp_path):
 
 def test_claude_code_project_filter(tmp_path):
   base = tmp_path / 'projects'
-  for name, sid in [('-Users-lowell-Projects-alt-nfp', 'aaaa1111-0000-0000-0000-000000000000'),
-                    ('-Users-lowell-Projects-bls-stats', 'bbbb2222-0000-0000-0000-000000000000')]:
+  # cwd is the real thing a session records — the encoded dir name under a stub
+  # prefix would make _project_name's cwd branch return the encoded name itself.
+  for name, sid, cwd in [
+      ('-Users-lowell-Projects-alt-nfp', 'aaaa1111-0000-0000-0000-000000000000',
+       '/Users/lowell/Projects/alt-nfp'),
+      ('-Users-lowell-Projects-bls-stats', 'bbbb2222-0000-0000-0000-000000000000',
+       '/Users/lowell/Projects/bls-stats')]:
     _write_jsonl(base / name / f'{sid}.jsonl', [
       {'type': 'user', 'uuid': 'a', 'parentUuid': None, 'timestamp': '2026-05-14T10:00:00Z',
-       'cwd': f'/x/{name}', 'message': {'role': 'user', 'content': 'hi'}}])
+       'cwd': cwd, 'message': {'role': 'user', 'content': 'hi'}}])
   out = tmp_path / 'out'
   ds.main(['--source', 'claude-code', '--project', 'alt-nfp', str(base), str(out)])
-  assert len(list(out.glob('*.md'))) == 1  # only the alt-nfp session
+  digests = list(out.glob('*.md'))
+  assert len(digests) == 1                             # only one session survived
+  # ... and it is the right one: a count alone passes under an inverted filter.
+  assert 'project: alt-nfp' in digests[0].read_text()
 
 
 def test_claude_code_bad_file_is_reported_not_fatal(tmp_path, capsys):
