@@ -143,9 +143,15 @@ def read_sheet(path: Path, sheet: str | None = None) -> pl.DataFrame:
   detection happens downstream because these workbooks carry preamble, legend, and footnote
   rows. Reading as strings keeps codes textual at the source ('0010', not 10.0) and silences
   fastexcel's dtype-inference chatter.'''
+  sheet_kwargs = {'sheet_name': sheet} if sheet else {}
   with warnings.catch_warnings():
-    warnings.simplefilter('ignore', FutureWarning)  # polars-internal from_arrow deprecation
-    sheet_kwargs = {'sheet_name': sheet} if sheet else {}
+    # polars-internal: read_excel's calamine path calls from_arrow itself
+    # (polars/io/spreadsheet/functions.py:1106), and stacklevel pins the warning to this
+    # call. read_excel is declared -> DataFrame and relies on one internally (it sets
+    # df.columns and drops null rows/cols right after), so there is no call-site fix and
+    # 2.0 must fix it upstream. Matched on message so other read_excel deprecations still
+    # surface.
+    warnings.filterwarnings('ignore', message='from_arrow', category=FutureWarning)
     raw = pl.read_excel(path, has_header=False, read_options={'dtypes': 'string'}, **sheet_kwargs)
   return raw.select(pl.all().cast(pl.Utf8))
 

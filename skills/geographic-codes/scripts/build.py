@@ -51,6 +51,7 @@ import sys
 import urllib.error
 import urllib.parse
 import urllib.request
+import warnings
 import zipfile
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
@@ -207,7 +208,16 @@ def fetch(
 
 def read_sheet(path: Path) -> pl.DataFrame:
     '''First worksheet with every cell as Utf8; header detection happens downstream.'''
-    return pl.read_excel(path, has_header=False).select(pl.all().cast(pl.Utf8))
+    with warnings.catch_warnings():
+        # polars-internal: read_excel's calamine path calls from_arrow itself
+        # (polars/io/spreadsheet/functions.py:1106), and stacklevel pins the warning to this
+        # call. read_excel is declared -> DataFrame and relies on one internally (it sets
+        # df.columns and drops null rows/cols right after), so there is no call-site fix and
+        # 2.0 must fix it upstream. Matched on message so other read_excel deprecations still
+        # surface.
+        warnings.filterwarnings('ignore', message='from_arrow', category=FutureWarning)
+        raw = pl.read_excel(path, has_header=False)
+    return raw.select(pl.all().cast(pl.Utf8))
 
 
 def frame_below_header(raw: pl.DataFrame, needles: list[str]) -> pl.DataFrame:
