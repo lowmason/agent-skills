@@ -60,12 +60,18 @@ def _repo_name(repo):
   and fall back to a sanitized raw dir name instead: strip a leading '#' or
   '-', since repo_name is embedded unquoted as `repo: {repo_name}` in the
   brief's YAML frontmatter and those lead characters mean comment / list
-  item there. A name that sanitizes to nothing falls back to 'session'.'''
+  item there. A name that sanitizes to nothing — or that still
+  carries a YAML key separator — falls back to 'session'.'''
   slug = slugify(repo.name)
   if slug != 'session' or repo.name == 'session':
     return slug
   name = repo.name.lstrip('#-').strip()
-  return name or 'session'
+  # ': ' re-parses as a nested key in `repo: {repo_name}` — the same
+  # unquoted-scalar hazard as the lead characters stripped above, but it can
+  # sit anywhere in the name, so the only safe move is the sentinel.
+  if not name or ': ' in name:
+    return 'session'
+  return name
 
 
 # Settled strata first (spec §7): completed material is stable ground truth;

@@ -256,6 +256,18 @@ def test_punctuation_only_repo_name_falls_back_to_session(tmp_path):
   assert 'repo: session\n' in brief.read_text()
 
 
+def test_repo_name_falls_back_when_the_raw_name_carries_a_yaml_key_sep(
+    tmp_path):
+  '''repo_name is embedded unquoted as `repo: {repo_name}` in the brief's
+  YAML frontmatter. A zero-ASCII-word directory name (slugify collapses to
+  the 'session' sentinel) containing ': ' would land there raw and re-parse
+  as a nested key — the same unquoted-scalar hazard the leading '#'/'-'
+  strip already guards, but not fixable by stripping.'''
+  repo = tmp_path / 'δ: δ'
+  repo.mkdir()
+  assert dsp._repo_name(repo) == 'session'
+
+
 # --- Task 2: seed grep -------------------------------------------------------
 
 SEED_DOC = '''# Doc
