@@ -79,6 +79,10 @@ def _repo_name(repo):
 # the tail (pilot: near-noise, open questions at most).
 WALK_DIRS = ('specs/completed', 'specs/plans/completed', 'specs', 'specs/plans')
 DEFERRED_FILE = 'specs/deferred_items.md'
+# render_digest and the drift check read these with a hard []; a hand-edited
+# brief missing one must fail the gate with a brief-error line, not a
+# KeyError traceback.
+REQUIRED_HEADER_KEYS = ('repo', 'repo_head', 'date')
 
 
 # Seed grep (spec §5.1). Hits are prompts for whole-file agent reading, not
@@ -590,22 +594,32 @@ def cmd_assemble(args):
           f'--root is {root} (wrong-wiki protection)', file=sys.stderr)
     return 1
   validate_entries(entries, errors)
+  for key in REQUIRED_HEADER_KEYS:
+    if not header.get(key):
+      errors.append(f'brief: missing header key {key}')
   if not any(e['ticked'] for e in entries):
     errors.append('brief: no ticked entries')
   if errors:
     for err in errors:
       print(f'brief-error: {err}', file=sys.stderr)
     return 1
-  repo_path = Path(header.get('repo_path', ''))
-  try:
-    head = _git(repo_path, 'rev-parse', '--short', 'HEAD').strip()
-    if head != header.get('repo_head'):
-      print(f'warning: {header["repo"]} HEAD {head} != brief repo_head '
-            f'{header["repo_head"]} — post-inventory edits are the wiki\'s '
-            'dated-claims staleness, not re-harvested here', file=sys.stderr)
-  except (RuntimeError, OSError):
-    print(f'warning: cannot check drift ({repo_path} unavailable)',
+  repo_path = header.get('repo_path', '')
+  if not repo_path:
+    # Path('') is Path('.'): the check would run `git -C .` and report the
+    # cwd's HEAD as a mismatch for a repo the brief never named.
+    print('warning: cannot check drift (no repo_path in brief)',
           file=sys.stderr)
+  else:
+    try:
+      head = _git(Path(repo_path), 'rev-parse', '--short', 'HEAD').strip()
+      if head != header.get('repo_head'):
+        print(f'warning: {header["repo"]} HEAD {head} != brief repo_head '
+              f'{header["repo_head"]} — post-inventory edits are the wiki\'s '
+              'dated-claims staleness, not re-harvested here',
+              file=sys.stderr)
+    except (RuntimeError, OSError):
+      print(f'warning: cannot check drift ({repo_path} unavailable)',
+            file=sys.stderr)
   stem, digest = render_digest(header, entries, brief.name)
   out = root / 'raw/specs' / f'{stem}.md'
   out.parent.mkdir(parents=True, exist_ok=True)

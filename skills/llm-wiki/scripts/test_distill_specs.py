@@ -1015,6 +1015,34 @@ def test_all_q_brief_advertises_no_capture_page(tmp_path, capsys):
   assert 'no ticked captures' in cap.err
 
 
+def test_brief_missing_a_required_header_key_is_a_brief_error(
+    tmp_path, capsys):
+  '''render_digest reads header['date'] with a hard []; a hand-edited brief
+  missing it raised KeyError. The write-nothing contract held, but the
+  operator got a traceback where the CLI promises a brief-error line.'''
+  repo, root = make_repo(tmp_path), make_root(tmp_path)
+  brief = _write_brief(root, repo, _ticked_pair(repo))
+  brief.write_text(brief.read_text().replace('date: 2026-07-24\n', ''))
+  assert assemble(brief, root) == 1
+  assert 'brief-error: brief: missing header key date' in \
+    capsys.readouterr().err
+  assert _digests(root) == []
+
+
+def test_brief_missing_repo_path_reports_cannot_check_drift(
+    tmp_path, capsys):
+  '''Path('') is Path('.'), so the drift check ran `git -C .` and reported
+  the CURRENT directory's HEAD as a mismatch — a foreign-HEAD warning about
+  a repo the brief never named.'''
+  repo, root = make_repo(tmp_path), make_root(tmp_path)
+  brief = _write_brief(root, repo, _ticked_pair(repo))
+  brief.write_text(brief.read_text().replace(f'repo_path: {repo}\n', ''))
+  assert assemble(brief, root) == 0
+  err = capsys.readouterr().err
+  assert 'warning: cannot check drift (no repo_path in brief)' in err
+  assert 'post-inventory edits' not in err   # the foreign-HEAD warning
+
+
 def test_root_mismatch_refused(tmp_path, capsys):
   repo, root = make_repo(tmp_path), make_root(tmp_path)
   other = tmp_path / 'other-wiki'
