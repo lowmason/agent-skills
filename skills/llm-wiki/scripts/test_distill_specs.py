@@ -996,6 +996,25 @@ def test_no_ticked_entries_is_error(tmp_path, capsys):
   assert _digests(root) == []
 
 
+def test_all_q_brief_advertises_no_capture_page(tmp_path, capsys):
+  '''A harvest whose only ticked entries are open questions is legitimate
+  (pilot q-02), but the digest preamble pointed at a wiki/sources page that
+  would hold no captures, and the stdout body was a bare newline the agent
+  would paste as that empty page.'''
+  repo, root = make_repo(tmp_path), make_root(tmp_path)
+  entry = ('- [x] [q-01] Open thing\n'
+           '  at: specs/deferred_items.md L3\n'
+           '  claim: Whether the later thing matters is unresolved.\n')
+  brief = _write_brief(root, repo, entry)
+  assert assemble(brief, root) == 0
+  digest = _digests(root)[0].read_text()
+  assert 'wiki/sources/' not in digest
+  assert 'Open questions only' in digest
+  cap = capsys.readouterr()
+  assert cap.out == ''
+  assert 'no ticked captures' in cap.err
+
+
 def test_root_mismatch_refused(tmp_path, capsys):
   repo, root = make_repo(tmp_path), make_root(tmp_path)
   other = tmp_path / 'other-wiki'

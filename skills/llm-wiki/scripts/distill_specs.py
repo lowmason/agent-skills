@@ -481,11 +481,23 @@ def render_digest(header, entries, brief_name):
     '  ' + '; '.join(files),
     '---',
     '',
-    f'Ground-truth entries for the capture notes in wiki/sources/{stem}.md.',
-    f'Each entry: verbatim excerpt from the {header["repo"]} file at the',
-    'stated location, introducing commit sha.',
-    '',
   ]
+  if caps:
+    fm += [
+      f'Ground-truth entries for the capture notes in wiki/sources/{stem}.md.',
+      f'Each entry: verbatim excerpt from the {header["repo"]} file at the',
+      'stated location, introducing commit sha.',
+      '',
+    ]
+  else:
+    # No ticked captures: assemble creates no wiki/sources page for this
+    # harvest, so the preamble must not send a reader to one.
+    fm += [
+      'Open questions only — this harvest produced no capture notes, and no',
+      'wiki/sources page is created for it. Each entry: a question raised by',
+      f'the {header["repo"]} specs at the stated location.',
+      '',
+    ]
   # '\n'.join leaves fm's trailing '' as a single newline; add one more so a
   # blank line separates the preamble from the first entry block.
   return stem, '\n'.join(fm) + '\n' + '\n\n'.join(blocks) + '\n'
@@ -511,7 +523,9 @@ def render_source_body(entries, repo_name):
                   f'kind: {f["kind"]}{SEP}at: {repo_name} {pos}{SEP}'
                   f'basis: git:{f["sha"]}\n'
                   + redact(f['claim'])[0])
-  return '\n\n'.join(blocks) + '\n'
+  # No blocks means no capture page: return nothing rather than a bare
+  # newline the caller would print as an empty page body.
+  return '\n\n'.join(blocks) + '\n' if blocks else ''
 
 
 def _stamp_brief(brief, stem):
@@ -598,6 +612,10 @@ def cmd_assemble(args):
   _atomic_write(out, digest)
   _stamp_brief(brief, stem)
   print(render_source_body(entries, header['repo']), end='')
+  if not any(e['ticked'] and e['prefix'] != 'q' for e in entries):
+    print('note: no ticked captures — open questions only; the digest is the '
+          'whole yield and there is no wiki/sources page to create',
+          file=sys.stderr)
   print(f'wrote {out.relative_to(root)}', file=sys.stderr)
   return 0
 
