@@ -166,6 +166,22 @@ def sha_table(repo, rel):
   return rows
 
 
+def renamed_from(repo, rel):
+  '''Historical repo-relative paths for rel, newest first, read from the same
+  --follow history sha_table walks. `previously seen` keys are grouped by the
+  at:-path recorded in prior briefs, so a spec retired between two harvests
+  (specs/x.md -> specs/completed/x.md) loses every prior hint unless its old
+  names are looked up too.'''
+  out = _git(repo, 'log', '--follow', '-M', '--name-status',
+             '--diff-filter=R', '--format=', '--', rel)
+  olds = []
+  for line in out.splitlines():
+    parts = line.split('\t')
+    if len(parts) == 3 and parts[0].startswith('R') and parts[1] not in olds:
+      olds.append(parts[1])
+  return olds
+
+
 def _classify(status):
   return 'mechanical' if status and status.startswith('R100') else 'substantive'
 
@@ -399,11 +415,18 @@ def _render_new_sections(repo, rels, seen):
       raise RuntimeError(f'cannot read {rel}: {exc}') from exc
     try:
       shas = sha_table(repo, rel)
+      olds = renamed_from(repo, rel)
     except (RuntimeError, OSError) as exc:
       raise RuntimeError(f'cannot read git history for {rel}: {exc}') from exc
+    # prior briefs key their entries by the at:-path of the day, which is the
+    # pre-rename name for anything retired since — order-preserving union so
+    # the current path's hints stay first.
+    prior_keys = list(seen.get(rel, []))
+    for old in olds:
+      prior_keys += [k for k in seen.get(old, []) if k not in prior_keys]
     body += render_file_section(rel, shas,
                                 seed_hits(text, rel == DEFERRED_FILE),
-                                seen.get(rel, []))
+                                prior_keys)
   return body
 
 

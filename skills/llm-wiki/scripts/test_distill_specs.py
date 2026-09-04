@@ -598,6 +598,31 @@ def test_unreadable_git_history_is_a_hard_error(tmp_path, capsys,
   assert not (root / 'reports/harvest-repo-2026-07-24.md').exists()
 
 
+def test_previously_seen_follows_a_rename(tmp_path, capsys):
+  '''make_repo retires specs/a-spec.md to specs/completed/a-spec.md with a
+  pure git mv. A prior brief recorded its capture under the OLD path, so the
+  new walk path found nothing and the agent lost the dedup hint entirely.'''
+  repo, root = make_repo(tmp_path), make_root(tmp_path)
+  sha = _sha(repo)
+  prior = root / 'reports/harvest-repo-2026-07-23.md'
+  prior.write_text(
+    f'---\nharvest: specs\nrepo: repo\nrepo_path: {repo}\n'
+    f'repo_head: {sha}\nroot: {root.resolve()}\ndate: 2026-07-23\n'
+    f'prior_brief: none\nfiles_walked: >\n  specs/a-spec.md\n---\n\n'
+    f'## specs/a-spec.md\n\ncaptures:\n\n'
+    f'- [x] [d-01] Use X over Y\n'
+    f'  kind: decision · boundary: transferable\n'
+    f'  at: specs/a-spec.md §1 · sha: {sha}\n'
+    f'  excerpt: "**Decision:** use X over Y."\n'
+    f'  claim: X was chosen over Y.\n')
+  assert inventory(repo, root, date='2026-07-24') == 0
+  brief = (root / 'reports/harvest-repo-2026-07-24.md').read_text()
+  section = brief.split('## specs/completed/a-spec.md', 1)[1]
+  seen = section.split('previously seen:', 1)[1].split('captures:', 1)[0]
+  assert 'd-01' in seen
+  assert '- none' not in seen
+
+
 def test_only_glob_filters_walk(tmp_path):
   repo, root = make_repo(tmp_path), make_root(tmp_path)
   assert inventory(repo, root, only='specs/plans/completed/*') == 0
