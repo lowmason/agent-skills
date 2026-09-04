@@ -272,6 +272,31 @@ def test_decision_with_basis_is_clean(tmp_path):
           if f[0] == 'ERROR' and 'basis' in f[2].lower()] == []
 
 
+def test_indented_decision_without_basis_is_error(tmp_path):
+  '''The basis check must not be disabled by leading whitespace: an indented
+  capture is still a `kind: decision` line and still needs a basis.'''
+  root = make_wiki(tmp_path)
+  write_session(root, '2026-05-14-w-d5e2.md',
+                '---\nsession: d5e2\n---\n\n'
+                '### [d-01] Something decided\n'
+                '  kind: decision · turns: 3-5\n'   # indented, no basis:
+                'Statement.\n')
+  assert any(f[0] == 'ERROR' and 'basis' in f[2].lower()
+             for f in lint_wiki.run_checks(root))
+
+
+def test_list_prefixed_decision_without_basis_is_error(tmp_path):
+  '''Same for a markdown list prefix — `- kind: decision` must not slip past.'''
+  root = make_wiki(tmp_path)
+  write_session(root, '2026-05-14-v-e6f3.md',
+                '---\nsession: e6f3\n---\n\n'
+                '### [d-01] Something decided\n'
+                '- kind: decision · turns: 3-5\n'   # list prefix, no basis:
+                'Statement.\n')
+  assert any(f[0] == 'ERROR' and 'basis' in f[2].lower()
+             for f in lint_wiki.run_checks(root))
+
+
 def test_raw_without_source_page_is_info(tmp_path):
   root = make_wiki(tmp_path)
   (root / 'raw/samplers/newpaper.pdf').write_bytes(b'%PDF-1.4 stub')

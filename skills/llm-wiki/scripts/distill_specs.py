@@ -60,12 +60,18 @@ def _repo_name(repo):
   and fall back to a sanitized raw dir name instead: strip a leading '#' or
   '-', since repo_name is embedded unquoted as `repo: {repo_name}` in the
   brief's YAML frontmatter and those lead characters mean comment / list
-  item there. A name that sanitizes to nothing falls back to 'session'.'''
+  item there. A name that sanitizes to nothing — or that still
+  carries a YAML key separator — falls back to 'session'.'''
   slug = slugify(repo.name)
   if slug != 'session' or repo.name == 'session':
     return slug
   name = repo.name.lstrip('#-').strip()
-  return name or 'session'
+  # ': ' re-parses as a nested key in `repo: {repo_name}` — the same
+  # unquoted-scalar hazard as the lead characters stripped above, but it can
+  # sit anywhere in the name, so the only safe move is the sentinel.
+  if not name or ': ' in name:
+    return 'session'
+  return name
 
 
 # Settled strata first (spec §7): completed material is stable ground truth;
@@ -73,6 +79,10 @@ def _repo_name(repo):
 # the tail (pilot: near-noise, open questions at most).
 WALK_DIRS = ('specs/completed', 'specs/plans/completed', 'specs', 'specs/plans')
 DEFERRED_FILE = 'specs/deferred_items.md'
+# render_digest and the drift check read these with a hard []; a hand-edited
+# brief missing one must fail the gate with a brief-error line, not a
+# KeyError traceback.
+REQUIRED_HEADER_KEYS = ('repo', 'repo_head', 'date')
 
 
 # Seed grep (spec §5.1). Hits are prompts for whole-file agent reading, not
@@ -154,6 +164,22 @@ def sha_table(repo, rel):
   if sha is not None:
     rows.append((sha, subject, _classify(status)))
   return rows
+
+
+def renamed_from(repo, rel):
+  '''Historical repo-relative paths for rel, newest first, read from the same
+  --follow history sha_table walks. `previously seen` keys are grouped by the
+  at:-path recorded in prior briefs, so a spec retired between two harvests
+  (specs/x.md -> specs/completed/x.md) loses every prior hint unless its old
+  names are looked up too.'''
+  out = _git(repo, 'log', '--follow', '-M', '--name-status',
+             '--diff-filter=R', '--format=', '--', rel)
+  olds = []
+  for line in out.splitlines():
+    parts = line.split('\t')
+    if len(parts) == 3 and parts[0].startswith('R') and parts[1] not in olds:
+      olds.append(parts[1])
+  return olds
 
 
 def _classify(status):
@@ -335,6 +361,13 @@ def validate_entries(entries, errors):
     for loc, sha in e['also']:
       if sha is not None and not SHA_RE.fullmatch(sha):
         errors.append(f'{e["id"]}: also sha is not a commit hash')
+    # Hoisted above the q branch for the same reason the also-sha gate is:
+    # q claims are rendered into the digest by render_digest_entry too, so a
+    # bracketed q claim fabricates a BODY_CITE_RE citation just like a
+    # bracketed capture claim.
+    if re.search(r'[\[\]]', f.get('claim', '')):
+      errors.append(f'{e["id"]}: square brackets in claim '
+                    '(BODY_CITE_RE discipline)')
     if e['prefix'] == 'q':
       for req in ('at', 'claim'):
         if not f.get(req):
@@ -360,9 +393,6 @@ def validate_entries(entries, errors):
     if f.get('boundary') == 'code-coupled':
       errors.append(f'{e["id"]}: code-coupled entries must not be ticked '
                     '(engineering stratum waits for the code-wiki root)')
-    if re.search(r'[\[\]]', f.get('claim', '')):
-      errors.append(f'{e["id"]}: square brackets in claim '
-                    '(BODY_CITE_RE discipline)')
 
 
 def _render_new_sections(repo, rels, seen):
@@ -371,19 +401,70 @@ def _render_new_sections(repo, rels, seen):
   SHA table and seed hits, and render its `## ` section. One place for both
   callers so the is_deferred flag can't drift between them (review finding:
   the extend path once called seed_hits without it, so deferred_items.md
-  rendered "- none" when it first entered the brief via that path).'''
+  rendered "- none" when it first entered the brief via that path).
+
+  Raises RuntimeError naming the offending file when a spec file or its git
+  history cannot be read: the brief lists every walked file or none at all
+  (spec §7), so a mid-walk failure must reach the cmd_* caller as the house
+  error line, not a traceback.'''
   body = []
   for rel in rels:
-    text = (repo / rel).read_text()
-    body += render_file_section(rel, sha_table(repo, rel),
+    try:
+      text = (repo / rel).read_text()
+    except (OSError, UnicodeDecodeError) as exc:
+      raise RuntimeError(f'cannot read {rel}: {exc}') from exc
+    try:
+      shas = sha_table(repo, rel)
+      olds = renamed_from(repo, rel)
+    except (RuntimeError, OSError) as exc:
+      raise RuntimeError(f'cannot read git history for {rel}: {exc}') from exc
+    # prior briefs key their entries by the at:-path of the day, which is the
+    # pre-rename name for anything retired since — order-preserving union so
+    # the current path's hints stay first.
+    prior_keys = list(seen.get(rel, []))
+    for old in olds:
+      prior_keys += [k for k in seen.get(old, []) if k not in prior_keys]
+    body += render_file_section(rel, shas,
                                 seed_hits(text, rel == DEFERRED_FILE),
-                                seen.get(rel, []))
+                                prior_keys)
   return body
 
 
-def _extend_brief(path, repo, head, files, seen):
-  '''Same-date re-run (spec §7): append sections for files not yet present;
-  never overwrite or duplicate. One brief = one repo_head.'''
+def _splice_notes(lines, notes):
+  '''Regenerate the header's directory-presence note block in place.
+  Regeneration, not accretion: a note that stopped being true (a WALK_DIRS
+  dir that gained .md files) must leave, exactly as a newly-true one must
+  arrive. -> True if the block changed.
+
+  A brief with no closing '---' is malformed beyond this function's remit:
+  leave it alone rather than raising ValueError out of cmd_inventory. The
+  repo_head check above already rejects every brief this script did not
+  write, so this is a belt-and-braces guard, not a supported input.'''
+  if '---' not in lines[1:]:
+    return False
+  close = lines.index('---', 1)
+  at = close + 1
+  if at < len(lines) and lines[at] == '':
+    at += 1
+  start = at
+  while at < len(lines) and lines[at].startswith('note: '):
+    at += 1
+  end = at
+  if end > start and end < len(lines) and lines[end] == '':
+    end += 1                       # the blank line closing an existing block
+  block = [f'note: {n}' for n in notes]
+  if block:
+    block.append('')
+  if lines[start:end] == block:
+    return False
+  lines[start:end] = block
+  return True
+
+
+def _extend_brief(path, repo, head, files, notes, seen):
+  '''Same-date re-run (spec §7): append sections for files not yet present
+  and refresh the directory-presence notes; never overwrite or duplicate.
+  One brief = one repo_head.'''
   text = path.read_text()
   header, _, _ = parse_brief(text)
   if header.get('repo_head') != head:
@@ -393,17 +474,33 @@ def _extend_brief(path, repo, head, files, seen):
     return 1
   have = set(re.findall(r'^## (.+)$', text, re.M))
   new = [f for f in files if f not in have]
+  lines = text.rstrip('\n').split('\n')
+  notes_changed = _splice_notes(lines, notes)
   if not new:
+    if notes_changed:
+      _atomic_write(path, '\n'.join(lines) + '\n')
+      print(f'{path.name}: no new files; notes refreshed')
+      return 0
     print(f'{path.name}: no new files; brief unchanged')
     return 0
-  body = _render_new_sections(repo, new, seen)
+  try:
+    body = _render_new_sections(repo, new, seen)
+  except RuntimeError as exc:
+    print(f'error: {exc}; the brief lists every walked file or none',
+          file=sys.stderr)
+    return 1
   walked = [f.strip() for f in header.get('files_walked', '').split(';')
             if f.strip()]
   walked += [f for f in new if f not in walked]
-  lines = text.rstrip('\n').split('\n')
   for i, line in enumerate(lines):
     if line == 'files_walked: >':
-      lines[i + 1] = '  ' + '; '.join(walked)
+      # the block is EVERY two-space continuation line, not just the first:
+      # parse_brief folds all of them into one value, so replacing one leaves
+      # a stale tail that re-parses as duplicate walked files.
+      j = i + 1
+      while j < len(lines) and lines[j].startswith('  ') and lines[j].strip():
+        j += 1
+      lines[i + 1:j] = ['  ' + '; '.join(walked)]
       break
   _atomic_write(path, '\n'.join(lines) + '\n\n'
                 + '\n'.join(body).rstrip('\n') + '\n')
@@ -471,11 +568,23 @@ def render_digest(header, entries, brief_name):
     '  ' + '; '.join(files),
     '---',
     '',
-    f'Ground-truth entries for the capture notes in wiki/sources/{stem}.md.',
-    f'Each entry: verbatim excerpt from the {header["repo"]} file at the',
-    'stated location, introducing commit sha.',
-    '',
   ]
+  if caps:
+    fm += [
+      f'Ground-truth entries for the capture notes in wiki/sources/{stem}.md.',
+      f'Each entry: verbatim excerpt from the {header["repo"]} file at the',
+      'stated location, introducing commit sha.',
+      '',
+    ]
+  else:
+    # No ticked captures: assemble creates no wiki/sources page for this
+    # harvest, so the preamble must not send a reader to one.
+    fm += [
+      'Open questions only — this harvest produced no capture notes, and no',
+      'wiki/sources page is created for it. Each entry: a question raised by',
+      f'the {header["repo"]} specs at the stated location.',
+      '',
+    ]
   # '\n'.join leaves fm's trailing '' as a single newline; add one more so a
   # blank line separates the preamble from the first entry block.
   return stem, '\n'.join(fm) + '\n' + '\n\n'.join(blocks) + '\n'
@@ -501,7 +610,9 @@ def render_source_body(entries, repo_name):
                   f'kind: {f["kind"]}{SEP}at: {repo_name} {pos}{SEP}'
                   f'basis: git:{f["sha"]}\n'
                   + redact(f['claim'])[0])
-  return '\n\n'.join(blocks) + '\n'
+  # No blocks means no capture page: return nothing rather than a bare
+  # newline the caller would print as an empty page body.
+  return '\n\n'.join(blocks) + '\n' if blocks else ''
 
 
 def _stamp_brief(brief, stem):
@@ -543,12 +654,17 @@ def cmd_inventory(args):
   path = brief_path(root, repo_name, date)
   path.parent.mkdir(parents=True, exist_ok=True)
   if path.exists():
-    return _extend_brief(path, repo, head, files, seen)
+    return _extend_brief(path, repo, head, files, notes, seen)
   body = render_brief_header(repo_name, repo, head, root, date, files, prior)
   body += [f'note: {n}' for n in notes]
   if notes:
     body.append('')
-  body += _render_new_sections(repo, files, seen)
+  try:
+    body += _render_new_sections(repo, files, seen)
+  except RuntimeError as exc:
+    print(f'error: {exc}; the brief lists every walked file or none',
+          file=sys.stderr)
+    return 1
   _atomic_write(path, '\n'.join(body).rstrip('\n') + '\n')
   print(f'wrote {path}')
   return 0
@@ -566,28 +682,42 @@ def cmd_assemble(args):
           f'--root is {root} (wrong-wiki protection)', file=sys.stderr)
     return 1
   validate_entries(entries, errors)
+  for key in REQUIRED_HEADER_KEYS:
+    if not header.get(key):
+      errors.append(f'brief: missing header key {key}')
   if not any(e['ticked'] for e in entries):
     errors.append('brief: no ticked entries')
   if errors:
     for err in errors:
       print(f'brief-error: {err}', file=sys.stderr)
     return 1
-  repo_path = Path(header.get('repo_path', ''))
-  try:
-    head = _git(repo_path, 'rev-parse', '--short', 'HEAD').strip()
-    if head != header.get('repo_head'):
-      print(f'warning: {header["repo"]} HEAD {head} != brief repo_head '
-            f'{header["repo_head"]} — post-inventory edits are the wiki\'s '
-            'dated-claims staleness, not re-harvested here', file=sys.stderr)
-  except (RuntimeError, OSError):
-    print(f'warning: cannot check drift ({repo_path} unavailable)',
+  repo_path = header.get('repo_path', '')
+  if not repo_path:
+    # Path('') is Path('.'): the check would run `git -C .` and report the
+    # cwd's HEAD as a mismatch for a repo the brief never named.
+    print('warning: cannot check drift (no repo_path in brief)',
           file=sys.stderr)
+  else:
+    try:
+      head = _git(Path(repo_path), 'rev-parse', '--short', 'HEAD').strip()
+      if head != header.get('repo_head'):
+        print(f'warning: {header["repo"]} HEAD {head} != brief repo_head '
+              f'{header["repo_head"]} — post-inventory edits are the wiki\'s '
+              'dated-claims staleness, not re-harvested here',
+              file=sys.stderr)
+    except (RuntimeError, OSError):
+      print(f'warning: cannot check drift ({repo_path} unavailable)',
+            file=sys.stderr)
   stem, digest = render_digest(header, entries, brief.name)
   out = root / 'raw/specs' / f'{stem}.md'
   out.parent.mkdir(parents=True, exist_ok=True)
   _atomic_write(out, digest)
   _stamp_brief(brief, stem)
   print(render_source_body(entries, header['repo']), end='')
+  if not any(e['ticked'] and e['prefix'] != 'q' for e in entries):
+    print('note: no ticked captures — open questions only; the digest is the '
+          'whole yield and there is no wiki/sources page to create',
+          file=sys.stderr)
   print(f'wrote {out.relative_to(root)}', file=sys.stderr)
   return 0
 

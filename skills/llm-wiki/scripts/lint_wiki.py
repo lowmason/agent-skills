@@ -242,7 +242,11 @@ SECRET_PATTERNS = [
     r'(?i)(password|secret|token)\s*[:=]\s*[\'"]?[A-Za-z0-9/+_-]{12,}')),
 ]
 # `kind: decision` capture metadata line must carry an approved basis.
-DECISION_META_RE = re.compile(r'^kind:\s*decision\b(.*)$', re.M)
+# Leading whitespace and a markdown list bullet are tolerated: an indented or
+# bulleted capture is still a decision line, and anchoring hard at column 0
+# silently disabled the basis check for it.
+DECISION_META_RE = re.compile(
+  r'^[ \t]*(?:[-*+][ \t]+)?kind:\s*decision\b(.*)$', re.M)
 BASIS_OK_RE = re.compile(r'basis:\s*(user-turn|git:[0-9a-f]{7,40})')
 
 

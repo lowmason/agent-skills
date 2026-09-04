@@ -256,6 +256,18 @@ def test_punctuation_only_repo_name_falls_back_to_session(tmp_path):
   assert 'repo: session\n' in brief.read_text()
 
 
+def test_repo_name_falls_back_when_the_raw_name_carries_a_yaml_key_sep(
+    tmp_path):
+  '''repo_name is embedded unquoted as `repo: {repo_name}` in the brief's
+  YAML frontmatter. A zero-ASCII-word directory name (slugify collapses to
+  the 'session' sentinel) containing ': ' would land there raw and re-parse
+  as a nested key — the same unquoted-scalar hazard the leading '#'/'-'
+  strip already guards, but not fixable by stripping.'''
+  repo = tmp_path / 'δ: δ'
+  repo.mkdir()
+  assert dsp._repo_name(repo) == 'session'
+
+
 # --- Task 2: seed grep -------------------------------------------------------
 
 SEED_DOC = '''# Doc
@@ -502,6 +514,115 @@ def test_same_date_rerun_with_no_new_files_is_noop(tmp_path, capsys):
   assert 'no new files' in capsys.readouterr().out
 
 
+def test_extend_rewrites_a_wrapped_files_walked_block(tmp_path, capsys):
+  '''parse_brief folds any number of two-space continuation lines into
+  files_walked, so a wrapped walk list is valid input — but the splice
+  replaced exactly lines[i + 1], leaving the stale tail behind and listing
+  files twice on re-parse.'''
+  repo, root = make_repo(tmp_path), make_root(tmp_path)
+  assert inventory(repo, root, only='specs/completed/*.md') == 0
+  brief = root / 'reports/harvest-repo-2026-07-24.md'
+  # hand-wrap the walk list across two continuation lines, as a human editor
+  # or a future wrapping writer would
+  brief.write_text(brief.read_text().replace(
+    '  specs/completed/a-spec.md\n',
+    '  specs/completed/a-spec.md;\n  specs/deferred_items.md\n'))
+  assert inventory(repo, root) == 0
+  lines = brief.read_text().split('\n')
+  i = lines.index('files_walked: >')
+  assert not lines[i + 2].startswith('  ')     # exactly one continuation line
+  header, _, _ = dsp.parse_brief(brief.read_text())
+  walked = [f.strip() for f in header['files_walked'].split(';') if f.strip()]
+  assert len(walked) == len(set(walked))       # no duplicates
+
+
+def test_extend_adds_a_note_for_a_directory_that_vanished(tmp_path, capsys):
+  '''Directory-presence notes were rendered only on the fresh-brief path, so
+  a same-date re-run left the brief asserting a directory state that no
+  longer held.'''
+  repo, root = make_repo(tmp_path), make_root(tmp_path)
+  assert inventory(repo, root, only='specs/completed/*.md') == 0
+  brief = root / 'reports/harvest-repo-2026-07-24.md'
+  assert 'note: specs/plans/completed/: absent' not in brief.read_text()
+  (repo / 'specs/plans/completed/1-a-spec.md').unlink()
+  (repo / 'specs/plans/completed').rmdir()
+  assert inventory(repo, root) == 0
+  assert 'note: specs/plans/completed/: absent' in brief.read_text()
+
+
+def test_extend_drops_a_note_that_stopped_being_true(tmp_path, capsys):
+  '''The other direction: a WALK_DIRS dir that gained a .md file between two
+  same-date runs must lose its "no .md files" note. The block is regenerated
+  from the current walk, not accreted.'''
+  repo, root = make_repo(tmp_path), make_root(tmp_path)
+  assert inventory(repo, root, only='specs/completed/*.md') == 0
+  brief = root / 'reports/harvest-repo-2026-07-24.md'
+  assert 'note: specs/plans/: no .md files' in brief.read_text()
+  (repo / 'specs/plans/live-plan.md').write_text('# Live plan\n')
+  assert inventory(repo, root) == 0
+  assert 'note: specs/plans/: no .md files' not in brief.read_text()
+
+
+@pytest.mark.skipif(os.geteuid() == 0, reason='root bypasses chmod')
+def test_unreadable_spec_file_is_a_hard_error_not_a_traceback(
+    tmp_path, capsys):
+  '''The walk loop read each file unguarded: one unreadable file aborted the
+  inventory with a traceback instead of the house error line, and the brief
+  is all-or-nothing (spec §7) so no partial one may survive.'''
+  repo, root = make_repo(tmp_path), make_root(tmp_path)
+  target = repo / 'specs/completed/a-spec.md'
+  target.chmod(0o000)
+  try:
+    assert inventory(repo, root) == 1
+  finally:
+    target.chmod(0o644)
+  assert 'error: cannot read specs/completed/a-spec.md' in \
+    capsys.readouterr().err
+  assert not (root / 'reports/harvest-repo-2026-07-24.md').exists()
+
+
+def test_unreadable_git_history_is_a_hard_error(tmp_path, capsys,
+                                                monkeypatch):
+  '''sha_table's _git call was unguarded too. Monkeypatched at the seam
+  rather than faked with a corrupt repo: making git fail for ONE file
+  mid-walk while the repo-level HEAD check still passes is not arrangeable
+  hermetically, and the seam is the thing under test.'''
+  repo, root = make_repo(tmp_path), make_root(tmp_path)
+
+  def boom(repo_, rel):
+    raise RuntimeError('fatal: bad object')
+
+  monkeypatch.setattr(dsp, 'sha_table', boom)
+  assert inventory(repo, root) == 1
+  assert 'error: cannot read git history for' in capsys.readouterr().err
+  assert not (root / 'reports/harvest-repo-2026-07-24.md').exists()
+
+
+def test_previously_seen_follows_a_rename(tmp_path, capsys):
+  '''make_repo retires specs/a-spec.md to specs/completed/a-spec.md with a
+  pure git mv. A prior brief recorded its capture under the OLD path, so the
+  new walk path found nothing and the agent lost the dedup hint entirely.'''
+  repo, root = make_repo(tmp_path), make_root(tmp_path)
+  sha = _sha(repo)
+  prior = root / 'reports/harvest-repo-2026-07-23.md'
+  prior.write_text(
+    f'---\nharvest: specs\nrepo: repo\nrepo_path: {repo}\n'
+    f'repo_head: {sha}\nroot: {root.resolve()}\ndate: 2026-07-23\n'
+    f'prior_brief: none\nfiles_walked: >\n  specs/a-spec.md\n---\n\n'
+    f'## specs/a-spec.md\n\ncaptures:\n\n'
+    f'- [x] [d-01] Use X over Y\n'
+    f'  kind: decision · boundary: transferable\n'
+    f'  at: specs/a-spec.md §1 · sha: {sha}\n'
+    f'  excerpt: "**Decision:** use X over Y."\n'
+    f'  claim: X was chosen over Y.\n')
+  assert inventory(repo, root, date='2026-07-24') == 0
+  brief = (root / 'reports/harvest-repo-2026-07-24.md').read_text()
+  section = brief.split('## specs/completed/a-spec.md', 1)[1]
+  seen = section.split('previously seen:', 1)[1].split('captures:', 1)[0]
+  assert 'd-01' in seen
+  assert '- none' not in seen
+
+
 def test_only_glob_filters_walk(tmp_path):
   repo, root = make_repo(tmp_path), make_root(tmp_path)
   assert inventory(repo, root, only='specs/plans/completed/*') == 0
@@ -679,6 +800,19 @@ def test_also_without_sha_stays_valid():
           '  excerpt: "x"\n'
           '  claim: A claim.\n')
   assert _validated(text) == []
+
+
+def test_ticked_q_entry_claim_brackets_are_reported():
+  '''The square-bracket claim check applies to every ticked entry: q claims
+  are rendered into the digest by render_digest_entry too, so brackets there
+  fabricate a lint_wiki BODY_CITE_RE citation exactly like a capture claim
+  would. The q branch continue'd before the check.'''
+  text = ('- [x] [q-01] Open thing\n'
+          '  at: specs/x.md L1\n'
+          '  claim: Whether [the thing] matters is unresolved.\n')
+  _, entries, errors = dsp.parse_brief(text)
+  dsp.validate_entries(entries, errors)
+  assert any('square brackets in claim' in err for err in errors)
 
 
 def test_kind_prefix_mismatch_is_reported():
@@ -934,6 +1068,34 @@ def test_also_sha_placeholder_end_to_end_reports_and_writes_nothing(
   assert 'assembled:' not in brief.read_text()
 
 
+def test_also_location_is_digest_only(tmp_path, capsys):
+  '''Framework spec §5.3: (also …) locations ride in the digest and are
+  dropped from the wiki/sources capture-note body. Until now that asymmetry
+  was pinned only by the @needs_pilot round-trip tests, which skip on every
+  machine without the pilot reference wiki — i.e. in CI and on a fresh
+  clone. Not redundant with
+  test_planted_secret_in_title_at_and_also_never_reaches_sinks: that one
+  carries an (also …) line but asserts only that its secret is REDACTED,
+  never that the location rides in the digest and is dropped from stdout.'''
+  repo, root = make_repo(tmp_path), make_root(tmp_path)
+  sha = _sha(repo)
+  entry = (f'- [x] [d-01] Use X over Y\n'
+           f'  kind: decision · boundary: transferable\n'
+           f'  at: specs/completed/a-spec.md §1 · sha: {sha}\n'
+           f'  (also specs/plans/completed/1-a-spec.md L4)\n'
+           f'  excerpt: "**Decision:** use X over Y."\n'
+           f'  claim: X was chosen over Y.\n')
+  brief = _write_brief(root, repo, entry)
+  assert assemble(brief, root) == 0
+  digest = _digests(root)[0].read_text()
+  out = capsys.readouterr().out
+  assert '  (also specs/plans/completed/1-a-spec.md L4)' in digest
+  # assert the body was produced at all, so an unrelated change that empties
+  # stdout cannot satisfy the omission assertion below by accident
+  assert '### [d-01]' in out
+  assert 'specs/plans/completed/1-a-spec.md' not in out
+
+
 def test_no_ticked_entries_is_error(tmp_path, capsys):
   repo, root = make_repo(tmp_path), make_root(tmp_path)
   unticked = _ticked_pair(repo).replace('- [x]', '- [ ]')
@@ -941,6 +1103,53 @@ def test_no_ticked_entries_is_error(tmp_path, capsys):
   assert assemble(brief, root) == 1
   assert 'no ticked entries' in capsys.readouterr().err
   assert _digests(root) == []
+
+
+def test_all_q_brief_advertises_no_capture_page(tmp_path, capsys):
+  '''A harvest whose only ticked entries are open questions is legitimate
+  (pilot q-02), but the digest preamble pointed at a wiki/sources page that
+  would hold no captures, and the stdout body was a bare newline the agent
+  would paste as that empty page.'''
+  repo, root = make_repo(tmp_path), make_root(tmp_path)
+  entry = ('- [x] [q-01] Open thing\n'
+           '  at: specs/deferred_items.md L3\n'
+           '  claim: Whether the later thing matters is unresolved.\n')
+  brief = _write_brief(root, repo, entry)
+  assert assemble(brief, root) == 0
+  digest = _digests(root)[0].read_text()
+  assert 'wiki/sources/' not in digest
+  assert 'Open questions only' in digest
+  cap = capsys.readouterr()
+  assert cap.out == ''
+  assert 'no ticked captures' in cap.err
+
+
+def test_brief_missing_a_required_header_key_is_a_brief_error(
+    tmp_path, capsys):
+  '''render_digest reads header['date'] with a hard []; a hand-edited brief
+  missing it raised KeyError. The write-nothing contract held, but the
+  operator got a traceback where the CLI promises a brief-error line.'''
+  repo, root = make_repo(tmp_path), make_root(tmp_path)
+  brief = _write_brief(root, repo, _ticked_pair(repo))
+  brief.write_text(brief.read_text().replace('date: 2026-07-24\n', ''))
+  assert assemble(brief, root) == 1
+  assert 'brief-error: brief: missing header key date' in \
+    capsys.readouterr().err
+  assert _digests(root) == []
+
+
+def test_brief_missing_repo_path_reports_cannot_check_drift(
+    tmp_path, capsys):
+  '''Path('') is Path('.'), so the drift check ran `git -C .` and reported
+  the CURRENT directory's HEAD as a mismatch — a foreign-HEAD warning about
+  a repo the brief never named.'''
+  repo, root = make_repo(tmp_path), make_root(tmp_path)
+  brief = _write_brief(root, repo, _ticked_pair(repo))
+  brief.write_text(brief.read_text().replace(f'repo_path: {repo}\n', ''))
+  assert assemble(brief, root) == 0
+  err = capsys.readouterr().err
+  assert 'warning: cannot check drift (no repo_path in brief)' in err
+  assert 'post-inventory edits' not in err   # the foreign-HEAD warning
 
 
 def test_root_mismatch_refused(tmp_path, capsys):

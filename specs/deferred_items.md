@@ -127,9 +127,14 @@ Downgraded-to-minor from the same audit (later hardening pass; none block M0):
       → done in plan 23: legal. `_index_targets` strips the fragment, matching
       `check_links`. All three parity checks read that one site, so duplicate detection
       was fixed at the same time.
-- [ ] `DECISION_META_RE` anchors `^kind: decision` with no tolerance for leading whitespace
+- [x] `DECISION_META_RE` anchors `^kind: decision` with no tolerance for leading whitespace
       or a markdown list prefix (`  kind: decision`, `- kind: decision`), silently disabling
       the echo-rule check for indented captures.
+      → done 2026-09-04 (/deferred quick fix): the pattern now tolerates leading
+      whitespace and a markdown list bullet (`^[ \t]*(?:[-*+][ \t]+)?kind:…`). Two RED
+      tests first — `test_indented_decision_without_basis_is_error` and
+      `test_list_prefixed_decision_without_basis_is_error` — both failing with no ERROR
+      emitted, which is the silent-disable itself.
 - [ ] `check_links` counts a page's self-link as an inbound reference (silencing its own
       orphan warning); and on a case-insensitive FS (macOS/APFS) a broken relative link with
       wrong case (`../Sources/A.MD`) resolves via `.exists()` and escapes the broken-link
@@ -234,9 +239,14 @@ DRY / structure:
       three call sites — treat as one whole-file refactor, not a per-function patch.
 
 Test-coverage gaps:
-- [ ] `test_claude_code_project_filter` asserts the resulting digest *count* (`== 1`), not
+- [x] `test_claude_code_project_filter` asserts the resulting digest *count* (`== 1`), not
       which session survived — an inverted filter (keeping the wrong project) would still
       pass. Strengthen to assert the surviving digest's `project:` header value.
+      → done 2026-09-04 (/deferred quick fix): now asserts `project: alt-nfp` in the
+      surviving digest. The fixture also had to become realistic — its `cwd` was
+      `/x/<encoded-dir-name>`, which no real session records, so `_project_name`'s cwd
+      branch returned the encoded name. Mutation-verified: inverting the filter keeps
+      `project: bls-stats` and still writes exactly one digest, so the old `== 1` passed.
 - [ ] `_project_name`'s no-`cwd`-fallback branch (deriving the project name from the encoded
       directory name when no record in the session carries `cwd`) executes during real-corpus
       smoke runs but has no dedicated unit test asserting its output.
@@ -257,10 +267,13 @@ Test-coverage gaps:
       contents on a zero-turn session: `turns: 0`, the sentinel `dates: 0000-00-00/0000-00-00`
       range, `redactions: 0`, and `'**[' not in text` for the empty body. It landed in
       b0ef660 (2026-07-23), the same day this item was written.
-- [ ] The Task 5 fix-pass regression test for the unbounded-slug fix (F1) asserts
+- [x] The Task 5 fix-pass regression test for the unbounded-slug fix (F1) asserts
       `len(name) < 255`; the real bound the `slugify(...)[:60]` fix guarantees is 83
       characters (10-char date + up to 60-char slug + hyphens + 8-char sess8 + `.md`) — a
       much weaker assertion than what the fix actually guarantees.
+      → done 2026-09-04 (/deferred quick fix): now `len(p.name) <= 83`, with the
+      arithmetic recorded in the test. Mutation-verified: raising the cap to `[:200]`
+      yields `assert 223 <= 83` while the old `< 255` would have passed.
 - [ ] Three Task 5 fix-pass tests construct a session with `project=None` but none asserts
       `'project:'` is actually absent from the written digest body.
 - [ ] `slugify` and `_turn_date` have no test that calls them directly; both are exercised
@@ -334,22 +347,32 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       (one `claude -p` probe against a scratch `probe.py`, per plan 15 Task 8 Step 5).
 
 ## 16-llm-wiki-specs-harvest — 2026-07-25
-- [ ] Script-family hardening pass: unguarded `read_text()` in the walk loops and the unguarded per-file `sha_table()` `_git` call in `cmd_inventory` (skills/llm-wiki/scripts/distill_specs.py; same unguarded convention exists in distill_sessions.py / lint_wiki.py). Wrap in the house stderr+exit-1 style or settle the convention repo-wide.
-- [ ] `_extend_brief` never renders directory-presence `note:` lines — same divergence class as the fixed is_deferred bug; reachable when dir notes change between two same-date runs (distill_specs.py).
-- [ ] `files_walked:` header splice in `_extend_brief` assumes exactly one continuation line; a wrapping walk list would corrupt the header (distill_specs.py).
-- [ ] Ticked q-entries bypass the square-bracket claim check (the q branch `continue`s before the check in `validate_entries`); hoist the check + red test (distill_specs.py).
-- [ ] Brief missing `repo_path:` → `Path('')` → the drift check runs `git -C .` and warns about a foreign HEAD; should report "cannot check drift" instead (distill_specs.py).
-- [ ] Hermetic `(also …)` render test: digest-renders-it / source-body-omits-it is currently pinned only by @needs_pilot tests that skip on machines without /Users/lowell/research-wiki (test_distill_specs.py).
-- [ ] All-q ticked brief edge: stdout body is a bare newline while the digest preamble still points readers at a capture page that would have no captures (distill_specs.py).
-- [ ] Required digest header keys are read with hard `[]` in `cmd_assemble` — a hand-edited brief missing e.g. `date:` raises KeyError instead of a `brief-error:` line (the write-nothing contract still holds) (distill_specs.py).
-- [ ] `_repo_name` YAML-hostile residue: a zero-ASCII-word directory name containing `': '` still lands unquoted in the brief header (distill_specs.py).
+- [x] Script-family hardening pass: unguarded `read_text()` in the walk loops and the unguarded per-file `sha_table()` `_git` call in `cmd_inventory` (skills/llm-wiki/scripts/distill_specs.py; same unguarded convention exists in distill_sessions.py / lint_wiki.py). Wrap in the house stderr+exit-1 style or settle the convention repo-wide.
+      → done in plan 25
+- [x] `_extend_brief` never renders directory-presence `note:` lines — same divergence class as the fixed is_deferred bug; reachable when dir notes change between two same-date runs (distill_specs.py).
+      → done in plan 25
+- [x] `files_walked:` header splice in `_extend_brief` assumes exactly one continuation line; a wrapping walk list would corrupt the header (distill_specs.py).
+      → done in plan 25
+- [x] Ticked q-entries bypass the square-bracket claim check (the q branch `continue`s before the check in `validate_entries`); hoist the check + red test (distill_specs.py).
+      → done in plan 25
+- [x] Brief missing `repo_path:` → `Path('')` → the drift check runs `git -C .` and warns about a foreign HEAD; should report "cannot check drift" instead (distill_specs.py).
+      → done in plan 25
+- [x] Hermetic `(also …)` render test: digest-renders-it / source-body-omits-it is currently pinned only by @needs_pilot tests that skip on machines without /Users/lowell/research-wiki (test_distill_specs.py).
+      → done in plan 25
+- [x] All-q ticked brief edge: stdout body is a bare newline while the digest preamble still points readers at a capture page that would have no captures (distill_specs.py).
+      → done in plan 25
+- [x] Required digest header keys are read with hard `[]` in `cmd_assemble` — a hand-edited brief missing e.g. `date:` raises KeyError instead of a `brief-error:` line (the write-nothing contract still holds) (distill_specs.py).
+      → done in plan 25
+- [x] `_repo_name` YAML-hostile residue: a zero-ASCII-word directory name containing `': '` still lands unquoted in the brief header (distill_specs.py).
+      → done in plan 25
 - [x] Placeholder-less f-string in a test (`f'reports/harvest-wt-2026-07-24.md'`); fold into any future style sweep (test_distill_specs.py).
       → done 2026-09-02 (/deferred quick fix).
 - [x] Also-line sha shape gate (`ALSO_RE` swallowed a non-hex `(also … · sha:)` into the location text) → done post-merge in afa9af8.
-- [ ] Renamed spec files lose `previously seen` hinting (prior keys grouped by the old at:-path, looked up by the new walk path); agent-side dedup still reads the whole prior brief, so impact is weaker hints only — decide whether rename-following is worth building (distill_specs.py).
+- [x] Renamed spec files lose `previously seen` hinting (prior keys grouped by the old at:-path, looked up by the new walk path); agent-side dedup still reads the whole prior brief, so impact is weaker hints only — decide whether rename-following is worth building (distill_specs.py).
       → decided 2026-09-03 (/deferred): yes, build it. The open decision is closed, so
       this is no longer a design item — it joins the `distill_specs.py` hardening pass
       as ordinary planned work. Still unticked: the decision is made, the work is not.
+      → done in plan 25
 
 ## 17-agents-and-commands-expansion — 2026-07-25
 - [x] PreToolUse hooks mechanically enforcing the read-only contracts of
@@ -474,11 +497,15 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       log fixture: 2/2 wrote a top PROVISIONAL banner and a marked Open-questions block
       ahead of any stage text, kept the §4 checkpoint, and read none of this repo's
       specs.
-- [ ] **The roadmap format cannot express parallel stages**
+- [x] **The roadmap format cannot express parallel stages**
       (`skills/derive-roadmap/references/roadmap-format.md`). The gold master's own
       sequencing wants it ("Req 5 Stage-A audit starts in parallel"). Deferred because
       `Consumes:` already carries the dependency information, so parallelism is
       derivable rather than lost.
+      → retired 2026-09-04: records a no-action decision, not work — the item's own
+      rationale (`Consumes:` already carries the dependency information) closes it. The
+      format still has no parallel construct (`grep -i parallel` on roadmap-format.md →
+      zero matches; only `Consumes:` at line 36), and that gap is accepted, not pending.
 - [ ] **Two of the skill's own checkpoints have no behavioural evidence.**
       `skills/derive-roadmap/SKILL.md` §1's batched question set and §4's human approval
       before Stage 1 both require an interactive turn; every test in this plan ran
