@@ -71,6 +71,8 @@ cd skills/bayesian-workflow/scripts && uv run --python 3.13 --with pytest --with
 
 # llm-wiki bundled wiki-script tests (bootstrap + lint + session + specs distillers) —
 # 243 tests (stdlib only; these are the scripts the bootstrap installs to a wiki)
+# (3 @needs_pilot round-trip tests in test_distill_specs.py read a pilot reference wiki from a
+# machine-level path outside the repo; on a machine without it: 240 passed, 3 skipped)
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest -q
 
 # describe-critique-methodology decoupling-check tests — 18 tests
