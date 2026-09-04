@@ -385,11 +385,23 @@ def _render_new_sections(repo, rels, seen):
   SHA table and seed hits, and render its `## ` section. One place for both
   callers so the is_deferred flag can't drift between them (review finding:
   the extend path once called seed_hits without it, so deferred_items.md
-  rendered "- none" when it first entered the brief via that path).'''
+  rendered "- none" when it first entered the brief via that path).
+
+  Raises RuntimeError naming the offending file when a spec file or its git
+  history cannot be read: the brief lists every walked file or none at all
+  (spec §7), so a mid-walk failure must reach the cmd_* caller as the house
+  error line, not a traceback.'''
   body = []
   for rel in rels:
-    text = (repo / rel).read_text()
-    body += render_file_section(rel, sha_table(repo, rel),
+    try:
+      text = (repo / rel).read_text()
+    except (OSError, UnicodeDecodeError) as exc:
+      raise RuntimeError(f'cannot read {rel}: {exc}') from exc
+    try:
+      shas = sha_table(repo, rel)
+    except (RuntimeError, OSError) as exc:
+      raise RuntimeError(f'cannot read git history for {rel}: {exc}') from exc
+    body += render_file_section(rel, shas,
                                 seed_hits(text, rel == DEFERRED_FILE),
                                 seen.get(rel, []))
   return body
@@ -448,7 +460,12 @@ def _extend_brief(path, repo, head, files, notes, seen):
       return 0
     print(f'{path.name}: no new files; brief unchanged')
     return 0
-  body = _render_new_sections(repo, new, seen)
+  try:
+    body = _render_new_sections(repo, new, seen)
+  except RuntimeError as exc:
+    print(f'error: {exc}; the brief lists every walked file or none',
+          file=sys.stderr)
+    return 1
   walked = [f.strip() for f in header.get('files_walked', '').split(';')
             if f.strip()]
   walked += [f for f in new if f not in walked]
@@ -619,7 +636,12 @@ def cmd_inventory(args):
   body += [f'note: {n}' for n in notes]
   if notes:
     body.append('')
-  body += _render_new_sections(repo, files, seen)
+  try:
+    body += _render_new_sections(repo, files, seen)
+  except RuntimeError as exc:
+    print(f'error: {exc}; the brief lists every walked file or none',
+          file=sys.stderr)
+    return 1
   _atomic_write(path, '\n'.join(body).rstrip('\n') + '\n')
   print(f'wrote {path}')
   return 0

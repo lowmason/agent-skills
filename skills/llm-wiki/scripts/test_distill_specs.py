@@ -563,6 +563,41 @@ def test_extend_drops_a_note_that_stopped_being_true(tmp_path, capsys):
   assert 'note: specs/plans/: no .md files' not in brief.read_text()
 
 
+@pytest.mark.skipif(os.geteuid() == 0, reason='root bypasses chmod')
+def test_unreadable_spec_file_is_a_hard_error_not_a_traceback(
+    tmp_path, capsys):
+  '''The walk loop read each file unguarded: one unreadable file aborted the
+  inventory with a traceback instead of the house error line, and the brief
+  is all-or-nothing (spec §7) so no partial one may survive.'''
+  repo, root = make_repo(tmp_path), make_root(tmp_path)
+  target = repo / 'specs/completed/a-spec.md'
+  target.chmod(0o000)
+  try:
+    assert inventory(repo, root) == 1
+  finally:
+    target.chmod(0o644)
+  assert 'error: cannot read specs/completed/a-spec.md' in \
+    capsys.readouterr().err
+  assert not (root / 'reports/harvest-repo-2026-07-24.md').exists()
+
+
+def test_unreadable_git_history_is_a_hard_error(tmp_path, capsys,
+                                                monkeypatch):
+  '''sha_table's _git call was unguarded too. Monkeypatched at the seam
+  rather than faked with a corrupt repo: making git fail for ONE file
+  mid-walk while the repo-level HEAD check still passes is not arrangeable
+  hermetically, and the seam is the thing under test.'''
+  repo, root = make_repo(tmp_path), make_root(tmp_path)
+
+  def boom(repo_, rel):
+    raise RuntimeError('fatal: bad object')
+
+  monkeypatch.setattr(dsp, 'sha_table', boom)
+  assert inventory(repo, root) == 1
+  assert 'error: cannot read git history for' in capsys.readouterr().err
+  assert not (root / 'reports/harvest-repo-2026-07-24.md').exists()
+
+
 def test_only_glob_filters_walk(tmp_path):
   repo, root = make_repo(tmp_path), make_root(tmp_path)
   assert inventory(repo, root, only='specs/plans/completed/*') == 0
