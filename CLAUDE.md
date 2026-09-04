@@ -67,7 +67,9 @@ cd skills/track-model-experiments/scripts && uv run --python 3.13 --with pytest 
 cd skills/bayesian-workflow/scripts && uv run --python 3.13 --with pytest --with arviz --with arviz-stats --with numpy --with xarray python -m pytest -q
 
 # llm-wiki bundled wiki-script tests (bootstrap + lint + session + specs distillers) —
-# 185 tests (stdlib only; these are the scripts the bootstrap installs to a wiki)
+# 243 tests (stdlib only; these are the scripts the bootstrap installs to a wiki)
+# (3 @needs_pilot round-trip tests in test_distill_specs.py read a pilot reference wiki, resolved
+# from $LLM_WIKI_ROOT and defaulting to ~/research-wiki; where absent: 240 passed, 3 skipped)
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest -q
 
 # describe-critique-methodology decoupling-check tests — 18 tests

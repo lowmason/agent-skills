@@ -1378,13 +1378,19 @@ PILOT_ENTRIES = r'''- [x] [d-01] Flat files primary; BLS API v2 demoted to utili
 PILOT_BRIEF = PILOT_HEADER + PILOT_ENTRIES
 
 
-PILOT_DIGEST = Path('/Users/lowell/research-wiki/raw/specs/'
-                    '2026-07-24-bls-stats-specs-harvest.md')
-PILOT_SOURCE = Path('/Users/lowell/research-wiki/wiki/sources/'
-                    '2026-07-24-bls-stats-specs-harvest.md')
+# The pilot is a real wiki root, so find it the way the skill documents its
+# root (INSTALL.md): $LLM_WIKI_ROOT, else the ~/research-wiki default.
+PILOT_NAME = '2026-07-24-bls-stats-specs-harvest.md'
+PILOT_ROOT = Path(os.environ.get('LLM_WIKI_ROOT',
+                                 str(Path.home() / 'research-wiki')))
+PILOT_DIGEST = PILOT_ROOT / 'raw/specs' / PILOT_NAME
+PILOT_SOURCE = PILOT_ROOT / 'wiki/sources' / PILOT_NAME
 
+# Both files are read below, so both gate: a partly-populated root skips
+# instead of erroring, and the reason names the root that came up short.
 needs_pilot = pytest.mark.skipif(
-  not PILOT_DIGEST.exists(), reason='pilot reference wiki not on this machine')
+  not (PILOT_DIGEST.exists() and PILOT_SOURCE.exists()),
+  reason=f'no pilot reference wiki under {PILOT_ROOT}')
 
 
 def _norm_blocks(text):
