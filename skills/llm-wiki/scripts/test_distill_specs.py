@@ -959,6 +959,34 @@ def test_also_sha_placeholder_end_to_end_reports_and_writes_nothing(
   assert 'assembled:' not in brief.read_text()
 
 
+def test_also_location_is_digest_only(tmp_path, capsys):
+  '''Framework spec §5.3: (also …) locations ride in the digest and are
+  dropped from the wiki/sources capture-note body. Until now that asymmetry
+  was pinned only by the @needs_pilot round-trip tests, which skip on every
+  machine without the pilot reference wiki — i.e. in CI and on a fresh
+  clone. Not redundant with
+  test_planted_secret_in_title_at_and_also_never_reaches_sinks: that one
+  carries an (also …) line but asserts only that its secret is REDACTED,
+  never that the location rides in the digest and is dropped from stdout.'''
+  repo, root = make_repo(tmp_path), make_root(tmp_path)
+  sha = _sha(repo)
+  entry = (f'- [x] [d-01] Use X over Y\n'
+           f'  kind: decision · boundary: transferable\n'
+           f'  at: specs/completed/a-spec.md §1 · sha: {sha}\n'
+           f'  (also specs/plans/completed/1-a-spec.md L4)\n'
+           f'  excerpt: "**Decision:** use X over Y."\n'
+           f'  claim: X was chosen over Y.\n')
+  brief = _write_brief(root, repo, entry)
+  assert assemble(brief, root) == 0
+  digest = _digests(root)[0].read_text()
+  out = capsys.readouterr().out
+  assert '  (also specs/plans/completed/1-a-spec.md L4)' in digest
+  # assert the body was produced at all, so an unrelated change that empties
+  # stdout cannot satisfy the omission assertion below by accident
+  assert '### [d-01]' in out
+  assert 'specs/plans/completed/1-a-spec.md' not in out
+
+
 def test_no_ticked_entries_is_error(tmp_path, capsys):
   repo, root = make_repo(tmp_path), make_root(tmp_path)
   unticked = _ticked_pair(repo).replace('- [x]', '- [ ]')
