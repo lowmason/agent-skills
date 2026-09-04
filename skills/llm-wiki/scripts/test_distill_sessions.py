@@ -1231,3 +1231,17 @@ def test_two_titleless_sessions_do_not_collide(tmp_path):
   assert a is not None and b is not None and a != b
   assert a.name.endswith('-aaaaaaaa.md') and b.name.endswith('-bbbbbbbb.md')
   assert len(list(out.glob('*.md'))) == 2
+
+
+def test_real_dates_drops_sentinels_and_sorts():
+  '''The date floor must ignore undated turns: the sentinel sorts below every
+  real date, so leaving it in poisons min(). One helper is the single place
+  that rule lives -- the identical sentinel-poisons-min() bug had to be found
+  and fixed independently at two of three sites before the duplication was
+  even noticed.'''
+  turns = [{'ts': '2026-05-15T09:00:00Z'}, {'ts': ''},
+           {'ts': '2026-05-14T10:00:00Z'}, {'ts': 'not-a-timestamp'}]
+  assert ds._real_dates(turns) == ['2026-05-14', '2026-05-15']
+  assert ds._real_dates([{'ts': ''}]) == []
+  assert ds._real_dates([]) == []
+  assert ds._SENTINEL_DATE == '0000-00-00'

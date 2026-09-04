@@ -206,9 +206,8 @@ def iter_claude_code(src, args, failures):
     turns = reconstruct(records, args.include_sidechains)
     if not turns:
       continue
-    real = sorted(d for d in (_turn_date(t['ts']) for t in turns)
-                  if d != '0000-00-00')
-    first_date = real[0] if real else '0000-00-00'
+    real = _real_dates(turns)
+    first_date = real[0] if real else _SENTINEL_DATE
     if args.since and first_date < args.since:
       continue
     sessions.append({
@@ -268,9 +267,8 @@ def iter_claude_ai(src, args, failures):
     turns = _claude_ai_turns(conv)
     if not turns:
       continue
-    real = sorted(d for d in (_turn_date(t['ts']) for t in turns)
-                  if d != '0000-00-00')
-    first_date = real[0] if real else '0000-00-00'
+    real = _real_dates(turns)
+    first_date = real[0] if real else _SENTINEL_DATE
     if args.since and first_date < args.since:
       continue
     sessions.append({
@@ -289,13 +287,28 @@ def slugify(text, max_words=6):
 
 
 _DATE_RE = re.compile(r'^\d{4}-\d{2}-\d{2}$')
+_SENTINEL_DATE = '0000-00-00'
 
 
 def _turn_date(ts):
   '''YYYY-MM-DD from an ISO timestamp, or the sentinel for anything that is
   not date-shaped -- a malformed value must never become a digest's date.'''
   head = ts[:10] if ts else ''
-  return head if _DATE_RE.match(head) else '0000-00-00'
+  return head if _DATE_RE.match(head) else _SENTINEL_DATE
+
+
+def _real_dates(turns):
+  '''Sorted YYYY-MM-DD dates of the turns that carry a real one, sentinels
+  dropped. Empty when every turn is undated -- the caller supplies the
+  sentinel then, because what it stands for differs by site (a date floor at
+  one end vs. both ends of a range).
+
+  Single source for this rule on purpose: it was open-coded at three sites,
+  and the same sentinel-poisons-min() bug had to be found and fixed twice
+  before the duplication was noticed.
+  '''
+  return sorted(d for d in (_turn_date(t['ts']) for t in turns)
+                if d != _SENTINEL_DATE)
 
 
 _TURNS_HEADER_RE = re.compile(r'^turns:\s*(\d+)\s*$', re.M)
@@ -327,12 +340,11 @@ def write_digest(session, out):
     if previous is None or len(turns) <= previous:
       return None
 
-  real = sorted(d for d in (_turn_date(t['ts']) for t in turns)
-                if d != '0000-00-00')
+  real = _real_dates(turns)
   if real:
     first_date, last_date = real[0], real[-1]
   else:
-    first_date, last_date = '0000-00-00', '0000-00-00'
+    first_date, last_date = _SENTINEL_DATE, _SENTINEL_DATE
   slug_src = next((t['text'] for t in turns if t['role'] == 'user' and t['text']), '')
   # redact BEFORE slugifying so a secret in the opening turn never reaches the
   # filename (the body is redacted too, below).
