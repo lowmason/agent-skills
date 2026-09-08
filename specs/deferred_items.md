@@ -427,11 +427,31 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       per-file.
       → done 2026-09-02 (/deferred quick fix): check_command_file requires the YAML
       boolean true, test-first; commands/deferred.md carries the key.
-- [ ] Agent description length cap (final-review Minor): `check_skill`
+- [x] Agent description length cap (final-review Minor): `check_skill`
       enforces the 1024-char cap but `check_agent_file` caps nothing, and
       all agent descriptions load into the Agent-tool listing (current
       roster: 261–445 chars each). Add a cap to build/check_frontmatter.py
       when the roster grows.
+      → done 2026-09-08 (/deferred quick fix): `check_agent_file` now enforces the
+      same 1024-char cap as `check_skill`, test-first. Note the recorded trigger had NOT fired — `git log
+      --diff-filter=A -- agents/` shows no agent file added since 2026-07-25 and
+      the roster is still 7 (261–445 chars) — so this was released early on the
+      owner's call rather than triggered by roster growth. The premise was
+      otherwise exact: check_agent_file validated only non-emptiness. Both sides
+      of the boundary are pinned (1024 clean, 1025 reported with the exact
+      message); an over-cap test alone cannot tell `>` from `>=`.
+      Two adversarial-review findings were fixed rather than filed. (a) The cap
+      now lives in one `DESCRIPTION_CAP` module constant instead of four literals
+      across two functions — this repo auto-loads `rules/clean-code-python.md` on
+      Python edits, whose G25 mandates named constants, and the naive mirror
+      doubled the magic-number sites. (b) The agent-side message reads
+      `(listing budget 1024)` where `check_skill` reads `(spec cap 1024)`: the
+      1024 figure is the Agent Skills standard's cap on a SKILL.md
+      (specs/completed/audit_1_3_26.md), no standard governs an `agents/*.md`,
+      and the cap here is justified by the Agent-tool listing budget — so the
+      copied wording asserted a spec that does not apply. Same number, two
+      rationales, now stated separately and mutation-checked at both seats.
+      Build suite +2 (45 → 47); CLAUDE.md's count was stale at 43 and is synced.
 
 ## 18-methodology-pipeline-skills (plan #1, describe-critique-methodology) — 2026-07-26
 - [ ] **DL/NLP domain extension for the methodology templates (spec Req 15,
@@ -469,7 +489,7 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       arrived, and a three-arm subagent check now covers adjudication-status
       detection. Still untested once entered: locator discipline, the
       triage-table-before-spec-text ordering, and the derive-roadmap handoff.
-- [ ] **Partial adjudication has no explicit handling.** The skill frames
+- [x] **Partial adjudication has no explicit handling.** The skill frames
       adjudication status as binary — "was the critique adjudicated at all?"
       — but a real critique can record push-back on a handful of points and
       none on the rest. Observed in the Amendment A arm-C check: given a
@@ -484,7 +504,21 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       withdrawn X-13 recommendation still stood in the Recommendations block),
       so a withdrawal must be carried to every site, not just the paragraph
       recording it. Worth a clause if it recurs.
-- [ ] **`suspicious_notation` false positives on acronym subscripts.** After
+      → retired 2026-09-08 (/deferred): records a no-action decision, not work.
+      The item's own text IS the decision — guidance was deliberately NOT added
+      because the observed behaviour was already correct (both agents diagnosed
+      the 2-of-~30 split unprompted, inherited the recorded rejections, and
+      adjudicated the remainder themselves), and writing-skills forbids adding
+      guidance for a failure mode that did not occur. Same ground as the three
+      entries already retired in §14 and §19 ("an adjudicated no-action record,
+      never work"). Its own `Revisit only if` clause survives the tick as the
+      standing trigger: a real critique that mishandles a partial split reopens
+      this. THE WARNING, carried forward because it stays worth reading (M6
+      precedent, §22): a withdrawn critique point can survive elsewhere in the
+      document — the fixture's withdrawn X-13 recommendation still stood in the
+      Recommendations block — so a withdrawal must be carried to EVERY site, not
+      just the paragraph recording it.
+- [x] **`suspicious_notation` false positives on acronym subscripts.** After
       the LaTeX fix, uppercase-acronym math symbols (`NSA_t`, `TOT_c`,
       `NSA_v` — from `G^{\mathrm{NSA}}_t`) are reported as
       identifier-shaped. They are correct-by-the-documented-rule (advisory,
@@ -492,6 +526,18 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       the noise is predictable rather than alarming. If it becomes
       irritating, exempt all-uppercase segments of ≤4 chars — but only with
       a test proving a genuine uppercase identifier still warns.
+      → done 2026-09-08 (/deferred quick fix): `ACRONYM_BASE_MAX = 4` added beside
+      the existing `SUBSCRIPT_BASE_MAX`, exempting an all-caps base of ≤4 chars,
+      so `NSA_t` / `TOT_c` / `NSA_v` are no longer reported. The item's mandatory
+      condition is discharged by
+      `test_suspicious_notation_flags_genuine_uppercase_identifier`
+      (`MODEL_PATH`, `KALMAN_ll` — word bases over 4 chars, still reported), and
+      two further boundary tests pin what a loose predicate would have swallowed:
+      `TOTL_t` exempt vs `TOTAL_t` reported, and mixed-case `Nsa_t` still
+      reported, since `base.isupper()` is False for a title-cased base. The
+      docstring's ">=3-char non-Greek base" sentence was rewritten in the same
+      pass — the fix made it false, and this repo treats an overpromising
+      docstring as a real defect. describe-critique-methodology suite +4.
 
 ## 19-methodology-pipeline-skills — 2026-07-30
 
