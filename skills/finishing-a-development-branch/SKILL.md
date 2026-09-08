@@ -92,8 +92,8 @@ Do not present the merge/PR menu until one of the two lands.
 ```
 
 Commit that edit with the branch's other completion commits, then continue to
-Step 2. The full contract is the **Aged-tail gate** section of the
-writing-plans skill's `references/deferred-backlog.md`.
+Step 2. The full contract is the **Aged-tail gate** section of
+`../writing-plans/references/deferred-backlog.md`.
 
 "Carried deliberately" with no reason is the silent default this gate exists to
 convert into a conscious one. Never write the acknowledgement without asking —
