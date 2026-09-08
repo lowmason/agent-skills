@@ -129,7 +129,8 @@ uv run --python 3.13 python build/check_snippets.py skills/bayesian-workflow/
 uv run --python 3.13 --with "arviz>=1.0" --with arviz-base --with arviz-stats \
   --with arviz-plots --with numpyro --with jax \
   python build/check_snippets.py --api skills/bayesian-workflow/
-# Tier 3 (+ execute the harnessed subset against PINNED deps; ~4 min, 27 of 78 blocks).
+# Tier 3 (+ execute the harnessed subset against PINNED deps; minutes — 27 of 78 blocks,
+# each a separate subprocess running the full preamble).
 # The other 51 are advisory on stderr with a per-block reason, never silent. If a block
 # raises, fix the snippet — `norun` is for blocks that cannot run by design, never for
 # blocks that fail. Pins live in build/snippet_preamble.py (PINNED); refresh deliberately:
