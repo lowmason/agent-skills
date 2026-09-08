@@ -78,6 +78,10 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 # describe-critique-methodology decoupling-check tests — 18 tests
 cd skills/describe-critique-methodology/scripts && uv run --python 3.13 --with pytest python -m pytest -q
 
+# writing-plans deferred-backlog stats tests (parser, age buckets, --json contract) — 10 tests
+# (stdlib only; two tests drive the script as a subprocess through sys.executable)
+cd skills/writing-plans/scripts && uv run --python 3.13 --with pytest python -m pytest -q
+
 # geographic-codes build tests (interval synthesizer, readers, referential check) — 42 tests
 # (the 7 per-vintage workbook tests need sources/, which is committed)
 cd skills/geographic-codes/scripts && uv run --python 3.13 --with pytest --with polars --with fastexcel python -m pytest -q
