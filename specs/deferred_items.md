@@ -1,6 +1,13 @@
 # Deferred items
 
 ## Aged-backlog acknowledgements
+- 2026-09-08 — finished `feat/snippet-execution-gate` (plan 29) with 2 items aged
+  >45d, carried across the merge on the partner's instruction ("merge then clear"):
+  they are to be cleared immediately after. Neither is dischargeable by an agent —
+  `11-delegation-frontmatter-rollout` needs a live interactive session to read the
+  model/effort indicator and take `/status` cost readings, and `15-clean-code-family`
+  is a `Revisit if:` watch item gated on a preference decision plus a re-probe of a
+  version-dependent mechanism.
 - 2026-09-08 — finished `fix/lint-wiki-link-hardening` (plan 28) with 3 items aged
   >45d, carried deliberately: none is actionable from a coding session. `11`
   (51d) needs an interactive probe of the live model/effort indicator, which is
@@ -50,7 +57,7 @@
       → done 2026-09-02 (/deferred quick fix): dropped the link — no pyprobml deep-
       ensembles notebook exists, so the row carries §17.3.9 alone, as other notebook-
       less rows do; Gate A, the rpm tests and the smoke test pass.
-- [ ] Snippet-execution gate for `bayesian-workflow` (audit Theme 1; offered at the
+- [x] Snippet-execution gate for `bayesian-workflow` (audit Theme 1; offered at the
       completion gate, not selected): `skills/bayesian-workflow/SKILL.md:59` promises "the
       modern ArviZ >= 1.0 stack" and no gate enforces it. C1, C2 and D2 were all executable
       or API claims that went stale silently — C1's *mandatory* recipe raised on the exact
@@ -58,6 +65,14 @@
       correctness check when the artifact is a §-ref; nothing equivalent guards inline code.
       Would have caught all three before review. Needs a runner that extracts fenced python
       from the skill and executes it against pinned deps.
+      → done in plan 29. Three tiers in `build/check_snippets.py` (parse / --api / --run)
+      over a shared `build/fences.py` extractor. The "would have caught all three" premise
+      is WRONG and the plan said so up front: only C1 is snippet-executable. C2 was a prose
+      contradiction, and D2 was a **dotless** `az.compare` column named `warning`, which the
+      --api tier's dotted-name regex cannot match — verified against `git show a2f2f96`.
+      What the gate did find on first run: a shipped SyntaxError in diagnostics.md
+      (`def model(...):`) and a wrong API path in SKILL.md
+      (`numpyro.infer.config_enumerate`, which lives in `numpyro.contrib.funsor`).
 - [x] `PML2 §2.2.1.4` chapter-fallback WARN (offered at the completion gate, not selected):
       Gate A exits 0 but emits a standing WARN on this ref every run. Gate B verified it is
       a false alarm — the section exists ("Negative binomial distribution") and substantiates
@@ -1097,3 +1112,26 @@ declined as YAGNI (zero instances in a one-page wiki).
       re-anchor past an unbalanced `[`, so `- [a [b](x.md)` now yields no target
       (loud "no index line") where the flat class accidentally read the inner link.
       +2 tests in the llm-wiki suite.
+
+## 29-snippet-execution-gate — 2026-09-08
+- [ ] Per-block fixtures for the 34 blocks `--run` cannot reach. Tier 3 executes 27 of
+      `skills/bayesian-workflow/`'s 78 python blocks; of the 51 advisories, 24 are
+      name-incomplete and 10 name variables outside `FIXTURE_VARS` in
+      `build/snippet_preamble.py` — those 34 are reachable with per-block context. The
+      other 17 are not: 7 are model-body fragments (a numpyro primitive outside any `def`)
+      and 6 are elided with `...`, both structurally unexecutable, and 4 are `norun`.
+      Declared out of scope by the plan itself ("they need per-block fixtures and are out
+      of scope"). Widening `FIXTURE_VARS` and the fixture together is the cheap half; the
+      name-incomplete tail needs a per-block context mechanism the gate does not have.
+      Size: plan. Done when: either the executed count rises with `FIXTURE_VARS` and the
+      preamble widened together, or a per-block fixture mechanism exists and the advisory
+      count for "unbound names" falls.
+- [ ] Repo-wide Tier 1 (parse-only) across all skills, not just `bayesian-workflow`.
+      The plan's own executor notes propose it separately and explain why only Tier 1
+      generalizes: repo-wide *execution* is a category error, since `clean-code`'s blocks
+      are before/after pairs whose "before" half is deliberately bad and
+      `test-driven-development`'s are RED examples meant to fail. `build/check_snippets.py`
+      already takes paths-or-dirs, so this is an invocation and a triage pass, not new code
+      — but the triage is the work, and an unknown number of skills may ship broken syntax.
+      Size: plan. Done when: `check_snippets.py skills/` exits 0 and the invocation is in
+      the root `CLAUDE.md` Commands block alongside the three bayesian-workflow tiers.

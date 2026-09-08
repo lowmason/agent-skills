@@ -75,7 +75,7 @@ unchanged on 0.23: the examples assume ArviZ 1.x, and the 1.x idioms here *will 
 | JAX→NumPy conversion | `idata.map_over_datasets(lambda ds: ds.as_numpy())` (DataTree method) | `idata.map(lambda ds: ds.as_numpy())` — and it is unnecessary: 0.23 `from_numpyro` already returns NumPy-backed arrays |
 | Posterior-predictive plot | `arviz_plots.plot_ppc_dist(idata)` (imported as `azp`) | `az.plot_ppc(idata)` (removed from the ArviZ 1.x umbrella) |
 | Calibration (PPC-PIT / LOO-PIT) | `azp.plot_ppc_pit(idata)` and **separately** `azp.plot_loo_pit(idata)` | `az.plot_loo_pit(idata, ecdf=True)` |
-| Test-statistic PPC | `azp.plot_ppc_tstat(idata, t_stat="median")` | `az.plot_ppc(idata, ...)` + manual |
+| Test-statistic PPC | `azp.plot_ppc_tstat(idata, t_stat="median")` | `az.plot_ppc(idata, ...)` (removed from the ArviZ 1.x umbrella) + manual |
 | Trace / rank plot | `az.plot_trace(idata, var_names=[...])`; rank `az.plot_rank(idata, var_names=[...])` — **pass `var_names`** (ArviZ 1.x errors when the auto-selected set exceeds its subplot cap, e.g. a vector `Deterministic` like `mu` over an `obs` dim). Returns a `PlotCollection` — `.savefig(...)` to save | `az.plot_trace(idata, kind="rank_vlines")` (the `kind=` arg is 0.23-only); returns a NumPy array of Matplotlib `Axes` — save via `plt.gcf().savefig(...)`, not `.savefig` on the return |
 | Summary interval | `az.summary(idata, ci_prob=0.94, ci_kind="hdi")` | `az.summary(idata, hdi_prob=0.94)` |
 | Prior sensitivity | `az.psense_summary(idata)` (on the 1.x umbrella) | not on the 0.23 umbrella — use `arviz_stats.psense_summary(idata)` |
@@ -167,7 +167,7 @@ identical once you have an InferenceData.
 
 **1. Native NumPyro NUTS (default).** Idiomatic, the least code, and already fast.
 
-```python
+```python norun slow: 4 chains x 2000 draws, minutes -- not a pre-commit gate
 numpyro.set_host_device_count(4)                 # required for parallel CPU chains; MUST precede the first JAX op
 mcmc = MCMC(NUTS(model, target_accept_prob=0.9),
             num_warmup=1000, num_samples=1000, num_chains=4, chain_method="parallel")
@@ -181,7 +181,7 @@ Use it when you want fine control over adaptation or a second independent sample
 You drive a NumPyro model through it via its log-density, then assemble the InferenceData
 yourself with `az.from_dict`:
 
-```python
+```python norun blackjax is optional (SKILL.md:52), not a declared dependency
 import blackjax
 from numpyro.infer.util import initialize_model
 
@@ -334,7 +334,7 @@ These are battle-tested lessons that save hours of debugging:
 - **Forgetting to standardize predictors** makes shared priors inappropriate and slows sampling. Always standardize before fitting, then back-transform for interpretation.
 - **Horseshoe priors create a double-funnel geometry** that standard NUTS can struggle with. Always use the **regularized (Finnish) horseshoe** (Piironen & Vehtari, 2017), which adds a slab component that smooths the geometry. Set `target_accept_prob=0.95` or higher. If you see divergences with a horseshoe model, this is almost certainly the cause.
 - **`np.median` on posterior predictive probabilities is a silent bug.** It does not produce the Bayesian predictive distribution and can yield probabilities that don't sum to 1 across categories. Always use `np.mean` over the posterior samples dimension.
-- **Discrete latents: marginalize or enumerate, don't plug in.** NUTS cannot sample discrete variables. Prefer a **true mixture likelihood** via `dist.MixtureSameFamily` (exact, O(K) per observation, NUTS-compatible), or enumerate with `numpyro.infer.config_enumerate` from `numpyro.contrib.funsor` (requires `pip install funsor`) plus `infer_discrete`. For Gibbs-style updates use `DiscreteHMCGibbs` or `MixedHMC`. Plugging a soft relaxation (soft-min/argmax, or `E[z]`) into a nonlinear function is mathematically wrong: it is not the marginal and can return out-of-bounds values. Any mixture also needs an identification constraint (e.g. `ordered` components) or chains will label-switch.
+- **Discrete latents: marginalize or enumerate, don't plug in.** NUTS cannot sample discrete variables. Prefer a **true mixture likelihood** via `dist.MixtureSameFamily` (exact, O(K) per observation, NUTS-compatible), or enumerate with `numpyro.contrib.funsor.config_enumerate` (requires `pip install funsor`) plus `infer_discrete`. For Gibbs-style updates use `DiscreteHMCGibbs` or `MixedHMC`. Plugging a soft relaxation (soft-min/argmax, or `E[z]`) into a nonlinear function is mathematically wrong: it is not the marginal and can return out-of-bounds values. Any mixture also needs an identification constraint (e.g. `ordered` components) or chains will label-switch.
 - **Overlapping data subsets in a likelihood double-count.** When a likelihood is assembled from per-subset terms, the subsets must partition the data *disjointly* — an observation that lands in two terms is counted twice, silently over-shrinking the posterior. Partition disjointly, or model the overlap explicitly.
 
 ## When things go wrong

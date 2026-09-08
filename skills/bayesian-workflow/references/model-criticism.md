@@ -154,7 +154,7 @@ SBC checks that the whole pipeline — prior, data model, NumPyro code, and samp
 
 A NumPyro sketch (roll your own; `simuk` from arviz-devs can also help):
 
-```python
+```python norun slow: 200 SBC replicates x 600 draws -- not a pre-commit gate
 from numpyro.infer import Predictive, MCMC, NUTS
 import jax, numpy as np
 
@@ -339,12 +339,10 @@ When using sparsity priors (horseshoe, R2-D2), summarize feature relevance via *
 beta_samples = idata.posterior["beta"].stack(samples=("chain", "draw")).values
 threshold = 0.05  # on the standardized coefficient scale
 
-importance = pd.DataFrame({
-    "feature": features,
-    "posterior_mean": beta_samples.mean(axis=-1),
-    "posterior_sd": beta_samples.std(axis=-1),
-    "P(|beta|>threshold)": (np.abs(beta_samples) > threshold).mean(axis=-1),
-}).sort_values("P(|beta|>threshold)", ascending=False)
+prob_relevant = (np.abs(beta_samples) > threshold).mean(axis=-1)
+for i in np.argsort(-prob_relevant):            # most practically-relevant first
+    print(f"{features[i]:<24} mean={beta_samples[i].mean():+.3f} "
+          f"sd={beta_samples[i].std():.3f} P(|beta|>{threshold})={prob_relevant[i]:.2f}")
 ```
 
 This is more informative than just looking at posterior means — it tells you the **probability that each feature has a practically meaningful effect**, which is the natural Bayesian answer to "which features matter?"
