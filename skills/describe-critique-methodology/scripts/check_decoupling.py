@@ -101,6 +101,7 @@ def _pathlike(token: str) -> bool:
 
 
 SUBSCRIPT_BASE_MAX = 2  # y_t, g_cont: a 1-2 char base reads as a math subscript
+ACRONYM_BASE_MAX = 4  # NSA_t, TOT_c: a short all-caps base is an acronym
 
 
 def suspicious_notation(whitelist: set[str] | frozenset[str]) -> list[str]:
@@ -108,8 +109,11 @@ def suspicious_notation(whitelist: set[str] | frozenset[str]) -> list[str]:
 
     A notation-table symbol is exempt when it reads as math: single plain
     words, Greek-based names (sigma_obs), short-base subscripts (y_t,
-    g_cont). Everything identifier-shaped — camelCase, dotted, path-like,
-    or snake_case with a >=3-char non-Greek base — is reported, so a
+    g_cont), and acronym subscripts whose base is all-caps and at most
+    four chars (NSA_t, TOT_c — what \\mathrm{NSA} normalizes to).
+    Everything identifier-shaped — camelCase, dotted, path-like, or
+    snake_case with a >=3-char base that is neither Greek nor a short
+    all-caps acronym (kalman_ll, MODEL_PATH, Nsa_t) — is reported, so a
     smuggled identifier cannot hide by being "defined" in the table.
     '''
     out: list[str] = []
@@ -119,7 +123,9 @@ def suspicious_notation(whitelist: set[str] | frozenset[str]) -> list[str]:
             continue
         if SNAKE_RE.fullmatch(sym):
             base = sym.split('_', 1)[0]
-            if len(base) > SUBSCRIPT_BASE_MAX and base.lower() not in GREEK:
+            acronym = base.isupper() and len(base) <= ACRONYM_BASE_MAX
+            if (len(base) > SUBSCRIPT_BASE_MAX and not acronym
+                    and base.lower() not in GREEK):
                 out.append(sym)
     return out
 

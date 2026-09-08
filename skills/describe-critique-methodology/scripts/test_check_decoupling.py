@@ -138,6 +138,28 @@ def test_suspicious_notation_exempts_latex_greek_variants():
                                 'varphi_0', 'vartheta_j', 'ell_i'}) == []
 
 
+def test_suspicious_notation_exempts_acronym_subscripts():
+    '''G^{\\mathrm{NSA}}_t normalizes to NSA_t: an acronym, not an identifier.'''
+    assert suspicious_notation({'NSA_t', 'TOT_c', 'NSA_v'}) == []
+
+
+def test_suspicious_notation_flags_genuine_uppercase_identifier():
+    '''Genuine because the base is a word, not an acronym: MODEL_PATH is a
+    module constant and KALMAN_ll a sample site, both >4 chars of base.'''
+    assert suspicious_notation({'MODEL_PATH', 'KALMAN_ll'}) == [
+        'KALMAN_ll', 'MODEL_PATH',
+    ]
+
+
+def test_suspicious_notation_acronym_exemption_stops_at_four_chars():
+    assert suspicious_notation({'TOTL_t', 'TOTAL_t'}) == ['TOTAL_t']
+
+
+def test_suspicious_notation_acronym_exemption_needs_a_full_caps_base():
+    '''Nsa_t is title-cased, so it does not read as an acronym.'''
+    assert suspicious_notation({'Nsa_t'}) == ['Nsa_t']
+
+
 def test_cli_always_exits_zero(tmp_path):
     doc = tmp_path / 'm.md'
     doc.write_text('uses kalman_ll everywhere\n')
