@@ -1,6 +1,11 @@
 # Deferred items
 
 ## Aged-backlog acknowledgements
+- 2026-09-08 — finished `feat/snippet-gate-repo-wide` with 1 item aged >45d,
+  carried on the same reason the owner gave earlier the same session for the same
+  item: `11-delegation-frontmatter-rollout`'s remaining sub-item is the live
+  model/effort indicator check, which needs an interactive terminal. Unchanged by
+  this branch, which touches only build/ and two skill snippets.
 - 2026-09-08 — finished `test/derive-roadmap-red-rerun` (plan 30) with 1 item aged
   >45d, carried deliberately: `11-delegation-frontmatter-rollout`'s remaining
   sub-item is the live model/effort indicator check, which needs an interactive
