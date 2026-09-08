@@ -1,5 +1,7 @@
 # Snippet Execution Gate Implementation Plan
 
+**Status: COMPLETE (2026-09-08)** — executed via executing-plans; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Mechanize the correctness of `bayesian-workflow`'s inline code against the stack `SKILL.md:59` declares, so executable and API claims cannot go stale silently.
@@ -52,7 +54,7 @@
   - `iter_code_blocks(text: str, langs=('python', 'py')) -> list[CodeBlock]` where `CodeBlock` is a `NamedTuple` with fields `lang: str`, `info: str` (everything on the fence line after the language word, stripped — `''` when absent), `line: int` (1-based line number of the fence opener), `code: str`.
   - Tasks 2, 4 and 5 all consume `iter_code_blocks`. Only blocks at the OUTERMOST fence level are returned — a ```` ```python ```` fence nested inside a ````` ````markdown ````` fence is content, not a block.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `build/test_fences.py`:
 
@@ -97,12 +99,12 @@ def test_strip_fenced_blocks_still_works():
     assert fences.strip_fenced_blocks('a\n```\nb\n```\nc') == 'a\nc'
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `cd build && uv run --python 3.13 --with pytest python -m pytest test_fences.py -q`
 Expected: FAIL — `ModuleNotFoundError: No module named 'fences'`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Create `build/fences.py`:
 
@@ -180,12 +182,12 @@ def iter_code_blocks(text: str,
     return out
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `cd build && uv run --python 3.13 --with pytest python -m pytest test_fences.py -q`
 Expected: PASS, 5 tests.
 
-- [ ] **Step 5: Point check_frontmatter.py at the shared helper**
+- [x] **Step 5: Point check_frontmatter.py at the shared helper**
 
 In `build/check_frontmatter.py`, delete the `FENCE_OPEN_RE` assignment and the whole `strip_fenced_blocks` function (currently lines 50-75), and add to the imports at the top of the file:
 
@@ -193,7 +195,7 @@ In `build/check_frontmatter.py`, delete the `FENCE_OPEN_RE` assignment and the w
 from fences import strip_fenced_blocks
 ```
 
-- [ ] **Step 6: Verify no regression in the existing gate**
+- [x] **Step 6: Verify no regression in the existing gate**
 
 Run: `cd build && uv run --python 3.13 --with pytest --with numpy --with polars --with pyyaml python -m pytest -q`
 Expected: PASS with a **+5** delta over the pre-task baseline (47 → 52 if `build/.scratch/` is present).
@@ -201,7 +203,7 @@ Expected: PASS with a **+5** delta over the pre-task baseline (47 → 52 if `bui
 Run: `uv run --python 3.13 --with pyyaml python build/check_frontmatter.py`
 Expected: exit 0, no output — identical to before the move.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add build/fences.py build/test_fences.py build/check_frontmatter.py
@@ -225,7 +227,7 @@ git commit -m "refactor(build): hoist CommonMark fence handling into fences.py"
 
 **Context the implementer needs:** `references/diagnostics.md` ships a block containing `def model(...):`, which is not valid Python (`...` is an expression, not a parameter). Confirmed 2026-09-08: `ast.parse` raises `SyntaxError: invalid syntax` at that line. The block is illustrative — it contrasts a centered and a non-centered model — so the fix is to give the placeholder a real signature, not to delete the block. **The gate must ship green**, so this content fix lands in the same task as the gate that finds it.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `build/test_check_snippets.py`:
 
@@ -266,12 +268,12 @@ def test_bayesian_workflow_parses_clean():
     assert errs == [], errs
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `cd build && uv run --python 3.13 --with pytest python -m pytest test_check_snippets.py -q`
 Expected: FAIL — `ModuleNotFoundError: No module named 'check_snippets'`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Create `build/check_snippets.py`:
 
@@ -336,12 +338,12 @@ if __name__ == '__main__':
     sys.exit(main())
 ```
 
-- [ ] **Step 4: Run the gate against the real skill to see it find the shipped defect**
+- [x] **Step 4: Run the gate against the real skill to see it find the shipped defect**
 
 Run: `uv run --python 3.13 python build/check_snippets.py skills/bayesian-workflow/`
 Expected: exit 1, one line naming `references/diagnostics.md` and `SyntaxError: invalid syntax`.
 
-- [ ] **Step 5: Fix the shipped snippet**
+- [x] **Step 5: Fix the shipped snippet**
 
 In `skills/bayesian-workflow/references/diagnostics.md`, in the block that opens at line 117, replace the invalid placeholder signature so the contrast still reads:
 
@@ -353,7 +355,7 @@ def model(y, group_idx):
 
 Leave the surrounding `LocScaleReparam` / `reparam` lines untouched — only the `def model(...):` line changes.
 
-- [ ] **Step 6: Run test and gate to verify both pass**
+- [x] **Step 6: Run test and gate to verify both pass**
 
 Run: `cd build && uv run --python 3.13 --with pytest python -m pytest test_check_snippets.py -q`
 Expected: PASS, 4 tests.
@@ -361,7 +363,7 @@ Expected: PASS, 4 tests.
 Run: `uv run --python 3.13 python build/check_snippets.py skills/bayesian-workflow/`
 Expected: exit 0, no output.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add build/check_snippets.py build/test_check_snippets.py \
@@ -386,7 +388,7 @@ git commit -m "feat(build): parse-only snippet gate; fix shipped SyntaxError in 
 
 **Why an info-string suffix and not a manifest:** a `file:line` exemption list is brittle against every future edit, and this repo has already been bitten by coordinate-anchored bookkeeping. The marker travels with the block. ```` ```python norun <reason> ```` still renders as a python block in every CommonMark renderer, and `iter_code_blocks` matches on the first info word, so `lang` is still `python`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `build/test_check_snippets.py`:
 
@@ -425,12 +427,12 @@ def test_every_norun_marker_carries_a_reason():
     assert bare == [], bare
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `cd build && uv run --python 3.13 --with pytest python -m pytest test_check_snippets.py -q`
 Expected: FAIL — `AttributeError: module 'check_snippets' has no attribute 'is_exempt'`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Add to `build/check_snippets.py`, after `parse_errors`:
 
@@ -465,7 +467,13 @@ And in `main`, after printing failures, print advisories to stderr:
             print(f'WARN {line}', file=sys.stderr)
 ```
 
-- [ ] **Step 4: Mark the four blocks that cannot or must not run**
+- [x] **Step 4: Mark the four blocks that cannot or must not run**
+
+> Deviation: marked SKILL.md fence **170**, not the plan's "line 96". The plan's other three
+> citations are all fence-line minus one, so "96" resolves to fence 95 — but that block is
+> `runnable=False` (unbound `df`, `add_log_prior`), so the marker would be a no-op. Fence 170
+> is the block that is actually runnable-and-slow, and matches the plan's own reason string.
+> Verified empirically before marking.
 
 `skills/bayesian-workflow/references/state-space.md`, the block opening at line 77 — change its fence line to:
 
@@ -491,7 +499,7 @@ And in `main`, after printing failures, print advisories to stderr:
 ```python norun slow: 200 SBC replicates x 600 draws -- not a pre-commit gate
 ````
 
-- [ ] **Step 5: Run tests and the gate**
+- [x] **Step 5: Run tests and the gate**
 
 Run: `cd build && uv run --python 3.13 --with pytest python -m pytest test_check_snippets.py -q`
 Expected: PASS, 8 tests.
@@ -499,7 +507,7 @@ Expected: PASS, 8 tests.
 Run: `uv run --python 3.13 python build/check_snippets.py skills/bayesian-workflow/ 2>&1 1>/dev/null`
 Expected: exactly four `WARN ... not executed: ...` lines on stderr, each with a reason; exit 0.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add build/check_snippets.py build/test_check_snippets.py skills/bayesian-workflow/
@@ -522,7 +530,7 @@ git commit -m "feat(build): norun fence marker with a required reason"
 
 **Known false-positive source:** backticked identifiers that are user code, not library API (`model`, `idata.posterior`). Restrict resolution to chains whose ROOT is a known alias in `modules`; everything else is ignored. That is why `modules` is an explicit dict, not inference.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `build/test_check_snippets.py`:
 
@@ -560,12 +568,16 @@ def test_non_library_roots_are_ignored(tmp_path):
     assert check_snippets.api_errors(p, MODULES) == []
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `cd build && uv run --python 3.13 --with pytest --with "arviz>=1.0" --with arviz-base --with arviz-stats python -m pytest test_check_snippets.py -q -k api or backticked or non_library or real_attribute`
 Expected: FAIL — `AttributeError: module 'check_snippets' has no attribute 'api_errors'`
 
-- [ ] **Step 3: Write minimal implementation**
+> Deviation: quoted the `-k` expression (`-k "api or ..."`); unquoted, the shell splits it
+> and pytest reads `or` as a file path. Selected 3 of the 4 new tests, all failing for the
+> predicted reason.
+
+- [x] **Step 3: Write minimal implementation**
 
 Add to `build/check_snippets.py`:
 
@@ -645,12 +657,21 @@ with, after the parse pass:
         failures += [e for md in _iter_md(args.paths) for e in api_errors(md, mods)]
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `cd build && uv run --python 3.13 --with pytest --with "arviz>=1.0" --with arviz-base --with arviz-stats python -m pytest test_check_snippets.py -q`
 Expected: PASS, 12 tests.
 
-- [ ] **Step 5: Run against the real skill and triage what it finds**
+- [x] **Step 5: Run against the real skill and triage what it finds**
+
+> Deviation: 7 findings. 1 real (`numpyro.infer.config_enumerate` → `numpyro.contrib.funsor`,
+> doc fixed); 2 resolver bugs (`hasattr` does not bind submodules — fixed with a
+> prefix-import attempt); 1 optional dependency (funsor → advisory); 3 prose naming a
+> deliberately-removed API (→ name-keyed `DOCUMENTED_ABSENT` allowlist, prose-only, with
+> teeth verified: the same name in a code block still fails). Also corrected the module
+> docstring: `git show a2f2f96` shows audit D2 was a **dotless** `warning` column, which
+> `TICK_NAME_RE` cannot match — this tier would NOT have caught D2, contrary to the task
+> title. The `pd.DataFrame` fix landed as its own commit, as the step directs.
 
 Run:
 ```bash
@@ -660,7 +681,7 @@ uv run --python 3.13 --with "arviz>=1.0" --with arviz-base --with arviz-stats \
 ```
 Expected: a list of unresolvable chains. **Each one is either a real staleness finding (fix the doc) or a false positive (extend the ignore rule).** Do not suppress wholesale. Record the triage verdict per finding in the commit body. A known one to expect: `references/model-criticism.md` uses `pd.DataFrame` with no pandas import anywhere in the skill — `pd` is not in `modules`, so it will not be flagged here; fix it or drop it as a separate content commit.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add build/check_snippets.py build/test_check_snippets.py
@@ -688,7 +709,7 @@ git commit -m "feat(build): API-surface tier; the class D2 belonged to"
 
 **Pinned vs floating — the tension, resolved two-tier.** Pinning is reproducible but goes blind to exactly the upstream drift audit Theme 1 is about; floating catches drift but makes the gate's verdict non-reproducible. So: the **pinned** run is the hard gate (exit 1); a **floating** run is advisory (stderr, exit 0). Pinned set verified 2026-09-08 — `arviz==1.3.0`, `arviz-stats==1.3.2`, `arviz-plots==1.3.1`, `numpyro==0.21.0`, `jax==0.11.1`. Record that provenance line beside the constant and refresh it deliberately.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `build/test_check_snippets.py`:
 
@@ -731,12 +752,18 @@ def test_block_side_effects_do_not_touch_cwd(tmp_path, monkeypatch):
     assert not (tmp_path / 'sentinel.txt').exists()
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `cd build && uv run --python 3.13 --with pytest python -m pytest test_check_snippets.py -q -k runnable or raising or side_effects`
 Expected: FAIL — `AttributeError: module 'check_snippets' has no attribute 'runnable'`
 
-- [ ] **Step 3: Write the preamble**
+> Deviation: quoted the `-k` expression, as in Task 4 Step 2.
+
+- [x] **Step 3: Write the preamble**
+
+> Deviation: every coverage figure in the plan had drifted; re-measured and wrote actuals
+> (78 blocks not 77; after the Step 6 rework, 54 preamble names carrying 27 executed blocks).
+> The preamble was also enriched well past the plan's sketch — see Step 6.
 
 Create `build/snippet_preamble.py`:
 
@@ -788,7 +815,7 @@ PINNED = (
 )
 ```
 
-- [ ] **Step 4: Write the runner**
+- [x] **Step 4: Write the runner**
 
 Add to `build/check_snippets.py`:
 
@@ -861,12 +888,24 @@ def run_errors(path: Path, timeout: int = 300) -> list[str]:
 
 Add `import os` at the top, and the `--run` flag in `main` mirroring `--api`.
 
-- [ ] **Step 5: Run test to verify it passes**
+- [x] **Step 5: Run test to verify it passes**
 
 Run: `cd build && uv run --python 3.13 --with pytest --with "arviz>=1.0" --with arviz-base --with arviz-stats --with arviz-plots --with numpyro --with jax --with numpy --with matplotlib python -m pytest test_check_snippets.py -q`
 Expected: PASS, 17 tests.
 
-- [ ] **Step 6: Run the pinned gate against the skill**
+- [x] **Step 6: Run the pinned gate against the skill**
+
+> Deviation: did NOT exit 0 — 24 blocks raised. All 24 were fixture-shape mismatches, not
+> snippet defects: the plan's preamble builds idata with no log_likelihood, no
+> posterior_predictive, no log_prior and no energy, and with sites named a/b rather than the
+> beta/sigma the docs use. Root cause is a gap in the plan's design — `runnable()` tests
+> NAME-completeness, which does not imply the fixture can satisfy a block's DATA
+> requirements. Resolved (partner-approved) by enriching the fixture to match SKILL.md:95,
+> including sensitivity.md's own documented `add_log_prior` helper used verbatim so the gate
+> exercises it, and by tightening admission with two structural rules: literal `var_names`
+> must lie within FIXTURE_VARS, and a numpyro primitive called outside any `def` is a
+> model-body fragment. No snippet was marked `norun` to go green; `skills/` was untouched by
+> the fix. Final: exit 0, 27 executed, 51 advisories each naming its cause.
 
 Run:
 ```bash
@@ -877,7 +916,7 @@ uv run --python 3.13 --with 'arviz==1.3.0' --with arviz-base \
 ```
 Expected: exit 0. **If a block raises, that is a real finding — fix the snippet, do not mark it `norun` to get green.** `norun` is for blocks that cannot run by design, never for blocks that fail.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add build/snippet_preamble.py build/check_snippets.py build/test_check_snippets.py
@@ -895,7 +934,7 @@ git commit -m "feat(build): harnessed snippet execution with pinned deps"
 - Consumes: the three tiers' invocations from Tasks 2, 4, 5.
 - Produces: nothing consumed by later tasks.
 
-- [ ] **Step 1: Add the gate to the Commands block**
+- [x] **Step 1: Add the gate to the Commands block**
 
 In the root `CLAUDE.md`, immediately after the frontmatter/provenance lint entries, add:
 
@@ -918,11 +957,17 @@ uv run --python 3.13 --with 'arviz==1.3.0' --with arviz-base \
 ```
 ````
 
-- [ ] **Step 2: Update the build/ test-count line**
+- [x] **Step 2: Update the build/ test-count line**
+
+> Deviation: **+24**, not +22. The completion gate's resolve-before-defer step added two rot
+> guards for hazards this execution introduced: one pinning the preamble's copy of
+> `add_log_prior` to sensitivity.md (it had silently drifted from "verbatim"), one
+> re-validating `DOCUMENTED_ABSENT` against the installed stack. All counts verified by
+> running, including the `.scratch/`-absent case.
 
 The `build/` suite entry in `CLAUDE.md` currently records 47 tests. This plan adds `test_fences.py` (5) and `test_check_snippets.py` (17) — a **+22** delta. Update the count and its parenthetical, and note that `test_check_snippets.py`'s API and execution tests need the ArviZ/NumPyro chain (`-q` without it will error on import).
 
-- [ ] **Step 3: Verify the documented commands actually run**
+- [x] **Step 3: Verify the documented commands actually run**
 
 Run each of the three commands exactly as written in `CLAUDE.md`.
 Expected: tiers 1 and 2 exit 0; tier 3 exits 0 with `WARN ... not executed:` advisories on stderr for the four `norun` blocks.
@@ -930,7 +975,7 @@ Expected: tiers 1 and 2 exit 0; tier 3 exits 0 with `WARN ... not executed:` adv
 Run: `cd build && uv run --python 3.13 --with pytest --with numpy --with polars --with pyyaml python -m pytest -q`
 Expected: the non-ArviZ subset passes; confirm the count matches the number written into `CLAUDE.md`.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add CLAUDE.md
