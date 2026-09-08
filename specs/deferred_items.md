@@ -32,6 +32,15 @@
       `/status` before/after cost reading on one exploration-heavy session. Could not
       run in the non-interactive execution flow; the enforceable lints/tests passed.
       Run in a normal interactive session — no code needed.
+      **Partially retired 2026-09-08 (/deferred)**: the `/status` before/after cost
+      reading is dropped — it was specified against the Sonnet-default routing policy,
+      superseded 2026-08-10 by Opus-default at auto effort, so the "before" baseline it
+      would compare against no longer exists. What stays open is the indicator check
+      alone, whose premise was re-confirmed 2026-09-08: the pins are still there to
+      observe (`model: haiku` on bls-data-context / classification-codes / explore-data
+      / geographic-codes; `effort: xhigh` on bayesian-workflow / tune-hyperparameters).
+      Owner-only — needs an interactive terminal — and still the backlog's whole aged
+      tail, so the finishing-a-development-branch merge/PR gate stays bound.
 - [x] Opt-ins decided against but available (one-line frontmatter adds if revisited):
       `effort: high` on `recommend-probabilistic-model`/`recommend-visualization`
       (no-op at the default `high`); `model: opus` on `bayesian-workflow` (would
@@ -658,12 +667,24 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       `skills/derive-roadmap/SKILL.md` §1's batched question set and §4's human approval
       before Stage 1 both require an interactive turn; every test in this plan ran
       non-interactively, so neither was exercised.
-- [ ] **The RED baseline for this skill is confounded and could be re-run cleanly.**
-      Both leak channels are now closed (the fixture is name-neutralisable, and the
-      shared task list no longer names the work). A clean round would settle whether
-      E1–E5 are genuinely unobserved, which is what the kept-as-is SKILL.md guidance
-      rests on. See specs/plans/completed/19-methodology-pipeline-skills.md (Task 1) for
-      the full method.
+- [x] **The RED baseline for this skill is confounded and could be re-run cleanly.**
+      → attempted in plan 30, 2026-09-08: **VOID IN FULL — 0 of 12 reps valid.** It did
+      not settle E1–E5. This item's premise ("both leak channels are now closed") was
+      wrong: a third, decisive channel exists. Every rep receives the skill name in
+      inherited session context — the project CLAUDE.md provenance list and the
+      session-start gitStatus naming the plan file — before its first tool call, which
+      no file quarantine can close, because gitStatus snapshots before the move.
+      See specs/completed/red-baseline-derive-roadmap-2026-09-08.md.
+- [ ] **`derive-roadmap`'s RED baseline is still unmeasured; a re-run now has a known
+      method.** Plan 30 established four requirements for a clean round: (a) dispatch
+      from a session whose cwd was NEVER the skill's repo, so no repo CLAUDE.md or
+      gitStatus is ever captured — the only fix for Channel 5; (b) gate on a pilot
+      subagent's own transcript grepped for the skill name, not on the filesystem;
+      (c) a VOID rule distinguishing contamination from measured behaviour, since the
+      current one voids any rep that exhibits E2; (d) a fixture whose routing header
+      names a skill that exists, since renaming it makes the header legitimately
+      unfollowable. Not planned — the owner decides whether the question is worth
+      another round. See specs/completed/red-baseline-derive-roadmap-2026-09-08.md.
 - [x] **Req 12's `/context` residency check** → discharged 2026-07-30, same day. The owner
       ran `/context`: the skill listing reports **12.8K tokens, 1.3%** of the window. That
       implies a ~1M-token window, so `skillListingBudgetFraction: 0.025` allows ~25K and
@@ -728,11 +749,18 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       over-/under-confident posterior plus assertions on
       `assess_calibration`'s five returned keys. Confirmed at the 2026-09-03
       gate as a deferral, not an accepted permanent gap.
-- [ ] `skills/tech-debt/scripts/scan.sh` has no test (audit H1). Deferred on
+- [x] `skills/tech-debt/scripts/scan.sh` has no test (audit H1). Deferred on
       cost: it needs fixture repositories with planted debt signals (a magic
       seed, a hardcoded /Users/ path, an unvalidated join, a committed .env) and
       assertions per section. Highest cost, lowest marginal value of the five
       untested scripts.
+      → retired 2026-09-08 (/deferred): an accepted permanent gap, not deferred work.
+      The item states no closure condition, and by the deferred-item schema an item
+      that cannot state one is not deferrable — its own cost/value verdict ("highest
+      cost, lowest marginal value of the five untested scripts") *is* the decision.
+      Unlike the `calibration_check.py` item above it, the 2026-09-03 gate never
+      confirmed this one as a deferral. Reopen only if scan.sh gains logic worth
+      asserting on; today it is grep over planted signals.
 - [x] Audit H4 — loose files inside skill directories: `README.md` in three
       skills, `writing-skills/`'s five support docs at top level while it
       prescribes `references/` for everyone else, `systematic-debugging/`'s four
@@ -1040,7 +1068,7 @@ declined as YAGNI (zero instances in a one-page wiki).
 
 ## 26-distill-sessions-hardening — 2026-09-04
 
-- [ ] Refresh the deployed wiki copy of `distill_sessions.py`. `~/research-wiki/scripts/
+- [x] Refresh the deployed wiki copy of `distill_sessions.py`. `~/research-wiki/scripts/
       distill_sessions.py` was byte-identical to the repo copy before this plan and is now
       two commits stale (the `_ordered_by_time` ordering fix and the `_real_dates`
       extraction). It is a managed install — `bootstrap_wiki.py` `MANAGED_SCRIPTS` — so the
@@ -1058,6 +1086,17 @@ declined as YAGNI (zero instances in a one-page wiki).
       repo copy run against the pilot wiki reports `0 errors, 1 warnings, 0 info`,
       identical to the deployed copy's output — and that post-fix run includes the
       DECISION_META_RE tightening too, so the refresh brings no content churn.
+      → done 2026-09-08 (/deferred quick fix): the owner authorised the out-of-repo write.
+      SCOPE WIDENED A SECOND TIME, checked before writing: `bootstrap_wiki.py --check`
+      reported ALL THREE `MANAGED_SCRIPTS` divergent — `distill_specs.py` was stale too
+      (deployed 2026-07-25), a third drift neither plan 26 nor plan 28 noticed. One
+      `--force` refreshed all three; `SCHEMA.md` was correctly left alone (seed-once).
+      The post-write self-verification reported `0 errors, 1 warnings, 0 info` — exactly
+      the output this item predicted — and `--check` now reports `tooling is current`.
+      Two caveats recorded rather than filed as new items: the wiki's
+      `test_distill_sessions.py` / `test_lint_wiki.py` are outside the allowlist BY DESIGN
+      (the docstring rejects a glob) and still pass 86/86 against the refreshed scripts;
+      and `~/research-wiki` now has three modified, uncommitted files in its own repo.
 
 ## 27-deferment-loop-hardening — 2026-09-08
 - [ ] Sync these skills to the work environment, where the backlog problem
@@ -1141,5 +1180,16 @@ declined as YAGNI (zero instances in a one-page wiki).
       `test-driven-development`'s are RED examples meant to fail. `build/check_snippets.py`
       already takes paths-or-dirs, so this is an invocation and a triage pass, not new code
       — but the triage is the work, and an unknown number of skills may ship broken syntax.
+      → SCOPED 2026-09-08 (/deferred triage): the number is no longer unknown — measured,
+      `check_snippets.py skills/` reports THREE failures, not an open-ended tail. One is
+      now fixed: `systematic-debugging/root-cause-tracing.md:46` was a `→` call-chain
+      diagram in a `python` fence (done 2026-09-08, /deferred quick fix; `text` fence,
+      that skill now exits 0). The remaining TWO are the actual work, and both are the
+      same open question rather than typos: `clean-code/references/comments.md:24` (a
+      deliberately body-less `for`) and `develop-testing-strategy/references/model-tests.md:83`
+      (an indented continuation fragment) are illustrative non-programs, and `norun`
+      CANNOT waive them — it exempts from EXECUTION only, parsing always applies
+      (`build/check_snippets.py:94`). So this needs a decision on a parse-level exemption,
+      which is what keeps it `Size: plan` rather than a second quick fix.
       Size: plan. Done when: `check_snippets.py skills/` exits 0 and the invocation is in
       the root `CLAUDE.md` Commands block alongside the three bayesian-workflow tiers.
