@@ -19,6 +19,8 @@ from pathlib import Path
 
 import yaml
 
+from fences import strip_fenced_blocks
+
 REPO = Path(__file__).resolve().parent.parent
 ALLOWED_KEYS = {'name', 'description', 'license', 'allowed-tools', 'metadata',
                 'when_to_use', 'model', 'effort', 'context'}
@@ -47,33 +49,6 @@ READONLY_HEADING = '## Read-only contract'
 # which already excludes '#' from the captured group).
 LINK_RE = re.compile(r'\]\(([^)#\s]+)\)')
 TICK_PATH_RE = re.compile(r'`((?:references|scripts)/[A-Za-z0-9._/-]+)`')
-FENCE_OPEN_RE = re.compile(r'^(`{3,})')
-
-
-def strip_fenced_blocks(text: str) -> str:
-    '''Remove fenced code blocks, honoring CommonMark fence-matching rules.
-
-    A fence closes only on a line of the same fence character whose run
-    length is >= the opener's (and nothing else on the line but whitespace).
-    A naive non-greedy regex closes on the FIRST ``` it sees, which
-    desynchronizes on nested fences (e.g. a ````markdown fence wrapping a
-    literal ```python fence) — real prose gets stripped and fence-internal
-    content gets scanned instead.
-    '''
-    kept: list[str] = []
-    open_len: int | None = None
-    for line in text.split('\n'):
-        if open_len is None:
-            m = FENCE_OPEN_RE.match(line)
-            if m:
-                open_len = len(m.group(1))
-                continue
-            kept.append(line)
-        else:
-            stripped = line.strip()
-            if stripped.startswith('`' * open_len) and set(stripped) == {'`'}:
-                open_len = None
-    return '\n'.join(kept)
 
 
 def check_skill(skill_dir: Path) -> list[str]:
