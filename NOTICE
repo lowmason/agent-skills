@@ -246,6 +246,17 @@ Changes from upstream:
     heading-termination and Global-Constraints rework survives unchanged:
     upstream's own change to that script was only the workspace call, so
     the two compose.
+  - subagent-driven-development's SKILL.md was split for length (586 ->
+    476 lines, against the ~500-line guideline writing-skills sets), adding
+    a references/ directory beside the existing scripts/. Four sections
+    moved into it: example-workflow.md and advantages.md wholesale;
+    model-selection.md and context-checkpoints.md carry the on-demand half
+    of a section whose binding rules stay resident in SKILL.md (the model
+    tiers and aliases, and the checkpoint trigger, are still in SKILL.md
+    because other files point at them there). This is a layout change
+    only -- the moved text is verbatim, carrying the same authorship and
+    MIT terms as the sections it came from, and no wording was rewritten
+    in the move.
 
     brainstorming/
     dispatching-parallel-agents/

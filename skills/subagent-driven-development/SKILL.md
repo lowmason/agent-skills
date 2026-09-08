@@ -142,9 +142,11 @@ conflicts that only emerge from implementation.
 ## Model Selection
 
 Pick the **cheapest tier that can one-shot the task without a re-loop** — but
-on a genuine toss-up between two tiers, **err toward the stronger one.** A model
-that takes 2-3× the turns, or comes back wrong and needs a re-dispatch, costs
-more than the tier above it; turn count and rework dominate sticker price.
+on a genuine toss-up between two tiers, **err toward the stronger one.** The
+signal order that picks the tier for a given task — risk, then the source of
+the work, then spread — is in
+[references/model-selection.md](references/model-selection.md); read it before
+the first dispatch of a plan.
 
 **Tiers** (update these IDs when the lineup changes; the aliases are the durable part):
 - **cheap** — Haiku 4.5 (dispatch alias `haiku`)
@@ -157,23 +159,10 @@ dispatch tool's model parameter does not accept. An omitted model inherits your
 session's model — usually the most capable and most expensive — silently
 defeating this section.
 
-**Choosing the tier — read the signals in order; the first that fires wins:**
-1. **Risk / subtlety** — concurrency, security, data-loss, broad blast radius,
-   or debugging from symptoms → **capable**, regardless of file count or diff size.
-2. **Source of the work** — the complete code is in the brief (transcription +
-   testing) → **cheap**; behavior is described in prose → **standard floor**
-   (prose implementers never get the cheap tier).
-3. **Spread** — 1-2 files with a clear spec → **cheap**; multiple files /
-   integration / pattern-matching → **standard**; open design judgment or
-   broad-codebase understanding → **capable**.
-
-When nothing clearly fires, default to **standard** — the floor that absorbs the
-cost of one wrong cheap pick.
-
-**Reviews** floor at **standard** and scale up with the diff: a small mechanical
-diff reviews at **standard**, a subtle or risky change at **capable**. The
-**final whole-branch review is always capable** — dispatch it explicitly, not on
-the session default.
+When nothing clearly fires, default to **standard**. **Reviews** floor at
+**standard** and scale up with the diff: a small mechanical diff reviews at
+**standard**, a subtle or risky change at **capable**. The **final whole-branch
+review is always capable** — dispatch it explicitly, not on the session default.
 
 ## Handling Implementer Status
 
@@ -409,21 +398,11 @@ you notice has grown large. Many tasks since the last fresh start is a weak
 secondary hint, not a trigger by itself; task sizes vary, so read the
 context-pressure signal, not a task count.
 
-**How:**
-1. **Capture cross-task state the ledger lacks.** The plan's `Produces:` blocks
-   carry each task's *planned* interfaces, not what changed during execution.
-   For each task done since the last fresh start, append any plan deviation a
-   later implementer must know — a renamed symbol, a changed signature, or an
-   unanticipated decision (`Task 3: deviation — plan said clearLayers(); shipped
-   clearAll()`). A task that matched its plan needs no line. After `/clear` your
-   memory of these is gone; the ledger is the only carrier.
-2. Confirm the ledger's completion lines are current through the last finished
-   task and that their commits exist in `git log`.
-3. In one line, tell your human partner which tasks are complete, that the
-   ledger is current, and that you recommend `/clear` + relaunching
-   subagent-driven-development on the same plan to resume with fresh context —
-   with the cost reason. Then stop; the relaunch resumes from the ledger via
-   Durable Progress above.
+**How:** run the three-step handoff in
+[references/context-checkpoints.md](references/context-checkpoints.md) — capture
+the plan deviations a later implementer needs, confirm the ledger is current
+through the last finished task, then recommend `/clear` + relaunch and stop.
+The relaunch resumes from the ledger via **Durable Progress** above.
 
 ## Prompt Templates
 
@@ -434,103 +413,14 @@ context-pressure signal, not a task count.
 
 ## Example Workflow
 
-```
-You: I'm using Subagent-Driven Development to execute this plan.
-
-[Read plan file once: specs/plans/7-feature-name.md]
-[Create todos for all tasks]
-
-Task 1: Hook installation script
-
-[Run task-brief for Task 1; dispatch implementer with brief + report paths + context]
-
-Implementer (final message): NEEDS_CONTEXT — "Should the hook be installed
-  at user or system level?"
-
-You: [Re-dispatch the implementer with the same brief plus: "User level (~/.claude/hooks/)"]
-
-Implementer (second run):
-  - Implemented install-hook command
-  - Added tests, 5/5 passing
-  - Self-review: Found I missed --force flag, added it
-  - Committed
-
-[Run review-package, dispatch task reviewer with the path it reports]
-Task reviewer: Spec ✅ - all requirements met, nothing extra.
-  Strengths: Good test coverage, clean. Issues: None. Task quality: Approved.
-
-[Mark Task 1 complete]
-
-Task 2: Recovery modes
-
-[Run task-brief for Task 2; dispatch implementer with brief + report paths + context]
-
-Implementer: [No questions, proceeds]
-Implementer:
-  - Added verify/repair modes
-  - 8/8 tests passing
-  - Self-review: All good
-  - Committed
-
-[Run review-package, dispatch task reviewer with the path it reports]
-Task reviewer: Spec ❌:
-  - Missing: Progress reporting (spec says "report every 100 items")
-  - Extra: Added --json flag (not requested)
-  Issues (Important): Magic number (100)
-
-[Fix round 1: resume the same implementer with all findings]
-Implementer (resumed): Removed --json flag, added progress reporting,
-  extracted PROGRESS_INTERVAL constant
-
-[Dispatch scoped re-review (re-review-prompt.md) with the numbered findings]
-Re-reviewer:
-  1. Missing progress reporting — ADDRESSED (reports every PROGRESS_INTERVAL items)
-  2. Extra --json flag — ADDRESSED (removed)
-  3. Magic number (100) — ADDRESSED (extracted to PROGRESS_INTERVAL)
-  No new findings.
-
-[Mark Task 2 complete]
-
-...
-
-[After all tasks]
-[Dispatch final code-reviewer]
-Final reviewer: All requirements met, ready to merge
-
-Done!
-```
+One worked pass through the loop — a NEEDS_CONTEXT round-trip on Task 1, then a
+failed spec review, a fix round and a scoped re-review on Task 2:
+[references/example-workflow.md](references/example-workflow.md).
 
 ## Advantages
 
-**vs. Manual execution:**
-- Subagents follow TDD naturally
-- Fresh context per task (no confusion)
-- Isolated context per dispatch (no cross-task contamination)
-- Subagent can surface questions (a NEEDS_CONTEXT report; controller answers and re-dispatches)
-
-**vs. Executing Plans:**
-- Same session (no handoff)
-- Continuous progress (no waiting)
-- Review checkpoints automatic
-
-**Efficiency gains:**
-- Controller curates exactly what context is needed; bulk artifacts move
-  as files, not pasted text
-- Subagent gets complete information upfront
-- Questions surfaced before work begins (not after)
-
-**Quality gates:**
-- Self-review catches issues before handoff
-- Task review carries two verdicts: spec compliance and code quality
-- Review loops ensure fixes actually work
-- Spec compliance prevents over/under-building
-- Code quality ensures implementation is well-built
-
-**Cost:**
-- More subagent invocations (implementer + reviewer per task)
-- Controller does more prep work (extracting all tasks upfront)
-- Review loops add iterations
-- But catches issues early (cheaper than debugging later)
+What this buys against manual execution and a separate parallel session, and
+what it costs: [references/advantages.md](references/advantages.md).
 
 ## Red Flags
 

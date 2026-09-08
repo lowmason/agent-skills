@@ -1134,7 +1134,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       most reliable fix and the most disruptive, and can block legitimate work.
       Size: design. Revisit if: closure rate measured by deferred_stats.py is
       still flat or falling in the work repos 60 days after the sync above.
-- [ ] Trim `skills/subagent-driven-development/SKILL.md` from 586 lines to
+- [x] Trim `skills/subagent-driven-development/SKILL.md` from 586 lines to
       under the ~500-line guideline; candidates to move to `references/` are
       Model Selection, Fix Rounds, Durable Progress and Context Checkpoints.
       Fenced out of plan 27 by explicit scope decision — restructuring the
@@ -1142,6 +1142,25 @@ declined as YAGNI (zero instances in a one-page wiki).
       self-modifying-plan hazard.
       Size: plan. Done when: SKILL.md is under 500 lines with the core loop
       intact and the moved sections reachable from it.
+      → done 2026-09-08 (direct, not via a plan — this is a restructure of one
+      skill file, and executing it *through* subagent-driven-development is the
+      very hazard the item was fenced out of plan 27 to avoid): 586 → 476 lines,
+      four sections moved into a new `references/` beside `scripts/`.
+      Two of the four named candidates were deliberately NOT moved. **Fix Rounds**
+      is the bounded half of the core loop and is cross-referenced from six places
+      in the body; **Durable Progress** prevents the re-dispatch failure the skill
+      itself calls "the single most expensive failure observed". Both must shape
+      behavior in the moment, so both stay resident — moving them would have met
+      the line count by gutting "the core loop intact".
+      Moved instead: **Example Workflow** (68 lines) and **Advantages** (32) —
+      illustration and rationale, carrying no procedure. **Model Selection** and
+      **Context Checkpoints** were split rather than moved: six files outside
+      SKILL.md say "choose per SKILL.md Model Selection", so the tiers, aliases,
+      always-specify-a-model rule and review floors stay resident and only the
+      signal order moved; the checkpoint trigger stays, only the handoff steps moved.
+      Verified: check_frontmatter / check_provenance / check_snippets all exit 0,
+      22 script tests pass, and 4/4 reference files are reachable from SKILL.md by
+      explicit pointer with no orphans. NOTICE records the layout change.
 - [x] `skills/finishing-a-development-branch/SKILL.md` hardcodes the `gh` CLI
       in Step 3's base-branch fallback and Step 5's Option 2, which does not
       exist in the Bloomberg/BBGitHub environment (source review §3, minor
