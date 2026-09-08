@@ -228,23 +228,51 @@ current plan deferred nothing. Then append this plan's deferred items, one
 section per plan, newest last. Create the file on first use with a single
 `# Deferred items` title line, no other preamble. Skip the append entirely
 when nothing was deferred — never append an empty section; the ticking
-pass above still runs. Each item is self-contained: file paths, why it was
-deferred, what it would take to do.
+pass above still runs. Each item follows the **Deferred-item schema** in
+`references/deferred-backlog.md`: self-contained (file paths, why it was
+deferred, what it would take to do), plus a `Size:` of `quick-fix` / `plan` /
+`design` and a closure condition (`Done when:` or `Revisit if:`). An item that
+cannot state a closure condition is not deferrable — resolve it now or drop it.
 
 ```markdown
 ## 7-rate-limiter — 2026-07-04
 - [ ] Redis-backed counter store (plan Task 4, skipped): needs prod Redis
       DSN decision. See specs/plans/completed/7-rate-limiter.md; touches
-      src/limiter/store.py.
+      src/limiter/store.py. Size: design. Done when: the DSN decision is
+      recorded and the store lands behind it.
 - [ ] Review Minor: retry jitter is fixed-seed in tests only (reviewer
-      report, triaged defer).
+      report, triaged defer). Size: quick-fix. Revisit if: a flake in
+      tests/test_limiter.py traces to jitter.
 ```
 
 When a later plan implements an item, tick its box with a pointer
 (`- [x] … → done in plan 12`). Never delete items — the file doubles as a
 history of consciously-deferred work.
 
-**4. Retire.** `git mv` the plan to `specs/plans/completed/`, in one
+**4. Backlog triage.** Report backlog health, then bring the triage to your
+human partner rather than waiting to be asked for it. Run from the repo root:
+
+```bash
+uv run --python 3.13 python ~/.claude/skills/writing-plans/scripts/deferred_stats.py
+```
+
+Surface its summary line — open count, closure rate, aged tail — in the
+completion report. Always, even when this plan deferred nothing: the summary is
+how the trend stays legible.
+
+Then, when the backlog has **20 or more open items or any aged tail**, run
+steps 1–4 of the **Triage rubric** in `references/deferred-backlog.md` and
+present the grouped, sorted proposal as part of this completion batch. Those
+four steps are read-only — no file is edited by presenting them.
+
+Executing a disposition is your human partner's call and runs under
+`/deferred`; this step's job is that the proposal exists without anyone having
+to remember to ask for it. Present it, note that `/deferred` acts on a
+selection, and continue to step 5 either way. The triage never blocks
+completion — the aged tail is gated later, at
+finishing-a-development-branch.
+
+**5. Retire.** `git mv` the plan to `specs/plans/completed/`, in one
 `chore(specs): retire plan <id>` commit. Retire the spec to
 `specs/completed/` (marked complete at top) in the same commit **only if**
 the spec file exists and no other live plan in `specs/plans/` implements it
