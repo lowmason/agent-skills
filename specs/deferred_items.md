@@ -432,13 +432,21 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
 
 ## 15-clean-code-family — 2026-07-24
 
-- [ ] Ship `clean-code-python` user-level (`~/.claude/rules` → `~/Projects/agent-skills/rules`):
+- [x] Ship `clean-code-python` user-level (`~/.claude/rules` → `~/Projects/agent-skills/rules`):
       deliberately not shipped — gate 2026-07-24 chose project-level only. Task 8's
       informational probe showed the user-level symlink DID load on Claude Code 2.1.218
       (contradicting issue #21858's silent-ignore report; probe transcript in commit
       7aa454f's body). Revisit if the always-on Python guardrails are wanted across work
       repos; mechanism is version-dependent, so re-probe on the then-current binary first
       (one `claude -p` probe against a scratch `probe.py`, per plan 15 Task 8 Step 5).
+      → retired 2026-09-08 (aged-tail clear, plan 29's completion): asked and answered —
+      user-level shipping is still not wanted, so the 2026-07-24 project-level-only gate
+      stands. This records a no-action decision, not outstanding work. Confirmed at
+      retirement: `~/.claude/rules` absent, and the project-level
+      `.claude/rules/clean-code-python.md -> ../../rules/clean-code-python.md` symlink in
+      place. The mechanism is version-dependent, so any future revisit needs a fresh probe
+      on the then-current binary regardless — the checkbox was carrying no information the
+      probe would not have to re-establish anyway.
 
 ## 16-llm-wiki-specs-harvest — 2026-07-25
 - [x] Script-family hardening pass: unguarded `read_text()` in the walk loops and the unguarded per-file `sha_table()` `_git` call in `cmd_inventory` (skills/llm-wiki/scripts/distill_specs.py; same unguarded convention exists in distill_sessions.py / lint_wiki.py). Wrap in the house stderr+exit-1 style or settle the convention repo-wide.
