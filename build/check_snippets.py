@@ -17,18 +17,30 @@ longer resolves. On its first run against skills/bayesian-workflow/ it found
 SKILL.md naming `numpyro.infer.config_enumerate`, which lives in
 numpyro.contrib.funsor and has never been on numpyro.infer.
 
-Run: uv run --python 3.13 python build/check_snippets.py skills/bayesian-workflow/
-Exit 0 if clean; exit 1 with one line per violation.
+Three tiers, cheapest first; see the root CLAUDE.md for the full invocations.
+  (default)  parse every block            stdlib, instant
+  --api      + resolve dotted API chains  imports the stack, ~30s
+  --run      + execute the harnessed set  minutes, pinned deps
+
+Exit 0 clean, 1 violations (stdout, one line each), 2 environment failure
+with a remediation command. Advisories go to stderr prefixed WARN and never
+change the exit code -- norun blocks and blocks needing a per-block fixture
+are reported there so partial coverage never reads as total coverage.
 '''
 import argparse
 import ast
+import builtins
 import importlib
+import os
 import re
+import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 from fences import (CodeBlock, iter_code_blocks,  # noqa: F401  (re-exported)
                     strip_fenced_blocks)
+from snippet_preamble import PINNED, PREAMBLE
 
 NORUN = 'norun'
 TICK_NAME_RE = re.compile(r'`([A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)+)')
@@ -48,6 +60,10 @@ DOCUMENTED_ABSENT = {
 API_REMEDIATION = ('uv run --python 3.13 --with "arviz>=1.0" --with arviz-base '
                    '--with arviz-stats --with arviz-plots --with numpyro '
                    '--with jax python build/check_snippets.py --api <paths>')
+RUN_REMEDIATION = ('uv run --python 3.13 ' +
+                   ' '.join(f'--with {d!r}'.replace("'", '\"')
+                            for d in PINNED) +
+                   ' python build/check_snippets.py --run <paths>')
 
 
 def _iter_md(paths):
@@ -183,11 +199,101 @@ def api_advisories(path: Path, modules: dict) -> list[str]:
     return [m for m, fatal in _api_findings(path, modules) if not fatal]
 
 
+def _bound_by(tree) -> set[str]:
+    '''Names a module body binds: assignments, defs, imports, parameters.'''
+    names = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store):
+            names.add(node.id)
+        elif isinstance(node, (ast.FunctionDef, ast.ClassDef)):
+            names.add(node.name)
+        elif isinstance(node, ast.alias):
+            names.add((node.asname or node.name).split('.')[0])
+        elif isinstance(node, ast.arg):
+            names.add(node.arg)
+    return names
+
+
+_PREAMBLE_NAMES = None
+
+
+def _preamble_names() -> set[str]:
+    global _PREAMBLE_NAMES
+    if _PREAMBLE_NAMES is None:
+        _PREAMBLE_NAMES = _bound_by(ast.parse(PREAMBLE)) | set(dir(builtins))
+    return _PREAMBLE_NAMES
+
+
+def runnable(block) -> bool:
+    '''Not exempt, parses, no `...` elision, every free name bound.
+
+    Conservative by design: a block is admitted only when the preamble can
+    actually satisfy it, so a NameError in a --run report means THIS harness
+    drifted, not the documentation.
+    '''
+    if is_exempt(block):
+        return False
+    try:
+        tree = ast.parse(block.code)
+    except SyntaxError:
+        return False
+    if any(isinstance(n, ast.Constant) and n.value is Ellipsis
+           for n in ast.walk(tree)):
+        return False
+    bound = _preamble_names() | _bound_by(tree)
+    free = {n.id for n in ast.walk(tree)
+            if isinstance(n, ast.Name) and isinstance(n.ctx, ast.Load)}
+    return free <= bound
+
+
+def run_errors(path: Path, timeout: int = 300) -> list[str]:
+    '''Execute every runnable block in an isolated temp cwd; report raises.
+
+    Isolation is mandatory, not tidiness: blocks write model_output.nc, create
+    a literal <slug>/ directory, and save PNGs. Warnings are not failures --
+    the skill documents several as expected -- so this asserts "did not
+    raise", never -W error.
+    '''
+    out = []
+    for block in iter_code_blocks(path.read_text()):
+        if not runnable(block):
+            continue
+        with tempfile.TemporaryDirectory() as tmp:
+            env = {**os.environ, 'MPLBACKEND': 'Agg'}
+            try:
+                proc = subprocess.run(
+                    [sys.executable, '-c', PREAMBLE + '\n' + block.code],
+                    cwd=tmp, env=env, capture_output=True, text=True,
+                    timeout=timeout)
+            except subprocess.TimeoutExpired:
+                out.append(f'{path}:{block.line}: timed out after {timeout}s')
+                continue
+        if proc.returncode != 0:
+            tail = proc.stderr.strip().split('\n')[-1]
+            out.append(f'{path}:{block.line}: raised: {tail}')
+    return out
+
+
+def unrunnable_report(path: Path) -> list[str]:
+    '''Advisory lines for blocks --run cannot reach (fixture-dependent).
+
+    The plan's "reported as advisories, never silently dropped" -- a gate that
+    covers 36 of 74 blocks must not read as if it covered all of them.
+    '''
+    return [f'{path}:{b.line}: not executed: needs a per-block fixture'
+            for b in iter_code_blocks(path.read_text())
+            if not is_exempt(b) and not runnable(b)]
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[0])
     ap.add_argument('paths', nargs='+', help='.md files or directories')
     ap.add_argument('--api', action='store_true',
                     help='also resolve library attribute chains (imports the stack)')
+    ap.add_argument('--run', action='store_true',
+                    help='also execute the harnessed subset (minutes; needs the stack)')
+    ap.add_argument('--timeout', type=int, default=300,
+                    help='per-block execution timeout in seconds (default: 300)')
     args = ap.parse_args(argv)
     failures = [e for md in _iter_md(args.paths) for e in parse_errors(md)]
     advisories = [ln for md in _iter_md(args.paths) for ln in exempt_report(md)]
@@ -203,6 +309,17 @@ def main(argv=None) -> int:
         for md in _iter_md(args.paths):
             for msg, fatal in _api_findings(md, mods):
                 (failures if fatal else advisories).append(msg)
+    if args.run:
+        missing = _missing_roots({'az': 'arviz', 'numpyro': 'numpyro',
+                                  'jax': 'jax'})
+        if missing:
+            print(f'--run needs the stack; cannot import: {", ".join(missing)}',
+                  file=sys.stderr)
+            print(f'  {RUN_REMEDIATION}', file=sys.stderr)
+            return 2
+        for md in _iter_md(args.paths):
+            failures += run_errors(md, timeout=args.timeout)
+            advisories += unrunnable_report(md)
     for f in failures:
         print(f)
     for line in advisories:

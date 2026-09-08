@@ -112,3 +112,43 @@ def test_non_library_roots_are_ignored(tmp_path):
     p = tmp_path / 'd.md'
     p.write_text('```python\nidata.posterior.mean()\nmodel.whatever()\n```\n')
     assert check_snippets.api_errors(p, MODULES) == []
+
+
+def test_elided_block_is_not_runnable(tmp_path):
+    p = tmp_path / 'e.md'
+    p.write_text('```python\nmodel = ...\n...\n```\n')
+    b = check_snippets.iter_code_blocks(p.read_text())[0]
+    assert check_snippets.runnable(b) is False
+
+
+def test_block_with_unbound_name_is_not_runnable(tmp_path):
+    p = tmp_path / 'f.md'
+    p.write_text('```python\nresult = totally_unbound_thing(1)\n```\n')
+    b = check_snippets.iter_code_blocks(p.read_text())[0]
+    assert check_snippets.runnable(b) is False
+
+
+def test_preamble_bound_block_is_runnable(tmp_path):
+    p = tmp_path / 'g.md'
+    p.write_text('```python\nsummary = az.summary(idata)\n```\n')
+    b = check_snippets.iter_code_blocks(p.read_text())[0]
+    assert check_snippets.runnable(b) is True
+
+
+@requires_stack
+def test_raising_block_is_reported(tmp_path):
+    p = tmp_path / 'h.md'
+    p.write_text('```python\nraise ValueError("boom")\n```\n')
+    errs = check_snippets.run_errors(p, timeout=60)
+    assert any('boom' in e for e in errs), errs
+
+
+@requires_stack
+def test_block_side_effects_do_not_touch_cwd(tmp_path, monkeypatch):
+    '''Blocks write model_output.nc and a literal <slug>/ dir. The runner must
+    execute elsewhere or the gate pollutes the repo it guards.'''
+    p = tmp_path / 'i.md'
+    p.write_text('```python\nopen("sentinel.txt", "w").write("x")\n```\n')
+    monkeypatch.chdir(tmp_path)
+    check_snippets.run_errors(p, timeout=60)
+    assert not (tmp_path / 'sentinel.txt').exists()
