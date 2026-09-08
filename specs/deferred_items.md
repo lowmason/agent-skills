@@ -1,6 +1,12 @@
 # Deferred items
 
 ## Aged-backlog acknowledgements
+- 2026-09-08 — finished `test/derive-roadmap-red-rerun` (plan 30) with 1 item aged
+  >45d, carried deliberately: `11-delegation-frontmatter-rollout`'s remaining
+  sub-item is the live model/effort indicator check, which needs an interactive
+  terminal and cannot be run from this session. Triaged by /deferred earlier the
+  same day; the `/status` cost reading was retired then as superseded by the
+  2026-08-10 Opus-default policy.
 - 2026-09-08 — finished `feat/snippet-execution-gate` (plan 29) with 2 items aged
   >45d, carried across the merge on the partner's instruction ("merge then clear"):
   they are to be cleared immediately after. Neither is dischargeable by an agent —
