@@ -209,6 +209,15 @@ Changes from upstream:
     aged-tail gate at Step 1b of finishing-a-development-branch. Those
     three files are original works by Lowell Mason under the same MIT
     terms; the surrounding adapted skills are unchanged in structure.
+  - finishing-a-development-branch's Option 2 creates the PR and Step 3
+    detects the base branch. Neither is upstream: as vendored, Option 2
+    only pushed the branch and there was no `gh` anywhere in the file. Both
+    were added locally at 46423d5, which is where the `gh` dependency came
+    in. That dependency is now optional -- Option 2 pushes first, then
+    branches on `command -v gh`, falling back to a compare URL derived from
+    the origin remote so the path also serves environments that ship
+    without `gh` (Bloomberg's BBGitHub). Step 3's probe stays
+    unconditional: it already fails silently into the ask path.
   - subagent-driven-development's three bundled scripts (sdd-workspace,
     task-brief and review-package, under scripts/) came in with the
     vendoring at 2f283ae and were changed locally afterwards: c5ff0b5

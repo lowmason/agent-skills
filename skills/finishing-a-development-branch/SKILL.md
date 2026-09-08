@@ -139,11 +139,13 @@ This determines which menu to show and how cleanup works:
 
 ```bash
 BASE_BRANCH=$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's|^origin/||')
-# Fallback when origin/HEAD is unset (fresh clone or no remote):
+# Fallback when origin/HEAD is unset (fresh clone or no remote). Both probes
+# fail silently, so a missing `gh` just leaves BASE_BRANCH empty:
 [ -n "$BASE_BRANCH" ] || BASE_BRANCH=$(gh repo view --json defaultBranchRef -q .defaultBranchRef.name 2>/dev/null)
 ```
 
-Or ask: "This branch split from main - is that correct?"
+**If `BASE_BRANCH` is still empty** — no `origin/HEAD`, and no `gh` to ask —
+ask instead: "This branch split from main - is that correct?"
 
 ### Step 4: Present Options
 
@@ -208,21 +210,47 @@ git branch -d <feature-branch>
 **Aged-tail gate (Step 1b):** if aged items were reported, resolve them before
 pushing — a `/deferred` pass or a logged acknowledgement.
 
+Push first — this half never needs `gh`, and it makes the branch a real ref the
+fallback URL below can point at:
+
 ```bash
-# Push branch, then create the PR with the gh CLI
 git push -u origin <feature-branch>
+```
+
+**If `gh` is installed** (`command -v gh`), create the PR with it:
+
+```bash
 gh pr create --base <base-branch>
+```
+
+**If it is not** — GitHub Enterprise hosts (BBGitHub among them) commonly ship
+without it — derive the PR URL from the remote and hand it to your partner. On
+GitHub-family hosts the PR form lives at
+`<web-root>/compare/<base>...<branch>?expand=1`:
+
+```bash
+git remote get-url origin \
+  | sed -e 's|^git@\([^:]*\):|https://\1/|' -e 's|^ssh://git@|https://|' -e 's|\.git$||'
+```
+
+Report the push, and never a PR you did not open:
+
+```
+Pushed <feature-branch> to origin. `gh` isn't installed here, so I can't open
+the PR from the command line — open it in the browser:
+
+<web-root>/compare/<base-branch>...<feature-branch>?expand=1
 ```
 
 Consider a pre-PR review via the requesting-code-review skill first.
 
 **Do NOT clean up worktree** — user needs it alive to iterate on PR feedback.
 
-**Detached HEAD ("push as new branch") recipe:**
+**Detached HEAD ("push as new branch") recipe** — same `gh` branch as above:
 
 ```bash
 git push origin HEAD:refs/heads/<new-branch>
-gh pr create --base <base-branch> --head <new-branch>
+gh pr create --base <base-branch> --head <new-branch>  # no gh: compare URL above, head <new-branch>
 ```
 
 #### Option 3: Keep As-Is
@@ -328,6 +356,7 @@ ExitWorktree), use it. Otherwise, leave the workspace in place.
 **Never:**
 - Proceed with failing tests
 - Merge or open a PR with an unaddressed aged tail
+- Report a PR as created when only the branch was pushed
 - Write an aged-backlog acknowledgement your partner did not ask for
 - Merge without verifying tests on result
 - Delete work without confirmation

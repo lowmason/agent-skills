@@ -1142,12 +1142,24 @@ declined as YAGNI (zero instances in a one-page wiki).
       self-modifying-plan hazard.
       Size: plan. Done when: SKILL.md is under 500 lines with the core loop
       intact and the moved sections reachable from it.
-- [ ] `skills/finishing-a-development-branch/SKILL.md` hardcodes the `gh` CLI
+- [x] `skills/finishing-a-development-branch/SKILL.md` hardcodes the `gh` CLI
       in Step 3's base-branch fallback and Step 5's Option 2, which does not
       exist in the Bloomberg/BBGitHub environment (source review §3, minor
       findings). Untouched by plan 27, whose scope was the deferment loop.
       Size: plan. Done when: the PR path either works without `gh` or fails
       with a message naming the missing tool and the manual alternative.
+      → done 2026-09-08 (direct, not via a plan — the change is one skill file,
+      well under the "plan" size this item carried): Option 2 now pushes first,
+      then branches on `command -v gh`. Without it the agent derives
+      `<web-root>/compare/<base>...<branch>?expand=1` from `git remote get-url
+      origin` and reports a push, never a PR — backed by a new Red Flag. The
+      detached-HEAD recipe points at the same branch. Step 3 needed no code
+      change: verified `gh` absent exits 127 silently under `2>/dev/null`,
+      leaving BASE_BRANCH empty, so only its fallthrough to the ask was made
+      explicit. The shipped sed was executed verbatim out of SKILL.md against
+      github.com plus BBGitHub scp-form and ssh:// remotes. NOTICE now records
+      that the whole PR-creation step, `gh` included, was local from 46423d5
+      and never upstream — as vendored, Option 2 only pushed the branch.
 
 ## 28-lint-wiki-link-hardening — 2026-09-08
 - [x] `INDEX_LINE_RE` still cannot see nested brackets in index-line text, leaving plan
