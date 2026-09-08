@@ -11,7 +11,16 @@ TYPES = ('source', 'concept', 'synthesis')
 STATUSES = ('unverified', 'verified')
 INDEX_LINE_RE = re.compile(r'^- \[[^\]]+\]\(([^)]+)\)')
 # Markdown relative links: [text](target) where target is not a URL/anchor.
-MD_LINK_RE = re.compile(r'\[[^\]]*\]\(([^)]+)\)')
+# The text alternation allows ONE level of balanced nested brackets, so
+# `[the [above] discussion](x.md)` is seen and its target checked; the flat
+# `[^\]]*` form matched no part of it and let the target go unvalidated. The
+# two alternatives are disjoint on their first character, so the repetition
+# cannot backtrack ambiguously.
+MD_LINK_RE = re.compile(r'\[(?:[^\[\]]|\[[^\[\]]*\])*\]\(([^)]+)\)')
+# A CommonMark link title trailing the destination: [a](x.md "Title"). Both
+# link patterns capture everything inside the parens, so the title is stripped
+# once, here, rather than complicating two regexes.
+LINK_TITLE_RE = re.compile(r'''\s+(?:"[^"]*"|'[^']*')\s*$''')
 # Structural shape of a body locator: [token position], and NOT a markdown
 # link (no '(' immediately after the ']'). Shape only -- _is_citation decides
 # whether a matched pair is actually a citation.
@@ -97,6 +106,17 @@ def check_frontmatter_schema(root, pages):
   return findings
 
 
+def _link_target(dest):
+  '''The path part of a link destination, without a CommonMark title.
+
+  `[a](x.md "Title")` and the index line `- [A](sources/a.md "Title")` both
+  name `x.md` / `sources/a.md`; the title is display metadata. Shared by
+  check_links and _index_targets so body links and index lines cannot
+  disagree about what a destination points at -- a divergence between those
+  two code paths was the earlier #fragment bug.'''
+  return LINK_TITLE_RE.sub('', dest).strip()
+
+
 def _index_targets(root):
   '''Set of index-line targets (paths relative to wiki/, e.g. sources/a.md).
   A #fragment is stripped, matching check_links: SCHEMA.md does not prohibit
@@ -110,7 +130,7 @@ def _index_targets(root):
   for line in idx.read_text().split('\n'):
     m = INDEX_LINE_RE.match(line.strip())
     if m:
-      out.append(m.group(1).split('#', 1)[0])
+      out.append(_link_target(m.group(1)).split('#', 1)[0])
   return out
 
 
@@ -157,13 +177,43 @@ def _is_citation(token, position, slugs):
   return bool(SLUG_SHAPE_RE.search(token)) or token in slugs
 
 
+def _real_paths(root):
+  '''Every real file under root, resolved. Membership in this set replaces
+  Path.exists() for link resolution: exists() consults the filesystem, and a
+  case-insensitive one (macOS/APFS) accepts `../Sources/A.MD` for
+  `sources/a.md`, so a genuinely wrong link passed the check on the author's
+  machine and failed on a case-sensitive one. Comparing against names the
+  directory walk produced gives the same answer everywhere.
+
+  Dot-directories are skipped -- a wiki root is a git repo, and no legal link
+  targets a dotfile. A link resolving outside root is absent from this set and
+  is therefore an error, which matches SCHEMA.md's relative-links-only rule.'''
+  return {
+    p.resolve() for p in root.rglob('*')
+    if p.is_file()
+    and not any(part.startswith('.') for part in p.relative_to(root).parts)
+  }
+
+
+def _page_key(root, p):
+  '''A page's identity in check_links' `referenced` set: its path relative to
+  wiki/. One definition, shared by every producer and by the orphan consumer,
+  so the two can never disagree about what names a page.'''
+  return str(p.relative_to(root / 'wiki'))
+
+
 def check_links(root, pages):
   findings = []
   slugs = _source_slugs(root)
   referenced = set()  # page paths (relative to wiki/) that something points at
   wiki_abs = (root / 'wiki').resolve()
+  real = _real_paths(root)
   for p in pages:
     rel = p.relative_to(root)
+    # A page cannot reference itself into non-orphanhood. All three inbound
+    # channels below (cites, links, locators) are filtered against this key:
+    # the orphan check asks whether ANOTHER page points here.
+    own = _page_key(root, p)
     text = p.read_text()
     fm = parse_frontmatter(text) or {}
     body = _strip_frontmatter(text)
@@ -171,19 +221,23 @@ def check_links(root, pages):
     cites = fm.get('cites')
     if isinstance(cites, list):
       for target in cites:
-        referenced.add(target + '.md')
+        if target + '.md' != own:
+          referenced.add(target + '.md')
     # body markdown links must resolve; a resolved wiki target is inbound
-    for target in MD_LINK_RE.findall(body):
+    for raw_target in MD_LINK_RE.findall(body):
+      target = _link_target(raw_target)
       if target.startswith(('http://', 'https://', 'mailto:', '#')):
         continue
       resolved = (p.parent / target.split('#', 1)[0]).resolve()
-      if not resolved.exists():
+      if resolved not in real:
         findings.append(('ERROR', str(rel), f'link: broken relative link: {target}'))
       else:
         try:
-          referenced.add(str(resolved.relative_to(wiki_abs)))
+          key = str(resolved.relative_to(wiki_abs))
         except ValueError:
-          pass
+          continue
+        if key != own:
+          referenced.add(key)
     # body citation locators [slug §x] must map to a source page; and count
     # as an inbound reference to it. Bracketed prose is not a citation and is
     # neither validated nor counted.
@@ -191,14 +245,14 @@ def check_links(root, pages):
       if not _is_citation(token, position, slugs):
         continue
       if token in slugs:
-        referenced.add(f'sources/{token}.md')
+        if f'sources/{token}.md' != own:
+          referenced.add(f'sources/{token}.md')
       else:
         findings.append(
           ('ERROR', str(rel), f'citation: [{token} …] has no source page'))
   # orphan warning: a page nothing references (via link, cites, or locator)
   for p in pages:
-    relw = str(p.relative_to(root / 'wiki'))
-    if relw not in referenced:
+    if _page_key(root, p) not in referenced:
       findings.append(('WARN', str(p.relative_to(root)), 'orphan: no inbound links'))
   return findings
 

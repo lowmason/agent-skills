@@ -1,5 +1,12 @@
 # lint_wiki.py Link-Checking Hardening Implementation Plan
 
+**Status: COMPLETE (2026-09-08)** — executed via executing-plans; deferred items in specs/deferred_items.md
+
+> Deviation (pre-execution): executed on branch `fix/lint-wiki-link-hardening`, not `main`.
+> The seven files staged when the session opened were committed by a concurrent session
+> (merge `a3302d8`) while their suites were being verified, so nothing needed stashing
+> here; the branch was cut from that merge.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 >
 > **Execution mode chosen at the 2026-09-08 handoff: INLINE.** Use the **executing-plans** skill and work the tasks yourself in plan order, in this session. Do **not** dispatch subagents per task — the partner chose inline execution deliberately. executing-plans' stop-and-ask rules and completion chain apply.
@@ -62,7 +69,7 @@ No new files. No file is split — `lint_wiki.py` is 371 lines and stays comfort
 
 **Why the current pattern misses it.** `MD_LINK_RE = re.compile(r'\[[^\]]*\]\(([^)]+)\)')`. Against `[the [above] discussion](samplers/none.md)` the engine matches `[` then `[^\]]*` = `the [above` then `]`, and then requires `(` — but the next character is a space. It backtracks, retries from `[above]`, again requires `(` and finds a space. No match anywhere, so the broken target `samplers/none.md` is never checked.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `skills/llm-wiki/scripts/test_lint_wiki.py`:
 
@@ -98,7 +105,7 @@ def test_link_with_nested_brackets_resolves_and_counts_as_inbound(tmp_path):
               if f[0] == 'WARN' and f[1] == 'wiki/sources/a.md'], findings
 ```
 
-- [ ] **Step 2: Run the tests and watch them fail**
+- [x] **Step 2: Run the tests and watch them fail**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest test_lint_wiki.py -q -k nested_brackets
@@ -108,7 +115,7 @@ Expected: **2 failed**. The first fails its `assert any(...)` because no ERROR i
 
 If either fails for any other reason — an import error, a `write_page` signature mismatch, a fixture typo — stop and fix the test before going on. A test that fails for the wrong reason proves nothing.
 
-- [ ] **Step 3: Widen the pattern to one level of balanced nesting**
+- [x] **Step 3: Widen the pattern to one level of balanced nesting**
 
 In `skills/llm-wiki/scripts/lint_wiki.py`, replace line 13–14:
 
@@ -129,7 +136,7 @@ with:
 MD_LINK_RE = re.compile(r'\[(?:[^\[\]]|\[[^\[\]]*\])*\]\(([^)]+)\)')
 ```
 
-- [ ] **Step 4: Run the new tests, then the whole suite**
+- [x] **Step 4: Run the new tests, then the whole suite**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest test_lint_wiki.py -q -k nested_brackets
@@ -141,11 +148,11 @@ cd /Users/lowell/Projects/agent-skills/skills/llm-wiki/scripts && uv run --pytho
 ```
 Expected: all green, **+2** on the directory baseline.
 
-- [ ] **Step 5: Mutation-check the tests**
+- [x] **Step 5: Mutation-check the tests**
 
 Temporarily restore the old flat pattern (`r'\[[^\]]*\]\(([^)]+)\)'`), re-run `-k nested_brackets`, and confirm **both** tests fail. Then put the new pattern back and re-run to green. A test that survives this revert is not pinning the fix.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add skills/llm-wiki/scripts/lint_wiki.py skills/llm-wiki/scripts/test_lint_wiki.py
@@ -170,7 +177,7 @@ git commit -m "fix(llm-wiki): see links whose text contains nested brackets"
 
 **Both regexes capture everything inside the parens**, so `[a](x.md "Title")` yields the destination `x.md "Title"`. In `check_links` that is treated as a path and reported as a broken link; in `_index_targets` it becomes an index target that matches no page, so `check_index_parity` reports both a missing page **and** an unindexed page for the same file. The fix is one shared helper, called at both sites — the same DRY shape as the `_real_dates` extraction in `distill_sessions.py`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `test_lint_wiki.py`:
 
@@ -222,7 +229,12 @@ def test_link_target_helper_handles_both_quote_styles():
   assert lint_wiki._link_target('a"b".md') == 'a"b".md'
 ```
 
-- [ ] **Step 2: Run the tests and watch them fail**
+> Deviation: `test_link_title_does_not_hide_a_broken_target` as written asserted
+> `'broken relative link: none.md' in msg`, which is a SUBSTRING of the buggy message
+> `link: broken relative link: none.md "Not here"` — so it PASSED before the fix and
+> pinned nothing. Changed to an exact message match, which fails red as intended.
+
+- [x] **Step 2: Run the tests and watch them fail**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest test_lint_wiki.py -q -k "title"
@@ -230,7 +242,12 @@ cd /Users/lowell/Projects/agent-skills/skills/llm-wiki/scripts && uv run --pytho
 
 Expected: **4 failed**. The helper test fails with `AttributeError: module 'lint_wiki' has no attribute '_link_target'`; the other three fail on the swallowed title (a broken-link ERROR naming `../sources/a.md "The A page"`, an orphan WARN, and two index-parity ERRORs respectively).
 
-- [ ] **Step 3: Add the helper**
+> Deviation: `-k "title"` selects only 3 of the 4 tests —
+> `test_link_target_helper_handles_both_quote_styles` has no "title" in its name.
+> Used `-k "title or link_target_helper"` throughout Task 2. Observed with the
+> corrected assertion above: 4 failed, the helper test on `AttributeError` as predicted.
+
+- [x] **Step 3: Add the helper**
 
 In `lint_wiki.py`, immediately after the `MD_LINK_RE` definition, add:
 
@@ -255,7 +272,7 @@ def _link_target(dest):
   return LINK_TITLE_RE.sub('', dest).strip()
 ```
 
-- [ ] **Step 4: Call it at both sites**
+- [x] **Step 4: Call it at both sites**
 
 In `check_links`, the loop currently reads:
 
@@ -286,7 +303,7 @@ to:
       out.append(_link_target(m.group(1)).split('#', 1)[0])
 ```
 
-- [ ] **Step 5: Run the new tests, then the whole suite**
+- [x] **Step 5: Run the new tests, then the whole suite**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest test_lint_wiki.py -q -k "title"
@@ -298,13 +315,13 @@ cd /Users/lowell/Projects/agent-skills/skills/llm-wiki/scripts && uv run --pytho
 ```
 Expected: all green, **+4** on the Task 1 total (three fixture tests plus the direct helper test). Confirm the arithmetic against your own run rather than trusting this line.
 
-- [ ] **Step 6: Mutation-check both call sites separately**
+- [x] **Step 6: Mutation-check both call sites separately**
 
 Revert **only** the `check_links` call (back to `for target in MD_LINK_RE.findall(body):`), re-run, confirm the two body-link title tests fail while the index test still passes. Restore. Then revert **only** the `_index_targets` call, re-run, confirm the index test fails while the body-link tests pass. Restore and re-run to green.
 
 Two call sites need two independent mutation checks — a single check could pass while one site was silently unwired.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add skills/llm-wiki/scripts/lint_wiki.py skills/llm-wiki/scripts/test_lint_wiki.py
@@ -337,7 +354,12 @@ A page whose frontmatter cites itself, or a source page whose body carries its o
 
 This repo has a recorded precedent for exactly this call: the `_ordered_by_time` fix in plan 26 "Landed at **both** sort sites — `reconstruct` (claude-code) carried the byte-identical defect the item did not name." Follow it. Close all three channels, and record the widening as a `> Deviation:` note under this task at completion, since it goes beyond the item's literal text.
 
-- [ ] **Step 1: Write the failing tests**
+> Deviation: done as directed — the recorded item names the body-LINK channel only,
+> and the implementation also closes the `cites:` frontmatter and citation-locator
+> channels. Each channel has its own test and its own mutation check; each mutation
+> failed exactly its own test and no other.
+
+- [x] **Step 1: Write the failing tests**
 
 ```python
 def test_self_link_does_not_silence_its_own_orphan_warning(tmp_path):
@@ -396,7 +418,7 @@ def test_inbound_reference_from_another_page_still_clears_the_orphan(tmp_path):
               if f[0] == 'WARN' and f[1] == 'wiki/sources/a.md'], findings
 ```
 
-- [ ] **Step 2: Run the tests and watch them fail**
+- [x] **Step 2: Run the tests and watch them fail**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest test_lint_wiki.py -q -k "self_link or self_cite or self_locator or inbound_reference"
@@ -404,7 +426,7 @@ cd /Users/lowell/Projects/agent-skills/skills/llm-wiki/scripts && uv run --pytho
 
 Expected: **3 failed, 1 passed**. The three self-reference tests fail because no orphan WARN is emitted; `test_inbound_reference_from_another_page_still_clears_the_orphan` passes already and exists to stay passing.
 
-- [ ] **Step 3: Add the self-reference guard**
+- [x] **Step 3: Add the self-reference guard**
 
 First give the key one definition. `check_links` already derives a page's `referenced`-set identity in its orphan loop (`relw = str(p.relative_to(root / 'wiki'))`), and the guard needs the same expression — two copies of one key rule is precisely the divergence that caused the earlier `_index_targets` / `check_links` fragment-stripping bug. Add above `check_links`:
 
@@ -477,7 +499,7 @@ And the locator block becomes:
 
 Note the link block also replaces the old `try/except ValueError: pass` with an early `continue` — a target outside `wiki/` is not a page key and there is nothing further to do with it. Behaviour is unchanged for that case.
 
-- [ ] **Step 4: Run the tests, then the whole suite**
+- [x] **Step 4: Run the tests, then the whole suite**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest test_lint_wiki.py -q -k "self_link or self_cite or self_locator or inbound_reference"
@@ -491,11 +513,11 @@ Expected: all green, **+4** on the Task 2 total.
 
 Watch for a pre-existing test that asserted a self-referencing fixture was *not* an orphan. If one fails, do not weaken the new guard — read the old test, decide whether it encoded the bug, and if so update it and say so in your report.
 
-- [ ] **Step 5: Mutation-check each channel independently**
+- [x] **Step 5: Mutation-check each channel independently**
 
 Remove the `!= own` guard from one channel at a time, re-run, and confirm that exactly the matching test fails each time (`self_link` → link channel, `self_cite` → cites channel, `self_locator` → locator channel). Restore between checks. Three guards need three checks; one combined check would let a mis-wired channel through.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add skills/llm-wiki/scripts/lint_wiki.py skills/llm-wiki/scripts/test_lint_wiki.py
@@ -522,7 +544,7 @@ git commit -m "fix(llm-wiki): a page's self-reference no longer clears its orpha
 
 **Second, consequential decision:** a link pointing *outside* the wiki root currently passes via `exists()` and will now be reported as broken. That is a deliberate tightening, consistent with `schema-template.md`'s "relative links only" and with a wiki being self-contained. It is called out in Task 5's contract text.
 
-- [ ] **Step 0: Sanity-check path-resolution symmetry before writing anything**
+- [x] **Step 0: Sanity-check path-resolution symmetry before writing anything**
 
 `_real_paths` compares `resolved` link targets against `{p.resolve() for p in root.rglob('*')}`. Both sides call `.resolve()`, so they should agree — but on macOS pytest's `tmp_path` lives under `/var/folders/…`, which is a symlink to `/private/var/folders/…`. If the two sides ever resolved asymmetrically, **every link test in the suite would go red at once** and you would waste a long time chasing a fixture artefact instead of a code bug. Prove the symmetry first, in a scratch dir outside the repo:
 
@@ -552,7 +574,7 @@ symmetric:  True
 
 Note the first two lines: the symlink is real, so the hazard is real — symmetry holds only because **both** sides call `.resolve()`. Keep it that way. If your run prints `symmetric: False`, stop and report; the membership approach would then need both sides normalised the same way (resolve the root once and build keys relative to it) before Task 4 can proceed.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 The case test must not silently pass on a case-sensitive filesystem, where the old code was already correct. Gate it so it *proves* something wherever it runs — on a case-sensitive FS the wrong-case link is broken for the ordinary reason and the assertion still holds, so no skip is needed; the added `is_case_insensitive` assertion documents which regime you observed.
 
@@ -599,7 +621,7 @@ def test_real_paths_excludes_dot_directories(tmp_path):
   assert (root / '.git/config').resolve() not in paths
 ```
 
-- [ ] **Step 2: Run the tests and watch them fail**
+- [x] **Step 2: Run the tests and watch them fail**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest test_lint_wiki.py -q -k "wrong_case or structural_and_raw or real_paths"
@@ -615,7 +637,7 @@ cd /tmp && rm -rf casetest && mkdir casetest && touch casetest/a.md && ls casete
 
 If that prints `CASE-SENSITIVE`, the `wrong_case` test will already pass — say so in your report, and rely on the mutation check in Step 5 for evidence instead.
 
-- [ ] **Step 3: Add the helper**
+- [x] **Step 3: Add the helper**
 
 Add above `check_links` in `lint_wiki.py`:
 
@@ -638,7 +660,7 @@ def _real_paths(root):
   }
 ```
 
-- [ ] **Step 4: Use it in `check_links`**
+- [x] **Step 4: Use it in `check_links`**
 
 Build the set once, alongside the other per-run values at the top of `check_links`:
 
@@ -667,7 +689,7 @@ Change the condition to:
 
 Nothing else in the loop changes.
 
-- [ ] **Step 5: Run the tests, then the whole suite**
+- [x] **Step 5: Run the tests, then the whole suite**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest test_lint_wiki.py -q -k "wrong_case or structural_and_raw or real_paths"
@@ -679,11 +701,17 @@ cd /Users/lowell/Projects/agent-skills/skills/llm-wiki/scripts && uv run --pytho
 ```
 Expected: all green, **+3** on the Task 3 total.
 
-- [ ] **Step 6: Mutation-check**
+- [x] **Step 6: Mutation-check**
 
 Revert the condition to `if not resolved.exists():` and re-run `-k wrong_case`. On a case-insensitive filesystem it must fail. On a case-sensitive one it will still pass — in that case, prove the tripwire differently: keep the membership form and mutate `_real_paths` to lowercase every path, then confirm a correctly-cased link is newly reported. Restore, re-run to green.
 
-- [ ] **Step 7: Commit**
+> Deviation: the filesystem is case-insensitive (confirmed at Step 2), so the primary
+> `exists()` revert applied and `wrong_case` failed under it. A second mutation was
+> added beyond the plan: dropping the dot-directory exclusion from `_real_paths`,
+> which fails `test_real_paths_excludes_dot_directories` alone. Two guards ship in
+> this task, so both are pinned.
+
+- [x] **Step 7: Commit**
 
 ```bash
 git add skills/llm-wiki/scripts/lint_wiki.py skills/llm-wiki/scripts/test_lint_wiki.py
@@ -704,7 +732,7 @@ git commit -m "fix(llm-wiki): resolve links case-sensitively on every filesystem
 
 Two of the four changes are author-visible and belong in the contract shipped to new wikis; the fourth changes a published test count.
 
-- [ ] **Step 1: Add the two contract sentences**
+- [x] **Step 1: Add the two contract sentences**
 
 In `skills/llm-wiki/scripts/schema-template.md`, the `### Body conventions` section opens:
 
@@ -727,7 +755,7 @@ reports as an orphan.
 
 If you conclude after implementing that this really is a breaking contract change, raise it rather than bumping silently.
 
-- [ ] **Step 2: Sync the test count in `CLAUDE.md`**
+- [x] **Step 2: Sync the test count in `CLAUDE.md`**
 
 Find the `llm-wiki bundled wiki-script tests` block. It reads `252 tests`. Replace that number with the count your own final full-directory run reported, and leave the surrounding notes (`stdlib only`, the three `@needs_pilot` skips) untouched.
 
@@ -737,21 +765,27 @@ cd /Users/lowell/Projects/agent-skills/skills/llm-wiki/scripts && uv run --pytho
 
 Use that output. Do not compute the number from this plan's per-task deltas — they are estimates, and your run is the fact.
 
-- [ ] **Step 3: Run the two repo lints**
+> Deviation: both counts were synced, not just the headline. The block carried
+> `252 tests` against a parenthetical `240 passed, 3 skipped` (= 243) — already
+> mutually inconsistent by 9 BEFORE this plan. Leaving the parenthetical would have
+> left a demonstrably wrong number on the line below one being edited. Both now read
+> from the same run: 265, and 262 passed / 3 skipped without a pilot wiki.
+
+- [x] **Step 3: Run the two repo lints**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills && uv run --python 3.13 --with pyyaml python build/check_frontmatter.py && uv run --python 3.13 python build/check_provenance.py
 ```
 Expected: both exit 0 with no output. `schema-template.md` is not a skill file, but `check_frontmatter.py` walks referenced paths in skill prose, so run it after any file under `skills/` changes.
 
-- [ ] **Step 4: Full-suite confirmation**
+- [x] **Step 4: Full-suite confirmation**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest -q
 ```
 Expected: all green, no failures, no errors.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/llm-wiki/scripts/schema-template.md CLAUDE.md

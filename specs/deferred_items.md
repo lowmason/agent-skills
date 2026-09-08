@@ -1,5 +1,15 @@
 # Deferred items
 
+## Aged-backlog acknowledgements
+- 2026-09-08 — finished `fix/lint-wiki-link-hardening` (plan 28) with 3 items aged
+  >45d, carried deliberately: none is actionable from a coding session. `11`
+  (51d) needs an interactive probe of the live model/effort indicator, which is
+  owner-only. `15` (46d) is gated on wanting always-on Python guardrails across
+  the work repos — trigger verified still unmet this session (`~/.claude/rules`
+  does not exist; only the project-level `.claude/rules` symlink is present).
+  `12` (50d) was offered at a completion gate and declined. All three sit in the
+  Hold/owner-only column of the triage presented at plan 28's completion.
+
 ## 11-delegation-frontmatter-rollout — 2026-07-19
 - [x] Haiku-pinned `Explore` override agent (fork-isolation upgrade; plan "Out of
       scope"): the direct `model: haiku` pins on `explore-data`/`bls-data-context`
@@ -96,7 +106,7 @@ Regex-strictness design calls (need a spec decision on how strict the M0 linter 
       → done in plan 23: adjudicated a false positive. Recognition now requires a
       position sigil AND (multi-part slug OR membership in the source-slug set), so
       `[see below]` is prose. Rule written into SCHEMA.md at schema-version 3.
-- [ ] D2 — nested brackets in link text break both directions: `MD_LINK_RE` misses a
+- [x] D2 — nested brackets in link text break both directions: `MD_LINK_RE` misses a
       genuinely-broken link like `[the [above] discussion](samplers/none.md)` AND
       `BODY_CITE_RE` fabricates a citation from the link text. Fix `MD_LINK_RE` to allow one
       level of balanced nested brackets, and exclude link-text spans from citation matching.
@@ -108,6 +118,12 @@ Regex-strictness design calls (need a spec decision on how strict the M0 linter 
       `[the [above] discussion](samplers/none.md)` is still missed. No longer needs
       "exclude link-text spans from citation matching" — write the mechanical plan
       against the nesting fix only.
+      → done in plan 28 (Task 1): the text alternation now allows one level of balanced
+      nesting, so the broken target in `[the [above] discussion](none.md)` is seen and
+      reported. The two alternatives are disjoint on their first character, so the
+      repetition cannot backtrack ambiguously, and group 1 still captures only the
+      destination. Two tests, both mutation-checked against the old flat pattern. The
+      citation-fabrication half stayed untouched, as the REDUCED note directed.
 - [x] D3 — citation slugs outside `[a-z0-9-]` are invisible (`[Hoffman2014 §3]`,
       `[robnik_2022 §4]`, `[robnik.2022 §4]` all pass unchecked, both directions). The
       lowercase-start anchor also serves as a deliberate prose guard (`[NUTS §3]`,
@@ -119,8 +135,18 @@ Regex-strictness design calls (need a spec decision on how strict the M0 linter 
       case-sensitive, so a miscased slug errors rather than silently missing.
 
 Downgraded-to-minor from the same audit (later hardening pass; none block M0):
-- [ ] `MD_LINK_RE` / `INDEX_LINE_RE` capture a CommonMark link *title* attribute
+- [x] `MD_LINK_RE` / `INDEX_LINE_RE` capture a CommonMark link *title* attribute
       (`[a](x.md "Title")`) as part of the path, breaking resolution/parity if titles are used.
+      → done in plan 28 (Task 2): one shared helper, `_link_target`, strips a trailing
+      CommonMark title and is called at BOTH sites — `check_links` and `_index_targets` —
+      so body links and index lines cannot disagree about what a destination points at.
+      In `check_links` the strip runs before the URL-scheme test and before the existing
+      fragment strip, so `(https://x "T")` is still a URL and `(x.md#frag "T")` still
+      resolves to `x.md`. Four tests including direct unit coverage of the helper, plus
+      two independent mutation checks, one per call site — a single combined check would
+      pass with one site unwired. The plan's `test_link_title_does_not_hide_a_broken_
+      target` asserted a SUBSTRING of the buggy message (`... none.md "Not here"` contains
+      `... none.md`) and so passed against the bug; changed to an exact message match.
 - [x] `_index_targets` does not strip a `#fragment` from an index-line target (whereas
       `check_links` does for body links) — an index deep-link `sources/a.md#background`
       yields false parity/link errors. Decide whether fragment-bearing index lines are legal.
@@ -135,10 +161,32 @@ Downgraded-to-minor from the same audit (later hardening pass; none block M0):
       tests first — `test_indented_decision_without_basis_is_error` and
       `test_list_prefixed_decision_without_basis_is_error` — both failing with no ERROR
       emitted, which is the silent-disable itself.
-- [ ] `check_links` counts a page's self-link as an inbound reference (silencing its own
+- [x] `check_links` counts a page's self-link as an inbound reference (silencing its own
       orphan warning); and on a case-insensitive FS (macOS/APFS) a broken relative link with
       wrong case (`../Sources/A.MD`) resolves via `.exists()` and escapes the broken-link
       check. Prefer membership in the discovered page set over `resolved.exists()`.
+      → done in plan 28 (Tasks 3 and 4). Self-reference: `_page_key` gives a page's
+      identity in the `referenced` set one definition, and all THREE inbound channels are
+      filtered against it — not only the body-link channel the item names. A page whose
+      `cites:` frontmatter names itself, or a source page carrying its own slug as a body
+      locator, silenced its orphan warning exactly as a self-link did; fixing only the
+      named channel would have shipped a guard with two open doors (precedent: the
+      `_ordered_by_time` fix in plan 26, which landed at both sort sites). One test and
+      one mutation check per channel, each failing exactly its own test.
+      Case-sensitivity: `_real_paths(root)` — every real file under the root, resolved,
+      dot-directories excluded — replaces `resolved.exists()`, moving the name-equality
+      decision from the filesystem to Python so the answer is identical everywhere. The
+      item said "the discovered page set", but `discover_pages()` returns only
+      `wiki/*/*.md`, so that set would have reported every legitimate link to `index.md`,
+      `log.md` or `raw/` as broken; membership in all real files is the correct
+      generalisation, pinned by `test_links_to_structural_and_raw_files_still_resolve`.
+      Consequential tightening, deliberate: a link resolving OUTSIDE the wiki root is now
+      an error, matching the relative-links-only rule. Verified on a case-insensitive
+      filesystem, with the tmp_path `/var`→`/private/var` resolution symmetry proven
+      first. Both author-visible changes are recorded in `schema-template.md` § Body
+      conventions; `schema-version` was NOT bumped — no rule changed, these enforce what
+      the contract already meant. The pilot wiki lints byte-identically before and after
+      (`0 errors, 1 warnings, 0 info`), so no cleanup pass is needed there.
 
 Adjudicated INTENDED-behavior (recorded so they are not re-litigated — no action):
 - The `assignment` secret pattern fires on compound identifiers like `client_secret` /
@@ -962,6 +1010,15 @@ declined as YAGNI (zero instances in a one-page wiki).
       execution would have reached outside the repo, and the timing is the owner's call.
       **Owner-only.** Until it runs, a `lint_wiki.py`/`distill_sessions.py` run from the wiki
       root still renumbers an undated turn to position 1.
+      → SCOPE WIDENED by plan 28 (2026-09-08): `lint_wiki.py` is now stale in the same way
+      and for the same reason — also a `MANAGED_SCRIPTS` entry. Checked rather than
+      assumed: the deployed copy is byte-identical to `50bcba0`, so it is FIVE commits
+      behind, not four — it already missed `3451e74` (the DECISION_META_RE indent/bullet
+      fix, 2026-09-04) before plan 28 added four more. One `bootstrap_wiki.py --force`
+      discharges both scripts. Still owner-only. Reassuring for the timing: the post-fix
+      repo copy run against the pilot wiki reports `0 errors, 1 warnings, 0 info`,
+      identical to the deployed copy's output — and that post-fix run includes the
+      DECISION_META_RE tightening too, so the refresh brings no content churn.
 
 ## 27-deferment-loop-hardening — 2026-09-08
 - [ ] Sync these skills to the work environment, where the backlog problem
@@ -1002,3 +1059,17 @@ declined as YAGNI (zero instances in a one-page wiki).
       findings). Untouched by plan 27, whose scope was the deferment loop.
       Size: plan. Done when: the PR path either works without `gh` or fails
       with a message naming the missing tool and the manual alternative.
+
+## 28-lint-wiki-link-hardening — 2026-09-08
+- [ ] `INDEX_LINE_RE` still cannot see nested brackets in index-line text, leaving plan
+      28's Task 1 widening asymmetric: `MD_LINK_RE` now matches
+      `- [the [above] page](sources/a.md)` and returns `sources/a.md`, while
+      `INDEX_LINE_RE` does not match the line at all, so it yields no target and
+      `check_index_parity` reports the page as having no index line. Verified directly
+      against both compiled patterns on 2026-09-08. Fenced out of plan 28 by its own
+      Interfaces block, which scoped Task 1 to `MD_LINK_RE`; Task 2 did reach
+      `_index_targets`, so the link-title half is symmetric and only the nesting half is
+      not. The fix is the same alternation Task 1 used, in
+      `skills/llm-wiki/scripts/lint_wiki.py`.
+      Size: quick-fix. Done when: an index line whose text carries nested brackets reaches
+      parity with its page, pinned by a test in `test_lint_wiki.py`.

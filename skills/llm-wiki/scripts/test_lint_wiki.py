@@ -169,6 +169,87 @@ def test_broken_relative_link_is_error(tmp_path):
              for f in lint_wiki.run_checks(root))
 
 
+def test_broken_link_with_nested_brackets_in_text_is_error(tmp_path):
+  '''A link whose TEXT contains brackets must still have its TARGET checked.
+
+  The pre-fix MD_LINK_RE required no ']' inside the link text, so this whole
+  link was invisible and its dangling target went unreported.'''
+  root = make_wiki(tmp_path)
+  write_page(root, 'sources/a.md', {'title': 'A', 'type': 'source'})
+  write_page(
+    root, 'samplers/p.md', {'title': 'P', 'type': 'concept'},
+    'See [the [above] discussion](none.md).')
+  findings = lint_wiki.check_links(root, lint_wiki.discover_pages(root))
+  assert any(
+    level == 'ERROR' and 'broken relative link: none.md' in msg
+    for level, _, msg in findings), findings
+
+
+def test_link_with_nested_brackets_resolves_and_counts_as_inbound(tmp_path):
+  '''The same shape, pointing at a real page: no error, and the target is
+  no longer an orphan. Pins that the widened regex still captures the TARGET
+  (group 1), not the bracketed text.'''
+  root = make_wiki(tmp_path)
+  write_page(root, 'sources/a.md', {'title': 'A', 'type': 'source'})
+  write_page(
+    root, 'samplers/p.md', {'title': 'P', 'type': 'concept'},
+    'See [the [above] discussion](../sources/a.md).')
+  findings = lint_wiki.check_links(root, lint_wiki.discover_pages(root))
+  assert not [f for f in findings if f[0] == 'ERROR'], findings
+  assert not [f for f in findings
+              if f[0] == 'WARN' and f[1] == 'wiki/sources/a.md'], findings
+
+
+def test_link_title_is_not_part_of_the_path(tmp_path):
+  '''[a](x.md "Title") points at x.md. The title is display metadata.'''
+  root = make_wiki(tmp_path)
+  write_page(root, 'sources/a.md', {'title': 'A', 'type': 'source'})
+  write_page(
+    root, 'samplers/p.md', {'title': 'P', 'type': 'concept'},
+    'See [A](../sources/a.md "The A page").')
+  findings = lint_wiki.check_links(root, lint_wiki.discover_pages(root))
+  assert not [f for f in findings if f[0] == 'ERROR'], findings
+  assert not [f for f in findings
+              if f[0] == 'WARN' and f[1] == 'wiki/sources/a.md'], findings
+
+
+def test_link_title_does_not_hide_a_broken_target(tmp_path):
+  '''Stripping the title must not stop the PATH being checked.'''
+  root = make_wiki(tmp_path)
+  write_page(root, 'sources/a.md', {'title': 'A', 'type': 'source'})
+  write_page(
+    root, 'samplers/p.md', {'title': 'P', 'type': 'concept'},
+    'See [gone](none.md "Not here").')
+  findings = lint_wiki.check_links(root, lint_wiki.discover_pages(root))
+  # Exact match, not a substring: the pre-fix message read
+  # `... none.md "Not here"`, which CONTAINS the substring, so a containment
+  # assertion here passes against the bug and pins nothing.
+  assert any(
+    level == 'ERROR' and msg == 'link: broken relative link: none.md'
+    for level, _, msg in findings), findings
+
+
+def test_index_line_title_is_not_part_of_the_target(tmp_path):
+  '''An index line carrying a title must still reach parity with its page.'''
+  root = make_wiki(tmp_path)
+  write_page(root, 'sources/a.md', {'title': 'A', 'type': 'source'})
+  (root / 'wiki/index.md').write_text(
+    '# Wiki index\n\n## sources\n- [A](sources/a.md "The A page")\n')
+  findings = lint_wiki.check_index_parity(root, lint_wiki.discover_pages(root))
+  assert findings == [], findings
+
+
+def test_link_target_helper_handles_both_quote_styles():
+  '''Direct unit coverage of the helper: its contract is shared by two
+  callers, so it is pinned on its own terms rather than only through them.'''
+  assert lint_wiki._link_target('x.md') == 'x.md'
+  assert lint_wiki._link_target('x.md "Title"') == 'x.md'
+  assert lint_wiki._link_target("x.md 'Title'") == 'x.md'
+  assert lint_wiki._link_target('x.md#frag "Title"') == 'x.md#frag'
+  # No trailing quoted run: nothing is stripped.
+  assert lint_wiki._link_target('a"b".md') == 'a"b".md'
+
+
 def test_body_citation_without_source_is_error(tmp_path):
   root = make_wiki(tmp_path)
   write_page(root, 'samplers/x.md',
@@ -187,6 +268,124 @@ def test_orphan_page_is_warning(tmp_path):
   set_index(root, ['- [a](sources/a.md) — s · 1 · verified · 2026-07-22'])
   assert any(f[0] == 'WARN' and 'orphan' in f[2].lower()
              for f in lint_wiki.run_checks(root))
+
+
+def test_self_link_does_not_silence_its_own_orphan_warning(tmp_path):
+  '''A page linking to itself has no INBOUND reference -- it is still an
+  orphan. Counting the self-link made the orphan check self-defeating.'''
+  root = make_wiki(tmp_path)
+  write_page(root, 'sources/a.md', {'title': 'A', 'type': 'source'})
+  write_page(
+    root, 'samplers/p.md', {'title': 'P', 'type': 'concept'},
+    'As noted [here](p.md), and see [A](../sources/a.md).')
+  findings = lint_wiki.check_links(root, lint_wiki.discover_pages(root))
+  assert not [f for f in findings if f[0] == 'ERROR'], findings
+  assert any(
+    level == 'WARN' and path == 'wiki/samplers/p.md' and 'orphan' in msg
+    for level, path, msg in findings), findings
+
+
+def test_self_cite_does_not_silence_its_own_orphan_warning(tmp_path):
+  '''Same hole via the cites: frontmatter channel.'''
+  root = make_wiki(tmp_path)
+  write_page(root, 'sources/a.md', {'title': 'A', 'type': 'source'})
+  write_page(
+    root, 'samplers/p.md',
+    {'title': 'P', 'type': 'concept', 'cites': ['samplers/p', 'sources/a']})
+  findings = lint_wiki.check_links(root, lint_wiki.discover_pages(root))
+  assert any(
+    level == 'WARN' and path == 'wiki/samplers/p.md' and 'orphan' in msg
+    for level, path, msg in findings), findings
+
+
+def test_self_locator_does_not_silence_its_own_orphan_warning(tmp_path):
+  '''Same hole via the citation-locator channel: a source page carrying its
+  own slug as a locator pointed the reference straight back at itself.'''
+  root = make_wiki(tmp_path)
+  write_page(
+    root, 'sources/robnik-2022-mclmc.md', {'title': 'R', 'type': 'source'},
+    'Restating [robnik-2022-mclmc §4] from the same page.')
+  findings = lint_wiki.check_links(root, lint_wiki.discover_pages(root))
+  assert not [f for f in findings if f[0] == 'ERROR'], findings
+  assert any(
+    level == 'WARN' and path == 'wiki/sources/robnik-2022-mclmc.md'
+    and 'orphan' in msg
+    for level, path, msg in findings), findings
+
+
+def test_inbound_reference_from_another_page_still_clears_the_orphan(tmp_path):
+  '''The guard must not make every page an orphan: a genuine cross-page
+  link still counts. This is the counter-test for the three above.'''
+  root = make_wiki(tmp_path)
+  write_page(root, 'sources/a.md', {'title': 'A', 'type': 'source'})
+  write_page(
+    root, 'samplers/p.md', {'title': 'P', 'type': 'concept'},
+    'See [A](../sources/a.md).')
+  findings = lint_wiki.check_links(root, lint_wiki.discover_pages(root))
+  assert not [f for f in findings
+              if f[0] == 'WARN' and f[1] == 'wiki/sources/a.md'], findings
+
+
+def test_wrong_case_link_is_error_even_on_a_case_insensitive_fs(tmp_path):
+  '''`.exists()` asks the filesystem, and APFS/macOS answers case-
+  insensitively, so `../Sources/A.MD` resolved and escaped the check. Set
+  membership compares names the directory walk produced, so the answer is the
+  same on every filesystem.'''
+  root = make_wiki(tmp_path)
+  write_page(root, 'sources/a.md', {'title': 'A', 'type': 'source'})
+  write_page(
+    root, 'samplers/p.md', {'title': 'P', 'type': 'concept'},
+    'See [A](../Sources/A.MD).')
+  findings = lint_wiki.check_links(root, lint_wiki.discover_pages(root))
+  assert any(
+    level == 'ERROR' and 'broken relative link: ../Sources/A.MD' in msg
+    for level, _, msg in findings), findings
+
+
+def test_links_to_structural_and_raw_files_still_resolve(tmp_path):
+  '''The membership set is every real file under the root, NOT the page set:
+  links to structural files and to raw/ are legal and must not become
+  errors. This is the regression this task is most likely to cause.'''
+  root = make_wiki(tmp_path)
+  (root / 'raw/samplers/note.md').write_text('raw note\n')
+  write_page(root, 'sources/a.md', {'title': 'A', 'type': 'source'})
+  write_page(
+    root, 'samplers/p.md', {'title': 'P', 'type': 'concept'},
+    'See [the index](../index.md), [the log](../log.md) and '
+    '[the raw note](../../raw/samplers/note.md).')
+  findings = lint_wiki.check_links(root, lint_wiki.discover_pages(root))
+  assert not [f for f in findings if f[0] == 'ERROR'], findings
+
+
+def test_real_paths_excludes_dot_directories(tmp_path):
+  '''A wiki root is a git repo; .git must not be walked into the set, and no
+  legitimate link targets a dotfile.'''
+  root = make_wiki(tmp_path)
+  (root / '.git').mkdir(exist_ok=True)
+  (root / '.git/config').write_text('[core]\n')
+  paths = lint_wiki._real_paths(root)
+  assert (root / 'wiki/index.md').resolve() in paths
+  assert (root / '.git/config').resolve() not in paths
+
+
+def test_link_resolving_outside_the_wiki_root_is_error(tmp_path):
+  '''A link escaping the wiki root is absent from the real-file set and is
+  therefore broken. `exists()` accepted it, so this is a real tightening --
+  and it now ships as a contract rule in SCHEMA.md's "must resolve inside the
+  wiki root", so it is pinned rather than left to the helper's docstring.'''
+  outside = tmp_path / 'outside-note.md'
+  outside.write_text('not part of the wiki\n')
+  root = make_wiki(tmp_path / 'wikiroot')
+  write_page(root, 'sources/a.md', {'title': 'A', 'type': 'source'})
+  write_page(
+    root, 'samplers/p.md', {'title': 'P', 'type': 'concept'},
+    'See [outside](../../../outside-note.md).')
+  assert outside.exists()  # the target is real; only its LOCATION is wrong
+  findings = lint_wiki.check_links(root, lint_wiki.discover_pages(root))
+  assert any(
+    level == 'ERROR'
+    and msg == 'link: broken relative link: ../../../outside-note.md'
+    for level, _, msg in findings), findings
 
 
 def test_strict_flips_warning_to_exit_one(tmp_path):
