@@ -326,6 +326,48 @@ def test_inbound_reference_from_another_page_still_clears_the_orphan(tmp_path):
               if f[0] == 'WARN' and f[1] == 'wiki/sources/a.md'], findings
 
 
+def test_wrong_case_link_is_error_even_on_a_case_insensitive_fs(tmp_path):
+  '''`.exists()` asks the filesystem, and APFS/macOS answers case-
+  insensitively, so `../Sources/A.MD` resolved and escaped the check. Set
+  membership compares names the directory walk produced, so the answer is the
+  same on every filesystem.'''
+  root = make_wiki(tmp_path)
+  write_page(root, 'sources/a.md', {'title': 'A', 'type': 'source'})
+  write_page(
+    root, 'samplers/p.md', {'title': 'P', 'type': 'concept'},
+    'See [A](../Sources/A.MD).')
+  findings = lint_wiki.check_links(root, lint_wiki.discover_pages(root))
+  assert any(
+    level == 'ERROR' and 'broken relative link: ../Sources/A.MD' in msg
+    for level, _, msg in findings), findings
+
+
+def test_links_to_structural_and_raw_files_still_resolve(tmp_path):
+  '''The membership set is every real file under the root, NOT the page set:
+  links to structural files and to raw/ are legal and must not become
+  errors. This is the regression this task is most likely to cause.'''
+  root = make_wiki(tmp_path)
+  (root / 'raw/samplers/note.md').write_text('raw note\n')
+  write_page(root, 'sources/a.md', {'title': 'A', 'type': 'source'})
+  write_page(
+    root, 'samplers/p.md', {'title': 'P', 'type': 'concept'},
+    'See [the index](../index.md), [the log](../log.md) and '
+    '[the raw note](../../raw/samplers/note.md).')
+  findings = lint_wiki.check_links(root, lint_wiki.discover_pages(root))
+  assert not [f for f in findings if f[0] == 'ERROR'], findings
+
+
+def test_real_paths_excludes_dot_directories(tmp_path):
+  '''A wiki root is a git repo; .git must not be walked into the set, and no
+  legitimate link targets a dotfile.'''
+  root = make_wiki(tmp_path)
+  (root / '.git').mkdir(exist_ok=True)
+  (root / '.git/config').write_text('[core]\n')
+  paths = lint_wiki._real_paths(root)
+  assert (root / 'wiki/index.md').resolve() in paths
+  assert (root / '.git/config').resolve() not in paths
+
+
 def test_strict_flips_warning_to_exit_one(tmp_path):
   root = make_wiki(tmp_path)
   valid_source(root, 'sources/a.md', 'a')

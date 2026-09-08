@@ -177,6 +177,24 @@ def _is_citation(token, position, slugs):
   return bool(SLUG_SHAPE_RE.search(token)) or token in slugs
 
 
+def _real_paths(root):
+  '''Every real file under root, resolved. Membership in this set replaces
+  Path.exists() for link resolution: exists() consults the filesystem, and a
+  case-insensitive one (macOS/APFS) accepts `../Sources/A.MD` for
+  `sources/a.md`, so a genuinely wrong link passed the check on the author's
+  machine and failed on a case-sensitive one. Comparing against names the
+  directory walk produced gives the same answer everywhere.
+
+  Dot-directories are skipped -- a wiki root is a git repo, and no legal link
+  targets a dotfile. A link resolving outside root is absent from this set and
+  is therefore an error, which matches SCHEMA.md's relative-links-only rule.'''
+  return {
+    p.resolve() for p in root.rglob('*')
+    if p.is_file()
+    and not any(part.startswith('.') for part in p.relative_to(root).parts)
+  }
+
+
 def _page_key(root, p):
   '''A page's identity in check_links' `referenced` set: its path relative to
   wiki/. One definition, shared by every producer and by the orphan consumer,
@@ -189,6 +207,7 @@ def check_links(root, pages):
   slugs = _source_slugs(root)
   referenced = set()  # page paths (relative to wiki/) that something points at
   wiki_abs = (root / 'wiki').resolve()
+  real = _real_paths(root)
   for p in pages:
     rel = p.relative_to(root)
     # A page cannot reference itself into non-orphanhood. All three inbound
@@ -210,7 +229,7 @@ def check_links(root, pages):
       if target.startswith(('http://', 'https://', 'mailto:', '#')):
         continue
       resolved = (p.parent / target.split('#', 1)[0]).resolve()
-      if not resolved.exists():
+      if resolved not in real:
         findings.append(('ERROR', str(rel), f'link: broken relative link: {target}'))
       else:
         try:
