@@ -239,6 +239,35 @@ def test_index_line_title_is_not_part_of_the_target(tmp_path):
   assert findings == [], findings
 
 
+def test_index_line_with_nested_brackets_reaches_parity(tmp_path):
+  '''Plan 28 widened MD_LINK_RE to see one level of nested brackets but left
+  INDEX_LINE_RE flat, so `- [the [above] page](sources/a.md)` matched no index
+  line at all and the page was reported as having none -- while the body-link
+  path resolved the same text fine. The two patterns must agree about what an
+  index line points at.'''
+  root = make_wiki(tmp_path)
+  write_page(root, 'sources/a.md', {'title': 'A', 'type': 'source'})
+  (root / 'wiki/index.md').write_text(
+    '# Wiki index\n\n## sources\n- [the [above] page](sources/a.md)\n')
+  findings = lint_wiki.check_index_parity(root, lint_wiki.discover_pages(root))
+  assert findings == [], findings
+
+
+def test_index_line_with_unbalanced_bracket_has_no_target(tmp_path):
+  '''The balanced alternation admits no stray `[`, where the old flat class
+  did. INDEX_LINE_RE is anchored, so unlike its unanchored sibling it cannot
+  re-anchor on the inner link and simply yields no target. Deliberate: the
+  line is malformed markdown, and a loud "no index line" beats the old
+  accidentally-right read of a typo. Pinned so it is not refiled as a bug.'''
+  root = make_wiki(tmp_path)
+  write_page(root, 'sources/a.md', {'title': 'A', 'type': 'source'})
+  (root / 'wiki/index.md').write_text(
+    '# Wiki index\n\n## sources\n- [a [b](sources/a.md)\n')
+  findings = lint_wiki.check_index_parity(root, lint_wiki.discover_pages(root))
+  assert findings == [
+    ('ERROR', 'wiki/sources/a.md', 'index: page has no index line')], findings
+
+
 def test_link_target_helper_handles_both_quote_styles():
   '''Direct unit coverage of the helper: its contract is shared by two
   callers, so it is pinned on its own terms rather than only through them.'''
