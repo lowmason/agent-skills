@@ -52,6 +52,12 @@ referencing a source-page slug plus a position: `[robnik-2022-mclmc §4.2]`,
 `[hoffman-2014-nuts Table 2]`. Contradictory claims are recorded adjacently with
 both locators and a one-line note, then logged to `open-questions.md`. Session
 digest source pages structure their body as capture notes (below), not prose.
+Link paths are matched case-sensitively against real files and must resolve
+inside the wiki root, on every filesystem — a link that only works because
+macOS matches names case-insensitively is an error. A CommonMark link title
+(`[a](x.md "Title")`) is display metadata and is not part of the path. A page
+linking or citing itself does not count as an inbound reference, so it still
+reports as an orphan.
 
 A position opens with `§`, `p.`, `Table`, `Fig`, `Eq`, or a digit — `Table`
 also covers `Tables`, and `Fig` covers `Figure`/`Figs`, while a page range is
