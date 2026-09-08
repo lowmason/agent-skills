@@ -203,10 +203,11 @@ Changes from upstream:
     That lifecycle was extended again here with a deferred-backlog
     contract not present upstream: writing-plans/references/deferred-backlog.md
     (the triage rubric, item schema, and thresholds), the
-    writing-plans/scripts/deferred_stats.py reporter, an automatic
+    writing-plans/scripts/deferred_stats.py reporter and its tests
+    (writing-plans/scripts/test_deferred_stats.py), an automatic
     read-only triage step in the Plan Completion Protocol, and an
     aged-tail gate at Step 1b of finishing-a-development-branch. Those
-    two files are original works by Lowell Mason under the same MIT
+    three files are original works by Lowell Mason under the same MIT
     terms; the surrounding adapted skills are unchanged in structure.
   - subagent-driven-development's three bundled scripts (sdd-workspace,
     task-brief and review-package, under scripts/) came in with the

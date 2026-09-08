@@ -7,9 +7,12 @@ from each item's ``## <plan> — <YYYY-MM-DD>`` section header, which the Plan
 Completion Protocol has always written, so every existing item already carries
 one and no backfill is needed.
 
-Sections whose heading carries no parseable date (for example the
-``## Aged-backlog acknowledgements`` log) still contribute to the open/closed
-counts but are excluded from every age figure and reported as ``undated_open``.
+Sections whose heading carries no usable date still contribute to the
+open/closed counts but are excluded from every age figure and reported as
+``undated_open``. That covers three cases: no date at all (for example the
+``## Aged-backlog acknowledgements`` log), a date that is not a real calendar
+date (``2026-09-31``), and a date in the future — the last two being typos in a
+hand-written header rather than ages.
 
 Usage:
     python3 ~/.claude/skills/writing-plans/scripts/deferred_stats.py
@@ -46,6 +49,24 @@ AGE_BUCKETS: tuple[tuple[str, int, int | None], ...] = (
 )
 
 
+def _parse_date(raw: str | None) -> dt.date | None:
+    '''Header date, or None when there is no usable one.
+
+    SECTION_RE only matches the date's *shape*, so `2026-09-31` reaches here and
+    ``fromisoformat`` rejects it. These dates are hand-typed by whoever ran the
+    Plan Completion Protocol, so that typo is the expected failure — and parsing
+    is a single pass before any output, so letting it raise would suppress every
+    other section's counts and exit non-zero, breaking the always-exits-0
+    contract both callers rely on. Losing one section's age is the cheaper loss.
+    '''
+    if raw is None:
+        return None
+    try:
+        return dt.date.fromisoformat(raw)
+    except ValueError:
+        return None
+
+
 def parse_sections(text: str) -> list[dict]:
     '''Split the backlog into sections, counting checkbox items in each.
 
@@ -58,10 +79,9 @@ def parse_sections(text: str) -> list[dict]:
     for line in text.splitlines():
         heading = SECTION_RE.match(line)
         if heading:
-            raw_date = heading.group('date')
             current = {
                 'name': heading.group('name').strip(),
-                'date': dt.date.fromisoformat(raw_date) if raw_date else None,
+                'date': _parse_date(heading.group('date')),
                 'open': 0,
                 'closed': 0,
             }
@@ -110,6 +130,12 @@ def compute_stats(
             undated_open += section['open']
             continue
         days = (today - section['date']).days
+        if days < 0:
+            # Dated in the future: a typo, not an age. Bucketing it would put a
+            # phantom item in the oldest bucket (_bucket_label's fallback), so
+            # it degrades exactly like an unparseable date.
+            undated_open += section['open']
+            continue
         histogram[_bucket_label(days)] += section['open']
         if days > aged_days:
             aged_open += section['open']

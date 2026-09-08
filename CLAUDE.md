@@ -78,7 +78,7 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 # describe-critique-methodology decoupling-check tests — 18 tests
 cd skills/describe-critique-methodology/scripts && uv run --python 3.13 --with pytest python -m pytest -q
 
-# writing-plans deferred-backlog stats tests (parser, age buckets, --json contract) — 10 tests
+# writing-plans deferred-backlog stats tests (parser, age buckets, bad/future dates, --json) — 13 tests
 # (stdlib only; two tests drive the script as a subprocess through sys.executable)
 cd skills/writing-plans/scripts && uv run --python 3.13 --with pytest python -m pytest -q
 

@@ -118,3 +118,31 @@ def test_format_report_names_the_two_thresholds():
     assert '3 open' in report
     assert '40%' in report
     assert 'aged >45d: 1' in report
+
+
+def test_calendar_invalid_date_is_treated_as_undated():
+    text = '# Deferred items\n\n## 27-typo — 2026-09-31\n- [ ] Item under an impossible date.\n'
+    sections = parse_sections(text)
+    assert sections[0]['date'] is None
+    stats = compute_stats(sections, TODAY)
+    assert (stats['open'], stats['undated_open'], stats['aged_open']) == (1, 1, 0)
+    assert sum(b['count'] for b in stats['age_histogram']) == 0
+
+
+def test_future_dated_section_is_not_reported_as_oldest():
+    text = SAMPLE + '\n## 28-future — 2026-10-01\n- [ ] Typed next month by mistake.\n'
+    stats = compute_stats(parse_sections(text), TODAY)
+    assert stats['undated_open'] == 1
+    assert {b['label']: b['count'] for b in stats['age_histogram']}['91d+'] == 0
+    assert stats['oldest_open_days'] == 51
+
+
+def test_invalid_date_does_not_break_the_exit_contract(tmp_path):
+    target = tmp_path / 'deferred_items.md'
+    target.write_text('# Deferred items\n\n## 27-typo — 2026-02-30\n- [ ] One item.\n', encoding='utf-8')
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT), '--file', str(target), '--json'],
+        capture_output=True, text=True, check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert json.loads(result.stdout)['undated_open'] == 1

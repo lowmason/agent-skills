@@ -62,21 +62,33 @@ continue to Step 2.
 Deferred backlog: 12 open, 40 ever closed (closure rate 77%), aged >45d: 0.
 ```
 
-**If `aged >45d:` is greater than 0:** report it and stop before the menu.
+**If `aged >45d:` is greater than 0:** report it, then continue to Step 2 and
+present the menu normally.
 
 ```
 Deferred backlog: 44 open, 61 ever closed (closure rate 58%), aged >45d: 29.
 Oldest open: 71d (12-audit_7_20_26).
 
-29 items have been open past the 45-day review horizon. Before finishing:
+29 items are aged past the 45-day review horizon — I'll ask about those before
+merging or opening a PR.
+```
+
+**The gate binds Options 1 and 2 only.** Merge and PR are the paths where the
+work leaves the building. Options 3 (Keep) and 4 (Discard) are never gated:
+nothing ships on either, and gating Discard would force a triage pass onto a
+branch that is about to be deleted — then delete the acknowledgement along with
+it, destroying the very record the gate exists to create.
+
+Before executing Option 1 or Option 2, ask, and wait for an answer:
+
+```
+29 items are aged past the 45-day review horizon. Before I <merge / open the PR>:
 
 1. Run `/deferred` to triage them
 2. Acknowledge and carry them — tell me why, and I'll log it
 
 Which?
 ```
-
-Do not present the merge/PR menu until one of the two lands.
 
 - **`/deferred`** is your human partner's to run. When they have, re-run the
   stats and continue from the new numbers.
@@ -91,8 +103,9 @@ Do not present the merge/PR menu until one of the two lands.
   deliberately: the Redis decision is still with the platform team.
 ```
 
-Commit that edit with the branch's other completion commits, then continue to
-Step 2. The full contract is the **Aged-tail gate** section of
+Commit that edit with the branch's other completion commits, then proceed with
+the chosen option — on Options 1 and 2 the branch survives, so the record
+survives with it. The full contract is the **Aged-tail gate** section of
 `../writing-plans/references/deferred-backlog.md`.
 
 "Carried deliberately" with no reason is the silent default this gate exists to
@@ -165,6 +178,9 @@ Which option?
 
 #### Option 1: Merge Locally
 
+**Aged-tail gate (Step 1b):** if aged items were reported, resolve them before
+merging — a `/deferred` pass or a logged acknowledgement.
+
 ```bash
 # Get main repo root for CWD safety
 MAIN_ROOT=$(git -C "$(git rev-parse --git-common-dir)/.." rev-parse --show-toplevel)
@@ -188,6 +204,9 @@ git branch -d <feature-branch>
 ```
 
 #### Option 2: Push and Create PR
+
+**Aged-tail gate (Step 1b):** if aged items were reported, resolve them before
+pushing — a `/deferred` pass or a logged acknowledgement.
 
 ```bash
 # Push branch, then create the PR with the gh CLI
@@ -308,7 +327,7 @@ ExitWorktree), use it. Otherwise, leave the workspace in place.
 
 **Never:**
 - Proceed with failing tests
-- Present the merge/PR menu with an unaddressed aged tail
+- Merge or open a PR with an unaddressed aged tail
 - Write an aged-backlog acknowledgement your partner did not ask for
 - Merge without verifying tests on result
 - Delete work without confirmation

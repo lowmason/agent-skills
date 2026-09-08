@@ -124,13 +124,19 @@ the human's, and runs only under `/deferred`.
 
 ## Aged-tail gate
 
-Run by finishing-a-development-branch before it offers merge/PR. Volume alone
-is reported, never blocking: a large backlog can be legitimate. **Age is the
-proxy for neglect**, so only the aged tail gates.
+Run by finishing-a-development-branch at its Step 1b. Volume alone is reported,
+never blocking: a large backlog can be legitimate. **Age is the proxy for
+neglect**, so only the aged tail gates.
+
+The gate binds the **merge and PR options only**. Keep and Discard are never
+gated — nothing ships on either, and gating Discard would force a triage pass
+onto a branch about to be deleted, destroying the acknowledgement record along
+with it.
 
 When `aged_open` is 0, report the one-line status and continue.
 
-When `aged_open` is greater than 0, the branch does not finish until one of:
+When `aged_open` is greater than 0, the branch does not merge or open a PR
+until one of:
 
 - **A `/deferred` pass**, which the human runs. Then re-run the stats.
 - **A logged acknowledgement.** Append one plain bullet — never a checkbox,
