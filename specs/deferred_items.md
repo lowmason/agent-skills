@@ -986,18 +986,34 @@ is where the design deliberately concentrates error risk, and these are its two
 residuals. The fix in each case is a new WARN severity, which the spec explicitly
 declined as YAGNI (zero instances in a one-page wiki).
 
-- [ ] A well-formed slug with a malformed position is silently unrecognized —
+- [x] A well-formed slug with a malformed position is silently unrecognized —
       `[robnik-2022-mclmc see this]` is read as prose, so a real citation goes
       uncounted and unvalidated. The symmetric residual of requiring both predicates.
       Pinned as a test today (`test_is_citation`, the `shape, bad position` row) so the
       behavior is deliberate rather than accidental. To fix: add a WARN when the token
       passes `SLUG_SHAPE_RE` or membership but the position does not parse. Touches
       `skills/llm-wiki/scripts/lint_wiki.py` `check_links`.
-- [ ] Prose whose first token is hyphenated or year-bearing and whose remainder opens
+      → retired 2026-09-08 (/deferred): the spec conditioned this WARN on real content
+      producing the case ("Not built for; add a WARN if real content produces it",
+      specs/completed/lint-wiki-citation-contract.md Accepted limitations #1). Measured
+      across 192 .md / 61,422 lines / 295 bracketed pairs: the recorded predicate
+      (shape-or-membership) fires 13 times and 0 are organic citations — all are template
+      placeholders or hyphenated prose (`[1-2 sentence technical assessment]`,
+      `[2-3 sentences about approach]`); 3 of the 13 are this item's own example quoted
+      back at itself. The membership-only variant fires 0 — unreachable today, and it
+      would fire on the pilot wiki's own real locator vocabulary (`d-01`, `L3815`) as
+      sources grow. SCHEMA.md:58-60 also states the un-parsing case is prose "never
+      checked as one". The conditional gate was evaluated and returned no. Re-open with
+      a real instance.
+- [x] Prose whose first token is hyphenated or year-bearing and whose remainder opens
       with a position sigil hard-errors — `[well-known Table 2]` (acceptance case 18,
       pinned as an expected ERROR). Contrived; the escape is to not bracket it. Same
       file; the fix would be a curated stop-word list or a WARN, both rejected as
       inventing contract the wiki has no content for.
+      → retired 2026-09-08: records a no-action decision, not deferred work — both
+      candidate fixes (stop-word list, WARN) were rejected at the time as inventing
+      contract, and the behavior is pinned as an expected ERROR by acceptance case 18
+      (`test_lint_wiki.py:746`). It never needed a checkbox.
 
 ## 26-distill-sessions-hardening — 2026-09-04
 
@@ -1061,7 +1077,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       with a message naming the missing tool and the manual alternative.
 
 ## 28-lint-wiki-link-hardening — 2026-09-08
-- [ ] `INDEX_LINE_RE` still cannot see nested brackets in index-line text, leaving plan
+- [x] `INDEX_LINE_RE` still cannot see nested brackets in index-line text, leaving plan
       28's Task 1 widening asymmetric: `MD_LINK_RE` now matches
       `- [the [above] page](sources/a.md)` and returns `sources/a.md`, while
       `INDEX_LINE_RE` does not match the line at all, so it yields no target and
@@ -1073,3 +1089,11 @@ declined as YAGNI (zero instances in a one-page wiki).
       `skills/llm-wiki/scripts/lint_wiki.py`.
       Size: quick-fix. Done when: an index line whose text carries nested brackets reaches
       parity with its page, pinned by a test in `test_lint_wiki.py`.
+      → done 2026-09-08 (/deferred quick fix): widened to MD_LINK_RE's alternation,
+      keeping `+` (schema-template.md defines the link text as the page title, so a
+      titleless index line is not one). Pinned by
+      `test_index_line_with_nested_brackets_reaches_parity`. A second test pins the
+      behaviour change the widening introduces: being anchored, the pattern cannot
+      re-anchor past an unbalanced `[`, so `- [a [b](x.md)` now yields no target
+      (loud "no index line") where the flat class accidentally read the inner link.
+      +2 tests in the llm-wiki suite.
