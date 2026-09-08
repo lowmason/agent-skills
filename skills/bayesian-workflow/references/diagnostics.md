@@ -119,7 +119,7 @@ from numpyro.infer.reparam import LocScaleReparam
 from numpyro.handlers import reparam
 
 # CENTERED (can cause funnel divergences):
-def model(...):
+def model(y, group_idx):
     mu = numpyro.sample("mu", dist.Normal(mu_global, sigma_group))   # funnel-prone
 
 # NON-CENTERED (usually fixes the funnel) — wrap the SAME model:
