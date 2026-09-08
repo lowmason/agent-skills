@@ -27,6 +27,11 @@
   does not exist; only the project-level `.claude/rules` symlink is present).
   `12` (50d) was offered at a completion gate and declined. All three sit in the
   Hold/owner-only column of the triage presented at plan 28's completion.
+- 2026-09-08 — finished `trim-sdd-skill-references` with 1 item aged >45d, carried
+  deliberately: `11-delegation-frontmatter-rollout`'s remaining sub-item is the live
+  model/effort indicator check, an interactive-only verification that no automated
+  session can run. Not blocking this branch, which only restructures
+  subagent-driven-development's skill text into references/.
 
 ## 11-delegation-frontmatter-rollout — 2026-07-19
 - [x] Haiku-pinned `Explore` override agent (fork-isolation upgrade; plan "Out of
