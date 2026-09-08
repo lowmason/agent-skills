@@ -17,7 +17,7 @@
 - Thresholds, used verbatim everywhere: **aged tail = older than 45 days**; **volume nudge = 20 or more open items**.
 - `commands/deferred.md` **keeps `disable-model-invocation: true`**. Steps 1–4 become agent-runnable by extracting their rubric into a shared reference; step 5 (which edits the backlog file) stays reachable only when the human types `/deferred`.
 - In `finishing-a-development-branch`, insert **Step 1b** — do **not** renumber Steps 2–6. Step 5 and the Quick Reference both reference "Step 6" by name; renumbering silently breaks those cross-references.
-- The new completion-protocol backlog step must be written as a **complete, self-contained section that supersedes any prior nudge text**. Lowell's work environment runs a drifted copy of these skills that already contains a "20+ open items" nudge and an aging computation; when this repo's version is copied over, it must replace that text, not merge with it. Nothing in the new step may be phrased as an amendment to text that does not exist in this repo.
+- The new completion-protocol backlog step must be written as a **complete, self-contained section**, not as an amendment. This repo has never had a backlog nudge or aging computation (verified: `git log -S "soft nudge"` and `git log -S "45 days"` over `skills/` and `commands/` are both empty), so there is no existing text to amend — and writing it self-contained also means it safely **overwrites** rather than merges if any downstream copy of these skills does carry one.
 - Do **not** edit the content of this repo's `specs/deferred_items.md` as part of any task. The only write to it is the Plan Completion Protocol's own append at the end.
 - Every new file is an original work by Lowell Mason (MIT) and must be attributed in `NOTICE` before the plan completes.
 
@@ -648,7 +648,7 @@ git commit -m "refactor(deferred): extract triage rubric to a shared reference"
 - Consumes: `skills/writing-plans/references/deferred-backlog.md` (Task 2), `skills/writing-plans/scripts/deferred_stats.py` (Task 1).
 - Produces: a Plan Completion Protocol with five numbered steps. Task 4 references none of them; Task 5 documents the new script in `CLAUDE.md`.
 
-**Why a self-contained step:** Lowell's work environment runs a drifted copy of these skills that already contains a "20+ open items" nudge and an aging computation. The step written here must read as the complete backlog step, so that copying this file over that one replaces the old text rather than sitting beside it. Do not phrase anything as an amendment.
+**Why a self-contained step:** the source review described this protocol as already having a "20+ open items" nudge and an aging computation. It does not — neither string appears anywhere in this repo's history. Write the step as the complete backlog step rather than as an amendment to text that is not there; that also makes it safe to overwrite any downstream copy that does carry one.
 
 - [ ] **Step 1: Replace the item template in step 3**
 
@@ -970,8 +970,12 @@ problem is.
 Step 1b gate you just built — that is the intended dogfood, not a bug. Take
 whichever branch the gate offers, on its merits.
 
-**Sync caution.** Lowell's work environment runs a drifted copy of these skills
-containing a "20+ open items" nudge and an aging computation that never came
-back upstream to this repo. When these files are copied there, they must
-**overwrite**, not merge — the new completion-protocol step 4 and Step 1b are
-written as complete replacements, and merging would leave two nudges firing.
+**Sync caution.** The source review reported a "20+ open items" nudge and a
+45-day aging computation as already present. They are not present here, and
+never have been — `git log -S` finds neither string in `skills/` or
+`commands/`, the working tree is clean, and `~/.claude/skills/` is symlinks
+into this repo, so there is no second local copy they could live in. Treat
+those two claims as unverified. If a copy of these skills on another machine
+*does* carry them, sync by **overwriting** rather than merging: step 4 and
+Step 1b are written as complete sections, and a merge would leave two nudges
+firing.
