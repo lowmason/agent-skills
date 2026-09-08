@@ -107,6 +107,30 @@ def test_agent_file_clean(tmp_path):
     assert check_agent_file(good) == []
 
 
+def make_agent(tmp_path: Path, name: str, description: str) -> Path:
+    md = tmp_path / f'{name}.md'
+    md.write_text(
+        f"---\nname: {name}\ndescription: '{description}'\n"
+        'tools: Read, Grep, Glob, Bash\n---\nbody\n'
+    )
+    return md
+
+
+def test_agent_overlong_description_is_reported(tmp_path):
+    # Agent descriptions all load into the Agent-tool listing, so they carry
+    # the same 1024-char cap check_skill enforces on SKILL.md.
+    md = make_agent(tmp_path, 'wordy-agent', 'x' * 1100)
+    errs = '\n'.join(check_agent_file(md))
+    assert 'chars (listing budget 1024)' in errs
+
+
+def test_agent_description_cap_boundary_is_exact(tmp_path):
+    # Pin both sides: the over-cap case alone cannot tell `>` from `>=`.
+    assert check_agent_file(make_agent(tmp_path, 'at-cap', 'x' * 1024)) == []
+    errs = '\n'.join(check_agent_file(make_agent(tmp_path, 'over-cap', 'x' * 1025)))
+    assert 'description is 1025 chars (listing budget 1024)' in errs
+
+
 def test_command_file_requires_description(tmp_path):
     bad = tmp_path / 'do-thing.md'
     bad.write_text('---\nother: x\n---\nbody\n')

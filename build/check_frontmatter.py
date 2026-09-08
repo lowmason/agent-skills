@@ -26,6 +26,13 @@ ALLOWED_KEYS = {'name', 'description', 'license', 'allowed-tools', 'metadata',
 # an isolated subagent). Any other value is a typo that silently no-ops at
 # runtime, so it fails here instead — widen this set if the spec grows one.
 CONTEXT_VALUES = frozenset({'fork'})
+# One number, two different reasons — which is why the two messages below name
+# different ones. For a SKILL.md it is the Agent Skills standard's cap
+# (agentskills.io; see specs/completed/audit_1_3_26.md, which also records that
+# Claude Code itself enforces no 1024 hard cap). No standard governs an
+# agents/*.md, but every agent description loads into the Agent-tool listing, so
+# agents are held to the same budget by analogy, not by spec.
+DESCRIPTION_CAP = 1024
 NAME_RE = re.compile(r'^[a-z0-9]+(-[a-z0-9]+)*$')
 KNOWN_AGENT_TOOLS = {
     'Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit', 'WebFetch', 'WebSearch',
@@ -91,8 +98,9 @@ def check_skill(skill_dir: Path) -> list[str]:
     desc = (fm.get('description') or '').strip()
     if not desc:
         errs.append(f'{sk}: missing description')
-    elif len(desc) > 1024:
-        errs.append(f'{sk}: description is {len(desc)} chars (spec cap 1024)')
+    elif len(desc) > DESCRIPTION_CAP:
+        errs.append(
+            f'{sk}: description is {len(desc)} chars (spec cap {DESCRIPTION_CAP})')
     ctx = fm.get('context')
     if ctx is not None and ctx not in CONTEXT_VALUES:
         errs.append(f'{sk}: context must be one of {sorted(CONTEXT_VALUES)}, got {ctx!r}')
@@ -135,8 +143,16 @@ def check_agent_file(md: Path) -> list[str]:
     # name shadows the built-in Explore agent (probed on 2.1.219).
     if str(fm.get('name') or '').lower() != md.stem.lower():
         errs.append(f'{md}: name {fm.get("name")!r} does not match filename {md.stem!r}')
-    if not (fm.get('description') or '').strip():
+    # Every agent description loads into the Agent-tool listing, so agents are
+    # on the same budget check_skill enforces on a SKILL.md — by analogy, not
+    # by spec, so the message says 'listing budget' where check_skill says
+    # 'spec cap'.
+    desc = (fm.get('description') or '').strip()
+    if not desc:
         errs.append(f'{md}: missing description')
+    elif len(desc) > DESCRIPTION_CAP:
+        errs.append(
+            f'{md}: description is {len(desc)} chars (listing budget {DESCRIPTION_CAP})')
     tools = fm.get('tools')
     if tools is not None:
         unknown = [t.strip() for t in str(tools).split(',') if t.strip() not in KNOWN_AGENT_TOOLS]
