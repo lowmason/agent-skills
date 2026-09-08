@@ -586,7 +586,24 @@ Expected: exit 0, no output about `deferred-backlog.md` (reference files carry n
 
 - [ ] **Step 3: Re-point `/deferred` at the reference**
 
-In `commands/deferred.md`, replace everything from the line `1. Read \`specs/deferred_items.md\` at the project root. If the file does not` through the line `   Open the repo only to confirm a retire verdict, never to re-litigate an item's merit.` and the whole of step 4, with:
+In `commands/deferred.md`, delete numbered steps 1 through 4 in full. The span
+starts at this exact line:
+
+````markdown
+1. Read `specs/deferred_items.md` at the project root. If the file does not
+````
+
+and ends at this exact line — the last line of step 4. Step 5 follows it
+directly, with **no blank line** between them:
+
+````markdown
+   user's selection.
+5. Act only on what the user selects, per disposition:
+````
+
+Keep that `5.` line. Replace only the span above it with the block below, and
+keep it flush against `5.` with no blank line, so the numbered list stays one
+list:
 
 ````markdown
 1.–4. Run the **Triage rubric** in the writing-plans skill's
@@ -635,10 +652,26 @@ git commit -m "refactor(deferred): extract triage rubric to a shared reference"
 
 - [ ] **Step 1: Replace the item template in step 3**
 
-In `skills/writing-plans/SKILL.md`, inside § Plan Completion Protocol step 3, replace the sentence `Each item is self-contained: file paths, why it was deferred, what it would take to do.` and the fenced ```markdown example that follows it, with:
+In `skills/writing-plans/SKILL.md`, § Plan Completion Protocol step 3, replace this exact block — the paragraph's trailing sentence plus the whole fenced example after it:
 
 ````markdown
-Each item follows the **Deferred-item schema** in
+pass above still runs. Each item is self-contained: file paths, why it was
+deferred, what it would take to do.
+
+```markdown
+## 7-rate-limiter — 2026-07-04
+- [ ] Redis-backed counter store (plan Task 4, skipped): needs prod Redis
+      DSN decision. See specs/plans/completed/7-rate-limiter.md; touches
+      src/limiter/store.py.
+- [ ] Review Minor: retry jitter is fixed-seed in tests only (reviewer
+      report, triaged defer).
+```
+````
+
+with this exact block:
+
+````markdown
+pass above still runs. Each item follows the **Deferred-item schema** in
 `references/deferred-backlog.md`: self-contained (file paths, why it was
 deferred, what it would take to do), plus a `Size:` of `quick-fix` / `plan` /
 `design` and a closure condition (`Done when:` or `Revisit if:`). An item that
@@ -660,7 +693,15 @@ Leave the rest of step 3 — the ticking pass, the create-on-first-use rule, the
 
 - [ ] **Step 2: Insert the new step 4**
 
-In `skills/writing-plans/SKILL.md`, immediately after step 3 ends (after the line `history of consciously-deferred work.`) and before the line beginning `**4. Retire.**`, insert:
+In `skills/writing-plans/SKILL.md`, insert a new step between these two exact lines — step 3's last line and step 4's first:
+
+````markdown
+history of consciously-deferred work.
+
+**4. Retire.** `git mv` the plan to `specs/plans/completed/`, in one
+````
+
+Insert this, with one blank line on each side, so it sits between them:
 
 ````markdown
 **4. Backlog triage.** Report backlog health, then bring the triage to your
@@ -747,19 +788,21 @@ This is the last moment before the work leaves the building. Volume is
 reported; only the **aged tail** gates.
 
 ```bash
-uv run --python 3.13 python ~/.claude/skills/writing-plans/scripts/deferred_stats.py --json
+uv run --python 3.13 python ~/.claude/skills/writing-plans/scripts/deferred_stats.py
 ```
 
-No `specs/deferred_items.md` in this repo (`exists: false`), or `open` is 0?
-Say nothing and continue to Step 2.
+Run it without `--json`: this step needs the human-readable summary, and reading
+`aged >45d:` off that line is all the gate requires. If the script prints
+`no specs/deferred_items.md in this repo`, or reports `0 open`, say nothing and
+continue to Step 2.
 
-**If `aged_open` is 0:** report the one-line status and continue to Step 2.
+**If `aged >45d:` is 0:** report the summary line as printed and continue to Step 2.
 
 ```
 Deferred backlog: 12 open, 40 ever closed (closure rate 77%), aged >45d: 0.
 ```
 
-**If `aged_open` is greater than 0:** report it and stop before the menu.
+**If `aged >45d:` is greater than 0:** report it and stop before the menu.
 
 ```
 Deferred backlog: 44 open, 61 ever closed (closure rate 58%), aged >45d: 29.
