@@ -40,7 +40,7 @@ from pathlib import Path
 
 from fences import (CodeBlock, iter_code_blocks,  # noqa: F401  (re-exported)
                     strip_fenced_blocks)
-from snippet_preamble import PINNED, PREAMBLE
+from snippet_preamble import FIXTURE_VARS, PINNED, PREAMBLE
 
 NORUN = 'norun'
 TICK_NAME_RE = re.compile(r'`([A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)+)')
@@ -224,26 +224,101 @@ def _preamble_names() -> set[str]:
     return _PREAMBLE_NAMES
 
 
-def runnable(block) -> bool:
-    '''Not exempt, parses, no `...` elision, every free name bound.
+_VAR_KWARGS = ('var_names', 'var_name')
+# Groups an InferenceData/DataTree exposes as attributes; a literal subscript
+# on one of these names a variable the fixture must actually carry.
+_IDATA_GROUPS = ('posterior', 'prior', 'observed_data', 'posterior_predictive',
+                 'prior_predictive', 'log_likelihood', 'log_prior',
+                 'sample_stats')
 
-    Conservative by design: a block is admitted only when the preamble can
-    actually satisfy it, so a NameError in a --run report means THIS harness
-    drifted, not the documentation.
+
+def _required_vars(tree) -> set[str]:
+    '''Fixture variables a block names as STRING LITERALS.
+
+    Two shapes reach the fixture: a var_names=/var_name= keyword, and a
+    literal subscript on an idata group (idata.posterior["beta"]). Only
+    literals are visible; a computed name leaves the block admitted as before.
+
+    This is what stops name-completeness from over-promising. A block can bind
+    every name it uses and still ask for `param1` -- a PLACEHOLDER standing in
+    for the reader's own parameters, not a claim that `param1` exists. Running
+    it would report a doc defect where there is none.
     '''
+    out = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.keyword) and node.arg in _VAR_KWARGS:
+            val = node.value
+            if isinstance(val, ast.Constant) and isinstance(val.value, str):
+                out.add(val.value)
+            elif isinstance(val, (ast.List, ast.Tuple)):
+                out |= {e.value for e in val.elts
+                        if isinstance(e, ast.Constant) and isinstance(e.value, str)}
+        elif (isinstance(node, ast.Subscript)
+                and isinstance(node.value, ast.Attribute)
+                and node.value.attr in _IDATA_GROUPS
+                and isinstance(node.slice, ast.Constant)
+                and isinstance(node.slice.value, str)):
+            out.add(node.slice.value)
+    return out
+
+
+# numpyro primitives are only meaningful inside a model function: called at
+# module level they raise, because the PRNG key comes from the enclosing
+# trace. Prior catalogues are full of such fragments -- menus of alternative
+# sites shown for comparison, never meant as programs.
+_MODEL_PRIMITIVES = ('sample', 'factor', 'deterministic', 'param', 'plate')
+
+
+def _module_level_primitive(tree) -> str | None:
+    '''A numpyro primitive called outside any def -- a model-body fragment.'''
+    stack = list(tree.body)
+    while stack:
+        node = stack.pop()
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            continue  # inside a def is exactly where these belong
+        if (isinstance(node, ast.Call)
+                and isinstance(node.func, ast.Attribute)
+                and node.func.attr in _MODEL_PRIMITIVES
+                and isinstance(node.func.value, ast.Name)
+                and node.func.value.id == 'numpyro'):
+            return f'numpyro.{node.func.attr}'
+        stack.extend(ast.iter_child_nodes(node))
+    return None
+
+
+def _unrunnable_reason(block) -> str:
+    '''Why --run cannot execute this block; empty string when it can.'''
     if is_exempt(block):
-        return False
+        return f'{NORUN}: {block.info[len(NORUN):].strip()}'
     try:
         tree = ast.parse(block.code)
     except SyntaxError:
-        return False
+        return 'does not parse'
     if any(isinstance(n, ast.Constant) and n.value is Ellipsis
            for n in ast.walk(tree)):
-        return False
-    bound = _preamble_names() | _bound_by(tree)
+        return 'elided with `...`'
+    primitive = _module_level_primitive(tree)
+    if primitive:
+        return f'model-body fragment ({primitive} outside a model handler)'
+    missing = _required_vars(tree) - FIXTURE_VARS
+    if missing:
+        return f'needs fixture variables {sorted(missing)}'
     free = {n.id for n in ast.walk(tree)
             if isinstance(n, ast.Name) and isinstance(n.ctx, ast.Load)}
-    return free <= bound
+    unbound = free - (_preamble_names() | _bound_by(tree))
+    if unbound:
+        return f'unbound names {sorted(unbound)}'
+    return ''
+
+
+def runnable(block) -> bool:
+    '''Not exempt, parses, no `...` elision, name-complete, fixture-complete.
+
+    Conservative by design: a block is admitted only when the preamble can
+    actually satisfy it, so a raise in a --run report is a claim about the
+    DOCUMENTATION, not about this harness.
+    '''
+    return _unrunnable_reason(block) == ''
 
 
 def run_errors(path: Path, timeout: int = 300) -> list[str]:
@@ -275,14 +350,21 @@ def run_errors(path: Path, timeout: int = 300) -> list[str]:
 
 
 def unrunnable_report(path: Path) -> list[str]:
-    '''Advisory lines for blocks --run cannot reach (fixture-dependent).
+    '''Advisory lines for blocks --run cannot reach, each with its reason.
 
-    The plan's "reported as advisories, never silently dropped" -- a gate that
-    covers 36 of 74 blocks must not read as if it covered all of them.
+    The plan's "reported as advisories, never silently dropped": a gate that
+    executes a subset must not read as if it covered everything. norun blocks
+    are omitted here -- exempt_report already names those.
     '''
-    return [f'{path}:{b.line}: not executed: needs a per-block fixture'
-            for b in iter_code_blocks(path.read_text())
-            if not is_exempt(b) and not runnable(b)]
+    out = []
+    for b in iter_code_blocks(path.read_text()):
+        if is_exempt(b):
+            continue
+        reason = _unrunnable_reason(b)
+        if reason:
+            out.append(f'{path}:{b.line}: not executed: {reason}')
+    return out
+
 
 
 def main(argv=None) -> int:
