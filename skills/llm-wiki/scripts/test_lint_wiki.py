@@ -368,6 +368,26 @@ def test_real_paths_excludes_dot_directories(tmp_path):
   assert (root / '.git/config').resolve() not in paths
 
 
+def test_link_resolving_outside_the_wiki_root_is_error(tmp_path):
+  '''A link escaping the wiki root is absent from the real-file set and is
+  therefore broken. `exists()` accepted it, so this is a real tightening --
+  and it now ships as a contract rule in SCHEMA.md's "must resolve inside the
+  wiki root", so it is pinned rather than left to the helper's docstring.'''
+  outside = tmp_path / 'outside-note.md'
+  outside.write_text('not part of the wiki\n')
+  root = make_wiki(tmp_path / 'wikiroot')
+  write_page(root, 'sources/a.md', {'title': 'A', 'type': 'source'})
+  write_page(
+    root, 'samplers/p.md', {'title': 'P', 'type': 'concept'},
+    'See [outside](../../../outside-note.md).')
+  assert outside.exists()  # the target is real; only its LOCATION is wrong
+  findings = lint_wiki.check_links(root, lint_wiki.discover_pages(root))
+  assert any(
+    level == 'ERROR'
+    and msg == 'link: broken relative link: ../../../outside-note.md'
+    for level, _, msg in findings), findings
+
+
 def test_strict_flips_warning_to_exit_one(tmp_path):
   root = make_wiki(tmp_path)
   valid_source(root, 'sources/a.md', 'a')

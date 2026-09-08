@@ -1001,11 +1001,14 @@ declined as YAGNI (zero instances in a one-page wiki).
       **Owner-only.** Until it runs, a `lint_wiki.py`/`distill_sessions.py` run from the wiki
       root still renumbers an undated turn to position 1.
       → SCOPE WIDENED by plan 28 (2026-09-08): `lint_wiki.py` is now stale in the same way
-      and for the same reason — also a `MANAGED_SCRIPTS` entry, left four commits ahead of
-      `~/research-wiki/scripts/lint_wiki.py`. One `bootstrap_wiki.py --force` discharges
-      both. Still owner-only. Reassuring for the timing: the post-fix linter run against
-      the pilot wiki is byte-identical to the pre-fix one, so the refresh brings no
-      content churn.
+      and for the same reason — also a `MANAGED_SCRIPTS` entry. Checked rather than
+      assumed: the deployed copy is byte-identical to `50bcba0`, so it is FIVE commits
+      behind, not four — it already missed `3451e74` (the DECISION_META_RE indent/bullet
+      fix, 2026-09-04) before plan 28 added four more. One `bootstrap_wiki.py --force`
+      discharges both scripts. Still owner-only. Reassuring for the timing: the post-fix
+      repo copy run against the pilot wiki reports `0 errors, 1 warnings, 0 info`,
+      identical to the deployed copy's output — and that post-fix run includes the
+      DECISION_META_RE tightening too, so the refresh brings no content churn.
 
 ## 27-deferment-loop-hardening — 2026-09-08
 - [ ] Sync these skills to the work environment, where the backlog problem
