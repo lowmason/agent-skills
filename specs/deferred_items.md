@@ -1184,7 +1184,20 @@ declined as YAGNI (zero instances in a one-page wiki).
       Size: plan. Done when: either the executed count rises with `FIXTURE_VARS` and the
       preamble widened together, or a per-block fixture mechanism exists and the advisory
       count for "unbound names" falls.
-- [ ] Repo-wide Tier 1 (parse-only) across all skills, not just `bayesian-workflow`.
+- [x] Repo-wide Tier 1 (parse-only) across all skills, not just `bayesian-workflow`.
+      → done 2026-09-08 (direct, not via a plan — the /deferred triage above had already
+      scoped it to two known blocks and named the open question, leaving nothing a plan
+      would add). The parse-level exemption this item asked for is a new `noparse` fence
+      marker mirroring `norun`: reason required and test-pinned, stderr advisory, and it
+      implies `norun` since an unparseable block cannot execute. Only ONE of the two
+      blocks uses it — `model-tests.md:83`, whose indentation shows where the excerpt
+      substitutes into the loop above; `comments.md:24`'s body-less `for` was simply
+      completed with `...`, keeping the exemption list as short as it can be.
+      `test_every_norun_marker_carries_a_reason` was widened from bayesian-workflow to
+      all of skills/ (a reason check scoped to one skill is a hole in a repo-wide gate).
+      Build suite +6 tests. Both Done-when criteria met: `check_snippets.py skills/`
+      exits 0, and the invocation is in the root CLAUDE.md Commands block with the
+      differing tier scopes stated. Commit 163e561.
       The plan's own executor notes propose it separately and explain why only Tier 1
       generalizes: repo-wide *execution* is a category error, since `clean-code`'s blocks
       are before/after pairs whose "before" half is deliberately bad and
