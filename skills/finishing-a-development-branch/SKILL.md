@@ -14,7 +14,7 @@ description: >
 
 Guide completion of development work by presenting clear options and handling chosen workflow.
 
-**Core principle:** Verify tests → Detect environment → Present options → Execute choice → Clean up.
+**Core principle:** Verify tests → Check deferred backlog → Detect environment → Present options → Execute choice → Clean up.
 
 **Announce at start:** "I'm using the finishing-a-development-branch skill to complete this work."
 
@@ -40,7 +40,64 @@ Cannot proceed with merge/PR until tests pass.
 
 Stop. Don't proceed to Step 2.
 
-**If tests pass:** Continue to Step 2.
+**If tests pass:** Continue to Step 1b.
+
+### Step 1b: Check Deferred Backlog
+
+This is the last moment before the work leaves the building. Volume is
+reported; only the **aged tail** gates.
+
+```bash
+uv run --python 3.13 python ~/.claude/skills/writing-plans/scripts/deferred_stats.py
+```
+
+Run it without `--json`: this step needs the human-readable summary, and reading
+`aged >45d:` off that line is all the gate requires. If the script prints
+`no specs/deferred_items.md in this repo`, or reports `0 open`, say nothing and
+continue to Step 2.
+
+**If `aged >45d:` is 0:** report the summary line as printed and continue to Step 2.
+
+```
+Deferred backlog: 12 open, 40 ever closed (closure rate 77%), aged >45d: 0.
+```
+
+**If `aged >45d:` is greater than 0:** report it and stop before the menu.
+
+```
+Deferred backlog: 44 open, 61 ever closed (closure rate 58%), aged >45d: 29.
+Oldest open: 71d (12-audit_7_20_26).
+
+29 items have been open past the 45-day review horizon. Before finishing:
+
+1. Run `/deferred` to triage them
+2. Acknowledge and carry them — tell me why, and I'll log it
+
+Which?
+```
+
+Do not present the merge/PR menu until one of the two lands.
+
+- **`/deferred`** is your human partner's to run. When they have, re-run the
+  stats and continue from the new numbers.
+- **Acknowledge** requires a reason. Append one plain bullet — never a
+  checkbox, so it stays out of the backlog counts — under a
+  `## Aged-backlog acknowledgements` section pinned directly beneath the
+  file's `# Deferred items` title, creating that section if absent:
+
+```markdown
+## Aged-backlog acknowledgements
+- 2026-09-08 — finished `feat/rate-limiter` with 29 items aged >45d, carried
+  deliberately: the Redis decision is still with the platform team.
+```
+
+Commit that edit with the branch's other completion commits, then continue to
+Step 2. The full contract is the **Aged-tail gate** section of the
+writing-plans skill's `references/deferred-backlog.md`.
+
+"Carried deliberately" with no reason is the silent default this gate exists to
+convert into a conscious one. Never write the acknowledgement without asking —
+taking the override on your partner's behalf defeats the whole mechanism.
 
 ### Step 2: Detect Environment
 
@@ -219,6 +276,10 @@ ExitWorktree), use it. Otherwise, leave the workspace in place.
 - **Problem:** Merge broken code, create failing PR
 - **Fix:** Always verify tests before offering options
 
+**Taking the aged-tail override unasked**
+- **Problem:** Writing the acknowledgement yourself turns a gate meant to force a conscious decision back into a silent default
+- **Fix:** Present both options and wait; log only the reason your partner gives
+
 **Open-ended questions**
 - **Problem:** "What should I do next?" is ambiguous
 - **Fix:** Present exactly 4 structured options (or 3 for detached HEAD)
@@ -247,6 +308,8 @@ ExitWorktree), use it. Otherwise, leave the workspace in place.
 
 **Never:**
 - Proceed with failing tests
+- Present the merge/PR menu with an unaddressed aged tail
+- Write an aged-backlog acknowledgement your partner did not ask for
 - Merge without verifying tests on result
 - Delete work without confirmation
 - Force-push without explicit request
@@ -256,6 +319,7 @@ ExitWorktree), use it. Otherwise, leave the workspace in place.
 
 **Always:**
 - Verify tests before offering options
+- Check the deferred backlog before offering options
 - Detect environment before presenting menu
 - Present exactly 4 options (or 3 for detached HEAD)
 - Get typed confirmation for Option 4
