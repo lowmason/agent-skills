@@ -43,12 +43,12 @@ When creating or editing a skill, **follow the `writing-skills` skill** — it's
 There is no root test runner or repo-wide `pyproject`, and the scientific deps (numpy, polars, pytest) aren't installed into the interpreter directly. Run everything through `uv run` pinned to the Homebrew Python 3.13, supplying deps inline. Tests use **bare imports** and are **directory-scoped** — run pytest from inside the relevant directory, not the repo root: each suite pins its own inline deps, and a repo-root collection fails outright anyway, since `geographic-codes` and `classification-codes` both ship a `test_build.py` whose basenames collide under pytest's prepend import mode with no `__init__.py`.
 
 ```bash
-# Build-tooling tests (citation verifier + lints + snippet gate) — 71 tests
-# (all 71 collect either way. 7 of test_check_snippets.py's need the ArviZ/NumPyro chain and
-# skip without it, so the command below reports 64 passed, 7 skipped; append
+# Build-tooling tests (citation verifier + lints + snippet gate) — 77 tests
+# (all 77 collect either way. 7 of test_check_snippets.py's need the ArviZ/NumPyro chain and
+# skip without it, so the command below reports 70 passed, 7 skipped; append
 # --with "arviz>=1.0" --with arviz-base --with arviz-stats --with arviz-plots --with numpyro
-# --with jax --with matplotlib to run all 71. Separately, 5 in test_verify_citations.py need the
-# build/.scratch/ ground truth — lacking both: 59 passed, 4 failed, 8 skipped. .scratch/ is
+# --with jax --with matplotlib to run all 77. Separately, 5 in test_verify_citations.py need the
+# build/.scratch/ ground truth — lacking both: 65 passed, 4 failed, 8 skipped. .scratch/ is
 # gitignored, so a fresh clone or worktree lacks it; regenerate with build/extract_structure.py,
 # see build/CLAUDE.md)
 cd build && uv run --python 3.13 --with pytest --with numpy --with polars --with pyyaml python -m pytest -q
@@ -118,11 +118,19 @@ cd hooks && uv run --python 3.13 --with pytest python -m pytest -q
 uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
 uv run --python 3.13 python build/check_provenance.py
 
-# Snippet gate for bayesian-workflow. Three tiers, cheapest first; each includes the ones
-# above it. Failures on stdout (exit 1), advisories on stderr as `WARN` (exit 0), exit 2 for
-# a missing stack with the remediation command printed.
-# Tier 1 (parse-only, stdlib, instant):
-uv run --python 3.13 python build/check_snippets.py skills/bayesian-workflow/
+# Snippet gate. Three tiers, cheapest first; each includes the ones above it. Failures on
+# stdout (exit 1), advisories on stderr as `WARN` (exit 0), exit 2 for a missing stack with
+# the remediation command printed.
+# NOTE the scopes differ: Tier 1 covers ALL of skills/ (stdlib, so it costs nothing to run
+# everywhere); Tiers 2 and 3 stay scoped to skills/bayesian-workflow, whose stack they import
+# and execute against — their module map knows only that stack (arviz / numpyro / jax), so
+# pointing them wider checks nothing extra.
+# Two fence markers opt a block out, each REQUIRING a reason (tests pin this): `norun`
+# (execution only — parsing still applies) and `noparse` (parsing too, and so execution).
+# Reach for `noparse` only when dedenting or completing the block would damage what it
+# teaches — one block uses it today; otherwise fix the snippet.
+# Tier 1 (parse-only, stdlib, instant) — run before committing any skill edit:
+uv run --python 3.13 python build/check_snippets.py skills/
 # Tier 2 (+ resolve dotted library chains from code AND backticked prose; imports the stack,
 # ~30s). Catches a library path that no longer resolves — it found SKILL.md naming
 # `numpyro.infer.config_enumerate`, which lives in numpyro.contrib.funsor:

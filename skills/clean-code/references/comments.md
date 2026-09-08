@@ -25,6 +25,7 @@ it actively misleads. When you change code, the attached comment is in scope.
 # Bad — the comment survived a refactor the code didn't
 # retry three times on rate limiting
 for attempt in range(MAX_ATTEMPTS):   # MAX_ATTEMPTS is now 5
+    ...
 ```
 
 ## C3 — Redundant comments (delete) vs. intent comments (keep)

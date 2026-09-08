@@ -58,14 +58,70 @@ def test_norun_still_parses_and_is_still_reported_as_advisory(tmp_path):
 
 
 def test_every_norun_marker_carries_a_reason():
-    '''A bare `norun` with no reason is how an exemption list rots.'''
+    '''A bare `norun` with no reason is how an exemption list rots.
+
+    Repo-wide since the parse tier went repo-wide: a reason check scoped to
+    one skill is a hole in a gate that covers all of them.'''
     from pathlib import Path
-    root = Path(__file__).resolve().parent.parent / 'skills/bayesian-workflow'
+    root = Path(__file__).resolve().parent.parent / 'skills'
     bare = [f'{md}:{b.line}'
             for md in sorted(root.rglob('*.md'))
             for b in check_snippets.iter_code_blocks(md.read_text())
             if b.info.strip() == 'norun']
     assert bare == [], bare
+
+
+def test_noparse_block_is_exempt_from_parsing(tmp_path):
+    '''An excerpt whose indentation is load-bearing cannot be made valid
+    standalone Python without losing its meaning. noparse is that escape.'''
+    p = tmp_path / 'frag.md'
+    p.write_text('```python noparse indented excerpt\n    x = 1\n```\n')
+    assert check_snippets.parse_errors(p) == []
+
+
+def test_noparse_implies_norun(tmp_path):
+    '''A block that cannot be parsed cannot be executed either -- otherwise
+    --run tries it and fails confusingly.'''
+    p = tmp_path / 'frag.md'
+    p.write_text('```python noparse indented excerpt\n    x = 1\n```\n')
+    block = next(iter(check_snippets.iter_code_blocks(p.read_text())))
+    assert check_snippets.is_exempt(block) is True
+
+
+def test_noparse_is_reported_as_advisory(tmp_path):
+    '''Silent exemption is how partial coverage reads as total coverage.'''
+    p = tmp_path / 'frag.md'
+    p.write_text('```python noparse indented excerpt\n    x = 1\n```\n')
+    rep = check_snippets.exempt_report(p)
+    assert len(rep) == 1, rep
+    assert 'indented excerpt' in rep[0], rep
+
+
+def test_noparse_still_flags_a_bare_marker(tmp_path):
+    '''noparse without a reason must not silently pass the reason test.'''
+    p = tmp_path / 'frag.md'
+    p.write_text('```python noparse\n    x = 1\n```\n')
+    block = next(iter(check_snippets.iter_code_blocks(p.read_text())))
+    assert block.info.strip() == 'noparse'
+
+
+def test_every_noparse_marker_carries_a_reason():
+    from pathlib import Path
+    root = Path(__file__).resolve().parent.parent / 'skills'
+    bare = [f'{md}:{b.line}'
+            for md in sorted(root.rglob('*.md'))
+            for b in check_snippets.iter_code_blocks(md.read_text())
+            if b.info.strip() == 'noparse']
+    assert bare == [], bare
+
+
+def test_all_skills_parse_clean():
+    '''The repo-wide parse tier must ship green, not just bayesian-workflow.'''
+    from pathlib import Path
+    root = Path(__file__).resolve().parent.parent / 'skills'
+    errs = [e for md in sorted(root.rglob('*.md'))
+            for e in check_snippets.parse_errors(md)]
+    assert errs == [], errs
 
 
 import importlib.util

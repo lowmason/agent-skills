@@ -80,7 +80,7 @@ def test_recovers_slope_and_intercept():
 
 Tighten or loosen via "within k posterior SDs of the mean" when an interval is awkward:
 
-```python
+```python noparse replacement lines for the loop body above; the indentation shows where they substitute
         mean, sd = draws.mean(), draws.std()
         assert abs(mean - truth) <= 4 * sd, f"{name}: |mean-truth| = {abs(mean-truth):.3f} > 4 SD"
 ```

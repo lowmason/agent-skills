@@ -1,7 +1,13 @@
 '''Snippet gate for skill documentation (Gate A pattern).
 
 Tier 1 (default) parses every fenced python block with ast.parse. It catches
-syntax that shipped broken; it does NOT catch API drift.
+syntax that shipped broken; it does NOT catch API drift. Tier 1 runs over all
+of skills/; tiers 2 and 3 stay scoped to skills/bayesian-workflow, whose stack
+they import and execute against.
+
+Two fence markers opt a block out, each requiring a reason so the exemption
+list stays auditable: `norun` (execution only, parsing still applies) and
+`noparse` (parsing too, and therefore execution). Both are reported on stderr.
 
 Scope honesty, since the motivating backlog item overstates it. Of audit
 12-audit_7_20_26's three findings this gate reaches exactly ONE: C1, whose
@@ -43,6 +49,7 @@ from fences import (CodeBlock, iter_code_blocks,  # noqa: F401  (re-exported)
 from snippet_preamble import FIXTURE_VARS, PINNED, PREAMBLE
 
 NORUN = 'norun'
+NOPARSE = 'noparse'
 TICK_NAME_RE = re.compile(r'`([A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)+)')
 # Optional per SKILL.md:50-53 -- absent from a clean env by design, so an
 # unimportable chain rooted in one of these is an advisory, never a failure.
@@ -77,9 +84,13 @@ def _iter_md(paths):
 
 
 def parse_errors(path: Path) -> list[str]:
-    '''Return one message per block that fails ast.parse (empty == clean).'''
+    '''Return one message per block that fails ast.parse (empty == clean).
+
+    `noparse` blocks are skipped -- see is_parse_exempt.'''
     out = []
     for block in iter_code_blocks(path.read_text()):
+        if is_parse_exempt(block):
+            continue
         try:
             ast.parse(block.code)
         except SyntaxError as e:
@@ -88,20 +99,49 @@ def parse_errors(path: Path) -> list[str]:
     return out
 
 
+def _marker(block) -> str | None:
+    '''The exemption marker leading the fence info string, or None.'''
+    head = block.info.split(None, 1)[:1]
+    return head[0] if head and head[0] in (NORUN, NOPARSE) else None
+
+
 def is_exempt(block) -> bool:
     '''True when the fence info string opts the block out of execution.
 
     Shape: ```python norun <reason>. Exempt from EXECUTION only -- parsing
     still applies. The reason is required (test_every_norun_marker_carries_a
     _reason pins it) so the exemption list stays auditable.
+
+    `noparse` implies this: a block that cannot be parsed cannot be executed,
+    and without it --run would try one and fail confusingly.
     '''
-    return block.info.split(None, 1)[:1] == [NORUN]
+    return _marker(block) is not None
+
+
+def is_parse_exempt(block) -> bool:
+    '''True for ```python noparse <reason>: exempt from PARSING as well.
+
+    For excerpts that cannot be made valid standalone Python without losing
+    their meaning -- an indented replacement fragment whose indentation shows
+    where it substitutes into the block above it. Strictly narrower in intent
+    than norun and strictly wider in effect, so it carries the same required
+    reason (test_every_noparse_marker_carries_a_reason pins it) and the same
+    stderr advisory. Reach for it only when dedenting or completing the block
+    would damage what it teaches; otherwise fix the snippet.
+    '''
+    return _marker(block) == NOPARSE
 
 
 def exempt_report(path: Path) -> list[str]:
-    '''Advisory lines naming every block excluded from execution.'''
-    return [f'{path}:{b.line}: not executed: {b.info[len(NORUN):].strip()}'
-            for b in iter_code_blocks(path.read_text()) if is_exempt(b)]
+    '''Advisory lines naming every block excluded from execution or parsing.'''
+    out = []
+    for b in iter_code_blocks(path.read_text()):
+        m = _marker(b)
+        if m is None:
+            continue
+        what = 'not parsed or executed' if m == NOPARSE else 'not executed'
+        out.append(f'{path}:{b.line}: {what}: {b.info[len(m):].strip()}')
+    return out
 
 
 def _dotted_from_code(code: str) -> set[str]:
