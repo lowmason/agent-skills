@@ -43,7 +43,7 @@ subprocess.run(["git", "init"], cwd=project_dir, check=True)
 ```
 
 ### 3. Ask: What Called This?
-```python
+```text
 WorktreeManager.create_session_worktree(project_dir, session_id)
   → called by Session.initialize_workspace()
   → called by Session.create()
