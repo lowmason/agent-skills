@@ -916,3 +916,43 @@ declined as YAGNI (zero instances in a one-page wiki).
       execution would have reached outside the repo, and the timing is the owner's call.
       **Owner-only.** Until it runs, a `lint_wiki.py`/`distill_sessions.py` run from the wiki
       root still renumbers an undated turn to position 1.
+
+## 27-deferment-loop-hardening — 2026-09-08
+- [ ] Sync these skills to the work environment, where the backlog problem
+      actually lives (309 open items across five alt-nfp repos; this repo is at
+      21 open / 77% closure, so nothing here exercises the fix at scale).
+      Overwrite rather than merge: writing-plans' Plan Completion Protocol
+      step 4 and finishing-a-development-branch's Step 1b are written as
+      complete sections, so a merge against any local variant would leave two
+      backlog nudges firing. Owner-only — needs the work machine.
+      Size: quick-fix. Done when: deferred_stats.py runs in each alt-nfp repo
+      off the synced skills.
+- [ ] Verify the source review's §1.1 backlog table with the new reporter.
+      The review that motivated this plan cited 309 open items, `stats` at 17%
+      closure and `model` with 29 items aged >45d, but the same review also
+      reported two guardrails that have never existed in this repo, so its
+      numbers are unconfirmed. `deferred_stats.py` reproduces this repo's
+      counts exactly against `grep -c`, so it is a trustworthy independent
+      check. Owner-only — needs the work machine.
+      Size: quick-fix. Done when: the reporter has been run in all five
+      alt-nfp repos and the real closure rates and aged tails recorded.
+- [ ] R5 — per-repo WIP cap on open deferred items, forcing a drain before the
+      next completion may append. Consciously fenced out of this plan as the
+      escalation rather than the opening move (source review §2, R5): it is the
+      most reliable fix and the most disruptive, and can block legitimate work.
+      Size: design. Revisit if: closure rate measured by deferred_stats.py is
+      still flat or falling in the work repos 60 days after the sync above.
+- [ ] Trim `skills/subagent-driven-development/SKILL.md` from 586 lines to
+      under the ~500-line guideline; candidates to move to `references/` are
+      Model Selection, Fix Rounds, Durable Progress and Context Checkpoints.
+      Fenced out of plan 27 by explicit scope decision — restructuring the
+      skill that executes plans while a plan is executing is the
+      self-modifying-plan hazard.
+      Size: plan. Done when: SKILL.md is under 500 lines with the core loop
+      intact and the moved sections reachable from it.
+- [ ] `skills/finishing-a-development-branch/SKILL.md` hardcodes the `gh` CLI
+      in Step 3's base-branch fallback and Step 5's Option 2, which does not
+      exist in the Bloomberg/BBGitHub environment (source review §3, minor
+      findings). Untouched by plan 27, whose scope was the deferment loop.
+      Size: plan. Done when: the PR path either works without `gh` or fails
+      with a message naming the missing tool and the manual alternative.

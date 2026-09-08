@@ -1,5 +1,7 @@
 # Deferment Loop Hardening Implementation Plan
 
+**Status: COMPLETE (2026-09-08)** — executed via executing-plans; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Close the deferment loop's producer/consumer asymmetry — make the read-only backlog triage run automatically, gate the aged tail at branch-finish with a logged override, require a closure condition and size at deferral, and report closure rate and age histogram from a script that runs in any repo.
@@ -54,7 +56,7 @@
   Constants `DEFAULT_AGED_DAYS = 45`, `VOLUME_THRESHOLD = 20`.
   The `compute_stats` return dict is the `--json` contract: keys `exists`, `open`, `closed`, `total`, `closure_rate`, `aged_days`, `aged_open`, `undated_open`, `oldest_open_days`, `oldest_open_section`, `age_histogram`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `skills/writing-plans/scripts/test_deferred_stats.py`:
 
@@ -181,12 +183,19 @@ def test_format_report_names_the_two_thresholds():
     assert 'aged >45d: 1' in report
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `cd skills/writing-plans/scripts && uv run --python 3.13 --with pytest python -m pytest -q`
 Expected: collection error — `ModuleNotFoundError: No module named 'deferred_stats'`
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
+
+> Deviation: the script as specified crashed (exit 1, no output) on a
+> calendar-invalid section date such as `2026-09-31`, because SECTION_RE
+> shape-matches the date and `fromisoformat` then raises — a review finding
+> (major). A future-dated header was the same bug via `_bucket_label`'s
+> fallback (minor). Both guarded under one rule in f462259; +3 regression
+> tests, 13 total.
 
 Create `skills/writing-plans/scripts/deferred_stats.py`:
 
@@ -393,17 +402,17 @@ if __name__ == '__main__':
     sys.exit(main())
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `cd skills/writing-plans/scripts && uv run --python 3.13 --with pytest python -m pytest -q`
 Expected: PASS — 10 passed
 
-- [ ] **Step 5: Sanity-check against this repo's real backlog**
+- [x] **Step 5: Sanity-check against this repo's real backlog**
 
 Run from the repo root: `uv run --python 3.13 python skills/writing-plans/scripts/deferred_stats.py`
 Expected, exactly: `Deferred backlog: 21 open, 69 ever closed (closure rate 77%), aged >45d: 6.` followed by an oldest-open line naming `11-delegation-frontmatter-rollout` at 51d. Confirm the first two numbers match `grep -c '^- \[ \]' specs/deferred_items.md` and `grep -c '^- \[x\]' specs/deferred_items.md`. If they differ, the parser is wrong — fix it before continuing.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add skills/writing-plans/scripts/deferred_stats.py skills/writing-plans/scripts/test_deferred_stats.py
@@ -423,7 +432,7 @@ git commit -m "feat(writing-plans): add deferred-backlog stats script"
 
 **Why this file exists:** `commands/deferred.md` carries `disable-model-invocation: true`, so an agent can never run any part of it — including steps 1–4, which the command itself declares read-only. Extracting the rubric to a reference the agent *can* read makes the safe 80% reachable while leaving step 5, the only part that writes, behind the human's `/deferred` invocation.
 
-- [ ] **Step 1: Create the shared reference**
+- [x] **Step 1: Create the shared reference**
 
 Create `skills/writing-plans/references/deferred-backlog.md` with exactly this content:
 
@@ -579,12 +588,12 @@ the silent default this gate exists to convert into a conscious one. The
 override is deliberately easy to take and impossible to take invisibly.
 ````
 
-- [ ] **Step 2: Verify the reference does not break the frontmatter lint**
+- [x] **Step 2: Verify the reference does not break the frontmatter lint**
 
 Run: `uv run --python 3.13 --with pyyaml python build/check_frontmatter.py`
 Expected: exit 0, no output about `deferred-backlog.md` (reference files carry no frontmatter — only `SKILL.md` does).
 
-- [ ] **Step 3: Re-point `/deferred` at the reference**
+- [x] **Step 3: Re-point `/deferred` at the reference**
 
 In `commands/deferred.md`, delete numbered steps 1 through 4 in full. The span
 starts at this exact line:
@@ -615,7 +624,7 @@ list:
 
 Leave the frontmatter, the opening scope paragraph, and step 5 exactly as they are. `disable-model-invocation: true` **stays**.
 
-- [ ] **Step 4: Add the schema pointer to step 5**
+- [x] **Step 4: Add the schema pointer to step 5**
 
 In `commands/deferred.md`, in step 5's **Quick fix** bullet, after
 `(/deferred quick fix)`.`, add this sentence on a new line at the same indent:
@@ -625,12 +634,12 @@ In `commands/deferred.md`, in step 5's **Quick fix** bullet, after
      in the writing-plans skill's `references/deferred-backlog.md`.
 ```
 
-- [ ] **Step 5: Verify no rubric text is duplicated**
+- [x] **Step 5: Verify no rubric text is duplicated**
 
 Run: `grep -c 'the premise no longer holds' commands/deferred.md skills/writing-plans/references/deferred-backlog.md`
 Expected: `commands/deferred.md:0` and `.../deferred-backlog.md:1` — the rubric lives in exactly one place.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add skills/writing-plans/references/deferred-backlog.md commands/deferred.md
@@ -650,7 +659,7 @@ git commit -m "refactor(deferred): extract triage rubric to a shared reference"
 
 **Why a self-contained step:** the source review described this protocol as already having a "20+ open items" nudge and an aging computation. It does not — neither string appears anywhere in this repo's history. Write the step as the complete backlog step rather than as an amendment to text that is not there; that also makes it safe to overwrite any downstream copy that does carry one.
 
-- [ ] **Step 1: Replace the item template in step 3**
+- [x] **Step 1: Replace the item template in step 3**
 
 In `skills/writing-plans/SKILL.md`, § Plan Completion Protocol step 3, replace this exact block — the paragraph's trailing sentence plus the whole fenced example after it:
 
@@ -691,7 +700,7 @@ cannot state a closure condition is not deferrable — resolve it now or drop it
 
 Leave the rest of step 3 — the ticking pass, the create-on-first-use rule, the never-delete rule — unchanged.
 
-- [ ] **Step 2: Insert the new step 4**
+- [x] **Step 2: Insert the new step 4**
 
 In `skills/writing-plans/SKILL.md`, insert a new step between these two exact lines — step 3's last line and step 4's first:
 
@@ -728,19 +737,24 @@ completion — the aged tail is gated later, at
 finishing-a-development-branch.
 ````
 
-- [ ] **Step 3: Renumber Retire to step 5**
+- [x] **Step 3: Renumber Retire to step 5**
 
 In `skills/writing-plans/SKILL.md`, change `**4. Retire.**` to `**5. Retire.**`. Then confirm no other text refers to "step 4" of this protocol:
 
 Run: `grep -n 'step 4\|Step 4' skills/writing-plans/SKILL.md skills/executing-plans/SKILL.md skills/subagent-driven-development/SKILL.md skills/brainstorming/SKILL.md`
 Expected: no hit that refers to the Plan Completion Protocol's step 4. (The execution skills reference the protocol by name, not by step number — this grep confirms that assumption still holds. If a hit does refer to it, update that reference to step 5.)
 
-- [ ] **Step 4: Verify the protocol reads as five steps**
+- [x] **Step 4: Verify the protocol reads as five steps**
+
+> Deviation: the `^\*\*[0-9]\. ` grep also matches the Self-Review and
+> Execution Handoff lists, so it returns 11 lines rather than 5. The
+> protocol itself was verified as steps 1-5 (SKILL.md lines 200, 214, 224,
+> 252, 275).
 
 Run: `grep -n '^\*\*[0-9]\. ' skills/writing-plans/SKILL.md`
 Expected: exactly five lines, numbered 1–5, in order: Resolve-before-defer gate, Markup the plan file, Update deferred items, Backlog triage, Retire.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/writing-plans/SKILL.md
@@ -759,7 +773,7 @@ git commit -m "feat(writing-plans): require closure conditions and auto-run back
 
 **Numbering constraint:** insert **Step 1b**. Do not renumber Steps 2–6. Step 5 says "Then: Cleanup worktree (Step 6)" in three places and the Quick Reference table depends on the existing numbers; renumbering breaks those silently.
 
-- [ ] **Step 1: Update the Core principle line**
+- [x] **Step 1: Update the Core principle line**
 
 In `skills/finishing-a-development-branch/SKILL.md`, replace:
 
@@ -773,11 +787,19 @@ with:
 **Core principle:** Verify tests → Check deferred backlog → Detect environment → Present options → Execute choice → Clean up.
 ```
 
-- [ ] **Step 2: Change the Step 1 hand-off line**
+- [x] **Step 2: Change the Step 1 hand-off line**
 
 In the same file, in § Step 1, replace `**If tests pass:** Continue to Step 2.` with `**If tests pass:** Continue to Step 1b.`
 
-- [ ] **Step 3: Insert Step 1b**
+- [x] **Step 3: Insert Step 1b**
+
+> Deviation (two, both from review findings): the reference had to be written
+> `../writing-plans/references/deferred-backlog.md` — check_frontmatter.py
+> resolves backtick paths against the referencing skill's own directory, and
+> the bare form does not resolve there (35dfc9c). And Step 1b as specified
+> blocked Step 4's whole menu, so it also blocked Option 4 (Discard) and let
+> the acknowledgement be force-deleted with the branch — destroying the record
+> the gate exists to create. Narrowed to bind Options 1 and 2 only (f462259).
 
 Immediately after the line you just edited, and before the line `### Step 2: Detect Environment`, insert:
 
@@ -840,7 +862,7 @@ convert into a conscious one. Never write the acknowledgement without asking —
 taking the override on your partner's behalf defeats the whole mechanism.
 ````
 
-- [ ] **Step 4: Add the Common Mistake**
+- [x] **Step 4: Add the Common Mistake**
 
 In § Common Mistakes, after the `**Skipping test verification**` block, insert:
 
@@ -850,7 +872,7 @@ In § Common Mistakes, after the `**Skipping test verification**` block, insert:
 - **Fix:** Present both options and wait; log only the reason your partner gives
 ```
 
-- [ ] **Step 5: Add the Red Flags entries**
+- [x] **Step 5: Add the Red Flags entries**
 
 In § Red Flags, add to the **Never** list, after `- Proceed with failing tests`:
 
@@ -865,12 +887,12 @@ and to the **Always** list, after `- Verify tests before offering options`:
 - Check the deferred backlog before offering options
 ```
 
-- [ ] **Step 6: Verify the numbering survived**
+- [x] **Step 6: Verify the numbering survived**
 
 Run: `grep -n '^### Step \|Step 6)' skills/finishing-a-development-branch/SKILL.md`
 Expected: headings read `Step 1`, `Step 1b`, `Step 2`, `Step 3`, `Step 4`, `Step 5`, `Step 6` in that order, and the three "Cleanup worktree (Step 6)" references still say Step 6.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add skills/finishing-a-development-branch/SKILL.md
@@ -891,7 +913,11 @@ git commit -m "feat(finishing-a-development-branch): gate the aged deferred tail
 
 **Why this is its own task:** `NOTICE` is authoritative for this repo and CLAUDE.md requires reading it before substantially changing any skill. `writing-plans` and `finishing-a-development-branch` are both superpowers-adapted (MIT, © 2025 Jesse Vincent); the new script and reference are Lowell Mason originals. Both facts have to land before the plan completes.
 
-- [ ] **Step 1: Extend the superpowers "Changes from upstream" bullet**
+- [x] **Step 1: Extend the superpowers "Changes from upstream" bullet**
+
+> Deviation: the NOTICE text as specified named two of the three new files,
+> leaving test_deferred_stats.py under the superpowers attribution — a review
+> finding (moderate). All three named in f462259, per the llm-wiki precedent.
 
 In `NOTICE`, find the bullet beginning `- The planning/execution skills (brainstorming, writing-plans,` and ending `deferred-items log, spec/plan retirement).`. Append to that bullet, at the same indent:
 
@@ -906,12 +932,15 @@ In `NOTICE`, find the bullet beginning `- The planning/execution skills (brainst
     terms; the surrounding adapted skills are unchanged in structure.
 ```
 
-- [ ] **Step 2: Verify the provenance lint still passes**
+- [x] **Step 2: Verify the provenance lint still passes**
 
 Run: `uv run --python 3.13 python build/check_provenance.py`
 Expected: exit 0, no output. (The lint checks that every `skills/<name>/` directory is attributed and that no binary assets are tracked; no new skill directory was added, so this is a regression check, not a new assertion.)
 
-- [ ] **Step 3: Add the test-command block to CLAUDE.md**
+- [x] **Step 3: Add the test-command block to CLAUDE.md**
+
+> Deviation: the block states 10 tests; the suite is 13 after the review
+> fixes. CLAUDE.md records 13.
 
 In `CLAUDE.md`, in the `## Commands` fenced bash block, insert after the `describe-critique-methodology` block and before the `geographic-codes` block:
 
@@ -921,7 +950,7 @@ In `CLAUDE.md`, in the `## Commands` fenced bash block, insert after the `descri
 cd skills/writing-plans/scripts && uv run --python 3.13 --with pytest python -m pytest -q
 ```
 
-- [ ] **Step 4: Verify both lints and the new suite together**
+- [x] **Step 4: Verify both lints and the new suite together**
 
 Run from the repo root:
 
@@ -933,7 +962,7 @@ uv run --python 3.13 python build/check_provenance.py && \
 
 Expected: both lints silent with exit 0, then `10 passed`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add NOTICE CLAUDE.md
