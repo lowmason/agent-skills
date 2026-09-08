@@ -1,6 +1,13 @@
 # Deferred items
 
 ## Aged-backlog acknowledgements
+- 2026-09-08 — finished `feat/snippet-execution-gate` (plan 29) with 2 items aged
+  >45d, carried across the merge on the partner's instruction ("merge then clear"):
+  they are to be cleared immediately after. Neither is dischargeable by an agent —
+  `11-delegation-frontmatter-rollout` needs a live interactive session to read the
+  model/effort indicator and take `/status` cost readings, and `15-clean-code-family`
+  is a `Revisit if:` watch item gated on a preference decision plus a re-probe of a
+  version-dependent mechanism.
 - 2026-09-08 — finished `fix/lint-wiki-link-hardening` (plan 28) with 3 items aged
   >45d, carried deliberately: none is actionable from a coding session. `11`
   (51d) needs an interactive probe of the live model/effort indicator, which is
