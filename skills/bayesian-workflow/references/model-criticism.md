@@ -154,7 +154,7 @@ SBC checks that the whole pipeline — prior, data model, NumPyro code, and samp
 
 A NumPyro sketch (roll your own; `simuk` from arviz-devs can also help):
 
-```python
+```python norun slow: 200 SBC replicates x 600 draws -- not a pre-commit gate
 from numpyro.infer import Predictive, MCMC, NUTS
 import jax, numpy as np
 

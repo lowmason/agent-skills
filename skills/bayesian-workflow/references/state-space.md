@@ -73,7 +73,7 @@ this skill's sibling `recommend-probabilistic-model` routes linear-Gaussian SSM 
 `LinearGaussianSSM.marginal_log_prob(params, emissions)` runs the filter and returns the scalar log
 marginal likelihood, ready to drop into a NumPyro model:
 
-```python
+```python norun HANDOFF SKETCH; dynamax is not a bayesian-workflow dependency
 # HANDOFF SKETCH — dynamax must be installed separately (`pip install dynamax`); it is not a
 # bayesian-workflow dependency. The marginal_log_prob CALL below is the verified API; the params
 # CONTAINER is a dynamax ParamsLGSSM pytree whose construction is dynamax-version-specific — build

@@ -167,7 +167,7 @@ identical once you have an InferenceData.
 
 **1. Native NumPyro NUTS (default).** Idiomatic, the least code, and already fast.
 
-```python
+```python norun slow: 4 chains x 2000 draws, minutes -- not a pre-commit gate
 numpyro.set_host_device_count(4)                 # required for parallel CPU chains; MUST precede the first JAX op
 mcmc = MCMC(NUTS(model, target_accept_prob=0.9),
             num_warmup=1000, num_samples=1000, num_chains=4, chain_method="parallel")
@@ -181,7 +181,7 @@ Use it when you want fine control over adaptation or a second independent sample
 You drive a NumPyro model through it via its log-density, then assemble the InferenceData
 yourself with `az.from_dict`:
 
-```python
+```python norun blackjax is optional (SKILL.md:52), not a declared dependency
 import blackjax
 from numpyro.infer.util import initialize_model
 

@@ -17,7 +17,7 @@ import ast
 import sys
 from pathlib import Path
 
-from fences import iter_code_blocks
+from fences import CodeBlock, iter_code_blocks  # noqa: F401  (re-exported)
 
 NORUN = 'norun'
 
@@ -44,6 +44,22 @@ def parse_errors(path: Path) -> list[str]:
     return out
 
 
+def is_exempt(block) -> bool:
+    '''True when the fence info string opts the block out of execution.
+
+    Shape: ```python norun <reason>. Exempt from EXECUTION only -- parsing
+    still applies. The reason is required (test_every_norun_marker_carries_a
+    _reason pins it) so the exemption list stays auditable.
+    '''
+    return block.info.split(None, 1)[:1] == [NORUN]
+
+
+def exempt_report(path: Path) -> list[str]:
+    '''Advisory lines naming every block excluded from execution.'''
+    return [f'{path}:{b.line}: not executed: {b.info[len(NORUN):].strip()}'
+            for b in iter_code_blocks(path.read_text()) if is_exempt(b)]
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[0])
     ap.add_argument('paths', nargs='+', help='.md files or directories')
@@ -51,6 +67,9 @@ def main(argv=None) -> int:
     failures = [e for md in _iter_md(args.paths) for e in parse_errors(md)]
     for f in failures:
         print(f)
+    for md in _iter_md(args.paths):
+        for line in exempt_report(md):
+            print(f'WARN {line}', file=sys.stderr)
     return 1 if failures else 0
 
 
