@@ -270,6 +270,62 @@ def test_orphan_page_is_warning(tmp_path):
              for f in lint_wiki.run_checks(root))
 
 
+def test_self_link_does_not_silence_its_own_orphan_warning(tmp_path):
+  '''A page linking to itself has no INBOUND reference -- it is still an
+  orphan. Counting the self-link made the orphan check self-defeating.'''
+  root = make_wiki(tmp_path)
+  write_page(root, 'sources/a.md', {'title': 'A', 'type': 'source'})
+  write_page(
+    root, 'samplers/p.md', {'title': 'P', 'type': 'concept'},
+    'As noted [here](p.md), and see [A](../sources/a.md).')
+  findings = lint_wiki.check_links(root, lint_wiki.discover_pages(root))
+  assert not [f for f in findings if f[0] == 'ERROR'], findings
+  assert any(
+    level == 'WARN' and path == 'wiki/samplers/p.md' and 'orphan' in msg
+    for level, path, msg in findings), findings
+
+
+def test_self_cite_does_not_silence_its_own_orphan_warning(tmp_path):
+  '''Same hole via the cites: frontmatter channel.'''
+  root = make_wiki(tmp_path)
+  write_page(root, 'sources/a.md', {'title': 'A', 'type': 'source'})
+  write_page(
+    root, 'samplers/p.md',
+    {'title': 'P', 'type': 'concept', 'cites': ['samplers/p', 'sources/a']})
+  findings = lint_wiki.check_links(root, lint_wiki.discover_pages(root))
+  assert any(
+    level == 'WARN' and path == 'wiki/samplers/p.md' and 'orphan' in msg
+    for level, path, msg in findings), findings
+
+
+def test_self_locator_does_not_silence_its_own_orphan_warning(tmp_path):
+  '''Same hole via the citation-locator channel: a source page carrying its
+  own slug as a locator pointed the reference straight back at itself.'''
+  root = make_wiki(tmp_path)
+  write_page(
+    root, 'sources/robnik-2022-mclmc.md', {'title': 'R', 'type': 'source'},
+    'Restating [robnik-2022-mclmc §4] from the same page.')
+  findings = lint_wiki.check_links(root, lint_wiki.discover_pages(root))
+  assert not [f for f in findings if f[0] == 'ERROR'], findings
+  assert any(
+    level == 'WARN' and path == 'wiki/sources/robnik-2022-mclmc.md'
+    and 'orphan' in msg
+    for level, path, msg in findings), findings
+
+
+def test_inbound_reference_from_another_page_still_clears_the_orphan(tmp_path):
+  '''The guard must not make every page an orphan: a genuine cross-page
+  link still counts. This is the counter-test for the three above.'''
+  root = make_wiki(tmp_path)
+  write_page(root, 'sources/a.md', {'title': 'A', 'type': 'source'})
+  write_page(
+    root, 'samplers/p.md', {'title': 'P', 'type': 'concept'},
+    'See [A](../sources/a.md).')
+  findings = lint_wiki.check_links(root, lint_wiki.discover_pages(root))
+  assert not [f for f in findings
+              if f[0] == 'WARN' and f[1] == 'wiki/sources/a.md'], findings
+
+
 def test_strict_flips_warning_to_exit_one(tmp_path):
   root = make_wiki(tmp_path)
   valid_source(root, 'sources/a.md', 'a')

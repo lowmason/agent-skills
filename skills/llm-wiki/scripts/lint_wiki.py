@@ -177,6 +177,13 @@ def _is_citation(token, position, slugs):
   return bool(SLUG_SHAPE_RE.search(token)) or token in slugs
 
 
+def _page_key(root, p):
+  '''A page's identity in check_links' `referenced` set: its path relative to
+  wiki/. One definition, shared by every producer and by the orphan consumer,
+  so the two can never disagree about what names a page.'''
+  return str(p.relative_to(root / 'wiki'))
+
+
 def check_links(root, pages):
   findings = []
   slugs = _source_slugs(root)
@@ -184,6 +191,10 @@ def check_links(root, pages):
   wiki_abs = (root / 'wiki').resolve()
   for p in pages:
     rel = p.relative_to(root)
+    # A page cannot reference itself into non-orphanhood. All three inbound
+    # channels below (cites, links, locators) are filtered against this key:
+    # the orphan check asks whether ANOTHER page points here.
+    own = _page_key(root, p)
     text = p.read_text()
     fm = parse_frontmatter(text) or {}
     body = _strip_frontmatter(text)
@@ -191,7 +202,8 @@ def check_links(root, pages):
     cites = fm.get('cites')
     if isinstance(cites, list):
       for target in cites:
-        referenced.add(target + '.md')
+        if target + '.md' != own:
+          referenced.add(target + '.md')
     # body markdown links must resolve; a resolved wiki target is inbound
     for raw_target in MD_LINK_RE.findall(body):
       target = _link_target(raw_target)
@@ -202,9 +214,11 @@ def check_links(root, pages):
         findings.append(('ERROR', str(rel), f'link: broken relative link: {target}'))
       else:
         try:
-          referenced.add(str(resolved.relative_to(wiki_abs)))
+          key = str(resolved.relative_to(wiki_abs))
         except ValueError:
-          pass
+          continue
+        if key != own:
+          referenced.add(key)
     # body citation locators [slug §x] must map to a source page; and count
     # as an inbound reference to it. Bracketed prose is not a citation and is
     # neither validated nor counted.
@@ -212,14 +226,14 @@ def check_links(root, pages):
       if not _is_citation(token, position, slugs):
         continue
       if token in slugs:
-        referenced.add(f'sources/{token}.md')
+        if f'sources/{token}.md' != own:
+          referenced.add(f'sources/{token}.md')
       else:
         findings.append(
           ('ERROR', str(rel), f'citation: [{token} …] has no source page'))
   # orphan warning: a page nothing references (via link, cites, or locator)
   for p in pages:
-    relw = str(p.relative_to(root / 'wiki'))
-    if relw not in referenced:
+    if _page_key(root, p) not in referenced:
       findings.append(('WARN', str(p.relative_to(root)), 'orphan: no inbound links'))
   return findings
 
