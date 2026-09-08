@@ -9,7 +9,15 @@ STRUCTURAL = {'index.md', 'log.md', 'open-questions.md'}
 REQUIRED_KEYS = ('title', 'type', 'status', 'topics', 'updated')
 TYPES = ('source', 'concept', 'synthesis')
 STATUSES = ('unverified', 'verified')
-INDEX_LINE_RE = re.compile(r'^- \[[^\]]+\]\(([^)]+)\)')
+# An index line: `- [text](target)`. The text alternation is MD_LINK_RE's,
+# verbatim, so the two patterns agree about what a link points at -- the flat
+# `[^\]]+` form saw no nesting, so `- [the [above] page](x.md)` yielded no
+# target and its page was reported as un-indexed. Two deliberate divergences
+# from the sibling: `+` not `*`, because schema-template.md defines the link
+# text as the page title and a titleless index line is not one; and, being
+# anchored, this pattern cannot re-anchor past an unbalanced `[`, so such a
+# line now yields no target at all (pinned by test).
+INDEX_LINE_RE = re.compile(r'^- \[(?:[^\[\]]|\[[^\[\]]*\])+\]\(([^)]+)\)')
 # Markdown relative links: [text](target) where target is not a URL/anchor.
 # The text alternation allows ONE level of balanced nested brackets, so
 # `[the [above] discussion](x.md)` is seen and its target checked; the flat
