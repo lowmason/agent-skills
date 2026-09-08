@@ -169,6 +169,37 @@ def test_broken_relative_link_is_error(tmp_path):
              for f in lint_wiki.run_checks(root))
 
 
+def test_broken_link_with_nested_brackets_in_text_is_error(tmp_path):
+  '''A link whose TEXT contains brackets must still have its TARGET checked.
+
+  The pre-fix MD_LINK_RE required no ']' inside the link text, so this whole
+  link was invisible and its dangling target went unreported.'''
+  root = make_wiki(tmp_path)
+  write_page(root, 'sources/a.md', {'title': 'A', 'type': 'source'})
+  write_page(
+    root, 'samplers/p.md', {'title': 'P', 'type': 'concept'},
+    'See [the [above] discussion](none.md).')
+  findings = lint_wiki.check_links(root, lint_wiki.discover_pages(root))
+  assert any(
+    level == 'ERROR' and 'broken relative link: none.md' in msg
+    for level, _, msg in findings), findings
+
+
+def test_link_with_nested_brackets_resolves_and_counts_as_inbound(tmp_path):
+  '''The same shape, pointing at a real page: no error, and the target is
+  no longer an orphan. Pins that the widened regex still captures the TARGET
+  (group 1), not the bracketed text.'''
+  root = make_wiki(tmp_path)
+  write_page(root, 'sources/a.md', {'title': 'A', 'type': 'source'})
+  write_page(
+    root, 'samplers/p.md', {'title': 'P', 'type': 'concept'},
+    'See [the [above] discussion](../sources/a.md).')
+  findings = lint_wiki.check_links(root, lint_wiki.discover_pages(root))
+  assert not [f for f in findings if f[0] == 'ERROR'], findings
+  assert not [f for f in findings
+              if f[0] == 'WARN' and f[1] == 'wiki/sources/a.md'], findings
+
+
 def test_body_citation_without_source_is_error(tmp_path):
   root = make_wiki(tmp_path)
   write_page(root, 'samplers/x.md',

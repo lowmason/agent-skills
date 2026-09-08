@@ -11,7 +11,12 @@ TYPES = ('source', 'concept', 'synthesis')
 STATUSES = ('unverified', 'verified')
 INDEX_LINE_RE = re.compile(r'^- \[[^\]]+\]\(([^)]+)\)')
 # Markdown relative links: [text](target) where target is not a URL/anchor.
-MD_LINK_RE = re.compile(r'\[[^\]]*\]\(([^)]+)\)')
+# The text alternation allows ONE level of balanced nested brackets, so
+# `[the [above] discussion](x.md)` is seen and its target checked; the flat
+# `[^\]]*` form matched no part of it and let the target go unvalidated. The
+# two alternatives are disjoint on their first character, so the repetition
+# cannot backtrack ambiguously.
+MD_LINK_RE = re.compile(r'\[(?:[^\[\]]|\[[^\[\]]*\])*\]\(([^)]+)\)')
 # Structural shape of a body locator: [token position], and NOT a markdown
 # link (no '(' immediately after the ']'). Shape only -- _is_citation decides
 # whether a matched pair is actually a citation.
