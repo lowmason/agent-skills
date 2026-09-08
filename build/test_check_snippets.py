@@ -152,3 +152,33 @@ def test_block_side_effects_do_not_touch_cwd(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     check_snippets.run_errors(p, timeout=60)
     assert not (tmp_path / 'sentinel.txt').exists()
+
+
+def test_preamble_add_log_prior_matches_the_doc():
+    '''The preamble embeds sensitivity.md's add_log_prior verbatim, so running
+    --run also exercises that documented block. Nothing else pins them equal,
+    and a fixture that silently diverges from the doc it claims to copy is
+    exactly the "second source of truth" hazard snippet_preamble.py warns
+    about -- it would go green while the documented version was broken.'''
+    from pathlib import Path
+
+    from snippet_preamble import PREAMBLE
+    doc = (Path(__file__).resolve().parent.parent
+           / 'skills/bayesian-workflow/references/sensitivity.md').read_text()
+    block = next(b for b in check_snippets.iter_code_blocks(doc)
+                 if 'def add_log_prior' in b.code)
+    fn = block.code[block.code.index('def add_log_prior'):]
+    fn = fn[:fn.index('\n# Use the SAME')].rstrip()
+    assert fn in PREAMBLE, 'preamble drifted from sensitivity.md add_log_prior'
+
+
+@requires_stack
+def test_documented_absent_names_are_still_absent():
+    '''DOCUMENTED_ABSENT exempts prose that names a REMOVED API. If one comes
+    back on a newer stack the doc's "removed" claim is now wrong -- and the
+    allowlist would hide exactly the staleness --api exists to catch. So the
+    allowlist re-validates against the installed stack, the same way
+    test_every_norun_marker_carries_a_reason keeps norun auditable.'''
+    resurrected = [name for name in check_snippets.DOCUMENTED_ABSENT
+                   if check_snippets._resolve(name, {'az': 'arviz'}) is None]
+    assert resurrected == [], resurrected

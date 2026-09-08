@@ -71,7 +71,8 @@ post_pred = Predictive(model, mcmc.get_samples())(k_post, x)
 idata = az.from_numpyro(mcmc, prior=prior_pred, posterior_predictive=post_pred,
                         log_likelihood=True, coords=coords, dims=dims)
 
-# Copied VERBATIM from references/sensitivity.md (the `add_log_prior` block).
+# Copied VERBATIM from references/sensitivity.md (the `add_log_prior` block);
+# test_preamble_add_log_prior_matches_the_doc pins the two equal.
 # NumPyro emits no log_prior group and az.from_numpyro has no option for it,
 # so the skill documents this helper -- and the fixture uses the documented
 # one rather than reimplementing it, which means running the gate also
@@ -80,7 +81,12 @@ import xarray as xr
 from numpyro.handlers import trace, substitute
 
 def add_log_prior(idata, model, mcmc, *model_args, **model_kwargs):
-    """Attach a `log_prior` group so power-scaling sensitivity (psense) can run."""
+    """Attach a `log_prior` group so power-scaling sensitivity (psense) can run.
+
+    For each posterior draw, substitute the latent values into the model, trace it, and
+    record each *non-observed* sample site's prior log-density. Dims are reused from the
+    posterior group so the new group aligns for psense.
+    """
     samples = mcmc.get_samples(group_by_chain=True)          # {site: (chain, draw, ...)}
     chains, draws = next(iter(samples.values())).shape[:2]
     flat = {k: v.reshape((chains * draws,) + v.shape[2:]) for k, v in samples.items()}
@@ -98,6 +104,9 @@ def add_log_prior(idata, model, mcmc, *model_args, **model_kwargs):
         if name not in post:
             continue
         arr = np.asarray(v).reshape((chains, draws) + v.shape[1:])
+        # log_prob reduces over event dims, so multivariate sites (MVN, LKJ,
+        # Dirichlet) yield ONE log-prior value per batch element — pair the
+        # array with the leading posterior dims only.
         data_vars[name] = (post[name].dims[:arr.ndim], arr)
     idata["log_prior"] = xr.DataTree(
         xr.Dataset(data_vars, coords={"chain": post.chain, "draw": post.draw})
