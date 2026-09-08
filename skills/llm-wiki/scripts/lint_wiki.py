@@ -17,6 +17,10 @@ INDEX_LINE_RE = re.compile(r'^- \[[^\]]+\]\(([^)]+)\)')
 # two alternatives are disjoint on their first character, so the repetition
 # cannot backtrack ambiguously.
 MD_LINK_RE = re.compile(r'\[(?:[^\[\]]|\[[^\[\]]*\])*\]\(([^)]+)\)')
+# A CommonMark link title trailing the destination: [a](x.md "Title"). Both
+# link patterns capture everything inside the parens, so the title is stripped
+# once, here, rather than complicating two regexes.
+LINK_TITLE_RE = re.compile(r'''\s+(?:"[^"]*"|'[^']*')\s*$''')
 # Structural shape of a body locator: [token position], and NOT a markdown
 # link (no '(' immediately after the ']'). Shape only -- _is_citation decides
 # whether a matched pair is actually a citation.
@@ -102,6 +106,17 @@ def check_frontmatter_schema(root, pages):
   return findings
 
 
+def _link_target(dest):
+  '''The path part of a link destination, without a CommonMark title.
+
+  `[a](x.md "Title")` and the index line `- [A](sources/a.md "Title")` both
+  name `x.md` / `sources/a.md`; the title is display metadata. Shared by
+  check_links and _index_targets so body links and index lines cannot
+  disagree about what a destination points at -- a divergence between those
+  two code paths was the earlier #fragment bug.'''
+  return LINK_TITLE_RE.sub('', dest).strip()
+
+
 def _index_targets(root):
   '''Set of index-line targets (paths relative to wiki/, e.g. sources/a.md).
   A #fragment is stripped, matching check_links: SCHEMA.md does not prohibit
@@ -115,7 +130,7 @@ def _index_targets(root):
   for line in idx.read_text().split('\n'):
     m = INDEX_LINE_RE.match(line.strip())
     if m:
-      out.append(m.group(1).split('#', 1)[0])
+      out.append(_link_target(m.group(1)).split('#', 1)[0])
   return out
 
 
@@ -178,7 +193,8 @@ def check_links(root, pages):
       for target in cites:
         referenced.add(target + '.md')
     # body markdown links must resolve; a resolved wiki target is inbound
-    for target in MD_LINK_RE.findall(body):
+    for raw_target in MD_LINK_RE.findall(body):
+      target = _link_target(raw_target)
       if target.startswith(('http://', 'https://', 'mailto:', '#')):
         continue
       resolved = (p.parent / target.split('#', 1)[0]).resolve()

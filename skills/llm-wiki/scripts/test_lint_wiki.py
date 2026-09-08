@@ -200,6 +200,56 @@ def test_link_with_nested_brackets_resolves_and_counts_as_inbound(tmp_path):
               if f[0] == 'WARN' and f[1] == 'wiki/sources/a.md'], findings
 
 
+def test_link_title_is_not_part_of_the_path(tmp_path):
+  '''[a](x.md "Title") points at x.md. The title is display metadata.'''
+  root = make_wiki(tmp_path)
+  write_page(root, 'sources/a.md', {'title': 'A', 'type': 'source'})
+  write_page(
+    root, 'samplers/p.md', {'title': 'P', 'type': 'concept'},
+    'See [A](../sources/a.md "The A page").')
+  findings = lint_wiki.check_links(root, lint_wiki.discover_pages(root))
+  assert not [f for f in findings if f[0] == 'ERROR'], findings
+  assert not [f for f in findings
+              if f[0] == 'WARN' and f[1] == 'wiki/sources/a.md'], findings
+
+
+def test_link_title_does_not_hide_a_broken_target(tmp_path):
+  '''Stripping the title must not stop the PATH being checked.'''
+  root = make_wiki(tmp_path)
+  write_page(root, 'sources/a.md', {'title': 'A', 'type': 'source'})
+  write_page(
+    root, 'samplers/p.md', {'title': 'P', 'type': 'concept'},
+    'See [gone](none.md "Not here").')
+  findings = lint_wiki.check_links(root, lint_wiki.discover_pages(root))
+  # Exact match, not a substring: the pre-fix message read
+  # `... none.md "Not here"`, which CONTAINS the substring, so a containment
+  # assertion here passes against the bug and pins nothing.
+  assert any(
+    level == 'ERROR' and msg == 'link: broken relative link: none.md'
+    for level, _, msg in findings), findings
+
+
+def test_index_line_title_is_not_part_of_the_target(tmp_path):
+  '''An index line carrying a title must still reach parity with its page.'''
+  root = make_wiki(tmp_path)
+  write_page(root, 'sources/a.md', {'title': 'A', 'type': 'source'})
+  (root / 'wiki/index.md').write_text(
+    '# Wiki index\n\n## sources\n- [A](sources/a.md "The A page")\n')
+  findings = lint_wiki.check_index_parity(root, lint_wiki.discover_pages(root))
+  assert findings == [], findings
+
+
+def test_link_target_helper_handles_both_quote_styles():
+  '''Direct unit coverage of the helper: its contract is shared by two
+  callers, so it is pinned on its own terms rather than only through them.'''
+  assert lint_wiki._link_target('x.md') == 'x.md'
+  assert lint_wiki._link_target('x.md "Title"') == 'x.md'
+  assert lint_wiki._link_target("x.md 'Title'") == 'x.md'
+  assert lint_wiki._link_target('x.md#frag "Title"') == 'x.md#frag'
+  # No trailing quoted run: nothing is stripped.
+  assert lint_wiki._link_target('a"b".md') == 'a"b".md'
+
+
 def test_body_citation_without_source_is_error(tmp_path):
   root = make_wiki(tmp_path)
   write_page(root, 'samplers/x.md',
