@@ -1,5 +1,15 @@
 # Deferred items
 
+## Aged-backlog acknowledgements
+- 2026-09-08 — finished `fix/lint-wiki-link-hardening` (plan 28) with 3 items aged
+  >45d, carried deliberately: none is actionable from a coding session. `11`
+  (51d) needs an interactive probe of the live model/effort indicator, which is
+  owner-only. `15` (46d) is gated on wanting always-on Python guardrails across
+  the work repos — trigger verified still unmet this session (`~/.claude/rules`
+  does not exist; only the project-level `.claude/rules` symlink is present).
+  `12` (50d) was offered at a completion gate and declined. All three sit in the
+  Hold/owner-only column of the triage presented at plan 28's completion.
+
 ## 11-delegation-frontmatter-rollout — 2026-07-19
 - [x] Haiku-pinned `Explore` override agent (fork-isolation upgrade; plan "Out of
       scope"): the direct `model: haiku` pins on `explore-data`/`bls-data-context`
