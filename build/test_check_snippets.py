@@ -66,3 +66,49 @@ def test_every_norun_marker_carries_a_reason():
             for b in check_snippets.iter_code_blocks(md.read_text())
             if b.info.strip() == 'norun']
     assert bare == [], bare
+
+
+import importlib.util
+
+import pytest
+
+MODULES = {'az': 'arviz'}
+# The stack is an optional dep of this suite, matching the repo idiom for
+# optional-dep guards (CLAUDE.md records the tune-hyperparameters skips the
+# same way). Without it these would FAIL on `cannot import arviz` rather than
+# skip, and CLAUDE.md's "non-ArviZ subset passes" line would be untrue.
+requires_stack = pytest.mark.skipif(
+    importlib.util.find_spec('arviz') is None,
+    reason='needs the ArviZ stack; see CLAUDE.md for the --api invocation')
+
+
+@requires_stack
+def test_missing_attribute_is_flagged(tmp_path):
+    p = tmp_path / 'a.md'
+    p.write_text('```python\naz.definitely_not_a_real_function(x)\n```\n')
+    errs = check_snippets.api_errors(p, MODULES)
+    assert any('definitely_not_a_real_function' in e for e in errs), errs
+
+
+@requires_stack
+def test_real_attribute_passes(tmp_path):
+    p = tmp_path / 'b.md'
+    p.write_text('```python\nidata = az.from_numpyro(mcmc)\n```\n')
+    assert check_snippets.api_errors(p, MODULES) == []
+
+
+@requires_stack
+def test_backticked_prose_identifier_is_checked(tmp_path):
+    '''D2 lived in a markdown bullet, not a code block. If this tier only read
+    code it would have missed the finding that motivates it.'''
+    p = tmp_path / 'c.md'
+    p.write_text('- `az.no_such_thing`: gone in ArviZ 1.x\n')
+    assert check_snippets.api_errors(p, MODULES) != []
+
+
+@requires_stack
+def test_non_library_roots_are_ignored(tmp_path):
+    '''`idata.posterior` and `model.foo` are user code, not library API.'''
+    p = tmp_path / 'd.md'
+    p.write_text('```python\nidata.posterior.mean()\nmodel.whatever()\n```\n')
+    assert check_snippets.api_errors(p, MODULES) == []
