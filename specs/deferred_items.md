@@ -32,6 +32,13 @@
   model/effort indicator check, an interactive-only verification that no automated
   session can run. Not blocking this branch, which only restructures
   subagent-driven-development's skill text into references/.
+- 2026-09-12 — finished `fix-deferred-stats-no-project` with 4 items aged >45d,
+  carried on the partner's reason at the end of a long session: "It is late."
+  The items are `11-delegation-frontmatter-rollout`'s live model/effort indicator
+  check (55d, interactive-only) and three `18-methodology-pipeline-skills` items
+  (48d: synthesize-mode scenario verification, the in-session SOTA pass, and the
+  DL/NLP template extension). This branch only adds `--no-project` to the
+  documented deferred_stats.py command.
 
 ## 11-delegation-frontmatter-rollout — 2026-07-19
 - [x] Haiku-pinned `Explore` override agent (fork-isolation upgrade; plan "Out of
