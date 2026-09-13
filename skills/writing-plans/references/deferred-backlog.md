@@ -24,10 +24,12 @@ made of old ones.
 
 ## Backlog stats
 
-Run from the repo root:
+Run from the repo root. `--no-project` stops uv from binding the run to that
+repo's own project, whose `requires-python` may exclude 3.13; the script is
+stdlib-only and needs no project environment.
 
 ```bash
-uv run --python 3.13 python ~/.claude/skills/writing-plans/scripts/deferred_stats.py
+uv run --no-project --python 3.13 python ~/.claude/skills/writing-plans/scripts/deferred_stats.py
 ```
 
 Add `--json` when you need the raw numbers (`open`, `closed`, `closure_rate`,

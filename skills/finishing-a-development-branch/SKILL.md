@@ -48,7 +48,7 @@ This is the last moment before the work leaves the building. Volume is
 reported; only the **aged tail** gates.
 
 ```bash
-uv run --python 3.13 python ~/.claude/skills/writing-plans/scripts/deferred_stats.py
+uv run --no-project --python 3.13 python ~/.claude/skills/writing-plans/scripts/deferred_stats.py
 ```
 
 Run it without `--json`: this step needs the human-readable summary, and reading
