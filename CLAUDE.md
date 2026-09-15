@@ -1,12 +1,43 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file is the canonical maintainer guide for Claude Code, Codex, and Gemini
+CLI when working in this repository. `AGENTS.md` points Codex here and
+`GEMINI.md` imports it.
 
 ## What this repo is
 
-A personal collection of Claude Code user-level configuration, centered on [agent skills](https://code.claude.com/docs/en/skills). Skills live under `skills/` — each subdirectory is **one self-contained skill**: a `SKILL.md` plus optional `references/` (loaded on demand) and `scripts/` (executable helpers). Sibling top-level dirs hold the other config types: `agents/` (subagent definitions — the two reviewers plus `security-auditor`, the Haiku-pinned `Explore` override, `test-runner`, `debugger`, `docs-writer`), `commands/` (slash commands — `/deferred`, `/fix-issue`, `/license-audit`), `hooks/` (two categories: per-repo ruff/uv gate templates for the user's *work* repos, not wired into this repo; and `readonly-agent-guard.py`, a globally-installed `PreToolUse` hook enforcing the five read-only agents' Bash contract — see `hooks/README.md`), `rules/` (path-scoped rule files — `clean-code-python.md` loads on `**/*.py` edits via the committed `.claude/rules/` symlink). There is no application here to run — the "product" is the skill text and its bundled scripts.
+A personal collection of coding-agent configuration, centered on the portable
+[Agent Skills specification](https://agentskills.io/specification). Skills live
+under `skills/` — each subdirectory is **one self-contained skill**: a
+`SKILL.md` plus optional `references/` (loaded on demand) and `scripts/`
+(executable helpers). Sibling top-level dirs hold the other config types:
+`agents/` (canonical Claude-format subagent definitions), `commands/`
+(canonical Claude slash commands), `runtimes/` (generated Codex and Gemini
+adapters), `hooks/` (Claude Code hook templates and its read-only-agent guard),
+and `rules/` (Claude Code path-scoped rules). There is no application here to
+run — the "product" is the skill text, companion configuration, and bundled
+scripts.
 
-Skills install into `~/.claude/skills/` (symlink or copy). This repo *is* the user's symlinked source: per-skill symlinks in `~/.claude/skills/` point at `skills/<name>` here (and `~/.claude/agents/` links into `agents/`), so edits here are live.
+`install.py` installs skills and companion assets for Claude, Codex, Gemini, or
+all three. Claude uses `~/.claude/skills/`; Codex and Gemini share
+`~/.agents/skills/`. This repo *is* the user's symlinked source, so edits here
+are live.
+
+## Runtime adapters
+
+`agents/*.md` and `commands/*.md` are canonical. Never hand-edit files under
+`runtimes/`. After changing a canonical agent or command, regenerate and check
+the adapters:
+
+```bash
+uv run --python 3.13 --with pyyaml python build/sync_runtime_assets.py
+uv run --python 3.13 --with pyyaml python build/sync_runtime_assets.py --check
+```
+
+The generator translates manifest syntax and Gemini tool names only. Codex and
+Gemini agents inherit the active runtime model; Claude-specific model pins do
+not cross runtimes. Gemini gets TOML command adapters. Codex has no command
+adapter here; reusable Codex workflows are skills.
 
 ## Provenance is load-bearing — preserve it
 
@@ -34,21 +65,29 @@ When creating or editing a skill, **follow the `writing-skills` skill** — it's
 - **Python style**: Polars over pandas; single quotes over double; NumPyro + JAX (not PyMC) for Bayesian code; target Python 3.13.
 - **Specs & plans**: design records live in `specs/` (retired ones in `specs/completed/`). Implementation plans go to `specs/plans/<id>-<spec-name>.md` where `<id>` is the next integer (max existing id across `specs/plans/` and `specs/plans/completed/`, +1). At completion, the plan-completion protocol (writing-plans § Plan Completion Protocol) gates leftovers past the user, marks up the plan, appends consciously-deferred work to `specs/deferred_items.md`, and retires the plan (and, when no other live plan shares it, the spec) to the `completed/` dirs.
 
-## Build tooling (`build/`) — only for `recommend-probabilistic-model`
+## Build tooling (`build/`)
 
-`build/` is a citation-verification pipeline, not a project build; see `build/CLAUDE.md` for its two gates and how the ground truth is regenerated. **`build/.scratch/` is gitignored and must never be committed** — it contains own-use extraction of CC-BY-NC-ND material.
+Most of `build/` is the citation-verification pipeline for
+`recommend-probabilistic-model`; see `build/CLAUDE.md` for its gates and ground
+truth. `sync_runtime_assets.py` is the separate cross-runtime adapter
+generator. **`build/.scratch/` is gitignored and must never be committed** — it
+contains own-use extraction of CC-BY-NC-ND material.
 
 ## Commands
 
 There is no root test runner or repo-wide `pyproject`, and the scientific deps (numpy, polars, pytest) aren't installed into the interpreter directly. Run everything through `uv run` pinned to the Homebrew Python 3.13, supplying deps inline. Tests use **bare imports** and are **directory-scoped** — run pytest from inside the relevant directory, not the repo root: each suite pins its own inline deps, and a repo-root collection fails outright anyway, since `geographic-codes` and `classification-codes` both ship a `test_build.py` whose basenames collide under pytest's prepend import mode with no `__init__.py`.
 
 ```bash
-# Build-tooling tests (citation verifier + lints + snippet gate) — 77 tests
-# (all 77 collect either way. 7 of test_check_snippets.py's need the ArviZ/NumPyro chain and
-# skip without it, so the command below reports 70 passed, 7 skipped; append
+# Cross-runtime adapters and installer — 11 tests
+cd build && uv run --python 3.13 --with pytest --with pyyaml \
+  python -m pytest -q test_runtime_support.py
+
+# Full build-directory tests — 88 tests (77 citation/lint/snippet + 11 runtime-support)
+# (all 88 collect either way. 7 of test_check_snippets.py's need the ArviZ/NumPyro chain and
+# skip without it, so the command below reports 81 passed, 7 skipped; append
 # --with "arviz>=1.0" --with arviz-base --with arviz-stats --with arviz-plots --with numpyro
-# --with jax --with matplotlib to run all 77. Separately, 5 in test_verify_citations.py need the
-# build/.scratch/ ground truth — lacking both: 65 passed, 4 failed, 8 skipped. .scratch/ is
+# --with jax --with matplotlib to run all 88. Separately, 5 in test_verify_citations.py need the
+# build/.scratch/ ground truth — lacking both: 76 passed, 4 failed, 8 skipped. .scratch/ is
 # gitignored, so a fresh clone or worktree lacks it; regenerate with build/extract_structure.py,
 # see build/CLAUDE.md)
 cd build && uv run --python 3.13 --with pytest --with numpy --with polars --with pyyaml python -m pytest -q

@@ -1,8 +1,12 @@
 # agent-skills
 
-My personal collection of [agent skills](https://code.claude.com/docs/en/skills), primarily for **Claude Code**.
+My personal collection of [Agent Skills](https://agentskills.io/specification) for
+**Claude Code, Codex, and Gemini CLI**.
 
-Each skill is a self-contained directory under [`skills/`](skills/) with a `SKILL.md` (plus any `references/`, `scripts/`, or bundled `data/` tables it needs). Claude Code auto-discovers installed skills and loads one into context when it's relevant to what you're doing — or you can invoke it directly as a slash command.
+Each skill is a self-contained directory under [`skills/`](skills/) with a
+`SKILL.md` (plus any `references/`, `scripts/`, or bundled `data/` tables it
+needs). All three runtimes discover the same skill source and load the full body
+only when its description matches the task or you invoke it explicitly.
 
 > [!IMPORTANT]
 > **These skills are opinionated — about my environment and my process.** They work best if you share (or deliberately adopt) those opinions. Read a skill's `SKILL.md` before installing it, and edit what doesn't fit — it's all plain markdown. Two families of assumptions to know about:
@@ -12,20 +16,27 @@ Each skill is a self-contained directory under [`skills/`](skills/) with a `SKIL
 
 ## Layout
 
-Skills are the center of the repo, but it also carries the other Claude Code user-level config types:
+Skills are the center of the repo, but it also carries runtime-specific agent,
+command, hook, and instruction assets:
 
 ```
 agent-skills/
 ├── skills/      # agent skills, one directory per skill (the tables below)
 ├── agents/      # subagent definitions (reviewers + security/search/test/debug/docs — see Agents below)
 ├── commands/    # slash commands (/deferred, /fix-issue, /license-audit — see Commands below)
+├── runtimes/    # generated Codex/Gemini agent and command adapters
 ├── hooks/       # deterministic gates for Python/uv work repos (see Hooks below)
 ├── rules/       # path-scoped rule files, loaded via .claude/rules/ (see Rules below)
 ├── build/       # citation-verification tooling for recommend-probabilistic-model
-└── specs/       # design records + implementation plans (retired work under completed/)
+├── specs/       # design records + implementation plans (retired work under completed/)
+└── install.py   # safe, idempotent installer for Claude, Codex, Gemini, or all three
 ```
 
-Skills, agents, and commands install into `~/.claude/` and are discovered automatically. Rules load natively from a project's `.claude/rules/` (this repo commits a symlink into [`rules/`](rules/); a work repo copies the file). **Hooks don't** — they are copied per work-repo. See [Installation](#installation).
+The canonical skill bodies are portable. Agent manifests are generated from
+[`agents/`](agents/) because the runtimes use different file formats and tool
+names; Gemini command TOML is generated from [`commands/`](commands/). Claude's
+hooks and path-scoped rules remain Claude-specific. See
+[Installation](#installation) and the compatibility notes below.
 
 ## Skills
 
@@ -85,7 +96,11 @@ Adapted from Jesse Vincent's superpowers skills — process disciplines for plan
 
 ## Agents
 
-Subagent definitions live in [`agents/`](agents/) and install into `~/.claude/agents/` the same way skills do (symlink or copy):
+Canonical subagent definitions live in [`agents/`](agents/). Claude loads these
+files directly; generated Codex TOML and Gemini Markdown adapters live under
+[`runtimes/`](runtimes/). The adapters keep the same system-prompt body, map
+Gemini's tool identifiers, declare read-only sandboxes in Codex where required,
+and inherit the active runtime model instead of carrying Claude model names.
 
 | Agent | Description |
 |-------|-------------|
@@ -99,7 +114,10 @@ Subagent definitions live in [`agents/`](agents/) and install into `~/.claude/ag
 
 ## Commands
 
-Slash commands live in [`commands/`](commands/) and install into `~/.claude/commands/` (symlink or copy, one file per command):
+Slash commands live in [`commands/`](commands/) for Claude. Generated Gemini
+TOML commands live in [`runtimes/gemini/commands/`](runtimes/gemini/commands/)
+and preserve user arguments through `{{args}}`. Codex has no equivalent command
+adapter in this repo; its reusable workflows are invoked as skills.
 
 | Command | Description |
 |---------|-------------|
@@ -109,7 +127,10 @@ Slash commands live in [`commands/`](commands/) and install into `~/.claude/comm
 
 ## Hooks
 
-Hook scripts live in [`hooks/`](hooks/). They're **templates for your Python/uv work repos**, not config for this one — each is copied into a target repo and registered in *that* repo's `.claude/settings.json`. What they buy you: the advisory prose in a `CLAUDE.md` ("always run ruff", "use uv, not pip") becomes a deterministic gate that fires every time, for ~0 tokens, instead of an instruction the agent may or may not honor.
+Hook scripts live in [`hooks/`](hooks/). They're **Claude Code templates for your
+Python/uv work repos**, not cross-runtime config and not config for this one —
+each is copied into a target repo and registered in *that* repo's
+`.claude/settings.json`.
 
 | Hook | Event | What it does |
 |------|-------|--------------|
@@ -138,73 +159,72 @@ To use a rule in another project, copy it into that repo's `.claude/rules/` (pro
 
 ## Installation
 
-These skills install into Claude Code's user-level skills directory, `~/.claude/skills/`, where they're discovered automatically.
-
-First, clone the repo somewhere stable and make sure the skills directory exists:
+Clone the repository somewhere stable:
 
 ```bash
 git clone https://github.com/lowmason/agent-skills.git ~/agent-skills
-mkdir -p ~/.claude/skills
 ```
 
-Then install whichever skills you want, with **either** of these approaches.
-
-### Symlink (recommended)
-
-A symlink means edits in the repo are picked up live, without restarting Claude Code — ideal if you're tracking updates or hacking on the skill yourself:
+Then use the installer for one runtime or all three. It installs every skill plus
+that runtime's supported agents and commands:
 
 ```bash
-ln -s ~/agent-skills/skills/bayesian-workflow ~/.claude/skills/bayesian-workflow
+cd ~/agent-skills
+python3 install.py codex
+python3 install.py gemini
+python3 install.py claude
+# or: python3 install.py all
 ```
 
-### Copy
-
-A copy gives you a frozen, self-contained install that won't change when the repo does:
+Symlinks are the default, so repository updates are live. The installer is
+idempotent for links it already owns and refuses to overwrite any other existing
+file or directory. Useful options:
 
 ```bash
-cp -r ~/agent-skills/skills/bayesian-workflow ~/.claude/skills/bayesian-workflow
+python3 install.py codex --skill bayesian-workflow  # one skill; repeat --skill as needed
+python3 install.py all --dry-run                    # inspect without writing
+python3 install.py gemini --copy                    # frozen copies instead of links
 ```
 
-### Project-level install (optional)
+| Runtime | Skills | Agents | Commands |
+|---------|--------|--------|----------|
+| Claude Code | `~/.claude/skills/` | `~/.claude/agents/*.md` | `~/.claude/commands/*.md` |
+| Codex | `~/.agents/skills/` | `~/.codex/agents/*.toml` | — |
+| Gemini CLI | `~/.agents/skills/` | `~/.gemini/agents/*.md` | `~/.gemini/commands/*.toml` |
 
-To make a skill available only inside one project (and shareable with collaborators via that repo), put it under the project's `.claude/skills/` instead of `~/.claude/skills/`:
+Codex and Gemini deliberately share the cross-runtime `~/.agents/skills/`
+installation. This matches [Codex's local skill discovery](https://developers.openai.com/codex/skills)
+and [Gemini CLI's discovery tiers](https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/using-agent-skills.md).
+
+### Manual skill install
+
+To link one skill manually for Codex and Gemini:
 
 ```bash
-mkdir -p .claude/skills
-ln -s ~/agent-skills/skills/bayesian-workflow .claude/skills/bayesian-workflow
+mkdir -p ~/.agents/skills
+ln -s ~/agent-skills/skills/bayesian-workflow ~/.agents/skills/bayesian-workflow
+```
+
+For Claude Code, use `~/.claude/skills/` instead. To scope a skill to one
+project, use `.agents/skills/` for Codex/Gemini or `.claude/skills/` for Claude:
+
+```bash
+mkdir -p .agents/skills
+ln -s ~/agent-skills/skills/bayesian-workflow .agents/skills/bayesian-workflow
 ```
 
 ### Verify
 
-Inside Claude Code, run `/skills` to list discovered skills and confirm yours shows up (along with the level it loaded from). You can also invoke a skill by name, e.g. `/bayesian-workflow`.
+Use `/skills` in Claude or Codex and `/skills list` in Gemini. Gemini agents and
+commands can be checked with `/agents list` and `/commands list`; use the
+corresponding `reload` command after changing generated files. Codex reads its
+TOML agents when a new session starts.
 
-### Agents
+Project instruction entrypoints are included too: Codex reads [`AGENTS.md`](AGENTS.md),
+while Gemini reads [`GEMINI.md`](GEMINI.md), which imports the canonical
+maintainer guide.
 
-Subagent definitions install the same way, into `~/.claude/agents/` (one symlink per file):
-
-```bash
-mkdir -p ~/.claude/agents
-ln -s ~/agent-skills/agents/code-reviewer.md ~/.claude/agents/code-reviewer.md
-ln -s ~/agent-skills/agents/task-reviewer.md ~/.claude/agents/task-reviewer.md
-ln -s ~/agent-skills/agents/security-auditor.md ~/.claude/agents/security-auditor.md
-ln -s ~/agent-skills/agents/explore.md ~/.claude/agents/explore.md
-ln -s ~/agent-skills/agents/test-runner.md ~/.claude/agents/test-runner.md
-ln -s ~/agent-skills/agents/debugger.md ~/.claude/agents/debugger.md
-ln -s ~/agent-skills/agents/docs-writer.md ~/.claude/agents/docs-writer.md
-```
-
-### Commands
-
-Slash commands install the same way, into `~/.claude/commands/` (one symlink per file):
-
-```bash
-mkdir -p ~/.claude/commands
-ln -s ~/agent-skills/commands/deferred.md ~/.claude/commands/deferred.md
-ln -s ~/agent-skills/commands/fix-issue.md ~/.claude/commands/fix-issue.md
-ln -s ~/agent-skills/commands/license-audit.md ~/.claude/commands/license-audit.md
-```
-
-### Hooks
+### Claude Code hooks
 
 Hooks break the pattern above — **don't symlink them into `~/.claude/`**, or they'll fire in every project you open (see the warning under [Hooks](#hooks)). Copy them into the work repo that wants them:
 
@@ -214,7 +234,7 @@ mkdir -p .claude/hooks && cp ~/agent-skills/hooks/{ruff-fix,ruff-check,uv-guard}
 
 Then merge the `hooks` block from [`hooks/README.md`](hooks/README.md) into that repo's `.claude/settings.json`. Prefer `cp` over a symlink here: a copy means editing a template can't silently change the gates in every repo at once — re-copy when you actually want the update.
 
-### Rules
+### Claude Code rules
 
 Project-level, per repo:
 

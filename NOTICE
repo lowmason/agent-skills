@@ -4,6 +4,13 @@ NOTICE
 This repository bundles agent skills from more than one source; skills live
 under skills/, one directory per skill. Attribution and licensing, by skill:
 
+Files under runtimes/ are mechanically generated format adapters for the
+canonical agents/*.md and commands/*.md sources. They reproduce the source
+instruction bodies without changing their provenance or license; each adapter
+inherits the attribution and license of its canonical source. The adapter
+generator, installer, runtime entrypoint files, and compatibility documentation
+are original works by Lowell Mason under this repository's MIT license.
+
 bayesian-workflow/
     Adapted by Lowell Mason from Alexandre Andorra's original PyMC
     Bayesian-workflow skill. Ported to NumPyro + JAX with expanded
