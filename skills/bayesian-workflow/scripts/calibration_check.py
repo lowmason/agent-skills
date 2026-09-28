@@ -16,6 +16,7 @@ import json
 import os
 import sys
 import warnings
+from typing import NoReturn
 
 import numpy as np
 
@@ -175,7 +176,7 @@ def save_pit_plot(
     return output_path
 
 
-def _exit_with_error(message):
+def _exit_with_error(message) -> NoReturn:
     """Print a JSON error object to stdout and exit with status 1."""
     print(json.dumps({"error": message}))
     sys.exit(1)
