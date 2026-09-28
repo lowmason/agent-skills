@@ -17,8 +17,8 @@ Usage:
   python3 bootstrap_wiki.py <root> --topic samplers # also create raw/ + wiki/ topic dirs
 
 Examples:
-  python3 ~/.claude/skills/llm-wiki/scripts/bootstrap_wiki.py ~/research-wiki
-  python3 ~/.claude/skills/llm-wiki/scripts/bootstrap_wiki.py /work/wiki --topic nowcasting
+  python3 <this-skill-dir>/scripts/bootstrap_wiki.py ~/research-wiki
+  python3 <this-skill-dir>/scripts/bootstrap_wiki.py /work/wiki --topic nowcasting
 
 Exit codes: 0 = scaffolded and verified (or dry-run / check-current);
 1 = refused before writing (bad args, incomplete bundle, or --check found

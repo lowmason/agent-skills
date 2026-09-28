@@ -253,7 +253,7 @@ history of consciously-deferred work.
 human partner rather than waiting to be asked for it. Run from the repo root:
 
 ```bash
-uv run --no-project --python 3.13 python ~/.claude/skills/writing-plans/scripts/deferred_stats.py
+uv run --no-project --python 3.13 python <this-skill-dir>/scripts/deferred_stats.py
 ```
 
 Surface its summary line — open count, closure rate, aged tail — in the

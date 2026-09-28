@@ -7,8 +7,8 @@ existing file. Numbering is derived from the directory on every run rather than 
 counter, so deleting the highest-numbered ADR frees its number to be handed out again.
 
 Usage:
-    python3 ~/.claude/skills/design-architecture/scripts/new_adr.py "Use NumPyro/JAX over PyMC for nowcasting"
-    python3 ~/.claude/skills/design-architecture/scripts/new_adr.py "Store parquet levels only" --dir docs/adr --status Proposed
+    python3 <this-skill-dir>/scripts/new_adr.py "Use NumPyro/JAX over PyMC for nowcasting"
+    python3 <this-skill-dir>/scripts/new_adr.py "Store parquet levels only" --dir docs/adr --status Proposed
 
 The default directory is ``specs/adr`` (the design-record convention in this stack); pass
 ``--dir docs/adr`` for repos that publish ADRs in a MkDocs site.

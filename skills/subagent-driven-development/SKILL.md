@@ -69,7 +69,7 @@ digraph process {
 
     "Read plan, note context and global constraints, create todos" [shape=box];
     "More tasks remain?" [shape=diamond];
-    "Dispatch final code reviewer subagent (../requesting-code-review/code-reviewer.md)" [shape=box];
+    "Final review: code reviewer subagent + Codex second opinion (../requesting-code-review/)" [shape=box];
     "Run plan-completion protocol (../writing-plans/SKILL.md)" [shape=box];
     "Finish the branch (finishing-a-development-branch)" [shape=box style=filled fillcolor=lightgreen];
 
@@ -88,8 +88,8 @@ digraph process {
     "Re-review reports all findings addressed, no new Critical/Important?" -> "Mark task complete in todo list and progress ledger" [label="yes"];
     "Mark task complete in todo list and progress ledger" -> "More tasks remain?";
     "More tasks remain?" -> "Dispatch implementer subagent (./implementer-prompt.md)" [label="yes"];
-    "More tasks remain?" -> "Dispatch final code reviewer subagent (../requesting-code-review/code-reviewer.md)" [label="no"];
-    "Dispatch final code reviewer subagent (../requesting-code-review/code-reviewer.md)" -> "Run plan-completion protocol (../writing-plans/SKILL.md)";
+    "More tasks remain?" -> "Final review: code reviewer subagent + Codex second opinion (../requesting-code-review/)" [label="no"];
+    "Final review: code reviewer subagent + Codex second opinion (../requesting-code-review/)" -> "Run plan-completion protocol (../writing-plans/SKILL.md)";
     "Run plan-completion protocol (../writing-plans/SKILL.md)" -> "Finish the branch (finishing-a-development-branch)";
 }
 ```
@@ -168,7 +168,7 @@ review is always capable** — dispatch it explicitly, not on the session defaul
 
 Implementer subagents report one of four statuses. Handle each appropriately:
 
-**DONE:** Generate the review package (`scripts/review-package PLAN_FILE BASE HEAD` — see **File Handoffs** for the BASE rule and for the path the script reports), then dispatch the task reviewer with that path.
+**DONE:** Generate the review package (`<this-skill-dir>/scripts/review-package PLAN_FILE BASE HEAD` — see **File Handoffs** for the BASE rule and for the path the script reports), then dispatch the task reviewer with that path.
 
 **DONE_WITH_CONCERNS:** The implementer completed the work but flagged doubts. Read the concerns before proceeding. If the concerns are about correctness or scope, address them before review. If they're observations (e.g., "this file is getting large"), note them and proceed to review.
 
@@ -267,8 +267,19 @@ final whole-branch review. When you fill a reviewer template:
   Before re-dispatching the reviewer, confirm the fix report contains the
   covering tests, the command run, and the output; dispatch the re-review
   once all three are present.
-- If the final whole-branch review returns findings, dispatch ONE fix
-  subagent with the complete findings list — not one fixer per finding.
+- The final whole-branch review has two seats, launched in the same message:
+  the code-reviewer subagent (requesting-code-review's code-reviewer.md) and
+  the Codex second opinion in requesting-code-review's
+  [codex-review.md](../requesting-code-review/codex-review.md), `--base` at
+  the same merge base. When the Codex run completes, the recipe has you write
+  `Codex reviewed <sha>` into the conversation, where
+  finishing-a-development-branch reads it after this workspace is gone. Copy
+  that exact line into the progress ledger too, and back into the
+  conversation if you resume from the ledger. Touch nothing until both seats
+  have returned.
+- If the final whole-branch review returns findings, merge both seats' lists
+  and dispatch ONE fix subagent with the complete list — not one fixer per
+  finding.
   Per-finding fixers each rebuild context and re-run suites; a real
   session's final-review fix wave cost more than all its tasks combined.
 
@@ -287,7 +298,7 @@ tasks complete" is a sanctioned stop.
 When the plan-completion protocol has finished and the final review's fixes
 are merged, delete this plan's workspace — the `$WORKSPACE` you resolved at
 skill start: `rm -rf "$WORKSPACE"`. If a `/clear` and relaunch since then left
-you without that variable, re-run `scripts/sdd-workspace <plan-file>`; it is
+you without that variable, re-run `<this-skill-dir>/scripts/sdd-workspace <plan-file>`; it is
 idempotent and reprints the same path. Git history is the record now. Sibling
 directories under `.sdd/` belong to other plans — leave them alone, and never
 `rm -rf .sdd` itself.
@@ -347,7 +358,7 @@ a ledger file, not only in todos.
 - At skill start, run this skill's `scripts/sdd-workspace <plan-file>` once and
   keep the directory it prints — it creates this plan's workspace and the
   self-ignoring .gitignore that covers every plan's:
-  `WORKSPACE=$(scripts/sdd-workspace <plan-file>)`. Then check for a ledger:
+  `WORKSPACE=$(<this-skill-dir>/scripts/sdd-workspace <plan-file>)`. Then check for a ledger:
   `cat "$WORKSPACE/progress.md"`. Tasks listed there as complete are DONE — do
   not re-dispatch them; resume at the first task not marked complete.
 - The workspace is per plan, so that ledger is always this plan's. Its first
@@ -409,7 +420,7 @@ The relaunch resumes from the ledger via **Durable Progress** above.
 - [implementer-prompt.md](implementer-prompt.md) - Dispatch implementer subagent
 - [task-reviewer-prompt.md](task-reviewer-prompt.md) - Dispatch task reviewer subagent (spec compliance + code quality)
 - [re-review-prompt.md](re-review-prompt.md) - Dispatch a scoped re-review after fixes (per-finding ADDRESSED / NOT ADDRESSED)
-- Final whole-branch review: use requesting-code-review's [code-reviewer.md](../requesting-code-review/code-reviewer.md)
+- Final whole-branch review: use requesting-code-review's [code-reviewer.md](../requesting-code-review/code-reviewer.md), alongside its Codex second opinion, [codex-review.md](../requesting-code-review/codex-review.md)
 
 ## Example Workflow
 
@@ -438,7 +449,7 @@ what it costs: [references/advantages.md](references/advantages.md).
 - Let implementer self-review replace actual review (both are needed)
 - Tell a reviewer what not to flag, or pre-rate a finding's severity — see **Constructing Reviewer Prompts**
 - Dispatch a task reviewer without a diff file — generate it first
-  (`scripts/review-package PLAN_FILE BASE HEAD`) and name the path it reports in
+  (`<this-skill-dir>/scripts/review-package PLAN_FILE BASE HEAD`) and name the path it reports in
   the prompt, the path alone and not its whole summary line
 - Move to next task while the review has open Critical/Important issues
 - Re-dispatch a task the progress ledger already marks complete — check
@@ -466,7 +477,7 @@ what it costs: [references/advantages.md](references/advantages.md).
 **Required workflow skills:**
 - **using-git-worktrees** - Ensures isolated workspace (creates one or verifies existing)
 - **writing-plans** - Creates the plan this skill executes
-- **requesting-code-review** - Code review template for the final whole-branch review
+- **requesting-code-review** - Code review template and Codex second-opinion recipe for the final whole-branch review
 - **finishing-a-development-branch** - Integrates the branch after the plan-completion protocol
 
 **After all tasks:** run the plan-completion protocol, then use finishing-a-development-branch to integrate the branch (merge / PR / cleanup) and remove any worktree.

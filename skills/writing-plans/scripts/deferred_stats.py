@@ -15,9 +15,9 @@ date (``2026-09-31``), and a date in the future — the last two being typos in 
 hand-written header rather than ages.
 
 Usage:
-    python3 ~/.claude/skills/writing-plans/scripts/deferred_stats.py
-    python3 ~/.claude/skills/writing-plans/scripts/deferred_stats.py --json
-    python3 ~/.claude/skills/writing-plans/scripts/deferred_stats.py \\
+    python3 <this-skill-dir>/scripts/deferred_stats.py
+    python3 <this-skill-dir>/scripts/deferred_stats.py --json
+    python3 <this-skill-dir>/scripts/deferred_stats.py \\
         --file path/to/deferred_items.md --aged-days 60
 
 Always exits 0. This is a reporter, not a gate: the caller decides what to do

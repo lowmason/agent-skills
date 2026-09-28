@@ -264,6 +264,45 @@ Changes from upstream:
     only -- the moved text is verbatim, carrying the same authorship and
     MIT terms as the sections it came from, and no wording was rewritten
     in the move.
+  - writing-plans and finishing-a-development-branch invoked the
+    deferred_stats.py reporter through a hard-coded ~/.claude/skills/
+    path, which exists only on a Claude Code install. That path was never
+    upstream -- it came in with the deferred-backlog contract above -- and
+    it now resolves relative to the skill directory instead:
+    <this-skill-dir>/scripts/deferred_stats.py in writing-plans' SKILL.md,
+    and <this-skill-dir>/../writing-plans/scripts/deferred_stats.py at
+    finishing-a-development-branch's Step 1b, so the same text works
+    under every install root install.py supports, including the
+    ~/.agents/skills/ that Codex and Gemini CLI share. Those two SKILL.md
+    files are the adapted files touched; the same path change in
+    references/deferred-backlog.md and in deferred_stats.py's usage
+    docstring is to the original works named above. Only the path
+    changed.
+  - subagent-driven-development and brainstorming invoked their own
+    bundled scripts by bare scripts/... paths, which an agent working in
+    the user's repository resolves against that repository rather than
+    the skill directory. The runnable invocations now carry the same
+    <this-skill-dir>/scripts/... anchor as the entry above; the commands
+    still run from the repository root. In subagent-driven-development's
+    SKILL.md that is four calls: the DONE status's review-package call
+    and the red-flag line naming it, both descended from text vendored
+    at 2f283ae (as vendored, the first was qualified "from this skill's
+    directory", which ae693bd's file-handoff consolidation dropped), and
+    the sdd-workspace call at skill start and its re-run after a /clear,
+    both added after the vendoring (0eca5f1, e135234). In brainstorming's
+    visual-companion.md it is the seven start-server.sh and
+    stop-server.sh commands, all vendored verbatim at 2f283ae. Prose
+    that only names a script, or already calls it "this skill's", is
+    unchanged. Only the path changed.
+  - A Codex second-opinion review seat was added: a concurrent Codex CLI
+    review (`codex exec review --base`, pinned to a read-only sandbox)
+    beside the code-reviewer subagent at subagent-driven-development's
+    final whole-branch review; at a new whole-plan review step (Step 3) in
+    executing-plans, which as vendored ran no code review at all -- only a
+    critical read of the plan; and as a merge/PR gate at Step 4b of
+    finishing-a-development-branch. The recipe all three follow,
+    requesting-code-review/codex-review.md, is an original work by Lowell
+    Mason under the same MIT terms.
 
     brainstorming/
     dispatching-parallel-agents/

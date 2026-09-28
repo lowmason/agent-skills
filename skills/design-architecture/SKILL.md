@@ -146,7 +146,7 @@ bottleneck, the JAX cost may no longer pay for itself."
 
 1. **Confirm it deserves an ADR.** Costly to reverse, or crosses package/repo boundaries? If
    not, decide in a code comment or `CLAUDE.md` note instead.
-2. **Pick the number and file** (or run `scripts/new_adr.py "<title>"`).
+2. **Pick the number and file** (or run `python3 <this-skill-dir>/scripts/new_adr.py "<title>"`).
 3. **Write Context first, as a frozen snapshot.** Resist editing it later — that's what
    supersession is for.
 4. **State exactly one Decision.** Split anything compound.
@@ -266,9 +266,10 @@ half": demand the second alternative, the negative consequence, or the reversibi
 
 ```bash
 # Writes specs/adr/0009-use-numpyro-jax-over-pymc-for-nowcasting.md (or docs/adr/ — pass --dir)
-# (stdlib-only, so plain python3 suffices; absolute path works from any repo cwd)
-python3 ~/.claude/skills/design-architecture/scripts/new_adr.py "Use NumPyro/JAX over PyMC for nowcasting"
-python3 ~/.claude/skills/design-architecture/scripts/new_adr.py "Store parquet levels only" --dir docs/adr --status Proposed
+# (stdlib-only, so plain python3 suffices; <this-skill-dir> resolves to an absolute path,
+# so it works from any repo cwd)
+python3 <this-skill-dir>/scripts/new_adr.py "Use NumPyro/JAX over PyMC for nowcasting"
+python3 <this-skill-dir>/scripts/new_adr.py "Store parquet levels only" --dir docs/adr --status Proposed
 ```
 
 It scans the target directory for the highest `NNNN-` prefix, increments it, slugifies the title,
