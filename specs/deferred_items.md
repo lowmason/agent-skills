@@ -1440,23 +1440,28 @@ declined as YAGNI (zero instances in a one-page wiki).
       programs rather than drift off the read-only contract.
 - [ ] Each of the eight readings holds for a whole line, so a line that needs the flat
       reading for one construct and the nested reading for another is misread by all of
-      them (review R1, plus reviews R2-R4 and Codex P2a/P2b). This is the class the
-      branch narrowed but did not close: round 2 fixed the argument-dropping regressions
-      against main (named-fd locale, process substitutions, unquoted `$(…)` and numeric
-      globs in git/sed value slots), and these remaining gaps are also present on main.
-      All are documented under "Not caught" in `hooks/README.md`. Each example is
-      read-only to the guard only because the guard cannot reach the mutator: a reserved
-      word or brace group before a git verb (`{ git branch ]] HEAD; }`, `true && { git
-      branch ]] HEAD; }`); zsh's `>!` clobber, whose `!` is taken as the target (`>! f rm
-      x`); `=cmd` expansion (`=rm x`); clustered short options ending in a value-taker
-      (`exec -la foo rm x`, `env -iu HOME rm x`); and zsh's assignment/operand grammar
-      (`arr[1]=x rm t`, `ä=x rm t`, `env a-b=x rm t`, `env -- a-b=x rm t`). Size: design.
+      them (the round-2 review of 854947c: its R1-R4 and Codex P2a/P2b). This is the
+      class the branch narrowed but did not close. The round-3 fix (0c1f5c3), answering
+      that review, fixed the argument-dropping regressions against main (named-fd locale,
+      process substitutions, unquoted `$(…)` and numeric globs in git/sed value slots),
+      and the round-4 fix closed the operator lexing the round-3 gate found (`git ><1-1>
+      stash`, `git branch >! --format x`, `true&!rm x`). The remaining gaps are also
+      present on main, and all are documented under "Not caught" in `hooks/README.md`.
+      Each example is allowed because the guard cannot reach the mutator: a reserved word
+      or brace group before a git verb (`{ git branch ]] HEAD; }`, `true && { git branch
+      ]] HEAD; }`); `=cmd` expansion (`=rm x`); clustered short options ending in a
+      value-taker (`exec -la foo rm x`, `env -iu HOME rm x`); zsh's assignment/operand
+      grammar (`arr[1]=x rm t`, `ä=x rm t`, `env a-b=x rm t`, `env -- a-b=x rm t`); and a
+      glob qualifier glued to the command word (`git(.) stash`, live only with
+      `BARE_GLOB_QUAL`, which the Bash tool turns off). Deferred by the owner under the
+      no-worse-than-main merge bar: every example is also allowed on main (db5d222).
+      Size: design.
       The reviewer's fix sketches, to weigh as one design rather than pile on as ad-hoc
       invariants: use the `spaced` flag so a paren touching `$`/`<`/`>`/`=` always nests
       and only a bare paren takes both readings; add `{` to `LEADING_KEYWORDS` and skip a
-      leading `[[ … ]]` in the command-word scan; fold an unspaced `!` into its
-      redirection operator once, before the readings split; strip one leading `=` in
-      `_command_name`, quoted or not; parse prefix-utility options getopt-style (this
+      leading `[[ … ]]` in the command-word scan; keep the command word when a group is
+      glued to it, so the command is still classified if zsh globs it; strip one leading
+      `=` in `_command_name`, quoted or not; parse prefix-utility options getopt-style (this
       subsumes the long-option item above); handle assignments fail-safe by classifying a
       command-position word containing `=` together with the word after it, so an
       ambiguous prefix denies rather than guesses; and for `env`, skip any operand
