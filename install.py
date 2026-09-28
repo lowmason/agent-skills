@@ -393,8 +393,13 @@ def main(argv: list[str] | None = None) -> int:
       commands=commands,
     )
     # Decide each copy's files once, so the symlink check sees what is copied.
+    # A linked source is refused whole, so its target is never scanned.
     copies = (
-      {item.source: copy_list(item.source) for item in items if item.source.is_dir()}
+      {
+        item.source: copy_list(item.source)
+        for item in items
+        if item.source.is_dir() and not item.source.is_symlink()
+      }
       if args.copy
       else {}
     )

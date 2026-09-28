@@ -513,6 +513,23 @@ def test_copy_refuses_a_symlink_it_would_copy(tmp_path, monkeypatch, capsys, tar
   assert not (root.parent / 'home').exists()
 
 
+def test_copy_refuses_a_linked_skill_without_scanning_it(tmp_path, monkeypatch, capsys):
+  # The link alone decides the refusal; its target may be a whole other tree.
+  install = load_install(monkeypatch)
+  root = tmp_path / 'repo'
+  elsewhere = tmp_path / 'elsewhere'
+  elsewhere.mkdir()
+  (elsewhere / 'SKILL.md').write_text('tracked\n')
+  (root / 'skills').mkdir(parents=True)
+  (root / 'skills' / 'demo').symlink_to(elsewhere, target_is_directory=True)
+  scanned = []
+  monkeypatch.setattr(install, 'copy_list', lambda source: scanned.append(source) or [])
+  status, _ = copy_demo(install, monkeypatch, root, '--dry-run')
+  assert status == 1
+  assert 'symlink' in capsys.readouterr().err
+  assert scanned == []
+
+
 @pytest.mark.parametrize(('git', 'expected'), [
   (True, ['SKILL.md', 'draft.md']),
   (False, ['SKILL.md', 'draft.md', 'local.env']),
