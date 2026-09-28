@@ -72,27 +72,26 @@ def runtime_items(
   runtimes = REPO / 'runtimes'
   if runtime == 'claude':
     skill_root = home / '.claude' / 'skills'
-    companion_items = [
-      *file_items(REPO / 'agents', '.md', home / '.claude' / 'agents'),
-      *file_items(REPO / 'commands', '.md', home / '.claude' / 'commands'),
-    ]
+    agent_items = file_items(REPO / 'agents', '.md', home / '.claude' / 'agents')
+    command_items = file_items(REPO / 'commands', '.md', home / '.claude' / 'commands')
   elif runtime == 'codex':
     skill_root = home / '.agents' / 'skills'
-    companion_items = file_items(
+    agent_items = file_items(
       runtimes / 'codex' / 'agents', '.toml', home / '.codex' / 'agents'
     )
+    command_items = []
   elif runtime == 'gemini':
     skill_root = home / '.agents' / 'skills'
-    companion_items = [
-      *file_items(runtimes / 'gemini' / 'agents', '.md', home / '.gemini' / 'agents'),
-      *file_items(
-        runtimes / 'gemini' / 'commands', '.toml', home / '.gemini' / 'commands'
-      ),
-    ]
+    agent_items = file_items(
+      runtimes / 'gemini' / 'agents', '.md', home / '.gemini' / 'agents'
+    )
+    command_items = file_items(
+      runtimes / 'gemini' / 'commands', '.toml', home / '.gemini' / 'commands'
+    )
   else:
     raise InstallError(f'unsupported runtime: {runtime}')
   skill_items = [InstallItem(REPO / 'skills' / name, skill_root / name) for name in skills]
-  return (skill_items + companion_items) if companions else skill_items
+  return (skill_items + agent_items + command_items) if companions else skill_items
 
 
 def plan(
