@@ -48,9 +48,11 @@ code-reviewer's contract forbids it from spawning further reviewers.
      branch, computed just before launch and shared with code-reviewer; or,
      for a plan executed on the base branch itself, the SHA recorded before
      its first task; or — in finishing-a-development-branch only — the SHA of
-     an earlier `Codex reviewed` line, to review just the commits after it. Never a
-     SHA recorded earlier in the session: a rebase onto a newer base branch
-     silently widens that range to upstream commits.
+     an earlier `Codex reviewed` line, to review just the commits after it. On
+     a feature branch, do not substitute a SHA noted earlier in the session
+     for the merge base: a rebase onto a newer base branch silently widens
+     that range to upstream commits. (The base-branch case has no such
+     rebase, which is why a recorded start is right there.)
    - `-c sandbox_mode=read-only` — required. A Codex config that trusts the
      project resolves `exec review` to `workspace-write`: a reviewer that can
      edit the tree it is reviewing.

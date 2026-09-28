@@ -26,7 +26,12 @@ Load plan, review critically, execute all tasks, report when complete.
 5. Executing on the base branch itself (only with your partner's explicit
    consent)? Record `git rev-parse --short HEAD` in the conversation before
    Task 1 — Step 3's review starts there, because on the base branch there
-   is no merge base to compute.
+   is no merge base to compute. Lost it to a `/clear`? The commit that added
+   the plan file precedes every task, so it bounds the range safely:
+   `git log --follow --diff-filter=A --format=%h -- <plan-file> | tail -n 1`.
+   Reviewing from there may also cover commits made after the plan was
+   written — say so in code-reviewer's `[DESCRIPTION]`. If the plan file was
+   never committed, ask your partner for the starting commit.
 
 ### Step 2: Execute Tasks
 
@@ -46,7 +51,8 @@ review covers that work too — as subagent-driven-development's final review
 does, and as finishing-a-development-branch relies on. Computing it at review
 time, rather than recording it earlier, also survives a `/clear` and a rebase
 onto a newer base branch. On the base branch itself that command returns HEAD
-— an empty range — so use the SHA Step 1 had you record instead.
+— an empty range — so use the start Step 1 had you record (or recover)
+instead.
 
 1. **code-reviewer** — fill requesting-code-review's
    [code-reviewer.md](../requesting-code-review/code-reviewer.md) with the plan
