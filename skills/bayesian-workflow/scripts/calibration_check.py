@@ -16,6 +16,7 @@ import json
 import os
 import sys
 import warnings
+from typing import NoReturn
 
 import numpy as np
 
@@ -49,6 +50,9 @@ except ImportError:
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 
+# Monte Carlo draws behind each simultaneous confidence band.
+BAND_SIMULATIONS = 1000
+
 
 def _extract_ecdf_results(ds, var_name):
     """Extract ΔECDF check from a difference_ecdf_pit result Dataset.
@@ -62,7 +66,7 @@ def _extract_ecdf_results(ds, var_name):
     return inside, round(float(np.mean(dy)), 4)
 
 
-def _ecdf_check(pit_vals, ci_prob=0.99, n_simulations=1000):
+def _ecdf_check(pit_vals, ci_prob=0.99, n_simulations=BAND_SIMULATIONS):
     """Compute ΔECDF and check if it stays inside simultaneous confidence bands.
 
     Uses arviz_stats.ecdf_pit. i.e the same computation that powers the ArviZ plots.
@@ -90,21 +94,46 @@ def assess_calibration(dt, var_name, use_loo, ci_prob=0.99):
     The coverage direction follows ArviZ conventions (EABM reference):
         positive coverage ΔECDF → empirical > nominal → under-confident (too uncertain)
         negative coverage ΔECDF → empirical < nominal → over-confident (too certain)
+
+    When only the PIT band fails, the verdict reads the failure as a shift — the spread
+    is right but the centre is off — and takes the direction from the sign of the mean
+    PIT ΔECDF (PIT is P(y_rep <= y)):
+        positive PIT ΔECDF → observations fall low in their predictive → biased (predictions too high)
+        negative PIT ΔECDF → observations fall high in their predictive → biased (predictions too low)
+    That reading is a heuristic. A shape mismatch (a skewed predictive, a missing mode)
+    can fail the PIT band alone too, and its mean ΔECDF can sit near zero with a sign
+    that carries no information. A shift keeps the ΔECDF on one side of zero; one that
+    crosses zero points at shape rather than location.
+    A failed coverage band takes precedence: its verdict names the spread problem.
     """
     if use_loo:
         pit_vals = azs.loo_pit(dt, var_names=var_name)[var_name].values
-        pit_inside, _ = _ecdf_check(pit_vals, ci_prob=ci_prob)
-        coverage_vals = 2 * np.abs(pit_vals - 0.5)
-        coverage_inside, mean_cov_delta = _ecdf_check(coverage_vals, ci_prob=ci_prob)
-    else:
-        pp_ds = dt["posterior_predictive"].dataset
-        obs_ds = dt["observed_data"].dataset
-        ds_pit = difference_ecdf_pit(
-            pp_ds, obs_ds, ci_prob=ci_prob, coverage=False, n_simulations=1000
+        pit_inside, mean_pit_delta = _ecdf_check(
+            pit_vals, ci_prob=ci_prob, n_simulations=BAND_SIMULATIONS
         )
-        pit_inside, _ = _extract_ecdf_results(ds_pit, var_name)
+        coverage_vals = 2 * np.abs(pit_vals - 0.5)
+        coverage_inside, mean_cov_delta = _ecdf_check(
+            coverage_vals, ci_prob=ci_prob, n_simulations=BAND_SIMULATIONS
+        )
+    else:
+        # difference_ecdf_pit walks every observed variable and raises on one with no
+        # posterior_predictive counterpart: pass only the one being assessed.
+        pp_ds = dt["posterior_predictive"].dataset[[var_name]]
+        obs_ds = dt["observed_data"].dataset[[var_name]]
+        ds_pit = difference_ecdf_pit(
+            pp_ds,
+            obs_ds,
+            ci_prob=ci_prob,
+            coverage=False,
+            n_simulations=BAND_SIMULATIONS,
+        )
+        pit_inside, mean_pit_delta = _extract_ecdf_results(ds_pit, var_name)
         ds_cov = difference_ecdf_pit(
-            pp_ds, obs_ds, ci_prob=ci_prob, coverage=True, n_simulations=1000
+            pp_ds,
+            obs_ds,
+            ci_prob=ci_prob,
+            coverage=True,
+            n_simulations=BAND_SIMULATIONS,
         )
         coverage_inside, mean_cov_delta = _extract_ecdf_results(ds_cov, var_name)
 
@@ -113,6 +142,11 @@ def assess_calibration(dt, var_name, use_loo, ci_prob=0.99):
             calibration_diagnosis = "under-confident (predictions too uncertain)"
         else:
             calibration_diagnosis = "over-confident (predictions too certain)"
+    elif not pit_inside:
+        if mean_pit_delta > 0:
+            calibration_diagnosis = "biased (predictions too high)"
+        else:
+            calibration_diagnosis = "biased (predictions too low)"
     else:
         calibration_diagnosis = "well-calibrated"
 
@@ -145,6 +179,12 @@ def save_pit_plot(
     pc = plot_fn(dt, var_names=var_name, coverage=coverage, envelope_prob=ci_prob)
     pc.savefig(output_path)
     return output_path
+
+
+def _exit_with_error(message) -> NoReturn:
+    """Print a JSON error object to stdout and exit with status 1."""
+    print(json.dumps({"error": message}))
+    sys.exit(1)
 
 
 def main():
@@ -180,25 +220,16 @@ def main():
     try:
         dt = convert_to_datatree(args.idata)
     except Exception as e:
-        print(json.dumps({"error": f"Could not load InferenceData: {e}"}))
-        sys.exit(1)
+        _exit_with_error(f"Could not load InferenceData: {e}")
 
     # Validate data availability
     if "posterior_predictive" not in dt.children:
-        print(
-            json.dumps(
-                {
-                    "error": "No posterior_predictive group. Generate it with Predictive(model, posterior_samples=mcmc.get_samples())(key, *args) and pass posterior_predictive=... to az.from_numpyro()."
-                }
-            )
+        _exit_with_error(
+            "No posterior_predictive group. Generate it with Predictive(model, posterior_samples=mcmc.get_samples())(key, *args) and pass posterior_predictive=... to az.from_numpyro()."
         )
-        sys.exit(1)
 
     if "observed_data" not in dt.children:
-        print(
-            json.dumps({"error": "No observed_data group. Cannot compute calibration."})
-        )
-        sys.exit(1)
+        _exit_with_error("No observed_data group. Cannot compute calibration.")
 
     # Auto-detect var_name if not specified
     var_name = args.var_name
@@ -207,17 +238,10 @@ def main():
         obs_vars = set(dt["observed_data"].data_vars)
         common = sorted(pp_vars & obs_vars)
         if not common:
-            print(
-                json.dumps(
-                    {
-                        "error": (
-                            f"No common variables between posterior_predictive {sorted(pp_vars)} "
-                            f"and observed_data {sorted(obs_vars)}."
-                        )
-                    }
-                )
+            _exit_with_error(
+                f"No common variables between posterior_predictive {sorted(pp_vars)} "
+                f"and observed_data {sorted(obs_vars)}."
             )
-            sys.exit(1)
         var_name = common[0]
         if len(common) > 1:
             print(
@@ -227,39 +251,28 @@ def main():
 
     if var_name not in dt["posterior_predictive"].data_vars:
         available = list(dt["posterior_predictive"].data_vars)
-        print(
-            json.dumps(
-                {
-                    "error": f"Variable '{var_name}' not found in posterior_predictive. Available: {available}"
-                }
-            )
+        _exit_with_error(
+            f"Variable '{var_name}' not found in posterior_predictive. Available: {available}"
         )
-        sys.exit(1)
 
     if var_name not in dt["observed_data"].data_vars:
-        print(
-            json.dumps(
-                {
-                    "error": f"No observed data for '{var_name}'. Cannot compute calibration."
-                }
-            )
+        _exit_with_error(
+            f"No observed data for '{var_name}'. Cannot compute calibration."
         )
-        sys.exit(1)
 
     # Validate LOO-PIT requirements
     if args.loo_pit and "log_likelihood" not in dt.children:
-        print(
-            json.dumps(
-                {
-                    "error": (
-                        "LOO-PIT requires a log_likelihood group in the InferenceData. "
-                        "Build it with az.from_numpyro(mcmc, log_likelihood=True, ...) "
-                        "(or numpyro.infer.log_likelihood) before saving the netCDF."
-                    )
-                }
-            )
+        _exit_with_error(
+            "LOO-PIT requires a log_likelihood group in the InferenceData. "
+            "Build it with az.from_numpyro(mcmc, log_likelihood=True, ...) "
+            "(or numpyro.infer.log_likelihood) before saving the netCDF."
         )
-        sys.exit(1)
+    if args.loo_pit and "posterior" not in dt.children:
+        _exit_with_error(
+            "LOO-PIT requires a posterior group in the InferenceData: arviz_stats.loo_pit "
+            "reads its chain/draw structure for the relative efficiency. "
+            "az.from_numpyro(mcmc, ...) writes it by default; keep it when saving the netCDF."
+        )
 
     # Assess calibration using ArviZ ΔECDF + simultaneous bands
     ci_prob = args.ci_prob

@@ -4,6 +4,8 @@ cd skills/bayesian-workflow/scripts && uv run --python 3.13 --with pytest --with
   --with arviz-stats --with numpy --with xarray python -m pytest -q
 """
 
+import pytest
+
 from check_diagnostics import DIVERGENCE_GATE_PCT, check_diagnostics, suggest_next_steps
 
 
@@ -63,3 +65,42 @@ def test_no_divergences_no_divergence_step():
     diag["convergence"]["divergences"]["ok"] = True
     diag["convergence"]["all_ok"] = True
     assert not [s for s in suggest_next_steps(check_diagnostics(diagnostics=diag)) if "ivergence" in s]
+
+
+def _calibration(diagnosis, mean_coverage_deviation, *, pit_inside, coverage_inside):
+    """calibration_check.py-shaped input."""
+    return {
+        "variable": "y",
+        "pit_method": "ppc_pit",
+        "assessment": {
+            "pit_ecdf_inside_bands": pit_inside,
+            "coverage_ecdf_inside_bands": coverage_inside,
+            "well_calibrated": pit_inside and coverage_inside,
+            "mean_coverage_deviation": mean_coverage_deviation,
+            "calibration_diagnosis": diagnosis,
+        },
+    }
+
+
+def _calibration_step(steps):
+    hits = [s for s in steps if s.startswith("Calibration")]
+    assert len(hits) == 1, steps
+    return hits[0]
+
+
+@pytest.mark.parametrize("direction", ["too high", "too low"])
+def test_biased_calibration_points_at_the_mean_structure(direction):
+    # Right spread, off-centre: the coverage deviation is small, so the rating is "fair".
+    cal = _calibration(f"biased (predictions {direction})", -0.0255, pit_inside=False, coverage_inside=True)
+    step = _calibration_step(suggest_next_steps(check_diagnostics(calibration=cal)))
+    assert f"biased (predictions {direction})" in step
+    assert "mean structure" in step
+    assert "heavier-tailed" not in step
+
+
+def test_over_confident_calibration_keeps_its_likelihood_advice():
+    cal = _calibration(
+        "over-confident (predictions too certain)", -0.3126, pit_inside=False, coverage_inside=False
+    )
+    step = _calibration_step(suggest_next_steps(check_diagnostics(calibration=cal)))
+    assert "likelihood is too narrow" in step

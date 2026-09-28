@@ -109,7 +109,9 @@ cd skills/tune-hyperparameters/scripts && uv run --python 3.13 --with pytest --w
 # numpyro + NetCDF-writer chain, since the tests round-trip InferenceData to .nc)
 cd skills/track-model-experiments/scripts && uv run --python 3.13 --with pytest --with numpy --with polars --with arviz --with numpyro --with h5netcdf --with h5py python -m pytest -q
 
-# bayesian-workflow script tests (MCSE precision block + divergence-gate next steps) — 11 tests
+# bayesian-workflow script tests (MCSE precision block + divergence-gate and calibration next
+# steps + calibration verdicts on both PIT paths, --ci-prob plumbing and the --loo-pit group
+# checks) — 59 tests
 # (4 arviz RuntimeWarnings — "invalid value encountered in scalar divide" on the constant-parameter
 # fixture — are expected and not silenced)
 cd skills/bayesian-workflow/scripts && uv run --python 3.13 --with pytest --with arviz --with arviz-stats --with numpy --with xarray python -m pytest -q
