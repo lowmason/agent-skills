@@ -1424,7 +1424,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       `-o`; zsh's reserved word takes no options). Found by the code-reviewer pass over
       db5d222..107e39d; documented under "Not caught" in `hooks/README.md`. Deferred by
       the owner when the review was handed back: out of scope for the regression fix.
-      Size: small. Done when: those three are denied, while `env --version` and the
+      Size: quick-fix. Done when: those three are denied, while `env --version` and the
       `--opt=value` spellings still read as one word.
 - [ ] Allowlisted git verbs can run a program through configuration or the environment
       (review section C, out of range). `git -c core.fsmonitor=<cmd> status`, `git -c
@@ -1438,3 +1438,29 @@ declined as YAGNI (zero instances in a one-page wiki).
       core.pager=cat log`; `GIT_*` assignments pose the same choice. Revisit if: an
       agent is seen setting such a key, or the guard is asked to stop arbitrary
       programs rather than drift off the read-only contract.
+- [ ] Each of the eight readings holds for a whole line, so a line that needs the flat
+      reading for one construct and the nested reading for another is misread by all of
+      them (review R1, plus reviews R2-R4 and Codex P2a/P2b). This is the class the
+      branch narrowed but did not close: round 2 fixed the argument-dropping regressions
+      against main (named-fd locale, process substitutions, unquoted `$(…)` and numeric
+      globs in git/sed value slots), and these remaining gaps are also present on main.
+      All are documented under "Not caught" in `hooks/README.md`. Each example is
+      read-only to the guard only because the guard cannot reach the mutator: a reserved
+      word or brace group before a git verb (`{ git branch ]] HEAD; }`, `true && { git
+      branch ]] HEAD; }`); zsh's `>!` clobber, whose `!` is taken as the target (`>! f rm
+      x`); `=cmd` expansion (`=rm x`); clustered short options ending in a value-taker
+      (`exec -la foo rm x`, `env -iu HOME rm x`); and zsh's assignment/operand grammar
+      (`arr[1]=x rm t`, `ä=x rm t`, `env a-b=x rm t`, `env -- a-b=x rm t`). Size: design.
+      The reviewer's fix sketches, to weigh as one design rather than pile on as ad-hoc
+      invariants: use the `spaced` flag so a paren touching `$`/`<`/`>`/`=` always nests
+      and only a bare paren takes both readings; add `{` to `LEADING_KEYWORDS` and skip a
+      leading `[[ … ]]` in the command-word scan; fold an unspaced `!` into its
+      redirection operator once, before the readings split; strip one leading `=` in
+      `_command_name`, quoted or not; parse prefix-utility options getopt-style (this
+      subsumes the long-option item above); handle assignments fail-safe by classifying a
+      command-position word containing `=` together with the word after it, so an
+      ambiguous prefix denies rather than guesses; and for `env`, skip any operand
+      containing `=`, including after `--`. Done when: the examples above are denied while
+      `git log --format='%(refname)'`, `*(.)`, `(#i)readme*` and the read-only fd and
+      process-substitution forms still pass. Revisit if: a hunter finds a mixed-reading
+      line that mutates, or the guard is promoted from guardrail toward sandbox.
