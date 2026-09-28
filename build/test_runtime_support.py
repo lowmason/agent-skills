@@ -433,10 +433,10 @@ def init_repo(root: Path, gitignore: str, *tracked: str) -> None:
     subprocess.run(['git', '-C', str(root), 'add', '-f', *tracked], check=True)
 
 
-def copy_demo(install, monkeypatch, root: Path) -> tuple[int, Path]:
+def copy_demo(install, monkeypatch, root: Path, *flags: str) -> tuple[int, Path]:
   monkeypatch.setattr(install, 'REPO', root)
   home = root.parent / 'home'
-  status = install.main(['claude', '--skill', 'demo', '--copy', '--home', str(home)])
+  status = install.main(['claude', '--skill', 'demo', '--copy', '--home', str(home), *flags])
   return status, home / '.claude' / 'skills' / 'demo'
 
 
@@ -492,19 +492,22 @@ def test_copy_of_an_excluded_skill_still_skips_caches(tmp_path, monkeypatch):
   assert names(copied) == ['SKILL.md', 'draft.md', 'local.env']
 
 
+@pytest.mark.parametrize('flags', [(), ('--dry-run',)])
 @pytest.mark.parametrize('git', [True, False])
-def test_copy_refuses_a_symlink_it_would_copy(tmp_path, monkeypatch, capsys, git):
-  # Copying follows a link, so it could carry out anything it points at.
+@pytest.mark.parametrize('target', ['../../secret', 'missing'])
+def test_copy_refuses_a_symlink_it_would_copy(tmp_path, monkeypatch, capsys, target, git, flags):
+  # Copying follows a link, so it could carry out anything it points at, and
+  # would lose a dangling one. A dry run refuses the same way.
   install = load_install(monkeypatch)
   monkeypatch.setenv('GIT_CEILING_DIRECTORIES', str(tmp_path))
   root = tmp_path / 'repo'
   skill = make_skill(root)
   (root / 'secret').mkdir()
   (root / 'secret' / 'extract.txt').write_text('never leaves the repo\n')
-  (skill / 'shared').symlink_to('../../secret', target_is_directory=True)
+  (skill / 'shared').symlink_to(target, target_is_directory=True)
   if git:
     init_repo(root, '__pycache__/\n*.env\nsecret/\n', 'skills/demo/SKILL.md', 'skills/demo/shared')
-  status, _ = copy_demo(install, monkeypatch, root)
+  status, _ = copy_demo(install, monkeypatch, root, *flags)
   assert status == 1
   assert 'symlink' in capsys.readouterr().err
   assert not (root.parent / 'home').exists()

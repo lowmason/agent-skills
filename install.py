@@ -271,8 +271,11 @@ def kept_files(source: Path) -> list[Path] | None:
   except (OSError, subprocess.CalledProcessError):
     return None
   files = [Path(os.fsdecode(entry)) for entry in listing.split(b'\0') if entry]
-  # --cached also lists tracked files deleted from the working tree.
-  return [path for path in files if (source / path).exists()] or None
+  # --cached also lists tracked files deleted from the working tree; exists()
+  # would drop a dangling link too, hiding it from the symlink refusal.
+  return [
+    path for path in files if (source / path).exists() or (source / path).is_symlink()
+  ] or None
 
 
 def copy_list(source: Path) -> list[Path]:
