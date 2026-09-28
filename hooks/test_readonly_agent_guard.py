@@ -563,6 +563,7 @@ DROPPED_ARGUMENT_BYPASSES = [
     pytest.param('git --namespace {²}>/dev/null stash', id='superscript-in-braces-as-namespace'),
     pytest.param('git --namespace {é}>/dev/null stash', id='accent-in-braces-as-namespace'),
     pytest.param('git branch {é}>/dev/null', id='accent-in-braces-as-branch'),
+    pytest.param('git tag {é}>/dev/null', id='accent-in-braces-as-tag'),
     # A word glued to a process substitution is part of the same word.
     pytest.param('git branch 2<(true)', id='digit-glued-to-a-process-substitution'),
     pytest.param('git tag 1>(cat)', id='digit-glued-to-an-output-process-substitution'),
@@ -596,13 +597,77 @@ def test_every_word_zsh_passes_reaches_the_classifier(command):
     assert guard.classify(command) is not None
 
 
-def test_a_numeric_glob_is_words_not_redirections():
+def test_a_numeric_glob_is_one_word_not_redirections():
     # zsh's `<->` and `<1-5>` match files named by numbers, so their `<` and
     # `>` redirect nothing, and the word after them stays an argument.
     [words] = guard.split_subcommands('git tag <1-5> v1')
-    assert [(str(t), t.syntax) for t in words] == [
-        ('git', False), ('tag', False), ('<', False), ('1-5', False), ('>', False),
-        ('v1', False)]
+    assert [(str(t), t.syntax, t.expands) for t in words] == [
+        ('git', False, False), ('tag', False, False), ('<1-5>', False, True),
+        ('v1', False, False)]
+
+
+# Operator runs the old lexing read whole, or a `!` it read as a word, where zsh
+# ends or extends the operator: zsh has no `><`, `<<<<` or `&><`, so the run
+# stops before a numeric glob's `<`, and the glob is the redirection's target;
+# and `>!`, `>>!` and `&>!` clobber, `&!` disowns. Read the old way, the glob's
+# `>` or the `!` is taken as a target, and a real argument goes in its place.
+# Each creates a ref, stashes, runs sed -i or rm in zsh as the Bash tool runs it,
+# checked in a scratch repo; the glued-glob ids need a file the range matches.
+OPERATOR_LEXING_BYPASSES = [
+    pytest.param('git ><1-1> stash', id='redirection-glued-to-a-numeric-glob-hides-the-verb'),
+    pytest.param('git 2><-> stash', id='descriptor-redirection-glued-to-a-numeric-glob'),
+    pytest.param('git branch ><1-1> NEW', id='glued-numeric-glob-hides-a-branch'),
+    pytest.param('git tag ><1-1> v9', id='glued-numeric-glob-hides-a-tag'),
+    pytest.param('git --namespace ><1-1> V stash', id='glued-numeric-glob-hides-a-value'),
+    pytest.param('sed ><5-5> -i p f', id='glued-numeric-glob-hides-sed-i'),
+    pytest.param('><1-1> rm x', id='glued-numeric-glob-hides-the-command'),
+    pytest.param('git<<<<9-9> stash', id='herestring-glued-to-a-numeric-glob'),
+    pytest.param('sed <<<<9-9> -i p f', id='herestring-numeric-glob-hides-sed-i'),
+    pytest.param('sed&><5-5> -i -e p f', id='both-streams-glued-to-a-numeric-glob'),
+    pytest.param('git -C>><1-1><<<<5-5> . stash', id='chained-numeric-globs-hide-the-verb'),
+    pytest.param('git tag --format x <><1->>><1-> v9', id='chained-numeric-globs-hide-a-tag'),
+    pytest.param('sed <<<->&2 (x) -i -e p f', id='herestring-word-is-not-a-numeric-glob'),
+    pytest.param('git branch >! --format newbranch', id='clobber-hides-a-branch'),
+    pytest.param('git branch >>! --format newbranch', id='append-clobber-hides-a-branch'),
+    pytest.param('git branch 2>! --format newbranch', id='descriptor-clobber-hides-a-branch'),
+    pytest.param('git tag >! --format v9', id='clobber-hides-a-tag'),
+    pytest.param('true&!git -C . stash', id='glued-disown-then-git'),
+    pytest.param('true&!rm x', id='glued-disown-then-rm'),
+]
+
+
+@pytest.mark.parametrize('command', OPERATOR_LEXING_BYPASSES)
+def test_an_operator_ends_where_zsh_ends_it(command):
+    assert guard.classify(command) is not None
+
+
+def test_a_redirection_glued_to_a_numeric_glob_targets_the_glob():
+    for command in ('git tag ><1-1> v9', 'git tag <<<<1-1> v9', 'git tag <<<<<<<1-1> v9'):
+        [words] = guard.split_subcommands(command)
+        assert [(str(t), t.syntax) for t in words][-2:] == [('<1-1>', False), ('v9', False)]
+        assert guard._without_redirections(words) == ['git', 'tag', 'v9']
+
+
+def test_an_operator_that_takes_the_lt_opens_no_numeric_glob():
+    # zsh lexes a run of `<` greedily into `<<<`s: `<<<->` is a herestring of
+    # `-`, and `<<1-1>` a heredoc, so neither is a glob.
+    for command in ('git tag <<<1-1> v9', 'git tag <<1-1> v9'):
+        [words] = guard.split_subcommands(command)
+        assert '<1-1>' not in words
+
+
+def test_the_rest_of_a_glob_closing_run_can_open_the_next_glob():
+    [words] = guard.split_subcommands('git tag --format x <><1->>><1-> v9')
+    assert guard._without_redirections(words) == ['git', 'tag', '--format', 'x', 'v9']
+
+
+def test_a_bang_glued_to_an_operator_joins_it_where_quoting_is_read():
+    assert guard._without_redirections(
+        guard.split_subcommands('git branch >! --format x')[0]) == ['git', 'branch', 'x']
+    assert guard.split_subcommands('true&!git log') == [['true'], ['git', 'log']]
+    # Blind to quoting, the old lexing stands, `!` a word as bash reads it, so
+    # `>! rm x` is still denied though zsh runs `x` with its output in `rm`.
+    assert guard.classify('>! rm x') is not None
 
 
 def test_a_quoted_word_stays_a_word_in_the_default_reading():

@@ -151,13 +151,13 @@ cd skills/design-architecture/scripts && uv run --python 3.13 --with pytest pyth
 # (stdlib only; drives the three bash scripts as subprocesses)
 cd skills/subagent-driven-development/scripts && uv run --python 3.13 --with pytest python -m pytest -q
 
-# read-only agent guard tests (Gate A: classifier units + payload contract) — 228 tests
+# read-only agent guard tests (Gate A: classifier units + payload contract) — 252 tests
 # (the guard is stdlib only and must stay 3.9-compatible, so run BOTH commands. Each of the
 # 14 contract tests runs twice through the hook's shebang, on the test's PATH and on
 # launchd's /usr/bin-first PATH, since under uv run the shebang resolves to uv's pinned
 # python, never reliably 3.9. The second command runs the whole suite, unit tests
 # included, under the 3.9 floor. Where /usr/bin/python3 is missing or not 3.9, the first
-# reports 214 passed, 14 skipped (-rs shows why) and the second does not test the floor.
+# reports 238 passed, 14 skipped (-rs shows why) and the second does not test the floor.
 # Gate B is the live probe: ./hooks/probe-readonly-guard.sh, which spawns claude -p)
 cd hooks && uv run --python 3.13 --with pytest python -m pytest -q \
   && uv run --python /usr/bin/python3 --with pytest python -m pytest -q

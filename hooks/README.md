@@ -188,9 +188,15 @@ it (`exec {fd}>f`). Any other word before a redirection is an argument: `git bra
 >f` creates branch `5`. A `{name}` descriptor is an ASCII identifier only, as zsh reads
 it in the C locale the Bash tool runs under. A process substitution `<(…)` / `>(…)` is
 one word, a path, never a redirection, so a digit or `{name}` touching it is part of
-that word (`2<(true)` is one argument). An unquoted `$(…)` or a glob where git or `sed`
-takes a value or a verb, which zsh can split or expand into any number of words, fails
-closed; quoting keeps a substitution one word (`git -C "$(pwd)" log`). Not caught:
+that word (`2<(true)` is one argument). A numeric glob `<1-5>` is one word too, and an
+operator glued to one ends before it, since zsh has no `><` or `<<<<`: in `git ><1-1>
+stash` the glob is the target of `>`, and `stash` is the verb. zsh takes `<<<` and `<<`
+from a run of `<` first, so only a `<` left alone opens a glob (`<<<1-1>` is a
+herestring of `1-1`), and a glob ends at its first `>`, so `<1->>><1->` is two globs
+around a `>>`. An unquoted `$(…)`, a glob group `(…)` or a numeric glob where git or
+`sed` takes a value or a verb, which zsh can split or expand into any number of words,
+fails closed; quoting keeps a substitution one word (`git -C "$(pwd)" log`). Other globs
+(`*`, `?`, `[…]`) are read as the literal word. Not caught:
 
 - A command run by any other utility: `xargs rm`, `find . -exec rm {} \;`, and
   `find . -delete`, or read from what a command prints: `source <(echo rm x)`, and
@@ -219,8 +225,9 @@ closed; quoting keeps a substitution one word (`git -C "$(pwd)" log`). Not caugh
   reading catches both, and a reserved word or brace group before a git verb hides it:
   `{ git branch ]] HEAD; }`, `true && { git branch ]] HEAD; }`,
   `if [[ -n a ]] git branch ]] HEAD`.
-- zsh's `>!` / `>>!` clobber redirection, whose `!` is read as the target, so the real
-  target lands in the command's place: `>! f rm x`.
+- A glob qualifier glued to the command word, `git(.) stash`, which zsh expands to `git`
+  only with `BARE_GLOB_QUAL` on and a file named `git` present. The Bash tool turns the
+  option off, and there the word is an unmatched glob.
 - A program run by an allowlisted git verb through configuration or the environment:
   `git -c core.fsmonitor=… status`, `git -c diff.external=… diff`,
   `GIT_EXTERNAL_DIFF=… git diff`.
@@ -265,23 +272,26 @@ Known false positives, accepted rather than widened:
   - `{` and `]]` end the command, as where a command could start (`{ rm x; }`,
     `if [[ -n a ]] rm x`), or are words, as among arguments (`git branch {`). So the
     word after one is classified as a command: `echo { rm x` is denied.
-  - Quoting is kept, or ignored. Kept, a quoted word is only a word, as zsh reads it.
-    Ignored, a quoted word made only of punctuation is the syntax it spells, as `eval`
-    reads it and as every command was read before quoting was kept. So `echo ';' rm x`
-    is denied, and so is `git --namespace '>' log`, where `'>'` reads as a redirection
-    that takes `log` with it.
+  - Quoting is kept, or ignored. Kept, a quoted word is only a word, as zsh reads it,
+    and a `!` glued after `>` or `&` joins the operator as zsh lexes it: `>!` and `>>!`
+    clobber, `&!` disowns. Ignored, a quoted word made only of punctuation is the syntax
+    it spells, as `eval` reads it and as every command was read before quoting was kept,
+    and that `!` stays a word, as bash reads it. So `echo ';' rm x` is denied, and so is
+    `git --namespace '>' log`, where `'>'` reads as a redirection that takes `log` with
+    it, and so is `>! rm x`, which zsh runs as `x` with its output in a file `rm`.
 
 - **`time -p rm x` is denied**, though zsh's `time` is a reserved word that takes no
   options: it runs a command named `-p` and never reaches `rm`. Options after `time` are
   skipped as they are after `env` and `nice`, since `/usr/bin/time -p` and bash's
   `time -p` do run the command.
-- **An unquoted `$(…)` or glob is denied where git takes a global-option value or a flag
-  verb's argument, or anywhere in a `sed` command, even when it is read-only** (`git -C
-  $(pwd) log`, `git branch --format $(cmd) x`, `sed -n $(cmd) f`), because zsh can split
-  or expand it into several words and the guard cannot see which lands in the verb or
-  value slot. Quoting keeps a substitution one word and is allowed: `git -C "$(pwd)"
-  log`; and an unquoted substitution that only supplies a positional to a read-only verb
-  still passes (`git log $(git merge-base a b)..b`).
+- **An unquoted `$(…)`, glob group or numeric glob is denied where git takes a
+  global-option value or a flag verb's argument, or anywhere in a `sed` command, even
+  when it is read-only** (`git -C $(pwd) log`, `git branch --format $(cmd) x`, `sed -n
+  $(cmd) f`), because zsh can split or expand it into several words and the guard
+  cannot see which lands in the verb or value slot. Quoting keeps a substitution one
+  word and is allowed: `git -C "$(pwd)" log`; and an unquoted substitution that only
+  supplies a positional to a read-only verb still passes (`git log $(git merge-base a
+  b)..b`).
 - **Read-only git verbs missing from the allowlist are denied wherever they appear**, and
   with subshells, `$(…)`, `if` and assignments no longer hiding a command, that now
   includes the likes of `B=$(git symbolic-ref --short HEAD)`. Among them:

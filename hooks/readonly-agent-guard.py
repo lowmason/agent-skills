@@ -69,7 +69,8 @@ class _Token(str):
     branch). `spaced`: whitespace or the start of the line comes before it, so
     it does not touch the token on its left. `expands`: zsh may make any number
     of words of it: the `$` of an unquoted `$(…)`, whose output zsh splits, or a
-    glob, which becomes every file it matches.
+    glob group `(…)` or numeric glob `<1-5>`, which becomes every file it
+    matches. Other globs (`*`, `?`, `[…]`) are not marked.
     """
 
     def __new__(cls, text, syntax=False, quoted=False, spaced=False, expands=False):
@@ -363,17 +364,63 @@ def _pieces(tokens, quoting):
 
 
 def _numeric_globs(pieces):
-    """Return the pieces, with the `<` and `>` of each numeric glob as words."""
+    """Return the pieces, with each numeric glob one word.
+
+    zsh has no operator that runs on into a glob's `<`: `><1-1>` is `>` and the
+    glob `<1-1>`, and `<<<<9-9>` a herestring of one. So an operator run glued
+    to a glob ends before it, the glob is its target, and the word after the
+    glob stays an argument. The glob ends at its first `>`, and the rest of that
+    run is read afresh: `<1->>><1->` is two globs, with `>>` between them.
+    """
     pieces = list(pieces)
-    for i in range(len(pieces) - 2):
-        opening, middle, closing = pieces[i:i + 3]
-        if (opening.syntax and opening == '<' and not middle.syntax
-                and not middle.quoted and not middle.spaced
-                and NUMERIC_RANGE.fullmatch(middle) and closing.syntax
-                and closing.startswith('>') and not closing.spaced):
-            pieces[i] = _Token(opening, spaced=opening.spaced, expands=True)
-            pieces[i + 2] = _Token(closing)
-    return pieces
+    words = []
+    i = 0
+    while i < len(pieces):
+        opening = pieces[i]
+        if i + 2 < len(pieces) and _opens_a_numeric_glob(*pieces[i:i + 3]):
+            middle, closing = pieces[i + 1:i + 3]
+            glued = len(opening) > 1
+            if glued:
+                words.append(_Token(opening[:-1], syntax=True, spaced=opening.spaced))
+            words.append(_Token('<' + middle + '>', spaced=opening.spaced and not glued,
+                                expands=True))
+            if len(closing) > 1:  # `<1-1>>f`: the glob, then a redirection
+                pieces[i + 2] = _Token(closing[1:], syntax=True)
+                i += 2
+            else:
+                i += 3
+        else:
+            words.append(opening)
+            i += 1
+    return words
+
+
+def _opens_a_numeric_glob(opening, middle, closing):
+    return (opening.syntax and _ends_in_a_lone_lt(opening) and not middle.syntax
+            and not middle.quoted and not middle.spaced
+            and NUMERIC_RANGE.fullmatch(middle) is not None and closing.syntax
+            and closing.startswith('>') and not closing.spaced)
+
+
+def _ends_in_a_lone_lt(run):
+    """Whether zsh, taking `<<<` before `<<` before `<`, leaves a run's last `<`
+    alone: `<<<1-1>` is a herestring of `1-1`, and `<<1-1>` a heredoc."""
+    return (len(run) - len(run.rstrip('<'))) % 3 == 1
+
+
+def _bangs_join_operators(pieces):
+    """Return the pieces, with a `!` glued after `>` or `&` part of the operator,
+    as zsh reads it: `>!`, `>>!` and `&>!` clobber, and `&!` disowns."""
+    words = []
+    for piece in pieces:
+        if (words and words[-1].syntax and words[-1].endswith(('>', '&'))
+                and not piece.syntax and not piece.quoted and not piece.spaced
+                and piece.startswith('!')):
+            if piece == '!':
+                continue
+            piece = _Token(piece[1:], expands=piece.expands)
+        words.append(piece)
+    return words
 
 
 def _closing_parens(enclosing):
@@ -446,6 +493,10 @@ def _split_tokens(tokens, nest, braces, quoting):
     current = []
     glued = False  # a group just closed, and a word touching it is part of its word
     pieces = _numeric_globs(_pieces(tokens, quoting))
+    if quoting:
+        # Blind to quoting stays the old lexing, `!` a word as bash reads it, so
+        # a denial either way stands: `>! rm x` runs rm in bash, x in zsh.
+        pieces = _bangs_join_operators(pieces)
     # A group still open when the line runs out closes there, as if at a `)`.
     for piece in itertools.chain(pieces, _closing_parens(enclosing)):
         if glued and not piece.syntax and not piece.spaced:
