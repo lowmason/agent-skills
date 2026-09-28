@@ -89,6 +89,15 @@ def test_runtime_instruction_entrypoints_exist():
   assert '@./CLAUDE.md' in (REPO / 'GEMINI.md').read_text()
 
 
+def load_install(monkeypatch):
+  spec = importlib.util.spec_from_file_location('install', INSTALL)
+  assert spec is not None and spec.loader is not None
+  install = importlib.util.module_from_spec(spec)
+  monkeypatch.setitem(sys.modules, 'install', install)  # @dataclass looks it up
+  spec.loader.exec_module(install)
+  return install
+
+
 def run_install(
   tmp_path: Path, runtime: str, *extra: str, skills: tuple[str, ...] = ('brainstorming',)
 ):
@@ -320,11 +329,7 @@ def referenced_dependencies() -> set[tuple[str, str]]:
 
 
 def test_declared_dependencies_match_skill_and_command_text(monkeypatch):
-  spec = importlib.util.spec_from_file_location('install', INSTALL)
-  assert spec is not None and spec.loader is not None
-  install = importlib.util.module_from_spec(spec)
-  monkeypatch.setitem(sys.modules, 'install', install)  # @dataclass looks it up
-  spec.loader.exec_module(install)
+  install = load_install(monkeypatch)
   declared = {
     (source, target)
     for source, targets in install.DEPENDENCIES.items()
@@ -338,11 +343,7 @@ def test_declared_dependencies_match_skill_and_command_text(monkeypatch):
 def test_symlink_loop_is_a_conflict_not_a_crash(tmp_path, monkeypatch):
   # Python 3.9's Path.resolve() raises RuntimeError on a symlink loop where
   # 3.13 does not; emulate it so every interpreter pins the handling.
-  spec = importlib.util.spec_from_file_location('install', INSTALL)
-  assert spec is not None and spec.loader is not None
-  install = importlib.util.module_from_spec(spec)
-  monkeypatch.setitem(sys.modules, 'install', install)  # @dataclass looks it up
-  spec.loader.exec_module(install)
+  install = load_install(monkeypatch)
   loop = tmp_path / 'skills' / 'brainstorming'
   loop.parent.mkdir()
   loop.symlink_to('brainstorming')
