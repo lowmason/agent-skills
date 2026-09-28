@@ -228,6 +228,27 @@ def test_aliased_destinations_with_different_sources_write_nothing(tmp_path, ext
   assert tree(tmp_path) == before
 
 
+def test_symlink_loop_is_a_conflict_not_a_crash(tmp_path, monkeypatch):
+  # Python 3.9's Path.resolve() raises RuntimeError on a symlink loop where
+  # 3.13 does not; emulate it so every interpreter pins the handling.
+  spec = importlib.util.spec_from_file_location('install', INSTALL)
+  assert spec is not None and spec.loader is not None
+  install = importlib.util.module_from_spec(spec)
+  monkeypatch.setitem(sys.modules, 'install', install)  # @dataclass looks it up
+  spec.loader.exec_module(install)
+  loop = tmp_path / 'skills' / 'brainstorming'
+  loop.parent.mkdir()
+  loop.symlink_to('brainstorming')
+  item = install.InstallItem(REPO / 'skills' / 'brainstorming', loop)
+
+  def resolve_like_python39(self, strict=False):
+    raise RuntimeError(f'Symlink loop from {str(self)!r}')
+
+  monkeypatch.setattr(Path, 'resolve', resolve_like_python39)
+  assert install.physical_location(loop) == loop
+  assert install.destination_state(item, copy=False) == 'unmanaged'
+
+
 def test_help_keeps_docstring_examples_on_their_own_lines():
   result = subprocess.run(
     [sys.executable, str(INSTALL), '--help'],

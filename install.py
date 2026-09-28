@@ -121,13 +121,21 @@ def plan(
 def physical_location(destination: Path) -> Path:
   # Two runtime directories can be one directory through a symlink. Resolve
   # the parent only, so a managed symlink at the leaf keeps its own name.
-  return destination.parent.resolve() / destination.name
+  # Python 3.9 raises RuntimeError on a symlink loop; plan by the path as
+  # written and let the write report it, as later Pythons do.
+  try:
+    return destination.parent.resolve() / destination.name
+  except (OSError, RuntimeError):
+    return destination
 
 
 def is_managed_symlink(item: InstallItem) -> bool:
   if not item.destination.is_symlink():
     return False
-  return item.destination.resolve() == item.source.resolve()
+  try:
+    return item.destination.resolve() == item.source.resolve()
+  except (OSError, RuntimeError):  # a symlink loop is never ours
+    return False
 
 
 def destination_state(item: InstallItem, *, copy: bool) -> str:
