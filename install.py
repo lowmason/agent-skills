@@ -55,46 +55,38 @@ def files(source_dir: Path, suffix: str) -> list[Path]:
   return sorted(path for path in source_dir.glob(f'*{suffix}') if path.is_file())
 
 
+def file_items(source_dir: Path, suffix: str, destination_dir: Path) -> list[InstallItem]:
+  return [
+    InstallItem(source, destination_dir / source.name)
+    for source in files(source_dir, suffix)
+  ]
+
+
 def runtime_items(runtime: str, home: Path, skills: list[str]) -> list[InstallItem]:
-  items: list[InstallItem] = []
+  runtimes = REPO / 'runtimes'
   if runtime == 'claude':
     skill_root = home / '.claude' / 'skills'
-    items.extend(
-      InstallItem(REPO / 'skills' / name, skill_root / name) for name in skills
-    )
-    items.extend(
-      InstallItem(source, home / '.claude' / 'agents' / source.name)
-      for source in files(REPO / 'agents', '.md')
-    )
-    items.extend(
-      InstallItem(source, home / '.claude' / 'commands' / source.name)
-      for source in files(REPO / 'commands', '.md')
-    )
+    companion_items = [
+      *file_items(REPO / 'agents', '.md', home / '.claude' / 'agents'),
+      *file_items(REPO / 'commands', '.md', home / '.claude' / 'commands'),
+    ]
   elif runtime == 'codex':
     skill_root = home / '.agents' / 'skills'
-    items.extend(
-      InstallItem(REPO / 'skills' / name, skill_root / name) for name in skills
-    )
-    items.extend(
-      InstallItem(source, home / '.codex' / 'agents' / source.name)
-      for source in files(REPO / 'runtimes' / 'codex' / 'agents', '.toml')
+    companion_items = file_items(
+      runtimes / 'codex' / 'agents', '.toml', home / '.codex' / 'agents'
     )
   elif runtime == 'gemini':
     skill_root = home / '.agents' / 'skills'
-    items.extend(
-      InstallItem(REPO / 'skills' / name, skill_root / name) for name in skills
-    )
-    items.extend(
-      InstallItem(source, home / '.gemini' / 'agents' / source.name)
-      for source in files(REPO / 'runtimes' / 'gemini' / 'agents', '.md')
-    )
-    items.extend(
-      InstallItem(source, home / '.gemini' / 'commands' / source.name)
-      for source in files(REPO / 'runtimes' / 'gemini' / 'commands', '.toml')
-    )
+    companion_items = [
+      *file_items(runtimes / 'gemini' / 'agents', '.md', home / '.gemini' / 'agents'),
+      *file_items(
+        runtimes / 'gemini' / 'commands', '.toml', home / '.gemini' / 'commands'
+      ),
+    ]
   else:
     raise InstallError(f'unsupported runtime: {runtime}')
-  return items
+  skill_items = [InstallItem(REPO / 'skills' / name, skill_root / name) for name in skills]
+  return skill_items + companion_items
 
 
 def plan(runtime: str, home: Path, skills: list[str]) -> list[InstallItem]:
@@ -118,11 +110,21 @@ def is_managed_symlink(item: InstallItem) -> bool:
   return item.destination.resolve() == item.source.resolve()
 
 
+def destination_state(item: InstallItem, *, copy: bool) -> str:
+  destination = item.destination
+  if not (destination.exists() or destination.is_symlink()):
+    return 'absent'
+  if not copy and is_managed_symlink(item):
+    return 'managed'
+  return 'unmanaged'
+
+
 def install_item(item: InstallItem, *, copy: bool, dry_run: bool) -> str:
   destination = item.destination
-  if destination.exists() or destination.is_symlink():
-    if not copy and is_managed_symlink(item):
-      return f'unchanged {destination}'
+  state = destination_state(item, copy=copy)
+  if state == 'managed':
+    return f'unchanged {destination}'
+  if state == 'unmanaged':
     raise InstallError(f'refusing to replace existing unmanaged path: {destination}')
   if dry_run:
     action = 'copy' if copy else 'link'
