@@ -18,7 +18,9 @@ code-reviewer's contract forbids it from spawning further reviewers.
 
 ## Launch
 
-1. **Clean tree.** `git status --porcelain` must print nothing. The preset
+1. **Clean tree.** `git status --porcelain --untracked-files=normal` must
+   print nothing (the flag overrides a `status.showUntrackedFiles=no`
+   config that would hide new files). The preset
    diffs the merge base against the *working tree*, so an uncommitted edit
    would be reviewed as if it were on the branch — and a new file never
    `git add`-ed passes the tests locally while never reaching Codex or the
@@ -42,10 +44,12 @@ code-reviewer's contract forbids it from spawning further reviewers.
    ```
 
    - `--base <BASE>` — Codex runs `git merge-base HEAD <BASE>` and reviews
-     everything since, so give it the same BASE the code-reviewer got. A commit
-     SHA or a branch name both work, but a SHA must still be an ancestor of
-     HEAD: if `git merge-base --is-ancestor <BASE> HEAD` fails, the branch was
-     rebased since you recorded it — pass the base branch name instead.
+     everything since. BASE is either the branch's merge base with its base
+     branch, computed just before launch and shared with code-reviewer, or —
+     in finishing-a-development-branch only — the SHA of an earlier
+     `Codex reviewed` line, to review just the commits after it. Never a
+     SHA recorded earlier in the session: a rebase onto a newer base branch
+     silently widens that range to upstream commits.
    - `-c sandbox_mode=read-only` — required. A Codex config that trusts the
      project resolves `exec review` to `workspace-write`: a reviewer that can
      edit the tree it is reviewing.
@@ -62,13 +66,19 @@ code-reviewer's contract forbids it from spawning further reviewers.
 - **Exit 0 and a non-empty `.md`:** Read the `.md` — that is the whole review.
   Then write `Codex reviewed <short-HEAD>` into the conversation, and into the
   progress ledger if the run keeps one, so it survives a context checkpoint.
-  That line is the only record of a completed review; a later
-  finishing-a-development-branch run keys on it to avoid a repeat pass.
+  The line means everything from the branch's merge base through that SHA
+  has had a completed Codex review — true because every BASE above is either
+  that merge base or an earlier such line. It is the only record of a
+  completed review; a later finishing-a-development-branch run keys on it to
+  avoid a repeat pass.
 - **Anything else:** report "Codex review did not complete:" with the log's
-  last line (`tail -n 1` the log), and write no `Codex reviewed` line. Where
-  another reviewer ran beside it, proceed on that review; where Codex was the
-  only one, ask your partner whether to retry or proceed without it. Never
-  report a Codex review that did not complete.
+  last line (`tail -n 1` the log), and write no `Codex reviewed` line. In
+  executing-plans and subagent-driven-development, proceed on code-reviewer's
+  review: with no line written, finishing-a-development-branch will review the
+  whole branch before it ships. In finishing-a-development-branch, where this
+  run is the gate, always ask your partner whether to retry or proceed without
+  it — even if code-reviewer ran beside it. Never report a Codex review that
+  did not complete.
 
 Codex opens each finding's title with a priority tag and ends with an overall
 verdict (`patch is correct` / `patch is incorrect`). Map the tags onto

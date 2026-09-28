@@ -42,7 +42,7 @@
 - 2026-09-27 — finished `worktree-codex-second-review` with 7 items aged >45d,
   carried on the partner's reason: "Lazy." The items are
   `11-delegation-frontmatter-rollout`'s interactive verification (70d), three
-  `17-agents-and-commands-expansion` items (64d: the DL/NLP template extension,
+  `18-methodology-pipeline-skills` items (63d: the DL/NLP template extension,
   the in-session SOTA pass, synthesize-mode scenario verification), and three
   `19-methodology-pipeline-skills` items (59d: the unbacked stage-stamp
   carrier, two checkpoints without behavioural evidence, derive-roadmap's

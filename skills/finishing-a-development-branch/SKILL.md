@@ -183,8 +183,9 @@ get a second model's review before the work leaves the building. Keep and
 Discard ship nothing and skip this step, the same binding as the aged-tail
 gate. Resolve that gate first: both of its outcomes commit to the branch — an
 acknowledgement, or `/deferred` quick fixes — and the review must see the
-branch as it will ship. For the same reason `git status --porcelain` must
-print nothing before you go on: commit what is part of the work, and ask your
+branch as it will ship. For the same reason
+`git status --porcelain --untracked-files=normal` must print nothing before
+you go on: commit what is part of the work, and ask your
 partner about anything else.
 
 Run it from the feature worktree, before Option 1's `cd` and `checkout` — from

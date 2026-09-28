@@ -23,10 +23,6 @@ Load plan, review critically, execute all tasks, report when complete.
 2. Review critically - identify any questions or concerns about the plan
 3. If concerns: Raise them with your human partner before starting
 4. If no concerns: Create todos for the plan items and proceed
-5. Record the plan's base before Task 1: `git rev-parse --short HEAD`. Write the
-   SHA into the conversation — shell state does not persist — because Step 3's
-   review starts from it. Lost it to a `/clear`? On a branch cut for this plan,
-   `git merge-base <base-branch> HEAD` recovers it.
 
 ### Step 2: Execute Tasks
 
@@ -38,18 +34,23 @@ For each task:
 
 ### Step 3: Review the Whole Plan
 
-After the last task is verified, review everything the plan changed — the
-Step 1 base through HEAD — with two reviewers, launched in the same message so
-they run concurrently:
+After the last task is verified, review the whole branch with two reviewers,
+launched in the same message so they run concurrently. Compute one BASE for
+both, now: `git merge-base <base-branch> HEAD`. On a branch cut for this plan
+that is where the plan began; on a branch that already carried work, the
+review covers that work too — as subagent-driven-development's final review
+does, and as finishing-a-development-branch relies on. Computing it at review
+time, rather than recording it earlier, also survives a `/clear` and a rebase
+onto a newer base branch.
 
 1. **code-reviewer** — fill requesting-code-review's
    [code-reviewer.md](../requesting-code-review/code-reviewer.md) with the plan
-   file as `[PLAN_OR_REQUIREMENTS]`, the Step 1 base as `[BASE_SHA]`, and the
-   capable model tier (opus), as for any final whole-branch review. On a
-   platform without subagents, work through the same template yourself.
+   file as `[PLAN_OR_REQUIREMENTS]`, BASE as `[BASE_SHA]`, and the capable
+   model tier (opus), as for any final whole-branch review. On a platform
+   without subagents, work through the same template yourself.
 2. **Codex** — the second-opinion review in
    [codex-review.md](../requesting-code-review/codex-review.md), with
-   `--base <the Step 1 base>`.
+   `--base <BASE>`.
 
 Touch nothing until both have returned. Then merge the two lists into one, work
 it with the receiving-code-review skill, fix what holds up, re-run the plan's
