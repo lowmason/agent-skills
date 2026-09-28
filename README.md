@@ -192,6 +192,9 @@ python3 install.py gemini --copy                                 # frozen copies
 
 `--skill` skips the runtime's agents and commands unless you add
 `--companions`; a full install includes them unless you add `--no-companions`.
+`finishing-a-development-branch`, `writing-plans`, and `derive-roadmap` send
+you to the `/deferred` command, so add `--companions` when installing any of
+them on their own for Claude Code or Gemini CLI (Codex has no commands).
 
 | Runtime | Skills | Agents | Commands |
 |---------|--------|--------|----------|

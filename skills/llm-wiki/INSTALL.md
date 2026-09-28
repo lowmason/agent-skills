@@ -49,9 +49,10 @@ python3 ~/Projects/agent-skills/install.py claude --skill llm-wiki
 
 With `--skill`, the installer links only this skill; add `--companions` to also
 link that runtime's agents and commands. If any destination already exists and
-isn't a link the installer made, it installs nothing and lists every
-conflicting path. To link the skill by hand instead, symlink it into your
-runtime's skills directory:
+isn't a symlink to the matching item in this checkout, it installs nothing and
+lists every conflicting path — a link left by a different clone counts as a
+conflict and must be removed first. To link the skill by hand instead, symlink
+it into your runtime's skills directory:
 
 ```bash
 # Claude Code
