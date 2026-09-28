@@ -1358,8 +1358,9 @@ declined as YAGNI (zero instances in a one-page wiki).
       or a softer "recommends" tier.
 
 ## deferred-triage (no plan; /deferred pass, branch deferred-triage-2026-09-28) — 2026-09-28
-- [ ] Calibration diagnosis precedence misreads a pure location shift on a minority of
-      seeds. `assess_calibration` in `skills/bayesian-workflow/scripts/calibration_check.py`
+- [ ] Calibration diagnosis labels: precedence misreads a pure location shift on a
+      minority of seeds, and a PIT-only shape failure is given a direction that is sign
+      noise. `assess_calibration` in `skills/bayesian-workflow/scripts/calibration_check.py`
       lets a failed coverage band win: when both bands fail it reports over- or
       under-confident from the coverage ΔECDF sign, and only a PIT-band-alone failure
       becomes `biased (predictions too high|low)`. A shift is only second-order visible in
@@ -1372,5 +1373,23 @@ declined as YAGNI (zero instances in a one-page wiki).
       choosing between two failed bands is a design decision — compare the PIT and
       coverage ΔECDF magnitudes, report both verdicts, or add a combined label — and
       `check_diagnostics.py`'s next-step routing keys on the label, so it moves too.
-      Size: design. Done when: the precedence rule is decided and a shift fixture on a
-      seed where both bands fail is diagnosed according to it.
+      Second half (the branch's Codex P2 and code-reviewer passes, same day): a PIT-only
+      failure is always read as a shift, taking its direction from the sign of the
+      rounded mean PIT ΔECDF, which a shape failure can leave at zero. An exact PPC
+      fixture — `_model_with_pit_values` fed coverage levels c = (i + 0.5)/N, placed
+      above the predictive median (u = 0.5 + c/2) when c < 0.25 or c ≥ 0.75 and below
+      it (u = 0.5 − c/2) otherwise — fails the PIT band alone with E[u] = 0.5, and is
+      diagnosed `too low` at N = 200 (mean −0.000000) and N = 400, then `too high` at
+      N = 1000 (+0.0005). Its out-of-band points fall on both sides of zero every time
+      (4 above / 41 below at N = 200), which a pure shift never does in population.
+      Candidate rule, not adopted: take direction from the side of the out-of-band
+      points and give a two-sided excursion a direction-neutral label. It leaves open a
+      skewed predictive whose PIT mean moves off 0.5 and exits on one side, which would
+      still read as a shift (argued by the reviewer, not measured). The docstring and
+      `references/reporting.md` now call the verdict a heuristic (commit `0803a8a`).
+      Deferred by the owner with the precedence question, so one design pass covers the
+      whole label set.
+      Size: design. Done when: the precedence rule and the PIT-only direction rule are
+      decided, a shift fixture on a seed where both bands fail and the three-segment
+      fixture are each diagnosed according to them, and `check_diagnostics.py` routes
+      any new label.
