@@ -34,9 +34,13 @@ REPO = Path(__file__).resolve().parent
 # against the references in skill and command text.
 DEPENDENCIES: dict[str, tuple[str, ...]] = {
   'command:deferred': ('skill:writing-plans',),
+  'skill:clean-code': ('skill:clean-coder',),
   'skill:clean-coder': ('skill:clean-code',),
   'skill:derive-roadmap': ('command:deferred',),
-  'skill:executing-plans': ('skill:requesting-code-review',),
+  'skill:executing-plans': (
+    'skill:requesting-code-review',
+    'skill:writing-plans',
+  ),
   'skill:finishing-a-development-branch': (
     'command:deferred',
     'skill:requesting-code-review',
@@ -47,6 +51,7 @@ DEPENDENCIES: dict[str, tuple[str, ...]] = {
     'skill:requesting-code-review',
     'skill:writing-plans',
   ),
+  'skill:track-model-experiments': ('skill:bayesian-workflow',),
   'skill:writing-plans': ('command:deferred',),
 }
 

@@ -279,6 +279,21 @@ def installed_links(root: Path) -> set[str]:
       '.claude/skills/writing-plans',
       '.claude/commands/deferred.md',
     }),
+    # So is clean-code <-> clean-coder.
+    ('claude', 'clean-code', (), {
+      '.claude/skills/clean-code',
+      '.claude/skills/clean-coder',
+    }),
+    ('claude', 'executing-plans', (), {
+      '.claude/skills/executing-plans',
+      '.claude/skills/requesting-code-review',
+      '.claude/skills/writing-plans',
+      '.claude/commands/deferred.md',
+    }),
+    ('claude', 'track-model-experiments', (), {
+      '.claude/skills/track-model-experiments',
+      '.claude/skills/bayesian-workflow',
+    }),
   ],
 )
 def test_skill_brings_its_hard_dependencies(tmp_path, runtime, skill, flags, expected):
@@ -318,12 +333,22 @@ SOFT_REFERENCES = {
   ('skill:brainstorming', 'skill:writing-plans'),
   # Names the routing header its input spec carries; never reads the file.
   ('skill:derive-roadmap', 'skill:describe-critique-methodology'),
+  # Likens a stage to writing-plans' Scope Check; an analogy, not a step.
+  ('skill:derive-roadmap', 'skill:writing-plans'),
+  # Names SDD's Model Selection but gives the tier aliases inline.
+  ('skill:dispatching-parallel-agents', 'skill:subagent-driven-development'),
   # A docstring contrasting its signals with profile.py's; never calls it.
   ('skill:recommend-probabilistic-model', 'skill:explore-data'),
+  # Routes posterior plots to bayesian-workflow's own guide instead.
+  ('skill:recommend-visualization', 'skill:bayesian-workflow'),
+  # Likens its extra signals to characterize.py's; never runs it.
+  ('skill:recommend-visualization', 'skill:recommend-probabilistic-model'),
   # SDD's review-package and task-reviewer prompt apply only when SDD calls.
   ('skill:requesting-code-review', 'skill:subagent-driven-development'),
-  # Reads the diagnostics files bayesian-workflow writes, not the skill.
-  ('skill:track-model-experiments', 'skill:bayesian-workflow'),
+  # Hands a tuned model on to the experiments ledger; a next step.
+  ('skill:tune-hyperparameters', 'skill:track-model-experiments'),
+  # Quotes an @-path as an example of what not to write.
+  ('skill:writing-skills', 'skill:writing-plans'),
 }
 
 
@@ -333,14 +358,23 @@ def referenced_dependencies() -> set[tuple[str, str]]:
   names = '|'.join(sorted(map(re.escape, skills), key=len, reverse=True))
   command_ref = re.compile(rf"(?<![\w/.-])/({'|'.join(map(re.escape, commands))})\b")
   skill_ref = re.compile(
-    rf'\.\./({names})/'
-    rf"|(?<![\w/-])({names})(?:'s|'|’s)?(?: skill's| skill’s)?\s+"
+    # A path into the skill: ../x/..., skills/x/..., x/references/...
+    rf'(?<![\w-])({names})/(?:references/|scripts/|[\w.-]+\.(?:md|py)\b)'
+    # The name, then a file, a references/ or scripts/ path, or a § section.
+    rf"|(?<![\w/-])({names})`?(?:'s|'|’s)?(?: skill's| skill’s)?\s+"
     rf'(?:§|`?(?:references|scripts)/|\[?`?[\w.-]+\.(?:md|py)\b)'
+    # A named section: "x's Model Selection", "x skill's Confirmation Gate".
+    rf"|(?<![\w/-])({names})(?:'s|'|’s| skill's| skill’s)\s+[A-Z][a-z]+(?:[ -][A-Z][a-z]+)*"
+    # "the x skill (its "Section" section)".
+    rf'|(?<![\w/-])({names}) skill \(its "'
   )
 
   def scan(source: str, text: str) -> set[tuple[str, str]]:
     found = {(source, f'command:{name}') for name in command_ref.findall(text)}
-    found |= {(source, f'skill:{m.group(1) or m.group(2)}') for m in skill_ref.finditer(text)}
+    found |= {
+      (source, 'skill:' + next(group for group in m.groups() if group))
+      for m in skill_ref.finditer(text)
+    }
     return {(source, target) for source, target in found if source != target}
 
   edges: set[tuple[str, str]] = set()
