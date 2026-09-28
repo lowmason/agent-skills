@@ -17,10 +17,11 @@ destination before writing, so a conflict leaves nothing half-installed.
 from __future__ import annotations
 
 import argparse
+import os
 import shutil
 import subprocess
 import sys
-from collections.abc import Callable, Collection
+from collections.abc import Collection
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -55,9 +56,10 @@ DEPENDENCIES: dict[str, tuple[str, ...]] = {
   'skill:writing-plans': ('command:deferred',),
 }
 
-# .gitignore's generic entries, for --copy from a checkout without git.
+# .gitignore's generic entries, for --copy where git cannot say what to keep.
 FALLBACK_IGNORES = (
-  '.DS_Store', '__pycache__', '*.pyc', '.pytest_cache', '.hypothesis', '.verify_venv',
+  '.DS_Store', '__pycache__', '*.pyc', '.pytest_cache', '.hypothesis',
+  '.verify_venv', 'settings.local.json', '.sdd', 'review',
 )
 
 
@@ -225,37 +227,68 @@ def preflight(items: list[InstallItem], *, copy: bool) -> None:
     raise InstallError(
       f'refusing to replace existing unmanaged {noun}; nothing was installed:{listing}'
     )
+  if copy:
+    linked = [path for item in items for path in symlinks_in(item.source)]
+    if linked:
+      listing = ''.join(f'\n  {path}' for path in linked)
+      raise InstallError(
+        f'--copy would follow these symlinks, so nothing was installed:{listing}'
+      )
 
 
-def copy_filter(root: Path) -> Callable[[str, list[str]], set[str]]:
-  '''Return a copytree ignore callable that skips what git ignores under root.'''
+def symlinks_in(source: Path) -> list[Path]:
+  if source.is_symlink():
+    return [source]
+  found: list[Path] = []
+  for directory, subdirectories, filenames in os.walk(source):
+    found += [
+      Path(directory) / name
+      for name in subdirectories + filenames
+      if os.path.islink(os.path.join(directory, name))
+    ]
+  return found
+
+
+def git_env() -> dict[str, str]:
+  # A hook or shell may export GIT_DIR, GIT_INDEX_FILE, and the like, which
+  # would point git at another repository's index.
+  local = subprocess.run(
+    ['git', 'rev-parse', '--local-env-vars'], capture_output=True, text=True, check=True
+  ).stdout.split()
+  return {name: value for name, value in os.environ.items() if name not in local}
+
+
+def kept_files(source: Path) -> list[Path] | None:
+  '''Files under source that git keeps: tracked, or untracked and not ignored.
+
+  None when git cannot say: no git, not a checkout, or source ignored whole.
+  '''
   try:
     listing = subprocess.run(
-      [
-        'git', '-C', str(root), 'ls-files',
-        '--others', '--ignored', '--exclude-standard', '--directory', '-z',
-      ],
+      ['git', 'ls-files', '--cached', '--others', '--exclude-standard', '-z'],
+      cwd=source,
+      env=git_env(),
       capture_output=True,
-      text=True,
       check=True,
     ).stdout
   except (OSError, subprocess.CalledProcessError):
-    return shutil.ignore_patterns(*FALLBACK_IGNORES)
-  ignored = {root / entry.rstrip('/') for entry in listing.split('\0') if entry}
-
-  def ignore(directory: str, names: list[str]) -> set[str]:
-    return {name for name in names if Path(directory) / name in ignored}
-
-  return ignore
+    return None
+  files = [Path(os.fsdecode(entry)) for entry in listing.split(b'\0') if entry]
+  # --cached also lists tracked files deleted from the working tree.
+  return [path for path in files if (source / path).exists()] or None
 
 
-def install_item(
-  item: InstallItem,
-  *,
-  copy: bool,
-  dry_run: bool,
-  ignore: Callable[[str, list[str]], set[str]] | None = None,
-) -> str:
+def copy_tree(source: Path, destination: Path) -> None:
+  files = kept_files(source)
+  if files is None:
+    shutil.copytree(source, destination, ignore=shutil.ignore_patterns(*FALLBACK_IGNORES))
+    return
+  for path in files:
+    (destination / path).parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(source / path, destination / path)
+
+
+def install_item(item: InstallItem, *, copy: bool, dry_run: bool) -> str:
   destination = item.destination
   state = destination_state(item, copy=copy)
   if state == 'managed':
@@ -268,7 +301,7 @@ def install_item(
   destination.parent.mkdir(parents=True, exist_ok=True)
   if copy:
     if item.source.is_dir():
-      shutil.copytree(item.source, destination, ignore=ignore)
+      copy_tree(item.source, destination)
     else:
       shutil.copy2(item.source, destination)
     return f'copied {item.source} -> {destination}'
@@ -327,9 +360,8 @@ def main(argv: list[str] | None = None) -> int:
       commands=commands,
     )
     preflight(items, copy=args.copy)
-    ignore = copy_filter(REPO) if args.copy and not args.dry_run else None
     for item in items:
-      print(install_item(item, copy=args.copy, dry_run=args.dry_run, ignore=ignore))
+      print(install_item(item, copy=args.copy, dry_run=args.dry_run))
   except (InstallError, OSError) as exc:
     print(f'install: {exc}', file=sys.stderr)
     return 1

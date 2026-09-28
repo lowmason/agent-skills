@@ -426,30 +426,110 @@ def make_skill(root: Path) -> Path:
   return skill
 
 
-def test_copy_skips_what_git_ignores(tmp_path, monkeypatch):
+def init_repo(root: Path, gitignore: str, *tracked: str) -> None:
+  (root / '.gitignore').write_text(gitignore)
+  subprocess.run(['git', '-C', str(root), 'init', '-q'], check=True)
+  if tracked:
+    subprocess.run(['git', '-C', str(root), 'add', '-f', *tracked], check=True)
+
+
+def copy_demo(install, monkeypatch, root: Path) -> tuple[int, Path]:
+  monkeypatch.setattr(install, 'REPO', root)
+  home = root.parent / 'home'
+  status = install.main(['claude', '--skill', 'demo', '--copy', '--home', str(home)])
+  return status, home / '.claude' / 'skills' / 'demo'
+
+
+def names(directory: Path) -> list[str]:
+  return sorted(path.name for path in directory.iterdir())
+
+
+def test_copy_keeps_what_git_keeps(tmp_path, monkeypatch):
+  install = load_install(monkeypatch)
+  root = tmp_path / 'repo'
+  make_skill(root)
+  init_repo(root, '__pycache__/\n*.env\n', 'skills/demo/SKILL.md')
+  status, copied = copy_demo(install, monkeypatch, root)
+  assert status == 0
+  assert names(copied) == ['SKILL.md', 'draft.md']
+
+
+def test_copy_skips_an_ignored_name_with_a_carriage_return(tmp_path, monkeypatch):
+  # Finder's custom-icon file is named "Icon\r".
   install = load_install(monkeypatch)
   root = tmp_path / 'repo'
   skill = make_skill(root)
-  (root / '.gitignore').write_text('__pycache__/\n*.env\n')
-  subprocess.run(['git', 'init', '-q', str(root)], check=True)
-  subprocess.run(['git', '-C', str(root), 'add', '.gitignore', 'skills/demo/SKILL.md'], check=True)
-  destination = tmp_path / 'home' / 'demo'
-  item = install.InstallItem(skill, destination)
-  install.install_item(item, copy=True, dry_run=False, ignore=install.copy_filter(root))
-  assert sorted(path.name for path in destination.iterdir()) == ['SKILL.md', 'draft.md']
+  (skill / 'Icon\r').write_bytes(b'')
+  init_repo(root, '__pycache__/\n*.env\nIcon?\n', 'skills/demo/SKILL.md')
+  status, copied = copy_demo(install, monkeypatch, root)
+  assert status == 0
+  assert names(copied) == ['SKILL.md', 'draft.md']
+
+
+def test_copy_ignores_an_inherited_git_index(tmp_path, monkeypatch):
+  # A hook or shell exporting GIT_INDEX_FILE must not change what is tracked.
+  install = load_install(monkeypatch)
+  root = tmp_path / 'repo'
+  skill = make_skill(root)
+  (skill / 'keep.pyc').write_bytes(b'')
+  init_repo(root, '__pycache__/\n*.env\n*.pyc\n', 'skills/demo/SKILL.md', 'skills/demo/keep.pyc')
+  monkeypatch.setenv('GIT_INDEX_FILE', str(tmp_path / 'foreign-index'))
+  status, copied = copy_demo(install, monkeypatch, root)
+  assert status == 0
+  assert names(copied) == ['SKILL.md', 'draft.md', 'keep.pyc']
+
+
+def test_copy_of_an_excluded_skill_still_skips_caches(tmp_path, monkeypatch):
+  # git has nothing to say inside a local-only skill; the fallback applies.
+  install = load_install(monkeypatch)
+  root = tmp_path / 'repo'
+  make_skill(root)
+  init_repo(root, '__pycache__/\n*.env\n')
+  (root / '.git' / 'info').mkdir(parents=True, exist_ok=True)
+  (root / '.git' / 'info' / 'exclude').write_text('skills/demo/\n')
+  status, copied = copy_demo(install, monkeypatch, root)
+  assert status == 0
+  assert names(copied) == ['SKILL.md', 'draft.md', 'local.env']
+
+
+def test_copy_refuses_a_symlink_inside_a_skill(tmp_path, monkeypatch, capsys):
+  # Copying follows a link, so it could carry out anything it points at.
+  install = load_install(monkeypatch)
+  root = tmp_path / 'repo'
+  skill = make_skill(root)
+  (root / 'secret').mkdir()
+  (root / 'secret' / 'extract.txt').write_text('never leaves the repo\n')
+  (skill / 'shared').symlink_to('../../secret', target_is_directory=True)
+  init_repo(root, '__pycache__/\n*.env\nsecret/\n', 'skills/demo/SKILL.md', 'skills/demo/shared')
+  status, _ = copy_demo(install, monkeypatch, root)
+  assert status == 1
+  assert 'symlink' in capsys.readouterr().err
+  assert not (root.parent / 'home').exists()
 
 
 def test_copy_outside_git_skips_common_caches(tmp_path, monkeypatch):
   install = load_install(monkeypatch)
   monkeypatch.setenv('GIT_CEILING_DIRECTORIES', str(tmp_path))
   root = tmp_path / 'unpacked'
-  skill = make_skill(root)
-  destination = tmp_path / 'home' / 'demo'
-  item = install.InstallItem(skill, destination)
-  install.install_item(item, copy=True, dry_run=False, ignore=install.copy_filter(root))
-  assert sorted(path.name for path in destination.iterdir()) == [
-    'SKILL.md', 'draft.md', 'local.env',
-  ]
+  make_skill(root)
+  status, copied = copy_demo(install, monkeypatch, root)
+  assert status == 0
+  assert names(copied) == ['SKILL.md', 'draft.md', 'local.env']
+
+
+def test_fallback_covers_every_generic_gitignore_entry(monkeypatch):
+  install = load_install(monkeypatch)
+  generic = set()
+  for line in (REPO / '.gitignore').read_text().splitlines():
+    entry = line.strip().rstrip('/')
+    if not entry or entry.startswith('#'):
+      continue
+    if entry.startswith('**/'):
+      entry = entry.removeprefix('**/').rsplit('/', 1)[-1]
+    elif '/' in entry:
+      continue  # anchored to one path in this checkout
+    generic.add(entry)
+  assert generic <= set(install.FALLBACK_IGNORES)
 
 
 @pytest.mark.parametrize('flags', [(), ('--copy', '--dry-run')])
