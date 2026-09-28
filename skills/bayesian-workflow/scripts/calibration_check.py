@@ -93,10 +93,16 @@ def assess_calibration(dt, var_name, use_loo, ci_prob=0.99):
     The coverage direction follows ArviZ conventions (EABM reference):
         positive coverage ΔECDF → empirical > nominal → under-confident (too uncertain)
         negative coverage ΔECDF → empirical < nominal → over-confident (too certain)
+
+    When only the PIT band fails, the spread is right but the centre is off, and
+    the sign of the PIT ΔECDF gives the direction (PIT is P(y_rep <= y)):
+        positive PIT ΔECDF → observations fall low in their predictive → biased (predictions too high)
+        negative PIT ΔECDF → observations fall high in their predictive → biased (predictions too low)
+    A failed coverage band takes precedence: its verdict names the spread problem.
     """
     if use_loo:
         pit_vals = azs.loo_pit(dt, var_names=var_name)[var_name].values
-        pit_inside, _ = _ecdf_check(
+        pit_inside, mean_pit_delta = _ecdf_check(
             pit_vals, ci_prob=ci_prob, n_simulations=BAND_SIMULATIONS
         )
         coverage_vals = 2 * np.abs(pit_vals - 0.5)
@@ -104,8 +110,10 @@ def assess_calibration(dt, var_name, use_loo, ci_prob=0.99):
             coverage_vals, ci_prob=ci_prob, n_simulations=BAND_SIMULATIONS
         )
     else:
-        pp_ds = dt["posterior_predictive"].dataset
-        obs_ds = dt["observed_data"].dataset
+        # difference_ecdf_pit walks every observed variable and raises on one with no
+        # posterior_predictive counterpart: pass only the one being assessed.
+        pp_ds = dt["posterior_predictive"].dataset[[var_name]]
+        obs_ds = dt["observed_data"].dataset[[var_name]]
         ds_pit = difference_ecdf_pit(
             pp_ds,
             obs_ds,
@@ -113,7 +121,7 @@ def assess_calibration(dt, var_name, use_loo, ci_prob=0.99):
             coverage=False,
             n_simulations=BAND_SIMULATIONS,
         )
-        pit_inside, _ = _extract_ecdf_results(ds_pit, var_name)
+        pit_inside, mean_pit_delta = _extract_ecdf_results(ds_pit, var_name)
         ds_cov = difference_ecdf_pit(
             pp_ds,
             obs_ds,
@@ -128,6 +136,11 @@ def assess_calibration(dt, var_name, use_loo, ci_prob=0.99):
             calibration_diagnosis = "under-confident (predictions too uncertain)"
         else:
             calibration_diagnosis = "over-confident (predictions too certain)"
+    elif not pit_inside:
+        if mean_pit_delta > 0:
+            calibration_diagnosis = "biased (predictions too high)"
+        else:
+            calibration_diagnosis = "biased (predictions too low)"
     else:
         calibration_diagnosis = "well-calibrated"
 
@@ -247,6 +260,12 @@ def main():
             "LOO-PIT requires a log_likelihood group in the InferenceData. "
             "Build it with az.from_numpyro(mcmc, log_likelihood=True, ...) "
             "(or numpyro.infer.log_likelihood) before saving the netCDF."
+        )
+    if args.loo_pit and "posterior" not in dt.children:
+        _exit_with_error(
+            "LOO-PIT requires a posterior group in the InferenceData: arviz_stats.loo_pit "
+            "reads its chain/draw structure for the relative efficiency. "
+            "az.from_numpyro(mcmc, ...) writes it by default; keep it when saving the netCDF."
         )
 
     # Assess calibration using ArviZ ΔECDF + simultaneous bands
