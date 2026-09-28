@@ -95,10 +95,15 @@ def assess_calibration(dt, var_name, use_loo, ci_prob=0.99):
         positive coverage ΔECDF → empirical > nominal → under-confident (too uncertain)
         negative coverage ΔECDF → empirical < nominal → over-confident (too certain)
 
-    When only the PIT band fails, the spread is right but the centre is off, and
-    the sign of the PIT ΔECDF gives the direction (PIT is P(y_rep <= y)):
+    When only the PIT band fails, the verdict reads the failure as a shift — the spread
+    is right but the centre is off — and takes the direction from the sign of the mean
+    PIT ΔECDF (PIT is P(y_rep <= y)):
         positive PIT ΔECDF → observations fall low in their predictive → biased (predictions too high)
         negative PIT ΔECDF → observations fall high in their predictive → biased (predictions too low)
+    That reading is a heuristic. A shape mismatch (a skewed predictive, a missing mode)
+    can fail the PIT band alone too, and its mean ΔECDF can sit near zero with a sign
+    that carries no information. A shift keeps the ΔECDF on one side of zero; one that
+    crosses zero points at shape rather than location.
     A failed coverage band takes precedence: its verdict names the spread problem.
     """
     if use_loo:
