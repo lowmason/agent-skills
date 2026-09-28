@@ -30,7 +30,7 @@ agent-skills/
 ├── rules/       # path-scoped rule files, loaded via .claude/rules/ (see Rules below)
 ├── build/       # citation-verification tooling for recommend-probabilistic-model
 ├── specs/       # design records + implementation plans (retired work under completed/)
-└── install.py   # safe, idempotent installer for Claude, Codex, Gemini, or all three
+└── install.py   # safe installer for Claude, Codex, Gemini, or all three (idempotent when linking)
 ```
 
 The canonical skill bodies are portable. Agent manifests are generated from
@@ -177,10 +177,12 @@ python3 install.py claude
 # or: python3 install.py all
 ```
 
-Symlinks are the default, so repository updates are live. The installer is
-idempotent for links it already owns and refuses to overwrite any other existing
-file or directory. It checks every destination before writing, so a conflict
-installs nothing and lists every conflicting path at once. Useful options:
+Symlinks are the default, so edits to installed skills are live; re-run the
+installer after a pull that adds skills, agents, or commands. It is idempotent
+for symlinks that already point at the matching item in this checkout and
+refuses to overwrite any other existing file or directory. It checks every
+destination before writing, so a conflict installs nothing and lists every
+conflicting path at once. Useful options:
 
 ```bash
 python3 install.py codex --skill bayesian-workflow                # just this skill; repeat --skill as needed

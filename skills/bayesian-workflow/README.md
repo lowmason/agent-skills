@@ -32,14 +32,14 @@ that runtime's agents and commands too; see the root README for runtimes and
 options):
 
 ```bash
-python3 ~/Projects/agent-skills/install.py claude --skill bayesian-workflow  # or codex, gemini, all
+python3 ~/agent-skills/install.py claude --skill bayesian-workflow  # or codex, gemini, all
 ```
 
 or by symlinking it into your runtime's skills directory by hand:
 
 ```bash
-ln -s ~/Projects/agent-skills/skills/bayesian-workflow ~/.claude/skills/bayesian-workflow  # Claude Code
-ln -s ~/Projects/agent-skills/skills/bayesian-workflow ~/.agents/skills/bayesian-workflow  # Codex, Gemini CLI
+ln -s ~/agent-skills/skills/bayesian-workflow ~/.claude/skills/bayesian-workflow  # Claude Code
+ln -s ~/agent-skills/skills/bayesian-workflow ~/.agents/skills/bayesian-workflow  # Codex, Gemini CLI
 ```
 
 Provenance: adapted from [Alexandre Andorra](https://alexandorra.github.io/)'s
