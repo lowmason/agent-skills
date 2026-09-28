@@ -691,9 +691,10 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       → retired 2026-09-28: the first real stage cycle settled it, and the carrier held
       with no writing-plans hook. alt-nfp-stats' bls-stats-merge roadmap ran S0–S2.1:
       the stamp line sits verbatim in the header of
-      `specs/plans/completed/22-bls-stats-merge-s1.1.md:7` and of stage plans 23, 29,
-      30 and 32, and the roadmap carries the authoritative `Stage N: COMPLETE` lines
-      for S0 through S2.1 (`specs/bls-stats-merge-roadmap.md:737–803`).
+      `alt-nfp-stats:specs/plans/completed/22-bls-stats-merge-s1.1.md:7` and of stage
+      plans 23, 29, 30 and 32, and the roadmap carries the authoritative
+      `Stage N: COMPLETE` lines for S0 through S2.1
+      (`alt-nfp-stats:specs/bls-stats-merge-roadmap.md:737–803`).
 - [x] **A stranded roadmap artifact.**
       `/Users/lowell/Projects/alt-nfp/specs/usable-series-selection-roadmap.md` was
       named from the spec's H1 title, a convention now superseded by the skill's
@@ -729,11 +730,12 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       `skills/derive-roadmap/SKILL.md` §1's batched question set and §4's human approval
       before Stage 1 both require an interactive turn; every test in this plan ran
       non-interactively, so neither was exercised.
-      → retired 2026-09-28: the owner retired it (/deferred) on real interactive use
-      since — alt-nfp-stats' bls-stats-merge roadmap was derived 2026-09-22 (de6f0a8)
-      and resumed through S2.1 in owner-run sessions. The transcripts alone could not
-      show either checkpoint firing: the derivation wrote the roadmap with no human
-      turn before it, and §4's approval comes after that write.
+      → retired 2026-09-28 by owner decision (/deferred): no further action. The skill
+      has had real interactive use since — alt-nfp-stats' bls-stats-merge roadmap was
+      derived 2026-09-22 (de6f0a8) and resumed through S2.1 in owner-run sessions — but
+      that is not evidence the checkpoints work. The transcripts do not show either one
+      firing: the derivation wrote the roadmap with no human turn before it, and §4's
+      approval comes after that write. The premise above still stands.
 - [x] **The RED baseline for this skill is confounded and could be re-run cleanly.**
       → attempted in plan 30, 2026-09-08: **VOID IN FULL — 0 of 12 reps valid.** It did
       not settle E1–E5. This item's premise ("both leak channels are now closed") was
@@ -834,11 +836,13 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       45 tests over both PIT paths — calibrated / too-narrow / too-wide / shifted normal
       fixtures, a per-observation model on which PPC-PIT double-dips and LOO-PIT does
       not, an exact-PIT fixture failing the coverage band alone, `--ci-prob` plumbing,
-      and CLI group checks. Mutation-verified: 21 targeted mutants all killed. An
-      adversarial pass generated ~48 more; 8 were genuine gaps, now killed, and the
-      rest were classified equivalent or benign-for-fixtures (band-simulation count,
-      rounding and ci_prob defaults no caller reaches) and still survive. Writing the tests surfaced three defects, fixed the same
-      session with the owner's go-ahead: a pure location shift reported
+      and CLI group checks. Mutation-verified: 21 targeted mutants, all killed — 12
+      written with the tests, one for the PPC-path defect below, and the 8 genuine gaps
+      an adversarial pass found among the ~48 mutants it generated. That pass's other
+      survivors were classified equivalent or benign-for-fixtures (band-simulation
+      count, rounding and ci_prob defaults no caller reaches) and still survive.
+      Writing the tests surfaced three defects, fixed the same session with the owner's
+      go-ahead: a pure location shift reported
       `well_calibrated: False` beside `calibration_diagnosis: 'well-calibrated'` (now
       `biased (predictions too high|low)`, with bias advice in `check_diagnostics.py`);
       `--loo-pit` crashed on a missing `posterior` group instead of a JSON error; and the

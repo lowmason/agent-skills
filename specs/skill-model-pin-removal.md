@@ -56,8 +56,9 @@ committed); the figures above are the durable record.
    11 ship the pins. The lint already fails a `context:` value that "silently no-ops at
    runtime" (`CONTEXT_VALUES`, `build/check_frontmatter.py:27-30`); an inert `model: haiku`
    is the same class of defect.
-3. **Reject only what auto mode cannot run.** `model: opus`, `sonnet` and `fable` do apply
-   in auto mode and stay allowed. `agents/*.md` are exempt: subagent Haiku pins work.
+3. **Reject only what auto mode cannot run.** `model: opus`, `sonnet` and `fable` are
+   documented to apply in auto mode (not observed here: every skill pin in this repo is
+   Haiku, so the transcript sweep saw no other) and stay allowed. `agents/*.md` are exempt: subagent Haiku pins work.
 
 ## Requirements
 
@@ -80,8 +81,10 @@ committed); the figures above are the durable record.
   - the existing `test_model_and_effort_keys_allowed` fixture changes from `model: haiku`
     to `model: sonnet`, so it keeps testing that the keys are allowed;
   - `test_real_repo_is_clean` is the natural RED step: once R2 lands it fails on the four
-    real pins until R1 deletes them. It also covers the agent exemption, since
-    `agents/explore.md` and `agents/test-runner.md` carry `model: haiku` and must stay clean.
+    real skill pins until R1 deletes them. It walks `skills/` only;
+    `test_real_agents_and_commands_are_clean` covers the agent exemption, since
+    `agents/explore.md` and `agents/test-runner.md` carry `model: haiku` and must stay
+    clean, and the command half of R2 on the real repo.
 - **R4 — Correct the docs.**
   - `skills/writing-skills/SKILL.md:103`: after "(per-skill overrides for the model tier
     and reasoning effort a skill runs at)", add that a `model` the session's permission
