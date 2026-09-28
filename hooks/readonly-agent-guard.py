@@ -410,15 +410,21 @@ def _ends_in_a_lone_lt(run):
 
 def _bangs_join_operators(pieces):
     """Return the pieces, with a `!` glued after `>` or `&` part of the operator,
-    as zsh reads it: `>!`, `>>!` and `&>!` clobber, and `&!` disowns."""
+    as zsh reads it: `>!`, `>>!` and `&>!` clobber, and `&!` disowns.
+
+    A token is quoted if any of it is, so `!"rm"` and `"!rm"` look alike: the
+    `!` joins either way, which can only cost a denial. A lone quoted `!` stays
+    a word, since dropping it would make the next word the target.
+    """
     words = []
     for piece in pieces:
         if (words and words[-1].syntax and words[-1].endswith(('>', '&'))
-                and not piece.syntax and not piece.quoted and not piece.spaced
-                and piece.startswith('!')):
+                and not piece.syntax and not piece.spaced and piece.startswith('!')):
             if piece == '!':
-                continue
-            piece = _Token(piece[1:], expands=piece.expands)
+                if not piece.quoted:
+                    continue
+            else:
+                piece = _Token(piece[1:], quoted=piece.quoted, expands=piece.expands)
         words.append(piece)
     return words
 

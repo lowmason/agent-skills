@@ -633,6 +633,9 @@ OPERATOR_LEXING_BYPASSES = [
     pytest.param('git tag >! --format v9', id='clobber-hides-a-tag'),
     pytest.param('true&!git -C . stash', id='glued-disown-then-git'),
     pytest.param('true&!rm x', id='glued-disown-then-rm'),
+    pytest.param('true&!"rm" x', id='glued-disown-then-quoted-rm'),
+    pytest.param('true&!g"it" stash', id='glued-disown-then-partly-quoted-git'),
+    pytest.param('true&!\\rm x', id='glued-disown-then-escaped-rm'),
 ]
 
 
@@ -668,6 +671,13 @@ def test_a_bang_glued_to_an_operator_joins_it_where_quoting_is_read():
     # Blind to quoting, the old lexing stands, `!` a word as bash reads it, so
     # `>! rm x` is still denied though zsh runs `x` with its output in `rm`.
     assert guard.classify('>! rm x') is not None
+
+
+def test_a_bang_that_is_all_quoted_stays_the_target():
+    # The tokenizer cannot tell `!"rm"` from `"!rm"`, so a glued `!` joins its
+    # operator quoted or not, but a word that is only a quoted `!` is the target.
+    for command in ('>"!" rm x', ">'!' rm x", '>\\! rm x'):
+        assert guard.classify(command) is not None
 
 
 def test_a_quoted_word_stays_a_word_in_the_default_reading():

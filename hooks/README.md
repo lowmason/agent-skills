@@ -274,8 +274,11 @@ Known false positives, accepted rather than widened:
     word after one is classified as a command: `echo { rm x` is denied.
   - Quoting is kept, or ignored. Kept, a quoted word is only a word, as zsh reads it,
     and a `!` glued after `>` or `&` joins the operator as zsh lexes it: `>!` and `>>!`
-    clobber, `&!` disowns. Ignored, a quoted word made only of punctuation is the syntax
-    it spells, as `eval` reads it and as every command was read before quoting was kept,
+    clobber, `&!` disowns. The `!` joins from a partly quoted word too (`&!"rm" x` runs
+    `rm`), and so from a wholly quoted one, which zsh leaves a word: `&"!rm" x` is
+    denied. A quoted `!` alone stays a word, since zsh takes it as the target (`>"!" rm
+    x` runs `rm`). Ignored, a quoted word made only of punctuation is the syntax it
+    spells, as `eval` reads it and as every command was read before quoting was kept,
     and that `!` stays a word, as bash reads it. So `echo ';' rm x` is denied, and so is
     `git --namespace '>' log`, where `'>'` reads as a redirection that takes `log` with
     it, and so is `>! rm x`, which zsh runs as `x` with its output in a file `rm`.
