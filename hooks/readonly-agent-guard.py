@@ -17,6 +17,7 @@ annotations deferred via __future__.
 """
 from __future__ import annotations
 
+import itertools
 import json
 import shlex
 import sys
@@ -152,68 +153,91 @@ GIT_FLAG_ALLOWED = {
 }
 
 
-# A `#` starts a comment only at the start of a word: at the start of input or
-# after one of these. Mid-word (`foo#`) it is an ordinary character. `(` and `<`
-# are absent although bash would count them: in zsh, which the Bash tool runs,
-# `(#i)` is a glob flag and `${(#)x}` a parameter flag, and dropping those as
-# comments would hide the rest of the line.
-COMMENT_BOUNDARIES = frozenset(' \t\n;&|')
+# Syntax that opens a context with quoting rules of its own, which shlex's flat
+# posix model cannot follow: command and arithmetic substitution, backticks,
+# ANSI-C strings, parameter expansion, arithmetic, and heredocs. A command that
+# contains any of them is split at every newline, as before multi-line quotes
+# were supported, so a misread quote can never join lines.
+UNMODELED_QUOTING = ('$(', '`', "$'", '${', '$[', '((', '<<')
+
+SPAN_AFTER_HASH = (
+    'a quote or line continuation spans lines after an unquoted `#`, and '
+    'whether that `#` starts a comment depends on the shell and the context')
+
+
+def _split_line(line):
+    """Tokenize one line and split it into subcommands on shell operators."""
+    lexer = shlex.shlex(line, posix=True, punctuation_chars=True)
+    lexer.whitespace_split = True
+    lexer.commenters = ''  # a shell comment only starts at a word boundary
+    subcommands = []
+    current = []
+    for token in lexer:
+        if token in OPERATORS:
+            if current:
+                subcommands.append(current)
+            current = []
+        else:
+            current.append(token)
+    if current:
+        subcommands.append(current)
+    return subcommands
 
 
 def _logical_lines(command):
     """Split `command` at the newlines that end a shell command.
 
     Only unquoted newlines end one, so cutting at every newline breaks any
-    quoted string that spans lines. This scan tracks just enough shell syntax to
-    find the real ones, and follows shlex's posix quoting rules so the two agree
-    on where every quote closes:
+    quoted string that spans lines. This scan follows shlex's posix quoting
+    rules, so the two agree on where every quote closes: a newline inside '...'
+    or "..." stays in its word, and a backslash-newline outside quotes is a line
+    continuation and is dropped. An unterminated quote runs to the end of the
+    command, where shlex raises and a guarded agent fails closed.
 
-    * a newline inside '...' or "..." stays in its word;
-    * a backslash-newline outside quotes is a line continuation, and is dropped;
-    * a comment (see COMMENT_BOUNDARIES) is dropped up to its newline, so an
-      apostrophe in it cannot open a quote that swallows the lines after it.
-
-    An unterminated quote runs to the end of the command, where shlex raises
-    and a guarded agent fails closed.
+    It does not model comments. Where a `#` starts one depends on the shell and
+    the context (zsh glob qualifiers and subscripts, arithmetic), and a wrong
+    guess either hides live code or lets a comment's apostrophe open a quote
+    that swallows the lines after it. So comment text is tokenized like any
+    other, and a physical line with an unquoted `#` may not end inside a quote
+    or with a continuation: the scan raises instead.
     """
+    if any(syntax in command for syntax in UNMODELED_QUOTING):
+        return command.split('\n')
     lines = []
     current = []
     quote = None
-    comment_can_start = True
+    unquoted_hash = False  # on the current physical line
     i = 0
     while i < len(command):
         char = command[i]
-        if quote == "'":  # nothing escapes inside single quotes
-            current.append(char)
-            if char == "'":
-                quote = None
-        elif char == '\\':
+        if char == '\\' and quote != "'":  # nothing escapes inside single quotes
             escaped = command[i + 1:i + 2]
             i += 2
-            if escaped == '\n' and quote is None:
-                continue  # a continuation: the next line is more of this word
+            if escaped == '\n':
+                if unquoted_hash:
+                    raise ValueError(SPAN_AFTER_HASH)
+                if quote is None:
+                    continue  # a continuation: the next line is more of this word
             current.append(char + escaped)
-            comment_can_start = False
             continue
-        elif quote == '"':
-            current.append(char)
-            if char == '"':
-                quote = None
-        elif char in '\'"':
-            current.append(char)
-            quote = char
-            comment_can_start = False
-        elif char == '#' and comment_can_start:
-            end = command.find('\n', i)
-            i = len(command) if end == -1 else end  # the newline still ends the line
-            continue
-        elif char == '\n':
-            lines.append(''.join(current))
-            current = []
-            comment_can_start = True
+        if char == '\n':
+            if quote is None:
+                lines.append(''.join(current))
+                current = []
+            elif unquoted_hash:
+                raise ValueError(SPAN_AFTER_HASH)
+            else:
+                current.append(char)
+            unquoted_hash = False
         else:
             current.append(char)
-            comment_can_start = char in COMMENT_BOUNDARIES
+            if quote is None:
+                if char in '\'"':
+                    quote = char
+                elif char == '#':
+                    unquoted_hash = True
+            elif char == quote:
+                quote = None
         i += 1
     lines.append(''.join(current))
     return lines
@@ -228,20 +252,23 @@ def split_subcommands(command):
     """
     subcommands = []
     for line in _logical_lines(command):
-        lexer = shlex.shlex(line, posix=True, punctuation_chars=True)
-        lexer.whitespace_split = True
-        lexer.commenters = ''  # a shell comment only starts at a word boundary
-        current = []
-        for token in lexer:
-            if token in OPERATORS:
-                if current:
-                    subcommands.append(current)
-                current = []
-            else:
-                current.append(token)
-        if current:
-            subcommands.append(current)
+        subcommands.extend(_split_line(line))
     return subcommands
+
+
+def _physical_line_subcommands(command):
+    """Yield each physical line's subcommands, tokenized alone.
+
+    This is the split from before multi-line support. A line that does not
+    tokenize alone, because a quote or a continuation spans it, is skipped:
+    split_subcommands has read it.
+    """
+    for line in command.split('\n'):
+        try:
+            subcommands = _split_line(line)
+        except ValueError:
+            continue
+        yield from subcommands
 
 
 def _sed_edits_in_place(args):
@@ -277,8 +304,13 @@ def classify(command):
     git is an allowlist that fails closed on unknown verbs; non-git is a
     denylist of unambiguous mutators, so unlisted commands pass. The asymmetry
     is deliberate — read-only shell is unbounded, read-only git is not.
+
+    Every physical line is also classified on its own, the way it was before
+    multi-line support. Whatever the multi-line reading gets wrong, a line that
+    begins with a mutator is still denied.
     """
-    for tokens in split_subcommands(command):
+    subcommands = split_subcommands(command)  # raises before anything is allowed
+    for tokens in itertools.chain(subcommands, _physical_line_subcommands(command)):
         detail = _classify_subcommand(tokens)
         if detail is not None:
             return detail

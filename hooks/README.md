@@ -182,15 +182,26 @@ permission system. Not caught:
 - Command substitution: `$(git commit -m x)`.
 - Mutators inside a quoted script: `python -c "..."`, `sh -c "..."`, `perl -e`.
 - Anything reached through an alias or a wrapper script.
-- A mutator between two heredoc bodies that each hold an unpaired quote. Commands
-  split only at unquoted newlines. Backslash-newlines join lines, and `#` comments
-  are dropped, so multi-line quoted strings, continued lines, and `# what's this`
-  annotations all classify correctly. Heredoc bodies, though, are still read as
-  shell. In a body, a denied leading word (`rm = 5`) or a lone quote is denied
-  (fail-closed). A quote left open in one body and closed in a later one
-  swallows everything between them, including any command.
 
 Known false positives, accepted rather than widened:
+
+- **Multi-line commands are read across lines only where the quoting is certain.**
+  A quoted string may span lines and a backslash-newline continues one, so a
+  multi-line `python -c "..."` is classified by its leading token. A misread quote
+  would join a later command into a word and hide it, so three rules deny instead
+  of guessing:
+  - A command containing `$(`, a backtick, `$'`, `${`, `$[`, `((`, or `<<` has nested
+    quoting that `shlex` cannot follow. It is split at every newline, as before
+    multi-line support: a quote or continuation spanning lines there fails closed,
+    and heredoc bodies are read as shell, line by line.
+  - Comments are tokenized, never stripped. Where a `#` starts one depends on the
+    shell and the context (zsh glob qualifiers, arithmetic, `${…}`), and a wrong
+    guess either hides live code or lets a comment's apostrophe open a quote. So a
+    quote or continuation spanning lines after an unquoted `#` on the same line
+    fails closed, and a `# what's changed` line above a command is denied.
+  - Every physical line is also classified alone, the pre-multi-line way. That is
+    the backstop against a misread the first two rules miss, and its cost is a
+    line inside a quoted script that begins with a denied word (`rm = 5`).
 
 - **`git config --global --list` is denied.** The allowlist carries exactly the five
   read-mode flags from the spec (`--get --get-all --get-regexp --list -l`); a scope

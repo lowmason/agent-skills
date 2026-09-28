@@ -123,6 +123,20 @@ def test_newline_inside_quotes_stays_in_its_word():
     # An escaped double quote does not close the string.
     assert guard.split_subcommands('echo "say \\"hi\\"\n"\nrm x') == [
         ['echo', 'say "hi"\n'], ['rm', 'x']]
+    # Inside "..." a backslash-newline is not a continuation to shlex.
+    assert guard.split_subcommands('echo "a\\\nb"\nrm x') == [
+        ['echo', 'a\\\nb'], ['rm', 'x']]
+
+
+def test_hash_inside_a_multiline_quote_is_data():
+    # `python -c` scripts carry comments; inside the quote they are not shell.
+    assert guard.split_subcommands('python -c "\n# mean\nprint(1)\n"') == [
+        ['python', '-c', '\n# mean\nprint(1)\n']]
+
+
+def test_trailing_backslash_fails_closed():
+    with pytest.raises(ValueError):
+        guard.classify('git log \\')
 
 
 def test_backslash_is_literal_inside_single_quotes():
@@ -148,39 +162,77 @@ def test_escaped_backslash_before_a_newline_is_not_a_continuation():
     assert guard.split_subcommands('echo a\\\\\nrm x') == [['echo', 'a\\'], ['rm', 'x']]
 
 
-def test_comment_text_is_not_tokenized():
-    # An apostrophe in a comment is not a quote to the shell, so it must not be
-    # one to the tokenizer. Agents annotate multi-line commands this way.
-    assert guard.split_subcommands("# what's changed\ngit diff main..HEAD") == [
-        ['git', 'diff', 'main..HEAD']]
-    assert guard.split_subcommands("git log  # don't page\ngit status") == [
-        ['git', 'log'], ['git', 'status']]
-    assert guard.split_subcommands("git log;# don't\nrm x") == [
-        ['git', 'log'], ['rm', 'x']]
-
-
-def test_comment_cannot_hide_a_mutator():
-    # Tokenized, the apostrophes in these two comments would pair into one
-    # quoted word and swallow the `git stash` between them.
-    assert 'stash' in guard.classify("# what's here\ngit stash\n# let's see")
-    # A backslash in a comment is literal: the comment ends at its newline
-    # rather than continuing into the next line.
-    assert '`rm`' in guard.classify('# note \\\nrm x')
-
-
-def test_hash_that_does_not_start_a_word_is_not_a_comment():
+def test_comments_are_tokenized_not_stripped():
+    # Where a `#` starts a comment depends on the shell and the context, so the
+    # guard never decides it: comment text is tokenized like any other.
+    assert guard.split_subcommands('# check it\ngit status') == [
+        ['#', 'check', 'it'], ['git', 'status']]
+    assert guard.split_subcommands('git log  # show\ngit status') == [
+        ['git', 'log', '#', 'show'], ['git', 'status']]
     assert guard.split_subcommands("git log --grep '# x'") == [
         ['git', 'log', '--grep', '# x']]
-    # An escaped space keeps the `#` mid-word, like `foo#` below.
     assert guard.split_subcommands('echo a\\ #b') == [['echo', 'a #b']]
 
 
-def test_zsh_hash_after_a_paren_or_redirect_is_not_a_comment():
-    # The Bash tool runs zsh, where `(#i)` is a glob flag and `${(#)x}` a
-    # parameter flag. Taking their `#` as a comment would drop the `; git stash`.
-    for command in ('ls (#i)readme*; git stash', 'echo ${(#)x}; git stash',
-                    'ls <#x; git stash'):
-        assert 'stash' in guard.classify(command), command
+def test_no_quote_or_continuation_spans_lines_after_an_unquoted_hash():
+    # If that `#` starts a comment, its apostrophe is no quote to the shell, and
+    # pairing it with a later one would swallow the lines between. Fails closed,
+    # as every comment with an apostrophe did before multi-line support.
+    for command in ("# what's changed\ngit diff main..HEAD",
+                    "git log  # don't page\ngit status",
+                    '# note \\\ngit status'):
+        with pytest.raises(ValueError):
+            guard.split_subcommands(command)
+
+
+def test_every_physical_line_is_also_classified_on_its_own():
+    # The backstop: whatever the multi-line reading misses, a line that begins
+    # with a mutator is denied, exactly as it was before multi-line support.
+    # Its cost is this false positive inside a quoted script.
+    assert guard.classify('python -c "\nrm = 1\nprint(rm)\n"') is not None
+
+
+def _guard_denies(command):
+    # main() denies a guarded agent both a classified mutator and a ValueError.
+    try:
+        return guard.classify(command) is not None
+    except ValueError:
+        return True
+
+
+# Every entry runs `rm x` or `git stash` in zsh (checked with `echo` in its
+# place) and was denied before multi-line support. Sources: the 2026-09-28
+# code-reviewer and Codex reviews of this change, and the probes that followed.
+MULTILINE_BYPASSES = [
+    pytest.param('echo `echo a #b`; rm x', id='hash-in-backticks'),
+    pytest.param('echo ${x// #/y}; rm x', id='hash-in-param-pattern'),
+    pytest.param('echo ${x:-a #b}; rm x', id='hash-in-param-default'),
+    pytest.param('(( 1 #2 )) ; rm x', id='hash-in-arithmetic'),
+    pytest.param('echo $(( 1 + ##A )) ; rm x', id='zsh-char-code'),
+    pytest.param('echo ${x:-a\n#b}; rm x', id='hash-in-param-across-lines'),
+    pytest.param('echo `echo a\n#b`; rm x', id='hash-in-backticks-across-lines'),
+    pytest.param("echo $'\\''\nrm x\necho \\'", id='ansi-c-quote'),
+    pytest.param('echo "$(printf \'"\')"\nrm x\necho \\\'', id='quote-in-substitution'),
+    pytest.param("cat <<EOF\nit's\nEOF\nrm x\necho \\'", id='quote-in-heredoc'),
+    pytest.param('echo "$(printf \'"\')"\nrm x\necho "$(printf \'"\')"',
+                 id='quote-in-substitution-twice'),
+    pytest.param('echo "`printf \'"\'`"\nrm x\necho "`printf \'"\'`"',
+                 id='quote-in-backticks-twice'),
+    pytest.param("echo \"${x#\"'\"}\"\nrm x\necho \"${x#\"'\"}\"",
+                 id='quote-in-param-twice'),
+    pytest.param('echo *(e: #:N) ; rm x', id='zsh-hash-in-glob-qualifier'),
+    pytest.param("(cd /tmp)#'\nrm x #'", id='zsh-comment-after-paren'),
+    pytest.param("# what's here\ngit stash\n# let's see", id='apostrophes-in-comments'),
+    pytest.param('# note \\\nrm x', id='backslash-in-comment'),
+    pytest.param("echo $'it\\'s'\ngit stash\necho $'don\\'t'", id='ansi-c-escaped-quote'),
+    pytest.param('ls (#i)readme*; git stash', id='zsh-glob-flag'),
+    pytest.param('echo ${(#)x}; git stash', id='zsh-param-flag'),
+]
+
+
+@pytest.mark.parametrize('command', MULTILINE_BYPASSES)
+def test_known_multiline_and_comment_bypasses_are_denied(command):
+    assert _guard_denies(command)
 
 
 def test_tokenizer_leaves_redirection_intact():
