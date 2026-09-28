@@ -123,9 +123,6 @@ def test_newline_inside_quotes_stays_in_its_word():
     # An escaped double quote does not close the string.
     assert guard.split_subcommands('echo "say \\"hi\\"\n"\nrm x') == [
         ['echo', 'say "hi"\n'], ['rm', 'x']]
-    # Inside "..." a backslash-newline is not a continuation to shlex.
-    assert guard.split_subcommands('echo "a\\\nb"\nrm x') == [
-        ['echo', 'a\\\nb'], ['rm', 'x']]
 
 
 def test_hash_inside_a_multiline_quote_is_data():
@@ -145,15 +142,25 @@ def test_backslash_is_literal_inside_single_quotes():
     assert guard.split_subcommands("echo 'a\\'\nrm x") == [['echo', 'a\\'], ['rm', 'x']]
 
 
-def test_backslash_newline_continues_the_command():
-    assert guard.split_subcommands(
-        'uv run --python 3.13 --with pytest \\\n  python -m pytest -q') == [[
-            'uv', 'run', '--python', '3.13', '--with', 'pytest',
-            'python', '-m', 'pytest', '-q']]
-    # Splitting at the continuation instead would strand the verb or the flag in
-    # a subcommand of its own, where nothing classifies it.
-    assert 'stash' in guard.classify('git \\\n  stash')
-    assert 'sed -i' in guard.classify('sed \\\n  -i s/a/b/ f')
+def test_backslash_newline_fails_closed_as_before_multiline_support():
+    # Continuations are not joined, in or out of quotes: the command is split at
+    # every newline, and the line ending in `\` raises, as it always did.
+    for command in ('uv run --python 3.13 --with pytest \\\n  python -m pytest -q',
+                    'git \\\n  stash',
+                    'echo "a\\\nb"\nrm x'):
+        with pytest.raises(ValueError):
+            guard.split_subcommands(command)
+
+
+# Syntax whose quoting the scan does not model. Beside any of it, a multi-line
+# quote gets the split from before multi-line support, and so fails closed.
+UNMODELED_SYNTAX = ['$(', '`', "$'", '${', '$[', '((', '<<', '\\\n']
+
+
+@pytest.mark.parametrize('syntax', UNMODELED_SYNTAX)
+def test_multiline_quote_fails_closed_beside_unmodeled_syntax(syntax):
+    with pytest.raises(ValueError):
+        guard.split_subcommands('echo ' + syntax + ' "a\nb"')
 
 
 def test_escaped_backslash_before_a_newline_is_not_a_continuation():
@@ -174,13 +181,12 @@ def test_comments_are_tokenized_not_stripped():
     assert guard.split_subcommands('echo a\\ #b') == [['echo', 'a #b']]
 
 
-def test_no_quote_or_continuation_spans_lines_after_an_unquoted_hash():
+def test_no_quote_spans_lines_after_an_unquoted_hash():
     # If that `#` starts a comment, its apostrophe is no quote to the shell, and
     # pairing it with a later one would swallow the lines between. Fails closed,
     # as every comment with an apostrophe did before multi-line support.
     for command in ("# what's changed\ngit diff main..HEAD",
-                    "git log  # don't page\ngit status",
-                    '# note \\\ngit status'):
+                    "git log  # don't page\ngit status"):
         with pytest.raises(ValueError):
             guard.split_subcommands(command)
 

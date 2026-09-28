@@ -153,16 +153,18 @@ GIT_FLAG_ALLOWED = {
 }
 
 
-# Syntax that opens a context with quoting rules of its own, which shlex's flat
-# posix model cannot follow: command and arithmetic substitution, backticks,
-# ANSI-C strings, parameter expansion, arithmetic, and heredocs. A command that
-# contains any of them is split at every newline, as before multi-line quotes
-# were supported, so a misread quote can never join lines.
-UNMODELED_QUOTING = ('$(', '`', "$'", '${', '$[', '((', '<<')
+# Syntax the scan in _logical_lines does not model. Most opens a context with
+# quoting rules of its own, which shlex's flat posix model cannot follow:
+# command and arithmetic substitution, backticks, ANSI-C strings, parameter
+# expansion, arithmetic, heredocs. A backslash-newline joins lines, and the
+# shell joins them in and out of quotes, so it is here too. A command that
+# contains any of them is split at every newline, exactly as before multi-line
+# quotes were supported, so nothing is ever joined on a misreading.
+UNMODELED_SYNTAX = ('$(', '`', "$'", '${', '$[', '((', '<<', '\\\n')
 
 SPAN_AFTER_HASH = (
-    'a quote or line continuation spans lines after an unquoted `#`, and '
-    'whether that `#` starts a comment depends on the shell and the context')
+    'a quoted string spans lines after an unquoted `#`, and whether that `#` '
+    'starts a comment depends on the shell and the context')
 
 
 def _split_line(line):
@@ -190,18 +192,18 @@ def _logical_lines(command):
     Only unquoted newlines end one, so cutting at every newline breaks any
     quoted string that spans lines. This scan follows shlex's posix quoting
     rules, so the two agree on where every quote closes: a newline inside '...'
-    or "..." stays in its word, and a backslash-newline outside quotes is a line
-    continuation and is dropped. An unterminated quote runs to the end of the
-    command, where shlex raises and a guarded agent fails closed.
+    or "..." stays in its word. An unterminated quote runs to the end of the
+    command, where shlex raises and a guarded agent fails closed. A command
+    with anything in UNMODELED_SYNTAX is not scanned at all.
 
     It does not model comments. Where a `#` starts one depends on the shell and
-    the context (zsh glob qualifiers and subscripts, arithmetic), and a wrong
-    guess either hides live code or lets a comment's apostrophe open a quote
-    that swallows the lines after it. So comment text is tokenized like any
-    other, and a physical line with an unquoted `#` may not end inside a quote
-    or with a continuation: the scan raises instead.
+    the context (zsh glob qualifiers, arithmetic), and a wrong guess either
+    hides live code or lets a comment's apostrophe open a quote that swallows
+    the lines after it. So comment text is tokenized like any other, and a
+    physical line with an unquoted `#` may not end inside a quote: the scan
+    raises instead.
     """
-    if any(syntax in command for syntax in UNMODELED_QUOTING):
+    if any(syntax in command for syntax in UNMODELED_SYNTAX):
         return command.split('\n')
     lines = []
     current = []
@@ -211,14 +213,8 @@ def _logical_lines(command):
     while i < len(command):
         char = command[i]
         if char == '\\' and quote != "'":  # nothing escapes inside single quotes
-            escaped = command[i + 1:i + 2]
+            current.append(command[i:i + 2])  # never a newline: see UNMODELED_SYNTAX
             i += 2
-            if escaped == '\n':
-                if unquoted_hash:
-                    raise ValueError(SPAN_AFTER_HASH)
-                if quote is None:
-                    continue  # a continuation: the next line is more of this word
-            current.append(char + escaped)
             continue
         if char == '\n':
             if quote is None:
@@ -248,7 +244,9 @@ def split_subcommands(command):
 
     Each logical line is tokenized on its own, because shlex treats a newline
     as ordinary whitespace, which would otherwise fold a second command into the
-    first subcommand and hide its leading token from classification.
+    first subcommand and hide its leading token from classification. Raises
+    ValueError from the scan as well as from shlex; either way a guarded agent
+    fails closed.
     """
     subcommands = []
     for line in _logical_lines(command):

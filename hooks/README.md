@@ -186,19 +186,20 @@ permission system. Not caught:
 Known false positives, accepted rather than widened:
 
 - **Multi-line commands are read across lines only where the quoting is certain.**
-  A quoted string may span lines and a backslash-newline continues one, so a
-  multi-line `python -c "..."` is classified by its leading token. A misread quote
-  would join a later command into a word and hide it, so three rules deny instead
-  of guessing:
-  - A command containing `$(`, a backtick, `$'`, `${`, `$[`, `((`, or `<<` has nested
-    quoting that `shlex` cannot follow. It is split at every newline, as before
-    multi-line support: a quote or continuation spanning lines there fails closed,
-    and heredoc bodies are read as shell, line by line.
+  A quoted string may span lines, so a multi-line `python -c "..."` is classified
+  by its leading token. A misread quote would join a later command into a word and
+  hide it, so three rules deny instead of guessing:
+  - A command containing `$(`, a backtick, `$'`, `${`, `$[`, `((`, `<<`, or a
+    backslash-newline is split at every newline, as before multi-line support. The
+    first seven carry nested quoting that `shlex` cannot follow, and the shell joins
+    continued lines in and out of quotes. So a quote spanning lines there fails
+    closed, and so does every backslash-continued command (the line ending in `\`
+    does not tokenize), and heredoc bodies are read as shell, line by line.
   - Comments are tokenized, never stripped. Where a `#` starts one depends on the
     shell and the context (zsh glob qualifiers, arithmetic, `${…}`), and a wrong
     guess either hides live code or lets a comment's apostrophe open a quote. So a
-    quote or continuation spanning lines after an unquoted `#` on the same line
-    fails closed, and a `# what's changed` line above a command is denied.
+    quote spanning lines after an unquoted `#` on the same line fails closed, and a
+    `# what's changed` line above a multi-line command is denied.
   - Every physical line is also classified alone, the pre-multi-line way. That is
     the backstop against a misread the first two rules miss, and its cost is a
     line inside a quoted script that begins with a denied word (`rm = 5`).
