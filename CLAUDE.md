@@ -159,8 +159,8 @@ cd skills/subagent-driven-development/scripts && uv run --python 3.13 --with pyt
 # included, under the 3.9 floor. Where /usr/bin/python3 is missing or not 3.9, the first
 # reports 40 passed, 12 skipped (-rs shows why) and the second does not test the floor.
 # Gate B is the live probe: ./hooks/probe-readonly-guard.sh, which spawns claude -p)
-cd hooks && uv run --python 3.13 --with pytest python -m pytest -q
-cd hooks && uv run --python /usr/bin/python3 --with pytest python -m pytest -q
+cd hooks && uv run --python 3.13 --with pytest python -m pytest -q \
+  && uv run --python /usr/bin/python3 --with pytest python -m pytest -q
 
 # Frontmatter + provenance lints (run before committing skill changes)
 uv run --python 3.13 --with pyyaml python build/check_frontmatter.py

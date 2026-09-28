@@ -140,8 +140,8 @@ system Python 3.9. So the source stays 3.9-compatible.
 **Tests.** Gate A is `test_readonly_agent_guard.py`, run both ways:
 
 ```bash
-cd hooks && uv run --python 3.13 --with pytest python -m pytest -q
-cd hooks && uv run --python /usr/bin/python3 --with pytest python -m pytest -q
+cd hooks && uv run --python 3.13 --with pytest python -m pytest -q \
+  && uv run --python /usr/bin/python3 --with pytest python -m pytest -q
 ```
 
 The 3.9 floor is checked on purpose, not by `PATH` order. Under `uv run` the shebang

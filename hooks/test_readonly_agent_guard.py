@@ -1,7 +1,8 @@
 """Gate A for hooks/readonly-agent-guard.py — run from this directory, both ways.
 
-cd hooks && uv run --python 3.13 --with pytest python -m pytest -q
-cd hooks && uv run --python /usr/bin/python3 --with pytest python -m pytest -q
+cd hooks
+uv run --python 3.13 --with pytest python -m pytest -q
+uv run --python /usr/bin/python3 --with pytest python -m pytest -q
 
 Two layers, per spec Verification: unit tests import the classifier directly,
 contract tests drive the script as a subprocess with real payloads on stdin.
