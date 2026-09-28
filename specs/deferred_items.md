@@ -58,6 +58,16 @@
   carrier, two checkpoints without behavioural evidence, derive-roadmap's
   unmeasured RED baseline). This branch adds the Codex second-opinion review
   seat to the process skills and touches none of them.
+- 2026-09-28 — finished `claude/admiring-ishizaka-3edb6d` with 7 items aged
+  >45d, carried on the partner's reason, verbatim: "Out of scope for this
+  branch." The items are `11-delegation-frontmatter-rollout`'s interactive
+  verification (71d), three `18-methodology-pipeline-skills` items (64d: the
+  DL/NLP template extension, the in-session SOTA pass, synthesize-mode
+  scenario verification), and three `19-methodology-pipeline-skills` items
+  (60d: the unbacked stage-stamp carrier, two checkpoints without behavioural
+  evidence, derive-roadmap's unmeasured RED baseline). This branch reworks
+  install.py (--skill dependency closure, pre-flight, git-aware --copy) and
+  touches none of them.
 
 ## 11-delegation-frontmatter-rollout — 2026-07-19
 - [x] Haiku-pinned `Explore` override agent (fork-isolation upgrade; plan "Out of
