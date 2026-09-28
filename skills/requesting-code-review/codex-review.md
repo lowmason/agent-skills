@@ -47,12 +47,15 @@ code-reviewer's contract forbids it from spawning further reviewers.
      everything since. BASE is either the branch's merge base with its base
      branch, computed just before launch and shared with code-reviewer; or,
      for a plan executed on the base branch itself, the SHA recorded before
-     its first task; or — in finishing-a-development-branch only — the SHA of
-     an earlier `Codex reviewed` line, to review just the commits after it. On
-     a feature branch, do not substitute a SHA noted earlier in the session
-     for the merge base: a rebase onto a newer base branch silently widens
-     that range to upstream commits. (The base-branch case has no such
-     rebase, which is why a recorded start is right there.)
+     its first task or the start your partner confirmed; or — in
+     finishing-a-development-branch only — the SHA of an earlier
+     `Codex reviewed` line, to review just the commits after it. On a feature
+     branch, do not substitute a SHA noted earlier in the session for the
+     merge base: a rebase onto a newer base branch silently widens that range
+     to upstream commits. The base branch has no merge base to recompute, so
+     its recorded start holds only while no pull or rebase has brought
+     upstream commits into the range; once one has, ask your partner where
+     the plan's work begins.
    - `-c sandbox_mode=read-only` — required. A Codex config that trusts the
      project resolves `exec review` to `workspace-write`: a reviewer that can
      edit the tree it is reviewing.
@@ -70,19 +73,20 @@ code-reviewer's contract forbids it from spawning further reviewers.
   Then write `Codex reviewed <short-HEAD>` into the conversation, and into the
   progress ledger if the run keeps one, so it survives a context checkpoint.
   The line means everything from the branch's merge base (on the base branch
-  itself, from the plan's recorded start) through that SHA has had a
-  completed Codex review — true because every BASE above is one of those
-  starting points or an earlier such line. It is the only record of a
+  itself, from the plan's recorded or confirmed start) through that SHA has
+  had a completed Codex review — true because every BASE above is one of
+  those starting points or an earlier such line. It is the only record of a
   completed review; a later finishing-a-development-branch run keys on it to
   avoid a repeat pass.
 - **Anything else:** report "Codex review did not complete:" with the log's
   last line (`tail -n 1` the log), and write no `Codex reviewed` line. In
   executing-plans and subagent-driven-development, proceed on code-reviewer's
-  review: with no line written, finishing-a-development-branch will review the
-  whole branch before it ships. In finishing-a-development-branch, where this
-  run is the gate, always ask your partner whether to retry or proceed without
-  it — even if code-reviewer ran beside it. Never report a Codex review that
-  did not complete.
+  review: with no line written, finishing-a-development-branch runs Codex on
+  the work before it ships — the whole branch, or on the base branch itself
+  from a start your partner gives it. In finishing-a-development-branch,
+  where this run is the gate, always ask your partner whether to retry or
+  proceed without it — even if code-reviewer ran beside it. Never report a
+  Codex review that did not complete.
 
 Codex opens each finding's title with a priority tag and ends with an overall
 verdict (`patch is correct` / `patch is incorrect`). Map the tags onto

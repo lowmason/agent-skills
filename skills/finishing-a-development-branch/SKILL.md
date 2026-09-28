@@ -212,7 +212,9 @@ this way:
   since" and skip the review. Otherwise `--base <sha>`, which reviews just the
   new commits.
 - **Otherwise** — no such line, or it was lost to a `/clear` or a rebase —
-  `--base <base-branch>`, the whole branch.
+  `--base <base-branch>`, the whole branch. On the base branch itself (a plan
+  executed there) that is an empty range, a review of nothing: ask your
+  partner which commit the work starts after, and use that.
 
 Work its findings — merged with code-reviewer's, if that ran — with the
 receiving-code-review skill: fix what holds up, re-run the tests, commit. Show
