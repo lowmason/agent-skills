@@ -18,6 +18,7 @@ destination before writing, so a conflict leaves nothing half-installed.
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import os
 import shutil
 import subprocess
@@ -216,7 +217,12 @@ def destination_state(item: InstallItem, *, copy: bool) -> str:
   return 'unmanaged'
 
 
-def preflight(items: list[InstallItem], *, copy: bool) -> None:
+def preflight(
+  items: list[InstallItem],
+  *,
+  copy: bool,
+  copies: dict[Path, list[Path]] | None = None,
+) -> None:
   unmanaged = [
     item.destination
     for item in items
@@ -229,25 +235,15 @@ def preflight(items: list[InstallItem], *, copy: bool) -> None:
       f'refusing to replace existing unmanaged {noun}; nothing was installed:{listing}'
     )
   if copy:
-    linked = [path for item in items for path in symlinks_in(item.source)]
+    # Only what would be copied: a venv's links inside an ignored dir are fine.
+    linked = [item.source for item in items if item.source.is_symlink()]
+    for source, files in (copies or {}).items():
+      linked += [source / path for path in files if (source / path).is_symlink()]
     if linked:
       listing = ''.join(f'\n  {path}' for path in linked)
       raise InstallError(
         f'--copy would follow these symlinks, so nothing was installed:{listing}'
       )
-
-
-def symlinks_in(source: Path) -> list[Path]:
-  if source.is_symlink():
-    return [source]
-  found: list[Path] = []
-  for directory, subdirectories, filenames in os.walk(source):
-    found += [
-      Path(directory) / name
-      for name in subdirectories + filenames
-      if os.path.islink(os.path.join(directory, name))
-    ]
-  return found
 
 
 def git_env() -> dict[str, str]:
@@ -279,17 +275,47 @@ def kept_files(source: Path) -> list[Path] | None:
   return [path for path in files if (source / path).exists()] or None
 
 
-def copy_tree(source: Path, destination: Path) -> None:
-  files = kept_files(source)
-  if files is None:
-    shutil.copytree(source, destination, ignore=shutil.ignore_patterns(*FALLBACK_IGNORES))
-    return
+def copy_list(source: Path) -> list[Path]:
+  '''The files --copy writes for source, relative to it: what git keeps, or,
+  when git cannot say, everything outside .gitignore's generic patterns.
+  A symlink appears as one entry, never descended into.'''
+  kept = kept_files(source)
+  if kept is not None:
+    return kept
+
+  def fallback_ignores(name: str) -> bool:
+    return any(fnmatch.fnmatch(name, pattern) for pattern in FALLBACK_IGNORES)
+
+  found: list[Path] = []
+  for directory, subdirectories, filenames in os.walk(source):
+    here = Path(directory)
+    subdirectories[:] = [name for name in subdirectories if not fallback_ignores(name)]
+    found += [
+      (here / name).relative_to(source)
+      for name in subdirectories
+      if (here / name).is_symlink()
+    ]
+    found += [
+      (here / name).relative_to(source)
+      for name in filenames
+      if not fallback_ignores(name)
+    ]
+  return found
+
+
+def copy_files(source: Path, destination: Path, files: list[Path]) -> None:
   for path in files:
     (destination / path).parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(source / path, destination / path)
 
 
-def install_item(item: InstallItem, *, copy: bool, dry_run: bool) -> str:
+def install_item(
+  item: InstallItem,
+  *,
+  copy: bool,
+  dry_run: bool,
+  files: list[Path] | None = None,
+) -> str:
   destination = item.destination
   state = destination_state(item, copy=copy)
   if state == 'managed':
@@ -302,7 +328,9 @@ def install_item(item: InstallItem, *, copy: bool, dry_run: bool) -> str:
   destination.parent.mkdir(parents=True, exist_ok=True)
   if copy:
     if item.source.is_dir():
-      copy_tree(item.source, destination)
+      if files is None:
+        files = copy_list(item.source)
+      copy_files(item.source, destination, files)
     else:
       shutil.copy2(item.source, destination)
     return f'copied {item.source} -> {destination}'
@@ -361,9 +389,16 @@ def main(argv: list[str] | None = None) -> int:
       companions=companions,
       commands=commands,
     )
-    preflight(items, copy=args.copy)
+    # Decide each copy's files once, so the symlink check sees what is copied.
+    copies = (
+      {item.source: copy_list(item.source) for item in items if item.source.is_dir()}
+      if args.copy
+      else {}
+    )
+    preflight(items, copy=args.copy, copies=copies)
     for item in items:
-      print(install_item(item, copy=args.copy, dry_run=args.dry_run))
+      to_copy = copies.get(item.source)
+      print(install_item(item, copy=args.copy, dry_run=args.dry_run, files=to_copy))
   except (InstallError, OSError) as exc:
     print(f'install: {exc}', file=sys.stderr)
     return 1

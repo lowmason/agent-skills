@@ -492,19 +492,41 @@ def test_copy_of_an_excluded_skill_still_skips_caches(tmp_path, monkeypatch):
   assert names(copied) == ['SKILL.md', 'draft.md', 'local.env']
 
 
-def test_copy_refuses_a_symlink_inside_a_skill(tmp_path, monkeypatch, capsys):
+@pytest.mark.parametrize('git', [True, False])
+def test_copy_refuses_a_symlink_it_would_copy(tmp_path, monkeypatch, capsys, git):
   # Copying follows a link, so it could carry out anything it points at.
   install = load_install(monkeypatch)
+  monkeypatch.setenv('GIT_CEILING_DIRECTORIES', str(tmp_path))
   root = tmp_path / 'repo'
   skill = make_skill(root)
   (root / 'secret').mkdir()
   (root / 'secret' / 'extract.txt').write_text('never leaves the repo\n')
   (skill / 'shared').symlink_to('../../secret', target_is_directory=True)
-  init_repo(root, '__pycache__/\n*.env\nsecret/\n', 'skills/demo/SKILL.md', 'skills/demo/shared')
+  if git:
+    init_repo(root, '__pycache__/\n*.env\nsecret/\n', 'skills/demo/SKILL.md', 'skills/demo/shared')
   status, _ = copy_demo(install, monkeypatch, root)
   assert status == 1
   assert 'symlink' in capsys.readouterr().err
   assert not (root.parent / 'home').exists()
+
+
+@pytest.mark.parametrize(('git', 'expected'), [
+  (True, ['SKILL.md', 'draft.md']),
+  (False, ['SKILL.md', 'draft.md', 'local.env']),
+])
+def test_copy_ignores_symlinks_it_would_not_copy(tmp_path, monkeypatch, git, expected):
+  # A virtualenv's bin/ holds symlinks, and .verify_venv/ is ignored.
+  install = load_install(monkeypatch)
+  monkeypatch.setenv('GIT_CEILING_DIRECTORIES', str(tmp_path))
+  root = tmp_path / 'repo'
+  skill = make_skill(root)
+  (skill / '.verify_venv' / 'bin').mkdir(parents=True)
+  (skill / '.verify_venv' / 'bin' / 'python').symlink_to('python3')
+  if git:
+    init_repo(root, '__pycache__/\n*.env\n.verify_venv/\n', 'skills/demo/SKILL.md')
+  status, copied = copy_demo(install, monkeypatch, root)
+  assert status == 0
+  assert names(copied) == expected
 
 
 def test_copy_outside_git_skips_common_caches(tmp_path, monkeypatch):
@@ -532,8 +554,8 @@ def test_fallback_covers_every_generic_gitignore_entry(monkeypatch):
   assert generic <= set(install.FALLBACK_IGNORES)
 
 
-@pytest.mark.parametrize('flags', [(), ('--copy', '--dry-run')])
-def test_git_runs_only_when_copying(tmp_path, monkeypatch, flags):
+@pytest.mark.parametrize('flags', [(), ('--dry-run',)])
+def test_link_installs_never_run_git(tmp_path, monkeypatch, flags):
   install = load_install(monkeypatch)
 
   def no_git(*args, **kwargs):

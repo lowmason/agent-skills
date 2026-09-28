@@ -205,7 +205,8 @@ companion unless you add `--no-companions`, which leaves out all agents and
 commands, required ones included. The table is `DEPENDENCIES` in `install.py`.
 
 `--copy` copies the files git keeps (tracked, or untracked and not ignored)
-and refuses a skill that contains a symlink, since a copy would follow it.
+and refuses a skill whose copied files include a symlink, since a copy would
+follow it.
 
 | Runtime | Skills | Agents | Commands |
 |---------|--------|--------|----------|
