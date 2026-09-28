@@ -27,14 +27,15 @@ The skill enforces guardrails that agents won't apply on their own: credible int
 ## Installation
 
 This skill installs like every skill in this repo — with the repo-root
-installer, which also links that runtime's companion agents and commands (see
-the root README for runtimes and options):
+installer, which with `--skill` links just this skill (add `--companions` for
+that runtime's agents and commands too; see the root README for runtimes and
+options):
 
 ```bash
 python3 ~/Projects/agent-skills/install.py claude --skill bayesian-workflow  # or codex, gemini, all
 ```
 
-or by symlinking just this skill into your runtime's skills directory:
+or by symlinking it into your runtime's skills directory by hand:
 
 ```bash
 ln -s ~/Projects/agent-skills/skills/bayesian-workflow ~/.claude/skills/bayesian-workflow  # Claude Code
