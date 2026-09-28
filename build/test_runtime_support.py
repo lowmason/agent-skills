@@ -266,6 +266,11 @@ def installed_links(root: Path) -> set[str]:
       '.agents/skills/derive-roadmap',
       '.agents/skills/writing-plans',
     }),
+    # So does dropping the command with --no-companions.
+    ('claude', 'derive-roadmap', ('--no-companions',), {
+      '.claude/skills/derive-roadmap',
+      '.claude/skills/writing-plans',
+    }),
     ('claude', 'recommend-visualization', (), {
       '.claude/skills/recommend-visualization',
       '.claude/skills/explore-data',
@@ -327,7 +332,8 @@ TEXT_SUFFIXES = {'.md', '.py', '.sh', '.js', '.cjs'}
 # guides are for people, so their links are not dependencies.
 HUMAN_DOCS = {'README.md', 'INSTALL.md'}
 # References the scan finds that are not hard dependencies: the source works
-# without the target installed.
+# without the target installed. An entry excuses its whole edge, so a hard
+# reference added later between the same two skills passes unnoticed.
 SOFT_REFERENCES = {
   # Says where the plan-completion protocol retires specs; never runs it.
   ('skill:brainstorming', 'skill:writing-plans'),
@@ -343,6 +349,7 @@ SOFT_REFERENCES = {
   ('skill:recommend-visualization', 'skill:bayesian-workflow'),
   # Likens its extra signals to characterize.py's; never runs it.
   ('skill:recommend-visualization', 'skill:recommend-probabilistic-model'),
+  # Names SDD's Model Selection but gives the review tiers and aliases inline;
   # SDD's review-package and task-reviewer prompt apply only when SDD calls.
   ('skill:requesting-code-review', 'skill:subagent-driven-development'),
   # Hands a tuned model on to the experiments ledger; a next step.
@@ -509,7 +516,7 @@ def test_copy_refuses_a_symlink_it_would_copy(tmp_path, monkeypatch, capsys, tar
     init_repo(root, '__pycache__/\n*.env\nsecret/\n', 'skills/demo/SKILL.md', 'skills/demo/shared')
   status, _ = copy_demo(install, monkeypatch, root, *flags)
   assert status == 1
-  assert 'symlink' in capsys.readouterr().err
+  assert '--copy would follow these symlinks' in capsys.readouterr().err
   assert not (root.parent / 'home').exists()
 
 
@@ -542,7 +549,7 @@ def test_copy_refuses_a_linked_skill_without_scanning_it(tmp_path, monkeypatch, 
   monkeypatch.setattr(install, 'copy_list', lambda source: scanned.append(source) or [])
   status, _ = copy_demo(install, monkeypatch, root, '--dry-run')
   assert status == 1
-  assert 'symlink' in capsys.readouterr().err
+  assert '--copy would follow these symlinks' in capsys.readouterr().err
   assert scanned == []
 
 
