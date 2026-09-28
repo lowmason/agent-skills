@@ -520,13 +520,44 @@ def test_copy_refuses_a_symlink_it_would_copy(tmp_path, monkeypatch, capsys, tar
   assert not (root.parent / 'home').exists()
 
 
-def test_copy_refuses_a_nested_repository_before_writing(tmp_path, monkeypatch, capsys):
-  # git lists a nested repository as one entry, a directory no file copy takes.
+def test_copy_installs_the_items_a_link_install_does(tmp_path, monkeypatch):
+  # git decides what a copied skill holds, never which items install: a
+  # local-only skill or agent, ignored whole, installs either way.
+  install = load_install(monkeypatch)
+  root = tmp_path / 'repo'
+  make_skill(root)
+  (root / 'skills' / 'local').mkdir()
+  (root / 'skills' / 'local' / 'SKILL.md').write_text('local only\n')
+  (root / 'agents').mkdir()
+  (root / 'agents' / 'public.md').write_text('tracked\n')
+  (root / 'agents' / 'private.md').write_text('local only\n')
+  init_repo(root, '__pycache__/\n*.env\n', 'skills/demo/SKILL.md', 'agents/public.md')
+  (root / '.git' / 'info' / 'exclude').write_text('agents/private.md\nskills/local/\n')
+  monkeypatch.setattr(install, 'REPO', root)
+
+  def installed(*flags: str) -> list[str]:
+    home = tmp_path / ('copy' if flags else 'link')
+    assert install.main(['claude', '--home', str(home), *flags]) == 0
+    return sorted(str(path.relative_to(home)) for path in home.glob('.claude/*/*'))
+
+  assert installed('--copy') == installed() == [
+    '.claude/agents/private.md',
+    '.claude/agents/public.md',
+    '.claude/skills/demo',
+    '.claude/skills/local',
+  ]
+
+
+@pytest.mark.parametrize('git', [True, False])
+def test_copy_refuses_a_nested_repository_before_writing(tmp_path, monkeypatch, capsys, git):
+  # git lists a nested repository as one entry, a directory no file copy
+  # takes; outside git, the fallback walk must not copy it file by file.
   install = load_install(monkeypatch)
   monkeypatch.setenv('GIT_CEILING_DIRECTORIES', str(tmp_path))
   root = tmp_path / 'repo'
   skill = make_skill(root)
-  init_repo(root, '__pycache__/\n*.env\n', 'skills/demo/SKILL.md')
+  if git:
+    init_repo(root, '__pycache__/\n*.env\n', 'skills/demo/SKILL.md')
   subprocess.run(['git', 'init', '-q', str(skill / 'vendor')], check=True)
   (skill / 'vendor' / 'lib.py').write_text('tracked elsewhere\n')
   status, _ = copy_demo(install, monkeypatch, root)

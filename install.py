@@ -9,10 +9,11 @@ Examples:
 
 Symlinks are the default, so edits to installed items are live; re-run after a
 pull that adds skills, agents, or commands.
-A full install also links each runtime's companion agents and commands. --skill
-installs the named skills plus what they cannot work without (the DEPENDENCIES
-table in install.py); other companions only with --companions. The installer
-never replaces a path it does not already manage, and it checks every
+A full install also includes each runtime's companion agents and commands.
+--skill installs the named skills plus what they cannot work without (the
+DEPENDENCIES table in install.py); other companions only with --companions.
+The installer never replaces a path it does not already manage, and a copy
+manages none, so --copy needs old copies removed first. It checks every
 destination before writing, so a conflict leaves nothing half-installed.
 '''
 from __future__ import annotations
@@ -59,7 +60,8 @@ DEPENDENCIES: dict[str, tuple[str, ...]] = {
   'skill:writing-plans': ('command:deferred',),
 }
 
-# .gitignore's generic entries, for --copy where git cannot say what to keep.
+# .gitignore's generic entries, fixed here, for --copy where git keeps none of
+# a skill's files; patterns added to .gitignore later do not apply.
 FALLBACK_IGNORES = (
   '.DS_Store', '__pycache__', '*.pyc', '.pytest_cache', '.hypothesis',
   '.verify_venv', 'settings.local.json', '.sdd', 'review',
@@ -271,7 +273,7 @@ def git_env() -> dict[str, str]:
 def kept_files(source: Path) -> list[Path] | None:
   '''Files under source that git keeps: tracked, or untracked and not ignored.
 
-  None when git cannot say: no git, not a checkout, or source ignored whole.
+  None when git keeps none of them: no git, not a checkout, or source ignored whole.
   '''
   try:
     listing = subprocess.run(
@@ -293,8 +295,8 @@ def kept_files(source: Path) -> list[Path] | None:
 
 def copy_list(source: Path) -> list[Path]:
   '''The files --copy writes for source, relative to it: what git keeps, or,
-  when git cannot say, everything outside .gitignore's generic patterns.
-  A symlink appears as one entry, never descended into.'''
+  when git keeps none of them, everything outside FALLBACK_IGNORES. A symlink
+  or nested repository appears as one entry, never descended into.'''
   kept = kept_files(source)
   if kept is not None:
     return kept
@@ -306,6 +308,14 @@ def copy_list(source: Path) -> list[Path]:
   for directory, subdirectories, filenames in os.walk(source):
     here = Path(directory)
     subdirectories[:] = [name for name in subdirectories if not fallback_ignores(name)]
+    # As git lists it: a nested repository is one entry, which preflight() refuses.
+    nested = [
+      name
+      for name in subdirectories
+      if not (here / name).is_symlink() and (here / name / '.git').exists()
+    ]
+    subdirectories[:] = [name for name in subdirectories if name not in nested]
+    found += [(here / name).relative_to(source) for name in nested]
     found += [
       (here / name).relative_to(source)
       for name in subdirectories
@@ -371,14 +381,14 @@ def main(argv: list[str] | None = None) -> int:
   parser.add_argument(
     '--companions',
     action=argparse.BooleanOptionalAction,
-    help="also link the runtime's agents and commands; "
+    help="also install the runtime's agents and commands; "
     'default: on for a full install, off with --skill; turning it off '
     'also drops the commands a skill requires',
   )
   parser.add_argument(
     '--copy',
     action='store_true',
-    help='copy instead of symlinking, skipping files git ignores',
+    help='copy instead of symlinking; README.md says what a copy leaves out',
   )
   parser.add_argument('--dry-run', action='store_true', help='show actions without writing')
   parser.add_argument(
