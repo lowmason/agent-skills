@@ -152,15 +152,79 @@ GIT_FLAG_ALLOWED = {
 }
 
 
+# A `#` starts a comment only at the start of a word: at the start of input or
+# after one of these. Mid-word (`foo#`) it is an ordinary character.
+WORD_BOUNDARIES = frozenset(' \t\n;&|()<>')
+
+
+def _logical_lines(command):
+    """Split `command` at the newlines that end a shell command.
+
+    Only unquoted newlines end one, so cutting at every newline breaks any
+    quoted string that spans lines. This scan tracks just enough shell syntax to
+    find the real ones, and follows shlex's posix quoting rules so the two agree
+    on where every quote closes:
+
+    * a newline inside '...' or "..." stays in its word;
+    * a backslash-newline outside quotes is a line continuation, and is dropped;
+    * a comment — a `#` starting a word — is dropped up to its newline, so an
+      apostrophe in it cannot open a quote that swallows the lines after it.
+
+    An unterminated quote runs to the end of the command, where shlex raises
+    and a guarded agent fails closed.
+    """
+    lines = []
+    current = []
+    quote = None
+    word_start = True
+    i = 0
+    while i < len(command):
+        char = command[i]
+        if quote == "'":  # nothing escapes inside single quotes
+            current.append(char)
+            if char == "'":
+                quote = None
+        elif char == '\\':
+            escaped = command[i + 1:i + 2]
+            i += 2
+            if escaped == '\n' and quote is None:
+                continue  # a continuation: the next line is more of this word
+            current.append(char + escaped)
+            word_start = False
+            continue
+        elif quote == '"':
+            current.append(char)
+            if char == '"':
+                quote = None
+        elif char in '\'"':
+            current.append(char)
+            quote = char
+            word_start = False
+        elif char == '#' and word_start:
+            end = command.find('\n', i)
+            i = len(command) if end == -1 else end  # the newline still ends the line
+            continue
+        elif char == '\n':
+            lines.append(''.join(current))
+            current = []
+            word_start = True
+        else:
+            current.append(char)
+            word_start = char in WORD_BOUNDARIES
+        i += 1
+    lines.append(''.join(current))
+    return lines
+
+
 def split_subcommands(command):
     """Tokenize `command` and split it into subcommands on shell operators.
 
-    Newlines are pre-split because shlex treats them as ordinary whitespace,
-    which would otherwise fold a second line into the first subcommand and hide
-    its leading token from classification.
+    Each logical line is tokenized on its own, because shlex treats a newline
+    as ordinary whitespace, which would otherwise fold a second command into the
+    first subcommand and hide its leading token from classification.
     """
     subcommands = []
-    for line in command.split('\n'):
+    for line in _logical_lines(command):
         lexer = shlex.shlex(line, posix=True, punctuation_chars=True)
         lexer.whitespace_split = True
         lexer.commenters = ''  # a shell comment only starts at a word boundary

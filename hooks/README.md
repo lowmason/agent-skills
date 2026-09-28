@@ -182,6 +182,13 @@ permission system. Not caught:
 - Command substitution: `$(git commit -m x)`.
 - Mutators inside a quoted script: `python -c "..."`, `sh -c "..."`, `perl -e`.
 - Anything reached through an alias or a wrapper script.
+- A mutator between two heredoc bodies that each hold an unpaired quote. Commands
+  split only at unquoted newlines. Backslash-newlines join lines, and `#` comments
+  are dropped, so multi-line quoted strings, continued lines, and `# what's this`
+  annotations all classify correctly. Heredoc bodies, though, are still read as
+  shell. In a body, a denied leading word (`rm = 5`) or a lone quote is denied
+  (fail-closed). A quote left open in one body and closed in a later one
+  swallows everything between them, including any command.
 
 Known false positives, accepted rather than widened:
 

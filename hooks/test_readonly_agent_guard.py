@@ -96,8 +96,83 @@ def test_tokenizer_splits_on_shell_operators():
 
 def test_tokenizer_splits_on_newlines():
     # shlex treats a newline as plain whitespace, so 'a\nb' would collapse into
-    # one subcommand and hide b's leading token. The pre-split is load-bearing.
+    # one subcommand and hide b's leading token. Splitting at every unquoted
+    # newline is load-bearing.
     assert guard.split_subcommands('git log\nrm x') == [['git', 'log'], ['rm', 'x']]
+
+
+# Observed 2026-09-28: a code-reviewer's calibration probe, denied because the
+# guard cut the command at every newline and shlex then raised on the half-open
+# quote in the first line.
+MULTILINE_PYTHON_C = (
+    'uv run --python 3.13 --with numpy python -c "\n'
+    'import numpy as np\n'
+    'print(np.mean([1, 2]))\n'
+    '"'
+)
+
+
+def test_newline_inside_quotes_stays_in_its_word():
+    assert guard.split_subcommands(MULTILINE_PYTHON_C) == [[
+        'uv', 'run', '--python', '3.13', '--with', 'numpy', 'python', '-c',
+        '\nimport numpy as np\nprint(np.mean([1, 2]))\n']]
+    assert guard.split_subcommands('python -c "a\nb"\nrm x') == [
+        ['python', '-c', 'a\nb'], ['rm', 'x']]
+    assert guard.split_subcommands("python -c 'a\nb'\nrm x") == [
+        ['python', '-c', 'a\nb'], ['rm', 'x']]
+    # An escaped double quote does not close the string.
+    assert guard.split_subcommands('echo "say \\"hi\\"\n"\nrm x') == [
+        ['echo', 'say "hi"\n'], ['rm', 'x']]
+
+
+def test_backslash_is_literal_inside_single_quotes():
+    # Where a quote closes must match shlex exactly: if the split thinks a quote
+    # is still open when shlex does not, a newline folds a mutator into a word.
+    assert guard.split_subcommands("echo 'a\\'\nrm x") == [['echo', 'a\\'], ['rm', 'x']]
+
+
+def test_backslash_newline_continues_the_command():
+    assert guard.split_subcommands(
+        'uv run --python 3.13 --with pytest \\\n  python -m pytest -q') == [[
+            'uv', 'run', '--python', '3.13', '--with', 'pytest',
+            'python', '-m', 'pytest', '-q']]
+    # Splitting at the continuation instead would strand the verb or the flag in
+    # a subcommand of its own, where nothing classifies it.
+    assert 'stash' in guard.classify('git \\\n  stash')
+    assert 'sed -i' in guard.classify('sed \\\n  -i s/a/b/ f')
+
+
+def test_escaped_backslash_before_a_newline_is_not_a_continuation():
+    # `a\\` ends in a literal backslash, so the newline after it still ends the
+    # command. Taking it as a continuation would glue `rm` onto `echo`'s word.
+    assert guard.split_subcommands('echo a\\\\\nrm x') == [['echo', 'a\\'], ['rm', 'x']]
+
+
+def test_comment_text_is_not_tokenized():
+    # An apostrophe in a comment is not a quote to the shell, so it must not be
+    # one to the tokenizer. Agents annotate multi-line commands this way.
+    assert guard.split_subcommands("# what's changed\ngit diff main..HEAD") == [
+        ['git', 'diff', 'main..HEAD']]
+    assert guard.split_subcommands("git log  # don't page\ngit status") == [
+        ['git', 'log'], ['git', 'status']]
+    assert guard.split_subcommands("git log;# don't\nrm x") == [
+        ['git', 'log'], ['rm', 'x']]
+
+
+def test_comment_cannot_hide_a_mutator():
+    # Tokenized, the apostrophes in these two comments would pair into one
+    # quoted word and swallow the `git stash` between them.
+    assert 'stash' in guard.classify("# what's here\ngit stash\n# let's see")
+    # A backslash in a comment is literal: the comment ends at its newline
+    # rather than continuing into the next line.
+    assert '`rm`' in guard.classify('# note \\\nrm x')
+
+
+def test_hash_that_does_not_start_a_word_is_not_a_comment():
+    assert guard.split_subcommands("git log --grep '# x'") == [
+        ['git', 'log', '--grep', '# x']]
+    # An escaped space keeps the `#` mid-word, like `foo#` below.
+    assert guard.split_subcommands('echo a\\ #b') == [['echo', 'a #b']]
 
 
 def test_tokenizer_leaves_redirection_intact():
@@ -440,6 +515,20 @@ def test_classification_failure_fails_closed_for_a_guarded_agent(guard_env):
     # Unbalanced quote: shlex raises, and after identification the guard denies.
     proc = run_guard(payload_for('git log "unterminated'), guard_env)
     assert proc.returncode == 0
+    out = json.loads(proc.stdout)
+    assert out['hookSpecificOutput']['permissionDecision'] == 'deny'
+    assert 'ValueError' in out['hookSpecificOutput']['permissionDecisionReason']
+
+
+def test_multiline_quoted_script_from_a_guarded_agent_is_allowed(guard_env):
+    for agent in sorted(guard.READONLY_AGENTS):
+        proc = run_guard(payload_for(MULTILINE_PYTHON_C, agent=agent), guard_env)
+        assert proc.returncode == 0, agent
+        assert proc.stdout.strip() == '', agent
+
+
+def test_unbalanced_quote_spanning_lines_still_fails_closed(guard_env):
+    proc = run_guard(payload_for('git log "a\nb'), guard_env)
     out = json.loads(proc.stdout)
     assert out['hookSpecificOutput']['permissionDecision'] == 'deny'
     assert 'ValueError' in out['hookSpecificOutput']['permissionDecisionReason']
