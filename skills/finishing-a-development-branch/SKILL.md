@@ -14,7 +14,7 @@ description: >
 
 Guide completion of development work by presenting clear options and handling chosen workflow.
 
-**Core principle:** Verify tests → Check deferred backlog → Detect environment → Present options → Execute choice → Clean up.
+**Core principle:** Verify tests → Check deferred backlog → Detect environment → Present options → Codex review (merge/PR) → Execute choice → Clean up.
 
 **Announce at start:** "I'm using the finishing-a-development-branch skill to complete this work."
 
@@ -176,12 +176,50 @@ Which option?
 
 **Don't add explanation** - keep options concise.
 
+### Step 4b: Codex Second Review (Merge and PR Only)
+
+When your partner picks merge or PR — on a detached HEAD, push-as-new-branch —
+get a second model's review before the work leaves the building. Keep and
+Discard ship nothing and skip this step, the same binding as the aged-tail
+gate. Resolve that gate first: both of its outcomes commit to the branch — an
+acknowledgement, or `/deferred` quick fixes — and the review must see the
+branch as it will ship.
+
+Run it from the feature worktree, before Option 1's `cd` and `checkout` — from
+the base branch there is nothing left to review. Follow
+[codex-review.md](../requesting-code-review/codex-review.md), choosing the base
+this way:
+
+- **Codex already reviewed this branch** — executing-plans and
+  subagent-driven-development run it in their final review, and recorded the
+  SHA it reviewed in the conversation. See what has changed since, outside the
+  plan-completion bookkeeping in `specs/`:
+
+  ```bash
+  git diff --stat <reviewed-sha>..HEAD -- . ':(exclude)specs/'
+  ```
+
+  Empty: say "Codex reviewed this code at <reviewed-sha>; only specs/
+  bookkeeping since" and skip the review. Otherwise `--base <reviewed-sha>`,
+  which reviews just the new commits.
+- **Otherwise** — or the reviewed SHA is lost to a `/clear` —
+  `--base <base-branch>`, the whole branch.
+
+Work its findings with the receiving-code-review skill: fix what holds up,
+re-run the tests, commit. Show your partner anything you left unfixed, and
+execute the chosen option only after they have seen it. If nothing reviewed
+this branch before finishing — it did not come through executing-plans or
+subagent-driven-development — offer a code-reviewer pass via the
+requesting-code-review skill as well.
+
 ### Step 5: Execute Choice
 
 #### Option 1: Merge Locally
 
 **Aged-tail gate (Step 1b):** if aged items were reported, resolve them before
 merging — a `/deferred` pass or a logged acknowledgement.
+
+**Codex review (Step 4b):** done from the feature worktree before the `cd` below.
 
 ```bash
 # Get main repo root for CWD safety
@@ -209,6 +247,8 @@ git branch -d <feature-branch>
 
 **Aged-tail gate (Step 1b):** if aged items were reported, resolve them before
 pushing — a `/deferred` pass or a logged acknowledgement.
+
+**Codex review (Step 4b):** done before the push.
 
 Push first — this half never needs `gh`, and it makes the branch a real ref the
 fallback URL below can point at:
@@ -241,8 +281,6 @@ the PR from the command line — open it in the browser:
 
 <web-root>/compare/<base-branch>...<feature-branch>?expand=1
 ```
-
-Consider a pre-PR review via the requesting-code-review skill first.
 
 **Do NOT clean up worktree** — user needs it alive to iterate on PR feedback.
 
@@ -310,12 +348,12 @@ ExitWorktree), use it. Otherwise, leave the workspace in place.
 
 ## Quick Reference
 
-| Option | Merge | Push | Keep Worktree | Cleanup Branch |
-|--------|-------|------|---------------|----------------|
-| 1. Merge locally | yes | - | - | yes |
-| 2. Create PR | - | yes | yes | - |
-| 3. Keep as-is | - | - | yes | - |
-| 4. Discard | - | - | - | yes (force) |
+| Option | Codex Review | Merge | Push | Keep Worktree | Cleanup Branch |
+|--------|--------------|-------|------|---------------|----------------|
+| 1. Merge locally | yes | yes | - | - | yes |
+| 2. Create PR | yes | - | yes | yes | - |
+| 3. Keep as-is | - | - | - | yes | - |
+| 4. Discard | - | - | - | - | yes (force) |
 
 ## Common Mistakes
 
@@ -326,6 +364,10 @@ ExitWorktree), use it. Otherwise, leave the workspace in place.
 **Taking the aged-tail override unasked**
 - **Problem:** Writing the acknowledgement yourself turns a gate meant to force a conscious decision back into a silent default
 - **Fix:** Present both options and wait; log only the reason your partner gives
+
+**Running the Codex review after Option 1's checkout**
+- **Problem:** On the base branch the merge base is HEAD itself — Codex reviews an empty diff
+- **Fix:** Run Step 4b from the feature worktree, before any `cd` or `checkout`
 
 **Open-ended questions**
 - **Problem:** "What should I do next?" is ambiguous
@@ -356,6 +398,8 @@ ExitWorktree), use it. Otherwise, leave the workspace in place.
 **Never:**
 - Proceed with failing tests
 - Merge or open a PR with an unaddressed aged tail
+- Merge or open a PR without the Step 4b Codex review, or a stated reason it was skipped
+- Report a Codex review that did not complete
 - Report a PR as created when only the branch was pushed
 - Write an aged-backlog acknowledgement your partner did not ask for
 - Merge without verifying tests on result
@@ -370,6 +414,7 @@ ExitWorktree), use it. Otherwise, leave the workspace in place.
 - Check the deferred backlog before offering options
 - Detect environment before presenting menu
 - Present exactly 4 options (or 3 for detached HEAD)
+- Run the Codex review (Step 4b) before merging or pushing
 - Get typed confirmation for Option 4
 - Clean up worktree for Options 1 & 4 only
 - `cd` to main repo root before worktree removal

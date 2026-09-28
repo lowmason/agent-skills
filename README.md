@@ -88,9 +88,9 @@ Adapted from Jesse Vincent's superpowers skills — process disciplines for plan
 | [`test-driven-development`](skills/test-driven-development/) | Write tests before implementation for any feature or bugfix. |
 | [`systematic-debugging`](skills/systematic-debugging/) | Diagnose bugs and test failures methodically before proposing fixes. |
 | [`verification-before-completion`](skills/verification-before-completion/) | Run verification and confirm output before claiming work is done. |
-| [`requesting-code-review`](skills/requesting-code-review/) | Get work reviewed when completing features or before merging. |
+| [`requesting-code-review`](skills/requesting-code-review/) | Get work reviewed when completing features or before merging. Also carries the Codex CLI second-opinion recipe (`codex-review.md`) that the plan executors and branch finishing run beside `code-reviewer`; it is skipped with a notice where the `codex` CLI is absent. |
 | [`receiving-code-review`](skills/receiving-code-review/) | Handle review feedback with rigor instead of blind agreement. |
-| [`finishing-a-development-branch`](skills/finishing-a-development-branch/) | Decide how to integrate completed work (merge, PR, or cleanup). |
+| [`finishing-a-development-branch`](skills/finishing-a-development-branch/) | Decide how to integrate completed work (merge, PR, or cleanup); merge and PR are gated on a Codex second-opinion review. |
 | [`using-git-worktrees`](skills/using-git-worktrees/) | Create an isolated workspace for feature work. |
 | [`writing-skills`](skills/writing-skills/) | Create, edit, and verify agent skills. |
 

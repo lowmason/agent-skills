@@ -264,6 +264,15 @@ Changes from upstream:
     only -- the moved text is verbatim, carrying the same authorship and
     MIT terms as the sections it came from, and no wording was rewritten
     in the move.
+  - A Codex second-opinion review seat was added: a concurrent Codex CLI
+    review (`codex exec review --base`, pinned to a read-only sandbox)
+    beside the code-reviewer subagent at subagent-driven-development's
+    final whole-branch review; at a new whole-plan review step (Step 3) in
+    executing-plans, which as vendored ran no code review at all -- only a
+    critical read of the plan; and as a merge/PR gate at Step 4b of
+    finishing-a-development-branch. The recipe all three follow,
+    requesting-code-review/codex-review.md, is an original work by Lowell
+    Mason under the same MIT terms.
 
     brainstorming/
     dispatching-parallel-agents/

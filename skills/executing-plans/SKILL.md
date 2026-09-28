@@ -23,6 +23,10 @@ Load plan, review critically, execute all tasks, report when complete.
 2. Review critically - identify any questions or concerns about the plan
 3. If concerns: Raise them with your human partner before starting
 4. If no concerns: Create todos for the plan items and proceed
+5. Record the plan's base before Task 1: `git rev-parse --short HEAD`. Write the
+   SHA into the conversation — shell state does not persist — because Step 3's
+   review starts from it. Lost it to a `/clear`? On a branch cut for this plan,
+   `git merge-base <base-branch> HEAD` recovers it.
 
 ### Step 2: Execute Tasks
 
@@ -32,14 +36,34 @@ For each task:
 3. Run verifications as specified
 4. Mark as completed
 
-### Step 3: Complete the Plan
+### Step 3: Review the Whole Plan
 
-After all tasks are complete and verified, run the plan-completion protocol
+After the last task is verified, review everything the plan changed — the
+Step 1 base through HEAD — with two reviewers, launched in the same message so
+they run concurrently:
+
+1. **code-reviewer** — fill requesting-code-review's
+   [code-reviewer.md](../requesting-code-review/code-reviewer.md) with the plan
+   file as `[PLAN_OR_REQUIREMENTS]`, the Step 1 base as `[BASE_SHA]`, and model
+   opus (the final whole-branch tier). On a platform without subagents, work
+   through the same template yourself.
+2. **Codex** — the second-opinion review in
+   [codex-review.md](../requesting-code-review/codex-review.md), with
+   `--base <the Step 1 base>`.
+
+Touch nothing until both have returned. Then merge the two lists into one, work
+it with the receiving-code-review skill, fix what holds up, and re-run the
+plan's tests. Findings you leave unfixed carry into Step 4, where they feed the
+resolve-before-defer gate.
+
+### Step 4: Complete the Plan
+
+After the review resolves, run the plan-completion protocol
 from the writing-plans skill (its "Plan Completion Protocol" section):
 resolve-before-defer gate → plan markup → deferred items → retire the plan
 and (conditionally) its spec.
 
-### Step 4: Complete Development
+### Step 5: Complete Development
 
 Once the plan is complete and retired:
 - Announce: "I'm using the finishing-a-development-branch skill to complete this work."
@@ -68,6 +92,7 @@ Once the plan is complete and retired:
 - Review plan critically first
 - Follow plan steps exactly
 - Don't skip verifications
+- Review the whole plan — code-reviewer plus Codex — before completing it
 - Reference skills when plan says to
 - Stop when blocked, don't guess
 - Never start implementation on main/master branch without explicit user consent
@@ -77,4 +102,6 @@ Once the plan is complete and retired:
 **Required workflow skills:**
 - **using-git-worktrees** - Ensures isolated workspace (creates one or verifies existing)
 - **writing-plans** - Creates the plan this skill executes
+- **requesting-code-review** - code-reviewer template and Codex second-opinion recipe for the whole-plan review
+- **receiving-code-review** - Works the merged findings before anything is fixed
 - **finishing-a-development-branch** - Complete development after all tasks

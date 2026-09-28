@@ -16,7 +16,7 @@ Dispatch a code reviewer subagent to catch issues before they cascade. The revie
 ## When to Request Review
 
 **Mandatory:**
-- The final whole-branch review in subagent-driven development (per-task reviews there use subagent-driven-development's own task-reviewer-prompt.md)
+- The final whole-branch review in subagent-driven development (per-task reviews there use subagent-driven-development's own task-reviewer-prompt.md), and the whole-plan review in executing-plans — both pair this reviewer with a Codex second opinion ([codex-review.md](codex-review.md))
 - After completing major feature
 - Before merge to main
 
@@ -90,12 +90,15 @@ You: [Fix progress indicators]
 ## Integration with Workflows
 
 **Subagent-Driven Development:**
-- This template serves the FINAL whole-branch review only
+- This template serves the FINAL whole-branch review only, beside a concurrent Codex second opinion ([codex-review.md](codex-review.md))
 - Per-task reviews use subagent-driven-development's task-reviewer-prompt.md (task-scoped gate)
 
 **Executing Plans:**
-- Review after each task or at natural checkpoints
-- Get feedback, apply, continue
+- Whole-plan review once every task is verified: this template plus a concurrent Codex second opinion, before the plan-completion protocol
+- Optional reviews at natural checkpoints before that
+
+**Finishing a Development Branch:**
+- A Codex second opinion gates merge and PR — skipped when Codex already reviewed the same code
 
 **Ad-Hoc Development:**
 - Review before merge
