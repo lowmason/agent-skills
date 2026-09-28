@@ -153,8 +153,11 @@ GIT_FLAG_ALLOWED = {
 
 
 # A `#` starts a comment only at the start of a word: at the start of input or
-# after one of these. Mid-word (`foo#`) it is an ordinary character.
-WORD_BOUNDARIES = frozenset(' \t\n;&|()<>')
+# after one of these. Mid-word (`foo#`) it is an ordinary character. `(` and `<`
+# are absent although bash would count them: in zsh, which the Bash tool runs,
+# `(#i)` is a glob flag and `${(#)x}` a parameter flag, and dropping those as
+# comments would hide the rest of the line.
+COMMENT_BOUNDARIES = frozenset(' \t\n;&|')
 
 
 def _logical_lines(command):
@@ -167,7 +170,7 @@ def _logical_lines(command):
 
     * a newline inside '...' or "..." stays in its word;
     * a backslash-newline outside quotes is a line continuation, and is dropped;
-    * a comment — a `#` starting a word — is dropped up to its newline, so an
+    * a comment (see COMMENT_BOUNDARIES) is dropped up to its newline, so an
       apostrophe in it cannot open a quote that swallows the lines after it.
 
     An unterminated quote runs to the end of the command, where shlex raises
@@ -176,7 +179,7 @@ def _logical_lines(command):
     lines = []
     current = []
     quote = None
-    word_start = True
+    comment_can_start = True
     i = 0
     while i < len(command):
         char = command[i]
@@ -190,7 +193,7 @@ def _logical_lines(command):
             if escaped == '\n' and quote is None:
                 continue  # a continuation: the next line is more of this word
             current.append(char + escaped)
-            word_start = False
+            comment_can_start = False
             continue
         elif quote == '"':
             current.append(char)
@@ -199,18 +202,18 @@ def _logical_lines(command):
         elif char in '\'"':
             current.append(char)
             quote = char
-            word_start = False
-        elif char == '#' and word_start:
+            comment_can_start = False
+        elif char == '#' and comment_can_start:
             end = command.find('\n', i)
             i = len(command) if end == -1 else end  # the newline still ends the line
             continue
         elif char == '\n':
             lines.append(''.join(current))
             current = []
-            word_start = True
+            comment_can_start = True
         else:
             current.append(char)
-            word_start = char in WORD_BOUNDARIES
+            comment_can_start = char in COMMENT_BOUNDARIES
         i += 1
     lines.append(''.join(current))
     return lines

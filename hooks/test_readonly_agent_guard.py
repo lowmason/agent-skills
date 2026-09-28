@@ -175,6 +175,14 @@ def test_hash_that_does_not_start_a_word_is_not_a_comment():
     assert guard.split_subcommands('echo a\\ #b') == [['echo', 'a #b']]
 
 
+def test_zsh_hash_after_a_paren_or_redirect_is_not_a_comment():
+    # The Bash tool runs zsh, where `(#i)` is a glob flag and `${(#)x}` a
+    # parameter flag. Taking their `#` as a comment would drop the `; git stash`.
+    for command in ('ls (#i)readme*; git stash', 'echo ${(#)x}; git stash',
+                    'ls <#x; git stash'):
+        assert 'stash' in guard.classify(command), command
+
+
 def test_tokenizer_leaves_redirection_intact():
     # '2>&1' lexes as ['2', '>&', '1'] and '>' is not an operator we split on —
     # redirection stays inside its subcommand, per spec D2.
