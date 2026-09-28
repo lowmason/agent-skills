@@ -204,9 +204,12 @@ and commands unless you add `--companions`. A full install includes every
 companion unless you add `--no-companions`, which leaves out all agents and
 commands, required ones included. The table is `DEPENDENCIES` in `install.py`.
 
-`--copy` copies the files git keeps (tracked, or untracked and not ignored)
-and refuses a skill whose copied files include a symlink, since a copy would
-follow it.
+`--copy` copies the files git keeps (tracked, or untracked and not ignored).
+Where git cannot say (no git, not a checkout, or a skill git ignores whole),
+it copies everything except `.gitignore`'s generic patterns, such as caches and
+virtualenvs. It installs nothing if anything it would copy is a symlink, which
+a copy would follow, or a nested repository or submodule, which it cannot copy
+file by file.
 
 | Runtime | Skills | Agents | Commands |
 |---------|--------|--------|----------|

@@ -31,10 +31,11 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent
 
 # Hard dependencies: what a skill or command cannot work without because it
-# runs, reads, or sends you to it. --skill follows them transitively; a
-# command installs only where its runtime has command adapters, and never
-# under --no-companions. build/test_runtime_support.py checks this table
-# against the references in skill and command text.
+# runs or reads another skill's files or named sections, or runs a command.
+# A handoff to a whole skill by name is not one. --skill follows them
+# transitively; a command installs only where its runtime has command
+# adapters, and never under --no-companions. build/test_runtime_support.py
+# checks this table against the references in skill and command text.
 DEPENDENCIES: dict[str, tuple[str, ...]] = {
   'command:deferred': ('skill:writing-plans',),
   'skill:clean-code': ('skill:clean-coder',),
