@@ -58,6 +58,16 @@
   carrier, two checkpoints without behavioural evidence, derive-roadmap's
   unmeasured RED baseline). This branch adds the Codex second-opinion review
   seat to the process skills and touches none of them.
+- 2026-09-28 — finished `claude/admiring-ishizaka-3edb6d` with 7 items aged
+  >45d, carried on the partner's reason, verbatim: "Out of scope for this
+  branch." The items are `11-delegation-frontmatter-rollout`'s interactive
+  verification (71d), three `18-methodology-pipeline-skills` items (64d: the
+  DL/NLP template extension, the in-session SOTA pass, synthesize-mode
+  scenario verification), and three `19-methodology-pipeline-skills` items
+  (60d: the unbacked stage-stamp carrier, two checkpoints without behavioural
+  evidence, derive-roadmap's unmeasured RED baseline). This branch reworks
+  install.py (--skill dependency closure, pre-flight, git-aware --copy) and
+  touches none of them.
 
 ## 11-delegation-frontmatter-rollout — 2026-07-19
 - [x] Haiku-pinned `Explore` override agent (fork-isolation upgrade; plan "Out of
@@ -1279,3 +1289,21 @@ declined as YAGNI (zero instances in a one-page wiki).
       which is what keeps it `Size: plan` rather than a second quick fix.
       Size: plan. Done when: `check_snippets.py skills/` exits 0 and the invocation is in
       the root `CLAUDE.md` Commands block alongside the three bayesian-workflow tiers.
+
+## install-py-rework (no plan; branch claude/admiring-ishizaka-3edb6d) — 2026-09-28
+- [ ] Bare-name skill handoffs are not install dependencies. `install.py`'s
+      `DEPENDENCIES` and the drift scan (`referenced_dependencies()` in
+      `build/test_runtime_support.py`) cover another skill's files, named sections,
+      and `/commands` only; a `REQUIRED SUB-SKILL: Use <skill>` handoff is not one
+      (stated in CLAUDE.md "Editing skills" and the comment above `DEPENDENCIES`).
+      So `install.py claude --skill executing-plans` installs a skill whose Step 5
+      hands off to finishing-a-development-branch without installing it
+      (`skills/executing-plans/SKILL.md:85`; also its "Required workflow skills" list,
+      `skills/subagent-driven-development/SKILL.md:477`, and
+      `skills/writing-plans/SKILL.md:65,187,191`). Deferred by the owner at the
+      finishing review (code-reviewer finding I1 on aa5fe74): counting handoffs would
+      pull most of the superpowers set into every closure, and writing-plans hands off
+      to subagent-driven-development OR executing-plans, an either/or the table cannot
+      express. Size: design. Revisit if: a `--skill` install is reported broken for a
+      missing handed-off skill, or the installer gains a way to express alternatives
+      or a softer "recommends" tier.

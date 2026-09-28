@@ -30,7 +30,7 @@ agent-skills/
 ├── rules/       # path-scoped rule files, loaded via .claude/rules/ (see Rules below)
 ├── build/       # citation-verification tooling for recommend-probabilistic-model
 ├── specs/       # design records + implementation plans (retired work under completed/)
-└── install.py   # safe, idempotent installer for Claude, Codex, Gemini, or all three
+└── install.py   # safe installer for Claude, Codex, Gemini, or all three (idempotent when linking)
 ```
 
 The canonical skill bodies are portable. Agent manifests are generated from
@@ -177,15 +177,39 @@ python3 install.py claude
 # or: python3 install.py all
 ```
 
-Symlinks are the default, so repository updates are live. The installer is
-idempotent for links it already owns and refuses to overwrite any other existing
-file or directory. Useful options:
+Symlinks are the default, so edits to installed skills are live; re-run the
+installer after a pull that adds skills, agents, or commands. It is idempotent
+for symlinks that already point at the matching item in this checkout and
+refuses to overwrite any other existing file or directory. It checks every
+destination before writing, so a conflict installs nothing and lists every
+conflicting path at once. Useful options:
 
 ```bash
-python3 install.py codex --skill bayesian-workflow  # one skill; repeat --skill as needed
-python3 install.py all --dry-run                    # inspect without writing
-python3 install.py gemini --copy                    # frozen copies instead of links
+python3 install.py codex --skill bayesian-workflow                # just this skill; repeat --skill as needed
+python3 install.py claude --skill finishing-a-development-branch  # plus its dependencies (see below)
+python3 install.py codex --skill bayesian-workflow --companions   # the skill plus Codex's agents
+python3 install.py claude --no-companions                         # every skill, no agents or commands
+python3 install.py all --dry-run                                  # inspect without writing
+python3 install.py gemini --copy                                  # frozen copies, minus git-ignored files
 ```
+
+`--skill` also installs what the named skills cannot work without, and what
+those need in turn: sibling skills whose scripts or files they use, and the
+`/deferred` command where the runtime has commands (Claude Code, Gemini CLI).
+So `--skill finishing-a-development-branch` brings `writing-plans`,
+`requesting-code-review`, and `/deferred`, and `--skill derive-roadmap` brings
+`writing-plans`, which `/deferred` needs, even where the command itself is not
+installed (Codex, or `--no-companions`). It skips the runtime's other agents
+and commands unless you add `--companions`. A full install includes every
+companion unless you add `--no-companions`, which leaves out all agents and
+commands, required ones included. The table is `DEPENDENCIES` in `install.py`.
+
+`--copy` copies the files git keeps (tracked, or untracked and not ignored).
+Where git cannot say (no git, not a checkout, or a skill git ignores whole),
+it copies everything except `.gitignore`'s generic patterns, such as caches and
+virtualenvs. It installs nothing if anything it would copy is a symlink, which
+a copy would follow, or a nested repository or submodule, which it cannot copy
+file by file.
 
 | Runtime | Skills | Agents | Commands |
 |---------|--------|--------|----------|
