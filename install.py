@@ -244,6 +244,18 @@ def preflight(
       raise InstallError(
         f'--copy would follow these symlinks, so nothing was installed:{listing}'
       )
+    # git lists a nested repository or submodule as one directory entry.
+    nested = [
+      source / path
+      for source, files in (copies or {}).items()
+      for path in files
+      if (source / path).is_dir()
+    ]
+    if nested:
+      listing = ''.join(f'\n  {path}' for path in nested)
+      raise InstallError(
+        f'--copy cannot copy these nested repositories, so nothing was installed:{listing}'
+      )
 
 
 def git_env() -> dict[str, str]:

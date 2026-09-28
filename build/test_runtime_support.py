@@ -513,6 +513,22 @@ def test_copy_refuses_a_symlink_it_would_copy(tmp_path, monkeypatch, capsys, tar
   assert not (root.parent / 'home').exists()
 
 
+def test_copy_refuses_a_nested_repository_before_writing(tmp_path, monkeypatch, capsys):
+  # git lists a nested repository as one entry, a directory no file copy takes.
+  install = load_install(monkeypatch)
+  monkeypatch.setenv('GIT_CEILING_DIRECTORIES', str(tmp_path))
+  root = tmp_path / 'repo'
+  skill = make_skill(root)
+  init_repo(root, '__pycache__/\n*.env\n', 'skills/demo/SKILL.md')
+  subprocess.run(['git', 'init', '-q', str(skill / 'vendor')], check=True)
+  (skill / 'vendor' / 'lib.py').write_text('tracked elsewhere\n')
+  status, _ = copy_demo(install, monkeypatch, root)
+  assert status == 1
+  # The message, not a word: pytest names tmp_path after the test.
+  assert '--copy cannot copy these nested repositories' in capsys.readouterr().err
+  assert not (root.parent / 'home').exists()
+
+
 def test_copy_refuses_a_linked_skill_without_scanning_it(tmp_path, monkeypatch, capsys):
   # The link alone decides the refusal; its target may be a whole other tree.
   install = load_install(monkeypatch)
