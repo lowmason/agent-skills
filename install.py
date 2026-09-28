@@ -306,6 +306,14 @@ def copy_list(source: Path) -> list[Path]:
   for directory, subdirectories, filenames in os.walk(source):
     here = Path(directory)
     subdirectories[:] = [name for name in subdirectories if not fallback_ignores(name)]
+    # As git lists it: a nested repository is one entry, which preflight() refuses.
+    nested = [
+      name
+      for name in subdirectories
+      if not (here / name).is_symlink() and (here / name / '.git').exists()
+    ]
+    subdirectories[:] = [name for name in subdirectories if name not in nested]
+    found += [(here / name).relative_to(source) for name in nested]
     found += [
       (here / name).relative_to(source)
       for name in subdirectories

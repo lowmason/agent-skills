@@ -548,13 +548,16 @@ def test_copy_installs_the_items_a_link_install_does(tmp_path, monkeypatch):
   ]
 
 
-def test_copy_refuses_a_nested_repository_before_writing(tmp_path, monkeypatch, capsys):
-  # git lists a nested repository as one entry, a directory no file copy takes.
+@pytest.mark.parametrize('git', [True, False])
+def test_copy_refuses_a_nested_repository_before_writing(tmp_path, monkeypatch, capsys, git):
+  # git lists a nested repository as one entry, a directory no file copy
+  # takes; outside git, the fallback walk must not copy it file by file.
   install = load_install(monkeypatch)
   monkeypatch.setenv('GIT_CEILING_DIRECTORIES', str(tmp_path))
   root = tmp_path / 'repo'
   skill = make_skill(root)
-  init_repo(root, '__pycache__/\n*.env\n', 'skills/demo/SKILL.md')
+  if git:
+    init_repo(root, '__pycache__/\n*.env\n', 'skills/demo/SKILL.md')
   subprocess.run(['git', 'init', '-q', str(skill / 'vendor')], check=True)
   (skill / 'vendor' / 'lib.py').write_text('tracked elsewhere\n')
   status, _ = copy_demo(install, monkeypatch, root)
