@@ -8,8 +8,9 @@ Examples:
   python3 install.py all --copy
 
 Symlinks are the default so edits in this checkout are picked up immediately.
-A full install also links each runtime's companion agents and commands; --skill
-installs only the named skills unless --companions is given. The installer
+A full install also links each runtime's companion agents and commands. --skill
+installs the named skills plus what they cannot work without (the DEPENDENCIES
+table in install.py); other companions only with --companions. The installer
 never replaces a path it does not already manage, and it checks every
 destination before writing, so a conflict leaves nothing half-installed.
 '''
@@ -18,11 +19,35 @@ from __future__ import annotations
 import argparse
 import shutil
 import sys
+from collections.abc import Collection
 from dataclasses import dataclass
 from pathlib import Path
 
 
 REPO = Path(__file__).resolve().parent
+
+# Hard dependencies: what a skill or command cannot work without because it
+# runs, reads, or sends you to it. --skill follows them transitively; a
+# command installs only where its runtime has command adapters, and never
+# under --no-companions. build/test_runtime_support.py checks this table
+# against the references in skill and command text.
+DEPENDENCIES: dict[str, tuple[str, ...]] = {
+  'command:deferred': ('skill:writing-plans',),
+  'skill:clean-coder': ('skill:clean-code',),
+  'skill:derive-roadmap': ('command:deferred',),
+  'skill:executing-plans': ('skill:requesting-code-review',),
+  'skill:finishing-a-development-branch': (
+    'command:deferred',
+    'skill:requesting-code-review',
+    'skill:writing-plans',
+  ),
+  'skill:recommend-visualization': ('skill:explore-data',),
+  'skill:subagent-driven-development': (
+    'skill:requesting-code-review',
+    'skill:writing-plans',
+  ),
+  'skill:writing-plans': ('command:deferred',),
+}
 
 
 @dataclass(frozen=True)
@@ -55,6 +80,22 @@ def selected_skills(requested: list[str] | None) -> list[str]:
   return list(dict.fromkeys(requested))
 
 
+def with_dependencies(skills: list[str]) -> tuple[list[str], list[str]]:
+  '''Return the skills and commands that the given skills need, transitively.'''
+  closure: dict[str, None] = {}
+  pending = [f'skill:{name}' for name in skills]
+  while pending:
+    node = pending.pop(0)
+    if node not in closure:
+      closure[node] = None
+      pending.extend(DEPENDENCIES.get(node, ()))
+  by_kind: dict[str, list[str]] = {'skill': [], 'command': []}
+  for node in closure:
+    kind, _, name = node.partition(':')
+    by_kind[kind].append(name)
+  return by_kind['skill'], by_kind['command']
+
+
 def files(source_dir: Path, suffix: str) -> list[Path]:
   return sorted(path for path in source_dir.glob(f'*{suffix}') if path.is_file())
 
@@ -67,7 +108,12 @@ def file_items(source_dir: Path, suffix: str, destination_dir: Path) -> list[Ins
 
 
 def runtime_items(
-  runtime: str, home: Path, skills: list[str], *, companions: bool
+  runtime: str,
+  home: Path,
+  skills: list[str],
+  *,
+  companions: bool,
+  commands: Collection[str] = (),
 ) -> list[InstallItem]:
   runtimes = REPO / 'runtimes'
   if runtime == 'claude':
@@ -91,16 +137,24 @@ def runtime_items(
   else:
     raise InstallError(f'unsupported runtime: {runtime}')
   skill_items = [InstallItem(REPO / 'skills' / name, skill_root / name) for name in skills]
-  return (skill_items + agent_items + command_items) if companions else skill_items
+  if companions:
+    return skill_items + agent_items + command_items
+  return skill_items + [item for item in command_items if item.source.stem in commands]
 
 
 def plan(
-  runtime: str, home: Path, skills: list[str], *, companions: bool
+  runtime: str,
+  home: Path,
+  skills: list[str],
+  *,
+  companions: bool,
+  commands: Collection[str] = (),
 ) -> list[InstallItem]:
   runtimes = ('claude', 'codex', 'gemini') if runtime == 'all' else (runtime,)
   by_location: dict[Path, InstallItem] = {}
   for name in runtimes:
-    for item in runtime_items(name, home, skills, companions=companions):
+    items = runtime_items(name, home, skills, companions=companions, commands=commands)
+    for item in items:
       location = physical_location(item.destination)
       existing = by_location.get(location)
       if existing is None:
@@ -191,8 +245,9 @@ def main(argv: list[str] | None = None) -> int:
     action='append',
     dest='skills',
     metavar='NAME',
-    help='install this skill instead of all skills (repeatable); '
-    'companions are then skipped unless --companions is given',
+    help='install this skill instead of all skills (repeatable), plus the '
+    'skills and commands it depends on; other companions are then skipped '
+    'unless --companions is given',
   )
   parser.add_argument(
     '--companions',
@@ -212,7 +267,18 @@ def main(argv: list[str] | None = None) -> int:
   companions = not args.skills if args.companions is None else args.companions
   try:
     skills = selected_skills(args.skills)
-    items = plan(args.runtime, args.home.expanduser(), skills, companions=companions)
+    commands: list[str] = []
+    if args.skills:
+      skills, commands = with_dependencies(skills)
+    if args.companions is False:
+      commands = []
+    items = plan(
+      args.runtime,
+      args.home.expanduser(),
+      skills,
+      companions=companions,
+      commands=commands,
+    )
     preflight(items, copy=args.copy)
     for item in items:
       print(install_item(item, copy=args.copy, dry_run=args.dry_run))

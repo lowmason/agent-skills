@@ -1,5 +1,6 @@
 import importlib.util
 import os
+import re
 import subprocess
 import sys
 import tomllib
@@ -226,6 +227,112 @@ def test_aliased_destinations_with_different_sources_write_nothing(tmp_path, ext
   assert str(tmp_path / '.claude/agents') in result.stderr
   assert str(tmp_path / '.gemini/agents') in result.stderr
   assert tree(tmp_path) == before
+
+
+def installed_links(root: Path) -> set[str]:
+  return {str(path.relative_to(root)) for path in root.rglob('*') if path.is_symlink()}
+
+
+@pytest.mark.parametrize(
+  ('runtime', 'skill', 'flags', 'expected'),
+  [
+    ('claude', 'finishing-a-development-branch', (), {
+      '.claude/skills/finishing-a-development-branch',
+      '.claude/skills/requesting-code-review',
+      '.claude/skills/writing-plans',
+      '.claude/commands/deferred.md',
+    }),
+    ('claude', 'finishing-a-development-branch', ('--no-companions',), {
+      '.claude/skills/finishing-a-development-branch',
+      '.claude/skills/requesting-code-review',
+      '.claude/skills/writing-plans',
+    }),
+    ('gemini', 'derive-roadmap', (), {
+      '.agents/skills/derive-roadmap',
+      '.agents/skills/writing-plans',
+      '.gemini/commands/deferred.toml',
+    }),
+    # Codex has no command adapters, but /deferred's own skill dependency holds.
+    ('codex', 'derive-roadmap', (), {
+      '.agents/skills/derive-roadmap',
+      '.agents/skills/writing-plans',
+    }),
+    ('claude', 'recommend-visualization', (), {
+      '.claude/skills/recommend-visualization',
+      '.claude/skills/explore-data',
+    }),
+    ('claude', 'clean-coder', (), {
+      '.claude/skills/clean-coder',
+      '.claude/skills/clean-code',
+    }),
+  ],
+)
+def test_skill_brings_its_hard_dependencies(tmp_path, runtime, skill, flags, expected):
+  result = run_install(tmp_path, runtime, *flags, skills=(skill,))
+  assert result.returncode == 0, result.stdout + result.stderr
+  assert installed_links(tmp_path) == expected
+
+
+TEXT_SUFFIXES = {'.md', '.py', '.sh', '.js', '.cjs'}
+# Agents load a skill's SKILL.md, references, and scripts; READMEs and install
+# guides are for people, so their links are not dependencies.
+HUMAN_DOCS = {'README.md', 'INSTALL.md'}
+# References the scan finds that are not hard dependencies: the source works
+# without the target installed.
+SOFT_REFERENCES = {
+  # Says where the plan-completion protocol retires specs; never runs it.
+  ('skill:brainstorming', 'skill:writing-plans'),
+  # Names the routing header its input spec carries; never reads the file.
+  ('skill:derive-roadmap', 'skill:describe-critique-methodology'),
+  # A docstring contrasting its signals with profile.py's; never calls it.
+  ('skill:recommend-probabilistic-model', 'skill:explore-data'),
+  # SDD's review-package and task-reviewer prompt apply only when SDD calls.
+  ('skill:requesting-code-review', 'skill:subagent-driven-development'),
+  # Reads the diagnostics files bayesian-workflow writes, not the skill.
+  ('skill:track-model-experiments', 'skill:bayesian-workflow'),
+}
+
+
+def referenced_dependencies() -> set[tuple[str, str]]:
+  skills = {path.name for path in (REPO / 'skills').iterdir() if (path / 'SKILL.md').is_file()}
+  commands = {path.stem for path in (REPO / 'commands').glob('*.md')}
+  names = '|'.join(sorted(map(re.escape, skills), key=len, reverse=True))
+  command_ref = re.compile(rf"(?<![\w/.-])/({'|'.join(map(re.escape, commands))})\b")
+  skill_ref = re.compile(
+    rf'\.\./({names})/'
+    rf"|(?<![\w/-])({names})(?:'s|'|’s)?(?: skill's| skill’s)?\s+"
+    rf'(?:§|`?(?:references|scripts)/|\[?`?[\w.-]+\.(?:md|py)\b)'
+  )
+
+  def scan(source: str, text: str) -> set[tuple[str, str]]:
+    found = {(source, f'command:{name}') for name in command_ref.findall(text)}
+    found |= {(source, f'skill:{m.group(1) or m.group(2)}') for m in skill_ref.finditer(text)}
+    return {(source, target) for source, target in found if source != target}
+
+  edges: set[tuple[str, str]] = set()
+  for name in skills:
+    for path in (REPO / 'skills' / name).rglob('*'):
+      if path.suffix in TEXT_SUFFIXES and path.name not in HUMAN_DOCS and path.is_file():
+        edges |= scan(f'skill:{name}', path.read_text(errors='ignore'))
+  for name in commands:
+    edges |= scan(f'command:{name}', (REPO / 'commands' / f'{name}.md').read_text())
+  return edges
+
+
+def test_declared_dependencies_match_skill_and_command_text(monkeypatch):
+  spec = importlib.util.spec_from_file_location('install', INSTALL)
+  assert spec is not None and spec.loader is not None
+  install = importlib.util.module_from_spec(spec)
+  monkeypatch.setitem(sys.modules, 'install', install)  # @dataclass looks it up
+  spec.loader.exec_module(install)
+  declared = {
+    (source, target)
+    for source, targets in install.DEPENDENCIES.items()
+    for target in targets
+  }
+  referenced = referenced_dependencies()
+  assert SOFT_REFERENCES <= referenced, 'a soft reference is gone; drop it'
+  assert declared == referenced - SOFT_REFERENCES
 
 
 def test_symlink_loop_is_a_conflict_not_a_crash(tmp_path, monkeypatch):

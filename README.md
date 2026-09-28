@@ -183,18 +183,22 @@ file or directory. It checks every destination before writing, so a conflict
 installs nothing and lists every conflicting path at once. Useful options:
 
 ```bash
-python3 install.py codex --skill bayesian-workflow               # just this skill; repeat --skill as needed
-python3 install.py codex --skill bayesian-workflow --companions  # the skill plus Codex's agents
-python3 install.py claude --no-companions                        # every skill, no agents or commands
-python3 install.py all --dry-run                                 # inspect without writing
-python3 install.py gemini --copy                                 # frozen copies instead of links
+python3 install.py codex --skill bayesian-workflow                # just this skill; repeat --skill as needed
+python3 install.py claude --skill finishing-a-development-branch  # plus its dependencies (see below)
+python3 install.py codex --skill bayesian-workflow --companions   # the skill plus Codex's agents
+python3 install.py claude --no-companions                         # every skill, no agents or commands
+python3 install.py all --dry-run                                  # inspect without writing
+python3 install.py gemini --copy                                  # frozen copies instead of links
 ```
 
-`--skill` skips the runtime's agents and commands unless you add
-`--companions`; a full install includes them unless you add `--no-companions`.
-`finishing-a-development-branch`, `writing-plans`, and `derive-roadmap` send
-you to the `/deferred` command, so add `--companions` when installing any of
-them on their own for Claude Code or Gemini CLI (Codex has no commands).
+`--skill` also installs what the named skills cannot work without: sibling
+skills whose scripts or files they use, and the `/deferred` command where the
+runtime has commands (Claude Code, Gemini CLI). So
+`--skill finishing-a-development-branch` brings `writing-plans`,
+`requesting-code-review`, and `/deferred`. It skips the runtime's other agents
+and commands unless you add `--companions`. A full install includes every
+companion unless you add `--no-companions`, which leaves out all agents and
+commands, required ones included. The table is `DEPENDENCIES` in `install.py`.
 
 | Runtime | Skills | Agents | Commands |
 |---------|--------|--------|----------|
