@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import itertools
 import json
+import re
 import shlex
 import sys
 
@@ -42,9 +43,47 @@ CONTRACT_CLAUSE = (
     'or the worktree list via Bash'
 )
 
-# Subcommand separators. '>' and '<' are deliberately absent: redirection stays
-# inside its subcommand so `git log > /tmp/f` classifies as a `git log`.
-OPERATORS = frozenset({'&&', '||', ';', '|', '&'})
+# shlex returns a run of unquoted punctuation as one token, so `);` and `)&&`
+# are single tokens. Each run is cut into pieces: a parenthesis, a separator,
+# or a redirection. A separator is any run of ;&|, which covers `|&`, zsh's
+# `&|`, and `&;`, which zsh also accepts. A redirection starts at < or > (or
+# &>) and keeps what follows, so `2>&1`, `>|` and `&>` stay whole, and it stays
+# in its subcommand, so `git log > /tmp/f` classifies as a `git log`.
+PUNCTUATION = frozenset('();<>|&')
+PUNCTUATION_PIECE = re.compile(r'[()]|&?>[<>&|]*|<[<>&|]*|(?:[;|]|&(?!>))+')
+SEPARATOR = re.compile(r'[;&|]+')
+
+# Pieces that end a subcommand as a separator does: parentheses (but see
+# _split_line), a brace group's braces, and the `]]` closing a test, after which
+# zsh runs a command on the same line (`if [[ -n a ]] rm x`).
+ENDS_A_SUBCOMMAND = frozenset({'(', ')', '{', '}', ']]'})
+
+# The word a nested group leaves in the command around it, so the next word
+# cannot slide into its place: zsh globs `(stash)` to a file named stash, and
+# `git (stash)` must fail closed on the verb as it always did.
+GROUP_WORD = '()'
+
+# Words that lead a subcommand without being its command: reserved words and
+# zsh's precommand modifiers. `for`, `select` and `case` are absent on purpose:
+# the word after them is a name or a pattern, never a command, so `for rm in a`
+# must not read as `rm`.
+LEADING_KEYWORDS = frozenset({
+    '!', 'if', 'then', 'elif', 'else', 'while', 'until', 'do', 'coproc',
+    'noglob', 'nocorrect', 'builtin',
+})
+
+# Utilities that run a command after their own options, each mapped to its
+# options that take a value. `command -v` and `-V` only describe the command.
+PREFIX_UTILITIES = {
+    'command': frozenset(),
+    'env': frozenset({'-C', '-P', '-S', '-u'}),
+    'exec': frozenset({'-a'}),
+    'nice': frozenset({'-n'}),
+    'nohup': frozenset(),
+    'time': frozenset(),
+}
+
+ASSIGNMENT = re.compile(r'[A-Za-z_][A-Za-z0-9_]*\+?=')
 
 DENIED_COMMANDS = {
     'rm': '`rm` deletes files.',
@@ -167,20 +206,56 @@ SPAN_AFTER_HASH = (
     'starts a comment depends on the shell and the context')
 
 
-def _split_line(line):
-    """Tokenize one line and split it into subcommands on shell operators."""
+def _pieces(tokens):
+    """Yield each word, and each piece of each run of punctuation."""
+    for token in tokens:
+        if token and PUNCTUATION.issuperset(token):
+            yield from PUNCTUATION_PIECE.findall(token)
+        else:
+            yield token
+
+
+def _closing_parens(enclosing):
+    """Yield a `)` while a group is open; each one read closes a group."""
+    while enclosing:
+        yield ')'
+
+
+def _split_line(line, nest=True):
+    """Tokenize one line and split it into subcommands.
+
+    Separators and ENDS_A_SUBCOMMAND end one; redirections stay in theirs. A
+    parenthesis may open a group inside a word, where the command around it
+    continues after the `)` (`$(…)`, `<(…)`, zsh's `*(.)`), or stand before a
+    command (a case pattern's `(a) rm x`, `f() rm x`, zsh's `for f (a) rm x`).
+    Only a parser can tell which, so there are two readings. Nested, a group is
+    a subcommand of its own, and the one it interrupted resumes after it with
+    GROUP_WORD in its place, unless a `$` (`$(…)`) already stands in for it.
+    Flat, a parenthesis ends a subcommand like a separator. classify denies if
+    either reading does. An unmatched `)` ends a subcommand in both, and a group
+    still open at the end of the line closes there.
+    """
     lexer = shlex.shlex(line, posix=True, punctuation_chars=True)
     lexer.whitespace_split = True
     lexer.commenters = ''  # a shell comment only starts at a word boundary
     subcommands = []
+    enclosing = []  # subcommands a nested group interrupted, innermost last
     current = []
-    for token in lexer:
-        if token in OPERATORS:
+    # A group still open when the line runs out closes there, as if at a `)`.
+    for piece in itertools.chain(_pieces(lexer), _closing_parens(enclosing)):
+        if nest and piece == '(':
+            enclosing.append(current)
+            current = []
+        elif piece in ENDS_A_SUBCOMMAND or SEPARATOR.fullmatch(piece):
             if current:
                 subcommands.append(current)
             current = []
+            if nest and piece == ')' and enclosing:
+                current = enclosing.pop()
+                if current and not current[-1].endswith('$'):
+                    current.append(GROUP_WORD)
         else:
-            current.append(token)
+            current.append(piece)
     if current:
         subcommands.append(current)
     return subcommands
@@ -239,22 +314,22 @@ def _logical_lines(command):
     return lines
 
 
-def split_subcommands(command):
-    """Tokenize `command` and split it into subcommands on shell operators.
+def split_subcommands(command, nest=True):
+    """Tokenize `command` and split it into subcommands.
 
     Each logical line is tokenized on its own, because shlex treats a newline
     as ordinary whitespace, which would otherwise fold a second command into the
     first subcommand and hide its leading token from classification. Raises
     ValueError from the scan as well as from shlex; either way a guarded agent
-    fails closed.
+    fails closed. `nest` picks the reading of parentheses; see _split_line.
     """
     subcommands = []
     for line in _logical_lines(command):
-        subcommands.extend(_split_line(line))
+        subcommands.extend(_split_line(line, nest))
     return subcommands
 
 
-def _physical_line_subcommands(command):
+def _physical_line_subcommands(command, nest):
     """Yield each physical line's subcommands, tokenized alone.
 
     This is the split from before multi-line support. A line that does not
@@ -263,7 +338,7 @@ def _physical_line_subcommands(command):
     """
     for line in command.split('\n'):
         try:
-            subcommands = _split_line(line)
+            subcommands = _split_line(line, nest)
         except ValueError:
             continue
         yield from subcommands
@@ -278,22 +353,92 @@ def _sed_edits_in_place(args):
     return False
 
 
-def _classify_non_git(tokens):
-    head = tokens[0]
-    if head in DENIED_COMMANDS:
-        return DENIED_COMMANDS[head] + ' This agent inspects; it does not modify.'
-    if head == 'sed' and _sed_edits_in_place(tokens[1:]):
+def _classify_non_git(name, args):
+    if name in DENIED_COMMANDS:
+        return DENIED_COMMANDS[name] + ' This agent inspects; it does not modify.'
+    if name == 'sed' and _sed_edits_in_place(args):
         return ('`sed -i` edits files in place; drop `-i` to write the result to '
                 'stdout instead.')
     return None
 
 
+def _command_name(word):
+    return word.rpartition('/')[2]  # `/bin/rm` runs rm
+
+
+def _is_redirection(piece):
+    return piece.startswith(('<', '>', '&>')) and PUNCTUATION.issuperset(piece)
+
+
+def _without_redirections(tokens):
+    """Drop each redirection with its target and the file descriptor before it.
+
+    A redirection can stand anywhere in a command and is never an argument:
+    `2>/dev/null rm x` runs rm, and the `2` in `git remote -v 2>&1` is not a
+    subcommand.
+    """
+    words = []
+    i = 0
+    while i < len(tokens):
+        if _is_redirection(tokens[i]):
+            i += 2
+        elif tokens[i].isdigit() and i + 1 < len(tokens) and _is_redirection(tokens[i + 1]):
+            i += 3
+        else:
+            words.append(tokens[i])
+            i += 1
+    return words
+
+
+def _skip_prefix_utility(words, i):
+    """Return where the command run by the prefix utility at words[i] starts,
+    or len(words) if it runs none."""
+    name = _command_name(words[i])
+    i += 1
+    while i < len(words):
+        word = words[i]
+        if word == '--':
+            return i + 1
+        if word.startswith('-'):
+            if name == 'command' and ('v' in word or 'V' in word):
+                return len(words)  # it only describes the command
+            i += 2 if word in PREFIX_UTILITIES[name] else 1
+        elif name == 'env' and ASSIGNMENT.match(word):
+            i += 1
+        else:
+            break
+    return i
+
+
+def _command_words(words):
+    """Drop the words before a command; [] if there is none.
+
+    Those are LEADING_KEYWORDS, assignments (`X=1 rm x`), and PREFIX_UTILITIES
+    with their options, in any order and number: `time env GIT_PAGER=cat git
+    stash` runs `git stash`.
+    """
+    i = 0
+    while i < len(words):
+        word = words[i]
+        if word in LEADING_KEYWORDS or ASSIGNMENT.match(word):
+            i += 1
+        elif word == 'repeat':
+            i += 2  # and its count
+        elif _command_name(word) in PREFIX_UTILITIES:
+            i = _skip_prefix_utility(words, i)
+        else:
+            break
+    return words[i:]
+
+
 def _classify_subcommand(tokens):
-    if not tokens:
+    words = _command_words(_without_redirections(tokens))
+    if not words:
         return None
-    if tokens[0] == 'git':
-        return _classify_git(tokens[1:])
-    return _classify_non_git(tokens)
+    name = _command_name(words[0])
+    if name == 'git':
+        return _classify_git(words[1:])
+    return _classify_non_git(name, words[1:])
 
 
 def classify(command):
@@ -303,12 +448,16 @@ def classify(command):
     denylist of unambiguous mutators, so unlisted commands pass. The asymmetry
     is deliberate — read-only shell is unbounded, read-only git is not.
 
-    Every physical line is also classified on its own, the way it was before
-    multi-line support. Whatever the multi-line reading gets wrong, a line that
-    begins with a mutator is still denied.
+    Parentheses are read both ways (see _split_line), and every physical line
+    is also classified on its own, the way it was before multi-line support.
+    Each extra reading can only add a denial, so whatever one reading gets
+    wrong, a mutator that leads a subcommand in any of them is denied.
     """
-    subcommands = split_subcommands(command)  # raises before anything is allowed
-    for tokens in itertools.chain(subcommands, _physical_line_subcommands(command)):
+    # Both readings are split before anything is classified, so a raise from
+    # either one comes before anything is allowed.
+    readings = [split_subcommands(command, nest) for nest in (True, False)]
+    backstops = [_physical_line_subcommands(command, nest) for nest in (True, False)]
+    for tokens in itertools.chain(*readings, *backstops):
         detail = _classify_subcommand(tokens)
         if detail is not None:
             return detail

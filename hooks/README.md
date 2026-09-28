@@ -175,13 +175,21 @@ learned the hard way, all now baked into the script:
 
 **This is a guardrail against an agent drifting off contract, not a sandbox.** The real
 containment is the `tools:` frontmatter denying `Write`/`Edit` outright, plus the
-permission system. Not caught:
+permission system. Each subcommand is classified by its command word, taken by its
+basename (`/bin/rm` is `rm`) and found past redirections, assignments (`X=1`), leading
+keywords (`!`, `if`, `then`, `do`, `coproc`, `noglob`, …) and the prefix utilities `env`,
+`command`, `exec`, `time`, `nohup` and `nice` with their options. Subshells, brace
+groups, `$(…)` and `<(…)` are classified as commands of their own. Not caught:
 
-- `xargs rm` — the mutator is not any subcommand's first token.
-- `find . -delete` and `find . -exec rm {} \;` — same reason.
-- Command substitution: `$(git commit -m x)`.
-- Mutators inside a quoted script: `python -c "..."`, `sh -c "..."`, `perl -e`.
-- Anything reached through an alias or a wrapper script.
+- A command run by any other utility: `xargs rm`, `find . -exec rm {} \;`, and
+  `find . -delete`.
+- Mutators inside a quoted string, which `shlex` reads as one word: `"$(git commit)"`,
+  backticks, `eval '…'`, `env -S '…'`, `sh -c "..."`, `python -c "..."`, `perl -e`.
+- A command word the shell produces by expansion (`c=rm; $c x`, `$(which rm) x`), or
+  glues to a brace (zsh runs `{rm x;}`).
+- A digit just before a redirection is read as its file descriptor, so `git branch 5
+  >f`, which creates branch `5`, is read as `git branch`.
+- Anything reached through an alias, a function defined elsewhere, or a wrapper script.
 
 Known false positives, accepted rather than widened:
 
@@ -203,6 +211,15 @@ Known false positives, accepted rather than widened:
   - Every physical line is also classified alone, the pre-multi-line way. That is
     the backstop against a misread the first two rules miss, and its cost is a
     line inside a quoted script that begins with a denied word (`rm = 5`).
+
+- **Parentheses are read two ways, and a denial in either stands.** Nested, a group is
+  a command of its own and the command around it continues after it (`$(…)`, `<(…)`,
+  zsh's `*(.)`); flat, a parenthesis ends the command, as a case pattern or `f()` does
+  before the command that follows it. Telling them apart takes a parser. So a
+  parenthesized word that is not a command is classified as one: a case pattern
+  `(rm)`, an array `(rm mv)`, a comment's `# (rm x)`, or a heredoc line such as
+  `print(git(x))`. A group where git expects its verb fails closed, since zsh globs
+  `git (stash)` into `git stash` when a file named `stash` exists.
 
 - **`git config --global --list` is denied.** The allowlist carries exactly the five
   read-mode flags from the spec (`--get --get-all --get-regexp --list -l`); a scope

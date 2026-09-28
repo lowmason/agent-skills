@@ -241,6 +241,195 @@ def test_known_multiline_and_comment_bypasses_are_denied(command):
     assert _guard_denies(command)
 
 
+# Leading-token bypasses, found 2026-09-28 by a code review and the probes that
+# followed. Each hides its mutator behind syntax around the command, and each
+# runs `rm x` or `git stash` in zsh as Claude Code's Bash tool runs it (checked
+# with a marker-writing stand-in in its place) where classify returned None.
+
+# shlex merges adjacent punctuation into one token, so `);` was never `;`, and a
+# parenthesis could hide a command or lead one.
+PAREN_AND_OPERATOR_BYPASSES = [
+    pytest.param('echo $(git rev-parse HEAD); rm x', id='substitution-then-semicolon'),
+    pytest.param('(cd /tmp); rm x', id='subshell-then-semicolon'),
+    pytest.param('(cd /tmp)&& rm x', id='subshell-then-and'),
+    pytest.param('(cd /tmp)|rm x', id='subshell-then-pipe'),
+    pytest.param('git log;(rm x)', id='semicolon-then-subshell'),
+    pytest.param('(rm x)', id='subshell'),
+    pytest.param('echo $(rm x)', id='command-substitution'),
+    pytest.param('cat <(rm x)', id='process-substitution'),
+    pytest.param('case a in a) rm x;; esac', id='case-arm'),
+    pytest.param('case a in (a) rm x;; esac', id='case-arm-open-paren'),
+    pytest.param('f() rm x; f', id='function-short-body'),
+    pytest.param('for f (a) rm x', id='zsh-for-short-body'),
+    pytest.param('git log |& rm x', id='pipe-with-stderr'),
+    pytest.param('git log &| rm x', id='zsh-disown'),
+    pytest.param('git log &; rm x', id='background-then-semicolon'),
+]
+
+# A word that leads the subcommand without being its command.
+RESERVED_WORD_BYPASSES = [
+    pytest.param('git log && { rm x; }', id='brace-group'),
+    pytest.param('! { rm x; }', id='bang-brace-group'),
+    pytest.param('function f { rm x; }; f', id='function-keyword'),
+    pytest.param('! rm x', id='bang'),
+    pytest.param('git log &! rm x', id='zsh-disown-bang'),
+    pytest.param('if rm x; then :; fi', id='if'),
+    pytest.param('if true; then rm x; fi', id='then'),
+    pytest.param('if false; then :; elif rm x; then :; fi', id='elif'),
+    pytest.param('if false; then :; else rm x; fi', id='else'),
+    pytest.param('while rm x; do break; done', id='while'),
+    pytest.param('until rm x; do :; done', id='until'),
+    pytest.param('for f in a; do rm x; done', id='do'),
+    pytest.param('if [[ -n a ]] rm x', id='zsh-if-short-test'),
+    pytest.param('if (( 1 )) rm x', id='zsh-if-short-arithmetic'),
+    pytest.param('coproc rm x', id='coproc'),
+    pytest.param('repeat 1 rm x', id='repeat'),
+    pytest.param('noglob rm x', id='noglob'),
+    pytest.param('nocorrect rm x', id='nocorrect'),
+    pytest.param('zmodload zsh/files; builtin rm x', id='builtin'),
+]
+
+# Words before the command: assignments, redirections, a path, and utilities
+# that run the command after their own options.
+PREFIX_BYPASSES = [
+    pytest.param('X=1 rm x', id='assignment'),
+    pytest.param('GIT_PAGER=cat git stash', id='assignment-before-git'),
+    pytest.param('2>/dev/null rm x', id='leading-redirection'),
+    pytest.param('> out rm x', id='leading-redirection-without-fd'),
+    pytest.param('git log |> out rm x', id='pipe-into-leading-redirection'),
+    pytest.param('/bin/rm x', id='path'),
+    pytest.param('/usr/bin/git stash', id='path-to-git'),
+    pytest.param('env rm x', id='env'),
+    pytest.param('env -i FOO=1 rm x', id='env-option-and-assignment'),
+    pytest.param('command rm x', id='command'),
+    pytest.param('command -p rm x', id='command-option'),
+    pytest.param('exec rm x', id='exec'),
+    pytest.param('exec -a foo rm x', id='exec-value-option'),
+    pytest.param('time rm x', id='time'),
+    pytest.param('nohup rm x', id='nohup'),
+    pytest.param('nice rm x', id='nice'),
+    pytest.param('nice -n 5 rm x', id='nice-value-option'),
+    pytest.param('time env GIT_PAGER=cat git stash', id='prefix-chain'),
+]
+
+
+@pytest.mark.parametrize('command', PAREN_AND_OPERATOR_BYPASSES)
+def test_parenthesis_and_operator_bypasses_are_denied(command):
+    assert guard.classify(command) is not None
+
+
+@pytest.mark.parametrize('command', RESERVED_WORD_BYPASSES)
+def test_reserved_word_bypasses_are_denied(command):
+    assert guard.classify(command) is not None
+
+
+@pytest.mark.parametrize('command', PREFIX_BYPASSES)
+def test_prefix_bypasses_are_denied(command):
+    assert guard.classify(command) is not None
+
+
+def test_the_command_after_its_prefixes_is_the_one_classified():
+    # The stripped command reaches the checks a bare one does: git's allowlist,
+    # the denylist, and sed's in-place flag.
+    assert 'git stash' in guard.classify('time env GIT_PAGER=cat git stash')
+    assert '`rm`' in guard.classify('/bin/rm x')
+    assert 'sed -i' in guard.classify('nice -n 5 sed -i s/a/b/ f')
+
+
+def test_parentheses_nest_so_the_command_around_them_continues():
+    # Nested, a group is a subcommand of its own and the one it interrupted
+    # resumes after it, so git's verb is still found past a substitution.
+    assert guard.split_subcommands('echo $(ls); rm x') == [
+        ['ls'], ['echo', '$'], ['rm', 'x']]
+    assert guard.split_subcommands('git -C $(pwd) stash') == [
+        ['pwd'], ['git', '-C', '$', 'stash']]
+    assert guard.split_subcommands('cat <(git show a:f)') == [
+        ['git', 'show', 'a:f'], ['cat', '<', '()']]
+
+
+def test_a_nested_group_holds_its_place_in_the_command_around_it():
+    # zsh globs `(stash)` to a file named stash, and `git (stash)` then runs
+    # `git stash`. Git's verb slot fails closed on a group, as it did before
+    # nesting, unless a `$` already stands in for it.
+    assert guard.classify('git (stash)') is not None
+    assert guard.classify('git branch (x)') is not None
+    assert guard.split_subcommands('ls (#i)readme*') == [
+        ['#i'], ['ls', '()', 'readme*']]
+    # A group left open closes at the end of its line, the same way.
+    assert guard.split_subcommands('git (stash') == [['stash'], ['git', '()']]
+
+
+def test_redirections_are_not_arguments():
+    # A redirection, its target and its file descriptor are dropped before a
+    # command is classified, so `2` is not read as a subcommand or a branch.
+    for command in ('git branch --show-current 2>/dev/null', 'git remote -v 2>&1',
+                    'git reflog 2>/dev/null',
+                    'B=$(git branch --show-current 2>/dev/null); echo "$B"'):
+        assert guard.classify(command) is None, command
+
+
+def test_parentheses_read_flat_end_the_command():
+    # Flat, every parenthesis ends a subcommand: the reading for one that
+    # stands before a command, as a case pattern does.
+    assert guard.split_subcommands('case a in (a) rm x;; esac', nest=False) == [
+        ['case', 'a', 'in'], ['a'], ['rm', 'x'], ['esac']]
+
+
+def test_unbalanced_parentheses_do_not_raise():
+    # An unmatched `)` ends the subcommand, as after a case pattern, and a `(`
+    # left open closes with its line, so a subshell may span lines.
+    assert guard.split_subcommands('a) rm x') == [['a'], ['rm', 'x']]
+    assert guard.split_subcommands('(\n  git log\n)') == [['git', 'log']]
+
+
+def test_merged_punctuation_is_cut_into_separators_and_redirections():
+    assert guard.split_subcommands('cat x 2>&1 |& grep y') == [
+        ['cat', 'x', '2', '>&', '1'], ['grep', 'y']]
+    assert guard.split_subcommands('a &| b &; c') == [['a'], ['b'], ['c']]
+    assert guard.split_subcommands('a |> f') == [['a'], ['>', 'f']]
+    assert guard.split_subcommands('a &> f; b >| g') == [
+        ['a', '&>', 'f'], ['b', '>|', 'g']]
+
+
+def test_braces_and_the_end_of_a_test_end_a_command():
+    assert guard.split_subcommands('{ git log; } && git status') == [
+        ['git', 'log'], ['git', 'status']]
+    assert guard.split_subcommands('if [[ -n a ]] git log') == [
+        ['if', '[[', '-n', 'a'], ['git', 'log']]
+
+
+def test_syntax_around_a_read_only_command_stays_allowed():
+    for command in (
+            'command -v rm', 'command -V rm', 'command -pv rm',  # describe, not run
+            'for rm in a b; do echo $rm; done',  # a loop variable, not a command
+            'ls *(.)', 'ls (#i)readme*',  # zsh glob qualifier and flag
+            "git log --format='%(refname)'",
+            'time -p git log', 'exec 3>&1', 'env | grep PATH',
+            'cat x 2>&1', 'echo a &> f', 'echo a >| f',
+            'GIT_PAGER=cat git log', '/usr/bin/git status', '2>/dev/null git log',
+            'cd $(git rev-parse --show-toplevel) && git status',
+            'if git diff --quiet; then echo clean; fi',
+            'while read -r f; do git log -1 -- "$f"; done < files',
+            '(\n  git log\n)'):
+        assert guard.classify(command) is None, command
+
+
+def test_git_after_a_substitution_is_classified_by_its_verb():
+    # Before nesting, `(` sat in git's verb slot and failed closed, so these
+    # read-only commands were denied.
+    assert guard.classify('git -C $(pwd) log') is None
+    assert guard.classify('git -C $(git rev-parse --show-toplevel) status') is None
+
+
+def test_git_after_a_substitution_is_still_denied_when_the_verb_writes():
+    # If `)` only ended the subcommand, the verb would lead one of its own,
+    # where git's allowlist never sees it.
+    for command in ('git -C $(pwd) stash',
+                    'git -C $(git rev-parse --show-toplevel) checkout main',
+                    'git --git-dir=$(pwd)/.git stash'):
+        assert guard.classify(command) is not None, command
+
+
 def test_tokenizer_leaves_redirection_intact():
     # '2>&1' lexes as ['2', '>&', '1'] and '>' is not an operator we split on —
     # redirection stays inside its subcommand, per spec D2.
