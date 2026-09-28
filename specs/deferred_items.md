@@ -68,6 +68,13 @@
   evidence, derive-roadmap's unmeasured RED baseline). This branch reworks
   install.py (--skill dependency closure, pre-flight, git-aware --copy) and
   touches none of them.
+- 2026-09-28 — finished `claude/priceless-wing-e8754d` with 3 items aged >45d,
+  carried on the partner's reason: out of scope for this branch. The items are
+  `11-delegation-frontmatter-rollout`'s interactive verification (71d) and two
+  `18-methodology-pipeline-skills` items (64d: the DL/NLP template extension,
+  synthesize-mode scenario verification). This branch makes the read-only
+  guard's 3.9 floor a checked test (hooks/ tests and docs) and touches none of
+  them.
 
 ## 11-delegation-frontmatter-rollout — 2026-07-19
 - [x] Haiku-pinned `Explore` override agent (fork-isolation upgrade; plan "Out of
