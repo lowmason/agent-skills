@@ -190,7 +190,7 @@ python3 install.py claude --skill finishing-a-development-branch  # plus its dep
 python3 install.py codex --skill bayesian-workflow --companions   # the skill plus Codex's agents
 python3 install.py claude --no-companions                         # every skill, no agents or commands
 python3 install.py all --dry-run                                  # inspect without writing
-python3 install.py gemini --copy                                  # frozen copies, minus git-ignored files
+python3 install.py gemini --copy                                  # frozen copies instead of symlinks (see below)
 ```
 
 `--skill` also installs what the named skills cannot work without, and what
@@ -204,12 +204,17 @@ and commands unless you add `--companions`. A full install includes every
 companion unless you add `--no-companions`, which leaves out all agents and
 commands, required ones included. The table is `DEPENDENCIES` in `install.py`.
 
-`--copy` copies the files git keeps (tracked, or untracked and not ignored).
-Where git cannot say (no git, not a checkout, or a skill git ignores whole),
-it copies everything except `.gitignore`'s generic patterns, such as caches and
-virtualenvs. It installs nothing if anything it would copy is a symlink, which
-a copy would follow, or a nested repository or submodule, which it cannot copy
-file by file.
+`--copy` installs the same skills, agents, and commands a link install would,
+including any that git ignores whole; agents and commands are copied as they
+are. Within a skill it copies the files git keeps (tracked, or untracked and
+not ignored). Where git keeps none of a skill's files (no git, not a checkout,
+or a skill git ignores whole), it copies everything except a fixed list of
+generic names from this repo's `.gitignore`, such as caches and virtualenvs;
+patterns you add to `.gitignore` later do not apply there. It installs nothing
+if anything it would copy is a symlink, which a copy would follow, or a nested
+repository or submodule, which it cannot copy file by file. It never replaces
+an existing destination, a previous copy included, so remove old copies before
+re-running it.
 
 | Runtime | Skills | Agents | Commands |
 |---------|--------|--------|----------|
