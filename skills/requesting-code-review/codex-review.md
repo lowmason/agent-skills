@@ -54,8 +54,8 @@ code-reviewer's contract forbids it from spawning further reviewers.
      merge base: a rebase onto a newer base branch silently widens that range
      to upstream commits. The base branch has no merge base to recompute, so
      its recorded start holds only while no pull or rebase has brought
-     upstream commits into the range; once one has, ask your partner where
-     the plan's work begins.
+     upstream commits into the range; once one has, ask your partner which
+     commit the plan's work starts after — BASE itself is never reviewed.
    - `-c sandbox_mode=read-only` — required. A Codex config that trusts the
      project resolves `exec review` to `workspace-write`: a reviewer that can
      edit the tree it is reviewing.

@@ -28,8 +28,9 @@ Load plan, review critically, execute all tasks, report when complete.
    Task 1 — Step 3's review starts there, because on the base branch there
    is no merge base to compute. Two things break that record: losing it to
    a `/clear`, and a pull or rebase of the base branch since, which brings
-   upstream commits into the range. Either way, ask your partner where the
-   plan's work begins rather than guessing. If the plan file is committed,
+   upstream commits into the range. Either way, ask your partner which
+   commit the plan's work starts *after* — the review excludes the commit it
+   starts from — rather than guessing. If the plan file is committed,
    offer the commit that added it as a candidate —
    `git log --follow --diff-filter=A --format=%h -- <plan-file> | tail -n 1`
    — but let them confirm it: nothing guarantees it predates every task.
