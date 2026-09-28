@@ -20,7 +20,6 @@ from __future__ import annotations
 import itertools
 import json
 import re
-import shlex
 import sys
 
 # Keyed on each agent's frontmatter `name`, which is what Claude Code reports as
@@ -43,33 +42,76 @@ CONTRACT_CLAUSE = (
     'or the worktree list via Bash'
 )
 
-# shlex returns a run of unquoted punctuation as one token, so `);` and `)&&`
-# are single tokens. Each run is cut into pieces: a parenthesis, a separator,
-# or a redirection. A separator is any run of ;&|, which covers `|&`, zsh's
-# `&|`, and `&;`, which zsh also accepts. A redirection starts at < or > (or
-# &>) and keeps what follows, so `2>&1`, `>|` and `&>` stay whole, and it stays
-# in its subcommand, so `git log > /tmp/f` classifies as a `git log`.
+# Like shlex, the tokenizer returns a run of unquoted punctuation as one token,
+# so `);` and `)&&` are single tokens. Each run is cut into pieces: a
+# parenthesis, a separator, or a redirection. A separator is any run of ;&|,
+# which covers `|&`, zsh's `&|`, and `&;`, which zsh also accepts. A redirection
+# starts at < or > (or &>) and keeps what follows, so `2>&1`, `>|` and `&>` stay
+# whole, and it stays in its subcommand, so `git log > /tmp/f` classifies as a
+# `git log`.
 PUNCTUATION = frozenset('();<>|&')
 PUNCTUATION_PIECE = re.compile(r'[()]|&?>[<>&|]*|<[<>&|]*|(?:[;|]|&(?!>))+')
 SEPARATOR = re.compile(r'[;&|]+')
 
-# Pieces that end a subcommand as a separator does: parentheses (but see
-# _split_line), a brace group's braces, and the `]]` closing a test, after which
-# zsh runs a command on the same line (`if [[ -n a ]] rm x`).
-ENDS_A_SUBCOMMAND = frozenset({'(', ')', '{', '}', ']]'})
+# shlex's whitespace, and the runs _tokenize reads a line in.
+WHITESPACE = frozenset(' \t\r\n')
+BLANKS = re.compile(r'[ \t\r\n]+')
+PUNCTUATION_RUN = re.compile(r'[();<>|&]+')
+PLAIN_RUN = re.compile(r'[^ \t\r\n\'"\\();<>|&]+')
+DOUBLE_QUOTED_RUN = re.compile(r'[^"\\]+')
+
+
+class _Token(str):
+    """A word or a run of punctuation, keeping what shlex drops about it.
+
+    `syntax`: an unquoted run of PUNCTUATION. `quoted`: some of it was quoted or
+    escaped, and quoting makes a word of anything (`git branch ')'` names a
+    branch). `spaced`: whitespace or the start of the line comes before it, so
+    it does not touch the token on its left.
+    """
+
+    def __new__(cls, text, syntax=False, quoted=False, spaced=False):
+        token = super().__new__(cls, text)
+        token.syntax = syntax
+        token.quoted = quoted
+        token.spaced = spaced
+        return token
+
+
+CLOSE_PAREN = _Token(')', syntax=True)
+
+# Unquoted, a `}` alone is syntax wherever it stands in zsh, and ends a
+# subcommand as a separator does. `{` and the `]]` closing a test are syntax
+# only where a command could start, and zsh runs one right after them on the
+# same line (`{ rm x; }`, `if [[ -n a ]] rm x`). Anywhere else they are words:
+# `git branch {` names a branch. See _split_tokens.
+CLOSE_BRACE = '}'
+COMMAND_POSITION_SYNTAX = frozenset({'{', ']]'})
 
 # The word a nested group leaves in the command around it, so the next word
 # cannot slide into its place: zsh globs `(stash)` to a file named stash, and
 # `git (stash)` must fail closed on the verb as it always did.
-GROUP_WORD = '()'
+GROUP_WORD = _Token('()')
+
+# Three choices only a shell parser could make, so every line is read all eight
+# ways and a denial in any reading stands. See _split_tokens.
+READINGS = tuple(itertools.product((True, False), repeat=3))  # nest, braces, quoting
+
+# What zsh reads as the file descriptor of the redirection after it: a single
+# unquoted digit touching the operator (`2>&1`; in `2 >f` and `12>f` the digits
+# are arguments), or a `{name}` before it, spaced or not, which zsh gives a new
+# descriptor (`exec {fd}>f`).
+FILE_DESCRIPTOR_DIGIT = re.compile(r'[0-9]')
+NAMED_FILE_DESCRIPTOR = re.compile(r'\{\w+\}')
 
 # Words that lead a subcommand without being its command: reserved words and
-# zsh's precommand modifiers. `for`, `select` and `case` are absent on purpose:
-# the word after them is a name or a pattern, never a command, so `for rm in a`
-# must not read as `rm`.
+# zsh's precommand modifiers, `-` among them (quoted or escaped: the Bash tool's
+# shell snapshot aliases a bare `-` to `cd -`). `for`, `select` and `case` are
+# absent on purpose: the word after them is a name or a pattern, never a
+# command, so `for rm in a` must not read as `rm`.
 LEADING_KEYWORDS = frozenset({
     '!', 'if', 'then', 'elif', 'else', 'while', 'until', 'do', 'coproc',
-    'noglob', 'nocorrect', 'builtin',
+    'noglob', 'nocorrect', 'builtin', '-',
 })
 
 # Utilities that run a command after their own options, each mapped to its
@@ -193,12 +235,12 @@ GIT_FLAG_ALLOWED = {
 
 
 # Syntax the scan in _logical_lines does not model. Most opens a context with
-# quoting rules of its own, which shlex's flat posix model cannot follow:
-# command and arithmetic substitution, backticks, ANSI-C strings, parameter
-# expansion, arithmetic, heredocs. A backslash-newline joins lines, and the
-# shell joins them in and out of quotes, so it is here too. A command that
-# contains any of them is split at every newline, exactly as before multi-line
-# quotes were supported, so nothing is ever joined on a misreading.
+# quoting rules of its own, which the tokenizer's flat posix model (shlex's)
+# cannot follow: command and arithmetic substitution, backticks, ANSI-C strings,
+# parameter expansion, arithmetic, heredocs. A backslash-newline joins lines,
+# and the shell joins them in and out of quotes, so it is here too. A command
+# that contains any of them is split at every newline, exactly as before
+# multi-line quotes were supported, so nothing is ever joined on a misreading.
 UNMODELED_SYNTAX = ('$(', '`', "$'", '${', '$[', '((', '<<', '\\\n')
 
 SPAN_AFTER_HASH = (
@@ -206,11 +248,100 @@ SPAN_AFTER_HASH = (
     'starts a comment depends on the shell and the context')
 
 
-def _pieces(tokens):
-    """Yield each word, and each piece of each run of punctuation."""
+def _tokenize(line):
+    """Split one line into the words and punctuation runs shlex returns.
+
+    The texts, and the errors for an unclosed quote or a trailing backslash,
+    are exactly those of shlex in posix mode with punctuation_chars and
+    whitespace_split and no commenters, the reading every rule here was built
+    on; the tests hold the two together. Each _Token also keeps what shlex
+    drops: whether it was quoted, and whether whitespace came before it.
+    """
+    tokens = []
+    spaced = True
+    i = 0
+    while i < len(line):
+        blanks = BLANKS.match(line, i)
+        if blanks:
+            spaced = True
+            i = blanks.end()
+            continue
+        run = PUNCTUATION_RUN.match(line, i)
+        if run:
+            tokens.append(_Token(run.group(), syntax=True, spaced=spaced))
+            i = run.end()
+        else:
+            word, quoted, i = _read_word(line, i)
+            tokens.append(_Token(word, quoted=quoted, spaced=spaced))
+        spaced = False
+    return tokens
+
+
+def _read_word(line, i):
+    """Return the word starting at line[i], whether any of it was quoted or
+    escaped, and where it ends."""
+    parts = []
+    quoted = False
+    while i < len(line):
+        plain = PLAIN_RUN.match(line, i)
+        if plain:
+            parts.append(plain.group())
+            i = plain.end()
+            continue
+        char = line[i]
+        if char in WHITESPACE or char in PUNCTUATION:
+            break
+        quoted = True
+        if char == "'":  # everything up to the next one is literal
+            end = line.find("'", i + 1)
+            if end < 0:
+                raise ValueError('No closing quotation')
+            parts.append(line[i + 1:end])
+            i = end + 1
+        elif char == '\\':
+            if i + 1 == len(line):
+                raise ValueError('No escaped character')
+            parts.append(line[i + 1])
+            i += 2
+        else:
+            text, i = _read_double_quoted(line, i + 1)
+            parts.append(text)
+    return ''.join(parts), quoted, i
+
+
+def _read_double_quoted(line, i):
+    """Return the text from just inside a `"` to its close, and where it ends.
+
+    A backslash escapes only `"` and itself; before anything else it stays.
+    """
+    parts = []
+    while True:
+        run = DOUBLE_QUOTED_RUN.match(line, i)
+        if run:
+            parts.append(run.group())
+            i = run.end()
+        if i == len(line):
+            raise ValueError('No closing quotation')
+        if line[i] == '"':
+            return ''.join(parts), i + 1
+        if i + 1 == len(line):  # the backslash ends the line
+            raise ValueError('No escaped character')
+        escaped = line[i + 1]
+        parts.append(escaped if escaped in '"\\' else '\\' + escaped)
+        i += 2
+
+
+def _pieces(tokens, quoting):
+    """Yield each word, and each piece of each run of punctuation.
+
+    Blind to quoting, a word of nothing but punctuation is a run like any other.
+    """
     for token in tokens:
-        if token and PUNCTUATION.issuperset(token):
-            yield from PUNCTUATION_PIECE.findall(token)
+        if token.syntax or (not quoting and token and PUNCTUATION.issuperset(token)):
+            spaced = token.spaced
+            for piece in PUNCTUATION_PIECE.findall(token):
+                yield _Token(piece, syntax=True, spaced=spaced)
+                spaced = False
         else:
             yield token
 
@@ -218,39 +349,55 @@ def _pieces(tokens):
 def _closing_parens(enclosing):
     """Yield a `)` while a group is open; each one read closes a group."""
     while enclosing:
-        yield ')'
+        yield CLOSE_PAREN
 
 
-def _split_line(line, nest=True):
-    """Tokenize one line and split it into subcommands.
+def _ends_a_subcommand(piece, braces, quoting):
+    if piece.syntax:
+        return piece in ('(', ')') or SEPARATOR.fullmatch(piece) is not None
+    if quoting and piece.quoted:
+        return False
+    return piece == CLOSE_BRACE or (braces and piece in COMMAND_POSITION_SYNTAX)
 
-    Separators and ENDS_A_SUBCOMMAND end one; redirections stay in theirs. A
-    parenthesis may open a group inside a word, where the command around it
-    continues after the `)` (`$(…)`, `<(…)`, zsh's `*(.)`), or stand before a
-    command (a case pattern's `(a) rm x`, `f() rm x`, zsh's `for f (a) rm x`).
-    Only a parser can tell which, so there are two readings. Nested, a group is
-    a subcommand of its own, and the one it interrupted resumes after it with
-    GROUP_WORD in its place, unless a `$` (`$(…)`) already stands in for it.
-    Flat, a parenthesis ends a subcommand like a separator. classify denies if
-    either reading does. An unmatched `)` ends a subcommand in both, and a group
-    still open at the end of the line closes there.
+
+def _split_tokens(tokens, nest, braces, quoting):
+    """Split one line's tokens into subcommands, in one of READINGS.
+
+    Separators end a subcommand, and so do the parentheses and braces
+    _ends_a_subcommand names; redirections stay in theirs. Three things here
+    take a parser, so classify reads every line each way and denies if any
+    reading does:
+
+    `nest`: a parenthesis may open a group inside a word, where the command
+    around it continues after the `)` (`$(…)`, `<(…)`, zsh's `*(.)`), or stand
+    before a command (a case pattern's `(a) rm x`, `f() rm x`, zsh's `for f (a)
+    rm x`). Nested, a group is a subcommand of its own, and the one it
+    interrupted resumes after it with GROUP_WORD in its place, unless a `$`
+    (`$(…)`) already stands in for it. Flat, a parenthesis ends a subcommand
+    like a separator. An unmatched `)` ends a subcommand either way, and a
+    group still open at the end of the line closes there.
+
+    `braces`: `{` and `]]` end a subcommand, as where a command could start, or
+    are words, as among arguments (`git branch { HEAD`).
+
+    `quoting`: a quoted word is only ever a word, as zsh reads it, or it splits
+    like the syntax it spells, as a quoted `;` does once eval hands it back to
+    the shell. Blind to quoting is how every command was read before quoting
+    was kept.
     """
-    lexer = shlex.shlex(line, posix=True, punctuation_chars=True)
-    lexer.whitespace_split = True
-    lexer.commenters = ''  # a shell comment only starts at a word boundary
     subcommands = []
     enclosing = []  # subcommands a nested group interrupted, innermost last
     current = []
     # A group still open when the line runs out closes there, as if at a `)`.
-    for piece in itertools.chain(_pieces(lexer), _closing_parens(enclosing)):
-        if nest and piece == '(':
+    for piece in itertools.chain(_pieces(tokens, quoting), _closing_parens(enclosing)):
+        if nest and piece.syntax and piece == '(':
             enclosing.append(current)
             current = []
-        elif piece in ENDS_A_SUBCOMMAND or SEPARATOR.fullmatch(piece):
+        elif _ends_a_subcommand(piece, braces, quoting):
             if current:
                 subcommands.append(current)
             current = []
-            if nest and piece == ')' and enclosing:
+            if nest and piece.syntax and piece == ')' and enclosing:
                 current = enclosing.pop()
                 if current and not current[-1].endswith('$'):
                     current.append(GROUP_WORD)
@@ -265,11 +412,12 @@ def _logical_lines(command):
     """Split `command` at the newlines that end a shell command.
 
     Only unquoted newlines end one, so cutting at every newline breaks any
-    quoted string that spans lines. This scan follows shlex's posix quoting
-    rules, so the two agree on where every quote closes: a newline inside '...'
-    or "..." stays in its word. An unterminated quote runs to the end of the
-    command, where shlex raises and a guarded agent fails closed. A command
-    with anything in UNMODELED_SYNTAX is not scanned at all.
+    quoted string that spans lines. This scan follows the tokenizer's posix
+    quoting rules (shlex's), so the two agree on where every quote closes: a
+    newline inside '...' or "..." stays in its word. An unterminated quote runs
+    to the end of the command, where the tokenizer raises and a guarded agent
+    fails closed. A command with anything in UNMODELED_SYNTAX is not scanned
+    at all.
 
     It does not model comments. Where a `#` starts one depends on the shell and
     the context (zsh glob qualifiers, arithmetic), and a wrong guess either
@@ -314,34 +462,36 @@ def _logical_lines(command):
     return lines
 
 
-def split_subcommands(command, nest=True):
-    """Tokenize `command` and split it into subcommands.
+def split_subcommands(command, nest=True, braces=True, quoting=True):
+    """Tokenize `command` and split it into subcommands, in one reading.
 
-    Each logical line is tokenized on its own, because shlex treats a newline
-    as ordinary whitespace, which would otherwise fold a second command into the
-    first subcommand and hide its leading token from classification. Raises
-    ValueError from the scan as well as from shlex; either way a guarded agent
-    fails closed. `nest` picks the reading of parentheses; see _split_line.
+    Each logical line is tokenized on its own, because the tokenizer, like
+    shlex, treats a newline as ordinary whitespace, which would otherwise fold a
+    second command into the first subcommand and hide its leading token from
+    classification. Raises ValueError from the scan as well as from the
+    tokenizer; either way a guarded agent fails closed. The keywords pick the
+    reading; see _split_tokens.
     """
     subcommands = []
     for line in _logical_lines(command):
-        subcommands.extend(_split_line(line, nest))
+        subcommands.extend(_split_tokens(_tokenize(line), nest, braces, quoting))
     return subcommands
 
 
-def _physical_line_subcommands(command, nest):
-    """Yield each physical line's subcommands, tokenized alone.
+def _physical_line_tokens(command, logical_lines):
+    """Yield each physical line's tokens, tokenized alone.
 
     This is the split from before multi-line support. A line that does not
-    tokenize alone, because a quote or a continuation spans it, is skipped:
-    split_subcommands has read it.
+    tokenize alone, because a quote or a continuation spans it, is skipped: the
+    logical lines have read it. So is a line that is also a logical line.
     """
     for line in command.split('\n'):
+        if line in logical_lines:
+            continue
         try:
-            subcommands = _split_line(line, nest)
+            yield _tokenize(line)
         except ValueError:
             continue
-        yield from subcommands
 
 
 def _sed_edits_in_place(args):
@@ -366,23 +516,33 @@ def _command_name(word):
     return word.rpartition('/')[2]  # `/bin/rm` runs rm
 
 
-def _is_redirection(piece):
-    return piece.startswith(('<', '>', '&>')) and PUNCTUATION.issuperset(piece)
+def _is_redirection(token):
+    return token.syntax and token.startswith(('<', '>', '&>'))
+
+
+def _names_a_file_descriptor(word, redirection):
+    """Whether zsh reads `word` as the file descriptor `redirection` acts on."""
+    if word.quoted or not _is_redirection(redirection):
+        return False
+    if FILE_DESCRIPTOR_DIGIT.fullmatch(word):
+        return not redirection.spaced
+    return NAMED_FILE_DESCRIPTOR.fullmatch(word) is not None
 
 
 def _without_redirections(tokens):
-    """Drop each redirection with its target and the file descriptor before it.
+    """Drop each redirection with its target and the file descriptor it names.
 
     A redirection can stand anywhere in a command and is never an argument:
     `2>/dev/null rm x` runs rm, and the `2` in `git remote -v 2>&1` is not a
-    subcommand.
+    subcommand. Only what zsh reads as a file descriptor goes with it, though:
+    the `5` in `git branch 5 >f` names a branch.
     """
     words = []
     i = 0
     while i < len(tokens):
         if _is_redirection(tokens[i]):
             i += 2
-        elif tokens[i].isdigit() and i + 1 < len(tokens) and _is_redirection(tokens[i + 1]):
+        elif i + 1 < len(tokens) and _names_a_file_descriptor(tokens[i], tokens[i + 1]):
             i += 3
         else:
             words.append(tokens[i])
@@ -448,19 +608,23 @@ def classify(command):
     denylist of unambiguous mutators, so unlisted commands pass. The asymmetry
     is deliberate — read-only shell is unbounded, read-only git is not.
 
-    Parentheses are read both ways (see _split_line), and every physical line
-    is also classified on its own, the way it was before multi-line support.
-    Each extra reading can only add a denial, so whatever one reading gets
-    wrong, a mutator that leads a subcommand in any of them is denied.
+    Every line is split in each of READINGS (see _split_tokens), and every
+    physical line is also classified on its own, the way it was before
+    multi-line support. A denial in any reading stands, so whatever one reading
+    gets wrong, a mutator that leads a subcommand in any of them is denied. That
+    covers only what the readings differ on: the tokens under all of them keep
+    their quoting and spacing, since whatever a shared step loses, no reading
+    can recover.
     """
-    # Both readings are split before anything is classified, so a raise from
-    # either one comes before anything is allowed.
-    readings = [split_subcommands(command, nest) for nest in (True, False)]
-    backstops = [_physical_line_subcommands(command, nest) for nest in (True, False)]
-    for tokens in itertools.chain(*readings, *backstops):
-        detail = _classify_subcommand(tokens)
-        if detail is not None:
-            return detail
+    logical_lines = _logical_lines(command)
+    lines = [_tokenize(line) for line in logical_lines]
+    lines.extend(_physical_line_tokens(command, set(logical_lines)))
+    for tokens in lines:
+        for nest, braces, quoting in READINGS:
+            for subcommand in _split_tokens(tokens, nest, braces, quoting):
+                detail = _classify_subcommand(subcommand)
+                if detail is not None:
+                    return detail
     return None
 
 
@@ -531,7 +695,9 @@ def _locate_git_verb(args):
 
     A reason of '' means "allow, there is no verb" — bare `git` or an info flag.
     An unknown leading option denies rather than being treated as a verb, so
-    `git --wat log` cannot slip a verb past the scan.
+    `git --wat log` cannot slip a verb past the scan. So does an option whose
+    value is missing: whichever reading cut the command there, git's verb lies
+    past the cut. Bare `--exec-path` takes no value; it prints and exits.
     """
     i = 0
     while i < len(args):
@@ -542,6 +708,10 @@ def _locate_git_verb(args):
             i += 1
             continue
         if token in GIT_GLOBAL_WITH_VALUE:
+            if i + 1 == len(args) and token != '--exec-path':
+                return None, ('`git ' + token + '` has no value here, so this guard '
+                              'cannot see the verb git would run, and it fails '
+                              'closed.')
             i += 2  # the option's value is the next token
             continue
         if '=' in token and token.partition('=')[0] in GIT_GLOBAL_WITH_VALUE:

@@ -16,6 +16,8 @@ import functools
 import importlib.util
 import json
 import os
+import random
+import shlex
 import subprocess
 from pathlib import Path
 
@@ -430,6 +432,149 @@ def test_git_after_a_substitution_is_still_denied_when_the_verb_writes():
         assert guard.classify(command) is not None, command
 
 
+# Found 2026-09-28 by the review of the leading-token fix, and the probes that
+# followed. Each creates or deletes a ref, stashes, edits a file in place, or
+# runs `rm x` in zsh as Claude Code's Bash tool runs it (checked in a scratch
+# repo, with a marker-writing stand-in for `rm x`), except the one whose id
+# ends in `gnu`: BSD sed reads an option after a file name as a file.
+
+# Quoting makes a word of anything, and shlex drops the quotes, so a quoted `>`
+# or `)` was read as syntax: a redirection took the next word as its target, and
+# a parenthesis, separator or brace ended the command.
+QUOTED_SYNTAX_BYPASSES = [
+    pytest.param("git branch '>'", id='quoted-redirection-as-branch'),
+    pytest.param('git branch ">"', id='double-quoted-redirection-as-branch'),
+    pytest.param('git branch \\>', id='escaped-redirection-as-branch'),
+    pytest.param("git tag '>'", id='quoted-redirection-as-tag'),
+    pytest.param("git branch '<' HEAD", id='quoted-input-redirection-as-branch'),
+    pytest.param("git branch ')'", id='quoted-paren-as-branch'),
+    pytest.param("git branch ')' -D feature", id='quoted-paren-hides-a-delete'),
+    pytest.param("git branch ';' -D feature", id='quoted-separator-hides-a-delete'),
+    pytest.param("git --namespace '>' stash", id='quoted-redirection-as-namespace'),
+    pytest.param("git --namespace ')' stash", id='quoted-paren-as-namespace'),
+    pytest.param("git --namespace '(' stash", id='quoted-open-paren-as-namespace'),
+    pytest.param("git --namespace ';' stash", id='quoted-separator-as-namespace'),
+    pytest.param("git -C ')' stash", id='quoted-paren-as-directory'),
+    pytest.param("sed -e '/start/,/end/{' -e 'd' -e '}' -i.bak notes.md",
+                 id='quoted-brace-in-a-sed-script'),
+    pytest.param("sed -e ';;' -e 's/body/X/' -i '' f", id='quoted-separators-as-a-sed-script'),
+    pytest.param("exec -a '>' rm x", id='quoted-redirection-as-exec-name'),
+    pytest.param("env -u '>' rm x", id='quoted-redirection-as-env-variable'),
+]
+
+# Unquoted, `{` and `]]` are syntax only where a command could start. Anywhere
+# else they are words, unlike `}`, which zsh reads as syntax wherever it stands.
+ARGUMENT_BRACE_BYPASSES = [
+    pytest.param('git branch { HEAD', id='open-brace-as-branch'),
+    pytest.param('git branch ]] HEAD', id='test-end-as-branch'),
+    pytest.param('git --namespace ]] stash', id='test-end-as-namespace'),
+    pytest.param('sed -e p ]] -i f', id='test-end-before-sed-i-gnu'),
+]
+
+# zsh reads a file descriptor only as one unquoted digit touching its `<`, `>`
+# or `&>`; any other digit is an argument. A `{name}` before a redirection names
+# one whether or not a space comes between.
+FILE_DESCRIPTOR_BYPASSES = [
+    pytest.param('git branch 5 >/dev/null', id='spaced-digit-as-branch'),
+    pytest.param('git tag 1 >/dev/null', id='spaced-digit-as-tag'),
+    pytest.param('git branch 5 &>/dev/null', id='spaced-digit-before-and-redirection'),
+    pytest.param('git branch 12>/dev/null', id='two-digits-as-branch'),
+    pytest.param("git branch '5'>/dev/null", id='quoted-digit-as-branch'),
+    pytest.param('git branch \\5>/dev/null', id='escaped-digit-as-branch'),
+    pytest.param('exec {fd}>/dev/null rm x', id='named-fd-before-exec-command'),
+    pytest.param('noglob {fd}>/dev/null rm x', id='named-fd-before-a-command'),
+    pytest.param('noglob {fd} >/dev/null rm x', id='spaced-named-fd'),
+    pytest.param('exec {fd}>/dev/null git checkout main', id='named-fd-before-git'),
+]
+
+# zsh's `-` precommand modifier. The snapshot the Bash tool sources aliases a
+# bare `-` to `cd -`, so only a quoted or escaped one reaches the modifier.
+DASH_MODIFIER_BYPASSES = [
+    pytest.param('\\- rm x', id='escaped-dash'),
+    pytest.param("'-' rm x", id='quoted-dash'),
+    pytest.param('"-" git stash', id='double-quoted-dash-before-git'),
+    pytest.param('true; \\- rm x', id='escaped-dash-after-a-separator'),
+]
+
+
+@pytest.mark.parametrize('command', QUOTED_SYNTAX_BYPASSES)
+def test_a_quoted_word_is_never_syntax(command):
+    assert guard.classify(command) is not None
+
+
+@pytest.mark.parametrize('command', ARGUMENT_BRACE_BYPASSES)
+def test_a_brace_or_test_end_among_arguments_is_a_word(command):
+    assert guard.classify(command) is not None
+
+
+@pytest.mark.parametrize('command', FILE_DESCRIPTOR_BYPASSES)
+def test_only_a_file_descriptor_leaves_with_its_redirection(command):
+    assert guard.classify(command) is not None
+
+
+@pytest.mark.parametrize('command', DASH_MODIFIER_BYPASSES)
+def test_the_dash_modifier_leads_a_command_like_a_keyword(command):
+    assert guard.classify(command) is not None
+
+
+def test_a_quoted_word_stays_a_word_in_the_default_reading():
+    assert guard.split_subcommands("git branch ')' -D feature") == [
+        ['git', 'branch', ')', '-D', 'feature']]
+    assert guard.split_subcommands("sed -e 'x{' -e '}' -i f") == [
+        ['sed', '-e', 'x{', '-e', '}', '-i', 'f']]
+
+
+def test_braces_read_as_words_do_not_end_a_command():
+    assert guard.split_subcommands('git branch { HEAD', braces=False) == [
+        ['git', 'branch', '{', 'HEAD']]
+    assert guard.split_subcommands('if [[ -n a ]] git log', braces=False) == [
+        ['if', '[[', '-n', 'a', ']]', 'git', 'log']]
+    # A `}` alone is syntax wherever it stands in zsh, so it ends one either way.
+    assert guard.split_subcommands('{ git log }', braces=False) == [['{', 'git', 'log']]
+
+
+def test_the_quote_blind_reading_splits_at_a_quoted_separator():
+    # How zsh reads a quoted separator once eval hands it back to the shell.
+    assert guard.split_subcommands('eval echo \\; rm x', quoting=False) == [
+        ['eval', 'echo'], ['rm', 'x']]
+    # Only a whole word of punctuation splits, so `sh -c '…'` is still one word.
+    assert guard.split_subcommands("sh -c 'git log; rm x'", quoting=False) == [
+        ['sh', '-c', 'git log; rm x']]
+
+
+def test_a_quoted_separator_still_splits_for_eval():
+    # eval joins its words and hands them back to the shell, where a quoted `;`
+    # separates again. Denied before quoting was tracked, by a split blind to
+    # it; still denied by the reading that stays blind to it.
+    for command in ('eval echo \\; rm x', "eval echo ';' rm x",
+                    "eval 'git log' '&&' git stash"):
+        assert guard.classify(command) is not None, command
+
+
+def test_a_quoted_command_word_is_still_its_command():
+    for command in ('"rm" x', '\\rm x', "r''m x", "'git' stash", "g'i't stash"):
+        assert guard.classify(command) is not None, command
+
+
+def test_a_git_option_missing_its_value_fails_closed():
+    # The backstop under every reading: wherever one cuts a command between a
+    # global option and its value, the verb git would run lies past the cut.
+    # Bare --exec-path takes no value; it prints the path and exits.
+    for command in ('git -C', 'git -c', 'git --namespace', 'git --git-dir'):
+        assert guard.classify(command) is not None, command
+    assert guard.classify('git --exec-path') is None
+
+
+def test_quoted_and_brace_arguments_to_read_only_commands_stay_allowed():
+    for command in ("git grep ';'", "git log --grep '>'", "git grep -e '(' -- src",
+                    "git log --format='%H {' -1", "git branch --list '>'",
+                    'find . -name x -exec grep -l y {} \\;',
+                    'git log -n 2 >/dev/null', 'git branch --show-current 2>/dev/null',
+                    'exec {fd}>/dev/null', 'git --exec-path',
+                    '{ git log; } 2>&1', 'if [[ -n a ]]; then git status; fi'):
+        assert guard.classify(command) is None, command
+
+
 def test_tokenizer_leaves_redirection_intact():
     # '2>&1' lexes as ['2', '>&', '1'] and '>' is not an operator we split on —
     # redirection stays inside its subcommand, per spec D2.
@@ -447,6 +592,68 @@ def test_tokenizer_does_not_treat_hash_as_a_comment():
 def test_quoted_arguments_survive_tokenization():
     assert guard.split_subcommands("git log --grep='a && b'") == [
         ['git', 'log', '--grep=a && b']]
+
+
+def _shlex_tokens(line):
+    lexer = shlex.shlex(line, posix=True, punctuation_chars=True)
+    lexer.whitespace_split = True
+    lexer.commenters = ''
+    return list(lexer)
+
+
+def _tokenized(tokenize, line):
+    try:
+        return [str(token) for token in tokenize(line)]
+    except ValueError as exc:
+        return 'ValueError: ' + str(exc)
+
+
+# The guard reads words exactly as shlex does, so every rule built on shlex's
+# reading holds; its tokenizer only keeps what shlex drops.
+SHLEX_EDGE_LINES = [
+    '', ' ', 'a b', ' a\tb\r\nc ', "''", '""', "a''", "'' ''", "'a b'", '"a b"',
+    "'a\\'", '"a\\"b"', '"a\\\\b"', '"a\\b"', '"a\\$b"', '\\a', '\\\\', '\\ x',
+    '\\;', 'a\\', '"a\\', "'a", '"a', "a'b'c", 'a"b"c', "a'>'b", "'>'", '\\>',
+    ';', ';;&', '2>&1', 'a>b', 'a >b', '>(rm x)', '$(ls)', ');', ')&&', ';(',
+    '{ a; }', '{fd}>f', 'x="a;b"c', 'a#b', "it's", '"it\'s"', "'\\\\'", '\\\n',
+    'a\n\nb', '\x0b', 'é b',
+]
+
+
+def test_tokenizer_reads_edge_cases_as_shlex_does():
+    for line in SHLEX_EDGE_LINES:
+        assert _tokenized(guard._tokenize, line) == _tokenized(_shlex_tokens, line), line
+
+
+def test_tokenizer_reads_random_lines_as_shlex_does():
+    rng = random.Random(20260928)
+    alphabet = ' \t\n\'"\\;&|<>(){}]$#a2-'
+    for _ in range(4000):
+        line = ''.join(rng.choice(alphabet) for _ in range(rng.randrange(14)))
+        assert _tokenized(guard._tokenize, line) == _tokenized(_shlex_tokens, line), line
+
+
+def _flags(line):
+    return [(str(t), t.syntax, t.quoted, t.spaced) for t in guard._tokenize(line)]
+
+
+def test_tokens_keep_what_shlex_drops():
+    # (text, syntax, quoted, spaced): an unquoted run of punctuation; any of it
+    # quoted or escaped; whitespace or the line's start before it.
+    assert _flags('\\;') == [(';', False, True, True)]
+    assert _flags('"\\>"') == [('\\>', False, True, True)]
+    assert _flags("a'>'b") == [('a>b', False, True, True)]
+    assert _flags('2\\>f') == [('2>f', False, True, True)]
+    assert _flags(">'f'") == [('>', True, False, True), ('f', False, True, False)]
+    assert _flags("''>f") == [
+        ('', False, True, True), ('>', True, False, False), ('f', False, False, False)]
+    assert _flags("'2'>f") == [
+        ('2', False, True, True), ('>', True, False, False), ('f', False, False, False)]
+    assert _flags('2>f') == [
+        ('2', False, False, True), ('>', True, False, False), ('f', False, False, False)]
+    assert _flags('2 >f')[1] == ('>', True, False, True)
+    assert _flags('{fd}>f')[1] == ('>', True, False, False)
+    assert _flags('{fd} >f')[1] == ('>', True, False, True)
 
 
 def test_non_git_denylist_entries_are_denied():

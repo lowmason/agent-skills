@@ -129,10 +129,11 @@ per-project, and this hook has one install. Symlinked rather than copied because
 guard must not drift from the agent files it enforces, which are themselves symlinked
 from this repo.
 
-Python rather than bash, against this directory's convention: `shlex` tokenizes quoted
-commands properly (narrowing the "heuristic, not a shell parser" gap below), it drops
-the `jq` dependency for a hook that now runs in every project, and the tests can import
-the classifier directly. It runs under whatever `python3` is first on the `PATH`
+Python rather than bash, against this directory's convention: it tokenizes quoted
+commands properly, reading words exactly as `shlex`'s posix mode does while keeping the
+quoting `shlex` drops (narrowing the "heuristic, not a shell parser" gap below), it
+drops the `jq` dependency for a hook that now runs in every project, and the tests can
+import the classifier directly. It runs under whatever `python3` is first on the `PATH`
 Claude Code hands its hooks, which need not be your shell's: an app launched from the
 Dock can inherit launchd's `/usr/bin:/bin:/usr/sbin:/sbin`, where `python3` is macOS's
 system Python 3.9. So the source stays 3.9-compatible.
@@ -177,18 +178,34 @@ learned the hard way, all now baked into the script:
 containment is the `tools:` frontmatter denying `Write`/`Edit` outright, plus the
 permission system. Each subcommand is classified by its command word, taken by its
 basename (`/bin/rm` is `rm`) and found past redirections, assignments (`X=1`), leading
-keywords (`!`, `if`, `then`, `do`, `coproc`, `noglob`, …) and the prefix utilities `env`,
-`command`, `exec`, `time`, `nohup` and `nice` with their options. Subshells, brace
-groups, `$(…)` and `<(…)` are classified as commands of their own. Not caught:
+keywords (`!`, `if`, `then`, `do`, `coproc`, `noglob`, zsh's `-` modifier, …) and the
+prefix utilities `env`, `command`, `exec`, `time`, `nohup` and `nice` with their
+options. Subshells, brace groups, `$(…)` and `<(…)` are classified as commands of their
+own. A quoted or escaped word is a word, never syntax: `git branch ')' -D feature`
+deletes a branch. A redirection leaves with its target and with the file descriptor zsh
+reads for it: one unquoted digit touching the operator (`2>&1`), or a `{name}` before
+it (`exec {fd}>f`). Any other word before a redirection is an argument: `git branch 5
+>f` creates branch `5`. Not caught:
 
 - A command run by any other utility: `xargs rm`, `find . -exec rm {} \;`, and
-  `find . -delete`.
-- Mutators inside a quoted string, which `shlex` reads as one word: `"$(git commit)"`,
-  backticks, `eval '…'`, `env -S '…'`, `sh -c "..."`, `python -c "..."`, `perl -e`.
+  `find . -delete`, or read from what a command prints: `source <(echo rm x)`, and
+  zsh's `source =(echo rm x)`.
+- Mutators inside a quoted string, which is one word: `"$(git commit)"`, `eval '…'`,
+  `env -S '…'`, `sh -c "..."`, `python -c "..."`, `perl -e`. (A quoted word made only
+  of punctuation is also read as the syntax it spells, the way `eval` hands it back to
+  the shell, so `eval echo \; rm x` is denied.)
+- Command substitution in backticks. The tokenizer, like `shlex`, takes a backtick for
+  an ordinary character, so `` echo `rm x` `` reads as the words `echo`, `` `rm `` and
+  `` x` ``, and none of them is a denied command. `$(…)` is read as a command.
 - A command word the shell produces by expansion (`c=rm; $c x`, `$(which rm) x`), or
   glues to a brace (zsh runs `{rm x;}`).
-- A digit just before a redirection is read as its file descriptor, so `git branch 5
-  >f`, which creates branch `5`, is read as `git branch`.
+- Options of the prefix utilities that take a value the guard does not model, which
+  puts the value in the command's place: the long options (`env --chdir /tmp rm x`,
+  `nice --adjustment 5 rm x`) and `/usr/bin/time -o f rm x`. zsh's own `time` takes no
+  options.
+- A program run by an allowlisted git verb through configuration or the environment:
+  `git -c core.fsmonitor=… status`, `git -c diff.external=… diff`,
+  `GIT_EXTERNAL_DIFF=… git diff`.
 - Anything reached through an alias, a function defined elsewhere, or a wrapper script.
 
 Known false positives, accepted rather than widened:
@@ -199,10 +216,11 @@ Known false positives, accepted rather than widened:
   hide it, so three rules deny instead of guessing:
   - A command containing `$(`, a backtick, `$'`, `${`, `$[`, `((`, `<<`, or a
     backslash-newline is split at every newline, as before multi-line support. The
-    first seven carry nested quoting that `shlex` cannot follow, and the shell joins
-    continued lines in and out of quotes. So a quote spanning lines there fails
-    closed, and so does every backslash-continued command (the line ending in `\`
-    does not tokenize), and heredoc bodies are read as shell, line by line.
+    first seven carry nested quoting that the tokenizer, like `shlex`, cannot follow,
+    and the shell joins continued lines in and out of quotes. So a quote spanning
+    lines there fails closed, and so does every backslash-continued command (the line
+    ending in `\` does not tokenize), and heredoc bodies are read as shell, line by
+    line.
   - Comments are tokenized, never stripped. Where a `#` starts one depends on the
     shell and the context (zsh glob qualifiers, arithmetic, `${…}`), and a wrong
     guess either hides live code or lets a comment's apostrophe open a quote. So a
@@ -212,14 +230,37 @@ Known false positives, accepted rather than widened:
     the backstop against a misread the first two rules miss, and its cost is a
     line inside a quoted script that begins with a denied word (`rm = 5`).
 
-- **Parentheses are read two ways, and a denial in either stands.** Nested, a group is
-  a command of its own and the command around it continues after it (`$(…)`, `<(…)`,
-  zsh's `*(.)`); flat, a parenthesis ends the command, as a case pattern or `f()` does
-  before the command that follows it. Telling them apart takes a parser. So a
-  parenthesized word that is not a command is classified as one: a case pattern
-  `(rm)`, an array `(rm mv)`, a comment's `# (rm x)`, or a heredoc line such as
-  `print(git(x))`. A group where git expects its verb fails closed, since zsh globs
-  `git (stash)` into `git stash` when a file named `stash` exists.
+- **Every command is read eight ways, and a denial in any of them stands.** Three
+  things take a parser to tell apart, so each is read both ways:
+  - Parentheses nest, or end the command. Nested, a group is a command of its own and
+    the command around it continues after it (`$(…)`, `<(…)`, zsh's `*(.)`); flat, a
+    parenthesis ends the command, as a case pattern or `f()` does before the command
+    that follows it. So a parenthesized word that is not a command is classified as
+    one: a case pattern `(rm)`, an array `(rm mv)`, a comment's `# (rm x)`, or a
+    heredoc line such as `print(git(x))`. A group where git expects its verb fails
+    closed, since zsh globs `git (stash)` into `git stash` when a file named `stash`
+    exists.
+  - `{` and `]]` end the command, as where a command could start (`{ rm x; }`,
+    `if [[ -n a ]] rm x`), or are words, as among arguments (`git branch {`). So the
+    word after one is classified as a command: `echo { rm x` is denied.
+  - Quoting is kept, or ignored. Kept, a quoted word is only a word, as zsh reads it.
+    Ignored, a quoted word made only of punctuation is the syntax it spells, as `eval`
+    reads it and as every command was read before quoting was kept. So `echo ';' rm x`
+    is denied, and so is `git --namespace '>' log`, where `'>'` reads as a redirection
+    that takes `log` with it.
+
+- **`time -p rm x` is denied**, though zsh's `time` is a reserved word that takes no
+  options: it runs a command named `-p` and never reaches `rm`. Options after `time` are
+  skipped as they are after `env` and `nice`, since `/usr/bin/time -p` and bash's
+  `time -p` do run the command.
+- **Read-only git verbs missing from the allowlist are denied wherever they appear**, and
+  with subshells, `$(…)`, `if` and assignments no longer hiding a command, that now
+  includes the likes of `B=$(git symbolic-ref --short HEAD)`. Among them:
+  `symbolic-ref`, `merge-tree`, `hash-object`, `diff-index`, `diff-files`, `show-ref`,
+  `cherry`, `range-diff`, `show-branch`, `patch-id`, `check-ref-format`, and
+  `filter-repo --version`. The allowlist fails closed on whatever it does not list.
+  Widening it is a line per verb, but several of these also have forms that write
+  (`symbolic-ref` with two arguments, `hash-object -w`).
 
 - **`git config --global --list` is denied.** The allowlist carries exactly the five
   read-mode flags from the spec (`--get --get-all --get-regexp --list -l`); a scope
