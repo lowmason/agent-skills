@@ -199,3 +199,30 @@ def test_install_reports_every_conflict(tmp_path, extra):
   assert result.returncode == 1
   assert str(skill) in result.stderr
   assert str(agent) in result.stderr
+
+
+def test_aliased_skill_roots_install_each_skill_once(tmp_path):
+  (tmp_path / '.agents/skills').mkdir(parents=True)
+  (tmp_path / '.claude').mkdir()
+  (tmp_path / '.claude/skills').symlink_to('../.agents/skills', target_is_directory=True)
+  result = run_install(tmp_path, 'all', '--copy')
+  assert result.returncode == 0, result.stdout + result.stderr
+  assert len(result.stdout.splitlines()) == 1
+  assert (tmp_path / '.agents/skills/brainstorming/SKILL.md').is_file()
+
+
+@pytest.mark.parametrize('extra', [(), ('--dry-run',)])
+def test_aliased_destinations_with_different_sources_write_nothing(tmp_path, extra):
+  # Claude and Gemini ship different agent files under the same names, so one
+  # directory cannot hold both; plan() must see through the alias.
+  (tmp_path / '.claude/agents').mkdir(parents=True)
+  (tmp_path / '.gemini').mkdir()
+  (tmp_path / '.gemini/agents').symlink_to('../.claude/agents', target_is_directory=True)
+  before = tree(tmp_path)
+  result = run_install(tmp_path, 'all', '--companions', *extra)
+  assert result.returncode == 1
+  assert 'conflicting sources' in result.stderr
+  assert str(tmp_path / '.claude/agents') in result.stderr
+  assert str(tmp_path / '.gemini/agents') in result.stderr
+  assert tree(tmp_path) == before
+

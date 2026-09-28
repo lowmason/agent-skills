@@ -99,17 +99,29 @@ def plan(
   runtime: str, home: Path, skills: list[str], *, companions: bool
 ) -> list[InstallItem]:
   runtimes = ('claude', 'codex', 'gemini') if runtime == 'all' else (runtime,)
-  by_destination: dict[Path, InstallItem] = {}
+  by_location: dict[Path, InstallItem] = {}
   for name in runtimes:
     for item in runtime_items(name, home, skills, companions=companions):
-      existing = by_destination.get(item.destination)
-      if existing is not None and existing.source != item.source:
+      location = physical_location(item.destination)
+      existing = by_location.get(location)
+      if existing is None:
+        by_location[location] = item
+      elif existing.source != item.source:
+        alias = (
+          '' if existing.destination == item.destination
+          else f' (also reached as {item.destination})'
+        )
         raise InstallError(
-          f'conflicting sources for {item.destination}: '
+          f'conflicting sources for {existing.destination}{alias}: '
           f'{existing.source} and {item.source}'
         )
-      by_destination[item.destination] = item
-  return list(by_destination.values())
+  return list(by_location.values())
+
+
+def physical_location(destination: Path) -> Path:
+  # Two runtime directories can be one directory through a symlink. Resolve
+  # the parent only, so a managed symlink at the leaf keeps its own name.
+  return destination.parent.resolve() / destination.name
 
 
 def is_managed_symlink(item: InstallItem) -> bool:
