@@ -75,6 +75,13 @@
   synthesize-mode scenario verification). This branch makes the read-only
   guard's 3.9 floor a checked test (hooks/ tests and docs) and touches none of
   them.
+- 2026-09-28 — finished `claude/xenodochial-kalam-73a045` with 3 items aged
+  >45d, carried on the partner's reason, verbatim: "Seen in today's /deferred
+  pass (b76d23d), which retired four other items and left these open; this
+  branch touches only hooks/ and CLAUDE.md." The items are
+  `11-delegation-frontmatter-rollout`'s interactive verification (71d) and two
+  `18-methodology-pipeline-skills` items (64d: the DL/NLP template extension,
+  synthesize-mode scenario verification).
 
 ## 11-delegation-frontmatter-rollout — 2026-07-19
 - [x] Haiku-pinned `Explore` override agent (fork-isolation upgrade; plan "Out of
