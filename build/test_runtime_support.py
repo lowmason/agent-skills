@@ -274,12 +274,37 @@ def installed_links(root: Path) -> set[str]:
       '.claude/skills/clean-coder',
       '.claude/skills/clean-code',
     }),
+    # writing-plans -> /deferred -> writing-plans is a cycle.
+    ('claude', 'writing-plans', (), {
+      '.claude/skills/writing-plans',
+      '.claude/commands/deferred.md',
+    }),
   ],
 )
 def test_skill_brings_its_hard_dependencies(tmp_path, runtime, skill, flags, expected):
   result = run_install(tmp_path, runtime, *flags, skills=(skill,))
   assert result.returncode == 0, result.stdout + result.stderr
   assert installed_links(tmp_path) == expected
+
+
+@pytest.mark.parametrize(
+  ('skill', 'required'),
+  [
+    # --companions installs /deferred, which needs writing-plans.
+    ('brainstorming', {'.claude/skills/writing-plans'}),
+    ('finishing-a-development-branch', {
+      '.claude/skills/requesting-code-review',
+      '.claude/skills/writing-plans',
+    }),
+  ],
+)
+def test_companions_keep_the_dependency_closure(tmp_path, skill, required):
+  result = run_install(tmp_path, 'claude', '--companions', skills=(skill,))
+  assert result.returncode == 0, result.stdout + result.stderr
+  links = installed_links(tmp_path)
+  assert {f'.claude/skills/{skill}', '.claude/commands/deferred.md'} <= links
+  assert '.claude/agents/code-reviewer.md' in links
+  assert required <= links
 
 
 TEXT_SUFFIXES = {'.md', '.py', '.sh', '.js', '.cjs'}

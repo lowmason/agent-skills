@@ -86,10 +86,12 @@ def selected_skills(requested: list[str] | None) -> list[str]:
   return list(dict.fromkeys(requested))
 
 
-def with_dependencies(skills: list[str]) -> tuple[list[str], list[str]]:
-  '''Return the skills and commands that the given skills need, transitively.'''
+def with_dependencies(
+  skills: list[str], commands: Collection[str] = ()
+) -> tuple[list[str], list[str]]:
+  '''Return the skills and commands these need, transitively, themselves included.'''
   closure: dict[str, None] = {}
-  pending = [f'skill:{name}' for name in skills]
+  pending = [f'skill:{name}' for name in skills] + [f'command:{name}' for name in commands]
   while pending:
     node = pending.pop(0)
     if node not in closure:
@@ -307,7 +309,9 @@ def main(argv: list[str] | None = None) -> int:
     skills = selected_skills(args.skills)
     commands: list[str] = []
     if args.skills:
-      skills, commands = with_dependencies(skills)
+      # --companions installs every command, so their dependencies come too.
+      every_command = [path.stem for path in files(REPO / 'commands', '.md')]
+      skills, commands = with_dependencies(skills, every_command if companions else ())
     if args.companions is False:
       commands = []
     items = plan(
