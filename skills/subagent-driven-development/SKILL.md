@@ -69,7 +69,7 @@ digraph process {
 
     "Read plan, note context and global constraints, create todos" [shape=box];
     "More tasks remain?" [shape=diamond];
-    "Dispatch final code reviewer subagent (../requesting-code-review/code-reviewer.md)" [shape=box];
+    "Final review: code reviewer subagent + Codex second opinion (../requesting-code-review/)" [shape=box];
     "Run plan-completion protocol (../writing-plans/SKILL.md)" [shape=box];
     "Finish the branch (finishing-a-development-branch)" [shape=box style=filled fillcolor=lightgreen];
 
@@ -88,8 +88,8 @@ digraph process {
     "Re-review reports all findings addressed, no new Critical/Important?" -> "Mark task complete in todo list and progress ledger" [label="yes"];
     "Mark task complete in todo list and progress ledger" -> "More tasks remain?";
     "More tasks remain?" -> "Dispatch implementer subagent (./implementer-prompt.md)" [label="yes"];
-    "More tasks remain?" -> "Dispatch final code reviewer subagent (../requesting-code-review/code-reviewer.md)" [label="no"];
-    "Dispatch final code reviewer subagent (../requesting-code-review/code-reviewer.md)" -> "Run plan-completion protocol (../writing-plans/SKILL.md)";
+    "More tasks remain?" -> "Final review: code reviewer subagent + Codex second opinion (../requesting-code-review/)" [label="no"];
+    "Final review: code reviewer subagent + Codex second opinion (../requesting-code-review/)" -> "Run plan-completion protocol (../writing-plans/SKILL.md)";
     "Run plan-completion protocol (../writing-plans/SKILL.md)" -> "Finish the branch (finishing-a-development-branch)";
 }
 ```
@@ -267,8 +267,19 @@ final whole-branch review. When you fill a reviewer template:
   Before re-dispatching the reviewer, confirm the fix report contains the
   covering tests, the command run, and the output; dispatch the re-review
   once all three are present.
-- If the final whole-branch review returns findings, dispatch ONE fix
-  subagent with the complete findings list — not one fixer per finding.
+- The final whole-branch review has two seats, launched in the same message:
+  the code-reviewer subagent (requesting-code-review's code-reviewer.md) and
+  the Codex second opinion in requesting-code-review's
+  [codex-review.md](../requesting-code-review/codex-review.md), `--base` at
+  the same merge base. When the Codex run completes, the recipe has you write
+  `Codex reviewed <sha>` into the conversation, where
+  finishing-a-development-branch reads it after this workspace is gone. Copy
+  that exact line into the progress ledger too, and back into the
+  conversation if you resume from the ledger. Touch nothing until both seats
+  have returned.
+- If the final whole-branch review returns findings, merge both seats' lists
+  and dispatch ONE fix subagent with the complete list — not one fixer per
+  finding.
   Per-finding fixers each rebuild context and re-run suites; a real
   session's final-review fix wave cost more than all its tasks combined.
 
@@ -409,7 +420,7 @@ The relaunch resumes from the ledger via **Durable Progress** above.
 - [implementer-prompt.md](implementer-prompt.md) - Dispatch implementer subagent
 - [task-reviewer-prompt.md](task-reviewer-prompt.md) - Dispatch task reviewer subagent (spec compliance + code quality)
 - [re-review-prompt.md](re-review-prompt.md) - Dispatch a scoped re-review after fixes (per-finding ADDRESSED / NOT ADDRESSED)
-- Final whole-branch review: use requesting-code-review's [code-reviewer.md](../requesting-code-review/code-reviewer.md)
+- Final whole-branch review: use requesting-code-review's [code-reviewer.md](../requesting-code-review/code-reviewer.md), alongside its Codex second opinion, [codex-review.md](../requesting-code-review/codex-review.md)
 
 ## Example Workflow
 
@@ -466,7 +477,7 @@ what it costs: [references/advantages.md](references/advantages.md).
 **Required workflow skills:**
 - **using-git-worktrees** - Ensures isolated workspace (creates one or verifies existing)
 - **writing-plans** - Creates the plan this skill executes
-- **requesting-code-review** - Code review template for the final whole-branch review
+- **requesting-code-review** - Code review template and Codex second-opinion recipe for the final whole-branch review
 - **finishing-a-development-branch** - Integrates the branch after the plan-completion protocol
 
 **After all tasks:** run the plan-completion protocol, then use finishing-a-development-branch to integrate the branch (merge / PR / cleanup) and remove any worktree.

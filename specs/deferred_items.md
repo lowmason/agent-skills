@@ -49,6 +49,15 @@
   evidence, and `derive-roadmap`'s unmeasured RED baseline). This branch,
   stacked on 47dc45c, only anchors bundled-script invocations to
   `<this-skill-dir>`.
+- 2026-09-27 — finished `worktree-codex-second-review` with 7 items aged >45d,
+  carried on the partner's reason: "Lazy." The items are
+  `11-delegation-frontmatter-rollout`'s interactive verification (70d), three
+  `18-methodology-pipeline-skills` items (63d: the DL/NLP template extension,
+  the in-session SOTA pass, synthesize-mode scenario verification), and three
+  `19-methodology-pipeline-skills` items (59d: the unbacked stage-stamp
+  carrier, two checkpoints without behavioural evidence, derive-roadmap's
+  unmeasured RED baseline). This branch adds the Codex second-opinion review
+  seat to the process skills and touches none of them.
 
 ## 11-delegation-frontmatter-rollout — 2026-07-19
 - [x] Haiku-pinned `Explore` override agent (fork-isolation upgrade; plan "Out of
