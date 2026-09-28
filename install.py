@@ -7,7 +7,8 @@ Examples:
   python3 install.py gemini --skill bayesian-workflow --companions
   python3 install.py all --copy
 
-Symlinks are the default so edits in this checkout are picked up immediately.
+Symlinks are the default, so edits to installed items are live; re-run after a
+pull that adds skills, agents, or commands.
 A full install also links each runtime's companion agents and commands. --skill
 installs the named skills plus what they cannot work without (the DEPENDENCIES
 table in install.py); other companions only with --companions. The installer
@@ -327,7 +328,8 @@ def main(argv: list[str] | None = None) -> int:
     '--companions',
     action=argparse.BooleanOptionalAction,
     help="also link the runtime's agents and commands; "
-    'default: on for a full install, off with --skill',
+    'default: on for a full install, off with --skill; turning it off '
+    'also drops the commands a skill requires',
   )
   parser.add_argument(
     '--copy',

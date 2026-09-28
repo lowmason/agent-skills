@@ -193,14 +193,19 @@ python3 install.py all --dry-run                                  # inspect with
 python3 install.py gemini --copy                                  # frozen copies, minus git-ignored files
 ```
 
-`--skill` also installs what the named skills cannot work without: sibling
-skills whose scripts or files they use, and the `/deferred` command where the
-runtime has commands (Claude Code, Gemini CLI). So
-`--skill finishing-a-development-branch` brings `writing-plans`,
-`requesting-code-review`, and `/deferred`. It skips the runtime's other agents
+`--skill` also installs what the named skills cannot work without, and what
+those need in turn: sibling skills whose scripts or files they use, and the
+`/deferred` command where the runtime has commands (Claude Code, Gemini CLI).
+So `--skill finishing-a-development-branch` brings `writing-plans`,
+`requesting-code-review`, and `/deferred`, and `--skill derive-roadmap` brings
+`writing-plans`, which `/deferred` needs, even where the command itself is not
+installed (Codex, or `--no-companions`). It skips the runtime's other agents
 and commands unless you add `--companions`. A full install includes every
 companion unless you add `--no-companions`, which leaves out all agents and
 commands, required ones included. The table is `DEPENDENCIES` in `install.py`.
+
+`--copy` copies the files git keeps (tracked, or untracked and not ignored)
+and refuses a skill that contains a symlink, since a copy would follow it.
 
 | Runtime | Skills | Agents | Commands |
 |---------|--------|--------|----------|

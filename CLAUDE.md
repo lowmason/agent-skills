@@ -60,6 +60,8 @@ When creating or editing a skill, **follow the `writing-skills` skill** — it's
 - Frontmatter needs `name` + `description`; the description starts with "Use when…", is third-person, and is dense with concrete triggers (this is what drives auto-loading, so wording is functional, not decorative).
 - Discipline/behavior skills are pressure-tested and their wording micro-tested against a no-guidance control before deployment; pure reference skills are not.
 
+A skill's references to other skills and to commands are install dependencies. Adding or dropping a `/command`, a `../<skill>/` or `<skill>/references/…` path, or a named section of another skill (`<skill>'s Model Selection`) must be mirrored in `install.py`'s `DEPENDENCIES` (hard: the skill runs, reads, or sends you to it) or in `build/test_runtime_support.py`'s `SOFT_REFERENCES` (soft, with a reason). The dependency-drift check in Commands fails on a mismatch.
+
 ## Conventions
 
 - **Python style**: Polars over pandas; single quotes over double; NumPyro + JAX (not PyMC) for Bayesian code; target Python 3.13.
@@ -78,16 +80,16 @@ contains own-use extraction of CC-BY-NC-ND material.
 There is no root test runner or repo-wide `pyproject`, and the scientific deps (numpy, polars, pytest) aren't installed into the interpreter directly. Run everything through `uv run` pinned to the Homebrew Python 3.13, supplying deps inline. Tests use **bare imports** and are **directory-scoped** — run pytest from inside the relevant directory, not the repo root: each suite pins its own inline deps, and a repo-root collection fails outright anyway, since `geographic-codes` and `classification-codes` both ship a `test_build.py` whose basenames collide under pytest's prepend import mode with no `__init__.py`.
 
 ```bash
-# Cross-runtime adapters and installer — 37 tests
+# Cross-runtime adapters, installer, and DEPENDENCIES drift — 48 tests
 cd build && uv run --python 3.13 --with pytest --with pyyaml \
   python -m pytest -q test_runtime_support.py
 
-# Full build-directory tests — 114 tests (77 citation/lint/snippet + 37 runtime-support)
-# (all 114 collect either way. 7 of test_check_snippets.py's need the ArviZ/NumPyro chain and
-# skip without it, so the command below reports 107 passed, 7 skipped; append
+# Full build-directory tests — 125 tests (77 citation/lint/snippet + 48 runtime-support)
+# (all 125 collect either way. 7 of test_check_snippets.py's need the ArviZ/NumPyro chain and
+# skip without it, so the command below reports 118 passed, 7 skipped; append
 # --with "arviz>=1.0" --with arviz-base --with arviz-stats --with arviz-plots --with numpyro
-# --with jax --with matplotlib to run all 114. Separately, 5 in test_verify_citations.py need the
-# build/.scratch/ ground truth — lacking both: 102 passed, 4 failed, 8 skipped. .scratch/ is
+# --with jax --with matplotlib to run all 125. Separately, 5 in test_verify_citations.py need the
+# build/.scratch/ ground truth — lacking both: 113 passed, 4 failed, 8 skipped. .scratch/ is
 # gitignored, so a fresh clone or worktree lacks it; regenerate with build/extract_structure.py,
 # see build/CLAUDE.md)
 cd build && uv run --python 3.13 --with pytest --with numpy --with polars --with pyyaml python -m pytest -q
@@ -156,6 +158,11 @@ cd hooks && uv run --python 3.13 --with pytest python -m pytest -q
 # Frontmatter + provenance lints (run before committing skill changes)
 uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
 uv run --python 3.13 python build/check_provenance.py
+
+# Dependency drift: skill and command text vs install.py's DEPENDENCIES (run before
+# committing skill changes that add or drop a cross-skill or /command reference)
+cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q \
+  test_runtime_support.py -k declared_dependencies
 
 # Snippet gate. Three tiers, cheapest first; each includes the ones above it. Failures on
 # stdout (exit 1), advisories on stderr as `WARN` (exit 0), exit 2 for a missing stack with

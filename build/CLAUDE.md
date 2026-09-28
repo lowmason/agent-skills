@@ -12,4 +12,6 @@ notebook links honest. Two gates:
 The exception is `sync_runtime_assets.py` plus
 `test_runtime_support.py`: these generate and verify Codex/Gemini adapters and
 the cross-runtime installer. Their canonical inputs are `../agents/*.md` and
-`../commands/*.md`; never edit `../runtimes/` by hand.
+`../commands/*.md`; never edit `../runtimes/` by hand. `test_runtime_support.py`
+also scans the agent-facing text of `../skills/**` (not READMEs or install
+guides) against `../install.py`'s `DEPENDENCIES`, so a skill edit can fail it.
