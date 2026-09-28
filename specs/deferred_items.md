@@ -83,11 +83,12 @@
   `18-methodology-pipeline-skills` items (64d: the DL/NLP template extension,
   synthesize-mode scenario verification).
 - 2026-09-28 — finished `claude/objective-nash-accd9c` with 3 items aged >45d,
-  carried on the partner's reason: seen in today's /deferred pass (b76d23d), which
-  left these open; this branch touches only hooks/ and CLAUDE.md. The items are
-  `11-delegation-frontmatter-rollout`'s interactive verification (71d) and two
-  `18-methodology-pipeline-skills` items (64d: the DL/NLP template extension,
-  synthesize-mode scenario verification).
+  carried on the partner's reason, verbatim: "seen in today's /deferred pass
+  (b76d23d), which left these open; this branch touches only hooks/ and
+  CLAUDE.md." The items are `11-delegation-frontmatter-rollout`'s interactive
+  verification (71d) and two `18-methodology-pipeline-skills` items (64d: the
+  DL/NLP template extension, synthesize-mode scenario verification). This branch
+  closes the read-only guard's leading-token bypasses and touches none of them.
 
 ## 11-delegation-frontmatter-rollout — 2026-07-19
 - [x] Haiku-pinned `Explore` override agent (fork-isolation upgrade; plan "Out of
@@ -1413,3 +1414,27 @@ declined as YAGNI (zero instances in a one-page wiki).
       decided, a shift fixture on a seed where both bands fail and the three-segment
       fixture are each diagnosed according to them, and `check_diagnostics.py` routes
       any new label.
+
+## readonly-guard-leading-token-bypasses (no plan; branch claude/objective-nash-accd9c) — 2026-09-28
+- [ ] The guard's prefix utilities have value-taking options it does not model (review
+      R4, Minor). `PREFIX_UTILITIES` in `hooks/readonly-agent-guard.py` lists only the
+      short options that take a value, so any other option's value lands where the
+      command word should be, and the command is never classified: `env --chdir /tmp rm
+      x`, `nice --adjustment 5 rm x`, and `/usr/bin/time -o f rm x` (macOS's `time` takes
+      `-o`; zsh's reserved word takes no options). Found by the code-reviewer pass over
+      db5d222..107e39d; documented under "Not caught" in `hooks/README.md`. Deferred by
+      the owner when the review was handed back: out of scope for the regression fix.
+      Size: small. Done when: those three are denied, while `env --version` and the
+      `--opt=value` spellings still read as one word.
+- [ ] Allowlisted git verbs can run a program through configuration or the environment
+      (review section C, out of range). `git -c core.fsmonitor=<cmd> status`, `git -c
+      diff.external=<cmd> diff` and `GIT_EXTERNAL_DIFF=<cmd> git diff` run `<cmd>` from
+      verbs the allowlist passes: `_locate_git_verb` skips every `-c` value, and
+      assignments before a command are never read. Documented under "Not caught" in
+      `hooks/README.md`. Deferred by the owner when the review was handed back: out of
+      scope for the regression fix. Size: design — deny the program-naming keys (an
+      open-ended set: `core.fsmonitor`, `diff.external`, `core.sshCommand`, filter and
+      textconv drivers, …) or allow `-c` only for listed keys, which must keep `git -c
+      core.pager=cat log`; `GIT_*` assignments pose the same choice. Revisit if: an
+      agent is seen setting such a key, or the guard is asked to stop arbitrary
+      programs rather than drift off the read-only contract.
