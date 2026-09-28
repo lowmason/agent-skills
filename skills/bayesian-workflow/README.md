@@ -94,7 +94,8 @@ bayesian-workflow/
     ├── calibration_check.py          # Calibration plots from InferenceData (writes calibration.json)
     ├── check_diagnostics.py          # Interprets diagnostics + calibration into qualitative ratings + suggested next steps
     ├── test_diagnose_model.py        # pytest: precision block (run from scripts/)
-    └── test_check_diagnostics.py     # pytest: divergence-fraction gate in suggested next steps
+    ├── test_calibration_check.py     # pytest: calibration verdicts on both PIT paths + --loo-pit group checks
+    └── test_check_diagnostics.py     # pytest: divergence-fraction gate + calibration advice in suggested next steps
 ```
 
 ## License

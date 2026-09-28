@@ -318,7 +318,17 @@ def suggest_next_steps(report: dict) -> list[str]:
 
     # ── Calibration ───────────────────────────────────────────────────
     cal = report.get("calibration", {})
-    if cal.get("rating") == "poor":
+    if "biased" in cal.get("diagnosis", ""):
+        # Spread fits but the centre is off: the coverage deviation stays small, so
+        # the rating alone would route this to the spread-oriented "fair" advice.
+        steps.append(
+            f"Calibration is {cal['diagnosis']} — the predictive's spread fits but its "
+            "centre is off, so check the mean structure before the likelihood: a "
+            "missing predictor or group effect, a wrong link or offset, or an "
+            "intercept prior pulling the centre. Compare posterior-predictive means "
+            "with observed means by group."
+        )
+    elif cal.get("rating") == "poor":
         diag = cal.get("diagnosis", "")
         if "over-confident" in diag:
             steps.append(
