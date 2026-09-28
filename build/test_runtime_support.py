@@ -357,6 +357,54 @@ def test_symlink_loop_is_a_conflict_not_a_crash(tmp_path, monkeypatch):
   assert install.destination_state(item, copy=False) == 'unmanaged'
 
 
+def make_skill(root: Path) -> Path:
+  skill = root / 'skills' / 'demo'
+  (skill / '__pycache__').mkdir(parents=True)
+  (skill / 'SKILL.md').write_text('tracked\n')
+  (skill / 'draft.md').write_text('untracked, not ignored\n')
+  (skill / 'local.env').write_text('SECRET=1\n')
+  (skill / '__pycache__' / 'demo.cpython-313.pyc').write_bytes(b'')
+  return skill
+
+
+def test_copy_skips_what_git_ignores(tmp_path, monkeypatch):
+  install = load_install(monkeypatch)
+  root = tmp_path / 'repo'
+  skill = make_skill(root)
+  (root / '.gitignore').write_text('__pycache__/\n*.env\n')
+  subprocess.run(['git', 'init', '-q', str(root)], check=True)
+  subprocess.run(['git', '-C', str(root), 'add', '.gitignore', 'skills/demo/SKILL.md'], check=True)
+  destination = tmp_path / 'home' / 'demo'
+  item = install.InstallItem(skill, destination)
+  install.install_item(item, copy=True, dry_run=False, ignore=install.copy_filter(root))
+  assert sorted(path.name for path in destination.iterdir()) == ['SKILL.md', 'draft.md']
+
+
+def test_copy_outside_git_skips_common_caches(tmp_path, monkeypatch):
+  install = load_install(monkeypatch)
+  monkeypatch.setenv('GIT_CEILING_DIRECTORIES', str(tmp_path))
+  root = tmp_path / 'unpacked'
+  skill = make_skill(root)
+  destination = tmp_path / 'home' / 'demo'
+  item = install.InstallItem(skill, destination)
+  install.install_item(item, copy=True, dry_run=False, ignore=install.copy_filter(root))
+  assert sorted(path.name for path in destination.iterdir()) == [
+    'SKILL.md', 'draft.md', 'local.env',
+  ]
+
+
+@pytest.mark.parametrize('flags', [(), ('--copy', '--dry-run')])
+def test_git_runs_only_when_copying(tmp_path, monkeypatch, flags):
+  install = load_install(monkeypatch)
+
+  def no_git(*args, **kwargs):
+    raise AssertionError(f'unexpected subprocess: {args}')
+
+  monkeypatch.setattr(install.subprocess, 'run', no_git)
+  argv = ['claude', '--skill', 'brainstorming', '--home', str(tmp_path / 'h'), *flags]
+  assert install.main(argv) == 0
+
+
 def test_help_keeps_docstring_examples_on_their_own_lines():
   result = subprocess.run(
     [sys.executable, str(INSTALL), '--help'],

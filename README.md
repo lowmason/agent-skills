@@ -188,7 +188,7 @@ python3 install.py claude --skill finishing-a-development-branch  # plus its dep
 python3 install.py codex --skill bayesian-workflow --companions   # the skill plus Codex's agents
 python3 install.py claude --no-companions                         # every skill, no agents or commands
 python3 install.py all --dry-run                                  # inspect without writing
-python3 install.py gemini --copy                                  # frozen copies instead of links
+python3 install.py gemini --copy                                  # frozen copies, minus git-ignored files
 ```
 
 `--skill` also installs what the named skills cannot work without: sibling

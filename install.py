@@ -18,8 +18,9 @@ from __future__ import annotations
 
 import argparse
 import shutil
+import subprocess
 import sys
-from collections.abc import Collection
+from collections.abc import Callable, Collection
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -48,6 +49,11 @@ DEPENDENCIES: dict[str, tuple[str, ...]] = {
   ),
   'skill:writing-plans': ('command:deferred',),
 }
+
+# .gitignore's generic entries, for --copy from a checkout without git.
+FALLBACK_IGNORES = (
+  '.DS_Store', '__pycache__', '*.pyc', '.pytest_cache', '.hypothesis', '.verify_venv',
+)
 
 
 @dataclass(frozen=True)
@@ -214,7 +220,35 @@ def preflight(items: list[InstallItem], *, copy: bool) -> None:
     )
 
 
-def install_item(item: InstallItem, *, copy: bool, dry_run: bool) -> str:
+def copy_filter(root: Path) -> Callable[[str, list[str]], set[str]]:
+  '''Return a copytree ignore callable that skips what git ignores under root.'''
+  try:
+    listing = subprocess.run(
+      [
+        'git', '-C', str(root), 'ls-files',
+        '--others', '--ignored', '--exclude-standard', '--directory', '-z',
+      ],
+      capture_output=True,
+      text=True,
+      check=True,
+    ).stdout
+  except (OSError, subprocess.CalledProcessError):
+    return shutil.ignore_patterns(*FALLBACK_IGNORES)
+  ignored = {root / entry.rstrip('/') for entry in listing.split('\0') if entry}
+
+  def ignore(directory: str, names: list[str]) -> set[str]:
+    return {name for name in names if Path(directory) / name in ignored}
+
+  return ignore
+
+
+def install_item(
+  item: InstallItem,
+  *,
+  copy: bool,
+  dry_run: bool,
+  ignore: Callable[[str, list[str]], set[str]] | None = None,
+) -> str:
   destination = item.destination
   state = destination_state(item, copy=copy)
   if state == 'managed':
@@ -227,7 +261,7 @@ def install_item(item: InstallItem, *, copy: bool, dry_run: bool) -> str:
   destination.parent.mkdir(parents=True, exist_ok=True)
   if copy:
     if item.source.is_dir():
-      shutil.copytree(item.source, destination)
+      shutil.copytree(item.source, destination, ignore=ignore)
     else:
       shutil.copy2(item.source, destination)
     return f'copied {item.source} -> {destination}'
@@ -255,7 +289,11 @@ def main(argv: list[str] | None = None) -> int:
     help="also link the runtime's agents and commands; "
     'default: on for a full install, off with --skill',
   )
-  parser.add_argument('--copy', action='store_true', help='copy instead of symlinking')
+  parser.add_argument(
+    '--copy',
+    action='store_true',
+    help='copy instead of symlinking, skipping files git ignores',
+  )
   parser.add_argument('--dry-run', action='store_true', help='show actions without writing')
   parser.add_argument(
     '--home',
@@ -280,8 +318,9 @@ def main(argv: list[str] | None = None) -> int:
       commands=commands,
     )
     preflight(items, copy=args.copy)
+    ignore = copy_filter(REPO) if args.copy and not args.dry_run else None
     for item in items:
-      print(install_item(item, copy=args.copy, dry_run=args.dry_run))
+      print(install_item(item, copy=args.copy, dry_run=args.dry_run, ignore=ignore))
   except (InstallError, OSError) as exc:
     print(f'install: {exc}', file=sys.stderr)
     return 1
