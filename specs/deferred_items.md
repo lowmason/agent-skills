@@ -39,6 +39,16 @@
   (48d: synthesize-mode scenario verification, the in-session SOTA pass, and the
   DL/NLP template extension). This branch only adds `--no-project` to the
   documented deferred_stats.py command.
+- 2026-09-27 — finished `claude/affectionate-mcnulty-9ec1c6` with 7 items aged
+  >45d, carried on the partner's reason, verbatim: "Barf." The items are
+  `11-delegation-frontmatter-rollout`'s live model/effort indicator check (70d),
+  three `18-methodology-pipeline-skills` items (63d: synthesize-mode scenario
+  verification, the in-session SOTA pass, and the DL/NLP template extension),
+  and three `19-methodology-pipeline-skills` items (59d: the unbacked
+  stage-stamp lifecycle carrier, the two checkpoints without behavioural
+  evidence, and `derive-roadmap`'s unmeasured RED baseline). This branch,
+  stacked on 47dc45c, only anchors bundled-script invocations to
+  `<this-skill-dir>`.
 
 ## 11-delegation-frontmatter-rollout — 2026-07-19
 - [x] Haiku-pinned `Explore` override agent (fork-isolation upgrade; plan "Out of
