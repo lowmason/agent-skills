@@ -4,6 +4,8 @@ import sys
 import tomllib
 from pathlib import Path
 
+import pytest
+
 
 REPO = Path(__file__).resolve().parent.parent
 SYNC = REPO / 'build' / 'sync_runtime_assets.py'
@@ -85,26 +87,31 @@ def test_runtime_instruction_entrypoints_exist():
   assert '@./CLAUDE.md' in (REPO / 'GEMINI.md').read_text()
 
 
-def run_install(tmp_path: Path, runtime: str, *extra: str):
+def run_install(
+  tmp_path: Path, runtime: str, *extra: str, skills: tuple[str, ...] = ('brainstorming',)
+):
+  skill_args = [arg for name in skills for arg in ('--skill', name)]
   return subprocess.run(
-    [
-      sys.executable,
-      str(INSTALL),
-      runtime,
-      '--home',
-      str(tmp_path),
-      '--skill',
-      'brainstorming',
-      *extra,
-    ],
+    [sys.executable, str(INSTALL), runtime, '--home', str(tmp_path), *skill_args, *extra],
     cwd=REPO,
     capture_output=True,
     text=True,
   )
 
 
+def tree(root: Path) -> list[Path]:
+  return sorted(path.relative_to(root) for path in root.rglob('*'))
+
+
+COMPANION_DIRS = {
+  'claude': ('.claude/agents', '.claude/commands'),
+  'codex': ('.codex/agents',),
+  'gemini': ('.gemini/agents', '.gemini/commands'),
+}
+
+
 def test_codex_install_links_shared_skill_and_native_agents(tmp_path):
-  result = run_install(tmp_path, 'codex')
+  result = run_install(tmp_path, 'codex', '--companions')
   assert result.returncode == 0, result.stdout + result.stderr
   assert (tmp_path / '.agents/skills/brainstorming').is_symlink()
   assert (tmp_path / '.codex/agents/code-reviewer.toml').is_symlink()
@@ -112,7 +119,7 @@ def test_codex_install_links_shared_skill_and_native_agents(tmp_path):
 
 
 def test_gemini_install_links_skill_agents_and_commands(tmp_path):
-  result = run_install(tmp_path, 'gemini')
+  result = run_install(tmp_path, 'gemini', '--companions')
   assert result.returncode == 0, result.stdout + result.stderr
   assert (tmp_path / '.agents/skills/brainstorming').is_symlink()
   assert (tmp_path / '.gemini/agents/debugger.md').is_symlink()
@@ -120,12 +127,43 @@ def test_gemini_install_links_skill_agents_and_commands(tmp_path):
 
 
 def test_all_install_is_idempotent_across_shared_skill_root(tmp_path):
-  first = run_install(tmp_path, 'all')
-  second = run_install(tmp_path, 'all')
+  first = run_install(tmp_path, 'all', '--companions')
+  second = run_install(tmp_path, 'all', '--companions')
   assert first.returncode == 0, first.stdout + first.stderr
   assert second.returncode == 0, second.stdout + second.stderr
   assert (tmp_path / '.claude/skills/brainstorming').is_symlink()
   assert (tmp_path / '.agents/skills/brainstorming').is_symlink()
+  assert (tmp_path / '.claude/agents/code-reviewer.md').is_symlink()
+  assert (tmp_path / '.claude/commands/deferred.md').is_symlink()
+
+
+@pytest.mark.parametrize('runtime', sorted(COMPANION_DIRS))
+def test_skill_selection_skips_companions_by_default(tmp_path, runtime):
+  result = run_install(tmp_path, runtime)
+  assert result.returncode == 0, result.stdout + result.stderr
+  skill_root = '.claude/skills' if runtime == 'claude' else '.agents/skills'
+  assert (tmp_path / skill_root / 'brainstorming').is_symlink()
+  for companion_dir in COMPANION_DIRS[runtime]:
+    assert not (tmp_path / companion_dir).exists()
+
+
+@pytest.mark.parametrize(
+  ('skills', 'flags', 'expect_companions'),
+  [
+    (('brainstorming',), (), False),
+    (('brainstorming',), ('--companions',), True),
+    ((), (), True),
+    ((), ('--no-companions',), False),
+  ],
+)
+def test_companion_flag_overrides_the_skill_based_default(
+  tmp_path, skills, flags, expect_companions
+):
+  result = run_install(tmp_path, 'codex', *flags, skills=skills)
+  assert result.returncode == 0, result.stdout + result.stderr
+  assert (tmp_path / '.agents/skills/brainstorming').is_symlink()
+  companion = tmp_path / '.codex/agents/code-reviewer.toml'
+  assert companion.is_symlink() == expect_companions
 
 
 def test_install_refuses_to_replace_an_unmanaged_path(tmp_path):
@@ -134,3 +172,30 @@ def test_install_refuses_to_replace_an_unmanaged_path(tmp_path):
   result = run_install(tmp_path, 'codex')
   assert result.returncode == 1
   assert 'refusing to replace' in result.stderr
+
+
+def test_conflict_late_in_the_plan_writes_nothing(tmp_path):
+  # Companions follow every skill in plan order, so a conflicting agent is
+  # reached only after all skills; a per-item check would have linked them.
+  occupied = tmp_path / '.claude/agents/code-reviewer.md'
+  occupied.parent.mkdir(parents=True)
+  occupied.write_text('hand-made\n')
+  before = tree(tmp_path)
+  result = run_install(tmp_path, 'claude', skills=())
+  assert result.returncode == 1
+  assert str(occupied) in result.stderr
+  assert tree(tmp_path) == before
+  assert occupied.read_text() == 'hand-made\n'
+
+
+@pytest.mark.parametrize('extra', [(), ('--dry-run',)])
+def test_install_reports_every_conflict(tmp_path, extra):
+  skill = tmp_path / '.claude/skills/brainstorming'
+  skill.mkdir(parents=True)
+  agent = tmp_path / '.claude/agents/code-reviewer.md'
+  agent.parent.mkdir(parents=True)
+  agent.write_text('hand-made\n')
+  result = run_install(tmp_path, 'claude', *extra, skills=())
+  assert result.returncode == 1
+  assert str(skill) in result.stderr
+  assert str(agent) in result.stderr

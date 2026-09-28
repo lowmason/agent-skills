@@ -4,10 +4,14 @@
 Examples:
   python install.py codex
   python install.py gemini --skill bayesian-workflow
+  python install.py gemini --skill bayesian-workflow --companions
   python install.py all --copy
 
 Symlinks are the default so edits in this checkout are picked up immediately.
-The installer never replaces a path it does not already manage.
+A full install also links each runtime's companion agents and commands; --skill
+installs only the named skills unless --companions is given. The installer
+never replaces a path it does not already manage, and it checks every
+destination before writing, so a conflict leaves nothing half-installed.
 '''
 from __future__ import annotations
 
@@ -62,7 +66,9 @@ def file_items(source_dir: Path, suffix: str, destination_dir: Path) -> list[Ins
   ]
 
 
-def runtime_items(runtime: str, home: Path, skills: list[str]) -> list[InstallItem]:
+def runtime_items(
+  runtime: str, home: Path, skills: list[str], *, companions: bool
+) -> list[InstallItem]:
   runtimes = REPO / 'runtimes'
   if runtime == 'claude':
     skill_root = home / '.claude' / 'skills'
@@ -86,14 +92,16 @@ def runtime_items(runtime: str, home: Path, skills: list[str]) -> list[InstallIt
   else:
     raise InstallError(f'unsupported runtime: {runtime}')
   skill_items = [InstallItem(REPO / 'skills' / name, skill_root / name) for name in skills]
-  return skill_items + companion_items
+  return (skill_items + companion_items) if companions else skill_items
 
 
-def plan(runtime: str, home: Path, skills: list[str]) -> list[InstallItem]:
+def plan(
+  runtime: str, home: Path, skills: list[str], *, companions: bool
+) -> list[InstallItem]:
   runtimes = ('claude', 'codex', 'gemini') if runtime == 'all' else (runtime,)
   by_destination: dict[Path, InstallItem] = {}
   for name in runtimes:
-    for item in runtime_items(name, home, skills):
+    for item in runtime_items(name, home, skills, companions=companions):
       existing = by_destination.get(item.destination)
       if existing is not None and existing.source != item.source:
         raise InstallError(
@@ -117,6 +125,20 @@ def destination_state(item: InstallItem, *, copy: bool) -> str:
   if not copy and is_managed_symlink(item):
     return 'managed'
   return 'unmanaged'
+
+
+def preflight(items: list[InstallItem], *, copy: bool) -> None:
+  unmanaged = [
+    item.destination
+    for item in items
+    if destination_state(item, copy=copy) == 'unmanaged'
+  ]
+  if unmanaged:
+    noun = 'path' if len(unmanaged) == 1 else 'paths'
+    listing = ''.join(f'\n  {path}' for path in unmanaged)
+    raise InstallError(
+      f'refusing to replace existing unmanaged {noun}; nothing was installed:{listing}'
+    )
 
 
 def install_item(item: InstallItem, *, copy: bool, dry_run: bool) -> str:
@@ -148,7 +170,14 @@ def main(argv: list[str] | None = None) -> int:
     action='append',
     dest='skills',
     metavar='NAME',
-    help='install only this skill (repeatable); default: all skills',
+    help='install this skill instead of all skills (repeatable); '
+    'companions are then skipped unless --companions is given',
+  )
+  parser.add_argument(
+    '--companions',
+    action=argparse.BooleanOptionalAction,
+    help="also link the runtime's agents and commands; "
+    'default: on for a full install, off with --skill',
   )
   parser.add_argument('--copy', action='store_true', help='copy instead of symlinking')
   parser.add_argument('--dry-run', action='store_true', help='show actions without writing')
@@ -159,9 +188,11 @@ def main(argv: list[str] | None = None) -> int:
     help=argparse.SUPPRESS,
   )
   args = parser.parse_args(argv)
+  companions = not args.skills if args.companions is None else args.companions
   try:
     skills = selected_skills(args.skills)
-    items = plan(args.runtime, args.home.expanduser(), skills)
+    items = plan(args.runtime, args.home.expanduser(), skills, companions=companions)
+    preflight(items, copy=args.copy)
     for item in items:
       print(install_item(item, copy=args.copy, dry_run=args.dry_run))
   except (InstallError, OSError) as exc:

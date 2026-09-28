@@ -178,13 +178,19 @@ python3 install.py claude
 
 Symlinks are the default, so repository updates are live. The installer is
 idempotent for links it already owns and refuses to overwrite any other existing
-file or directory. Useful options:
+file or directory. It checks every destination before writing, so a conflict
+installs nothing and lists every conflicting path at once. Useful options:
 
 ```bash
-python3 install.py codex --skill bayesian-workflow  # one skill; repeat --skill as needed
-python3 install.py all --dry-run                    # inspect without writing
-python3 install.py gemini --copy                    # frozen copies instead of links
+python3 install.py codex --skill bayesian-workflow               # just this skill; repeat --skill as needed
+python3 install.py codex --skill bayesian-workflow --companions  # the skill plus Codex's agents
+python3 install.py claude --no-companions                        # every skill, no agents or commands
+python3 install.py all --dry-run                                 # inspect without writing
+python3 install.py gemini --copy                                 # frozen copies instead of links
 ```
+
+`--skill` skips the runtime's agents and commands unless you add
+`--companions`; a full install includes them unless you add `--no-companions`.
 
 | Runtime | Skills | Agents | Commands |
 |---------|--------|--------|----------|
