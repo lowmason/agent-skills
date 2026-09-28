@@ -28,7 +28,7 @@ this skill stays generic — a second wiki can reuse it unchanged.
 2. **Root missing, or no `SCHEMA.md` in it?** The wiki is not installed — do
    not improvise a layout. Confirm the intended root with the human, then run
    this skill's `scripts/bootstrap_wiki.py` with that root as its only
-   argument: `python3 ~/.claude/skills/llm-wiki/scripts/bootstrap_wiki.py <root>`.
+   argument: `python3 <this-skill-dir>/scripts/bootstrap_wiki.py <root>`.
    The root is required — there is no default, so nothing is written to the
    wrong wiki by accident. It seeds the skeleton and `SCHEMA.md` and installs
    the runtime scripts — `lint_wiki.py`, `distill_sessions.py`,

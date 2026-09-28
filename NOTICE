@@ -264,6 +264,20 @@ Changes from upstream:
     only -- the moved text is verbatim, carrying the same authorship and
     MIT terms as the sections it came from, and no wording was rewritten
     in the move.
+  - writing-plans and finishing-a-development-branch invoked the
+    deferred_stats.py reporter through a hard-coded ~/.claude/skills/
+    path, which exists only on a Claude Code install. That path was never
+    upstream -- it came in with the deferred-backlog contract above -- and
+    it now resolves relative to the skill directory instead:
+    <this-skill-dir>/scripts/deferred_stats.py in writing-plans' SKILL.md,
+    and <this-skill-dir>/../writing-plans/scripts/deferred_stats.py at
+    finishing-a-development-branch's Step 1b, so the same text works
+    under every install root install.py supports, including the
+    ~/.agents/skills/ that Codex and Gemini CLI share. Those two SKILL.md
+    files are the adapted files touched; the same path change in
+    references/deferred-backlog.md and in deferred_stats.py's usage
+    docstring is to the original works named above. Only the path
+    changed.
 
     brainstorming/
     dispatching-parallel-agents/

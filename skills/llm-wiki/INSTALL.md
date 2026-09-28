@@ -23,7 +23,8 @@ never land in the other by accident.
   standard-library only — nothing to `pip install` to *use* the wiki. (`uv` is
   needed only to run the bundled test suite, below, which you can skip.)
 - **git**, to get and update the `agent-skills` repo.
-- **Claude Code**, if you want the skill to load automatically.
+- **Claude Code, Codex, or Gemini CLI**, if you want the skill to load
+  automatically.
 
 ## Steps
 
@@ -36,14 +37,27 @@ git clone https://github.com/lowmason/agent-skills.git ~/Projects/agent-skills \
   || git -C ~/Projects/agent-skills pull
 ```
 
-### 2. Make the skill discoverable to Claude Code
+### 2. Make the skill discoverable to your agent
 
-Symlink this skill into `~/.claude/skills/` (a symlink means later `git pull`s
-update the skill in place — no re-copy):
+Run the repo's installer for your runtime — `claude`, `codex`, `gemini`, or
+`all`. It symlinks rather than copies, so later `git pull`s update the skill in
+place — no re-copy:
 
 ```bash
+python3 ~/Projects/agent-skills/install.py claude --skill llm-wiki
+```
+
+The installer also links that runtime's companion agents and commands, and
+stops at the first existing path it does not manage. To link only this skill,
+symlink it into your runtime's skills directory instead:
+
+```bash
+# Claude Code
 mkdir -p ~/.claude/skills
 ln -sfn ~/Projects/agent-skills/skills/llm-wiki ~/.claude/skills/llm-wiki
+# Codex and Gemini CLI (shared directory)
+mkdir -p ~/.agents/skills
+ln -sfn ~/Projects/agent-skills/skills/llm-wiki ~/.agents/skills/llm-wiki
 ```
 
 ### 3. Bootstrap a wiki
@@ -52,7 +66,7 @@ Pick a root that signals which wiki it is (use a work-specific path on a work
 machine). The root is the only required argument:
 
 ```bash
-python3 ~/.claude/skills/llm-wiki/scripts/bootstrap_wiki.py ~/work-wiki
+python3 ~/Projects/agent-skills/skills/llm-wiki/scripts/bootstrap_wiki.py ~/work-wiki
 ```
 
 This scaffolds the skeleton, seeds `SCHEMA.md`, and installs `lint_wiki.py`,
@@ -63,7 +77,7 @@ To seed topic folders for this wiki's own subjects (instead of the personal
 default, which starts with no topic folders), add `--topic` once per subject:
 
 ```bash
-python3 ~/.claude/skills/llm-wiki/scripts/bootstrap_wiki.py ~/work-wiki \
+python3 ~/Projects/agent-skills/skills/llm-wiki/scripts/bootstrap_wiki.py ~/work-wiki \
   --topic forecasting --topic risk
 ```
 
@@ -94,10 +108,10 @@ after a `git pull` of `agent-skills` they can fall behind. Check and refresh:
 
 ```bash
 # report whether the installed scripts match the skill bundle (writes nothing)
-python3 ~/.claude/skills/llm-wiki/scripts/bootstrap_wiki.py "$LLM_WIKI_ROOT" --check
+python3 ~/Projects/agent-skills/skills/llm-wiki/scripts/bootstrap_wiki.py "$LLM_WIKI_ROOT" --check
 
 # refresh only the installed scripts that differ (never touches SCHEMA.md or content)
-python3 ~/.claude/skills/llm-wiki/scripts/bootstrap_wiki.py "$LLM_WIKI_ROOT" --force
+python3 ~/Projects/agent-skills/skills/llm-wiki/scripts/bootstrap_wiki.py "$LLM_WIKI_ROOT" --force
 ```
 
 `--check` exits non-zero when an installed script is missing or differs from the

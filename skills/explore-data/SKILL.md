@@ -36,7 +36,7 @@ lands in memory whole — collect only the small summary frames each check needs
 
 ```bash
 uv run --python 3.13 --with polars python \
-    ~/.claude/skills/explore-data/scripts/profile.py \
+    <this-skill-dir>/scripts/profile.py \
     data/qcew/qcew_estimates.parquet \
     --candidate-keys series_id,ref_date,vintage_date \
     --vintage-cols series_id,ref_date,vintage_date \

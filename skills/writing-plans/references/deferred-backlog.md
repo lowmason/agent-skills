@@ -29,7 +29,7 @@ repo's own project, whose `requires-python` may exclude 3.13; the script is
 stdlib-only and needs no project environment.
 
 ```bash
-uv run --no-project --python 3.13 python ~/.claude/skills/writing-plans/scripts/deferred_stats.py
+uv run --no-project --python 3.13 python <this-skill-dir>/scripts/deferred_stats.py
 ```
 
 Add `--json` when you need the raw numbers (`open`, `closed`, `closure_rate`,
