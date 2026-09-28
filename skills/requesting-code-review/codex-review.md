@@ -45,9 +45,10 @@ code-reviewer's contract forbids it from spawning further reviewers.
 
    - `--base <BASE>` — Codex runs `git merge-base HEAD <BASE>` and reviews
      everything since. BASE is either the branch's merge base with its base
-     branch, computed just before launch and shared with code-reviewer, or —
-     in finishing-a-development-branch only — the SHA of an earlier
-     `Codex reviewed` line, to review just the commits after it. Never a
+     branch, computed just before launch and shared with code-reviewer; or,
+     for a plan executed on the base branch itself, the SHA recorded before
+     its first task; or — in finishing-a-development-branch only — the SHA of
+     an earlier `Codex reviewed` line, to review just the commits after it. Never a
      SHA recorded earlier in the session: a rebase onto a newer base branch
      silently widens that range to upstream commits.
    - `-c sandbox_mode=read-only` — required. A Codex config that trusts the
@@ -66,9 +67,10 @@ code-reviewer's contract forbids it from spawning further reviewers.
 - **Exit 0 and a non-empty `.md`:** Read the `.md` — that is the whole review.
   Then write `Codex reviewed <short-HEAD>` into the conversation, and into the
   progress ledger if the run keeps one, so it survives a context checkpoint.
-  The line means everything from the branch's merge base through that SHA
-  has had a completed Codex review — true because every BASE above is either
-  that merge base or an earlier such line. It is the only record of a
+  The line means everything from the branch's merge base (on the base branch
+  itself, from the plan's recorded start) through that SHA has had a
+  completed Codex review — true because every BASE above is one of those
+  starting points or an earlier such line. It is the only record of a
   completed review; a later finishing-a-development-branch run keys on it to
   avoid a repeat pass.
 - **Anything else:** report "Codex review did not complete:" with the log's

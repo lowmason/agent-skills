@@ -23,6 +23,10 @@ Load plan, review critically, execute all tasks, report when complete.
 2. Review critically - identify any questions or concerns about the plan
 3. If concerns: Raise them with your human partner before starting
 4. If no concerns: Create todos for the plan items and proceed
+5. Executing on the base branch itself (only with your partner's explicit
+   consent)? Record `git rev-parse --short HEAD` in the conversation before
+   Task 1 — Step 3's review starts there, because on the base branch there
+   is no merge base to compute.
 
 ### Step 2: Execute Tasks
 
@@ -41,7 +45,8 @@ that is where the plan began; on a branch that already carried work, the
 review covers that work too — as subagent-driven-development's final review
 does, and as finishing-a-development-branch relies on. Computing it at review
 time, rather than recording it earlier, also survives a `/clear` and a rebase
-onto a newer base branch.
+onto a newer base branch. On the base branch itself that command returns HEAD
+— an empty range — so use the SHA Step 1 had you record instead.
 
 1. **code-reviewer** — fill requesting-code-review's
    [code-reviewer.md](../requesting-code-review/code-reviewer.md) with the plan
