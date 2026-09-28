@@ -183,34 +183,40 @@ get a second model's review before the work leaves the building. Keep and
 Discard ship nothing and skip this step, the same binding as the aged-tail
 gate. Resolve that gate first: both of its outcomes commit to the branch — an
 acknowledgement, or `/deferred` quick fixes — and the review must see the
-branch as it will ship.
+branch as it will ship. For the same reason `git status --porcelain` must
+print nothing before you go on: commit what is part of the work, and ask your
+partner about anything else.
 
 Run it from the feature worktree, before Option 1's `cd` and `checkout` — from
-the base branch there is nothing left to review. Follow
+the base branch there is nothing left to review. If nothing reviewed this
+branch before finishing — it did not come through executing-plans or
+subagent-driven-development — first offer your partner a code-reviewer pass
+via the requesting-code-review skill; if they take it, launch it in the same
+message as Codex. Follow
 [codex-review.md](../requesting-code-review/codex-review.md), choosing the base
 this way:
 
-- **Codex already reviewed this branch** — executing-plans and
-  subagent-driven-development run it in their final review, and recorded the
-  SHA it reviewed in the conversation. See what has changed since, outside the
-  plan-completion bookkeeping in `specs/`:
+- **The conversation holds a `Codex reviewed <sha>` line** — executing-plans
+  and subagent-driven-development write one when their final review's Codex
+  run completes. If `git merge-base --is-ancestor <sha> HEAD` fails, the
+  branch was rebased since: treat the line as lost. Otherwise see what has
+  changed since, outside the plan-completion bookkeeping in `specs/` — the
+  pathspecs are anchored at the repo root, so this holds from any directory:
 
   ```bash
-  git diff --stat <reviewed-sha>..HEAD -- . ':(exclude)specs/'
+  git diff --stat <sha>..HEAD -- ':/' ':(top,exclude)specs/'
   ```
 
-  Empty: say "Codex reviewed this code at <reviewed-sha>; only specs/
-  bookkeeping since" and skip the review. Otherwise `--base <reviewed-sha>`,
-  which reviews just the new commits.
-- **Otherwise** — or the reviewed SHA is lost to a `/clear` —
+  Empty: say "Codex reviewed this code at <sha>; only specs/ bookkeeping
+  since" and skip the review. Otherwise `--base <sha>`, which reviews just the
+  new commits.
+- **Otherwise** — no such line, or it was lost to a `/clear` or a rebase —
   `--base <base-branch>`, the whole branch.
 
-Work its findings with the receiving-code-review skill: fix what holds up,
-re-run the tests, commit. Show your partner anything you left unfixed, and
-execute the chosen option only after they have seen it. If nothing reviewed
-this branch before finishing — it did not come through executing-plans or
-subagent-driven-development — offer a code-reviewer pass via the
-requesting-code-review skill as well.
+Work its findings — merged with code-reviewer's, if that ran — with the
+receiving-code-review skill: fix what holds up, re-run the tests, commit. Show
+your partner anything you left unfixed, and execute the chosen option only
+after they have seen it.
 
 ### Step 5: Execute Choice
 

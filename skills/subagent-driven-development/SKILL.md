@@ -271,10 +271,12 @@ final whole-branch review. When you fill a reviewer template:
   the code-reviewer subagent (requesting-code-review's code-reviewer.md) and
   the Codex second opinion in requesting-code-review's
   [codex-review.md](../requesting-code-review/codex-review.md), `--base` at
-  the same merge base. Record the SHA Codex reviewed in the conversation —
-  finishing-a-development-branch reads it there, after this workspace is
-  gone — and in the progress ledger, which survives a context checkpoint.
-  Touch nothing until both seats have returned.
+  the same merge base. When the Codex run completes, the recipe has you write
+  `Codex reviewed <sha>` into the conversation, where
+  finishing-a-development-branch reads it after this workspace is gone. Copy
+  that exact line into the progress ledger too, and back into the
+  conversation if you resume from the ledger. Touch nothing until both seats
+  have returned.
 - If the final whole-branch review returns findings, merge both seats' lists
   and dispatch ONE fix subagent with the complete list — not one fixer per
   finding.

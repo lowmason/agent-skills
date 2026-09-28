@@ -44,17 +44,18 @@ they run concurrently:
 
 1. **code-reviewer** — fill requesting-code-review's
    [code-reviewer.md](../requesting-code-review/code-reviewer.md) with the plan
-   file as `[PLAN_OR_REQUIREMENTS]`, the Step 1 base as `[BASE_SHA]`, and model
-   opus (the final whole-branch tier). On a platform without subagents, work
-   through the same template yourself.
+   file as `[PLAN_OR_REQUIREMENTS]`, the Step 1 base as `[BASE_SHA]`, and the
+   capable model tier (opus), as for any final whole-branch review. On a
+   platform without subagents, work through the same template yourself.
 2. **Codex** — the second-opinion review in
    [codex-review.md](../requesting-code-review/codex-review.md), with
    `--base <the Step 1 base>`.
 
 Touch nothing until both have returned. Then merge the two lists into one, work
-it with the receiving-code-review skill, fix what holds up, and re-run the
-plan's tests. Findings you leave unfixed carry into Step 4, where they feed the
-resolve-before-defer gate.
+it with the receiving-code-review skill, fix what holds up, re-run the plan's
+tests, and commit the fixes — the plan-completion protocol commits only
+`specs/`, and the branch ships as committed. Findings you leave unfixed carry
+into Step 4, where they feed the resolve-before-defer gate.
 
 ### Step 4: Complete the Plan
 

@@ -9,9 +9,10 @@ needs). All three runtimes discover the same skill source and load the full body
 only when its description matches the task or you invoke it explicitly.
 
 > [!IMPORTANT]
-> **These skills are opinionated — about my environment and my process.** They work best if you share (or deliberately adopt) those opinions. Read a skill's `SKILL.md` before installing it, and edit what doesn't fit — it's all plain markdown. Two families of assumptions to know about:
+> **These skills are opinionated — about my environment and my process.** They work best if you share (or deliberately adopt) those opinions. Read a skill's `SKILL.md` before installing it, and edit what doesn't fit — it's all plain markdown. Three assumptions to know about:
 >
 > - **The process skills impose a spec-driven lifecycle.** `brainstorming`, `writing-plans`, `executing-plans`, and `subagent-driven-development` (plus the `/deferred` command) drive every feature through spec → plan → implementation → retirement, and will create and maintain that structure in your project: specs as markdown in `specs/`, plans in `specs/plans/<id>-<spec-name>.md` (auto-numbered), finished work retired to `specs/completed/` and `specs/plans/completed/`, and consciously-deferred work appended to `specs/deferred_items.md`. If your projects don't follow that layout, these skills will start building it.
+> - **The review steps send code to OpenAI when the Codex CLI is present.** `executing-plans`, `subagent-driven-development`, and `finishing-a-development-branch` run a read-only Codex CLI second-opinion review (`codex exec review`) whenever `codex` is on your `PATH`, which sends the branch diff to OpenAI under your Codex login. Where code egress is governed, keep `codex` off that machine or delete the step.
 > - **The data & modeling skills assume my stack.** Polars (not pandas), NumPyro + JAX (not PyMC), Python 3.13, and Altair/matplotlib/plotly for charts. `bls-data-context`, `classification-codes`, and `geographic-codes` are domain-specific to US federal statistics (BLS employment programs; NAICS, SOC, and Census occupation codes; FIPS and CBSA geography), and `validate-data` is tuned to the BLS side.
 
 ## Layout
@@ -88,7 +89,7 @@ Adapted from Jesse Vincent's superpowers skills — process disciplines for plan
 | [`test-driven-development`](skills/test-driven-development/) | Write tests before implementation for any feature or bugfix. |
 | [`systematic-debugging`](skills/systematic-debugging/) | Diagnose bugs and test failures methodically before proposing fixes. |
 | [`verification-before-completion`](skills/verification-before-completion/) | Run verification and confirm output before claiming work is done. |
-| [`requesting-code-review`](skills/requesting-code-review/) | Get work reviewed when completing features or before merging. Also carries the Codex CLI second-opinion recipe (`codex-review.md`) that the plan executors and branch finishing run beside `code-reviewer`; it is skipped with a notice where the `codex` CLI is absent. |
+| [`requesting-code-review`](skills/requesting-code-review/) | Get work reviewed when completing features or before merging. Also carries the Codex CLI second-opinion recipe (`codex-review.md`): the plan executors run it beside `code-reviewer`, and branch finishing runs it before merge or PR. It is skipped with a notice where the `codex` CLI is absent. |
 | [`receiving-code-review`](skills/receiving-code-review/) | Handle review feedback with rigor instead of blind agreement. |
 | [`finishing-a-development-branch`](skills/finishing-a-development-branch/) | Decide how to integrate completed work (merge, PR, or cleanup); merge and PR are gated on a Codex second-opinion review. |
 | [`using-git-worktrees`](skills/using-git-worktrees/) | Create an isolated workspace for feature work. |

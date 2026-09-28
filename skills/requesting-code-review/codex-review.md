@@ -12,24 +12,28 @@ code-reviewer's contract forbids it from spawning further reviewers.
 ## Skip it when
 
 - `command -v codex` prints nothing. Say "Codex CLI not installed — second
-  review skipped" and continue with the other review.
+  review skipped" and continue without it.
 - You are Codex. A second opinion from the same model family isn't one; say so
   and continue.
 
 ## Launch
 
-1. **Clean tree.** `git status --porcelain --untracked-files=no` must print
-   nothing. The preset diffs the merge base against the *working tree*, so
-   uncommitted edits to tracked files would be reviewed as part of the branch.
-2. **Record the HEAD under review** — `git rev-parse --short HEAD` — in the
-   conversation, where a later finishing-a-development-branch run reads it to
-   avoid a repeat pass. If the run keeps a progress ledger, record it there
-   too, so it survives a context checkpoint.
-3. **Start it in the background** (in Claude Code: Bash with
-   `run_in_background`) and don't poll — you are notified when it exits. It
-   takes minutes: 85 s for a ten-line commit at `xhigh` effort, far longer for
-   a branch, and a foreground Bash call is cut off at 10 minutes. Write the
-   values in literally; worktree-isolated sessions refuse to run a `codex`
+1. **Clean tree.** `git status --porcelain` must print nothing. The preset
+   diffs the merge base against the *working tree*, so an uncommitted edit
+   would be reviewed as if it were on the branch — and a new file never
+   `git add`-ed passes the tests locally while never reaching Codex or the
+   push. Commit what is part of the work; ask your partner about anything
+   else. Never `git stash` it away: every worktree of the repo shares one
+   stash stack.
+2. **Note the HEAD under review** — `git rev-parse --short HEAD`. It only
+   becomes a record of a review once the run completes (see below).
+3. **Start it in the background.** It takes minutes: 85 s for a ten-line
+   commit at `xhigh` effort, far longer for a branch. In Claude Code use Bash
+   with `run_in_background` and don't poll — you are notified when it exits,
+   whereas a foreground call is cut off at 10 minutes. Elsewhere, use your
+   platform's background mechanism and wait for the process to exit, or run
+   it in the foreground with a timeout long enough for the whole branch. Write
+   the values in literally; worktree-isolated sessions refuse to run a `codex`
    command assembled from shell variables:
 
    ```bash
@@ -39,7 +43,9 @@ code-reviewer's contract forbids it from spawning further reviewers.
 
    - `--base <BASE>` — Codex runs `git merge-base HEAD <BASE>` and reviews
      everything since, so give it the same BASE the code-reviewer got. A commit
-     SHA or a branch name both work.
+     SHA or a branch name both work, but a SHA must still be an ancestor of
+     HEAD: if `git merge-base --is-ancestor <BASE> HEAD` fails, the branch was
+     rebased since you recorded it — pass the base branch name instead.
    - `-c sandbox_mode=read-only` — required. A Codex config that trusts the
      project resolves `exec review` to `workspace-write`: a reviewer that can
      edit the tree it is reviewing.
@@ -54,9 +60,15 @@ code-reviewer's contract forbids it from spawning further reviewers.
 ## Read the result
 
 - **Exit 0 and a non-empty `.md`:** Read the `.md` — that is the whole review.
+  Then write `Codex reviewed <short-HEAD>` into the conversation, and into the
+  progress ledger if the run keeps one, so it survives a context checkpoint.
+  That line is the only record of a completed review; a later
+  finishing-a-development-branch run keys on it to avoid a repeat pass.
 - **Anything else:** report "Codex review did not complete:" with the log's
-  last line (`tail -n 1` the log) and proceed on the other review. Never report
-  a Codex review that did not complete.
+  last line (`tail -n 1` the log), and write no `Codex reviewed` line. Where
+  another reviewer ran beside it, proceed on that review; where Codex was the
+  only one, ask your partner whether to retry or proceed without it. Never
+  report a Codex review that did not complete.
 
 Codex opens each finding's title with a priority tag and ends with an overall
 verdict (`patch is correct` / `patch is incorrect`). Map the tags onto
