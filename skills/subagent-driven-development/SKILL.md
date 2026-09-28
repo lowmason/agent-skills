@@ -168,7 +168,7 @@ review is always capable** — dispatch it explicitly, not on the session defaul
 
 Implementer subagents report one of four statuses. Handle each appropriately:
 
-**DONE:** Generate the review package (`scripts/review-package PLAN_FILE BASE HEAD` — see **File Handoffs** for the BASE rule and for the path the script reports), then dispatch the task reviewer with that path.
+**DONE:** Generate the review package (`<this-skill-dir>/scripts/review-package PLAN_FILE BASE HEAD` — see **File Handoffs** for the BASE rule and for the path the script reports), then dispatch the task reviewer with that path.
 
 **DONE_WITH_CONCERNS:** The implementer completed the work but flagged doubts. Read the concerns before proceeding. If the concerns are about correctness or scope, address them before review. If they're observations (e.g., "this file is getting large"), note them and proceed to review.
 
@@ -287,7 +287,7 @@ tasks complete" is a sanctioned stop.
 When the plan-completion protocol has finished and the final review's fixes
 are merged, delete this plan's workspace — the `$WORKSPACE` you resolved at
 skill start: `rm -rf "$WORKSPACE"`. If a `/clear` and relaunch since then left
-you without that variable, re-run `scripts/sdd-workspace <plan-file>`; it is
+you without that variable, re-run `<this-skill-dir>/scripts/sdd-workspace <plan-file>`; it is
 idempotent and reprints the same path. Git history is the record now. Sibling
 directories under `.sdd/` belong to other plans — leave them alone, and never
 `rm -rf .sdd` itself.
@@ -347,7 +347,7 @@ a ledger file, not only in todos.
 - At skill start, run this skill's `scripts/sdd-workspace <plan-file>` once and
   keep the directory it prints — it creates this plan's workspace and the
   self-ignoring .gitignore that covers every plan's:
-  `WORKSPACE=$(scripts/sdd-workspace <plan-file>)`. Then check for a ledger:
+  `WORKSPACE=$(<this-skill-dir>/scripts/sdd-workspace <plan-file>)`. Then check for a ledger:
   `cat "$WORKSPACE/progress.md"`. Tasks listed there as complete are DONE — do
   not re-dispatch them; resume at the first task not marked complete.
 - The workspace is per plan, so that ledger is always this plan's. Its first
@@ -438,7 +438,7 @@ what it costs: [references/advantages.md](references/advantages.md).
 - Let implementer self-review replace actual review (both are needed)
 - Tell a reviewer what not to flag, or pre-rate a finding's severity — see **Constructing Reviewer Prompts**
 - Dispatch a task reviewer without a diff file — generate it first
-  (`scripts/review-package PLAN_FILE BASE HEAD`) and name the path it reports in
+  (`<this-skill-dir>/scripts/review-package PLAN_FILE BASE HEAD`) and name the path it reports in
   the prompt, the path alone and not its whole summary line
 - Move to next task while the review has open Critical/Important issues
 - Re-dispatch a task the progress ledger already marks complete — check

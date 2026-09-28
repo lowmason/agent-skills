@@ -6,7 +6,7 @@
 # vs HARDEN. Read-only: it greps and lists, never edits.
 #
 # Usage:
-#   scripts/scan.sh [ROOT]        # ROOT defaults to the current directory
+#   <this-skill-dir>/scripts/scan.sh [ROOT]   # ROOT defaults to the current directory
 #
 # Designed for the user's stack (Polars / NumPyro / PyMC / BLS ETL → parquet).
 # The search tool is chosen once (rg when available, else grep/find); sections

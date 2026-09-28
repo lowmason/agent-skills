@@ -278,6 +278,22 @@ Changes from upstream:
     references/deferred-backlog.md and in deferred_stats.py's usage
     docstring is to the original works named above. Only the path
     changed.
+  - subagent-driven-development and brainstorming invoked their own
+    bundled scripts by bare scripts/... paths, which an agent working in
+    the user's repository resolves against that repository rather than
+    the skill directory. The runnable invocations now carry the same
+    <this-skill-dir>/scripts/... anchor as the entry above; the commands
+    still run from the repository root. In subagent-driven-development's
+    SKILL.md that is four calls: the DONE status's review-package call
+    and the red-flag line naming it, both descended from text vendored
+    at 2f283ae (as vendored, the first was qualified "from this skill's
+    directory", which ae693bd's file-handoff consolidation dropped), and
+    the sdd-workspace call at skill start and its re-run after a /clear,
+    both added after the vendoring (0eca5f1, e135234). In brainstorming's
+    visual-companion.md it is the seven start-server.sh and
+    stop-server.sh commands, all vendored verbatim at 2f283ae. Prose
+    that only names a script, or already calls it "this skill's", is
+    unchanged. Only the path changed.
 
     brainstorming/
     dispatching-parallel-agents/

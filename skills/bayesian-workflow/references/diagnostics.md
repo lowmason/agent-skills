@@ -199,7 +199,7 @@ The recommended approach is `arviz_stats.diagnose()` (see Quick diagnostic check
 For a script-based workflow, use `diagnose_model.py`:
 
 ```bash
-python scripts/diagnose_model.py --idata model_output.nc
+python <this-skill-dir>/scripts/diagnose_model.py --idata model_output.nc
 ```
 
 Or inline (this last approach doesn't require `arviz_stats.diagnose()`):

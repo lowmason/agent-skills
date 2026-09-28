@@ -47,7 +47,7 @@ than an opportunistic fix, it stops and defers here.
 
 ## Workflow overview
 
-1. **Sweep** — Run `scripts/scan.sh <repo>` to surface candidate signals (grep recipes
+1. **Sweep** — Run `<this-skill-dir>/scripts/scan.sh <repo>` to surface candidate signals (grep recipes
    below if you want to run them by hand). Every hit is a *candidate*, not a verdict.
 2. **Classify** — Assign each finding a category (correctness, reproducibility,
    maintainability, onboarding/docs, security). See **Categories**.
@@ -87,7 +87,7 @@ back from `rg` to `grep -r` so they run anywhere.
 | Unguarded join cardinality | Polars `.join(` with no `validate=` | Accepts `m:m` silently; one duplicated key fans rows out and misaligns every downstream array, with no error |
 
 ```bash
-scripts/scan.sh /path/to/repo      # full grouped report, read-only
+<this-skill-dir>/scripts/scan.sh /path/to/repo      # full grouped report, read-only
 ```
 
 The script will produce false positives (a `TODO` in a docstring, an `Optional` that is

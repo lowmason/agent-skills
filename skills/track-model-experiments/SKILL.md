@@ -94,7 +94,7 @@ ranks them with `az.compare`, and (optionally) rewrites the ledger's
 
 ```bash
 uv run --python 3.13 --with numpyro --with arviz --with arviz-stats --with numpy \
-  --with h5netcdf --with h5py python scripts/compare_experiments.py \
+  --with h5netcdf --with h5py python <this-skill-dir>/scripts/compare_experiments.py \
   --analysis-dir <analysis-dir> --ledger <analysis-dir>/experiments.md --output comparison.json
 ```
 
