@@ -345,8 +345,32 @@ def test_parentheses_nest_so_the_command_around_them_continues():
         ['ls'], ['echo', '$'], ['rm', 'x']]
     assert guard.split_subcommands('git -C $(pwd) stash') == [
         ['pwd'], ['git', '-C', '$', 'stash']]
+
+
+def test_a_process_substitution_is_one_word():
+    # zsh passes `<(…)` as one path, never a redirection, and glues it to the
+    # word it touches: `2<(true)` is the single word `2/dev/fd/11`.
     assert guard.split_subcommands('cat <(git show a:f)') == [
-        ['git', 'show', 'a:f'], ['cat', '<', '()']]
+        ['git', 'show', 'a:f'], ['cat', '<()']]
+    assert guard.split_subcommands('git branch --format 2<(true) newbr') == [
+        ['true'], ['git', 'branch', '--format', '<()', 'newbr']]
+
+
+def test_a_word_glued_to_a_group_is_part_of_its_word():
+    # `*(.)`, `$(pwd)/.git` and `<(x)y` are each one word to zsh.
+    assert guard.split_subcommands('ls *(.) x') == [['.'], ['ls', '()', 'x']]
+    assert guard.split_subcommands('echo $(pwd)/.git x') == [['pwd'], ['echo', '$', 'x']]
+    assert guard.split_subcommands('cat <(true)y x') == [['true'], ['cat', '<()', 'x']]
+
+
+def test_a_substitution_or_a_glob_group_may_be_many_words():
+    # zsh splits an unquoted $(…) into as many words as it prints, and a glob
+    # group matches any number of files. A quoted "$(…)" stays one word.
+    tokens = guard._tokenize('git -C $(pwd) "$(pwd)" log')
+    assert [(str(t), t.expands) for t in tokens if not t.syntax] == [
+        ('git', False), ('-C', False), ('$', True), ('pwd', False),
+        ('$(pwd)', False), ('log', False)]
+    assert guard.split_subcommands('ls (a|b)')[-1][-1].expands
 
 
 def test_a_nested_group_holds_its_place_in_the_command_around_it():
@@ -355,8 +379,8 @@ def test_a_nested_group_holds_its_place_in_the_command_around_it():
     # nesting, unless a `$` already stands in for it.
     assert guard.classify('git (stash)') is not None
     assert guard.classify('git branch (x)') is not None
-    assert guard.split_subcommands('ls (#i)readme*') == [
-        ['#i'], ['ls', '()', 'readme*']]
+    # A glob flag and its pattern are one word.
+    assert guard.split_subcommands('ls (#i)readme*') == [['#i'], ['ls', '()']]
     # A group left open closes at the end of its line, the same way.
     assert guard.split_subcommands('git (stash') == [['stash'], ['git', '()']]
 
@@ -416,11 +440,20 @@ def test_syntax_around_a_read_only_command_stays_allowed():
         assert guard.classify(command) is None, command
 
 
-def test_git_after_a_substitution_is_classified_by_its_verb():
-    # Before nesting, `(` sat in git's verb slot and failed closed, so these
-    # read-only commands were denied.
-    assert guard.classify('git -C $(pwd) log') is None
-    assert guard.classify('git -C $(git rev-parse --show-toplevel) status') is None
+def test_a_substitution_where_git_takes_a_value_fails_closed():
+    # zsh splits an unquoted $(…) into as many words as it prints, so one in a
+    # value slot can hand git its verb, and one among branch's arguments a
+    # name to create: `git -C $(echo . stash)` stashes. Quoted, it stays one
+    # word, and git's verb is classified as usual.
+    for command in ('git -C $(pwd) log', 'git --git-dir=$(pwd)/.git log',
+                    'git branch --contains $(git rev-parse HEAD)'):
+        detail = guard.classify(command)
+        assert detail is not None and 'quote' in detail, command
+    for command in ('git -C "$(pwd)" log',
+                    'git -C "$(git rev-parse --show-toplevel)" status',
+                    'git branch --contains "$(git rev-parse HEAD)"',
+                    'git log --oneline $(git merge-base main HEAD)..HEAD'):
+        assert guard.classify(command) is None, command
 
 
 def test_git_after_a_substitution_is_still_denied_when_the_verb_writes():
@@ -517,6 +550,61 @@ def test_the_dash_modifier_leads_a_command_like_a_keyword(command):
     assert guard.classify(command) is not None
 
 
+# Found 2026-09-28 by the second review, and the probes that followed. Main
+# denies each, and the first fix allowed it by dropping a word zsh passes to the
+# command: taken for a file descriptor, for a redirection or its target, or
+# folded into one placeholder. Each creates or deletes a ref, stashes, or edits
+# a file in place in zsh as the Bash tool runs it, checked in a scratch repo,
+# with files for the globs to match (`3`, `stash`, `a`, `b`). Two exceptions:
+# the id ending in `gnu` edits only under GNU sed, and `{é}` is a word only in
+# the C locale; under UTF-8 zsh reads it as a name.
+DROPPED_ARGUMENT_BYPASSES = [
+    # zsh names a descriptor only with an ASCII identifier.
+    pytest.param('git --namespace {²}>/dev/null stash', id='superscript-in-braces-as-namespace'),
+    pytest.param('git --namespace {é}>/dev/null stash', id='accent-in-braces-as-namespace'),
+    pytest.param('git branch {é}>/dev/null', id='accent-in-braces-as-branch'),
+    # A word glued to a process substitution is part of the same word.
+    pytest.param('git branch 2<(true)', id='digit-glued-to-a-process-substitution'),
+    pytest.param('git tag 1>(cat)', id='digit-glued-to-an-output-process-substitution'),
+    pytest.param('git branch {x}<(true)', id='braces-glued-to-a-process-substitution'),
+    pytest.param('git branch --format 2<(true) newbr',
+                 id='glued-process-substitution-as-a-value'),
+    # A process substitution is a word, never a redirection with a target.
+    pytest.param('git branch --format <(true) newbr', id='process-substitution-as-a-value'),
+    pytest.param('git tag --format >(true) v9', id='output-process-substitution-as-a-value'),
+    pytest.param('git branch --sort <(true) newbr', id='process-substitution-as-a-sort-key'),
+    # An unquoted $(…) is as many words as it prints.
+    pytest.param('git -C $(echo . stash)', id='substitution-as-directory-and-verb'),
+    pytest.param('git --namespace $(echo x stash)', id='substitution-as-namespace-and-verb'),
+    pytest.param('git --git-dir $(echo .git stash)', id='substitution-as-git-dir-and-verb'),
+    pytest.param('git --work-tree $(echo . stash)', id='substitution-as-work-tree-and-verb'),
+    pytest.param('git branch --format $(echo x -D feature)', id='substitution-hides-a-delete'),
+    pytest.param('git tag --format $(echo x v9)', id='substitution-as-a-value-and-a-tag'),
+    pytest.param('sed $(echo -i.bak) s/body/X/ f', id='substitution-as-sed-in-place'),
+    # zsh globs: a numeric range, and a group that may match more than one file.
+    pytest.param('git branch <-> newb', id='numeric-glob-as-branch'),
+    pytest.param('git tag <1-5> v1', id='numeric-range-glob-as-tag'),
+    pytest.param('git branch --format <-> newb', id='numeric-glob-as-a-value'),
+    pytest.param('sed -e p <-> -i f', id='numeric-glob-before-sed-i-gnu'),
+    pytest.param('git --namespace $ (stash)', id='spaced-group-after-a-dollar-as-verb'),
+    pytest.param('git branch --format (a|b)', id='glob-alternation-as-a-value-and-a-branch'),
+]
+
+
+@pytest.mark.parametrize('command', DROPPED_ARGUMENT_BYPASSES)
+def test_every_word_zsh_passes_reaches_the_classifier(command):
+    assert guard.classify(command) is not None
+
+
+def test_a_numeric_glob_is_words_not_redirections():
+    # zsh's `<->` and `<1-5>` match files named by numbers, so their `<` and
+    # `>` redirect nothing, and the word after them stays an argument.
+    [words] = guard.split_subcommands('git tag <1-5> v1')
+    assert [(str(t), t.syntax) for t in words] == [
+        ('git', False), ('tag', False), ('<', False), ('1-5', False), ('>', False),
+        ('v1', False)]
+
+
 def test_a_quoted_word_stays_a_word_in_the_default_reading():
     assert guard.split_subcommands("git branch ')' -D feature") == [
         ['git', 'branch', ')', '-D', 'feature']]
@@ -560,7 +648,8 @@ def test_a_git_option_missing_its_value_fails_closed():
     # The backstop under every reading: wherever one cuts a command between a
     # global option and its value, the verb git would run lies past the cut.
     # Bare --exec-path takes no value; it prints the path and exits.
-    for command in ('git -C', 'git -c', 'git --namespace', 'git --git-dir'):
+    for command in ('git -C', 'git -c', 'git --namespace', 'git --git-dir',
+                    '{ git --namespace ]] stash; }'):
         assert guard.classify(command) is not None, command
     assert guard.classify('git --exec-path') is None
 

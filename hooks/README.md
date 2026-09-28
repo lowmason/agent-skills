@@ -185,7 +185,12 @@ own. A quoted or escaped word is a word, never syntax: `git branch ')' -D featur
 deletes a branch. A redirection leaves with its target and with the file descriptor zsh
 reads for it: one unquoted digit touching the operator (`2>&1`), or a `{name}` before
 it (`exec {fd}>f`). Any other word before a redirection is an argument: `git branch 5
->f` creates branch `5`. Not caught:
+>f` creates branch `5`. A `{name}` descriptor is an ASCII identifier only, as zsh reads
+it in the C locale the Bash tool runs under. A process substitution `<(…)` / `>(…)` is
+one word, a path, never a redirection, so a digit or `{name}` touching it is part of
+that word (`2<(true)` is one argument). An unquoted `$(…)` or a glob where git or `sed`
+takes a value or a verb, which zsh can split or expand into any number of words, fails
+closed; quoting keeps a substitution one word (`git -C "$(pwd)" log`). Not caught:
 
 - A command run by any other utility: `xargs rm`, `find . -exec rm {} \;`, and
   `find . -delete`, or read from what a command prints: `source <(echo rm x)`, and
@@ -197,12 +202,25 @@ it (`exec {fd}>f`). Any other word before a redirection is an argument: `git bra
 - Command substitution in backticks. The tokenizer, like `shlex`, takes a backtick for
   an ordinary character, so `` echo `rm x` `` reads as the words `echo`, `` `rm `` and
   `` x` ``, and none of them is a denied command. `$(…)` is read as a command.
-- A command word the shell produces by expansion (`c=rm; $c x`, `$(which rm) x`), or
-  glues to a brace (zsh runs `{rm x;}`).
+- A command word the shell produces by expansion (`c=rm; $c x`, `$(which rm) x`), by
+  zsh's `=cmd` path expansion (`=rm x`), or by gluing to a brace (zsh runs `{rm x;}`).
 - Options of the prefix utilities that take a value the guard does not model, which
   puts the value in the command's place: the long options (`env --chdir /tmp rm x`,
   `nice --adjustment 5 rm x`) and `/usr/bin/time -o f rm x`. zsh's own `time` takes no
-  options.
+  options. Clustered short options ending in a value-taker slip through the same way
+  (`exec -la foo rm x`, `env -iu HOME rm x`); the guard reads only the short options it
+  lists, not getopt-style clusters.
+- A word the guard does not recognise as an assignment, so the word becomes the command
+  and the real command after it is never read: `arr[1]=x rm t`, `ä=x rm t`. `env` takes
+  any `name=value` operand the same way, including after `--`: `env a-b=x rm t`,
+  `env -- a-b=x rm t`.
+- A line that needs the flat reading for one construct and the nested reading for
+  another. Each of the eight readings below applies to the whole line, so no single
+  reading catches both, and a reserved word or brace group before a git verb hides it:
+  `{ git branch ]] HEAD; }`, `true && { git branch ]] HEAD; }`,
+  `if [[ -n a ]] git branch ]] HEAD`.
+- zsh's `>!` / `>>!` clobber redirection, whose `!` is read as the target, so the real
+  target lands in the command's place: `>! f rm x`.
 - A program run by an allowlisted git verb through configuration or the environment:
   `git -c core.fsmonitor=… status`, `git -c diff.external=… diff`,
   `GIT_EXTERNAL_DIFF=… git diff`.
@@ -230,16 +248,20 @@ Known false positives, accepted rather than widened:
     the backstop against a misread the first two rules miss, and its cost is a
     line inside a quoted script that begins with a denied word (`rm = 5`).
 
-- **Every command is read eight ways, and a denial in any of them stands.** Three
-  things take a parser to tell apart, so each is read both ways:
+- **Every command is read eight ways, each reading applied to the whole line, and a
+  denial in any of them stands.** Three things take a parser to tell apart, so each is
+  read both ways. (Because a reading spans the whole line, a line that mixes a construct
+  needing one reading with a construct needing another is caught by none — see the
+  mixed-reading gap under "Not caught".)
   - Parentheses nest, or end the command. Nested, a group is a command of its own and
     the command around it continues after it (`$(…)`, `<(…)`, zsh's `*(.)`); flat, a
     parenthesis ends the command, as a case pattern or `f()` does before the command
     that follows it. So a parenthesized word that is not a command is classified as
-    one: a case pattern `(rm)`, an array `(rm mv)`, a comment's `# (rm x)`, or a
-    heredoc line such as `print(git(x))`. A group where git expects its verb fails
-    closed, since zsh globs `git (stash)` into `git stash` when a file named `stash`
-    exists.
+    one: a case pattern `(rm)`, an array `(rm mv)`, or a comment's `# (rm x)`. A word
+    glued to a group is part of one word, as zsh reads it, so a `<(…)` process
+    substitution is a single path and a heredoc line such as `print(git(x))` is not
+    split into a `git` command. A group where git expects its verb fails closed, since
+    zsh globs `git (stash)` into `git stash` when a file named `stash` exists.
   - `{` and `]]` end the command, as where a command could start (`{ rm x; }`,
     `if [[ -n a ]] rm x`), or are words, as among arguments (`git branch {`). So the
     word after one is classified as a command: `echo { rm x` is denied.
@@ -253,6 +275,13 @@ Known false positives, accepted rather than widened:
   options: it runs a command named `-p` and never reaches `rm`. Options after `time` are
   skipped as they are after `env` and `nice`, since `/usr/bin/time -p` and bash's
   `time -p` do run the command.
+- **An unquoted `$(…)` or glob is denied where git takes a global-option value or a flag
+  verb's argument, or anywhere in a `sed` command, even when it is read-only** (`git -C
+  $(pwd) log`, `git branch --format $(cmd) x`, `sed -n $(cmd) f`), because zsh can split
+  or expand it into several words and the guard cannot see which lands in the verb or
+  value slot. Quoting keeps a substitution one word and is allowed: `git -C "$(pwd)"
+  log`; and an unquoted substitution that only supplies a positional to a read-only verb
+  still passes (`git log $(git merge-base a b)..b`).
 - **Read-only git verbs missing from the allowlist are denied wherever they appear**, and
   with subshells, `$(…)`, `if` and assignments no longer hiding a command, that now
   includes the likes of `B=$(git symbolic-ref --short HEAD)`. Among them:

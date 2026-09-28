@@ -67,14 +67,17 @@ class _Token(str):
     `syntax`: an unquoted run of PUNCTUATION. `quoted`: some of it was quoted or
     escaped, and quoting makes a word of anything (`git branch ')'` names a
     branch). `spaced`: whitespace or the start of the line comes before it, so
-    it does not touch the token on its left.
+    it does not touch the token on its left. `expands`: zsh may make any number
+    of words of it: the `$` of an unquoted `$(…)`, whose output zsh splits, or a
+    glob, which becomes every file it matches.
     """
 
-    def __new__(cls, text, syntax=False, quoted=False, spaced=False):
+    def __new__(cls, text, syntax=False, quoted=False, spaced=False, expands=False):
         token = super().__new__(cls, text)
         token.syntax = syntax
         token.quoted = quoted
         token.spaced = spaced
+        token.expands = expands
         return token
 
 
@@ -88,21 +91,31 @@ CLOSE_PAREN = _Token(')', syntax=True)
 CLOSE_BRACE = '}'
 COMMAND_POSITION_SYNTAX = frozenset({'{', ']]'})
 
-# The word a nested group leaves in the command around it, so the next word
-# cannot slide into its place: zsh globs `(stash)` to a file named stash, and
-# `git (stash)` must fail closed on the verb as it always did.
-GROUP_WORD = _Token('()')
+# The words a nested group leaves in the command around it, so the next word
+# cannot slide into its place. A group inside a word is a glob, and zsh makes it
+# every file it matches: `git (stash)` runs `git stash` when a file named stash
+# exists, so git's verb slot fails closed on one as it always did. A process
+# substitution, `<(…)` or `>(…)`, is one path, never a redirection.
+GROUP_WORD = _Token('()', expands=True)
+PROCESS_SUBSTITUTION = _Token('<()')
 
 # Three choices only a shell parser could make, so every line is read all eight
-# ways and a denial in any reading stands. See _split_tokens.
+# ways and a denial in any reading stands. Each reading holds for a whole line,
+# so a line that needs two at once, flat for one construct and nested for
+# another, is misread by all eight. See _split_tokens.
 READINGS = tuple(itertools.product((True, False), repeat=3))  # nest, braces, quoting
 
 # What zsh reads as the file descriptor of the redirection after it: a single
 # unquoted digit touching the operator (`2>&1`; in `2 >f` and `12>f` the digits
 # are arguments), or a `{name}` before it, spaced or not, which zsh gives a new
-# descriptor (`exec {fd}>f`).
+# descriptor (`exec {fd}>f`). The name is an ASCII identifier: in the C locale
+# zsh reads `{é}` as a word.
 FILE_DESCRIPTOR_DIGIT = re.compile(r'[0-9]')
-NAMED_FILE_DESCRIPTOR = re.compile(r'\{\w+\}')
+NAMED_FILE_DESCRIPTOR = re.compile(r'\{[A-Za-z_][A-Za-z0-9_]*\}')
+
+# zsh's numeric glob, `<->` or `<1-5>`: the middle of the three pieces it is cut
+# into. It matches files named by numbers and redirects nothing.
+NUMERIC_RANGE = re.compile(r'[0-9]*-[0-9]*')
 
 # Words that lead a subcommand without being its command: reserved words and
 # zsh's precommand modifiers, `-` among them (quoted or escaped: the Bash tool's
@@ -268,6 +281,9 @@ def _tokenize(line):
             continue
         run = PUNCTUATION_RUN.match(line, i)
         if run:
+            if (run.group().startswith('(') and not spaced and tokens
+                    and not tokens[-1].syntax and tokens[-1].endswith('$')):
+                tokens[-1].expands = True  # `$(…)`: zsh splits what it prints
             tokens.append(_Token(run.group(), syntax=True, spaced=spaced))
             i = run.end()
         else:
@@ -346,10 +362,46 @@ def _pieces(tokens, quoting):
             yield token
 
 
+def _numeric_globs(pieces):
+    """Return the pieces, with the `<` and `>` of each numeric glob as words."""
+    pieces = list(pieces)
+    for i in range(len(pieces) - 2):
+        opening, middle, closing = pieces[i:i + 3]
+        if (opening.syntax and opening == '<' and not middle.syntax
+                and not middle.quoted and not middle.spaced
+                and NUMERIC_RANGE.fullmatch(middle) and closing.syntax
+                and closing.startswith('>') and not closing.spaced):
+            pieces[i] = _Token(opening, spaced=opening.spaced, expands=True)
+            pieces[i + 2] = _Token(closing)
+    return pieces
+
+
 def _closing_parens(enclosing):
     """Yield a `)` while a group is open; each one read closes a group."""
     while enclosing:
         yield CLOSE_PAREN
+
+
+def _group_word(current, paren):
+    """Return the word a group opening at `paren` leaves in `current` when it
+    closes, taking from `current` any word glued to it. None for `$(…)`, whose
+    `$` already stands in its place, and where no command surrounds it."""
+    if not current:
+        return None
+    before = current[-1]
+    if paren.spaced:
+        return GROUP_WORD
+    if not before.syntax:
+        if before.endswith('$'):
+            return None
+        current.pop()  # glued into one glob: `*(.)`, `=(…)`
+        return GROUP_WORD
+    if before in ('<', '>'):
+        current.pop()
+        if not before.spaced and current and not current[-1].syntax:
+            current.pop()  # glued into one word: `2<(true)` is `2/dev/fd/11`
+        return PROCESS_SUBSTITUTION
+    return GROUP_WORD
 
 
 def _ends_a_subcommand(piece, braces, quoting):
@@ -366,16 +418,19 @@ def _split_tokens(tokens, nest, braces, quoting):
     Separators end a subcommand, and so do the parentheses and braces
     _ends_a_subcommand names; redirections stay in theirs. Three things here
     take a parser, so classify reads every line each way and denies if any
-    reading does:
+    reading does. Each choice holds for the whole line, so a line that needs
+    both answers to one of them, in two places, is misread either way:
 
     `nest`: a parenthesis may open a group inside a word, where the command
     around it continues after the `)` (`$(…)`, `<(…)`, zsh's `*(.)`), or stand
     before a command (a case pattern's `(a) rm x`, `f() rm x`, zsh's `for f (a)
     rm x`). Nested, a group is a subcommand of its own, and the one it
-    interrupted resumes after it with GROUP_WORD in its place, unless a `$`
-    (`$(…)`) already stands in for it. Flat, a parenthesis ends a subcommand
-    like a separator. An unmatched `)` ends a subcommand either way, and a
-    group still open at the end of the line closes there.
+    interrupted resumes after it with one word in its place, the word zsh
+    makes of it and whatever it touches (see _group_word): an unspaced `$(…)`
+    leaves its `$`, a process substitution PROCESS_SUBSTITUTION, and any other
+    group GROUP_WORD. Flat, a parenthesis ends a subcommand like a separator.
+    An unmatched `)` ends a subcommand either way, and a group still open at
+    the end of the line closes there.
 
     `braces`: `{` and `]]` end a subcommand, as where a command could start, or
     are words, as among arguments (`git branch { HEAD`).
@@ -386,21 +441,28 @@ def _split_tokens(tokens, nest, braces, quoting):
     was kept.
     """
     subcommands = []
-    enclosing = []  # subcommands a nested group interrupted, innermost last
+    # (subcommand a nested group interrupted, the word it leaves), innermost last
+    enclosing = []
     current = []
+    glued = False  # a group just closed, and a word touching it is part of its word
+    pieces = _numeric_globs(_pieces(tokens, quoting))
     # A group still open when the line runs out closes there, as if at a `)`.
-    for piece in itertools.chain(_pieces(tokens, quoting), _closing_parens(enclosing)):
+    for piece in itertools.chain(pieces, _closing_parens(enclosing)):
+        if glued and not piece.syntax and not piece.spaced:
+            continue  # `$(pwd)/.git`, `<(x)y`
+        glued = False
         if nest and piece.syntax and piece == '(':
-            enclosing.append(current)
+            enclosing.append((current, _group_word(current, piece)))
             current = []
         elif _ends_a_subcommand(piece, braces, quoting):
             if current:
                 subcommands.append(current)
             current = []
             if nest and piece.syntax and piece == ')' and enclosing:
-                current = enclosing.pop()
-                if current and not current[-1].endswith('$'):
-                    current.append(GROUP_WORD)
+                current, word = enclosing.pop()
+                if word is not None:
+                    current.append(word)
+                glued = bool(current)
         else:
             current.append(piece)
     if current:
@@ -503,12 +565,21 @@ def _sed_edits_in_place(args):
     return False
 
 
+def _expands_to_words(what, danger):
+    """The reason to deny when a word zsh expands could carry `danger`."""
+    return ('`' + what + '` is given an unquoted substitution or glob, and zsh can '
+            'make it several words, ' + danger + ', so this guard fails closed. '
+            'To keep a substitution one word, quote it: "$(…)".')
+
+
 def _classify_non_git(name, args):
     if name in DENIED_COMMANDS:
         return DENIED_COMMANDS[name] + ' This agent inspects; it does not modify.'
     if name == 'sed' and _sed_edits_in_place(args):
         return ('`sed -i` edits files in place; drop `-i` to write the result to '
                 'stdout instead.')
+    if name == 'sed' and any(arg.expands for arg in args):
+        return _expands_to_words('sed', 'among them `-i`')
     return None
 
 
@@ -612,9 +683,9 @@ def classify(command):
     physical line is also classified on its own, the way it was before
     multi-line support. A denial in any reading stands, so whatever one reading
     gets wrong, a mutator that leads a subcommand in any of them is denied. That
-    covers only what the readings differ on: the tokens under all of them keep
-    their quoting and spacing, since whatever a shared step loses, no reading
-    can recover.
+    covers only what the readings differ on, and only a line one reading gets
+    right as a whole. The tokens under all of them keep their quoting and
+    spacing, since whatever a shared step loses, no reading can recover.
     """
     logical_lines = _logical_lines(command)
     lines = [_tokenize(line) for line in logical_lines]
@@ -665,6 +736,9 @@ def _classify_git_flag_verb(verb, rest):
       than special-cased.
     """
     rule = GIT_FLAG_ALLOWED[verb]
+    if any(token.expands for token in rest):
+        return _expands_to_words('git ' + verb, 'among them a name to create or a '
+                                 'flag that writes')
     seen = set()
     has_positional = False
     i = 0
@@ -697,7 +771,8 @@ def _locate_git_verb(args):
     An unknown leading option denies rather than being treated as a verb, so
     `git --wat log` cannot slip a verb past the scan. So does an option whose
     value is missing: whichever reading cut the command there, git's verb lies
-    past the cut. Bare `--exec-path` takes no value; it prints and exits.
+    past the cut. Bare `--exec-path` takes no value; it prints and exits. And so
+    does a value zsh may make several words, the next of them git's verb.
     """
     i = 0
     while i < len(args):
@@ -707,14 +782,23 @@ def _locate_git_verb(args):
         if token in GIT_GLOBAL_FLAGS:
             i += 1
             continue
-        if token in GIT_GLOBAL_WITH_VALUE:
-            if i + 1 == len(args) and token != '--exec-path':
+        if token in GIT_GLOBAL_WITH_VALUE and token != '--exec-path':
+            if i + 1 == len(args):
                 return None, ('`git ' + token + '` has no value here, so this guard '
                               'cannot see the verb git would run, and it fails '
                               'closed.')
+            if args[i + 1].expands:
+                return None, _expands_to_words('git ' + token, 'the next of them '
+                                               "git's verb")
             i += 2  # the option's value is the next token
             continue
+        if token == '--exec-path':
+            i += 2  # prints and exits, whatever follows
+            continue
         if '=' in token and token.partition('=')[0] in GIT_GLOBAL_WITH_VALUE:
+            if token.expands:
+                return None, _expands_to_words(token.partition('=')[0] + '=',
+                                               "the next of them git's verb")
             i += 1
             continue
         if token.startswith('-'):
