@@ -1,4 +1,5 @@
 import importlib.util
+import os
 import subprocess
 import sys
 import tomllib
@@ -226,3 +227,15 @@ def test_aliased_destinations_with_different_sources_write_nothing(tmp_path, ext
   assert str(tmp_path / '.gemini/agents') in result.stderr
   assert tree(tmp_path) == before
 
+
+def test_help_keeps_docstring_examples_on_their_own_lines():
+  result = subprocess.run(
+    [sys.executable, str(INSTALL), '--help'],
+    capture_output=True,
+    text=True,
+    env={**os.environ, 'COLUMNS': '80'},
+  )
+  assert result.returncode == 0, result.stderr
+  assert '\n  python3 install.py gemini --skill bayesian-workflow --companions\n' in (
+    result.stdout
+  )

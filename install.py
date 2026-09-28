@@ -2,10 +2,10 @@
 '''Install this repository's skills and runtime-native companion assets.
 
 Examples:
-  python install.py codex
-  python install.py gemini --skill bayesian-workflow
-  python install.py gemini --skill bayesian-workflow --companions
-  python install.py all --copy
+  python3 install.py codex
+  python3 install.py gemini --skill bayesian-workflow
+  python3 install.py gemini --skill bayesian-workflow --companions
+  python3 install.py all --copy
 
 Symlinks are the default so edits in this checkout are picked up immediately.
 A full install also links each runtime's companion agents and commands; --skill
@@ -175,7 +175,9 @@ def install_item(item: InstallItem, *, copy: bool, dry_run: bool) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
-  parser = argparse.ArgumentParser(description=__doc__)
+  parser = argparse.ArgumentParser(
+    description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+  )
   parser.add_argument('runtime', choices=('claude', 'codex', 'gemini', 'all'))
   parser.add_argument(
     '--skill',
