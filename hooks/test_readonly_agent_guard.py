@@ -1,20 +1,35 @@
-"""Gate A for hooks/readonly-agent-guard.py — run from this directory.
+"""Gate A for hooks/readonly-agent-guard.py — run from this directory, both ways.
 
 cd hooks && uv run --python 3.13 --with pytest python -m pytest -q
+cd hooks && uv run --python /usr/bin/python3 --with pytest python -m pytest -q
 
 Two layers, per spec Verification: unit tests import the classifier directly,
 contract tests drive the script as a subprocess with real payloads on stdin.
-Stdlib only, matching the guard itself.
+Each contract test runs twice — see guard_env. The second command runs the
+unit tests under the 3.9 floor too, so this file stays 3.9-compatible as well.
+Stdlib plus pytest; the guard itself is stdlib only.
 """
 
 import copy
+import functools
 import importlib.util
 import json
+import os
 import subprocess
 from pathlib import Path
 
+import pytest
+
 HOOKS = Path(__file__).resolve().parent
 GUARD = HOOKS / 'readonly-agent-guard.py'
+
+# The oldest python3 the guard must run under: macOS's system python3 (Xcode
+# Command Line Tools). Bump it only alongside the guard's own docstring.
+FLOOR_PYTHON = (3, 9)
+# launchd's default PATH. An app launched from the Dock may hand its hooks only
+# this, and on it the guard's `#!/usr/bin/env python3` resolves to
+# /usr/bin/python3 — the floor interpreter, whatever the developer's shell has.
+LAUNCHD_PATH = '/usr/bin:/bin:/usr/sbin:/sbin'
 
 # Recorded from Claude Code 2.1.259 on 2026-09-03 by the plan-24 Task 1 probe,
 # via the production path: an Agent-tool dispatch of Explore from a `claude -p`
@@ -283,15 +298,57 @@ def test_value_taking_flags_do_not_look_like_positionals():
         assert guard.classify(command) is None, command
 
 
-def run_guard(payload):
+def run_hook(stdin_text, env=None):
     """Drive the hook exactly as Claude Code does: through its own shebang.
 
-    Not [sys.executable, GUARD] — the shebang resolves to the system python3
-    (3.9 on macOS), so this is also the regression test for the guard staying
-    3.9-compatible.
+    Not [sys.executable, GUARD]. The shebang resolves to the first python3 on
+    the child's PATH, and with env=None that is this test's PATH — under
+    `uv run` it is uv's pinned interpreter, never reliably the 3.9 floor. The
+    floor is checked by passing guard_env's launchd PATH, not by PATH order.
     """
-    return subprocess.run(
-        [str(GUARD)], input=json.dumps(payload), capture_output=True, text=True)
+    return subprocess.run([str(GUARD)], input=stdin_text, capture_output=True,
+                          text=True, env=env)
+
+
+def run_guard(payload, env=None):
+    return run_hook(json.dumps(payload), env)
+
+
+@functools.lru_cache(maxsize=None)
+def floor_python_skip_reason():
+    """Why the launchd-PATH python3 cannot stand in for the floor, or None."""
+    probe = subprocess.run(
+        ['/usr/bin/env', 'python3', '-c',
+         'import sys; print(sys.executable, *sys.version_info[:2])'],
+        capture_output=True, text=True, env=dict(os.environ, PATH=LAUNCHD_PATH))
+    if probe.returncode != 0:
+        # macOS without the Command Line Tools ships /usr/bin/python3 as a stub
+        # that exits non-zero, so a present path is not a runnable interpreter.
+        return (f'no runnable python3 on PATH={LAUNCHD_PATH} '
+                f'(exit {probe.returncode}: {probe.stderr.strip()[:200]})')
+    executable, major, minor = probe.stdout.split()
+    if (int(major), int(minor)) != FLOOR_PYTHON:
+        # A newer system python3 would pass silently while the docs still
+        # promise the floor; skip loudly so the floor gets revisited instead.
+        return (f'python3 on PATH={LAUNCHD_PATH} is {executable} {major}.{minor}, '
+                f'not the {FLOOR_PYTHON[0]}.{FLOOR_PYTHON[1]} floor')
+    return None
+
+
+@pytest.fixture(params=['test-path', 'launchd-path'])
+def guard_env(request):
+    """Run each contract test on this test's PATH, then on launchd's.
+
+    The launchd-path run is the check that the guard still works under the
+    FLOOR_PYTHON system python3; it skips, naming the reason, where that
+    interpreter is missing or is not the floor.
+    """
+    if request.param == 'test-path':
+        return None
+    reason = floor_python_skip_reason()
+    if reason is not None:
+        pytest.skip(reason)
+    return dict(os.environ, PATH=LAUNCHD_PATH)
 
 
 def payload_for(command, agent='Explore'):
@@ -304,50 +361,52 @@ def payload_for(command, agent='Explore'):
     return p
 
 
-def test_malformed_stdin_allows():
-    proc = subprocess.run([str(GUARD)], input='not json at all',
-                          capture_output=True, text=True)
+def test_malformed_stdin_allows(guard_env):
+    proc = run_hook('not json at all', guard_env)
     assert proc.returncode == 0
     assert proc.stdout.strip() == ''
 
 
-def test_empty_stdin_allows():
-    proc = subprocess.run([str(GUARD)], input='', capture_output=True, text=True)
+def test_empty_stdin_allows(guard_env):
+    proc = run_hook('', guard_env)
     assert proc.returncode == 0
     assert proc.stdout.strip() == ''
 
 
-def test_main_session_is_never_blocked():
+def test_main_session_is_never_blocked(guard_env):
     # The property everything else rests on.
-    proc = run_guard(payload_for('git stash', agent=None))
+    proc = run_guard(payload_for('git stash', agent=None), guard_env)
     assert proc.returncode == 0
     assert proc.stdout.strip() == ''
-    assert run_guard(copy.deepcopy(RECORDED_MAIN_SESSION_PAYLOAD)).stdout.strip() == ''
+    main = run_guard(copy.deepcopy(RECORDED_MAIN_SESSION_PAYLOAD), guard_env)
+    assert main.returncode == 0
+    assert main.stdout.strip() == ''
 
 
-def test_unguarded_agents_are_allowed():
+def test_unguarded_agents_are_allowed(guard_env):
     for agent in ('debugger', 'docs-writer', 'general-purpose', 'explore'):
-        proc = run_guard(payload_for('git commit -m x', agent=agent))
+        proc = run_guard(payload_for('git commit -m x', agent=agent), guard_env)
+        assert proc.returncode == 0, agent
         assert proc.stdout.strip() == '', agent
 
 
-def test_guarded_agent_running_a_readonly_command_is_allowed():
+def test_guarded_agent_running_a_readonly_command_is_allowed(guard_env):
     for agent in sorted(guard.READONLY_AGENTS):
-        proc = run_guard(payload_for('git diff main..HEAD', agent=agent))
+        proc = run_guard(payload_for('git diff main..HEAD', agent=agent), guard_env)
         assert proc.returncode == 0
         assert proc.stdout.strip() == '', agent
 
 
-def test_guarded_agent_running_a_mutator_is_denied():
+def test_guarded_agent_running_a_mutator_is_denied(guard_env):
     for agent in sorted(guard.READONLY_AGENTS):
-        proc = run_guard(payload_for('git stash', agent=agent))
+        proc = run_guard(payload_for('git stash', agent=agent), guard_env)
         assert proc.returncode == 0, agent
         out = json.loads(proc.stdout)
         assert out['hookSpecificOutput']['permissionDecision'] == 'deny', agent
 
 
-def test_deny_payload_has_the_exact_documented_shape():
-    proc = run_guard(payload_for('git checkout main'))
+def test_deny_payload_has_the_exact_documented_shape(guard_env):
+    proc = run_guard(payload_for('git checkout main'), guard_env)
     out = json.loads(proc.stdout)
     assert set(out) == {'hookSpecificOutput'}
     inner = out['hookSpecificOutput']
@@ -357,8 +416,8 @@ def test_deny_payload_has_the_exact_documented_shape():
     assert inner['permissionDecision'] == 'deny'
 
 
-def test_denial_reason_names_agent_command_clause_and_alternative():
-    proc = run_guard(payload_for('git checkout main', agent='task-reviewer'))
+def test_denial_reason_names_agent_command_clause_and_alternative(guard_env):
+    proc = run_guard(payload_for('git checkout main', agent='task-reviewer'), guard_env)
     reason = json.loads(proc.stdout)['hookSpecificOutput']['permissionDecisionReason']
     assert 'task-reviewer' in reason
     assert 'git checkout main' in reason
@@ -366,31 +425,34 @@ def test_denial_reason_names_agent_command_clause_and_alternative():
     assert 'git show' in reason               # the read-only alternative
 
 
-def test_denial_reason_offers_no_escape_hatch():
+def test_denial_reason_offers_no_escape_hatch(guard_env):
     # Spec D5: the constrained party reads this message. A documented bypass
     # string here would make the guard advisory.
-    proc = run_guard(payload_for('rm -rf build'))
+    proc = run_guard(payload_for('rm -rf build'), guard_env)
     reason = json.loads(proc.stdout)['hookSpecificOutput']['permissionDecisionReason']
     lowered = reason.lower()
     for word in ('bypass', 'override', 'escape hatch', 'disable', 'skip this'):
         assert word not in lowered, word
 
 
-def test_classification_failure_fails_closed_for_a_guarded_agent():
+def test_classification_failure_fails_closed_for_a_guarded_agent(guard_env):
     # Unbalanced quote: shlex raises, and after identification the guard denies.
-    proc = run_guard(payload_for('git log "unterminated'))
+    proc = run_guard(payload_for('git log "unterminated'), guard_env)
     assert proc.returncode == 0
     out = json.loads(proc.stdout)
     assert out['hookSpecificOutput']['permissionDecision'] == 'deny'
     assert 'ValueError' in out['hookSpecificOutput']['permissionDecisionReason']
 
 
-def test_classification_failure_still_allows_the_main_session():
-    proc = run_guard(payload_for('git log "unterminated', agent=None))
+def test_classification_failure_still_allows_the_main_session(guard_env):
+    proc = run_guard(payload_for('git log "unterminated', agent=None), guard_env)
+    assert proc.returncode == 0
     assert proc.stdout.strip() == ''
 
 
-def test_missing_command_does_not_block():
+def test_missing_command_does_not_block(guard_env):
     p = copy.deepcopy(RECORDED_PAYLOAD)
     p['tool_input'] = {}
-    assert run_guard(p).stdout.strip() == ''
+    proc = run_guard(p, guard_env)
+    assert proc.returncode == 0
+    assert proc.stdout.strip() == ''

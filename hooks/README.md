@@ -132,15 +132,27 @@ from this repo.
 Python rather than bash, against this directory's convention: `shlex` tokenizes quoted
 commands properly (narrowing the "heuristic, not a shell parser" gap below), it drops
 the `jq` dependency for a hook that now runs in every project, and the tests can import
-the classifier directly. It runs under whatever `python3` is first on `PATH` — 3.9 on
-macOS system Python — so the source stays 3.9-compatible, which the contract tests
-enforce by invoking the script through its own shebang.
+the classifier directly. It runs under whatever `python3` is first on the `PATH`
+Claude Code hands its hooks, which need not be your shell's: an app launched from the
+Dock can inherit launchd's `/usr/bin:/bin:/usr/sbin:/sbin`, where `python3` is macOS's
+system Python 3.9. So the source stays 3.9-compatible.
 
-**Tests.** Gate A is `test_readonly_agent_guard.py`:
+**Tests.** Gate A is `test_readonly_agent_guard.py`, run both ways:
 
 ```bash
 cd hooks && uv run --python 3.13 --with pytest python -m pytest -q
+cd hooks && uv run --python /usr/bin/python3 --with pytest python -m pytest -q
 ```
+
+The 3.9 floor is checked on purpose, not by `PATH` order. Under `uv run` the shebang
+resolves to uv's pinned interpreter, so a plain shebang run never reliably reached 3.9.
+Instead each contract test runs twice through the script's own shebang: once on the
+test's `PATH`, once on launchd's. The launchd run skips where that `python3` is missing
+or is not 3.9 (`pytest -rs` prints the reason). It catches 3.10-only *syntax* anywhere
+in the guard, but a 3.10-only *runtime* API (`zip(strict=)`, `isinstance(x, A | B)`)
+only on a classifier branch some contract payload reaches. The second command runs the
+whole suite, unit tests included, under `/usr/bin/python3`, so that API fails there on
+any branch.
 
 Gate B is `probe-readonly-guard.sh`, a live check against the installed binary — Gate A
 can pass perfectly against a hook Claude Code never invokes. Three things that probe
