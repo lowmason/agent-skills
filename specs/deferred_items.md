@@ -89,6 +89,14 @@
   verification (71d) and two `18-methodology-pipeline-skills` items (64d: the
   DL/NLP template extension, synthesize-mode scenario verification). This branch
   closes the read-only guard's leading-token bypasses and touches none of them.
+- 2026-09-28 — finished `fix/skill-model-pin-removal` with 2 items aged >45d,
+  carried on the partner's reason, verbatim: "Unrelated to this branch: the
+  DL/NLP slots wait on a real DL/NLP target, and the synthesize-mode checks wait
+  on their own plan." The items are two `18-methodology-pipeline-skills` items
+  (64d: the DL/NLP template extension, synthesize-mode scenario verification).
+  This branch removes the inert `model: haiku` skill pins, makes
+  build/check_frontmatter.py fail a Haiku skill or command model, and closes
+  item 11 (plan 31); it touches neither aged item.
 
 ## 11-delegation-frontmatter-rollout — 2026-07-19
 - [x] Haiku-pinned `Explore` override agent (fork-isolation upgrade; plan "Out of
