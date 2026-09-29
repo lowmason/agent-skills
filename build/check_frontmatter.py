@@ -4,8 +4,10 @@
 Per <skill>/SKILL.md: the frontmatter must parse as YAML (catches unquoted-
 scalar breakage), name must equal the directory name (<=64 chars, lowercase
 letters/digits/hyphens), description must be present and <=1024 chars (Agent
-Skills spec cap), keys must be spec-valid, and every relative markdown-link
-target plus every backticked references/ or scripts/ path must exist.
+Skills spec cap), keys must be spec-valid, context must be in CONTEXT_VALUES,
+model must not be haiku or a claude-haiku-* ID (auto mode drops it), and every
+relative markdown-link target plus every backticked references/ or scripts/
+path must exist.
 
 Run: uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
 Exit 0 if clean; exit 1 with one line per violation.

@@ -230,6 +230,16 @@ def test_models_auto_mode_can_run_stay_allowed(tmp_path):
         assert check_skill(d) == [], model
 
 
+def test_haiku_model_on_an_agent_is_allowed(tmp_path):
+    # A subagent's Haiku pin applies, so agents/*.md are exempt from the rule;
+    # this pins that without depending on a real agent keeping its pin.
+    md = tmp_path / 'cheap-agent.md'
+    md.write_text(
+        '---\nname: cheap-agent\ndescription: Does a thing.\nmodel: haiku\n---\nbody\n'
+    )
+    assert check_agent_file(md) == []
+
+
 def test_context_fork_key_allowed(tmp_path):
     d = make_skill(
         tmp_path,

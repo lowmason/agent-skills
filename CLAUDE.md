@@ -84,12 +84,12 @@ There is no root test runner or repo-wide `pyproject`, and the scientific deps (
 cd build && uv run --python 3.13 --with pytest --with pyyaml \
   python -m pytest -q test_runtime_support.py
 
-# Full build-directory tests — 144 tests (82 citation/lint/snippet + 62 runtime-support)
-# (all 144 collect either way. 7 of test_check_snippets.py's need the ArviZ/NumPyro chain and
-# skip without it, so the command below reports 137 passed, 7 skipped; append
+# Full build-directory tests — 145 tests (83 citation/lint/snippet + 62 runtime-support)
+# (all 145 collect either way. 7 of test_check_snippets.py's need the ArviZ/NumPyro chain and
+# skip without it, so the command below reports 138 passed, 7 skipped; append
 # --with "arviz>=1.0" --with arviz-base --with arviz-stats --with arviz-plots --with numpyro
-# --with jax --with matplotlib to run all 144. Separately, 5 in test_verify_citations.py need the
-# build/.scratch/ ground truth — lacking both: 132 passed, 4 failed, 8 skipped. .scratch/ is
+# --with jax --with matplotlib to run all 145. Separately, 5 in test_verify_citations.py need the
+# build/.scratch/ ground truth — lacking both: 133 passed, 4 failed, 8 skipped. .scratch/ is
 # gitignored, so a fresh clone or worktree lacks it; regenerate with build/extract_structure.py,
 # see build/CLAUDE.md)
 cd build && uv run --python 3.13 --with pytest --with numpy --with polars --with pyyaml python -m pytest -q
