@@ -79,7 +79,7 @@ Same-name skills shadow lower-precedence ones. Symlinks are followed — keeping
 | `arguments` | Named positional args usable as `$name` in the body |
 | `allowed-tools` | Tools pre-approved for the turn the skill runs (clears next user message) |
 | `disallowed-tools` | Tools removed while the skill is active |
-| `model` / `effort` | Per-skill model and reasoning-effort override (respects `availableModels`) |
+| `model` / `effort` | Per-skill model and reasoning-effort override (respects `availableModels`). In auto mode, a skill `model` that auto mode does not support (Haiku) is ignored and the session model runs — observed on 2.1.219–2.1.281 ⚠ |
 | `context: fork` | Run the body in an isolated subagent instead of the main conversation |
 | `agent` | Which agent type executes a forked skill (default `general-purpose`) |
 | `background` | For forked skills: `false` blocks the turn for the result; `true` (default) runs in background ⚠ |
