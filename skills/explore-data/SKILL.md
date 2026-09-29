@@ -13,7 +13,6 @@ description: >
   null/duplicate/quality checks, schema inspection, scan_parquet, .describe(), value_counts,
   .null_count(), n_unique, or "is this column a key?".
 license: MIT
-model: haiku
 metadata:
   author: Lowell Mason
   version: "1.0"

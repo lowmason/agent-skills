@@ -28,6 +28,12 @@ ALLOWED_KEYS = {'name', 'description', 'license', 'allowed-tools', 'metadata',
 # an isolated subagent). Any other value is a typo that silently no-ops at
 # runtime, so it fails here instead — widen this set if the spec grows one.
 CONTEXT_VALUES = frozenset({'fork'})
+# A skill or command `model:` that auto mode cannot run: the bare `haiku` alias
+# or any claude-haiku-* model ID, matched whole and case-insensitively. Auto
+# mode drops such a model and the turn keeps the session model, so the pin
+# silently no-ops at runtime; it fails here instead. agents/*.md are not checked
+# — a subagent's Haiku pin does apply. See specs/completed/skill-model-pin-removal.md.
+AUTO_MODE_DROPPED_MODEL_RE = re.compile(r'haiku|claude-haiku-.+', re.IGNORECASE)
 # One number, two different reasons — which is why the two messages below name
 # different ones. For a SKILL.md it is the Agent Skills standard's cap
 # (agentskills.io; see specs/completed/audit_1_3_26.md, which also records that
@@ -49,6 +55,16 @@ READONLY_HEADING = '## Read-only contract'
 # which already excludes '#' from the captured group).
 LINK_RE = re.compile(r'\]\(([^)#\s]+)\)')
 TICK_PATH_RE = re.compile(r'`((?:references|scripts)/[A-Za-z0-9._/-]+)`')
+
+
+def _check_model_pin(md: Path, fm: dict) -> list[str]:
+    '''Fail a skill or command `model:` that auto mode drops (AUTO_MODE_DROPPED_MODEL_RE).'''
+    model = fm.get('model')
+    if model is None or not AUTO_MODE_DROPPED_MODEL_RE.fullmatch(str(model)):
+        return []
+    return [f'{md}: model {model!r} is inert: auto mode drops a Haiku skill or command '
+            'model and keeps the session model; put cheap work on a model-pinned '
+            'subagent instead (specs/completed/skill-model-pin-removal.md)']
 
 
 def check_skill(skill_dir: Path) -> list[str]:
@@ -79,6 +95,7 @@ def check_skill(skill_dir: Path) -> list[str]:
     ctx = fm.get('context')
     if ctx is not None and ctx not in CONTEXT_VALUES:
         errs.append(f'{sk}: context must be one of {sorted(CONTEXT_VALUES)}, got {ctx!r}')
+    errs += _check_model_pin(sk, fm)
     for key in fm:
         if key not in ALLOWED_KEYS:
             errs.append(f'{sk}: unknown frontmatter key {key!r}')
@@ -148,6 +165,7 @@ def check_command_file(md: Path) -> list[str]:
     # disables nothing) alike.
     if fm.get('disable-model-invocation') is not True:
         errs.append(f'{md}: disable-model-invocation must be the YAML boolean true')
+    errs += _check_model_pin(md, fm)
     return errs
 
 

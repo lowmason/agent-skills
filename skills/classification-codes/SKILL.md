@@ -14,7 +14,6 @@ description: >
   mean", "is code X still valid", "when is the next revision". Codes and titles come from
   data/, never from model memory.
 license: MIT
-model: haiku
 metadata:
   author: Lowell Mason
   version: "0.2"

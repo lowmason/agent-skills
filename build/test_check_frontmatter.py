@@ -165,9 +165,69 @@ def test_model_and_effort_keys_allowed(tmp_path):
     d = make_skill(
         tmp_path,
         'pinned-skill',
-        'name: pinned-skill\ndescription: Use when testing pins.\nmodel: haiku\neffort: xhigh',
+        'name: pinned-skill\ndescription: Use when testing pins.\nmodel: sonnet\neffort: xhigh',
     )
     assert check_skill(d) == []
+
+
+def test_haiku_model_on_a_skill_is_rejected(tmp_path):
+    # Auto mode drops a skill `model` it cannot run and keeps the session model,
+    # so the pin is inert (specs/completed/skill-model-pin-removal.md).
+    d = make_skill(
+        tmp_path,
+        'haiku-skill',
+        'name: haiku-skill\ndescription: Use when testing pins.\nmodel: haiku',
+    )
+    errs = check_skill(d)
+    assert len(errs) == 1, errs
+    msg = errs[0]
+    assert msg.startswith(f"{d / 'SKILL.md'}: model 'haiku' ")
+    assert 'auto mode drops a Haiku skill or command model and keeps the session model' in msg
+    assert 'model-pinned subagent' in msg
+    assert 'specs/completed/skill-model-pin-removal.md' in msg
+
+
+def test_haiku_model_id_on_a_skill_is_rejected(tmp_path):
+    d = make_skill(
+        tmp_path,
+        'haiku-id-skill',
+        'name: haiku-id-skill\ndescription: Use when testing pins.\nmodel: claude-haiku-4-5-20251001',
+    )
+    errs = check_skill(d)
+    assert len(errs) == 1 and 'auto mode drops' in errs[0], errs
+
+
+def test_haiku_model_on_a_command_is_rejected(tmp_path):
+    md = tmp_path / 'cheap-command.md'
+    md.write_text(
+        '---\ndescription: Does a thing.\ndisable-model-invocation: true\nmodel: haiku\n---\nbody\n'
+    )
+    errs = check_command_file(md)
+    assert len(errs) == 1 and 'auto mode drops' in errs[0], errs
+
+
+def test_haiku_model_match_ignores_case(tmp_path):
+    # The alias and the model-ID prefix are both compared case-insensitively.
+    for i, model in enumerate(['Haiku', 'CLAUDE-HAIKU-4-5-20251001']):
+        d = make_skill(
+            tmp_path,
+            f'case-{i}',
+            f'name: case-{i}\ndescription: Use when testing pins.\nmodel: {model}',
+        )
+        errs = check_skill(d)
+        assert len(errs) == 1 and 'auto mode drops' in errs[0], (model, errs)
+
+
+def test_models_auto_mode_can_run_stay_allowed(tmp_path):
+    # Only a model auto mode cannot run is rejected. This guard passes before the
+    # Haiku rule exists, too; it fails only if the rule matches too much.
+    for i, model in enumerate(['sonnet', 'opus', 'fable', 'claude-sonnet-5']):
+        d = make_skill(
+            tmp_path,
+            f'runnable-{i}',
+            f'name: runnable-{i}\ndescription: Use when testing pins.\nmodel: {model}',
+        )
+        assert check_skill(d) == [], model
 
 
 def test_context_fork_key_allowed(tmp_path):

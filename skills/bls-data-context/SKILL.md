@@ -14,7 +14,6 @@ description: >
   reconciling a payroll-provider or nowcast series to BLS. The detailed program facts that agents
   otherwise get subtly wrong.
 license: MIT
-model: haiku
 metadata:
   author: Lowell Mason
   version: "1.0"

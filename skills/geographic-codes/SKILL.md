@@ -14,7 +14,6 @@ description: >
   "which metro is Y in", "was this code valid in", delineation, county change, OMB bulletin,
   central / outlying county, commuting threshold.
 license: MIT
-model: haiku
 metadata:
   author: Lowell Mason
   version: "0.2"
