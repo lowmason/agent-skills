@@ -1,6 +1,6 @@
 # skill model-pin removal — Design Spec
 
-**Status: APPROVED (2026-09-28)** — design approved in a brainstorming pass opened by the
+**Status: COMPLETE (2026-09-28)** — implemented by plan 31 (`specs/plans/completed/31-skill-model-pin-removal.md`) and retired here. Design approved 2026-09-28 in a brainstorming pass opened by the
 2026-09-28 `/deferred` triage (disposition D1). Closes
 `specs/deferred_items.md` § `11-delegation-frontmatter-rollout` — the open "interactive
 verification" item (the live model/effort indicator check, 71 days old at triage).
