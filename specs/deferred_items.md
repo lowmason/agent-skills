@@ -100,7 +100,7 @@
       a new agent file + a README Agents-table row. → done in plan 17
       (`agents/explore.md`, lowercase filename with load-bearing `name: Explore`;
       shadowing probe-verified on 2.1.219)
-- [ ] Interactive verification (plan Task 5 Steps 3–4, deviation): confirm the live
+- [x] Interactive verification (plan Task 5 Steps 3–4, deviation): confirm the live
       model/effort indicator shows haiku/xhigh when the pinned skills load, and take a
       `/status` before/after cost reading on one exploration-heavy session. Could not
       run in the non-interactive execution flow; the enforceable lints/tests passed.
@@ -114,6 +114,12 @@
       / geographic-codes; `effort: xhigh` on bayesian-workflow / tune-hyperparameters).
       Owner-only — needs an interactive terminal — and still the backlog's whole aged
       tail, so the finishing-a-development-branch merge/PR gate stays bound.
+      → done in plan 31: superseded, not run. The 2026-09-28 transcript sweep answered
+      the question this check asked — 0 of 26 informative pinned-skill loads ran on
+      Haiku, because auto mode drops a Haiku skill model and keeps the session model.
+      Plan 31 removed the four pins and made build/check_frontmatter.py fail a Haiku
+      skill or command model; the two `effort: xhigh` pins stay (the spec's "Out of
+      scope"). See specs/completed/skill-model-pin-removal.md.
 - [x] Opt-ins decided against but available (one-line frontmatter adds if revisited):
       `effort: high` on `recommend-probabilistic-model`/`recommend-visualization`
       (no-op at the default `high`); `model: opus` on `bayesian-workflow` (would
@@ -1469,3 +1475,17 @@ declined as YAGNI (zero instances in a one-page wiki).
       `git log --format='%(refname)'`, `*(.)`, `(#i)readme*` and the read-only fd and
       process-substitution forms still pass. Revisit if: a hunter finds a mixed-reading
       line that mutates, or the guard is promoted from guardrail toward sandbox.
+
+## 31-skill-model-pin-removal — 2026-09-28
+- [ ] Watch the two `effort: xhigh` skill pins (`skills/bayesian-workflow/SKILL.md`,
+      `skills/tune-hyperparameters/SKILL.md`), which plan 31 kept (its spec's "Out of scope",
+      specs/completed/skill-model-pin-removal.md). Auto mode does not restrict effort, and
+      their rationale (effort composes with a Sonnet session) still holds, but the evidence
+      is split, one informative case each way: on 2.1.266 a load moved a max-effort session
+      to xhigh for the rest of the turn (a pin can lower effort as well as raise it), and on
+      2.1.281 a load left it at max. On the owner's default as of 2026-09-28 (Opus 5.5 with a
+      persisted `effortLevel: "xhigh"`) both pins are no-ops. Acting on it is a one-line
+      frontmatter edit per skill (drop or change its `effort:` line). Recorded at the plan-31
+      completion gate (the owner's call) so /deferred keeps seeing it after the spec retired.
+      Size: quick-fix. Revisit if: the session default moves off xhigh, or a skill turn is
+      seen running at a lower effort than its session because of a pin.

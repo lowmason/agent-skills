@@ -1,5 +1,7 @@
 # Skill Model-Pin Removal Implementation Plan
 
+**Status: COMPLETE (2026-09-28)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 >
 > **Execution mode chosen at the 2026-09-28 handoff: SUBAGENT-DRIVEN.** Use the
@@ -76,7 +78,7 @@ Auto mode drops a skill or command `model` it cannot run and keeps the session m
   - `_check_model_pin(md: Path, fm: dict) -> list[str]` — private; returns `[]`, or exactly one message beginning `f'{md}: model {model!r} is inert: '`.
   - The rule itself. Task 2's new `writing-skills` wording says "the lint fails a Haiku `model`", which is true only once this task has landed.
 
-- [ ] **Step 1: Record the baseline**
+- [x] **Step 1: Record the baseline**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-31-skill-model-pin-removal/build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_frontmatter.py | tail -1
@@ -86,7 +88,7 @@ cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-31-skill-model-pin
 
 Expected: the frontmatter suite reports only `passed` — write that count down, it is the baseline for Steps 3, 5 and 7; the build directory reports a `collected` total — the baseline for Step 8; the lint prints nothing and `exit=0`.
 
-- [ ] **Step 2: Write the failing tests**
+- [x] **Step 2: Write the failing tests**
 
 In `build/test_check_frontmatter.py`, replace exactly this function:
 
@@ -185,7 +187,7 @@ Coverage, spec clause → test:
 | R3: a skill with `model: sonnet` passes; Decision 3: `opus` and `fable` stay allowed | `test_models_auto_mode_can_run_stay_allowed` |
 | R3: the existing fixture moves from `haiku` to `sonnet` | `test_model_and_effort_keys_allowed` |
 
-- [ ] **Step 3: Run the tests to verify they fail**
+- [x] **Step 3: Run the tests to verify they fail**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-31-skill-model-pin-removal/build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_frontmatter.py
@@ -204,7 +206,7 @@ Read each failure. Every one must be `assert 0 == 1` with `where 0 = len([])` �
 
 Two tests pass here **by design**, and neither is vacuous: `test_models_auto_mode_can_run_stay_allowed` guards against a rule that matches too much, so it passes before and after the rule; `test_model_and_effort_keys_allowed` now uses `sonnet`.
 
-- [ ] **Step 4: Implement the rule (R2)**
+- [x] **Step 4: Implement the rule (R2)**
 
 In `build/check_frontmatter.py`, (a) directly after the line `CONTEXT_VALUES = frozenset({'fork'})`, add:
 
@@ -264,7 +266,7 @@ with:
 
 `check_agent_file` is not touched — that is the agent exemption.
 
-- [ ] **Step 5: Run the tests — the real repo must now go red**
+- [x] **Step 5: Run the tests — the real repo must now go red**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-31-skill-model-pin-removal/build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_frontmatter.py
@@ -295,7 +297,7 @@ Expected: exactly these four lines — each path prefixed by the absolute worktr
 
 Do not commit in this state.
 
-- [ ] **Step 6: Delete the four pins (R1)**
+- [x] **Step 6: Delete the four pins (R1)**
 
 First confirm each file carries exactly one pin:
 
@@ -322,7 +324,7 @@ metadata:
 
 Nothing else in these files changes: no skill body refers to its own model tier (R1).
 
-- [ ] **Step 7: Run every gate — green**
+- [x] **Step 7: Run every gate — green**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-31-skill-model-pin-removal/build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_frontmatter.py | tail -1
@@ -343,7 +345,7 @@ Expected, in order:
 - `check_snippets.py` Tier 1, `exit=0` (any `WARN` lines on stderr are advisory);
 - the dependency-drift check reports `1 passed` (every other test in the file is deselected).
 
-- [ ] **Step 8: Sync the build-directory counts in `CLAUDE.md`**
+- [x] **Step 8: Sync the build-directory counts in `CLAUDE.md`**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-31-skill-model-pin-removal/build && uv run --python 3.13 --with pytest --with numpy --with polars --with pyyaml python -m pytest -q --collect-only | tail -1
@@ -362,7 +364,13 @@ Leave unchanged: `62 runtime-support`, `7 of test_check_snippets.py's`, the `7 s
 
 Check the edit against your own runs, not against arithmetic alone: the new directory total equals the `collected` count you just saw; the new lacking-both pass count equals the `N passed` your full run just reported; and the `.scratch/`-present pass count + 7 equals the new directory total.
 
-- [ ] **Step 9: Commit**
+> Deviation: at the completion gate (2026-09-28) the owner had the final review's two
+> Minors fixed in `d5638ec`: a sixth test, `test_haiku_model_on_an_agent_is_allowed`, pins
+> the agent exemption with a synthetic fixture, and `check_frontmatter.py`'s docstring now
+> names the context and model checks. The suite grew by +6, not +5, so these six figures
+> now read 145 (three times), 83, 138 and 133.
+
+- [x] **Step 9: Commit**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-31-skill-model-pin-removal && git add build/check_frontmatter.py build/test_check_frontmatter.py skills/bls-data-context/SKILL.md skills/classification-codes/SKILL.md skills/explore-data/SKILL.md skills/geographic-codes/SKILL.md CLAUDE.md
@@ -385,7 +393,7 @@ git commit -m "fix(skills): remove the inert model: haiku pins and fail them in 
 
 **REQUIRED SKILL:** writing-skills — this is an edit to a skill. Per spec R4 it is reference content, so the wording micro-test does not apply; the gates in Step 5 do. Do not touch the skill's `description:`.
 
-- [ ] **Step 1: Confirm the provenance claim**
+- [x] **Step 1: Confirm the provenance claim**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-31-skill-model-pin-removal && git log --format='%h %ad %s' --date=short -S 'the two delegation keys' -- skills/writing-skills/SKILL.md
@@ -395,7 +403,7 @@ cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-31-skill-model-pin
 
 Expected: `5572236 2026-07-20 docs(writing-skills): scope the 1024-char cap to description (C6)`; then `9a8575c 2026-09-04 feat(tech-debt): run the audit forked in an isolated subagent`; then `0`. Both are local additions that left `NOTICE` alone, so this edit leaves it alone too. If either log names a different commit, stop and ask: the line's provenance is not what the spec recorded.
 
-- [ ] **Step 2: Capture the before-state**
+- [x] **Step 2: Capture the before-state**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-31-skill-model-pin-removal && grep -c 'silently dropped' skills/writing-skills/SKILL.md; grep -c 'observed on 2.1.219' specs/claude-code-customization-guide.md
@@ -403,7 +411,7 @@ cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-31-skill-model-pin
 
 Expected: `0` and `0`.
 
-- [ ] **Step 3: Correct `writing-skills`**
+- [x] **Step 3: Correct `writing-skills`**
 
 In `skills/writing-skills/SKILL.md`, replace exactly this text (it occurs once, in line 103):
 
@@ -419,7 +427,7 @@ with exactly this text:
 
 The rest of the line — the `context` clause and "Any other key fails `build/check_frontmatter.py`." — is unchanged.
 
-- [ ] **Step 4: Correct the customization guide**
+- [x] **Step 4: Correct the customization guide**
 
 In `specs/claude-code-customization-guide.md`, replace exactly this row:
 
@@ -435,7 +443,7 @@ with exactly this row:
 
 The guide's header defines ⚠ as "most version-sensitive — confirm against your installed version", which is why the observed version range rides with it. The new text contains no `|`, so the row stays two cells. The subagent table further down (its own `model` row lists `haiku` as a value) is correct — subagent pins work — and is not touched.
 
-- [ ] **Step 5: Gate**
+- [x] **Step 5: Gate**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-31-skill-model-pin-removal && grep -c 'silently dropped' skills/writing-skills/SKILL.md; grep -c 'observed on 2.1.219' specs/claude-code-customization-guide.md
@@ -448,7 +456,7 @@ cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-31-skill-model-pin
 
 Expected: `1` and `1`; `3` (the row keeps exactly three pipes, i.e. two cells); then `exit=0` three times; then `1 passed`. The new wording names no other skill, no skill's section, and no `references/` or `scripts/` path, so the drift check and the lint's path check have nothing new to match.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-31-skill-model-pin-removal && git add skills/writing-skills/SKILL.md specs/claude-code-customization-guide.md
