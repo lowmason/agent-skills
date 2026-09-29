@@ -1,6 +1,10 @@
 # Skill Model-Pin Removal Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
+>
+> **Execution mode chosen at the 2026-09-28 handoff: SUBAGENT-DRIVEN.** Use the
+> **subagent-driven-development** skill: a fresh implementer per task, the task review
+> between tasks, and the final whole-branch review. Do not re-ask the execution mode.
 
 > **Where this runs.** This plan exists only on branch `fix/skill-model-pin-removal`
 > (cut from `main` at `d49c9fa`; not pushed), checked out in the worktree
@@ -24,6 +28,7 @@ Every task's requirements implicitly include this section.
 
 - **The rejected set (R2):** a `SKILL.md` (`check_skill`) or a `commands/*.md` (`check_command_file`) whose `model:` is `haiku` or any `claude-haiku-*` model ID, compared case-insensitively. `agents/*.md` are not checked by this rule — subagent Haiku pins work, and `agents/explore.md` and `agents/test-runner.md` carry `model: haiku` and must stay clean.
 - **What stays allowed (Decision 3):** `model: opus`, `sonnet` and `fable`, and every other value outside the rejected set.
+- **Owner-approved tests beyond R3's list (2026-09-28 handoff):** `test_haiku_model_match_ignores_case` (R2's case-insensitivity, which no R3 bullet tests) and `test_models_auto_mode_can_run_stay_allowed` (Decision 3) are kept. The suite grows by +5, not the +4 R3's bullets alone would give. Reviewers: this is approved scope, not scope creep.
 - **The message (R2)** states that auto mode drops a Haiku skill or command model and keeps the session model, says to put cheap work on a model-pinned subagent instead, and names the spec as `specs/completed/skill-model-pin-removal.md`. That is where the completion protocol moves the spec on this same branch, so the path is right from the merge on; `hooks/readonly-agent-guard.py:12` cited its own spec at the `completed/` path from its first commit (`3a799f4`) the same way. Do not "fix" it to `specs/…` during execution.
 - **The constant (R2)** is a module constant beside `CONTEXT_VALUES`, with a comment giving the same "silently no-ops at runtime" rationale.
 - **R4's `writing-skills` edit is reference content:** no behavioural micro-test (spec R4; the writing-skills checklist marks the wording micro-test "N/A for pure reference skills"). Line 103 is a local addition — `5572236` (plan 12's C6) wrote it and `9a8575c` added its `context` clause — not superpowers text, and neither commit touched `NOTICE`. `NOTICE` is unaffected.
