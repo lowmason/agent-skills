@@ -2,6 +2,7 @@
 import argparse
 import math
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -11,12 +12,66 @@ from pathlib import Path
 from fences import iter_code_blocks
 
 
+OUTER_FENCE_OPEN_RE = re.compile(
+    r'^(?P<indent> {0,3})(?P<delimiter>`{3,}|~{3,})(?P<info>.*)$'
+)
+OUTER_FENCE_CLOSE_RE = re.compile(r'^ {0,3}(?P<delimiter>`{3,}|~{3,})[ \t]*$')
+
+
 @dataclass(frozen=True)
 class Example:
     path: Path
     line: int
     identifier: str
     code: str
+
+
+def _supported_outer_fences(
+    text: str, parsed_closing_lines: dict[int, int],
+) -> tuple[set[int], list[int]]:
+    '''Validate outer fence boundaries without extending the shared extractor.
+
+    Markers in a non-Python template's body are literal text.
+    '''
+    supported_lines: set[int] = set()
+    unsupported_lines: list[int] = []
+    opening: re.Match[str] | None = None
+    opening_line = 0
+    marked = False
+    for line_number, line in enumerate(text.splitlines(), start=1):
+        if opening is None:
+            opening = OUTER_FENCE_OPEN_RE.match(line)
+            if opening is None:
+                continue
+            delimiter = opening.group('delimiter')
+            info = opening.group('info')
+            if delimiter[0] == '`' and '`' in info:
+                opening = None
+                continue
+            opening_line = line_number
+            parts = info.split()
+            marked = len(parts) > 1 and parts[1] == 'cpu-example'
+            continue
+        closing = OUTER_FENCE_CLOSE_RE.match(line)
+        if closing is None:
+            continue
+        delimiter = opening.group('delimiter')
+        closing_delimiter = closing.group('delimiter')
+        if closing_delimiter[0] != delimiter[0] or len(closing_delimiter) < len(delimiter):
+            continue
+        is_supported = (
+            opening.group('indent') == ''
+            and delimiter[0] == '`'
+            and parsed_closing_lines.get(opening_line) == line_number
+        )
+        if is_supported:
+            supported_lines.add(opening_line)
+        elif marked:
+            unsupported_lines.append(opening_line)
+        opening = None
+    if opening is not None and marked:
+        unsupported_lines.append(opening_line)
+    return supported_lines, unsupported_lines
 
 
 def collect_examples(paths: list[Path]) -> tuple[list[Example], list[str]]:
@@ -37,8 +92,23 @@ def collect_examples(paths: list[Path]) -> tuple[list[Example], list[str]]:
             continue
         selected = 0
         for path in files:
-            blocks = iter_code_blocks(path.read_text())
+            text = path.read_text()
+            blocks = iter_code_blocks(text)
+            parsed_closing_lines = {
+                block.line: block.line + block.code.count('\n') + 1
+                for block in blocks
+            }
+            supported_lines, unsupported_lines = _supported_outer_fences(
+                text, parsed_closing_lines,
+            )
+            errors.extend(
+                f'{path}:{line}: unsupported cpu-example fence; '
+                'use an unindented python/py backtick opener and a matching closer'
+                for line in unsupported_lines
+            )
             for block in blocks:
+                if block.line not in supported_lines:
+                    continue
                 parts = block.info.split()
                 marker = parts[0] if parts else ''
                 location = f'{path}:{block.line}'

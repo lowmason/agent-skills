@@ -1,6 +1,8 @@
 from pathlib import Path
 
-from check_jax_examples import collect_examples, run_example
+import pytest
+
+from check_jax_examples import collect_examples, main, run_example
 
 
 def write_example(tmp_path: Path, code: str, info: str = 'cpu-example probe') -> Path:
@@ -82,3 +84,62 @@ def test_explicit_nonrun_reason_is_allowed_but_not_counted(tmp_path):
     examples, errors = collect_examples([path])
     assert errors == []
     assert len(examples) == 1
+
+
+@pytest.mark.parametrize(('opener', 'closer'), [
+    (' ```python', ' ```\n'),
+    ('  ```python', '  ```\n'),
+    ('   ```python', '   ```\n'),
+    ('~~~python', '~~~\n'),
+    ('```python', ''),
+], ids=['one-space', 'two-spaces', 'three-spaces', 'tilde', 'EOF-ended'])
+def test_rejects_unsupported_marked_fence_in_mixed_document(
+    tmp_path, capsys, opener, closer,
+):
+    path = write_example(tmp_path, 'assert True')
+    with path.open('a') as handle:
+        handle.write(f'{opener} cpu-example omitted\n')
+        handle.write("raise AssertionError('omitted block')\n")
+        handle.write(closer)
+    examples, errors = collect_examples([path])
+    assert main([str(path)]) == 1
+    assert [example.identifier for example in examples] == ['probe']
+    assert any(error.startswith(f'{path}:4: unsupported cpu-example fence')
+               for error in errors)
+    assert 'executed 0 (scope errors)' in capsys.readouterr().out
+
+
+@pytest.mark.parametrize(('opener', 'closer'), [
+    ('````', '````'),
+    ('  ````', '  ````'),
+    ('~~~', '~~~'),
+    ('~~~~', '~~~~'),
+], ids=['backtick-template', 'indented-template', 'tilde-template', 'long-tilde-template'])
+def test_literal_marked_fence_inside_outer_template_is_not_selected(
+    tmp_path, capsys, opener, closer,
+):
+    path = write_example(tmp_path, 'assert True')
+    with path.open('a') as handle:
+        handle.write(f'{opener}markdown\n')
+        handle.write('```python cpu-example literal\n')
+        handle.write("raise AssertionError('literal template content')\n")
+        handle.write('```\n')
+        handle.write(f'{closer}\n')
+    examples, errors = collect_examples([path])
+    assert main([str(path)]) == 0
+    assert errors == []
+    assert [example.identifier for example in examples] == ['probe']
+    assert 'Selected/executed 1 CPU examples; passed 1.' in capsys.readouterr().out
+
+
+def test_rejects_marked_fence_closed_early_by_shared_parser(tmp_path, capsys):
+    path = write_example(tmp_path, 'assert True')
+    with path.open('a') as handle:
+        handle.write('```python cpu-example omitted\nassert True\n    ```\n')
+        handle.write("raise AssertionError('omitted body')\n```\n")
+    examples, errors = collect_examples([path])
+    assert main([str(path)]) == 1
+    assert [example.identifier for example in examples] == ['probe']
+    assert any(error.startswith(f'{path}:4: unsupported cpu-example fence')
+               for error in errors)
+    assert 'executed 0 (scope errors)' in capsys.readouterr().out
