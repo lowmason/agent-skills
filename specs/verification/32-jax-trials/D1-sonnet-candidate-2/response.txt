@@ -1,0 +1,414 @@
+No file-write tool is available in this session, which matches the task framing — this is inline code-generation, so I'll deliver the complete, final code directly in this response.
+
+`★ Insight ─────────────────────────────────────`
+Three design decisions shape this implementation, each resolving a specific failure mode the skill's reference material calls out explicitly:
+1. **Masks come from integer lengths, never from waveform values.** A sine legitimately crosses zero, so `waves != 0` would silently misclassify real observations as padding. `jnp.arange(max_len - 2) < lengths[:, None] - 2` is the only mask source.
+2. **The data cursor is `(epoch, batch_index)`, not a saved permutation array.** `jax.random.permutation(jax.random.fold_in(order_key, epoch), n)` regenerates the exact shuffle from two integers, so recovery doesn't need to checkpoint shuffled indices.
+3. **Dropout's PRNG key is the only state that must survive a checkpoint/restore cycle bit-for-bit** — everything else (data, shuffling) is reconstructible from config. This is what gives the recovery parity check real teeth instead of checking a deterministic no-op.
+`─────────────────────────────────────────────────`
+
+```python
+"""Two-lag MLP that predicts the next sample in variable-length sine sequences.
+
+Train/validation/test split, masked pooled-timestep loss (with an equal-
+trajectory alternative), and a resumable Orbax checkpoint. CPU-only, synthetic
+data, no accelerator or distributed-training assumptions.
+"""
+
+import json
+import tempfile
+from pathlib import Path
+
+import jax
+import jax.numpy as jnp
+import numpy as np
+import optax
+import orbax.checkpoint as ocp
+from flax import nnx
+
+CONFIG = {
+    'seed': sum(map(ord, 'sine-next-sample-v1')),
+    'max_len': 16,
+    'min_len': 3,
+    'num_train_sequences': 64,
+    'num_validation_sequences': 32,
+    'batch_size': 16,
+    'frequency': 0.25,
+    'width': 32,
+    'dropout_rate': 0.1,
+    'learning_rate': 0.02,
+    'final_learning_rate': 0.002,
+    'transition_steps': 200,
+    'epochs': 20,
+    'weighting': 'pooled_timestep',  # or 'equal_trajectory'
+    'rng_impl': 'threefry2x32',
+    'dtype': 'float32',
+    'data_tag': 'synthetic-sine-variable-length-v1',
+}
+
+
+# ---------------------------------------------------------------------------
+# Loss contract: eligible-unit reductions, with a hand-checked fixture.
+# ---------------------------------------------------------------------------
+
+def require_units(mask):
+    if not np.asarray(mask).any():
+        raise ValueError('batch has no eligible targets')
+
+
+def pooled_timestep_mean(errors, mask):
+    return jnp.where(mask, errors, 0.0).sum() / mask.sum()
+
+
+def equal_trajectory_mean(errors, mask):
+    counts = mask.sum(axis=-1)
+    per_sequence = jnp.where(mask, errors, 0.0).sum(axis=-1) / counts
+    return per_sequence.mean()
+
+
+WEIGHTING_FNS = {
+    'pooled_timestep': pooled_timestep_mean,
+    'equal_trajectory': equal_trajectory_mean,
+}
+
+
+def check_loss_contract():
+    hand_losses = jnp.array([[1.0, 100.0, 100.0], [3.0, 5.0, 100.0]])
+    hand_mask = jnp.array([[True, False, False], [True, True, False]])
+    np.testing.assert_allclose(pooled_timestep_mean(hand_losses, hand_mask), 3.0)
+    np.testing.assert_allclose(equal_trajectory_mean(hand_losses, hand_mask), 2.5)
+    changed_padding = jnp.where(hand_mask, hand_losses, -999.0)
+    np.testing.assert_allclose(pooled_timestep_mean(changed_padding, hand_mask), 3.0)
+    try:
+        require_units(jnp.zeros_like(hand_mask))
+    except ValueError:
+        pass
+    else:
+        raise AssertionError('empty eligible batch was accepted')
+
+
+# ---------------------------------------------------------------------------
+# Data: two causal lags predict the next sample. Every row has >= 1 eligible
+# target because min_len == 3 (length - 2 >= 1), so no batch is ever empty.
+# ---------------------------------------------------------------------------
+
+def generate_dataset(key, num_sequences, config):
+    length_key, phase_key = jax.random.split(key)
+    max_len = config['max_len']
+    lengths = jax.random.randint(length_key, (num_sequences,), config['min_len'], max_len + 1)
+    time = jnp.arange(max_len, dtype=jnp.float32)[None, :]
+    phase = jax.random.uniform(phase_key, (num_sequences, 1), maxval=2 * jnp.pi)
+    waves = jnp.sin(phase + config['frequency'] * time)
+    waves = jnp.where(time < lengths[:, None], waves, 0.0)
+    features = jnp.stack((waves[:, :-2], waves[:, 1:-1]), axis=-1)
+    targets = waves[:, 2:]
+    mask = jnp.arange(max_len - 2)[None, :] < lengths[:, None] - 2
+    require_units(mask)
+    assert features.shape == (num_sequences, max_len - 2, 2)
+    assert targets.shape == mask.shape
+    assert np.isfinite(np.asarray(features)).all()
+    assert np.isfinite(np.asarray(targets)).all()
+    return {'features': features, 'targets': targets, 'mask': mask, 'lengths': lengths}
+
+
+def persistence_baseline(dataset, weighting_fn):
+    predictions = dataset['features'][..., 1]
+    errors = jnp.square(predictions - dataset['targets'])
+    return float(weighting_fn(errors, dataset['mask']))
+
+
+def batch_indices(order_key, epoch, batch_index, batch_size, num_sequences):
+    permutation = jax.random.permutation(jax.random.fold_in(order_key, epoch), num_sequences)
+    start = batch_index * batch_size
+    return permutation[start:start + batch_size]
+
+
+def gather_batch(dataset, indices):
+    return {key: value[indices] for key, value in dataset.items()
+            if key in ('features', 'targets', 'mask')}
+
+
+# ---------------------------------------------------------------------------
+# Model
+# ---------------------------------------------------------------------------
+
+class LagForecaster(nnx.Module):
+    def __init__(self, config, rngs):
+        self.hidden = nnx.Linear(2, config['width'], rngs=rngs)
+        self.dropout = nnx.Dropout(rate=config['dropout_rate'])
+        self.output = nnx.Linear(config['width'], 1, rngs=rngs)
+
+    def __call__(self, features, dropout_key):
+        hidden = jnp.tanh(self.hidden(features))
+        hidden = self.dropout(hidden, rngs=dropout_key)
+        return self.output(hidden)[..., 0]
+
+
+def objective(model, batch, dropout_key, weighting_fn):
+    predictions = model(batch['features'], dropout_key)
+    errors = jnp.square(predictions - batch['targets'])
+    return weighting_fn(errors, batch['mask'])
+
+
+def make_train_step(weighting_fn):
+    @nnx.jit
+    def train_step(model, optimizer, batch, dropout_key):
+        def loss_fn(model):
+            return objective(model, batch, dropout_key, weighting_fn)
+
+        loss, grads = nnx.value_and_grad(loss_fn)(model)
+        finite = jnp.isfinite(loss)
+        for leaf in jax.tree.leaves(grads):
+            finite = finite & jnp.isfinite(leaf).all()
+        optimizer.update(model, grads)
+        return loss, finite
+
+    return train_step
+
+
+def make_training(config, init_seed):
+    model = LagForecaster(config, nnx.Rngs(params=init_seed))
+    schedule = optax.linear_schedule(config['learning_rate'], config['final_learning_rate'],
+                                     config['transition_steps'])
+    optimizer = nnx.Optimizer(model, optax.adam(schedule), wrt=nnx.Param)
+    return model, optimizer, schedule
+
+
+# ---------------------------------------------------------------------------
+# Tiny fixed-fixture learnability check (correctness slot, not the deliverable
+# run): two-lag sine model on four fixed-length trajectories, as in the skill's
+# canonical sequence example.
+# ---------------------------------------------------------------------------
+
+def check_tiny_fixture_learns(config):
+    weighting_fn = WEIGHTING_FNS[config['weighting']]
+    lengths = jnp.array([5, 7, 9, 12], dtype=jnp.int32)
+
+    def fixed_dataset(seed_key):
+        time = jnp.arange(12, dtype=jnp.float32)[None, :]
+        phase = jax.random.uniform(seed_key, (4, 1), maxval=2 * jnp.pi)
+        waves = jnp.sin(phase + 0.25 * time)
+        waves = jnp.where(time < lengths[:, None], waves, 0.0)
+        features = jnp.stack((waves[:, :-2], waves[:, 1:-1]), axis=-1)
+        targets = waves[:, 2:]
+        mask = jnp.arange(10)[None, :] < lengths[:, None] - 2
+        require_units(mask)
+        return {'features': features, 'targets': targets, 'mask': mask}
+
+    train_key, validation_key, model_key = jax.random.split(jax.random.key(config['seed'] + 5), 3)
+    training = fixed_dataset(train_key)
+    validation = fixed_dataset(validation_key)
+    assert int(training['mask'].sum()) == 25
+
+    tiny_config = dict(config, width=16, dropout_rate=0.0)
+    model, optimizer, _ = make_training(tiny_config, model_key)
+    train_step = make_train_step(weighting_fn)
+    zero_key = jax.random.key(0)
+
+    model.train()
+    initial = float(objective(model, training, zero_key, weighting_fn))
+    for _ in range(150):
+        loss, finite = train_step(model, optimizer, training, zero_key)
+        assert bool(finite), 'nonfinite loss or gradient'
+    final = float(objective(model, training, zero_key, weighting_fn))
+    assert final < 0.2 * initial, (initial, final)
+    assert int(optimizer.step[...]) == 150
+
+    model.eval()
+    validation_loss = float(objective(model, validation, zero_key, weighting_fn))
+    assert np.isfinite(validation_loss)
+    np.testing.assert_array_equal(model(validation['features'], zero_key),
+                                   model(validation['features'], zero_key))
+    changed_targets = jnp.where(training['mask'], training['targets'], 999.0)
+    np.testing.assert_allclose(
+        objective(model, training, zero_key, weighting_fn),
+        objective(model, {**training, 'targets': changed_targets}, zero_key, weighting_fn))
+    print(f'tiny fixture: train {initial:.6f} -> {final:.6f}; validation {validation_loss:.6f}')
+
+
+# ---------------------------------------------------------------------------
+# Checkpoint / recovery contract: dynamic model + optimizer state, the RNG key
+# driving dropout, and the (epoch, batch_index) cursor. The dataset itself is
+# not checkpointed -- it is a deterministic function of config['seed'].
+# ---------------------------------------------------------------------------
+
+def snapshot(model, optimizer, key, epoch, batch_index):
+    return {
+        'model': nnx.state(model).to_pure_dict(),
+        'optimizer': nnx.state(optimizer).to_pure_dict(),
+        'key_data': jax.random.key_data(key),
+        'epoch': jnp.array(epoch, dtype=jnp.int32),
+        'batch_index': jnp.array(batch_index, dtype=jnp.int32),
+    }
+
+
+def restore_nnx(obj, pure_state):
+    state = nnx.state(obj)
+    state.replace_by_pure_dict(pure_state)
+    nnx.update(obj, state)
+
+
+def assert_same_tree(left, right):
+    assert jax.tree.structure(left) == jax.tree.structure(right)
+    for before, after in zip(jax.tree.leaves(left), jax.tree.leaves(right)):
+        if np.issubdtype(np.asarray(before).dtype, np.inexact):
+            np.testing.assert_allclose(before, after, rtol=1e-6, atol=1e-6)
+        else:
+            np.testing.assert_array_equal(before, after)
+
+
+def save_checkpoint(root, model, optimizer, key, epoch, batch_index, config):
+    root = Path(root).resolve()
+    root.mkdir(parents=True, exist_ok=True)
+    (root / 'config.json').write_text(json.dumps(config, sort_keys=True))
+    with ocp.StandardCheckpointer() as checkpointer:
+        checkpointer.save(root / 'state', snapshot(model, optimizer, key, epoch, batch_index))
+        checkpointer.wait_until_finished()
+
+
+def load_checkpoint(root, init_seed):
+    root = Path(root).resolve()
+    loaded_config = json.loads((root / 'config.json').read_text())
+    model, optimizer, schedule = make_training(loaded_config, init_seed)
+    target = snapshot(model, optimizer, jax.random.key(0, impl=loaded_config['rng_impl']), 0, 0)
+    with ocp.StandardCheckpointer() as checkpointer:
+        loaded = checkpointer.restore(root / 'state', target=target)
+    restore_nnx(model, loaded['model'])
+    restore_nnx(optimizer, loaded['optimizer'])
+    key = jax.random.wrap_key_data(loaded['key_data'], impl=loaded_config['rng_impl'])
+    epoch = int(loaded['epoch'])
+    batch_index = int(loaded['batch_index'])
+    return model, optimizer, schedule, key, epoch, batch_index, loaded_config
+
+
+def checkpoint_exists(root):
+    return (Path(root) / 'config.json').exists()
+
+
+# ---------------------------------------------------------------------------
+# Recovery parity check (correctness slot): run 3 epochs, checkpoint, restore
+# into a model/optimizer built from a *different* init seed, advance one more
+# batch on both, and require identical loss/parameters/optimizer/schedule/RNG.
+# This is the thing that proves recovery, not just storage round-trip.
+# ---------------------------------------------------------------------------
+
+def check_recovery_parity(config):
+    weighting_fn = WEIGHTING_FNS[config['weighting']]
+    train_step = make_train_step(weighting_fn)
+    seed = config['seed'] + 100
+
+    data_key = jax.random.key(seed)
+    dataset = generate_dataset(data_key, config['num_train_sequences'], config)
+    order_key = jax.random.key(seed + 1)
+    num_batches = config['num_train_sequences'] // config['batch_size']
+
+    def advance(model, optimizer, key, epoch, batch_index):
+        key, dropout_key = jax.random.split(key)
+        indices = batch_indices(order_key, epoch, batch_index, config['batch_size'],
+                                config['num_train_sequences'])
+        loss, finite = train_step(model, optimizer, gather_batch(dataset, indices), dropout_key)
+        assert bool(finite)
+        return float(loss), key
+
+    model, optimizer, schedule = make_training(config, seed + 2)
+    model.train()
+    key = jax.random.key(seed + 3, impl=config['rng_impl'])
+    for epoch in range(3):
+        for batch_index in range(num_batches):
+            _, key = advance(model, optimizer, key, epoch, batch_index)
+
+    saved = snapshot(model, optimizer, key, 3, 0)
+    with tempfile.TemporaryDirectory(prefix='sine-resume-') as directory:
+        save_checkpoint(directory, model, optimizer, key, 3, 0, config)
+        (restored_model, restored_optimizer, restored_schedule,
+         restored_key, restored_epoch, restored_batch_index,
+         loaded_config) = load_checkpoint(directory, seed + 999)
+
+        assert_same_tree(saved, snapshot(restored_model, restored_optimizer,
+                                         restored_key, restored_epoch, restored_batch_index))
+        assert restored_epoch == 3 and restored_batch_index == 0
+        np.testing.assert_allclose(schedule(optimizer.step[...]),
+                                   restored_schedule(restored_optimizer.step[...]))
+
+        next_loss, next_key = advance(model, optimizer, key, 3, 0)
+        resumed_loss, resumed_key = advance(restored_model, restored_optimizer,
+                                            restored_key, restored_epoch, restored_batch_index)
+
+        np.testing.assert_allclose(next_loss, resumed_loss, rtol=1e-6, atol=1e-6)
+        assert_same_tree(snapshot(model, optimizer, next_key, 3, 1),
+                         snapshot(restored_model, restored_optimizer, resumed_key, 3, 1))
+        assert int(optimizer.step[...]) == int(restored_optimizer.step[...])
+        np.testing.assert_allclose(schedule(optimizer.step[...]),
+                                   restored_schedule(restored_optimizer.step[...]))
+        assert not np.array_equal(jax.random.key_data(key), jax.random.key_data(next_key))
+    print('recovery: next loss, model, Adam/schedule, step, RNG and cursor agree')
+
+
+# ---------------------------------------------------------------------------
+# Practical train/validate/checkpoint entry point.
+# ---------------------------------------------------------------------------
+
+def train_with_checkpointing(config, checkpoint_dir, total_epochs, checkpoint_every=5):
+    weighting_fn = WEIGHTING_FNS[config['weighting']]
+    train_step = make_train_step(weighting_fn)
+    num_batches = config['num_train_sequences'] // config['batch_size']
+    eval_key = jax.random.key(0)
+
+    train_data_key = jax.random.key(config['seed'])
+    validation_data_key = jax.random.key(config['seed'] + 1)
+    train_dataset = generate_dataset(train_data_key, config['num_train_sequences'], config)
+    validation_dataset = generate_dataset(validation_data_key,
+                                          config['num_validation_sequences'], config)
+    baseline = persistence_baseline(validation_dataset, weighting_fn)
+    order_key = jax.random.key(config['seed'] + 2)
+
+    if checkpoint_exists(checkpoint_dir):
+        model, optimizer, schedule, key, start_epoch, _, _ = load_checkpoint(
+            checkpoint_dir, config['seed'] + 3)
+        print(f'resumed from checkpoint at epoch {start_epoch}')
+    else:
+        model, optimizer, schedule = make_training(config, config['seed'] + 3)
+        key = jax.random.key(config['seed'] + 4, impl=config['rng_impl'])
+        start_epoch = 0
+
+    model.train()
+    for epoch in range(start_epoch, total_epochs):
+        for batch_index in range(num_batches):
+            indices = batch_indices(order_key, epoch, batch_index, config['batch_size'],
+                                    config['num_train_sequences'])
+            key, dropout_key = jax.random.split(key)
+            loss, finite = train_step(model, optimizer, gather_batch(train_dataset, indices),
+                                      dropout_key)
+            assert bool(finite), 'nonfinite loss or gradient'
+
+        model.eval()
+        train_loss = float(objective(model, train_dataset, eval_key, weighting_fn))
+        validation_loss = float(objective(model, validation_dataset, eval_key, weighting_fn))
+        model.train()
+        print(f'epoch {epoch:02d} train={train_loss:.6f} validation={validation_loss:.6f} '
+              f'persistence_baseline={baseline:.6f}')
+
+        if (epoch + 1) % checkpoint_every == 0 or epoch + 1 == total_epochs:
+            save_checkpoint(checkpoint_dir, model, optimizer, key, epoch + 1, 0, config)
+
+    return model, optimizer
+
+
+if __name__ == '__main__':
+    check_loss_contract()
+    check_tiny_fixture_learns(CONFIG)
+    check_recovery_parity(CONFIG)
+
+    with tempfile.TemporaryDirectory(prefix='sine-checkpoints-') as checkpoint_dir:
+        train_with_checkpointing(CONFIG, checkpoint_dir, total_epochs=10, checkpoint_every=5)
+        train_with_checkpointing(CONFIG, checkpoint_dir, total_epochs=CONFIG['epochs'],
+                                 checkpoint_every=5)
+```
+
+`★ Insight ─────────────────────────────────────`
+The parity check in `check_recovery_parity` is the part that actually proves "resume works," not just "save/restore round-trips." Equality of the restored state *before* any further training only checks that bytes went to disk and came back — it would pass even if the optimizer's schedule position were silently wrong, because a freshly-restored optimizer hasn't been asked to produce a learning rate yet. The test instead restores into a model built from a **different** init seed (`seed + 999`), runs one more real training step on both the original and the restored copy, and requires the losses, gradients-derived parameters, Adam moments, and the RNG-driven dropout mask to all agree. That's the only way a schedule-position bug or an RNG-reseeding bug would actually surface.
+
+`WEIGHTING_FNS` gives you a genuine, already-implemented modeling choice rather than a placeholder: `pooled_timestep` weights every observed timestep equally (a sequence of length 12 contributes 10x more to the loss than one of length 3), while `equal_trajectory` weights every sequence equally regardless of length. On the hand-checked fixture these disagree (3.0 vs 2.5) — with real variable-length data they can push training in different directions, e.g. pooled timestep biases the fit toward long sequences. Flip `CONFIG['weighting']` to try the other.
+`─────────────────────────────────────────────────`
+
+**Remaining uncertainty, stated plainly:** nothing in this response was executed — this session has no file-write or shell tool, so delivery is the code itself, not a verified run. The implementation targets the pinned profile from `frameworks.md` (JAX/JAXlib 0.11.2, Flax 0.12.10, Optax 0.2.8, Orbax checkpoint 0.12.6); if your environment differs, re-run the three check functions (`check_loss_contract`, `check_tiny_fixture_learns`, `check_recovery_parity`) first and treat a failure there as an API-surface mismatch before trusting the full training run. One specific unverified assumption: `model.eval()` is expected to make `nnx.Dropout` ignore the `dropout_key` argument via its `deterministic` flag — none of the skill's reference examples exercise a dropout-bearing module in eval mode, so this is inference from the Flax NNX contract, not something checked in this session.

@@ -1,0 +1,110 @@
+Here's a minimal JAX model on 3D point sets with a rotation-invariant scalar output and a rotation-equivariant vector output, built on the `e3nn-jax` + Equinox path (the documented native route for symmetry-constrained models rather than hand-rolling the group algebra).
+
+`★ Insight ─────────────────────────────────────`
+The key design move is typing quantities by their representation, not just their shape. A length-3 array isn't automatically "a vector" in the symmetry sense — it's only equivariant if every operation applied to it commutes with rotation. Relative position is a *polar vector* (irrep `1o`: odd parity, degree 1), while a squared norm is an *even scalar* (`0e`). e3nn-jax's `IrrepsArray` tags data with this type so the library can reject or structure operations that would break it.
+`─────────────────────────────────────────────────`
+
+```python
+import e3nn_jax as e3nn
+import equinox as eqx
+import jax
+import jax.numpy as jnp
+import numpy as np
+
+SEED = 0
+
+
+class PointModel(eqx.Module):
+    vector_layer: e3nn.equinox.Linear
+    radial_scale: jax.Array
+    scalar_bias: jax.Array
+
+    def __init__(self, key):
+        # Linear(1o -> 1o) only admits a single learnable scalar weight:
+        # Schur's lemma forbids any other linear map between copies of the
+        # same irrep, so this layer cannot smuggle in a rotation-breaking op.
+        self.vector_layer = e3nn.equinox.Linear(
+            irreps_in=e3nn.Irreps('1o'), irreps_out=e3nn.Irreps('1o'), key=key)
+        self.radial_scale = jnp.array(0.4, dtype=jnp.float32)
+        self.scalar_bias = jnp.array(0.1, dtype=jnp.float32)
+
+    def __call__(self, points):
+        # squared norm is rotation-invariant: ||Rp||^2 = ||p||^2
+        radius_squared = jnp.square(points).sum(axis=-1)
+        weights = jax.nn.sigmoid(self.radial_scale * radius_squared)
+
+        # scaling a 1o vector by an invariant scalar preserves equivariance:
+        # R(w*p) = w*(Rp)
+        vectors = e3nn.IrrepsArray('1o', points * weights[:, None])
+        transformed = self.vector_layer(vectors)
+        assert transformed.irreps == e3nn.Irreps('1o')
+
+        scalar = self.scalar_bias + self.radial_scale * radius_squared.sum()
+        vector = transformed.array.sum(axis=0)  # sum over points: permutation-invariant
+        return scalar, vector
+
+
+def rotation(axis, angle):
+    c, s = jnp.cos(angle), jnp.sin(angle)
+    if axis == 'x':
+        return jnp.array([[1.0, 0.0, 0.0], [0.0, c, -s], [0.0, s, c]], dtype=jnp.float32)
+    return jnp.array([[c, -s, 0.0], [s, c, 0.0], [0.0, 0.0, 1.0]], dtype=jnp.float32)
+
+
+points = jnp.array([[1.0, 0.2, -0.3], [-0.4, 0.8, 0.1],
+                     [0.3, -0.2, 0.5], [0.5, 0.9, -0.4]], dtype=jnp.float32)
+
+model = PointModel(jax.random.key(SEED))
+scalar, vector = model(points)
+assert scalar.shape == () and vector.shape == (3,)
+assert abs(float(scalar)) > 1e-4 and float(jnp.linalg.norm(vector)) > 1e-4
+```
+
+### Validating the claim
+
+The claim "scalar invariant, vector equivariant" is an algebraic statement — `f_scalar(Rp) == f_scalar(p)` and `f_vector(Rp) == R @ f_vector(p)` for every rotation `R` — so it must be checked against actual rotation matrices, not just inspected by eye. Equivariance under `SO(3)` is continuous and infinite, so I sample a few genuinely orthogonal, `det=+1` matrices (verified, not assumed) and a composition of two, to catch bugs that only show up off-axis.
+
+```python
+for matrix in (rotation('x', 0.7), rotation('z', -1.1),
+               rotation('x', 0.4) @ rotation('z', 0.9)):
+    # confirm these are actually rotations before trusting the test
+    np.testing.assert_allclose(matrix.T @ matrix, jnp.eye(3), atol=1e-6)
+    np.testing.assert_allclose(jnp.linalg.det(matrix), 1.0, atol=1e-6)
+
+    rotated_scalar, rotated_vector = model(points @ matrix.T)
+    np.testing.assert_allclose(rotated_scalar, scalar, atol=1e-5, rtol=1e-5)
+    np.testing.assert_allclose(rotated_vector, vector @ matrix.T, atol=1e-5, rtol=1e-5)
+
+# bonus: since 1o is odd parity and scalar is built from an even combination,
+# this model happens to satisfy full O(3), not just SO(3) — check inversion too
+inverted_scalar, inverted_vector = model(-points)
+np.testing.assert_allclose(inverted_scalar, scalar, atol=1e-5, rtol=1e-5)
+np.testing.assert_allclose(inverted_vector, -vector, atol=1e-5, rtol=1e-5)
+
+# the global sum aggregation should also be permutation-invariant/equivariant
+permuted_scalar, permuted_vector = model(points[jnp.array([2, 0, 3, 1])])
+np.testing.assert_allclose(permuted_scalar, scalar, atol=1e-5, rtol=1e-5)
+np.testing.assert_allclose(permuted_vector, vector, atol=1e-5, rtol=1e-5)
+
+# finally confirm the model is actually trainable: finite gradients everywhere
+def objective(m):
+    s, v = m(points)
+    return jnp.square(s) + jnp.square(v).sum()
+
+gradients = eqx.filter_grad(objective)(model)
+assert all(np.isfinite(np.asarray(leaf)).all() for leaf in jax.tree.leaves(gradients))
+
+print('scalar invariant, vector equivariant, inversion + permutation hold, gradients finite')
+```
+
+`★ Insight ─────────────────────────────────────`
+Why `points @ matrix.T` and not `matrix @ points`? Each row of `points` is a vector `p`, and rotating a row vector is `p @ R.T` (equivalent to `(R @ p.T).T`). This convention — row-vectors on the left — is what most array libraries assume, so getting the transpose backwards is a classic silent bug: it would still "pass" for symmetric test rotations but fail for general ones. That's exactly why the test uses a *composition* of two non-aligned rotations (`rotation('x', 0.4) @ rotation('z', 0.9)`) rather than only single-axis rotations — a transpose or axis-order mistake often cancels out for simple axis rotations but not for a generic composed one.
+`─────────────────────────────────────────────────`
+
+### What this does and doesn't claim
+
+- **Claims verified:** O(3) equivariance (rotations + inversion) of both outputs, permutation invariance of the aggregated outputs, and finite gradients through the whole model.
+- **Not claimed:** translation invariance (the model is written in absolute, not relative, coordinates — translating `points` changes `radius_squared` and thus both outputs), and no learning/generalization check is included — this is a structural correctness check, not a trained-model evaluation.
+- If you need translation invariance too, switch to relative coordinates (differences between points, or distances to a reference) before computing `radius_squared` — that's a one-line change but changes what physical quantity the model can represent.
+
+Want me to extend this to a graph/message-passing version (so it operates on variable numbers of neighbors with an explicit edge list), or wire up a small training loop with the correctness-run checklist (loss fixture, recovery, etc.) from the `training.md` reference?

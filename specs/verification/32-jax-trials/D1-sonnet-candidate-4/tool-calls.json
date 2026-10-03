@@ -1,0 +1,44 @@
+[
+  {
+    "id": "toolu_01UzYGKbNj3VerDZsM8sVwNN",
+    "name": "Read",
+    "input": {
+      "file_path": "/private/tmp/jax-skill-trials-pAYZ0t/guidance-candidate-deep-learning/references/training.md"
+    },
+    "result_present": true,
+    "is_error": false,
+    "result_sha256": "3ddcfd5297dd99ad69188da87fc74b4d6e1e2258fc69db8ea96e309d07f1fab0"
+  },
+  {
+    "id": "toolu_01QgMrYhsTJ6hv2AiEWYMqJp",
+    "name": "Read",
+    "input": {
+      "file_path": "/private/tmp/jax-skill-trials-pAYZ0t/guidance-candidate-deep-learning/references/sequences.md"
+    },
+    "result_present": true,
+    "is_error": false,
+    "result_sha256": "b6c926bf821b993d551a7fbbac36cd1eee346f12d73d50cb7075829d86e06b51"
+  },
+  {
+    "id": "toolu_01Mrg4LEFZEvBuVfHZkDn81F",
+    "name": "Read",
+    "input": {
+      "file_path": "/private/tmp/jax-skill-trials-pAYZ0t/guidance-candidate-deep-learning/references/frameworks.md"
+    },
+    "result_present": true,
+    "is_error": false,
+    "result_sha256": "4a733cea4a1a5af0c0e1f894dd1b551cb6074e0ec1834105f2533c4f1db08347"
+  },
+  {
+    "id": "toolu_01Q7AcwJ7ZCudgd6foMNFG7a",
+    "name": "Read",
+    "input": {
+      "file_path": "/private/tmp/jax-skill-trials-pAYZ0t/guidance-candidate-deep-learning/references/training.md",
+      "offset": 187,
+      "limit": 1
+    },
+    "result_present": true,
+    "is_error": false,
+    "result_sha256": "768cea1be5d54538f8331b4b92885ece6ff80984ed96da9f1da2e5739666a361"
+  }
+]

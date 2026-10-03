@@ -8,6 +8,13 @@ from pathlib import Path
 
 from run_trials import PREFIX, ROOT, SCENARIOS
 
+SCENARIOS = dict(SCENARIOS)
+SCENARIOS.update({
+    'RD': 'Which local references support irregular continuous-time models and equivariant 3D outputs? Explain the framework choice for each.',
+    'RE': 'Which references should I use to evaluate a generative model and an LLM after preference optimization? Explain the main evaluation units and artifacts to retain.',
+    'RS': 'My training loss is not improving, and my generation loop recompiles for different input lengths. Which guidance handles each issue, and where should I look for cache checks?',
+})
+
 
 def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
@@ -87,8 +94,17 @@ def run(name, condition, index, guidance_dir, hashes):
 if __name__ == '__main__':
     group, condition, skill_path = sys.argv[1:4]
     guidance_dir, hashes = snapshot(skill_path, condition)
-    names = {'D': ['D1', 'D2', 'D3', 'D4'], 'E': ['E1', 'E2', 'E3'], 'S': ['S1', 'S2', 'S3']}[group]
-    jobs = [(name, condition, i, guidance_dir, hashes) for name in names for i in range(1, 6 if name.endswith('1') else 2)]
+    names = {
+        'D': ['D1', 'D2', 'D3', 'D4', 'RD'],
+        'D1': ['D1'],
+        'D-refined': ['D1', 'D2', 'D4'],
+        'D2': ['D2'],
+        'D3': ['D3'],
+        'D4': ['D4'],
+        'E': ['E1', 'E2', 'E3', 'RE'],
+        'S': ['S1', 'S2', 'S3', 'RS'],
+    }[group]
+    jobs = [(name, condition, i, guidance_dir, hashes) for name in names for i in range(1, 6 if name in {'D1', 'E1', 'S1'} else 2)]
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
         results = list(pool.map(lambda args: run(*args), jobs))
     sys.exit(0 if all(r['exit'] == 0 and r.get('is_error') is False for r in results) else 1)

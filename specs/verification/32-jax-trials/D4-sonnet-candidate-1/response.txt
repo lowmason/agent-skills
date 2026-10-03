@@ -1,0 +1,246 @@
+## Plan: LoRA SFT → DPO on a JAX language model
+
+Two-stage post-training run: adapter fine-tuning (stage 1, SFT) produces a policy; preference optimization (stage 2, DPO) refines that policy against an **immutable** reference. The crux of this plan is the stage boundary — getting the reference-policy identity wrong is the single most common way these pipelines silently train against the wrong target. I'll make that explicit throughout.
+
+### 1. Model loading
+
+Load through [Tunix's `AutoModel.from_pretrained`](https://tunix.readthedocs.io/en/latest/models.html) with a supported model identity (e.g. a Gemma/Llama/Qwen variant) and a JAX mesh — this is the maintained JAX execution path. Use Hugging Face only for the artifact/tokenizer download, not for JAX execution: Transformers v5 removed its JAX backend, so there is no current `FlaxAutoModelForCausalLM` to reach for.
+
+Before any adaptation, run a small forward/logit comparison against the source checkpoint on identical tokens. Record exact architecture/config, artifact revision, tokenizer revision and special-token IDs, chat template, dtype, and tied-weight/embedding layout. A vocabulary match alone does **not** establish chat-template or positional compatibility — that needs the logit check.
+
+`★ Insight ─────────────────────────────────────`
+Checkpoint "compatibility" is often checked only at the shape level (does `embed.weight` have the right vocab size?). That's necessary but not sufficient — a wrong positional embedding convention or chat-template mismatch produces identically-shaped tensors with silently wrong semantics. The only cheap test that catches this is comparing actual logits on the same token IDs against the source implementation, not comparing configs.
+`─────────────────────────────────────────────────`
+
+### 2. The reference-policy handoff (the decision to make explicit)
+
+I'm choosing: **preserve the trained SFT adapter as a frozen, immutable reference**, and train a **second, fresh adapter** on top of `base + frozen_sft_adapter` for DPO. This is one of three valid options (the others: merge SFT into the reference weights, or cache SFT log-probabilities with checkpoint/tokenizer/mask identities) — confirm this is the one you want before scaling, since disabling the SFT adapter instead would silently substitute the *base* policy as the reference.
+
+The check that discriminates a correct wiring from a wrong one: if the DPO policy is initialized from the SFT checkpoint and the reference *is* that SFT checkpoint, the log-ratio `Δ` is exactly 0 at step 0, so the loss is exactly `log(2)`. If the reference were accidentally the base model instead, step-0 loss would not equal `log(2)`. This assertion is in the code below and is the one I'd treat as non-negotiable before a real run.
+
+### 3. Data format and loss, per stage
+
+Shift once, use everywhere: for logits at position `t`, the label is token `t+1`. Shift both attention availability and completion membership to that target position:
+
+```python
+mask = attention[:, :-1] & attention[:, 1:] & completion[:, 1:]
+```
+
+- **SFT**: pooled completion NLL divided by the actual eligible-token count (not sequence count, not padded length). Uniform logits give `log(V)` — that's the hand-computable sanity value.
+- **DPO**: sum completion log-probabilities *within* each response, then average `-log sigmoid(beta * Δ)` over eligible **pairs**, where `Δ = (log π(chosen) - log π(rejected)) - (log ref(chosen) - log ref(rejected))`. A pair is eligible only if *both* chosen and rejected have a nonempty shifted completion mask; an empty mask is excluded, not treated as zero loss.
+- Chosen/rejected and policy/reference must use identical tokenization and masking — otherwise `Δ` isn't interpretable. Any cached log-probability manifest must carry the same identity guarantee.
+- State BOS/EOS policy explicitly and whether EOS is scored as part of the response.
+
+`★ Insight ─────────────────────────────────────`
+DPO's loss has a built-in sanity check that SFT's doesn't: at `policy == reference`, the loss is analytically `log(2)` regardless of the data. That's a much stronger invariant than "loss decreased" — it's a fixed point you can assert against exactly, and it's sensitive to exactly the bug (wrong reference identity) that's easy to introduce silently.
+`─────────────────────────────────────────────────`
+
+### 4. Correctness code — SFT stage, adapter selection, and DPO handoff
+
+This is a synthetic, CPU-sized stand-in: a frozen embedding + a LoRA-adapted linear head standing in for "the model." It is not a transformer and proves no attention/packing correctness — it exists only to pin down the shift/mask/loss/update/reference contracts before they're wired to a real architecture.
+
+```python
+import jax
+import jax.numpy as jnp
+import numpy as np
+import optax
+from flax import nnx
+
+SEED = sum(map(ord, 'adapter-sft-then-dpo'))
+VOCAB, EMBED, RANK = 6, 4, 2
+
+TOKENS = jnp.array([[1, 2, 3, 0, 0], [1, 4, 2, 3, 0]], dtype=jnp.int32)
+ATTENTION = jnp.array([[True, True, True, False, False],
+                        [True, True, True, True, False]])
+COMPLETION = jnp.array([[False, False, True, False, False],
+                        [False, False, True, True, False]])
+
+
+def target_mask(attention, completion):
+    return attention[:, :-1] & attention[:, 1:] & completion[:, 1:]
+
+
+def require_eligible(mask):
+    if not np.asarray(mask).any(axis=-1).all():
+        raise ValueError('an example/pair has no eligible shifted completion tokens')
+
+
+def sequence_logprob_sums(logits, tokens, mask):
+    log_probs = jax.nn.log_softmax(logits[:, :-1, :], axis=-1)
+    target_lp = jnp.take_along_axis(log_probs, tokens[:, 1:, None], axis=-1)[..., 0]
+    return jnp.where(mask, target_lp, 0.0).sum(axis=1)
+
+
+def sft_loss(sums, mask):
+    return -sums.sum() / mask.sum()
+
+
+class AdaptedHead(nnx.Module):
+    """Frozen base projection + trainable LoRA adapter (a, b); b starts at zero."""
+    def __init__(self, embed_dim, vocab, rank, rngs):
+        self.base = nnx.Param(jax.random.normal(rngs.params(), (embed_dim, vocab)) * 0.1)
+        self.a = nnx.Param(jax.random.normal(rngs.params(), (embed_dim, rank)) * 0.1)
+        self.b = nnx.Param(jnp.zeros((rank, vocab)))
+
+    def __call__(self, hidden):
+        return hidden @ (self.base + self.a @ self.b)
+
+
+class ToyLM(nnx.Module):
+    def __init__(self, rngs):
+        self.embed = nnx.Embed(VOCAB, EMBED, rngs=rngs)   # frozen "pretrained" weights
+        self.head = AdaptedHead(EMBED, VOCAB, RANK, rngs)
+
+    def logits(self, tokens):
+        return self.head(jnp.tanh(self.embed(tokens)))
+
+
+key = jax.random.key(SEED)
+model = ToyLM(nnx.Rngs(params=key))
+
+# ---- Stage 1: SFT, training only the adapter (a, b) ----
+mask = target_mask(ATTENTION, COMPLETION)
+require_eligible(mask)
+np.testing.assert_array_equal(mask, [[False, True, False, False],
+                                      [False, True, True, False]])
+
+def sft_objective(model):
+    sums = sequence_logprob_sums(model.logits(TOKENS), TOKENS, mask)
+    return sft_loss(sums, mask)
+
+initial_sft_loss = float(sft_objective(model))
+# Hand-checkable only at true init (base/adapter random, not uniform) — report, don't assert equality.
+print('SFT initial loss (uniform-logit reference is log(V) =', float(np.log(VOCAB)), '):', initial_sft_loss)
+
+labels = jax.tree.map(lambda _: 'frozen', nnx.state(model, nnx.Param))
+labels['head']['a'] = 'adapter'
+labels['head']['b'] = 'adapter'
+sft_optimizer = nnx.Optimizer(
+    model, optax.multi_transform(
+        {'frozen': optax.set_to_zero(), 'adapter': optax.adam(0.05)}, labels),
+    wrt=nnx.Param)
+
+@nnx.jit
+def sft_step(model, optimizer):
+    loss, grads = nnx.value_and_grad(sft_objective)(model)
+    finite = jnp.isfinite(loss)
+    for leaf in jax.tree.leaves(grads):
+        finite = finite & jnp.isfinite(leaf).all()
+    optimizer.update(model, grads)
+    return loss, finite
+
+frozen_embed_before = jnp.array(model.embed.embedding.value)
+frozen_base_before = jnp.array(model.head.base.value)
+model.train()
+for _ in range(80):
+    loss, finite = sft_step(model, sft_optimizer)
+    assert bool(finite), 'non-finite SFT loss/gradient'
+final_sft_loss = float(sft_objective(model))
+assert final_sft_loss < 0.5 * initial_sft_loss, (initial_sft_loss, final_sft_loss)
+np.testing.assert_array_equal(model.embed.embedding.value, frozen_embed_before)
+np.testing.assert_array_equal(model.head.base.value, frozen_base_before)
+print(f'SFT: {initial_sft_loss:.4f} -> {final_sft_loss:.4f}; base/embedding unchanged')
+
+# ---- Handoff: freeze the trained SFT adapter as the DPO reference ----
+reference_a = jax.lax.stop_gradient(jnp.array(model.head.a.value))
+reference_b = jax.lax.stop_gradient(jnp.array(model.head.b.value))
+reference_embed = jax.lax.stop_gradient(jnp.array(model.embed.embedding.value))
+reference_base = jax.lax.stop_gradient(jnp.array(model.head.base.value))
+
+CHOSEN = jnp.array([[1, 2, 3, 0, 0], [1, 2, 3, 3, 0]], dtype=jnp.int32)
+REJECTED = jnp.array([[1, 2, 4, 0, 0], [1, 2, 4, 4, 0]], dtype=jnp.int32)
+pair_mask = target_mask(ATTENTION, COMPLETION)
+require_eligible(pair_mask)       # both chosen and rejected share this mask contract here;
+                                  # a real loader must check each side independently and
+                                  # drop any pair where either side is empty after shifting.
+
+def reference_logits(tokens):
+    hidden = jnp.tanh(reference_embed[tokens])
+    return hidden @ (reference_base + reference_a @ reference_b)
+
+reference_chosen = sequence_logprob_sums(reference_logits(CHOSEN), CHOSEN, pair_mask)
+reference_rejected = sequence_logprob_sums(reference_logits(REJECTED), REJECTED, pair_mask)
+
+# ---- Stage 2: DPO, a *fresh* adapter (a2, b2) stacked on top of the frozen reference ----
+class DPOPolicy(nnx.Module):
+    def __init__(self, rngs):
+        self.a2 = nnx.Param(jax.random.normal(rngs.params(), (EMBED, RANK)) * 0.1)
+        self.b2 = nnx.Param(jnp.zeros((RANK, VOCAB)))
+
+    def weight(self):
+        return reference_base + reference_a @ reference_b + self.a2 @ self.b2
+
+    def logits(self, tokens):
+        return jnp.tanh(reference_embed[tokens]) @ self.weight()
+
+def preference_loss(chosen_sums, rejected_sums, beta=0.2):
+    margin = (chosen_sums - rejected_sums) - (reference_chosen - reference_rejected)
+    return -jax.nn.log_sigmoid(beta * margin).mean()
+
+def dpo_objective(policy):
+    chosen = sequence_logprob_sums(policy.logits(CHOSEN), CHOSEN, pair_mask)
+    rejected = sequence_logprob_sums(policy.logits(REJECTED), REJECTED, pair_mask)
+    return preference_loss(chosen, rejected)
+
+policy = DPOPolicy(nnx.Rngs(params=jax.random.key(SEED + 1)))
+
+# THE discriminating check: policy == reference at init (b2 == 0) => loss == log(2) exactly.
+step0_loss = float(dpo_objective(policy))
+np.testing.assert_allclose(step0_loss, np.log(2), rtol=1e-6)
+print('DPO step-0 loss == log(2):', step0_loss, '-- reference identity confirmed')
+
+step0_grads = jax.grad(dpo_objective)(policy)
+np.testing.assert_array_equal(step0_grads.a2.value, 0.0)   # b2=0 zeroes d(loss)/d(a2) at init
+assert float(jnp.linalg.norm(step0_grads.b2.value)) > 0    # but d(loss)/d(b2) is live
+
+dpo_optimizer = nnx.Optimizer(policy, optax.adam(0.1), wrt=nnx.Param)
+
+@nnx.jit
+def dpo_step(policy, optimizer):
+    loss, grads = nnx.value_and_grad(dpo_objective)(policy)
+    finite = jnp.isfinite(loss)
+    for leaf in jax.tree.leaves(grads):
+        finite = finite & jnp.isfinite(leaf).all()
+    optimizer.update(policy, grads)
+    return loss, finite
+
+for _ in range(60):
+    loss, finite = dpo_step(policy, dpo_optimizer)
+    assert bool(finite), 'non-finite DPO loss/gradient'
+final_dpo_loss = float(dpo_objective(policy))
+assert final_dpo_loss < step0_loss, (step0_loss, final_dpo_loss)
+print(f'DPO: {step0_loss:.6f} -> {final_dpo_loss:.6f}')
+```
+
+`★ Insight ─────────────────────────────────────`
+Stacking a *second* zero-initialized LoRA adapter on top of a *frozen* first adapter, rather than reusing the SFT adapter's own parameters as the DPO-trainable leaves, is what makes `policy == reference` at step 0 provable rather than assumed. If DPO instead continued training the original adapter directly, you'd need a separate frozen *copy* of its weights as the reference — easy to get right, but also easy to accidentally alias (training the "reference" by mistake because it's the same pytree). The two-adapter stack makes that aliasing structurally impossible: `reference_a`/`reference_b` are plain stopped-gradient arrays, not part of any `nnx.Optimizer`'s managed state.
+`─────────────────────────────────────────────────`
+
+### 5. Required check slots (both stages)
+
+1. **Structure/objective** — shapes, mask counts (`mask.sum()`), hand-computable loss values (`log(V)` at SFT init with uniform logits; `log(2)` at DPO init with matched policy/reference), invariance of the loss to changes at masked-out positions.
+2. **Numerics** — finite loss and every differentiated leaf, each step, both stages (asserted above).
+3. **Learning** — fixed tiny fixture, bounded step count, asserted improvement (`final < 0.5 * initial` for SFT; `final < step0` for DPO) — this tests learnability of the wired path, not generalization.
+4. **Evaluation** — held-out prompts/pairs, disjoint from training, with `model.eval()` and no dropout; baseline is "no adaptation" (base policy) for SFT, and "SFT policy" for DPO.
+5. **Recovery** — next-*update* parity after save/restore, not parameter equality before an update.
+
+### 6. Recovery contract
+
+For SFT: save `nnx.state(model)` restricted to the trainable adapter plus the optimizer state, step, and data cursor/RNG streams — same pattern as `training.md`'s Orbax example (`StandardCheckpointer`, pure-dict state, `wait_until_finished()`, `replace_by_pure_dict` + `nnx.update` on restore).
+
+For DPO, the checkpoint additionally **must** carry the reference identity: which SFT checkpoint/adapter it was frozen from (or the cached log-probability manifest), `beta`, the mask/tokenization configuration, and the pair-unit definition. Without that, a restored run can silently resume against a different reference than the one that produced the saved optimizer state. The recovery guarantee to verify is: next DPO loss, policy parameters, optimizer/schedule state, and RNG progression all match an uninterrupted run — not that restored parameters equal pre-restore parameters (that only checks storage).
+
+### 7. Real-recipe prerequisites (source-reported, not measured here)
+
+| Recipe | Prerequisites | Status |
+|---|---|---|
+| [Tunix GPU PEFT](https://tunix.readthedocs.io/en/latest/_collections/examples/qlora_llama3_gpu.html) | Llama 3.1-8B checkpoint/tokenizer, JAX CUDA + Tunix/Qwix; source recommends 16 GB+ VRAM for 4-bit QLoRA, 24 GB+ for LoRA | Inspected, not run. These are source recommendations, not measured local minima. |
+| [Tunix DPO example](https://tunix.readthedocs.io/en/latest/_collections/examples/dpo_gemma.html) | Gemma 3-1B instruct checkpoint + matching tokenizer, prompt/chosen/rejected data, Tunix/Qwix; source tested on v6e-1 TPU, 32 GB HBM | Inspected, not run. Adapting it to an SFT-derived reference needs the immutable-adapter identity established above. |
+
+### Scope limits — explicit, per instructions
+
+Nothing above was executed this session (execution wasn't required by the task, and no results are claimed as run). The code establishes shift/mask/loss/update/reference-identity math on a synthetic CPU fixture only. It does **not** verify: real tokenizer rendering or chat templates, causal attention/packing, actual checkpoint loading/conversion, Tunix's trainer interfaces, quantized (QLoRA) kernels, accelerator memory behavior, or end-to-end preference quality. Those require the small preflight checks above re-run against the real checkpoint and loader, followed by held-out evaluation — route execution/throughput problems to `optimize-jax` and comparative quality claims to `evaluate-deep-learning`.
+
+**Two decisions to confirm before scaling this up:**
+1. Reference-policy identity — I chose "frozen SFT adapter + fresh second adapter." Confirm this over merge-then-fresh-adapter or a cached-logprob manifest, since it determines what must be preserved in storage.
+2. No-eligible-pair policy for real data — the toy fixture never hits an empty pair; your real loader needs an explicit skip/reject path (not a silent zero) when a chosen or rejected completion has no eligible tokens after truncation.

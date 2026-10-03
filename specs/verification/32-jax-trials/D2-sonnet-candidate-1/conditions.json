@@ -1,0 +1,58 @@
+{
+  "trial": "D2-sonnet-candidate-1",
+  "exit": 0,
+  "fresh_session": true,
+  "model": "sonnet",
+  "effort": "medium",
+  "model_usage": {
+    "claude-sonnet-5": {
+      "inputTokens": 6,
+      "outputTokens": 12536,
+      "cacheReadInputTokens": 56930,
+      "cacheCreationInputTokens": 25883,
+      "webSearchRequests": 0,
+      "costUSD": 0.23763949999999998,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "thinkingTokens": 3914,
+      "canonicalModel": "claude-sonnet-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    },
+    "claude-opus-5": {
+      "inputTokens": 32022,
+      "outputTokens": 6243,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.31618500000000005,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "thinkingTokens": 0,
+      "canonicalModel": "claude-opus-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "is_error": false,
+  "tool_names": [
+    "Read",
+    "WebSearch",
+    "WebFetch"
+  ],
+  "guidance_directory": "/private/tmp/jax-skill-trials-pAYZ0t/guidance-candidate-deep-learning",
+  "source_hashes": {
+    "SKILL.md": "4a3a195ef1d26a76a1ac13790906406fb7db2eb595b630ca739e566866836b0a",
+    "references/frameworks.md": "47b458e1b8f3c9285e43dec18f74bc5c3d7b44027ab90c4d87ddebc371bebdf2",
+    "references/generative.md": "6f9cf63e3bd2d737c735e5ea1ac494eb1e6705ca1aa681b937f1c849edf9ff3f",
+    "references/geometric.md": "ea30fbaab10b8cb9cce0882cd3bf1152bc5434225deac92d1095ee302e710e7d",
+    "references/llm.md": "cd2cb928ff1d79887479eb5becdb1223bd6b134fbe14a2fd484eed5aa2497e01",
+    "references/scientific.md": "3f155a60fbfb3b7cba12c4c4efa7b597b369857e093a6da41f5e743e2297a54a",
+    "references/sequences.md": "1d5a46913ffb1ff1754efb4defdc4b03d2abe4a4374dac9ba27833b4799af4e4",
+    "references/training.md": "9ce708a572990ca068060bc9125d8f5dafcbb4b09e159cc1f0fde881939537b3",
+    "references/vision.md": "4fb0d0c790f5c92146fbfc5967f2be0ab1215476e7f1b6e36505ac197eabefef"
+  },
+  "guidance_loaded": "Complete SKILL.md appended to the system context; references available by Read.",
+  "logging_difference": "stream-json with verbose captures tool calls; controls used final-result JSON.",
+  "raw_stream_sha256": "0504f927b560edbf24e8f2f5527ef10adc44ce1e729a0726da16c9a77bce8c49"
+}
