@@ -1,0 +1,426 @@
+Use invariant radial features to gate polar vectors. The scalar head pools invariant features, and the vector head mixes vector channels with an e3nn equivariant linear layer. This gives the desired behavior for every value of the learned parameters.
+
+For a cloud with row-vector coordinates (X\in\mathbb R^{N\times3}), the rotation convention below is
+
+\[
+X' = XR^T,\qquad s(X')=s(X),\qquad v(X')=v(X)R^T,
+\]
+
+where (R^TR=I) and \(\det R=1\). The origin stays fixed. The construction also respects reflections, so its full symmetry is O(3), with an even scalar (`0e`) and a polar vector (`1o`). It also preserves both global outputs under point permutations. These representation and parity conventions follow the [e3nn irreps documentation](https://e3nn-jax.readthedocs.io/en/latest/api/irreps.html).
+
+Take (t_i=\|x_i\|^2/(1+\|x_i\|^2)) and \(\phi_i=(1,t_i,t_i^2)\). In ordinary coordinates the model has the form
+
+\[
+s(X)=a_0+\sum_i m_i\,a^T\phi_i,
+\qquad
+v(X)=\sum_i m_i\left(\sum_{k=0}^2 b_k\phi_{ik}\right)x_i.
+\]
+
+Orthogonal transformations leave \(t_i\) and \(\phi_i\) unchanged. Therefore the scalar stays unchanged and the weighted vector sum transforms by \(R^T\). e3nn's `3x1o -> 1o` linear layer implements the allowed channel mixing in the vector head. Its constructor explicitly receives input/output irreps and an initialization key, as required by the [native Equinox API](https://e3nn-jax.readthedocs.io/en/latest/api/equinox.html). Merely labeling an arbitrary coordinate MLP with an irrep would not establish this property.
+
+This is a small nonlinear model in the coordinates, with learned radial mixing rather than a large network. It can represent a useful first hypothesis: the output depends on radial contributions relative to a fixed origin. It cannot express general angular interactions between pairs of points. That limitation is appropriate for this symmetry demonstration; a richer geometric task would call for tensor products or distance-based message passing. An unconstrained MLP would need to learn the symmetry from data instead of satisfying it structurally.
+
+The complete script below includes the model and its correctness fixture:
+
+- One observation is a point cloud. Inputs are float32, dimensionless coordinates; a boolean point mask controls pooling. Synthetic train and held-out clouds use independent typed-key streams and disjoint observation IDs. There is no fitted preprocessing.
+- Pooling uses a sum, so changing the number of eligible points can change the output. There are no edges, neighbor rules, periodic images, or attention masks. Finite padding is ignored; empty clouds and empty training batches are rejected at the host boundary.
+- The objective averages over clouds: scalar squared error plus vector squared Euclidean error divided by three. This vector loss is itself rotation invariant. Scalar/vector weights are both one for these dimensionless targets; physical targets would need a declared scale for each head.
+- Training uses a fixed batch, Adam, a learning rate that falls from 0.03 to 0.003 over 300 updates, and no clipping, regularization, accumulation, dropout, or mutable statistics. Evaluation uses exactly the same deterministic forward pass. The initial and final training losses use the same fixed fixture.
+- The held-out comparison uses a scalar mean fitted on training targets and a zero-vector baseline. Its reported loss is separate from the structural symmetry checks.
+- A native Equinox checkpoint saves the model, every optimizer leaf, and the external update count. Configuration records the architecture, target/data recipe, seeds, precision, packages, and backend. This fixed-full-batch experiment has no live training RNG stream or loader cursor; the saved update count is its entire progress state. Equinox supports [leaf serialization and reconstruction from a matching template](https://docs.kidger.site/equinox/api/serialisation/).
+
+Save this as `point_model.py`. It requires JAX/JAXlib, Equinox, e3nn-jax, Optax, and NumPy. The supplied guidance's CPU profile used Python 3.13.8, JAX/JAXlib 0.11.2, Equinox 0.13.8, e3nn-jax 0.21.0, Optax 0.2.8, and NumPy 2.5.3; that profile is a dependency starting point, not an execution result for this script. Run with `JAX_PLATFORMS=cpu python point_model.py` in a compatible environment. The script records the versions actually used.
+
+```python
+import json
+from importlib.metadata import version
+from pathlib import Path
+import platform
+import tempfile
+
+import e3nn_jax as e3nn
+import equinox as eqx
+import jax
+import jax.numpy as jnp
+import numpy as np
+import optax
+
+
+SYMMETRY_ATOL = 2e-5
+SYMMETRY_RTOL = 2e-5
+SEED = sum(map(ord, "radial-point-contract"))
+
+
+class PointModel(eqx.Module):
+    scalar_weights: jax.Array
+    scalar_bias: jax.Array
+    vector_layer: e3nn.equinox.Linear
+
+    def __init__(self, key, config):
+        self.scalar_weights = jnp.asarray(
+            config["initial_scalar_weights"], dtype=jnp.float32
+        )
+        self.scalar_bias = jnp.asarray(config["initial_bias"], dtype=jnp.float32)
+        self.vector_layer = e3nn.equinox.Linear(
+            irreps_in=e3nn.Irreps(config["irreps_in"]),
+            irreps_out=e3nn.Irreps(config["irreps_out"]),
+            biases=False,
+            key=key,
+        )
+
+    def __call__(self, points, mask=None):
+        assert points.ndim == 2 and points.shape[-1] == 3
+        if mask is None:
+            mask = jnp.ones(points.shape[0], dtype=jnp.bool_)
+        assert mask.shape == points.shape[:1]
+        # Sanitize padding before nonlinear arithmetic and differentiation.
+        points = jnp.where(mask[:, None], points, 0.0)
+        radius_squared = jnp.square(points).sum(axis=-1)
+        t = radius_squared / (1.0 + radius_squared)
+        basis = jnp.stack((jnp.ones_like(t), t, t * t), axis=-1)
+        basis = jnp.where(mask[:, None], basis, 0.0)
+        scalar = self.scalar_bias + (basis @ self.scalar_weights).sum()
+        vector_features = (basis[:, :, None] * points[:, None, :]).reshape(
+            points.shape[0], 9
+        )
+        vectors = self.vector_layer(e3nn.IrrepsArray("3x1o", vector_features))
+        assert vectors.irreps == e3nn.Irreps("1o")
+        return scalar, vectors.array.sum(axis=0)
+
+
+def predict(model, points, mask):
+    return jax.vmap(lambda x, m: model(x, m))(points, mask)
+
+
+def output_loss(predicted_scalar, predicted_vector, target_scalar, target_vector):
+    scalar_error = jnp.square(predicted_scalar - target_scalar)
+    vector_error = jnp.square(predicted_vector - target_vector).sum(axis=-1) / 3.0
+    return (scalar_error + vector_error).mean()
+
+
+def objective(model, points, mask, target_scalar, target_vector):
+    scalar, vector = predict(model, points, mask)
+    return output_loss(scalar, vector, target_scalar, target_vector)
+
+
+def validate_batch(batch):
+    points, mask, scalar, vector = map(np.asarray, batch)
+    assert points.ndim == 3 and points.shape[-1] == 3
+    batch_size, point_count, _ = points.shape
+    assert mask.shape == (batch_size, point_count) and mask.dtype == np.bool_
+    assert scalar.shape == (batch_size,) and vector.shape == (batch_size, 3)
+    assert points.dtype == scalar.dtype == vector.dtype == np.float32
+    if batch_size == 0 or point_count == 0 or not mask.any(axis=1).all():
+        raise ValueError("each batch must contain at least one nonempty cloud")
+    for array in (points, scalar, vector):
+        if not np.isfinite(array).all():
+            raise ValueError("all inputs and targets, including padding, must be finite")
+
+
+def make_fixture(key, batch_size, config):
+    point_count = config["max_points"]
+    points = jax.random.uniform(
+        key, (batch_size, point_count, 3), dtype=jnp.float32,
+        minval=-1.0, maxval=1.0,
+    )
+    lengths = 1 + jnp.arange(batch_size) % point_count
+    mask = jnp.arange(point_count)[None, :] < lengths[:, None]
+    points = jnp.where(mask[:, :, None], points, 0.0)
+    radius_squared = jnp.square(points).sum(axis=-1)
+    t = radius_squared / (1.0 + radius_squared)
+    a, b, c = config["target_scalar_weights"]
+    u, w, z = config["target_vector_weights"]
+    scalar = config["target_bias"] + jnp.where(
+        mask, a + b * t + c * t * t, 0.0
+    ).sum(axis=1)
+    gates = jnp.where(mask, u + w * t + z * t * t, 0.0)
+    vector = (gates[:, :, None] * points).sum(axis=1)
+    batch = (points, mask, scalar, vector)
+    validate_batch(batch)
+    assert int(mask.sum()) == sum(1 + i % point_count for i in range(batch_size))
+    return batch
+
+
+def make_experiment(config):
+    root = jax.random.key(config["seed"], impl=config["rng_impl"])
+    model_key, train_key, validation_key, rotation_key = jax.random.split(root, 4)
+    model = PointModel(model_key, config)
+    schedule = optax.linear_schedule(
+        init_value=config["learning_rate"],
+        end_value=config["final_learning_rate"],
+        transition_steps=config["updates"],
+    )
+    optimizer = optax.adam(schedule)
+    state = optimizer.init(eqx.filter(model, eqx.is_inexact_array))
+    training = make_fixture(train_key, config["train_clouds"], config)
+    validation = make_fixture(validation_key, config["validation_clouds"], config)
+    return model, optimizer, state, schedule, training, validation, rotation_key
+
+
+def finite_tree(tree):
+    leaves = jax.tree.leaves(eqx.filter(tree, eqx.is_array))
+    return jnp.all(jnp.stack([jnp.isfinite(x).all() for x in leaves]))
+
+
+@eqx.filter_jit
+def update(model, state, optimizer, batch):
+    loss, gradients = eqx.filter_value_and_grad(objective)(model, *batch)
+    updates, next_state = optimizer.update(
+        gradients, state, eqx.filter(model, eqx.is_inexact_array)
+    )
+    next_model = eqx.apply_updates(model, updates)
+    finite = jnp.isfinite(loss) & finite_tree((gradients, next_model, next_state))
+    return next_model, next_state, loss, finite
+
+
+def advance(model, state, step, optimizer, batch):
+    next_model, next_state, loss, finite = update(model, state, optimizer, batch)
+    assert bool(finite), "nonfinite loss, gradient, parameter, or optimizer state"
+    return next_model, next_state, step + 1, float(loss)
+
+
+def assert_same_tree(left, right):
+    left = eqx.filter(left, eqx.is_array)
+    right = eqx.filter(right, eqx.is_array)
+    assert jax.tree.structure(left) == jax.tree.structure(right)
+    for x, y in zip(jax.tree.leaves(left), jax.tree.leaves(right)):
+        x, y = np.asarray(x), np.asarray(y)
+        assert x.shape == y.shape and x.dtype == y.dtype
+        if np.issubdtype(x.dtype, np.inexact):
+            np.testing.assert_allclose(x, y, rtol=1e-6, atol=1e-6)
+        else:
+            np.testing.assert_array_equal(x, y)
+
+
+def rotation_matrix(axis, angle):
+    axis = jnp.asarray(axis, dtype=jnp.float32)
+    axis = axis / jnp.linalg.norm(axis)
+    x, y, z = axis
+    cross = jnp.array([[0.0, -z, y], [z, 0.0, -x], [-y, x, 0.0]])
+    cosine, sine = jnp.cos(angle), jnp.sin(angle)
+    return cosine * jnp.eye(3) + (1.0 - cosine) * jnp.outer(axis, axis) + sine * cross
+
+
+def check_symmetry(model, points, key):
+    scalar, vector = model(points)
+    assert scalar.shape == () and vector.shape == (3,)
+    assert bool(finite_tree((scalar, vector)))
+    assert abs(float(scalar)) > 1e-4
+    assert float(jnp.linalg.norm(vector)) > 1e-4, "use a nontrivial vector fixture"
+    rx = rotation_matrix([1.0, 0.0, 0.0], 0.7)
+    rz = rotation_matrix([0.0, 0.0, 1.0], -1.1)
+    axes_key, angles_key = jax.random.split(key)
+    axes = jax.random.normal(axes_key, (32, 3), dtype=jnp.float32)
+    angles = jax.random.uniform(angles_key, (32,), minval=-jnp.pi, maxval=jnp.pi)
+    rotations = [jnp.eye(3), rx, rz, rx @ rz]
+    rotations += [rotation_matrix(axis, angle) for axis, angle in zip(axes, angles)]
+    max_scalar_error = max_vector_error = 0.0
+    for matrix in rotations:
+        np.testing.assert_allclose(matrix.T @ matrix, jnp.eye(3), atol=1e-6)
+        np.testing.assert_allclose(jnp.linalg.det(matrix), 1.0, atol=1e-6)
+        transformed_scalar, transformed_vector = model(points @ matrix.T)
+        np.testing.assert_allclose(
+            transformed_scalar, scalar, atol=SYMMETRY_ATOL, rtol=SYMMETRY_RTOL
+        )
+        np.testing.assert_allclose(
+            transformed_vector, vector @ matrix.T,
+            atol=SYMMETRY_ATOL, rtol=SYMMETRY_RTOL,
+        )
+        max_scalar_error = max(max_scalar_error, float(abs(transformed_scalar - scalar)))
+        max_vector_error = max(
+            max_vector_error, float(jnp.max(abs(transformed_vector - vector @ matrix.T)))
+        )
+    for matrix in (-jnp.eye(3), jnp.diag(jnp.array([-1.0, 1.0, 1.0]))):
+        transformed_scalar, transformed_vector = model(points @ matrix.T)
+        np.testing.assert_allclose(transformed_scalar, scalar, atol=SYMMETRY_ATOL)
+        np.testing.assert_allclose(
+            transformed_vector, vector @ matrix.T,
+            atol=SYMMETRY_ATOL, rtol=SYMMETRY_RTOL,
+        )
+    permuted = model(points[jnp.array([2, 0, 3, 1])])
+    np.testing.assert_allclose(permuted[0], scalar, atol=SYMMETRY_ATOL)
+    np.testing.assert_allclose(permuted[1], vector, atol=SYMMETRY_ATOL)
+    # The gradient of an invariant scalar is a polar vector at each input point.
+    input_gradient = jax.grad(lambda p: model(p)[0])(points)
+    rotated_gradient = jax.grad(lambda p: model(p)[0])(points @ rx.T)
+    np.testing.assert_allclose(
+        rotated_gradient, input_gradient @ rx.T,
+        atol=SYMMETRY_ATOL, rtol=SYMMETRY_RTOL,
+    )
+    return max_scalar_error, max_vector_error
+
+
+def check_objective(model, training):
+    # Two cloud errors are 1 + 1/3 and 4 + 4/3; their mean is 10/3.
+    hand_loss = output_loss(
+        jnp.array([1.0, 3.0]), jnp.array([[1.0, 0.0, 0.0], [0.0, 2.0, 0.0]]),
+        jnp.array([0.0, 1.0]), jnp.zeros((2, 3)),
+    )
+    np.testing.assert_allclose(hand_loss, 10.0 / 3.0, rtol=1e-6)
+    points, mask, scalar, vector = training
+    changed_points = jnp.where(mask[:, :, None], points, 99.0)
+    changed = (changed_points, mask, scalar, vector)
+    assert_same_tree(predict(model, points, mask), predict(model, changed_points, mask))
+    order = jnp.arange(points.shape[1])[::-1]
+    assert_same_tree(
+        predict(model, points, mask), predict(model, points[:, order], mask[:, order])
+    )
+    np.testing.assert_allclose(objective(model, *training), objective(model, *changed))
+    gradients = eqx.filter_grad(objective)(model, *training)
+    assert bool(finite_tree(gradients))
+    assert_same_tree(gradients, eqx.filter_grad(objective)(model, *changed))
+    predicted_scalar, _ = predict(model, points, mask)
+    analytic_bias_gradient = 2.0 * jnp.mean(predicted_scalar - scalar)
+    np.testing.assert_allclose(
+        gradients.scalar_bias, analytic_bias_gradient, atol=1e-6, rtol=1e-6
+    )
+    input_gradients = jax.grad(lambda p: objective(model, p, mask, scalar, vector))(points)
+    assert bool(finite_tree(input_gradients))
+    np.testing.assert_array_equal(np.asarray(input_gradients)[~np.asarray(mask)], 0.0)
+    invalid = (points, jnp.zeros_like(mask), scalar, vector)
+    try:
+        validate_batch(invalid)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("empty clouds were accepted")
+    try:
+        validate_batch(tuple(x[:0] for x in training))
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("an empty batch was accepted")
+
+
+def check_recovery(model, optimizer, state, schedule, training, config):
+    step = 0
+    with tempfile.TemporaryDirectory(prefix="radial-point-recovery-") as directory:
+        root = Path(directory).resolve()
+        for boundary in (3, 5):
+            while step < boundary:
+                model, state, step, _ = advance(model, state, step, optimizer, training)
+            progress = root / f"step-{step:08d}"
+            progress.mkdir()
+            (progress / "config.json").write_text(json.dumps(config, sort_keys=True))
+            saved = (model, state, jnp.asarray(step, dtype=jnp.int32))
+            eqx.tree_serialise_leaves(progress / "state.eqx", saved)
+            (progress / "COMPLETE").write_text("complete\n")
+        completed = sorted(p for p in root.glob("step-*") if (p / "COMPLETE").exists())
+        assert [int(p.name[5:]) for p in completed] == [3, 5]
+        latest = completed[-1]
+        loaded_config = json.loads((latest / "config.json").read_text())
+        # Validate before constructing any resumed model, optimizer, or data.
+        assert loaded_config == config, "configuration/environment mismatch"
+        restored = make_experiment(loaded_config)
+        restored_model, restored_optimizer, restored_state, restored_schedule = restored[:4]
+        restored_training, restored_validation, _ = restored[4:]
+        assert_same_tree(training, restored_training)
+        validate_batch(restored_validation)
+        template = (restored_model, restored_state, jnp.asarray(0, dtype=jnp.int32))
+        restored_model, restored_state, restored_step = eqx.tree_deserialise_leaves(
+            latest / "state.eqx", template
+        )
+        assert_same_tree(saved, (restored_model, restored_state, restored_step))
+        restored_step = int(restored_step)
+        assert restored_step == step == 5
+        np.testing.assert_allclose(schedule(step), restored_schedule(restored_step))
+        model, state, step, uninterrupted_loss = advance(
+            model, state, step, optimizer, training
+        )
+        restored_model, restored_state, restored_step, resumed_loss = advance(
+            restored_model, restored_state, restored_step,
+            restored_optimizer, restored_training,
+        )
+        np.testing.assert_allclose(uninterrupted_loss, resumed_loss, atol=1e-6, rtol=1e-6)
+        assert_same_tree(model, restored_model)
+        # This compares Adam moments, Adam's count, and the internal schedule count.
+        assert_same_tree(state, restored_state)
+        assert step == restored_step == 6
+        np.testing.assert_allclose(schedule(step), restored_schedule(restored_step))
+    # Continue with the complete post-comparison state, already at update 6.
+    return model, state, step
+
+
+def main():
+    config = {
+        "architecture": "three-radial-channels-fixed-origin-v1",
+        "irreps_in": "3x1o", "irreps_out": "1o",
+        "initial_scalar_weights": [0.2, -0.1, 0.1], "initial_bias": 0.1,
+        "target_scalar_weights": [0.3, 0.2, 0.1], "target_bias": 0.15,
+        "target_vector_weights": [0.7, -0.2, 0.1],
+        "data_recipe": "uniform-unit-cube-independent-splits-variable-length-v1",
+        "seed": SEED, "rng_impl": "threefry2x32", "dtype": "float32",
+        "max_points": 6, "train_clouds": 24, "validation_clouds": 12,
+        "optimizer": "adam-defaults", "learning_rate": 0.03,
+        "final_learning_rate": 0.003, "updates": 300,
+        "versions": {name: version(name) for name in (
+            "jax", "jaxlib", "equinox", "e3nn-jax", "optax", "numpy"
+        )},
+        "backend": jax.default_backend(),
+        "python": platform.python_version(),
+        "devices": [str(device) for device in jax.devices()],
+    }
+    train_ids = {f"train:{i}" for i in range(config["train_clouds"])}
+    validation_ids = {f"validation:{i}" for i in range(config["validation_clouds"])}
+    assert train_ids.isdisjoint(validation_ids)
+    model, optimizer, state, schedule, training, validation, rotation_key = make_experiment(config)
+    assert int(training[1].sum()) == 84 and int(validation[1].sum()) == 42
+    points = jnp.array([
+        [1.0, 0.2, -0.3], [-0.4, 0.8, 0.1],
+        [0.3, -0.2, 0.5], [0.5, 0.9, -0.4],
+    ], dtype=jnp.float32)
+    # For one unit-radius point: t=1/2 and scalar=0.1+0.2-0.1/2+0.1/4.
+    one_point_scalar, _ = model(jnp.array([[1.0, 0.0, 0.0]], dtype=jnp.float32))
+    np.testing.assert_allclose(one_point_scalar, 0.275, atol=1e-6)
+    origin_scalar, origin_vector = model(jnp.zeros((1, 3), dtype=jnp.float32))
+    np.testing.assert_allclose(origin_scalar, 0.3, atol=1e-6)
+    np.testing.assert_array_equal(origin_vector, jnp.zeros(3))
+    before_residuals = check_symmetry(model, points, rotation_key)
+    check_objective(model, training)
+    initial = float(objective(model, *training))
+    assert np.isfinite(initial) and initial > 0.0
+    model, state, step = check_recovery(
+        model, optimizer, state, schedule, training, config
+    )
+    while step < config["updates"]:
+        model, state, step, _ = advance(model, state, step, optimizer, training)
+    final = float(objective(model, *training))
+    assert np.isfinite(final) and final < 0.2 * initial, (initial, final)
+    assert step == config["updates"]
+    after_residuals = check_symmetry(model, points, rotation_key)
+    check_objective(model, training)
+    held_out = float(objective(model, *validation))
+    constant_scalar = jnp.full_like(validation[2], training[2].mean())
+    zero_vector = jnp.zeros_like(validation[3])
+    baseline = float(output_loss(constant_scalar, zero_vector, validation[2], validation[3]))
+    assert np.isfinite(held_out) and np.isfinite(baseline)
+    assert_same_tree(predict(model, validation[0], validation[1]),
+                     predict(model, validation[0], validation[1]))
+    # Validate on independent held-out coordinates as well as the asymmetric fixture.
+    held_out_points = validation[0][-1][validation[1][-1]]
+    matrix = rotation_matrix([0.2, 0.7, -0.4], 0.83)
+    scalar, vector = model(held_out_points)
+    rotated_scalar, rotated_vector = model(held_out_points @ matrix.T)
+    np.testing.assert_allclose(rotated_scalar, scalar, atol=SYMMETRY_ATOL, rtol=SYMMETRY_RTOL)
+    np.testing.assert_allclose(rotated_vector, vector @ matrix.T,
+                               atol=SYMMETRY_ATOL, rtol=SYMMETRY_RTOL)
+    print(json.dumps({name: config[name] for name in (
+        "versions", "backend", "python", "devices"
+    )}))
+    print(f"fixed-training loss: {initial:.6g} -> {final:.6g}; updates={step}")
+    print(f"held-out loss: model={held_out:.6g}, training-mean/zero-vector={baseline:.6g}")
+    print(f"max rotation residuals (scalar, vector): before={before_residuals}, after={after_residuals}")
+    print("shape, loss, masks, finite gradients, symmetry, learning, and next-update recovery checks passed")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+The implementation uses [Equinox's filtered differentiation](https://docs.kidger.site/equinox/api/transformations/) so that only floating array leaves are differentiated; e3nn representation metadata stays static. Optax's [initialization/update contract](https://optax.readthedocs.io/en/latest/getting_started.html) supplies the optimizer transition. The initialization, training-data, validation-data, and test-rotation streams come from independent splits of a typed JAX key, following the [JAX randomness guidance](https://docs.jax.dev/en/latest/random-numbers.html).
+
+When run, the assertions test nonzero outputs, shapes, finite values, a hand-computed scalar, a hand-computed loss, padding and padding-gradient independence, an analytic scalar-bias gradient, deterministic evaluation, fixed and random proper rotations, inversion, reflection, point permutations, and the transformation of the scalar's coordinate gradient. They repeat the model symmetry checks after the bounded learning run. The rotation samples use random axes and angles; they are numerical stress cases, not a claim of Haar-uniform coverage. Finite tests detect implementation mistakes; the algebra above establishes the symmetry for all orthogonal transformations in exact arithmetic.
+
+For recovery, two synchronous saves at updates 3 and 5 are marked complete, then the latest completed checkpoint is reconstructed from its validated saved configuration. Both branches perform update 6 and compare the next loss, all model parameters, all optimizer leaves, the update count, and the schedule value. The returned state is already at update 6, so continuation does not repeat it. The example uses a temporary directory; replace that root with a persistent absolute directory to retain checkpoints. Preserve each completed directory's configuration and state file together. This guarantee is for the same package environment, backend, data recipe, and fixed-full-batch policy. A stochastic loader or dropout extension must additionally save its live keys and data cursor; an inference-only export needs the model and reconstruction configuration but not Adam state.
+
+I have not executed the delivered model, imports, training, assertions, or checkpoint operations in this session. Numerical residuals, learning improvement, held-out losses, and recovery parity remain to be measured by running the script. The claim supported here is the stated structural O(3) symmetry about a fixed origin; translation behavior, richer angular expressiveness, and performance on real data require separate work.
