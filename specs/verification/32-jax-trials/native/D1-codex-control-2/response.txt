@@ -1,0 +1,424 @@
+Below is a standalone CPU example. It observes a variable-length prefix `s[0:L]` and predicts the single next value `s[L]`. Each example has its own amplitude, phase, frequency, offset, and length; training and validation contain independently sampled waves.
+
+The model is a 32-unit GRU with a residual readout: its prediction is the last observed value plus a learned correction. Inputs have shape `[batch, max_length, 1]`. A length mask freezes each sequence's hidden state after its final observation, so padding cannot affect the prediction. The recurrent computation uses `lax.scan`, whose carry has a fixed shape and dtype. [JAX scan documentation](https://docs.jax.dev/en/latest/_autosummary/jax.lax.scan.html)
+
+The script sets `JAX_PLATFORMS=cpu` before importing JAX. Install the standard CPU packages in a virtual environment, then save the code below as `sine_gru.py`. [JAX installation](https://docs.jax.dev/en/latest/installation.html), [platform configuration](https://docs.jax.dev/en/latest/config_options.html#platforms)
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install jax numpy
+python -m pip freeze > requirements.lock
+
+# Optional checks for padding, checkpoint restoration, and continuation.
+python sine_gru.py --self-test
+
+# Train until the absolute update count reaches 2,000.
+python sine_gru.py --steps 2000 --checkpoint sine-checkpoint.npz
+
+# Restore everything and continue to update 4,000.
+python sine_gru.py --resume --steps 4000 --checkpoint sine-checkpoint.npz
+```
+
+```python
+#!/usr/bin/env python3
+"""CPU next-value prediction for variable-length synthetic sine sequences."""
+
+import os
+
+os.environ["JAX_PLATFORMS"] = "cpu"
+
+import argparse
+from dataclasses import asdict, dataclass
+import json
+from pathlib import Path
+import tempfile
+from typing import NamedTuple
+
+import jax
+import jax.numpy as jnp
+import jaxlib
+import numpy as np
+
+jax.config.update("jax_enable_x64", False)
+
+
+CHECKPOINT_VERSION = 1
+PRNG_IMPL = "threefry2x32"
+PARAM_NAMES = ("wx", "wh", "b", "wy", "by")
+
+
+@dataclass(frozen=True)
+class Config:
+    seed: int = 7
+    hidden_size: int = 32
+    min_length: int = 8
+    max_length: int = 48
+    train_size: int = 2048
+    val_size: int = 512
+    batch_size: int = 64
+    learning_rate: float = 0.003
+    clip_norm: float = 1.0
+    beta1: float = 0.9
+    beta2: float = 0.999
+    epsilon: float = 1e-8
+
+
+class Dataset(NamedTuple):
+    x: jax.Array          # float32 [N, T, 1], right-padded
+    lengths: jax.Array    # int32 [N]
+    y: jax.Array          # float32 [N], sample immediately after the prefix
+
+
+class TrainState(NamedTuple):
+    params: dict
+    first_moment: dict
+    second_moment: dict
+    step: jax.Array
+    key: jax.Array
+
+
+def make_dataset(cfg, size, seed):
+    rng = np.random.default_rng(seed)
+    lengths = rng.integers(
+        cfg.min_length, cfg.max_length + 1, size=size, dtype=np.int32
+    )
+    amplitude = rng.uniform(0.5, 1.5, size=(size, 1))
+    frequency = rng.uniform(0.08, 0.45, size=(size, 1))  # radians/sample
+    phase = rng.uniform(-np.pi, np.pi, size=(size, 1))
+    offset = rng.uniform(-0.5, 0.5, size=(size, 1))
+    time = np.arange(cfg.max_length + 1)[None, :]
+    signal = (offset + amplitude * np.sin(frequency * time + phase)).astype(
+        np.float32
+    )
+    valid = np.arange(cfg.max_length)[None, :] < lengths[:, None]
+    x = np.where(valid, signal[:, :cfg.max_length], 0.0)[..., None]
+    y = signal[np.arange(size), lengths]
+    return Dataset(jnp.asarray(x), jnp.asarray(lengths), jnp.asarray(y))
+
+
+def fresh_run(cfg):
+    train_seed, val_seed = np.random.SeedSequence(cfg.seed).spawn(2)
+    train = make_dataset(cfg, cfg.train_size, train_seed)
+    validation = make_dataset(cfg, cfg.val_size, val_seed)
+    init_key, sampling_key = jax.random.split(
+        jax.random.key(cfg.seed, impl=PRNG_IMPL)
+    )
+    wx_key, wh_key, wy_key = jax.random.split(init_key, 3)
+    h = cfg.hidden_size
+    params = {
+        "wx": jax.random.normal(wx_key, (1, 3 * h), dtype=jnp.float32),
+        "wh": jax.random.normal(wh_key, (h, 3 * h), dtype=jnp.float32)
+              / np.sqrt(h),
+        "b": jnp.zeros((3 * h,), dtype=jnp.float32),
+        "wy": 0.1 * jax.random.normal(wy_key, (h, 1), dtype=jnp.float32)
+              / np.sqrt(h),
+        "by": jnp.zeros((1,), dtype=jnp.float32),
+    }
+    zeros = jax.tree_util.tree_map(jnp.zeros_like, params)
+    state = TrainState(
+        params, zeros, zeros, jnp.asarray(0, dtype=jnp.int32), sampling_key
+    )
+    return state, train, validation
+
+
+@jax.jit
+def predict(params, x, lengths):
+    batch_size, max_length, _ = x.shape
+    hidden_size = params["wh"].shape[0]
+    valid = jnp.arange(max_length)[:, None] < lengths[None, :]
+
+    def cell(hidden, inputs):
+        value, active = inputs
+        # Sanitize padding before arithmetic as well as masking the state update.
+        value = jnp.where(active[:, None], value, 0.0)
+        xr, xz, xn = jnp.split(value @ params["wx"] + params["b"], 3, axis=-1)
+        hr, hz, hn = jnp.split(hidden @ params["wh"], 3, axis=-1)
+        reset = jax.nn.sigmoid(xr + hr)
+        update = jax.nn.sigmoid(xz + hz)
+        candidate = jnp.tanh(xn + reset * hn)
+        proposed = update * hidden + (1.0 - update) * candidate
+        return jnp.where(active[:, None], proposed, hidden), None
+
+    initial = jnp.zeros((batch_size, hidden_size), dtype=x.dtype)
+    final, _ = jax.lax.scan(cell, initial, (jnp.swapaxes(x, 0, 1), valid))
+    last_value = x[jnp.arange(batch_size), lengths - 1, 0]
+    correction = (final @ params["wy"] + params["by"])[:, 0]
+    return last_value + correction
+
+
+def mean_squared_error(params, batch):
+    error = predict(params, batch.x, batch.lengths) - batch.y
+    return jnp.mean(jnp.square(error))
+
+
+def make_train_step(cfg):
+    @jax.jit
+    def train_step(state, train):
+        next_key, batch_key = jax.random.split(state.key)
+        indices = jax.random.randint(
+            batch_key, (cfg.batch_size,), 0, train.x.shape[0]
+        )
+        batch = Dataset(*(array[indices] for array in train))
+        loss, gradients = jax.value_and_grad(mean_squared_error)(state.params, batch)
+        grad_norm = jnp.sqrt(sum(
+            jnp.sum(jnp.square(leaf))
+            for leaf in jax.tree_util.tree_leaves(gradients)
+        ))
+        scale = jnp.minimum(1.0, cfg.clip_norm / (grad_norm + 1e-12))
+        gradients = jax.tree_util.tree_map(lambda g: g * scale, gradients)
+        first = jax.tree_util.tree_map(
+            lambda m, g: cfg.beta1 * m + (1.0 - cfg.beta1) * g,
+            state.first_moment, gradients,
+        )
+        second = jax.tree_util.tree_map(
+            lambda v, g: cfg.beta2 * v + (1.0 - cfg.beta2) * jnp.square(g),
+            state.second_moment, gradients,
+        )
+        step = state.step + 1
+        correction1 = 1.0 - cfg.beta1 ** step
+        correction2 = 1.0 - cfg.beta2 ** step
+        params = jax.tree_util.tree_map(
+            lambda p, m, v: p - cfg.learning_rate * (m / correction1)
+            / (jnp.sqrt(v / correction2) + cfg.epsilon),
+            state.params, first, second,
+        )
+        return TrainState(params, first, second, step, next_key), loss, grad_norm
+
+    return train_step
+
+
+def report_validation(state, validation):
+    predictions = np.asarray(predict(state.params, validation.x, validation.lengths))
+    targets = np.asarray(validation.y)
+    lengths = np.asarray(validation.lengths)
+    last_value = np.asarray(validation.x)[np.arange(len(lengths)), lengths - 1, 0]
+    mse = float(np.mean(np.square(predictions - targets)))
+    baseline_mse = float(np.mean(np.square(last_value - targets)))
+    print(
+        f"step={int(state.step):5d} val_mse={mse:.6f} "
+        f"val_rmse={np.sqrt(mse):.6f} persistence_mse={baseline_mse:.6f}",
+        flush=True,
+    )
+    return mse
+
+
+def runtime_versions():
+    return {"jax": jax.__version__, "jaxlib": jaxlib.__version__,
+            "numpy": np.__version__}
+
+
+def save_checkpoint(path, cfg, state, train, validation):
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    metadata = {
+        "version": CHECKPOINT_VERSION,
+        "model": "masked-gru-residual-v1",
+        "config": asdict(cfg),
+        "prng_impl": PRNG_IMPL,
+        "packages": runtime_versions(),
+    }
+    arrays = {
+        "metadata": np.asarray(json.dumps(metadata)),
+        "step": np.asarray(state.step),
+        "key": np.asarray(jax.random.key_data(state.key)),
+    }
+    for group_name, values in (
+        ("params", state.params),
+        ("first", state.first_moment),
+        ("second", state.second_moment),
+    ):
+        for name in PARAM_NAMES:
+            arrays[f"{group_name}_{name}"] = np.asarray(values[name])
+    for split_name, dataset in (("train", train), ("validation", validation)):
+        for field, array in zip(Dataset._fields, dataset):
+            arrays[f"{split_name}_{field}"] = np.asarray(array)
+
+    # Replace only after the complete file is flushed; retain the old checkpoint
+    # if writing is interrupted. The temporary file is on the same filesystem.
+    temporary_path = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            dir=path.parent, prefix=path.name + ".", suffix=".tmp", delete=False
+        ) as file:
+            temporary_path = Path(file.name)
+            np.savez_compressed(file, **arrays)
+            file.flush()
+            os.fsync(file.fileno())
+        os.replace(temporary_path, path)
+    finally:
+        if temporary_path is not None:
+            temporary_path.unlink(missing_ok=True)
+
+
+def load_checkpoint(path):
+    with np.load(path, allow_pickle=False) as saved:
+        metadata = json.loads(saved["metadata"].item())
+        if (metadata["version"] != CHECKPOINT_VERSION
+                or metadata["model"] != "masked-gru-residual-v1"
+                or metadata["prng_impl"] != PRNG_IMPL):
+            raise ValueError("Unsupported checkpoint format or model.")
+        if metadata["packages"] != runtime_versions():
+            raise ValueError(
+                "Resume using the recorded package versions: "
+                + json.dumps(metadata["packages"])
+            )
+        cfg = Config(**metadata["config"])
+
+        def read_group(prefix):
+            return {name: jnp.asarray(saved[f"{prefix}_{name}"])
+                    for name in PARAM_NAMES}
+
+        state = TrainState(
+            read_group("params"), read_group("first"), read_group("second"),
+            jnp.asarray(saved["step"]),
+            jax.random.wrap_key_data(jnp.asarray(saved["key"]), impl=PRNG_IMPL),
+        )
+
+        def read_dataset(prefix):
+            return Dataset(*(jnp.asarray(saved[f"{prefix}_{field}"])
+                             for field in Dataset._fields))
+
+        train = read_dataset("train")
+        validation = read_dataset("validation")
+    return cfg, state, train, validation
+
+
+def predict_next(params, cfg, observed):
+    observed = np.asarray(observed, dtype=np.float32)
+    if (observed.ndim != 1 or not 1 <= observed.size <= cfg.max_length
+            or not np.isfinite(observed).all()):
+        raise ValueError(f"Supply 1 to {cfg.max_length} finite scalar observations.")
+    x = np.zeros((1, cfg.max_length, 1), dtype=np.float32)
+    x[0, :observed.size, 0] = observed
+    lengths = jnp.asarray([observed.size], dtype=jnp.int32)
+    return float(predict(params, jnp.asarray(x), lengths)[0])
+
+
+def assert_states_equal(left, right):
+    left_leaves = jax.tree_util.tree_leaves(left[:-1])
+    right_leaves = jax.tree_util.tree_leaves(right[:-1])
+    assert len(left_leaves) == len(right_leaves)
+    for a, b in zip(left_leaves, right_leaves):
+        np.testing.assert_array_equal(np.asarray(a), np.asarray(b))
+    np.testing.assert_array_equal(
+        np.asarray(jax.random.key_data(left.key)),
+        np.asarray(jax.random.key_data(right.key)),
+    )
+
+
+def self_test():
+    cfg = Config(hidden_size=8, min_length=3, max_length=7,
+                 train_size=32, val_size=16, batch_size=8)
+    state, train, validation = fresh_run(cfg)
+    padding = np.arange(cfg.max_length)[None, :] >= np.asarray(train.lengths)[:, None]
+    changed = np.asarray(train.x).copy()
+    changed[padding] = 123.0
+    np.testing.assert_allclose(
+        np.asarray(predict(state.params, train.x, train.lengths)),
+        np.asarray(predict(state.params, jnp.asarray(changed), train.lengths)),
+        rtol=1e-6, atol=1e-6,
+    )
+    input_gradient = jax.grad(
+        lambda x: jnp.sum(predict(state.params, x, train.lengths))
+    )(train.x)
+    padded_gradient = np.asarray(input_gradient)[padding]
+    np.testing.assert_array_equal(padded_gradient, np.zeros_like(padded_gradient))
+
+    train_step = make_train_step(cfg)
+    after_one, loss, norm = train_step(state, train)
+    assert np.isfinite(float(loss)) and np.isfinite(float(norm))
+    with tempfile.TemporaryDirectory() as directory:
+        path = Path(directory) / "checkpoint.npz"
+        save_checkpoint(path, cfg, after_one, train, validation)
+        loaded_cfg, restored, loaded_train, loaded_validation = load_checkpoint(path)
+        assert loaded_cfg == cfg
+        assert_states_equal(after_one, restored)
+        for original, loaded in ((train, loaded_train), (validation, loaded_validation)):
+            for a, b in zip(original, loaded):
+                np.testing.assert_array_equal(np.asarray(a), np.asarray(b))
+        uninterrupted, _, _ = train_step(after_one, train)
+        resumed, _, _ = train_step(restored, loaded_train)
+        assert_states_equal(uninterrupted, resumed)
+    print("Padding, zero padding-gradient, checkpoint, and resume checks passed.")
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--steps", type=int, default=2000,
+                        help="Absolute target update count, including restored updates.")
+    parser.add_argument("--checkpoint", type=Path, default=Path("sine-checkpoint.npz"))
+    parser.add_argument("--resume", action="store_true")
+    parser.add_argument("--self-test", action="store_true")
+    args = parser.parse_args()
+    if jax.default_backend() != "cpu":
+        raise RuntimeError("This example requires the CPU backend.")
+    if args.self_test:
+        self_test()
+        return
+    if args.steps < 0:
+        parser.error("--steps must be nonnegative.")
+    if args.resume:
+        if not args.checkpoint.is_file():
+            parser.error("The checkpoint to resume does not exist.")
+        cfg, state, train, validation = load_checkpoint(args.checkpoint)
+    else:
+        if args.checkpoint.exists():
+            parser.error("Checkpoint exists; use --resume or a new --checkpoint path.")
+        cfg = Config()
+        state, train, validation = fresh_run(cfg)
+    start_step = int(state.step)
+    if args.steps < start_step:
+        parser.error("--steps is less than the restored update count.")
+
+    print(f"backend={jax.default_backend()} packages={runtime_versions()}", flush=True)
+    report_validation(state, validation)
+    train_step = make_train_step(cfg)
+    try:
+        for step in range(start_step + 1, args.steps + 1):
+            proposed, loss, norm = train_step(state, train)
+            loss_value, norm_value = jax.device_get((loss, norm))
+            if not np.isfinite(loss_value) or not np.isfinite(norm_value):
+                raise FloatingPointError("Nonfinite loss or gradient; last valid state retained.")
+            state = proposed
+            if step % 200 == 0 or step == args.steps:
+                print(f"batch_mse_before_update={float(loss_value):.6f}", flush=True)
+                report_validation(state, validation)
+                save_checkpoint(args.checkpoint, cfg, state, train, validation)
+    except KeyboardInterrupt:
+        print("Interrupted; saving the last completed update.", flush=True)
+    finally:
+        save_checkpoint(args.checkpoint, cfg, state, train, validation)
+
+    length = int(validation.lengths[0])
+    observed = np.asarray(validation.x[0, :length, 0])
+    print(f"example_length={length} prediction={predict_next(state.params, cfg, observed):.6f} "
+          f"target={float(validation.y[0]):.6f}")
+    print(f"Saved update {int(state.step)} to {args.checkpoint.resolve()}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+Validation reports MSE and RMSE on every held-out sequence, plus the MSE of simply repeating the last observation. That baseline makes the learned correction easy to assess. The batch training loss is measured before its update; validation uses the updated parameters. No target after the observed prefix enters the model input, and the validation split never participates in gradient updates.
+
+The checkpoint stores parameters, both Adam moment trees, the completed update count, the next sampling key, all configuration values, and the exact training and validation arrays. Minibatches are sampled with replacement using a freshly split JAX key per update. Validation does not advance this key. Typed keys are serialized through `key_data` and restored with the recorded Threefry implementation through `wrap_key_data`, following [JAX's random-key API](https://docs.jax.dev/en/latest/jax.random.html). Thus restoration preserves the next batch draw as well as the optimizer state. The compressed NPZ contains ordinary numeric arrays and JSON text and is read with `allow_pickle=False`. [NumPy NPZ documentation](https://numpy.org/doc/stable/reference/generated/numpy.savez_compressed.html)
+
+Keep the same script and environment for continuation; the loader checks the JAX, jaxlib, and NumPy versions against the checkpoint. `--steps` is the total desired number of updates, so resuming from update 2,000 with `--steps 4000` runs 2,000 additional updates. Every 200 updates and at normal termination the script writes a checkpoint. A caught keyboard interruption saves the last completed update; an abrupt process termination can lose updates since the latest checkpoint. Checkpoints retain the latest state rather than choosing a state by validation score.
+
+To use a checkpoint for a new prefix, import this script and call:
+
+```python
+from sine_gru import load_checkpoint, predict_next
+
+cfg, state, _, _ = load_checkpoint("sine-checkpoint.npz")
+next_value = predict_next(state.params, cfg, observed=[0.0, 0.2, 0.39, 0.56,
+                                                     0.72, 0.84, 0.93, 0.99])
+print(next_value)
+```
+
+The default training lengths are 8–48 samples. The inference helper accepts shorter prefixes, but their accuracy and generalization to frequencies or signals outside the synthetic distribution require separate validation.
+
+I have not executed this model, training loop, or the supplied self-tests in this session. The code was checked by static inspection and Python syntax parsing only; no measured validation score or runtime success is claimed. The optional self-test checks prediction invariance to padding, zero input gradients on padded positions, complete checkpoint restoration, and equality of the next update after a save/load boundary.

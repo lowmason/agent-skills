@@ -1,0 +1,26 @@
+{
+  "trial": "D3-codex-control-1",
+  "scenario": "D3",
+  "condition": "control",
+  "runtime": "Built-in Codex collaboration agent",
+  "agent_type": "default",
+  "requested_fork_turns": "none",
+  "model": "Inherited active runtime; exact identifier not exposed by collaboration API",
+  "effort": "Inherited active runtime; exact value not exposed by collaboration API",
+  "tool_policy": "Read-only information gathering; execute only local trial_io recording helper, no delivered application code",
+  "automatic_skill_loading_observed": false,
+  "source_hashes": {},
+  "guidance_directory": null,
+  "guidance_loading": "No new JAX skill guidance supplied; ordinary knowledge/primary sources available",
+  "prompt_sha256": "08d6e1d0f5e92e5aab45310e24a3ae423a43634194ed37d51ba8ae030c7b43b7",
+  "spawn_identity": {
+    "task_name": "/root/native_trial_conductor/native_d3_control"
+  },
+  "completion": "Complete substantive response and research notes; child final received",
+  "completion_verified_at_utc": "2026-10-03T22:13:19.280923+00:00",
+  "response_sha256": "e4a7a34617f3ad7fec152648f4457829848f7b43658a60c83e6926cfc08e5aad",
+  "response_lines": 199,
+  "verified_first_read": "Full prompt hash and byte count match first recorded start event",
+  "actual_reference_reads": [],
+  "application_execution": "Not executed per explicit child delivery/research notes; scorer treats response code as data"
+}

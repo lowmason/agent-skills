@@ -1,0 +1,510 @@
+Below is a small CPU-only JAX GRU that learns **one-step prediction from an observed prefix**. For a sequence of length `L`, it trains on `s[:-1] → s[1:]`, producing `L - 1` targets. Sequences vary from 16 to 64 samples; each batch is padded to a fixed shape, and the mask excludes padding from both hidden-state updates and the mean squared error. The final partial batch is padded with fully masked rows.
+
+The default model has 3,297 parameters. It uses synthetic sine waves with random amplitude, angular frequency, phase, offset, and small observation noise. Training and validation use independent deterministic random streams. Validation also reports the persistence baseline, which predicts that the next sample equals the current sample.
+
+The implementation uses JAX's compiled [`lax.scan`](https://docs.jax.dev/en/latest/_autosummary/jax.lax.scan.html) for the recurrent calculation and [`value_and_grad`](https://docs.jax.dev/en/latest/automatic-differentiation.html) for training. CPU selection is set before importing JAX, using the documented [`JAX_PLATFORMS` option](https://docs.jax.dev/en/latest/config_options.html#platforms).
+
+Save the following as `sine_gru.py`. Install JAX using the [official CPU installation](https://docs.jax.dev/en/latest/installation.html#cpu) and run:
+
+```bash
+python -m pip install --upgrade jax numpy
+python sine_gru.py --epochs 20 --checkpoint sine_checkpoint.npz
+
+# Continue until a total of 40 epochs have completed:
+python sine_gru.py --resume --epochs 40 --checkpoint sine_checkpoint.npz
+```
+
+`--epochs` is the total target, not an additional number of epochs. A checkpoint is written every 25 updates and at every epoch boundary; `--save-every` changes the update interval. Resuming restores parameters, Adam moments, update count, epoch, next batch, training metric accumulators, and the configuration. Dataset generation and shuffling are deterministic functions of the saved seed and epoch, so no mutable training RNG is needed. An interrupted process resumes from its latest completed checkpoint; updates since that save are replayed. Keep the same script and package versions for reproducible continuation.
+
+```python
+from __future__ import annotations
+
+import os
+
+# This must be set before JAX initializes its backends.
+os.environ["JAX_PLATFORMS"] = "cpu"
+
+import argparse
+import json
+import math
+from dataclasses import asdict, dataclass
+from pathlib import Path
+from typing import NamedTuple
+
+import jax
+import jax.numpy as jnp
+import jaxlib
+import numpy as np
+
+
+CHECKPOINT_FORMAT = 1
+ADAM_BETA1 = 0.9
+ADAM_BETA2 = 0.999
+ADAM_EPSILON = 1e-8
+GRADIENT_CLIP_NORM = 1.0
+
+
+@dataclass(frozen=True)
+class Config:
+    seed: int = 42
+    train_size: int = 512
+    validation_size: int = 128
+    min_length: int = 16
+    max_length: int = 64
+    batch_size: int = 32
+    hidden_size: int = 32
+    learning_rate: float = 0.003
+    noise_std: float = 0.01
+
+    def validate(self):
+        if not 2 <= self.min_length <= self.max_length:
+            raise ValueError("Require 2 <= min_length <= max_length.")
+        if min(self.train_size, self.validation_size,
+               self.batch_size, self.hidden_size) < 1:
+            raise ValueError("Dataset, batch, and hidden sizes must be positive.")
+        if not math.isfinite(self.learning_rate) or self.learning_rate <= 0:
+            raise ValueError("learning_rate must be finite and positive.")
+        if not math.isfinite(self.noise_std) or self.noise_std < 0:
+            raise ValueError("noise_std must be finite and nonnegative.")
+        if not 0 <= self.seed < 2**32:
+            raise ValueError("seed must be an unsigned 32-bit integer.")
+
+
+class Batch(NamedTuple):
+    inputs: np.ndarray       # [batch, time, 1], float32
+    targets: np.ndarray      # [batch, time, 1], float32
+    valid: np.ndarray        # [batch, time], bool
+
+
+def make_sequences(config, size, stream):
+    rng = np.random.default_rng(np.random.SeedSequence([config.seed, stream]))
+    sequences = []
+    for _ in range(size):
+        length = int(rng.integers(config.min_length, config.max_length + 1))
+        amplitude = rng.uniform(0.5, 1.5)
+        omega = rng.uniform(0.08, 0.45)  # Radians per sample, same sampling interval.
+        phase = rng.uniform(0.0, 2.0 * np.pi)
+        offset = rng.uniform(-0.2, 0.2)
+        time = np.arange(length, dtype=np.float32)
+        signal = amplitude * np.sin(omega * time + phase) + offset
+        signal += rng.normal(0.0, config.noise_std, size=length)
+        sequences.append(signal.astype(np.float32))
+    return sequences
+
+
+def pack_batch(sequences, indices, config):
+    indices = list(indices)
+    if not 1 <= len(indices) <= config.batch_size:
+        raise ValueError("A batch needs 1..batch_size real sequences.")
+    shape = (config.batch_size, config.max_length - 1, 1)
+    inputs = np.zeros(shape, dtype=np.float32)
+    targets = np.zeros(shape, dtype=np.float32)
+    valid = np.zeros(shape[:2], dtype=bool)
+    for row, index in enumerate(indices):
+        sequence = np.asarray(sequences[index], dtype=np.float32)
+        if sequence.ndim != 1 or not 2 <= len(sequence) <= config.max_length:
+            raise ValueError("Each sequence must be 1D with 2..max_length samples.")
+        if not np.isfinite(sequence).all():
+            raise ValueError("Sequence values must be finite.")
+        length = len(sequence) - 1
+        inputs[row, :length, 0] = sequence[:-1]
+        targets[row, :length, 0] = sequence[1:]
+        valid[row, :length] = True
+    return Batch(inputs, targets, valid)
+
+
+def initialize_state(config):
+    gate_key, candidate_key, output_key = jax.random.split(
+        jax.random.key(config.seed), 3
+    )
+    hidden = config.hidden_size
+
+    def weight(key, fan_in, fan_out):
+        scale = math.sqrt(2.0 / (fan_in + fan_out))
+        return jax.random.normal(key, (fan_in, fan_out), dtype=jnp.float32) * scale
+
+    params = {
+        "w_gate": weight(gate_key, hidden + 1, 2 * hidden),
+        "b_gate": jnp.zeros(2 * hidden, dtype=jnp.float32),
+        "w_candidate": weight(candidate_key, hidden + 1, hidden),
+        "b_candidate": jnp.zeros(hidden, dtype=jnp.float32),
+        "w_output": weight(output_key, hidden, 1),
+        "b_output": jnp.zeros(1, dtype=jnp.float32),
+    }
+    return {
+        "params": params,
+        "m": jax.tree.map(jnp.zeros_like, params),
+        "v": jax.tree.map(jnp.zeros_like, params),
+        "step": jnp.asarray(0, dtype=jnp.int32),
+    }
+
+
+@jax.jit
+def forward(params, inputs, valid):
+    hidden_size = params["b_candidate"].shape[0]
+    initial_hidden = jnp.zeros((inputs.shape[0], hidden_size), dtype=inputs.dtype)
+
+    def cell(hidden, sample):
+        x, active = sample
+        x = jnp.where(active[:, None], x, 0.0)
+        gates = jax.nn.sigmoid(
+            jnp.concatenate([x, hidden], axis=-1) @ params["w_gate"]
+            + params["b_gate"]
+        )
+        update, reset = jnp.split(gates, 2, axis=-1)
+        candidate = jnp.tanh(
+            jnp.concatenate([x, reset * hidden], axis=-1)
+            @ params["w_candidate"] + params["b_candidate"]
+        )
+        proposed_hidden = (1.0 - update) * hidden + update * candidate
+        # Each sequence stops advancing once its valid samples are exhausted.
+        hidden = jnp.where(active[:, None], proposed_hidden, hidden)
+        prediction = hidden @ params["w_output"] + params["b_output"]
+        prediction = jnp.where(active[:, None], prediction, 0.0)
+        return hidden, prediction
+
+    final_hidden, predictions = jax.lax.scan(
+        cell,
+        initial_hidden,
+        (jnp.swapaxes(inputs, 0, 1), jnp.swapaxes(valid, 0, 1)),
+    )
+    return jnp.swapaxes(predictions, 0, 1), final_hidden
+
+
+def squared_error_sum(predictions, targets, valid):
+    safe_targets = jnp.where(valid[..., None], targets, 0.0)
+    error = jnp.where(valid[..., None], predictions - safe_targets, 0.0)
+    return jnp.sum(jnp.square(error))
+
+
+def mse(params, batch):
+    predictions, _ = forward(params, batch.inputs, batch.valid)
+    count = jnp.sum(batch.valid, dtype=jnp.float32)
+    return squared_error_sum(predictions, batch.targets, batch.valid) / jnp.maximum(
+        count, 1.0
+    )
+
+
+@jax.jit
+def train_step(state, batch, learning_rate):
+    loss, gradients = jax.value_and_grad(mse)(state["params"], batch)
+    gradient_norm = jnp.sqrt(sum(
+        jnp.sum(jnp.square(leaf)) for leaf in jax.tree.leaves(gradients)
+    ))
+    scale = jnp.minimum(1.0, GRADIENT_CLIP_NORM / (gradient_norm + 1e-8))
+    gradients = jax.tree.map(lambda gradient: gradient * scale, gradients)
+    first_moment = jax.tree.map(
+        lambda old, gradient: ADAM_BETA1 * old + (1.0 - ADAM_BETA1) * gradient,
+        state["m"], gradients,
+    )
+    second_moment = jax.tree.map(
+        lambda old, gradient: ADAM_BETA2 * old
+        + (1.0 - ADAM_BETA2) * jnp.square(gradient),
+        state["v"], gradients,
+    )
+    step = state["step"] + jnp.asarray(1, dtype=jnp.int32)
+    correction1 = 1.0 - ADAM_BETA1 ** step.astype(jnp.float32)
+    correction2 = 1.0 - ADAM_BETA2 ** step.astype(jnp.float32)
+    params = jax.tree.map(
+        lambda param, moment1, moment2: param - learning_rate
+        * (moment1 / correction1)
+        / (jnp.sqrt(moment2 / correction2) + ADAM_EPSILON),
+        state["params"], first_moment, second_moment,
+    )
+    return {
+        "params": params, "m": first_moment, "v": second_moment, "step": step
+    }, loss
+
+
+@jax.jit
+def validation_statistics(params, batch):
+    predictions, _ = forward(params, batch.inputs, batch.valid)
+    return (
+        squared_error_sum(predictions, batch.targets, batch.valid),
+        jnp.sum(batch.valid, dtype=jnp.float32),
+        squared_error_sum(batch.inputs, batch.targets, batch.valid),
+    )
+
+
+def evaluate(params, sequences, config):
+    total_error = total_count = baseline_error = 0.0
+    for start in range(0, len(sequences), config.batch_size):
+        indices = range(start, min(start + config.batch_size, len(sequences)))
+        batch = pack_batch(sequences, indices, config)
+        error, count, baseline = (
+            float(value) for value in validation_statistics(params, batch)
+        )
+        total_error += error
+        total_count += count
+        baseline_error += baseline
+    if total_count == 0:
+        raise ValueError("Validation needs at least one valid target.")
+    # Summing errors/counts weights batches by actual valid sample count.
+    return total_error / total_count, baseline_error / total_count
+
+
+def predict_next(params, observed):
+    observed = np.asarray(observed, dtype=np.float32)
+    if observed.ndim != 1 or observed.size == 0:
+        raise ValueError("Provide a nonempty 1D observed sequence.")
+    if not np.isfinite(observed).all():
+        raise ValueError("Observed samples must be finite.")
+    inputs = jnp.asarray(observed[None, :, None])
+    valid = jnp.ones((1, observed.size), dtype=bool)
+    predictions, _ = forward(params, inputs, valid)
+    return float(predictions[0, -1, 0])
+
+
+def package_versions():
+    return {"jax": jax.__version__, "jaxlib": jaxlib.__version__,
+            "numpy": np.__version__}
+
+
+def save_checkpoint(path, state, config, progress):
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    host_state = jax.device_get(state)
+    metadata = {
+        "format": CHECKPOINT_FORMAT,
+        "config": asdict(config),
+        "progress": dict(progress),
+        "versions": package_versions(),
+    }
+    arrays = {
+        "metadata": np.asarray(json.dumps(metadata)),
+        "step": np.asarray(host_state["step"]),
+    }
+    for group in ("params", "m", "v"):
+        for name, value in host_state[group].items():
+            arrays[f"{group}/{name}"] = np.asarray(value)
+    temporary = path.with_name(path.name + ".tmp")
+    try:
+        # A file handle prevents NumPy from appending another .npz suffix.
+        with temporary.open("wb") as checkpoint_file:
+            np.savez_compressed(checkpoint_file, **arrays)
+            checkpoint_file.flush()
+            os.fsync(checkpoint_file.fileno())
+        os.replace(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def load_checkpoint(path):
+    with np.load(path, allow_pickle=False) as saved:
+        metadata = json.loads(str(saved["metadata"].item()))
+        if metadata["format"] != CHECKPOINT_FORMAT:
+            raise ValueError("Unsupported checkpoint format.")
+        config = Config(**metadata["config"])
+        config.validate()
+        template = initialize_state(config)
+        state = {}
+        for group in ("params", "m", "v"):
+            state[group] = {}
+            for name, expected in template[group].items():
+                value = saved[f"{group}/{name}"]
+                if value.shape != expected.shape or value.dtype != np.float32:
+                    raise ValueError(f"Invalid checkpoint array: {group}/{name}")
+                if not np.isfinite(value).all():
+                    raise ValueError(f"Nonfinite checkpoint array: {group}/{name}")
+                state[group][name] = jnp.asarray(value)
+        step = saved["step"]
+        if step.shape != () or step.dtype != np.int32 or int(step) < 0:
+            raise ValueError("Invalid checkpoint update count.")
+        state["step"] = jnp.asarray(step)
+        progress = metadata["progress"]
+        batches_per_epoch = math.ceil(config.train_size / config.batch_size)
+        if (not isinstance(progress["epoch"], int)
+                or not isinstance(progress["batch"], int)
+                or progress["epoch"] < 0
+                or not 0 <= progress["batch"] <= batches_per_epoch):
+            raise ValueError("Invalid checkpoint training position.")
+        expected_step = progress["epoch"] * batches_per_epoch + progress["batch"]
+        if int(step) != expected_step:
+            raise ValueError("Checkpoint position disagrees with update count.")
+        if (not math.isfinite(progress["sse"])
+                or progress["sse"] < 0 or progress["count"] < 0):
+            raise ValueError("Invalid checkpoint training metrics.")
+    return state, config, progress, metadata["versions"]
+
+
+def run_training(state, config, progress, epochs, checkpoint, save_every):
+    train_sequences = make_sequences(config, config.train_size, stream=0)
+    validation_sequences = make_sequences(config, config.validation_size, stream=1)
+    learning_rate = jnp.asarray(config.learning_rate, dtype=jnp.float32)
+    batches_per_epoch = math.ceil(config.train_size / config.batch_size)
+    initial_mse, baseline_mse = evaluate(state["params"], validation_sequences, config)
+    print(f"CPU={jax.devices()[0]}  validation MSE={initial_mse:.6f}  "
+          f"persistence MSE={baseline_mse:.6f}", flush=True)
+
+    while progress["epoch"] < epochs:
+        epoch = progress["epoch"]
+        shuffle_rng = np.random.default_rng(
+            np.random.SeedSequence([config.seed, 2, epoch])
+        )
+        order = shuffle_rng.permutation(config.train_size)
+        for batch_number in range(progress["batch"], batches_per_epoch):
+            start = batch_number * config.batch_size
+            batch = pack_batch(
+                train_sequences, order[start:start + config.batch_size], config
+            )
+            state, loss = train_step(state, batch, learning_rate)
+            loss = float(loss)
+            if not math.isfinite(loss):
+                raise FloatingPointError("Nonfinite training loss; latest checkpoint retained.")
+            count = int(batch.valid.sum())
+            progress["sse"] += loss * count
+            progress["count"] += count
+            progress["batch"] = batch_number + 1
+            if int(state["step"]) % save_every == 0:
+                save_checkpoint(checkpoint, state, config, progress)
+
+        validation_mse, baseline_mse = evaluate(
+            state["params"], validation_sequences, config
+        )
+        train_mse = progress["sse"] / progress["count"]
+        print(f"epoch {epoch + 1:02d}/{epochs}: train MSE={train_mse:.6f}  "
+              f"validation MSE={validation_mse:.6f}  "
+              f"persistence MSE={baseline_mse:.6f}", flush=True)
+        progress = {"epoch": epoch + 1, "batch": 0, "sse": 0.0, "count": 0}
+        save_checkpoint(checkpoint, state, config, progress)
+
+    # Also makes --epochs 0 a usable initialized-model checkpoint.
+    save_checkpoint(checkpoint, state, config, progress)
+    example = validation_sequences[0]
+    prediction = predict_next(state["params"], example[:-1])
+    print(f"Example: observed {len(example) - 1} samples, "
+          f"predicted next={prediction:.4f}, actual next={example[-1]:.4f}")
+    print(f"Checkpoint: {Path(checkpoint).resolve()}")
+    return state, progress
+
+
+def main():
+    parser = argparse.ArgumentParser(description="CPU GRU for variable-length sine waves")
+    parser.add_argument("--epochs", type=int, default=20)
+    parser.add_argument("--checkpoint", type=Path, default=Path("sine_checkpoint.npz"))
+    parser.add_argument("--resume", action="store_true")
+    parser.add_argument("--save-every", type=int, default=25)
+    args = parser.parse_args()
+    if args.epochs < 0 or args.save_every < 1:
+        parser.error("--epochs must be nonnegative and --save-every must be positive")
+    if args.resume:
+        state, config, progress, versions = load_checkpoint(args.checkpoint)
+        print(f"Resuming epoch={progress['epoch']} next_batch={progress['batch']} "
+              f"updates={int(state['step'])}", flush=True)
+        if versions != package_versions():
+            print(f"Package versions changed: saved={versions}, current={package_versions()}. "
+                  "Continuation is possible, but identical numerical replay is not guaranteed.")
+    else:
+        if args.checkpoint.exists():
+            parser.error("Checkpoint already exists; use --resume or choose a new path")
+        config = Config()
+        config.validate()
+        state = initialize_state(config)
+        progress = {"epoch": 0, "batch": 0, "sse": 0.0, "count": 0}
+        # Establish a recovery point before the first update.
+        save_checkpoint(args.checkpoint, state, config, progress)
+    if args.epochs < progress["epoch"]:
+        parser.error("--epochs is below the completed epoch count")
+    run_training(state, config, progress, args.epochs, args.checkpoint, args.save_every)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+For prediction after loading a checkpoint, the relevant API is:
+
+```python
+from sine_gru import load_checkpoint, predict_next
+
+state, config, progress, versions = load_checkpoint("sine_checkpoint.npz")
+observed = [0.0, 0.2, 0.39, 0.56, 0.72]
+next_sample = predict_next(state["params"], observed)
+print(next_sample)
+```
+
+`predict_next` processes the entire observed prefix and returns the output after its final sample. The recurrent state starts at zero for each independent sequence. This is one-step forecasting with observed inputs; repeatedly feeding predictions back would be a separate rollout evaluation and can accumulate error. Validation MSE measures noisy observed next samples, including the early timesteps where frequency and phase are still ambiguous. No convergence threshold or measured training result is assumed here.
+
+Here are focused checks to save as `test_sine_gru.py`. They cover the indexing contract, dummy rows, masking with nonfinite padded values, frozen state during padding, and checkpoint continuation. They are supplied for execution in your environment:
+
+```python
+from dataclasses import replace
+
+import jax
+import jax.numpy as jnp
+import numpy as np
+
+from sine_gru import (
+    Batch, Config, forward, initialize_state, load_checkpoint, make_sequences,
+    mse, pack_batch, save_checkpoint, train_step,
+)
+
+
+def assert_trees_close(left, right):
+    left_leaves, left_structure = jax.tree.flatten(left)
+    right_leaves, right_structure = jax.tree.flatten(right)
+    assert left_structure == right_structure
+    for a, b in zip(left_leaves, right_leaves, strict=True):
+        np.testing.assert_allclose(np.asarray(a), np.asarray(b), rtol=1e-6, atol=1e-7)
+
+
+def test_batch_shifts_targets_and_masks_dummy_rows():
+    config = replace(Config(), batch_size=3, min_length=2, max_length=5)
+    sequences = [np.array([1, 2, 3]), np.array([4, 5, 6, 7, 8])]
+    batch = pack_batch(sequences, [0, 1], config)
+    np.testing.assert_array_equal(batch.inputs[0, :2, 0], [1, 2])
+    np.testing.assert_array_equal(batch.targets[0, :2, 0], [2, 3])
+    np.testing.assert_array_equal(batch.valid.sum(axis=1), [2, 4, 0])
+    assert batch.inputs.shape == (3, 4, 1)
+    assert batch.inputs.dtype == np.float32
+
+
+def test_padding_changes_neither_predictions_loss_nor_gradients():
+    config = replace(Config(), batch_size=2, min_length=2, max_length=6)
+    params = initialize_state(config)["params"]
+    batch = pack_batch([np.array([0.1, 0.2, 0.3])], [0], config)
+    changed = Batch(
+        np.where(batch.valid[..., None], batch.inputs, np.nan).astype(np.float32),
+        np.where(batch.valid[..., None], batch.targets, np.nan).astype(np.float32),
+        batch.valid,
+    )
+    predictions, hidden = forward(params, batch.inputs, batch.valid)
+    changed_predictions, changed_hidden = forward(params, changed.inputs, changed.valid)
+    assert_trees_close((predictions, hidden), (changed_predictions, changed_hidden))
+    assert_trees_close(mse(params, batch), mse(params, changed))
+    assert_trees_close(jax.grad(mse)(params, batch), jax.grad(mse)(params, changed))
+    _, unpadded_hidden = forward(
+        params, batch.inputs[:1, :2], batch.valid[:1, :2]
+    )
+    assert_trees_close(hidden[:1], unpadded_hidden)
+    np.testing.assert_array_equal(np.asarray(hidden[1]), 0.0)
+
+
+def test_checkpoint_restores_next_optimizer_update(tmp_path):
+    config = replace(Config(), train_size=7, batch_size=3, min_length=2, max_length=6)
+    sequences = make_sequences(config, config.train_size, stream=0)
+    state = initialize_state(config)
+    first_batch = pack_batch(sequences, [0, 1, 2], config)
+    second_batch = pack_batch(sequences, [3, 4, 5], config)
+    rate = jnp.asarray(config.learning_rate, dtype=jnp.float32)
+    state, loss = train_step(state, first_batch, rate)
+    count = int(first_batch.valid.sum())
+    progress = {"epoch": 0, "batch": 1, "sse": float(loss) * count, "count": count}
+    checkpoint = tmp_path / "resume.npz"
+    save_checkpoint(checkpoint, state, config, progress)
+    restored, restored_config, restored_progress, _ = load_checkpoint(checkpoint)
+    assert restored_config == config
+    assert restored_progress == progress
+    assert_trees_close(state, restored)
+    continuous_state, continuous_loss = train_step(state, second_batch, rate)
+    resumed_state, resumed_loss = train_step(restored, second_batch, rate)
+    assert_trees_close(continuous_state, resumed_state)
+    assert_trees_close(continuous_loss, resumed_loss)
+```
+
+```bash
+python -m pip install pytest
+python -m pytest -q test_sine_gru.py
+```
+
+I checked the JAX APIs against the official documentation and statically checked the supplied Python blocks. I did not execute model training or these tests in this session; runtime behavior, convergence, and timings remain unmeasured.

@@ -1,0 +1,199 @@
+Build the neural network from rotation-invariant scalar features, then use its scalar weights to combine geometric vectors. This guarantees the symmetry for every parameter setting, including after training.
+
+Here is a small model for a nonempty point cloud `points` of shape `(N, 3)`. It returns one scalar, shape `()`, and one vector, shape `(3,)`, for the whole cloud. Points and output vectors use row storage, so a rotation matrix `R` acts as `points @ R.T` and `vector @ R.T`.
+
+Let the centered points be \(u_i=x_i-\bar x\). For each point, construct two scalar features:
+
+\[
+z_i=\left[\|u_i\|^2,\quad \frac1N\sum_j\exp(-\|u_i-u_j\|^2)\right].
+\]
+
+The second feature measures nearby point density at a fixed length scale of one coordinate unit; its sum includes the point itself. A shared scalar MLP produces hidden features \(h_i=\tanh(z_i W+b)\). The two heads are
+
+\[
+s(X)=\frac1N\sum_i h_i^T w_s+b_s,
+\qquad
+v(X)=\frac1N\sum_i(h_i^T w_v)u_i.
+\]
+
+Only scalar features enter the MLP. The vector head multiplies each whole vector by one scalar; it does not apply different learned weights or nonlinearities to the three coordinate axes. This uses the same underlying principle as invariant distance features and scalar-weighted coordinate differences in [E(n) Equivariant Graph Neural Networks](https://proceedings.mlr.press/v139/satorras21a/satorras21a.pdf), in a smaller global readout model.
+
+For any \(R\in SO(3)\), centering commutes with rotation: \(u_i'=Ru_i\) in column notation. Orthogonality gives \(\|Ru_i\|^2=\|u_i\|^2\) and \(\|R(u_i-u_j)\|^2=\|u_i-u_j\|^2\). Thus \(z_i\), \(h_i\), and both head weights are unchanged. Consequently,
+
+\[
+\boxed{s(RX)=s(X)},\qquad
+\boxed{v(RX)=Rv(X)}.
+\]
+
+The numerical validation checks these equations directly, including a nonzero vector example so that an identically zero vector would not suffice. It also checks output shapes and finiteness, eager/JIT agreement, several parameter settings, random proper rotations, a known 90-degree rotation, and single-point, coincident-point, and collinear cases. Permutation and translation checks cover additional properties introduced by the symmetric pooling and centering.
+
+The implementation uses explicit parameter arguments and array operations, which fit JAX's requirements for [pure functions under `jit`](https://docs.jax.dev/en/latest/_autosummary/jax.jit.html). Its randomness uses separate [PRNG keys](https://docs.jax.dev/en/latest/_autosummary/jax.random.key.html). JAX's [`random.orthogonal`](https://docs.jax.dev/en/latest/_autosummary/jax.random.orthogonal.html) samples from `O(3)`, so the rotation helper flips one column when necessary to ensure determinant `+1`.
+
+```python
+import jax
+import jax.numpy as jnp
+import numpy as np
+
+
+def init_params(key, hidden_width=8):
+    """Initialize the 5 * hidden_width + 1 trainable scalar parameters."""
+    if hidden_width < 1:
+        raise ValueError("hidden_width must be positive")
+    feature_key, scalar_key, vector_key = jax.random.split(key, 3)
+    dtype = jnp.float32
+    return {
+        "feature_weights": jax.random.normal(
+            feature_key, (2, hidden_width), dtype=dtype
+        ) / jnp.sqrt(2.0),
+        "feature_bias": jnp.zeros((hidden_width,), dtype=dtype),
+        "scalar_weights": jax.random.normal(
+            scalar_key, (hidden_width,), dtype=dtype
+        ) / jnp.sqrt(float(hidden_width)),
+        "scalar_bias": jnp.zeros((), dtype=dtype),
+        "vector_weights": jax.random.normal(
+            vector_key, (hidden_width,), dtype=dtype
+        ) / jnp.sqrt(float(hidden_width)),
+    }
+
+
+def model(params, points):
+    """Return an invariant scalar and equivariant vector for finite 3D points."""
+    points = jnp.asarray(points)
+    if points.ndim != 2 or points.shape[1] != 3 or points.shape[0] == 0:
+        raise ValueError("points must have shape (N, 3), with N >= 1")
+    if not jnp.issubdtype(points.dtype, jnp.floating):
+        raise TypeError("points must have a floating-point dtype")
+
+    centered = points - jnp.mean(points, axis=0, keepdims=True)
+    radius_squared = jnp.sum(centered * centered, axis=-1)
+    differences = centered[:, None, :] - centered[None, :, :]
+    distance_squared = jnp.sum(differences * differences, axis=-1)
+    density = jnp.mean(jnp.exp(-distance_squared), axis=1)
+    features = jnp.stack((radius_squared, density), axis=-1)
+
+    hidden = jnp.tanh(
+        features @ params["feature_weights"] + params["feature_bias"]
+    )
+    scalar = jnp.mean(hidden @ params["scalar_weights"]) + params["scalar_bias"]
+    weights = hidden @ params["vector_weights"]
+    vector = jnp.mean(weights[:, None] * centered, axis=0)
+    return scalar, vector
+
+
+compiled_model = jax.jit(model)
+
+
+def random_rotation(key):
+    """Generate a proper rotation, rather than an arbitrary orthogonal matrix."""
+    orthogonal = jax.random.orthogonal(key, 3, dtype=jnp.float32)
+    orientation = jnp.where(jnp.linalg.det(orthogonal) < 0, -1.0, 1.0)
+    return orthogonal.at[:, 0].set(orthogonal[:, 0] * orientation)
+
+
+def assert_outputs_close(actual, expected, *, rtol=2e-5, atol=2e-5):
+    for observed, reference in zip(actual, expected):
+        np.testing.assert_allclose(
+            np.asarray(observed), np.asarray(reference), rtol=rtol, atol=atol
+        )
+
+
+def run_validation():
+    """Test transformation contracts; return observed maximum absolute errors."""
+    params_key, clouds_key, rotations_key = jax.random.split(
+        jax.random.key(20261003), 3
+    )
+    cloud_keys = jax.random.split(clouds_key, 3)
+    asymmetric = jnp.array(
+        [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0],
+         [0.0, 2.0, 0.0], [0.0, 0.0, 3.0]],
+        dtype=jnp.float32,
+    )
+    clouds = [
+        asymmetric,
+        jnp.array([[0.7, -1.0, 2.0]], dtype=jnp.float32),
+        jnp.ones((4, 3), dtype=jnp.float32),
+        jnp.array([[-2.0, 0.0, 0.0], [0.0, 0.0, 0.0],
+                   [1.0, 0.0, 0.0]], dtype=jnp.float32),
+    ]
+    for key, count in zip(cloud_keys, (2, 5, 9)):
+        clouds.append(jax.random.normal(key, (count, 3), dtype=jnp.float32))
+
+    quarter_turn = jnp.array(
+        [[0.0, -1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 1.0]],
+        dtype=jnp.float32,
+    )
+    rotations = [jnp.eye(3, dtype=jnp.float32), quarter_turn]
+    rotations.extend(random_rotation(key) for key in jax.random.split(rotations_key, 16))
+    for rotation in rotations:
+        np.testing.assert_allclose(
+            np.asarray(rotation.T @ rotation), np.eye(3), rtol=0, atol=2e-6
+        )
+        np.testing.assert_allclose(
+            np.asarray(jnp.linalg.det(rotation)), 1.0, rtol=0, atol=2e-6
+        )
+
+    # Deliberate weights expose input dependence and a nonzero vector.
+    probe_params = {
+        "feature_weights": jnp.array([[1.0], [0.0]], dtype=jnp.float32),
+        "feature_bias": jnp.zeros((1,), dtype=jnp.float32),
+        "scalar_weights": jnp.ones((1,), dtype=jnp.float32),
+        "scalar_bias": jnp.zeros((), dtype=jnp.float32),
+        "vector_weights": jnp.ones((1,), dtype=jnp.float32),
+    }
+    probe_scalar, probe_vector = model(probe_params, asymmetric)
+    scaled_scalar, _ = model(probe_params, 2.0 * asymmetric)
+    assert float(jnp.linalg.norm(probe_vector)) > 1e-3
+    assert abs(float(scaled_scalar - probe_scalar)) > 1e-3
+    rotated_probe = model(probe_params, asymmetric @ quarter_turn.T)
+    assert_outputs_close(rotated_probe, (probe_scalar, probe_vector @ quarter_turn.T))
+    assert not np.allclose(np.asarray(rotated_probe[1]), np.asarray(probe_vector))
+
+    parameter_sets = [probe_params]
+    parameter_sets.extend(init_params(key) for key in jax.random.split(params_key, 3))
+    max_scalar_error = 0.0
+    max_vector_error = 0.0
+    translation = jnp.array([0.3, -0.7, 1.1], dtype=jnp.float32)
+
+    for params in parameter_sets:
+        for points in clouds:
+            scalar, vector = model(params, points)
+            assert scalar.shape == () and vector.shape == (3,)
+            assert np.isfinite(np.asarray(scalar)).all()
+            assert np.isfinite(np.asarray(vector)).all()
+            assert_outputs_close(compiled_model(params, points), (scalar, vector))
+            assert_outputs_close(model(params, points[::-1]), (scalar, vector))
+            assert_outputs_close(model(params, points + translation), (scalar, vector))
+
+            if points.shape[0] == 1 or np.all(np.asarray(points) == np.asarray(points[0])):
+                np.testing.assert_allclose(np.asarray(vector), 0.0, rtol=0, atol=2e-5)
+
+            for rotation in rotations:
+                expected = (scalar, vector @ rotation.T)
+                rotated_points = points @ rotation.T
+                actual = model(params, rotated_points)
+                assert_outputs_close(actual, expected)
+                assert_outputs_close(compiled_model(params, rotated_points), expected)
+                max_scalar_error = max(
+                    max_scalar_error, float(jnp.abs(actual[0] - expected[0]))
+                )
+                max_vector_error = max(
+                    max_vector_error, float(jnp.max(jnp.abs(actual[1] - expected[1])))
+                )
+
+    return {
+        "max_absolute_scalar_rotation_error": max_scalar_error,
+        "max_absolute_vector_rotation_error": max_vector_error,
+    }
+
+
+if __name__ == "__main__":
+    print(run_validation())
+```
+
+Save the code as `rotation_model.py` and run `python rotation_model.py` in an environment with JAX and NumPy installed. Assertions will fail if a transformation contract is violated; if they finish, the script prints the measured maximum absolute rotation errors. The relative and absolute tolerances are for these modest-scale float32 fixtures. Compare against a float64 reference with x64 enabled if your application needs tighter numerical validation; large offsets or extreme scales can increase floating-point error.
+
+The algebraic argument establishes the property for arbitrary rotations and weights in exact arithmetic. Random rotation tests check implementation errors and numerical accuracy over sampled cases; they are not a proof over all rotations. I have not executed the model or validation code in this session, so there are no measured residuals or passing-test results to report.
+
+With width eight, the model has 41 trainable parameters. The pairwise feature computation uses O(N²) work and memory. For a fixed batch of clouds with equal `N`, `jax.vmap(model, in_axes=(None, 0))(params, batch_points)` produces scalar outputs of shape `(batch_size,)` and vector outputs of shape `(batch_size, 3)`; varying cloud sizes need separate calls or an explicit padding mask. JAX's [`grad` and `vmap` transformations](https://docs.jax.dev/en/latest/101/transformations.html) can differentiate and batch this pure array model.
+
+Centering also makes both outputs translation invariant: the vector represents a direction or displacement, rather than an absolute position. Both global outputs are invariant to point ordering. In fact, the proof also works for reflections, so the scalar cannot distinguish mirror images and the vector transforms as a polar vector. Highly symmetric clouds may correctly produce a zero vector; the asymmetric probe demonstrates that this architecture can also produce a nonzero, rotating vector.

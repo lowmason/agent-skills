@@ -965,6 +965,25 @@ execution session for those actions.
 remaining work, if any, follows the explicit completion gate rather than being
 silently omitted.
 
+## Execution runtime correction — owner decision 2026-10-03
+
+The owner selected built-in Codex agents for all remaining application and
+catalog trials. An automatic approval review rejected the refined external
+Claude launch because it would export private skill/prompt payloads to an
+external agent service without destination-specific authorization; that launch
+executed no process or trial. External launches are disabled thereafter.
+
+Preserve the completed Claude controls and first candidate round as their own
+historical cohorts. Fresh Codex control/candidate samples form separate matched
+cohorts with new `fork_turns=none` agents, the same scenario/policy within each
+comparison, full recorded prompt reads, and hashed on-demand reference reads.
+The native D controls postdate the refined source with guidance withheld; the
+original Claude controls predate authoring. E/S native controls precede their
+skill authoring. Do not infer improvement from comparing different runtimes.
+Exact native model/effort identifiers are unavailable through the collaboration
+API; record inherited runtime and that limit rather than inventing an alias.
+Catalog tests remain explicit selection simulations, not proof of auto-loading.
+
 ## Planning Verification
 
 On 2026-10-03, the plan's Python fences passed the repository parse gate. Its
