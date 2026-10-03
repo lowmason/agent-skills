@@ -12,12 +12,12 @@ Grouped proposal: **2 Plan, 1 Design, 1 Quick fix, 9 Hold, 0 Retire**.
 
 1. Methodology scenario verification: Synthesize locator discipline, triage table
    before spec, and derive-roadmap handoff. Source:
-   [18-methodology-pipeline-skills, 2026-07-26](deferred_items.md#18-methodology-pipeline-skills-plan-1-describe-critique-methodology--2026-07-26).
+   [18-methodology-pipeline-skills, 2026-07-26](../deferred_items.md#18-methodology-pipeline-skills-plan-1-describe-critique-methodology--2026-07-26).
    First because it is 69d old and the real round-trip fixture is available;
    remaining behavioral requirements are recorded.
 2. Snippet execution coverage: widen fixture variables/preamble together or add
    per-block fixtures, increasing execution coverage/reducing unbound advisories.
-   Source: [29-snippet-execution-gate, 2026-09-08](deferred_items.md#29-snippet-execution-gate--2026-09-08).
+   Source: [29-snippet-execution-gate, 2026-09-08](../deferred_items.md#29-snippet-execution-gate--2026-09-08).
    Second because the recorded Size is plan and the alternatives/closure metric
    are specified.
 
@@ -25,14 +25,14 @@ Grouped proposal: **2 Plan, 1 Design, 1 Quick fix, 9 Hold, 0 Retire**.
 
 - Calibration diagnosis labels: decide precedence when both bands fail and
   PIT-only direction; verify shift/three-segment fixtures and update routing.
-  Source: [deferred-triage, 2026-09-28](deferred_items.md#deferred-triage-no-plan--2026-09-28).
+  Source: [deferred-triage, 2026-09-28](../deferred_items.md#deferred-triage-no-plan--2026-09-28).
   Highest design priority because it is the sole actionable design decision.
 
 ## Quick fix
 
 - Read-only guard value-taking prefix options: support the recorded env/nice/time
   cases while preserving version and equals-value options. Source:
-  [readonly-guard-leading-token-bypasses, 2026-09-28](deferred_items.md#readonly-guard-leading-token-bypasses-no-plan-branch-claudeobjective-nash-accd9c--2026-09-28).
+  [readonly-guard-leading-token-bypasses, 2026-09-28](../deferred_items.md#readonly-guard-leading-token-bypasses-no-plan-branch-claudeobjective-nash-accd9c--2026-09-28).
   Recorded Size: quick-fix.
 
 ## Hold: owner-only
