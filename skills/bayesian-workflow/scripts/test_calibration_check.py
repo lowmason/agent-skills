@@ -613,7 +613,7 @@ def _any_biased(findings):
     return HIGH in findings or LOW in findings
 
 
-# The spec's pre-registered thresholds (specs/calibration-check-verdicts.md, "Acceptance"),
+# The spec's pre-registered thresholds (specs/completed/calibration-check-verdicts.md, "Acceptance"),
 # set from the 2026-10-03 probe before implementation. A miss is a finding for the owner,
 # never a reason to edit a threshold. "Named" counts any finding list that holds the label.
 SWEEP_THRESHOLDS = {

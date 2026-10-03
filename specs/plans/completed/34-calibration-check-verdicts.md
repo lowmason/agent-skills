@@ -10,7 +10,7 @@
 
 **Tech Stack:** Python 3.13; arviz-stats (the `.azstats.uniformity_test` accessor, `loo_pit`), arviz-plots (`plot_ecdf_pit`), arviz-base, xarray, numpy, scipy (`stats.t`); pytest. The suite command below resolved arviz 1.3.0, arviz-stats 1.3.3, arviz-plots 1.3.2 and arviz-base 1.3.1 on 2026-10-03, with no matplotlib.
 
-**Source:** [specs/calibration-check-verdicts.md](../calibration-check-verdicts.md), approved 2026-10-03 (commits 8e54154, cac1138). Its Decisions, Design, Testing and Planning handoff sections are binding. It closes two items in [specs/deferred_items.md](../deferred_items.md); see Completion.
+**Source:** [specs/completed/calibration-check-verdicts.md](../../completed/calibration-check-verdicts.md), approved 2026-10-03 (commits 8e54154, cac1138). Its Decisions, Design, Testing and Planning handoff sections are binding. It closes two items in [specs/deferred_items.md](../../deferred_items.md); see Completion.
 
 **Where:** the worktree `/Users/lowell/Projects/agent-skills/.claude/worktrees/deferred-triage-2026-10-03`, branch `worktree-deferred-triage-2026-10-03`. The spec and the live plans 32 and 33 exist only on this branch. Run every command from the worktree root unless a step says otherwise.
 
@@ -2395,3 +2395,5 @@ After the final whole-branch review, run the writing-plans **Plan Completion Pro
     - Size: quick-fix. Revisit if: arviz-plots changes its default figure layout, or the owner wants the saved figures to depart from `plot_ppc_pit` parity.
 - **Upstream issues** for the two arviz-plots defects (the coverage-fold false alarm, and the envelope `TypeError`) stay out of scope. Filing is outward-facing and the owner's call; the spec offers a draft separately.
 - **Retire.** `git mv` the plan to `specs/plans/completed/`. Retire the spec to `specs/completed/`, marked complete, because no other live plan implements it. Re-point both files' relative links for their new depth.
+
+> Deviation: retirement also re-pointed the spec path in `test_calibration_check.py`'s `SWEEP_THRESHOLDS` comment (Task 5's edit 5.6 text) to `specs/completed/calibration-check-verdicts.md`; the move would otherwise leave it dangling.

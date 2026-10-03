@@ -1,5 +1,7 @@
 # calibration_check verdicts — Design Spec
 
+**Status: COMPLETE (2026-10-03)** — implemented by plan 34 (`specs/plans/completed/34-calibration-check-verdicts.md`) and retired here. At the plan's Q2 the owner chose the citation "Tesso & Vehtari (2026)", which the code and `references/publications.md` use; it supersedes "Tesso et al." below.
+
 Design approved 2026-10-03, section by section, in a brainstorming pass opened by the
 2026-10-03 `/deferred` triage (the owner's paired Design selection). It closes two items in
 `specs/deferred_items.md`:
