@@ -182,9 +182,10 @@ keywords (`!`, `if`, `then`, `do`, `coproc`, `noglob`, zsh's `-` modifier, …) 
 prefix utilities `env`, `command`, `exec`, `time`, `nohup` and `nice` with their
 options, read as getopt reads them: short options clustered or apart, a value attached
 or in the next word, and GNU long options by any unambiguous prefix (`--ch /tmp` is
-`--chdir /tmp`). env's `-S`/`--split-string` is the exception: env splits that value
-back into its own arguments, so the word after it is read on, never skipped. Subshells,
-brace groups, `$(…)` and `<(…)` are classified as commands of their own. A quoted or escaped word is a word, never syntax: `git branch ')' -D feature`
+`--chdir /tmp`). env's `-S`/`--split-string` fails closed in every spelling: env
+re-splits its value into its own arguments in a syntax of its own, which the guard does
+not read. Subshells, brace groups, `$(…)` and `<(…)` are classified as commands of their
+own. A quoted or escaped word is a word, never syntax: `git branch ')' -D feature`
 deletes a branch. A redirection leaves with its target and with the file descriptor zsh
 reads for it: one unquoted digit touching the operator (`2>&1`), or a `{name}` before
 it (`exec {fd}>f`). Any other word before a redirection is an argument: `git branch 5
@@ -205,12 +206,9 @@ fails closed; quoting keeps a substitution one word (`git -C "$(pwd)" log`). Oth
   `find . -delete`, or read from what a command prints: `source <(echo rm x)`, and
   zsh's `source =(echo rm x)`.
 - Mutators inside a quoted string, which is one word: `"$(git commit)"`, `eval '…'`,
-  `env -S '…'`, `sh -c "..."`, `python -c "..."`, `perl -e`. (A quoted word made only
+  `sh -c "..."`, `python -c "..."`, `perl -e`. (A quoted word made only
   of punctuation is also read as the syntax it spells, the way `eval` hands it back to
   the shell, so `eval echo \; rm x` is denied.)
-- A command glued to env's `-S` in one word, `env -Srm x` or `env --split-string=rm x`:
-  env splits the attached value into the command, while the guard reads the whole word
-  as options.
 - Command substitution in backticks. The tokenizer, like `shlex`, takes a backtick for
   an ordinary character, so `` echo `rm x` `` reads as the words `echo`, `` `rm `` and
   `` x` ``, and none of them is a denied command. `$(…)` is read as a command.
@@ -287,6 +285,10 @@ Known false positives, accepted rather than widened:
   options: it runs a command named `-p` and never reaches `rm`. Options after `time` are
   skipped as they are after `env` and `nice`, since `/usr/bin/time -p` and bash's
   `time -p` do run the command.
+- **`env -S` is denied in every spelling**, even when the command it runs is read-only.
+  env re-splits that value in a syntax of its own (quotes, `#` comments, `\c`,
+  `${VAR}`), so its value can be the command, part of it, or nothing at all; reading it
+  either way let a command past in review.
 - **An unquoted `$(…)`, glob group or numeric glob is denied where git takes a
   global-option value or a flag verb's argument, or anywhere in a `sed` command, even
   when it is read-only** (`git -C $(pwd) log`, `git branch --format $(cmd) x`, `sed -n

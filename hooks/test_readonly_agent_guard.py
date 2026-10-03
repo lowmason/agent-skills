@@ -327,14 +327,19 @@ PREFIX_OPTION_BYPASSES = [
     pytest.param('exec -la foo rm x', id='exec-cluster-ending-in-a-value-taker'),
 ]
 
-# env splits its -S / --split-string value back into the arguments it reads
-# itself, so the word after that option is still an option, an assignment or
-# the command, never a value to skip.
-ENV_SPLIT_STRING_BYPASSES = [
+# env re-splits its -S / --split-string value into its own arguments, in a
+# syntax of its own (quotes, comments, expansions), so every spelling of the
+# option fails closed rather than be read one way or another.
+ENV_SPLIT_STRING_SPELLINGS = [
     pytest.param('env -S rm x', id='short'),
     pytest.param('env -vS git stash', id='clustered'),
     pytest.param('env --split-string rm x', id='long'),
     pytest.param('env --split rm x', id='long-abbreviated'),
+    pytest.param("env -S '' rm x", id='empty-value'),
+    pytest.param("env -S ' ' git stash", id='blank-value'),
+    pytest.param("env -S 'rm x'", id='quoted-command-line'),
+    pytest.param('env -Srm x', id='value-glued-to-the-option'),
+    pytest.param('env --split-string=rm x', id='long-value-attached'),
 ]
 
 
@@ -366,9 +371,17 @@ def test_no_prefix_option_value_takes_the_commands_place(command):
     assert guard.classify(command) is not None
 
 
-@pytest.mark.parametrize('command', ENV_SPLIT_STRING_BYPASSES)
-def test_env_reads_its_split_string_value_as_its_own_arguments(command):
-    assert guard.classify(command) is not None
+@pytest.mark.parametrize('command', ENV_SPLIT_STRING_SPELLINGS)
+def test_env_split_string_fails_closed(command):
+    reason = guard.classify(command)
+    assert reason is not None and 'env -S' in reason, reason
+
+
+def test_split_string_is_only_env_s_where_getopt_reads_it():
+    # An S that is another option's value, or another command's -S, is not
+    # env's split-string.
+    for command in ('env -uS ls', 'git log -S needle', 'env -i ls'):
+        assert guard.classify(command) is None, command
 
 
 def test_an_option_without_a_value_in_the_next_word_is_one_word():
