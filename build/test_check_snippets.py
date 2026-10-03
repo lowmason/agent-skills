@@ -238,3 +238,44 @@ def test_documented_absent_names_are_still_absent():
     resurrected = [name for name in check_snippets.DOCUMENTED_ABSENT
                    if check_snippets._resolve(name, {'az': 'arviz'}) is None]
     assert resurrected == [], resurrected
+
+
+def _skill_block(relpath, needle):
+    '''The bayesian-workflow block whose code contains `needle`. Found by
+    content, not line number, so prose edits above it do not break the test.'''
+    doc = (Path(__file__).resolve().parent.parent
+           / 'skills/bayesian-workflow' / relpath).read_text()
+    return next(b for b in check_snippets.iter_code_blocks(doc) if needle in b.code)
+
+
+def test_blocks_the_shared_fixture_already_carries_are_admitted():
+    '''diagnostics.md's run_diagnostics reads sample_stats["diverging"], which the
+    preamble's MCMC records via extra_fields; model-comparison.md's
+    log_likelihood call needs posterior_samples, which the preamble's mcmc
+    already holds.'''
+    for relpath, needle in (
+            ('references/diagnostics.md', 'def run_diagnostics(idata)'),
+            ('references/model-comparison.md',
+             'log_likelihood(model, posterior_samples')):
+        block = _skill_block(relpath, needle)
+        assert check_snippets.runnable(block), check_snippets._unrunnable_reason(block)
+
+
+@requires_stack
+def test_every_fixture_var_is_carried_by_the_fixture_idata():
+    '''FIXTURE_VARS is the honesty half of the fixture: every name in it must be
+    a variable the preamble's idata carries, in some group.'''
+    import os
+    import subprocess
+    import sys
+
+    from snippet_preamble import FIXTURE_VARS, PREAMBLE
+    check = (
+        '\ncarried = {name for node in idata.children.values()'
+        ' for name in node.data_vars}\n'
+        f'missing = [n for n in {sorted(FIXTURE_VARS)!r} if n not in carried]\n'
+        'assert not missing, missing\n')
+    proc = subprocess.run([sys.executable, '-c', PREAMBLE + check],
+                          capture_output=True, text=True, timeout=300,
+                          env={**os.environ, 'MPLBACKEND': 'Agg'})
+    assert proc.returncode == 0, proc.stderr[-2000:]

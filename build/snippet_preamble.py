@@ -24,13 +24,19 @@ simpler than the doc's example can make a doc-level error pass. Keep the
 fixtures shaped like the skill's running example, and edit this file whenever
 a snippet's assumed context changes.
 
-FIXTURE_VARS is the honesty half. check_snippets.runnable() refuses any block
+FIXTURE_VARS is the honesty half. It names every variable the fixture's
+InferenceData carries, in any group: the posterior sites `beta` and `sigma`,
+the observed site `y_obs`, and `diverging`, which the MCMC run records into
+sample_stats through extra_fields. check_snippets.runnable() refuses any block
 naming a variable outside it, so a snippet written against a DIFFERENT
 running example (`param1`, `alpha`/`delta`, `tau`/`theta`) is reported as
 needing its own fixture rather than executed and blamed for the mismatch.
-Widen the fixture and this set together, never one alone.
+`param1`/`param2` are placeholders for the reader's own parameters and are
+never added. Widen the fixture and this set together, never one alone;
+test_every_fixture_var_is_carried_by_the_fixture_idata pins the set against
+the fixture.
 '''
-FIXTURE_VARS = frozenset({'beta', 'sigma', 'y_obs'})
+FIXTURE_VARS = frozenset({'beta', 'sigma', 'y_obs', 'diverging'})
 
 PREAMBLE = '''
 import os
@@ -68,6 +74,7 @@ mcmc = MCMC(NUTS(model), num_warmup=100, num_samples=200, num_chains=1,
 mcmc.run(k_mcmc, x, y=y,
          extra_fields=("energy", "diverging", "num_steps", "accept_prob"))
 post_pred = Predictive(model, mcmc.get_samples())(k_post, x)
+posterior_samples = mcmc.get_samples()   # {site: (draws, ...)}, as log_likelihood takes it
 idata = az.from_numpyro(mcmc, prior=prior_pred, posterior_predictive=post_pred,
                         log_likelihood=True, coords=coords, dims=dims)
 
