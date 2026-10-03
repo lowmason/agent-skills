@@ -1579,3 +1579,37 @@ declined as YAGNI (zero instances in a one-page wiki).
       error, test first.
       Size: quick-fix. Revisit if: a masked or missing-observation model reports a calibration
       verdict, or a run exits with the broadcast error.
+- [ ] The fair-rated spread step is direction-blind (plan 34 final-review recommendation,
+      pre-existing; filed after completion at the owner's request). `_spread_step` in
+      `skills/bayesian-workflow/scripts/check_diagnostics.py` gives every fair-rated spread
+      finding (not well calibrated, |`mean_coverage_deviation`| ≤ `COVERAGE_DEVIATION_FAIR` =
+      0.05) one step: "consider tightening priors, switching to a heavier-tailed likelihood, or
+      running a sensitivity check". Each remedy worsens one direction: tightening priors
+      narrows an over-confident predictive further, and a heavier-tailed likelihood widens an
+      under-confident one. Only poor-rated findings get the direction-specific steps. The text
+      predates plan 34 (present at d9bea91), and plan 34's spec kept it on purpose (its routing
+      table: "today's `fair` step when it is `fair`"). Since plan 34 every finding names its
+      direction, so the fair step can split: a milder form of the over-confident (likelihood)
+      advice and of the under-confident (prior) advice. `test_a_fair_spread_finding_gets_the_fair_step`
+      in `scripts/test_check_diagnostics.py` pins the shared "fair but not excellent" text and
+      moves with it. The contract test in `scripts/test_calibration_check.py` is unaffected.
+      Size: quick-fix. Done when: a fair-rated over-confident and a fair-rated under-confident
+      finding each get a step whose remedy moves the predictive in the right direction, with
+      both tests updated.
+- [ ] `--loo-pit` figures don't match the report template's filenames (plan 34 final-review
+      recommendation, pre-existing; filed after completion at the owner's request). With
+      `--loo-pit --save-plots`, `skills/bayesian-workflow/scripts/calibration_check.py` (the
+      `prefix = "loo_pit"` line in `main()`, present at d9bea91) writes `loo_pit_ecdf.png` and
+      `loo_pit_coverage.png`. The report layout and template in
+      `skills/bayesian-workflow/references/reporting.md` (the file-tree comments at ~lines
+      36–37 and the image links at ~164 and ~168) and the step-2 comment in `SKILL.md`'s
+      pipeline block (~line 312) name only `pit_ecdf.png` / `pit_coverage.png`. The documented
+      command has no `--loo-pit`, so the docs are accurate as written, but a report built after
+      a LOO-PIT run links images that don't exist. Meanwhile `SKILL.md` (~line 77) asks for the
+      LOO-PIT check separately from PPC-PIT. Fix: name the `loo_pit_*` files in the
+      reporting.md tree and template (and in SKILL.md's comment, if the pipeline gains a LOO-PIT
+      step), or have the template link whichever set exists. The tree sits in a bare fence and
+      SKILL.md's comment in a bash fence, so no python fence moves (plan 33's snippet counts are
+      safe).
+      Size: quick-fix. Done when: a report written after a `--loo-pit --save-plots` run links
+      figures that exist.
