@@ -1,9 +1,9 @@
 # Compact JAX Deep-Learning Skills — Design Spec
 
-**Status: DESIGN APPROVED (2026-10-03); written spec awaiting review.**
-The owner approved the three-skill structure and stack after a brainstorming
-pass. This document is the handoff for implementation planning; the skills
-have not been implemented.
+**Status: APPROVED (2026-10-03).**
+The owner approved both the three-skill design and this written spec after a
+brainstorming pass. Implementation is planned in
+`specs/plans/32-jax-deep-learning-skills.md`; the skills have not been implemented.
 
 ## Purpose and scope
 
