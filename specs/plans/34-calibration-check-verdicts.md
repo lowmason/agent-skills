@@ -30,7 +30,7 @@ The labels, keys, seed, floors and sweep thresholds are copied verbatim from the
   - The guarantee is figure = JSON within one stack.
   - Removed: the pre-1.0 `difference_ecdf_pit` import fallback.
   - scipy, used for the t quantile, is already an arviz-stats dependency.
-  - Planning-time finding F1 bears on this floor. It stays as written unless the owner answers Q1 by amending the spec.
+  - Planning-time finding F1 bears on this floor. The owner kept the floor at Q1 (2026-10-03).
 - **Acceptance-sweep thresholds:** seeds 0–99 on both PIT paths at `ci_prob` = 0.99. "Named" counts any finding list that contains the label.
 
   | Fixture (loc, scale) | Pass condition, per path, of 100 |
@@ -140,7 +140,14 @@ These were measured while building the whole end state in scratch: every task's 
   - Today's `plot_ppc_pit` figures are cropped identically, so the plan keeps parity, as the spec's "as `plot_ppc_pit` sets them" asks.
   - Q3 offers the one-line fix.
 
-## Owner questions (answer before execution)
+## Owner questions
+
+**Answered by the owner on 2026-10-03, all defaults:**
+- Q1: keep the arviz-stats ≥ 1.1 / arviz-plots ≥ 1.1 floor.
+- Q2: cite "Tesso & Vehtari (2026)".
+- Q3: keep parity with today's figures.
+
+The plan text below already encodes these answers, so execute it as written. Completion's two conditional items both apply: "Only if Q1 kept the spec's floor" and "Only if Q3 kept parity". Execution: subagent-driven-development, in a fresh session.
 
 - **Q1 — Version floor (F1).**
   - **Keep** the spec's arviz-stats ≥ 1.1 and arviz-plots ≥ 1.1 (the plan's default), and record the old-stack error as a deferred item at completion.
