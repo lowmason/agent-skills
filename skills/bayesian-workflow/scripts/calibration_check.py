@@ -13,6 +13,7 @@ Usage:
 
 import argparse
 import json
+import math
 import os
 import sys
 import warnings
@@ -23,8 +24,10 @@ import numpy as np
 try:
     import arviz_plots as azp
     import arviz_stats as azs
+    import xarray as xr
     from arviz_base import convert_to_datatree
     from arviz_stats.ecdf_utils import ecdf_pit
+    from scipy import stats
 
     # `difference_ecdf_pit` is a statistics helper; its stable home is
     # arviz_stats.ecdf_utils on arviz-stats >= 1.0 (both PyMC-5 and PyMC-6 stacks).
@@ -52,6 +55,110 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 
 # Monte Carlo draws behind each simultaneous confidence band.
 BAND_SIMULATIONS = 1000
+
+# The five calibration findings, centre first.
+BIASED_HIGH = "biased (predictions too high)"
+BIASED_LOW = "biased (predictions too low)"
+OVER_CONFIDENT = "over-confident (predictions too certain)"
+UNDER_CONFIDENT = "under-confident (predictions too uncertain)"
+SHAPE_MISMATCH = "shape mismatch (neither a shift nor a spread error)"
+FINDINGS = (BIASED_HIGH, BIASED_LOW, OVER_CONFIDENT, UNDER_CONFIDENT, SHAPE_MISMATCH)
+
+
+def _pot_c_p_value(values):
+    """The pot_c uniformity-test p-value of `values`.
+
+    Read by index, never by unpacking: arviz-stats 1.1 returns (p, shapley) and 1.3
+    returns (p, shapley, shapley_unsorted).
+    """
+    result = xr.DataArray(values, dims=["pit"]).azstats.uniformity_test(dim=["pit"], method="pot_c")
+    return float(result[0])
+
+
+def assess_pit(pit, ci_prob=0.99):
+    """Judge PIT values with pot_c and name every failing calibration component.
+
+    With α = 1 − ci_prob and coverage levels c = 2|u − 0.5|, the PIT test and the
+    coverage test each pass when their pot_c p-value is at least α. Findings, centre
+    first:
+
+    1. Location. The PIT test failed and |location_t| exceeds the Student-t quantile at
+       1 − α/2 on n − 1 df, where location_t = (mean(u) − 0.5)/(sd(u)/√n). A negative
+       location_t means the observations sit low in their predictive: biased
+       (predictions too high). A positive one: biased (predictions too low). A spread
+       error leaves the mean PIT at 0.5 while a shift moves it many standard errors, and
+       gating the t-test on a failed PIT test keeps it an explanation rather than a
+       third test, so it adds no false-alarm rate.
+    2. Spread. The coverage test failed: over-confident (predictions too certain) when
+       mean_coverage_deviation = 0.5 − mean(c) is ≤ 0, so intervals cover too little;
+       otherwise under-confident (predictions too uncertain). A shift also lowers
+       interval coverage, to second order, and the data cannot tell that echo from
+       real narrowness, so a shift and a spread error are both named.
+    3. Shape. The PIT test failed and neither of the above fired: shape mismatch
+       (neither a shift nor a spread error).
+
+    well_calibrated holds when both tests pass, which is exactly when findings is empty.
+    Every rule reads the value the report records (alpha, mean_pit, location_t,
+    mean_coverage_deviation), so each finding re-derives from calibration.json alone.
+    When sd(u) = 0 (every LOO-PIT clamped to one tail), the mean counts as a
+    significant shift toward mean_pit − 0.5, and location_t is None: an infinite t is
+    not valid JSON.
+
+    Known limits:
+    - A skewed predictive with the right mean and variance is not labelled shape
+      mismatch. A standardized Gamma(2) predictive for N(0, 1) data reads
+      over-confident, sometimes with biased (predictions too low).
+    - The t-test treats PIT values as independent. Heavy posterior dependence (few
+      observations per parameter) inflates it, so read a borderline biased call against
+      the PIT figure.
+
+    Raises ValueError for fewer than 2 PIT values, where the t-test is undefined.
+    """
+    u = np.asarray(pit, dtype=float).ravel()
+    n = u.size
+    if n < 2:
+        raise ValueError(f"Calibration needs at least 2 PIT values; got {n}.")
+    # 1 - 0.99 is 0.010000000000000009 in floating point; record the α that was asked for.
+    alpha = round(1 - ci_prob, 10)
+    coverage = 2 * np.abs(u - 0.5)
+    pit_p_value = _pot_c_p_value(u)
+    coverage_p_value = _pot_c_p_value(coverage)
+    pit_test_passed = pit_p_value >= alpha
+    coverage_test_passed = coverage_p_value >= alpha
+    mean_pit = round(float(u.mean()), 4)
+    mean_coverage_deviation = round(0.5 - float(coverage.mean()), 4)
+
+    sd = float(u.std(ddof=1))
+    if sd > 0:
+        location_t = round((float(u.mean()) - 0.5) / (sd / math.sqrt(n)), 2)
+        shifted = abs(location_t) > float(stats.t.ppf(1 - alpha / 2, n - 1))
+        sits_low = location_t < 0
+    else:
+        location_t = None
+        shifted = mean_pit != 0.5
+        sits_low = mean_pit < 0.5
+
+    findings = []
+    if shifted and not pit_test_passed:
+        findings.append(BIASED_HIGH if sits_low else BIASED_LOW)
+    if not coverage_test_passed:
+        findings.append(OVER_CONFIDENT if mean_coverage_deviation <= 0 else UNDER_CONFIDENT)
+    if not pit_test_passed and not findings:
+        findings.append(SHAPE_MISMATCH)
+
+    return {
+        "pit_p_value": pit_p_value,
+        "coverage_p_value": coverage_p_value,
+        "alpha": alpha,
+        "pit_test_passed": pit_test_passed,
+        "coverage_test_passed": coverage_test_passed,
+        "mean_pit": mean_pit,
+        "location_t": location_t,
+        "mean_coverage_deviation": mean_coverage_deviation,
+        "findings": findings,
+        "well_calibrated": pit_test_passed and coverage_test_passed,
+        "calibration_diagnosis": " and ".join(findings) or "well-calibrated",
+    }
 
 
 def _extract_ecdf_results(ds, var_name):

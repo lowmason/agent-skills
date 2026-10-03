@@ -3,7 +3,9 @@
 cd skills/bayesian-workflow/scripts && uv run --python 3.13 --with pytest --with arviz \
   --with arviz-stats --with numpy --with xarray python -m pytest -q
 
-Most fixtures are a normal model of y ~ N(0, 1) whose predictive distribution is
+The rule tests feed assess_pit exact-quantile PIT arrays: the PIT of N(0, 1)'s exact
+quantiles under a N(loc, scale) predictive, so they involve no sampling. Most other
+fixtures are a normal model of y ~ N(0, 1) whose predictive distribution is
 deliberately right, too narrow, too wide, or shifted. Both PIT paths are
 exercised: PPC-PIT reads posterior_predictive directly; LOO-PIT reweights it
 through a log_likelihood group consistent with the same predictive. In those
@@ -20,6 +22,7 @@ import arviz_stats as azs
 import numpy as np
 import pytest
 from arviz_base import from_dict
+from scipy import stats
 
 import calibration_check
 from calibration_check import assess_calibration
@@ -31,6 +34,8 @@ UNDER_CONFIDENT_SCALE = 3.0  # predictive far wider than the data
 # Right spread, biased centre: the PIT band fails. The coverage fold is only second-order
 # sensitive to a shift, so it holds at SEED (and on most seeds, not all).
 LOCATION_SHIFT = 0.4
+COMPOUND_NARROW_SCALE = 0.7  # paired with LOCATION_SHIFT: a shift and a spread error at once
+COMPOUND_WIDE_SCALE = 1.5
 POSTERIOR_SD_OF_MEAN = 0.05
 PER_OBSERVATION_PRIOR_SD = 0.7
 # A calibrated model is still flagged at ci_prob=0.99 on ~2-3% of seeds (3 of seeds
@@ -44,6 +49,27 @@ REPORT_KEYS = {
     'coverage_ecdf_inside_bands',
     'well_calibrated',
     'mean_coverage_deviation',
+    'calibration_diagnosis',
+}
+
+# The five finding labels, verbatim; calibration_check.FINDINGS must hold exactly these.
+HIGH = 'biased (predictions too high)'
+LOW = 'biased (predictions too low)'
+OVER = 'over-confident (predictions too certain)'
+UNDER = 'under-confident (predictions too uncertain)'
+SHAPE = 'shape mismatch (neither a shift nor a spread error)'
+
+ASSESSMENT_KEYS = {
+    'pit_p_value',
+    'coverage_p_value',
+    'alpha',
+    'pit_test_passed',
+    'coverage_test_passed',
+    'mean_pit',
+    'location_t',
+    'mean_coverage_deviation',
+    'findings',
+    'well_calibrated',
     'calibration_diagnosis',
 }
 
@@ -286,3 +312,87 @@ def test_an_observed_only_variable_does_not_disturb_the_assessed_one(use_loo):
     groups['posterior'] = {'mu': base['posterior']['mu'].values}
     data = from_dict(groups, dims={'y': ['obs'], 'x_covariate': ['obs']})
     assert assess_calibration(data, 'y', use_loo=use_loo) == assess_calibration(base, 'y', use_loo=use_loo)
+
+
+def _exact_pit(loc, scale, n=N_OBS):
+    """PIT values of N(0, 1)'s exact quantiles under a N(loc, scale) predictive: no sampling."""
+    y = stats.norm.ppf((np.arange(n) + 0.5) / n)
+    return stats.norm.cdf((y - loc) / scale)
+
+
+def _shape_pit(n):
+    """The shape fixture recorded in specs/deferred_items.md (the calibration-labels item).
+
+    Coverage levels c = (i + 0.5)/n sit above the predictive median (u = 0.5 + c/2) when
+    c < 0.25 or c >= 0.75 and below it (u = 0.5 - c/2) otherwise: the mean PIT is exactly
+    0.5 and the coverage levels exactly uniform, yet the PIT values are far from uniform.
+    """
+    c = (np.arange(n) + 0.5) / n
+    return np.where((c < 0.25) | (c >= 0.75), 0.5 + c / 2, 0.5 - c / 2)
+
+
+EXACT_RULES = {
+    'calibrated': (_exact_pit(0.0, TRUE_SCALE), []),
+    'shifted_up': (_exact_pit(LOCATION_SHIFT, TRUE_SCALE), [HIGH]),
+    'shifted_down': (_exact_pit(-LOCATION_SHIFT, TRUE_SCALE), [LOW]),
+    'too_narrow': (_exact_pit(0.0, OVER_CONFIDENT_SCALE), [OVER]),
+    'too_wide': (_exact_pit(0.0, UNDER_CONFIDENT_SCALE), [UNDER]),
+    'shifted_and_narrow': (_exact_pit(LOCATION_SHIFT, COMPOUND_NARROW_SCALE), [HIGH, OVER]),
+    'shifted_and_wide': (_exact_pit(LOCATION_SHIFT, COMPOUND_WIDE_SCALE), [HIGH, UNDER]),
+    'shape_200': (_shape_pit(200), [SHAPE]),
+    'shape_400': (_shape_pit(400), [SHAPE]),
+    'shape_1000': (_shape_pit(1000), [SHAPE]),
+}
+
+
+def test_findings_constant_holds_the_five_labels_centre_first():
+    assert calibration_check.FINDINGS == (HIGH, LOW, OVER, UNDER, SHAPE)
+
+
+@pytest.mark.parametrize('pit, expected', EXACT_RULES.values(), ids=EXACT_RULES.keys())
+def test_every_failing_component_is_named_centre_first(pit, expected):
+    assert calibration_check.assess_pit(pit)['findings'] == expected
+
+
+@pytest.mark.parametrize('pit', [pit for pit, _ in EXACT_RULES.values()], ids=EXACT_RULES.keys())
+def test_the_report_is_consistent_with_itself(pit):
+    report = calibration_check.assess_pit(pit)
+    coverage = 2 * np.abs(pit - 0.5)
+    assert set(report) == ASSESSMENT_KEYS
+    assert (report['findings'] == []) is report['well_calibrated']
+    assert (report['calibration_diagnosis'] == 'well-calibrated') is report['well_calibrated']
+    assert report['calibration_diagnosis'] == (' and '.join(report['findings']) or 'well-calibrated')
+    assert report['pit_test_passed'] is (report['pit_p_value'] >= report['alpha'])
+    assert report['coverage_test_passed'] is (report['coverage_p_value'] >= report['alpha'])
+    assert report['mean_coverage_deviation'] == round(0.5 - float(coverage.mean()), 4)
+    # Valid JSON: plain bools and floats, no NaN.
+    assert json.loads(json.dumps(report)) == report
+
+
+def test_alpha_is_one_minus_ci_prob_without_float_noise():
+    pit = _exact_pit(0.0, TRUE_SCALE)
+    assert calibration_check.assess_pit(pit)['alpha'] == 0.01
+    assert calibration_check.assess_pit(pit, ci_prob=0.95)['alpha'] == 0.05
+
+
+def test_location_t_is_the_one_sample_t_of_the_mean_pit():
+    pit = _exact_pit(LOCATION_SHIFT, TRUE_SCALE)
+    report = calibration_check.assess_pit(pit)
+    t = (pit.mean() - 0.5) / (pit.std(ddof=1) / np.sqrt(len(pit)))
+    assert report['location_t'] == round(float(t), 2)
+    assert report['mean_pit'] == round(float(pit.mean()), 4)
+
+
+def test_fewer_than_two_pit_values_raise():
+    with pytest.raises(ValueError, match='at least 2'):
+        calibration_check.assess_pit([0.3])
+
+
+@pytest.mark.parametrize('value, shift', [(0.9375, LOW), (0.0625, HIGH)], ids=['upper_tail', 'lower_tail'])
+def test_zero_spread_pit_reads_as_a_shift_with_a_null_t(value, shift):
+    # Every LOO-PIT clamped to one tail. These values are exact in binary, so sd(u) is
+    # exactly 0; every coverage value is 0.875, so the coverage test fails as well.
+    report = calibration_check.assess_pit(np.full(N_OBS, value))
+    assert report['location_t'] is None
+    assert report['findings'] == [shift, OVER]
+    assert json.loads(json.dumps(report)) == report
