@@ -130,12 +130,15 @@ LEADING_KEYWORDS = frozenset({
 
 # Utilities that run a command after their own options, each mapped to its
 # short options that take a value. `command -v` and `-V` only describe the
-# command. env's `-a` is GNU's. `time` lists the options of the BSD and GNU
-# /usr/bin/time; zsh's own `time` takes none, and there a word like `-o` is a
-# command zsh cannot find, so reading it as an option hides nothing.
+# command. env's `-a` is GNU's. env's `-S` is left out on purpose: env splits
+# its value back into the arguments it reads itself, so the word after `-S` is
+# still an option, an assignment or the command, never a value to skip. `time`
+# lists the options of the BSD and GNU /usr/bin/time; zsh's own `time` takes
+# none, and there a word like `-o` is a command zsh cannot find, so reading it
+# as an option hides nothing.
 PREFIX_UTILITIES = {
     'command': frozenset(),
-    'env': frozenset({'-C', '-P', '-S', '-a', '-u'}),
+    'env': frozenset({'-C', '-P', '-a', '-u'}),
     'exec': frozenset({'-a'}),
     'nice': frozenset({'-n'}),
     'nohup': frozenset(),
@@ -148,13 +151,14 @@ PREFIX_UTILITIES = {
 # (`--block-signal[=SIG]`) is only ever attached with `=`. An unknown or
 # ambiguous option makes the utility fail before it runs anything. Checked
 # against the GNU coreutils and GNU time sources on 2026-10-03.
+# `split-string` is False for the reason env's `-S` is absent above.
 PREFIX_UTILITY_LONG_OPTIONS = {
     'env': {
         'argv0': True, 'block-signal': False, 'chdir': True, 'debug': False,
         'default-signal': False, 'env0-from': True, 'help': False,
         'ignore-environment': False, 'ignore-signal': False,
         'list-signal-handling': False, 'null': False, 'quoting-style': True,
-        'split-string': True, 'unset': True, 'version': False,
+        'split-string': False, 'unset': True, 'version': False,
     },
     'nice': {'adjustment': True, 'help': False, 'version': False},
     'nohup': {'help': False, 'version': False},

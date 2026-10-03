@@ -327,6 +327,16 @@ PREFIX_OPTION_BYPASSES = [
     pytest.param('exec -la foo rm x', id='exec-cluster-ending-in-a-value-taker'),
 ]
 
+# env splits its -S / --split-string value back into the arguments it reads
+# itself, so the word after that option is still an option, an assignment or
+# the command, never a value to skip.
+ENV_SPLIT_STRING_BYPASSES = [
+    pytest.param('env -S rm x', id='short'),
+    pytest.param('env -vS git stash', id='clustered'),
+    pytest.param('env --split-string rm x', id='long'),
+    pytest.param('env --split rm x', id='long-abbreviated'),
+]
+
 
 @pytest.mark.parametrize('command', PAREN_AND_OPERATOR_BYPASSES)
 def test_parenthesis_and_operator_bypasses_are_denied(command):
@@ -353,6 +363,11 @@ def test_the_command_after_its_prefixes_is_the_one_classified():
 
 @pytest.mark.parametrize('command', PREFIX_OPTION_BYPASSES)
 def test_no_prefix_option_value_takes_the_commands_place(command):
+    assert guard.classify(command) is not None
+
+
+@pytest.mark.parametrize('command', ENV_SPLIT_STRING_BYPASSES)
+def test_env_reads_its_split_string_value_as_its_own_arguments(command):
     assert guard.classify(command) is not None
 
 
