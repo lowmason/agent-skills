@@ -152,7 +152,7 @@ With α = 1 − `ci_prob`, n = len(u), and coverage levels c = 2|u − 0.5|:
 
 | Quantity | Definition |
 |---|---|
-| `pit_p_value` | `pot_c` p-value of `u`, via `xarray.DataArray.azstats.uniformity_test(method='pot_c')` |
+| `pit_p_value` | `pot_c` p-value of `u`: element `[0]` of `xarray.DataArray.azstats.uniformity_test(method='pot_c')` (Version floor) |
 | `coverage_p_value` | `pot_c` p-value of `c` |
 | `pit_test_passed` / `coverage_test_passed` | p ≥ α |
 | `mean_pit` | mean(u) |
@@ -216,11 +216,19 @@ Every finding traces to a number in the record:
 ### Figures — `save_pit_plot(pit, output_path, *, var_name, coverage=False, ci_prob=0.99)`
 
 `save_pit_plot` wraps `pit` in a one-variable `xarray.DataTree` named `var_name`, and calls
-public `azp.plot_ecdf_pit`. It passes `coverage=coverage` and `envelope_prob=ci_prob`, and
-leaves `method` at its default, `pot_c`. The x-label is `PIT`, or `ETI %` for coverage, as
-`plot_ppc_pit` sets them. Plot paths and filenames are unchanged. The figure and the JSON
-read the same values with the same test, so the p-value printed on each figure is the JSON's
-`pit_p_value` or `coverage_p_value`.
+public `azp.plot_ecdf_pit`. It passes `coverage=coverage`, `envelope_prob=ci_prob` and
+`method='pot_c'`. That last is explicit, not left to the default. `pot_c` is the default on
+every version checked, but pinning it keeps "the same test as the JSON" from depending on a
+future default. The x-label is `PIT`, or `ETI %` for coverage, as `plot_ppc_pit` sets them.
+Plot paths and filenames are unchanged. The figure and the JSON read the same values with
+the same test, so the p-value printed on each figure is the JSON's `pit_p_value` or
+`coverage_p_value`.
+
+**Binary data.** `plot_ppc_pit` warns when a variable looks binary, pointing to
+`plot_ppc_pava`. Bypassing it would drop that warning silently. So `main()` prints its own
+stderr warning when every observed value is 0 or 1, naming `plot_ppc_pava`, and does so on
+every run, since the JSON verdict is PIT-based too. The script does not import arviz's
+internal `warn_if_binary`.
 
 ### Routing — `check_diagnostics.py`
 
@@ -261,14 +269,18 @@ read the same values with the same test, so the p-value printed on each figure i
     - "names every failing component" replaces the band and precedence sentences;
     - the guidance on reading the curve's shape stays;
   - line 171, the Assessment placeholder: add `shape mismatch` and compound findings.
-- **`references/model-criticism.md`, lines 107–109 only:** one sentence warning that a
-  direct `plot_ppc_pit(…, coverage=True)` can print p = 0.00 on a calibrated model. It
-  gives the rate formula and points to `calibration_check.py`'s coverage figure. The gated
-  SBC paragraph is not touched.
+- **`references/model-criticism.md`:** one prose sentence directly after the code fence
+  that closes at line 110. It warns that a direct `plot_ppc_pit(…, coverage=True)` can print
+  p = 0.00 on a calibrated model, gives the rate formula, and points to
+  `calibration_check.py`'s coverage figure. The fence itself is not edited, and neither is
+  the gated SBC paragraph.
+- **`references/publications.md`:** the Tesso et al. entry (Provenance).
 - **Root `CLAUDE.md`:** the bayesian-workflow test-suite line (count and description),
   re-measured, plus the sweep flag (Testing).
 - **Unchanged:** `SKILL.md`, `references/visualize.md`, `README.md`. Their direct calls use
   the raw-PIT view or LOO, which the defect does not reach.
+- **Gates for the skill edits** (root `CLAUDE.md` "Commands"): the frontmatter and
+  provenance lints, Tier 1 of the snippet gate, and the dependency-drift check.
 
 ### Known limits
 
@@ -285,13 +297,39 @@ Both are stated in the `assess_pit` docstring:
 
 ### Version floor
 
-- **Floors:** arviz-stats ≥ 1.1, for `loo_pit(pareto_pit=…)` and the `uniformity_test`
-  accessor. arviz-plots ≥ 1.1, for `plot_ecdf_pit` with `coverage`, `envelope_prob`,
-  `group` and `sample_dims`.
-- **Signatures checked** on arviz-stats 1.1.0, 1.2.0, 1.3.0 and 1.3.3, and arviz-plots
-  1.1.0, 1.3.1 and 1.3.2.
+- **Floors:** arviz-stats ≥ 1.1 and arviz-plots ≥ 1.1.
+- **Verified end to end on two stacks.** The floor stack is arviz-plots 1.1.0,
+  arviz-stats 1.1.0 and arviz-base 1.1.0. It needs matplotlib < 3.11: arviz-plots 1.1.0
+  fails to import against newer matplotlib, which no longer exposes `matplotlib.style.core`.
+  The live stack is arviz-plots 1.3.2, arviz-stats 1.3.3 and arviz-base 1.3.1. On both:
+  - `plot_ecdf_pit` defaults to `pot_c`, and accepts the one-variable DataTree;
+  - the p-value it prints equals the accessor's in all 12 cases checked (calibrated, too
+    narrow and shift, × PPC/LOO, × PIT/coverage);
+  - `loo_pit(pareto_pit=True)` works.
+
+  Parameter names alone were also checked on arviz-stats 1.2.0 and 1.3.0, and on
+  arviz-plots 1.3.1.
+- **Read the p-value by index, never by unpacking.** `uniformity_test` returns
+  `(p, shapley)` on arviz-stats 1.1, and `(p, shapley, shapley_unsorted)` on 1.3, so take
+  element `[0]`.
+- **The guarantee is figure = JSON within one stack.** `pot_c`'s p for the same values
+  differs across arviz-stats versions: 0.14 vs 0.17 on one calibrated PIT array, 1.1.0 vs
+  1.3.3. The sweep thresholds were measured on the live stack.
 - **Removed:** the pre-1.0 `difference_ecdf_pit` import fallback.
 - **scipy**, used for the t quantile, is already an arviz-stats dependency.
+
+### Provenance
+
+`calibration_check.py` arrived with the initial `bayesian-workflow` commit (2d99584). It is
+part of the skill adapted from Alexandre Andorra's PyMC skill (MIT; see `NOTICE`). The
+rewrite keeps that attribution, and needs no `NOTICE` edit.
+
+`pot_c` is cited as ArviZ cites it: Tesso et al., *LOO-PIT predictive model checking*,
+arXiv:2603.02928 (2026), from the `plot_ppc_pit` and `plot_ecdf_pit` docstrings on
+arviz-plots 1.3.2. The citation is author-year, in original wording, with no text reproduced
+— the way `references/publications.md` already cites Säilynoja et al. 2022 for the envelope
+band. `references/publications.md` gains a Tesso et al. entry after Talts et al., for the
+`pot_c` test behind ArviZ's default PIT plots and the script's verdicts.
 
 ## Testing
 
@@ -317,7 +355,8 @@ Both are stated in the `assess_pit` docstring:
   - `mean_coverage_deviation == round(0.5 − mean(c), 4)`.
 - **The figures share the JSON's values:**
   - with `azp.plot_ecdf_pit` monkeypatched to capture its input, both figures receive the
-    PIT values the assessment used, with `coverage=` and `envelope_prob=ci_prob`;
+    PIT values the assessment used, with `coverage=`, `envelope_prob=ci_prob` and
+    `method='pot_c'`;
   - one rendering test, gated by `pytest.importorskip('matplotlib')`, checks that the
     printed p-value equals `f'{pit_p_value:.2f}'`.
 - **Re-measured:**
@@ -326,6 +365,8 @@ Both are stated in the `assess_pit` docstring:
   - the CLI tests: renamed keys, and `--ci-prob 0.01` → `alpha == 0.99`.
 - **Contract:** every label in `calibration_check.FINDINGS` reaches a non-generic step in
   `check_diagnostics.suggest_next_steps`.
+- **Binary data:** a 0/1 observed variable prints the `plot_ppc_pava` warning on stderr,
+  and a continuous one prints nothing.
 
 `test_check_diagnostics.py`:
 
@@ -337,9 +378,22 @@ Both are stated in the `assess_pit` docstring:
 ### Acceptance — a pre-registered seed sweep
 
 An env-gated test in `test_calibration_check.py` runs when `CALIBRATION_SWEEP=1`. It sweeps
-seeds 0–99 on both PIT paths with the test file's normal fixtures (n = 200, S = 1000,
-`ci_prob` = 0.99). The flag is documented on the root `CLAUDE.md` test line. The plan runs
-the sweep once and records the counts.
+seeds 0–99 on both PIT paths at `ci_prob` = 0.99. The flag is documented on the root
+`CLAUDE.md` test line. The plan runs the sweep once and records the counts.
+
+The fixtures:
+- **Normal fixtures.** The test file's `_normal_model`, generalized to take the seed and
+  (loc, scale):
+  - y ~ N(0, 1), with n = 200;
+  - μ ~ N(loc, 0.05) per draw, over 2 chains × 500 draws (S = 1000);
+  - y_rep ~ N(μ, scale);
+  - the log-likelihood is the same normal density.
+- **Skewed fixture,** PPC only:
+  - y ~ N(0, 1);
+  - μ ~ N(0, 0.05) per draw, and y_rep = μ + (G − 2)/√2 with G ~ Gamma(2, 1), a standardized
+    Gamma(2) predictive;
+  - LOO is skipped, because PSIS fails on observations that sit outside the predictive's
+    support in every draw.
 
 The thresholds were set from the 2026-10-03 probe before implementation, below its measured
 values. An implementation that misses one is a finding for the owner, never a reason to edit
@@ -356,6 +410,21 @@ the threshold. "Named" counts any finding list that contains the label.
 | shift + narrow (0.4, 0.7) | exactly `[biased (predictions too high), over-confident]` ≥ 95 | 100 / 100 |
 | shift + wide (0.4, 1.5) | exactly `[biased (predictions too high), under-confident]` ≥ 95 | 100 / 100 |
 | skewed predictive, PPC only | recorded, no threshold: a known limit | `shape mismatch` 0 |
+
+## Planning handoff
+
+- **Plan id:** the next free integer at planning time. Plans 32 and 33 are live on this
+  branch, so it is 34 unless another plan lands first.
+- **Sequencing with plan 33** (`specs/plans/33-snippet-per-block-fixtures.md`). Both plans
+  edit root `CLAUDE.md` and bayesian-workflow references, and plan 33 hard-codes measured
+  snippet-block and advisory counts.
+  - **`CLAUDE.md`:** plan 33 changes the build-suite and Tier 3 lines; this design changes
+    the bayesian-workflow suite line.
+  - **References:** plan 33 changes fence info strings in `model-comparison.md` and
+    `visualize.md`. This design changes prose in `reporting.md`, `model-criticism.md` and
+    `publications.md`, plus comments inside `reporting.md`'s bare-fenced file tree.
+  - **No python fence is added, removed or edited,** so plan 33's counts hold whichever
+    plan lands first. Either order works; re-read `CLAUDE.md` before editing it.
 
 ## Closure
 
