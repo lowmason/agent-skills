@@ -325,3 +325,30 @@ def test_a_named_fixture_runs_between_the_preamble_and_the_block(tmp_path, monke
                         Fixture(code='tiny_name = N + 1\n', variables=frozenset()))
     _, path = _annotated_block(tmp_path, 'fixture=tiny', 'assert tiny_name == 41')
     assert check_snippets.run_errors(path, timeout=300) == []
+
+
+COMPARISON_BLOCKS = (
+    ('references/model-comparison.md', 'idata_1 = az.from_numpyro(mcmc_1'),
+    ('references/model-comparison.md', 'models = {"m1": idata_1'),
+    ('references/model-comparison.md', 'az.compare(models, method="stacking")'),
+    ('references/model-comparison.md', 'loo_a = az.loo(idata_1'),
+    ('references/visualize.md', 'loo2 = az.loo(idata_m2'),
+)
+
+
+def test_the_comparison_fixture_binds_every_name_its_blocks_use():
+    import ast
+
+    from snippet_preamble import NAMED_FIXTURES
+    bound = check_snippets._bound_by(ast.parse(NAMED_FIXTURES['comparison'].code))
+    assert {'mcmc_1', 'mcmc_2', 'mcmc_3', 'idata_1', 'idata_2', 'idata_3',
+            'models', 'idata_m2', 'idata_m3'} <= bound
+
+
+def test_the_comparison_blocks_select_the_comparison_fixture():
+    '''Every bayesian-workflow block that compares fitted variants is admitted
+    through the comparison fixture. Blocks are found by content, not line.'''
+    for relpath, needle in COMPARISON_BLOCKS:
+        block = _skill_block(relpath, needle)
+        assert check_snippets.fixture_name(block) == 'comparison', needle
+        assert check_snippets.runnable(block), check_snippets._unrunnable_reason(block)

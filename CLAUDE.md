@@ -84,12 +84,12 @@ There is no root test runner or repo-wide `pyproject`, and the scientific deps (
 cd build && uv run --python 3.13 --with pytest --with pyyaml \
   python -m pytest -q test_runtime_support.py
 
-# Full build-directory tests — 145 tests (83 citation/lint/snippet + 62 runtime-support)
-# (all 145 collect either way. 7 of test_check_snippets.py's need the ArviZ/NumPyro chain and
-# skip without it, so the command below reports 138 passed, 7 skipped; append
+# Full build-directory tests — 153 tests (91 citation/lint/snippet + 62 runtime-support)
+# (all 153 collect either way. 9 of test_check_snippets.py's need the ArviZ/NumPyro chain and
+# skip without it, so the command below reports 144 passed, 9 skipped; append
 # --with "arviz>=1.0" --with arviz-base --with arviz-stats --with arviz-plots --with numpyro
-# --with jax --with matplotlib to run all 145. Separately, 5 in test_verify_citations.py need the
-# build/.scratch/ ground truth — lacking both: 133 passed, 4 failed, 8 skipped. .scratch/ is
+# --with jax --with matplotlib to run all 153. Separately, 5 in test_verify_citations.py need the
+# build/.scratch/ ground truth — lacking both: 139 passed, 4 failed, 10 skipped. .scratch/ is
 # gitignored, so a fresh clone or worktree lacks it; regenerate with build/extract_structure.py,
 # see build/CLAUDE.md)
 cd build && uv run --python 3.13 --with pytest --with numpy --with polars --with pyyaml python -m pytest -q
@@ -192,9 +192,10 @@ uv run --python 3.13 python build/check_snippets.py skills/
 uv run --python 3.13 --with "arviz>=1.0" --with arviz-base --with arviz-stats \
   --with arviz-plots --with numpyro --with jax \
   python build/check_snippets.py --api skills/bayesian-workflow/
-# Tier 3 (+ execute the harnessed subset against PINNED deps; minutes — 27 of 78 blocks,
-# each a separate subprocess running the full preamble).
-# The other 51 are advisory on stderr with a per-block reason, never silent. If a block
+# Tier 3 (+ execute the harnessed subset against PINNED deps; minutes — 34 of 78 blocks,
+# each a separate subprocess running the full preamble; 3 of those only define functions
+# they never call).
+# The other 44 are advisory on stderr with a per-block reason, never silent. If a block
 # raises, fix the snippet — `norun` is for blocks that cannot run by design, never for
 # blocks that fail. Pins live in build/snippet_preamble.py (PINNED); refresh deliberately:
 uv run --python 3.13 --with 'arviz==1.3.0' --with arviz-base \

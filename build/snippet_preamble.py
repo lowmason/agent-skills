@@ -12,12 +12,15 @@ Sized to be fast: 1 chain, 100 warmup / 200 draws, purely so `mcmc` and
 `idata` exist with realistic structure -- it is NOT a model worth
 interpreting. 200 draws is chosen to keep LOO's Pareto-k estimates sane.
 
-Measured against the skill on 2026-09-08 (re-measure whenever this file or
+Measured against the skill on 2026-10-03 (re-measure whenever this file or
 the skill changes; a stale coverage claim is worse than none): 78 fenced
-python blocks, all 78 parse. 4 are norun-exempt and 47 are advisory --
-24 name-incomplete, 10 naming variables outside FIXTURE_VARS, 7 model-body
-fragments, 6 elided with `...`. That leaves 54 preamble-bound names carrying
-27 blocks that --run actually executes.
+python blocks, all 78 parse. 4 are norun-exempt and 40 are advisory --
+18 name-incomplete, 9 naming variables outside the fixtures, 7 model-body
+fragments, 6 elided with `...`. That leaves 34 blocks that --run executes,
+5 of them through the `comparison` fixture. 3 of the 34 are def-only: they
+define functions they never call, so they show only that the definitions
+compile (diagnostics.md's run_diagnostics, hierarchical.md's centered,
+model-criticism.md's expected_calibration_error and ranked_probability_score).
 
 THIS FILE IS A SECOND SOURCE OF TRUTH and can go green wrongly: a fixture
 simpler than the doc's example can make a doc-level error pass. Keep the
@@ -141,9 +144,47 @@ def add_log_prior(idata, model, mcmc, *model_args, **model_kwargs):
 idata = add_log_prior(idata, model, mcmc, x, y=y)
 '''
 
+COMPARISON_FIXTURE = '''
+# Two more fits of the running example, differing only in the prior on beta
+# or in the likelihood, so every site keeps its shape and the preamble's
+# coords/dims still apply. model-comparison.md compares three such fits.
+def model_wide(x=x, y=None):
+    beta = numpyro.sample("beta", dist.Normal(0, 10).expand([x.shape[1]]).to_event(1))
+    sigma = numpyro.sample("sigma", dist.HalfNormal(1))
+    with numpyro.plate("obs", x.shape[0]):
+        numpyro.sample("y_obs", dist.Normal(x @ beta, sigma), obs=y)
+
+def model_robust(x=x, y=None):
+    beta = numpyro.sample("beta", dist.Normal(0, 1).expand([x.shape[1]]).to_event(1))
+    sigma = numpyro.sample("sigma", dist.HalfNormal(1))
+    with numpyro.plate("obs", x.shape[0]):
+        numpyro.sample("y_obs", dist.StudentT(4, x @ beta, sigma), obs=y)
+
+def fit(variant, key):
+    run = MCMC(NUTS(variant), num_warmup=100, num_samples=200, num_chains=1,
+               progress_bar=False)
+    run.run(key, x, y=y)
+    return run
+
+mcmc_1 = mcmc
+mcmc_2 = fit(model_wide, jax.random.PRNGKey(1))
+mcmc_3 = fit(model_robust, jax.random.PRNGKey(2))
+idata_1, idata_2, idata_3 = (
+    az.from_numpyro(run, log_likelihood=True, coords=coords, dims=dims)
+    for run in (mcmc_1, mcmc_2, mcmc_3))
+models = {"m1": idata_1, "m2": idata_2, "m3": idata_3}
+
+# Deliberately shape-agnostic aliases: visualize.md's pointwise-ELPD block
+# only diffs the per-observation ELPD of two fits over the same observations,
+# so any two of these fits satisfy what it assumes.
+idata_m2, idata_m3 = idata_2, idata_3
+'''
+
 # Per-block fixtures, keyed by the name a block selects. Only the blocks that
 # select one pay for its extra fits; the shared PREAMBLE stays fast.
-NAMED_FIXTURES: dict[str, Fixture] = {}
+NAMED_FIXTURES: dict[str, Fixture] = {
+    'comparison': Fixture(code=COMPARISON_FIXTURE, variables=frozenset()),
+}
 
 PINNED = (
     # Verified resolving 2026-09-08. Refresh deliberately and re-record.
