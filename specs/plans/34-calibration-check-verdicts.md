@@ -149,7 +149,7 @@ These were measured while building the whole end state in scratch: every task's 
   Amending touches the floor line in Global Constraints, the module docstring and import-error message in Task 3 Step 3 (edits 3.1 and 3.2), Task 3 Step 6 (pin the new floor and drop `--deselect`), and Completion's third new item (dropped).
 - **Q2 — Citation (F2).** "Tesso & Vehtari (2026)" (the plan's default) or the spec's "Tesso et al.". The choice touches edit 3.1 (the module docstring) and edit 6.6 (the `publications.md` entry).
 - **Q3 — Cropped x-label (F7).**
-  - **Keep** parity with today's figures (the plan's default).
+  - **Keep** parity with today's figures (the plan's default), and record the cropped label as a deferred item at completion.
   - **Or fix** it: in edit 3.4, `save_pit_plot` calls `pc.savefig(output_path, bbox_inches="tight")` instead of `pc.savefig(output_path)`.
     - Checked at planning on arviz-plots 1.3.2 and on the 1.1.0 floor: the keyword passes through to matplotlib, and the label shows. The PNG goes from 640 × 257 to about 588 × 282 px.
     - No test changes.
@@ -1419,7 +1419,11 @@ Then confirm nothing outside the scripts still names the removed API:
 grep -rn -E "inside_bands|difference_ecdf_pit|BAND_SIMULATIONS|_ecdf_check|_extract_ecdf_results" skills/bayesian-workflow/scripts/ skills/track-model-experiments/ build/ commands/ agents/ runtimes/
 ```
 
-Expected: no output. `references/reporting.md` still names `*_inside_bands` until Task 6.
+Expected: exactly two matching lines, both from the `_calibration` helper in `test_check_diagnostics.py`: `"pit_ecdf_inside_bands": pit_inside,` and `"coverage_ecdf_inside_bands": coverage_inside,`.
+- Task 4 moves that helper to the new contract.
+- Task 4's `_legacy_calibration` fixture keeps the two keys on purpose, to model a file written before this change, so the same two keys match after Task 4 as well.
+- Any other match is a leftover, so fix it.
+- `references/reporting.md` still names `*_inside_bands` until Task 6; it is outside this grep's paths.
 
 - [ ] **Step 5: Smoke-run the CLI end to end on a real file**
 
@@ -2285,7 +2289,7 @@ with:
 git diff -U0 -- skills/bayesian-workflow | grep -cE '^[-+][[:space:]]*`{3}'
 ```
 
-Expected: `0`.
+Expected: `0`. `grep -c` exits 1 when it counts nothing, so here exit status 1 is the pass.
 
 - [ ] **Step 6: Re-measure the suite and update `CLAUDE.md`**
 
@@ -2295,7 +2299,12 @@ cd skills/bayesian-workflow/scripts && uv run --python 3.13 --with pytest --with
 
 Expected shape: `<P> passed, 3 skipped, <W> warnings in …`. The 3 skips are the rendering test and the two sweep items. The warnings are the four arviz RuntimeWarnings the current line already names.
 
-Write the measured values into edit 6.7: `<T>` = `<P>` + 3, the collected total. Fill the placeholders from this run, never by arithmetic on old totals.
+Edit 6.7, the suite line. Apply it as shown, then replace its three placeholders with values from this run:
+- `<P>` is the passed count;
+- `<T>` is `<P>` + 3, the collected total;
+- `<W>` is the warning count.
+
+Never derive them by arithmetic on old totals.
 
 In `CLAUDE.md`, replace:
 
@@ -2365,5 +2374,10 @@ After the final whole-branch review, run the writing-plans **Plan Completion Pro
     - arviz-stats 1.3.1 and later return p = 0.5 (Tesso & Vehtari 2026, Eq. 24).
     - The floor stayed at arviz-stats ≥ 1.1 / arviz-plots ≥ 1.1 at the owner's call (plan 34, Q1).
     - Size: quick-fix: raise the floor in the module docstring and the import error. Revisit if: a run on an older stack reports that error, or every stack the skill runs on reaches arviz-stats ≥ 1.3.1.
+  - **Only if Q3 kept parity:** the saved calibration figures crop their x-label.
+    - `save_pit_plot` in `skills/bayesian-workflow/scripts/calibration_check.py` calls `pc.savefig(output_path)`.
+    - arviz-plots' default layout puts the `PIT` / `ETI %` label below the figure's bottom edge, exactly as on `plot_ppc_pit` figures (plan 34, F7).
+    - `pc.savefig(output_path, bbox_inches="tight")` fixes it on arviz-plots 1.1.0 and 1.3.2 (checked 2026-10-03).
+    - Size: quick-fix. Revisit if: arviz-plots changes its default figure layout, or the owner wants the saved figures to depart from `plot_ppc_pit` parity.
 - **Upstream issues** for the two arviz-plots defects (the coverage-fold false alarm, and the envelope `TypeError`) stay out of scope. Filing is outward-facing and the owner's call; the spec offers a draft separately.
 - **Retire.** `git mv` the plan to `specs/plans/completed/`. Retire the spec to `specs/completed/`, marked complete, because no other live plan implements it. Re-point both files' relative links for their new depth.
