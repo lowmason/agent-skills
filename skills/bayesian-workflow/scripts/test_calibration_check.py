@@ -3,6 +3,8 @@
 cd skills/bayesian-workflow/scripts && uv run --python 3.13 --with pytest --with arviz \
   --with arviz-stats --with numpy --with xarray python -m pytest -q
 
+The figure-rendering test skips unless matplotlib is installed (add --with matplotlib).
+
 The rule tests feed assess_pit exact-quantile PIT arrays: the PIT of N(0, 1)'s exact
 quantiles under a N(loc, scale) predictive, so they involve no sampling. Most other
 fixtures are a normal model of y ~ N(0, 1) whose predictive distribution is
@@ -31,27 +33,19 @@ N_OBS, N_CHAIN, N_DRAW = 200, 2, 500
 TRUE_SCALE = 1.0
 OVER_CONFIDENT_SCALE = 0.3  # predictive far narrower than the data
 UNDER_CONFIDENT_SCALE = 3.0  # predictive far wider than the data
-# Right spread, biased centre: the PIT band fails. The coverage fold is only second-order
-# sensitive to a shift, so it holds at SEED (and on most seeds, not all).
+# Right spread, biased centre: the PIT test fails. The coverage fold is only second-order
+# sensitive to a shift, so its test holds at SEED (and on most seeds, not all).
 LOCATION_SHIFT = 0.4
 COMPOUND_NARROW_SCALE = 0.7  # paired with LOCATION_SHIFT: a shift and a spread error at once
 COMPOUND_WIDE_SCALE = 1.5
 POSTERIOR_SD_OF_MEAN = 0.05
 PER_OBSERVATION_PRIOR_SD = 0.7
 DISCRETE_RATE = 3.0
-# A calibrated model is still flagged at ci_prob=0.99 on ~2-3% of seeds (3 of seeds
-# 0-99, on both paths): each of the two simultaneous bands has its own false-alarm
-# rate. Both the data and arviz-stats' band simulation are seeded, so the outcome
-# for this seed is deterministic.
+# A calibrated model is still flagged at ci_prob=0.99 on a few percent of seeds: each of
+# the two pot_c tests has its own false-alarm rate. The data and the PIT randomization
+# are both seeded, and pot_c is deterministic given the PIT values, so the outcome for
+# this seed is deterministic.
 SEED = 0
-
-REPORT_KEYS = {
-    'pit_ecdf_inside_bands',
-    'coverage_ecdf_inside_bands',
-    'well_calibrated',
-    'mean_coverage_deviation',
-    'calibration_diagnosis',
-}
 
 # The five finding labels, verbatim; calibration_check.FINDINGS must hold exactly these.
 HIGH = 'biased (predictions too high)'
@@ -127,15 +121,15 @@ def _assess(loc, scale, use_loo):
 
 
 @PIT_PATHS
-def test_report_carries_exactly_the_five_documented_keys(use_loo):
-    assert set(_assess(0.0, TRUE_SCALE, use_loo)) == REPORT_KEYS
+def test_report_carries_exactly_the_eleven_documented_keys(use_loo):
+    assert set(_assess(0.0, TRUE_SCALE, use_loo)) == ASSESSMENT_KEYS
 
 
 @PIT_PATHS
-def test_calibrated_predictive_is_inside_both_bands(use_loo):
+def test_calibrated_predictive_passes_both_tests(use_loo):
     report = _assess(0.0, TRUE_SCALE, use_loo)
-    assert report['pit_ecdf_inside_bands'] is True
-    assert report['coverage_ecdf_inside_bands'] is True
+    assert report['pit_test_passed'] is True
+    assert report['coverage_test_passed'] is True
     assert report['well_calibrated'] is True
     assert report['calibration_diagnosis'] == 'well-calibrated'
 
@@ -143,28 +137,28 @@ def test_calibrated_predictive_is_inside_both_bands(use_loo):
 @PIT_PATHS
 def test_too_narrow_predictive_is_diagnosed_over_confident(use_loo):
     report = _assess(0.0, OVER_CONFIDENT_SCALE, use_loo)
-    assert report['coverage_ecdf_inside_bands'] is False
+    assert report['coverage_test_passed'] is False
     assert report['well_calibrated'] is False
     # Empirical coverage below nominal: the coverage ΔECDF runs negative.
     assert report['mean_coverage_deviation'] < 0
-    assert report['calibration_diagnosis'].startswith('over-confident')
+    assert report['findings'] == [OVER]
 
 
 @PIT_PATHS
 def test_too_wide_predictive_is_diagnosed_under_confident(use_loo):
     report = _assess(0.0, UNDER_CONFIDENT_SCALE, use_loo)
-    assert report['coverage_ecdf_inside_bands'] is False
+    assert report['coverage_test_passed'] is False
     assert report['well_calibrated'] is False
     # Empirical coverage above nominal: the coverage ΔECDF runs positive.
     assert report['mean_coverage_deviation'] > 0
-    assert report['calibration_diagnosis'].startswith('under-confident')
+    assert report['findings'] == [UNDER]
 
 
 @PIT_PATHS
-def test_location_shift_fails_the_pit_band_alone_and_is_not_well_calibrated(use_loo):
+def test_location_shift_fails_the_pit_test_alone_and_is_not_well_calibrated(use_loo):
     report = _assess(LOCATION_SHIFT, TRUE_SCALE, use_loo)
-    assert report['pit_ecdf_inside_bands'] is False
-    assert report['coverage_ecdf_inside_bands'] is True
+    assert report['pit_test_passed'] is False
+    assert report['coverage_test_passed'] is True
     assert report['well_calibrated'] is False
 
 
@@ -177,12 +171,11 @@ def test_loo_pit_clears_the_double_dipping_that_ppc_pit_flags():
     # Every theta_i is fit to its own y_i, so every PPC-PIT is pulled toward 0.5 and
     # reads as under-confident. Exact leave-one-out gives the prior predictive
     # N(0, tau^2 + sigma^2), which is the data-generating process, so a correct LOO-PIT
-    # is uniform. PSIS k-hat exceeds 0.7 on a few extreme-|y| points (6 of 200 at
-    # SEED); both assertions held on every one of seeds 0-9.
+    # is uniform. PSIS k-hat exceeds 0.7 on a few extreme-|y| points (6 of 200 at SEED).
     data = _per_observation_model()
     in_sample = assess_calibration(data, 'y', use_loo=False)
-    assert in_sample['coverage_ecdf_inside_bands'] is False
-    assert in_sample['calibration_diagnosis'].startswith('under-confident')
+    assert in_sample['coverage_test_passed'] is False
+    assert in_sample['findings'] == [UNDER]
     assert assess_calibration(data, 'y', use_loo=True)['well_calibrated'] is True
 
 
@@ -210,11 +203,14 @@ def test_diagnosis_reads_well_calibrated_exactly_when_the_report_is(use_loo, loc
 )
 def test_location_shift_is_diagnosed_as_bias_in_its_direction(use_loo, loc, direction):
     report = _assess(loc, TRUE_SCALE, use_loo)
-    assert report['calibration_diagnosis'] == f'biased (predictions {direction})'
+    assert report['findings'] == [f'biased (predictions {direction})']
 
 
 def _run_cli(monkeypatch, capsys, data, *flags):
-    """Run main() on in-memory data; only the netCDF load is replaced. Returns (exit code, JSON)."""
+    """Run main() on in-memory data; only the netCDF load is replaced.
+
+    Returns (exit code, the JSON on stdout, stderr).
+    """
     monkeypatch.setattr(calibration_check, 'convert_to_datatree', lambda _path: data)
     monkeypatch.setattr(sys, 'argv', ['calibration_check.py', '--idata', 'in-memory.nc', *flags])
     try:
@@ -222,59 +218,53 @@ def _run_cli(monkeypatch, capsys, data, *flags):
         exit_code = 0
     except SystemExit as exited:
         exit_code = exited.code
-    return exit_code, json.loads(capsys.readouterr().out)
+    captured = capsys.readouterr()
+    return exit_code, json.loads(captured.out), captured.err
 
 
 @pytest.mark.parametrize('missing', ['posterior', 'log_likelihood'])
 def test_loo_pit_cli_names_a_missing_required_group(monkeypatch, capsys, missing):
     data = _normal_model(0.0, TRUE_SCALE, drop=(missing,))
-    exit_code, output = _run_cli(monkeypatch, capsys, data, '--loo-pit')
+    exit_code, output, _ = _run_cli(monkeypatch, capsys, data, '--loo-pit')
     assert exit_code == 1
     assert missing in output['error']
 
 
 def test_loo_pit_cli_reports_on_data_with_every_required_group(monkeypatch, capsys):
-    exit_code, output = _run_cli(monkeypatch, capsys, _normal_model(0.0, TRUE_SCALE), '--loo-pit')
+    exit_code, output, _ = _run_cli(monkeypatch, capsys, _normal_model(0.0, TRUE_SCALE), '--loo-pit')
     assert exit_code == 0
     assert output['pit_method'] == 'loo_pit'
     assert output['assessment']['well_calibrated'] is True
 
 
 @PIT_PATHS
-def test_ci_prob_sets_the_band_level(use_loo):
-    # A 1% simultaneous band admits a calibrated ΔECDF about 1% of the time, so the
-    # fixture inside both bands at 0.99 falls outside both. Held on seeds 0-9.
+def test_ci_prob_sets_the_test_level(use_loo):
+    # At α = 0.99 a test passes only with p >= 0.99, so the calibrated fixture that passes
+    # both tests at ci_prob = 0.99 fails both.
     report = assess_calibration(_normal_model(0.0, TRUE_SCALE), 'y', use_loo=use_loo, ci_prob=0.01)
-    assert report['pit_ecdf_inside_bands'] is False
-    assert report['coverage_ecdf_inside_bands'] is False
+    assert report['alpha'] == 0.99
+    assert report['pit_test_passed'] is False
+    assert report['coverage_test_passed'] is False
 
 
 def test_cli_passes_ci_prob_to_the_assessment(monkeypatch, capsys):
     data = _normal_model(0.0, TRUE_SCALE)
-    exit_code, output = _run_cli(monkeypatch, capsys, data, '--ci-prob', '0.01')
+    exit_code, output, _ = _run_cli(monkeypatch, capsys, data, '--ci-prob', '0.01')
     assert exit_code == 0
-    assert output['assessment']['pit_ecdf_inside_bands'] is False
-    assert output['assessment']['coverage_ecdf_inside_bands'] is False
-
-
-def _coverage_levels(data, use_loo):
-    """Each observation's coverage level 2|u - 0.5|, from PIT values computed independently."""
-    if use_loo:
-        pit = azs.loo_pit(data, var_names='y')['y'].values
-    else:
-        pit = (data['posterior_predictive']['y'] <= data['observed_data']['y']).mean(('chain', 'draw')).values
-    return 2 * np.abs(pit - 0.5)
+    assert output['assessment']['alpha'] == 0.99
+    assert output['assessment']['pit_test_passed'] is False
+    assert output['assessment']['coverage_test_passed'] is False
 
 
 @PIT_PATHS
 @pytest.mark.parametrize('loc, scale', FIXTURES.values(), ids=FIXTURES.keys())
 def test_mean_coverage_deviation_is_the_mean_gap_between_coverage_ecdf_and_nominal(use_loo, loc, scale):
-    # On the evaluation grid 0, 1/N, ..., 1 the mean of ECDF(c) - x is 0.5 - mean(c) up
-    # to 1/(N_OBS + 1); the report rounds to 4 dp. The gap is under 0.00503.
+    # The mean of ECDF(c) - x over [0, 1] is 0.5 - mean(c), rounded to 4 dp, on the same
+    # PIT values the verdict reads.
     data = _normal_model(loc, scale)
-    expected = 0.5 - _coverage_levels(data, use_loo).mean()
+    coverage = 2 * np.abs(calibration_check.pit_values(data, 'y', use_loo) - 0.5)
     report = assess_calibration(data, 'y', use_loo=use_loo)
-    assert report['mean_coverage_deviation'] == pytest.approx(expected, abs=0.006)
+    assert report['mean_coverage_deviation'] == round(0.5 - float(coverage.mean()), 4)
 
 
 def _model_with_pit_values(pit):
@@ -288,19 +278,19 @@ def _model_with_pit_values(pit):
     )
 
 
-def test_coverage_band_failing_alone_is_not_well_calibrated():
+def test_coverage_test_failing_alone_is_not_well_calibrated():
     # An even PIT grid plus a tenth of the points exactly at their predictive median: the
-    # PIT ECDF stays inside its band, while the coverage ECDF starts 0.1 too high, which
-    # its band cannot absorb. No random draws are involved.
+    # PIT test passes, while those points' coverage values all sit within 1/(S + 1) of 0,
+    # which the coverage test cannot absorb. No sampling; the PIT randomization is seeded.
     n_centred = N_OBS // 10
     grid = (np.arange(N_OBS - n_centred) + 0.5) / (N_OBS - n_centred)
     report = assess_calibration(
         _model_with_pit_values(np.concatenate([grid, np.full(n_centred, 0.5)])), 'y', use_loo=False
     )
-    assert report['pit_ecdf_inside_bands'] is True
-    assert report['coverage_ecdf_inside_bands'] is False
+    assert report['pit_test_passed'] is True
+    assert report['coverage_test_passed'] is False
     assert report['well_calibrated'] is False
-    assert report['calibration_diagnosis'].startswith('under-confident')
+    assert report['findings'] == [UNDER]
 
 
 @PIT_PATHS
@@ -474,3 +464,100 @@ def test_loo_pit_values_are_arviz_pareto_smoothed_loo_pit():
         calibration_check.pit_values(data, 'y', use_loo=True),
         azs.loo_pit(data, var_names='y', pareto_pit=True)['y'].values,
     )
+
+
+def test_cli_reports_too_few_observations_as_a_json_error(monkeypatch, capsys):
+    rng = np.random.default_rng(SEED)
+    data = from_dict(
+        {'posterior_predictive': {'y': rng.normal(size=(N_CHAIN, N_DRAW, 1))}, 'observed_data': {'y': np.zeros(1)}},
+        dims={'y': ['obs']},
+    )
+    exit_code, output, _ = _run_cli(monkeypatch, capsys, data)
+    assert exit_code == 1
+    assert 'at least 2' in output['error']
+
+
+def test_n_observations_counts_every_pooled_pit_value(monkeypatch, capsys):
+    exit_code, output, _ = _run_cli(monkeypatch, capsys, _two_dimensional_model())
+    assert exit_code == 0
+    assert output['n_observations'] == N_OBS
+
+
+@pytest.mark.parametrize('binary', [True, False], ids=['binary', 'continuous'])
+def test_binary_observations_warn_toward_plot_ppc_pava(monkeypatch, capsys, binary):
+    rng = np.random.default_rng(SEED)
+    if binary:
+        y = rng.integers(0, 2, size=N_OBS)
+        y_rep = rng.integers(0, 2, size=(N_CHAIN, N_DRAW, N_OBS))
+        data = from_dict({'posterior_predictive': {'y': y_rep}, 'observed_data': {'y': y}}, dims={'y': ['obs']})
+    else:
+        data = _normal_model(0.0, TRUE_SCALE)
+    exit_code, _, stderr = _run_cli(monkeypatch, capsys, data)
+    assert exit_code == 0
+    if binary:
+        assert 'plot_ppc_pava' in stderr
+    else:
+        assert stderr == ''
+
+
+def _record_figures(monkeypatch):
+    """Replace azp.plot_ecdf_pit with a recorder. Returns its list of (tree, kwargs) calls."""
+    calls = []
+
+    class _Figure:
+        def savefig(self, _path):
+            pass
+
+    def record(tree, **kwargs):
+        calls.append((tree, kwargs))
+        return _Figure()
+
+    monkeypatch.setattr(calibration_check.azp, 'plot_ecdf_pit', record)
+    return calls
+
+
+@PIT_PATHS
+def test_both_figures_draw_the_pit_values_the_json_judged(monkeypatch, capsys, tmp_path, use_loo):
+    calls = _record_figures(monkeypatch)
+    data = _normal_model(0.0, TRUE_SCALE)
+    flags = ['--save-plots', '--plot-dir', str(tmp_path), '--ci-prob', '0.95'] + (['--loo-pit'] if use_loo else [])
+    exit_code, output, _ = _run_cli(monkeypatch, capsys, data, *flags)
+    assert exit_code == 0
+    pit = calibration_check.pit_values(data, 'y', use_loo)
+    assert output['assessment'] == calibration_check.assess_pit(pit, ci_prob=0.95)
+    assert [kwargs['coverage'] for _, kwargs in calls] == [False, True]
+    for tree, kwargs in calls:
+        np.testing.assert_array_equal(tree['ecdf_pit']['y'].values, pit)
+        assert kwargs['method'] == 'pot_c'
+        assert kwargs['envelope_prob'] == 0.95
+    prefix = 'loo_pit' if use_loo else 'pit'
+    assert output['plots'] == {
+        'pit_ecdf': str(tmp_path / f'{prefix}_ecdf.png'),
+        'coverage': str(tmp_path / f'{prefix}_coverage.png'),
+    }
+
+
+def test_each_figure_prints_the_p_value_its_json_verdict_records(monkeypatch, tmp_path):
+    matplotlib = pytest.importorskip('matplotlib')
+    matplotlib.use('Agg')
+    from matplotlib.text import Text
+
+    drawn = []
+    draw = calibration_check.azp.plot_ecdf_pit
+
+    def draw_and_keep(*args, **kwargs):
+        drawn.append(draw(*args, **kwargs))
+        return drawn[-1]
+
+    monkeypatch.setattr(calibration_check.azp, 'plot_ecdf_pit', draw_and_keep)
+    # The per-observation LOO-PIT prints two distinct p-values (0.18 and 0.09), so a
+    # figure showing the other test's p-value would fail here.
+    pit = calibration_check.pit_values(_per_observation_model(), 'y', use_loo=True)
+    report = calibration_check.assess_pit(pit)
+    for coverage, key in ((False, 'pit_p_value'), (True, 'coverage_p_value')):
+        calibration_check.save_pit_plot(pit, tmp_path / f'{key}.png', var_name='y', coverage=coverage)
+        figure = drawn[-1].viz['figure'].item()
+        printed = [text.get_text() for text in figure.findobj(Text) if text.get_text().startswith('p=')]
+        assert len(printed) == 1
+        assert printed[0].startswith(f'p={report[key]:.2f}(α={report["alpha"]:.2f})')
+        matplotlib.pyplot.close('all')

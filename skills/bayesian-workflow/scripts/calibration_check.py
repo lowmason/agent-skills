@@ -1,8 +1,11 @@
 """
 Calibration assessment for Bayesian models.
 
-Computes coverage calibration, PIT ECDFs, and generates calibration plots
-using ArviZ 1.0+ (arviz_plots). Supports both PPC-PIT and LOO-PIT.
+Computes one set of PIT values per run, judges them with the pot_c uniformity test
+(Tesso & Vehtari 2026) that ArviZ's PIT plots print, names every failing calibration
+component, and draws the PIT Δ-ECDF and coverage figures from the same values, so the
+p-value printed on each figure is the one the JSON records. Supports both PPC-PIT and
+LOO-PIT. Requires arviz-stats >= 1.1 and arviz-plots >= 1.1.
 
 Usage:
     python calibration_check.py --idata path/to/inference_data.nc
@@ -26,25 +29,14 @@ try:
     import arviz_stats as azs
     import xarray as xr
     from arviz_base import convert_to_datatree
-    from arviz_stats.ecdf_utils import ecdf_pit
     from scipy import stats
-
-    # `difference_ecdf_pit` is a statistics helper; its stable home is
-    # arviz_stats.ecdf_utils on arviz-stats >= 1.0 (both PyMC-5 and PyMC-6 stacks).
-    # arviz_plots <= 1.0 also re-exported it under arviz_plots.plots.ppc_pit_plot,
-    # but arviz_plots 1.1 removed that re-export — import from arviz_stats, and only
-    # fall back to the old plots path for the older layout.
-    try:
-        from arviz_stats.ecdf_utils import difference_ecdf_pit
-    except ImportError:  # pragma: no cover - pre-1.0 arviz_stats layout
-        from arviz_plots.plots.ppc_pit_plot import difference_ecdf_pit
 except ImportError:
     print(
         json.dumps(
             {
                 "error": (
-                    "arviz_plots and arviz_base are required. "
-                    "Install with: pip install arviz-plots arviz-base"
+                    "arviz-plots >= 1.1, arviz-stats >= 1.1 and arviz-base are required. "
+                    "Install with: pip install 'arviz-plots>=1.1' 'arviz-stats>=1.1' arviz-base"
                 )
             }
         )
@@ -52,9 +44,6 @@ except ImportError:
     sys.exit(1)
 
 warnings.filterwarnings("ignore", category=FutureWarning)
-
-# Monte Carlo draws behind each simultaneous confidence band.
-BAND_SIMULATIONS = 1000
 
 # ArviZ's own default seed for PIT tie-breaking.
 PIT_SEED = 214
@@ -195,129 +184,36 @@ def assess_pit(pit, ci_prob=0.99):
     }
 
 
-def _extract_ecdf_results(ds, var_name):
-    """Extract ΔECDF check from a difference_ecdf_pit result Dataset.
-
-    Returns (inside_bands, mean_delta_ecdf).
-    """
-    dy = ds[var_name].sel(plot_axis="y").values
-    dy_lb = ds[var_name].sel(plot_axis="y_bottom").values
-    dy_ub = ds[var_name].sel(plot_axis="y_top").values
-    inside = bool(((dy >= dy_lb) & (dy <= dy_ub)).all())
-    return inside, round(float(np.mean(dy)), 4)
-
-
-def _ecdf_check(pit_vals, ci_prob=0.99, n_simulations=BAND_SIMULATIONS):
-    """Compute ΔECDF and check if it stays inside simultaneous confidence bands.
-
-    Uses arviz_stats.ecdf_pit. i.e the same computation that powers the ArviZ plots.
-    Returns (inside_bands, mean_delta_ecdf).
-    """
-    eval_pts, ecdf_vals, ci_lb, ci_ub = ecdf_pit(
-        pit_vals, ci_prob, n_simulations=n_simulations
-    )
-    dy = ecdf_vals - eval_pts
-    dy_lb = ci_lb - eval_pts
-    dy_ub = ci_ub - eval_pts
-    inside = bool(((dy >= dy_lb) & (dy <= dy_ub)).all())
-    return inside, round(float(np.mean(dy)), 4)
-
-
 def assess_calibration(dt, var_name, use_loo, ci_prob=0.99):
-    """Assess calibration using the same ΔECDF + simultaneous bands as the plots.
+    """Assess the calibration of `var_name`: assess_pit on its pit_values (see both)."""
+    return assess_pit(pit_values(dt, var_name, use_loo), ci_prob)
 
-    For PPC-PIT, delegates to arviz_plots.difference_ecdf_pit which handles
-    discrete-data randomization correctly. For LOO-PIT, uses arviz_stats.loo_pit
-    (which also handles discrete data) then arviz_stats.ecdf_pit.
 
-    "Well-calibrated" means the ΔECDF stays inside the simultaneous bands.
+def save_pit_plot(pit, output_path, *, var_name, coverage=False, ci_prob=0.99):
+    """Save the PIT Δ-ECDF figure of `pit`, or with coverage=True its coverage view.
 
-    The coverage direction follows ArviZ conventions (EABM reference):
-        positive coverage ΔECDF → empirical > nominal → under-confident (too uncertain)
-        negative coverage ΔECDF → empirical < nominal → over-confident (too certain)
-
-    When only the PIT band fails, the verdict reads the failure as a shift — the spread
-    is right but the centre is off — and takes the direction from the sign of the mean
-    PIT ΔECDF (PIT is P(y_rep <= y)):
-        positive PIT ΔECDF → observations fall low in their predictive → biased (predictions too high)
-        negative PIT ΔECDF → observations fall high in their predictive → biased (predictions too low)
-    That reading is a heuristic. A shape mismatch (a skewed predictive, a missing mode)
-    can fail the PIT band alone too, and its mean ΔECDF can sit near zero with a sign
-    that carries no information. A shift keeps the ΔECDF on one side of zero; one that
-    crosses zero points at shape rather than location.
-    A failed coverage band takes precedence: its verdict names the spread problem.
+    Draws with public azp.plot_ecdf_pit from the same PIT values and the same pot_c test
+    as assess_pit, so the p-value printed on the figure is the JSON's pit_p_value
+    (coverage_p_value with coverage=True), judged against the same α = 1 − ci_prob. The
+    figure shows the Δ-ECDF step line, a zero line, that p-value with its α, and the
+    suspicious points the test highlights when it rejects; no band is drawn.
+    method="pot_c" is passed explicitly: it is the default on every version checked,
+    but "the same test as the JSON" must not depend on a future default. The axis
+    labels are the ones plot_ppc_pit sets.
     """
-    if use_loo:
-        pit_vals = azs.loo_pit(dt, var_names=var_name)[var_name].values
-        pit_inside, mean_pit_delta = _ecdf_check(
-            pit_vals, ci_prob=ci_prob, n_simulations=BAND_SIMULATIONS
-        )
-        coverage_vals = 2 * np.abs(pit_vals - 0.5)
-        coverage_inside, mean_cov_delta = _ecdf_check(
-            coverage_vals, ci_prob=ci_prob, n_simulations=BAND_SIMULATIONS
-        )
-    else:
-        # difference_ecdf_pit walks every observed variable and raises on one with no
-        # posterior_predictive counterpart: pass only the one being assessed.
-        pp_ds = dt["posterior_predictive"].dataset[[var_name]]
-        obs_ds = dt["observed_data"].dataset[[var_name]]
-        ds_pit = difference_ecdf_pit(
-            pp_ds,
-            obs_ds,
-            ci_prob=ci_prob,
-            coverage=False,
-            n_simulations=BAND_SIMULATIONS,
-        )
-        pit_inside, mean_pit_delta = _extract_ecdf_results(ds_pit, var_name)
-        ds_cov = difference_ecdf_pit(
-            pp_ds,
-            obs_ds,
-            ci_prob=ci_prob,
-            coverage=True,
-            n_simulations=BAND_SIMULATIONS,
-        )
-        coverage_inside, mean_cov_delta = _extract_ecdf_results(ds_cov, var_name)
-
-    if not coverage_inside:
-        if mean_cov_delta > 0:
-            calibration_diagnosis = "under-confident (predictions too uncertain)"
-        else:
-            calibration_diagnosis = "over-confident (predictions too certain)"
-    elif not pit_inside:
-        if mean_pit_delta > 0:
-            calibration_diagnosis = "biased (predictions too high)"
-        else:
-            calibration_diagnosis = "biased (predictions too low)"
-    else:
-        calibration_diagnosis = "well-calibrated"
-
-    return {
-        "pit_ecdf_inside_bands": pit_inside,
-        "coverage_ecdf_inside_bands": coverage_inside,
-        "well_calibrated": pit_inside and coverage_inside,
-        "mean_coverage_deviation": mean_cov_delta,
-        "calibration_diagnosis": calibration_diagnosis,
-    }
-
-
-def save_pit_plot(
-    dt, var_name, output_path, *, use_loo=False, coverage=False, ci_prob=0.99
-):
-    """Generate and save a PIT-based calibration plot.
-
-    Uses azp.plot_loo_pit (LOO-PIT, avoids double-dipping) or
-    azp.plot_ppc_pit (PPC-PIT) with optional coverage=True for the
-    coverage transformation. Both produce ΔECDF plots whose simultaneous
-    bounds (Säilynoja et al. 2022) are computed but not drawn — the figure
-    shows the step line, a zero line, highlighted suspicious points, and
-    the p-value with its α; the bounds themselves feed the
-    *_inside_bands values this script writes.
-    """
-    plot_fn = azp.plot_loo_pit if use_loo else azp.plot_ppc_pit
-    # arviz_plots 1.0 names the simultaneous-band probability `envelope_prob`;
-    # passing `ci_prob` here falls through to **pc_kwargs and the backend rejects
-    # it ("no active aesthetic"). The lower-level ecdf helpers still use ci_prob.
-    pc = plot_fn(dt, var_names=var_name, coverage=coverage, envelope_prob=ci_prob)
+    # Named after the variable so the dim can never share its name: a 1-D variable named
+    # like its own dim becomes a coordinate, not a data variable.
+    sample_dim = f"{var_name}_dim_0"
+    tree = xr.DataTree.from_dict({"ecdf_pit": xr.Dataset({var_name: ((sample_dim,), pit)})})
+    pc = azp.plot_ecdf_pit(
+        tree,
+        group="ecdf_pit",
+        sample_dims=[sample_dim],
+        method="pot_c",
+        envelope_prob=ci_prob,
+        coverage=coverage,
+        visuals={"xlabel": {"text": "ETI %" if coverage else "PIT"}, "ylabel": {}},
+    )
     pc.savefig(output_path)
     return output_path
 
@@ -354,7 +250,7 @@ def main():
         "--ci-prob",
         type=float,
         default=0.99,
-        help="Probability for simultaneous confidence bands (default: 0.99)",
+        help="A test fails when its pot_c p-value is below 1 - ci-prob (default: 0.99)",
     )
     args = parser.parse_args()
 
@@ -415,35 +311,44 @@ def main():
             "az.from_numpyro(mcmc, ...) writes it by default; keep it when saving the netCDF."
         )
 
-    # Assess calibration using ArviZ ΔECDF + simultaneous bands
-    ci_prob = args.ci_prob
-    assessment = assess_calibration(dt, var_name, use_loo=args.loo_pit, ci_prob=ci_prob)
+    # plot_ppc_pit warns on binary data; this script bypasses it, so it warns itself.
+    if np.isin(dt["observed_data"][var_name].values, (0, 1)).all():
+        print(
+            f"Warning: every observed value of '{var_name}' is 0 or 1. The PIT checks, "
+            "and this verdict, are weak on binary outcomes; azp.plot_ppc_pava may be "
+            "more appropriate.",
+            file=sys.stderr,
+        )
 
-    n_obs = len(dt["observed_data"][var_name].values)
+    # One set of PIT values feeds the JSON verdict and both figures.
+    ci_prob = args.ci_prob
+    pit = pit_values(dt, var_name, use_loo=args.loo_pit)
+    try:
+        assessment = assess_pit(pit, ci_prob=ci_prob)
+    except ValueError as e:
+        _exit_with_error(str(e))
+
     report = {
         "variable": var_name,
-        "n_observations": n_obs,
+        "n_observations": int(pit.size),
         "pit_method": "loo_pit" if args.loo_pit else "ppc_pit",
         "assessment": assessment,
     }
 
-    # Save plots using arviz_plots
     if args.save_plots:
         os.makedirs(args.plot_dir, exist_ok=True)
         prefix = "loo_pit" if args.loo_pit else "pit"
         report["plots"] = {
             "pit_ecdf": save_pit_plot(
-                dt,
-                var_name,
+                pit,
                 os.path.join(args.plot_dir, f"{prefix}_ecdf.png"),
-                use_loo=args.loo_pit,
+                var_name=var_name,
                 ci_prob=ci_prob,
             ),
             "coverage": save_pit_plot(
-                dt,
-                var_name,
+                pit,
                 os.path.join(args.plot_dir, f"{prefix}_coverage.png"),
-                use_loo=args.loo_pit,
+                var_name=var_name,
                 coverage=True,
                 ci_prob=ci_prob,
             ),
