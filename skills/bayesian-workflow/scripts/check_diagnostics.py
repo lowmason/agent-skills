@@ -38,6 +38,14 @@ COVERAGE_DEVIATION_FAIR = 0.05
 PSENSE_OK = 0.05
 PSENSE_FAIR = 0.10
 
+# calibration_check.FINDINGS labels, routed by prefix. This is a copy, not an import:
+# importing calibration_check would pull the ArviZ stack into this pure-JSON reader.
+# test_calibration_check.py's contract test keeps the two in step.
+BIASED_PREFIX = "biased ("
+OVER_CONFIDENT_PREFIX = "over-confident ("
+UNDER_CONFIDENT_PREFIX = "under-confident ("
+SHAPE_MISMATCH_PREFIX = "shape mismatch ("
+
 
 def _rate_convergence(conv: dict) -> tuple[str, list[str]]:
     """Return (rating, problematic_param_names) for the convergence section.
@@ -131,6 +139,21 @@ def _rate_calibration(cal: dict) -> tuple[str, str]:
     return "poor", diagnosis
 
 
+def _calibration_findings(cal: dict) -> list[str]:
+    """Return the calibration findings, in calibration_check.py's order.
+
+    A calibration.json written before findings existed falls back to its one
+    diagnosis, unless that is empty or reads well-calibrated.
+    """
+    assessment = cal.get("assessment", {})
+    if "findings" in assessment:
+        return list(assessment["findings"])
+    diagnosis = assessment.get("calibration_diagnosis", "")
+    if not diagnosis or diagnosis == "well-calibrated":
+        return []
+    return [diagnosis]
+
+
 def _rate_psense(ps: dict) -> tuple[str, list[str]]:
     """Return (rating, flagged_params) for prior sensitivity."""
     if not ps:
@@ -211,6 +234,7 @@ def check_diagnostics(
         report["calibration"] = {
             "rating": cal_rating,
             "diagnosis": cal_diagnosis,
+            "findings": _calibration_findings(calibration),
         }
 
     if psense is not None:
@@ -261,6 +285,68 @@ def _build_summary(report: dict) -> dict:
         s["psense"] = f"Prior sensitivity: {r['rating']} (flagged: {flagged})."
 
     return s
+
+
+def _spread_step(finding: str, rating: str) -> str:
+    """The spread step: specific when the calibration rating is poor, general when fair."""
+    if rating != "poor":
+        return (
+            "Calibration is fair but not excellent — consider tightening priors, "
+            "switching to a heavier-tailed likelihood, or running a sensitivity "
+            "check on the most informative observations."
+        )
+    if finding.startswith(OVER_CONFIDENT_PREFIX):
+        return (
+            "Calibration is over-confident — likelihood is too narrow for the "
+            "data. Consider StudentT for continuous outcomes with heavy tails, "
+            "NegBinomial for overdispersed counts, or hierarchical structure if "
+            "groups have distinct variance."
+        )
+    return (
+        "Calibration is under-confident — predictions are too uncertain. "
+        "Tighten priors that are dominating the likelihood, or check whether "
+        "the model is overcomplicated for the data."
+    )
+
+
+def _calibration_steps(cal: dict) -> list[str]:
+    """One next step per calibration finding, in findings order (centre first)."""
+    steps: list[str] = []
+    shifted = False
+    for finding in cal.get("findings", []):
+        if finding.startswith(BIASED_PREFIX):
+            shifted = True
+            steps.append(
+                f"Calibration is {finding} — the predictive's centre is off, so check "
+                "the mean structure before the likelihood: a missing predictor or "
+                "group effect, a wrong link or offset, or an intercept prior pulling "
+                "the centre. Compare posterior-predictive means with observed means "
+                "by group."
+            )
+        elif finding.startswith(OVER_CONFIDENT_PREFIX) and shifted:
+            # A shift alone lowers interval coverage, so this may be its echo.
+            steps.append(
+                "Calibration is also over-confident, but a shift alone lowers interval "
+                "coverage — fix the centre first, re-run calibration_check.py, and act "
+                "on the spread only if the over-confidence remains."
+            )
+        elif finding.startswith((OVER_CONFIDENT_PREFIX, UNDER_CONFIDENT_PREFIX)):
+            # A shift cannot cause under-confidence, so it keeps its spread step.
+            steps.append(_spread_step(finding, cal.get("rating", "")))
+        elif finding.startswith(SHAPE_MISMATCH_PREFIX):
+            steps.append(
+                "Calibration fails the PIT test, but neither a shift nor a spread "
+                "error explains it — read the highlighted points on the PIT figure "
+                "beside a posterior-predictive density overlay (azp.plot_ppc_dist), and "
+                "consider a likelihood with the right shape: skewed, mixture, "
+                "zero-inflated or hurdle."
+            )
+        else:
+            steps.append(
+                "Calibration check failed — re-examine the likelihood and the "
+                "prior predictive range before interpreting posteriors."
+            )
+    return steps
 
 
 def suggest_next_steps(report: dict) -> list[str]:
@@ -317,43 +403,7 @@ def suggest_next_steps(report: dict) -> list[str]:
             )
 
     # ── Calibration ───────────────────────────────────────────────────
-    cal = report.get("calibration", {})
-    if "biased" in cal.get("diagnosis", ""):
-        # Spread fits but the centre is off: the coverage deviation stays small, so
-        # the rating alone would route this to the spread-oriented "fair" advice.
-        steps.append(
-            f"Calibration is {cal['diagnosis']} — the predictive's spread fits but its "
-            "centre is off, so check the mean structure before the likelihood: a "
-            "missing predictor or group effect, a wrong link or offset, or an "
-            "intercept prior pulling the centre. Compare posterior-predictive means "
-            "with observed means by group."
-        )
-    elif cal.get("rating") == "poor":
-        diag = cal.get("diagnosis", "")
-        if "over-confident" in diag:
-            steps.append(
-                "Calibration is over-confident — likelihood is too narrow for the "
-                "data. Consider StudentT for continuous outcomes with heavy tails, "
-                "NegBinomial for overdispersed counts, or hierarchical structure if "
-                "groups have distinct variance."
-            )
-        elif "under-confident" in diag:
-            steps.append(
-                "Calibration is under-confident — predictions are too uncertain. "
-                "Tighten priors that are dominating the likelihood, or check whether "
-                "the model is overcomplicated for the data."
-            )
-        else:
-            steps.append(
-                "Calibration check failed — re-examine the likelihood and the "
-                "prior predictive range before interpreting posteriors."
-            )
-    elif cal.get("rating") == "fair":
-        steps.append(
-            "Calibration is fair but not excellent — consider tightening priors, "
-            "switching to a heavier-tailed likelihood, or running a sensitivity "
-            "check on the most informative observations."
-        )
+    steps.extend(_calibration_steps(report.get("calibration", {})))
 
     # ── LOO ───────────────────────────────────────────────────────────
     loo = report.get("loo", {})

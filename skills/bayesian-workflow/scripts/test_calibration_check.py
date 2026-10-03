@@ -27,6 +27,7 @@ from arviz_base import from_dict
 from scipy import stats
 
 import calibration_check
+import check_diagnostics
 from calibration_check import assess_calibration
 
 N_OBS, N_CHAIN, N_DRAW = 200, 2, 500
@@ -561,3 +562,23 @@ def test_each_figure_prints_the_p_value_its_json_verdict_records(monkeypatch, tm
         assert len(printed) == 1
         assert printed[0].startswith(f'p={report[key]:.2f}(α={report["alpha"]:.2f})')
         matplotlib.pyplot.close('all')
+
+
+@pytest.mark.parametrize('label', calibration_check.FINDINGS)
+def test_every_finding_reaches_a_specific_next_step(label):
+    # check_diagnostics.py keeps its own copy of the labels, since importing
+    # calibration_check would pull the ArviZ stack into a pure-JSON reader. A label it
+    # cannot route falls through to the generic step. A |deviation| above 0.05 rates
+    # calibration poor, so the spread labels take their specific steps.
+    calibration = {
+        'assessment': {
+            'findings': [label],
+            'well_calibrated': False,
+            'calibration_diagnosis': label,
+            'mean_coverage_deviation': -0.3,
+        }
+    }
+    report = check_diagnostics.check_diagnostics(calibration=calibration)
+    steps = [step for step in check_diagnostics.suggest_next_steps(report) if step.startswith('Calibration')]
+    assert len(steps) == 1, steps
+    assert 'Calibration check failed' not in steps[0]

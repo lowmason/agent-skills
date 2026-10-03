@@ -48,7 +48,8 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 # ArviZ's own default seed for PIT tie-breaking.
 PIT_SEED = 214
 
-# The five calibration findings, centre first.
+# The five calibration findings, centre first. check_diagnostics.py routes on these
+# labels by prefix and keeps its own copy; test_calibration_check.py holds the two in step.
 BIASED_HIGH = "biased (predictions too high)"
 BIASED_LOW = "biased (predictions too low)"
 OVER_CONFIDENT = "over-confident (predictions too certain)"
