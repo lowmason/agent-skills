@@ -279,3 +279,49 @@ def test_every_fixture_var_is_carried_by_the_fixture_idata():
                           capture_output=True, text=True, timeout=300,
                           env={**os.environ, 'MPLBACKEND': 'Agg'})
     assert proc.returncode == 0, proc.stderr[-2000:]
+
+
+def _annotated_block(tmp_path, info, code):
+    '''A one-block markdown file whose fence info string is `python <info>`.'''
+    path = tmp_path / 'block.md'
+    path.write_text(f'```python {info}\n{code}\n```\n')
+    return check_snippets.iter_code_blocks(path.read_text())[0], path
+
+
+def test_a_named_fixture_binds_names_for_the_block_that_selects_it(tmp_path, monkeypatch):
+    from snippet_preamble import Fixture
+    monkeypatch.setitem(check_snippets.NAMED_FIXTURES, 'tiny',
+                        Fixture(code='tiny_name = 1\n', variables=frozenset()))
+    selected, _ = _annotated_block(tmp_path, 'fixture=tiny', 'print(tiny_name)')
+    assert check_snippets.runnable(selected), check_snippets._unrunnable_reason(selected)
+    plain, _ = _annotated_block(tmp_path, '', 'print(tiny_name)')
+    assert 'unbound names' in check_snippets._unrunnable_reason(plain)
+
+
+def test_a_named_fixture_widens_the_variables_a_block_may_ask_for(tmp_path, monkeypatch):
+    from snippet_preamble import Fixture
+    monkeypatch.setitem(check_snippets.NAMED_FIXTURES, 'tiny',
+                        Fixture(code='', variables=frozenset({'tau'})))
+    code = 's = az.summary(idata, var_names=["tau"])'
+    selected, _ = _annotated_block(tmp_path, 'fixture=tiny', code)
+    assert check_snippets.runnable(selected), check_snippets._unrunnable_reason(selected)
+    plain, _ = _annotated_block(tmp_path, '', code)
+    assert 'needs fixture variables' in check_snippets._unrunnable_reason(plain)
+
+
+def test_an_unknown_fixture_fails_the_gate(tmp_path):
+    _, path = _annotated_block(tmp_path, 'fixture=no_such_fixture', 'x = 1')
+    errors = check_snippets.fixture_errors(path)
+    assert len(errors) == 1 and 'no_such_fixture' in errors[0], errors
+    assert check_snippets.main([str(path)]) == 1
+
+
+@requires_stack
+def test_a_named_fixture_runs_between_the_preamble_and_the_block(tmp_path, monkeypatch):
+    '''The fixture can use what the preamble binds (N = 40), and the block can
+    use what the fixture binds (tiny_name).'''
+    from snippet_preamble import Fixture
+    monkeypatch.setitem(check_snippets.NAMED_FIXTURES, 'tiny',
+                        Fixture(code='tiny_name = N + 1\n', variables=frozenset()))
+    _, path = _annotated_block(tmp_path, 'fixture=tiny', 'assert tiny_name == 41')
+    assert check_snippets.run_errors(path, timeout=300) == []

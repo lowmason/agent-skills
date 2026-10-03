@@ -9,6 +9,11 @@ Two fence markers opt a block out, each requiring a reason so the exemption
 list stays auditable: `norun` (execution only, parsing still applies) and
 `noparse` (parsing too, and therefore execution). Both are reported on stderr.
 
+A third fence token, `fixture=<name>`, opts a block into a per-block fixture
+from snippet_preamble.NAMED_FIXTURES, run between the preamble and the block.
+It exempts nothing. An unknown name fails at every tier, since a typo would
+otherwise quietly drop the block from --run.
+
 Scope honesty, since the motivating backlog item overstates it. Of audit
 12-audit_7_20_26's three findings this gate reaches exactly ONE: C1, whose
 recipe raises when executed (--run). C2 was a lexical contradiction between
@@ -46,11 +51,12 @@ from pathlib import Path
 
 from fences import (CodeBlock, iter_code_blocks,  # noqa: F401  (re-exported)
                     strip_fenced_blocks)
-from snippet_preamble import FIXTURE_VARS, PINNED, PREAMBLE
+from snippet_preamble import FIXTURE_VARS, NAMED_FIXTURES, PINNED, PREAMBLE
 
 NORUN = 'norun'
 NOPARSE = 'noparse'
 TICK_NAME_RE = re.compile(r'`([A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)+)')
+FIXTURE_RE = re.compile(r'(?:^|\s)fixture=(\S+)')
 # Optional per SKILL.md:50-53 -- absent from a clean env by design, so an
 # unimportable chain rooted in one of these is an advisory, never a failure.
 # Same standing as the blackjax/dynamax norun blocks.
@@ -141,6 +147,37 @@ def exempt_report(path: Path) -> list[str]:
             continue
         what = 'not parsed or executed' if m == NOPARSE else 'not executed'
         out.append(f'{path}:{b.line}: {what}: {b.info[len(m):].strip()}')
+    return out
+
+
+def fixture_name(block) -> str | None:
+    '''The named fixture a block selects with `fixture=<name>`, or None.'''
+    m = FIXTURE_RE.search(block.info)
+    return m.group(1) if m else None
+
+
+def _fixture(block):
+    '''The block's named fixture; None when it selects none, or an unknown one
+    (fixture_errors fails that).'''
+    name = fixture_name(block)
+    return NAMED_FIXTURES.get(name) if name else None
+
+
+def _fixture_names(fixture) -> set[str]:
+    '''Names a named fixture binds; empty when the block selects none.'''
+    return _bound_by(ast.parse(fixture.code)) if fixture else set()
+
+
+def fixture_errors(path: Path) -> list[str]:
+    '''One failure per block selecting a fixture snippet_preamble lacks. A
+    typo must fail, not quietly drop the block from execution.'''
+    out = []
+    for block in iter_code_blocks(path.read_text()):
+        name = fixture_name(block)
+        if name and name not in NAMED_FIXTURES:
+            known = ', '.join(sorted(NAMED_FIXTURES)) or 'none'
+            out.append(f'{path}:{block.line}: unknown fixture {name!r} '
+                       f'(known: {known})')
     return out
 
 
@@ -340,12 +377,15 @@ def _unrunnable_reason(block) -> str:
     primitive = _module_level_primitive(tree)
     if primitive:
         return f'model-body fragment ({primitive} outside a model handler)'
-    missing = _required_vars(tree) - FIXTURE_VARS
+    fixture = _fixture(block)
+    known_vars = FIXTURE_VARS | (fixture.variables if fixture else frozenset())
+    missing = _required_vars(tree) - known_vars
     if missing:
         return f'needs fixture variables {sorted(missing)}'
     free = {n.id for n in ast.walk(tree)
             if isinstance(n, ast.Name) and isinstance(n.ctx, ast.Load)}
-    unbound = free - (_preamble_names() | _bound_by(tree))
+    bound = _preamble_names() | _fixture_names(fixture) | _bound_by(tree)
+    unbound = free - bound
     if unbound:
         return f'unbound names {sorted(unbound)}'
     return ''
@@ -367,17 +407,20 @@ def run_errors(path: Path, timeout: int = 300) -> list[str]:
     Isolation is mandatory, not tidiness: blocks write model_output.nc, create
     a literal <slug>/ directory, and save PNGs. Warnings are not failures --
     the skill documents several as expected -- so this asserts "did not
-    raise", never -W error.
+    raise", never -W error. A block's named fixture runs between the preamble
+    and the block.
     '''
     out = []
     for block in iter_code_blocks(path.read_text()):
         if not runnable(block):
             continue
+        fixture = _fixture(block)
+        program = '\n'.join([PREAMBLE, fixture.code if fixture else '', block.code])
         with tempfile.TemporaryDirectory() as tmp:
             env = {**os.environ, 'MPLBACKEND': 'Agg'}
             try:
                 proc = subprocess.run(
-                    [sys.executable, '-c', PREAMBLE + '\n' + block.code],
+                    [sys.executable, '-c', program],
                     cwd=tmp, env=env, capture_output=True, text=True,
                     timeout=timeout)
             except subprocess.TimeoutExpired:
@@ -417,7 +460,8 @@ def main(argv=None) -> int:
     ap.add_argument('--timeout', type=int, default=300,
                     help='per-block execution timeout in seconds (default: 300)')
     args = ap.parse_args(argv)
-    failures = [e for md in _iter_md(args.paths) for e in parse_errors(md)]
+    failures = [e for md in _iter_md(args.paths)
+                for e in parse_errors(md) + fixture_errors(md)]
     advisories = [ln for md in _iter_md(args.paths) for ln in exempt_report(md)]
     if args.api:
         mods = {'az': 'arviz', 'azs': 'arviz_stats', 'azp': 'arviz_plots',

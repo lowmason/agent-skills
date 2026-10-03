@@ -35,7 +35,25 @@ needing its own fixture rather than executed and blamed for the mismatch.
 never added. Widen the fixture and this set together, never one alone;
 test_every_fixture_var_is_carried_by_the_fixture_idata pins the set against
 the fixture.
+
+NAMED_FIXTURES holds per-block fixtures for blocks written against more than
+the running example. A block opts in with `fixture=<name>` in its fence info
+string (```python fixture=comparison); its code runs between PREAMBLE and the
+block. A name not defined here fails the gate at every tier.
 '''
+
+from typing import NamedTuple
+
+
+class Fixture(NamedTuple):
+    '''A per-block fixture a block selects with `fixture=<name>` in its fence
+    info string. `code` runs after PREAMBLE, so it may use every name the
+    preamble binds. `variables` are the fixture variables it adds to
+    FIXTURE_VARS -- the same honesty rule: widen the code and the set together.'''
+    code: str
+    variables: frozenset
+
+
 FIXTURE_VARS = frozenset({'beta', 'sigma', 'y_obs', 'diverging'})
 
 PREAMBLE = '''
@@ -122,6 +140,10 @@ def add_log_prior(idata, model, mcmc, *model_args, **model_kwargs):
 
 idata = add_log_prior(idata, model, mcmc, x, y=y)
 '''
+
+# Per-block fixtures, keyed by the name a block selects. Only the blocks that
+# select one pay for its extra fits; the shared PREAMBLE stays fast.
+NAMED_FIXTURES: dict[str, Fixture] = {}
 
 PINNED = (
     # Verified resolving 2026-09-08. Refresh deliberately and re-record.
