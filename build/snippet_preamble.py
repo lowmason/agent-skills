@@ -27,17 +27,19 @@ simpler than the doc's example can make a doc-level error pass. Keep the
 fixtures shaped like the skill's running example, and edit this file whenever
 a snippet's assumed context changes.
 
-FIXTURE_VARS is the honesty half. It names every variable the fixture's
-InferenceData carries, in any group: the posterior sites `beta` and `sigma`,
-the observed site `y_obs`, and `diverging`, which the MCMC run records into
-sample_stats through extra_fields. check_snippets.runnable() refuses any block
-naming a variable outside it, so a snippet written against a DIFFERENT
-running example (`param1`, `alpha`/`delta`, `tau`/`theta`) is reported as
-needing its own fixture rather than executed and blamed for the mismatch.
-`param1`/`param2` are placeholders for the reader's own parameters and are
-never added. Widen the fixture and this set together, never one alone;
-test_every_fixture_var_is_carried_by_the_fixture_idata pins the set against
-the fixture.
+FIXTURE_VARS is the honesty half. Every name in it is a variable the
+fixture's InferenceData carries, in some group: the posterior sites `beta`
+and `sigma`, the observed site `y_obs`, and `diverging`, which the MCMC run
+records into sample_stats through extra_fields. It is a subset: the idata
+also carries sample_stats fields such as `energy` and `tree_depth`, which
+join the set when a block asks for them. check_snippets.runnable() refuses
+any block naming a variable outside it, so a snippet written against a
+DIFFERENT running example (`param1`, `alpha`/`delta`, `tau`/`theta`) is
+reported as needing its own fixture rather than executed and blamed for the
+mismatch. `param1`/`param2` are placeholders for the reader's own parameters
+and are never added. Widen the fixture and this set together, never one
+alone; test_every_fixture_var_is_carried_by_the_fixture_idata pins that every
+name in the set is carried.
 
 NAMED_FIXTURES holds per-block fixtures for blocks written against more than
 the running example. A block opts in with `fixture=<name>` in its fence info

@@ -169,8 +169,10 @@ def _fixture_names(fixture) -> set[str]:
 
 
 def fixture_errors(path: Path) -> list[str]:
-    '''One failure per block selecting a fixture snippet_preamble lacks. A
-    typo must fail, not quietly drop the block from execution.'''
+    '''One failure per block selecting a fixture snippet_preamble lacks. An
+    unknown fixture name must fail, not quietly drop the block from execution.
+    A malformed key (`fixtures=x`, a bare `fixture=`) is not detected: the block
+    stays plain and surfaces as an advisory under --run.'''
     out = []
     for block in iter_code_blocks(path.read_text()):
         name = fixture_name(block)
