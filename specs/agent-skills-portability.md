@@ -406,9 +406,8 @@ Constraints:
 
 - `specs/agent-skills-best-practices.md`: the survey. Its Claude Code numbers are
   secondary; `specs/claude-code-customization-guide.md` governs Claude Code
-  facts. Its 2026-10-03 re-verification against official docs (at 2.1.288) was
-  on branch `docs/cc-guide-refresh-2026-10-03`, not yet on main, when this spec
-  was written.
+  facts. Its 2026-10-03 re-verification against official docs (at 2.1.288)
+  landed on main via lowmason/agent-skills#19 (merge `c33bc99`).
 - [Agent Skills specification](https://agentskills.io/specification): the six
   frontmatter fields, the `compatibility` ≤ 500 limit, and `metadata` as a
   string-to-string map.
