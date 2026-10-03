@@ -1,0 +1,26 @@
+I'll put the bucketing decision in your hands — here's where to wire it in:
+
+```python
+def choose_bucket(length: int, buckets: list[int]) -> int:
+    """
+    Pick the smallest bucket >= length to pad into.
+    Trade-off you're positioned to make, not me:
+      - Few, widely-spaced buckets -> fewer compiles, more wasted
+        padding compute on average (e.g. a length-33 input padded to 128).
+      - Many, closely-spaced buckets -> less wasted compute, but more
+        distinct shapes -> more compiles (defeats the point above a limit).
+    The right buckets depend on YOUR length distribution (e.g. is it
+    roughly uniform 1-512, or bimodal short-prompt/long-prompt?) and
+    your latency budget for the first-seen-bucket compile stall.
+
+    TODO: implement the bucket selection policy.
+    Suggested signature stays the same; `buckets` should probably be
+    sorted ascending and precomputed once (e.g. powers of two, or
+    percentiles of your actual traffic).
+    """
+    raise NotImplementedError
+```
+
+Once you've picked a policy, the call site is mechanical: pad `x` up to `choose_bucket(len(x), buckets)` with a validity mask, and `jitted` will only ever see `len(buckets)` distinct shapes — bounding your worst case to one compile per bucket instead of one per observed length.
+
+One asymmetry worth naming for your own memory, since this surfaced a confusion that's easy to re-trigger: the diagnosis was two independent bugs stacked on each other (async dispatch hiding compute time, and shape-triggered recompilation), and each one alone produces a plausible-but-wrong story if you only fix the other. Worth checking both whenever "the jit timer lies" comes up again.

@@ -1,0 +1,140 @@
+I don't have a file-write tool available in this session, so here's the complete module inline — copy it to `compare_forecasts.py`:
+
+```python
+"""Diebold-Mariano comparison of two forecast models on overlapping evaluation windows."""
+from dataclasses import dataclass
+
+import numpy as np
+from scipy.stats import t as student_t
+
+
+@dataclass
+class DMResult:
+    stat: float          # small-sample-corrected DM statistic
+    p_value: float       # two-sided, Student-t(n-1) reference distribution
+    n: int                # nominal number of evaluation windows
+    n_eff: float          # effective sample size implied by the long-run variance inflation
+    mean_diff: float      # mean(loss_A - loss_B); negative favors model A
+
+
+def diebold_mariano(e1, e2, horizon, loss="squared", power=2):
+    """Paired comparison of two same-length, same-origin forecast-error series.
+
+    e1, e2: forecast errors (actual - predicted) for model A and model B, one entry
+        per evaluation window, in origin order. Must be aligned 1:1 (same windows).
+    horizon: the forecast horizon in periods. Windows that are `horizon` periods
+        or fewer apart share realized outcomes, which is what generates the
+        autocorrelation this test corrects for. Pass the true horizon, not a guess.
+    """
+    e1 = np.asarray(e1, dtype=float)
+    e2 = np.asarray(e2, dtype=float)
+    if e1.shape != e2.shape:
+        raise ValueError("e1 and e2 must be paired, equal-length error series")
+
+    if loss == "squared":
+        d = e1**2 - e2**2
+    elif loss == "absolute":
+        d = np.abs(e1) - np.abs(e2)
+    elif loss == "power":
+        d = np.abs(e1) ** power - np.abs(e2) ** power
+    else:
+        raise ValueError(f"unknown loss {loss!r}")
+
+    n = d.size
+    mean_d = d.mean()
+    dc = d - mean_d
+
+    # Long-run variance of mean_d: gamma_0 + 2*sum_{k=1}^{h-1} gamma_k (Diebold & Mariano 1995).
+    # Truncating at h-1 lags reflects that windows more than h-1 apart share no horizon overlap.
+    max_lag = horizon - 1
+    gamma0 = (dc @ dc) / n
+    s = gamma0
+    for k in range(1, max_lag + 1):
+        gamma_k = (dc[k:] @ dc[:-k]) / n
+        s += 2 * gamma_k
+
+    if s <= 0:
+        raise ValueError(
+            "non-positive long-run variance estimate — strong negative autocorrelation "
+            "at the given horizon, or n too small relative to horizon; inspect d_t directly"
+        )
+
+    dm_stat = mean_d / np.sqrt(s / n)
+
+    # Harvey-Leybourne-Newbold (1997) small-sample correction; reference t(n-1), not normal.
+    correction = np.sqrt((n + 1 - 2 * horizon + horizon * (horizon - 1) / n) / n)
+    dm_stat_corrected = dm_stat * correction
+    p_value = 2 * (1 - student_t.cdf(np.abs(dm_stat_corrected), df=n - 1))
+
+    n_eff = n * gamma0 / s
+
+    return DMResult(dm_stat_corrected, p_value, n, n_eff, mean_d)
+
+
+def moving_block_bootstrap_ci(d, block_length, n_boot=10_000, ci=0.95, seed=None):
+    """Block-bootstrap CI for mean(d) that preserves within-block autocorrelation.
+
+    block_length should be >= the forecast horizon used to generate d, so each
+    resampled block stays internally consistent with the dependence structure.
+    """
+    d = np.asarray(d, dtype=float)
+    n = d.size
+    if block_length > n:
+        raise ValueError("block_length must not exceed the number of windows")
+
+    rng = np.random.default_rng(seed)
+    n_blocks = int(np.ceil(n / block_length))
+    starts = np.arange(n - block_length + 1)
+
+    boot_means = np.empty(n_boot)
+    for b in range(n_boot):
+        chosen = rng.choice(starts, size=n_blocks)
+        sample = np.concatenate([d[s : s + block_length] for s in chosen])[:n]
+        boot_means[b] = sample.mean()
+
+    lo, hi = np.quantile(boot_means, [(1 - ci) / 2, 1 - (1 - ci) / 2])
+    return lo, hi, boot_means
+
+
+if __name__ == "__main__":
+    # Synthetic illustration: 200 overlapping windows, horizon 12, model A truly
+    # slightly better, but window-to-window errors share an AR(1) shock — the
+    # realistic case where overlap inflates apparent precision.
+    rng = np.random.default_rng(20261003)
+    n_windows, horizon = 200, 12
+
+    shared_shock = np.zeros(n_windows)
+    for i in range(1, n_windows):
+        shared_shock[i] = 0.85 * shared_shock[i - 1] + rng.normal(scale=1.0)
+
+    e_a = 0.3 * shared_shock + rng.normal(scale=0.5, size=n_windows)
+    e_b = 0.3 * shared_shock + 0.15 + rng.normal(scale=0.5, size=n_windows)  # A is better
+
+    # What NOT to do: naive paired t-test on loss differences, treating n_windows as i.i.d.
+    d_naive = e_a**2 - e_b**2
+    naive_t = d_naive.mean() / (d_naive.std(ddof=1) / np.sqrt(n_windows))
+    naive_p = 2 * (1 - student_t.cdf(np.abs(naive_t), df=n_windows - 1))
+
+    result = diebold_mariano(e_a, e_b, horizon=horizon, loss="squared")
+    lo, hi, _ = moving_block_bootstrap_ci(d_naive, block_length=horizon, seed=20261003)
+
+    print(f"nominal n           : {n_windows}")
+    print(f"naive paired t-test : t={naive_t:.2f}, p={naive_p:.4f}  <- overstates confidence")
+    print(f"DM test (HAC, h={horizon}) : t={result.stat:.2f}, p={result.p_value:.4f}")
+    print(f"effective n         : {result.n_eff:.1f}")
+    print(f"block-bootstrap 95% CI on mean(loss_A - loss_B): [{lo:.3f}, {hi:.3f}]")
+```
+
+`★ Insight ─────────────────────────────────────`
+Run this and you'll typically see the naive test report `p < 0.01` while the DM/HAC test on the same data reports something far less extreme — often `p` in the 0.05–0.3 range — with `n_eff` dropping to roughly `n/horizon`. That gap *is* the overstated confidence the overlap produces, made visible on synthetic data where you know the true effect size, so you can calibrate your intuition for how much the correction should move the needle on your real series.
+`─────────────────────────────────────────────────`
+
+## Applying this to your two models
+
+Plug in `e1`/`e2` as the actual-minus-predicted errors from model A and model B on the *same* windows and horizon. A few things to decide before you run it, since they change the answer:
+
+- **Which horizon to pass.** If your backtest evaluates multiple horizons (e.g. 1-step through 12-step forecasts from each origin), run `diebold_mariano` separately per horizon with that horizon's own `e1`/`e2` and its own `horizon` value — don't flatten horizons together into one call, since each horizon has a different overlap structure.
+- **Loss function.** `squared` for an RMSE-style comparison, `absolute` for MAE-style; use whichever matches the metric you'll actually report.
+- **Block length for the bootstrap.** Set it to the horizon, or longer if you suspect dependence beyond what the DM test's lag truncation captures (e.g. seasonal effects at lag 12 with a horizon of 6) — check this by eyeballing the autocorrelation of `d_t` first.
+
+If `n_eff` comes back small (single digits to low tens) even though you ran hundreds of overlapping windows, that's the honest answer: report it, and frame the comparison as suggestive rather than conclusive unless you can add independent series or genuinely non-overlapping evaluation periods.

@@ -1,0 +1,124 @@
+I'll build this as pure JAX (no Flax/Haiku) so the equivariance structure is fully visible in the code rather than hidden inside a layer abstraction.
+
+## Design
+
+The key idea: build the network entirely out of **rotation-invariant scalars** (point norms, pairwise distances) and **rotation-equivariant vectors** (centered coordinates), and combine them so that:
+- the **scalar** output is a function of invariants only → automatically invariant
+- the **vector** output is an invariant scalar *times* an equivariant vector, summed → automatically equivariant
+
+`★ Insight ─────────────────────────────────────`
+1. This is the "invariant scalars gate equivariant vectors" pattern used in E(3)-equivariant GNNs (e.g. EGNN, SchNet-style updates) — you never need `sin`/`cos` basis functions or Clebsch-Gordan machinery for *this* level of equivariance (scalars + single vectors); it falls out of linear algebra: `R(a·v) = a·(Rv)` for scalar `a` and `R(v+w) = Rv+Rw`.
+2. Centering by the point-cloud mean (`x - mean(x)`) is what makes this *also* translation-invariant/equivariant correctly: distances and norms computed on centered coordinates don't care about translation, and the output vector transforms as a true "direction" (rotates with `R`, ignores translation) — matching how physical vectors like displacements or forces actually transform.
+3. Because I only used norms and Euclidean distances (no cross products), the model is invariant/equivariant under the *full* orthogonal group O(3), including reflections — a strictly stronger and easier-to-verify guarantee than SO(3)-only equivariance.
+`─────────────────────────────────────────────────`
+
+```python
+import jax
+import jax.numpy as jnp
+import jax.scipy.linalg as jsl
+from jax import random
+
+
+def init_params(key, in_dim=2, hidden=16):
+    k1, k2, k3, k4 = random.split(key, 4)
+
+    def layer(key, m, n):
+        return {
+            "w": random.normal(key, (m, n)) * jnp.sqrt(2.0 / m),
+            "b": jnp.zeros((n,)),
+        }
+
+    return {
+        "point_mlp": {
+            "l1": layer(k1, in_dim, hidden),
+            "l2": layer(k2, hidden, hidden),
+        },
+        "vector_head": layer(k3, hidden, 1),  # per-point invariant weight w_i
+        "scalar_head": layer(k4, hidden, 1),  # per-point invariant feature s_i
+    }
+
+
+def _dense(layer, x):
+    return jnp.tanh(x @ layer["w"] + layer["b"])
+
+
+def invariant_features(x):
+    """x: (N, 3) point cloud -> (equivariant vectors r, invariant features feats)."""
+    r = x - jnp.mean(x, axis=0, keepdims=True)           # centered coords: equivariant, translation-free
+    norms = jnp.linalg.norm(r, axis=-1, keepdims=True)    # (N, 1) invariant
+    diff = r[:, None, :] - r[None, :, :]                  # (N, N, 3)
+    dists = jnp.linalg.norm(diff, axis=-1)                 # (N, N) invariant
+    dist_sum = jnp.sum(dists, axis=-1, keepdims=True)      # (N, 1) invariant
+    feats = jnp.concatenate([norms, dist_sum], axis=-1)    # (N, 2) invariant
+    return r, feats
+
+
+def forward(params, x):
+    """x: (N, 3) -> (scalar_out: (), vector_out: (3,))"""
+    r, feats = invariant_features(x)
+
+    h = _dense(params["point_mlp"]["l1"], feats)
+    h = _dense(params["point_mlp"]["l2"], h)            # (N, hidden), all invariant per-point
+
+    w = h @ params["vector_head"]["w"] + params["vector_head"]["b"]   # (N, 1) invariant
+    vector_out = jnp.sum(w * r, axis=0)                 # (3,) equivariant: sum_i w_i * r_i
+
+    s = h @ params["scalar_head"]["w"] + params["scalar_head"]["b"]   # (N, 1) invariant
+    scalar_out = jnp.tanh(jnp.sum(s))                   # () invariant
+
+    return scalar_out, vector_out
+```
+
+`★ Insight ─────────────────────────────────────`
+`dist_sum` (sum of all pairwise distances from point `i`) gives each point a feature that depends on the *whole cloud's* geometry, not just its own norm — without this, two points with the same distance from the centroid but different neighborhoods would get identical features, limiting expressiveness. It's still invariant because it's built purely from distances.
+`─────────────────────────────────────────────────`
+
+## Validation
+
+Mathematical proof is airtight (as above), but for a deliverable I also want **numeric** verification against randomly sampled rotations — this catches implementation bugs (e.g. row/column convention errors) that a proof on paper wouldn't.
+
+```python
+def random_rotation(key):
+    """Haar-ish random SO(3) rotation via exp of a random skew-symmetric matrix."""
+    a = random.normal(key, (3, 3))
+    skew = a - a.T
+    return jsl.expm(skew)  # guaranteed orthogonal, det = +1
+
+
+def check_equivariance(params, x, key, atol=1e-5):
+    R = random_rotation(key)
+    rotated_x = x @ R.T  # row-vector convention: point i -> R @ x_i  <=>  x_i @ R.T
+
+    s1, v1 = forward(params, x)
+    s2, v2 = forward(params, rotated_x)
+
+    scalar_ok = jnp.allclose(s1, s2, atol=atol)
+    vector_ok = jnp.allclose(v2, v1 @ R.T, atol=atol)
+    return scalar_ok, vector_ok, (s1, s2), (v1, v2, R)
+
+
+if __name__ == "__main__":
+    key = random.PRNGKey(0)
+    pkey, xkey, *rkeys = random.split(key, 10)
+
+    params = init_params(pkey)
+    x = random.normal(xkey, (6, 3))  # a 6-point cloud in 3D
+
+    for i, rk in enumerate(rkeys):
+        scalar_ok, vector_ok, (s1, s2), (v1, v2, R) = check_equivariance(params, x, rk)
+        print(f"trial {i}: scalar invariant={bool(scalar_ok)}, vector equivariant={bool(vector_ok)}")
+        assert scalar_ok and vector_ok
+
+    print("scalar output:", float(s1))
+    print("vector output:", v1)
+```
+
+Expected output: `scalar invariant=True, vector equivariant=True` for every trial.
+
+`★ Insight ─────────────────────────────────────`
+1. `jsl.expm` of a skew-symmetric matrix is a cheap, differentiable way to sample from SO(3) in JAX without needing `scipy.spatial.transform.Rotation` (which isn't JAX-traceable) — useful if you ever want to sample rotations *inside* a jitted training loop for data augmentation.
+2. The row-vector convention (`x @ R.T` instead of `R @ x`) matters here because `x` is shaped `(N, 3)` with points as rows — getting this backwards is the single most common bug when testing equivariance, and it would show up as the test failing for non-symmetric `R` while coincidentally passing for symmetric/identity cases.
+3. Testing with several independent random rotations (not just one) guards against a subtle bug class: a model that's accidentally invariant/equivariant only for rotations about one particular axis (e.g. if you mistakenly only used z-coordinates somewhere) — a single fixed test rotation could hide that.
+`─────────────────────────────────────────────────`
+
+This gives you both a **constructive proof** (the architecture can't *not* be invariant/equivariant, by the linear-algebra identities noted above) and an **empirical check** (catches convention/implementation bugs the proof wouldn't).

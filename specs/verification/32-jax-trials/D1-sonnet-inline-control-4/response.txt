@@ -1,0 +1,212 @@
+Here's the complete implementation — one self-contained file, pure JAX + optax (no Flax, to avoid betting on an API surface I can't execute and verify in this sandbox).
+
+`★ Insight ─────────────────────────────────────`
+Three design decisions matter more than they look:
+1. **Hand-rolled GRU over `flax.linen.GRUCell`** — Flax's cell signatures have shifted across linen vs NNX, and I can't execute code here to confirm which is installed. A 20-line GRU under `jax.lax.scan` has zero such risk.
+2. **Fixed `MAX_LEN` padding, not per-batch bucketing.** JAX's JIT retraces whenever input shapes change. Bucketing by length is a real optimization at scale, but here it would mean a fresh XLA compile per bucket for no payoff — a textbook premature optimization.
+3. **The masked target is `t < length - 1`, not `t < length`.** Predicting `x[t+1]` from `x[t]` means the last real sample has no valid target (there's nothing after it) — so the valid window shrinks by one at the end, not zero.
+`─────────────────────────────────────────────────`
+
+```python
+"""Next-sample prediction on variable-length sine sequences, pure JAX + optax."""
+import os
+os.environ["JAX_PLATFORMS"] = "cpu"  # must precede `import jax` — too late afterward
+
+import argparse
+import pickle
+import tempfile
+
+import jax
+import jax.numpy as jnp
+import numpy as np
+import optax
+
+# ---- hyperparameters -------------------------------------------------------
+HIDDEN = 32
+MAX_LEN = 60
+L_MIN = 10
+L_MAX = MAX_LEN
+FREQ_MIN, FREQ_MAX = 0.03, 0.15  # cycles/sample
+BATCH_SIZE = 64
+VAL_BATCH_SIZE = 256
+LR = 1e-3
+
+
+# ---- synthetic data ---------------------------------------------------------
+def make_batch(key, batch_size, max_len=MAX_LEN, l_min=L_MIN, l_max=L_MAX):
+    k_len, k_freq, k_phase = jax.random.split(key, 3)
+    lengths = jax.random.randint(k_len, (batch_size,), l_min, l_max + 1)
+    freqs = jax.random.uniform(k_freq, (batch_size,), minval=FREQ_MIN, maxval=FREQ_MAX)
+    phases = jax.random.uniform(k_phase, (batch_size,), minval=0.0, maxval=2 * jnp.pi)
+
+    t = jnp.arange(max_len)[None, :]
+    x = jnp.sin(2 * jnp.pi * freqs[:, None] * t + phases[:, None])
+    valid = t < lengths[:, None]
+    x = jnp.where(valid, x, 0.0)  # zero-pad beyond each sequence's length
+    return x, lengths
+
+
+# ---- model: hand-rolled GRU + linear readout --------------------------------
+def init_params(key, hidden_size=HIDDEN, input_size=1):
+    k1, k2, k3 = jax.random.split(key, 3)
+    scale_x = 1.0 / jnp.sqrt(input_size)
+    scale_h = 1.0 / jnp.sqrt(hidden_size)
+    return {
+        "Wx": jax.random.normal(k1, (input_size, 3 * hidden_size)) * scale_x,
+        "Wh": jax.random.normal(k2, (hidden_size, 3 * hidden_size)) * scale_h,
+        "b": jnp.zeros(3 * hidden_size),
+        "Wout": jax.random.normal(k3, (hidden_size,)) * scale_h,
+        "bout": jnp.zeros(()),
+    }
+
+
+def forward(params, x_seq):
+    """x_seq: (seq_len,) -> preds: (seq_len,), preds[t] predicts x_seq[t+1]."""
+    hidden_size = params["Wh"].shape[0]
+    Wxz, Wxr, Wxh = jnp.split(params["Wx"], 3, axis=1)
+    Whz, Whr, Whh = jnp.split(params["Wh"], 3, axis=1)
+    bz, br, bh = jnp.split(params["b"], 3)
+
+    def step(h, x_t):
+        xt = x_t[None]
+        z = jax.nn.sigmoid(xt @ Wxz + h @ Whz + bz)
+        r = jax.nn.sigmoid(xt @ Wxr + h @ Whr + br)
+        h_tilde = jnp.tanh(xt @ Wxh + (r * h) @ Whh + bh)
+        h_new = (1 - z) * h + z * h_tilde
+        pred = jnp.dot(h_new, params["Wout"]) + params["bout"]
+        return h_new, pred
+
+    h0 = jnp.zeros(hidden_size)
+    _, preds = jax.lax.scan(step, h0, x_seq)
+    return preds
+
+
+batched_forward = jax.vmap(forward, in_axes=(None, 0))
+
+
+def masked_mse(preds, targets, lengths):
+    """lengths refers to the *input* sequence length, so the valid target
+    window is one shorter: position t needs both x[t] and x[t+1] real."""
+    seq_len = targets.shape[1]
+    t = jnp.arange(seq_len)[None, :]
+    mask = (t < (lengths - 1)[:, None]).astype(jnp.float32)
+    sq_err = (preds - targets) ** 2 * mask
+    return jnp.sum(sq_err) / jnp.sum(mask)
+
+
+def loss_fn(params, x, lengths):
+    inputs, targets = x[:, :-1], x[:, 1:]
+    preds = batched_forward(params, inputs)
+    return masked_mse(preds, targets, lengths)
+
+
+def persistence_baseline(x, lengths):
+    """Naive baseline: predict x[t+1] = x[t]. Anything the model beats this
+    by is evidence it learned the sine structure, not just "small is safe"."""
+    inputs, targets = x[:, :-1], x[:, 1:]
+    return masked_mse(inputs, targets, lengths)
+
+
+# ---- training ----------------------------------------------------------------
+optimizer = optax.adam(LR)
+
+
+@jax.jit
+def train_step(params, opt_state, x, lengths):
+    loss, grads = jax.value_and_grad(loss_fn)(params, x, lengths)
+    updates, opt_state = optimizer.update(grads, opt_state, params)
+    params = optax.apply_updates(params, updates)
+    return params, opt_state, loss
+
+
+@jax.jit
+def eval_loss(params, x, lengths):
+    return loss_fn(params, x, lengths)
+
+
+# ---- checkpointing -------------------------------------------------------------
+def save_checkpoint(path, state):
+    """Params-only checkpoints silently reset Adam's moment estimates on
+    resume; the full optimizer state, step count, and RNG must round-trip too."""
+    state_np = jax.tree_util.tree_map(np.asarray, state)
+    dirpath = os.path.dirname(os.path.abspath(path)) or "."
+    fd, tmp_path = tempfile.mkstemp(dir=dirpath)
+    with os.fdopen(fd, "wb") as f:
+        pickle.dump(state_np, f)
+    os.replace(tmp_path, path)  # atomic: no half-written checkpoint on crash
+
+
+def load_checkpoint(path):
+    with open(path, "rb") as f:
+        state_np = pickle.load(f)
+    return jax.tree_util.tree_map(jnp.asarray, state_np)
+
+
+# ---- main ------------------------------------------------------------------------
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--steps", type=int, default=300)
+    parser.add_argument("--eval-every", type=int, default=50)
+    parser.add_argument("--ckpt", type=str, default="checkpoint.pkl")
+    parser.add_argument("--resume", action="store_true")
+    args = parser.parse_args()
+
+    # Fixed, frozen validation set — regenerated identically every run so the
+    # curve reflects training progress, not a reshuffled validation target.
+    val_x, val_lengths = make_batch(jax.random.PRNGKey(999), VAL_BATCH_SIZE)
+    baseline = float(persistence_baseline(val_x, val_lengths))
+    print(f"persistence baseline val MSE: {baseline:.5f}")
+
+    if args.resume and os.path.exists(args.ckpt):
+        state = load_checkpoint(args.ckpt)
+        params, opt_state = state["params"], state["opt_state"]
+        start_step, best_val, rng = int(state["step"]), float(state["best_val"]), state["rng"]
+        print(f"resumed from step {start_step}, best_val={best_val:.5f}")
+    else:
+        rng = jax.random.PRNGKey(0)
+        rng, init_key = jax.random.split(rng)
+        params = init_params(init_key)
+        opt_state = optimizer.init(params)
+        start_step, best_val = 0, float("inf")
+
+    for step in range(start_step, start_step + args.steps):
+        rng, batch_key = jax.random.split(rng)
+        x, lengths = make_batch(batch_key, BATCH_SIZE)
+        params, opt_state, train_loss = train_step(params, opt_state, x, lengths)
+
+        if (step + 1) % args.eval_every == 0:
+            val = float(eval_loss(params, val_x, val_lengths))
+            best_val = min(best_val, val)
+            print(f"step {step + 1}: train={float(train_loss):.5f}  val={val:.5f}  best={best_val:.5f}")
+
+    final_step = start_step + args.steps
+    save_checkpoint(
+        args.ckpt,
+        {"params": params, "opt_state": opt_state, "step": final_step, "best_val": best_val, "rng": rng},
+    )
+    print(f"saved checkpoint at step {final_step} -> {args.ckpt}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+`★ Insight ─────────────────────────────────────`
+A couple of things worth noticing if you run this:
+- **`jax.lax.scan` traces the GRU `step` function once**, regardless of sequence length, and compiles it into a single XLA loop body. That's why splitting `Wx`/`Wh`/`b` into per-gate slices happens *outside* `step` — it's a one-time trace-level operation, not per-timestep overhead.
+- **No carry-gating on padded steps.** Because padding is on the right and the scan is causal, a padded timestep can only ever influence *later* padded timesteps — and the loss mask already zeroes those contributions out. Gating the carry (`h = where(mask, h_new, h)`) would only matter if you read out the final hidden state (e.g., for classification); here every timestep's prediction is used directly, so it's unnecessary complexity.
+- **The RNG key is stored and restored as a plain `uint32[2]` array** (`jax.random.PRNGKey`), not the newer typed-key API — those need explicit `key_data`/`wrap_key_data` conversions to pickle safely, which is one more thing to get wrong without being able to test it here.
+`─────────────────────────────────────────────────`
+
+**Two choices worth your input**, since this is where the real design tradeoffs live:
+
+1. **Loss normalization: sum-then-divide-by-total-valid-count vs. per-example mean then batch mean.** I used the former (`sum(sq_err)/sum(mask)`), which weights every *valid timestep* equally regardless of which sequence it came from — a batch with longer sequences contributes proportionally more loss signal. The alternative weights every *sequence* equally. Either is defensible; I'd keep mine unless you have a reason sequences should count equally regardless of length.
+2. **Checkpoint policy: save-last (what I did) vs. save-best-val.** Save-last is what makes resuming simple and exact (optimizer momentum intact). Save-best requires either checkpointing on every eval (more I/O) or tracking best params as a separate non-resumable artifact. If you want "resume training" and "deploy the best model" to be different things, say so and I'll split them into two checkpoint files.
+
+To actually run this you'd need `pip install jax jaxlib optax numpy`, then:
+```
+python sine_rnn.py              # fresh run, 300 steps, saves checkpoint.pkl
+python sine_rnn.py --resume     # loads checkpoint.pkl, trains 300 more steps, step counter continues
+```
+
+I haven't executed this (sandboxed, no Write/Bash tools available in this session) — if you run it and `persistence baseline val MSE` doesn't clearly exceed the trained model's `val` loss within ~300 steps, that's a signal worth bringing back rather than assuming the code is wrong.

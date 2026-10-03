@@ -1,0 +1,166 @@
+## Diagnosis
+
+You're almost certainly looking at the combination of two independent JAX behaviors that happen to produce exactly this symptom pair:
+
+1. **Async dispatch.** `jit`-compiled calls return a `DeviceArray`/`jax.Array` immediately — the Python call enqueues work on the device and hands you back a *future*, not a result. A `time.perf_counter()` wrapped around the call measures dispatch overhead, not device execution. The real work finishes later, off the clock.
+2. **Shape-triggered retracing.** `jit` caches compiled executables keyed by `(shape, dtype, static_args, pytree structure)`. If your inference loop feeds variable-length sequences, every new length is a cache miss: JAX retraces your Python function and asks XLA to recompile it — often tens to hundreds of ms — before running anything. That compile cost is exactly the kind of thing that "changes with input length" without being real computation.
+
+These aren't alternative explanations to choose between — your description ("small time reported" + "latency changes with length") is consistent with *both* firing at once, and the repro below is built to tell them apart rather than just confirm "yes it's slow."
+
+`★ Insight ─────────────────────────────────────`
+The reason a naive timer lies: XLA on GPU/TPU (and often CPU) executes asynchronously relative to the Python host thread. `jax.jit(f)(x)` dispatches a computation to a work queue and returns a `jax.Array` wrapping a future buffer. Python moves on immediately. Only an operation that *reads* the value (`.block_until_ready()`, `float(x)`, `np.asarray(x)`, printing it) forces a sync point — and that sync point is where the "missing" time hides.
+`─────────────────────────────────────────────────`
+
+The discriminating test: **replay the same shape twice.** Compilation cost appears only the first time JAX sees a given shape; genuine O(n) or O(n²) compute cost (attention, etc.) appears on *every* call at that length. If calls 1 and 2 at lengths 128 and 256 are slow, but a repeat call at 128 and a repeat call at 256 are fast, you've isolated recompilation as the dominant cost rather than legitimate scaling.
+
+## Repro / attribution script
+
+```python
+"""
+repro_jax_latency.py
+
+Reproduces: "jit call reports near-zero time via a timer, but end-to-end
+loop latency is much larger and grows with input length."
+
+Not run in this session -- execute locally and read the printed table.
+Requires: jax, jax.numpy, numpy.
+"""
+import time
+import numpy as np
+import jax
+import jax.numpy as jnp
+
+# Surface every trace/compile event JAX performs, not just the ones we
+# expect. If something recompiles that "shouldn't" (e.g. because a
+# constant leaked into a traced value), this is the ground truth, not
+# our assumptions about our own code.
+jax.config.update("jax_log_compiles", True)
+
+
+def model_step(params, x):
+    # Stand-in for an inference step: a couple of matmuls + nonlinearity.
+    # Shape of x is (seq_len, hidden); this is what will vary.
+    h = jnp.tanh(x @ params["w1"])
+    out = h @ params["w2"]
+    return out
+
+
+jit_step = jax.jit(model_step)
+
+hidden = 512
+key = jax.random.PRNGKey(0)
+params = {
+    "w1": jax.random.normal(key, (hidden, hidden)),
+    "w2": jax.random.normal(key, (hidden, hidden)),
+}
+# Keep params on-device explicitly -- if these were plain NumPy arrays,
+# every call would re-transfer them host->device, which is its own
+# length-independent but still real cost worth ruling out.
+params = jax.device_put(params)
+
+
+def make_input(seq_len):
+    # Simulates "feed a fresh NumPy array each call," which is how most
+    # inference loops actually look (tokenizer output, etc.).
+    return np.random.randn(seq_len, hidden).astype(np.float32)
+
+
+def timed_call(seq_len, label):
+    x_host = make_input(seq_len)
+
+    t0 = time.perf_counter()
+    x_dev = jax.device_put(x_host)
+    t1 = time.perf_counter()
+
+    out = jit_step(params, x_dev)
+    t2 = time.perf_counter()               # <-- this is the "small time" trap
+
+    jax.block_until_ready(out)
+    t3 = time.perf_counter()               # <-- true device-execution-inclusive time
+
+    out_host = np.asarray(out)             # forces device->host transfer + sync
+    t4 = time.perf_counter()
+
+    print(
+        f"{label:<28} len={seq_len:<5} "
+        f"h2d={1e3*(t1-t0):7.3f}ms  "
+        f"dispatch={1e3*(t2-t1):7.3f}ms  "
+        f"blocked={1e3*(t3-t2):7.3f}ms  "
+        f"d2h={1e3*(t4-t3):7.3f}ms  "
+        f"total={1e3*(t4-t0):7.3f}ms"
+    )
+    return out_host
+
+
+print("\n--- Phase 1: first-touch per shape (compile cost included) ---")
+for seq_len in (128, 256, 512):
+    timed_call(seq_len, "first touch")
+
+print("\n--- Phase 2: repeat same shapes (compile already cached) ---")
+for seq_len in (128, 256, 512):
+    timed_call(seq_len, "repeat")
+
+print("\n--- Phase 3: end-to-end loop, as the real inference loop would run ---")
+t_loop0 = time.perf_counter()
+for seq_len in (128, 256, 384, 512, 128, 256, 384, 512):
+    timed_call(seq_len, "loop")
+t_loop1 = time.perf_counter()
+print(f"\nTotal wall time for loop: {1e3*(t_loop1-t_loop0):.3f}ms")
+
+# Optional, private-API cache introspection -- version-dependent, so
+# guard it and treat it as informational only, not load-bearing.
+if hasattr(jit_step, "_cache_size"):
+    print(f"\njit cache size (compiled variants so far): {jit_step._cache_size()}")
+```
+
+`★ Insight ─────────────────────────────────────`
+Why split the timer into four segments (`h2d`, `dispatch`, `blocked`, `d2h`) instead of one "total" number: each segment isolates a *different* candidate root cause, and they're additive — if they don't roughly sum to your observed end-to-end latency, something outside this script (data loading, Python-side pre/post-processing) is the actual culprit, and you'd know to look there instead of deeper into JAX.
+`─────────────────────────────────────────────────`
+
+### How to read the output
+
+- **Phase 1 vs Phase 2 at the same `seq_len`:** if Phase 1's `blocked` time is dramatically larger than Phase 2's `blocked` time for the identical length, that delta is compilation — not computation. `JAX_LOG_COMPILES` lines printed during Phase 1 (and *absent* during Phase 2) confirm it directly rather than inferring it from timing alone.
+- **`dispatch` vs `blocked` at any row:** `dispatch` is what a naive timer around the jitted call reports. `blocked` is dispatch + actual device execution time, forced by `block_until_ready`. A large gap between them is the async-dispatch illusion — your "very small time" symptom, caught in the act.
+- **`h2d` growing with `seq_len`:** real, unavoidable transfer cost if you're feeding fresh host arrays every call. Scales with input length but isn't a JAX bug — it's architecture.
+- **Loop total vs sum of per-call `total`:** should match closely. If the loop's wall time is much larger than the sum of its parts, look for non-JAX overhead (Python-level preprocessing, logging, GC pauses) between calls.
+
+## Likely root cause given your symptoms
+
+Given you said latency "changes with input length," the two most probable explanations, in order of likelihood for an inference loop:
+
+1. **Variable-length sequences retrace/recompile per length.** Every distinct `seq_len` is a new compiled executable. If your real traffic has many distinct lengths, you're compiling almost every call.
+2. **A traced value is marked `static_argnums`/`static_argnames` but actually varies** (e.g., passing `seq_len` itself as a static arg "to help JAX know the shape"). This forces a retrace on every distinct value even if the array shapes are otherwise padded to a fixed size — an easy trap when someone tries to "help" JIT by hand.
+
+## Fix: bucket to fixed shapes
+
+```python
+import math
+
+BUCKETS = (128, 256, 384, 512)  # choose based on your real traffic distribution
+
+def bucket_len(n, buckets=BUCKETS):
+    for b in buckets:
+        if n <= b:
+            return b
+    raise ValueError(f"input length {n} exceeds largest bucket {buckets[-1]}")
+
+
+def pad_to_bucket(x_host, bucket):
+    n = x_host.shape[0]
+    if n == bucket:
+        return x_host, n
+    pad = np.zeros((bucket - n, x_host.shape[1]), dtype=x_host.dtype)
+    return np.concatenate([x_host, pad], axis=0), n
+
+
+def run_inference(x_host):
+    b = bucket_len(x_host.shape[0])
+    x_padded, valid_len = pad_to_bucket(x_host, b)
+    out = jit_step(params, jax.device_put(x_padded))
+    jax.block_until_ready(out)
+    return np.asarray(out)[:valid_len]  # trim padding back off on the host
+```
+
+With a fixed, small set of bucket lengths, `jit` compiles once per bucket — typically 4-8 total compiles for the life of the process — and every subsequent call at any length hits a cached executable. Re-run Phase 1/2/3 of the repro against `run_inference` and you should see the compile-time spike disappear entirely after the first pass through the bucket set, with steady-state latency flat across input lengths (modulo real, bounded-by-bucket-size compute).
+
+I haven't executed this script in this session — the numbers above are structural claims about *what the columns will show*, not observed output. Run it locally and the `JAX_LOG_COMPILES` lines plus the four-way timing breakdown should tell you within one pass which of the two mechanisms (or both) is dominant in your actual loop.

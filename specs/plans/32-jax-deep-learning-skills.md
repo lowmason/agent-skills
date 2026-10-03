@@ -388,6 +388,16 @@ with message `test(build): execute self-contained JAX CPU examples`.
 **Checkpoint:** A reviewer can run eight process-contract tests without JAX
 installed and distinguish failure, timeout, exemption, and zero-example scope.
 
+**Approved Task 1 correction (2026-10-03):** The task review demonstrated that
+`iter_code_blocks` omits indented, tilde, and EOF-ended fences, allowing an
+explicitly marked raising example to be skipped in a mixed document. The owner
+approved rejecting unsupported marked fences with a source-located error rather
+than broadening parser support. Add the collector guard and RED/GREEN regressions,
+preserve literal nested fences and leave `build/fences.py` unchanged. This
+correction supersedes the exact-source constraint for the runner and its tests.
+Report the actual additional test count and update Commands accordingly; the
+eight original process tests remain the baseline, not a cap.
+
 ### Task 2: Deliver and verify the deep-learning skill and its domain references
 
 **Files:** Create `skills/deep-learning/SKILL.md` and all eight training

@@ -1,0 +1,286 @@
+Good — advisor's fixes are important (the FD check against an adaptive controller would have been noise, not signal; vector-field error needs restricting to the data-visited region). Here's the full deliverable with those corrections folded in.
+
+## Approach
+
+A **Neural ODE** regressed directly against observed states is the right model class for irregularly-sampled trajectories: the vector field `f_θ(y)` is a small MLP, and `diffrax.diffeqsolve` integrates it continuously, so you evaluate the solution at *exactly* the timestamps you observed — no interpolation, no binning, no assumption of a fixed sampling rate.
+
+`★ Insight ─────────────────────────────────────`
+The reason this handles irregular sampling "for free" is that an adaptive ODE solver (Tsit5 + PID step-size control) decomposes the problem into "integrate the dynamics" and "report the state at these specific times" as two separate concerns. `SaveAt(ts=...)` just records interpolated solver output at your query times — the solver's internal step grid is unrelated to and almost always finer than your observation grid. Contrast this with an RNN/discrete-time model, where irregular Δt either has to be fed in as a feature or forces resampling onto a regular grid, discarding exactly the information (the Δt itself) that often matters most.
+`─────────────────────────────────────────────────`
+
+## Code
+
+```python
+# neural_ode.py
+import jax
+# Must precede any other JAX array creation — x64 toggling is a one-shot,
+# load-time flag; enabling it later silently does nothing for arrays already traced.
+jax.config.update("jax_enable_x64", True)
+
+import jax.numpy as jnp
+import jax.random as jr
+import equinox as eqx
+import diffrax
+import optax
+from jax.flatten_util import ravel_pytree
+
+
+# ---- Model -------------------------------------------------------------
+
+class VectorField(eqx.Module):
+    mlp: eqx.nn.MLP
+
+    def __init__(self, data_size, width_size, depth, *, key):
+        self.mlp = eqx.nn.MLP(
+            in_size=data_size, out_size=data_size,
+            width_size=width_size, depth=depth,
+            activation=jax.nn.softplus, key=key,
+        )
+
+    def __call__(self, t, y, args):
+        # Autonomous field: dy/dt = f_theta(y). Fine for this system since
+        # the true dynamics (below) don't depend explicitly on t; a
+        # non-autonomous process would need f_theta(t, y) instead.
+        return self.mlp(y)
+
+
+class NeuralODE(eqx.Module):
+    vf: VectorField
+
+    def __call__(self, y0, ts, *, rtol, atol, max_steps, adjoint):
+        term = diffrax.ODETerm(self.vf)
+        solver = diffrax.Tsit5()
+        controller = diffrax.PIDController(rtol=rtol, atol=atol)
+        sol = diffrax.diffeqsolve(
+            term, solver, t0=ts[0], t1=ts[-1], dt0=None, y0=y0,
+            saveat=diffrax.SaveAt(ts=ts),
+            stepsize_controller=controller,
+            adjoint=adjoint, max_steps=max_steps,
+        )
+        return sol.ys
+
+
+# ---- Synthetic data: irregularly-observed damped oscillator ------------
+
+A_TRUE = jnp.array([[0.0, 1.0], [-1.0, -0.3]])  # stable: eigenvalues have Re<0
+
+def true_field(t, y, args):
+    return A_TRUE @ y
+
+def make_dataset(key, n_traj, n_obs_per_traj, t_max=8.0):
+    """Union-grid + mask design: every trajectory is solved on the same
+    sorted grid of all timestamps that appear anywhere in the batch, with
+    a boolean mask marking which grid points that trajectory actually
+    observed. This sidesteps ragged SaveAt shapes under vmap while still
+    representing genuinely irregular, per-trajectory sampling."""
+    keys = jr.split(key, n_traj + 2)
+    y0s = jr.normal(keys[0], (n_traj, 2))
+
+    obs_times = jnp.sort(
+        jr.uniform(keys[1], (n_traj, n_obs_per_traj), minval=0.0, maxval=t_max),
+        axis=1,
+    )
+    obs_times = obs_times.at[:, 0].set(0.0)  # ensure t0 is observed
+    union_ts = jnp.sort(jnp.unique(obs_times))
+
+    mask = jnp.isin(union_ts[None, :], obs_times)  # (n_traj, len(union_ts))
+
+    def solve_true(y0):
+        term = diffrax.ODETerm(true_field)
+        sol = diffrax.diffeqsolve(
+            term, diffrax.Tsit5(), t0=0.0, t1=t_max, dt0=0.01, y0=y0,
+            saveat=diffrax.SaveAt(ts=union_ts),
+            stepsize_controller=diffrax.PIDController(rtol=1e-9, atol=1e-11),
+            max_steps=16384,
+        )
+        return sol.ys
+
+    clean = jax.vmap(solve_true)(y0s)
+    noise = 0.01 * jr.normal(keys[2], clean.shape)
+    obs = clean + noise
+    return y0s, union_ts, obs, mask
+
+
+# ---- Loss / training -----------------------------------------------------
+
+def loss_fn(vf, y0s, ts, obs, mask, *, rtol, atol, max_steps, adjoint):
+    model = NeuralODE(vf)
+    pred = jax.vmap(lambda y0: model(y0, ts, rtol=rtol, atol=atol,
+                                      max_steps=max_steps, adjoint=adjoint))(y0s)
+    sq_err = (pred - obs) ** 2
+    return jnp.sum(mask[..., None] * sq_err) / jnp.sum(mask)
+
+
+@eqx.filter_jit
+def train_step(vf, opt_state, optimizer, y0s, ts, obs, mask):
+    loss, grads = eqx.filter_value_and_grad(loss_fn)(
+        vf, y0s, ts, obs, mask,
+        rtol=1e-5, atol=1e-7, max_steps=4096,
+        adjoint=diffrax.RecursiveCheckpointAdjoint(),
+    )
+    updates, opt_state = optimizer.update(grads, opt_state, vf)
+    vf = eqx.apply_updates(vf, updates)
+    return vf, opt_state, loss
+
+
+def train(key, n_steps=2000):
+    key, data_key, model_key = jr.split(key, 3)
+    y0s, ts, obs, mask = make_dataset(data_key, n_traj=32, n_obs_per_traj=15)
+
+    vf = VectorField(data_size=2, width_size=64, depth=2, key=model_key)
+    optimizer = optax.adam(3e-3)
+    opt_state = optimizer.init(eqx.filter(vf, eqx.is_inexact_array))
+
+    for step in range(n_steps):
+        vf, opt_state, loss = train_step(vf, opt_state, optimizer, y0s, ts, obs, mask)
+        if step % 200 == 0:
+            print(f"step {step:5d}  loss {loss:.6f}")
+
+    return vf, (y0s, ts, obs, mask)
+```
+
+`★ Insight ─────────────────────────────────────`
+`eqx.filter_jit` / `eqx.filter_value_and_grad` matter here because `vf` is an Equinox `Module` — a pytree that mixes differentiable array leaves (MLP weights) with non-array structure (activation function references, shape ints). Plain `jax.grad` would try to differentiate through *everything* and choke on the non-array leaves; the `filter_*` variants automatically partition the pytree into inexact-array leaves (differentiated) and the rest (held static), then recombine. This is the Equinox idiom specifically because Equinox models are just pytrees, not a special "parameter container" class like Flax's `FrozenDict`.
+`─────────────────────────────────────────────────`
+
+## Establishing reliability
+
+Three independent failure modes are possible, and each needs its own check:
+1. **Gradients could be wrong** (adjoint bugs, discretization artifacts entering the backward pass).
+2. **The fit could be fitting the solver, not the dynamics** (loose tolerances absorbed into learned parameters).
+3. **The fit could be a lucky local optimum that doesn't generalize** to unseen times or regions of state space.
+
+```python
+# reliability_checks.py
+import jax
+import jax.numpy as jnp
+import jax.random as jr
+import equinox as eqx
+import diffrax
+from jax.flatten_util import ravel_pytree
+from neural_ode import VectorField, NeuralODE, loss_fn, true_field, A_TRUE
+
+
+# -- 1. Directional finite-difference gradient check ----------------------
+# Checked against a FIXED step size, not the adaptive controller used in
+# training: an adaptive controller's step sequence changes discontinuously
+# with theta, so the loss surface it induces is not smooth enough for FD
+# to agree with — that mismatch is solver noise, not a gradient bug.
+
+def check_gradient_directional(vf, y0s, ts, obs, mask, key, eps=1e-6):
+    params, static = eqx.partition(vf, eqx.is_inexact_array)
+    flat, unravel = ravel_pytree(params)
+    direction = jr.normal(key, flat.shape)
+    direction = direction / jnp.linalg.norm(direction)
+
+    fixed_kwargs = dict(
+        rtol=1.0, atol=1.0, max_steps=4096,  # ignored by ConstantStepSize
+        adjoint=diffrax.RecursiveCheckpointAdjoint(),
+    )
+
+    def loss_fixed_step(flat_params):
+        p = unravel(flat_params)
+        vf_i = eqx.combine(p, static)
+        model = NeuralODE(vf_i)
+        pred = jax.vmap(lambda y0: _solve_fixed(model, y0, ts))(y0s)
+        sq_err = (pred - obs) ** 2
+        return jnp.sum(mask[..., None] * sq_err) / jnp.sum(mask)
+
+    def _solve_fixed(model, y0, ts):
+        term = diffrax.ODETerm(model.vf)
+        sol = diffrax.diffeqsolve(
+            term, diffrax.Tsit5(), t0=ts[0], t1=ts[-1], dt0=0.01, y0=y0,
+            saveat=diffrax.SaveAt(ts=ts),
+            stepsize_controller=diffrax.ConstantStepSize(),
+            max_steps=4096,
+        )
+        return sol.ys
+
+    autodiff_loss, autodiff_grad = jax.value_and_grad(loss_fixed_step)(flat)
+    g_dot_v = jnp.dot(autodiff_grad, direction)
+
+    fd_plus = loss_fixed_step(flat + eps * direction)
+    fd_minus = loss_fixed_step(flat - eps * direction)
+    fd_estimate = (fd_plus - fd_minus) / (2 * eps)
+
+    rel_err = jnp.abs(g_dot_v - fd_estimate) / (jnp.abs(fd_estimate) + 1e-12)
+    return dict(autodiff=float(g_dot_v), finite_diff=float(fd_estimate), rel_err=float(rel_err))
+
+
+# -- 2. Adjoint convergence (not equality) across tolerance tightening -----
+# BacksolveAdjoint is optimize-then-discretize (solves its own adjoint ODE
+# backward) and will disagree with the checkpointed exact-gradient method
+# at any fixed tolerance. The valid test is that the gap SHRINKS as
+# rtol/atol tighten, not that the two ever match exactly.
+
+def check_adjoint_convergence(vf, y0s, ts, obs, mask, tolerances):
+    results = []
+    for tol in tolerances:
+        kwargs = dict(rtol=tol, atol=tol * 1e-2, max_steps=16384)
+        g_checkpoint = eqx.filter_grad(loss_fn)(
+            vf, y0s, ts, obs, mask, **kwargs,
+            adjoint=diffrax.RecursiveCheckpointAdjoint(),
+        )
+        g_backsolve = eqx.filter_grad(loss_fn)(
+            vf, y0s, ts, obs, mask, **kwargs,
+            adjoint=diffrax.BacksolveAdjoint(),
+        )
+        flat_a, _ = ravel_pytree(eqx.filter(g_checkpoint, eqx.is_inexact_array))
+        flat_b, _ = ravel_pytree(eqx.filter(g_backsolve, eqx.is_inexact_array))
+        rel_gap = jnp.linalg.norm(flat_a - flat_b) / jnp.linalg.norm(flat_a)
+        results.append((tol, float(rel_gap)))
+    return results  # expect rel_gap to decrease monotonically as tol -> 0
+
+
+# -- 3. Post-training tolerance sensitivity --------------------------------
+# If predictions from the TRAINED model move materially under a tighter
+# solver tolerance, the parameters absorbed discretization error rather
+# than genuine dynamics -- a sign the model fit the solver, not the system.
+
+def check_tolerance_sensitivity(vf, y0s, ts):
+    model = NeuralODE(vf)
+    loose = jax.vmap(lambda y0: model(y0, ts, rtol=1e-5, atol=1e-7,
+                                        max_steps=4096,
+                                        adjoint=diffrax.RecursiveCheckpointAdjoint()))(y0s)
+    tight = jax.vmap(lambda y0: model(y0, ts, rtol=1e-9, atol=1e-11,
+                                        max_steps=16384,
+                                        adjoint=diffrax.RecursiveCheckpointAdjoint()))(y0s)
+    rel_diff = jnp.max(jnp.abs(loose - tight) / (jnp.abs(tight) + 1e-6))
+    return float(rel_diff)
+
+
+# -- 4. Held-out time generalization (interpolation + extrapolation) ------
+
+def check_generalization(vf, y0s, ts, obs, mask, held_out_mask, extrap_ts, extrap_obs):
+    model = NeuralODE(vf)
+    pred = jax.vmap(lambda y0: model(y0, ts, rtol=1e-6, atol=1e-8,
+                                       max_steps=4096,
+                                       adjoint=diffrax.RecursiveCheckpointAdjoint()))(y0s)
+    sq_err = (pred - obs) ** 2
+    interp_mse = jnp.sum(held_out_mask[..., None] * sq_err) / jnp.sum(held_out_mask)
+
+    pred_extrap = jax.vmap(lambda y0: model(y0, extrap_ts, rtol=1e-6, atol=1e-8,
+                                              max_steps=4096,
+                                              adjoint=diffrax.RecursiveCheckpointAdjoint()))(y0s)
+    extrap_mse = jnp.mean((pred_extrap - extrap_obs) ** 2)
+    return float(interp_mse), float(extrap_mse)
+
+
+# -- 5. Vector-field error, restricted to the data-visited region ---------
+# Evaluated on points sampled ALONG the true trajectories (not a generic
+# grid) -- off that region the field is unconstrained by the loss, so a
+# generous bounding-box grid would make a good fit look spuriously bad.
+
+def check_vector_field_error(vf, visited_states):
+    pred_f = jax.vmap(lambda y: vf(0.0, y, None))(visited_states)
+    true_f = jax.vmap(lambda y: A_TRUE @ y)(visited_states)
+    return float(jnp.mean(jnp.linalg.norm(pred_f - true_f, axis=-1)))
+```
+
+`★ Insight ─────────────────────────────────────`
+The adjoint-convergence check (#2) is a good example of a subtlety specific to differentiable ODE solvers: there are two philosophically different ways to get `d(loss)/d(theta)` through a solve. `RecursiveCheckpointAdjoint` differentiates the actual sequence of solver steps taken ("discretize-then-optimize") — it's exact for whatever steps were taken, at the cost of memory for the checkpoint trail. `BacksolveAdjoint` instead derives a continuous adjoint ODE analytically and solves *that* backward ("optimize-then-discretize") — memory-cheap (no checkpointing) but introduces its own independent integration error. Neither is "more correct" in isolation; they're expected to converge to the same true gradient as tolerances tighten, and that convergence — not agreement at a fixed tolerance — is the thing worth testing.
+`─────────────────────────────────────────────────`
+
+One design point worth your input rather than mine: the MLP vector field above is **autonomous** (`f_θ(y)`, no explicit `t`). That's correct for this damped-oscillator example because the true dynamics are time-invariant, but if your real trajectories have exogenous time-dependence (e.g., a forcing term, or regime change at a known time), you'd want `f_θ(t, y)` instead — concatenating `t` as an MLP input, or using a dedicated time-embedding. That's a modeling decision about *your* system that I can't make for you from the synthetic example; happy to adjust once you describe the actual trajectories you're fitting.
+
+**Summary of what "reliable" means operationally here:** gradients are trustworthy when the directional FD check agrees to the solver's tolerance floor and the two adjoint methods converge as tolerances tighten; the fit reflects dynamics (not discretization) when tightening the solver post-training doesn't move predictions; and the fit generalizes when held-out interpolation/extrapolation error and the true-vs-learned vector-field error (restricted to the visited region) both stay small and stable across random seeds.

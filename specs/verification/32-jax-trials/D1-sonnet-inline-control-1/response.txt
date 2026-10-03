@@ -1,0 +1,235 @@
+Before the code: I called the advisor, since this is a from-scratch model build with several non-obvious correctness traps (variable-length sequences, masking, resumable checkpoints). It confirmed the toolset here is read-only — no execution, no file writes — so the deliverable is a single self-contained script printed in this response, and flagged the specific bugs to avoid (mask off-by-one, loss denominator, incomplete checkpoints).
+
+`★ Insight ─────────────────────────────────────`
+1. **Causality lets you scan the full padded length and mask only the loss.** A GRU's output at timestep *t* depends only on inputs at ≤ *t*. Since we never read the final hidden state (we read every per-step output and discard the ones past the real sequence length), padding with zeros after the sequence ends can't corrupt any *valid* prediction — it only produces garbage outputs at positions we're already masking out of the loss. This is why we don't need `flax.linen`'s `seq_lengths=` machinery at all; a plain `lax.scan` is sufficient and has zero API-version risk. This invariant would be **false** for a bidirectional RNN or a model that pools/reads the final hidden state, since those *do* let padding leak into valid outputs.
+2. **Global `L_MAX` padding vs. per-batch padding is a `jit` performance issue, not just a style choice.** JAX traces and compiles a new XLA program for every distinct input shape it sees. If you pad each batch to that batch's own max length, every batch with a different max retriggers a full retrace/recompile — silently turning your training loop into a compiler stress test. Padding to one fixed shape up front means `jax.jit` compiles exactly once.
+`─────────────────────────────────────────────────`
+
+```python
+"""
+Next-sample prediction on variable-length sine sequences, in pure JAX.
+
+Model: single-layer GRU (hand-rolled, via lax.scan) + linear readout to 1 scalar.
+Data: synthetic sine waves, random amplitude/frequency/phase/length, CPU only.
+Checkpointing: full state (params + optax moments + step + PRNG key) via pickle,
+so --resume continues training rather than restarting the optimizer from scratch.
+"""
+import os
+os.environ.setdefault("JAX_PLATFORMS", "cpu")  # must precede `import jax`
+
+import argparse
+import pickle
+import time
+
+import jax
+import jax.numpy as jnp
+from jax import lax
+import optax
+
+# ----------------------------------------------------------------------------
+# Config
+# ----------------------------------------------------------------------------
+L_MIN, L_MAX = 10, 50       # sequence length range (inclusive); L_MIN >= 2 required
+HIDDEN_DIM = 48
+NOISE_STD = 0.02
+LEARNING_RATE = 1e-3
+BATCH_SIZE = 64
+VAL_BATCH_SIZE = 256
+CKPT_LATEST = "ckpt_latest.pkl"
+CKPT_BEST = "ckpt_best.pkl"
+
+# ----------------------------------------------------------------------------
+# Synthetic data
+# ----------------------------------------------------------------------------
+def _sample_one(key, l_min, l_max, noise_std):
+    k_amp, k_freq, k_phase, k_len, k_noise = jax.random.split(key, 5)
+    amp = jax.random.uniform(k_amp, (), minval=0.5, maxval=1.5)
+    freq = jax.random.uniform(k_freq, (), minval=0.05, maxval=0.3)
+    phase = jax.random.uniform(k_phase, (), minval=0.0, maxval=2 * jnp.pi)
+    length = jax.random.randint(k_len, (), l_min, l_max + 1)
+
+    t = jnp.arange(l_max)
+    noise = jax.random.normal(k_noise, (l_max,)) * noise_std
+    seq = amp * jnp.sin(freq * t + phase) + noise
+    seq = jnp.where(t < length, seq, 0.0)  # zero-pad tail; never read by the loss
+    return seq, length
+
+
+def make_batch(key, batch_size, l_min=L_MIN, l_max=L_MAX, noise_std=NOISE_STD):
+    """Returns (seqs: [B, L_MAX], lengths: [B])."""
+    keys = jax.random.split(key, batch_size)
+    sample_fn = lambda k: _sample_one(k, l_min, l_max, noise_std)
+    seqs, lengths = jax.vmap(sample_fn)(keys)
+    return seqs, lengths
+
+
+def inputs_targets_mask(seqs, lengths, l_max=L_MAX):
+    """
+    Teacher-forced next-sample setup: predict x[t+1] from x[t].
+    A sequence of true length L yields L-1 valid (input, target) pairs.
+    """
+    inputs = seqs[:, :-1]
+    targets = seqs[:, 1:]
+    t_idx = jnp.arange(l_max - 1)
+    mask = (t_idx[None, :] < (lengths - 1)[:, None]).astype(jnp.float32)
+    return inputs, targets, mask
+
+
+# ----------------------------------------------------------------------------
+# Model: hand-rolled GRU + linear readout
+# ----------------------------------------------------------------------------
+def init_params(key, hidden_dim=HIDDEN_DIM, input_dim=1):
+    keys = jax.random.split(key, 8)
+    scale = 1.0 / jnp.sqrt(hidden_dim)
+
+    def mat(k, shape):
+        return jax.random.uniform(k, shape, minval=-scale, maxval=scale)
+
+    return {
+        "Wz": mat(keys[0], (input_dim, hidden_dim)), "Uz": mat(keys[1], (hidden_dim, hidden_dim)), "bz": jnp.zeros(hidden_dim),
+        "Wr": mat(keys[2], (input_dim, hidden_dim)), "Ur": mat(keys[3], (hidden_dim, hidden_dim)), "br": jnp.zeros(hidden_dim),
+        "Wh": mat(keys[4], (input_dim, hidden_dim)), "Uh": mat(keys[5], (hidden_dim, hidden_dim)), "bh": jnp.zeros(hidden_dim),
+        "Wout": mat(keys[6], (hidden_dim, 1)), "bout": jnp.zeros(1),
+    }
+
+
+def _gru_step(params, h, x_t):
+    x = jnp.atleast_1d(x_t)  # (1,)
+    z = jax.nn.sigmoid(x @ params["Wz"] + h @ params["Uz"] + params["bz"])
+    r = jax.nn.sigmoid(x @ params["Wr"] + h @ params["Ur"] + params["br"])
+    h_tilde = jnp.tanh(x @ params["Wh"] + (r * h) @ params["Uh"] + params["bh"])
+    h_new = (1 - z) * h + z * h_tilde
+    y = (h_new @ params["Wout"] + params["bout"]).squeeze(-1)
+    return h_new, y
+
+
+def run_sequence(params, x_seq, hidden_dim=HIDDEN_DIM):
+    """x_seq: [L] -> per-step predictions [L]."""
+    h0 = jnp.zeros(hidden_dim)
+
+    def step(h, x_t):
+        return _gru_step(params, h, x_t)
+
+    _, ys = lax.scan(step, h0, x_seq)
+    return ys
+
+
+def predict_batch(params, inputs, hidden_dim=HIDDEN_DIM):
+    return jax.vmap(lambda seq: run_sequence(params, seq, hidden_dim))(inputs)
+
+
+# ----------------------------------------------------------------------------
+# Loss, train step
+# ----------------------------------------------------------------------------
+def masked_mse(params, inputs, targets, mask):
+    """
+    Pooled masked MSE: every *valid timestep* is weighted equally, so longer
+    sequences (more valid timesteps) dominate the gradient more than short ones.
+
+    Alternative (not used here): average per-sequence first, then average those
+    per-sequence losses across the batch, which instead weights every *sequence*
+    equally regardless of length. That alternative is a straightforward swap --
+    `seq_loss = (sq_err).sum(axis=1) / mask.sum(axis=1); return seq_loss.mean()`
+    -- and may be preferable if you care about short sequences as much as long
+    ones. Pooled is the standard default and is what's implemented below.
+    """
+    preds = predict_batch(params, inputs)
+    sq_err = (preds - targets) ** 2 * mask
+    return sq_err.sum() / mask.sum()
+
+
+optimizer = optax.adam(LEARNING_RATE)
+
+
+@jax.jit
+def train_step(params, opt_state, inputs, targets, mask):
+    loss, grads = jax.value_and_grad(masked_mse)(params, inputs, targets, mask)
+    updates, opt_state = optimizer.update(grads, opt_state, params)
+    params = optax.apply_updates(params, updates)
+    return params, opt_state, loss
+
+
+@jax.jit
+def eval_loss(params, inputs, targets, mask):
+    return masked_mse(params, inputs, targets, mask)
+
+
+# ----------------------------------------------------------------------------
+# Checkpointing
+# ----------------------------------------------------------------------------
+def save_checkpoint(path, params, opt_state, step, key):
+    # device_get pulls arrays off-device into plain numpy so the pickle is portable.
+    data = jax.device_get({"params": params, "opt_state": opt_state, "step": step, "key": key})
+    with open(path, "wb") as f:
+        pickle.dump(data, f)
+
+
+def load_checkpoint(path):
+    with open(path, "rb") as f:
+        data = pickle.load(f)
+    return data["params"], data["opt_state"], data["step"], data["key"]
+
+
+# ----------------------------------------------------------------------------
+# Main training loop
+# ----------------------------------------------------------------------------
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--steps", type=int, default=2000)
+    parser.add_argument("--eval-every", type=int, default=100)
+    parser.add_argument("--resume", action="store_true")
+    parser.add_argument("--seed", type=int, default=0)
+    args = parser.parse_args()
+
+    if args.resume and os.path.exists(CKPT_LATEST):
+        params, opt_state, start_step, base_key = load_checkpoint(CKPT_LATEST)
+        print(f"Resumed from {CKPT_LATEST} at step {start_step}")
+    else:
+        base_key = jax.random.PRNGKey(args.seed)
+        init_key, base_key = jax.random.split(base_key)
+        params = init_params(init_key)
+        opt_state = optimizer.init(params)
+        start_step = 0
+
+    # Fixed, differently-seeded validation set, built once and reused every eval
+    # so val-loss numbers are comparable across steps (not resampled noise).
+    val_key = jax.random.PRNGKey(12345)
+    val_seqs, val_lengths = make_batch(val_key, VAL_BATCH_SIZE)
+    val_inputs, val_targets, val_mask = inputs_targets_mask(val_seqs, val_lengths)
+
+    best_val = float("inf")
+    for step in range(start_step, args.steps):
+        # fold_in(base_key, step) ties each batch deterministically to its step
+        # number, so resuming at step N reproduces the training stream from N
+        # onward instead of replaying batches already seen before the restart.
+        batch_key = jax.random.fold_in(base_key, step)
+        seqs, lengths = make_batch(batch_key, BATCH_SIZE)
+        inputs, targets, mask = inputs_targets_mask(seqs, lengths)
+
+        params, opt_state, train_loss = train_step(params, opt_state, inputs, targets, mask)
+
+        if (step + 1) % args.eval_every == 0 or step + 1 == args.steps:
+            val_loss = eval_loss(params, val_inputs, val_targets, val_mask)
+            print(f"step {step + 1:5d}  train_loss {float(train_loss):.5f}  val_loss {float(val_loss):.5f}")
+
+            save_checkpoint(CKPT_LATEST, params, opt_state, step + 1, base_key)
+            if float(val_loss) < best_val:
+                best_val = float(val_loss)
+                save_checkpoint(CKPT_BEST, params, opt_state, step + 1, base_key)
+
+    print(f"Done. latest -> {CKPT_LATEST}, best (val={best_val:.5f}) -> {CKPT_BEST}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+**Disclosure:** this session's tools are read-only (no Bash/execution), so this script has not been run here. First command to try: `python next_sample_sine_rnn.py --steps 2000`, then `python next_sample_sine_rnn.py --steps 4000 --resume` to confirm the resume path continues rather than restarting.
+
+`★ Insight ─────────────────────────────────────`
+1. **The mask off-by-one is the single most common bug in this task.** `x[:, :-1]` and `x[:, 1:]` are each `L_MAX-1` long, but a sequence of true length `L` only has `L-1` *valid* (input, target) pairs — the mask has to be rebuilt at `t < length - 1`, not reused from a length-based mask built for the full `L_MAX` input. Get this wrong and the model trains on phantom positions that mix real sine values with zero-padding, with a wrong-but-plausible loss curve.
+2. **`mask.sum()` vs `mask.size` in the loss denominator** looks like a 1-character difference but changes what the number *means*. Dividing by `mask.size` averages in the zeros from padded-out positions, so your reported loss shrinks as your padding ratio grows — making a train/val comparison across different length distributions meaningless. Dividing by `mask.sum()` (the actual count of valid timesteps) keeps the loss an honest "average squared error per real prediction," comparable across any batch.
+3. **Why `opt_state` has to be checkpointed, not just `params`.** Adam tracks a running first moment (`mu`) and second moment (`nu`) per parameter. If you restore only `params` and reinitialize the optimizer, step 1 after resume computes `mu`/`nu` from a single gradient sample — effectively an uncalibrated, oversized first step, which can visibly spike the loss right after a resume even though the weights themselves were fine.
+`─────────────────────────────────────────────────`
+
+One design choice I made rather than exposing as a TODO: the loss pools over all valid timesteps (longer sequences get proportionally more weight), documented in `masked_mse`'s docstring along with the ~2-line per-sequence-weighted alternative. If you'd rather weight every sequence equally regardless of length, say so and I'll swap it in.

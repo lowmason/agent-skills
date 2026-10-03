@@ -1,0 +1,216 @@
+Orientation confirmed the deliverable is complete code in this response (no Write/Edit tools available, and the task explicitly says inline delivery). Here's the full implementation as a single file.
+
+`★ Insight ─────────────────────────────────────`
+Three design decisions shape everything below: (1) padding + a boolean mask handles variable length without ragged arrays, which JAX can't jit over — but the mask must be checked at *every* loss computation or padding (zeros) silently trains the model to predict zero; (2) a resumable checkpoint needs optimizer state and the data-generating RNG key, not just params — otherwise "resuming" silently restarts momentum/Adam moments from scratch and replays identical training batches; (3) `jax.random.PRNGKey` is used (not `np.random`) specifically because a key is just a small array, so it slots into the same pickle/tree_map checkpointing path as params with no special-casing.
+`─────────────────────────────────────────────────`
+
+```python
+"""Next-sample prediction on variable-length sine sequences, in JAX.
+
+Single-layer GRU (hand-rolled, no Flax/Haiku) run via lax.scan, trained
+with optax.adam on masked MSE loss. Runs on CPU.
+"""
+import argparse
+import functools
+import os
+import pickle
+
+import jax
+import jax.numpy as jnp
+import optax
+
+jax.config.update("jax_platform_name", "cpu")
+
+
+# ----------------------------- data -----------------------------------
+
+def generate_batch(key, batch_size, min_len, max_len, dt=0.1):
+    """Returns (next_key, x, mask).
+
+    x: (batch, max_len) padded sine samples, padding = 0.
+    mask: (batch, max_len) 1.0 where the sample is real, 0.0 where padded.
+    Amplitude, frequency, phase, and length are all randomized per
+    sequence so next-sample prediction isn't degenerate.
+    """
+    key, k_len, k_amp, k_freq, k_phase = jax.random.split(key, 5)
+    lengths = jax.random.randint(k_len, (batch_size,), min_len, max_len + 1)
+    amplitude = jax.random.uniform(k_amp, (batch_size,), minval=0.5, maxval=1.5)
+    freq = jax.random.uniform(k_freq, (batch_size,), minval=0.5, maxval=3.0)
+    phase = jax.random.uniform(k_phase, (batch_size,), minval=0.0, maxval=2 * jnp.pi)
+
+    t = jnp.arange(max_len) * dt
+    x = amplitude[:, None] * jnp.sin(freq[:, None] * t[None, :] + phase[:, None])
+    mask = (jnp.arange(max_len)[None, :] < lengths[:, None]).astype(jnp.float32)
+    x = x * mask  # zero out padding; loss masking makes the exact value irrelevant
+    return key, x, mask
+
+
+# ----------------------------- model -----------------------------------
+
+def init_params(key, hidden_size):
+    k_in, k_rec, k_out = jax.random.split(key, 3)
+    glorot = jax.nn.initializers.glorot_uniform()
+    orthogonal = jax.nn.initializers.orthogonal()
+
+    def gate_params(k):
+        k_w, k_u = jax.random.split(k)
+        return {
+            "W": glorot(k_w, (1, hidden_size)),
+            "U": orthogonal(k_u, (hidden_size, hidden_size)),
+            "b": jnp.zeros((hidden_size,)),
+        }
+
+    k_z, k_r, k_h = jax.random.split(k_in, 3)
+    return {
+        "z": gate_params(k_z),
+        "r": gate_params(k_r),
+        "h": gate_params(k_h),
+        "Wo": glorot(k_out, (hidden_size, 1)),
+        "bo": jnp.zeros((1,)),
+    }
+
+
+def _gru_step(params, h, x_t):
+    def gate(p, h, x, act):
+        return act(x @ p["W"] + h @ p["U"] + p["b"])
+
+    z = gate(params["z"], h, x_t, jax.nn.sigmoid)
+    r = gate(params["r"], h, x_t, jax.nn.sigmoid)
+    h_candidate = jnp.tanh(x_t @ params["h"]["W"] + (r * h) @ params["h"]["U"] + params["h"]["b"])
+    h_new = (1 - z) * h_candidate + z * h
+    return h_new
+
+
+def _predict_sequence(params, x_seq):
+    """x_seq: (T,) -> predictions: (T,), predictions[t] predicts x_seq[t+1]."""
+    hidden_size = params["z"]["b"].shape[0]
+
+    def step(h, x_t):
+        h_new = _gru_step(params, h, x_t[None])
+        y = (h_new @ params["Wo"] + params["bo"])[0]
+        return h_new, y
+
+    h0 = jnp.zeros((hidden_size,))
+    _, ys = jax.lax.scan(step, h0, x_seq)
+    return ys
+
+
+_batched_predict = jax.vmap(_predict_sequence, in_axes=(None, 0))
+
+
+def loss_fn(params, x, mask):
+    inputs = x[:, :-1]
+    targets = x[:, 1:]
+    target_mask = mask[:, 1:]  # a target position is valid iff it's within the real sequence
+    preds = _batched_predict(params, inputs)
+    sq_err = (preds - targets) ** 2
+    return jnp.sum(sq_err * target_mask) / jnp.sum(target_mask)
+
+
+# --------------------------- train/eval steps ---------------------------
+
+def make_optimizer(lr):
+    return optax.adam(lr)
+
+
+@functools.partial(jax.jit, static_argnums=(0,))
+def train_step(optimizer, params, opt_state, x, mask):
+    loss, grads = jax.value_and_grad(loss_fn)(params, x, mask)
+    updates, opt_state = optimizer.update(grads, opt_state, params)
+    params = optax.apply_updates(params, updates)
+    return params, opt_state, loss
+
+
+@jax.jit
+def eval_step(params, x, mask):
+    return loss_fn(params, x, mask)
+
+
+# ----------------------------- checkpointing -----------------------------
+
+def save_checkpoint(path, step, params, opt_state, rng_key):
+    ckpt = {
+        "step": step,
+        "params": jax.tree.map(lambda a: jax.device_get(a), params),
+        "opt_state": jax.tree.map(lambda a: jax.device_get(a), opt_state),
+        "rng_key": jax.device_get(rng_key),
+    }
+    with open(path, "wb") as f:
+        pickle.dump(ckpt, f)
+
+
+def load_checkpoint(path):
+    with open(path, "rb") as f:
+        ckpt = pickle.load(f)
+    params = jax.tree.map(jnp.asarray, ckpt["params"])
+    opt_state = jax.tree.map(jnp.asarray, ckpt["opt_state"])
+    rng_key = jnp.asarray(ckpt["rng_key"])
+    return ckpt["step"], params, opt_state, rng_key
+
+
+# ----------------------------- training loop -----------------------------
+
+def main():
+    p = argparse.ArgumentParser()
+    p.add_argument("--epochs", type=int, default=50)
+    p.add_argument("--steps-per-epoch", type=int, default=20)
+    p.add_argument("--batch-size", type=int, default=64)
+    p.add_argument("--val-size", type=int, default=256)
+    p.add_argument("--hidden-size", type=int, default=32)
+    p.add_argument("--min-len", type=int, default=10)
+    p.add_argument("--max-len", type=int, default=50)
+    p.add_argument("--lr", type=float, default=1e-3)
+    p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--checkpoint", type=str, default="checkpoint.pkl")
+    p.add_argument("--resume", action="store_true")
+    args = p.parse_args()
+
+    optimizer = make_optimizer(args.lr)
+
+    # Validation data uses a disjoint, fixed key so val loss is comparable
+    # across epochs and never leaks into the training RNG stream.
+    val_key = jax.random.PRNGKey(args.seed + 1)
+    _, val_x, val_mask = generate_batch(val_key, args.val_size, args.min_len, args.max_len)
+
+    if args.resume and os.path.exists(args.checkpoint):
+        step, params, opt_state, train_key = load_checkpoint(args.checkpoint)
+        print(f"Resumed from {args.checkpoint} at step {step}")
+    else:
+        key = jax.random.PRNGKey(args.seed)
+        key_params, train_key = jax.random.split(key)
+        params = init_params(key_params, args.hidden_size)
+        opt_state = optimizer.init(params)
+        step = 0
+
+    start_epoch = step // args.steps_per_epoch
+    for epoch in range(start_epoch, args.epochs):
+        epoch_loss = 0.0
+        for _ in range(args.steps_per_epoch):
+            train_key, x, mask = generate_batch(train_key, args.batch_size, args.min_len, args.max_len)
+            params, opt_state, loss = train_step(optimizer, params, opt_state, x, mask)
+            epoch_loss += loss
+            step += 1
+        epoch_loss /= args.steps_per_epoch
+        val_loss = eval_step(params, val_x, val_mask)
+        print(f"epoch {epoch:3d} | step {step:5d} | train_loss {epoch_loss:.5f} | val_loss {val_loss:.5f}")
+
+        save_checkpoint(args.checkpoint, step, params, opt_state, train_key)
+
+    print(f"Final checkpoint written to {args.checkpoint}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+`★ Insight ─────────────────────────────────────`
+Three subtler points worth understanding:
+
+1. **The off-by-one in masking.** `target_mask = mask[:, 1:]` rather than `mask[:, :-1]` or `mask` directly — the loss at timestep `t` scores the prediction of `x[t+1]`, so it's only meaningful when `x[t+1]` itself is real data. Using the un-shifted mask would score one extra (padded) prediction per sequence, which seems harmless but quietly biases the gradient toward predicting zero near sequence boundaries.
+
+2. **Orthogonal init for recurrent weights, Glorot for input weights.** This is the standard RNN init split: recurrent weight matrices (`U`) get orthogonal init because repeated multiplication by the same matrix across `max_len` timesteps either explodes or vanishes unless its singular values start at 1; input weights (`W`) don't face that repeated-multiplication problem, so Glorot (variance-preserving for a single matmul) suffices.
+
+3. **`jax.jit(static_argnums=(0,))` on `train_step`.** The optimizer object itself is passed as a static arg because `optax.adam(lr)` returns a `GradientTransformation` — a pair of plain Python functions, not a pytree of arrays. JAX can't trace through "which function to call" as a dynamic value, so it must be fixed at trace time. This is also why `lr` is baked in via closure rather than passed as a traced float: changing it would require rebuilding the optimizer, not just re-jitting.
+`─────────────────────────────────────────────────`
+
+Notes on scope: I did not run this (no Bash tool in this session, and execution wasn't required), so treat it as reviewed-but-unexecuted — if you want, I can also write a small `--verify` flag that round-trips a checkpoint and asserts bit-for-bit param/opt_state equality plus `step > 0`, which was the advisor's suggested resumption check. Want that added, or is this sufficient as delivered?

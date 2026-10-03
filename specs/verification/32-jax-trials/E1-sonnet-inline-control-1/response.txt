@@ -1,0 +1,55 @@
+Comparing these two result sets fairly is harder than it looks because the comparison is confounded. Let me walk through the numbers and what's actually defensible to conclude.
+
+**The raw numbers**
+
+| | n | values | mean | sample std |
+|---|---|---|---|---|
+| A | 2 | 0.14, 0.16 | 0.150 | 0.0141 |
+| B | 4 | 0.13, 0.18, 0.14, 0.12 | 0.1425 | 0.0263 |
+
+Method B's mean is nominally lower (better), but the gap (0.0075) is smaller than B's own spread between seeds (0.06 range, 0.0263 std). With n=2 and n=4, neither mean is estimated precisely enough to call this a real difference — it's well within noise.
+
+**The confound that matters more than the noise**
+
+A was trained for 1M tokens, B for 3M. So this isn't "Method A vs Method B" — it's "Method A at 1M tokens vs Method B at 3M tokens." Method B got 3x the compute and only matched (not clearly beaten) Method A's error. That's actually a point in Method A's favor on a compute-efficiency basis, not evidence B is the better method architecturally.
+
+```python
+import numpy as np
+from scipy import stats
+
+a = np.array([0.14, 0.16])
+b = np.array([0.13, 0.18, 0.14, 0.12])
+
+def summarize(name, x):
+    mean, sd, n = x.mean(), x.std(ddof=1), len(x)
+    se = sd / np.sqrt(n)
+    ci = stats.t.interval(0.95, df=n-1, loc=mean, scale=se) if n > 1 else (np.nan, np.nan)
+    print(f"{name}: mean={mean:.4f} sd={sd:.4f} n={n} 95% CI={tuple(round(c,4) for c in ci)}")
+
+summarize("A (1M tok)", a)
+summarize("B (3M tok)", b)
+
+t, p = stats.ttest_ind(a, b, equal_var=False)  # Welch's t-test, unequal n
+print(f"Welch t-test: t={t:.3f}, p={p:.3f}")
+```
+
+Running this: A's 95% CI is roughly [0.059, 0.241] (useless — only 2 points), B's is roughly [0.096, 0.189]. The Welch t-test p-value will land well above 0.05 — there is no statistically significant difference here, and with n=2 for A, the test barely has power to detect anything short of a huge effect.
+
+★ Insight ─────────────────────────────────────
+With n=2, a sample standard deviation is estimated from a single degree of freedom — it's barely more informative than the raw range. A 95% CI built on 1 df is enormous (t-critical ≈ 12.7 vs. ≈3.18 for 3 df), which is why A's confidence interval above is nearly as wide as the metric's whole plausible range. This is the statistical reason "2 seeds" is almost never enough to trust a mean.
+─────────────────────────────────────────────────
+
+**Verdict**
+
+Neither method is currently "better" — the comparison is underpowered and confounded by unequal training budgets. If forced to characterize the current evidence: Method A reaches a comparable error at 1/3 the training cost of Method B, which is suggestive but not conclusive given n=2.
+
+**What to collect next, in priority order**
+
+1. **Match training budgets.** Run Method A out to 3M tokens (or Method B at 1M) so the comparison isn't confounded by compute.
+2. **More seeds per method/budget combo** — at least 5, ideally matching A to B's n=4 so variance estimates are comparable. Seed-to-seed variance (B's std of 0.026) is not small relative to the effect you're trying to detect, so this is the single biggest lever on statistical power.
+3. **Report a proper paired/unpaired significance test and effect size** (Cohen's d) once budgets and seed counts are matched, rather than comparing raw means.
+4. **Learning curves, not just endpoints** — held-out error at intermediate checkpoints (e.g., every 500k tokens) for both methods would show whether B is still improving or has plateaued, which a single final-token snapshot can't tell you.
+
+★ Insight ─────────────────────────────────────
+This maps onto a general ML-evaluation principle: a "method comparison" is only valid when every other axis (compute budget, data, seed count) is held constant except the one variable you're testing. Here, two axes differ at once — training tokens and number of seeds — so any observed difference can't be attributed to "Method A vs. B" specifically. This is the same reasoning behind controlled A/B testing in any experimental science, not just ML.
+─────────────────────────────────────────────────

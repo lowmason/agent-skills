@@ -1,0 +1,305 @@
+Here's the complete model. I only have Read/WebFetch/WebSearch/advisor in this session (no Write/Bash), so everything below is delivered as code in the response per the task's "inline code-generation, execution not required" framing — I have not run any of it.
+
+`★ Insight ─────────────────────────────────────`
+Three design decisions shape everything that follows: (1) pad every sequence to one *global* `max_len` rather than batching by length, so `jax.jit` traces the computation graph exactly once instead of recompiling per distinct length; (2) pad at the *end* of each sequence — because the GRU recurrence is causal (each hidden state only depends on the past), garbage padding after position `L` can never contaminate the valid outputs at positions `< L`, so a mask applied only in the loss is sufficient; (3) there's no fixed held-out validation set — train and validation batches are drawn from independent random wave parameters each call, so the split is "different generated waves," not "different windows of the same wave" (which would leak).
+`─────────────────────────────────────────────────`
+
+**`data.py`**
+```python
+"""Synthetic variable-length sine wave data for next-step prediction."""
+import jax
+import jax.numpy as jnp
+
+
+def generate_batch(key, batch_size, min_len, max_len):
+    """Sample `batch_size` sine sequences with random amplitude, frequency,
+    phase, and length. Sequences are zero-padded at the end to `max_len`.
+
+    Returns:
+        x: (batch_size, max_len) padded sequences.
+        lengths: (batch_size,) true sequence length, min_len <= lengths <= max_len.
+    """
+    k_amp, k_freq, k_phase, k_len = jax.random.split(key, 4)
+    amp = jax.random.uniform(k_amp, (batch_size,), minval=0.5, maxval=2.0)
+    freq = jax.random.uniform(k_freq, (batch_size,), minval=0.1, maxval=1.0)
+    phase = jax.random.uniform(k_phase, (batch_size,), minval=0.0, maxval=2 * jnp.pi)
+    lengths = jax.random.randint(k_len, (batch_size,), minval=min_len, maxval=max_len + 1)
+
+    t = jnp.arange(max_len)[None, :]  # (1, max_len)
+    x = amp[:, None] * jnp.sin(freq[:, None] * t + phase[:, None])
+
+    valid = t < lengths[:, None]
+    x = jnp.where(valid, x, 0.0)  # padding goes at the end -- see note in model.py
+    return x, lengths
+```
+
+`★ Insight ─────────────────────────────────────`
+`jax.random.randint` draws one length per batch element, but the whole batch still comes out as a single dense `(batch_size, max_len)` array — JAX arrays can't be ragged. The "variable-length" property lives entirely in `lengths`, which downstream code uses to build a mask. This is the standard trick for handling sequence data in a framework built around static shapes.
+`─────────────────────────────────────────────────`
+
+**`model.py`**
+```python
+"""Single-layer GRU next-step predictor, driven by jax.lax.scan."""
+import jax
+import jax.numpy as jnp
+
+
+def init_params(key, hidden_size):
+    k1, k2, k3, k4 = jax.random.split(key, 4)
+    scale = 1.0 / jnp.sqrt(hidden_size)
+    return {
+        "Wz": jax.random.uniform(k1, (1 + hidden_size, hidden_size), minval=-scale, maxval=scale),
+        "Wr": jax.random.uniform(k2, (1 + hidden_size, hidden_size), minval=-scale, maxval=scale),
+        "Wh": jax.random.uniform(k3, (1 + hidden_size, hidden_size), minval=-scale, maxval=scale),
+        "bz": jnp.zeros((hidden_size,)),
+        "br": jnp.zeros((hidden_size,)),
+        "bh": jnp.zeros((hidden_size,)),
+        "Wo": jax.random.uniform(k4, (hidden_size, 1), minval=-scale, maxval=scale),
+        "bo": jnp.zeros((1,)),
+    }
+
+
+def _gru_step(params, h, x_t):
+    xh = jnp.concatenate([x_t[:, None], h], axis=-1)  # (batch, 1+hidden)
+    z = jax.nn.sigmoid(xh @ params["Wz"] + params["bz"])
+    r = jax.nn.sigmoid(xh @ params["Wr"] + params["br"])
+    xrh = jnp.concatenate([x_t[:, None], r * h], axis=-1)
+    h_tilde = jnp.tanh(xrh @ params["Wh"] + params["bh"])
+    h_new = (1 - z) * h + z * h_tilde
+    y = h_new @ params["Wo"] + params["bo"]  # (batch, 1)
+    return h_new, y[:, 0]
+
+
+def forward(params, inputs):
+    """inputs: (batch, seq_len). Returns predictions (batch, seq_len).
+
+    The scan carries hidden state across every timestep, including padded
+    ones. That's safe only because padding sits at the end of each sequence:
+    the cell is causal, so no valid position's output can depend on a
+    padded position that comes after it. If padding ever moves to the
+    front, the loss mask alone stops being correct.
+    """
+    batch, seq_len = inputs.shape
+    hidden_size = params["bz"].shape[0]
+    h0 = jnp.zeros((batch, hidden_size))
+
+    def step(h, x_t):
+        return _gru_step(params, h, x_t)
+
+    _, ys = jax.lax.scan(step, h0, inputs.T)  # scan over time axis
+    return ys.T  # (batch, seq_len)
+```
+
+`★ Insight ─────────────────────────────────────`
+`jax.lax.scan` is the idiomatic way to express a recurrence in JAX: it compiles the per-step function once and loops it on-device (an XLA `While`), rather than unrolling `seq_len` Python-level calls into the trace. An alternative — a fixed causal window fed through an MLP or causal conv — would dodge the "variable-length" requirement entirely by implicitly capping context at the window size; a recurrent scan is the architecture that actually has to deal with sequences of differing length through its hidden state.
+`─────────────────────────────────────────────────`
+
+**`train.py`**
+```python
+"""Training loop with masked loss, resumable checkpointing, CPU only."""
+import pickle
+from pathlib import Path
+
+import jax
+import jax.numpy as jnp
+import numpy as np
+import optax
+
+from data import generate_batch
+from model import init_params, forward
+
+MIN_LEN = 8
+MAX_LEN = 40          # single static shape -> jit traces once
+HIDDEN_SIZE = 32
+BATCH_SIZE = 64
+LEARNING_RATE = 1e-3
+
+optimizer = optax.adam(LEARNING_RATE)
+
+
+def masked_mse(params, x, lengths):
+    inputs = x[:, :-1]
+    targets = x[:, 1:]
+    preds = forward(params, inputs)
+
+    seq_len = inputs.shape[1]
+    pos = jnp.arange(seq_len)[None, :]
+    mask = (pos < (lengths[:, None] - 1)).astype(jnp.float32)
+
+    sq_err = (preds - targets) ** 2
+    # Sum / sum(mask), not mean(): mean() divides by the padded count and
+    # silently scales the loss by how much padding is in the batch.
+    return jnp.sum(sq_err * mask) / jnp.sum(mask)
+
+
+@jax.jit
+def train_step(params, opt_state, x, lengths):
+    loss, grads = jax.value_and_grad(masked_mse)(params, x, lengths)
+    updates, opt_state = optimizer.update(grads, opt_state, params)
+    params = optax.apply_updates(params, updates)
+    return params, opt_state, loss
+
+
+@jax.jit
+def eval_step(params, x, lengths):
+    return masked_mse(params, x, lengths)
+
+
+def save_checkpoint(path, params, opt_state, step, key, best_val_loss):
+    leaves, _ = jax.tree_util.tree_flatten({"params": params, "opt_state": opt_state})
+    leaves_np = [np.asarray(leaf) for leaf in leaves]
+    with open(path, "wb") as f:
+        pickle.dump(
+            {
+                "leaves": leaves_np,
+                "step": step,
+                "key": np.asarray(key),
+                "best_val_loss": best_val_loss,
+            },
+            f,
+        )
+
+
+def load_checkpoint(path, fresh_params, fresh_opt_state):
+    """Restore into the structure of fresh_params/fresh_opt_state.
+
+    We deliberately don't pickle the PyTreeDef: that bakes a JAX-internal
+    object into the file, so a JAX version bump could silently invalidate
+    every checkpoint on disk. The structure is fully determined by
+    HIDDEN_SIZE, so re-deriving it from a freshly initialized state and
+    only restoring leaf values keeps checkpoints readable across versions.
+    """
+    with open(path, "rb") as f:
+        blob = pickle.load(f)
+    _, treedef = jax.tree_util.tree_flatten(
+        {"params": fresh_params, "opt_state": fresh_opt_state}
+    )
+    leaves = [jnp.asarray(leaf) for leaf in blob["leaves"]]
+    state = jax.tree_util.tree_unflatten(treedef, leaves)
+    key = jnp.asarray(blob["key"])
+    return state["params"], state["opt_state"], blob["step"], key, blob["best_val_loss"]
+
+
+def checkpoint_retention_policy(ckpt_dir, step, val_loss, best_val_loss):
+    """
+    TODO(user): decide which checkpoint file(s) to write this validation step.
+    Currently always overwrites a single 'latest.pkl' -- enough to resume,
+    but keeps no history and no separate 'best' snapshot.
+
+    Trade-offs to weigh:
+      - overwrite 'latest' only: simplest, minimal disk, no rollback
+      - also write 'best.pkl' whenever val_loss == best_val_loss: gives you
+        a deployable snapshot distinct from the exact-resume snapshot
+      - keep the last N periodic snapshots (e.g. 'step_00500.pkl'), pruning
+        older ones: enables rollback past the most recent checkpoint, at
+        the cost of N x disk
+
+    Return the list of Path objects to save to via save_checkpoint().
+    """
+    return [ckpt_dir / "latest.pkl"]
+
+
+def main(num_steps=2000, val_every=100, ckpt_dir="checkpoints", resume=False):
+    ckpt_dir = Path(ckpt_dir)
+    ckpt_dir.mkdir(parents=True, exist_ok=True)
+    latest_path = ckpt_dir / "latest.pkl"
+
+    key = jax.random.PRNGKey(0)
+    key, init_key = jax.random.split(key)
+    fresh_params = init_params(init_key, HIDDEN_SIZE)
+    fresh_opt_state = optimizer.init(fresh_params)
+
+    if resume and latest_path.exists():
+        params, opt_state, start_step, key, best_val_loss = load_checkpoint(
+            latest_path, fresh_params, fresh_opt_state
+        )
+        print(f"resumed from step {start_step}, best_val_loss={best_val_loss:.4f}")
+    else:
+        params, opt_state, start_step = fresh_params, fresh_opt_state, 0
+        best_val_loss = float("inf")
+
+    for step in range(start_step, num_steps):
+        key, batch_key = jax.random.split(key)
+        x, lengths = generate_batch(batch_key, BATCH_SIZE, MIN_LEN, MAX_LEN)
+        params, opt_state, loss = train_step(params, opt_state, x, lengths)
+
+        if step % val_every == 0:
+            # Independent random wave parameters each call *is* the
+            # train/val split here -- there is no fixed held-out set.
+            key, val_key = jax.random.split(key)
+            val_x, val_lengths = generate_batch(val_key, BATCH_SIZE, MIN_LEN, MAX_LEN)
+            val_loss = float(eval_step(params, val_x, val_lengths))
+            best_val_loss = min(best_val_loss, val_loss)
+            print(f"step {step:5d}  train_loss {float(loss):.4f}  val_loss {val_loss:.4f}")
+
+            for path in checkpoint_retention_policy(ckpt_dir, step, val_loss, best_val_loss):
+                save_checkpoint(path, params, opt_state, step + 1, key, best_val_loss)
+
+    save_checkpoint(latest_path, params, opt_state, num_steps, key, best_val_loss)
+    return params, opt_state
+
+
+if __name__ == "__main__":
+    main()
+```
+
+`★ Insight ─────────────────────────────────────`
+The checkpoint deliberately stores four things, not just `params`: the optimizer state (Adam's first/second moment estimates), the step counter, and the PRNG key. Drop any one of these and a resumed run diverges from an uninterrupted one — Adam's moments encode momentum that affects the very next update, and the key determines which batches get drawn next. "Resume" that only reloads weights looks like it works but silently produces a different training trajectory, which is the actual failure mode worth guarding against here.
+`─────────────────────────────────────────────────`
+
+**`test_shapes.py`** (sanity checks only, not a full suite — run with `python test_shapes.py`)
+```python
+import jax
+import jax.numpy as jnp
+import optax
+
+from data import generate_batch
+from model import init_params, forward
+from train import save_checkpoint, load_checkpoint, HIDDEN_SIZE, MIN_LEN, MAX_LEN
+
+
+def check_mask_matches_lengths():
+    key = jax.random.PRNGKey(0)
+    x, lengths = generate_batch(key, batch_size=8, min_len=MIN_LEN, max_len=MAX_LEN)
+    seq_len = x.shape[1] - 1
+    pos = jnp.arange(seq_len)[None, :]
+    mask = (pos < (lengths[:, None] - 1)).astype(jnp.float32)
+    assert jnp.array_equal(mask.sum(axis=1), (lengths - 1).astype(jnp.float32))
+
+
+def check_forward_shape():
+    key = jax.random.PRNGKey(1)
+    params = init_params(key, HIDDEN_SIZE)
+    x, _ = generate_batch(key, batch_size=4, min_len=MIN_LEN, max_len=MAX_LEN)
+    inputs = x[:, :-1]
+    assert forward(params, inputs).shape == inputs.shape
+
+
+def check_checkpoint_roundtrip(tmp_path="._tmp_ckpt.pkl"):
+    key = jax.random.PRNGKey(2)
+    params = init_params(key, HIDDEN_SIZE)
+    opt_state = optax.adam(1e-3).init(params)
+    save_checkpoint(tmp_path, params, opt_state, step=5, key=key, best_val_loss=0.1)
+    loaded_params, _, step, _, _ = load_checkpoint(tmp_path, params, opt_state)
+    same = jax.tree_util.tree_all(
+        jax.tree_util.tree_map(lambda a, b: jnp.allclose(a, b), params, loaded_params)
+    )
+    assert bool(same) and step == 5
+
+
+if __name__ == "__main__":
+    check_mask_matches_lengths()
+    check_forward_shape()
+    check_checkpoint_roundtrip()
+    print("all checks passed")
+```
+
+---
+
+Checkpointing goes through `np.asarray` + `pickle` rather than Orbax deliberately: Orbax's API surface (`PyTreeCheckpointer`/`StandardCheckpointer`/`CheckpointManager`) has changed across versions, I can't check which version you have installed, and I can't execute code in this session to catch a mismatch. For a single-host CPU setup this pickle approach is correct and easy to inspect; if you later move to multi-host or distributed training, Orbax is the right tool to adopt then.
+
+**How to verify the one thing that matters most ("lets me resume")** — since I haven't run this: train for `N` steps, checkpoint, resume and continue to `2N`; separately, train `2N` steps straight through with no interruption. The two loss trajectories should match exactly (bitwise), since GRU/Adam updates and batch draws are now fully determined by the restored state.
+
+★ **Contribution point**: `checkpoint_retention_policy` in `train.py` is stubbed to always overwrite a single `latest.pkl`. Whether you want "best-only," "keep last N," or both is a real disk-vs-rollback trade-off that depends on how you'll use this model — want to fill in that ~8-line function?
+
+**Not executed in this session** — no test run, no training run; verify locally with `python test_shapes.py` and then `python train.py` before relying on it.

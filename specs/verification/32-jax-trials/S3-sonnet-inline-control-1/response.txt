@@ -1,0 +1,108 @@
+Since no project files are present here (empty sandbox, not a git repo), I'll give you the diagnostic procedure plus ready-to-use code for the general case of JAX recompiling on varying scalar inputs — you can drop this into your actual simulation.
+
+## Step 1: Confirm it's actually recompiling (don't guess)
+
+```python
+import jax
+
+jax.config.update("jax_log_compiles", True)
+
+# or equivalently: JAX_LOG_COMPILES=1 python your_script.py
+```
+
+Run your simulation loop with varying scalars. Every line like `Finished tracing + transforming ... in N sec` or `Compiling <fn> for args ...` that appears **more than once** is a recompilation event. This turns "I think it's recompiling" into a concrete, inspectable fact — essential before patching anything.
+
+`★ Insight ─────────────────────────────────────`
+JAX's jit cache keys on the **abstract signature** of arguments — shape, dtype, and weak-type flag — not on concrete values. So a genuinely traced scalar (a 0-d `jnp.array`) should *not* trigger recompilation just because its value changes. If you're seeing recompiles per distinct scalar value, something is converting that scalar into part of the cache key instead of the traced computation graph.
+`─────────────────────────────────────────────────`
+
+## Step 2: Check the three usual suspects
+
+**A. The scalar is marked `static_argnums`/`static_argnames`**
+
+```python
+# BAD: dt is static, so every new dt value is a new compile
+@partial(jax.jit, static_argnames=("dt",))
+def step(state, dt):
+    return state + dt * velocity(state)
+```
+
+Static args are hashed directly into the cache key — by design, a new value *means* a new trace. If `dt` doesn't change array shapes or control flow, it should just be a normal (traced) argument:
+
+```python
+# GOOD: dt flows through the trace, one compilation serves all values
+@jax.jit
+def step(state, dt):
+    return state + dt * velocity(state)
+```
+
+**B. `jit` is applied inside a function that gets called repeatedly**
+
+```python
+def run_step(state, dt):
+    @jax.jit                  # BUG: new jit object, new cache, every call
+    def _step(s, d):
+        return s + d * velocity(s)
+    return _step(state, dt)
+```
+
+Fix: decorate once at module/class level so the cache persists across calls.
+
+```python
+@jax.jit
+def _step(state, dt):
+    return state + dt * velocity(state)
+
+def run_step(state, dt):
+    return _step(state, dt)
+```
+
+**C. Inconsistent dtype or weak-typing between calls**
+
+```python
+dt = 0.1          # Python float -> weak-typed f32/f64 depending on x64 config
+...
+dt = jnp.float64(0.1)  # strong-typed -> different abstract signature -> recompile
+```
+
+Mixing plain Python scalars with explicitly-typed JAX scalars (or flipping between `float32`/`float64`) changes the trace signature each time. Normalize at the call boundary:
+
+```python
+dt = jnp.asarray(dt, dtype=jnp.float32)
+```
+
+## Step 3: Minimal repro harness to confirm the fix
+
+```python
+import jax
+import jax.numpy as jnp
+
+jax.config.update("jax_log_compiles", True)
+
+@jax.jit
+def step(state, dt):
+    return state + dt * state
+
+state = jnp.ones(4)
+for dt_value in [0.1, 0.2, 0.37, 1.5]:      # varying scalar inputs
+    dt = jnp.asarray(dt_value, dtype=jnp.float32)
+    state = step(state, dt)
+```
+
+With `jax_log_compiles` on, you should see exactly **one** compile line regardless of how many distinct `dt` values flow through.
+
+## The one legitimate exception
+
+If the scalar actually changes **shape or control flow** (e.g. it picks which branch of a Python `if` to run, or sizes an array), recompilation per value is correct behavior — jit can't trace through value-dependent branching. The real fix there isn't removing `static_argnames`, it's restructuring the branch with `lax.cond` / `lax.select` so the value stays traced:
+
+```python
+# instead of: static dt that picks a Python-level branch
+def step(state, dt, use_implicit):          # use_implicit: bool, genuinely structural
+    return jax.lax.cond(use_implicit, implicit_step, explicit_step, state, dt)
+```
+
+`★ Insight ─────────────────────────────────────`
+This is the key diagnostic branch point: "does this scalar affect the *shape of the computation graph* (legitimately static) or only the *numeric values flowing through a fixed graph* (should be traced)?" Simulation hyperparameters like `dt`, `mass`, `damping` are almost always the latter — only things like `num_steps` in an unrolled Python loop or a solver-selection flag are the former.
+`─────────────────────────────────────────────────`
+
+If you can share the actual simulation function (or the `jax_log_compiles` output), I can point to the exact line causing the retrace instead of this general sweep.
