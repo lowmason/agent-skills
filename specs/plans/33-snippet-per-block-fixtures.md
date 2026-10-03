@@ -1,5 +1,7 @@
 # Snippet Per-Block Fixtures Implementation Plan
 
+**Status: COMPLETE (2026-10-03)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Raise the number of `skills/bayesian-workflow` snippets that the snippet gate's `--run` tier executes, by binding what the shared fixture already carries and adding a per-block named-fixture mechanism with one `comparison` fixture.
@@ -53,7 +55,7 @@ Expected end state: 34 executed (one of them def-only) and 44 advisories, with "
 - Consumes: `check_snippets.runnable(block) -> bool`, `check_snippets._unrunnable_reason(block) -> str`, `check_snippets.iter_code_blocks(text) -> list[CodeBlock]` (all existing).
 - Produces: `FIXTURE_VARS == frozenset({'beta', 'sigma', 'y_obs', 'diverging'})`; `PREAMBLE` binds `posterior_samples`; the test helper `_skill_block(relpath, needle) -> CodeBlock`, which Task 3 reuses.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `build/test_check_snippets.py`:
 
@@ -99,12 +101,14 @@ def test_every_fixture_var_is_carried_by_the_fixture_idata():
     assert proc.returncode == 0, proc.stderr[-2000:]
 ```
 
-- [ ] **Step 2: Run the tests to verify the first fails**
+- [x] **Step 2: Run the tests to verify the first fails**
 
 Run: `cd build && uv run --python 3.13 --with pytest --with numpy --with polars --with pyyaml python -m pytest test_check_snippets.py -q -k "already_carries or every_fixture_var"`
 Expected: `test_blocks_the_shared_fixture_already_carries_are_admitted` FAILS with `needs fixture variables ['diverging']` (the first block in the loop). `test_every_fixture_var_is_carried_by_the_fixture_idata` SKIPS, since this command does not install the stack.
 
-- [ ] **Step 3: Widen `FIXTURE_VARS` and the preamble together**
+- [x] **Step 3: Widen `FIXTURE_VARS` and the preamble together**
+
+> Deviation (D2, owner-approved at the completion gate; commit 39f1202): the docstring paragraph below claimed `FIXTURE_VARS` "names every variable the fixture's InferenceData carries" and that the test "pins the set against the fixture". Both are false on the pinned stack: sample_stats also carries `acceptance_rate`, `energy`, `n_steps`, `reached_max_tree_depth` and `tree_depth`, and the test pins only the subset direction. The paragraph now says the set is a subset ("Every name in it is a variable the fixture's InferenceData carries, in some group … pins that every name in the set is carried"), as the Global Constraint's "names the fixture's InferenceData carries" supports. `FIXTURE_VARS` itself is unchanged.
 
 In `build/snippet_preamble.py`, change the `FIXTURE_VARS` line to:
 
@@ -134,7 +138,7 @@ test_every_fixture_var_is_carried_by_the_fixture_idata pins the set against
 the fixture.
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run: `cd build && uv run --python 3.13 --with pytest --with numpy --with polars --with pyyaml python -m pytest test_check_snippets.py -q -k "already_carries or every_fixture_var"`
 Expected: 1 passed, 1 skipped.
@@ -143,7 +147,7 @@ Then the stack-gated test with the stack:
 Run: `cd build && uv run --python 3.13 --with pytest --with 'arviz==1.3.0' --with arviz-base --with 'arviz-stats==1.3.2' --with 'arviz-plots==1.3.1' --with 'numpyro==0.21.0' --with 'jax==0.11.1' --with numpy --with polars --with pyyaml --with matplotlib python -m pytest test_check_snippets.py -q -k "already_carries or every_fixture_var"`
 Expected: 2 passed. If `diverging` is reported missing, the ArviZ conversion renamed the field: read the actual `sample_stats` names from the failure message, and put the carried name in both `FIXTURE_VARS` and this docstring. Never drop the test.
 
-- [ ] **Step 5: Run Tier 3 and confirm both blocks execute clean**
+- [x] **Step 5: Run Tier 3 and confirm both blocks execute clean**
 
 Run (repo root):
 ```bash
@@ -155,7 +159,7 @@ uv run --python 3.13 --with 'arviz==1.3.0' --with arviz-base \
 ```
 Expected: `exit 0` and `49` (51 advisories less the two admitted blocks). A raise on the `log_likelihood` block is a finding; resolve it under the Global Constraints rule.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add build/snippet_preamble.py build/test_check_snippets.py
@@ -182,7 +186,7 @@ Test delta for this task: +2 (one of them stack-gated).
   - `check_snippets.fixture_errors(path) -> list[str]` — one failure line per block naming an unknown fixture.
   - `check_snippets.main` fails (exit 1) on an unknown fixture at every tier.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `build/test_check_snippets.py`:
 
@@ -233,12 +237,12 @@ def test_a_named_fixture_runs_between_the_preamble_and_the_block(tmp_path, monke
     assert check_snippets.run_errors(path, timeout=300) == []
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `cd build && uv run --python 3.13 --with pytest --with numpy --with polars --with pyyaml python -m pytest test_check_snippets.py -q -k "named_fixture or unknown_fixture"`
 Expected: the three non-stack tests FAIL. The two `monkeypatch` tests fail on `AttributeError: module 'check_snippets' has no attribute 'NAMED_FIXTURES'`, or on `ImportError: cannot import name 'Fixture'`. `test_an_unknown_fixture_fails_the_gate` fails on `fixture_errors` missing. The stack test SKIPS.
 
-- [ ] **Step 3: Add `Fixture` and `NAMED_FIXTURES` to the preamble module**
+- [x] **Step 3: Add `Fixture` and `NAMED_FIXTURES` to the preamble module**
 
 In `build/snippet_preamble.py`, directly after the module docstring and before `FIXTURE_VARS`, add:
 
@@ -272,7 +276,9 @@ string (```python fixture=comparison); its code runs between PREAMBLE and the
 block. A name not defined here fails the gate at every tier.
 ```
 
-- [ ] **Step 4: Teach `check_snippets.py` to select and validate fixtures**
+- [x] **Step 4: Teach `check_snippets.py` to select and validate fixtures**
+
+> Deviation (D2, owner-approved at the completion gate; commit 39f1202): `fixture_errors`' docstring below ("A typo must fail") overclaimed. Only an unknown fixture *name* fails: a malformed key (`fixtures=x`, a bare `fixture=`) does not match `FIXTURE_RE`, so the block stays plain and surfaces as an advisory under `--run`. The docstring now says so. Hardening the grammar is deferred (specs/deferred_items.md, plan 33 section).
 
 Change the import line `from snippet_preamble import FIXTURE_VARS, PINNED, PREAMBLE` to:
 
@@ -395,19 +401,19 @@ It exempts nothing. An unknown name fails at every tier, since a typo would
 otherwise quietly drop the block from --run.
 ```
 
-- [ ] **Step 5: Run the tests to verify they pass**
+- [x] **Step 5: Run the tests to verify they pass**
 
 Run: `cd build && uv run --python 3.13 --with pytest --with numpy --with polars --with pyyaml python -m pytest test_check_snippets.py -q`
 Expected: all pass except the stack-gated tests, which skip. Then run the whole file with the stack command from Task 1 Step 4. Expected: all pass, including `test_a_named_fixture_runs_between_the_preamble_and_the_block`.
 
-- [ ] **Step 6: Confirm Tier 1 and Tier 3 are unchanged**
+- [x] **Step 6: Confirm Tier 1 and Tier 3 are unchanged**
 
 Run: `uv run --python 3.13 python build/check_snippets.py skills/`
 Expected: exit 0. No skill selects a fixture yet, so `fixture_errors` finds nothing.
 Run the Tier 3 command from Task 1 Step 5.
 Expected: `exit 0` and `49` advisories, the same as after Task 1.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add build/snippet_preamble.py build/check_snippets.py build/test_check_snippets.py
@@ -431,7 +437,7 @@ Test delta for this task: +4 (one of them stack-gated).
 - Consumes: `Fixture`, `NAMED_FIXTURES`, `fixture_name`, `runnable`, `_unrunnable_reason`, `_bound_by` (Task 2); `_skill_block` (Task 1).
 - Produces: `NAMED_FIXTURES['comparison']`, whose code binds `mcmc_1`, `mcmc_2`, `mcmc_3`, `idata_1`, `idata_2`, `idata_3`, `models`, `idata_m2`, `idata_m3`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `build/test_check_snippets.py`:
 
@@ -463,12 +469,12 @@ def test_the_comparison_blocks_select_the_comparison_fixture():
         assert check_snippets.runnable(block), check_snippets._unrunnable_reason(block)
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `cd build && uv run --python 3.13 --with pytest --with numpy --with polars --with pyyaml python -m pytest test_check_snippets.py -q -k comparison`
 Expected: both FAIL. The first fails with `KeyError: 'comparison'`. The second fails on its first needle, because `fixture_name` returns `None`.
 
-- [ ] **Step 3: Add the comparison fixture**
+- [x] **Step 3: Add the comparison fixture**
 
 In `build/snippet_preamble.py`, after `PREAMBLE` and before the `NAMED_FIXTURES` comment, add:
 
@@ -520,7 +526,7 @@ NAMED_FIXTURES: dict[str, Fixture] = {
 
 The variant fits carry exactly the running example's sites, so the fixture adds no variables.
 
-- [ ] **Step 4: Annotate the five blocks — fence info strings only**
+- [x] **Step 4: Annotate the five blocks — fence info strings only**
 
 For each block in `COMPARISON_BLOCKS`, change its opening fence from ```` ```python ```` to ```` ```python fixture=comparison ````. Change nothing else in either file. Find each fence by its needle:
 
@@ -531,12 +537,12 @@ grep -n 'loo2 = az.loo(idata_m2' skills/bayesian-workflow/references/visualize.m
 
 Each fence is the nearest ```` ```python ```` line above the printed line.
 
-- [ ] **Step 5: Run the tests to verify they pass**
+- [x] **Step 5: Run the tests to verify they pass**
 
 Run: `cd build && uv run --python 3.13 --with pytest --with numpy --with polars --with pyyaml python -m pytest test_check_snippets.py -q -k comparison`
 Expected: 2 passed.
 
-- [ ] **Step 6: Run Tier 3 and resolve every raise**
+- [x] **Step 6: Run Tier 3 and resolve every raise**
 
 Run the Tier 3 command from Task 1 Step 5, writing to `/tmp/snippet-tier3-task3.err`:
 ```bash
@@ -551,7 +557,11 @@ grep -c 'needs fixture variables' /tmp/snippet-tier3-task3.err
 ```
 Expected: `exit 0`, then `44`, `18`, `9`. If a newly admitted block raises (stdout names `file:line: raised: …`), apply the Global Constraints rule. If the documentation is wrong, fix the snippet; that is a skill prose edit, so record it as a `> Deviation:` and run the skill lints in Step 8. If the fixture misshapes what the documentation assumes, fix the fixture. Never `norun` it.
 
-- [ ] **Step 7: Re-measure and write the coverage claims**
+- [x] **Step 7: Re-measure and write the coverage claims**
+
+> Deviation (D1): this step's template ("… and 1 of them def-only (diagnostics.md's run_diagnostics, which compiles but never runs)") and the Measured-baseline expected end state ("34 executed (one of them def-only)") undercount def-only blocks. Measured by AST at the end of Task 3 (a block that defines a function and makes no call outside function bodies, with decorators and defaults counted as calls), three executed blocks are def-only: diagnostics.md's `run_diagnostics` (admitted by Task 1), hierarchical.md's `centered`, and model-criticism.md's `expected_calibration_error` / `ranked_probability_score`. The last two were executed before this plan. The Global Constraints win ("Report def-only blocks separately wherever coverage is stated"; coverage re-measured from a real `--run`, never by arithmetic). So the preamble docstring states the measured count (3) and names each block, and the root CLAUDE.md Tier 3 line, which the constraints name as a coverage claim, gains "3 of those only define functions they never call". The wording avoids "compiles but never runs" because hierarchical.md's block executes its imports.
+
+> Deviation: per the owner's execution instructions, every number in the root CLAUDE.md "Full build-directory tests" comment was re-measured in the configuration the comment names for it, not just the two lines named below. That covers the collected total and split, the stack-gated count, the main passed/skipped pair, the stack "run all" total, the `.scratch`-gated count, and the lacking-both triple. The lacking-both triple was measured first, without `build/.scratch/`. Then `build/.scratch/` was copied read-only from the main checkout; it is gitignored by `.gitignore:14` and never appears in `git status`. Measured: 153 tests (91 + 62), 9 stack-gated, 144 passed / 9 skipped, all 153 with the stack, 5 `.scratch`-gated, and 139 passed / 4 failed / 10 skipped lacking both.
 
 Count the blocks from this run, never by arithmetic:
 ```bash
@@ -579,7 +589,7 @@ cd build && uv run --python 3.13 --with pytest --with numpy --with polars --with
 ```
 The plan's test delta across all three tasks is +8, two of them stack-gated. Write the measured totals, not this delta added to the old ones.
 
-- [ ] **Step 8: Run the skill-change gates**
+- [x] **Step 8: Run the skill-change gates**
 
 Run each from the repo root:
 ```bash
@@ -590,7 +600,7 @@ cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q
 ```
 Expected: every command exits 0.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add build/snippet_preamble.py build/test_check_snippets.py \

@@ -1330,7 +1330,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       +2 tests in the llm-wiki suite.
 
 ## 29-snippet-execution-gate — 2026-09-08
-- [ ] Per-block fixtures for the 34 blocks `--run` cannot reach. Tier 3 executes 27 of
+- [x] Per-block fixtures for the 34 blocks `--run` cannot reach. Tier 3 executes 27 of
       `skills/bayesian-workflow/`'s 78 python blocks; of the 51 advisories, 24 are
       name-incomplete and 10 name variables outside `FIXTURE_VARS` in
       `build/snippet_preamble.py` — those 34 are reachable with per-block context. The
@@ -1342,6 +1342,17 @@ declined as YAGNI (zero instances in a one-page wiki).
       Size: plan. Done when: either the executed count rises with `FIXTURE_VARS` and the
       preamble widened together, or a per-block fixture mechanism exists and the advisory
       count for "unbound names" falls.
+      → done in plan 33 (2026-10-03), meeting both halves of the Done-when:
+      - `FIXTURE_VARS` and the preamble widened together (`diverging`, `posterior_samples`),
+        admitting 2 blocks.
+      - A per-block fixture mechanism now exists: `fixture=<name>` in a fence info string
+        selects from `NAMED_FIXTURES` in `build/snippet_preamble.py`. Its one `comparison`
+        fixture admits 5 more blocks.
+      - Tier 3 now executes 34 of the 78 blocks, 3 of them def-only. "Unbound names" fell from
+        24 to 18, and "needs fixture variables" from 10 to 9.
+      - Of the 27 still blocked, most need per-document named fixtures (the hierarchical
+        `mu`/`tau`/`theta`, `alpha`/`delta` and `group` examples). The `param1`/`param2`
+        placeholder blocks stay advisory by design.
 - [x] Repo-wide Tier 1 (parse-only) across all skills, not just `bayesian-workflow`.
       → done 2026-09-08 (direct, not via a plan — the /deferred triage above had already
       scoped it to two known blocks and named the open question, leaving nothing a plan
@@ -1613,3 +1624,93 @@ declined as YAGNI (zero instances in a one-page wiki).
       safe).
       Size: quick-fix. Done when: a report written after a `--loo-pit --save-plots` run links
       figures that exist.
+
+## 33-snippet-per-block-fixtures — 2026-10-03
+- [ ] The `fixture=` info-string grammar is looser than the exemption-marker grammar. The code
+      is `build/check_snippets.py`: `FIXTURE_RE`, `fixture_name`, `fixture_errors` and
+      `_marker`. There are three edge cases. No shipped block hits any of them today.
+      (a) `fixture=x norun <reason>` silently drops the `norun`. `_marker` reads only the
+      first token of the info string, so the block executes or becomes an advisory, and its
+      `exempt_report` audit line is lost.
+      (b) A `norun` reason that contains `fixture=name` is parsed as a fixture selection, so an
+      unknown name there fails the gate (loudly, but wrongly).
+      (c) Key typos (`fixtures=x`, a bare `fixture=`, `Fixture=x`) do not match `FIXTURE_RE`.
+      The block stays plain and surfaces only as an advisory under `--run`. Plan 33's D2 made
+      the docstrings say so.
+      Raised as a Minor in plan 33's Task 2 review; deferred at the completion gate. Fix:
+      tokenise the info string once. A leading marker makes the rest free-text reason, and a
+      non-leading marker or a malformed `fixture` token is a failure.
+      Size: quick-fix. Done when: each of (a)-(c) either fails the gate or is pinned by a test as
+      deliberate.
+- [ ] The stack-gated test `test_a_named_fixture_runs_between_the_preamble_and_the_block`
+      (`build/test_check_snippets.py`) can pass vacuously. `run_errors` returns `[]` for a block
+      it skips as not runnable, so the test's final `== []` holds even if nothing ran. Two
+      regressions would have to coincide, because the sibling non-stack test pins `runnable()`
+      for the same tiny-fixture construction. The test text is plan-verbatim (plan 33 Task 2
+      Step 1); deferred at the completion gate. Fix: keep the block that `_annotated_block`
+      returns, and `assert check_snippets.runnable(block)` before the final assertion.
+      Size: quick-fix. Done when: the test asserts the block is runnable before it asserts no
+      errors.
+- [ ] `fixture_errors` (`build/check_snippets.py`) has no positive control. No pytest asserts
+      `fixture_errors(path) == []` for a block that selects a KNOWN fixture. A regression that
+      flagged every `fixture=` selection would therefore pass
+      `test_an_unknown_fixture_fails_the_gate`, and only Tier 1, outside pytest, would catch it.
+      Raised in plan 33's Task 2 review; deferred at the completion gate. Fix: add a repo-wide
+      `test_all_skills_select_known_fixtures`, modelled on `test_all_skills_parse_clean`, that
+      asserts `fixture_errors` is empty for every skills/**/*.md. That test also guards the five
+      shipped `fixture=comparison` blocks.
+      Size: quick-fix. Done when: a pytest asserts `fixture_errors` finds nothing in the shipped
+      skills.
+- [ ] Named fixtures have no mechanical honesty pin.
+      `test_every_fixture_var_is_carried_by_the_fixture_idata` (`build/test_check_snippets.py`)
+      checks `FIXTURE_VARS` only against the preamble's `idata`. There are two gaps, and
+      neither is exposed today.
+      (a) A named fixture's `Fixture.variables` (`NAMED_FIXTURES` in
+      `build/snippet_preamble.py`) is unchecked. `comparison` registers `frozenset()`.
+      (b) The `comparison` fixture builds `idata_1..3` with bare
+      `az.from_numpyro(..., log_likelihood=True)`, so they have no prior, posterior_predictive
+      or log_prior group. The sample_stats of `idata_2` and `idata_3` carry only `diverging`;
+      plan 33's final review verified this on the pinned stack. A future `fixture=comparison`
+      block reading `idata_2.prior["beta"]` would therefore be admitted, because `beta` is in
+      `FIXTURE_VARS`, and would then raise: a loud failure, but a false doc defect.
+      Fix: parametrise the honesty test over `NAMED_FIXTURES`. Run PREAMBLE plus the fixture,
+      then check each declared variable against the fixture's idata objects. Also decide
+      whether `_required_vars` should be judged per idata object.
+      Size: quick-fix. Revisit if: a named fixture declares a non-empty `variables`, or a
+      `fixture=comparison` block reads a group other than posterior or log_likelihood.
+- [ ] Root `CLAUDE.md`'s snippet-gate notes describe the two exemption markers (`norun`,
+      `noparse`) but never mention the `fixture=<name>` fence token that plan 33 added. Nothing
+      there is false, because `fixture=` opts nothing out. A maintainer who reads only
+      CLAUDE.md will not find the mechanism, though; it is documented only in the docstrings of
+      `build/check_snippets.py` and `build/snippet_preamble.py`. Raised in plan 33's Task 2
+      review; deferred at the completion gate. Fix: add one sentence beside the marker notes.
+      For example: "A third token, `fixture=<name>`, opts a block INTO a per-block fixture from
+      `build/snippet_preamble.py`'s `NAMED_FIXTURES`; an unknown name fails at every tier."
+      Size: quick-fix. Done when: the CLAUDE.md snippet-gate notes name the `fixture=` token and
+      where fixtures live.
+- [ ] A named fixture's helper names count as bound for every block that selects the fixture.
+      `_fixture_names` (`build/check_snippets.py`) uses `_bound_by`, which walks function
+      bodies, parameters and comprehension targets. So for a `fixture=comparison` block,
+      `COMPARISON_FIXTURE` (`build/snippet_preamble.py`) also "binds" two kinds of name:
+      - `fit`, `model_wide` and `model_robust`, which are truly module-level. A doc block that
+        calls an undefined `fit(...)` would be admitted and could run GREEN against the
+        fixture's helper. That is the "go green wrongly" path the preamble docstring warns of.
+      - `run`, `variant` and `key`, which are locals. Misusing them raises a loud NameError.
+      No current block uses any of these names. The same over-approximation predates plan 33
+      in `_preamble_names` (PREAMBLE's `samples`, `post`, `name`, `per_draw`, …). Raised in
+      plan 33's Task 3 and final reviews; deferred at the completion gate. Fix:
+      - make `_fixture_names`, and ideally `_preamble_names`, count module-level bindings only;
+      - underscore-prefix or `del` the fixture's helpers after use, so a doc block that calls
+        them raises.
+      Size: quick-fix. Done when: a block that uses a fixture-local or helper name it does not
+      define is reported as unbound, pinned by a test.
+- [ ] No pytest executes `COMPARISON_FIXTURE` (`build/snippet_preamble.py`). Plan 33's two
+      comparison tests are static: they check binding and fence selection. A stack change that
+      breaks the fixture's two extra fits would leave the pytest suite green. Only the roughly
+      3-minute Tier 3 `--run` gate executes the fixture, and the preamble docstring already
+      requires a re-measure whenever that file changes. Raised by the Task 3 implementer and
+      reviewer; deferred at the completion gate. Fix (optional): a `@requires_stack` test that
+      runs one annotated comparison block through `check_snippets.run_errors`, at the cost of
+      two extra NUTS fits in the stack-gated suite.
+      Size: quick-fix. Revisit if: a `PINNED` refresh or a Tier 3 run breaks the comparison
+      fixture without a pytest failure.
