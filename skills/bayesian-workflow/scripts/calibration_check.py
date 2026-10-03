@@ -56,6 +56,9 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 # Monte Carlo draws behind each simultaneous confidence band.
 BAND_SIMULATIONS = 1000
 
+# ArviZ's own default seed for PIT tie-breaking.
+PIT_SEED = 214
+
 # The five calibration findings, centre first.
 BIASED_HIGH = "biased (predictions too high)"
 BIASED_LOW = "biased (predictions too low)"
@@ -63,6 +66,37 @@ OVER_CONFIDENT = "over-confident (predictions too certain)"
 UNDER_CONFIDENT = "under-confident (predictions too uncertain)"
 SHAPE_MISMATCH = "shape mismatch (neither a shift nor a spread error)"
 FINDINGS = (BIASED_HIGH, BIASED_LOW, OVER_CONFIDENT, UNDER_CONFIDENT, SHAPE_MISMATCH)
+
+
+def pit_values(dt, var_name, use_loo, seed=PIT_SEED):
+    """PIT values of `var_name`, pooled over all its observation dims into one 1-D array.
+
+    PPC-PIT is a seeded rank PIT, randomized within its cell. With S posterior-predictive
+    draws (chain × draw), an observation's rank is k = #(draws < y) + ⌊U·(#(draws = y) + 1)⌋
+    and its PIT is u = (k + V)/(S + 1), where U and V are U(0, 1) draws from
+    np.random.default_rng(seed). When y and its draws are exchangeable, k is uniform on
+    {0, …, S}, so u is exactly U(0, 1). The floor term randomizes ties, so discrete data
+    stays correct.
+
+    A grid PIT breaks pot_c's coverage test. arviz-plots' plot_ppc_pit draws the
+    empirical k/S in the centre, so when exactly S/2 of an even S draws fall below y,
+    u = 0.5 and the coverage value 2|u − 0.5| is exactly 0. pot_c reads a smallest
+    coverage value of 0 as impossible, and its p-value collapses on a calibrated model.
+    Spreading each PIT over its 1/(S + 1) cell keeps u off 0, 0.5 and 1.
+
+    LOO-PIT is arviz_stats.loo_pit(..., pareto_pit=True): the values plot_loo_pit draws,
+    which Pareto smoothing keeps off 0 and 1.
+    """
+    if use_loo:
+        return azs.loo_pit(dt, var_names=var_name, pareto_pit=True)[var_name].values.ravel()
+    predicted = dt["posterior_predictive"][var_name]
+    observed = dt["observed_data"][var_name]
+    below = (predicted < observed).sum(("chain", "draw")).values.ravel()
+    ties = (predicted == observed).sum(("chain", "draw")).values.ravel()
+    n_draws = predicted.sizes["chain"] * predicted.sizes["draw"]
+    rng = np.random.default_rng(seed)
+    rank = below + np.floor(rng.uniform(size=below.shape) * (ties + 1))
+    return (rank + rng.uniform(size=below.shape)) / (n_draws + 1)
 
 
 def _pot_c_p_value(values):

@@ -38,6 +38,7 @@ COMPOUND_NARROW_SCALE = 0.7  # paired with LOCATION_SHIFT: a shift and a spread 
 COMPOUND_WIDE_SCALE = 1.5
 POSTERIOR_SD_OF_MEAN = 0.05
 PER_OBSERVATION_PRIOR_SD = 0.7
+DISCRETE_RATE = 3.0
 # A calibrated model is still flagged at ci_prob=0.99 on ~2-3% of seeds (3 of seeds
 # 0-99, on both paths): each of the two simultaneous bands has its own false-alarm
 # rate. Both the data and arviz-stats' band simulation are seeded, so the outcome
@@ -396,3 +397,80 @@ def test_zero_spread_pit_reads_as_a_shift_with_a_null_t(value, shift):
     assert report['location_t'] is None
     assert report['findings'] == [shift, OVER]
     assert json.loads(json.dumps(report)) == report
+
+
+def _two_dimensional_model():
+    """_normal_model's calibrated draws, reshaped into a (20, 10) observed variable."""
+    flat = _normal_model(0.0, TRUE_SCALE)
+    shape = (20, 10)
+    return from_dict(
+        {
+            'posterior_predictive': {'y': flat['posterior_predictive']['y'].values.reshape(N_CHAIN, N_DRAW, *shape)},
+            'observed_data': {'y': flat['observed_data']['y'].values.reshape(shape)},
+        },
+        dims={'y': ['row', 'col']},
+    )
+
+
+def _draws_below(data):
+    return (data['posterior_predictive']['y'] < data['observed_data']['y']).sum(('chain', 'draw')).values
+
+
+def test_ppc_pit_values_sit_strictly_inside_the_unit_interval_and_repeat_for_a_seed():
+    # A too-narrow predictive leaves observations with every draw on one side of them,
+    # where a grid PIT reads exactly 0 or 1.
+    data = _normal_model(0.0, OVER_CONFIDENT_SCALE)
+    below = _draws_below(data)
+    assert (below == 0).any() and (below == N_CHAIN * N_DRAW).any()
+    pit = calibration_check.pit_values(data, 'y', use_loo=False)
+    assert pit.min() > 0 and pit.max() < 1
+    assert calibration_check.PIT_SEED == 214
+    np.testing.assert_array_equal(pit, calibration_check.pit_values(data, 'y', use_loo=False))
+    reseeded = calibration_check.pit_values(data, 'y', use_loo=False, seed=calibration_check.PIT_SEED + 1)
+    assert not np.array_equal(pit, reseeded)
+
+
+def test_a_pit_at_the_predictive_median_does_not_break_the_coverage_test():
+    # An odd centred grid holds one PIT of exactly 0.5, so one observation has exactly S/2
+    # of the S = 1000 draws below it. The grid PIT k/S puts it at u = 0.5, coverage 0, and
+    # pot_c's coverage test collapses on this calibrated fixture.
+    data = _model_with_pit_values((np.arange(N_OBS - 1) + 0.5) / (N_OBS - 1))
+    n_draws = N_CHAIN * N_DRAW
+    below = _draws_below(data)
+    assert np.sum(below == n_draws // 2) == 1
+    assert calibration_check.assess_pit(below / n_draws)['coverage_test_passed'] is False
+    pit = calibration_check.pit_values(data, 'y', use_loo=False)
+    assert not np.any(pit == 0.5)
+    assert calibration_check.assess_pit(pit)['coverage_test_passed'] is True
+
+
+def test_discrete_pit_values_land_inside_their_rank_cell():
+    # Poisson data under a Poisson predictive, so draws tie with y. The rank k spreads
+    # over {below, ..., below + ties}, so u lands in [below, below + ties + 1) / (S + 1).
+    rng = np.random.default_rng(SEED)
+    y = rng.poisson(DISCRETE_RATE, size=N_OBS)
+    y_rep = rng.poisson(DISCRETE_RATE, size=(N_CHAIN, N_DRAW, N_OBS))
+    data = from_dict({'posterior_predictive': {'y': y_rep}, 'observed_data': {'y': y}}, dims={'y': ['obs']})
+    draws = y_rep.reshape(-1, N_OBS)
+    below, ties = (draws < y).sum(axis=0), (draws == y).sum(axis=0)
+    assert (ties > 0).sum() > N_OBS // 2
+    n_draws = N_CHAIN * N_DRAW
+    pit = calibration_check.pit_values(data, 'y', use_loo=False)
+    assert np.all(pit >= below / (n_draws + 1))
+    assert np.all(pit < (below + ties + 1) / (n_draws + 1))
+
+
+def test_a_two_dimensional_observed_variable_is_pooled():
+    # The same draws, as a (20, 10) variable and as a flat 200: the same values in the same order.
+    np.testing.assert_array_equal(
+        calibration_check.pit_values(_two_dimensional_model(), 'y', use_loo=False),
+        calibration_check.pit_values(_normal_model(0.0, TRUE_SCALE), 'y', use_loo=False),
+    )
+
+
+def test_loo_pit_values_are_arviz_pareto_smoothed_loo_pit():
+    data = _normal_model(0.0, TRUE_SCALE)
+    np.testing.assert_array_equal(
+        calibration_check.pit_values(data, 'y', use_loo=True),
+        azs.loo_pit(data, var_names='y', pareto_pit=True)['y'].values,
+    )
