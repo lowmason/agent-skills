@@ -1,0 +1,26 @@
+Neither method is established as better. B has a slightly lower observed mean error, but it received three times as many training tokens per run, and there are too few runs to distinguish a small improvement from training variability.
+
+Assuming lower error is better:
+
+| Method | Runs | Tokens per run | Mean error | Sample standard deviation |
+|---|---:|---:|---:|---:|
+| A | 2 | 1 million | 0.1500 | 0.0141 |
+| B | 4 | 3 million | 0.1425 | 0.0263 |
+
+The observed difference is B − A = −0.0075 error units. If these numbers are error proportions, that is a 0.75 percentage point reduction, or a 5% relative reduction from A's mean. These are descriptive summaries of the supplied runs, not evidence that B has lower expected error at equal resources. The sample standard deviations describe variation across runs; they are not confidence intervals, and their estimates are especially uncertain with only two and four runs.
+
+The small sample also makes the ranking sensitive to which seeds were observed: on seeds 0 and 1, B averages 0.155, versus A's 0.150. B wins on seed 0 and loses on seed 1. This does not establish that A is better either; it illustrates why the current ordering is fragile. Matching seed numbers alone does not guarantee that the methods experienced matched randomness. Keep all runs, including B's 0.18, unless a documented failure criterion established independently of its error excludes it. Comparing the best run would also favor the method given more chances.
+
+The main missing comparison is method performance at the same budget. A was measured at 1 million tokens and B at 3 million, so the method difference is confounded with training duration. Tokens are also only a proxy for compute: different methods can use different FLOPs, time, or memory per token. Across the reported experiments, A consumed 2 million training tokens and B consumed 12 million; this does not by itself measure either method's compute efficiency.
+
+I would collect the following evidence next, in this order:
+
+1. **Fill the missing budget comparisons.** Evaluate both methods at 1 million and 3 million tokens with the same data, evaluation protocol, and comparable tuning effort. Prioritize B at 1 million and A at 3 million. Save intermediate checkpoints to obtain error-versus-token and error-versus-compute curves. Reuse existing checkpoints only if their training schedule and checkpoint-selection rule match the intended comparison; a checkpoint from a longer scheduled run may differ from a run designed to stop earlier.
+
+2. **Balance and expand the seed experiments.** Complete seeds 0–3 for both methods at each budget, then add a predeclared set of fresh seeds for both. Control shared data splits and, where feasible, data ordering or other common randomness; record which sources are actually paired. Equalize the hyperparameter-search budget if the claim concerns the methods after tuning. Initialization, data sampling, and hyperparameter selection can all materially affect benchmark conclusions. [Accounting for Variance in Machine Learning Benchmarks](https://proceedings.mlsys.org/paper_files/paper/2021/file/0184b0cd3cfb185989f858a1d9f5c1eb-Paper.pdf)
+
+3. **Keep the evaluation detail needed for uncertainty.** Record the held-out sample size and per-example predictions or losses from every run. Estimate the difference at each budget, with uncertainty across training runs and evaluation samples. Resample independent evaluation units, such as documents or users when observations are clustered; treating correlated tokens as independent would overstate precision. More seeds on one fixed held-out set do not resolve uncertainty about generalization to other data.
+
+4. **Predefine the decision and record real costs.** Choose a smallest worthwhile error reduction, a maximum experiment budget, and a stopping rule before examining additional results. Use the pilot variance to plan replication; four seeds per method is a starting point, not a guaranteed adequate sample size. Report intervals for the difference alongside GPU time or FLOPs, hardware, and deployment costs. Use validation data for tuning and checkpoint selection, then confirm the frozen choice on an untouched test set. An inconclusive comparison should remain inconclusive; failure to show superiority does not establish equivalence.
+
+For now, B is a promising candidate with a modest observed advantage at its larger training budget. A is the measured option at the smaller budget. A matched-budget learning curve with balanced replication is the next evidence most likely to make the choice defensible.

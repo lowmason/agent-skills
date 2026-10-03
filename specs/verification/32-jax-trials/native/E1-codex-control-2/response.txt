@@ -1,0 +1,26 @@
+There is no established winner yet. B has the lower observed average error at its larger training budget; A reaches a similar observed error with one-third as many training tokens per run. These results do not establish which method is better at equal cost.
+
+Assuming lower error is better and every run used the same evaluation metric and held-out data:
+
+| Method | Runs | Training tokens per run | Mean error | Sample standard deviation across runs |
+|---|---:|---:|---:|---:|
+| A | 2 | 1 million | 0.1500 | 0.0141 |
+| B | 4 | 3 million | 0.1425 | 0.0263 |
+
+B's observed mean advantage is 0.0075 error units, or 0.75 percentage points if these are error proportions. The standard deviations describe the observed run-to-run spread, not uncertainty intervals for the means; both estimates are unstable with so few runs. B's observed spread is larger, but this is insufficient evidence that B is intrinsically less reliable.
+
+The seed set also matters. Looking only at the reported seeds 0 and 1, B averages (0.13 + 0.18)/2 = 0.1550, slightly worse than A's 0.1500. This is a descriptive sensitivity check, not a reason to discard B's other runs. Nor do equal numeric seed labels automatically make the runs a valid paired experiment: the underlying data splits, ordering, and randomization must be meaningfully matched. Research on stochastic training supports reporting distributions across runs rather than selecting a favorable seed. [Reimers and Gurevych, 2017](https://aclanthology.org/D17-1035/).
+
+There are two different questions to resolve: expected error at a specified budget, and the quality-versus-cost tradeoff across budgets. Here, method and budget change together, so B's small apparent advantage cannot be attributed to its method alone. Tokens are also an incomplete cost measure: different model sizes, tokenizers, or implementations can have different FLOPs, runtime, and monetary cost per token. Avoid dividing error by training tokens; that ratio does not answer either question.
+
+I would collect the following evidence, in this order:
+
+1. **A balanced comparison at equal budgets.** Evaluate both methods at 1 million tokens on the same prespecified set of seeds. Existing B checkpoints at 1 million could provide cheap evidence if they were saved and their training schedule matches the intended 1-million-token protocol. Then compare both at 3 million tokens if that budget is relevant. Record intermediate checkpoints to obtain error-versus-token and error-versus-compute curves. A checkpoint partway through a long learning-rate schedule and a separately trained short-budget model answer different questions, so define the protocol explicitly.
+
+2. **More independent training replications.** Filling in A's seeds 2 and 3 would balance the current seed coverage, but four runs per method would still be a pilot. Use a balanced pilot to estimate variability, then determine the number of runs needed for a useful interval on the equal-budget difference. Prespecify a smallest worthwhile improvement and a stopping rule; do not repeatedly add seeds until a favorable result appears. Report every planned run, including failures, and show the individual scores alongside an uncertainty interval for the mean difference. If runs are deliberately paired by shared data conditions, analyze the paired differences; seed labels alone do not justify pairing.
+
+3. **Evaluation evidence beyond aggregate scores.** Record the held-out sample size, sampling unit, and per-example predictions or losses for each run. This allows a paired evaluation comparison on the same examples and uncertainty estimates that respect document, user, or other clustering. Distinguish uncertainty from training randomness from uncertainty due to the finite held-out sample. A very large test set cannot replace additional training replications; additional seeds cannot establish generalization to a different data distribution.
+
+4. **A documented and fair selection procedure.** Keep the dataset versions, splits, preprocessing, metric, checkpoint-selection rule, and hyperparameter-tuning budget comparable. Tune on validation data and reserve untouched test data for the final decision. If the claim concerns new datasets, include additional representative splits or datasets. Initialization, data sampling, and hyperparameter selection can all materially affect a benchmark comparison. [Bouthillier et al., 2021](https://proceedings.mlsys.org/paper_files/paper/2021/file/0184b0cd3cfb185989f858a1d9f5c1eb-Paper.pdf).
+
+For a decision today, I would retain A as a provisional economical baseline if training cost matters and the observed difference is operationally small. If only the lowest observed mean at these particular budgets matters, B leads descriptively. Neither choice supports a claim of demonstrated superiority. The strongest next experiment is both methods at the same budget, with balanced replications and a prespecified practical improvement threshold.

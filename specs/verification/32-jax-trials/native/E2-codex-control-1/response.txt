@@ -1,0 +1,319 @@
+Compare the models on the same forecast origins and targets using paired loss differences. Keep overlapping windows for scoring if that matches deployment, but account for their dependence when estimating uncertainty. A window is a forecasting occasion; it is usually not an independent replicate.
+
+No predictions or dataset were supplied, so I cannot identify a winner or calculate a numerical confidence interval. The following defines the comparison and gives complete evaluation code for already computed predictions.
+
+There are several distinct evaluation units:
+
+| Unit | What it measures | How it contributes to uncertainty |
+|---|---|---|
+| A forecast cell, identified by sequence, origin, horizon, and output variable | One forecast of one outcome | Cells within a window and across overlapping windows can be dependent. Do not treat every cell as an independent observation. |
+| A forecast origin and its whole forecast window | Performance of one issued forecast | A useful paired scoring unit, but successive origins usually remain dependent. |
+| A contiguous run of forecast origins | Performance over a stretch of time | Time blocks preserve some of the dependence needed for time-series inference. They are resampling units, not automatically independent experimental replicates. |
+| An independent person, device, episode, or separately sampled sequence | Generalization to new sequences | Resample the independent groups as whole units if that is the target population. A new identifier is not proof of independence. |
+| A training run or seed | Variability from fitting the learning procedure | Seeds on the same held-out data share test outcomes; seed-by-window combinations are not independent replicates. |
+
+For example, suppose 1,000 origins each predict the next 24 hourly values, with a stride of one hour. There are 24,000 origin–horizon forecast cells, but only 1,023 distinct target hours, assuming complete contiguous horizons. A target hour can be predicted repeatedly at different lead times. Those forecasts answer different questions and can legitimately all receive scores, but counting them separately does not create independent data. Even the 1,023 target hours may be serially correlated.
+
+Choose the estimand before looking at which model wins. A reasonable default is the expected loss of an issued forecast, with fixed weights over horizons and variables. With origins indexed by t, horizons h = 1, …, H, and nonnegative weights summing to one, define
+
+    L_A,t = sum_h w_h × mean_c loss(y_t,h,c, prediction_A,t,h,c)
+    L_B,t = sum_h w_h × mean_c loss(y_t,h,c, prediction_B,t,h,c)
+    d_t   = L_A,t − L_B,t
+    delta_hat = mean_t d_t.
+
+Negative differences favor A; positive differences favor B. Choose a loss that matches the decision: squared or absolute error for point forecasts, or a proper scoring rule for predictive distributions. If variables have different units, predefine their scaling or business weights using training information. Averaging raw squared errors across dollars and temperatures is not meaningful. The code below uses horizon-weighted MSE with equally weighted output variables; it supports a single output too.
+
+This origin-weighted estimand counts a target at every scored lead time. If instead you want one score per realized target timestamp, define which lead time or issued forecast is used before calculating losses. Another option is to average its losses across the selected horizons, then give each timestamp equal weight. Averaging predictions first defines an ensemble and changes the object being evaluated. Neither timestamp aggregation nor removing direct horizon overlap proves independence.
+
+Pair the models throughout: same sequence identifiers, origins, target timestamps, availability rules, weights, and valid cells. Check the metadata before passing arrays into evaluation code; equal array shapes cannot establish that alignment. Do not compute separate model confidence intervals and judge the difference by whether they overlap. Forecast comparison can instead be expressed directly through the mean paired loss differential, using a standard error robust to serial dependence. A Diebold–Mariano-style comparison uses this principle; its assumptions and the distinction between comparing observed forecasts and general claims about models matter. [Diebold, Comparing Predictive Accuracy, Twenty Years Later](https://economics.sas.upenn.edu/sites/default/files/filevault/12-035.pdf).
+
+For one long, regularly sampled sequence, use a paired time-block bootstrap of d_t. The implementation below uses circular blocks: choose block starts, take successive origins, concatenate blocks to the original length, and recompute the mean. The same indices implicitly apply to both models because their differences are computed before resampling. Circular wrapping treats the endpoint as adjacent to the beginning for resampling; this is an approximation justified by stationarity, not a claim that the physical series repeats. Block resampling and its validity conditions are discussed in [Politis, The Impact of Bootstrap Methods on Time Series Analysis](https://math.ucsd.edu/~politis/StatSci03.pdf).
+
+Set block length in units of forecast origins, not scalar forecast cells. For contiguous H-step horizons and origins every s target time steps, directly overlapping windows can extend across ceil(H / s) origins. Use that as a geometric starting scale, then examine the loss-difference time series, its autocorrelation, seasonality, and plausible longer dependence. For H = 24 and s = 1, inspect lengths such as 24, 48, and 96 origins if the record is sufficiently long. Merely setting length to 24 is not a guarantee of correct coverage: block boundaries still cut some dependence, and model errors can correlate much longer than the forecast horizon. Report sensitivity across plausible lengths rather than selecting the shortest interval.
+
+The block interval is an approximate frequentist interval for the mean difference under a sufficiently stable, weakly dependent loss-difference process with suitable finite moments. It is not a distribution-free guarantee. Strong drift, structural breaks, heavy tails, or only a handful of usable blocks can make it unreliable. Under marked regime change, show period-specific differences and evaluate on relevant future-like holdouts; increasing the number of bootstrap draws cannot manufacture additional information. The stationary-bootstrap literature likewise assumes dependent stationary observations, rather than treating resampling as a cure for every dependence structure. [Politis and Romano, Limit Theorems with Application to the Stationary Bootstrap](https://www3.stat.sinica.edu.tw/statistica/j4n2/j4n25/j4n25.htm).
+
+If your independent units are subjects or episodes and you want generalization to new units, calculate a paired mean difference within each unit and bootstrap the complete unit means. The code includes that alternative. Equal unit weighting estimates the average unit's performance; weighting by unit length estimates a different quantity. It is reasonable to use whole-unit resampling when units are independently sampled, even though their windows overlap internally. For a fixed panel of correlated series observed on the same calendar, aggregate the paired differences across the panel at each origin using your chosen panel weights, then bootstrap common time blocks. Bootstrapping each series independently would discard shared shocks. A design involving both new units and new time periods needs a resampling or hierarchical model that explicitly matches both dimensions; the two simple procedures below do not cover every such design.
+
+Use chronological evaluation and fit preprocessing only on information available at the relevant forecast origin. With multi-step labels, inspect the entire target interval at each train/test boundary: a training window whose label extends into a fixed held-out target period compromises that holdout. Purge such labels or choose a boundary/gap that excludes them. Historical input context before the test origin can be legitimate; it need not all be discarded. A generic gap over window-row indices does not automatically understand your horizon or data-release dates. [The official TimeSeriesSplit documentation](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.TimeSeriesSplit.html) describes temporal splits and an optional gap; apply them to your actual availability and target intervals. If rolling refitting on newly observed outcomes is part of deployment, allow those updates only after the outcomes become available and specify that protocol explicitly.
+
+The following is complete analysis code using NumPy. It evaluates supplied predictions; it does not train either sequence model. It accepts arrays of shape (origins, horizons) or (origins, horizons, output_variables). It rejects missing values instead of silently deleting origins, because deletion can change the temporal spacing. Handle missingness with a common, explicitly defined scoring policy before using this implementation. For irregular origins or disconnected episodes, do not concatenate the gaps and interpret neighboring rows as adjacent time.
+
+```python
+from dataclasses import dataclass
+import math
+from numbers import Integral
+
+import numpy as np
+
+
+@dataclass(frozen=True)
+class PairedComparison:
+    mean_loss_a: float
+    mean_loss_b: float
+    difference_a_minus_b: float
+    confidence: float
+    confidence_interval: tuple[float, float] | None
+    bootstrap_standard_error: float | None
+    n_scoring_units: int
+    block_length: int
+    approximate_blocks_per_sample: float
+    n_bootstrap: int
+    resampling_unit: str
+    notes: tuple[str, ...]
+
+
+def _positive_integer(value, name):
+    if isinstance(value, bool) or not isinstance(value, Integral) or value < 1:
+        raise ValueError(f"{name} must be a positive integer.")
+    return int(value)
+
+
+def _finite_vector(values, name):
+    array = np.asarray(values, dtype=np.float64)
+    if array.ndim != 1 or array.size < 2:
+        raise ValueError(f"{name} must be a vector with at least two entries.")
+    if not np.all(np.isfinite(array)):
+        raise ValueError(f"{name} must contain only finite values.")
+    return array
+
+
+def origin_mse_losses(y_true, prediction_a, prediction_b, horizon_weights=None):
+    """Return paired MSE vectors, one loss per forecast origin.
+
+    Arrays must already be aligned by origin, target timestamp, and variable.
+    Supported shapes: (T, H) and (T, H, C). Variables receive equal weight.
+    """
+    arrays = tuple(
+        np.asarray(values, dtype=np.float64)
+        for values in (y_true, prediction_a, prediction_b)
+    )
+    truth, forecast_a, forecast_b = arrays
+    if truth.ndim not in (2, 3) or any(size == 0 for size in truth.shape):
+        raise ValueError("Expected a nonempty (T, H) or (T, H, C) array.")
+    if forecast_a.shape != truth.shape or forecast_b.shape != truth.shape:
+        raise ValueError("Truth and both predictions must have identical shapes.")
+    if any(not np.all(np.isfinite(array)) for array in arrays):
+        raise ValueError("Use a common missingness policy; inputs must be finite.")
+
+    horizon_count = truth.shape[1]
+    if horizon_weights is None:
+        weights = np.full(horizon_count, 1.0 / horizon_count)
+    else:
+        weights = np.asarray(horizon_weights, dtype=np.float64)
+        if weights.shape != (horizon_count,):
+            raise ValueError("horizon_weights must have one entry per horizon.")
+        if not np.all(np.isfinite(weights)) or np.any(weights < 0):
+            raise ValueError("Horizon weights must be finite and nonnegative.")
+        total_weight = float(weights.sum())
+        if not math.isfinite(total_weight) or total_weight <= 0:
+            raise ValueError("Horizon weights must have a finite positive sum.")
+        weights = weights / total_weight
+
+    with np.errstate(over="raise", invalid="raise"):
+        squared_a = np.square(forecast_a - truth)
+        squared_b = np.square(forecast_b - truth)
+        if truth.ndim == 3:
+            squared_a = squared_a.mean(axis=2)
+            squared_b = squared_b.mean(axis=2)
+        losses_a = squared_a @ weights
+        losses_b = squared_b @ weights
+    if not np.all(np.isfinite(losses_a)) or not np.all(np.isfinite(losses_b)):
+        raise ValueError("Loss computation produced nonfinite values.")
+    return losses_a, losses_b
+
+
+def _paired_circular_block_comparison(
+    losses_a,
+    losses_b,
+    *,
+    block_length,
+    confidence,
+    n_bootstrap,
+    seed,
+    resampling_unit,
+):
+    loss_a = _finite_vector(losses_a, "losses_a")
+    loss_b = _finite_vector(losses_b, "losses_b")
+    if loss_a.shape != loss_b.shape:
+        raise ValueError("Paired loss vectors must have the same length.")
+    n_units = loss_a.size
+    length = _positive_integer(block_length, "block_length")
+    repetitions = _positive_integer(n_bootstrap, "n_bootstrap")
+    if length >= n_units:
+        raise ValueError("block_length must be smaller than the record length.")
+    if repetitions < 2:
+        raise ValueError("n_bootstrap must be at least two.")
+    if not math.isfinite(confidence) or not 0 < confidence < 1:
+        raise ValueError("confidence must be strictly between zero and one.")
+    if isinstance(seed, bool) or not isinstance(seed, Integral) or seed < 0:
+        raise ValueError("seed must be a nonnegative integer.")
+
+    with np.errstate(over="raise", invalid="raise"):
+        differences = loss_a - loss_b
+        estimate = float(differences.mean())
+    if not np.all(np.isfinite(differences)) or not math.isfinite(estimate):
+        raise ValueError("Loss differences must be finite.")
+
+    rng = np.random.default_rng(int(seed))
+    blocks_needed = math.ceil(n_units / length)
+    offsets = np.arange(length)
+    bootstrap_means = np.empty(repetitions, dtype=np.float64)
+    for repetition in range(repetitions):
+        starts = rng.integers(0, n_units, size=blocks_needed)
+        indices = ((starts[:, None] + offsets) % n_units).ravel()[:n_units]
+        bootstrap_means[repetition] = differences[indices].mean()
+
+    standard_error = float(bootstrap_means.std(ddof=1))
+    notes = [
+        "Negative differences favor A; positive differences favor B.",
+        "Intervals are approximate and depend on the sampling assumptions.",
+    ]
+    if standard_error == 0 or not math.isfinite(standard_error):
+        interval = None
+        reported_standard_error = None
+        notes.append(
+            "Resampling produced no usable variation; an uncertainty interval "
+            "is not reported. This does not establish population certainty."
+        )
+    else:
+        alpha = 1.0 - confidence
+        # Basic interval: approximate the centered sampling error, then invert.
+        lower_error, upper_error = np.quantile(
+            bootstrap_means - estimate, [alpha / 2.0, 1.0 - alpha / 2.0]
+        )
+        interval = (
+            float(estimate - upper_error),
+            float(estimate - lower_error),
+        )
+        reported_standard_error = standard_error
+
+    return PairedComparison(
+        mean_loss_a=float(loss_a.mean()),
+        mean_loss_b=float(loss_b.mean()),
+        difference_a_minus_b=estimate,
+        confidence=float(confidence),
+        confidence_interval=interval,
+        bootstrap_standard_error=reported_standard_error,
+        n_scoring_units=int(n_units),
+        block_length=length,
+        approximate_blocks_per_sample=n_units / length,
+        n_bootstrap=repetitions,
+        resampling_unit=resampling_unit,
+        notes=tuple(notes),
+    )
+
+
+def compare_overlapping_forecasts(
+    y_true,
+    prediction_a,
+    prediction_b,
+    *,
+    block_length,
+    origin_stride=1,
+    horizon_weights=None,
+    confidence=0.95,
+    n_bootstrap=4999,
+    seed=20261003,
+):
+    """Paired comparison for one regular, contiguous sequence of origins.
+
+    Horizons must be contiguous target steps 1..H. origin_stride is measured
+    in those target steps. A valid block choice can exceed the overlap scale.
+    The caller must assess stationarity, longer dependence, and time alignment.
+    """
+    stride = _positive_integer(origin_stride, "origin_stride")
+    length = _positive_integer(block_length, "block_length")
+    loss_a, loss_b = origin_mse_losses(
+        y_true, prediction_a, prediction_b, horizon_weights
+    )
+    horizon_count = np.asarray(y_true).shape[1]
+    overlap_scale = math.ceil(horizon_count / stride)
+    if length < overlap_scale:
+        raise ValueError(
+            f"Start with at least {overlap_scale} origins per block for this "
+            "horizon/stride; longer dependence may require a larger block."
+        )
+    return _paired_circular_block_comparison(
+        loss_a,
+        loss_b,
+        block_length=length,
+        confidence=confidence,
+        n_bootstrap=n_bootstrap,
+        seed=seed,
+        resampling_unit="contiguous time blocks of paired forecast origins",
+    )
+
+
+def compare_independent_sequences(
+    sequence_mean_losses_a,
+    sequence_mean_losses_b,
+    *,
+    confidence=0.95,
+    n_bootstrap=4999,
+    seed=20261003,
+):
+    """Equal-weight comparison of independently sampled complete sequences.
+
+    Each entry is the mean loss over one sequence's origins. Entries must
+    pair the same sequence in A and B. Within-sequence overlap stays inside
+    the unit; sequences themselves must be independent sampling units.
+    """
+    return _paired_circular_block_comparison(
+        sequence_mean_losses_a,
+        sequence_mean_losses_b,
+        block_length=1,
+        confidence=confidence,
+        n_bootstrap=n_bootstrap,
+        seed=seed,
+        resampling_unit="independently sampled complete sequences",
+    )
+```
+
+Usage for one hourly record with 24-step forecasts, assuming `y_test`, `pred_a`, and `pred_b` already contain aligned predictions and truth:
+
+```python
+from dataclasses import asdict
+
+# Choose the primary length from the data's plausible dependence beforehand.
+primary = compare_overlapping_forecasts(
+    y_test, pred_a, pred_b, origin_stride=1, block_length=48
+)
+print(asdict(primary))
+
+# Sensitivity analysis: report every defensible length, including uncertainty.
+for length in (24, 48, 96):
+    if length < len(y_test):
+        result = compare_overlapping_forecasts(
+            y_test, pred_a, pred_b, origin_stride=1, block_length=length
+        )
+        print(length, result.difference_a_minus_b, result.confidence_interval)
+```
+
+The values 24, 48, and 96 are an example for H = 24, not universal defaults. `approximate_blocks_per_sample` is a record-length diagnostic, not an estimate of the number of independent observations. Increasing `n_bootstrap` reduces simulation error in interval calculation; it does not increase the test record length. A stable interval with only a few blocks is still weak evidence.
+
+Usage for independently sampled complete sequences:
+
+```python
+mean_losses_a = []
+mean_losses_b = []
+for truth, forecast_a, forecast_b in independent_sequence_predictions:
+    losses_a, losses_b = origin_mse_losses(truth, forecast_a, forecast_b)
+    mean_losses_a.append(float(losses_a.mean()))
+    mean_losses_b.append(float(losses_b.mean()))
+
+result = compare_independent_sequences(mean_losses_a, mean_losses_b)
+print(asdict(result))
+```
+
+Keep short, meaningful validation checks when you integrate this code: a hand-calculated horizon-weighted loss example; swapping A and B reverses the point difference; a fixed seed reproduces results; invalid shapes and missing values fail; and block length is expressed in origins. Validate uncertainty statistically on repeated simulated dependent sequences with a known mean difference, measuring interval coverage rather than merely checking that an interval exists. Such simulations should also demonstrate the failure of an IID cell bootstrap under positive temporal dependence. These are proposed checks, not checks I executed.
+
+To avoid overstating confidence, report the point estimate, the paired interval, the score and weighting scheme, the forecast horizon/stride, the test dates, the number of origins, the number of genuinely independent sequences if any, the block length and its sensitivity, and the scope of inference. For MSE, the interval above is for the MSE difference. A difference of global RMSE values requires recomputing both square roots inside each shared bootstrap replicate; it is not the square root of the MSE difference. Likewise, recompute nonlinear metrics such as relative improvement within each replicate if you need their uncertainty.
+
+Predefine a practically meaningful difference epsilon. An interval entirely below −epsilon supports a meaningful improvement by A under the stated assumptions; an interval entirely above epsilon supports B. An interval that includes zero means the evidence does not resolve the sign at that confidence level. It does not prove equivalence. An interval contained within [−epsilon, epsilon] can support practical equivalence under the same interval assumptions. Do not turn the fraction of bootstrap differences below zero into a posterior probability that A is better.
+
+Preselect a primary metric and horizon weighting. If you examine many horizons, features, seeds, and model variants, treat secondary plots as exploratory or use simultaneous intervals/multiplicity control for formal claims. Choose hyperparameters on validation data and reserve the final chronological test for the final comparison. A dependence-aware interval does not repair selecting the winning model on the same test outcomes.
+
+Finally, this comparison concerns the already produced forecasts over the population represented by the evaluation design. It does not, by itself, establish that an architecture wins across future training datasets, optimization seeds, all regimes, or new domains. To make a learning-procedure claim, repeat the full fitting and selection protocol on suitable independent datasets or a dependence-aware design that includes refitting, and account separately for fitting variability. A careful statement is: “A had lower average loss on this held-out evaluation; the paired time-block interval for A minus B was [...], with these horizon weights and block-length sensitivity.” If the interval is wide, retain that uncertainty in the conclusion.
+
+This is an analysis and code-delivery response. I did not execute the evaluation code, train models, run the proposed tests, or compute empirical results.

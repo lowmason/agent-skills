@@ -1,0 +1,32 @@
+There is no well-supported overall winner yet. B has the lower observed mean error, but it was trained for three times as many tokens per run, and the difference is small relative to the variation across runs. If training tokens are scarce, I would keep A as the provisional baseline while collecting a fair comparison.
+
+Assuming lower error is better and all scores use the same held-out data and metric:
+
+| Quantity | Method A | Method B |
+|---|---:|---:|
+| Number of runs | 2 | 4 |
+| Mean error | 0.1500 | 0.1425 |
+| Sample SD across runs | 0.0141 | 0.0263 |
+| Observed error range | 0.14–0.16 | 0.12–0.18 |
+| Training tokens per run | 1 million | 3 million |
+| Total training tokens reported | 2 million | 12 million |
+
+B's mean advantage is 0.0075 absolute error, or 0.75 percentage points if these errors are rates. That is a 5% relative reduction from A's mean. This describes the observed runs; it does not establish a repeatable improvement.
+
+There are three important limits to that comparison:
+
+- **The training budgets differ.** These results compare A at 1 million tokens with B at 3 million. They cannot tell us which method is better at a common budget, or how much of B's apparent advantage comes from longer training. Tokens also need not imply equal computation: methods can have different cost per token. Dividing error by training tokens would not fix this confounding.
+- **There are very few independent training runs.** Both estimated means and SDs are uncertain, especially A's SD from only two runs. As a rough scale check, treating runs as independent draws gives an estimated standard error of the difference of about 0.0165, larger than the 0.0075 observed difference. This calculation assumes independent runs and does not include finite-test-set uncertainty; it is not a definitive significance analysis. The data establish neither superiority nor equivalence.
+- **Unequal numbers of runs complicate comparisons of the best run.** B's 0.12 is its best of four attempts, whereas A's 0.14 is its best of two. That does not fairly compare best-of-the-same-number-of-attempts performance. Even the two shared seed labels give mixed results: B is better by 0.01 for seed 0 and worse by 0.02 for seed 1. Those two differences are descriptive only; matching numeric seed labels alone does not guarantee a valid paired experiment.
+
+I would collect the following evidence next, in this order:
+
+1. **Run a balanced comparison at a common budget.** First decide the operational question: lowest expected error at a fixed token budget, lowest error at a fixed compute budget, or the cost required to reach a target error. For token efficiency, evaluate both methods at 1 million and 3 million tokens using the same training corpus, held-out examples, metric, and evaluation procedure. Record learning curves at common checkpoints. Existing B checkpoints at 1 million tokens could give a cheap first look, and A at 3 million tokens is particularly informative. Checkpoint comparisons must be labeled with their training schedules; a schedule designed for 3 million tokens may differ from a separately tuned 1-million-token run. Equalize tuning and checkpoint-selection rules. Report wall time or FLOPs on comparable hardware as well as tokens. Performance comparisons can change with computation and search budgets, as documented by [Dodge et al., Show Your Work](https://aclanthology.org/D19-1224/).
+
+2. **Add balanced, independent replications.** Use an initial pilot of, for example, 8–10 runs per method at the chosen common budget; that is a starting point, not a guarantee of adequate precision. Match data splits and data-order randomness where appropriate, and keep each method's initialization random and correctly controlled. Analyze paired differences when the experimental design actually supports pairing. Report every run, including failures, rather than selecting favorable seeds. Use the pilot variance and a prespecified smallest worthwhile improvement to plan a fixed-size confirmation experiment. Sources of variation can include data sampling, initialization, and hyperparameter choice, not just one seed field; see [Bouthillier et al., Accounting for Variance in Machine Learning Benchmarks](https://arxiv.org/abs/2103.03098).
+
+3. **Save per-example predictions or losses and quantify evaluation uncertainty.** Record the held-out sample size, its sampling process, and the units that can reasonably be treated as independent. Use paired evaluation on the same examples; resample independent examples or clusters such as documents or users when observations within them are correlated. Keep uncertainty across training runs separate from uncertainty due to the finite held-out sample. Thousands of evaluated tokens are not thousands of independent training runs. If the existing held-out set has guided tuning, reserve a fresh untouched test set for confirmation.
+
+4. **Set a practical decision rule before collecting confirmation results.** Define a worthwhile absolute error improvement, δ, and an acceptable training and deployment cost. At a matched budget, define the difference as mean(B) − mean(A), so negative values favor B. An uncertainty interval entirely below −δ would support a meaningful B advantage. An interval entirely within [−δ, δ] would support practical equivalence at that budget. An interval spanning both meaningful improvement and meaningful harm means the evidence remains inconclusive. Do not keep checking ordinary confidence intervals and stop at the first favorable result; use a planned sample size or a sequential procedure designed for repeated looks.
+
+The immediate experiment with the highest value is measuring both methods at the same training budget across a balanced set of runs. Until then, the defensible statement is: B achieved a slightly lower sample mean with more training tokens; whether the method itself improves error, and whether the improvement is worth its cost, remain unresolved.

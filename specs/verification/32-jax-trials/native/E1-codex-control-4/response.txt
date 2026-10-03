@@ -1,0 +1,38 @@
+There is no convincing winner yet. B has the lower observed mean error, but that is a comparison of B after three million tokens against A after one million tokens. It does not establish that B is the better method at an equal training budget.
+
+Assuming lower error is better and all runs use the same metric and held-out evaluation protocol:
+
+| Quantity | A | B |
+|---|---:|---:|
+| Runs | 2 | 4 |
+| Tokens per run | 1 million | 3 million |
+| Total training tokens across reported runs | 2 million | 12 million |
+| Mean error | 0.1500 | 0.1425 |
+| Sample standard deviation across runs | 0.0141 | 0.0263 |
+| Observed range | 0.14–0.16 | 0.12–0.18 |
+
+B's observed mean is lower by 0.0075 error units, a 5% relative reduction from A's mean. If these are error proportions, that is 0.75 percentage points. B used three times as many tokens per run, and six times as many tokens across the entire reported experiment. Tokens are a data-exposure measure; they need not imply equal ratios of FLOPs, time, or money if the methods have different costs per token.
+
+The mean gap is small compared with the observed run variation. For orientation, treating the runs as independent gives an estimated standard error for the mean difference of
+
+    sqrt(0.0141² / 2 + 0.0263² / 4) ≈ 0.0165.
+
+That is larger than the observed gap. With two and four runs, the variance estimates are themselves uncertain. This calculation is an illustrative noise estimate under independence, not a definitive significance test, an equivalence claim, or a precise probability that B is better.
+
+The comparison is also sensitive to which seeds were included. On the two shared seed labels, A averages 0.150 and B averages 0.155; the ordering reverses. Their B-minus-A differences are −0.01 and +0.02. This does not prove A is better either: two pairs are insufficient, the training budgets still differ, and matching seed numbers only supports a paired analysis if the experimental protocol actually couples relevant random factors. It does show why neither the pooled mean nor the best run should settle the decision. B's best error of 0.12 also comes from twice as many opportunities to obtain a favorable run.
+
+The next evidence I would collect, in priority order, is:
+
+1. **Compare both methods at the same budget.** Measure A and B at one million tokens and at three million tokens, using the same preselected set of seeds, training data, preprocessing, and evaluation examples. This fills the missing A-at-three-million and B-at-one-million comparisons. Report the two budget-specific differences separately. If budgets are limited, first choose the budget that matches the intended use and replicate both methods there. Existing B checkpoints at one million tokens may give cheap preliminary evidence, but document whether their learning-rate schedule and training protocol match the intended one-million-token comparison; an intermediate checkpoint from a longer schedule may answer a different question.
+
+2. **Collect learning curves and actual resource costs.** Save errors at predeclared token checkpoints, plus accelerator time, FLOPs or a defensible compute estimate, memory, and inference cost where relevant. Plot error against tokens and against actual compute. Ask whether B reaches a target error with less resource use, whether A catches up after longer training, and whether either method has plateaued. Do not divide error by token count as a substitute for this comparison: error is not generally linear in training tokens.
+
+3. **Add balanced, independent replications.** Run additional seeds for both methods, preferably as designed pairs sharing data split and data order where that is meaningful. Preserve independent random streams for method-specific operations; the same integer seed is not sufficient by itself. Use a balanced pilot, for example ten runs per method at the primary budget if affordable, to estimate variability. Ten is a starting point, not a guarantee of enough evidence. Set the final sample size from a practically meaningful error difference and the observed variability. Adding only more B runs at three million tokens leaves the budget confound unresolved.
+
+4. **Prespecify what improvement would matter and how the decision will be made.** Let Δ(T) be expected error of B minus expected error of A at a common budget T, averaged over the intended training randomness. Choose a smallest worthwhile improvement δ before inspecting the new results. Report Δ(T) with an uncertainty interval, using a paired analysis only for genuine pairs. An interval entirely below −δ would support a practically useful advantage for B; an interval inside [−δ, +δ] would support practical equivalence at that budget; a wide interval spanning both possibilities means more evidence is needed. If you monitor repeatedly while adding seeds, use a prespecified stopping rule or an appropriate sequential procedure.
+
+5. **Separate training variability from evaluation uncertainty.** Record held-out set size, the sampling unit, and per-example errors or predictions. Repeated seeds on one fixed held-out set estimate variation in training conditional on that set. Generalization beyond it also depends on finite-sample evaluation uncertainty and, sometimes, data-split variation. Compare predictions on the same examples and resample at the appropriate independent unit, such as documents or users rather than correlated tokens. Do not count every token or every checkpoint as an independent training replicate. Once the method and tuning choices are fixed, confirm the result on an untouched test set; use validation data for the intervening decisions.
+
+6. **Record the full experimental protocol.** Keep all runs, including failures, alongside configurations, data and code versions, seed roles, checkpoint-selection rules, and tuning budgets. Give both methods comparable opportunities for hyperparameter tuning and document any differences. Broader superiority claims need evidence across the relevant datasets or conditions, not just repeated initialization on one split. Research on benchmarking variance identifies data sampling, initialization, and hyperparameter choice as consequential sources of variation. [Bouthillier et al., Accounting for Variance in Machine Learning Benchmarks](https://arxiv.org/abs/2103.03098).
+
+If a decision is required today, describe B as a tentative candidate with a slightly better observed endpoint at a larger training budget. A remains a reasonable provisional choice when the additional training cost is hard to justify. Neither method has demonstrated superiority or equal-budget efficiency from these six results. The most informative immediate comparison is both methods at the same operational budget, with a balanced set of seeds; the second budget then reveals whether the ranking changes with training duration.
