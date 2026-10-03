@@ -180,8 +180,10 @@ permission system. Each subcommand is classified by its command word, taken by i
 basename (`/bin/rm` is `rm`) and found past redirections, assignments (`X=1`), leading
 keywords (`!`, `if`, `then`, `do`, `coproc`, `noglob`, zsh's `-` modifier, …) and the
 prefix utilities `env`, `command`, `exec`, `time`, `nohup` and `nice` with their
-options. Subshells, brace groups, `$(…)` and `<(…)` are classified as commands of their
-own. A quoted or escaped word is a word, never syntax: `git branch ')' -D feature`
+options, read as getopt reads them: short options clustered or apart, a value attached
+or in the next word, and GNU long options by any unambiguous prefix (`--ch /tmp` is
+`--chdir /tmp`). Subshells, brace groups, `$(…)` and `<(…)` are classified as commands
+of their own. A quoted or escaped word is a word, never syntax: `git branch ')' -D feature`
 deletes a branch. A redirection leaves with its target and with the file descriptor zsh
 reads for it: one unquoted digit touching the operator (`2>&1`), or a `{name}` before
 it (`exec {fd}>f`). Any other word before a redirection is an argument: `git branch 5
@@ -210,12 +212,6 @@ fails closed; quoting keeps a substitution one word (`git -C "$(pwd)" log`). Oth
   `` x` ``, and none of them is a denied command. `$(…)` is read as a command.
 - A command word the shell produces by expansion (`c=rm; $c x`, `$(which rm) x`), by
   zsh's `=cmd` path expansion (`=rm x`), or by gluing to a brace (zsh runs `{rm x;}`).
-- Options of the prefix utilities that take a value the guard does not model, which
-  puts the value in the command's place: the long options (`env --chdir /tmp rm x`,
-  `nice --adjustment 5 rm x`) and `/usr/bin/time -o f rm x`. zsh's own `time` takes no
-  options. Clustered short options ending in a value-taker slip through the same way
-  (`exec -la foo rm x`, `env -iu HOME rm x`); the guard reads only the short options it
-  lists, not getopt-style clusters.
 - A word the guard does not recognise as an assignment, so the word becomes the command
   and the real command after it is never read: `arr[1]=x rm t`, `ä=x rm t`. `env` takes
   any `name=value` operand the same way, including after `--`: `env a-b=x rm t`,
