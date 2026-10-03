@@ -33,8 +33,8 @@ os.makedirs(results_dir, exist_ok=True)
 ├── trace.png                    # az.plot_trace(idata, var_names=[...])
 ├── forest.png                   # az.plot_forest of posteriors
 ├── posterior_predictive.png     # azp.plot_ppc_dist(idata)
-├── pit_ecdf.png                 # azp.plot_ppc_pit (or azp.plot_loo_pit)
-├── pit_coverage.png             # azp.plot_ppc_pit(coverage=True)
+├── pit_ecdf.png                 # calibration_check.py --save-plots
+├── pit_coverage.png             # calibration_check.py --save-plots
 ├── psense.png                   # azp.plot_psense_dist (if sensitivity ran)
 ├── summary.csv                  # az.summary(idata).to_csv
 ├── diagnostics.json             # diagnose_model.py output
@@ -71,8 +71,9 @@ pc = azp.plot_ppc_dist(idata)
 pc.savefig(os.path.join(results_dir, "posterior_predictive.png"))
 ```
 
-For the calibration plots (`azp.plot_ppc_pit` / `azp.plot_loo_pit`), use `pc.savefig(...)` directly —
-`scripts/calibration_check.py --save-plots --plot-dir <slug>` does this automatically with the right filenames.
+For the calibration plots, run `scripts/calibration_check.py --save-plots --plot-dir <slug>`. It writes both
+figures with the right filenames, drawn from the same PIT values as `calibration.json`, so the p-value on each
+figure is the one the JSON records.
 
 ### Report template
 
@@ -162,13 +163,13 @@ The posterior predictive distribution shows what the fitted model implies the da
 
 ![PIT ECDF](pit_ecdf.png)
 
-The PIT-ECDF plot tests whether the model's predictive distribution is calibrated — that is, whether stated credible levels match empirical coverage. It plots the difference between the empirical CDF of the probability integral transform values and the uniform reference, so a calibrated model stays near the dashed zero line; no band is drawn around it — the panel carries a uniformity-test p-value with the α it is judged against, and points are highlighted only when that test rejects. The band still exists in the numbers even though the figure omits it: `calibration_check.py` computes it and records the verdict in `calibration.json` as `pit_ecdf_inside_bands` / `coverage_ecdf_inside_bands`. Read its *shape*, not a global sign: in the raw PIT ECDF neither miscalibration sits wholly above or below the zero line — both trace a sign-flipping slope that integrates to ≈0. A predictive that is too narrow runs above the zero line in the lower half and below it in the upper half; one that is too broad mirrors that. A predictive with the right spread but an off-centre location is the exception: it sits above the zero line when predictions run too high and below it when they run too low. When only the PIT band fails, `calibration.json` diagnoses it as `biased (predictions too high)` or `biased (predictions too low)`; if the coverage band trips as well, the coverage verdict takes precedence. That label reads the failure as a shift, taking its direction from the sign of the mean deviation. A shape mismatch — a skewed predictive, a missing mode — can also fail the PIT band alone, so check the plot before trusting the direction: a shift keeps the curve on one side of the zero line, while a curve that crosses it points at shape rather than location, and its mean deviation can sit near zero with a sign that means nothing. For spread, the single-signed reading belongs to the coverage plot below. See [references/model-criticism.md](model-criticism.md).
+The PIT-ECDF plot tests whether the model's predictive distribution is calibrated — that is, whether stated credible levels match empirical coverage. It plots the difference between the empirical CDF of the probability integral transform values and the uniform reference, so a calibrated model stays near the dashed zero line; no band is drawn around it — the panel carries a uniformity-test p-value with the α it is judged against, and points are highlighted only when that test rejects. That p-value is `pit_p_value` in `calibration.json` (`coverage_p_value` on the coverage plot below), judged against its `alpha`: `calibration_check.py` draws both figures from the same PIT values its verdict reads. Read the curve's *shape*, not a global sign: in the raw PIT ECDF neither miscalibration sits wholly above or below the zero line — both trace a sign-flipping slope that integrates to ≈0. A predictive that is too narrow runs above the zero line in the lower half and below it in the upper half; one that is too broad mirrors that. A predictive with the right spread but an off-centre location is the exception: it sits above the zero line when predictions run too high and below it when they run too low. A shift keeps the curve on one side of the zero line, while a curve that crosses it points at shape rather than location. `calibration.json` names every failing component, so one failed check never hides another: `biased (predictions too high)` or `biased (predictions too low)` when the PIT test fails and the mean PIT sits significantly off 0.5 (its `location_t`); `over-confident` or `under-confident` when the coverage test fails; both together when both hold; and `shape mismatch` when the PIT test fails and neither a shift nor a spread error explains it. For spread, the single-signed reading belongs to the coverage plot below. See [references/model-criticism.md](model-criticism.md).
 
 ![Coverage](pit_coverage.png)
 
 The coverage plot tests the same idea in coverage units: it asks whether nominal central credible intervals (50%, 80%, 95%) actually contain the stated fraction of the observed data. A well-calibrated model lies on the zero line. Here the deviation *is* single-signed, so it reads directly: above → under-confident (intervals wider than they should be); below → over-confident (intervals too narrow).
 
-**Assessment:** <1–2 sentences from `check_diagnostics()` calibration section — well-calibrated, over-confident, under-confident, or biased (predictions too high or too low), with the mean coverage deviation if available.>
+**Assessment:** <1–2 sentences from `check_diagnostics()` calibration section — well-calibrated, or each finding it names: over-confident, under-confident, biased (predictions too high or too low), shape mismatch, or a compound such as biased and over-confident — with the mean coverage deviation if available.>
 
 ## [IF MODEL_COMPARISON] Model Comparison
 

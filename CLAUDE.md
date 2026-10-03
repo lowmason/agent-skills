@@ -109,11 +109,13 @@ cd skills/tune-hyperparameters/scripts && uv run --python 3.13 --with pytest --w
 # numpyro + NetCDF-writer chain, since the tests round-trip InferenceData to .nc)
 cd skills/track-model-experiments/scripts && uv run --python 3.13 --with pytest --with numpy --with polars --with arviz --with numpyro --with h5netcdf --with h5py python -m pytest -q
 
-# bayesian-workflow script tests (MCSE precision block + divergence-gate and calibration next
-# steps + calibration verdicts on both PIT paths, --ci-prob plumbing and the --loo-pit group
-# checks) — 59 tests
-# (4 arviz RuntimeWarnings — "invalid value encountered in scalar divide" on the constant-parameter
-# fixture — are expected and not silenced)
+# bayesian-workflow script tests (MCSE precision block + divergence-gate and per-finding calibration
+# next steps + calibration verdicts from one owned PIT on both paths: the pot_c rules, the figures
+# drawing the JSON's own values, --ci-prob plumbing and the --loo-pit group checks) — 117 tests
+# (this command reports 114 passed, 3 skipped: add --with matplotlib to run the figure-rendering
+# test, and set CALIBRATION_SWEEP=1 to run the 2-path pre-registered acceptance sweep — seeds 0-99,
+# about a minute and a half; -s prints its counts. 4 arviz RuntimeWarnings — "invalid value
+# encountered in scalar divide" on the constant-parameter fixture — are expected and not silenced)
 cd skills/bayesian-workflow/scripts && uv run --python 3.13 --with pytest --with arviz --with arviz-stats --with numpy --with xarray python -m pytest -q
 
 # llm-wiki bundled wiki-script tests (bootstrap + lint + session + specs distillers) —

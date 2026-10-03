@@ -31,3 +31,6 @@ None are redistributed here (see the repo-root NOTICE).
   algorithms with simulation-based calibration* — arXiv:1804.06788. Cited as "Talts et al.
   2018" after the preprint year; the book's reference list dates it 2020 and links the authors'
   unpublished PDF at sites.stat.columbia.edu/gelman/research/unpublished/sbc.pdf, not arXiv.
+- Tesso & Vehtari (2026), *LOO-PIT predictive model checking* — arXiv:2603.02928. Cited as
+  "Tesso & Vehtari 2026" for the `pot_c` uniformity test behind ArviZ's default PIT plots
+  (`plot_ppc_pit`, `plot_loo_pit`, `plot_ecdf_pit`) and `scripts/calibration_check.py`'s verdicts.

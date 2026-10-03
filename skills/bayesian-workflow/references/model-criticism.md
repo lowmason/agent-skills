@@ -109,6 +109,8 @@ azp.plot_ppc_pit(idata, coverage=True)
 azp.plot_loo_pit(idata, coverage=True)
 ```
 
+A direct `plot_ppc_pit(idata, coverage=True)` can print `p=0.00` on a calibrated model: when exactly half of an even number S of posterior-predictive draws fall below an observation, its PIT is exactly 0.5 and its coverage value exactly 0, which the test reads as impossible, and a calibrated fit holds such an observation with probability 1 − (1 − 1/(S+1))ⁿ over n observations (18% at S = 1000 and n = 200), so take the coverage figure from `scripts/calibration_check.py --save-plots`, which randomizes each PIT within its rank cell.
+
 Refer to [this guide](https://arviz-devs.github.io/EABM/Chapters/Prior_posterior_predictive_checks.html#coverage) for detailed coverage interpretation — it's a treasure trove for the whole Bayesian workflow.
 
 ### Coverage calibration
