@@ -4,6 +4,8 @@ cd skills/bayesian-workflow/scripts && uv run --python 3.13 --with pytest --with
   --with arviz-stats --with numpy --with xarray python -m pytest -q
 
 The figure-rendering test skips unless matplotlib is installed (add --with matplotlib).
+The pre-registered acceptance sweep runs only with CALIBRATION_SWEEP=1 set (seeds 0-99
+on both PIT paths, a minute or two); add -s to see the counts it records.
 
 The rule tests feed assess_pit exact-quantile PIT arrays: the PIT of N(0, 1)'s exact
 quantiles under a N(loc, scale) predictive, so they involve no sampling. Most other
@@ -17,8 +19,12 @@ per-observation model separates the two paths: PPC-PIT double-dips on it, and
 LOO-PIT does not.
 """
 
+import functools
 import json
+import operator
+import os
 import sys
+from collections import Counter
 
 import arviz_stats as azs
 import numpy as np
@@ -76,12 +82,12 @@ def _normal_logpdf(x, loc, scale):
     return -0.5 * np.log(2 * np.pi) - np.log(scale) - 0.5 * ((x - loc) / scale) ** 2
 
 
-def _normal_model(loc, scale, *, drop=()):
+def _normal_model(loc, scale, *, seed=SEED, drop=()):
     """DataTree for y ~ N(0, TRUE_SCALE) under a predictive N(mu, scale), mu ~ N(loc, POSTERIOR_SD_OF_MEAN).
 
     `drop` names groups to leave out, to exercise the CLI's group validation.
     """
-    rng = np.random.default_rng(SEED)
+    rng = np.random.default_rng(seed)
     y = rng.normal(0.0, TRUE_SCALE, size=N_OBS)
     mu = rng.normal(loc, POSTERIOR_SD_OF_MEAN, size=(N_CHAIN, N_DRAW, 1))
     y_rep = rng.normal(mu, scale, size=(N_CHAIN, N_DRAW, N_OBS))
@@ -582,3 +588,93 @@ def test_every_finding_reaches_a_specific_next_step(label):
     steps = [step for step in check_diagnostics.suggest_next_steps(report) if step.startswith('Calibration')]
     assert len(steps) == 1, steps
     assert 'Calibration check failed' not in steps[0]
+
+
+SWEEP = pytest.mark.skipif(
+    os.environ.get('CALIBRATION_SWEEP') != '1',
+    reason='pre-registered acceptance sweep: set CALIBRATION_SWEEP=1 (seeds 0-99, both paths)',
+)
+SWEEP_SEEDS = range(100)
+MILDLY_NARROW_SCALE = 0.8
+SMALL_SHIFT = 0.25
+SKEWED_SHAPE = 2.0  # Gamma(2), standardized to mean 0 and sd 1: right-skewed
+AT_LEAST, AT_MOST = operator.ge, operator.le
+
+
+def _named(label):
+    return lambda findings: label in findings
+
+
+def _exactly(*labels):
+    return lambda findings: findings == list(labels)
+
+
+def _any_biased(findings):
+    return HIGH in findings or LOW in findings
+
+
+# The spec's pre-registered thresholds (specs/calibration-check-verdicts.md, "Acceptance"),
+# set from the 2026-10-03 probe before implementation. A miss is a finding for the owner,
+# never a reason to edit a threshold. "Named" counts any finding list that holds the label.
+SWEEP_THRESHOLDS = {
+    'calibrated': ((0.0, TRUE_SCALE), [('well-calibrated', _exactly(), AT_LEAST, 95)]),
+    'too_narrow': ((0.0, OVER_CONFIDENT_SCALE), [('exactly [over-confident]', _exactly(OVER), AT_LEAST, 95)]),
+    'too_wide': ((0.0, UNDER_CONFIDENT_SCALE), [('exactly [under-confident]', _exactly(UNDER), AT_LEAST, 95)]),
+    'mildly_narrow': (
+        (0.0, MILDLY_NARROW_SCALE),
+        [('over-confident named', _named(OVER), AT_LEAST, 80), ('any biased named', _any_biased, AT_MOST, 5)],
+    ),
+    'shift_up': (
+        (LOCATION_SHIFT, TRUE_SCALE),
+        [('biased (predictions too high) named', _named(HIGH), AT_LEAST, 95),
+         ('biased (predictions too low) named', _named(LOW), AT_MOST, 0)],
+    ),
+    'shift_down': (
+        (-LOCATION_SHIFT, TRUE_SCALE),
+        [('biased (predictions too low) named', _named(LOW), AT_LEAST, 95),
+         ('biased (predictions too high) named', _named(HIGH), AT_MOST, 0)],
+    ),
+    'small_shift': ((SMALL_SHIFT, TRUE_SCALE), [('biased (predictions too high) named', _named(HIGH), AT_LEAST, 60)]),
+    'shift_and_narrow': (
+        (LOCATION_SHIFT, COMPOUND_NARROW_SCALE),
+        [('exactly [biased (predictions too high), over-confident]', _exactly(HIGH, OVER), AT_LEAST, 95)],
+    ),
+    'shift_and_wide': (
+        (LOCATION_SHIFT, COMPOUND_WIDE_SCALE),
+        [('exactly [biased (predictions too high), under-confident]', _exactly(HIGH, UNDER), AT_LEAST, 95)],
+    ),
+}
+
+
+def _skewed_model(*, seed):
+    """y ~ N(0, 1) under a standardized Gamma(2) predictive: the right mean and spread, the wrong shape."""
+    rng = np.random.default_rng(seed)
+    y = rng.normal(0.0, TRUE_SCALE, size=N_OBS)
+    mu = rng.normal(0.0, POSTERIOR_SD_OF_MEAN, size=(N_CHAIN, N_DRAW, 1))
+    gamma = rng.gamma(SKEWED_SHAPE, 1.0, size=(N_CHAIN, N_DRAW, N_OBS))
+    y_rep = mu + (gamma - SKEWED_SHAPE) / np.sqrt(SKEWED_SHAPE)
+    return from_dict({'posterior_predictive': {'y': y_rep}, 'observed_data': {'y': y}}, dims={'y': ['obs']})
+
+
+def _sweep(build, use_loo):
+    """The findings for each sweep seed of the fixture `build(seed=...)` builds."""
+    return [assess_calibration(build(seed=seed), 'y', use_loo=use_loo)['findings'] for seed in SWEEP_SEEDS]
+
+
+@SWEEP
+@PIT_PATHS
+def test_acceptance_sweep_meets_the_pre_registered_thresholds(use_loo):
+    path = 'loo_pit' if use_loo else 'ppc_pit'
+    misses = []
+    for fixture, ((loc, scale), checks) in SWEEP_THRESHOLDS.items():
+        runs = _sweep(functools.partial(_normal_model, loc, scale), use_loo)
+        for what, holds, compare, bound in checks:
+            count = sum(1 for findings in runs if holds(findings))
+            print(f'{path} {fixture}: {what} {count}/{len(runs)}')
+            if not compare(count, bound):
+                misses.append(f'{fixture}: {what} {count}, needs {compare.__name__} {bound}')
+    if not use_loo:
+        # PPC only: PSIS fails on observations outside the predictive's support in every draw.
+        split = Counter(' and '.join(findings) or 'well-calibrated' for findings in _sweep(_skewed_model, use_loo))
+        print(f'{path} skewed (a known limit, recorded with no threshold): {dict(split.most_common())}')
+    assert not misses, misses

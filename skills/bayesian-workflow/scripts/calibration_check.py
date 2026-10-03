@@ -131,7 +131,8 @@ def assess_pit(pit, ci_prob=0.99):
     Known limits:
     - A skewed predictive with the right mean and variance is not labelled shape
       mismatch. A standardized Gamma(2) predictive for N(0, 1) data reads
-      over-confident, sometimes with biased (predictions too low).
+      over-confident, sometimes with biased (predictions too low); the acceptance sweep
+      in test_calibration_check.py records the split.
     - The t-test treats PIT values as independent. Heavy posterior dependence (few
       observations per parameter) inflates it, so read a borderline biased call against
       the PIT figure.
