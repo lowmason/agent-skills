@@ -1430,7 +1430,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       any new label.
 
 ## readonly-guard-leading-token-bypasses (no plan; branch claude/objective-nash-accd9c) — 2026-09-28
-- [ ] The guard's prefix utilities have value-taking options it does not model (review
+- [x] The guard's prefix utilities have value-taking options it does not model (review
       R4, Minor). `PREFIX_UTILITIES` in `hooks/readonly-agent-guard.py` lists only the
       short options that take a value, so any other option's value lands where the
       command word should be, and the command is never classified: `env --chdir /tmp rm
@@ -1440,6 +1440,23 @@ declined as YAGNI (zero instances in a one-page wiki).
       the owner when the review was handed back: out of scope for the regression fix.
       Size: quick-fix. Done when: those three are denied, while `env --version` and the
       `--opt=value` spellings still read as one word.
+      → done 2026-10-03 (/deferred quick fix): prefix-utility options are now read as
+      getopt reads them (d67f856). Long options resolve by exact name or unambiguous
+      prefix from a table checked against the GNU coreutils and GNU time sources, `=`
+      attaches a value, and a short-option cluster's first value-taker takes the rest of
+      the word or the next one. The sources added two value-takers the item did not
+      list: GNU env's `-a` and `/usr/bin/time`'s `-f`. All three examples are denied,
+      `env --version` and the `--opt=value` spellings stay one word, and the guard suite
+      is +18 (256 → 274 on both the 3.13 and 3.9-floor runs). Two Codex rounds each found
+      an env `-S`/`--split-string` spelling that a getopt reading lets past (d67f856
+      skipped its value; ee3c080's read-on missed a value that splits to nothing). The
+      owner chose to fail closed over a third round of modelling env's string syntax:
+      any env split-string is denied in every spelling (9acda9b). That also closes main's
+      quoted and glued `-S` gaps, and `env -S` moves to the README's accepted false
+      positives. Codex reviewed 9acda9b clean. The getopt reading also denies the two
+      clustered-option examples recorded in the mixed-reading item below, whose text is
+      left as recorded. The guard goes live in every repo once this merges into the main
+      checkout.
 - [ ] Allowlisted git verbs can run a program through configuration or the environment
       (review section C, out of range). `git -c core.fsmonitor=<cmd> status`, `git -c
       diff.external=<cmd> diff` and `GIT_EXTERNAL_DIFF=<cmd> git diff` run `<cmd>` from
