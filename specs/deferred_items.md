@@ -819,7 +819,7 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       `specs/completed/`. `git -C ../alt-nfp status --short -- specs/` is clean.
 
 ## 20-bayesian-workflow-book-integration — 2026-09-03
-- [ ] Split the durable Δ-ECDF reading rule from the arviz-plots-1.3.1-specific notes
+- [x] Split the durable Δ-ECDF reading rule from the arviz-plots-1.3.1-specific notes
       (final-review Minor, triaged defer): the "What that call actually draws" paragraph in
       `skills/bayesian-workflow/references/model-criticism.md` (SBC section, ~line 189) is one
       ~10-sentence block of version-pinned detail (the `rcParams["stats.envelope_prob"]` fallback,
@@ -839,6 +839,8 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       the *_inside_bands values"). Settle both sites together with the model-criticism.md
       paragraph once upstream settles: either correct the docstrings to name the split, or
       move the JSON verdict to the method the plots use.
+      → done in plan 34 (the calibration_check.py half); the model-criticism.md half carries
+      forward as the SBC-paragraph item under § 34-calibration-check-verdicts
 - [x] `sbc_rank` sketch breaks on scalar parameters (final-review Minor; pre-existing and
       re-shipped verbatim by plan 20's own replacement text): in
       `skills/bayesian-workflow/references/model-criticism.md`, `draws[..., idx]` and
@@ -1393,7 +1395,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       or a softer "recommends" tier.
 
 ## deferred-triage (no plan; /deferred pass, branch deferred-triage-2026-09-28) — 2026-09-28
-- [ ] Calibration diagnosis labels: precedence misreads a pure location shift on a
+- [x] Calibration diagnosis labels: precedence misreads a pure location shift on a
       minority of seeds, and a PIT-only shape failure is given a direction that is sign
       noise. `assess_calibration` in `skills/bayesian-workflow/scripts/calibration_check.py`
       lets a failed coverage band win: when both bands fail it reports over- or
@@ -1428,6 +1430,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       decided, a shift fixture on a seed where both bands fail and the three-segment
       fixture are each diagnosed according to them, and `check_diagnostics.py` routes
       any new label.
+      → done in plan 34
 
 ## readonly-guard-leading-token-bypasses (no plan; branch claude/objective-nash-accd9c) — 2026-09-28
 - [x] The guard's prefix utilities have value-taking options it does not model (review
@@ -1514,3 +1517,65 @@ declined as YAGNI (zero instances in a one-page wiki).
       completion gate (the owner's call) so /deferred keeps seeing it after the spec retired.
       Size: quick-fix. Revisit if: the session default moves off xhigh, or a skill turn is
       seen running at a lower effort than its session because of a pin.
+
+## 34-calibration-check-verdicts — 2026-10-03
+- [ ] Shrink the SBC paragraph's version-pinned detail once upstream settles: the "What that
+      call actually draws" paragraph in `skills/bayesian-workflow/references/model-criticism.md`
+      keeps its version-pinned detail until the pot_c/envelope situation settles upstream.
+      When it does, keep the one durable instruction (read the p-value and the highlighted
+      points, not a picture of a band) and shrink the version notes to a clause. Evidence on
+      arviz-plots 1.3.2 (2026-10-03): the envelope branch of `plot_ecdf_pit` still raises
+      `TypeError: 'DataArray' object cannot be interpreted as an integer` (measured on PPC and
+      LOO trees, not on the SBC call itself), and `pot_c` false-alarms on grid-valued PPC PITs
+      after the coverage fold. Carried from the 20-bayesian-workflow-book-integration item that
+      plan 34 half-closed.
+      Size: quick-fix. Revisit if: an arviz-plots release fixes or removes `method="envelope"`.
+- [ ] Skewed-predictive residual: a skewed predictive with the right mean and variance is not
+      labelled `shape mismatch`. This is the first known limit in `assess_pit`'s docstring
+      (`skills/bayesian-workflow/scripts/calibration_check.py`). Measured by plan 34's
+      acceptance sweep (PPC, seeds 0-99, a standardized Gamma(2) predictive for N(0, 1) data,
+      `CALIBRATION_SWEEP=1` in `scripts/test_calibration_check.py`):
+      `over-confident (predictions too certain)` 84, `biased (predictions too low) and
+      over-confident (predictions too certain)` 12, `under-confident (predictions too
+      uncertain)` 2, `biased (predictions too low) and under-confident (predictions too
+      uncertain)` 2; `shape mismatch` 0. No rule scored in the 2026-10-03 design pass labelled
+      it `shape mismatch`.
+      Size: design. Revisit if: a real model's shape failure is reported as a shift or a
+      spread error.
+- [ ] Below arviz-stats 1.3.1, a super-uniform PIT gets an error instead of a verdict. On
+      arviz-stats 1.1.0–1.3.0, `pot_c` raises `ValueError: Cannot compute truncated Cauchy
+      combination test. No p-values below 0.5 found.` on super-uniform PITs (exact grids,
+      near-perfect fits, and typical n = 2–3).
+      `skills/bayesian-workflow/scripts/calibration_check.py` then exits with that JSON error
+      instead of a verdict, and `--save-plots` never runs. arviz-stats 1.3.1 and later return
+      p = 0.5 (Tesso & Vehtari 2026, Eq. 24). Plan 34's floor run (arviz-stats, arviz-plots and
+      arviz-base 1.1.0) confirmed it: the 10 tests that feed super-uniform PITs fail with
+      exactly this error, and every other test passes. The floor stayed at arviz-stats ≥ 1.1 /
+      arviz-plots ≥ 1.1 at the owner's call (plan 34, Q1).
+      Size: quick-fix: raise the floor in the module docstring and the import error. Revisit
+      if: a run on an older stack reports that error, or every stack the skill runs on reaches
+      arviz-stats ≥ 1.3.1.
+- [ ] The saved calibration figures crop their x-label. `save_pit_plot` in
+      `skills/bayesian-workflow/scripts/calibration_check.py` calls `pc.savefig(output_path)`,
+      and arviz-plots' default layout puts the `PIT` / `ETI %` label below the figure's bottom
+      edge, exactly as on `plot_ppc_pit` figures (plan 34, F7; parity kept at the owner's call,
+      Q3). `pc.savefig(output_path, bbox_inches="tight")` fixes it on arviz-plots 1.1.0 and
+      1.3.2 (checked 2026-10-03).
+      Size: quick-fix. Revisit if: arviz-plots changes its default figure layout, or the owner
+      wants the saved figures to depart from `plot_ppc_pit` parity.
+- [ ] `calibration_check.py` never guards against non-finite inputs (plan 34 final-review
+      Minor, pre-existing; deferred at the completion gate, the owner's call). In
+      `skills/bayesian-workflow/scripts/calibration_check.py`, a NaN observed `y` makes both
+      `predicted < observed` and `predicted == observed` false in `pit_values`, so that
+      observation silently gets u ≈ U(0, 1/(S+1)), an extreme-tail miss. The reviewer's probe
+      (the calibrated test fixture with 10 of 200 `y` set to NaN) read `over-confident
+      (predictions too certain)` (mean_pit 0.4816, location_t −0.86) where the clean fixture
+      reads well-calibrated; the pre-plan-34 code (d9bea91) gives the same verdict on the same
+      input, so it is not a regression. A NaN in the PIT array, probed directly through
+      `assess_pit`, makes `pot_c` raise an opaque arviz-stats broadcast `ValueError`, which
+      `main()` passes through as its JSON error. NumPyro models with masked or missing
+      observations can carry NaN into `observed_data`. Fix: in `main()`, check that the
+      observed values (and the PIT, on the LOO path) are finite, and exit with a named JSON
+      error, test first.
+      Size: quick-fix. Revisit if: a masked or missing-observation model reports a calibration
+      verdict, or a run exits with the broadcast error.

@@ -1,5 +1,7 @@
 # calibration_check Verdicts Implementation Plan
 
+**Status: COMPLETE (2026-10-03)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** `skills/bayesian-workflow/scripts/calibration_check.py` computes its PIT values once, judges them with the `pot_c` uniformity test its saved figures print, draws both figures from the same values, and names every failing calibration component; `check_diagnostics.py` routes one next step per named component.
@@ -217,7 +219,7 @@ cd skills/bayesian-workflow/scripts && uv run --python 3.13 --with pytest --with
   - the constants `HIGH`, `LOW`, `OVER`, `UNDER`, `SHAPE`, `ASSESSMENT_KEYS`, `COMPOUND_NARROW_SCALE` and `COMPOUND_WIDE_SCALE`;
   - the helpers `_exact_pit(loc, scale, n=N_OBS)` and `_shape_pit(n)`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Edit 1.5, the test module docstring:
 
@@ -385,7 +387,7 @@ def test_zero_spread_pit_reads_as_a_shift_with_a_null_t(value, shift):
     assert json.loads(json.dumps(report)) == report
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run the suite command. Expected: exactly 26 failures, all in the new tests, and no pre-existing test fails.
 - 25 fail with `AttributeError: module 'calibration_check' has no attribute 'assess_pit'`.
@@ -393,7 +395,7 @@ Run the suite command. Expected: exactly 26 failures, all in the new tests, and 
 
 The reason is the same for all 26: `assess_pit` and `FINDINGS` do not exist yet. Any other failure reason means a test is wrong; fix it before Step 3.
 
-- [ ] **Step 3: Implement `FINDINGS`, `_pot_c_p_value` and `assess_pit`**
+- [x] **Step 3: Implement `FINDINGS`, `_pot_c_p_value` and `assess_pit`**
 
 Edit 1.1:
 
@@ -555,11 +557,11 @@ def assess_pit(pit, ci_prob=0.99):
     }
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run the suite command. Expected: 0 failed, with 26 more tests passing than before this task.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/bayesian-workflow/scripts/calibration_check.py skills/bayesian-workflow/scripts/test_calibration_check.py
@@ -578,7 +580,7 @@ git commit -m "feat(bayesian-workflow): assess_pit names every failing calibrati
 - Consumes: `assess_pit` from Task 1, which the regression test calls; the existing test helpers `_normal_model` and `_model_with_pit_values`.
 - Produces: `PIT_SEED = 214` and `pit_values(dt, var_name, use_loo, seed=PIT_SEED) -> np.ndarray`, a 1-D array pooled over all observation dims and strictly inside (0, 1). Test-side, for Task 3, the helpers `_two_dimensional_model()` and `_draws_below(data)`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Edit 2.3:
 
@@ -680,11 +682,11 @@ def test_loo_pit_values_are_arviz_pareto_smoothed_loo_pit():
     )
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run the suite command. Expected: exactly 5 failures, all with `AttributeError: module 'calibration_check' has no attribute 'pit_values'`. `pit_values` does not exist yet. In the regression test, the `assess_pit` precondition on the grid PIT runs and passes first, then the `pit_values` call fails. No other test fails.
 
-- [ ] **Step 3: Implement `PIT_SEED` and `pit_values`**
+- [x] **Step 3: Implement `PIT_SEED` and `pit_values`**
 
 Edit 2.1:
 
@@ -739,11 +741,11 @@ def pit_values(dt, var_name, use_loo, seed=PIT_SEED):
     return (rank + rng.uniform(size=below.shape)) / (n_draws + 1)
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run the suite command. Expected: 0 failed, with 5 more tests passing than before this task.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/bayesian-workflow/scripts/calibration_check.py skills/bayesian-workflow/scripts/test_calibration_check.py
@@ -773,7 +775,7 @@ git commit -m "feat(bayesian-workflow): own a cell-randomized PIT that never lan
   - `_run_cli(monkeypatch, capsys, data, *flags) -> (exit_code, json, stderr)`, now three values;
   - `_record_figures(monkeypatch) -> list[(tree, kwargs)]`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Edit 3.7, the test module docstring:
 
@@ -1133,7 +1135,7 @@ def test_each_figure_prints_the_p_value_its_json_verdict_records(monkeypatch, tm
         matplotlib.pyplot.close('all')
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail, twice**
+- [x] **Step 2: Run the tests to verify they fail, twice**
 
 **Without matplotlib:** run the suite command. Expected: exactly 34 failures; the rendering test is skipped.
 
@@ -1162,7 +1164,7 @@ These pass before the change by design, as guards:
 - The two figure tests fail on `assert output['assessment'] == calibration_check.assess_pit(...)`, because with matplotlib today's figures render and the five-key assessment is reached first.
 - `test_each_figure_prints_the_p_value_its_json_verdict_records` fails with `TypeError: save_pit_plot() got multiple values for argument 'var_name'`, from today's signature.
 
-- [ ] **Step 3: Implement one PIT for the JSON and both figures**
+- [x] **Step 3: Implement one PIT for the JSON and both figures**
 
 Edit 3.1, the module docstring. It carries Q2's default citation and Q1's default floors.
 
@@ -1415,7 +1417,7 @@ with:
         }
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass, twice**
+- [x] **Step 4: Run the tests to verify they pass, twice**
 
 1. Run the suite command. Expected: 0 failed, 1 skipped (the rendering test); 6 more tests pass than before the task, out of the +7 new.
 2. Run it with matplotlib. Expected: 0 failed and 0 skipped.
@@ -1432,7 +1434,7 @@ Expected: exactly two matching lines, both from the `_calibration` helper in `te
 - Any other match is a leftover, so fix it.
 - `references/reporting.md` still names `*_inside_bands` until Task 6; it is outside this grep's paths.
 
-- [ ] **Step 5: Smoke-run the CLI end to end on a real file**
+- [x] **Step 5: Smoke-run the CLI end to end on a real file**
 
 This writes a calibrated model to netCDF and runs the script with `--save-plots`. Run it from `skills/bayesian-workflow/scripts`:
 
@@ -1451,7 +1453,7 @@ Expected:
 - Open one PNG: its corner p-value is the JSON's `pit_p_value` or `coverage_p_value` to 2 dp. At planning, the coverage figure printed `p=0.45(α=0.01)` beside a JSON `coverage_p_value` of 0.4528.
 - The x-label is cut off at the bottom edge, as on today's figures (F7), unless Q3 chose the fix. That is not a regression.
 
-- [ ] **Step 6: Floor run (Q1's default: arviz-stats ≥ 1.1, arviz-plots ≥ 1.1)**
+- [x] **Step 6: Floor run (Q1's default: arviz-stats ≥ 1.1, arviz-plots ≥ 1.1)**
 
 The spec verified its design on this stack; this step verifies the implementation. Run from `skills/bayesian-workflow/scripts`:
 
@@ -1475,7 +1477,7 @@ The 10 deselected tests all feed super-uniform PIT values, which arviz-stats bel
 
 If the owner amended the floor at Q1, run the same command pinned to `arviz-plots==1.3.1`, `arviz-stats==1.3.1` and `arviz-base==1.3.1` with plain `--with matplotlib`, and without the `--deselect` lines. Expected: 0 failed.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add skills/bayesian-workflow/scripts/calibration_check.py skills/bayesian-workflow/scripts/test_calibration_check.py
@@ -1505,7 +1507,7 @@ git commit -m "feat(bayesian-workflow): one PIT feeds calibration_check's verdic
   - the constants `BIASED_PREFIX`, `OVER_CONFIDENT_PREFIX`, `UNDER_CONFIDENT_PREFIX` and `SHAPE_MISMATCH_PREFIX`.
 - Unchanged: the rating rule (`_rate_calibration`) and `_build_summary`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Edit 4.7. It replaces `test_check_diagnostics.py`'s calibration section, from `def _calibration(` to the end of the file. The `_calibration` helper moves to the new contract and carries the four assessment keys this script reads. A `_legacy_calibration` helper models a file written before `findings` existed. There is a test for every row of the spec's routing table.
 
@@ -1712,7 +1714,7 @@ def test_every_finding_reaches_a_specific_next_step(label):
     assert 'Calibration check failed' not in steps[0]
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run the suite command. Expected: exactly 9 failures.
 
@@ -1733,7 +1735,7 @@ These pass before the change by design, as guards on today's routing:
 - `test_a_legacy_over_confident_file_keeps_its_likelihood_advice`;
 - the contract test's other four labels.
 
-- [ ] **Step 3: Implement the routing**
+- [x] **Step 3: Implement the routing**
 
 Edit 4.2, the prefix constants (D8):
 
@@ -1932,7 +1934,7 @@ with:
 # labels by prefix and keeps its own copy; test_calibration_check.py holds the two in step.
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run the suite command. Expected: 0 failed, with 18 more tests passing than before this task.
 
@@ -1944,7 +1946,7 @@ grep -nE "^(import|from) " skills/bayesian-workflow/scripts/check_diagnostics.py
 
 Expected: exactly `import argparse`, `import json` and `import sys`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/bayesian-workflow/scripts/check_diagnostics.py skills/bayesian-workflow/scripts/test_check_diagnostics.py skills/bayesian-workflow/scripts/calibration_check.py skills/bayesian-workflow/scripts/test_calibration_check.py
@@ -1970,7 +1972,7 @@ git commit -m "feat(bayesian-workflow): route one next step per calibration find
 
 **This task has no RED phase.** The sweep measures the finished implementation against thresholds the spec pre-registered before implementation. Run before Tasks 1–3, it would fail on missing keys, which proves nothing.
 
-- [ ] **Step 1: Write the sweep**
+- [x] **Step 1: Write the sweep**
 
 Edit 5.2:
 
@@ -2150,11 +2152,11 @@ with:
       in test_calibration_check.py records the split.
 ```
 
-- [ ] **Step 2: Run the suite without the flag**
+- [x] **Step 2: Run the suite without the flag**
 
 Run the suite command. Expected: 0 failed, with 2 more skipped than before this task. Both new skips carry the reason `pre-registered acceptance sweep: set CALIBRATION_SWEEP=1 …`.
 
-- [ ] **Step 3: Run the sweep once and record its counts**
+- [x] **Step 3: Run the sweep once and record its counts**
 
 ```bash
 cd skills/bayesian-workflow/scripts && CALIBRATION_SWEEP=1 uv run --python 3.13 --with pytest --with arviz --with arviz-stats --with numpy --with xarray python -m pytest -q -s -k acceptance_sweep test_calibration_check.py
@@ -2167,7 +2169,12 @@ Copy every printed count line, the skewed split and the two versions into the co
 
 **If any threshold misses, the test fails and lists the misses. Stop.** Do not commit, and do not edit a threshold or `SWEEP_THRESHOLDS`. Report the misses to the owner as a finding, with the printed counts.
 
-- [ ] **Step 4: Commit**
+> Result (2026-10-03, commit 858f5c9; arviz-stats 1.3.3, arviz-plots 1.3.2): `2 passed, 88 deselected in 80.05s`. Every threshold held, and every count matches F5's prototype.
+> - PPC: calibrated `well-calibrated` 97/100; too narrow exactly `[over-confident]` 99/100; too wide exactly `[under-confident]` 99/100; mildly narrow `over-confident` named 88/100, any `biased` named 1/100; shift up `biased (predictions too high)` 100/100, `too low` 0/100; shift down `biased (predictions too low)` 99/100, `too high` 0/100; small shift `biased (predictions too high)` 69/100; shift + narrow exactly `[biased (predictions too high), over-confident]` 100/100; shift + wide exactly `[biased (predictions too high), under-confident]` 100/100.
+> - LOO: calibrated 98/100; too narrow 99/100; too wide 99/100; mildly narrow `over-confident` named 87/100, any `biased` named 1/100; shift up 100/100, wrong direction 0/100; shift down 99/100, wrong direction 0/100; small shift 69/100; shift + narrow 100/100; shift + wide 100/100.
+> - Skewed predictive (PPC, recorded with no threshold): `over-confident (predictions too certain)` 84, `biased (predictions too low) and over-confident (predictions too certain)` 12, `under-confident (predictions too uncertain)` 2, `biased (predictions too low) and under-confident (predictions too uncertain)` 2; `shape mismatch` 0.
+
+- [x] **Step 4: Commit**
 
 ```bash
 git add skills/bayesian-workflow/scripts/test_calibration_check.py skills/bayesian-workflow/scripts/calibration_check.py
@@ -2183,11 +2190,11 @@ git commit -m "test(bayesian-workflow): pre-registered calibration acceptance sw
 
 **Interfaces:** none. These are prose edits that describe Tasks 1–5's behaviour. No python code fence is added, removed or edited.
 
-- [ ] **Step 1: Re-read before editing**
+- [x] **Step 1: Re-read before editing**
 
 Plan 33 may have landed first, and it also edits root `CLAUDE.md`. Re-read the bayesian-workflow test-suite comment in `CLAUDE.md`, and the lines each edit below names. Every `old_string` below was checked against this branch at 2026-10-03, and each occurs exactly once. If one no longer matches, re-anchor on the current text and record a `> Deviation:` note.
 
-- [ ] **Step 2: `reporting.md`**
+- [x] **Step 2: `reporting.md`**
 
 Edit 6.1, the file-tree comments at lines 36–37. These lines sit inside a bare code fence. Only the comments change; the fence lines do not.
 
@@ -2253,7 +2260,7 @@ with:
 **Assessment:** <1–2 sentences from `check_diagnostics()` calibration section — well-calibrated, or each finding it names: over-confident, under-confident, biased (predictions too high or too low), shape mismatch, or a compound such as biased and over-confident — with the mean coverage deviation if available.>
 ```
 
-- [ ] **Step 3: `model-criticism.md`**
+- [x] **Step 3: `model-criticism.md`**
 
 Edit 6.5 adds one prose sentence directly after the code fence that closes at line 110. The sentence warns about the false alarm, gives the rate formula, and points to the script's coverage figure. The fence and the gated SBC paragraph are not edited.
 
@@ -2271,7 +2278,7 @@ A direct `plot_ppc_pit(idata, coverage=True)` can print `p=0.00` on a calibrated
 Refer to [this guide](https://arviz-devs.github.io/EABM/Chapters/Prior_posterior_predictive_checks.html#coverage) for detailed coverage interpretation — it's a treasure trove for the whole Bayesian workflow.
 ```
 
-- [ ] **Step 4: `publications.md`**
+- [x] **Step 4: `publications.md`**
 
 Edit 6.6 adds the entry after Talts et al., per Q2's default.
 
@@ -2290,7 +2297,7 @@ with:
   (`plot_ppc_pit`, `plot_loo_pit`, `plot_ecdf_pit`) and `scripts/calibration_check.py`'s verdicts.
 ```
 
-- [ ] **Step 5: Check that no fence line changed**
+- [x] **Step 5: Check that no fence line changed**
 
 ```bash
 git diff -U0 -- skills/bayesian-workflow | grep -cE '^[-+][[:space:]]*`{3}'
@@ -2298,7 +2305,7 @@ git diff -U0 -- skills/bayesian-workflow | grep -cE '^[-+][[:space:]]*`{3}'
 
 Expected: `0`. `grep -c` exits 1 when it counts nothing, so here exit status 1 is the pass.
 
-- [ ] **Step 6: Re-measure the suite and update `CLAUDE.md`**
+- [x] **Step 6: Re-measure the suite and update `CLAUDE.md`**
 
 ```bash
 cd skills/bayesian-workflow/scripts && uv run --python 3.13 --with pytest --with arviz --with arviz-stats --with numpy --with xarray python -m pytest -q 2>&1 | tail -1
@@ -2335,7 +2342,7 @@ with:
 # encountered in scalar divide" on the constant-parameter fixture — are expected and not silenced)
 ```
 
-- [ ] **Step 7: Run the skill gates**
+- [x] **Step 7: Run the skill gates**
 
 From the worktree root:
 
@@ -2348,7 +2355,7 @@ cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q
 
 Expected: each exits 0. A Tier 1 failure here means a fence moved; undo the edit that moved it.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add skills/bayesian-workflow/references/reporting.md skills/bayesian-workflow/references/model-criticism.md skills/bayesian-workflow/references/publications.md CLAUDE.md
