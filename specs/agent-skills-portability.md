@@ -38,7 +38,7 @@ skill bodies; every command is `disable-model-invocation: true`.
 | `ALLOWED_KEYS` lacks the spec field `compatibility`, so the lint rejects a spec-valid skill | `build/check_frontmatter.py` |
 | Gemini CLI 0.46.0 loads the three skills carrying Claude host keys (`effort`: bayesian-workflow, tune-hyperparameters; `context`: tech-debt) as `[Enabled]` | `gemini skills list --all`, run from a neutral directory |
 | Codex CLI 0.154.0 lists the same three skills | `codex debug prompt-input`, run from `/tmp/bwprobe/` |
-| Codex shortens **every** description when the listing exceeds its budget: with 71 skills installed, descriptions were cut to 155–164 characters (median 157). The cutoff depends on how many skills share the budget; it is not a constant | same `codex debug prompt-input` render |
+| Codex shortens descriptions when its listing exceeds its budget. With 93 skills listed (66 from `~/.agents/skills`, the rest system and plugin skills), 31 of this repo's 32 descriptions were cut to 156–164 characters (median 158); only `test-driven-development` (79 characters) appeared whole. Measured at this one skill count only. That the cutoff moves with the number of skills sharing the budget is an inference from Codex's documented budget, not a measurement | same `codex debug prompt-input` render |
 | All 32 descriptions lead with "Use when" and name their primary trigger within the first 150 characters | per-skill review of each description's opening (R2.1) |
 | One description contains angle brackets: llm-wiki's `'verify <page>'` | YAML parse of every `SKILL.md` |
 | Two of 16 runnable scripts carry PEP 723 headers (both `build.py`); others are invoked as `python`, `python3`, or `uv run --python 3.13 --with … python …` | grep of `skills/**` |
@@ -168,8 +168,8 @@ R2.2 **RED baseline micro-test for `writing-skills`.** Before any edit to
 R2.3 **Edit by outcome.**
 - **Baseline ≥ 4/5:** add only a factual note of 2–4 lines to `writing-skills`'
   "Token Efficiency" section. The note covers three points: Codex shortens every
-  description when its listing exceeds its budget; the measured cut (155–164
-  characters with 71 skills, Codex 0.154, 2026-10-03); and how to re-measure
+  description when its listing exceeds its budget; the measured cut (156–164
+  characters with 93 skills listed, Codex 0.154, 2026-10-03); and how to re-measure
   (`codex debug prompt-input` from a directory outside any repo, reading the
   Skills list). No new rule.
 - **Baseline ≤ 3/5:** also add one checklist line ("the primary trigger falls
@@ -284,7 +284,7 @@ license files and carry the same names:
 
 | File | Skills | Basis |
 |---|---|---|
-| `LICENSE` | all 32 | every skill contains Lowell Mason's original work or modifications |
+| `LICENSE` | every skill under `skills/` | every skill contains Lowell Mason's original work or modifications |
 | `LICENSE-superpowers` | the 13 superpowers skills | adapted from obra/superpowers (NOTICE) |
 | `LICENSE-coding-skills` | `bayesian-workflow`, `clean-code` | NOTICE records *adapted* Mancuso Lab content (`references/jax-numerics.md`, `references/modules.md`). `tech-debt` took "only the idea" and gets no copy |
 | `LICENSE-andorra` | `bayesian-workflow` | only if R4.5 finds an upstream notice |
@@ -349,8 +349,13 @@ Constraints:
   and update CLAUDE.md's per-suite counts by the same deltas.
 - **Before allocating the plan id**, check `specs/plans/` on every branch
   (`git ls-tree`); ids are allocated per branch and have collided.
-- **Leave `specs/claude-code-customization-guide.md` alone**; it carries the
-  owner's uncommitted edits.
+- **Coordinate with the in-flight JAX spec.** `specs/jax-deep-learning-skills.md`
+  is being implemented on `codex/jax-deep-learning-skills` and defines three
+  skills (`skills/deep-learning` is on that branch as of 2026-10-03).
+  R1.4's required `license`, R3's header and invocation rules, and R4's per-skill
+  license copies apply to them too. Whichever branch merges second brings the
+  other's skills into conformance in the same merge, or the new lints fail on
+  arrival.
 
 ## Validation and acceptance
 
@@ -369,8 +374,8 @@ Constraints:
    passes after.
 4. R3.8's execution proof is recorded for all 16 scripts.
 5. **Cross-runtime load check**, from a directory outside any repo:
-   - `gemini skills list --all` shows all 32 repo skills `[Enabled]`;
-   - `codex debug prompt-input` lists all 32 names.
+   - `gemini skills list --all` shows every skill under `skills/` as `[Enabled]`;
+   - `codex debug prompt-input` lists every skill under `skills/` by name.
 
    This shows the new `compatibility`, `license`, and `metadata` values and the
    bundled license files break loading in neither runtime.
@@ -393,12 +398,17 @@ Constraints:
 - **Splitting `writing-skills`** below 500 body lines (R1.7's warning).
 - **A versioning policy**: CHANGELOG, git tags, and `metadata.version` bumps.
 - **Skill security scanning** (e.g. Cisco's `skill-scanner`). The repo has no CI.
+- **License travel for single-file agents.** `agents/code-reviewer.md` and
+  `agents/task-reviewer.md` are distilled from superpowers and install as single
+  files without `LICENSE-superpowers`: the same gap R4 closes for skills.
 
 ## Sources and verification notes
 
 - `specs/agent-skills-best-practices.md`: the survey. Its Claude Code numbers are
-  secondary; `specs/claude-code-customization-guide.md` (re-verified against
-  official docs on 2026-10-03, at 2.1.288) governs Claude Code facts.
+  secondary; `specs/claude-code-customization-guide.md` governs Claude Code
+  facts. Its 2026-10-03 re-verification against official docs (at 2.1.288) was
+  on branch `docs/cc-guide-refresh-2026-10-03`, not yet on main, when this spec
+  was written.
 - [Agent Skills specification](https://agentskills.io/specification): the six
   frontmatter fields, the `compatibility` ≤ 500 limit, and `metadata` as a
   string-to-string map.
@@ -409,4 +419,4 @@ Constraints:
   assuming it.
 - Runtime measurements in "Measured baseline" were taken on 2026-10-03 with
   Gemini CLI 0.46.0 and Codex CLI 0.154.0, on this machine's installed skill set
-  (71 skills visible to Codex).
+  (93 skills in Codex's listing).
