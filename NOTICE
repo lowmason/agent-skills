@@ -75,6 +75,16 @@ The following skills are original works by Lowell Mason, MIT licensed:
     derive-roadmap/
     classification-codes/
     geographic-codes/
+    deep-learning/
+
+deep-learning/ is an original work by Lowell Mason, MIT licensed. Its
+prose, canonical JAX examples, synthetic fixtures, and numerical checks are
+original. The Orchestra AI Research Skills suite
+(https://github.com/Orchestra-Research/AI-Research-SKILLs, MIT licensed) is
+coverage inspiration by reference to its scope only; no Orchestra prose or
+code is adapted or reproduced. Primary library documentation and research
+papers are cited as method/API sources; no manuals, papers, checkpoints or
+datasets are bundled.
 
 classification-codes/ and geographic-codes/ are original works by Lowell
 Mason (MIT) whose bundled data/ tables are derived from U.S. Census Bureau,

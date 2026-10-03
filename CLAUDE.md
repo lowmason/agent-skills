@@ -43,7 +43,7 @@ adapter here; reusable Codex workflows are skills.
 
 Skills come from three sources with distinct attribution, all tracked in `NOTICE`. **Read `NOTICE` before moving, renaming, or substantially rewriting any skill**, and keep it in sync:
 
-- **Lowell's originals** (MIT, `LICENSE`): `develop-testing-strategy`, `validate-data`, `explore-data`, `tech-debt`, `design-architecture`, `bls-data-context`, `recommend-probabilistic-model`, `recommend-visualization`, `track-model-experiments`, `tune-hyperparameters`, `creative-thinking`, `derive-roadmap`, `llm-wiki`, `describe-critique-methodology`, `classification-codes`, `geographic-codes`. (Sixteen — keep in sync with `NOTICE`, which is authoritative.)
+- **Lowell's originals** (MIT, `LICENSE`): `develop-testing-strategy`, `validate-data`, `explore-data`, `tech-debt`, `design-architecture`, `bls-data-context`, `recommend-probabilistic-model`, `recommend-visualization`, `track-model-experiments`, `tune-hyperparameters`, `creative-thinking`, `llm-wiki`, `describe-critique-methodology`, `derive-roadmap`, `classification-codes`, `geographic-codes`, `deep-learning`. (17 originals — keep in sync with `NOTICE`, which is authoritative.)
 - **`bayesian-workflow`** — adapted from Alexandre Andorra's PyMC skill, ported to NumPyro+JAX (MIT).
 - **superpowers skills** (MIT, © 2025 Jesse Vincent, `LICENSE-superpowers`): the 13 process skills (`brainstorming`, `writing-plans`, `test-driven-development`, etc.). These were adapted from the upstream `superpowers` plugin.
 - **clean-code family** — `clean-coder`, `clean-code`, and `rules/clean-code-python.md` adapt Robert C. Martin's *Clean Code* rule catalog (2008), cited by rule code only, no book prose; `clean-coder` also cites Beck's *Tidy First?*, Fowler's opportunistic refactoring, and Ousterhout's *APOSD* by idea only.
@@ -202,9 +202,16 @@ uv run --python 3.13 --with 'arviz==1.3.0' --with arviz-base \
   python build/check_snippets.py --run skills/bayesian-workflow/
 
 # Self-contained CPU-example process-contract tests — 37 tests (stdlib + pytest only)
-# Actual JAX CPU-example execution uses a separate pinned environment (added in Task 2).
+# Actual JAX CPU-example execution uses the separate pinned environment below.
 # norun/noparse blocks are not executed; execution does not validate surrounding prose.
 cd build && uv run --python 3.13 --with pytest python -m pytest -q test_check_jax_examples.py
+
+# Verified deep-learning CPU examples — six canonical Markdown blocks, no preamble.
+# Profile: specs/verification/32-jax-cpu.in -> 32-jax-cpu.txt; refresh deliberately,
+# then rerun. Hardware/checkpoint recipes in references have separate stated limits.
+JAX_PLATFORMS=cpu uv run --python 3.13 \
+  --with-requirements specs/verification/32-jax-cpu.txt \
+  python build/check_jax_examples.py skills/deep-learning/
 
 # Single test
 cd build && uv run --python 3.13 --with pytest --with numpy --with polars \
