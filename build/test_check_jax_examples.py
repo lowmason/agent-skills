@@ -143,3 +143,85 @@ def test_rejects_marked_fence_closed_early_by_shared_parser(tmp_path, capsys):
     assert any(error.startswith(f'{path}:4: unsupported cpu-example fence')
                for error in errors)
     assert 'executed 0 (scope errors)' in capsys.readouterr().out
+
+
+def test_unmarked_premature_close_still_requires_execution_marker(tmp_path, capsys):
+    path = write_example(tmp_path, 'assert True')
+    with path.open('a') as handle:
+        handle.write('```python\nassert True\n    ```\n')
+        handle.write("raise AssertionError('unmarked omitted body')\n```\n")
+    examples, errors = collect_examples([path])
+    assert main([str(path)]) == 1
+    assert [example.identifier for example in examples] == ['probe']
+    assert any(error.startswith(f'{path}:4: needs an explicit execution marker')
+               for error in errors)
+    assert 'executed 0 (scope errors)' in capsys.readouterr().out
+
+
+def write_mixed_example(tmp_path: Path, opener: str, info: str, closer: str) -> Path:
+    path = write_example(tmp_path, 'assert True')
+    with path.open('a') as handle:
+        handle.write(f'{opener} {info}\n')
+        handle.write("raise AssertionError('metadata must prevent execution')\n")
+        handle.write(closer)
+    return path
+
+
+@pytest.mark.parametrize(('opener', 'closer'), [
+    (' ```python', ' ```\n'),
+    ('~~~py', '~~~\n'),
+    ('```python', ''),
+], ids=['indented', 'tilde-py-alias', 'EOF-ended'])
+@pytest.mark.parametrize(('info', 'message'), [
+    ('', 'needs an explicit execution marker'),
+    ('norun', 'exemption needs a reason'),
+    ('noparse', 'exemption needs a reason'),
+], ids=['unmarked', 'bare-norun', 'bare-noparse'])
+def test_unsupported_python_fence_still_requires_valid_metadata(
+    tmp_path, capsys, opener, closer, info, message,
+):
+    path = write_mixed_example(tmp_path, opener, info, closer)
+    examples, errors = collect_examples([path])
+    assert main([str(path)]) == 1
+    assert [example.identifier for example in examples] == ['probe']
+    assert any(error.startswith(f'{path}:4: {message}') for error in errors)
+    assert 'executed 0 (scope errors)' in capsys.readouterr().out
+
+
+@pytest.mark.parametrize(('opener', 'closer'), [
+    (' ```python', ' ```\n'),
+    ('~~~py', '~~~\n'),
+    ('```python', ''),
+], ids=['indented', 'tilde-py-alias', 'EOF-ended'])
+@pytest.mark.parametrize('marker', ['norun', 'noparse'])
+def test_reasoned_exemption_in_unsupported_fence_remains_allowed(
+    tmp_path, capsys, opener, closer, marker,
+):
+    info = f'{marker} requires a real accelerator checkpoint'
+    path = write_mixed_example(tmp_path, opener, info, closer)
+    examples, errors = collect_examples([path])
+    assert main([str(path)]) == 0
+    assert errors == []
+    assert [example.identifier for example in examples] == ['probe']
+    assert 'Selected/executed 1 CPU examples; passed 1.' in capsys.readouterr().out
+
+
+def test_unsupported_cpu_example_still_requires_a_unique_id(tmp_path, capsys):
+    path = write_mixed_example(tmp_path, '~~~py', 'cpu-example probe', '~~~\n')
+    examples, errors = collect_examples([path])
+    assert main([str(path)]) == 1
+    assert [example.identifier for example in examples] == ['probe']
+    assert any(error.startswith(f'{path}:4: duplicate example id probe')
+               for error in errors)
+    assert 'executed 0 (scope errors)' in capsys.readouterr().out
+
+
+@pytest.mark.parametrize('info', ['cpu-example', 'cpu-example omitted extra'])
+def test_unsupported_cpu_example_still_requires_one_id(tmp_path, capsys, info):
+    path = write_mixed_example(tmp_path, '~~~py', info, '~~~\n')
+    examples, errors = collect_examples([path])
+    assert main([str(path)]) == 1
+    assert [example.identifier for example in examples] == ['probe']
+    assert any(error.startswith(f'{path}:4: needs an explicit execution marker')
+               for error in errors)
+    assert 'executed 0 (scope errors)' in capsys.readouterr().out

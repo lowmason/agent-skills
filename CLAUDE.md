@@ -84,13 +84,13 @@ There is no root test runner or repo-wide `pyproject`, and the scientific deps (
 cd build && uv run --python 3.13 --with pytest --with pyyaml \
   python -m pytest -q test_runtime_support.py
 
-# Full build-directory tests — 163 tests
-# (83 citation/lint/snippet + 62 runtime-support + 18 CPU-example process-contract)
-# (all 163 collect either way. 7 of test_check_snippets.py's need the ArviZ/NumPyro chain and
-# skip without it, so the command below reports 156 passed, 7 skipped; append
+# Full build-directory tests — 182 tests
+# (83 citation/lint/snippet + 62 runtime-support + 37 CPU-example process-contract)
+# (all 182 collect either way. 7 of test_check_snippets.py's need the ArviZ/NumPyro chain and
+# skip without it, so the command below reports 175 passed, 7 skipped; append
 # --with "arviz>=1.0" --with arviz-base --with arviz-stats --with arviz-plots --with numpyro
-# --with jax --with matplotlib to run all 163. Separately, 5 in test_verify_citations.py need the
-# build/.scratch/ ground truth — lacking both: 151 passed, 4 failed, 8 skipped. .scratch/ is
+# --with jax --with matplotlib to run all 182. Separately, 5 in test_verify_citations.py need the
+# build/.scratch/ ground truth — lacking both: 170 passed, 4 failed, 8 skipped. .scratch/ is
 # gitignored, so a fresh clone or worktree lacks it; regenerate with build/extract_structure.py,
 # see build/CLAUDE.md)
 cd build && uv run --python 3.13 --with pytest --with numpy --with polars --with pyyaml python -m pytest -q
@@ -201,7 +201,7 @@ uv run --python 3.13 --with 'arviz==1.3.0' --with arviz-base \
   --with 'numpyro==0.21.0' --with 'jax==0.11.1' --with numpy --with matplotlib \
   python build/check_snippets.py --run skills/bayesian-workflow/
 
-# Self-contained CPU-example process-contract tests — 18 tests (stdlib + pytest only)
+# Self-contained CPU-example process-contract tests — 37 tests (stdlib + pytest only)
 # Actual JAX CPU-example execution uses a separate pinned environment (added in Task 2).
 # norun/noparse blocks are not executed; execution does not validate surrounding prose.
 cd build && uv run --python 3.13 --with pytest python -m pytest -q test_check_jax_examples.py

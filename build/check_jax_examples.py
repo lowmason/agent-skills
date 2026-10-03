@@ -26,31 +26,40 @@ class Example:
     code: str
 
 
-def _supported_outer_fences(
+@dataclass(frozen=True)
+class _OuterFence:
+    line: int
+    lang: str
+    info: str
+    supported: bool
+
+
+def _outer_fence_metadata(
     text: str, parsed_closing_lines: dict[int, int],
-) -> tuple[set[int], list[int]]:
-    '''Validate outer fence boundaries without extending the shared extractor.
+) -> list[_OuterFence]:
+    '''Retain outer metadata before deciding whether its payload is supported.
 
     Markers in a non-Python template's body are literal text.
     '''
-    supported_lines: set[int] = set()
-    unsupported_lines: list[int] = []
+    fences: list[_OuterFence] = []
     opening: re.Match[str] | None = None
     opening_line = 0
-    marked = False
+    lang = ''
+    info = ''
     for line_number, line in enumerate(text.splitlines(), start=1):
         if opening is None:
             opening = OUTER_FENCE_OPEN_RE.match(line)
             if opening is None:
                 continue
             delimiter = opening.group('delimiter')
-            info = opening.group('info')
-            if delimiter[0] == '`' and '`' in info:
+            full_info = opening.group('info')
+            if delimiter[0] == '`' and '`' in full_info:
                 opening = None
                 continue
             opening_line = line_number
-            parts = info.split()
-            marked = len(parts) > 1 and parts[1] == 'cpu-example'
+            parts = full_info.strip().split(None, 1)
+            lang = parts[0] if parts else ''
+            info = parts[1] if len(parts) > 1 else ''
             continue
         closing = OUTER_FENCE_CLOSE_RE.match(line)
         if closing is None:
@@ -59,19 +68,16 @@ def _supported_outer_fences(
         closing_delimiter = closing.group('delimiter')
         if closing_delimiter[0] != delimiter[0] or len(closing_delimiter) < len(delimiter):
             continue
-        is_supported = (
+        supported = (
             opening.group('indent') == ''
             and delimiter[0] == '`'
             and parsed_closing_lines.get(opening_line) == line_number
         )
-        if is_supported:
-            supported_lines.add(opening_line)
-        elif marked:
-            unsupported_lines.append(opening_line)
+        fences.append(_OuterFence(opening_line, lang, info, supported))
         opening = None
-    if opening is not None and marked:
-        unsupported_lines.append(opening_line)
-    return supported_lines, unsupported_lines
+    if opening is not None:
+        fences.append(_OuterFence(opening_line, lang, info, False))
+    return fences
 
 
 def collect_examples(paths: list[Path]) -> tuple[list[Example], list[str]]:
@@ -94,24 +100,23 @@ def collect_examples(paths: list[Path]) -> tuple[list[Example], list[str]]:
         for path in files:
             text = path.read_text()
             blocks = iter_code_blocks(text)
+            blocks_by_line = {block.line: block for block in blocks}
             parsed_closing_lines = {
                 block.line: block.line + block.code.count('\n') + 1
                 for block in blocks
             }
-            supported_lines, unsupported_lines = _supported_outer_fences(
-                text, parsed_closing_lines,
-            )
-            errors.extend(
-                f'{path}:{line}: unsupported cpu-example fence; '
-                'use an unindented python/py backtick opener and a matching closer'
-                for line in unsupported_lines
-            )
-            for block in blocks:
-                if block.line not in supported_lines:
-                    continue
-                parts = block.info.split()
+            for fence in _outer_fence_metadata(text, parsed_closing_lines):
+                parts = fence.info.split()
                 marker = parts[0] if parts else ''
-                location = f'{path}:{block.line}'
+                location = f'{path}:{fence.line}'
+                unsupported_error = (
+                    f'{location}: unsupported cpu-example fence; '
+                    'use an unindented python/py backtick opener and a matching closer'
+                )
+                if fence.lang not in {'python', 'py'}:
+                    if marker == 'cpu-example':
+                        errors.append(unsupported_error)
+                    continue
                 if marker in {'norun', 'noparse'}:
                     if len(parts) < 2:
                         errors.append(f'{location}: exemption needs a reason')
@@ -119,7 +124,8 @@ def collect_examples(paths: list[Path]) -> tuple[list[Example], list[str]]:
                 if marker != 'cpu-example' or len(parts) != 2:
                     errors.append(f'{location}: needs an explicit execution marker and id/reason')
                     continue
-                selected += 1
+                if fence.supported:
+                    selected += 1
                 if path.resolve() in visited:
                     continue
                 identifier = parts[1]
@@ -127,7 +133,11 @@ def collect_examples(paths: list[Path]) -> tuple[list[Example], list[str]]:
                     errors.append(f'{location}: duplicate example id {identifier}')
                     continue
                 identifiers.add(identifier)
-                examples.append(Example(path.resolve(), block.line, identifier, block.code))
+                if not fence.supported:
+                    errors.append(unsupported_error)
+                    continue
+                block = blocks_by_line[fence.line]
+                examples.append(Example(path.resolve(), fence.line, identifier, block.code))
             visited.add(path.resolve())
         if selected == 0:
             errors.append(f'{scope}: zero CPU examples')
