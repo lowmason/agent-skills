@@ -1,6 +1,6 @@
 # Claude Code drift automation — Design Spec
 
-**Status: DESIGN APPROVED (2026-10-03); merged spec awaiting review.**
+**Status: merged design awaiting review (2026-10-03).**
 Two sessions designed this system in parallel from the same brief. This
 session's spec (`71d2422`) and the guide-upkeep session's
 (`specs/claude-code-guide-upkeep.md`, `024d430` on branch
@@ -185,11 +185,12 @@ scripts were session-local (`/tmp/ccdrift-probe/`).
 14. **Probes v1** (the owner's call): guard liveness, agent tool set, Stop-hook
     continuation, and agent model pins. Declined: skill frontmatter pins
     (deferred item 31 stays a manual watch) and the Stop-hook block cap, which
-    matters only if drift #2 is resolved toward re-checking. `--claude <path>`
-    is required, since with four versions coexisting a default would silently
+    matters only if drift #2 is resolved toward re-checking.
+15. **Probes name their binary.** `--claude <path>` is required (this spec's
+    first draft): with four versions coexisting, a default would silently
     probe the wrong binary. A binary older than the latest release is refused
-    unless `--allow-old` is given and recorded.
-15. **One staged spec, one plan per stage** (Sequencing). The detector, the
+    unless `--allow-old` is given and recorded (the guide-upkeep draft).
+16. **One staged spec, one plan per stage** (Sequencing). The detector, the
     wiring, the skill, the notice and the probes share one manifest and one set
     of section IDs; designing them together avoids a schema migration later.
 
@@ -198,8 +199,9 @@ scripts were session-local (`/tmp/ccdrift-probe/`).
 ### Layout
 
 - `build/cc_guide/` holds the tool, its configuration and its log:
-  - `cli.py`, the one CLI, run from the repo root as
-    `uv run --python 3.13 python build/cc_guide/cli.py <subcommand>`. Its
+  - `cli.py`, the one CLI, run as
+    `uv run --python 3.13 python build/cc_guide/cli.py <subcommand>`. It finds
+    the repo from its own location, never from the working directory. Its
     subcommands, named in code font below, are `lint`, `check`, `packets`,
     `quotes`, `baseline <sub>`, `probes` and `binaries`. Each one's logic lives
     in its own module (`lint.py`, `check.py`, `baseline.py`, `quotes.py`,
@@ -707,17 +709,20 @@ prints `~/.cache/agent-skills/cc-guide/notice.json`, a JSON object holding one
 `systemMessage` that Python escaped when writing it, unless the same notice
 was already shown today. `notice-shown` holds the date and the notice's
 digest, which Python writes beside the notice, so a changed notice shows again
-the same day. It always exits 0, and works under `env -i PATH=/usr/bin:/bin`.
+the same day. It always exits 0 and needs only `HOME` and a minimal `PATH`: a
+session started from the Dock keeps `HOME` but gets launchd's `PATH`.
 
 R9.3 **`refresh`**, async.
 - It exits 0 at once when the last successful check finished under 24 hours
   ago (`last-check.json`), or when another session holds the lock (an atomic
   `mkdir` lock, broken when older than an hour).
 - Otherwise it looks for `uv` on PATH, then in `~/.local/bin` and
-  `/opt/homebrew/bin`, and runs
-  `uv run --python 3.13 python build/cc_guide/cli.py check --hook` under an
-  overall time budget, since `timeout` is not enforced on async hooks. When
-  `uv` is missing, it writes a fixed error notice itself. It exits 0.
+  `/opt/homebrew/bin`, and runs `cli.py check --hook` through
+  `uv run --python 3.13` under an overall time budget, since `timeout` is not
+  enforced on async hooks. It locates `cli.py` from its own directory, never
+  from the hook's working directory: a relative path would repeat drift #3's
+  class of bug. When `uv` is missing, it writes a fixed error notice itself.
+  It exits 0.
 - `check --hook` writes `notice.json` and `last-check.json` and prints
   nothing: an async hook's output would reach only Claude.
 
@@ -729,6 +734,9 @@ R9.4 **The notice.**
   of the last good check. A failure is never silent.
 - The stale backlog is not part of the notice; the lint and the report carry
   it.
+- Because `check --hook` reads `main` (R6.1), the notice keeps naming work the
+  skill has resolved until the owner commits the bookkeeping it left in the
+  working tree (Decision 13).
 
 R9.5 It fires only in this repo (the main checkout and its worktrees) and
 only in Claude Code. The settings change is persistent configuration: the
@@ -889,9 +897,11 @@ sets `tools: Read, Grep, Glob`, `model: sonnet` and `omitClaudeMd: true`.
 `check_frontmatter.py`, the dependency-drift test and
 `sync_runtime_assets.py --check` stay unchanged.
 
-R12.5 **`notice.sh show`** is tested under `env -i PATH=/usr/bin:/bin`: it
-always exits 0, prints only JSON, and shows a given notice at most once a
-day.
+R12.5 **`notice.sh show`** is tested under
+`env -i HOME=<tmpdir> PATH=/usr/bin:/bin`, with a fixture notice under that
+`HOME`. It must print the notice, print nothing on a second run the same day,
+print a changed notice again, print only JSON, and always exit 0. A run that
+prints nothing at all fails, so a missing notice cannot pass as a quiet day.
 
 R12.6 **Probe assertions** are replayed against streams recorded from our own
 probe runs.
@@ -979,7 +989,7 @@ Constraints:
      and nothing is committed.
 4. **Stage 4.**
    - `show` prints nothing on exit 0 and a single `systemMessage` on exit 1 or
-     2, and passes under the launchd-like PATH.
+     2, and passes R12.5 in its launchd-like environment.
    - The owner sees the notice at a live session start, at most once a day.
 5. **Stage 5.**
    - Each probe yields PASS or DIVERGES with recorded evidence on an
