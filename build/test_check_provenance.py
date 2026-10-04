@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 from check_provenance import (
@@ -86,12 +87,21 @@ def test_originals_mismatch_clean_when_sets_match_out_of_order():
     assert extra == []
 
 
-def test_real_notice_originals_has_sixteen_entries():
+def test_real_notice_originals_match_claude_md_stated_count():
     # Guards against a silent vacuous pass: if a future heading rewording ever
     # breaks notice_originals's regex, it would return [] and the drift check
-    # would compare empty-to-empty and pass without checking anything.
-    notice = (Path(__file__).resolve().parent.parent / 'NOTICE').read_text()
-    assert len(notice_originals(notice)) == 16
+    # would compare empty-to-empty and pass without checking anything. The
+    # expected count is the "(N originals" note on CLAUDE.md's originals
+    # bullet rather than a literal, so adding an original means updating that
+    # note, not this test, and the note itself can no longer drift.
+    repo = Path(__file__).resolve().parent.parent
+    notice = (repo / 'NOTICE').read_text()
+    claude_md = (repo / 'CLAUDE.md').read_text()
+    bullet = re.search(r"^- \*\*Lowell's originals\*\*.*$", claude_md, re.M)
+    assert bullet, "CLAUDE.md has no \"- **Lowell's originals**\" bullet"
+    stated = re.search(r'\((\d+) originals', bullet.group(0))
+    assert stated, "CLAUDE.md's originals bullet has no '(N originals' count note"
+    assert len(notice_originals(notice)) == int(stated.group(1))
 
 
 def test_real_repo_originals_are_in_sync():
