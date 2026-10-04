@@ -66,7 +66,7 @@
   - `.claude/`
   - anything under `~/Projects/alt-nfp-model`, `~/Projects/alt-nfp-stats*` or `~/Projects/archive/alt_nfp`
   - the control directory
-- Or injected context (`attachment` / `system` records) carrying any Channel-5 marker: `32-synthesize-mode`, `synthesize-mode-verification`, `scenario verification`, `ctl-q9`.
+- Or injected context (`attachment` / `system` records) carrying any Channel-5 marker: `36-synthesize-mode`, `synthesize-mode-verification`, `scenario verification`, `ctl-q9`.
 
 Reading the skill's own files, and reading other `specs/completed/` exemplars, is required behaviour and never voids: `spec-synthesis.md` tells the rep to read two exemplars there. A bare directory listing that shows file names does not void. Reading or grepping the content of a listed VOID path does.
 
@@ -205,7 +205,7 @@ VOID_PATHS = (
     'Projects/alt-nfp-model', 'Projects/alt-nfp-stats', 'Projects/archive/alt_nfp',
     '.cache/ctl-q9',
 )
-INHERITED = ('32-synthesize-mode', 'synthesize-mode-verification',
+INHERITED = ('36-synthesize-mode', 'synthesize-mode-verification',
              'scenario verification', 'ctl-q9')
 EXEMPLAR = re.compile(r'Projects/agent-skills/specs/completed/([^/\s"\']+\.md)')
 TABLE_HEADER = re.compile(r'^\s*\|.*\bverdict\b.*\|\s*$', re.IGNORECASE | re.MULTILINE)
@@ -500,4 +500,4 @@ git commit -m "docs(specs): record the synthesize-mode scenario verification"
 
 - [ ] **Step 5: Report**
 
-Report the three verdicts, the void count and the record's path. Failed behaviours go to the Plan Completion Protocol's resolve-before-defer gate as leftovers. The protocol ticks the source item `→ done in plan 32` whatever the verdicts: its closure was that the behaviour be verified, and a recorded failure is a verification.
+Report the three verdicts, the void count and the record's path. Failed behaviours go to the Plan Completion Protocol's resolve-before-defer gate as leftovers. The protocol ticks the source item `→ done in plan 36` whatever the verdicts: its closure was that the behaviour be verified, and a recorded failure is a verification.
