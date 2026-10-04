@@ -2182,3 +2182,17 @@ declined as YAGNI (zero instances in a one-page wiki).
 - [ ] A distilled `references/` file for writing-skills (conformance spec Decision 10).
       Size: plan. Revisit if: writing-skills is split below 500 body lines (a portability
       Out-of-scope item; R1.7's body-length warning).
+
+## 37-recommend-causal-design (merge review) — 2026-10-04
+- [ ] Re-run the skill's evaluation on a held-out scenario (code-reviewer, merge review).
+      The worked example is the evaluation's focal scenario, and the guided outputs track
+      its edge list and exclusion wording; the three application cases ran inside one
+      agent, with no control arm. Size: plan. Done when: a scenario the worked example does
+      not cover runs in fresh contexts with no-guidance controls, and the record says
+      whether uptake of the causal graph and the status contract generalizes.
+- [ ] Point `recommend-probabilistic-model` back to `recommend-causal-design` for design and
+      identification questions (code-reviewer, merge review). Its decision map's
+      route-only row and `references/drill-down.md` send causal questions to the PML
+      drill-down. A bare-name pointer closes the routing loop and adds no
+      install-dependency edge. Size: quick-fix. Done when: the pointer is in place and the
+      dependency-drift check passes.
