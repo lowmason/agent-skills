@@ -18,7 +18,9 @@ inline). The Placeholders section at the bottom applies to both forms.
 Subagent (task-reviewer):
   description: "Review Task N (spec + quality)"
   model: [MODEL — REQUIRED: choose per SKILL.md Model Selection; an omitted
-         model silently inherits the session's most expensive one]
+         model runs at this agent's pin, the review floor, on Claude Code —
+         never escalated for a risky diff — and inherits the session's model
+         on Codex and Gemini]
   prompt: |
     Review one task's implementation. Your agent definition carries the
     review contract; this dispatch carries the task.

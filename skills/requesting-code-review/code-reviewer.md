@@ -6,8 +6,10 @@ Use this template when dispatching a code reviewer subagent.
 
 ```
 Subagent (code-reviewer if defined, else general-purpose):
-  # Choose the model explicitly — an omitted model inherits the session default,
-  # usually the most capable and most expensive. Pick the tier per
+  # Choose the model explicitly — an omitted model is never a tier choice: on
+  # Claude Code a defined code-reviewer runs at its pin whatever the diff, and
+  # general-purpose, like every agent on Codex and Gemini, inherits the session
+  # default, usually the most capable and most expensive. Pick the tier per
   # subagent-driven-development's Model Selection: a small mechanical diff reviews
   # at standard, a subtle or risky change at capable, and the final whole-branch
   # review is always capable.

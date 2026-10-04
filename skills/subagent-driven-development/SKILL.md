@@ -155,9 +155,11 @@ the first dispatch of a plan.
 
 **Always specify the model explicitly when dispatching** — pass the tier's
 dispatch alias (`haiku` / `sonnet` / `opus`), not the version ID, which the
-dispatch tool's model parameter does not accept. An omitted model inherits your
-session's model — usually the most capable and most expensive — silently
-defeating this section.
+dispatch tool's model parameter does not accept. An omitted model is never a
+tier choice: on Claude Code a model-pinned agent runs at its pin, never
+escalated, and any other agent inherits your session's model — usually the most
+capable and most expensive; the Codex and Gemini adapters drop the pins, so
+there every omission inherits. Either way it silently defeats this section.
 
 When nothing clearly fires, default to **standard**. **Reviews** floor at
 **standard** and scale up with the diff: a small mechanical diff reviews at

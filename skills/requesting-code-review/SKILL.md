@@ -44,7 +44,9 @@ the template at [code-reviewer.md](code-reviewer.md).
 **Set its model explicitly.** Choose the tier per subagent-driven-development's
 Model Selection: a small mechanical diff reviews at **standard**; a subtle or
 risky change — and the final whole-branch review — at **capable**. An omitted
-model silently inherits your session's model, usually the most capable and most
+model is never a tier choice: on Claude Code a defined `code-reviewer` runs at
+its pin whatever the diff, and `general-purpose`, like every agent on Codex and
+Gemini, inherits your session's model — usually the most capable and most
 expensive.
 
 **Placeholders:**
