@@ -4,6 +4,7 @@
 
 - **Date:** 2026-10-04.
 - **Worktree:** `feat/cc-guide-conformance` at `e30c438` (plan 35, Tasks 1–7 committed: the anchored guide, the register skeleton and the lint).
+- **Where `e30c438` resolves now:** the branch was squash-merged into `main` as `18b4a71`, so `e30c438` is not on `main`. Each file this report cites is byte-identical at `e30c438` and on `main`: the guide at `18b4a71`; `CLAUDE.md`, `specs/claude-code-guide-conformance.md` (since moved to `specs/completed/`), `specs/agent-skills-portability.md` and `specs/deferred_items.md` at `c67278d`; every other file at either.
 - **Guide:** `specs/guides/claude-code-customization-guide.md`, at 2.1.288, with drift R1.1's 38 anchors.
 - **Method (spec R5.2):** the lint's day-one run gives the mechanical rows (`L-nn`). Four read-only seats audited the rest, one per artifact group. Each seat read every section assigned to it, classified each rule as fact or advice, checked every artifact against it, and returned a findings table with verbatim single-line quotes, proposed checks, section-map notes and guide notes. The seats were `code-reviewer` subagents dispatched with model `sonnet`, all under the read-only guard:
   - **S:** skills.

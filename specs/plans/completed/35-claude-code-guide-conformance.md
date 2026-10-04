@@ -2,6 +2,8 @@
 
 **Status: COMPLETE (2026-10-04)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
 
+The deviation notes' commit hashes (281da10, c6ae014, 85ff48a, c6b7313, b601eed) name commits on `feat/cc-guide-conformance`, which was squash-merged into `main` as 18b4a71; they are not on `main`.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 > **Where this runs.** This plan is committed on local `main` and is not pushed.
