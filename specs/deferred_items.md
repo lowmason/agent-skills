@@ -116,6 +116,10 @@
   `worktree-deferred-triage-2026-10-03`. This branch adds the Claude Code guide
   conformance spec (specs/claude-code-guide-conformance.md); it touches neither
   aged item.
+- 2026-10-04 — finished `codex/jax-deep-learning-skills` with 2 items aged >45d,
+  carried deliberately at the owner's request: they belong to separate methodology
+  work outside this JAX skill PR. The two plan-18 items remain open; this is an
+  acknowledgement, not a backlog disposition.
 
 ## 11-delegation-frontmatter-rollout — 2026-07-19
 - [x] Haiku-pinned `Explore` override agent (fork-isolation upgrade; plan "Out of
