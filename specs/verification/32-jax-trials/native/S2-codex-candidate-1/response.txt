@@ -1,0 +1,506 @@
+The example below implements a tiny untrained, single-head causal attention model in JAX. Its cache stores the actual projected keys and values. It includes full-prefix JAX generation and a separate NumPy causal-attention oracle, with assertions for logits, greedy tokens, cache contents, padding, capacity, EOS, and stochastic replay.
+
+**Execution status: this code has not been run in this session.** The assertions are delivered, but their pass/fail result, maximum numerical error, runtime versions, and performance measurements remain pending. No speedup is claimed.
+
+For a consumed token at absolute position t, the model computes h_t = embedding[token] + position[t], q_t = h_t W_Q, k_t = h_t W_K, and v_t = h_t W_V. It attends to positions 0 through t using softmax(q_t K^T / sqrt(width)), then produces vocabulary logits from a residual output projection. With one attention layer, previously computed keys and values do not change as the prefix grows. The full-prefix implementations independently recompute the entire triangular attention matrix.
+
+The generation contract is:
+
+| Item | Policy |
+|---|---|
+| Prompt | A one-dimensional integer array plus a matching boolean mask. Masked padding is removed before model computation; valid tokens preserve order. |
+| Empty/BOS | Reject an empty effective prompt. The caller can explicitly provide BOS token 0. |
+| Positions | Contiguous absolute positions starting at 0 after compaction. |
+| Cache | Float32 K/V arrays of shape `(8, 6)` and an int32 scalar cursor; cursor equals consumed-token count and the next write position. |
+| Prefill | Consume each effective prompt token once. Its final logits predict the first generated token. |
+| Decode | Choose a token from current logits, emit it, append it once, and obtain logits for the following token. |
+| Mask | Attend to written slots including the current token; unwritten slots have zero attention probability. |
+| Capacity | Require effective prompt length plus requested new tokens to fit in 8 slots before starting. Reject each attempted append beyond the final slot. |
+| Final token/EOS | Consume every emitted token, including the final bounded token or EOS, then stop. Returned logits predict the next token beyond the returned sequence. |
+| Randomness | Split a dedicated sampling key once per emitted categorical token; return the advanced key. Weight initialization uses an unrelated seed. |
+
+The private jitted append kernel uses fixed array shapes and dynamic int32 token/cursor values. Host guards enforce its bounds: JAX indexed updates do not provide Python-style bounds exceptions by default. Keeping the jitted callable stable also avoids recreating its compilation-cache identity. These API choices follow the official [JAX indexed-update documentation](https://docs.jax.dev/en/latest/_autosummary/jax.Array.at.html) and [jax.jit documentation](https://docs.jax.dev/en/latest/_autosummary/jax.jit.html).
+
+Save this complete script as `tiny_kv_cache.py` in a Python environment containing JAX, jaxlib, and NumPy. A CPU correctness run is `JAX_PLATFORMS=cpu python tiny_kv_cache.py`; this is a proposed run command, not a command executed here.
+
+```python
+import json
+import platform
+from operator import index
+from typing import NamedTuple
+
+import jax
+import jax.numpy as jnp
+import jaxlib
+import numpy as np
+
+# Declare this fixture's numerical policy before constructing arrays.
+jax.config.update("jax_enable_x64", False)
+jax.config.update("jax_default_matmul_precision", "highest")
+
+CAPACITY = 8
+WIDTH = 6
+VOCABULARY = 9
+BOS = 0
+PAD = -999
+PARAMETER_SEED = 1729
+SAMPLING_SEED = 2026
+RTOL = 2e-5
+ATOL = 2e-5
+
+
+class Generation(NamedTuple):
+    tokens: np.ndarray
+    predictions: np.ndarray
+    cache: dict
+    next_logits: jax.Array
+    sampling_key: object
+
+
+def make_parameters():
+    rng = np.random.default_rng(PARAMETER_SEED)
+    shapes = {
+        "embedding": (VOCABULARY, WIDTH),
+        "position": (CAPACITY, WIDTH),
+        "query": (WIDTH, WIDTH),
+        "key": (WIDTH, WIDTH),
+        "value": (WIDTH, WIDTH),
+        "output": (WIDTH, WIDTH),
+        "vocabulary": (WIDTH, VOCABULARY),
+    }
+    host = {
+        name: (0.25 * rng.normal(size=shape)).astype(np.float32)
+        for name, shape in shapes.items()
+    }
+    device = jax.device_put(host)
+    jax.block_until_ready(device)
+    return host, device
+
+
+def as_host(array):
+    return np.asarray(jax.device_get(array))
+
+
+def integer(value, name):
+    if isinstance(value, (bool, np.bool_)):
+        raise ValueError(f"{name} must be an integer, not a boolean")
+    try:
+        return index(value)
+    except TypeError as exc:
+        raise ValueError(f"{name} must be an integer") from exc
+
+
+def validate_request(tokens, mask, new_count, eos_id=None):
+    tokens = np.asarray(tokens)
+    mask = np.asarray(mask)
+    if tokens.ndim != 1 or mask.shape != tokens.shape:
+        raise ValueError("one-dimensional tokens and matching mask required")
+    if mask.dtype != np.bool_:
+        raise ValueError("boolean prompt mask required")
+    if not np.issubdtype(tokens.dtype, np.integer):
+        raise ValueError("integer prompt tokens required")
+    new_count = integer(new_count, "new_count")
+    prompt = tokens[mask]
+    if len(prompt) == 0:
+        raise ValueError("empty effective prompt; provide BOS explicitly")
+    if np.any(prompt < 0) or np.any(prompt >= VOCABULARY):
+        raise ValueError("valid prompt token outside vocabulary")
+    if new_count < 0:
+        raise ValueError("negative generation count")
+    if len(prompt) + new_count > CAPACITY:
+        raise ValueError("request exceeds cache/position capacity")
+    if eos_id is not None:
+        eos_id = integer(eos_id, "eos_id")
+        if not 0 <= eos_id < VOCABULARY:
+            raise ValueError("EOS outside vocabulary")
+    return prompt.astype(np.int32), new_count, eos_id
+
+
+def empty_cache():
+    return {
+        "key": jnp.zeros((CAPACITY, WIDTH), dtype=jnp.float32),
+        "value": jnp.zeros((CAPACITY, WIDTH), dtype=jnp.float32),
+        "length": jnp.asarray(0, dtype=jnp.int32),
+    }
+
+
+@jax.jit
+def _cached_step(parameters, cache, token):
+    # append() proves bounds before this private, fixed-shape kernel runs.
+    position = cache["length"]
+    hidden = parameters["embedding"][token] + parameters["position"][position]
+    query = hidden @ parameters["query"]
+    keys = cache["key"].at[position].set(hidden @ parameters["key"])
+    values = cache["value"].at[position].set(hidden @ parameters["value"])
+    length = position + jnp.asarray(1, dtype=jnp.int32)
+    written = jnp.arange(CAPACITY, dtype=jnp.int32) < length
+    scores = keys @ query / jnp.sqrt(jnp.asarray(WIDTH, dtype=jnp.float32))
+    attention = jax.nn.softmax(jnp.where(written, scores, -jnp.inf))
+    hidden_out = hidden + (attention @ values) @ parameters["output"]
+    logits = hidden_out @ parameters["vocabulary"]
+    return {"key": keys, "value": values, "length": length}, logits
+
+
+def append(parameters, cache, token):
+    """Accept only cache states produced by this fixture's cache functions."""
+    position = int(jax.device_get(cache["length"]))
+    token = integer(token, "token")
+    if not 0 <= position < CAPACITY:
+        raise ValueError("cache append exceeds capacity")
+    if not 0 <= token < VOCABULARY:
+        raise ValueError("token outside vocabulary")
+    return _cached_step(parameters, cache, jnp.asarray(token, dtype=jnp.int32))
+
+
+def prefill(parameters, prompt):
+    """Educational serial prefill; prompt is already validated and compacted."""
+    cache = empty_cache()
+    logits = None
+    for token in prompt:
+        cache, logits = append(parameters, cache, int(token))
+    return cache, logits
+
+
+@jax.jit
+def full_prefix_jax(parameters, tokens):
+    # Recompute all Q/K/V and full causal attention; no cache helper reuse.
+    length = tokens.shape[0]
+    hidden = parameters["embedding"][tokens] + parameters["position"][:length]
+    queries = hidden @ parameters["query"]
+    keys = hidden @ parameters["key"]
+    values = hidden @ parameters["value"]
+    scores = queries @ keys.T / jnp.sqrt(jnp.asarray(WIDTH, dtype=jnp.float32))
+    causal = jnp.tril(jnp.ones((length, length), dtype=jnp.bool_))
+    attention = jax.nn.softmax(jnp.where(causal, scores, -jnp.inf), axis=-1)
+    hidden_out = hidden + (attention @ values) @ parameters["output"]
+    return hidden_out @ parameters["vocabulary"]
+
+
+def full_prefix_numpy(host_parameters, tokens):
+    # Independent NumPy math oracle, including its own stable softmax.
+    tokens = np.asarray(tokens, dtype=np.int32)
+    length = len(tokens)
+    hidden = host_parameters["embedding"][tokens] + host_parameters["position"][:length]
+    queries = hidden @ host_parameters["query"]
+    keys = hidden @ host_parameters["key"]
+    values = hidden @ host_parameters["value"]
+    scores = queries @ keys.T / np.sqrt(np.float32(WIDTH))
+    scores = np.where(np.tri(length, dtype=bool), scores, -np.inf)
+    attention = np.exp(scores - np.max(scores, axis=-1, keepdims=True))
+    attention /= np.sum(attention, axis=-1, keepdims=True)
+    hidden_out = hidden + (attention @ values) @ host_parameters["output"]
+    return hidden_out @ host_parameters["vocabulary"]
+
+
+def generate_cached(parameters, tokens, mask, new_count, sampling_key=None, eos_id=None):
+    prompt, new_count, eos_id = validate_request(tokens, mask, new_count, eos_id)
+    cache, logits = prefill(parameters, prompt)
+    emitted = []
+    predictions = []
+    for _ in range(new_count):
+        predictions.append(as_host(logits))
+        if sampling_key is None:
+            token = int(jax.device_get(jnp.argmax(logits)))
+        else:
+            sampling_key, token_key = jax.random.split(sampling_key)
+            token = int(jax.device_get(jax.random.categorical(token_key, logits, mode="high")))
+        emitted.append(token)
+        # Also consume the final emitted token and EOS under our declared policy.
+        cache, logits = append(parameters, cache, token)
+        if eos_id is not None and token == eos_id:
+            break
+    jax.block_until_ready((cache, logits))
+    return Generation(
+        tokens=np.asarray(emitted, dtype=np.int32),
+        predictions=np.asarray(predictions, dtype=np.float32).reshape(-1, VOCABULARY),
+        cache=cache,
+        next_logits=logits,
+        sampling_key=sampling_key,
+    )
+
+
+def generate_full(parameters, tokens, mask, new_count, eos_id=None):
+    prompt, new_count, eos_id = validate_request(tokens, mask, new_count, eos_id)
+    prefix = prompt.tolist()
+    emitted = []
+    predictions = []
+    for _ in range(new_count):
+        logits = full_prefix_jax(parameters, jnp.asarray(prefix, dtype=jnp.int32))[-1]
+        predictions.append(as_host(logits))
+        token = int(jax.device_get(jnp.argmax(logits)))
+        emitted.append(token)
+        prefix.append(token)
+        if eos_id is not None and token == eos_id:
+            break
+    next_logits = full_prefix_jax(parameters, jnp.asarray(prefix, dtype=jnp.int32))[-1]
+    jax.block_until_ready(next_logits)
+    return (
+        np.asarray(emitted, dtype=np.int32),
+        np.asarray(predictions, dtype=np.float32).reshape(-1, VOCABULARY),
+        next_logits,
+    )
+
+
+def numpy_greedy(host_parameters, prompt, new_count, eos_id=None):
+    prefix = list(map(int, prompt))
+    emitted = []
+    for _ in range(new_count):
+        token = int(np.argmax(full_prefix_numpy(host_parameters, prefix)[-1]))
+        emitted.append(token)
+        prefix.append(token)
+        if eos_id is not None and token == eos_id:
+            break
+    return np.asarray(emitted, dtype=np.int32)
+
+
+def padding_variants(prompt):
+    raw = np.asarray(prompt, dtype=np.int32)
+    holes = np.full(2 * len(raw) + 1, PAD, dtype=np.int32)
+    holes[1::2] = raw
+    hole_mask = np.zeros(len(holes), dtype=bool)
+    hole_mask[1::2] = True
+    changed_holes = holes.copy()
+    changed_holes[~hole_mask] = 123456  # Even out-of-vocabulary padding is ignored.
+    return [
+        (raw, np.ones(len(raw), dtype=bool)),
+        (np.concatenate((np.array([PAD, PAD], dtype=np.int32), raw)),
+         np.array([False, False] + [True] * len(raw))),
+        (np.concatenate((raw, np.array([PAD, PAD], dtype=np.int32))),
+         np.array([True] * len(raw) + [False, False])),
+        (holes, hole_mask),
+        (changed_holes, hole_mask.copy()),
+    ]
+
+
+def sampling_key():
+    # A fresh equal-seeded key starts each deliberately independent replay.
+    return jax.random.key(SAMPLING_SEED, impl="threefry2x32")
+
+
+def run_checks(host_parameters, parameters):
+    stats = {"max_reference_error": 0.0, "array_checks": 0,
+             "greedy_padding_cases": 0, "rejected_requests": 0}
+
+    def check(actual, expected):
+        actual = as_host(actual)
+        expected = np.asarray(expected)
+        assert actual.shape == expected.shape
+        assert np.isfinite(actual).all() and np.isfinite(expected).all()
+        np.testing.assert_allclose(actual, expected, rtol=RTOL, atol=ATOL)
+        if actual.size:
+            stats["max_reference_error"] = max(
+                stats["max_reference_error"],
+                float(np.max(np.abs(actual - expected))),
+            )
+        stats["array_checks"] += 1
+
+    def check_cache(cache, consumed):
+        cache_host = jax.device_get(cache)
+        length = len(consumed)
+        assert int(cache_host["length"]) == length
+        assert cache_host["length"].shape == ()
+        assert cache_host["length"].dtype == np.int32
+        assert cache_host["key"].shape == cache_host["value"].shape == (CAPACITY, WIDTH)
+        assert cache_host["key"].dtype == cache_host["value"].dtype == np.float32
+        hidden = (host_parameters["embedding"][np.asarray(consumed, dtype=np.int32)]
+                  + host_parameters["position"][:length])
+        check(cache_host["key"][:length], hidden @ host_parameters["key"])
+        check(cache_host["value"][:length], hidden @ host_parameters["value"])
+
+    # A,A,B,B,A revisits lengths with the same stable jitted callable.
+    prompts = [[BOS], [BOS], [2, 4, 3], [2, 4, 3], [BOS],
+               [3, 5, 4, 2, 6], [2, 3, 4, 5, 6, 7, 2],
+               [2, 3, 4, 5, 6, 7, 2, 3]]
+    for prompt in prompts:
+        cache = empty_cache()
+        for position, token in enumerate(prompt):
+            prefix = prompt[:position + 1]
+            cache, logits = append(parameters, cache, token)
+            oracle = full_prefix_numpy(host_parameters, prefix)
+            check(logits, oracle[-1])
+            check(full_prefix_jax(parameters, jnp.asarray(prefix, dtype=jnp.int32)), oracle)
+            check_cache(cache, prefix)
+        remaining = CAPACITY - len(prompt)
+        counts = sorted({0, min(1, remaining), min(2, remaining),
+                         min(3, remaining), remaining})
+        for count in counts:
+            full_tokens, full_predictions, full_next = generate_full(
+                parameters, prompt, np.ones(len(prompt), dtype=bool), count)
+            oracle_tokens = numpy_greedy(host_parameters, prompt, count)
+            np.testing.assert_array_equal(full_tokens, oracle_tokens)
+            for physical, mask in padding_variants(prompt):
+                out = generate_cached(parameters, physical, mask, count)
+                np.testing.assert_array_equal(out.tokens, full_tokens)
+                assert out.predictions.shape == (count, VOCABULARY)
+                check(out.predictions, full_predictions)
+                consumed = prompt + out.tokens.tolist()
+                check_cache(out.cache, consumed)
+                oracle_next = full_prefix_numpy(host_parameters, consumed)[-1]
+                check(out.next_logits, oracle_next)
+                check(full_next, oracle_next)
+                for step, prediction in enumerate(out.predictions):
+                    prefix = prompt + out.tokens[:step].tolist()
+                    check(prediction, full_prefix_numpy(host_parameters, prefix)[-1])
+                stats["greedy_padding_cases"] += 1
+
+    # Prompt-padding checks above and dirty unused-slot masking are distinct.
+    cache, _ = prefill(parameters, np.array([2, 4], dtype=np.int32))
+    dirty = {
+        "key": cache["key"].at[2:].set(1000.0),
+        "value": cache["value"].at[2:].set(-1000.0),
+        "length": cache["length"],
+    }
+    clean_next, clean_logits = append(parameters, cache, 3)
+    dirty_next, dirty_logits = append(parameters, dirty, 3)
+    check(dirty_logits, full_prefix_numpy(host_parameters, [2, 4, 3])[-1])
+    check(dirty_logits, clean_logits)
+    check_cache(clean_next, [2, 4, 3])
+    check_cache(dirty_next, [2, 4, 3])
+    assert int(jax.device_get(cache["length"])) == 2
+
+    # Actually exercise categorical sampling, rather than only seeded weights.
+    prompt = [2, 4, 3]
+    mask = np.ones(len(prompt), dtype=bool)
+    first = generate_cached(parameters, prompt, mask, 3, sampling_key())
+    replay = generate_cached(parameters, prompt, mask, 3, sampling_key())
+    np.testing.assert_array_equal(first.tokens, replay.tokens)
+    np.testing.assert_array_equal(first.predictions, replay.predictions)
+    np.testing.assert_array_equal(as_host(first.next_logits), as_host(replay.next_logits))
+    np.testing.assert_array_equal(as_host(jax.random.key_data(first.sampling_key)),
+                                  as_host(jax.random.key_data(replay.sampling_key)))
+    for physical, padded_mask in padding_variants(prompt):
+        out = generate_cached(parameters, physical, padded_mask, 3, sampling_key())
+        np.testing.assert_array_equal(out.tokens, first.tokens)
+        np.testing.assert_array_equal(out.predictions, first.predictions)
+        check_cache(out.cache, prompt + out.tokens.tolist())
+        check(out.next_logits, full_prefix_numpy(host_parameters, prompt + out.tokens.tolist())[-1])
+    for step, prediction in enumerate(first.predictions):
+        prefix = prompt + first.tokens[:step].tolist()
+        check(prediction, full_prefix_numpy(host_parameters, prefix)[-1])
+    expected_key = sampling_key()
+    for _ in first.tokens:
+        expected_key, _ = jax.random.split(expected_key)
+    np.testing.assert_array_equal(as_host(jax.random.key_data(first.sampling_key)),
+                                  as_host(jax.random.key_data(expected_key)))
+    zero = generate_cached(parameters, prompt, mask, 0, sampling_key())
+    assert zero.tokens.shape == (0,) and zero.predictions.shape == (0, VOCABULARY)
+    np.testing.assert_array_equal(as_host(jax.random.key_data(zero.sampling_key)),
+                                  as_host(jax.random.key_data(sampling_key())))
+    check_cache(zero.cache, prompt)
+
+    # Choose an EOS guaranteed to be the first greedy token for this test only.
+    eos_id = int(np.argmax(full_prefix_numpy(host_parameters, [2])[-1]))
+    eos_out = generate_cached(parameters, [2], [True], 5, eos_id=eos_id)
+    full_eos, eos_predictions, eos_next = generate_full(parameters, [2], [True], 5, eos_id)
+    np.testing.assert_array_equal(eos_out.tokens, full_eos)
+    assert eos_out.tokens.tolist() == [eos_id]
+    assert eos_out.predictions.shape == (1, VOCABULARY)
+    check(eos_out.predictions, eos_predictions)
+    check(eos_out.predictions[0], full_prefix_numpy(host_parameters, [2])[-1])
+    check(eos_out.next_logits, full_prefix_numpy(host_parameters, [2, eos_id])[-1])
+    check(eos_next, eos_out.next_logits)
+    check_cache(eos_out.cache, [2, eos_id])
+
+    def reject(call):
+        try:
+            call()
+        except ValueError:
+            stats["rejected_requests"] += 1
+        else:
+            raise AssertionError("invalid request was accepted")
+
+    invalid = [
+        (np.array([], dtype=np.int32), np.array([], dtype=bool), 0),
+        ([PAD], [False], 1),
+        ([2], [True], -1),
+        ([2] * CAPACITY, [True] * CAPACITY, 1),
+        ([2] * (CAPACITY + 1), [True] * (CAPACITY + 1), 0),
+        ([VOCABULARY], [True], 0),
+        ([-1], [True], 0),
+        ([2.0], [True], 0),
+        ([2], [1], 0),
+        ([2], [True, False], 0),
+        ([[2]], [[True]], 0),
+        ([2], [True], True),
+        ([2], [True], 1.5),
+    ]
+    for tokens, invalid_mask, count in invalid:
+        reject(lambda: generate_cached(parameters, tokens, invalid_mask, count))
+    reject(lambda: generate_cached(parameters, [2], [True], 0, eos_id=VOCABULARY))
+    reject(lambda: generate_cached(parameters, [2], [True], 0, eos_id=True))
+    reject(lambda: append(parameters, empty_cache(), VOCABULARY))
+    full_cache, _ = prefill(parameters, np.full(CAPACITY, 2, dtype=np.int32))
+    reject(lambda: append(parameters, full_cache, 3))
+    assert int(jax.device_get(full_cache["length"])) == CAPACITY
+
+    demo = generate_cached(parameters, [2, 4, 3], [True, True, True], 3)
+    np.testing.assert_array_equal(demo.tokens, numpy_greedy(host_parameters, [2, 4, 3], 3))
+    check(demo.next_logits, full_prefix_numpy(host_parameters, [2, 4, 3] + demo.tokens.tolist())[-1])
+    check_cache(demo.cache, [2, 4, 3] + demo.tokens.tolist())
+    stats.update({
+        "prompt_lengths_in_order": [len(prompt) for prompt in prompts],
+        "example_greedy_tokens": demo.tokens.tolist(),
+        "fixed_key_sample": first.tokens.tolist(),
+        "eos_tokens": eos_out.tokens.tolist(),
+        "rtol": RTOL,
+        "atol": ATOL,
+    })
+    return stats
+
+
+def main():
+    host_parameters, parameters = make_parameters()
+    checks = run_checks(host_parameters, parameters)
+    report = {
+        "status": "all assertions passed",
+        "scope": "tiny untrained single-head causal attention fixture",
+        "python": platform.python_version(),
+        "jax": jax.__version__,
+        "jaxlib": jaxlib.__version__,
+        "numpy": np.__version__,
+        "backend": jax.default_backend(),
+        "devices": [str(device) for device in jax.devices()],
+        "device_kinds": [device.device_kind for device in jax.devices()],
+        "device_count": jax.device_count(),
+        "process_count": jax.process_count(),
+        "process_index": jax.process_index(),
+        "capacity": CAPACITY,
+        "width": WIDTH,
+        "vocabulary": VOCABULARY,
+        "batch_size": 1,
+        "dtype": "float32",
+        "cursor_dtype": "int32",
+        "jax_enable_x64": bool(jax.config.jax_enable_x64),
+        "matmul_precision": str(jax.config.jax_default_matmul_precision),
+        "sampling": "threefry2x32; categorical mode=high; one split per token",
+        "parameter_seed": PARAMETER_SEED,
+        "sampling_seed": SAMPLING_SEED,
+        "benchmark_status": "not measured",
+        **checks,
+    }
+    print(json.dumps(report, sort_keys=True, indent=2))
+
+
+if __name__ == "__main__":
+    main()
+```
+
+A successful future run reaches the JSON print only after the assertions finish. The recorded maximum error covers compared logits and projected cache arrays; emitted greedy tokens are checked with exact array equality. The tolerance is `rtol=2e-5, atol=2e-5` for this float32 fixture. Near-tied logits can produce different greedy tokens across numerical backends even when the allclose check succeeds; the exact-token assertions deliberately expose that outcome instead of hiding it.
+
+The stochastic check calls `jax.random.categorical` and replays the same sampling seed with fresh equivalent keys. It also verifies one key split per emitted token and no split for a zero-token request. Replay applies to the same model, runtime, backend, and key-consumption sequence; it is distinct from deterministic weight initialization. This follows [JAX's explicit-key and splitting contract](https://docs.jax.dev/en/latest/random-numbers.html) and [categorical sampling API](https://docs.jax.dev/en/latest/_autosummary/jax.random.categorical.html).
+
+For any valid prefix of length L, the cached step computes the same new-row query/key/value as the full model, preserves the previous L−1 projected key/value rows, and masks precisely the same written prefix as the full model's final causal-attention row. Starting from equal prefill logits, exact agreement of the chosen token at each step gives the same prefix for the next comparison. The delivered assertions check this induction operationally, including the final cache after the last emitted token.
+
+This is a correctness fixture with host loops and host materialization of prediction vectors. Serial prefill favors clarity; a production prefill normally processes the prompt in a compiled batch. Full-prefix JAX attention specializes to its prefix shapes, while the cached kernel keeps its `(8, 6)` K/V shape; no compilation diagnostics were collected here. Each cached step still scores all allocated slots. Cache K/V storage here is logically `2 * 8 * 6 * 4 = 384` bytes, plus the 4-byte cursor; this excludes parameters, attention temporaries, compiled executables, and allocator overhead and is not measured peak memory.
+
+The evidence record is therefore:
+
+| Field | Delivered evidence and current status |
+|---|---|
+| Reproduction | One untrained sequence, width 6, vocabulary 9, capacity 8; float32 parameters/cache/logits, int32 token/cursor; fixed dict PyTrees and stable jit callables; repeated length order 1,1,3,3,1,5,7,8; five padding variants; seeds and runtime/device/precision metadata printed by a future run. |
+| Diagnosis | Full-prefix recomputation versus reuse of projected K/V is explicit in the code. Compilation events, synchronized timings, profiles, and live-memory measurements have not been collected. |
+| Change | One new query/key/value per consumed token with an explicit cursor and written-slot mask; absolute position lookup uses consumed length. Shared host validation compacts padding before either path's independent model math. |
+| Correctness | Full-prefix JAX and independent NumPy causal math; per-consumed-prefix and per-generation logits; final logits; exact greedy tokens; cache K/V and cursor; padding-value changes; zero/short/final-capacity requests; rejected overflow; EOS consumption; fixed-key categorical replay and key advancement. Assertions are delivered; run result and actual maximum error remain pending. |
+| Effect and limits | No before/after latency distributions, throughput, peak memory, or speedup result. The host-facing generation wrapper starts from raw tokens/mask and returns host tokens/predictions with completed cache/next-logit arrays; it is not timed. The resident append kernel is a different potential timing boundary. No checkpoint, tokenizer, multi-layer cache, RoPE, GQA, batching, or distributed execution is validated by this fixture. |
+
+After correctness passes on the intended environment, measure prompt prefill and one-token decode separately with inputs ready before each resident timer and the entire returned array tree ready at its end. Measure complete requests separately if host validation, tokenization, transfer, sampling, or output consumption matter to the target. JAX execution is asynchronous, so submission-only durations are insufficient; the official [JAX benchmarking guide](https://docs.jax.dev/en/latest/benchmarking.html) describes the synchronization boundary. Those measurements remain outside this unexecuted delivery.

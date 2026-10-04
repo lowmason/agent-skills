@@ -1,0 +1,33 @@
+{
+  "trial": "S1-codex-candidate-4",
+  "scenario": "S1",
+  "condition": "candidate",
+  "runtime": "Built-in Codex collaboration agent",
+  "agent_type": "default",
+  "requested_fork_turns": "none",
+  "model": "Inherited active runtime; exact identifier not exposed by collaboration API",
+  "effort": "Inherited active runtime; exact value not exposed by collaboration API",
+  "tool_policy": "Read-only information gathering; execute only local trial_io recording helper, no delivered application code",
+  "automatic_skill_loading_observed": false,
+  "source_hashes": {
+    "SKILL.md": "e177b588bf9cbb73654b16dc594a294a782f098cbb4f3226856e1f42835a4200",
+    "references/profiling.md": "e18a541db2b1db44c016ebc0ac0d330f0e475f52e094a36d4d013ec3bc3cdc9d",
+    "references/sharding.md": "6d963f477d1b64d1974780678a1e21214c9ec6727c54ada6da9ed72e4e1b1275",
+    "references/inference.md": "7d2baaedf008a42ae50477e520022207a3991ad018c2855aa2d3c19f10d3c1d6"
+  },
+  "guidance_directory": "/private/tmp/jax-skill-trials-pAYZ0t/guidance-candidate-optimize-jax",
+  "guidance_loading": "Full SKILL.md supplied in first recorded prompt read; references read on demand through trial_io",
+  "prompt_sha256": "547b907df3becb1bec2f10aab16170eab2b15aa298dfc3cecd92292cb574b518",
+  "spawn_identity": {
+    "task_name": "/root/native_trial_conductor/native_s1_candidate_4"
+  },
+  "completion": "Complete substantive response and research notes; child final received",
+  "completion_verified_at_utc": "2026-10-04T01:35:20.225523+00:00",
+  "response_sha256": "a7cf148c693abeaab5c3dcede15cf15c63ec332115f014b9e100dedd2c2421f3",
+  "response_lines": 426,
+  "verified_first_read": "Full prompt hash and byte count match first recorded start event",
+  "actual_reference_reads": [
+    "/private/tmp/jax-skill-trials-pAYZ0t/guidance-candidate-optimize-jax/references/profiling.md"
+  ],
+  "application_execution": "Not executed per explicit child delivery/research notes; scorer treats response code as data"
+}

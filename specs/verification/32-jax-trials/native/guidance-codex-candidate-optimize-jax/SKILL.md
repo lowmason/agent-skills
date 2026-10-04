@@ -1,0 +1,166 @@
+---
+name: optimize-jax
+description: >
+  Use when JAX code has tracing errors, unexpected recompilation, memory
+  pressure, slow execution, or distributed placement problems, or when
+  improving inference and generation — including profiling, precision,
+  sharding, asynchronous timing, prefill/decode, and KV caches.
+license: MIT
+metadata:
+  author: Lowell Mason
+---
+
+# Optimize JAX
+
+Improve an execution path by connecting a reproduced symptom to measured costs
+and a tested change. The output is a workload-specific diagnosis and evidence
+record: what ran, where time or memory went, what changed, whether results still
+agree, and which limits remain. A fast timer without its synchronization and
+input/output boundary does not establish low request latency.
+
+## Boundary and routing
+
+Use this skill for JAX execution, including non-learning simulations and numerical
+programs. Training loss, convergence, objectives and learned-model quality belong
+to **deep-learning**; checkpoint comparisons and research claims belong to
+**evaluate-deep-learning**. Load those whole skills when that decision arises.
+Actual posterior inference belongs to **bayesian-workflow**. A scalar-valued
+simulation needs no optimizer, neural experiment, posterior draws or tracking
+service merely because it uses JAX.
+
+Model computation stays in JAX. Preserve an existing project's JAX framework and
+state conventions. Flax NNX needs graph-aware transforms; a plain functional
+array program does not need a framework migration. This is research execution
+and generation guidance. Real checkpoint conversion, device placement and
+hardware performance require their own evidence beyond the small CPU fixtures.
+
+## 1. Reproduce the execution contract
+
+Collect the smallest program that retains the symptom and its actual input
+sequence. State shapes, dtypes, batch/sequence lengths, static settings, padding,
+model/state PyTree structure, randomness and output consumption. Include varying
+and revisited lengths or scalar values, such as A,A,B,B,A. Keep callable identity
+stable across calls. Record the exact Python/JAX/jaxlib/framework versions,
+backend, device kind/count, precision settings and process/mesh layout.
+
+Define the target before measuring: single completed call, serialized request
+latency, throughput with queued work, peak live memory, or generation prefill
+and token decode. A latency fixture has different barriers from a throughput
+fixture. Name the real start and finish: host raw input to host-consumed output,
+or ready device arrays to ready device output. Record preprocessing, transfers,
+queueing, initialization and concurrency included or excluded by that boundary.
+
+Establish a trusted reference and tolerances now. For a padding change retain the
+original unpadded computation. For cache mechanics retain independent full-prefix
+causal attention. For numerical simulation preserve its discrete integration
+method. Use **develop-testing-strategy** when designing permanent tests; carry
+these domain invariants into its plan rather than adding Bayesian requirements.
+
+## 2. Separate costs before diagnosing them
+
+Load [profiling](references/profiling.md) for the timing protocol and the
+`jax-timing` fixture. Make input and parameter work ready before resident timers,
+and wait for the entire returned array tree at their end. Record first encounter
+before warming that signature, then repeated warm calls. A first encounter can
+include trace, lowering, compilation or cache loading, dispatch and execution;
+it is not a measurement of compilation alone.
+
+Use separate AOT trace/lower/compile measurements when compilation attribution
+matters. A previously compiled signature or persistent-cache hit is not a cold
+compile. Submission time and remaining wait are host intervals; subtracting them
+does not yield independently measured kernel time. Measure synchronized transfer
+stages for attribution, and measure the natural complete request separately,
+because stage barriers alter overlap. CPU placement/fetch may share memory and
+cannot predict accelerator transfer cost.
+
+Enable compile/cache-miss diagnostics in a separate evidence run, associate
+messages with the target function and full signature, and replay the input
+sequence. A new numeric value of a dynamic scalar with the same abstract type
+normally reuses its compiled signature. Investigate static values, weak types,
+shapes, dtypes, PyTree/NNX structure, callable recreation and sharding when evidence
+shows new specialization. Python branching on traced values and value-dependent
+array shapes need different remedies; making every argument static usually
+creates more specializations.
+
+## 3. Profile and change one measured cause
+
+Capture a warmed host/device trace with completed device work inside the capture;
+annotate preprocessing, placement, model call and output consumption. Read the
+profile alongside compile logs and timing distributions. If memory motivates the
+change, record the memory quantity and peak observation method. A compiler buffer
+estimate, allocator reservation and live tensor peak describe different things.
+
+Choose a change from the evidence. Repeated specialization can justify normalized
+scalar types, stable state/callables, or finite shape buckets. Bucket masks,
+positions and reduction denominators must preserve valid-input semantics, and
+padding adds work. Host gaps can justify reducing Python dispatch or batching;
+transfer costs can justify keeping state resident. Kernel bottlenecks need an
+algorithm or layout experiment. Training activation memory can justify measured
+rematerialization. Precision changes need explicit storage, compute, accumulation
+and tolerance choices; float64 is not an unconditional JAX default.
+
+Load [sharding](references/sharding.md) for mesh, partition and placement
+contracts, distributed model/optimizer state and checkpoint restore. Establish
+single-device parity before scaling. The bundled one-device placement check
+verifies API use and logical results; multi-host collectives, topology, memory
+and recovery require an actual distributed run.
+
+## 4. Establish generation correctness before scaling
+
+Load [inference](references/inference.md) when changing autoregressive decoding,
+KV caches, sampling or generation length policies. Define effective prompt tokens,
+BOS/empty policy, absolute positions, valid prefix lengths, physical capacity,
+cache cursor, attention masks and EOS/bounded termination. Prefill consumes the
+prompt; its final logits select the first generated token. Decode consumes each
+chosen token once and advances the cache under the declared final-token policy.
+
+Deliver the actual logits/reference assertions and exact greedy token comparison
+across multiple prompt lengths, changed padding and zero/short/final-capacity
+requests. Include rejected overflow and fixed-key stochastic replay as distinct
+checks. Seeded weight initialization does not test sampling reproducibility.
+The `cached-decode` fixture demonstrates those contracts with real projected
+keys/values and independent NumPy causal full-prefix math.
+
+After this math gate, profile prefill and decode separately on the real workload.
+Fixed cache arrays can reduce shape variation while wasting work over unused
+slots. Cache size also changes memory. Tunix native generation and optional
+MaxText scale recipes in the reference require checked package/model/checkpoint,
+tokenizer, precision and hardware compatibility. Tiny fixture parity does not
+validate an arbitrary converted pretrained model or promise a speedup.
+
+## 5. Verify and report the change
+
+Run the same workload/reference checks before and after each change. Compare all
+relevant outputs, finite values and state; when the path trains, compare loss,
+gradients and one optimizer/state update with appropriate precision tolerances.
+Keep correctness tests outside performance timers. Report repeat counts and
+latency distributions under the same hardware/configuration, plus memory when
+relevant. If execution is unavailable, deliver the checks and label measurements
+pending; do not turn a proposed test into a result.
+
+Required evidence record:
+
+| Field | Concrete content |
+|---|---|
+| Reproduction | Input sequence, full signatures/state, versions/device/precision, request boundary |
+| Diagnosis | Target compile/cache events, ready first/warm/transfer/request timings, profile or memory evidence |
+| Change | One cause-supported change and its workload/shape/state assumptions |
+| Correctness | Delivered reference assertion, inputs/edge cases, tolerances, actual maximum error and token/state checks |
+| Effect and limits | Before/after distributions and memory, run status, hardware/checkpoint scope, unresolved costs |
+
+## Quick reference and common mistakes
+
+| Symptom | Load / next evidence |
+|---|---|
+| Tiny call timer, slow request | profiling: full-tree barriers and complete request boundary |
+| Length/scalar changes are slow | profiling: actual specialization logs and cause-specific replay |
+| Memory or precision pressure | profiling: live-memory source, dtype/accumulation and gradient parity |
+| Placement/distributed state | sharding: mesh/spec/global-local shape and restore contract |
+| Decode/cache mismatch | inference: independent full-prefix logits, masks/positions/cursor and boundaries |
+
+Common mistakes are interpreting remaining wait as kernel time, warming signatures
+before a claimed cold measurement, treating a checksum as parity, masking only
+cache slots while omitting prompt-padding tests, or reporting a one-device API
+check as distributed performance. Resolve each with the corresponding recorded
+boundary or independent assertion. A valid optimization result may be no useful
+speed change under the stated workload; report that evidence clearly.
