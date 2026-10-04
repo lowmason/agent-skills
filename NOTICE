@@ -77,25 +77,21 @@ The following skills are original works by Lowell Mason, MIT licensed:
     geographic-codes/
     deep-learning/
     evaluate-deep-learning/
+    optimize-jax/
 
-deep-learning/ is an original work by Lowell Mason, MIT licensed. Its
-prose, canonical JAX examples, synthetic fixtures, and numerical checks are
-original. The Orchestra AI Research Skills suite
+deep-learning/, evaluate-deep-learning/, and optimize-jax/ are original
+works by Lowell Mason, MIT licensed. Their training, evaluation and JAX
+execution/generation workflows, domain references, experiment-record
+contracts, prose, canonical JAX/NumPy examples and synthetic numerical
+checks are original. The Orchestra AI Research Skills suite
 (https://github.com/Orchestra-Research/AI-Research-SKILLs, MIT licensed) is
-coverage inspiration by reference to its scope only; no Orchestra prose or
+coverage inspiration by reference to scope only; no Orchestra prose or
 code is adapted or reproduced. Primary library documentation and research
-papers are cited as method/API sources; no manuals, papers, checkpoints or
-datasets are bundled.
-
-evaluate-deep-learning/ is an original work by Lowell Mason, MIT licensed.
-Its evaluation protocol, domain checks, experiment-record contract, prose and
-canonical JAX/NumPy synthetic fixture are original. The Orchestra AI Research
-Skills suite (https://github.com/Orchestra-Research/AI-Research-SKILLs, MIT
-licensed) is coverage inspiration by reference to scope only; no Orchestra
-prose or code is adapted or reproduced. Primary library documentation and
-research papers are cited as method/API sources; no manuals, papers, model
-weights or datasets are bundled. Neural-run records introduce no posterior
-artifact or external tracking-service requirement.
+papers are cited as method/API sources; no manuals, papers, checkpoints,
+model weights or datasets are bundled. Neural-run records introduce no
+posterior artifact or external tracking-service requirement. Optimization
+fixtures establish their small CPU math/placement/timing contracts only;
+real-checkpoint and accelerator recipes retain explicit verification limits.
 
 classification-codes/ and geographic-codes/ are original works by Lowell
 Mason (MIT) whose bundled data/ tables are derived from U.S. Census Bureau,
