@@ -26,3 +26,10 @@ on a genuine toss-up, and defaulting to **standard** when nothing clearly fires
 3. **Spread** — 1-2 files with a clear spec → **cheap**; multiple files /
    integration / pattern-matching → **standard**; open design judgment or
    broad-codebase understanding → **capable**.
+
+## No tier above capable
+
+Fable is not an SDD tier. Not every runtime offers `fable`, and the ladder in
+SKILL.md § Fix Rounds ends at **capable**: a task that still fails there goes to
+adjudication, where reaching for a stronger model is your human partner's call,
+not a dispatch default.
