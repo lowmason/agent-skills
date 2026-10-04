@@ -3,7 +3,9 @@
 **Status: DESIGN APPROVED (2026-10-04); written spec awaiting review.**
 The owner approved all four design sections in a brainstorming session,
 along with three choices: comply-or-explain, report-only for files outside
-the repo, and approach A. Nothing here has been implemented.
+the repo, and approach A. R6 amends two specs that are already approved (the
+drift and portability specs), so applying it needs the owner's approval of
+those amendments. Nothing here has been implemented.
 
 ## Purpose and scope
 
@@ -63,7 +65,8 @@ designs that anchoring and takes the guide as it stands.
 | `install.py` installs skills to all three runtimes, plus agents and commands. Hooks and rules are copy-in templates. `runtimes/` is generated | `install.py`; README |
 | Under `~/.claude/`, the `agents/`, `commands/` and `skills/` entries and `hooks/readonly-agent-guard.py` are symlinks into this repo. Four files are outside it: `~/.claude/CLAUDE.md` (33 lines); `~/.claude/settings.json`; `~/.claude/rules/aws-agent-toolkit.md` (31 lines, third-party, no `paths`); and the main checkout's gitignored `.claude/settings.local.json` (about 15 KB of allow rules, `Bash(pip install *)` among them) | `ls -la`; `.gitignore:5` |
 | `.gitignore` ignores `.claude/worktrees/` | `.gitignore:25` |
-| Plan id 32 is taken on `codex/jax-deep-learning-skills` and 33 on `codex/recommend-causal-design`. The drift spec reserves 32–34 | `git ls-tree` |
+| Plan ids 32–34 are taken on sibling branches. 32 is used twice: on `codex/jax-deep-learning-skills` and on `worktree-deferred-triage-2026-10-03`. 33 is on `codex/recommend-causal-design` and the deferred-triage branch, and 34 is on the deferred-triage branch. `claude/superpowers-drift-spec-update-65c2f5` stops at 31 | `git ls-tree` on each branch |
+| Every in-flight workstream grows CLAUDE.md. `codex/jax-deep-learning-skills` has it at 238 lines (+19, −6 against `main`). Portability's R1.9 and R4.4 add lines, as does drift's R12.7 | `git diff --stat`; both specs |
 
 ## Decisions and alternatives
 
@@ -92,8 +95,8 @@ designs that anchoring and takes the guide as it stands.
 4. **The register is `build/cc_guide/conformance.toml`.** It sits outside
    `specs/`, which the drift spec's R4.2 excludes from citations, so drift can
    flag it. It shares the directory drift's tool will use, and it is TOML read
-   with `tomllib`, like drift's `manifest.toml`. Only the owner edits it.
-   Rejected:
+   with `tomllib`, like drift's `manifest.toml`. It is edited by hand, on the
+   owner's decisions; no script writes it. Rejected:
    - `specs/guides/`: the register would never be flagged when the guide
      changes;
    - Markdown tables: fragile to parse;
@@ -118,6 +121,10 @@ designs that anchoring and takes the guide as it stands.
      `SOFT_REFERENCES` entry does.
    - A waiver on a numeric check carries a ceiling: the file may shrink but
      not grow.
+   - An exception with no check has no automatic staleness test. A gap is
+     closed by the work named in its `tracked_in`, which removes the entry as
+     part of the fix (R6). A deviation is re-examined when its `revisit`
+     trigger fires.
 
    Rejected: one-way waivers, which pile up stale entries that warn nobody.
 9. **No deviation comments at the artifact in v1.** The both-ways match shows
@@ -188,7 +195,8 @@ lands.
 ### R2 — The register (`build/cc_guide/conformance.toml`)
 
 R2.1 **File.**
-- TOML, read with stdlib `tomllib`. No tool writes it.
+- TOML, read with stdlib `tomllib`. It is edited by hand, on the owner's
+  decisions; no script writes it.
 - Comments record why each entry exists.
 - Paraphrases are in the repo's own wording; no docs text is committed.
 
@@ -248,8 +256,8 @@ entries record existing rules without changing them:
 | `known-agent-tools` | `subagents.frontmatter` | Agent tools come from a known set |
 | `description-cap` | `skills.description` | Descriptions stay within the listing cap. The repo's 1,024-character spec cap is stricter |
 
-When portability Stage A adds its R1.7 body-length warning, a
-`skill-body-size` entry for `skills.overview` maps to it.
+When portability Stage A adds its R1.7 body-length warning, that stage adds a
+`skill-body-size` entry for `skills.overview` mapping to it (R6, P3).
 
 R2.6 **`[[exception]]`.** Every exception carries:
 - `id`, unique;
@@ -278,7 +286,7 @@ R2.7 **Expected entries.** The owner gate (R5.5) decides the final set.
 |---|---|---|
 | `grep-glob-beside-bash` | gap | `check = 'bash-search-tools'`; the 7 agents by path; `protects = ['gemini']`; tracked in drift Stage 3 (its R11.5 #1) |
 | `hook-dir-unquoted` | gap | `check = 'hook-dir-quoted'`; `hooks/README.md`; tracked in drift Stage 3 (R11.5 #3) |
-| `claude-md-size` | gap or deviation, the owner's call | the root CLAUDE.md; `ceiling = 225` |
+| `claude-md-size` | gap or deviation, the owner's call | the root CLAUDE.md; the owner sets `ceiling` at the gate, expected `225`, today's length |
 | `description-when-only` | deviation | `skills/*/SKILL.md`; evidence: `writing-skills`' "Skill Discovery Optimization" section and portability Decision 4; revisit when trigger-eval suites exist (a portability deferred item) |
 | `side-effecting-skills-invocable` | deviation | the skills the audit lists; evidence: portability Decision 3; revisit when the guide documents a way for one skill to hand off to a manual-only skill |
 
@@ -331,7 +339,7 @@ R3.4 **The seven checks.** Parameters come from the register (Decision 5).
 | Check | Sections | Type | Passes when |
 |---|---|---|---|
 | `claude-md-size` | `rules.claude-md` | advice | each claude-md file has fewer than `limit = 200` lines |
-| `rule-paths` | `rules.rules-files` | advice | each rule file's frontmatter has a non-empty `paths` list, and each `.claude/rules/` symlink resolves inside the repo, since a target outside it would be an external import |
+| `rule-paths` | `rules.rules-files` | advice | each rule file's frontmatter has a non-empty `paths` list, unless the check's `always_on` parameter lists it. The same section says a rule that must persist past compaction should drop `paths`, and `always_on` starts empty. A listed rule that has `paths` fails. Each `.claude/rules/` symlink must resolve inside the repo, since a target outside it would be an external import |
 | `hook-dir-quoted` | `hooks.patterns` | advice | in every hook `command` string (the `hooks` tree of each JSON block in hook-kind Markdown, and of `.claude/settings.json`), each `$CLAUDE_PROJECT_DIR` or `${CLAUDE_PROJECT_DIR}` lies inside a double-quoted span, found by scanning quote state. A single-quoted occurrence fails too, since it never expands. A JSON block that does not parse is a violation |
 | `stop-hook-guard` | `hooks.exit-codes`, `hooks.patterns` | advice | for each command wired to `Stop` in those trees, the basename of its first shell word (`shlex.split`) names a hook-kind script that reads `stop_hook_active`. An unresolvable script is a violation |
 | `agent-fields` | `subagents.frontmatter` | fact | agent frontmatter keys come from `fields`, and `model` is in `models` or is a full `claude-` model ID |
@@ -383,8 +391,8 @@ R4.2 **The command.** The `check_conformance.py` command joins the existing
 
 R4.3 **Net zero.** The same commit trims at least as many CLAUDE.md lines as
 R4.1 and R4.2 add. It condenses wording; it removes no instruction, since
-Codex and Gemini read the same file. The `claude-md-size` ceiling of 225
-enforces this.
+Codex and Gemini read the same file. Validation item 5 checks it. If the
+owner sets the ceiling at 225, the lint enforces it as well.
 
 ### R5 — The one-time audit
 
@@ -439,7 +447,9 @@ Then the register is filled in and the lint passes. Destinations:
 | `writing-skills` | portability Stage D |
 | Anything else | a deferred item, flagged for `/deferred` when it is a quick fix |
 
-This plan applies no fix.
+A deferred item created for a gap names the register exception that its fix
+must remove. That closes the loop R6's D5 and P2 close for the staged
+destinations. This plan applies no fix.
 
 R5.6 **Proposed checks.** A mechanical rule the audit finds beyond R3.4's
 seven becomes a deferred item. This plan builds exactly seven checks.
@@ -473,18 +483,37 @@ one; none is decided here.
 - **Outside the repo**: the AWS rule has no `paths`, and
   `settings.local.json` contains `Bash(pip install *)`.
 
-### R6 — Amendments to the drift spec
+### R6 — Amendments to the drift and portability specs
 
-Applied to `specs/claude-code-drift-automation.md` in this plan, with the
-owner's approval:
-1. Stage 1 adopts the anchors already present instead of adding them.
-2. R4.1 gains a TOML placement: a `# cc-guide:` line before the first key or
-   table, preceded only by comments and blank lines.
-3. R4.2's known clusters gain `build/cc_guide/conformance.toml` and
-   `build/check_conformance.py`, stamped `@2.1.288`, not R11.3's bootstrap
-   `@2.1.219`.
-4. R12.7's CLAUDE.md additions stay within the `claude-md-size` ceiling, by
-   trimming elsewhere or by raising the ceiling in the register on purpose.
+Both specs are already approved, so this plan applies these amendments only
+with the owner's approval. The register's waivers and its CLAUDE.md ceiling
+reach into their stages, and each amendment says how.
+
+**`specs/claude-code-drift-automation.md`:**
+- D1. Stage 1 adopts the anchors already present instead of adding them.
+- D2. R4.1 gains a TOML placement: a `# cc-guide:` line before the first key
+  or table, preceded only by comments and blank lines.
+- D3. R4.2's known clusters gain `build/cc_guide/conformance.toml` and
+  `build/check_conformance.py`. They are stamped `@2.1.288`, not R11.3's
+  bootstrap `@2.1.219`.
+- D4. R12.7's CLAUDE.md additions stay within the `claude-md-size` ceiling,
+  either by trimming elsewhere or by raising the ceiling in the register on
+  purpose, with a reason.
+- D5. Whenever drift applies a fix that resolves a conformance gap, it
+  removes or narrows the matching register exception in the same
+  working-tree change and runs `check_conformance.py`. This covers Stage 3's
+  fixes to the known drifts and any later R8.8 correction. R8.8's step 5
+  runs `check_conformance.py` beside `lint`. Without this, the both-ways
+  match fails the fix as a stale waiver.
+
+**`specs/agent-skills-portability.md`:**
+- P1. The CLAUDE.md lines from R1.9 and R4.4 stay within the
+  `claude-md-size` ceiling, by trimming elsewhere or by raising the ceiling
+  on purpose, with a reason.
+- P2. When Stage A or Stage D fixes a gap the register tracks to it, the same
+  change removes or narrows the exception and runs `check_conformance.py`.
+- P3. When Stage A adds R1.7's body-length warning, it adds the register's
+  `skill-body-size` entry mapping `skills.overview` to that warning.
 
 ## Sequencing and execution constraints
 
@@ -502,26 +531,31 @@ Constraints:
 - **Worktree.** Check `git rev-parse main origin/main` first: `EnterWorktree`
   branches from `origin/main` and leaves out unpushed commits.
 - **Plan id.** Check `specs/plans/` on every branch (`git ls-tree`) before
-  allocating one. Ids 32 and 33 are taken on sibling branches, and the drift
-  spec reserves 32–34.
+  allocating one. Ids 32–34 are taken on sibling branches, and 32 twice.
 - **Test counts** are +N deltas, never absolute totals. CLAUDE.md's
   build-suite count moves by the same delta.
 - **No artifact fixes.** CLAUDE.md changes only as R4 allows. The plan edits
   no skill, so the self-modifying-plan hazard does not arise.
 - **Drift coupling.**
-  - Anchors and R6 come from this plan.
+  - The anchors and R6's amendments come from this plan.
   - Whichever lands second, this plan or drift Stage 2, adds the register's
     and the lint's citation lines.
-  - The audit's three known drifts stay with drift Stage 3.
+  - The audit's three known drifts stay with drift Stage 3. D5 keeps the
+    register in step when Stage 3 fixes them.
 - **Portability coupling.**
-  - Stage A owns `check_frontmatter.py`, and its R1.7 warning gets a register
-    mapping when it lands.
+  - Stage A owns `check_frontmatter.py`, and P3 maps its R1.7 warning.
   - Stage D owns any `writing-skills` edit, batched into its single
     micro-test cycle.
+  - P1 and P2 cover the ceiling and the gaps routed to Stages A and D.
   - Line 25 of `writing-skills` and `anthropic-best-practices.md` stay out of
     every task.
-- **JAX branch.** Its skills fall under the skill kind. Its merge runs the
-  lint.
+- **JAX branch.** Its skills fall under the skill kind, and its merge runs
+  the lint.
+  - Its CLAUDE.md is 238 lines, over the expected 225 ceiling.
+  - Whichever lands second, the JAX merge or this plan, trims CLAUDE.md or
+    raises the ceiling in the register on purpose, with a reason.
+- **The ceiling at the gate.** Every in-flight workstream grows CLAUDE.md.
+  The owner sets `claude-md-size`'s ceiling at the gate (R5.5) knowing that.
 - **Nothing outward-facing.** Nothing is pushed or posted.
 
 ## Validation and acceptance
@@ -534,7 +568,8 @@ Constraints:
 3. R1.2's pin passes, so the anchors equal drift's R1.1 table.
 4. The audit report exists, and every quote in it was re-grepped. The owner's
    decisions are recorded in the register.
-5. CLAUDE.md is no longer than 225 lines.
+5. This plan leaves CLAUDE.md no longer than 225 lines, its length at
+   `6186635` (R4.3).
 6. Every existing gate passes:
    - `check_frontmatter.py`;
    - `check_provenance.py`;
