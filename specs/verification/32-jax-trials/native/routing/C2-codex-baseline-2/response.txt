@@ -1,0 +1,10 @@
+Primary skill: evaluate-deep-learning.
+Supporting skills selected: none.
+The task compares existing neural checkpoints across training budgets and seeds.
+The primary skill explicitly owns checkpoint comparison, unequal compute budgets, and seed variation.
+Its body requires common-budget comparisons or budget-performance curves before method-wide conclusions.
+It retains per-run scores, failures, and seed policy; matching numeric seed labels alone does not justify pairing.
+It separates finite-test uncertainty, training-run variation, predictive uncertainty, and numerical sensitivity.
+deep-learning is unnecessary without training changes or learning diagnosis; optimize-jax is unnecessary without performance work.
+Bayesian tracking/comparison skills are unnecessary because posterior inference is not stated.
+All catalog pages and the full selected SKILL.md were read; this is a selection result only.

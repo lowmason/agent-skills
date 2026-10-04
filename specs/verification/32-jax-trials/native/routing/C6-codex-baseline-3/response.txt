@@ -1,0 +1,11 @@
+Primary skill: optimize-jax.
+Supporting skills: none for the stated task.
+
+Its catalog description explicitly covers improving inference/generation, prefill/decode, and KV caches.
+The full skill connects speed changes to synchronized measurements and independent full-prefix causal-attention assertions.
+It requires logits parity and exact greedy-token comparison across prompt lengths, padding changes, capacity boundaries, and overflow rejection.
+It also separates stochastic replay checks, correctness checks, and prefill/decode performance measurement.
+This directly handles both generation speed and cache correctness without requiring a second domain skill.
+deep-learning applies if training, objectives, convergence, or learned-model quality arise; evaluate-deep-learning applies if checkpoint comparisons or research claims arise.
+develop-testing-strategy becomes relevant if designing permanent tests, which this selection task does not request.
+Selection only: no optimization, test execution, reference inspection, implementation workflow, or speed/correctness claim was performed.

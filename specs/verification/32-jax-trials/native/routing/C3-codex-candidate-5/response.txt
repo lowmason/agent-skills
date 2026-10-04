@@ -1,0 +1,8 @@
+Primary skill: optimize-jax.
+Supporting skill: systematic-debugging.
+The task explicitly concerns unexpected recompilation in JAX, which optimize-jax covers for non-learning numerical calculations.
+Its full body emphasizes reproducing the input sequence, identifying specialization through compile/cache diagnostics, and preserving numerical correctness.
+Systematic-debugging supports reproduction, root-cause investigation, and one hypothesis at a time before any fix.
+Do not select deep-learning or evaluate-deep-learning: there is no neural model, training objective, checkpoint comparison, or learning-quality claim.
+Do not select bayesian-workflow: the task supplies no posterior-inference context.
+This is selection only; implementation, profiling, permanent tests, and reference loading were not performed.

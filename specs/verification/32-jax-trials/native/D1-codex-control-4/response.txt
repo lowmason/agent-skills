@@ -1,0 +1,481 @@
+Below is a self-contained CPU JAX example. It trains a 32-unit recurrent model to predict one sample beyond the end of each variable-length sine context. Synthetic training and validation sets use independent seeds and vary the amplitude, phase, frequency, and context length.
+
+Every batch has shape `[batch_size, max_length]`. A length mask freezes the recurrent state after each sequence ends; an example mask excludes dummy rows in a partial final batch. Training and validation use mean squared error over actual examples, so padding contributes neither state updates nor loss. The recurrence uses [`jax.lax.scan`](https://docs.jax.dev/en/latest/_autosummary/jax.lax.scan.html), whose carry retains a fixed shape and dtype, and the pure training and evaluation functions use [`jax.jit`](https://docs.jax.dev/en/latest/_autosummary/jax.jit.html).
+
+Install the CPU dependencies in a fresh environment. The standard `jax` installation includes the CPU runtime on supported platforms, following the [official installation guide](https://docs.jax.dev/en/latest/installation.html). The script sets `JAX_PLATFORMS=cpu` before importing JAX, following the [platform configuration documentation](https://docs.jax.dev/en/latest/config_options.html#platforms).
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade jax numpy
+```
+
+Save this as `sine_jax.py`:
+
+```python
+from __future__ import annotations
+
+import os
+
+os.environ["JAX_PLATFORMS"] = "cpu"
+
+import argparse
+import json
+import tempfile
+from dataclasses import asdict, dataclass
+from pathlib import Path
+
+import jax
+import jax.numpy as jnp
+import jaxlib
+import numpy as np
+
+
+PARAM_NAMES = ("wx", "wh", "b", "wy", "by")
+CHECKPOINT_VERSION = 1
+KEY_IMPLEMENTATION = "threefry2x32"
+ADAM_BETA1 = 0.9
+ADAM_BETA2 = 0.999
+ADAM_EPSILON = 1e-8
+GRADIENT_CLIP = 1.0
+
+
+@dataclass(frozen=True)
+class Config:
+    seed: int = 42
+    hidden_size: int = 32
+    min_length: int = 8
+    max_length: int = 48
+    batch_size: int = 64
+    train_size: int = 2048
+    validation_size: int = 512
+    learning_rate: float = 1e-3
+
+    def __post_init__(self):
+        if not 1 <= self.min_length <= self.max_length:
+            raise ValueError("Require 1 <= min_length <= max_length.")
+        if min(self.hidden_size, self.batch_size,
+               self.train_size, self.validation_size) < 1:
+            raise ValueError("Model and dataset sizes must be positive.")
+        if not np.isfinite(self.learning_rate) or self.learning_rate <= 0:
+            raise ValueError("learning_rate must be positive and finite.")
+
+
+def make_data(config, seed, size):
+    rng = np.random.default_rng(seed)
+    lengths = rng.integers(
+        config.min_length, config.max_length + 1,
+        size=size, dtype=np.int32,
+    )
+    amplitude = rng.uniform(0.5, 1.5, size=(size, 1))
+    frequency = rng.uniform(0.08, 0.5, size=(size, 1))  # radians/sample
+    phase = rng.uniform(0.0, 2.0 * np.pi, size=(size, 1))
+    time = np.arange(config.max_length + 1)[None, :]
+    waves = (amplitude * np.sin(frequency * time + phase)).astype(np.float32)
+    observed = np.arange(config.max_length)[None, :] < lengths[:, None]
+    return {
+        "x": np.where(observed, waves[:, :-1], 0.0).astype(np.float32),
+        "lengths": lengths,
+        # A length-L context contains samples 0..L-1; its target is sample L.
+        "y": waves[np.arange(size), lengths],
+    }
+
+
+def initialize(config):
+    key = jax.random.key(config.seed, impl=KEY_IMPLEMENTATION)
+    key, input_key, recurrent_key, output_key = jax.random.split(key, 4)
+    hidden = config.hidden_size
+    params = {
+        "wx": 0.3 * jax.random.normal(input_key, (1, hidden)),
+        "wh": 0.8 * jax.nn.initializers.orthogonal()(
+            recurrent_key, (hidden, hidden), jnp.float32
+        ),
+        "b": jnp.zeros((hidden,), dtype=jnp.float32),
+        "wy": jax.random.normal(output_key, (hidden, 1)) / np.sqrt(hidden),
+        "by": jnp.zeros((1,), dtype=jnp.float32),
+    }
+    params = jax.tree.map(lambda value: value.astype(jnp.float32), params)
+    state = {
+        "params": params,
+        "m": jax.tree.map(jnp.zeros_like, params),
+        "v": jax.tree.map(jnp.zeros_like, params),
+        "step": jnp.asarray(0, dtype=jnp.int32),
+    }
+    datasets = {
+        "train": make_data(config, config.seed + 1, config.train_size),
+        "validation": make_data(
+            config, config.seed + 2, config.validation_size
+        ),
+    }
+    return state, key, datasets
+
+
+def forecast(params, inputs, lengths):
+    """Predict the sample following each right-padded context."""
+    hidden = jnp.zeros(
+        (inputs.shape[0], params["wh"].shape[0]), dtype=inputs.dtype
+    )
+
+    def advance(hidden, item):
+        time, sample = item
+        active = (time < lengths)[:, None]
+        # Replace masked values before arithmetic, even if a caller pads with NaN.
+        sample = jnp.where(active, sample[:, None], 0.0)
+        candidate = jnp.tanh(
+            sample @ params["wx"] + hidden @ params["wh"] + params["b"]
+        )
+        hidden = jnp.where(active, candidate, hidden)
+        return hidden, None
+
+    hidden, _ = jax.lax.scan(
+        advance, hidden, (jnp.arange(inputs.shape[1]), inputs.T)
+    )
+    return (hidden @ params["wy"] + params["by"])[:, 0]
+
+
+predict = jax.jit(forecast)
+
+
+def squared_error_totals(params, batch):
+    predictions = forecast(params, batch["x"], batch["lengths"])
+    errors = jnp.where(batch["valid"], (predictions - batch["y"]) ** 2, 0.0)
+    return jnp.sum(errors), jnp.sum(batch["valid"])
+
+
+def loss(params, batch):
+    squared_error, count = squared_error_totals(params, batch)
+    return squared_error / jnp.maximum(count, 1)
+
+
+@jax.jit
+def train_step(state, batch, learning_rate):
+    batch_loss, gradients = jax.value_and_grad(loss)(state["params"], batch)
+    norm = jnp.sqrt(sum(jnp.sum(g ** 2) for g in jax.tree.leaves(gradients)))
+    scale = jnp.minimum(1.0, GRADIENT_CLIP / (norm + ADAM_EPSILON))
+    gradients = jax.tree.map(lambda g: g * scale, gradients)
+    step = state["step"] + 1
+    first = jax.tree.map(
+        lambda m, g: ADAM_BETA1 * m + (1.0 - ADAM_BETA1) * g,
+        state["m"], gradients,
+    )
+    second = jax.tree.map(
+        lambda v, g: ADAM_BETA2 * v + (1.0 - ADAM_BETA2) * g ** 2,
+        state["v"], gradients,
+    )
+    params = jax.tree.map(
+        lambda p, m, v: p - learning_rate * (m / (1.0 - ADAM_BETA1 ** step))
+        / (jnp.sqrt(v / (1.0 - ADAM_BETA2 ** step)) + ADAM_EPSILON),
+        state["params"], first, second,
+    )
+    return {"params": params, "m": first, "v": second, "step": step}, batch_loss
+
+
+evaluate_batch = jax.jit(squared_error_totals)
+
+
+def make_batch(data, indices, batch_size):
+    count = len(indices)
+    if not 1 <= count <= batch_size:
+        raise ValueError("A batch must contain 1..batch_size actual examples.")
+    batch = {
+        "x": np.zeros((batch_size, data["x"].shape[1]), dtype=np.float32),
+        "lengths": np.zeros((batch_size,), dtype=np.int32),
+        "y": np.zeros((batch_size,), dtype=np.float32),
+        "valid": np.arange(batch_size) < count,
+    }
+    for name in ("x", "lengths", "y"):
+        batch[name][:count] = data[name][indices]
+    return jax.tree.map(jnp.asarray, batch)
+
+
+def validation_mse(params, data, batch_size):
+    total_error, total_count = 0.0, 0
+    for start in range(0, len(data["y"]), batch_size):
+        indices = np.arange(start, min(start + batch_size, len(data["y"])))
+        error, count = evaluate_batch(params, make_batch(data, indices, batch_size))
+        total_error += float(error)
+        total_count += int(count)
+    return total_error / total_count
+
+
+def package_versions():
+    return {"jax": jax.__version__, "jaxlib": jaxlib.__version__,
+            "numpy": np.__version__}
+
+
+def save_checkpoint(path, config, state, key, next_epoch, datasets):
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    metadata = {
+        "format": CHECKPOINT_VERSION,
+        "config": asdict(config),
+        "next_epoch": next_epoch,
+        "key_implementation": KEY_IMPLEMENTATION,
+        "versions": package_versions(),
+    }
+    payload = {
+        "metadata": np.asarray(json.dumps(metadata)),
+        "step": np.asarray(state["step"]),
+        "key": np.asarray(jax.random.key_data(key)),
+    }
+    for group in ("params", "m", "v"):
+        for name in PARAM_NAMES:
+            payload[f"{group}_{name}"] = np.asarray(state[group][name])
+    for split, data in datasets.items():
+        for name, values in data.items():
+            payload[f"{split}_{name}"] = values
+
+    temporary_path = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            dir=path.parent, suffix=".tmp", delete=False
+        ) as handle:
+            temporary_path = Path(handle.name)
+            np.savez_compressed(handle, **payload)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary_path, path)
+    finally:
+        if temporary_path is not None:
+            temporary_path.unlink(missing_ok=True)
+
+
+def load_checkpoint(path):
+    with np.load(path, allow_pickle=False) as archive:
+        metadata = json.loads(str(archive["metadata"].item()))
+        if metadata["format"] != CHECKPOINT_VERSION:
+            raise ValueError("Unsupported checkpoint format.")
+        if metadata["key_implementation"] != KEY_IMPLEMENTATION:
+            raise ValueError("Checkpoint PRNG implementation differs.")
+        if metadata["versions"] != package_versions():
+            raise ValueError(
+                "Resume using the saved package versions: "
+                + json.dumps(metadata["versions"])
+            )
+        config = Config(**metadata["config"])
+        state = {
+            group: {
+                name: jnp.asarray(archive[f"{group}_{name}"])
+                for name in PARAM_NAMES
+            }
+            for group in ("params", "m", "v")
+        }
+        state["step"] = jnp.asarray(archive["step"])
+        key = jax.random.wrap_key_data(
+            jnp.asarray(archive["key"], dtype=jnp.uint32),
+            impl=KEY_IMPLEMENTATION,
+        )
+        datasets = {
+            split: {
+                name: archive[f"{split}_{name}"].copy()
+                for name in ("x", "lengths", "y")
+            }
+            for split in ("train", "validation")
+        }
+    return config, state, key, int(metadata["next_epoch"]), datasets
+
+
+def predict_next(params, sequences, max_length):
+    """Host-side inference for a list of finite, nonempty 1-D contexts."""
+    if not sequences:
+        raise ValueError("Provide at least one sequence.")
+    contexts = [np.asarray(sequence, dtype=np.float32) for sequence in sequences]
+    if any(context.ndim != 1 or not 1 <= len(context) <= max_length
+           or not np.isfinite(context).all() for context in contexts):
+        raise ValueError("Contexts must be finite 1-D arrays of length 1..max_length.")
+    inputs = np.zeros((len(contexts), max_length), dtype=np.float32)
+    lengths = np.asarray([len(context) for context in contexts], dtype=np.int32)
+    for row, context in enumerate(contexts):
+        inputs[row, :len(context)] = context
+    return np.asarray(predict(params, jnp.asarray(inputs), jnp.asarray(lengths)))
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--epochs", type=int, default=30,
+                        help="Total completed epochs to reach, including prior epochs.")
+    parser.add_argument("--checkpoint", type=Path, default=Path("sine_checkpoint.npz"))
+    parser.add_argument("--resume", action="store_true")
+    parser.add_argument("--seed", type=int, default=42,
+                        help="Used only when starting a new run.")
+    args = parser.parse_args()
+    if args.epochs < 1 or args.seed < 0:
+        parser.error("epochs must be positive and seed must be nonnegative.")
+
+    if args.resume:
+        config, state, key, next_epoch, datasets = load_checkpoint(args.checkpoint)
+    else:
+        if args.checkpoint.exists():
+            parser.error("Checkpoint already exists; use --resume or a different path.")
+        config = Config(seed=args.seed)
+        state, key, datasets = initialize(config)
+        next_epoch = 0
+    if args.epochs < next_epoch:
+        parser.error("epochs cannot be smaller than the checkpoint's completed epochs.")
+
+    print("Devices:", jax.devices())
+    print("Package versions:", package_versions())
+    validation = datasets["validation"]
+    last_observed = validation["x"][
+        np.arange(len(validation["y"])), validation["lengths"] - 1
+    ]
+    baseline = float(np.mean((last_observed - validation["y"]) ** 2))
+    print(f"Validation persistence baseline MSE: {baseline:.6f}")
+    print(f"Starting validation MSE: "
+          f"{validation_mse(state['params'], validation, config.batch_size):.6f}")
+
+    training = datasets["train"]
+    for epoch in range(next_epoch, args.epochs):
+        key, permutation_key = jax.random.split(key)
+        order = np.asarray(jax.random.permutation(permutation_key, len(training["y"])))
+        train_error = 0.0
+        for start in range(0, len(order), config.batch_size):
+            indices = order[start:start + config.batch_size]
+            batch = make_batch(training, indices, config.batch_size)
+            state, batch_loss = train_step(state, batch, config.learning_rate)
+            batch_loss = float(batch_loss)
+            if not np.isfinite(batch_loss):
+                raise FloatingPointError("Nonfinite training loss; prior checkpoint retained.")
+            train_error += batch_loss * len(indices)
+        validation_loss = validation_mse(state["params"], validation, config.batch_size)
+        if not np.isfinite(validation_loss):
+            raise FloatingPointError("Nonfinite validation loss; prior checkpoint retained.")
+        save_checkpoint(
+            args.checkpoint, config, state, key, epoch + 1, datasets
+        )
+        print(f"Epoch {epoch + 1:03d} | step {int(state['step']):05d} | "
+              f"train MSE {train_error / len(order):.6f} | "
+              f"validation MSE {validation_loss:.6f}")
+
+    contexts = [validation["x"][i, :validation["lengths"][i]]
+                for i in range(min(3, len(validation["y"])))]
+    predictions = predict_next(state["params"], contexts, config.max_length)
+    for i, prediction in enumerate(predictions):
+        print(f"length={len(contexts[i]):2d} predicted={prediction:+.4f} "
+              f"actual={validation['y'][i]:+.4f}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+Start a run, then continue it:
+
+```bash
+python sine_jax.py --epochs 10 --checkpoint runs/sine.npz
+python sine_jax.py --resume --epochs 30 --checkpoint runs/sine.npz
+```
+
+`--epochs 30` means reach 30 completed epochs. After the first command completes 10 epochs, the second performs 20 additional epochs. A checkpoint is replaced atomically after each completed epoch and contains the parameters, Adam moments, optimizer step, next epoch, next shuffle key, configuration, package versions, and both datasets. An interruption during an epoch restarts that epoch from the previous completed checkpoint. This example retains the latest checkpoint; it does not select a best validation checkpoint.
+
+The key is split explicitly, following [JAX's PRNG guidance](https://docs.jax.dev/en/latest/random-numbers.html). Checkpoint serialization extracts the typed key with [`key_data`](https://docs.jax.dev/en/latest/_autosummary/jax.random.key_data.html) and restores it with [`wrap_key_data`](https://docs.jax.dev/en/latest/_autosummary/jax.random.wrap_key_data.html). Numeric arrays and JSON metadata use [NumPy's compressed NPZ format](https://numpy.org/doc/stable/reference/generated/numpy.savez_compressed.html), with [`allow_pickle=False` when loading](https://numpy.org/doc/stable/reference/generated/numpy.load.html).
+
+Resume requires the saved JAX, jaxlib, and NumPy versions. On the same CPU setup and with unchanged code, the saved state is intended to produce the same continuation as an uninterrupted run. This does not promise bitwise identity across different hardware or compiler configurations. Context lengths outside 8–48 or frequencies outside the synthetic training range are outside the default training distribution, even though the inference function accepts shorter nonempty contexts.
+
+For inference from a checkpoint:
+
+```python
+from pathlib import Path
+import numpy as np
+from sine_jax import load_checkpoint, predict_next
+
+config, state, _, _, _ = load_checkpoint(Path("runs/sine.npz"))
+context = np.sin(0.2 * np.arange(20) + 0.7)
+prediction = predict_next(state["params"], [context], config.max_length)[0]
+print("Predicted next sample:", prediction)
+print("Actual next sample:", np.sin(0.2 * 20 + 0.7))
+```
+
+Here are focused checks to save as `test_sine_jax.py`. They cover padding invariance and gradients, partial-batch loss normalization, and the next optimizer update and shuffle after a checkpoint round trip:
+
+```python
+import jax
+import jax.numpy as jnp
+import numpy as np
+
+from sine_jax import (
+    Config, forecast, initialize, load_checkpoint, make_batch,
+    save_checkpoint, squared_error_totals, train_step,
+)
+
+
+def small_run():
+    config = Config(hidden_size=8, min_length=2, max_length=12,
+                    batch_size=4, train_size=9, validation_size=3)
+    state, key, datasets = initialize(config)
+    return config, state, key, datasets
+
+
+def test_padding_does_not_change_predictions_or_gradients():
+    config, state, _, datasets = small_run()
+    data = datasets["validation"]
+    inputs = jnp.asarray(data["x"])
+    lengths = jnp.asarray(data["lengths"])
+    padding = jnp.arange(config.max_length)[None, :] >= lengths[:, None]
+    changed_inputs = jnp.where(padding, 1000.0, inputs)
+    np.testing.assert_allclose(
+        forecast(state["params"], inputs, lengths),
+        forecast(state["params"], changed_inputs, lengths),
+        rtol=0, atol=0,
+    )
+    gradients = jax.grad(
+        lambda x: forecast(state["params"], x, lengths).sum()
+    )(inputs)
+    assert np.all(np.asarray(gradients)[np.asarray(padding)] == 0.0)
+
+
+def test_partial_batch_excludes_dummy_rows():
+    config, state, _, datasets = small_run()
+    data = datasets["validation"]
+    batch = make_batch(data, np.arange(3), config.batch_size)
+    error, count = squared_error_totals(state["params"], batch)
+    predictions = forecast(
+        state["params"], jnp.asarray(data["x"]), jnp.asarray(data["lengths"])
+    )
+    assert int(count) == 3
+    np.testing.assert_allclose(
+        float(error) / int(count),
+        np.mean((np.asarray(predictions) - data["y"]) ** 2),
+        rtol=1e-5, atol=1e-7,
+    )
+
+
+def test_checkpoint_preserves_next_update_and_shuffle(tmp_path):
+    config, state, key, datasets = small_run()
+    batch = make_batch(datasets["train"], np.arange(4), config.batch_size)
+    state, _ = train_step(state, batch, config.learning_rate)
+    key, _ = jax.random.split(key)
+    path = tmp_path / "resume.npz"
+    save_checkpoint(path, config, state, key, 1, datasets)
+    loaded_config, loaded_state, loaded_key, epoch, loaded_data = load_checkpoint(path)
+    assert loaded_config == config
+    assert epoch == 1
+    for original, restored in zip(
+        jax.tree.leaves(state), jax.tree.leaves(loaded_state), strict=True
+    ):
+        np.testing.assert_array_equal(original, restored)
+    for split in datasets:
+        for name in datasets[split]:
+            np.testing.assert_array_equal(datasets[split][name], loaded_data[split][name])
+    np.testing.assert_array_equal(
+        jax.random.permutation(jax.random.split(key)[1], config.train_size),
+        jax.random.permutation(jax.random.split(loaded_key)[1], config.train_size),
+    )
+    expected, _ = train_step(state, batch, config.learning_rate)
+    actual, _ = train_step(loaded_state, batch, config.learning_rate)
+    for original, restored in zip(
+        jax.tree.leaves(expected), jax.tree.leaves(actual), strict=True
+    ):
+        np.testing.assert_allclose(original, restored, rtol=0, atol=0)
+```
+
+Run the checks with:
+
+```bash
+python -m pip install pytest
+python -m pytest -q test_sine_jax.py
+```
+
+The validation printout includes a persistence baseline that predicts the last observed value. Use that baseline and the validation MSE to assess learning; no convergence value or runtime is asserted here. The reported training MSE averages losses measured before each minibatch update, while validation uses the model after the full epoch.
+
+All three Python code blocks passed static syntax parsing. I have not executed, imported, trained, or tested the delivered application code in this session. The implementation and tests are supplied for you to run; numerical behavior, training quality, and checkpoint continuity remain unverified by execution.

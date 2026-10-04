@@ -1,0 +1,40 @@
+{
+  "selected_primary": "bayesian-workflow",
+  "selected_supporting": [],
+  "correctness": "correct",
+  "posterior_boundary": "preserved",
+  "rationale": "BlackJAX posterior sampling selects and fully reads bayesian-workflow alone; initial display-budget recovery is fully retained, without neural or optimization work inferred.",
+  "full_payloads_manually_read": true,
+  "display_reads_manually_verified": true,
+  "conflicts_or_resident_choices": [],
+  "evidence": [
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-candidate-3/response.txt",
+      "line": 1
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-candidate-3/read-events.jsonl",
+      "line": 2
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-candidate-3/research-notes.md",
+      "line": 1
+    }
+  ],
+  "reviewed_utc": "2026-10-04T03:25:47.121300+00:00",
+  "catalog_manifest_sha256": "3f3e5414d6a6c76a68c4038003aab5c025f32a7b2451f4245304b7261c9a1df0",
+  "payloads": {
+    "response.txt": {
+      "sha256": "fc8d6ecff97fefe5ae3a80b9c200cc37714da92a42b813ac63bf4beb446e2c03",
+      "bytes": 859,
+      "lines": 8
+    },
+    "research-notes.md": {
+      "sha256": "665e5eb89938331f606c2f50803827525785f4f04a427eab01362bbda9487194",
+      "bytes": 1264,
+      "lines": 12
+    }
+  },
+  "grading_source": "conductor manual full-response judgment",
+  "semantic_grading_automated": false
+}

@@ -1,0 +1,880 @@
+Use supervised fine-tuning (SFT) to teach the desired response format and task, then run Direct Preference Optimization (DPO) to improve the relative preference for chosen responses. Keep the pretrained backbone frozen throughout; only LoRA parameters receive gradients and optimizer state.
+
+The concrete implementation below uses openai-community/gpt2 as a small checkpoint for proving the training pipeline. It is a complete single-device experiment script, with JSONL loading, adapter initialization, SFT, DPO, validation, and adapter checkpoint round trips. GPT-2 is a pipeline baseline; choosing the final model requires the target task, language, context length, and hardware budget. I have not executed this code, installed its dependencies, downloaded model weights, or run training in this session.
+
+The model loader uses the versioned Flax Transformers API and native Flax weights. The GPT-2 repository currently lists a flax_model.msgpack checkpoint, and the Flax language-model class exposes pretrained loading and explicit parameters. Pin the library version and resolve the model revision once, then use that exact commit for both tokenizer and weights. Initialization from configuration alone does not load pretrained weights. [GPT-2 files](https://huggingface.co/openai-community/gpt2/tree/main), [versioned GPT-2 API](https://huggingface.co/docs/transformers/v4.44.2/en/model_doc/gpt2)
+
+The proposed run proceeds through these checkpoints:
+
+1. Freeze the model, tokenizer, dependency environment, data split, prompt format, and adapter targets. Load native weights without filling missing tensors with random values; verify required paths, shapes, vocabulary, and context length.
+2. Run the numerical and model preflight checks included in the script. Inspect decoded examples and their masks manually. On a tiny dataset, show that SFT can overfit and that a DPO update improves a deliberately labeled pair.
+3. Train SFT adapters and select the checkpoint using held-out completion negative log likelihood. Evaluate task quality and generation behavior as well.
+4. Initialize the DPO policy from those selected SFT adapters. Save a frozen copy of the same adapters as the reference. Reset the policy optimizer for DPO. The reference shares the immutable backbone but has its own fixed adapter values.
+5. Select the DPO checkpoint using held-out preference loss, then compare generations against the SFT checkpoint on previously unseen prompts. Check preference wins, response lengths, formatting, factuality, and task-specific regressions.
+6. Before a substantial run, profile the target sequence lengths and batch size, prove restoration and reproducibility, and establish the validation criteria that will stop an unsuccessful run.
+
+LoRA represents each adapted stored kernel as W_eff = W_base + (alpha/r) A B, with A shaped [kernel_rows, r] and B shaped [r, kernel_columns]. Initializing B to zero preserves the pretrained function at the start. The script targets the fused attention QKV kernel and attention output kernel in every GPT-2 block. It leaves embeddings, normalization, biases, and MLP weights frozen. These names are specific to this implementation; a different architecture needs an inspected target map. [LoRA paper](https://arxiv.org/abs/2106.09685)
+
+Supply four UTF-8 JSONL files. SFT records contain a prompt and a response:
+
+~~~json
+{"group_id":"document-001","prompt":"Summarize the following passage: ...","response":"A concise accurate summary."}
+~~~
+
+Preference records contain one prompt and two response alternatives:
+
+~~~json
+{"group_id":"document-002","prompt":"Summarize the following passage: ...","chosen":"A faithful concise summary.","rejected":"A misleading or unsupported summary."}
+~~~
+
+The alternatives must answer the same prompt. Split by source document, conversation, or other leakage group before writing the files. Use group_id for this purpose; when it is omitted the script can only detect repeated normalized prompts. The script checks that the union of training groups from both stages is disjoint from the union of validation groups. It also rejects empty text, duplicated records, identical tokenized alternatives, embedded EOS strings, and examples that exceed the configured context. Review annotation consistency and response-length imbalance separately.
+
+This baseline renders the prompt as "Instruction:\n{prompt}\nResponse:\n", tokenizes that prefix and the response separately, prepends a BOS token, and appends a genuine EOS token to the response. That token boundary is the defined serialization contract. Use exactly the same prefix encoding at generation time. GPT-2 has no assumed conversational chat template here. For a chat model, replace this formatter with its verified chat template and derive the assistant-token mask from the actual serialized token sequence.
+
+Each sequence has three distinct arrays:
+
+- input_ids: valid vocabulary indices, including padded positions.
+- attention_mask: one on real prompt and response tokens; zero on right padding.
+- completion_mask: one only on response tokens and the response EOS; zero on prompt and padding.
+
+The next-token prediction uses logits[:, :-1] against input_ids[:, 1:], so the completion mask also shifts to completion_mask[:, 1:]. The first response token is predicted at the final prompt position. EOS can also be the padding ID because the two masks distinguish a real EOS from padding.
+
+SFT minimizes completion-only cross entropy, normalized by the number of supervised tokens in the batch:
+
+L_SFT = - sum(m_it log p_theta(token_it | preceding tokens)) / sum(m_it).
+
+DPO uses the sum of the same completion log probabilities for each response, without dividing by response length:
+
+d = [log pi_theta(chosen | prompt) - log pi_theta(rejected | prompt)]
+    - [log pi_ref(chosen | prompt) - log pi_ref(rejected | prompt)]
+L_DPO = mean(softplus(-beta * d)).
+
+The frozen reference is the selected SFT policy. Both chosen and rejected responses need policy and reference scores. The reference receives no updates. Equal policy and reference scores give d = 0 and loss = log(2); increasing the reference-adjusted chosen margin lowers the loss. Length averaging would change this objective. DPO uses offline preference pairs and does not need a separate reward-model training loop. [DPO paper and implementation](https://arxiv.org/html/2305.18290v3)
+
+Use FP32 for the initial correctness run. The script deliberately disables model dropout during both stages so policy/reference scores are deterministic. Training still occurs through gradients. It splits a JAX key for adapter initialization and uses separate seeded NumPy generators for each epoch's data order. If dropout is introduced later, thread and split an explicit PRNG key through each step and restore that key with the checkpoint.
+
+Below is the entire script to save as train_adapters.py. The proposed compatibility environment is Python 3.11 with jax==0.4.35, flax==0.10.2, optax==0.2.4, transformers==4.44.2, huggingface-hub==0.26.2, tokenizers==0.19.1, and numpy==1.26.4. Resolve and lock the transitive dependencies, then prove this environment on the intended backend; this exact combination has not been tested here. Install the backend-appropriate JAX build rather than assuming a CPU installation uses the accelerator. The old Transformers version is intentional because this script uses its Flax API.
+
+~~~python
+from __future__ import annotations
+
+import argparse
+import hashlib
+import importlib.metadata
+import json
+import math
+from pathlib import Path
+
+import jax
+import jax.numpy as jnp
+import numpy as np
+import optax
+from flax import serialization
+from flax.core import freeze, unfreeze
+from flax.traverse_util import flatten_dict, unflatten_dict
+from huggingface_hub import HfApi
+from transformers import AutoTokenizer, FlaxGPT2LMHeadModel
+
+FEATURES = ("input_ids", "attention_mask", "completion_mask")
+PACKAGES = (
+    "jax", "jaxlib", "flax", "optax", "transformers",
+    "huggingface-hub", "tokenizers", "numpy",
+)
+EXPECTED_VERSIONS = {
+    "jax": "0.4.35",
+    "flax": "0.10.2",
+    "optax": "0.2.4",
+    "transformers": "4.44.2",
+    "huggingface-hub": "0.26.2",
+    "tokenizers": "0.19.1",
+    "numpy": "1.26.4",
+}
+
+
+def require(condition, message):
+    if not condition:
+        raise ValueError(message)
+
+
+def fingerprint(tree):
+    digest = hashlib.sha256()
+    for path, value in sorted(flatten_dict(unfreeze(tree)).items()):
+        array = np.asarray(jax.device_get(value))
+        digest.update("/".join(path).encode())
+        digest.update(str((array.shape, array.dtype.str)).encode())
+        digest.update(array.tobytes(order="C"))
+    return digest.hexdigest()
+
+
+def write_bytes(path, payload):
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_bytes(payload)
+    temporary.replace(path)
+
+
+def read_rows(path, preference):
+    fields = ("prompt", "chosen", "rejected") if preference else (
+        "prompt", "response"
+    )
+    rows, seen = [], set()
+    with Path(path).open(encoding="utf-8") as handle:
+        for line_number, line in enumerate(handle, 1):
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            require(isinstance(row, dict), f"{path}:{line_number}: not an object")
+            for field in fields:
+                require(
+                    isinstance(row.get(field), str) and row[field].strip(),
+                    f"{path}:{line_number}: {field} must be nonempty text",
+                )
+            signature = tuple(row[field] for field in fields)
+            require(signature not in seen, f"{path}:{line_number}: duplicate")
+            seen.add(signature)
+            group = row.get("group_id")
+            require(
+                group is None or (isinstance(group, str) and group.strip()),
+                f"{path}:{line_number}: invalid group_id",
+            )
+            row["_group"] = group or hashlib.sha256(
+                row["prompt"].strip().encode()
+            ).hexdigest()
+            rows.append(row)
+    require(rows, f"{path}: empty dataset")
+    return rows
+
+
+def check_split(train_sets, validation_sets):
+    training = [row for rows in train_sets for row in rows]
+    validation = [row for rows in validation_sets for row in rows]
+    training_groups = {row["_group"] for row in training}
+    validation_groups = {row["_group"] for row in validation}
+    require(
+        training_groups.isdisjoint(validation_groups),
+        "Training and validation share a leakage group",
+    )
+    training_prompts = {row["prompt"].strip() for row in training}
+    validation_prompts = {row["prompt"].strip() for row in validation}
+    require(
+        training_prompts.isdisjoint(validation_prompts),
+        "Training and validation share a normalized prompt",
+    )
+
+
+def prompt_tokens(tokenizer, prompt):
+    prefix = f"Instruction:\n{prompt}\nResponse:\n"
+    bos = tokenizer.bos_token_id
+    require(bos is not None, "This tokenizer needs an explicit BOS policy")
+    return [bos] + tokenizer.encode(prefix, add_special_tokens=False)
+
+
+def pack_sequence(tokenizer, prefix, response, length):
+    response_ids = tokenizer.encode(response, add_special_tokens=False)
+    require(response_ids, "Response tokenizes to zero tokens")
+    tokens = prefix + response_ids + [tokenizer.eos_token_id]
+    require(
+        len(tokens) <= length,
+        f"Sequence has {len(tokens)} tokens; limit is {length}. "
+        "Review a preprocessing policy instead of silently truncating.",
+    )
+    input_ids = np.full(length, tokenizer.pad_token_id, dtype=np.int32)
+    attention = np.zeros(length, dtype=np.int32)
+    completion = np.zeros(length, dtype=np.float32)
+    input_ids[:len(tokens)] = tokens
+    attention[:len(tokens)] = 1
+    completion[len(prefix):len(tokens)] = 1
+    require(completion[1:].sum() > 0, "No predictable completion tokens")
+    return dict(zip(FEATURES, (input_ids, attention, completion)))
+
+
+def encode_rows(rows, tokenizer, length, preference):
+    encoded = []
+    fields = ("prompt", "chosen", "rejected") if preference else (
+        "prompt", "response"
+    )
+    for row in rows:
+        require(
+            all(tokenizer.eos_token not in row[field] for field in fields),
+            "Embedded EOS strings require an explicit serialization policy",
+        )
+        prefix = prompt_tokens(tokenizer, row["prompt"])
+        if preference:
+            chosen = pack_sequence(tokenizer, prefix, row["chosen"], length)
+            rejected = pack_sequence(tokenizer, prefix, row["rejected"], length)
+            require(
+                not np.array_equal(
+                    chosen["input_ids"], rejected["input_ids"]
+                ),
+                "Preference alternatives have identical token IDs",
+            )
+            encoded.append({
+                **{f"chosen_{key}": value for key, value in chosen.items()},
+                **{f"rejected_{key}": value for key, value in rejected.items()},
+            })
+        else:
+            encoded.append(
+                pack_sequence(tokenizer, prefix, row["response"], length)
+            )
+    return {
+        key: np.stack([row[key] for row in encoded])
+        for key in encoded[0]
+    }
+
+
+def batch_iterator(data, order, batch_size):
+    for offset in range(0, len(order), batch_size):
+        indices = order[offset:offset + batch_size]
+        real_count = len(indices)
+        if real_count < batch_size:
+            indices = np.concatenate([
+                indices,
+                np.repeat(indices[0], batch_size - real_count),
+            ])
+        batch = {
+            key: jnp.asarray(values[indices])
+            for key, values in data.items()
+        }
+        # Static final-batch shape without giving repeated rows extra weight.
+        batch["example_mask"] = jnp.asarray(
+            np.arange(batch_size) < real_count, dtype=jnp.float32
+        )
+        yield batch
+
+
+def load_backbone(model_id, revision, length):
+    resolved = HfApi().model_info(model_id, revision=revision).sha
+    require(resolved is not None, "Could not resolve the model revision")
+    tokenizer = AutoTokenizer.from_pretrained(
+        model_id, revision=resolved, trust_remote_code=False
+    )
+    require(tokenizer.eos_token_id is not None, "EOS is required")
+    tokenizer.pad_token = tokenizer.eos_token
+    tokenizer.padding_side = "right"
+
+    # This pinned API returns (model, params) when _do_init=False.
+    model, loaded = FlaxGPT2LMHeadModel.from_pretrained(
+        model_id,
+        revision=resolved,
+        from_pt=False,
+        _do_init=False,
+        dtype=jnp.float32,
+        ignore_mismatched_sizes=False,
+    )
+    actual = flatten_dict(unfreeze(loaded))
+    expected = flatten_dict(unfreeze(model.params_shape_tree))
+    require(set(actual) == set(expected), "Missing model parameter paths")
+    for path, value in actual.items():
+        require(
+            value.shape == expected[path].shape,
+            f"Wrong parameter shape at {'/'.join(path)}",
+        )
+        require(
+            np.isfinite(np.asarray(jax.device_get(value))).all(),
+            f"Nonfinite pretrained weights at {'/'.join(path)}",
+        )
+    require(length <= model.config.n_positions, "Context exceeds model limit")
+    require(len(tokenizer) == model.config.vocab_size, "Vocabulary mismatch")
+    for token_id in (tokenizer.bos_token_id, tokenizer.eos_token_id):
+        require(
+            token_id is not None and 0 <= token_id < model.config.vocab_size,
+            "Invalid BOS/EOS token ID",
+        )
+    base = freeze(jax.tree_util.tree_map(
+        lambda value: jax.device_put(
+            value.astype(jnp.float32), jax.local_devices()[0]
+        ),
+        loaded,
+    ))
+    return model, tokenizer, base, resolved
+
+
+def initialize_adapters(base, config, rank, seed):
+    flat = flatten_dict(unfreeze(base))
+    targets = {
+        "/".join(path): path
+        for path in flat
+        if path[-3:] in {
+            ("attn", "c_attn", "kernel"),
+            ("attn", "c_proj", "kernel"),
+        }
+    }
+    require(
+        len(targets) == 2 * config.n_layer,
+        "Unexpected attention target map; inspect the loaded architecture",
+    )
+    adapters = {}
+    key = jax.random.PRNGKey(seed)
+    for name, path in sorted(targets.items()):
+        kernel = flat[path]
+        require(kernel.ndim == 2, f"{name} is not a matrix")
+        require(rank <= min(kernel.shape), f"Rank exceeds {name} dimensions")
+        if path[-2] == "c_attn":
+            require(
+                sorted(kernel.shape) == [
+                    config.n_embd, 3 * config.n_embd
+                ],
+                f"Unexpected fused-QKV shape: {name}",
+            )
+        else:
+            require(
+                kernel.shape == (config.n_embd, config.n_embd),
+                f"Unexpected attention-output shape: {name}",
+            )
+        key, initialization_key = jax.random.split(key)
+        adapters[name] = {
+            "a": 0.01 * jax.random.normal(
+                initialization_key, (kernel.shape[0], rank), jnp.float32
+            ),
+            "b": jnp.zeros((rank, kernel.shape[1]), dtype=jnp.float32),
+        }
+    return freeze(adapters), targets
+
+
+def effective_parameters(base, adapters, targets, scale):
+    flat = dict(flatten_dict(unfreeze(base)))
+    for name, path in targets.items():
+        adapter = adapters[name]
+        delta = scale * (adapter["a"] @ adapter["b"])
+        flat[path] = jax.lax.stop_gradient(flat[path]) + delta
+    return freeze(unflatten_dict(flat))
+
+
+def forward_logits(model, params, batch):
+    ids = batch["input_ids"]
+    positions = jnp.broadcast_to(
+        jnp.arange(ids.shape[1], dtype=jnp.int32), ids.shape
+    )
+    return model(
+        input_ids=ids,
+        attention_mask=batch["attention_mask"],
+        position_ids=positions,
+        params=params,
+        train=False,
+        return_dict=True,
+    ).logits.astype(jnp.float32)
+
+
+def completion_logps(logits, batch):
+    labels = batch["input_ids"][:, 1:]
+    token_logps = -optax.softmax_cross_entropy_with_integer_labels(
+        logits[:, :-1, :].astype(jnp.float32), labels
+    )
+    mask = (
+        batch["completion_mask"][:, 1:]
+        * batch["attention_mask"][:, 1:]
+    ).astype(jnp.float32)
+    return jnp.sum(token_logps * mask, axis=1), jnp.sum(mask, axis=1)
+
+
+def pair_batch(batch):
+    return {
+        feature: jnp.concatenate([
+            batch[f"chosen_{feature}"], batch[f"rejected_{feature}"]
+        ], axis=0)
+        for feature in FEATURES
+    }
+
+
+def make_objectives(model, targets, scale, beta):
+    def sft_objective(adapters, base, reference, batch):
+        del reference
+        params = effective_parameters(base, adapters, targets, scale)
+        logps, counts = completion_logps(
+            forward_logits(model, params, batch), batch
+        )
+        weights = batch["example_mask"]
+        loss_sum = -jnp.sum(logps * weights)
+        weight = jnp.sum(counts * weights)
+        return loss_sum / weight, {
+            "loss_sum": loss_sum,
+            "weight": weight,
+        }
+
+    def dpo_objective(adapters, base, reference, batch):
+        combined = pair_batch(batch)
+        policy_params = effective_parameters(base, adapters, targets, scale)
+        reference_params = effective_parameters(
+            base, reference, targets, scale
+        )
+        policy_logps, _ = completion_logps(
+            forward_logits(model, policy_params, combined), combined
+        )
+        reference_logps, _ = completion_logps(
+            forward_logits(model, reference_params, combined), combined
+        )
+        reference_logps = jax.lax.stop_gradient(reference_logps)
+        policy_chosen, policy_rejected = jnp.split(policy_logps, 2)
+        ref_chosen, ref_rejected = jnp.split(reference_logps, 2)
+        chosen_reward = beta * (policy_chosen - ref_chosen)
+        rejected_reward = beta * (policy_rejected - ref_rejected)
+        margin = chosen_reward - rejected_reward
+        weights = batch["example_mask"]
+        weight = jnp.sum(weights)
+        loss_sum = jnp.sum(jax.nn.softplus(-margin) * weights)
+        return loss_sum / weight, {
+            "loss_sum": loss_sum,
+            "weight": weight,
+            "margin_sum": jnp.sum(margin * weights),
+            "accuracy_sum": jnp.sum((margin > 0) * weights),
+            "tie_sum": jnp.sum((margin == 0) * weights),
+            "chosen_reward_sum": jnp.sum(chosen_reward * weights),
+            "rejected_reward_sum": jnp.sum(rejected_reward * weights),
+            "chosen_logp_sum": jnp.sum(policy_chosen * weights),
+            "rejected_logp_sum": jnp.sum(policy_rejected * weights),
+        }
+
+    return sft_objective, dpo_objective
+
+
+def finite_tree(tree):
+    leaves = jax.tree_util.tree_leaves(tree)
+    return jnp.all(jnp.stack([
+        jnp.all(jnp.isfinite(value)) for value in leaves
+    ])) if leaves else jnp.asarray(True)
+
+
+def evaluate(objective, adapters, base, reference, data, batch_size):
+    count = len(next(iter(data.values())))
+    totals = {}
+    for batch in batch_iterator(data, np.arange(count), batch_size):
+        _, metrics = objective(adapters, base, reference, batch)
+        host = jax.device_get(metrics)
+        for key, value in host.items():
+            totals[key] = totals.get(key, 0.0) + float(value)
+    weight = totals.pop("weight")
+    require(weight > 0, "Validation contains no supervised targets")
+    result = {
+        key.removesuffix("_sum"): value / weight
+        for key, value in totals.items()
+    }
+    result["weight"] = weight
+    return result
+
+
+def numerical_checks():
+    def synthetic_dpo(logps):
+        chosen, rejected = logps
+        return jax.nn.softplus(-0.1 * (chosen - rejected))
+
+    baseline = float(synthetic_dpo(jnp.array([0.0, 0.0])))
+    np.testing.assert_allclose(baseline, np.log(2.0), rtol=1e-6)
+    require(
+        float(synthetic_dpo(jnp.array([1.0, 0.0]))) < baseline,
+        "DPO preference sign is reversed",
+    )
+    derivative = jax.grad(synthetic_dpo)(jnp.array([0.0, 0.0]))
+    require(
+        float(derivative[0]) < 0 < float(derivative[1]),
+        "DPO gradient does not favor chosen over rejected",
+    )
+
+    batch = {
+        "input_ids": jnp.array([[0, 1, 2, 0, 0]], dtype=jnp.int32),
+        "attention_mask": jnp.array([[1, 1, 1, 1, 0]]),
+        "completion_mask": jnp.array([[0, 0, 1, 1, 0]]),
+    }
+    logits = jnp.zeros((1, 5, 3), dtype=jnp.float32)
+    logp, count = completion_logps(logits, batch)
+    np.testing.assert_allclose(logp, [-2 * np.log(3)], rtol=1e-6)
+    np.testing.assert_equal(np.asarray(count), [2])
+    changed = logits.at[:, 0, :].set(jnp.array([10.0, -10.0, 0.0]))
+    changed = changed.at[:, 3:, :].set(
+        jnp.array([-10.0, 10.0, 0.0])
+    )
+    np.testing.assert_allclose(
+        completion_logps(changed, batch)[0], logp, rtol=1e-6
+    )
+    require(
+        float(completion_logps(
+            logits.at[:, 1, 2].set(3.0), batch
+        )[0][0]) > float(logp[0]),
+        "First completion token was shifted or masked incorrectly",
+    )
+
+
+def model_preflight(model, base, adapters, targets, scale, objective, batch):
+    merged = effective_parameters(base, adapters, targets, scale)
+    np.testing.assert_allclose(
+        np.asarray(jax.device_get(forward_logits(model, merged, batch))),
+        np.asarray(jax.device_get(forward_logits(model, base, batch))),
+        rtol=1e-6,
+        atol=1e-6,
+    )
+    gradient_function = jax.jit(
+        jax.value_and_grad(objective, argnums=0, has_aux=True)
+    )
+    (loss, _), gradients = gradient_function(adapters, base, None, batch)
+    require(bool(jax.device_get(finite_tree(gradients))), "Nonfinite gradients")
+    require(np.isfinite(float(loss)), "Nonfinite initial SFT loss")
+    require(
+        float(optax.global_norm(gradients)) > 0,
+        "All adapter gradients are zero",
+    )
+    for name in gradients:
+        np.testing.assert_allclose(
+            np.asarray(jax.device_get(gradients[name]["a"])), 0.0,
+            atol=1e-7,
+        )
+    # A's initial gradient is zero because B is zero; B can still learn.
+
+
+def train_stage(
+    name, adapters, base, reference, training, validation,
+    objective, epochs, learning_rate, args, output,
+):
+    output.mkdir()
+    count = len(next(iter(training.values())))
+    total_steps = epochs * math.ceil(count / args.batch_size)
+    if total_steps >= 20:
+        warmup = min(10, total_steps // 10)
+        schedule = optax.warmup_cosine_decay_schedule(
+            init_value=0.1 * learning_rate,
+            peak_value=learning_rate,
+            warmup_steps=warmup,
+            decay_steps=total_steps,
+            end_value=0.1 * learning_rate,
+        )
+    else:
+        schedule = learning_rate
+    optimizer = optax.chain(
+        optax.clip_by_global_norm(1.0),
+        optax.adamw(schedule, weight_decay=0.0),
+    )
+    state = optimizer.init(adapters)
+
+    def update(current, optimizer_state, backbone, frozen_reference, batch):
+        (loss, metrics), gradients = jax.value_and_grad(
+            objective, argnums=0, has_aux=True
+        )(current, backbone, frozen_reference, batch)
+        updates, next_state = optimizer.update(
+            gradients, optimizer_state, current
+        )
+        candidate = optax.apply_updates(current, updates)
+        return candidate, next_state, {
+            **metrics,
+            "loss": loss,
+            "gradient_norm": optax.global_norm(gradients),
+            "finite": (
+                jnp.isfinite(loss)
+                & finite_tree(gradients)
+                & finite_tree(candidate)
+                & finite_tree(next_state)
+            ),
+        }
+
+    compiled_update = jax.jit(update)
+    compiled_objective = jax.jit(objective)
+    initial_metrics = evaluate(
+        compiled_objective, adapters, base, reference,
+        validation, args.batch_size,
+    )
+    best_loss = initial_metrics["loss"]
+    template = adapters
+    best_path = output / "best_adapter.msgpack"
+    write_bytes(best_path, serialization.to_bytes(adapters))
+    print(json.dumps({"stage": name, "step": 0, "validation": initial_metrics}))
+
+    step = 0
+    stage_seed_offset = 0 if name == "sft" else 100_000
+    for epoch in range(epochs):
+        rng = np.random.default_rng(args.seed + stage_seed_offset + epoch)
+        order = rng.permutation(count)
+        for batch_index, batch in enumerate(
+            batch_iterator(training, order, args.batch_size)
+        ):
+            candidate, next_state, metrics = compiled_update(
+                adapters, state, base, reference, batch
+            )
+            host = jax.device_get(metrics)
+            require(bool(host["finite"]), f"{name}: nonfinite update")
+            adapters, state = candidate, next_state
+            step += 1
+            if step % args.eval_every == 0 or step == total_steps:
+                validation_metrics = evaluate(
+                    compiled_objective, adapters, base, reference,
+                    validation, args.batch_size,
+                )
+                require(
+                    all(np.isfinite(value) for value in validation_metrics.values()),
+                    f"{name}: nonfinite validation metric",
+                )
+                if validation_metrics["loss"] < best_loss:
+                    best_loss = validation_metrics["loss"]
+                    write_bytes(best_path, serialization.to_bytes(adapters))
+                write_bytes(
+                    output / "latest_training_state.msgpack",
+                    serialization.to_bytes({
+                        "adapters": adapters,
+                        "optimizer": state,
+                        "step": np.asarray(step, dtype=np.int32),
+                    }),
+                )
+                (output / "progress.json").write_text(
+                    json.dumps({
+                        "stage": name,
+                        "step": step,
+                        "epoch": epoch,
+                        "next_batch_index": batch_index + 1,
+                        "seed": args.seed,
+                        "stage_seed_offset": stage_seed_offset,
+                        "total_steps": total_steps,
+                        "best_validation_loss": best_loss,
+                    }, indent=2) + "\n",
+                    encoding="utf-8",
+                )
+                print(json.dumps({
+                    "stage": name,
+                    "step": step,
+                    "training_loss": float(host["loss"]),
+                    "gradient_norm": float(host["gradient_norm"]),
+                    "validation": validation_metrics,
+                }))
+
+    restored = serialization.from_bytes(template, best_path.read_bytes())
+    restored = freeze(jax.tree_util.tree_map(jnp.asarray, restored))
+    restored_metrics = evaluate(
+        compiled_objective, restored, base, reference,
+        validation, args.batch_size,
+    )
+    np.testing.assert_allclose(
+        restored_metrics["loss"], best_loss, rtol=1e-6, atol=1e-5
+    )
+    require(
+        best_loss < initial_metrics["loss"],
+        f"{name}: no held-out loss improvement; review before scaling",
+    )
+    return restored
+
+
+def parse_arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model", default="openai-community/gpt2")
+    parser.add_argument("--revision", default="main")
+    parser.add_argument("--sft-train", required=True)
+    parser.add_argument("--sft-val", required=True)
+    parser.add_argument("--dpo-train", required=True)
+    parser.add_argument("--dpo-val", required=True)
+    parser.add_argument("--output", required=True)
+    parser.add_argument("--max-length", type=int, default=256)
+    parser.add_argument("--batch-size", type=int, default=2)
+    parser.add_argument("--rank", type=int, default=8)
+    parser.add_argument("--alpha", type=float, default=16.0)
+    parser.add_argument("--beta", type=float, default=0.1)
+    parser.add_argument("--sft-lr", type=float, default=1e-4)
+    parser.add_argument("--dpo-lr", type=float, default=1e-5)
+    parser.add_argument("--sft-epochs", type=int, default=3)
+    parser.add_argument("--dpo-epochs", type=int, default=1)
+    parser.add_argument("--eval-every", type=int, default=50)
+    parser.add_argument("--seed", type=int, default=17)
+    parser.add_argument("--preflight-only", action="store_true")
+    args = parser.parse_args()
+    for name in (
+        "max_length", "batch_size", "rank", "alpha", "beta",
+        "sft_lr", "dpo_lr", "sft_epochs", "dpo_epochs", "eval_every",
+    ):
+        require(getattr(args, name) > 0, f"{name} must be positive")
+    require(args.max_length >= 3, "Context is too short")
+    return args
+
+
+def main():
+    args = parse_arguments()
+    versions = {name: importlib.metadata.version(name) for name in PACKAGES}
+    for name, expected in EXPECTED_VERSIONS.items():
+        require(
+            versions[name] == expected,
+            f"{name} must be {expected}; found {versions[name]}",
+        )
+    require(jax.process_count() == 1, "This baseline supports one process")
+    numerical_checks()
+
+    rows = {
+        "sft_train": read_rows(args.sft_train, preference=False),
+        "sft_val": read_rows(args.sft_val, preference=False),
+        "dpo_train": read_rows(args.dpo_train, preference=True),
+        "dpo_val": read_rows(args.dpo_val, preference=True),
+    }
+    check_split(
+        [rows["sft_train"], rows["dpo_train"]],
+        [rows["sft_val"], rows["dpo_val"]],
+    )
+    model, tokenizer, base, revision = load_backbone(
+        args.model, args.revision, args.max_length
+    )
+    datasets = {
+        name: encode_rows(
+            records, tokenizer, args.max_length, name.startswith("dpo")
+        )
+        for name, records in rows.items()
+    }
+    adapters, targets = initialize_adapters(
+        base, model.config, args.rank, args.seed
+    )
+    scale = args.alpha / args.rank
+    sft_objective, dpo_objective = make_objectives(
+        model, targets, scale, args.beta
+    )
+    initial_base_fingerprint = fingerprint(base)
+    sft_count = len(rows["sft_train"])
+    first_sft_batch = next(batch_iterator(
+        datasets["sft_train"], np.arange(sft_count), args.batch_size
+    ))
+    model_preflight(
+        model, base, adapters, targets, scale,
+        sft_objective, first_sft_batch,
+    )
+    first_pair_batch = next(batch_iterator(
+        datasets["dpo_train"], np.arange(len(rows["dpo_train"])),
+        args.batch_size,
+    ))
+    initial_dpo_loss, initial_dpo_metrics = jax.jit(dpo_objective)(
+        adapters, base, adapters, first_pair_batch
+    )
+    np.testing.assert_allclose(
+        float(initial_dpo_loss), np.log(2.0), rtol=1e-5
+    )
+    np.testing.assert_allclose(
+        float(initial_dpo_metrics["margin_sum"]), 0.0, atol=1e-5
+    )
+    print(json.dumps({
+        "preflight": "passed",
+        "backend": jax.default_backend(),
+        "devices": [str(device) for device in jax.local_devices()],
+        "model_revision": revision,
+        "base_parameters": sum(
+            value.size for value in jax.tree_util.tree_leaves(base)
+        ),
+        "adapter_parameters": sum(
+            value.size for value in jax.tree_util.tree_leaves(adapters)
+        ),
+    }))
+    if args.preflight_only:
+        return
+
+    output = Path(args.output)
+    output.mkdir(parents=True, exist_ok=False)
+    tokenizer.save_pretrained(output / "tokenizer")
+    manifest = {
+        "arguments": vars(args),
+        "versions": versions,
+        "model_revision": revision,
+        "base_fingerprint": initial_base_fingerprint,
+        "adapter_targets": sorted(targets),
+        "adapter_scale": scale,
+        "prompt_template": "Instruction:\n{prompt}\nResponse:\n",
+        "serialization": "BOS + prefix_tokens + response_tokens + EOS",
+        "data_sha256": {
+            name: hashlib.sha256(Path(path).read_bytes()).hexdigest()
+            for name, path in {
+                "sft_train": args.sft_train,
+                "sft_val": args.sft_val,
+                "dpo_train": args.dpo_train,
+                "dpo_val": args.dpo_val,
+            }.items()
+        },
+    }
+    (output / "manifest.json").write_text(
+        json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
+    )
+
+    sft_adapters = train_stage(
+        "sft", adapters, base, None,
+        datasets["sft_train"], datasets["sft_val"],
+        sft_objective, args.sft_epochs, args.sft_lr, args, output / "sft",
+    )
+    reference = freeze(jax.tree_util.tree_map(
+        lambda value: jax.lax.stop_gradient(jnp.array(value)),
+        sft_adapters,
+    ))
+    initial_reference_fingerprint = fingerprint(reference)
+    write_bytes(
+        output / "dpo_reference_adapter.msgpack",
+        serialization.to_bytes(reference),
+    )
+
+    # The reference is the selected SFT policy, including its adapter.
+    loss_at_start, metrics_at_start = jax.jit(dpo_objective)(
+        sft_adapters, base, reference, first_pair_batch
+    )
+    np.testing.assert_allclose(float(loss_at_start), np.log(2.0), rtol=1e-5)
+    np.testing.assert_allclose(
+        float(metrics_at_start["margin_sum"]), 0.0, atol=1e-5
+    )
+
+    dpo_adapters = train_stage(
+        "dpo", sft_adapters, base, reference,
+        datasets["dpo_train"], datasets["dpo_val"],
+        dpo_objective, args.dpo_epochs, args.dpo_lr, args, output / "dpo",
+    )
+    require(
+        fingerprint(base) == initial_base_fingerprint,
+        "Frozen backbone changed",
+    )
+    require(
+        fingerprint(reference) == initial_reference_fingerprint,
+        "DPO reference changed",
+    )
+    final_path = output / "final_adapter.msgpack"
+    write_bytes(final_path, serialization.to_bytes(dpo_adapters))
+    round_trip = serialization.from_bytes(
+        dpo_adapters, final_path.read_bytes()
+    )
+    require(
+        fingerprint(round_trip) == fingerprint(dpo_adapters),
+        "Final adapter checkpoint round trip changed its values",
+    )
+    print(json.dumps({
+        "result": "selected adapters saved",
+        "path": str(final_path),
+        "model_revision": revision,
+    }))
+
+
+if __name__ == "__main__":
+    main()
+~~~
+
+The loader's _do_init=False path avoids a silent random initialization of missing pretrained parameters, and the script compares the returned tensor paths with params_shape_tree. Flax's computation dtype and the parameter storage dtype are separate choices; this baseline explicitly casts the backbone to FP32. [pinned Flax loader source](https://github.com/huggingface/transformers/blob/v4.44.2/src/transformers/modeling_flax_utils.py)
+
+The optimizer is initialized solely on the adapter tree. Differentiation uses argnums=0, so the backbone and reference are excluded from the gradient output. This also avoids allocating backbone Adam moments. The numerical cross entropy takes valid integer labels; masked positions are removed by weights rather than by passing an invalid vocabulary index such as -100. [Optax integer-label cross entropy](https://optax.readthedocs.io/en/latest/api/generated/optax.losses.softmax_cross_entropy_with_integer_labels.html), [Optax AdamW](https://optax.readthedocs.io/en/stable/api/optimizers.html#optax.adamw)
+
+Run the preflight first, then the pilot using the same arguments without the last flag:
+
+~~~bash
+python train_adapters.py \
+  --model openai-community/gpt2 \
+  --revision main \
+  --sft-train sft_train.jsonl \
+  --sft-val sft_val.jsonl \
+  --dpo-train dpo_train.jsonl \
+  --dpo-val dpo_val.jsonl \
+  --output pilot_run \
+  --max-length 256 --batch-size 2 \
+  --rank 8 --alpha 16 --beta 0.1 \
+  --sft-lr 1e-4 --dpo-lr 1e-5 \
+  --sft-epochs 3 --dpo-epochs 1 \
+  --preflight-only
+~~~
+
+Those values are pilot starting points, not claims about optimal settings. The script resolves main to one commit and reports it; for a repeat run, pass that reported commit as --revision. For substantive training, use a reviewed immutable revision from the outset.
+
+The essential checks before committing substantial compute are:
+
+- Loading and adapters: compare zero-adapter logits with the original pretrained model, inspect the exact adapter paths and parameter count, and confirm nonzero B gradients at initialization. A initially has zero gradient because B starts at zero. Confirm that applying an update changes adapters and leaves the backbone untouched.
+- Tokens and loss: decode several prompt/response examples with mask boundaries. Check the first response token, true EOS, right padding, and unequal response lengths. Confirm that changing logits only at excluded targets has no effect. Compare sequence scores against a slow hand-computed log-softmax sum. Check eager and JIT results within a declared tolerance.
+- Preference behavior: verify equal policy/reference loss is log(2), the chosen-gradient sign, and a known pair's margin after one controlled update. Hash the frozen reference before and after training. Raw chosen-versus-rejected likelihood and the reference-adjusted implicit-reward margin measure different quantities; report which one is being used.
+- Tiny-run behavior: overfit a few SFT examples, then improve a few unambiguous preference pairs. Check generation, not only training loss. The script treats lack of held-out improvement as a failed pilot and leaves its checkpoints available for diagnosis.
+- Data quality: audit group splits, duplicates, preference ambiguity, annotation agreement, prompt distribution, and length bias. Long examples are rejected here rather than silently changing a preference label through truncation. Any later truncation policy must preserve the identical prompt and usable completion evidence for both alternatives.
+- Evaluation: keep a final untouched prompt set. Compare base, SFT, and DPO under the same decoding settings. Use blinded response comparisons when possible, report sample counts and uncertainty, stratify by task and response length, and inspect task-specific regressions. A lower DPO loss alone does not establish better user-facing behavior.
+- Resources and recovery: time compilation separately from steady-state steps; synchronize device work before reporting throughput. Measure peak memory for policy and reference passes, including logits, activations, merged kernels, adapters, optimizer state, and transient buffers. Interrupt and restore a pilot, then compare the subsequent updates with an uninterrupted run.
+
+JIT sees arrays with fixed sequence and batch shapes in this script; the last batch uses an example mask so repeated filler examples do not alter the objective. A long run can use a small number of length buckets to reduce padding while controlling recompilation. Benchmark with block_until_ready or equivalent synchronization because JAX dispatch can be asynchronous. [JAX compilation and timing guide](https://docs.jax.dev/en/latest/notebooks/thinking_in_jax.html)
+
+This implementation saves selected adapter checkpoints, the DPO reference, a manifest, and periodic optimizer/step snapshots. The checkpoint format is custom and is not a Hugging Face PEFT adapter format. To load for inference, reconstruct the same base revision and target map, initialize an adapter-shaped template, restore with serialization.from_bytes, and pass effective_parameters(...) explicitly as params. Verify the restored logits before serving it. The periodic state contains the optimizer and progress coordinates, but the script has no resume CLI; implement and verify exact restoration of its optimizer, step, epoch/batch position, schedule, manifest, and data order before using it for an expensive recoverable job.
+
+Two scale limits matter. First, materializing A B into a dense kernel gives a transparent correctness baseline but does not establish the compute or memory savings of an integrated low-rank layer. An efficient implementation adds x A B at the projection, with the appropriate orientation, instead of computing a dense update on every step. Validate equivalence before replacing the baseline. Second, all encoded examples are held in host memory here. A large dataset needs a deterministic streaming or indexed loader with the same masking and batching contract.
+
+For the larger-model run, establish a memory budget first, then select mixed precision, activation rematerialization, microbatch accumulation, and explicit device sharding as needed. Keep adapter master parameters, optimizer state, log-softmax, sequence sums, and DPO margins in FP32 while validating lower-precision backbone computation. Do not assume a PyTorch quantization or PEFT option works in this JAX implementation. A multi-device implementation must also weight SFT by global supervised-token count and DPO by global real-pair count; averaging per-device means can give unequal batches the wrong weight. Prove parity with this baseline before expanding the run.
+
+The analysis and code delivery are complete. Runtime compatibility, numerical preflight success, training convergence, and quality improvement remain unverified because application/model execution was explicitly outside this session's scope.
+

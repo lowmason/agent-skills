@@ -1,0 +1,8 @@
+Primary skill: optimize-jax (Read ID: optimize-jax).
+Supporting skill: systematic-debugging (Read ID: systematic-debugging).
+optimize-jax directly covers unexpected recompilation and explicitly includes non-learning simulations and numerical programs.
+Its full body calls for replaying actual input signatures, keeping callable identity stable, and inspecting compile/cache-miss evidence before choosing a cause-supported change.
+systematic-debugging supplies the complementary reproduce, isolate, hypothesize, and verify discipline for this unexpected behavior.
+Do not select deep-learning or evaluate-deep-learning: no neural model, learning behavior, checkpoint comparison, or research claim is stated.
+Do not select bayesian-workflow merely for JAX: no posterior inference or probabilistic-model task is stated, and optimize-jax explicitly defines that boundary.
+This is a selection result only; no recompilation cause was diagnosed and no calculation, test, implementation workflow, or reference/script was executed.

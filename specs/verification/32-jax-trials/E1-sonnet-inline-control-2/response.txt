@@ -1,0 +1,54 @@
+## Verdict
+
+Neither method is shown to be better — the 0.0075 gap between Method A (mean 0.15) and Method B (mean 0.1425) is well inside the noise, and worse, the comparison is confounded by training budget.
+
+Welch's t-test: t ≈ 0.45 on ~3.7 effective df, p ≈ 0.68. Not close to significant.
+
+The more important point is the direction of the confound: **B was trained on 3× the tokens and still didn't beat A outside noise.** If anything, that's evidence in A's favor compute-normalized — A reached a statistically indistinguishable error using a third of the training budget. Don't read this as "B is marginally ahead, but it's confounded" — read it as "B's extra compute bought nothing measurable."
+
+Also resist the pull to say A looks "tighter" (0.14–0.16 vs. 0.12–0.18 for B). With n=2, A's variance estimate has 1 degree of freedom — the sample range tells you almost nothing about A's true seed-to-seed variability. It's unestimated, not small.
+
+```python
+import numpy as np
+from scipy import stats
+
+A = np.array([0.14, 0.16])
+B = np.array([0.13, 0.18, 0.14, 0.12])
+
+t, p = stats.ttest_ind(A, B, equal_var=False)
+print(f"mean A={A.mean():.4f}  mean B={B.mean():.4f}  diff={A.mean()-B.mean():.4f}")
+print(f"Welch t={t:.3f}  p={p:.3f}")
+
+# bootstrap CI on the difference
+rng = np.random.default_rng(0)
+diffs = [rng.choice(A, 2, replace=True).mean() - rng.choice(B, 4, replace=True).mean()
+         for _ in range(20000)]
+lo, hi = np.percentile(diffs, [2.5, 97.5])
+print(f"bootstrap 95% CI on (A-B): [{lo:.4f}, {hi:.4f}]")
+
+# seeds/arm needed for 80% power at alpha=0.05, using B's sigma as the working estimate
+sigma = B.std(ddof=1)
+for delta in (0.03, 0.02, 0.01):
+    n = 15.7 * sigma**2 / delta**2
+    print(f"delta={delta:.2f} -> ~{n:.0f} seeds/arm")
+```
+
+`★ Insight ─────────────────────────────────────`
+1. **Welch's t-test (not Student's)** is the right default here because the two groups have unequal sample sizes *and* unequal variances — Student's t assumes equal variance and will misstate the degrees of freedom when B has more seeds and a larger spread.
+2. **Why n=2 variance is nearly useless**: the sampling distribution of a variance estimate has its own variance that scales like 2σ⁴/(n-1). At n-1=1 that error term is enormous — you're fitting a spread from a single degree of freedom. This is why "A looks more consistent" is an artifact, not a finding.
+3. **Why the power table matters more than the p-value**: a p=0.68 only tells you "not detected at this n." The 15.7σ²/δ² formula (derived from the normal-approximation power calc for a two-sample t-test at α=0.05, power=0.80) converts "not detected" into "here's what sample size would be needed to detect it" — which reframes the ask from "which is better" to "is resolving a 0.01 gap even worth ~100+ runs per arm."
+`─────────────────────────────────────────────────`
+
+## What to collect next, in priority order
+
+1. **Break the compute confound first** — run B at 1M tokens and A at 3M tokens. This is the single cheapest experiment that actually discriminates the methods. If B@1M is much worse than B@3M, B is just slow-converging and the budgets were never comparable. If A@3M improves further, A may dominate outright. Everything below this is secondary — more seeds at mismatched budgets just estimates a confounded quantity more precisely.
+
+2. **Full learning curves, not endpoints.** Log held-out error at several checkpoints (e.g. every 250k–500k tokens) for both methods. Two single-point measurements can't tell you whether one method is temporarily ahead mid-training while the other catches up or overtakes later.
+
+3. **Paired seeds with controlled init/data order.** Run both methods on the *same* seed set (same data shuffling, same initialization seed where architecture allows). This removes a shared variance component and lets you run a paired test, which is much more sensitive than the independent-samples test above at the same n.
+
+4. **Check whether B's 0.18 is a real draw or an instability.** One bad seed in a 4-seed sample is disproportionately influential. If it's a divergence/LR-spike artifact rather than typical seed variance, it shouldn't be pooled into the variance estimate used for planning.
+
+5. **Ask how large the held-out evaluation set is.** At error ≈ 0.14, binomial evaluation noise alone is roughly sqrt(0.14×0.86/N) ≈ 0.011 for N=1000 — larger than the entire observed A–B gap. If the held-out set is small, no amount of additional seeding fixes this; you need a bigger eval set before seed-count even matters.
+
+The one question I'd ask the user directly rather than assume: **why do A and B have different training budgets in the first place?** If B is inherently slower-converging and 3M is its intended operating point, then compute-matched comparison at 1M is unfair to B, and the right comparison is at matched *final* performance or matched wall-clock cost, not matched token count. If the budget difference is incidental (e.g., an artifact of how the runs were launched), it's trivial to re-run matched and this becomes moot.

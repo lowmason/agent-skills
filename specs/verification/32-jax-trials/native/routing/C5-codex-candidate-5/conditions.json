@@ -1,0 +1,53 @@
+{
+  "trial": "C5-codex-candidate-5",
+  "family": "C5",
+  "condition": "candidate",
+  "fresh_context": true,
+  "fork_turns": "none",
+  "agent_type": "default",
+  "runtime": "built-in Codex collaboration agent",
+  "model": "inherited active runtime; exact identifier unavailable",
+  "reasoning_effort": "inherited active runtime; exact value unavailable",
+  "catalog": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/candidate-catalog",
+  "catalog_entries": 138,
+  "catalog_manifest_sha256": "3f3e5414d6a6c76a68c4038003aab5c025f32a7b2451f4245304b7261c9a1df0",
+  "prompt_sha256": "75aeb8cf795ef0affb88a7d4ff16966926d4dfef14c3b8596c641494a18f4577",
+  "selection_simulation": true,
+  "real_auto_loading_observed": false,
+  "tool_policy": "recorded local prompt and selected SKILL.md reads; own trial artifacts only",
+  "resident_global_guidance_may_be_available": true,
+  "spawn_identity": {
+    "task_name": "/root/native_c5_candidate_5",
+    "source": "actual collaboration.spawn_agent return",
+    "recorded_utc": "2026-10-04T03:25:03.092901+00:00"
+  },
+  "completion": "Complete substantive response and research notes",
+  "completed_utc": "2026-10-04T03:26:51.166802+00:00",
+  "first_prompt_read": {
+    "sha256": "75aeb8cf795ef0affb88a7d4ff16966926d4dfef14c3b8596c641494a18f4577",
+    "bytes": 89673,
+    "lines": 620
+  },
+  "actual_skill_reads": [
+    {
+      "read_id": "bayesian-workflow",
+      "native_label": "bayesian-workflow",
+      "sha256": "2adf320e9184e733e5b5ae2f321cf2f7b6e485b765f3fd3c07c16a8e21b341ff",
+      "bytes": 33943,
+      "read_event_line": 2
+    }
+  ],
+  "payloads": {
+    "response.txt": {
+      "sha256": "2253447c2d9e08f3e309390909c86a01945264b9e33a6ffc138a7a95f00baeb0",
+      "bytes": 816,
+      "lines": 9
+    },
+    "research-notes.md": {
+      "sha256": "98fc62ce753c7b7c57379b1eb7edfb55ec0834638167bedbdf6e1d04a42a24ee",
+      "bytes": 1339,
+      "lines": 11
+    }
+  },
+  "execution_claim": "No underlying application implementation or execution observed; selection simulation only"
+}

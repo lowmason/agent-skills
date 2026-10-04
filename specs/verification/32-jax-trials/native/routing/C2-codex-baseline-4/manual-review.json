@@ -1,0 +1,40 @@
+{
+  "selected_primary": "evaluate-deep-learning",
+  "selected_supporting": [],
+  "correctness": "correct",
+  "posterior_boundary": "preserved",
+  "rationale": "Unequal-budget checkpoint comparison selects and reads evaluate-deep-learning for compute curves, retained seed results and separate uncertainty sources; no posterior loading.",
+  "full_payloads_manually_read": true,
+  "display_reads_manually_verified": true,
+  "conflicts_or_resident_choices": [],
+  "evidence": [
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-4/response.txt",
+      "line": 1
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-4/read-events.jsonl",
+      "line": 2
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-4/research-notes.md",
+      "line": 1
+    }
+  ],
+  "reviewed_utc": "2026-10-04T02:33:26.142788+00:00",
+  "catalog_manifest_sha256": "fee71e65dfd7f9372132f86feaf5316bac5ca3c8212906359039bf0b0010c800",
+  "payloads": {
+    "response.txt": {
+      "sha256": "e648a9186ffdddf849afb54447d67df73485f82295e0dcb16e34c2c46d049661",
+      "bytes": 975,
+      "lines": 10
+    },
+    "research-notes.md": {
+      "sha256": "096c777f385187f3faaa1ce0c2f48c0b4511d420f074b6c88aa800b3afd4acf3",
+      "bytes": 1196,
+      "lines": 10
+    }
+  },
+  "grading_source": "conductor manual full-response judgment",
+  "semantic_grading_automated": false
+}

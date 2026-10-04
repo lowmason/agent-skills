@@ -1,0 +1,40 @@
+{
+  "selected_primary": "deep-learning",
+  "selected_supporting": [],
+  "correctness": "correct",
+  "posterior_boundary": "preserved",
+  "rationale": "NNX sequence training selects and reads deep-learning for synthetic contracts, state, masks, learning and next-update recovery parity. No posterior, comparison or execution problem is assumed.",
+  "full_payloads_manually_read": true,
+  "display_reads_manually_verified": true,
+  "conflicts_or_resident_choices": [],
+  "evidence": [
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-candidate-5/response.txt",
+      "line": 1
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-candidate-5/read-events.jsonl",
+      "line": 2
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-candidate-5/research-notes.md",
+      "line": 1
+    }
+  ],
+  "reviewed_utc": "2026-10-04T03:10:14.143351+00:00",
+  "catalog_manifest_sha256": "3f3e5414d6a6c76a68c4038003aab5c025f32a7b2451f4245304b7261c9a1df0",
+  "payloads": {
+    "response.txt": {
+      "sha256": "cc8714ac8b23130d216f379fccf02ea0b3d19e131b14c01fc398e95b12532f4d",
+      "bytes": 1137,
+      "lines": 10
+    },
+    "research-notes.md": {
+      "sha256": "0fb2a17adba1227262693161c3c74078fcea52c08efdafbc6b099b59f65d0e2c",
+      "bytes": 1157,
+      "lines": 10
+    }
+  },
+  "grading_source": "conductor manual full-response judgment",
+  "semantic_grading_automated": false
+}

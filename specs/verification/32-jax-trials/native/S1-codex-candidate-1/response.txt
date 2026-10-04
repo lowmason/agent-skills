@@ -1,0 +1,380 @@
+Your small timer may be measuring submission to JAX while the device is still working. If input length changes, a second cost may appear: a new compiled specialization for the new shape. Preprocessing, device placement, output transfer, and Python consumption can also explain the gap. These are hypotheses; without your loop and measurements, I cannot establish which dominates your application. JAX documents the need for a completion barrier and ready device inputs when benchmarking. [JAX benchmarking](https://docs.jax.dev/en/latest/benchmarking.html)
+
+The immediate measurement correction is to wait for the **entire output PyTree**, including returned state, and distinguish two boundaries:
+
+- **Resident completed-call latency:** ready parameters and device inputs → every returned array ready. This excludes preprocessing and transfers, and includes dispatch plus any synchronous specialization work.
+- **Request latency:** raw host input → host-consumed result. This includes preprocessing, placement, model work, fetch, and consumption. Startup, loading weights, incoming request queueing, and concurrent requests are separate unless you deliberately include them.
+
+A timestamp immediately after the call measures submission, which can include tracing and compilation. The subsequent barrier measures the remaining wait. Neither interval is a standalone kernel measurement: device work can overlap Python execution. Printing arrays, converting them to NumPy, or reading their values can move the wait to a later part of your loop. [JAX asynchronous dispatch](https://docs.jax.dev/en/latest/async_dispatch.html)
+
+Below is a complete reproduction and diagnostic harness adapted from the supplied timing fixture. It uses deterministic float32 projection inference, batch size 1, input shape `(1, length, 16)`, parameters `weight[16, 8]` and `bias[8]`, and two returned arrays. Its default length sequence is **7, 7, 13, 13, 7**. A dynamic float32 scalar also changes across visits without changing rank, dtype, or weak type. There is one stable jitted callable, no mutable model state, no sampling, no padding, and no mesh. This fixture exercises the measurement issue; it does not reproduce your model's particular kernels or establish its bottleneck.
+
+Save the following as `diagnose_jax.py` in your normal JAX environment. I have not executed it in this session; runtime compatibility, assertions, timings, and trace capture remain pending.
+
+```python
+import argparse
+from contextlib import nullcontext
+from importlib.metadata import PackageNotFoundError, version
+import json
+import platform
+import sys
+from time import perf_counter
+
+import jax
+import jax.numpy as jnp
+import jaxlib
+import numpy as np
+
+WIDTH = 16
+OUTPUT_WIDTH = 8
+WARMUPS = 3
+RTOL = 2e-5
+ATOL = 2e-5
+
+
+def inference_fixture(params, inputs, gain):
+    projected = jnp.matmul(
+        inputs, params["weight"], precision=jax.lax.Precision.HIGHEST
+    ) + params["bias"]
+    token = jnp.tanh(projected * gain)
+    return {"token": token, "pooled": jnp.mean(token, axis=1)}
+
+
+# Construct once; do not recreate this callable inside a request loop.
+forward = jax.jit(inference_fixture)
+
+
+def reference(host_params, host_input, gain):
+    token = np.tanh(
+        (host_input @ host_params["weight"] + host_params["bias"]) * gain
+    )
+    return {"token": token, "pooled": np.mean(token, axis=1)}
+
+
+def check_reference(host_params, host_input, gain, output):
+    actual = jax.device_get(output)
+    expected = reference(host_params, host_input, gain)
+    assert actual.keys() == expected.keys()
+    max_error = 0.0
+    for name in expected:
+        assert actual[name].shape == expected[name].shape
+        assert actual[name].dtype == np.dtype("float32")
+        assert np.isfinite(actual[name]).all()
+        assert np.isfinite(expected[name]).all()
+        np.testing.assert_allclose(
+            actual[name], expected[name], rtol=RTOL, atol=ATOL
+        )
+        max_error = max(
+            max_error, float(np.max(np.abs(actual[name] - expected[name])))
+        )
+    return max_error
+
+
+def signature(tree):
+    leaves, structure = jax.tree_util.tree_flatten_with_path(tree)
+    return {
+        "pytree": str(structure),
+        "leaves": [
+            {
+                "path": str(path),
+                "shape": list(leaf.shape),
+                "dtype": str(leaf.dtype),
+                "weak_type": bool(getattr(leaf, "weak_type", False)),
+                "sharding": str(getattr(leaf, "sharding", None)),
+            }
+            for path, leaf in leaves
+        ],
+    }
+
+
+def elapsed_ms(start, end):
+    return (end - start) * 1000.0
+
+
+def distribution(samples):
+    return {
+        "n": len(samples),
+        "min_ms": float(np.min(samples)),
+        "median_ms": float(np.median(samples)),
+        "p95_ms": float(np.percentile(samples, 95)),
+        "max_ms": float(np.max(samples)),
+        "samples_ms": samples,
+    }
+
+
+def summarize_rows(rows):
+    return {
+        key: distribution([row[key] for row in rows])
+        for key in rows[0] if key.endswith("_ms")
+    }
+
+
+def completed_call(function, params, device_args):
+    jax.block_until_ready((params, device_args))
+    start = perf_counter()
+    output = function(params, *device_args)
+    submitted = perf_counter()
+    jax.block_until_ready(output)
+    completed = perf_counter()
+    return output, {
+        "submit_ms": elapsed_ms(start, submitted),
+        "remaining_wait_ms": elapsed_ms(submitted, completed),
+        "completed_call_ms": elapsed_ms(start, completed),
+    }
+
+
+def consume(host_output):
+    # Consumption makes the declared host-result boundary explicit.
+    return sum(
+        float(np.sum(leaf, dtype=np.float64))
+        for leaf in jax.tree_util.tree_leaves(host_output)
+    )
+
+
+def natural_request(params, raw_input, raw_gain, annotation=nullcontext):
+    start = perf_counter()
+    with annotation("preprocess"):
+        host_input = np.asarray(raw_input, dtype=np.float32)
+        gain = np.asarray(raw_gain, dtype=np.float32)
+    with annotation("placement_submission"):
+        device_args = jax.device_put((host_input, gain))
+    with annotation("model_submission"):
+        output = forward(params, *device_args)
+    with annotation("fetch_and_consume"):
+        host_output = jax.device_get(output)
+        checksum = consume(host_output)
+    end = perf_counter()
+    return host_output, {
+        "request_ms": elapsed_ms(start, end), "checksum": checksum
+    }
+
+
+def fenced_request(params, raw_input, raw_gain):
+    # Deliberate stage barriers alter overlap; measure natural_request separately.
+    jax.block_until_ready(params)
+    start = perf_counter()
+    host_input = np.asarray(raw_input, dtype=np.float32)
+    gain = np.asarray(raw_gain, dtype=np.float32)
+    preprocessed = perf_counter()
+    device_args = jax.device_put((host_input, gain))
+    jax.block_until_ready(device_args)
+    placed = perf_counter()
+    output = forward(params, *device_args)
+    jax.block_until_ready(output)
+    modeled = perf_counter()
+    host_output = jax.device_get(output)
+    checksum = consume(host_output)
+    fetched = perf_counter()
+    return host_output, {
+        "preprocess_ms": elapsed_ms(start, preprocessed),
+        "placement_ms": elapsed_ms(preprocessed, placed),
+        "completed_model_ms": elapsed_ms(placed, modeled),
+        "fetch_consume_ms": elapsed_ms(modeled, fetched),
+        "fenced_total_ms": elapsed_ms(start, fetched),
+        "checksum": checksum,
+    }
+
+
+def optional_version(package):
+    try:
+        return version(package)
+    except PackageNotFoundError:
+        return "not installed"
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("mode", choices=["replay", "timings", "aot", "profile"])
+    parser.add_argument("--lengths", default="7,7,13,13,7")
+    parser.add_argument("--repeats", type=int, default=20)
+    parser.add_argument("--trace-dir", default="./jax-trace")
+    parser.add_argument("--keep-cache", action="store_true")
+    args = parser.parse_args()
+    lengths = [int(value) for value in args.lengths.split(",")]
+    if not lengths or min(lengths) < 1 or args.repeats < 1:
+        parser.error("lengths and repeats must be positive; empty inputs are rejected")
+
+    # Logging affects timing; only the separate replay enables it.
+    jax.config.update("jax_log_compiles", args.mode == "replay")
+    jax.config.update("jax_explain_cache_misses", args.mode == "replay")
+    if not args.keep_cache:
+        jax.config.update("jax_enable_compilation_cache", False)
+
+    rng = np.random.default_rng(123)
+    host_params = {
+        "weight": (rng.normal(size=(WIDTH, OUTPUT_WIDTH)) * 0.1).astype(np.float32),
+        "bias": np.linspace(-0.1, 0.1, OUTPUT_WIDTH, dtype=np.float32),
+    }
+    params = jax.device_put(host_params)
+    jax.block_until_ready(params)
+    cases = []
+    for visit, length in enumerate(lengths):
+        host_input = np.linspace(
+            -1, 1, length * WIDTH, dtype=np.float32
+        ).reshape(1, length, WIDTH)
+        gain = np.asarray(1.0 if visit % 2 == 0 else 0.5, dtype=np.float32)
+        device_args = jax.device_put((host_input, gain))
+        jax.block_until_ready(device_args)
+        cases.append((length, host_input, gain, device_args))
+
+    report = {
+        "mode": args.mode,
+        "python": platform.python_version(), "platform": platform.platform(),
+        "jax": jax.__version__, "jaxlib": jaxlib.__version__,
+        "numpy": np.__version__,
+        "installed_frameworks": {name: optional_version(name) for name in ["flax", "optax"]},
+        "backend": jax.default_backend(),
+        "devices": [str(device) for device in jax.devices()],
+        "device_kinds": [device.device_kind for device in jax.devices()],
+        "global_device_count": jax.device_count(),
+        "local_device_count": jax.local_device_count(),
+        "process_count": jax.process_count(), "process_index": jax.process_index(),
+        "mesh": "none; single-controller fixture, no distributed initialization",
+        "x64": bool(jax.config.jax_enable_x64),
+        "default_matmul_precision": str(jax.config.jax_default_matmul_precision),
+        "fixture_matmul_precision": "HIGHEST",
+        "storage_compute_accumulation_dtype": "float32",
+        "persistent_cache_enabled": bool(jax.config.jax_enable_compilation_cache),
+        "persistent_cache_dir": jax.config.jax_compilation_cache_dir,
+        "callable_id": id(forward), "static_arguments": [],
+        "length_sequence": lengths, "gain_sequence": [float(case[2]) for case in cases],
+        "batch_size": 1, "width": WIDTH, "output_width": OUTPUT_WIDTH,
+        "warmups": WARMUPS, "repeats": args.repeats,
+        "rtol": RTOL, "atol": ATOL,
+    }
+    max_error = 0.0
+    visits = []
+
+    if args.mode == "aot":
+        # No target call or target warmup precedes these stages in this process.
+        length, host_input, gain, device_args = cases[0]
+        report["aot_signature"] = signature((params, device_args))
+        start = perf_counter()
+        traced = forward.trace(params, *device_args)
+        traced_at = perf_counter()
+        lowered = traced.lower()
+        lowered_at = perf_counter()
+        compiled = lowered.compile()
+        compiled_at = perf_counter()
+        output, first = completed_call(compiled, params, device_args)
+        max_error = check_reference(host_params, host_input, gain, output)
+        rows = [completed_call(compiled, params, device_args)[1] for _ in range(args.repeats)]
+        report["aot"] = {
+            "length": length, "trace_ms": elapsed_ms(start, traced_at),
+            "lower_ms": elapsed_ms(traced_at, lowered_at),
+            "compile_or_load_ms": elapsed_ms(lowered_at, compiled_at),
+            "first_executable_call": first, "subsequent_calls": summarize_rows(rows),
+        }
+    else:
+        seen = set()
+        for visit, (length, host_input, gain, device_args) in enumerate(cases):
+            entry = {
+                "visit": visit, "length": length, "gain": float(gain),
+                "first_length_encounter": length not in seen,
+                "signature": signature((params, device_args)),
+            }
+            if args.mode == "replay":
+                print("VISIT-BEGIN " + json.dumps(entry), file=sys.stderr, flush=True)
+            output, durations = completed_call(forward, params, device_args)
+            if args.mode == "replay":
+                print("VISIT-END " + str(visit), file=sys.stderr, flush=True)
+            max_error = max(max_error, check_reference(host_params, host_input, gain, output))
+            visits.append({**entry, **durations})
+            seen.add(length)
+        report["visits_before_additional_warmups"] = visits
+
+        if args.mode == "timings":
+            warm = []
+            for length in dict.fromkeys(lengths):
+                _, host_input, gain, device_args = next(case for case in cases if case[0] == length)
+                for _ in range(WARMUPS):
+                    jax.block_until_ready(forward(params, *device_args))
+                resident_rows, request_rows, stage_rows = [], [], []
+                raw_input, raw_gain = host_input.tolist(), float(gain)
+                for _ in range(args.repeats):
+                    output, row = completed_call(forward, params, device_args)
+                    resident_rows.append(row)
+                    max_error = max(max_error, check_reference(host_params, host_input, gain, output))
+                    output, row = natural_request(params, raw_input, raw_gain)
+                    request_rows.append(row)
+                    max_error = max(max_error, check_reference(host_params, host_input, gain, output))
+                    output, row = fenced_request(params, raw_input, raw_gain)
+                    stage_rows.append(row)
+                    max_error = max(max_error, check_reference(host_params, host_input, gain, output))
+                warm.append({
+                    "length": length, "resident": summarize_rows(resident_rows),
+                    "natural_request": summarize_rows(request_rows),
+                    "fenced_stages": summarize_rows(stage_rows),
+                })
+            report["warm_serialized_measurements"] = warm
+
+        if args.mode == "profile":
+            # Every visited signature is already compiled and completed above.
+            for _, _, _, device_args in cases:
+                for _ in range(WARMUPS):
+                    jax.block_until_ready(forward(params, *device_args))
+            raw_cases = [(case[1].tolist(), float(case[2])) for case in cases]
+            with jax.profiler.trace(args.trace_dir):
+                for visit, (raw_input, raw_gain) in enumerate(raw_cases):
+                    with jax.profiler.TraceAnnotation("request", visit=visit):
+                        natural_request(params, raw_input, raw_gain, jax.profiler.TraceAnnotation)
+                # device_get inside each request completes the entire output tree
+                # while the trace is active, including copies and consumption.
+            report["trace_directory"] = args.trace_dir
+
+    report["correctness"] = {
+        "status": "all delivered reference assertions passed in this run",
+        "max_absolute_reference_error": max_error,
+    }
+    print(json.dumps(report, indent=2, sort_keys=True))
+
+
+if __name__ == "__main__":
+    main()
+```
+
+Use separate fresh processes so logging, profiling, and AOT staging do not contaminate the main timing run:
+
+```bash
+python diagnose_jax.py replay > replay.json 2> compile-events.log
+python diagnose_jax.py timings --repeats 20 > timings.json
+python diagnose_jax.py aot > aot.json
+python diagnose_jax.py profile --trace-dir ./jax-trace > profile.json
+```
+
+The default disables the JAX persistent compilation cache and records its configuration. A fresh process avoids warming the target in Python before its first encounter. `--keep-cache` preserves your environment's persistent-cache policy for a distinct cache experiment; record its directory and hit/miss evidence. Backend reuse and bookkeeping may still affect AOT stages, so the field is named `compile_or_load_ms`. Do not call a cache hit a cold compile. [JAX persistent compilation cache](https://docs.jax.dev/en/latest/501/compilation-cache.html)
+
+Interpret the evidence as follows:
+
+| Observation | What it supports | Next action |
+|---|---|---|
+| Warm submission is small but completed-call latency is larger | The original timer omitted completion | Use the full-tree barrier for serialized latency; inspect device timelines for kernel costs. |
+| First A and first B are slow; repeats and revisited A are fast; target logs show shape specializations | New input shapes incur specialization | Count distinct production signatures and their frequency before considering a finite bucket set. |
+| A repeatedly compiles, including after identical revisits | Some other cache-key property or callable identity changes | Compare static values, shapes, dtypes, weak types, PyTree structure, sharding, and callable creation. |
+| The scalar changes but abstract type stays fixed, with no new target compilation | Dynamic numerical values reuse the specialization in this fixture | In your loop, inspect unnecessary static scalar settings and mixed scalar types only if logs show that cause. |
+| Warm completed calls grow with length and no new compilation appears | More work per execution, potentially a different kernel choice | Read the profile; distinguish compute from dispatch and data movement. Attention can scale differently from this pointwise fixture. |
+| Warm requests greatly exceed resident calls | Costs outside the resident model boundary matter | Inspect preprocessing, placement, copies, host gaps, and output conversion in the full request trace. |
+
+Compile messages must refer to `inference_fixture` and the recorded visit signature. Logs about helper primitives are not evidence that the target repeatedly compiles. New static values and recreated temporary functions can force new specializations; ordinary dynamic scalar values do not have that same value-based contract. Avoid making all arguments static as a general cure. [JAX JIT compilation and caching](https://docs.jax.dev/en/latest/jit-compilation.html)
+
+The AOT mode separately times tracing, lowering, compilation/loading, and completed execution for the first length. These are host stage intervals, including bookkeeping. Its compiled callable accepts the signature used for tracing, so it is not a drop-in executable for arbitrary lengths. Run `aot --lengths 13` in another fresh process to investigate B independently. [JAX ahead-of-time stages](https://docs.jax.dev/en/latest/aot.html)
+
+The profile contains warmed requests with annotations for preprocessing, placement submission, model submission, and host fetch/consumption. `device_get` consumes the whole returned tree inside capture. Submission annotations show host intervals; they are not synonymous with device kernel intervals. Inspect the device lanes, copies, gaps, and compilation events in the captured profile. Trace support and GPU profiling dependencies must be verified on your machine. [JAX profiling](https://docs.jax.dev/en/latest/profiling.html), [jax.device_get](https://docs.jax.dev/en/latest/_autosummary/jax.device_get.html)
+
+The fenced-stage experiment deliberately synchronizes placement, then model work, then fetch/consumption. Its components explain costs under those barriers; their sum is not a prediction of the naturally overlapped request. CPU placement/fetch may share memory, so a CPU result cannot establish accelerator transfer costs. All calls here are serialized and complete before the next begins. This does not measure queued throughput or service latency under concurrency.
+
+To diagnose your actual loop, retain these helpers and replace the fixture with your existing transformed model function, actual parameter/state PyTree, input sequence, preprocessing, and output consumer. Keep the callable outside the loop. Include any output state in the barrier and correctness comparisons. If the model uses Flax NNX, preserve its graph-aware transform or its existing deliberate functional boundary. Preserve actual dtype, precision, masks, positions, randomness, and framework conventions; the fixture's `HIGHEST` matmul policy is solely an explicit toy numerical choice. A one-token edge run is `--lengths 1,1,13,13,1`; empty inputs are explicitly rejected by this fixture. Use your application's own empty/BOS policy if it accepts empty prompts.
+
+Choose one optimization after attribution. If logs confirm many shape specializations, test finite buckets derived from actual lengths against the original unpadded computation. Preserve attention masks, valid positions, and valid-token reduction denominators, and account for extra padding work. If copies dominate, test retaining reusable parameters/state on device. If host dispatch dominates, test a larger JIT boundary or batching independent requests; dependent decode steps require appropriate fixed-state control flow. Re-run the same correctness checks and before/after latency distributions under the same hardware and boundaries. None of those application changes is justified yet by the symptom alone.
+
+The evidence record currently stands as follows:
+
+| Field | Delivered / outstanding |
+|---|---|
+| Reproduction | Complete deterministic fixture, A,A,B,B,A visits, dynamic scalar values, signatures, runtime/device/precision metadata, explicit boundaries. Your original loop and production lengths are still needed for workload fidelity. |
+| Diagnosis | First-encounter and warm submission/completion, natural requests, fenced stages, separate compile logs, AOT stages, and warmed trace are delivered as executable checks. All measurements and target compile events are pending. |
+| Change | Measurement boundary is corrected. No model optimization or demonstrated speedup is claimed. |
+| Correctness | Independent NumPy arrays, shape/dtype/finite checks, allclose at rtol/atol 2e-5, and reported maximum error. Checks are outside timers. Assertions have not been run; the checksum is only an output consumer. |
+| Effect and limits | Twenty warm serialized repetitions per length by default, raw samples plus median/p95/min/max. No measured before/after effect, peak-memory result, real-checkpoint parity, or hardware performance result is available yet. |
+
+For a concrete diagnosis of your loop, the useful next evidence is its jitted function and invocation site, the actual length sequence, backend/version metadata, `timings.json`, and the target messages from `compile-events.log`. Include where the application first reads or serializes the output and whether its request latency includes queueing or loading weights.

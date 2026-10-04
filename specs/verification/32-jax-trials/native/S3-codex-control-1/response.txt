@@ -1,0 +1,166 @@
+Changing the value of a **dynamic scalar with the same JAX type** should reuse a compiled simulation. A Python float is dynamic by default; being a scalar does not make it static. With no simulation source or logs supplied, the cause is still unknown. First establish which part of the compilation cache key changes, then make the corresponding fix. Static argument values and the identity of the underlying Python function matter to caching. [JAX `jit` API](https://docs.jax.dev/en/latest/_autosummary/jax.jit.html)
+
+I would investigate in this order:
+
+1. Reproduce in one process with calls **A, A, B, B, A**, changing only one scalar's value. Keep initial-state shapes, every other argument, device placement, and compilation configuration fixed. Record JAX/JAXlib versions and the X64 setting. Restarting the process for each call measures cold compilation rather than reuse within a process.
+2. Enable `jax_log_compiles` and `jax_explain_cache_misses`. Look at messages for the simulation kernel: array conversions and other helper operations can also produce compile messages. Distinguish a tracing cache miss from an actual executable compilation. The first call is expected to compile; a slow call alone is insufficient evidence of recompilation. [JAX configuration options](https://docs.jax.dev/en/latest/config_options.html#explain-cache-misses)
+3. Inspect the inputs **at the actual jitted boundary**, including pytree structure, each leaf's shape, dtype, and `weak_type`. Compare the original callable's identity and any explicit static arguments or static pytree metadata. Scalars shaped `()` and arrays shaped `(1,)` are different inputs. A Python `1`, Python `1.0`, NumPy scalar, and explicitly typed JAX scalar need not have the same abstract type. Python scalars are weakly typed, whereas an explicit `dtype` produces a strongly typed array. [JAX type promotion](https://docs.jax.dev/en/latest/101/type_promotion.html#weakly-typed-values-in-jax)
+4. Trace the changing scalar through the caller. Determine whether it is passed as data, bound into a new closure/`partial`, marked static, used in Python control flow, or used to construct a different-sized array. Test one hypothesis at a time against the same reproduction.
+
+Use the evidence to choose the smallest fix:
+
+| Observed cause | Fix |
+| --- | --- |
+| A numerical coefficient is in `static_argnums`/`static_argnames`, or static configuration metadata | Pass it as a dynamic scalar argument or dynamic pytree leaf. Keep only genuine compile-time configuration static. |
+| The caller creates `jax.jit(lambda ...)`, a new `partial`, or a new decorated function for each parameter value | Define the numerical function and its jitted wrapper once; pass changing parameters explicitly. |
+| Dtype, scalar rank, or weak typing differs | Normalize inputs before entering `jit`, using the simulation's chosen precision. A cast inside the kernel is too late to stabilize its incoming signature. |
+| A changing count is static so that `range(n_steps)` can execute during tracing | If only the final state is needed, use a dynamic `lax.fori_loop` or `lax.while_loop`; keep the loop carry's structure, shapes, and dtypes fixed. |
+| The parameter controls state size, mesh dimensions, or returned trajectory length | Ordinary `jit` specializes for concrete shapes. Use a fixed capacity with a valid-length/mask contract, a small set of shape buckets, or accept one specialization per required shape. |
+| The same signature and callable recur but still miss | Check process restarts, cache clearing, changing backend/sharding/compiler configuration, and outer wrappers that specialize before this kernel is called. |
+
+Fresh function objects and changing shapes/dtypes are documented causes of cache misses. A nested loop body defined while tracing a stable outer kernel is fine; repeatedly creating and jitting a new callable in the host parameter-sweep loop is the troublesome pattern. [JAX compilation troubleshooting](https://docs.jax.dev/en/latest/201/slow-compilation.html)
+
+For this **non-learning simulation**, there is no need to make a frequently changing loop bound static merely to support reverse-mode differentiation. `lax.fori_loop` accepts a dynamic trip count, lowering it to a while loop; reverse-mode differentiation is unavailable on that path. If you need a complete trajectory, `scan` has a fixed iteration/output length, so choose a fixed horizon or a padded buffer rather than expecting a dynamically sized output to share one executable. [JAX `fori_loop`](https://docs.jax.dev/en/latest/_autosummary/jax.lax.fori_loop.html), [JAX control flow](https://docs.jax.dev/en/latest/201/control-flow.html)
+
+Here is a complete example. Its illustrative model is forward Euler for `dy/dt = -rate * y`, returning only the final scalar state. Keep your actual update equation and integration scheme when applying the same structure. `diagnose_calls` can also be used on your existing jitted callable with its original, unnormalized argument cases before making a change.
+
+```python
+import logging
+import operator
+from time import perf_counter
+
+import jax
+import jax.numpy as jnp
+import jaxlib
+import numpy as np
+
+
+# Preserve the program's existing precision policy for this example.
+# For a float64 simulation, set jax_enable_x64=True at program startup.
+REAL_DTYPE = np.float64 if jax.config.jax_enable_x64 else np.float32
+MAX_STEPS = np.iinfo(np.int32).max
+
+
+def _identity(value):
+    return value
+
+
+def describe_inputs(args, kwargs):
+    leaves, structure = jax.tree_util.tree_flatten_with_path((args, kwargs))
+    print("pytree:", structure)
+    for path, value in leaves:
+        try:
+            abstract = jax.eval_shape(_identity, value)
+        except TypeError:
+            # Inspect these against the callable's declared static arguments.
+            print(path, "non-array:", type(value).__name__, repr(value))
+            continue
+        print(
+            path,
+            "python_type=", type(value).__name__,
+            "shape=", abstract.shape,
+            "dtype=", abstract.dtype,
+            "weak_type=", abstract.weak_type,
+            "sharding=", getattr(value, "sharding", None),
+        )
+
+
+def diagnose_calls(kernel, cases):
+    """Cases are (label, positional_args, keyword_args) triples."""
+    print("jax:", jax.__version__, "jaxlib:", jaxlib.__version__)
+    print("devices:", jax.devices())
+    print("x64:", jax.config.jax_enable_x64)
+    print("callable id:", id(kernel))
+    old_explain = jax.config.jax_explain_cache_misses
+    outputs = []
+    jax.config.update("jax_explain_cache_misses", True)
+    try:
+        with jax.log_compiles(True):
+            for label, args, kwargs in cases:
+                print("case:", label, flush=True)
+                describe_inputs(args, kwargs)
+                # Finish input placement before starting the kernel timer.
+                jax.block_until_ready((args, kwargs))
+                start = perf_counter()
+                result = jax.block_until_ready(kernel(*args, **kwargs))
+                elapsed = perf_counter() - start
+                print("kernel seconds:", elapsed, flush=True)
+                outputs.append(result)
+    finally:
+        jax.config.update("jax_explain_cache_misses", old_explain)
+    return outputs
+
+
+def _simulate_core(y0, rate, dt, n_steps):
+    def step(_, y):
+        return y + dt * (-rate * y)
+
+    return jax.lax.fori_loop(jnp.int32(0), n_steps, step, y0)
+
+
+# One long-lived callable; none of its arguments is static.
+_simulate_jit = jax.jit(_simulate_core)
+
+
+def prepare_inputs(y0, rate, dt, n_steps):
+    """Host-facing normalization; n_steps must be an integer scalar."""
+    values = tuple(
+        jnp.asarray(value, dtype=REAL_DTYPE)
+        for value in (y0, rate, dt)
+    )
+    if any(value.shape != () for value in values):
+        raise ValueError("y0, rate, and dt must be scalars")
+    if isinstance(n_steps, (bool, np.bool_)):
+        raise TypeError("n_steps must be an integer, not a boolean")
+    steps = operator.index(n_steps)
+    if not 0 <= steps <= MAX_STEPS:
+        raise ValueError("n_steps must fit a nonnegative int32")
+    return (*values, jnp.asarray(steps, dtype=jnp.int32))
+
+
+def simulate(y0, rate, dt, n_steps):
+    return _simulate_jit(*prepare_inputs(y0, rate, dt, n_steps))
+
+
+def check_example():
+    # A, A, B, B, A first; then exercise representation and loop-bound changes.
+    raw_cases = [
+        (1.0, 0.4, 0.01, 100),
+        (1.0, 0.4, 0.01, 100),
+        (1.0, 0.7, 0.01, 100),
+        (1.0, 0.7, 0.01, 100),
+        (1.0, 0.4, 0.01, 100),
+        (2, np.float32(0.2), np.float64(0.005), np.int64(200)),
+        (2.0, 0.2, 0.005, 0),
+        (2.0, 0.0, 0.005, 50),
+        (2.0, 0.2, 0.0, 50),
+    ]
+    prepared = [prepare_inputs(*case) for case in raw_cases]
+    cases = [(str(index), args, {}) for index, args in enumerate(prepared)]
+    outputs = diagnose_calls(_simulate_jit, cases)
+
+    tolerance = 1e-12 if REAL_DTYPE is np.float64 else 1e-5
+    for args, output in zip(prepared, outputs):
+        y0, rate, dt, steps = [np.asarray(value).item() for value in args]
+        # Exact discrete Euler solution, rather than the continuous ODE solution.
+        expected = y0 * (1.0 - rate * dt) ** steps
+        np.testing.assert_allclose(
+            np.asarray(output), expected, rtol=tolerance, atol=tolerance
+        )
+    print("Numerical checks passed; inspect kernel compile logs for reuse.")
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.WARNING)
+    check_example()
+```
+
+All normalized numerical parameters have rank `()`, the chosen real dtype, and strong typing; the step count has rank `()` and dtype `int32`. The public `simulate` wrapper performs host validation and normalization, so it is not intended to be nested inside another transformation. Compose `_simulate_core` with already typed inputs if the caller itself is jitted. In particular, do not use host `int()`, `.item()`, NumPy conversion, or `operator.index()` on a traced loop bound to get Python control flow to run.
+
+Choose precision according to the simulation's numerical requirements. Standardizing everything to float32 could suppress a cache miss while degrading a scientific result. If float64 is required, enable X64 once before constructing arrays and use float64 consistently. [JAX dtype policy](https://docs.jax.dev/en/latest/101/default_dtypes.html)
+
+The acceptance criteria are both **correct results** and **cache reuse**. In a fresh process with stable placement/configuration, this example should produce one compilation for `_simulate_core` across its normalized cases; verify that in the logs rather than counting every helper compilation. Apply the equivalent reproduction to the real kernel before and after the specific fix. Test zero steps and value changes so that accidentally capturing a coefficient as a constant cannot pass unnoticed. Time the first call separately, then warmed calls with completion blocking; otherwise asynchronous dispatch can make launch time look like execution time. [JAX benchmarking](https://docs.jax.dev/en/latest/201/profiling.html)
+
+A persistent compilation cache can help across process restarts, but it does not remove unwanted specializations. Fix the changing signature/static values/callable first; consider persistent caching if restart cost is the remaining issue. [JAX persistent cache](https://docs.jax.dev/en/latest/501/compilation-cache.html)
+
+I have not executed this code or observed your simulation's logs in this session. The code supplies the investigation and verification steps; identifying the actual root cause and demonstrating runtime reuse require running them against the simulation.

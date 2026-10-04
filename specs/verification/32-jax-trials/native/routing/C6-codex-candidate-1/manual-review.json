@@ -1,0 +1,40 @@
+{
+  "selected_primary": "optimize-jax",
+  "selected_supporting": [],
+  "correctness": "correct",
+  "posterior_boundary": "preserved",
+  "rationale": "Generation speed with KV-cache correctness selects and fully reads optimize-jax alone; timing and independent parity come from its main body, with first-page budget replay recorded and no posterior work.",
+  "full_payloads_manually_read": true,
+  "display_reads_manually_verified": true,
+  "conflicts_or_resident_choices": [],
+  "evidence": [
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-candidate-1/response.txt",
+      "line": 1
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-candidate-1/read-events.jsonl",
+      "line": 2
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-candidate-1/research-notes.md",
+      "line": 1
+    }
+  ],
+  "reviewed_utc": "2026-10-04T03:28:24.952199+00:00",
+  "catalog_manifest_sha256": "3f3e5414d6a6c76a68c4038003aab5c025f32a7b2451f4245304b7261c9a1df0",
+  "payloads": {
+    "response.txt": {
+      "sha256": "4427fb30f7c5593b745e3bbaa84f79ac845d039b76c3ab17a6707594bd85dec3",
+      "bytes": 1067,
+      "lines": 8
+    },
+    "research-notes.md": {
+      "sha256": "ba52ecf3eaf90616764e466b31611a0a4716f21cdb3dc9a627d5a0cd1a1e21c5",
+      "bytes": 1694,
+      "lines": 12
+    }
+  },
+  "grading_source": "conductor manual full-response judgment",
+  "semantic_grading_automated": false
+}

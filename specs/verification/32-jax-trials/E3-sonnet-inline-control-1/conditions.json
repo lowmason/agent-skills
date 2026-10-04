@@ -1,0 +1,57 @@
+{
+  "trial": "E3-sonnet-inline-control-1",
+  "exit": 0,
+  "command": [
+    "claude",
+    "-p",
+    "--model",
+    "sonnet",
+    "--effort",
+    "medium",
+    "--no-session-persistence",
+    "--output-format",
+    "json",
+    "--permission-mode",
+    "dontAsk",
+    "--tools",
+    "Read,WebSearch,WebFetch",
+    "--allowedTools",
+    "Read,WebSearch,WebFetch",
+    "--strict-mcp-config",
+    "--mcp-config",
+    "{\"mcpServers\":{}}",
+    "--"
+  ],
+  "fresh_session": true,
+  "model_usage": {
+    "claude-sonnet-5": {
+      "inputTokens": 8,
+      "outputTokens": 5827,
+      "cacheReadInputTokens": 64441,
+      "cacheCreationInputTokens": 20408,
+      "webSearchRequests": 0,
+      "costUSD": 0.1491117,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "thinkingTokens": 1044,
+      "canonicalModel": "claude-sonnet-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    },
+    "claude-opus-5": {
+      "inputTokens": 25793,
+      "outputTokens": 5337,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.26239,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "thinkingTokens": 0,
+      "canonicalModel": "claude-opus-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "is_error": false
+}

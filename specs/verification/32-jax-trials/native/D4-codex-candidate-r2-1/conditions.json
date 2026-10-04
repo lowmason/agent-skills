@@ -1,0 +1,41 @@
+{
+  "trial": "D4-codex-candidate-r2-1",
+  "scenario": "D4",
+  "condition": "candidate-r2",
+  "runtime": "Built-in Codex collaboration agent",
+  "agent_type": "default",
+  "requested_fork_turns": "none",
+  "model": "Inherited active runtime; exact identifier not exposed by collaboration API",
+  "effort": "Inherited active runtime; exact value not exposed by collaboration API",
+  "tool_policy": "Read-only information gathering; execute only local trial_io recording helper, no delivered application code",
+  "automatic_skill_loading_observed": false,
+  "source_hashes": {
+    "SKILL.md": "ece0ac27eaf8b9ca8de149fc27ec408d6ab975e58ba9cfa132c47d765b14fdbf",
+    "references/frameworks.md": "86bf7d4be22899bffc75aeaad33ee5986a4b572c6cb924425214998a1097dc47",
+    "references/generative.md": "6f9cf63e3bd2d737c735e5ea1ac494eb1e6705ca1aa681b937f1c849edf9ff3f",
+    "references/geometric.md": "ea30fbaab10b8cb9cce0882cd3bf1152bc5434225deac92d1095ee302e710e7d",
+    "references/llm.md": "4d5e193c9376d05af7ac402cd7994df450f74c3c5c0275cd567523d30e1659f2",
+    "references/scientific.md": "aeecdd5ea8bdb1b44652918586564900091465b68524b61ca303d18e0e643b97",
+    "references/sequences.md": "1d5a46913ffb1ff1754efb4defdc4b03d2abe4a4374dac9ba27833b4799af4e4",
+    "references/training.md": "dc2e7ccc657d6b438796a0f44b38e06648564e7ff8fdd6d38c58bca835d80970",
+    "references/vision.md": "4fb0d0c790f5c92146fbfc5967f2be0ab1215476e7f1b6e36505ac197eabefef"
+  },
+  "guidance_directory": "/private/tmp/jax-skill-trials-pAYZ0t/guidance-candidate-r2-deep-learning",
+  "guidance_loading": "Full SKILL.md supplied in first recorded prompt read; references read on demand through trial_io",
+  "prompt_sha256": "2f20c9d5886d37a5142ad11a0800ccdc9538c82f94c9e3655610e77cec370760",
+  "spawn_identity": {
+    "task_name": "/root/native_trial_conductor/native_d4_candidate"
+  },
+  "completion": "Complete substantive response and research notes; child final received",
+  "completion_verified_at_utc": "2026-10-03T22:57:34.467445+00:00",
+  "response_sha256": "115b581bfa936ad0e3577febe843ec3d355e792253a6c328499fdfe6c1fb8687",
+  "response_lines": 484,
+  "verified_first_read": "Full prompt hash and byte count match first recorded start event",
+  "actual_reference_reads": [
+    "/private/tmp/jax-skill-trials-pAYZ0t/guidance-candidate-r2-deep-learning/references/training.md",
+    "/private/tmp/jax-skill-trials-pAYZ0t/guidance-candidate-r2-deep-learning/references/frameworks.md",
+    "/private/tmp/jax-skill-trials-pAYZ0t/guidance-candidate-r2-deep-learning/references/llm.md",
+    "/private/tmp/jax-skill-trials-pAYZ0t/guidance-candidate-r2-deep-learning/references/llm.md"
+  ],
+  "application_execution": "Not executed per explicit child delivery/research notes; scorer treats response code as data"
+}

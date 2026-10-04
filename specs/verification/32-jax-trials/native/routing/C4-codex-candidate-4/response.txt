@@ -1,0 +1,9 @@
+Primary skill: bayesian-workflow.
+Supporting skills: none required for the stated task.
+Task: Infer a Bayesian neural-network posterior with NumPyro and NUTS.
+The task directly matches this skill's NumPyro, posterior-distribution, and MCMC/NUTS triggers.
+Its full body owns priors, prior predictive checks, sampling, convergence diagnostics, posterior predictive criticism, sensitivity, and reporting.
+I also read deep-learning in full to resolve the neural-model overlap; it explicitly leaves posterior-inference procedures with the responsible inference skill.
+No architecture, neural training, optimizer, checkpoint recovery, benchmark, or reproduced JAX execution problem is stated, so deep-learning and optimize-jax are not selected.
+The model family and inference method are already given, so recommend-probabilistic-model is unnecessary; no hyperparameter search is requested.
+This is skill selection only: no posterior was computed and no underlying modeling workflow was executed.

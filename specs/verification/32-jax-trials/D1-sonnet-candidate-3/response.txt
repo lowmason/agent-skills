@@ -1,0 +1,344 @@
+`★ Insight ─────────────────────────────────────`
+Two architectural decisions anchor this script. First, a fixed-frequency sine's next value is an **exact** linear function of its previous two samples — `x_t = 2cos(ω)·x_{t-1} − x_{t-2}` — because sine satisfies a second-order linear recurrence. That gives a rare luxury in deep learning: a closed-form oracle to check the trained network against, not just a decreasing loss curve. A 2-lag network isn't a toy simplification here, it's the *exactly sufficient* architecture for this task.
+
+Second, the batch is a pure function of an integer cursor (`jax.random.fold_in(key, cursor)`) rather than of a mutating global key. This is what makes checkpoint resume well-defined: "resume training" means "reconstruct batch N+1," and that only has one right answer if batch N+1 doesn't depend on how you got to cursor N — it depends only on the cursor value itself.
+`─────────────────────────────────────────────────`
+
+One judgment call I made for you, worth knowing about: the loss pools **all eligible timesteps across the batch** (`sum(errors)/count(valid)`) rather than averaging per-trajectory means first. Pooled weighting means a length-14 sequence contributes ~5x more loss terms than a length-5 one — appropriate if you care about per-timestep accuracy; if you instead want every *trajectory* judged equally regardless of length, switch to averaging each sequence's own masked mean before combining across the batch. I went with pooled because it's the convention in the skill's reference and matches "predict the next sample" read literally (one unit = one sample), but this is genuinely your call to make if you have a reason to weight short and long sequences equally.
+
+Here is the complete program:
+
+```python
+"""Next-sample forecaster for variable-length, fixed-frequency sine sequences.
+
+Not executed in this session (no shell/file tools available here) — every
+assertion encodes a contract from the deep-learning skill's training
+reference rather than a reported result. Run it locally to get real numbers.
+Tested package profile: JAX/JAXlib 0.11.2, Flax 0.12.10, Optax 0.2.8,
+Orbax-checkpoint 0.12.6, NumPy 2.5.3, Python 3.13.8.
+"""
+import json
+import tempfile
+from pathlib import Path
+
+import jax
+import jax.numpy as jnp
+import numpy as np
+import optax
+import orbax.checkpoint as ocp
+from flax import nnx
+
+SEED = sum(map(ord, "next-sample-sine-forecaster"))
+
+CONFIG = {
+    "width": 8,
+    "frequency": 0.25,          # omega, radians/step
+    "max_length": 14,
+    "min_length": 5,
+    "batch_size": 4,
+    "learning_rate": 0.02,
+    "final_learning_rate": 0.002,
+    "transition_steps": 150,
+    "dropout_rate": 0.1,
+    "input_noise": 0.02,
+    "rng_impl": "threefry2x32",
+    "dtype": "float32",
+    "data": "variable-length-sine-cursor-v1",
+}
+CHECKPOINT_STEP = 20     # where we simulate an interruption
+TOTAL_TRAIN_STEPS = 120
+VALIDATION_CURSORS = 50  # distinct validation batches, own stream
+
+
+# ---------------------------------------------------------------------------
+# Slot 1 (structure/objective): hand-computed masked-mean sanity check,
+# copied from the skill's canonical fixture, before trusting it on real data.
+# ---------------------------------------------------------------------------
+def valid_mean(values, mask):
+    return jnp.where(mask, values, 0.0).sum() / mask.sum()
+
+
+def require_units(mask):
+    if not np.asarray(mask).any():
+        raise ValueError("batch has no eligible targets")
+
+
+hand_losses = jnp.array([[1.0, 100.0, 100.0], [3.0, 5.0, 100.0]])
+hand_mask = jnp.array([[True, False, False], [True, True, False]])
+np.testing.assert_allclose(valid_mean(hand_losses, hand_mask), 3.0)
+changed_padding = jnp.where(hand_mask, hand_losses, -999.0)
+np.testing.assert_allclose(valid_mean(changed_padding, hand_mask), 3.0)
+try:
+    require_units(jnp.zeros_like(hand_mask))
+except ValueError:
+    pass
+else:
+    raise AssertionError("empty eligible batch was accepted")
+
+
+# ---------------------------------------------------------------------------
+# Data: a batch's phases and lengths are a pure function of (split_key, cursor).
+# This is what makes "resume" well-defined -- the cursor alone reproduces the
+# batch, independent of how training got to that cursor.
+# ---------------------------------------------------------------------------
+def batch_at(config, split_key, cursor):
+    batch_size = config["batch_size"]
+    draw_key = jax.random.fold_in(split_key, cursor)
+    length_key, phase_key = jax.random.split(draw_key)
+    lengths = jax.random.randint(
+        length_key, (batch_size,), config["min_length"], config["max_length"] + 1
+    )
+    phases = jax.random.uniform(phase_key, (batch_size,), maxval=2 * jnp.pi)
+    time = jnp.arange(config["max_length"], dtype=jnp.float32)[None, :]
+    waves = jnp.sin(phases[:, None] + config["frequency"] * time)
+    waves = jnp.where(time < lengths[:, None], waves, 0.0)
+    features = jnp.stack((waves[:, :-2], waves[:, 1:-1]), axis=-1)
+    targets = waves[:, 2:]
+    mask = jnp.arange(config["max_length"] - 2)[None, :] < (lengths[:, None] - 2)
+    require_units(mask)
+    assert features.shape == (batch_size, config["max_length"] - 2, 2)
+    assert targets.shape == mask.shape
+    assert np.isfinite(np.asarray(features)).all()
+    assert np.isfinite(np.asarray(targets)).all()
+    return features, targets, mask
+
+
+# ---------------------------------------------------------------------------
+# Baselines established BEFORE training: persistence (no parameters) and the
+# analytic oracle (exact for noiseless fixed-frequency sine). These bound
+# what the trained network should achieve.
+# ---------------------------------------------------------------------------
+def persistence_predict(features):
+    return features[..., 1]  # x_{t-1}
+
+
+def oracle_predict(features, omega):
+    lag2, lag1 = features[..., 0], features[..., 1]
+    return 2 * jnp.cos(omega) * lag1 - lag2
+
+
+probe_key = jax.random.key(SEED, impl=CONFIG["rng_impl"])
+probe_features, probe_targets, probe_mask = batch_at(CONFIG, probe_key, cursor=0)
+oracle_error = valid_mean(
+    jnp.square(oracle_predict(probe_features, CONFIG["frequency"]) - probe_targets),
+    probe_mask,
+)
+persistence_error = valid_mean(
+    jnp.square(persistence_predict(probe_features) - probe_targets), probe_mask
+)
+np.testing.assert_allclose(oracle_error, 0.0, atol=1e-5)
+assert float(persistence_error) > 1e-3, "persistence baseline should not be near-exact"
+print(f"oracle MSE {float(oracle_error):.2e}, persistence MSE {float(persistence_error):.4f}")
+
+
+# ---------------------------------------------------------------------------
+# Model: a 2-lag causal network, exactly matched to the recurrence above.
+# ---------------------------------------------------------------------------
+class LagForecaster(nnx.Module):
+    def __init__(self, config, rngs):
+        self.hidden = nnx.Linear(2, config["width"], rngs=rngs)
+        self.dropout = nnx.Dropout(rate=config["dropout_rate"])
+        self.output = nnx.Linear(config["width"], 1, rngs=rngs)
+
+    def __call__(self, features, dropout_key):
+        hidden = jnp.tanh(self.hidden(features))
+        hidden = self.dropout(hidden, rngs=dropout_key)
+        return self.output(hidden)[..., 0]
+
+
+def objective(model, features, targets, mask, dropout_key):
+    errors = jnp.square(model(features, dropout_key) - targets)
+    return valid_mean(errors, mask)
+
+
+def make_training(config, initialization_seed):
+    model = LagForecaster(config, nnx.Rngs(params=initialization_seed))
+    schedule = optax.linear_schedule(
+        config["learning_rate"], config["final_learning_rate"], config["transition_steps"]
+    )
+    optimizer = nnx.Optimizer(model, optax.adam(schedule), wrt=nnx.Param)
+    model.train()
+    return model, optimizer, schedule
+
+
+@nnx.jit
+def train_step(model, optimizer, features, targets, mask, dropout_key):
+    loss, grads = nnx.value_and_grad(objective)(model, features, targets, mask, dropout_key)
+    finite = jnp.isfinite(loss)
+    for leaf in jax.tree.leaves(grads):
+        finite = finite & jnp.isfinite(leaf).all()
+    optimizer.update(model, grads)
+    return loss, finite
+
+
+def advance(model, optimizer, data_key, stochastic_key, cursor, config):
+    features, targets, mask = batch_at(config, data_key, cursor)
+    next_key, noise_key, dropout_key = jax.random.split(stochastic_key, 3)
+    features = features + config["input_noise"] * jax.random.normal(noise_key, features.shape)
+    loss, finite = train_step(model, optimizer, features, targets, mask, dropout_key)
+    assert bool(finite), "nonfinite loss or gradient"
+    return float(loss), next_key, cursor + 1
+
+
+# ---------------------------------------------------------------------------
+# Checkpoint snapshot / restore helpers (Orbax StandardCheckpointer pattern).
+# ---------------------------------------------------------------------------
+def snapshot(model, optimizer, stochastic_key, cursor):
+    return {
+        "model": nnx.state(model).to_pure_dict(),
+        "optimizer": nnx.state(optimizer).to_pure_dict(),
+        "key_data": jax.random.key_data(stochastic_key),
+        "cursor": jnp.array(cursor, dtype=jnp.int32),
+    }
+
+
+def restore_nnx(obj, pure_state):
+    state = nnx.state(obj)
+    state.replace_by_pure_dict(pure_state)
+    nnx.update(obj, state)
+
+
+def assert_same_tree(left, right):
+    assert jax.tree.structure(left) == jax.tree.structure(right)
+    for before, after in zip(jax.tree.leaves(left), jax.tree.leaves(right)):
+        if np.issubdtype(np.asarray(before).dtype, np.inexact):
+            np.testing.assert_allclose(before, after, rtol=1e-6, atol=1e-6)
+        else:
+            np.testing.assert_array_equal(before, after)
+
+
+# ---------------------------------------------------------------------------
+# Phase 1: train up to the simulated interruption point.
+# ---------------------------------------------------------------------------
+master_key = jax.random.key(SEED, impl=CONFIG["rng_impl"])
+model_key, train_data_key, validation_data_key, stochastic_key = jax.random.split(master_key, 4)
+
+model, optimizer, schedule = make_training(CONFIG, model_key)
+cursor = 0
+initial_loss = None
+for step in range(CHECKPOINT_STEP):
+    loss, stochastic_key, cursor = advance(
+        model, optimizer, train_data_key, stochastic_key, cursor, CONFIG
+    )
+    if step == 0:
+        initial_loss = loss
+assert int(optimizer.step[...]) == CHECKPOINT_STEP
+
+saved = snapshot(model, optimizer, stochastic_key, cursor)
+
+with tempfile.TemporaryDirectory(prefix="sine-forecaster-") as directory:
+    # Swap this tempdir for a persistent path (e.g. Path.home() / "checkpoints")
+    # to actually resume across process restarts rather than within one script.
+    root = Path(directory).resolve()
+    (root / "config.json").write_text(json.dumps(CONFIG, sort_keys=True))
+    checkpoint_path = root / "state"
+    with ocp.StandardCheckpointer() as checkpointer:
+        checkpointer.save(checkpoint_path, saved)
+        checkpointer.wait_until_finished()
+
+        # ------------------------------------------------------------------
+        # Phase 2 (slot 5, recovery): restore into a FRESH model built with a
+        # DIFFERENT init seed, so a no-op restore could not accidentally pass.
+        # ------------------------------------------------------------------
+        loaded_config = json.loads((root / "config.json").read_text())
+        assert loaded_config == CONFIG
+
+        restored_model, restored_optimizer, restored_schedule = make_training(
+            loaded_config, model_key + 999
+        )
+        restore_target = snapshot(
+            restored_model, restored_optimizer,
+            jax.random.key(0, impl=loaded_config["rng_impl"]), 0,
+        )
+        loaded = checkpointer.restore(checkpoint_path, target=restore_target)
+        restore_nnx(restored_model, loaded["model"])
+        restore_nnx(restored_optimizer, loaded["optimizer"])
+        restored_stochastic_key = jax.random.wrap_key_data(
+            loaded["key_data"], impl=loaded_config["rng_impl"]
+        )
+        restored_cursor = int(loaded["cursor"])
+        assert restored_cursor == CHECKPOINT_STEP
+        restored_model.train()
+
+        assert_same_tree(
+            saved,
+            snapshot(restored_model, restored_optimizer, restored_stochastic_key, restored_cursor),
+        )
+        np.testing.assert_allclose(
+            schedule(optimizer.step[...]), restored_schedule(restored_optimizer.step[...])
+        )
+
+        # Next-update parity: the real test of recovery, not just state equality.
+        next_loss, next_key, next_cursor = advance(
+            model, optimizer, train_data_key, stochastic_key, cursor, CONFIG
+        )
+        resumed_loss, resumed_key, resumed_cursor = advance(
+            restored_model, restored_optimizer, train_data_key,
+            restored_stochastic_key, restored_cursor, loaded_config,
+        )
+        np.testing.assert_allclose(next_loss, resumed_loss, rtol=1e-6, atol=1e-6)
+        assert_same_tree(
+            snapshot(model, optimizer, next_key, next_cursor),
+            snapshot(restored_model, restored_optimizer, resumed_key, resumed_cursor),
+        )
+        assert next_cursor == resumed_cursor == CHECKPOINT_STEP + 1
+        assert not np.array_equal(
+            jax.random.key_data(stochastic_key), jax.random.key_data(next_key)
+        )
+        print(
+            f"recovery verified at step {CHECKPOINT_STEP}: next loss "
+            f"{next_loss:.6f} == resumed loss {resumed_loss:.6f}"
+        )
+
+        # ------------------------------------------------------------------
+        # Phase 3: continue training from the restored state to completion.
+        # This is the realistic "resume and keep going" path.
+        # ------------------------------------------------------------------
+        model, optimizer = restored_model, restored_optimizer
+        stochastic_key, cursor = resumed_key, resumed_cursor
+        for _ in range(TOTAL_TRAIN_STEPS - cursor):
+            loss, stochastic_key, cursor = advance(
+                model, optimizer, train_data_key, stochastic_key, cursor, CONFIG
+            )
+        final_loss = loss
+        assert int(optimizer.step[...]) == TOTAL_TRAIN_STEPS
+        assert final_loss < 0.3 * initial_loss, (initial_loss, final_loss)
+        print(f"train loss {initial_loss:.6f} -> {final_loss:.6f} over {TOTAL_TRAIN_STEPS} steps")
+
+# ---------------------------------------------------------------------------
+# Phase 4 (slot 4, evaluation): held-out validation on its own phase/length
+# stream, deterministic, model in eval() mode, compared against persistence.
+# ---------------------------------------------------------------------------
+model.eval()
+no_dropout = jax.random.key(0, impl=CONFIG["rng_impl"])  # unused: eval() disables dropout
+validation_losses, baseline_losses = [], []
+for validation_cursor in range(VALIDATION_CURSORS):
+    features, targets, mask = batch_at(CONFIG, validation_data_key, validation_cursor)
+    prediction = model(features, no_dropout)
+    validation_losses.append(float(valid_mean(jnp.square(prediction - targets), mask)))
+    baseline_losses.append(
+        float(valid_mean(jnp.square(persistence_predict(features) - targets), mask))
+    )
+
+validation_loss = float(np.mean(validation_losses))
+baseline_loss = float(np.mean(baseline_losses))
+assert np.isfinite(validation_loss)
+np.testing.assert_array_equal(
+    model(*batch_at(CONFIG, validation_data_key, 0)[:1], no_dropout),
+    model(*batch_at(CONFIG, validation_data_key, 0)[:1], no_dropout),
+)
+assert validation_loss < baseline_loss, (validation_loss, baseline_loss)
+print(f"validation MSE {validation_loss:.6f} vs persistence baseline {baseline_loss:.6f}")
+```
+
+Walking through what the five required checks (from the training reference) buy you here:
+
+**1. Structure/objective** — the hand-computed `[[1,100,100],[3,5,100]] → 3.0` check and the padding-invariance check at the top catch an off-by-one mask before any model touches the data. **2. Numerics** — every `train_step` call asserts finiteness of the loss *and every gradient leaf*, not just the loss. **3. Learning** — bounded steps, `final_loss < 0.3 * initial_loss` on the fixed cursor stream. **4. Evaluation** — held-out cursors from a separate key, `eval()` disabling dropout, and the persistence-baseline comparison that stops a trivially-overfit network from passing silently. **5. Recovery** — restoring into a *differently-seeded* fresh model and checking the **next** update matches, not just that saved parameters round-trip.
+
+`★ Insight ─────────────────────────────────────`
+Why restore into a model built from a *different* seed (`model_key + 999`) rather than the same one: if you restored into a model with identical initial weights, a completely broken `restore_nnx` could still pass the "states match" assertion by coincidence — not because the checkpoint loaded, but because the fresh and target models started out equal anyway. Changing the seed forces the state comparison to be doing real work, and it's the same trick the reference uses to avoid testing a tautology.
+`─────────────────────────────────────────────────`
+
+One more deliberate choice to flag: the checkpoint directory here is a `TemporaryDirectory`, since we're simulating the interrupt-and-resume cycle within one script run. For a real resumable training job across process restarts, swap that for a persistent path and separate the "save" and "load" halves into two different invocations (e.g., `python train.py --resume` branching on whether `checkpoint_path.exists()`), since right now save and restore happen inside the same `with` block as a demonstration of parity, not as two independent program runs.
+
+Since I can't execute this in this session, I haven't reported any loss numbers — the `assert` statements are the actual claims; run it locally (`pip install jax flax optax orbax-checkpoint numpy` on CPU) to see real values. If `final_loss < 0.3 * initial_loss` or `validation_loss < baseline_loss` fails, the fixture-isolation order from `training.md` applies: check mask/target alignment, then the differentiated leaves, then learning rate, before touching the architecture.

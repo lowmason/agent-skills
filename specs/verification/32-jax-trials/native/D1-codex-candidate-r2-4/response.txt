@@ -1,0 +1,504 @@
+Below is a complete CPU example using JAX, Flax NNX, Optax, and Orbax. It trains a small causal network, evaluates independent synthetic trajectories against persistence, and resumes from the latest completed checkpoint. **I have not executed the application or its model checks in this session.** The assertions below are checks to run, not reported passing results.
+
+The experiment uses unit-amplitude, noiseless sine waves with one shared angular frequency, 0.25 radians per sample, independent phases, and lengths drawn uniformly from 5 through 32. This deliberately small problem has a two-lag solution: `y[t+1] = 2*cos(0.25)*y[t] - y[t-1]`. A 2 → 16 → 1 tanh network can approximate that relation. Persistence, `prediction = y[t]`, is the simple comparison; it cannot represent the direction of motion using only the latest value. Variable frequencies, noisy observations, and long-memory forecasting would require a broader experiment.
+
+The data contract is:
+
+- Raw sequences have shape `(batch, 32)` and finite float32 values in `[-1, 1]`, with zero right-padding. No preprocessing is fitted.
+- Features have shape `(batch, 30, 2)` and contain `(y[t], y[t+1])`; targets and boolean loss masks have shape `(batch, 30)` and refer to `y[t+2]`.
+- A sequence of length `L` contributes exactly `L-2` targets. The objective is `sum(mask * squared_error) / sum(mask)`, pooled across eligible timesteps. Longer trajectories therefore carry more weight. Empty eligible batches raise an error before an update.
+- Every prediction uses two observed past samples. There is no attention, recurrence, hidden carry, dropout, or normalization state. Applying the network independently at each time position prevents padding or future values from entering a valid prediction.
+- Training uses a reproducible stream of new trajectories. Validation uses its own fixed random stream and trajectory identities; all windows from a trajectory stay in its split. The metric is teacher-forced, one-step MSE, not an autoregressive rollout metric.
+
+Adam updates only `nnx.Param` leaves, with no accumulation, clipping, or regularization. The learning rate decreases linearly from 0.02 to 0.002 over 400 optimizer updates, then stays at 0.002. The default budget is 400 updates of 32 trajectories each. The program prints the actual eligible target count per update and evaluates a fixed training fixture at both endpoints. The decision to expand the experiment should depend on held-out MSE beating persistence; a falling training loss alone is insufficient.
+
+The implementation uses graph-aware differentiation and updates as documented by the [NNX transformation guide](https://flax.readthedocs.io/en/stable/guides/transforms.html) and [NNX optimizer API](https://flax.readthedocs.io/en/stable/api_reference/flax.nnx/training/optimizer.html). Its checkpoint state uses the public [NNX state conversion API](https://flax.readthedocs.io/en/stable/api_reference/flax.nnx/state.html). It waits for Orbax saves to finish before marking them complete, following the [StandardCheckpointer API](https://orbax.readthedocs.io/en/latest/api_reference/checkpoint.checkpointers.html). Data keys advance through explicit splitting, following [JAX's PRNG guidance](https://docs.jax.dev/en/latest/random-numbers.html).
+
+Save this as `sine_forecast.py`:
+
+```python
+import os
+
+# Set this before importing JAX so the example runs on CPU.
+os.environ["JAX_PLATFORMS"] = "cpu"
+
+import argparse
+from dataclasses import dataclass
+from importlib.metadata import version
+import json
+from pathlib import Path
+import platform
+import tempfile
+import uuid
+
+import jax
+import jax.numpy as jnp
+import numpy as np
+import optax
+import orbax.checkpoint as ocp
+from flax import nnx
+
+jax.config.update("jax_enable_x64", False)
+
+PACKAGES = ("jax", "jaxlib", "flax", "optax", "orbax-checkpoint", "numpy")
+
+
+def default_config():
+    return {
+        "schema": 1,
+        "model": "two-lag-tanh-v1",
+        "data": "unit-sine-independent-phases-stream-v1",
+        "objective": "pooled-valid-timestep-mse-v1",
+        "preprocessing": "none",
+        "padding": "finite-zero-right-padding",
+        "seed": sum(map(ord, "sequence-correctness")),
+        "rng_impl": "threefry2x32",
+        "dtype": "float32",
+        "frequency": 0.25,
+        "min_length": 5,
+        "max_length": 32,
+        "width": 16,
+        "batch_size": 32,
+        "validation_size": 256,
+        "learning_rate": 0.02,
+        "final_learning_rate": 0.002,
+        "transition_steps": 400,
+        "optimizer": "adam",
+        "adam_b1": 0.9,
+        "adam_b2": 0.999,
+        "adam_eps": 1e-8,
+        "checkpoint_every": 100,
+        "backend": "cpu",
+        "cpu_arch": platform.machine(),
+        "python": platform.python_version(),
+        "versions": {name: version(name) for name in PACKAGES},
+        "stream_tags": {"init": 0, "train": 1, "validation": 2, "fixture": 3},
+    }
+
+
+def validate_saved_config(config):
+    # Deliberately reject a changed model, generator, optimizer, or environment.
+    if config != default_config():
+        raise ValueError(
+            "Saved configuration/environment differs from this script. "
+            "Use the original script, package versions, Python, and CPU architecture."
+        )
+
+
+def stream_key(config, stream):
+    root = jax.random.key(config["seed"], impl=config["rng_impl"])
+    return jax.random.fold_in(root, config["stream_tags"][stream])
+
+
+def require_batch(batch):
+    features, targets, mask = map(np.asarray, batch)
+    if features.shape != (*targets.shape, 2) or targets.shape != mask.shape:
+        raise ValueError("Unexpected feature/target/mask shapes")
+    if features.dtype != np.float32 or targets.dtype != np.float32:
+        raise ValueError("Inputs and targets must be float32")
+    if mask.dtype != np.bool_:
+        raise ValueError("The loss mask must be boolean")
+    if not np.isfinite(features).all() or not np.isfinite(targets).all():
+        raise ValueError("All entries, including padding, must be finite")
+    count = int(mask.sum())
+    if count == 0:
+        raise ValueError("Batch has no eligible targets; no update is performed")
+    return count
+
+
+def make_batch(config, key, size=None, lengths=None):
+    phase_key, length_key = jax.random.split(key)
+    if lengths is None:
+        size = config["batch_size"] if size is None else size
+        lengths = jax.random.randint(
+            length_key, (size,), config["min_length"],
+            config["max_length"] + 1, dtype=jnp.int32
+        )
+    else:
+        lengths = jnp.asarray(lengths, dtype=jnp.int32)
+        size = len(lengths)
+    if not ((np.asarray(lengths) >= 3).all()
+            and (np.asarray(lengths) <= config["max_length"]).all()):
+        raise ValueError("Lengths must be between 3 and max_length")
+    time = jnp.arange(config["max_length"], dtype=jnp.float32)[None, :]
+    phases = jax.random.uniform(
+        phase_key, (size, 1), dtype=jnp.float32, minval=0.0, maxval=2 * jnp.pi
+    )
+    waves = jnp.sin(phases + config["frequency"] * time)
+    waves = jnp.where(time < lengths[:, None], waves, 0.0)
+    features = jnp.stack((waves[:, :-2], waves[:, 1:-1]), axis=-1)
+    targets = waves[:, 2:]
+    mask = jnp.arange(config["max_length"] - 2)[None, :] < lengths[:, None] - 2
+    batch = features, targets, mask
+    count = require_batch(batch)
+    assert count == int(np.asarray(lengths - 2).sum())
+    return batch
+
+
+class LagForecaster(nnx.Module):
+    def __init__(self, config, rngs):
+        self.hidden = nnx.Linear(
+            2, config["width"], dtype=jnp.float32, param_dtype=jnp.float32, rngs=rngs
+        )
+        self.output = nnx.Linear(
+            config["width"], 1, dtype=jnp.float32, param_dtype=jnp.float32, rngs=rngs
+        )
+
+    def __call__(self, features):
+        return self.output(jnp.tanh(self.hidden(features)))[..., 0]
+
+
+def valid_mean(values, mask):
+    # require_batch rejects empty masks before any model update or evaluation.
+    return jnp.where(mask, values, 0.0).sum() / mask.sum()
+
+
+def objective(model, features, targets, mask):
+    return valid_mean(jnp.square(model(features) - targets), mask)
+
+
+@nnx.jit
+def loss_and_grad(model, features, targets, mask):
+    return nnx.value_and_grad(
+        objective, argnums=nnx.DiffState(0, nnx.Param)
+    )(model, features, targets, mask)
+
+
+@nnx.jit
+def apply_gradients(model, optimizer, grads):
+    optimizer.update(model, grads)
+
+
+def require_finite(tree):
+    for leaf in jax.tree.leaves(tree):
+        if not np.isfinite(np.asarray(leaf)).all():
+            raise FloatingPointError("Nonfinite loss, gradient, prediction, or state")
+
+
+@dataclass
+class Run:
+    config: dict
+    model: object
+    optimizer: object
+    schedule: object
+    data_key: object
+    step: int = 0
+    cursor: int = 0
+
+
+def make_run(config):
+    model = LagForecaster(config, nnx.Rngs(params=stream_key(config, "init")))
+    schedule = optax.linear_schedule(
+        config["learning_rate"], config["final_learning_rate"],
+        config["transition_steps"]
+    )
+    optimizer = nnx.Optimizer(
+        model,
+        optax.adam(
+            schedule, b1=config["adam_b1"], b2=config["adam_b2"],
+            eps=config["adam_eps"]
+        ),
+        wrt=nnx.Param,
+    )
+    model.train()
+    return Run(config, model, optimizer, schedule, stream_key(config, "train"))
+
+
+def update_on_batch(run, batch):
+    count = require_batch(batch)
+    run.model.train()
+    loss, grads = loss_and_grad(run.model, *batch)
+    require_finite((loss, grads))  # Reject before mutating optimizer/parameters.
+    learning_rate = float(run.schedule(run.step))
+    apply_gradients(run.model, run.optimizer, grads)
+    require_finite((nnx.state(run.model), nnx.state(run.optimizer)))
+    return float(loss), count, learning_rate
+
+
+def advance(run):
+    assert run.step == run.cursor == int(run.optimizer.step[...])
+    next_key, batch_key = jax.random.split(run.data_key)
+    batch = make_batch(run.config, batch_key)
+    result = update_on_batch(run, batch)
+    # These assignments complete the same training transition as the update.
+    run.data_key = next_key
+    run.step += 1
+    run.cursor += 1
+    assert run.step == run.cursor == int(run.optimizer.step[...])
+    return result
+
+
+def evaluate(model, batch):
+    count = require_batch(batch)
+    model.eval()
+    features, targets, mask = batch
+    predictions = model(features)
+    require_finite(predictions)
+    mse = float(valid_mean(jnp.square(predictions - targets), mask))
+    persistence = float(valid_mean(jnp.square(features[..., 1] - targets), mask))
+    require_finite((mse, persistence))
+    return {"mse": mse, "persistence_mse": persistence, "targets": count}
+
+
+def predict_next(model, observed):
+    observed = np.asarray(observed, dtype=np.float32)
+    if observed.ndim != 1 or len(observed) < 2 or not np.isfinite(observed).all():
+        raise ValueError("Provide at least two finite observed samples")
+    model.eval()
+    prediction = model(jnp.asarray(observed[-2:]))
+    require_finite(prediction)
+    return float(prediction)
+
+
+def snapshot(run):
+    return {
+        "model": nnx.to_pure_dict(nnx.state(run.model)),
+        "optimizer": nnx.to_pure_dict(nnx.state(run.optimizer)),
+        "key_data": jax.random.key_data(run.data_key),
+        "step": jnp.array(run.step, dtype=jnp.int32),
+        "cursor": jnp.array(run.cursor, dtype=jnp.int32),
+    }
+
+
+def restore_nnx(obj, pure_state):
+    state = nnx.state(obj)
+    nnx.replace_by_pure_dict(state, nnx.restore_int_paths(pure_state))
+    nnx.update(obj, state)
+
+
+def save_run(root, checkpointer, run):
+    assert run.step == run.cursor == int(run.optimizer.step[...])
+    root = Path(root).resolve()
+    root.mkdir(parents=True, exist_ok=True)
+    # Unique directories allow a retry after an interrupted save at the same step.
+    progress = root / f"step-{run.step:08d}-{uuid.uuid4().hex}"
+    progress.mkdir()
+    (progress / "config.json").write_text(
+        json.dumps(run.config, sort_keys=True, indent=2), encoding="utf-8"
+    )
+    checkpointer.save(progress / "state", snapshot(run))
+    checkpointer.wait_until_finished()
+    marker = progress / "COMPLETE.tmp"
+    marker.write_text(str(run.step), encoding="utf-8")
+    marker.replace(progress / "COMPLETE")
+    return progress
+
+
+def latest_completed(root):
+    candidates = [
+        path for path in Path(root).resolve().glob("step-*")
+        if (path / "COMPLETE").is_file() and (path / "state").is_dir()
+    ]
+    if not candidates:
+        raise FileNotFoundError("No completed checkpoint found")
+    return max(candidates, key=lambda path: (int(path.name.split("-")[1]), path.name))
+
+
+def load_run(root, checkpointer):
+    progress = latest_completed(root)
+    config = json.loads((progress / "config.json").read_text(encoding="utf-8"))
+    validate_saved_config(config)  # Before resumed model/optimizer/data factories.
+    run = make_run(config)
+    loaded = checkpointer.restore(progress / "state", target=snapshot(run))
+    restore_nnx(run.model, loaded["model"])
+    restore_nnx(run.optimizer, loaded["optimizer"])
+    run.data_key = jax.random.wrap_key_data(loaded["key_data"], impl=config["rng_impl"])
+    run.step = int(loaded["step"])
+    run.cursor = int(loaded["cursor"])
+    declared_step = int(progress.name.split("-")[1])
+    assert run.step == run.cursor == int(run.optimizer.step[...]) == declared_step
+    assert int((progress / "COMPLETE").read_text()) == declared_step
+    require_finite((nnx.state(run.model), nnx.state(run.optimizer)))
+    return run, progress
+
+
+def assert_same_tree(left, right):
+    assert jax.tree.structure(left) == jax.tree.structure(right)
+    for a, b in zip(jax.tree.leaves(left), jax.tree.leaves(right)):
+        a, b = np.asarray(a), np.asarray(b)
+        assert a.dtype == b.dtype and a.shape == b.shape
+        if np.issubdtype(a.dtype, np.inexact):
+            np.testing.assert_allclose(a, b, rtol=1e-6, atol=1e-6)
+        else:
+            np.testing.assert_array_equal(a, b)
+
+
+def correctness_checks(config):
+    hand_mask = jnp.array([[True, False, False], [True, True, False]])
+    hand_errors = jnp.array([[1.0, 100.0, 100.0], [3.0, 5.0, 100.0]])
+    np.testing.assert_allclose(valid_mean(hand_errors, hand_mask), 3.0)
+    np.testing.assert_allclose(
+        valid_mean(jnp.where(hand_mask, hand_errors, -999.0), hand_mask), 3.0
+    )
+    fixture = make_batch(config, stream_key(config, "fixture"), lengths=[5, 7, 9, 12])
+    features, targets, mask = fixture
+    assert features.shape == (4, config["max_length"] - 2, 2)
+    assert require_batch(fixture) == 25
+    empty = features, targets, jnp.zeros_like(mask)
+    try:
+        require_batch(empty)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("An empty eligible batch was accepted")
+    # Independent analytic target-alignment reference for fixed-frequency sines.
+    oracle = 2 * jnp.cos(config["frequency"]) * features[..., 1] - features[..., 0]
+    np.testing.assert_allclose(np.asarray(oracle)[np.asarray(mask)],
+                               np.asarray(targets)[np.asarray(mask)], atol=1e-5)
+    run = make_run(config)
+    loss, grads = loss_and_grad(run.model, *fixture)
+    require_finite((features, targets, run.model(features), loss, grads))
+    assert any(np.any(np.asarray(leaf) != 0) for leaf in jax.tree.leaves(grads))
+    perturbed = (
+        jnp.where(mask[..., None], features, 999.0),
+        jnp.where(mask, targets, -999.0), mask,
+    )
+    changed_loss, changed_grads = loss_and_grad(run.model, *perturbed)
+    require_finite((changed_loss, changed_grads))
+    np.testing.assert_allclose(loss, changed_loss, rtol=1e-6, atol=1e-6)
+    assert_same_tree(grads, changed_grads)
+    # Constant LR keeps this bounded fixture separate from the production schedule.
+    learning_config = dict(config, final_learning_rate=config["learning_rate"])
+    learner = make_run(learning_config)
+    initial = evaluate(learner.model, fixture)["mse"]
+    for _ in range(150):
+        update_on_batch(learner, fixture)
+        learner.step += 1
+    final = evaluate(learner.model, fixture)["mse"]
+    assert final < 0.2 * initial, (initial, final)
+    assert int(learner.optimizer.step[...]) == learner.step == 150
+    first_prediction = learner.model(features)
+    np.testing.assert_array_equal(first_prediction, learner.model(features))
+    validation = make_batch(
+        config, stream_key(config, "validation"), size=config["validation_size"]
+    )
+    print(f"fixed-fixture learning: {initial:.6g} -> {final:.6g}")
+    print("independent validation after tiny learning:", evaluate(learner.model, validation))
+    print("objective, count, empty-batch, padding/gradient, and finite checks passed")
+
+
+def recovery_check(config):
+    # This run and its next-update comparison never mutate production training.
+    run = make_run(config)
+    with tempfile.TemporaryDirectory(prefix="sine-resume-check-") as directory:
+        root = Path(directory).resolve()
+        with ocp.StandardCheckpointer() as checkpointer:
+            for save_step in (3, 5):
+                while run.step < save_step:
+                    advance(run)
+                save_run(root, checkpointer, run)
+            completed_steps = sorted(
+                int(path.name.split("-")[1]) for path in root.glob("step-*")
+                if (path / "COMPLETE").is_file()
+            )
+            assert completed_steps == [3, 5]
+            (root / "step-00000006-interrupted").mkdir()  # Must be ignored.
+            resumed, progress = load_run(root, checkpointer)
+            assert resumed.step == 5 and progress == latest_completed(root)
+            assert resumed.config == run.config
+            assert_same_tree(snapshot(run), snapshot(resumed))
+            _, batch_key = jax.random.split(run.data_key)
+            _, resumed_batch_key = jax.random.split(resumed.data_key)
+            assert_same_tree(make_batch(run.config, batch_key),
+                             make_batch(resumed.config, resumed_batch_key))
+            before_key = np.asarray(jax.random.key_data(run.data_key)).copy()
+            uninterrupted_result = advance(run)
+            resumed_result = advance(resumed)
+            np.testing.assert_allclose(uninterrupted_result, resumed_result,
+                                       rtol=1e-6, atol=1e-6)
+            # Includes parameters, every Adam/scheduler leaf, RNG, step, and cursor.
+            assert_same_tree(snapshot(run), snapshot(resumed))
+            assert run.step == resumed.step == run.cursor == resumed.cursor == 6
+            np.testing.assert_allclose(run.schedule(run.step),
+                                       resumed.schedule(resumed.step))
+            assert not np.array_equal(before_key, jax.random.key_data(run.data_key))
+    print("two-save/latest-restore/next-update recovery check passed")
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--root", type=Path, default=Path("sine-checkpoints"))
+    parser.add_argument("--steps", type=int, default=400,
+                        help="Absolute target optimizer step, including resumed steps")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--resume", action="store_true")
+    mode.add_argument("--self-test", action="store_true")
+    args = parser.parse_args()
+    if args.steps <= 0 or args.steps >= 2**31:
+        parser.error("--steps must be between 1 and 2**31-1")
+    assert jax.default_backend() == "cpu"
+    print("devices:", jax.devices())
+    if args.self_test:
+        config = default_config()
+        correctness_checks(config)
+        recovery_check(config)
+        return
+    root = args.root.resolve()
+    if not args.resume and root.exists() and any(root.iterdir()):
+        raise ValueError("Use an empty --root for a new run, or pass --resume")
+    with ocp.StandardCheckpointer() as checkpointer:
+        if args.resume:
+            run, progress = load_run(root, checkpointer)
+            print(f"restored step {run.step} from {progress}")
+        else:
+            run = make_run(default_config())
+        if args.steps < run.step:
+            raise ValueError("--steps is an absolute target and precedes the saved step")
+        # For resume, all data factories use the already validated saved config.
+        config = run.config
+        fixture = make_batch(config, stream_key(config, "fixture"), lengths=[5, 7, 9, 12])
+        validation = make_batch(
+            config, stream_key(config, "validation"), size=config["validation_size"]
+        )
+        initial = evaluate(run.model, fixture)["mse"]
+        while run.step < args.steps:
+            loss, count, learning_rate = advance(run)
+            if run.step % config["checkpoint_every"] == 0:
+                print("saved:", save_run(root, checkpointer, run))
+            if run.step % 100 == 0 or run.step == args.steps:
+                print(f"step={run.step} train_mse={loss:.6g} targets={count} "
+                      f"lr_used={learning_rate:.6g} validation={evaluate(run.model, validation)}")
+        if run.step % config["checkpoint_every"] != 0:
+            print("saved:", save_run(root, checkpointer, run))
+        final = evaluate(run.model, fixture)["mse"]
+        metrics = evaluate(run.model, validation)
+        print(f"same fixed training fixture: {initial:.6g} -> {final:.6g}")
+        print("final held-out metrics:", metrics)
+        print("beats persistence:", metrics["mse"] < metrics["persistence_mse"])
+        observed = np.sin(0.15 + config["frequency"] * np.arange(7))
+        print("next prediction for a seven-sample context:", predict_next(run.model, observed))
+
+
+if __name__ == "__main__":
+    main()
+```
+
+Use a fresh Python environment. The supplied reference examples report a CPU profile with Python 3.13.8, JAX/JAXlib 0.11.2, Flax 0.12.10, Optax 0.2.8, Orbax checkpoint 0.12.6, and NumPy 2.5.3. Those are the dependency targets here; that reference verification does not establish that this new script passes. The [NNX Linear API](https://flax.readthedocs.io/en/stable/api_reference/flax.nnx/nn/linear.html) supports the explicit float32 layer configuration, and the [Optax linear schedule documentation](https://optax.readthedocs.io/en/latest/api/generated/optax.schedules.linear_schedule.html) describes the schedule used.
+
+```bash
+python3.13 -m venv .venv
+source .venv/bin/activate
+python -m pip install "jax==0.11.2" "jaxlib==0.11.2" "flax==0.12.10" "optax==0.2.8" "orbax-checkpoint==0.12.6" "numpy==2.5.3"
+
+# Run the bounded math, learning, validation, and recovery assertions first.
+python sine_forecast.py --self-test
+
+# Train for 200 updates, saving completed checkpoints at steps 100 and 200.
+python sine_forecast.py --root ./sine-checkpoints --steps 200
+
+# Continue to a total of 400 updates with the original schedule and data stream.
+python sine_forecast.py --root ./sine-checkpoints --resume --steps 400
+```
+
+Each completed checkpoint stores all dynamic model and optimizer state, including Adam moments and its internal schedule count, the external update step, next-batch cursor, and the raw buffer of the typed data PRNG key. Its companion configuration records architecture, optimizer, schedule, generator/split identity, dtype, preprocessing, Python/package versions, and CPU architecture. Restore reads and validates that configuration before constructing the resumed model, optimizer, or data. It rejects changed configurations or environments instead of silently changing training semantics.
+
+The recovery boundary is the last **completed saved update**, with periodic saves every 100 steps and a save at the requested final step. An interrupted run can therefore lose unsaved updates since that boundary; replay starts from the saved key and cursor. Saves use unique progress directories and publish a completion marker only after `wait_until_finished()`. Latest selection ignores unfinished directories. This is a single-process, local-filesystem recovery example; it does not claim cross-version, distributed, accelerator, or power-loss durability guarantees.
+
+When you run `--self-test`, it must establish all of the following before printing its passing messages:
+
+- Hand-computed pooled loss `(1+3+5)/3 = 3`, 25 eligible targets for lengths `[5,7,9,12]`, correct two-lag alignment against the analytic sine recurrence, and rejection of an empty mask.
+- Finite inputs, predictions, initial loss and every gradient leaf; loss and gradient invariance after finite perturbations at ineligible positions. Every training update also checks gradients before applying them.
+- Deterministic initial/final evaluation on the exact same tiny training fixture, with a 150-update bound and an assertion that final MSE is below 20% of initial MSE. A separately seeded held-out validation batch is evaluated against persistence.
+- Two completed saves at steps 3 and 5, restoration of step 5 despite an unfinished step-6 directory, equal next generated batches, and equal next loss, post-update model tree, every optimizer leaf, external step, schedule value, PRNG progression, and data cursor. Floating arrays use `rtol=atol=1e-6`; discrete state must agree exactly.
+
+**Current verification status:** source/API review and a successful static AST syntax parse of the embedded Python; no application execution, measured loss, training time, baseline improvement, or actual checkpoint restoration was observed here. Run the self-test first. If an assertion fails, isolate that failure before increasing the training budget. If the checks pass but held-out MSE fails to beat persistence, inspect alignment, data coverage, scale, and updates before increasing capacity. Even a successful run supports only this fixed-frequency, one-step synthetic experiment.

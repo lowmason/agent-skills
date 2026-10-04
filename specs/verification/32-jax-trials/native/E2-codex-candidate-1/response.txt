@@ -1,0 +1,301 @@
+Compare the models using a **paired loss difference on the same forecast decisions**, and estimate uncertainty at the level of independent trajectories or justified temporal blocks. Overlapping windows provide many scored forecasts, but they do not provide the same number of independent observations. Without predictions, targets, timestamps, and training records, I cannot report a numerical difference or name a winner.
+
+First define the population: future forecast origins for the existing series, new independent series, or new training runs under a fixed resource policy. These are different questions and require different repetitions.
+
+| Level | What it represents | What counts as a replicate |
+|---|---|---|
+| Training run | A fitted model produced by a specified training and selection procedure | A repeated training run, with its random factors recorded |
+| Series or trajectory | An entity's complete observed sequence | Potentially an independent cluster, if entities do not share relevant shocks or other dependence |
+| Forecast origin | One forecast issued using information available at that cutoff | A scoring unit; neighboring origins are usually dependent |
+| Horizon and channel | Components of the forecast issued at an origin | Nested scores, generally dependent within and across windows |
+| Target timestamp | The outcome being predicted | May occur in several origin/horizon cells; repeated forecasts of that outcome do not create new independent outcomes |
+
+Keep the axes explicit, for example `(model, run, series, origin, horizon, channel)`. Store the series ID, origin, horizon, target timestamp, target version, and eligibility for every prediction. A complete daily evaluation with 1,000 consecutive origins and horizons 1 through 24 contains 24,000 scored cells but only 1,023 distinct target timestamps for one channel. Neither number establishes the number of independent replicates.
+
+Overlapping evaluation windows can be appropriate when deployment really issues forecasts at that stride. The important distinction is between scoring those forecast decisions and treating their errors as independent. Rolling-origin evaluation should use only information available before each forecast; the origin and horizon contract determines the operational question being answered. [Hyndman and Athanasopoulos, time-series cross-validation](https://otexts.com/fpp3/tscv.html).
+
+Prespecify a primary metric, its units, weighting, and a useful improvement threshold before interpreting the final test results. For example, choose MAE in target units with equal origin weighting and fixed horizon weights. Retain horizon-specific results as well. If series have different scales, define any scaling from training data and state whether each series receives equal weight or long series receive more weight.
+
+For complete windows, a paired contrast can be written as:
+
+```text
+loss_m(s, t, h) = |prediction_m(s, t, h) - target(s, t, h)|
+d(s, t) = sum_h w(h) * [loss_B(s, t, h) - loss_A(s, t, h)]
+sum_h w(h) = 1
+Delta = the prespecified average of d(s, t)
+```
+
+With this sign convention, negative Delta favors B. For missing targets, use the same prespecified eligibility mask for both methods and explicitly define the denominator. A global weighted loss, an average of origin losses, and an average of series losses can differ when the counts differ. If deployment values each target timestamp once, specify which forecasts are combined or retained for that timestamp before scoring. Averaging forecasts first evaluates a combined predictor and changes the estimand.
+
+Compare both methods on identical series/origin/horizon/target IDs, target values, masks, and weights. Evaluate in the same declared mode and use the same update or refit schedule. Include persistence or seasonal persistence where relevant, and record checkpoint selection, tuning effort, training exposure, and measured compute or cost. A comparison of two selected checkpoints supports a claim about those checkpoints under that evaluation policy; a method-wide claim also needs an appropriate repeated-training and resource comparison.
+
+Before inference, audit validity:
+
+- Use chronological training, validation, calibration if needed, and protected test partitions. Check target intervals that cross boundaries; use a purge or gap justified by target availability and the intended deployment procedure.
+- Audit feature publication times, revised data vintages, scaler fitting, lag construction, and label availability at every origin. Historical context preceding an origin can be legitimate. A future-fitted scaler or a feature unavailable at issuance is leakage.
+- Freeze hyperparameters, horizons, weighting, and checkpoint selection using development data. If the test period has influenced those choices, label the current comparison exploratory and use a protected confirmation period.
+- Verify shared IDs, order, targets, and eligibility. Record missingness and failed predictions; do not silently drop one method's failures to obtain a favorable matched subset.
+- Where the pipeline promises causality, perturb unavailable future inputs and check that predictions at the earlier origin remain unchanged. This is a proposed check here, not an executed result.
+
+Keep predictive uncertainty separate. If either model supplies quantiles, intervals, or a distribution, evaluate held-out coverage, sharpness, and appropriate proper scores by horizon, using an independently fitted calibration policy. A confidence interval for Delta describes uncertainty in the performance comparison; it is not a prediction interval for the next target. If these are deterministic point predictors, say that no predictive distribution was evaluated.
+
+For the result, report A's score, B's score, and B-minus-A directly, followed by uncertainty with its sampling assumptions and conditioning:
+
+| Evaluation design | Appropriate uncertainty unit | Limits to state |
+|---|---|---|
+| Many independent trajectories; generalization to new trajectories | Resample whole trajectories, applying the same draw to A and B; retain each trajectory's complete windows | Requires enough independent trajectories; shared shocks undermine independence |
+| One long, ordered series; generalization to comparable future periods | Paired temporal block bootstrap, or a suitable dependence-aware forecast-loss analysis | Requires a defensible dependence/stationarity model and enough time span |
+| A panel of entities with common shocks | Resample common time blocks jointly across the panel for a time-generalization claim | Independent resampling of each entity can destroy the shared-shock structure; generalization to new entities may need an additional cluster design |
+| Repeated training; generalization to the training method | Retain every run's score and use a run-level design appropriate to the actual random-factor sampling | Test-data resampling alone holds fitted models fixed and omits training variation |
+
+For a long series, inspect the autocorrelation and time evolution of the **paired loss difference**, not just the raw targets or each model's errors. Choose temporal block lengths using the relevant dependence and seasonal timescales, then report sensitivity across defensible choices. Forecast horizon, window length, and stride help identify possible overlap; none determines a universal dependence cutoff. Non-overlapping windows can still have serially correlated errors.
+
+The stationary bootstrap preserves local ordering through random-length blocks and is intended for weakly dependent stationary observations. Its applicability and finite-sample adequacy need to be justified for the actual loss process. Regime shifts, long memory, or very few independent clusters can leave the comparison inconclusive even after blocking. [Politis and Romano, The Stationary Bootstrap](https://www.tandfonline.com/doi/abs/10.1080/01621459.1994.10476870).
+
+For a nonlinear metric such as pooled RMSE, recompute the complete metric for both models within every shared bootstrap draw and subtract the resulting scores. Averaging origin-level RMSE differences generally answers a different question. Analyze the interval for the difference directly; comparing overlap between two separate model intervals is not a substitute.
+
+The following complete implementation covers **one regularly spaced trajectory and two fixed checkpoints**, with univariate axes `(origin, horizon)`. It computes shared-mask, horizon-weighted pooled MAE, MSE, or RMSE and an approximate paired stationary-bootstrap percentile interval. All horizon cells and both methods move together when an origin is resampled. The statistics use host-side NumPy; the code performs no neural inference or training. The data and dependence audits described above remain necessary.
+
+```python
+from dataclasses import dataclass
+from typing import Hashable
+
+import numpy as np
+
+
+@dataclass(frozen=True)
+class ForecastEvaluation:
+    series_id: str
+    origin_ids: tuple[Hashable, ...]
+    origin_steps: np.ndarray  # Integer time ticks, in chronological order.
+    horizons: tuple[Hashable, ...]
+    target_ids: np.ndarray  # (origin, horizon), including timestamp/version.
+    targets: np.ndarray
+    predictions: np.ndarray
+    eligible: np.ndarray
+
+
+def validate_evaluation(evaluation):
+    predictions = np.asarray(evaluation.predictions, dtype=np.float64)
+    targets = np.asarray(evaluation.targets, dtype=np.float64)
+    eligible = np.asarray(evaluation.eligible)
+    origin_steps = np.asarray(evaluation.origin_steps)
+    target_ids = np.asarray(evaluation.target_ids)
+
+    if predictions.ndim != 2 or min(predictions.shape) == 0:
+        raise ValueError("Expected nonempty predictions (origin, horizon)")
+    if targets.shape != predictions.shape or target_ids.shape != targets.shape:
+        raise ValueError("Targets, predictions, and target IDs must align")
+    if eligible.shape != targets.shape or eligible.dtype != np.bool_:
+        raise ValueError("Eligibility must be a boolean array of the same shape")
+
+    n_origins, n_horizons = targets.shape
+    if len(evaluation.origin_ids) != n_origins:
+        raise ValueError("Origin IDs must match the origin axis")
+    if len(set(evaluation.origin_ids)) != n_origins:
+        raise ValueError("Origin IDs must be unique and hashable")
+    if len(evaluation.horizons) != n_horizons:
+        raise ValueError("Horizon IDs must match the horizon axis")
+    if len(set(evaluation.horizons)) != n_horizons:
+        raise ValueError("Horizon IDs must be unique and hashable")
+
+    if origin_steps.shape != (n_origins,):
+        raise ValueError("Origin steps must be a one-dimensional origin axis")
+    if not np.issubdtype(origin_steps.dtype, np.integer):
+        raise ValueError("Use integer time ticks for origin steps")
+    if n_origins < 3:
+        raise ValueError("Temporal resampling requires more origin observations")
+    strides = np.diff(origin_steps)
+    if np.any(strides <= 0) or not np.all(strides == strides[0]):
+        raise ValueError("This implementation requires regularly spaced origins")
+
+    if not np.isfinite(targets[eligible]).all():
+        raise ValueError("Nonfinite eligible target")
+    if not np.isfinite(predictions[eligible]).all():
+        raise ValueError("Nonfinite eligible prediction")
+    return predictions, targets, eligible
+
+
+def stationary_indices(n_origins, mean_block_length, rng):
+    restart_probability = 1.0 / mean_block_length
+    indices = np.empty(n_origins, dtype=np.int64)
+    indices[0] = rng.integers(n_origins)
+    for position in range(1, n_origins):
+        if rng.random() < restart_probability:
+            indices[position] = rng.integers(n_origins)
+        else:
+            indices[position] = (indices[position - 1] + 1) % n_origins
+    return indices
+
+
+def paired_checkpoint_comparison(
+    evaluation_a,
+    evaluation_b,
+    *,
+    horizon_weights,
+    mean_block_length,
+    metric="mae",
+    n_bootstrap=4000,
+    confidence=0.95,
+    random_seed=0,
+):
+    """Conditional comparison; does not resample training runs or entities."""
+    pred_a, targets_a, mask_a = validate_evaluation(evaluation_a)
+    pred_b, targets_b, mask_b = validate_evaluation(evaluation_b)
+
+    if (
+        evaluation_a.series_id != evaluation_b.series_id
+        or evaluation_a.origin_ids != evaluation_b.origin_ids
+        or evaluation_a.horizons != evaluation_b.horizons
+        or not np.array_equal(
+            evaluation_a.origin_steps, evaluation_b.origin_steps
+        )
+        or not np.array_equal(evaluation_a.target_ids, evaluation_b.target_ids)
+    ):
+        raise ValueError("Forecast identity/order mismatch")
+    if not np.array_equal(mask_a, mask_b):
+        raise ValueError("Held-out eligibility mismatch")
+    if not np.array_equal(targets_a[mask_a], targets_b[mask_b]):
+        raise ValueError("Eligible target values differ")
+    if metric not in {"mae", "mse", "rmse"}:
+        raise ValueError("Metric must be mae, mse, or rmse")
+
+    n_origins, n_horizons = pred_a.shape
+    weights = np.asarray(horizon_weights, dtype=np.float64)
+    if (
+        weights.shape != (n_horizons,)
+        or not np.isfinite(weights).all()
+        or np.any(weights < 0)
+        or weights.sum() <= 0
+    ):
+        raise ValueError("Supply finite nonnegative horizon weights")
+    weights = weights / weights.sum()
+    cell_weights = mask_a * weights[None, :]
+    denominator_by_origin = cell_weights.sum(axis=1)
+    if np.any(denominator_by_origin == 0):
+        raise ValueError("Every included origin needs positive eligible weight")
+
+    if not np.isfinite(mean_block_length) or not (
+        1 <= mean_block_length < n_origins
+    ):
+        raise ValueError("Mean block length must be at least 1 and below T")
+    if not isinstance(n_bootstrap, (int, np.integer)) or n_bootstrap < 2:
+        raise ValueError("Need at least two bootstrap draws")
+    if not 0 < confidence < 1:
+        raise ValueError("Confidence must lie strictly between 0 and 1")
+
+    # Select padding out before residual arithmetic, including NaN padding.
+    safe_targets = np.where(mask_a, targets_a, 0.0)
+    residual_a = np.where(mask_a, pred_a, 0.0) - safe_targets
+    residual_b = np.where(mask_b, pred_b, 0.0) - safe_targets
+    if metric == "mae":
+        loss_a = np.abs(residual_a)
+        loss_b = np.abs(residual_b)
+    else:
+        loss_a = np.square(residual_a)
+        loss_b = np.square(residual_b)
+    if not np.isfinite(loss_a[mask_a]).all():
+        raise ValueError("Loss arithmetic overflow for A")
+    if not np.isfinite(loss_b[mask_b]).all():
+        raise ValueError("Loss arithmetic overflow for B")
+
+    numerator_a = (cell_weights * loss_a).sum(axis=1)
+    numerator_b = (cell_weights * loss_b).sum(axis=1)
+    if not np.isfinite(numerator_a).all() or not np.isfinite(numerator_b).all():
+        raise ValueError("Weighted reduction overflow")
+
+    def score(numerator, indices):
+        value = numerator[indices].sum() / denominator_by_origin[indices].sum()
+        return float(np.sqrt(value) if metric == "rmse" else value)
+
+    all_origins = np.arange(n_origins)
+    score_a = score(numerator_a, all_origins)
+    score_b = score(numerator_b, all_origins)
+    rng = np.random.default_rng(random_seed)
+    differences = np.empty(n_bootstrap, dtype=np.float64)
+    for draw in range(n_bootstrap):
+        indices = stationary_indices(n_origins, mean_block_length, rng)
+        differences[draw] = (
+            score(numerator_b, indices) - score(numerator_a, indices)
+        )
+
+    tail_probability = (1.0 - confidence) / 2.0
+    interval = np.quantile(
+        differences, [tail_probability, 1.0 - tail_probability]
+    )
+    return {
+        "metric": metric,
+        "score_a": score_a,
+        "score_b": score_b,
+        "difference_b_minus_a": score_b - score_a,
+        "approximate_percentile_interval": interval,
+        "confidence": confidence,
+        "mean_block_length_in_origins": float(mean_block_length),
+        "n_origins": n_origins,
+        "eligible_cells": int(mask_a.sum()),
+        "weighted_loss_sum_a_by_origin": numerator_a,
+        "weighted_loss_sum_b_by_origin": numerator_b,
+        "weight_sum_by_origin": denominator_by_origin,
+        "eligible": mask_a.copy(),
+        "cell_loss_a": loss_a,
+        "cell_loss_b": loss_b,
+        "bootstrap_differences": differences,
+        "conditioning": "two fixed checkpoints; one observed trajectory",
+    }
+```
+
+Supply one `ForecastEvaluation` per checkpoint using its own manifest and arrays, then call `paired_checkpoint_comparison(a, b, horizon_weights=weights, mean_block_length=L)` for each prespecified block-length sensitivity. Here L is measured in origin steps, not target-time ticks. Complete windows give the same denominator at every origin; with missing targets, this implementation uses the total weighted eligible-cell denominator. It does not implement equal-series macro averaging or equal-origin averaging under unequal missingness. The circular continuation at the observed endpoint is part of the stationary-bootstrap construction and is another reason to require a plausible stationary loss process.
+
+I have not run this code, evaluated a model, computed an interval, or executed the validity checks. Before relying on it, verify identity/mask mismatch rejection, masked-padding invariance, correct MAE/MSE/RMSE reductions on a hand-checkable fixture, zero difference for identical predictions, and sign reversal when A and B are swapped using identical bootstrap draws. Assess interval behavior on simulated dependent losses and perform the actual dependence and block-length sensitivity analysis. More bootstrap draws reduce simulation noise; they do not add independent test evidence or certify interval coverage.
+
+Training-run variation deserves a separate result. Keep every planned run, its failures, and its complete test score. Two architectures with seed 7 are not automatically paired training runs; pairing requires a documented shared random-factor design, such as shared data-order factors where appropriate. Do not discard extra runs to force equal counts. Averaging separately trained predictors creates an ensemble, whereas averaging their scores summarizes repeated training; these operations answer different questions. A method-level uncertainty analysis must respect the actual run design and the shared evaluation data rather than counting run-by-window cells as independent. Benchmark variability can arise from data sampling, initialization, and hyperparameter choices. [Bouthillier et al., Accounting for Variance in Machine Learning Benchmarks](https://arxiv.org/abs/2103.03098).
+
+For the decision, choose a practically useful margin delta in the primary metric's units. With negative differences favoring B, an interval entirely below minus delta supports a useful B improvement under the interval's stated assumptions. An interval spanning zero leaves the direction unresolved. Failure to detect a difference does not establish equivalence; equivalence needs prespecified bounds, an appropriate procedure, and sufficient precision. Report a preplanned aggregate and horizon tradeoffs rather than selecting whichever horizon looks best after inspection.
+
+A defensible report would read:
+
+> On [protected series/origins], using [horizons, stride, refit policy, metric, weights], A scored [value] and B scored [value]. The observed B-minus-A difference was [value], with an approximate [level] paired [trajectory/block] interval [bounds]. The resampling held both checkpoints fixed and used [independent clusters or temporal assumptions], with [block-length sensitivity]. Training variation and predictive calibration were [separately assessed/not assessed]. The practical margin was [delta]; the supported decision is [choice or inconclusive].
+
+No supplied evidence currently resolves that decision. The next discriminating measurement is a protected, sufficiently long confirmation period spanning relevant temporal regimes, additional independent trajectories when the population is new entities, and common-budget training repetitions when the claim is about the methods. Increasing the number of overlapping windows within the same short period is less informative than adding the repetitions required by the claim.
+
+Keep an evaluation record linked to each training record, plus a record for the comparison. At minimum, retain the following; the values here are deliberately unfilled because no empirical run was supplied:
+
+```yaml
+run_id: <unique-comparison-evaluation-id>
+parent_run_id: <training-or-prior-evaluation-record>
+hypothesis: <population, primary metric, useful-effect margin>
+change: <checkpoint/pipeline contrast being evaluated>
+data:
+  source_and_split_hashes: <immutable identifiers>
+  held_out_manifest: <series, origin, horizon, target timestamp/version>
+  axes: [run, series, origin, horizon, channel]
+  eligibility_and_weights: <policy and artifact hash>
+  information_cutoff_and_preprocessing: <fitting and availability policy>
+  contamination: unresolved; no source data or training provenance supplied
+model:
+  A: <architecture/checkpoint/configuration hash>
+  B: <architecture/checkpoint/configuration hash>
+  evaluation: <mode, dtype, horizon, stride, refit/update policy>
+seed:
+  training_runs: <all run IDs, random factors, failures>
+  pairing: <documented shared factors, or unpaired>
+  resampling: <seed, draw count, scheme, block lengths>
+environment: unknown; no model or statistical execution performed
+artifacts:
+  predictions_targets_ids_masks: <location and hashes>
+  training_checkpoints_and_logs: <location and hashes>
+  analysis_code: <version/hash when executed>
+metrics:
+  primary: <name, units, direction, aggregation, denominator>
+  per_run_and_per_horizon: not measured
+  A_B_and_difference: not measured
+  finite_test_interval_and_sensitivity: not computed
+  predictive_uncertainty: not assessed; model output type unspecified
+  numerical_sensitivity: not assessed
+budget:
+  training_and_tuning: unknown
+  measured_compute_cost_and_latency: unknown
+status: planned
+decision: unresolved; collect protected paired evidence at the stated units
+```
+

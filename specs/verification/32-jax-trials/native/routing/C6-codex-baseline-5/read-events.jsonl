@@ -1,0 +1,2 @@
+{"operation": "start", "label": null, "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-5/prompt.txt", "sha256": "5b75e5be03dcc690e45cab4362b3f1b763340dd7d45542a01adb0c4da68760a4", "bytes": 89690, "utc": "2026-10-04T02:48:34.034190+00:00"}
+{"operation": "readskill", "label": "optimize-jax", "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/baseline-catalog/097/SKILL.md", "sha256": "e177b588bf9cbb73654b16dc594a294a782f098cbb4f3226856e1f42835a4200", "bytes": 9783, "utc": "2026-10-04T02:49:13.123429+00:00"}

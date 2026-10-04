@@ -1,0 +1,516 @@
+The example below trains a **32-unit GRU on variable-length sine sequences using CPU JAX**. It predicts `s[t + 1]` from the observed prefix `s[:t + 1]`, uses a mask to exclude padding, evaluates on independently generated validation sequences, and saves a resumable checkpoint after every completed epoch.
+
+Training and validation use one-step prediction with observed inputs. The `predict_next()` function also predicts one sample beyond an arbitrary observed prefix. Early predictions have an unavoidable limitation: one sine sample does not identify the sequence's phase and frequency. This example reports error over all valid next-sample pairs, including those early predictions.
+
+Install dependencies in a fresh Python environment:
+
+```bash
+python -m pip install -U jax optax numpy
+python -m pip freeze > requirements.lock.txt
+```
+
+JAX documents `pip install -U jax` for CPU installation; the script sets `JAX_PLATFORMS=cpu` before importing JAX. Keep the same environment when resuming. [JAX installation](https://docs.jax.dev/en/latest/installation.html), [JAX configuration](https://docs.jax.dev/en/latest/config_options.html).
+
+Save the following as `sine_gru.py`:
+
+```python
+from __future__ import annotations
+
+import os
+
+# Set the backend before JAX or libraries that import it are imported.
+os.environ["JAX_PLATFORMS"] = "cpu"
+os.environ["JAX_ENABLE_X64"] = "false"
+
+import argparse
+from dataclasses import asdict, dataclass
+import hashlib
+from importlib.metadata import version
+import json
+from pathlib import Path
+import tempfile
+
+import jax
+import jax.numpy as jnp
+import numpy as np
+import optax
+
+
+CHECKPOINT_VERSION = 1
+Batch = tuple[np.ndarray, np.ndarray, np.ndarray]
+
+
+@dataclass(frozen=True)
+class Config:
+    n_train: int = 1024
+    n_valid: int = 256
+    min_length: int = 8
+    max_length: int = 64
+    hidden_size: int = 32
+    batch_size: int = 32
+    learning_rate: float = 1e-3
+    clip_norm: float = 1.0
+    data_seed: int = 123
+    init_seed: int = 456
+    shuffle_seed: int = 789
+
+    def validate(self) -> None:
+        if self.n_train < 1 or self.n_valid < 1:
+            raise ValueError("Both datasets must contain at least one sequence.")
+        if not 2 <= self.min_length <= self.max_length:
+            raise ValueError("Require 2 <= min_length <= max_length.")
+        if self.hidden_size < 1 or self.batch_size < 1:
+            raise ValueError("Hidden size and batch size must be positive.")
+        if not np.isfinite(self.learning_rate) or self.learning_rate <= 0:
+            raise ValueError("Learning rate must be positive and finite.")
+        if not np.isfinite(self.clip_norm) or self.clip_norm <= 0:
+            raise ValueError("Clip norm must be positive and finite.")
+        for seed in (self.data_seed, self.init_seed, self.shuffle_seed):
+            if not 0 <= seed < 2**32 - 1:
+                raise ValueError("Seeds must be between 0 and 2**32 - 2.")
+
+
+def make_dataset(count: int, config: Config, seed: int) -> Batch:
+    """Generate independent complete sequences, then form shifted pairs."""
+    rng = np.random.default_rng(seed)
+    lengths = rng.integers(
+        config.min_length, config.max_length + 1, size=count
+    )
+    values = np.zeros((count, config.max_length), dtype=np.float32)
+    for index, length in enumerate(lengths):
+        amplitude = rng.uniform(0.5, 1.5)
+        phase = rng.uniform(0.0, 2.0 * np.pi)
+        angular_frequency = rng.uniform(0.10, 0.60)  # radians per sample
+        time = np.arange(length, dtype=np.float64)
+        values[index, :length] = amplitude * np.sin(
+            angular_frequency * time + phase
+        )
+    inputs = values[:, :-1, None].copy()  # [N, T, 1]
+    targets = values[:, 1:].copy()        # [N, T]
+    mask = (
+        np.arange(config.max_length - 1)[None, :]
+        < lengths[:, None] - 1
+    )                                    # [N, T], L - 1 valid pairs
+    return inputs, targets, mask
+
+
+def dataset_digest(data: Batch) -> str:
+    digest = hashlib.sha256()
+    for array in data:
+        digest.update(str((array.shape, array.dtype.str)).encode("utf-8"))
+        digest.update(np.ascontiguousarray(array).tobytes())
+    return digest.hexdigest()
+
+
+def batches(data: Batch, batch_size: int, indices: np.ndarray):
+    """Keep every batch shape fixed, including the final partial batch."""
+    for start in range(0, len(indices), batch_size):
+        chosen = indices[start : start + batch_size]
+        padded = []
+        for array in data:
+            batch = np.zeros(
+                (batch_size, *array.shape[1:]), dtype=array.dtype
+            )
+            batch[: len(chosen)] = array[chosen]
+            padded.append(jnp.asarray(batch))
+        # Added rows have an entirely false mask and contribute no loss.
+        yield tuple(padded)
+
+
+def initialize_parameters(hidden_size: int, seed: int):
+    gate_key, candidate_key, output_key = jax.random.split(
+        jax.random.key(seed), 3
+    )
+    glorot = jax.nn.initializers.glorot_uniform()
+    return {
+        "gate_weight": glorot(
+            gate_key, (1 + hidden_size, 2 * hidden_size), jnp.float32
+        ),
+        "gate_bias": jnp.zeros(2 * hidden_size, dtype=jnp.float32),
+        "candidate_weight": glorot(
+            candidate_key, (1 + hidden_size, hidden_size), jnp.float32
+        ),
+        "candidate_bias": jnp.zeros(hidden_size, dtype=jnp.float32),
+        "output_weight": glorot(
+            output_key, (hidden_size, 1), jnp.float32
+        ),
+        "output_bias": jnp.zeros(1, dtype=jnp.float32),
+    }
+
+
+def forward(params, inputs, mask):
+    """Causal batched GRU: [B, T, 1] -> [B, T] next-sample predictions."""
+    batch_size = inputs.shape[0]
+    hidden_size = params["candidate_bias"].shape[0]
+    initial_hidden = jnp.zeros(
+        (batch_size, hidden_size), dtype=inputs.dtype
+    )
+
+    def recurrent_step(hidden, observation):
+        sample, valid = observation
+        joined = jnp.concatenate((sample, hidden), axis=-1)
+        gates = jax.nn.sigmoid(
+            joined @ params["gate_weight"] + params["gate_bias"]
+        )
+        reset, update = jnp.split(gates, 2, axis=-1)
+        candidate_input = jnp.concatenate((sample, reset * hidden), axis=-1)
+        candidate = jnp.tanh(
+            candidate_input @ params["candidate_weight"]
+            + params["candidate_bias"]
+        )
+        proposed_hidden = update * hidden + (1.0 - update) * candidate
+        next_hidden = jnp.where(valid[:, None], proposed_hidden, hidden)
+        prediction = (
+            next_hidden @ params["output_weight"] + params["output_bias"]
+        )[:, 0]
+        return next_hidden, prediction
+
+    _, predictions = jax.lax.scan(
+        recurrent_step,
+        initial_hidden,
+        (jnp.swapaxes(inputs, 0, 1), jnp.swapaxes(mask, 0, 1)),
+    )
+    return jnp.swapaxes(predictions, 0, 1)
+
+
+def error_totals(params, batch):
+    inputs, targets, mask = batch
+    predictions = forward(params, inputs, mask)
+    squared_error = jnp.square(predictions - targets)
+    error_sum = jnp.sum(jnp.where(mask, squared_error, 0.0))
+    token_count = jnp.sum(mask, dtype=jnp.float32)
+    return error_sum, token_count
+
+
+def loss(params, batch):
+    error_sum, token_count = error_totals(params, batch)
+    return error_sum / jnp.maximum(token_count, 1.0)
+
+
+def make_optimizer(config: Config):
+    return optax.chain(
+        optax.clip_by_global_norm(config.clip_norm),
+        optax.adam(config.learning_rate),
+    )
+
+
+def initial_state(config: Config, optimizer):
+    params = initialize_parameters(config.hidden_size, config.init_seed)
+    return {
+        "params": params,
+        "optimizer": optimizer.init(params),
+        "step": jnp.asarray(0, dtype=jnp.int32),
+    }
+
+
+def make_train_step(optimizer):
+    @jax.jit
+    def train_step(state, batch):
+        value, gradients = jax.value_and_grad(loss)(state["params"], batch)
+        updates, optimizer_state = optimizer.update(
+            gradients, state["optimizer"], state["params"]
+        )
+        new_state = {
+            "params": optax.apply_updates(state["params"], updates),
+            "optimizer": optimizer_state,
+            "step": state["step"] + jnp.asarray(1, dtype=jnp.int32),
+        }
+        return new_state, value
+
+    return train_step
+
+
+def train_epoch(state, data: Batch, config: Config, rng, train_step):
+    order = rng.permutation(data[0].shape[0])
+    for batch in batches(data, config.batch_size, order):
+        state, batch_loss = train_step(state, batch)
+        if not np.isfinite(float(batch_loss)):
+            raise FloatingPointError("Nonfinite training loss.")
+    return state
+
+
+@jax.jit
+def evaluate_batch(params, batch):
+    return error_totals(params, batch)
+
+
+def evaluate(params, data: Batch, batch_size: int) -> float:
+    total_error = 0.0
+    total_tokens = 0.0
+    order = np.arange(data[0].shape[0])
+    for batch in batches(data, batch_size, order):
+        error_sum, token_count = evaluate_batch(params, batch)
+        total_error += float(error_sum)
+        total_tokens += float(token_count)
+    # Aggregate token totals, rather than averaging differently sized batches.
+    mse = total_error / total_tokens
+    if not np.isfinite(mse):
+        raise FloatingPointError("Nonfinite evaluation metric.")
+    return mse
+
+
+def persistence_mse(data: Batch) -> float:
+    inputs, targets, mask = data
+    squared_error = np.square(inputs[..., 0] - targets)
+    return float(np.sum(np.where(mask, squared_error, 0.0)) / np.sum(mask))
+
+
+def environment_versions() -> dict[str, str]:
+    return {
+        package: version(package)
+        for package in ("jax", "jaxlib", "numpy", "optax")
+    }
+
+
+def write_checkpoint(
+    path: Path,
+    state,
+    config: Config,
+    completed_epoch: int,
+    rng,
+    data_digests: dict[str, str],
+) -> None:
+    """Save arrays + JSON; atomically replace the previous checkpoint."""
+    leaves, _ = jax.tree_util.tree_flatten(state)
+    metadata = {
+        "format_version": CHECKPOINT_VERSION,
+        "config": asdict(config),
+        "completed_epoch": completed_epoch,
+        "shuffle_rng_state": rng.bit_generator.state,
+        "data_digests": data_digests,
+        "versions": environment_versions(),
+        "leaf_count": len(leaves),
+    }
+    arrays = {
+        f"leaf_{index:04d}": np.asarray(jax.device_get(leaf))
+        for index, leaf in enumerate(leaves)
+    }
+    arrays["metadata"] = np.asarray(json.dumps(metadata, sort_keys=True))
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary_path = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="wb", dir=path.parent, suffix=".npz", delete=False
+        ) as stream:
+            temporary_path = Path(stream.name)
+            np.savez_compressed(stream, **arrays)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary_path, path)
+    finally:
+        if temporary_path is not None and temporary_path.exists():
+            temporary_path.unlink()
+
+
+def read_checkpoint(path: Path):
+    with np.load(path, allow_pickle=False) as archive:
+        metadata = json.loads(str(archive["metadata"].item()))
+        if metadata["format_version"] != CHECKPOINT_VERSION:
+            raise ValueError("Unsupported checkpoint format.")
+        if metadata["versions"] != environment_versions():
+            raise ValueError(
+                "Checkpoint package versions differ. Restore the original "
+                f"environment: {metadata['versions']}"
+            )
+        expected_names = {"metadata"} | {
+            f"leaf_{index:04d}" for index in range(metadata["leaf_count"])
+        }
+        if set(archive.files) != expected_names:
+            raise ValueError("Checkpoint array manifest is inconsistent.")
+        leaves = [
+            archive[f"leaf_{index:04d}"].copy()
+            for index in range(metadata["leaf_count"])
+        ]
+    return metadata, leaves
+
+
+def restore_state(template, saved_leaves):
+    template_leaves, structure = jax.tree_util.tree_flatten(template)
+    if len(template_leaves) != len(saved_leaves):
+        raise ValueError("Checkpoint state structure differs.")
+    restored_leaves = []
+    for expected, saved in zip(template_leaves, saved_leaves, strict=True):
+        if expected.shape != saved.shape or expected.dtype != saved.dtype:
+            raise ValueError("Checkpoint state shape or dtype differs.")
+        if not np.all(np.isfinite(saved)):
+            raise ValueError("Checkpoint contains nonfinite state.")
+        restored_leaves.append(jnp.asarray(saved))
+    return jax.tree_util.tree_unflatten(structure, restored_leaves)
+
+
+def predict_next(params, observed_prefix) -> float:
+    prefix = np.asarray(observed_prefix, dtype=np.float32)
+    if prefix.ndim != 1 or prefix.size == 0 or not np.all(np.isfinite(prefix)):
+        raise ValueError("Supply a nonempty, finite, one-dimensional prefix.")
+    inputs = jnp.asarray(prefix[None, :, None])
+    # Consume every observed sample, including the last one.
+    mask = jnp.ones((1, prefix.size), dtype=jnp.bool_)
+    return float(forward(params, inputs, mask)[0, -1])
+
+
+def check_state_equal(left, right) -> None:
+    left_leaves, left_structure = jax.tree_util.tree_flatten(left)
+    right_leaves, right_structure = jax.tree_util.tree_flatten(right)
+    assert left_structure == right_structure
+    for first, second in zip(left_leaves, right_leaves, strict=True):
+        np.testing.assert_allclose(
+            np.asarray(first), np.asarray(second), rtol=1e-6, atol=1e-7
+        )
+
+
+def run_self_tests() -> None:
+    """Optional checks; these are not invoked during ordinary training."""
+    config = Config(
+        n_train=5, n_valid=3, min_length=2, max_length=8,
+        hidden_size=8, batch_size=4,
+    )
+    config.validate()
+    data = make_dataset(config.n_train, config, config.data_seed)
+    optimizer = make_optimizer(config)
+    state = initial_state(config, optimizer)
+    train_step = make_train_step(optimizer)
+    rng = np.random.default_rng(config.shuffle_seed)
+
+    all_batches = list(batches(data, config.batch_size, np.arange(5)))
+    assert len(all_batches) == 2
+    assert all_batches[-1][0].shape == (4, 7, 1)
+    assert not np.any(np.asarray(all_batches[-1][2])[1:])
+    batch = all_batches[-1]
+    predictions = forward(state["params"], batch[0], batch[2])
+    assert predictions.shape == batch[1].shape
+    mask = np.asarray(batch[2])
+    expected = np.square(np.asarray(predictions) - np.asarray(batch[1]))[mask].mean()
+    np.testing.assert_allclose(float(loss(state["params"], batch)), expected)
+
+    # Finite changes to padded inputs/targets must leave loss and gradients alone.
+    changed = (
+        jnp.where(batch[2][..., None], batch[0], 1000.0),
+        jnp.where(batch[2], batch[1], -1000.0),
+        batch[2],
+    )
+    original_loss, original_grad = jax.value_and_grad(loss)(state["params"], batch)
+    changed_loss, changed_grad = jax.value_and_grad(loss)(state["params"], changed)
+    np.testing.assert_allclose(float(original_loss), float(changed_loss))
+    check_state_equal(original_grad, changed_grad)
+
+    # Save at an epoch boundary, then compare the next epoch with a direct run.
+    state = train_epoch(state, data, config, rng, train_step)
+    digests = {"train": dataset_digest(data)}
+    with tempfile.TemporaryDirectory() as directory:
+        path = Path(directory) / "checkpoint.npz"
+        write_checkpoint(path, state, config, 1, rng, digests)
+        metadata, leaves = read_checkpoint(path)
+        assert metadata["completed_epoch"] == 1
+        assert metadata["data_digests"] == digests
+        restored = restore_state(initial_state(config, optimizer), leaves)
+        check_state_equal(state, restored)
+        restored_rng = np.random.default_rng()
+        restored_rng.bit_generator.state = metadata["shuffle_rng_state"]
+        direct = train_epoch(state, data, config, rng, train_step)
+        resumed = train_epoch(restored, data, config, restored_rng, train_step)
+        check_state_equal(direct, resumed)
+        assert int(resumed["step"]) == 4
+    assert np.isfinite(predict_next(state["params"], [0.0, 0.2, 0.4]))
+    print("Self-tests passed: partial batches, masking, resume replay, inference.")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="CPU JAX sine-sequence model")
+    parser.add_argument("--epochs", type=int, default=30, help="Total target epochs")
+    parser.add_argument("--checkpoint", type=Path, default=Path("sine_checkpoint.npz"))
+    parser.add_argument("--resume", action="store_true")
+    parser.add_argument("--self-test", action="store_true")
+    args = parser.parse_args()
+    if args.self_test:
+        run_self_tests()
+        return
+    if args.epochs < 1:
+        parser.error("--epochs must be positive")
+    if not args.resume and args.checkpoint.exists():
+        parser.error("Checkpoint exists; use --resume or choose another path.")
+
+    metadata = None
+    leaves = None
+    if args.resume:
+        metadata, leaves = read_checkpoint(args.checkpoint)
+        config = Config(**metadata["config"])
+    else:
+        config = Config()
+    config.validate()
+
+    train_data = make_dataset(config.n_train, config, config.data_seed)
+    valid_data = make_dataset(config.n_valid, config, config.data_seed + 1)
+    digests = {
+        "train": dataset_digest(train_data),
+        "valid": dataset_digest(valid_data),
+    }
+    optimizer = make_optimizer(config)
+    state = initial_state(config, optimizer)
+    rng = np.random.default_rng(config.shuffle_seed)
+    completed_epoch = 0
+    if metadata is not None:
+        if metadata["data_digests"] != digests:
+            raise ValueError("Regenerated data differs from the checkpoint.")
+        state = restore_state(state, leaves)
+        rng.bit_generator.state = metadata["shuffle_rng_state"]
+        completed_epoch = int(metadata["completed_epoch"])
+        batches_per_epoch = (
+            config.n_train + config.batch_size - 1
+        ) // config.batch_size
+        if completed_epoch < 0 or int(state["step"]) != completed_epoch * batches_per_epoch:
+            raise ValueError("Checkpoint epoch and update count are inconsistent.")
+        if args.epochs < completed_epoch:
+            parser.error("--epochs cannot be below the completed epoch count")
+    else:
+        write_checkpoint(args.checkpoint, state, config, 0, rng, digests)
+
+    print(f"Devices: {jax.devices()}")
+    print(f"Start epoch: {completed_epoch}; step: {int(state['step'])}")
+    baseline = persistence_mse(valid_data)
+    initial_valid = evaluate(state["params"], valid_data, config.batch_size)
+    print(f"Validation MSE: {initial_valid:.6f}; persistence MSE: {baseline:.6f}")
+    train_step = make_train_step(optimizer)
+    for epoch in range(completed_epoch + 1, args.epochs + 1):
+        state = train_epoch(state, train_data, config, rng, train_step)
+        train_mse = evaluate(state["params"], train_data, config.batch_size)
+        valid_mse = evaluate(state["params"], valid_data, config.batch_size)
+        write_checkpoint(args.checkpoint, state, config, epoch, rng, digests)
+        print(
+            f"epoch={epoch:03d} step={int(state['step']):05d} "
+            f"train_mse={train_mse:.6f} valid_mse={valid_mse:.6f} "
+            f"valid_rmse={np.sqrt(valid_mse):.6f}",
+            flush=True,
+        )
+
+    demo = np.sin(0.3 * np.arange(20) + 0.2).astype(np.float32)
+    next_value = predict_next(state["params"], demo[:-1])
+    print(f"Demo next sample: predicted={next_value:.5f}, true={demo[-1]:.5f}")
+    print(f"Checkpoint: {args.checkpoint.resolve()}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+Run training, then resume to a larger **total** epoch count:
+
+```bash
+python sine_gru.py --epochs 10 --checkpoint sine_checkpoint.npz
+python sine_gru.py --resume --epochs 30 --checkpoint sine_checkpoint.npz
+```
+
+The second command starts at epoch 11. If a run is interrupted during an epoch, its saved checkpoint still contains the preceding completed epoch; that interrupted epoch is replayed on resume. The initial state is also saved before epoch 1. Writing uses a temporary file in the checkpoint directory followed by an atomic replacement, so interruption during a write retains the previous checkpoint on filesystems supporting atomic rename.
+
+The checkpoint contains the parameter and optimizer array leaves, including Adam's moments and counter, the explicit update count, completed epoch, configuration, data hashes, package versions, and NumPy shuffle RNG state. Arrays load with `allow_pickle=False`; the known state structure is reconstructed from the same model and optimizer configuration. Validation generation has its own seed, and validation does not change model state or training randomness. There is no dropout or other stochastic operation during training, so no ongoing JAX PRNG key is needed after initialization. Resume restores the training process from the saved epoch boundary; identical floating-point results across different hardware or library versions are not promised.
+
+`forward()` uses `lax.scan` for the time axis, while differentiation and updates use `jax.value_and_grad`, `jax.jit`, and Optax's explicit optimizer state. Fixed sequence padding and fixed batch sizes keep training shapes stable. Hidden state resets for every batch and is held unchanged at padded positions. [JAX scan](https://docs.jax.dev/en/latest/_autosummary/jax.lax.scan.html), [JAX automatic differentiation](https://docs.jax.dev/en/latest/_autosummary/jax.value_and_grad.html), [Optax usage](https://optax.readthedocs.io/en/latest/getting_started.html).
+
+The printed training and validation MSEs both use the model at the end of the epoch. Each metric sums squared errors and divides by the total number of valid targets, so longer sequences contribute more observations. The persistence baseline predicts the next sample by repeating the current sample; compare the model's validation MSE against it to assess whether training is useful. No expected metric or runtime is asserted here.
+
+Optional local verification:
+
+```bash
+python sine_gru.py --self-test
+```
+
+Those checks cover the final partial batch, masked loss and gradient invariance, checkpoint round-trip, resumed next-epoch updates, and next-sample inference. **I did not execute the delivered model, training, validation, or self-tests in this session.** A static Python AST syntax parse passed. The code was prepared from the current official documentation; convergence and numerical results remain to be verified by running it.

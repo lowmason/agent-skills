@@ -1,0 +1,8 @@
+Primary skill: optimize-jax.
+Supporting skill: systematic-debugging.
+The task is unexpected recompilation in a non-learning JAX calculation, an explicit optimize-jax trigger.
+Its full body covers numerical programs, stable callable identity, signature replay, and target compile/cache diagnostics.
+It distinguishes dynamic scalar changes from static values, shapes, dtypes, weak types, PyTrees, and sharding without presuming the cause.
+Systematic-debugging adds reproducible evidence, root-cause isolation, and a single tested hypothesis before any fix.
+Deep-learning, evaluate-deep-learning, and bayesian-workflow are outside this task: no learned model, checkpoint evaluation, or posterior inference is stated.
+This is selection only. No implementation, test execution, profiling, reference reading, workflow execution, or fix claim was performed.

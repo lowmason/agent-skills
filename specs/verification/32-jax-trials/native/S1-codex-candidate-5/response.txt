@@ -1,0 +1,485 @@
+A timer that stops immediately after a jitted call can measure submission while device work is still running. It can also omit input preparation, transfers, and output consumption. Your length-dependent latency has at least two plausible causes: new shapes may specialize and compile, and larger inputs may take longer even after compilation. The symptom alone does not distinguish them. [JAX benchmarking](https://docs.jax.dev/en/latest/benchmarking.html)
+
+I have not run your inference loop or the code below. All timings, compilation counts, correctness results, and speed improvements are pending. This is a complete diagnostic fixture plus instructions for applying the same measurements to your loop.
+
+Use two explicit boundaries:
+
+| Measurement | Start | Finish |
+|---|---|---|
+| Resident, serialized call latency | Parameters and inputs are already ready on the device | Every array in the returned tree is ready |
+| Complete request latency | Raw host input is available | Outputs have been fetched and consumed on the host |
+
+For a dictionary, tuple, or nested result, use `jax.block_until_ready(output)` on the entire tree. Waiting on just one leaf can leave other work outstanding. The top-level API supports PyTrees. [jax.block_until_ready](https://docs.jax.dev/en/latest/_autosummary/jax.block_until_ready.html)
+
+The fixture below uses one sequence at a time, float32 parameters/input/output, a dynamic float32 scalar, a stable callable, and a deterministic pointwise projection with both token and pooled outputs. It replays lengths 7,7,13,13,7 before warming them. A separate replay changes only a scalar value at fixed shape. The independent NumPy reference checks full outputs; the checksum serves only to consume the request result.
+
+Save the code as `jax_latency_probe.py` and use the JAX environment already installed for your application.
+
+```python
+import argparse
+import json
+import platform
+import sys
+from time import perf_counter
+
+import jax
+import jax.numpy as jnp
+import jaxlib
+import numpy as np
+
+RTOL = 2e-5
+ATOL = 2e-5
+WARMUPS = 3
+PARAMETER_SEED = 123
+
+
+def probe_forward(params, inputs, scale):
+    projected = jnp.matmul(
+        inputs, params["weight"], precision=jax.lax.Precision.HIGHEST
+    )
+    token = jnp.tanh(scale * projected + params["bias"])
+    return {"token": token, "pooled": jnp.mean(token, axis=0)}
+
+
+def numpy_reference(host_params, inputs, scale):
+    projected = inputs @ host_params["weight"]
+    token = np.tanh(np.float32(scale) * projected + host_params["bias"])
+    return {"token": token, "pooled": np.mean(token, axis=0, dtype=np.float32)}
+
+
+def make_input(length, width):
+    return np.linspace(
+        -1.0, 1.0, length * width, dtype=np.float32
+    ).reshape(length, width)
+
+
+def describe_signature(function, params, inputs, scale):
+    arguments = (params, inputs, scale)
+    leaves, structure = jax.tree_util.tree_flatten(arguments)
+    return {
+        "target": "probe_forward",
+        "python_function_id": id(probe_forward),
+        "jitted_callable_id": id(function),
+        "pytree": str(structure),
+        "static_arguments": [],
+        "leaves": [
+            {
+                "shape": list(leaf.shape),
+                "dtype": str(leaf.dtype),
+                "weak_type": bool(getattr(leaf, "weak_type", False)),
+                "sharding": str(leaf.sharding),
+            }
+            for leaf in leaves
+        ],
+    }
+
+
+def completed_call(function, params, inputs, scale):
+    # Input/parameter work is excluded from this resident timer.
+    jax.block_until_ready((params, inputs, scale))
+    start = perf_counter()
+    output = function(params, inputs, scale)
+    submitted = perf_counter()
+    jax.block_until_ready(output)
+    completed = perf_counter()
+    return output, {
+        "submit_ms": 1000 * (submitted - start),
+        "remaining_wait_ms": 1000 * (completed - submitted),
+        "completed_call_ms": 1000 * (completed - start),
+    }
+
+
+def natural_request(function, params, raw, scale_value, device):
+    # No intermediate barriers: retain normal placement/compute/fetch overlap.
+    start = perf_counter()
+    inputs = np.asarray(raw, dtype=np.float32)
+    scalar = np.asarray(scale_value, dtype=np.float32)
+    inputs, scale = jax.device_put((inputs, scalar), device)
+    output = function(params, inputs, scale)
+    host_output = jax.device_get(output)
+    checksum = float(np.sum(host_output["pooled"], dtype=np.float64))
+    finish = perf_counter()
+    return host_output, {
+        "request_ms": 1000 * (finish - start),
+        "checksum": checksum,
+    }
+
+
+def fenced_request(function, params, raw, scale_value, device):
+    # These fences are for attribution; they change the natural overlap.
+    jax.block_until_ready(params)
+    start = perf_counter()
+    inputs = np.asarray(raw, dtype=np.float32)
+    scalar = np.asarray(scale_value, dtype=np.float32)
+    after_preprocess = perf_counter()
+    inputs, scale = jax.device_put((inputs, scalar), device)
+    jax.block_until_ready((inputs, scale))
+    after_placement = perf_counter()
+    output = function(params, inputs, scale)
+    jax.block_until_ready(output)
+    after_model = perf_counter()
+    host_output = jax.device_get(output)
+    float(np.sum(host_output["pooled"], dtype=np.float64))
+    after_consume = perf_counter()
+    return host_output, {
+        "preprocess_ms": 1000 * (after_preprocess - start),
+        "placement_ms": 1000 * (after_placement - after_preprocess),
+        "model_ms": 1000 * (after_model - after_placement),
+        "fetch_consume_ms": 1000 * (after_consume - after_model),
+        "fenced_total_ms": 1000 * (after_consume - start),
+    }
+
+
+def assert_reference(output, host_params, host_input, scale_value):
+    actual = jax.device_get(output)
+    expected = numpy_reference(host_params, host_input, scale_value)
+    assert actual.keys() == expected.keys()
+    max_error = 0.0
+    for name, reference in expected.items():
+        result = np.asarray(actual[name])
+        assert result.shape == reference.shape, (name, result.shape, reference.shape)
+        assert result.dtype == np.dtype("float32"), (name, result.dtype)
+        assert np.isfinite(result).all(), name
+        np.testing.assert_allclose(result, reference, rtol=RTOL, atol=ATOL)
+        max_error = max(
+            max_error, float(np.max(np.abs(result - reference)))
+        )
+    return max_error
+
+
+def distribution(samples):
+    samples = np.asarray(samples, dtype=np.float64)
+    return {
+        "n": int(samples.size),
+        "median_ms": float(np.median(samples)),
+        "p95_ms": float(np.percentile(samples, 95)),
+        "min_ms": float(np.min(samples)),
+        "max_ms": float(np.max(samples)),
+        "samples_ms": samples.tolist(),
+    }
+
+
+def summarize_rows(rows):
+    return {
+        key: distribution([row[key] for row in rows])
+        for key in rows[0]
+        if key != "checksum"
+    }
+
+
+def environment(args, device):
+    return {
+        "python": platform.python_version(),
+        "platform": platform.platform(),
+        "jax": jax.__version__,
+        "jaxlib": jaxlib.__version__,
+        "numpy": np.__version__,
+        "framework": "plain functional JAX; no Flax/NNX",
+        "backend": jax.default_backend(),
+        "devices": [
+            {"name": str(d), "kind": d.device_kind, "process_index": d.process_index}
+            for d in jax.devices()
+        ],
+        "global_device_count": jax.device_count(),
+        "local_device_count": jax.local_device_count(),
+        "selected_device": str(device),
+        "process_count": jax.process_count(),
+        "process_index": jax.process_index(),
+        "mesh": None,
+        "storage_dtype": "float32",
+        "compute_dtype": "float32",
+        "reduction_dtype": "float32",
+        "matmul_precision_in_fixture": "HIGHEST",
+        "configured_default_matmul_precision": str(
+            jax.config.jax_default_matmul_precision
+        ),
+        "x64": bool(jax.config.jax_enable_x64),
+        "persistent_compilation_cache": "disabled",
+        "parameter_seed": PARAMETER_SEED,
+        "randomness_in_forward": None,
+        "batch": "one sequence; input shape (length, width)",
+        "padding": "none; lengths must be positive",
+        "state": "parameter dictionary only; no mutations/cache",
+        "concurrency": "one serialized caller",
+        "configuration": vars(args),
+        "excluded_from_all_timers": [
+            "imports", "backend/device initialization", "parameter initialization",
+            "parameter placement", "construction of the raw request fixtures",
+            "correctness assertions", "network/service queueing",
+        ],
+    }
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--mode",
+        choices=("measure", "request-first", "logs", "aot", "profile"),
+        default="measure",
+    )
+    parser.add_argument("--lengths", default="7,7,13,13,7")
+    parser.add_argument("--width", type=int, default=16)
+    parser.add_argument("--output-width", type=int, default=8)
+    parser.add_argument("--repeats", type=int, default=30)
+    parser.add_argument("--trace-dir", default="/tmp/jax-latency-profile")
+    args = parser.parse_args()
+    lengths = [int(value) for value in args.lengths.split(",")]
+    if (
+        not lengths or min(lengths) < 1 or args.width < 1
+        or args.output_width < 1 or args.repeats < 1
+    ):
+        parser.error("lengths, widths, and repeats must be positive")
+
+    # Set these before any target call. Run each mode in a fresh process.
+    jax.config.update("jax_enable_compilation_cache", False)
+    diagnostics = args.mode == "logs"
+    jax.config.update("jax_log_compiles", diagnostics)
+    jax.config.update("jax_explain_cache_misses", diagnostics)
+
+    if jax.process_count() != 1:
+        raise RuntimeError("This fixture requires one process.")
+    device = jax.local_devices()[0]
+    rng = np.random.default_rng(PARAMETER_SEED)
+    host_params = {
+        "weight": (
+            0.1 * rng.normal(size=(args.width, args.output_width))
+        ).astype(np.float32),
+        "bias": np.linspace(
+            -0.1, 0.1, args.output_width, dtype=np.float32
+        ),
+    }
+    params = jax.device_put(host_params, device)
+    jax.block_until_ready(params)
+    host_inputs = {n: make_input(n, args.width) for n in dict.fromkeys(lengths)}
+    raw_requests = {n: value.tolist() for n, value in host_inputs.items()}
+
+    function = jax.jit(probe_forward)  # One callable for the entire process.
+    report = {"environment": environment(args, device)}
+    errors = []
+
+    def prepared(n, value=1.0):
+        arrays = jax.device_put(
+            (host_inputs[n], np.asarray(value, dtype=np.float32)), device
+        )
+        jax.block_until_ready(arrays)
+        return arrays
+
+    def verify(output, n, value=1.0):
+        errors.append(
+            assert_reference(output, host_params, host_inputs[n], value)
+        )
+
+    if args.mode in ("measure", "logs"):
+        visits = []
+        for index, n in enumerate(lengths):
+            inputs, scale = prepared(n)
+            signature = describe_signature(function, params, inputs, scale)
+            if diagnostics:
+                print(
+                    "TARGET_VISIT " + json.dumps(
+                        {"visit": index, "length": n, "signature": signature}
+                    ),
+                    file=sys.stderr, flush=True,
+                )
+            output, timing = completed_call(function, params, inputs, scale)
+            visits.append({"visit": index, "length": n, "signature": signature, **timing})
+            verify(output, n)
+        report["resident_visits_before_extra_warmup"] = visits
+
+        scalar_visits = []
+        n = lengths[0]
+        for value in (1.0, 0.5, 0.0, 1.0):
+            inputs, scale = prepared(n, value)
+            signature = describe_signature(function, params, inputs, scale)
+            if diagnostics:
+                print(
+                    "TARGET_SCALAR_VISIT " + json.dumps(
+                        {"length": n, "scalar_value": value, "signature": signature}
+                    ),
+                    file=sys.stderr, flush=True,
+                )
+            output, timing = completed_call(function, params, inputs, scale)
+            scalar_visits.append({"value": value, "signature": signature, **timing})
+            verify(output, n, value)
+        report["fixed_shape_dynamic_scalar_visits"] = scalar_visits
+
+        if diagnostics:
+            report["timing_status"] = "diagnostic logging enabled; not performance data"
+        else:
+            warm = {}
+            for n in host_inputs:
+                inputs, scale = prepared(n)
+                for _ in range(WARMUPS):
+                    output, _ = completed_call(function, params, inputs, scale)
+                verify(output, n)
+                resident_rows, request_rows, fenced_rows = [], [], []
+                for _ in range(args.repeats):
+                    output, timing = completed_call(function, params, inputs, scale)
+                    resident_rows.append(timing)
+                    verify(output, n)
+                for _ in range(args.repeats):
+                    output, timing = natural_request(
+                        function, params, raw_requests[n], 1.0, device
+                    )
+                    request_rows.append(timing)
+                    verify(output, n)
+                for _ in range(args.repeats):
+                    output, timing = fenced_request(
+                        function, params, raw_requests[n], 1.0, device
+                    )
+                    fenced_rows.append(timing)
+                    verify(output, n)
+                warm[str(n)] = {
+                    "resident": summarize_rows(resident_rows),
+                    "natural_request": summarize_rows(request_rows),
+                    "fenced_stages": summarize_rows(fenced_rows),
+                }
+            report["warm_distributions_by_length"] = warm
+
+    elif args.mode == "request-first":
+        visits = []
+        for index, n in enumerate(lengths):
+            output, timing = natural_request(
+                function, params, raw_requests[n], 1.0, device
+            )
+            visits.append({"visit": index, "length": n, **timing})
+            verify(output, n)
+        report["natural_request_visits_without_target_warmup"] = visits
+
+    elif args.mode == "aot":
+        stages = []
+        for n in host_inputs:
+            inputs, scale = prepared(n)
+            signature = describe_signature(function, params, inputs, scale)
+            start = perf_counter()
+            traced = function.trace(params, inputs, scale)
+            trace_ms = 1000 * (perf_counter() - start)
+            start = perf_counter()
+            lowered = traced.lower()
+            lower_ms = 1000 * (perf_counter() - start)
+            start = perf_counter()
+            compiled = lowered.compile()
+            compile_or_load_ms = 1000 * (perf_counter() - start)
+            output, first_execution = completed_call(compiled, params, inputs, scale)
+            verify(output, n)
+            for _ in range(WARMUPS):
+                output, _ = completed_call(compiled, params, inputs, scale)
+            verify(output, n)
+            rows = []
+            for _ in range(args.repeats):
+                output, timing = completed_call(compiled, params, inputs, scale)
+                rows.append(timing)
+                verify(output, n)
+            stages.append({
+                "length": n, "signature": signature,
+                "trace_ms": trace_ms, "lower_ms": lower_ms,
+                "compile_or_load_ms": compile_or_load_ms,
+                "first_compiled_execution": first_execution,
+                "warm_compiled_execution": summarize_rows(rows),
+            })
+        report["aot_stages"] = stages
+
+    elif args.mode == "profile":
+        # Warm every captured signature outside the profile.
+        for n in host_inputs:
+            for _ in range(WARMUPS):
+                output, _ = natural_request(
+                    function, params, raw_requests[n], 1.0, device
+                )
+            verify(output, n)
+        with jax.profiler.trace(args.trace_dir):
+            for index in range(args.repeats):
+                n = lengths[index % len(lengths)]
+                with jax.profiler.TraceAnnotation("complete_request", length=n):
+                    with jax.profiler.TraceAnnotation("preprocess"):
+                        host_input = np.asarray(raw_requests[n], dtype=np.float32)
+                        host_scale = np.asarray(1.0, dtype=np.float32)
+                    with jax.profiler.TraceAnnotation("placement_submission"):
+                        inputs, scale = jax.device_put((host_input, host_scale), device)
+                    with jax.profiler.TraceAnnotation("model_submission"):
+                        output = function(params, inputs, scale)
+                    with jax.profiler.TraceAnnotation("fetch_and_consume"):
+                        fetched = jax.device_get(output)
+                        float(np.sum(fetched["pooled"], dtype=np.float64))
+                    # Fetch already completed the entire tree; this explicitly
+                    # guarantees the final device barrier stays inside capture.
+                    jax.block_until_ready(output)
+        verify(fetched, n)
+        report["profile"] = {
+            "directory": args.trace_dir,
+            "completed_requests": args.repeats,
+            "timing_status": "profile overhead; use measure mode for comparisons",
+        }
+
+    report["correctness"] = {
+        "reference": "independent unpadded float32 NumPy projection/tanh/mean",
+        "rtol": RTOL, "atol": ATOL,
+        "checks": len(errors),
+        "max_absolute_error": max(errors),
+        "status": "all delivered assertions passed in this invocation",
+    }
+    report["memory"] = {"peak_live_memory": "not measured"}
+    print(json.dumps(report, indent=2, sort_keys=True))
+
+
+if __name__ == "__main__":
+    main()
+```
+
+Run each mode as a separate invocation so the target has no earlier in-process warmup. Do not use the log or profile run's timings for performance comparisons.
+
+```bash
+python jax_latency_probe.py --mode measure > timing.json
+python jax_latency_probe.py --mode request-first > first-requests.json
+python jax_latency_probe.py --mode logs > log-run.json 2> compile.log
+python jax_latency_probe.py --mode aot > aot.json
+python jax_latency_probe.py --mode profile --trace-dir /tmp/jax-latency-profile
+```
+
+The default fixture is small enough that Python/timer overhead can dominate. Increase dimensions to match your workload, and replace `probe_forward`, parameter initialization, and the reference with your actual operation. Retain its parameter/state PyTree, dtypes, static configuration, input sequence, random keys, and output consumption. For a real service, replace the host-list conversion with its tokenizer/preprocessor and checksum with its actual sampling/serialization/consumer. Include those stages inside the request boundary. Add separate startup and queueing measurements if your observed end-to-end latency includes them. This fixture excludes them.
+
+Keep the application's existing transform conventions. If the model uses Flax NNX, instrument its graph-aware transform rather than putting a mutable NNX object through this plain functional fixture. This script has no KV cache or autoregressive loop; it does not establish generation/cache correctness.
+
+Interpret the evidence this way:
+
+| Evidence | What it supports | One next experiment |
+|---|---|---|
+| Tiny `submit_ms`, much larger `completed_call_ms` | The original timer omitted unfinished work | Correct the timing boundary; this improves measurement, with no speedup claim |
+| A and B each have a slow first visit, revisits are fast, and target compile messages show their different signatures | Shape specialization contributes to first-encounter latency | Test a finite set of workload-derived length buckets |
+| Warm B stays slower than warm A, with no new target compilation | Length-dependent steady-state work remains | Inspect kernels, arithmetic, and padding/work performed at those lengths |
+| Large fenced placement or fetch/consume time, and copies in the profile | Data movement/output handling contributes | Keep the required state resident or reduce unnecessary host consumption |
+| Repeated compilation at the same apparent length | Length alone is insufficient to explain specialization | Compare all leaves, weak types, static settings, callable identities, state structure, and sharding |
+| Device idle gaps aligned with host activity | Host dispatch/preprocessing is a candidate cost | Test batching or an outer transform appropriate to the operation |
+
+Look for compilation messages associated with `probe_forward` between the `TARGET_VISIT` markers. Do not count unrelated placement or primitive messages as model compilations. A trace counter or Python print would identify tracing, with weaker evidence about backend compilation. The scalar replay uses the same rank/dtype/weak type throughout; changing its numerical value ordinarily reuses the specialization. Static scalar values, mixed incoming types, or recreated callables require different investigation. Making every argument static can increase compilations. [JAX JIT and caching](https://docs.jax.dev/en/latest/jit-compilation.html), [cache diagnostics](https://docs.jax.dev/en/latest/501/compilation-cache.html)
+
+The first-encounter call includes tracing, lowering, compilation or reuse, dispatch, and execution. Label it as first encounter, not compilation alone. The separate AOT run times `trace`, `lower`, and `compile`; its compile interval can include compiler bookkeeping/reuse, hence `compile_or_load_ms`. Persistent caching is disabled for this controlled fixture, but an actual application using a persistent cache needs a separate recorded cache-hit/cache-miss experiment. An AOT executable accepts only its specialized signature. [JAX AOT stages](https://docs.jax.dev/en/latest/aot.html)
+
+`submit_ms` and `remaining_wait_ms` are host intervals. Execution can overlap submission, and queueing can affect the wait. Neither interval, nor a subtraction involving them, independently measures kernel time. The fenced stage totals alter overlap, so compare the natural request directly as well. CPU placement and fetching may share memory and do not predict accelerator transfer costs.
+
+Inspect the warmed trace for host gaps, copies, and device kernels; the completion is inside the capture. The submission annotations label host calls, so a kernel may extend beyond its submission annotation. Profiling availability and accelerator tracing support depend on the installed backend/tooling. [JAX profiling](https://docs.jax.dev/en/latest/profiling.html)
+
+For accidental movement in the real loop, use a separate diagnostic run:
+
+```python
+with jax.transfer_guard("log"):
+    result = run_one_real_request()
+    jax.block_until_ready(result)
+```
+
+This logs implicit transfers and permits explicit `device_put`/`device_get`; use `"log_explicit"` when auditing all transfers. Printing an array, converting it to NumPy, and reading a device scalar can introduce host synchronization. CPU fetches have different guard behavior, so absence of a CPU warning does not establish accelerator behavior. [JAX transfer guard](https://docs.jax.dev/en/latest/transfer_guard.html)
+
+If the logs establish a shape-specialization cause, introduce buckets only as a single controlled change. Choose buckets from the observed length distribution. Preserve valid positions, attention/padding masks, and reduction denominators; compare every valid output against the original unpadded computation across interior lengths and bucket boundaries. Padding increases work, and quadratic attention can make a larger bucket expensive. Re-run the same request sequence and distributions, including first encounters and warmed requests, before deciding whether bucketing helped. Retain the fixture's precision during the comparison; its HIGHEST float32 matmul is an explicit fixture contract, not a recommendation to change your application's precision.
+
+The evidence record for this delivery is:
+
+| Field | Current status |
+|---|---|
+| Reproduction | Complete fixture delivered; 7,7,13,13,7 replay, fixed-shape scalar replay, float32 input/parameter/output tree, stable callable, two explicit boundaries |
+| Runtime/configuration | Script records exact Python/JAX/jaxlib/NumPy versions, backend/devices, process count, placement, precision, cache policy, static arguments, and state structure; actual values pending execution |
+| Diagnosis | Asynchronous undermeasurement and specialization are hypotheses; logs, first/warm distributions, fenced stages, AOT measurements, and profile capture delivered |
+| Change | Timing instrumentation delivered; no workload optimization applied without causal evidence |
+| Correctness | Full-tree NumPy assertions with finite/shape/dtype checks and rtol/atol 2e-5 delivered; actual maximum error and pass status pending execution |
+| Effect and limits | No measured before/after speedup, kernel attribution, peak-memory result, accelerator validation, or real-model/checkpoint parity yet |
+
+Compare one cause-supported change at a time with the same hardware, precision, inputs, repeats, and boundaries. Report median/p95 plus the individual samples, target compile events, actual maximum reference error, and any unresolved request costs. That evidence will determine whether your loop needs fewer specializations, less movement/host work, or a change to the computation itself.

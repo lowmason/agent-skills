@@ -1,0 +1,172 @@
+I'll implement this directly as requested — a self-contained script, delivered in this response, with no file writes needed (and no execution tools available here anyway, consistent with "execution not required").
+
+`★ Insight ─────────────────────────────────────`
+The core idea of a KV cache: in causal self-attention, the Key and Value vectors for position *i* never change once computed — they only depend on the token and position at *i*, not on anything that comes later. So instead of recomputing K/V for the whole growing prefix at every decode step (O(T²) total work), you compute each token's K/V once, cache it, and only do a fresh attention query against the cache (O(T) per step, O(T²) total but with much smaller constant work per step since you're not recomputing old K/V).
+`─────────────────────────────────────────────────`
+
+```python
+"""Tiny JAX autoregressive generation example demonstrating KV-cache correctness.
+
+A single-layer, single-head decoder-only attention model generates tokens
+greedily two ways:
+  1. `generate_full_prefix`   — recomputes attention over the *entire* prefix
+     at every step (the naive textbook approach).
+  2. `generate_with_kv_cache` — keeps running K/V buffers and only attends
+     the new query against the cached keys/values.
+
+main() asserts the two produce identical generated tokens and numerically
+equivalent logits — the property that makes KV caching a valid optimization
+rather than an approximation.
+"""
+
+from __future__ import annotations
+
+from typing import NamedTuple
+
+import jax
+import jax.numpy as jnp
+from jax import random
+
+VOCAB_SIZE = 16
+D_MODEL = 8
+MAX_LEN = 32
+
+
+class Params(NamedTuple):
+    embed: jnp.ndarray       # (VOCAB_SIZE, D_MODEL)
+    pos_embed: jnp.ndarray   # (MAX_LEN, D_MODEL)
+    w_q: jnp.ndarray         # (D_MODEL, D_MODEL)
+    w_k: jnp.ndarray         # (D_MODEL, D_MODEL)
+    w_v: jnp.ndarray         # (D_MODEL, D_MODEL)
+    w_o: jnp.ndarray         # (D_MODEL, D_MODEL)
+    w_unembed: jnp.ndarray   # (D_MODEL, VOCAB_SIZE)
+
+
+def init_params(key: jax.Array) -> Params:
+    keys = random.split(key, 7)
+    scale = 0.1
+    return Params(
+        embed=random.normal(keys[0], (VOCAB_SIZE, D_MODEL)) * scale,
+        pos_embed=random.normal(keys[1], (MAX_LEN, D_MODEL)) * scale,
+        w_q=random.normal(keys[2], (D_MODEL, D_MODEL)) * scale,
+        w_k=random.normal(keys[3], (D_MODEL, D_MODEL)) * scale,
+        w_v=random.normal(keys[4], (D_MODEL, D_MODEL)) * scale,
+        w_o=random.normal(keys[5], (D_MODEL, D_MODEL)) * scale,
+        w_unembed=random.normal(keys[6], (D_MODEL, VOCAB_SIZE)) * scale,
+    )
+
+
+def full_prefix_logits(params: Params, tokens: jnp.ndarray) -> jnp.ndarray:
+    """Causal self-attention over the full prefix: tokens (T,) -> logits (T, VOCAB)."""
+    t = tokens.shape[0]
+    hidden = params.embed[tokens] + params.pos_embed[jnp.arange(t)]
+    q = hidden @ params.w_q
+    k = hidden @ params.w_k
+    v = hidden @ params.w_v
+    scores = (q @ k.T) / jnp.sqrt(D_MODEL)
+    causal_mask = jnp.tril(jnp.ones((t, t), dtype=bool))
+    scores = jnp.where(causal_mask, scores, -jnp.inf)
+    attn = jax.nn.softmax(scores, axis=-1)
+    out = (attn @ v) @ params.w_o
+    return out @ params.w_unembed
+
+
+class KVCache(NamedTuple):
+    k: jnp.ndarray       # (MAX_LEN, D_MODEL)
+    v: jnp.ndarray       # (MAX_LEN, D_MODEL)
+    length: jnp.ndarray  # scalar: number of valid entries written so far
+
+
+def init_cache() -> KVCache:
+    return KVCache(
+        k=jnp.zeros((MAX_LEN, D_MODEL)),
+        v=jnp.zeros((MAX_LEN, D_MODEL)),
+        length=jnp.array(0),
+    )
+
+
+def step_with_cache(
+    params: Params, cache: KVCache, token_id: jnp.ndarray, position: int
+) -> tuple[jnp.ndarray, KVCache]:
+    """Attend one new token against the cache. Returns (logits (VOCAB,), updated cache)."""
+    hidden = params.embed[token_id] + params.pos_embed[position]
+    q = hidden @ params.w_q
+    k_new = hidden @ params.w_k
+    v_new = hidden @ params.w_v
+
+    k_cache = cache.k.at[position].set(k_new)
+    v_cache = cache.v.at[position].set(v_new)
+    new_length = cache.length + 1
+
+    valid = jnp.arange(MAX_LEN) < new_length
+    scores = (k_cache @ q) / jnp.sqrt(D_MODEL)
+    scores = jnp.where(valid, scores, -jnp.inf)
+    attn = jax.nn.softmax(scores, axis=-1)
+    out = (attn @ v_cache) @ params.w_o
+    logits = out @ params.w_unembed
+    return logits, KVCache(k=k_cache, v=v_cache, length=new_length)
+
+
+def generate_full_prefix(params: Params, prompt: jnp.ndarray, n_new: int) -> jnp.ndarray:
+    tokens = prompt
+    for _ in range(n_new):
+        logits = full_prefix_logits(params, tokens)
+        next_token = jnp.argmax(logits[-1])
+        tokens = jnp.concatenate([tokens, next_token[None]])
+    return tokens
+
+
+def generate_with_kv_cache(params: Params, prompt: jnp.ndarray, n_new: int) -> jnp.ndarray:
+    cache = init_cache()
+    last_logits = None
+    for position, tok in enumerate(prompt):
+        last_logits, cache = step_with_cache(params, cache, tok, position)
+
+    tokens = prompt
+    position = prompt.shape[0]
+    for _ in range(n_new):
+        next_token = jnp.argmax(last_logits)
+        tokens = jnp.concatenate([tokens, next_token[None]])
+        last_logits, cache = step_with_cache(params, cache, next_token, position)
+        position += 1
+    return tokens
+
+
+def main() -> None:
+    key = random.PRNGKey(0)
+    params = init_params(key)
+    prompt = jnp.array([3, 7, 1])
+    n_new = 6
+
+    tokens_full = generate_full_prefix(params, prompt, n_new)
+    tokens_cached = generate_with_kv_cache(params, prompt, n_new)
+
+    print("full-prefix generation: ", tokens_full)
+    print("kv-cache generation:    ", tokens_cached)
+    assert jnp.array_equal(tokens_full, tokens_cached), "Generated token sequences diverged!"
+
+    logits_full_final = full_prefix_logits(params, tokens_full)[-1]
+    cache = init_cache()
+    last_logits = None
+    for position, tok in enumerate(tokens_cached):
+        last_logits, cache = step_with_cache(params, cache, tok, position)
+    assert jnp.allclose(logits_full_final, last_logits, atol=1e-5), "Final-step logits diverged!"
+
+    print("OK: cached generation agrees with full-prefix generation.")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+`★ Insight ─────────────────────────────────────`
+Three implementation choices worth noting:
+
+1. **`-jnp.inf` masking, not `-1e9`.** Using true `-inf` for masked positions guarantees `exp(-inf) == 0` exactly in the softmax, so masked and valid positions are treated identically in both code paths — no "leakage" from an arbitrarily-large-but-finite mask value causing tiny numeric drift between the two methods.
+
+2. **`jnp.allclose` with `atol=1e-5` for logits, not bit-exact equality.** The two code paths do the *same* matmuls but in different shapes (vector-times-matrix in the cached path vs. matrix-times-matrix in the full-prefix path). On accelerators, different reduction/vectorization strategies can produce last-bit floating-point differences even though they're mathematically the same sum. Testing token *agreement* (argmax) exactly, but logits only approximately, mirrors how real transformer KV-cache implementations are validated.
+
+3. **No JIT.** This stays intentionally un-jitted and uses Python-level loops with static `position` ints — the simplest way to show the cache mechanics explicitly. A production version would use `jax.lax.scan`/`fori_loop` with a fixed-size cache buffer (exactly as done here, since `MAX_LEN` is already static) so the whole decode loop can be compiled once.
+`─────────────────────────────────────────────────`
+
+To actually run it, save as `kv_cache_demo.py` and run `python kv_cache_demo.py` (requires `jax` installed). It will print both generated sequences and assert they match exactly, plus confirm the final-step logits agree within numerical tolerance.

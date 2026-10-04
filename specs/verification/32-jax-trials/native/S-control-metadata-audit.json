@@ -1,0 +1,16 @@
+{
+  "report": "/private/tmp/jax-skill-trials-pAYZ0t/S-native-control-scoring.md",
+  "fresh_samples": 7,
+  "score": 61,
+  "maximum": 70,
+  "verified_local_evidence_links": 116,
+  "response_lines": {
+    "S1-codex-control-1": 334,
+    "S1-codex-control-2": 272,
+    "S1-codex-control-3": 279,
+    "S1-codex-control-4": 267,
+    "S1-codex-control-5": 260,
+    "S2-codex-control-1": 242,
+    "S3-codex-control-1": 166
+  }
+}

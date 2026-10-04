@@ -1,0 +1,43 @@
+{
+  "trial": "S1-sonnet-inline-control-2",
+  "exit": 0,
+  "command": [
+    "claude",
+    "-p",
+    "--model",
+    "sonnet",
+    "--effort",
+    "medium",
+    "--no-session-persistence",
+    "--output-format",
+    "json",
+    "--permission-mode",
+    "dontAsk",
+    "--tools",
+    "Read,WebSearch,WebFetch",
+    "--allowedTools",
+    "Read,WebSearch,WebFetch",
+    "--strict-mcp-config",
+    "--mcp-config",
+    "{\"mcpServers\":{}}",
+    "--"
+  ],
+  "fresh_session": true,
+  "model_usage": {
+    "claude-sonnet-5": {
+      "inputTokens": 453,
+      "outputTokens": 5134,
+      "cacheReadInputTokens": 56747,
+      "cacheCreationInputTokens": 10435,
+      "webSearchRequests": 0,
+      "costUSD": 0.1053354,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "thinkingTokens": 2246,
+      "canonicalModel": "claude-sonnet-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "is_error": false
+}

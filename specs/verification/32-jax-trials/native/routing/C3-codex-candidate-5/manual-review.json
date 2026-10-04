@@ -1,0 +1,42 @@
+{
+  "selected_primary": "optimize-jax",
+  "selected_supporting": [
+    "systematic-debugging"
+  ],
+  "correctness": "correct",
+  "posterior_boundary": "preserved",
+  "rationale": "Non-learning recompilation selects and reads optimize-jax with systematic-debugging support; full catalog replay precedes selection and no neural or posterior workflow is inferred.",
+  "full_payloads_manually_read": true,
+  "display_reads_manually_verified": true,
+  "conflicts_or_resident_choices": [],
+  "evidence": [
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-candidate-5/response.txt",
+      "line": 1
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-candidate-5/read-events.jsonl",
+      "line": 2
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-candidate-5/research-notes.md",
+      "line": 1
+    }
+  ],
+  "reviewed_utc": "2026-10-04T03:22:47.457131+00:00",
+  "catalog_manifest_sha256": "3f3e5414d6a6c76a68c4038003aab5c025f32a7b2451f4245304b7261c9a1df0",
+  "payloads": {
+    "response.txt": {
+      "sha256": "11c241b24e6553c18bbb4d414850da468079756c9a9e4db89e8f37522657dfe9",
+      "bytes": 814,
+      "lines": 8
+    },
+    "research-notes.md": {
+      "sha256": "36474780ff4edd1f7318e5f910445a1793c58e05630b37b9fa441fb9c5953ec6",
+      "bytes": 1539,
+      "lines": 12
+    }
+  },
+  "grading_source": "conductor manual full-response judgment",
+  "semantic_grading_automated": false
+}

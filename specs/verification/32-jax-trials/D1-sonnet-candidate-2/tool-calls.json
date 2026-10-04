@@ -1,0 +1,62 @@
+[
+  {
+    "id": "toolu_01SBFf7nnqVdk1Bh4fXD2L1x",
+    "name": "Read",
+    "input": {
+      "file_path": "/private/tmp/jax-skill-trials-pAYZ0t/guidance-candidate-deep-learning/references/sequences.md"
+    },
+    "result_present": true,
+    "is_error": false,
+    "result_sha256": "b6c926bf821b993d551a7fbbac36cd1eee346f12d73d50cb7075829d86e06b51"
+  },
+  {
+    "id": "toolu_01F7kYKV5iYZVbDLrU4XxrsK",
+    "name": "Read",
+    "input": {
+      "file_path": "/private/tmp/jax-skill-trials-pAYZ0t/guidance-candidate-deep-learning/references/training.md"
+    },
+    "result_present": true,
+    "is_error": false,
+    "result_sha256": "3ddcfd5297dd99ad69188da87fc74b4d6e1e2258fc69db8ea96e309d07f1fab0"
+  },
+  {
+    "id": "toolu_01M81hAaDSPjbQ36HoVwVQXL",
+    "name": "Read",
+    "input": {
+      "file_path": "/private/tmp/jax-skill-trials-pAYZ0t/guidance-candidate-deep-learning/references/frameworks.md"
+    },
+    "result_present": true,
+    "is_error": false,
+    "result_sha256": "4a733cea4a1a5af0c0e1f894dd1b551cb6074e0ec1834105f2533c4f1db08347"
+  },
+  {
+    "id": "toolu_019xfL6dRZn96pqXsHUSzwMf",
+    "name": "Read",
+    "input": {
+      "file_path": "/private/tmp/jax-skill-trials-pAYZ0t/D1-sonnet-candidate-2"
+    },
+    "result_present": true,
+    "is_error": true,
+    "result_sha256": "fe8d56d5c2d888dd2959c05c11a526ca5e7d673a7b2f2e8131655e22da6853de"
+  },
+  {
+    "id": "toolu_01AQ3hQYAT9pb2w3z5YKT1bj",
+    "name": "Read",
+    "input": {
+      "file_path": "/private/tmp/jax-skill-trials-pAYZ0t/D1-sonnet-candidate-2/sine_next_sample.py"
+    },
+    "result_present": true,
+    "is_error": true,
+    "result_sha256": "51cab42da9be23711441c6b674e92821cb43e2bcea98ba7b917a7f38c4751dc1"
+  },
+  {
+    "id": "toolu_01P9mdcmBZpgD3tLTGyUf6ok",
+    "name": "Read",
+    "input": {
+      "file_path": "/private/tmp/jax-skill-trials-pAYZ0t/D1-sonnet-candidate-2"
+    },
+    "result_present": true,
+    "is_error": true,
+    "result_sha256": "fe8d56d5c2d888dd2959c05c11a526ca5e7d673a7b2f2e8131655e22da6853de"
+  }
+]

@@ -1,0 +1,1 @@
+Supplemental native subagent control, separate from matched Claude CLI trials. Reported Python 3.13.8, JAX 0.8.1 and 16 tests passed in 9.65s. Native agent had implementation/execution tools; matched cohorts explicitly permitted nonexecution. Preserve as a contrary successful full-tool outcome; do not include in matched cohort counts. Complete delivered source is in response.txt.

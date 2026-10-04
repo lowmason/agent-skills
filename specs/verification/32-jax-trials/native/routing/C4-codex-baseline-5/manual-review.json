@@ -1,0 +1,40 @@
+{
+  "selected_primary": "bayesian-workflow",
+  "selected_supporting": [],
+  "correctness": "correct",
+  "posterior_boundary": "preserved",
+  "rationale": "Bayesian posterior inference selects and reads bayesian-workflow for NumPyro NUTS and diagnostics. The read deep-learning candidate is excluded after confirming its explicit inference boundary.",
+  "full_payloads_manually_read": true,
+  "display_reads_manually_verified": true,
+  "conflicts_or_resident_choices": [],
+  "evidence": [
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-5/response.txt",
+      "line": 1
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-5/read-events.jsonl",
+      "line": 2
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-5/research-notes.md",
+      "line": 1
+    }
+  ],
+  "reviewed_utc": "2026-10-04T02:43:52.669886+00:00",
+  "catalog_manifest_sha256": "fee71e65dfd7f9372132f86feaf5316bac5ca3c8212906359039bf0b0010c800",
+  "payloads": {
+    "response.txt": {
+      "sha256": "9d3e87fd3cb02c01c5c3a2f1cf0f2131c80d6b010daac6c54b316a1a9e4f2f94",
+      "bytes": 907,
+      "lines": 8
+    },
+    "research-notes.md": {
+      "sha256": "3c4c98aa8d9f9dcb3a5e8a8b890078a7e3bf13ea4a5ce3047e86a8c4ba8fe2a2",
+      "bytes": 1279,
+      "lines": 12
+    }
+  },
+  "grading_source": "conductor manual full-response judgment",
+  "semantic_grading_automated": false
+}

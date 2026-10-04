@@ -1,0 +1,9 @@
+Primary skill: optimize-jax
+Supporting skills: none required for the stated task.
+
+Task: Improve generation speed while checking KV-cache correctness.
+Rationale: optimize-jax explicitly covers inference/generation speed, synchronized profiling, prefill/decode, and KV caches.
+Its full body requires independent full-prefix logit parity, exact greedy-token checks, cache masks/positions/cursor and boundary checks, then separate prefill/decode measurements.
+deep-learning concerns training and learned-model quality; evaluate-deep-learning concerns checkpoint comparisons and research claims. Neither is required here.
+
+This is selection only: no implementation, test execution, reference loading, benchmarks, or speed/correctness results are claimed.

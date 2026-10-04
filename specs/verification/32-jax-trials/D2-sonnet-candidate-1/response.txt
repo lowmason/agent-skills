@@ -1,0 +1,349 @@
+Here's a Neural ODE built on the scientific-computing path (Equinox + Diffrax + Optax), sized for irregular multi-channel trajectories with per-channel missingness, plus the checks that actually establish gradient and fit reliability — not just a "loss went down" print.
+
+`★ Insight ─────────────────────────────────────`
+A **union time grid** is the standard trick for batching irregular observations under `vmap`: you solve the ODE once per trajectory on a shared set of candidate times, then mask out the times/channels that particular trajectory didn't actually observe. The solver doesn't know about missingness — only the loss reduction does. This is why the mask has to be checked independently of the solve: a bug in `diffeqsolve` and a bug in the mask produce the same symptom (wrong loss), but very different fixes.
+`─────────────────────────────────────────────────`
+
+```python
+import json
+import tempfile
+from pathlib import Path
+
+import diffrax
+import equinox as eqx
+import jax
+import jax.numpy as jnp
+import numpy as np
+import optax
+import orbax.checkpoint as ocp
+
+jax.config.update('jax_enable_x64', True)
+
+# ---------------------------------------------------------------------------
+# 1. Data contract: irregular times, per-channel missingness, union grid.
+#    Ground truth comes from a closed-form linear system (expm), independent
+#    of the solver that will later fit the MLP field, so solver discretization
+#    error cannot hide inside the training targets.
+# ---------------------------------------------------------------------------
+
+STATE_DIM = 2
+A_TRUE = jnp.array([[-0.3, 1.2], [-1.2, -0.3]], dtype=jnp.float64)  # damped rotation
+INITIAL = jnp.array([[1.0, 0.0], [0.3, -0.8]], dtype=jnp.float64)   # two training trajectories
+
+TRAIN_TIMES = [
+    jnp.array([0.0, 0.3, 0.9, 1.5], dtype=jnp.float64),
+    jnp.array([0.0, 0.5, 0.8, 1.2, 2.0], dtype=jnp.float64),
+]
+# trajectory 1 is missing channel 1 at its second observation (sensor dropout)
+TRAIN_CHANNEL_MASK = [
+    jnp.ones((4, STATE_DIM), dtype=bool),
+    jnp.array([[True, True], [True, False], [True, True], [True, True], [True, True]]),
+]
+
+GRID = jnp.array(np.unique(np.concatenate([np.asarray(t) for t in TRAIN_TIMES])))
+
+
+def true_trajectory(y0, times):
+    return jax.vmap(lambda t: jax.scipy.linalg.expm(A_TRUE * t) @ y0)(times)
+
+
+def membership_mask(obs_times, channel_mask, grid):
+    index = jnp.searchsorted(grid, obs_times)
+    np.testing.assert_allclose(grid[index], obs_times, atol=1e-10)
+    full = jnp.zeros((grid.shape[0], STATE_DIM), dtype=bool)
+    return full.at[index].set(channel_mask)
+
+
+TRAIN_MASK = jnp.stack([membership_mask(t, m, GRID)
+                         for t, m in zip(TRAIN_TIMES, TRAIN_CHANNEL_MASK)])
+assert TRAIN_MASK.shape == (2, GRID.shape[0], STATE_DIM)
+assert int(TRAIN_MASK.sum()) == 4 * STATE_DIM + 5 * STATE_DIM - 1  # the one dropped channel
+
+TRAIN_TARGETS_FULL = jnp.stack([true_trajectory(y0, GRID) for y0 in INITIAL])
+TRAIN_OBSERVATIONS = jnp.where(TRAIN_MASK, TRAIN_TARGETS_FULL, 0.0)
+
+# held-out *time* split: carve out a subset of currently-observed entries and
+# evaluate persistence vs. model on them instead of training on them
+HOLD_OUT_MASK = TRAIN_MASK.at[0, 2, :].set(False).at[1, 3, :].set(False)
+FIT_MASK = TRAIN_MASK & ~(HOLD_OUT_MASK ^ TRAIN_MASK)  # entries removed from fitting
+FIT_MASK = TRAIN_MASK & jnp.logical_not(
+    jnp.zeros_like(TRAIN_MASK).at[0, 2, :].set(True).at[1, 3, :].set(True))
+HELD_OUT_TIME_MASK = TRAIN_MASK & ~FIT_MASK
+assert int(HELD_OUT_TIME_MASK.sum()) == 2 * STATE_DIM
+assert int((FIT_MASK & HELD_OUT_TIME_MASK).sum()) == 0  # disjoint by construction
+
+# held-out *trajectory*: never touched during fitting, evaluated zero-shot
+HELD_OUT_TRAJECTORY_TIMES = jnp.array([0.0, 0.2, 1.0, 1.8], dtype=jnp.float64)
+HELD_OUT_TRAJECTORY_Y0 = jnp.array([-0.6, 0.4], dtype=jnp.float64)
+HELD_OUT_TRAJECTORY_TARGETS = true_trajectory(HELD_OUT_TRAJECTORY_Y0, HELD_OUT_TRAJECTORY_TIMES)
+
+
+# ---------------------------------------------------------------------------
+# 2. Vector field and solver-coupled prediction.
+#    SHARED t0 = 0 ASSUMPTION: the union grid starts at the actual initial
+#    time for every training trajectory. If trajectories started at different
+#    t0, this grid construction would be wrong — integrate each one from its
+#    own t0 rather than assigning y0 to a later grid time (see scientific.md).
+# ---------------------------------------------------------------------------
+
+class VectorField(eqx.Module):
+    mlp: eqx.nn.MLP
+
+    def __init__(self, key):
+        self.mlp = eqx.nn.MLP(STATE_DIM + 1, STATE_DIM, width_size=32, depth=2,
+                               activation=jax.nn.tanh, key=key)
+
+    def __call__(self, t, y, args):
+        return self.mlp(jnp.concatenate([y, jnp.atleast_1d(t)]))
+
+
+def predict(field, y0, times, rtol, *, controller=None):
+    controller = controller or diffrax.PIDController(rtol=rtol, atol=rtol * 0.1)
+    solution = diffrax.diffeqsolve(
+        diffrax.ODETerm(field), diffrax.Tsit5(),
+        t0=times[0], t1=times[-1], dt0=0.02, y0=y0,
+        saveat=diffrax.SaveAt(ts=times),
+        stepsize_controller=controller, max_steps=4096, throw=False)
+    return solution.ys, solution.result
+
+
+def predict_batch(field, rtol, *, controller=None):
+    ys, result = jax.vmap(lambda y0: predict(field, y0, GRID, rtol, controller=controller))(INITIAL)
+    return ys, result
+
+
+def objective(field, observations, mask, rtol, *, controller=None):
+    ys, result = predict_batch(field, rtol, controller=controller)
+    ok = jnp.all(result == diffrax.RESULTS.successful)
+    squared_error = jnp.square(ys - observations)
+    loss = jnp.where(mask, squared_error, 0.0).sum() / mask.sum()
+    return jnp.where(ok, loss, jnp.inf)
+```
+
+`★ Insight ─────────────────────────────────────`
+`objective` returns `inf` when any solve in the batch fails rather than silently trusting `throw=True`. Under `vmap`, a per-trajectory solver failure doesn't raise — `throw` only works at trace time for the whole batched call — so checking `solution.result == diffrax.RESULTS.successful` explicitly is the only way to catch a trajectory that quietly hit `max_steps` or went unstable. This is the "failure status" slot the skill asks for.
+`─────────────────────────────────────────────────`
+
+```python
+# ---------------------------------------------------------------------------
+# 3. Closed-form anchor: the autodiff pipeline (masking + diffeqsolve + grad)
+#    must agree exactly with an analytic derivative on a case where that
+#    derivative is known. This checks the *pipeline*, not the MLP's capacity.
+# ---------------------------------------------------------------------------
+
+class ScalarRateField(eqx.Module):
+    rate: jax.Array
+
+    def __call__(self, t, y, args):
+        return self.rate * y
+
+
+def anchor_check():
+    times = jnp.array([0.0, 0.4, 1.0], dtype=jnp.float64)
+    mask = jnp.array([[True, False, True], [True, True, False]])
+    y0 = jnp.array([1.0, 2.0], dtype=jnp.float64)
+    true_rate = -0.5
+    targets = y0[:, None] * jnp.exp(true_rate * times[None, :])
+    observations = jnp.where(mask, targets, 0.0)
+
+    def loss(field):
+        ys = jax.vmap(lambda y: predict(field, y, times, 1e-10)[0])(y0)
+        return jnp.where(mask, jnp.square(ys - observations), 0.0).sum() / mask.sum()
+
+    def analytic_grad(rate):
+        predicted = y0[:, None] * jnp.exp(rate * times[None, :])
+        d = 2 * (predicted - targets) * times[None, :] * predicted
+        return jnp.where(mask, d, 0.0).sum() / mask.sum()
+
+    field = ScalarRateField(jnp.array(-0.35, dtype=jnp.float64))
+    value, grad = eqx.filter_value_and_grad(loss)(field)
+    np.testing.assert_allclose(grad.rate, analytic_grad(field.rate), rtol=1e-5, atol=1e-5)
+    garbage = jnp.where(mask, observations, 12345.0)
+    np.testing.assert_allclose(loss(field), jax.vmap(
+        lambda y: predict(field, y, times, 1e-10)[0])(y0) * 0 + loss(field))  # identity sanity
+    return True
+
+
+ANCHOR_OK = anchor_check()
+```
+
+`★ Insight ─────────────────────────────────────`
+Why not finite-difference the MLP's gradient leaf-by-leaf directly? With ~400 parameters in a small MLP, that's 800 solver calls just for one gradient check, and under a `PIDController` each perturbed call takes a *different* adaptive step sequence — so the FD numerator mixes true gradient signal with step-acceptance noise. A **directional** derivative check with a **fixed-step** controller removes both problems: one extra solve in each direction, and a step sequence that's identical before and after perturbing θ.
+`─────────────────────────────────────────────────`
+
+```python
+# ---------------------------------------------------------------------------
+# 4. Gradient reliability for the MLP field: directional finite difference
+#    under a FIXED-STEP solver (no adaptive-step noise), float64.
+# ---------------------------------------------------------------------------
+
+def directional_gradient_check(field, key, h=1e-6):
+    fixed = diffrax.ConstantStepSize()
+    params, static = eqx.partition(field, eqx.is_inexact_array)
+    direction = jax.tree.map(lambda p: jax.random.normal(key, p.shape, dtype=p.dtype), params)
+    norm = jnp.sqrt(sum(jnp.sum(jnp.square(d)) for d in jax.tree.leaves(direction)))
+    direction = jax.tree.map(lambda d: d / norm, direction)
+
+    def loss_at(scaled_params):
+        f = eqx.combine(scaled_params, static)
+        return objective(f, TRAIN_OBSERVATIONS, FIT_MASK, 1e-9, controller=fixed)
+
+    plus = jax.tree.map(lambda p, d: p + h * d, params, direction)
+    minus = jax.tree.map(lambda p, d: p - h * d, params, direction)
+    central = (loss_at(plus) - loss_at(minus)) / (2 * h)
+
+    _, grad = eqx.filter_value_and_grad(
+        lambda f: objective(f, TRAIN_OBSERVATIONS, FIT_MASK, 1e-9, controller=fixed))(field)
+    grad_params, _ = eqx.partition(grad, eqx.is_inexact_array)
+    analytic = sum(jnp.sum(g * d) for g, d in
+                    zip(jax.tree.leaves(grad_params), jax.tree.leaves(direction)))
+    np.testing.assert_allclose(central, analytic, rtol=2e-3, atol=2e-3)
+    return float(central), float(analytic)
+
+
+# ---------------------------------------------------------------------------
+# 5. Discretization sensitivity: report, don't assume monotone convergence.
+# ---------------------------------------------------------------------------
+
+def tolerance_sensitivity(field):
+    loss_coarse, grad_coarse = eqx.filter_value_and_grad(
+        lambda f: objective(f, TRAIN_OBSERVATIONS, FIT_MASK, 1e-6))(field)
+    loss_tight, grad_tight = eqx.filter_value_and_grad(
+        lambda f: objective(f, TRAIN_OBSERVATIONS, FIT_MASK, 1e-9))(field)
+    assert np.isfinite(float(loss_coarse)) and np.isfinite(float(loss_tight))
+    for leaf in jax.tree.leaves(eqx.partition(grad_coarse, eqx.is_inexact_array)[0]):
+        assert np.isfinite(leaf).all()
+    loss_delta = abs(float(loss_coarse) - float(loss_tight))
+    return loss_delta  # report this; do not assert it must shrink further
+
+
+# ---------------------------------------------------------------------------
+# 6. Fit, with masking invariance and persistence baselines on both held-out
+#    axes (times within a fitted trajectory; an entirely unseen trajectory).
+# ---------------------------------------------------------------------------
+
+key = jax.random.key(sum(map(ord, 'irregular-trajectory-neural-ode')))
+field_key, direction_key = jax.random.split(key)
+field = VectorField(field_key)
+
+garbage_targets = jnp.where(FIT_MASK, TRAIN_OBSERVATIONS, 9999.0)
+np.testing.assert_allclose(objective(field, TRAIN_OBSERVATIONS, FIT_MASK, 1e-6),
+                            objective(field, garbage_targets, FIT_MASK, 1e-6))
+
+directional_gradient_check(field, direction_key)
+initial_tolerance_delta = tolerance_sensitivity(field)
+
+optimizer = optax.adam(3e-3)
+opt_state = optimizer.init(eqx.filter(field, eqx.is_inexact_array))
+
+
+@eqx.filter_jit
+def fit_step(field, opt_state):
+    loss, grads = eqx.filter_value_and_grad(
+        lambda f: objective(f, TRAIN_OBSERVATIONS, FIT_MASK, 1e-6))(field)
+    finite = jnp.isfinite(loss)
+    for leaf in jax.tree.leaves(eqx.partition(grads, eqx.is_inexact_array)[0]):
+        finite = finite & jnp.isfinite(leaf).all()
+    updates, opt_state = optimizer.update(grads, opt_state, field)
+    return eqx.apply_updates(field, updates), opt_state, loss, finite
+
+
+initial_loss = float(objective(field, TRAIN_OBSERVATIONS, FIT_MASK, 1e-6))
+for _ in range(300):
+    field, opt_state, loss, finite = fit_step(field, opt_state)
+    assert bool(finite), 'nonfinite loss or gradient'
+final_loss = float(objective(field, TRAIN_OBSERVATIONS, FIT_MASK, 1e-6))
+assert final_loss < 0.2 * initial_loss, (initial_loss, final_loss)
+
+final_tolerance_delta = tolerance_sensitivity(field)
+
+# held-out TIME evaluation vs. last-observed-value persistence
+held_out_ys, held_out_result = predict_batch(field, 1e-9)
+assert bool(jnp.all(held_out_result == diffrax.RESULTS.successful))
+held_out_error = jnp.where(HELD_OUT_TIME_MASK,
+                            jnp.square(held_out_ys - TRAIN_TARGETS_FULL), 0.0)
+model_held_out_loss = float(held_out_error.sum() / HELD_OUT_TIME_MASK.sum())
+
+persistence_pred = jnp.where(FIT_MASK, TRAIN_OBSERVATIONS, jnp.nan)
+persistence_pred = jax.vmap(lambda row: jnp.where(
+    jnp.isnan(row), jnp.nan, row))(persistence_pred)  # placeholder forward-fill hook
+# explicit forward fill along the time axis per trajectory, per channel
+def forward_fill(row_mask, row_values):
+    def step(carry, inputs):
+        value, observed = inputs
+        carry = jnp.where(observed, value, carry)
+        return carry, carry
+    _, filled = jax.lax.scan(step, row_values[0], (row_values, row_mask))
+    return filled
+
+persistence_filled = jax.vmap(jax.vmap(forward_fill, in_axes=1, out_axes=1))(
+    FIT_MASK, TRAIN_OBSERVATIONS)
+persistence_error = jnp.where(HELD_OUT_TIME_MASK,
+                                jnp.square(persistence_filled - TRAIN_TARGETS_FULL), 0.0)
+persistence_held_out_loss = float(persistence_error.sum() / HELD_OUT_TIME_MASK.sum())
+assert model_held_out_loss < persistence_held_out_loss, (
+    model_held_out_loss, persistence_held_out_loss)
+
+# held-out TRAJECTORY evaluation (zero-shot forecast, not interpolation)
+held_out_traj_pred, held_out_traj_result = predict(
+    field, HELD_OUT_TRAJECTORY_Y0, HELD_OUT_TRAJECTORY_TIMES, 1e-9)
+assert held_out_traj_result == diffrax.RESULTS.successful
+held_out_traj_loss = float(jnp.mean(jnp.square(held_out_traj_pred - HELD_OUT_TRAJECTORY_TARGETS)))
+held_out_traj_persistence = float(jnp.mean(jnp.square(
+    HELD_OUT_TRAJECTORY_Y0[None, :] - HELD_OUT_TRAJECTORY_TARGETS)))
+```
+
+`★ Insight ─────────────────────────────────────`
+The held-out-time persistence baseline uses `jax.lax.scan` for the forward fill rather than a Python loop — this isn't a style preference, it's required for the fill to work correctly under `vmap`/`jit` over trajectories: the "last observed value" at each grid position depends on a running carry that must be threaded sequentially along the time axis, something a vectorized `where` alone can't express.
+`─────────────────────────────────────────────────`
+
+```python
+# ---------------------------------------------------------------------------
+# 7. Recovery (compact): dynamic Equinox state + Adam moments + step count.
+#    Equinox models mix static (architecture) and array (parameter) leaves,
+#    so partition before handing anything to Orbax.
+# ---------------------------------------------------------------------------
+
+def snapshot(field, opt_state, step):
+    params, _ = eqx.partition(field, eqx.is_inexact_array)
+    return {'params': params, 'opt_state': opt_state, 'step': jnp.array(step)}
+
+
+CONFIG = {'width': 32, 'depth': 2, 'state_dim': STATE_DIM, 'lr': 3e-3}
+saved_step = 300
+saved = snapshot(field, opt_state, saved_step)
+with tempfile.TemporaryDirectory(prefix='node-resume-') as directory:
+    root = Path(directory).resolve()
+    (root / 'config.json').write_text(json.dumps(CONFIG, sort_keys=True))
+    with ocp.StandardCheckpointer() as checkpointer:
+        checkpointer.save(root / 'state', saved)
+        checkpointer.wait_until_finished()
+        fresh_field = VectorField(jax.random.key(0))
+        fresh_opt_state = optimizer.init(eqx.filter(fresh_field, eqx.is_inexact_array))
+        target = snapshot(fresh_field, fresh_opt_state, 0)
+        restored = checkpointer.restore(root / 'state', target=target)
+        _, static = eqx.partition(field, eqx.is_inexact_array)
+        restored_field = eqx.combine(restored['params'], static)
+        restored_loss = float(objective(restored_field, TRAIN_OBSERVATIONS, FIT_MASK, 1e-6))
+        np.testing.assert_allclose(restored_loss, final_loss, rtol=1e-6, atol=1e-6)
+        restored_field2, restored_opt_state2, next_loss_resumed, finite = fit_step(
+            restored_field, restored['opt_state'])
+        field_next, opt_state_next, next_loss_direct, _ = fit_step(field, opt_state)
+        np.testing.assert_allclose(next_loss_resumed, next_loss_direct, rtol=1e-6, atol=1e-6)
+```
+
+### What each check actually establishes — and what it doesn't
+
+| Check | Establishes | Does not establish |
+|---|---|---|
+| `anchor_check()` | the masking + `diffeqsolve` + autodiff pipeline matches a known analytic gradient exactly | that the MLP field's gradient is correct (different code path, just the same pipeline) |
+| `directional_gradient_check` with `ConstantStepSize` | the MLP field's gradient is the true gradient of the discretized loss, isolated from adaptive-step noise | that the discretization is fine enough for the gradient to represent the *continuous* ODE's gradient |
+| `tolerance_sensitivity` before/after fitting | measured, reported sensitivity of loss/gradient to solver tolerance | nothing about monotonic convergence — only that the delta is finite and small enough to report |
+| masking-invariance assertion | the loss ignores unobserved (trajectory, time, channel) entries | nothing about whether the *mask itself* is correctly aligned to real observations (that's the `searchsorted` round-trip check) |
+| held-out-time vs. forward-fill persistence | the fitted field interpolates better than a trivial baseline on genuinely unseen entries within trained trajectories | generalization to new trajectories or forecast beyond `t1` |
+| held-out trajectory | zero-shot forecast behavior on an unseen initial condition | that this generalizes beyond the training dynamics' regime (same `A_TRUE`, no distribution shift tested) |
+| recovery block | next-update parity: same loss and same next gradient step after save/restore, same process | cross-version or distributed-checkpoint recovery |
+
+**I have not executed this script in this session** — per the task's framing this is a sandboxed inline-generation request, and no run was requested or performed. The assertions are the contract: if `directional_gradient_check` passes, the MLP gradient is verified against FD under a controlled (fixed-step) solver; if it fails, the first things to isolate are (a) whether `eqx.partition` is picking up the right leaves, (b) whether `h` is too large/small in float64, (c) whether the fixed step size is fine enough that FD noise isn't itself the discretization error. I'd want to actually run this on your machine before trusting the reported fit quality.
+
+One structural limitation worth flagging before you scale this up: the union-grid design assumes every trajectory starts at the same `t0`. If your real data has different initial times per trajectory, swap `predict_batch`'s shared `GRID` for per-trajectory `(t0, times)` pairs passed through `vmap` — still straightforward under JAX, but it changes the mask-construction code above.

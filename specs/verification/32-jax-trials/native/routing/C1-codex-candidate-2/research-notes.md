@@ -1,0 +1,11 @@
+# C1-codex-candidate-2 selection notes
+- Frozen task: Train an NNX sequence model in JAX using synthetic data.
+- Choice: primary `deep-learning`; no supporting skills selected.
+- The task-specific match is neural sequence training in JAX/NNX; synthetic fixtures suit its bounded correctness and learnability checks.
+- Catalog helper `start` succeeded; full stdout stored in functions store (89,493 characters).
+- Read all five contiguous catalog pages: [0,18000), [18000,36000), [36000,54000), [54000,72000), [72000,89493).
+- Recovery: page 1 initially displayed without explicit 6000 budget, then reread in full with explicit 6000; all five required page reads used explicit 6000 budgets.
+- Recorded `readskill ... deep-learning` succeeded; full 11,046-character body stored and read as one [0,11046) page with explicit 6000 budget.
+- Resident guidance conflicts: the frozen fixture controls skill selection; repository inspection and implementation/workflow actions were excluded, so resident build/design/test procedures were not invoked.
+- No references, scripts, web, repository files, plans, rubrics, other trials, manifests, or subagents were inspected or invoked.
+- Only the authorized helpers and these two selection artifacts were used; no underlying training or verification claim is made.

@@ -1,0 +1,385 @@
+Neither observation establishes the stronger claim by itself. A loose ODE solver can reduce held-out prediction error while moving farther from the solution of the learned differential equation. Low task loss also does not establish rotation equivariance. Substantiate the first claim with numerical and training comparisons, and the second with an explicit transformation test.
+
+**Evaluation population.** Freeze the checkpoint, preprocessing, evaluation mode, held-out IDs, target units, observation times, and eligibility masks before making either comparison. For the ODE, retain axes such as `(training_run, independent_trajectory, observation_time, state_channel)`; state whether the primary score weights trajectories equally or pools all eligible observations. Split at the trajectory, subject, simulation, or other independent group appropriate to deployment, and audit duplicates and shared parameter/forcing regimes. For 3D inputs, retain whole graph/scene IDs and node/edge identities. Rotated copies of a graph and time points from one trajectory are repeated measurements on that input, not additional independent test examples. Unknown training provenance leaves contamination unresolved.
+
+**Prespecified protocol.** Name the actual claim: better predictions from a frozen checkpoint under a particular inference policy, a benefit of training with loose settings, or numerical correctness of the continuous model. Choose a practical task-error difference, acceptable numerical error, and symmetry tolerance before viewing the confirmation results. Keep task error, numerical discrepancy, and transformation residual as separate metrics.
+
+| Check | What to hold fixed and measure | What it can substantiate |
+|---|---|---|
+| Frozen-checkpoint ODE sweep | Evaluate the same parameters at the same observation times across a logarithmic `rtol`/`atol` grid, initial-step choices, solver families, and relevant float32/float64 policies. Save predictions, per-trajectory task error, success/failure, and accepted/rejected steps. | Whether the reported task-error improvement is reproducible under a specified inference policy, and how numerically sensitive that checkpoint is. |
+| Validated solution reference | Establish agreement under successive tolerance or step-size refinements and an appropriate independent solver. Test an analytic small problem first. Compare maximum and scale-normalized trajectory discrepancies, including long horizons and difficult regimes. | Accuracy relative to a demonstrated numerical reference; a very small requested tolerance alone does not establish convergence. |
+| Gradient audit | For a small fixed case, compare the actual training derivative with an analytic derivative and central finite differences over an epsilon sweep, several parameter directions, and progressively accurate forward solves. Record absolute/relative differences, full-gradient norm/cosine differences where tractable, failures, and any lack of a stable agreement region. | Whether gradients match the declared target sufficiently for the decision. An adaptive discrete objective and a continuous adjoint are distinct targets. |
+| Training × evaluation matrix | Train checkpoints under loose and accurate settings, then evaluate every checkpoint under both inference policies and a validated common policy. Repeat planned training runs; control data, architecture, optimizer/schedule, selection, and tuning effort. Report common-budget comparisons or performance-versus-budget curves. | Whether improvement persists for the learned model when the numerical evaluation policy is shared, and whether a training-setting intervention explains it. |
+| Rotation commutation | Compare the entire inference pipeline on a transformed input with the correctly transformed original output, retaining residuals by input, transformation, and output channel. | Empirical rotation-equivariance evidence on those inputs and transformations. |
+
+For the ODE, write the relevant decomposition as
+
+\[
+\hat y_{\mathrm{loose}}-y_{\mathrm{obs}}
+=(\hat y_{\mathrm{ref}}-y_{\mathrm{obs}})
+ +(\hat y_{\mathrm{loose}}-\hat y_{\mathrm{ref}}).
+\]
+
+The last term can partially cancel model error. That is a possible explanation to test, not a conclusion from the lower score. If loose *training* helps, an implicit regularization or optimization explanation requires the controlled training comparison. Report solver statistics accurately: accepted/rejected steps are not automatically numbers of vector-field evaluations. Instrument actual NFE or leave it unmeasured. Diffrax exposes solve status/statistics and permits failure inspection through `throw=False`. [Diffrax Solution](https://docs.kidger.site/diffrax/api/solution/), [diffeqsolve](https://docs.kidger.site/diffrax/api/diffeqsolve/).
+
+Use an appropriate solver for the problem, including stiffness when present. Audit interpolation, discontinuities/events, the initial condition, and physical conservation or boundary constraints if the scientific claim includes them. Confirm the *actual* parameter, state, and time dtypes on the tested device; JAX float64 requires an enabled x64 policy. [JAX dtypes and x64](https://docs.jax.dev/en/latest/101/default_dtypes.html). State the adjoint implementation: `RecursiveCheckpointAdjoint` differentiates the numerical solve, whereas `BacksolveAdjoint` numerically solves continuous-adjoint equations and can give approximate gradients. Test the implementation actually used during training. [Diffrax adjoints](https://docs.kidger.site/diffrax/api/adjoints/).
+
+For rotation equivariance, declare the group and every input/output representation first. For proper rotations, `R.T @ R = I` and `det(R) = +1`, the requirement is
+
+\[
+f(\rho_{\mathrm{in}}(R)x)=\rho_{\mathrm{out}}(R)f(x).
+\]
+
+With row-wise Cartesian coordinates, rotate positions and polar vector features by `x @ R.T`; scalar outputs stay unchanged, Cartesian vector outputs rotate, and rank-two Cartesian tensors transform as `R @ T @ R.T`. Higher-order irreducible channels need their declared representation matrices, rather than treating every feature as a Cartesian vector. O(3) additionally requires reflection/inversion parity; SO(3) alone makes no reflection claim. SE(3) additionally requires translation behavior. The e3nn-jax representation interface explicitly distinguishes degree and parity. [e3nn-jax irreps](https://e3nn-jax.readthedocs.io/en/latest/api/irreps.html).
+
+**Validity checks.** Transform every covariant input consistently, including relative/edge features, directions, normals, and external fields. Rebuild geometric features and neighbors through the real preprocessing pipeline. Test identity, random proper rotations, fixed rotations, rotations close to zero and pi, compositions, and node relabelings with features and edge indices remapped together. Include generic, degenerate, small/large-scale, and neighbor-cutoff/tie cases within the declared input domain. Freeze inference randomness or explicitly declare the coupling for a stochastic claim. Report maximum absolute and scale-normalized residuals, quantiles, and failed-case IDs using tolerances appropriate to dtype, output units, and numerical conditioning. Include a known equivariant positive control and a deliberately symmetry-breaking negative control. Verify nontrivial task behavior separately: a constant zero output passes commutation while conveying no useful prediction.
+
+Finite transformations provide empirical evidence, not an all-input/all-rotation proof. A mathematical guarantee needs an architectural argument that every operation, preprocessing rule, neighbor policy, and readout respects the representation, plus tests that the implementation realizes it.
+
+Keep four uncertainty fields separate: variation across repeated training, finite-test uncertainty over independent trajectories/graphs, numerical sensitivity, and predictive uncertainty about future targets. For a deterministic point predictor, explicitly say no predictive distribution or interval was evaluated. If intervals/distributions are supplied, assess held-out coverage/calibration and sharpness by horizon or relevant group. For uncertainty in task-error differences, pair the same held-out units, verify identity/order/masks, and resample whole independent groups or justified temporal blocks. Recompute the chosen metric on each replicate. Numeric seed labels alone do not justify pairing training runs; record shared random factors or use an unpaired run-level design. Preserve all planned runs, including failures, and label test-selected solver settings exploratory until confirmed on protected data.
+
+**Results.** No checkpoint, data, score table, or execution output was provided here. Consequently:
+
+| Quantity | Current evidence |
+|---|---|
+| Loose-versus-accurate held-out error difference | Unverified observation; no per-unit/per-run values or uncertainty available. |
+| Reference convergence and gradient agreement | Unmeasured. |
+| Rotation residuals and control outcomes | Unmeasured. |
+| Predictive calibration and hardware compatibility | Unmeasured; no predictive-uncertainty construction supplied. |
+
+The following complete JAX/Diffrax reference code provides an analytic ODE fixture, a solver sweep, a directional-gradient epsilon table, and rotation/relabeling checks with positive and negative controls. It is **unexecuted**. Its thresholds are illustrative float64 fixture choices, not thresholds for the unspecified models. Substitute the actual vector field/checkpoint and full pipeline actions, and evaluate all held-out units. The ODE fixture accepts dense `(trajectory, time, channel)` arrays and a boolean mask of the same shape; it returns predictions and separate per-trajectory metrics, retaining failed solves. Its supplied reference is analytic; real references must first pass the refinement checks above.
+
+```python
+from dataclasses import dataclass
+
+import diffrax as dfx
+import jax
+import jax.numpy as jnp
+import numpy as np
+from jax.flatten_util import ravel_pytree
+
+jax.config.update("jax_enable_x64", True)
+
+
+@dataclass(frozen=True)
+class SolvePolicy:
+    name: str
+    solver: object
+    rtol: float
+    atol: float
+    dtype: str = "float64"
+    dt0: float = 0.01
+    max_steps: int = 100_000
+
+
+def solve(vf, params, y0, times, policy, *, throw=False):
+    dtype = jnp.dtype(policy.dtype)
+    if dtype == jnp.float64 and not jax.config.x64_enabled:
+        raise ValueError("float64 policy requires enabled x64")
+    # params here is a floating-array pytree; partition non-array model metadata.
+    params = jax.tree_util.tree_map(lambda a: jnp.asarray(a, dtype), params)
+    y0, times = jnp.asarray(y0, dtype), jnp.asarray(times, dtype)
+    return dfx.diffeqsolve(
+        dfx.ODETerm(vf), policy.solver,
+        t0=times[0], t1=times[-1], dt0=policy.dt0,
+        y0=y0, args=params, saveat=dfx.SaveAt(ts=times),
+        stepsize_controller=dfx.PIDController(
+            rtol=policy.rtol, atol=policy.atol
+        ),
+        adjoint=dfx.RecursiveCheckpointAdjoint(),
+        max_steps=policy.max_steps, throw=throw,
+    )
+
+
+def discrepancy(actual, expected, *, atol, rtol, scale_floor):
+    actual, expected = np.asarray(actual), np.asarray(expected)
+    if actual.shape != expected.shape or actual.size == 0:
+        raise ValueError("Need nonempty aligned arrays")
+    finite = np.isfinite(actual).all() and np.isfinite(expected).all()
+    if not finite:
+        return {"finite": False, "passed": False,
+                "max_abs": None, "normalized_rms": None,
+                "max_scaled": None}
+    delta = actual - expected
+    rms = lambda a: float(np.sqrt(np.mean(np.square(a))))
+    scale = max(rms(actual), rms(expected), scale_floor)
+    threshold = atol + rtol * np.maximum(np.abs(actual), np.abs(expected))
+    scaled = float(np.max(np.abs(delta) / threshold))
+    return {"finite": True, "passed": scaled <= 1.0,
+            "max_abs": float(np.max(np.abs(delta))),
+            "normalized_rms": rms(delta) / scale,
+            "max_scaled": scaled}
+
+
+def ode_sweep(vf, params, ids, initial, times, targets, valid, reference,
+              policies, *, numerical_atol, numerical_rtol, scale_floor):
+    initial, times = np.asarray(initial), np.asarray(times)
+    targets, reference, valid = map(np.asarray, (targets, reference, valid))
+    if (targets.ndim != 3 or reference.shape != targets.shape
+            or valid.shape != targets.shape or valid.dtype != np.bool_
+            or initial.shape != (targets.shape[0], targets.shape[2])
+            or len(ids) != targets.shape[0] or len(set(ids)) != len(ids)
+            or times.shape != (targets.shape[1],) or len(times) < 2
+            or not np.all(np.diff(times) > 0)):
+        raise ValueError("Invalid trajectory/time/channel contract")
+    if (not np.isfinite(initial).all() or not np.isfinite(times).all()
+            or not valid.reshape(len(ids), -1).any(axis=1).all()
+            or not np.isfinite(targets[valid]).all()
+            or not np.isfinite(reference[valid]).all()):
+        raise ValueError("Invalid eligible inputs, targets, or reference")
+    rows = []
+    for policy in policies:
+        for index, unit_id in enumerate(ids):
+            sol = solve(vf, params, initial[index], times, policy)
+            predictions = np.asarray(sol.ys)
+            if predictions.shape != targets[index].shape:
+                raise ValueError("Saved prediction shape mismatch")
+            if predictions.dtype != np.dtype(policy.dtype):
+                raise ValueError("Actual solve dtype differs from policy")
+            mask = valid[index]
+            success = bool(np.asarray(sol.result == dfx.RESULTS.successful))
+            success = success and np.isfinite(predictions[mask]).all()
+            row = {
+                "unit_id": unit_id, "policy": policy.name,
+                "dtype": str(predictions.dtype),
+                "result": str(sol.result), "successful": bool(success),
+                "stats": {k: int(np.asarray(v)) for k, v in sol.stats.items()
+                          if k in {"num_steps", "num_accepted_steps",
+                                   "num_rejected_steps"}},
+                "eligible_count": int(mask.sum()),
+                "predictions": predictions, "task_mse": None,
+                "numerical_discrepancy": None,
+            }
+            if success:
+                row["task_mse"] = float(np.mean(np.square(
+                    predictions[mask] - targets[index][mask]
+                )))
+                row["numerical_discrepancy"] = discrepancy(
+                    predictions[mask], reference[index][mask],
+                    atol=numerical_atol, rtol=numerical_rtol,
+                    scale_floor=scale_floor,
+                )
+            rows.append(row)
+    # Do not silently aggregate only successful units. Apply a declared failure
+    # rule, and report failure counts with any aggregate task score.
+    return rows
+
+
+def gradient_directions(loss, params, directions, epsilons):
+    flat, unravel = ravel_pytree(params)
+    flat_loss = lambda vector: loss(unravel(vector))
+    gradient = jax.grad(flat_loss)(flat)
+    if not np.isfinite(np.asarray(gradient)).all():
+        raise ValueError("Nonfinite autodiff gradient")
+    rows = []
+    for index, direction in enumerate(directions):
+        direction = jnp.asarray(direction, dtype=flat.dtype)
+        norm = float(jnp.linalg.norm(direction))
+        if direction.shape != flat.shape or not np.isfinite(norm) or norm == 0:
+            raise ValueError("Invalid parameter direction")
+        direction = direction / norm
+        autodiff = float(jnp.vdot(gradient, direction))
+        for epsilon in epsilons:
+            if epsilon <= 0:
+                raise ValueError("Epsilon must be positive")
+            forward = float(flat_loss(flat + epsilon * direction))
+            backward = float(flat_loss(flat - epsilon * direction))
+            finite_difference = (forward - backward) / (2 * epsilon)
+            rows.append({
+                "direction": index, "epsilon": float(epsilon),
+                "autodiff": autodiff, "finite_difference": finite_difference,
+                "finite": bool(np.isfinite(finite_difference)),
+                "absolute_difference": abs(autodiff - finite_difference),
+            })
+    # Inspect the whole epsilon/tolerance table, not just its best-looking row.
+    return np.asarray(gradient), rows
+
+
+def proper_rotation(rng):
+    matrix, _ = jnp.linalg.qr(jnp.asarray(rng.normal(size=(3, 3))))
+    matrix = matrix.at[:, -1].multiply(jnp.linalg.det(matrix))
+    rotation = np.asarray(matrix)
+    np.testing.assert_allclose(rotation.T @ rotation, np.eye(3), atol=1e-12)
+    np.testing.assert_allclose(np.linalg.det(rotation), 1.0, atol=1e-12)
+    return matrix
+
+
+def equivariance_rows(pipeline, examples, transformations,
+                      input_action, output_action, *, atol, rtol, scale_floor):
+    rows = []
+    for unit_id, example in examples:
+        original = pipeline(example)
+        for name, transformation in transformations:
+            actual = pipeline(input_action(example, transformation))
+            expected = output_action(original, transformation)
+            if set(actual) != set(expected):
+                raise ValueError("Output channel mismatch")
+            for channel in expected:
+                rows.append({
+                    "unit_id": unit_id, "transformation": name,
+                    "channel": channel,
+                    **discrepancy(actual[channel], expected[channel],
+                                  atol=atol, rtol=rtol,
+                                  scale_floor=scale_floor),
+                })
+    return rows
+
+
+# Explicit fixture representations: invariant graph scalar, polar node vectors,
+# and a graph Cartesian rank-two tensor. No reflection claim is tested here.
+def point_input_action(example, transformation):
+    rotation, permutation = transformation
+    return {
+        "positions": (example["positions"] @ rotation.T)[permutation],
+        "weights": example["weights"][permutation],
+    }
+
+
+def point_output_action(output, transformation):
+    rotation, permutation = transformation
+    return {
+        "scalar": output["scalar"],
+        "vectors": (output["vectors"] @ rotation.T)[permutation],
+        "tensor": rotation @ output["tensor"] @ rotation.T,
+    }
+
+
+def equivariant_control(example):
+    centered = example["positions"] - example["positions"].mean(axis=0)
+    weighted = centered * example["weights"][:, None]
+    return {
+        "scalar": jnp.sum(centered * weighted),
+        "vectors": weighted,
+        "tensor": centered.T @ weighted,
+    }
+
+
+def broken_control(example):
+    output = equivariant_control(example)
+    return {**output,
+            "vectors": output["vectors"] @ jnp.diag(jnp.array([1., 2., 3.]))}
+
+
+def main():
+    # Analytic positive control: y' = theta*y, y(t) = y0*exp(theta*t).
+    theta = jnp.array(0.7, dtype=jnp.float64)
+    times = np.linspace(0., 1., 21)
+    initial = np.array([[1.], [2.]])
+    reference = initial[:, None, :] * np.exp(float(theta) * times[None, :, None])
+    policies = [
+        SolvePolicy("loose-f32", dfx.Tsit5(), 1e-3, 1e-5, "float32"),
+        SolvePolicy("loose-f64", dfx.Tsit5(), 1e-3, 1e-5),
+        SolvePolicy("medium-f64", dfx.Tsit5(), 1e-6, 1e-8),
+        SolvePolicy("tight-f64", dfx.Tsit5(), 1e-9, 1e-11),
+        SolvePolicy("tighter-f64", dfx.Tsit5(), 1e-11, 1e-13),
+        SolvePolicy("independent-f64", dfx.Dopri8(), 1e-11, 1e-13),
+    ]
+    vf = lambda t, y, parameter: parameter * y
+    ode_rows = ode_sweep(
+        vf, theta, ("analytic-a", "analytic-b"), initial, times,
+        reference, np.ones(reference.shape, dtype=bool), reference, policies,
+        numerical_atol=1e-8, numerical_rtol=1e-8, scale_floor=1e-12,
+    )
+    # Audit the endpoint derivative against the analytic derivative. A real audit
+    # should also use its training loss and its actual training adjoint.
+    endpoint = lambda parameter: solve(
+        vf, parameter, jnp.array([2.]), times, policies[-2], throw=True
+    ).ys[-1, 0]
+    derivative, gradient_rows = gradient_directions(
+        endpoint, theta, (np.array([1.]),), np.logspace(-2, -7, 6)
+    )
+    analytic_derivative = 2 * np.exp(float(theta))
+    print("analytic derivative:", analytic_derivative,
+          "autodiff derivative:", derivative)
+    print("gradient epsilon table:", gradient_rows)
+    print("ODE table:", [{k: v for k, v in row.items() if k != "predictions"}
+                         for row in ode_rows])
+
+    rng = np.random.default_rng(2026)
+    rotation_1, rotation_2 = proper_rotation(rng), proper_rotation(rng)
+    permutation = jnp.array([2, 0, 3, 1])
+    identity_permutation = jnp.arange(4)
+    fixed_rotation = jnp.array([[0., -1., 0.], [1., 0., 0.], [0., 0., 1.]])
+    transformations = [
+        ("identity", (jnp.eye(3), identity_permutation)),
+        ("fixed-z-rotation", (fixed_rotation, identity_permutation)),
+        ("random-1", (rotation_1, identity_permutation)),
+        ("random-2", (rotation_2, identity_permutation)),
+        ("composition", (rotation_2 @ rotation_1, identity_permutation)),
+        ("relabel", (jnp.eye(3), permutation)),
+        ("rotation-and-relabel", (rotation_1, permutation)),
+    ]
+    examples = [("generic", {
+        "positions": jnp.array([[1., 2., 0.], [-1., 0., 3.],
+                                [2., -2., 1.], [0., 1., -1.]]),
+        "weights": jnp.array([1., 2., 3., 4.]),
+    })]
+    good = equivariance_rows(
+        equivariant_control, examples, transformations,
+        point_input_action, point_output_action,
+        atol=1e-10, rtol=1e-10, scale_floor=1e-12,
+    )
+    bad = equivariance_rows(
+        broken_control, examples, transformations,
+        point_input_action, point_output_action,
+        atol=1e-10, rtol=1e-10, scale_floor=1e-12,
+    )
+    assert all(row["passed"] for row in good), good
+    assert any(not row["passed"] for row in bad), bad
+    print("positive rotation control:", good)
+    print("negative rotation control:", bad)
+    print("environment:", {"jax": jax.__version__, "diffrax": dfx.__version__,
+                           "numpy": np.__version__, "backend": jax.default_backend(),
+                           "devices": [str(device) for device in jax.devices()],
+                           "x64_enabled": jax.config.x64_enabled})
+
+
+if __name__ == "__main__":
+    main()
+```
+
+**Decision.** The claims remain unsubstantiated with the available evidence. If the fixed checkpoint shows a practically useful, protected-test improvement at loose settings, report that specific inference-policy result and its numerical discrepancy. A training-method claim additionally needs common-policy cross-evaluation, comparable resources, and repeated training evidence. If residuals meet prespecified tolerances and controls behave correctly, report empirical SO(3) equivariance for the tested pipeline, inputs, precision, and transformations; reserve a universal guarantee for the construction argument. The next discriminating measurements are the fixed-checkpoint convergence sweep and the full-pipeline commutation table. Neither requires retraining; retraining becomes necessary to isolate the training-setting claim.
+
+**Run record.** Create one record per actual training run and one per evaluation rerun, with parent links. For this delivery the honest record is:
+
+```yaml
+run_id: neural-ode-and-so3-checks-proposed-v1
+parent_run_id: null
+hypothesis: Separate predictive performance from solver accuracy and SO(3) commutation.
+change: Proposed evaluation protocol and unexecuted analytic/control harness.
+data:
+  real_split_ids_and_hashes: null  # No data supplied.
+  real_held_out_ids_masks_weights: null
+  fixture_axes: [trajectory, time, state_channel]
+  fixture_ids: [analytic-a, analytic-b, generic]
+  contamination: unresolved for real checkpoints; inapplicable to synthetic controls
+model:
+  real_architecture_checkpoint_training_config: null  # Not supplied.
+  fixture: analytic linear ODE plus Cartesian positive/negative controls
+  evaluation: policies and transformations specified in inline code
+seed:
+  fixture_rotation_seed: 2026
+  training_runs: null  # None trained.
+  pairing: same fixture units across policies; no paired-training claim
+  real_initialization_data_augmentation_policy: null
+  inference_randomness: deterministic fixture
+  real_selection_and_tuning_policy: null
+environment:
+  actual_package_versions_backend_devices: null  # Code not executed.
+  requested: JAX/Diffrax/NumPy; explicit x64 for float64 fixtures
+artifacts:
+  protocol_and_code: inline response
+  real_checkpoints_predictions_logs: null  # No model execution.
+metrics:
+  proposed: per-trajectory MSE; numerical residual; gradient epsilon table; symmetry residual
+  observed_values_uncertainty_failures: null
+budget:
+  actual_training_inference_time_cost: null  # Unmeasured; no model execution.
+  planned_real_common_budget_policy: to be fixed before repeated-training comparisons
+status: planned
+decision:
+  result: neither research claim established here
+  predictive_uncertainty: no distribution or interval supplied/evaluated
+  limitations: reference/control code and real-model checks remain unexecuted
+  next_action: frozen-checkpoint numerical sweep and full-pipeline SO(3) residual tests
+```

@@ -1,0 +1,43 @@
+B has the lower observed mean error, but these results do not establish which method is better at a common resource budget. A uses fewer training tokens. The next useful experiment is a comparison of both methods at the same budgets, with planned replications and a protected evaluation protocol.
+
+The evaluation population is not yet specified. We have one aggregate held-out score per training run, with axes method × run; the underlying sample/group/token axes, dependence, test size, held-out IDs, split provenance, preprocessing, masks and weights are unknown. Assuming the numbers use the same error metric and lower is better, they describe performance on the supplied held-out evaluation. Generalization to a deployment population, and even comparability of the scores, require that missing contract.
+
+Before collecting more results, fix the primary error metric, its units, denominator and weighting; define whether the decision concerns repeatable quality at equal exposure, quality at equal measured cost, or the supplied endpoint checkpoints. Set a minimum useful error reduction δ and the additional cost you would accept for it. Choose a fixed replication/stopping plan, comparable tuning opportunities, and a validation-only checkpoint selection rule. Add secondary metrics only where they affect the intended use, such as latency, failure frequency or domain-specific quality. Include a relevant inexpensive baseline if none has been evaluated.
+
+Validity checks remain unresolved. Verify identical held-out IDs, labels, eligibility, ordering and weighting across methods; audit train/test overlap, duplicates or shared groups, preprocessing fitting, temporal availability where relevant, and any test-driven tuning. If the held-out set has already guided selection, treat these scores as exploratory and reserve fresh confirmation data. The model family is unspecified, so domain checks must be chosen once it is known: for example, causal forecasting windows, image preprocessing/group policies, or frozen prompts/tokenizers/decoding for language models. No predictive probabilities or intervals were supplied, so predictive calibration and coverage have not been assessed. Training-seed variation is not a calibrated predictive uncertainty distribution.
+
+The supplied results are:
+
+| Method | Seed → error | Runs | Mean error | Observed range | Tokens per run | Total supplied training tokens |
+|---|---|---:|---:|---:|---:|---:|
+| A | 0 → 0.14; 1 → 0.16 | 2 | 0.1500 | 0.14–0.16 | 1 million | 2 million |
+| B | 0 → 0.13; 1 → 0.18; 2 → 0.14; 3 → 0.12 | 4 | 0.1425 | 0.12–0.18 | 3 million | 12 million |
+
+The descriptive difference is A minus B = 0.1500 − 0.1425 = 0.0075 error units, favoring B at the supplied endpoints. If these errors are proportions, that is 0.75 percentage points. B's observed range is wider, but two and four runs cannot reliably establish which method has greater training variability. Keep all six scores, including B's 0.18. Do not discard extra B runs or compare only the best checkpoints.
+
+B received three times the training exposure per run. This does not establish three times the physical compute or cost: architecture, hardware, throughput and training configuration are unknown. The sixfold difference in total tokens also reflects B's larger run count. These facts confound a method-wide ranking. Numeric seed labels 0 and 1 do not justify a paired training-run test without a documented mapping of shared random factors. Unequal counts can support an appropriate unpaired analysis; here the tiny counts limit precision. No confidence interval or significance test has been computed, and the aggregate scores cannot quantify finite-test uncertainty. Neither superiority nor equivalence is established.
+
+My decision would depend on the constraint. For a one-million-token exposure limit, A is the only method with evidence at that budget. If three million tokens are acceptable and you prioritize the observed endpoint average, B is a provisional candidate for confirmation. I would not claim repeatable superiority, or choose a best run using these held-out scores. Evidence that the common-budget error reduction clears δ, with acceptable measured cost and reliability, would justify switching the operational choice.
+
+Collect the following evidence, in priority order:
+
+1. **A matched budget experiment.** Evaluate A and B at both 1 million and 3 million tokens, preferably adding intermediate checkpoints for performance curves. Prespecify whether each budget is a separately scheduled training run or a prefix of a longer run; a 1-million-token checkpoint on a 3-million-token schedule may answer a different question from a dedicated short-budget run. Measure device time, accelerator type/count, FLOPs where feasible and money, including tuning and inference cost. If physical cost drives the decision, also compare at a common cost or time budget.
+2. **Balanced planned replications.** Use equal planned run counts within each method-by-budget cell, retain all failed and completed runs, and document initialization, data-order, augmentation and selection randomness. Treat the existing six runs as pilot evidence. Choose the confirmation replication count from the precision needed around δ and the available resources; there is no universal seed count that guarantees a decision. Share compatible random factors only by an explicit design, and use unpaired run inference otherwise. Benchmark variation can also come from data sampling and hyperparameter choices, not only initialization. [Bouthillier et al., Accounting for Variance in Machine Learning Benchmarks](https://arxiv.org/abs/2103.03098).
+3. **Aligned per-unit predictions and errors.** Save unit IDs, targets, masks, weights and outputs for every run. Estimate the common-budget difference across repeated training, and separately assess finite-test uncertainty by paired resampling of the same held-out independent units or whole justified groups/temporal blocks. State which fitted models are held fixed. Recompute nonlinear metrics on each resample. If both training and test variation must enter one interval, use a design that preserves their nesting and dependence. More test examples do not substitute for more independent training runs.
+4. **Protected confirmation and relevant validity checks.** Freeze data, metric, tuning and checkpoint rules before confirmation. Assess the actual deployment population and relevant domain behavior. If predictive uncertainty is part of the method's claim, collect calibration/coverage and sharpness evidence separately. Prespecify numerical or generation-sampling sensitivity checks when applicable. A causal ablation is useful only after specifying which component difference you want to identify and matching the remaining conditions.
+
+Keep a reproducible run record for each existing and new run:
+
+| Record field | Current evidence / required next entry |
+|---|---|
+| Run and parent IDs | Six supplied method/seed entries; assign immutable run IDs and parent links for continuations or controlled interventions. |
+| Hypothesis and change | Existing endpoint comparison; next: common-budget error difference relative to δ, with exact intervention/configuration changes. |
+| Data and protocol | Currently unknown; preserve split/manifests/hashes, unit IDs/axes, preprocessing, masks/weights, leakage audit and metric implementation. |
+| Model and randomness | Method labels and seed integers only; record architecture/checkpoint/tokenizer revisions, schedules, tuning/selection and actual random-factor streams. |
+| Environment and artifacts | Unknown; record package/backend/device versions and hashes/locations of checkpoints, predictions and logs. |
+| Metrics and budgets | Retain every supplied score and exposure shown above; add per-unit results, failures, measured time/cost and planned versus actual budgets. |
+| Status and decision | Scores are reported by you; underlying runs and checks were not independently verified here. Proposed experiments are planned, not executed. Current decision: endpoint mean favors B; method superiority/equivalence unresolved. |
+
+Inspectable code, data and experiment reporting support reproducibility; they do not alone prove a winner. [Pineau et al., Improving Reproducibility in Machine Learning Research](https://jmlr.org/papers/v22/20-303.html).
+
+Only the supplied-score arithmetic and analysis are reported here. No training, checkpoint evaluation, model/application code, statistical interval procedure, hardware test or domain check was executed in this session.

@@ -1,0 +1,31 @@
+Looking at this, there's no code to write here — it's an experiment-design and statistics question, so I'll answer it directly.
+
+## Can you conclude Method B is better?
+
+No — the comparison as given doesn't support a confident conclusion in either direction, for two independent reasons.
+
+**1. The comparison is confounded by training budget.** Method A was trained for 1M tokens; Method B for 3M tokens. Any difference you observe could be due to the method, the extra 2M tokens of training, or some interaction between them. Right now you cannot attribute the gap to "Method B is a better method" — it might just be "more training helps, regardless of method." You'd need Method A trained to 3M tokens too (or Method B's 1M-token checkpoint) before the comparison isolates the method itself.
+
+**2. The sample sizes are too small for the apparent gap to mean anything.** Let's look at the numbers:
+
+| | n | values | mean | sample std | SE of mean |
+|---|---|---|---|---|---|
+| A | 2 | 0.14, 0.16 | 0.150 | 0.0141 | 0.0100 |
+| B | 4 | 0.13, 0.18, 0.14, 0.12 | 0.1425 | 0.0263 | 0.0131 |
+
+The difference in means is 0.0075. The standard error of that difference is roughly √(0.0100² + 0.0131²) ≈ 0.0165 — more than **twice** the size of the difference itself. With n=2 and n=4, this is nowhere near statistically distinguishable; B's single 0.18 run is as consistent with "same underlying distribution, unlucky seed" as it is with "B is noisier."
+
+`★ Insight ─────────────────────────────────────`
+- With only 2–4 seeds, the standard error of a mean scales as σ/√n — going from n=2 to n=8 only halves your uncertainty, not eliminates it. Seed variance in ML training runs is often underestimated because people eyeball 2–3 runs and assume consistency.
+- Notice B's std (0.026) is nearly double A's (0.014) just from the visible samples — if that holds up with more seeds, B may be the *less stable* method even if its mean ends up slightly lower, which matters a lot if you're deploying a single trained model rather than averaging over many.
+- "Better" for a training method is usually a claim about a *scaling curve* (error vs. compute), not a point estimate — comparing single checkpoints at different budgets is a classic confound in ML experiment reporting.
+`─────────────────────────────────────────────────`
+
+## What to collect next, in priority order
+
+1. **Match the compute budget.** Run Method A out to 3M tokens (and/or evaluate Method B's checkpoint at 1M tokens). You need a same-budget comparison before the method label means anything.
+2. **More seeds, matched counts.** Run both methods with the same number of seeds (e.g., 5–8 each) at the same budget. This lets you compute a proper two-sample test (Welch's t-test, since variances look unequal) instead of eyeballing means.
+3. **Full learning curves, not single checkpoints.** Log held-out error at several token counts (e.g., 0.5M, 1M, 2M, 3M) for both methods. This tells you whether B is actually learning faster/better or just caught a lucky window, and reveals whether the methods' relative ranking is stable or crosses over.
+4. **Report variance alongside the mean** once you have more seeds — if B's higher variance persists, that's a real finding about robustness, independent of which mean is lower.
+
+Once you have equal-budget, equal-seed-count data with curves, a formal significance test (or simply checking whether the confidence intervals overlap) will give you a real answer instead of an artifact of budget mismatch and small-n noise.

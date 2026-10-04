@@ -1,0 +1,40 @@
+{
+  "selected_primary": "deep-learning",
+  "selected_supporting": [],
+  "correctness": "correct",
+  "posterior_boundary": "preserved",
+  "rationale": "NNX sequence training selects and reads deep-learning for RNG, optimizer, held-out checks and recovery. Immediate display correction precedes selection; no Bayesian body is read.",
+  "full_payloads_manually_read": true,
+  "display_reads_manually_verified": true,
+  "conflicts_or_resident_choices": [],
+  "evidence": [
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-candidate-3/response.txt",
+      "line": 1
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-candidate-3/read-events.jsonl",
+      "line": 2
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-candidate-3/research-notes.md",
+      "line": 1
+    }
+  ],
+  "reviewed_utc": "2026-10-04T03:08:10.322444+00:00",
+  "catalog_manifest_sha256": "3f3e5414d6a6c76a68c4038003aab5c025f32a7b2451f4245304b7261c9a1df0",
+  "payloads": {
+    "response.txt": {
+      "sha256": "745b9aa955774194ecb38a6a46dd88ea17ac4e5d403d2d0466c7fa48389336d4",
+      "bytes": 859,
+      "lines": 7
+    },
+    "research-notes.md": {
+      "sha256": "530ccf7fb7d0661cfd1d27b6bf9f9c1e9657ca74771c9abe338cc7af819edb21",
+      "bytes": 1345,
+      "lines": 13
+    }
+  },
+  "grading_source": "conductor manual full-response judgment",
+  "semantic_grading_automated": false
+}

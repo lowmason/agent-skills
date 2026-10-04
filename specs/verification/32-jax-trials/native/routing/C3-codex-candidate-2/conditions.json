@@ -1,0 +1,60 @@
+{
+  "trial": "C3-codex-candidate-2",
+  "family": "C3",
+  "condition": "candidate",
+  "fresh_context": true,
+  "fork_turns": "none",
+  "agent_type": "default",
+  "runtime": "built-in Codex collaboration agent",
+  "model": "inherited active runtime; exact identifier unavailable",
+  "reasoning_effort": "inherited active runtime; exact value unavailable",
+  "catalog": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/candidate-catalog",
+  "catalog_entries": 138,
+  "catalog_manifest_sha256": "3f3e5414d6a6c76a68c4038003aab5c025f32a7b2451f4245304b7261c9a1df0",
+  "prompt_sha256": "0fb4f2c3a82f4dccad78803b769a5ac0a7919feefb83b8f69092b5906e697803",
+  "selection_simulation": true,
+  "real_auto_loading_observed": false,
+  "tool_policy": "recorded local prompt and selected SKILL.md reads; own trial artifacts only",
+  "resident_global_guidance_may_be_available": true,
+  "spawn_identity": {
+    "task_name": "/root/native_c3_candidate_2",
+    "source": "actual collaboration.spawn_agent return",
+    "recorded_utc": "2026-10-04T03:12:38.678845+00:00"
+  },
+  "completion": "Complete substantive response and research notes",
+  "completed_utc": "2026-10-04T03:15:47.928953+00:00",
+  "first_prompt_read": {
+    "sha256": "0fb4f2c3a82f4dccad78803b769a5ac0a7919feefb83b8f69092b5906e697803",
+    "bytes": 89677,
+    "lines": 620
+  },
+  "actual_skill_reads": [
+    {
+      "read_id": "systematic-debugging",
+      "native_label": "systematic-debugging",
+      "sha256": "1f6eac398945ad67e37cc6ae412a893815a07da32b4b8a510d4a4933f35bb2f7",
+      "bytes": 10203,
+      "read_event_line": 2
+    },
+    {
+      "read_id": "optimize-jax",
+      "native_label": "optimize-jax",
+      "sha256": "e177b588bf9cbb73654b16dc594a294a782f098cbb4f3226856e1f42835a4200",
+      "bytes": 9783,
+      "read_event_line": 3
+    }
+  ],
+  "payloads": {
+    "response.txt": {
+      "sha256": "11cff13e9ae4950899d65c5a9a6354563b06ea12bf393d489be7dae488165fe4",
+      "bytes": 851,
+      "lines": 8
+    },
+    "research-notes.md": {
+      "sha256": "498d9508ceaa01b365651b8bc6febf4dd60a214339febf69bf9d5493e89d20f7",
+      "bytes": 1286,
+      "lines": 12
+    }
+  },
+  "execution_claim": "No underlying application implementation or execution observed; selection simulation only"
+}

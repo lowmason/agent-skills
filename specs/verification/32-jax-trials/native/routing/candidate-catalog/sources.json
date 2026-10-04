@@ -1,0 +1,99 @@
+{
+  "created_utc": "2026-10-04T02:17:04.367038+00:00",
+  "repository_priority": true,
+  "duplicate_read_ids": "Distinct system bodies retain the native label and use the [system] read ID suffix.",
+  "system_catalog_policy": "Only the four session-advertised system skills are included.",
+  "advertised_skill_recovery": {
+    "advertised_path": "/Users/lowell/.agents/skills/recommend-causal-design/SKILL.md",
+    "availability": "advertised installed link dangling at freeze time",
+    "recovered_git_commit": "b2cfe552706eb0fc23f53f274305a419c8744b23",
+    "git_path": "skills/recommend-causal-design/SKILL.md",
+    "sha256": "65be2d92f9240780d1e73dc1a476508a0204aa7788963fe95f0db6c157502e5a"
+  },
+  "active_sources": [
+    [
+      "",
+      "/Users/lowell/.agents/skills"
+    ],
+    [
+      "",
+      "/Users/lowell/.codex/skills/.system"
+    ],
+    [
+      "aws-startup-advisor",
+      "/Users/lowell/.codex/plugins/cache/claude-plugins-official/aws-startup-advisor/2.0.2/skills"
+    ],
+    [
+      "claude-code-setup",
+      "/Users/lowell/.codex/plugins/cache/claude-plugins-official/claude-code-setup/1.0.0/skills"
+    ],
+    [
+      "claude-md-management",
+      "/Users/lowell/.codex/plugins/cache/claude-plugins-official/claude-md-management/1.0.0/.codex-plugin/migrated-command-skills"
+    ],
+    [
+      "claude-md-management",
+      "/Users/lowell/.codex/plugins/cache/claude-plugins-official/claude-md-management/1.0.0/skills"
+    ],
+    [
+      "skill-creator",
+      "/Users/lowell/.codex/plugins/cache/claude-plugins-official/skill-creator/local/skills"
+    ],
+    [
+      "app-6a0b1644959c8191a6ecd016190651cd",
+      "/Users/lowell/.codex/plugins/cache/openai-curated-remote/app-6a0b1644959c8191a6ecd016190651cd/1.0.0/skills"
+    ],
+    [
+      "hugging-face",
+      "/Users/lowell/.codex/plugins/cache/openai-curated-remote/hugging-face/1.0.0/skills"
+    ],
+    [
+      "nvidia",
+      "/Users/lowell/.codex/plugins/cache/openai-curated-remote/nvidia/1.4.0/skills"
+    ],
+    [
+      "plugin-management",
+      "/Users/lowell/.codex/plugins/cache/openai-curated-remote/plugin-management/0.1.0/skills"
+    ],
+    [
+      "openai-developers",
+      "/Users/lowell/.codex/plugins/cache/openai-curated-remote/openai-developers/1.3.6/skills"
+    ],
+    [
+      "pages",
+      "/Users/lowell/.codex/plugins/cache/openai-curated-remote/pages/0.1.19/skills"
+    ],
+    [
+      "sites",
+      "/Users/lowell/.codex/plugins/cache/openai-curated-remote/sites/1.0.0-b/skills"
+    ],
+    [
+      "work-pets",
+      "/Users/lowell/.codex/plugins/cache/openai-curated-remote/work-pets/0.1.6/skills"
+    ],
+    [
+      "visualize",
+      "/Users/lowell/.codex/plugins/cache/openai-bundled/visualize/1.0.46/skills"
+    ],
+    [
+      "documents",
+      "/Users/lowell/.codex/plugins/cache/openai-primary-runtime/documents/26.905.11957/skills"
+    ],
+    [
+      "pdf",
+      "/Users/lowell/.codex/plugins/cache/openai-primary-runtime/pdf/26.905.11957/skills"
+    ],
+    [
+      "presentations",
+      "/Users/lowell/.codex/plugins/cache/openai-primary-runtime/presentations/26.905.11957/skills"
+    ],
+    [
+      "template-creator",
+      "/Users/lowell/.codex/plugins/cache/openai-primary-runtime/template-creator/26.905.11957/skills"
+    ],
+    [
+      "spreadsheets",
+      "/Users/lowell/.codex/plugins/cache/openai-primary-runtime/spreadsheets/26.905.11957/skills"
+    ]
+  ]
+}

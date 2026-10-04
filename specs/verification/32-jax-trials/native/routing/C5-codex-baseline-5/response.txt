@@ -1,0 +1,8 @@
+Primary skill: bayesian-workflow.
+Supporting skills: none.
+The task explicitly asks to use BlackJAX to sample a posterior distribution.
+The frozen catalog names both BlackJAX and posterior distributions as bayesian-workflow triggers.
+Its full body treats BlackJAX NUTS as a first-class sampler and covers warmup, sampling, constrained posterior output, and convergence diagnostics.
+optimize-jax is unnecessary without a tracing, performance, memory, or placement issue; deep-learning requires a neural-model task.
+recommend-probabilistic-model concerns choosing a model rather than executing posterior sampling; tuning and experiment-tracking needs are not stated.
+This is a skill-selection result only; no sampling or implementation was performed.

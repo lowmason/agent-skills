@@ -1,0 +1,279 @@
+A timer around a jitted call can finish while the device is still working. Your symptoms are consistent with **asynchronous dispatch**, possibly combined with **compilation for new input shapes**. Those are hypotheses about your loop; without the loop or measurements, I cannot identify its dominant bottleneck. JAX documents that reading an array on the host, or explicitly waiting for it, forces completion. [JAX asynchronous dispatch](https://docs.jax.dev/en/latest/async_dispatch.html).
+
+Measure three things separately:
+
+- **First call for a signature:** tracing, lowering, compilation/cache loading, and execution can all contribute.
+- **Warmed, synchronized call with inputs already on the device:** elapsed time includes Python dispatch, device execution, and the completion wait. It is not a pure kernel-duration measurement.
+- **Request latency:** begin before preprocessing and end when the actual response is usable, including placement, output transfer, and postprocessing where applicable. [JAX benchmarking guide](https://docs.jax.dev/en/latest/benchmarking.html).
+
+The following self-contained harness reproduces those distinctions. Save it as `diagnose_jax.py` in your existing JAX environment. Its toy model processes `[batch, length, width]` arrays and returns a dictionary, so synchronization covers the entire output tree. `jax.block_until_ready` accepts pytrees. Input placement is also asynchronous and is explicitly completed before the resident-input measurements. [Completion API](https://docs.jax.dev/en/latest/_autosummary/jax.block_until_ready.html), [placement API](https://docs.jax.dev/en/latest/_autosummary/jax.device_put.html).
+
+```python
+import argparse
+import platform
+from time import perf_counter
+
+import jax
+import jax.numpy as jnp
+import jaxlib
+import numpy as np
+
+
+MILLISECONDS_PER_SECOND = 1000.0
+
+
+def forward(params, tokens, valid_mask):
+    # This toy has independent token transforms, followed by a masked mean.
+    hidden = tokens
+    for weight in params:
+        hidden = jnp.tanh(hidden @ weight)
+    masked = jnp.where(valid_mask[..., None], hidden, 0.0)
+    count = jnp.maximum(valid_mask.sum(axis=1, keepdims=True), 1)
+    return {
+        "pooled": masked.sum(axis=1) / count,
+        "token_scores": masked.sum(axis=-1),
+    }
+
+
+def preprocess(raw_tokens, bucket):
+    tokens = np.ascontiguousarray(raw_tokens, dtype=np.float32)
+    batch, length, width = tokens.shape
+    mask = np.ones((batch, length), dtype=np.bool_)
+    if bucket is None:
+        return tokens, mask
+    if length > bucket:
+        raise ValueError(f"Length {length} exceeds bucket {bucket}")
+    padded = np.zeros((batch, bucket, width), dtype=np.float32)
+    padded_mask = np.zeros((batch, bucket), dtype=np.bool_)
+    padded[:, :length, :] = tokens
+    padded_mask[:, :length] = mask
+    return padded, padded_mask
+
+
+def summary(samples_ms):
+    return (
+        f"median={np.median(samples_ms):.3f} ms, "
+        f"p95={np.percentile(samples_ms, 95):.3f} ms"
+    )
+
+
+def resident_samples(infer, params, device_inputs, repeats):
+    samples = {"dispatch": [], "wait_after_return": [], "ready_total": []}
+    for _ in range(repeats):
+        start = perf_counter()
+        outputs = infer(params, *device_inputs)
+        returned = perf_counter()
+        jax.block_until_ready(outputs)
+        ready = perf_counter()
+        samples["dispatch"].append((returned - start) * MILLISECONDS_PER_SECOND)
+        samples["wait_after_return"].append(
+            (ready - returned) * MILLISECONDS_PER_SECOND
+        )
+        samples["ready_total"].append((ready - start) * MILLISECONDS_PER_SECOND)
+    return samples
+
+
+def run_request(infer, params, raw_tokens, bucket, device):
+    host_inputs = preprocess(raw_tokens, bucket)
+    device_inputs = jax.device_put(host_inputs, device)
+    outputs = infer(params, *device_inputs)
+    host_outputs = jax.device_get(outputs)
+    return np.argmax(host_outputs["pooled"], axis=-1)
+
+
+def fenced_request_stages(infer, params, raw_tokens, bucket, device):
+    start = perf_counter()
+    host_inputs = preprocess(raw_tokens, bucket)
+    preprocessed = perf_counter()
+    device_inputs = jax.device_put(host_inputs, device)
+    jax.block_until_ready(device_inputs)
+    placed = perf_counter()
+    outputs = infer(params, *device_inputs)
+    jax.block_until_ready(outputs)
+    computed = perf_counter()
+    host_outputs = jax.device_get(outputs)
+    copied = perf_counter()
+    labels = np.argmax(host_outputs["pooled"], axis=-1)
+    finished = perf_counter()
+    stages = {
+        "preprocess": preprocessed - start,
+        "input_placement": placed - preprocessed,
+        "inference_ready": computed - placed,
+        "output_to_host": copied - computed,
+        "postprocess": finished - copied,
+        "total": finished - start,
+    }
+    return labels, {
+        name: duration * MILLISECONDS_PER_SECOND
+        for name, duration in stages.items()
+    }
+
+
+def check_toy_padding(infer, params, raw_tokens, bucket, device):
+    native_inputs = jax.device_put(preprocess(raw_tokens, None), device)
+    padded_inputs = jax.device_put(preprocess(raw_tokens, bucket), device)
+    native = jax.device_get(infer(params, *native_inputs))
+    padded = jax.device_get(infer(params, *padded_inputs))
+    np.testing.assert_allclose(
+        native["pooled"], padded["pooled"], rtol=1e-4, atol=1e-5
+    )
+    length = raw_tokens.shape[1]
+    np.testing.assert_allclose(
+        native["token_scores"], padded["token_scores"][:, :length],
+        rtol=1e-4, atol=1e-5,
+    )
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--mode", choices=("latency", "compile"), default="latency")
+    parser.add_argument("--lengths", type=int, nargs="+", default=[128, 256, 128, 512, 256])
+    parser.add_argument("--batch", type=int, default=4)
+    parser.add_argument("--width", type=int, default=256)
+    parser.add_argument("--layers", type=int, default=4)
+    parser.add_argument("--repeats", type=int, default=30)
+    parser.add_argument("--bucket", type=int)
+    parser.add_argument("--log-compiles", action="store_true")
+    parser.add_argument("--trace-dir")
+    args = parser.parse_args()
+    positive_values = [args.batch, args.width, args.layers, args.repeats, *args.lengths]
+    if any(value <= 0 for value in positive_values):
+        parser.error("Dimensions, lengths, layers, and repeats must be positive")
+    if args.bucket is not None and args.bucket < max(args.lengths):
+        parser.error("The bucket must cover every requested length")
+    if args.trace_dir and args.mode != "latency":
+        parser.error("Use --trace-dir with --mode latency")
+
+    if args.log_compiles:
+        jax.config.update("jax_log_compiles", True)
+        jax.config.update("jax_explain_cache_misses", True)
+
+    device = jax.devices()[0]
+    print(f"Python={platform.python_version()}, JAX={jax.__version__}, jaxlib={jaxlib.__version__}")
+    print(f"backend={jax.default_backend()}, device={device}, x64={jax.config.jax_enable_x64}")
+    print(f"batch={args.batch}, width={args.width}, layers={args.layers}, dtype=float32")
+    print("Backend initialization, parameter loading, and source-data generation are outside timings.")
+
+    rng = np.random.default_rng(0)
+    host_params = tuple(
+        (rng.standard_normal((args.width, args.width)) / np.sqrt(args.width)).astype(np.float32)
+        for _ in range(args.layers)
+    )
+    params = jax.device_put(host_params, device)
+    jax.block_until_ready(params)
+    raw_cases = [
+        rng.standard_normal((args.batch, length, args.width)).astype(np.float32)
+        for length in args.lengths
+    ]
+    infer = jax.jit(forward)  # Keep this callable for all requests.
+    compiled_signatures = set()
+
+    for raw_tokens in raw_cases:
+        host_inputs = preprocess(raw_tokens, args.bucket)
+        device_inputs = jax.device_put(host_inputs, device)
+        jax.block_until_ready(device_inputs)
+        signature = tuple((array.shape, str(array.dtype)) for array in device_inputs)
+        print(f"\nrequested_length={raw_tokens.shape[1]}, signature={signature}")
+
+        if args.mode == "compile":
+            if signature in compiled_signatures:
+                print("Signature already measured in this process")
+                continue
+            start = perf_counter()
+            lowered = infer.lower(params, *device_inputs)
+            lowered_at = perf_counter()
+            executable = lowered.compile()
+            compiled_at = perf_counter()
+            outputs = executable(params, *device_inputs)
+            jax.block_until_ready(outputs)
+            ready_at = perf_counter()
+            print(f"trace_and_lower_ms={(lowered_at - start) * MILLISECONDS_PER_SECOND:.3f}")
+            print(f"compile_or_cache_load_ms={(compiled_at - lowered_at) * MILLISECONDS_PER_SECOND:.3f}")
+            print(f"first_execution_ready_ms={(ready_at - compiled_at) * MILLISECONDS_PER_SECOND:.3f}")
+            compiled_signatures.add(signature)
+            continue
+
+        start = perf_counter()
+        outputs = infer(params, *device_inputs)
+        jax.block_until_ready(outputs)
+        print(f"first_call_this_visit_ready_ms={(perf_counter() - start) * MILLISECONDS_PER_SECOND:.3f}")
+        for _ in range(3):
+            jax.block_until_ready(infer(params, *device_inputs))
+
+        samples = resident_samples(infer, params, device_inputs, args.repeats)
+        for name, values in samples.items():
+            print(f"resident_{name}: {summary(values)}")
+
+        run_request(infer, params, raw_tokens, args.bucket, device)
+        request_samples = []
+        for _ in range(args.repeats):
+            start = perf_counter()
+            run_request(infer, params, raw_tokens, args.bucket, device)
+            request_samples.append((perf_counter() - start) * MILLISECONDS_PER_SECOND)
+        print(f"warm_host_input_to_host_result: {summary(request_samples)}")
+        _, stages = fenced_request_stages(infer, params, raw_tokens, args.bucket, device)
+        print("one_fenced_stage_sample_ms:", {name: round(value, 3) for name, value in stages.items()})
+
+    if args.mode == "latency" and args.bucket is not None:
+        print("\nChecking toy padding semantics after all timing measurements")
+        for raw_tokens in raw_cases:
+            check_toy_padding(infer, params, raw_tokens, args.bucket, device)
+        print("Toy padding checks passed")
+
+    if args.trace_dir:
+        raw_tokens = raw_cases[-1]
+        run_request(infer, params, raw_tokens, args.bucket, device)
+        with jax.profiler.trace(args.trace_dir, create_perfetto_link=False):
+            for index in range(5):
+                with jax.profiler.TraceAnnotation(f"request_{index}"):
+                    run_request(infer, params, raw_tokens, args.bucket, device)
+        print(f"Trace exported to {args.trace_dir}")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+Run these as separate processes so the compile experiment does not warm the latency experiment:
+
+```bash
+python diagnose_jax.py
+python diagnose_jax.py --log-compiles
+python diagnose_jax.py --mode compile --log-compiles
+python diagnose_jax.py --bucket 512 --log-compiles
+python diagnose_jax.py --trace-dir /tmp/jax-inference-trace
+```
+
+Use the logging run to establish cache behavior; use the quiet run for timing comparisons. Logging and profiling add overhead. The default sequence `128 → 256 → 128 → 512 → 256` tests new signatures and reuse of earlier ones. The bucket run holds the physical token and mask shapes constant while their values change. Its padding correctness checks run **after** the timing measurements; any additional native-shape compilations during those checks are expected.
+
+The compile mode uses JAX's lowering and compilation interfaces to separate trace/lowering from executable compilation or persistent-cache loading. A fresh process resets the in-memory cache, but an enabled disk cache can still supply executables. Consequently, these labels do not claim to measure a completely cold system. Backend startup and model loading need their own process-start-to-first-response measurement if they are part of your service latency. [JAX ahead-of-time compilation](https://docs.jax.dev/en/latest/aot.html), [persistent compilation cache](https://docs.jax.dev/en/latest/persistent_compilation_cache.html).
+
+Interpret your measurements this way:
+
+| Evidence | What it supports | Next targeted experiment |
+|---|---|---|
+| Dispatch is tiny; `resident_ready_total` is much larger | Your short timer omitted completion time | Use a completion boundary for per-request latency and retain dispatch as its own diagnostic metric |
+| First visits to new lengths are slow and logs show compilation; repeated signatures reuse executables | Shape specialization contributes to spikes | Compare a few padded length buckets and warm each supported signature before serving |
+| The same shape/dtype repeatedly retraces | Something besides input length changes the cache key | Check recreated functions, changing static arguments, parameter/input pytree structure, and placement/sharding |
+| Warm synchronized calls grow with length without fresh compilation | Work or memory traffic grows with length | Inspect the device trace and model algorithm; compilation caching alone cannot remove that work |
+| Warm host-result latency exceeds resident latency substantially | Work outside the resident call contributes | Inspect preprocessing, placement, output transfer, and postprocessing stage measurements, then trace the actual request |
+
+`jax_log_compiles` and `jax_explain_cache_misses` expose tracing, lowering, compilation timings, and cache-miss explanations. Keep the jitted function at a stable scope and inspect static arguments before changing them: new static values specialize the computation, and rebuilding lambdas or closures can defeat reuse. Ordinary JIT specialization also depends on array shapes and dtypes. [JAX compilation diagnostics](https://docs.jax.dev/en/latest/201/slow-compilation.html), [JIT caching and static arguments](https://docs.jax.dev/en/latest/jit-compilation.html).
+
+Some measurement details matter:
+
+- `wait_after_return` is only the remaining wait when Python regains control; execution can overlap dispatch. For each sample, dispatch plus remaining wait equals synchronized elapsed time. Separately computed medians or p95s need not add up.
+- The stage breakdown deliberately introduces barriers for attribution. Those barriers can remove overlap, so its total is a diagnostic sample. The warmed request timer preserves the natural dependencies of this toy request and waits by obtaining the host output.
+- The toy's request begins with an existing numeric host array and ends with NumPy labels. It includes mask/padding preparation but excludes file/network reads, tokenization, queueing, serialization, and model loading. Move your real request timer outward to include whichever of those your users experience. Do not subtract independent medians and call the difference an exact transfer cost.
+- The toy transfers its whole output dictionary. In your real path, transfer the response leaves you need, and time that same contract. On CPU, placement and fetching may avoid physical accelerator transfers; the printed backend prevents mistaking a CPU measurement for a GPU measurement.
+- Run on an otherwise idle device. These samples measure serialized request latency; they are not throughput under concurrency. To measure a queued loop, time the whole loop and wait for all measured results at its end. Adding a wait after every iteration changes overlap and can change throughput.
+
+Only apply an optimization after the relevant evidence appears. If varying lengths cause compilation, use a small set of buckets and masks while keeping batch size, dtype, parameter structure, and other signature components stable. Padding still computes over the physical bucket shape; it can increase memory use and execution time. For a real attention model, padding must be excluded inside attention and reductions, and output trimming and position handling must preserve semantics. Compare outputs against the unpadded reference over representative lengths before relying on the change. The toy checks establish only its own masked-mean semantics. If your model uses dense full-sequence attention, part of the computation can grow quadratically with length; this toy's token transforms have a different scaling pattern.
+
+If a trace instead shows Python dispatch gaps between many small inference steps, consider batching independent steps or staging the pure numerical loop. For a recurrent fixed-shape carry, `jax.lax.scan` can express the loop without unrolling a long Python loop into the compiled graph. Its carry must keep the same shape and dtype; a growing token array or KV cache needs a different representation before that transformation is valid. [JAX scan documentation](https://docs.jax.dev/en/latest/_autosummary/jax.lax.scan.html).
+
+The optional trace captures warmed complete toy requests. For your real loop, add annotations around preprocessing, placement, inference, and output handling, and ensure the measured results finish before leaving the trace. Use the trace to distinguish host gaps, copy activity, kernel execution, and actual compilation. JAX's guide describes viewing exported traces with XProf; `create_perfetto_link=True` has an interactive wait, which this harness avoids. [JAX profiling guide](https://docs.jax.dev/en/latest/profiling.html), [trace API](https://docs.jax.dev/en/latest/_autosummary/jax.profiler.trace.html).
+
+To carry the diagnosis into your application, replace `forward`, parameter initialization, preprocessing, and response handling with your existing functions while retaining the timing boundaries. Preserve your actual inference state, RNG policy, shapes, dtypes, and sharding. Record those signatures alongside first-use and warmed times. The useful evidence to compare is the environment line, compile/cache-miss logs for one repeated length sequence, synchronized resident timings, and your actual complete-request timing.
+
+**Execution status:** I researched the current official JAX documentation and authored this harness, but did not execute application/model code, benchmark it, or run its padding assertions in this session. No measured timings or confirmed fix are claimed.

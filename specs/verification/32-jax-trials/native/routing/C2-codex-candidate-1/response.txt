@@ -1,0 +1,10 @@
+Primary skill: evaluate-deep-learning.
+Supporting skill: validate-data, limited to applicable input and conclusion QA before sign-off.
+The task directly asks to compare neural checkpoints with unequal training budgets and different seeds.
+evaluate-deep-learning owns held-out comparisons, checkpoint selection, resource policy, seed variation, and the neural run record.
+It calls for common-budget comparisons or budget-performance curves and distinguishes checkpoint outcomes from method-wide claims.
+It retains all planned runs and only pairs training runs when compatible random factors were shared; matching seed numbers alone does not justify pairing.
+It separates finite-test uncertainty, training-seed variation, predictive uncertainty, and numerical sensitivity.
+validate-data supports integrity, pinned inputs, reproducibility, and claim-to-evidence review under those neural contracts; its BLS/posterior examples are not task requirements.
+No deep-learning, optimize-jax, tune-hyperparameters, track-model-experiments, or bayesian-workflow: no training changes, JAX performance issue, search, or posterior comparison is requested.
+This is selection only: no checkpoints evaluated, implementation performed, numerical results produced, or validation verdict claimed.

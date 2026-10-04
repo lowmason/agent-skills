@@ -1,0 +1,365 @@
+`★ Insight ─────────────────────────────────────`
+Two architectural choices are worth flagging before the code: (1) the two-lag feature design `(x[t], x[t+1]) → x[t+2]` can express the *exact* linear recurrence that generates a fixed-frequency sine, `x[t+2] = 2cos(ω)x[t+1] − x[t]`, so a tiny linear-ish network has no excuse not to learn it — that's what makes the fixed-fixture assertion (`final < 0.2·initial`) a legitimate hard check rather than a guess. (2) Because batches are a pure function of `(seed, cursor)` with no dropout or other stochastic op inside the model, the *entire* random-stream state that recovery must reproduce collapses to one integer — the cursor. That's unusually simple compared to the skill's dropout-bearing recovery example, and I call it out explicitly in the code rather than silently carrying an unused RNG key.
+`─────────────────────────────────────────────────`
+
+```python
+"""Next-sample prediction for variable-length sine sequences (Flax NNX / Optax / Orbax, CPU).
+
+Verified-version profile for the patterns below (not independently re-verified in this
+session): JAX/jaxlib 0.11.2, Flax 0.12.10, Optax 0.2.8, Orbax-checkpoint 0.12.6,
+NumPy 2.5.3, Python 3.13.8. All assertions in this file are ASSERTED-BUT-UNRUN: this
+response was produced without executing the code. Each block is structured so a first
+run either passes or fails loudly on an assertion, not silently.
+"""
+
+import json
+import tempfile
+from pathlib import Path
+
+import jax
+import jax.numpy as jnp
+import numpy as np
+import optax
+import orbax.checkpoint as ocp
+from flax import nnx
+
+
+# ---------------------------------------------------------------------------
+# Shared loss contract: pooled timestep MSE over eligible (unpadded) positions.
+# ---------------------------------------------------------------------------
+
+def require_units(mask):
+    if not np.asarray(mask).any():
+        raise ValueError('batch has no eligible targets')
+
+
+def valid_mean(values, mask):
+    return jnp.where(mask, values, 0.0).sum() / mask.sum()
+
+
+# ---------------------------------------------------------------------------
+# Part 1 — fixed-fixture learnability proof.
+#
+# This is a *separate*, self-contained block from the main experiment below.
+# Every constant here (max_length=12, width=16, lr=0.02, frequency=0.25,
+# lengths=[5,7,9,12]) must stay fixed together, because the `final < 0.2 *
+# initial` bound and the `mask.sum() == 25` count are both derived from this
+# exact configuration. Changing any one number without re-deriving the others
+# turns the assertion into an unverified guess.
+# ---------------------------------------------------------------------------
+
+FIXTURE_SEED = sum(map(ord, 'sequence-correctness'))
+FIXTURE_TRAIN_STEPS = 150
+
+
+def fixture_batch(key, lengths):
+    time = jnp.arange(12, dtype=jnp.float32)[None, :]
+    phase = jax.random.uniform(key, (len(lengths), 1), maxval=2 * jnp.pi)
+    waves = jnp.sin(phase + 0.25 * time)
+    waves = jnp.where(time < lengths[:, None], waves, 0.0)
+    features = jnp.stack((waves[:, :-2], waves[:, 1:-1]), axis=-1)
+    targets = waves[:, 2:]
+    mask = jnp.arange(10)[None, :] < lengths[:, None] - 2
+    require_units(mask)
+    return features, targets, mask
+
+
+class LagForecaster(nnx.Module):
+    def __init__(self, width, rngs):
+        self.hidden = nnx.Linear(2, width, rngs=rngs)
+        self.output = nnx.Linear(width, 1, rngs=rngs)
+
+    def __call__(self, features):
+        return self.output(jnp.tanh(self.hidden(features)))[..., 0]
+
+
+def objective(model, features, targets, mask):
+    return valid_mean(jnp.square(model(features) - targets), mask)
+
+
+@nnx.jit
+def fixture_train_step(model, optimizer, features, targets, mask):
+    loss, grads = nnx.value_and_grad(objective)(model, features, targets, mask)
+    finite = jnp.isfinite(loss)
+    for leaf in jax.tree.leaves(grads):
+        finite = finite & jnp.isfinite(leaf).all()
+    optimizer.update(model, grads)
+    return loss, finite
+
+
+def run_fixture_learnability_check():
+    train_key, model_key = jax.random.split(jax.random.key(FIXTURE_SEED))
+    lengths = jnp.array([5, 7, 9, 12], dtype=jnp.int32)
+    training = fixture_batch(train_key, lengths)
+    assert int(training[2].sum()) == 25
+
+    model = LagForecaster(16, nnx.Rngs(params=model_key))
+    optimizer = nnx.Optimizer(model, optax.adam(0.02), wrt=nnx.Param)
+    model.train()
+
+    initial = float(objective(model, *training))
+    for _ in range(FIXTURE_TRAIN_STEPS):
+        loss, finite = fixture_train_step(model, optimizer, *training)
+        assert bool(finite), 'nonfinite loss or gradient in fixture training'
+    final = float(objective(model, *training))
+    assert final < 0.2 * initial, (initial, final)
+    print(f'[fixture] learnability proof: {initial:.6f} -> {final:.6f}')
+
+
+# ---------------------------------------------------------------------------
+# Part 2 — main experiment: variable-length sine sequences, streamed batches.
+#
+# Lengths vary *within* every batch (jax.random.randint per example), not just
+# across batches, so masking has to be correct per-row, not just per-batch.
+# transition_steps is set equal to train_steps because the resume check later
+# compares the Adam/schedule position on both branches of a simulated restart
+# — those two numbers silently diverging would be the kind of bug you'd only
+# catch by this explicit comparison, not by looking at the loss curve.
+# ---------------------------------------------------------------------------
+
+CONFIG = {
+    'max_length': 20,
+    'min_length': 6,
+    'batch_size': 16,
+    'width': 32,
+    'frequency': 0.3,
+    'learning_rate': 0.01,
+    'final_learning_rate': 0.001,
+    'transition_steps': 200,
+    'train_steps': 200,
+    'checkpoint_step': 120,          # simulated interruption point
+    'seed': sum(map(ord, 'variable-length-sine-next-sample')),
+    'validation_cursor_offset': 100_000,   # disjoint from training cursors [0, train_steps)
+    'validation_batches': 5,
+    'rng_impl': 'threefry2x32',
+    'dtype': 'float32',
+    'data': 'synthetic-sine-variable-length-v1',
+}
+
+
+def batch_at(config, cursor):
+    """Deterministic batch: a pure function of (seed, cursor). No model ever
+    sees a dropout key or any other stochastic op, so `cursor` *is* the
+    complete random-stream record required for recovery — there is no
+    separate key to checkpoint."""
+    key = jax.random.fold_in(jax.random.key(config['seed']), cursor)
+    phase_key, length_key = jax.random.split(key)
+    batch = config['batch_size']
+    time = jnp.arange(config['max_length'], dtype=jnp.float32)[None, :]
+    phases = jax.random.uniform(phase_key, (batch, 1), maxval=2 * jnp.pi)
+    waves = jnp.sin(phases + config['frequency'] * time)
+    lengths = jax.random.randint(
+        length_key, (batch,), config['min_length'], config['max_length'] + 1)
+    waves = jnp.where(time < lengths[:, None], waves, 0.0)
+    features = jnp.stack((waves[:, :-2], waves[:, 1:-1]), axis=-1)
+    targets = waves[:, 2:]
+    mask = jnp.arange(config['max_length'] - 2)[None, :] < (lengths[:, None] - 2)
+    require_units(mask)
+    return features, targets, mask, lengths
+
+
+def run_mask_alignment_hand_check(config):
+    """Concrete numeric check of the mask/target alignment — the skill's
+    named top failure mode, and the one thing unrunnable code can't catch any
+    other way."""
+    length = 5
+    time = jnp.arange(config['max_length'], dtype=jnp.float32)
+    waves = jnp.sin(0.7 + config['frequency'] * time)
+    waves = jnp.where(time < length, waves, 0.0)
+    features = jnp.stack((waves[:-2], waves[1:-1]), axis=-1)[None, :, :]
+    targets = waves[2:][None, :]
+    mask = (jnp.arange(config['max_length'] - 2) < (length - 2))[None, :]
+
+    assert int(mask.sum()) == 3, int(mask.sum())          # length - 2 eligible targets
+    assert bool(mask[0, 2]) and not bool(mask[0, 3])        # last eligible t = length-3 = 2
+
+    # last eligible position: features[t=2] = (waves[2], waves[3]), target[2] = waves[4]
+    np.testing.assert_allclose(features[0, 2, 0], waves[2])
+    np.testing.assert_allclose(features[0, 2, 1], waves[3])
+    np.testing.assert_allclose(targets[0, 2], waves[4])
+
+    # loss must be invariant to garbage written at ineligible (padded) positions
+    changed_targets = jnp.where(mask, targets, 999.0)
+    changed_features = jnp.where(mask[..., None], features, -999.0)
+    base = valid_mean(jnp.square(features[..., 1] - targets), mask)
+    perturbed = valid_mean(jnp.square(changed_features[..., 1] - changed_targets), mask)
+    np.testing.assert_allclose(base, perturbed)
+    print('[main] mask/target alignment hand-check passed: 3 eligible, padding-invariant')
+
+
+def run_persistence_baseline_alignment_check(config):
+    """Ties the persistence baseline (`features[..., 1]`, the last observed
+    sample) to the actual target indexing, so a future edit to the stacking
+    order fails loudly instead of silently shifting the baseline."""
+    key = jax.random.key(config['seed'] + 7)
+    features, targets, mask, lengths = batch_at(config, cursor=0)
+    row = int(jnp.argmax(lengths))
+    t = int(lengths[row]) - 3  # an interior eligible position (not the last one)
+    assert t >= 1
+    np.testing.assert_allclose(features[row, t, 1], targets[row, t - 1])
+    print('[main] persistence-baseline indexing check passed')
+
+
+def make_training(config, initialization_seed):
+    model = LagForecaster(config['width'], nnx.Rngs(params=initialization_seed))
+    schedule = optax.linear_schedule(
+        config['learning_rate'], config['final_learning_rate'], config['transition_steps'])
+    optimizer = nnx.Optimizer(model, optax.adam(schedule), wrt=nnx.Param)
+    model.train()
+    return model, optimizer, schedule
+
+
+@nnx.jit
+def train_step(model, optimizer, features, targets, mask):
+    loss, grads = nnx.value_and_grad(objective)(model, features, targets, mask)
+    finite = jnp.isfinite(loss)
+    for leaf in jax.tree.leaves(grads):
+        finite = finite & jnp.isfinite(leaf).all()
+    optimizer.update(model, grads)
+    return loss, finite
+
+
+def advance(model, optimizer, cursor, config):
+    features, targets, mask, _ = batch_at(config, cursor)
+    loss, finite = train_step(model, optimizer, features, targets, mask)
+    assert bool(finite), f'nonfinite loss or gradient at cursor {cursor}'
+    return float(loss), cursor + 1
+
+
+def held_out_validation_batches(config):
+    """Cursors start at a large, disjoint offset from the training range
+    [0, train_steps), so validation phases/lengths were never seen in
+    training — this establishes held-out evaluation at a shared frequency,
+    not generalization to other frequencies or architectures."""
+    return [batch_at(config, config['validation_cursor_offset'] + i)
+            for i in range(config['validation_batches'])]
+
+
+def evaluate(model, batches):
+    model.eval()
+    losses = [float(objective(model, f, t, m)) for f, t, m, _ in batches]
+    persistence_losses = [
+        float(valid_mean(jnp.square(f[..., 1] - t), m)) for f, t, m, _ in batches]
+    model_loss = float(np.mean(losses))
+    persistence_loss = float(np.mean(persistence_losses))
+    assert np.isfinite(model_loss) and np.isfinite(persistence_loss)
+    return model_loss, persistence_loss
+
+
+# ---------------------------------------------------------------------------
+# Part 3 — checkpoint / resume, mirroring the skill's canonical recovery
+# pattern exactly (StandardCheckpointer, pure-dict state, replace_by_pure_dict
+# + nnx.update, wait_until_finished).
+# ---------------------------------------------------------------------------
+
+def snapshot(model, optimizer, cursor):
+    return {
+        'model': nnx.state(model).to_pure_dict(),
+        'optimizer': nnx.state(optimizer).to_pure_dict(),
+        'cursor': jnp.array(cursor, dtype=jnp.int32),
+    }
+
+
+def restore_nnx(obj, pure_state):
+    state = nnx.state(obj)
+    state.replace_by_pure_dict(pure_state)
+    nnx.update(obj, state)
+
+
+def assert_same_tree(left, right):
+    assert jax.tree.structure(left) == jax.tree.structure(right)
+    for before, after in zip(jax.tree.leaves(left), jax.tree.leaves(right)):
+        if np.issubdtype(np.asarray(before).dtype, np.inexact):
+            np.testing.assert_allclose(before, after, rtol=1e-6, atol=1e-6)
+        else:
+            np.testing.assert_array_equal(before, after)
+
+
+def run_main_experiment(config):
+    run_mask_alignment_hand_check(config)
+    run_persistence_baseline_alignment_check(config)
+
+    validation = held_out_validation_batches(config)
+    model, optimizer, schedule = make_training(config, config['seed'] + 1)
+
+    initial_val_loss, initial_persistence = evaluate(model, validation)
+    model.train()
+
+    cursor = 0
+    for _ in range(config['checkpoint_step']):
+        _, cursor = advance(model, optimizer, cursor, config)
+    assert cursor == config['checkpoint_step']
+
+    saved = snapshot(model, optimizer, cursor)
+    with tempfile.TemporaryDirectory(prefix='nnx-sine-resume-') as directory:
+        root = Path(directory).resolve()
+        (root / 'config.json').write_text(json.dumps(config, sort_keys=True))
+        checkpoint_path = root / 'state'
+        with ocp.StandardCheckpointer() as checkpointer:
+            checkpointer.save(checkpoint_path, saved)
+            checkpointer.wait_until_finished()
+
+            loaded_config = json.loads((root / 'config.json').read_text())
+            assert loaded_config == config
+
+            # "Resumed" copy: freshly constructed, then restored from checkpoint.
+            restored_model, restored_optimizer, restored_schedule = make_training(
+                loaded_config, config['seed'] + 999)
+            target = snapshot(restored_model, restored_optimizer, 0)
+            loaded = checkpointer.restore(checkpoint_path, target=target)
+            restore_nnx(restored_model, loaded['model'])
+            restore_nnx(restored_optimizer, loaded['optimizer'])
+            restored_cursor = int(loaded['cursor'])
+            assert restored_cursor == config['checkpoint_step']
+
+            assert_same_tree(saved, snapshot(restored_model, restored_optimizer, restored_cursor))
+            np.testing.assert_allclose(
+                schedule(optimizer.step[...]), restored_schedule(restored_optimizer.step[...]))
+
+            # Next-update parity: continuing the original run vs. continuing
+            # the restored copy must agree, including the Adam/schedule step.
+            next_loss, next_cursor = advance(model, optimizer, cursor, config)
+            resumed_loss, resumed_cursor = advance(
+                restored_model, restored_optimizer, restored_cursor, config)
+            np.testing.assert_allclose(next_loss, resumed_loss, rtol=1e-6, atol=1e-6)
+            assert_same_tree(
+                snapshot(model, optimizer, next_cursor),
+                snapshot(restored_model, restored_optimizer, resumed_cursor))
+            assert next_cursor == resumed_cursor == config['checkpoint_step'] + 1
+            assert int(optimizer.step[...]) == int(restored_optimizer.step[...]) \
+                == config['checkpoint_step'] + 1
+            print('[main] recovery: next loss, model, Adam/schedule, step and cursor agree')
+
+            # Continue the restored copy to the end of training.
+            cursor = resumed_cursor
+            model, optimizer = restored_model, restored_optimizer
+            for _ in range(config['train_steps'] - cursor):
+                _, cursor = advance(model, optimizer, cursor, config)
+            assert cursor == config['train_steps']
+
+    final_val_loss, final_persistence = evaluate(model, validation)
+    assert final_val_loss < initial_val_loss, (initial_val_loss, final_val_loss)
+
+    print(f'[main] held-out validation loss: {initial_val_loss:.6f} -> {final_val_loss:.6f}')
+    print(f'[main] persistence baseline on same held-out batches: '
+          f'{initial_persistence:.6f} (before) / {final_persistence:.6f} (after, unaffected by '
+          f'training)')
+    # A two-lag model can express x[t+2] = 2cos(w)x[t+1] - x[t] exactly for a
+    # fixed-frequency sine, so beating persistence is the expected outcome
+    # here, not a claim this file independently proves by a verified margin.
+
+
+if __name__ == '__main__':
+    run_fixture_learnability_check()
+    run_main_experiment(CONFIG)
+```
+
+A few things worth being explicit about since this code wasn't executed in this sandbox:
+
+`★ Insight ─────────────────────────────────────`
+The recovery check compares *three* independent things that could each silently drift apart on their own schedule: the raw Adam moments (`assert_same_tree` on pure-dict state), the external step counter (`optimizer.step[...]`), and the *schedule's output at that step* (`schedule(optimizer.step[...])`). It's possible to restore parameters correctly while getting the schedule wrong — e.g. if `transition_steps` in a reloaded config doesn't match the original run, the loss values would even look continuous for a while before diverging later in training. Checking all three closes exactly that gap, which is why the canonical pattern insists on it rather than just checking the loss number.
+`─────────────────────────────────────────────────`
+
+- **Scope of the validation claim:** `held_out_validation_batches` uses cursors offset by 100,000 from the training range `[0, 200)`, so it's phases and lengths genuinely unseen in training — but still drawn at the *same fixed frequency* (`config['frequency'] = 0.3`) and from the same generator. This establishes held-out generalization within that generator, not generalization to other frequencies, noise levels, or real sensor data.
+- **Everything above is asserted-but-unrun.** I did not execute this in the sandbox (per your instructions), so "the checks pass" is a claim about what the assertions test, not a confirmed result. If you run it and something fails, the most likely first-failure points are the Orbax `StandardCheckpointer` API surface (version-sensitive) and the `nnx.Optimizer(..., wrt=nnx.Param)` constructor signature, both pinned to the versions noted at the top of the file.
+- **What's next:** run it locally, and if the mask hand-check or recovery block fails, that pinpoints a version mismatch rather than a logic error, since the logic mirrors the skill's tested canonical examples structurally.

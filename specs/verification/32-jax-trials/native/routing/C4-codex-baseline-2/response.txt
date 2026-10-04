@@ -1,0 +1,8 @@
+Primary skill: bayesian-workflow.
+Supporting skills: none for the stated task.
+Reason: inferring a Bayesian neural-network posterior with NumPyro and NUTS directly triggers Bayesian model fitting, posterior inference, priors, and convergence diagnostics.
+The primary skill supplies the generative-model, prior/predictive-check, NumPyro NUTS, convergence, criticism, sensitivity, and posterior-reporting workflow.
+Deep-learning was fully read as a boundary candidate and excluded: it owns neural design/training correctness and explicitly keeps posterior inference with the responsible skill.
+No request was made for architecture design, optimizer training, benchmarking, JAX execution diagnosis, or choosing a model family.
+The selection would change only if those additional responsibilities were requested or observed during an authorized implementation task.
+This trial selects and explains skills only; no model, sampler, installation, test, workflow, or reference/script was executed.

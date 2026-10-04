@@ -1,0 +1,8 @@
+Primary skill: bayesian-workflow.
+Supporting skills: none required by the stated task.
+The request explicitly asks for Bayesian posterior inference with NumPyro and NUTS, which bayesian-workflow owns.
+Its full body covers prior specification, prior predictive checks, NUTS sampling, convergence diagnostics, posterior checks, and uncertainty reporting.
+I also read deep-learning fully to resolve the neural-model overlap; its routing section keeps posterior-inference procedures with their owning skill.
+No separate neural training, benchmarking, hyperparameter search, or JAX performance problem is stated, so those skills are not selected.
+This is selection-only: no model code, inference run, implementation workflow, references, or scripts were executed.
+The full catalog and both read skill bodies were reviewed; paging and recovery details are in research-notes.md.

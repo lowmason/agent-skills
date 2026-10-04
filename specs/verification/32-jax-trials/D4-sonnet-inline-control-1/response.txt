@@ -1,0 +1,210 @@
+`★ Insight ─────────────────────────────────────`
+The most common silent failure in this exact pipeline is topology, not code: stage 2's reference policy must be the **stage‑1 SFT'd adapter**, not the base model. "Fine‑tune, then preference-optimize" means the SFT checkpoint is both the DPO initialization *and* the DPO reference — if you accidentally diff against the base model, DPO will "reward" the model for recovering behavior it already had, which silently corrupts the signal without any visible error.
+`─────────────────────────────────────────────────`
+
+I don't have directory-listing tools in this session, so I can't enumerate your skills library to check for an existing fine-tuning procedure — proceeding on standard JAX/Flax/Optax practice. Everything below is **untested in this session** (no execution available); treat shapes/signatures as a design to compile-check, not as verified-working code.
+
+## 1. Model loading
+
+The two JAX-specific decisions here: params live as an explicit pytree (no hidden module state), and "frozen" is a property of the optimizer, not the parameter.
+
+```python
+import jax
+import jax.numpy as jnp
+from jax.sharding import Mesh, NamedSharding, PartitionSpec as P
+import orbax.checkpoint as ocp
+import flax.linen as nn
+import optax
+
+# --- sharded load without materializing the full model on one device ---
+devices = jax.devices()
+mesh = Mesh(devices, axis_names=("data", "model"))
+
+def base_param_sharding(path, param):
+    # Simple 1-D model-parallel rule; replace with your actual layer naming.
+    if "kernel" in path and param.ndim == 2:
+        return NamedSharding(mesh, P(None, "model"))
+    return NamedSharding(mesh, P())
+
+def load_base_model(checkpoint_dir: str, abstract_params):
+    # eval_shape gives shapes/dtypes without allocating — required so the
+    # sharded restore can place each leaf directly on its target device.
+    shardings = jax.tree_util.tree_map_with_path(
+        lambda path, p: base_param_sharding(path, p), abstract_params
+    )
+    restore_args = ocp.checkpoint_utils.construct_restore_args(
+        abstract_params, shardings
+    )
+    ckptr = ocp.StandardCheckpointer()
+    base_params = ckptr.restore(checkpoint_dir, args=ocp.args.StandardRestore(
+        abstract_params, restore_args=restore_args
+    ))
+    # Base weights in bf16 for memory; compute will upcast at the matmul.
+    return jax.tree_util.tree_map(lambda p: p.astype(jnp.bfloat16), base_params)
+```
+
+`★ Insight ─────────────────────────────────────`
+`jax.eval_shape` + Orbax's sharded restore exists because of a sequencing problem: if you first allocate the full model on device 0 and *then* shard it, you've already OOM'd on a large model. `eval_shape` traces the model to get a shape/dtype pytree with zero FLOPs and zero memory, so the restore can place each leaf directly onto its target device from disk — the unsharded tensor never exists.
+`─────────────────────────────────────────────────`
+
+### LoRA adapter (hand-rolled, not a library call)
+
+I'm writing this by hand rather than reaching for `nnx.LoRA` — API surface for Flax's newer `nnx` module system has churned recently, and hand-rolling makes the freeze/mask logic below unambiguous instead of hidden behind a library default.
+
+```python
+class LoRADense(nn.Module):
+    base_kernel: jnp.ndarray   # frozen, passed in, not a trainable Flax param
+    rank: int = 8
+    alpha: float = 16.0
+
+    @nn.compact
+    def __call__(self, x):
+        in_dim, out_dim = self.base_kernel.shape
+        A = self.param("lora_A", nn.initializers.normal(0.01), (in_dim, self.rank), jnp.float32)
+        # B initialized to zero: adapter contributes nothing at step 0 (checked below).
+        B = self.param("lora_B", nn.initializers.zeros, (self.rank, out_dim), jnp.float32)
+        base_out = x.astype(jnp.float32) @ self.base_kernel.astype(jnp.float32)
+        delta = (x.astype(jnp.float32) @ A) @ B * (self.alpha / self.rank)
+        return base_out + delta
+```
+
+### Freezing via `optax.multi_transform`
+
+There's no `requires_grad`. The base params must never reach the optimizer:
+
+```python
+def partition_fn(param_path, _):
+    return "adapter" if "lora_" in param_path else "frozen"
+
+label_tree = jax.tree_util.tree_map_with_path(
+    lambda path, p: partition_fn("/".join(map(str, path)), p), params
+)
+
+optimizer = optax.multi_transform(
+    {"adapter": optax.adamw(learning_rate=1e-4), "frozen": optax.set_to_zero()},
+    label_tree,
+)
+opt_state = optimizer.init(params)  # frozen leaves get a no-op state
+```
+
+## 2. Stage 1 — SFT adapter fine-tuning
+
+**Data format.** Each example is `(prompt_tokens, completion_tokens)`. Pack into fixed-size buckets (e.g. powers of 2 up to `max_len`) — JAX recompiles per distinct shape, so ragged batches silently multiply your compile time.
+
+```python
+def build_example(prompt_ids, completion_ids, max_len, pad_id):
+    input_ids = prompt_ids + completion_ids
+    loss_mask = [0] * len(prompt_ids) + [1] * len(completion_ids)
+    pad_len = max_len - len(input_ids)
+    input_ids += [pad_id] * pad_len
+    loss_mask += [0] * pad_len          # mask covers prompt AND padding
+    return jnp.array(input_ids), jnp.array(loss_mask)
+```
+
+**Loss.** Causal shift by one; cast to fp32 before the log-softmax (bf16 logits make cross-entropy numerically unreliable near the tails):
+
+```python
+def sft_loss(params, apply_fn, batch, pad_id):
+    input_ids, loss_mask = batch["input_ids"], batch["loss_mask"]
+    logits = apply_fn(params, input_ids[:, :-1]).astype(jnp.float32)
+    labels = input_ids[:, 1:]
+    mask = loss_mask[:, 1:]
+    token_loss = optax.softmax_cross_entropy_with_integer_labels(logits, labels)
+    # Normalizer choice: sum over the whole batch's completion tokens,
+    # not per-sequence mean — avoids upweighting short completions.
+    return jnp.sum(token_loss * mask) / jnp.maximum(jnp.sum(mask), 1)
+```
+
+## 3. Stage 2 — Preference optimization (DPO)
+
+**Data format.** `(prompt, chosen, rejected)` triples, each rendered through the *same chat template* used in stage 1 — a template mismatch between stages is a silent, hard-to-detect bug since training still "works," just on the wrong distribution.
+
+**Loss.**
+
+```python
+def dpo_loss(policy_logp_chosen, policy_logp_rejected,
+             ref_logp_chosen, ref_logp_rejected, beta=0.1):
+    pi_logratio = policy_logp_chosen - policy_logp_rejected
+    ref_logratio = ref_logp_chosen - ref_logp_rejected
+    logits = beta * (pi_logratio - ref_logratio)
+    loss = -jax.nn.log_sigmoid(logits)
+    # Implicit reward margin — log this every step, it's the primary health signal.
+    reward_margin = beta * (pi_logratio - ref_logratio)
+    return jnp.mean(loss), jnp.mean(reward_margin)
+```
+
+Where `*_logp_*` is the sum (or length-normalized sum — pick one, it's a length-bias knob, not free) of per-token log-probs over the completion span, using the same `loss_mask` convention as stage 1.
+
+**The real design decision: where do `ref_logp_*` come from?** There are two valid strategies, and this is the piece I want your input on rather than guessing at your constraints:
+
+`★ Insight ─────────────────────────────────────`
+Because LoRA adds a *delta* rather than replacing weights, "the reference model" isn't a second copy of the network — it's the same base weights with the adapter's contribution zeroed out. That's a JAX-specific simplification over the typical PyTorch DPO setup, which usually keeps a whole frozen reference model resident in memory.
+`─────────────────────────────────────────────────`
+
+```python
+def get_reference_logprobs(adapter_state, batch, apply_fn):
+    """
+    Two valid strategies — pick based on your infra constraints:
+
+    (a) Disable-adapter forward pass: zero out lora_B (or skip the delta
+        branch) for a second forward pass each step. No second model copy,
+        but doubles forward-pass compute per training step.
+
+    (b) Offline precompute: run the SFT'd adapter once over the whole
+        preference dataset before training starts, store ref_logp_chosen/
+        ref_logp_rejected alongside the data. Train step becomes a single
+        forward pass, but the dataset is now coupled to one specific
+        checkpoint — any resume/retokenization requires recomputing it.
+
+    TODO(you): implement whichever fits — e.g. if you're memory-bound,
+    (a); if you're compute-bound and can tolerate the staleness, (b).
+    """
+    raise NotImplementedError
+```
+
+This matters because it's not just an implementation detail — (a) keeps the reference perfectly in sync with the policy's starting point at the cost of 2x forward FLOPs per step, while (b) is cheaper per-step but means your "reference" silently diverges in meaning if you ever change the SFT checkpoint without regenerating the dataset.
+
+## 4. Pre-run checks (before a substantial run)
+
+These are invariants that catch pipeline bugs cheaply, before burning compute:
+
+```python
+# 1. Zero-init sanity: LoRA B=0 ⇒ stage-1 step-0 output is bit-identical to base model.
+assert jnp.allclose(lora_model.apply(params, x), base_model.apply(base_params, x))
+
+# 2. DPO zero-point sanity: if policy == ref, loss must be exactly -log(0.5).
+loss0, margin0 = dpo_loss(lp_c, lp_r, lp_c, lp_r)  # policy logp == ref logp
+assert jnp.allclose(loss0, -jnp.log(0.5), atol=1e-5)
+assert jnp.allclose(margin0, 0.0, atol=1e-6)
+
+# 3. Gradient partition check: nonzero only on adapter leaves.
+grads = jax.grad(loss_fn)(params)
+for path, g in jax.tree_util.tree_leaves_with_path(grads):
+    key = "/".join(map(str, path))
+    if "lora_" in key:
+        assert jnp.any(g != 0), f"adapter leaf {key} got zero gradient"
+    else:
+        assert jnp.all(g == 0), f"frozen leaf {key} got nonzero gradient"
+
+# 4. Compile-count check — run with JAX_LOG_COMPILES=1 over a few batches;
+#    expect exactly ONE compilation. A recompile per batch means your
+#    bucketing isn't actually fixed-shape.
+
+# 5. Mask coverage: every example must have at least one loss-counted token.
+assert jnp.all(jnp.sum(batch["loss_mask"], axis=-1) > 0)
+
+# 6. Template/tokenization drift: if using offline reference logprobs (3b above),
+#    recompute ref logprobs for a handful of examples at train start and assert
+#    they match the stored values — catches silent tokenizer/template changes.
+
+# 7. Overfit-one-batch: loss on a single repeated batch should approach ~0
+#    within a few hundred steps for both stages — a cheap end-to-end check
+#    that gradients actually flow and the loss is wired correctly.
+
+# 8. Checkpoint round-trip: save → restore → loss on the same batch is unchanged.
+
+# 9. Enable jax.config.update("jax_debug_nans", True) for the smoke run only
+#    (it's slow); turn it off for the real run once clean.
+```
+
+What's left to decide: whether you want (a) the double-forward reference strategy or (b) offline-precomputed reference logprobs for DPO — that choice affects both your dataset format and per-step compute budget, so it's worth deciding deliberately rather than me picking for you.

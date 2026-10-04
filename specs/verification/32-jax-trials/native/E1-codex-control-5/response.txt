@@ -1,0 +1,27 @@
+**B has the lower observed mean error, but these results do not establish that B is the better method.** Assuming lower error is better and all runs use the same metric and evaluation set:
+
+| Method | Runs | Tokens per run | Mean error | Sample standard deviation | Observed range |
+|---|---:|---:|---:|---:|---:|
+| A | 2 | 1 million | 0.1500 | 0.0141 | 0.14–0.16 |
+| B | 4 | 3 million | 0.1425 | 0.0263 | 0.12–0.18 |
+
+B's observed advantage is **0.0075 error units**, or a **5% relative reduction** from A's mean. If these are error proportions, that is 0.75 percentage points. B also has greater observed spread, but four runs versus two are insufficient to establish a difference in reliability.
+
+There are two separate limitations:
+
+- **Method and training budget are confounded.** You compared A at 1 million tokens with B at 3 million. B's lower average could reflect its method, additional training, seed variation, or a combination. Tokens are also only a proxy for compute: different architectures or training procedures may cost different amounts per token. These measurements establish neither equal-budget superiority nor compute efficiency.
+- **The repeat count is very small and unequal.** The estimates of both mean and variability are uncertain. On the two shared seed labels, B's mean is 0.155 rather than 0.1425: it improves by 0.01 on seed 0 and worsens by 0.02 on seed 1. That reversal illustrates the fragility of the current comparison; it does not establish that A is better. Matching seed numbers alone does not guarantee a valid paired experiment.
+
+I would treat B as a promising candidate and keep A as the cheaper baseline while collecting stronger evidence. If forced to make an operational choice now, A is a reasonable provisional choice when training cost matters; B has the better observed average at the supplied budgets when error matters most. Neither choice is a demonstrated winner, and these data do not establish equivalence either.
+
+Collect the following evidence, in this order:
+
+1. **Complete the method-by-budget comparison.** Evaluate both A and B at 1 million and 3 million tokens, with comparable data, evaluation, and declared training/checkpoint-selection policies. Recover B's 1-million-token checkpoints if they exist and are suitable for the intended comparison. Run A at 3 million under an appropriate declared schedule. Record intermediate learning curves, actual compute or accelerator time, and peak memory. This reveals whether B's advantage persists at equal tokens or equal compute, and whether either method reaches a target error more cheaply. Do not estimate efficiency by dividing error by tokens.
+
+2. **Run balanced, prespecified repeats.** Fill the missing seed/budget cells, including A's missing seeds 2 and 3, then add fresh replicates for both methods. Where feasible, share the train/validation split and data-order realization within each experimental block, with explicit random streams for initialization and other stochastic components. Analyze within-block differences when that pairing is justified. This follows the experimental principle of controlling nuisance factors within blocks. [NIST: randomized block designs](https://www.itl.nist.gov/div898/handbook/pri/section3/pri332.htm)
+
+3. **Define what improvement would justify the cost.** Before inspecting the new results, choose a minimum useful error reduction, acceptable compute cost, and a fixed sample size or valid sequential stopping rule. At each budget, report the mean difference, an uncertainty interval, all run outcomes, and failure frequency. Choose the number of repeats based on desired precision or power for that useful reduction, using a balanced pilot to estimate variance. A fixed number such as five seeds does not guarantee a decisive comparison. Initialization, data sampling, and hyperparameter selection can all contribute material benchmark variation. [Bouthillier et al., Accounting for Variance in Machine Learning Benchmarks](https://arxiv.org/abs/2103.03098)
+
+4. **Measure evaluation uncertainty and protect the final test.** Record the held-out sample size, independent sampling unit, dataset version, and per-example predictions or losses. Use the same examples for paired evaluation; account for clustering if examples share a document, subject, or other source. Distinguish uncertainty from training repeats from uncertainty about generalization to new examples. Give each method a comparable tuning budget and use validation data for tuning. If these held-out results guide method selection or further tuning, reserve an untouched test set for final confirmation. Retain the 0.18 run and investigate its logs rather than discarding it after seeing its score.
+
+The first decisive question is whether B offers a useful reduction in expected error **at the same resource budget**, with uncertainty narrow enough to support that decision.

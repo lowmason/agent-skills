@@ -1,0 +1,75 @@
+Use **`evaluate-deep-learning` with all three supplied references**. Start with the comparison protocol, apply the generative and LLM sections of the domain checks, and retain the experiment records needed to reconstruct the comparison.
+
+| Reference | What to use it for |
+|---|---|
+| [protocol.md](/private/tmp/jax-skill-trials-pAYZ0t/guidance-candidate-evaluate-deep-learning/references/protocol.md) | Define the population, units, metric aggregation, baselines, resource policy, pairing, and uncertainty in the difference. Use it for checkpoint comparisons, ablations, and model selection. |
+| [domain-checks.md](/private/tmp/jax-skill-trials-pAYZ0t/guidance-candidate-evaluate-deep-learning/references/domain-checks.md) | Read **“Generative models: quality, diversity, conditioning,” “LLM prompts, likelihood, and decoded outputs,”** and **“Predictive uncertainty across domains.”** Add “Images and vision” for an image-generation pipeline. These sections specify the domain contracts and checks behind the scores. |
+| [experiments.md](/private/tmp/jax-skill-trials-pAYZ0t/guidance-candidate-evaluate-deep-learning/references/experiments.md) | Record training and evaluation runs, their parent relationships, configurations, budgets, failures, decisions, and separately versioned artifacts. |
+
+These references support an evaluation protocol; they do not supply a pretrained model, a complete benchmark implementation, or evidence that your checkpoint has passed any checks.
+
+**1. Define the evaluation population and units.** For conditional generation, the main held-out unit is usually a condition or prompt, with sampled outputs nested inside it. For an LLM, it is usually a task instance or prompt, potentially nested within a conversation, source document, user, or other group. Use the independence level relevant to deployment when splitting data and estimating uncertainty.
+
+A useful conceptual layout is `training run × prompt/condition × sampled completion`, with token or output-feature axes retained where needed. Annotation and evaluator information can be attached to each output or comparison. A repeated rating, another completion from the same prompt, or another token does not create another independent prompt.
+
+| Evaluation unit | What it supports |
+|---|---|
+| Held-out prompt, condition, or justified group | Generalization across the intended input population; paired comparisons on identical input IDs. |
+| Generated sample within a fixed condition | Sampling variability for a fixed checkpoint and input; quality/diversity under the declared decoder or sampler. |
+| Training run | Variability from repeated training under the specified initialization, data-order, search, and resource policy. |
+| Token or output element | Likelihood/loss reductions with explicit masks and denominators; generally not an independent replicate. |
+| Human or model-judge assessment | Evidence under a specified rubric and annotation protocol; repeated assessments require their own dependence policy. |
+
+For an unconditional generator, generated samples are draws from the fixed model under its sampling policy. Keep their Monte Carlo variability separate from uncertainty due to a finite held-out reference dataset. Corpus metrics such as FID summarize sets; they are not automatically per-image losses.
+
+Preserve immutable split and preprocessing identifiers, exact held-out IDs, group membership, masks, weights, and reference associations. Explain what the test population leaves out. Preference-training examples, reward-model development data, prompt tuning, and checkpoint selection must not consume the protected final evaluation set.
+
+**2. Prespecify the protocol and comparison.** For a generative model, cover three complementary questions: **quality/fidelity, diversity/coverage, and conditioning correctness**. Add a human or task-based assessment appropriate to the intended use. Keep held-out likelihood or training objectives separate from generated-output utility: denoising or flow-matching loss alone does not establish useful or diverse samples.
+
+Freeze the checkpoint, condition mapping, sampler/solver, steps, noise schedule, guidance or truncation, output shape, precision, random-seed policy, and postprocessing. For FID or a related feature metric, also pin the feature extractor and checkpoint, preprocessing, metric implementation, reference statistics, and sample count. Examine condition/group coverage and possible training-data reproduction. If guidance or sampling compute changes the quality/diversity tradeoff, show a prespecified sensitivity curve.
+
+For an LLM after preference optimization, compare the optimized checkpoint with its **preference-optimization parent**, such as the preceding supervised fine-tuned checkpoint, on identical held-out prompts. Include a strong relevant baseline when the claim warrants it. Record both the fixed-checkpoint question and any broader method claim; one endpoint comparison cannot establish repeatable superiority of a training method.
+
+Choose a primary independent utility metric before examining the final scores. It could be verifiable task success or a blinded preference comparison under a written rubric. Define ties, failures, denominators, prompt weighting, and the practical improvement required for a decision. A preference-training reward is useful as a diagnostic, but **it is not independent validation of improved utility**. Reward-model or model-judge scores need evaluator identity, evaluator prompts, output-order policy, and bias checks against independent human or task evidence. Check relevant secondary outcomes such as factual correctness, instruction following, diversity, and failure rates according to the deployment question.
+
+Freeze tokenizer revision, vocabulary/special tokens, chat template, system messages, in-context examples, truncation/context length, completion masks, answer extraction, decoding settings, stop rules, and output limits. If models require native templates, describe a full-pipeline comparison and assess template sensitivity. Best-of-N and longer generation budgets change the evaluated procedure and must be recorded.
+
+When reporting likelihood, distinguish summed sequence log probability from token-mean cross entropy and retain eligible token counts. Per-token perplexity from different tokenizers does not provide a directly comparable common unit.
+
+Compare under declared training and sampling budgets, with comparable tuning opportunities. Record tokens/examples/steps separately from measured time, FLOPs, or money. Equal token counts do not guarantee equal physical compute. Include all planned runs and failures; do not select only the best seed or best-looking generations.
+
+**3. Check validity and the uncertainty claim.** Audit training/evaluation overlap, near duplicates, group leakage, and prompt/example leakage. For a preference-optimized LLM, include the preference and evaluator-development datasets in that audit. If pretraining provenance is unavailable, mark contamination as unresolved and qualify the claim. An absent known match does not prove an example was unseen.
+
+Use blinded output order and a fixed human rubric; retain the annotation protocol and assessor information needed to inspect disagreement. For automated judges, examine order and other relevant scoring biases. Check the complete generation and extraction pipeline, including failures. A nearest-neighbor memorization check or a favorable scalar metric is evidence for a limited question, not a general guarantee of semantic quality.
+
+Complete a separate predictive-uncertainty field. If the model supplies probabilities or intervals intended to quantify future-target uncertainty, assess calibration or coverage and sharpness on protected data, using a separate calibration partition where applicable. If no such claim is evaluated, say so explicitly. Training-seed spread and diversity among sampled completions are not by themselves calibrated confidence that an answer is correct.
+
+**4. Retain results at the units that generated them.** Keep per-output assessments, per-prompt or per-condition aggregates, per-run scores, eligible counts, failures, and the observed difference between methods. Clearly identify token-pooled versus prompt-macro or group-weighted aggregation. Avoid letting long completions or heavily sampled prompts silently dominate the result.
+
+Report distinct sources of variation:
+
+- **Finite-test uncertainty:** resample independent prompts or whole justified clusters with both methods aligned. For nonlinear corpus metrics, recompute the full metric on each replicate.
+- **Generation Monte Carlo variability:** repeat sampled outputs within fixed prompts or conditions; those draws remain nested within their inputs.
+- **Training-run variability:** retain each planned training repetition. Pair runs only when actual compatible random factors were shared; equal seed integers are insufficient.
+- **Numerical sensitivity:** assess fixed checkpoints across relevant precision, solver, or implementation settings separately from statistical uncertainty.
+- **Predictive uncertainty:** report the calibration/coverage assessment, or the explicit absence of that claim.
+
+State what is held fixed and which population an interval addresses. Use an interval for the actual paired or otherwise justified difference. A failure to detect an improvement does not establish equivalence. Few training runs or few independent prompts limit precision even when there are many generated outputs or ratings.
+
+**5. Tie the decision to the evidence.** Decide using the prespecified useful-effect threshold and measured resource tradeoff. Distinguish a useful operational choice of checkpoint from a claim that the preference-optimization method is superior. If the evidence is inconclusive, retain that outcome and specify the next measurement: for example, more independent held-out prompts, common-budget training replications, an independent human/task check of judge scores, or a protected confirmation set after selection.
+
+**6. Retain a reconstructable run record and separate artifacts.** Give every actual training run and evaluation rerun a unique ID and a parent link. Record hypothesis, exact intervention, data/split/units, model and tokenizer revisions, seed policy, environment, metrics, budgets, status, decision, and artifact locations with hashes or revisions. Preserve failed and superseded records. Use explicit unknown values with reasons instead of silently omitting missing provenance or cost measurements.
+
+| Artifact | Minimum useful contents and purpose |
+|---|---|
+| Evaluation manifest and protocol | Exact prompt/condition IDs and text or versioned content, references/targets, groups, splits, masks/weights, metric definitions, aggregation, selection rules, decoding/sampling policy, rubric, and contamination findings. |
+| Complete generated set or completions | All planned outputs, including failures, linked to run/checkpoint, prompt/condition, draw ID or sampling seed, reference, generation settings, and input/output token counts where relevant. Preserve extracted answers and the raw output that produced them. |
+| Scores and annotations | Per-output and per-unit results, raw judge/human assessments, evaluator identities/versions, ordering, ties/disagreement, denominators, and run-level summaries. Retain uncertainty-analysis settings and outputs. |
+| Model export | Parameters, architecture/configuration, tokenizer or preprocessing, and version compatibility needed to reproduce inference. This need not include optimizer or data-cursor state. |
+| Recovery checkpoint | Model/optimizer state, schedule position, randomness, and data progress needed for the declared training-resume boundary. Record the resume guarantee and any restoration-check evidence. This is separate from an inference export. |
+| Preference-optimization provenance | Parent/reference-policy checkpoint, objective and hyperparameters, preference-data identifiers/splits, reward-model identity and configuration when used, selection history, and training resources. Distinguish training evaluators from independent evaluation evidence. |
+| Logs and environment | Package/backend/device versions, relevant compiler/distributed configuration, measured resources, run status, errors, failures, check outputs, and decision history. |
+
+Store the full generated evidence, not only a gallery of favorable examples. Ordinary neural or LLM evaluation does not require posterior-draw artifacts such as `InferenceData`, NetCDF, ELPD, LOO, or ArviZ unless the actual procedure performs posterior inference.
+
+This is a reference-selection and evaluation-design answer. No model, generation pipeline, metric calculation, bootstrap, checkpoint-restoration check, or supplied CPU fixture was executed here; there are no measured model results or verified hardware-compatibility claims.

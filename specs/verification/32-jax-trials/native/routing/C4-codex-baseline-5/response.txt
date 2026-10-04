@@ -1,0 +1,8 @@
+Primary skill: bayesian-workflow.
+Supporting skills: none required by the stated task.
+The task explicitly asks for Bayesian posterior inference using NumPyro and NUTS.
+bayesian-workflow directly covers generative specification, justified priors, prior predictive checks, native NumPyro NUTS, convergence diagnostics, posterior predictive checks, and uncertainty reporting.
+Read deep-learning as a candidate because the model is a neural network; its full boundary section keeps posterior-inference procedures with the responsible inference skill.
+No neural training, architecture redesign, benchmark, execution bottleneck, hyperparameter search, or model-family selection is requested, so those supporting workflows are unnecessary.
+This is a skill-selection result only; no model was implemented, fit, tested, or interpreted.
+The frozen catalog and recorded helper reads are the evidence for this choice.

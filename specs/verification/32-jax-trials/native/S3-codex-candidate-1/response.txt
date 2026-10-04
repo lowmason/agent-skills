@@ -1,0 +1,399 @@
+Start by proving what changed in the JIT specialization. **Changing a dynamic scalar's numeric value normally does not require recompilation when its abstract type stays the same.** A scalar marked static, a changed shape/dtype/weak type, or a newly created callable is a different situation. Without your program and logs, the cause is still unconfirmed; the static-timestep example below demonstrates one cause and its corresponding fix. JAX documents both static-value specialization and reuse of cached JIT programs. [JAX JIT guide](https://docs.jax.dev/en/latest/jit-compilation.html)
+
+I have not executed the supplied code. Compile counts, numerical errors, latency distributions, and the actual application diagnosis are pending.
+
+1. Capture the smallest simulation and the exact input sequence, including revisits such as A,A,B,B,A. Record every argument's shape, dtype, weak type, static value, PyTree structure, callable identity, and device/sharding. Record Python/JAX/jaxlib versions, x64 and precision settings, and process/device counts. Preserve the existing integrator and reference calculation.
+2. In a separate diagnostic run, enable `jax_log_compiles` and `jax_explain_cache_misses` before the sequence. Associate the target function's tracing, lowering, and compilation messages with each call. Logs for unrelated array initialization operations are not evidence that the simulation recompiled. A Python print inside a jitted function signals tracing; it does not independently establish backend compilation. [JAX compilation diagnostics](https://docs.jax.dev/en/latest/201/slow-compilation.html), [configuration options](https://docs.jax.dev/en/latest/config_options.html)
+3. Apply one change supported by those logs, rerun the sequence, and assert numerical parity. Then compare first encounters and synchronized warm calls with logging disabled. First encounter includes specialization, dispatch, and execution; it is not compilation time alone.
+
+| Evidence at the target function | Cause-specific change |
+|---|---|
+| `dt`, `rate`, or another changing numeric parameter is in `static_argnames`/`static_argnums` | Make that parameter dynamic if it only participates in numerical operations. Retain intentionally finite static algorithm/shape configuration. |
+| Shape `()` becomes `(1,)`, dtype changes, or weak typing changes | Normalize rank and dtype at the input boundary, preserving the precision the simulation needs. Python floats and explicitly typed array scalars can have different abstract types. |
+| A fresh lambda, closure, partial, or jitted function is created on every call | Define and jit the callable once; pass changing values/state as arguments. |
+| Input/state shapes, PyTree structure, or placement change | Stabilize the relevant contract, or accept/document a finite set of specializations. Shape bucketing needs valid-element masks and preserved reductions. |
+| A Python `if`, `while`, or array allocation depends on a dynamic value | This is a tracing/control-flow or shape issue. Use `lax.cond`/`lax.fori_loop`/`lax.while_loop` for compatible fixed-shape computations; variable-sized outputs need a separate shape policy. |
+
+For callable recreation, JAX explicitly recommends retaining a long-lived function handle and passing changing values. [JAX cache-miss examples](https://docs.jax.dev/en/latest/201/slow-compilation.html) Weak typing is part of JAX's scalar type behavior. [JAX type promotion](https://docs.jax.dev/en/latest/101/type_promotion.html)
+
+The following complete script isolates an unnecessarily static timestep. Both implementations calculate the same explicit Euler update,
+
+`y[k + 1] = y[k] - rate * dt * y[k]`.
+
+The only intended specialization change is removing `dt` from the static arguments. `steps` remains a fixed, explicit static configuration in this comparison. Inputs and arithmetic are float32 for this fixture, and both paths normalize timestep values to float32. Keep float64 instead if your existing simulation requires it; precision conversion is a separate experiment. [JAX dtype configuration](https://docs.jax.dev/en/latest/101/default_dtypes.html)
+
+Save this as `scalar_recompile.py` in your application environment, using its existing JAX/jaxlib installation:
+
+```python
+import argparse
+import json
+import platform
+import sys
+from time import perf_counter
+
+import jax
+import jaxlib
+import numpy as np
+
+SEQUENCE = [('A', 0.01), ('A', 0.01), ('B', 0.02), ('B', 0.02), ('A', 0.01)]
+STEPS = 64
+RATE = 0.5
+REPEATS = 30
+RTOL = 2e-5
+ATOL = 2e-5
+
+
+def euler(y0, rate, dt, steps):
+    coefficient = rate * dt
+
+    def step(_, y):
+        return y - coefficient * y
+
+    final = jax.lax.fori_loop(0, steps, step, y0)
+    return {'final': final, 'delta': final - y0}
+
+
+def static_dt_impl(y0, rate, dt, steps):
+    return euler(y0, rate, dt, steps)
+
+
+def dynamic_dt_impl(y0, rate, dt, steps):
+    return euler(y0, rate, dt, steps)
+
+
+# Construct these once, outside the request loop.
+STATIC_DT = jax.jit(static_dt_impl, static_argnames=('dt', 'steps'))
+DYNAMIC_DT = jax.jit(dynamic_dt_impl, static_argnames=('steps',))
+FUNCTIONS = {'static': STATIC_DT, 'dynamic': DYNAMIC_DT}
+
+
+def scalar32(value):
+    result = np.asarray(value, dtype=np.float32)
+    if result.shape != ():
+        raise ValueError('Expected a rank-zero scalar')
+    if not np.isfinite(result):
+        raise ValueError('Expected a finite scalar')
+    return result
+
+
+def host_inputs(raw_y0, rate, dt, steps):
+    if not isinstance(steps, (int, np.integer)) or steps < 0:
+        raise ValueError('steps must be a nonnegative integer')
+    y0 = np.asarray(raw_y0, dtype=np.float32)
+    if not np.all(np.isfinite(y0)):
+        raise ValueError('Expected finite initial state')
+    return y0, scalar32(rate), scalar32(dt), int(steps)
+
+
+def place_inputs(host, variant, device):
+    y0, rate, dt, steps = host
+    dynamic = {'y0': y0, 'rate': rate}
+    if variant == 'dynamic':
+        dynamic['dt'] = dt
+    placed = jax.device_put(dynamic, device)
+    # NumPy float32 is hashable for the deliberately static variant.
+    timestep = np.float32(dt) if variant == 'static' else placed['dt']
+    return placed['y0'], placed['rate'], timestep, steps
+
+
+def array_signature(value):
+    return {
+        'shape': list(value.shape),
+        'dtype': str(value.dtype),
+        'weak_type': bool(getattr(value, 'weak_type', False)),
+        'sharding': str(getattr(value, 'sharding', 'host/static')),
+    }
+
+
+def signature(function, arguments, variant):
+    y0, rate, dt, steps = arguments
+    return {
+        'callable_id': id(function),
+        'pytree': str(jax.tree_util.tree_structure(arguments)),
+        'y0': array_signature(y0),
+        'rate': array_signature(rate),
+        'dt': array_signature(dt),
+        'static': {'steps': steps, **({'dt': float(dt)} if variant == 'static' else {})},
+    }
+
+
+def completed_call(function, arguments):
+    jax.block_until_ready(arguments)
+    start = perf_counter()
+    output = function(*arguments)
+    submitted = perf_counter()
+    jax.block_until_ready(output)  # Wait for every returned array leaf.
+    completed = perf_counter()
+    return output, {
+        'submit_ms': 1000 * (submitted - start),
+        'remaining_wait_ms': 1000 * (completed - submitted),
+        'completed_call_ms': 1000 * (completed - start),
+    }
+
+
+def reference(host):
+    y0, rate, dt, steps = host
+    y = y0.copy()
+    coefficient = np.float32(rate) * np.float32(dt)
+    for _ in range(steps):
+        y = np.asarray(y - coefficient * y, dtype=np.float32)
+    return {'final': y, 'delta': y - y0}
+
+
+def assert_reference(output, host):
+    actual = jax.device_get(output)
+    expected = reference(host)
+    assert set(actual) == set(expected)
+    maximum = 0.0
+    for name in expected:
+        assert actual[name].shape == expected[name].shape
+        assert actual[name].dtype == np.dtype('float32')
+        assert np.all(np.isfinite(actual[name]))
+        np.testing.assert_allclose(actual[name], expected[name], rtol=RTOL, atol=ATOL)
+        maximum = max(maximum, float(np.max(np.abs(actual[name] - expected[name]))))
+    y0, rate, dt, steps = host
+    # Independent closed form of the discrete method, not exp(-rate * time).
+    closed = y0.astype(np.float64) * (1.0 - float(rate) * float(dt)) ** steps
+    np.testing.assert_allclose(actual['final'], closed, rtol=RTOL, atol=ATOL)
+    if steps == 0 or float(rate) == 0.0 or float(dt) == 0.0:
+        np.testing.assert_array_equal(actual['final'], y0)
+        np.testing.assert_array_equal(actual['delta'], np.zeros_like(y0))
+    closed_error = float(np.max(np.abs(actual['final'] - closed)))
+    return {'max_recurrence_error': maximum, 'max_discrete_closed_form_error': closed_error}
+
+
+def consume(output):
+    host_output = jax.device_get(output)
+    return float(sum(np.sum(leaf, dtype=np.float64)
+                     for leaf in jax.tree_util.tree_leaves(host_output)))
+
+
+def distribution(samples):
+    return {'count': len(samples), 'median_ms': float(np.median(samples)),
+            'p95_ms': float(np.percentile(samples, 95)),
+            'min_ms': float(np.min(samples)), 'max_ms': float(np.max(samples)),
+            'samples_ms': samples}
+
+
+def request(function, raw_y0, dt, variant, device):
+    start = perf_counter()
+    host = host_inputs(raw_y0, RATE, dt, STEPS)
+    arguments = place_inputs(host, variant, device)
+    output = function(*arguments)
+    checksum = consume(output)
+    return 1000 * (perf_counter() - start), checksum
+
+
+def fenced_stages(function, host, variant, device):
+    start = perf_counter()
+    arguments = place_inputs(host, variant, device)
+    jax.block_until_ready(arguments)
+    placed = perf_counter()
+    output = function(*arguments)
+    jax.block_until_ready(output)
+    completed = perf_counter()
+    checksum = consume(output)
+    consumed = perf_counter()
+    return {'placement_ms': 1000 * (placed - start),
+            'completed_model_ms': 1000 * (completed - placed),
+            'fetch_consume_ms': 1000 * (consumed - completed), 'checksum': checksum}
+
+
+def replay(function, raw_y0, variant, device, diagnostic=False):
+    records = []
+    saved = []
+    for index, (label, dt) in enumerate(SEQUENCE):
+        host = host_inputs(raw_y0, RATE, dt, STEPS)
+        arguments = place_inputs(host, variant, device)
+        jax.block_until_ready(arguments)
+        record = {'visit': index, 'label': label, 'dt_value': dt,
+                  'signature': signature(function, arguments, variant)}
+        if diagnostic:
+            print('BEFORE_TARGET_CALL ' + json.dumps(record), file=sys.stderr, flush=True)
+        output, duration = completed_call(function, arguments)
+        record.update(duration)
+        records.append(record)
+        saved.append((host, arguments, output))
+        if diagnostic:
+            print('AFTER_TARGET_CALL ' + json.dumps(duration), file=sys.stderr, flush=True)
+    return records, saved
+
+
+def check_all(raw_y0, device):
+    cases = [(RATE, 0.01, STEPS, raw_y0), (RATE, 0.02, STEPS, raw_y0),
+             (RATE, 0.03, 1, raw_y0), (RATE, 0.01, 0, raw_y0),
+             (0.0, 0.02, STEPS, raw_y0), (RATE, 0.0, STEPS, raw_y0),
+             (RATE, 0.02, STEPS, np.zeros_like(raw_y0))]
+    errors = []
+    pair_error = 0.0
+    for rate, dt, steps, y0 in cases:
+        host = host_inputs(y0, rate, dt, steps)
+        outputs = {}
+        for variant, function in FUNCTIONS.items():
+            arguments = place_inputs(host, variant, device)
+            output = function(*arguments)
+            errors.append(assert_reference(output, host))
+            outputs[variant] = jax.device_get(output)
+        for name in outputs['static']:
+            before, after = outputs['static'][name], outputs['dynamic'][name]
+            np.testing.assert_allclose(after, before, rtol=RTOL, atol=ATOL)
+            pair_error = max(pair_error, float(np.max(np.abs(after - before))))
+    return {'cases': len(cases), 'rtol': RTOL, 'atol': ATOL,
+            'max_before_after_error': pair_error,
+            'max_recurrence_error': max(e['max_recurrence_error'] for e in errors),
+            'max_discrete_closed_form_error': max(e['max_discrete_closed_form_error'] for e in errors)}
+
+
+def measure(function, raw_y0, variant, device):
+    # No warm-up or correctness calls precede this replay in the fresh process.
+    visits, saved = replay(function, raw_y0, variant, device)
+    checks = [assert_reference(output, host) for host, _, output in saved]
+    warm = {}
+    requests = {}
+    stages = {}
+    for label, dt in [('A', 0.01), ('B', 0.02)]:
+        host = host_inputs(raw_y0, RATE, dt, STEPS)
+        arguments = place_inputs(host, variant, device)
+        # Both signatures have been encountered in the replay above.
+        warm[label] = distribution([
+            completed_call(function, arguments)[1]['completed_call_ms']
+            for _ in range(REPEATS)
+        ])
+        request_samples = [request(function, raw_y0, dt, variant, device)[0]
+                           for _ in range(REPEATS)]
+        requests[label] = distribution(request_samples)
+        stages[label] = fenced_stages(function, host, variant, device)
+    return {'visits': visits, 'warm_resident': warm, 'warm_host_request': requests,
+            'fenced_stages': stages, 'replay_reference_checks': checks}
+
+
+def aot(function, raw_y0, variant, device):
+    host = host_inputs(raw_y0, RATE, 0.01, STEPS)
+    arguments = place_inputs(host, variant, device)
+    jax.block_until_ready(arguments)
+    start = perf_counter()
+    traced = function.trace(*arguments)
+    traced_at = perf_counter()
+    lowered = traced.lower()
+    lowered_at = perf_counter()
+    compiled = lowered.compile()
+    compiled_at = perf_counter()
+    # The executable accepts dynamic arguments only, with its fixed signature.
+    executable_arguments = arguments[:2] if variant == 'static' else arguments[:3]
+    output, first = completed_call(compiled, executable_arguments)
+    return {'trace_ms': 1000 * (traced_at - start),
+            'lower_ms': 1000 * (lowered_at - traced_at),
+            'compile_or_load_ms': 1000 * (compiled_at - lowered_at),
+            'first_compiled_execution': first, 'correctness': assert_reference(output, host)}
+
+
+def profile(function, raw_y0, variant, device, trace_dir):
+    for dt in [0.01, 0.02]:
+        host = host_inputs(raw_y0, RATE, dt, STEPS)
+        arguments = place_inputs(host, variant, device)
+        jax.block_until_ready(function(*arguments))
+    checksum = 0.0
+    with jax.profiler.trace(trace_dir):
+        for label, dt in SEQUENCE:
+            with jax.profiler.TraceAnnotation('request_' + label):
+                with jax.profiler.TraceAnnotation('preprocess'):
+                    host = host_inputs(raw_y0, RATE, dt, STEPS)
+                with jax.profiler.TraceAnnotation('placement'):
+                    arguments = place_inputs(host, variant, device)
+                with jax.profiler.TraceAnnotation('simulation_dispatch'):
+                    output = function(*arguments)
+                with jax.profiler.TraceAnnotation('fetch_and_consume'):
+                    checksum += consume(output)
+                jax.block_until_ready(output)
+    return {'trace_dir': trace_dir, 'checksum': checksum,
+            'capture': 'warmed host-input-to-host-consumed-output requests'}
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('mode', choices=['diagnose', 'check', 'measure', 'aot', 'profile'])
+    parser.add_argument('--variant', choices=['static', 'dynamic'], default='dynamic')
+    parser.add_argument('--trace-dir', default='/tmp/scalar-recompile-profile')
+    options = parser.parse_args()
+    jax.config.update('jax_enable_compilation_cache', False)
+    jax.config.update('jax_log_compiles', options.mode == 'diagnose')
+    jax.config.update('jax_explain_cache_misses', options.mode == 'diagnose')
+    if jax.config.jax_disable_jit:
+        raise ValueError('Enable JIT for this specialization experiment')
+    device = jax.local_devices()[0]
+    raw_y0 = np.linspace(-1, 1, 256, dtype=np.float32).tolist()
+    function = FUNCTIONS[options.variant]
+    metadata = {
+        'python': platform.python_version(), 'platform': platform.platform(),
+        'jax': jax.__version__, 'jaxlib': jaxlib.__version__, 'numpy': np.__version__,
+        'backend': jax.default_backend(), 'devices': [str(d) for d in jax.devices()],
+        'device_kinds': [d.device_kind for d in jax.devices()],
+        'global_device_count': jax.device_count(), 'local_device_count': jax.local_device_count(),
+        'process_count': jax.process_count(), 'process_index': jax.process_index(),
+        'fixture_placement': str(device), 'mesh': None,
+        'x64': bool(jax.config.jax_enable_x64),
+        'matmul_precision': str(jax.config.jax_default_matmul_precision),
+        'pgle_enabled': bool(jax.config.jax_enable_pgle),
+        'storage_compute_accumulation_dtype': 'float32; no matmul or state reduction',
+        'persistent_cache_enabled': False, 'mode': options.mode, 'variant': options.variant,
+        'randomness': None, 'steps': STEPS, 'rate': RATE, 'initial_state_shape': [256],
+        'output_tree': "dict(final=float32[256], delta=float32[256])",
+        'resident_boundary': 'ready device arguments to entire ready output tree',
+        'request_boundary': 'host list/scalars to fetched output tree and host checksum',
+        'excluded': 'imports, device initialization, initial workload construction, concurrent requests',
+        'memory': 'not measured',
+    }
+    print(json.dumps({'environment_and_contract': metadata}), flush=True)
+    if options.mode == 'diagnose':
+        visits, _ = replay(function, raw_y0, options.variant, device, diagnostic=True)
+        result = {'diagnostic_visits': visits, 'timing_use': 'diagnostics only'}
+    elif options.mode == 'check':
+        result = check_all(raw_y0, device)
+    elif options.mode == 'measure':
+        result = measure(function, raw_y0, options.variant, device)
+    elif options.mode == 'aot':
+        result = aot(function, raw_y0, options.variant, device)
+    else:
+        result = profile(function, raw_y0, options.variant, device, options.trace_dir)
+    print(json.dumps(result, sort_keys=True))
+
+
+if __name__ == '__main__':
+    main()
+```
+
+Run each command in a fresh process. For an illustrative CPU check, prefix the commands with `JAX_PLATFORMS=cpu`; for performance evidence, use your actual deployment device and the same configuration for both variants.
+
+```bash
+python scalar_recompile.py diagnose --variant static > static-diagnostics.jsonl 2> static-compiles.log
+python scalar_recompile.py diagnose --variant dynamic > dynamic-diagnostics.jsonl 2> dynamic-compiles.log
+python scalar_recompile.py check
+python scalar_recompile.py measure --variant static > static-times.jsonl
+python scalar_recompile.py measure --variant dynamic > dynamic-times.jsonl
+python scalar_recompile.py aot --variant dynamic
+python scalar_recompile.py profile --variant dynamic --trace-dir /tmp/scalar-dynamic-trace
+```
+
+In this controlled example, the expected pattern is two target specializations for `static_dt_impl` (first A and first B), and one for `dynamic_dt_impl` (first A). Revisited values should reuse the corresponding program. **Those are expectations to check in the target compile logs, not measured results here.** Extra initialization or internal loop logs must be attributed separately. If the fixed path still specializes, compare the recorded full signatures and configuration; do not infer that dynamic scalar values are the cause simply because the calls use different numbers.
+
+The `check` mode verifies both returned arrays and both implementations against an independent NumPy float32 recurrence, and verifies the final state against the discrete closed form `y0 * (1 - rate * dt)**steps`. It covers A/B, another timestep, one and zero steps, zero rate, zero timestep, and zero initial state. Shape, dtype, finiteness, exact no-op invariants, and before/after parity are assertions. A host checksum merely consumes output; it is not the correctness test. The tolerances are fixture choices and need domain justification for your simulation, especially near numerical instability or over long integration horizons.
+
+`measure` first records A,A,B,B,A before any warm-up of the target signatures. It then records 30 serialized warm samples per timestep for two boundaries: ready device arguments to ready device results, and host-list/scalar input to host-consumed output. It also records fenced placement, completed-model, and fetch/consumption intervals for attribution. Those extra fences change overlap, so they need not sum to the natural request interval. Submission and remaining wait are host intervals; subtracting them does not give measured kernel time. CPU placement/fetch can share memory and does not predict accelerator transfer costs. [JAX benchmarking](https://docs.jax.dev/en/latest/benchmarking.html)
+
+`aot` exposes trace, lower, and compile-or-load intervals separately. It does not call a warmed signature first in that process, but the compile interval still includes compiler bookkeeping and possible reuse; report the cache policy and avoid calling it pure kernel time or proving cold compilation from a timer alone. Static arguments disappear from the executable's runtime argument list. [JAX AOT stages](https://docs.jax.dev/en/latest/aot.html)
+
+`profile` warms both timesteps before capturing annotated complete requests, with all output work completed inside the capture. Inspect dispatch gaps, copies, kernel execution, and compilation against the diagnostic logs before making further changes. This code delivers a capture procedure, not a measured profile or proof of GPU profiler compatibility. [JAX profiling](https://docs.jax.dev/en/latest/profiling.html)
+
+If the varying scalar is actually the **number of steps**, and you return only a final fixed-shape state, `lax.fori_loop` can accept dynamic bounds: use a separately defined stable `jax.jit(euler)` and a rank-zero integer step argument. Investigate that independently of the timestep experiment. Its carry must retain fixed shape and dtype. If the simulation returns a trajectory of length `steps`, dynamic bounds alone do not make the output shape variable; use a declared finite shape policy or change the return contract while preserving valid-step semantics. [JAX loop contract](https://docs.jax.dev/en/latest/_autosummary/jax.lax.fori_loop.html)
+
+For your evidence record, fill in the pending observations after running the original and changed paths on the real workload:
+
+| Field | Delivered contract / pending observation |
+|---|---|
+| Reproduction | A,A,B,B,A timestep sequence; float32 state `[256]`, rank-zero rate/timestep, fixed `steps=64`, stable callable, one device, two-array output tree. Exact versions and precision/device configuration emitted at runtime. Actual application contract still needed. |
+| Diagnosis | Target compile/cache-miss logs, ready first-encounter calls, synchronized warm distributions, fenced transfer intervals, natural host-consumed request distributions, optional warmed trace. All observations pending. |
+| Change | For the illustrated static-timestep cause, remove only `dt` from static arguments and pass a consistently typed rank-zero dynamic scalar. Apply to the application only when its source/logs support that cause. |
+| Correctness | Independent discrete recurrence and closed-form assertions; output/state, finite, dtype and boundary checks; `rtol=atol=2e-5` for the fixture. Actual maximum error and passed checks pending. |
+| Effect and limits | Compare target specializations and before/after median/p95/sample distributions under the same hardware/configuration. No measured speedup, compile count, memory reduction, or numerical result is claimed. Memory unmeasured; no distributed or accelerator performance validation. |
+
+This simulation does not need a training optimizer, neural-model evaluation, or posterior inference workflow. The useful result is a demonstrated cause, preserved discrete numerical behavior, and the measured effect at your chosen request boundary.

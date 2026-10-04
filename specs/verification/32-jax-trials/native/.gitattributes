@@ -1,0 +1,4 @@
+# Preserve original trial/report bytes; retain other default whitespace checks.
+*-codex-*/response.txt whitespace=-blank-at-eof
+*-codex-*/research-notes.md whitespace=-blank-at-eof
+*-native-*-scoring.md whitespace=-blank-at-eof

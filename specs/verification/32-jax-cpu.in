@@ -1,0 +1,9 @@
+jax
+jaxlib
+flax
+optax
+orbax-checkpoint
+equinox
+diffrax
+e3nn-jax
+numpy

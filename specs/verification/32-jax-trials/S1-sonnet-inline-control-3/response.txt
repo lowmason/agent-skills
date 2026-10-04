@@ -1,0 +1,134 @@
+## Two separate bugs, not one
+
+The symptoms you're describing are actually two independent problems that happen to compound:
+
+1. **"Timer around jitted call reports tiny time"** — this is JAX's asynchronous dispatch. `jit`ted calls return a `DeviceArray` handle immediately; the Python thread doesn't wait for the computation to actually finish on the accelerator. Your `time.perf_counter()` around the call is measuring *dispatch overhead* (microseconds), not *compute time*.
+2. **"Latency changes with input length"** — this is shape-triggered retracing. `jit` caches one compiled XLA executable per distinct input *shape*. Every new sequence length is a cache miss, which means a full XLA compile (often 100ms–several seconds) happens synchronously on that call.
+
+These are separable: fixing (1) makes your timer tell the truth; fixing (2) makes the truth itself small. Below is a script that isolates each.
+
+`★ Insight ─────────────────────────────────────`
+JAX dispatches async by design: the host Python thread enqueues ops on the accelerator and immediately moves on to build the next computation, rather than blocking. This lets the accelerator stay fed with work queued ahead of it instead of idling between host round-trips — critical for throughput on GPU/TPU. The cost is that naive wall-clock timing around a single call is almost always wrong unless you force synchronization.
+`─────────────────────────────────────────────────`
+
+```python
+# repro_timing.py
+import time
+import numpy as np
+import jax
+import jax.numpy as jnp
+
+jax.config.update("jax_log_compiles", True)  # prints a line every time XLA actually compiles
+
+trace_count = {"n": 0}
+
+@jax.jit
+def f(x):
+    # a plain Python side effect here only fires during tracing, not on cached replays —
+    # that's what makes it a reliable "did we retrace?" probe
+    trace_count["n"] += 1
+    w = x
+    for _ in range(4):
+        w = jnp.tanh(w @ w.T) @ w
+    return w.sum()
+
+lengths = [128, 131, 137, 256, 256, 512, 131, 128]  # deliberately non-bucketed -> cache misses
+
+print("=== (A) naive timing: no block_until_ready ===")
+for n in lengths:
+    x = jnp.ones((n, n), dtype=jnp.float32)
+    t0 = time.perf_counter()
+    y = f(x)
+    t1 = time.perf_counter()
+    print(f"n={n:4d}  'elapsed'={1e3*(t1-t0):8.3f} ms   <- dispatch only, compute may still be queued")
+
+print("\n=== (B) correct timing: block_until_ready + host-side transfer included ===")
+trace_count["n"] = 0
+for n in lengths:
+    x_np = np.ones((n, n), dtype=np.float32)      # simulate real input arriving on host
+    t0 = time.perf_counter()
+    x = jax.device_put(x_np)                      # host -> device transfer, often skipped in timing
+    y = f(x)
+    jax.block_until_ready(y)                       # force sync: this is the real end-to-end cost
+    t1 = time.perf_counter()
+    print(f"n={n:4d}  total={1e3*(t1-t0):8.3f} ms   trace_count={trace_count['n']}")
+```
+
+`★ Insight ─────────────────────────────────────`
+Watch `trace_count` in loop (B): it increments on `128`, `131`, `137`, `256`, stays flat on the repeated `256`, increments again on `512`, then increments *again* on the repeated `131` and `128` — because JAX's jit cache is typically bounded (LRU-style) and your 8-shape sequence evicted the earlier entries. In a real inference loop with many distinct lengths, you can be recompiling on nearly every request without ever seeing a "cache miss" log you'd recognize as such — `jax_log_compiles` is the only thing that makes this visible.
+`─────────────────────────────────────────────────`
+
+Running this (I haven't executed it in this session — treat the printed format as the contract, not the specific millisecond values) should show loop (A) reporting low, roughly-constant times regardless of `n`, while loop (B) shows a spike on every new shape and reveals the real length-dependent cost in `block_until_ready`'s wait.
+
+## The fix: stabilize shapes so the compile cache actually hits
+
+The standard pattern is bucketing — pad every input up to the nearest member of a fixed ladder of sizes, so you only ever trigger a handful of compiles, done once at startup via AOT (`lower(...).compile()`), not lazily during serving.
+
+The one piece that's genuinely yours to decide: **the bucket policy**. Bucket spacing is a real trade-off —
+
+- Few, widely-spaced buckets → fewer compiles, more wasted compute on padding (a 129-token input padded to 1024 wastes ~87% of FLOPs).
+- Many, tightly-spaced buckets → less padding waste, but each bucket is its own compile (startup cost) and cache slot.
+
+This also depends on things only you know: your actual length distribution (is it bimodal — short chat turns vs long documents? uniform?), whether this is prefill or autoregressive decode (decode usually wants a *fixed* max length + KV cache with `lax.dynamic_update_slice`, not bucketing at all), and your latency budget for the rare long-tail input.
+
+In `bucket_policy.py`, implement `bucket_len`:
+
+```python
+# bucket_policy.py
+def bucket_len(n: int) -> int:
+    """
+    Map an actual sequence length `n` to the padded length JAX will
+    actually trace/compile for. Called once per request before padding.
+
+    TODO (fills in a real trade-off, not boilerplate):
+    Decide the bucket ladder for YOUR length distribution and latency
+    budget. Some starting points to adapt, not copy:
+      - power-of-two buckets: 128, 256, 512, 1024, ...
+      - fixed-step buckets:   128, 256, 384, 512, ... (less padding waste,
+        more compiled executables resident)
+      - a hybrid: tight buckets up to your p95 length, one wide bucket
+        for the long tail so it doesn't blow up your compile count
+    """
+    raise NotImplementedError
+```
+
+Once you have `bucket_len`, the serving loop becomes:
+
+```python
+# serve.py
+from bucket_policy import bucket_len
+
+buckets = sorted({bucket_len(n) for n in lengths})
+
+compiled = {}
+for b in buckets:
+    x = jnp.ones((b, b), dtype=jnp.float32)
+    compiled[b] = f.lower(x).compile()   # AOT: pay the compile cost once, at startup, not per-request
+
+for n in lengths:
+    b = bucket_len(n)
+    x_np = np.ones((n, n), dtype=np.float32)
+    x_padded = np.pad(x_np, ((0, b - n), (0, b - n)))
+    x = jax.device_put(x_padded)
+    t0 = time.perf_counter()
+    y = compiled[b](x)
+    jax.block_until_ready(y)
+    t1 = time.perf_counter()
+    print(f"n={n:4d}  bucket={b:4d}  total={1e3*(t1-t0):8.3f} ms")  # should now track bucket cost only, flat per bucket
+```
+
+`★ Insight ─────────────────────────────────────`
+`.lower(x).compile()` is the AOT (ahead-of-time) path — it separates tracing/compilation from execution so you can do the expensive part at process startup rather than discovering it as tail latency on a user's first request of a new shape. This is the same mechanism `jax.jit`'s implicit cache uses internally; you're just forcing it to happen eagerly and on a controlled set of shapes instead of lazily and on whatever shape shows up first.
+`─────────────────────────────────────────────────`
+
+## Other sync points worth auditing in the real loop
+
+Beyond shape instability, these silently serialize an otherwise-async pipeline — each forces the host to block on the device:
+
+- Any `.item()`, `int(...)`, `float(...)`, or `if device_array > 0:` inside the hot loop.
+- `donate_argnums` *not* being used for large buffers you overwrite every step (e.g., a KV cache) — without it, JAX keeps the old buffer alive and copies, which costs more as the buffer grows with sequence length.
+- Calling `device_put` per-step on data that could be placed once outside the loop.
+
+## One thing to check before trusting any of this
+
+If your *existing* timer already wraps the call in `block_until_ready` (or something like `jax.device_get`) and still reports a small number, the async-dispatch explanation doesn't apply — the gap would be purely host-side (tokenizer, data loading, Python glue) and you'd want to profile that path instead with `jax.profiler` or just `cProfile`. Worth confirming which case you're actually in before applying the bucketing fix.

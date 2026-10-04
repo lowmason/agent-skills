@@ -1,0 +1,260 @@
+The small timer may be measuring how quickly Python submits work, while the larger end-to-end timer measures when that work actually finishes. JAX dispatches asynchronously: printing an array, converting it to NumPy, or fetching it to the host can incur the wait later. That is a strong hypothesis for your timing discrepancy, but it does not establish the cause of the input-length effect. [JAX asynchronous dispatch](https://docs.jax.dev/en/latest/async_dispatch.html).
+
+For the length effect, separate three possibilities: a new shape triggers compilation; a longer input needs more device work; or preparation and transfers grow with length. Multiple causes can occur together. Ordinary `jax.jit` specializes on input shapes and dtypes, so warming up length 128 does not warm up length 512. [JAX JIT compilation and caching](https://docs.jax.dev/en/latest/201/jit.html).
+
+I have not executed code or collected timings here. The following is a complete standalone reproduction and measurement harness. Run it in your existing JAX environment on the same hardware as your inference loop. It uses a small synthetic inference model so you can establish the measurement behavior before substituting your model.
+
+Save this as `diagnose_jax_latency.py`:
+
+```python
+import argparse
+import platform
+import sys
+from time import perf_counter
+
+import jax
+import jax.numpy as jnp
+import jaxlib
+import numpy as np
+
+MILLISECONDS_PER_SECOND = 1000.0
+OUTPUT_WIDTH = 16
+
+
+@jax.jit
+def infer(params, inputs):
+    hidden = inputs
+    for weight in params[:-1]:
+        hidden = jnp.tanh(hidden @ weight)
+    return hidden @ params[-1]
+
+
+def prepare_input(rng, length, width):
+    # Substitute actual tokenization/feature preparation here.
+    return rng.standard_normal((length, width), dtype=np.float32)
+
+
+def postprocess(host_output):
+    # Substitute the actual response construction here.
+    return float(np.asarray(host_output).sum(dtype=np.float64))
+
+
+def elapsed_ms(start, end):
+    return (end - start) * MILLISECONDS_PER_SECOND
+
+
+def measure_resident_call(params, device_input):
+    # The previous call has completed and this input is already ready.
+    start = perf_counter()
+    output = infer(params, device_input)
+    submitted = perf_counter()
+    jax.block_until_ready(output)
+    completed = perf_counter()
+    return {
+        "submit_ms": elapsed_ms(start, submitted),
+        "remaining_wait_ms": elapsed_ms(submitted, completed),
+        "completed_call_ms": elapsed_ms(start, completed),
+    }
+
+
+def measure_stages(params, device, rng, length, width):
+    start = perf_counter()
+    host_input = prepare_input(rng, length, width)
+    prepared = perf_counter()
+
+    device_input = jax.device_put(host_input, device)
+    jax.block_until_ready(device_input)
+    input_ready = perf_counter()
+
+    output = infer(params, device_input)
+    submitted = perf_counter()
+    jax.block_until_ready(output)
+    output_ready = perf_counter()
+
+    host_output = jax.device_get(output)
+    host_ready = perf_counter()
+    checksum = postprocess(host_output)
+    finished = perf_counter()
+
+    return {
+        "prepare_ms": elapsed_ms(start, prepared),
+        "input_placement_ms": elapsed_ms(prepared, input_ready),
+        "submit_ms": elapsed_ms(input_ready, submitted),
+        "remaining_wait_ms": elapsed_ms(submitted, output_ready),
+        "output_fetch_ms": elapsed_ms(output_ready, host_ready),
+        "postprocess_ms": elapsed_ms(host_ready, finished),
+        "serial_total_ms": elapsed_ms(start, finished),
+    }, checksum
+
+
+def measure_end_to_end(params, device, rng, length, width):
+    # No intermediate fences: completion is defined by a usable host response.
+    start = perf_counter()
+    host_input = prepare_input(rng, length, width)
+    device_input = jax.device_put(host_input, device)
+    output = infer(params, device_input)
+    checksum = postprocess(jax.device_get(output))
+    finished = perf_counter()
+    return {"end_to_end_ms": elapsed_ms(start, finished)}, checksum
+
+
+def report(label, rows):
+    print(label, flush=True)
+    for name in rows[0]:
+        values = np.asarray([row[name] for row in rows])
+        print(
+            f"  {name}: median={np.median(values):.3f} "
+            f"p95={np.percentile(values, 95):.3f}",
+            flush=True,
+        )
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--lengths", type=int, nargs="+",
+                        default=[128, 512, 128, 1024, 512])
+    parser.add_argument("--width", type=int, default=512)
+    parser.add_argument("--depth", type=int, default=8)
+    parser.add_argument("--repeats", type=int, default=20)
+    parser.add_argument("--log-compiles", action="store_true")
+    args = parser.parse_args()
+    if min(args.lengths + [args.width, args.depth, args.repeats]) < 1:
+        parser.error("lengths, width, depth, and repeats must be positive")
+
+    device = jax.devices()[0]
+    print({
+        "python": sys.version.split()[0],
+        "platform": platform.platform(),
+        "jax": jax.__version__,
+        "jaxlib": jaxlib.__version__,
+        "numpy": np.__version__,
+        "device": str(device),
+        "backend": jax.default_backend(),
+        "x64_enabled": bool(jax.config.jax_enable_x64),
+        "input_dtype": "float32",
+        "lengths": args.lengths,
+        "width": args.width,
+        "depth": args.depth,
+    }, flush=True)
+
+    rng = np.random.default_rng(0)
+    scale = np.float32(args.width ** -0.5)
+    weights = [
+        rng.standard_normal((args.width, args.width), dtype=np.float32) * scale
+        for _ in range(args.depth)
+    ]
+    weights.append(
+        rng.standard_normal((args.width, OUTPUT_WIDTH), dtype=np.float32) * scale
+    )
+    params = jax.device_put(tuple(weights), device)
+    jax.block_until_ready(params)
+
+    # Enable diagnostics after setup; compile logging affects measured latency.
+    jax.config.update("jax_log_compiles", args.log_compiles)
+    jax.config.update("jax_explain_cache_misses", args.log_compiles)
+
+    seen_lengths = set()
+    for length in args.lengths:
+        first_visit = length not in seen_lengths
+        print(
+            f"\nlength={length} shape=({length}, {args.width}) "
+            f"first_visit={first_visit}",
+            flush=True,
+        )
+        row, checksum = measure_stages(params, device, rng, length, args.width)
+        report("arrival call (may include compilation)", [row])
+        seen_lengths.add(length)
+
+        device_input = jax.device_put(
+            prepare_input(rng, length, args.width), device
+        )
+        jax.block_until_ready(device_input)
+        # Warm up this exact shape, dtype, parameter structure, and device.
+        for _ in range(3):
+            jax.block_until_ready(infer(params, device_input))
+
+        resident_rows = [
+            measure_resident_call(params, device_input)
+            for _ in range(args.repeats)
+        ]
+        report("warm, resident input (no host output fetch)", resident_rows)
+
+        stage_rows = []
+        end_to_end_rows = []
+        for _ in range(args.repeats):
+            row, checksum = measure_stages(
+                params, device, rng, length, args.width
+            )
+            stage_rows.append(row)
+        for _ in range(args.repeats):
+            row, checksum = measure_end_to_end(
+                params, device, rng, length, args.width
+            )
+            end_to_end_rows.append(row)
+        report("warm, stages deliberately synchronized", stage_rows)
+        report("warm, complete host response", end_to_end_rows)
+        print(f"  final_checksum={checksum:.6f}", flush=True)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+Run two passes:
+
+```bash
+python diagnose_jax_latency.py --log-compiles --repeats 5
+python diagnose_jax_latency.py --repeats 50
+```
+
+The first pass provides compilation evidence. The second gives less-disturbed timing distributions. Avoid concurrent workloads when comparing runs, and keep backend, dtype, batch size, and model configuration fixed. The script reports the actual device so an unexpected CPU backend is visible.
+
+The important measurement boundaries are deliberate:
+
+- `submit_ms` is time until the Python call returns. On a cold call this can include tracing and compilation; even on a warm call it can include some device work. It is not a kernel-runtime measurement.
+- `remaining_wait_ms` is the additional wait after return. Device execution can overlap submission, so this is not the entire device execution time either.
+- `completed_call_ms` measures the warm call through output readiness, with inputs and parameters already on the device. It includes dispatch overhead but excludes host output retrieval.
+- The stage breakdown waits after input placement and after inference. This attributes costs but introduces synchronization, so its `serial_total_ms` is a diagnostic measurement. `end_to_end_ms` measures the complete request without those intermediate fences. Compare the latter to your observed user latency.
+
+`device_put` itself is asynchronous, which is why timing only that call would also undercount input-placement time. `jax.block_until_ready` works on a whole output pytree, including dictionaries or tuples returned by real models. [JAX device placement API](https://docs.jax.dev/en/latest/_autosummary/jax.device_put.html), [JAX readiness API](https://docs.jax.dev/en/latest/_autosummary/jax.block_until_ready.html).
+
+Use this evidence to distinguish the causes:
+
+| Observation | Diagnosis supported | Next controlled change |
+|---|---|---|
+| Warm submission is small, completed-call time is much larger | Earlier timer excluded unfinished work | Include output readiness inside the benchmark timer; retain a full-request timer too |
+| Arrival calls for new lengths are slow and compilation logs name `infer` with new shapes; revisits are faster | Shape specialization contributes to latency | Compare the same request sequence using a small fixed set of padded lengths |
+| Warm completed-call time grows with length, with no new compilation | Length-dependent device work remains | Profile the model operations at short and long lengths |
+| Resident completed calls are fast, but preparation or postprocessing dominates | Host work contributes most | Profile the actual tokenizer, input assembly, and response construction |
+| Input placement or output fetch dominates | Data movement contributes most | Compare with device-resident parameters/inputs, and fetch only the output needed by the caller |
+| Compilation continues for repeated identical lengths | Length alone does not explain the cache misses | Inspect function identity, all leaf shapes/dtypes, static values, batch structure, and placement changes |
+
+The demo revisits lengths within one process and keeps one jitted function object. Check that your real loop also reuses its inference callable: function identity participates in caching, and changed static values trigger recompilation. [JAX function caching and static arguments](https://docs.jax.dev/en/latest/_autosummary/jax.jit.html).
+
+For your own loop, replace `infer`, `prepare_input`, and `postprocess`, preserve actual parameter and input pytrees, and add timers around every remaining outer component such as loading, batching, decoding, or response serialization. Warm up every signature you intend to compare. The toy preparation and checksum are placeholders; their proportions do not predict your application's latency. JAX's benchmarking guide likewise distinguishes first-call compilation, warmed execution, and transfers. [JAX benchmarking guidance](https://docs.jax.dev/en/latest/benchmarking.html).
+
+If compilation dominates, test a few padded length buckets with model-appropriate masks, keeping the true length as a runtime value. Check output equivalence on real tokens. This trades extra computation and memory for fewer variants. [JAX variable-shape caching guidance](https://docs.jax.dev/en/latest/201/jit.html).
+
+If unexplained host/device traffic remains, use this around a short diagnostic run of your existing loop:
+
+```python
+with jax.transfer_guard("log"):
+    output = infer(params, device_input)
+    jax.block_until_ready(output)
+```
+
+This logs implicit transfers while allowing explicit `device_put`/`device_get` calls. Inspect printing, NumPy conversion, scalar extraction, and Python decisions based on device values, especially inside a per-token loop. [JAX transfer guard](https://docs.jax.dev/en/latest/transfer_guard.html).
+
+Finally, capture a warmed model call when timing alone cannot identify the expensive operation. In the example below, `params` and `device_input` are already ready and `infer` has been warmed for their exact signature:
+
+```python
+jax.block_until_ready(infer(params, device_input))
+with jax.profiler.trace("/tmp/jax-latency-profile"):
+    with jax.profiler.TraceAnnotation("warm_inference"):
+        output = infer(params, device_input)
+        jax.block_until_ready(output)
+```
+
+Keep the final wait inside the trace so the device work is captured. Inspect compilation events, host gaps, transfer activity, and kernel durations in XProf. Capture a separate trace around the complete request if the model-only trace is fast. [JAX profiling guide](https://docs.jax.dev/en/latest/profiling.html).
+
+Success would be a reproducible timing gap explained by these measurements, followed by a one-change experiment that improves completed request latency while preserving outputs. No root cause or speedup is verified until the harness is run against your actual loop.

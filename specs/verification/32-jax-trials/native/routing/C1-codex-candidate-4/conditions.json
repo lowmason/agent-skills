@@ -1,0 +1,53 @@
+{
+  "trial": "C1-codex-candidate-4",
+  "family": "C1",
+  "condition": "candidate",
+  "fresh_context": true,
+  "fork_turns": "none",
+  "agent_type": "default",
+  "runtime": "built-in Codex collaboration agent",
+  "model": "inherited active runtime; exact identifier unavailable",
+  "reasoning_effort": "inherited active runtime; exact value unavailable",
+  "catalog": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/candidate-catalog",
+  "catalog_entries": 138,
+  "catalog_manifest_sha256": "3f3e5414d6a6c76a68c4038003aab5c025f32a7b2451f4245304b7261c9a1df0",
+  "prompt_sha256": "30127a9d1f6596e30dc8e4b3348c8751c25d9d00efa6f45bdd5376f7603ece45",
+  "selection_simulation": true,
+  "real_auto_loading_observed": false,
+  "tool_policy": "recorded local prompt and selected SKILL.md reads; own trial artifacts only",
+  "resident_global_guidance_may_be_available": true,
+  "spawn_identity": {
+    "task_name": "/root/native_c1_candidate_4",
+    "source": "actual collaboration.spawn_agent return",
+    "recorded_utc": "2026-10-04T03:07:38.235098+00:00"
+  },
+  "completion": "Complete substantive response and research notes",
+  "completed_utc": "2026-10-04T03:10:14.133241+00:00",
+  "first_prompt_read": {
+    "sha256": "30127a9d1f6596e30dc8e4b3348c8751c25d9d00efa6f45bdd5376f7603ece45",
+    "bytes": 89681,
+    "lines": 620
+  },
+  "actual_skill_reads": [
+    {
+      "read_id": "deep-learning",
+      "native_label": "deep-learning",
+      "sha256": "ece0ac27eaf8b9ca8de149fc27ec408d6ab975e58ba9cfa132c47d765b14fdbf",
+      "bytes": 11048,
+      "read_event_line": 2
+    }
+  ],
+  "payloads": {
+    "response.txt": {
+      "sha256": "8118b2b76073cf5dd4eba4ccac3e8d007468d8dba431b1f9916947c8e3cceb9a",
+      "bytes": 875,
+      "lines": 9
+    },
+    "research-notes.md": {
+      "sha256": "f885981583f1c516bfd7ee381af10aa38bc017489282909ca9329b689f1721c4",
+      "bytes": 1242,
+      "lines": 11
+    }
+  },
+  "execution_claim": "No underlying application implementation or execution observed; selection simulation only"
+}

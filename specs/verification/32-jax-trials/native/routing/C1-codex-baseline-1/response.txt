@@ -1,0 +1,6 @@
+Primary read ID: deep-learning.
+Supporting read IDs: none.
+Training an NNX sequence model in JAX matches this skill's explicit framework, domain, and training scope.
+Its full body covers synthetic tiny fixtures, sequence shape/mask/target contracts, NNX-aware differentiation, optimizer/RNG state, learnability, held-out checks, and recovery.
+The requested first training run needs no separate benchmark, hyperparameter-search, or execution-optimization skill.
+This response selects and explains skills only; no model was implemented or trained.

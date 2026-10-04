@@ -1,0 +1,9 @@
+Primary skill: deep-learning.
+It directly covers training neural sequence models in JAX and Flax NNX.
+Its experiment, data/objective, NNX update-state, tiny-learning, and recovery contracts fit synthetic training.
+Supporting skill: brainstorming.
+The terse request leaves the synthetic process, prediction target, architecture, compute, and success criterion unspecified.
+Brainstorming would clarify those choices before implementation when no approved design exists.
+Both selected complete SKILL.md bodies were actually read through the recorded helper.
+No Bayesian inference, benchmark comparison, or reproduced JAX execution problem was requested, so those specialist routes are unnecessary.
+This is a catalog skill-selection simulation; no model or implementation workflow was executed.

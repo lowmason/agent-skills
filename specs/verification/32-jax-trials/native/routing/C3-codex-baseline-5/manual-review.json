@@ -1,0 +1,44 @@
+{
+  "selected_primary": "optimize-jax",
+  "selected_supporting": [
+    "systematic-debugging",
+    "test-driven-development",
+    "verification-before-completion"
+  ],
+  "correctness": "correct",
+  "posterior_boundary": "preserved",
+  "rationale": "Non-learning recompilation selects and reads optimize-jax for signature and cause evidence; process support remains a future workflow and no Bayesian posterior loading occurs.",
+  "full_payloads_manually_read": true,
+  "display_reads_manually_verified": true,
+  "conflicts_or_resident_choices": [],
+  "evidence": [
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-5/response.txt",
+      "line": 1
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-5/read-events.jsonl",
+      "line": 2
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-5/research-notes.md",
+      "line": 1
+    }
+  ],
+  "reviewed_utc": "2026-10-04T02:41:00.282310+00:00",
+  "catalog_manifest_sha256": "fee71e65dfd7f9372132f86feaf5316bac5ca3c8212906359039bf0b0010c800",
+  "payloads": {
+    "response.txt": {
+      "sha256": "054fc31c759eed75c9dba0a2d52df43d0f1f76bc656df9de5650516371999209",
+      "bytes": 1267,
+      "lines": 11
+    },
+    "research-notes.md": {
+      "sha256": "5f8ba3a06ac2bfc40ef01021362631d34afdd09a3e4cd00f91f11a298dccc792",
+      "bytes": 1166,
+      "lines": 9
+    }
+  },
+  "grading_source": "conductor manual full-response judgment",
+  "semantic_grading_automated": false
+}

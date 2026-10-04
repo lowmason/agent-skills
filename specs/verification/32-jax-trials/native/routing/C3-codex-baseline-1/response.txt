@@ -1,0 +1,9 @@
+Primary: optimize-jax.
+It directly covers unexpected JAX recompilation, including non-learning numerical calculations.
+Its body calls for stable callable identity, replayed input signatures, compile/cache diagnostics, and cause-supported changes with numerical parity.
+Supporting: systematic-debugging, test-driven-development, verification-before-completion.
+systematic-debugging supplies reproduction, root-cause isolation, and one-hypothesis-at-a-time diagnosis before proposing a fix.
+test-driven-development supplies the failing regression case and red/green evidence for the eventual bugfix.
+verification-before-completion requires fresh evidence before claiming the original recompilation symptom is fixed.
+Do not route this calculation to deep-learning, evaluate-deep-learning, or bayesian-workflow merely because it uses JAX; no learning, neural evaluation, or posterior inference was requested.
+This response selects and explains skills only; no underlying calculation, fix, test, profiling, reference, script, or implementation workflow was executed.

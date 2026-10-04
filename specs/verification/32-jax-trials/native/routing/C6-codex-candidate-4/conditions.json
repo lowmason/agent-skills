@@ -1,0 +1,53 @@
+{
+  "trial": "C6-codex-candidate-4",
+  "family": "C6",
+  "condition": "candidate",
+  "fresh_context": true,
+  "fork_turns": "none",
+  "agent_type": "default",
+  "runtime": "built-in Codex collaboration agent",
+  "model": "inherited active runtime; exact identifier unavailable",
+  "reasoning_effort": "inherited active runtime; exact value unavailable",
+  "catalog": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/candidate-catalog",
+  "catalog_entries": 138,
+  "catalog_manifest_sha256": "3f3e5414d6a6c76a68c4038003aab5c025f32a7b2451f4245304b7261c9a1df0",
+  "prompt_sha256": "24d90dc67a2bcf539775c146995a213bf85abdb27926bc9759b45c3f0b54434d",
+  "selection_simulation": true,
+  "real_auto_loading_observed": false,
+  "tool_policy": "recorded local prompt and selected SKILL.md reads; own trial artifacts only",
+  "resident_global_guidance_may_be_available": true,
+  "spawn_identity": {
+    "task_name": "/root/native_c6_candidate_4",
+    "source": "actual collaboration.spawn_agent return",
+    "recorded_utc": "2026-10-04T03:28:24.812789+00:00"
+  },
+  "completion": "Complete substantive response and research notes",
+  "completed_utc": "2026-10-04T03:29:50.229565+00:00",
+  "first_prompt_read": {
+    "sha256": "24d90dc67a2bcf539775c146995a213bf85abdb27926bc9759b45c3f0b54434d",
+    "bytes": 89686,
+    "lines": 620
+  },
+  "actual_skill_reads": [
+    {
+      "read_id": "optimize-jax",
+      "native_label": "optimize-jax",
+      "sha256": "e177b588bf9cbb73654b16dc594a294a782f098cbb4f3226856e1f42835a4200",
+      "bytes": 9783,
+      "read_event_line": 2
+    }
+  ],
+  "payloads": {
+    "response.txt": {
+      "sha256": "4355cb27890e2cb03aee050d14229120ad87807b7d5e3ce8a95f4cc7fd66a04f",
+      "bytes": 773,
+      "lines": 9
+    },
+    "research-notes.md": {
+      "sha256": "34829d91fa3512e8d94ea2b397ccbf82052ca62aa3e9535102134231b30ef562",
+      "bytes": 1294,
+      "lines": 11
+    }
+  },
+  "execution_claim": "No underlying application implementation or execution observed; selection simulation only"
+}

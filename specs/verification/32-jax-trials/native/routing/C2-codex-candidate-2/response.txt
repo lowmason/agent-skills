@@ -1,0 +1,8 @@
+Primary skill: evaluate-deep-learning.
+Supporting skill: validate-data, for applicable input and conclusion QA before reporting the comparison.
+The primary description directly matches comparing neural checkpoints, unequal compute budgets, and variation across seeds.
+Its procedure calls for common-budget comparisons or budget-performance curves, explicit checkpoint-selection rules, and a record of all planned runs, including failures.
+It distinguishes endpoint checkpoint performance from method superiority; numeric seed labels alone do not justify paired training-run inference.
+The support skill supplies integrity, reproducibility, unit/denominator, silent-fallback, and claim-to-evidence checks under the primary skill's neural contracts.
+No deep-learning, optimize-jax, tune-hyperparameters, or Bayesian experiment-tracking skill is needed for the stated comparison alone.
+This is skill selection only: no checkpoint evaluation, metric computation, implementation, or empirical conclusion was performed.

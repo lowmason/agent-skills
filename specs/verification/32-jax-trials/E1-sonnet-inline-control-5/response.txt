@@ -1,0 +1,37 @@
+## Short answer
+
+With the numbers given, you **can't conclude Method B is better** — the apparent gap is both small and confounded with training budget.
+
+## The numbers
+
+| | n | mean held-out error | sample std | SEM |
+|---|---|---|---|---|
+| A | 2 | 0.150 | 0.0141 | 0.0100 |
+| B | 4 | 0.1425 | 0.0263 | 0.0132 |
+
+Difference in means: 0.0075. Combined SE of that difference: √(0.0100² + 0.0132²) ≈ 0.0165. That's a t-statistic of ~0.45 — nowhere near significant. With only 2 and 4 seeds, you have almost no statistical power to distinguish these methods; the observed gap is well within noise.
+
+`★ Insight ─────────────────────────────────────`
+With n=2, the "sample std" is computed from a single degree of freedom — it's barely an estimate at all. Seed-to-seed variance in neural net training (data order, init) routinely produces swings of this size on its own, with no difference in method. A rule of thumb: don't trust a method comparison with fewer than ~5 seeds per arm unless the effect size is huge.
+`─────────────────────────────────────────────────`
+
+## The bigger problem: confounded comparison
+
+Method B was trained for **3x the tokens** of Method A (3M vs 1M). So this isn't a clean "Method A vs Method B" comparison — it's "Method A at 1M tokens" vs "Method B at 3M tokens." Any of these could be true and you currently can't tell them apart:
+
+1. B is a genuinely better method.
+2. A and B are equivalent, and B just benefited from more training.
+3. A would have *beaten* B if given 3M tokens too (methods can cross over on scaling curves — some approaches that look worse early overtake others with more compute, and vice versa).
+
+`★ Insight ─────────────────────────────────────`
+This is the single most common error in reported "Method X beats baseline" claims: unequal compute/data budgets between arms. A fair comparison needs either (a) compute-matched runs, or (b) full scaling curves for both methods so you can see whether the *curves* separate, not just two points on them.
+`─────────────────────────────────────────────────`
+
+## What evidence to collect next
+
+1. **Compute-match the comparison**: train Method A to 3M tokens (and/or Method B to 1M tokens) with matched seeds, so token budget is no longer a free variable.
+2. **More seeds per arm** — at least 5, ideally the same count for both methods — to get a usable variance estimate and run a proper test (e.g., Welch's t-test, since variances look unequal) instead of eyeballing means.
+3. **Scaling curves, not single points**: log held-out error at intermediate checkpoints (e.g., every 0.5M tokens) for both methods. This tells you whether B's advantage is a constant offset, a different slope, or just an artifact of being further along training.
+4. **Check B's seed 1 outlier** (0.18, well above its own mean) — worth confirming it's not a failed/divergent run before it drags the mean.
+
+**Bottom line**: don't report a winner yet. Get compute-matched, equal-seed-count runs with scaling curves before drawing a conclusion.

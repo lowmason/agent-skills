@@ -1,0 +1,22 @@
+[
+  {
+    "id": "toolu_015RUKWFCznUp4uv4tJLyKWD",
+    "name": "Read",
+    "input": {
+      "file_path": "/private/tmp/jax-skill-trials-pAYZ0t/guidance-candidate-deep-learning/references/geometric.md"
+    },
+    "result_present": true,
+    "is_error": false,
+    "result_sha256": "3714e88d5d7dfb1157e0b0c5cc2c3fe456188119c62690a93c6b05e1e45b3436"
+  },
+  {
+    "id": "toolu_017RPUHae7rR8jbs9ztJFEey",
+    "name": "Read",
+    "input": {
+      "file_path": "/private/tmp/jax-skill-trials-pAYZ0t/guidance-candidate-deep-learning/references/frameworks.md"
+    },
+    "result_present": true,
+    "is_error": false,
+    "result_sha256": "4a733cea4a1a5af0c0e1f894dd1b551cb6074e0ec1834105f2533c4f1db08347"
+  }
+]

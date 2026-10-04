@@ -1,0 +1,42 @@
+{
+  "selected_primary": "evaluate-deep-learning",
+  "selected_supporting": [
+    "validate-data"
+  ],
+  "correctness": "correct",
+  "posterior_boundary": "preserved",
+  "rationale": "Checkpoint comparison selects and reads evaluate-deep-learning with its applicable validate-data QA handoff. It explicitly limits support to neural integrity and evidence checks, preserves the posterior boundary and records preselection display recovery.",
+  "full_payloads_manually_read": true,
+  "display_reads_manually_verified": true,
+  "conflicts_or_resident_choices": [],
+  "evidence": [
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-candidate-4/response.txt",
+      "line": 1
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-candidate-4/read-events.jsonl",
+      "line": 2
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-candidate-4/research-notes.md",
+      "line": 1
+    }
+  ],
+  "reviewed_utc": "2026-10-04T03:13:44.439656+00:00",
+  "catalog_manifest_sha256": "3f3e5414d6a6c76a68c4038003aab5c025f32a7b2451f4245304b7261c9a1df0",
+  "payloads": {
+    "response.txt": {
+      "sha256": "7c45b187e5a6604070dc7d4a6e12a6be4589da01614835b2f5fada2ee542a439",
+      "bytes": 1122,
+      "lines": 9
+    },
+    "research-notes.md": {
+      "sha256": "17cf38f552b28c42d16bd2102a1fa2caf3f3997d18abd8f7cd0191e229089b3d",
+      "bytes": 1401,
+      "lines": 10
+    }
+  },
+  "grading_source": "conductor manual full-response judgment",
+  "semantic_grading_automated": false
+}

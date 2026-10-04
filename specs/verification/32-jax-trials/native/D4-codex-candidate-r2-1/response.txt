@@ -1,0 +1,484 @@
+Use two stages: completion-only supervised fine-tuning (SFT) of LoRA adapters, then standard Direct Preference Optimization (DPO), initialized from the selected SFT adapter and regularized against an immutable copy of that same SFT policy. Keep model execution and differentiation in JAX. Use a supported Tunix model implementation, Qwix for adapter insertion, Flax NNX for the update boundary, Optax for the optimizer, and Orbax for recovery.
+
+I have inspected the supplied guidance and primary documentation, but have not loaded a checkpoint or executed any of the code below. This is a concrete plan and complete objective/preflight implementation; accelerator training, tokenizer compatibility, learning, and recovery remain checks to run in the target environment.
+
+1. Fix the experiment and stopping rule.
+
+   The hypothesis is that SFT improves domain response accuracy and format compliance over the initial model, and DPO further improves preference agreement without unacceptable task regressions. The observations are independent conversations for SFT and common-prompt response pairs for DPO. Split by prompt/conversation/source identity before tokenization, deduplicate across both stages and evaluation, and keep related turns or variations in one split. Record dataset revisions, hashes, label provenance, and any filtering.
+
+   Start with the original model and the SFT-only model as baselines. Use a fixed held-out task metric appropriate to the application, completion-token NLL, held-out preference accuracy, and output-length/termination statistics. For mathematical answers, use a defined final-answer parser and exact answer comparison; an answer appearing anywhere in a response is an unreliable success rule. For open-ended preferences, use blinded comparison under a declared judging protocol and report uncertainty.
+
+   The model, dataset, accelerator, and budget were not specified. A concrete supported GPU starting point is Llama 3.1-8B with the documented Tunix/Qwix LoRA recipe; use a smaller supported configuration for inexpensive correctness work if needed. Reserve a bounded preflight of 32–64 examples, short sequences, and at most 100 updates per stage. Set the production cap in optimizer updates, eligible tokens/pairs, and wall time before launch. Stop on nonfinite values, broken masking/reference/recovery checks, or a declared validation regression; select checkpoints on validation and assess the final selection once on an independent test set. Tunix lists selected Gemma, Llama, and Qwen configurations and exposes PEFT/DPO paths. [Tunix models](https://tunix.readthedocs.io/en/latest/models.html), [Tunix algorithms](https://tunix.readthedocs.io/en/latest/algorithms.html).
+
+2. Load a supported architecture and an exact artifact.
+
+   Pin the checkpoint and tokenizer to resolved artifact commits, and lock the exact Tunix, Qwix, JAX/JAXlib, Flax, Optax, Orbax, Transformers, Python, accelerator-runtime, and driver versions. Treat the supplied CPU-example versions as evidence for those examples only; they do not establish a compatible GPU/Tunix environment.
+
+   Hugging Face supplies weights and tokenizer artifacts here; Tunix executes the model. Do not assume that current Transformers offers a generic JAX/Flax model loader: its v5 migration guide records removal of the JAX backend. [Transformers migration guide](https://github.com/huggingface/transformers/blob/main/MIGRATION_GUIDE_V5.md).
+
+   The documented `AutoModel.from_pretrained(model_id, mesh, ...)` path handles selected models. Its inspected signature does not explicitly expose a checkpoint revision, so do not invent a `revision=` guarantee. For pinning, download the exact snapshot separately and load that local snapshot through the model family's supported SafeTensors converter. The source-inspected dispatch functions below demonstrate that boundary for Llama; confirm their installed signatures and model mapping before execution. A model-table entry alone does not prove every source/format/variant combination works. [AutoModel source](https://raw.githubusercontent.com/google/tunix/main/tunix/models/automodel.py).
+
+   Check architecture/config identity, vocabulary and embedding/output dimensions, tied weights, projection layouts, rotary positions, special tokens, chat template, and the checkpoint's allowed context length. Compare a small set of full logits against a trusted source-checkpoint fixture with exactly the same tokens, positions, and deterministic mode before adding adapters. Store the fixture, dtype, tolerance, and comparison result. For unquantized zero-output LoRA, compare initial adapted logits with the unadapted JAX model too.
+
+   Start with ordinary LoRA, e.g. rank 16 and alpha 32 on the recipe's named attention and MLP projections. Freeze the base and train only selected LoRA leaves. LoRA represents a low-rank weight increment; QLoRA additionally quantizes the frozen base and requires its own quantization/kernel validation. [LoRA paper](https://arxiv.org/abs/2106.09685), [QLoRA paper](https://arxiv.org/abs/2305.14314), [Qwix](https://github.com/google/qwix).
+
+   Consider 4-bit QLoRA only after the unquantized contract passes or when memory requires it. The GPU recipe gives 16 GB+ VRAM guidance for its 8B QLoRA example and recommends 24 GB+ for LoRA. Those figures are source guidance, not measured capacity for this workload, and do not budget a simultaneous DPO reference. Measure real peak memory, including activations, logits, optimizer moments, reference work, and loading/conversion peaks. [Tunix GPU PEFT recipe](https://tunix.readthedocs.io/en/latest/_collections/examples/qlora_llama3_gpu.html).
+
+3. Establish data, attention, and objective semantics.
+
+   SFT JSONL can use this schema:
+
+   ```json
+   {"id":"sft-001","prompt":[{"role":"user","content":"Explain the result."}],"response":"The result follows because ..."}
+   ```
+
+   DPO JSONL uses the same prompt representation and two assistant responses:
+
+   ```json
+   {"id":"pair-001","prompt":[{"role":"user","content":"Explain the result."}],"chosen":"A correct explanation ...","rejected":"An incorrect explanation ..."}
+   ```
+
+   Render the checkpoint-compatible chat template. The complete conversation includes its template-provided BOS and assistant termination tokens; do not add a second BOS/EOS afterward. Mark only the final assistant continuation, including its template termination token, as completion targets. Earlier assistant turns in the prompt remain context. Use the same template and boundary policy for chosen and rejected. The initial implementation rejects overlength sequences/pairs instead of silently truncating them. If later truncation is needed, define one common prompt-truncation rule, retain a valid response and termination policy on both sides, and recount eligible tokens afterward. [Chat-template documentation](https://huggingface.co/docs/transformers/main/en/chat_templating).
+
+   The model-facing batch contract is:
+
+   | Value | Shape and dtype | Meaning |
+   |---|---|---|
+   | tokens | [B,T], int32 | One complete conversation per row, right padded |
+   | nonpad | [B,T], bool | Real tokens, including real EOS/end-of-turn tokens |
+   | completion | [B,T], bool | Final response and declared termination targets |
+   | positions | [B,T], int32 | Real positions 0 through length−1; padding position convention fixed |
+   | attention | [B,T,T], bool | For eligible query q, allow real keys k ≤ q |
+   | logits | [B,T,V], reduced in float32 | Position t predicts token t+1 |
+   | target mask | [B,T−1], bool | nonpad[t] AND nonpad[t+1] AND completion[t+1] |
+
+   Use explicit nonpadding metadata, even when PAD equals EOS. Comparing token IDs to PAD would incorrectly remove real EOS. Completion masking does not implement attention. Response tokens may attend to the prompt and preceding response. The first run uses no packing and no training KV cache. If packing is later enabled, also require equal query/key segment IDs and an explicitly tested position/cache-reset convention; retain any architecture-specific local-window behavior.
+
+   With eligible target mask m, SFT loss is the negative sum of eligible next-token log-probabilities divided by their actual token count. This pools tokens across sequences. Averaging sequence means would define a different weighting.
+
+   For a DPO pair, compute each response's SUM of eligible completion log-probabilities. Let c and r be the policy's chosen and rejected sums, and c_ref and r_ref the frozen SFT reference sums. Minimize the pair mean of:
+
+   ```text
+   -log_sigmoid(beta * ((c - r) - (c_ref - r_ref)))
+   ```
+
+   Start beta at 0.1 as a tunable pilot value. Do not length-normalize these sums unless deliberately changing the objective consistently for policy and reference. Reject a pair if either side has no eligible shifted response target; also reject identical responses, malformed labels, and tokenization that loses the shared prompt. Standard DPO needs no separately trained reward model. [DPO paper](https://arxiv.org/abs/2305.18290).
+
+4. Make the SFT-to-DPO boundary explicit.
+
+   Select and save the SFT adapter before starting DPO. Start the DPO policy from that adapter and create a separate frozen reference containing the identical base AND trained SFT adapter. Disabling the trained adapter yields the original base policy and changes the reference.
+
+   Preserve the reference as a separate model/adapter snapshot, a correctly merged SFT snapshot, or immutable cached response log-probabilities. For a cache, key each entry by exact prompt/response tokens, attention/loss masks, position IDs, base revision, SFT-adapter hash, tokenizer/template, dtype, and objective version; forbid stale entries after any of these change. Reference evaluation disables dropout and carries no optimizer updates.
+
+   At the transition, compare individual chosen and rejected policy log-probabilities with the SFT reference under identical inputs. Initial DPO loss should be log(2), but that scalar alone does not verify identity: different policies can have equal chosen-versus-rejected margins. After one DPO update, check that the reference's full state remains unchanged. The official Gemma DPO example provides a concrete supported trainer path; its original base reference must be replaced by the SFT-derived reference for this two-stage experiment. [Tunix DPO example](https://tunix.readthedocs.io/en/latest/_collections/examples/dpo_gemma.html).
+
+5. Keep updates and recovery auditable.
+
+   Use float32 log-softmax/reductions, adapters, and Adam moments for the initial correctness run; the base may use a supported bfloat16 compute/storage recipe. Inspect actual leaf dtypes after adapter insertion. Use separate SFT and DPO optimizers/schedules, with DPO's count starting at zero unless continuation was explicitly intended. Reasonable pilot values are SFT learning rate 1e-4, DPO 1e-5, global-norm clipping at 1, and a short warmup followed by a declared schedule. These are starting choices to evaluate, not claims of optimality.
+
+   NNX modules must use NNX-aware differentiation, including the initial gradient checks. Match the differentiation filter and optimizer filter; the inspected Tunix PEFT implementation uses `nnx.LoRAParam`. A zero-initialized LoRA B matrix may give zero initial dA and nonzero dB. Test actual adapter changes and bitwise unchanged frozen parameters; a zero dA alone is not a failed gradient path. [Tunix PEFT source](https://raw.githubusercontent.com/google/tunix/main/tunix/sft/peft_trainer.py), [NNX optimizer API](https://flax.readthedocs.io/en/stable/api_reference/flax.nnx/training/optimizer.html).
+
+   For accumulation, accumulate gradients of SFT NLL NUMERATORS and divide by the TOTAL eligible token count before clipping and updating. For DPO, accumulate pair-loss sums and divide by total eligible pairs. Do not average unequal microbatch means. Advance Adam and the schedule once per effective update. The code below uses one full effective batch per update; distributed/accumulated execution needs an explicit global numerator/denominator reduction.
+
+   Separate adapter initialization, data-order, dropout, and generation RNG streams using typed JAX keys and split/fold_in. The deterministic first training path below disables dropout; no hidden cache or running statistics are intended. If dropout is enabled later, wire its key through the actual model interface and checkpoint the stream. Record loader epoch, permutation or reproducible shuffle identity, within-epoch cursor, external update step, and all required RNG progress. [JAX random-number documentation](https://docs.jax.dev/en/latest/random-numbers.html).
+
+The following module implements token preparation, attention/loss math, selected NNX derivatives and updates, and synthetic objective checks. Its loader is a source-inspected Llama starting point. Supply an exact manifest and real data; this module does not claim to implement a distributed production trainer.
+
+```python
+from pathlib import Path
+import json
+
+import jax
+import jax.numpy as jnp
+import numpy as np
+import optax
+import orbax.checkpoint as ocp
+from flax import nnx
+
+
+def load_llama_lora(manifest):
+    # Imports are delayed: synthetic checks need no checkpoint/Tunix/Qwix.
+    from huggingface_hub import snapshot_download
+    from transformers import AutoTokenizer
+    import qwix
+    from tunix.models.automodel import (
+        call_model_config, create_model_from_safe_tensors,
+    )
+
+    # Restrict this concrete recipe to the architecture whose target names
+    # and forward signature were inspected. Other families need their mapping.
+    model_id = manifest["base_id"]
+    if model_id != "meta-llama/Llama-3.1-8B":
+        raise ValueError("Use an independently verified loader for this model")
+    if len(manifest["base_revision"]) != 40:
+        raise ValueError("Record a resolved checkpoint commit, not a moving tag")
+    if len(manifest["tokenizer_revision"]) != 40:
+        raise ValueError("Record a resolved tokenizer commit")
+    if jax.local_device_count() != 1:
+        raise ValueError("This loader's first-run mesh assumes one device")
+    snapshot = snapshot_download(
+        repo_id=model_id, revision=manifest["base_revision"],
+        ignore_patterns=["*.pth", "*.bin"],
+    )
+    tokenizer = AutoTokenizer.from_pretrained(
+        manifest["tokenizer_id"], revision=manifest["tokenizer_revision"],
+    )
+    if not tokenizer.chat_template:
+        raise ValueError("An explicitly validated chat template is required")
+    if tokenizer.pad_token_id is None:
+        if tokenizer.eos_token_id is None:
+            raise ValueError("Define a valid padding token without resizing silently")
+        tokenizer.pad_token = tokenizer.eos_token
+    mesh = jax.make_mesh(
+        (1, 1), ("fsdp", "tp"),
+        axis_types=(jax.sharding.AxisType.Auto,) * 2,
+    )
+    with mesh:
+        config = call_model_config("llama-3.1-8b")
+        base = create_model_from_safe_tensors(
+            "llama-3.1-8b", snapshot, config, mesh, dtype=jnp.bfloat16,
+        )
+        base.eval()
+        targets = (
+            ".*q_proj|.*k_proj|.*v_proj|.*o_proj|"
+            ".*gate_proj|.*up_proj|.*down_proj"
+        )
+        provider = qwix.LoraProvider(
+            module_path=targets, rank=manifest["rank"], alpha=manifest["alpha"],
+        )
+        length = 4
+        model = qwix.apply_lora_to_model(
+            base, provider,
+            rngs=nnx.Rngs(params=jax.random.key(manifest["adapter_seed"])),
+            input_tokens=jnp.ones((1, length), dtype=jnp.int32),
+            positions=jnp.arange(length, dtype=jnp.int32)[None, :],
+            cache=None,
+            attention_mask=jnp.tril(
+                jnp.ones((1, length, length), dtype=jnp.bool_)
+            ),
+        )
+        adapters = nnx.state(model, nnx.LoRAParam)
+        if not jax.tree.leaves(adapters):
+            raise ValueError("The adapter targets matched no trainable leaves")
+        adapters = jax.tree.map(lambda x: x.astype(jnp.float32), adapters)
+        nnx.update(model, adapters)
+        model.eval()  # Deliberate deterministic training/evaluation pilot.
+    return model, tokenizer, mesh
+
+
+def encode_response(tokenizer, prompt, response, max_length):
+    if not prompt or prompt[-1]["role"] != "user":
+        raise ValueError("The first recipe requires a prompt ending in a user turn")
+    if not isinstance(response, str) or not response.strip():
+        raise ValueError("Empty response")
+    prefix = list(tokenizer.apply_chat_template(
+        prompt, tokenize=True, add_generation_prompt=True,
+    ))
+    full = list(tokenizer.apply_chat_template(
+        prompt + [{"role": "assistant", "content": response}],
+        tokenize=True, add_generation_prompt=False,
+    ))
+    # Token-boundary inference must be proved for the chosen template.
+    # Do not separately tokenize and concatenate response text.
+    if full[:len(prefix)] != prefix:
+        raise ValueError("Template/token boundary mismatch; use verified spans")
+    if len(prefix) < 1 or len(full) <= len(prefix):
+        raise ValueError("No response continuation")
+    if len(full) > max_length:
+        raise ValueError("Overlength: exclude and count, or apply a declared policy")
+    tokens = np.full(max_length, tokenizer.pad_token_id, dtype=np.int32)
+    nonpad = np.zeros(max_length, dtype=bool)
+    completion = np.zeros(max_length, dtype=bool)
+    tokens[:len(full)] = full
+    nonpad[:len(full)] = True
+    completion[len(prefix):len(full)] = True
+    return {"tokens": tokens, "nonpad": nonpad, "completion": completion}
+
+
+def stack_rows(rows):
+    if not rows:
+        raise ValueError("Empty batch")
+    batch = {name: jnp.asarray(np.stack([row[name] for row in rows]))
+             for name in ("tokens", "nonpad", "completion")}
+    validate_batch(batch)
+    return batch
+
+
+def target_mask(batch):
+    return (batch["nonpad"][:, :-1] & batch["nonpad"][:, 1:]
+            & batch["completion"][:, 1:])
+
+
+def validate_batch(batch, vocabulary=None):
+    tokens = np.asarray(batch["tokens"])
+    nonpad = np.asarray(batch["nonpad"])
+    completion = np.asarray(batch["completion"])
+    if tokens.ndim != 2 or tokens.shape[1] < 2:
+        raise ValueError("Expected [B,T] with T >= 2")
+    if tokens.dtype != np.int32 or nonpad.dtype != bool or completion.dtype != bool:
+        raise ValueError("Incorrect token or mask dtype")
+    if tokens.shape != nonpad.shape or tokens.shape != completion.shape:
+        raise ValueError("Mismatched shapes")
+    if np.any(completion & ~nonpad):
+        raise ValueError("Completion includes padding")
+    if np.any(nonpad[:, 1:] & ~nonpad[:, :-1]):
+        raise ValueError("The first recipe uses contiguous right padding")
+    if np.any(tokens < 0) or (vocabulary is not None and np.any(tokens >= vocabulary)):
+        raise ValueError("Out-of-vocabulary IDs, including padding")
+    if not np.asarray(target_mask(batch)).any(axis=1).all():
+        raise ValueError("Each included response needs a shifted completion target")
+
+
+def model_inputs(batch):
+    valid = batch["nonpad"]
+    length = valid.shape[1]
+    causal = jnp.tril(jnp.ones((length, length), dtype=jnp.bool_))
+    # Eligible queries attend only to real preceding/current keys.
+    # Padding queries are never loss units; retaining valid keys avoids
+    # an all-masked softmax row on model implementations that dislike it.
+    attention = causal[None, :, :] & valid[:, None, :]
+    positions = jnp.where(valid, jnp.cumsum(valid, axis=1) - 1, 0).astype(jnp.int32)
+    return positions, attention
+
+
+def forward_logits(model, batch):
+    positions, attention = model_inputs(batch)
+    output = model(
+        input_tokens=batch["tokens"], positions=positions,
+        cache=None, attention_mask=attention,
+    )
+    logits = output[0] if isinstance(output, tuple) else output
+    return logits.astype(jnp.float32)
+
+
+def response_statistics(logits, batch):
+    mask = target_mask(batch)
+    log_probs = jax.nn.log_softmax(logits[:, :-1, :].astype(jnp.float32), axis=-1)
+    selected = jnp.take_along_axis(
+        log_probs, batch["tokens"][:, 1:, None], axis=-1,
+    )[..., 0]
+    sums = jnp.where(mask, selected, 0.0).sum(axis=1)
+    return sums, mask.sum()  # Response log-probability sums and eligible tokens.
+
+
+def sft_loss(model, batch):
+    sums, count = response_statistics(forward_logits(model, batch), batch)
+    # No clamp: the host boundary rejects zero eligible counts.
+    return -sums.sum() / count
+
+
+def dpo_from_sums(chosen, rejected, ref_chosen, ref_rejected, beta=0.1):
+    ref_chosen = jax.lax.stop_gradient(ref_chosen)
+    ref_rejected = jax.lax.stop_gradient(ref_rejected)
+    margin = (chosen - rejected) - (ref_chosen - ref_rejected)
+    return -jax.nn.log_sigmoid(beta * margin).mean()
+
+
+def dpo_loss(model, chosen_batch, rejected_batch, ref_chosen, ref_rejected, beta=0.1):
+    chosen, _ = response_statistics(forward_logits(model, chosen_batch), chosen_batch)
+    rejected, _ = response_statistics(forward_logits(model, rejected_batch), rejected_batch)
+    return dpo_from_sums(chosen, rejected, ref_chosen, ref_rejected, beta)
+
+
+def make_optimizer(model, learning_rate):
+    # Called separately for SFT and DPO: counts/moments start anew at the boundary.
+    tx = optax.chain(optax.clip_by_global_norm(1.0), optax.adam(learning_rate))
+    return nnx.Optimizer(model, tx, wrt=nnx.LoRAParam)
+
+
+def checked_update(model, optimizer, loss_function, *args):
+    # Host-checked pilot step: nonfinite gradients cannot mutate the optimizer.
+    loss, grads = nnx.value_and_grad(
+        loss_function, argnums=nnx.DiffState(0, nnx.LoRAParam),
+    )(model, *args)
+    if not np.isfinite(np.asarray(loss)).all():
+        raise FloatingPointError("Nonfinite loss")
+    leaves = jax.tree.leaves(grads)
+    if not leaves or not all(np.isfinite(np.asarray(x)).all() for x in leaves):
+        raise FloatingPointError("Missing or nonfinite differentiated gradient")
+    optimizer.update(model, grads)
+    return float(loss)
+
+
+def freeze_sft_reference(model, chosen_batch, rejected_batch):
+    # Separate Variable wrappers; immutable JAX buffers may initially share.
+    # This pilot uses no donation and never updates or trains the reference.
+    reference = nnx.clone(model)
+    reference.eval()
+    model.eval()
+    policy_chosen, _ = response_statistics(forward_logits(model, chosen_batch), chosen_batch)
+    policy_rejected, _ = response_statistics(forward_logits(model, rejected_batch), rejected_batch)
+    ref_chosen, _ = response_statistics(forward_logits(reference, chosen_batch), chosen_batch)
+    ref_rejected, _ = response_statistics(forward_logits(reference, rejected_batch), rejected_batch)
+    np.testing.assert_allclose(policy_chosen, ref_chosen, rtol=1e-5, atol=1e-5)
+    np.testing.assert_allclose(policy_rejected, ref_rejected, rtol=1e-5, atol=1e-5)
+    np.testing.assert_allclose(
+        dpo_from_sums(policy_chosen, policy_rejected, ref_chosen, ref_rejected),
+        np.log(2), rtol=1e-6,
+    )
+    return reference, ref_chosen, ref_rejected
+
+
+def synthetic_checks():
+    batch = {
+        "tokens": jnp.array([[1, 2, 3, 0, 0], [1, 4, 2, 3, 0]], dtype=jnp.int32),
+        "nonpad": jnp.array([[1, 1, 1, 0, 0], [1, 1, 1, 1, 0]], dtype=bool),
+        "completion": jnp.array([[0, 0, 1, 0, 0], [0, 0, 1, 1, 0]], dtype=bool),
+    }
+    validate_batch(batch, vocabulary=5)
+    np.testing.assert_array_equal(
+        target_mask(batch), [[False, True, False, False], [False, True, True, False]],
+    )
+    uniform = jnp.zeros((2, 5, 5), dtype=jnp.float32)
+    sums, count = response_statistics(uniform, batch)
+    assert int(count) == 3
+    np.testing.assert_allclose(sums, [-np.log(5), -2 * np.log(5)], rtol=1e-6)
+    np.testing.assert_allclose(-sums.sum() / count, np.log(5), rtol=1e-6)
+    favored = uniform.at[:, :-1, :].add(
+        3 * jax.nn.one_hot(batch["tokens"][:, 1:], 5)
+    )
+    wrong_shift = uniform.at[:, :-1, :].add(
+        3 * jax.nn.one_hot(batch["tokens"][:, :-1], 5)
+    )
+    def loss(logits):
+        seq, units = response_statistics(logits, batch)
+        return -seq.sum() / units
+    assert float(loss(favored)) < 0.4 * float(loss(uniform))
+    assert float(loss(favored)) < float(loss(wrong_shift))
+    source_mask = jnp.concatenate(
+        [target_mask(batch), jnp.zeros((2, 1), dtype=bool)], axis=1,
+    )
+    changed = jnp.where(
+        source_mask[:, :, None], favored, jnp.array([-9., 7., 1., 5., -3.])
+    )
+    np.testing.assert_allclose(loss(changed), loss(favored), rtol=1e-6)
+    gradient = jax.grad(loss)(favored)  # Valid array-only JAX boundary.
+    assert np.isfinite(np.asarray(gradient)).all()
+    np.testing.assert_array_equal(np.asarray(gradient)[~np.asarray(source_mask)], 0)
+    empty = dict(batch, completion=jnp.zeros_like(batch["completion"]))
+    try:
+        validate_batch(empty)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("Empty response was accepted")
+    c = jnp.array([-1., -2.])
+    r = jnp.array([-2., -4.])
+    np.testing.assert_allclose(dpo_from_sums(c, r, c, r), np.log(2), rtol=1e-6)
+    assert float(dpo_from_sums(c + 1, r, c, r)) < np.log(2)
+    assert float(dpo_from_sums(c, r + 1, c, r)) > np.log(2)
+    # Equal margins are insufficient to identify the reference policy.
+    np.testing.assert_allclose(
+        dpo_from_sums(c, r, c - 0.4, r - 0.4), np.log(2), rtol=1e-6,
+    )
+    assert not np.array_equal(c, c - 0.4)
+    np.testing.assert_array_equal(
+        jax.grad(lambda ref: dpo_from_sums(c, r, ref, r))(c),
+        jnp.zeros_like(c),
+    )
+    positions, attention = model_inputs(batch)
+    np.testing.assert_array_equal(positions[0], [0, 1, 2, 0, 0])
+    np.testing.assert_array_equal(attention[0, 2], [True, True, True, False, False])
+    assert not bool(attention[0, 1, 2])
+    return "Synthetic math assertions completed"
+```
+
+The cloning semantics matter if donation is later added: the default clone copies NNX Variable wrappers while initially sharing immutable array buffers. Independent buffer copies or immutable cached reference scores avoid donation conflicts. [NNX graph/clone API](https://flax.readthedocs.io/en/stable/api_reference/flax.nnx/graph.html).
+
+For actual SFT data, call `encode_response` for each accepted record, then `stack_rows`. For DPO, encode each chosen and rejected continuation from the identical prompt, reject the WHOLE pair if either encoding fails, retain pair IDs/order, and assert both prompt-token prefixes match. Validate the declared final termination token, template, vocabulary, maximum lengths, and filtering counts on decoded examples. The prefix assertion deliberately stops templates for which the inferred completion boundary is invalid.
+
+Before substantial compute, collect these results from the target environment:
+
+| Gate | Required evidence |
+|---|---|
+| Structure/objective | Decoded real examples with correct response spans; shift fixture has three targets and SFT loss log(5); DPO identity loss log(2); counts after filtering/truncation; explicit empty-example rejection |
+| Numerics | Finite inputs, logits, loss, and EVERY selected gradient leaf; a central finite-difference or analytic derivative comparison for the synthetic DPO margin; declared float32 and bfloat16 tolerances |
+| Loading | Converted-logit agreement against a trusted source fixture; template/special-token/position compatibility; zero-output unquantized LoRA parity and exact target-module inventory |
+| Attention | Under deterministic real-model evaluation, perturb padding or extend right padding and compare unchanged eligible logits/loss; perturb future tokens and compare earlier queries whose next-token labels remain unchanged |
+| Update selection | One real SFT update changes at least one selected adapter leaf and leaves every frozen parameter unchanged; all expected target layers have adapters; zero dA at zero B is allowed |
+| Learning | Fixed-fixture initial and final deterministic SFT losses, ≤100 updates, with a predeclared meaningful reduction such as ≥10%; a distinct fixed DPO fixture shows lower loss and increased chosen-vs-rejected margin under the same evaluation policy |
+| Reference | Individual chosen AND rejected scores match the selected SFT snapshot initially; reference state/adapter identity remains unchanged after policy updates; cached scores reproduce direct scoring if caching |
+| Evaluation | Independent held-out inputs, base/SFT/DPO comparisons, fixed generation protocol, preference/task metrics, lengths and termination, confidence intervals where appropriate |
+| Recovery | Two completed unique saves; restore latest completed checkpoint; next loss AND post-update model/optimizer/step/schedule/RNG/data-cursor agreement with uninterrupted execution |
+| Resources | Exact environment, actual accelerator topology, measured memory/headroom, compilation and update time, and a feasible compute/time cap |
+
+For the attention test, compare the full real forward path, not just `response_statistics`. If a future token at index k changes, queries before k should have equal logits, but the loss at query k−1 has a changed label; exclude that loss term from the invariance comparison. For packing, add a two-segment fixture and perturb only the other segment, while checking query/key segment isolation and the chosen reset policy. The synthetic checks above do not test these model behaviors.
+
+For learning, do not compare losses from different moving batches. Evaluate the same retained bounded fixture before and after training with dropout disabled. If it fails to improve, isolate shift/boundary alignment, selected leaves, parameter changes, mode, scales, and learning rate before allocating more compute. Passing a tiny memorization fixture establishes learnability of the delivered path; it does not establish generalization.
+
+The recovery code below saves complete dynamic model state for the initial correctness path, optimizer moments/counts, external update and data cursor, and typed-key storage. A production adapter-only checkpoint can omit the immutable base only after its exact artifact/config identity is validated on reconstruction. A portable adapter or merged model export serves inference and is not a resumable optimizer checkpoint.
+
+```python
+def dynamic_snapshot(model, optimizer, key, update_step, data_cursor):
+    return {
+        "model": nnx.state(model).to_pure_dict(),
+        "optimizer": nnx.state(optimizer).to_pure_dict(),
+        "key_data": jax.random.key_data(key),
+        "update_step": jnp.asarray(update_step, dtype=jnp.int32),
+        "data_cursor": jnp.asarray(data_cursor, dtype=jnp.int32),
+    }
+
+
+def save_progress(root, manifest, model, optimizer, key, step, cursor):
+    path = Path(root).resolve() / f"step-{step:08d}"
+    path.mkdir(parents=True, exist_ok=False)  # Unique progress directories.
+    (path / "manifest.json").write_text(json.dumps(manifest, sort_keys=True))
+    with ocp.StandardCheckpointer() as cp:
+        cp.save(path / "state", dynamic_snapshot(model, optimizer, key, step, cursor))
+        cp.wait_until_finished()
+    # Only a completed save is eligible for restore-latest.
+    (path / "COMPLETE").write_text("complete")
+    return path
+
+
+def restore_progress(root, expected_manifest, factory):
+    completed = [p for p in Path(root).resolve().glob("step-*")
+                 if (p / "COMPLETE").is_file()]
+    if not completed:
+        raise ValueError("No completed checkpoint")
+    path = max(completed, key=lambda p: int(p.name.removeprefix("step-")))
+    manifest = json.loads((path / "manifest.json").read_text())
+    # Validate BEFORE constructing resumed model, optimizer, data, or objective.
+    if manifest != expected_manifest:
+        raise ValueError("Reconstruction manifest mismatch")
+    # factory uses THIS loaded manifest for all factories, including the data
+    # loader/objective/reference. It returns model, optimizer, and a bundle
+    # containing that loader/objective/schedule/reference configuration.
+    model, optimizer, bundle = factory(manifest)
+    target = dynamic_snapshot(
+        model, optimizer,
+        jax.random.key(0, impl=manifest["rng_impl"]), 0, 0,
+    )
+    with ocp.StandardCheckpointer() as cp:
+        restored = cp.restore(path / "state", target=target)
+    for obj, name in ((model, "model"), (optimizer, "optimizer")):
+        state = nnx.state(obj)
+        state.replace_by_pure_dict(restored[name])
+        nnx.update(obj, state)
+    key = jax.random.wrap_key_data(
+        restored["key_data"], impl=manifest["rng_impl"],
+    )
+    return (
+        manifest, model, optimizer, bundle, key,
+        int(restored["update_step"]), int(restored["data_cursor"]),
+    )
+
+
+def assert_same_tree(left, right, rtol=1e-6, atol=1e-6):
+    if jax.tree.structure(left) != jax.tree.structure(right):
+        raise AssertionError("State structure changed")
+    for a, b in zip(jax.tree.leaves(left), jax.tree.leaves(right)):
+        aa, bb = np.asarray(a), np.asarray(b)
+        if aa.dtype != bb.dtype or aa.shape != bb.shape:
+            raise AssertionError("State dtype or shape changed")
+        if jnp.issubdtype(a.dtype, jnp.inexact):
+            np.testing.assert_allclose(aa, bb, rtol=rtol, atol=atol)
+        else:
+            np.testing.assert_array_equal(aa, bb)
+```
+
+The manifest must include stage, architecture and static configuration, base/tokenizer commits and hashes, chat-template/special-token identity, adapter targets/rank/alpha and SFT-reference identity, quantization settings, dtype and mesh, optimizer/schedule configuration and units, beta/objective version, data/split/preprocessing identity, sampler state policy, RNG implementation, and exact package versions. For DPO, either reconstruct and validate the immutable SFT reference from its own completed snapshot or validate the cache manifest. Merely recording an SFT filename is insufficient.
+
+Exercise saves at steps 3 and 5, restore step 5, then compare update 6 against an isolated uninterrupted branch using the same next batch and randomness. Compare next loss, every post-update model leaf, EVERY optimizer leaf including moments and internal schedule counters, external step, schedule output, next RNG, and next cursor. Assign the returned key/cursor together with the model/optimizer transition. An equal pre-update weight tree or equal next loss alone does not establish recovery. Wait for saves to finish before marking completion. [Orbax checkpoint documentation](https://orbax.readthedocs.io/en/latest/guides/checkpoint/orbax_checkpoint_101.html).
+
+The authorized deliverable is complete as a plan and unexecuted implementation. No synthetic assertion, checkpoint conversion, real forward pass, fine-tuning run, preference evaluation, memory measurement, or recovery test was run in this session. A substantial run should begin only after the named checks have recorded actual results on the selected checkpoint and environment.

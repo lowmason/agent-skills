@@ -1,0 +1,40 @@
+{
+  "selected_primary": "evaluate-deep-learning",
+  "selected_supporting": [],
+  "correctness": "correct",
+  "posterior_boundary": "preserved",
+  "rationale": "Checkpoint comparison selects and reads evaluate-deep-learning for compute curves, retained runs and uncertainty distinctions. Full catalog recovery precedes selection and no Bayesian posterior workflow is assumed.",
+  "full_payloads_manually_read": true,
+  "display_reads_manually_verified": true,
+  "conflicts_or_resident_choices": [],
+  "evidence": [
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-candidate-5/response.txt",
+      "line": 1
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-candidate-5/read-events.jsonl",
+      "line": 2
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-candidate-5/research-notes.md",
+      "line": 1
+    }
+  ],
+  "reviewed_utc": "2026-10-04T03:14:38.134005+00:00",
+  "catalog_manifest_sha256": "3f3e5414d6a6c76a68c4038003aab5c025f32a7b2451f4245304b7261c9a1df0",
+  "payloads": {
+    "response.txt": {
+      "sha256": "a9f59720a98303e87d4829f901ba31311d3758c071824d9cc44905c430341659",
+      "bytes": 866,
+      "lines": 8
+    },
+    "research-notes.md": {
+      "sha256": "4833f746fa035fc7aed724555a76be02e1434f488aa337b2f464605cd215ff88",
+      "bytes": 1328,
+      "lines": 12
+    }
+  },
+  "grading_source": "conductor manual full-response judgment",
+  "semantic_grading_automated": false
+}

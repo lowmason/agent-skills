@@ -1,0 +1,22 @@
+## Local references
+
+- **Irregular continuous-time models** → [`references/scientific.md`](file:///private/tmp/jax-skill-trials-pAYZ0t/guidance-candidate-deep-learning/references/scientific.md)
+- **Equivariant 3D outputs** → [`references/geometric.md`](file:///private/tmp/jax-skill-trials-pAYZ0t/guidance-candidate-deep-learning/references/geometric.md)
+
+## Why each breaks from the Flax NNX default
+
+The skill's baseline framework for *new* projects is Flax NNX + Optax + Orbax (stated in `frameworks.md`/the main SKILL.md). Both of these domains are explicitly called out as **exceptions**, and the reasoning is different in each case.
+
+### Scientific (irregular continuous-time) → Equinox + Diffrax + Optax
+
+The driver is **solver coupling**, not a stylistic preference. Neural ODEs/CDEs don't apply a fixed sequence of layers — they define a vector field that an ODE/CDE solver integrates, and gradients must flow back *through that solver's adjoint*. Diffrax is the JAX-native differentiable solver library, and it's built on Equinox's pytree-module convention (model parameters are plain fields on an `eqx.Module`, not a separate "state dict" threaded through `apply`). Flax NNX's object-with-mutable-state model doesn't buy you anything here and adds friction interfacing with Diffrax's `diffeqsolve`, `ODETerm`, `SaveAt`, and adjoint types, which all expect PyTree-compatible callables. The reference is explicit that this is "serving solver-coupled models, not a framework switch for unrelated training" — i.e., don't drag Equinox into, say, a vision model just because you liked using it once.
+
+### Geometric (equivariant 3D outputs) → e3nn-jax (Equinox or Linen path)
+
+The driver here is **representation algebra**, not solver mechanics. Equivariance to SO(3)/O(3) isn't something you bolt onto arbitrary layers — it requires that every operation (linear maps, nonlinearities, tensor products) be defined in terms of irreducible representations (irreps) so that a rotation/inversion of the input provably produces the corresponding transformation of the output. e3nn-jax is the library that implements this irreps algebra (`Irreps`, `IrrepsArray`, tensor products, equivariant gates) correctly in JAX. The framework choice (Equinox *or* Linen) is secondary — either is a "documented...path" into e3nn-jax; what matters is using e3nn's typed layers at all, since a generic MLP in NNX or raw Flax has no mechanism to track irrep type/parity through its operations and would silently break equivariance the moment a componentwise nonlinearity touched a vector channel.
+
+`★ Insight ─────────────────────────────────────`
+1. Both exceptions are **justified by a non-negotiable mathematical structure** that the data/model relationship imposes — a differentiable solver in one case, representation theory in the other — not by developer taste. The skill frames this precisely to prevent exception-creep ("not a framework switch for unrelated training").
+2. Equinox's design principle (models are just PyTrees of arrays/callables, no hidden state container) is what makes it compose cleanly with *other* JAX libraries like Diffrax and e3nn-jax. NNX's object-oriented mutable-state model is excellent for typical training loops but adds an impedance mismatch when a third-party library expects bare PyTree semantics.
+3. Note the asymmetry in how prescriptive each reference is: scientific.md mandates Equinox+Diffrax outright, while geometric.md explicitly allows "existing direct-JAX constructions" too, provided you "establish their algebra and check the same transformation contract" — e3nn-jax is the default path, not the only legitimate one.
+`─────────────────────────────────────────────────`

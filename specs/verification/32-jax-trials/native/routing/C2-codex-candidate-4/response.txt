@@ -1,0 +1,9 @@
+Primary skill: evaluate-deep-learning.
+Task: Compare neural checkpoints trained with different budgets and seeds.
+Its description directly covers checkpoint comparisons, unequal compute budgets, and variation across seeds.
+Its body calls for common-budget comparisons or budget-performance curves, retaining every planned run, and separating endpoint checkpoint findings from method-wide claims.
+It also cautions that identical numeric seed labels do not establish paired randomness and that seed spread is distinct from predictive uncertainty.
+Supporting skill: validate-data, for the input and conclusion QA handoff explicitly named by evaluate-deep-learning.
+That support covers input integrity, reproducibility, and claim-to-evidence checks under the neural evaluation contract; it does not impose Bayesian artifacts or BLS-specific examples on this task.
+No training, hyperparameter-search, JAX-performance, or posterior-model-comparison skill is required by the stated task.
+This is skill selection only: no checkpoint evaluation, training, measurements, implementation, or claim of model superiority was performed.

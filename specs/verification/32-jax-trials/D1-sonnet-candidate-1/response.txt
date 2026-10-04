@@ -1,0 +1,306 @@
+★ Insight ─────────────────────────────────────
+The skill's canonical sequence-training example uses one **shared** frequency with independent phases, not a random frequency per sequence. That's not a simplification for convenience — it's what makes a 2-lag model correct rather than just "small." With `ω` fixed, the recurrence `sin(θ+2ω) = 2cos(ω)·sin(θ+ω) − sin(θ)` is exact, so `(w[t], w[t+1]) → w[t+2]` is a deterministic linear map and even a linear 2-lag model is optimal — tanh+16 hidden units is already generous. If I let `ω` vary per sequence, two samples can't identify both phase and frequency, the model becomes genuinely misspecified, and — critically in this no-execution session — I'd have no way to detect that the `final < 0.2·initial` bar silently fails. So frequency is fixed in `CONFIG`, documented as a stated scope limit, and variable-length only applies to how much of the fixed-frequency wave each sequence observes.
+─────────────────────────────────────────────────
+
+Here's the data and model layer. It reuses the exact NNX/Optax/Orbax call shapes from the skill's training reference verbatim (I can't execute this session, so deviating from a validated call shape is pure unverifiable risk):
+
+```python
+"""Resumable next-sample forecaster for variable-length sine sequences (CPU, JAX/Flax NNX)."""
+
+import argparse
+import json
+import tempfile
+from pathlib import Path
+
+import jax
+import jax.numpy as jnp
+import numpy as np
+import optax
+import orbax.checkpoint as ocp
+from flax import nnx
+
+CONFIG = {
+    'width': 16,
+    'dropout_rate': 0.1,
+    'frequency': 0.25,              # shared across sequences: see note on 2-lag identifiability
+    'min_length': 4,                # shortest length giving >=2 eligible targets
+    'max_length': 16,
+    'batch_size': 32,
+    'val_batch_size': 64,
+    'learning_rate': 0.02,
+    'final_learning_rate': 0.002,
+    'transition_steps': 400,
+    'input_noise': 0.02,
+    'rng_impl': 'threefry2x32',
+    'dtype': 'float32',
+    'seed': sum(map(ord, 'sine-next-sample-forecaster')),
+    'val_every': 25,
+    'checkpoint_every': 50,
+    'train_steps': 300,
+    'data': 'synthetic-sine-shared-frequency-random-phase-v1',
+}
+
+
+def require_units(mask):
+    if not np.asarray(mask).any():
+        raise ValueError('batch has no eligible targets')
+
+
+def valid_mean(values, mask):
+    return jnp.where(mask, values, 0.0).sum() / mask.sum()
+
+
+def sample_batch(config, key):
+    length_key, phase_key = jax.random.split(key)
+    batch_size = config['batch_size']
+    lengths = jax.random.randint(
+        length_key, (batch_size,), config['min_length'], config['max_length'] + 1)
+    time = jnp.arange(config['max_length'], dtype=jnp.float32)[None, :]
+    phase = jax.random.uniform(phase_key, (batch_size, 1), maxval=2 * jnp.pi)
+    waves = jnp.sin(phase + config['frequency'] * time)
+    waves = jnp.where(time < lengths[:, None], waves, 0.0)
+    features = jnp.stack((waves[:, :-2], waves[:, 1:-1]), axis=-1)
+    targets = waves[:, 2:]
+    mask = jnp.arange(config['max_length'] - 2)[None, :] < (lengths[:, None] - 2)
+    require_units(mask)
+    assert features.shape == (batch_size, config['max_length'] - 2, 2)
+    assert np.isfinite(np.asarray(features)).all()
+    assert np.isfinite(np.asarray(targets)).all()
+    return features, targets, mask
+
+
+def persistence_baseline(features, targets, mask):
+    predicted = features[..., 1]  # naive forecast: next sample equals the last observed one
+    return float(valid_mean(jnp.square(predicted - targets), mask))
+
+
+def make_validation_batch(config):
+    seed_key = jax.random.key(config['seed'], impl=config['rng_impl'])
+    _, validation_key = jax.random.split(seed_key)
+    return sample_batch(dict(config, batch_size=config['val_batch_size']), validation_key)
+
+
+class LagForecaster(nnx.Module):
+    def __init__(self, config, rngs):
+        self.hidden = nnx.Linear(2, config['width'], rngs=rngs)
+        self.dropout = nnx.Dropout(rate=config['dropout_rate'])
+        self.output = nnx.Linear(config['width'], 1, rngs=rngs)
+
+    def __call__(self, features, dropout_key):
+        hidden = jnp.tanh(self.hidden(features))
+        hidden = self.dropout(hidden, rngs=dropout_key)
+        return self.output(hidden)[..., 0]
+
+
+def make_training(config, seed):
+    model = LagForecaster(config, nnx.Rngs(params=seed))
+    schedule = optax.linear_schedule(
+        config['learning_rate'], config['final_learning_rate'], config['transition_steps'])
+    optimizer = nnx.Optimizer(model, optax.adam(schedule), wrt=nnx.Param)
+    model.train()
+    return model, optimizer, schedule
+
+
+def objective(model, features, targets, mask, dropout_key):
+    predictions = model(features, dropout_key)
+    return valid_mean(jnp.square(predictions - targets), mask)
+
+
+@nnx.jit
+def train_step(model, optimizer, features, targets, mask, dropout_key):
+    loss, grads = nnx.value_and_grad(objective)(model, features, targets, mask, dropout_key)
+    finite = jnp.isfinite(loss)
+    for leaf in jax.tree.leaves(grads):
+        finite = finite & jnp.isfinite(leaf).all()
+    optimizer.update(model, grads)
+    return loss, finite
+
+
+def advance(model, optimizer, key, config):
+    next_key, batch_key, augmentation_key, dropout_key = jax.random.split(key, 4)
+    features, targets, mask = sample_batch(config, batch_key)
+    features = features + config['input_noise'] * jax.random.normal(augmentation_key, features.shape)
+    loss, finite = train_step(model, optimizer, features, targets, mask, dropout_key)
+    assert bool(finite), 'nonfinite loss or gradient'
+    return float(loss), next_key
+
+
+def validate(model, config, validation_batch, dropout_key):
+    model.eval()
+    features, targets, mask = validation_batch
+    loss = float(objective(model, features, targets, mask, dropout_key))
+    model.train()
+    return loss
+```
+
+★ Insight ─────────────────────────────────────
+`require_units` runs at the host boundary on every sampled batch, not just as a one-off test — because the mask isn't a static shape here, it's a **data-dependent** quantity (`lengths` are randomly drawn each step). The skill's training reference is explicit about this: a zero from a denominator clamp silently looks like "perfect performance," which is far worse than a crash. Setting `min_length=4` makes an all-False mask mathematically impossible, so the check should never fire in practice — it's there to make a future change to the length distribution fail loudly instead of quietly reporting loss 0.0.
+
+Also notice `validate()` passes a `dropout_key` even though dropout shouldn't fire — NNX's `.eval()` sets the module to deterministic mode, which overrides the key's effect on `nnx.Dropout` regardless of what's passed. The key argument is only there to satisfy `LagForecaster.__call__`'s signature, which is intentionally identical between train and eval so the exact same `objective`/`train_step` code path is exercised in both — no duplicated "eval version" of the forward pass to drift out of sync.
+─────────────────────────────────────────────────
+
+Now the checkpoint/resume machinery and the correctness checks, following the recovery pattern from the skill reference (save dynamic state + RNG + step counter; reconstruct static config separately):
+
+```python
+def snapshot(model, optimizer, key, step):
+    return {
+        'model': nnx.state(model).to_pure_dict(),
+        'optimizer': nnx.state(optimizer).to_pure_dict(),
+        'key_data': jax.random.key_data(key),
+        'step': jnp.array(step, dtype=jnp.int32),
+    }
+
+
+def restore_nnx(obj, pure_state):
+    state = nnx.state(obj)
+    state.replace_by_pure_dict(pure_state)
+    nnx.update(obj, state)
+
+
+def save_checkpoint(root, config, model, optimizer, key, step):
+    root = Path(root).resolve()
+    root.mkdir(parents=True, exist_ok=True)
+    config_path = root / 'config.json'
+    if not config_path.exists():
+        config_path.write_text(json.dumps(config, sort_keys=True))
+    checkpoint_path = root / f'step_{step:06d}'
+    with ocp.StandardCheckpointer() as checkpointer:
+        checkpointer.save(checkpoint_path, snapshot(model, optimizer, key, step))
+        checkpointer.wait_until_finished()
+    return checkpoint_path
+
+
+def latest_step(root):
+    root = Path(root).resolve()
+    steps = sorted(int(p.name.split('_')[1]) for p in root.glob('step_*') if p.is_dir())
+    return steps[-1] if steps else None
+
+
+def load_checkpoint(root, config, step=None):
+    root = Path(root).resolve()
+    saved_config = json.loads((root / 'config.json').read_text())
+    assert saved_config == config, 'checkpoint config does not match the current CONFIG'
+    step = latest_step(root) if step is None else step
+    model, optimizer, _ = make_training(config, config['seed'])
+    target = snapshot(model, optimizer, jax.random.key(0, impl=config['rng_impl']), 0)
+    with ocp.StandardCheckpointer() as checkpointer:
+        loaded = checkpointer.restore(root / f'step_{step:06d}', target=target)
+    restore_nnx(model, loaded['model'])
+    restore_nnx(optimizer, loaded['optimizer'])
+    key = jax.random.wrap_key_data(loaded['key_data'], impl=config['rng_impl'])
+    return model, optimizer, key, int(loaded['step'])
+
+
+def run_correctness_checks(config):
+    # 1. Loss contract: pooled mean over eligible units, invariant to masked-out values.
+    hand_losses = jnp.array([[1.0, 100.0, 100.0], [3.0, 5.0, 100.0]])
+    hand_mask = jnp.array([[True, False, False], [True, True, False]])
+    np.testing.assert_allclose(valid_mean(hand_losses, hand_mask), 3.0)
+    changed_padding = jnp.where(hand_mask, hand_losses, -999.0)
+    np.testing.assert_allclose(valid_mean(changed_padding, hand_mask), 3.0)
+    try:
+        require_units(jnp.zeros_like(hand_mask))
+    except ValueError:
+        pass
+    else:
+        raise AssertionError('empty eligible batch was accepted')
+
+    # 2 & 3. Numerics and learnability on one fixed, bounded fixture.
+    model, optimizer, _ = make_training(config, config['seed'] + 3)
+    fixture_key = jax.random.key(config['seed'] + 2, impl=config['rng_impl'])
+    features, targets, mask = sample_batch(config, fixture_key)
+    dropout_key = jax.random.key(config['seed'] + 4, impl=config['rng_impl'])
+    initial = float(objective(model, features, targets, mask, dropout_key))
+    for _ in range(150):
+        loss, finite = train_step(model, optimizer, features, targets, mask, dropout_key)
+        assert bool(finite), 'nonfinite loss or gradient'
+    final = float(objective(model, features, targets, mask, dropout_key))
+    assert final < 0.2 * initial, (initial, final)
+
+    # 4. Evaluation determinism and target-masking invariance.
+    model.eval()
+    eval_key = jax.random.key(0, impl=config['rng_impl'])
+    np.testing.assert_array_equal(model(features, eval_key), model(features, eval_key))
+    changed_targets = jnp.where(mask, targets, 999.0)
+    np.testing.assert_allclose(
+        objective(model, features, targets, mask, eval_key),
+        objective(model, features, changed_targets, mask, eval_key))
+    model.train()
+
+    # 5. Recovery: next-update parity across an actual save/restore round trip,
+    # using the exact functions the real training loop uses.
+    model_a, optimizer_a, _ = make_training(config, config['seed'] + 6)
+    key_a = jax.random.key(config['seed'] + 5, impl=config['rng_impl'])
+    for _ in range(5):
+        _, key_a = advance(model_a, optimizer_a, key_a, config)
+    with tempfile.TemporaryDirectory(prefix='sine-correctness-') as directory:
+        save_checkpoint(directory, config, model_a, optimizer_a, key_a, 5)
+        model_b, optimizer_b, key_b, step_b = load_checkpoint(directory, config, step=5)
+    assert step_b == 5
+    loss_a, key_a_next = advance(model_a, optimizer_a, key_a, config)
+    loss_b, key_b_next = advance(model_b, optimizer_b, key_b, config)
+    np.testing.assert_allclose(loss_a, loss_b, rtol=1e-6, atol=1e-6)
+    np.testing.assert_array_equal(jax.random.key_data(key_a_next), jax.random.key_data(key_b_next))
+    assert int(optimizer_a.step[...]) == int(optimizer_b.step[...]) == 6
+
+    print('correctness checks passed: loss contract, learnability, determinism, recovery parity')
+
+
+def main(args):
+    config = CONFIG
+    validation_batch = make_validation_batch(config)
+    eval_key = jax.random.key(0, impl=config['rng_impl'])
+    persistence_mse = persistence_baseline(*validation_batch)
+
+    if args.resume:
+        model, optimizer, key, start_step = load_checkpoint(args.checkpoint_dir, config)
+        print(f'resumed from step {start_step}')
+    else:
+        model, optimizer, _ = make_training(config, config['seed'])
+        key = jax.random.key(config['seed'] + 1, impl=config['rng_impl'])
+        start_step = 0
+
+    print(f'persistence baseline (validation): {persistence_mse:.6f}')
+    for step in range(start_step, start_step + args.steps):
+        loss, key = advance(model, optimizer, key, config)
+        if (step + 1) % config['val_every'] == 0:
+            val_loss = validate(model, config, validation_batch, eval_key)
+            print(f'step {step + 1}: train {loss:.6f}  val {val_loss:.6f}  persistence {persistence_mse:.6f}')
+        if (step + 1) % config['checkpoint_every'] == 0:
+            path = save_checkpoint(args.checkpoint_dir, config, model, optimizer, key, step + 1)
+            print(f'checkpoint saved: {path}')
+
+    final_val = validate(model, config, validation_batch, eval_key)
+    print(f'final validation loss {final_val:.6f} vs persistence {persistence_mse:.6f}')
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--resume', action='store_true')
+    parser.add_argument('--checkpoint-dir', default='checkpoints')
+    parser.add_argument('--steps', type=int, default=CONFIG['train_steps'])
+    parser.add_argument('--skip-checks', action='store_true')
+    args = parser.parse_args()
+    if not args.skip_checks:
+        run_correctness_checks(CONFIG)
+    main(args)
+```
+
+★ Insight ─────────────────────────────────────
+Resumability here hinges on one design choice: the PRNG **key itself is the data cursor**. Every call to `advance()` splits the key into `(next_key, batch_key, augmentation_key, dropout_key)`, so saving just `key_data` + `step` is sufficient to reproduce the identical next batch, noise, and dropout mask after a restart — no separate index into a dataset is needed because the "dataset" is generated on the fly from the key. This is also why `make_validation_batch` derives its key from the fixed `config['seed']` rather than from the advancing training key: the validation set must be identical before and after a resume, which a key derived from training progress would not guarantee.
+
+The recovery check also verifies `optimizer.step[...]` and the schedule-driving step counter survive the round trip — a common checkpoint bug is restoring parameters correctly but losing the Adam step count, which silently resets the learning-rate schedule and bias-correction terms on resume.
+─────────────────────────────────────────────────
+
+**Run it:**
+```
+python train_sine_forecaster.py                        # correctness checks, then training
+python train_sine_forecaster.py --resume                # continue from the latest checkpoint
+python train_sine_forecaster.py --skip-checks --steps 50
+```
+
+**What I have not done:** I have no execution tool in this session, so none of the asserts above have actually been run. I did not write this to a file either (no file-write tool available here) — the code above is the complete deliverable; save it as `train_sine_forecaster.py` to run it. Treat the correctness-check section as unexecuted until you run it yourself.
+
+**Scope of what the checks establish, once run:** same-process, same-CPU, same-package-version next-update parity after save/restore, learnability on one fixed fixture, and the stated masked-loss contract. They do **not** establish: generalization beyond this shared-frequency setup (per-sequence frequency would need ≥3 lags or a recurrent model), cross-version or cross-device recovery, or distributed/multi-host checkpointing.
+
+**One design choice worth your input:** the loss is pooled timestep MSE (`sum(valid errors)/count(valid targets)`), so longer sequences contribute more terms and dominate the gradient. The alternative — equal weight per trajectory — is a 3-line change to `objective`: compute `valid_mean` per-row then average the rows instead of pooling globally. I defaulted to pooled since that's what the skill's canonical reference uses, but flag it since it's a real modeling decision, not a detail.

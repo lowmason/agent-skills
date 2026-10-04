@@ -1,0 +1,2 @@
+{"operation": "start", "label": null, "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-candidate-5/prompt.txt", "sha256": "d8e26929c7653d273dfe272581b4e0ebb4cbf1e544fb3a7bd2c48785e7ab3b4b", "bytes": 89693, "utc": "2026-10-04T03:11:25.933318+00:00"}
+{"operation": "readskill", "label": "evaluate-deep-learning", "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/candidate-catalog/069/SKILL.md", "sha256": "db75cc39c357cd80340d39d7255bcb9c53602b6bbb0c5af9789169b5a82607c8", "bytes": 9447, "utc": "2026-10-04T03:12:05.672011+00:00"}

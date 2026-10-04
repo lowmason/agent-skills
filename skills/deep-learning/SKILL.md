@@ -1,0 +1,192 @@
+---
+name: deep-learning
+description: >
+  Use when designing, implementing, training, fine-tuning, post-training, or
+  diagnosing neural models in JAX, Flax NNX, or Equinox — including sequence,
+  scientific, vision, geometric, generative, and language models; custom losses,
+  masking, optimizer behavior, unstable learning, or training recovery.
+license: MIT
+metadata:
+  author: Lowell Mason
+---
+
+# Deep Learning in JAX
+
+Build an experiment whose objective, data, updates, and recovery behavior can be
+checked on a small fixture before committing substantial compute. This skill
+owns model design and training correctness, including diagnosis of learning
+behavior. Model execution and differentiation stay in JAX; host-side loading
+and tokenization can use suitable artifact tools.
+
+For new neural training and inference code, assume a GPU target unless the
+project or user specifies another device. The bundled CPU fixtures are portable
+correctness checks. Use [frameworks.md](references/frameworks.md) for GPU setup,
+resident execution and target-hardware validation.
+
+## Boundary and routing
+
+Use evaluate-deep-learning when the immediate decision is a benchmark, ablation,
+checkpoint comparison, model selection, or research claim. Use optimize-jax when
+a reproduced execution problem concerns tracing, compilation, throughput,
+memory, sharding, or generation/cache performance. A mixed request can reach
+these handoffs after its training contract is established.
+
+Tabular prediction is outside this version. Sequence arrays, node attributes,
+and MLP components remain valid inputs and building blocks in the included
+domains. When choosing between neural and probabilistic formulations, use
+recommend-probabilistic-model. Keep posterior-inference procedures with the
+skill responsible for that task rather than attaching them to every neural run.
+
+## Decision procedure
+
+### 1. Establish the experiment
+
+Record the task and hypothesis, data source and observation unit, available
+compute and wall-time budget, a simple baseline, training objective, evaluation
+target, and stopping condition. State what result would change the next action:
+for example, a causal forecast beating persistence on held-out trajectories,
+rather than merely obtaining a decreasing training curve.
+
+For an existing project, read its current model, data loader, training loop,
+and checkpoint contract. Preserve its working framework unless a migration
+serves the requested task. For a new project, use Flax NNX, Optax, and Orbax as
+the coherent default; native solver and symmetry paths are listed below.
+Keep the first run small enough to inspect each loss unit and state transition.
+
+### 2. Select the domain and framework path
+
+Read [frameworks.md](references/frameworks.md) for the default and exceptions,
+then load the domain reference whose assumptions match the task. Architecture
+selection follows information flow, required symmetry, objective, and compute
+constraints. Explain why the chosen structure can express the hypothesis and
+why a simpler baseline is insufficient. Multiple modalities can require more
+than one reference; load each when its contract becomes relevant.
+
+| Task or decision | Load |
+|---|---|
+| Forecasting, recurrent/transformer/state-space models, variable lengths | [sequences.md](references/sequences.md) |
+| Irregular continuous-time observations, neural ODE/CDE, physics constraints, operators | [scientific.md](references/scientific.md); native Equinox/Diffrax |
+| Image classification, segmentation, reconstruction, CNN/ViT | [vision.md](references/vision.md) |
+| Graph aggregation, invariant/equivariant 3D outputs, irreps/parity | [geometric.md](references/geometric.md); documented e3nn native path |
+| VAE, invertible flow, diffusion, flow matching, conditioning/sampling | [generative.md](references/generative.md) |
+| Autoregressive language models, SFT, LoRA/QLoRA, preferences, rewards | [llm.md](references/llm.md); supported Tunix/Qwix recipe |
+| Losses, updates, precision, randomness, checkpoint recovery | [training.md](references/training.md) |
+
+### 3. Establish the data and objective contract
+
+Write the shape, axis meaning, dtype, units/range, split identity, fitted
+preprocessing, and target construction. Fit learned preprocessing on training
+inputs. Record tokenization, special tokens, chat templates, and checkpoint
+compatibility when text is involved. Identify the information available at
+prediction time, including forecast horizon and conditioning inputs. For text,
+specify model-facing causal/nonpadding attention, packed-segment isolation and
+position/reset policy separately from shifted completion-loss eligibility.
+
+Define padding, attention, observation, and loss masks by their separate jobs.
+Give the loss numerator, denominator, and weighting unit: token, sequence,
+pixel, graph, trajectory, or preference pair. Include a hand-checkable fixture
+for variable-length or missing-observation objectives and an explicit policy
+for no eligible units. If trajectories have different observed timestamps,
+verify the mask separately for each trajectory and count its actual eligible
+observations. Select held-out targets from those observed members; assert fit
+and held-out counts and disjointness. A solver's interpolation grid does not
+create new observations.
+
+Use validate-data when input or conclusion QA is required. Supply these domain
+contracts to that handoff. A schema check alone does not establish causality,
+observation completeness, or tokenizer compatibility.
+
+### 4. Establish the update and state contract
+
+Separate trainable parameters, frozen leaves, mutable model statistics,
+recurrent/cache state, random streams, optimizer state, and scheduler position.
+Name what changes in training and what is fixed in evaluation. Describe how
+keys advance across initialization, data order, augmentation, dropout, and
+sampling, and which of those streams recovery must reproduce. Derive typed
+keys with `split`/`fold_in`; integer seed arithmetic precedes key creation.
+Every derivative check on a directly passed NNX module uses an NNX-aware
+transform, including initialization checks; array/PyTree math can use plain JAX.
+Treat model/optimizer updates and returned key/cursor assignments as one
+training transition. Isolate a recovery parity fixture, or carry its complete
+post-update state into continuation.
+
+Record optimizer, learning-rate schedule, batch/accumulation policy, any
+clipping or regularization, and the effective number of eligible loss units per
+update. Select dtypes for the numerical workload and measured hardware.
+Scientific derivative checks can justify float64; neural training has no
+unconditional x64 requirement. When training adapters, check selected updates
+and unchanged frozen parameters. At LoRA's zero-B initialization, zero dA is
+compatible with a nonzero dB and a valid first update.
+
+### 5. Deliver the small correctness run
+
+The implementation's correctness record has these required slots:
+
+1. **Structure and objective:** shapes/dtypes, masks/counts, hand-computed loss,
+   and invariance to changes at ineligible positions.
+2. **Numerics:** finite inputs, loss, and every differentiated gradient leaf;
+   an independent analytic or finite-difference reference when the objective
+   or solver warrants it. Name a solver's adjoint and compare fixed-model
+   predictions and gradient values across tolerances and with the reference.
+3. **Learning:** initial/final losses on the same bounded tiny fixture under one
+   declared evaluation/randomness policy, a bounded update count, and asserted
+   meaningful improvement. For a changing data stream, evaluate a separately
+   fixed fixture at both endpoints. This tests learnability of the delivered
+   path; held-out generalization remains a separate question.
+4. **Evaluation:** explicit train/eval policy, independent held-out inputs, and
+   the baseline/metric appropriate to the task.
+5. **Recovery:** the saved-state guarantee and a next-update comparison against
+   uninterrupted execution, described in the next step.
+
+[training.md](references/training.md) contains the canonical NNX sequence and
+Orbax recovery patterns. The domain references add their numerical/symmetry
+checks. For a permanent project test suite, use develop-testing-strategy with
+these invariants and cheap fixtures. For a hyperparameter search, use
+tune-hyperparameters after correctness and held-out selection are established.
+
+If a check fails, reproduce its actual exception/assertion and isolate inputs,
+state and logic. For an API error, inspect the installed version and signature;
+a failed mathematical/state assertion needs its own diagnosis.
+
+If the tiny fixture does not learn, isolate target alignment, gradient/update
+selection, state/mode, scales, and learning rate before scaling. If it learns
+but validation deteriorates, inspect leakage, mismatch, capacity,
+regularization, and data coverage. Route a reproduced execution bottleneck to
+optimize-jax; route a comparative conclusion to evaluate-deep-learning.
+
+### 6. Save recovery and report the verified scope
+
+Declare recovery at the last step, an epoch boundary, or a best checkpoint.
+Save dynamic model and optimizer state, step/schedule position, required RNG
+streams, and data progress for that guarantee. Store or validate the static
+model/optimizer configuration, data/split identity, preprocessing/tokenizer,
+and package versions used to reconstruct them. Load and validate one saved
+reconstruction configuration before resumed model, optimizer, data, objective
+or loader factories; use it throughout resumed construction.
+
+Compare the next loss and post-update model tree, every optimizer leaf
+(including moments/internal schedule counts), external step, schedule output,
+RNG progression and next data cursor with uninterrupted execution. Parameter
+equality before an update checks storage; post-update comparisons check
+recovery. When saving repeatedly, use unique progress directories or a declared
+manager/replacement policy; exercise two saves and restore the latest completed
+progress. A portable model export serves inference and carries a different
+contract.
+
+Deliver the experiment contract, implementation, actual check results,
+checkpoint/recovery instructions, and remaining uncertainty. State hardware,
+checkpoint, and package prerequisites for scale recipes. Small CPU math checks
+establish their named contracts; a real loader, accelerator, or distributed
+run needs its own evidence.
+
+## Common mistakes
+
+| Symptom | Next check |
+|---|---|
+| Loss changes with padding length | Eligible-unit numerator/denominator and attention/observation masks |
+| No learning on the fixed fixture | Target shift, differentiated leaves, update, mode, units, learning rate |
+| Good training curve, weak held-out result | Split/time leakage, baseline, preprocessing and distribution shift |
+| Resumed run diverges immediately | Optimizer/schedule, randomness, data cursor and reconstruction config |
+| Solver fit changes under tighter tolerance | Fixed-model prediction/gradient sensitivity and solver status |
+| Geometric output breaks a claimed symmetry | Irreps/parity, nonlinearities, neighbors and aggregation |
+| Preference run starts from the wrong reference | Immutable SFT checkpoint/adapter identity and cached log-probabilities |

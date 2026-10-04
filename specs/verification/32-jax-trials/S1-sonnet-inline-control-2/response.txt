@@ -1,0 +1,120 @@
+Good — no advisor available this turn, but this is a well-understood class of JAX bug, so I'll reason from first principles and deliver the repro + diagnostic code directly, as the sandboxed/no-execution framing requests.
+
+## Why a timer around `jit` can lie
+
+`★ Insight ─────────────────────────────────────`
+JAX dispatch is **asynchronous**: calling a jitted function enqueues work on the device and returns a `DeviceArray`/`jax.Array` future almost immediately — the Python call returns before the actual computation finishes. `time.perf_counter()` wrapped directly around the call only measures *dispatch overhead* (tracing cache lookup + enqueueing), not device execution time. The real cost only becomes visible when something forces a *blocking* sync — calling `.block_until_ready()`, printing the array, converting to NumPy, or starting the *next* dependent op.
+`─────────────────────────────────────────────────`
+
+That explains the "tiny timer, big end-to-end latency" half of your report. The "changes with input length" half points to a second, distinct cause:
+
+`★ Insight ─────────────────────────────────────`
+`jax.jit` traces and compiles a separate XLA program **per unique combination of input abstract shapes/dtypes** (and static args). If your inference loop feeds a growing or varying sequence length each call (common in autoregressive decoding without fixed-size padding), every new length is a cache miss — triggering a full trace + XLA compile, which costs milliseconds-to-seconds depending on model size, dwarfing the actual matmul time. This looks exactly like "latency scales with input length" even though the *compute* for a given length is cheap and fast once compiled.
+`─────────────────────────────────────────────────`
+
+So the two candidate root causes to confirm/rule out are:
+1. **Async dispatch**: you're timing enqueue, not completion.
+2. **Shape-triggered recompilation**: each distinct input length pays a compile tax.
+
+## Reproduction script
+
+```python
+"""repro_jit_timing.py — demonstrates both failure modes."""
+import time
+import jax
+import jax.numpy as jnp
+
+def toy_model(params, x):
+    for w in params:
+        x = jnp.tanh(x @ w)
+    return x
+
+key = jax.random.PRNGKey(0)
+dims = [256, 256, 256, 256]
+params = [jax.random.normal(key, (dims[i], dims[i + 1])) for i in range(len(dims) - 1)]
+
+jitted = jax.jit(toy_model)
+
+def bad_timer(x):
+    t0 = time.perf_counter()
+    out = jitted(params, x)          # returns as soon as dispatched
+    t1 = time.perf_counter()
+    return out, t1 - t0
+
+def good_timer(x):
+    t0 = time.perf_counter()
+    out = jitted(params, x)
+    jax.block_until_ready(out)       # force sync — this is the real cost
+    t1 = time.perf_counter()
+    return out, t1 - t0
+
+print("=== Mode 1: async dispatch illusion (fixed length) ===")
+x = jnp.ones((8, dims[0]))
+_, _ = good_timer(x)  # warm up / compile once
+for _ in range(3):
+    _, dt_bad = bad_timer(x)
+    _, dt_good = good_timer(x)
+    print(f"bad(dispatch-only)={dt_bad*1e3:.3f} ms  good(blocked)={dt_good*1e3:.3f} ms")
+
+print("\n=== Mode 2: recompilation per input length ===")
+with jax.log_compiles():  # prints every trace/compile event to stderr
+    for seq_len in [1, 2, 4, 8, 16, 32, 8, 16]:  # note repeats at the end
+        x = jnp.ones((seq_len, dims[0]))
+        _, dt = good_timer(x)
+        print(f"seq_len={seq_len:3d}  blocked_latency={dt*1e3:.3f} ms")
+```
+
+Run this (not executed here, per the sandbox instruction) and you should see:
+- In Mode 1, `bad` is near-zero and roughly constant; `good` is the true latency and is larger and more variable — this isolates the async-dispatch illusion.
+- In Mode 2, `jax.log_compiles()` emits a compile message for every *new* `seq_len`, but **not** for the repeated `8` and `16` at the end (cache hit) — those should show a latency drop back to baseline. If every call recompiles (even repeats), that's a separate bug (e.g., unhashable/mutable static args, or weak-typed Python scalars changing dtype).
+
+## Confirming which cause dominates in your real loop
+
+Add this diagnostic wrapper around your actual inference call — it separates dispatch time from device time and surfaces compilation events without modifying your model code:
+
+```python
+import jax
+
+def diagnose(jitted_fn, *args, label=""):
+    t0 = time.perf_counter()
+    out = jitted_fn(*args)
+    t_dispatch = time.perf_counter() - t0
+
+    jax.block_until_ready(out)
+    t_total = time.perf_counter() - t0
+
+    print(f"{label}: dispatch={t_dispatch*1e3:.3f}ms  "
+          f"device+dispatch={t_total*1e3:.3f}ms  "
+          f"device-only≈{(t_total - t_dispatch)*1e3:.3f}ms")
+    return out
+```
+
+If `device-only` time is small and stable across lengths but you still see large *first-call* latency per new length, that's compilation, not device execution — confirmable directly via `jax.log_compiles()` or by inspecting `jitted_fn._cache_size()` (grows by 1 per distinct shape signature).
+
+## The actual fix: bounding the number of distinct shapes
+
+This is the part with a real design trade-off, not boilerplate — how you bucket/pad sequence lengths determines how much wasted compute you accept versus how many compiled variants you carry. Padding every input to one fixed max length eliminates recompilation entirely but wastes FLOPs on short inputs; padding to the *next power of two* (or some custom bucket schedule) caps the number of compiled variants to `O(log(max_len))` while bounding wasted compute to at most 2x. There's no universally correct answer — it depends on your length distribution and whether compute or compile-time dominates your workload.
+
+```python
+def bucket_length(seq_len: int, max_len: int) -> int:
+    """
+    Round seq_len up to a bucket boundary so jit sees few distinct
+    shapes. TODO: implement the bucketing strategy.
+
+    Trade-off to consider:
+      - Finer buckets (e.g., multiples of 8) -> less padding waste,
+        but more distinct compiled shapes -> more total compile time
+        if the loop sees many different lengths.
+      - Coarser buckets (e.g., powers of two) -> only log2(max_len)
+        distinct shapes ever compiled, but up to ~2x wasted compute
+        on padding for unlucky lengths.
+      - Must never exceed max_len, and should be monotonic
+        (seq_len1 <= seq_len2 => bucket(seq_len1) <= bucket(seq_len2))
+        or the KV-cache/mask logic downstream will break.
+    """
+    raise NotImplementedError
+```
+
+Once you've picked a bucketing policy and padded inputs (plus a boolean/attention mask so padding doesn't affect correctness), wrap the padded-shape call in `jax.jit` as before — the cache will stabilize to a handful of entries, `jax.log_compiles()` should go quiet after the first pass through each bucket, and your true steady-state latency (measured with `block_until_ready`) should stop scaling with raw input length.
+
+Let me know how you want `bucket_length` implemented (power-of-two vs. custom schedule based on your actual length distribution), and I can help wire the padding/masking through the rest of the inference loop.

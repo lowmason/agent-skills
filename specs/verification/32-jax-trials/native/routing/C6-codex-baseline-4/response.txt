@@ -1,0 +1,10 @@
+Primary skill: optimize-jax.
+Supporting skills: none.
+Task: Improve generation speed while checking KV-cache correctness.
+The catalog description explicitly covers inference/generation, profiling, prefill/decode, and KV caches.
+The full body checks caches against independent full-prefix causal logits and exact greedy tokens, including masks, positions, cursor, capacity, padding, and termination boundaries.
+It establishes correctness before profiling prefill and decode separately, then compares synchronized before/after latency distributions under the same configuration.
+deep-learning is conditional on model objectives, training, or quality; evaluate-deep-learning is conditional on checkpoint or research comparisons, neither stated here.
+develop-testing-strategy becomes relevant when designing permanent tests; the stated task does not require a separate test-strategy deliverable.
+This is selection only: no implementation, benchmark execution, or claims that cache correctness or a speedup has been demonstrated.
+Referenced skill resources and scripts were not read or invoked because the fixture excludes them.

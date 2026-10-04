@@ -1,0 +1,53 @@
+{
+  "trial": "C6-codex-baseline-5",
+  "family": "C6",
+  "condition": "baseline",
+  "fresh_context": true,
+  "fork_turns": "none",
+  "agent_type": "default",
+  "runtime": "built-in Codex collaboration agent",
+  "model": "inherited active runtime; exact identifier unavailable",
+  "reasoning_effort": "inherited active runtime; exact value unavailable",
+  "catalog": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/baseline-catalog",
+  "catalog_entries": 138,
+  "catalog_manifest_sha256": "fee71e65dfd7f9372132f86feaf5316bac5ca3c8212906359039bf0b0010c800",
+  "prompt_sha256": "5b75e5be03dcc690e45cab4362b3f1b763340dd7d45542a01adb0c4da68760a4",
+  "selection_simulation": true,
+  "real_auto_loading_observed": false,
+  "tool_policy": "recorded local prompt and selected SKILL.md reads; own trial artifacts only",
+  "resident_global_guidance_may_be_available": true,
+  "spawn_identity": {
+    "task_name": "/root/native_c6_baseline_5",
+    "source": "actual collaboration.spawn_agent return",
+    "recorded_utc": "2026-10-04T02:48:48.931994+00:00"
+  },
+  "completion": "Complete substantive response and research notes",
+  "completed_utc": "2026-10-04T02:50:28.278283+00:00",
+  "first_prompt_read": {
+    "sha256": "5b75e5be03dcc690e45cab4362b3f1b763340dd7d45542a01adb0c4da68760a4",
+    "bytes": 89690,
+    "lines": 620
+  },
+  "actual_skill_reads": [
+    {
+      "read_id": "optimize-jax",
+      "native_label": "optimize-jax",
+      "sha256": "e177b588bf9cbb73654b16dc594a294a782f098cbb4f3226856e1f42835a4200",
+      "bytes": 9783,
+      "read_event_line": 2
+    }
+  ],
+  "payloads": {
+    "response.txt": {
+      "sha256": "2e9536f5c413a804ee2c83d821acabd8002ffde426204842ca13ea16f134e902",
+      "bytes": 954,
+      "lines": 9
+    },
+    "research-notes.md": {
+      "sha256": "f7e44a3010a74b097c886e29cb0f7fcfa8f5fdc1be55f1cf0196273d67157315",
+      "bytes": 1250,
+      "lines": 11
+    }
+  },
+  "execution_claim": "No underlying application implementation or execution observed; selection simulation only"
+}

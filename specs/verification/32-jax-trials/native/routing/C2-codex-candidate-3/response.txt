@@ -1,0 +1,10 @@
+Primary skill: evaluate-deep-learning.
+Supporting skill: validate-data, for applicable input and conclusion QA before signing off.
+
+The task directly matches checkpoint comparison, unequal compute budgets, and variation across seeds.
+evaluate-deep-learning owns the comparison protocol and neural experiment record: protected held-out units, budget comparability, retained per-run scores, and clearly separated sources of uncertainty.
+Its full body warns that shared numeric seed labels do not establish paired training randomness, and that endpoint checkpoint scores alone do not establish method superiority.
+validate-data supports integrity, reproducibility, leakage checks, and mapping conclusions to evidence under the supplied neural contracts.
+No training changes, performance diagnosis, hyperparameter search, Bayesian posterior comparison, or permanent test-plan request is stated, so those skills are not selected.
+
+This is selection only; no evaluation, reference loading, implementation workflow, or numerical result was produced.

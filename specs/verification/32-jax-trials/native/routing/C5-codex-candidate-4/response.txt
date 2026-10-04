@@ -1,0 +1,8 @@
+Primary skill: bayesian-workflow.
+Supporting skills: none.
+The task explicitly asks to use BlackJAX to sample a posterior distribution.
+Both BlackJAX and posterior distributions are explicit triggers in the frozen catalog entry.
+The full skill body treats BlackJAX NUTS as a co-equal sampler and covers log density, window adaptation, chain sampling, constrained draws, and ArviZ diagnostics.
+optimize-jax is conditional on performance, tracing, memory, or placement problems; none are stated here.
+Model selection, experiment tracking, and implementation workflows are not required by this task.
+This is a selection-only answer; no sampler was implemented or run.

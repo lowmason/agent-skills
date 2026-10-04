@@ -1,0 +1,8 @@
+Primary skill: bayesian-workflow
+Supporting skills: none.
+The task explicitly asks for BlackJAX posterior sampling; the catalog names both BlackJAX and posterior distributions as triggers.
+The full body treats BlackJAX NUTS as a first-class sampler and covers log density, window adaptation, sampling, ArviZ conversion, and posterior diagnostics.
+optimize-jax is not selected because no tracing, recompilation, memory, speed, or placement problem is stated.
+deep-learning is not selected because no neural model, training, fine-tuning, or neural diagnosis is requested.
+recommend-probabilistic-model is not selected because the task asks to execute posterior sampling rather than choose a model family.
+This is selection-only: no model code, sampling, installation, references, scripts, or implementation workflows were executed.

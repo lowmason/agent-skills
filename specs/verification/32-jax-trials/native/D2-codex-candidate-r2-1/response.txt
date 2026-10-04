@@ -1,0 +1,512 @@
+Use an ODE model whose vector field contains trainable parameters:
+
+$$
+\frac{dy_i}{dt}=f_\theta(t,y_i),\qquad y_i(t_{0,i})=y_{0,i}.
+$$
+
+The solver predicts at each trajectory's observation times; training compares those predictions with actual measurements. Equinox, Diffrax, and Optax are a natural JAX path for this, and Diffrax provides a [neural ODE example](https://docs.kidger.site/diffrax/examples/neural_ode/). This assumes the evolving state contains enough information to determine its future. Partially observed dynamics may need an encoder and latent state; an irregular input path driving the dynamics may instead call for a neural CDE.
+
+Start with one learned rate, fθ(t,y) = θy. Its exact solution is y(t) = y0 exp(θ(t−t0)), which gives an independent reference for both predictions and gradients. This small model tests the complete solver/training path before adding an MLP's capacity and identifiability problems.
+
+The experiment below has this contract:
+
+- Synthetic, noise-free scalar trajectories share a true rate of −0.7 per unit time. The observation unit is one scalar measurement. Time and state have arbitrary, fixed units; there is no fitted preprocessing.
+- Trajectory A starts at 1 and is observed at times 0, 0.2, 0.8. Trajectory B starts at 2 and is observed at 0, 0.5, 1.0. Their union grid has five times, but only six observations. Four observed units fit the rate; the two actual observations at 0.8 and 1.0 are held out. The two initial observations have zero error because their states are provided as initial conditions, so only the two other fit observations identify the rate.
+- The objective is pooled observed-unit MSE: sum of eligible squared errors divided by the actual eligible count. This does not give equal weight to trajectories if their observation counts differ. Empty eligibility is rejected. Missing slots are finite placeholders, with zero loss weight.
+- Evaluation fixes the field and uses no dropout, noise, normalization state, or randomness. A separate synthetic trajectory with a new initial condition and different observed times supplies three further held-out targets; its final target is beyond the training trajectories' time range. No held-out value enters the training objective or selects the update count.
+- The bounded run uses full-batch Adam, a learning rate decreasing from 0.03 to 0.01 over 200 updates, no accumulation, clipping, or regularization, and stops at 200 updates or immediately on a failed assertion. It must reduce the same fixed fit loss by at least 99%, recover the rate within 0.002, and beat persistence on held-out targets. These are acceptance criteria, not measured results here.
+- The solver is Tsit5 with an adaptive PID controller, initial step 0.05, maximum 256 steps, explicitly requested output times, and RecursiveCheckpointAdjoint. Base rtol/atol are 1e−6/1e−7; tight values are 1e−9/1e−10. Float64 serves this small numerical reference.
+
+RecursiveCheckpointAdjoint differentiates the numerical solve and is Diffrax's preferred reverse-mode approach for most problems. A continuous backsolve adjoint is not an automatic gradient-accuracy improvement. See the [adjoint documentation](https://docs.kidger.site/diffrax/api/adjoints/). With throw=True, any failed trajectory in a vmapped solve raises; this example stops instead of fitting failed solves. See [diffeqsolve](https://docs.kidger.site/diffrax/api/diffeqsolve/) and [SaveAt](https://docs.kidger.site/diffrax/api/saveat/).
+
+Save the following as a single Python file. It requires Python, JAX/JAXlib, Equinox, Diffrax, Optax, and NumPy. The supplied guidance names Python 3.13.8, JAX/JAXlib 0.11.2, Equinox 0.13.8, Diffrax 0.7.2, Optax 0.2.8, and NumPy 2.5.3 as its example compatibility profile; I have not checked installed packages or executed this adapted script. Use your project's compatible lockfile and rerun the assertions after dependency changes. A small CPU run is sufficient for these checks; no pretrained checkpoint or accelerator is needed.
+
+~~~bash
+JAX_PLATFORMS=cpu python continuous_time_example.py
+~~~
+
+~~~python
+import importlib.metadata
+import json
+from pathlib import Path
+import platform
+import tempfile
+
+import diffrax
+import equinox as eqx
+import jax
+import jax.numpy as jnp
+import numpy as np
+import optax
+
+jax.config.update("jax_enable_x64", True)
+
+
+class RateField(eqx.Module):
+    rate: jax.Array
+
+    def __call__(self, t, y, args):
+        return self.rate * y
+
+
+def environment():
+    names = ("jax", "jaxlib", "equinox", "diffrax", "optax", "numpy")
+    return {
+        "python": platform.python_version(),
+        "packages": {name: importlib.metadata.version(name) for name in names},
+        "machine": platform.machine(),
+        "devices": [str(device) for device in jax.devices()],
+    }
+
+
+def configuration():
+    return {
+        "schema": 1,
+        "model": "scalar-rate-field-v1",
+        "data": "irregular-exponential-fixture-v1",
+        "dtype": "float64",
+        "preprocessing": "identity",
+        "t0": 0.0,
+        "times": [0.0, 0.2, 0.5, 0.8, 1.0],
+        "observed_times": [[0.0, 0.2, 0.8], [0.0, 0.5, 1.0]],
+        "initial": [1.0, 2.0],
+        "true_rate": -0.7,
+        "held_from": 0.8,
+        "test_times": [0.0, 0.17, 0.61, 1.1],
+        "test_initial": [1.3],
+        "initial_rate": -0.4,
+        "solver": "Tsit5",
+        "adjoint": "RecursiveCheckpointAdjoint",
+        "dt0": 0.05,
+        "max_steps": 256,
+        "rtol": 1e-6,
+        "tight_rtol": 1e-9,
+        "atol_ratio": 0.1,
+        "optimizer": "adam",
+        "lr_start": 0.03,
+        "lr_end": 0.01,
+        "steps": 200,
+        "randomness": "none; deterministic fixed full batch",
+        "environment": environment(),
+    }
+
+
+def validate_config(cfg):
+    # This example implements precisely this reconstruction contract.
+    assert cfg["schema"] == 1
+    assert cfg["model"] == "scalar-rate-field-v1"
+    assert cfg["data"] == "irregular-exponential-fixture-v1"
+    assert cfg["dtype"] == "float64"
+    assert cfg["preprocessing"] == "identity"
+    assert cfg["solver"] == "Tsit5"
+    assert cfg["adjoint"] == "RecursiveCheckpointAdjoint"
+    assert cfg["optimizer"] == "adam"
+    assert cfg["randomness"] == "none; deterministic fixed full batch"
+    assert cfg["environment"] == environment(), "environment changed"
+    assert all(device.platform == "cpu" for device in jax.devices())
+    assert 0 < cfg["tight_rtol"] < cfg["rtol"]
+    assert cfg["steps"] == 200
+
+
+def require_units(mask):
+    if int(np.asarray(mask).sum()) == 0:
+        raise ValueError("no eligible observations")
+
+
+def mean_eligible(values, mask):
+    # Host callers validate a nonempty mask before entering transformed code.
+    return jnp.where(mask, values, 0.0).sum() / mask.sum()
+
+
+def exact(rate, data):
+    elapsed = data["times"] - data["t0"]
+    return data["initial"][:, None] * jnp.exp(rate * elapsed[None, :])
+
+
+def make_data(cfg):
+    times = jnp.asarray(cfg["times"], dtype=jnp.float64)
+    observed_times = jnp.asarray(cfg["observed_times"], dtype=jnp.float64)
+    observed = jnp.any(
+        times[None, :, None] == observed_times[:, None, :], axis=-1
+    )
+    data = {
+        "t0": cfg["t0"],
+        "times": times,
+        "initial": jnp.asarray(cfg["initial"], dtype=jnp.float64),
+        "observed": observed,
+    }
+    # Exact timestamp matching is safe in this deliberately constructed fixture.
+    # For real ingestion, build membership from canonical observation IDs.
+    truth = exact(cfg["true_rate"], data)
+    data["targets"] = jnp.where(observed, truth, 0.0)
+    data["held"] = observed & (times[None, :] >= cfg["held_from"])
+    data["fit"] = observed & ~data["held"]
+    assert data["targets"].shape == observed.shape == (2, 5)
+    np.testing.assert_array_equal(
+        observed,
+        [[True, True, False, True, False],
+         [True, False, True, False, True]],
+    )
+    np.testing.assert_array_equal(
+        data["held"],
+        [[False, False, False, True, False],
+         [False, False, False, False, True]],
+    )
+    assert int(observed.sum()) == 6
+    assert int(data["fit"].sum()) == 4
+    assert int(data["held"].sum()) == 2
+    assert not bool((data["fit"] & data["held"]).any())
+    np.testing.assert_array_equal(data["fit"] | data["held"], observed)
+    for mask in (data["fit"], data["held"]):
+        require_units(mask)
+    assert np.all(np.diff(np.asarray(times)) > 0)
+    assert float(times[0]) == cfg["t0"]
+    assert np.isfinite(np.asarray(data["initial"])).all()
+    assert np.isfinite(np.asarray(data["targets"])).all()
+    return data
+
+
+def make_test_data(cfg):
+    data = {
+        "t0": cfg["t0"],
+        "times": jnp.asarray(cfg["test_times"], dtype=jnp.float64),
+        "initial": jnp.asarray(cfg["test_initial"], dtype=jnp.float64),
+    }
+    data["targets"] = exact(cfg["true_rate"], data)
+    data["observed"] = jnp.ones_like(data["targets"], dtype=bool)
+    data["held"] = data["observed"] & (
+        data["times"][None, :] > data["t0"]
+    )
+    require_units(data["held"])
+    assert data["targets"].shape == (1, 4)
+    assert int(data["held"].sum()) == 3
+    assert np.isfinite(np.asarray(data["targets"])).all()
+    return data
+
+
+def predict(field, data, cfg, rtol):
+    def solve_one(initial):
+        sol = diffrax.diffeqsolve(
+            terms=diffrax.ODETerm(field),
+            solver=diffrax.Tsit5(),
+            # The initial state belongs to the original initial time.
+            # Do not reset t0 to the first requested forecast timestamp.
+            t0=data["t0"],
+            t1=data["times"][-1],
+            dt0=cfg["dt0"],
+            y0=initial,
+            saveat=diffrax.SaveAt(ts=data["times"]),
+            stepsize_controller=diffrax.PIDController(
+                rtol=rtol, atol=rtol * cfg["atol_ratio"]
+            ),
+            adjoint=diffrax.RecursiveCheckpointAdjoint(),
+            max_steps=cfg["max_steps"],
+            throw=True,
+        )
+        return sol.ys
+
+    return jax.vmap(solve_one)(data["initial"])
+
+
+def objective(field, data, mask, cfg, rtol):
+    residual = predict(field, data, cfg, rtol) - data["targets"]
+    return mean_eligible(jnp.square(residual), mask)
+
+
+def analytic_gradient(field, data, mask):
+    pred = exact(field.rate, data)
+    elapsed = data["times"][None, :] - data["t0"]
+    terms = 2 * (pred - data["targets"]) * elapsed * pred
+    return mean_eligible(terms, mask)
+
+
+def finite_tree(tree):
+    checks = [
+        jnp.isfinite(leaf).all()
+        for leaf in jax.tree.leaves(tree)
+        if eqx.is_inexact_array(leaf)
+    ]
+    return jnp.all(jnp.stack(checks)) if checks else jnp.array(True)
+
+
+def assert_same_tree(left, right, tolerance=1e-12):
+    assert jax.tree.structure(left) == jax.tree.structure(right)
+    for a, b in zip(jax.tree.leaves(left), jax.tree.leaves(right)):
+        a, b = np.asarray(a), np.asarray(b)
+        assert a.shape == b.shape and a.dtype == b.dtype
+        if np.issubdtype(a.dtype, np.inexact):
+            np.testing.assert_allclose(a, b, rtol=tolerance, atol=tolerance)
+        else:
+            np.testing.assert_array_equal(a, b)
+
+
+def numerical_checks(field, data, cfg):
+    # Hold the parameters fixed while changing only solver tolerances.
+    predictions, gradients = [], []
+    reference_prediction = exact(field.rate, data)
+    reference_gradient = analytic_gradient(field, data, data["fit"])
+    for rtol, check_tolerance in (
+        (cfg["rtol"], 2e-5),
+        (cfg["tight_rtol"], 2e-7),
+    ):
+        loss, grads = eqx.filter_value_and_grad(objective)(
+            field, data, data["fit"], cfg, rtol
+        )
+        pred = predict(field, data, cfg, rtol)
+        assert pred.shape == (2, 5)
+        assert pred.dtype == jnp.float64
+        assert bool(jnp.isfinite(loss))
+        assert bool(finite_tree(grads)), "nonfinite gradient leaf"
+        assert np.isfinite(np.asarray(pred)).all()
+        np.testing.assert_allclose(
+            pred, reference_prediction,
+            rtol=check_tolerance, atol=check_tolerance,
+        )
+        np.testing.assert_allclose(
+            grads.rate, reference_gradient,
+            rtol=check_tolerance, atol=check_tolerance,
+        )
+        predictions.append(pred)
+        gradients.append(grads)
+        print(
+            f"rtol={rtol:g}: "
+            f"prediction max abs reference error="
+            f"{float(jnp.max(jnp.abs(pred-reference_prediction))):.3e}; "
+            f"gradient={float(grads.rate):.9g}; "
+            f"gradient abs reference error="
+            f"{float(jnp.abs(grads.rate-reference_gradient)):.3e}"
+        )
+    np.testing.assert_allclose(
+        predictions[0], predictions[1], rtol=2e-5, atol=2e-5
+    )
+    # Every differentiated leaf; this field has exactly one.
+    assert_same_tree(gradients[0], gradients[1], tolerance=2e-5)
+    print(
+        "fixed-model tolerance sensitivity: "
+        f"max abs prediction delta="
+        f"{float(jnp.max(jnp.abs(predictions[0]-predictions[1]))):.3e}; "
+        f"abs gradient delta="
+        f"{float(jnp.abs(gradients[0].rate-gradients[1].rate)):.3e}"
+    )
+
+
+def make_training(cfg, data):
+    field = RateField(jnp.asarray(cfg["initial_rate"], dtype=jnp.float64))
+    schedule = optax.linear_schedule(
+        init_value=cfg["lr_start"],
+        end_value=cfg["lr_end"],
+        transition_steps=cfg["steps"],
+    )
+    tx = optax.adam(schedule)
+    state = {
+        "field": field,
+        "optimizer": tx.init(eqx.filter(field, eqx.is_inexact_array)),
+        "step": jnp.array(0, dtype=jnp.int32),
+        # Number of consumed fixed-batch presentations; no shuffled loader.
+        "cursor": jnp.array(0, dtype=jnp.int32),
+    }
+
+    @eqx.filter_jit
+    def candidate_update(state):
+        loss, grads = eqx.filter_value_and_grad(objective)(
+            state["field"], data, data["fit"], cfg, cfg["rtol"]
+        )
+        params = eqx.filter(state["field"], eqx.is_inexact_array)
+        updates, optimizer_state = tx.update(
+            grads, state["optimizer"], params
+        )
+        next_state = {
+            "field": eqx.apply_updates(state["field"], updates),
+            "optimizer": optimizer_state,
+            "step": state["step"] + 1,
+            "cursor": state["cursor"] + 1,
+        }
+        finite = (
+            jnp.isfinite(loss) & finite_tree(grads) & finite_tree(next_state)
+        )
+        return next_state, loss, finite
+
+    def advance(state):
+        candidate, loss, finite = candidate_update(state)
+        assert bool(finite), "nonfinite loss, gradient, or updated state"
+        # Only a successful transition is committed by the caller.
+        return candidate, float(loss)
+
+    return state, advance, schedule
+
+
+def save_checkpoint(root, cfg, state):
+    progress = root / f"step-{int(state['step']):08d}"
+    progress.mkdir()  # Unique paths; accidental overwrites raise.
+    (progress / "config.json").write_text(
+        json.dumps(cfg, indent=2, sort_keys=True), encoding="utf-8"
+    )
+    eqx.tree_serialise_leaves(progress / "state.eqx", state)
+    # Synchronous writes finish before marking the progress recoverable.
+    (progress / "COMPLETE").write_text("complete\n", encoding="utf-8")
+    return progress
+
+
+def restore_latest(root, expected_cfg):
+    complete = sorted(
+        (p for p in root.glob("step-*") if (p / "COMPLETE").is_file()),
+        key=lambda p: int(p.name[5:]),
+    )
+    assert [int(p.name[5:]) for p in complete] == [3, 5]
+    latest = complete[-1]
+    # Load and validate BEFORE constructing resumed data, objective, or state.
+    cfg = json.loads((latest / "config.json").read_text(encoding="utf-8"))
+    assert cfg == expected_cfg, "saved reconstruction contract changed"
+    validate_config(cfg)
+    data = make_data(cfg)
+    template, advance, schedule = make_training(cfg, data)
+    state = eqx.tree_deserialise_leaves(latest / "state.eqx", template)
+    assert int(state["step"]) == int(state["cursor"]) == 5
+    return state, advance, schedule, cfg
+
+
+def run():
+    cfg = configuration()
+    validate_config(cfg)
+    data = make_data(cfg)
+    state, advance, schedule = make_training(cfg, data)
+
+    # A hand-checkable reduction: (1 + 3 + 5) / 3 == 3.
+    values = jnp.array([[1.0, 100.0, 100.0], [3.0, 5.0, 100.0]])
+    mask = jnp.array([[True, False, False], [True, True, False]])
+    np.testing.assert_allclose(mean_eligible(values, mask), 3.0)
+    try:
+        require_units(jnp.zeros_like(mask))
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("empty eligibility accepted")
+
+    changed = dict(data)
+    changed["targets"] = jnp.where(data["fit"], data["targets"], 10000.0)
+    value_and_grad = eqx.filter_value_and_grad(objective)
+    original_loss, original_grad = value_and_grad(
+        state["field"], data, data["fit"], cfg, cfg["rtol"]
+    )
+    changed_loss, changed_grad = value_and_grad(
+        state["field"], changed, data["fit"], cfg, cfg["rtol"]
+    )
+    np.testing.assert_allclose(original_loss, changed_loss)
+    assert_same_tree(original_grad, changed_grad)
+    numerical_checks(state["field"], data, cfg)
+    initial_loss = float(original_loss)
+    assert initial_loss > 0
+
+    # Isolated recovery parity fixture: two saves, restore the latest,
+    # and compare update 6 against uninterrupted execution.
+    with tempfile.TemporaryDirectory(prefix="rate-ode-recovery-") as directory:
+        root = Path(directory).resolve()
+        for step in (3, 5):
+            while int(state["step"]) < step:
+                state, _ = advance(state)
+            save_checkpoint(root, cfg, state)
+        resumed, resumed_advance, resumed_schedule, loaded_cfg = restore_latest(
+            root, cfg
+        )
+        assert_same_tree(state, resumed)  # Storage parity alone is insufficient.
+        uninterrupted, next_loss = advance(state)
+        recovered, recovered_loss = resumed_advance(resumed)
+        np.testing.assert_allclose(next_loss, recovered_loss, rtol=1e-12, atol=1e-12)
+        assert_same_tree(uninterrupted["field"], recovered["field"])
+        # Includes both Adam moments and all internal optimizer/schedule counts.
+        assert_same_tree(uninterrupted["optimizer"], recovered["optimizer"])
+        assert_same_tree(uninterrupted["step"], recovered["step"])
+        assert_same_tree(uninterrupted["cursor"], recovered["cursor"])
+        assert int(uninterrupted["step"]) == int(uninterrupted["cursor"]) == 6
+        np.testing.assert_allclose(
+            schedule(uninterrupted["step"]),
+            resumed_schedule(recovered["step"]),
+            rtol=0, atol=0,
+        )
+        assert loaded_cfg == cfg
+        # Continue with the COMPLETE successful state, including its cursor.
+        state = uninterrupted
+        print("recovery: next loss, parameters, optimizer, schedule, step, cursor agree")
+
+    while int(state["step"]) < cfg["steps"]:
+        state, _ = advance(state)
+    field = state["field"]
+    final_loss = float(objective(field, data, data["fit"], cfg, cfg["rtol"]))
+    assert final_loss < 0.01 * initial_loss, (initial_loss, final_loss)
+    np.testing.assert_allclose(field.rate, cfg["true_rate"], rtol=0, atol=2e-3)
+    assert int(state["step"]) == int(state["cursor"]) == cfg["steps"]
+
+    # Check sensitivity again at the fitted parameters, without refitting.
+    numerical_checks(field, data, cfg)
+    prediction = predict(field, data, cfg, cfg["tight_rtol"])
+    held_loss = float(mean_eligible(
+        jnp.square(prediction - data["targets"]), data["held"]
+    ))
+    last_fit_indices = jnp.array([1, 2])
+    assert bool(data["fit"][jnp.arange(2), last_fit_indices].all())
+    last_seen = data["targets"][jnp.arange(2), last_fit_indices]
+    persistence = jnp.broadcast_to(last_seen[:, None], prediction.shape)
+    persistence_loss = float(mean_eligible(
+        jnp.square(persistence - data["targets"]), data["held"]
+    ))
+    assert np.isfinite(held_loss) and held_loss < 0.1 * persistence_loss
+    np.testing.assert_allclose(
+        prediction[data["held"]], data["targets"][data["held"]],
+        rtol=2e-3, atol=2e-3,
+    )
+
+    test = make_test_data(cfg)
+    test_prediction = predict(field, test, cfg, cfg["tight_rtol"])
+    test_loss = float(mean_eligible(
+        jnp.square(test_prediction-test["targets"]), test["held"]
+    ))
+    test_persistence = jnp.broadcast_to(
+        test["initial"][:, None], test_prediction.shape
+    )
+    test_baseline_loss = float(mean_eligible(
+        jnp.square(test_persistence-test["targets"]), test["held"]
+    ))
+    assert np.isfinite(np.asarray(test_prediction)).all()
+    assert np.isfinite(test_loss) and test_loss < 0.1 * test_baseline_loss
+    # Future-only requests still start the integration at the original t0.
+    future_only = dict(test)
+    future_only["times"] = test["times"][1:]
+    np.testing.assert_allclose(
+        predict(field, future_only, cfg, cfg["tight_rtol"]),
+        test_prediction[:, 1:], rtol=2e-7, atol=2e-7,
+    )
+    print(
+        f"rate={float(field.rate):.8f}; "
+        f"fixed fit MSE {initial_loss:.8g} -> {final_loss:.8g}; "
+        f"late observed holdout MSE={held_loss:.8g}, "
+        f"persistence={persistence_loss:.8g}; "
+        f"new trajectory MSE={test_loss:.8g}, "
+        f"persistence={test_baseline_loss:.8g}"
+    )
+    print("all requested fixture assertions passed")
+
+
+if __name__ == "__main__":
+    run()
+~~~
+
+The prediction shape is (trajectory, requested time), with a scalar state and a boolean observation mask of the same shape. For vector observations, introduce a channel axis and an explicit mask for each measured channel; decide whether to weight measured scalars or whole trajectories before reducing. Requesting an output on the union grid never creates a new measurement.
+
+The exact reference used above is independent of the numerical solver:
+
+$$
+\frac{\partial L}{\partial\theta}
+=\frac{1}{N_{\rm fit}}
+\sum_{i,j\in{\rm fit}}
+2(\hat y_{ij}-y_{ij})(t_j-t_{0,i})\hat y_{ij}.
+$$
+
+The checks compare actual prediction arrays and gradient values against this formula at both tolerances, then compare the two solver results directly at fixed parameters. They print absolute errors and tolerance sensitivity so agreement is measurable. A smaller loss difference alone would not establish a reliable gradient. The checks also run at the fitted parameters, where the gradient is small and an absolute error criterion matters. Equinox's [filtered transforms](https://docs.kidger.site/equinox/api/transformations/) differentiate floating array leaves of the field; the gradient fixture checks every such leaf.
+
+Recovery is declared at the last successfully saved update. The model's only trainable state is its rate; Adam's moments and counts, external update number, and consumed-batch cursor are separate saved state. There are no mutable model statistics, hidden carry, frozen parameters, or RNG streams in this deterministic fixture. Unique step directories plus a completion marker define the restore-latest policy. The JSON configuration is loaded and validated before any resumed data or training construction; [Equinox serialization](https://docs.kidger.site/equinox/api/serialisation/) saves leaves and reconstructs them against a matching tree. The parity check compares the next loss and full post-update parameter/optimizer state, along with schedule output, step, and cursor. It continues from that complete transition. The temporary directory is removed after the demonstration; use a persistent experiment directory for real recovery. This synchronous local fixture is not a power-loss durability or multi-host checkpoint protocol.
+
+For a richer neural ODE, replace the scalar field with an Equinox MLP implementing fθ(t,y), keep the solver and observed-unit objective, and record the architecture in the reconstruction configuration. Normalize time and channels using training data and adjust the vector field consistently with those units. Check every differentiated leaf for finiteness and tolerance sensitivity. On a small deterministic fixture, supplement analytic cases with centered finite differences in several normalized parameter directions: compare [L(θ+εv)−L(θ−εv)]/(2ε) with the gradient dot v over an ε sweep, using solver error much smaller than the finite-difference change. Adaptive step decisions and cancellation can make individual ε values misleading. Repeat the bounded learnability and recovery checks for that architecture before scale runs.
+
+For real trajectories, split independent subjects or systems before fitting preprocessing, reserve observed future targets with a causal cutoff, and compare against persistence and a simple fitted dynamics baseline. Report errors by forecast horizon, trajectory, channel, and observation density rather than only one pooled number. Repeat over initialization seeds and assess sensitivity to measurement noise, solver tolerances, and initial-condition uncertainty. A fit can identify observed trajectories without uniquely identifying an unconstrained vector field; sparse observations, hidden state, and multiple plausible dynamics require additional evidence or constraints. Stiffness and scientific extrapolation also need their own tests.
+
+**Execution status:** I have not executed the delivered application/model code, so there are no measured gradient errors, fitted losses, timing results, or passed runtime assertions to report. The script supplies the checks and prints their actual outcomes when run; it raises on any failed criterion. Passing it would establish this deterministic scalar fixture's observation accounting, numerical differentiation, learnability, baseline comparison, and same-environment next-update recovery. It would not establish generalization for noisy real data or reliability of a larger neural field.

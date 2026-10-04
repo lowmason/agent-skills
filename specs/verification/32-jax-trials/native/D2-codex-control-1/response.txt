@@ -1,0 +1,257 @@
+Use a differentiable ODE whose parameters are shared across trajectories:
+
+\[
+\dot y(t)=f_\theta(t,y(t)),\qquad y(t_{b,0})=y_{b,0}.
+\]
+
+For trajectory \(b\), solve from its initial time and compare the solution with observations at its actual times \(t_{b,i}\). Irregular observations do not require equally spaced inputs. Diffrax's `SaveAt(ts=...)` returns the numerical solution at the requested times using the solver's interpolation; its internal integration steps can be different from those observation times. [Diffrax SaveAt documentation](https://docs.kidger.site/diffrax/api/saveat/).
+
+A small, useful starting example is a learnable damped rotation:
+
+\[
+\dot y=
+\begin{pmatrix}-\gamma&-\omega\\\omega&-\gamma\end{pmatrix}y,
+\qquad \gamma=\operatorname{softplus}(\theta_0)>0,
+\quad \omega=\theta_1.
+\]
+
+Here the learned parameters control decay and angular velocity. This example assumes both state components are observed, the initial state is known, and all trajectories obey the same deterministic dynamics. Its exact solution, \(y(t)=e^{-\gamma\Delta t}R(\omega\Delta t)y_0\), supplies an independent reference for checking the numerical integration and gradients. Choosing a small identifiable model first makes failures easier to diagnose before replacing the vector field with a neural network.
+
+The code below generates four trajectories with different irregular time grids, adds observation noise, fits the dynamics, and checks the result. It requires `jax`, `diffrax`, `optax`, and `numpy`. I have checked the APIs against their official documentation but have not executed this code; the assertions are proposed validation gates, not reported passing results.
+
+```python
+import jax
+
+# Set before creating arrays; tight solver/gradient checks need float64.
+jax.config.update("jax_enable_x64", True)
+
+import diffrax as dfx
+import jax.numpy as jnp
+import numpy as np
+import optax
+
+TRAIN_RTOL = 1e-7
+TRAIN_ATOL = 1e-9
+NOISE_SD = 0.01
+
+
+def make_params(decay, frequency):
+    # Inverse softplus; suitable for these moderate positive decay values.
+    return jnp.array([jnp.log(jnp.expm1(decay)), frequency], dtype=jnp.float64)
+
+
+def physical_params(theta):
+    return jnp.stack((jax.nn.softplus(theta[0]), theta[1]))
+
+
+def vector_field(t, y, theta):
+    decay, frequency = physical_params(theta)
+    x, z = y
+    return jnp.stack((-decay * x - frequency * z,
+                      frequency * x - decay * z))
+
+
+def exact_solution(theta, times, y0):
+    decay, frequency = physical_params(theta)
+    elapsed = times - times[0]  # y0 is the state at times[0].
+    angle = frequency * elapsed
+    c, s = jnp.cos(angle), jnp.sin(angle)
+    rotated = jnp.stack((c * y0[0] - s * y0[1],
+                         s * y0[0] + c * y0[1]), axis=-1)
+    return jnp.exp(-decay * elapsed)[:, None] * rotated
+
+
+def solve(theta, times, y0, *, rtol=TRAIN_RTOL, atol=TRAIN_ATOL,
+          fixed_dt=None):
+    controller = (dfx.PIDController(rtol=rtol, atol=atol)
+                  if fixed_dt is None else dfx.ConstantStepSize())
+    solution = dfx.diffeqsolve(
+        terms=dfx.ODETerm(vector_field),
+        solver=dfx.Tsit5(),
+        t0=times[0],
+        t1=times[-1],
+        dt0=0.02 if fixed_dt is None else fixed_dt,
+        y0=y0,
+        args=theta,  # Trainable values enter the solve explicitly.
+        saveat=dfx.SaveAt(ts=times),
+        stepsize_controller=controller,
+        adjoint=dfx.RecursiveCheckpointAdjoint(),
+        max_steps=4096,
+        throw=True,
+    )
+    return solution.ys
+
+
+def batch_predictions(theta, times, initial_states, **solver_options):
+    return jax.vmap(
+        lambda ts, y0: solve(theta, ts, y0, **solver_options)
+    )(times, initial_states)
+
+
+def loss(theta, times, initial_states, observations, **solver_options):
+    predicted = batch_predictions(theta, times, initial_states, **solver_options)
+    # Initial conditions are given exactly, so they are excluded from fitting.
+    residual = predicted[:, 1:, :] - observations[:, 1:, :]
+    return jnp.mean(residual**2)
+
+
+def validate_inputs(times, initial_states, observations):
+    # Host-side validation happens outside jit/grad.
+    ts, y0, ys = map(np.asarray, (times, initial_states, observations))
+    assert ts.ndim == 2 and ts.shape[1] >= 2
+    assert y0.shape == (ts.shape[0], 2)
+    assert ys.shape == (*ts.shape, 2)
+    assert np.isfinite(ts).all() and np.isfinite(y0).all()
+    assert np.isfinite(ys).all()
+    assert (np.diff(ts, axis=1) > 0).all()
+
+
+optimizer = optax.adam(learning_rate=0.02)
+
+
+@jax.jit
+def train_step(theta, optimizer_state, times, initial_states, observations):
+    value, gradient = jax.value_and_grad(loss)(
+        theta, times, initial_states, observations
+    )
+    updates, optimizer_state = optimizer.update(
+        gradient, optimizer_state, theta
+    )
+    return optax.apply_updates(theta, updates), optimizer_state, value, gradient
+
+
+def main():
+    truth = make_params(decay=0.25, frequency=1.2)
+    initial = make_params(decay=0.08, frequency=0.8)
+    initial_states = jnp.array([[1., 0.], [0., 1.],
+                                [-1., 0.5], [0.6, -0.9]])
+    time_key, noise_key = jax.random.split(jax.random.key(20261003))
+    interior = jnp.sort(
+        jax.random.uniform(time_key, (4, 10), dtype=jnp.float64,
+                           minval=0.05, maxval=3.95), axis=1
+    )
+    times = jnp.concatenate((jnp.zeros((4, 1)), interior,
+                             jnp.full((4, 1), 4.0)), axis=1)
+    clean = jax.vmap(exact_solution, in_axes=(None, 0, 0))(
+        truth, times, initial_states
+    )
+    observations = clean + NOISE_SD * jax.random.normal(
+        noise_key, clean.shape, dtype=jnp.float64
+    )
+    observations = observations.at[:, 0, :].set(initial_states)
+    validate_inputs(times, initial_states, observations)
+
+    # Check the solver against an independent, non-numerical reference.
+    reference_prediction = batch_predictions(
+        truth, times, initial_states, rtol=1e-9, atol=1e-11
+    )
+    np.testing.assert_allclose(reference_prediction, clean,
+                               rtol=1e-6, atol=1e-7)
+    np.testing.assert_allclose(reference_prediction[:, 0], initial_states,
+                               rtol=0, atol=1e-12)
+
+    # Use a point away from the optimum: near-zero gradients hide mistakes.
+    probe = initial + jnp.array([0.15, 0.05])
+    fixed_loss = jax.jit(lambda p: loss(
+        p, times, initial_states, observations, fixed_dt=0.02
+    ))
+    fixed_gradient = jax.jit(jax.grad(fixed_loss))(probe)
+    assert np.isfinite(np.asarray(fixed_gradient)).all()
+    directions = jnp.array([[1., 0.], [0., 1.], [0.6, 0.8]])
+    for direction in directions:
+        autodiff = jnp.dot(fixed_gradient, direction)
+        for epsilon in (1e-3, 1e-4, 1e-5):
+            finite_difference = (
+                fixed_loss(probe + epsilon * direction)
+                - fixed_loss(probe - epsilon * direction)
+            ) / (2 * epsilon)
+            np.testing.assert_allclose(finite_difference, autodiff,
+                                       rtol=2e-4, atol=2e-7)
+
+    def analytic_loss(p):
+        predicted = jax.vmap(exact_solution, in_axes=(None, 0, 0))(
+            p, times, initial_states
+        )
+        return jnp.mean((predicted[:, 1:] - observations[:, 1:])**2)
+
+    analytic_gradient = jax.grad(analytic_loss)(probe)
+    for rtol, atol in ((1e-5, 1e-7), (1e-7, 1e-9), (1e-9, 1e-11)):
+        gradient = jax.grad(lambda p: loss(
+            p, times, initial_states, observations, rtol=rtol, atol=atol
+        ))(probe)
+        error = float(jnp.linalg.norm(gradient - analytic_gradient))
+        print(f"gradient reference error at rtol={rtol:g}: {error:.3g}")
+    np.testing.assert_allclose(gradient, analytic_gradient,
+                               rtol=2e-5, atol=2e-7)
+
+    theta = initial
+    optimizer_state = optimizer.init(theta)
+    initial_loss = float(loss(theta, times, initial_states, observations))
+    for step in range(800):
+        theta, optimizer_state, value, gradient = train_step(
+            theta, optimizer_state, times, initial_states, observations
+        )
+        if step % 100 == 0:
+            assert np.isfinite(np.asarray(theta)).all()
+            assert np.isfinite(np.asarray(gradient)).all()
+            assert np.isfinite(float(value))
+            print(f"step={step}, pre-update MSE={float(value):.6g}")
+
+    final_loss = float(loss(theta, times, initial_states, observations))
+    learned = physical_params(theta)
+    assert np.isfinite(np.asarray(learned)).all()
+    assert np.isfinite(final_loss) and final_loss < initial_loss / 10
+    # A generous recovery gate for this noisy synthetic fixture.
+    np.testing.assert_allclose(learned, physical_params(truth), rtol=0, atol=0.03)
+
+    # New initial condition, unseen times, and a separately measured forecast.
+    heldout_times = jnp.linspace(0., 6., 121)
+    heldout_y0 = jnp.array([0.8, 0.4])
+    predicted = solve(theta, heldout_times, heldout_y0)
+    expected = exact_solution(truth, heldout_times, heldout_y0)
+    errors = (predicted - expected)**2
+    interpolation_rmse = jnp.sqrt(jnp.mean(errors[heldout_times <= 4.]))
+    forecast_rmse = jnp.sqrt(jnp.mean(errors[heldout_times > 4.]))
+    assert np.isfinite(np.asarray(predicted)).all()
+    print("learned [decay, frequency]:", np.asarray(learned))
+    print("training MSE:", final_loss)
+    print("held-out RMSE through t=4:", float(interpolation_rmse))
+    print("forecast RMSE from t=4 to t=6:", float(forecast_rmse))
+
+    # Re-evaluate the SAME learned parameters with a more accurate solve.
+    tighter = solve(theta, heldout_times, heldout_y0, rtol=1e-9, atol=1e-11)
+    np.testing.assert_allclose(predicted, tighter, rtol=1e-5, atol=1e-6)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+`Tsit5` is a reasonable general-purpose choice for this smooth, non-stiff system. The `PIDController` supplies adaptive local error control. The float64 setting matters for tight numerical checks: JAX ordinarily disables 64-bit types unless enabled. [Diffrax solver guide](https://docs.kidger.site/diffrax/usage/how-to-choose-a-solver/), [JAX dtype documentation](https://docs.jax.dev/en/latest/101/default_dtypes.html).
+
+The fitting objective is a mean squared error over observed components. With independent Gaussian observation errors of constant known variance, minimizing this objective is equivalent to maximum likelihood. If measurement variances differ, use variance-weighted residuals and the corresponding Gaussian likelihood. The code optimizes parameters through `jax.value_and_grad` and Optax's standard update/apply-updates pattern. [Optax getting started](https://optax.readthedocs.io/en/latest/getting_started.html).
+
+How to establish reliability:
+
+1. **Validate the forward solve before trusting gradients.** The exact solution here checks signs, time units, initial conditions, interpolation, and numerical accuracy. For unknown dynamics, keep a separate analytic fixture such as this one and compare representative fitted trajectories against a substantially more accurate solve or another suitable solver. Local `rtol`/`atol` values are not promises about global trajectory error. The final fixed-parameter comparison checks whether the prediction changes materially when integration accuracy improves.
+
+2. **Check the gradient of the same objective being optimized.** The finite-difference checks deliberately use fixed steps, so accept/reject decisions do not change between parameter perturbations. They cover each parameter and a mixed direction, with an epsilon sweep to expose truncation error at large epsilon and cancellation at small epsilon. Repeat at several parameter values, including fitted values, using absolute as well as relative tolerances when derivatives approach zero. Directional finite differences also scale to large neural parameter PyTrees after flattening. [JAX autodiff cookbook](https://docs.jax.dev/en/latest/notebooks/autodiff_cookbook.html).
+
+3. **Check numerical convergence of the actual training gradient.** Fixed-step checks validate the differentiation machinery, but training uses adaptive steps. The adaptive-gradient comparison above checks against the exact closed-form objective at progressively tighter tolerances. Expect errors to become small; strict monotonic improvement at every tolerance is unnecessary. For a neural field without an analytic answer, compare gradients, losses, and trajectories across tighter tolerances and smaller fixed steps. Adaptive control flow and stopped gradients through solver decisions can make finite differences of the adaptive implementation disagree near a change of step sequence. Inspect that behavior before treating every discrepancy as an autodiff bug.
+
+4. **Separate gradient correctness from fit quality.** The recovery assertion tests whether this synthetic experiment finds the known physical parameters. Repeat the experiment across several noise seeds and initializations, and run a noiseless recovery case as a stronger implementation check. Compare loss curves, recovered parameters, and prediction errors; a finite gradient or a decreasing training loss alone establishes little. Bootstrap whole trajectories if you need uncertainty estimates; correlated points within one trajectory are not independent experimental units.
+
+5. **Evaluate the use case on held-out trajectories and time ranges.** The example reports new-initial-condition interpolation and future forecasting separately. On real data, select hyperparameters using a validation set and reserve an untouched test set. Split by trajectory and use chronological cutoffs for forecasts. Compare with simple alternatives, inspect residuals against time and gap length, and check physical behavior such as positivity, conservation, or decay when the application requires it. Good interpolation does not establish reliable long-horizon forecasting or behavior outside the observed state region.
+
+Diffrax's `RecursiveCheckpointAdjoint` differentiates the numerical solution and uses checkpointing to control memory; it is the documented default and generally preferred reverse-mode approach. This does not eliminate numerical error, hence the convergence checks. `BacksolveAdjoint` uses a separate backwards continuous adjoint solve and can return approximate gradients. Also, `RecursiveCheckpointAdjoint` does not support `jax.jvp`; use `ForwardMode` when you explicitly need forward sensitivities. The checks above use reverse-mode `jax.grad`. [Diffrax adjoint documentation](https://docs.kidger.site/diffrax/api/adjoints/).
+
+For more flexible dynamics, replace the two-parameter field with an MLP returning a vector of the same state dimension, for example \(f_\theta(t,y)=W_2\tanh(W_1[t,y]^\top+b_1)+b_2\). Keep its weights as a JAX PyTree and pass it through `args`; the solver, observation-time loss, and optimizer pattern stay the same. Smooth activations are a convenient initial choice. Neural weights generally have no unique recoverable interpretation, so assess trajectory and vector-field behavior rather than demanding weight recovery. Preserve the analytic ODE fixture to test the underlying solve/differentiate path.
+
+For real irregular data, a few details change the model:
+
+- Trajectories may have different numbers of observations. Bucket them by length for `vmap`, or solve each valid grid separately. Do not send NaN/Inf padding to the solver. With missing components, sanitize missing observation values and apply a boolean mask with `where` before reducing the loss; `0 * NaN` remains NaN. Decide whether the loss gives each observation or each trajectory equal weight.
+- A noisy first measurement is an uncertain initial condition. Estimate each initial state jointly with appropriate regularization or use a latent-state model, instead of treating that measurement as exact. Partial observations may require a latent ODE and observation map; including state variables that the data cannot identify needs additional assumptions.
+- An ODE represents deterministic state evolution. If process noise is material, consider an SDE or state-space model; if trajectories depend on time-varying measured inputs, incorporate those inputs with a defined interpolation or use a controlled differential equation. Normalize time and state scales using training data and account for the resulting derivative units.
+- Keep solver failures visible. Here `throw=True` raises if a solve fails, including a failing element under `vmap`. For diagnostic runs you can use `throw=False` and inspect each `solution.result` and step counts. Do not average failed solves into a seemingly valid loss. [Diffrax solve documentation](https://docs.kidger.site/diffrax/api/diffeqsolve/).
+
+Before calling a real fit reliable, record package versions, precision, solver/controller settings, random seeds, data split rules, gradient-check errors, tolerance sensitivity, recovery results, and held-out errors. The unexecuted code above shows how to produce that evidence; it does not claim those results have already been obtained.

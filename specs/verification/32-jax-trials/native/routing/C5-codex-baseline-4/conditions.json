@@ -1,0 +1,53 @@
+{
+  "trial": "C5-codex-baseline-4",
+  "family": "C5",
+  "condition": "baseline",
+  "fresh_context": true,
+  "fork_turns": "none",
+  "agent_type": "default",
+  "runtime": "built-in Codex collaboration agent",
+  "model": "inherited active runtime; exact identifier unavailable",
+  "reasoning_effort": "inherited active runtime; exact value unavailable",
+  "catalog": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/baseline-catalog",
+  "catalog_entries": 138,
+  "catalog_manifest_sha256": "fee71e65dfd7f9372132f86feaf5316bac5ca3c8212906359039bf0b0010c800",
+  "prompt_sha256": "8b2f0a3e48b680422cc6788e17bf985f96aa402eca9e5ec47f83f6d322e17d12",
+  "selection_simulation": true,
+  "real_auto_loading_observed": false,
+  "tool_policy": "recorded local prompt and selected SKILL.md reads; own trial artifacts only",
+  "resident_global_guidance_may_be_available": true,
+  "spawn_identity": {
+    "task_name": "/root/native_c5_baseline_4",
+    "source": "actual collaboration.spawn_agent return",
+    "recorded_utc": "2026-10-04T02:44:48.108440+00:00"
+  },
+  "completion": "Complete substantive response and research notes",
+  "completed_utc": "2026-10-04T02:47:14.526165+00:00",
+  "first_prompt_read": {
+    "sha256": "8b2f0a3e48b680422cc6788e17bf985f96aa402eca9e5ec47f83f6d322e17d12",
+    "bytes": 89677,
+    "lines": 620
+  },
+  "actual_skill_reads": [
+    {
+      "read_id": "bayesian-workflow",
+      "native_label": "bayesian-workflow",
+      "sha256": "8b6c06e85a0eb4750e5516d53f0c7a82ad279eaaf68692218de79ae098913156",
+      "bytes": 33948,
+      "read_event_line": 2
+    }
+  ],
+  "payloads": {
+    "response.txt": {
+      "sha256": "7a41489ba3f9516eda5d86a1edf6e1ec138c81397500ffcb5075990b8f9f823a",
+      "bytes": 788,
+      "lines": 7
+    },
+    "research-notes.md": {
+      "sha256": "f4cfc8ae6d76c07e2630157f1fab8cff5a5b411488b150cda80cca902636ef26",
+      "bytes": 1173,
+      "lines": 13
+    }
+  },
+  "execution_claim": "No underlying application implementation or execution observed; selection simulation only"
+}

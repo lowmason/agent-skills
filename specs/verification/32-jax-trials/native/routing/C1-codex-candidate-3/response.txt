@@ -1,0 +1,7 @@
+Primary skill: deep-learning.
+Supporting skills: none required by the stated task.
+The task explicitly asks to train a sequence neural model in JAX with Flax NNX, matching deep-learning's training and sequence scope.
+Its full body covers synthetic-data/objective contracts, NNX-aware differentiation, RNG and optimizer state, tiny-fixture learning checks, held-out evaluation, and checkpoint recovery.
+Those checks establish whether the delivered training path learns and resumes correctly; a decreasing training curve alone is insufficient.
+No benchmark, checkpoint comparison, hyperparameter search, Bayesian inference, or reproduced execution problem is stated, so their specialized skills are not selected.
+This is skill selection only: no training, implementation workflow, references, scripts, repository inspection, or external research was performed.

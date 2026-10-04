@@ -8,7 +8,7 @@ description: >
   hierarchical/multilevel models, count regressions, logistic regression with uncertainty,
   state-space or latent time-series models, prior sensitivity analysis, calibration
   (PIT/LOO-PIT), presenting Bayesian results to non-technical audiences, or mentions of NumPyro,
-  Pyro, JAX, BlackJAX, ArviZ, InferenceData, DataTree, credible intervals, HDI, posterior
+  Pyro, BlackJAX, ArviZ, InferenceData, DataTree, credible intervals, HDI, posterior
   distributions, shrinkage, or uncertainty quantification.
 license: MIT
 effort: xhigh

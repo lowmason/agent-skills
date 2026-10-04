@@ -1,0 +1,80 @@
+## Short answer: the data doesn't show either method is better
+
+The two methods aren't comparable as reported — they were trained on different token budgets (A: 1M, B: 3M), so any difference includes both "method" and "3x more compute." That confound can't be fixed by more seeds; it needs a matched-budget run.
+
+Even setting the confound aside, look at the *paired* seeds (0 and 1), where both methods report a result:
+
+| seed | A | B | B − A |
+|---|---|---|---|
+| 0 | 0.14 | 0.13 | −0.01 (B better) |
+| 1 | 0.16 | 0.18 | +0.02 (A better) |
+
+That's a 1–1 split with mean paired difference **+0.005 favoring A**. B's overall edge (mean 0.1425 vs 0.15) comes entirely from seeds 2 and 3 (0.14, 0.12) — seeds A was never run on. So "B is better" is really "B looks better once you add two seeds A doesn't have, and after giving B 3x the compute." Neither fact supports a method-level claim.
+
+`★ Insight ─────────────────────────────────────`
+This is a classic small-n trap: comparing *unpaired* means (0.15 vs 0.1425) hides that the comparison is apples-to-partial-oranges. Pairing by seed — when both methods share a seed — is a much stronger design because it cancels out seed-level variation (different random inits, data shuffles) that has nothing to do with which method is better. Here it flips the sign of the apparent effect.
+`─────────────────────────────────────────────────`
+
+## Code: the three numbers that matter
+
+```python
+import numpy as np
+from scipy import stats
+
+A = {0: 0.14, 1: 0.16}
+B = {0: 0.13, 1: 0.18, 2: 0.14, 3: 0.12}
+
+def paired_diff_stats(a: dict[int, float], b: dict[int, float]) -> dict:
+    """Paired comparison on shared seeds only — cancels seed-level noise
+    that an unpaired mean comparison conflates with the method effect."""
+    shared = sorted(set(a) & set(b))
+    diffs = np.array([b[s] - a[s] for s in shared])  # positive => B worse
+    rng = np.random.default_rng(0)
+    boot = rng.choice(diffs, size=(10_000, len(diffs)), replace=True).mean(axis=1)
+    return {
+        "seeds": shared,
+        "diffs": diffs,
+        "mean_diff": diffs.mean(),
+        "boot_ci95": (np.percentile(boot, 2.5), np.percentile(boot, 97.5)),
+    }
+
+def unpaired_welch(a: dict[int, float], b: dict[int, float]) -> dict:
+    """Secondary check — treats all seeds as independent draws, ignoring
+    the budget confound. Reported for completeness, not as the headline."""
+    a_vals, b_vals = np.array(list(a.values())), np.array(list(b.values()))
+    t, p = stats.ttest_ind(a_vals, b_vals, equal_var=False)
+    return {"t": t, "p": p, "mean_a": a_vals.mean(), "mean_b": b_vals.mean()}
+
+def required_n_per_arm(sd: float, delta: float, power: float = 0.8, alpha: float = 0.05) -> float:
+    """Two-sample n for detecting `delta` given per-seed sd `sd`.
+    Uses the normal approximation n ≈ 2*(z_a/2 + z_power)^2 * sd^2 / delta^2."""
+    z_alpha = stats.norm.ppf(1 - alpha / 2)
+    z_power = stats.norm.ppf(power)
+    return 2 * (z_alpha + z_power) ** 2 * sd ** 2 / delta ** 2
+
+paired = paired_diff_stats(A, B)
+unpaired = unpaired_welch(A, B)
+b_sd = np.std(list(B.values()), ddof=1)
+observed_gap = abs(unpaired["mean_a"] - unpaired["mean_b"])
+
+print("Paired (seeds 0,1 only):", paired)
+print("Unpaired Welch t-test:", unpaired)
+print(f"B seed sd ≈ {b_sd:.3f}; observed gap ≈ {observed_gap:.3f}")
+print(f"Required n/arm for 80% power: {required_n_per_arm(b_sd, observed_gap):.0f}")
+```
+
+Running this: the paired mean difference is +0.005 (B worse, tiny n so the bootstrap CI will be very wide and straddle zero), the Welch test won't approach significance, and the power calculation comes out to roughly **~200 seeds per arm** to reliably detect a gap this small given B's seed-to-seed spread (sd ≈ 0.026). That's the number that matters most: it tells you the current experiment is structurally incapable of answering the question, no matter how the existing data is sliced.
+
+`★ Insight ─────────────────────────────────────`
+The power calculation is the most useful output here, not the t-test. A non-significant p-value is ambiguous — it could mean "no real effect" or "underpowered study," and with n=2 vs n=4 it's almost certainly the latter. Converting the observed gap and seed variance into "you'd need ~200 seeds per arm" turns that ambiguity into an actionable number: it tells you *why* collecting 2-3 more seeds won't settle anything, and roughly what scale of experiment would.
+`─────────────────────────────────────────────────`
+
+## What to collect next, in order of how much it actually discriminates
+
+1. **Run A to 3M tokens (or B to 1M)** — breaks the compute confound. Nothing else in this list matters if this isn't done, since any result otherwise conflates method with budget.
+2. **Same seed set for both methods**, fixed in advance (e.g., seeds 0–3 for both) — enables the paired analysis above instead of a mismatched unpaired one.
+3. **Error-vs-tokens curves** at several checkpoints (e.g., every 0.5M tokens) rather than single endpoints — this answers the matched-budget question *and* the scaling-behavior question in one run, which single-point comparisons can't.
+4. **Decompose variance**: bootstrap the held-out eval set itself (holding the model fixed) to see how much of B's 0.026 sd is eval-set noise vs. genuine seed-to-seed training variance. If eval-set noise dominates, the fix is a bigger held-out set, not more seeds — a different and often cheaper intervention.
+5. **Check B's seed 1 (0.18)** — it's the single largest contributor to B's variance. Worth a quick look at its training curve to rule out a diverged or anomalous run before it drives the whole comparison.
+
+One thing only you can decide, since it's a judgment call the numbers themselves can't make: **what paired difference and CI width would actually make you switch methods in practice** (e.g., "B must beat A by ≥0.01 with a CI that excludes zero, at matched compute")? Writing that threshold down *before* the next run (step 1 above) is what turns this from "which number is smaller" into a pre-registered decision — and prevents post-hoc rationalization once the new data comes in.

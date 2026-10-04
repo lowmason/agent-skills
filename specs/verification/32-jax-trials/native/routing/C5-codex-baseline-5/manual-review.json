@@ -1,0 +1,40 @@
+{
+  "selected_primary": "bayesian-workflow",
+  "selected_supporting": [],
+  "correctness": "correct",
+  "posterior_boundary": "preserved",
+  "rationale": "BlackJAX posterior sampling selects and reads bayesian-workflow. Explicit-budget catalog replay is disclosed and the posterior route remains the primary choice.",
+  "full_payloads_manually_read": true,
+  "display_reads_manually_verified": true,
+  "conflicts_or_resident_choices": [],
+  "evidence": [
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-5/response.txt",
+      "line": 1
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-5/read-events.jsonl",
+      "line": 2
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-5/research-notes.md",
+      "line": 1
+    }
+  ],
+  "reviewed_utc": "2026-10-04T02:47:14.536393+00:00",
+  "catalog_manifest_sha256": "fee71e65dfd7f9372132f86feaf5316bac5ca3c8212906359039bf0b0010c800",
+  "payloads": {
+    "response.txt": {
+      "sha256": "dc6467ce61023f207ab44630c7fd8add285462492cec69438f73bad51bb4536d",
+      "bytes": 749,
+      "lines": 8
+    },
+    "research-notes.md": {
+      "sha256": "05acc8a63b9297e8eded886faf08b256f045e4eba39e91dbfc2b450a3f44db7c",
+      "bytes": 1276,
+      "lines": 12
+    }
+  },
+  "grading_source": "conductor manual full-response judgment",
+  "semantic_grading_automated": false
+}

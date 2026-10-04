@@ -1,0 +1,35 @@
+{
+  "condition": "baseline",
+  "fresh_samples": 30,
+  "family_counts": {
+    "C1": 5,
+    "C2": 5,
+    "C3": 5,
+    "C4": 5,
+    "C5": 5,
+    "C6": 5
+  },
+  "manual_correctness_counts": {
+    "correct": 30,
+    "incorrect": 0,
+    "unresolved": 0
+  },
+  "manual_posterior_boundary_counts": {
+    "preserved": 30,
+    "violated": 0,
+    "unresolved": 0
+  },
+  "actual_body_read_events": 52,
+  "verified_local_evidence_links": 90,
+  "catalog": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/baseline-catalog",
+  "catalog_manifest_sha256": "fee71e65dfd7f9372132f86feaf5316bac5ca3c8212906359039bf0b0010c800",
+  "report": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/baseline-manual-scoring.md",
+  "report_payload": {
+    "sha256": "5e4336a4276a2637b431571fb111a61cce673bb5bee86717b779525db8cc5aec",
+    "bytes": 21352,
+    "lines": 52
+  },
+  "semantic_grading_performed": false,
+  "application_code_executed": false,
+  "limits": "Hashes and caller attestations do not independently prove tool display reading or real dispatch; no real auto-loading measurement."
+}

@@ -1,0 +1,149 @@
+Both claims share the same defect: a scalar metric moved in a direction, and a mechanism got inferred from it without anything that measures the claimed property directly. Below are the checks that would actually substantiate — or correctly falsify — each one, with code.
+
+## Claim 1: "Error improves with loose solver settings"
+
+`★ Insight ─────────────────────────────────────`
+A neural ODE's "error" is actually two different quantities that this claim conflates: **numerical error** (how far the solver's output is from the true solution of the *same* ODE) and **predictive error** (how far the model's output is from ground-truth labels). Loosening tolerance can only make numerical error worse — it has no mechanism to make the learned vector field more correct. If test loss drops anyway, the real finding is "loose tolerance acts as an implicit regularizer," which is a legitimate and known phenomenon, but it's a different claim than "error improves," and conflating the two is the bug in the original statement.
+`─────────────────────────────────────────────────`
+
+```python
+import jax
+import jax.numpy as jnp
+import diffrax
+
+
+def numerical_error_curve(vector_field, params, x0, t0, t1, rtols, atols, ref_rtol=1e-10, ref_atol=1e-12):
+    """Isolate numerical error from predictive error: freeze weights, vary only
+    solver tolerance, and compare against a near-exact reference trajectory."""
+    term = diffrax.ODETerm(lambda t, y, args: vector_field(params, t, y))
+
+    def solve(rtol, atol):
+        sol = diffrax.diffeqsolve(
+            term, diffrax.Dopri5(), t0=t0, t1=t1, dt0=None, y0=x0,
+            stepsize_controller=diffrax.PIDController(rtol=rtol, atol=atol),
+            saveat=diffrax.SaveAt(t1=True),
+        )
+        return sol.ys[-1], sol.stats["num_steps"]
+
+    y_ref, _ = solve(ref_rtol, ref_atol)
+    curve = []
+    for rtol, atol in zip(rtols, atols):
+        y, nfe = solve(rtol, atol)
+        err = jnp.linalg.norm(y - y_ref) / (jnp.linalg.norm(y_ref) + 1e-12)
+        curve.append((rtol, float(err), int(nfe)))
+    return curve
+```
+
+`★ Insight ─────────────────────────────────────`
+`diffrax` reports `sol.stats["num_steps"]` — the NFE count — for free. Reporting NFE alongside every error number is check #3 below in action: if someone claims "better accuracy at looser tolerance" without also reporting that NFE dropped 10x, that's the signature of either an artifact or a measurement mismatch (e.g., comparing test loss, not trajectory error, across settings).
+`─────────────────────────────────────────────────`
+
+The full set of checks, in order of cost (cheapest/most decisive first):
+
+1. **Multiple seeds with confidence intervals.** Run the loose-vs-tight comparison across ≥5 seeds before anything else. Most "loose is better" effects reported from a single run are inside run-to-run noise.
+
+2. **Separate numerical error from predictive/test error.** The function above — plot ‖x(t;tol) − x(t;tol_ref)‖ vs tol *and* test loss vs tol on the same axis. If numerical error rises monotonically with looser tol while test loss falls, state the finding as regularization, not "error improves."
+
+3. **NFE accounting.** Always report alongside error. A genuine win looks like "same NFE, lower error" or "fewer NFE, same error" — not an unexplained inversion.
+
+4. **Train/eval solver 2×2.**
+
+```python
+def solver_cross_grid(model_apply, params_loose, params_tight, test_batch, tol_pairs):
+    results = {}
+    for train_tag, params in [("loose", params_loose), ("tight", params_tight)]:
+        for eval_tag, (rtol, atol) in tol_pairs.items():
+            loss = evaluate(model_apply, params, test_batch, rtol, atol)
+            results[(train_tag, eval_tag)] = loss
+    return results
+```
+If `(loose-train, tight-eval)` is much worse than `(loose-train, loose-eval)`, the network learned the discrete integrator's map, not the continuous vector field — a known failure mode for adaptive-step neural ODEs.
+
+5. **Fixed-step convergence ladder (Richardson extrapolation).** Run at dt, dt/2, dt/4 with a fixed-step method (`diffrax.Tsit5` with `dt0=dt`, `stepsize_controller=diffrax.ConstantStepSize()`), and fit the empirical order p from `log(err_dt / err_{dt/2}) / log(2)`. If p is well below the solver's nominal order, the learned field is locally stiff or non-smooth and the adaptive controller's error estimate (which assumes smoothness) can't be trusted — undermining any claim based on the adaptive solver's reported tolerance.
+
+6. **Test the regularization hypothesis directly.** Train at tight tolerance with an explicit regularizer (weight decay, input noise, or a kinetic-energy penalty `∫‖f(x,t)‖²dt`). If that recovers the same test-loss gain, the mechanism was regularization all along, not solver looseness per se — the loose solver was a proxy for it.
+
+7. **Gradient fidelity.** Compare adjoint gradients computed at loose tolerance against discretize-then-optimize gradients at tight tolerance (cosine similarity + relative norm). Loose-tolerance adjoint solves can silently corrupt gradients; an apparent generalization "win" may be gradient noise acting like SGD regularization, which is a different mechanism again.
+
+**Failure criterion to state inline:** if the test-loss gain disappears once the regularizer in check 6 is added at tight tolerance, or falls inside the CI from check 1, the claim is not substantiated as a solver effect.
+
+## Claim 2: "Rotation-equivariant because loss is low"
+
+`★ Insight ─────────────────────────────────────`
+This is the sharper non-sequitur of the two: equivariance is a **label-free, structural property** — `f(g·x) == ρ(g)·f(x)` for all rotations g — and it can be measured directly without touching the loss at all. Low loss is neither necessary nor sufficient for it: a dataset that's pre-aligned (canonical molecular frames, upright ModelNet meshes) lets a plain non-equivariant CNN reach low loss with zero rotation generalization, and conversely a correctly equivariant model can have high loss simply because it's undertrained. The loss number carries no information about the symmetry claim either way.
+`─────────────────────────────────────────────────`
+
+```python
+import jax
+import jax.numpy as jnp
+
+
+def random_so3_quaternion(key):
+    """Haar-uniform rotation via a normalized Gaussian quaternion —
+    uniform Euler angles are NOT uniform over SO(3) and will bias the test."""
+    q = jax.random.normal(key, (4,))
+    return q / jnp.linalg.norm(q)
+
+
+def quat_to_matrix(q):
+    w, x, y, z = q
+    return jnp.array([
+        [1 - 2*(y*y+z*z),   2*(x*y - z*w),     2*(x*z + y*w)],
+        [2*(x*y + z*w),     1 - 2*(x*x+z*z),   2*(y*z - x*w)],
+        [2*(x*z - y*w),     2*(y*z + x*w),     1 - 2*(x*x+y*y)],
+    ])
+
+
+def equivariance_error(f, rho_out, x, key, n_samples=256):
+    """Distribution of relative equivariance error over Haar-random rotations.
+    rho_out(R, y) applies the correct output representation for f's output type
+    (identity for scalars, R @ y for vectors, Wigner-D for higher ell)."""
+    keys = jax.random.split(key, n_samples)
+
+    def one_sample(k):
+        R = quat_to_matrix(random_so3_quaternion(k))
+        fx = f(x)
+        f_rx = f(jnp.einsum("ij,...j->...i", R, x))
+        rho_fx = rho_out(R, fx)
+        return jnp.linalg.norm(f_rx - rho_fx) / (jnp.linalg.norm(fx) + 1e-12)
+
+    return jax.vmap(one_sample)(keys)  # inspect median, p95, max — not just mean
+```
+
+`★ Insight ─────────────────────────────────────`
+The `random_so3_quaternion` helper exists because sampling Euler angles uniformly in `[0, 2π)` is a classic, non-obvious bug: it concentrates samples near the poles and under-samples other regions of SO(3), so an equivariance test built on it can silently pass or fail on a biased subset of rotations rather than the group it claims to test.
+`─────────────────────────────────────────────────`
+
+The checks, in order:
+
+1. **Equivariance error over Haar-random SO(3), reported as a distribution** (median/p95/max, never mean — the max is what matters for a "is it equivariant" claim, since a single large-error rotation falsifies it).
+
+2. **Precision-scaling test — the single sharpest discriminator.** Recompute the same equivariance error in float64 and compare to float32. Architectural (exact-by-construction) equivariance error should shrink roughly in proportion to machine epsilon when precision increases; *learned, approximate* equivariance (e.g., data augmentation instead of equivariant layers) will not shrink with precision because its error is architectural, not numerical.
+
+```python
+def precision_scaling_check(f32_fn, f64_fn, x, key):
+    err32 = equivariance_error(f32_fn, rho_out, x.astype(jnp.float32), key)
+    err64 = equivariance_error(f64_fn, rho_out, x.astype(jnp.float64), key)
+    ratio = jnp.max(err32) / (jnp.max(err64) + 1e-12)
+    # architecturally equivariant: ratio tracks float32/float64 eps ratio (~1e9)
+    # approximately/learned equivariant: ratio stays near 1
+    return ratio
+```
+
+3. **Correct ρ per output head, plus O(3) not just SO(3).** Scalars should be invariant (ρ = identity), vectors should rotate (ρ = R), higher angular-momentum features need Wigner-D matrices (`e3nn-jax`'s `e3nn.wigner_D` if that library is in use). Also test reflections: a model that's accidentally invariant where it should be equivariant, or that has a sign/parity bug under improper rotations, passes a rotation-only test — testing O(3) catches that class of bug that SO(3)-only testing is blind to.
+
+4. **Isolate preprocessing confounds.** If there's voxelization, point sampling, or kNN graph construction upstream of the network, rotate the raw input *before* that step and separately *after* it (i.e., rotate the already-built graph/voxel grid). If error is large only in the "rotate before" case, the discretization — not the network — is breaking equivariance, and the claim about the model is simply untested by that measurement.
+
+5. **Worst-case search + held-out rotation groups.** Gradient-ascent on the rotation to find the worst-case g (maximize equivariance error over g), and separately test rotations outside whatever augmentation group was used during training (e.g., trained with 24-element octahedral augmentation → test off-axis, continuous rotations). Average-case error over random rotations can look deceptively small while the worst case is large.
+
+6. **The control that determines whether the loss number means anything at all: measure dataset orientation diversity**, then re-run the standard protocol: aligned-train/aligned-test vs aligned-train/SO(3)-test vs SO(3)-train/SO(3)-test. If the data is canonically aligned, low loss under the aligned-test condition carries zero evidence about equivariance — it only shows the model fit a fixed-frame dataset.
+
+7. **Baseline comparison.** Train a same-capacity *non*-equivariant model with rotation augmentation. If it matches the loss of the "equivariant" model, the low loss was never evidence of the equivariance claim — both models solved the aligned-data problem the same way.
+
+8. **Canonicalization ablation.** Align all inputs to a canonical (e.g. PCA) frame before feeding the "equivariant" model. If loss is unchanged, the model never used orientation information, meaning the equivariance claim is moot — right or wrong, it had no bearing on the reported loss.
+
+**Failure criterion to state inline:** e.g., "max relative equivariance error > 1e-4 at float32, not shrinking under float64 ⇒ model is not architecturally equivariant; reclassify as approximately/augmentation-equivariant" — and separately, "loss on aligned-test data is uninformative about equivariance if check 6 shows the dataset has < X° orientation spread."
+
+## Summary of the shared principle
+
+For both claims, the fix is the same: **measure the property the claim is actually about, directly and label-free where possible, with a numeric pass/fail threshold stated up front** — rather than treating "a scalar metric moved" as proof of a mechanism. For claim 1 that means separating numerical error from predictive error and testing the regularization hypothesis explicitly, since the claim may well turn out to be true once correctly framed. For claim 2 it means testing the equivariance equation directly rather than inferring it from loss, since as stated the claim is a non-sequitur regardless of what the loss number is.

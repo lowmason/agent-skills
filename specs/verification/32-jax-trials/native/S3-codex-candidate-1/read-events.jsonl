@@ -1,0 +1,2 @@
+{"operation": "start", "source": "/private/tmp/jax-skill-trials-pAYZ0t/native/S3-codex-candidate-1/prompt.txt", "sha256": "a670f40a16fab537c43356cf003f21c80d9b699396f5a6fea6d3da50624293d5", "bytes": 10454, "time_utc": "2026-10-04T01:38:35.201628+00:00"}
+{"operation": "readref", "source": "/private/tmp/jax-skill-trials-pAYZ0t/guidance-candidate-optimize-jax/references/profiling.md", "sha256": "e18a541db2b1db44c016ebc0ac0d330f0e475f52e094a36d4d013ec3bc3cdc9d", "bytes": 14056, "time_utc": "2026-10-04T01:38:56.663867+00:00"}

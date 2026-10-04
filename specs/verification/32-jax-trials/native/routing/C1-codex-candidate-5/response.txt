@@ -1,0 +1,10 @@
+Primary skill: deep-learning
+Supporting skills: none.
+Task: Train an NNX sequence model in JAX using synthetic data.
+Rationale: deep-learning explicitly owns neural-model design and training correctness in JAX and Flax NNX, including sequence models.
+Its body covers the synthetic experiment contract, shapes and masks, NNX-aware differentiation, PRNG/state transitions, bounded learning checks, held-out metrics, and next-update recovery parity.
+The task requests training, so evaluate-deep-learning is unnecessary without a benchmark, ablation, checkpoint comparison, model-selection decision, or research claim.
+optimize-jax is unnecessary without a reproduced tracing, compilation, memory, placement, or performance problem.
+No permanent test suite, hyperparameter search, input QA handoff, or probabilistic formulation was requested, so those conditional supporting skills are not selected.
+Selection only: no model, data, training, tests, checkpoint, or implementation workflow was executed.
+Full selected SKILL.md read through the recorded helper; referenced framework/domain/training files remain outside the authorized fixture.
