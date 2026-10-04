@@ -139,6 +139,15 @@
   latter's plan is still `32-synthesize-mode-scenario-verification.md` on the
   unmerged `worktree-deferred-triage-2026-10-03`. This branch adds the Claude
   Code guide conformance register, lint and audit; it touches neither aged item.
+- 2026-10-04 — finished `worktree-deferred-triage-2026-10-03` (plans 33 and 34)
+  with 2 items aged >45d, carried on the partner's 2026-09-28 reason, which they
+  chose again for this branch, verbatim: "Unrelated to this branch: the DL/NLP
+  slots wait on a real DL/NLP target, and the synthesize-mode checks wait on
+  their own plan." The items are the same two `18-methodology-pipeline-skills`
+  items (70d: the DL/NLP template extension, synthesize-mode scenario
+  verification). This branch brings the latter's plan to main, renumbered at the
+  merge from 32 to `36-synthesize-mode-scenario-verification.md` because main
+  already held a plan 32; it closes neither aged item.
 
 ## 11-delegation-frontmatter-rollout — 2026-07-19
 - [x] Haiku-pinned `Explore` override agent (fork-isolation upgrade; plan "Out of
@@ -861,7 +870,7 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       `specs/completed/`. `git -C ../alt-nfp status --short -- specs/` is clean.
 
 ## 20-bayesian-workflow-book-integration — 2026-09-03
-- [ ] Split the durable Δ-ECDF reading rule from the arviz-plots-1.3.1-specific notes
+- [x] Split the durable Δ-ECDF reading rule from the arviz-plots-1.3.1-specific notes
       (final-review Minor, triaged defer): the "What that call actually draws" paragraph in
       `skills/bayesian-workflow/references/model-criticism.md` (SBC section, ~line 189) is one
       ~10-sentence block of version-pinned detail (the `rcParams["stats.envelope_prob"]` fallback,
@@ -881,6 +890,8 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       the *_inside_bands values"). Settle both sites together with the model-criticism.md
       paragraph once upstream settles: either correct the docstrings to name the split, or
       move the JSON verdict to the method the plots use.
+      → done in plan 34 (the calibration_check.py half); the model-criticism.md half carries
+      forward as the SBC-paragraph item under § 34-calibration-check-verdicts
 - [x] `sbc_rank` sketch breaks on scalar parameters (final-review Minor; pre-existing and
       re-shipped verbatim by plan 20's own replacement text): in
       `skills/bayesian-workflow/references/model-criticism.md`, `draws[..., idx]` and
@@ -1370,7 +1381,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       +2 tests in the llm-wiki suite.
 
 ## 29-snippet-execution-gate — 2026-09-08
-- [ ] Per-block fixtures for the 34 blocks `--run` cannot reach. Tier 3 executes 27 of
+- [x] Per-block fixtures for the 34 blocks `--run` cannot reach. Tier 3 executes 27 of
       `skills/bayesian-workflow/`'s 78 python blocks; of the 51 advisories, 24 are
       name-incomplete and 10 name variables outside `FIXTURE_VARS` in
       `build/snippet_preamble.py` — those 34 are reachable with per-block context. The
@@ -1382,6 +1393,17 @@ declined as YAGNI (zero instances in a one-page wiki).
       Size: plan. Done when: either the executed count rises with `FIXTURE_VARS` and the
       preamble widened together, or a per-block fixture mechanism exists and the advisory
       count for "unbound names" falls.
+      → done in plan 33 (2026-10-03), meeting both halves of the Done-when:
+      - `FIXTURE_VARS` and the preamble widened together (`diverging`, `posterior_samples`),
+        admitting 2 blocks.
+      - A per-block fixture mechanism now exists: `fixture=<name>` in a fence info string
+        selects from `NAMED_FIXTURES` in `build/snippet_preamble.py`. Its one `comparison`
+        fixture admits 5 more blocks.
+      - Tier 3 now executes 34 of the 78 blocks, 3 of them def-only. "Unbound names" fell from
+        24 to 18, and "needs fixture variables" from 10 to 9.
+      - Of the 27 still blocked, most need per-document named fixtures (the hierarchical
+        `mu`/`tau`/`theta`, `alpha`/`delta` and `group` examples). The `param1`/`param2`
+        placeholder blocks stay advisory by design.
 - [x] Repo-wide Tier 1 (parse-only) across all skills, not just `bayesian-workflow`.
       → done 2026-09-08 (direct, not via a plan — the /deferred triage above had already
       scoped it to two known blocks and named the open question, leaving nothing a plan
@@ -1435,7 +1457,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       or a softer "recommends" tier.
 
 ## deferred-triage (no plan; /deferred pass, branch deferred-triage-2026-09-28) — 2026-09-28
-- [ ] Calibration diagnosis labels: precedence misreads a pure location shift on a
+- [x] Calibration diagnosis labels: precedence misreads a pure location shift on a
       minority of seeds, and a PIT-only shape failure is given a direction that is sign
       noise. `assess_calibration` in `skills/bayesian-workflow/scripts/calibration_check.py`
       lets a failed coverage band win: when both bands fail it reports over- or
@@ -1470,9 +1492,10 @@ declined as YAGNI (zero instances in a one-page wiki).
       decided, a shift fixture on a seed where both bands fail and the three-segment
       fixture are each diagnosed according to them, and `check_diagnostics.py` routes
       any new label.
+      → done in plan 34
 
 ## readonly-guard-leading-token-bypasses (no plan; branch claude/objective-nash-accd9c) — 2026-09-28
-- [ ] The guard's prefix utilities have value-taking options it does not model (review
+- [x] The guard's prefix utilities have value-taking options it does not model (review
       R4, Minor). `PREFIX_UTILITIES` in `hooks/readonly-agent-guard.py` lists only the
       short options that take a value, so any other option's value lands where the
       command word should be, and the command is never classified: `env --chdir /tmp rm
@@ -1482,6 +1505,23 @@ declined as YAGNI (zero instances in a one-page wiki).
       the owner when the review was handed back: out of scope for the regression fix.
       Size: quick-fix. Done when: those three are denied, while `env --version` and the
       `--opt=value` spellings still read as one word.
+      → done 2026-10-03 (/deferred quick fix): prefix-utility options are now read as
+      getopt reads them (d67f856). Long options resolve by exact name or unambiguous
+      prefix from a table checked against the GNU coreutils and GNU time sources, `=`
+      attaches a value, and a short-option cluster's first value-taker takes the rest of
+      the word or the next one. The sources added two value-takers the item did not
+      list: GNU env's `-a` and `/usr/bin/time`'s `-f`. All three examples are denied,
+      `env --version` and the `--opt=value` spellings stay one word, and the guard suite
+      is +18 (256 → 274 on both the 3.13 and 3.9-floor runs). Two Codex rounds each found
+      an env `-S`/`--split-string` spelling that a getopt reading lets past (d67f856
+      skipped its value; ee3c080's read-on missed a value that splits to nothing). The
+      owner chose to fail closed over a third round of modelling env's string syntax:
+      any env split-string is denied in every spelling (9acda9b). That also closes main's
+      quoted and glued `-S` gaps, and `env -S` moves to the README's accepted false
+      positives. Codex reviewed 9acda9b clean. The getopt reading also denies the two
+      clustered-option examples recorded in the mixed-reading item below, whose text is
+      left as recorded. The guard goes live in every repo once this merges into the main
+      checkout.
 - [ ] Allowlisted git verbs can run a program through configuration or the environment
       (review section C, out of range). `git -c core.fsmonitor=<cmd> status`, `git -c
       diff.external=<cmd> diff` and `GIT_EXTERNAL_DIFF=<cmd> git diff` run `<cmd>` from
@@ -1539,6 +1579,192 @@ declined as YAGNI (zero instances in a one-page wiki).
       completion gate (the owner's call) so /deferred keeps seeing it after the spec retired.
       Size: quick-fix. Revisit if: the session default moves off xhigh, or a skill turn is
       seen running at a lower effort than its session because of a pin.
+
+## 34-calibration-check-verdicts — 2026-10-03
+- [ ] Shrink the SBC paragraph's version-pinned detail once upstream settles: the "What that
+      call actually draws" paragraph in `skills/bayesian-workflow/references/model-criticism.md`
+      keeps its version-pinned detail until the pot_c/envelope situation settles upstream.
+      When it does, keep the one durable instruction (read the p-value and the highlighted
+      points, not a picture of a band) and shrink the version notes to a clause. Evidence on
+      arviz-plots 1.3.2 (2026-10-03): the envelope branch of `plot_ecdf_pit` still raises
+      `TypeError: 'DataArray' object cannot be interpreted as an integer` (measured on PPC and
+      LOO trees, not on the SBC call itself), and `pot_c` false-alarms on grid-valued PPC PITs
+      after the coverage fold. Carried from the 20-bayesian-workflow-book-integration item that
+      plan 34 half-closed.
+      Size: quick-fix. Revisit if: an arviz-plots release fixes or removes `method="envelope"`.
+- [ ] Skewed-predictive residual: a skewed predictive with the right mean and variance is not
+      labelled `shape mismatch`. This is the first known limit in `assess_pit`'s docstring
+      (`skills/bayesian-workflow/scripts/calibration_check.py`). Measured by plan 34's
+      acceptance sweep (PPC, seeds 0-99, a standardized Gamma(2) predictive for N(0, 1) data,
+      `CALIBRATION_SWEEP=1` in `scripts/test_calibration_check.py`):
+      `over-confident (predictions too certain)` 84, `biased (predictions too low) and
+      over-confident (predictions too certain)` 12, `under-confident (predictions too
+      uncertain)` 2, `biased (predictions too low) and under-confident (predictions too
+      uncertain)` 2; `shape mismatch` 0. No rule scored in the 2026-10-03 design pass labelled
+      it `shape mismatch`.
+      Size: design. Revisit if: a real model's shape failure is reported as a shift or a
+      spread error.
+- [ ] Below arviz-stats 1.3.1, a super-uniform PIT gets an error instead of a verdict. On
+      arviz-stats 1.1.0–1.3.0, `pot_c` raises `ValueError: Cannot compute truncated Cauchy
+      combination test. No p-values below 0.5 found.` on super-uniform PITs (exact grids,
+      near-perfect fits, and typical n = 2–3).
+      `skills/bayesian-workflow/scripts/calibration_check.py` then exits with that JSON error
+      instead of a verdict, and `--save-plots` never runs. arviz-stats 1.3.1 and later return
+      p = 0.5 (Tesso & Vehtari 2026, Eq. 24). Plan 34's floor run (arviz-stats, arviz-plots and
+      arviz-base 1.1.0) confirmed it: the 10 tests that feed super-uniform PITs fail with
+      exactly this error, and every other test passes. The floor stayed at arviz-stats ≥ 1.1 /
+      arviz-plots ≥ 1.1 at the owner's call (plan 34, Q1).
+      Size: quick-fix: raise the floor in the module docstring and the import error. Revisit
+      if: a run on an older stack reports that error, or every stack the skill runs on reaches
+      arviz-stats ≥ 1.3.1.
+- [ ] The saved calibration figures crop their x-label. `save_pit_plot` in
+      `skills/bayesian-workflow/scripts/calibration_check.py` calls `pc.savefig(output_path)`,
+      and arviz-plots' default layout puts the `PIT` / `ETI %` label below the figure's bottom
+      edge, exactly as on `plot_ppc_pit` figures (plan 34, F7; parity kept at the owner's call,
+      Q3). `pc.savefig(output_path, bbox_inches="tight")` fixes it on arviz-plots 1.1.0 and
+      1.3.2 (checked 2026-10-03).
+      Size: quick-fix. Revisit if: arviz-plots changes its default figure layout, or the owner
+      wants the saved figures to depart from `plot_ppc_pit` parity.
+- [ ] `calibration_check.py` never guards against non-finite inputs (plan 34 final-review
+      Minor, pre-existing; deferred at the completion gate, the owner's call). In
+      `skills/bayesian-workflow/scripts/calibration_check.py`, a NaN observed `y` makes both
+      `predicted < observed` and `predicted == observed` false in `pit_values`, so that
+      observation silently gets u ≈ U(0, 1/(S+1)), an extreme-tail miss. The reviewer's probe
+      (the calibrated test fixture with 10 of 200 `y` set to NaN) read `over-confident
+      (predictions too certain)` (mean_pit 0.4816, location_t −0.86) where the clean fixture
+      reads well-calibrated; the pre-plan-34 code (d9bea91) gives the same verdict on the same
+      input, so it is not a regression. A NaN in the PIT array, probed directly through
+      `assess_pit`, makes `pot_c` raise an opaque arviz-stats broadcast `ValueError`, which
+      `main()` passes through as its JSON error. NumPyro models with masked or missing
+      observations can carry NaN into `observed_data`. Fix: in `main()`, check that the
+      observed values (and the PIT, on the LOO path) are finite, and exit with a named JSON
+      error, test first.
+      Size: quick-fix. Revisit if: a masked or missing-observation model reports a calibration
+      verdict, or a run exits with the broadcast error.
+- [ ] The fair-rated spread step is direction-blind (plan 34 final-review recommendation,
+      pre-existing; filed after completion at the owner's request). `_spread_step` in
+      `skills/bayesian-workflow/scripts/check_diagnostics.py` gives every fair-rated spread
+      finding (not well calibrated, |`mean_coverage_deviation`| ≤ `COVERAGE_DEVIATION_FAIR` =
+      0.05) one step: "consider tightening priors, switching to a heavier-tailed likelihood, or
+      running a sensitivity check". Each remedy worsens one direction: tightening priors
+      narrows an over-confident predictive further, and a heavier-tailed likelihood widens an
+      under-confident one. Only poor-rated findings get the direction-specific steps. The text
+      predates plan 34 (present at d9bea91), and plan 34's spec kept it on purpose (its routing
+      table: "today's `fair` step when it is `fair`"). Since plan 34 every finding names its
+      direction, so the fair step can split: a milder form of the over-confident (likelihood)
+      advice and of the under-confident (prior) advice. `test_a_fair_spread_finding_gets_the_fair_step`
+      in `scripts/test_check_diagnostics.py` pins the shared "fair but not excellent" text and
+      moves with it. The contract test in `scripts/test_calibration_check.py` is unaffected.
+      Size: quick-fix. Done when: a fair-rated over-confident and a fair-rated under-confident
+      finding each get a step whose remedy moves the predictive in the right direction, with
+      both tests updated.
+- [ ] `--loo-pit` figures don't match the report template's filenames (plan 34 final-review
+      recommendation, pre-existing; filed after completion at the owner's request). With
+      `--loo-pit --save-plots`, `skills/bayesian-workflow/scripts/calibration_check.py` (the
+      `prefix = "loo_pit"` line in `main()`, present at d9bea91) writes `loo_pit_ecdf.png` and
+      `loo_pit_coverage.png`. The report layout and template in
+      `skills/bayesian-workflow/references/reporting.md` (the file-tree comments at ~lines
+      36–37 and the image links at ~164 and ~168) and the step-2 comment in `SKILL.md`'s
+      pipeline block (~line 312) name only `pit_ecdf.png` / `pit_coverage.png`. The documented
+      command has no `--loo-pit`, so the docs are accurate as written, but a report built after
+      a LOO-PIT run links images that don't exist. Meanwhile `SKILL.md` (~line 77) asks for the
+      LOO-PIT check separately from PPC-PIT. Fix: name the `loo_pit_*` files in the
+      reporting.md tree and template (and in SKILL.md's comment, if the pipeline gains a LOO-PIT
+      step), or have the template link whichever set exists. The tree sits in a bare fence and
+      SKILL.md's comment in a bash fence, so no python fence moves (plan 33's snippet counts are
+      safe).
+      Size: quick-fix. Done when: a report written after a `--loo-pit --save-plots` run links
+      figures that exist.
+
+## 33-snippet-per-block-fixtures — 2026-10-03
+- [ ] The `fixture=` info-string grammar is looser than the exemption-marker grammar. The code
+      is `build/check_snippets.py`: `FIXTURE_RE`, `fixture_name`, `fixture_errors` and
+      `_marker`. There are three edge cases. No shipped block hits any of them today.
+      (a) `fixture=x norun <reason>` silently drops the `norun`. `_marker` reads only the
+      first token of the info string, so the block executes or becomes an advisory, and its
+      `exempt_report` audit line is lost.
+      (b) A `norun` reason that contains `fixture=name` is parsed as a fixture selection, so an
+      unknown name there fails the gate (loudly, but wrongly).
+      (c) Key typos (`fixtures=x`, a bare `fixture=`, `Fixture=x`) do not match `FIXTURE_RE`.
+      The block stays plain and surfaces only as an advisory under `--run`. Plan 33's D2 made
+      the docstrings say so.
+      Raised as a Minor in plan 33's Task 2 review; deferred at the completion gate. Fix:
+      tokenise the info string once. A leading marker makes the rest free-text reason, and a
+      non-leading marker or a malformed `fixture` token is a failure.
+      Size: quick-fix. Done when: each of (a)-(c) either fails the gate or is pinned by a test as
+      deliberate.
+- [ ] The stack-gated test `test_a_named_fixture_runs_between_the_preamble_and_the_block`
+      (`build/test_check_snippets.py`) can pass vacuously. `run_errors` returns `[]` for a block
+      it skips as not runnable, so the test's final `== []` holds even if nothing ran. Two
+      regressions would have to coincide, because the sibling non-stack test pins `runnable()`
+      for the same tiny-fixture construction. The test text is plan-verbatim (plan 33 Task 2
+      Step 1); deferred at the completion gate. Fix: keep the block that `_annotated_block`
+      returns, and `assert check_snippets.runnable(block)` before the final assertion.
+      Size: quick-fix. Done when: the test asserts the block is runnable before it asserts no
+      errors.
+- [ ] `fixture_errors` (`build/check_snippets.py`) has no positive control. No pytest asserts
+      `fixture_errors(path) == []` for a block that selects a KNOWN fixture. A regression that
+      flagged every `fixture=` selection would therefore pass
+      `test_an_unknown_fixture_fails_the_gate`, and only Tier 1, outside pytest, would catch it.
+      Raised in plan 33's Task 2 review; deferred at the completion gate. Fix: add a repo-wide
+      `test_all_skills_select_known_fixtures`, modelled on `test_all_skills_parse_clean`, that
+      asserts `fixture_errors` is empty for every skills/**/*.md. That test also guards the five
+      shipped `fixture=comparison` blocks.
+      Size: quick-fix. Done when: a pytest asserts `fixture_errors` finds nothing in the shipped
+      skills.
+- [ ] Named fixtures have no mechanical honesty pin.
+      `test_every_fixture_var_is_carried_by_the_fixture_idata` (`build/test_check_snippets.py`)
+      checks `FIXTURE_VARS` only against the preamble's `idata`. There are two gaps, and
+      neither is exposed today.
+      (a) A named fixture's `Fixture.variables` (`NAMED_FIXTURES` in
+      `build/snippet_preamble.py`) is unchecked. `comparison` registers `frozenset()`.
+      (b) The `comparison` fixture builds `idata_1..3` with bare
+      `az.from_numpyro(..., log_likelihood=True)`, so they have no prior, posterior_predictive
+      or log_prior group. The sample_stats of `idata_2` and `idata_3` carry only `diverging`;
+      plan 33's final review verified this on the pinned stack. A future `fixture=comparison`
+      block reading `idata_2.prior["beta"]` would therefore be admitted, because `beta` is in
+      `FIXTURE_VARS`, and would then raise: a loud failure, but a false doc defect.
+      Fix: parametrise the honesty test over `NAMED_FIXTURES`. Run PREAMBLE plus the fixture,
+      then check each declared variable against the fixture's idata objects. Also decide
+      whether `_required_vars` should be judged per idata object.
+      Size: quick-fix. Revisit if: a named fixture declares a non-empty `variables`, or a
+      `fixture=comparison` block reads a group other than posterior or log_likelihood.
+- [ ] Root `CLAUDE.md`'s snippet-gate notes describe the two exemption markers (`norun`,
+      `noparse`) but never mention the `fixture=<name>` fence token that plan 33 added. Nothing
+      there is false, because `fixture=` opts nothing out. A maintainer who reads only
+      CLAUDE.md will not find the mechanism, though; it is documented only in the docstrings of
+      `build/check_snippets.py` and `build/snippet_preamble.py`. Raised in plan 33's Task 2
+      review; deferred at the completion gate. Fix: add one sentence beside the marker notes.
+      For example: "A third token, `fixture=<name>`, opts a block INTO a per-block fixture from
+      `build/snippet_preamble.py`'s `NAMED_FIXTURES`; an unknown name fails at every tier."
+      Size: quick-fix. Done when: the CLAUDE.md snippet-gate notes name the `fixture=` token and
+      where fixtures live.
+- [ ] A named fixture's helper names count as bound for every block that selects the fixture.
+      `_fixture_names` (`build/check_snippets.py`) uses `_bound_by`, which walks function
+      bodies, parameters and comprehension targets. So for a `fixture=comparison` block,
+      `COMPARISON_FIXTURE` (`build/snippet_preamble.py`) also "binds" two kinds of name:
+      - `fit`, `model_wide` and `model_robust`, which are truly module-level. A doc block that
+        calls an undefined `fit(...)` would be admitted and could run GREEN against the
+        fixture's helper. That is the "go green wrongly" path the preamble docstring warns of.
+      - `run`, `variant` and `key`, which are locals. Misusing them raises a loud NameError.
+      No current block uses any of these names. The same over-approximation predates plan 33
+      in `_preamble_names` (PREAMBLE's `samples`, `post`, `name`, `per_draw`, …). Raised in
+      plan 33's Task 3 and final reviews; deferred at the completion gate. Fix:
+      - make `_fixture_names`, and ideally `_preamble_names`, count module-level bindings only;
+      - underscore-prefix or `del` the fixture's helpers after use, so a doc block that calls
+        them raises.
+      Size: quick-fix. Done when: a block that uses a fixture-local or helper name it does not
+      define is reported as unbound, pinned by a test.
+- [ ] No pytest executes `COMPARISON_FIXTURE` (`build/snippet_preamble.py`). Plan 33's two
+      comparison tests are static: they check binding and fence selection. A stack change that
+      breaks the fixture's two extra fits would leave the pytest suite green. Only the roughly
+      3-minute Tier 3 `--run` gate executes the fixture, and the preamble docstring already
+      requires a re-measure whenever that file changes. Raised by the Task 3 implementer and
+      reviewer; deferred at the completion gate. Fix (optional): a `@requires_stack` test that
+      runs one annotated comparison block through `check_snippets.run_errors`, at the cost of
+      two extra NUTS fits in the stack-gated suite.
+      Size: quick-fix. Revisit if: a `PINNED` refresh or a Tier 3 run breaks the comparison
+      fixture without a pytest failure.
 
 ## 35-claude-code-guide-conformance — 2026-10-04
 - [ ] Bring the root CLAUDE.md under 200 lines (plan 35 audit rows L-01, C-02 to C-05). It

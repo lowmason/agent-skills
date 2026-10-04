@@ -1,8 +1,6 @@
 # CLAUDE.md
 
-This file is the canonical maintainer guide for Claude Code, Codex, and Gemini
-CLI when working in this repository. `AGENTS.md` points Codex here and
-`GEMINI.md` imports it.
+This file is the canonical maintainer guide for Claude Code, Codex, and Gemini CLI when working in this repository. `AGENTS.md` points Codex here and `GEMINI.md` imports it.
 
 ## What this repo is
 
@@ -12,9 +10,7 @@ A personal collection of coding-agent configuration, centered on the portable [A
 
 ## Runtime adapters
 
-`agents/*.md` and `commands/*.md` are canonical. Never hand-edit files under
-`runtimes/`. After changing a canonical agent or command, regenerate and check
-the adapters:
+`agents/*.md` and `commands/*.md` are canonical. Never hand-edit files under `runtimes/`. After changing a canonical agent or command, regenerate and check the adapters:
 
 ```bash
 uv run --python 3.13 --with pyyaml python build/sync_runtime_assets.py
@@ -69,13 +65,13 @@ There is no root test runner or repo-wide `pyproject`, and the scientific deps (
 cd build && uv run --python 3.13 --with pytest --with pyyaml \
   python -m pytest -q test_runtime_support.py
 
-# Full build-directory tests — 263 tests
-# (85 citation/lint/snippet + 62 runtime-support + 37 CPU-example process-contract + 79 conformance)
-# (all 263 collect either way. 7 of test_check_snippets.py's need the ArviZ/NumPyro chain and
-# skip without it, so the command below reports 256 passed, 7 skipped; append
+# Full build-directory tests — 271 tests
+# (93 citation/lint/snippet + 62 runtime-support + 37 CPU-example process-contract + 79 conformance)
+# (all 271 collect either way. 9 of test_check_snippets.py's need the ArviZ/NumPyro chain and
+# skip without it, so the command below reports 262 passed, 9 skipped; append
 # --with "arviz>=1.0" --with arviz-base --with arviz-stats --with arviz-plots --with numpyro
-# --with jax --with matplotlib to run all 263. Separately, 5 in test_verify_citations.py need the
-# build/.scratch/ ground truth — lacking both: 251 passed, 4 failed, 8 skipped. .scratch/ is
+# --with jax --with matplotlib to run all 271. Separately, 5 in test_verify_citations.py need the
+# build/.scratch/ ground truth — lacking both: 257 passed, 4 failed, 10 skipped. .scratch/ is
 # gitignored, so a fresh clone or worktree lacks it; regenerate with build/extract_structure.py,
 # see build/CLAUDE.md)
 cd build && uv run --python 3.13 --with pytest --with numpy --with polars --with pyyaml python -m pytest -q
@@ -95,11 +91,13 @@ cd skills/tune-hyperparameters/scripts && uv run --python 3.13 --with pytest --w
 # numpyro + NetCDF-writer chain, since the tests round-trip InferenceData to .nc)
 cd skills/track-model-experiments/scripts && uv run --python 3.13 --with pytest --with numpy --with polars --with arviz --with numpyro --with h5netcdf --with h5py python -m pytest -q
 
-# bayesian-workflow script tests (MCSE precision block + divergence-gate and calibration next
-# steps + calibration verdicts on both PIT paths, --ci-prob plumbing and the --loo-pit group
-# checks) — 59 tests
-# (4 arviz RuntimeWarnings — "invalid value encountered in scalar divide" on the constant-parameter
-# fixture — are expected and not silenced)
+# bayesian-workflow script tests (MCSE precision block + divergence-gate and per-finding calibration
+# next steps + calibration verdicts from one owned PIT on both paths: the pot_c rules, the figures
+# drawing the JSON's own values, --ci-prob plumbing and the --loo-pit group checks) — 117 tests
+# (this command reports 114 passed, 3 skipped: add --with matplotlib to run the figure-rendering
+# test, and set CALIBRATION_SWEEP=1 to run the 2-path pre-registered acceptance sweep — seeds 0-99,
+# about a minute and a half; -s prints its counts. 4 arviz RuntimeWarnings — "invalid value
+# encountered in scalar divide" on the constant-parameter fixture — are expected and not silenced)
 cd skills/bayesian-workflow/scripts && uv run --python 3.13 --with pytest --with arviz --with arviz-stats --with numpy --with xarray python -m pytest -q
 
 # llm-wiki bundled wiki-script tests (bootstrap + lint + session + specs distillers) —
@@ -137,13 +135,13 @@ cd skills/design-architecture/scripts && uv run --python 3.13 --with pytest pyth
 # (stdlib only; drives the three bash scripts as subprocesses)
 cd skills/subagent-driven-development/scripts && uv run --python 3.13 --with pytest python -m pytest -q
 
-# read-only agent guard tests (Gate A: classifier units + payload contract) — 256 tests
+# read-only agent guard tests (Gate A: classifier units + payload contract) — 274 tests
 # (the guard is stdlib only and must stay 3.9-compatible, so run BOTH commands. Each of the
 # 14 contract tests runs twice through the hook's shebang, on the test's PATH and on
 # launchd's /usr/bin-first PATH, since under uv run the shebang resolves to uv's pinned
 # python, never reliably 3.9. The second command runs the whole suite, unit tests
 # included, under the 3.9 floor. Where /usr/bin/python3 is missing or not 3.9, the first
-# reports 242 passed, 14 skipped (-rs shows why) and the second does not test the floor.
+# reports 260 passed, 14 skipped (-rs shows why) and the second does not test the floor.
 # Gate B is the live probe: ./hooks/probe-readonly-guard.sh, which spawns claude -p)
 cd hooks && uv run --python 3.13 --with pytest python -m pytest -q \
   && uv run --python /usr/bin/python3 --with pytest python -m pytest -q
@@ -177,9 +175,10 @@ uv run --python 3.13 python build/check_snippets.py skills/
 uv run --python 3.13 --with "arviz>=1.0" --with arviz-base --with arviz-stats \
   --with arviz-plots --with numpyro --with jax \
   python build/check_snippets.py --api skills/bayesian-workflow/
-# Tier 3 (+ execute the harnessed subset against PINNED deps; minutes — 27 of 78 blocks,
-# each a separate subprocess running the full preamble).
-# The other 51 are advisory on stderr with a per-block reason, never silent. If a block
+# Tier 3 (+ execute the harnessed subset against PINNED deps; minutes — 34 of 78 blocks,
+# each a separate subprocess running the full preamble; 3 of those only define functions
+# they never call).
+# The other 44 are advisory on stderr with a per-block reason, never silent. If a block
 # raises, fix the snippet — `norun` is for blocks that cannot run by design, never for
 # blocks that fail. Pins live in build/snippet_preamble.py (PINNED); refresh deliberately:
 uv run --python 3.13 --with 'arviz==1.3.0' --with arviz-base \

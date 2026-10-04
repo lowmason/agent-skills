@@ -29,7 +29,7 @@ Fit *several* models to **understand** each one, not just to crown a winner; if 
 LOO needs a pointwise `log_likelihood` group in each model's InferenceData. With NumPyro, the
 simplest path is to request it at conversion time:
 
-```python
+```python fixture=comparison
 idata_1 = az.from_numpyro(mcmc_1, log_likelihood=True, coords=coords, dims=dims).map_over_datasets(lambda ds: ds.as_numpy())
 idata_2 = az.from_numpyro(mcmc_2, log_likelihood=True, coords=coords, dims=dims).map_over_datasets(lambda ds: ds.as_numpy())
 ```
@@ -47,7 +47,7 @@ ll = log_likelihood(model, posterior_samples, x, y=y)         # {"y_obs": (sampl
 
 The primary comparison tool. Uses PSIS-LOO via ArviZ.
 
-```python
+```python fixture=comparison
 # Fit multiple models, store InferenceData for each (each with a log_likelihood group)
 models = {"m1": idata_1, "m2": idata_2, "m3": idata_3}
 
@@ -86,7 +86,7 @@ azp.plot_compare(comparison)
 
 `az.compare` uses **stacking** by default (`method="stacking"`). Stacking minimizes expected log predictive density loss and combines predictions:
 
-```python
+```python fixture=comparison
 comparison = az.compare(models, method="stacking")
 # The 'weight' column gives optimal combination weights
 ```
@@ -99,7 +99,7 @@ To see *which observations* drive a model difference (the Gabry et al. 2019 Fig.
 the per-observation ELPD from two `pointwise=True` LOO objects and plot it against an informative
 predictor or index:
 
-```python
+```python fixture=comparison
 import matplotlib.pyplot as plt
 
 loo_a = az.loo(idata_1, pointwise=True)

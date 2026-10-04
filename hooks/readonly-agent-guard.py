@@ -129,15 +129,49 @@ LEADING_KEYWORDS = frozenset({
 })
 
 # Utilities that run a command after their own options, each mapped to its
-# options that take a value. `command -v` and `-V` only describe the command.
+# short options that take a value. `command -v` and `-V` only describe the
+# command. env's `-a` is GNU's, and its `-S` fails closed (ENV_SPLIT_STRING)
+# before its value is read. `time` lists the options of the BSD and GNU
+# /usr/bin/time; zsh's own `time` takes none, and there a word like `-o` is a
+# command zsh cannot find, so reading it as an option hides nothing.
 PREFIX_UTILITIES = {
     'command': frozenset(),
-    'env': frozenset({'-C', '-P', '-S', '-u'}),
+    'env': frozenset({'-C', '-P', '-S', '-a', '-u'}),
     'exec': frozenset({'-a'}),
     'nice': frozenset({'-n'}),
     'nohup': frozenset(),
-    'time': frozenset(),
+    'time': frozenset({'-f', '-o'}),
 }
+
+# Their GNU long options, each mapped to whether its value can be the next word.
+# getopt_long also takes any unambiguous prefix (`--ch` for `--chdir`), so every
+# long option is listed, not only those with a value. An optional value
+# (`--block-signal[=SIG]`) is only ever attached with `=`. An unknown or
+# ambiguous option makes the utility fail before it runs anything. Checked
+# against the GNU coreutils and GNU time sources on 2026-10-03.
+PREFIX_UTILITY_LONG_OPTIONS = {
+    'env': {
+        'argv0': True, 'block-signal': False, 'chdir': True, 'debug': False,
+        'default-signal': False, 'env0-from': True, 'help': False,
+        'ignore-environment': False, 'ignore-signal': False,
+        'list-signal-handling': False, 'null': False, 'quoting-style': True,
+        'split-string': True, 'unset': True, 'version': False,
+    },
+    'nice': {'adjustment': True, 'help': False, 'version': False},
+    'nohup': {'help': False, 'version': False},
+    'time': {
+        'append': False, 'format': True, 'help': False, 'output-file': True,
+        'portability': False, 'quiet': False, 'verbose': False, 'version': False,
+    },
+}
+
+# env's -S / --split-string re-splits its value into env's own arguments, in a
+# syntax of its own: quotes, `#` comments, `\c`, `${VAR}`. Whether that value
+# yields the command, part of it or nothing at all is env's reading, and
+# reading it either way here has let a command past, so the option fails closed.
+ENV_SPLIT_STRING = ('`env -S` re-splits a string into the command line in a syntax '
+                    'of its own, which this guard cannot read, so it fails closed. '
+                    'Run the command without `env -S`.')
 
 ASSIGNMENT = re.compile(r'[A-Za-z_][A-Za-z0-9_]*\+?=')
 
@@ -678,9 +712,52 @@ def _without_redirections(tokens):
     return words
 
 
+def _long_option(utility, option):
+    """The long option a `--option` word names, as getopt_long resolves it: its
+    exact name, else the one name it is a prefix of; None if unknown or
+    ambiguous."""
+    name = option[2:].partition('=')[0]
+    long_options = PREFIX_UTILITY_LONG_OPTIONS.get(utility, {})
+    if name in long_options:
+        return name
+    matches = [long_name for long_name in long_options if long_name.startswith(name)]
+    return matches[0] if len(matches) == 1 else None
+
+
+def _takes_next_word(utility, option):
+    """Whether an option word of a prefix utility takes the next word as its
+    value, as getopt reads it. A long option is found by _long_option, and `=`
+    attaches its value. In a cluster of short options, the first that takes a
+    value takes the rest of the word, or the next word when nothing is left."""
+    if option.startswith('--'):
+        if '=' in option:
+            return False
+        name = _long_option(utility, option)
+        return name is not None and PREFIX_UTILITY_LONG_OPTIONS[utility][name]
+    letters = option[1:]
+    for index, letter in enumerate(letters):
+        if f'-{letter}' in PREFIX_UTILITIES[utility]:
+            return index == len(letters) - 1
+    return False
+
+
+def _is_env_split_string(option):
+    """Whether an option word of env is its -S / --split-string, as getopt reads
+    it: in a cluster, an S that comes before any option taking the rest of the
+    word as its value."""
+    if option.startswith('--'):
+        return _long_option('env', option) == 'split-string'
+    for letter in option[1:]:
+        if letter == 'S':
+            return True
+        if f'-{letter}' in PREFIX_UTILITIES['env']:
+            return False  # the rest of the word is that option's value
+    return False
+
+
 def _skip_prefix_utility(words, i):
     """Return where the command run by the prefix utility at words[i] starts,
-    or len(words) if it runs none."""
+    len(words) if it runs none, or None where env's -S hides it."""
     name = _command_name(words[i])
     i += 1
     while i < len(words):
@@ -690,7 +767,9 @@ def _skip_prefix_utility(words, i):
         if word.startswith('-'):
             if name == 'command' and ('v' in word or 'V' in word):
                 return len(words)  # it only describes the command
-            i += 2 if word in PREFIX_UTILITIES[name] else 1
+            if name == 'env' and _is_env_split_string(word):
+                return None
+            i += 2 if _takes_next_word(name, word) else 1
         elif name == 'env' and ASSIGNMENT.match(word):
             i += 1
         else:
@@ -699,7 +778,8 @@ def _skip_prefix_utility(words, i):
 
 
 def _command_words(words):
-    """Drop the words before a command; [] if there is none.
+    """Drop the words before a command; [] if there is none, None if env's -S
+    hides it.
 
     Those are LEADING_KEYWORDS, assignments (`X=1 rm x`), and PREFIX_UTILITIES
     with their options, in any order and number: `time env GIT_PAGER=cat git
@@ -714,6 +794,8 @@ def _command_words(words):
             i += 2  # and its count
         elif _command_name(word) in PREFIX_UTILITIES:
             i = _skip_prefix_utility(words, i)
+            if i is None:
+                return None
         else:
             break
     return words[i:]
@@ -721,6 +803,8 @@ def _command_words(words):
 
 def _classify_subcommand(tokens):
     words = _command_words(_without_redirections(tokens))
+    if words is None:
+        return ENV_SPLIT_STRING
     if not words:
         return None
     name = _command_name(words[0])

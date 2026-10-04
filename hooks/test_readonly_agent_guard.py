@@ -314,6 +314,34 @@ PREFIX_BYPASSES = [
     pytest.param('time env GIT_PAGER=cat git stash', id='prefix-chain'),
 ]
 
+# The prefix utilities' options, read as getopt reads them, so no option's value
+# takes the command's place: a long option by any unambiguous prefix, and a
+# cluster of short options whose last letter takes a value.
+PREFIX_OPTION_BYPASSES = [
+    pytest.param('env --chdir /tmp rm x', id='long-option-value-in-next-word'),
+    pytest.param('env --ch /tmp rm x', id='long-option-by-unambiguous-prefix'),
+    pytest.param('nice --adjustment 5 rm x', id='nice-long-option'),
+    pytest.param('/usr/bin/time -o f rm x', id='time-binary-value-option'),
+    pytest.param('env -a foo rm x', id='gnu-env-argv0-value-option'),
+    pytest.param('env -iu HOME rm x', id='cluster-ending-in-a-value-taker'),
+    pytest.param('exec -la foo rm x', id='exec-cluster-ending-in-a-value-taker'),
+]
+
+# env re-splits its -S / --split-string value into its own arguments, in a
+# syntax of its own (quotes, comments, expansions), so every spelling of the
+# option fails closed rather than be read one way or another.
+ENV_SPLIT_STRING_SPELLINGS = [
+    pytest.param('env -S rm x', id='short'),
+    pytest.param('env -vS git stash', id='clustered'),
+    pytest.param('env --split-string rm x', id='long'),
+    pytest.param('env --split rm x', id='long-abbreviated'),
+    pytest.param("env -S '' rm x", id='empty-value'),
+    pytest.param("env -S ' ' git stash", id='blank-value'),
+    pytest.param("env -S 'rm x'", id='quoted-command-line'),
+    pytest.param('env -Srm x', id='value-glued-to-the-option'),
+    pytest.param('env --split-string=rm x', id='long-value-attached'),
+]
+
 
 @pytest.mark.parametrize('command', PAREN_AND_OPERATOR_BYPASSES)
 def test_parenthesis_and_operator_bypasses_are_denied(command):
@@ -336,6 +364,34 @@ def test_the_command_after_its_prefixes_is_the_one_classified():
     assert 'git stash' in guard.classify('time env GIT_PAGER=cat git stash')
     assert '`rm`' in guard.classify('/bin/rm x')
     assert 'sed -i' in guard.classify('nice -n 5 sed -i s/a/b/ f')
+
+
+@pytest.mark.parametrize('command', PREFIX_OPTION_BYPASSES)
+def test_no_prefix_option_value_takes_the_commands_place(command):
+    assert guard.classify(command) is not None
+
+
+@pytest.mark.parametrize('command', ENV_SPLIT_STRING_SPELLINGS)
+def test_env_split_string_fails_closed(command):
+    reason = guard.classify(command)
+    assert reason is not None and 'env -S' in reason, reason
+
+
+def test_split_string_is_only_env_s_where_getopt_reads_it():
+    # An S that is another option's value, or another command's -S, is not
+    # env's split-string.
+    for command in ('env -uS ls', 'git log -S needle', 'env -i ls'):
+        assert guard.classify(command) is None, command
+
+
+def test_an_option_without_a_value_in_the_next_word_is_one_word():
+    # A value attached with `=` or to a short option rides in its own word, an
+    # optional long value (`--block-signal[=SIG]`) is only ever attached, and a
+    # long option without a value takes none, so the next word is the command.
+    for command in (
+            'env --chdir=/tmp rm x', 'env -uHOME rm x',
+            'env --block-signal rm x', 'env --debug rm x'):
+        assert guard.classify(command) is not None, command
 
 
 def test_parentheses_nest_so_the_command_around_them_continues():
@@ -430,7 +486,7 @@ def test_syntax_around_a_read_only_command_stays_allowed():
             'for rm in a b; do echo $rm; done',  # a loop variable, not a command
             'ls *(.)', 'ls (#i)readme*',  # zsh glob qualifier and flag
             "git log --format='%(refname)'",
-            'time -p git log', 'exec 3>&1', 'env | grep PATH',
+            'time -p git log', 'exec 3>&1', 'env | grep PATH', 'env --version',
             'cat x 2>&1', 'echo a &> f', 'echo a >| f',
             'GIT_PAGER=cat git log', '/usr/bin/git status', '2>/dev/null git log',
             'cd $(git rev-parse --show-toplevel) && git status',

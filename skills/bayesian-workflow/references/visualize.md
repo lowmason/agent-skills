@@ -233,7 +233,7 @@ points (influential). Both are diagnosed pointwise from LOO.
 Diff the per-observation ELPD of two models and plot it (color by group, as the paper does for WHO
 clusters). Positive values favor the first model.
 
-```python
+```python fixture=comparison
 loo2 = az.loo(idata_m2, pointwise=True)
 loo3 = az.loo(idata_m3, pointwise=True)
 elpd_diff = loo3.elpd_i.values - loo2.elpd_i.values        # >0 => Model 3 better for that point
