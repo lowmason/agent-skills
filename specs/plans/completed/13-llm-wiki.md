@@ -1,5 +1,7 @@
 # llm-wiki M0 Tooling Implementation Plan
 
+**Status: COMPLETE (2026-07-22)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Build the buildable M0 core of the personal research wiki (Karpathy LLM-wiki pattern): retention protection, the `research-wiki` repo scaffold, its `SCHEMA.md`, the stdlib mechanical linter `lint_wiki.py`, and the `llm-wiki` skill — so that literature can be ingested afterward.

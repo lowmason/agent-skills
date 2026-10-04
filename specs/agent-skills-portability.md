@@ -5,7 +5,8 @@ The owner approved all five design sections in a brainstorming pass over
 `specs/completed/agent-skills-best-practices.md` (a September 2026 survey of
 Agent Skills portability across Claude Code, Codex, Gemini CLI, Cursor, Copilot,
 and others). This document is the handoff for implementation planning; nothing
-here has been implemented. The survey is this spec's input and retires with it.
+here has been implemented. The survey is this spec's input; it was retired
+ahead of the spec, to `specs/completed/` in `79ad04f` (2026-10-03).
 
 ## Purpose and scope
 

@@ -1,5 +1,7 @@
 # Writing Portable Agent Skills: Best Practices for Claude Code, Codex, Gemini CLI, Cursor, Copilot and Other Agents (as of September 2026)
 
+**Status: RETIRED (2026-10-03)** — the survey behind `specs/agent-skills-portability.md`; moved to `specs/completed/` in `79ad04f`, ahead of that spec.
+
 Use the agentskills.io core as the contract: `name` and `description` are required, and `license`, `compatibility`, `metadata` and `allowed-tools` are optional.\[1\] Keep one canonical skills tree, ideally at `.agents/skills/`, and link it into each tool. Add each vendor's extensions as extras that the other tools can safely ignore, never as something the skill depends on. The biggest trap in 2026 is still discovery paths and invocation flags rather than the file format. Claude Code still doesn't scan `.agents/skills`.\[2\] Codex ignores Claude's `disable-model-invocation` and reads its own `agents/openai.yaml` sidecar instead.\[3\]\[4\]
 
 ## TL;DR

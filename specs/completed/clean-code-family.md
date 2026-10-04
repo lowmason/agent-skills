@@ -1,6 +1,7 @@
 # clean-code-family — Design Spec (REVISED)
 
-**Status: PROPOSED (2026-07-22; revised 2026-07-24)** — approved in brainstorming; next step `writing-plans` (plan id: next integer across `specs/plans/` + `specs/plans/completed/`).
+**Status: COMPLETE (2026-07-24)** — implemented by plan 15 (`specs/plans/completed/15-clean-code-family.md`) and retired here in `98aa145`.
+**Original status:** PROPOSED (2026-07-22; revised 2026-07-24) — approved in brainstorming; next step `writing-plans`.
 
 > **Revision note (2026-07-24):** This revision augments and corrects the PROPOSED spec against (1) the primary source — Martin's Chapter 17 "Smells and Heuristics" catalog, verified rule-by-rule — and (2) a survey of comparable Claude Code skill implementations and the critical/complementary literature (Beck's *Tidy First?*, Ousterhout's *A Philosophy of Software Design*, Fowler's opportunistic refactoring, qntm's critique). All locked decisions (C, G1, A, B) are preserved. See the change log at the end.
 

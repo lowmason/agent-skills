@@ -15,8 +15,11 @@ brief and recommended a merge on this spec's base: only this spec delivered
 the brief's decided wiring, and the other's detection model, triage, audit
 and measurements fit into it. The owner then settled the points where the
 two sessions had decided differently (Decisions 10–14). This document
-supersedes both. Nothing here has been implemented; retiring the other
-branch is the owner's call.
+supersedes both. It merged to `main` at `fe072a1`. The other branch is
+retired: `024d430` survives as the tag `archive/cc-guide-upkeep`, pushed to
+origin. Of this spec, only R1.1's anchors exist so far, added to the guide by
+the conformance plan (plan 35, `18b4a71`; see R1.1); nothing else has been
+implemented.
 
 ## Purpose and scope
 
@@ -969,8 +972,8 @@ Five stages, in order; each is one plan.
 Each stage updates the documentation in R12.7 for what it adds.
 
 Constraints:
-- **Base.** This spec sits on `docs/cc-drift-spec`, branched from `main` at
-  `b0ee62e`. Integrating it is the owner's call.
+- **Base.** This spec was written on `docs/cc-drift-spec`, branched from
+  `main` at `b0ee62e`, and merged to `main` at `fe072a1`; that branch is gone.
 - **Guide location.** The guide is at `specs/guides/` from `79ad04f` on;
   history before that has it at `specs/claude-code-customization-guide.md`
   (R11.1, R12.3).
@@ -983,18 +986,22 @@ Constraints:
   branch merges second reconciles both in that merge. When a script gains a PEP
   723 header (its R3), the citation goes below the block.
   `check_frontmatter.py` is not touched.
-- **JAX branch.** Skills from `codex/jax-deep-learning-skills` that rest on
-  Claude Code facts get citations in whichever merge comes second.
+- **JAX branch.** `codex/jax-deep-learning-skills` has merged to `main`
+  (PR #20, `110bd99`), and so has `codex/recommend-causal-design`
+  (`c3ff265`). No merge coordination remains: their skills that rest on
+  Claude Code facts get citations in Stage 2's sweep like any other skill.
 - **Plan IDs.** Check `specs/plans/` on every branch (`git ls-tree`) before
-  allocating one; IDs 32 to 34 are taken on sibling branches.
+  allocating one; IDs are allocated per branch and have collided. On
+  2026-10-04 no sibling branch existed and the next free ID was 38.
 - **Test counts** are stated as +N deltas, never absolute totals.
 - **Never commit docs text.** Caches, reports, packets and probe streams live
   under `~/.cache/agent-skills/cc-guide/`, fixtures are hand-written, and quotes
   appear only in session reports.
 - **Nothing outward-facing.** Nothing commits, pushes or posts.
-- **The superseded spec.** `specs/claude-code-guide-upkeep.md` (`024d430`,
-  unpushed, on `worktree-cc-guide-upkeep-design`) is superseded by this one.
-  Retiring that branch and worktree is the owner's call.
+- **The superseded spec.** `specs/claude-code-guide-upkeep.md` (`024d430`) is
+  superseded by this one. Its branch, `worktree-cc-guide-upkeep-design`, and
+  its worktree are retired; the commit survives as the tag
+  `archive/cc-guide-upkeep`, pushed to origin.
 
 ## Validation and acceptance
 
@@ -1073,7 +1080,8 @@ Constraints:
   corrected.
 - `specs/agent-skills-portability.md` at `b0ee62e` supplies R1.1, R1.2, R1.4,
   R1.6, R1.8 and R3 as cited above.
-- `specs/claude-code-guide-upkeep.md` at `024d430` supplies the block model,
+- `specs/claude-code-guide-upkeep.md` at `024d430` (tag
+  `archive/cc-guide-upkeep`) supplies the block model,
   triage, the audit, the verifier contract, the due rules, the probe
   conventions, and the measurements marked as the guide-upkeep session's.
 - Line references are to the snapshot under

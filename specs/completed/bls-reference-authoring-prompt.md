@@ -1,5 +1,7 @@
 # Authoring prompt for `bls-data-context/references/<program>.md`
 
+**Status: RETIRED (2026-09-03)** — moved to `specs/completed/` in `d0cc615`; still usable as written for the next program reference.
+
 A reusable deep-research prompt for producing one new BLS program reference, matching the
 converged style of `references/bed.md` and `references/qcew.md`. Written for Claude Chat's
 Research mode or ChatGPT deep research.
