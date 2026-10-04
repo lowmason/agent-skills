@@ -1,0 +1,8 @@
+Primary skill: optimize-jax.
+Supporting skills: none.
+
+The task asks to improve generation speed while checking KV-cache correctness, which directly matches optimize-jax's generation, prefill/decode, profiling, and KV-cache scope.
+Its full body requires independent full-prefix causal-attention logits, exact greedy-token comparisons, cache masks/positions/cursor checks, padding and capacity boundaries, and stochastic replay before performance scaling.
+It also separates prefill from decode, uses synchronized request boundaries, and compares before/after latency distributions while keeping correctness checks outside performance timers.
+deep-learning and evaluate-deep-learning are unnecessary for this stated execution task; training quality, checkpoint comparison, and research claims are not requested. develop-testing-strategy is conditional on designing permanent tests, which is not requested here.
+This is a selection-only result: no implementation, reference/script loading, repository inspection, benchmarking, or correctness-result claim was performed.

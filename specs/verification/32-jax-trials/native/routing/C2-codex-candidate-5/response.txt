@@ -1,0 +1,8 @@
+Primary skill: evaluate-deep-learning.
+Supporting skills: none required by the stated task.
+The task directly matches comparing neural checkpoints with unequal compute budgets and variation across seeds.
+The full skill prescribes common-budget comparisons or budget-performance curves, explicit checkpoint-selection rules, and per-run results including failures.
+It distinguishes endpoint checkpoint quality from method superiority and requires seed variation to remain separate from predictive and finite-test uncertainty.
+Numeric seed labels alone do not justify paired training-run comparisons.
+deep-learning, optimize-jax, Bayesian tracking, and hyperparameter tuning are unnecessary without training changes, runtime issues, posterior inference, or a search task.
+This is a skill-selection result only; no checkpoint evaluation or implementation was performed.

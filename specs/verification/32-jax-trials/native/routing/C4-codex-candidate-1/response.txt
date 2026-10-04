@@ -1,0 +1,9 @@
+Primary skill: bayesian-workflow.
+Supporting skills: none.
+Task: Infer a Bayesian neural-network posterior with NumPyro and NUTS.
+The immediate task is Bayesian posterior inference, and this skill explicitly owns NumPyro models, NUTS sampling, priors, predictive checks, convergence diagnostics, and uncertainty reporting.
+I read its full SKILL.md before finalizing the choice.
+I also fully read deep-learning to resolve the neural-model overlap; its boundary keeps posterior-inference procedures with the responsible inference skill.
+Deep-learning is therefore unnecessary here; architecture design, optimizer training, and recovery are not requested.
+Optimize-jax would apply to a demonstrated execution or performance problem, which the task does not describe.
+This is selection only: I did not implement, sample, test a model, or invoke an implementation workflow.

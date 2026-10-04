@@ -1,0 +1,9 @@
+Primary skill: deep-learning.
+It directly covers training neural sequence models in JAX and Flax NNX.
+Its full body supplies the experiment, data/objective, update/state, learning-check, evaluation, and checkpoint-recovery contracts this task needs.
+Supporting skills: none for the task as stated.
+Basic held-out evaluation and a fixed synthetic learning fixture are already part of deep-learning.
+evaluate-deep-learning becomes relevant for benchmarks, ablations, checkpoint comparisons, or model-selection claims.
+optimize-jax becomes relevant after a reproduced tracing, recompilation, throughput, memory, or placement problem.
+bayesian-workflow is not triggered merely by JAX; this task specifies NNX neural training rather than posterior inference.
+This is skill selection only; no model, data, training run, tests, checkpoints, or implementation workflow was produced.

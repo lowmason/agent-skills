@@ -1,0 +1,9 @@
+Primary skill: optimize-jax
+Supporting skills: none.
+Task: Improve generation speed while checking KV-cache correctness.
+The primary skill explicitly covers inference/generation, prefill/decode, profiling, and KV caches.
+Its procedure establishes independent full-prefix causal attention before performance changes.
+It checks logits, exact greedy tokens, masks, positions, cache cursor/capacity, padding, overflow, and sampling replay.
+It then measures prefill/decode and compares synchronized before/after workload timings.
+Deep-learning and evaluate-deep-learning are conditional on training/model-quality or checkpoint/research decisions absent here.
+This is a skill selection only; no optimization, test execution, references, or implementation workflow was performed.

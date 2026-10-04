@@ -1,0 +1,10 @@
+Primary skill: optimize-jax.
+It directly covers unexpected JAX recompilation and explicitly includes non-learning numerical programs and simulations.
+Its execution contract, signature replay and compile/cache diagnostics address the task's actual symptom.
+The body identifies relevant evidence categories: static values, weak types, shapes, dtypes, PyTree structure, callable identity and sharding.
+Supporting skill: systematic-debugging.
+Its reproduce-first and root-cause-before-fix discipline complements the JAX-specific diagnosis.
+No deep-learning or evaluate-deep-learning selection: the task supplies no neural learning, checkpoint comparison or research-claim evaluation.
+No bayesian-workflow selection: the task supplies no posterior inference or probabilistic-model requirement.
+Implementation, permanent-test planning and completion workflows remain outside this selection-only exercise.
+Both selected skill bodies were read fully through the recorded helper; no proposed fix or measurement result is claimed.

@@ -1,0 +1,53 @@
+{
+  "trial": "C1-codex-candidate-2",
+  "family": "C1",
+  "condition": "candidate",
+  "fresh_context": true,
+  "fork_turns": "none",
+  "agent_type": "default",
+  "runtime": "built-in Codex collaboration agent",
+  "model": "inherited active runtime; exact identifier unavailable",
+  "reasoning_effort": "inherited active runtime; exact value unavailable",
+  "catalog": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/candidate-catalog",
+  "catalog_entries": 138,
+  "catalog_manifest_sha256": "3f3e5414d6a6c76a68c4038003aab5c025f32a7b2451f4245304b7261c9a1df0",
+  "prompt_sha256": "1fc9d3424db1ef561ff33382c97d888f2ed966984079ac7e426c6fc8670456d8",
+  "selection_simulation": true,
+  "real_auto_loading_observed": false,
+  "tool_policy": "recorded local prompt and selected SKILL.md reads; own trial artifacts only",
+  "resident_global_guidance_may_be_available": true,
+  "spawn_identity": {
+    "task_name": "/root/native_c1_candidate_2",
+    "source": "actual collaboration.spawn_agent return",
+    "recorded_utc": "2026-10-04T03:06:26.442059+00:00"
+  },
+  "completion": "Complete substantive response and research notes",
+  "completed_utc": "2026-10-04T03:08:10.310999+00:00",
+  "first_prompt_read": {
+    "sha256": "1fc9d3424db1ef561ff33382c97d888f2ed966984079ac7e426c6fc8670456d8",
+    "bytes": 89681,
+    "lines": 620
+  },
+  "actual_skill_reads": [
+    {
+      "read_id": "deep-learning",
+      "native_label": "deep-learning",
+      "sha256": "ece0ac27eaf8b9ca8de149fc27ec408d6ab975e58ba9cfa132c47d765b14fdbf",
+      "bytes": 11048,
+      "read_event_line": 2
+    }
+  ],
+  "payloads": {
+    "response.txt": {
+      "sha256": "1b5dfb3f29ad5dab452281483163232cae907da77603048acbded0c0f5b2940a",
+      "bytes": 1014,
+      "lines": 9
+    },
+    "research-notes.md": {
+      "sha256": "5b24323539046e56ba8336240b082ad28f7e29d93ff0a98c06c4ed4be1933017",
+      "bytes": 1301,
+      "lines": 11
+    }
+  },
+  "execution_claim": "No underlying application implementation or execution observed; selection simulation only"
+}

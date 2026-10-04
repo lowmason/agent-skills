@@ -1,0 +1,8 @@
+Primary skill: optimize-jax.
+Supporting skills: none required by the stated task.
+Its description explicitly covers improving generation, profiling, prefill/decode, and KV caches.
+Its full procedure couples measured execution costs with independent full-prefix causal-attention checks.
+The generation gate checks logits, exact greedy tokens, masks, positions, cache cursor, padding, capacity, and stochastic replay before performance scaling.
+deep-learning is conditional on training/model-quality decisions; evaluate-deep-learning is conditional on checkpoint comparisons or research claims.
+develop-testing-strategy becomes relevant if permanent tests must be designed; that additional scope is not stated here.
+This is skill selection only: no implementation, references, fixtures, profiling, or correctness/performance results were produced.

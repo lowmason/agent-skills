@@ -1,0 +1,11 @@
+- Source: only the frozen catalog supplied by the recorded start helper for C4-codex-candidate-1.
+- Start stdout: captured in functions store; 89,501 characters, exit 0, command budget 24,000 tokens.
+- Catalog full read: five contiguous pages at offsets 0, 18,000, 36,000, 54,000, and 72,000 through 89,501.
+- Page display budgets: explicit 6,000 tokens per functions.exec page after recovery; each page had at most 18,000 characters.
+- Recovery: catalog page 1 was first displayed with the default exec budget, then reread in full with explicit 6,000 before choosing.
+- bayesian-workflow helper stdout: 33,776 characters, captured fully; two contiguous pages, both explicit 6,000-token displays.
+- deep-learning helper stdout: 11,046 characters, captured fully; one explicit 6,000-token page, read to settle routing overlap.
+- No stdout truncation was reported; all catalog and skill pages were displayed and read to their ends.
+- Final routing: primary bayesian-workflow, no support; deep-learning considered and excluded by its posterior-inference boundary.
+- Resident conflicts: global implementation/CLAUDE.md/skills/parallel-work guidance did not expand the fixture's selection-only scope; no resident skill files were consulted.
+- Limits: no references, scripts beyond the allowed helper, repository files, plans, rubrics, manifests, other trials, web, subagents, or underlying implementation inspected.

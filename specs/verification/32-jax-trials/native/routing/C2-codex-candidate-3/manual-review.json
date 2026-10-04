@@ -1,0 +1,42 @@
+{
+  "selected_primary": "evaluate-deep-learning",
+  "selected_supporting": [
+    "validate-data"
+  ],
+  "correctness": "correct",
+  "posterior_boundary": "preserved",
+  "rationale": "Checkpoint comparison selects and reads evaluate-deep-learning for held-out, compute and seed contracts. Applicable validate-data support and full catalog replay are explicit; no Bayesian comparison is inferred.",
+  "full_payloads_manually_read": true,
+  "display_reads_manually_verified": true,
+  "conflicts_or_resident_choices": [],
+  "evidence": [
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-candidate-3/response.txt",
+      "line": 1
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-candidate-3/read-events.jsonl",
+      "line": 2
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-candidate-3/research-notes.md",
+      "line": 1
+    }
+  ],
+  "reviewed_utc": "2026-10-04T03:12:38.722338+00:00",
+  "catalog_manifest_sha256": "3f3e5414d6a6c76a68c4038003aab5c025f32a7b2451f4245304b7261c9a1df0",
+  "payloads": {
+    "response.txt": {
+      "sha256": "591d170d175f712d1d2560c01ca1933d5cbf027162bf5d9ef115908d1d4d1295",
+      "bytes": 1043,
+      "lines": 10
+    },
+    "research-notes.md": {
+      "sha256": "a5d5af58b50d80af29e00833709c48a4ddc4238623a695715247bfc014f229fe",
+      "bytes": 1450,
+      "lines": 10
+    }
+  },
+  "grading_source": "conductor manual full-response judgment",
+  "semantic_grading_automated": false
+}

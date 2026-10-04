@@ -1,0 +1,9 @@
+Primary skill: deep-learning.
+Supporting skills: none for the stated request.
+The task explicitly asks to train a sequence model with JAX and Flax NNX, matching this skill's framework, domain, and training scope.
+Its full body covers experiment/data contracts, sequence targets and masks, NNX-aware differentiation, optimizer/RNG state, a tiny synthetic correctness run, held-out evaluation, and checkpoint recovery.
+It specifies Flax NNX, Optax, and Orbax as the coherent default and points to sequence/training references for implementation.
+Those references are outside this selection fixture and were not read.
+evaluate-deep-learning applies to comparisons or benchmarks; optimize-jax applies to reproduced execution/performance problems, neither present here.
+No permanent test-suite design, hyperparameter search, Bayesian inference, cloud training, or implementation workflow is requested in this simulation.
+This is a skill-selection result only; no model was implemented, trained, tested, or benchmarked.

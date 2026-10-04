@@ -1,0 +1,42 @@
+{
+  "selected_primary": "optimize-jax",
+  "selected_supporting": [
+    "systematic-debugging"
+  ],
+  "correctness": "correct",
+  "posterior_boundary": "preserved",
+  "rationale": "Non-learning recompilation selects and reads optimize-jax for signatures, callable identity and compile diagnostics; systematic-debugging supports root-cause evidence. Frozen-catalog availability controls the choice and no posterior guidance is loaded.",
+  "full_payloads_manually_read": true,
+  "display_reads_manually_verified": true,
+  "conflicts_or_resident_choices": [],
+  "evidence": [
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-candidate-2/response.txt",
+      "line": 1
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-candidate-2/read-events.jsonl",
+      "line": 3
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-candidate-2/research-notes.md",
+      "line": 1
+    }
+  ],
+  "reviewed_utc": "2026-10-04T03:15:47.929495+00:00",
+  "catalog_manifest_sha256": "3f3e5414d6a6c76a68c4038003aab5c025f32a7b2451f4245304b7261c9a1df0",
+  "payloads": {
+    "response.txt": {
+      "sha256": "11cff13e9ae4950899d65c5a9a6354563b06ea12bf393d489be7dae488165fe4",
+      "bytes": 851,
+      "lines": 8
+    },
+    "research-notes.md": {
+      "sha256": "498d9508ceaa01b365651b8bc6febf4dd60a214339febf69bf9d5493e89d20f7",
+      "bytes": 1286,
+      "lines": 12
+    }
+  },
+  "grading_source": "conductor manual full-response judgment",
+  "semantic_grading_automated": false
+}

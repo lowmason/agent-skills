@@ -1,0 +1,12 @@
+# Research notes
+- Trial: C5-codex-candidate-3; used only its frozen catalog.
+- Every helper ran with workdir /private/tmp/jax-skill-trials-pAYZ0t/native-routing.
+- start exited 0; full stdout retained in functions store c5-start-full (89,485 characters).
+- Catalog read in separate 6,000-token exec pages: [0,18000), [18000,36000), [36000,54000), [54000,72000), [72000,89485).
+- Recovery: the initial capture also displayed page 1 without the explicit page budget; page 1 was then redisplayed/read in a separate explicit 6,000-token call before selection.
+- Selected readskill bayesian-workflow exited 0; full stdout retained in c5-bayesian-full (33,776 characters; 8,486 original tokens).
+- Full skill read in separate 6,000-token exec pages: [0,18000), [18000,33776).
+- All pages were contiguous and at most 18,000 characters; no unresolved read or truncation issue remains.
+- Resident catalog differences were resolved by selecting solely from the frozen fixture; no resident skill bodies were read.
+- Repository CLAUDE.md and implementation procedures were outside this selection fixture; no repository change required them.
+- Only these two trial artifacts were written; no references, scripts, plans, other trials, web, or subagents were inspected/invoked.

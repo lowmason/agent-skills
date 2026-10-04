@@ -1,0 +1,42 @@
+{
+  "selected_primary": "evaluate-deep-learning",
+  "selected_supporting": [
+    "validate-data"
+  ],
+  "correctness": "correct",
+  "posterior_boundary": "preserved",
+  "rationale": "Checkpoint comparison selects and reads evaluate-deep-learning for common-budget and seed policies; validate-data supports integrity and conclusions under the neural contract. No posterior artifacts or empirical outcome are imposed.",
+  "full_payloads_manually_read": true,
+  "display_reads_manually_verified": true,
+  "conflicts_or_resident_choices": [],
+  "evidence": [
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-candidate-2/response.txt",
+      "line": 1
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-candidate-2/read-events.jsonl",
+      "line": 2
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-candidate-2/research-notes.md",
+      "line": 1
+    }
+  ],
+  "reviewed_utc": "2026-10-04T03:12:38.713469+00:00",
+  "catalog_manifest_sha256": "3f3e5414d6a6c76a68c4038003aab5c025f32a7b2451f4245304b7261c9a1df0",
+  "payloads": {
+    "response.txt": {
+      "sha256": "b3219c18bb578603c4b4d6e6b37caacdcfe9df3c7bb8aded3509189ea555f268",
+      "bytes": 1014,
+      "lines": 8
+    },
+    "research-notes.md": {
+      "sha256": "8d927128253730eb4917f5097720e2038cb8f1f32f33a05bd60903106fdfffc8",
+      "bytes": 1510,
+      "lines": 12
+    }
+  },
+  "grading_source": "conductor manual full-response judgment",
+  "semantic_grading_automated": false
+}

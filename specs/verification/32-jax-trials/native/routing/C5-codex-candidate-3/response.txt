@@ -1,0 +1,8 @@
+Primary skill: bayesian-workflow.
+Supporting skills: none.
+Task: Use BlackJAX to sample a posterior distribution.
+The catalog explicitly names BlackJAX, posterior distributions, and MCMC/NUTS inference in this skill's triggers.
+Its fully read body treats BlackJAX NUTS as a co-equal JAX sampler and covers log-density setup, window adaptation, chain execution, constrained samples, and ArviZ conversion.
+It also covers convergence, predictive checks, reproducibility, and saving results, which directly support reliable posterior sampling.
+No performance failure, neural model, model-family choice, or multi-variant comparison is specified, so optimize-jax, deep-learning, recommend-probabilistic-model, and track-model-experiments are unnecessary.
+This is a selection-only recommendation; no posterior was sampled and no implementation workflow was invoked.

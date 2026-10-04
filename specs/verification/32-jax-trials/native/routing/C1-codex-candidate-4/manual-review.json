@@ -1,0 +1,40 @@
+{
+  "selected_primary": "deep-learning",
+  "selected_supporting": [],
+  "correctness": "correct",
+  "posterior_boundary": "preserved",
+  "rationale": "NNX sequence training selects and reads deep-learning for correctness, evaluation and recovery contracts. It explicitly rejects Bayesian loading from bare JAX and keeps other responsibilities conditional.",
+  "full_payloads_manually_read": true,
+  "display_reads_manually_verified": true,
+  "conflicts_or_resident_choices": [],
+  "evidence": [
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-candidate-4/response.txt",
+      "line": 1
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-candidate-4/read-events.jsonl",
+      "line": 2
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-candidate-4/research-notes.md",
+      "line": 1
+    }
+  ],
+  "reviewed_utc": "2026-10-04T03:10:14.133836+00:00",
+  "catalog_manifest_sha256": "3f3e5414d6a6c76a68c4038003aab5c025f32a7b2451f4245304b7261c9a1df0",
+  "payloads": {
+    "response.txt": {
+      "sha256": "8118b2b76073cf5dd4eba4ccac3e8d007468d8dba431b1f9916947c8e3cceb9a",
+      "bytes": 875,
+      "lines": 9
+    },
+    "research-notes.md": {
+      "sha256": "f885981583f1c516bfd7ee381af10aa38bc017489282909ca9329b689f1721c4",
+      "bytes": 1242,
+      "lines": 11
+    }
+  },
+  "grading_source": "conductor manual full-response judgment",
+  "semantic_grading_automated": false
+}

@@ -1,0 +1,620 @@
+This is a catalog-selection simulation. Choose the primary skill and any supporting skills for the task below. Read each selected SKILL.md using the recorded local read helper, then explain the choice briefly. Do not implement the underlying task or invoke implementation workflows. Use only this frozen catalog to select; resident global guidance may remain available, but this fixture supplies the catalog under test. Skill references and scripts are outside this selection fixture. Do not inspect the plan, rubrics, earlier trials, other conditions, or underlying repository files.
+
+Task: Train an NNX sequence model in JAX using synthetic data.
+
+Selected skill read command: python3 /private/tmp/jax-skill-trials-pAYZ0t/native_routing_io.py readskill /private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-candidate-3 LABEL
+
+Catalog:
+Read ID: amazon-bedrock
+Skill: amazon-bedrock
+Description: Builds generative AI applications on Amazon Bedrock. Covers model invocation (Converse API, InvokeModel), RAG with Knowledge Bases, Bedrock Agents, Guardrails, and AgentCore (including the Harness managed agent loop). Applies when invoking models, setting up Knowledge Bases, creating agents, applying guardrails, deploying to AgentCore, migrating/porting/converting a Bedrock Agent (including inline agents) to an AgentCore Harness, troubleshooting Bedrock errors (ThrottlingException, AccessDeniedException), or choosing models (Claude, Llama, Nova, Titan). Also for prompt caching, quota and throttling diagnosis, cost tracking, migrating between Claude model generations (4.5 to 4.6 to 4.7), chunking strategies, API selection (Converse vs InvokeModel), guardrail capabilities, and model selection. Also covers AgentCore Payments (x402, microtransactions, Payment Manager, Connector, Instrument, Coinbase CDP, Stripe Privy, paid endpoints, agent payments). NOT for custom model training, Rekognition, or Comprehend.
+
+Read ID: app-6a0b1644959c8191a6ecd016190651cd:amazon-bedrock
+Skill: app-6a0b1644959c8191a6ecd016190651cd:amazon-bedrock
+Description: Builds generative AI applications on Amazon Bedrock. Covers model invocation (Converse API, InvokeModel), RAG with Knowledge Bases, Bedrock Agents, Guardrails, and AgentCore. Use when invoking models, setting up Knowledge Bases, creating agents, applying guardrails, deploying to AgentCore, troubleshooting Bedrock errors (ThrottlingException, AccessDeniedException), or choosing models (Claude, Llama, Nova, Titan). ALSO USE for prompt caching setup and debugging, quota health checks and throttling diagnosis, cost attribution and tracking, migrating between Claude model generations (4.5 to 4.6 to 4.7), chunking strategies, API selection (Converse vs InvokeModel), guardrail capabilities, and model selection. Also covers AgentCore Payments setup (x402, microtransactions, Payment Manager, Connector, Instrument, Coinbase CDP, Stripe Privy, 402 Payment Required, pay for content, paid endpoint, agent payments). NOT for custom model training, Rekognition, or Comprehend.
+
+Read ID: app-6a0b1644959c8191a6ecd016190651cd:aws-billing-and-cost-management
+Skill: app-6a0b1644959c8191a6ecd016190651cd:aws-billing-and-cost-management
+Description: Analyze AWS costs, find savings, manage budgets, evaluate Savings Plans and
+Reserved Instances, right-size EC2/Lambda/RDS/EBS with Compute Optimizer,
+look up service pricing, query CUR with Athena, detect cost anomalies,
+scope costs to billing views, and monitor Free Tier usage. Triggers on:
+AWS bill, cost analysis, reduce spend, savings plan, reserved instance,
+right-size, budget alert, cost optimization, pricing, free tier, cost
+anomaly, CUR, cost audit, billing view, billing view ARN.
+
+
+Read ID: app-6a0b1644959c8191a6ecd016190651cd:aws-blocks
+Skill: app-6a0b1644959c8191a6ecd016190651cd:aws-blocks
+Description: Guides building full-stack applications with AWS Blocks — an Infrastructure-from-Code framework. Applies when creating APIs, selecting Building Blocks (KVStore, DistributedTable, Database, AuthBasic, AuthCognito, Realtime, AsyncJob, FileBucket, etc.), running local development, or deploying AWS Blocks applications. Also covers AWS Blocks topics with validated, version-specific patterns that prevent common mistakes. Triggers when user mentions AWS Blocks; project has aws-blocks/ directory; code imports @aws-blocks packages.
+
+Read ID: app-6a0b1644959c8191a6ecd016190651cd:aws-cdk
+Skill: app-6a0b1644959c8191a6ecd016190651cd:aws-cdk
+Description: Authors, deploys, and troubleshoots AWS infrastructure using CDK with TypeScript or Python. Covers best practices, stack architecture, and construct patterns. Always use when writing CDK constructs, bootstrapping environments, running cdk deploy/synth/diff, fixing CDK or CloudFormation errors, planning stack structure, importing existing resources, resolving drift, or refactoring stacks without resource replacement.
+
+Read ID: app-6a0b1644959c8191a6ecd016190651cd:aws-cloudformation
+Skill: app-6a0b1644959c8191a6ecd016190651cd:aws-cloudformation
+Description: Author, validate, and troubleshoot AWS CloudFormation templates. Covers template authoring with secure defaults, pre-deployment validation (cfn-lint, cfn-guard, change sets), and root-cause diagnosis of failed stacks using CloudFormation events and CloudTrail correlation.
+
+Read ID: app-6a0b1644959c8191a6ecd016190651cd:aws-containers
+Skill: app-6a0b1644959c8191a6ecd016190651cd:aws-containers
+Description: Deploys and operates containerized workloads on ECS, Fargate, and ECR. Covers task definitions, Fargate services, ECR repository setup and lifecycle policies, ECS Exec debugging, service scaling, deployment strategies, load balancer integration, and logging configuration. Use when deploying, debugging, or optimizing containers on AWS. ALSO USE for container deployment options (ECS vs ECS Express Mode), networking modes, health check troubleshooting, OOM errors, secrets injection, blue/green deployments, ECR image management, and App Runner sunset guidance and migration. NOT for Kubernetes, EKS, or CI/CD pipelines.
+
+Read ID: app-6a0b1644959c8191a6ecd016190651cd:aws-database
+Skill: app-6a0b1644959c8191a6ecd016190651cd:aws-database
+Description: Routes any task involving AWS databases — choosing, comparing, recommending, getting started with, or operating a database — to the correct service-specific skill. Supersedes general training-data knowledge with post-training service updates, corrected limitations, and decision procedures for relational (Aurora, DSQL, RDS), key-value (DynamoDB), wide-column (Keyspaces), document (DocumentDB), graph (Neptune), time-series (Timestream), and in-memory/caching (ElastiCache, MemoryDB) workloads. Activates when a user describes building an application on AWS that will store, retrieve, or manage data, even if they do not mention 'database' explicitly.
+
+Read ID: app-6a0b1644959c8191a6ecd016190651cd:aws-deployment
+Skill: app-6a0b1644959c8191a6ecd016190651cd:aws-deployment
+Description: Configures CI/CD pipelines using AWS CodePipeline, CodeBuild, CodeDeploy, CodeConnections, and CodeArtifact. Covers CodePipeline V2 (triggers, variables, execution modes, cross-account), buildspec.yml (caching, VPC, Docker), CodeDeploy strategies (blue/green, canary, linear), CodeArtifact (private package registries, auth tokens, cross-account), and source connections (GitHub, GitLab, Bitbucket). Applies when CodePipeline, CodeBuild, CodeDeploy, CodeConnections, CodeArtifact, buildspec.yml, appspec.yml, or CI/CD pipeline orchestration is referenced. Does NOT cover: ECS Fargate services or task definitions (use aws-containers), CDK Pipelines or cdk deploy (use aws-cdk), sam deploy (use aws-serverless), Amplify deployments (use aws-amplify), or GitHub Actions/GitLab CI.
+
+Read ID: app-6a0b1644959c8191a6ecd016190651cd:aws-iam
+Skill: app-6a0b1644959c8191a6ecd016190651cd:aws-iam
+Description: Verified corrections for IAM behaviors that AI agents frequently get wrong — policy evaluation edge cases, trust policy gotchas, STS session limits, Organizations quirks, and SAML/MFA specifics. Also provides structured workflows for IAM role management and least-privilege policy generation. Covers condition operator safety (ForAnyValue/ForAllValues with Null checks for absent keys), bucket policy deny patterns (VPC endpoint restrictions, org path conditions), resource-based policy confused deputy protection, and service role creation for AWS services (Glue, CloudTrail, VPC Flow Logs, Firehose, DataSync, S3 replication, Lambda, Step Functions, ECS, etc.) including trust policies with aws:SourceAccount/aws:SourceArn conditions. Applies when creating or configuring IAM roles, writing IAM or bucket policies, working with STS, Organizations, condition operators, or any task requiring an IAM service role or execution role. Does not cover non-IAM authorization like Cognito user-pool policies or app-level RBAC.
+
+
+Read ID: app-6a0b1644959c8191a6ecd016190651cd:aws-messaging-and-streaming
+Skill: app-6a0b1644959c8191a6ecd016190651cd:aws-messaging-and-streaming
+Description: Guides use of AWS messaging and streaming services. Covers Amazon SQS, Amazon SNS, Amazon EventBridge, Amazon MQ, Amazon Kinesis Data Streams, Amazon Data Firehose, Amazon Managed Service for Apache Flink, and Amazon Managed Streaming for Apache Kafka (MSK). Use when implementing messaging and streaming patterns.
+
+
+Read ID: app-6a0b1644959c8191a6ecd016190651cd:aws-observability
+Skill: app-6a0b1644959c8191a6ecd016190651cd:aws-observability
+Description: Builds, configures, debugs, and optimizes AWS observability with CloudWatch (Log Insights, Metrics, Alarms, Dashboards, EMF), X-Ray, CloudTrail, and ADOT (AWS Distro for OpenTelemetry), AND enables/onboards services to Application Signals using ADOT auto-instrumentation SDKs. Covers Log Insights queries, alarms (metric, composite, anomaly), dashboards, custom metrics/EMF, X-Ray tracing and sampling, ADOT collector config, CloudTrail auditing, and end-to-end Application Signals enablement via ADOT SDKs (CloudWatch Observability EKS add-on, CloudWatch Agent IAM, OTLP endpoints, ServiceEvents, Dynamic Instrumentation) on EC2, ECS, EKS, and Lambda in Python, Node.js, Java, and .NET. Applies to CloudWatch, alarms, dashboards, EMF, X-Ray, traces, CloudTrail, ADOT, monitoring, synthetics/canaries, OR enabling/onboarding/instrumenting a service for Application Signals using ADOT, ServiceEvents, auto-instrumentation, or making a service show up in Application Signals. Not for app logging or security threat detection.
+
+Read ID: app-6a0b1644959c8191a6ecd016190651cd:aws-sdk-js-v3-usage
+Skill: app-6a0b1644959c8191a6ecd016190651cd:aws-sdk-js-v3-usage
+Description: AWS SDK for JavaScript v3 development patterns. Use when writing JavaScript or TypeScript code that uses AWS services via @aws-sdk/* packages (aws-sdk-js-v3), or when asked about schemas, runtime validation, serialization, or code generation in the context of the JS/TS AWS SDK.
+
+
+Read ID: app-6a0b1644959c8191a6ecd016190651cd:aws-sdk-python-usage
+Skill: app-6a0b1644959c8191a6ecd016190651cd:aws-sdk-python-usage
+Description: AWS SDK for Python (boto3/botocore) development patterns. You MUST use this skill when writing Python code that uses AWS services via boto3 or botocore. This includes creating service clients or resources, configuring sessions and credentials, handling errors with ClientError, using paginators and waiters, S3 file transfers and presigned URLs, DynamoDB table operations, and any boto3/botocore client configuration. Use this skill whenever Python code imports boto3 or botocore, or when the user asks about AWS operations in Python.
+
+
+Read ID: app-6a0b1644959c8191a6ecd016190651cd:aws-sdk-swift-usage
+Skill: app-6a0b1644959c8191a6ecd016190651cd:aws-sdk-swift-usage
+Description: AWS SDK for Swift development patterns. Use when writing Swift code that uses AWS services via aws-sdk-swift package.
+
+
+Read ID: app-6a0b1644959c8191a6ecd016190651cd:aws-secrets-manager
+Skill: app-6a0b1644959c8191a6ecd016190651cd:aws-secrets-manager
+Description: Secret safety for AWS Secrets Manager, secret management, credentials, API keys, tokens, and passwords. Prevents AI agents from directly fetching secret values and teaches runtime dynamic references with asm-exec so plaintext never enters the LLM context window.
+
+
+Read ID: app-6a0b1644959c8191a6ecd016190651cd:aws-serverless
+Skill: app-6a0b1644959c8191a6ecd016190651cd:aws-serverless
+Description: Builds, deploys, manages, debugs, configures, and optimizes serverless applications on AWS using Lambda, API Gateway, Step Functions, EventBridge, and SAM/CDK. Covers cold starts, CORS debugging, event source mappings, troubleshooting, concurrency, SnapStart, Powertools, function URLs, EventBridge Scheduler, Lambda layers, and production readiness. Triggers on mentions of Lambda, API Gateway, Step Functions, SAM templates, CDK serverless stacks, DynamoDB stream triggers, SQS event sources, cold starts, timeouts, 502/504 errors, throttling, concurrency, CORS, Powertools, or any event-driven architecture on AWS, even without the word "serverless." Does not apply to EC2, ECS/Fargate containers, or Amplify hosting.
+
+Read ID: app-6a0b1644959c8191a6ecd016190651cd:signing-in-to-aws
+Skill: app-6a0b1644959c8191a6ecd016190651cd:signing-in-to-aws
+Description: Gets AWS credentials for CLI/SDK access via `aws login`. Activates when a developer needs to authenticate to AWS for local development, when an AWS operation fails due to missing or expired credentials, or when someone asks about setting up AWS access. Triggers: "set up AWS", "configure AWS", "aws login", "get credentials", "authenticate", "session expired", "token expired", "no credentials", "AccessDeniedException" with no configured credentials.
+
+
+Read ID: aws-ai-ml
+Skill: aws-ai-ml
+Description: Selects, deploys, and customizes AI models on Amazon SageMaker. Fine-tuning (SFT, DPO, RLVR, RLAIF), model selection, dataset preparation, evaluation, deployment to SageMaker endpoints or Bedrock, inference optimization and endpoint diagnostics. Covers the full lifecycle from planning through production. Use when fine-tuning models on SageMaker, choosing/selecting which base model to customize or fine-tune from SageMaker Hub, finding a model to deploy without fine-tuning, transforming datasets for training, checking data readiness, evaluating model quality, deploying to endpoints, benchmarking or optimizing inference, setting up IAM roles and S3 buckets for training jobs, or managing a SageMaker Managed MLflow app. Also use to check endpoint health, diagnose failures, debug latency or errors, or view container logs and CloudWatch metrics. Covers Serverless Model Customization, Nova and OSS deployment paths, and PySDK v3. NOT for Ground Truth labeling, Feature Store, or general-purpose AWS infrastructure.
+
+Read ID: aws-auth
+Skill: aws-auth
+Description: Adds user authentication to web and mobile apps with Amazon Cognito (user pools and identity pools) and the AWS Amplify client auth libraries. Covers sign-up/sign-in flows and the login page (Cognito-hosted UI / managed login), MFA, password policies, OAuth 2.0 / OIDC flows (auth-code + PKCE, client credentials), social/SAML federation, tokens (ID/access/refresh, rotation, revocation, storage), Cognito Lambda triggers, identity pools (temp AWS creds), and gating API Gateway (or ALB) routes to signed-in users via Cognito/JWT authorizers. Applies when adding a login or sign-up page, configuring a user pool or app client, choosing user pool vs identity pool, wiring social/SAML, refreshing tokens, requiring sign-in on an API Gateway or ALB, or debugging redirect_uri/token/MFA/CORS/federation errors. Does NOT cover Amplify Gen2 backend definitions (defineAuth, npx ampx → aws-amplify), IAM/STS/Identity Center (→ aws-iam), or API Gateway/Lambda resource config beyond the authorizer (→ aws-serverless).
+
+Read ID: aws-billing-and-cost-management
+Skill: aws-billing-and-cost-management
+Description: Analyze AWS costs, find savings, manage budgets, evaluate Savings Plans and Reserved Instances, right-size EC2/Lambda/RDS/EBS with Compute Optimizer, look up service pricing, query CUR with Athena, detect cost anomalies, scope costs to billing views, and monitor Free Tier usage. Triggers on: AWS bill, cost analysis, reduce spend, savings plan, reserved instance, right-size, budget alert, cost optimization, pricing, free tier, cost anomaly, CUR, cost audit, billing view, billing view ARN.
+
+Read ID: aws-blocks
+Skill: aws-blocks
+Description: Guides building full-stack applications with AWS Blocks — an Infrastructure-from-Code framework. Applies when creating APIs, selecting Building Blocks (KVStore, DistributedTable, Database, AuthBasic, AuthCognito, Realtime, AsyncJob, FileBucket, etc.), running local development, or deploying AWS Blocks applications. Also covers AWS Blocks topics with validated, version-specific patterns that prevent common mistakes. Triggers when user mentions AWS Blocks; project has aws-blocks/ directory; code imports @aws-blocks packages.
+
+Read ID: aws-cdk
+Skill: aws-cdk
+Description: Authors, deploys, and troubleshoots AWS infrastructure using CDK with TypeScript or Python. Covers best practices, stack architecture, and construct patterns. Applies when writing CDK constructs, bootstrapping environments, running cdk deploy/synth/diff, fixing CDK or CloudFormation errors, planning stack structure, importing existing resources, resolving drift, or refactoring stacks without resource replacement.
+
+Read ID: aws-cloudformation
+Skill: aws-cloudformation
+Description: Authors, validates, and troubleshoots AWS CloudFormation templates. Covers template authoring with secure defaults, local validation with either cfn-lint or cloudformation-validate, cfn-guard security and compliance checks as a recommended default, account-aware CloudFormation service pre-deployment validation, CloudFormation Express mode for faster deployments, and root-cause diagnosis of failed stacks using CloudFormation events and CloudTrail correlation. Also covers author-time template intelligence with the CloudFormation Language Server and published cloudformation-validate libraries.
+
+Read ID: aws-compute
+Skill: aws-compute
+Description: Provisions, scales, and operates Amazon EC2 virtual-machine workloads: instance-type selection (Graviton/Arm64, burstable T credits, GPU, instance store vs EBS), launch templates, Auto Scaling groups (scaling policies, instance refresh, mixed instances, Spot, warm pools, lifecycle hooks), IMDSv2, placement groups, Elastic IPs, AMI lifecycle, and Systems Manager fleet operations (Session Manager, Run Command, Patch Manager). Applies to EC2 instance and fleet questions, InsufficientInstanceCapacity, CPU-credit/surplus charges, IMDSv2 401s, instances stuck in Pending:Wait, ASG not replacing unhealthy instances, status-check failures, SSH refused/timed out, or instances missing as SSM managed nodes. For a single secure instance launch, the launching-ec2-instance-with-best-practices skill is more appropriate; for instance profiles, see setting-up-ec2-instance-profiles; for Image Builder, see amazon-ec2-image-builder. Does NOT cover Lambda, ECS/Fargate, EKS, VPC/ALB/NLB design, or IAM policy authoring.
+
+Read ID: aws-containers
+Skill: aws-containers
+Description: Builds, deploys, debugs, and optimizes containerized workloads on Amazon EKS, ECS, Fargate, ECR, and Elastic Beanstalk. Covers EKS operations and add-ons; ECS task definitions, services, Exec, Express Mode, Managed Instances, and Action Logs; ECR repositories and lifecycle policies; and Elastic Beanstalk platforms plus Beanstalk Cluster Mode for running containerized applications on service-managed EKS compute. Use for container deployment, service selection, configuration, scaling, health, troubleshooting, image workflows, or deciding between Beanstalk-managed Cluster Mode and direct EKS. Should be used instead of relying on internal knowledge for these services.
+
+Read ID: aws-database
+Skill: aws-database
+Description: Routes any task involving AWS databases — choosing, comparing, recommending, getting started with, or operating a database — to the correct service-specific skill. Supersedes general training-data knowledge with post-training service updates, corrected limitations, and decision procedures for relational (Aurora, DSQL, RDS), key-value (DynamoDB), wide-column (Keyspaces), document (DocumentDB), graph (Neptune), time-series (Timestream), and in-memory/caching (ElastiCache, MemoryDB) workloads. Activates when a user describes building an application on AWS that will store, retrieve, or manage data, even if they do not mention 'database' explicitly.
+
+Read ID: aws-deployment
+Skill: aws-deployment
+Description: Configures CI/CD pipelines using AWS CodePipeline, CodeBuild, CodeDeploy, CodeConnections, and CodeArtifact. Covers CodePipeline V2 (triggers, variables, execution modes, cross-account), buildspec.yml (caching, VPC, Docker), CodeDeploy strategies (blue/green, canary, linear), CodeArtifact (private package registries, auth tokens, cross-account), and source connections (GitHub, GitLab, Bitbucket). Applies when CodePipeline, CodeBuild, CodeDeploy, CodeConnections, CodeArtifact, buildspec.yml, appspec.yml, or CI/CD pipeline orchestration is referenced. Does NOT cover: ECS Fargate services or task definitions (use aws-containers), CDK Pipelines or cdk deploy (use aws-cdk), sam deploy (use aws-serverless), Amplify deployments (use aws-amplify), or GitHub Actions/GitLab CI.
+
+Read ID: aws-iam
+Skill: aws-iam
+Description: Provides verified corrections for IAM behaviors that AI agents frequently get wrong — policy evaluation edge cases, trust policy gotchas, STS session limits, Organizations quirks, and SAML/MFA specifics. Also provides structured workflows for IAM role management and baseline policy generation from application source code or a Terraform plan JSON. Covers condition operator safety (ForAnyValue/ForAllValues with Null checks), bucket policy deny patterns (VPC endpoint restrictions, org paths), confused deputy protection, and service role creation for AWS services (Glue, CloudTrail, Lambda, ECS, etc.) with aws:SourceAccount/aws:SourceArn trust conditions. Applies when creating IAM roles, writing IAM or bucket policies, generating policies from application source code or a Terraform plan JSON, working with STS, Organizations, or condition operators, or any task needing a service or execution role. Does not cover non-IAM authorization like Cognito user-pool policies or app-level RBAC.
+
+Read ID: aws-messaging-and-streaming
+Skill: aws-messaging-and-streaming
+Description: Guides general use of AWS messaging and streaming services. Covers Amazon SQS, Amazon SNS, Amazon EventBridge, Amazon MQ, Amazon Kinesis Data Streams, Amazon Data Firehose, Amazon Managed Service for Apache Flink, and Amazon Managed Streaming for Apache Kafka (MSK).  Use when reasoning about messaging and streaming patterns. Also identifies which AWS service owns each customer communication channel: email (Amazon SES), and WhatsApp, SMS, MMS, RCS, voice and mobile push (the AWS End User Messaging family of services). Routes the request to the specialized skill for that channel. Defers to the channel's specialized skill when the user already named a specific channel. In general, use specific skills or documentation searches for detailed service-specific questions. Do NOT use for MSK or Managed Service for Apache Flink questions, prefer specific skills. Does not configure customer communication channels; defers to specific skills.
+
+Read ID: aws-networking
+Skill: aws-networking
+Description: Routes AWS networking requests to the correct service skill for implementation. Covers Route 53 (DNS, health checks, routing policies, Resolver, DNS Firewall), CloudFront (caching, edge, OAC, mTLS, signed URLs), Transit Gateway (multi-VPC hub, segmentation, centralized egress), Direct Connect (hybrid link, DX Gateway, MACsec), Site-to-Site VPN (IPsec tunnels, static or BGP), WAF (web ACLs, AWS Managed Rules, rate-based rules, Bot and Fraud Control), and Shield Advanced (L3/L4 DDoS). Applicable when creating, configuring, troubleshooting, or designing across these services, choosing between them, or diagnosing connectivity or traffic-filtering issues. Not for VPC subnets and route tables, load balancers, VPC endpoints, PrivateLink, API Gateway, IAM policy logic, container or serverless networking, or IaC authoring.
+
+Read ID: aws-observability
+Skill: aws-observability
+Description: Builds, debugs, and optimizes AWS observability across two products. CloudWatch: Log Insights, metric/composite/anomaly alarms, dashboards, custom metrics/EMF, X-Ray tracing, ADOT collector config, CloudTrail, synthetics, Dynamic Instrumentation, and Application Signals onboarding and auto-instrumentation (ADOT SDKs / CloudWatch agent add-on). CloudWatch Omni (Application Observability): SQL over logs/traces, PromQL over metrics, views, dashboards, alerts (vs CloudWatch alarms), context graph (GetContextGraph), programmatic access (API/SDK/CLI/CFN), and agent-quality evaluation on OTel traces (on-demand scoring, stored-score readback, datasets, online evaluation, custom evaluators). Use for Application Signals onboarding and day-2 use of CloudWatch or an onboarded Omni Space. For first-time Omni setup only — Space/Domain creation, access grants/profiles, ingestion, or ADOT-to-Omni instrumentation for a new Space (NOT Application Signals) — use setting-up-cloudwatch-observability.
+
+Read ID: aws-sdk-js-v3-usage
+Skill: aws-sdk-js-v3-usage
+Description: AWS SDK for JavaScript v3 development patterns. Use when writing JavaScript or TypeScript code that uses AWS services via @aws-sdk/* packages (aws-sdk-js-v3), or when asked about schemas, runtime validation, serialization, or code generation in the context of the JS/TS AWS SDK.
+
+Read ID: aws-sdk-python-usage
+Skill: aws-sdk-python-usage
+Description: AWS SDK for Python (boto3/botocore) development patterns. You MUST use this skill when writing Python code that uses AWS services via boto3 or botocore. This includes creating service clients or resources, configuring sessions and credentials, handling errors with ClientError, using paginators and waiters, S3 file transfers and presigned URLs, DynamoDB table operations, and any boto3/botocore client configuration. Use this skill whenever Python code imports boto3 or botocore, or when the user asks about AWS operations in Python.
+
+Read ID: aws-sdk-swift-usage
+Skill: aws-sdk-swift-usage
+Description: AWS SDK for Swift development patterns. Use when writing Swift code that uses AWS services via aws-sdk-swift package.
+
+Read ID: aws-security
+Skill: aws-security
+Description: Covers AWS security services and workflows — Security Hub V2 (OCSF) findings, connectors, aggregators, automation rules, and security posture summaries; Security Hub CSPM (V1/ASFF) controls and compliance standards; GuardDuty threat findings; Inspector vulnerability findings; Macie sensitive data findings; Detective investigation; and Security Lake configuration and data aggregation. Applicable when questions involve security posture, Exposure findings, CSPM failed controls, threat findings, vulnerability findings, sensitive data findings, automation rules, or cross-service security configuration across AWS environments. Procedures use standard AWS CLI syntax and work with or without the AWS MCP server.
+
+Read ID: aws-serverless
+Skill: aws-serverless
+Description: Builds, deploys, manages, debugs, configures, and optimizes serverless applications on AWS using Lambda, API Gateway, Step Functions, EventBridge, and SAM/CDK. Covers cold starts, CORS debugging, event source mappings, troubleshooting, concurrency, SnapStart, Powertools, function URLs, EventBridge Scheduler, Lambda layers, and production readiness. Triggers on mentions of Lambda, API Gateway, Step Functions, SAM templates, CDK serverless stacks, DynamoDB stream triggers, SQS event sources, cold starts, timeouts, 502/504 errors, throttling, concurrency, CORS, Powertools, or any event-driven architecture on AWS, even without the word "serverless." Does not apply to EC2, ECS/Fargate containers, or Amplify hosting.
+
+Read ID: aws-startup-advisor:agent-advisor
+Skill: aws-startup-advisor:agent-advisor
+Description: Entry point for AI-agent work on AWS: pick a runtime, plan a migration for existing workloads, and build an executable POC — one phased flow. Triggers on: which runtime for my agent, AgentCore vs ECS vs EKS vs Lambda, AgentCore vs Lambda MicroVMs, deploy an AI agent on AWS, agent architecture on AWS, I have an agent idea what do I build, move/migrate my agents to AWS, agent migration plan, add AgentCore services (memory, gateway, identity, policy, observability) to an agent already on AWS, Temporal on AWS (migrate/run Temporal workers on AWS, a service orchestrated by Temporal, Temporal Cloud vs self-hosted). Temporal Workflow code is never rewritten into Step Functions. Requires at least one agentic component — a purely non-agent system (plain services, batch jobs, HTTP endpoints, non-agent Temporal Activities) is out of scope, redirected to gcp-to-aws / heroku-to-aws / llm-to-bedrock. Not for: compute/data migration with no AI agent; pure LLM SDK rewrite (use llm-to-bedrock); per-model pricing.
+
+Read ID: aws-startup-advisor:architect-for-startups
+Skill: aws-startup-advisor:architect-for-startups
+Description: Startup-tailored AWS architecture advice that adjusts recommendations to the company's stage (pre-revenue through Series B+), team size, runway, and available credits. Use when a founder wants guidance or a recommendation rather than code changes: which services to choose, how to plan or review an architecture, how to stretch credits and control cost, or how to prepare architecture for a fundraise or technical diligence. For an interactive discovery flow that scaffolds and writes the architecture into the codebase, use start-building-for-startups. For AI-agent runtime selection or agentic architecture recommendations specifically, use agent-advisor. Do not use for: writing or scaffolding code, factual AWS Activate / programs / credits lookups (see knowledge-base-for-startups), a single copy-paste prompt (see prompt-library-for-startups), or migration intent such as GCP-to-AWS, Azure-to-AWS, or Heroku-to-AWS (see the migration skills: `gcp-to-aws`, `azure-to-aws`, `heroku-to-aws`, `llm-to-bedrock`).
+
+Read ID: aws-startup-advisor:azure-to-aws
+Skill: aws-startup-advisor:azure-to-aws
+Description: Migrate workloads from Microsoft Azure to AWS. Triggers on: migrate from Azure, Azure to AWS, move off Azure, migrate AKS to EKS, migrate App Service or Azure VMs to AWS compute, migrate Azure SQL or Azure Database to RDS, migrate Cosmos DB to DynamoDB, migrate Azure OpenAI to Bedrock, move Azure AI or agentic workloads to AWS, estimate AWS costs for my Azure infrastructure, what-if workshop. Runs a 6-phase process: discover Azure resources from Terraform, app code, and billing exports, then clarify, design, estimate costs (1:1 lift and right-sized), optionally reprice scenarios, generate artifacts, and collect feedback. Clarify gates Design, Estimate, and Generate; Generate is opt-in at the post-Estimate decision gate. Bicep/ARM/live-`az` discovery is not yet implemented; such a workspace halts. Do not use for: GCP migrations (see gcp-to-aws), Heroku migrations (see heroku-to-aws), general AWS architecture advice (see architect-for-startups), AWS-to-Azure reverse migration, or Azure-to-Azure refactoring.
+
+Read ID: aws-startup-advisor:contextual-offers-for-startups
+Skill: aws-startup-advisor:contextual-offers-for-startups
+Description: Surfaces a single, genuinely relevant AWS Activate partner offer as optional context AFTER another AWS Startup Advisor skill has finalized its recommendation, plan, or build — never influencing the technical advice. Consulted by architect-for-startups, start-building-for-startups, agent-advisor, gcp-to-aws, heroku-to-aws, and llm-to-bedrock: once their output is final, this skill checks whether a relevant Activate offer exists for what the founder is building or migrating and, if so, appends one quiet, dismissible line with a tracked redeem link. Merit-first (offers never change the recommendation), relevance-gated to what the founder actually surfaced, at most one per response and often none, muteable. Offer content is read live from the sibling knowledge-base-for-startups skill (references/offers.md). Do NOT use for account-specific lookups (credits balance, Activate membership, application status) — send those to https://aws.amazon.com/startups.
+
+Read ID: aws-startup-advisor:gcp-to-aws
+Skill: aws-startup-advisor:gcp-to-aws
+Description: Migrate workloads from Google Cloud Platform to AWS — plus AI and agentic workloads from any provider. Triggers on: migrate from GCP, GCP to AWS, move off Google Cloud, migrate Terraform to AWS, migrate Cloud SQL to RDS, migrate GKE to EKS, migrate Cloud Run to Fargate, migrate App Engine to Elastic Beanstalk, migrate from OpenAI to Bedrock, move off OpenAI, switch from ChatGPT API to AWS, migrate from Gemini to Bedrock, migrate LangChain to Bedrock, migrate LangGraph to AWS, migrate agentic workloads to AWS, move AI workloads to AWS, migrate my AI app to AWS. Runs a 6-phase process: discover GCP resources from Terraform, app code, or billing exports, then clarify, design, estimate costs, generate artifacts, and collect feedback. Clarify must finish before Design, Estimate, or Generate. Do not use for: Azure migrations (see azure-to-aws), on-premises migrations, AWS-to-GCP reverse migration, general AWS architecture advice without migration intent, or GCP-to-GCP refactoring.
+
+Read ID: aws-startup-advisor:heroku-to-aws
+Skill: aws-startup-advisor:heroku-to-aws
+Description: Migrate workloads from Heroku to AWS. Triggers on: migrate from Heroku, Heroku to AWS, move off Heroku, migrate Heroku Postgres to RDS, migrate Heroku Redis to ElastiCache, migrate Heroku Kafka to MSK, migrate dynos to Elastic Beanstalk, migrate dynos to Fargate, migrate Heroku Private Space, Heroku to ECS, leave Heroku, what-if workshop, compare migration scenarios, workshop mode. Runs a 6-phase process: discover Heroku resources live via the authenticated Heroku CLI (read-only, consent-gated) and/or from Terraform, Procfile/app.json, and billing exports, then clarify, design, estimate costs, generate artifacts, and collect feedback. Clarify must finish before Design, Estimate, or Generate. An optional post-Estimate what-if workshop reprices region/HA/compute/Graviton scenarios. Do not use for: GCP migrations (see gcp-to-aws), Azure migrations (see azure-to-aws), AWS-to-Heroku reverse migration, general AWS architecture advice without migration intent, or Heroku-to-Heroku refactoring.
+
+Read ID: aws-startup-advisor:knowledge-base-for-startups
+Skill: aws-startup-advisor:knowledge-base-for-startups
+Description: AWS Startups reference content — Activate FAQ, credits guide, programs, partner offers, sample architectures, and hundreds of learn articles spanning generative AI, cloud architecture, cost optimization, security, fundraising, go-to-market, and real-world startup case studies. Use when the user asks factual questions about AWS Activate (eligibility, credits, programs, providers), wants a sample architecture or solution guide, or needs an AWS-curated learn article on a specific startup topic. For copy-paste AI prompts (RAG chatbot, MVP scaffold, security baseline, GPU quota, etc.), see the prompt-library-for-startups skill. Do not use for: account-specific lookups (credits balance, Activate membership status, application status), real-time event listings beyond the events stub, or content not present in the bundled `references/` tree.
+
+Read ID: aws-startup-advisor:llm-to-bedrock
+Skill: aws-startup-advisor:llm-to-bedrock
+Description: Use when the user wants to migrate code that calls OpenAI, Gemini/Google AI, or the Anthropic API to Amazon Bedrock — a pure model/SDK rewrite. End-to-end: assesses the codebase, then rewrites SDK calls, evaluates output quality against Bedrock, and delivers a ready-to-merge git branch. Not for: agent runtime selection, agentic architecture decisions, or agent migration planning — use agent-advisor for those. Not for standalone Bedrock cost estimates or infrastructure-only migration. REQUIRES the gcp-to-aws skill installed alongside this one — Assess is delegated entirely to it via a cross-skill invocation, with no standalone fallback if gcp-to-aws is absent.
+
+Read ID: aws-startup-advisor:prompt-library-for-startups
+Skill: aws-startup-advisor:prompt-library-for-startups
+Description: AWS-curated copy-paste prompts for AI coding agents (MVP scaffolding, RAG chatbot with Claude on Bedrock, security baseline evaluation, cost anomaly detection, GPU quota requests, EKS deployment, Well-Architected review, etc.) plus downloadable installable agents (Multi-Account Transition Advisor, Bill Shock Preventer, Service Quota Agent, Bedrock Model Availability Agent, AWS DB Advisor). Use when the user asks for a prompt to do X on AWS, wants an installable agent for multi-account / cost monitoring / quota management / Bedrock model availability / database selection, or asks how to use AWS prompts. For migration intent (GCP to AWS, Azure to AWS, OpenAI/Gemini to Bedrock), route to the migration skills in this plugin (`gcp-to-aws`, `azure-to-aws`, `heroku-to-aws`, `llm-to-bedrock`). Do not use for: factual AWS Activate / programs / credits questions, learn articles, sample architectures, or for prompts that are not in the bundled `references/prompt-library/` tree.
+
+Read ID: aws-startup-advisor:start-building-for-startups
+Skill: aws-startup-advisor:start-building-for-startups
+Description: Interactive discovery + implementation workflow that gathers requirements through picker-based questions (intent, scope, constraints, preferences), scans the codebase for what it can already infer, then writes an AWS architectural scaffold and implementation directly into the project. Use when the user wants to build a new app, scaffold a project, or expand/refactor an existing one on AWS — anything that calls for a structured discovery flow followed by code changes, not a one-off lookup. Do not use for: factual lookups about AWS Activate / programs / credits, requests for a single copy-paste prompt, non-AWS architectural work, architecture advice/recommendations without code changes (see architect-for-startups), a new idea centered on an AI agent — runtime selection, agentic architecture, or an agent POC (see agent-advisor), or migrating an existing GCP/Azure/Heroku workload or an LLM SDK rewrite (see gcp-to-aws / azure-to-aws / heroku-to-aws / llm-to-bedrock).
+
+Read ID: aws-startup-advisor:tf-best-practices
+Skill: aws-startup-advisor:tf-best-practices
+Description: Best-practice authoring guidance AND a read-only policy gate for AWS Terraform generated by a migration skill. Load during any phase that writes a terraform/ directory — first as the "what to emit" posture rules + security-baseline spec, then after writing as the deterministic policy verdict. Read-only: it reports whether the generated Terraform passes; it never edits .tf files, never touches .phase-status.json, and never decides phase completion. Complements (does not replace) terraform fmt/init/validate.
+
+Read ID: aws-storage
+Skill: aws-storage
+Description: Selects, investigates, and compares AWS object, file, and block storage services, and answers cost, performance, configuration, security, and troubleshooting questions about storage services. Applies when a user asks where to store or archive data based on their usage patterns; which storage service to choose or how two compare; how to migrate data from on-premises or between AWS services; how to protect, replicate, or recover data; how to optimize storage costs; where to deploy shared NFS, SMB, or POSIX file systems; where to store vector embeddings or tabular data; what storage backs enterprise file shares, self-managed databases on EC2, VMware, or stateful containers; or asks what an AWS storage service can do or how it works. Relevant for storage needs for workloads such as AI/ML, analytics, EDA, HPC, media, genomics, or financial trading. Not applicable for SQL query engines (Athena, Spark, Redshift, EMR), ETL (Glue), streaming (Kafka, MSK, Kinesis), or managed database services (RDS, Aurora, DynamoDB).
+
+Read ID: bayesian-workflow
+Skill: bayesian-workflow
+Description: Use when building, fitting, diagnosing, comparing, or reporting on Bayesian/probabilistic models with NumPyro (JAX) and ArviZ — consult BEFORE writing any Bayesian model code, not after. Trigger on: prior elicitation or choosing priors, MCMC/NUTS inference, convergence diagnostics (divergences, R-hat, ESS), model comparison (LOO-CV, ELPD, stacking weights), hierarchical/multilevel models, count regressions, logistic regression with uncertainty, state-space or latent time-series models, prior sensitivity analysis, calibration (PIT/LOO-PIT), presenting Bayesian results to non-technical audiences, or mentions of NumPyro, Pyro, BlackJAX, ArviZ, InferenceData, DataTree, credible intervals, HDI, posterior distributions, shrinkage, or uncertainty quantification.
+
+
+Read ID: bls-data-context
+Skill: bls-data-context
+Description: Use when working with U.S. Bureau of Labor Statistics employment, wage, or labor-turnover data — QCEW, CES (national or state/area SAE), JOLTS, BED/BDM, OEWS/OES, ECI, ECEC, CPS — or building pipelines over their flat files or API. Consult BEFORE interpreting a BLS series, constructing or parsing a series ID, joining two BLS sources, reconciling to an official total, or reasoning about revisions / as-of correctness. Trigger on: QCEW, CES, CES-SA, SAE, JOLTS, BED, BDM, OEWS, OES, ECI, ECEC, CPS, LAUS, NAICS / SOC codes, series_id, M01–M13, download.bls.gov/pub/time.series, BLS API v2 quotas, release feeds, Last-Modified vintages, vintage / benchmark / revision, place-of-work vs residence, OMB delineation, jobs vs persons, thousands-vs-persons units, "pay period including the 12th", UI / UCFE coverage, net birth-death model, benchmarking CES to QCEW, JOLTS alignment to CES, or reconciling a payroll-provider or nowcast series to BLS. The detailed program facts that agents otherwise get subtly wrong.
+
+
+Read ID: brainstorming
+Skill: brainstorming
+Description: Use when the user proposes new functionality — a feature, component, script, scraper, pipeline, analysis, or behavior change — and no approved design or spec exists yet; before writing any code, scaffolding a project, or invoking an implementation skill. Trigger on "let's build", "add a feature", "create a tool", "I have an idea", or any request that would otherwise jump straight to implementation, however simple it looks.
+
+
+Read ID: classification-codes
+Skill: classification-codes
+Description: Use when a task touches NAICS, SOC, or Census occupation codes — mapping a code to its title or a title to its code, listing a sector's or major group's members, converting between vintages (NAICS 2012↔2017↔2022, SOC 2010↔2018, Census OCC 2010↔2018), joining datasets coded in different vintages, a series break at a classification revision, or explaining how industries and occupations are defined, created, and revised (ECPC / SOCPC, NAICS 2027, SOC 2028). Consult BEFORE answering any code↔title question, before joining on an industry or occupation code, and before treating a code as meaning the same thing in two vintages. Trigger on: NAICS, SOC, O*NET, ACS / CPS OCC variable, sector, subsector, industry group, six-digit code, occupation code, major group, detailed occupation, concordance, crosswalk, trilateral, change indicator, unclassified / 999999, "what industry is X", "what does code X mean", "is code X still valid", "when is the next revision". Codes and titles come from data/, never from model memory.
+
+
+Read ID: claude-code-setup:claude-automation-recommender
+Skill: claude-code-setup:claude-automation-recommender
+Description: Analyze a codebase and recommend Claude Code automations (hooks, subagents, skills, plugins, MCP servers). Use when user asks for automation recommendations, wants to optimize their Claude Code setup, mentions improving Claude Code workflows, asks how to first set up Claude Code for a project, or wants to know what Claude Code features they should use.
+
+Read ID: claude-md-management:claude-md-improver
+Skill: claude-md-management:claude-md-improver
+Description: Audit and improve CLAUDE.md files in repositories. Use when user asks to check, audit, update, improve, or fix CLAUDE.md files. Scans for all CLAUDE.md files, evaluates quality against templates, outputs quality report, then makes targeted updates. Also use when the user mentions "CLAUDE.md maintenance" or "project memory optimization".
+
+Read ID: claude-md-management:source-command-revise-claude-md
+Skill: claude-md-management:source-command-revise-claude-md
+Description: Update CLAUDE.md with learnings from this session
+
+Read ID: clean-code
+Skill: clean-code
+Description: Use when writing, editing, reviewing, or refactoring Python — choosing or judging names, sizing a function, deciding whether a comment earns its keep, extracting duplication, replacing magic numbers, restructuring if/elif chains, judging method chains against the Law of Demeter, or filling test-coverage gaps. Trigger on: naming a variable, function, or module; a function doing too many things; dead, obsolete, or redundant comments; copy-pasted logic (rule of three); long conditional chains; magic HTTP codes, retry counts, or thresholds in ETL code; boundary-condition test gaps; or citing a cleanup by Clean Code rule code (N/F/G/C/T/M). Also when a package is accumulating seam-named siblings (paired *_io.py / *_parse.py, *_reader.py / *_writer.py) and another is being added, or deciding whether a repeated filename seam should become a subpackage. The curated, stack-tuned (Polars / NumPyro+JAX / httpx ETL) subset of Robert C. Martin's Clean Code catalog; mechanical rules defer to ruff.
+
+
+Read ID: clean-coder
+Skill: clean-coder
+Description: Use when editing, fixing, or refactoring existing Python — before touching code near the task. Trigger on: applying cleanups to code you are already editing; noticing adjacent code that could be improved; "while you're at it", "any quick wins", "clean this up too", "anything else obviously wrong", "just make it clean"; the urge to fix a smell you spotted outside the task's scope; deciding whether a cleanup shares a commit with a behavior change; or a small tidying starting to cascade into further tidyings.
+
+
+Read ID: creative-thinking
+Skill: creative-thinking
+Description: Use when the target itself is fuzzy: "something interesting in this data but I can't articulate the analysis", "what should I even be estimating", "the true objective is too expensive to evaluate — what cheap target stands in", every design a flavor of one idea, or brainstorming's propose-approaches step running thin. Named goal: brainstorming. Objective chosen: tune-hyperparameters. Model-family or chart choice for a defined question: recommend-probabilistic-model, recommend-visualization.
+
+
+Read ID: deep-learning
+Skill: deep-learning
+Description: Use when designing, implementing, training, fine-tuning, post-training, or diagnosing neural models in JAX, Flax NNX, or Equinox — including sequence, scientific, vision, geometric, generative, and language models; custom losses, masking, optimizer behavior, unstable learning, or training recovery.
+
+
+Read ID: derive-roadmap
+Skill: derive-roadmap
+Description: Use when a spec opens with a header naming derive-roadmap as the required next skill, when resuming staged work ("resume the roadmap", a specs/*-roadmap.md file), or when comparing a spec against the current implementation to stage what remains. Partitions gaps into staged spec-to-plan cycles. Never plans or brainstorms a stage itself.
+
+
+Read ID: describe-critique-methodology
+Skill: describe-critique-methodology
+Description: Use when writing a system- or module-level methodological description of a codebase for external critique, or when a critique returns from that round-trip. Describe mode: "describe the methodology", "write up the model or math independent of the code", "methodological description", "prepare a document for external or SOTA critique" — statistical, Bayesian, nowcast, NumPyro, state-space, estimation or inference procedures. Synthesize mode: a saved specs/*-critique.md returning from a Claude Chat Research round-trip, "the critique is back", "synthesize the critique into a spec". Not for new-functionality ideas — that is brainstorming. The critique itself happens externally in Chat Research — this skill is not for reviewing code or specs. The description is math and prose decoupled from code — not a code walkthrough, README, or analysis writeup.
+
+
+Read ID: design-architecture
+Skill: design-architecture
+Description: Use when authoring or evaluating Architecture Decision Records (ADRs) for data and modeling systems — choosing between technologies (NumPyro/JAX vs PyMC, Polars vs pandas, Trino vs DuckDB, one parquet layout vs another), when a design decision spans multiple packages or repos, when reviewing a design proposal or spec for whether its trade-offs are honest, or when a past decision keeps getting re-explained or re-litigated. Trigger on: ADR, architecture decision, design record, design doc/spec review, "should we use X or Y", "document this decision", "why did we pick", trade-off analysis, alternatives considered, reversibility / blast radius, superseding a prior decision, parquet store layout and dedup/vintage policy, scraper resilience (retry/backoff/fixtures), as-of / vintage / point-in-time data modeling, multi-package workspace boundaries, inference engine choice, or determinism/seed/parity decisions — especially when the same problem is solved more than one way across repos with no recorded rationale.
+
+
+Read ID: develop-testing-strategy
+Skill: develop-testing-strategy
+Description: Use when designing a test strategy or plan for data-science code — web scrapers, Polars pipelines, or Bayesian models: a repo with zero or smoke-test-only tests, adding the first tests to an ETL/scraper/model package, a scraper that silently breaks on a site relayout, a pipeline emitting malformed parquet (wrong schema, dropped rows, exploded null rate, duplicate keys, stale data), a NumPyro/PyMC model needing more than 'it ran', parameter recovery / SBC-lite / golden-master parity / seed determinism, slow MCMC tests in CI, or as-of/vintage correctness and future leakage. Trigger on: 'how should we test this', 'what tests do we need', 'test plan', 'add tests', 'this has no tests', flaky or slow suites, pytest marker design (network/slow/real_store) and CI exclusions, recorded HTML fixtures vs live sites, schema/row-count/null-rate/freshness assertions, or httpx, BeautifulSoup, lxml, parquet, JAX, PRNGKey, BLS/QCEW/CES/JOLTS. Consult BEFORE writing tests.
+
+
+Read ID: dispatching-parallel-agents
+Skill: dispatching-parallel-agents
+Description: Use when 2+ tasks are independent — no shared state, no ordering dependency — and are being worked sequentially: multiple test files failing with different root causes, several subsystems broken independently, or a batch of self-contained fixes or investigations that could run as parallel subagents.
+
+
+Read ID: doc-coauthoring
+Skill: doc-coauthoring
+Description: Guide users through a structured workflow for co-authoring documentation. Use when user wants to write documentation, proposals, technical specs, decision docs, or similar structured content. This workflow helps users efficiently transfer context, refine content through iteration, and verify the doc works for readers. Trigger when user mentions writing docs, creating proposals, drafting specs, or similar documentation tasks.
+
+Read ID: docs
+Skill: docs
+Description: docs (living docs people share, comment on and edit; use only when the user asks for one: names a doc, document, page, memo, spec, PRD, runbook or write-up, asks for somewhere to share or keep editing something, or says yes to your doc offer; a plan, comparison, summary or notes asked in chat stays in chat (at most a one-line doc offer); a report, status update, recap or "something I can send them" with no form named → ask first: reply, doc or file?; tabs hold tables and live charts too; a pasted Codex.ai/code/artifact/… link may be a doc: check with docs tools first; not HTML pages, apps or plain chat answers; a .docx/.pptx/.xlsx/PDF asked for by name → that format's skill): asked for one → no docs-connector instructions in context? call the docs connector's `guide` with topic.instructions first, then create the doc (headings only, no body) before any search, file read or plan, even with files attached. Documenting code means docstrings or repo docs, not a doc.
+
+Read ID: documents:documents
+Skill: documents:documents
+Description: Create, edit, redline, and comment on `.docx`, Word, and Google Docs-targeted document artifacts inside the container, with a strict render-and-verify workflow. Use `render_docx.py` to generate page PNGs (and optional PDF) for visual QA, then iterate until layout is flawless before delivering the final document.
+
+Read ID: docx
+Skill: docx
+Description: Use this skill whenever the user wants to create, read, edit, or manipulate Word documents (.docx) or Word templates (.dotx). Triggers include: any mention of 'Word doc', 'word document', '.docx', '.dotx', or requests to produce professional documents with formatting like tables of contents, page numbers, or letterheads. Also use when extracting or reorganizing content from .docx or .dotx files, inserting or replacing images in documents, find-and-replace in Word files, working with tracked changes or comments, or converting content into a polished Word document. If the user asks for a 'report', 'memo', 'letter', 'template', or similar deliverable as a Word or .docx file (to download, email or print), use this skill. However, if they ask for a document, page, report, memo, or notes WITHOUT naming a file format and the session offers Codex's own dedicated document or page skill or connector, use that instead. Do NOT use for PDFs, spreadsheets, Google Docs, or coding unrelated to document generation.
+
+Read ID: evaluate-deep-learning
+Skill: evaluate-deep-learning
+Description: Use when benchmarking neural models, comparing checkpoints or methods, designing ablations, selecting models, or assessing deep-learning research claims — including held-out metrics, contamination, leakage, unequal compute budgets, variation across seeds, generative quality, or domain correctness.
+
+
+Read ID: executing-plans
+Skill: executing-plans
+Description: Use when you have a written implementation plan to execute yourself, task by task, in the current session — e.g. a plan file from writing-plans in specs/plans/ — because tasks are tightly coupled or your human partner asked for direct execution rather than subagent dispatch
+
+
+Read ID: explore-data
+Skill: explore-data
+Description: Use when profiling a new dataset with Polars before analysis or modeling — first contact with a parquet/CSV/scrape whose shape, schema, null rates, or cardinality is unknown; when checking whether a candidate key (series_id + ref_date) is actually unique; when you suspect duplicates, sentinel codes (-1, 9999, "", "N/A", "."), constant or high-null columns, or mixed types from a raw ingest; when confirming the as-of/vintage layout on revised series (one row per series-period-vintage) before tagging or joining; when panel diagnostics are needed — coverage by period/geography/industry, balance, entry/exit; or when comparing provider microdata against QCEW/CES/JOLTS/BED. The pre-flight before bayesian-workflow, recommend-probabilistic-model, or recommend-visualization. Trigger on new microdata, "explore/profile this dataset", null/duplicate/quality checks, schema inspection, scan_parquet, .describe(), value_counts, .null_count(), n_unique, or "is this column a key?".
+
+
+Read ID: finishing-a-development-branch
+Skill: finishing-a-development-branch
+Description: Use when implementation on a development branch is complete and tests pass, and the work needs wrapping up — merge vs. PR vs. keep vs. discard is being decided, or a feature branch's worktree needs cleanup. Trigger on: "the feature is done", "ready to merge", "should I open a PR", "clean up this branch/worktree", deciding how to integrate a completed feature branch, or finishing work started with the using-git-worktrees skill.
+
+
+Read ID: geographic-codes
+Skill: geographic-codes
+Description: Use when a task touches U.S. statistical geography codes over any time span — FIPS state or county codes, county-equivalents (parishes, boroughs, census areas, independent cities, municipios, Connecticut planning regions), CBSAs / MSAs / micropolitan areas, metropolitan divisions, CSAs — mapping a code to a name, listing a metro's counties, asking whether a code was valid at a reference date, joining panels across a county change or an OMB re-delineation, diagnosing a break that coincides with one, or explaining how OMB and Census define and revise these areas. Consult BEFORE answering any geography code question, before joining on a county or CBSA code, and before treating a code as the same thing at two dates. Trigger on: FIPS, GEOID, county code, CBSA, MSA, metro area, micropolitan, metropolitan division, CSA, NECTA, planning region, "what county is X", "which metro is Y in", "was this code valid in", delineation, county change, OMB bulletin, central / outlying county, commuting threshold.
+
+
+Read ID: hugging-face:hf-cli
+Skill: hugging-face:hf-cli
+Description: Hugging Face Hub CLI (`hf`) for downloading, uploading, and managing repositories, models, datasets, and Spaces on the Hugging Face Hub. Replaces now deprecated `huggingface-cli` command.
+
+Read ID: hugging-face:huggingface-community-evals
+Skill: hugging-face:huggingface-community-evals
+Description: Run evaluations for Hugging Face Hub models using inspect-ai and lighteval on local hardware. Use for backend selection, local GPU evals, and choosing between vLLM / Transformers / accelerate. Not for HF Jobs orchestration, model-card PRs, .eval_results publication, or community-evals automation.
+
+Read ID: hugging-face:huggingface-datasets
+Skill: hugging-face:huggingface-datasets
+Description: Use this skill for Hugging Face Dataset Viewer API workflows that fetch subset/split metadata, paginate rows, search text, apply filters, download parquet URLs, and read size or statistics.
+
+Read ID: hugging-face:huggingface-gradio
+Skill: hugging-face:huggingface-gradio
+Description: Build Gradio web UIs and demos in Python. Use when creating or editing Gradio apps, components, event listeners, layouts, or chatbots.
+
+Read ID: hugging-face:huggingface-jobs
+Skill: hugging-face:huggingface-jobs
+Description: This skill should be used when users want to run any workload on Hugging Face Jobs infrastructure. Covers UV scripts, Docker-based jobs, hardware selection, cost estimation, authentication with tokens, secrets management, timeout configuration, and result persistence. Designed for general-purpose compute workloads including data processing, inference, experiments, batch jobs, and any Python-based tasks. Should be invoked for tasks involving cloud compute, GPU workloads, or when users mention running jobs on Hugging Face infrastructure without local setup.
+
+Read ID: hugging-face:huggingface-llm-trainer
+Skill: hugging-face:huggingface-llm-trainer
+Description: This skill should be used when users want to train or fine-tune language models using TRL (Transformer Reinforcement Learning) on Hugging Face Jobs infrastructure. Covers SFT, DPO, GRPO and reward modeling training methods, plus GGUF conversion for local deployment. Includes guidance on the TRL Jobs package, UV scripts with PEP 723 format, dataset preparation and validation, hardware selection, cost estimation, Trackio monitoring, Hub authentication, and model persistence. Should be invoked for tasks involving cloud GPU training, GGUF conversion, or when users mention training on Hugging Face Jobs without local GPU setup.
+
+Read ID: hugging-face:huggingface-paper-publisher
+Skill: hugging-face:huggingface-paper-publisher
+Description: Publish and manage research papers on Hugging Face Hub. Supports creating paper pages, linking papers to models/datasets, claiming authorship, and generating professional markdown-based research articles.
+
+Read ID: hugging-face:huggingface-papers
+Skill: hugging-face:huggingface-papers
+Description: Look up and read Hugging Face paper pages in markdown, and use the papers API for structured metadata such as authors, linked models/datasets/spaces, Github repo and project page. Use when the user shares a Hugging Face paper page URL, an arXiv URL or ID, or asks to summarize, explain, or analyze an AI research paper.
+
+Read ID: hugging-face:huggingface-trackio
+Skill: hugging-face:huggingface-trackio
+Description: Track and visualize ML training experiments with Trackio. Use when logging metrics during training (Python API), firing alerts for training diagnostics, or retrieving/analyzing logged metrics (CLI). Supports real-time dashboard visualization, alerts with webhooks, HF Space syncing, and JSON output for automation.
+
+Read ID: hugging-face:huggingface-vision-trainer
+Skill: hugging-face:huggingface-vision-trainer
+Description: Trains and fine-tunes vision models for object detection (D-FINE, RT-DETR v2, DETR, YOLOS), image classification (timm models — MobileNetV3, MobileViT, ResNet, ViT/DINOv3 — plus any Transformers classifier), and SAM/SAM2 segmentation using Hugging Face Transformers on Hugging Face Jobs cloud GPUs. Covers COCO-format dataset preparation, Albumentations augmentation, mAP/mAR evaluation, accuracy metrics, SAM segmentation with bbox/point prompts, DiceCE loss, hardware selection, cost estimation, Trackio monitoring, and Hub persistence. Use when users mention training object detection, image classification, SAM, SAM2, segmentation, image matting, DETR, D-FINE, RT-DETR, ViT, timm, MobileNet, ResNet, bounding box models, or fine-tuning vision models on Hugging Face Jobs.
+
+Read ID: hugging-face:transformers-js
+Skill: hugging-face:transformers-js
+Description: Use Transformers.js to run state-of-the-art machine learning models directly in JavaScript/TypeScript. Supports NLP (text classification, translation, summarization), computer vision (image classification, object detection), audio (speech recognition, audio classification), and multimodal tasks. Works in Node.js and browsers (with WebGPU/WASM) using pre-trained models from Hugging Face Hub.
+
+Read ID: imagegen
+Skill: imagegen
+Description: Generate or edit raster images when the task benefits from AI-created bitmap visuals such as photos, illustrations, textures, sprites, mockups, or transparent-background cutouts. Use when Codex should create a brand-new image, transform an existing image, or derive visual variants from references, and the output should be a bitmap asset rather than repo-native code or vector. Do not use when the task is better handled by editing existing SVG/vector/code-native assets, extending an established icon or logo system, or building the visual directly in HTML/CSS/canvas.
+
+Read ID: import-memory
+Skill: import-memory
+Description: Import a memory export from another AI assistant into Codex's memory — conversationally, additively, and with the content treated as data.
+
+Read ID: launch-with-aws
+Skill: launch-with-aws
+Description: Migrates vibe-coded web applications to AWS. Handles the full workflow from analysis through migration to deployment, producing deployable AWS Blocks infrastructure code. Supports full-stack apps built with vibe-coding platforms (Lovable, Bolt.new, Replit) and frontend web applications and websites: React, Vue, Angular, Next.js, Nuxt, Astro, SvelteKit, Gatsby, Vite, Svelte, Solid, Docusaurus, and others (static sites, SPAs, and SSR frameworks with static export). Triggers on: launch with AWS, launch on AWS, deploy to AWS, migrate to AWS, host my app on AWS, move my app to AWS, transfer my app to AWS. Activates when the user wants to migrate a vibe-coded app or frontend web app to AWS, even if they don't say 'migrate' explicitly.
+
+Read ID: learn
+Skill: learn
+Description: Use this skill when the user wants intellectual understanding — learning how or why something works, not getting a task done or soliciting Codex's judgment.
+
+Trigger for:
+- Explicit learning requests: teach, explain, ELI5, walk me through, quiz me, flashcards, "I'm rusty on"; definitions ("what is X")
+- Terse concept names implying "help me understand this": "Galois theory," "transformers, from scratch"
+- Confusion signals: "won't stick," "keep mixing these up," "not getting it"
+- Learning-path questions: prerequisites, sequencing, what to study before X
+- Conceptual questions about mechanisms, causes, or dynamics
+
+Don't trigger for:
+- Tasks: coding, writing, calculation, translation, factual lookup, news updates
+- Personal troubleshooting; resource/textbook recommendations
+- Codex's evaluative verdict: opinion prompts ("do you think X", "settle this", "honest take", "is X dead / still taken seriously") and interpretive takes ("was X really as harsh as people say")
+
+
+Read ID: llm-wiki
+Skill: llm-wiki
+Description: Use when maintaining or setting up the research wiki (Karpathy LLM-wiki pattern) at $LLM_WIKI_ROOT: 'ingest', 'add to the wiki', 'what does the wiki say', 'wiki lint', 'verify <page>', 'file this into the wiki'; any reference to the research wiki, sampler literature notes, or nowcasting literature notes; a paper dropped into raw/ to process; and 'set up', 'bootstrap', or 'install the research wiki' on a new machine or for a second wiki root; and 'harvest', 'harvest the specs', or turning a repo's specs/ corpus (specs, plans, deferred items) into wiki captures.
+
+
+Read ID: morning
+Skill: morning
+Description: Render the user's morning brief as a styled HTML artifact, or set it up as a recurring weekday task. Use only when the user explicitly asks to run, see, or set up their morning brief, or if they invoke /morning by name. A question about their day, schedule, or calendar is not by itself a request for the brief; answer it directly instead.
+
+Read ID: nvidia:nvidia-skill-finder
+Skill: nvidia:nvidia-skill-finder
+Description: Use for NVIDIA-related requests where an NVIDIA skill might help, even if the user did not ask for a skill. Trigger on NVIDIA products, hardware, software, SDKs, GPUs, Jetson/JetPack/L4T/BSP/SDK Manager/driver/flashing/setup, CUDA, NIM, NeMo, Omniverse/OpenUSD/SimReady, RAPIDS/cuDF, cuPyNumeric, cuOpt, Dynamo, Holoscan, TensorRT, DeepStream, VSS, TAO, NGC/NVCF. Do not use for generic non-NVIDIA route, optimize, deploy, AI, video, data, or infrastructure tasks.
+
+Read ID: openai-developers:agents
+Skill: openai-developers:agents
+Description: Build agent apps with the Agents API or Agents SDK. Use when adding tools, sessions, sandboxes, handoffs, guardrails, evals, or deployment.
+
+Read ID: openai-developers:devday-guide
+Skill: openai-developers:devday-guide
+Description: Help with OpenAI DevDay attendance, onsite logistics, session schedules, personal plans, livestreams, recordings, and DevDay Exchanges. Use for DevDay-specific questions, not general OpenAI API or app development.
+
+Read ID: openai-developers:openai-api-troubleshooting
+Skill: openai-developers:openai-api-troubleshooting
+Description: Use when an OpenAI API request fails and Codex needs to classify the likely cause, explain the next step, and route to the right follow-up. Covers common runtime failures such as blocked outbound network access, invalid credentials, exhausted API quota or credits, rate limits, and model, project, or organization access issues; delegate key provisioning to openai-platform-api-key and current documentation lookups to openai-docs.
+
+Read ID: openai-developers:openai-platform-api-key
+Skill: openai-developers:openai-platform-api-key
+Description: Use when Codex is asked to build, run, test, debug, or configure an OpenAI-backed or provider-unspecified AI app, UI, script, CLI, generator, or tool, especially requests phrased only as "using AI" or generators driven by forms/user input; also use for OPENAI_API_KEY or sk-proj setup. Treat this as the credential gate: inspect safely, ask reuse-vs-new before API work, and never expose plaintext.
+
+Read ID: openai-docs
+Skill: openai-docs
+Description: Use for Codex models/pricing, scheduled tasks, skills, settings, setup, troubleshooting, customization, automations, and self-knowledge—including 'you,' 'your,' 'this app,' or 'this coding agent' when they refer to Codex—and for OpenAI APIs/products and ChatGPT Work. Also use for model choice/migration, prompting, SDKs, Responses, Realtime, agents, evals, and Chat/Work/Codex comparisons. Do not use for generic app/software tasks that merely mention Codex.
+
+Read ID: optimize-jax
+Skill: optimize-jax
+Description: Use when JAX code has tracing errors, unexpected recompilation, memory pressure, slow execution, or distributed placement problems, or when improving inference and generation — including profiling, precision, sharding, asynchronous timing, prefill/decode, and KV caches.
+
+
+Read ID: pages:maintain-space
+Skill: pages:maintain-space
+Description: Reconcile new evidence into existing ChatGPT Pages or a Space when the user requests upkeep. For a direct text correction, use write-page. Do not use for ordinary chat drafts, writing, or advice, or treat a selected Page as a request to save. Schedule future upkeep only when requested.
+
+Read ID: pages:manage-schedules
+Skill: pages:manage-schedules
+Description: Review a ChatGPT Space page and its schedules, recommend useful recurring work, and create, update, or remove scheduled automations.
+
+Read ID: pages:organize-space
+Skill: pages:organize-space
+Description: Organize existing ChatGPT Pages and Space structure when the user requests changes to that structure. Do not use for ordinary chat drafts or advice; a selected Page alone does not authorize reorganization. A narrow text edit does not need this workflow.
+
+Read ID: pages:write-page
+Skill: pages:write-page
+Description: Create or edit requested Page/Space content, or use for prose you have already decided to save as a standalone Markdown file, only if the user did not explicitly request a Markdown file. Honor established formats, destinations, and repository documentation. A selected Page alone does not authorize a write.
+
+Read ID: pdf
+Skill: pdf
+Description: Use this skill whenever the user wants to do anything with PDF files. This includes reading or extracting text/tables from PDFs, combining or merging multiple PDFs into one, splitting PDFs apart, rotating pages, adding watermarks, creating new PDFs, filling PDF forms, encrypting/decrypting PDFs, extracting images, and OCR on scanned PDFs to make them searchable. If the user mentions a .pdf file or asks to produce one, use this skill.
+
+Read ID: pdf:pdf
+Skill: pdf:pdf
+Description: Read, create, inspect, render, and verify PDF files where visual layout matters, including fillable AcroForms. Use Poppler rendering plus Python tools such as reportlab, pdfplumber, and pypdf for generation and extraction.
+
+Read ID: plugin-management:plugin-management
+Skill: plugin-management:plugin-management
+Description: Discover and suggest relevant plugins, inspect app permissions and dependencies, and manage plugin connections or removal. Use when the user asks about plugins or when a task would materially benefit from an external app, account, service, or data source that available tools cannot access.
+
+Read ID: pptx
+Skill: pptx
+Description: Use this skill any time a .pptx or .potx file is involved in any way — as input, output, or both. This includes: creating slide decks, pitch decks, or presentations as PowerPoint (.pptx) files; reading, parsing, or extracting text from any .pptx or .potx file (even if the extracted content will be used elsewhere, like in an email, summary, or creating a different type of slide deck); editing, modifying, or updating existing presentations; combining or splitting slide files; working with templates (.potx), layouts, speaker notes, or comments. Trigger whenever the user asks for a PowerPoint or .pptx file, or references a .pptx or .potx filename, regardless of what they plan to do with the content afterward. However, when the user asks for a deck, slides, a slide deck, or a presentation without naming a file format, default to using a dedicated slide-deck artifact type or a separate slides skill if this session offers one; otherwise, use this skill.
+
+Read ID: presentations:Presentations
+Skill: presentations:Presentations
+Description: Read, create or edit PowerPoint or Google Slides decks. Use for presentation, slide deck, PowerPoint, PPT, PPTX, or Google Slides requests.
+
+Read ID: receiving-code-review
+Skill: receiving-code-review
+Description: Use when receiving code review feedback — from the user, a GitHub PR comment thread, a review bot, or a reviewer agent (e.g. output of the requesting-code-review skill) — before implementing any suggested change, especially when items are unclear, conflict with prior decisions, or seem technically wrong for this codebase.
+
+
+Read ID: recommend-causal-design
+Skill: recommend-causal-design
+Description: Use when choosing a research design for a causal question before estimation: policy impact, treatment effects, ATE/ATT/ITT/LATE, confounding, identification, DAGs, experiments, difference-in-differences, instrumental variables, regression discontinuity, synthetic control, matching/weighting, interrupted time series, or time-varying treatments. Trigger on "did X cause Y", "which causal method", or "can these data identify this effect".
+
+
+Read ID: recommend-probabilistic-model
+Skill: recommend-probabilistic-model
+Description: Use when choosing a modeling approach for a problem and its data — "which model/method should I use", "what approach fits this dataset", "recommend a model", "is this Poisson or negative binomial", "how do I handle overdispersion / zero-inflation / panel data / many predictors". Covers regression / GLMs / counts, classification, hierarchical/multilevel, time series & state-space, Gaussian processes, dimensionality reduction & (dynamic) factor models, mixtures & clustering, and probabilistic graphical models, grounded in Kevin Murphy's Probabilistic Machine Learning (PML) books. Trigger on model selection, "which method for X", recommending an approach before fitting, or deciding between Poisson/NB/zero-inflated, pooled vs hierarchical, GP vs parametric, PCA vs factor model, HMM vs state-space. Consult BEFORE fitting a model — not for executing the fit itself.
+
+
+Read ID: recommend-visualization
+Skill: recommend-visualization
+Description: Use when you need to choose — and then build — the right chart for a dataset: "which chart should I use", "how do I visualize this", "what's the best plot for X", "recommend a visualization", or building a figure in Altair / matplotlib / plotly. Trigger on a visualization intent (trend over time, comparison, distribution, correlation / relationship, part-to-whole, ranking, geographic, flow) and on the symptoms of a bad chart choice: "too many slices for a pie", an overplotted scatter / blob of points, a spaghetti multi-line, a skewed distribution that needs a log scale, "top-N with an other bucket", small multiples / faceting, dual-axis or 3D temptations, a colorblind-safe palette, direct labels vs. a legend, or deciding between Altair, matplotlib, and plotly. Also when turning an explore-data profile into a chart, or picking encodings (which field maps to x / y / color / facet / size). Polars-first.
+
+
+Read ID: requesting-code-review
+Skill: requesting-code-review
+Description: Use when completed work needs a code review — after finishing a task or major feature, before merging a branch or opening a PR, when reviewing a commit range (BASE..HEAD) against its plan or requirements, when stuck and wanting a fresh pass on recent commits, or after fixing a complex bug.
+
+
+Read ID: setting-up-cloudwatch-observability
+Skill: setting-up-cloudwatch-observability
+Description: Sets up CloudWatch Application Observability (also called Omni) for the first time. Covers creating an Omni Space or Domain; configuring Omni access grants and access profiles; provisioning an Omni ingestion endpoint; wiring an application (Python, Node.js, Java, .NET on EC2, ECS, EKS, or Lambda) or an AI agent with the ADOT SDK so its OpenTelemetry traces reach an Omni endpoint — CloudWatch Omni instrumentation ONLY; NOT Application Signals auto-instrumentation, NOT X-Ray, NOT a CloudWatch Agent add-on — including no-image-rebuild instrumentation and CoreCLR profiler env vars for .NET; ingesting Azure telemetry via the CloudWatch agent; and connecting the DevOps Agent or Slack to a Space. Omni onboarding only. For Application Signals onboarding or auto-instrumentation (monitored Application Signals service, ServiceEvents, CI/CD deploy metadata), use aws-observability. For day-2 use of an onboarded Space (queries, dashboards, alerts, debugging), also use aws-observability.
+
+Read ID: signing-in-to-aws
+Skill: signing-in-to-aws
+Description: Gets AWS credentials for CLI/SDK access via `aws login`. Activates when a developer needs to authenticate to AWS for local development, when an AWS operation fails due to missing or expired credentials, or when someone asks about setting up AWS access. Triggers: "set up AWS", "configure AWS", "aws login", "get credentials", "authenticate", "session expired", "token expired", "no credentials", "AccessDeniedException" with no configured credentials.
+
+Read ID: sites:sites
+Skill: sites:sites
+Description: Use Sites when the user wants a complete website built for them, requests changes to a website already built with Sites, wants to publish a website with Sites, or wants to manage Sites hosting.
+
+Read ID: skill-creator
+Skill: skill-creator
+Description: Create new skills, modify and improve existing skills, and measure skill performance. Use when users want to create a skill from scratch, edit, or optimize an existing skill, run evals to test a skill, benchmark skill performance with variance analysis, or optimize a skill's description for better triggering accuracy.
+
+Read ID: skill-creator [system]
+Skill: skill-creator
+Description: Create or update a Codex skill with appropriately scoped instructions and any needed supporting resources.
+
+Read ID: skill-creator:skill-creator
+Skill: skill-creator:skill-creator
+Description: Create new skills, modify and improve existing skills, and measure skill performance. Use when users want to create a skill from scratch, edit, or optimize an existing skill, run evals to test a skill, benchmark skill performance with variance analysis, or optimize a skill's description for better triggering accuracy.
+
+Read ID: skill-installer
+Skill: skill-installer
+Description: Install Codex skills into $CODEX_HOME/skills from a curated list or a GitHub repo path. Use when a user asks to list installable skills, install a curated skill, or install a skill from another repo (including private repos).
+
+Read ID: spreadsheets:Spreadsheets
+Skill: spreadsheets:Spreadsheets
+Description: Use skill when user requests to create, modify, analyze, visualize, or work with spreadsheet files (`.xlsx`, `.xls`, `.csv`, `.tsv`) or Google Sheets with formulas, formatting, charts, tables, and recalculation. Do not use for live controlling Microsoft Excel app or a live Excel session.
+
+Read ID: spreadsheets:excel-live-control
+Skill: spreadsheets:excel-live-control
+Description: Control an open or active Microsoft Excel workbook through the ChatGPT add-in or connected session. Use when the user tags the Microsoft Excel app in Codex or follows up on an established live Excel task. Do not use for standalone spreadsheet files or Google Sheets.
+
+Read ID: subagent-driven-development
+Skill: subagent-driven-development
+Description: Use when executing an implementation plan task-by-task in the current session. Trigger on: "execute this plan", "implement the plan", a plan header naming subagent-driven-development as the required sub-skill, a specs/plans/*.md handoff from writing-plans, or resuming a partially executed plan. Not for tightly coupled tasks needing one continuous context, or partner-requested direct execution (use executing-plans).
+
+
+Read ID: systematic-debugging
+Skill: systematic-debugging
+Description: Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes — including flaky or intermittent tests, race conditions or arbitrary sleeps/timeouts in tests, test pollution where state leaks between tests, errors deep in a stack trace, works-locally-but-fails-in-CI, a regression after a dependency or config change, or when previous fixes didn't stick and you're tempted to try one more quick change.
+
+
+Read ID: tech-debt
+Skill: tech-debt
+Description: Use when auditing a research or data codebase for technical debt — periodic code-health triage, cleaning up before handing a project off, deciding what to refactor or delete next, building a maintenance backlog, or estimating refactor effort. Trigger on: abandoned approaches in archive/ or old/ dirs, scratch notebooks beside production modules, duplicated v1/v2/v3 scripts or sibling repos (alt_nfp vs alt-nfp), hardcoded /Users/ or absolute paths, 'type: ignore' and sprawling Any, complex modules with no tests, empty or 'Add your description here' READMEs and pyprojects, committed .env files or API keys, raise NotImplementedError / TODO / FIXME stubs, and reproducibility hazards (datetime.now() in a pipeline, magic seeds, as-of/vintage joins without guards). Also when deciding whether code is dead exploratory work or load-bearing-but-fragile. Tuned for a Polars / NumPyro / PyMC / BLS-ETL stack.
+
+
+Read ID: template-creator:template-creator
+Skill: template-creator:template-creator
+Description: Create or update a reusable personal Codex artifact-template skill. Use when the user invokes $template-creator or asks in natural language to create a reusable template from a reference document, presentation, spreadsheet, Google Docs, Slides, or Sheets link, ImageGen or Product Design image, email, Slack message, or Site project, or explicitly asks to edit or update a passed artifact-template skill. Do not use for one-off creation from an existing template.
+
+Read ID: test-driven-development
+Skill: test-driven-development
+Description: Use when implementing any feature or bugfix, before writing implementation code
+
+Read ID: track-model-experiments
+Skill: track-model-experiments
+Description: Use when iterating over multiple Bayesian/probabilistic model variants and losing track of them — trying different priors, likelihoods, distribution parameters, or hierarchical structure across churn-logistic → v2 → v3 and unable to reconstruct what changed or why one won. Trigger on: comparing many NumPyro/ArviZ model versions, "which model fits best", keeping an experiment log or ledger of model runs, ranking variants by ELPD/LOO, recording what changed between model versions, deciding which variant to ship, or knowing when to stop iterating. Sits above a per-variant analysis folder and complements bayesian-workflow's model comparison. Not for tuning continuous ML hyperparameters (that is tune-hyperparameters).
+
+
+Read ID: tune-hyperparameters
+Skill: tune-hyperparameters
+Description: Use when tuning model hyperparameters and unsure how to do it without leaking or overfitting — searching regularization strength, tree depth, or learning rate for a nowcasting/tabular model, or setting inference knobs (NUTS target_accept / max_tree_depth, SVI learning rate/steps, dynamax optax SGD). Trigger on: cross- validation for time-series/temporal data, rolling-origin / walk-forward / purged / embargoed CV, "which hyperparameters", grid/random/Optuna search, avoiding future leakage in CV, when NOT to tune, or graduating a tuned model to a compared variant. Guards temporal leakage; revision/vintage leakage belongs to develop-testing-strategy.
+
+
+Read ID: using-git-worktrees
+Skill: using-git-worktrees
+Description: Use when starting feature work, a bugfix, or plan execution that must not disturb the current checkout — before executing an implementation plan, when the working tree has uncommitted changes to protect, when the user asks for a worktree, isolated workspace, or branch sandbox, or when parallel agents need separate checkouts of the same repo.
+
+
+Read ID: validate-data
+Skill: validate-data
+Description: Use when QA-ing a dataset or an analysis before it is shared, published, or fed downstream — the last gate before a number leaves your laptop. Trigger on: "is this ready to publish", "sanity-check this dataset/parquet", "review my analysis", "do the numbers reconcile", "why doesn't this match the official total", validating an ETL output, pre-publish review, "I can't reproduce yesterday's run", a silent cache or fallback masking a failure, a coverage ratio that looks too clean, a decomposition whose components don't add up, unexpected nulls / duplicate keys / dtype drift in a parquet, future leakage past the as-of date on revised series (QCEW/CES/JOLTS vintages), or a claim that a result is "fine" without an independent check. Always consult before signing off on data or an analysis — these checks are the ones agents skip unprompted.
+
+
+Read ID: verification-before-completion
+Skill: verification-before-completion
+Description: Use when about to claim work is complete, fixed, done, or passing — before committing, pushing, opening a PR, marking a task or todo complete, moving to the next task, or relaying a subagent's success report; also when tempted to say "should work now" or "looks correct", or to wrap up while tired.
+
+
+Read ID: visualize:visualize
+Skill: visualize:visualize
+Description: Create visualizations and interactive tools directly in conversation. Proactively use to show how something works; explore 'what happens when', 'what changes', or 'help me understand'; compare or inspect; create simulations, maps, charts, graphs, and mockups. Use standard tools for static scientific figures.
+
+Read ID: work-pets:create-pet
+Skill: work-pets:create-pet
+Description: Create, repair, validate, preview, upload, or activate an animated v2 pet in ChatGPT Work mode from a character idea, brand cue, or reference image. Use for new ChatGPT Pets, custom mascots, non-pixel styles, and unattached sprite sheets requiring nine animation states plus sixteen look directions. Preserve Library artifacts and Pets MCP lifecycle behavior. Exclude real pets, standalone images, and other-app pets; clarify before invoking.
+
+Read ID: work-pets:pets
+Skill: work-pets:pets
+Description: List, inspect, select, download, or delete animated pets in ChatGPT Work mode. Use for an explicit pet in ChatGPT or established ChatGPT Pets context. Exclude real-world and other-app pets; clarify before invoking.
+
+Read ID: work-pets:update-pet
+Skill: work-pets:update-pet
+Description: Inspect, validate, preview, repair, or update a custom pet in ChatGPT Work mode, including its name, description, or sprite sheet. Use for a pet in ChatGPT or established ChatGPT Pets context. Exclude real-world and other-app pets; clarify before invoking.
+
+Read ID: writing-plans
+Skill: writing-plans
+Description: Use when you have a spec, design doc, or requirements for a multi-step task and need an implementation plan before touching code — "write a plan", "plan this feature", "break this into tasks", a finished spec in specs/ awaiting its plan, or before handing work to subagents or a separate execution session.
+
+
+Read ID: writing-skills
+Skill: writing-skills
+Description: Use when creating a new skill, editing or renaming an existing skill, or verifying a skill before deployment — including writing SKILL.md frontmatter (name/description limits), fixing a skill that fails to trigger or over-triggers, tightening a description, structuring references/ and scripts/, pressure-testing a discipline skill, or micro-testing wording changes against a no-guidance baseline.
+
+
+Read ID: xlsx
+Skill: xlsx
+Description: Use this skill any time a spreadsheet file is the primary input or output. This means any task where the user wants to: open, read, edit, or fix an existing .xlsx, .xlsm, .xltx, .csv, or .tsv file (e.g., adding columns, computing formulas, formatting, charting, cleaning messy data); create a new spreadsheet from scratch or from other data sources; or convert between tabular file formats. Trigger especially when the user references a spreadsheet file by name or path — even casually (like "the xlsx in my downloads") — and wants something done to it or produced from it. Also trigger for cleaning or restructuring messy tabular data files (malformed rows, misplaced headers, junk data) into proper spreadsheets. The deliverable must be a spreadsheet file. Do NOT trigger when the primary deliverable is a Word document, HTML report, standalone Python script, database pipeline, or Google Sheets API integration, even if tabular data is involved.

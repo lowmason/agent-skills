@@ -1,0 +1,40 @@
+{
+  "selected_primary": "bayesian-workflow",
+  "selected_supporting": [],
+  "correctness": "correct",
+  "posterior_boundary": "preserved",
+  "rationale": "NumPyro/NUTS posterior inference selects and fully reads bayesian-workflow; deep-learning is read to settle the neural overlap and excluded by its posterior boundary. Preselection first-page budget replay is retained.",
+  "full_payloads_manually_read": true,
+  "display_reads_manually_verified": true,
+  "conflicts_or_resident_choices": [],
+  "evidence": [
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-candidate-1/response.txt",
+      "line": 1
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-candidate-1/read-events.jsonl",
+      "line": 2
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-candidate-1/research-notes.md",
+      "line": 1
+    }
+  ],
+  "reviewed_utc": "2026-10-04T03:22:47.467714+00:00",
+  "catalog_manifest_sha256": "3f3e5414d6a6c76a68c4038003aab5c025f32a7b2451f4245304b7261c9a1df0",
+  "payloads": {
+    "response.txt": {
+      "sha256": "3da61042629590a93dc9359273a02b289a7b51cf63ae4914efdba6f2b0289fd3",
+      "bytes": 869,
+      "lines": 9
+    },
+    "research-notes.md": {
+      "sha256": "b26f5eb8245d64822705a463f62b4230a7a57bed1ef61d7dcee3169256bede33",
+      "bytes": 1411,
+      "lines": 11
+    }
+  },
+  "grading_source": "conductor manual full-response judgment",
+  "semantic_grading_automated": false
+}

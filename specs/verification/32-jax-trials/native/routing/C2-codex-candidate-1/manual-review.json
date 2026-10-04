@@ -1,0 +1,42 @@
+{
+  "selected_primary": "evaluate-deep-learning",
+  "selected_supporting": [
+    "validate-data"
+  ],
+  "correctness": "correct",
+  "posterior_boundary": "preserved",
+  "rationale": "Unequal-budget checkpoint comparison selects and reads evaluate-deep-learning; validate-data supports only applicable input and conclusion QA without importing BLS or posterior artifacts. No Bayesian guidance is loaded.",
+  "full_payloads_manually_read": true,
+  "display_reads_manually_verified": true,
+  "conflicts_or_resident_choices": [],
+  "evidence": [
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-candidate-1/response.txt",
+      "line": 1
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-candidate-1/read-events.jsonl",
+      "line": 2
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-candidate-1/research-notes.md",
+      "line": 1
+    }
+  ],
+  "reviewed_utc": "2026-10-04T03:10:14.152945+00:00",
+  "catalog_manifest_sha256": "3f3e5414d6a6c76a68c4038003aab5c025f32a7b2451f4245304b7261c9a1df0",
+  "payloads": {
+    "response.txt": {
+      "sha256": "ad6ff012e75fd139270f9090e07bbd7e7c5ec5242c7eb748c97320b27feddf39",
+      "bytes": 1276,
+      "lines": 10
+    },
+    "research-notes.md": {
+      "sha256": "a9222fcdf30e362932590dd505031ed20b5c3e2fd543ae85b989227a68a7a9af",
+      "bytes": 1296,
+      "lines": 10
+    }
+  },
+  "grading_source": "conductor manual full-response judgment",
+  "semantic_grading_automated": false
+}

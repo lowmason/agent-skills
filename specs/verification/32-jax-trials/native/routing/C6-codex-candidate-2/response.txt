@@ -1,0 +1,10 @@
+Primary skill: optimize-jax.
+Supporting skills: none.
+The task is to improve generation speed while checking KV-cache correctness.
+The catalog explicitly assigns inference/generation, prefill/decode, profiling, and KV caches to optimize-jax.
+Its full body requires a trusted independent full-prefix causal-attention reference before cache changes.
+It checks logits, greedy tokens, positions, masks, cache cursor, padding, capacity, overflow, and stochastic replay.
+It then measures prefill and decode separately, with synchronization and consistent request boundaries.
+deep-learning is unnecessary without training/objective/learned-quality work; evaluate-deep-learning is unnecessary without checkpoint/research comparisons.
+develop-testing-strategy becomes relevant if permanent tests are designed; that additional scope is not stated here.
+This is a skill-selection explanation only; no optimization, test execution, reference loading, or implementation was performed.

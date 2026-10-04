@@ -1,0 +1,10 @@
+Primary skill: optimize-jax.
+Supporting skill: systematic-debugging.
+The task is unexpected recompilation in a non-learning JAX calculation, exactly within optimize-jax's execution boundary.
+Its full body explicitly covers numerical programs and simulations, stable callables, input signatures, specialization logs, and repeated input sequences.
+Systematic-debugging supports reproducing the issue and identifying its cause before selecting any fix.
+The diagnosis would distinguish shape, dtype, weak-type, static-argument, PyTree, callable-identity, or placement changes using evidence.
+No specific cause or remedy is established by the short task description.
+Deep-learning, evaluate-deep-learning, bayesian-workflow, and tune-hyperparameters are not selected: no learned model, checkpoint comparison, posterior inference, or tuning task is stated.
+Test-design and implementation-phase skills can become relevant during authorized execution; this selection does not invoke those phases.
+Only skill selection and explanation were performed; the calculation was not inspected, changed, run, or claimed fixed.
