@@ -148,10 +148,10 @@ the work, then spread — is in
 [references/model-selection.md](references/model-selection.md); read it before
 the first dispatch of a plan.
 
-**Tiers** (update these IDs when the lineup changes; the aliases are the durable part):
-- **cheap** — Haiku 4.5 (dispatch alias `haiku`)
-- **standard** — Sonnet 5 (dispatch alias `sonnet`)
-- **capable** — Opus 4.8 (dispatch alias `opus`)
+**Tiers** (each tier is its dispatch alias; the version behind an alias depends on your provider and settings):
+- **cheap** — Haiku (dispatch alias `haiku`)
+- **standard** — Sonnet (dispatch alias `sonnet`)
+- **capable** — Opus (dispatch alias `opus`)
 
 **Always specify the model explicitly when dispatching** — pass the tier's
 dispatch alias (`haiku` / `sonnet` / `opus`), not the version ID, which the
