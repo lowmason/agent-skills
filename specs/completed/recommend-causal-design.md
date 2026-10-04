@@ -1,6 +1,6 @@
 # Recommend Causal Design
 
-**Status: COMPLETE (2026-10-03)** — implemented by plan 33; nothing deferred.
+**Status: COMPLETE (2026-10-03)** — implemented by plan 37; nothing deferred.
 
 Approved scope: the user approved the recommendation in this chat on 2026-10-03.
 
