@@ -56,6 +56,24 @@ bayesian-workflow/
     only; the skill reproduces no text and bundles no copies of any of
     them.
 
+recommend-causal-design/ selectively adapts the planning workflows of
+Robson Tigre's causal-planner in everyday-causal-skills (MIT, Copyright (c)
+2026 Robson Tigre; source commit 5317ebc8affd36a7132739d480ccfae22f4bb3ad)
+and Alexandre Andorra's causal-inference in Learning-Bayesian-Statistics/
+baygent-skills (MIT, Copyright (c) 2026 Learning Bayesian Statistics;
+source commit 18ab0de9b63b5bb03caa96146235e8f1534d45d4). Both full upstream
+MIT notices are retained in LICENSE-causal-design-sources. Modifications
+are by Lowell Mason under the same MIT terms. Adaptation is limited to
+the planning shape: interview/estimand, causal diagram, identification,
+candidate selection, and a written handoff. Method guidance, routing,
+memo contract and example are newly written. No upstream estimator code,
+fitting instructions, decision-tree heuristics, automated causal grading,
+or repeated mandatory approval checkpoints are imported. Primary papers,
+Hernan and Robins' Causal Inference: What If, and official implementation
+documentation are cited in original wording by author-year/topic only;
+no book/paper prose, figures, PDFs, or other document copies are bundled.
+Pinned URLs and the bibliography are in the skill's references/sources.md.
+
 The following skills are original works by Lowell Mason, MIT licensed:
 
     develop-testing-strategy/

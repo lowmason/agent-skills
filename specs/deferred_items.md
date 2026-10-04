@@ -148,6 +148,15 @@
   verification). This branch brings the latter's plan to main, renumbered at the
   merge from 32 to `36-synthesize-mode-scenario-verification.md` because main
   already held a plan 32; it closes neither aged item.
+- 2026-10-04 — finished `codex/recommend-causal-design` (plan 37, renumbered at
+  the merge from 33) with 2 items aged >45d, carried on the partner's 2026-09-28
+  reason, which they chose again for this branch, verbatim: "Unrelated to this
+  branch: the DL/NLP slots wait on a real DL/NLP target, and the synthesize-mode
+  checks wait on their own plan." The items are the same two
+  `18-methodology-pipeline-skills` items (70d: the DL/NLP template extension,
+  synthesize-mode scenario verification); the latter's plan is
+  `36-synthesize-mode-scenario-verification.md` on main. This branch adds the
+  recommend-causal-design skill; it touches neither aged item.
 
 ## 11-delegation-frontmatter-rollout — 2026-07-19
 - [x] Haiku-pinned `Explore` override agent (fork-isolation upgrade; plan "Out of
