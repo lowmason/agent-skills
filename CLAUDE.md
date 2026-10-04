@@ -17,10 +17,7 @@ uv run --python 3.13 --with pyyaml python build/sync_runtime_assets.py
 uv run --python 3.13 --with pyyaml python build/sync_runtime_assets.py --check
 ```
 
-The generator translates manifest syntax and Gemini tool names only. Codex and
-Gemini agents inherit the active runtime model; Claude-specific model pins do
-not cross runtimes. Gemini gets TOML command adapters. Codex has no command
-adapter here; reusable Codex workflows are skills.
+The generator translates manifest syntax and Gemini tool names only. Codex and Gemini agents inherit the active runtime model; Claude-specific model pins do not cross runtimes. Gemini gets TOML command adapters. Codex has no command adapter here; reusable Codex workflows are skills.
 
 ## Provenance is load-bearing — preserve it
 
@@ -55,153 +52,102 @@ A skill's references into other skills and to commands are install dependencies;
 
 ## Build tooling (`build/`)
 
-Most of `build/` is the citation-verification pipeline for `recommend-probabilistic-model`; see `build/CLAUDE.md` for its gates and ground truth. `sync_runtime_assets.py` is the separate cross-runtime adapter generator. **`build/.scratch/` is gitignored and must never be committed** — it contains own-use extraction of CC-BY-NC-ND material.
+`build/` holds the repo's lints and commit gates, the cross-runtime adapter generator (`sync_runtime_assets.py`), and the citation-verification pipeline for `recommend-probabilistic-model`; `build/CLAUDE.md` describes each. **`build/.scratch/` is gitignored and must never be committed** — it contains own-use extraction of CC-BY-NC-ND material.
 
 ## Commands
 
-There is no root test runner or repo-wide `pyproject`, and the scientific deps (numpy, polars, pytest) aren't installed into the interpreter directly. Run everything through `uv run` pinned to the Homebrew Python 3.13, supplying deps inline. Tests use **bare imports** and are **directory-scoped** — run pytest from inside the relevant directory, not the repo root: each suite pins its own inline deps, and a repo-root collection fails outright anyway, since `geographic-codes` and `classification-codes` both ship a `test_build.py` whose basenames collide under pytest's prepend import mode with no `__init__.py`.
+There is no root test runner or repo-wide `pyproject`, and the scientific deps (numpy, polars, pytest) aren't installed into the interpreter directly. Run everything through `uv run` pinned to the Homebrew Python 3.13, supplying deps inline. Tests use **bare imports** and are **directory-scoped** — run pytest from inside the relevant directory, not the repo root: each suite pins its own inline deps, and a repo-root collection fails outright anyway, since `geographic-codes` and `classification-codes` both ship a `test_build.py` whose basenames collide under pytest's prepend import mode with no `__init__.py`. Comments name the extra `--with` deps that unlock a suite's skips; pytest's summary line gives the counts.
 
 ```bash
-# Cross-runtime adapters, installer, and DEPENDENCIES drift — 62 tests
-cd build && uv run --python 3.13 --with pytest --with pyyaml \
-  python -m pytest -q test_runtime_support.py
+# Cross-runtime adapters, installer, and DEPENDENCIES drift
+cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_runtime_support.py
 
-# Full build-directory tests — 271 tests
-# (93 citation/lint/snippet + 62 runtime-support + 37 CPU-example process-contract + 79 conformance)
-# (all 271 collect either way. 9 of test_check_snippets.py's need the ArviZ/NumPyro chain and
-# skip without it, so the command below reports 262 passed, 9 skipped; append
-# --with "arviz>=1.0" --with arviz-base --with arviz-stats --with arviz-plots --with numpyro
-# --with jax --with matplotlib to run all 271. Separately, 5 in test_verify_citations.py need the
-# build/.scratch/ ground truth — lacking both: 257 passed, 4 failed, 10 skipped. .scratch/ is
-# gitignored, so a fresh clone or worktree lacks it; regenerate with build/extract_structure.py,
-# see build/CLAUDE.md)
+# Full build-directory tests. The snippet tests that need the stack skip unless you add --with "arviz>=1.0"
+# --with arviz-base --with arviz-stats --with arviz-plots --with numpyro --with jax --with matplotlib. A fresh clone
+# or worktree lacks the gitignored build/.scratch/, so test_verify_citations.py's ground-truth tests fail or skip there
 cd build && uv run --python 3.13 --with pytest --with numpy --with polars --with pyyaml python -m pytest -q
 
-# recommend-probabilistic-model signal-extractor tests — 10 tests
+# recommend-probabilistic-model signal-extractor tests
 cd skills/recommend-probabilistic-model/scripts && uv run --python 3.13 --with pytest --with numpy --with polars python -m pytest -q
 
-# recommend-visualization router tests — 29 tests
+# recommend-visualization router tests
 cd skills/recommend-visualization/scripts && uv run --python 3.13 --with pytest --with numpy --with polars python -m pytest -q
 
-# tune-hyperparameters CV-splitter tests — 6 passed, 2 skipped
-# (the 2 skips are optional-dep guards: add --with scikit-learn --with optuna to run all 8;
-# the PyPI name is scikit-learn, not sklearn — --with sklearn fails to install)
+# tune-hyperparameters CV-splitter tests; its skips need --with scikit-learn --with optuna (--with sklearn fails)
 cd skills/tune-hyperparameters/scripts && uv run --python 3.13 --with pytest --with numpy --with polars python -m pytest -q
 
-# track-model-experiments ledger/compare tests — 11 tests (~20–50 s depending on the uv cache; needs the full
-# numpyro + NetCDF-writer chain, since the tests round-trip InferenceData to .nc)
+# track-model-experiments ledger/compare tests (~20–50 s, depending on the uv cache). They round-trip
+# InferenceData to .nc, so they need the full numpyro + NetCDF-writer chain
 cd skills/track-model-experiments/scripts && uv run --python 3.13 --with pytest --with numpy --with polars --with arviz --with numpyro --with h5netcdf --with h5py python -m pytest -q
 
-# bayesian-workflow script tests (MCSE precision block + divergence-gate and per-finding calibration
-# next steps + calibration verdicts from one owned PIT on both paths: the pot_c rules, the figures
-# drawing the JSON's own values, --ci-prob plumbing and the --loo-pit group checks) — 120 tests
-# (this command reports 117 passed, 3 skipped: add --with matplotlib to run the figure-rendering
-# test, and set CALIBRATION_SWEEP=1 to run the 2-path pre-registered acceptance sweep — seeds 0-99,
-# about a minute and a half; -s prints its counts. 4 arviz RuntimeWarnings — "invalid value
-# encountered in scalar divide" on the constant-parameter fixture — are expected and not silenced)
+# bayesian-workflow script tests (MCSE precision, divergence-gate and calibration next steps and verdicts, figures,
+# --ci-prob, --loo-pit group checks). --with matplotlib runs the figure test; CALIBRATION_SWEEP=1 runs the
+# pre-registered acceptance sweep over both paths (seeds 0-99, about 1.5 min; -s prints its counts). arviz's
+# "invalid value encountered in scalar divide" warnings on the constant-parameter fixture are expected, not silenced
 cd skills/bayesian-workflow/scripts && uv run --python 3.13 --with pytest --with arviz --with arviz-stats --with numpy --with xarray python -m pytest -q
 
-# llm-wiki bundled wiki-script tests (bootstrap + lint + session + specs distillers) —
-# 266 tests (stdlib only; these are the scripts the bootstrap installs to a wiki)
-# (3 @needs_pilot round-trip tests in test_distill_specs.py read a pilot reference wiki, resolved
-# from $LLM_WIKI_ROOT and defaulting to ~/research-wiki; where absent: 263 passed, 3 skipped)
+# llm-wiki bundled wiki-script tests (bootstrap, lint, session and specs distillers; stdlib only). The
+# @needs_pilot tests read a pilot wiki at $LLM_WIKI_ROOT (default ~/research-wiki) and skip without one
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest -q
 
-# describe-critique-methodology decoupling-check tests — 22 tests
+# describe-critique-methodology decoupling-check tests
 cd skills/describe-critique-methodology/scripts && uv run --python 3.13 --with pytest python -m pytest -q
 
-# writing-plans deferred-backlog stats tests (parser, age buckets, bad/future dates, --json) — 13 tests
-# (stdlib only; two tests drive the script as a subprocess through sys.executable)
+# writing-plans deferred-backlog stats tests (stdlib only)
 cd skills/writing-plans/scripts && uv run --python 3.13 --with pytest python -m pytest -q
 
-# geographic-codes build tests (interval synthesizer, readers, referential check) — 42 tests
-# (the 7 per-vintage workbook tests need sources/, which is committed)
+# geographic-codes build tests; the per-vintage workbook tests read the committed sources/
 cd skills/geographic-codes/scripts && uv run --python 3.13 --with pytest --with polars --with fastexcel python -m pytest -q
 
-# classification-codes build tests (NAICS/SOC/Census-OCC workbook parsers, concordance link
-# types, referential checks, BLS contact-email fetch guard) — 51 tests
-# (fixtures are in-memory frames, so no workbook reader is needed)
+# classification-codes build tests (fixtures are in-memory frames, so no workbook reader is needed)
 cd skills/classification-codes/scripts && uv run --python 3.13 --with pytest --with polars python -m pytest -q
 
-# explore-data profile.py tests (--json handoff contract, duplicate + quality flags) — 7 tests
-# (the --json contract is recommend-visualization's input; profile.py shadows the stdlib
-# `profile` module, but that's not why this cd's in — see the repo-wide reason above)
+# explore-data profile.py tests (its --json contract is recommend-visualization's input). profile.py
+# shadows the stdlib `profile` module, but the repo-wide reason above is why this cd's in
 cd skills/explore-data/scripts && uv run --python 3.13 --with pytest --with polars python -m pytest -q
 
-# design-architecture ADR-scaffolder tests (numbering, slugify, no-clobber) — 9 tests (stdlib only)
+# design-architecture ADR-scaffolder tests (stdlib only)
 cd skills/design-architecture/scripts && uv run --python 3.13 --with pytest python -m pytest -q
 
-# subagent-driven-development dispatch-script tests (workspace, task-brief fences and exit
-# codes, review-package, and both scripts' default-workspace output paths) — 24 tests
-# (stdlib only; drives the three bash scripts as subprocesses)
+# subagent-driven-development dispatch-script tests (stdlib only; they drive its bash scripts)
 cd skills/subagent-driven-development/scripts && uv run --python 3.13 --with pytest python -m pytest -q
 
-# read-only agent guard tests (Gate A: classifier units + payload contract) — 274 tests
-# (the guard is stdlib only and must stay 3.9-compatible, so run BOTH commands. Each of the
-# 14 contract tests runs twice through the hook's shebang, on the test's PATH and on
-# launchd's /usr/bin-first PATH, since under uv run the shebang resolves to uv's pinned
-# python, never reliably 3.9. The second command runs the whole suite, unit tests
-# included, under the 3.9 floor. Where /usr/bin/python3 is missing or not 3.9, the first
-# reports 260 passed, 14 skipped (-rs shows why) and the second does not test the floor.
-# Gate B is the live probe: ./hooks/probe-readonly-guard.sh, which spawns claude -p)
-cd hooks && uv run --python 3.13 --with pytest python -m pytest -q \
-  && uv run --python /usr/bin/python3 --with pytest python -m pytest -q
+# read-only agent guard tests (Gate A: classifier units, payload contract). The guard is stdlib only and must stay
+# 3.9-compatible, so run BOTH: the first runs each contract test through the hook's shebang on the test's PATH and on
+# launchd's /usr/bin-first PATH (under uv run the shebang resolves to uv's pinned python); the second runs the whole
+# suite under the 3.9 floor. Where /usr/bin/python3 is missing or not 3.9, the launchd-PATH runs skip (-rs shows why)
+# and the floor goes untested. Gate B is the live probe, ./hooks/probe-readonly-guard.sh, which spawns claude -p
+cd hooks && uv run --python 3.13 --with pytest python -m pytest -q && uv run --python /usr/bin/python3 --with pytest python -m pytest -q
 
 # Frontmatter, provenance and guide-conformance lints (run before committing any Claude Code artifact)
 uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
 uv run --python 3.13 python build/check_provenance.py
 uv run --python 3.13 --with pyyaml python build/check_conformance.py
 
-# Dependency drift: skill and command text vs install.py's DEPENDENCIES (run before
-# committing skill changes that add or drop a cross-skill or /command reference)
-cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q \
-  test_runtime_support.py -k declared_dependencies
+# Dependency drift: skill and command text vs install.py's DEPENDENCIES (run before committing a skill
+# change that adds or drops a cross-skill or /command reference)
+cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_runtime_support.py -k declared_dependencies
 
-# Snippet gate. Three tiers, cheapest first; each includes the ones above it. Failures on
-# stdout (exit 1), advisories on stderr as `WARN` (exit 0), exit 2 for a missing stack with
-# the remediation command printed.
-# NOTE the scopes differ: Tier 1 covers ALL of skills/ (stdlib, so it costs nothing to run
-# everywhere); Tiers 2 and 3 stay scoped to skills/bayesian-workflow, whose stack they import
-# and execute against — their module map knows only that stack (arviz / numpyro / jax), so
-# pointing them wider checks nothing extra.
-# Two fence markers opt a block out, each REQUIRING a reason (tests pin this): `norun`
-# (execution only — parsing still applies) and `noparse` (parsing too, and so execution).
-# Reach for `noparse` only when dedenting or completing the block would damage what it
-# teaches — one block uses it today; otherwise fix the snippet.
+# Snippet gate: three tiers, cheapest first, each including those above. Tier 1 covers all of skills/; Tiers 2 and 3
+# only skills/bayesian-workflow, whose stack they import. build/check_snippets.py documents the fence markers (norun,
+# noparse, fixture=<name>). If a block raises under Tier 3, fix it: norun is for blocks that cannot run by design.
 # Tier 1 (parse-only, stdlib, instant) — run before committing any skill edit:
 uv run --python 3.13 python build/check_snippets.py skills/
-# Tier 2 (+ resolve dotted library chains from code AND backticked prose; imports the stack,
-# ~30s). Catches a library path that no longer resolves — it found SKILL.md naming
-# `numpyro.infer.config_enumerate`, which lives in numpyro.contrib.funsor:
-uv run --python 3.13 --with "arviz>=1.0" --with arviz-base --with arviz-stats \
-  --with arviz-plots --with numpyro --with jax \
-  python build/check_snippets.py --api skills/bayesian-workflow/
-# Tier 3 (+ execute the harnessed subset against PINNED deps; minutes — 34 of 78 blocks,
-# each a separate subprocess running the full preamble; 3 of those only define functions
-# they never call).
-# The other 44 are advisory on stderr with a per-block reason, never silent. If a block
-# raises, fix the snippet — `norun` is for blocks that cannot run by design, never for
-# blocks that fail. Pins live in build/snippet_preamble.py (PINNED); refresh deliberately:
-uv run --python 3.13 --with 'arviz==1.3.0' --with arviz-base \
-  --with 'arviz-stats==1.3.2' --with 'arviz-plots==1.3.1' \
-  --with 'numpyro==0.21.0' --with 'jax==0.11.1' --with numpy --with matplotlib \
-  python build/check_snippets.py --run skills/bayesian-workflow/
+# Tier 2 (+ resolve dotted library chains from code and backticked prose; imports the stack, ~30s):
+uv run --python 3.13 --with "arviz>=1.0" --with arviz-base --with arviz-stats --with arviz-plots --with numpyro --with jax python build/check_snippets.py --api skills/bayesian-workflow/
+# Tier 3 (+ execute the harnessed subset; minutes; the pins match build/snippet_preamble.py's PINNED, refresh deliberately):
+uv run --python 3.13 --with 'arviz==1.3.0' --with arviz-base --with 'arviz-stats==1.3.2' --with 'arviz-plots==1.3.1' --with 'numpyro==0.21.0' --with 'jax==0.11.1' --with numpy --with matplotlib python build/check_snippets.py --run skills/bayesian-workflow/
 
-# Self-contained CPU-example process-contract tests — 37 tests (stdlib + pytest only)
-# Actual JAX CPU-example execution uses the separate pinned environment below.
-# norun/noparse blocks are not executed; execution does not validate surrounding prose.
+# CPU-example process-contract tests (stdlib + pytest only). The JAX run itself is the pinned command
+# below; it skips norun and noparse blocks and does not validate the surrounding prose
 cd build && uv run --python 3.13 --with pytest python -m pytest -q test_check_jax_examples.py
 
-# Verified deep-learning CPU examples — six canonical Markdown blocks, no preamble.
-# Profile: specs/verification/32-jax-cpu.in -> 32-jax-cpu.txt; refresh deliberately,
-# then rerun. Hardware/checkpoint recipes in references have separate stated limits.
-JAX_PLATFORMS=cpu uv run --python 3.13 \
-  --with-requirements specs/verification/32-jax-cpu.txt \
-  python build/check_jax_examples.py skills/deep-learning/
+# Verified deep-learning CPU examples (canonical Markdown blocks, no preamble), pinned by specs/verification/32-jax-cpu.in
+# -> 32-jax-cpu.txt: refresh deliberately, then rerun. Hardware and checkpoint recipes in references state their own limits
+JAX_PLATFORMS=cpu uv run --python 3.13 --with-requirements specs/verification/32-jax-cpu.txt python build/check_jax_examples.py skills/deep-learning/
 
 # Single test
-cd build && uv run --python 3.13 --with pytest --with numpy --with polars \
-  python -m pytest test_verify_citations.py::test_true_negative_flags_bad_refs
+cd build && uv run --python 3.13 --with pytest --with numpy --with polars python -m pytest test_verify_citations.py::test_true_negative_flags_bad_refs
 
 # End-to-end routing smoke test (no PDFs needed)
 uv run --python 3.13 --with numpy --with polars python build/smoke_test.py
@@ -210,13 +156,13 @@ uv run --python 3.13 --with numpy --with polars python build/smoke_test.py
 uv run skills/geographic-codes/scripts/build.py
 uv run skills/geographic-codes/scripts/build.py --offline
 
-# Rebuild classification-codes data/ from the pinned Census/BLS sources (network; the bls.gov
-# workbooks need BLS_CONTACT_EMAIL exported) or the sources/ cache
+# Rebuild classification-codes data/ from the pinned Census/BLS sources (network; the bls.gov workbooks
+# need BLS_CONTACT_EMAIL exported) or the sources/ cache
 uv run skills/classification-codes/scripts/build.py
 uv run skills/classification-codes/scripts/build.py --offline
 
-# Verify citations across the whole skill (Gate A; exit 0 = all resolve;
-# chapter-fallback WARNs on stderr are non-fatal — confirm those via Gate B)
+# Verify citations across the whole skill (Gate A; exit 0 = all resolve; chapter-fallback WARNs on
+# stderr are non-fatal — confirm those via Gate B)
 uv run --python 3.13 python build/verify_citations.py skills/recommend-probabilistic-model/
 
 # Rebuild citation ground truth (needs local PDFs + gh; writes gitignored build/.scratch/)
