@@ -4,8 +4,9 @@ The Task 6 implementer checks passed on 2026-10-04 UTC: all ten selected
 canonical CPU examples, 99 focused tests, the repository checks, source/evidence
 integrity and private-home installer discovery. No skill, build, installer or
 runtime source required a correction. This record covers the integration
-checks; the controller's fresh Task 6 review and final whole-branch review are
-pending at this initial record commit.
+checks; the controller's fresh Task 6 review and final whole-branch review
+were pending at the initial record commit; accepted review/completion outcomes
+are recorded at the end of this document.
 
 Execution checkout: `/Users/lowell/.codex/worktrees/jax-deep-learning-skills/agent-skills`,
 branch `codex/jax-deep-learning-skills`. The clean starting HEAD and Task 6 scoped
@@ -15,8 +16,8 @@ whitespace checks use the controller-derived BASE
 independently; this verification neither incorporates nor removes its additions.
 Later integration must preserve those concurrent changes and recompute inventories.
 
-The implementation and evidence were checked against the [design](../jax-deep-learning-skills.md)
-and [plan](../plans/32-jax-deep-learning-skills.md), using the full four prior
+The implementation and evidence were checked against the [design](../completed/jax-deep-learning-skills.md)
+and [plan](../plans/completed/32-jax-deep-learning-skills.md), using the full four prior
 records: [training](32-deep-learning.md), [evaluation](32-evaluate-deep-learning.md),
 [execution](32-optimize-jax.md) and [Bayesian routing](32-bayesian-routing.md).
 The native manual scoring reports, frozen guidance manifests, trial conditions,
@@ -385,20 +386,20 @@ dependency appeared. No registration, runtime-adapter change or global
 installation was needed. `rmdir` of that still-empty private destination exited
 0 after output inspection; no user runtime setting or home variable was changed.
 
-## Review and completion boundary
+## Task 6 snapshot and subsequent review outcomes
 
-Task 6 implementer gates and the scoped integration-record self-review are
-complete at this initial commit. Root owns the following subsequent gates and
-will record their actual outcomes; this record does not invent approval or a
+Task 6 implementer gates and the scoped integration-record self-review were
+complete at the initial record commit. Root subsequently resolved the review
+and completion gates below; this record does not invent approval or a
 reviewed SHA:
 
-| Gate | Initial disposition |
+| Gate | Disposition |
 |---|---|
 | Fresh Task 6 task review against scoped BASE | Approved by a fresh built-in full-form reviewer for `094d474..6ec9c90`; no Critical/Important/actionable Minor issue. It compared saved gate/capture/audit artifacts with the committed record; later GPU prose is covered by whole-branch review. |
-| Fresh final whole-branch native review against whole-branch BASE | Pending controller dispatch |
+| Fresh final whole-branch native review against whole-branch BASE | Accepted full-form built-in reviewer for `3abece1..cb18636`; full substantive verdict below. |
 | Different-model-family read-only second opinion | Same-family exception: this runtime is Codex; another Codex opinion is not a different-family review. Use the required fresh native whole-branch reviewer; no external fallback is authorized. |
-| Actionable findings, affected checks, completion/retirement and moved links | Controller resolves before claiming full plan completion |
-| Backlog health and integration/worktree cleanup | Controller performs read-only triage and obtains the owner's concrete integration choice; DL/NLP methodology-template completion is unrelated |
+| Actionable findings, affected checks, completion/retirement and moved links | Closed: no actionable new finding; completed plan/spec retirement and authored-link repair are checked. |
+| Backlog health and integration/worktree cleanup | Read-only health/triage is recorded below. The owner’s integration choice remains pending; DL/NLP methodology-template completion is unrelated. |
 
 No plan/spec retirement, completion ticks, Bayesian ledger generalization,
 methodology-template backlog change, publish, merge or unrelated cleanup occurred
@@ -446,3 +447,114 @@ Changed prose source SHA-256 values after clarification:
 | `evaluate-deep-learning/SKILL.md` | `c7b28dac4fd79a1709b6b2cc2864421307d412e152c70d31340d0cd8e90411c7` |
 | `optimize-jax/SKILL.md` | `5e9e8c7ababf21e98c6cd8ca0da95405841e6e33d0517572cd9f07c374f01bcc` |
 | `optimize-jax/references/inference.md` | `abc14e87ffa1e7f0c20b8f42fb33c8cfa25cdabd21fe37476a946aabbd48ce0a` |
+
+## Final review, completion and integration handoff — 2026-10-04
+
+Root read and accepted the fresh Task 6 review and the complete final whole-
+branch verdict below. No Critical or Important issue remains. Known parse
+advisories and partial RS scope-summary evidence are retained as explicit
+pre-existing/verification limits, not silently changed or newly deferred work.
+The code-reviewer backend was unavailable, so a fresh default built-in Codex
+agent followed the complete read-only reviewer contract. Exact model/effort
+identifiers are unavailable. A fresh context is independent of the implementer;
+no different-model-family second opinion or fabricated reviewed SHA is claimed.
+
+The reviewed source snapshot is `cb18636341e2d7473e31b3b59c64a2420635e86a` against
+merge-base `3abece14e1ff6a129c44e9ffccc46691e93856a9`. Subsequent changes are
+completion bookkeeping and relative-link repair only. The completed plan/spec
+are retired together after the resolve-before-defer pass: no required
+implementation question remains, no earlier deferred item was implemented, and
+nothing new is deferred. The DL/NLP methodology-template item stays open.
+Executable blocks, profiles, frozen trial payloads and product source remain
+unchanged. Owned ignored controller records are removed after durable outcomes
+are retained here; other chats and their worktrees are preserved.
+
+Fresh read-only backlog health:
+
+```text
+Deferred backlog: 13 open, 92 ever closed (closure rate 88%), aged >45d: 2.
+  Oldest open: 70d (18-methodology-pipeline-skills (plan #1, describe-critique-methodology)).
+  Age spread — 0-14d: 6  15-30d: 4  31-45d: 1  46-90d: 2
+```
+
+Read-only triage proposal (no disposition or owner acknowledgement written):
+
+| Group | Sorted proposal and decision condition |
+|---|---|
+| Plan, aged first | Plan 18 / 2026-07-26: verify synthesize-mode locator/order/derive-roadmap behavior with the real critique fixture. Then plan 29 / 2026-09-08: coordinate per-block Bayesian fixtures for the 34 reachable examples outside its existing execution gate. |
+| Quick fix | readonly-guard-leading-token-bypasses / 2026-09-28: model known value-taking prefix-utility options and preserve benign option forms. |
+| Design | deferred-triage / 2026-09-28: settle calibration-label precedence and direction-neutral PIT-only shape failures, including downstream routing. |
+| Hold | Plan 18 / 2026-07-26: DL/NLP methodology-template slots require a real target; these JAX fixtures do not fulfill that requirement. |
+| Hold | Plan 20 / 2026-09-03: settle upstream ArviZ plotting-versus-JSON method/version notes and docstrings together. |
+| Hold | Plan 27 / 2026-09-08: consider WIP-cap escalation only after measured post-sync closure remains flat/falling for 60 days. |
+| Hold | install-py-rework / 2026-09-28: whole-skill handoff dependencies await a reported missing-skill failure or support for alternatives/recommendations. |
+| Hold | readonly-guard-leading-token-bypasses / 2026-09-28: configuration-driven program execution and mixed parser readings are two separate watch items under their recorded predicates. |
+| Hold | Plan 31 / 2026-09-28: effort pins await a relevant session-default/runtime change. |
+| Owner-only Hold | Plan 27 / 2026-09-08: work-machine skill sync, then independent reporter measurements in five alt-nfp repositories; two separate items. |
+| Retire | None: no new closure condition was demonstrated. |
+
+The owner uses `/deferred` to execute a selection. Backlog triage does not block
+implementation completion/retirement. The existing aged-tail gate binds merge
+and PR only: either owner triage or an explicit carry reason is required before
+those paths. No override is taken on the owner's behalf.
+
+Integration handoff: implementation is reviewable on
+`codex/jax-deep-learning-skills`; no merge, push/PR, global skill installation or
+managed-worktree archive is claimed. The concrete options are local merge to
+main, push/create PR, keep, or discard. Concurrent main additions must be
+preserved and inventories recomputed at integration. Managed cleanup uses the
+app's recoverable archive tool only after a merge or confirmed discard; keep
+and PR preserve the worktree.
+
+Recorded environment/provenance before the integration choice:
+
+- GIT_DIR: `/Users/lowell/Projects/agent-skills/.git/worktrees/agent-skills`
+- GIT_COMMON: `/Users/lowell/Projects/agent-skills/.git`
+- WORKTREE_PATH: `/Users/lowell/.codex/worktrees/jax-deep-learning-skills/agent-skills`
+- MAIN_ROOT: `/Users/lowell/Projects/agent-skills`
+- Base branch: `main` from `origin/HEAD`; attached managed worktree created for this chat.
+
+### Full substantive final reviewer verdict
+
+The substantive verdict is preserved below. Rendered local link destinations
+are repository-relative for portability; findings, checks and wording are unchanged.
+
+### Strengths
+
+The branch satisfies R1–R8 with coherent boundaries between neural training, learned-model evaluation, JAX execution work, and posterior inference. The Bayesian change removes only the standalone `JAX` description trigger; the body and other metadata remain intact.
+
+The numerical examples check meaningful behavior. Training covers actual eligible-unit reductions, fixed-fixture learning, finite gradients, and recovery after two completed checkpoints, including the next model/optimizer update, schedule, RNG and cursor. Scientific examples distinguish observations from interpolation and check actual per-trajectory membership, held-out counts, analytic derivatives and tolerance sensitivity. Geometric examples exercise the declared O(3) actions and point permutations without implying translation invariance. LLM examples correctly separate completion eligibility, frozen/trainable updates, immutable SFT reference identity and the DPO zero-margin sanity check.
+
+Execution guidance uses complete output-tree synchronization and separates first encounter, warmed execution, request latency and AOT stages. Cached decoding has a genuinely independent NumPy full-prefix oracle plus logits, greedy tokens, padding, stochastic replay, EOS and capacity checks. The marked-fence runner and regressions address malformed fences that could otherwise silently evade the gate.
+
+The newly requested GPU default is implemented consistently. [deep-learning/SKILL.md](../../skills/deep-learning/SKILL.md:21) and [optimize-jax/SKILL.md](../../skills/optimize-jax/SKILL.md:37) default new neural workloads to GPU while preserving explicit project/device contracts. Setup, visible GPU verification, resident state, compiled loops and distinct precision policies are covered. [inference.md](../../skills/optimize-jax/references/inference.md:316) explicitly scopes the host-controlled cache fixture and describes the required compiled GPU generation path.
+
+### Issues
+
+#### Critical (Must Fix)
+
+None identified.
+
+#### Important (Should Fix)
+
+None identified.
+
+#### Minor (Nice to Have)
+
+No actionable minor findings identified. The documented runtime, hardware, application-trial and routing limitations are appropriately bounded evidence, rather than defects requiring speculative changes.
+
+### Recommendations
+
+Preserve the verification record’s distinctions in the completion summary: executed CPU fixtures are separate from unexecuted application responses; routing is a selection/retrieval simulation; older and native cohorts have separate conditions; and GPU, distributed execution, actual pretrained loading and Tunix recipes remain unexecuted. No additional implementation change or broad gate rerun is needed for this review.
+
+### Assessment
+
+**Ready to merge? Yes.**
+
+**Reasoning:** The implementation matches the approved requirements and incorporates the accepted task findings without losing successful control behavior. The GPU clarification changes the intended deployment guidance while keeping correctness-fixture and hardware-validation claims accurate.
+
+Review scope was the frozen range `3abece14e1ff6a129c44e9ffccc46691e93856a9..cb18636341e2d7473e31b3b59c64a2420635e86a`. I directly reviewed the complete spec and plan, all 17 new live skill sources, runner/tests, dependency records, all five durable verification records, complete manual scoring reports, and all 16 distinct helper implementations represented by 40 copies. I independently examined 12 complete routing responses, covering all six families in both conditions; I did not regrade the accepted application cohorts or reread every raw response.
+
+For the large immutable archive, I accounted for all 923 diff paths and verified reconstructed added-file content against the frozen diff. Read-only integrity checks verified 759 manifest hash entries, four source snapshots, all 31 historical raw-result/response pairs, all 60 routing prompt reconstructions and their payload identities, routing report fingerprints and raw-to-portable conversion, and the exact 138-entry catalog delta. These checks establish content integrity; they do not prove hidden display reading or actual dispatch, and I did not repeat the accepted private 276-body reconstruction audit.
+
+I reviewed the recorded CPU/check evidence and did not rerun model applications, GPU workloads or broad suites. This review used the inherited native Codex runtime; exact model/effort identifiers were unavailable. The remaining completion, spec-retirement and branch-integration steps belong to the root workflow and are not outstanding code-review fixes.

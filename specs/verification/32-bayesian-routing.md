@@ -3,8 +3,8 @@
 Status: matched candidate gate closed by the controller; metadata and compatibility
 checks verified. The metadata checkpoint was recorded at 2026-10-04 02:58:11 UTC;
 fresh finalization checks ran at 2026-10-04 03:36:47 UTC. This record covers Task 5
-of [plan 32](../plans/32-jax-deep-learning-skills.md) and
-[R7](../jax-deep-learning-skills.md#r7--existing-skill-integration-and-routing).
+of [plan 32](../plans/completed/32-jax-deep-learning-skills.md) and
+[R7](../completed/jax-deep-learning-skills.md#r7--existing-skill-integration-and-routing).
 
 ## Change and scope
 

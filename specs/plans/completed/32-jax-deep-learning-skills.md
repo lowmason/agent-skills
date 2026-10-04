@@ -1,5 +1,7 @@
 # Compact JAX Deep-Learning Skills Implementation Plan
 
+**Status: COMPLETE (2026-10-04)** — executed via subagent-driven-development; nothing deferred
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add three compact, tested JAX research skills covering neural-model
@@ -14,7 +16,7 @@ Bayesian preamble. Complete and verify each skill before authoring the next.
 checks; JAX/Flax NNX/Optax/Orbax as the default example stack, Equinox/Diffrax and
 e3nn-jax where appropriate, and documented Tunix/Qwix LLM integration.
 
-**Spec:** `specs/jax-deep-learning-skills.md`, approved 2026-10-03. Requirement
+**Spec:** `specs/completed/jax-deep-learning-skills.md`, approved 2026-10-03. Requirement
 references R1–R8 below name its numbered requirements.
 
 ## Global Constraints
@@ -137,7 +139,7 @@ document the new unit gate. Consume the existing `build/fences.py` unchanged.
   execution failure; invalid CLI arguments use argparse's exit 2. It reports
   selected/executed counts and full child output on failure.
 
-- [ ] **Step 1: Write these process-contract tests first.**
+- [x] **Step 1: Write these process-contract tests first.**
 
 Create `build/test_check_jax_examples.py` with the following source. Tests use
 only pytest and stdlib; they do not download or import the scientific stack.
@@ -229,7 +231,7 @@ def test_explicit_nonrun_reason_is_allowed_but_not_counted(tmp_path):
     assert len(examples) == 1
 ```
 
-- [ ] **Step 2: Run RED from working directory `build/`.**
+- [x] **Step 2: Run RED from working directory `build/`.**
 
 `uv run --python 3.13 --with pytest python -m pytest -q test_check_jax_examples.py`
 
@@ -237,7 +239,7 @@ Expected: collection fails because `check_jax_examples` does not yet exist.
 Inspect the output and distinguish this intended failure from a missing pytest
 environment.
 
-- [ ] **Step 3: Implement the small runner.**
+- [x] **Step 3: Implement the small runner.**
 
 Create `build/check_jax_examples.py` with this complete source:
 
@@ -359,7 +361,9 @@ if __name__ == '__main__':
     raise SystemExit(main())
 ```
 
-- [ ] **Step 4: Run GREEN and inspect all eight tests.**
+- [x] **Step 4: Run GREEN and inspect all eight tests.**
+
+> Deviation: The owner-approved unsupported marked-fence rejection regressions increased the runner gate from eight to 37 meaningful tests; shared fence parsing remains unchanged.
 
 Use the Step 2 command from `build/`. Then run the existing snippet suite there:
 
@@ -369,7 +373,9 @@ Expected: all new tests pass; existing available snippet tests stay green and
 optional-stack tests report their skips. Do not
 broaden the existing Bayesian `PREAMBLE`, module alias map, or `PINNED` tuple.
 
-- [ ] **Step 5: Document the unit command and commit.**
+- [x] **Step 5: Document the unit command and commit.**
+
+> Deviation: Observed full-build collection is 182 (83 citation/lint/snippet + 62 runtime-support + 37 runner); available-stack and private-ground-truth limits remain explicit.
 
 Add the new stdlib/pytest unit command beside existing snippet commands in
 `CLAUDE.md`, noting that CPU example execution uses a separate pinned environment
@@ -417,7 +423,9 @@ references in File Structure. Create `specs/verification/32-deep-learning.md`,
   `recommend-probabilistic-model` only when their responsibility arises. Do not
   make training depend on another skill's private file or named section.
 
-- [ ] **Step 1: Run and record the no-new-skill application baseline.**
+- [x] **Step 1: Run and record the no-new-skill application baseline.**
+
+> Deviation: Historical controls were preauthoring; the owner-selected native Codex controls followed a refined draft with guidance withheld. Cohorts and chronology remain separate.
 
 Create the evidence directory and record fresh responses to these verbatim
 prompts before creating the skill files. Use five samples for D1; use a fresh
@@ -437,7 +445,7 @@ and apply the five-sample micro-test protocol. When the controls already satisfy
 a criterion, keep its useful reference explanation without adding a new
 discipline prohibition. The evidence record distinguishes those dispositions.
 
-- [ ] **Step 2: Resolve the CPU environment used for actual examples.**
+- [x] **Step 2: Resolve the CPU environment used for actual examples.**
 
 Create `specs/verification/32-jax-cpu.in` with these exact package names:
 
@@ -468,7 +476,7 @@ every affected command/evidence record rather than claiming one environment
 verified all families. Keep Tunix checkpoint/accelerator recipes out of this
 small CPU dependency profile unless an actual executable example needs Tunix.
 
-- [ ] **Step 3: Author the main decision procedure and shared references.**
+- [x] **Step 3: Author the main decision procedure and shared references.**
 
 Use this exact frontmatter as the initial discovery candidate:
 
@@ -518,7 +526,7 @@ Do not copy the same example into a script: its canonical code remains in the
 Markdown reference. Show complete source there, with the CPU marker and local
 imports/fixtures, and execute it unchanged using Task 1.
 
-- [ ] **Step 4: Author all six domain references with explicit loading conditions.**
+- [x] **Step 4: Author all six domain references with explicit loading conditions.**
 
 Each reference starts with when to load it, provides architecture/objective
 selection criteria and implementation contracts, names domain failure modes,
@@ -534,7 +542,9 @@ handoff; the current skill still owns its training correctness checks.
 | `generative.md` | VAE ELBO, invertible-flow density/Jacobian, diffusion denoising, and flow-matching velocity objectives; conditioning and sampling; objective versus output-quality comparison. `generative-objectives` demonstrates a small original JAX objective with an independently calculable limiting case and finite gradients. Other families can be concise equations/contracts and authoritative pointers, avoiding a model zoo. |
 | `llm.md` | Autoregressive shifts and masks, tokenizer/special-token/chat-template/checkpoint compatibility; pretraining versus SFT/PEFT/preference/reward choices; supported Tunix/Qwix paths; frozen/reference models, selected trainable leaves, rewards/rollout/advantages, hardware prerequisites. `llm-token-masks` uses synthetic logits/labels and chosen/rejected sequence fixtures to check shift, valid-token/completion reduction, and preference/reference semantics without loading a real checkpoint. Real Tunix/MaxText recipes state their model/accelerator requirements and local verification limits. |
 
-- [ ] **Step 5: Execute syntax/numerical checks, then application checks.**
+- [x] **Step 5: Execute syntax/numerical checks, then application checks.**
+
+> Deviation: Native application grades describe delivered artifacts, not executed proposals or general reliability; six canonical CPU fixtures supply separate runtime evidence.
 
 ```bash
 uv run --python 3.13 python build/check_snippets.py skills/deep-learning/
@@ -553,7 +563,7 @@ irregular continuous-time data and which supports equivariant outputs. Add
 targeted variants for genuine missing information/gaps, then refine and rerun
 the affected checks. A narrative review does not substitute for application.
 
-- [ ] **Step 6: Complete attribution/docs and commit this verified skill.**
+- [x] **Step 6: Complete attribution/docs and commit this verified skill.**
 
 Append `deep-learning/` to NOTICE's originals block. Add a provenance paragraph
 recording Lowell's original prose/examples and Orchestra coverage inspiration
@@ -588,7 +598,7 @@ Modify `NOTICE`, `CLAUDE.md`, and `README.md` for this second new original skill
   record, and the executable example ID `paired-evaluation`.
 - Does not alter `track-model-experiments` or require Bayesian artifacts.
 
-- [ ] **Step 1: Record fresh no-evaluation-skill controls.**
+- [x] **Step 1: Record fresh no-evaluation-skill controls.**
 
 Use five samples of E1 and fresh variations E2/E3; withhold the rubric.
 
@@ -598,7 +608,7 @@ Use five samples of E1 and fresh variations E2/E3; withhold the rubric.
 | E2 | "Compare two sequence models evaluated on overlapping forecast windows. Explain the evaluation units and how I can avoid overstating confidence in the difference." | Temporal split/leakage and dependence; horizon/window definition; appropriate aggregation/resampling units; metrics fixed before interpreting the result. |
 | E3 | "A neural ODE's error improves with loose solver settings, and a 3D model is called rotation-equivariant because its loss is low. What checks would substantiate these claims?" | Solver-tolerance/gradient sensitivity and explicit transformation tests; loss alone is not a symmetry proof; predictive uncertainty and run variability remain distinct. |
 
-- [ ] **Step 2: Author the main entry point and protocol.**
+- [x] **Step 2: Author the main entry point and protocol.**
 
 Initial frontmatter:
 
@@ -630,7 +640,7 @@ invariance to changed padding, comparison on identical held-out units, and
 preservation of per-seed scores and budget metadata. It does not assert a
 universal winner or compute confidence by treating dependent tokens as runs.
 
-- [ ] **Step 3: Author domain checks and the neural-run record.**
+- [x] **Step 3: Author domain checks and the neural-run record.**
 
 `domain-checks.md` maps temporal causality/window dependence; image preprocessing,
 augmentation and group splits; graph permutation and declared rotation/inversion
@@ -660,7 +670,9 @@ decision: result, limitations and next action
 Distinguish recovery/export/prediction artifacts. A run without posterior draws
 does not need `InferenceData`, NetCDF, ELPD, LOO, or ArviZ.
 
-- [ ] **Step 4: Execute the example and fresh WITH-skill applications.**
+- [x] **Step 4: Execute the example and fresh WITH-skill applications.**
+
+> Deviation: Native E1 reused the exact supplied worked scenario and both cohorts scored 50/50; RE uses a separate retrieval rubric, with no claimed unseen-task improvement.
 
 ```bash
 uv run --python 3.13 python build/check_snippets.py skills/evaluate-deep-learning/
@@ -673,7 +685,7 @@ E1–E3 application criteria; add a generative/LLM comparison retrieval case to
 ensure coverage is not limited to supervised scalar scores. Refine from actual
 failures and rerun affected checks before the deployment step.
 
-- [ ] **Step 5: Complete attribution/docs and commit.**
+- [x] **Step 5: Complete attribution/docs and commit.**
 
 Append the new original skill in NOTICE and CLAUDE.md; recompute the written
 count from NOTICE (one additional original in this task); append its README
@@ -702,7 +714,7 @@ Structure, and `specs/verification/32-optimize-jax.md`. Modify `NOTICE`,
   `jax-timing` and `cached-decode`.
 - Supports non-learning JAX execution without requiring neural training.
 
-- [ ] **Step 1: Record fresh no-optimization-skill controls.**
+- [x] **Step 1: Record fresh no-optimization-skill controls.**
 
 Use five S1 samples and fresh S2/S3 applications, withholding the rubric.
 
@@ -712,7 +724,7 @@ Use five S1 samples and fresh S2/S3 applications, withholding the rubric.
 | S2 | "Implement a tiny JAX autoregressive generation example using a KV cache and establish that cached generation agrees with full-prefix generation." | Explicit prefill/decode, masks/positions/capacity, cache state and termination; full/cached logits and greedy parity; seeded sampling and padding checks; no claimed real-LLM correctness from only a toy fixture. |
 | S3 | "A non-learning JAX simulation recompiles for different scalar inputs. How should I investigate and fix it?" | Correct tracing/static-versus-dynamic reasoning, observed recompilation evidence and output parity; no imposed training or Bayesian inference workflow. |
 
-- [ ] **Step 2: Author the entry point and profiling/sharding references.**
+- [x] **Step 2: Author the entry point and profiling/sharding references.**
 
 Initial frontmatter:
 
@@ -747,7 +759,7 @@ A one-device CPU demonstration is labeled as such; do not call it multi-host
 verification. Mark any actual multi-host/accelerator recipe with the explicit
 reason it cannot run in the CPU gate.
 
-- [ ] **Step 3: Author and execute the generation reference.**
+- [x] **Step 3: Author and execute the generation reference.**
 
 `inference.md` starts with JAX-native research generation. `cached-decode`
 implements tiny causal attention with fixed cache arrays, explicit positions
@@ -772,14 +784,16 @@ Expected: parse/execution exit 0; both required IDs and every selected CPU
 example pass. Record actual timings, environment and hashes without promising
 speed on other devices.
 
-- [ ] **Step 4: Run WITH-skill micro/application and retrieval checks.**
+- [x] **Step 4: Run WITH-skill micro/application and retrieval checks.**
+
+> Deviation: RS remains a separate partial 7/8 scope-summary result; the source already states its limits and accepted reviews identified no source defect requiring another application run.
 
 Use matched S1 conditions for five candidate samples, plus fresh S2/S3
 applications. Ask a retrieval question distinguishing a loss/convergence problem
 from a cache/recompilation problem. Read and score actual outputs, refine the
 guidance from failures, and rerun affected numerical/application checks.
 
-- [ ] **Step 5: Complete attribution/docs and commit.**
+- [x] **Step 5: Complete attribution/docs and commit.**
 
 Append `optimize-jax/` to NOTICE and its bare name to CLAUDE.md's originals
 list; recompute the written count from NOTICE (one additional original in this
@@ -809,7 +823,9 @@ create `specs/verification/32-bayesian-routing.md`.
 - Preserve `NumPyro (JAX)`, BlackJAX, MCMC/NUTS, posterior terminology, and the
   Bayesian body/license/metadata. No Bayesian precision policy is generalized.
 
-- [ ] **Step 1: Run the current-description selection baseline.**
+- [x] **Step 1: Run the current-description selection baseline.**
+
+> Deviation: Routing is declared catalog-selection/retrieval simulation; private snapshot and paging recoveries are retained, with no actual runtime auto-loading or hidden-read proof claimed.
 
 Use a realistic full catalog with the current Bayesian description and the new
 three descriptions. In fresh contexts ask which guidance to load, then let the
@@ -829,7 +845,7 @@ selected/read skills, rationale, and whether a runtime's real auto-loading was
 observed or this was a catalog-selection simulation. Do not call a literal
 substring test or `build/smoke_test.py` a routing test.
 
-- [ ] **Step 2: Apply the approved minimal textual narrowing.**
+- [x] **Step 2: Apply the approved minimal textual narrowing.**
 
 Replace this exact description substring:
 
@@ -849,7 +865,9 @@ the approved spec still narrows the textual trigger, but there is no measured
 over-trigger improvement to claim. Add no larger wording rule without an
 observed gap and the authoring gate.
 
-- [ ] **Step 3: Repeat matched candidate selection and compatibility checks.**
+- [x] **Step 3: Repeat matched candidate selection and compatibility checks.**
+
+> Deviation: Both 30-sample cohorts already route correctly; the five-byte metadata narrowing shows no measured over-trigger reduction. Immutable large copies are reviewed structurally with explicit limits.
 
 Run the same prompt families against the edited catalog, five fresh samples
 each. Read every output, verify preservation of posterior discovery and absence
@@ -878,7 +896,7 @@ retirement follow the existing plan protocol, after final reviews resolve.
   runtime adapters. Installation uses a temporary destination, not global skill
   directories or runtime settings.
 
-- [ ] **Step 1: Check spec coverage and evidence completeness.**
+- [x] **Step 1: Check spec coverage and evidence completeness.**
 
 | Spec requirement | Implementation/verification |
 |---|---|
@@ -899,7 +917,9 @@ and confirm CLAUDE.md's written count matches; keep that bullet single-line for
 the existing parser. Check local reference links and that a domain not mentioned in a primary
 description can still be retrieved from its main body.
 
-- [ ] **Step 2: Run final build and execution checks.**
+- [x] **Step 2: Run final build and execution checks.**
+
+> Deviation: The final gate contains 99 focused tests (62 + 37) and ten selected CPU examples including optional placement; GPU-target prose added later leaves all executable hashes unchanged.
 
 From the execution checkout root:
 
@@ -924,7 +944,7 @@ adapter generator reports no drift. Existing documented parse advisories remain
 advisories, not evidence that an unexecuted hardware recipe ran. Do not run
 repo-root pytest or unrelated citation/PDF-ground-truth suites for this change.
 
-- [ ] **Step 3: Check installer discovery in an empty temporary destination.**
+- [x] **Step 3: Check installer discovery in an empty temporary destination.**
 
 Run this dry run from the root:
 
@@ -938,7 +958,9 @@ destinations), no companion installation, and no invented extra dependencies.
 Inspect targets, then remove the empty temporary directory with `rmdir`.
 Record the dry run and check outputs in the integration record.
 
-- [ ] **Step 4: Resolve reviews and commit the integration report.**
+- [x] **Step 4: Resolve reviews and commit the integration report.**
+
+> Deviation: User-selected native Codex agents replaced unavailable provider aliases; task-reviewer/code-reviewer backends were unavailable and full-form default reviewers were used. The same-family second-opinion exception applies.
 
 Use the chosen execution skill's per-task and final whole-branch review gates,
 including its read-only Codex second opinion where required. Give reviewers the
@@ -947,7 +969,9 @@ success report. Reproduce and resolve actionable failures, rerun affected gates,
 and report any actual deviation. Commit the final record with message
 `test(skills): verify JAX skill integration`.
 
-- [ ] **Step 5: Apply the existing completion and branch-integration protocols.**
+- [x] **Step 5: Apply the existing completion and branch-integration protocols.**
+
+> Deviation: Implementation completion, retirement and the integration-menu handoff are performed here; publishing, merging and managed-worktree cleanup follow the owner’s integration choice and are not deferred implementation.
 
 Use `writing-plans`' Plan Completion Protocol after required tasks/reviews are
 complete: resolve questions before deferring, mark completed/deviated steps,
@@ -1006,3 +1030,13 @@ The integration record preserves initial snapshot hashes and the separate new
 prose identities/checks; original application cohorts are not regraded or
 represented as tests of these later additions. Final whole-branch review covers
 this clarification alongside R1–R8. No new skill or GPU execution was added.
+
+## Completion evidence — 2026-10-04
+
+All six implementations and their scoped reviews are accepted. The fresh whole-
+branch native review covers R1–R8, source/tooling/tests/evidence and the GPU
+clarification, with no blocking finding. The [integration record](../../verification/32-jax-integration.md)
+contains actual verification outputs, current prose identities, review scope and
+limitations, read-only backlog triage and the integration handoff. No earlier
+backlog item is implemented by this plan, and no new work is deferred. The
+methodology-template DL/NLP extension remains outside scope.

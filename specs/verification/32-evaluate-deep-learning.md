@@ -7,8 +7,8 @@ controls 65/66; the separate RE retrieval case scored 8/8. The canonical CPU
 pass is reused under freshly verified identical source/profile hashes. Fresh
 final repository, source/schema, archive and whitespace gates are recorded below.
 The four reusable skill files remain exactly the tested/frozen snapshot.
-Task 3 of the approved [design](../jax-deep-learning-skills.md) and
-[plan](../plans/32-jax-deep-learning-skills.md).
+Task 3 of the approved [design](../completed/jax-deep-learning-skills.md) and
+[plan](../plans/completed/32-jax-deep-learning-skills.md).
 
 ## Pre-authoring controls and authoring form
 

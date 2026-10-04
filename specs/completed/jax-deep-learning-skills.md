@@ -1,9 +1,11 @@
 # Compact JAX Deep-Learning Skills — Design Spec
 
-**Status: APPROVED (2026-10-03).**
-The owner approved both the three-skill design and this written spec after a
-brainstorming pass. Implementation is planned in
-`specs/plans/32-jax-deep-learning-skills.md`; the skills have not been implemented.
+**Status: COMPLETE (2026-10-04).**
+Implemented and verified through subagent-driven-development, including the
+owner’s GPU-target clarification. The completed plan is
+`specs/plans/completed/32-jax-deep-learning-skills.md`; actual checks, reviews and
+limits are in the [integration record](../verification/32-jax-integration.md).
+Branch integration remains the owner’s choice.
 
 ## Purpose and scope
 

@@ -3,8 +3,8 @@
 Status: application gate complete for the stable refined skill; six canonical
 CPU examples have unchanged verified source hashes. Final repository checks
 and the scoped commit are recorded below. Task 2 of the approved
-[JAX deep-learning spec](../jax-deep-learning-skills.md) and
-[implementation plan](../plans/32-jax-deep-learning-skills.md).
+[JAX deep-learning spec](../completed/jax-deep-learning-skills.md) and
+[implementation plan](../plans/completed/32-jax-deep-learning-skills.md).
 
 ## Baseline and wording dispositions
 
@@ -402,7 +402,7 @@ with references available from the immutable snapshot. This tests supplied
 application/retrieval rather than automatic catalog discovery.
 
 The owner then chose built-in Codex agents for all remaining trials. The
-[durable runtime correction](../plans/32-jax-deep-learning-skills.md#execution-runtime-correction--owner-decision-2026-10-03)
+[durable runtime correction](../plans/completed/32-jax-deep-learning-skills.md#execution-runtime-correction--owner-decision-2026-10-03)
 records that automatic approval review rejected the external refined launch
 because destination-specific export authorization was absent. That rejected
 launch executed no process or trial. No further external trial launch occurred.
