@@ -74,17 +74,21 @@ def pit_values(dt, var_name, use_loo, seed=PIT_SEED):
     coverage value of 0 as impossible, and its p-value collapses on a calibrated model.
     Spreading each PIT over its 1/(S + 1) cell keeps u off 0, 0.5 and 1.
 
-    LOO-PIT is arviz_stats.loo_pit(..., pareto_pit=True): the values plot_loo_pit draws,
-    which Pareto smoothing keeps off 0 and 1.
+    LOO-PIT starts from arviz_stats.loo_pit(..., pareto_pit=True), whose Pareto smoothing
+    keeps it off 0 and 1, and is spread over the same cell: u = (S·u_loo + V)/(S + 1).
+    When the posterior is so concentrated that the PSIS weights are near-uniform, u_loo is
+    the grid value k/S, and the spread makes it the PPC formula exactly; unspread, that
+    grid fails pot_c's coverage test on a calibrated model.
     """
-    if use_loo:
-        return azs.loo_pit(dt, var_names=var_name, pareto_pit=True)[var_name].values.ravel()
     predicted = dt["posterior_predictive"][var_name]
+    n_draws = predicted.sizes["chain"] * predicted.sizes["draw"]
+    rng = np.random.default_rng(seed)
+    if use_loo:
+        loo = azs.loo_pit(dt, var_names=var_name, pareto_pit=True)[var_name].values.ravel()
+        return (n_draws * loo + rng.uniform(size=loo.shape)) / (n_draws + 1)
     observed = dt["observed_data"][var_name]
     below = (predicted < observed).sum(("chain", "draw")).values.ravel()
     ties = (predicted == observed).sum(("chain", "draw")).values.ravel()
-    n_draws = predicted.sizes["chain"] * predicted.sizes["draw"]
-    rng = np.random.default_rng(seed)
     rank = below + np.floor(rng.uniform(size=below.shape) * (ties + 1))
     return (rank + rng.uniform(size=below.shape)) / (n_draws + 1)
 

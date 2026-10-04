@@ -93,8 +93,8 @@ cd skills/track-model-experiments/scripts && uv run --python 3.13 --with pytest 
 
 # bayesian-workflow script tests (MCSE precision block + divergence-gate and per-finding calibration
 # next steps + calibration verdicts from one owned PIT on both paths: the pot_c rules, the figures
-# drawing the JSON's own values, --ci-prob plumbing and the --loo-pit group checks) — 117 tests
-# (this command reports 114 passed, 3 skipped: add --with matplotlib to run the figure-rendering
+# drawing the JSON's own values, --ci-prob plumbing and the --loo-pit group checks) — 120 tests
+# (this command reports 117 passed, 3 skipped: add --with matplotlib to run the figure-rendering
 # test, and set CALIBRATION_SWEEP=1 to run the 2-path pre-registered acceptance sweep — seeds 0-99,
 # about a minute and a half; -s prints its counts. 4 arviz RuntimeWarnings — "invalid value
 # encountered in scalar divide" on the constant-parameter fixture — are expected and not silenced)

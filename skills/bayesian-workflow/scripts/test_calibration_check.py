@@ -46,6 +46,12 @@ LOCATION_SHIFT = 0.4
 COMPOUND_NARROW_SCALE = 0.7  # paired with LOCATION_SHIFT: a shift and a spread error at once
 COMPOUND_WIDE_SCALE = 1.5
 POSTERIOR_SD_OF_MEAN = 0.05
+# A posterior this concentrated barely moves with any one observation, so the PSIS
+# weights are near-uniform and the Pareto-smoothed LOO-PIT is the grid value k/S. At
+# GRID_SEED, pot_c's coverage test reads that grid as miscalibration (p = 0.0036)
+# unless each LOO-PIT is spread over its cell.
+CONCENTRATED_SD_OF_MEAN = 1e-4
+GRID_SEED = 3
 PER_OBSERVATION_PRIOR_SD = 0.7
 DISCRETE_RATE = 3.0
 # A calibrated model is still flagged at ci_prob=0.99 on a few percent of seeds: each of
@@ -82,14 +88,14 @@ def _normal_logpdf(x, loc, scale):
     return -0.5 * np.log(2 * np.pi) - np.log(scale) - 0.5 * ((x - loc) / scale) ** 2
 
 
-def _normal_model(loc, scale, *, seed=SEED, drop=()):
-    """DataTree for y ~ N(0, TRUE_SCALE) under a predictive N(mu, scale), mu ~ N(loc, POSTERIOR_SD_OF_MEAN).
+def _normal_model(loc, scale, *, seed=SEED, drop=(), sd_of_mean=POSTERIOR_SD_OF_MEAN):
+    """DataTree for y ~ N(0, TRUE_SCALE) under a predictive N(mu, scale), mu ~ N(loc, sd_of_mean).
 
     `drop` names groups to leave out, to exercise the CLI's group validation.
     """
     rng = np.random.default_rng(seed)
     y = rng.normal(0.0, TRUE_SCALE, size=N_OBS)
-    mu = rng.normal(loc, POSTERIOR_SD_OF_MEAN, size=(N_CHAIN, N_DRAW, 1))
+    mu = rng.normal(loc, sd_of_mean, size=(N_CHAIN, N_DRAW, 1))
     y_rep = rng.normal(mu, scale, size=(N_CHAIN, N_DRAW, N_OBS))
     groups = {
         'posterior': {'mu': mu[..., 0]},
@@ -184,6 +190,29 @@ def test_loo_pit_clears_the_double_dipping_that_ppc_pit_flags():
     assert in_sample['coverage_test_passed'] is False
     assert in_sample['findings'] == [UNDER]
     assert assess_calibration(data, 'y', use_loo=True)['well_calibrated'] is True
+
+
+def _concentrated_model(scale):
+    return _normal_model(0.0, scale, seed=GRID_SEED, sd_of_mean=CONCENTRATED_SD_OF_MEAN)
+
+
+def test_loo_pit_stays_calibrated_when_psis_weights_are_flat():
+    report = assess_calibration(_concentrated_model(TRUE_SCALE), 'y', use_loo=True)
+    assert report['coverage_test_passed'] is True
+    assert report['well_calibrated'] is True
+
+
+def test_loo_pit_values_never_sit_on_the_draw_grid():
+    n_draws = N_CHAIN * N_DRAW
+    pit = calibration_check.pit_values(_concentrated_model(TRUE_SCALE), 'y', use_loo=True)
+    assert not np.isclose(pit * n_draws, np.round(pit * n_draws), rtol=0, atol=1e-6).any()
+
+
+def test_loo_pit_spread_still_flags_a_too_narrow_concentrated_predictive():
+    # A guard, green before the spread and after: the spread moves each PIT by at most
+    # 1/(S + 1), far less than a predictive this narrow moves it.
+    report = assess_calibration(_concentrated_model(OVER_CONFIDENT_SCALE), 'y', use_loo=True)
+    assert report['findings'] == [OVER]
 
 
 FIXTURES = {
@@ -465,12 +494,14 @@ def test_a_two_dimensional_observed_variable_is_pooled():
     )
 
 
-def test_loo_pit_values_are_arviz_pareto_smoothed_loo_pit():
+def test_loo_pit_values_stay_within_one_cell_of_arviz_pareto_smoothed_loo_pit():
+    # The spread moves each value by (V - u_loo)/(S + 1), never more than one cell; the
+    # draw-grid test above pins that the spread happens at all.
     data = _normal_model(0.0, TRUE_SCALE)
-    np.testing.assert_array_equal(
-        calibration_check.pit_values(data, 'y', use_loo=True),
-        azs.loo_pit(data, var_names='y', pareto_pit=True)['y'].values,
-    )
+    n_draws = N_CHAIN * N_DRAW
+    loo = azs.loo_pit(data, var_names='y', pareto_pit=True)['y'].values
+    pit = calibration_check.pit_values(data, 'y', use_loo=True)
+    assert np.all(np.abs(pit - loo) <= 1 / (n_draws + 1))
 
 
 def test_cli_reports_too_few_observations_as_a_json_error(monkeypatch, capsys):
