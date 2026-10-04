@@ -46,7 +46,7 @@ owner to review. It has five parts:
 It watches Claude Code only; the Codex and Gemini guides beside it in
 `specs/guides/` are out of scope. Tool names use `cc_guide`, which avoids the repo's two
 existing uses of "drift" (`install.py`'s dependency-drift check and
-`specs/superpowers-drift-2026-09-03.md`).
+`specs/superpowers-drift-spec.md`).
 
 ## Measured baseline (2026-10-03)
 
