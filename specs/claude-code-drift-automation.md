@@ -6,8 +6,9 @@ session's approvals had covered: the stage order, the `build/` test
 collection, the fetch gate, DIVERGES staying due, discarding failed verify
 quotes, and the once-a-day notice in place of `ack`.
 Two sessions designed this system in parallel from the same brief. This
-session's spec (`71d2422`) and the guide-upkeep session's
-(`specs/claude-code-guide-upkeep.md`, `024d430` on branch
+session's spec (`71d2422`, "define Claude Code drift automation") and the
+guide-upkeep session's (`specs/claude-code-guide-upkeep.md`, `024d430`,
+"design Claude Code guide upkeep", on branch
 `worktree-cc-guide-upkeep-design`) were each approved section by section. A
 neutral reviewer, blind to both conversations, compared them against the
 brief and recommended a merge on this spec's base: only this spec delivered
@@ -54,7 +55,7 @@ scripts were session-local (`/tmp/ccdrift-probe/`).
 
 | Fact | Evidence |
 |---|---|
-| The three customization guides are moving from `specs/` to `specs/guides/`; on 2026-10-03 the move was uncommitted in the shared checkout. Every commit before it, `91474f6` and `c33bc99` included, has the Claude Code guide at `specs/claude-code-customization-guide.md`, and the portability spec names that path twice | owner; `git status`; `git log --all -- 'specs/guides/*'` (empty) |
+| The owner moved the three customization guides from `specs/` to `specs/guides/` in `79ad04f` (renames only). Earlier commits, `91474f6` and `c33bc99` included, have the Claude Code guide at `specs/claude-code-customization-guide.md`, and the portability spec still names that path twice | `git diff --stat b0ee62e 79ad04f`; `git grep` |
 | The guide has 38 sections (9 `##`, 29 `###`). Two `###` headings read "Frontmatter reference ⚠" (Skills and Subagents) | heading scan at `c33bc99`, ignoring `#` lines inside fences |
 | The guide carries 33 ⚠ markers on 32 lines, 5 of them on headings, plus the legend in its header | `grep` |
 | Between the July guide (`91474f6`, verified at 2.1.219) and the refresh (`c33bc99`, 2.1.288), 32 sections changed. Six did not: the Skills intro, "The description is the router", the Rules intro (empty), "Auto memory", the Running-lean intro (empty), "Scale ceremony to task size" | per-section diff keyed by (parent `##`, heading) |
@@ -942,10 +943,9 @@ Each stage updates the documentation in R12.7 for what it adds.
 Constraints:
 - **Base.** This spec sits on `docs/cc-drift-spec`, branched from `main` at
   `b0ee62e`. Integrating it is the owner's call.
-- **Guide location.** The plans use `specs/guides/`. Stage 1 first confirms
-  the move has landed on `main`
-  (`git show main:specs/guides/claude-code-customization-guide.md`); until it
-  has, nothing that reads the guide from `main` can run.
+- **Guide location.** The guide is at `specs/guides/` from `79ad04f` on;
+  history before that has it at `specs/claude-code-customization-guide.md`
+  (R11.1, R12.3).
 - **Work in a worktree.** Check `git rev-parse main origin/main` first:
   `EnterWorktree` branches from `origin/main` and omits unpushed commits, and
   concurrent sessions switch and rebase the shared checkout. Stage 2's sweep
@@ -1013,8 +1013,9 @@ Constraints:
 - Line-level citations, and anchors for individual rows of the guide's tables.
 - The Codex and Gemini customization guides in `specs/guides/`. The manifest
   is per guide, so a second guide could be added later with its own sources.
-- The multi-vendor best-practices spec (`agent-skills-best-practices.md`), and
-  the guide's §8 `TODO(owner)`.
+- The multi-vendor best-practices spec (retired to
+  `specs/completed/agent-skills-best-practices.md` in `79ad04f`), and the
+  guide's §8 `TODO(owner)`.
 - Anything automatic and outward-facing (commits, PRs, issues), and CI, which
   the repo does not have.
 - Widening `check_frontmatter.py` to `.claude/skills` and `.claude/agents`:
@@ -1038,8 +1039,8 @@ Constraints:
 ## Sources and verification notes
 
 - The guide at `c33bc99` (identical at `b0ee62e`, both at
-  `specs/claude-code-customization-guide.md`) is the hub; `91474f6` is its
-  July version. `9f85f08`'s message records the refresh: every changed fact
+  `specs/claude-code-customization-guide.md`; moved unchanged to
+  `specs/guides/` in `79ad04f`) is the hub; `91474f6` is its July version. `9f85f08`'s message records the refresh: every changed fact
   traced to a verbatim doc quote, 151 of 151 re-grepped, five July claims
   corrected.
 - `specs/agent-skills-portability.md` at `b0ee62e` supplies R1.1, R1.2, R1.4,
