@@ -2,10 +2,10 @@
 
 **Status: DESIGN APPROVED (2026-10-03); written spec awaiting review.**
 The owner approved all five design sections in a brainstorming pass over
-`specs/agent-skills-best-practices.md` (a September 2026 survey of Agent Skills
-portability across Claude Code, Codex, Gemini CLI, Cursor, Copilot, and others).
-This document is the handoff for implementation planning; nothing here has been
-implemented. The survey is this spec's input and retires with it.
+`specs/completed/agent-skills-best-practices.md` (a September 2026 survey of
+Agent Skills portability across Claude Code, Codex, Gemini CLI, Cursor, Copilot,
+and others). This document is the handoff for implementation planning; nothing
+here has been implemented. The survey is this spec's input and retires with it.
 
 ## Purpose and scope
 
@@ -75,7 +75,8 @@ skill bodies; every command is `disable-model-invocation: true`.
 7. **No secondary-source numbers become lint caps.** The survey's 1,536-character
    truncation, Codex's 2% / 8,000-character budget, and Claude Code's listing
    fraction stay out of the lint; it keeps the spec's 1,024 cap. Claude Code
-   listing behavior is documented in `specs/claude-code-customization-guide.md`.
+   listing behavior is documented in
+   `specs/guides/claude-code-customization-guide.md`.
 8. **House PEP 723 form, not `#!/usr/bin/env -S uv run --script`.** A plain
    `#!/usr/bin/env python3` shebang keeps the script runnable by bare `python3`
    where uv is absent; `uv run <path>` reads the header either way. The two
@@ -404,10 +405,11 @@ Constraints:
 
 ## Sources and verification notes
 
-- `specs/agent-skills-best-practices.md`: the survey. Its Claude Code numbers are
-  secondary; `specs/claude-code-customization-guide.md` governs Claude Code
-  facts. Its 2026-10-03 re-verification against official docs (at 2.1.288)
-  landed on main via lowmason/agent-skills#19 (merge `c33bc99`).
+- `specs/completed/agent-skills-best-practices.md`: the survey. Its Claude Code
+  numbers are secondary; `specs/guides/claude-code-customization-guide.md`
+  governs Claude Code facts. Its 2026-10-03 re-verification against official
+  docs (at 2.1.288) landed on main via lowmason/agent-skills#19 (merge
+  `c33bc99`).
 - [Agent Skills specification](https://agentskills.io/specification): the six
   frontmatter fields, the `compatibility` ≤ 500 limit, and `metadata` as a
   string-to-string map.

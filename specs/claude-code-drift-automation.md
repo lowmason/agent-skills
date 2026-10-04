@@ -55,7 +55,7 @@ scripts were session-local (`/tmp/ccdrift-probe/`).
 
 | Fact | Evidence |
 |---|---|
-| The owner moved the three customization guides from `specs/` to `specs/guides/` in `79ad04f` (renames only). Earlier commits, `91474f6` and `c33bc99` included, have the Claude Code guide at `specs/claude-code-customization-guide.md`, and the portability spec still names that path twice | `git diff --stat b0ee62e 79ad04f`; `git grep` |
+| The owner moved the three customization guides from `specs/` to `specs/guides/` in `79ad04f` (renames only). Earlier commits, `91474f6` and `c33bc99` included, have the Claude Code guide at `specs/claude-code-customization-guide.md` | `git diff --stat b0ee62e 79ad04f` |
 | The guide has 38 sections (9 `##`, 29 `###`). Two `###` headings read "Frontmatter reference ⚠" (Skills and Subagents) | heading scan at `c33bc99`, ignoring `#` lines inside fences |
 | The guide carries 33 ⚠ markers on 32 lines, 5 of them on headings, plus the legend in its header | `grep` |
 | Between the July guide (`91474f6`, verified at 2.1.219) and the refresh (`c33bc99`, 2.1.288), 32 sections changed. Six did not: the Skills intro, "The description is the router", the Rules intro (empty), "Auto memory", the Running-lean intro (empty), "Scale ceremony to task size" | per-section diff keyed by (parent `##`, heading) |
