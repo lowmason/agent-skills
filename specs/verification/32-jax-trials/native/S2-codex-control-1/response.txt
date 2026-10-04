@@ -1,0 +1,242 @@
+Below is a self-contained example of greedy autoregressive generation with a KV cache. It uses a tiny, untrained language model: token and positional embeddings, one causal attention head, a residual connection, and a vocabulary projection. Both generation paths use exactly the same parameters.
+
+I have not executed this code in this session. The equivalence argument follows the code, and the included assertions provide a runnable numerical check without assuming a particular generated sequence.
+
+The cache has fixed arrays of shape `(MAX_LEN, WIDTH)` and an `int32` cursor. Each step writes the current token's key and value, attends to positions through the current position, and returns a new cache. This keeps the carry's shapes and dtypes fixed, as required by [`jax.lax.scan`](https://docs.jax.dev/en/latest/_autosummary/jax.lax.scan.html).
+
+With JAX and NumPy installed, save this as `tiny_kv_cache.py` and run `python tiny_kv_cache.py`.
+
+```python
+from functools import partial
+from typing import NamedTuple
+
+import jax
+import jax.numpy as jnp
+import numpy as np
+from jax import lax
+
+
+VOCAB_SIZE = 32
+WIDTH = 16
+MAX_LEN = 32
+RTOL = 1e-5
+ATOL = 1e-5
+
+
+def test_cache_equivalence():
+    params = init_params(jax.random.key(0))
+    teacher_tokens = jnp.array([3, 5, 1, 8, 6], dtype=jnp.int32)
+
+    # Compare every cached position with its own full-prefix forward pass.
+    cache, cached_teacher_logits = _prefill(params, teacher_tokens)
+    full_teacher_logits = jnp.stack([
+        full_logits(params, teacher_tokens[:end])[-1]
+        for end in range(1, teacher_tokens.size + 1)
+    ])
+    np.testing.assert_allclose(
+        np.asarray(cached_teacher_logits),
+        np.asarray(full_teacher_logits),
+        rtol=RTOL,
+        atol=ATOL,
+    )
+    assert int(cache.position) == teacher_tokens.size
+    assert cache.keys.shape == (MAX_LEN, WIDTH)
+    assert cache.values.shape == (MAX_LEN, WIDTH)
+    assert cache.position.dtype == jnp.int32
+
+    # Unwritten slots must be invisible, even if their contents are nonzero.
+    dirty_cache = Cache(
+        jnp.full((MAX_LEN, WIDTH), 50.0, dtype=jnp.float32),
+        jnp.full((MAX_LEN, WIDTH), 99.0, dtype=jnp.float32),
+        jnp.int32(0),
+    )
+    _, dirty_logits = _cached_step(params, dirty_cache, teacher_tokens[0])
+    np.testing.assert_allclose(
+        np.asarray(dirty_logits),
+        np.asarray(full_logits(params, teacher_tokens[:1])[-1]),
+        rtol=RTOL,
+        atol=ATOL,
+    )
+
+    # Include one-token prompts, zero new tokens, and the final valid slot.
+    cases = [([3], 1), ([3, 5, 1], 6), ([4, 2], 0), ([4, 2], MAX_LEN - 2)]
+    for prompt, n_new in cases:
+        cached_tokens, cached_logits = generate_cached(params, prompt, n_new)
+        full_tokens, reference_logits = generate_full(params, prompt, n_new)
+        np.testing.assert_array_equal(
+            np.asarray(cached_tokens), np.asarray(full_tokens)
+        )
+        assert cached_logits.shape == (n_new, VOCAB_SIZE)
+        np.testing.assert_allclose(
+            np.asarray(cached_logits),
+            np.asarray(reference_logits),
+            rtol=RTOL,
+            atol=ATOL,
+        )
+
+    invalid_requests = [
+        ([], 1), ([3], -1), ([VOCAB_SIZE], 1),
+        ([3], MAX_LEN), ([1.5], 1),
+    ]
+    for generate in (generate_cached, generate_full):
+        for prompt, n_new in invalid_requests:
+            try:
+                generate(params, prompt, n_new)
+            except ValueError:
+                continue
+            raise AssertionError("Invalid generation request was accepted")
+
+
+class Cache(NamedTuple):
+    keys: jax.Array
+    values: jax.Array
+    position: jax.Array  # Next slot to write; number of tokens already consumed.
+
+
+def init_params(key):
+    shapes = {
+        "token_embedding": (VOCAB_SIZE, WIDTH),
+        "position_embedding": (MAX_LEN, WIDTH),
+        "query": (WIDTH, WIDTH),
+        "key": (WIDTH, WIDTH),
+        "value": (WIDTH, WIDTH),
+        "output": (WIDTH, WIDTH),
+        "lm_head": (WIDTH, VOCAB_SIZE),
+    }
+    subkeys = jax.random.split(key, len(shapes))
+    params = {}
+    for (name, shape), subkey in zip(shapes.items(), subkeys):
+        scale = 0.2 if name.endswith("embedding") else WIDTH ** -0.5
+        params[name] = scale * jax.random.normal(
+            subkey, shape, dtype=jnp.float32
+        )
+    return params
+
+
+def matmul(left, right):
+    return jnp.matmul(left, right, precision=lax.Precision.HIGHEST)
+
+
+@jax.jit
+def full_logits(params, tokens):
+    """Causal forward pass; row i predicts the token after tokens[i]."""
+    positions = jnp.arange(tokens.shape[0], dtype=jnp.int32)
+    x = params["token_embedding"][tokens] + params["position_embedding"][positions]
+    queries = matmul(x, params["query"])
+    keys = matmul(x, params["key"])
+    values = matmul(x, params["value"])
+    scores = matmul(queries, keys.T) * WIDTH ** -0.5
+    causal_mask = positions[None, :] <= positions[:, None]
+    weights = jax.nn.softmax(jnp.where(causal_mask, scores, -jnp.inf), axis=-1)
+    hidden = x + matmul(matmul(weights, values), params["output"])
+    return matmul(hidden, params["lm_head"])
+
+
+def empty_cache():
+    return Cache(
+        jnp.zeros((MAX_LEN, WIDTH), dtype=jnp.float32),
+        jnp.zeros((MAX_LEN, WIDTH), dtype=jnp.float32),
+        jnp.int32(0),
+    )
+
+
+def _cached_step(params, cache, token):
+    """Consume one token; caller must ensure 0 <= position < MAX_LEN."""
+    position = cache.position
+    x = params["token_embedding"][token] + params["position_embedding"][position]
+    query = matmul(x, params["query"])
+    key = matmul(x, params["key"])
+    value = matmul(x, params["value"])
+    start = (position, jnp.int32(0))
+    keys = lax.dynamic_update_slice(cache.keys, key[None, :], start)
+    values = lax.dynamic_update_slice(cache.values, value[None, :], start)
+
+    # Include the key just written and mask every future cache slot.
+    scores = matmul(query, keys.T) * WIDTH ** -0.5
+    valid = jnp.arange(MAX_LEN, dtype=jnp.int32) <= position
+    weights = jax.nn.softmax(jnp.where(valid, scores, -jnp.inf), axis=-1)
+    hidden = x + matmul(matmul(weights, values), params["output"])
+    logits = matmul(hidden, params["lm_head"])
+    return Cache(keys, values, position + jnp.int32(1)), logits
+
+
+@jax.jit
+def _prefill(params, prompt):
+    def consume(cache, token):
+        return _cached_step(params, cache, token)
+
+    return lax.scan(consume, empty_cache(), prompt)
+
+
+@partial(jax.jit, static_argnames=("n_new",))
+def _generate_cached(params, prompt, n_new):
+    cache, prompt_logits = _prefill(params, prompt)
+
+    def advance(carry, unused):
+        cache, logits = carry
+        token = jnp.argmax(logits).astype(jnp.int32)
+        next_cache, next_logits = _cached_step(params, cache, token)
+        return (next_cache, next_logits), (token, logits)
+
+    # The final prompt logits predict the FIRST new token.
+    _, (new_tokens, prediction_logits) = lax.scan(
+        advance, (cache, prompt_logits[-1]), xs=None, length=n_new
+    )
+    return jnp.concatenate((prompt, new_tokens)), prediction_logits
+
+
+def validate_request(prompt, n_new):
+    """Host-side validation before entering the compiled generation path."""
+    host_prompt = np.asarray(prompt)
+    if host_prompt.ndim != 1 or host_prompt.size == 0:
+        raise ValueError("prompt must be a nonempty 1D sequence")
+    if not np.issubdtype(host_prompt.dtype, np.integer):
+        raise ValueError("prompt must contain integer token IDs")
+    if np.any(host_prompt < 0) or np.any(host_prompt >= VOCAB_SIZE):
+        raise ValueError("token IDs must lie in [0, VOCAB_SIZE)")
+    if type(n_new) is not int or n_new < 0:
+        raise ValueError("n_new must be a nonnegative Python int")
+    if host_prompt.size + n_new > MAX_LEN:
+        raise ValueError("prompt plus generation exceeds cache capacity")
+    return jnp.asarray(host_prompt, dtype=jnp.int32)
+
+
+def generate_cached(params, prompt, n_new):
+    prompt = validate_request(prompt, n_new)
+    return _generate_cached(params, prompt, n_new)
+
+
+def generate_full(params, prompt, n_new):
+    """Reference: recompute the whole current prefix for each prediction."""
+    prefix = validate_request(prompt, n_new)
+    prediction_logits = []
+    for _ in range(n_new):
+        logits = full_logits(params, prefix)[-1]
+        token = jnp.argmax(logits).astype(jnp.int32)
+        prediction_logits.append(logits)
+        prefix = jnp.concatenate((prefix, token[None]))
+    logits = (
+        jnp.stack(prediction_logits)
+        if prediction_logits
+        else jnp.empty((0, VOCAB_SIZE), dtype=jnp.float32)
+    )
+    return prefix, logits
+
+
+if __name__ == "__main__":
+    test_cache_equivalence()
+    params = init_params(jax.random.key(0))
+    tokens, _ = generate_cached(params, [3, 5, 1], n_new=6)
+    print("All cache/full-prefix assertions passed.")
+    print("Prompt plus generated token IDs:", np.asarray(tokens))
+```
+
+The equivalence follows from the cache invariant. Before consuming position `t`, slots `0:t` contain the keys and values of the previous tokens. The current embedding is `E[token_t] + P[t]` in both paths, so both compute the same current query, key, and value. After writing slot `t`, the cached softmax uses exactly keys `0:t+1`, matching the last row of the full-prefix causal attention matrix. The residual and vocabulary projection are identical. Induction gives equal next-token logits in real arithmetic, and consequently the same greedy continuation.
+
+There are two alignment details: prefill consumes every prompt token before sampling; the last prompt logits select the first new token. Each generated token is then consumed to prepare the logits for the following prediction. This example also consumes the final generated token, so its capacity requirement is `len(prompt) + n_new <= MAX_LEN`.
+
+The code uses a tolerance for logits and exact equality for token IDs. Different compiled computations can produce slightly different floating-point results, so bitwise logit equality is not the appropriate assertion. Near-tied logits can still change an argmax; the token check independently detects that. [`JAX's numerical FAQ`](https://docs.jax.dev/en/latest/faq.html#jit-changes-the-exact-numerics-of-outputs) explains compilation-related numerical differences, and [`jax.numpy.matmul`](https://docs.jax.dev/en/latest/_autosummary/jax.numpy.matmul.html) documents the explicit precision setting used here.
+
+The host validation prevents overflowing the cache; [`dynamic_update_slice`](https://docs.jax.dev/en/latest/_autosummary/jax.lax.dynamic_update_slice.html) adjusts an out-of-range start to fit instead of providing the desired overflow error. Generation runs in a compiled scan, with `n_new` static because it determines the scan length and output shape. Changing a static argument triggers compilation of a new specialization, as documented by [`jax.jit`](https://docs.jax.dev/en/latest/_autosummary/jax.jit.html). The public wrappers do host validation and are meant to be called from Python; `_generate_cached` is the compiled core.
+
+Caching avoids recalculating old key/value projections and old query rows. This compact implementation still scores every allocated cache slot and masks unused slots, so each cached step's attention work scales with `MAX_LEN`. The full-prefix path is an intentionally simple reference and may compile once per prefix shape; this example makes no speed measurement claim.

@@ -1,0 +1,26 @@
+{
+  "trial": "S1-codex-control-1",
+  "scenario": "S1",
+  "condition": "control",
+  "runtime": "Built-in Codex collaboration agent",
+  "agent_type": "default",
+  "requested_fork_turns": "none",
+  "model": "Inherited active runtime; exact identifier not exposed by collaboration API",
+  "effort": "Inherited active runtime; exact value not exposed by collaboration API",
+  "tool_policy": "Read-only information gathering; execute only local trial_io recording helper, no delivered application code",
+  "automatic_skill_loading_observed": false,
+  "source_hashes": {},
+  "guidance_directory": null,
+  "guidance_loading": "No new JAX skill guidance supplied; ordinary knowledge/primary sources available",
+  "prompt_sha256": "a3673ec187f34dbde1402f09ea237586194bb39736609fb92ed20443ff298383",
+  "spawn_identity": {
+    "task_name": "/root/native_trial_conductor/native_s1_control_1"
+  },
+  "completion": "Complete substantive response and research notes; child final received",
+  "completion_verified_at_utc": "2026-10-03T23:41:12.082458+00:00",
+  "response_sha256": "7a94bdef07edd609aff8b631fb0606b14cfcc31ce0d84b94f0fc6b75f762441a",
+  "response_lines": 334,
+  "verified_first_read": "Full prompt hash and byte count match first recorded start event",
+  "actual_reference_reads": [],
+  "application_execution": "Not executed per explicit child delivery/research notes; scorer treats response code as data"
+}

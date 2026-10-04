@@ -1,0 +1,26 @@
+{
+  "trial": "S3-codex-control-1",
+  "scenario": "S3",
+  "condition": "control",
+  "runtime": "Built-in Codex collaboration agent",
+  "agent_type": "default",
+  "requested_fork_turns": "none",
+  "model": "Inherited active runtime; exact identifier not exposed by collaboration API",
+  "effort": "Inherited active runtime; exact value not exposed by collaboration API",
+  "tool_policy": "Read-only information gathering; execute only local trial_io recording helper, no delivered application code",
+  "automatic_skill_loading_observed": false,
+  "source_hashes": {},
+  "guidance_directory": null,
+  "guidance_loading": "No new JAX skill guidance supplied; ordinary knowledge/primary sources available",
+  "prompt_sha256": "0b0c4fb015c03c9ddcf8c37e0e40086e52e18b596f8c9938555b47b0ca763484",
+  "spawn_identity": {
+    "task_name": "/root/native_trial_conductor/native_s3_control_1"
+  },
+  "completion": "Complete substantive response and research notes; child final received",
+  "completion_verified_at_utc": "2026-10-04T00:20:19.555017+00:00",
+  "response_sha256": "5c9549887f7ce2d639d50a12b9c5a2fd7c8a227a4b3f8967ff23bed4eda6f6f0",
+  "response_lines": 166,
+  "verified_first_read": "Full prompt hash and byte count match first recorded start event",
+  "actual_reference_reads": [],
+  "application_execution": "Not executed per explicit child delivery/research notes; scorer treats response code as data"
+}
