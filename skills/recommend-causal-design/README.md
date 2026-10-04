@@ -9,7 +9,7 @@ Example invocation:
 
 > Use recommend-causal-design to assess whether our eligibility policy changed
 > earnings. Compare credible designs, keep the requested population ATE separate
-> from any cutoff-local effect, and write training-policy/recommendation.md.
+> from any cutoff-local effect, and write training-policy/causal-design.md.
 
 Coverage: experiments, observational adjustment/weighting, IV, RDD, DiD/event
 studies, synthetic control, interrupted time series and longitudinal regimes.

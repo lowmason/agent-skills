@@ -1,6 +1,6 @@
 # Recommendation memo contract
 
-Write `<analysis-slug>/recommendation.md` with these sections, in this order.
+Write `<analysis-slug>/causal-design.md` with these sections, in this order.
 Use concrete variable names if known; otherwise label the missing definitions.
 Every required field receives a value or `unknown/not applicable` plus a reason.
 Do not invent data, successful diagnostics, implementation results, or references
@@ -90,9 +90,11 @@ Carry these fields together:
 - Uncertainty/inference compatible with assignment/dependence, small-cluster or
   weak-instrument limitations, multiplicity and sensitivity/robustness plan.
 - Implementation destination and verified official documentation. Data profiling
-  defaults to Polars. Bayesian execution uses NumPyro/JAX when justified; provide
-  likelihood, candidate priors, pooling/temporal structure and model checks for
-  `bayesian-workflow`. A prior does not resolve identification by itself.
+  defaults to Polars. Bayesian execution uses NumPyro/JAX when justified: either
+  give `bayesian-workflow` the likelihood, candidate priors, pooling/temporal
+  structure and model checks, or name `recommend-probabilistic-model` to choose
+  them in its own `recommendation.md` beside this memo. A prior does not resolve
+  identification by itself.
 - Output specification: effects/uncertainty to report, diagnostic artifacts,
   claim limits, and distinction between local and target-population effects.
 

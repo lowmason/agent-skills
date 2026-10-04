@@ -12,6 +12,12 @@ produces `<analysis-slug>/recommendation.md` for another analyst to start cold.
 It selects a defensible research design before estimator or likelihood choice.
 It does not estimate effects, fit models, run refutations, or certify causation.
 
+> Amended at the merge into main (2026-10-04): the memo is
+> `<analysis-slug>/causal-design.md`. `recommend-probabilistic-model` writes
+> `<slug>/recommendation.md`, so on the handoff this skill documents, the model
+> recommendation would overwrite the causal memo. Both reviewers of the merge
+> found it, and the owner chose the rename.
+
 ## Decision procedure
 
 Define the requested estimand (intervention/comparator, outcome, population,

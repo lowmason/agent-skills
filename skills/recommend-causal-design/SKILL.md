@@ -20,7 +20,7 @@ metadata:
 # Recommend a Causal Design
 
 Given a causal question and optional data, write
-`<analysis-slug>/recommendation.md`: a defensible research design, its identifying
+`<analysis-slug>/causal-design.md`: a defensible research design, its identifying
 assumptions, alternatives, and a specification another analyst can implement.
 **Identification precedes estimator choice.** A flexible model, Bayesian prior,
 large sample, or successful diagnostic cannot create identifying variation.
@@ -35,10 +35,13 @@ not as passed.
 - Use `explore-data` when data need profiling; metadata alone can support a
   provisional design memo. Data distributions do not establish assignment.
 - Use `recommend-probabilistic-model` for likelihood/model choice after the
-  causal design and estimand are settled, or for a predictive question.
+  causal design and estimand are settled, or for a predictive question. It
+  writes `<analysis-slug>/recommendation.md` beside this memo, and chooses the
+  likelihood unless this memo already fixes one.
 - Hand a fully specified Bayesian estimation model to `bayesian-workflow`
   (NumPyro/JAX). That handoff must include identification assumptions as well
-  as likelihood, priors, and structure.
+  as likelihood, priors, and structure: pass this memo, plus
+  `recommendation.md` when `recommend-probabilistic-model` chose the model.
 - Use `develop-testing-strategy` for downstream computational/model tests;
   use `validate-data` for data/result QA.
 
