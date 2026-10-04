@@ -2187,9 +2187,12 @@ declined as YAGNI (zero instances in a one-page wiki).
 - [ ] Re-run the skill's evaluation on a held-out scenario (code-reviewer, merge review).
       The worked example is the evaluation's focal scenario, and the guided outputs track
       its edge list and exclusion wording; the three application cases ran inside one
-      agent, with no control arm. Size: plan. Done when: a scenario the worked example does
-      not cover runs in fresh contexts with no-guidance controls, and the record says
-      whether uptake of the causal graph and the status contract generalizes.
+      agent, with no control arm. The example was also rewritten at the merge, after the
+      evaluation ran (the contract tables, the D -> R edge, a placebo row), so no
+      evaluation covers the shipped text. Size: plan. Done when: a scenario the worked
+      example does not cover runs in fresh contexts with no-guidance controls against the
+      shipped skill, and the record says whether uptake of the causal graph and the status
+      contract generalizes.
 - [ ] Point `recommend-probabilistic-model` back to `recommend-causal-design` for design and
       identification questions (code-reviewer, merge review). Its decision map's
       route-only row and `references/drill-down.md` send causal questions to the PML
