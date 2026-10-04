@@ -81,8 +81,8 @@ Robins (2020).
 | Continuity at 60: no problematic sorting and no other policy at the cutoff | Any local effect at the cutoff | Published cutoff; pilot density result, output not seen | Scoring and appeal audit; density, heaping and covariate checks (§6) | Continuity of potential outcomes is untestable; checks can only fail to find sorting |
 | Consistency: one training version and one earnings measure | Every target | None yet | Confirm training versions and the earnings definition | Gate until confirmed |
 | Local support around 60 | Any local effect | Scores near 60 exist in the scenario; density and resolution unknown | Inspect local support, score resolution and heaping | Gate if the score is coarse or support near 60 is thin |
-| Outcome observation: outcomes recoverable, or response ignorable given defended covariates, with a positive response probability in every relevant covariate stratum near 60 | Any local outcome effect | 20% missing near the cutoff; mechanism unresolved | Administrative recovery first; otherwise missing-outcome sensitivity or bounds | Gate: without recovery or a defended observation model, local effects are not point-identified; a stratum with no responses near 60 needs recovery or an explicit estimand restriction |
-| No interference between applicants; dependence structure known | Every target, and its inference | Unknown | Ask about cohorts, sites and spillovers; specify clustering | Unknown; it changes the estimand or the inference |
+| Outcome observation: outcomes recoverable, or response ignorable given eligibility, receipt and defended baseline covariates (no direct Y -> R), with a positive response probability in every such stratum on each side of 60 | Any local outcome effect | 20% missing near the cutoff; mechanism unresolved | Administrative recovery first; otherwise missing-outcome sensitivity or bounds | Gate: without recovery or a defended observation model, local effects are not point-identified; a stratum with no responses near 60 needs recovery or an explicit estimand restriction |
+| No interference between applicants | Every target | Unknown | Ask about cohorts, sites and spillovers | Unknown; it changes the estimand |
 | First stage: take-up just above 60 is bounded away from zero | Receipt effect only | Receipt is impossible below 60, so the jump is the take-up rate in the limit just above the cutoff; take-up further above 60 does not establish it | Estimate the receipt discontinuity in the full cohort | Gate: if take-up just above 60 tends to zero, the receipt effect is not identified; a small positive jump needs weak-identification-robust inference |
 | Exclusion: eligibility affects earnings only through receipt | Receipt effect only; the policy effect permits other pathways | None; concurrent services or job-search responses could violate it | Audit services tied to eligibility | Untestable; if it fails, report only the policy effect |
 | Monotonicity: no defiers | Receipt effect only | Ineligible applicants cannot enroll, so no one takes training only when ineligible | Audit enforcement and other enrollment routes | Holds by design if enforcement is complete; an enrollment route below 60 is a gate |
@@ -97,7 +97,7 @@ empirically verified.
 
 | Candidate | Identified estimand | Match to requested target | Critical assumptions | Required data | Main threat | Feasibility/failure action |
 |---|---|---|---|---|---|---|
-| Eligibility RD | Effect of eligibility at score 60 | Local policy effect; not the national receipt ATE | Continuity, local support, outcome observation | Full cohort: score, eligibility, earnings, response | Sorting, another cutoff policy, selective response | Feasible after the audit; sorting or a separate program at 60 rules it out unless a bundled-policy estimand is agreed; selective response calls for recovery or bounds |
+| Eligibility RD | Effect of eligibility at score 60 | Local policy effect; not the national receipt ATE | Continuity, local support, outcome observation | Full cohort: score, eligibility, earnings, response | Sorting, another cutoff policy, selective response | Feasible after the audit; sorting rules it out; a separate program at 60 rules it out unless a bundled-policy estimand is agreed; selective response calls for recovery or bounds |
 | Fuzzy receipt RD | Receipt effect for compliers at 60 | Local complier effect; not the national ATE | RD assumptions plus first stage, exclusion and monotonicity | As above, plus receipt records | Exclusion failure from concurrent services; weak first stage | If exclusion fails, retain the policy target separately; a weak first stage needs specialized inference, and an absent one leaves the receipt effect unidentified |
 | Broader randomized rollout or encouragement | Offer effect in the rollout population | Closer to the target population; a receipt ATE still needs additional assumptions | Randomization, coverage and follow-up | New assignment and follow-up data | Noncompliance and generalization gaps | Needs a new study; keep assignment and receipt targets distinct |
 
@@ -120,7 +120,7 @@ Every check below is planned; none has been performed.
 | Density and heaping at 60 | Full-cohort scores at their recorded resolution | No precise sorting | A smooth density does not prove continuity of potential outcomes | Treat the RD as unsupported; investigate before estimation |
 | Predetermined covariates at 60 (age, region, baseline earnings) | Covariates with confirmed pre-assignment timing | Continuity | Balance on observed covariates says nothing about unobserved ones | Investigate sorting; report the imbalance and restrict claims |
 | Placebo cutoffs away from 60 | Full-cohort scores and outcomes | Continuity: no jumps where nothing changes | Clean placebos do not prove continuity at 60, and missing outcomes affect them too | Investigate other score-based rules and the outcome specification; restrict claims |
-| Receipt discontinuity | Receipt records for the full cohort | First stage | Its strength depends on the local sample | Take-up near zero just above 60: report only the policy effect. A small jump: use weak-identification-robust inference |
+| Receipt discontinuity | Receipt records for the full cohort | First stage | Its strength depends on the local sample | Use weak-identification-robust inference; if its interval for the receipt effect is unbounded, report only the policy effect |
 | Response discontinuity | Response indicator for the full cohort | Ignorable outcome observation | Equal response rates do not establish ignorable response | Prioritize outcome recovery; otherwise sensitivity analysis or bounds |
 | Bandwidth and local-specification sensitivity | Full cohort | Stability of the local estimate | Agreement across bandwidths does not validate identification | Report the range and flag instability as a limitation |
 | Missing-outcome sensitivity or bounds | Response indicator; any recovered outcomes | Outcome observation | Bounds may be wide and have their own target | Report bounds with stated outcome/selection assumptions; do not mechanically divide selected-population bounds by the overall first stage |
@@ -142,10 +142,11 @@ eligibility, receipt first stage, response process and conditional receipt effec
 separately. Final outcome-observation strategy, clusters and weak-identification
 inference remain gates. Do not fit a national ATE from these cutoff data.
 
-Stop and return to evidence collection if the audit finds sorting or a separate
-program at 60, or if outcome observation cannot be defended. Bayesian execution
-is `not applicable`: the recommended estimator is a local-linear RD with robust
-bias-corrected inference.
+Stop and return to evidence collection if the audit finds sorting, or a separate
+program at 60 with no agreed bundled-policy estimand. If outcome observation
+cannot be defended, proceed only to the bounds analysis in §6. Bayesian
+execution is `not applicable`: the recommended estimator is a local-linear RD
+with robust bias-corrected inference.
 
 ## 8. Sources
 
