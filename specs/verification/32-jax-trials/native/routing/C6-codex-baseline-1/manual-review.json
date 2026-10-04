@@ -1,0 +1,40 @@
+{
+  "selected_primary": "optimize-jax",
+  "selected_supporting": [],
+  "correctness": "correct",
+  "posterior_boundary": "preserved",
+  "rationale": "Generation speed and cache correctness select and read optimize-jax for independent full-prefix parity and separate prefill/decode profiling. Catalog replay preceded selection; no benchmark or posterior inference is claimed.",
+  "full_payloads_manually_read": true,
+  "display_reads_manually_verified": true,
+  "conflicts_or_resident_choices": [],
+  "evidence": [
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-1/response.txt",
+      "line": 1
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-1/read-events.jsonl",
+      "line": 2
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-1/research-notes.md",
+      "line": 1
+    }
+  ],
+  "reviewed_utc": "2026-10-04T02:48:48.967606+00:00",
+  "catalog_manifest_sha256": "fee71e65dfd7f9372132f86feaf5316bac5ca3c8212906359039bf0b0010c800",
+  "payloads": {
+    "response.txt": {
+      "sha256": "07452b269ee159ea1f7d69a04bf16d6e71109b9736da5957cb19e1d6c320c427",
+      "bytes": 751,
+      "lines": 9
+    },
+    "research-notes.md": {
+      "sha256": "557ea4652dc6f2866e1368877cb3d9f27122974d5813d91e2ce8bb226acaa03a",
+      "bytes": 1415,
+      "lines": 11
+    }
+  },
+  "grading_source": "conductor manual full-response judgment",
+  "semantic_grading_automated": false
+}

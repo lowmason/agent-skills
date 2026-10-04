@@ -1,0 +1,53 @@
+{
+  "trial": "C2-codex-baseline-5",
+  "family": "C2",
+  "condition": "baseline",
+  "fresh_context": true,
+  "fork_turns": "none",
+  "agent_type": "default",
+  "runtime": "built-in Codex collaboration agent",
+  "model": "inherited active runtime; exact identifier unavailable",
+  "reasoning_effort": "inherited active runtime; exact value unavailable",
+  "catalog": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/baseline-catalog",
+  "catalog_entries": 138,
+  "catalog_manifest_sha256": "fee71e65dfd7f9372132f86feaf5316bac5ca3c8212906359039bf0b0010c800",
+  "prompt_sha256": "c4bfb1c0b45764d384ca074ed1ea070fdf15f7bd48c7a7bcbb3376aefa130ee5",
+  "selection_simulation": true,
+  "real_auto_loading_observed": false,
+  "tool_policy": "recorded local prompt and selected SKILL.md reads; own trial artifacts only",
+  "resident_global_guidance_may_be_available": true,
+  "spawn_identity": {
+    "task_name": "/root/native_c2_baseline_5",
+    "source": "actual collaboration.spawn_agent return",
+    "recorded_utc": "2026-10-04T02:32:40.568485+00:00"
+  },
+  "completion": "Complete substantive response and research notes",
+  "completed_utc": "2026-10-04T02:34:16.186471+00:00",
+  "first_prompt_read": {
+    "sha256": "c4bfb1c0b45764d384ca074ed1ea070fdf15f7bd48c7a7bcbb3376aefa130ee5",
+    "bytes": 89697,
+    "lines": 620
+  },
+  "actual_skill_reads": [
+    {
+      "read_id": "evaluate-deep-learning",
+      "native_label": "evaluate-deep-learning",
+      "sha256": "db75cc39c357cd80340d39d7255bcb9c53602b6bbb0c5af9789169b5a82607c8",
+      "bytes": 9447,
+      "read_event_line": 2
+    }
+  ],
+  "payloads": {
+    "response.txt": {
+      "sha256": "28480275673e5a89eaa15553d4877da9781278bb19789cbdfa69fd1d7ce0ce8d",
+      "bytes": 1212,
+      "lines": 11
+    },
+    "research-notes.md": {
+      "sha256": "a703bc8aeb94d40ae4b5af7d4e69642104b7452afbc5593d8f1537db53de9ccd",
+      "bytes": 1131,
+      "lines": 9
+    }
+  },
+  "execution_claim": "No underlying application implementation or execution observed; selection simulation only"
+}

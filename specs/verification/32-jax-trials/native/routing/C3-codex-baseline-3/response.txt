@@ -1,0 +1,10 @@
+Primary: optimize-jax.
+Its description names unexpected recompilation, and its full body explicitly covers non-learning numerical programs.
+Supporting: systematic-debugging for reproduction, root-cause evidence, and one hypothesis at a time.
+Supporting: develop-testing-strategy for permanent numerical invariants and trusted-reference parity; optimize-jax explicitly routes permanent test design there.
+Supporting: test-driven-development for a failing regression before the eventual bugfix implementation.
+Supporting: clean-code and clean-coder for Python edits and keeping any cleanup within the authorized fix scope.
+Supporting: verification-before-completion for fresh correctness and recompilation evidence before claiming the eventual fix works.
+Do not select deep-learning, evaluate-deep-learning, or bayesian-workflow: the request contains no neural learning, checkpoint assessment, or posterior inference.
+No recompilation cause or concrete fix is asserted; this is skill selection only, with no implementation, tests, profiling, or reference/script execution.
+Read status: full catalog and all seven selected SKILL.md bodies read through the recorded helper; no recovery was needed.

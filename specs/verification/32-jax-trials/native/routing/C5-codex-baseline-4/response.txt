@@ -1,0 +1,7 @@
+Primary skill: bayesian-workflow.
+Supporting skills: none for the stated task.
+The task explicitly requests BlackJAX posterior sampling; this skill's description names BlackJAX, posterior distributions, and MCMC/NUTS inference.
+Its full body treats BlackJAX NUTS as a co-equal sampler and covers log density, window adaptation, multiple chains, transformed draws, ArviZ conversion, and convergence diagnostics.
+The skill therefore directly supports the requested sampler and Bayesian inference workflow.
+No optimization failure, neural-model task, model-family choice, dataset profiling, or experiment comparison is stated, so their neighboring skills are unnecessary.
+This is a catalog selection only: no posterior was implemented or sampled, and no implementation workflow was invoked.

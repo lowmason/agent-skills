@@ -1,0 +1,12 @@
+# Selection research notes
+- Task: infer a Bayesian neural-network posterior with NumPyro and NUTS.
+- Catalog source: recorded start helper for this trial only; exit code 0.
+- Catalog full-read status: all 89,505 characters displayed and read in five contiguous pages of at most 18,000 characters.
+- Catalog page boundaries: [0,18000), [18000,36000), [36000,54000), [54000,72000), [72000,89505).
+- Primary read: bayesian-workflow via recorded readskill helper; exit code 0; all 33,781 characters read in two contiguous pages.
+- Primary page boundaries: [0,18000), [18000,33781).
+- Boundary candidate read: deep-learning via recorded readskill helper; exit code 0; all 11,046 characters read in one page; excluded from final selection.
+- Final selection: bayesian-workflow primary; no supporting skills.
+- Recovery status: no failed reads or page recovery required; every captured body reached its ending.
+- Resident conflicts: frozen-catalog and selection-only limits govern this simulation; resident discovery, repository-guide, browsing, implementation, test, planning, delegation, and completion workflows were not invoked.
+- Scope preserved: only authorized helper reads and these two trial-owned files; no other files, trials, manifests, plans, rubrics, references, scripts, browsing, or subagents accessed.

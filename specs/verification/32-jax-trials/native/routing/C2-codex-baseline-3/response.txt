@@ -1,0 +1,10 @@
+Primary skill: evaluate-deep-learning.
+Supporting skills: none required by the stated task.
+Its explicit checkpoint-comparison, unequal-compute-budget, and across-seed triggers directly match comparing neural checkpoints trained with different budgets and seeds.
+The body requires a resource policy: record training exposure and physical compute, compare common budgets or budget-performance curves, and distinguish endpoint results from method-wide claims.
+It requires retaining all planned runs and failures; equal numeric seed labels alone do not justify pairing training runs.
+It separates training-run variation, finite-test uncertainty, sampling variation, numerical sensitivity, and predictive-uncertainty claims.
+The evaluation contract, held-out unit identity, metrics and aggregation, validity checks, results, decision threshold, and neural run record supply the comparison workflow.
+Deep-learning and optimize-jax are conditional handoffs for training changes or execution-performance issues; no such need is stated here. Bayesian workflows and their experiment ledger are not implied by neural checkpoints.
+Read status: the full frozen catalog and the full selected SKILL.md were displayed in contiguous pages; no body page or catalog page remains unread.
+Selection only: no checkpoints, data, references, scripts, metrics, training runs, or underlying implementation were inspected or executed; no empirical ranking is claimed.

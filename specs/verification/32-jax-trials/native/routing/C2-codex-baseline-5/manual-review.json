@@ -1,0 +1,40 @@
+{
+  "selected_primary": "evaluate-deep-learning",
+  "selected_supporting": [],
+  "correctness": "correct",
+  "posterior_boundary": "preserved",
+  "rationale": "Neural checkpoint comparison selects and reads evaluate-deep-learning for unequal compute and seed variation; Bayesian posterior guidance remains conditional on an actual posterior task.",
+  "full_payloads_manually_read": true,
+  "display_reads_manually_verified": true,
+  "conflicts_or_resident_choices": [],
+  "evidence": [
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-5/response.txt",
+      "line": 1
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-5/read-events.jsonl",
+      "line": 2
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-5/research-notes.md",
+      "line": 1
+    }
+  ],
+  "reviewed_utc": "2026-10-04T02:34:16.187227+00:00",
+  "catalog_manifest_sha256": "fee71e65dfd7f9372132f86feaf5316bac5ca3c8212906359039bf0b0010c800",
+  "payloads": {
+    "response.txt": {
+      "sha256": "28480275673e5a89eaa15553d4877da9781278bb19789cbdfa69fd1d7ce0ce8d",
+      "bytes": 1212,
+      "lines": 11
+    },
+    "research-notes.md": {
+      "sha256": "a703bc8aeb94d40ae4b5af7d4e69642104b7452afbc5593d8f1537db53de9ccd",
+      "bytes": 1131,
+      "lines": 9
+    }
+  },
+  "grading_source": "conductor manual full-response judgment",
+  "semantic_grading_automated": false
+}

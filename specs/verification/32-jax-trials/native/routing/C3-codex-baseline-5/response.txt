@@ -1,0 +1,11 @@
+Primary skill: optimize-jax.
+Supporting skills: systematic-debugging; test-driven-development; verification-before-completion.
+optimize-jax directly covers unexpected recompilation and explicitly includes non-learning simulations and numerical programs.
+Its relevant guidance is to replay actual inputs, associate compile/cache events with full signatures, and distinguish first-encounter costs from warm execution.
+It investigates static values, weak types, shapes, dtypes, PyTree structure, callable identity, and sharding before choosing a change.
+systematic-debugging supports reproducible evidence, root-cause isolation, and testing one hypothesis at a time.
+test-driven-development supports a regression reproduction that fails before a repair; verification-before-completion requires fresh evidence before claiming it fixed.
+These supporting workflows were selected and read, not executed in this simulation.
+deep-learning and evaluate-deep-learning do not fit a non-learning calculation; bayesian-workflow does not fit absent posterior inference.
+develop-testing-strategy would become relevant if permanent numerical tests need a testing plan; that additional scope is not stated here.
+No underlying calculation was inspected, changed, run, or claimed fixed.

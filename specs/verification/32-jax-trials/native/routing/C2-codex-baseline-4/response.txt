@@ -1,0 +1,10 @@
+Primary skill: evaluate-deep-learning.
+Supporting skills selected: none for the stated comparison.
+Task: compare neural checkpoints trained with different budgets and seeds.
+Its catalog description explicitly names checkpoint comparisons, unequal compute budgets, and seed variation.
+The full body owns held-out comparison, checkpoint selection, resource policies, and neural experiment records.
+It calls for common-budget comparisons or budget-performance curves and distinguishes checkpoint endpoints from method superiority.
+It preserves each planned seed/run and warns that matching seed numbers alone do not justify paired training runs.
+It separates training-run variation, finite-test variation, predictive uncertainty, and numerical sensitivity.
+Deep-learning and optimize-jax become supporting skills only if training diagnosis or execution-performance work arises.
+This is a selection recommendation only; no checkpoints were loaded, evaluated, ranked, or changed.

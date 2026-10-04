@@ -1,0 +1,2 @@
+{"operation": "start", "label": null, "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-4/prompt.txt", "sha256": "8b2f0a3e48b680422cc6788e17bf985f96aa402eca9e5ec47f83f6d322e17d12", "bytes": 89677, "utc": "2026-10-04T02:44:50.873627+00:00"}
+{"operation": "readskill", "label": "bayesian-workflow", "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/baseline-catalog/049/SKILL.md", "sha256": "8b6c06e85a0eb4750e5516d53f0c7a82ad279eaaf68692218de79ae098913156", "bytes": 33948, "utc": "2026-10-04T02:45:19.798333+00:00"}

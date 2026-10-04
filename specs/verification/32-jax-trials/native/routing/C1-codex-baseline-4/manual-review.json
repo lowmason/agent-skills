@@ -1,0 +1,40 @@
+{
+  "selected_primary": "deep-learning",
+  "selected_supporting": [],
+  "correctness": "correct",
+  "posterior_boundary": "preserved",
+  "rationale": "NNX sequence training selects deep-learning for model, masks, RNG, optimizer and checkpoint contracts; comparative and posterior tasks are absent.",
+  "full_payloads_manually_read": true,
+  "display_reads_manually_verified": true,
+  "conflicts_or_resident_choices": [],
+  "evidence": [
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-4/response.txt",
+      "line": 1
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-4/read-events.jsonl",
+      "line": 2
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-4/research-notes.md",
+      "line": 1
+    }
+  ],
+  "reviewed_utc": "2026-10-04T02:29:57.838642+00:00",
+  "catalog_manifest_sha256": "fee71e65dfd7f9372132f86feaf5316bac5ca3c8212906359039bf0b0010c800",
+  "payloads": {
+    "response.txt": {
+      "sha256": "913a31e631bc1170bddce58ac07f33819fd53a6cb76ff720fe5152e9bf215f86",
+      "bytes": 722,
+      "lines": 6
+    },
+    "research-notes.md": {
+      "sha256": "65038599b13a5be7ff9c4f0f716562a930acf7ef634a6197058831b41f122d18",
+      "bytes": 971,
+      "lines": 8
+    }
+  },
+  "grading_source": "conductor manual full-response judgment",
+  "semantic_grading_automated": false
+}

@@ -1,0 +1,40 @@
+{
+  "selected_primary": "bayesian-workflow",
+  "selected_supporting": [],
+  "correctness": "correct",
+  "posterior_boundary": "preserved",
+  "rationale": "The Bayesian neural-network request selects and reads bayesian-workflow for NumPyro NUTS posterior inference. The additionally read deep-learning candidate explicitly leaves posterior ownership there and is excluded.",
+  "full_payloads_manually_read": true,
+  "display_reads_manually_verified": true,
+  "conflicts_or_resident_choices": [],
+  "evidence": [
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-3/response.txt",
+      "line": 1
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-3/read-events.jsonl",
+      "line": 2
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-3/research-notes.md",
+      "line": 1
+    }
+  ],
+  "reviewed_utc": "2026-10-04T02:43:09.564976+00:00",
+  "catalog_manifest_sha256": "fee71e65dfd7f9372132f86feaf5316bac5ca3c8212906359039bf0b0010c800",
+  "payloads": {
+    "response.txt": {
+      "sha256": "8fddba9b9bc4bdb3ff6602c0a30b72c68a883712557428b107dcc0a7f8816400",
+      "bytes": 932,
+      "lines": 10
+    },
+    "research-notes.md": {
+      "sha256": "c123d25ffccd8df971839bb0aae594a6f96e289605a24e0dcb0ae9b86a8d2e70",
+      "bytes": 1130,
+      "lines": 10
+    }
+  },
+  "grading_source": "conductor manual full-response judgment",
+  "semantic_grading_automated": false
+}

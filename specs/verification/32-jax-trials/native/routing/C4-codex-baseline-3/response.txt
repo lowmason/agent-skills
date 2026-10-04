@@ -1,0 +1,10 @@
+Primary skill: bayesian-workflow.
+Supporting skills: none.
+The requested operation is Bayesian posterior inference, and NumPyro/NUTS directly trigger bayesian-workflow.
+Its full body covers generative specification, priors, prior predictive checks, MCMC(NUTS), convergence diagnostics, posterior criticism, and uncertainty reporting.
+The neural-network likelihood does not change ownership of posterior inference.
+I also fully read deep-learning as a candidate; its routing explicitly keeps posterior-inference procedures with the responsible skill.
+No neural architecture design, optimizer training, benchmark comparison, or JAX execution problem was requested.
+recommend-probabilistic-model is unnecessary because the model family and inference method are already chosen.
+Selection only: no model was implemented, fit, diagnosed, or claimed to converge.
+All choices were made from the frozen catalog supplied by the trial helper.

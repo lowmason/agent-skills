@@ -1,0 +1,10 @@
+Primary skill: bayesian-workflow.
+Supporting skills: none.
+
+The task asks to use BlackJAX to sample a posterior distribution. The frozen catalog explicitly routes BlackJAX, posterior distributions, and MCMC inference to bayesian-workflow.
+I read the complete selected skill body. Its Samplers section treats BlackJAX NUTS as a first-class alternative and covers log-density setup, window adaptation, chain sampling, constrained posterior conversion, and sampler diagnostics.
+This guidance fits the requested inference task directly, including reproducibility and convergence checks needed before interpreting posterior samples.
+optimize-jax is not selected because no tracing, recompilation, memory, placement, or performance issue is stated.
+deep-learning and recommend-probabilistic-model are not selected because the task specifies posterior sampling rather than neural training or choosing a model family.
+No implementation workflow is invoked: this is a selection-only simulation.
+No posterior was sampled, environment changed, or underlying task implemented.

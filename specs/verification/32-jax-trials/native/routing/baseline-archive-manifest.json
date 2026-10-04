@@ -1,0 +1,2095 @@
+{
+  "schema_version": 1,
+  "condition": "baseline",
+  "created_utc": "2026-10-04T02:51:44.423406+00:00",
+  "source_root": "/private/tmp/jax-skill-trials-pAYZ0t",
+  "destination": "/Users/lowell/.codex/worktrees/jax-deep-learning-skills/agent-skills/specs/verification/32-jax-trials/native/routing",
+  "trial_count": 30,
+  "required_trial_records": [
+    "prompt.txt",
+    "conditions.json",
+    "read-events.jsonl",
+    "response.txt",
+    "research-notes.md",
+    "manual-review.json"
+  ],
+  "raw_report": "baseline-manual-scoring.raw.md",
+  "portable_report": "baseline-manual-scoring.portable.md",
+  "metadata_audit": "baseline-metadata-audit.json",
+  "files": [
+    {
+      "path": "C1-codex-baseline-1/conditions.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-1/conditions.json",
+      "role": "raw trial record",
+      "sha256": "70cc0da5bc267e20bb95a7b9487e7cea3c7e4acfc94fe66727c1dcdde1a42bd8",
+      "bytes": 2014,
+      "lines": 53
+    },
+    {
+      "path": "C1-codex-baseline-1/manual-review.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-1/manual-review.json",
+      "role": "raw trial record",
+      "sha256": "7813b05f9df06d2b8a3c85c7f0e3aabba6201ca4832911c906c0b7cc4b8009d9",
+      "bytes": 1396,
+      "lines": 40
+    },
+    {
+      "path": "C1-codex-baseline-1/prompt.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-1/prompt.txt",
+      "role": "raw trial record",
+      "sha256": "c2dd78486f06988b6d01f707b723c0f869783a152185743f199c95c7f358f38f",
+      "bytes": 89685,
+      "lines": 620
+    },
+    {
+      "path": "C1-codex-baseline-1/read-events.jsonl",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-1/read-events.jsonl",
+      "role": "raw trial record",
+      "sha256": "c76b445862d42657d21ab986d5a0bc937f29d35f5e6d32af0d291acc59fa4394",
+      "bytes": 827,
+      "lines": 3
+    },
+    {
+      "path": "C1-codex-baseline-1/research-notes.md",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-1/research-notes.md",
+      "role": "raw trial record",
+      "sha256": "bf29b0b8a2edf837fb4f82d1556bce4b472ecd73d6e565e8d83402a2b2de6a74",
+      "bytes": 853,
+      "lines": 6
+    },
+    {
+      "path": "C1-codex-baseline-1/response.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-1/response.txt",
+      "role": "raw trial record",
+      "sha256": "bff886fea24060e19516601c173c62e048f664f9412b6740f143a0e23d2e19fe",
+      "bytes": 546,
+      "lines": 6
+    },
+    {
+      "path": "C1-codex-baseline-2/conditions.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-2/conditions.json",
+      "role": "raw trial record",
+      "sha256": "686a8ac43a77b6a39af61d841d5c0b522a646e51ba6fbb1b36f9f11b4fefde49",
+      "bytes": 2014,
+      "lines": 53
+    },
+    {
+      "path": "C1-codex-baseline-2/manual-review.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-2/manual-review.json",
+      "role": "raw trial record",
+      "sha256": "ec3f4fdd017da746c1d489493e5508386fba07f9912ba7399c7f51273e875abc",
+      "bytes": 1392,
+      "lines": 40
+    },
+    {
+      "path": "C1-codex-baseline-2/prompt.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-2/prompt.txt",
+      "role": "raw trial record",
+      "sha256": "da171e192d5e09d2a2a4223fad5478f0c0ec025dad15975f6c1d542f4af05fb0",
+      "bytes": 89685,
+      "lines": 620
+    },
+    {
+      "path": "C1-codex-baseline-2/read-events.jsonl",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-2/read-events.jsonl",
+      "role": "raw trial record",
+      "sha256": "c57e7a15cc0688d3a33807b9f16a7cf119b288ab0650b0952d3939d1f76b05c4",
+      "bytes": 827,
+      "lines": 3
+    },
+    {
+      "path": "C1-codex-baseline-2/research-notes.md",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-2/research-notes.md",
+      "role": "raw trial record",
+      "sha256": "e813b2783f0625086bc2d917cae35d44d4bb969f1f20b7eba6b45036a324bbcc",
+      "bytes": 745,
+      "lines": 7
+    },
+    {
+      "path": "C1-codex-baseline-2/response.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-2/response.txt",
+      "role": "raw trial record",
+      "sha256": "f88b125d98fcfb0766260fba8dedb29edaeece430ac8d1261fd0853464a17112",
+      "bytes": 643,
+      "lines": 6
+    },
+    {
+      "path": "C1-codex-baseline-3/conditions.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-3/conditions.json",
+      "role": "raw trial record",
+      "sha256": "240fd74e77d4c8830e4636d733acd996977a8d3e11c487e50f0c76051a9a5134",
+      "bytes": 2015,
+      "lines": 53
+    },
+    {
+      "path": "C1-codex-baseline-3/manual-review.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-3/manual-review.json",
+      "role": "raw trial record",
+      "sha256": "b2f59ca9cb9ada10ad8b441ab5b34c4b3651982d174c4f72e81230b5c3c96fb2",
+      "bytes": 1400,
+      "lines": 40
+    },
+    {
+      "path": "C1-codex-baseline-3/prompt.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-3/prompt.txt",
+      "role": "raw trial record",
+      "sha256": "1c1937a13d503b5a168cfa7d751392a90b1711738de5ad9c58f2bd02119cfe99",
+      "bytes": 89685,
+      "lines": 620
+    },
+    {
+      "path": "C1-codex-baseline-3/read-events.jsonl",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-3/read-events.jsonl",
+      "role": "raw trial record",
+      "sha256": "baa148f701ed032a92ec62c9417798798cc7de6af11f04c187c19f118b5647c6",
+      "bytes": 556,
+      "lines": 2
+    },
+    {
+      "path": "C1-codex-baseline-3/research-notes.md",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-3/research-notes.md",
+      "role": "raw trial record",
+      "sha256": "bad3dd49a18ee30cb578935b44dd848dd723857c3d22cf96ce78b61453c3e052",
+      "bytes": 1022,
+      "lines": 8
+    },
+    {
+      "path": "C1-codex-baseline-3/response.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-3/response.txt",
+      "role": "raw trial record",
+      "sha256": "f9361c55d7fc08a772494ebdba3501becfac5b6f1e9ec17d21fffaee97ab5bd2",
+      "bytes": 714,
+      "lines": 6
+    },
+    {
+      "path": "C1-codex-baseline-4/conditions.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-4/conditions.json",
+      "role": "raw trial record",
+      "sha256": "276e6301e2d969866de93928bab55c6baa2011525ac81599189f075343c3c691",
+      "bytes": 2014,
+      "lines": 53
+    },
+    {
+      "path": "C1-codex-baseline-4/manual-review.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-4/manual-review.json",
+      "role": "raw trial record",
+      "sha256": "e9650fe5131e36df78bc623b0c94ca6eea3a4135cd9f87fda2b30372073ad698",
+      "bytes": 1423,
+      "lines": 40
+    },
+    {
+      "path": "C1-codex-baseline-4/prompt.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-4/prompt.txt",
+      "role": "raw trial record",
+      "sha256": "ad54414b9251edb64b72068f87586cad7ab601cdc939e89c1c7397497a79db98",
+      "bytes": 89685,
+      "lines": 620
+    },
+    {
+      "path": "C1-codex-baseline-4/read-events.jsonl",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-4/read-events.jsonl",
+      "role": "raw trial record",
+      "sha256": "e7e127f56c1497f90c1c2fff52813463be46bfeb010db26d3f71f8efb86e1d97",
+      "bytes": 556,
+      "lines": 2
+    },
+    {
+      "path": "C1-codex-baseline-4/research-notes.md",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-4/research-notes.md",
+      "role": "raw trial record",
+      "sha256": "65038599b13a5be7ff9c4f0f716562a930acf7ef634a6197058831b41f122d18",
+      "bytes": 971,
+      "lines": 8
+    },
+    {
+      "path": "C1-codex-baseline-4/response.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-4/response.txt",
+      "role": "raw trial record",
+      "sha256": "913a31e631bc1170bddce58ac07f33819fd53a6cb76ff720fe5152e9bf215f86",
+      "bytes": 722,
+      "lines": 6
+    },
+    {
+      "path": "C1-codex-baseline-5/conditions.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-5/conditions.json",
+      "role": "raw trial record",
+      "sha256": "721ec3c5cfa5efb7bfd37c90e1ec0b0670c366272c2776b01cb782009222a2fc",
+      "bytes": 2235,
+      "lines": 60
+    },
+    {
+      "path": "C1-codex-baseline-5/manual-review.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-5/manual-review.json",
+      "role": "raw trial record",
+      "sha256": "8904a0ec1cdbf7796e0dbe886080b25c7066879c676e5f5be444859273dbd06c",
+      "bytes": 1463,
+      "lines": 42
+    },
+    {
+      "path": "C1-codex-baseline-5/prompt.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-5/prompt.txt",
+      "role": "raw trial record",
+      "sha256": "d5362dcc11189b34f6059f298d1e3ed213b082d17a720910e20c19361445ef44",
+      "bytes": 89685,
+      "lines": 620
+    },
+    {
+      "path": "C1-codex-baseline-5/read-events.jsonl",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-5/read-events.jsonl",
+      "role": "raw trial record",
+      "sha256": "82c36c835a259e5e25a6ebacf1c33368fa7e7784119f1d52c2cb6b6532ab8dd0",
+      "bytes": 841,
+      "lines": 3
+    },
+    {
+      "path": "C1-codex-baseline-5/research-notes.md",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-5/research-notes.md",
+      "role": "raw trial record",
+      "sha256": "d98a2dd9a7011409d74bda68d4b223f254616b99f7cce61132d5acb86d21b23f",
+      "bytes": 1198,
+      "lines": 11
+    },
+    {
+      "path": "C1-codex-baseline-5/response.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-5/response.txt",
+      "role": "raw trial record",
+      "sha256": "61861b0d85777344513adab466766a90aeb25efaf0547ad920837b32d46dea65",
+      "bytes": 791,
+      "lines": 9
+    },
+    {
+      "path": "C2-codex-baseline-1/conditions.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-1/conditions.json",
+      "role": "raw trial record",
+      "sha256": "773a8eb80f1264de4bedf7bc292165e71a5ac57d097a4950a566de1352487829",
+      "bytes": 2034,
+      "lines": 53
+    },
+    {
+      "path": "C2-codex-baseline-1/manual-review.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-1/manual-review.json",
+      "role": "raw trial record",
+      "sha256": "dc4f9a8dff2270110e52025e3155a14ba997cffc4418262fc2dea6f57e601f5f",
+      "bytes": 1437,
+      "lines": 40
+    },
+    {
+      "path": "C2-codex-baseline-1/prompt.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-1/prompt.txt",
+      "role": "raw trial record",
+      "sha256": "83f4dbf3f5e64ca6b93b179692d8b5913cdff9dd55b17fdb206b43d3b5fcf01c",
+      "bytes": 89697,
+      "lines": 620
+    },
+    {
+      "path": "C2-codex-baseline-1/read-events.jsonl",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-1/read-events.jsonl",
+      "role": "raw trial record",
+      "sha256": "76bd1f0c2d87f0f517185f9b14370a1f6e33c420da706ae6d30d69908660b0f7",
+      "bytes": 564,
+      "lines": 2
+    },
+    {
+      "path": "C2-codex-baseline-1/research-notes.md",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-1/research-notes.md",
+      "role": "raw trial record",
+      "sha256": "0854107e51edadead9ae28bd53aa8470ce04262fb88c09800aa394f0bbbea5a5",
+      "bytes": 1055,
+      "lines": 10
+    },
+    {
+      "path": "C2-codex-baseline-1/response.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-1/response.txt",
+      "role": "raw trial record",
+      "sha256": "2188b395ef34b1223e2c18d9dafc52d97b831b0ab1ce835d3ca9dda7448580a8",
+      "bytes": 970,
+      "lines": 10
+    },
+    {
+      "path": "C2-codex-baseline-2/conditions.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-2/conditions.json",
+      "role": "raw trial record",
+      "sha256": "8916e587759265115a7580b4dfba8937d599fd85173c75ee776bf71d2c7d9b8b",
+      "bytes": 2034,
+      "lines": 53
+    },
+    {
+      "path": "C2-codex-baseline-2/manual-review.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-2/manual-review.json",
+      "role": "raw trial record",
+      "sha256": "4ac25a61a67f0ec55e8286e85c4c6824a5e6c91f2e3b4e39c09cfbe5d60c3bb1",
+      "bytes": 1453,
+      "lines": 40
+    },
+    {
+      "path": "C2-codex-baseline-2/prompt.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-2/prompt.txt",
+      "role": "raw trial record",
+      "sha256": "454ac7fc7ed5d9d239bf0c630f9b0e7acb99d450f77ae04224e722dc7d17f17c",
+      "bytes": 89697,
+      "lines": 620
+    },
+    {
+      "path": "C2-codex-baseline-2/read-events.jsonl",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-2/read-events.jsonl",
+      "role": "raw trial record",
+      "sha256": "846a6b19f607b1575dac16d830d93c6ff71278a8f566f0896827cabd2eee38c2",
+      "bytes": 564,
+      "lines": 2
+    },
+    {
+      "path": "C2-codex-baseline-2/research-notes.md",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-2/research-notes.md",
+      "role": "raw trial record",
+      "sha256": "0643ec9fae934a50a0af8a66983f42b4e0fcb7b53021c5aed5ce98077ff20f43",
+      "bytes": 1014,
+      "lines": 10
+    },
+    {
+      "path": "C2-codex-baseline-2/response.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-2/response.txt",
+      "role": "raw trial record",
+      "sha256": "3d62426e170106e684dcc32ce32e3c09fdd985df41379e1f29aef197fe5af6e7",
+      "bytes": 908,
+      "lines": 10
+    },
+    {
+      "path": "C2-codex-baseline-3/conditions.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-3/conditions.json",
+      "role": "raw trial record",
+      "sha256": "5f091807b036ec23dc3624ccb7c237555941bef47c4a2d7d2625692aad7163aa",
+      "bytes": 2035,
+      "lines": 53
+    },
+    {
+      "path": "C2-codex-baseline-3/manual-review.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-3/manual-review.json",
+      "role": "raw trial record",
+      "sha256": "a5198004e7c8bc7c7529faf321e700066d32e09d2d48ae29cd1905b373a15590",
+      "bytes": 1489,
+      "lines": 40
+    },
+    {
+      "path": "C2-codex-baseline-3/prompt.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-3/prompt.txt",
+      "role": "raw trial record",
+      "sha256": "c89884fb0bcf861545a34dd1e53cf8f637e348697ee5dca0646d7be6dfed4f96",
+      "bytes": 89697,
+      "lines": 620
+    },
+    {
+      "path": "C2-codex-baseline-3/read-events.jsonl",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-3/read-events.jsonl",
+      "role": "raw trial record",
+      "sha256": "1e5c4d28e3746ca16bef7d911053c823db282a0a503b3a50aa89fab3e6979c20",
+      "bytes": 564,
+      "lines": 2
+    },
+    {
+      "path": "C2-codex-baseline-3/research-notes.md",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-3/research-notes.md",
+      "role": "raw trial record",
+      "sha256": "1d0adc4cda7e0d1b0d645044b7358cee7230d10f9e672509a3147a3bb172a4bd",
+      "bytes": 1582,
+      "lines": 10
+    },
+    {
+      "path": "C2-codex-baseline-3/response.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-3/response.txt",
+      "role": "raw trial record",
+      "sha256": "fa51e90a4fdcff667a76a9d3772deba39edbc0b6e935a1eb92f8f74d03becffa",
+      "bytes": 1442,
+      "lines": 10
+    },
+    {
+      "path": "C2-codex-baseline-4/conditions.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-4/conditions.json",
+      "role": "raw trial record",
+      "sha256": "f959ecb764631d666d5c85a4308397226681ce62d9bcbc45c65486904cf5573f",
+      "bytes": 2034,
+      "lines": 53
+    },
+    {
+      "path": "C2-codex-baseline-4/manual-review.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-4/manual-review.json",
+      "role": "raw trial record",
+      "sha256": "3c161c777fbebe896dca5759acda5d992d2ed7908def4b9749c08047ae4456c1",
+      "bytes": 1464,
+      "lines": 40
+    },
+    {
+      "path": "C2-codex-baseline-4/prompt.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-4/prompt.txt",
+      "role": "raw trial record",
+      "sha256": "873f2389799ffa245e43b26c9b1acd8ff70c9c6a0480881b2d7191856c5c906c",
+      "bytes": 89697,
+      "lines": 620
+    },
+    {
+      "path": "C2-codex-baseline-4/read-events.jsonl",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-4/read-events.jsonl",
+      "role": "raw trial record",
+      "sha256": "d39fdd541df0472b46ee2226aa643c38c54ced02456cc1cd7c3e15bb097c322a",
+      "bytes": 564,
+      "lines": 2
+    },
+    {
+      "path": "C2-codex-baseline-4/research-notes.md",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-4/research-notes.md",
+      "role": "raw trial record",
+      "sha256": "096c777f385187f3faaa1ce0c2f48c0b4511d420f074b6c88aa800b3afd4acf3",
+      "bytes": 1196,
+      "lines": 10
+    },
+    {
+      "path": "C2-codex-baseline-4/response.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-4/response.txt",
+      "role": "raw trial record",
+      "sha256": "e648a9186ffdddf849afb54447d67df73485f82295e0dcb16e34c2c46d049661",
+      "bytes": 975,
+      "lines": 10
+    },
+    {
+      "path": "C2-codex-baseline-5/conditions.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-5/conditions.json",
+      "role": "raw trial record",
+      "sha256": "0e9ac1bfbe460583c015ead93a478de905fb9e1863a2661ce19c17122079e7a0",
+      "bytes": 2034,
+      "lines": 53
+    },
+    {
+      "path": "C2-codex-baseline-5/manual-review.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-5/manual-review.json",
+      "role": "raw trial record",
+      "sha256": "199091b07a76f7a76425dd1eb25812cd788ad9a48da674fa455eb3bc24d26b45",
+      "bytes": 1475,
+      "lines": 40
+    },
+    {
+      "path": "C2-codex-baseline-5/prompt.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-5/prompt.txt",
+      "role": "raw trial record",
+      "sha256": "c4bfb1c0b45764d384ca074ed1ea070fdf15f7bd48c7a7bcbb3376aefa130ee5",
+      "bytes": 89697,
+      "lines": 620
+    },
+    {
+      "path": "C2-codex-baseline-5/read-events.jsonl",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-5/read-events.jsonl",
+      "role": "raw trial record",
+      "sha256": "cb21e645f4866ccdf39d761e0a807a0c17ed33f6f02d948904c77828d282edd9",
+      "bytes": 564,
+      "lines": 2
+    },
+    {
+      "path": "C2-codex-baseline-5/research-notes.md",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-5/research-notes.md",
+      "role": "raw trial record",
+      "sha256": "a703bc8aeb94d40ae4b5af7d4e69642104b7452afbc5593d8f1537db53de9ccd",
+      "bytes": 1131,
+      "lines": 9
+    },
+    {
+      "path": "C2-codex-baseline-5/response.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-5/response.txt",
+      "role": "raw trial record",
+      "sha256": "28480275673e5a89eaa15553d4877da9781278bb19789cbdfa69fd1d7ce0ce8d",
+      "bytes": 1212,
+      "lines": 11
+    },
+    {
+      "path": "C3-codex-baseline-1/conditions.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-1/conditions.json",
+      "role": "raw trial record",
+      "sha256": "dc88e3f2826ccd6f710f225c1008c4f20f3bba21d3164c2354ff5824be35d689",
+      "bytes": 2736,
+      "lines": 74
+    },
+    {
+      "path": "C3-codex-baseline-1/manual-review.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-1/manual-review.json",
+      "role": "raw trial record",
+      "sha256": "d3f3f755feb4f8bcc651d067839fe463644a40f9fb85cf11abca13b385c3407d",
+      "bytes": 1582,
+      "lines": 44
+    },
+    {
+      "path": "C3-codex-baseline-1/prompt.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-1/prompt.txt",
+      "role": "raw trial record",
+      "sha256": "55237177d2fd1c89418f9c66c5b1efce1ceb35f8b212e4a3c50e0d6f00b6193f",
+      "bytes": 89681,
+      "lines": 620
+    },
+    {
+      "path": "C3-codex-baseline-1/read-events.jsonl",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-1/read-events.jsonl",
+      "role": "raw trial record",
+      "sha256": "e3a725de11a997174ba6dcb789fec81148a490b4bdb427a5f3059d81db3d7711",
+      "bytes": 1441,
+      "lines": 5
+    },
+    {
+      "path": "C3-codex-baseline-1/research-notes.md",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-1/research-notes.md",
+      "role": "raw trial record",
+      "sha256": "fc00f56ada654a68a6bb2c1338ecc540e7e12d47555c5b49eb98ee051445a3f1",
+      "bytes": 1344,
+      "lines": 8
+    },
+    {
+      "path": "C3-codex-baseline-1/response.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-1/response.txt",
+      "role": "raw trial record",
+      "sha256": "bb36ebdea198d6fb83b7c379cf386cbb31225229b5f1b9feb79bfdefe073edf5",
+      "bytes": 1062,
+      "lines": 9
+    },
+    {
+      "path": "C3-codex-baseline-2/conditions.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-2/conditions.json",
+      "role": "raw trial record",
+      "sha256": "5d5e657d7a62a4ddcb6887e114167f9af11fcda70db06c58048822bf58bfee0a",
+      "bytes": 2247,
+      "lines": 60
+    },
+    {
+      "path": "C3-codex-baseline-2/manual-review.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-2/manual-review.json",
+      "role": "raw trial record",
+      "sha256": "5e241fb3cb29b0dc561facdf7bb607ec7000962abcd02dd519e3b0eac21e10e8",
+      "bytes": 1497,
+      "lines": 42
+    },
+    {
+      "path": "C3-codex-baseline-2/prompt.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-2/prompt.txt",
+      "role": "raw trial record",
+      "sha256": "27a596b31fd77a5b2f8995db00cf5d91ad85bde6d420c8d2a6e0d87cb224db72",
+      "bytes": 89681,
+      "lines": 620
+    },
+    {
+      "path": "C3-codex-baseline-2/read-events.jsonl",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-2/read-events.jsonl",
+      "role": "raw trial record",
+      "sha256": "a5fc95811070e580c150656b32b951a96e0aa5160efe5bdefb47870a19e943ac",
+      "bytes": 846,
+      "lines": 3
+    },
+    {
+      "path": "C3-codex-baseline-2/research-notes.md",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-2/research-notes.md",
+      "role": "raw trial record",
+      "sha256": "6413b0537e88cea04dc8bb2caeecf98a07a35a6dbe7f218d53083b411fe20a53",
+      "bytes": 1215,
+      "lines": 10
+    },
+    {
+      "path": "C3-codex-baseline-2/response.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-2/response.txt",
+      "role": "raw trial record",
+      "sha256": "66eb659c6155e530c06ac82541b172764a3415e33a302aef1fa4b0c800547463",
+      "bytes": 1022,
+      "lines": 8
+    },
+    {
+      "path": "C3-codex-baseline-3/conditions.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-3/conditions.json",
+      "role": "raw trial record",
+      "sha256": "0bd9787afb0d732b159f69f857a29d51d550b6555ec5b6ccf5d4eef8df186d83",
+      "bytes": 3405,
+      "lines": 95
+    },
+    {
+      "path": "C3-codex-baseline-3/manual-review.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-3/manual-review.json",
+      "role": "raw trial record",
+      "sha256": "387b956e10c8936d952f00d073a2a113de8215e893c4505754eef0b010c10170",
+      "bytes": 1672,
+      "lines": 47
+    },
+    {
+      "path": "C3-codex-baseline-3/prompt.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-3/prompt.txt",
+      "role": "raw trial record",
+      "sha256": "486e439251898b600c526655b66cbd870b720983ffaeda436d8d9244d964b7c5",
+      "bytes": 89681,
+      "lines": 620
+    },
+    {
+      "path": "C3-codex-baseline-3/read-events.jsonl",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-3/read-events.jsonl",
+      "role": "raw trial record",
+      "sha256": "4e2a21e213968450271ac047920d4b1deb68faea7a53a0d3c048ff39c12c35f4",
+      "bytes": 2300,
+      "lines": 8
+    },
+    {
+      "path": "C3-codex-baseline-3/research-notes.md",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-3/research-notes.md",
+      "role": "raw trial record",
+      "sha256": "f01c4550486e29affcea8b4ee4275c9f9a0f954fca50128c48c00c14068b2a07",
+      "bytes": 1187,
+      "lines": 10
+    },
+    {
+      "path": "C3-codex-baseline-3/response.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-3/response.txt",
+      "role": "raw trial record",
+      "sha256": "bbd71077b9ec9da671848754eba038358f4e5532465fde1714dc226203cbcfc9",
+      "bytes": 1194,
+      "lines": 10
+    },
+    {
+      "path": "C3-codex-baseline-4/conditions.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-4/conditions.json",
+      "role": "raw trial record",
+      "sha256": "c550065615237c6c1e04ac10b3ef71545efed2dbad1bb6aebb54e35bbad4aa44",
+      "bytes": 2738,
+      "lines": 74
+    },
+    {
+      "path": "C3-codex-baseline-4/manual-review.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-4/manual-review.json",
+      "role": "raw trial record",
+      "sha256": "a2431a921d92d1e48131eb6cb67e010a9612b0858a246002909c57c8c7c266b3",
+      "bytes": 1584,
+      "lines": 44
+    },
+    {
+      "path": "C3-codex-baseline-4/prompt.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-4/prompt.txt",
+      "role": "raw trial record",
+      "sha256": "13ddc42816c2ca219e9c702972ce970ece44dac924d6f461f165489f9d032065",
+      "bytes": 89681,
+      "lines": 620
+    },
+    {
+      "path": "C3-codex-baseline-4/read-events.jsonl",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-4/read-events.jsonl",
+      "role": "raw trial record",
+      "sha256": "ac376bed738236baf8f7b662b9d50e5d80591bb14ff6daced6d08e0db8090ed5",
+      "bytes": 1441,
+      "lines": 5
+    },
+    {
+      "path": "C3-codex-baseline-4/research-notes.md",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-4/research-notes.md",
+      "role": "raw trial record",
+      "sha256": "32eceec4dc30da83c9211cebd04b888efe0ffa1f77f985b774f7dd4280a21221",
+      "bytes": 1321,
+      "lines": 10
+    },
+    {
+      "path": "C3-codex-baseline-4/response.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-4/response.txt",
+      "role": "raw trial record",
+      "sha256": "97b231fd13ecb2f1b24b342fb75e7e85218f5f29754edf010144a798e280eeb6",
+      "bytes": 1144,
+      "lines": 10
+    },
+    {
+      "path": "C3-codex-baseline-5/conditions.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-5/conditions.json",
+      "role": "raw trial record",
+      "sha256": "42e458b27c5e7e700b248d8cccdf4c9d2c425f8da0294fa10f915c0f75ef98fb",
+      "bytes": 2737,
+      "lines": 74
+    },
+    {
+      "path": "C3-codex-baseline-5/manual-review.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-5/manual-review.json",
+      "role": "raw trial record",
+      "sha256": "e9ebbb651db5baf2d62b38b3974ab1947d4bb6a69ae73e8fb56397f451167a82",
+      "bytes": 1553,
+      "lines": 44
+    },
+    {
+      "path": "C3-codex-baseline-5/prompt.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-5/prompt.txt",
+      "role": "raw trial record",
+      "sha256": "7e43216fa86c7ef9faa944740a089b0e06a05ce2dbb3df87e55ad111c76b98c3",
+      "bytes": 89681,
+      "lines": 620
+    },
+    {
+      "path": "C3-codex-baseline-5/read-events.jsonl",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-5/read-events.jsonl",
+      "role": "raw trial record",
+      "sha256": "ca0abbfbdfc6bf8f7025348a4ba10d478ee18c19634a18517a5bcae036eed282",
+      "bytes": 1441,
+      "lines": 5
+    },
+    {
+      "path": "C3-codex-baseline-5/research-notes.md",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-5/research-notes.md",
+      "role": "raw trial record",
+      "sha256": "5f8ba3a06ac2bfc40ef01021362631d34afdd09a3e4cd00f91f11a298dccc792",
+      "bytes": 1166,
+      "lines": 9
+    },
+    {
+      "path": "C3-codex-baseline-5/response.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-5/response.txt",
+      "role": "raw trial record",
+      "sha256": "054fc31c759eed75c9dba0a2d52df43d0f1f76bc656df9de5650516371999209",
+      "bytes": 1267,
+      "lines": 11
+    },
+    {
+      "path": "C4-codex-baseline-1/conditions.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-1/conditions.json",
+      "role": "raw trial record",
+      "sha256": "8421ba4c0f994b6023de990367c040199989ab5a292f12feea584e988ce920f6",
+      "bytes": 2243,
+      "lines": 60
+    },
+    {
+      "path": "C4-codex-baseline-1/manual-review.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-1/manual-review.json",
+      "role": "raw trial record",
+      "sha256": "315ca2c66e467b69050750dbf99174158b2f5fc598cc487ea3040364bc6040ec",
+      "bytes": 1456,
+      "lines": 40
+    },
+    {
+      "path": "C4-codex-baseline-1/prompt.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-1/prompt.txt",
+      "role": "raw trial record",
+      "sha256": "d8cb77ada4495387672c63dd7234705e3ac4a7938282eb96f92de54b39ad6d95",
+      "bytes": 89693,
+      "lines": 620
+    },
+    {
+      "path": "C4-codex-baseline-1/read-events.jsonl",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-1/read-events.jsonl",
+      "role": "raw trial record",
+      "sha256": "858c7950d9612f7bfc749a15229ed51dbcc69608474b6eb370cba7a1941ad4a4",
+      "bytes": 845,
+      "lines": 3
+    },
+    {
+      "path": "C4-codex-baseline-1/research-notes.md",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-1/research-notes.md",
+      "role": "raw trial record",
+      "sha256": "a1699b23b023085cd7b63ede425ae99aa60c23808bdaa8947ff804b070e1b90f",
+      "bytes": 1559,
+      "lines": 12
+    },
+    {
+      "path": "C4-codex-baseline-1/response.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-1/response.txt",
+      "role": "raw trial record",
+      "sha256": "27efc772a73cf3638ccb51acffedbc9ffe49c94b5705c64cb8fe27228fa253fd",
+      "bytes": 872,
+      "lines": 8
+    },
+    {
+      "path": "C4-codex-baseline-2/conditions.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-2/conditions.json",
+      "role": "raw trial record",
+      "sha256": "fc27df080d5863506ace321fcda1adeeb6bca891dc74476638134cef94ed5b2e",
+      "bytes": 2243,
+      "lines": 60
+    },
+    {
+      "path": "C4-codex-baseline-2/manual-review.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-2/manual-review.json",
+      "role": "raw trial record",
+      "sha256": "69e861a2e142148dc9e24d8c519981ae3dcb672a4c0b1d65b282577c912d4d9e",
+      "bytes": 1462,
+      "lines": 40
+    },
+    {
+      "path": "C4-codex-baseline-2/prompt.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-2/prompt.txt",
+      "role": "raw trial record",
+      "sha256": "11d2ab45a0596256a282b0053822096468981e7a075f9e980af1b7d2b46df7bd",
+      "bytes": 89693,
+      "lines": 620
+    },
+    {
+      "path": "C4-codex-baseline-2/read-events.jsonl",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-2/read-events.jsonl",
+      "role": "raw trial record",
+      "sha256": "6d2a69c51f4957200cd165274cf9091f6502b9a748c512c6c56c71a7449fc403",
+      "bytes": 845,
+      "lines": 3
+    },
+    {
+      "path": "C4-codex-baseline-2/research-notes.md",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-2/research-notes.md",
+      "role": "raw trial record",
+      "sha256": "d87d4d9e8b49eec0de1a17a7d917bb1207c8b1e431489dc146363f3d4feab898",
+      "bytes": 1313,
+      "lines": 12
+    },
+    {
+      "path": "C4-codex-baseline-2/response.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-2/response.txt",
+      "role": "raw trial record",
+      "sha256": "d9d2a833994f321d308f5d59dc6cf51931a787ac33d101481e6bb16a2947068f",
+      "bytes": 990,
+      "lines": 8
+    },
+    {
+      "path": "C4-codex-baseline-3/conditions.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-3/conditions.json",
+      "role": "raw trial record",
+      "sha256": "d03d340e37b37bdd2fa0caed6d01d4361d8f12341db21e18ea0eea2c21ed01ae",
+      "bytes": 2244,
+      "lines": 60
+    },
+    {
+      "path": "C4-codex-baseline-3/manual-review.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-3/manual-review.json",
+      "role": "raw trial record",
+      "sha256": "2ed8b13d5e2da6249401cc21132cc45e7ac11b98f11117b13a4133796d5ce634",
+      "bytes": 1500,
+      "lines": 40
+    },
+    {
+      "path": "C4-codex-baseline-3/prompt.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-3/prompt.txt",
+      "role": "raw trial record",
+      "sha256": "28ef70d27f12f2948bb6432edba273f3096386ad18a4128adc6bb18b29e006d8",
+      "bytes": 89693,
+      "lines": 620
+    },
+    {
+      "path": "C4-codex-baseline-3/read-events.jsonl",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-3/read-events.jsonl",
+      "role": "raw trial record",
+      "sha256": "9f62a0021d9d2ca3a40e938c579cd3215ab3041142a4e38036b906c09b3847f3",
+      "bytes": 845,
+      "lines": 3
+    },
+    {
+      "path": "C4-codex-baseline-3/research-notes.md",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-3/research-notes.md",
+      "role": "raw trial record",
+      "sha256": "c123d25ffccd8df971839bb0aae594a6f96e289605a24e0dcb0ae9b86a8d2e70",
+      "bytes": 1130,
+      "lines": 10
+    },
+    {
+      "path": "C4-codex-baseline-3/response.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-3/response.txt",
+      "role": "raw trial record",
+      "sha256": "8fddba9b9bc4bdb3ff6602c0a30b72c68a883712557428b107dcc0a7f8816400",
+      "bytes": 932,
+      "lines": 10
+    },
+    {
+      "path": "C4-codex-baseline-4/conditions.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-4/conditions.json",
+      "role": "raw trial record",
+      "sha256": "aa81746fe0413176c20b8b7abfbe06669b1dbeb09f76ebbdc46c851fc8005e7a",
+      "bytes": 2243,
+      "lines": 60
+    },
+    {
+      "path": "C4-codex-baseline-4/manual-review.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-4/manual-review.json",
+      "role": "raw trial record",
+      "sha256": "1c4a827aedf947afe72dbe4ecb3667ffa80772c6eff5e24134430c22061e5490",
+      "bytes": 1482,
+      "lines": 40
+    },
+    {
+      "path": "C4-codex-baseline-4/prompt.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-4/prompt.txt",
+      "role": "raw trial record",
+      "sha256": "803a34a9f760a66e150e281ffe94fad4eb4508460c9c7a80b6e390617bc74395",
+      "bytes": 89693,
+      "lines": 620
+    },
+    {
+      "path": "C4-codex-baseline-4/read-events.jsonl",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-4/read-events.jsonl",
+      "role": "raw trial record",
+      "sha256": "b1707b31701334d051327bb481c4c5b3939714978ea8c1ae192e1de632997f6f",
+      "bytes": 845,
+      "lines": 3
+    },
+    {
+      "path": "C4-codex-baseline-4/research-notes.md",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-4/research-notes.md",
+      "role": "raw trial record",
+      "sha256": "a547c1f47a1c7d7f0854267991be9214a8cbe6ae6002598a17440cf70550a71f",
+      "bytes": 1122,
+      "lines": 11
+    },
+    {
+      "path": "C4-codex-baseline-4/response.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-4/response.txt",
+      "role": "raw trial record",
+      "sha256": "754c73597655346f2a857d0670152fb598a694cb4d979cd2b47c786101acce23",
+      "bytes": 909,
+      "lines": 9
+    },
+    {
+      "path": "C4-codex-baseline-5/conditions.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-5/conditions.json",
+      "role": "raw trial record",
+      "sha256": "b641aeccb1e7e7a0e7bd00a922599453baf11af1c0ce33fb4d6477737864f93a",
+      "bytes": 2243,
+      "lines": 60
+    },
+    {
+      "path": "C4-codex-baseline-5/manual-review.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-5/manual-review.json",
+      "role": "raw trial record",
+      "sha256": "54ec88eba44ab62240ddcf948dd9f06ec56521915c8e20b5e6fe03c343c0747b",
+      "bytes": 1476,
+      "lines": 40
+    },
+    {
+      "path": "C4-codex-baseline-5/prompt.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-5/prompt.txt",
+      "role": "raw trial record",
+      "sha256": "7b22fb90d6e5db6284521261753e532d9f29a1820161cce2ae670a17a10726b2",
+      "bytes": 89693,
+      "lines": 620
+    },
+    {
+      "path": "C4-codex-baseline-5/read-events.jsonl",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-5/read-events.jsonl",
+      "role": "raw trial record",
+      "sha256": "4b6fe9daac7f4f636df8a00414c7da3df2d5f3616d95273451b12c4e68de4f71",
+      "bytes": 845,
+      "lines": 3
+    },
+    {
+      "path": "C4-codex-baseline-5/research-notes.md",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-5/research-notes.md",
+      "role": "raw trial record",
+      "sha256": "3c4c98aa8d9f9dcb3a5e8a8b890078a7e3bf13ea4a5ce3047e86a8c4ba8fe2a2",
+      "bytes": 1279,
+      "lines": 12
+    },
+    {
+      "path": "C4-codex-baseline-5/response.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-5/response.txt",
+      "role": "raw trial record",
+      "sha256": "9d3e87fd3cb02c01c5c3a2f1cf0f2131c80d6b010daac6c54b316a1a9e4f2f94",
+      "bytes": 907,
+      "lines": 8
+    },
+    {
+      "path": "C5-codex-baseline-1/conditions.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-1/conditions.json",
+      "role": "raw trial record",
+      "sha256": "18d786665eeabb9a1f84ddb5e22dc1acc7491aaf69e72d5378e6a2ce3347b371",
+      "bytes": 2026,
+      "lines": 53
+    },
+    {
+      "path": "C5-codex-baseline-1/manual-review.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-1/manual-review.json",
+      "role": "raw trial record",
+      "sha256": "5744ac66e702800408f72e84253655bbee8d7bcadbe46d7c16f5b0a7ffb31463",
+      "bytes": 1496,
+      "lines": 40
+    },
+    {
+      "path": "C5-codex-baseline-1/prompt.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-1/prompt.txt",
+      "role": "raw trial record",
+      "sha256": "82db107a8ff673b6290e579572fcf445cd0d5421eb407f3cd3c4c8da8c21aea9",
+      "bytes": 89677,
+      "lines": 620
+    },
+    {
+      "path": "C5-codex-baseline-1/read-events.jsonl",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-1/read-events.jsonl",
+      "role": "raw trial record",
+      "sha256": "7da14deb8906b77d7fc58a218a43b410554213a380cf3cb98e82a7b4c83489c5",
+      "bytes": 560,
+      "lines": 2
+    },
+    {
+      "path": "C5-codex-baseline-1/research-notes.md",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-1/research-notes.md",
+      "role": "raw trial record",
+      "sha256": "592f57973507bcece10a11deaa404c9f0cf3f201d1bc6a82308aa5c28de85d3f",
+      "bytes": 1350,
+      "lines": 10
+    },
+    {
+      "path": "C5-codex-baseline-1/response.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-1/response.txt",
+      "role": "raw trial record",
+      "sha256": "e995be5201213372a6cf7a876c0a83071c4fe34e4684c44e66e1f7b5e5321a99",
+      "bytes": 1065,
+      "lines": 10
+    },
+    {
+      "path": "C5-codex-baseline-2/conditions.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-2/conditions.json",
+      "role": "raw trial record",
+      "sha256": "d2383ce64b0a9192bb458ddb0073467a73fec846d7c46cc466eaf88ab3bf7c2f",
+      "bytes": 2024,
+      "lines": 53
+    },
+    {
+      "path": "C5-codex-baseline-2/manual-review.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-2/manual-review.json",
+      "role": "raw trial record",
+      "sha256": "2cd2c85031593e558ed83b16d6d2a99aa801a3e7c6d2834a0bbf6aa785513250",
+      "bytes": 1449,
+      "lines": 40
+    },
+    {
+      "path": "C5-codex-baseline-2/prompt.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-2/prompt.txt",
+      "role": "raw trial record",
+      "sha256": "d7bf8bfaa022f311f35f49971bd5535dee48ae46ea164d08b992a74275f81e01",
+      "bytes": 89677,
+      "lines": 620
+    },
+    {
+      "path": "C5-codex-baseline-2/read-events.jsonl",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-2/read-events.jsonl",
+      "role": "raw trial record",
+      "sha256": "cab2a94dcf939ced34556e079af3cd3c74523b4e2f8485ab335e155fd3023cbf",
+      "bytes": 560,
+      "lines": 2
+    },
+    {
+      "path": "C5-codex-baseline-2/research-notes.md",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-2/research-notes.md",
+      "role": "raw trial record",
+      "sha256": "8ad94da2f17c98d1f19b6a656bd8639fe6558f0d54670e5c7a7beef91eb63e47",
+      "bytes": 1364,
+      "lines": 12
+    },
+    {
+      "path": "C5-codex-baseline-2/response.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-2/response.txt",
+      "role": "raw trial record",
+      "sha256": "55c576e8d2c8b56ef04ce230680a312045c8b1645f39e71c87cf056da6d46dab",
+      "bytes": 815,
+      "lines": 8
+    },
+    {
+      "path": "C5-codex-baseline-3/conditions.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-3/conditions.json",
+      "role": "raw trial record",
+      "sha256": "5097cc36291ee8f5580f5e48ee095f6af7ce906d5d0270f501dd32f70c2fa7f4",
+      "bytes": 2024,
+      "lines": 53
+    },
+    {
+      "path": "C5-codex-baseline-3/manual-review.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-3/manual-review.json",
+      "role": "raw trial record",
+      "sha256": "31361e6c066a46d43d9837af8d5eea10c579dc2abb56f0a5243fb402d769d2ef",
+      "bytes": 1484,
+      "lines": 40
+    },
+    {
+      "path": "C5-codex-baseline-3/prompt.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-3/prompt.txt",
+      "role": "raw trial record",
+      "sha256": "389b65665a5826fc90f7617cbb5217f327da251e042ec7f5ca4b46b7166804ad",
+      "bytes": 89677,
+      "lines": 620
+    },
+    {
+      "path": "C5-codex-baseline-3/read-events.jsonl",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-3/read-events.jsonl",
+      "role": "raw trial record",
+      "sha256": "37b0b44d599abf6e6cad519fee8ab227da577b1b7aebc3a4de73419b28ef59d3",
+      "bytes": 560,
+      "lines": 2
+    },
+    {
+      "path": "C5-codex-baseline-3/research-notes.md",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-3/research-notes.md",
+      "role": "raw trial record",
+      "sha256": "b3f2171b0469b415b6ada7aa0e39155d3e54d8686adfb9e7525e9dcb2fd95a21",
+      "bytes": 1323,
+      "lines": 12
+    },
+    {
+      "path": "C5-codex-baseline-3/response.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-3/response.txt",
+      "role": "raw trial record",
+      "sha256": "92b0a3ec4510a168446a389b8bf75cb263a9300a838f9b64889c308b8acf6e06",
+      "bytes": 759,
+      "lines": 8
+    },
+    {
+      "path": "C5-codex-baseline-4/conditions.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-4/conditions.json",
+      "role": "raw trial record",
+      "sha256": "2779ff2bfbef00d30e5c11fc8e58fd263ef39a9eb7c515668f4da76ec59047da",
+      "bytes": 2024,
+      "lines": 53
+    },
+    {
+      "path": "C5-codex-baseline-4/manual-review.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-4/manual-review.json",
+      "role": "raw trial record",
+      "sha256": "345cd9e3db554a7d3c195de511a878bad5a0cde0540f35b012688697e7f4df39",
+      "bytes": 1455,
+      "lines": 40
+    },
+    {
+      "path": "C5-codex-baseline-4/prompt.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-4/prompt.txt",
+      "role": "raw trial record",
+      "sha256": "8b2f0a3e48b680422cc6788e17bf985f96aa402eca9e5ec47f83f6d322e17d12",
+      "bytes": 89677,
+      "lines": 620
+    },
+    {
+      "path": "C5-codex-baseline-4/read-events.jsonl",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-4/read-events.jsonl",
+      "role": "raw trial record",
+      "sha256": "0b02cfc7b66d744947cf1f01bc0e1fd33c4db5bc5da8252912631a44d96a8658",
+      "bytes": 560,
+      "lines": 2
+    },
+    {
+      "path": "C5-codex-baseline-4/research-notes.md",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-4/research-notes.md",
+      "role": "raw trial record",
+      "sha256": "f4cfc8ae6d76c07e2630157f1fab8cff5a5b411488b150cda80cca902636ef26",
+      "bytes": 1173,
+      "lines": 13
+    },
+    {
+      "path": "C5-codex-baseline-4/response.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-4/response.txt",
+      "role": "raw trial record",
+      "sha256": "7a41489ba3f9516eda5d86a1edf6e1ec138c81397500ffcb5075990b8f9f823a",
+      "bytes": 788,
+      "lines": 7
+    },
+    {
+      "path": "C5-codex-baseline-5/conditions.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-5/conditions.json",
+      "role": "raw trial record",
+      "sha256": "f993528a9492e28faa381f255e4d364e489d680a1028dfae55a66ee2e341a785",
+      "bytes": 2024,
+      "lines": 53
+    },
+    {
+      "path": "C5-codex-baseline-5/manual-review.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-5/manual-review.json",
+      "role": "raw trial record",
+      "sha256": "4c4ef7ffc4b5b407872ce389f700a449b36a71ea9bb26792e4db68c244f6e40a",
+      "bytes": 1443,
+      "lines": 40
+    },
+    {
+      "path": "C5-codex-baseline-5/prompt.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-5/prompt.txt",
+      "role": "raw trial record",
+      "sha256": "bce6c9fb7f34f844528de7c0813222a90013b66005ddf215d6094c54d437e869",
+      "bytes": 89677,
+      "lines": 620
+    },
+    {
+      "path": "C5-codex-baseline-5/read-events.jsonl",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-5/read-events.jsonl",
+      "role": "raw trial record",
+      "sha256": "d337cce6f6fd25c4d2600a8397640201b505aa7ffb91061c81daabd055e0c044",
+      "bytes": 560,
+      "lines": 2
+    },
+    {
+      "path": "C5-codex-baseline-5/research-notes.md",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-5/research-notes.md",
+      "role": "raw trial record",
+      "sha256": "05acc8a63b9297e8eded886faf08b256f045e4eba39e91dbfc2b450a3f44db7c",
+      "bytes": 1276,
+      "lines": 12
+    },
+    {
+      "path": "C5-codex-baseline-5/response.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-5/response.txt",
+      "role": "raw trial record",
+      "sha256": "dc6467ce61023f207ab44630c7fd8add285462492cec69438f73bad51bb4536d",
+      "bytes": 749,
+      "lines": 8
+    },
+    {
+      "path": "C6-codex-baseline-1/conditions.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-1/conditions.json",
+      "role": "raw trial record",
+      "sha256": "c6b9d843519bb8f25bdc2edb0cb9593bc725e7cb114756e2aa51541a1d7157cf",
+      "bytes": 2013,
+      "lines": 53
+    },
+    {
+      "path": "C6-codex-baseline-1/manual-review.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-1/manual-review.json",
+      "role": "raw trial record",
+      "sha256": "18778a8fd7f2951026915fdd2872a57a5efee1cd768ec50ceaf99c737968a441",
+      "bytes": 1502,
+      "lines": 40
+    },
+    {
+      "path": "C6-codex-baseline-1/prompt.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-1/prompt.txt",
+      "role": "raw trial record",
+      "sha256": "ea7f40ff2cbc57aafb26c10459c1ce7bc98e551c6a15baaa454f78d36d02ddd7",
+      "bytes": 89690,
+      "lines": 620
+    },
+    {
+      "path": "C6-codex-baseline-1/read-events.jsonl",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-1/read-events.jsonl",
+      "role": "raw trial record",
+      "sha256": "654a75a31ed0c773f3a65a61e5b3624e5de6a4945b1d7911002303fadb657c11",
+      "bytes": 554,
+      "lines": 2
+    },
+    {
+      "path": "C6-codex-baseline-1/research-notes.md",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-1/research-notes.md",
+      "role": "raw trial record",
+      "sha256": "557ea4652dc6f2866e1368877cb3d9f27122974d5813d91e2ce8bb226acaa03a",
+      "bytes": 1415,
+      "lines": 11
+    },
+    {
+      "path": "C6-codex-baseline-1/response.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-1/response.txt",
+      "role": "raw trial record",
+      "sha256": "07452b269ee159ea1f7d69a04bf16d6e71109b9736da5957cb19e1d6c320c427",
+      "bytes": 751,
+      "lines": 9
+    },
+    {
+      "path": "C6-codex-baseline-2/conditions.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-2/conditions.json",
+      "role": "raw trial record",
+      "sha256": "718c8c1fb61699c92edd7246ba848f00d096b8097f3d7805ec5f9e2687c81c10",
+      "bytes": 2013,
+      "lines": 53
+    },
+    {
+      "path": "C6-codex-baseline-2/manual-review.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-2/manual-review.json",
+      "role": "raw trial record",
+      "sha256": "e6a04366f8b01e5036bc5021b5a504e47c10ba41ac30b45efe7fa931a6f91802",
+      "bytes": 1469,
+      "lines": 40
+    },
+    {
+      "path": "C6-codex-baseline-2/prompt.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-2/prompt.txt",
+      "role": "raw trial record",
+      "sha256": "a2d07512334f697f9e1ae4b75c904e72b70fdfa029a5e598e43209091c3ecefe",
+      "bytes": 89690,
+      "lines": 620
+    },
+    {
+      "path": "C6-codex-baseline-2/read-events.jsonl",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-2/read-events.jsonl",
+      "role": "raw trial record",
+      "sha256": "fe3e280a376c33bd1c1e7d32cf0621c71cf9284e93d06d5497f3719fd0b86027",
+      "bytes": 554,
+      "lines": 2
+    },
+    {
+      "path": "C6-codex-baseline-2/research-notes.md",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-2/research-notes.md",
+      "role": "raw trial record",
+      "sha256": "e8f20628b6e7ba80ea6736b83a5ef92ff1eab984d9f2c08827ab6e7d23a6f830",
+      "bytes": 1287,
+      "lines": 11
+    },
+    {
+      "path": "C6-codex-baseline-2/response.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-2/response.txt",
+      "role": "raw trial record",
+      "sha256": "17f722cabc0c4d411f780a5e8d79ec0ad7f3bb425bbdfd2dffa4fe0282165a47",
+      "bytes": 928,
+      "lines": 9
+    },
+    {
+      "path": "C6-codex-baseline-3/conditions.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-3/conditions.json",
+      "role": "raw trial record",
+      "sha256": "77ae3b6675189e4fe0f6df341a3d3eda617ac021de128a4fe1485de8bf91def7",
+      "bytes": 2014,
+      "lines": 53
+    },
+    {
+      "path": "C6-codex-baseline-3/manual-review.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-3/manual-review.json",
+      "role": "raw trial record",
+      "sha256": "0a7f2a4df03e2fcc296f87d8511c514d445418d1aa31d9ed08684ffcec8780f2",
+      "bytes": 1480,
+      "lines": 40
+    },
+    {
+      "path": "C6-codex-baseline-3/prompt.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-3/prompt.txt",
+      "role": "raw trial record",
+      "sha256": "c2109e0383814c359584c3128fb99b984d92f7cb9a89909df226c8cd38184c23",
+      "bytes": 89690,
+      "lines": 620
+    },
+    {
+      "path": "C6-codex-baseline-3/read-events.jsonl",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-3/read-events.jsonl",
+      "role": "raw trial record",
+      "sha256": "662099fbcaac25db5ea19a0cb3bc5376fff5985195dbe3b874f50b6109059e29",
+      "bytes": 554,
+      "lines": 2
+    },
+    {
+      "path": "C6-codex-baseline-3/research-notes.md",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-3/research-notes.md",
+      "role": "raw trial record",
+      "sha256": "87bf62193c4a97c7f79c85bc5763d7248b210dc8ef34b3fd3f16b3cc01c7ad9f",
+      "bytes": 1182,
+      "lines": 9
+    },
+    {
+      "path": "C6-codex-baseline-3/response.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-3/response.txt",
+      "role": "raw trial record",
+      "sha256": "b2a517e136bcd5120cee5f16fc910179f435287b4e9be9b00f74084058920a53",
+      "bytes": 1093,
+      "lines": 11
+    },
+    {
+      "path": "C6-codex-baseline-4/conditions.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-4/conditions.json",
+      "role": "raw trial record",
+      "sha256": "04d7d93eff99ccf79c8efb5c50d1009858bc183d8aacd5563569e2f7b06268bb",
+      "bytes": 2015,
+      "lines": 53
+    },
+    {
+      "path": "C6-codex-baseline-4/manual-review.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-4/manual-review.json",
+      "role": "raw trial record",
+      "sha256": "427ec57a26af037cbbd377e92e3a7e8c6fb326ba16bdcf9d18c26ec2c947ae44",
+      "bytes": 1485,
+      "lines": 40
+    },
+    {
+      "path": "C6-codex-baseline-4/prompt.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-4/prompt.txt",
+      "role": "raw trial record",
+      "sha256": "a1ca57363ebc879c76cf8a71d9ca39b389e2e411b055fadd89c45b896d903e30",
+      "bytes": 89690,
+      "lines": 620
+    },
+    {
+      "path": "C6-codex-baseline-4/read-events.jsonl",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-4/read-events.jsonl",
+      "role": "raw trial record",
+      "sha256": "4513b9e459578cb6cf4ef9d4ea724da790a32c158bbb8c5a5cb057fad84f1ab3",
+      "bytes": 554,
+      "lines": 2
+    },
+    {
+      "path": "C6-codex-baseline-4/research-notes.md",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-4/research-notes.md",
+      "role": "raw trial record",
+      "sha256": "5a79ccf78003f3322469889d518e2c1d45b4032fc3963ef815d4b03005997a2d",
+      "bytes": 1165,
+      "lines": 10
+    },
+    {
+      "path": "C6-codex-baseline-4/response.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-4/response.txt",
+      "role": "raw trial record",
+      "sha256": "cf8c4bdff9bf7a2bcf4718da94dd45b5bb22e36aa4953709e36e22bbfc959cbc",
+      "bytes": 1124,
+      "lines": 10
+    },
+    {
+      "path": "C6-codex-baseline-5/conditions.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-5/conditions.json",
+      "role": "raw trial record",
+      "sha256": "684dcf7a3d264fe45d0a6600acfa7e50556e1dd23113f09ab7e69c6201a61a8e",
+      "bytes": 2013,
+      "lines": 53
+    },
+    {
+      "path": "C6-codex-baseline-5/manual-review.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-5/manual-review.json",
+      "role": "raw trial record",
+      "sha256": "e588ff9d87819be629675887056187576d0f1e17bc6c7709917b5d9562506e62",
+      "bytes": 1504,
+      "lines": 40
+    },
+    {
+      "path": "C6-codex-baseline-5/prompt.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-5/prompt.txt",
+      "role": "raw trial record",
+      "sha256": "5b75e5be03dcc690e45cab4362b3f1b763340dd7d45542a01adb0c4da68760a4",
+      "bytes": 89690,
+      "lines": 620
+    },
+    {
+      "path": "C6-codex-baseline-5/read-events.jsonl",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-5/read-events.jsonl",
+      "role": "raw trial record",
+      "sha256": "592c8c387a3f8e3c534a3d8f26fc592cbf7216c5a5b216e2e10d7307607ff8e0",
+      "bytes": 554,
+      "lines": 2
+    },
+    {
+      "path": "C6-codex-baseline-5/research-notes.md",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-5/research-notes.md",
+      "role": "raw trial record",
+      "sha256": "f7e44a3010a74b097c886e29cb0f7fcfa8f5fdc1be55f1cf0196273d67157315",
+      "bytes": 1250,
+      "lines": 11
+    },
+    {
+      "path": "C6-codex-baseline-5/response.txt",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-5/response.txt",
+      "role": "raw trial record",
+      "sha256": "2e9536f5c413a804ee2c83d821acabd8002ffde426204842ca13ea16f134e902",
+      "bytes": 954,
+      "lines": 9
+    },
+    {
+      "path": "baseline-catalog/catalog.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/baseline-catalog/catalog.json",
+      "role": "raw catalog metadata only",
+      "sha256": "fee71e65dfd7f9372132f86feaf5316bac5ca3c8212906359039bf0b0010c800",
+      "bytes": 140582,
+      "lines": 1250
+    },
+    {
+      "path": "baseline-catalog/sources.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/baseline-catalog/sources.json",
+      "role": "raw catalog metadata only",
+      "sha256": "aee42d86d79154c2715e15180dceedb669aff26aea178c60bac756bb4ca5d1a8",
+      "bytes": 3385,
+      "lines": 99
+    },
+    {
+      "path": "baseline-manual-scoring.portable.md",
+      "source": null,
+      "role": "generated report; only Markdown link targets changed",
+      "sha256": "d3d51731fd8523be1ef9607e9ec7fb03dcdca406e79ae6929b63671ff6de2256",
+      "bytes": 16672,
+      "lines": 52
+    },
+    {
+      "path": "baseline-manual-scoring.raw.md",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/baseline-manual-scoring.md",
+      "role": "byte-identical raw manual report",
+      "sha256": "5e4336a4276a2637b431571fb111a61cce673bb5bee86717b779525db8cc5aec",
+      "bytes": 21352,
+      "lines": 52
+    },
+    {
+      "path": "baseline-metadata-audit.json",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/baseline-metadata-audit.json",
+      "role": "byte-identical actual condition metadata-audit",
+      "sha256": "2097c9a4cdb2044469f715136b16674a2c48670dcf48ebe40ff22422e74c2da8",
+      "bytes": 1074,
+      "lines": 35
+    },
+    {
+      "path": "helpers/baseline/archive_native_routing.py",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/archive_native_routing.py",
+      "role": "current helper or root-dispatch supplement",
+      "sha256": "14e488a38124700a6bc21e063cb9d8f01c8d45e6371e6289ca53597008d43462",
+      "bytes": 14207,
+      "lines": 298
+    },
+    {
+      "path": "helpers/baseline/native_routing_io.py",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native_routing_io.py",
+      "role": "current helper or root-dispatch supplement",
+      "sha256": "da3007f6ada35e9d042251639f81315c9eec5f4863a1bd5f97d432c14c152702",
+      "bytes": 1733,
+      "lines": 44
+    },
+    {
+      "path": "helpers/baseline/prepare_native_routing.py",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/prepare_native_routing.py",
+      "role": "current helper or root-dispatch supplement",
+      "sha256": "a2031e9ab293bfada72ba27c9f2a6afee1ec9c66019bc20d384d4b9251ee6ddc",
+      "bytes": 11807,
+      "lines": 223
+    },
+    {
+      "path": "helpers/baseline/routing-root-contract.md",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/routing-root-contract.md",
+      "role": "current helper or root-dispatch supplement",
+      "sha256": "bdbb502e6122fabe91dfc06874113c8cdd9821c423520cc79943fa5512509454",
+      "bytes": 5161,
+      "lines": 13
+    },
+    {
+      "path": "helpers/baseline/routing_records.py",
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/routing_records.py",
+      "role": "current helper or root-dispatch supplement",
+      "sha256": "a968123184facd2162ef690ccdd2eb0ed47fa1f7e806237ecbdf6ca6b6ea6600",
+      "bytes": 15149,
+      "lines": 285
+    },
+    {
+      "path": "../../rubrics/task-5-brief.md",
+      "source": "/Users/lowell/.codex/worktrees/jax-deep-learning-skills/agent-skills/.sdd/32-jax-deep-learning-skills/task-5-brief.md",
+      "role": "Task 5 brief",
+      "sha256": "c9e651bb2d387bd14ecc937a153e5ef54fcde4b55c738ae79ac6382dedab6aba",
+      "bytes": 5904,
+      "lines": 109
+    }
+  ],
+  "reused_files": [],
+  "portable_links": [
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-1/response.txt",
+      "target": "C1-codex-baseline-1/response.txt",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-1/read-events.jsonl",
+      "target": "C1-codex-baseline-1/read-events.jsonl",
+      "line": 3,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-1/research-notes.md",
+      "target": "C1-codex-baseline-1/research-notes.md",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-2/response.txt",
+      "target": "C1-codex-baseline-2/response.txt",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-2/read-events.jsonl",
+      "target": "C1-codex-baseline-2/read-events.jsonl",
+      "line": 3,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-2/research-notes.md",
+      "target": "C1-codex-baseline-2/research-notes.md",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-3/response.txt",
+      "target": "C1-codex-baseline-3/response.txt",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-3/read-events.jsonl",
+      "target": "C1-codex-baseline-3/read-events.jsonl",
+      "line": 2,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-3/research-notes.md",
+      "target": "C1-codex-baseline-3/research-notes.md",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-4/response.txt",
+      "target": "C1-codex-baseline-4/response.txt",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-4/read-events.jsonl",
+      "target": "C1-codex-baseline-4/read-events.jsonl",
+      "line": 2,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-4/research-notes.md",
+      "target": "C1-codex-baseline-4/research-notes.md",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-5/response.txt",
+      "target": "C1-codex-baseline-5/response.txt",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-5/read-events.jsonl",
+      "target": "C1-codex-baseline-5/read-events.jsonl",
+      "line": 2,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-5/research-notes.md",
+      "target": "C1-codex-baseline-5/research-notes.md",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-1/response.txt",
+      "target": "C2-codex-baseline-1/response.txt",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-1/read-events.jsonl",
+      "target": "C2-codex-baseline-1/read-events.jsonl",
+      "line": 2,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-1/research-notes.md",
+      "target": "C2-codex-baseline-1/research-notes.md",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-2/response.txt",
+      "target": "C2-codex-baseline-2/response.txt",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-2/read-events.jsonl",
+      "target": "C2-codex-baseline-2/read-events.jsonl",
+      "line": 2,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-2/research-notes.md",
+      "target": "C2-codex-baseline-2/research-notes.md",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-3/response.txt",
+      "target": "C2-codex-baseline-3/response.txt",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-3/read-events.jsonl",
+      "target": "C2-codex-baseline-3/read-events.jsonl",
+      "line": 2,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-3/research-notes.md",
+      "target": "C2-codex-baseline-3/research-notes.md",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-4/response.txt",
+      "target": "C2-codex-baseline-4/response.txt",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-4/read-events.jsonl",
+      "target": "C2-codex-baseline-4/read-events.jsonl",
+      "line": 2,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-4/research-notes.md",
+      "target": "C2-codex-baseline-4/research-notes.md",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-5/response.txt",
+      "target": "C2-codex-baseline-5/response.txt",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-5/read-events.jsonl",
+      "target": "C2-codex-baseline-5/read-events.jsonl",
+      "line": 2,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-5/research-notes.md",
+      "target": "C2-codex-baseline-5/research-notes.md",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-1/response.txt",
+      "target": "C3-codex-baseline-1/response.txt",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-1/read-events.jsonl",
+      "target": "C3-codex-baseline-1/read-events.jsonl",
+      "line": 2,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-1/research-notes.md",
+      "target": "C3-codex-baseline-1/research-notes.md",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-2/response.txt",
+      "target": "C3-codex-baseline-2/response.txt",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-2/read-events.jsonl",
+      "target": "C3-codex-baseline-2/read-events.jsonl",
+      "line": 2,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-2/research-notes.md",
+      "target": "C3-codex-baseline-2/research-notes.md",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-3/response.txt",
+      "target": "C3-codex-baseline-3/response.txt",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-3/read-events.jsonl",
+      "target": "C3-codex-baseline-3/read-events.jsonl",
+      "line": 2,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-3/research-notes.md",
+      "target": "C3-codex-baseline-3/research-notes.md",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-4/response.txt",
+      "target": "C3-codex-baseline-4/response.txt",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-4/read-events.jsonl",
+      "target": "C3-codex-baseline-4/read-events.jsonl",
+      "line": 2,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-4/research-notes.md",
+      "target": "C3-codex-baseline-4/research-notes.md",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-5/response.txt",
+      "target": "C3-codex-baseline-5/response.txt",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-5/read-events.jsonl",
+      "target": "C3-codex-baseline-5/read-events.jsonl",
+      "line": 2,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C3-codex-baseline-5/research-notes.md",
+      "target": "C3-codex-baseline-5/research-notes.md",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-1/response.txt",
+      "target": "C4-codex-baseline-1/response.txt",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-1/read-events.jsonl",
+      "target": "C4-codex-baseline-1/read-events.jsonl",
+      "line": 2,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-1/research-notes.md",
+      "target": "C4-codex-baseline-1/research-notes.md",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-2/response.txt",
+      "target": "C4-codex-baseline-2/response.txt",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-2/read-events.jsonl",
+      "target": "C4-codex-baseline-2/read-events.jsonl",
+      "line": 2,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-2/research-notes.md",
+      "target": "C4-codex-baseline-2/research-notes.md",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-3/response.txt",
+      "target": "C4-codex-baseline-3/response.txt",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-3/read-events.jsonl",
+      "target": "C4-codex-baseline-3/read-events.jsonl",
+      "line": 2,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-3/research-notes.md",
+      "target": "C4-codex-baseline-3/research-notes.md",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-4/response.txt",
+      "target": "C4-codex-baseline-4/response.txt",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-4/read-events.jsonl",
+      "target": "C4-codex-baseline-4/read-events.jsonl",
+      "line": 2,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-4/research-notes.md",
+      "target": "C4-codex-baseline-4/research-notes.md",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-5/response.txt",
+      "target": "C4-codex-baseline-5/response.txt",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-5/read-events.jsonl",
+      "target": "C4-codex-baseline-5/read-events.jsonl",
+      "line": 2,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C4-codex-baseline-5/research-notes.md",
+      "target": "C4-codex-baseline-5/research-notes.md",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-1/response.txt",
+      "target": "C5-codex-baseline-1/response.txt",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-1/read-events.jsonl",
+      "target": "C5-codex-baseline-1/read-events.jsonl",
+      "line": 2,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-1/research-notes.md",
+      "target": "C5-codex-baseline-1/research-notes.md",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-2/response.txt",
+      "target": "C5-codex-baseline-2/response.txt",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-2/read-events.jsonl",
+      "target": "C5-codex-baseline-2/read-events.jsonl",
+      "line": 2,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-2/research-notes.md",
+      "target": "C5-codex-baseline-2/research-notes.md",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-3/response.txt",
+      "target": "C5-codex-baseline-3/response.txt",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-3/read-events.jsonl",
+      "target": "C5-codex-baseline-3/read-events.jsonl",
+      "line": 2,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-3/research-notes.md",
+      "target": "C5-codex-baseline-3/research-notes.md",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-4/response.txt",
+      "target": "C5-codex-baseline-4/response.txt",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-4/read-events.jsonl",
+      "target": "C5-codex-baseline-4/read-events.jsonl",
+      "line": 2,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-4/research-notes.md",
+      "target": "C5-codex-baseline-4/research-notes.md",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-5/response.txt",
+      "target": "C5-codex-baseline-5/response.txt",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-5/read-events.jsonl",
+      "target": "C5-codex-baseline-5/read-events.jsonl",
+      "line": 2,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C5-codex-baseline-5/research-notes.md",
+      "target": "C5-codex-baseline-5/research-notes.md",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-1/response.txt",
+      "target": "C6-codex-baseline-1/response.txt",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-1/read-events.jsonl",
+      "target": "C6-codex-baseline-1/read-events.jsonl",
+      "line": 2,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-1/research-notes.md",
+      "target": "C6-codex-baseline-1/research-notes.md",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-2/response.txt",
+      "target": "C6-codex-baseline-2/response.txt",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-2/read-events.jsonl",
+      "target": "C6-codex-baseline-2/read-events.jsonl",
+      "line": 2,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-2/research-notes.md",
+      "target": "C6-codex-baseline-2/research-notes.md",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-3/response.txt",
+      "target": "C6-codex-baseline-3/response.txt",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-3/read-events.jsonl",
+      "target": "C6-codex-baseline-3/read-events.jsonl",
+      "line": 2,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-3/research-notes.md",
+      "target": "C6-codex-baseline-3/research-notes.md",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-4/response.txt",
+      "target": "C6-codex-baseline-4/response.txt",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-4/read-events.jsonl",
+      "target": "C6-codex-baseline-4/read-events.jsonl",
+      "line": 2,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-4/research-notes.md",
+      "target": "C6-codex-baseline-4/research-notes.md",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-5/response.txt",
+      "target": "C6-codex-baseline-5/response.txt",
+      "line": 1,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-5/read-events.jsonl",
+      "target": "C6-codex-baseline-5/read-events.jsonl",
+      "line": 2,
+      "fragment": null
+    },
+    {
+      "source": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-5/research-notes.md",
+      "target": "C6-codex-baseline-5/research-notes.md",
+      "line": 1,
+      "fragment": null
+    }
+  ],
+  "body_policy": "Only catalog.json and sources.json copied; numbered SKILL.md snapshots and recovered-source bodies remain private.",
+  "limits": "No semantic grading, launch, application execution, catalog freeze, or full-body archive verification is performed. Raw records retain private source paths.",
+  "manifest_self_hash": "Excluded: this generated manifest is not a copied file and cannot contain its own complete hash."
+}

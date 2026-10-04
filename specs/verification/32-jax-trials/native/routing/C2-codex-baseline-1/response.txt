@@ -1,0 +1,10 @@
+Primary skill: evaluate-deep-learning.
+Supporting skills: none for the stated task.
+The task asks to compare existing neural checkpoints trained with different budgets and seeds.
+The catalog explicitly routes checkpoint comparisons, unequal compute budgets, and seed variation to this skill.
+The full skill owns held-out comparison, checkpoint selection, and the neural experiment record.
+Its resource policy compares common budgets or budget-performance curves and separates endpoint from method claims.
+Its seed policy retains all planned runs and distinguishes compatible shared random factors from matching seed labels.
+No model redesign, training repair, JAX optimization, posterior inference, or hyperparameter search is stated.
+Actual read: the complete evaluate-deep-learning SKILL.md was read through the recorded helper and displayed in full.
+This is a skill-selection simulation only; no checkpoints were evaluated and no implementation workflow was invoked.

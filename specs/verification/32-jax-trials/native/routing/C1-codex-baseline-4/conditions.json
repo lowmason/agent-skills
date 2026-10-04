@@ -1,0 +1,53 @@
+{
+  "trial": "C1-codex-baseline-4",
+  "family": "C1",
+  "condition": "baseline",
+  "fresh_context": true,
+  "fork_turns": "none",
+  "agent_type": "default",
+  "runtime": "built-in Codex collaboration agent",
+  "model": "inherited active runtime; exact identifier unavailable",
+  "reasoning_effort": "inherited active runtime; exact value unavailable",
+  "catalog": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/baseline-catalog",
+  "catalog_entries": 138,
+  "catalog_manifest_sha256": "fee71e65dfd7f9372132f86feaf5316bac5ca3c8212906359039bf0b0010c800",
+  "prompt_sha256": "ad54414b9251edb64b72068f87586cad7ab601cdc939e89c1c7397497a79db98",
+  "selection_simulation": true,
+  "real_auto_loading_observed": false,
+  "tool_policy": "recorded local prompt and selected SKILL.md reads; own trial artifacts only",
+  "resident_global_guidance_may_be_available": true,
+  "spawn_identity": {
+    "task_name": "/root/native_c1_baseline_4",
+    "source": "actual collaboration.spawn_agent return",
+    "recorded_utc": "2026-10-04T02:22:54.616518+00:00"
+  },
+  "completion": "Complete substantive response and research notes",
+  "completed_utc": "2026-10-04T02:29:57.836102+00:00",
+  "first_prompt_read": {
+    "sha256": "ad54414b9251edb64b72068f87586cad7ab601cdc939e89c1c7397497a79db98",
+    "bytes": 89685,
+    "lines": 620
+  },
+  "actual_skill_reads": [
+    {
+      "read_id": "deep-learning",
+      "native_label": "deep-learning",
+      "sha256": "ece0ac27eaf8b9ca8de149fc27ec408d6ab975e58ba9cfa132c47d765b14fdbf",
+      "bytes": 11048,
+      "read_event_line": 2
+    }
+  ],
+  "payloads": {
+    "response.txt": {
+      "sha256": "913a31e631bc1170bddce58ac07f33819fd53a6cb76ff720fe5152e9bf215f86",
+      "bytes": 722,
+      "lines": 6
+    },
+    "research-notes.md": {
+      "sha256": "65038599b13a5be7ff9c4f0f716562a930acf7ef634a6197058831b41f122d18",
+      "bytes": 971,
+      "lines": 8
+    }
+  },
+  "execution_claim": "No underlying application implementation or execution observed; selection simulation only"
+}

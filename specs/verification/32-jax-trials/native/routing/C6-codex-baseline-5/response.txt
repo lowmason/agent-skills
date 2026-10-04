@@ -1,0 +1,9 @@
+Primary skill: optimize-jax
+Supporting skills: none for the stated scope.
+The task asks for generation speed improvements with KV-cache correctness checks, an explicit optimize-jax trigger.
+Its full body covers synchronized first/warm/request timing, profiling, and separate prefill/decode measurements.
+It also requires independent full-prefix causal-attention logits, greedy-token parity, cache-state contracts, padding and capacity boundaries, and stochastic replay.
+That combines the performance objective and correctness gate without assuming a training or checkpoint-quality problem.
+deep-learning and evaluate-deep-learning become relevant if the task expands to learned-model quality or checkpoint/research comparisons.
+develop-testing-strategy becomes relevant if permanent tests are being designed; that decision is not supplied here.
+This is skill selection only: no implementation, benchmark, cache validation, or speedup has been performed.

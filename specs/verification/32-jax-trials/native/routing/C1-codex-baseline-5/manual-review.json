@@ -1,0 +1,42 @@
+{
+  "selected_primary": "deep-learning",
+  "selected_supporting": [
+    "brainstorming"
+  ],
+  "correctness": "correct",
+  "posterior_boundary": "preserved",
+  "rationale": "NNX training selects and reads deep-learning; brainstorming support addresses unspecified design choices and does not displace the primary. No posterior loading.",
+  "full_payloads_manually_read": true,
+  "display_reads_manually_verified": true,
+  "conflicts_or_resident_choices": [],
+  "evidence": [
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-5/response.txt",
+      "line": 1
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-5/read-events.jsonl",
+      "line": 2
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C1-codex-baseline-5/research-notes.md",
+      "line": 1
+    }
+  ],
+  "reviewed_utc": "2026-10-04T02:30:58.770601+00:00",
+  "catalog_manifest_sha256": "fee71e65dfd7f9372132f86feaf5316bac5ca3c8212906359039bf0b0010c800",
+  "payloads": {
+    "response.txt": {
+      "sha256": "61861b0d85777344513adab466766a90aeb25efaf0547ad920837b32d46dea65",
+      "bytes": 791,
+      "lines": 9
+    },
+    "research-notes.md": {
+      "sha256": "d98a2dd9a7011409d74bda68d4b223f254616b99f7cce61132d5acb86d21b23f",
+      "bytes": 1198,
+      "lines": 11
+    }
+  },
+  "grading_source": "conductor manual full-response judgment",
+  "semantic_grading_automated": false
+}

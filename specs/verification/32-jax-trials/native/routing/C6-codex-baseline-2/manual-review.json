@@ -1,0 +1,40 @@
+{
+  "selected_primary": "optimize-jax",
+  "selected_supporting": [],
+  "correctness": "correct",
+  "posterior_boundary": "preserved",
+  "rationale": "Generation speed and cache correctness select and read optimize-jax for full-prefix logits, greedy tokens, masks, positions and synchronized prefill/decode timing; no posterior route is used.",
+  "full_payloads_manually_read": true,
+  "display_reads_manually_verified": true,
+  "conflicts_or_resident_choices": [],
+  "evidence": [
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-2/response.txt",
+      "line": 1
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-2/read-events.jsonl",
+      "line": 2
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C6-codex-baseline-2/research-notes.md",
+      "line": 1
+    }
+  ],
+  "reviewed_utc": "2026-10-04T02:48:59.963362+00:00",
+  "catalog_manifest_sha256": "fee71e65dfd7f9372132f86feaf5316bac5ca3c8212906359039bf0b0010c800",
+  "payloads": {
+    "response.txt": {
+      "sha256": "17f722cabc0c4d411f780a5e8d79ec0ad7f3bb425bbdfd2dffa4fe0282165a47",
+      "bytes": 928,
+      "lines": 9
+    },
+    "research-notes.md": {
+      "sha256": "e8f20628b6e7ba80ea6736b83a5ef92ff1eab984d9f2c08827ab6e7d23a6f830",
+      "bytes": 1287,
+      "lines": 11
+    }
+  },
+  "grading_source": "conductor manual full-response judgment",
+  "semantic_grading_automated": false
+}

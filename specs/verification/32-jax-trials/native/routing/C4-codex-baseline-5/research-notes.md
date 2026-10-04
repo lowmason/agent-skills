@@ -1,0 +1,12 @@
+# Selection notes
+- Task: Infer a Bayesian neural-network posterior with NumPyro and NUTS.
+- Final choice: primary bayesian-workflow; no supporting skills.
+- Candidate ruled out after full read: deep-learning; its posterior-inference boundary supports the sole Bayesian selection.
+- Catalog: start helper exited 0; captured all 89,505 characters in functions store before choosing.
+- Catalog pages fully displayed/read: [0,18000), [18000,36000), [36000,54000), [54000,72000), [72000,89505); each exec used an explicit 6,000-token output budget.
+- bayesian-workflow: helper exited 0; all 33,781 characters stored and read in [0,18000), [18000,33781).
+- deep-learning: helper exited 0; all 11,046 characters stored and read in one page [0,11046).
+- Capture budget: each helper command requested 24,000 tokens; all displayed pages were at most 18,000 characters.
+- Recovery: no truncation or failed helper calls; no recovery rerun was needed.
+- Resident conflicts: frozen catalog governed selection; resident implementation/skill-authoring guidance did not override this selection-only fixture.
+- Limits: no references, scripts, underlying repository, other trials, manifests, plans, rubrics, web, or subagents inspected/invoked; only authorized helper reads and these two outputs.

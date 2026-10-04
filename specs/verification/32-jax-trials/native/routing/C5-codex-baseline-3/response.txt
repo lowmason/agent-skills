@@ -1,0 +1,8 @@
+Primary skill: bayesian-workflow.
+Supporting skills: none.
+The task explicitly asks for BlackJAX posterior sampling, both direct triggers in this skill’s catalog description.
+Its full body treats BlackJAX NUTS as a first-class sampler alongside native NumPyro NUTS.
+It covers window adaptation, log-density integration, chain execution, constrained samples, and ArviZ conversion.
+It also supplies the Bayesian checks needed to assess sampled posteriors, including convergence and predictive checks.
+No performance problem, model-family choice, or hyperparameter search is stated, so optimize-jax, recommend-probabilistic-model, and tune-hyperparameters are unnecessary.
+This is a skill-selection result only; I did not sample a posterior or implement code.

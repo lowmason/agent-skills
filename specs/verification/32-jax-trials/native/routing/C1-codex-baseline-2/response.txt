@@ -1,0 +1,6 @@
+Primary read ID: deep-learning
+Supporting read IDs: none
+The task explicitly asks to train a JAX sequence model with Flax NNX; deep-learning directly owns this framework, domain, and training correctness.
+Its full body covers synthetic-data contracts, NNX-aware differentiation, optimizer/state updates, tiny-fixture learning checks, held-out evaluation, and recovery.
+No additional skill is needed for the stated training task: no comparative benchmark, execution bottleneck, hyperparameter search, or posterior inference is requested.
+This was selection and explanation only; no model implementation or implementation workflow was executed.

@@ -1,0 +1,11 @@
+Primary skill: evaluate-deep-learning.
+Supporting skills: none required for the stated task.
+Its catalog trigger explicitly covers neural checkpoint comparison, unequal compute budgets, and variation across seeds.
+The full body owns held-out comparison, checkpoint selection, and the neural experiment record.
+It calls for common-budget comparisons or budget-performance curves, rather than treating unequal endpoint scores as method superiority.
+It retains every planned run and distinguishes training-seed variation from test-sample and predictive uncertainty.
+It cautions that equal numeric seed labels alone do not justify paired training-run comparisons.
+deep-learning would support training changes or learning diagnosis; optimize-jax would support profiling or execution performance. Neither is requested.
+Bayesian workflow and experiment tracking concern posterior/probabilistic variants; this task gives no such inference requirement.
+Input QA, hyperparameter search, and permanent test planning are possible later handoffs, not established requirements of this selection.
+Only skill selection and full-body reading were performed; no checkpoints were evaluated and no underlying workflow was executed.

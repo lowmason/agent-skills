@@ -1,0 +1,95 @@
+{
+  "trial": "C3-codex-baseline-3",
+  "family": "C3",
+  "condition": "baseline",
+  "fresh_context": true,
+  "fork_turns": "none",
+  "agent_type": "default",
+  "runtime": "built-in Codex collaboration agent",
+  "model": "inherited active runtime; exact identifier unavailable",
+  "reasoning_effort": "inherited active runtime; exact value unavailable",
+  "catalog": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/baseline-catalog",
+  "catalog_entries": 138,
+  "catalog_manifest_sha256": "fee71e65dfd7f9372132f86feaf5316bac5ca3c8212906359039bf0b0010c800",
+  "prompt_sha256": "486e439251898b600c526655b66cbd870b720983ffaeda436d8d9244d964b7c5",
+  "selection_simulation": true,
+  "real_auto_loading_observed": false,
+  "tool_policy": "recorded local prompt and selected SKILL.md reads; own trial artifacts only",
+  "resident_global_guidance_may_be_available": true,
+  "spawn_identity": {
+    "task_name": "/root/native_c3_baseline_3",
+    "source": "actual collaboration.spawn_agent return",
+    "recorded_utc": "2026-10-04T02:35:58.504670+00:00"
+  },
+  "completion": "Complete substantive response and research notes",
+  "completed_utc": "2026-10-04T02:39:03.967448+00:00",
+  "first_prompt_read": {
+    "sha256": "486e439251898b600c526655b66cbd870b720983ffaeda436d8d9244d964b7c5",
+    "bytes": 89681,
+    "lines": 620
+  },
+  "actual_skill_reads": [
+    {
+      "read_id": "optimize-jax",
+      "native_label": "optimize-jax",
+      "sha256": "e177b588bf9cbb73654b16dc594a294a782f098cbb4f3226856e1f42835a4200",
+      "bytes": 9783,
+      "read_event_line": 2
+    },
+    {
+      "read_id": "clean-coder",
+      "native_label": "clean-coder",
+      "sha256": "93f3665780bb3cc2758573e11e3739c5fd54b4eb33c204173f4096fb3bdf0866",
+      "bytes": 8156,
+      "read_event_line": 3
+    },
+    {
+      "read_id": "clean-code",
+      "native_label": "clean-code",
+      "sha256": "1635f3e489a2f35525fd84be23bdfd4c8b8445b34e92939735f6527c7f0617b9",
+      "bytes": 8083,
+      "read_event_line": 4
+    },
+    {
+      "read_id": "systematic-debugging",
+      "native_label": "systematic-debugging",
+      "sha256": "1f6eac398945ad67e37cc6ae412a893815a07da32b4b8a510d4a4933f35bb2f7",
+      "bytes": 10203,
+      "read_event_line": 5
+    },
+    {
+      "read_id": "test-driven-development",
+      "native_label": "test-driven-development",
+      "sha256": "dd65ae553a65f1698c489bc617a7b8a059d06018f6abf29fad67300ba6c91083",
+      "bytes": 9678,
+      "read_event_line": 6
+    },
+    {
+      "read_id": "verification-before-completion",
+      "native_label": "verification-before-completion",
+      "sha256": "6b2792cb155004634ac5b39f72111f897c380e71e213be8969c5308dff70d088",
+      "bytes": 4286,
+      "read_event_line": 7
+    },
+    {
+      "read_id": "develop-testing-strategy",
+      "native_label": "develop-testing-strategy",
+      "sha256": "001fc530d1dab4bb29490f9e7e29cbf3f8811850828d8acbc1b2e79452930c95",
+      "bytes": 18619,
+      "read_event_line": 8
+    }
+  ],
+  "payloads": {
+    "response.txt": {
+      "sha256": "bbd71077b9ec9da671848754eba038358f4e5532465fde1714dc226203cbcfc9",
+      "bytes": 1194,
+      "lines": 10
+    },
+    "research-notes.md": {
+      "sha256": "f01c4550486e29affcea8b4ee4275c9f9a0f954fca50128c48c00c14068b2a07",
+      "bytes": 1187,
+      "lines": 10
+    }
+  },
+  "execution_claim": "No underlying application implementation or execution observed; selection simulation only"
+}

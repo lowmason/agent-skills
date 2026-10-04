@@ -1,0 +1,9 @@
+Primary skill: bayesian-workflow.
+Supporting skills: none.
+Task: Infer a Bayesian neural-network posterior with NumPyro and NUTS.
+Rationale: The task names Bayesian posterior inference, NumPyro, and NUTS, all direct triggers for bayesian-workflow.
+Its full body owns model formulation, priors, predictive checks, native NumPyro NUTS, convergence diagnostics, and posterior interpretation.
+Read candidate deep-learning in full, but did not select it: its boundary explicitly keeps posterior-inference procedures with the responsible skill.
+A neural-network model alone does not add a training/design request; no optimization, benchmarking, model-family selection, or tuning problem is stated.
+Selection only: no model implementation, fit, references, utility scripts, or implementation workflows were invoked.
+The frozen catalog supplied all routing choices; resident descriptions were not substituted for it.

@@ -1,0 +1,60 @@
+{
+  "trial": "C4-codex-baseline-3",
+  "family": "C4",
+  "condition": "baseline",
+  "fresh_context": true,
+  "fork_turns": "none",
+  "agent_type": "default",
+  "runtime": "built-in Codex collaboration agent",
+  "model": "inherited active runtime; exact identifier unavailable",
+  "reasoning_effort": "inherited active runtime; exact value unavailable",
+  "catalog": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/baseline-catalog",
+  "catalog_entries": 138,
+  "catalog_manifest_sha256": "fee71e65dfd7f9372132f86feaf5316bac5ca3c8212906359039bf0b0010c800",
+  "prompt_sha256": "28ef70d27f12f2948bb6432edba273f3096386ad18a4128adc6bb18b29e006d8",
+  "selection_simulation": true,
+  "real_auto_loading_observed": false,
+  "tool_policy": "recorded local prompt and selected SKILL.md reads; own trial artifacts only",
+  "resident_global_guidance_may_be_available": true,
+  "spawn_identity": {
+    "task_name": "/root/native_c4_baseline_3",
+    "source": "actual collaboration.spawn_agent return",
+    "recorded_utc": "2026-10-04T02:40:52.984521+00:00"
+  },
+  "completion": "Complete substantive response and research notes",
+  "completed_utc": "2026-10-04T02:43:09.564310+00:00",
+  "first_prompt_read": {
+    "sha256": "28ef70d27f12f2948bb6432edba273f3096386ad18a4128adc6bb18b29e006d8",
+    "bytes": 89693,
+    "lines": 620
+  },
+  "actual_skill_reads": [
+    {
+      "read_id": "bayesian-workflow",
+      "native_label": "bayesian-workflow",
+      "sha256": "8b6c06e85a0eb4750e5516d53f0c7a82ad279eaaf68692218de79ae098913156",
+      "bytes": 33948,
+      "read_event_line": 2
+    },
+    {
+      "read_id": "deep-learning",
+      "native_label": "deep-learning",
+      "sha256": "ece0ac27eaf8b9ca8de149fc27ec408d6ab975e58ba9cfa132c47d765b14fdbf",
+      "bytes": 11048,
+      "read_event_line": 3
+    }
+  ],
+  "payloads": {
+    "response.txt": {
+      "sha256": "8fddba9b9bc4bdb3ff6602c0a30b72c68a883712557428b107dcc0a7f8816400",
+      "bytes": 932,
+      "lines": 10
+    },
+    "research-notes.md": {
+      "sha256": "c123d25ffccd8df971839bb0aae594a6f96e289605a24e0dcb0ae9b86a8d2e70",
+      "bytes": 1130,
+      "lines": 10
+    }
+  },
+  "execution_claim": "No underlying application implementation or execution observed; selection simulation only"
+}

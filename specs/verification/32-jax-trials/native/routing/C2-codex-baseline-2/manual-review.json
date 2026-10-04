@@ -1,0 +1,40 @@
+{
+  "selected_primary": "evaluate-deep-learning",
+  "selected_supporting": [],
+  "correctness": "correct",
+  "posterior_boundary": "preserved",
+  "rationale": "Checkpoint comparison selects and reads evaluate-deep-learning for common-budget curves, retained seed variation and uncertainty distinctions; no posterior loading.",
+  "full_payloads_manually_read": true,
+  "display_reads_manually_verified": true,
+  "conflicts_or_resident_choices": [],
+  "evidence": [
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-2/response.txt",
+      "line": 1
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-2/read-events.jsonl",
+      "line": 2
+    },
+    {
+      "path": "/private/tmp/jax-skill-trials-pAYZ0t/native-routing/C2-codex-baseline-2/research-notes.md",
+      "line": 1
+    }
+  ],
+  "reviewed_utc": "2026-10-04T02:31:48.172037+00:00",
+  "catalog_manifest_sha256": "fee71e65dfd7f9372132f86feaf5316bac5ca3c8212906359039bf0b0010c800",
+  "payloads": {
+    "response.txt": {
+      "sha256": "3d62426e170106e684dcc32ce32e3c09fdd985df41379e1f29aef197fe5af6e7",
+      "bytes": 908,
+      "lines": 10
+    },
+    "research-notes.md": {
+      "sha256": "0643ec9fae934a50a0af8a66983f42b4e0fcb7b53021c5aed5ce98077ff20f43",
+      "bytes": 1014,
+      "lines": 10
+    }
+  },
+  "grading_source": "conductor manual full-response judgment",
+  "semantic_grading_automated": false
+}

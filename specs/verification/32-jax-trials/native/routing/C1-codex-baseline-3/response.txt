@@ -1,0 +1,6 @@
+Primary read ID: deep-learning
+Supporting read IDs: none.
+The task is to train an NNX sequence model in JAX on synthetic data; deep-learning explicitly covers JAX, Flax NNX, sequence models, and training correctness.
+Its body supplies the relevant data/target/mask, NNX-aware differentiation, optimizer/RNG/state, tiny-fixture learning, held-out baseline, and checkpoint recovery contracts.
+No separate benchmark/comparison, hyperparameter search, permanent test-suite design, Bayesian inference, or reproduced JAX execution problem is requested, so no supporting skill is necessary.
+Selection and reading only; no model, data generator, training run, implementation workflow, or referenced resource was executed.

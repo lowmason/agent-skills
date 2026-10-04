@@ -1,0 +1,9 @@
+Primary skill: optimize-jax.
+Supporting skills: none needed for the stated task.
+Its catalog description directly names improving generation, prefill/decode, profiling, asynchronous timing, and KV caches.
+The full body requires independent full-prefix causal-attention assertions before generation is scaled or timed.
+It covers cache positions, masks, cursor, prompt padding, capacity/overflow, greedy-token parity, and fixed-key sampling replay.
+It also separates prefill/decode and first/warm/request timings while preserving workload and correctness boundaries.
+Deep-learning and evaluate-deep-learning become relevant if model objectives, learned quality, checkpoints, or research claims enter scope.
+Develop-testing-strategy becomes relevant if designing permanent tests; that extra scope is not stated here.
+This is selection only: no optimization, benchmark, correctness result, or implementation workflow was performed.

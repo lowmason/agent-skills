@@ -1,0 +1,10 @@
+Primary skill: optimize-jax.
+Supporting skills: systematic-debugging, test-driven-development, verification-before-completion.
+
+optimize-jax directly covers unexpected recompilation and explicitly includes non-learning simulations and numerical programs.
+Its full body calls for replaying real input signatures, separating first/warm costs, and associating compile/cache events with the target function before changing one measured cause.
+systematic-debugging supports reproducing the symptom, isolating the root cause, and testing one hypothesis before proposing a fix.
+test-driven-development supports a failing regression case before a future implementation change.
+verification-before-completion supports fresh evidence for numerical agreement and the original recompilation symptom before any future fixed/passing claim.
+deep-learning and evaluate-deep-learning do not fit a calculation without neural learning or checkpoint evaluation; bayesian-workflow's broad JAX mention does not establish posterior inference here.
+This is selection only: no diagnosis, implementation, tests, profiling, external references, or scripts were executed.
