@@ -57,6 +57,41 @@ A heading deeper than the task's own is content, not a boundary.
 This trailing section must not leak into Task 2's brief.
 """
 
+# Global Constraints with ### subsections and plan-wide ## siblings after it:
+# the shape of a real plan whose spec quotes, decisions and project rules sat
+# under seven ### headings that every brief lost.
+SUBSECTIONED_PLAN = """\
+# Subsectioned Plan
+
+## Global Constraints
+
+Every task's requirements include this section.
+
+### Global Constraints from the spec, verbatim
+
+- Window size is 128 tokens.
+
+```markdown
+## 4. Design
+```
+
+### Project rules
+
+- Single quotes over double.
+
+## Workspace
+
+Worktree path for this plan.
+
+## Pre-flight
+
+- [ ] **Step 1: Confirm the workspace**
+
+### Task 1: First thing
+
+- [ ] **Step 1: do it**
+"""
+
 
 def run(*argv, cwd=None):
     return subprocess.run(
@@ -174,6 +209,46 @@ def test_task_brief_prepends_global_constraints(repo):
     body = out.read_text()
     assert body.index('## Global Constraints') < body.index('### Task 1')
     assert 'Single quotes over double.' in body
+
+
+def test_task_brief_keeps_global_constraints_subsections(repo):
+    """Global Constraints may hold ### subsections: only a heading at its own
+    level or shallower ends it. An any-heading terminator kept the first four
+    lines of a real plan's section and dropped all seven subsections from
+    every brief. The second subsection carries two more
+    checks: the fenced '## 4. Design' before it must not end the section,
+    and the first subsection's title, which also says 'Global Constraints',
+    must not restart the section at the deeper level."""
+    (repo / 'subsectioned.md').write_text(SUBSECTIONED_PLAN)
+    out = repo / 'brief.md'
+    result = run(TASK_BRIEF, repo / 'subsectioned.md', 1, out, cwd=repo)
+    assert result.returncode == 0
+    body = out.read_text()
+    assert '### Global Constraints from the spec, verbatim' in body
+    assert 'Window size is 128 tokens.' in body
+    assert '### Project rules' in body
+    assert 'Single quotes over double.' in body
+    # A same-level sibling ends the section, so the plan-wide ## sections
+    # after it stay out. Without these, a terminator that never fired would pass.
+    assert 'Worktree path' not in body
+    assert 'Confirm the workspace' not in body
+    assert body.count('### Task 1') == 1
+    assert body.index('Single quotes over double.') < body.index('### Task 1')
+
+
+def test_task_brief_ends_flat_global_constraints_at_a_deeper_task_heading(repo):
+    """The writing-plans template puts '### Task 1' directly under a flat
+    '## Global Constraints'. A level-only terminator would run the section
+    through every task into each brief, so any Task heading also ends it.
+    Task 2's brief is the sharp case: Task 1 must be absent, and Task 2 must
+    appear once, not once from the section and again as the task itself."""
+    out = repo / 'brief.md'
+    result = run(TASK_BRIEF, repo / 'plan.md', 2, out, cwd=repo)
+    assert result.returncode == 0
+    body = out.read_text()
+    assert 'Single quotes over double.' in body
+    assert '### Task 1' not in body
+    assert body.count('### Task 2') == 1
 
 
 def test_task_brief_keeps_a_fenced_task_heading_as_content(repo):

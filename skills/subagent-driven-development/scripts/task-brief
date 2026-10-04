@@ -2,8 +2,8 @@
 # Extract one task's full text from an implementation plan into a file the
 # implementer reads in one call, so the task text never has to be pasted
 # through the controller's context. The plan's Global Constraints section
-# (when present) is prepended to every brief — every task's requirements
-# implicitly include it (see writing-plans).
+# (when present, subsections included) is prepended to every brief — every
+# task's requirements implicitly include it (see writing-plans).
 #
 # Usage: task-brief PLAN_FILE TASK_NUMBER [OUTFILE]
 # Default OUTFILE: <repo-root>/.sdd/<plan-basename>/task-<N>-brief.md
@@ -55,18 +55,25 @@ if [ -z "$task" ]; then
   exit 3
 fi
 
-# The plan-wide Global Constraints section, if present. It is a flat list, so
-# ANY subsequent heading ends it — a level-based terminator would swallow the
-# deeper "### Task N" headings that follow it in the writing-plans template.
+# The plan-wide Global Constraints section, if present. It may hold deeper
+# subsections (spec quotes, decisions, project rules under "###"), so it ends
+# at the next heading of the same or shallower level, not at any heading. A
+# level test alone would swallow every task, though: the writing-plans
+# template puts "### Task N" directly under a "## Global Constraints", so a
+# Task heading at any depth ends it too. The !ingc guard keeps a subsection
+# whose title also says "Global Constraints" from resetting the level.
 gc=$(awk '
+  function hlevel(s,  i) { i = 0; while (substr(s, i + 1, 1) == "#") i++; return i }
   /^```/ {
     flen = 0
     while (substr($0, flen + 1, 1) == "`") flen++
     if (!infence) { infence = 1; openlen = flen }
     else if (flen >= openlen) infence = 0
   }
-  !infence && /^#+[ \t]+Global Constraints/ { ingc = 1; print; next }
-  !infence && ingc && /^#+[ \t]/ { ingc = 0 }
+  !infence && !ingc && /^#+[ \t]+Global Constraints/ { ingc = 1; glvl = hlevel($0); print; next }
+  !infence && ingc && /^#+[ \t]/ {
+    if (hlevel($0) <= glvl || /^#+[ \t]+Task[ \t]+[0-9]+/) ingc = 0
+  }
   ingc { print }
 ' "$plan")
 
