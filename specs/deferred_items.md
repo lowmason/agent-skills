@@ -120,6 +120,16 @@
   carried deliberately at the owner's request: they belong to separate methodology
   work outside this JAX skill PR. The two plan-18 items remain open; this is an
   acknowledgement, not a backlog disposition.
+- 2026-10-03 — finished `claude/repo-audit-deferred-items-cc29b8` with 2 items
+  aged >45d, carried on the partner's 2026-09-28 reason, which they chose again
+  for this branch, verbatim: "Unrelated to this branch: the DL/NLP slots wait on
+  a real DL/NLP target, and the synthesize-mode checks wait on their own plan."
+  The items are the same two `18-methodology-pipeline-skills` items (69d: the
+  DL/NLP template extension, synthesize-mode scenario verification); the
+  latter's plan is `32-synthesize-mode-scenario-verification.md` on the unmerged
+  `worktree-deferred-triage-2026-10-03`, awaiting the owner's launch. This branch
+  adds the findings-only repo audit (specs/audit-3-10-26.md); it touches neither
+  aged item.
 
 ## 11-delegation-frontmatter-rollout — 2026-07-19
 - [x] Haiku-pinned `Explore` override agent (fork-isolation upgrade; plan "Out of
