@@ -1,0 +1,35 @@
+{
+  "trial": "E3-codex-candidate-1",
+  "scenario": "E3",
+  "condition": "candidate",
+  "runtime": "Built-in Codex collaboration agent",
+  "agent_type": "default",
+  "requested_fork_turns": "none",
+  "model": "Inherited active runtime; exact identifier not exposed by collaboration API",
+  "effort": "Inherited active runtime; exact value not exposed by collaboration API",
+  "tool_policy": "Read-only information gathering; execute only local trial_io recording helper, no delivered application code",
+  "automatic_skill_loading_observed": false,
+  "source_hashes": {
+    "SKILL.md": "db75cc39c357cd80340d39d7255bcb9c53602b6bbb0c5af9789169b5a82607c8",
+    "references/domain-checks.md": "984209d2ee4b18b926fc722b24baec7cde470058f59fa7a64916a887e305156c",
+    "references/experiments.md": "1254907bbaf6cc731e22a92b15cc4e7b17ce32f7f3486e8b4f472e582da24518",
+    "references/protocol.md": "65d69194053e9183276a39a3e30dd1ee372da2bf3537a0b63306c10c0f0d672f"
+  },
+  "guidance_directory": "/private/tmp/jax-skill-trials-pAYZ0t/guidance-candidate-evaluate-deep-learning",
+  "guidance_loading": "Full SKILL.md supplied in first recorded prompt read; references read on demand through trial_io",
+  "prompt_sha256": "55784aaa119eadf2fe5544370284efa6f36e1cc77f76597c946926817f4e96b8",
+  "spawn_identity": {
+    "task_name": "/root/native_trial_conductor/native_e3_candidate_1"
+  },
+  "completion": "Complete substantive response and research notes; child final received",
+  "completion_verified_at_utc": "2026-10-04T00:23:11.672642+00:00",
+  "response_sha256": "0e16f65066c3839f87e9b68660590678646143fa8417b23b6b39111b223e1606",
+  "response_lines": 385,
+  "verified_first_read": "Full prompt hash and byte count match first recorded start event",
+  "actual_reference_reads": [
+    "/private/tmp/jax-skill-trials-pAYZ0t/guidance-candidate-evaluate-deep-learning/references/protocol.md",
+    "/private/tmp/jax-skill-trials-pAYZ0t/guidance-candidate-evaluate-deep-learning/references/domain-checks.md",
+    "/private/tmp/jax-skill-trials-pAYZ0t/guidance-candidate-evaluate-deep-learning/references/experiments.md"
+  ],
+  "application_execution": "Not executed per explicit child delivery/research notes; scorer treats response code as data"
+}

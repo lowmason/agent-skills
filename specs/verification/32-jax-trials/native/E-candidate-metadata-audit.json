@@ -1,0 +1,17 @@
+{
+  "report": "/private/tmp/jax-skill-trials-pAYZ0t/E-native-candidate-scoring.md",
+  "fresh_samples": 8,
+  "score": 74,
+  "maximum": 74,
+  "verified_local_evidence_links": 113,
+  "response_lines": {
+    "E1-codex-candidate-1": 31,
+    "E1-codex-candidate-2": 28,
+    "E1-codex-candidate-3": 28,
+    "E1-codex-candidate-4": 27,
+    "E1-codex-candidate-5": 43,
+    "E2-codex-candidate-1": 301,
+    "E3-codex-candidate-1": 385,
+    "RE-codex-candidate-1": 75
+  }
+}
