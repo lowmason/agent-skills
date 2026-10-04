@@ -32,12 +32,13 @@ and inference that accounts for nuisance estimation where required. Trimming
 changes the population and may change the estimand. Matching and weighting
 agreement is not proof against a shared omitted confounder.
 
-Doubly robust estimators can be consistent if one of specified nuisance models
-is correct under the identifying assumptions; they do not waive confounding
-or overlap requirements. DML/orthogonal scores address nuisance estimation
-under an identified model, often using cross-fitting. They cannot recover
-counterfactuals in structural support gaps without additional extrapolation
-assumptions. Source: Hernán and Robins (2020); official EconML DML guide.
+Doubly robust estimators can be consistent if either the outcome model or the
+treatment model is correct under the identifying assumptions; they do not waive
+confounding or overlap requirements. DML/orthogonal scores address nuisance
+estimation under an identified model, often using cross-fitting. They cannot
+recover counterfactuals in structural support gaps without additional
+extrapolation assumptions. Source: Hernán and Robins (2020); official EconML DML
+guide.
 
 ## Instrumental variables
 

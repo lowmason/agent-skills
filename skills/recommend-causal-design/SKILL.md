@@ -113,7 +113,7 @@ their additional assumptions instead of forcing them into ordinary adjustment.
 |---|---|---|
 | Random assignment | Experiment/ITT | Randomization, outcome observation, interference |
 | Plausible sufficient pretreatment covariates | Adjustment/weighting | Exchangeability and overlap for target population |
-| Exogenous encouragement/instrument | IV | Exclusion, independence, relevance; local target |
+| Exogenous encouragement/instrument | IV | Exclusion, independence, relevance, monotonicity; local target |
 | Treatment changes at a score threshold | Sharp/fuzzy RDD | Continuity or defended local randomization; local target |
 | Treated/comparison units before and after adoption | DiD/event study | Parallel untreated trends, timing and comparison eligibility |
 | Treated unit(s) with credible untreated donor histories | Synthetic control | Uncontaminated donors, support, counterfactual fit assumptions |

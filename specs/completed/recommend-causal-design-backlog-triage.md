@@ -25,7 +25,7 @@ Grouped proposal: **2 Plan, 1 Design, 1 Quick fix, 9 Hold, 0 Retire**.
 
 - Calibration diagnosis labels: decide precedence when both bands fail and
   PIT-only direction; verify shift/three-segment fixtures and update routing.
-  Source: [deferred-triage, 2026-09-28](../deferred_items.md#deferred-triage-no-plan--2026-09-28).
+  Source: [deferred-triage, 2026-09-28](../deferred_items.md#deferred-triage-no-plan-deferred-pass-branch-deferred-triage-2026-09-28--2026-09-28).
   Highest design priority because it is the sole actionable design decision.
 
 ## Quick fix

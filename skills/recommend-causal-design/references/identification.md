@@ -43,7 +43,7 @@ flowchart LR
     T --> M[Mediator M]
     M --> Y
     T --> Y
-    T --> S[Observed outcome S]
+    T --> S[Outcome observed? S]
     Y --> S
 ```
 
