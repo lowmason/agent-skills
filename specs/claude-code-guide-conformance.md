@@ -1,11 +1,13 @@
 # Claude Code guide conformance — Design Spec
 
-**Status: DESIGN APPROVED (2026-10-04); written spec awaiting review.**
-The owner approved all four design sections in a brainstorming session,
-along with three choices: comply-or-explain, report-only for files outside
-the repo, and approach A. R6 amends two specs that are already approved (the
-drift and portability specs), so applying it needs the owner's approval of
-those amendments. Nothing here has been implemented.
+**Status: APPROVED (2026-10-04), R6's amendments included.**
+- The owner approved all four design sections in a brainstorming session,
+  along with three choices: comply-or-explain, report-only for files outside
+  the repo, and approach A.
+- The owner then reviewed the written spec and approved it with R6's
+  amendments to the drift spec (D1–D5) and the portability spec (P1–P3).
+  The plan applies those amendments without a further gate.
+- Nothing here has been implemented.
 
 ## Purpose and scope
 
