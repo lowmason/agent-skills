@@ -2207,9 +2207,12 @@ declined as YAGNI (zero instances in a one-page wiki).
       Exposed: the `model: haiku` pins on `agents/explore.md` and `agents/test-runner.md`,
       and subagent-driven-development's **cheap** tier (alias `haiku`), which assumes some
       Haiku exists. The trigger is a notice, not the date: a "not sooner than" window can
-      open long after it. Two plan-35 items above watch the same model on a date trigger,
-      the `haiku-retirement-date` conformance check (warn from 2026-10-15) and guide note
-      A-53 (the alias's behaviour at retirement); triage settles which trigger governs.
-      Size: quick-fix (confirm where `haiku` resolves and repoint the two pins); if no Haiku
-      remains, SDD's cheap tier needs a new home and this becomes a plan. Revisit if: the
-      deprecations page posts a retirement date for Haiku 4.5, or a newer Haiku ships.
+      open long after it. Two plan-35 items above touch the same model: the
+      `haiku-retirement-date` conformance check watches on a date trigger (warn from
+      2026-10-15), and guide note A-53 (the alias's behaviour at retirement) waits on the
+      drift verification; triage settles whether the check's date or this item's notice
+      governs. Size: quick-fix while a Haiku exists (the pins and the tier all use the
+      `haiku` alias, so a newer Haiku needs only a check of where the alias resolves); if
+      no Haiku remains, the two pins need repointing and SDD's cheap tier a new home, and
+      this becomes a plan. Revisit if: the deprecations page posts a retirement date for
+      Haiku 4.5, or a newer Haiku ships.
