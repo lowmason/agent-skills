@@ -106,6 +106,16 @@
   branch renames the superpowers drift assessment to
   specs/superpowers-drift-spec.md and brings it to upstream v6.4.2; it touches
   neither aged item.
+- 2026-10-04 — finished `worktree-cc-guide-anchoring` with 2 items aged >45d,
+  carried on the partner's 2026-09-28 reason, which they chose again for this
+  branch, verbatim: "Unrelated to this branch: the DL/NLP slots wait on a real
+  DL/NLP target, and the synthesize-mode checks wait on their own plan." The
+  items are the same two `18-methodology-pipeline-skills` items (69d: the DL/NLP
+  template extension, synthesize-mode scenario verification); the latter's plan
+  now exists, as `32-synthesize-mode-scenario-verification.md` on
+  `worktree-deferred-triage-2026-10-03`. This branch adds the Claude Code guide
+  conformance spec (specs/claude-code-guide-conformance.md); it touches neither
+  aged item.
 
 ## 11-delegation-frontmatter-rollout — 2026-07-19
 - [x] Haiku-pinned `Explore` override agent (fork-isolation upgrade; plan "Out of
