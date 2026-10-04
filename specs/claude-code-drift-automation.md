@@ -1,6 +1,10 @@
 # Claude Code drift automation — Design Spec
 
-**Status: merged design awaiting review (2026-10-03).**
+**Status: DESIGN APPROVED (2026-10-03).** The owner reviewed the merged
+spec and approved it as written, including the merge-time choices neither
+session's approvals had covered: the stage order, the `build/` test
+collection, the fetch gate, DIVERGES staying due, discarding failed verify
+quotes, and the once-a-day notice in place of `ack`.
 Two sessions designed this system in parallel from the same brief. This
 session's spec (`71d2422`) and the guide-upkeep session's
 (`specs/claude-code-guide-upkeep.md`, `024d430` on branch
