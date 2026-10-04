@@ -994,3 +994,15 @@ the planned runner's process contracts, not the future JAX examples or skills.
 Those implementation/application gates remain the tasks above. The spec-coverage
 matrix, interface names, local paths and placeholder scan were reviewed before
 the planning commit.
+
+## Owner clarification — GPU target (2026-10-04)
+
+After the Task 6 runtime gates, the owner clarified that most skill usage writes
+GPU code. Root added focused prose to the three main bodies and existing
+framework/inference references: GPU default for new neural workloads, accelerator
+setup/device checks, resident compiled loops, precision and target-hardware
+validation. CPU fixtures/profile and routing descriptions remain unchanged.
+The integration record preserves initial snapshot hashes and the separate new
+prose identities/checks; original application cohorts are not regraded or
+represented as tests of these later additions. Final whole-branch review covers
+this clarification alongside R1–R8. No new skill or GPU execution was added.

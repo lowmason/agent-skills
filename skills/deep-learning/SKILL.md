@@ -18,6 +18,11 @@ owns model design and training correctness, including diagnosis of learning
 behavior. Model execution and differentiation stay in JAX; host-side loading
 and tokenization can use suitable artifact tools.
 
+For new neural training and inference code, assume a GPU target unless the
+project or user specifies another device. The bundled CPU fixtures are portable
+correctness checks. Use [frameworks.md](references/frameworks.md) for GPU setup,
+resident execution and target-hardware validation.
+
 ## Boundary and routing
 
 Use evaluate-deep-learning when the immediate decision is a benchmark, ablation,

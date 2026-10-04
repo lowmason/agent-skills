@@ -30,6 +30,11 @@ skill responsible for the immediate decision and add the other when its
 responsibility arises. Model execution stays JAX; host-side NumPy arithmetic
 and artifact bookkeeping can support the evaluation.
 
+For GPU-targeted models, execute model evaluation on the intended GPU and
+record its device, precision and resource policy. CPU metric fixtures validate
+arithmetic only; GPU model quality, timing and memory claims need measurements
+on the target hardware.
+
 Tabular prediction is outside this version. Sequences, scientific models,
 images, graphs/3D, generative models, and LLMs are included. A point estimate
 neural run can have predictions and checkpoints without posterior draws. If

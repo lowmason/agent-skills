@@ -313,6 +313,19 @@ logic nor tokenizer/chat-template/checkpoint conversion, quantization quality or
 accelerator speed. Approximate logits do not guarantee identical argmax near a
 tie on every backend; exact token tests here apply to the actual fixed fixture.
 
+## GPU generation loop
+
+For GPU deployment, use the supported model's compiled sampler or a compiled
+fixed-carry decode loop. Keep cache, positions, keys, per-example done flags and
+inactive-row masks on device. Validate prompt/capacity inputs before entry;
+avoid reading the cache cursor or each selected token back into Python to
+drive the next step. Batch or deliberately stream host output according to the
+request contract, and include required synchronization in end-to-end timing.
+The host-controlled loop above is an inspectable correctness fixture; it is
+not the default implementation for GPU generation. Check the compiled path
+against full-prefix logits and the same EOS/padding/capacity cases on the target
+GPU, with precision-specific tolerances, before measuring prefill/decode.
+
 ## Profile the established research path
 
 Measure prefill completion, time to first emitted token and warm decode latency

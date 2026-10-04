@@ -34,6 +34,12 @@ array program does not need a framework migration. This is research execution
 and generation guidance. Real checkpoint conversion, device placement and
 hardware performance require their own evidence beyond the small CPU fixtures.
 
+For new neural workloads, target GPUs unless the project or user specifies
+otherwise; preserve an existing numerical program's device contract. Verify GPU
+availability and the matching JAX accelerator installation before running.
+Keep hot-path state and control flow on device; the CPU fixtures' host assertions
+and token reads are correctness scaffolding, not production GPU loops.
+
 ## 1. Reproduce the execution contract
 
 Collect the smallest program that retains the symptom and its actual input

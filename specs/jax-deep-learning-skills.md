@@ -21,6 +21,15 @@ Tabular prediction is outside this first version. Arrays, node attributes, and
 MLPs remain useful components of the included domains; their representation
 does not make them excluded tabular-prediction tasks.
 
+## Owner clarification — 2026-10-04
+
+GPU is the usual target for code produced by these skills. New neural training
+and inference assume GPU unless the user/project specifies otherwise; evaluation
+uses the model's intended device. CPU examples remain portable correctness checks.
+Guidance must distinguish accelerator setup, resident compiled loops and actual
+GPU validation from those local fixtures. This clarifies the existing hardware
+scope without adding a skill or claiming locally measured GPU performance.
+
 ## Decisions and alternatives
 
 1. **Three workflow skills:** `deep-learning`, `evaluate-deep-learning`, and

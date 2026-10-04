@@ -38,7 +38,7 @@ source/hash/bookkeeping checks; this task did not regrade every raw response.
 | R8: originals and attribution | [NOTICE](../../NOTICE), [CLAUDE.md](../../CLAUDE.md) and [README](../../README.md) agree on 19 originals in this branch. The three skills are original MIT guidance; Orchestra inspiration is acknowledged, and references link primary API/framework sources with their stated limits. | Fresh provenance, exact original-name sets, single-line CLAUDE inventory and README Mine rows/credits checked. No third-party skill manual was vendored or copied as original guidance. Concurrent additions outside this checkout are not part of this count. |
 | Acceptance: execution/application/routing | Ten canonical examples run unchanged on the frozen 39-pin profile; earlier manually scored D/E/S cohorts and two matched catalog cohorts remain archived with conditions and source identities. | Fresh gates below passed. Application outputs are unexecuted delivered proposals, while canonical fixture stdout is runtime evidence. Controller reviews and plan/branch completion remain pending below. |
 
-## Navigation, inventory and source identity
+## Initial Task 6 snapshot: navigation, inventory and source identity
 
 | Skill | Main body words | Description characters | Markdown sources |
 |---|---:|---:|---:|
@@ -60,8 +60,10 @@ and execution work without requiring a neural training task. The existing RD,
 RE and RS read-event/application evidence tests on-demand reference retrieval.
 This task's link inspection is a static navigation check, not another agent trial.
 
-There are 17 authored Markdown sources, exactly matching the frozen candidate
-guidance snapshots. Fresh checks validated all 118 local links in those sources
+At the initial Task 6 gate there were 17 authored Markdown sources, exactly
+matching the frozen candidate guidance snapshots. The later GPU clarification
+below changes five prose sources while preserving those archived snapshots.
+Fresh checks validated all 118 local links in those sources
 and the four preceding durable records, including file/line target bounds.
 The integration record's own 51 local endpoints and line bounds also passed.
 The three added `skills/*/SKILL.md` files are the only added entry points against
@@ -392,7 +394,7 @@ reviewed SHA:
 
 | Gate | Initial disposition |
 |---|---|
-| Fresh Task 6 task review against scoped BASE | Pending controller dispatch |
+| Fresh Task 6 task review against scoped BASE | Approved by a fresh built-in full-form reviewer for `094d474..6ec9c90`; no Critical/Important/actionable Minor issue. It compared saved gate/capture/audit artifacts with the committed record; later GPU prose is covered by whole-branch review. |
 | Fresh final whole-branch native review against whole-branch BASE | Pending controller dispatch |
 | Different-model-family read-only second opinion | Same-family exception: this runtime is Codex; another Codex opinion is not a different-family review. Use the required fresh native whole-branch reviewer; no external fallback is authorized. |
 | Actionable findings, affected checks, completion/retirement and moved links | Controller resolves before claiming full plan completion |
@@ -402,3 +404,45 @@ No plan/spec retirement, completion ticks, Bayesian ledger generalization,
 methodology-template backlog change, publish, merge or unrelated cleanup occurred
 in this task. Review findings that alter frozen source require coordinated
 reverification rather than silent reuse of earlier application identities.
+
+## Owner clarification: GPU as the usual implementation target
+
+On 2026-10-04 the owner clarified that most skill uses write GPU code. New neural
+training/inference now explicitly target GPUs unless the project or user names
+another device. Evaluation follows the actual model target. The original CPU
+profile remains a portable correctness gate, not a deployment default.
+
+Five documentation sources were clarified: the three main skill bodies,
+[frameworks](../../skills/deep-learning/references/frameworks.md#gpu-target-and-local-verification)
+and [inference](../../skills/optimize-jax/references/inference.md#gpu-generation-loop).
+They cover accelerator environment/device checks, no silent CPU fallback,
+resident state/compiled training and decoding, deliberate host logging or
+streaming, hardware-specific precision and a target-GPU smoke/measurement gate.
+Current primary [JAX installation](https://docs.jax.dev/en/latest/installation.html)
+and [GPU performance](https://docs.jax.dev/en/latest/gpu_performance_tips.html)
+sources were checked. No GPU was available or exercised in this authoring gate;
+GPU execution and performance remain explicitly pending on the target hardware.
+
+A read-only built-in Codex wording audit found no remaining required gap for
+this clarification. It inspected training/LLM/generative and evaluation guidance;
+it did not execute GPU code or create a new scored application cohort.
+Earlier application/retrieval scores apply to their immutable source snapshots,
+not automatically to the new prose. All ten executable code hashes, all three
+descriptions/frontmatter and the profile are unchanged from the fresh Task 6
+runtime evidence. Their checks were not gratuitously repeated for prose edits.
+
+Post-edit frontmatter, provenance and global parse commands above each exited 0;
+parse retained the same five existing advisories. Whitespace and all eighteen
+local links across the five changed sources passed. Main body word counts are
+now 1,415 / 1,203 / 1,305. No new entry point, dependency edge, executable block,
+model pin or default precision flag was introduced.
+
+Changed prose source SHA-256 values after clarification:
+
+| Source, relative to `skills/` | SHA-256 |
+|---|---|
+| `deep-learning/SKILL.md` | `08f202c52f05043fe145333adb6c7f5b95ba0ba9d7bdd510d5acf98310606b50` |
+| `deep-learning/references/frameworks.md` | `7cc48adcd90ef3aa86b45b346827230167ab7267d9e8ef93422d8368e743654f` |
+| `evaluate-deep-learning/SKILL.md` | `c7b28dac4fd79a1709b6b2cc2864421307d412e152c70d31340d0cd8e90411c7` |
+| `optimize-jax/SKILL.md` | `5e9e8c7ababf21e98c6cd8ca0da95405841e6e33d0517572cd9f07c374f01bcc` |
+| `optimize-jax/references/inference.md` | `abc14e87ffa1e7f0c20b8f42fb33c8cfa25cdabd21fe37476a946aabbd48ce0a` |
