@@ -130,7 +130,9 @@ the first manual-only skill cannot auto-fire in Codex.
 R1.7 **Body-length advisory.** A `SKILL.md` body (the lines after the closing
 frontmatter `---`) over 500 lines prints one `WARN` line to stderr and does not
 change the exit code. Today only `writing-skills` warns; splitting it is
-deferred.
+deferred. When Stage A adds this warning, it also adds a `skill-body-size`
+`[[check]]` to `build/cc_guide/conformance.toml` that maps `skills.overview` to
+it, with `enforced_by = 'check_frontmatter'` (conformance R6 P3).
 
 R1.8 **`--strict` profile.** `check_frontmatter.py --strict` additionally fails
 on any `HOST_KEYS` key in a `SKILL.md`, and on a `name` containing `claude` or
@@ -140,7 +142,8 @@ commands are not Agent Skills and are unaffected.
 
 R1.9 The module docstring describes the new rules and the `--strict` flag, and
 CLAUDE.md's Commands section gains the `--strict` invocation with one line on
-when to use it (preparing a claude.ai upload or a spec-only validator run).
+when to use it (preparing a claude.ai upload or a spec-only validator run),
+within the CLAUDE.md ceiling (Sequencing, "Conformance register").
 
 ### R2 — Codex-visible openings
 
@@ -309,7 +312,7 @@ R4.4 **Documentation.**
   the copies.
 - README's License section gains one sentence to the same effect.
 - CLAUDE.md's provenance section gains the invariant and names the enforcing
-  lint.
+  lint, within the CLAUDE.md ceiling (Sequencing, "Conformance register").
 
 R4.5 **Andorra lookup** (a plan task).
 - Locate Alexandre Andorra's original PyMC Bayesian-workflow skill and read its
@@ -340,6 +343,14 @@ Stages, in order. D is independent of C and may run alongside it.
 - **D — R2.** The baseline micro-test and the `writing-skills` edit.
 
 Constraints:
+- **Conformance register** (`specs/completed/claude-code-guide-conformance.md`,
+  R6):
+  - The CLAUDE.md lines from R1.9 and R4.4 stay within the `claude-md-size`
+    ceiling in `build/cc_guide/conformance.toml`: trim CLAUDE.md elsewhere, or
+    raise the ceiling in the register on purpose, with a reason (R6 P1).
+  - When Stage A or Stage D fixes a gap the register tracks to it, the same
+    change removes or narrows that `[[exception]]` and runs
+    `build/check_conformance.py` (R6 P2).
 - **Work in a worktree.** The plan edits skills the executing session loads
   (`writing-plans`, `finishing-a-development-branch`, `writing-skills`), and
   `~/.claude/skills` resolves to the main checkout. Commit from the worktree;

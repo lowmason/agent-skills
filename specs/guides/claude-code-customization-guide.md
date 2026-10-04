@@ -5,6 +5,7 @@
 > Facts in this guide were re-verified against the official Claude Code documentation (code.claude.com/docs) and Anthropic's pricing pages on 2026-10-03, at Claude Code 2.1.288 (first verified July 2026, at 2.1.219 — 58 releases earlier). Claude Code changes quickly: items marked ⚠ are the most version-sensitive — confirm them against your installed version (`claude --version`, `/doctor`) before depending on exact numbers or field names.
 
 ## 1. The organizing constraint: context
+<!-- cc: context.overview -->
 
 Everything in this guide follows from one fact: **the context window fills up fast, and performance degrades as it fills.** Every token spent on configuration is a token unavailable for the task, and every always-loaded instruction competes for attention with the code in front of the model.
 
@@ -32,6 +33,7 @@ Each customization mechanism is, at bottom, a context-management tool:
 - **CLAUDE.md** is the only always-loaded prose you fully control — spend it like cash.
 
 ## 2. Choosing the right mechanism
+<!-- cc: mechanisms.overview -->
 
 | The guidance is… | Put it in… | Why |
 |---|---|---|
@@ -46,6 +48,7 @@ Each customization mechanism is, at bottom, a context-management tool:
 The dividing principle: **instructions are advisory; hooks are deterministic.** A CLAUDE.md line saying "always run the linter" is usually followed. A `PostToolUse` hook runs the linter every time, no exceptions. Whenever a rule is checkable by a program, moving it from prose into a hook (or linter config) frees tokens and closes the compliance gap in one move — it is the single highest-leverage conversion in this guide.
 
 ## 3. Skills
+<!-- cc: skills.overview -->
 
 A skill is a directory with a `SKILL.md` (YAML frontmatter + Markdown body) plus optional supporting files:
 
@@ -57,6 +60,7 @@ my-skill/
 ```
 
 ### Where skills live
+<!-- cc: skills.locations -->
 
 | Location | Applies to | Precedence |
 |---|---|---|
@@ -69,6 +73,7 @@ my-skill/
 Among the first three, a same-name skill shadows the lower-precedence one. Skills enabled on your claude.ai account also sync into terminal sessions signed in with that account (`~/.claude/skills/synced/`; `syncClaudeAiSkills: false` opts out) and join the listing ⚠. Symlinks are followed — keeping a skills repo elsewhere and symlinking each skill into `~/.claude/skills/` gives you version control with live edits.
 
 ### Frontmatter reference ⚠
+<!-- cc: skills.frontmatter -->
 
 | Field | Effect |
 |---|---|
@@ -91,6 +96,7 @@ Among the first three, a same-name skill shadows the lower-precedence one. Skill
 | `license`, `compatibility`, `metadata` | Agent Skills spec fields — accepted, not acted on. Unknown fields are ignored silently, so a misspelled field fails without an error |
 
 ### The description is the router
+<!-- cc: skills.description -->
 
 When deciding what to load, Claude sees only each skill's name and description — the description does all the routing work:
 
@@ -100,6 +106,7 @@ When deciding what to load, Claude sees only each skill's name and description �
 - Skills **under-trigger** on short requests more often than they over-trigger — when that happens, make the description pushier and more explicit; when a skill fires too often, narrow it.
 
 ### The listing budget ⚠
+<!-- cc: skills.listing-budget -->
 
 The always-loaded skill listing is budgeted at roughly **1% of the model's context window** (a character budget). Every skill's name always stays listed; when the descriptions overflow, Claude Code does not truncate them — it **drops entire descriptions, least-invoked skills first**. A skill whose description was dropped stays invocable by name but rarely auto-triggers.
 
@@ -110,6 +117,7 @@ The always-loaded skill listing is budgeted at roughly **1% of the model's conte
 - Disable unused plugins — a plugin's whole skill set lands in the listing.
 
 ### Progressive disclosure
+<!-- cc: skills.progressive-disclosure -->
 
 Three tiers keep skills nearly free until used: the listing (name + description, always loaded) → the `SKILL.md` body (loaded on invocation) → bundled files (loaded only when the body points at them). Exploit tier three deliberately: keep the body short and push depth into `references/`, named explicitly in prose ("For the edge cases, read `references/edge-cases.md`").
 
@@ -118,6 +126,7 @@ Tier two is not free once paid: an invoked body enters the conversation and stay
 Write the body as **process, not prose**. A 2,000-word essay gets skimmed and paraphrased; a numbered workflow with steps, checkpoints, and exit criteria gets executed — and gives you something verifiable. Bundle deterministic logic as scripts in `scripts/` rather than describing it and hoping the model re-derives it correctly.
 
 ### Arguments and dynamic context
+<!-- cc: skills.arguments -->
 
 | Substitution | Meaning |
 |---|---|
@@ -132,6 +141,7 @@ Write the body as **process, not prose**. A 2,000-word essay gets skimmed and pa
 `` !`command` `` (inline) or a ```` ```! ```` fenced block runs a shell command **once, at render time, before Claude sees the content**, and splices in the output — useful for injecting `git status`, dates, or issue metadata. It is preprocessing, not an agentic tool call, but it is still permission-checked: a deny rule aborts the whole invocation, and outside auto mode so does any command your rules don't allow, so pre-approve the commands in `allowed-tools`. A non-zero exit aborts the invocation too (append `|| true` where failure is an expected result). `disableSkillShellExecution` turns injection off entirely.
 
 ### Iterating on skills
+<!-- cc: skills.iterating -->
 
 Treat skills like code with observable failure modes:
 
@@ -146,16 +156,19 @@ Treat skills like code with observable failure modes:
 A skill **raises the floor, not the ceiling**: it reliably prevents skipped steps, but it does not upgrade judgment. Keep human review on the judgment calls (design choices, priors, tradeoffs) and let skills guarantee the mechanical ones.
 
 ## 4. Slash commands
+<!-- cc: commands.overview -->
 
 Commands have been **merged into skills**. A file at `.claude/commands/deploy.md` and a skill at `.claude/skills/deploy/SKILL.md` both create `/deploy` and take the same frontmatter (except `name` and `paths` — a command's filename is its name); on a name collision the skill wins. Most built-ins, like `/help`, `/model`, and `/compact`, are coded into the CLI rather than files (a few bundled ones are prompt-based skills) — and in a local terminal session, a skill with a built-in's name replaces it, though not its aliases.
 
 Command files still work, but the docs now recommend a skill for new work: a lone `SKILL.md` costs the same as a command file and leaves room for `references/`, `scripts/`, or forked execution later. Either way, set `disable-model-invocation: true` on anything side-effecting (`/commit`, `/deploy`, `/run-expensive-job`) so it fires only when you type it — and stays out of the listing.
 
 ## 5. Subagents
+<!-- cc: subagents.overview -->
 
 Subagent definitions are Markdown files in `~/.claude/agents/` (personal) or `.claude/agents/` (project): frontmatter plus a system prompt in the body. They deliver three levers at once — **an isolated context window, a per-agent model, and a scoped tool set**. Same-name definitions resolve managed → `--agents` CLI JSON → project → personal → plugin: here project beats personal, the reverse of skills.
 
 ### Frontmatter reference ⚠
+<!-- cc: subagents.frontmatter -->
 
 | Field | Effect |
 |---|---|
@@ -178,6 +191,7 @@ Subagent definitions are Markdown files in `~/.claude/agents/` (personal) or `.c
 | `color`, `initialPrompt` | Display color; auto-submitted first turn when run as a main session via `--agent` |
 
 ### Scope tools to the role
+<!-- cc: subagents.tools -->
 
 Least privilege keeps agents focused and safe:
 
@@ -188,6 +202,7 @@ Least privilege keeps agents focused and safe:
 A documentation agent doesn't need `Bash`; a review agent doesn't need `Write`. Two catches ⚠: on macOS, Linux, and WSL, `Glob` and `Grep` are absent by default and come back only for an agent that lists them *without* `Bash` (with `Bash`, search runs through the shell); and `memory:` silently adds Read/Write/Edit, so keep it off read-only roles.
 
 ### Route models by role
+<!-- cc: subagents.models -->
 
 Haiku 4.5 lists at a quarter of Opus 5.5's per-token price ($1/$5 vs $4/$20 per MTok) and half of Sonnet 5.5's, yet scored 73.3% on SWE-bench Verified at its October 2025 launch — cheap delegation costs little quality on mechanical work. Two caveats ⚠: Haiku's window is 200K tokens against 1M for the current Fable, Opus, and Sonnet (a subagent's window follows its own model, not the parent's), and its retirement window opens 2026-10-15. A sensible default split:
 
@@ -199,6 +214,7 @@ Haiku 4.5 lists at a quarter of Opus 5.5's per-token price ($1/$5 vs $4/$20 per 
 The built-in `Explore` agent now inherits the session model rather than running on Haiku; to explore on Haiku, define your own `Explore` with `model: haiku` (it overrides the built-in). `CLAUDE_CODE_SUBAGENT_MODEL` is only a fallback since 2.1.251: an agent's `model` field and a per-spawn `model` both outrank it, and it doesn't move the built-in Explore and Plan; `CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1` (2.1.257+) makes it override everything ⚠.
 
 ### Isolation mechanics — and when delegation pays
+<!-- cc: subagents.isolation -->
 
 A subagent starts from its own system prompt and environment details, not the parent's conversation. Custom agents and most built-ins also load your CLAUDE.md hierarchy and a git-status snapshot at spawn; Explore and Plan skip both. The exception is a **fork** — Claude's `fork` subagent type, or `/subtask` — which inherits the entire conversation; fork mode is on by default in interactive sessions ⚠. Either way, its exploration — possibly tens of thousands of tokens of file reads — stays in its own window; only its final text returns. Subagents keep their own prompt caches on a 5-minute TTL by default, even on a subscription where the main conversation gets 1 hour (`subagentPromptCacheTtl` or `experimental.cacheTtl` changes it); a fork reuses the parent's cache.
 
@@ -207,20 +223,24 @@ Delegation **pays** for: (a) read-heavy investigation whose file dumps would pol
 Delegation **burns tokens** on: trivial single-file edits; tasks where the summary loses details the main agent must then re-derive; over-spawning (cost scales with team size — the docs put agent teams at roughly 7× a standard session's tokens when teammates run in plan mode). A reviewer *asked* to find problems will always find some — instruct reviewers to flag only correctness and requirement gaps.
 
 ## 6. Rules: CLAUDE.md, rules files, settings, permissions
+<!-- cc: rules.overview -->
 
 ### CLAUDE.md discipline
+<!-- cc: rules.claude-md -->
 
 Include: non-guessable build/test commands, style deltas from language defaults, repo etiquette, environment quirks, genuine gotchas. Exclude: anything readable from the code, standard conventions, API documentation (link instead), fast-changing details, self-evident practice.
 
 The per-line litmus test: **would removing this line make Claude err?** If not, cut it. The docs' size target is under 200 lines per file. A bloated CLAUDE.md doesn't just waste tokens — it dilutes attention until the instructions that matter get ignored.
 
 ### Hierarchy and loading
+<!-- cc: rules.hierarchy -->
 
 Files load broad → specific and are **concatenated, never overridden**: managed policy → `~/.claude/CLAUDE.md` → project `CLAUDE.md` (or `.claude/CLAUDE.md`) → `CLAUDE.local.md` (personal; gitignore it yourself). CLAUDE.md files in ancestor directories of the working directory load at launch too. Subdirectory CLAUDE.md files are lazy — they load when Claude reads or edits files in that subtree, which makes them the right home for module-specific guidance in a monorepo. Lazy content lives in message history, so compaction summarizes it away; anything that must persist belongs in an always-loaded file. `AGENTS.md` is read natively since 2.1.277, but only as a fallback when no CLAUDE.md exists ⚠.
 
 `@path/to/file` inside CLAUDE.md inlines another file at load time (max 4 hops; escape with backticks to mention a path without importing it). Imports organize a long file but don't shrink it — imported files load at launch too.
 
 ### Rules files
+<!-- cc: rules.rules-files -->
 
 `.claude/rules/*.md` (project) and `~/.claude/rules/*.md` (personal) hold focused rule files:
 
@@ -230,10 +250,12 @@ Files load broad → specific and are **concatenated, never overridden**: manage
 Rules are discovered recursively, so subdirectory organization works. A symlinked rule whose target lies outside the project counts as an external import: it loads only after you approve external imports for the project, and then only if it has no `paths` (2.1.284+) ⚠. Keep cross-project rules in `~/.claude/rules/` instead.
 
 ### Auto memory
+<!-- cc: rules.auto-memory -->
 
 Claude Code keeps per-project memory in `~/.claude/projects/<project>/memory/`. The first 200 lines / 25 KB of `MEMORY.md` load every session; topic files load on demand. Keep `MEMORY.md` an index of one-line pointers and let the detail live in topic files.
 
 ### Settings precedence and permission rules
+<!-- cc: rules.settings -->
 
 `settings.json` resolves highest-to-lowest: **managed → command-line args → `.claude/settings.local.json` → `.claude/settings.json` → `~/.claude/settings.json`**.
 
@@ -247,10 +269,12 @@ Permissions **merge across levels** — a deny anywhere wins; no other level can
 Pair permission rules with hooks. In Manual mode an allowlist makes `uv run …` frictionless; in auto mode — the default starting mode since 2.1.283 — broad rules such as package-manager run commands are set aside and a classifier reviews those calls instead (on API and Enterprise billing its calls count toward your usage) ⚠. The hook that makes `pip install` impossible holds in every mode.
 
 ## 7. Hooks
+<!-- cc: hooks.overview -->
 
 Hooks are shell commands (or HTTP calls, MCP tool calls, prompts, or agents) that the harness executes at lifecycle events. They are the deterministic layer: instead of spending tokens instructing "always format with ruff," a `PostToolUse` hook formats every Write and Edit, every time, for free.
 
 ### Events ⚠
+<!-- cc: hooks.events -->
 
 Current builds document 33 events (the newest, `PreModelSwitch` / `PostModelSwitch`, arrived in 2.1.251); these are the workhorses:
 
@@ -270,6 +294,7 @@ Current builds document 33 events (the newest, `PreModelSwitch` / `PostModelSwit
 | `SessionEnd` | Session terminates | — (1.5 s default timeout) |
 
 ### Exit codes and JSON control
+<!-- cc: hooks.exit-codes -->
 
 - **Exit 0** — success; stdout may be plain text (becomes context on `SessionStart`/`UserPromptSubmit`) or structured JSON. JSON-looking output that fails to parse is a hook error (2.1.248+).
 - **Exit 2** — block, on blockable events. The message is your JSON `reason` if you give one, otherwise stderr; tool events and `Stop` show it to Claude, most other events only to the user.
@@ -278,6 +303,7 @@ Current builds document 33 events (the newest, `PreModelSwitch` / `PostModelSwit
 JSON on stdout unlocks finer control: universal fields (`continue`, `stopReason`, `systemMessage`; `suppressOutput` is still accepted but now does nothing) plus event-specific `hookSpecificOutput` — `permissionDecision` / `updatedInput` on `PreToolUse`, `updatedToolOutput` on `PostToolUse`, `additionalContext` for injected context. `decision` / `reason` stay top-level; a top-level `additionalContext` is silently ignored. Injected text — `additionalContext`, `systemMessage`, plain stdout — is capped at 10,000 characters per hook; the overflow arrives as a file path plus a short preview. Stop hooks receive `stop_hook_active: true` whenever Claude is already continuing because of a stop hook — **check it (or the transcript) to avoid blocking on a condition that can never resolve**; the 8-block cap is only the backstop.
 
 ### Handler types ⚠
+<!-- cc: hooks.handlers -->
 
 | Type | Runs | Default timeout |
 |---|---|---|
@@ -287,10 +313,12 @@ JSON on stdout unlocks finer control: universal fields (`continue`, `stopReason`
 | `http` / `mcp_tool` | POST to a URL / call an MCP tool | 600s |
 
 ### Configuration
+<!-- cc: hooks.configuration -->
 
 Hooks live in any settings level (user / project / local / managed — entries merge across levels), in plugins, and in **frontmatter**: a skill's hooks register when it's invoked and stay for the rest of the session (`once: true`, honored only there, removes one after its first successful run); an agent's hooks run only while that agent does. Per-hook fields: `matcher` (plain names or `A|B` lists match exactly; anything else is a regex over the event's field — tool name, session source, agent type), `if` (permission-rule syntax over tool arguments, e.g. `Bash(git *)`; honored only on tool events — elsewhere a hook with `if` never runs), `timeout`, `statusMessage`. `disableAllHooks: true` switches off user, project, local, and plugin hooks for debugging; managed hooks keep running unless it's set in managed settings.
 
 ### Patterns
+<!-- cc: hooks.patterns -->
 
 **1. Post-edit formatter** — `PostToolUse` on `Write|Edit`:
 
@@ -336,6 +364,7 @@ exit 0
 **4. Session context injection** — a `SessionStart` command hook whose stdout (sprint state, open tickets, environment status) is added to context — dynamic context without editing CLAUDE.md. Keep it under the 10,000-character cap.
 
 ### Pitfalls
+<!-- cc: hooks.pitfalls -->
 
 - `PostToolUse` runs *after* the edit — it can fix or report, not prevent. Pair it with a `Stop` gate for rules that must hold at turn end. A `Write|Edit` matcher also misses files that Bash or an outside process rewrites.
 - Blocking requires **exit 2** (stderr carries the message) or a JSON deny/block decision; exit 1 is a non-blocking error — the action proceeds.
@@ -347,12 +376,15 @@ exit 0
 - For Python hook logic, single-file scripts with inline dependency declarations (`uv run`) keep hook deps out of your project environment.
 
 ## 8. Running lean: the token-budget playbook
+<!-- cc: lean.overview -->
 
 ### Know your numbers first
+<!-- cc: lean.measure -->
 
 `/context` (what's loaded), `/usage` (session tokens and estimated cost — computed locally at list price, not your bill; `/cost` and `/stats` are aliases), `/doctor` (listing cost, plus unused skills, MCP servers, and plugins), `/skill-doctor` (per-skill cost and usage). The status line can render live `current_usage` including cache reads/writes. For continuous tracking: OpenTelemetry (`CLAUDE_CODE_ENABLE_TELEMETRY=1` plus an OTLP exporter and endpoint exports `claude_code.token.usage` and `claude_code.cost.usage`; set it in your shell, user, or managed settings — project and local settings ignore it since 2.1.282) or the community `ccusage` tool. Establish a baseline before optimizing anything.
 
 ### Session hygiene
+<!-- cc: lean.session-hygiene -->
 
 - **`/clear` between unrelated tasks** — stale history is pure input-token overhead. After two failed corrections on the same bug, `/clear` and re-prompt beats a polluted session.
 - **`/rewind` to abandon a wrong path** — truncates back to an earlier turn whose prefix is still cached; cheaper than compacting.
@@ -361,6 +393,7 @@ exit 0
 - **Plan mode is cache-friendly** (its instructions append after the cached prefix) but adds process overhead — if you can describe the diff in one sentence, skip the plan. Under `opusplan`, though, each plan-mode toggle is a model switch and a fresh cache.
 
 ### Caching: automatic, but don't fight it
+<!-- cc: lean.caching -->
 
 Claude Code caches in three layers (system prompt + tools / project context / conversation). Economics per MTok of base input: cache **reads cost 0.1×** on most models — **0.05× on Opus 5.5, 0.025× on Fable 5.1** — while 5-minute-TTL **writes cost 1.25×** and 1-hour writes 2×. A 5-minute write repays itself after one cache read, a 1-hour write after two. TTL depends on how you authenticate ⚠: **on a subscription, within your plan's included usage, the main conversation gets the 1-hour TTL automatically; subagents, compaction, and other background requests stay at 5 minutes, as does API-key and cloud-provider auth.** `ENABLE_PROMPT_CACHING_1H=1` requests 1 hour for everything, subagents included (at 2× writes); `promptCacheTtl` / `subagentPromptCacheTtl` set each bucket separately.
 
@@ -373,6 +406,7 @@ What invalidates the cache mid-session ⚠:
 The practical rule: **pick your model and server set at session start and leave them alone**, and front-load stable context.
 
 ### Model routing
+<!-- cc: lean.model-routing -->
 
 <!-- TODO(owner): decide the default-model stance in the first bullet below. Evidence as of 2026-10-03: the account default is now Opus 5.5 at medium effort; the costs docs still say Sonnet handles most coding and costs less; Opus 5.5 and Sonnet 5.5 charge the same $0.20/MTok for cached reads, so Sonnet saves only on output, cache writes, and fresh input (2x each). -->
 
@@ -399,6 +433,7 @@ List prices (October 2026, per MTok) ⚠:
 (Opus 5.5 and Sonnet 5.5 cost the same per cached-read token, so in a cache-heavy session Sonnet's discount applies only to output, writes, and fresh input. Claude models from 4.7 on use a tokenizer that yields roughly 30% more tokens for the same text, so per-token comparisons with older models such as Haiku 4.5 understate the gap. Batch API runs at 50% of list.)
 
 ### MCP hygiene
+<!-- cc: lean.mcp -->
 
 - Tool schemas are **deferred by default**: only tool names and server instructions load upfront; full schemas load on demand via tool search. `ENABLE_TOOL_SEARCH` tunes this (`auto` = load schemas upfront while they total under 10% of the window — up to ~100K tokens on a 1M window, so prefer the default or a small `auto:N`; `false` = all upfront; per-server `alwaysLoad: true` exempts a server). Deferral falls back to upfront loading when `ANTHROPIC_BASE_URL` points at a non-first-party host; `ENABLE_TOOL_SEARCH=true` overrides that ⚠.
 - `MAX_MCP_OUTPUT_TOKENS` (default 25,000) caps tool-result size; oversized non-image results are written to disk and referenced instead of inlined.
@@ -406,6 +441,7 @@ List prices (October 2026, per MTok) ⚠:
 - Prefer a CLI (`gh`, `aws`, `gcloud`) over an equivalent MCP server — a CLI has zero schema cost, and Bash permission rules can match its arguments, whereas settings-file rules can't match an MCP tool's parameters.
 
 ### Scale ceremony to task size
+<!-- cc: lean.ceremony -->
 
 A full Goal → Brainstorm → Spec → Plan → TDD → Subagents → Review → Verify pipeline earns its cost on large, ambiguous work and burns tokens on small fixes. Per-phase:
 
@@ -427,6 +463,7 @@ In practice this collapses into three paths:
 - **Full** (large, ambiguous, cross-cutting): the whole pipeline, with the spec written in one session and implementation started fresh from the spec file — planning residue is context you don't want to pay for during execution.
 
 ### Guard expensive operations
+<!-- cc: lean.expensive-ops -->
 
 For anything costly to recompute — long test suites, big builds, simulations, model training, data pulls:
 
@@ -435,5 +472,6 @@ For anything costly to recompute — long test suites, big builds, simulations, 
 - **Verify from saved output** — a skill instruction like "read the saved results file; do not re-run the job" plus a hook blocking the run command makes the cheap path the default and the expensive path deliberate.
 
 ## Further reading
+<!-- cc: reading.overview -->
 
 Official documentation (all under `code.claude.com/docs/en/`; append `.md` to any page for raw markdown, and `llms.txt` indexes them all): `skills`, `sub-agents`, `hooks` and `hooks-guide`, `memory` (CLAUDE.md, rules, auto-memory), `settings`, `permissions`, `permission-modes`, `model-config`, `advisor`, `context-window`, `prompt-caching`, `costs`, `monitoring-usage`, `mcp`, `fast-mode`, `changelog`. Current API pricing: `platform.claude.com/docs/en/about-claude/pricing`. The Haiku 4.5 SWE-bench figure is from Anthropic's launch post, `anthropic.com/news/claude-haiku-4-5`.

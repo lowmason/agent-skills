@@ -69,3 +69,24 @@ def iter_code_blocks(text: str,
             continue
         body.append(line)
     return out
+
+
+def fenced_lines(text: str) -> set[int]:
+    '''1-based numbers of the lines that open, close, or sit inside a fenced block.
+
+    Same matching rule as strip_fenced_blocks; an unclosed fence runs to the end.
+    '''
+    out: set[int] = set()
+    open_len: int | None = None
+    for i, line in enumerate(text.split('\n'), start=1):
+        if open_len is None:
+            m = FENCE_OPEN_RE.match(line)
+            if m:
+                open_len = len(m.group(1))
+                out.add(i)
+            continue
+        out.add(i)
+        stripped = line.strip()
+        if stripped.startswith('`' * open_len) and set(stripped) == {'`'}:
+            open_len = None
+    return out

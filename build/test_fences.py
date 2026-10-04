@@ -36,3 +36,15 @@ def test_strip_fenced_blocks_still_works():
     '''Moved verbatim from check_frontmatter.py; pinned here so the move is
     provably behaviour-preserving.'''
     assert fences.strip_fenced_blocks('a\n```\nb\n```\nc') == 'a\nc'
+
+
+def test_fenced_lines_cover_opener_body_and_closer():
+    text = '# Title\n```bash\n# not a heading\n```\n## After\n'
+    assert fences.fenced_lines(text) == {2, 3, 4}
+
+
+def test_fenced_lines_follow_the_closing_rule():
+    '''A ``` line inside a ````markdown fence is content: only the four-backtick
+    line closes it, so lines 1-5 are fenced and line 6 is not.'''
+    text = '````markdown\n```python\nx = 1\n```\n````\nafter\n'
+    assert fences.fenced_lines(text) == {1, 2, 3, 4, 5}

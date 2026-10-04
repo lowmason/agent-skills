@@ -1,5 +1,7 @@
 # Claude Code Guide Conformance Implementation Plan
 
+**Status: COMPLETE (2026-10-04)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 > **Where this runs.** This plan is committed on local `main` and is not pushed.
@@ -86,7 +88,7 @@ Scratch files (`insert_anchors.py`, `regrep.py`, `words_unchanged.py`, the audit
   - `class Violation(NamedTuple): file: str; check: str; section: str; message: str; value: int | None = None; waivable: bool = True`, with `render() -> str` returning `'<file>: <check> (<section>): <message>'`. `waivable` is False when a check could not evaluate the file; Task 7's waivers never hide such a violation.
   - `guide_sections(text: str, path: str) -> tuple[list[Section], list[Violation]]`.
 
-- [ ] **Step 1: Write the failing fence tests.** Append to `build/test_fences.py`:
+- [x] **Step 1: Write the failing fence tests.** Append to `build/test_fences.py`:
 
 ````python
 def test_fenced_lines_cover_opener_body_and_closer():
@@ -101,7 +103,7 @@ def test_fenced_lines_follow_the_closing_rule():
     assert fences.fenced_lines(text) == {1, 2, 3, 4, 5}
 ````
 
-- [ ] **Step 2: Write the failing conformance tests.** Create `build/test_check_conformance.py`:
+- [x] **Step 2: Write the failing conformance tests.** Create `build/test_check_conformance.py`:
 
 ````python
 '''Tests for check_conformance.py, the Claude Code guide conformance lint.
@@ -189,7 +191,7 @@ def test_real_guide_carries_the_drift_r11_anchors():
     assert [s.id for s in sections] == R11_IDS
 ````
 
-- [ ] **Step 3: Run both files; confirm RED.**
+- [x] **Step 3: Run both files; confirm RED.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance/build && uv run --python 3.13 --with pytest python -m pytest -q test_fences.py`
 Expected: `2 failed`, each `AttributeError: module 'fences' has no attribute 'fenced_lines'`; the file's baseline tests still pass.
@@ -197,7 +199,7 @@ Expected: `2 failed`, each `AttributeError: module 'fences' has no attribute 'fe
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance/build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_conformance.py`
 Expected: `1 error during collection`: `ModuleNotFoundError: No module named 'check_conformance'`.
 
-- [ ] **Step 4: Implement `fenced_lines`.** Append to `build/fences.py`:
+- [x] **Step 4: Implement `fenced_lines`.** Append to `build/fences.py`:
 
 ```python
 def fenced_lines(text: str) -> set[int]:
@@ -221,7 +223,7 @@ def fenced_lines(text: str) -> set[int]:
     return out
 ```
 
-- [ ] **Step 5: Create `build/check_conformance.py`** with exactly:
+- [x] **Step 5: Create `build/check_conformance.py`** with exactly:
 
 ````python
 #!/usr/bin/env python3
@@ -304,7 +306,7 @@ def guide_sections(text: str, path: str) -> tuple[list[Section], list[Violation]
     return sections, out
 ````
 
-- [ ] **Step 6: Run both files; only the real-guide pin is red.**
+- [x] **Step 6: Run both files; only the real-guide pin is red.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance/build && uv run --python 3.13 --with pytest python -m pytest -q test_fences.py`
 Expected: no failures; passed is the file's baseline +2.
@@ -312,7 +314,7 @@ Expected: no failures; passed is the file's baseline +2.
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance/build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_conformance.py`
 Expected: `1 failed, 5 passed`. The failure is `test_real_guide_carries_the_drift_r11_anchors`: `rendered(violations) == []` fails with 38 items. The first is `specs/guides/claude-code-customization-guide.md: anchor (-): line 7: heading '## 1. The organizing constraint: context' has no anchor on its next line`.
 
-- [ ] **Step 7: Insert the anchors.** Create `.sdd/35-claude-code-guide-conformance/insert_anchors.py` (the directory is gitignored). It refuses to write unless the guide's 38 headings match R1.1's section texts in order:
+- [x] **Step 7: Insert the anchors.** Create `.sdd/35-claude-code-guide-conformance/insert_anchors.py` (the directory is gitignored). It refuses to write unless the guide's 38 headings match R1.1's section texts in order:
 
 ```python
 '''One-off for plan 35 Task 1: add drift R1.1's anchors to the guide.
@@ -392,12 +394,12 @@ Expected: `inserted 38 anchors`. A second run prints `the guide already carries 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance && git diff --numstat -- specs/guides/`
 Expected: `38	0	specs/guides/claude-code-customization-guide.md`: 38 insertions and no deletions (R1.1: no other edit to the guide).
 
-- [ ] **Step 8: Run the new file again; all green.**
+- [x] **Step 8: Run the new file again; all green.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance/build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_conformance.py`
 Expected: `6 passed`. With Step 6's `test_fences.py` run, the build suite is now +8 over baseline: +2 in `test_fences.py` and +6 in `test_check_conformance.py`.
 
-- [ ] **Step 9: Commit.**
+- [x] **Step 9: Commit.**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance && [ "$(git branch --show-current)" = feat/cc-guide-conformance ] && git add build/fences.py build/test_fences.py build/check_conformance.py build/test_check_conformance.py specs/guides/claude-code-customization-guide.md && git commit -m "feat(build): anchor the Claude Code guide's 38 sections
@@ -440,7 +442,7 @@ The register's kinds map is R2.3's initial table, with every `skills.*`-style sh
 - A `[[check]]`'s `kind` may be a list. Both hook checks scan `hook` and `settings`, and `no-haiku-skill-model` covers skills and commands.
 - `[unmapped]` keys are quoted (`'rules.overview' = …`), because a bare dotted key would make a nested table.
 
-- [ ] **Step 1: Write the failing tests.** In `build/test_check_conformance.py`, replace the import line
+- [x] **Step 1: Write the failing tests.** In `build/test_check_conformance.py`, replace the import line
 
 ```python
 import check_conformance as cc
@@ -666,12 +668,12 @@ def test_real_register_maps_every_anchor():
     assert rendered(cc.section_violations(reg, [s.id for s in sections])) == []
 ````
 
-- [ ] **Step 2: Run; confirm RED.**
+- [x] **Step 2: Run; confirm RED.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance/build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_conformance.py`
 Expected: `10 failed, 6 passed`. Each failure is an `AttributeError` on the attribute the test reaches first: `REGISTER` ×2, `SetupError` ×3, `load_register` ×1, `parse_register` ×4.
 
-- [ ] **Step 3: Create the register skeleton** `build/cc_guide/conformance.toml`:
+- [x] **Step 3: Create the register skeleton** `build/cc_guide/conformance.toml`:
 
 ```toml
 # Claude Code guide conformance register.
@@ -906,7 +908,7 @@ rule = 'Descriptions stay within the listing cap; the repo enforces the stricter
 enforced_by = 'check_frontmatter'
 ```
 
-- [ ] **Step 4: Implement the register layer.** In `build/check_conformance.py`, replace
+- [x] **Step 4: Implement the register layer.** In `build/check_conformance.py`, replace
 
 ```python
 import re
@@ -1111,12 +1113,17 @@ def section_violations(reg: Register, anchors: list[str]) -> list[Violation]:
     return out
 ```
 
-- [ ] **Step 5: Run; all green.**
+> Deviation: on the owner's call (review finding T2-I1, 2026-10-04), `load_register` and
+> `load_guide` read with `encoding='utf-8'`. Under a Latin-1 locale the default decoding
+> accepted any bytes, so the non-UTF-8 tests did not raise `SetupError`. Fix round 1,
+> 281da10; tests unchanged.
+
+- [x] **Step 5: Run; all green.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance/build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_conformance.py`
 Expected: `16 passed` (+10). `test_real_register_maps_every_anchor` proves the skeleton maps all 38 anchors, with the kinds and `[unmapped]` disjoint.
 
-- [ ] **Step 6: Commit.**
+- [x] **Step 6: Commit.**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance && [ "$(git branch --show-current)" = feat/cc-guide-conformance ] && git add build/cc_guide/conformance.toml build/check_conformance.py build/test_check_conformance.py && git commit -m "feat(build): add the conformance register skeleton and its integrity rules
@@ -1154,7 +1161,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `check_agent_fields`, `check_readonly_agent_tools` and `check_bash_search_tools`.
   - In the test file: `git_repo(root, files)`, `AGENT_PARAMS` and `READ_ONLY`.
 
-- [ ] **Step 1: Write the failing tests.** In `build/test_check_conformance.py`, replace
+- [x] **Step 1: Write the failing tests.** In `build/test_check_conformance.py`, replace
 
 ```python
 import tomllib
@@ -1303,12 +1310,12 @@ def test_bash_search_tools_flag_grep_or_glob_beside_bash(tmp_path):
     ]
 ````
 
-- [ ] **Step 2: Run; confirm RED.**
+- [x] **Step 2: Run; confirm RED.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance/build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_conformance.py`
 Expected: `9 failed, 16 passed`, all `AttributeError`: `git_env` ×1, `kind_files` ×1, `check_agent_fields` ×3, `check_readonly_agent_tools` ×2, `check_bash_search_tools` ×2.
 
-- [ ] **Step 3: Implement.** In `build/check_conformance.py`, replace
+- [x] **Step 3: Implement.** In `build/check_conformance.py`, replace
 
 ```python
 import re
@@ -1467,12 +1474,15 @@ def check_bash_search_tools(root: Path, files: list[str], params: dict) -> list[
     return out
 ```
 
-- [ ] **Step 4: Run; all green.**
+> Deviation: `read_artifacts` reads with `encoding='utf-8'`, on the owner's Task 2 call
+> (T2-I1), applied at implementation in c6ae014. Tests unchanged.
+
+- [x] **Step 4: Run; all green.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance/build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_conformance.py`
 Expected: `25 passed` (+9).
 
-- [ ] **Step 5: Commit.**
+- [x] **Step 5: Commit.**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance && [ "$(git branch --show-current)" = feat/cc-guide-conformance ] && git add build/check_conformance.py build/test_check_conformance.py && git commit -m "feat(build): match conformance kinds to kept files; add the agent checks
@@ -1508,7 +1518,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 `hook-dir-quoted` reports a JSON block that does not parse, as R3.4 requires. The finding is unwaivable, so a waiver on the file can neither hide it nor be kept alive by it (Task 7). `stop-hook-guard` skips such a block, so the failure is reported once. A Stop command resolves to a script by the basename of its first `shlex.split` word, looked up among the `.sh` and `.py` files the check was given.
 
-- [ ] **Step 1: Write the failing tests.** In `build/test_check_conformance.py`, replace
+- [x] **Step 1: Write the failing tests.** In `build/test_check_conformance.py`, replace
 
 ```python
 import subprocess
@@ -1616,12 +1626,12 @@ def test_stop_hook_guard_flags_an_unguarded_or_unresolvable_script(tmp_path):
     ]
 ````
 
-- [ ] **Step 2: Run; confirm RED.**
+- [x] **Step 2: Run; confirm RED.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance/build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_conformance.py`
 Expected: `14 failed, 25 passed`, all `AttributeError`: `unquoted_var_uses` ×8 (the parametrized cases), `check_hook_dir_quoted` ×4, `check_stop_hook_guard` ×2.
 
-- [ ] **Step 3: Implement.** In `build/check_conformance.py`, replace
+- [x] **Step 3: Implement.** In `build/check_conformance.py`, replace
 
 ```python
 import os
@@ -1753,12 +1763,12 @@ def check_stop_hook_guard(root: Path, files: list[str], params: dict) -> list[Fi
     return out
 ````
 
-- [ ] **Step 4: Run; all green.**
+- [x] **Step 4: Run; all green.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance/build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_conformance.py`
 Expected: `39 passed` (+14).
 
-- [ ] **Step 5: Commit.**
+- [x] **Step 5: Commit.**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance && [ "$(git branch --show-current)" = feat/cc-guide-conformance ] && git add build/check_conformance.py build/test_check_conformance.py && git commit -m "feat(build): add the hook-dir-quoted and stop-hook-guard checks
@@ -1791,7 +1801,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 `claude-md-size` counts newline characters, exactly as `wc -l` does, because Task 9 measures with `wc -l`; `str.splitlines` would also break on form feeds and Unicode line separators. It passes below `limit` ("fewer than 200"). `rule-paths` follows a `.claude/rules/` symlink only when it resolves inside the repo.
 
-- [ ] **Step 1: Write the failing tests.** In `build/test_check_conformance.py`, replace
+- [x] **Step 1: Write the failing tests.** In `build/test_check_conformance.py`, replace
 
 ```python
 import json
@@ -1852,12 +1862,12 @@ def test_rule_paths_flag_missing_paths_always_on_paths_and_outside_links(tmp_pat
     ]
 ````
 
-- [ ] **Step 2: Run; confirm RED.**
+- [x] **Step 2: Run; confirm RED.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance/build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_conformance.py`
 Expected: `5 failed, 39 passed`, all `AttributeError`: `check_claude_md_size` ×3, `check_rule_paths` ×2.
 
-- [ ] **Step 3: Implement.** Append to `build/check_conformance.py`:
+- [x] **Step 3: Implement.** Append to `build/check_conformance.py`:
 
 ```python
 def check_claude_md_size(root: Path, files: list[str], params: dict) -> list[Finding]:
@@ -1895,12 +1905,17 @@ def check_rule_paths(root: Path, files: list[str], params: dict) -> list[Finding
     return out
 ```
 
-- [ ] **Step 4: Run; all green.**
+> Deviation: on the owner's call (review finding T5-I1, 2026-10-04), a rule link whose
+> target does not exist is an unwaivable finding (`waivable=False`), as the plan's contract
+> has it for a file a check cannot evaluate, and the outside-links test gained a dangling
+> `.claude/rules/gone.md` link. Fix round 1, 85ff48a; counts unchanged.
+
+- [x] **Step 4: Run; all green.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance/build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_conformance.py`
 Expected: `44 passed` (+5).
 
-- [ ] **Step 5: Commit.**
+- [x] **Step 5: Commit.**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance && [ "$(git branch --show-current)" = feat/cc-guide-conformance ] && git add build/check_conformance.py build/test_check_conformance.py && git commit -m "feat(build): add the claude-md-size and rule-paths checks
@@ -1934,7 +1949,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `main(root: Path = REPO) -> int`: prints and returns 0/1, or prints the `SetupError` to stderr and returns 2.
   - In the test file: `fixture_repo(tmp_path, files=None, register=FIXTURE_REGISTER)` and `GREP_BESIDE_BASH`.
 
-- [ ] **Step 1: Write the failing tests.** Append to `build/test_check_conformance.py`:
+- [x] **Step 1: Write the failing tests.** Append to `build/test_check_conformance.py`:
 
 ````python
 def fixture_repo(tmp_path, files=None, register=FIXTURE_REGISTER):
@@ -2019,12 +2034,12 @@ enforced_by = 'check_frontmatter'
         f'{cc.REGISTER}: duplicate-id (-): check ID known-agent-tools appears 2 times']
 ````
 
-- [ ] **Step 2: Run; confirm RED.**
+- [x] **Step 2: Run; confirm RED.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance/build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_conformance.py`
 Expected: `8 failed, 44 passed`, all `AttributeError`: `main` ×4, `run` ×4.
 
-- [ ] **Step 3: Implement.** In `build/check_conformance.py`, replace the module docstring's last paragraph
+- [x] **Step 3: Implement.** In `build/check_conformance.py`, replace the module docstring's last paragraph
 
 ```python
 governs, to mechanical checks, and to recorded exceptions. Design:
@@ -2162,12 +2177,12 @@ if __name__ == '__main__':
     sys.exit(main())
 ```
 
-- [ ] **Step 4: Run; all green.**
+- [x] **Step 4: Run; all green.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance/build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_conformance.py`
 Expected: `52 passed` (+8).
 
-- [ ] **Step 5: Run the lint on the repo; record the day-one output.** It must exit 1 with exactly these 11 lines (R5.2's mechanical findings), with the CLAUDE.md count as measured:
+- [x] **Step 5: Run the lint on the repo; record the day-one output.** It must exit 1 with exactly these 11 lines (R5.2's mechanical findings), with the CLAUDE.md count as measured:
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance && uv run --python 3.13 --with pyyaml python build/check_conformance.py; echo "exit=$?"`
 Expected:
@@ -2189,7 +2204,7 @@ exit=1
 
 Any other line is a finding to stop on and report, not to fix.
 
-- [ ] **Step 6: Commit.**
+- [x] **Step 6: Commit.**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance && [ "$(git branch --show-current)" = feat/cc-guide-conformance ] && git add build/check_conformance.py build/test_check_conformance.py && git commit -m "feat(build): wire the conformance checks into run and main
@@ -2223,7 +2238,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 An exception waives only when its `id`, `check` and `artifacts` are all usable. A malformed one still reports its field problems. Waivers match per (check, file), however many violations the file holds (R3.3 rule 4). An unwaivable violation (Tasks 3–4: a file or JSON block the check could not read or parse) always prints, and never makes a waiver on its file look stale. Nor does a check that did not run, because a malformed parameter or kind stopped it: R3.3's stale rule assumes the check evaluated the file.
 
-- [ ] **Step 1: Write the failing tests.** Append to `build/test_check_conformance.py`:
+- [x] **Step 1: Write the failing tests.** Append to `build/test_check_conformance.py`:
 
 ````python
 def toml_value(value):
@@ -2380,12 +2395,12 @@ def test_exception_field_rules(tmp_path, changes, expected):
     assert cc.run(root) == expected
 ````
 
-- [ ] **Step 2: Run; confirm RED.**
+- [x] **Step 2: Run; confirm RED.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance/build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_conformance.py`
 Expected: `26 failed, 52 passed`. Every failure is an `AssertionError` list mismatch: `run` ignores `[[exception]]` until Step 3, so the waived violation still prints and the field and staleness lines are missing. `test_valid_exceptions_pass` must fail too, on the unwaived `bash-search-tools` line. If it passes, it has gone vacuous: see Global Constraints, "Test-first".
 
-- [ ] **Step 3: Implement.** In `build/check_conformance.py`, insert immediately before the line `def run(root: Path) -> list[str]:`:
+- [x] **Step 3: Implement.** In `build/check_conformance.py`, insert immediately before the line `def run(root: Path) -> list[str]:`:
 
 ```python
 class ExceptionEntry(NamedTuple):
@@ -2567,7 +2582,7 @@ with
     return sorted(v.render() for v in out)
 ```
 
-- [ ] **Step 4: Run; all green.**
+- [x] **Step 4: Run; all green.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance/build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_conformance.py`
 Expected: `78 passed` (+26).
@@ -2590,12 +2605,12 @@ hooks/README.md: hook-dir-quoted (hooks.patterns): JSON block at line 51: Stop c
 exit=1
 ```
 
-- [ ] **Step 5: Full build suite.**
+- [x] **Step 5: Full build suite.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance/build && uv run --python 3.13 --with pytest --with numpy --with polars --with pyyaml python -m pytest -q`
 Expected: the baseline's failures and skips unchanged, and passed +80 over baseline.
 
-- [ ] **Step 6: Commit.**
+- [x] **Step 6: Commit.**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance && [ "$(git branch --show-current)" = feat/cc-guide-conformance ] && git add build/check_conformance.py build/test_check_conformance.py && git commit -m "feat(build): add conformance exceptions and both-way waivers
@@ -2627,7 +2642,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Consumes: the day-one lint output (Task 6 Step 5); the register (Task 2).
 - Produces: the report. Row IDs are stable: `L-01`…`L-11` for the lint lines in their sorted order, and per seat `S-nn` (skills), `A-nn` (agents and commands), `H-nn` (hooks, rules, settings), `C-nn` (CLAUDE.md, installer) and `O-nn` (outside the repo). A seat's guide notes take IDs in its own sequence. Task 9 decides on rows by ID, and Task 11 cites them as `evidence`. Rows whose quotes failed the re-grep are listed as unverified and are never decided or cited.
 
-- [ ] **Step 1: Record the mechanical findings.** Run the lint and number its lines in output order:
+- [x] **Step 1: Record the mechanical findings.** Run the lint and number its lines in output order:
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance && uv run --python 3.13 --with pyyaml python build/check_conformance.py | nl -w1 -s' '`
 Expected: the 11 lines of Task 6 Step 5. They become:
@@ -2635,9 +2650,9 @@ Expected: the 11 lines of Task 6 Step 5. They become:
 - `L-02`–`L-08`: `bash-search-tools` on the 7 agents, alphabetical.
 - `L-09`–`L-11`: `hook-dir-quoted` on `hooks/README.md` (PostToolUse, PreToolUse, Stop).
 
-- [ ] **Step 2: Resolve the inputs the seats need.** Run `git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance worktree list`. Its first line is the main checkout, whose `.claude/settings.local.json` R5.3 names. Record that absolute path for seat H.
+- [x] **Step 2: Resolve the inputs the seats need.** Run `git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance worktree list`. Its first line is the main checkout, whose `.claude/settings.local.json` R5.3 names. Record that absolute path for seat H.
 
-- [ ] **Step 3: Dispatch the four seats in parallel**, in one message with four `Agent` calls: `subagent_type: 'code-reviewer'`, `model: 'sonnet'` on every call, and a description naming the seat. Fill this template once per seat from the table below, and fill `<LINT_ROWS>` with Step 1's lines as `L-nn | check | file | message`, one per line. `code-reviewer`'s frontmatter keeps `effort: xhigh`, which the Agent tool cannot override, so expect a few dollars per seat.
+- [x] **Step 3: Dispatch the four seats in parallel**, in one message with four `Agent` calls: `subagent_type: 'code-reviewer'`, `model: 'sonnet'` on every call, and a description naming the seat. Fill this template once per seat from the table below, and fill `<LINT_ROWS>` with Step 1's lines as `L-nn | check | file | message`, one per line. `code-reviewer`'s frontmatter keeps `effort: xhigh`, which the Agent tool cannot override, so expect a few dollars per seat.
 
 ```text
 You are one seat of a four-seat audit of this repo's Claude Code artifacts against
@@ -2699,7 +2714,7 @@ Do not propose fixes. Do not judge the guide's own correctness beyond noting it 
 | Hooks, rules, settings (`H`; outside files `O`) | `hooks.overview`, `hooks.events`, `hooks.exit-codes`, `hooks.handlers`, `hooks.configuration`, `hooks.patterns`, `hooks.pitfalls`, `mechanisms.overview`, `rules.rules-files`, `rules.hierarchy`, `rules.settings`, `lean.model-routing`; for the `O` table only, also `rules.claude-md`, `context.overview` and `lean.session-hygiene`, applied to `~/.claude/CLAUDE.md` | `hooks/*.sh`, `hooks/*.py` except `hooks/test_*.py`, `hooks/README.md`, `rules/*.md`, `.claude/rules/*.md`, `.claude/settings.json` | R5.7 candidates. `enforceAvailableModels` is set in project settings, while `lean.model-routing` places its effect in managed settings. The guard is stdlib-only with no dependencies, against `hooks.pitfalls`' advice on `uv` inline deps. At `hooks/README.md:121` the guard's install command leaves `$HOME` unquoted. Ignore the section's `TODO(owner)` bullet. **Also, in a separate `O` table**, read by absolute path (R5.3): `~/.claude/CLAUDE.md`, `~/.claude/settings.json`, `~/.claude/rules/*`, and `<MAIN_CHECKOUT>/.claude/settings.local.json`. For these four: paraphrase only, give no quotes and no tsv lines, and never reproduce a value that looks like a credential (token, key, password, URL with credentials). R5.7 outside candidates: the AWS rule has no `paths`; `settings.local.json` allows `Bash(pip install *)` |
 | CLAUDE.md and installer (`C`) | `rules.claude-md`, `rules.hierarchy`, `context.overview`, `lean.session-hygiene`, `skills.locations`, `subagents.overview`, `commands.overview`; plus `mechanisms.overview` (not mapped to claude-md today), and the seven `[unmapped]` sections (`rules.overview`, `lean.overview`, `rules.auto-memory`, `lean.measure`, `lean.caching`, `lean.mcp`, `reading.overview`): confirm each governs no repo file, or name the file and kind | `CLAUDE.md`, `build/CLAUDE.md`, `install.py`; `AGENTS.md` and `GEMINI.md` only for how they reach CLAUDE.md | R5.7 candidates. CLAUDE.md's length against `rules.claude-md` (already `L-01`: cite it, don't repeat it). Its "run before committing" lints are prose where `mechanisms.overview` would use a hook |
 
-- [ ] **Step 4: Re-grep every quote (R5.2).** Save each seat's raw report under `.sdd/35-claude-code-guide-conformance/audit/<prefix>.md`. Concatenate the four `tsv` blocks into `.sdd/35-claude-code-guide-conformance/audit/quotes.tsv`, and create `.sdd/35-claude-code-guide-conformance/audit/regrep.py`:
+- [x] **Step 4: Re-grep every quote (R5.2).** Save each seat's raw report under `.sdd/35-claude-code-guide-conformance/audit/<prefix>.md`. Concatenate the four `tsv` blocks into `.sdd/35-claude-code-guide-conformance/audit/quotes.tsv`, and create `.sdd/35-claude-code-guide-conformance/audit/regrep.py`:
 
 ```python
 '''Re-grep the audit's quotes (plan 35, R5.2). Scratch only; never committed.
@@ -2738,7 +2753,7 @@ sys.exit(1 if failed else 0)
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance && uv run --python 3.13 python .sdd/35-claude-code-guide-conformance/audit/regrep.py < .sdd/35-claude-code-guide-conformance/audit/quotes.tsv`
 Expected: exit 0 and `N of N quotes verified` on stderr. Otherwise each stdout line is a failing quote: row ID, file, reason, quote. A row with a failing quote is discarded from the findings and listed as unverified, the refresh's rule (drift R8.8 step 1). Never repair or substitute quote text. Record each failing line for the report's "Unverified rows" section, delete every `quotes.tsv` line of that row, and rerun until it exits 0. Only verified rows enter the findings.
 
-- [ ] **Step 5: Write the report** `specs/claude-code-conformance-audit-<YYYY-MM-DD>.md` with these sections, in order:
+- [x] **Step 5: Write the report** `specs/claude-code-conformance-audit-<YYYY-MM-DD>.md` with these sections, in order:
   1. **Header:** date; worktree `HEAD` SHA; the guide at 2.1.288; method (R5.2); the four seats (agent `code-reviewer`, model `sonnet`); quotes re-grepped (`N of N verified`) and the count of rows discarded as unverified.
   2. **Mechanical findings:** `L-01`–`L-11`, each as `ID | check | section | file | message`.
   3. **Findings by group:** the four seat tables as returned, minus unverified rows, rows keeping their IDs.
@@ -2752,7 +2767,11 @@ Expected: exit 0 and `N of N quotes verified` on stderr. Otherwise each stdout l
 
 Quotes appear only from the guide and the repo's own files. No docs text is committed.
 
-- [ ] **Step 6: Commit.**
+> Deviation: in row O-12 the controller paraphrased three words the seat had quoted from
+> `~/.claude/CLAUDE.md`, outside the repo, under this step's quote rule; the report's §8
+> records it. No other seat text changed.
+
+- [x] **Step 6: Commit.**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance && [ "$(git branch --show-current)" = feat/cc-guide-conformance ] && git add specs/claude-code-conformance-audit-*.md && git commit -m "docs(specs): record the Claude Code guide conformance audit
@@ -2787,14 +2806,14 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - The routing of each guide note.
   - The list of deferred items to log at completion.
 
-- [ ] **Step 1: Measure CLAUDE.md now** (the user asked for gate-time figures):
+- [x] **Step 1: Measure CLAUDE.md now** (the user asked for gate-time figures):
   - `wc -l < /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance/CLAUDE.md` gives `L`, the worktree's length.
   - `git -C /Users/lowell/Projects/agent-skills show main:CLAUDE.md | wc -l` gives `M`, main's length.
   - `git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance show $(git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance merge-base main HEAD):CLAUDE.md | wc -l` gives `B`, the length at the worktree's base.
   - `G = M − B` is main's CLAUDE.md growth since the worktree was cut, and `P = L + G` is the length a merge into main would give, absent conflicts. While main has not touched CLAUDE.md, `G = 0` and `P = L`. Tasks 10 and 14 use `G` and `P` as defined here.
   - For each of `codex/recommend-causal-design` and `worktree-deferred-triage-2026-10-03`, first check that the branch still exists: `git -C /Users/lowell/Projects/agent-skills rev-parse --verify --quiet refs/heads/<branch>`. If that prints nothing, report "branch gone: if it merged, `M` already counts it" and skip the branch. Otherwise check whether it is merged: `git -C /Users/lowell/Projects/agent-skills merge-base --is-ancestor <branch> main && echo merged || echo unmerged`. If it is unmerged, measure its CLAUDE.md delta: `git -C /Users/lowell/Projects/agent-skills diff --numstat $(git -C /Users/lowell/Projects/agent-skills merge-base main <branch>) <branch> -- CLAUDE.md`. On 2026-10-04 they were +1 and +3 net.
 
-- [ ] **Step 2: Present the batch.**
+- [x] **Step 2: Present the batch.**
   - **(a) Each gap or deviation candidate**, in a table: `row ID(s) | artifact | section | fact/advice | audit status | proposed type | proposed destination or revisit`.
     - Group rows by root cause, as R2.7 does: one entry per cause, not per file.
     - Propose R5.5's default destinations: the three known drifts go to drift Stage 3; `check_frontmatter.py` findings to portability Stage A; `writing-skills` findings to portability Stage D; anything else to a deferred item, flagged for `/deferred` when it is a quick fix.
@@ -2815,7 +2834,11 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - **(e) Outside the repo:** the `O` rows, for the owner's information. Ask only whether any should become a deferred item for the owner. This plan edits none of them (Decision 13).
   - **(f) Guide notes** (the spec's Purpose: a finding that the guide itself is wrong goes to the owner, and to drift's `verify` once that exists). For each note, the owner chooses a deferred item to run `/cc-guide verify <section id>` (drift R8.5) once drift lands, or no action. Nothing edits the guide here, since the scope fence allows only Task 1's anchors, and nothing enters the register.
 
-- [ ] **Step 3: Record the answers** under "Owner decisions" in the report. Write one line per decision: the row IDs, the type, the reason, the revisit trigger or destination, the CLAUDE.md choice with `L`, `G`, `P` and the ceiling, the map changes, each guide note's routing, and the deferred-item list. For a corrected row, also append `(owner: <status>, see Owner decisions)` to its row in the group table; never rewrite the seat's text. Add the date. Then commit:
+> Deviation: after the batch was presented, the owner asked for the questions to be put
+> interactively, so the gate was decided in AskUserQuestion rounds. The owner chose every
+> answer; the controller chose none.
+
+- [x] **Step 3: Record the answers** under "Owner decisions" in the report. Write one line per decision: the row IDs, the type, the reason, the revisit trigger or destination, the CLAUDE.md choice with `L`, `G`, `P` and the ceiling, the map changes, each guide note's routing, and the deferred-item list. For a corrected row, also append `(owner: <status>, see Owner decisions)` to its row in the group table; never rewrite the seat's text. Add the date. Then commit:
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance && [ "$(git branch --show-current)" = feat/cc-guide-conformance ] && git add specs/claude-code-conformance-audit-*.md && git commit -m "docs(specs): record the owner's conformance gate decisions
@@ -2830,6 +2853,10 @@ Plan 35, Task 9.
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
+
+> Deviation: the Step 3 commit (c6b7313) also corrected a sentence of the report's §2,
+> written at Task 8: four checks found nothing, and `claude-md-size` passed
+> `build/CLAUDE.md`, where §2 had said the other five checks found nothing.
 
 ---
 
@@ -2846,7 +2873,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 The method is lossless reformatting, never rewording. Each candidate below joins a hard-wrapped paragraph or a `\`-continued command into one line. Other sections, and many commands in the same block, already use single long lines, and Markdown renders a soft-wrapped paragraph the same. None of the candidates touches a region the unmerged branches edit. Apply them in order until `wc -l` ≤ 225 − `G`. On `54fc246` (`L` = 238, `G` = 0), U1 and U2 together save 13 and reach exactly 225. The candidates total 24 lines; if they run out first, stop and take the figures back to the owner.
 
-- [ ] **Step 1: Write the check.** Create `.sdd/35-claude-code-guide-conformance/words_unchanged.py`:
+- [x] **Step 1: Write the check.** Create `.sdd/35-claude-code-guide-conformance/words_unchanged.py`:
 
 ```python
 '''Exit 0 when CLAUDE.md's word sequence equals HEAD's, lone backslashes
@@ -2870,7 +2897,7 @@ if words(head) != words(now):
 print(f'word sequence unchanged; {len(head.splitlines())} -> {len(now.splitlines())} lines')
 ```
 
-- [ ] **Step 2: Apply candidates in order** until the file is ≤ 225 − `G` lines. Each replaces its exact old text (shown as of `54fc246`) with one line.
+- [x] **Step 2: Apply candidates in order** until the file is ≤ 225 − `G` lines. Each replaces its exact old text (shown as of `54fc246`) with one line.
 
 **U1 — "What this repo is", first paragraph (saves 10).** Replace
 
@@ -2992,7 +3019,7 @@ with
 JAX_PLATFORMS=cpu uv run --python 3.13 --with-requirements specs/verification/32-jax-cpu.txt python build/check_jax_examples.py skills/deep-learning/
 ```
 
-- [ ] **Step 3: Verify.**
+- [x] **Step 3: Verify.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance && uv run --python 3.13 python .sdd/35-claude-code-guide-conformance/words_unchanged.py && wc -l < CLAUDE.md`
 Expected: `word sequence unchanged; L -> M lines` with `M` ≤ 225 − `G`, then `M`.
@@ -3000,7 +3027,7 @@ Expected: `word sequence unchanged; L -> M lines` with `M` ≤ 225 − `G`, then
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance && git diff --word-diff=porcelain -- CLAUDE.md | grep '^[-+][^-+]' | grep -cv '^-\\$'`
 Expected: `0` (and exit 1, as `grep -c` gives on a zero count). Apart from the line-continuation backslashes the J candidates drop, which the second `grep` sets aside, a pure rewrap adds and removes no words.
 
-- [ ] **Step 4: Commit.**
+- [x] **Step 4: Commit.**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance && [ "$(git branch --show-current)" = feat/cc-guide-conformance ] && git add CLAUDE.md && git commit -m "docs: rejoin hard-wrapped CLAUDE.md paragraphs to meet the 225-line ceiling
@@ -3027,7 +3054,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Consumes: Task 9's recorded decisions; Task 7's exception schema; the audit's row IDs.
 - Produces: a register whose lint run on the repo exits 0, and `test_repo_passes`.
 
-- [ ] **Step 1: Write the failing repo test.** Append to `build/test_check_conformance.py`:
+- [x] **Step 1: Write the failing repo test.** Append to `build/test_check_conformance.py`:
 
 ```python
 def test_repo_passes():
@@ -3035,12 +3062,12 @@ def test_repo_passes():
     assert cc.run(cc.REPO) == []
 ```
 
-- [ ] **Step 2: Run; confirm RED.**
+- [x] **Step 2: Run; confirm RED.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance/build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_conformance.py`
 Expected: `1 failed, 78 passed`. `test_repo_passes` lists the 11 day-one lines; under choice A, `L-01` reports the trimmed count.
 
-- [ ] **Step 3: Apply any map changes the owner confirmed** to `[kinds.*].sections` and `[unmapped]`. A section moves out of one and into the other, never both. Then append the exceptions below. Values the gate fixed replace the defaults shown:
+- [x] **Step 3: Apply any map changes the owner confirmed** to `[kinds.*].sections` and `[unmapped]`. A section moves out of one and into the other, never both. Then append the exceptions below. Values the gate fixed replace the defaults shown:
   - for `claude-md-size`: `type`, `ceiling`, and `tracked_in` or `revisit`, plus the gate date in its `evidence`;
   - for `side-effecting-skills-invocable`: `artifacts` (seat S's list, explicit paths);
   - the audit row IDs (`S-nn`) in each `evidence`;
@@ -3135,7 +3162,14 @@ evidence = 'Portability spec Decision 3; audit rows S-nn.'
 revisit = 'When the guide documents a way for one skill to hand off to a manual-only skill.'
 ```
 
-- [ ] **Step 4: Run; all green.**
+> Deviation: `[kinds.settings]` was reflowed onto several lines, like `[kinds.rule]`
+> (formatting only; same values and order). On the owner's completion-gate answers
+> (b601eed), two reasons were aligned with the report's §10:
+> `side-effecting-skills-invocable` now ends "their bodies gate the side effects, some only
+> in part.", and `writing-skills-guide-gaps` states the skill's departures instead of a
+> cause.
+
+- [x] **Step 4: Run; all green.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance && uv run --python 3.13 --with pyyaml python build/check_conformance.py; echo "exit=$?"`
 Expected: `exit=0` with no other output.
@@ -3146,7 +3180,7 @@ Expected: no output, and exit 1. A leftover placeholder would pass the lint, whi
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance/build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_conformance.py`
 Expected: `79 passed` (+1). The build suite is now +81 over baseline.
 
-- [ ] **Step 5: Commit.**
+- [x] **Step 5: Commit.**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance && [ "$(git branch --show-current)" = feat/cc-guide-conformance ] && git add build/cc_guide/conformance.toml build/test_check_conformance.py && git commit -m "feat(build): fill the conformance register from the owner's gate
@@ -3172,7 +3206,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Consumes: the green lint (Task 11); CLAUDE.md as Task 10 left it.
 - Produces: R4.1's rule, R4.2's command, R4.3's net-zero trim and the build-suite count deltas, all in one commit.
 
-- [ ] **Step 1: Trim first, losslessly.** Replace the "Build tooling" paragraph (5 lines; untouched by the unmerged branches):
+- [x] **Step 1: Trim first, losslessly.** Replace the "Build tooling" paragraph (5 lines; untouched by the unmerged branches):
 
 ```markdown
 Most of `build/` is the citation-verification pipeline for
@@ -3215,7 +3249,7 @@ print(f'word sequence unchanged; {len(head.splitlines())} -> {len(now.splitlines
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance && uv run --python 3.13 python .sdd/35-claude-code-guide-conformance/words_unchanged.py`
 Expected: `word sequence unchanged; L -> L-4 lines`, where `L` is HEAD's count.
 
-- [ ] **Step 2: Add the rule (R4.1).** Replace
+- [x] **Step 2: Add the rule (R4.1).** Replace
 
 ```markdown
 ## Editing skills
@@ -3235,7 +3269,12 @@ When creating or editing a skill, **follow the `writing-skills` skill**
 
 Only the heading, the new paragraph and its blank line change; the rest of the "When creating…" line is untouched.
 
-- [ ] **Step 3: Add the command (R4.2).** Replace
+> Deviation: at the completion gate the owner added the register's eighth kind to this
+> sentence, which now lists "skill, agent, command, hook, rule, settings, installer
+> (`install.py`), or CLAUDE.md" (b601eed; same line, so CLAUDE.md stays at 224 lines). Spec
+> R4.1 was corrected to match at retirement.
+
+- [x] **Step 3: Add the command (R4.2).** Replace
 
 ```text
 # Frontmatter + provenance lints (run before committing skill changes)
@@ -3252,7 +3291,7 @@ uv run --python 3.13 python build/check_provenance.py
 uv run --python 3.13 --with pyyaml python build/check_conformance.py
 ```
 
-- [ ] **Step 4: Raise the build-suite counts by this plan's delta**, in place, in the `# Full build-directory tests` comment. Change only numbers and the one added term, so no line is added:
+- [x] **Step 4: Raise the build-suite counts by this plan's delta**, in place, in the `# Full build-directory tests` comment. Change only numbers and the one added term, so no line is added:
   - the headline total: +81;
   - the breakdown: the `citation/lint/snippet` term +2 (`test_fences.py`), and append ` + 79 conformance` before the closing `)`;
   - "all N collect": +81;
@@ -3262,7 +3301,7 @@ uv run --python 3.13 --with pyyaml python build/check_conformance.py
 
   Leave the failed and skipped figures alone. Correcting the pre-existing provenance-test discrepancy is the separate fix's job (Global Constraints, "Baseline").
 
-- [ ] **Step 5: Verify net zero and the lints.**
+- [x] **Step 5: Verify net zero and the lints.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance && echo "HEAD $(git show HEAD:CLAUDE.md | wc -l) now $(wc -l < CLAUDE.md)"`
 Expected: now ≤ HEAD (R4.3); the net is −1 (+2 rule paragraph, +1 command, −4 trim). Under choice A, now ≤ 225 − `G`, with `G` as the audit report's "Owner decisions" records it.
@@ -3273,7 +3312,7 @@ Expected: `exit=0`. The `claude-md-size` waiver still holds, and the file stays 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance && git diff --stat -- CLAUDE.md`
 Expected: only `CLAUDE.md`, with deletions ≥ insertions.
 
-- [ ] **Step 6: Commit.**
+- [x] **Step 6: Commit.**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance && [ "$(git branch --show-current)" = feat/cc-guide-conformance ] && git add CLAUDE.md && git commit -m "docs: add the Claude Code guide conformance rule to CLAUDE.md
@@ -3304,7 +3343,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 Each amendment is applied as written, with no further gate (spec header). Neither status line changes. `specs/audit-3-10-26.md`'s D13 is not part of these edits.
 
-- [ ] **Step 1: D1 — Stage 1 adopts the anchors.** In `specs/claude-code-drift-automation.md`, replace
+- [x] **Step 1: D1 — Stage 1 adopts the anchors.** In `specs/claude-code-drift-automation.md`, replace
 
 ```markdown
 - Each section belongs to exactly one group (R2.5).
@@ -3340,7 +3379,7 @@ with
    are already in the guide, so Stage 1 adopts them (conformance R6 D1).
 ```
 
-- [ ] **Step 2: D2 — TOML placement.** In R4.1's table, replace
+- [x] **Step 2: D2 — TOML placement.** In R4.1's table, replace
 
 ```markdown
 | Markdown without frontmatter (CLAUDE.md, READMEs) | a block-level `<!-- cc-guide: … -->` at the top |
@@ -3353,7 +3392,7 @@ with
 | TOML (`build/cc_guide/conformance.toml`) | a `# cc-guide: …` line before the first key or table, preceded only by comments and blank lines (conformance R6 D2) |
 ```
 
-- [ ] **Step 3: D3 — the register and lint are known clusters, stamped `@2.1.288`.** In R4.2, replace
+- [x] **Step 3: D3 — the register and lint are known clusters, stamped `@2.1.288`.** In R4.2, replace
 
 ```markdown
   locations); the root `README.md` and `CLAUDE.md`.
@@ -3383,7 +3422,7 @@ conformance register and lint (R4.2) were written against the guide at 2.1.288,
 so the sweep stamps them `@2.1.288`, not `@2.1.219` (conformance R6 D3).
 ```
 
-- [ ] **Step 4: D4 — CLAUDE.md stays within the ceiling.** In R12.7, replace
+- [x] **Step 4: D4 — CLAUDE.md stays within the ceiling.** In R12.7, replace
 
 ```markdown
 - `build/CLAUDE.md` gains a paragraph on `cc_guide/`.
@@ -3399,7 +3438,7 @@ with
   (conformance R6 D4).
 ```
 
-- [ ] **Step 5: D5 — a fix that resolves a gap narrows its exception.** In R8.8, replace
+- [x] **Step 5: D5 — a fix that resolves a gap narrows its exception.** In R8.8, replace
 
 ```markdown
 5. Run `lint`.
@@ -3440,7 +3479,7 @@ with
     it, in the same change (R8.8; conformance R6 D5).
 ```
 
-- [ ] **Step 6: P3 — the body-length warning gets a register entry.** In `specs/agent-skills-portability.md`, replace
+- [x] **Step 6: P3 — the body-length warning gets a register entry.** In `specs/agent-skills-portability.md`, replace
 
 ```markdown
 change the exit code. Today only `writing-skills` warns; splitting it is
@@ -3456,7 +3495,7 @@ deferred. When Stage A adds this warning, it also adds a `skill-body-size`
 it, with `enforced_by = 'check_frontmatter'` (conformance R6 P3).
 ```
 
-- [ ] **Step 7: P1 and P2 — the ceiling and the gaps.** Replace
+- [x] **Step 7: P1 and P2 — the ceiling and the gaps.** Replace
 
 ```markdown
 when to use it (preparing a claude.ai upload or a spec-only validator run).
@@ -3505,7 +3544,7 @@ Constraints:
 - **Work in a worktree.** The plan edits skills the executing session loads
 ```
 
-- [ ] **Step 8: Verify the edits landed once each, and nothing else changed.**
+- [x] **Step 8: Verify the edits landed once each, and nothing else changed.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance && grep -oh 'R6 [DP][1-5]' specs/claude-code-drift-automation.md specs/agent-skills-portability.md | sort | uniq -c`
 Expected, exactly: `2 R6 D1`, `1 R6 D2`, `2 R6 D3`, `1 R6 D4`, `2 R6 D5`, `1 R6 P1`, `1 R6 P2`, `1 R6 P3`. Neither spec carried any of these markers before.
@@ -3513,7 +3552,7 @@ Expected, exactly: `2 R6 D1`, `1 R6 D2`, `2 R6 D3`, `1 R6 D4`, `2 R6 D5`, `1 R6 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance && git diff --stat -- specs/ && git diff -- specs/ | grep -c '^[-+]\*\*Status'`
 Expected: exactly the two specs listed, and `0` (exit 1, as `grep -c` gives on a zero count): neither status line changed.
 
-- [ ] **Step 9: Commit.**
+- [x] **Step 9: Commit.**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance && [ "$(git branch --show-current)" = feat/cc-guide-conformance ] && git add specs/claude-code-drift-automation.md specs/agent-skills-portability.md && git commit -m "docs(specs): apply the conformance spec's R6 amendments
@@ -3538,12 +3577,12 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 **Controller task.** It runs every gate and checks each validation item. Nothing is committed unless a fix is needed. A fix inside a fenced file goes to the completion gate instead.
 
-- [ ] **Step 1: The lint and its suite.**
+- [x] **Step 1: The lint and its suite.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance && uv run --python 3.13 --with pyyaml python build/check_conformance.py; echo "exit=$?"`
 Expected: `exit=0` (Validation item 2).
 
-- [ ] **Step 2: Every existing gate (Validation item 6).** Run each exactly as written; every command `cd`s by absolute path, so the order and the shell's working directory do not matter:
+- [x] **Step 2: Every existing gate (Validation item 6).** Run each exactly as written; every command `cd`s by absolute path, so the order and the shell's working directory do not matter:
   - `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance && uv run --python 3.13 --with pyyaml python build/check_frontmatter.py`: exit 0.
   - `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance && uv run --python 3.13 python build/check_provenance.py`: exit 0.
   - `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance && uv run --python 3.13 python build/check_snippets.py skills/`: exit 0 (Tier 1).
@@ -3551,14 +3590,21 @@ Expected: `exit=0` (Validation item 2).
   - `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance/build && uv run --python 3.13 --with pytest --with numpy --with polars --with pyyaml python -m pytest -q`: baseline failures and skips unchanged, passed +81.
   - `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance && uv run --python 3.13 --with pyyaml python build/sync_runtime_assets.py --check`: exit 0. Then `git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance status --short runtimes/`: empty, so no adapter changed.
 
-- [ ] **Step 3: The other validation items.**
+- [x] **Step 3: The other validation items.**
   - Item 1: `test_real_register_maps_every_anchor` and `test_repo_passes` are green. Every gap and deviation the gate decided is in the register, and every verified audit row is follows, n/a, corrected by the owner at the gate, or covered by an exception.
   - Item 2: each check and integrity rule has a test that was red before its implementation; the RED steps of Tasks 1–7 recorded it.
   - Item 3: `test_real_guide_carries_the_drift_r11_anchors` is green.
   - Item 4: the report exists. Its header states `N of N verified` quotes and the count of unverified rows, and "Owner decisions" is filled.
   - **Item 5**, as the owner settled it at the gate. Measure `wc -l < /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance/CLAUDE.md`, and recompute `G` as in Task 9 Step 1 in case `main` has moved since. Under A, the length plus `G` is ≤ 225; under B, it is ≤ the recorded ceiling. Either way, R4.3 holds: Tasks 11 and 13 leave CLAUDE.md alone, so `git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance show $(git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-35-cc-guide-conformance log -1 --format=%h --grep='Plan 35, Task 11\.'):CLAUDE.md | wc -l` (the length before Task 12) is ≥ the length now.
 
-- [ ] **Step 4: Request the final review** per subagent-driven-development: the whole-branch `code-reviewer`, from `main`'s merge-base to `HEAD`. Then run the Plan Completion Protocol below.
+- [x] **Step 4: Request the final review** per subagent-driven-development: the whole-branch `code-reviewer`, from `main`'s merge-base to `HEAD`. Then run the Plan Completion Protocol below.
+
+> Deviation: Codex rejected the configured model for a ChatGPT-account login, so the second
+> seat ran once with `-m gpt-6-astra`, as the owner approved, leaving the config untouched;
+> it found no actionable regressions. The code-reviewer's findings, decided at the
+> completion gate, landed in b601eed: two register reasons (Task 11), the installer kind
+> (Task 12) and the redaction of four outside-repo audit rows (Plan completion). A scoped
+> re-review found all four addressed.
 
 ---
 
@@ -3572,6 +3618,9 @@ Run writing-plans' Plan Completion Protocol after Task 14 and the final review. 
   - **Codex and Gemini guide conformance:** the register is per guide (spec, Out of scope). `Size: design`. `Revisit if:` the owner wants the Codex or Gemini guide anchored the same way.
   - **Deviation comments at artifact sites** (Decision 9). `Size: design`. `Revisit if:` drift's R4.5 load check shows a `SKILL.md` frontmatter comment loads in all three runtimes.
   - Each outside-repo finding the owner chose to track at the gate (Task 9 (e)), marked report-only for this repo.
+    > Deviation: at the completion gate the owner redacted rows O-20, O-21, O-23 and O-25 to
+    > ID, section and status, because the repo is public, and kept both owner items out of
+    > `specs/deferred_items.md`; their detail is held outside the repo.
   - Each guide note the owner routed to drift's `verify` (Task 9 (f)). `Size: quick-fix`. `Done when:` `/cc-guide verify <section id>` (drift R8.5) has judged the note, once drift lands.
   - **The rule kind misses nested rules.** Its glob `.claude/rules/*.md` (R2.3) skips rules in subdirectories, which `rules.rules-files` says are discovered recursively. git also lists a symlinked directory under `.claude/rules/` as one entry that no `.md` glob reaches, so R3.4's check that each `.claude/rules/` link resolves inside the repo never sees it. Latent: no such entry exists today. `Size: quick-fix`. `Done when:` the rule kind and `rule-paths` cover both cases, with red-first tests.
   - **Keeping the guide current** (spec, Out of scope) is the drift spec's work, so this item only points there. `Size: plan`. `Revisit if:` the drift spec's stages (`specs/claude-code-drift-automation.md`) stall or are dropped, leaving nothing that keeps the guide current.
@@ -3581,5 +3630,8 @@ Run writing-plans' Plan Completion Protocol after Task 14 and the final review. 
   - Not logged separately: fixes routed to drift Stage 3 or portability Stages A and D. D5 and P2 record them in those specs, which is where R5.5 sends them.
 - **`specs/deferred_items.md` merge note:** `worktree-deferred-triage-2026-10-03` rewrites about 225 lines of that file. If it merges first, append this plan's section after its last section.
 - **Retire** (step 5): `git mv` this plan to `specs/plans/completed/` and the spec to `specs/completed/` (no other live plan implements it), marking the spec complete at top. Re-point both files' relative links for their new depth. The audit report stays in `specs/`.
+  > Deviation: on the owner's completion-gate answers, the retire commit also notes under
+  > spec R3.4 that `hook-dir-quoted` does not parse the script inside `sh -c`, and adds the
+  > installer kind to R4.1's list.
 - **Report the backlog line** from `deferred_stats.py` (step 4), and run the triage rubric if the thresholds hit.
 - **Integration** is finishing-a-development-branch's call: merge, PR or keep. Nothing is pushed without the owner. After a merge, run `check_conformance.py` on the merged result. If `claude-md-size` breaks the ceiling because `main` moved after the gate, take it back to the owner for a further lossless trim or a reasoned ceiling change; never raise the ceiling silently.

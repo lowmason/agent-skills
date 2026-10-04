@@ -130,6 +130,15 @@
   `worktree-deferred-triage-2026-10-03`, awaiting the owner's launch. This branch
   adds the findings-only repo audit (specs/audit-3-10-26.md); it touches neither
   aged item.
+- 2026-10-04 — finished `feat/cc-guide-conformance` (plan 35) with 2 items aged
+  >45d, carried on the partner's 2026-09-28 reason, which they chose again for
+  this branch, verbatim: "Unrelated to this branch: the DL/NLP slots wait on a
+  real DL/NLP target, and the synthesize-mode checks wait on their own plan."
+  The items are the same two `18-methodology-pipeline-skills` items (70d: the
+  DL/NLP template extension, synthesize-mode scenario verification); the
+  latter's plan is still `32-synthesize-mode-scenario-verification.md` on the
+  unmerged `worktree-deferred-triage-2026-10-03`. This branch adds the Claude
+  Code guide conformance register, lint and audit; it touches neither aged item.
 
 ## 11-delegation-frontmatter-rollout — 2026-07-19
 - [x] Haiku-pinned `Explore` override agent (fork-isolation upgrade; plan "Out of
@@ -1530,3 +1539,411 @@ declined as YAGNI (zero instances in a one-page wiki).
       completion gate (the owner's call) so /deferred keeps seeing it after the spec retired.
       Size: quick-fix. Revisit if: the session default moves off xhigh, or a skill turn is
       seen running at a lower effort than its session because of a pin.
+
+## 35-claude-code-guide-conformance — 2026-10-04
+- [ ] Bring the root CLAUDE.md under 200 lines (plan 35 audit rows L-01, C-02 to C-05). It
+      is 224 lines against the guide's 200-line target (`rules.claude-md`), held by a waiver
+      with ceiling 225. C-02 to C-05 name fast-changing details to cut or move, in
+      `CLAUDE.md` and `build/CLAUDE.md`: 22 hand-kept test-count comment lines in the
+      Commands block, snippet-marker rules restated from `build/check_snippets.py`, and a
+      stale description of `build/` (also the 2026-10-03 repo audit's D11). Codex and Gemini
+      read the same file, so instructions leave it only by deliberate condensing or
+      relocation. Size: plan. Done when: CLAUDE.md is under 200 lines, and each of
+      exceptions `claude-md-size` and `claude-md-fast-changing-details` is removed from
+      `build/cc_guide/conformance.toml` in the same change, with
+      `build/check_conformance.py` passing.
+- [ ] Gate or make manual-only the four ungated side-effecting skills (plan 35 audit rows
+      S-88 to S-91): `skills/subagent-driven-development/SKILL.md`,
+      `skills/requesting-code-review/SKILL.md`, `skills/writing-skills/SKILL.md` and
+      `skills/dispatching-parallel-agents/SKILL.md` act with side effects (commits, paid
+      subagent fan-out, a push to a fork, the Codex diff upload), but each lacks a body gate
+      or an inbound bare-name handoff, so portability Decision 3 does not cover them.
+      Setting `disable-model-invocation` waits on portability Stage A:
+      `build/check_frontmatter.py`'s ALLOWED_KEYS rejects the key on a SKILL.md today. Size:
+      plan. Done when: each skill sets `disable-model-invocation: true` or gates its side
+      effect in its body, and exception `side-effecting-skills-ungated` (narrowed to any
+      skill still open) is removed from `build/cc_guide/conformance.toml` in the same
+      change, with `build/check_conformance.py` passing.
+- [ ] Rewrite seven skill descriptions in the third person (plan 35 audit rows S-21 to
+      S-27): clean-coder, executing-plans, explore-data, recommend-visualization,
+      systematic-debugging, validate-data and writing-plans use second person outside quoted
+      trigger phrases, against `skills.description` and writing-skills' own third-person
+      rule. Descriptions drive routing, so each rewording follows writing-skills (micro-test
+      discipline-skill wording). Size: plan. Done when: the seven descriptions are in the
+      third person, and exception `description-second-person` is removed from
+      `build/cc_guide/conformance.toml` in the same change, with
+      `build/check_conformance.py` passing.
+- [ ] Move critical sections above the compaction cut in two skills (plan 35 audit rows
+      S-69, S-70): compaction re-attaches only the first 5,000 tokens of a SKILL.md body
+      (`skills.progressive-disclosure`), but the Red Flags section of
+      `skills/subagent-driven-development/SKILL.md` (about 6.6k tokens in) and the Common
+      gotchas of `skills/bayesian-workflow/SKILL.md` (about 6.5k) sit past it. Size: plan.
+      Done when: both sit within the first 5,000 tokens, and exception
+      `critical-rules-past-compaction` is removed from `build/cc_guide/conformance.toml` in
+      the same change, with `build/check_conformance.py` passing.
+- [ ] Enforce the model-on-dispatch rule with a hook (plan 35 audit row S-94):
+      `skills/subagent-driven-development/SKILL.md` says to always specify the model
+      explicitly when dispatching. The rule is machine-checkable (the Agent tool's `model`
+      parameter) but enforced only by prose, where `mechanisms.overview` puts such rules in
+      a hook. Size: plan. Done when: a PreToolUse hook or an equivalent mechanism rejects an
+      Agent dispatch with no explicit model, and exception `dispatch-model-in-prose` is
+      removed from `build/cc_guide/conformance.toml` in the same change, with
+      `build/check_conformance.py` passing.
+- [ ] Make brainstorming's scope proportional (plan 35 audit row S-96):
+      `skills/brainstorming/SKILL.md` says every project goes through it, while the guide
+      (`lean.ceremony`) and the owner's proportional-process rule in `commands/deferred.md`
+      reserve brainstorming for open design decisions. brainstorming is an adapted
+      superpowers skill (LICENSE-superpowers), so the change follows writing-skills'
+      pressure-testing. Size: plan. Done when: brainstorming's scope matches the
+      proportional rule, and exception `brainstorming-every-project` is removed from
+      `build/cc_guide/conformance.toml` in the same change, with
+      `build/check_conformance.py` passing.
+- [ ] Reconcile requesting-code-review with the guide's skip for small watched changes (plan
+      35 audit row S-99): `skills/requesting-code-review/SKILL.md` requires review before
+      every merge to main, where `lean.ceremony` skips review for a small change you watched
+      being made. Size: plan. Done when: the skill states when review may be skipped, and
+      exception `review-before-every-merge` is removed from
+      `build/cc_guide/conformance.toml` in the same change; or the owner re-records that
+      exception as a deviation with a reason. Either way, `build/check_conformance.py`
+      passes.
+- [ ] Gate the geographic-codes and classification-codes network rebuilds (plan 35 audit
+      rows S-104, S-105): both SKILL.md files (line 37 each) rebuild `data/` from the
+      network when it is missing, with no manual gate (`lean.expensive-ops`). Size:
+      quick-fix. Done when: each rebuild asks first or runs only from a manual entry point,
+      and exception `network-rebuild-ungated` is removed from
+      `build/cc_guide/conformance.toml` in the same change, with
+      `build/check_conformance.py` passing.
+- [ ] Give debugger Write or record why not (plan 35 audit row A-18): `agents/debugger.md`
+      has Edit and Bash but not Write, yet its body tells it to create a failing test when
+      none exists; the recorded archetype reason
+      (specs/completed/agents-and-commands-expansion.md) covers Edit only. Size: quick-fix.
+      Done when: debugger lists Write, the runtime adapters are regenerated
+      (`build/sync_runtime_assets.py`), and exception `debugger-lacks-write` is removed from
+      `build/cc_guide/conformance.toml` in the same change; or the owner re-records that
+      exception as a deviation with a reason. Either way, `build/check_conformance.py`
+      passes.
+- [ ] Drop Bash from docs-writer or record why it needs it (plan 35 audit row A-20):
+      `agents/docs-writer.md` holds Bash with no recorded reason (`subagents.tools`); it is
+      deliberately outside the read-only guard (specs/completed/readonly-agent-guard.md).
+      Size: quick-fix. Done when: docs-writer drops Bash, the adapters are regenerated, and
+      exception `docs-writer-holds-bash` is removed from `build/cc_guide/conformance.toml`
+      in the same change; or the owner re-records that exception as a deviation with a
+      reason. Either way, `build/check_conformance.py` passes.
+- [ ] Scope code-reviewer and task-reviewer findings to correctness and requirement gaps
+      (plan 35 audit rows A-33, A-34): `agents/code-reviewer.md` and
+      `agents/task-reviewer.md` invite findings beyond correctness and requirement gaps
+      (structure, polish), against `subagents.isolation`. Both drive
+      subagent-driven-development's review loop, so a change shifts review behaviour and
+      should be micro-tested. Size: plan. Done when: both prompts scope their findings as
+      the guide advises, and exception `reviewers-flag-beyond-correctness` is removed from
+      `build/cc_guide/conformance.toml` in the same change; or the owner re-records that
+      exception as a deviation with a reason. Either way, `build/check_conformance.py`
+      passes.
+- [ ] Fix four hooks/README.md inaccuracies (plan 35 audit rows H-18, H-24, H-27, H-48), as
+      of the 2026-10-04 audit: the read-only guard's install command leaves `$HOME` unquoted
+      (:121); the README says only exit 2 blocks, beside a hook that blocks by JSON deny
+      (:90); the blocking hooks' install path has no step to trigger each one once (:39-78);
+      and it says the allowlist spares the uv forms a prompt, which holds only in manual
+      mode (:70-74). After fixing :121, the owner re-applies the quoted command to their own
+      `~/.claude/settings.json` (row O-16, outside the repo). Size: quick-fix (for
+      `/deferred`). Done when: all four are fixed, and each of exceptions
+      `hooks-readme-home-unquoted`, `hooks-readme-exit-claim`, `hooks-readme-no-verify-step`
+      and `hooks-readme-auto-mode-allow` is removed from `build/cc_guide/conformance.toml`
+      in the same change, with `build/check_conformance.py` passing.
+- [ ] Relabel clean-code-python's always-on title (plan 35 audit row H-38; the 2026-10-03
+      repo audit's D12): `rules/clean-code-python.md` (shared by its `.claude/rules/` link)
+      and the root README call the rule always-on, but its `paths` load it only on a `.py`
+      read or edit, and compaction can summarise it away. The owner kept it path-scoped at
+      the plan 35 gate. Size: quick-fix. Done when: the title and README say it loads on
+      `.py` reads and edits, and exception `clean-code-rule-always-on-label` is removed from
+      `build/cc_guide/conformance.toml` in the same change, with
+      `build/check_conformance.py` passing.
+- [ ] Settle where enforceAvailableModels belongs (plan 35 audit row H-51; guide note H-57):
+      `.claude/settings.json` sets `enforceAvailableModels`, while the guide places its
+      effect in managed settings, and whether the key is honoured elsewhere is guide note
+      H-57. The owner's user-level settings set it too (row O-13, outside the repo). Size:
+      quick-fix. Done when: `/cc-guide verify lean.model-routing` (drift R8.5) settles H-57,
+      and either the key moves to where it takes effect or, if project settings honour it,
+      the gap is void; either way exception `enforce-available-models-project` is removed
+      from `build/cc_guide/conformance.toml` in the same change, with
+      `build/check_conformance.py` passing.
+- [ ] Run the before-commit lints from a hook or CI (plan 35 audit rows C-31, C-32):
+      CLAUDE.md's "run before committing" lints and `build/CLAUDE.md`'s rule against
+      hand-editing `runtimes/` are prose that no hook or CI enforces
+      (`mechanisms.overview`); the repo has no CI. Size: plan. Done when: a hook or CI runs
+      `check_frontmatter.py`, `check_provenance.py`, `check_snippets.py` Tier 1,
+      `check_conformance.py`, the `declared_dependencies` test and `sync_runtime_assets.py
+      --check`, and exception `commit-lints-in-prose` is removed from
+      `build/cc_guide/conformance.toml` in the same change, with
+      `build/check_conformance.py` passing.
+- [ ] Close the conformance lint's untested branches (plan 35 per-task reviews T1-m2, T2-m2,
+      T3-m0, T3-m1, T4-m4, T5-m2, T6-m1, T7-m1, T7-m6 and the final review; triaged defer).
+      Add red-first tests in `build/test_check_conformance.py` and `build/test_fences.py`
+      for: the stray-anchor loop's `n not in fenced` clause; `<!-- cc-guide:` never matching
+      ANCHOR_LIKE_RE (drift Stage 2 puts those lines beside the anchors); `fenced_lines`
+      with an unclosed fence running to the end; a heading on the last line; `[unmapped]`
+      and per-check citations in `section_violations`; a missing `[guide] path`;
+      `parse_register`'s shape, id, rule, exclude and description branches; exit 2 when git
+      cannot list files; `kept_files`' exists/is_symlink filter; the hook group's Stop-only
+      filter, once-only reporting, JSON-file parse failure, shlex ValueError, backslash in
+      single quotes and two-use cases; `check_stop_hook_guard` discarding parse failures
+      (`found, _`), which go silent if `hook-dir-quoted` cannot run; `paths: []`, scalar and
+      null `paths` on an always-on rule; sorted output; the never-stale-on-unwaivable rule;
+      and `parse_exceptions`' field branches. Each new test moves CLAUDE.md's hand-kept
+      build-suite counts. Size: quick-fix. Done when: each listed branch has a red-first
+      test, and CLAUDE.md's counts are updated in the same change.
+- [ ] Make an unreadable conformance register a setup error (plan 35 review T2-m1):
+      `load_register` in `build/check_conformance.py` catches only FileNotFoundError, so a
+      PermissionError escapes as a traceback (exit 1), while `load_guide` catches OSError.
+      Size: quick-fix. Done when: any OSError reading the register raises SetupError (exit
+      2), with a red-first test.
+- [ ] Keep git's reason when the conformance lint cannot list files (plan 35 review T3-m2):
+      `kept_files` in `build/check_conformance.py` raises SetupError without git's stderr,
+      so exit 2 names no cause. Size: quick-fix. Done when: the SetupError message carries
+      git's stderr, with a red-first test.
+- [ ] Validate conformance waiver paths against the waived check's files (plan 35 review
+      T7-m3): `parse_exceptions` in `build/check_conformance.py` checks an explicit waiver
+      path only against the disk, so a `./`-prefixed, absolute, directory, ignored or
+      wrong-kind path is accepted and surfaces later as a misleading stale-waiver line.
+      Size: quick-fix. Done when: a waiver path must be one of its check's kind files, with
+      red-first tests.
+- [ ] Add a section-fit integrity rule to the conformance register (plan 35 final review):
+      nothing checks that a `[[check]]`'s sections belong to its kinds' sections, or that an
+      exception's sections are governed by its artifacts' kinds. Every check fits today; one
+      exception does not (`writing-skills-guide-gaps` cites `rules.hierarchy` on a skill,
+      from audit row S-107). Size: quick-fix. Done when: `build/check_conformance.py`
+      enforces the fit with red-first tests, and the one misfit is resolved by a map change
+      or a re-cite.
+- [ ] Teach hook-dir-quoted two more expansion forms (plan 35 completion gate; conformance
+      spec R3.4, limit 1): `unquoted_var_uses` in `build/check_conformance.py` misses
+      `${CLAUDE_PROJECT_DIR:-…}`-style expansions (a false negative) and flags a correctly
+      quoted use inside `$(…)` (a false positive, which fails correct hook code). Size:
+      quick-fix. Done when: both forms are handled, with red-first tests, and the lint still
+      passes on the repo.
+- [ ] Let stop-hook-guard see past a runner (plan 35 completion gate; conformance spec R3.4,
+      limit 2): the check's first-word rule rejects Stop commands like `uv run <script>`,
+      yet the guide's hooks.pitfalls advises uv inline-dependency scripts for Python hooks,
+      so a Stop hook written the guide's way fails the lint. Size: quick-fix. Done when: the
+      check resolves the script after a known runner (`uv run`, `python3`), with red-first
+      tests.
+- [ ] Add the `compaction-window` conformance check (plan 35 audit §6, d2, seat check S#2):
+      estimated body tokens above 5,000, plus critical-sounding headings (STOP, Red Flags,
+      Critical and similar) past that offset. Today 3 bodies and 6 headings. Size:
+      quick-fix. Done when: the check is in `CHECKS` in `build/check_conformance.py`, with a
+      `[[check]]` entry in `build/cc_guide/conformance.toml` and red-first tests.
+- [ ] Add the `description-person` conformance check (plan 35 audit §6, d3, seat check S#3):
+      first- or second-person pronouns in a description, outside quoted phrases. Today 7
+      (S-21 to S-27). Size: quick-fix. Done when: the check is in `CHECKS` in
+      `build/check_conformance.py`, with a `[[check]]` entry in
+      `build/cc_guide/conformance.toml` and red-first tests.
+- [ ] Add the `trigger-phrase-presence` conformance check (plan 35 audit §6, d4, seat check
+      S#4): a description has a quoted phrase or a "Trigger on" list. Heuristic. Today 9
+      lack both. Size: quick-fix. Done when: the check is in `CHECKS` in
+      `build/check_conformance.py`, with a `[[check]]` entry in
+      `build/cc_guide/conformance.toml` and red-first tests.
+- [ ] Add the `listing-aggregate` conformance check (plan 35 audit §6, d5, seat check S#5):
+      the summed name and description characters against window × fraction. Today 21,297
+      characters across 35 skills. It needs the unit the guide leaves open (guide note
+      S-109). Size: quick-fix. Blocked until guide note S-109 settles the listing budget's
+      unit. Done when: the check is in `CHECKS` in `build/check_conformance.py`, with a
+      `[[check]]` entry in `build/cc_guide/conformance.toml` and red-first tests.
+- [ ] Add the `substitution-hazard` conformance check (plan 35 audit §6, d6, seat check
+      S#6): an unescaped `$ARGUMENTS`, `$<digit>`, `${CLAUDE_...}` or render-time shell
+      token in a SKILL.md body. Today 0; it would guard against regressions. Size:
+      quick-fix. Done when: the check is in `CHECKS` in `build/check_conformance.py`, with a
+      `[[check]]` entry in `build/cc_guide/conformance.toml` and red-first tests.
+- [ ] Add the `orphan-bundled-file` conformance check (plan 35 audit §6, d7, seat check
+      S#7): a file under a skill directory that no SKILL.md or reference names, excluding
+      tests and READMEs. Today 2. Size: quick-fix. Done when: the check is in `CHECKS` in
+      `build/check_conformance.py`, with a `[[check]]` entry in
+      `build/cc_guide/conformance.toml` and red-first tests.
+- [ ] Add the `dmi-handoff-consistency` conformance check (plan 35 audit §6, d9, seat check
+      S#9): a skill that sets `disable-model-invocation: true` is never named as a handoff
+      elsewhere. Size: quick-fix. Done when: the check is in `CHECKS` in
+      `build/check_conformance.py`, with a `[[check]]` entry in
+      `build/cc_guide/conformance.toml` and red-first tests.
+- [ ] Add the `skill-command-name-collision` conformance check (plan 35 audit §6, d10, seat
+      check S#10): no `commands/*.md` stem equals a `skills/*/` directory name. Today 0.
+      Size: quick-fix. Done when: the check is in `CHECKS` in `build/check_conformance.py`,
+      with a `[[check]]` entry in `build/cc_guide/conformance.toml` and red-first tests.
+- [ ] Add the `command-frontmatter-keys` conformance check (plan 35 audit §6, d11, seat
+      check A#1): command keys are a subset of the skill fields, with no `name` or `paths`.
+      Today 0. Size: quick-fix. Done when: the check is in `CHECKS` in
+      `build/check_conformance.py`, with a `[[check]]` entry in
+      `build/cc_guide/conformance.toml` and red-first tests.
+- [ ] Add the `agent-name-form` conformance check (plan 35 audit §6, d12, seat check A#3):
+      an agent name is lowercase-hyphenated unless a register allow-list names it. Today it
+      flags only `Explore` (A-04). Size: quick-fix. Done when: the check is in `CHECKS` in
+      `build/check_conformance.py`, with a `[[check]]` entry in
+      `build/cc_guide/conformance.toml` and red-first tests.
+- [ ] Add the `agent-model-available` conformance check (plan 35 audit §6, d13, seat check
+      A#4): each agent's model alias appears in `availableModels`. Today 0. Size: quick-fix.
+      Done when: the check is in `CHECKS` in `build/check_conformance.py`, with a
+      `[[check]]` entry in `build/cc_guide/conformance.toml` and red-first tests.
+- [ ] Add the `agent-name-unique` conformance check (plan 35 audit §6, d14, seat check A#5):
+      no name repeats across `agents/` and `.claude/agents/`. Today `.claude/agents/` does
+      not exist. Size: quick-fix. Done when: the check is in `CHECKS` in
+      `build/check_conformance.py`, with a `[[check]]` entry in
+      `build/cc_guide/conformance.toml` and red-first tests.
+- [ ] Add the `haiku-retirement-date` conformance check (plan 35 audit §6, d15, seat check
+      A#6): warn on Haiku pins from 2026-10-15. Today it would flag explore.md and
+      test-runner.md. Size: quick-fix. Done when: the check is in `CHECKS` in
+      `build/check_conformance.py`, with a `[[check]]` entry in
+      `build/cc_guide/conformance.toml` and red-first tests.
+- [ ] Add the `command-substitution-tokens` conformance check (plan 35 audit §6, d16, seat
+      check A#7): substitution or render-time shell tokens in a command body that the
+      command does not declare. Today 0. Size: quick-fix. Done when: the check is in
+      `CHECKS` in `build/check_conformance.py`, with a `[[check]]` entry in
+      `build/cc_guide/conformance.toml` and red-first tests.
+- [ ] Add the `agent-effort-level` conformance check (plan 35 audit §6, d17, seat check
+      A#8): blocked until the guide lists the effort levels. Two agents use `xhigh`. Size:
+      quick-fix. Blocked until the guide lists the valid effort levels. Done when: the check
+      is in `CHECKS` in `build/check_conformance.py`, with a `[[check]]` entry in
+      `build/cc_guide/conformance.toml` and red-first tests.
+- [ ] Add the `hook-var-quoted` conformance check (plan 35 audit §6, d18, seat check H#1):
+      generalise `hook-dir-quoted` to any unquoted `$VAR` at the start of a script path,
+      `$HOME` included. It would catch README:121 (H-18). Size: quick-fix. Done when: the
+      check is in `CHECKS` in `build/check_conformance.py`, with a `[[check]]` entry in
+      `build/cc_guide/conformance.toml` and red-first tests.
+- [ ] Add the `managed-only-keys` conformance check (plan 35 audit §6, d19, seat check H#2):
+      `enforceAvailableModels` in non-managed settings (H-51). It needs guide note H-57
+      settled first. Size: quick-fix. Blocked until guide note H-57 settles whether the key
+      is managed-only. Done when: the check is in `CHECKS` in `build/check_conformance.py`,
+      with a `[[check]]` entry in `build/cc_guide/conformance.toml` and red-first tests.
+- [ ] Add the `rule-always-on-claim` conformance check (plan 35 audit §6, d20, seat check
+      H#3): a path-scoped rule whose text calls itself always-on (H-38). Size: quick-fix.
+      Done when: the check is in `CHECKS` in `build/check_conformance.py`, with a
+      `[[check]]` entry in `build/cc_guide/conformance.toml` and red-first tests.
+- [ ] Add the `hook-readme-exit-claims` conformance check (plan 35 audit §6, d21, seat check
+      H#4): a hooks README that says only exit 2 blocks, while it also documents a
+      `permissionDecision` deny (H-24). Size: quick-fix. Done when: the check is in `CHECKS`
+      in `build/check_conformance.py`, with a `[[check]]` entry in
+      `build/cc_guide/conformance.toml` and red-first tests.
+- [ ] Add the `hook-scripts-executable` conformance check (plan 35 audit §6, d22, seat check
+      H#5): every wired hook script exists with mode 100755. Today all five do. Size:
+      quick-fix. Done when: the check is in `CHECKS` in `build/check_conformance.py`, with a
+      `[[check]]` entry in `build/cc_guide/conformance.toml` and red-first tests.
+- [ ] Add the `hook-python-deps` conformance check (plan 35 audit §6, d23, seat check H#6):
+      hook Python is stdlib-only or declares a PEP 723 block. The guard would pass, which
+      turns H-32 into a recorded fact. Size: quick-fix. Done when: the check is in `CHECKS`
+      in `build/check_conformance.py`, with a `[[check]]` entry in
+      `build/cc_guide/conformance.toml` and red-first tests.
+- [ ] Add the `allow-rule-compound-operators` conformance check (plan 35 audit §6, d24, seat
+      check H#7): an unquoted `&&`, `||`, `;`, `|` or `&` in an allow rule. It would apply
+      only to a gitignored per-machine settings file, so it can only be a local check. Size:
+      quick-fix. Done when: the check is in `CHECKS` in `build/check_conformance.py`, with a
+      `[[check]]` entry in `build/cc_guide/conformance.toml` and red-first tests.
+- [ ] Add the `inert-runner-allow-rules` conformance check (plan 35 audit §6, d25, seat
+      check H#8): runner-style allow snippets that claim to spare prompts, which auto mode
+      sets aside (H-48). Size: quick-fix. Done when: the check is in `CHECKS` in
+      `build/check_conformance.py`, with a `[[check]]` entry in
+      `build/cc_guide/conformance.toml` and red-first tests.
+- [ ] Add the `hook-install-verify-step` conformance check (plan 35 audit §6, d26, seat
+      check H#9): install docs for a blocking hook name a trigger-it-once step (H-27).
+      Heuristic. Size: quick-fix. Done when: the check is in `CHECKS` in
+      `build/check_conformance.py`, with a `[[check]]` entry in
+      `build/cc_guide/conformance.toml` and red-first tests.
+- [ ] Add the `builtin-name-shadow` conformance check (plan 35 audit §6, d27, seat check
+      C#2): no skill or command takes a built-in command's name. It needs a register list.
+      Today 0 against the three the guide names. Size: quick-fix. Done when: the check is in
+      `CHECKS` in `build/check_conformance.py`, with a `[[check]]` entry in
+      `build/cc_guide/conformance.toml` and red-first tests.
+- [ ] Add the `reserved-skill-name` conformance check (plan 35 audit §6, d28, seat check
+      C#3): no `skills/synced/`. Absent today. Size: quick-fix. Done when: the check is in
+      `CHECKS` in `build/check_conformance.py`, with a `[[check]]` entry in
+      `build/cc_guide/conformance.toml` and red-first tests.
+- [ ] Add the `claude-md-import-resolves` conformance check (plan 35 audit §6, d29, seat
+      check C#4): each `@` import in a claude-md file resolves, within 4 hops, using a
+      fence-aware scan. Today a fence-aware scan passes; a naive one would flag
+      CLAUDE.md:122. Size: quick-fix. Done when: the check is in `CHECKS` in
+      `build/check_conformance.py`, with a `[[check]]` entry in
+      `build/cc_guide/conformance.toml` and red-first tests.
+- [ ] Add the `local-md-ignored` conformance check (plan 35 audit §6, d30, seat check C#5):
+      `CLAUDE.local.md` is gitignored. Today it is not, and no such file exists. Size:
+      quick-fix. Done when: the check is in `CHECKS` in `build/check_conformance.py`, with a
+      `[[check]]` entry in `build/cc_guide/conformance.toml` and red-first tests.
+- [ ] Add the `claude-md-count-claims` conformance check (plan 35 audit §6, d31, seat check
+      C#6): lines in claude-md files that state a test, pass or skip count. Today 22 hits.
+      The "(19 originals" note is pinned by the test from `c67278d` on `main`, so it would
+      need an allow-list. Size: quick-fix. Done when: the check is in `CHECKS` in
+      `build/check_conformance.py`, with a `[[check]]` entry in
+      `build/cc_guide/conformance.toml` and red-first tests.
+- [ ] Verify guide note S-108 with `/cc-guide verify skills.progressive-disclosure` once
+      drift lands (plan 35 audit §7): the guide's line 122 says the listing (name and
+      description) is always loaded, which contradicts line 111, under which overflowing
+      descriptions are dropped. Size: quick-fix. Done when: `/cc-guide verify
+      skills.progressive-disclosure` (drift R8.5) has judged the note.
+- [ ] Verify guide note S-109 with `/cc-guide verify skills.listing-budget` once drift lands
+      (plan 35 audit §7): the guide's line 111 leaves the listing budget's unit unstated
+      (the window is in tokens, the budget is called characters), so no threshold can be
+      computed. Size: quick-fix. Done when: `/cc-guide verify skills.listing-budget` (drift
+      R8.5) has judged the note.
+- [ ] Verify guide note S-110 with `/cc-guide verify mechanisms.overview` once drift lands
+      (plan 35 audit §7): the guide's line 45 calls a manual skill invocable without saying
+      by whom, while line 91 says manual only; portability Decision 3's hand-off exception
+      turns on the answer. Size: quick-fix. Done when: `/cc-guide verify
+      mechanisms.overview` (drift R8.5) has judged the note.
+- [ ] Verify guide note A-52 with `/cc-guide verify subagents.frontmatter` once drift lands
+      (plan 35 audit §7): the guide's line 175 requires lowercase-hyphenated agent names,
+      while line 214 defines a custom `Explore` with a capital E. Size: quick-fix. Done
+      when: `/cc-guide verify subagents.frontmatter` (drift R8.5) has judged the note.
+- [ ] Verify guide note A-53 with `/cc-guide verify subagents.models` once drift lands (plan
+      35 audit §7): the guide's line 207 opens Haiku's retirement window on 2026-10-15 while
+      lines 209 and 214 still recommend Haiku, and it leaves the alias's behaviour at
+      retirement unstated. Size: quick-fix. Done when: `/cc-guide verify subagents.models`
+      (drift R8.5) has judged the note.
+- [ ] Verify guide note A-54 with `/cc-guide verify subagents.isolation` once drift lands
+      (plan 35 audit §7): the guide's line 219 says custom agents load CLAUDE.md and git
+      status while the built-in Explore skips both, without saying which applies to line
+      214's Explore override. Size: quick-fix. Done when: `/cc-guide verify
+      subagents.isolation` (drift R8.5) has judged the note.
+- [ ] Verify guide note H-57 with `/cc-guide verify lean.model-routing` once drift lands
+      (plan 35 audit §7): the guide's line 422 leaves open whether `enforceAvailableModels`
+      is honoured only in managed settings; the enforce-available-models-project item waits
+      on it. Size: quick-fix. Done when: `/cc-guide verify lean.model-routing` (drift R8.5)
+      has judged the note.
+- [ ] Verify guide note H-58 with `/cc-guide verify hooks.patterns` once drift lands (plan
+      35 audit §7): the guide's line 362 endorses a Stop gate that re-blocks until the
+      8-block cap, while line 303 says to check `stop_hook_active`; the stop-hook-guard
+      check enforces only line 303's reading. Size: quick-fix. Done when: `/cc-guide verify
+      hooks.patterns` (drift R8.5) has judged the note.
+- [ ] Verify guide note C-40 with `/cc-guide verify mechanisms.overview` once drift lands
+      (plan 35 audit §7): the guide's line 48 says a PostToolUse hook runs the linter every
+      time, which overstates: line 369 says a Write/Edit matcher misses Bash rewrites, and
+      line 371 says gates fail open. Size: quick-fix. Done when: `/cc-guide verify
+      mechanisms.overview` (drift R8.5) has judged the note.
+- [ ] Verify guide note C-41 with `/cc-guide verify context.overview` once drift lands (plan
+      35 audit §7): the guide's line 33 calls CLAUDE.md the only always-loaded prose you
+      control, while line 18 lists rules files without `paths` as always loaded too. Size:
+      quick-fix. Done when: `/cc-guide verify context.overview` (drift R8.5) has judged the
+      note.
+- [ ] Codex and Gemini guide conformance (conformance spec, Out of scope): the register and
+      lint cover the Claude Code guide only, and the register is per guide. Size: design.
+      Revisit if: the owner wants the Codex or Gemini guide anchored and checked the same
+      way.
+- [ ] Deviation comments at artifact sites (conformance spec Decision 9): deviations are
+      recorded only in `build/cc_guide/conformance.toml`, not beside the artifacts they
+      cover. Size: design. Revisit if: drift's R4.5 load check shows a SKILL.md frontmatter
+      comment loads in all three runtimes.
+- [ ] The conformance rule kind misses nested rules (plan 35, latent): its glob
+      `.claude/rules/*.md` (conformance spec R2.3) skips rules in subdirectories, which
+      `rules.rules-files` says are discovered recursively, and git lists a symlinked
+      directory under `.claude/rules/` as one entry that no `.md` glob reaches, so
+      `rule-paths`' check that each `.claude/rules/` link resolves inside the repo never
+      sees it. No such entry exists today. Size: quick-fix. Done when: the rule kind and
+      `rule-paths` cover both cases, with red-first tests.
+- [ ] Keeping the Claude Code guide current is the drift spec's work (conformance spec, Out
+      of scope); this item only points to `specs/claude-code-drift-automation.md`. Size:
+      plan. Revisit if: the drift spec's stages stall or are dropped, leaving nothing that
+      keeps the guide current.
+- [ ] The guide's §8 `TODO(owner)` (conformance spec, Out of scope): the default-model
+      stance in `specs/guides/claude-code-customization-guide.md` is the owner's call. The
+      drift spec logs the same item at its own completion; keep one. Size: design. Done
+      when: the owner decides it and the `TODO(owner)` comment leaves the guide.
+- [ ] The provenance of `skills/writing-skills/anthropic-best-practices.md` (conformance
+      spec, Out of scope): the file reads like an Anthropic docs page, and NOTICE does not
+      attribute it. Size: design. Done when: the owner records the file's source and NOTICE
+      matches, or the file is replaced.
+- [ ] A distilled `references/` file for writing-skills (conformance spec Decision 10).
+      Size: plan. Revisit if: writing-skills is split below 500 body lines (a portability
+      Out-of-scope item; R1.7's body-length warning).

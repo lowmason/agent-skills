@@ -1,0 +1,633 @@
+# Claude Code guide conformance register.
+#
+# Links the guide's anchored sections to the repo's Claude Code artifact
+# kinds, to the mechanical checks that enforce them, and to the exceptions the
+# owner has recorded. Edited by hand, on the owner's decisions; no script
+# writes it. build/check_conformance.py reads it with tomllib.
+# Design: specs/completed/claude-code-guide-conformance.md (R2).
+#
+# Paraphrases here are in the repo's own words; no docs text is committed.
+# Section IDs are the guide's anchors (drift spec R1.1). A kind's `globs` are
+# matched with PurePath.full_match against the files git keeps, so `*` stays
+# inside one path segment and every glob is anchored at the repo root.
+# A [[check]]'s `kind` names one kind, or lists several when one check spans
+# kinds.
+
+[guide]
+path = 'specs/guides/claude-code-customization-guide.md'
+
+# ---------------------------------------------------------------------------
+# Kinds: which files each artifact kind covers, and which sections govern it.
+# A glob may match nothing yet: drift's project-local skill and agent under
+# .claude/ are listed before they exist.
+# ---------------------------------------------------------------------------
+
+[kinds.skill]
+description = 'Agent Skills: a SKILL.md per directory, canonical under skills/.'
+globs = ['skills/*/SKILL.md', '.claude/skills/*/SKILL.md']
+sections = [
+    'skills.overview', 'skills.locations', 'skills.frontmatter',
+    'skills.description', 'skills.listing-budget',
+    'skills.progressive-disclosure', 'skills.arguments', 'skills.iterating',
+    'commands.overview', 'mechanisms.overview', 'lean.ceremony',
+    'lean.expensive-ops', 'lean.model-routing', 'context.overview',
+    'lean.session-hygiene', 'lean.caching',
+]
+
+[kinds.agent]
+description = 'Subagent definitions: canonical agents/*.md and project-local .claude/agents/.'
+globs = ['agents/*.md', '.claude/agents/*.md']
+sections = [
+    'subagents.overview', 'subagents.frontmatter', 'subagents.tools',
+    'subagents.models', 'subagents.isolation', 'lean.model-routing',
+    'mechanisms.overview', 'lean.expensive-ops', 'lean.ceremony',
+]
+
+[kinds.command]
+description = 'Slash-command files; they take skill frontmatter.'
+globs = ['commands/*.md']
+sections = [
+    'commands.overview', 'skills.frontmatter', 'skills.arguments',
+    'skills.description', 'mechanisms.overview', 'skills.listing-budget',
+]
+
+[kinds.hook]
+description = 'Hook scripts and the README that documents their wiring.'
+globs = ['hooks/*.sh', 'hooks/*.py', 'hooks/README.md']
+exclude = ['hooks/test_*.py']
+sections = [
+    'hooks.overview', 'hooks.events', 'hooks.exit-codes', 'hooks.handlers',
+    'hooks.configuration', 'hooks.patterns', 'hooks.pitfalls',
+    'mechanisms.overview', 'rules.settings',
+]
+
+[kinds.rule]
+description = 'Rules files: the canonical rules/ templates and the project .claude/rules/ links.'
+globs = ['rules/*.md', '.claude/rules/*.md']
+sections = [
+    'rules.rules-files', 'rules.hierarchy', 'mechanisms.overview',
+    'lean.session-hygiene', 'context.overview',
+]
+
+[kinds.settings]
+description = 'Project settings committed to the repo.'
+globs = ['.claude/settings.json']
+# lean.model-routing governs the settings file, except its TODO(owner)
+# bullet, which is the owner's open question and binds nothing.
+sections = [
+    'rules.settings', 'hooks.configuration', 'lean.model-routing',
+    'hooks.patterns', 'hooks.exit-codes', 'mechanisms.overview',
+    'hooks.pitfalls',
+]
+
+[kinds.claude-md]
+description = 'Always-loaded CLAUDE.md files.'
+globs = ['CLAUDE.md', 'build/CLAUDE.md']
+sections = [
+    'rules.claude-md', 'rules.hierarchy', 'context.overview',
+    'lean.session-hygiene', 'mechanisms.overview', 'subagents.isolation',
+    'subagents.frontmatter',
+]
+
+[kinds.installer]
+description = 'install.py, which places skills, agents and commands for each runtime.'
+globs = ['install.py']
+sections = ['skills.locations', 'subagents.overview', 'commands.overview']
+
+# ---------------------------------------------------------------------------
+# Sections that govern no repo file, each with its reason. Disjoint from the
+# kinds' sections; together they cover every anchor.
+# ---------------------------------------------------------------------------
+
+[unmapped]
+'rules.overview' = 'An empty intro.'
+'lean.overview' = 'An empty intro.'
+'rules.auto-memory' = 'Auto memory lives under ~/.claude/projects/, outside the repo.'
+'lean.measure' = 'Governs how sessions are measured, not any file here.'
+'lean.mcp' = 'The repo configures no MCP server.'
+'reading.overview' = 'Pointers to the docs.'
+
+# ---------------------------------------------------------------------------
+# Mechanical checks only. `type` is fact or advice, by the drift spec's R8.5
+# test: a fact is a line a docs page could confirm or refute. Values taken
+# from the guide are named parameters, so a guide change is reviewed here and
+# the lint's code changes only when a mechanism does.
+# ---------------------------------------------------------------------------
+
+# The guide puts the docs' size target at under 200 lines per CLAUDE.md file.
+[[check]]
+id = 'claude-md-size'
+kind = 'claude-md'
+sections = ['rules.claude-md']
+type = 'advice'
+rule = 'Each CLAUDE.md file stays under the docs size target.'
+enforced_by = 'check_conformance'
+limit = 200
+
+# A rule without paths loads in every session. always_on lists the rules
+# that must persist past compaction, which the same section says should drop
+# paths instead; none does today.
+[[check]]
+id = 'rule-paths'
+kind = 'rule'
+sections = ['rules.rules-files']
+type = 'advice'
+rule = 'A rules file sets a non-empty paths list so it loads lazily, unless always_on lists it; a .claude/rules/ link resolves inside the repo.'
+enforced_by = 'check_conformance'
+always_on = []
+
+# The guide's Pattern 1 double-quotes the project-dir variable, so a path with
+# spaces survives word splitting.
+[[check]]
+id = 'hook-dir-quoted'
+kind = ['hook', 'settings']
+sections = ['hooks.patterns']
+type = 'advice'
+rule = 'A hook command keeps $CLAUDE_PROJECT_DIR inside double quotes.'
+enforced_by = 'check_conformance'
+
+# A Stop hook that ignores stop_hook_active can block on a condition that
+# never resolves, until the block cap stops it.
+[[check]]
+id = 'stop-hook-guard'
+kind = ['hook', 'settings']
+sections = ['hooks.exit-codes', 'hooks.patterns']
+type = 'advice'
+rule = 'A command wired to Stop runs a repo hook script that reads stop_hook_active.'
+enforced_by = 'check_conformance'
+
+# Both lists come from the guide's subagent frontmatter table.
+[[check]]
+id = 'agent-fields'
+kind = 'agent'
+sections = ['subagents.frontmatter']
+type = 'fact'
+rule = 'Agent frontmatter uses only documented fields, and model is an alias or a full claude- model ID.'
+enforced_by = 'check_conformance'
+fields = [
+    'name', 'description', 'tools', 'disallowedTools', 'model', 'effort',
+    'permissionMode', 'maxTurns', 'skills', 'mcpServers', 'hooks', 'memory',
+    'background', 'isolation', 'omitClaudeMd', 'experimental', 'color',
+    'initialPrompt',
+]
+models = ['sonnet', 'opus', 'haiku', 'fable', 'inherit']
+
+# Reviewers get read-only tools; memory silently adds Read, Write and Edit.
+# The marker is check_frontmatter.py's `## Read-only contract` heading.
+[[check]]
+id = 'readonly-agent-tools'
+kind = 'agent'
+sections = ['subagents.tools']
+type = 'advice'
+rule = 'A read-only agent sets a tools list without the editing tools, and sets no memory.'
+enforced_by = 'check_conformance'
+forbidden_tools = ['Write', 'Edit', 'NotebookEdit']
+
+# On macOS, Linux and WSL, Grep and Glob are absent for an agent that also
+# lists Bash; search then runs through the shell.
+[[check]]
+id = 'bash-search-tools'
+kind = 'agent'
+sections = ['subagents.tools']
+type = 'fact'
+rule = 'An agent that lists Bash lists neither Grep nor Glob.'
+enforced_by = 'check_conformance'
+
+# Rules build/check_frontmatter.py already enforces, recorded here without
+# change so the register maps them to the guide. Portability Stage A owns
+# that file.
+[[check]]
+id = 'command-manual-only'
+kind = 'command'
+sections = ['commands.overview']
+type = 'advice'
+rule = 'Commands set disable-model-invocation: true.'
+enforced_by = 'check_frontmatter'
+
+[[check]]
+id = 'fork-only-context'
+kind = 'skill'
+sections = ['skills.frontmatter']
+type = 'fact'
+rule = 'context, when present, is fork.'
+enforced_by = 'check_frontmatter'
+
+[[check]]
+id = 'no-haiku-skill-model'
+kind = ['skill', 'command']
+sections = ['skills.frontmatter']
+type = 'fact'
+rule = 'No skill or command sets a Haiku model, since auto mode ignores it.'
+enforced_by = 'check_frontmatter'
+
+[[check]]
+id = 'known-agent-tools'
+kind = 'agent'
+sections = ['subagents.frontmatter']
+type = 'fact'
+rule = 'Agent tools come from a known set.'
+enforced_by = 'check_frontmatter'
+
+# check_frontmatter.py applies the same 1,024-character cap to agent
+# descriptions, by analogy with the listing budget.
+[[check]]
+id = 'description-cap'
+kind = 'skill'
+sections = ['skills.description']
+type = 'fact'
+rule = 'Descriptions stay within the listing cap; the repo enforces the stricter 1,024-character Agent Skills cap.'
+enforced_by = 'check_frontmatter'
+
+# ---------------------------------------------------------------------------
+# Exceptions, decided by the owner at the plan 35 gate (2026-10-04) on the
+# audit in specs/claude-code-conformance-audit-2026-10-04.md. A deviation is
+# deliberate and names its revisit trigger; a gap is known non-conformance and
+# names where its fix lands. A waiver (check set) lists explicit paths, and
+# when its file stops violating, the lint fails until the entry is narrowed.
+# ---------------------------------------------------------------------------
+
+# All seven agents list Grep and Glob beside Bash (drift's known drift #1).
+[[exception]]
+id = 'grep-glob-beside-bash'
+type = 'gap'
+check = 'bash-search-tools'
+sections = ['subagents.tools']
+artifacts = [
+    'agents/code-reviewer.md', 'agents/debugger.md', 'agents/docs-writer.md',
+    'agents/explore.md', 'agents/security-auditor.md', 'agents/task-reviewer.md',
+    'agents/test-runner.md',
+]
+guide = 'On macOS, Linux and WSL an agent that lists Bash gets no Grep or Glob.'
+reason = 'The Gemini adapters map Grep and Glob to working tools, so deleting them from the canonical files would regress Gemini.'
+evidence = 'Drift spec R11.5 #1; audit rows L-02 to L-08.'
+protects = ['gemini']
+tracked_in = 'drift Stage 3, first files batch (drift spec R11.5 #1)'
+
+# hooks/README.md's install snippet leaves $CLAUDE_PROJECT_DIR unquoted
+# three times (drift's known drift #3).
+[[exception]]
+id = 'hook-dir-unquoted'
+type = 'gap'
+check = 'hook-dir-quoted'
+sections = ['hooks.patterns']
+artifacts = ['hooks/README.md']
+guide = 'A hook command keeps $CLAUDE_PROJECT_DIR in double quotes.'
+reason = 'The README install snippet predates the quoted pattern.'
+evidence = 'Drift spec R11.5 #3; audit rows L-09 to L-11.'
+tracked_in = 'drift Stage 3, first files batch (drift spec R11.5 #3)'
+
+# The root CLAUDE.md is over the docs target. The owner set its type,
+# ceiling and tracked_in at the gate (the audit report's Owner decisions):
+# choice A trimmed it to 225 lines without dropping an instruction.
+[[exception]]
+id = 'claude-md-size'
+type = 'gap'
+check = 'claude-md-size'
+sections = ['rules.claude-md']
+artifacts = ['CLAUDE.md']
+guide = 'The docs target fewer than 200 lines per CLAUDE.md file.'
+reason = 'Codex and Gemini read the same file, so instructions leave it only by deliberate condensing or relocation.'
+evidence = 'Audit row L-01; owner gate 2026-10-04 (choice A, trim to 225).'
+ceiling = 225
+tracked_in = 'deferred item: bring the root CLAUDE.md under 200 lines'
+
+# writing-skills keeps descriptions trigger-only on tested evidence.
+[[exception]]
+id = 'description-when-only'
+type = 'deviation'
+sections = ['skills.description']
+artifacts = ['skills/*/SKILL.md']
+guide = 'A description states what the skill does and when to use it.'
+reason = 'writing-skills requires trigger-only Use when descriptions, on tested evidence that a workflow summary lets agents skip the body.'
+evidence = 'writing-skills, Skill Discovery Optimization; portability spec Decision 4; audit rows S-28 to S-52 and S-54.'
+revisit = 'When trigger-eval suites exist (a portability deferred item).'
+
+# Other skills hand off to these by bare name. artifacts is seat S's list,
+# less the four the owner split out as a gap (side-effecting-skills-ungated).
+[[exception]]
+id = 'side-effecting-skills-invocable'
+type = 'deviation'
+sections = ['commands.overview', 'skills.frontmatter']
+artifacts = [
+    'skills/finishing-a-development-branch/SKILL.md',
+    'skills/using-git-worktrees/SKILL.md',
+    'skills/brainstorming/SKILL.md',
+    'skills/writing-plans/SKILL.md',
+    'skills/executing-plans/SKILL.md',
+    'skills/describe-critique-methodology/SKILL.md',
+    'skills/llm-wiki/SKILL.md',
+    'skills/derive-roadmap/SKILL.md',
+]
+guide = 'A side-effecting workflow sets disable-model-invocation: true.'
+reason = 'Other skills hand off to these by bare name, which a manual-only skill cannot receive; their bodies gate the side effects, some only in part.'
+evidence = 'Portability spec Decision 3; audit rows S-81 to S-87 and S-92.'
+revisit = 'When the guide documents a way for one skill to hand off to a manual-only skill.'
+
+# Side-effecting skills that Decision 3 does not cover.
+[[exception]]
+id = 'side-effecting-skills-ungated'
+type = 'gap'
+sections = ['commands.overview', 'skills.frontmatter']
+artifacts = [
+    'skills/subagent-driven-development/SKILL.md',
+    'skills/requesting-code-review/SKILL.md',
+    'skills/writing-skills/SKILL.md',
+    'skills/dispatching-parallel-agents/SKILL.md',
+]
+guide = 'A side-effecting workflow sets disable-model-invocation: true.'
+reason = 'These four act with side effects but lack a body gate or an inbound bare-name handoff, so portability Decision 3 does not cover them.'
+evidence = 'Audit rows S-88 to S-91; owner gate 2026-10-04.'
+tracked_in = 'deferred item: gate or make manual-only the four ungated side-effecting skills'
+
+# writing-skills' departures from the guide go to its rewrite.
+[[exception]]
+id = 'writing-skills-guide-gaps'
+type = 'gap'
+sections = ['skills.overview', 'skills.listing-budget', 'skills.progressive-disclosure', 'rules.hierarchy']
+artifacts = ['skills/writing-skills/SKILL.md']
+guide = 'A SKILL.md body stays well under 500 lines with critical rules near the top; overflowing descriptions are dropped from the listing; @ imports are documented for CLAUDE.md only.'
+reason = 'writing-skills departs from the guide on body length, the listing budget, critical-rules-first and @ loading; its @ loading claim is unsupported rather than contradicted, and Stage D verifies or drops it.'
+evidence = 'Audit rows S-02, S-58, S-67, S-68, S-107; owner gate 2026-10-04.'
+tracked_in = 'portability Stage D'
+
+[[exception]]
+id = 'writing-skills-tdd-for-docs'
+type = 'deviation'
+sections = ['lean.ceremony']
+artifacts = ['skills/writing-skills/SKILL.md']
+guide = 'Skip TDD for formatting, documentation and config changes.'
+reason = 'writing-skills treats skill documentation as behaviour-shaping, so it is tested first: tests written after the fact prove nothing.'
+evidence = 'Audit row S-97; owner gate 2026-10-04.'
+revisit = 'When portability Stage D revises writing-skills.'
+
+[[exception]]
+id = 'description-second-person'
+type = 'gap'
+sections = ['skills.description']
+artifacts = [
+    'skills/clean-coder/SKILL.md',
+    'skills/executing-plans/SKILL.md',
+    'skills/explore-data/SKILL.md',
+    'skills/recommend-visualization/SKILL.md',
+    'skills/systematic-debugging/SKILL.md',
+    'skills/validate-data/SKILL.md',
+    'skills/writing-plans/SKILL.md',
+]
+guide = 'Write a skill description in the third person.'
+reason = 'Seven descriptions use second person outside quoted trigger phrases; rewording waits for its own change, since descriptions drive routing.'
+evidence = 'Audit rows S-21 to S-27; owner gate 2026-10-04.'
+tracked_in = 'deferred item: rewrite seven skill descriptions in the third person'
+
+[[exception]]
+id = 'critical-rules-past-compaction'
+type = 'gap'
+sections = ['skills.progressive-disclosure']
+artifacts = [
+    'skills/subagent-driven-development/SKILL.md',
+    'skills/bayesian-workflow/SKILL.md',
+]
+guide = 'Put critical instructions near the top of a SKILL.md; compaction re-attaches only its first 5,000 tokens.'
+reason = 'Critical sections of both skills sit past the first 5,000 tokens.'
+evidence = 'Audit rows S-69, S-70; owner gate 2026-10-04.'
+tracked_in = 'deferred item: move critical sections above the compaction cut in two skills'
+
+[[exception]]
+id = 'dispatch-model-in-prose'
+type = 'gap'
+sections = ['mechanisms.overview']
+artifacts = ['skills/subagent-driven-development/SKILL.md']
+guide = 'A deterministic, machine-checkable rule belongs in a hook, not in prose.'
+reason = 'The rule to name a model on every dispatch is machine-checkable but enforced only by prose.'
+evidence = 'Audit row S-94; owner gate 2026-10-04.'
+tracked_in = 'deferred item: enforce the model-on-dispatch rule with a hook'
+
+[[exception]]
+id = 'brainstorming-every-project'
+type = 'gap'
+sections = ['lean.ceremony']
+artifacts = ['skills/brainstorming/SKILL.md']
+guide = 'Skip brainstorming when the solution can already be described.'
+reason = "brainstorming applies to every project, while the owner's proportional-process rule in /deferred reserves it for open design decisions."
+evidence = 'Audit row S-96; owner gate 2026-10-04.'
+tracked_in = "deferred item: make brainstorming's scope proportional"
+
+[[exception]]
+id = 'review-before-every-merge'
+type = 'gap'
+sections = ['lean.ceremony']
+artifacts = ['skills/requesting-code-review/SKILL.md']
+guide = 'Skip review for a small change you watched being made.'
+reason = 'requesting-code-review requires review before every merge to main.'
+evidence = 'Audit row S-99; owner gate 2026-10-04.'
+tracked_in = "deferred item: reconcile requesting-code-review with the guide's skip for small watched changes"
+
+[[exception]]
+id = 'network-rebuild-ungated'
+type = 'gap'
+sections = ['lean.expensive-ops']
+artifacts = [
+    'skills/geographic-codes/SKILL.md',
+    'skills/classification-codes/SKILL.md',
+]
+guide = 'Gate costly or networked commands behind a manual skill or a deny rule.'
+reason = 'Both skills rebuild data/ from the network when it is missing, with no manual gate.'
+evidence = 'Audit rows S-104, S-105; owner gate 2026-10-04.'
+tracked_in = 'deferred item: gate the geographic-codes and classification-codes network rebuilds'
+
+[[exception]]
+id = 'explore-capitalised-name'
+type = 'deviation'
+sections = ['subagents.frontmatter']
+artifacts = ['agents/explore.md']
+guide = 'An agent name is a unique lowercase-hyphenated ID.'
+reason = 'Only the capitalised name Explore overrides the built-in Explore agent, as probed on Claude Code 2.1.219.'
+evidence = 'Audit row A-04; owner gate 2026-10-04.'
+revisit = 'Re-probe after Claude Code binary updates, as agents/explore.md says.'
+
+[[exception]]
+id = 'readonly-agents-hold-bash'
+type = 'deviation'
+sections = ['subagents.tools', 'mechanisms.overview']
+artifacts = [
+    'agents/code-reviewer.md', 'agents/security-auditor.md',
+    'agents/task-reviewer.md', 'agents/explore.md',
+    'hooks/readonly-agent-guard.py',
+]
+guide = 'Reviewers and auditors get read-only tools, and a hard access boundary belongs in permission rules.'
+reason = 'The read-only agents need Bash for git and test commands; the PreToolUse guard bounds it because a hook matcher keys on the tool, not the agent.'
+evidence = 'Audit rows A-12 to A-15, H-34; specs/completed/readonly-agent-guard.md; owner gate 2026-10-04.'
+revisit = 'When permission rules can be scoped to an agent type.'
+
+[[exception]]
+id = 'debugger-lacks-write'
+type = 'gap'
+sections = ['subagents.tools']
+artifacts = ['agents/debugger.md']
+guide = 'An implementer agent gets Read, Write, Edit and Bash.'
+reason = 'debugger has Edit and Bash but not Write, yet it is told to create a failing test; the recorded reason covers Edit only.'
+evidence = 'Audit row A-18; owner gate 2026-10-04.'
+tracked_in = 'deferred item: give debugger Write or record why not'
+
+[[exception]]
+id = 'docs-writer-holds-bash'
+type = 'gap'
+sections = ['subagents.tools']
+artifacts = ['agents/docs-writer.md']
+guide = 'A documentation agent does not need Bash.'
+reason = 'docs-writer holds Bash with no recorded reason.'
+evidence = 'Audit row A-20; owner gate 2026-10-04.'
+tracked_in = 'deferred item: drop Bash from docs-writer or record why it needs it'
+
+[[exception]]
+id = 'task-reviewer-sonnet-floor'
+type = 'deviation'
+sections = ['subagents.models']
+artifacts = ['agents/task-reviewer.md']
+guide = 'Adversarial correctness review runs on Opus.'
+reason = 'Sonnet is the floor, and the controller escalates to Opus per dispatch.'
+evidence = 'Audit row A-26; owner gate 2026-10-04.'
+revisit = 'If the per-spawn model override stops applying.'
+
+[[exception]]
+id = 'reviewers-flag-beyond-correctness'
+type = 'gap'
+sections = ['subagents.isolation']
+artifacts = ['agents/code-reviewer.md', 'agents/task-reviewer.md']
+guide = 'Tell a reviewer to flag only correctness and requirement gaps.'
+reason = 'Both reviewers invite findings beyond correctness and requirement gaps.'
+evidence = 'Audit rows A-33, A-34; owner gate 2026-10-04.'
+tracked_in = 'deferred item: scope code-reviewer and task-reviewer findings to correctness and requirement gaps'
+
+[[exception]]
+id = 'commands-stay-command-files'
+type = 'deviation'
+sections = ['commands.overview']
+artifacts = [
+    'commands/deferred.md', 'commands/fix-issue.md', 'commands/license-audit.md',
+]
+guide = 'New work uses skills rather than command files.'
+reason = 'The Gemini TOML adapters are generated from commands/*.md, and /deferred is an install dependency.'
+evidence = 'Audit rows A-38 to A-40; owner gate 2026-10-04.'
+revisit = 'When the Gemini adapters can be generated from skills.'
+
+# Four hooks/README.md gaps share one deferred item.
+[[exception]]
+id = 'hooks-readme-home-unquoted'
+type = 'gap'
+sections = ['hooks.patterns']
+artifacts = ['hooks/README.md']
+guide = 'A hook command double-quotes the variable that locates its script.'
+reason = "The read-only guard's install command leaves $HOME unquoted; hook-dir-quoted checks only $CLAUDE_PROJECT_DIR."
+evidence = 'Audit row H-18; owner gate 2026-10-04.'
+tracked_in = 'deferred item: fix four hooks/README.md inaccuracies'
+
+[[exception]]
+id = 'hooks-readme-exit-claim'
+type = 'gap'
+sections = ['hooks.pitfalls']
+artifacts = ['hooks/README.md']
+guide = 'A hook blocks with exit 2 or with a JSON deny decision.'
+reason = 'hooks/README.md says only exit 2 blocks, beside a hook that blocks by JSON deny.'
+evidence = 'Audit row H-24; owner gate 2026-10-04.'
+tracked_in = 'deferred item: fix four hooks/README.md inaccuracies'
+
+[[exception]]
+id = 'hooks-readme-no-verify-step'
+type = 'gap'
+sections = ['hooks.pitfalls']
+artifacts = ['hooks/README.md']
+guide = 'A gate fails open on a bad path, so trigger each gate once after installing it.'
+reason = 'The install path for the blocking hooks ends at the settings merge, with no step to trigger each one.'
+evidence = 'Audit row H-27; owner gate 2026-10-04.'
+tracked_in = 'deferred item: fix four hooks/README.md inaccuracies'
+
+[[exception]]
+id = 'hooks-readme-auto-mode-allow'
+type = 'gap'
+sections = ['rules.settings']
+artifacts = ['hooks/README.md']
+guide = 'Auto mode sets aside broad allow rules for script runners.'
+reason = 'hooks/README.md says the allowlist spares the uv forms a prompt, which holds only in manual mode.'
+evidence = 'Audit row H-48; owner gate 2026-10-04.'
+tracked_in = 'deferred item: fix four hooks/README.md inaccuracies'
+
+[[exception]]
+id = 'guard-stdlib-only'
+type = 'deviation'
+sections = ['hooks.pitfalls']
+artifacts = ['hooks/readonly-agent-guard.py']
+guide = 'Python hook logic lives in a single-file uv script with inline dependencies.'
+reason = 'The guard must run on the Python 3.9 floor under the system interpreter, so it stays stdlib-only.'
+evidence = 'Audit row H-32; specs/completed/readonly-agent-guard.md; owner gate 2026-10-04.'
+revisit = 'When the guard needs a third-party dependency.'
+
+# rules/clean-code-python.md stays path-scoped (owner gate); its label is a gap.
+[[exception]]
+id = 'clean-code-rule-always-on-label'
+type = 'gap'
+sections = ['rules.rules-files']
+artifacts = ['rules/clean-code-python.md']
+guide = 'A rule with paths loads only when a matching file is read or edited.'
+reason = 'The rule is titled always-on but is path-scoped (the 2026-10-03 repo audit, D12).'
+evidence = 'Audit row H-38; owner gate 2026-10-04.'
+tracked_in = "deferred item: relabel clean-code-python's always-on title"
+
+[[exception]]
+id = 'clean-code-rule-path-scoped'
+type = 'deviation'
+sections = ['rules.rules-files']
+artifacts = ['rules/clean-code-python.md']
+guide = 'A rule that must persist through compaction drops paths.'
+reason = 'Plan 15 chose a token-cheap, path-scoped rule.'
+evidence = 'Audit row H-39; owner gate 2026-10-04.'
+revisit = 'When the clean-code family is next revised.'
+
+[[exception]]
+id = 'clean-code-rule-project-level'
+type = 'deviation'
+sections = ['rules.rules-files']
+artifacts = ['rules/clean-code-python.md']
+guide = 'Rules that apply across projects live in ~/.claude/rules/.'
+reason = 'The rule ships per repo by the project-level-only decision in specs/deferred_items.md, though its last bullet names work repos.'
+evidence = 'Audit row H-41; owner gate 2026-10-04.'
+revisit = 'If the rule moves to ~/.claude/rules.'
+
+[[exception]]
+id = 'enforce-available-models-project'
+type = 'gap'
+sections = ['lean.model-routing']
+artifacts = ['.claude/settings.json']
+guide = 'enforceAvailableModels is documented as a managed-settings key.'
+reason = 'It is set in project settings; whether it takes effect there turns on guide note H-57.'
+evidence = 'Audit rows H-51, H-57; owner gate 2026-10-04.'
+tracked_in = 'deferred item: settle where enforceAvailableModels belongs'
+
+[[exception]]
+id = 'claude-md-fast-changing-details'
+type = 'gap'
+sections = ['rules.claude-md']
+artifacts = ['CLAUDE.md', 'build/CLAUDE.md']
+guide = 'Keep fast-changing details and anything readable from the code out of CLAUDE.md.'
+reason = 'Both files carry hand-kept test counts, rules restated from code, and a stale description of build/.'
+evidence = 'Audit rows C-02 to C-05; owner gate 2026-10-04.'
+tracked_in = 'deferred item: bring the root CLAUDE.md under 200 lines'
+
+[[exception]]
+id = 'commit-lints-in-prose'
+type = 'gap'
+sections = ['mechanisms.overview']
+artifacts = ['CLAUDE.md', 'build/CLAUDE.md']
+guide = 'A deterministic, machine-checkable rule belongs in a hook, not in prose.'
+reason = 'The before-commit lints and the rule against hand-editing runtimes/ are prose that no hook or CI enforces.'
+evidence = 'Audit rows C-31, C-32; owner gate 2026-10-04.'
+tracked_in = 'deferred item: run the before-commit lints from a hook or CI'
+
+[[exception]]
+id = 'claude-md-serves-codex-gemini'
+type = 'deviation'
+sections = ['mechanisms.overview']
+artifacts = ['CLAUDE.md']
+guide = 'Guidance for certain files belongs in a path-scoped rule, and sometimes-relevant knowledge in a skill.'
+reason = 'CLAUDE.md is the one file Codex and Gemini read, so its Python-style line and Commands block stay (conformance spec Decision 1, R4.3).'
+evidence = 'Audit rows C-33, C-34; owner gate 2026-10-04.'
+revisit = 'When Codex and Gemini can load that content from a rule or a skill.'

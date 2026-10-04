@@ -241,6 +241,13 @@ the next line, by `<!-- cc: <id> -->`.
   they are unique, and they never change when a heading's text or ⚠ marker
   does. They contain no section numbers.
 - Each section belongs to exactly one group (R2.5).
+- The anchors are already in the guide. The conformance plan added them with
+  exactly these IDs, in this order. Its R1.2 test
+  (`test_real_guide_carries_the_drift_r11_anchors` in
+  `build/test_check_conformance.py`) pins the IDs and their order, and its
+  lint (`build/check_conformance.py`) requires a well-formed, unique anchor
+  under every heading. Stage 1 adopts them instead of adding them
+  (`specs/completed/claude-code-guide-conformance.md`, R6 D1).
 
 | Section | ID | Group |
 |---|---|---|
@@ -425,6 +432,7 @@ last review.
 | `SKILL.md`, `agents/*.md`, `commands/*.md`, `.claude/skills/*/SKILL.md`, `.claude/agents/*.md` | `# cc-guide: …` as a YAML comment, the last line inside the frontmatter |
 | `*.sh`, `*.py` | a `# cc-guide: …` line before the first line of code. Only a shebang, comments, blank lines, a PEP 723 block (never inside it) and a Python module docstring may precede it |
 | Markdown without frontmatter (CLAUDE.md, READMEs) | a block-level `<!-- cc-guide: … -->` at the top |
+| TOML (`build/cc_guide/conformance.toml`) | a `# cc-guide: …` line before the first key or table, preceded only by comments and blank lines (conformance R6 D2) |
 
 Citations never go in a skill or agent body: bodies reach Codex and Gemini
 verbatim and cost tokens on every load.
@@ -437,7 +445,11 @@ fact that can change between versions; naming Claude Code is not enough.
   rule, `KNOWN_AGENT_TOOLS`); `commands/*.md`; skills whose frontmatter or
   text depends on Claude Code behaviour (`effort`, `context: fork`, slash
   commands, subagent dispatch, model aliases); `install.py` (install
-  locations); the root `README.md` and `CLAUDE.md`.
+  locations); the root `README.md` and `CLAUDE.md`; the conformance register
+  `build/cc_guide/conformance.toml` (all 38 IDs, R2.8 of the conformance spec)
+  and its lint `build/check_conformance.py` (`hooks.configuration`,
+  `subagents.frontmatter`, `rules.rules-files`; its R3.6). The conformance plan
+  landed first, so Stage 2 adds both citation lines (conformance R6 D3).
 - The plan's sweep fixes the exact list, including this system's own files.
   JSON holds no comments, so `build/cc_guide/notice.sh` carries the citation
   for the settings wiring.
@@ -689,10 +701,17 @@ deterministic:
      release for `verify`; for an audit, `audited` instead;
    - `cite` for each reviewed file;
    - then `stamp`.
-5. Run `lint`.
+5. Run `lint` and `build/check_conformance.py`.
 6. List the citing files of every section whose `changed` moved.
 
 Nothing is committed, and quotes appear only in session reports.
+
+When a correction resolves a conformance gap, the same working-tree change
+removes the matching `[[exception]]` from `build/cc_guide/conformance.toml`, or
+narrows its `artifacts`, and step 5 then runs `check_conformance.py`. This
+covers Stage 3's fixes to the three known drifts (R11.5) and any later
+correction. Otherwise the register's both-ways match fails the fix as a stale
+waiver (conformance R6 D5).
 
 R8.9 **`/cc-guide probes`** runs `probes` (R10).
 
@@ -823,7 +842,9 @@ reviews `manifest.toml` before it is committed.
 R11.3 **Citation sweep.** Tag every pre-existing qualifying file (R4.2)
 `@2.1.219`, and record the coverage gaps (R4.3). Files this work creates are
 written against the current guide, so they take the highest `changed` among
-their cited sections. The load check (R4.5) runs before the sweep lands.
+their cited sections. The load check (R4.5) runs before the sweep lands. The
+conformance register and lint (R4.2) were written against the guide at 2.1.288,
+so the sweep stamps them `@2.1.288`, not `@2.1.219` (conformance R6 D3).
 
 R11.4 **First runs.**
 - `check --docs ~/.cache/agent-skills/cc-guide/2.1.288/docs` reports no
@@ -851,6 +872,8 @@ R11.5 **First jobs.**
     script's comment states the choice.
   - **#3, `hooks/README.md` lines 56, 60, 64.** Quote `$CLAUDE_PROJECT_DIR`
     as the guide's Pattern 1 does.
+  - Fixing #1 or #3 also removes or narrows the register exception that tracks
+    it, in the same change (R8.8; conformance R6 D5).
 
 R11.6 Later `files` batches clear the rest of the backlog. It tracks itself,
 through the lint's `STALE` lines and the report, so plan completion logs one
@@ -916,6 +939,10 @@ R12.7 **Documentation.**
   the build-directory count rises with it (both stated as +N deltas in
   plans), plus the `lint`, `check` and `probes` invocations.
 - `build/CLAUDE.md` gains a paragraph on `cc_guide/`.
+- The CLAUDE.md lines a stage adds stay within the `claude-md-size` ceiling in
+  `build/cc_guide/conformance.toml`: the stage trims CLAUDE.md elsewhere, or
+  raises the ceiling in the register on purpose, with a reason
+  (conformance R6 D4).
 - The skill body documents its modes.
 
 ## Sequencing and execution constraints
@@ -924,7 +951,8 @@ Five stages, in order; each is one plan.
 
 1. **Detector.** R1, R2, R3, R5 apart from its citation rules, R6 apart from
    R6.8's citing-file lists, and `baseline init`, `stamp` and `accept`, with
-   their tests. Usable through `uv run` as soon as it lands.
+   their tests. Usable through `uv run` as soon as it lands. R1.1's anchors
+   are already in the guide, so Stage 1 adopts them (conformance R6 D1).
 2. **Wiring.** R4, R5's citation rules, R6.8's citing-file lists,
    `baseline cite`, and R11.3, with their tests. It follows the detector
    because citation stamps and the lint's stale check compare against each

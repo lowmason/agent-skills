@@ -1,13 +1,15 @@
 # Claude Code guide conformance — Design Spec
 
-**Status: APPROVED (2026-10-04), R6's amendments included.**
+**Status: COMPLETE (2026-10-04)** — implemented by plan 35
+(`specs/plans/completed/35-claude-code-guide-conformance.md`) and retired here.
 - The owner approved all four design sections in a brainstorming session,
   along with three choices: comply-or-explain, report-only for files outside
   the repo, and approach A.
 - The owner then reviewed the written spec and approved it with R6's
   amendments to the drift spec (D1–D5) and the portability spec (P1–P3).
   The plan applies those amendments without a further gate.
-- Nothing here has been implemented.
+- At the plan's completion gate (2026-10-04), the owner added the installer
+  kind to R4.1's list and a note on `sh -c` quoting under R3.4.
 
 ## Purpose and scope
 
@@ -350,6 +352,13 @@ R3.4 **The seven checks.** Parameters come from the register (Decision 5).
 
 `tools` may be a comma-separated string or a YAML list.
 
+`hook-dir-quoted` reads only the outer shell's quoting; it does not parse the
+script inside `sh -c`. So `sh -c 'cd "$CLAUDE_PROJECT_DIR"'` fails as
+single-quoted, though the inner shell expands the variable inside double
+quotes, and `sh -c "cd $CLAUDE_PROJECT_DIR"` passes, though the inner shell
+splits the expanded path at spaces. No hook command in the repo uses `sh -c`
+(owner, plan 35 completion gate, 2026-10-04).
+
 The register holds two lists taken from the guide's `subagents.frontmatter`:
 - `fields`: `name`, `description`, `tools`, `disallowedTools`, `model`,
   `effort`, `permissionMode`, `maxTurns`, `skills`, `mcpServers`, `hooks`,
@@ -380,8 +389,9 @@ the same rule as R2.8.
 
 R4.1 **The rule.** CLAUDE.md's "Editing skills" section gains one rule; the
 section may be retitled to cover every artifact kind. It says:
-- a Claude Code artifact (skill, agent, command, hook, rule, settings or
-  CLAUDE.md) follows the guide sections listed for its kind in the register;
+- a Claude Code artifact (skill, agent, command, hook, rule, settings,
+  installer (`install.py`) or CLAUDE.md) follows the guide sections listed for
+  its kind in the register;
 - any departure is recorded there as a deviation or a gap;
 - `check_conformance.py` runs before committing.
 
