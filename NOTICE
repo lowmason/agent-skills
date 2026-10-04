@@ -70,9 +70,10 @@ memo contract and example are newly written. No upstream estimator code,
 fitting instructions, decision-tree heuristics, automated causal grading,
 or repeated mandatory approval checkpoints are imported. Primary papers,
 Hernan and Robins' Causal Inference: What If, and official implementation
-documentation are cited in original wording by author-year/topic only;
-no book/paper prose, figures, PDFs, or other document copies are bundled.
-Pinned URLs and the bibliography are in the skill's references/sources.md.
+documentation are cited in original wording by author-year/topic, with a
+locator only where it was checked against the cited text; no book/paper
+prose, figures, PDFs, or other document copies are bundled. Pinned URLs
+and the bibliography are in the skill's references/sources.md.
 
 The following skills are original works by Lowell Mason, MIT licensed:
 

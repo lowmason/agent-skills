@@ -9,7 +9,7 @@ No book/paper prose, figures, PDFs, or upstream estimator code is redistributed.
 | Source | Pinned source | Adapted portion |
 |---|---|---|
 | Robson Tigre, `causal-planner`, MIT | [SKILL.md at 5317ebc](https://github.com/RobsonTigre/everyday-causal-skills/blob/5317ebc8affd36a7132739d480ccfae22f4bb3ad/skills/causal-planner/SKILL.md) | Interview about assignment, compare designs, record a conditional recommendation and implementation handoff |
-| Alexandre Andorra, `causal-inference`, MIT, Learning Bayesian Statistics | [SKILL.md at 18ab0de](https://github.com/Learning-Bayesian-Statistics/baygent-skills/blob/18ab0de9b63b5bb03caa96146235e8f1534d45d4/causal-inference/SKILL.md) | Thinking phase: define estimand, draw DAG, establish identification, choose design |
+| Alexandre Andorra, `causal-inference`, MIT, Learning Bayesian Statistics | [SKILL.md at 18ab0de](https://github.com/Learning-Bayesian-Statistics/baygent-skills/blob/18ab0de9b63b5bb03caa96146235e8f1534d45d4/causal-inference/SKILL.md) | Thinking phase: define estimand, draw DAG, establish identification, choose design, and reconcile the requested estimand with the one the design identifies |
 
 Both public HEAD/main commits were resolved with `git ls-remote`; each LICENSE
 was checked at that exact commit. Full MIT notices are retained inside this
@@ -31,13 +31,14 @@ mandatory approval checkpoints were not imported.
 | Hernán, Miguel A., and James M. Robins (2020). *Causal Inference: What If*. | [Author's book page](https://miguelhernan.org/whatifbook) | Estimands, consistency, exchangeability, positivity, selection, intervention regimes and longitudinal treatment/confounder feedback. Part III addresses complex longitudinal data. |
 | Perković, Emilija; Johannes Textor; Markus Kalisch; Marloes H. Maathuis (2018). *Complete Graphical Characterization and Construction of Adjustment Sets in Markov Equivalence Classes of Ancestral Graphs*. | [JMLR 18, paper 16-319](https://jmlr.org/papers/v18/16-319.html) | Graphical adjustment criteria; restrictions on adjustment sets. |
 | Imbens, Guido W., and Joshua D. Angrist (1994). *Identification and Estimation of Local Average Treatment Effects*. | [NBER technical paper t0118](https://www.nber.org/papers/t0118) | IV/complier estimands and identifying assumptions. The linked record includes the published 1994 article. |
-| Imbens, Guido W., and Thomas Lemieux (2008). *Regression Discontinuity Designs: A Guide to Practice*. | [NBER technical paper t0337](https://www.nber.org/papers/t0337) | RD threshold identification, local targets and implementation/validity issues. |
+| Imbens, Guido W., and Thomas Lemieux (2008). *Regression Discontinuity Designs: A Guide to Practice*. | [NBER technical paper t0337](https://www.nber.org/papers/t0337); [journal-version full text](https://economics.ubc.ca/wp-content/uploads/sites/38/2013/05/pdf_paper_thomas-lemieux-regression-discontinuity-designs-guide.pdf) | RD threshold identification, local targets and implementation/validity issues. The Assumption 2.1 locator in design-map.md (continuity of the conditional regression functions) was checked against the journal-version full text on 2026-10-04. |
 | Callaway, Brantly, and Pedro H. C. Sant'Anna (2021). *Difference-in-Differences with Multiple Time Periods*. | [Author-submitted paper, arXiv:1803.09015](https://arxiv.org/abs/1803.09015) | Group/time ATT, staggered adoption, conditional parallel trends and aggregation. |
 | Sun, Liyang, and Sarah Abraham (2021). *Estimating Dynamic Treatment Effects in Event Studies with Heterogeneous Treatment Effects*. | [Author-submitted paper, arXiv:1804.05785](https://arxiv.org/abs/1804.05785) | Contamination of conventional event-study coefficients with heterogeneous effects. |
 | Abadie, Alberto (2021). *Using Synthetic Controls: Feasibility, Data Requirements, and Methodological Aspects*. | [Journal of Economic Literature article](https://www.aeaweb.org/articles?id=10.1257%2Fjel.20191450) | Donor feasibility, support, counterfactual construction and design limitations. |
 | Lopez Bernal, James; Steven Cummins; Antonio Gasparrini (2017). *Interrupted time series regression for the evaluation of public health interventions: a tutorial*. | [Full article, PMC5407170](https://pmc.ncbi.nlm.nih.gov/articles/PMC5407170/) | Impact model specification, seasonality, autocorrelation and concurrent/time-varying confounding. |
 
-These works are cited by author-year/topic in original wording. Links to public
+These works are cited by author-year/topic in original wording, with a locator
+only where it was checked against the linked text. Links to public
 texts are reading pointers; access does not confer redistribution permission.
 Use their publishers' or authors' terms for any proposed reuse.
 
