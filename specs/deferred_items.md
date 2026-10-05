@@ -711,7 +711,7 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       Build suite +2 (45 → 47); CLAUDE.md's count was stale at 43 and is synced.
 
 ## 18-methodology-pipeline-skills (plan #1, describe-critique-methodology) — 2026-07-26
-- [ ] **DL/NLP domain extension for the methodology templates (spec Req 15,
+- [x] **DL/NLP domain extension for the methodology templates (spec Req 15,
       v1 scope boundary — deliberately not built).** v1's templates are
       statistical/Bayesian/nowcast only and carry no DL/NLP slots. The
       sketched extension is *conditional* slots rather than new mandatory
@@ -727,6 +727,48 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       slot yet are methodologically load-bearing. Build only when a real
       DL/NLP target needs describing — speculative slots would dilute the
       stats-tuned wording that MT1 showed is doing the work.
+      → retired 2026-10-05 (brainstorming, no-change decision): the trigger was
+      met and the evidence says the six slots suffice, so no skill text changes.
+      Case study: naics-embedder's `specs/naics-embedding-methodology.md`
+      (e96eb3f; S1-S4 relabel 1a31f7b), a system description of a trained text
+      encoder (all-MiniLM-L6-v2 with low-rank adapters, AdamW, a plateau
+      schedule, token windows) plus a graph stage, read slot by slot against
+      `references/methodology-template.md` and against the three reviews
+      (`specs/naics-embedding-review-{chatgpt,claude,gemini}.md`). Findings:
+      (1) Objective, optimizer, schedule, checkpoint selection and tokenization
+      all landed in "Estimation / inference procedure", and the load-bearing
+      ones recur as numbered assumptions with *Breaks* clauses. Reviewers cited
+      them back as critique points: Claude C16, 512-token windows on a
+      256-native checkpoint; Claude C19, Gemini C13 and ChatGPT's
+      grouped-holdout answer, in-sample model selection. That falsifies this
+      item's "have no slot" claim. The slot is long, about 140 lines in S2, but
+      not strained. (2) The one real strain is the data-generating-story
+      wording "as random variables and distributions", which an
+      objective-defined method cannot satisfy. Unaided, the author wrote that
+      there is no probabilistic model and that the estimand is the minimizer
+      of an empirical objective. The slot's "state the estimand explicitly"
+      requirement, there and again in the evaluation component ("no estimand
+      is defined for any intended use"), produced the highest-value critique:
+      ChatGPT C15 and every reviewer's Q7 answer. So the slot held. (3)
+      "Notation (extension)" subsections and per-component open questions are
+      template-sanctioned (the system template says per-component sections
+      "may extend" the shared table, and each follows the module slots). They
+      are not invented structure. (4) The only coined vocabulary, "inert" (runs
+      but cannot change the objective) and "nominal" (declared learnable but
+      never updated), is domain-general: it marks a gap between design and
+      configuration, not anything DL-specific. It emerged unprompted: the
+      describe session (local transcript `b1263326`, not in any repo) was
+      invoked with no instructions, and the
+      labels came from its own fact-extraction findings. All three reviewers
+      and the synthesized spec's "No inert terms" check reused it. The
+      no-guidance condition already produces the idiom, so writing-skills gives
+      no license to encode it. Deliberately not added. (5) Making evaluation a
+      component (S4) worked: its Evaluation-criteria slot states the protocol's
+      own properties and "no criterion for the protocol's external validity".
+      No micro-tests were run or are needed, because nothing changed. The
+      RAG and fine-tuned-classifier cases were not exercised. They carry
+      forward as the successor watch item in the dl-nlp-template-decision
+      section (2026-10-05).
 - [x] **In-session SOTA pass as a Chat-Research alternative (spec "Out of
       scope").** Today Describe mode always hands off to an external Claude
       Chat session with Research enabled. An in-session variant — WebSearch
@@ -2458,3 +2500,30 @@ declined as YAGNI (zero instances in a one-page wiki).
       Files: `build/cc_guide/check.py`'s `Finding` and the packet builder. Size: part of
       Stage 3's plan. Done when: the packet builder reads a missing block's snapshot
       text by key hash.
+
+## dl-nlp-template-decision (no plan; brainstorming, branch chore/dl-nlp-template-decision) — 2026-10-05
+- [ ] **RAG and fine-tuned-classifier targets for the methodology templates
+      (successor of the "DL/NLP domain extension" item in the
+      18-methodology-pipeline-skills section, retired 2026-10-05 as
+      no-change).** The naics-embedder case study showed that the
+      six slots of `skills/describe-critique-methodology/references/methodology-template.md`
+      hold a trained text encoder. Two hypothesised breakage cases remain
+      untested. (a) A **RAG system** may have no estimation procedure at all,
+      with its method living in retrieval, chunking and reranking assembly
+      choices. That is the sketched conditional "if pipeline-assembled →
+      assembly policy" slot. (b) A **fine-tuned classifier** whose story is
+      dataset construction and human-label provenance. naics-embedder's
+      supervision-construction component (S1) only half-exercised this case,
+      because its labels are derived from the taxonomy, so annotation noise
+      and labeler provenance never arose. No speculative slots: any slot must be
+      conditional and must not change output for a statistical or Bayesian
+      target. Procedure when triggered: describe the real target with the
+      current templates first, then read the result and its critique slot by
+      slot, as the retired item's note did. Edit skill text only where a slot
+      demonstrably failed. Any edit is a writing-skills job with two micro-test
+      arms: a stats/Bayesian control target re-described under the new
+      wording, showing unchanged slot structure and wording, and the real
+      RAG/classifier target with versus without the new slot. Run reps from a
+      session whose cwd was never this repo.
+      Size: design. Revisit if: a real RAG or fine-tuned-classifier target is
+      described with the current templates.
