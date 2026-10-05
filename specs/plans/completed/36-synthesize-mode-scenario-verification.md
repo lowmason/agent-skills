@@ -1,5 +1,7 @@
 # Synthesize-Mode Scenario Verification Implementation Plan
 
+**Status: COMPLETE (2026-10-05)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Verify behaviourally, on a real critique and from sessions that never saw this repository, that `describe-critique-methodology`'s Synthesize mode has three properties once entered, and record the result. It presents one batched triage table before any spec text. It holds locator discipline in the spec it writes. It opens that spec with the derive-roadmap routing header and hands off without planning.
@@ -90,7 +92,7 @@ Reading the skill's own files, and reading other `specs/completed/` exemplars, i
   - `grade.py <n> …` prints one JSON object per rep, with keys `rep`, `void_hits`, `inherited_hits`, `exemplars_read`, `permission_denials`, `spec`, `write_turn`, `M1`, `M2`, `M3`, `M4`, `M5`, `bash_write_suspect`.
   - `grade.py --injected <n>` writes everything rep *n* was handed to `results/rep-<n>.injected.jsonl`, for the pilot audit to read in full.
 
-- [ ] **Step 1: Write the three prompts**
+- [x] **Step 1: Write the three prompts**
 
 ```bash
 mkdir -p ~/.cache/ctl-q9/prompts ~/.cache/ctl-q9/sessions ~/.cache/ctl-q9/results
@@ -99,7 +101,7 @@ printf '%s\n' "Thanks. On every needs-user-adjudication point, go with your reco
 printf '%s\n' 'Approved — the spec looks good.' > ~/.cache/ctl-q9/prompts/turn3.txt
 ```
 
-- [ ] **Step 2: Build the ten rep repos and session ids**
+- [x] **Step 2: Build the ten rep repos and session ids**
 
 Run once per `n` in 1–10, as a plain command each time. In a worktree-isolated session, loops of git commands may be refused; run them one by one.
 
@@ -122,7 +124,7 @@ git -C ~/.cache/nfp-series/rep-10 log --oneline
 ```
 Expected: `10`, `10`, and one commit line for rep-10. Then spot-check another rep the same way.
 
-- [ ] **Step 3: Write the run scripts**
+- [x] **Step 3: Write the run scripts**
 
 `~/.cache/ctl-q9/run_rep.sh`:
 
@@ -172,7 +174,7 @@ echo "batch done"
 
 Then: `chmod +x ~/.cache/ctl-q9/*.sh`
 
-- [ ] **Step 4: Write `grade.py`**
+- [x] **Step 4: Write `grade.py`**
 
 `~/.cache/ctl-q9/grade.py`:
 
@@ -363,7 +365,9 @@ Smoke-test the transcript lookup before any rep has run:
 Run: `python3 ~/.cache/ctl-q9/grade.py 1`
 Expected: `expected one transcript for <uuid>, found 0`. That message shows the lookup is live and no rep has run yet.
 
-- [ ] **Step 5: Write the coverage key and run the Channel 3 grep gate**
+- [x] **Step 5: Write the coverage key and run the Channel 3 grep gate**
+
+> Deviation: the key has 50 points, not the 49 first written: the task review added C3c (pay-frequency composition) before the pilot; it was frozen at the pilot.
 
 Read `~/.cache/nfp-series/rep-1/specs/calibration_methodology_review.md` in full. In `~/.cache/ctl-q9/coverage-key.md`, list every critique point in order, one line each with its location: each Key Findings bullet (KF1…), each Details section's distinct recommendation or claim (A1…, B1…, C1…, D1…), each numbered Recommendation (Rec 1…), and each Caveat that asks for a change. This is the reference R2 is scored against. Write it before any rep runs, and never change it afterwards.
 
@@ -373,7 +377,7 @@ grep -rlic 'derive-roadmap\|locator\|design provenance\|required next skill\|tri
 ```
 Expected: `0`. A hit means a fixture file names a measured behaviour: inspect it and report before continuing.
 
-- [ ] **Step 6: Checkpoint — hand the pilot to the owner**
+- [x] **Step 6: Checkpoint — hand the pilot to the owner**
 
 Nothing is committed in this repository by this task. Report to the owner: "Kit ready. Please run `bash ~/.cache/ctl-q9/run_pilot.sh` from a plain terminal — not from any Claude Code session — and tell me when it prints `rep-1 done`."
 
@@ -388,11 +392,13 @@ Nothing is committed in this repository by this task. Report to the owner: "Kit 
 - Consumes: `grade.py` (Task 1).
 - Produces: a go/no-go for the batch, with the audit notes that Task 4 copies into the record.
 
-- [ ] **Step 1: Owner runs the pilot**
+- [x] **Step 1: Owner runs the pilot**
 
 The owner runs `bash ~/.cache/ctl-q9/run_pilot.sh` and reports `rep-1 done`. If it errors, collect `~/.cache/ctl-q9/results/rep-1.turn*.json` and stop: the mechanism, not the skill, failed.
 
-- [ ] **Step 2: Grade the pilot mechanically**
+- [x] **Step 2: Grade the pilot mechanically**
+
+> Deviation: `grade.py` reported `permission_denials` 0, but the transcripts show 24 auto-rejected calls across reps 1-5 (`toolDenialKind: "user-rejected"`); the grader only counts text containing "permission". None blocked a spec write or commit, so the GO stands (record, Validity).
 
 Run: `python3 ~/.cache/ctl-q9/grade.py 1`
 Expected, before reading any behavioural field:
@@ -400,12 +406,14 @@ Expected, before reading any behavioural field:
 - `void_hits` is `[]`.
 - `permission_denials` is `0`, or every denial is on a command the rep then completed another way.
 
-- [ ] **Step 3: Read what the pilot was handed**
+- [x] **Step 3: Read what the pilot was handed**
 
 Run: `python3 ~/.cache/ctl-q9/grade.py --injected 1`
 Then read the file it prints (`~/.cache/ctl-q9/results/rep-1.injected.jsonl`) in full, not by grep alone. It holds every `attachment` and `system` record, plus every user text that is not one of the three turn prompts. The pilot passes the audit only if none of it mentions this plan, the deferred item, or the expected behaviours. The global `~/.claude/CLAUDE.md`, the skill listing and the rep repo's own git status are expected, and are not contamination.
 
-- [ ] **Step 4: Decide**
+- [x] **Step 4: Decide**
+
+> Deviation: rep-1 was void (full Read of methodology-pipeline-skills.md), so the pilot was GO per this step but did not count as a valid rep. Three VOID-rule rulings were fixed before the batch (record, Validity).
 
 - All of Steps 2–3 clean, and all three turns produced output: GO. rep-1 counts as the first rep, if it is not void.
 - Inherited context names this plan or the item: NO-GO. Stop and report; Channel 5 has a path this plan did not foresee.
@@ -414,7 +422,7 @@ Then read the file it prints (`~/.cache/ctl-q9/results/rep-1.injected.jsonl`) in
 
 Record the exemplars rep-1 opened (`exemplars_read`) in the audit notes.
 
-- [ ] **Step 5: Checkpoint — hand the batch to the owner**
+- [x] **Step 5: Checkpoint — hand the batch to the owner**
 
 Report the audit and, on GO: "Please run `bash ~/.cache/ctl-q9/run_batch.sh` from a plain terminal and tell me when it prints `batch done`."
 
@@ -426,20 +434,26 @@ Report the audit and, on GO: "Please run `bash ~/.cache/ctl-q9/run_batch.sh` fro
 - Consumes: `grade.py`, the VOID rule and the replacement rule (Pre-registration).
 - Produces: a set of exactly 5 valid reps, or a void run.
 
-- [ ] **Step 1: Owner runs the batch**
+- [x] **Step 1: Owner runs the batch**
 
 The owner runs `bash ~/.cache/ctl-q9/run_batch.sh` and reports `batch done`.
 
-- [ ] **Step 2: Grade every rep and apply the VOID rule**
+- [x] **Step 2: Grade every rep and apply the VOID rule**
+
+> Deviation: all five reps (1-5) were void, every one by a full Read of methodology-pipeline-skills.md found through the skill's own "read two retired exemplars" instruction.
 
 Run: `python3 ~/.cache/ctl-q9/grade.py 1 2 3 4 5`
 A rep is void if `void_hits` or `inherited_hits` is non-empty. For each void rep, open its transcript at the first hit and confirm that it reads a VOID path or carries a marker. A false match, such as a bare listing, is not a void: record why.
 
 - [ ] **Step 3: Replace void reps, if any**
 
+> Skipped: the owner chose to stop after 0 of 5 valid reps (2026-10-05), so replacement reps 6-10 were not run → deferred (successor item under the 2026-07-26 section of specs/deferred_items.md)
+
 For each void rep, ask the owner to run `bash ~/.cache/ctl-q9/run_rep.sh <k>` for the next unused *k* (6, 7, …), then grade it. Stop at rep-10. With fewer than 5 valid reps after rep-10, skip to Task 4 and record the run as void.
 
 - [ ] **Step 4: Fix the valid set**
+
+> Skipped: no valid reps, so there was no scored set → deferred (same successor item)
 
 The first 5 valid reps by number are the scored set. Note the batching and every void, with its cause, for the record.
 
@@ -455,6 +469,8 @@ The first 5 valid reps by number are the scored set. Note the batching and every
 - Produces: the record, and per behaviour a verdict that the Plan Completion Protocol acts on.
 
 - [ ] **Step 1: Score the manual rubric for each scored rep**
+
+> Skipped: no valid reps to score; the manual rubric was not applied → deferred (same successor item)
 
 For each rep, read its turn-1 output (`results/rep-<n>.turn1.json`, field `result`), its spec, and its turn-3 output. Score:
 - R1: adjudication status stated above the table.
@@ -476,9 +492,13 @@ Where reading shows the property holds, score it true and note why.
 
 - [ ] **Step 2: Compute the verdicts**
 
+> Skipped: no scored reps, so no B1-B3 verdicts exist → deferred (same successor item)
+
 Per rep, B1 = M1 ∧ R1 ∧ R2 ∧ R3; B2 = M3 ∧ R4 ∧ R5 ∧ R6 ∧ R7; B3 = M2 ∧ M4 ∧ M5 ∧ R8. A behaviour holds when it passes in ≥ 4 of the 5 scored reps.
 
-- [ ] **Step 3: Write the record**
+- [x] **Step 3: Write the record**
+
+> Deviation: written as the VOID variant (Status VOID; no B1-B3 verdicts; M1-M5 shown as UNSCORED observations).
 
 Create `specs/completed/synthesize-mode-verification-<YYYY-MM-DD>.md` with these sections:
 - **Header**: Date, Status ("B1 held 5/5, B2 held 4/5, B3 failed 2/5", or "VOID"), and Governs ("whether describe-critique-methodology Synthesize mode's triage ordering, locator discipline and derive-roadmap handoff hold in practice").
@@ -491,13 +511,15 @@ Create `specs/completed/synthesize-mode-verification-<YYYY-MM-DD>.md` with these
 - **Qualitative evidence**: verbatim quotes for every failure, plus any notable behaviour the pass bar does not capture.
 - **Disposition**: for each failed behaviour, the deferred item it becomes. Use the Deferred-item schema in `skills/writing-plans/references/deferred-backlog.md`, normally `Size: design` with `Done when:` a skill change verified by a writing-skills cycle.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
+
+> Deviation: two commits, not one: 560fc30 `docs(specs): record the synthesize-mode scenario verification (void)` and 65d3ca1 `docs(specs): correct the void record after final review`.
 
 ```bash
 git add specs/completed/synthesize-mode-verification-*.md
 git commit -m "docs(specs): record the synthesize-mode scenario verification"
 ```
 
-- [ ] **Step 5: Report**
+- [x] **Step 5: Report**
 
 Report the three verdicts, the void count and the record's path. Failed behaviours go to the Plan Completion Protocol's resolve-before-defer gate as leftovers. The protocol ticks the source item `→ done in plan 36` whatever the verdicts: its closure was that the behaviour be verified, and a recorded failure is a verification.
