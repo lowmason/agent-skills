@@ -36,6 +36,7 @@ import subprocess
 import sys
 import traceback
 from datetime import date, datetime
+from functools import partial
 from pathlib import Path
 
 import baseline
@@ -45,7 +46,7 @@ from guide import render_stamp
 from lint import lint
 from state import (BASELINE, BOOTSTRAP_DATE, BOOTSTRAP_RELEASE, MANIFEST, SetupError, Source, default_cache,
                    dump_baseline, fetch_record, latest_docs, newest_changelog, parse_baseline, parse_manifest,
-                   snapshot_docs)
+                   snapshot_docs, snapshot_text)
 
 REPO = Path(__file__).resolve().parents[2]
 
@@ -168,7 +169,7 @@ def run_baseline(args, cache: Path, today: date) -> int:
             raise SetupError(f'{snapshot_docs(cache, release)} is the bootstrap snapshot, which is never '
                              'written (R2.6): run check to fetch a newer release first')
         new, pages, notes = baseline.rebaseline(state, manifest, guide_text, args.group, args.refs,
-                                                latest_docs(cache), release)
+                                                latest_docs(cache), release, partial(snapshot_text, cache))
         target = snapshot_docs(cache, release)
         target.mkdir(parents=True, exist_ok=True)
         for page in pages:

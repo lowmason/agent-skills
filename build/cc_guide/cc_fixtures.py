@@ -324,6 +324,13 @@ def fixture_state(folder) -> dict:
                          FIXTURE_RELEASE, FIXTURE_DAY, FIXTURE_CHANGED)
 
 
+def fixture_snapshot(page: str, release: str) -> str | None:
+    '''The fixture baseline's snapshot, a state.Snapshot: each page as DOCS
+    holds it, whatever the release.'''
+    from docs import page_file
+    return DOCS.get(page_file(page))
+
+
 GUIDE_PATH = 'specs/guides/claude-code-customization-guide.md'
 
 

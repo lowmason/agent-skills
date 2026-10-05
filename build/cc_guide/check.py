@@ -9,14 +9,16 @@ import urllib.error
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, timedelta
+from functools import partial
 from pathlib import Path
 from typing import Callable, NamedTuple
 
-from blocks import SEP, block_hash, candidates, page_blocks, select
+from blocks import SEP, block_hash, candidates, key_hash, key_names, page_blocks, select
 from docs import CHANGELOG, LLMS, Release, is_platform, page_file, page_url, parse_changelog, parse_llms, version_key
 from lint import lint
-from state import (BASELINE, MANIFEST, PROBES, Manifest, ProbeRow, SetupError, Source, fetch_record,
-                   group_terms, latest_docs, parse_baseline, parse_manifest, parse_probes)
+from state import (BASELINE, MANIFEST, PROBES, Manifest, ProbeRow, SetupError, Snapshot, Source, block_namer,
+                   fetch_record, group_terms, latest_docs, no_snapshot, parse_baseline, parse_manifest, parse_probes,
+                   snapshot_text)
 
 USER_AGENT = 'agent-skills-cc-guide/1 (Claude Code docs drift check)'
 TIMEOUT = 30
@@ -140,13 +142,15 @@ class Finding(NamedTuple):
         return self.page if self.key is None else self.page + SEP + self.key
 
 
-def compare(manifest: Manifest, state: dict, terms: dict, docs: Docs) -> tuple[list[Finding], dict]:
+def compare(manifest: Manifest, state: dict, terms: dict, docs: Docs,
+            snapshot: Snapshot = no_snapshot) -> tuple[list[Finding], dict]:
     '''R6.5 and R3.7: per group, the changed, missing and new blocks and the
     missing pages, each with its candidate sections, plus the deselected
     blocks for information. A baselined block whose text changed is changed
     even when no longer selected; only an unchanged one is deselected. A page
     absent from llms.txt (code pages) or from the docs is missing; its blocks
-    are not compared one by one.'''
+    are not compared one by one. The baseline keys blocks by key hash (R2.3),
+    so a block gone from the page is named from `snapshot`, else by its hash.'''
     slugs = parse_llms(docs.llms)
     findings: list[Finding] = []
     deselected: dict[str, list[str]] = {}
@@ -154,6 +158,7 @@ def compare(manifest: Manifest, state: dict, terms: dict, docs: Docs) -> tuple[l
         sec_terms = terms[gid]
         watched = set().union(*sec_terms.values())
         base = state['groups'].get(gid, {}).get('blocks', {})
+        name = block_namer(state, gid, snapshot)
         info: list[str] = []
         for page, mark in group.pages.items():
             if page in docs.unread:
@@ -163,21 +168,24 @@ def compare(manifest: Manifest, state: dict, terms: dict, docs: Docs) -> tuple[l
                 findings.append(Finding(gid, 'missing-page', page, None, list(sec_terms)))
                 continue
             found = page_blocks(text)
+            live = key_names(found)
             chosen = set(select(found, mark, watched))
             old = base.get(page, {})
-            for key, recorded in old.items():
-                if key not in found:
-                    findings.append(Finding(gid, 'missing', page, key, candidates(key, '', sec_terms)))
+            for kh, recorded in old.items():
+                key = live.get(kh)
+                if key is None:
+                    gone = name(page, kh)
+                    findings.append(Finding(gid, 'missing', page, gone, candidates(gone, '', sec_terms)))
                 elif block_hash(found[key]) != recorded:
                     findings.append(Finding(gid, 'changed', page, key, candidates(key, found[key], sec_terms)))
                 elif key not in chosen:
                     info.append(page + SEP + key)
             for key in found:
-                if key in chosen and key not in old:
+                if key in chosen and key_hash(key) not in old:
                     findings.append(Finding(gid, 'new', page, key, candidates(key, found[key], sec_terms)))
         for page in base:
             if page not in group.pages:
-                info += [page + SEP + key for key in base[page]]
+                info += [page + SEP + name(page, kh) for kh in base[page]]
         deselected[gid] = info
     return findings, deselected
 
@@ -279,7 +287,7 @@ def check(source: Source, cache: Path, *, docs_dir: Path | None, today: date, no
     due = {'lint': len(violations)}
     if docs is not None:
         errors += docs.errors
-        findings, deselected = compare(manifest, state, terms, docs)
+        findings, deselected = compare(manifest, state, terms, docs, partial(snapshot_text, cache))
         pending = untriaged(state, releases)
         slugs = parse_llms(docs.llms)
         report.update({
