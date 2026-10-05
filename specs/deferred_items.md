@@ -166,6 +166,13 @@
   is `36-synthesize-mode-scenario-verification.md` on main. This branch adds
   Stage 1 of the Claude Code guide drift detector (`build/cc_guide/`); it
   touches neither aged item.
+- 2026-10-05 — finished `feat/cc-guide-hashed-keys` (no plan) with 2 items aged
+  >45d, carried on the partner's 2026-09-28 reason, which they chose again for
+  this branch, verbatim: "Unrelated to this branch: the DL/NLP slots wait on a
+  real DL/NLP target, and the synthesize-mode checks wait on their own plan."
+  They are the same two `18-methodology-pipeline-skills` items (71d). This branch
+  commits the drift baseline's block keys only as hashes (plan 38 decision 9); it
+  touches neither aged item.
 
 ## 11-delegation-frontmatter-rollout — 2026-07-19
 - [x] Haiku-pinned `Explore` override agent (fork-isolation upgrade; plan "Out of
