@@ -157,6 +157,15 @@
   synthesize-mode scenario verification); the latter's plan is
   `36-synthesize-mode-scenario-verification.md` on main. This branch adds the
   recommend-causal-design skill; it touches neither aged item.
+- 2026-10-05 — finished `feat/cc-drift-stage1` (plan 38) with 2 items aged >45d,
+  carried on the partner's 2026-09-28 reason, which they chose again for this
+  branch, verbatim: "Unrelated to this branch: the DL/NLP slots wait on a real
+  DL/NLP target, and the synthesize-mode checks wait on their own plan." The
+  items are the same two `18-methodology-pipeline-skills` items (71d: the DL/NLP
+  template extension, synthesize-mode scenario verification); the latter's plan
+  is `36-synthesize-mode-scenario-verification.md` on main. This branch adds
+  Stage 1 of the Claude Code guide drift detector (`build/cc_guide/`); it
+  touches neither aged item.
 
 ## 11-delegation-frontmatter-rollout — 2026-07-19
 - [x] Haiku-pinned `Explore` override agent (fork-isolation upgrade; plan "Out of
@@ -1738,7 +1747,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       whether `_required_vars` should be judged per idata object.
       Size: quick-fix. Revisit if: a named fixture declares a non-empty `variables`, or a
       `fixture=comparison` block reads a group other than posterior or log_likelihood.
-- [ ] Root `CLAUDE.md`'s snippet-gate notes describe the two exemption markers (`norun`,
+- [x] Root `CLAUDE.md`'s snippet-gate notes describe the two exemption markers (`norun`,
       `noparse`) but never mention the `fixture=<name>` fence token that plan 33 added. Nothing
       there is false, because `fixture=` opts nothing out. A maintainer who reads only
       CLAUDE.md will not find the mechanism, though; it is documented only in the docstrings of
@@ -1748,6 +1757,9 @@ declined as YAGNI (zero instances in a one-page wiki).
       `build/snippet_preamble.py`'s `NAMED_FIXTURES`; an unknown name fails at every tier."
       Size: quick-fix. Done when: the CLAUDE.md snippet-gate notes name the `fixture=` token and
       where fixtures live.
+      → done in plan 38 (decision 21, at its completion gate): the snippet-gate comment names
+      the `fixture=<name>` token and says named fixtures live in `build/snippet_preamble.py`'s
+      `NAMED_FIXTURES`.
 - [ ] A named fixture's helper names count as bound for every block that selects the fixture.
       `_fixture_names` (`build/check_snippets.py`) uses `_bound_by`, which walks function
       bodies, parameters and comprehension targets. So for a `fixture=comparison` block,
@@ -1776,7 +1788,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       fixture without a pytest failure.
 
 ## 35-claude-code-guide-conformance — 2026-10-04
-- [ ] Bring the root CLAUDE.md under 200 lines (plan 35 audit rows L-01, C-02 to C-05). It
+- [x] Bring the root CLAUDE.md under 200 lines (plan 35 audit rows L-01, C-02 to C-05). It
       is 224 lines against the guide's 200-line target (`rules.claude-md`), held by a waiver
       with ceiling 225. C-02 to C-05 name fast-changing details to cut or move, in
       `CLAUDE.md` and `build/CLAUDE.md`: 22 hand-kept test-count comment lines in the
@@ -1787,6 +1799,8 @@ declined as YAGNI (zero instances in a one-page wiki).
       exceptions `claude-md-size` and `claude-md-fast-changing-details` is removed from
       `build/cc_guide/conformance.toml` in the same change, with
       `build/check_conformance.py` passing.
+      → done in plan 38: CLAUDE.md is 177 lines, and Task 2 removed both exceptions
+      with `build/check_conformance.py` passing.
 - [ ] Gate or make manual-only the four ungated side-effecting skills (plan 35 audit rows
       S-88 to S-91): `skills/subagent-driven-development/SKILL.md`,
       `skills/requesting-code-review/SKILL.md`, `skills/writing-skills/SKILL.md` and
@@ -1924,9 +1938,8 @@ declined as YAGNI (zero instances in a one-page wiki).
       single quotes and two-use cases; `check_stop_hook_guard` discarding parse failures
       (`found, _`), which go silent if `hook-dir-quoted` cannot run; `paths: []`, scalar and
       null `paths` on an always-on rule; sorted output; the never-stale-on-unwaivable rule;
-      and `parse_exceptions`' field branches. Each new test moves CLAUDE.md's hand-kept
-      build-suite counts. Size: quick-fix. Done when: each listed branch has a red-first
-      test, and CLAUDE.md's counts are updated in the same change.
+      and `parse_exceptions`' field branches. Size: quick-fix. Done when: each listed
+      branch has a red-first test.
 - [ ] Make an unreadable conformance register a setup error (plan 35 review T2-m1):
       `load_register` in `build/check_conformance.py` catches only FileNotFoundError, so a
       PermissionError escapes as a traceback (exit 1), while `load_guide` catches OSError.
@@ -2089,19 +2102,20 @@ declined as YAGNI (zero instances in a one-page wiki).
       `build/cc_guide/conformance.toml` and red-first tests.
 - [ ] Add the `claude-md-import-resolves` conformance check (plan 35 audit §6, d29, seat
       check C#4): each `@` import in a claude-md file resolves, within 4 hops, using a
-      fence-aware scan. Today a fence-aware scan passes; a naive one would flag
-      CLAUDE.md:122. Size: quick-fix. Done when: the check is in `CHECKS` in
-      `build/check_conformance.py`, with a `[[check]]` entry in
-      `build/cc_guide/conformance.toml` and red-first tests.
+      fence-aware scan. Today a fence-aware scan passes; a naive one would flag the
+      `@needs_pilot` comment in CLAUDE.md's llm-wiki suite notes. Size: quick-fix.
+      Done when: the check is in `CHECKS` in `build/check_conformance.py`, with a
+      `[[check]]` entry in `build/cc_guide/conformance.toml` and red-first tests.
 - [ ] Add the `local-md-ignored` conformance check (plan 35 audit §6, d30, seat check C#5):
       `CLAUDE.local.md` is gitignored. Today it is not, and no such file exists. Size:
       quick-fix. Done when: the check is in `CHECKS` in `build/check_conformance.py`, with a
       `[[check]]` entry in `build/cc_guide/conformance.toml` and red-first tests.
 - [ ] Add the `claude-md-count-claims` conformance check (plan 35 audit §6, d31, seat check
-      C#6): lines in claude-md files that state a test, pass or skip count. Today 22 hits.
-      The "(19 originals" note is pinned by the test from `c67278d` on `main`, so it would
-      need an allow-list. Size: quick-fix. Done when: the check is in `CHECKS` in
-      `build/check_conformance.py`, with a `[[check]]` entry in
+      C#6): lines in claude-md files that state a test, pass or skip count. Today the
+      count is 0 apart from the provenance-pinned originals note, so the check would only
+      guard against regressions. The "(19 originals" note is pinned by the test from
+      `c67278d` on `main`, so it would need an allow-list. Size: quick-fix. Done when: the
+      check is in `CHECKS` in `build/check_conformance.py`, with a `[[check]]` entry in
       `build/cc_guide/conformance.toml` and red-first tests.
 - [ ] Verify guide note S-108 with `/cc-guide verify skills.progressive-disclosure` once
       drift lands (plan 35 audit §7): the guide's line 122 says the listing (name and
@@ -2216,3 +2230,156 @@ declined as YAGNI (zero instances in a one-page wiki).
       no Haiku remains, the two pins need repointing and SDD's cheap tier a new home, and
       this becomes a plan. Revisit if: the deprecations page posts a retirement date for
       Haiku 4.5, or a newer Haiku ships.
+
+## 38-claude-code-drift-automation — 2026-10-05
+- [ ] Stale cached pages after a manifest change (Codex, plan 38's final review; deferred
+      by the owner at the completion gate). `check.live_docs` in
+      `build/cc_guide/check.py` refetches every mapped page only when the changelog head
+      moves, and `latest/fetch.json` records one head for the whole cache. A page cached
+      at head A, left unmapped by the manifest of a run that fetches head B, and mapped
+      again later is found in `latest/docs/` and compared as current, with A's text;
+      `baseline rebaseline` can then snapshot that text under B. Runs on `main` and on
+      `--worktree` share one cache with different manifests, so the documented flow can
+      reach this. Fix: when the head moves, delete the cached pages the current manifest
+      does not map (or record the head per page), with a test and a clause in drift spec
+      R6.3. Size: quick-fix. Done when: a page mapped again after a head move is
+      refetched, pinned by a test.
+- [ ] `baseline accept` command fixes (plan 38's final review, T8-m3 and FR-m1; deferred
+      by the owner at the completion gate). (a) `build/cc_guide/lint.py` prints the
+      editorial outcome as `... --editorial`, which cannot be pasted and run, while drift
+      spec R5 asks for "the `baseline accept` command for each outcome"; the message is
+      pinned in `test_lint.py` and `test_cli.py`. (b) The accept branch of
+      `build/cc_guide/cli.py` resolves the newest cached release for both outcomes,
+      though only `--substantive` uses it, so an editorial accept fails with "no cached
+      changelog" where no cache exists. Size: quick-fix. Done when: lint prints both
+      full commands, and an editorial accept runs without a cached changelog, each
+      pinned by a test.
+- [ ] Guard rebaseline's snapshot against overwrites (plan 38, Task 7's review; the
+      route corrected by the final review). `baseline rebaseline` (the snapshot loop in
+      `build/cc_guide/cli.py`) copies each page into `<cache>/<release>/docs/` with
+      `write_bytes`, overwriting a file that another group's `snapshot` pointer may still
+      name, which would then hold text that group never baselined. An unchanged
+      changelog head fetches only missing pages, so a same-head docs edit cannot reach
+      it, but these can: a page refetched at the same head after a failed or 404 fetch
+      removed it; a changelog head that returns to a label that already has a snapshot
+      (a pulled release); a hand-edited cache, or a deleted `latest/fetch.json`. Fix:
+      refuse, with a `SetupError` naming the page, to overwrite an existing
+      `<release>/docs/<page>` whose bytes differ. Size: quick-fix. Done when: the guard
+      and its test land.
+- [ ] Say the bookkeeping rules where readers look (plan 38's final review: T10-m4,
+      T14-m1, T14-m2, FR-m2). (a) `build/cc_guide/cli.py --help` shows none of the
+      module docstring; pass `description=__doc__` with `RawDescriptionHelpFormatter`.
+      (b) Owner ruling 7's refusal (a listed `rebaseline` refuses while an unlisted
+      baselined block on the same page has also changed) is stated only in
+      `baseline.rebaseline`'s docstring and its error, not in drift spec R7, the CLI
+      help or `build/CLAUDE.md`'s flow. (c) The `cc_guide/` paragraph in
+      `build/CLAUDE.md` says "`advance` or `audited`" where the Stage 1 flow runs both,
+      leaves "or narrows its `artifacts`" out of its `[[exception]]` sentence, and names
+      `--worktree` but not `--ref`. (d) Drift spec R6.9 lists "an unresolvable anchor"
+      under exit 2, while Stage 1 sends every anchor problem through `lint`, at exit 1;
+      say whether it means Stage 2's citations. Size: quick-fix. Done when: each of
+      (a)-(d) reads true against the code.
+- [ ] Sections created after `baseline init` (plan 38, T7-m3). No R7 subcommand adds a
+      guide section created after init, so a new section needs `init --force`, which
+      rebuilds every hash. `baseline.derive_changed` (`build/cc_guide/baseline.py`)
+      aligns the July, refresh and current guides by heading text, so a later heading
+      edit breaks it, and `init --force` with it; and the real-history test in
+      `test_baseline.py` reads the working-tree guide (without `encoding='utf-8'`). A
+      fix needs a history reference that survives integration: a pinned branch SHA does
+      not survive a squash merge. Size: design. Done when: drift spec R7 says how a
+      section created after init enters `baseline.json`, and the history test no longer
+      depends on the working-tree guide's headings.
+- [ ] Unify the guide's anchor grammar (owner ruling 4, plan 38). `build/cc_guide/guide.py`
+      repeats `build/check_conformance.py`'s R1.1 anchor grammar: `ANCHOR_RE` and
+      `ANCHOR_LIKE_RE` are identical in both, `guide.anchor_problems` repeats
+      `check_conformance.guide_sections`' classifier and messages, and `test_guide.py`
+      copies the 38-ID list. The twins differ on a repeated anchor: conformance leaves
+      its ID `None`, while `guide.sections` gives it to both headings. Drift spec R12.1
+      bars only `cc_guide` importing from `build/`, so `check_conformance.py` may import
+      `guide.py`'s grammar. Size: plan. Done when: `check_conformance.py` uses
+      `guide.py`'s grammar, the duplicated patterns and the copied ID list are gone, and
+      a repeated anchor resolves the same way in both.
+- [ ] Every input error prints a `cc-guide:` line (plan 38's final review: T7-m1, T8-m1,
+      T10-m2, T10-m3, T10-m6, T6-m10, FR-m4). These all exit 2, within the CLI
+      contract, but print a traceback: `baseline stamp` on a guide with no stamp region
+      (`guide.with_stamp`'s bare `ValueError`); an emptied baseline reaching
+      `guide.render_stamp`'s bare `min()` in lint; a corrupt `latest/fetch.json`, which
+      both `cli.py`'s rebaseline and `check.live_docs` parse bare; `accept` on an ID the
+      guide no longer has (a `KeyError` in `baseline.accept`); a non-UTF-8 cached
+      changelog or page (`cli.cached_releases` and the read sites in `check.py`). Two
+      inputs pass unvalidated: `init --release/--date`, so a bad date writes a baseline
+      that `parse_baseline` rejects, and `init --release X` without `--docs`, which
+      hashes the 2.1.288 snapshot under label X. And a wrong-shaped `[guide]`,
+      `[sources]` or `[cadence]` table reports its shape problem, then every per-field
+      check against the `{}` fallback. Files: under `build/cc_guide/`. Size: plan. Done
+      when: each path prints one `cc-guide:` line, or is refused up front, with a test.
+- [ ] check's report and inputs, for Stage 4's hook and notice (plan 38's final review:
+      T9-m3, T6-m3, FR-m3). (a) `check` writes `reports/<sha12>.json` only at its end,
+      so a `SetupError` or a crash leaves the previous report, with its old exit, for
+      consumers. (b) `state.Source`'s git calls inherit the caller's `GIT_*`
+      environment, which a hook may set; `cc_fixtures.git` strips it for tests only.
+      (c) When the changelog fetch fails, `check()` also skips the audit due rule,
+      though that rule needs no docs (drift spec R6.3 says the due rules always run);
+      the exit is 2 either way. Files: `build/cc_guide/check.py`,
+      `build/cc_guide/state.py`. Size: plan. Done when: Stage 4's plan settles each, or
+      records why its hook does not need it.
+- [ ] The probe registry's gaps, for Stage 5 (owner rulings 6 and 9, plan 38). (a)
+      `state.parse_probes` accepts any outcome word, and `check.due_probes` schedules
+      ERROR and unknown words like PASS, so an ERROR-only probe reads as passed (drift
+      spec R10.5: ERROR "is never a pass") and a typo such as `DIVERGED` reads as
+      `probes: none due`; an empty outcome parses, and a second table in `PROBES.md` (a
+      legend) makes every check exit 2. (b) The probe validator requires a non-empty
+      `sections` (R10.1), but R10.2's guard-liveness row backs files only. Files:
+      `build/cc_guide/state.py`, `build/cc_guide/check.py`. Size: plan. Done when:
+      Stage 5's plan validates outcomes against R10's vocabulary, schedules ERROR as not
+      passed, and settles R10.1 against R10.2.
+- [ ] Test coverage and edge cases in `build/cc_guide/` (plan 38's final review triage:
+      each regression would surface as an error or a visible finding, or has no
+      realistic trigger today). Coverage: `test_blocks.py` pins neither sha256[:16] nor
+      a hashed newline (T3-m2), nor `KEY_PART_MAX`'s 60/61 boundary (T3-m3);
+      `test_docs.py` leaves the `changelog line N:` prefix and the repeat message
+      unpinned, the `</Update>` reset untested, `LLMS_TEXT` without `_llms/` or platform
+      negatives, and only the `date=` form of an unknown tag pinned (T4-m2, T4-m3,
+      T4-m4, T4-m7); the real-guide tests leave the fence rule unpinned, as are
+      `guide.py`'s term 3/60 boundaries, a fenced anchor-like line, `with_stamp`'s
+      `ValueError` and `render_stamp`'s tie-break (T5-m2, T5-m3); `state.py`'s
+      validator branches: ID formats, "maps no page", `[sections.X]`, `[[exclusion]]` and
+      `[[probe]]` fields, an empty `[groups]`, `group_terms`' fallback, `fetch_record`,
+      `Source.label` (T6-m5); `test_baseline.py`'s `history()` skips on any `git show`
+      failure, not only a missing commit (T7-m2); rebaseline's bare `<page>` ref, the
+      llms refresh on a listed run, its three `SetupError`s and a substantive accept's
+      `text_hash` (T7-m6); the refusal's vanished-block half, whose message says only
+      "changed" (T7-m8); lint's fenced-`|` guards, unclosed-fence branch and "missing
+      from manifest.toml" arm (T8-m7); check's dropped-page branch and its
+      `HTTP <code>` text (T9-m5, T9-m9); `test_cli.py`'s duplicated capture lines, the
+      init refusal's message, the "no snapshot directory" and "no latest fetch"
+      refusals, advance's stale-stamp message, and two `.err`-only comparisons (T10-m8,
+      T10-m5). Edge cases: `LINK_RE` keeps a link whose title sits on the next line
+      (T3-m6); `version_key` accepts a trailing newline, so use `fullmatch` (T4-m1);
+      non-bullet lines in a release are skipped silently, and the repeat error names no
+      label (T4-m5); `Source.read` in ref mode returns a tree listing for a directory
+      (T6-m2); `_iso` accepts 20260902 and week dates (T6-m6); `audited` can move
+      `checked` backwards, so reuse advance's guard (T7-m4); a 200 `llms.txt` with no
+      slugs flags every code page (T9-m2); `summary()` derives a ref by truthiness, so a
+      bare `#` heading prints as a page (T9-m4); a fence opener whose info string holds
+      backticks opens a fence CommonMark would not, giving coarser blocks only (FR-m5).
+      Size: plan. Done when: each is tested, fixed, or recorded as needing no action.
+- [ ] Style, DRY and naming in `build/cc_guide/` (plan 38's final review triage).
+      `blocks.py` reads the fence 4-tuple by position and leaves `select`'s `terms`
+      unannotated (T3-m5). `state.py`'s "manifest order" comment is wrong, since
+      `Group.pages` lists `all` marks before `terms` marks (T6-m4); `ID_RE`, `HASH_RE`
+      and `TEXT_HASH_RE` restate other modules' grammars, a `mapped = …` line duplicates
+      `Manifest.pages()`, and `parse_manifest` runs eleven checks in one body (T6-m7).
+      Test hygiene: an unused `git` import under a `noqa`, double quotes in
+      `{"stray"!r}`, `cc_fixtures.git`'s in-function imports, and `check=True` with
+      `capture_output` hiding stderr (T6-m8). `baseline.py` duplicates its drop-a-page
+      logic, and its note says "dropped its baselined blocks" when only listed keys go
+      (T7-m5). `lint.py` re-slices the stamp region instead of calling
+      `guide.stamp_content` (T8-m2), defines a table without decision 12's separator row
+      (T8-m4), keeps a dead `\|` guard (T8-m5), bundles three checks and two return
+      channels in `quality_problems` (T8-m6, plan-mandated), and writes `" and "` inside
+      an f-string (T8-m8). `check.py` uses literal 200, 404 and `range(2)` against G25,
+      stutters `changelog: changelog line 8:`, and `test_check.py` hard-codes the guide
+      path (T9-m6, plan-mandated). `releases_of`'s `source` parameter shadows
+      `state.Source` (T10-m7). Size: plan. Done when: each is tidied or recorded as
+      needing no action.

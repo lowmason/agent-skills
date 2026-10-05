@@ -1,5 +1,7 @@
 # Claude Code Drift Automation, Stage 1 (Detector) Implementation Plan
 
+**Status: COMPLETE (2026-10-05)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md. Commit hashes in the notes name commits on `feat/cc-drift-stage1`.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 > **Where this runs.** The owner commits this plan on local `main` after review, which
@@ -188,6 +190,12 @@ From `git grep -n 'CLAUDE.md' -- specs ':!specs/completed' ':!specs/plans/comple
 - `build/test_check_snippets.py:135`'s comment cites CLAUDE.md's "non-ArviZ subset passes" line. That line was already gone before this plan.
 - The dated audit records (`specs/audit-3-10-26.md`, `specs/claude-code-conformance-audit-2026-10-04.md`) quote old CLAUDE.md lines and counts. They are historical and stay as written.
 
+> Settled at the completion gate (owner, 2026-10-05), in 6127580: the
+> agent-skills-portability.md entries, the three deferred-item clauses and
+> handoff-briefs.md:557's line pointers were fixed; the drift spec's status line,
+> `build/test_check_snippets.py:135` and the dated audits were left. The CLAUDE.md
+> item was ticked, and the `fixture=<name>` item was fixed and ticked (decision 21).
+
 ## File Structure
 
 | File | Responsibility | Task |
@@ -223,7 +231,7 @@ From `git grep -n 'CLAUDE.md' -- specs ':!specs/completed' ':!specs/plans/comple
 
 The owner approves this wording at plan review. Apply each block exactly, and tag nothing else. The status line and the "Nothing outside `specs/` references the guide" baseline row stay untouched.
 
-- [ ] **Step 1: Sequencing item 1 gains the bookkeeping, the CLAUDE.md rewrite and the two deferrals.** In `specs/claude-code-drift-automation.md`, replace
+- [x] **Step 1: Sequencing item 1 gains the bookkeeping, the CLAUDE.md rewrite and the two deferrals.** In `specs/claude-code-drift-automation.md`, replace
 
 ```markdown
 1. **Detector.** R1, R2, R3, R5 apart from its citation rules, R6 apart from
@@ -249,7 +257,7 @@ with
    (owner, plan 38, 2026-10-04).
 ```
 
-- [ ] **Step 2: Sequencing item 3 loses "the rest of R7" and takes `packets`.** Replace
+- [x] **Step 2: Sequencing item 3 loses "the rest of R7" and takes `packets`.** Replace
 
 ```markdown
 3. **Act.** R8 apart from `/cc-guide probes`, the rest of R7, `quotes`, and
@@ -267,7 +275,7 @@ with
    since 2.1.288 and the first `files` batch.
 ```
 
-- [ ] **Step 3: Sequencing item 4 takes `check --hook`.** Replace
+- [x] **Step 3: Sequencing item 4 takes `check --hook`.** Replace
 
 ```markdown
 4. **Notice.** R9 and R12.5. It comes after Stage 3, so the notice points at a
@@ -282,7 +290,7 @@ with
    points at a skill that exists.
 ```
 
-- [ ] **Step 4: R12.7's first and third bullets.** Replace
+- [x] **Step 4: R12.7's first and third bullets.** Replace
 
 ```markdown
 - CLAUDE.md's Commands section gains the suite's command and test count, and
@@ -318,7 +326,7 @@ with
   ceiling rule).
 ```
 
-- [ ] **Step 5: Validation item 1 states what the new bookkeeping and the rewrite must show.** Replace
+- [x] **Step 5: Validation item 1 states what the new bookkeeping and the rewrite must show.** Replace
 
 ```markdown
    - The row fixture (R12.3) passes, and the lint passes on the converted
@@ -343,7 +351,7 @@ with
 2. **Stage 2.**
 ```
 
-- [ ] **Step 6: Validation item 6 gains `check_conformance.py`.** Replace
+- [x] **Step 6: Validation item 6 gains `check_conformance.py`.** Replace
 
 ```markdown
 6. **Every existing gate passes:** `check_frontmatter.py`,
@@ -362,7 +370,7 @@ with
    (owner, plan 38, 2026-10-04).
 ```
 
-- [ ] **Step 7 (the owner may drop it at plan review): what the dates mean, and the manual flow, in R1.2, R2.3 and R7.** In R1.2, replace
+- [x] **Step 7 (the owner may drop it at plan review): what the dates mean, and the manual flow, in R1.2, R2.3 and R7.** In R1.2, replace
 
 ```markdown
 oldest `audited`, for example: "Checked against the Claude Code docs and
@@ -416,12 +424,12 @@ that drops or remaps it, since `rebaseline` keeps a missing page's entries
 (owner, plan 38, 2026-10-04).
 ```
 
-- [ ] **Step 8: Check the edit.**
+- [x] **Step 8: Check the edit.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1 && git diff --stat -- specs/ && grep -c '(owner, plan 38, 2026-10-04' specs/claude-code-drift-automation.md && git diff -U0 -- specs/claude-code-drift-automation.md | grep -c '^-\*\*Status'`
 Expected: one file changed, `specs/claude-code-drift-automation.md`. The tag count is `11` with Step 7 (`8` without it). The last count is `0`, because the status line did not change.
 
-- [ ] **Step 9: Commit.**
+- [x] **Step 9: Commit.**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1 && [ "$(git branch --show-current)" = feat/cc-drift-stage1 ] && git add specs/claude-code-drift-automation.md && git commit -m "docs(specs): amend drift Stage 1 with the owner's 2026-10-04 decisions
@@ -478,12 +486,12 @@ Kept in condensed form, as the owner directed:
 
 The "- **Lowell's originals**" bullet is not touched. `build/check_provenance.py` reads its backticked list, and `build/test_check_provenance.py` reads its "(19 originals" note.
 
-- [ ] **Step 1: Confirm the base.** The text below was written against `f72822a`.
+- [x] **Step 1: Confirm the base.** The text below was written against `f72822a`.
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1 && git diff --stat f72822a HEAD -- CLAUDE.md build/CLAUDE.md build/cc_guide/conformance.toml`
 Expected: no output. If any of the three files changed, carry each change into Steps 3–5 without adding a count, and report the deviation. The handoff-briefs plan's R6.2 is the likely source.
 
-- [ ] **Step 2: Write the audit, and run it before editing.** Create `.sdd/38-claude-code-drift-automation/claude_md_audit.py` with exactly this content:
+- [x] **Step 2: Write the audit, and run it before editing.** Create `.sdd/38-claude-code-drift-automation/claude_md_audit.py` with exactly this content:
 
 ```python
 '''CLAUDE.md rewrite audit (plan 38, Task 2). Scratch: never committed.
@@ -591,7 +599,7 @@ if __name__ == '__main__':
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1 && uv run --python 3.13 python .sdd/38-claude-code-drift-automation/claude_md_audit.py; echo "exit=$?"`
 Expected: `35 command lines; CLAUDE.md 224 -> 224 lines; build/CLAUDE.md 17 lines`, then 34 lines of the form `CLAUDE.md:<n>: a numeral outside ALLOWED: …`, the first being `CLAUDE.md:65: … DEPENDENCIES drift — 62 tests`, and `exit=1`. That is this task's red: the counts are still there.
 
-- [ ] **Step 3: Write CLAUDE.md.** Replace the whole file with exactly this content (170 lines):
+- [x] **Step 3: Write CLAUDE.md.** Replace the whole file with exactly this content (170 lines):
 
 ````markdown
 # CLAUDE.md
@@ -766,7 +774,7 @@ uv run --python 3.13 python build/extract_structure.py
 ```
 ````
 
-- [ ] **Step 4: Correct `build/CLAUDE.md`.** Replace
+- [x] **Step 4: Correct `build/CLAUDE.md`.** Replace
 
 ```markdown
 Most files here form a citation-verification pipeline, not a project build. It
@@ -807,7 +815,7 @@ are `../agents/*.md` and `../commands/*.md`; never edit `../runtimes/` by hand.
 skill edit can fail it.
 ```
 
-- [ ] **Step 5: Remove both exceptions from the register.** In `build/cc_guide/conformance.toml`, delete this block, its comment and the blank line after it:
+- [x] **Step 5: Remove both exceptions from the register.** In `build/cc_guide/conformance.toml`, delete this block, its comment and the blank line after it:
 
 ```toml
 # The root CLAUDE.md is over the docs target. The owner set its type,
@@ -842,7 +850,7 @@ tracked_in = 'deferred item: bring the root CLAUDE.md under 200 lines'
 
 The `[[check]]` entry `claude-md-size` (with `limit = 200`) stays.
 
-- [ ] **Step 6: Verify (green).**
+- [x] **Step 6: Verify (green).**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1 && wc -l < CLAUDE.md && uv run --python 3.13 python .sdd/38-claude-code-drift-automation/claude_md_audit.py; echo "exit=$?"`
 Expected: `170`, then `35 command lines; CLAUDE.md 224 -> 170 lines; build/CLAUDE.md 20 lines` and `exit=0`. So every command is unchanged, the originals bullet is byte-identical, and no count is left in either file.
@@ -856,7 +864,7 @@ Expected: exactly one line, `id = 'claude-md-size'`, the `[[check]]` entry.
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1/build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_conformance.py test_check_provenance.py test_check_snippets.py`
 Expected: no failures, and the same passed and skipped counts as these files had at the baseline. `test_check_provenance.py` reads the originals bullet, and `test_repo_passes` runs the conformance lint on this tree.
 
-- [ ] **Step 7: Commit.**
+- [x] **Step 7: Commit.**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1 && [ "$(git branch --show-current)" = feat/cc-drift-stage1 ] && git add CLAUDE.md build/CLAUDE.md build/cc_guide/conformance.toml && git commit -m "docs: bring the root CLAUDE.md under 200 lines
@@ -897,7 +905,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 R3.1's fence rule follows `build/fences.py`, which R12.1 forbids importing. It is extended to tilde fences and to openers at any indentation. `guide.py` (Task 5) splits the guide with the same rule.
 
-- [ ] **Step 1: Create the fixtures file** `build/cc_guide/cc_fixtures.py` with exactly this content:
+- [x] **Step 1: Create the fixtures file** `build/cc_guide/cc_fixtures.py` with exactly this content:
 
 ```python
 '''Hand-written fixtures for the cc_guide suite. Never copied docs text.
@@ -1005,7 +1013,11 @@ PLATFORM_PAGE = '\n'.join([
 ])
 ```
 
-- [ ] **Step 2: Write the tests.** Create `build/cc_guide/test_blocks.py`:
+> Deviation: on the owner's call (ruling 1, 2026-10-04), two preamble lines of
+> `ENV_PAGE` that repeated the docs' own wording are paraphrased, keeping the line
+> count; Task 4's `CHANGELOG_TEXT` and Task 7's `TOOLS_PAGE` take the same paraphrase.
+
+- [x] **Step 2: Write the tests.** Create `build/cc_guide/test_blocks.py`:
 
 ```python
 '''Tests for blocks.py: fences, page splitting, keys, normalization, hashing
@@ -1135,14 +1147,14 @@ def test_candidates_are_matching_sections_or_the_whole_group():
     assert blocks.candidates('k', 'nothing here', terms) == ['b.overview', 'b.events', 'b.other']
 ```
 
-- [ ] **Step 3: Create the stub** `build/cc_guide/blocks.py`, holding only its docstring line: `'''Docs pages as hashed blocks (drift spec R3).'''`
+- [x] **Step 3: Create the stub** `build/cc_guide/blocks.py`, holding only its docstring line: `'''Docs pages as hashed blocks (drift spec R3).'''`
 
-- [ ] **Step 4: Run the tests to see them fail.**
+- [x] **Step 4: Run the tests to see them fail.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1/build/cc_guide && uv run --python 3.13 --with pytest python -m pytest -q -rf test_blocks.py`
 Expected: `17 failed`. Each failure is `AttributeError: module 'blocks' has no attribute …`: seven for `page_blocks`, three for `fenced_lines`, and one each for the other seven names.
 
-- [ ] **Step 5: Implement.** Replace `build/cc_guide/blocks.py` with:
+- [x] **Step 5: Implement.** Replace `build/cc_guide/blocks.py` with:
 
 ```python
 '''Docs pages as hashed blocks (drift spec R3).
@@ -1319,12 +1331,16 @@ def candidates(key: str, text: str, section_terms: dict[str, set[str]]) -> list[
     return hits or list(section_terms)
 ```
 
-- [ ] **Step 6: Run the suite to see it pass.**
+> Deviation: on the owner's call (ruling 2), `LINK_RE` stops at a newline
+> (`r'\]\([^)\n]*\)'`), and `test_normalize_empties_link_targets_and_collapses_whitespace`
+> gains one assertion. No count change.
+
+- [x] **Step 6: Run the suite to see it pass.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1/build/cc_guide && uv run --python 3.13 --with pytest python -m pytest -q`
 Expected: `17 passed`.
 
-- [ ] **Step 7: Commit.**
+- [x] **Step 7: Commit.**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1 && [ "$(git branch --show-current)" = feat/cc-drift-stage1 ] && git add build/cc_guide/cc_fixtures.py build/cc_guide/blocks.py build/cc_guide/test_blocks.py && git commit -m "feat(cc_guide): split docs pages into hashed blocks
@@ -1339,6 +1355,9 @@ Plan 38, Task 3.
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
+
+> Deviation: the plan's commit and the ruled fix were folded into one commit,
+> 38607ca, so the copied preamble lines are in no branch commit.
 
 ---
 
@@ -1361,7 +1380,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 The pre-check (Planning record) confirmed the live formats these parse.
 
-- [ ] **Step 1: Append to `build/cc_guide/cc_fixtures.py`,** after two blank lines:
+- [x] **Step 1: Append to `build/cc_guide/cc_fixtures.py`,** after two blank lines:
 
 ```python
 # Three releases, newest first as the real changelog lists them. Bullets are
@@ -1401,7 +1420,10 @@ LLMS_TEXT = '\n'.join([
 ])
 ```
 
-- [ ] **Step 2: Write the tests.** Create `build/cc_guide/test_docs.py`:
+> Deviation: ruling 1's paraphrase applies to `CHANGELOG_TEXT`'s preamble line
+> (Task 3, Step 1).
+
+- [x] **Step 2: Write the tests.** Create `build/cc_guide/test_docs.py`:
 
 ```python
 '''Tests for docs.py: release ordering, the changelog, llms.txt and page
@@ -1463,14 +1485,19 @@ def test_page_files_and_urls_follow_the_snapshot_and_the_refresh():
             == 'https://platform.claude.com/docs/en/models/haiku-4-5/overview.md')
 ```
 
-- [ ] **Step 3: Create the stub** `build/cc_guide/docs.py`, holding only `'''The docs sources around the block pages (drift spec R2.4, R6.5, R6.6).'''`
+> Deviation: on the owner's call (ruling 3), the malformed-changelog test gains a
+> fourth case, an `<Update …>` opener the pattern rejects, and is renamed (a09e62b).
+> That is +1 test, so later `build/cc_guide/` totals run one above the plan's, and
+> two above from Task 9 on.
 
-- [ ] **Step 4: Run the tests to see them fail.**
+- [x] **Step 3: Create the stub** `build/cc_guide/docs.py`, holding only `'''The docs sources around the block pages (drift spec R2.4, R6.5, R6.6).'''`
+
+- [x] **Step 4: Run the tests to see them fail.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1/build/cc_guide && uv run --python 3.13 --with pytest python -m pytest -q -rf test_docs.py`
 Expected: `12 failed`, each `AttributeError: module 'docs' has no attribute …`: five for `version_key`, five for `parse_changelog`, one for `parse_llms` and one for `page_file`.
 
-- [ ] **Step 5: Implement.** Replace `build/cc_guide/docs.py` with:
+- [x] **Step 5: Implement.** Replace `build/cc_guide/docs.py` with:
 
 ```python
 '''The docs sources around the block pages: release labels, the changelog,
@@ -1559,12 +1586,16 @@ def page_url(page: str, sources: dict[str, str]) -> str:
     return sources['docs_base'] + page + '.md'
 ```
 
-- [ ] **Step 6: Run the suite to see it pass.**
+> Deviation: ruling 3: `parse_changelog` raises `ValueError` for an `<Update` opener
+> that `UPDATE_RE` rejects, so a markup change cannot freeze the fetch gate's head
+> (a09e62b). The interface list above does not name this raise.
+
+- [x] **Step 6: Run the suite to see it pass.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1/build/cc_guide && uv run --python 3.13 --with pytest python -m pytest -q`
 Expected: `29 passed` (+12).
 
-- [ ] **Step 7: Commit.**
+- [x] **Step 7: Commit.**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1 && [ "$(git branch --show-current)" = feat/cc-drift-stage1 ] && git add build/cc_guide/cc_fixtures.py build/cc_guide/docs.py build/cc_guide/test_docs.py && git commit -m "feat(cc_guide): parse release labels, the changelog and llms.txt
@@ -1604,7 +1635,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 `test_guide.py` also pins the real guide: it splits into R1.1's 38 IDs in order with no anchor problem, which is how the fence rule is pinned (R12.1). The stamp region does not exist yet (Task 12), and no test here needs it on the real guide.
 
-- [ ] **Step 1: Append to `build/cc_guide/cc_fixtures.py`,** after two blank lines:
+- [x] **Step 1: Append to `build/cc_guide/cc_fixtures.py`,** after two blank lines:
 
 ```python
 # The fixture guide's sections, in heading order. Two `Reference ⚠` headings
@@ -1666,7 +1697,7 @@ def guide_text(stamp: str = FIXTURE_STAMP) -> str:
     ])
 ```
 
-- [ ] **Step 2: Write the tests.** Create `build/cc_guide/test_guide.py`:
+- [x] **Step 2: Write the tests.** Create `build/cc_guide/test_guide.py`:
 
 ```python
 '''Tests for guide.py: sections and anchors, text hashes, terms and the
@@ -1807,14 +1838,14 @@ def test_real_guide_has_no_anchor_problems():
     assert guide.anchor_problems(REAL_GUIDE.read_text(encoding='utf-8')) == []
 ```
 
-- [ ] **Step 3: Create the stub** `build/cc_guide/guide.py`, holding only `'''The guide: anchored sections, text hashes, terms and the stamp region (drift spec R1, R2.3, R3.6).'''`
+- [x] **Step 3: Create the stub** `build/cc_guide/guide.py`, holding only `'''The guide: anchored sections, text hashes, terms and the stamp region (drift spec R1, R2.3, R3.6).'''`
 
-- [ ] **Step 4: Run the tests to see them fail.**
+- [x] **Step 4: Run the tests to see them fail.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1/build/cc_guide && uv run --python 3.13 --with pytest python -m pytest -q -rf test_guide.py`
 Expected: `20 failed`. Sixteen are `AttributeError: module 'guide' has no attribute …`: four each for `code_spans` and `stamp_content`, three for `anchor_problems`, two for `sections`, and one each for `render_stamp`, `section_terms` and `text_hash`. The other four are `ImportError: cannot import name 'STAMP_CLOSE' from 'guide'`, raised inside the fixture `guide_text`.
 
-- [ ] **Step 5: Implement.** Replace `build/cc_guide/guide.py` with:
+- [x] **Step 5: Implement.** Replace `build/cc_guide/guide.py` with:
 
 ```python
 '''The guide: its anchored sections, their text hashes and terms, and the
@@ -1985,12 +2016,12 @@ def render_stamp(section_states: dict[str, dict]) -> str:
             f"at {audited['release']}.")
 ```
 
-- [ ] **Step 6: Run the suite to see it pass.**
+- [x] **Step 6: Run the suite to see it pass.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1/build/cc_guide && uv run --python 3.13 --with pytest python -m pytest -q`
 Expected: `49 passed` (+20).
 
-- [ ] **Step 7: Commit.**
+- [x] **Step 7: Commit.**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1 && [ "$(git branch --show-current)" = feat/cc-drift-stage1 ] && git add build/cc_guide/cc_fixtures.py build/cc_guide/guide.py build/cc_guide/test_guide.py && git commit -m "feat(cc_guide): read the guide's sections, terms and stamp region
@@ -2030,7 +2061,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - cache paths: `default_cache() -> Path`, `latest_docs(cache)`, `fetch_record(cache)`, `snapshot_docs(cache, release)` and `newest_changelog(cache) -> Path | None`.
 - Fixtures: `MANIFEST_TOML` (groups `alpha` and `beta`), `write_tree(root, files)`, `git(repo, *args)` and `fixture_repo(root, files)`.
 
-- [ ] **Step 1: Append to `build/cc_guide/cc_fixtures.py`,** after two blank lines:
+- [x] **Step 1: Append to `build/cc_guide/cc_fixtures.py`,** after two blank lines:
 
 ```python
 MANIFEST_TOML = '\n'.join([
@@ -2093,7 +2124,7 @@ def fixture_repo(root, files: dict):
     return root
 ```
 
-- [ ] **Step 2: Write the tests.** Create `build/cc_guide/test_state.py`:
+- [x] **Step 2: Write the tests.** Create `build/cc_guide/test_state.py`:
 
 ```python
 '''Tests for state.py: the manifest, the baseline, PROBES.md, the repo
@@ -2244,14 +2275,18 @@ def test_the_default_cache_follows_home(isolated_home):
     assert state.default_cache() == isolated_home / '.cache' / 'agent-skills' / 'cc-guide'
 ```
 
-- [ ] **Step 3: Create the stub** `build/cc_guide/state.py`, holding only `'''The detector's inputs and cache layout (drift spec R2, R6.1, Layout).'''`
+> Deviation: the eight `pytest.raises(match=…)` assertions compare messages
+> exactly, per the Global Constraints; on the owner's call (ruling 5) the
+> every-problem test gains a second mis-shaped manifest (53daf8d). No count change.
 
-- [ ] **Step 4: Run the tests to see them fail.**
+- [x] **Step 3: Create the stub** `build/cc_guide/state.py`, holding only `'''The detector's inputs and cache layout (drift spec R2, R6.1, Layout).'''`
+
+- [x] **Step 4: Run the tests to see them fail.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1/build/cc_guide && uv run --python 3.13 --with pytest python -m pytest -q -rf test_state.py`
 Expected: `13 failed`, each `AttributeError: module 'state' has no attribute …`: four for `SetupError`, three for `parse_manifest`, and one each for `Source`, `default_cache`, `dump_baseline`, `newest_changelog`, `parse_baseline` and `parse_probes`.
 
-- [ ] **Step 5: Implement.** Replace `build/cc_guide/state.py` with:
+- [x] **Step 5: Implement.** Replace `build/cc_guide/state.py` with:
 
 ```python
 '''The detector's inputs and cache layout: manifest.toml (owner
@@ -2579,12 +2614,16 @@ def newest_changelog(cache: Path) -> Path | None:
     return None
 ```
 
-- [ ] **Step 6: Run the suite to see it pass.**
+> Deviation: ruling 5: `parse_manifest` checks each table's shape first, so a
+> mis-shaped table is a listed problem, not an `AttributeError` (53daf8d). Ruling 6
+> deferred the probe validator's R10.1/R10.2 conflict to Stage 5 (deferred items).
+
+- [x] **Step 6: Run the suite to see it pass.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1/build/cc_guide && uv run --python 3.13 --with pytest python -m pytest -q`
 Expected: `62 passed` (+13).
 
-- [ ] **Step 7: Commit.**
+- [x] **Step 7: Commit.**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1 && [ "$(git branch --show-current)" = feat/cc-drift-stage1 ] && git add build/cc_guide/cc_fixtures.py build/cc_guide/state.py build/cc_guide/test_state.py && git commit -m "feat(cc_guide): read and validate the manifest, baseline and probe log
@@ -2627,7 +2666,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 `test_r11_derivation_from_the_real_history` reads `91474f6` and `c33bc99` from this repo's history. It expects six sections at 2.1.219 (`lean.ceremony`, `lean.overview`, `rules.auto-memory`, `rules.overview`, `skills.description`, `skills.overview`) and 32 at 2.1.288, and it skips with a reason in a shallow clone.
 
-- [ ] **Step 1: Append to `build/cc_guide/cc_fixtures.py`,** after two blank lines:
+- [x] **Step 1: Append to `build/cc_guide/cc_fixtures.py`,** after two blank lines:
 
 ```python
 TOOLS_PAGE = '\n'.join([
@@ -2695,7 +2734,10 @@ def fixture_state(folder) -> dict:
                          FIXTURE_RELEASE, FIXTURE_DAY, FIXTURE_CHANGED)
 ```
 
-- [ ] **Step 2: Write the tests.** Create `build/cc_guide/test_baseline.py`:
+> Deviation: ruling 1's paraphrase applies to `TOOLS_PAGE`'s preamble line (Task 3,
+> Step 1).
+
+- [x] **Step 2: Write the tests.** Create `build/cc_guide/test_baseline.py`:
 
 ```python
 '''Tests for baseline.py: R2.4's stamp rule, R11.1's derivation, and each
@@ -2888,14 +2930,19 @@ def test_stamp_regenerates_only_the_region(docs_dir):
     assert stamped == guide_text(guide.render_stamp(s['sections']))
 ```
 
-- [ ] **Step 3: Create the stub** `build/cc_guide/baseline.py`, holding only `'''`baseline`: the only writer of baseline.json and the guide's stamp region (drift spec R7).'''`
+> Deviation: the six `match=` assertions compare messages exactly (1653ef1). On the
+> owner's call (ruling 7), the listed-rebaseline test is renamed and gains the
+> refusal and a snapshot assertion (6822f01). The final review added an unlisted
+> `--slow` row, so a whole-page replace fails it (bfbc2d5). No count change.
 
-- [ ] **Step 4: Run the tests to see them fail.**
+- [x] **Step 3: Create the stub** `build/cc_guide/baseline.py`, holding only `'''`baseline`: the only writer of baseline.json and the guide's stamp region (drift spec R7).'''`
+
+- [x] **Step 4: Run the tests to see them fail.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1/build/cc_guide && uv run --python 3.13 --with pytest python -m pytest -q -rf test_baseline.py`
 Expected: `18 failed`, each `AttributeError: module 'baseline' has no attribute …`: nine for `init` (through `fixture_state`), five for `next_changed`, three for `derive_changed` and one for `advance`.
 
-- [ ] **Step 5: Implement.** Replace `build/cc_guide/baseline.py` with:
+- [x] **Step 5: Implement.** Replace `build/cc_guide/baseline.py` with:
 
 ```python
 '''`baseline`: the only writer of baseline.json and of the guide's stamp
@@ -3113,12 +3160,16 @@ def stamp(guide_text: str, state: dict) -> str:
     return with_stamp(guide_text, render_stamp(state['sections']))
 ```
 
-- [ ] **Step 6: Run the suite to see it pass.**
+> Deviation: ruling 7: a listed `rebaseline` raises `SetupError`, naming them, when
+> unlisted baselined blocks on the page also differ from `latest/`, since the page's
+> snapshot would then not hold their baselined text (6822f01).
+
+- [x] **Step 6: Run the suite to see it pass.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1/build/cc_guide && uv run --python 3.13 --with pytest python -m pytest -q`
 Expected: `80 passed` (+18). The real-history test must pass, not skip: a worktree made by `git worktree add` shares the repo's full history.
 
-- [ ] **Step 7: Commit.**
+- [x] **Step 7: Commit.**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1 && [ "$(git branch --show-current)" = feat/cc-drift-stage1 ] && git add build/cc_guide/cc_fixtures.py build/cc_guide/baseline.py build/cc_guide/test_baseline.py && git commit -m "feat(cc_guide): add the baseline bookkeeping but cite
@@ -3151,7 +3202,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - The violations come in this order: anchors, ID sets, text hashes, the stamp region, then guide quality.
 - `labels` holds the newest changelog's release labels. The caller parses the changelog, so a malformed one surfaces as a `SetupError` there (exit 2), never as a lint crash. With `labels=None`, the release-label check is skipped with the note `release-label check skipped: no changelog to read`.
 
-- [ ] **Step 1: Write the tests.** Create `build/cc_guide/test_lint.py`:
+- [x] **Step 1: Write the tests.** Create `build/cc_guide/test_lint.py`:
 
 ```python
 '''Tests for lint.py: every R5 rule but the citation rules (Stage 2's).'''
@@ -3259,14 +3310,17 @@ def test_an_anchor_problem_fails_the_lint(docs_dir):
     assert 'section beta.reference: missing from the guide' in violations
 ```
 
-- [ ] **Step 2: Create the stub** `build/cc_guide/lint.py`, holding only `'''`lint`: the offline gate over the guide, manifest.toml and baseline.json (drift spec R5).'''`
+> Deviation: `test_an_anchor_problem_fails_the_lint` compares the whole violation
+> list exactly, with the heading's line computed, per the Global Constraints (424d772).
 
-- [ ] **Step 3: Run the tests to see them fail.**
+- [x] **Step 2: Create the stub** `build/cc_guide/lint.py`, holding only `'''`lint`: the offline gate over the guide, manifest.toml and baseline.json (drift spec R5).'''`
+
+- [x] **Step 3: Run the tests to see them fail.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1/build/cc_guide && uv run --python 3.13 --with pytest python -m pytest -q -rf test_lint.py`
 Expected: `14 failed`, each `AttributeError: module 'lint' has no attribute 'lint'`.
 
-- [ ] **Step 4: Implement.** Replace `build/cc_guide/lint.py` with:
+- [x] **Step 4: Implement.** Replace `build/cc_guide/lint.py` with:
 
 ```python
 '''`lint`: the offline gate over the guide, manifest.toml and baseline.json
@@ -3381,12 +3435,12 @@ def lint(guide_text: str, manifest: Manifest, state: dict,
     return violations, notes
 ```
 
-- [ ] **Step 5: Run the suite to see it pass.**
+- [x] **Step 5: Run the suite to see it pass.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1/build/cc_guide && uv run --python 3.13 --with pytest python -m pytest -q`
 Expected: `94 passed` (+14).
 
-- [ ] **Step 6: Commit.**
+- [x] **Step 6: Commit.**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1 && [ "$(git branch --show-current)" = feat/cc-drift-stage1 ] && git add build/cc_guide/lint.py build/cc_guide/test_lint.py && git commit -m "feat(cc_guide): lint the guide against its manifest and baseline
@@ -3428,7 +3482,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 `test_editing_one_row_flags_only_the_groups_whose_terms_match_it` is R12.3's row fixture. The probe due rules are tested against a fixture registry, because the real one stays empty until Stage 5 (decision 6).
 
-- [ ] **Step 1: Append to `build/cc_guide/cc_fixtures.py`,** after two blank lines:
+- [x] **Step 1: Append to `build/cc_guide/cc_fixtures.py`,** after two blank lines:
 
 ```python
 GUIDE_PATH = 'specs/guides/claude-code-customization-guide.md'
@@ -3442,7 +3496,7 @@ def drift_repo(root, folder):
                                state.BASELINE: state.dump_baseline(fixture_state(folder))})
 ```
 
-- [ ] **Step 2: Write the tests.** Create `build/cc_guide/test_check.py`:
+- [x] **Step 2: Write the tests.** Create `build/cc_guide/test_check.py`:
 
 ```python
 '''Tests for check.py: compare, the changelog, every due rule, the fetch gate,
@@ -3694,14 +3748,21 @@ def test_llms_slugs_added_and_removed_since_the_baseline_are_listed(tmp_path, do
     assert report['llms'] == {'added': ['plugins/parts'], 'removed': ['plugins/components']}
 ```
 
-- [ ] **Step 3: Create the stub** `build/cc_guide/check.py`, holding only `'''`check`: fetch the docs, compare, and report what is due (drift spec R6).'''`
+> Deviation: per the Global Constraints, the `match=` assertion is exact (561c7c1),
+> and the audit test pins its first due day while the report test, renamed, lists
+> check's whole write set (b9a76ff). On the owner's call (ruling 8), a new offline
+> `http_get` test, +1 (12b0705). The final review added a parametrized test isolating
+> the exit code's audit and probe terms, +2 (bfbc2d5). At the completion gate the
+> owner reversed `test_a_block_that_lost_its_term_is_deselected_not_changed` (4ff20bb).
 
-- [ ] **Step 4: Run the tests to see them fail.**
+- [x] **Step 3: Create the stub** `build/cc_guide/check.py`, holding only `'''`check`: fetch the docs, compare, and report what is due (drift spec R6).'''`
+
+- [x] **Step 4: Run the tests to see them fail.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1/build/cc_guide && uv run --python 3.13 --with pytest python -m pytest -q -rf test_check.py`
 Expected: `29 failed`, each `AttributeError: module 'check' has no attribute …`: nine for `due_probes`, eight for `check`, five for `compare`, three for `due_changelog`, two for `live_docs`, and one each for `due_audit` and `untriaged`.
 
-- [ ] **Step 5: Implement.** Replace `build/cc_guide/check.py` with:
+- [x] **Step 5: Implement.** Replace `build/cc_guide/check.py` with:
 
 ```python
 '''`check`: fetch the docs when the changelog head moved, compare each group's
@@ -4038,12 +4099,19 @@ def summary(report: dict, path: Path) -> list[str]:
     return lines
 ```
 
-- [ ] **Step 6: Run the suite to see it pass.**
+> Deviation: `http_get` also catches `http.client.HTTPException`, so a truncated
+> read is retried and reported like any fetch failure (ruling 8, 12b0705). Ruling 9
+> deferred probe ERROR and unknown outcomes to Stage 5. At the completion gate
+> (owner, 2026-10-05; Codex's finding) `compare` tests a baselined block's hash
+> before its selection, so a block whose text changed is changed even when it lost
+> its term, and R3.7 says so (4ff20bb).
+
+- [x] **Step 6: Run the suite to see it pass.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1/build/cc_guide && uv run --python 3.13 --with pytest python -m pytest -q`
 Expected: `123 passed` (+29). No test reaches the network: every live path goes through a fake `fetch`.
 
-- [ ] **Step 7: Commit.**
+- [x] **Step 7: Commit.**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1 && [ "$(git branch --show-current)" = feat/cc-drift-stage1 ] && git add build/cc_guide/cc_fixtures.py build/cc_guide/check.py build/cc_guide/test_check.py && git commit -m "feat(cc_guide): fetch the docs, compare blocks and report what is due
@@ -4089,7 +4157,7 @@ The tests pin each `baseline` subcommand's write set, checked with `git status` 
 
 They also pin that `check` reads `main` unless given `--worktree`, that `rebaseline` refuses the bootstrap snapshot, and that a crash exits 2. `test_bookkeeping_alone_brings_check_to_exit_zero` is Validation item 1's bookkeeping bullet: in R8.8's order, the subcommands clear a changed block, untriaged releases and a due audit until `check --worktree` exits 0.
 
-- [ ] **Step 1: Append to `build/cc_guide/cc_fixtures.py`,** after two blank lines:
+- [x] **Step 1: Append to `build/cc_guide/cc_fixtures.py`,** after two blank lines:
 
 ```python
 def prime_cache(cache, folder, head: str = '2.1.902') -> None:
@@ -4101,7 +4169,7 @@ def prime_cache(cache, folder, head: str = '2.1.902') -> None:
                                                       'changelog_head': head}) + '\n')
 ```
 
-- [ ] **Step 2: Write the tests.** Create `build/cc_guide/test_cli.py`:
+- [x] **Step 2: Write the tests.** Create `build/cc_guide/test_cli.py`:
 
 ```python
 '''Tests for cli.py: exit codes, which inputs each subcommand reads, each
@@ -4304,14 +4372,19 @@ def test_bookkeeping_alone_brings_check_to_exit_zero(world):
     assert main(cache, 'check', '--docs', str(folder), today=today) == 1
 ```
 
-- [ ] **Step 3: Create the stub** `build/cc_guide/cli.py`, holding only `'''cc_guide's command line (Stage 1 of specs/claude-code-drift-automation.md).'''`
+> Deviation: six `(out, err)` checks are exact (aec437b). On the owner's call
+> (ruling 10), the malformed-changelog test, renamed, also rejects a changelog with
+> no `<Update>` block (6ce360b). The crash test also crashes before `main`'s `try`
+> (c6f3477). The final review pinned the snapshot's bytes (bfbc2d5).
 
-- [ ] **Step 4: Run the tests to see them fail.**
+- [x] **Step 3: Create the stub** `build/cc_guide/cli.py`, holding only `'''cc_guide's command line (Stage 1 of specs/claude-code-drift-automation.md).'''`
+
+- [x] **Step 4: Run the tests to see them fail.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1/build/cc_guide && uv run --python 3.13 --with pytest python -m pytest -q -rfE test_cli.py`
 Expected: `2 failed, 10 errors`. The ten ERRORs come at the `world` fixture's setup and the two FAILEDs from the tests that patch `cli.REPO` themselves. All twelve are `AttributeError: <module 'cli' …> has no attribute 'REPO'`.
 
-- [ ] **Step 5: Implement.** Replace `build/cc_guide/cli.py` with:
+- [x] **Step 5: Implement.** Replace `build/cc_guide/cli.py` with:
 
 ```python
 #!/usr/bin/env python3
@@ -4524,7 +4597,12 @@ if __name__ == '__main__':
     sys.exit(main())
 ```
 
-- [ ] **Step 6: Run the suite to see it pass, and smoke-test the command line.**
+> Deviation: `main` resolves its cache and dates inside the `try`, so that crash
+> exits 2 too, per the Global Constraints' CLI contract (c6f3477). On the owner's
+> call (ruling 11), `cached_releases` uses `check.releases_of`, which names its
+> source, not `docs.parse_changelog` as the interface list says (873c822).
+
+- [x] **Step 6: Run the suite to see it pass, and smoke-test the command line.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1/build/cc_guide && uv run --python 3.13 --with pytest python -m pytest -q`
 Expected: `135 passed` (+12).
@@ -4535,7 +4613,7 @@ Expected: a usage line listing `{lint,check,baseline}`, then `cc-guide: build/cc
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1 && grep -rnE --include='*.py' --include='*.toml' '^[[:space:]]*(# cc-guide:|<!-- cc-guide:)' build/cc_guide; echo "exit=$?"`
 Expected: no lines and `exit=1`, because no citation-shaped line exists in the tool's sources. Plain `grep` is used here, not `git grep`, because this task's files are not yet tracked.
 
-- [ ] **Step 7: Commit.**
+- [x] **Step 7: Commit.**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1 && [ "$(git branch --show-current)" = feat/cc-drift-stage1 ] && git add build/cc_guide/cc_fixtures.py build/cc_guide/cli.py build/cc_guide/test_cli.py && git commit -m "feat(cc_guide): add the lint, check and baseline command line
@@ -4566,7 +4644,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Consumes: `state.parse_manifest` (Task 6) and the CLI (Task 10).
 - Produces: the configuration Tasks 12 and 13 read. No tool writes this file (R2.1).
 
-- [ ] **Step 1: Write `build/cc_guide/manifest.toml`** with exactly this content. The six groups follow R2.5's table, their sections follow R1.1's Group column in guide order, and each choice carries a comment:
+- [x] **Step 1: Write `build/cc_guide/manifest.toml`** with exactly this content. The six groups follow R2.5's table, their sections follow R1.1's Group column in guide order, and each choice carries a comment:
 
 ```toml
 # Claude Code guide drift detector: configuration.
@@ -4682,7 +4760,7 @@ reason = 'Parsed release by release (R6.6), never hashed as blocks.'
 # as [[probe]] entries with an id, the sections they back, and optional files.
 ```
 
-- [ ] **Step 2: Check it against the spec.** Create `.sdd/38-claude-code-drift-automation/manifest_vs_spec.py`:
+- [x] **Step 2: Check it against the spec.** Create `.sdd/38-claude-code-drift-automation/manifest_vs_spec.py`:
 
 ```python
 '''Plan 38, Task 11: check the seed manifest against the spec's R1.1 table
@@ -4729,9 +4807,9 @@ Expected: `38 sections and 6 groups read from the spec` and `exit=0`.
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1 && uv run --python 3.13 python build/cc_guide/cli.py lint; echo "exit=$?"`
 Expected: `cc-guide: build/cc_guide/baseline.json: not found in the working tree` and `exit=2`. The manifest parsed: an invalid one would print every problem, prefixed `build/cc_guide/manifest.toml:`, before any baseline is read.
 
-- [ ] **Step 3: Owner gate (R11.2).** Show the owner the file, its six groups with their `all` and `terms` pages, the three exclusions, and the empty probe registry. Then **stop and ask**: approve as written, or name the changes. Apply any change, rerun Step 2, and log it in the ledger as a deviation for this step. Do not commit before the owner approves.
+- [x] **Step 3: Owner gate (R11.2).** Show the owner the file, its six groups with their `all` and `terms` pages, the three exclusions, and the empty probe registry. Then **stop and ask**: approve as written, or name the changes. Apply any change, rerun Step 2, and log it in the ledger as a deviation for this step. Do not commit before the owner approves.
 
-- [ ] **Step 4: Commit.**
+- [x] **Step 4: Commit.**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1 && [ "$(git branch --show-current)" = feat/cc-drift-stage1 ] && git add build/cc_guide/manifest.toml && git commit -m "feat(cc_guide): seed the drift manifest
@@ -4762,7 +4840,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Consumes: the CLI (Task 10), the manifest (Task 11), and the bootstrap snapshot at `~/.cache/agent-skills/cc-guide/2.1.288/docs/`, which `init` only reads.
 - Produces: the committed seed state that Task 13's runs read.
 
-- [ ] **Step 1: Owner gate: the stamp-region edit (R1.2).** Show the owner the replacement below (decision 7), then **stop and ask** for approval or other wording. Only the text outside the markers is theirs to word. The one line between the markers is what `baseline stamp` generates, and the lint requires it verbatim. The proposal replaces
+- [x] **Step 1: Owner gate: the stamp-region edit (R1.2).** Show the owner the replacement below (decision 7), then **stop and ask** for approval or other wording. Only the text outside the markers is theirs to word. The one line between the markers is what `baseline stamp` generates, and the lint requires it verbatim. The proposal replaces
 
 ```markdown
 > Facts in this guide were re-verified against the official Claude Code documentation (code.claude.com/docs) and Anthropic's pricing pages on 2026-10-03, at Claude Code 2.1.288 (first verified July 2026, at 2.1.219 — 58 releases earlier). Claude Code changes quickly: items marked ⚠ are the most version-sensitive — confirm them against your installed version (`claude --version`, `/doctor`) before depending on exact numbers or field names.
@@ -4780,12 +4858,12 @@ with
 
 "58 releases before the full re-verification at 2.1.288" replaces "58 releases earlier", which counted back from 2.1.288 and would go stale at the first restamp. The region sits before the first section, so no section's text, and no `text_hash`, changes.
 
-- [ ] **Step 2: Apply the approved edit,** and nothing else in the guide.
+- [x] **Step 2: Apply the approved edit,** and nothing else in the guide.
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1 && git diff --numstat -- specs/guides/`
 Expected: `5	1	specs/guides/claude-code-customization-guide.md` for the proposal as written.
 
-- [ ] **Step 3: Build the seed baseline (R2.6).**
+- [x] **Step 3: Build the seed baseline (R2.6).**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1 && uv run --python 3.13 python build/cc_guide/cli.py baseline init; echo "exit=$?"`
 Expected: `wrote build/cc_guide/baseline.json from /Users/lowell/.cache/agent-skills/cc-guide/2.1.288/docs; next: baseline stamp` and `exit=0`.
@@ -4793,7 +4871,7 @@ Expected: `wrote build/cc_guide/baseline.json from /Users/lowell/.cache/agent-sk
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1 && uv run --python 3.13 python -c "import json, collections; b = json.load(open('build/cc_guide/baseline.json')); print(dict(collections.Counter(s['changed'] for s in b['sections'].values()))); print({g: sum(map(len, v['blocks'].values())) for g, v in b['groups'].items()})" && shasum -a 256 build/cc_guide/baseline.json`
 Expected: `{'2.1.288': 32, '2.1.219': 6}` (R11.1) and `{'overview': 496, 'skills': 422, 'subagents': 546, 'rules': 524, 'hooks': 796, 'models': 633}`. With the manifest exactly as Task 11 wrote it, the hash is `5a1c88742f05018e8a7a148fa731af07db695e2cbd75aac8f2e92fb8b4a0c952`, because `init` is deterministic. A manifest the owner changed at Task 11 gives other block counts and another hash; record them in the ledger instead.
 
-- [ ] **Step 4: Stamp, then lint.**
+- [x] **Step 4: Stamp, then lint.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1 && uv run --python 3.13 python build/cc_guide/cli.py baseline stamp && git diff --numstat -- specs/guides/ && uv run --python 3.13 python build/cc_guide/cli.py lint; echo "exit=$?"`
 Expected: `regenerated the stamp region in specs/guides/claude-code-customization-guide.md`, the same `5	1` numstat as Step 2 (`stamp` wrote the line the edit already holds), and `exit=0`. The lint read the 2.1.288 snapshot's changelog, since `latest/` does not exist yet, so the release-label check ran.
@@ -4801,7 +4879,7 @@ Expected: `regenerated the stamp region in specs/guides/claude-code-customizatio
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1 && uv run --python 3.13 --with pyyaml python build/check_conformance.py; echo "exit=$?"`
 Expected: `exit=0`. The conformance lint still finds a well-formed anchor under every heading next to the new markers.
 
-- [ ] **Step 5: The repo lint test (R5, R12.4).** Append to `build/cc_guide/test_cli.py`:
+- [x] **Step 5: The repo lint test (R5, R12.4).** Append to `build/cc_guide/test_cli.py`:
 
 ```python
 def test_the_repo_lints_clean(capsys):
@@ -4813,7 +4891,10 @@ def test_the_repo_lints_clean(capsys):
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1/build/cc_guide && uv run --python 3.13 --with pytest python -m pytest -q`
 Expected: `136 passed` (+1). The new test reads the real guide, manifest and baseline.
 
-- [ ] **Step 6: Commit.**
+> Deviation: 138 passed, the plan's 136 plus the owner-approved tests of Tasks 4
+> and 9.
+
+- [x] **Step 6: Commit.**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1 && [ "$(git branch --show-current)" = feat/cc-drift-stage1 ] && git add specs/guides/claude-code-customization-guide.md build/cc_guide/baseline.json build/cc_guide/test_cli.py && git commit -m "feat(cc_guide): stamp the guide and seed the baseline at 2.1.288
@@ -4846,7 +4927,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 Every `check` here passes `--worktree`, because `main` does not hold the manifest yet. Do not run `advance`, `audited` or `rebaseline` on the real baseline: triaging the backlog since 2.1.288 is Stage 3's first job, or the owner's own manual review (decision 4). R11.4's third bullet, the stale backlog of citing files, needs Stage 2's citations.
 
-- [ ] **Step 1: The round trip (R11.4, first bullet).**
+- [x] **Step 1: The round trip (R11.4, first bullet).**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1 && uv run --python 3.13 python build/cc_guide/cli.py check --worktree --docs ~/.cache/agent-skills/cc-guide/2.1.288/docs; echo "exit=$?"`
 Expected:
@@ -4858,7 +4939,7 @@ Expected:
 
 The baseline round-trips. Judge it on the findings, not the exit: the exit is 0 until 2026-11-01, and from 2026-11-02 it is 1, with only the audit line adding `, due`.
 
-- [ ] **Step 2: The live run (R11.4, second bullet).** This fetches `changelog.md`, `llms.txt` and the 39 mapped pages into `~/.cache/agent-skills/cc-guide/latest/`.
+- [x] **Step 2: The live run (R11.4, second bullet).** This fetches `changelog.md`, `llms.txt` and the 39 mapped pages into `~/.cache/agent-skills/cc-guide/latest/`.
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1 && uv run --python 3.13 python build/cc_guide/cli.py check --worktree; echo "exit=$?"`
 Expected:
@@ -4873,7 +4954,7 @@ The exit is 1 if anything is due (a block finding, the batch from 2026-10-10, or
 Run, with the report path from the last line: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1 && uv run --python 3.13 python -c "import json, sys; u = json.load(open(sys.argv[1]))['untriaged']; print(len(u), all(v and v[0] == '2.1.289' for v in u.values()))" <report path>`
 Expected: `38 True`. Every section lists 2.1.289 and later as untriaged.
 
-- [ ] **Step 3: Owner gate: the block selection (Validation item 1).** Create the two scratch helpers.
+- [x] **Step 3: Owner gate: the block selection (Validation item 1).** Create the two scratch helpers.
 
 `.sdd/38-claude-code-drift-automation/selection.py`:
 
@@ -4964,7 +5045,7 @@ Expected: one diff per changed block, baselined text against latest. This is doc
 
 Show the owner both outputs. Point out pages whose `terms` selection looks too broad, such as more than a third of a page, or empty. Then **stop and ask**: keep the marks, or tune `all`/`terms` and per-section `extra_terms`/`exclude_terms` in `manifest.toml`. Record the answer in the ledger.
 
-- [ ] **Step 4: Only if the owner tuned the manifest: rebuild and round-trip again.** `init --force` rebuilds from the 2.1.288 snapshot. A `rebaseline` would absorb the docs' edits since then (decision 15).
+- [x] **Step 4: Only if the owner tuned the manifest: rebuild and round-trip again.** `init --force` rebuilds from the 2.1.288 snapshot. A `rebaseline` would absorb the docs' edits since then (decision 15).
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1 && uv run --python 3.13 python build/cc_guide/cli.py baseline init --force && uv run --python 3.13 python build/cc_guide/cli.py baseline stamp && git diff --numstat -- specs/guides/ && uv run --python 3.13 python build/cc_guide/cli.py lint; echo "exit=$?"`
 Expected: the `wrote …` and `regenerated …` lines, no guide numstat (the dates did not change, so neither did the stamp), and `exit=0`.
@@ -4973,7 +5054,12 @@ Then rerun Step 1's command, with Step 1's expectations, and the suite:
 `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1/build/cc_guide && uv run --python 3.13 --with pytest python -m pytest -q`
 Expected: `136 passed`.
 
-- [ ] **Step 5: Commit, only if Step 4 ran.**
+> Deviation: the owner tuned two marks (2026-10-05): `monitoring-usage` from `all` to
+> `terms` in overview, and `model-deprecations` from `terms` to `all` in models. The
+> rebuilt baseline holds 3,263 blocks in 4,154 lines (sha256 `6fa76f7c…`), superseding
+> decision 18's and Task 12's seed figures (3,417 blocks, 4,308 lines); 138 passed.
+
+- [x] **Step 5: Commit, only if Step 4 ran.**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1 && [ "$(git branch --show-current)" = feat/cc-drift-stage1 ] && git add build/cc_guide/manifest.toml build/cc_guide/baseline.json && git commit -m "feat(cc_guide): tune the block selection after the first live report
@@ -5002,7 +5088,7 @@ If the owner kept the marks, there is nothing to commit. Note "no tuning" for th
 - Consumes: Task 2's CLAUDE.md, and the CLI.
 - Produces: CLAUDE.md at 176 lines (the budget table's Stage 1 line).
 
-- [ ] **Step 1: The Build tooling paragraph names the detector.** In `CLAUDE.md`, replace the one-line paragraph
+- [x] **Step 1: The Build tooling paragraph names the detector.** In `CLAUDE.md`, replace the one-line paragraph
 
 ```markdown
 `build/` holds the repo's lints and commit gates, the cross-runtime adapter generator (`sync_runtime_assets.py`), and the citation-verification pipeline for `recommend-probabilistic-model`; `build/CLAUDE.md` describes each. **`build/.scratch/` is gitignored and must never be committed** — it contains own-use extraction of CC-BY-NC-ND material.
@@ -5014,7 +5100,7 @@ with
 `build/` holds the repo's lints and commit gates, the cross-runtime adapter generator (`sync_runtime_assets.py`), the Claude Code guide's drift detector (`cc_guide/`), and the citation-verification pipeline for `recommend-probabilistic-model`; `build/CLAUDE.md` describes each. **`build/.scratch/` is gitignored and must never be committed** — it contains own-use extraction of CC-BY-NC-ND material.
 ```
 
-- [ ] **Step 2: The Commands block gains the suite and the `lint` and `check` invocations, with no count** (R12.7 as amended). Replace
+- [x] **Step 2: The Commands block gains the suite and the `lint` and `check` invocations, with no count** (R12.7 as amended). Replace
 
 ```markdown
 uv run --python 3.13 --with pyyaml python build/check_conformance.py
@@ -5036,7 +5122,7 @@ uv run --python 3.13 python build/cc_guide/cli.py check
 # Dependency drift: skill and command text vs install.py's DEPENDENCIES (run before committing a skill
 ```
 
-- [ ] **Step 3: `build/CLAUDE.md` gains a `cc_guide/` paragraph** (R12.7, second bullet). Append, after one blank line:
+- [x] **Step 3: `build/CLAUDE.md` gains a `cc_guide/` paragraph** (R12.7, second bullet). Append, after one blank line:
 
 ```markdown
 `cc_guide/` holds two tools for `specs/guides/claude-code-customization-guide.md`.
@@ -5055,7 +5141,7 @@ committed for you. `cd build && pytest` collects this suite too, so module and
 test basenames stay unique across `build/`.
 ```
 
-- [ ] **Step 4: Verify.**
+- [x] **Step 4: Verify.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1 && wc -l < CLAUDE.md && uv run --python 3.13 python .sdd/38-claude-code-drift-automation/claude_md_audit.py --counts-only; echo "exit=$?"; uv run --python 3.13 --with pyyaml python build/check_conformance.py; echo "exit=$?"`
 Expected: `176`, then the audit's summary line and `exit=0` (no count crept in: "exit 1" is an allowed exit code), then `exit=0` from the conformance lint.
@@ -5065,7 +5151,9 @@ Run each documented command as written. The `check` line reads `main`, which doe
 `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1 && uv run --python 3.13 python build/cc_guide/cli.py lint; echo "exit=$?"; uv run --python 3.13 python build/cc_guide/cli.py check; echo "exit=$?"`
 Expected: `136 passed`; then `exit=0`; then `cc-guide: build/cc_guide/manifest.toml: not found in main` and `exit=2`. That is R6.1's default, shown working.
 
-- [ ] **Step 5: Commit.**
+> Deviation: 138 passed (Task 12's note).
+
+- [x] **Step 5: Commit.**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1 && [ "$(git branch --show-current)" = feat/cc-drift-stage1 ] && git add CLAUDE.md build/CLAUDE.md && git commit -m "docs: document the Claude Code guide drift detector
@@ -5087,7 +5175,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 **Controller task.** It runs every gate and checks each validation item. Nothing is committed unless a fix is needed.
 
-- [ ] **Step 1: The detector.**
+- [x] **Step 1: The detector.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1/build/cc_guide && uv run --python 3.13 --with pytest python -m pytest -q`
 Expected: `136 passed`.
@@ -5095,7 +5183,9 @@ Expected: `136 passed`.
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1 && uv run --python 3.13 python build/cc_guide/cli.py lint; echo "exit=$?"; uv run --python 3.13 python build/cc_guide/cli.py check --worktree --docs ~/.cache/agent-skills/cc-guide/2.1.288/docs; echo "exit=$?"`
 Expected: lint gives `exit=0`, now checking release labels against Task 13's `latest/` changelog. The round trip matches Task 13 Step 1.
 
-- [ ] **Step 2: Every existing gate (Validation item 6, as amended).** Run each exactly as written. Every command `cd`s by absolute path, so neither the order nor the shell's working directory matters.
+> Deviation: 138 passed before the final review, and 140 after its fixes.
+
+- [x] **Step 2: Every existing gate (Validation item 6, as amended).** Run each exactly as written. Every command `cd`s by absolute path, so neither the order nor the shell's working directory matters.
   - `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1 && uv run --python 3.13 --with pyyaml python build/check_frontmatter.py`: exit 0.
   - `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1 && uv run --python 3.13 python build/check_provenance.py`: exit 0.
   - `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1 && uv run --python 3.13 python build/check_snippets.py skills/`: exit 0 (Tier 1).
@@ -5104,7 +5194,10 @@ Expected: lint gives `exit=0`, now checking release labels against Task 13's `la
   - `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1 && uv run --python 3.13 --with pyyaml python build/sync_runtime_assets.py --check`: exit 0. Then `git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1 status --short runtimes/`: empty, so no adapter changed.
   - `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1 && uv run --python 3.13 --with pyyaml python build/check_conformance.py`: exit 0.
 
-- [ ] **Step 3: Validation item 1, as amended.**
+> Deviation: 395 passed, 4 failed and 10 skipped before the final review (257 +
+> 138), and 397 passed after its fixes, with the same four failures.
+
+- [x] **Step 3: Validation item 1, as amended.**
   - The round trip reports no changed, missing or new blocks (Task 13 Step 1; Step 1 above).
   - The live run listed 2.1.289 and later as untriaged for all 38 sections, reported changed blocks only where the docs moved (each shown by `block_diff.py`), and exited 1 only when something was due (Task 13 Step 2).
   - The owner reviewed the first live report's block selection and tuned or kept the marks (Task 13 Step 3).
@@ -5115,12 +5208,17 @@ Expected: lint gives `exit=0`, now checking release labels against Task 13's `la
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1 && wc -l < CLAUDE.md && grep -n "claude-md-size\|claude-md-fast-changing" build/cc_guide/conformance.toml && uv run --python 3.13 python .sdd/38-claude-code-drift-automation/claude_md_audit.py --counts-only; echo "exit=$?"`
 Expected: `176`, the single line `id = 'claude-md-size'`, the audit's summary line, and `exit=0`.
 
-- [ ] **Step 4: Repo hygiene.**
+- [x] **Step 4: Repo hygiene.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-38-cc-drift-stage1 && git status --short && git ls-files build/cc_guide | wc -l && grep -rnE --include='*.py' --include='*.toml' '^[[:space:]]*(# cc-guide:|<!-- cc-guide:)' build/cc_guide; echo "exit=$?"`
 Expected: no `git status` output (`.sdd/` is gitignored); `20` tracked files (`conformance.toml`, `manifest.toml`, `baseline.json`, `cc_fixtures.py`, the eight modules and their eight test files); no grep match, and `exit=1`.
 
-- [ ] **Step 5: Request the final review** per subagent-driven-development: both seats, the whole-branch `code-reviewer` and the Codex second opinion, from `main`'s merge-base to `HEAD`. Then run the Plan Completion Protocol below.
+- [x] **Step 5: Request the final review** per subagent-driven-development: both seats, the whole-branch `code-reviewer` and the Codex second opinion, from `main`'s merge-base to `HEAD`. Then run the Plan Completion Protocol below.
+
+> Deviation: the configured Codex model was rejected for the ChatGPT-account login,
+> so the second seat ran with the owner's per-run `-m gpt-6-astra` (Codex reviewed
+> 6595f16). The fixes: four test pins (bfbc2d5); at the completion gate, Codex's
+> deselection finding (4ff20bb) and the text this plan made stale (6127580).
 
 ---
 

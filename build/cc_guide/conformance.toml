@@ -276,21 +276,6 @@ reason = 'The README install snippet predates the quoted pattern.'
 evidence = 'Drift spec R11.5 #3; audit rows L-09 to L-11.'
 tracked_in = 'drift Stage 3, first files batch (drift spec R11.5 #3)'
 
-# The root CLAUDE.md is over the docs target. The owner set its type,
-# ceiling and tracked_in at the gate (the audit report's Owner decisions):
-# choice A trimmed it to 225 lines without dropping an instruction.
-[[exception]]
-id = 'claude-md-size'
-type = 'gap'
-check = 'claude-md-size'
-sections = ['rules.claude-md']
-artifacts = ['CLAUDE.md']
-guide = 'The docs target fewer than 200 lines per CLAUDE.md file.'
-reason = 'Codex and Gemini read the same file, so instructions leave it only by deliberate condensing or relocation.'
-evidence = 'Audit row L-01; owner gate 2026-10-04 (choice A, trim to 225).'
-ceiling = 225
-tracked_in = 'deferred item: bring the root CLAUDE.md under 200 lines'
-
 # writing-skills keeps descriptions trigger-only on tested evidence.
 [[exception]]
 id = 'description-when-only'
@@ -601,16 +586,6 @@ guide = 'enforceAvailableModels is documented as a managed-settings key.'
 reason = 'It is set in project settings; whether it takes effect there turns on guide note H-57.'
 evidence = 'Audit rows H-51, H-57; owner gate 2026-10-04.'
 tracked_in = 'deferred item: settle where enforceAvailableModels belongs'
-
-[[exception]]
-id = 'claude-md-fast-changing-details'
-type = 'gap'
-sections = ['rules.claude-md']
-artifacts = ['CLAUDE.md', 'build/CLAUDE.md']
-guide = 'Keep fast-changing details and anything readable from the code out of CLAUDE.md.'
-reason = 'Both files carry hand-kept test counts, rules restated from code, and a stale description of build/.'
-evidence = 'Audit rows C-02 to C-05; owner gate 2026-10-04.'
-tracked_in = 'deferred item: bring the root CLAUDE.md under 200 lines'
 
 [[exception]]
 id = 'commit-lints-in-prose'

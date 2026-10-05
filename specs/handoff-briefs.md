@@ -554,7 +554,7 @@ only the superpowers-drift spec's description of it.
 
 **R6.2** CLAUDE.md changes in two places:
 
-- The "Lowell's originals" bullet (`CLAUDE.md:29`) gains `prepare-handoff`,
+- The "Lowell's originals" bullet (`CLAUDE.md:26`) gains `prepare-handoff`,
   stays on one line in its current form, and its "(19 originals" note becomes
   20. `build/test_check_provenance.py` pins both.
 - The Commands block's comment for the writing-plans suite names the

@@ -1,0 +1,116 @@
+# Claude Code guide drift detector: configuration.
+#
+# Which docs pages back which guide sections, and how often each kind of
+# check comes due. Edited by hand, on the owner's decisions; no tool writes
+# it (baseline.json is the tool's state). build/cc_guide/cli.py reads it with
+# tomllib. Design: specs/claude-code-drift-automation.md (R2).
+#
+# A page is a code.claude.com slug (`hooks`, `plugins/components`) or a
+# platform slug written `platform:<slug>`. On an `all` page every block
+# counts; on a `terms` page, only blocks that mention one of the group's
+# terms (the backticked spans in its sections' guide text, R3.6).
+
+[guide]
+path = 'specs/guides/claude-code-customization-guide.md'
+
+[sources]
+docs_base = 'https://code.claude.com/docs/en/'
+# llms.txt sits at the docs root; /docs/en/llms.txt is a 404 (2026-10-03).
+llms = 'https://code.claude.com/docs/llms.txt'
+changelog = 'https://code.claude.com/docs/en/changelog.md'
+platform_base = 'https://platform.claude.com/docs/en/'
+
+[cadence]
+# A weekly changelog batch, weekly probes, and one group's full audit a month.
+changelog_days = 7
+probe_days = 7
+audit_days = 30
+
+# The six groups are the 2026-10-03 refresh's six verifier scopes, recovered
+# from its verifier prompts (R2.5). Their `all` and `terms` marks are the
+# seed values, tuned once after the first live report (2026-10-05).
+
+[groups.overview]
+sections = [
+    'context.overview', 'mechanisms.overview', 'lean.overview', 'lean.measure',
+    'lean.session-hygiene', 'lean.mcp', 'lean.ceremony', 'lean.expensive-ops',
+]
+all = ['context-window', 'costs']
+# monitoring-usage moved from all to terms after the first live report: its
+# 11 findings were OpenTelemetry tracing details, none naming a group term.
+terms = [
+    'mcp', 'commands', 'features-overview', 'debug-your-config', 'best-practices',
+    'statusline', 'interactive-mode', 'env-vars', 'memory', 'skills', 'monitoring-usage',
+]
+
+[groups.skills]
+sections = [
+    'skills.overview', 'skills.locations', 'skills.frontmatter', 'skills.description',
+    'skills.listing-budget', 'skills.progressive-disclosure', 'skills.arguments',
+    'skills.iterating', 'commands.overview',
+]
+all = ['skills']
+terms = [
+    'commands', 'plugins/components', 'plugins/loading', 'claude-directory',
+    'settings-reference', 'env-vars', 'auto-mode-config', 'model-config',
+]
+
+[groups.subagents]
+sections = ['subagents.overview', 'subagents.frontmatter', 'subagents.tools', 'subagents.isolation']
+all = ['sub-agents']
+terms = [
+    'agents', 'workflows', 'agent-teams', 'model-config', 'env-vars', 'tools-reference',
+    'prompt-caching', 'settings-reference', 'cli-reference',
+]
+
+[groups.rules]
+sections = [
+    'rules.overview', 'rules.claude-md', 'rules.hierarchy', 'rules.rules-files',
+    'rules.auto-memory', 'rules.settings',
+]
+all = ['memory', 'settings', 'permissions']
+terms = ['settings-reference', 'permission-modes', 'claude-directory', 'large-codebases', 'env-vars']
+
+[groups.hooks]
+sections = [
+    'hooks.overview', 'hooks.events', 'hooks.exit-codes', 'hooks.handlers',
+    'hooks.configuration', 'hooks.patterns', 'hooks.pitfalls',
+]
+all = ['hooks', 'hooks-guide']
+terms = ['settings-reference', 'env-vars']
+
+[groups.models]
+sections = ['subagents.models', 'lean.caching', 'lean.model-routing', 'reading.overview']
+# model-deprecations moved from terms to all after the first live report: as
+# a terms page only its intro was watched, so no retirement row was.
+all = [
+    'prompt-caching', 'model-config', 'fast-mode', 'advisor',
+    'platform:about-claude/pricing', 'platform:about-claude/models/overview',
+    'platform:about-claude/model-deprecations',
+]
+terms = [
+    'platform:build-with-claude/prompt-caching', 'platform:models/haiku-4-5/overview',
+    'costs', 'env-vars', 'settings-reference', 'commands',
+]
+
+# Per-section term tuning (R3.6), none yet. Each entry looks like
+#   [sections.'hooks.events']
+#   extra_terms = ['...']
+#   exclude_terms = ['...']
+
+# Sources deliberately left unmapped. A mapped page matching one is an error.
+
+[[exclusion]]
+page = 'whats-new/*'
+reason = 'The weekly digests duplicate the changelog.'
+
+[[exclusion]]
+page = 'https://www.anthropic.com/news/claude-haiku-4-5'
+reason = 'A launch post: a historical figure, and its HTML churns between fetches.'
+
+[[exclusion]]
+page = 'changelog'
+reason = 'Parsed release by release (R6.6), never hashed as blocks.'
+
+# The probe registry (R10.1) stays empty until Stage 5 registers its probes
+# as [[probe]] entries with an id, the sections they back, and optional files.
