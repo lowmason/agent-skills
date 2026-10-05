@@ -421,10 +421,13 @@ R3.7 **Selection, per group.**
   one of the group's terms.
 - A block that is selected now but absent from the baseline is *new*: the
   guide gained a claim, for example about a new setting.
-- A baselined block still on the page but no longer selected, because the
-  guide dropped the term, is *deselected*. That is informational, and the next
-  `baseline rebaseline` drops it. Only a block key that has disappeared from
-  the page is *missing*.
+- A baselined block still on the page, its text unchanged, but no longer
+  selected, because the guide dropped the term, is *deselected*. That is
+  informational, and the next `baseline rebaseline` drops it. A baselined
+  block whose text changed is *changed* even when it is no longer selected,
+  so a docs edit that drops a block's last watched term is a finding (owner,
+  plan 38 final review, 2026-10-05). Only a block key that has disappeared
+  from the page is *missing*.
 - A changed, missing or new block names its **candidate sections**: the
   group's sections whose terms it contains, or every section of the group when
   none match. Triage settles attribution (R8.4).

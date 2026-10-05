@@ -143,8 +143,10 @@ class Finding(NamedTuple):
 def compare(manifest: Manifest, state: dict, terms: dict, docs: Docs) -> tuple[list[Finding], dict]:
     '''R6.5 and R3.7: per group, the changed, missing and new blocks and the
     missing pages, each with its candidate sections, plus the deselected
-    blocks for information. A page absent from llms.txt (code pages) or from
-    the docs is missing; its blocks are not compared one by one.'''
+    blocks for information. A baselined block whose text changed is changed
+    even when no longer selected; only an unchanged one is deselected. A page
+    absent from llms.txt (code pages) or from the docs is missing; its blocks
+    are not compared one by one.'''
     slugs = parse_llms(docs.llms)
     findings: list[Finding] = []
     deselected: dict[str, list[str]] = {}
@@ -166,10 +168,10 @@ def compare(manifest: Manifest, state: dict, terms: dict, docs: Docs) -> tuple[l
             for key, recorded in old.items():
                 if key not in found:
                     findings.append(Finding(gid, 'missing', page, key, candidates(key, '', sec_terms)))
-                elif key not in chosen:
-                    info.append(page + SEP + key)
                 elif block_hash(found[key]) != recorded:
                     findings.append(Finding(gid, 'changed', page, key, candidates(key, found[key], sec_terms)))
+                elif key not in chosen:
+                    info.append(page + SEP + key)
             for key in found:
                 if key in chosen and key not in old:
                     findings.append(Finding(gid, 'new', page, key, candidates(key, found[key], sec_terms)))

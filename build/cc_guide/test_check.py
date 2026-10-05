@@ -25,8 +25,8 @@ def offline(folder):
     return check.offline_docs(MANIFEST, folder)
 
 
-def findings(folder, s=None):
-    found, deselected = check.compare(MANIFEST, s or fixture_state(folder), TERMS, offline(folder))
+def findings(folder, s=None, terms=TERMS):
+    found, deselected = check.compare(MANIFEST, s or fixture_state(folder), terms, offline(folder))
     return [(f.group, f.kind, f.ref(), f.candidates) for f in found], deselected
 
 
@@ -49,14 +49,27 @@ def test_changed_missing_and_new_blocks_name_their_candidate_sections(tmp_path, 
     ]
 
 
-def test_a_block_that_lost_its_term_is_deselected_not_changed(docs_dir):
+def test_deselection_is_informational_only_while_the_block_is_unchanged(docs_dir):
+    '''R3.7: a baselined block its group's terms no longer select is
+    deselected only while its text is unchanged. A docs edit that drops a
+    block's last watched term is a finding: changed when the term was in the
+    block's text, missing when it was in its key.'''
     s = fixture_state(docs_dir)
-    write_tree(docs_dir, {'env-vars.md': ENV_PAGE.replace('see [events](/docs/en/events)', 'see events')
+    rates = 'platform:pricing › Rates'
+    # The guide drops `BetaEvent`, the only beta term in Rates' text.
+    unwatched = state.group_terms(MANIFEST, guide_text().replace('`BetaEvent` fires.', 'It fires.'))
+    assert findings(docs_dir, s, unwatched) == ([], {'alpha': [], 'beta': [rates]})
+    # The docs drop it instead, then both do.
+    write_tree(docs_dir, {'platform_pricing.md': DOCS['platform_pricing.md']
+                          .replace('with `BetaEvent`', 'with demand')})
+    changed = ([('beta', 'changed', rates, ['beta.overview', 'beta.reference'])], {'alpha': [], 'beta': []})
+    assert findings(docs_dir, s) == changed
+    assert findings(docs_dir, s, unwatched) == changed
+    # A row renamed off its term leaves its old key missing.
+    write_tree(docs_dir, {'platform_pricing.md': DOCS['platform_pricing.md'],
+                          'env-vars.md': ENV_PAGE.replace('see [events](/docs/en/events)', 'see events')
                           .replace('| `BETA_ENV` |', '| `GAMMA_ENV` |')})
-    found, deselected = findings(docs_dir, s)
-    assert found == [('beta', 'missing', f'env-vars › {ENV} › `BETA_ENV`', ['beta.overview'])]
-    s['groups']['beta']['blocks']['env-vars'][f'{ENV} › `PIPE_ENV`'] = '0' * 16
-    assert findings(docs_dir, s)[1]['beta'] == [f'env-vars › {ENV} › `PIPE_ENV`']
+    assert findings(docs_dir, s)[0] == [('beta', 'missing', f'env-vars › {ENV} › `BETA_ENV`', ['beta.overview'])]
 
 
 def test_a_page_missing_from_llms_or_the_docs_is_one_finding(docs_dir):
