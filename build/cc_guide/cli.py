@@ -84,14 +84,18 @@ def parser() -> argparse.ArgumentParser:
 
 def cached_releases(cache: Path):
     '''The newest cached changelog's releases (R5: latest/, else the 2.1.288
-    snapshot), or None when neither is cached.'''
+    snapshot), or None when neither is cached. A changelog that does not
+    parse, or holds no release, is a SetupError, as in check.'''
     path = newest_changelog(cache)
     if path is None:
         return None
     try:
-        return parse_changelog(path.read_text(encoding='utf-8'))
+        releases = parse_changelog(path.read_text(encoding='utf-8'))
     except ValueError as exc:
         raise SetupError(f'{path}: {exc}') from None
+    if not releases:
+        raise SetupError(f'{path}: no <Update> release blocks')
+    return releases
 
 
 def newest_releases(cache: Path):

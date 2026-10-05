@@ -166,7 +166,7 @@ def test_rebaseline_never_writes_the_bootstrap_snapshot(world, capsys):
     assert dirty(repo) == []
 
 
-def test_a_malformed_cached_changelog_exits_two(world, capsys):
+def test_a_malformed_or_empty_cached_changelog_exits_two(world, capsys):
     _, cache, _ = world
     changelog = state.latest_docs(cache) / 'changelog.md'
     changelog.write_text(changelog.read_text().replace('October 1, 2026', '2026-10-01'))
@@ -174,6 +174,9 @@ def test_a_malformed_cached_changelog_exits_two(world, capsys):
     with pytest.raises(ValueError) as cause:
         datetime.strptime('2026-10-01', '%B %d, %Y')
     assert capsys.readouterr() == ('', f'cc-guide: {changelog}: changelog line 8: {cause.value}\n')
+    changelog.write_text('# Changelog\n')
+    assert main(cache, 'lint') == 2
+    assert capsys.readouterr() == ('', f'cc-guide: {changelog}: no <Update> release blocks\n')
 
 
 def test_a_crash_exits_two_never_one(world, monkeypatch, capsys):
