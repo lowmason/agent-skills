@@ -224,8 +224,11 @@ def test_a_failed_page_fetch_exits_two_without_comparing_that_page(tmp_path, doc
 def test_a_malformed_changelog_is_a_setup_error(tmp_path, docs_dir):
     repo = drift_repo(tmp_path / 'repo', docs_dir)
     write_tree(docs_dir, {'changelog.md': DOCS['changelog.md'].replace('October 1, 2026', '2026-10-01')})
-    with pytest.raises(state.SetupError, match='changelog line 8:'):
+    with pytest.raises(ValueError) as cause:
+        datetime.strptime('2026-10-01', '%B %d, %Y')
+    with pytest.raises(state.SetupError) as err:
         run_check(repo, tmp_path / 'cache', docs_dir)
+    assert str(err.value) == f'changelog: changelog line 8: {cause.value}'
 
 
 def test_the_report_is_keyed_by_the_baseline_hash_and_never_written_in_the_repo(tmp_path, docs_dir):
