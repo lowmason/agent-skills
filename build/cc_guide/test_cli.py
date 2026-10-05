@@ -2,7 +2,7 @@
 `baseline` subcommand's write set, and the manual bookkeeping that brings
 check to exit 0 (drift spec R5, R6.1, R7; Validation 1).'''
 import json
-from datetime import date
+from datetime import date, datetime
 
 import pytest
 
@@ -41,11 +41,14 @@ def test_lint_exits_zero_clean_one_on_a_violation_and_two_on_a_setup_error(world
     guide = repo / GUIDE_PATH
     guide.write_text(guide.read_text().replace('Alpha uses', 'Alpha now uses'))
     assert main(cache, 'lint') == 1
-    assert capsys.readouterr().out.startswith('section alpha.overview: text differs')
+    assert capsys.readouterr() == (
+        'section alpha.overview: text differs from its text_hash; record it with'
+        ' `uv run --python 3.13 python build/cc_guide/cli.py baseline accept alpha.overview --substantive`'
+        ' (flags its citers) or `... --editorial`\n', '')
     assert main(cache, 'lint', '--ref', 'main') == 0
     (repo / state.BASELINE).unlink()
     assert main(cache, 'lint') == 2
-    assert 'baseline.json: not found in the working tree' in capsys.readouterr().err
+    assert capsys.readouterr() == ('', f'cc-guide: {state.BASELINE}: not found in the working tree\n')
 
 
 def test_check_reads_main_unless_told_otherwise(tmp_path, docs_dir, monkeypatch, capsys):
@@ -57,7 +60,7 @@ def test_check_reads_main_unless_told_otherwise(tmp_path, docs_dir, monkeypatch,
     monkeypatch.setattr(cli, 'REPO', repo)
     cache = tmp_path / 'cache'
     assert main(cache, 'check', '--docs', str(docs_dir)) == 2
-    assert 'build/cc_guide/manifest.toml: not found in main' in capsys.readouterr().err
+    assert capsys.readouterr() == ('', f'cc-guide: {state.MANIFEST}: not found in main\n')
     assert main(cache, 'check', '--worktree', '--docs', str(docs_dir)) == 0
 
 
@@ -155,9 +158,11 @@ def test_stamp_writes_only_the_guides_stamp_region(world):
 def test_rebaseline_never_writes_the_bootstrap_snapshot(world, capsys):
     repo, cache, folder = world
     prime_cache(cache, folder, head='2.1.288')
+    snapshot = state.snapshot_docs(cache, '2.1.288')
     assert main(cache, 'baseline', 'rebaseline', 'alpha') == 2
-    assert 'never written' in capsys.readouterr().err
-    assert not state.snapshot_docs(cache, '2.1.288').exists()
+    assert capsys.readouterr() == ('', f'cc-guide: {snapshot} is the bootstrap snapshot, which is never'
+                                       ' written (R2.6): run check to fetch a newer release first\n')
+    assert not snapshot.exists()
     assert dirty(repo) == []
 
 
@@ -166,7 +171,9 @@ def test_a_malformed_cached_changelog_exits_two(world, capsys):
     changelog = state.latest_docs(cache) / 'changelog.md'
     changelog.write_text(changelog.read_text().replace('October 1, 2026', '2026-10-01'))
     assert main(cache, 'lint') == 2
-    assert 'changelog line 8:' in capsys.readouterr().err
+    with pytest.raises(ValueError) as cause:
+        datetime.strptime('2026-10-01', '%B %d, %Y')
+    assert capsys.readouterr() == ('', f'cc-guide: {changelog}: changelog line 8: {cause.value}\n')
 
 
 def test_a_crash_exits_two_never_one(world, monkeypatch, capsys):
@@ -177,7 +184,9 @@ def test_a_crash_exits_two_never_one(world, monkeypatch, capsys):
         raise RuntimeError('boom')
     monkeypatch.setattr(cli, 'run_lint', crash)
     assert main(cache, 'lint') == 2
-    assert 'RuntimeError: boom' in capsys.readouterr().err
+    out, err = capsys.readouterr()
+    lines = err.splitlines()
+    assert (out, lines[0], lines[-1]) == ('', 'Traceback (most recent call last):', 'RuntimeError: boom')
 
 
 def test_bookkeeping_alone_brings_check_to_exit_zero(world):
