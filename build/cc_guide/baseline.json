@@ -245,24 +245,24 @@
     "release": "2.1.289",
     "date": "2026-10-05"
    },
-   "changed": "2.1.219",
+   "changed": "2.1.289",
    "audited": {
     "release": "2.1.288",
     "date": "2026-10-03"
    },
-   "text_hash": "sha256:ce2bb1abfa555f27b14dd9a53462099deecab4b3743a3afaf7836cd3f1881552"
+   "text_hash": "sha256:7de1de635261f0a97e2573c45ffb0fde09021c654f02b0fe65eb34cfdf9966b4"
   },
   "rules.settings": {
    "checked": {
     "release": "2.1.289",
     "date": "2026-10-05"
    },
-   "changed": "2.1.288",
+   "changed": "2.1.289",
    "audited": {
     "release": "2.1.288",
     "date": "2026-10-03"
    },
-   "text_hash": "sha256:f4aa2af34e990346f1d19728cc6165fb96d53c11a8a0422e6c4a5167b494f7ce"
+   "text_hash": "sha256:124d0f5544d53120ca8aec781d5f7b518b32a5cb701dddd2245e5b71e6153154"
   },
   "hooks.overview": {
    "checked": {
@@ -2059,6 +2059,13 @@
      "334b59cc561c5dcd": "3e9cb8559312dbec",
      "c97cfb42af54426b": "0e28199c8784d7b3",
      "37e314858d325486": "db3b63e5ac35752f",
+     "4376cd8c75fd54e1": "fc3b29015814076c",
+     "19e57ae986c2c145": "0d291438c40da9b2",
+     "53a99f703ccfd42f": "119d2893c8e36e74",
+     "8a7eeb4b6209ebb1": "b66d3bf4a1b25838",
+     "b62521ef4a9758b5": "c456829eca9df6a3",
+     "c826cf872b7643db": "b5f8deead003507d",
+     "4b6952ff4f2b2d61": "aea9e44165fd6fe6",
      "5a88723a9fe30c41": "f0b17b7a4a566372",
      "d4566fa3f0517115": "b96688f47efa4fa4",
      "315fa74c6c524dff": "fe9fdd3686a3bd2d",
@@ -2121,10 +2128,22 @@
      "b7fc7639c0b31ce9": "8fc5b22c603b8683",
      "ca88098dd2bf4eaf": "d60eef8a00abd2b8",
      "0b1cb0c1c542900e": "76fff150fca0c6a8",
+     "074df602fb23be9a": "cbdf463303b4be34",
      "0bbf409273546a91": "8cddea657ac10126",
      "112d57ab4563d265": "cb531194337f1683",
+     "678894a91ffe892b": "ffbb7350a44e38ea",
+     "95395778d2b709c0": "c4c6737324d0e0a4",
+     "772eb8064275d93b": "feea33ed5a4ed36d",
+     "13e9b80f9acfb342": "a8c244f0920287dc",
+     "2e088a50dbff5bdf": "778991232b58dde1",
+     "0628470d121e80fd": "f06d6a5ce6836cab",
      "02a0dbf4f817b023": "95f65d6af978721b",
      "032e9c784b39f0ef": "8c59e06801172e05",
+     "49fa04372ed5bf3e": "0d78c2a0fcc443c1",
+     "d391cb2489164d06": "36d0942400f087d8",
+     "dfc2014c76935475": "f43ca82aceb55f40",
+     "a858151e4bc8897e": "fadede267f6a4481",
+     "51960cf6ecd06835": "b76db7ec01a384b7",
      "b61aabd8698b52ec": "d54d5ee050addf30",
      "a4e9d96b6acc7c9c": "4304434747d46d69",
      "f0bc4898d544ae73": "ab2741eddaae80f5",
@@ -2267,6 +2286,7 @@
      "3dcab7b7c21f7ce0": "ecd4b7c233eaa7e3",
      "6159a2c9e0862b08": "d33a67eccb230d39",
      "5e4e2d6a6dbdaa83": "18caf725eadada90",
+     "aafae3258f03da15": "bb15bca48ab4f836",
      "d1225d3a7653c00b": "8dbc97e8c95fa80c",
      "d10980bacc79127f": "c8f2d427d9b3cc97",
      "bdd2a770d19aaa38": "7530345985eba6d3",
@@ -2291,6 +2311,8 @@
      "445611c421e212c1": "e5c49747dc445186",
      "0c9b63445c9f16b0": "55759665324d45cd",
      "65ba5429c1bfbd4a": "f93f2f0aa9bb6a71",
+     "d0047fd203d13e2b": "accded7c67859812",
+     "20b97f1e734b87fd": "9c21b020ad5d21f9",
      "21fc162fd7ac2d32": "526d8a310cc9dd18",
      "1018c418eb141b51": "865d9403d0cdb3c1",
      "3ea11dda385931e9": "60e43e2b5e4087f1",
@@ -2309,12 +2331,23 @@
      "d4a0175b412021f5": "3ce30a34f5aaae47"
     },
     "permission-modes": {
+     "a3040a21aa2de0a4": "bc2f61874241b484",
      "11dc10d56e0505fa": "0bb462829b77fdc4",
+     "3bb014c448e81820": "b4c6f2be2ed0f5c4",
+     "e7981fc3f1981d6f": "cdc32a7bd7559df8",
+     "31ffd50ca27350cc": "3449f444858162dc",
+     "85130c0bf694226d": "948ec5e1375508c0",
+     "5de28cd254f7e48b": "efeee88309575aeb",
+     "096422562239ec0a": "a95015ce8058843b",
      "2a4d51244ff0d920": "5dc31a875bf576c0",
      "ca3c773b399860c7": "ba17829aaec2a45f",
+     "6f2f814a7ac3448d": "042447e97e76a60c",
      "38a3fb4cbc693cf7": "94fd59ba128413ae",
+     "97a0d0c7b745c82c": "3b63e14925e7d758",
+     "c4812b5cfcfaf408": "989e1b310aeb1eea",
      "be2947ef923c845c": "28b5ca56f3b99f91",
      "fe503793ba30a30f": "d5194403014be014",
+     "a472de1858965acc": "efebf466eeebb90a",
      "6ae8bd950f5d1b71": "502ea49d08bc6d39",
      "24f8972792f82e94": "c5bbfa3188b43dd9"
     },
@@ -2366,10 +2399,17 @@
      "910bbc4f51ab608f": "57057b7332f9ffb5",
      "3f20e090b7305ac2": "8b9fa7a24ac231ad",
      "fd01d50a3c852ae6": "9daec21333b41b9e",
+     "cda1f28e790dc881": "0a74db6c7029677e",
      "a6a5d30213d0d79f": "4773aa447f1e7cb7",
      "3bb07218b16eafd2": "0fd28777556bc1ae",
      "e53267c6e5fced59": "eb0c892c6232a097",
      "25010cb4642dfd22": "bc6d05cbcab1bb5d",
+     "8bca715d1862d166": "0f69f36d1a335e63",
+     "11e2a446781981c8": "d3ba5829a974cb7e",
+     "c7c5c12a232d4b16": "0124592d72b4a510",
+     "aee9bae8c997def3": "325d9c25f9f128c8",
+     "3a03a40f3397ce51": "6fb1f0acc0e442e9",
+     "f126fdee488667be": "920604c3ae78e8a6",
      "07b44027eefb59cd": "22e77b3dabb10629"
     }
    },

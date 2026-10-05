@@ -256,7 +256,7 @@ Rules are discovered recursively, so subdirectory organization works. A symlinke
 ### Auto memory
 <!-- cc: rules.auto-memory -->
 
-Claude Code keeps per-project memory in `~/.claude/projects/<project>/memory/`. The first 200 lines / 25 KB of `MEMORY.md` load every session; topic files load on demand. Keep `MEMORY.md` an index of one-line pointers and let the detail live in topic files.
+Claude Code keeps per-project memory in `~/.claude/projects/<project>/memory/`. The first 200 lines / 25 KB of `MEMORY.md` load every session; topic files load on demand. Keep `MEMORY.md` an index of one-line pointers and let the detail live in topic files. Claude's own config directory is a protected path, but the markdown files in this memory directory are exempt, so Claude's memory writes don't wait on approval, except in a session started with `--restricted` ⚠.
 
 ### Settings precedence and permission rules
 <!-- cc: rules.settings -->
@@ -269,8 +269,11 @@ Permissions **merge across levels** — a deny anywhere wins; no other level can
 - Word boundaries matter: `Bash(ls *)` matches `ls -la` but not `lsof`; `Bash(ls*)` matches both.
 - Compound commands are split on `&&`, `||`, `;`, `|`, `|&`, `&`, and newlines: an allow rule must match every part, while a deny or ask rule fires if any part matches — even inside `$()` or a subshell.
 - File rules use gitignore-style paths: `Read(./.env)`, `Read(./secrets/**)`, `//abs/path` (filesystem root), `~/path`. A single leading slash is **not** absolute: `/path` anchors at the settings file's own root.
+- On Windows with Git Bash installed, any Bash deny rule, scoped or bare, from a settings file or `--disallowedTools`, also turns the PowerShell tool off for the session, since a Bash rule can't restrict PowerShell. To keep PowerShell on, set `CLAUDE_CODE_USE_POWERSHELL_TOOL=1` or add a scoped `PowerShell(…)` rule of your own ⚠.
 
-Pair permission rules with hooks. In Manual mode an allowlist makes `uv run …` frictionless; in auto mode — the default starting mode since 2.1.283 — broad rules such as package-manager run commands are set aside and a classifier reviews those calls instead (on API and Enterprise billing its calls count toward your usage) ⚠. The hook that makes `pip install` impossible holds in every mode.
+`CLAUDE_CODE_SUBPROCESS_ENV_SCRUB=1` strips credentials, recognized by variable name or value, from the environments of Bash commands, hooks, and stdio MCP servers: a layer under permission rules, not a replacement. It deliberately keeps the GitHub token variables (`GITHUB_TOKEN`, `GH_TOKEN`, and the Enterprise pair) and `HTTP_PROXY`/`HTTPS_PROXY`, even a proxy URL carrying a username and password. Remove those yourself: list the GitHub variables under `sandbox.credentials.envVars` with `"mode": "deny"`, or `"mask"` with `"injectHosts": ["api.github.com"]` so `gh` keeps authenticating (mask entries count only from user or managed settings), and keep credentials out of proxy URLs. `sandbox.credentials` covers sandboxed commands only, so hooks and MCP servers still inherit whatever the scrub leaves ⚠.
+
+Pair permission rules with hooks. In Manual mode an allowlist makes `uv run …` frictionless; in auto mode — the default starting mode since 2.1.283 — broad rules such as package-manager run commands are set aside and a classifier reviews those calls instead (on API and Enterprise billing its calls count toward your usage) ⚠. The first session after an install or upgrade can start in another mode, and so can every run in a clean CI container or through a gateway token with no API key, since none of those has saved feature flags: set the mode explicitly there with `--permission-mode` or `defaultMode` ⚠. The hook that makes `pip install` impossible holds in every mode.
 
 ## 7. Hooks
 <!-- cc: hooks.overview -->
