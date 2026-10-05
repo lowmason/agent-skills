@@ -43,8 +43,9 @@ def test_derive_changed_aligns_by_parent_and_heading():
 
 def test_derive_changed_refuses_a_section_the_refresh_lacks():
     current = guide_text().replace('### Reference ⚠\n<!-- cc: beta.reference', '### Renamed\n<!-- cc: beta.reference')
-    with pytest.raises(state.SetupError, match='beta.reference'):
+    with pytest.raises(state.SetupError) as err:
         baseline.derive_changed(unanchored(guide_text()), unanchored(guide_text()), current)
+    assert str(err.value) == "R11.1: section beta.reference ('### Renamed') is not in the c33bc99 guide"
 
 
 def history(ref):
@@ -90,8 +91,10 @@ def test_init_leaves_a_page_the_snapshot_lacks_unbaselined(docs_dir):
 
 def test_init_refuses_anchors_that_disagree_with_the_manifest(docs_dir):
     text = guide_text().replace('<!-- cc: beta.reference -->', '<!-- cc: beta.other -->')
-    with pytest.raises(state.SetupError, match='beta.reference is in manifest.toml but not the guide'):
+    with pytest.raises(state.SetupError) as err:
         baseline.init(MANIFEST, text, docs_dir, '2.1.900', '2026-09-02', FIXTURE_CHANGED)
+    assert str(err.value) == ('section beta.reference is in manifest.toml but not the guide\n'
+                              'section beta.other is in the guide but not manifest.toml')
 
 
 def test_accept_records_the_hash_and_substantive_also_sets_changed(docs_dir):
@@ -114,12 +117,15 @@ def test_advance_sets_checked_on_the_day_of_the_check(docs_dir):
     moved = baseline.advance(s, ['beta.overview'], '2.1.902', labels, '2026-10-04')
     assert moved['sections']['beta.overview']['checked'] == {'release': '2.1.902', 'date': '2026-10-04'}
     assert moved['sections']['beta.reference'] == s['sections']['beta.reference']
-    with pytest.raises(state.SetupError, match='not a release'):
+    with pytest.raises(state.SetupError) as err:
         baseline.advance(s, ['beta.overview'], '2.1.950', labels, '2026-10-04')
-    with pytest.raises(state.SetupError, match='older than the checked release of beta.overview'):
+    assert str(err.value) == '2.1.950 is not a release in the newest cached changelog'
+    with pytest.raises(state.SetupError) as err:
         baseline.advance(moved, ['beta.overview'], '2.1.901', labels, '2026-10-05')
-    with pytest.raises(state.SetupError, match='unknown section IDs: beta.zzz'):
+    assert str(err.value) == '2.1.901 is older than the checked release of beta.overview'
+    with pytest.raises(state.SetupError) as err:
         baseline.advance(s, ['beta.zzz'], '2.1.902', labels, '2026-10-04')
+    assert str(err.value) == 'unknown section IDs: beta.zzz'
 
 
 def test_audited_sets_audited_and_checked_for_the_groups_sections(docs_dir):
@@ -129,8 +135,9 @@ def test_audited_sets_audited_and_checked_for_the_groups_sections(docs_dir):
         assert done['sections'][sid]['audited'] == {'release': '2.1.902', 'date': '2026-10-04'}
         assert done['sections'][sid]['checked'] == {'release': '2.1.902', 'date': '2026-10-04'}
     assert done['sections']['beta.overview'] == s['sections']['beta.overview']
-    with pytest.raises(state.SetupError, match='unknown group gamma'):
+    with pytest.raises(state.SetupError) as err:
         baseline.audited(s, MANIFEST, 'gamma', '2.1.902', '2026-10-04')
+    assert str(err.value) == 'unknown group gamma'
 
 
 def latest_from(tmp_path, **edits):
