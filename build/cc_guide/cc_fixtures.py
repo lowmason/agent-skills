@@ -197,3 +197,63 @@ def guide_text(stamp: str = FIXTURE_STAMP) -> str:
         '`BetaEvent` fires.',
         '',
     ])
+
+
+MANIFEST_TOML = '\n'.join([
+    '[guide]',
+    "path = 'specs/guides/claude-code-customization-guide.md'",
+    '',
+    '[sources]',
+    "docs_base = 'https://code.claude.com/docs/en/'",
+    "llms = 'https://code.claude.com/docs/llms.txt'",
+    "changelog = 'https://code.claude.com/docs/en/changelog.md'",
+    "platform_base = 'https://platform.claude.com/docs/en/'",
+    '',
+    '[cadence]',
+    'changelog_days = 7',
+    'probe_days = 7',
+    'audit_days = 30',
+    '',
+    '[groups.alpha]',
+    "sections = ['alpha.overview', 'alpha.reference']",
+    "all = ['tools']",
+    "terms = ['env-vars']",
+    '',
+    '[groups.beta]',
+    "sections = ['beta.overview', 'beta.reference']",
+    "all = ['events']",
+    "terms = ['env-vars', 'platform:pricing']",
+    '',
+    '[[exclusion]]',
+    "page = 'whats-new/*'",
+    "reason = 'Duplicates the changelog.'",
+    '',
+])
+
+
+def write_tree(root, files: dict) -> None:
+    '''Write {relative path: text} under root.'''
+    for rel, text in files.items():
+        path = root / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding='utf-8')
+
+
+def git(repo, *args: str) -> str:
+    '''git in a fixture repo, with an identity and none of the caller's GIT_ variables.'''
+    import os
+    import subprocess
+    env = {k: v for k, v in os.environ.items() if not k.startswith('GIT_')}
+    return subprocess.run(['git', '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid',
+                           '-c', 'commit.gpgsign=false', '-c', 'init.defaultBranch=main', *args],
+                          cwd=repo, env=env, capture_output=True, text=True, check=True).stdout
+
+
+def fixture_repo(root, files: dict):
+    '''A git repo at root holding files, committed on main.'''
+    root.mkdir(parents=True, exist_ok=True)
+    write_tree(root, files)
+    git(root, 'init', '-q')
+    git(root, 'add', '-A')
+    git(root, 'commit', '-qm', 'fixture')
+    return root
