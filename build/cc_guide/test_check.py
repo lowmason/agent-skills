@@ -1,0 +1,247 @@
+'''Tests for check.py: compare, the changelog, every due rule, the fetch gate,
+the report and exit codes (drift spec R6, R12.3's row fixture).'''
+import json
+from datetime import date, datetime, timezone
+
+import pytest
+
+import check
+import docs
+import state
+from cc_fixtures import (DOCS, ENV_PAGE, MANIFEST_TOML, docs_dir, drift_repo,  # noqa: F401
+                         fixture_state, git, guide_text, isolated_home, write_tree)
+
+MANIFEST = state.parse_manifest(MANIFEST_TOML)
+TERMS = state.group_terms(MANIFEST, guide_text())
+ENV = 'Environment variables'
+NOW = datetime(2026, 10, 4, 12, 0, tzinfo=timezone.utc)
+URLS = {docs.page_url(p, MANIFEST.sources): docs.page_file(p) for p in MANIFEST.pages()}
+URLS.update({MANIFEST.sources['changelog']: 'changelog.md', MANIFEST.sources['llms']: 'llms.txt'})
+
+
+def offline(folder):
+    return check.offline_docs(MANIFEST, folder)
+
+
+def findings(folder, s=None):
+    found, deselected = check.compare(MANIFEST, s or fixture_state(folder), TERMS, offline(folder))
+    return [(f.group, f.kind, f.ref(), f.candidates) for f in found], deselected
+
+
+def test_unchanged_docs_give_no_findings(docs_dir):
+    assert findings(docs_dir) == ([], {'alpha': [], 'beta': []})
+
+
+def test_changed_missing_and_new_blocks_name_their_candidate_sections(tmp_path, docs_dir):
+    s = fixture_state(docs_dir)
+    write_tree(docs_dir, {'tools.md': DOCS['tools.md'].replace('runs alpha jobs', 'runs alpha batches')
+                          .replace('## Options', '## Flags'),
+                          'events.md': DOCS['events.md'] + '## Retry\n\nRetries reuse `BetaEvent`.\n'})
+    assert findings(docs_dir, s)[0] == [
+        ('alpha', 'changed', 'tools › Tools', ['alpha.overview']),
+        ('alpha', 'missing', 'tools › Tools › Options', ['alpha.overview', 'alpha.reference']),
+        ('alpha', 'missing', 'tools › Tools › Options › `--fast`', ['alpha.overview', 'alpha.reference']),
+        ('alpha', 'new', 'tools › Tools › Flags', ['alpha.overview', 'alpha.reference']),
+        ('alpha', 'new', 'tools › Tools › Flags › `--fast`', ['alpha.overview', 'alpha.reference']),
+        ('beta', 'new', 'events › Events › Retry', ['beta.reference']),
+    ]
+
+
+def test_a_block_that_lost_its_term_is_deselected_not_changed(docs_dir):
+    s = fixture_state(docs_dir)
+    write_tree(docs_dir, {'env-vars.md': ENV_PAGE.replace('see [events](/docs/en/events)', 'see events')
+                          .replace('| `BETA_ENV` |', '| `GAMMA_ENV` |')})
+    found, deselected = findings(docs_dir, s)
+    assert found == [('beta', 'missing', f'env-vars › {ENV} › `BETA_ENV`', ['beta.overview'])]
+    s['groups']['beta']['blocks']['env-vars'][f'{ENV} › `PIPE_ENV`'] = '0' * 16
+    assert findings(docs_dir, s)[1]['beta'] == [f'env-vars › {ENV} › `PIPE_ENV`']
+
+
+def test_a_page_missing_from_llms_or_the_docs_is_one_finding(docs_dir):
+    s = fixture_state(docs_dir)
+    write_tree(docs_dir, {'llms.txt': DOCS['llms.txt'].replace('/tools.md', '/tools-moved.md')})
+    (docs_dir / 'platform_pricing.md').unlink()
+    assert findings(docs_dir, s)[0] == [
+        ('alpha', 'missing-page', 'tools', ['alpha.overview', 'alpha.reference']),
+        ('beta', 'missing-page', 'platform:pricing', ['beta.overview', 'beta.reference'])]
+
+
+def test_editing_one_row_flags_only_the_groups_whose_terms_match_it(docs_dir):
+    '''R12.3's row fixture: env-vars is a terms page of both groups.'''
+    s = fixture_state(docs_dir)
+    write_tree(docs_dir, {'env-vars.md': ENV_PAGE.replace('Turns on beta;', 'Turns on beta at once;')})
+    assert findings(docs_dir, s)[0] == [
+        ('beta', 'changed', f'env-vars › {ENV} › `BETA_ENV`', ['beta.overview'])]
+    write_tree(docs_dir, {'env-vars.md': ENV_PAGE.replace('Turns on alpha.', 'Turns alpha off.')})
+    assert findings(docs_dir, s)[0] == [
+        ('alpha', 'changed', f'env-vars › {ENV} › `ALPHA_ENV`', ['alpha.reference'])]
+
+
+def test_each_section_lists_the_releases_after_its_checked_oldest_first(docs_dir):
+    s = fixture_state(docs_dir)
+    s['sections']['beta.reference']['checked']['release'] = '2.1.901'
+    releases = docs.parse_changelog(DOCS['changelog.md'])
+    pending = check.untriaged(s, releases)
+    assert pending['alpha.overview'] == ['2.1.901', '2.1.902']
+    assert pending['beta.reference'] == ['2.1.902']
+    notes = check.release_notes(releases, {'2.1.901', '2.1.902'}, TERMS)
+    assert list(notes) == ['2.1.901', '2.1.902']
+    assert notes['2.1.902']['bullets'] == [
+        {'text': 'Changed how `BETA_ENV` is read', 'hints': ['beta.overview']},
+        {'text': 'Fixed a crash in the fixture tool', 'hints': []}]
+
+
+@pytest.mark.parametrize('today, due', [(date(2026, 9, 26), False), (date(2026, 9, 27), True)])
+def test_the_changelog_batch_is_due_once_its_oldest_release_is_a_week_old(docs_dir, today, due):
+    releases = docs.parse_changelog(DOCS['changelog.md'])
+    assert check.due_changelog(fixture_state(docs_dir), releases, 7, today) == {
+        'releases': 2, 'oldest': '2.1.901', 'oldest_date': '2026-09-20', 'due_from': '2026-09-27', 'due': due}
+
+
+def test_nothing_untriaged_means_no_batch(docs_dir):
+    s = fixture_state(docs_dir)
+    for sec in s['sections'].values():
+        sec['checked']['release'] = '2.1.902'
+    assert check.due_changelog(s, docs.parse_changelog(DOCS['changelog.md']), 7, date(2026, 12, 1)) is None
+
+
+def rows(*specs):
+    return [state.ProbeRow(date.fromisoformat(d), v, 'p1', o) for d, v, o in specs]
+
+
+@pytest.mark.parametrize('history, today, why', [
+    ([], date(2026, 10, 4), 'never run'),
+    ([('2026-10-01', '2.1.902', 'PASS')], date(2026, 10, 4), None),
+    ([('2026-09-20', '2.1.901', 'PASS')], date(2026, 9, 26), None),
+    ([('2026-09-20', '2.1.901', 'PASS')], date(2026, 9, 27), 'last run 2026-09-20 at 2.1.901'),
+    ([('2026-09-20', '2.1.902', 'PASS')], date(2026, 12, 1), None),
+    ([('2026-10-01', '2.1.902', 'DIVERGES')], date(2026, 10, 1), 'DIVERGES with no later PASS'),
+    ([('2026-10-01', '2.1.902', 'DIVERGES'), ('2026-10-02', '2.1.902', 'ERROR')], date(2026, 10, 2),
+     'DIVERGES with no later PASS'),
+    ([('2026-10-01', '2.1.902', 'DIVERGES'), ('2026-10-02', '2.1.902', 'PASS')], date(2026, 10, 2), None),
+])
+def test_probe_due_rules(history, today, why):
+    manifest = MANIFEST._replace(probes={'p1': (['beta.reference'], [])})
+    due = check.due_probes(manifest, rows(*history), '2.1.902', 7, today)
+    assert due == ([] if why is None else [{'probe': 'p1', 'why': why}])
+
+
+def test_an_empty_registry_has_no_probe_due():
+    assert check.due_probes(MANIFEST, [], '2.1.902', 7, date(2027, 1, 1)) == []
+
+
+def test_the_audit_clock_is_shared_and_targets_the_oldest_group(docs_dir):
+    s = fixture_state(docs_dir)
+    assert check.due_audit(MANIFEST, s, 30, date(2026, 10, 1)) == {
+        'group': 'alpha', 'last_audit': '2026-09-02', 'due_from': '2026-10-02', 'due': False}
+    for sid in ('alpha.overview', 'alpha.reference'):
+        s['sections'][sid]['audited'] = {'release': '2.1.902', 'date': '2026-10-02'}
+    assert check.due_audit(MANIFEST, s, 30, date(2026, 10, 3)) == {
+        'group': 'beta', 'last_audit': '2026-10-02', 'due_from': '2026-11-01', 'due': False}
+
+
+def serving(folder, log=None, fail=()):
+    '''A fake fetch serving folder's files by URL; unknown URLs are 404.'''
+    def fetch(url):
+        if log is not None:
+            log.append(url)
+        if url in fail:
+            raise check.FetchError(f'{url}: timed out')
+        path = folder / URLS.get(url, 'absent')
+        return (200, path.read_bytes()) if path.is_file() else (404, b'')
+    return fetch
+
+
+def test_the_fetch_gate_refetches_every_page_only_when_the_head_moves(tmp_path, docs_dir):
+    cache, log = tmp_path / 'cache', []
+    check.live_docs(MANIFEST, cache, serving(docs_dir, log), NOW)
+    assert len(log) == 2 + len(MANIFEST.pages())
+    assert json.loads((cache / 'latest' / 'fetch.json').read_text())['changelog_head'] == '2.1.902'
+    log.clear()
+    (state.latest_docs(cache) / 'events.md').unlink()
+    check.live_docs(MANIFEST, cache, serving(docs_dir, log), NOW)
+    assert log == [MANIFEST.sources['changelog'], MANIFEST.sources['llms'],
+                   docs.page_url('events', MANIFEST.sources)]
+    log.clear()
+    write_tree(docs_dir, {'changelog.md': DOCS['changelog.md'].replace(
+        '<Update label="2.1.902"', '<Update label="2.1.903" description="October 3, 2026">\n</Update>\n'
+        '<Update label="2.1.902"')})
+    check.live_docs(MANIFEST, cache, serving(docs_dir, log), NOW)
+    assert len(log) == 2 + len(MANIFEST.pages())
+
+
+def test_a_404_removes_the_stale_copy_and_reads_as_a_missing_page(tmp_path, docs_dir):
+    cache = tmp_path / 'cache'
+    s = fixture_state(docs_dir)
+    check.live_docs(MANIFEST, cache, serving(docs_dir), NOW)
+    (docs_dir / 'platform_pricing.md').unlink()
+    write_tree(docs_dir, {'changelog.md': DOCS['changelog.md'].replace(
+        '<Update label="2.1.902"', '<Update label="2.1.903" description="October 3, 2026">\n</Update>\n'
+        '<Update label="2.1.902"')})
+    got = check.live_docs(MANIFEST, cache, serving(docs_dir), NOW)
+    assert not (state.latest_docs(cache) / 'platform_pricing.md').exists()
+    found, _ = check.compare(MANIFEST, s, TERMS, got)
+    assert [(f.kind, f.page) for f in found] == [('missing-page', 'platform:pricing')]
+
+
+def run_check(repo, cache, folder=None, today=date(2026, 9, 10), fetch=None):
+    return check.check(state.Source(repo), cache, docs_dir=folder, today=today, now=NOW, fetch=fetch)
+
+
+@pytest.mark.parametrize('today, code', [(date(2026, 9, 10), 0), (date(2026, 9, 27), 1)])
+def test_exit_zero_when_nothing_is_due_and_one_when_something_is(tmp_path, docs_dir, today, code):
+    repo = drift_repo(tmp_path / 'repo', docs_dir)
+    assert run_check(repo, tmp_path / 'cache', docs_dir, today)[0] == code
+
+
+def test_a_changed_block_or_a_lint_failure_is_due_at_once(tmp_path, docs_dir):
+    repo = drift_repo(tmp_path / 'repo', docs_dir)
+    write_tree(docs_dir, {'events.md': DOCS['events.md'].replace('fires on beta', 'fires on gamma')})
+    assert run_check(repo, tmp_path / 'cache', docs_dir)[0] == 1
+    write_tree(docs_dir, DOCS)
+    guide = repo / 'specs/guides/claude-code-customization-guide.md'
+    guide.write_text(guide.read_text().replace('Alpha uses', 'Alpha now uses'))
+    code, report, _ = run_check(repo, tmp_path / 'cache', docs_dir)
+    assert (code, report['due']['lint']) == (1, 1)
+
+
+def test_a_network_failure_exits_two_and_is_reported(tmp_path, docs_dir):
+    repo = drift_repo(tmp_path / 'repo', docs_dir)
+    code, report, path = run_check(repo, tmp_path / 'cache',
+                                   fetch=serving(docs_dir, fail={MANIFEST.sources['changelog']}))
+    assert code == 2
+    assert report['errors'] == [f"{MANIFEST.sources['changelog']}: timed out"]
+    assert json.loads(path.read_text())['exit'] == 2
+
+
+def test_a_failed_page_fetch_exits_two_without_comparing_that_page(tmp_path, docs_dir):
+    repo = drift_repo(tmp_path / 'repo', docs_dir)
+    url = docs.page_url('tools', MANIFEST.sources)
+    code, report, _ = run_check(repo, tmp_path / 'cache', fetch=serving(docs_dir, fail={url}))
+    assert (code, report['errors'], report['findings']['alpha']) == (2, [f'{url}: timed out'], [])
+
+
+def test_a_malformed_changelog_is_a_setup_error(tmp_path, docs_dir):
+    repo = drift_repo(tmp_path / 'repo', docs_dir)
+    write_tree(docs_dir, {'changelog.md': DOCS['changelog.md'].replace('October 1, 2026', '2026-10-01')})
+    with pytest.raises(state.SetupError, match='changelog line 8:'):
+        run_check(repo, tmp_path / 'cache', docs_dir)
+
+
+def test_the_report_is_keyed_by_the_baseline_hash_and_never_written_in_the_repo(tmp_path, docs_dir):
+    repo = drift_repo(tmp_path / 'repo', docs_dir)
+    _, report, path = run_check(repo, tmp_path / 'cache', docs_dir)
+    baseline_sha = report['hashes']['baseline']
+    assert path == tmp_path / 'cache' / 'reports' / f'{baseline_sha[:12]}.json'
+    assert set(report) == {'generated_at', 'inputs', 'docs', 'hashes', 'lint', 'latest_release', 'findings',
+                           'deselected', 'llms', 'untriaged', 'releases', 'due', 'errors', 'exit'}
+    assert git(repo, 'status', '--porcelain') == ''
+    run_check(repo, tmp_path / 'cache', fetch=serving(docs_dir))
+    assert git(repo, 'status', '--porcelain') == ''
+
+
+def test_llms_slugs_added_and_removed_since_the_baseline_are_listed(tmp_path, docs_dir):
+    repo = drift_repo(tmp_path / 'repo', docs_dir)
+    write_tree(docs_dir, {'llms.txt': DOCS['llms.txt'].replace('plugins/components', 'plugins/parts')})
+    _, report, _ = run_check(repo, tmp_path / 'cache', docs_dir)
+    assert report['llms'] == {'added': ['plugins/parts'], 'removed': ['plugins/components']}

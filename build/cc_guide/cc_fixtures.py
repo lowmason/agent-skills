@@ -322,3 +322,14 @@ def fixture_state(folder) -> dict:
     import state
     return baseline.init(state.parse_manifest(MANIFEST_TOML), guide_text(), folder,
                          FIXTURE_RELEASE, FIXTURE_DAY, FIXTURE_CHANGED)
+
+
+GUIDE_PATH = 'specs/guides/claude-code-customization-guide.md'
+
+
+def drift_repo(root, folder):
+    '''A committed fixture repo: the guide, manifest.toml, and the baseline
+    init builds over `folder`.'''
+    import state
+    return fixture_repo(root, {GUIDE_PATH: guide_text(), state.MANIFEST: MANIFEST_TOML,
+                               state.BASELINE: state.dump_baseline(fixture_state(folder))})
