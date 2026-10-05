@@ -191,10 +191,10 @@ def run_baseline(args, cache: Path, today: date) -> int:
 
 def main(argv=None, *, today: date | None = None, now: datetime | None = None, fetch=None) -> int:
     args = parser().parse_args(argv)
-    cache = args.cache or default_cache()
-    now = now or datetime.now().astimezone()
-    today = today or now.date()
     try:
+        cache = args.cache or default_cache()
+        now = now or datetime.now().astimezone()
+        today = today or now.date()
         if args.command == 'lint':
             return run_lint(args, cache)
         if args.command == 'check':

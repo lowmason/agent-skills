@@ -190,6 +190,11 @@ def test_a_crash_exits_two_never_one(world, monkeypatch, capsys):
     out, err = capsys.readouterr()
     lines = err.splitlines()
     assert (out, lines[0], lines[-1]) == ('', 'Traceback (most recent call last):', 'RuntimeError: boom')
+    monkeypatch.setattr(cli, 'default_cache', crash)
+    assert cli.main(['lint']) == 2
+    out, err = capsys.readouterr()
+    lines = err.splitlines()
+    assert (out, lines[0], lines[-1]) == ('', 'Traceback (most recent call last):', 'RuntimeError: boom')
 
 
 def test_bookkeeping_alone_brings_check_to_exit_zero(world):
