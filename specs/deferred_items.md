@@ -1924,9 +1924,8 @@ declined as YAGNI (zero instances in a one-page wiki).
       single quotes and two-use cases; `check_stop_hook_guard` discarding parse failures
       (`found, _`), which go silent if `hook-dir-quoted` cannot run; `paths: []`, scalar and
       null `paths` on an always-on rule; sorted output; the never-stale-on-unwaivable rule;
-      and `parse_exceptions`' field branches. Each new test moves CLAUDE.md's hand-kept
-      build-suite counts. Size: quick-fix. Done when: each listed branch has a red-first
-      test, and CLAUDE.md's counts are updated in the same change.
+      and `parse_exceptions`' field branches. Size: quick-fix. Done when: each listed
+      branch has a red-first test.
 - [ ] Make an unreadable conformance register a setup error (plan 35 review T2-m1):
       `load_register` in `build/check_conformance.py` catches only FileNotFoundError, so a
       PermissionError escapes as a traceback (exit 1), while `load_guide` catches OSError.
@@ -2089,19 +2088,20 @@ declined as YAGNI (zero instances in a one-page wiki).
       `build/cc_guide/conformance.toml` and red-first tests.
 - [ ] Add the `claude-md-import-resolves` conformance check (plan 35 audit §6, d29, seat
       check C#4): each `@` import in a claude-md file resolves, within 4 hops, using a
-      fence-aware scan. Today a fence-aware scan passes; a naive one would flag
-      CLAUDE.md:122. Size: quick-fix. Done when: the check is in `CHECKS` in
-      `build/check_conformance.py`, with a `[[check]]` entry in
-      `build/cc_guide/conformance.toml` and red-first tests.
+      fence-aware scan. Today a fence-aware scan passes; a naive one would flag the
+      `@needs_pilot` comment in CLAUDE.md's llm-wiki suite notes. Size: quick-fix.
+      Done when: the check is in `CHECKS` in `build/check_conformance.py`, with a
+      `[[check]]` entry in `build/cc_guide/conformance.toml` and red-first tests.
 - [ ] Add the `local-md-ignored` conformance check (plan 35 audit §6, d30, seat check C#5):
       `CLAUDE.local.md` is gitignored. Today it is not, and no such file exists. Size:
       quick-fix. Done when: the check is in `CHECKS` in `build/check_conformance.py`, with a
       `[[check]]` entry in `build/cc_guide/conformance.toml` and red-first tests.
 - [ ] Add the `claude-md-count-claims` conformance check (plan 35 audit §6, d31, seat check
-      C#6): lines in claude-md files that state a test, pass or skip count. Today 22 hits.
-      The "(19 originals" note is pinned by the test from `c67278d` on `main`, so it would
-      need an allow-list. Size: quick-fix. Done when: the check is in `CHECKS` in
-      `build/check_conformance.py`, with a `[[check]]` entry in
+      C#6): lines in claude-md files that state a test, pass or skip count. Today the
+      count is 0 apart from the provenance-pinned originals note, so the check would only
+      guard against regressions. The "(19 originals" note is pinned by the test from
+      `c67278d` on `main`, so it would need an allow-list. Size: quick-fix. Done when: the
+      check is in `CHECKS` in `build/check_conformance.py`, with a `[[check]]` entry in
       `build/cc_guide/conformance.toml` and red-first tests.
 - [ ] Verify guide note S-108 with `/cc-guide verify skills.progressive-disclosure` once
       drift lands (plan 35 audit §7): the guide's line 122 says the listing (name and

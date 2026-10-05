@@ -144,7 +144,8 @@ commands are not Agent Skills and are unaffected.
 R1.9 The module docstring describes the new rules and the `--strict` flag, and
 CLAUDE.md's Commands section gains the `--strict` invocation with one line on
 when to use it (preparing a claude.ai upload or a spec-only validator run),
-within the CLAUDE.md ceiling (Sequencing, "Conformance register").
+under the `claude-md-size` check's 200-line limit (Sequencing, "Conformance
+register").
 
 ### R2 — Codex-visible openings
 
@@ -313,7 +314,8 @@ R4.4 **Documentation.**
   the copies.
 - README's License section gains one sentence to the same effect.
 - CLAUDE.md's provenance section gains the invariant and names the enforcing
-  lint, within the CLAUDE.md ceiling (Sequencing, "Conformance register").
+  lint, under the `claude-md-size` check's 200-line limit (Sequencing,
+  "Conformance register").
 
 R4.5 **Andorra lookup** (a plan task).
 - Locate Alexandre Andorra's original PyMC Bayesian-workflow skill and read its
@@ -346,9 +348,10 @@ Stages, in order. D is independent of C and may run alongside it.
 Constraints:
 - **Conformance register** (`specs/completed/claude-code-guide-conformance.md`,
   R6):
-  - The CLAUDE.md lines from R1.9 and R4.4 stay within the `claude-md-size`
-    ceiling in `build/cc_guide/conformance.toml`: trim CLAUDE.md elsewhere, or
-    raise the ceiling in the register on purpose, with a reason (R6 P1).
+  - The CLAUDE.md lines from R1.9 and R4.4 stay under the `claude-md-size`
+    check's 200-line limit in `build/cc_guide/conformance.toml`. No ceiling
+    remains to raise: a change whose lines would breach the limit trims
+    CLAUDE.md elsewhere (R6 P1; drift spec R12.7).
   - When Stage A or Stage D fixes a gap the register tracks to it, the same
     change removes or narrows that `[[exception]]` and runs
     `build/check_conformance.py` (R6 P2).
@@ -358,8 +361,7 @@ Constraints:
   the shared checkout's branch can change under a concurrent session.
 - **Stage D's micro-test** runs from a session whose cwd was never this repo;
   inherited session context voids reps otherwise.
-- **State test changes as +N deltas** against the suite, never absolute totals,
-  and update CLAUDE.md's per-suite counts by the same deltas.
+- **State test changes as +N deltas** against the suite, never absolute totals.
 - **Before allocating the plan id**, check `specs/plans/` on every branch
   (`git ls-tree`); ids are allocated per branch and have collided.
 - **Coordinate with the in-flight JAX spec.** `specs/jax-deep-learning-skills.md`

@@ -136,7 +136,8 @@ cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q
 
 # Snippet gate: three tiers, cheapest first, each including those above. Tier 1 covers all of skills/; Tiers 2 and 3
 # only skills/bayesian-workflow, whose stack they import. build/check_snippets.py documents the fence markers (norun,
-# noparse, fixture=<name>). If a block raises under Tier 3, fix it: norun is for blocks that cannot run by design.
+# noparse, fixture=<name>); named fixtures live in build/snippet_preamble.py's NAMED_FIXTURES. If a block raises
+# under Tier 3, fix it: norun is for blocks that cannot run by design.
 # Tier 1 (parse-only, stdlib, instant) — run before committing any skill edit:
 uv run --python 3.13 python build/check_snippets.py skills/
 # Tier 2 (+ resolve dotted library chains from code and backticked prose; imports the stack, ~30s):

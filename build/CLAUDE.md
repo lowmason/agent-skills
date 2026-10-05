@@ -1,8 +1,9 @@
 # Build tooling (`build/`)
 
 This directory holds the repo's lints and commit gates (each `check_*.py`
-documents itself in its docstring), the cross-runtime adapter generator, and a
-citation-verification pipeline. The root `CLAUDE.md` lists their commands.
+documents itself in its docstring), the cross-runtime adapter generator, the
+Claude Code guide's drift detector (`cc_guide/`), and a citation-verification
+pipeline. The root `CLAUDE.md` lists their commands.
 
 The pipeline keeps `recommend-probabilistic-model`'s PML §-refs and pyprobml
 notebook links honest, through two gates:
