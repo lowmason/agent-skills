@@ -101,3 +101,40 @@ PLATFORM_PAGE = '\n'.join([
     'Rates move with `BetaEvent`.',
     '',
 ])
+
+
+# Three releases, newest first as the real changelog lists them. Bullets are
+# indented two spaces, as on the real page (checked 2026-10-04).
+CHANGELOG_TEXT = '\n'.join([
+    '> ## Documentation Index',
+    '> Fixture page index: https://docs.example.invalid/llms.txt',
+    '',
+    '# Fixture changelog',
+    '',
+    '* A bullet outside every release block.',
+    '',
+    '<Update label="2.1.902" description="October 1, 2026">',
+    '  * Changed how `BETA_ENV` is read',
+    '  * Fixed a crash in the fixture tool',
+    '</Update>',
+    '',
+    '<Update label="2.1.901" description="September 20, 2026">',
+    '  * Added `ALPHA_ENV` to the alpha tools',
+    '</Update>',
+    '',
+    '<Update label="2.1.900" description="September 1, 2026">',
+    '  * First fixture release',
+    '</Update>',
+    '',
+])
+
+
+LLMS_TEXT = '\n'.join([
+    '# Fixture docs',
+    '',
+    '- [Tools](https://code.claude.com/docs/en/tools.md): The tools page.',
+    '- [Events](https://code.claude.com/docs/en/events.md): The events page.',
+    '- [Environment variables](https://code.claude.com/docs/en/env-vars.md): Variables.',
+    '- [Plugin parts](https://code.claude.com/docs/en/plugins/components.md): A nested slug.',
+    '',
+])
