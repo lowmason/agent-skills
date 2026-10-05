@@ -3,6 +3,7 @@ selected blocks with the baseline, list each section's untriaged releases,
 and report what is due (drift spec R6). R6.8's citing-file lists are Stage
 2's, `--hook` (R6.10) Stage 4's and `packets` (R6.11) Stage 3's.'''
 import hashlib
+import http.client
 import json
 import urllib.error
 import urllib.request
@@ -41,7 +42,7 @@ def http_get(url: str) -> tuple[int, bytes]:
             if exc.code == 404:
                 return 404, b''
             error = f'HTTP {exc.code}'
-        except OSError as exc:
+        except (OSError, http.client.HTTPException) as exc:
             error = str(exc)
     raise FetchError(f'{url}: {error}')
 

@@ -1,6 +1,8 @@
 '''Tests for check.py: compare, the changelog, every due rule, the fetch gate,
 the report and exit codes (drift spec R6, R12.3's row fixture).'''
+import http.client
 import json
+import urllib.error
 from datetime import date, datetime, timezone
 
 import pytest
@@ -140,6 +142,43 @@ def test_the_audit_clock_is_shared_and_targets_the_oldest_group(docs_dir):
         s['sections'][sid]['audited'] = {'release': '2.1.902', 'date': '2026-10-02'}
     assert check.due_audit(MANIFEST, s, 30, date(2026, 10, 3)) == {
         'group': 'beta', 'last_audit': '2026-10-02', 'due_from': '2026-11-01', 'due': False}
+
+
+def test_http_get_retries_once_and_reports_any_other_failure(monkeypatch):
+    '''R6.4: a 30-second timeout, one retry and the tool's User-Agent. A 404
+    is an answer; any other failure ends as a FetchError.'''
+    url = 'https://docs.example.invalid/en/tools.md'
+    sent, outcomes = [], []
+
+    class Response:
+        status = 200
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            return False
+
+        def read(self):
+            return b'body'
+
+    def urlopen(request, timeout):
+        sent.append((request.full_url, request.get_header('User-agent'), timeout))
+        outcome = outcomes.pop(0)
+        if isinstance(outcome, Exception):
+            raise outcome
+        return outcome
+
+    monkeypatch.setattr(check.urllib.request, 'urlopen', urlopen)
+    outcomes[:] = [urllib.error.HTTPError(url, 404, 'Not Found', {}, None)]
+    assert check.http_get(url) == (404, b'')
+    outcomes[:] = [http.client.IncompleteRead(b'par'), Response()]
+    assert check.http_get(url) == (200, b'body')
+    outcomes[:] = [urllib.error.HTTPError(url, 503, 'Unavailable', {}, None), http.client.IncompleteRead(b'')]
+    with pytest.raises(check.FetchError) as err:
+        check.http_get(url)
+    assert str(err.value) == f'{url}: IncompleteRead(0 bytes read)'
+    assert sent == [(url, 'agent-skills-cc-guide/1 (Claude Code docs drift check)', 30)] * 5
 
 
 def serving(folder, log=None, fail=()):
