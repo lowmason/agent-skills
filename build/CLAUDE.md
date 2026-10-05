@@ -18,3 +18,18 @@ are `../agents/*.md` and `../commands/*.md`; never edit `../runtimes/` by hand.
 `test_runtime_support.py` also scans the agent-facing text of `../skills/**`
 (not READMEs or install guides) against `../install.py`'s `DEPENDENCIES`, so a
 skill edit can fail it.
+
+`cc_guide/` holds two tools for `specs/guides/claude-code-customization-guide.md`.
+`conformance.toml` is the register `check_conformance.py` reads. The rest is
+the drift detector (`specs/claude-code-drift-automation.md`): `manifest.toml`
+is the owner's configuration, `baseline.json` its state, written only by
+`cli.py baseline`, and `cli.py --help` lists the subcommands. `check` fetches
+the docs into `~/.cache/agent-skills/cc-guide/`, never into the repo, and
+reads `main`'s commit unless given `--worktree`. After reviewing what it
+reports, record the review in this order: `baseline accept`,
+`baseline rebaseline`, `baseline advance` or `baseline audited`, then
+`baseline stamp`; then run `cli.py lint` and `check_conformance.py`. A
+missing page needs a `manifest.toml` edit first. A correction that resolves a
+conformance gap removes its `[[exception]]` in the same change. Nothing is
+committed for you. `cd build && pytest` collects this suite too, so module and
+test basenames stay unique across `build/`.

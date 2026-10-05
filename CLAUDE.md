@@ -52,7 +52,7 @@ A skill's references into other skills and to commands are install dependencies;
 
 ## Build tooling (`build/`)
 
-`build/` holds the repo's lints and commit gates, the cross-runtime adapter generator (`sync_runtime_assets.py`), and the citation-verification pipeline for `recommend-probabilistic-model`; `build/CLAUDE.md` describes each. **`build/.scratch/` is gitignored and must never be committed** — it contains own-use extraction of CC-BY-NC-ND material.
+`build/` holds the repo's lints and commit gates, the cross-runtime adapter generator (`sync_runtime_assets.py`), the Claude Code guide's drift detector (`cc_guide/`), and the citation-verification pipeline for `recommend-probabilistic-model`; `build/CLAUDE.md` describes each. **`build/.scratch/` is gitignored and must never be committed** — it contains own-use extraction of CC-BY-NC-ND material.
 
 ## Commands
 
@@ -123,6 +123,12 @@ cd hooks && uv run --python 3.13 --with pytest python -m pytest -q && uv run --p
 uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
 uv run --python 3.13 python build/check_provenance.py
 uv run --python 3.13 --with pyyaml python build/check_conformance.py
+
+# Claude Code guide drift detector (build/cc_guide/): its suite; lint, run before committing a change to the guide or
+# build/cc_guide/; check, which fetches the docs and reports what is due (exit 1 = due; reads main unless --worktree)
+cd build/cc_guide && uv run --python 3.13 --with pytest python -m pytest -q
+uv run --python 3.13 python build/cc_guide/cli.py lint
+uv run --python 3.13 python build/cc_guide/cli.py check
 
 # Dependency drift: skill and command text vs install.py's DEPENDENCIES (run before committing a skill
 # change that adds or drops a cross-skill or /command reference)
