@@ -92,6 +92,25 @@ def _strings(value) -> bool:
     return isinstance(value, list) and all(isinstance(v, str) and v for v in value)
 
 
+def _table(raw: dict, key: str, problems: list[str]) -> dict:
+    '''raw[key] if it is a TOML table, else one listed problem and {}.'''
+    value = raw.get(key, {})
+    if isinstance(value, dict):
+        return value
+    problems.append(f'[{key}] must be a table')
+    return {}
+
+
+def _tables(raw: dict, key: str, problems: list[str]) -> list[dict]:
+    '''raw[key] if it is an array of tables, written [[key]], else one
+    listed problem and [].'''
+    value = raw.get(key, [])
+    if isinstance(value, list) and all(isinstance(v, dict) for v in value):
+        return value
+    problems.append(f'[[{key}]] must be an array of tables')
+    return []
+
+
 def parse_manifest(text: str) -> Manifest:
     '''manifest.toml (R2.2), validated. Raises SetupError listing every
     problem, so an invalid manifest exits 2.'''
@@ -102,14 +121,14 @@ def parse_manifest(text: str) -> Manifest:
     problems: list[str] = []
     unknown = set(raw) - {'guide', 'sources', 'cadence', 'groups', 'sections', 'exclusion', 'probe'}
     problems += [f'unknown table or key {k!r}' for k in sorted(unknown)]
-    guide_path = raw.get('guide', {}).get('path')
+    guide_path = _table(raw, 'guide', problems).get('path')
     if not isinstance(guide_path, str) or not guide_path:
         problems.append('[guide] path must be a non-empty string')
-    sources = raw.get('sources', {})
+    sources = _table(raw, 'sources', problems)
     for k in SOURCE_KEYS:
         if not (isinstance(sources.get(k), str) and sources[k].startswith('https://')):
             problems.append(f'[sources] {k} must be an https URL')
-    cadence = raw.get('cadence', {})
+    cadence = _table(raw, 'cadence', problems)
     for k in CADENCE_KEYS:
         v = cadence.get(k)
         if not (isinstance(v, int) and not isinstance(v, bool) and v > 0):
@@ -152,16 +171,17 @@ def parse_manifest(text: str) -> Manifest:
             problems.append(f'{where} maps no page')
         groups[gid] = Group(list(secs), pages)
     terms: dict[str, tuple[list[str], list[str]]] = {}
-    for sid, t in raw.get('sections', {}).items():
-        extra, exclude = t.get('extra_terms', []), t.get('exclude_terms', [])
+    for sid, t in _table(raw, 'sections', problems).items():
         if sid not in owner:
             problems.append(f'[sections.{sid!r}] is not in any group')
-        if set(t) - {'extra_terms', 'exclude_terms'} or not _strings(extra) or not _strings(exclude):
+        shaped = isinstance(t, dict) and not set(t) - {'extra_terms', 'exclude_terms'}
+        extra, exclude = (t.get('extra_terms', []), t.get('exclude_terms', [])) if shaped else ([], [])
+        if not shaped or not _strings(extra) or not _strings(exclude):
             problems.append(f'[sections.{sid!r}] holds only extra_terms and exclude_terms, as lists')
             continue
         terms[sid] = (extra, exclude)
     exclusions: list[tuple[str, str]] = []
-    for e in raw.get('exclusion', []):
+    for e in _tables(raw, 'exclusion', problems):
         page, reason = e.get('page'), e.get('reason')
         if not (isinstance(page, str) and page and isinstance(reason, str) and reason):
             problems.append('[[exclusion]] needs a page pattern and a reason')
@@ -173,7 +193,7 @@ def parse_manifest(text: str) -> Manifest:
             if fnmatch.fnmatchcase(page, pattern):
                 problems.append(f'page {page} is mapped but matches exclusion {pattern!r}')
     probes: dict[str, tuple[list[str], list[str]]] = {}
-    for p in raw.get('probe', []):
+    for p in _tables(raw, 'probe', problems):
         pid, secs, files = p.get('id'), p.get('sections'), p.get('files', [])
         if not (isinstance(pid, str) and pid) or pid in probes:
             problems.append('[[probe]] needs a unique id')

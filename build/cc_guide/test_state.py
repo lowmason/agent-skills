@@ -1,6 +1,7 @@
 '''Tests for state.py: the manifest, the baseline, PROBES.md, the repo
 source and the cache layout (drift spec R2, R6.1).'''
 import json
+import tomllib
 from datetime import date
 
 import pytest
@@ -49,17 +50,32 @@ def test_every_manifest_problem_is_reported_at_once():
         f'{state.MANIFEST}: [groups.beta] alpha.reference is already in group alpha',
         f"{state.MANIFEST}: page whats-new/2026-w40 is mapped but matches exclusion 'whats-new/*'",
     ]
+    shapes = (MANIFEST_TOML.replace('[guide]\npath = ', 'guide = ').replace('[[exclusion]]', '[exclusion]')
+              + "\n[sections]\n'alpha.overview' = 1\n\n[probe]\nid = 'x'\n")
+    with pytest.raises(state.SetupError) as err:
+        state.parse_manifest(shapes)
+    assert str(err.value).split('\n') == [
+        f'{state.MANIFEST}: [guide] must be a table',
+        f'{state.MANIFEST}: [guide] path must be a non-empty string',
+        f"{state.MANIFEST}: [sections.'alpha.overview'] holds only extra_terms and exclude_terms, as lists",
+        f'{state.MANIFEST}: [[exclusion]] must be an array of tables',
+        f'{state.MANIFEST}: [[probe]] must be an array of tables',
+    ]
 
 
 def test_a_page_listed_under_both_marks_is_a_problem():
     text = MANIFEST_TOML.replace("terms = ['env-vars']", "terms = ['env-vars', 'tools']")
-    with pytest.raises(state.SetupError, match='tools is listed twice'):
+    with pytest.raises(state.SetupError) as err:
         state.parse_manifest(text)
+    assert str(err.value) == f'{state.MANIFEST}: [groups.alpha] tools is listed twice'
 
 
 def test_invalid_toml_is_a_setup_error():
-    with pytest.raises(state.SetupError, match='not valid TOML'):
+    with pytest.raises(tomllib.TOMLDecodeError) as cause:
+        tomllib.loads('[guide\n')
+    with pytest.raises(state.SetupError) as err:
         state.parse_manifest('[guide\n')
+    assert str(err.value) == f'{state.MANIFEST}: not valid TOML ({cause.value})'
 
 
 def test_section_terms_and_the_probe_registry_parse():
@@ -74,13 +90,20 @@ def test_section_terms_and_the_probe_registry_parse():
 def test_a_valid_baseline_parses_and_a_broken_one_is_a_setup_error():
     assert state.parse_baseline(baseline_text())['llms'] == ['tools']
     broken = {'sections': {'alpha.overview': {**SECTION, 'changed': '2.1.x'}}}
-    with pytest.raises(state.SetupError, match='section alpha.overview'):
+    with pytest.raises(state.SetupError) as err:
         state.parse_baseline(baseline_text(**broken))
-    with pytest.raises(state.SetupError, match='group alpha'):
+    assert str(err.value) == (f'{state.BASELINE}: section alpha.overview: needs checked, changed,'
+                              ' audited and text_hash')
+    with pytest.raises(state.SetupError) as err:
         state.parse_baseline(baseline_text(groups={'alpha': {'blocks': {'tools': {'Tools': 'xyz'}},
                                                              'snapshot': {}}}))
-    with pytest.raises(state.SetupError, match='not valid JSON'):
+    assert str(err.value) == (f'{state.BASELINE}: group alpha: needs blocks (page -> key -> hash)'
+                              ' and snapshot (page -> release)')
+    with pytest.raises(json.JSONDecodeError) as cause:
+        json.loads('{')
+    with pytest.raises(state.SetupError) as err:
         state.parse_baseline('{')
+    assert str(err.value) == f'{state.BASELINE}: not valid JSON ({cause.value})'
 
 
 def test_dump_baseline_keeps_insertion_order_and_utf8():
@@ -105,8 +128,9 @@ def test_probe_rows_are_read_by_header_and_an_absent_file_has_none():
 
 def test_an_unreadable_probe_row_is_a_setup_error():
     text = '| Date | Version | Probe | Outcome |\n|---|---|---|---|\n| soon | 2.1.290 | x | PASS |\n'
-    with pytest.raises(state.SetupError, match='unreadable row'):
+    with pytest.raises(state.SetupError) as err:
         state.parse_probes(text)
+    assert str(err.value) == f"{state.PROBES}: unreadable row '| soon | 2.1.290 | x | PASS |'"
 
 
 def test_a_source_reads_the_working_tree_or_a_commit(tmp_path):
@@ -115,10 +139,12 @@ def test_a_source_reads_the_working_tree_or_a_commit(tmp_path):
     assert state.Source(repo).read('a.txt') == 'edited\n'
     assert state.Source(repo, 'main').read('a.txt') == 'committed\n'
     assert state.Source(repo, 'main').read('absent.txt') is None
-    with pytest.raises(state.SetupError, match='absent.txt: not found in main'):
+    with pytest.raises(state.SetupError) as err:
         state.Source(repo, 'main').require('absent.txt')
-    with pytest.raises(state.SetupError, match='no-such-ref: not a commit'):
+    assert str(err.value) == 'absent.txt: not found in main'
+    with pytest.raises(state.SetupError) as err:
         state.Source(repo, 'no-such-ref')
+    assert str(err.value) == f'no-such-ref: not a commit in {repo}'
 
 
 def test_group_terms_join_the_manifest_and_the_guide():
