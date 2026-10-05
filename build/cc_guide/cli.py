@@ -20,7 +20,8 @@ Run: uv run --python 3.13 python build/cc_guide/cli.py <subcommand>
   baseline accept ID [ID ...] (--substantive | --editorial)
   baseline stamp
       The only writer of baseline.json and the guide's stamp region (R7).
-      Always the working tree; nothing is committed.
+      Always the working tree; nothing is committed. rebaseline takes each
+      KEY as check prints it, a key hash for a block check could not name.
 
 After reviewing what check reported, record it in R8.8's order: accept,
 rebaseline, advance or audited, then stamp; then run lint and

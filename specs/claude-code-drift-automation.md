@@ -433,7 +433,9 @@ R3.7 **Selection, per group.**
   so a docs edit that drops a block's last watched term is a finding (owner,
   plan 38 final review, 2026-10-05). Only a block key that has disappeared
   from the page is *missing*. It is named by the key its page's snapshot
-  holds, or by its key hash when that snapshot is gone (R2.3).
+  holds, or by its key hash when that snapshot is gone or no longer holds it
+  (R2.3); a block named by its hash names every section of the group as a
+  candidate.
 - A changed, missing or new block names its **candidate sections**: the
   group's sections whose terms it contains, or every section of the group when
   none match. Triage settles attribution (R8.4).
@@ -1106,8 +1108,9 @@ Constraints:
 - The docs are Anthropic's copyrighted text. Copies live only in
   `~/.cache/agent-skills/cc-guide/`. The repo commits hashes, slugs, release
   labels, terms and probe outcomes. Block keys, which are docs headings and
-  table first cells, are committed only as hashes (R2.3; owner, plan 38
-  decision 9, 2026-10-05).
+  table first cells, are committed only as hashes from 2026-10-05; the
+  history before that, `606fcc5` through `add1995`, holds them as text (R2.3;
+  owner, plan 38 decision 9, 2026-10-05).
 - Verifier quotes of at most 25 words appear only in session reports. Proposed
   wording is the verifier's own paraphrase, an existing rule of the refresh.
 - `manifest.toml`, the scripts, the skill, the agent and the hand-written

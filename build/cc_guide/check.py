@@ -175,7 +175,9 @@ def compare(manifest: Manifest, state: dict, terms: dict, docs: Docs,
                 key = live.get(kh)
                 if key is None:
                     gone = name(page, kh)
-                    findings.append(Finding(gid, 'missing', page, gone, candidates(gone, '', sec_terms)))
+                    # A block named only by its hash matches no term: every section is a candidate.
+                    cands = list(sec_terms) if gone == kh else candidates(gone, '', sec_terms)
+                    findings.append(Finding(gid, 'missing', page, gone, cands))
                 elif block_hash(found[key]) != recorded:
                     findings.append(Finding(gid, 'changed', page, key, candidates(key, found[key], sec_terms)))
                 elif key not in chosen:

@@ -59,8 +59,12 @@ def test_a_missing_block_is_named_from_its_snapshot_else_by_its_key_hash(docs_di
     body = ('beta', 'new', 'events › Events › Body', ['beta.overview'])
     gone = ['beta.overview', 'beta.reference']
     assert findings(docs_dir, s)[0] == [('beta', 'missing', 'events › Events › Payload', gone), body]
-    unnamed = ('beta', 'missing', 'events › ' + blocks.key_hash('Events › Payload'), gone)
+    payload = blocks.key_hash('Events › Payload')
+    unnamed = ('beta', 'missing', 'events › ' + payload, gone)
     assert findings(docs_dir, s, snapshot=state.no_snapshot)[0] == [unnamed, body]
+    # A hash names no term, even when a term happens to be hex digits of it.
+    hex_term = dict(TERMS, beta={**TERMS['beta'], 'beta.overview': TERMS['beta']['beta.overview'] | {payload[:6]}})
+    assert findings(docs_dir, s, hex_term, state.no_snapshot)[0] == [unnamed, body]
 
 
 def test_deselection_is_informational_only_while_the_block_is_unchanged(docs_dir):
