@@ -56,13 +56,15 @@ class Docs(NamedTuple):
     unread: set[str]              # pages whose fetch failed; never compared
 
 
-def releases_of(changelog_text: str) -> list[Release]:
+def releases_of(changelog_text: str, source: str = 'changelog') -> list[Release]:
+    '''The changelog's releases, newest first. A changelog that does not
+    parse, or holds no release, is a SetupError naming its source.'''
     try:
         releases = parse_changelog(changelog_text)
     except ValueError as exc:
-        raise SetupError(f'changelog: {exc}') from None
+        raise SetupError(f'{source}: {exc}') from None
     if not releases:
-        raise SetupError('changelog: no <Update> release blocks')
+        raise SetupError(f'{source}: no <Update> release blocks')
     return releases
 
 

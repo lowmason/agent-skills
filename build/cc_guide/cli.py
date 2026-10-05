@@ -39,8 +39,8 @@ from datetime import date, datetime
 from pathlib import Path
 
 import baseline
-from check import check, http_get, summary
-from docs import page_file, parse_changelog
+from check import check, http_get, releases_of, summary
+from docs import page_file
 from guide import render_stamp
 from lint import lint
 from state import (BASELINE, BOOTSTRAP_DATE, BOOTSTRAP_RELEASE, MANIFEST, SetupError, Source, default_cache,
@@ -85,17 +85,11 @@ def parser() -> argparse.ArgumentParser:
 def cached_releases(cache: Path):
     '''The newest cached changelog's releases (R5: latest/, else the 2.1.288
     snapshot), or None when neither is cached. A changelog that does not
-    parse, or holds no release, is a SetupError, as in check.'''
+    parse, or holds no release, is a SetupError (check.releases_of).'''
     path = newest_changelog(cache)
     if path is None:
         return None
-    try:
-        releases = parse_changelog(path.read_text(encoding='utf-8'))
-    except ValueError as exc:
-        raise SetupError(f'{path}: {exc}') from None
-    if not releases:
-        raise SetupError(f'{path}: no <Update> release blocks')
-    return releases
+    return releases_of(path.read_text(encoding='utf-8'), str(path))
 
 
 def newest_releases(cache: Path):
