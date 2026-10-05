@@ -333,3 +333,12 @@ def drift_repo(root, folder):
     import state
     return fixture_repo(root, {GUIDE_PATH: guide_text(), state.MANIFEST: MANIFEST_TOML,
                                state.BASELINE: state.dump_baseline(fixture_state(folder))})
+
+
+def prime_cache(cache, folder, head: str = '2.1.902') -> None:
+    '''A cache whose latest/ holds folder's files, as a live check leaves it.'''
+    import json
+    import state
+    write_tree(state.latest_docs(cache), {p.name: p.read_text(encoding='utf-8') for p in folder.iterdir()})
+    state.fetch_record(cache).write_text(json.dumps({'fetched_at': '2026-10-04T12:00:00+00:00',
+                                                      'changelog_head': head}) + '\n')
