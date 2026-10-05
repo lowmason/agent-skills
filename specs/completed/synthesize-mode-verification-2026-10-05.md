@@ -114,7 +114,18 @@ marker-scanned and their heads read. The five skill-listing marker hits were che
 and are skill descriptions (bayesian-workflow, executing-plans, subagent-driven-development,
 tech-debt, writing-skills). No plan, item or behaviour marker appeared (`36-synthesize`,
 `ctl-q9`, `deferred_items` and the like), only expected content. The grader's `inherited_hits`
-was `[]` and `permission_denials` was 0 for all five reps.
+was `[]` for all five reps.
+
+**Correction on permission denials.** The grader reported `permission_denials` = 0 for all five
+reps. That is a false negative: `grade.py` counts a denial only when the result has `is_error`
+and its text contains "permission", but the real refusals carry `toolDenialKind:
+"user-rejected"`. The transcripts show 6, 4, 4, 6 and 4 refused tool calls in reps 1-5 (24 in
+all), in three groups, all `Bash`: (i) compound or variable-bearing commands that needed
+approval (for example `A variable in braces in this command can't be checked before it runs`
+and `This Bash command contains multiple operations`); (ii) `printenv LLM_WIKI_ROOT`, refused
+in every rep (the skill's wiki step); (iii) out-of-cwd `ls` and `cd`, blocked (see Qualitative
+evidence). None blocked a spec write or a commit, so the pilot GO and the void verdict are
+unchanged.
 
 ## Validity
 
@@ -187,15 +198,16 @@ at the pilot the controller treated that Grep as counts-only. Under ruling 1 as 
 that Grep would itself void rep-1. Rep-1 is void by the `Read` at rec 148 either way. The
 `bash_write_suspect` entries in reps 1-5 are heredoc `git commit -F -` or `git commit -m` calls
 (ruling 3), plus rep-3's `cat README.md; ... ls -la .../specs/completed/` command, which writes
-nothing.
+nothing and was auto-rejected as needing approval, so it never ran.
 
 ## Result
 
-Mechanical checks M1-M5 were true in all five reps. **They are UNSCORED: every rep is void, and
-the reps had read the skill's own design spec, so these numbers are observations, not evidence
-about any behaviour.**
+`grade.py` returned true for M1-M5 in all five reps. **They are UNSCORED: every rep is void, and
+the reps had read the skill's own design spec, so these values are observations, not evidence
+about any behaviour.** They were also not read-verified: the plan only read-verifies false
+mechanical values.
 
-| Rep | Void cause | M1 | M2 | M3 | M4 | M5 (all UNSCORED, void) | Write turn | Spec path | Exemplars read |
+| Rep | Void cause | M1 (unscored) | M2 (unscored) | M3 (unscored) | M4 (unscored) | M5 (unscored) | Write turn | Spec path | Exemplars read |
 |---|---|---|---|---|---|---|---|---|---|
 | 1 | `Read` of `methodology-pipeline-skills.md` (rec 148) | true | true | true | true | true | 2 | `specs/calibration.md` | calibration-check-verdicts, methodology-pipeline-skills, tune-hyperparameters |
 | 2 | `Read` of the same file (rec 103) | true | true | true | true | true | 2 | `specs/calibration.md` | calibration-check-verdicts, methodology-pipeline-skills |
@@ -264,13 +276,19 @@ example of the behaviour under test, not a neutral house-format sample.
   did not verify that the read caused it. Note that `Projects/alt-nfp` is not on the VOID list
   (`alt-nfp-model`, `alt-nfp-stats*` and `archive/alt_nfp` are), so a hit there would not have
   voided a rep under the rule as written. That is a gap worth closing in any re-run.
-- Rep-3 ran a `Bash` `ls -la /Users/lowell/.cache/nfp-series/` (rec 80), a listing of the
-  sibling rep directories. It is not on the VOID list and was not counted.
-- Rep-5 ran a combined `cd /Users/lowell/Projects/agent-skills/specs/completed && wc -l ...`
-  `Bash` command (rec 110), which was blocked: the result begins `cd in
-  '/Users/lowell/Projects/agent-skills/specs/completed' was blocked`, and the allowed working
-  directory it names is `/Users/lowell/.cache/nfp-series/rep-5`. Its later reads of that
-  directory used `Read` and `Grep`, which were not blocked.
+- Out-of-cwd `Bash` was refused, while `Read`, `Glob` and `Grep` outside the cwd were not.
+  Reps 1, 2 and 3 attempted a listing of the sibling directory
+  `/Users/lowell/.cache/nfp-series/` and were refused: reps 1 and 2 got `ls in
+  '/Users/lowell/.cache/nfp-series' was blocked`, and rep-3's compound command (which
+  included `ls -la /Users/lowell/.cache/nfp-series/`) was auto-rejected as needing approval.
+  Rep-4's `ls ~/Projects/agent-skills/specs/completed/ | head -50` was also refused, and it
+  fell back to `Glob`. Rep-5 ran a combined
+  `cd /Users/lowell/Projects/agent-skills/specs/completed && wc -l ...` command (rec 110),
+  which was blocked: the result begins `cd in '/Users/lowell/Projects/agent-skills/specs/completed'
+  was blocked`, and the allowed working directory it names is
+  `/Users/lowell/.cache/nfp-series/rep-5`; its later access to that directory used `Read` and
+  `Grep`, which were not blocked. No transcript saw the sibling rep directories (a search for
+  `rep-10` across the five transcripts finds 0 occurrences).
 
 The manual rubric (R1-R8) was not scored, and nothing here claims a Synthesize-mode behaviour
 held or failed.
@@ -287,8 +305,8 @@ superseded by this one and keep the original 2026-07-26 date, so aging is not re
       from plan 18-methodology-pipeline-skills #1, dated 2026-07-26). The locator discipline,
       the triage-table-before-spec-text ordering and the derive-roadmap handoff of
       `describe-critique-methodology` Synthesize mode are still unverified: plan 36 ran VOID,
-      0 of 5 reps valid, because the exemplar step of `references/spec-synthesis.md` leads every
-      rep to read the skill's own design spec
+      0 of 5 reps valid, because the exemplar step of `references/spec-synthesis.md` led all 5
+      reps to read the skill's own design spec
       (`specs/completed/methodology-pipeline-skills.md`). This is a kit-isolation problem; no
       skill defect is asserted. The kit (`~/.cache/ctl-q9`, `~/.cache/nfp-series`) is outside
       the repo and is rebuildable from plan 36 Task 1. See
@@ -296,4 +314,16 @@ superseded by this one and keep the original 2026-07-26 date, so aging is not re
       pre-registration. Size: design. Done when: a re-run whose exemplar step is isolated (for
       example neutral exemplars supplied to the reps, or the VOID rule revised BEFORE the run;
       the owner's call) yields 5 valid reps and a record under `specs/completed/` with verdicts
-      for B1-B3.
+      for B1-B3. A rebuilt kit must also fix `grade.py`'s denial detector (it reported 0
+      denials, but the transcripts show 24; see Dispatch), decide whether `printenv` is allowed
+      (or set `LLM_WIKI_ROOT`), and consider adding `Projects/alt-nfp` (no `-model`) to the VOID
+      list, since reps 2 and 5 globbed it.
+
+File the successor under the original section,
+`## 18-methodology-pipeline-skills (plan #1, describe-critique-methodology) — 2026-07-26`, of
+`specs/deferred_items.md`: an item's age comes from its section header, so this keeps the
+original date. For the successor design: a re-run should treat "a pilot rep void because of the
+skill's own procedure" as a redesign trigger, not as a cue to run more reps. Note also that the
+VOID rule voids production-faithful behaviour, because any real Synthesize run will open the
+same design spec when it follows the exemplar step. So whether to revise the VOID rule, or to
+isolate the exemplar step instead, is the owner's decision, to be made before the run.
