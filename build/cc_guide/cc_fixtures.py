@@ -257,3 +257,68 @@ def fixture_repo(root, files: dict):
     git(root, 'add', '-A')
     git(root, 'commit', '-qm', 'fixture')
     return root
+
+
+TOOLS_PAGE = '\n'.join([
+    '> ## Documentation Index',
+    '> Fixture page index: https://docs.example.invalid/llms.txt',
+    '',
+    '# Tools',
+    '',
+    'The `ALPHA_TOOL` runs alpha jobs.',
+    '',
+    '## Options',
+    '',
+    '| Option | Effect |',
+    '|---|---|',
+    '| `--fast` | Runs fast. |',
+    '',
+])
+
+
+EVENTS_PAGE = '\n'.join([
+    '# Events',
+    '',
+    '`BetaEvent` fires on beta.',
+    '',
+    '## Payload',
+    '',
+    'The payload carries `BETA_ENV`.',
+    '',
+])
+
+
+# The fixture docs directory, file name -> text, named as the cache names them.
+DOCS = {
+    'tools.md': TOOLS_PAGE,
+    'events.md': EVENTS_PAGE,
+    'env-vars.md': ENV_PAGE,
+    'platform_pricing.md': PLATFORM_PAGE,
+    'changelog.md': CHANGELOG_TEXT,
+    'llms.txt': LLMS_TEXT,
+}
+
+
+# The fixture baseline: every section checked and audited at 2.1.900 on
+# 2026-09-02, so 2.1.901 (2026-09-20) and 2.1.902 (2026-10-01) are untriaged.
+FIXTURE_RELEASE, FIXTURE_DAY = '2.1.900', '2026-09-02'
+
+
+FIXTURE_CHANGED = {'alpha.overview': '2.1.900', 'alpha.reference': '2.1.899',
+                   'beta.overview': '2.1.900', 'beta.reference': '2.1.900'}
+
+
+@pytest.fixture
+def docs_dir(tmp_path):
+    '''The fixture docs as a local directory, named as the cache names them.'''
+    folder = tmp_path / 'docs'
+    write_tree(folder, DOCS)
+    return folder
+
+
+def fixture_state(folder) -> dict:
+    '''The baseline init builds for the fixture guide over a docs directory.'''
+    import baseline
+    import state
+    return baseline.init(state.parse_manifest(MANIFEST_TOML), guide_text(), folder,
+                         FIXTURE_RELEASE, FIXTURE_DAY, FIXTURE_CHANGED)
