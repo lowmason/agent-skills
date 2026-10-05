@@ -2,8 +2,8 @@
  "sections": {
   "context.overview": {
    "checked": {
-    "release": "2.1.288",
-    "date": "2026-10-03"
+    "release": "2.1.289",
+    "date": "2026-10-05"
    },
    "changed": "2.1.288",
    "audited": {
@@ -14,8 +14,8 @@
   },
   "mechanisms.overview": {
    "checked": {
-    "release": "2.1.288",
-    "date": "2026-10-03"
+    "release": "2.1.289",
+    "date": "2026-10-05"
    },
    "changed": "2.1.288",
    "audited": {
@@ -26,8 +26,8 @@
   },
   "skills.overview": {
    "checked": {
-    "release": "2.1.288",
-    "date": "2026-10-03"
+    "release": "2.1.289",
+    "date": "2026-10-05"
    },
    "changed": "2.1.219",
    "audited": {
@@ -38,8 +38,8 @@
   },
   "skills.locations": {
    "checked": {
-    "release": "2.1.288",
-    "date": "2026-10-03"
+    "release": "2.1.289",
+    "date": "2026-10-05"
    },
    "changed": "2.1.288",
    "audited": {
@@ -50,20 +50,20 @@
   },
   "skills.frontmatter": {
    "checked": {
-    "release": "2.1.288",
-    "date": "2026-10-03"
+    "release": "2.1.289",
+    "date": "2026-10-05"
    },
-   "changed": "2.1.288",
+   "changed": "2.1.289",
    "audited": {
     "release": "2.1.288",
     "date": "2026-10-03"
    },
-   "text_hash": "sha256:e74a216add76be9571bcb9b753d9a0579ad291c5df433374e101cb6c2f288215"
+   "text_hash": "sha256:7d45592fe61fc33b19d88f7d22d84dc00e378224b2f8ea27bf55da74f1ded52a"
   },
   "skills.description": {
    "checked": {
-    "release": "2.1.288",
-    "date": "2026-10-03"
+    "release": "2.1.289",
+    "date": "2026-10-05"
    },
    "changed": "2.1.219",
    "audited": {
@@ -74,8 +74,8 @@
   },
   "skills.listing-budget": {
    "checked": {
-    "release": "2.1.288",
-    "date": "2026-10-03"
+    "release": "2.1.289",
+    "date": "2026-10-05"
    },
    "changed": "2.1.288",
    "audited": {
@@ -86,8 +86,8 @@
   },
   "skills.progressive-disclosure": {
    "checked": {
-    "release": "2.1.288",
-    "date": "2026-10-03"
+    "release": "2.1.289",
+    "date": "2026-10-05"
    },
    "changed": "2.1.288",
    "audited": {
@@ -98,8 +98,8 @@
   },
   "skills.arguments": {
    "checked": {
-    "release": "2.1.288",
-    "date": "2026-10-03"
+    "release": "2.1.289",
+    "date": "2026-10-05"
    },
    "changed": "2.1.288",
    "audited": {
@@ -110,8 +110,8 @@
   },
   "skills.iterating": {
    "checked": {
-    "release": "2.1.288",
-    "date": "2026-10-03"
+    "release": "2.1.289",
+    "date": "2026-10-05"
    },
    "changed": "2.1.288",
    "audited": {
@@ -122,8 +122,8 @@
   },
   "commands.overview": {
    "checked": {
-    "release": "2.1.288",
-    "date": "2026-10-03"
+    "release": "2.1.289",
+    "date": "2026-10-05"
    },
    "changed": "2.1.288",
    "audited": {
@@ -134,8 +134,8 @@
   },
   "subagents.overview": {
    "checked": {
-    "release": "2.1.288",
-    "date": "2026-10-03"
+    "release": "2.1.289",
+    "date": "2026-10-05"
    },
    "changed": "2.1.288",
    "audited": {
@@ -146,8 +146,8 @@
   },
   "subagents.frontmatter": {
    "checked": {
-    "release": "2.1.288",
-    "date": "2026-10-03"
+    "release": "2.1.289",
+    "date": "2026-10-05"
    },
    "changed": "2.1.288",
    "audited": {
@@ -158,8 +158,8 @@
   },
   "subagents.tools": {
    "checked": {
-    "release": "2.1.288",
-    "date": "2026-10-03"
+    "release": "2.1.289",
+    "date": "2026-10-05"
    },
    "changed": "2.1.288",
    "audited": {
@@ -170,8 +170,8 @@
   },
   "subagents.models": {
    "checked": {
-    "release": "2.1.288",
-    "date": "2026-10-03"
+    "release": "2.1.289",
+    "date": "2026-10-05"
    },
    "changed": "2.1.288",
    "audited": {
@@ -182,8 +182,8 @@
   },
   "subagents.isolation": {
    "checked": {
-    "release": "2.1.288",
-    "date": "2026-10-03"
+    "release": "2.1.289",
+    "date": "2026-10-05"
    },
    "changed": "2.1.288",
    "audited": {
@@ -194,8 +194,8 @@
   },
   "rules.overview": {
    "checked": {
-    "release": "2.1.288",
-    "date": "2026-10-03"
+    "release": "2.1.289",
+    "date": "2026-10-05"
    },
    "changed": "2.1.219",
    "audited": {
@@ -206,8 +206,8 @@
   },
   "rules.claude-md": {
    "checked": {
-    "release": "2.1.288",
-    "date": "2026-10-03"
+    "release": "2.1.289",
+    "date": "2026-10-05"
    },
    "changed": "2.1.288",
    "audited": {
@@ -218,8 +218,8 @@
   },
   "rules.hierarchy": {
    "checked": {
-    "release": "2.1.288",
-    "date": "2026-10-03"
+    "release": "2.1.289",
+    "date": "2026-10-05"
    },
    "changed": "2.1.288",
    "audited": {
@@ -230,8 +230,8 @@
   },
   "rules.rules-files": {
    "checked": {
-    "release": "2.1.288",
-    "date": "2026-10-03"
+    "release": "2.1.289",
+    "date": "2026-10-05"
    },
    "changed": "2.1.288",
    "audited": {
@@ -242,32 +242,32 @@
   },
   "rules.auto-memory": {
    "checked": {
-    "release": "2.1.288",
-    "date": "2026-10-03"
+    "release": "2.1.289",
+    "date": "2026-10-05"
    },
-   "changed": "2.1.219",
+   "changed": "2.1.289",
    "audited": {
     "release": "2.1.288",
     "date": "2026-10-03"
    },
-   "text_hash": "sha256:ce2bb1abfa555f27b14dd9a53462099deecab4b3743a3afaf7836cd3f1881552"
+   "text_hash": "sha256:7de1de635261f0a97e2573c45ffb0fde09021c654f02b0fe65eb34cfdf9966b4"
   },
   "rules.settings": {
    "checked": {
-    "release": "2.1.288",
-    "date": "2026-10-03"
+    "release": "2.1.289",
+    "date": "2026-10-05"
    },
-   "changed": "2.1.288",
+   "changed": "2.1.289",
    "audited": {
     "release": "2.1.288",
     "date": "2026-10-03"
    },
-   "text_hash": "sha256:f4aa2af34e990346f1d19728cc6165fb96d53c11a8a0422e6c4a5167b494f7ce"
+   "text_hash": "sha256:124d0f5544d53120ca8aec781d5f7b518b32a5cb701dddd2245e5b71e6153154"
   },
   "hooks.overview": {
    "checked": {
-    "release": "2.1.288",
-    "date": "2026-10-03"
+    "release": "2.1.289",
+    "date": "2026-10-05"
    },
    "changed": "2.1.288",
    "audited": {
@@ -278,8 +278,8 @@
   },
   "hooks.events": {
    "checked": {
-    "release": "2.1.288",
-    "date": "2026-10-03"
+    "release": "2.1.289",
+    "date": "2026-10-05"
    },
    "changed": "2.1.288",
    "audited": {
@@ -290,8 +290,8 @@
   },
   "hooks.exit-codes": {
    "checked": {
-    "release": "2.1.288",
-    "date": "2026-10-03"
+    "release": "2.1.289",
+    "date": "2026-10-05"
    },
    "changed": "2.1.288",
    "audited": {
@@ -302,8 +302,8 @@
   },
   "hooks.handlers": {
    "checked": {
-    "release": "2.1.288",
-    "date": "2026-10-03"
+    "release": "2.1.289",
+    "date": "2026-10-05"
    },
    "changed": "2.1.288",
    "audited": {
@@ -314,8 +314,8 @@
   },
   "hooks.configuration": {
    "checked": {
-    "release": "2.1.288",
-    "date": "2026-10-03"
+    "release": "2.1.289",
+    "date": "2026-10-05"
    },
    "changed": "2.1.288",
    "audited": {
@@ -326,20 +326,20 @@
   },
   "hooks.patterns": {
    "checked": {
-    "release": "2.1.288",
-    "date": "2026-10-03"
+    "release": "2.1.289",
+    "date": "2026-10-05"
    },
-   "changed": "2.1.288",
+   "changed": "2.1.289",
    "audited": {
     "release": "2.1.288",
     "date": "2026-10-03"
    },
-   "text_hash": "sha256:af27725fe999e9b2206ee88574cf3bb0ab783c36513626c52b6eb67a1714676c"
+   "text_hash": "sha256:a3790e88228d2dfa99ec48075e9b8adbd658d02c0e9dbf0c009d3152be404d36"
   },
   "hooks.pitfalls": {
    "checked": {
-    "release": "2.1.288",
-    "date": "2026-10-03"
+    "release": "2.1.289",
+    "date": "2026-10-05"
    },
    "changed": "2.1.288",
    "audited": {
@@ -350,8 +350,8 @@
   },
   "lean.overview": {
    "checked": {
-    "release": "2.1.288",
-    "date": "2026-10-03"
+    "release": "2.1.289",
+    "date": "2026-10-05"
    },
    "changed": "2.1.219",
    "audited": {
@@ -362,8 +362,8 @@
   },
   "lean.measure": {
    "checked": {
-    "release": "2.1.288",
-    "date": "2026-10-03"
+    "release": "2.1.289",
+    "date": "2026-10-05"
    },
    "changed": "2.1.288",
    "audited": {
@@ -374,8 +374,8 @@
   },
   "lean.session-hygiene": {
    "checked": {
-    "release": "2.1.288",
-    "date": "2026-10-03"
+    "release": "2.1.289",
+    "date": "2026-10-05"
    },
    "changed": "2.1.288",
    "audited": {
@@ -386,8 +386,8 @@
   },
   "lean.caching": {
    "checked": {
-    "release": "2.1.288",
-    "date": "2026-10-03"
+    "release": "2.1.289",
+    "date": "2026-10-05"
    },
    "changed": "2.1.288",
    "audited": {
@@ -398,8 +398,8 @@
   },
   "lean.model-routing": {
    "checked": {
-    "release": "2.1.288",
-    "date": "2026-10-03"
+    "release": "2.1.289",
+    "date": "2026-10-05"
    },
    "changed": "2.1.288",
    "audited": {
@@ -410,20 +410,20 @@
   },
   "lean.mcp": {
    "checked": {
-    "release": "2.1.288",
-    "date": "2026-10-03"
+    "release": "2.1.289",
+    "date": "2026-10-05"
    },
-   "changed": "2.1.288",
+   "changed": "2.1.289",
    "audited": {
     "release": "2.1.288",
     "date": "2026-10-03"
    },
-   "text_hash": "sha256:fd38c0420ce1b18ec7e2b79de1df2aa54afeb9f6f33e2d5b9feaae5e32953b8b"
+   "text_hash": "sha256:3dfd4cd5e089bf8a4ed3c6f0fa09a7dfe76febb205aace92ae920ba6936a69fd"
   },
   "lean.ceremony": {
    "checked": {
-    "release": "2.1.288",
-    "date": "2026-10-03"
+    "release": "2.1.289",
+    "date": "2026-10-05"
    },
    "changed": "2.1.219",
    "audited": {
@@ -434,8 +434,8 @@
   },
   "lean.expensive-ops": {
    "checked": {
-    "release": "2.1.288",
-    "date": "2026-10-03"
+    "release": "2.1.289",
+    "date": "2026-10-05"
    },
    "changed": "2.1.288",
    "audited": {
@@ -446,8 +446,8 @@
   },
   "reading.overview": {
    "checked": {
-    "release": "2.1.288",
-    "date": "2026-10-03"
+    "release": "2.1.289",
+    "date": "2026-10-05"
    },
    "changed": "2.1.288",
    "audited": {
@@ -491,7 +491,7 @@
      "f7502a1bc45169da": "c753df52e18f6413",
      "d75d984d2fe7f531": "a46b2e8fd1fbb493",
      "12c70ab419889783": "2f7567a16a0d8aff",
-     "268db5d117ee05ae": "eef9a482aded6ccc",
+     "268db5d117ee05ae": "a94e486bfc99efe6",
      "d1a0c36f894fb592": "8a4ef933a85d546c",
      "e122683711828bc0": "2cb2e0a054bdfc68",
      "7883bb16a79d9798": "2f9d214b1b8af0e9",
@@ -508,7 +508,7 @@
      "c009757b73ca84bf": "7ee5dd06d3f4325c",
      "743167e7ef9b24c8": "2bc8fb78911f65aa",
      "bd4016e6bde9e6c8": "945af6cc58eb8711",
-     "f10ba4adb11a15f3": "45c461be9cd7d5b9",
+     "f10ba4adb11a15f3": "5f558d3746c4735c",
      "97f8c8f8e66e19b6": "3b265b960e99a710",
      "a30b3bc37c94b565": "b83b22f6a5643907",
      "a6f87b1b6a5ce981": "b37c836e8d00a2b4",
@@ -546,7 +546,7 @@
      "a8b91dacbf1f70bd": "15a255abd30e536b",
      "fabaccad216c5c03": "a71e1095a73b1ec7",
      "6f45d5462b22641d": "46dc6bb6472083f1",
-     "11f73dbb5b5d3362": "d77ed002664a0311",
+     "11f73dbb5b5d3362": "d4ec8176e42f5938",
      "aca748b469b6bbbd": "1af9c99d9060f075",
      "163d604bff2e9f65": "69a59ecb29694299",
      "2a369776153bae00": "faeea9edf227e53e",
@@ -556,7 +556,7 @@
      "65b655b0afbc88fe": "504c4c0ce9fa8a6f",
      "3259cb83ffbb3dbc": "7b2fe53bb429e133",
      "4ae01669fc292c44": "196e6b038cce3a37",
-     "ae3163327396663a": "f5bcad4af982ce59",
+     "ae3163327396663a": "89c0976a45ee4cfc",
      "72c63da42edeaddb": "0ea3b2fa493ad207",
      "c164c74c88f425fa": "c4c259c3315c072e",
      "900bd96702c388ce": "1cf77358eaa1c102",
@@ -569,8 +569,8 @@
      "89ef030f32170823": "ad3bd2f741394516",
      "90876573ef5bd34e": "a93a30bfd6fc361e",
      "e7219914f0c69da4": "07e72eda10d21412",
-     "247bbf234bb1e825": "a232895986d4d215",
-     "aa6cb2817497f755": "cc3e15703b3608da",
+     "247bbf234bb1e825": "dfcdc3668c2aca87",
+     "aa6cb2817497f755": "a257fde42352d77f",
      "39e7f838f528e499": "67bd44f672c3c420",
      "e42f86e8423936dd": "437230ab33886ce5",
      "34e4a9955375913a": "e7014263b18ecba7",
@@ -605,8 +605,8 @@
      "44d1cceccc2a21ff": "3eee3ad3cd79cf62",
      "a893dd599a969ac9": "e848c0002dd887c7",
      "21b7300973d5ccf5": "aca65f21864f2cec",
-     "1fc1fad9064b18f0": "37e2936c75dc47dd",
-     "6cc323c698e0f6b9": "5344ca6cd2964b38",
+     "1fc1fad9064b18f0": "85cf259e9de271d1",
+     "6cc323c698e0f6b9": "6c67fff90ea30dea",
      "ede79f099fb55629": "0b3d50e1c9285737"
     },
     "debug-your-config": {
@@ -694,10 +694,11 @@
      "ff8e0c1fa7033da3": "4893278fa67a995f",
      "4ff157a71716ff8f": "48f09b403be12644",
      "ea9105285910af6f": "8d34917fad292424",
-     "d3eddd9a7ed17f6b": "2abd64d1c8ff4fb2",
+     "d3eddd9a7ed17f6b": "d6fc90d4a7432b0e",
      "b27f2fd74bd980ad": "42f60ecddf51928d",
      "e33cdbca0cd039d2": "2d2b13c993a65414",
      "f126fdee488667be": "920604c3ae78e8a6",
+     "2c478490881fc7bd": "3fd0cb0274c102ed",
      "07b44027eefb59cd": "22e77b3dabb10629"
     },
     "memory": {
@@ -733,8 +734,10 @@
      "e0ee3443a637d635": "bccff5072249a45b",
      "de7b06c4a15e4659": "9ccf52f031240ecf",
      "ed34a62baba2acb9": "5e18388484bba46e",
-     "6dc55a8c82214c85": "c5e9c1781653c375",
-     "f117573d5e5484ab": "e19f6f9f05017eb2",
+     "6dc55a8c82214c85": "5ef9ad720401e2de",
+     "f117573d5e5484ab": "c9fe5db5612318e8",
+     "757bab4712a50bc6": "40b79e4ce26b1c16",
+     "68b014c65f697724": "e441c42b3bbd89f0",
      "231218af0dcfafcc": "e81401eda93adeac",
      "10b2af67544611a2": "c8feaf0f81c82e0c",
      "1f067d5dda9bbbf5": "f1a542288b689db4",
@@ -768,19 +771,19 @@
     }
    },
    "snapshot": {
-    "context-window": "2.1.288",
-    "costs": "2.1.288",
-    "mcp": "2.1.288",
-    "commands": "2.1.288",
-    "features-overview": "2.1.288",
-    "debug-your-config": "2.1.288",
-    "best-practices": "2.1.288",
-    "statusline": "2.1.288",
-    "interactive-mode": "2.1.288",
-    "env-vars": "2.1.288",
-    "memory": "2.1.288",
-    "skills": "2.1.288",
-    "monitoring-usage": "2.1.288"
+    "context-window": "2.1.289",
+    "costs": "2.1.289",
+    "mcp": "2.1.289",
+    "commands": "2.1.289",
+    "features-overview": "2.1.289",
+    "debug-your-config": "2.1.289",
+    "best-practices": "2.1.289",
+    "statusline": "2.1.289",
+    "interactive-mode": "2.1.289",
+    "env-vars": "2.1.289",
+    "memory": "2.1.289",
+    "skills": "2.1.289",
+    "monitoring-usage": "2.1.289"
    }
   },
   "skills": {
@@ -870,10 +873,13 @@
      "eb7f5cbf032d6e07": "112b0979cc692b4d",
      "cc3691ec3d58d781": "9609082c1002a26b",
      "1b6effe20fc3c8ba": "97924659db52228c",
-     "6dc55a8c82214c85": "c5e9c1781653c375",
+     "6dc55a8c82214c85": "5ef9ad720401e2de",
      "410eebc694a662b3": "59ee32c7bad80ff6",
-     "f117573d5e5484ab": "e19f6f9f05017eb2",
+     "f117573d5e5484ab": "c9fe5db5612318e8",
      "54826e7c898ddeb3": "e57e4553e3198d2d",
+     "d33f9b7419bca0d5": "7bcebd30feae4a20",
+     "757bab4712a50bc6": "40b79e4ce26b1c16",
+     "68b014c65f697724": "e441c42b3bbd89f0",
      "f9085a0b9c1f3dce": "02132b9648ab4cdd",
      "231218af0dcfafcc": "e81401eda93adeac",
      "26ffa3691b004d0c": "dcc27fc27624f600",
@@ -985,10 +991,10 @@
      "c6796303eeba855c": "f62ffbccf1cd6c06",
      "17d5bc4165f714d4": "d0188e4a3694555a",
      "69fe16bb0017ad89": "87d8323a66f7fa74",
-     "88034b4d1bead40e": "1f8e718475d98ff4",
+     "88034b4d1bead40e": "3aad50ac74237e9a",
      "02d94c76da435deb": "d88bcdbc28c97e1f",
      "434deb936852a917": "26562531a1b033fd",
-     "26b66e99f1a6ba83": "a9c42cc33924fb94",
+     "26b66e99f1a6ba83": "3579c5fe878308af",
      "c6b67fb99e465d8e": "c4ac37383bcee635",
      "32ecd083ae1babc8": "b1c9eaa956506dbe",
      "e0beb393b6ead1d7": "6aee9eb9febfdeaf",
@@ -1036,7 +1042,7 @@
      "a68d5291f7c74aa6": "ca0ad98a2e3c411e",
      "b42933c7dcd6cd88": "5ab02d31a826d029",
      "1a9bfefbfabadda3": "55e7446137168a9e",
-     "afc75960b46982f0": "638f7f6907ac65bd",
+     "afc75960b46982f0": "a70835228f726c08",
      "27fa3fcf231c3433": "29bebe5d15f4dbab",
      "6bc148a66bac171d": "f4447392583b7ab4",
      "1a2fd1400eafd0b7": "892ab8f39e0c7cc8",
@@ -1128,6 +1134,7 @@
      "b7194666ee613134": "92ffe6764c357004",
      "c4fdf2b429da7176": "728791c2b8e4d564",
      "ed3c104480448a84": "9dd01dd28335186a",
+     "375d120b33f88ed2": "cb50f0855a31edcb",
      "13d661184ca85066": "c29a2fb1aeac30ac",
      "88d89a114797a449": "a128055b00b8bd6f",
      "71577cdf645b3c8f": "3192710f521013df",
@@ -1151,16 +1158,17 @@
      "3bb07218b16eafd2": "0fd28777556bc1ae",
      "e53267c6e5fced59": "eb0c892c6232a097",
      "25010cb4642dfd22": "bc6d05cbcab1bb5d",
-     "982c59d78d3813cc": "8f0307dddb60546c",
+     "982c59d78d3813cc": "a555fed071a2bdb0",
      "ab55632043d4f6d0": "3edc43de686e1901",
      "715cbb75da9d7f51": "060dea5fbe8793a4",
      "144aa666a029212c": "e51e623eb663eeff",
      "3201d1e1b722e014": "be4bb414671e49e1",
      "0c40171ed3b6f1cc": "eb567762efe99643",
      "ff8e0c1fa7033da3": "4893278fa67a995f",
-     "730eccb989731f64": "5023ef864abfa5f3",
+     "730eccb989731f64": "9f680a6056a3918e",
      "50c045f8e6be7920": "0a0b1a5aba50f454",
      "91cd0b41a3668a49": "93cc344e79fa143f",
+     "c7c5c12a232d4b16": "0124592d72b4a510",
      "f126fdee488667be": "920604c3ae78e8a6"
     },
     "auto-mode-config": {
@@ -1179,7 +1187,7 @@
      "4b77914c2831235e": "fa1af95aee14a7d6",
      "894852664f695946": "a68e954b656e758d",
      "5066cf2d81cde0b4": "0865206720e84343",
-     "a22f38878b3db507": "a7c19096e20808f5",
+     "a22f38878b3db507": "3c09716ba3ec9c14",
      "5584a79116274ebd": "57ee7839a7aaf478",
      "e88f72bb1b209ba8": "dfd71a7b67879278",
      "806ec2cd5061e710": "2f62dbb84cc54807",
@@ -1227,15 +1235,15 @@
     }
    },
    "snapshot": {
-    "skills": "2.1.288",
-    "commands": "2.1.288",
-    "plugins/components": "2.1.288",
-    "plugins/loading": "2.1.288",
-    "claude-directory": "2.1.288",
-    "settings-reference": "2.1.288",
-    "env-vars": "2.1.288",
-    "auto-mode-config": "2.1.288",
-    "model-config": "2.1.288"
+    "skills": "2.1.289",
+    "commands": "2.1.289",
+    "plugins/components": "2.1.289",
+    "plugins/loading": "2.1.289",
+    "claude-directory": "2.1.289",
+    "settings-reference": "2.1.289",
+    "env-vars": "2.1.289",
+    "auto-mode-config": "2.1.289",
+    "model-config": "2.1.289"
    }
   },
   "subagents": {
@@ -1288,7 +1296,7 @@
      "0cd6e25160409649": "d5c94255f2e062d4",
      "2347a95998d96f73": "5a242252d0486488",
      "6f0c58a655e80973": "5e62173ab830d419",
-     "c75e17faa2aea324": "10720c46d4e82134",
+     "c75e17faa2aea324": "5808718eb0743eb4",
      "ec892c30571afeef": "43da183c5b57a935",
      "6c220cb77e95ce8f": "cf21014198fa29e0",
      "078f53332ab39e6e": "65b2e18f2df3d2ad",
@@ -1385,7 +1393,7 @@
      "18412ef34667ab4d": "b8e920a812122a00",
      "4b77914c2831235e": "fa1af95aee14a7d6",
      "894852664f695946": "a68e954b656e758d",
-     "a22f38878b3db507": "a7c19096e20808f5",
+     "a22f38878b3db507": "3c09716ba3ec9c14",
      "806ec2cd5061e710": "2f62dbb84cc54807",
      "044daf45efcde2f7": "4098062ca75af7db",
      "5e2db4dafc4fbfb4": "21822163e77c9e01",
@@ -1508,7 +1516,7 @@
      "081c4dfb5b88a20c": "ae5fd73ad536f677",
      "a0698d315983dbcf": "3136ec7f3c616e42",
      "5f42c52a3c4fe429": "ef4152c7195cac09",
-     "982c59d78d3813cc": "8f0307dddb60546c",
+     "982c59d78d3813cc": "a555fed071a2bdb0",
      "08e61401865a77ac": "0df8146c401e0f8b",
      "06b7b0a11da9f4e1": "c62bae6be3fe70a7",
      "e8b9421153f1fc23": "d5b1ef1b14744568",
@@ -1523,9 +1531,10 @@
      "f96001d9bad223e5": "80c13563cb8cd778",
      "ce561021fb953721": "f07ef2d045bd40d2",
      "70af4b7a49d1d262": "ee9205e56f20bc8e",
-     "d3eddd9a7ed17f6b": "2abd64d1c8ff4fb2",
-     "730eccb989731f64": "5023ef864abfa5f3",
+     "d3eddd9a7ed17f6b": "d6fc90d4a7432b0e",
+     "730eccb989731f64": "9f680a6056a3918e",
      "f0d25667880c456d": "81b712b8c90e0b76",
+     "c7c5c12a232d4b16": "0124592d72b4a510",
      "f126fdee488667be": "920604c3ae78e8a6"
     },
     "tools-reference": {
@@ -1569,6 +1578,7 @@
      "5fadbf10129a4ae6": "20aa2ae6301f7c10",
      "ed381e9cb9467878": "b0f1714b0690c246",
      "4c96244e1a9cf310": "fe2c760b06a1ab7a",
+     "44738fa3632f3d7f": "d98a2b28d3eb5cb0",
      "ebd0985c0a189e9b": "5ee3ccdc9d28f58d",
      "f1f64c155227986c": "90110bf1fb86af16",
      "baa4ea73e866318b": "f2a8a1dbb25fff52",
@@ -1653,7 +1663,7 @@
      "a68d5291f7c74aa6": "ca0ad98a2e3c411e",
      "b42933c7dcd6cd88": "5ab02d31a826d029",
      "1a9bfefbfabadda3": "55e7446137168a9e",
-     "afc75960b46982f0": "638f7f6907ac65bd",
+     "afc75960b46982f0": "a70835228f726c08",
      "effeefd8012e9034": "213a13d353cce48b",
      "27fa3fcf231c3433": "29bebe5d15f4dbab",
      "6bc148a66bac171d": "f4447392583b7ab4",
@@ -1669,7 +1679,7 @@
      "c960b10197f3152e": "bd671f378caa241a",
      "a07118b9b35b7a4f": "3a5130f43f941b6c",
      "6448fedd783cfee8": "8e82a34bc3fc2a96",
-     "f880230cf425eaf1": "082a1361e5636dba",
+     "f880230cf425eaf1": "2a8293d5669145ed",
      "de68bf6dd989c000": "5125c57584e64f25",
      "e8cc12eb1bacbab7": "af96c6cabe5dd6c0",
      "d46bbc193b736734": "2299e64b50662005",
@@ -1808,16 +1818,16 @@
     }
    },
    "snapshot": {
-    "sub-agents": "2.1.288",
-    "agents": "2.1.288",
-    "workflows": "2.1.288",
-    "agent-teams": "2.1.288",
-    "model-config": "2.1.288",
-    "env-vars": "2.1.288",
-    "tools-reference": "2.1.288",
-    "prompt-caching": "2.1.288",
-    "settings-reference": "2.1.288",
-    "cli-reference": "2.1.288"
+    "sub-agents": "2.1.289",
+    "agents": "2.1.289",
+    "workflows": "2.1.289",
+    "agent-teams": "2.1.289",
+    "model-config": "2.1.289",
+    "env-vars": "2.1.289",
+    "tools-reference": "2.1.289",
+    "prompt-caching": "2.1.289",
+    "settings-reference": "2.1.289",
+    "cli-reference": "2.1.289"
    }
   },
   "rules": {
@@ -2049,13 +2059,20 @@
      "334b59cc561c5dcd": "3e9cb8559312dbec",
      "c97cfb42af54426b": "0e28199c8784d7b3",
      "37e314858d325486": "db3b63e5ac35752f",
+     "4376cd8c75fd54e1": "fc3b29015814076c",
+     "19e57ae986c2c145": "0d291438c40da9b2",
+     "53a99f703ccfd42f": "119d2893c8e36e74",
+     "8a7eeb4b6209ebb1": "b66d3bf4a1b25838",
+     "b62521ef4a9758b5": "c456829eca9df6a3",
+     "c826cf872b7643db": "b5f8deead003507d",
+     "4b6952ff4f2b2d61": "aea9e44165fd6fe6",
      "5a88723a9fe30c41": "f0b17b7a4a566372",
      "d4566fa3f0517115": "b96688f47efa4fa4",
      "315fa74c6c524dff": "fe9fdd3686a3bd2d",
      "a68d5291f7c74aa6": "ca0ad98a2e3c411e",
      "b42933c7dcd6cd88": "5ab02d31a826d029",
      "1a9bfefbfabadda3": "55e7446137168a9e",
-     "afc75960b46982f0": "638f7f6907ac65bd",
+     "afc75960b46982f0": "a70835228f726c08",
      "effeefd8012e9034": "213a13d353cce48b",
      "bacfce3c5431fe0d": "32fd57c416e17433",
      "9864ea070c0d73b2": "5366a9c3acb43de0",
@@ -2074,7 +2091,7 @@
      "a07118b9b35b7a4f": "3a5130f43f941b6c",
      "6448fedd783cfee8": "8e82a34bc3fc2a96",
      "227cd6f0fa15c67d": "c1159d863d896e08",
-     "f880230cf425eaf1": "082a1361e5636dba",
+     "f880230cf425eaf1": "2a8293d5669145ed",
      "c4a32489569f994c": "ae50d6a88c3deab5",
      "de68bf6dd989c000": "5125c57584e64f25",
      "e596b412fbf4b057": "2c53acc44fb3622c",
@@ -2111,10 +2128,22 @@
      "b7fc7639c0b31ce9": "8fc5b22c603b8683",
      "ca88098dd2bf4eaf": "d60eef8a00abd2b8",
      "0b1cb0c1c542900e": "76fff150fca0c6a8",
+     "074df602fb23be9a": "cbdf463303b4be34",
      "0bbf409273546a91": "8cddea657ac10126",
      "112d57ab4563d265": "cb531194337f1683",
+     "678894a91ffe892b": "ffbb7350a44e38ea",
+     "95395778d2b709c0": "c4c6737324d0e0a4",
+     "772eb8064275d93b": "feea33ed5a4ed36d",
+     "13e9b80f9acfb342": "a8c244f0920287dc",
+     "2e088a50dbff5bdf": "778991232b58dde1",
+     "0628470d121e80fd": "f06d6a5ce6836cab",
      "02a0dbf4f817b023": "95f65d6af978721b",
      "032e9c784b39f0ef": "8c59e06801172e05",
+     "49fa04372ed5bf3e": "0d78c2a0fcc443c1",
+     "d391cb2489164d06": "36d0942400f087d8",
+     "dfc2014c76935475": "f43ca82aceb55f40",
+     "a858151e4bc8897e": "fadede267f6a4481",
+     "51960cf6ecd06835": "b76db7ec01a384b7",
      "b61aabd8698b52ec": "d54d5ee050addf30",
      "a4e9d96b6acc7c9c": "4304434747d46d69",
      "f0bc4898d544ae73": "ab2741eddaae80f5",
@@ -2257,6 +2286,7 @@
      "3dcab7b7c21f7ce0": "ecd4b7c233eaa7e3",
      "6159a2c9e0862b08": "d33a67eccb230d39",
      "5e4e2d6a6dbdaa83": "18caf725eadada90",
+     "aafae3258f03da15": "bb15bca48ab4f836",
      "d1225d3a7653c00b": "8dbc97e8c95fa80c",
      "d10980bacc79127f": "c8f2d427d9b3cc97",
      "bdd2a770d19aaa38": "7530345985eba6d3",
@@ -2281,6 +2311,8 @@
      "445611c421e212c1": "e5c49747dc445186",
      "0c9b63445c9f16b0": "55759665324d45cd",
      "65ba5429c1bfbd4a": "f93f2f0aa9bb6a71",
+     "d0047fd203d13e2b": "accded7c67859812",
+     "20b97f1e734b87fd": "9c21b020ad5d21f9",
      "21fc162fd7ac2d32": "526d8a310cc9dd18",
      "1018c418eb141b51": "865d9403d0cdb3c1",
      "3ea11dda385931e9": "60e43e2b5e4087f1",
@@ -2299,20 +2331,31 @@
      "d4a0175b412021f5": "3ce30a34f5aaae47"
     },
     "permission-modes": {
-     "11dc10d56e0505fa": "dd777198e6adb400",
+     "a3040a21aa2de0a4": "bc2f61874241b484",
+     "11dc10d56e0505fa": "0bb462829b77fdc4",
+     "3bb014c448e81820": "b4c6f2be2ed0f5c4",
+     "e7981fc3f1981d6f": "cdc32a7bd7559df8",
+     "31ffd50ca27350cc": "3449f444858162dc",
+     "85130c0bf694226d": "948ec5e1375508c0",
+     "5de28cd254f7e48b": "efeee88309575aeb",
+     "096422562239ec0a": "a95015ce8058843b",
      "2a4d51244ff0d920": "5dc31a875bf576c0",
      "ca3c773b399860c7": "ba17829aaec2a45f",
+     "6f2f814a7ac3448d": "042447e97e76a60c",
      "38a3fb4cbc693cf7": "94fd59ba128413ae",
+     "97a0d0c7b745c82c": "3b63e14925e7d758",
+     "c4812b5cfcfaf408": "989e1b310aeb1eea",
      "be2947ef923c845c": "28b5ca56f3b99f91",
      "fe503793ba30a30f": "d5194403014be014",
+     "a472de1858965acc": "efebf466eeebb90a",
      "6ae8bd950f5d1b71": "502ea49d08bc6d39",
-     "24f8972792f82e94": "b9b8b9083ac4764c"
+     "24f8972792f82e94": "c5bbfa3188b43dd9"
     },
     "claude-directory": {
      "12422515e7a19cc5": "a9f9efe4ba4ca51e",
      "8575096d3ecc863c": "ec75196b4c346655",
      "69fe16bb0017ad89": "87d8323a66f7fa74",
-     "88034b4d1bead40e": "1f8e718475d98ff4",
+     "88034b4d1bead40e": "3aad50ac74237e9a",
      "02d94c76da435deb": "d88bcdbc28c97e1f",
      "434deb936852a917": "26562531a1b033fd",
      "7be621b316c1d78b": "7be63b2559677a27",
@@ -2356,22 +2399,29 @@
      "910bbc4f51ab608f": "57057b7332f9ffb5",
      "3f20e090b7305ac2": "8b9fa7a24ac231ad",
      "fd01d50a3c852ae6": "9daec21333b41b9e",
+     "cda1f28e790dc881": "0a74db6c7029677e",
      "a6a5d30213d0d79f": "4773aa447f1e7cb7",
      "3bb07218b16eafd2": "0fd28777556bc1ae",
      "e53267c6e5fced59": "eb0c892c6232a097",
      "25010cb4642dfd22": "bc6d05cbcab1bb5d",
+     "8bca715d1862d166": "0f69f36d1a335e63",
+     "11e2a446781981c8": "d3ba5829a974cb7e",
+     "c7c5c12a232d4b16": "0124592d72b4a510",
+     "aee9bae8c997def3": "325d9c25f9f128c8",
+     "3a03a40f3397ce51": "6fb1f0acc0e442e9",
+     "f126fdee488667be": "920604c3ae78e8a6",
      "07b44027eefb59cd": "22e77b3dabb10629"
     }
    },
    "snapshot": {
-    "memory": "2.1.288",
-    "settings": "2.1.288",
-    "permissions": "2.1.288",
-    "settings-reference": "2.1.288",
-    "permission-modes": "2.1.288",
-    "claude-directory": "2.1.288",
-    "large-codebases": "2.1.288",
-    "env-vars": "2.1.288"
+    "memory": "2.1.289",
+    "settings": "2.1.289",
+    "permissions": "2.1.289",
+    "settings-reference": "2.1.289",
+    "permission-modes": "2.1.289",
+    "claude-directory": "2.1.289",
+    "large-codebases": "2.1.289",
+    "env-vars": "2.1.289"
    }
   },
   "hooks": {
@@ -2447,9 +2497,9 @@
      "6bec83a6bea10552": "71b3b5e635ece981",
      "85033fff83de6885": "96dbaa270f313bc8",
      "cace015ce2b13130": "7ed85284213c8ec2",
-     "310847e404791eba": "06a32bb2145dd846",
+     "310847e404791eba": "43af97949721bbe2",
      "1c8a963034b94b01": "b10de8b05af91c85",
-     "1d837a7d000782ac": "96744ec819b00edd",
+     "1d837a7d000782ac": "513dbc4dfd0738f5",
      "425b4e87464b141d": "17399588db05d145",
      "671245adf232a3ab": "82a8d33ed4306f50",
      "5a5012e518c307cc": "344ee70ed61f85d5",
@@ -2681,18 +2731,18 @@
      "28514103d902fa53": "8eced22d17872379",
      "87104ac5543853b7": "0617c030bbcb3948",
      "2f22ede2c68f2733": "7eec537df935ed77",
-     "2f8965824dc0adbe": "704085db861d52d1",
+     "2f8965824dc0adbe": "f79009a872e60cd8",
      "643824ee33b2f800": "a6367c49b008a440",
      "4b38aa83d5702e29": "07c35e58aa674994",
      "7c99286ab6e57f4f": "0d898a58dd43157a",
      "b7371acfa289399b": "5ac571acaa96c3c3",
      "a047757f93122553": "0f4bd69e8d959e23",
-     "f2accbeb6aa41948": "c8733f56635aaa41",
+     "f2accbeb6aa41948": "982576a317af6ca8",
      "13ba0e8c56222fe0": "ea340a9816b1fc52",
      "4a07cb8f7ab4cc7e": "7669b5a930d15ae2",
      "d8ec518807923136": "2a78fd1c40571e16",
      "258f5ea3f1790189": "ef3828bd788427e7",
-     "fb997096e63caf70": "3d8ca3fd44d7b1c0",
+     "fb997096e63caf70": "14b02d8358d5d4da",
      "f461448e6b60dfee": "11042ee83bf5e961",
      "c0d7b4b4e2952dc7": "8867b737582e62df",
      "658dc64f4f3e9990": "e0e06d4c34d435b7",
@@ -2774,7 +2824,7 @@
      "fd5442ee0e46a66c": "f537b95020fbcf82",
      "f8030a0c9bdff466": "4313e65c963bdccd",
      "11b199afe656874a": "6bb490af8f2261f0",
-     "ebe1aefc3c604975": "ff5ae1fde3381445",
+     "ebe1aefc3c604975": "146d4b77ddeac490",
      "3432f5b9b78f64b8": "7cf458dba2ef8f21",
      "59da42b30b65f5db": "e677203117426a6a",
      "b18fd4bba60df6d0": "6360816b8232ec0d",
@@ -3009,7 +3059,7 @@
      "5c749ddf18e14ee6": "ff09b1a6ca6b93df",
      "4b51692010a6dd5e": "9f22d8d09aae8e1e",
      "6454a07156bfec26": "5be913826b143c63",
-     "491f83e6672ece52": "ed33e4ca0ec9c26d",
+     "491f83e6672ece52": "b76ce1700e825c51",
      "14688a9c683caea3": "2ec3550842d62f0b",
      "4123f9e43aa986e8": "dc6550bda129a480",
      "992cf03ba3ee13f6": "88253afc70f3e5c4"
@@ -3043,7 +3093,7 @@
      "3fed26d67c143812": "485ac0693085b82c",
      "d0310315c8aaa531": "e7530a0454435377",
      "6448fedd783cfee8": "8e82a34bc3fc2a96",
-     "f880230cf425eaf1": "082a1361e5636dba",
+     "f880230cf425eaf1": "2a8293d5669145ed",
      "de68bf6dd989c000": "5125c57584e64f25",
      "e8cc12eb1bacbab7": "af96c6cabe5dd6c0",
      "d46bbc193b736734": "2299e64b50662005",
@@ -3162,7 +3212,7 @@
      "1e74c1b8d6810dae": "05f19fe6178ba14e",
      "cbec811ebd160d7c": "8d9c41f091104b83",
      "27afede5f486fe1d": "a442dc15f601c5a4",
-     "982c59d78d3813cc": "8f0307dddb60546c",
+     "982c59d78d3813cc": "a555fed071a2bdb0",
      "2abe058f82565a24": "5e164d6bcce073e8",
      "06b7b0a11da9f4e1": "c62bae6be3fe70a7",
      "c2af29c212c199d4": "71af5bac9f100d74",
@@ -3175,17 +3225,18 @@
      "144aa666a029212c": "e51e623eb663eeff",
      "f96001d9bad223e5": "80c13563cb8cd778",
      "ce561021fb953721": "f07ef2d045bd40d2",
-     "730eccb989731f64": "5023ef864abfa5f3",
+     "730eccb989731f64": "9f680a6056a3918e",
      "ae7d4fc131ffa7bf": "23762dcb69dd3c6d",
      "f0d25667880c456d": "81b712b8c90e0b76",
+     "c7c5c12a232d4b16": "0124592d72b4a510",
      "f126fdee488667be": "920604c3ae78e8a6"
     }
    },
    "snapshot": {
-    "hooks": "2.1.288",
-    "hooks-guide": "2.1.288",
-    "settings-reference": "2.1.288",
-    "env-vars": "2.1.288"
+    "hooks": "2.1.289",
+    "hooks-guide": "2.1.289",
+    "settings-reference": "2.1.289",
+    "env-vars": "2.1.289"
    }
   },
   "models": {
@@ -3265,7 +3316,7 @@
      "4b77914c2831235e": "fa1af95aee14a7d6",
      "894852664f695946": "a68e954b656e758d",
      "5066cf2d81cde0b4": "0865206720e84343",
-     "a22f38878b3db507": "a7c19096e20808f5",
+     "a22f38878b3db507": "3c09716ba3ec9c14",
      "5584a79116274ebd": "57ee7839a7aaf478",
      "7dafe321728543c7": "d42d40ebcba39173",
      "920aa220a33208ca": "bfb61b47e32d8cb0",
@@ -3305,7 +3356,7 @@
      "a7fb0f46f10c82fa": "b8c22acd7069d18c",
      "a24905d14d044330": "8a777da5c4eec6a0",
      "90db38c6dca28f86": "35c73e355170145e",
-     "673015cf87a62557": "2fdbf5c8dbf458cb",
+     "673015cf87a62557": "0f36c217d46251a0",
      "8e197b18b66b5c79": "9c72de9f6313e048",
      "c835d737424161bb": "bfdfaae7cab6d2a2",
      "8ed4637af64fc8ea": "73627b56752163a2",
@@ -3368,8 +3419,8 @@
      "ab989810ca992a28": "3758ca3144829623",
      "f5e98fc5c877cb53": "7696b3b035e79869",
      "96d8ba436df8a24c": "7c00f9280a72f0f3",
-     "d0b0e1c28a87b691": "1cbcbcf631315b6c",
-     "66834f7394241885": "beb158b60a7cb616",
+     "d0b0e1c28a87b691": "835460c984d2e529",
+     "66834f7394241885": "695d30da0e7af972",
      "6a1bdefee4009ddf": "5015a8fe104ea32a",
      "69ef293abc4548ba": "89eda01f8a2ce370",
      "711139917fe12124": "10773d97a3dbc58c",
@@ -3665,7 +3716,7 @@
      "f7502a1bc45169da": "c753df52e18f6413",
      "d75d984d2fe7f531": "a46b2e8fd1fbb493",
      "12c70ab419889783": "2f7567a16a0d8aff",
-     "268db5d117ee05ae": "eef9a482aded6ccc",
+     "268db5d117ee05ae": "a94e486bfc99efe6",
      "d1a0c36f894fb592": "8a4ef933a85d546c",
      "e122683711828bc0": "2cb2e0a054bdfc68",
      "7883bb16a79d9798": "2f9d214b1b8af0e9",
@@ -3682,7 +3733,7 @@
      "c009757b73ca84bf": "7ee5dd06d3f4325c",
      "743167e7ef9b24c8": "2bc8fb78911f65aa",
      "bd4016e6bde9e6c8": "945af6cc58eb8711",
-     "f10ba4adb11a15f3": "45c461be9cd7d5b9",
+     "f10ba4adb11a15f3": "5f558d3746c4735c",
      "97f8c8f8e66e19b6": "3b265b960e99a710",
      "a30b3bc37c94b565": "b83b22f6a5643907",
      "a6f87b1b6a5ce981": "b37c836e8d00a2b4",
@@ -3756,7 +3807,7 @@
      "081c4dfb5b88a20c": "ae5fd73ad536f677",
      "a0698d315983dbcf": "3136ec7f3c616e42",
      "5f42c52a3c4fe429": "ef4152c7195cac09",
-     "982c59d78d3813cc": "8f0307dddb60546c",
+     "982c59d78d3813cc": "a555fed071a2bdb0",
      "c2af29c212c199d4": "71af5bac9f100d74",
      "2c1032d3df9f7587": "1617b58fcfed0377",
      "074259574afd85c3": "c74df1d5926a2e2e",
@@ -3767,6 +3818,7 @@
      "70af4b7a49d1d262": "ee9205e56f20bc8e",
      "b27f2fd74bd980ad": "42f60ecddf51928d",
      "ae7d4fc131ffa7bf": "23762dcb69dd3c6d",
+     "c7c5c12a232d4b16": "0124592d72b4a510",
      "f126fdee488667be": "920604c3ae78e8a6"
     },
     "settings-reference": {
@@ -3809,7 +3861,7 @@
      "a68d5291f7c74aa6": "ca0ad98a2e3c411e",
      "b42933c7dcd6cd88": "5ab02d31a826d029",
      "1a9bfefbfabadda3": "55e7446137168a9e",
-     "afc75960b46982f0": "638f7f6907ac65bd",
+     "afc75960b46982f0": "a70835228f726c08",
      "bacfce3c5431fe0d": "32fd57c416e17433",
      "9864ea070c0d73b2": "5366a9c3acb43de0",
      "27fa3fcf231c3433": "29bebe5d15f4dbab",
@@ -3913,19 +3965,19 @@
     }
    },
    "snapshot": {
-    "prompt-caching": "2.1.288",
-    "model-config": "2.1.288",
-    "fast-mode": "2.1.288",
-    "advisor": "2.1.288",
-    "platform:about-claude/pricing": "2.1.288",
-    "platform:about-claude/models/overview": "2.1.288",
-    "platform:about-claude/model-deprecations": "2.1.288",
-    "platform:build-with-claude/prompt-caching": "2.1.288",
-    "platform:models/haiku-4-5/overview": "2.1.288",
-    "costs": "2.1.288",
-    "env-vars": "2.1.288",
-    "settings-reference": "2.1.288",
-    "commands": "2.1.288"
+    "prompt-caching": "2.1.289",
+    "model-config": "2.1.289",
+    "fast-mode": "2.1.289",
+    "advisor": "2.1.289",
+    "platform:about-claude/pricing": "2.1.289",
+    "platform:about-claude/models/overview": "2.1.289",
+    "platform:about-claude/model-deprecations": "2.1.289",
+    "platform:build-with-claude/prompt-caching": "2.1.289",
+    "platform:models/haiku-4-5/overview": "2.1.289",
+    "costs": "2.1.289",
+    "env-vars": "2.1.289",
+    "settings-reference": "2.1.289",
+    "commands": "2.1.289"
    }
   }
  },

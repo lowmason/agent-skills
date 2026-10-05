@@ -3,7 +3,7 @@
 **Skills · slash commands · subagents · rules · hooks — built and run on a token budget**
 
 <!-- cc-guide:stamp -->
-> Checked against the Claude Code docs and changelog through 2.1.288 on 2026-10-03; oldest full re-verification 2026-10-03, at 2.1.288.
+> Checked against the Claude Code docs and changelog through 2.1.289 on 2026-10-05; oldest full re-verification 2026-10-03, at 2.1.288.
 <!-- /cc-guide:stamp -->
 
 > First verified in July 2026, at Claude Code 2.1.219, 58 releases before the full re-verification at 2.1.288 against the official documentation (code.claude.com/docs) and Anthropic's pricing pages. Claude Code changes quickly: items marked ⚠ are the most version-sensitive — confirm them against your installed version (`claude --version`, `/doctor`) before depending on exact numbers or field names.
@@ -92,7 +92,7 @@ Among the first three, a same-name skill shadows the lower-precedence one. Skill
 | `context: fork` | Run the body in an isolated subagent that doesn't see the conversation — the instructions must stand alone |
 | `agent` | Which agent type executes a forked skill (default `general-purpose`) |
 | `background` | For forked skills: `false` blocks the turn for the result; `true` (default, 2.1.218+) runs in background ⚠ |
-| `disable-model-invocation` | `true` = only manual `/name` invocation, and the skill leaves the listing entirely — use for side-effecting workflows |
+| `disable-model-invocation` | `true` = Claude never runs the skill on its own, and the skill leaves the listing entirely — use for side-effecting workflows. `/name` at the start of a message runs it; `/name` later in a message only permits Claude to run it while answering that message, so write the bare name to mention it without permitting a run ⚠ |
 | `user-invocable` | `false` = Claude-only: hidden from the `/` menu, and typing `/name` won't run it |
 | `paths` | Globs restricting when the skill is auto-loaded |
 | `hooks` | Hooks registered when the skill is invoked; they stay active for the rest of the session (same JSON shape as settings; `once: true` is honored only here) |
@@ -256,7 +256,7 @@ Rules are discovered recursively, so subdirectory organization works. A symlinke
 ### Auto memory
 <!-- cc: rules.auto-memory -->
 
-Claude Code keeps per-project memory in `~/.claude/projects/<project>/memory/`. The first 200 lines / 25 KB of `MEMORY.md` load every session; topic files load on demand. Keep `MEMORY.md` an index of one-line pointers and let the detail live in topic files.
+Claude Code keeps per-project memory in `~/.claude/projects/<project>/memory/`. The first 200 lines / 25 KB of `MEMORY.md` load every session; topic files load on demand. Keep `MEMORY.md` an index of one-line pointers and let the detail live in topic files. Claude's own config directory is a protected path, but the markdown files in this memory directory are exempt, so Claude's memory writes don't wait on approval, except in a session started with `--restricted` ⚠.
 
 ### Settings precedence and permission rules
 <!-- cc: rules.settings -->
@@ -269,8 +269,11 @@ Permissions **merge across levels** — a deny anywhere wins; no other level can
 - Word boundaries matter: `Bash(ls *)` matches `ls -la` but not `lsof`; `Bash(ls*)` matches both.
 - Compound commands are split on `&&`, `||`, `;`, `|`, `|&`, `&`, and newlines: an allow rule must match every part, while a deny or ask rule fires if any part matches — even inside `$()` or a subshell.
 - File rules use gitignore-style paths: `Read(./.env)`, `Read(./secrets/**)`, `//abs/path` (filesystem root), `~/path`. A single leading slash is **not** absolute: `/path` anchors at the settings file's own root.
+- On Windows with Git Bash installed, any Bash deny rule, scoped or bare, from a settings file or `--disallowedTools`, also turns the PowerShell tool off for the session, since a Bash rule can't restrict PowerShell. To keep PowerShell on, set `CLAUDE_CODE_USE_POWERSHELL_TOOL=1` or add a scoped `PowerShell(…)` rule of your own ⚠.
 
-Pair permission rules with hooks. In Manual mode an allowlist makes `uv run …` frictionless; in auto mode — the default starting mode since 2.1.283 — broad rules such as package-manager run commands are set aside and a classifier reviews those calls instead (on API and Enterprise billing its calls count toward your usage) ⚠. The hook that makes `pip install` impossible holds in every mode.
+`CLAUDE_CODE_SUBPROCESS_ENV_SCRUB=1` strips credentials, recognized by variable name or value, from the environments of Bash commands, hooks, and stdio MCP servers: a layer under permission rules, not a replacement. It deliberately keeps the GitHub token variables (`GITHUB_TOKEN`, `GH_TOKEN`, and the Enterprise pair) and `HTTP_PROXY`/`HTTPS_PROXY`, even a proxy URL carrying a username and password. Remove those yourself: list the GitHub variables under `sandbox.credentials.envVars` with `"mode": "deny"`, or `"mask"` with `"injectHosts": ["api.github.com"]` so `gh` keeps authenticating (mask entries count only from user or managed settings), and keep credentials out of proxy URLs. `sandbox.credentials` covers sandboxed commands only, so hooks and MCP servers still inherit whatever the scrub leaves ⚠.
+
+Pair permission rules with hooks. In Manual mode an allowlist makes `uv run …` frictionless; in auto mode — the default starting mode since 2.1.283 — broad rules such as package-manager run commands are set aside and a classifier reviews those calls instead (on API and Enterprise billing its calls count toward your usage) ⚠. The first session after an install or upgrade can start in another mode, and so can every run in a clean CI container or through a gateway token with no API key, since none of those has saved feature flags: set the mode explicitly there with `--permission-mode` or `defaultMode` ⚠. The hook that makes `pip install` impossible holds in every mode.
 
 ## 7. Hooks
 <!-- cc: hooks.overview -->
@@ -363,7 +366,7 @@ fi
 exit 0
 ```
 
-**3. Stop-gate verification** — a `Stop` hook that runs the project's check (lint, tests) and exits 2 with the failure output on stderr forces Claude to fix before finishing. Decide what happens on the continuation: exiting 0 whenever `stop_hook_active` is set (the docs' loop guard) gives the gate one attempt per turn and never re-checks the fix; re-running the check and blocking only while it still fails re-verifies each fix, with the 8-block cap bounding the loop.
+**3. Stop-gate verification** — a `Stop` hook that runs the project's check (lint, tests) and exits 2 with the failure output on stderr forces Claude to fix before finishing. Decide what happens on the continuation: exiting 0 whenever `stop_hook_active` is set (the docs' loop guard) gives the gate one attempt per turn and never re-checks the fix; re-running the check and blocking only while it still fails re-verifies each fix, but the 8-block cap won't bound that loop: it counts only blocks with no tool call between them, so every fix attempt that edits a file starts the count over. Cap the retries in the hook itself, for example with a per-session attempt counter ⚠.
 
 **4. Session context injection** — a `SessionStart` command hook whose stdout (sprint state, open tickets, environment status) is added to context — dynamic context without editing CLAUDE.md. Keep it under the 10,000-character cap.
 
@@ -440,7 +443,7 @@ List prices (October 2026, per MTok) ⚠:
 <!-- cc: lean.mcp -->
 
 - Tool schemas are **deferred by default**: only tool names and server instructions load upfront; full schemas load on demand via tool search. `ENABLE_TOOL_SEARCH` tunes this (`auto` = load schemas upfront while they total under 10% of the window — up to ~100K tokens on a 1M window, so prefer the default or a small `auto:N`; `false` = all upfront; per-server `alwaysLoad: true` exempts a server). Deferral falls back to upfront loading when `ANTHROPIC_BASE_URL` points at a non-first-party host; `ENABLE_TOOL_SEARCH=true` overrides that ⚠.
-- `MAX_MCP_OUTPUT_TOKENS` (default 25,000) caps tool-result size; oversized non-image results are written to disk and referenced instead of inlined.
+- `MAX_MCP_OUTPUT_TOKENS` (default 25,000) caps tool-result size; oversized non-image results are written to disk and referenced instead of inlined. A second threshold ignores this variable: a successful text result over 50,000 characters also goes to disk, unless the server declares a larger `anthropic/maxResultSizeChars` for that tool ⚠.
 - Audit `/mcp` and disable servers you don't use in this project. A server only one subagent needs can be defined inline in that agent's `mcpServers`, keeping its tool descriptions out of the main context.
 - Prefer a CLI (`gh`, `aws`, `gcloud`) over an equivalent MCP server — a CLI has zero schema cost, and Bash permission rules can match its arguments, whereas settings-file rules can't match an MCP tool's parameters.
 
