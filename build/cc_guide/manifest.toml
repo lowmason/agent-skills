@@ -28,17 +28,19 @@ audit_days = 30
 
 # The six groups are the 2026-10-03 refresh's six verifier scopes, recovered
 # from its verifier prompts (R2.5). Their `all` and `terms` marks are the
-# seed values, to be tuned after the first live report.
+# seed values, tuned once after the first live report (2026-10-05).
 
 [groups.overview]
 sections = [
     'context.overview', 'mechanisms.overview', 'lean.overview', 'lean.measure',
     'lean.session-hygiene', 'lean.mcp', 'lean.ceremony', 'lean.expensive-ops',
 ]
-all = ['context-window', 'costs', 'monitoring-usage']
+all = ['context-window', 'costs']
+# monitoring-usage moved from all to terms after the first live report: its
+# 11 findings were OpenTelemetry tracing details, none naming a group term.
 terms = [
     'mcp', 'commands', 'features-overview', 'debug-your-config', 'best-practices',
-    'statusline', 'interactive-mode', 'env-vars', 'memory', 'skills',
+    'statusline', 'interactive-mode', 'env-vars', 'memory', 'skills', 'monitoring-usage',
 ]
 
 [groups.skills]
@@ -79,13 +81,16 @@ terms = ['settings-reference', 'env-vars']
 
 [groups.models]
 sections = ['subagents.models', 'lean.caching', 'lean.model-routing', 'reading.overview']
+# model-deprecations moved from terms to all after the first live report: as
+# a terms page only its intro was watched, so no retirement row was.
 all = [
     'prompt-caching', 'model-config', 'fast-mode', 'advisor',
     'platform:about-claude/pricing', 'platform:about-claude/models/overview',
+    'platform:about-claude/model-deprecations',
 ]
 terms = [
-    'platform:build-with-claude/prompt-caching', 'platform:about-claude/model-deprecations',
-    'platform:models/haiku-4-5/overview', 'costs', 'env-vars', 'settings-reference', 'commands',
+    'platform:build-with-claude/prompt-caching', 'platform:models/haiku-4-5/overview',
+    'costs', 'env-vars', 'settings-reference', 'commands',
 ]
 
 # Per-section term tuning (R3.6), none yet. Each entry looks like
