@@ -138,3 +138,62 @@ LLMS_TEXT = '\n'.join([
     '- [Plugin parts](https://code.claude.com/docs/en/plugins/components.md): A nested slug.',
     '',
 ])
+
+
+# The fixture guide's sections, in heading order. Two `Reference ⚠` headings
+# sit under different parents, as the real guide's two `Frontmatter reference
+# ⚠` headings do.
+GUIDE_IDS = ['alpha.overview', 'alpha.reference', 'beta.overview', 'beta.reference']
+
+
+FIXTURE_STAMP = ('> Checked against the Claude Code docs and changelog through 2.1.900 '
+                 'on 2026-09-02; oldest full re-verification 2026-09-02, at 2.1.900.')
+
+
+def guide_text(stamp: str = FIXTURE_STAMP) -> str:
+    '''The fixture guide, its stamp region holding `stamp`. The markers come
+    from guide.py, imported here so that blocks.py's tests run without it.'''
+    from guide import STAMP_CLOSE, STAMP_OPEN
+    return '\n'.join([
+        '# Fixture guide',
+        '',
+        '**A guide for the fixture tool.**',
+        '',
+        STAMP_OPEN,
+        stamp,
+        STAMP_CLOSE,
+        '',
+        '> First verified at 2.1.900.',
+        '',
+        '## 1. Alpha',
+        '<!-- cc: alpha.overview -->',
+        '',
+        'Alpha uses `ALPHA_TOOL`, `if` and `true`.',
+        '',
+        '### Reference ⚠',
+        '<!-- cc: alpha.reference -->',
+        '',
+        'Set `ALPHA_ENV`; `` a `tick` inside `` stays one span.',
+        '',
+        FENCE + 'bash',
+        '## not a heading inside a fence',
+        'echo `NOT_A_TERM`',
+        FENCE,
+        '',
+        '## 2. Beta',
+        '<!-- cc: beta.overview -->',
+        '',
+        '| Setting | Meaning |',
+        '|---|---|',
+        '| `BETA_ENV` | on |',
+        '',
+        FENCE + 'json',
+        '{"beta": true}',
+        FENCE,
+        '',
+        '### Reference ⚠',
+        '<!-- cc: beta.reference -->',
+        '',
+        '`BetaEvent` fires.',
+        '',
+    ])
