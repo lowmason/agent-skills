@@ -7,14 +7,20 @@ from pathlib import Path
 import pytest
 
 import baseline
+import blocks
 import guide
 import state
 from cc_fixtures import (DOCS, FIXTURE_CHANGED, GUIDE_IDS, MANIFEST_TOML, docs_dir,  # noqa: F401
-                         fixture_state, guide_text, isolated_home, write_tree)
+                         fixture_snapshot, fixture_state, guide_text, isolated_home, write_tree)
 
 REPO = Path(__file__).resolve().parents[2]
 MANIFEST = state.parse_manifest(MANIFEST_TOML)
 ENV = 'Environment variables'
+
+
+def hashed(*keys):
+    '''Block keys as baseline.json stores them (R2.3).'''
+    return [blocks.key_hash(k) for k in keys]
 
 
 def unanchored(text):
@@ -71,12 +77,12 @@ def test_init_baselines_each_groups_selected_blocks(docs_dir):
     assert s['sections']['alpha.reference']['changed'] == '2.1.899'
     assert s['sections']['alpha.overview']['checked'] == {'release': '2.1.900', 'date': '2026-09-02'}
     assert {p: list(keys) for p, keys in s['groups']['alpha']['blocks'].items()} == {
-        'tools': ['Tools', 'Tools › Options', 'Tools › Options › `--fast`'],
-        'env-vars': [f'{ENV} › `ALPHA_ENV`', f'{ENV} › `ALPHA_ENV`#2', f'{ENV} › Examples']}
+        'tools': hashed('Tools', 'Tools › Options', 'Tools › Options › `--fast`'),
+        'env-vars': hashed(f'{ENV} › `ALPHA_ENV`', f'{ENV} › `ALPHA_ENV`#2', f'{ENV} › Examples')}
     assert {p: list(keys) for p, keys in s['groups']['beta']['blocks'].items()} == {
-        'events': ['Events', 'Events › Payload'],
-        'env-vars': [f'{ENV} › `BETA_ENV`'],
-        'platform:pricing': ['(intro)', 'Rates']}
+        'events': hashed('Events', 'Events › Payload'),
+        'env-vars': hashed(f'{ENV} › `BETA_ENV`'),
+        'platform:pricing': hashed('(intro)', 'Rates')}
     assert s['groups']['beta']['snapshot'] == {'events': '2.1.900', 'env-vars': '2.1.900',
                                                'platform:pricing': '2.1.900'}
     assert s['llms'] == ['env-vars', 'events', 'plugins/components', 'tools']
@@ -148,14 +154,15 @@ def latest_from(tmp_path, **edits):
 
 def test_a_full_rebaseline_rehashes_drops_deselected_and_refreshes_llms(tmp_path, docs_dir):
     s = fixture_state(docs_dir)
-    s['groups']['alpha']['blocks']['env-vars']['Environment variables'] = '0' * 16
+    s['groups']['alpha']['blocks']['env-vars'][blocks.key_hash(ENV)] = '0' * 16
     latest = latest_from(tmp_path, **{
         'tools.md': DOCS['tools.md'].replace('runs alpha jobs', 'runs alpha batches'),
         'llms.txt': DOCS['llms.txt'] + '- [New](https://code.claude.com/docs/en/new-page.md): New.\n'})
     new, pages, notes = baseline.rebaseline(s, MANIFEST, guide_text(), 'alpha', [], latest, '2.1.902')
     fresh = fixture_state(latest)
     assert new['groups']['alpha']['blocks'] == fresh['groups']['alpha']['blocks']
-    assert new['groups']['alpha']['blocks']['tools']['Tools'] != s['groups']['alpha']['blocks']['tools']['Tools']
+    tools = blocks.key_hash('Tools')
+    assert new['groups']['alpha']['blocks']['tools'][tools] != s['groups']['alpha']['blocks']['tools'][tools]
     assert new['groups']['alpha']['snapshot'] == {'tools': '2.1.902', 'env-vars': '2.1.902'}
     assert new['groups']['beta'] == s['groups']['beta']
     assert (pages, notes) == (['tools', 'env-vars'], [])
@@ -170,8 +177,9 @@ def test_a_listed_rebaseline_touches_only_listed_blocks_and_refuses_other_change
     row = 'Tools › Options › `--fast`'
     new, pages, _ = baseline.rebaseline(s, MANIFEST, guide_text(), 'alpha', ['tools › ' + row], latest, '2.1.902')
     old_tools, new_tools = s['groups']['alpha']['blocks']['tools'], new['groups']['alpha']['blocks']['tools']
-    assert new_tools[row] != old_tools[row]
-    assert new_tools['Tools'] == old_tools['Tools']
+    row_hash, tools = hashed(row, 'Tools')
+    assert new_tools[row_hash] != old_tools[row_hash]
+    assert new_tools[tools] == old_tools[tools]
     assert list(new_tools) == list(old_tools)
     assert pages == ['tools']
     assert new['groups']['alpha']['snapshot']['tools'] == '2.1.902'
@@ -184,9 +192,28 @@ def test_a_listed_rebaseline_touches_only_listed_blocks_and_refuses_other_change
                               ' list them too, or rebaseline the whole page')
 
 
+def test_a_listed_rebaseline_takes_checks_refs_for_blocks_gone_from_the_page(tmp_path, docs_dir):
+    '''A block gone from the page is listed as check names it: by the key
+    read back from its snapshot, or by its key hash when there is none. The
+    refusal names an unlisted gone block the same way.'''
+    s = fixture_state(docs_dir)
+    latest = latest_from(tmp_path, **{'tools.md': DOCS['tools.md'].replace('## Options', '## Flags')})
+    options, row = 'Tools › Options', 'Tools › Options › `--fast`'
+    for snapshot, name in ((fixture_snapshot, options), (state.no_snapshot, blocks.key_hash(options))):
+        with pytest.raises(state.SetupError) as err:
+            baseline.rebaseline(s, MANIFEST, guide_text(), 'alpha', ['tools › ' + row], latest, '2.1.902',
+                                snapshot=snapshot)
+        assert str(err.value) == (f'tools: also changed since the baseline: tools › {name};'
+                                  ' list them too, or rebaseline the whole page')
+    refs = ['tools › ' + row, 'tools › ' + blocks.key_hash(options)]
+    new, pages, _ = baseline.rebaseline(s, MANIFEST, guide_text(), 'alpha', refs, latest, '2.1.902')
+    assert list(new['groups']['alpha']['blocks']['tools']) == hashed('Tools')
+    assert pages == ['tools']
+
+
 def test_rebaseline_keeps_a_missing_page_and_drops_an_unmapped_one(tmp_path, docs_dir):
     s = fixture_state(docs_dir)
-    s['groups']['beta']['blocks']['retired'] = {'Retired': '1' * 16}
+    s['groups']['beta']['blocks']['retired'] = {blocks.key_hash('Retired'): '1' * 16}
     latest = latest_from(tmp_path)
     (latest / 'events.md').unlink()
     new, pages, notes = baseline.rebaseline(s, MANIFEST, guide_text(), 'beta', [], latest, '2.1.902')

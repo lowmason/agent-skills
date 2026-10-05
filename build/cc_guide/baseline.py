@@ -4,10 +4,10 @@ to the working tree, and nothing is committed. `cite` is Stage 2's.'''
 import copy
 from pathlib import Path
 
-from blocks import SEP, block_hash, page_blocks, select
+from blocks import SEP, block_hash, key_hash, key_names, page_blocks, select
 from docs import is_platform, page_file, parse_llms, version_key
 from guide import anchor_problems, render_stamp, sections, text_hash, with_stamp
-from state import Manifest, SetupError, group_terms
+from state import Manifest, SetupError, Snapshot, block_namer, group_terms, no_snapshot
 
 # R11.1: the July guide (verified at 2.1.219) and the refresh (at 2.1.288),
 # both read at the guide's path before 79ad04f moved it.
@@ -59,9 +59,10 @@ def check_ids(manifest: Manifest, guide_text: str) -> None:
 
 
 def select_blocks(text: str, mark: str, terms: set[str]) -> dict[str, str]:
-    '''One page's selected blocks, key -> hash, in page order.'''
+    '''One page's selected blocks as baseline.json stores them, key hash ->
+    block hash, in page order (R2.3).'''
     found = page_blocks(text)
-    return {k: block_hash(found[k]) for k in select(found, mark, terms)}
+    return {key_hash(k): block_hash(found[k]) for k in select(found, mark, terms)}
 
 
 def init(manifest: Manifest, guide_text: str, docs: Path, release: str, day: str,
@@ -141,13 +142,15 @@ def audited(state: dict, manifest: Manifest, group: str, release: str, day: str)
 
 
 def rebaseline(state: dict, manifest: Manifest, guide_text: str, group: str, refs: list[str],
-               latest: Path, release: str) -> tuple[dict, list[str], list[str]]:
+               latest: Path, release: str, snapshot: Snapshot = no_snapshot) -> tuple[dict, list[str], list[str]]:
     '''R7 rebaseline: re-hash the group's selected blocks from latest/, all of
     them or the listed refs: `<page>`, or `<page> › <key>` as check prints a
-    block. A listed key that is no longer selected leaves the baseline. A
-    listed run refuses when an unlisted baselined block on the page changed
-    too, since the page's snapshot would then not hold its baselined text.
-    Returns the new state, the pages to snapshot to <release>/docs, and notes.
+    block, a key hash for a block check could not name. A listed key that is
+    no longer selected leaves the baseline. A listed run refuses when an
+    unlisted baselined block on the page changed too, since the page's
+    snapshot would then not hold its baselined text; the refusal names a gone
+    block from `snapshot`, as check does. Returns the new state, the pages to
+    snapshot to <release>/docs, and notes.
 
     A missing page keeps its entries: it needs a manifest edit, not a
     rebaseline. A full run also drops the pages the group no longer maps.
@@ -161,13 +164,15 @@ def rebaseline(state: dict, manifest: Manifest, guide_text: str, group: str, ref
     slugs = parse_llms(llms_path.read_text(encoding='utf-8'))
     mapped = manifest.groups[group].pages
     watched = set().union(*group_terms(manifest, guide_text)[group].values())
+    stored = state['groups'].get(group, {}).get('blocks', {})
     targets: dict[str, set[str] | None] = {}
     for ref in refs or list(mapped):
         page, _, key = ref.partition(SEP)
         if not key:
             targets[page] = None
         elif targets.get(page, set()) is not None:
-            targets.setdefault(page, set()).add(key)
+            targets.setdefault(page, set()).add(key if key in stored.get(page, {}) else key_hash(key))
+    name = block_namer(state, group, snapshot)
     new = copy.deepcopy(state)
     g = new['groups'].setdefault(group, {'blocks': {}, 'snapshot': {}})
     snap, notes = [], []
@@ -192,8 +197,10 @@ def rebaseline(state: dict, manifest: Manifest, guide_text: str, group: str, ref
         if keys is None:
             g['blocks'][page] = chosen
         else:
-            hashes = {k: block_hash(t) for k, t in page_blocks(text).items()}
-            moved = [page + SEP + k for k, h in g['blocks'].get(page, {}).items()
+            found = page_blocks(text)
+            live = key_names(found)
+            hashes = {key_hash(k): block_hash(t) for k, t in found.items()}
+            moved = [page + SEP + (live.get(k) or name(page, k)) for k, h in g['blocks'].get(page, {}).items()
                      if k not in keys and hashes.get(k) != h]
             if moved:
                 listed = ', '.join(moved)

@@ -8,10 +8,10 @@ import subprocess
 import tomllib
 from datetime import date
 from pathlib import Path
-from typing import NamedTuple
+from typing import Callable, NamedTuple
 
-from blocks import CELL_SPLIT_RE
-from docs import version_key
+from blocks import CELL_SPLIT_RE, key_names, page_blocks
+from docs import page_file, version_key
 from guide import section_terms, sections
 
 MANIFEST = 'build/cc_guide/manifest.toml'
@@ -249,12 +249,13 @@ def parse_baseline(text: str) -> dict:
         ok = (isinstance(g, dict) and set(g) == {'blocks', 'snapshot'}
               and isinstance(g['blocks'], dict) and isinstance(g['snapshot'], dict))
         if ok:
-            ok = all(isinstance(keys, dict) and all(isinstance(h, str) and HASH_RE.match(h)
-                                                    for h in keys.values())
+            ok = all(isinstance(keys, dict) and all(HASH_RE.match(k) and isinstance(h, str) and HASH_RE.match(h)
+                                                    for k, h in keys.items())
                      for keys in g['blocks'].values())
             ok = ok and all(_label(r) for r in g['snapshot'].values())
         if not ok:
-            problems.append(f'group {gid}: needs blocks (page -> key -> hash) and snapshot (page -> release)')
+            problems.append(f'group {gid}: needs blocks (page -> key hash -> block hash)'
+                            ' and snapshot (page -> release)')
     if not _strings(raw['llms']):
         problems.append('llms must be a list of slugs')
     if problems:
@@ -331,6 +332,35 @@ def fetch_record(cache: Path) -> Path:
 
 def snapshot_docs(cache: Path, release: str) -> Path:
     return cache / release / 'docs'
+
+
+# Reads (page, release) -> the page as that release's snapshot holds it, or None.
+Snapshot = Callable[[str, str], str | None]
+
+
+def no_snapshot(page: str, release: str) -> None:
+    '''The Snapshot that holds nothing, so baselined blocks go by key hash.'''
+    return None
+
+
+def snapshot_text(cache: Path, page: str, release: str) -> str | None:
+    '''The cache's Snapshot: the page as <release>/docs holds it.'''
+    path = snapshot_docs(cache, release) / page_file(page)
+    return path.read_text(encoding='utf-8') if path.is_file() else None
+
+
+def block_namer(state: dict, group: str, snapshot: Snapshot) -> Callable[[str, str], str]:
+    '''Names one group's baselined blocks, (page, key hash) -> key: the key
+    read back from the page's snapshot (R2.3), else the key hash itself.'''
+    releases = state['groups'].get(group, {}).get('snapshot', {})
+    names: dict[str, dict[str, str]] = {}
+
+    def name(page: str, kh: str) -> str:
+        if page not in names:
+            text = snapshot(page, releases[page]) if page in releases else None
+            names[page] = {} if text is None else key_names(page_blocks(text))
+        return names[page].get(kh, kh)
+    return name
 
 
 def newest_changelog(cache: Path) -> Path | None:

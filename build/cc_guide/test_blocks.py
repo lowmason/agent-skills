@@ -113,6 +113,14 @@ def test_key_parts_drop_link_targets_and_cap_at_sixty_characters():
     assert len(blocks.key_part(long)) == 60
 
 
+def test_a_key_hash_is_sixteen_hex_of_sha256_over_the_key_and_names_map_back():
+    '''R2.3 commits block keys only as these hashes.'''
+    assert blocks.key_hash('a') == 'ca978112ca1bbdca'
+    row, again = f'{ENV} › `ALPHA_ENV`', f'{ENV} › `ALPHA_ENV`#2'
+    assert blocks.key_hash(row) != blocks.key_hash(again)
+    assert blocks.key_names([row, again]) == {blocks.key_hash(row): row, blocks.key_hash(again): again}
+
+
 def test_select_takes_every_block_of_an_all_page_and_term_hits_of_a_terms_page():
     page = blocks.page_blocks(ENV_PAGE)
     assert blocks.select(page, 'all', set()) == list(page)

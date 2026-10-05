@@ -144,6 +144,16 @@ def test_rebaseline_writes_the_baseline_and_a_cache_snapshot_only(world):
     assert (snapshot / 'tools.md').read_bytes() == (state.latest_docs(cache) / 'tools.md').read_bytes()
 
 
+def test_rebaseline_names_a_gone_block_from_the_cached_snapshot(world, capsys):
+    repo, cache, _ = world
+    write_tree(state.snapshot_docs(cache, '2.1.900'), {'tools.md': DOCS['tools.md']})
+    write_tree(state.latest_docs(cache), {'tools.md': DOCS['tools.md'].replace('## Options', '## Flags')})
+    assert main(cache, 'baseline', 'rebaseline', 'alpha', 'tools › Tools › Options › `--fast`') == 2
+    assert capsys.readouterr() == ('', 'cc-guide: tools: also changed since the baseline: tools › Tools › Options;'
+                                       ' list them too, or rebaseline the whole page\n')
+    assert dirty(repo) == []
+
+
 def test_stamp_writes_only_the_guides_stamp_region(world):
     repo, cache, _ = world
     main(cache, 'baseline', 'advance', *GUIDE_IDS, '--to', '2.1.902', today=date(2026, 10, 4))

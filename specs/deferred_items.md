@@ -166,6 +166,13 @@
   is `36-synthesize-mode-scenario-verification.md` on main. This branch adds
   Stage 1 of the Claude Code guide drift detector (`build/cc_guide/`); it
   touches neither aged item.
+- 2026-10-05 — finished `feat/cc-guide-hashed-keys` (no plan) with 2 items aged
+  >45d, carried on the partner's 2026-09-28 reason, which they chose again for
+  this branch, verbatim: "Unrelated to this branch: the DL/NLP slots wait on a
+  real DL/NLP target, and the synthesize-mode checks wait on their own plan."
+  They are the same two `18-methodology-pipeline-skills` items (71d). This branch
+  commits the drift baseline's block keys only as hashes (plan 38 decision 9); it
+  touches neither aged item.
 
 ## 11-delegation-frontmatter-rollout — 2026-07-19
 - [x] Haiku-pinned `Explore` override agent (fork-isolation upgrade; plan "Out of
@@ -2264,8 +2271,10 @@ declined as YAGNI (zero instances in a one-page wiki).
       removed it; a changelog head that returns to a label that already has a snapshot
       (a pulled release); a hand-edited cache, or a deleted `latest/fetch.json`. Fix:
       refuse, with a `SetupError` naming the page, to overwrite an existing
-      `<release>/docs/<page>` whose bytes differ. Size: quick-fix. Done when: the guard
-      and its test land.
+      `<release>/docs/<page>` whose bytes differ. Since `feat/cc-guide-hashed-keys` an
+      overwrite also costs naming: check and rebaseline then name a missing block on
+      that page by its key hash, never by a wrong key. Size: quick-fix. Done when: the
+      guard and its test land.
 - [ ] Say the bookkeeping rules where readers look (plan 38's final review: T10-m4,
       T14-m1, T14-m2, FR-m2). (a) `build/cc_guide/cli.py --help` shows none of the
       module docstring; pass `description=__doc__` with `RawDescriptionHelpFormatter`.
@@ -2306,7 +2315,9 @@ declined as YAGNI (zero instances in a one-page wiki).
       `guide.render_stamp`'s bare `min()` in lint; a corrupt `latest/fetch.json`, which
       both `cli.py`'s rebaseline and `check.live_docs` parse bare; `accept` on an ID the
       guide no longer has (a `KeyError` in `baseline.accept`); a non-UTF-8 cached
-      changelog or page (`cli.cached_releases` and the read sites in `check.py`). Two
+      changelog, page or snapshot page (`cli.cached_releases`, the read sites in
+      `check.py`, and `state.snapshot_text`, which check and rebaseline call to name a
+      missing block). Two
       inputs pass unvalidated: `init --release/--date`, so a bad date writes a baseline
       that `parse_baseline` rejects, and `init --release X` without `--docs`, which
       hashes the 2.1.288 snapshot under label X. And a wrong-shaped `[guide]`,
@@ -2383,3 +2394,22 @@ declined as YAGNI (zero instances in a one-page wiki).
       path (T9-m6, plan-mandated). `releases_of`'s `source` parameter shadows
       `state.Source` (T10-m7). Size: plan. Done when: each is tidied or recorded as
       needing no action.
+
+## cc-guide-hashed-keys (no plan; branch feat/cc-guide-hashed-keys) — 2026-10-05
+- [ ] Mark baseline.json's format so older code refuses it (the branch's review,
+      Minor 1). The pre-hash `parse_baseline` validates only block hashes, so pre-hash
+      code accepts the hashed file: run against it, it reported 0 changed, 3,263
+      missing and 3,275 new blocks and exited 1, not 2. Exposed: only a checkout whose
+      code predates the merge while its local `main` includes it, such as a branch cut
+      before the merge; none existed at the merge. A top-level format key would make
+      any older reader exit 2 ("holds exactly sections, groups and llms"), now and at
+      any later format change. Files: `build/cc_guide/state.py`, `baseline.py`, their
+      tests, R2.3. Size: quick-fix. Revisit if: an open branch predates the merge, or
+      baseline.json's format changes again.
+- [ ] Carry each missing block's key hash into Stage 3's packets (the branch's review,
+      recommendation 3). A missing block's finding holds its readable name, or its key
+      hash when check could not read one, and `packets` (R6.11) will need that block's
+      baselined text from its page's snapshot, the same lookup `state.block_namer` does.
+      Files: `build/cc_guide/check.py`'s `Finding` and the packet builder. Size: part of
+      Stage 3's plan. Done when: the packet builder reads a missing block's snapshot
+      text by key hash.

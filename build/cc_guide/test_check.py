@@ -7,11 +7,12 @@ from datetime import date, datetime, timezone
 
 import pytest
 
+import blocks
 import check
 import docs
 import state
 from cc_fixtures import (DOCS, ENV_PAGE, MANIFEST_TOML, docs_dir, drift_repo,  # noqa: F401
-                         fixture_state, git, guide_text, isolated_home, write_tree)
+                         fixture_snapshot, fixture_state, git, guide_text, isolated_home, write_tree)
 
 MANIFEST = state.parse_manifest(MANIFEST_TOML)
 TERMS = state.group_terms(MANIFEST, guide_text())
@@ -25,8 +26,8 @@ def offline(folder):
     return check.offline_docs(MANIFEST, folder)
 
 
-def findings(folder, s=None, terms=TERMS):
-    found, deselected = check.compare(MANIFEST, s or fixture_state(folder), terms, offline(folder))
+def findings(folder, s=None, terms=TERMS, snapshot=fixture_snapshot):
+    found, deselected = check.compare(MANIFEST, s or fixture_state(folder), terms, offline(folder), snapshot)
     return [(f.group, f.kind, f.ref(), f.candidates) for f in found], deselected
 
 
@@ -47,6 +48,23 @@ def test_changed_missing_and_new_blocks_name_their_candidate_sections(tmp_path, 
         ('alpha', 'new', 'tools › Tools › Flags › `--fast`', ['alpha.overview', 'alpha.reference']),
         ('beta', 'new', 'events › Events › Retry', ['beta.reference']),
     ]
+
+
+def test_a_missing_block_is_named_from_its_snapshot_else_by_its_key_hash(docs_dir):
+    '''R2.3 commits block keys only as hashes, so a block gone from the page
+    is named by reading its key back from the page's snapshot. Without one it
+    goes by its key hash, which rebaseline takes as a ref too.'''
+    s = fixture_state(docs_dir)
+    write_tree(docs_dir, {'events.md': DOCS['events.md'].replace('## Payload', '## Body')})
+    body = ('beta', 'new', 'events › Events › Body', ['beta.overview'])
+    gone = ['beta.overview', 'beta.reference']
+    assert findings(docs_dir, s)[0] == [('beta', 'missing', 'events › Events › Payload', gone), body]
+    payload = blocks.key_hash('Events › Payload')
+    unnamed = ('beta', 'missing', 'events › ' + payload, gone)
+    assert findings(docs_dir, s, snapshot=state.no_snapshot)[0] == [unnamed, body]
+    # A hash names no term, even when a term happens to be hex digits of it.
+    hex_term = dict(TERMS, beta={**TERMS['beta'], 'beta.overview': TERMS['beta']['beta.overview'] | {payload[:6]}})
+    assert findings(docs_dir, s, hex_term, state.no_snapshot)[0] == [unnamed, body]
 
 
 def test_deselection_is_informational_only_while_the_block_is_unchanged(docs_dir):
@@ -276,6 +294,16 @@ def test_a_changed_block_or_a_lint_failure_is_due_at_once(tmp_path, docs_dir):
     guide.write_text(guide.read_text().replace('Alpha uses', 'Alpha now uses'))
     code, report, _ = run_check(repo, tmp_path / 'cache', docs_dir)
     assert (code, report['due']['lint']) == (1, 1)
+
+
+def test_check_names_a_missing_block_from_the_cached_snapshot(tmp_path, docs_dir):
+    repo = drift_repo(tmp_path / 'repo', docs_dir)
+    cache = tmp_path / 'cache'
+    write_tree(state.snapshot_docs(cache, '2.1.900'), {'events.md': DOCS['events.md']})
+    write_tree(docs_dir, {'events.md': DOCS['events.md'].replace('## Payload', '## Body')})
+    _, report, _ = run_check(repo, cache, docs_dir)
+    assert [(f['kind'], f['key']) for f in report['findings']['beta']] == [
+        ('missing', 'Events › Payload'), ('new', 'Events › Body')]
 
 
 def test_a_network_failure_exits_two_and_is_reported(tmp_path, docs_dir):

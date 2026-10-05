@@ -16,7 +16,7 @@ SECTION = {'checked': STAMP, 'changed': '2.1.900', 'audited': STAMP, 'text_hash'
 
 def baseline_text(**changes):
     raw = {'sections': {'alpha.overview': dict(SECTION)},
-           'groups': {'alpha': {'blocks': {'tools': {'Tools': '0' * 16}}, 'snapshot': {'tools': '2.1.900'}}},
+           'groups': {'alpha': {'blocks': {'tools': {'1' * 16: '0' * 16}}, 'snapshot': {'tools': '2.1.900'}}},
            'llms': ['tools']}
     raw.update(changes)
     return json.dumps(raw)
@@ -94,11 +94,12 @@ def test_a_valid_baseline_parses_and_a_broken_one_is_a_setup_error():
         state.parse_baseline(baseline_text(**broken))
     assert str(err.value) == (f'{state.BASELINE}: section alpha.overview: needs checked, changed,'
                               ' audited and text_hash')
-    with pytest.raises(state.SetupError) as err:
-        state.parse_baseline(baseline_text(groups={'alpha': {'blocks': {'tools': {'Tools': 'xyz'}},
-                                                             'snapshot': {}}}))
-    assert str(err.value) == (f'{state.BASELINE}: group alpha: needs blocks (page -> key -> hash)'
-                              ' and snapshot (page -> release)')
+    # A bad block hash, then a readable key: docs text R2.3 keeps out of the repo.
+    for entries in ({'1' * 16: 'xyz'}, {'Tools': '0' * 16}):
+        with pytest.raises(state.SetupError) as err:
+            state.parse_baseline(baseline_text(groups={'alpha': {'blocks': {'tools': entries}, 'snapshot': {}}}))
+        assert str(err.value) == (f'{state.BASELINE}: group alpha: needs blocks (page -> key hash -> block hash)'
+                                  ' and snapshot (page -> release)')
     with pytest.raises(json.JSONDecodeError) as cause:
         json.loads('{')
     with pytest.raises(state.SetupError) as err:

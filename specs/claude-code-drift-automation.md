@@ -172,10 +172,12 @@ scripts were session-local (`/tmp/ccdrift-probe/`).
    tool. The verifier is a subagent pinned to Sonnet with read-only tools,
    because a subagent `model:` pin holds in auto mode and a skill pin does
    not.
-10. **The docs cache and all state live outside every checkout**, in
+10. **The docs cache and all run state live outside every checkout**, in
     `~/.cache/agent-skills/cc-guide/` (the owner's call). Anthropic's text
     cannot be committed by accident, it survives worktree removal, and every
-    session shares one copy.
+    session shares one copy. The one committed state file, `baseline.json`
+    (R2.1), holds no docs text: it stores block keys only as hashes (R2.3;
+    owner, plan 38 decision 9, 2026-10-05).
 11. **A monthly audit** (the owner's call). Every 30 days one of the six
     groups is fully re-verified whether or not drift was flagged. This catches
     claims that were wrong when written, as the July pass's five were. It goes
@@ -334,10 +336,13 @@ R2.3 **`baseline.json` holds:**
   is the day the check or audit was done, not the release's ship date: the
   bootstrap's 2026-10-03 is the refresh's day, and 2.1.288 shipped on
   2026-10-02 (owner, plan 38, 2026-10-04);
-- per group: `blocks` (page → block key → hash) and `snapshot` (per page, the
-  release whose cached snapshot holds the baselined text). A block shared by
-  two groups is stored under each, so resolving it in one never hides it from
-  the other;
+- per group: `blocks` (page → key hash → block hash) and `snapshot` (per
+  page, the release whose cached snapshot holds the baselined text). A key
+  hash is R3.5 step 4's hash over a block key (R3.3, R3.4), so the committed
+  file holds no docs text; `check` and `rebaseline` read a key back from its
+  page's snapshot when they must name a block that has left the page (owner,
+  plan 38 decision 9, 2026-10-05). A block shared by two groups is stored
+  under each, so resolving it in one never hides it from the other;
 - the `llms.txt` slug list from the last baseline.
 
 R2.4 **Stamp rules.**
@@ -427,7 +432,10 @@ R3.7 **Selection, per group.**
   block whose text changed is *changed* even when it is no longer selected,
   so a docs edit that drops a block's last watched term is a finding (owner,
   plan 38 final review, 2026-10-05). Only a block key that has disappeared
-  from the page is *missing*.
+  from the page is *missing*. It is named by the key its page's snapshot
+  holds, or by its key hash when that snapshot is gone or no longer holds it
+  (R2.3); a block named by its hash names every section of the group as a
+  candidate.
 - A changed, missing or new block names its **candidate sections**: the
   group's sections whose terms it contains, or every section of the group when
   none match. Triage settles attribution (R8.4).
@@ -603,7 +611,9 @@ that drops or remaps it, since `rebaseline` keeps a missing page's entries
 - `init`: R2.6.
 - `rebaseline <group> [<block keys>]`: re-hash the group's selected blocks,
   all of them or the listed keys, from `latest/`, and snapshot those pages to
-  `~/.cache/agent-skills/cc-guide/<release>/docs/`.
+  `~/.cache/agent-skills/cc-guide/<release>/docs/`. A key is listed as
+  `check` prints it, so a block `check` could name only by its key hash is
+  listed by that hash (R2.3).
 - `advance <ids> --to <release>`: set `checked`.
 - `audited <group>`: set `audited` for the group's sections to the current
   release and date, and advance their `checked` to it.
@@ -1097,7 +1107,10 @@ Constraints:
 
 - The docs are Anthropic's copyrighted text. Copies live only in
   `~/.cache/agent-skills/cc-guide/`. The repo commits hashes, slugs, release
-  labels, terms and probe outcomes.
+  labels, terms and probe outcomes. Block keys, which are docs headings and
+  table first cells, are committed only as hashes from 2026-10-05; the
+  history before that, `606fcc5` through `add1995`, holds them as text (R2.3;
+  owner, plan 38 decision 9, 2026-10-05).
 - Verifier quotes of at most 25 words appear only in session reports. Proposed
   wording is the verifier's own paraphrase, an existing rule of the refresh.
 - `manifest.toml`, the scripts, the skill, the agent and the hand-written

@@ -3,8 +3,9 @@
 A page becomes one block per ATX heading, holding the heading's own text up to
 the next heading of any level, plus one block per table row. The leading
 "Documentation Index" blockquote is dropped first. Blocks are keyed by heading
-path and hashed after normalization. A group watches the blocks its pages'
-marks and its sections' terms select.
+path and hashed after normalization; baseline.json stores each key as its
+hash too (R2.3). A group watches the blocks its pages' marks and its sections'
+terms select.
 '''
 import hashlib
 import re
@@ -12,8 +13,8 @@ import re
 SEP = ' › '
 INTRO = '(intro)'
 EMPTY_CELL = '(row)'
-# Each key component is capped like R3.6's terms, so no committed key carries
-# more than a heading-sized fragment of docs text (spec, Provenance).
+# Each key component is capped like R3.6's terms, which keeps printed keys
+# short. baseline.json commits only each key's key_hash() (R2.3).
 KEY_PART_MAX = 60
 
 FENCE_OPEN_RE = re.compile(r'^[ \t]*(`{3,}|~{3,})')
@@ -64,6 +65,18 @@ def block_hash(text: str) -> str:
     '''R3.5 step 4: the first 16 hex characters of SHA-256 over the
     normalized text, as UTF-8.'''
     return hashlib.sha256(normalize(text).encode('utf-8')).hexdigest()[:16]
+
+
+def key_hash(key: str) -> str:
+    '''A block key as baseline.json stores it (R2.3), so the repo holds no
+    docs text: R3.5 step 4's hash over the key as it is, since key_part has
+    already normalized it.'''
+    return hashlib.sha256(key.encode('utf-8')).hexdigest()[:16]
+
+
+def key_names(keys) -> dict[str, str]:
+    '''Key hash -> key over `keys`, to name baselined blocks.'''
+    return {key_hash(k): k for k in keys}
 
 
 def key_part(text: str) -> str:
