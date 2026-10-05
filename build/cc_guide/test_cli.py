@@ -139,7 +139,9 @@ def test_rebaseline_writes_the_baseline_and_a_cache_snapshot_only(world):
     assert main(cache, 'baseline', 'rebaseline', 'alpha') == 0
     assert dirty(repo) == [state.BASELINE]
     assert changed_fields(before, load(repo)) == {'groups.alpha'}
-    assert sorted(p.name for p in state.snapshot_docs(cache, '2.1.902').iterdir()) == ['env-vars.md', 'tools.md']
+    snapshot = state.snapshot_docs(cache, '2.1.902')
+    assert sorted(p.name for p in snapshot.iterdir()) == ['env-vars.md', 'tools.md']
+    assert (snapshot / 'tools.md').read_bytes() == (state.latest_docs(cache) / 'tools.md').read_bytes()
 
 
 def test_stamp_writes_only_the_guides_stamp_region(world):

@@ -118,6 +118,10 @@ def test_select_takes_every_block_of_an_all_page_and_term_hits_of_a_terms_page()
     assert blocks.select(page, 'all', set()) == list(page)
     assert blocks.select(page, 'terms', {'BETA_ENV'}) == [f'{ENV} › `BETA_ENV`']
     assert blocks.select(page, 'terms', {'Examples'}) == [f'{ENV} › Examples', f'{ENV} › Examples#2']
+    # ENV is in every key but only the heading block's text, so keys match too.
+    assert blocks.select(page, 'terms', {ENV}) == list(page)
+    # Matching is case-sensitive.
+    assert blocks.select(page, 'terms', {'beta_env'}) == []
 
 
 def test_candidates_are_matching_sections_or_the_whole_group():

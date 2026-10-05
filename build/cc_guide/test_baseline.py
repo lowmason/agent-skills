@@ -164,7 +164,8 @@ def test_a_full_rebaseline_rehashes_drops_deselected_and_refreshes_llms(tmp_path
 
 def test_a_listed_rebaseline_touches_only_listed_blocks_and_refuses_other_changes(tmp_path, docs_dir):
     s = fixture_state(docs_dir)
-    faster = DOCS['tools.md'].replace('Runs fast.', 'Runs faster.')
+    # `--slow` is a new selected row the run does not list, so it stays out.
+    faster = DOCS['tools.md'].replace('Runs fast.', 'Runs faster.') + '| `--slow` | Runs slow. |\n'
     latest = latest_from(tmp_path, **{'tools.md': faster})
     row = 'Tools › Options › `--fast`'
     new, pages, _ = baseline.rebaseline(s, MANIFEST, guide_text(), 'alpha', ['tools › ' + row], latest, '2.1.902')

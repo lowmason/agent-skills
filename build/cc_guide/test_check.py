@@ -235,6 +235,25 @@ def test_exit_zero_when_nothing_is_due_and_one_when_something_is(tmp_path, docs_
     assert run_check(repo, tmp_path / 'cache', docs_dir, today)[0] == code
 
 
+@pytest.mark.parametrize('manifest, today, audit, probes', [
+    # The audit clock came due on 2026-10-02. A 60-day changelog cadence keeps
+    # the batch, oldest release 2026-09-20, from coming due until 2026-11-19.
+    (MANIFEST_TOML.replace('changelog_days = 7', 'changelog_days = 60'), date(2026, 10, 4), True, []),
+    # A registered probe with no row is due at once (R6.7); on 2026-09-10
+    # nothing else is.
+    (MANIFEST_TOML + "\n[[probe]]\nid = 'p1'\nsections = ['beta.reference']\n", date(2026, 9, 10), False,
+     [{'probe': 'p1', 'why': 'never run'}]),
+], ids=['audit', 'probe'])
+def test_a_due_audit_or_a_due_probe_alone_exits_one(tmp_path, docs_dir, manifest, today, audit, probes):
+    '''With every other term clear, the one due term alone must make check exit 1.'''
+    repo = drift_repo(tmp_path / 'repo', docs_dir)
+    write_tree(repo, {state.MANIFEST: manifest})
+    code, report, _ = run_check(repo, tmp_path / 'cache', docs_dir, today)
+    due = report['due']
+    assert (code, due['lint'], due['blocks'], due['changelog']['due'], due['audit']['due'], due['probes']) == (
+        1, 0, 0, False, audit, probes)
+
+
 def test_a_changed_block_or_a_lint_failure_is_due_at_once(tmp_path, docs_dir):
     repo = drift_repo(tmp_path / 'repo', docs_dir)
     write_tree(docs_dir, {'events.md': DOCS['events.md'].replace('fires on beta', 'fires on gamma')})
