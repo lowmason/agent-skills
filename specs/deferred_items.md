@@ -180,6 +180,13 @@
   They are the same two `18-methodology-pipeline-skills` items (71d). This branch
   is the drift detector's first bookkeeping run (guide corrections and baseline
   through 2.1.289); it touches neither aged item.
+- 2026-10-05 — finished `chore/synthesize-mode-verification` (plan 36) with 2 items
+  aged >45d, carried deliberately, on the reasons the partner approved at this gate.
+  (1) The synthesize-mode scenario-verification successor (71d, filed under the
+  original 2026-07-26 section): it waits on the partner's decision to revise the VOID
+  rule or isolate the exemplar step before any re-run, since plan 36 ran VOID. (2) The
+  DL/NLP template extension (71d): it waits on a real DL/NLP target; plan 32 confirmed
+  on 2026-10-05 that the deep-learning skills do not supersede it.
 
 ## 11-delegation-frontmatter-rollout — 2026-07-19
 - [x] Haiku-pinned `Explore` override agent (fork-isolation upgrade; plan "Out of
