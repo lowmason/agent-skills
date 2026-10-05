@@ -351,7 +351,7 @@ Constraints:
   - The CLAUDE.md lines from R1.9 and R4.4 stay under the `claude-md-size`
     check's 200-line limit in `build/cc_guide/conformance.toml`. No ceiling
     remains to raise: a change whose lines would breach the limit trims
-    CLAUDE.md elsewhere (R6 P1; drift spec R12.7).
+    CLAUDE.md elsewhere (R6 P1, whose ceiling option drift spec R12.7 removed).
   - When Stage A or Stage D fixes a gap the register tracks to it, the same
     change removes or narrows that `[[exception]]` and runs
     `build/check_conformance.py` (R6 P2).
