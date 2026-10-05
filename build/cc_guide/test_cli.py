@@ -213,3 +213,9 @@ def test_bookkeeping_alone_brings_check_to_exit_zero(world):
     assert main(cache, 'lint', today=today) == 0
     assert main(cache, *check_args, today=today) == 0
     assert main(cache, 'check', '--docs', str(folder), today=today) == 1
+
+
+def test_the_repo_lints_clean(capsys):
+    '''R5: the suite enforces the lint on the repo itself. HOME is isolated,
+    so no changelog is cached and the release-label check is skipped.'''
+    assert cli.main(['lint']) == 0, capsys.readouterr().out

@@ -2,7 +2,11 @@
 
 **Skills · slash commands · subagents · rules · hooks — built and run on a token budget**
 
-> Facts in this guide were re-verified against the official Claude Code documentation (code.claude.com/docs) and Anthropic's pricing pages on 2026-10-03, at Claude Code 2.1.288 (first verified July 2026, at 2.1.219 — 58 releases earlier). Claude Code changes quickly: items marked ⚠ are the most version-sensitive — confirm them against your installed version (`claude --version`, `/doctor`) before depending on exact numbers or field names.
+<!-- cc-guide:stamp -->
+> Checked against the Claude Code docs and changelog through 2.1.288 on 2026-10-03; oldest full re-verification 2026-10-03, at 2.1.288.
+<!-- /cc-guide:stamp -->
+
+> First verified in July 2026, at Claude Code 2.1.219, 58 releases before the full re-verification at 2.1.288 against the official documentation (code.claude.com/docs) and Anthropic's pricing pages. Claude Code changes quickly: items marked ⚠ are the most version-sensitive — confirm them against your installed version (`claude --version`, `/doctor`) before depending on exact numbers or field names.
 
 ## 1. The organizing constraint: context
 <!-- cc: context.overview -->
