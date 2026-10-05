@@ -437,7 +437,7 @@ skill before it exists.
 
 - **Where:** in sessions the owner launches from a plain terminal outside the
   repo, per Channel 5 and plan 36's precedent
-  (`specs/plans/36-synthesize-mode-scenario-verification.md:15`).
+  (`specs/plans/completed/36-synthesize-mode-scenario-verification.md:17`).
 - **Prompts:** pre-registered under `~/.cache/agent-skills/handoffs/red/`.
 - **Reps:** at least 5 per arm.
 - **Record:** the results go in `specs/red-baseline-handoff-briefs-<date>.md`,

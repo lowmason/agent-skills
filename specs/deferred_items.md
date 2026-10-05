@@ -732,7 +732,7 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       build it (/deferred). The external loop is in routine use: the usable-series
       synthesis, alt-nfp-model rounds 1 and 2 (round 2, e48bcbb, synthesized six
       external reviews), and naics-embedder's Describe run (e96eb3f).
-- [ ] **Synthesize mode has no scenario verification (spec Req 13,
+- [x] **Synthesize mode has no scenario verification (spec Req 13,
       gate-deferred).** MT2 proved the mode is *routed to* correctly (5/5
       across three treatment arms) but nothing tests its *behavior* once
       entered — triage-table-before-spec-text, locator discipline, the
@@ -743,6 +743,10 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       arrived, and a three-arm subagent check now covers adjudication-status
       detection. Still untested once entered: locator discipline, the
       triage-table-before-spec-text ordering, and the derive-roadmap handoff.
+      → plan 36 ran VOID (2026-10-05): 0 of 5 reps valid, so nothing was
+      verified; superseded by the last item of this section, which keeps this
+      section's date (owner's choice at the plan-36 completion gate). Record:
+      specs/completed/synthesize-mode-verification-2026-10-05.md.
 - [x] **Partial adjudication has no explicit handling.** The skill frames
       adjudication status as binary — "was the critique adjudicated at all?"
       — but a real critique can record push-back on a handful of points and
@@ -792,6 +796,33 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       docstring's ">=3-char non-Greek base" sentence was rewritten in the same
       pass — the fix made it false, and this repo treats an overpromising
       docstring as a real defect. describe-critique-methodology suite +4.
+- [ ] **Synthesize mode still has no scenario verification (successor of the
+      "Synthesize mode has no scenario verification" item above; plan 36
+      ran VOID).** The locator discipline, the triage-table-before-spec-text
+      ordering and the derive-roadmap handoff of `describe-critique-methodology`
+      Synthesize mode remain unverified. Plan 36
+      (`specs/plans/completed/36-synthesize-mode-scenario-verification.md`) ran 5
+      fresh `claude -p` reps on a real pre-skill critique; all 5 were void under its
+      pre-registered VOID rule, because
+      the exemplar step of `references/spec-synthesis.md` ("read two retired
+      exemplars in the agent-skills repo's `specs/completed/`") led every rep to read
+      the skill's own design spec, `specs/completed/methodology-pipeline-skills.md`.
+      This is a kit-isolation problem; no skill defect is asserted. The owner chose
+      on 2026-10-05 to stop at 5 reps rather than run replacements. Traces,
+      the pre-registration and the audit method are in
+      `specs/completed/synthesize-mode-verification-2026-10-05.md`; the kit
+      (`~/.cache/ctl-q9`, `~/.cache/nfp-series`) is outside the repo and is
+      rebuildable from plan 36 Task 1. A re-run should treat "a pilot rep void
+      because of the skill's own procedure" as a redesign trigger, not a cue to run
+      more reps, and the VOID rule also voids production-faithful behaviour (any
+      real Synthesize run opens the same design spec), so whether to revise the
+      rule or isolate the exemplar step is the owner's call, made BEFORE the run.
+      A rebuilt kit must also fix `grade.py`'s denial detector (it reported 0
+      denials; the transcripts show 24 auto-rejected calls), decide whether
+      `printenv` is allowed (or set `LLM_WIKI_ROOT`), and consider adding
+      `Projects/alt-nfp` (no `-model`) to the VOID list. Size: design.
+      Done when: a re-run whose exemplar step is isolated yields 5 valid reps
+      and a record under `specs/completed/` with verdicts for B1-B3.
 
 ## 19-methodology-pipeline-skills — 2026-07-30
 

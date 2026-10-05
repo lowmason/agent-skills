@@ -11,7 +11,7 @@ problem (below).
 > pattern `specs/completed/synthesize-mode-*`. Any re-run's isolation must cover it (Channel 1
 > per `microtest-isolation-channels`).
 
-Executes `specs/plans/36-synthesize-mode-scenario-verification.md` (Tasks 1-4). Source: the
+Executes `specs/plans/completed/36-synthesize-mode-scenario-verification.md` (Tasks 1-4). Source: the
 2026-07-26 deferred item "Synthesize mode has no scenario verification (spec Req 13,
 gate-deferred)" from plan 18-methodology-pipeline-skills. The behaviour under test is specified
 in `skills/describe-critique-methodology/SKILL.md` § Synthesize mode and
