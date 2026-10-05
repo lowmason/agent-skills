@@ -98,6 +98,10 @@ def test_every_json_block_must_parse(docs_dir):
 
 
 def test_an_anchor_problem_fails_the_lint(docs_dir):
-    violations, _ = run(guide_text().replace('<!-- cc: beta.reference -->\n', ''), fixture_state(docs_dir))
-    assert violations[0].endswith("heading '### Reference ⚠' has no anchor on its next line")
-    assert 'section beta.reference: missing from the guide' in violations
+    text = guide_text().replace('<!-- cc: beta.reference -->\n', '')
+    heading = '### Reference ⚠'
+    lines = text.split('\n')
+    line = lines.index(heading, lines.index(heading) + 1) + 1  # beta's, the second
+    violations, _ = run(text, fixture_state(docs_dir))
+    assert violations == [f"guide line {line}: heading '{heading}' has no anchor on its next line",
+                          'section beta.reference: missing from the guide']
