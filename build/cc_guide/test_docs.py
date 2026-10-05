@@ -37,8 +37,9 @@ def test_changelog_order_is_numeric_not_file_order():
     '<Update label="2.1.x" description="July 1, 2026">\n</Update>\n',
     ('<Update label="2.1.9" description="July 1, 2026">\n</Update>\n'
      '<Update label="2.1.9" description="July 2, 2026">\n</Update>\n'),
+    '<Update label="2.1.9" date="July 1, 2026">\n</Update>\n',
 ])
-def test_changelog_rejects_a_bad_date_a_bad_label_or_a_repeat(text):
+def test_changelog_rejects_a_bad_date_a_bad_label_a_repeat_or_an_unknown_tag(text):
     with pytest.raises(ValueError):
         docs.parse_changelog(text)
 

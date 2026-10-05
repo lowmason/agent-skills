@@ -36,7 +36,8 @@ class Release(NamedTuple):
 def parse_changelog(text: str) -> list[Release]:
     '''R6.6: the changelog's <Update label="X" description="Month D, YYYY">
     blocks with their `* ` bullets, newest first by version. Raises
-    ValueError on an unparseable label or date, or a repeated label.'''
+    ValueError on an unparseable label or date, an <Update> tag it cannot
+    read, or a repeated label.'''
     releases: list[Release] = []
     current: Release | None = None
     for n, line in enumerate(text.split('\n'), start=1):
@@ -50,6 +51,8 @@ def parse_changelog(text: str) -> list[Release]:
                 raise ValueError(f'changelog line {n}: {exc}') from None
             current = Release(label, when, [])
             releases.append(current)
+        elif line.lstrip().startswith('<Update'):
+            raise ValueError(f'changelog line {n}: unrecognized <Update> tag')
         elif line.strip() == '</Update>':
             current = None
         elif current is not None and (b := BULLET_RE.match(line)):
