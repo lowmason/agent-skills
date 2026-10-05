@@ -162,10 +162,10 @@ def test_a_full_rebaseline_rehashes_drops_deselected_and_refreshes_llms(tmp_path
     assert new['llms'] == ['env-vars', 'events', 'new-page', 'plugins/components', 'tools']
 
 
-def test_a_listed_rebaseline_touches_only_the_listed_blocks(tmp_path, docs_dir):
+def test_a_listed_rebaseline_touches_only_listed_blocks_and_refuses_other_changes(tmp_path, docs_dir):
     s = fixture_state(docs_dir)
-    latest = latest_from(tmp_path, **{'tools.md': DOCS['tools.md'].replace('Runs fast.', 'Runs faster.')
-                                      .replace('runs alpha jobs', 'runs alpha batches')})
+    faster = DOCS['tools.md'].replace('Runs fast.', 'Runs faster.')
+    latest = latest_from(tmp_path, **{'tools.md': faster})
     row = 'Tools › Options › `--fast`'
     new, pages, _ = baseline.rebaseline(s, MANIFEST, guide_text(), 'alpha', ['tools › ' + row], latest, '2.1.902')
     old_tools, new_tools = s['groups']['alpha']['blocks']['tools'], new['groups']['alpha']['blocks']['tools']
@@ -173,6 +173,14 @@ def test_a_listed_rebaseline_touches_only_the_listed_blocks(tmp_path, docs_dir):
     assert new_tools['Tools'] == old_tools['Tools']
     assert list(new_tools) == list(old_tools)
     assert pages == ['tools']
+    assert new['groups']['alpha']['snapshot']['tools'] == '2.1.902'
+    # An unlisted baselined block that also changed would leave the snapshot
+    # pointer naming text that is not baselined (R2.3), so the run refuses.
+    latest = latest_from(tmp_path, **{'tools.md': faster.replace('runs alpha jobs', 'runs alpha batches')})
+    with pytest.raises(state.SetupError) as err:
+        baseline.rebaseline(s, MANIFEST, guide_text(), 'alpha', ['tools › ' + row], latest, '2.1.902')
+    assert str(err.value) == ('tools: also changed since the baseline: tools › Tools;'
+                              ' list them too, or rebaseline the whole page')
 
 
 def test_rebaseline_keeps_a_missing_page_and_drops_an_unmapped_one(tmp_path, docs_dir):

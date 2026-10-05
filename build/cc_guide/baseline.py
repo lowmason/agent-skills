@@ -144,7 +144,9 @@ def rebaseline(state: dict, manifest: Manifest, guide_text: str, group: str, ref
                latest: Path, release: str) -> tuple[dict, list[str], list[str]]:
     '''R7 rebaseline: re-hash the group's selected blocks from latest/, all of
     them or the listed refs: `<page>`, or `<page> › <key>` as check prints a
-    block. A listed key that is no longer selected leaves the baseline.
+    block. A listed key that is no longer selected leaves the baseline. A
+    listed run refuses when an unlisted baselined block on the page changed
+    too, since the page's snapshot would then not hold its baselined text.
     Returns the new state, the pages to snapshot to <release>/docs, and notes.
 
     A missing page keeps its entries: it needs a manifest edit, not a
@@ -185,10 +187,18 @@ def rebaseline(state: dict, manifest: Manifest, guide_text: str, group: str, ref
         if not path.is_file() or (not is_platform(page) and page not in slugs):
             notes.append(f'{page}: missing page; kept its entries. Drop or remap it in manifest.toml first')
             continue
-        chosen = select_blocks(path.read_text(encoding='utf-8'), mapped[page], watched)
+        text = path.read_text(encoding='utf-8')
+        chosen = select_blocks(text, mapped[page], watched)
         if keys is None:
             g['blocks'][page] = chosen
         else:
+            hashes = {k: block_hash(t) for k, t in page_blocks(text).items()}
+            moved = [page + SEP + k for k, h in g['blocks'].get(page, {}).items()
+                     if k not in keys and hashes.get(k) != h]
+            if moved:
+                listed = ', '.join(moved)
+                raise SetupError(f'{page}: also changed since the baseline: {listed};'
+                                 ' list them too, or rebaseline the whole page')
             merged = {**g['blocks'].get(page, {})}
             for key in keys:
                 if key in chosen:
