@@ -134,6 +134,8 @@ def test_the_audit_clock_is_shared_and_targets_the_oldest_group(docs_dir):
     s = fixture_state(docs_dir)
     assert check.due_audit(MANIFEST, s, 30, date(2026, 10, 1)) == {
         'group': 'alpha', 'last_audit': '2026-09-02', 'due_from': '2026-10-02', 'due': False}
+    assert check.due_audit(MANIFEST, s, 30, date(2026, 10, 2)) == {
+        'group': 'alpha', 'last_audit': '2026-09-02', 'due_from': '2026-10-02', 'due': True}
     for sid in ('alpha.overview', 'alpha.reference'):
         s['sections'][sid]['audited'] = {'release': '2.1.902', 'date': '2026-10-02'}
     assert check.due_audit(MANIFEST, s, 30, date(2026, 10, 3)) == {
@@ -231,16 +233,24 @@ def test_a_malformed_changelog_is_a_setup_error(tmp_path, docs_dir):
     assert str(err.value) == f'changelog: changelog line 8: {cause.value}'
 
 
-def test_the_report_is_keyed_by_the_baseline_hash_and_never_written_in_the_repo(tmp_path, docs_dir):
+def test_the_report_is_keyed_by_the_baseline_hash_and_check_writes_only_its_cache_files(tmp_path, docs_dir):
     repo = drift_repo(tmp_path / 'repo', docs_dir)
-    _, report, path = run_check(repo, tmp_path / 'cache', docs_dir)
+    cache = tmp_path / 'cache'
+
+    def written():
+        return sorted(p.relative_to(cache).as_posix() for p in cache.rglob('*') if p.is_file())
+    _, report, path = run_check(repo, cache, docs_dir)
     baseline_sha = report['hashes']['baseline']
-    assert path == tmp_path / 'cache' / 'reports' / f'{baseline_sha[:12]}.json'
+    assert path == cache / 'reports' / f'{baseline_sha[:12]}.json'
     assert set(report) == {'generated_at', 'inputs', 'docs', 'hashes', 'lint', 'latest_release', 'findings',
                            'deselected', 'llms', 'untriaged', 'releases', 'due', 'errors', 'exit'}
     assert git(repo, 'status', '--porcelain') == ''
-    run_check(repo, tmp_path / 'cache', fetch=serving(docs_dir))
+    assert written() == [f'reports/{baseline_sha[:12]}.json']
+    run_check(repo, cache, fetch=serving(docs_dir))
     assert git(repo, 'status', '--porcelain') == ''
+    assert written() == ['latest/docs/changelog.md', 'latest/docs/env-vars.md', 'latest/docs/events.md',
+                         'latest/docs/llms.txt', 'latest/docs/platform_pricing.md', 'latest/docs/tools.md',
+                         'latest/fetch.json', f'reports/{baseline_sha[:12]}.json']
 
 
 def test_llms_slugs_added_and_removed_since_the_baseline_are_listed(tmp_path, docs_dir):
