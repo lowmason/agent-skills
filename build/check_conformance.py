@@ -9,8 +9,8 @@ specs/completed/claude-code-guide-conformance.md.
 
 Run: uv run --python 3.13 --with pyyaml python build/check_conformance.py
 Exit 0 when clean; 1 with one `<file>: <check> (<section>): <message>` line per
-violation on stdout; 2 when the guide or the register is missing or is not
-valid TOML, or git cannot list the repo's files, so a broken setup never looks
+violation on stdout; 2 when the guide or the register is missing, unreadable or
+is not valid TOML, or git cannot list the repo's files, so a broken setup never looks
 clean. Field-level register problems are violations, not errors.
 '''
 import json
@@ -129,6 +129,8 @@ def load_register(root: Path) -> dict:
         return tomllib.loads(path.read_text(encoding='utf-8'))
     except FileNotFoundError:
         raise SetupError(f'{REGISTER}: register not found') from None
+    except OSError as exc:
+        raise SetupError(f'{REGISTER}: cannot read ({exc.strerror or exc})') from None
     except UnicodeDecodeError as exc:
         raise SetupError(f'{REGISTER}: not valid TOML (not UTF-8: {exc.reason})') from None
     except tomllib.TOMLDecodeError as exc:

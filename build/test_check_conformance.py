@@ -800,3 +800,28 @@ def test_exception_field_rules(tmp_path, changes, expected):
 def test_repo_passes():
     '''The real repo, with the register the owner gate filled, is clean (R3.5).'''
     assert cc.run(cc.REPO) == []
+
+
+def test_unreadable_register_is_a_setup_error(tmp_path):
+    '''Any OSError reading the register is a setup error, not only a missing file.'''
+    (tmp_path / cc.REGISTER).mkdir(parents=True)  # reading a directory raises IsADirectoryError
+    with pytest.raises(cc.SetupError, match='cannot read'):
+        cc.load_register(tmp_path)
+
+
+def test_permission_denied_on_the_register_is_a_setup_error(tmp_path, monkeypatch):
+    write_tree(tmp_path, {cc.REGISTER: "[guide]\npath = 'guide.md'\n"})
+
+    def deny(self, *args, **kwargs):
+        raise PermissionError(13, 'Permission denied')
+    monkeypatch.setattr(cc.Path, 'read_text', deny)
+    with pytest.raises(cc.SetupError, match='cannot read.*Permission denied'):
+        cc.load_register(tmp_path)
+
+
+def test_main_exits_2_when_the_register_cannot_be_read(tmp_path, capsys):
+    (tmp_path / cc.REGISTER).mkdir(parents=True)
+    assert cc.main(tmp_path) == 2
+    captured = capsys.readouterr()
+    assert captured.out == ''
+    assert captured.err.startswith(f'{cc.REGISTER}: cannot read')
