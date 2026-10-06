@@ -122,7 +122,7 @@ sections = ['a.one']
 
 [kinds.rule]
 description = 'Rules files.'
-globs = ['rules/*.md', '.claude/rules/*.md']
+globs = ['rules/*.md', '.claude/rules/**']
 sections = ['a.one']
 
 [kinds.settings]
@@ -421,6 +421,15 @@ rule = 'Fixture entry.'
 enforced_by = 'check_conformance'
 nouns = ['tests']
 allow = []
+
+
+[[check]]
+id = 'hook-var-quoted'
+kind = ['hook', 'settings']
+sections = ['a.one']
+type = 'advice'
+rule = 'Quote a variable that starts a script path.'
+enforced_by = 'check_conformance'
 """
 
 
@@ -489,7 +498,7 @@ def test_register_field_problems_are_violations():
         'hook-readme-exit-claims', 'hook-scripts-executable', 'hook-python-deps',
         'allow-rule-compound-operators', 'inert-runner-allow-rules',
         'hook-install-verify-step', 'claude-md-import-resolves', 'local-md-ignored',
-        'claude-md-count-claims']
+        'claude-md-count-claims', 'hook-var-quoted']
     assert reg.checks[0].params == {'limit': 200}
 
 
@@ -1910,3 +1919,810 @@ def test_claude_md_count_claims_flag_counts_even_inside_fences(tmp_path):
 def test_claude_md_count_claims_allow_list_does_real_work_on_the_repo():
     assert real_check('claude-md-count-claims') == []
     assert any('originals' in f.message for f in real_check('claude-md-count-claims', allow=[]))
+
+
+def test_unreadable_register_is_a_setup_error(tmp_path):
+    '''Any OSError reading the register is a setup error, not only a missing file.'''
+    (tmp_path / cc.REGISTER).mkdir(parents=True)  # reading a directory raises IsADirectoryError
+    with pytest.raises(cc.SetupError, match='cannot read'):
+        cc.load_register(tmp_path)
+
+
+def test_permission_denied_on_the_register_is_a_setup_error(tmp_path, monkeypatch):
+    write_tree(tmp_path, {cc.REGISTER: "[guide]\npath = 'guide.md'\n"})
+
+    def deny(self, *args, **kwargs):
+        raise PermissionError(13, 'Permission denied')
+    monkeypatch.setattr(cc.Path, 'read_text', deny)
+    with pytest.raises(cc.SetupError, match='cannot read.*Permission denied'):
+        cc.load_register(tmp_path)
+
+
+def test_main_exits_2_when_the_register_cannot_be_read(tmp_path, capsys):
+    (tmp_path / cc.REGISTER).mkdir(parents=True)
+    assert cc.main(tmp_path) == 2
+    captured = capsys.readouterr()
+    assert captured.out == ''
+    assert captured.err.startswith(f'{cc.REGISTER}: cannot read')
+
+
+def no_git_repo(tmp_path, monkeypatch):
+    '''A fixture tree that is not a git repo, however the tests are run.'''
+    monkeypatch.setenv('GIT_CEILING_DIRECTORIES', str(tmp_path.parent))
+    monkeypatch.setenv('LC_ALL', 'C')
+    write_tree(tmp_path, {'guide.md': FIXTURE_GUIDE, cc.REGISTER: FIXTURE_REGISTER})
+    return tmp_path
+
+
+def test_kept_files_setup_error_carries_gits_reason(tmp_path, monkeypatch):
+    root = no_git_repo(tmp_path, monkeypatch)
+    with pytest.raises(cc.SetupError, match='not a git repository'):
+        cc.kept_files(root)
+
+
+def test_kept_files_setup_error_without_git_has_no_stderr(tmp_path, monkeypatch):
+    '''No git binary: an OSError, so there is no stderr to carry.'''
+    root = no_git_repo(tmp_path, monkeypatch)
+    monkeypatch.setenv('PATH', str(tmp_path / 'empty'))
+    with pytest.raises(cc.SetupError, match='cannot list the files git keeps'):
+        cc.kept_files(root)
+
+
+def test_main_exits_2_when_git_cannot_list_files(tmp_path, monkeypatch, capsys):
+    root = no_git_repo(tmp_path, monkeypatch)
+    assert cc.main(root) == 2
+    captured = capsys.readouterr()
+    assert captured.out == ''
+    assert 'cannot list the files git keeps' in captured.err
+    assert 'not a git repository' in captured.err
+
+
+# ---- #34: branches the first pass left untested ---------------------------
+
+
+def test_anchor_like_line_inside_a_fence_is_not_a_stray_anchor():
+    text = f'## A\n<!-- cc: a.overview -->\n\n{FENCE}markdown\n<!-- cc: a.sample -->\n{FENCE}\n'
+    sections, violations = cc.guide_sections(text, 'guide.md')
+    assert [s.id for s in sections] == ['a.overview']
+    assert violations == []
+
+
+def test_cc_guide_markers_are_never_anchors():
+    '''Drift Stage 2 puts <!-- cc-guide: --> lines beside the anchors; they
+    must read as neither a stray nor a malformed anchor.'''
+    text = ('## A\n<!-- cc: a.overview -->\n<!-- cc-guide: sha=abc123 -->\n\nBody.\n'
+            '<!-- cc-guide: stamp -->\n### B\n<!-- cc: a.one -->\n')
+    sections, violations = cc.guide_sections(text, 'guide.md')
+    assert [s.id for s in sections] == ['a.overview', 'a.one']
+    assert violations == []
+
+
+def test_cc_guide_marker_directly_under_a_heading_is_no_anchor():
+    '''The marker is not an anchor: the heading lacks one, and says so, instead
+    of reporting a malformed anchor.'''
+    text = '## A\n<!-- cc-guide: sha=abc123 -->\n<!-- cc: a.overview -->\n'
+    _, violations = cc.guide_sections(text, 'guide.md')
+    assert rendered(violations) == [
+        "guide.md: anchor (-): line 1: heading '## A' has no anchor on its next line",
+        'guide.md: anchor (-): line 3: anchor is not directly under a heading',
+    ]
+
+
+@pytest.mark.parametrize('text', ['## A', '## A\n'])
+def test_heading_on_the_last_line_has_no_anchor(text):
+    sections, violations = cc.guide_sections(text, 'guide.md')
+    assert [s.id for s in sections] == [None]
+    assert rendered(violations) == [
+        "guide.md: anchor (-): line 1: heading '## A' has no anchor on its next line"]
+
+
+def test_unmapped_and_check_citations_must_name_anchors():
+    raw = tomllib.loads(FIXTURE_REGISTER)
+    raw['unmapped']['z.gone'] = 'Cited by mistake.'
+    raw['check'][0]['sections'] = ['a.typo']
+    reg, _ = cc.parse_register(raw)
+    assert rendered(cc.section_violations(reg, FIXTURE_ANCHORS)) == [
+        f'{cc.REGISTER}: section-id (z.gone): [unmapped] cites a section with no anchor in the guide',
+        f'{cc.REGISTER}: section-id (a.typo): check claude-md-size cites a section with no anchor in the guide',
+    ]
+
+
+@pytest.mark.parametrize('raw', [
+    {}, {'guide': 'guide.md'}, {'guide': {}}, {'guide': {'path': ''}}, {'guide': {'path': 7}}])
+def test_missing_guide_path_is_a_setup_error(tmp_path, raw):
+    with pytest.raises(cc.SetupError, match=r'\[guide\] path is missing'):
+        cc.load_guide(tmp_path, raw)
+
+
+def test_main_exits_2_when_the_register_names_no_guide(tmp_path, capsys):
+    root = fixture_repo(tmp_path, register=FIXTURE_REGISTER.replace("[guide]\npath = 'guide.md'\n", ''))
+    assert cc.main(root) == 2
+    assert capsys.readouterr().err == f'{cc.REGISTER}: [guide] path is missing\n'
+
+
+def raw_register(**changes):
+    '''The fixture register as a dict, with top-level keys replaced.'''
+    return {**tomllib.loads(FIXTURE_REGISTER), **changes}
+
+
+def register_problems(raw):
+    return [v.message for v in cc.parse_register(raw)[1]]
+
+
+@pytest.mark.parametrize('raw, expected', [
+    (raw_register(kinds=['agent']), ['[kinds] must be a table of kinds']),
+    (raw_register(kinds={'agent': 'text'}), ['kinds.agent must be a table']),
+    (raw_register(unmapped='text'), ['[unmapped] must be a table']),
+    (raw_register(check={'id': 'x'}), ['[[check]] must be an array of tables']),
+    (raw_register(check=['text']), ['check #1 must be a table']),
+])
+def test_register_shape_problems_are_violations(raw, expected):
+    assert expected[0] in register_problems(raw)
+
+
+def test_register_shape_problems_leave_nothing_usable():
+    reg, _ = cc.parse_register({'kinds': 'x', 'unmapped': 'x', 'check': 'x'})
+    assert (reg.kinds, reg.unmapped, reg.checks) == ({}, {}, [])
+
+
+def kind_with(**fields):
+    raw = tomllib.loads(FIXTURE_REGISTER)
+    raw['kinds']['agent'] = {'description': 'Agents.', 'globs': ['agents/*.md'],
+                             'sections': ['a.overview'], **fields}
+    return raw
+
+
+def test_exclude_must_be_a_list_of_strings():
+    reg, violations = cc.parse_register(kind_with(exclude='hooks/test_*.py'))
+    assert [v.message for v in violations] == ['kinds.agent: exclude must be a list of strings']
+    assert 'agent' not in reg.kinds
+
+
+def test_a_kind_without_exclude_gets_an_empty_list():
+    reg, violations = cc.parse_register(kind_with())
+    assert violations == [] and reg.kinds['agent'].exclude == []
+
+
+def test_kind_sections_must_be_a_non_empty_list():
+    reg, violations = cc.parse_register(kind_with(sections=[]))
+    assert [v.message for v in violations] == [
+        'kinds.agent: sections must be a non-empty list of strings']
+    assert 'agent' not in reg.kinds
+
+
+def test_kind_description_is_required_but_not_structural():
+    reg, violations = cc.parse_register(kind_with(description='  '))
+    assert [v.message for v in violations] == ['kinds.agent: description must be a non-empty string']
+    assert 'agent' in reg.kinds
+
+
+def check_with(**fields):
+    raw = tomllib.loads(FIXTURE_REGISTER)
+    raw['check'][0] = {**raw['check'][0], **fields}
+    return raw
+
+
+def test_check_without_an_id_is_labelled_by_position():
+    reg, violations = cc.parse_register(check_with(id=''))
+    assert [v.message for v in violations] == ['check #1: id must be a non-empty string']
+    assert 'claude-md-size' not in [c.id for c in reg.checks]
+    assert len(reg.checks) == len(tomllib.loads(FIXTURE_REGISTER)['check']) - 1
+
+
+def test_check_rule_is_required_but_not_structural():
+    reg, violations = cc.parse_register(check_with(rule=' '))
+    assert [v.message for v in violations] == ['check claude-md-size: rule must be a non-empty string']
+    assert reg.checks[0].id == 'claude-md-size'
+
+
+@pytest.mark.parametrize('fields, message', [
+    ({'kind': 'agent'}, None),
+    ({'kind': ['agent', 'rule']}, None),
+    ({'kind': 5}, 'check claude-md-size: kind must name a kind, or list kinds'),
+    ({'kind': []}, 'check claude-md-size: kind must name a kind, or list kinds'),
+    ({'sections': 'a.one'}, 'check claude-md-size: sections must be a non-empty list of strings'),
+])
+def test_check_kind_and_sections_shapes(fields, message):
+    reg, violations = cc.parse_register(check_with(**fields))
+    assert [v.message for v in violations] == ([message] if message else [])
+    assert (reg.checks[0].id == 'claude-md-size') == (message is None)
+
+
+def test_kept_files_lists_untracked_files_and_drops_deleted_ones(tmp_path):
+    '''--cached lists a tracked file deleted from the working tree; kept_files
+    does not, and keeps a dangling symlink, which exists() calls missing.'''
+    root = git_repo(tmp_path, {'gone.md': 'x\n', 'stays.md': 'x\n'})
+    subprocess.run(['git', 'add', '.'], cwd=root, env=cc.git_env(), check=True)
+    (root / 'gone.md').unlink()
+    os.symlink('nowhere.md', root / 'dangling.md')
+    (root / 'untracked.md').write_text('x\n')
+    assert cc.kept_files(root) == ['dangling.md', 'stays.md', 'untracked.md']
+
+
+def test_stop_hook_guard_reads_only_stop_hooks(tmp_path):
+    write_tree(tmp_path, {'hooks/README.md': json_block(hooks_tree('PreToolUse', 'uv run ruff check .'))})
+    assert cc.check_stop_hook_guard(tmp_path, ['hooks/README.md'], {}) == []
+
+
+def test_stop_hook_guard_survives_a_command_shlex_rejects(tmp_path):
+    write_tree(tmp_path, {
+        'hooks/README.md': json_block(hooks_tree('Stop', '"$CLAUDE_PROJECT_DIR/.claude/hooks/ruff-check.sh')),
+        'hooks/ruff-check.sh': STOP_SCRIPT,
+    })
+    assert cc.check_stop_hook_guard(tmp_path, ['hooks/README.md', 'hooks/ruff-check.sh'], {}) == [
+        cc.Finding('hooks/README.md', 'JSON block at line 1: Stop command '
+                   "'\"$CLAUDE_PROJECT_DIR/.claude/hooks/ruff-check.sh' names no hook script in the repo")]
+
+
+def test_stop_hook_guard_leaves_parse_failures_to_hook_dir_quoted(tmp_path):
+    write_tree(tmp_path, {'hooks/README.md': f'{FENCE}json\n{{"hooks": }}\n{FENCE}\n'})
+    assert cc.check_stop_hook_guard(tmp_path, ['hooks/README.md'], {}) == []
+
+
+BROKEN_BLOCK = f'{FENCE}json\n{{"hooks": }}\n{FENCE}\n'
+BROKEN_LINE = ('hooks/README.md: hook-dir-quoted (a.one): '
+               'JSON block at line 1 does not parse (Expecting value)')
+
+
+def test_a_parse_failure_is_reported_once_when_both_hook_checks_run(tmp_path):
+    root = fixture_repo(tmp_path, {'hooks/README.md': BROKEN_BLOCK})
+    assert cc.run(root) == [BROKEN_LINE]
+
+
+def test_parse_failure_goes_quiet_without_hook_dir_quoted_but_the_run_is_not_clean(tmp_path):
+    '''stop-hook-guard drops parse failures, so with hook-dir-quoted's entry
+    gone nothing reports the block, yet the missing entry fails the run.'''
+    start = FIXTURE_REGISTER.index("[[check]]\nid = 'hook-dir-quoted'")
+    end = FIXTURE_REGISTER.index("[[check]]\nid = 'stop-hook-guard'")
+    root = fixture_repo(tmp_path, {'hooks/README.md': BROKEN_BLOCK},
+                        register=FIXTURE_REGISTER[:start] + FIXTURE_REGISTER[end:])
+    assert cc.run(root) == [
+        'build/check_conformance.py: check-impl (-): implementation hook-dir-quoted has no [[check]] entry']
+
+
+def test_unparseable_json_file_is_a_violation(tmp_path):
+    write_tree(tmp_path, {'.claude/settings.json': '{"hooks": }'})
+    assert cc.check_hook_dir_quoted(tmp_path, ['.claude/settings.json'], {}) == [
+        cc.Finding('.claude/settings.json', 'file does not parse (Expecting value)', waivable=False)]
+
+
+@pytest.mark.parametrize('command, states', [
+    ("echo '\\' $CLAUDE_PROJECT_DIR/a.sh", ['unquoted']),
+    ("echo '\\$CLAUDE_PROJECT_DIR'", ['single-quoted']),
+    ('"$CLAUDE_PROJECT_DIR"/a.sh "$CLAUDE_PROJECT_DIR"', []),
+    ('$CLAUDE_PROJECT_DIR/a.sh $CLAUDE_PROJECT_DIR/b.sh', ['unquoted', 'unquoted']),
+    ('"$CLAUDE_PROJECT_DIR"/a.sh $CLAUDE_PROJECT_DIR/b.sh', ['unquoted']),
+    ("$CLAUDE_PROJECT_DIR/a.sh '${CLAUDE_PROJECT_DIR}'", ['unquoted', 'single-quoted']),
+])
+def test_unquoted_var_uses_reports_every_use(command, states):
+    assert cc.unquoted_var_uses(command, 'CLAUDE_PROJECT_DIR') == states
+
+
+def test_each_unquoted_use_is_its_own_finding(tmp_path):
+    write_tree(tmp_path, {'hooks/README.md': json_block(
+        hooks_tree('Stop', '$CLAUDE_PROJECT_DIR/a.sh $CLAUDE_PROJECT_DIR/b.sh'))})
+    assert cc.check_hook_dir_quoted(tmp_path, ['hooks/README.md'], {}) == [
+        cc.Finding('hooks/README.md', 'JSON block at line 1: Stop command leaves $CLAUDE_PROJECT_DIR unquoted')] * 2
+
+
+def test_a_file_in_two_of_a_checks_kinds_is_checked_once(tmp_path):
+    register = FIXTURE_REGISTER.replace("globs = ['.claude/settings.json']",
+                                        "globs = ['.claude/settings.json', 'hooks/README.md']")
+    root = fixture_repo(tmp_path, {'hooks/README.md': json_block(
+        hooks_tree('PreToolUse', '$CLAUDE_PROJECT_DIR/a.sh'))}, register=register)
+    # The fixture README also trips two hook checks this test is not about.
+    unrelated = (': hook-install-verify-step (', ': hook-scripts-executable (')
+    assert [line for line in cc.run(root) if not any(u in line for u in unrelated)] == [
+        'hooks/README.md: hook-dir-quoted (a.one): JSON block at line 1: '
+        'PreToolUse command leaves $CLAUDE_PROJECT_DIR unquoted']
+
+
+def test_a_check_listed_twice_runs_once(tmp_path):
+    register = FIXTURE_REGISTER + """
+[[check]]
+id = 'hook-dir-quoted'
+kind = ['hook', 'settings']
+sections = ['a.one']
+type = 'advice'
+rule = 'Listed twice.'
+enforced_by = 'check_conformance'
+"""
+    root = fixture_repo(tmp_path, {'hooks/README.md': json_block(
+        hooks_tree('PreToolUse', '$CLAUDE_PROJECT_DIR/a.sh'))}, register=register)
+    assert cc.run(root) == [
+        f'{cc.REGISTER}: duplicate-id (-): check ID hook-dir-quoted appears 2 times',
+        'hooks/README.md: hook-dir-quoted (a.one): JSON block at line 1: '
+        'PreToolUse command leaves $CLAUDE_PROJECT_DIR unquoted',
+    ]
+
+
+PATHS_RULES = {
+    'rules/empty.md': '---\npaths: []\n---\nRule.\n',
+    'rules/scalar.md': '---\npaths: src/*.py\n---\nRule.\n',
+    'rules/null.md': '---\npaths:\n---\nRule.\n',
+    'rules/absent.md': '---\ndescription: x\n---\nRule.\n',
+}
+
+
+def test_rule_paths_on_an_always_on_rule_flags_any_paths_value_but_null(tmp_path):
+    '''An always-on rule must not set paths: an empty list or a scalar counts as
+    setting it; a bare `paths:` (null) and an absent key do not.'''
+    write_tree(tmp_path, PATHS_RULES)
+    files = sorted(PATHS_RULES)
+    assert cc.check_rule_paths(tmp_path, files, {'always_on': files}) == [
+        cc.Finding('rules/empty.md', 'always_on lists this rule, but it sets paths'),
+        cc.Finding('rules/scalar.md', 'always_on lists this rule, but it sets paths'),
+    ]
+
+
+def test_rule_paths_on_a_lazy_rule_flags_empty_scalar_null_and_absent_paths(tmp_path):
+    write_tree(tmp_path, PATHS_RULES)
+    files = sorted(PATHS_RULES)
+    message = 'frontmatter sets no non-empty paths list, so the rule loads in every session'
+    assert cc.check_rule_paths(tmp_path, files, {'always_on': []}) == [
+        cc.Finding(f, message) for f in files]
+
+
+def test_output_is_sorted_not_in_discovery_order(tmp_path):
+    '''A register violation is found before a file violation; the output sorts
+    them by file, so agents/ comes first.'''
+    register = FIXTURE_REGISTER.replace("[unmapped]\n'b.overview' = 'Governs no fixture file.'\n", '')
+    root = fixture_repo(tmp_path, {'agents/a.md': GREP_BESIDE_BASH}, register=register)
+    lines = cc.run(root)
+    assert [line.split(':')[0] for line in lines] == ['agents/a.md', cc.REGISTER]
+
+
+def test_waiver_is_not_stale_when_its_file_could_not_be_read(tmp_path):
+    '''The waived file's only finding is unwaivable (a block that does not
+    parse), so the check could not evaluate it: the waiver is neither stale
+    nor does it hide the finding.'''
+    hook_gap = {**GAP, 'id': 'hook-dir', 'check': 'hook-dir-quoted', 'sections': ['a.one'],
+                'artifacts': ['hooks/README.md'], 'protects': None}
+    root = fixture_repo(tmp_path, {'hooks/README.md': BROKEN_BLOCK},
+                        register=FIXTURE_REGISTER + exception_toml(hook_gap))
+    assert cc.run(root) == [BROKEN_LINE]
+
+
+def exception_register(raw_exception):
+    '''FIXTURE_REGISTER with one [[exception]] built from a dict (so a value TOML
+    helper cannot spell, such as a boolean, still reaches parse_exceptions).'''
+    raw = tomllib.loads(FIXTURE_REGISTER)
+    raw['exception'] = raw_exception
+    return raw
+
+
+def parse_exception_problems(raw, tmp_path):
+    reg, _ = cc.parse_register(raw)
+    write_tree(tmp_path, {'agents/a.md': GREP_BESIDE_BASH, 'CLAUDE.md': 'Short.\n'})
+    entries, violations = cc.parse_exceptions(
+        raw, reg, FIXTURE_ANCHORS, ['agents/a.md', 'CLAUDE.md'], tmp_path)
+    return entries, [v.message for v in violations]
+
+
+def clean_gap(**changes):
+    return {k: v for k, v in {**GAP, **changes}.items() if v is not None}
+
+
+def test_exceptions_must_be_an_array_of_tables(tmp_path):
+    entries, problems = parse_exception_problems(exception_register('text'), tmp_path)
+    assert (entries, problems) == ([], ['[[exception]] must be an array of tables'])
+
+
+def test_an_exception_entry_must_be_a_table(tmp_path):
+    entries, problems = parse_exception_problems(exception_register([7, clean_gap()]), tmp_path)
+    assert problems == ['exception #1 must be a table']
+    assert [e.id for e in entries] == ['grep-beside-bash']
+
+
+@pytest.mark.parametrize('changes, problem', [
+    ({'id': ''}, 'exception #1: id must be a non-empty string'),
+    ({'type': None}, 'exception grep-beside-bash: type must be deviation or gap'),
+    ({'guide': ' '}, 'exception grep-beside-bash: guide must be a non-empty string'),
+    ({'reason': None}, 'exception grep-beside-bash: reason must be a non-empty string'),
+    ({'sections': 'a.overview'}, 'exception grep-beside-bash: sections must be a non-empty list of strings'),
+    ({'sections': []}, 'exception grep-beside-bash: sections must be a non-empty list of strings'),
+    ({'protects': 'gemini'}, 'exception grep-beside-bash: protects may list only codex and gemini'),
+    ({'artifacts': None}, 'exception grep-beside-bash: artifacts must be a non-empty list of strings'),
+    ({'artifacts': []}, 'exception grep-beside-bash: artifacts must be a non-empty list of strings'),
+    ({'artifacts': 'agents/a.md'}, 'exception grep-beside-bash: artifacts must be a non-empty list of strings'),
+    ({'ceiling': True}, 'exception grep-beside-bash: ceiling applies only to a numeric check (claude-md-size)'),
+])
+def test_exception_field_problems_are_violations(tmp_path, changes, problem):
+    entries, problems = parse_exception_problems(exception_register([clean_gap(**changes)]), tmp_path)
+    assert problems == [problem]
+    # A usable id alone never keeps the entry: an unusable id or artifacts list drops it.
+    if 'id' in changes or 'artifacts' in changes:
+        assert entries == []
+
+
+def test_a_boolean_ceiling_is_not_an_integer_ceiling(tmp_path):
+    waiver = clean_gap(id='md-size', check='claude-md-size', sections=['a.one'],
+                       artifacts=['CLAUDE.md'], protects=['gemini'], ceiling=True)
+    entries, problems = parse_exception_problems(exception_register([waiver]), tmp_path)
+    assert problems == ['exception md-size: a waiver of claude-md-size needs an integer ceiling']
+    assert [(e.id, e.ceiling) for e in entries] == [('md-size', None)]
+
+
+def test_a_numeric_waiver_keeps_its_ceiling(tmp_path):
+    waiver = clean_gap(id='md-size', check='claude-md-size', sections=['a.one'],
+                       artifacts=['CLAUDE.md'], protects=None, ceiling=225)
+    entries, problems = parse_exception_problems(exception_register([waiver]), tmp_path)
+    assert problems == []
+    assert [(e.id, e.check, e.artifacts, e.ceiling) for e in entries] == [
+        ('md-size', 'claude-md-size', ['CLAUDE.md'], 225)]
+
+
+def test_a_checkless_exception_matches_artifacts_by_glob(tmp_path):
+    deviation = clean_gap(id='tools', type='deviation', check=None, tracked_in=None,
+                          revisit='later', artifacts=['agents/*.md', 'CLAUDE.md'])
+    entries, problems = parse_exception_problems(exception_register([deviation]), tmp_path)
+    assert problems == []
+    assert [(e.id, e.check, e.ceiling) for e in entries] == [('tools', None, None)]
+
+
+# ---- #39: expansion forms and substitutions --------------------------------
+
+
+@pytest.mark.parametrize('command, states', [
+    # ${VAR<operator>...} forms are uses of VAR, quoted or not.
+    ('${CLAUDE_PROJECT_DIR:-/x}/a.sh', ['unquoted']),
+    ('${CLAUDE_PROJECT_DIR-/x}/a.sh', ['unquoted']),
+    ('${CLAUDE_PROJECT_DIR:?unset}/a.sh', ['unquoted']),
+    ('${CLAUDE_PROJECT_DIR%/}/a.sh', ['unquoted']),
+    ("'${CLAUDE_PROJECT_DIR:-/x}'/a.sh", ['single-quoted']),
+    ('"${CLAUDE_PROJECT_DIR:-/x}/a.sh"', []),
+    ('"${CLAUDE_PROJECT_DIR:-$HOME}"/a.sh', []),
+    ('${CLAUDE_PROJECT_DIRX:-/x}/a.sh', []),
+    ('${OTHER:-$CLAUDE_PROJECT_DIR}/a.sh', ['unquoted']),
+    # A command substitution starts a fresh quoting context.
+    ('"$(dirname "$CLAUDE_PROJECT_DIR")/a.sh"', []),
+    ('$(dirname "$CLAUDE_PROJECT_DIR")/a.sh', []),
+    ('"$(cat "${CLAUDE_PROJECT_DIR:-/x}/v")"/a.sh', []),
+    ('"$(cat $CLAUDE_PROJECT_DIR/x)"/a.sh', ['unquoted']),
+    ('"$(cd "$(dirname "$CLAUDE_PROJECT_DIR")" && pwd)"/a.sh', []),
+    ('"$(cd "$(dirname $CLAUDE_PROJECT_DIR)" && pwd)"/a.sh', ['unquoted']),
+    ('"$( (cat "$CLAUDE_PROJECT_DIR") )"/a.sh', []),
+    ('"$( (cat x); echo $CLAUDE_PROJECT_DIR )"', ['unquoted']),
+    ('"$((1 + 2))$CLAUDE_PROJECT_DIR"', []),
+    ('"$(echo a)"$CLAUDE_PROJECT_DIR/a.sh', ['unquoted']),
+    ("'$(echo $CLAUDE_PROJECT_DIR)'", ['single-quoted']),
+    ('"\\$(echo $CLAUDE_PROJECT_DIR)"', []),
+])
+def test_unquoted_var_uses_handle_expansion_forms_and_substitutions(command, states):
+    assert cc.unquoted_var_uses(command, 'CLAUDE_PROJECT_DIR') == states
+
+
+def test_hook_dir_quoted_flags_a_default_expansion_and_passes_a_quoted_substitution(tmp_path):
+    write_tree(tmp_path, {'hooks/README.md': json_block({'hooks': {
+        'PreToolUse': [{'hooks': [
+            {'type': 'command', 'command': '${CLAUDE_PROJECT_DIR:-.}/a.sh'},
+            {'type': 'command', 'command': '"$(dirname "$CLAUDE_PROJECT_DIR")/b.sh"'}]}]}})})
+    assert cc.check_hook_dir_quoted(tmp_path, ['hooks/README.md'], {}) == [
+        cc.Finding('hooks/README.md', 'JSON block at line 1: PreToolUse command leaves $CLAUDE_PROJECT_DIR unquoted')]
+
+
+# ---- #40: stop-hook-guard sees past a runner --------------------------------
+
+
+@pytest.mark.parametrize('words, script', [
+    (['hooks/a.sh'], 'hooks/a.sh'),
+    (['uv', 'run', 'hooks/a.py'], 'hooks/a.py'),
+    (['uv', 'run', '--script', 'hooks/a.py'], 'hooks/a.py'),
+    (['uv', 'run', '--with', 'pyyaml', '--python', '3.13', 'hooks/a.py'], 'hooks/a.py'),
+    (['uv', 'run', '--with=pyyaml', 'hooks/a.py', '--flag'], 'hooks/a.py'),
+    (['python3', 'hooks/a.py'], 'hooks/a.py'),
+    (['python', '-u', 'hooks/a.py'], 'hooks/a.py'),
+    (['/usr/bin/python3.13', 'hooks/a.py'], 'hooks/a.py'),
+    (['uv', 'run', 'python3', 'hooks/a.py'], 'hooks/a.py'),
+    (['uv', 'run', 'ruff', 'check', '.'], 'ruff'),
+    (['python3', '-m', 'pytest'], 'pytest'),
+    (['python3', '-c', 'print(1)'], 'print(1)'),
+    (['uv', 'sync'], 'uv'),
+    (['uv', 'run'], None),
+    (['python3'], None),
+    ([], None),
+])
+def test_script_word_looks_past_a_known_runner(words, script):
+    assert cc.script_word(words) == script
+
+
+def stop_tree(command, script_name, source):
+    return {'hooks/README.md': json_block(hooks_tree('Stop', command)), script_name: source}
+
+
+@pytest.mark.parametrize('command, script', [
+    ('uv run "$CLAUDE_PROJECT_DIR"/.claude/hooks/ruff-check.py', 'hooks/ruff-check.py'),
+    ('uv run --with pyyaml hooks/ruff-check.py', 'hooks/ruff-check.py'),
+    ('python3 "$CLAUDE_PROJECT_DIR"/.claude/hooks/ruff-check.py', 'hooks/ruff-check.py'),
+])
+def test_stop_hook_guard_resolves_the_script_after_a_runner(tmp_path, command, script):
+    write_tree(tmp_path, stop_tree(command, script, '# reads stop_hook_active\n'))
+    assert cc.check_stop_hook_guard(tmp_path, ['hooks/README.md', script], {}) == []
+
+
+def test_stop_hook_guard_flags_an_unguarded_script_behind_a_runner(tmp_path):
+    write_tree(tmp_path, stop_tree('uv run hooks/gate.py', 'hooks/gate.py', 'import sys\n'))
+    assert cc.check_stop_hook_guard(tmp_path, ['hooks/README.md', 'hooks/gate.py'], {}) == [
+        cc.Finding('hooks/README.md', 'JSON block at line 1: Stop command runs hooks/gate.py, '
+                                      'which never reads stop_hook_active')]
+
+
+@pytest.mark.parametrize('command', ['uv run ruff check .', 'uv run', 'python3 -m pytest', 'python3'])
+def test_stop_hook_guard_still_flags_a_runner_with_no_repo_script(tmp_path, command):
+    write_tree(tmp_path, stop_tree(command, 'hooks/ruff-check.py', '# stop_hook_active\n'))
+    assert cc.check_stop_hook_guard(tmp_path, ['hooks/README.md', 'hooks/ruff-check.py'], {}) == [
+        cc.Finding('hooks/README.md', f'JSON block at line 1: Stop command {command!r} '
+                                      'names no hook script in the repo')]
+
+
+# ---- #37: a waiver path must be one of its check's files --------------------
+
+
+def not_covered(path, check='bash-search-tools', kinds='agent'):
+    return field_error(f'artifact {path} is not one of the files check {check} covers (kind: {kinds})')
+
+
+@pytest.mark.parametrize('artifact, message', [
+    ('./agents/a.md', lambda root: not_covered('./agents/a.md')),
+    (None, lambda root: not_covered(str(root / 'agents/a.md'))),  # absolute
+    ('agents', lambda root: not_covered('agents')),
+    ('agents/ignored.md', lambda root: not_covered('agents/ignored.md')),
+    ('CLAUDE.md', lambda root: not_covered('CLAUDE.md')),
+    ('agents/../agents/a.md', lambda root: not_covered('agents/../agents/a.md')),
+])
+def test_waiver_path_must_be_one_of_its_checks_files(tmp_path, artifact, message):
+    artifact = artifact or str(tmp_path / 'agents/a.md')
+    root = fixture_repo(tmp_path, {
+        'agents/a.md': GREP_BESIDE_BASH, 'agents/ignored.md': GREP_BESIDE_BASH,
+        'CLAUDE.md': 'Short.\n', '.gitignore': 'agents/ignored.md\n'},
+        register=FIXTURE_REGISTER + exception_toml({**GAP, 'artifacts': [artifact]}))
+    assert cc.run(root) == [UNWAIVED, message(root)]
+
+
+def test_waiver_path_that_is_a_check_file_passes(tmp_path):
+    '''A multi-kind check accepts a path from either kind.'''
+    hook_gap = {**GAP, 'id': 'hook-dir', 'check': 'hook-dir-quoted', 'sections': ['a.one'],
+                'artifacts': ['hooks/README.md', '.claude/settings.json'], 'protects': None}
+    root = fixture_repo(tmp_path, {
+        'hooks/README.md': json_block(hooks_tree('PreToolUse', '$CLAUDE_PROJECT_DIR/a.sh')),
+        '.claude/settings.json': json.dumps(hooks_tree('PreToolUse', '$CLAUDE_PROJECT_DIR/a.sh'))},
+        register=FIXTURE_REGISTER + exception_toml(hook_gap))
+    # The fixture names a hook script it does not ship, which this test is not about.
+    unrelated = (': hook-install-verify-step (', ': hook-scripts-executable (')
+    assert [line for line in cc.run(root) if not any(u in line for u in unrelated)] == []
+
+
+def test_waiver_path_of_the_wrong_kind_for_a_multi_kind_check_fails(tmp_path):
+    hook_gap = {**GAP, 'id': 'hook-dir', 'check': 'hook-dir-quoted', 'sections': ['a.one'],
+                'artifacts': ['agents/a.md'], 'protects': None}
+    root = fixture_repo(tmp_path, {'agents/a.md': GREP_BESIDE_BASH},
+                        register=FIXTURE_REGISTER + exception_toml(hook_gap))
+    assert cc.run(root) == [
+        UNWAIVED,
+        f'{cc.REGISTER}: exception (-): exception hook-dir: artifact agents/a.md is not one of '
+        'the files check hook-dir-quoted covers (kind: hook, settings)']
+
+
+# ---- #82: nested rules and symlinked rule directories -----------------------
+
+RULE_ENTRIES = ['.claude/rules/top.md', '.claude/rules/sub/nested.md', '.claude/rules/sub/deep/n.md',
+                '.claude/rules/dirlink', '.claude/rules/sub/dirlink', '.claude/rules/notes.txt',
+                'rules/py.md', 'rules/sub/x.md', '.claude/rulesx/y.md', '.claude/other/z.md']
+
+
+def test_real_rule_kind_covers_nested_rules_and_symlinked_directories():
+    reg, _ = cc.parse_register(cc.load_register(cc.REPO))
+    assert cc.kind_files(reg, sorted(RULE_ENTRIES))['rule'] == sorted([
+        '.claude/rules/top.md', '.claude/rules/sub/nested.md', '.claude/rules/sub/deep/n.md',
+        '.claude/rules/dirlink', '.claude/rules/sub/dirlink', '.claude/rules/notes.txt', 'rules/py.md'])
+
+
+def rules_repo(tmp_path):
+    '''A repo with nested rules, a directory link inside the repo, one outside
+    it, a dangling one, and a stray non-Markdown file.'''
+    root = tmp_path / 'repo'
+    write_tree(root, {
+        'rules/shared/a.md': RULE,
+        '.claude/rules/top.md': RULE,
+        '.claude/rules/sub/bare.md': 'No frontmatter.\n',
+        '.claude/rules/notes.txt': 'Not a rule, and no paths.\n'})
+    write_tree(tmp_path, {'elsewhere/out.md': RULE})
+    os.symlink('../../rules/shared', root / '.claude/rules/inside')
+    os.symlink('../../../elsewhere', root / '.claude/rules/outside')
+    os.symlink('../../../../elsewhere', root / '.claude/rules/sub/outside-nested')
+    os.symlink('../../rules/missing', root / '.claude/rules/dangling')
+    os.symlink('../../../elsewhere/out.md', root / '.claude/rules/link.txt')
+    return root
+
+
+def test_rule_paths_covers_nested_rules_and_directory_links(tmp_path):
+    root = rules_repo(tmp_path)
+    files = ['.claude/rules/dangling', '.claude/rules/inside', '.claude/rules/notes.txt',
+             '.claude/rules/outside', '.claude/rules/sub/bare.md',
+             '.claude/rules/sub/outside-nested', '.claude/rules/top.md']
+    outside = 'link resolves outside the repo, so Claude Code treats it as an external import'
+    assert cc.check_rule_paths(root, files, {'always_on': []}) == [
+        cc.Finding('.claude/rules/dangling', 'link target does not exist', waivable=False),
+        cc.Finding('.claude/rules/outside', outside),
+        cc.Finding('.claude/rules/sub/outside-nested', outside),
+        cc.Finding('.claude/rules/sub/bare.md',
+                   'frontmatter sets no non-empty paths list, so the rule loads in every session'),
+    ]
+
+
+def test_a_symlinked_directory_inside_the_repo_is_not_read_as_a_rule(tmp_path):
+    root = rules_repo(tmp_path)
+    assert cc.check_rule_paths(root, ['.claude/rules/inside'], {'always_on': []}) == []
+
+
+def test_a_non_markdown_file_is_not_a_rule(tmp_path):
+    root = rules_repo(tmp_path)
+    '''Neither a regular file nor a link to a file outside the repo, since
+    Claude Code discovers only .md files.'''
+    files = ['.claude/rules/link.txt', '.claude/rules/notes.txt']
+    assert cc.check_rule_paths(root, files, {'always_on': []}) == []
+
+
+# ---- #38: a check's and an exception's sections fit their kinds -------------
+
+
+def fit_line(sid, who, kinds, what='kinds'):
+    return (f'{cc.REGISTER}: section-fit ({sid}): {who} cites a section that none of its '
+            f'{what} governs (kinds: {kinds})')
+
+
+def test_check_sections_must_be_governed_by_its_kinds():
+    raw = tomllib.loads(FIXTURE_REGISTER)
+    raw['check'][0]['sections'] = ['a.one', 'a.overview']  # claude-md governs a.one only
+    reg, _ = cc.parse_register(raw)
+    assert rendered(cc.section_violations(reg, FIXTURE_ANCHORS)) == [
+        fit_line('a.overview', 'check claude-md-size', 'claude-md')]
+
+
+def test_a_multi_kind_check_needs_only_one_kind_to_govern_each_section():
+    raw = tomllib.loads(FIXTURE_REGISTER)
+    raw['kinds']['settings']['sections'] = ['a.one', 'a.overview']
+    raw['check'][2]['sections'] = ['a.overview']  # hook-dir-quoted: hook and settings
+    reg, _ = cc.parse_register(raw)
+    assert cc.section_violations(reg, FIXTURE_ANCHORS) == []
+    raw['kinds']['settings']['sections'] = ['a.one']
+    reg, _ = cc.parse_register(raw)
+    assert rendered(cc.section_violations(reg, FIXTURE_ANCHORS)) == [
+        fit_line('a.overview', 'check hook-dir-quoted', 'hook, settings')]
+
+
+def test_a_check_section_with_no_anchor_is_not_also_a_fit_violation():
+    raw = tomllib.loads(FIXTURE_REGISTER)
+    raw['check'][0]['sections'] = ['a.typo']
+    reg, _ = cc.parse_register(raw)
+    assert [v.check for v in cc.section_violations(reg, FIXTURE_ANCHORS)] == ['section-id']
+
+
+def test_exception_sections_must_be_governed_by_its_artifacts_kinds(tmp_path):
+    '''b.overview is a real anchor, but no kind governs it.'''
+    root = fixture_repo(tmp_path, {'agents/a.md': GREP_BESIDE_BASH},
+                        register=FIXTURE_REGISTER + exception_toml({**GAP, 'sections': ['a.overview', 'b.overview']}))
+    assert cc.run(root) == [fit_line('b.overview', 'exception grep-beside-bash', 'agent', 'artifacts\' kinds')]
+
+
+def test_exception_sections_may_come_from_any_of_its_artifacts_kinds(tmp_path):
+    '''The union over the artifacts: a.overview from the agent, a.one from CLAUDE.md.'''
+    mixed = {**GAP, 'id': 'mixed', 'type': 'deviation', 'check': None, 'tracked_in': None,
+             'revisit': 'later', 'sections': ['a.overview', 'a.one'],
+             'artifacts': ['agents/a.md', 'CLAUDE.md']}
+    root = fixture_repo(tmp_path, {'agents/a.md': GREP_BESIDE_BASH, 'CLAUDE.md': 'Short.\n'},
+                        register=FIXTURE_REGISTER + exception_toml(GAP) + exception_toml(mixed))
+    assert cc.run(root) == []
+
+
+def test_exception_artifacts_in_no_kind_govern_no_section(tmp_path):
+    stray = {**GAP, 'id': 'stray', 'type': 'deviation', 'check': None, 'tracked_in': None,
+             'revisit': 'later', 'artifacts': ['docs/*.md']}
+    root = fixture_repo(tmp_path, {'docs/x.md': 'Doc.\n'}, register=FIXTURE_REGISTER + exception_toml(stray))
+    assert cc.run(root) == [fit_line('a.overview', 'exception stray', 'none', 'artifacts\' kinds')]
+
+
+def test_a_misfit_exception_still_waives_its_check(tmp_path):
+    '''The fit rule reports; it does not disable the waiver.'''
+    root = fixture_repo(tmp_path, {'agents/a.md': GREP_BESIDE_BASH},
+                        register=FIXTURE_REGISTER + exception_toml({**GAP, 'sections': ['b.overview']}))
+    assert cc.run(root) == [fit_line('b.overview', 'exception grep-beside-bash', 'agent', 'artifacts\' kinds')]
+
+
+# ---- #56: hook-var-quoted ----------------------------------------------------
+
+
+@pytest.mark.parametrize('command, uses', [
+    ('"$HOME"/.claude/hooks/a.sh', []),
+    ('"${HOME}/.claude/hooks/a.sh"', []),
+    ('$HOME/.claude/hooks/a.sh', [('HOME', 'unquoted')]),
+    ('${HOME}/.claude/hooks/a.sh', [('HOME', 'unquoted')]),
+    ('${HOME:-/x}/a.sh', [('HOME', 'unquoted')]),
+    ('"$HOME"/a.sh $OTHER/b.sh', [('OTHER', 'unquoted')]),
+    ('$A/a.sh $B/b.sh', [('A', 'unquoted'), ('B', 'unquoted')]),
+    ("'$HOME'/a.sh", [('HOME', 'single-quoted')]),
+    ("'$HOME/a.sh'", [('HOME', 'single-quoted')]),
+    ('uv run --project=$REPO/tools "$REPO"/a.py', [('REPO', 'unquoted')]),
+    ('python3 --dir=$HOME/x a.py', [('HOME', 'unquoted')]),
+    ('uv run "$(dirname "$HOME")/a.py"', []),
+    ('$(cat "$HOME/x")/a.sh', []),
+    # not the start of a path, or not a path at all
+    ('echo $HOME', []),
+    ('echo $HOME done', []),
+    ('a/$HOME/b.sh', []),
+    ('x$HOME/b.sh', []),
+    ('\\$HOME/a.sh', []),
+    ('$1/a.sh', []),
+    # CLAUDE_PROJECT_DIR belongs to hook-dir-quoted
+    ('$CLAUDE_PROJECT_DIR/a.sh', []),
+    ('${CLAUDE_PROJECT_DIR}/a.sh $HOME/b.sh', [('HOME', 'unquoted')]),
+])
+def test_unquoted_path_vars(command, uses):
+    assert cc.unquoted_path_vars(command) == uses
+
+
+def test_hook_var_quoted_passes(tmp_path):
+    write_tree(tmp_path, {
+        'hooks/README.md': json_block(hooks_tree('PreToolUse', '"$HOME"/.claude/hooks/a.sh')),
+        '.claude/settings.json': json.dumps(hooks_tree('Stop', '"${HOME}/b.sh" --flag $VAR')),
+    })
+    assert cc.check_hook_var_quoted(tmp_path, ['.claude/settings.json', 'hooks/README.md'], {}) == []
+
+
+def test_hook_var_quoted_flags_unquoted_and_single_quoted_uses(tmp_path):
+    write_tree(tmp_path, {
+        'hooks/README.md': 'Wiring:\n\n' + json_block({'hooks': {
+            'PreToolUse': [{'matcher': 'Bash', 'hooks': [
+                {'type': 'command', 'command': '$HOME/.claude/hooks/a.sh'}]}],
+            'Stop': [{'hooks': [
+                {'type': 'command', 'command': "'$HOME'/.claude/hooks/b.sh"}]}],
+        }}),
+        '.claude/settings.json': json.dumps(hooks_tree('PostToolUse', '${TOOLS_DIR}/c.sh')),
+    })
+    assert cc.check_hook_var_quoted(tmp_path, ['.claude/settings.json', 'hooks/README.md'], {}) == [
+        cc.Finding('.claude/settings.json', 'PostToolUse command leaves $TOOLS_DIR unquoted at the start of a path'),
+        cc.Finding('hooks/README.md', 'JSON block at line 3: PreToolUse command leaves $HOME unquoted at the start of a path'),
+        cc.Finding('hooks/README.md', 'JSON block at line 3: Stop command leaves $HOME single-quoted at the start of a path'),
+    ]
+
+
+def test_hook_var_quoted_leaves_parse_failures_to_hook_dir_quoted(tmp_path):
+    write_tree(tmp_path, {'hooks/README.md': BROKEN_BLOCK})
+    assert cc.check_hook_var_quoted(tmp_path, ['hooks/README.md'], {}) == []
+
+
+def test_an_unquoted_project_dir_is_reported_by_hook_dir_quoted_alone(tmp_path):
+    root = fixture_repo(tmp_path, {'hooks/README.md': json_block(
+        hooks_tree('PreToolUse', '$CLAUDE_PROJECT_DIR/a.sh'))})
+    assert cc.run(root) == [
+        'hooks/README.md: hook-dir-quoted (a.one): JSON block at line 1: '
+        'PreToolUse command leaves $CLAUDE_PROJECT_DIR unquoted']
+
+
+def test_hook_var_quoted_runs_through_the_register(tmp_path):
+    root = fixture_repo(tmp_path, {'hooks/README.md': json_block(
+        hooks_tree('PreToolUse', '$HOME/.claude/hooks/a.sh'))})
+    assert cc.run(root) == [
+        'hooks/README.md: hook-var-quoted (a.one): JSON block at line 1: '
+        'PreToolUse command leaves $HOME unquoted at the start of a path']
+
+
+def test_hook_var_quoted_can_be_waived(tmp_path):
+    waiver = {**GAP, 'id': 'home-unquoted', 'check': 'hook-var-quoted', 'sections': ['a.one'],
+              'artifacts': ['hooks/README.md'], 'protects': None}
+    root = fixture_repo(tmp_path, {'hooks/README.md': json_block(
+        hooks_tree('PreToolUse', '$HOME/.claude/hooks/a.sh'))},
+        register=FIXTURE_REGISTER + exception_toml(waiver))
+    assert cc.run(root) == []
+
+
+def test_a_broken_kind_adds_no_fit_noise_and_crashes_nothing(tmp_path):
+    '''A check may name a kind whose table is unusable (no globs): parse_register
+    keeps the check but drops the kind. The register problem and its section-map
+    consequence are the reports; the section-fit rule skips the check and the
+    exception, and the waiver path rule does not call the agent path uncovered.'''
+    register = FIXTURE_REGISTER.replace("globs = ['agents/*.md']\n", '') + exception_toml(GAP)
+    root = fixture_repo(tmp_path, {'agents/a.md': GREP_BESIDE_BASH}, register=register)
+    assert cc.run(root) == [
+        f'{cc.REGISTER}: register (-): kinds.agent: globs must be a non-empty list of strings',
+        f'{cc.REGISTER}: section-map (a.overview): section is neither mapped to a kind nor listed in [unmapped]']

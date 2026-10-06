@@ -11,7 +11,8 @@
 # matched with PurePath.full_match against the files git keeps, so `*` stays
 # inside one path segment and every glob is anchored at the repo root.
 # A [[check]]'s `kind` names one kind, or lists several when one check spans
-# kinds.
+# kinds. A [[check]]'s sections must be governed by its kinds, and an
+# [[exception]]'s by the kinds of its artifacts (the lint's section-fit rule).
 
 [guide]
 path = 'specs/guides/claude-code-customization-guide.md'
@@ -62,8 +63,8 @@ sections = [
 ]
 
 [kinds.rule]
-description = 'Rules files: the canonical rules/ templates and the project .claude/rules/ links.'
-globs = ['rules/*.md', '.claude/rules/*.md']
+description = 'Rules files: the canonical rules/ templates and everything under the project .claude/rules/, nested rules and symlinked directories included.'
+globs = ['rules/*.md', '.claude/rules/**']
 sections = [
     'rules.rules-files', 'rules.hierarchy', 'mechanisms.overview',
     'lean.session-hygiene', 'context.overview',
@@ -137,7 +138,7 @@ id = 'rule-paths'
 kind = 'rule'
 sections = ['rules.rules-files']
 type = 'advice'
-rule = 'A rules file sets a non-empty paths list so it loads lazily, unless always_on lists it; a .claude/rules/ link resolves inside the repo.'
+rule = 'A rules file sets a non-empty paths list so it loads lazily, unless always_on lists it; a .claude/rules/ link, to a file or a directory, resolves inside the repo.'
 enforced_by = 'check_conformance'
 always_on = []
 
@@ -158,7 +159,7 @@ id = 'stop-hook-guard'
 kind = ['hook', 'settings']
 sections = ['hooks.exit-codes', 'hooks.patterns']
 type = 'advice'
-rule = 'A command wired to Stop runs a repo hook script that reads stop_hook_active.'
+rule = 'A command wired to Stop runs a repo hook script that reads stop_hook_active, directly or through uv run or python.'
 enforced_by = 'check_conformance'
 
 # Both lists come from the guide's subagent frontmatter table.
@@ -532,6 +533,17 @@ nouns = [
 ]
 allow = ['originals — keep in sync']
 
+# The guide's Pattern 1 quotes the project-dir variable so a path with spaces
+# survives word splitting; the same holds for any variable that starts a
+# script path, $HOME included. $CLAUDE_PROJECT_DIR stays with hook-dir-quoted.
+[[check]]
+id = 'hook-var-quoted'
+kind = ['hook', 'settings']
+sections = ['hooks.patterns']
+type = 'advice'
+rule = 'A hook command keeps any other variable that starts a script path inside double quotes.'
+enforced_by = 'check_conformance'
+
 # ---------------------------------------------------------------------------
 # Exceptions, decided by the owner at the plan 35 gate (2026-10-04) on the
 # audit in specs/claude-code-conformance-audit-2026-10-04.md. A deviation is
@@ -622,9 +634,9 @@ tracked_in = 'deferred item: gate or make manual-only the four ungated side-effe
 [[exception]]
 id = 'writing-skills-guide-gaps'
 type = 'gap'
-sections = ['skills.overview', 'skills.listing-budget', 'skills.progressive-disclosure', 'rules.hierarchy']
+sections = ['skills.overview', 'skills.listing-budget', 'skills.progressive-disclosure']
 artifacts = ['skills/writing-skills/SKILL.md']
-guide = 'A SKILL.md body stays well under 500 lines with critical rules near the top; overflowing descriptions are dropped from the listing; @ imports are documented for CLAUDE.md only.'
+guide = 'A SKILL.md body stays well under 500 lines with critical rules near the top; overflowing descriptions are dropped from the listing; a bundled file loads only when the body points at it.'
 reason = 'writing-skills departs from the guide on body length, the listing budget, critical-rules-first and @ loading; its @ loading claim is unsupported rather than contradicted, and Stage D verifies or drops it.'
 evidence = 'Audit rows S-02, S-58, S-67, S-68, S-107; owner gate 2026-10-04.'
 tracked_in = 'portability Stage D'

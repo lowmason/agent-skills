@@ -9,8 +9,8 @@ specs/completed/claude-code-guide-conformance.md.
 
 Run: uv run --python 3.13 --with pyyaml python build/check_conformance.py
 Exit 0 when clean; 1 with one `<file>: <check> (<section>): <message>` line per
-violation on stdout; 2 when the guide or the register is missing or is not
-valid TOML, or git cannot list the repo's files, so a broken setup never looks
+violation on stdout; 2 when the guide or the register is missing, unreadable or
+is not valid TOML, or git cannot list the repo's files, so a broken setup never looks
 clean. Field-level register problems are violations, not errors.
 '''
 import ast
@@ -131,6 +131,8 @@ def load_register(root: Path) -> dict:
         return tomllib.loads(path.read_text(encoding='utf-8'))
     except FileNotFoundError:
         raise SetupError(f'{REGISTER}: register not found') from None
+    except OSError as exc:
+        raise SetupError(f'{REGISTER}: cannot read ({exc.strerror or exc})') from None
     except UnicodeDecodeError as exc:
         raise SetupError(f'{REGISTER}: not valid TOML (not UTF-8: {exc.reason})') from None
     except tomllib.TOMLDecodeError as exc:
@@ -259,6 +261,14 @@ def section_violations(reg: Register, anchors: list[str]) -> list[Violation]:
     cite('[unmapped]', reg.unmapped)
     for check in reg.checks:
         cite(f'check {check.id}', check.sections)
+        if not all(k in reg.kinds for k in check.kinds):
+            continue  # a kind with an unusable table is already a register violation
+        governed = {sid for k in check.kinds for sid in reg.kinds[k].sections}
+        for sid in check.sections:
+            if sid in known and sid not in governed:
+                out.append(Violation(REGISTER, 'section-fit', sid,
+                                     f'check {check.id} cites a section that none of its kinds '
+                                     f'governs (kinds: {", ".join(check.kinds)})'))
     mapped = {sid for kind in reg.kinds.values() for sid in kind.sections}
     for sid in anchors:
         if sid in mapped and sid in reg.unmapped:
@@ -296,7 +306,10 @@ def kept_files(root: Path) -> list[str]:
             ['git', 'ls-files', '--cached', '--others', '--exclude-standard', '-z'],
             cwd=root, env=git_env(), capture_output=True, check=True).stdout
     except (OSError, subprocess.CalledProcessError) as exc:
-        raise SetupError(f'cannot list the files git keeps under {root} ({exc})') from None
+        # git's own words, when it ran and failed: stderr is bytes here.
+        reason = (os.fsdecode(exc.stderr).strip()
+                  if isinstance(exc, subprocess.CalledProcessError) and exc.stderr else str(exc))
+        raise SetupError(f'cannot list the files git keeps under {root} ({reason})') from None
     paths = [os.fsdecode(entry) for entry in listing.split(b'\0') if entry]
     # --cached also lists tracked files deleted from the working tree.
     return sorted(p for p in paths if (root / p).exists() or (root / p).is_symlink())
@@ -437,33 +450,57 @@ def hook_commands(root: Path, files: list[str]) -> tuple[list[HookCommand], list
     return found, problems
 
 
-def _identifier_char(text: str, i: int) -> bool:
-    return i < len(text) and (text[i].isalnum() or text[i] == '_')
+NAME_RE = re.compile(r'[A-Za-z_][A-Za-z0-9_]*')
 
 
-def unquoted_var_uses(command: str, var: str) -> list[str]:
-    '''The quote state, 'unquoted' or 'single-quoted', of each $var or ${var} in
-    a shell command that is not inside double quotes. A single-quoted use
-    never expands, so it counts too. Empty when every use is double-quoted.'''
-    plain, braced = '$' + var, '${' + var + '}'
-    states: list[str] = []
-    quote = ''  # '', "'" or '"'
+def shell_expansions(command: str) -> list[tuple[str, str, int, int]]:
+    '''(name, state, start, end) of each $NAME or ${NAME...} in a shell command
+    that is not inside double quotes: state is 'unquoted' or 'single-quoted'
+    (a single-quoted use never expands, so it counts too), start is the index of
+    the `$` and end the index after the name, or after the closing brace.
+    `${NAME:-x}` and the other operator forms are uses of NAME. A `$(` opens a
+    fresh quoting context that its matching `)` closes, so a quoted use inside
+    "$(...)" is quoted, and an unquoted one is not.'''
+    found: list[tuple[str, str, int, int]] = []
+    stack = [['', 0]]  # one [quote, open parens] frame per $( level; quote is '', "'" or '"'
     i = 0
     while i < len(command):
-        ch = command[i]
+        frame = stack[-1]
+        quote, ch = frame[0], command[i]
         if ch == '\\' and quote != "'":
             i += 2  # an escaped character, $ included, is literal
             continue
-        if not quote and ch in '\'"':
-            quote = ch
+        if ch == '$' and quote != "'" and command.startswith('$(', i):
+            stack.append(['', 0])
+            i += 2
+            continue
+        if ch == '$':
+            braced = command.startswith('${', i)
+            m = NAME_RE.match(command, i + (2 if braced else 1))
+            if m and quote != '"':
+                end = (command.find('}', m.end()) + 1 or len(command)) if braced else m.end()
+                found.append((m.group(), 'single-quoted' if quote else 'unquoted', i, end))
+        elif not quote and ch in '\'"':
+            frame[0] = ch
         elif ch == quote:
-            quote = ''
-        elif ch == '$' and (command.startswith(braced, i) or (
-                command.startswith(plain, i) and not _identifier_char(command, i + len(plain)))):
-            if quote != '"':
-                states.append('single-quoted' if quote else 'unquoted')
+            frame[0] = ''
+        elif not quote and len(stack) > 1:
+            if ch == '(':
+                frame[1] += 1
+            elif ch == ')':
+                if frame[1]:
+                    frame[1] -= 1
+                else:
+                    stack.pop()
         i += 1
-    return states
+    return found
+
+
+def unquoted_var_uses(command: str, var: str) -> list[str]:
+    '''The quote state, 'unquoted' or 'single-quoted', of each $var or ${var...}
+    in a shell command that is not inside double quotes. Empty when every use
+    is double-quoted.'''
+    return [state for name, state, _, _ in shell_expansions(command) if name == var]
 
 
 def check_hook_dir_quoted(root: Path, files: list[str], params: dict) -> list[Finding]:
@@ -473,6 +510,35 @@ def check_hook_dir_quoted(root: Path, files: list[str], params: dict) -> list[Fi
             out.append(Finding(hook.file, f'{hook.where}{hook.event} command leaves '
                                           f'$CLAUDE_PROJECT_DIR {state}'))
     return out
+
+
+PYTHON_RE = re.compile(r'python(?:3(?:\.\d+)?)?')
+# Options that take a separate value, for the runners script_word knows. Any
+# other option is taken to stand alone, so one missing here shows up as a
+# Stop command that names no hook script. -m and -c are left out on purpose:
+# what follows them is a module or code, never a script.
+VALUE_OPTIONS = frozenset({'--with', '--with-requirements', '--python', '-p', '--project',
+                           '--directory', '--env-file', '--extra', '--group', '--package',
+                           '-W', '-X'})
+
+
+def script_word(words: list[str]) -> str | None:
+    '''The word of a split shell command that names the script it runs: the
+    first word, or the first non-option word after a runner (`uv run`,
+    `python`, `python3`, `python3.13`, however nested). None when a runner has
+    no further word.'''
+    i = 0
+    while i < len(words):
+        name = PurePosixPath(words[i]).name
+        if name == 'uv' and words[i + 1:i + 2] == ['run']:
+            i += 2
+        elif PYTHON_RE.fullmatch(name):
+            i += 1
+        else:
+            return words[i]
+        while i < len(words) and words[i].startswith('-'):
+            i += 2 if words[i] in VALUE_OPTIONS else 1
+    return None
 
 
 def check_stop_hook_guard(root: Path, files: list[str], params: dict) -> list[Finding]:
@@ -486,7 +552,8 @@ def check_stop_hook_guard(root: Path, files: list[str], params: dict) -> list[Fi
             words = shlex.split(hook.command)
         except ValueError:
             words = []
-        script = scripts.get(PurePosixPath(words[0]).name) if words else None
+        word = script_word(words)
+        script = scripts.get(PurePosixPath(word).name) if word else None
         if script is None:
             out.append(Finding(hook.file, f'{hook.where}Stop command {hook.command!r} names '
                                           'no hook script in the repo'))
@@ -514,13 +581,16 @@ def check_rule_paths(root: Path, files: list[str], params: dict) -> list[Finding
     readable: list[str] = []
     for f in files:
         path = root / f
-        if (f.startswith('.claude/rules/') and path.is_symlink()
+        # A rule is a .md file; a symlinked directory holds rules, and git
+        # lists it as one entry with no .md suffix. Any other file is no rule.
+        entry = f.endswith('.md') or path.is_dir()
+        if (f.startswith('.claude/rules/') and path.is_symlink() and entry
                 and not path.resolve().is_relative_to(root.resolve())):
             out.append(Finding(f, 'link resolves outside the repo, so Claude Code treats '
                                   'it as an external import'))
         elif not path.exists():
             out.append(Finding(f, 'link target does not exist', waivable=False))
-        else:
+        elif entry and not path.is_dir():
             readable.append(f)
     for f, text in read_artifacts(root, readable, out):
         paths = (frontmatter(text) or {}).get('paths')
@@ -1221,6 +1291,34 @@ def check_claude_md_count_claims(root: Path, files: list[str], params: dict) -> 
     return out
 
 
+# The guide's Pattern 1 quotes $CLAUDE_PROJECT_DIR, which hook-dir-quoted
+# already checks, so the general check leaves that variable to it.
+PATH_START_BLOCKED = frozenset('_/.-~')
+QUOTES_THEN_SLASH_RE = re.compile(r'[\'"]*/')
+
+
+def unquoted_path_vars(command: str) -> list[tuple[str, str]]:
+    '''(name, state) of each $NAME or ${NAME...} other than CLAUDE_PROJECT_DIR
+    that starts a path in a shell command and is not double-quoted: it follows
+    no word character, `/`, `.`, `-` or `~`, and a `/` comes right after it
+    (past any closing quote). `$HOME/x` and `'$HOME'/x` qualify; `echo $HOME`,
+    `a/$HOME/x` and a variable inside double quotes do not.'''
+    return [(name, state) for name, state, start, end in shell_expansions(command)
+            if name != 'CLAUDE_PROJECT_DIR'
+            and (start == 0 or not (command[start - 1].isalnum() or command[start - 1] in PATH_START_BLOCKED))
+            and QUOTES_THEN_SLASH_RE.match(command, end)]
+
+
+def check_hook_var_quoted(root: Path, files: list[str], params: dict) -> list[Finding]:
+    found, _ = hook_commands(root, files)  # hook-dir-quoted reports parse failures
+    out: list[Finding] = []
+    for hook in found:
+        for name, state in unquoted_path_vars(hook.command):
+            out.append(Finding(hook.file, f'{hook.where}{hook.event} command leaves '
+                                          f'${name} {state} at the start of a path'))
+    return out
+
+
 # Each check_conformance check: its function and the parameters the register
 # must give it ('integer', or 'strings' for a list of strings).
 CHECKS = {
@@ -1255,6 +1353,7 @@ CHECKS = {
     'claude-md-import-resolves': (check_claude_md_import_resolves, {'max_hops': 'integer'}),
     'local-md-ignored': (check_local_md_ignored, {}),
     'claude-md-count-claims': (check_claude_md_count_claims, {'nouns': 'strings', 'allow': 'strings'}),
+    'hook-var-quoted': (check_hook_var_quoted, {}),
 }
 PARAM_TYPES = {
     'integer': (lambda v: isinstance(v, int) and not isinstance(v, bool), 'an integer'),
@@ -1336,7 +1435,13 @@ def parse_exceptions(raw: dict, reg: Register, anchors: list[str], files: list[s
     if not isinstance(raw_exceptions, list):
         return [], [Violation(REGISTER, 'register', '-', '[[exception]] must be an array of tables')]
     conformance = {c.id for c in reg.checks if c.enforced_by == 'check_conformance'}
+    covered = kind_files(reg, files)
+    check_kinds = {c.id: c.kinds for c in reg.checks if c.enforced_by == 'check_conformance'}
     known = set(anchors)
+    # A kind with an unusable table is a register violation already, and the
+    # artifacts' kinds cannot be known without it, so the fit rule waits.
+    raw_kinds = raw.get('kinds')
+    unusable_kinds = isinstance(raw_kinds, dict) and set(raw_kinds) != set(reg.kinds)
     out: list[Violation] = []
     entries: list[ExceptionEntry] = []
     ids: list[str] = []
@@ -1406,11 +1511,25 @@ def parse_exceptions(raw: dict, reg: Register, anchors: list[str], files: list[s
                 elif not ((root / a).exists() or (root / a).is_symlink()):
                     problems.append(f'artifact {a} does not exist')
                     artifacts_ok = False
+                elif (check_ok and all(k in reg.kinds for k in check_kinds[check])
+                      and a not in {f for k in check_kinds[check] for f in covered.get(k, [])}):
+                    problems.append(f'artifact {a} is not one of the files check {check} covers '
+                                    f'(kind: {", ".join(check_kinds[check])})')
+                    artifacts_ok = False
         else:
             for a in artifacts:
                 if not any(PurePosixPath(f).full_match(a) for f in files):
                     problems.append(f'artifact glob {a} matches no file')
                     artifacts_ok = False
+        if artifacts_ok and _str_list(sections) and not unusable_kinds:
+            names = sorted(name for name, kfiles in covered.items()
+                           if any(PurePosixPath(f).full_match(a) for a in artifacts for f in kfiles))
+            governed = {sid for name in names for sid in reg.kinds[name].sections}
+            for sid in sections:
+                if sid in known and sid not in governed:
+                    out.append(Violation(REGISTER, 'section-fit', sid,
+                                         f'{label} cites a section that none of its artifacts\' '
+                                         f'kinds governs (kinds: {", ".join(names) or "none"})'))
         for problem in problems:
             out.append(Violation(REGISTER, 'exception', '-', f'{label}: {problem}'))
         if _nonempty_str(eid) and check_ok and artifacts_ok:
