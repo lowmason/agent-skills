@@ -1236,3 +1236,44 @@ def test_a_checkless_exception_matches_artifacts_by_glob(tmp_path):
     entries, problems = parse_exception_problems(exception_register([deviation]), tmp_path)
     assert problems == []
     assert [(e.id, e.check, e.ceiling) for e in entries] == [('tools', None, None)]
+
+
+# ---- #39: expansion forms and substitutions --------------------------------
+
+
+@pytest.mark.parametrize('command, states', [
+    # ${VAR<operator>...} forms are uses of VAR, quoted or not.
+    ('${CLAUDE_PROJECT_DIR:-/x}/a.sh', ['unquoted']),
+    ('${CLAUDE_PROJECT_DIR-/x}/a.sh', ['unquoted']),
+    ('${CLAUDE_PROJECT_DIR:?unset}/a.sh', ['unquoted']),
+    ('${CLAUDE_PROJECT_DIR%/}/a.sh', ['unquoted']),
+    ("'${CLAUDE_PROJECT_DIR:-/x}'/a.sh", ['single-quoted']),
+    ('"${CLAUDE_PROJECT_DIR:-/x}/a.sh"', []),
+    ('"${CLAUDE_PROJECT_DIR:-$HOME}"/a.sh', []),
+    ('${CLAUDE_PROJECT_DIRX:-/x}/a.sh', []),
+    ('${OTHER:-$CLAUDE_PROJECT_DIR}/a.sh', ['unquoted']),
+    # A command substitution starts a fresh quoting context.
+    ('"$(dirname "$CLAUDE_PROJECT_DIR")/a.sh"', []),
+    ('$(dirname "$CLAUDE_PROJECT_DIR")/a.sh', []),
+    ('"$(cat "${CLAUDE_PROJECT_DIR:-/x}/v")"/a.sh', []),
+    ('"$(cat $CLAUDE_PROJECT_DIR/x)"/a.sh', ['unquoted']),
+    ('"$(cd "$(dirname "$CLAUDE_PROJECT_DIR")" && pwd)"/a.sh', []),
+    ('"$(cd "$(dirname $CLAUDE_PROJECT_DIR)" && pwd)"/a.sh', ['unquoted']),
+    ('"$( (cat "$CLAUDE_PROJECT_DIR") )"/a.sh', []),
+    ('"$( (cat x); echo $CLAUDE_PROJECT_DIR )"', ['unquoted']),
+    ('"$((1 + 2))$CLAUDE_PROJECT_DIR"', []),
+    ('"$(echo a)"$CLAUDE_PROJECT_DIR/a.sh', ['unquoted']),
+    ("'$(echo $CLAUDE_PROJECT_DIR)'", ['single-quoted']),
+    ('"\\$(echo $CLAUDE_PROJECT_DIR)"', []),
+])
+def test_unquoted_var_uses_handle_expansion_forms_and_substitutions(command, states):
+    assert cc.unquoted_var_uses(command, 'CLAUDE_PROJECT_DIR') == states
+
+
+def test_hook_dir_quoted_flags_a_default_expansion_and_passes_a_quoted_substitution(tmp_path):
+    write_tree(tmp_path, {'hooks/README.md': json_block({'hooks': {
+        'PreToolUse': [{'hooks': [
+            {'type': 'command', 'command': '${CLAUDE_PROJECT_DIR:-.}/a.sh'},
+            {'type': 'command', 'command': '"$(dirname "$CLAUDE_PROJECT_DIR")/b.sh"'}]}]}})})
+    assert cc.check_hook_dir_quoted(tmp_path, ['hooks/README.md'], {}) == [
+        cc.Finding('hooks/README.md', 'JSON block at line 1: PreToolUse command leaves $CLAUDE_PROJECT_DIR unquoted')]

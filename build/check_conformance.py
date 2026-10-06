@@ -440,33 +440,57 @@ def hook_commands(root: Path, files: list[str]) -> tuple[list[HookCommand], list
     return found, problems
 
 
-def _identifier_char(text: str, i: int) -> bool:
-    return i < len(text) and (text[i].isalnum() or text[i] == '_')
+NAME_RE = re.compile(r'[A-Za-z_][A-Za-z0-9_]*')
 
 
-def unquoted_var_uses(command: str, var: str) -> list[str]:
-    '''The quote state, 'unquoted' or 'single-quoted', of each $var or ${var} in
-    a shell command that is not inside double quotes. A single-quoted use
-    never expands, so it counts too. Empty when every use is double-quoted.'''
-    plain, braced = '$' + var, '${' + var + '}'
-    states: list[str] = []
-    quote = ''  # '', "'" or '"'
+def shell_expansions(command: str) -> list[tuple[str, str, int, int]]:
+    '''(name, state, start, end) of each $NAME or ${NAME...} in a shell command
+    that is not inside double quotes: state is 'unquoted' or 'single-quoted'
+    (a single-quoted use never expands, so it counts too), start is the index of
+    the `$` and end the index after the name, or after the closing brace.
+    `${NAME:-x}` and the other operator forms are uses of NAME. A `$(` opens a
+    fresh quoting context that its matching `)` closes, so a quoted use inside
+    "$(...)" is quoted, and an unquoted one is not.'''
+    found: list[tuple[str, str, int, int]] = []
+    stack = [['', 0]]  # one [quote, open parens] frame per $( level; quote is '', "'" or '"'
     i = 0
     while i < len(command):
-        ch = command[i]
+        frame = stack[-1]
+        quote, ch = frame[0], command[i]
         if ch == '\\' and quote != "'":
             i += 2  # an escaped character, $ included, is literal
             continue
-        if not quote and ch in '\'"':
-            quote = ch
+        if ch == '$' and quote != "'" and command.startswith('$(', i):
+            stack.append(['', 0])
+            i += 2
+            continue
+        if ch == '$':
+            braced = command.startswith('${', i)
+            m = NAME_RE.match(command, i + (2 if braced else 1))
+            if m and quote != '"':
+                end = (command.find('}', m.end()) + 1 or len(command)) if braced else m.end()
+                found.append((m.group(), 'single-quoted' if quote else 'unquoted', i, end))
+        elif not quote and ch in '\'"':
+            frame[0] = ch
         elif ch == quote:
-            quote = ''
-        elif ch == '$' and (command.startswith(braced, i) or (
-                command.startswith(plain, i) and not _identifier_char(command, i + len(plain)))):
-            if quote != '"':
-                states.append('single-quoted' if quote else 'unquoted')
+            frame[0] = ''
+        elif not quote and len(stack) > 1:
+            if ch == '(':
+                frame[1] += 1
+            elif ch == ')':
+                if frame[1]:
+                    frame[1] -= 1
+                else:
+                    stack.pop()
         i += 1
-    return states
+    return found
+
+
+def unquoted_var_uses(command: str, var: str) -> list[str]:
+    '''The quote state, 'unquoted' or 'single-quoted', of each $var or ${var...}
+    in a shell command that is not inside double quotes. Empty when every use
+    is double-quoted.'''
+    return [state for name, state, _, _ in shell_expansions(command) if name == var]
 
 
 def check_hook_dir_quoted(root: Path, files: list[str], params: dict) -> list[Finding]:
