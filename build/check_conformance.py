@@ -612,7 +612,8 @@ def check_rule_paths(root: Path, files: list[str], params: dict) -> list[Finding
 # that open at a word boundary, so an apostrophe inside a word never opens one.
 QUOTED_PHRASE_RE = re.compile(
     r"\"[^\"\n]+\"|“[^”\n]+”|(?<!\w)'(?:[^'\n]|(?<=\w)'(?=\w))+'(?!\w)")
-INLINE_CODE_RE = re.compile(r'`[^`\n]*`')
+# An inline code span, however many backticks fence it.
+INLINE_CODE_RE = re.compile(r'(`+)(.+?)\1')
 ANY_HEADING_RE = re.compile(r'#{1,6}[ \t]')
 # The substitutions the guide lists that need no declaration: $ARGUMENTS, a
 # positional $0, $1, ..., and a ${CLAUDE_...} session variable. A leading
@@ -900,8 +901,6 @@ def check_agent_model_available(root: Path, files: list[str], params: dict) -> l
 
 # $ARGUMENTS, $ARGUMENTS[n] and $n, unless a backslash escapes the $.
 ARG_TOKEN_RE = re.compile(r'(?<!\\)\$(?:ARGUMENTS(?:\[\d+\])?|\d+)')
-SHELL_INLINE_RE = re.compile(r'!`[^`\n]+`')
-SHELL_FENCE_RE = re.compile(r'^[ \t]*`{3,}!')
 
 
 def body_lines(text: str) -> list[tuple[int, str]]:
@@ -932,7 +931,7 @@ def check_command_substitution_tokens(root: Path, files: list[str], params: dict
                         out.append(Finding(f, f'line {n}: {token} is substituted, but frontmatter '
                                               'sets neither argument-hint nor arguments'))
             if not pre_approved and 'shell' not in seen and (
-                    SHELL_INLINE_RE.search(line) or SHELL_FENCE_RE.match(line)):
+                    INLINE_SHELL_RE.search(line) or SHELL_FENCE_RE.match(line)):
                 seen.add('shell')
                 out.append(Finding(f, f'line {n}: render-time shell runs, but frontmatter '
                                       'sets no allowed-tools Bash entry'))
@@ -1205,7 +1204,6 @@ def check_hook_install_verify_step(root: Path, files: list[str], params: dict) -
     return out
 
 
-INLINE_CODE_RE = re.compile(r'(`+)(.+?)\1')
 IMPORT_RE = re.compile(r'(?<![\w/.@-])@([^\s`]+)')
 
 

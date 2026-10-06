@@ -3,6 +3,7 @@
 Fixture trees are hand-written per test. The R1.2 pin and the repo tests read
 the real guide and register.
 '''
+import ast
 import json
 import os
 import subprocess
@@ -1993,6 +1994,14 @@ def test_index_modes_setup_error_carries_gits_reason(tmp_path, monkeypatch):
     root = no_git_repo(tmp_path, monkeypatch)
     with pytest.raises(cc.SetupError, match='cannot read the git index modes.*not a git repository'):
         cc.index_modes(root, ['hooks/gate.sh'])
+
+
+def test_no_module_level_name_is_assigned_twice():
+    '''A merge once left two INLINE_CODE_RE patterns; the later one silently won.'''
+    tree = ast.parse((cc.REPO / 'build/check_conformance.py').read_text())
+    names = [t.id for node in tree.body if isinstance(node, ast.Assign)
+             for t in node.targets if isinstance(t, ast.Name)]
+    assert sorted({n for n in names if names.count(n) > 1}) == []
 
 
 def test_main_exits_2_when_git_cannot_list_files(tmp_path, monkeypatch, capsys):
