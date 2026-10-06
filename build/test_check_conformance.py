@@ -1277,3 +1277,57 @@ def test_hook_dir_quoted_flags_a_default_expansion_and_passes_a_quoted_substitut
             {'type': 'command', 'command': '"$(dirname "$CLAUDE_PROJECT_DIR")/b.sh"'}]}]}})})
     assert cc.check_hook_dir_quoted(tmp_path, ['hooks/README.md'], {}) == [
         cc.Finding('hooks/README.md', 'JSON block at line 1: PreToolUse command leaves $CLAUDE_PROJECT_DIR unquoted')]
+
+
+# ---- #40: stop-hook-guard sees past a runner --------------------------------
+
+
+@pytest.mark.parametrize('words, script', [
+    (['hooks/a.sh'], 'hooks/a.sh'),
+    (['uv', 'run', 'hooks/a.py'], 'hooks/a.py'),
+    (['uv', 'run', '--script', 'hooks/a.py'], 'hooks/a.py'),
+    (['uv', 'run', '--with', 'pyyaml', '--python', '3.13', 'hooks/a.py'], 'hooks/a.py'),
+    (['uv', 'run', '--with=pyyaml', 'hooks/a.py', '--flag'], 'hooks/a.py'),
+    (['python3', 'hooks/a.py'], 'hooks/a.py'),
+    (['python', '-u', 'hooks/a.py'], 'hooks/a.py'),
+    (['/usr/bin/python3.13', 'hooks/a.py'], 'hooks/a.py'),
+    (['uv', 'run', 'python3', 'hooks/a.py'], 'hooks/a.py'),
+    (['uv', 'run', 'ruff', 'check', '.'], 'ruff'),
+    (['python3', '-m', 'pytest'], 'pytest'),
+    (['python3', '-c', 'print(1)'], 'print(1)'),
+    (['uv', 'sync'], 'uv'),
+    (['uv', 'run'], None),
+    (['python3'], None),
+    ([], None),
+])
+def test_script_word_looks_past_a_known_runner(words, script):
+    assert cc.script_word(words) == script
+
+
+def stop_tree(command, script_name, source):
+    return {'hooks/README.md': json_block(hooks_tree('Stop', command)), script_name: source}
+
+
+@pytest.mark.parametrize('command, script', [
+    ('uv run "$CLAUDE_PROJECT_DIR"/.claude/hooks/ruff-check.py', 'hooks/ruff-check.py'),
+    ('uv run --with pyyaml hooks/ruff-check.py', 'hooks/ruff-check.py'),
+    ('python3 "$CLAUDE_PROJECT_DIR"/.claude/hooks/ruff-check.py', 'hooks/ruff-check.py'),
+])
+def test_stop_hook_guard_resolves_the_script_after_a_runner(tmp_path, command, script):
+    write_tree(tmp_path, stop_tree(command, script, '# reads stop_hook_active\n'))
+    assert cc.check_stop_hook_guard(tmp_path, ['hooks/README.md', script], {}) == []
+
+
+def test_stop_hook_guard_flags_an_unguarded_script_behind_a_runner(tmp_path):
+    write_tree(tmp_path, stop_tree('uv run hooks/gate.py', 'hooks/gate.py', 'import sys\n'))
+    assert cc.check_stop_hook_guard(tmp_path, ['hooks/README.md', 'hooks/gate.py'], {}) == [
+        cc.Finding('hooks/README.md', 'JSON block at line 1: Stop command runs hooks/gate.py, '
+                                      'which never reads stop_hook_active')]
+
+
+@pytest.mark.parametrize('command', ['uv run ruff check .', 'uv run', 'python3 -m pytest', 'python3'])
+def test_stop_hook_guard_still_flags_a_runner_with_no_repo_script(tmp_path, command):
+    write_tree(tmp_path, stop_tree(command, 'hooks/ruff-check.py', '# stop_hook_active\n'))
+    assert cc.check_stop_hook_guard(tmp_path, ['hooks/README.md', 'hooks/ruff-check.py'], {}) == [
+        cc.Finding('hooks/README.md', f'JSON block at line 1: Stop command {command!r} '
+                                      'names no hook script in the repo')]

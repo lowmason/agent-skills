@@ -502,6 +502,35 @@ def check_hook_dir_quoted(root: Path, files: list[str], params: dict) -> list[Fi
     return out
 
 
+PYTHON_RE = re.compile(r'python(?:3(?:\.\d+)?)?')
+# Options that take a separate value, for the runners script_word knows. Any
+# other option is taken to stand alone, so one missing here shows up as a
+# Stop command that names no hook script. -m and -c are left out on purpose:
+# what follows them is a module or code, never a script.
+VALUE_OPTIONS = frozenset({'--with', '--with-requirements', '--python', '-p', '--project',
+                           '--directory', '--env-file', '--extra', '--group', '--package',
+                           '-W', '-X'})
+
+
+def script_word(words: list[str]) -> str | None:
+    '''The word of a split shell command that names the script it runs: the
+    first word, or the first non-option word after a runner (`uv run`,
+    `python`, `python3`, `python3.13`, however nested). None when a runner has
+    no further word.'''
+    i = 0
+    while i < len(words):
+        name = PurePosixPath(words[i]).name
+        if name == 'uv' and words[i + 1:i + 2] == ['run']:
+            i += 2
+        elif PYTHON_RE.fullmatch(name):
+            i += 1
+        else:
+            return words[i]
+        while i < len(words) and words[i].startswith('-'):
+            i += 2 if words[i] in VALUE_OPTIONS else 1
+    return None
+
+
 def check_stop_hook_guard(root: Path, files: list[str], params: dict) -> list[Finding]:
     found, _ = hook_commands(root, files)  # hook-dir-quoted reports parse failures
     scripts = {PurePosixPath(f).name: f for f in files if f.endswith(('.sh', '.py'))}
@@ -513,7 +542,8 @@ def check_stop_hook_guard(root: Path, files: list[str], params: dict) -> list[Fi
             words = shlex.split(hook.command)
         except ValueError:
             words = []
-        script = scripts.get(PurePosixPath(words[0]).name) if words else None
+        word = script_word(words)
+        script = scripts.get(PurePosixPath(word).name) if word else None
         if script is None:
             out.append(Finding(hook.file, f'{hook.where}Stop command {hook.command!r} names '
                                           'no hook script in the repo'))

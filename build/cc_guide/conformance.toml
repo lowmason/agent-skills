@@ -153,7 +153,7 @@ id = 'stop-hook-guard'
 kind = ['hook', 'settings']
 sections = ['hooks.exit-codes', 'hooks.patterns']
 type = 'advice'
-rule = 'A command wired to Stop runs a repo hook script that reads stop_hook_active.'
+rule = 'A command wired to Stop runs a repo hook script that reads stop_hook_active, directly or through uv run or python.'
 enforced_by = 'check_conformance'
 
 # Both lists come from the guide's subagent frontmatter table.
