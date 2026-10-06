@@ -34,5 +34,6 @@ group, then `baseline stamp`; then run `cli.py lint` and
 baselined block on the same page has also changed: list it too, or
 rebaseline the whole page. A missing page needs a `manifest.toml` edit first.
 A correction that resolves a conformance gap removes its `[[exception]]`, or
-narrows its `artifacts`, in the same change. Nothing is committed for you. `cd build && pytest` collects this suite too, so module and
-test basenames stay unique across `build/`.
+narrows its `artifacts`, in the same change. Nothing is committed for you.
+`cd build && pytest` collects this suite too, so module and test basenames
+stay unique across `build/`.

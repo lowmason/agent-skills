@@ -96,7 +96,7 @@ re-copy when you update a template here.
 - **Exit codes matter:** a hook blocks either by exiting 2, which feeds stderr to
   Claude, or by printing a JSON `permissionDecision: "deny"` (as `readonly-agent-guard.py`
   below does); any other non-zero exit, such as 1, just logs and lets the call through.
-  All three hooks here use exit 2.
+  `uv-guard.sh` and `ruff-check.sh` block with exit 2; `ruff-fix.sh` never blocks.
 
 # Agent contract hooks
 

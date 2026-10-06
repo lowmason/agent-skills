@@ -161,7 +161,7 @@ The posterior predictive distribution shows what the fitted model implies the da
 
 ## Calibration
 
-<If calibration_check.py ran with `--loo-pit`, it wrote `loo_pit_ecdf.png` and `loo_pit_coverage.png` instead; link those two figures below.>
+<If calibration_check.py ran with `--loo-pit`, it wrote `loo_pit_ecdf.png` and `loo_pit_coverage.png`; link whichever figure set the plot directory holds below (both sets, if both runs wrote there).>
 
 ![PIT ECDF](pit_ecdf.png)
 
