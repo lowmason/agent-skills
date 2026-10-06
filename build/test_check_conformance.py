@@ -1625,6 +1625,27 @@ def test_hook_scripts_executable_judge_an_untracked_script_by_its_execute_bit(tm
         cc.Finding('hooks/new.sh', 'untracked and not executable, so the hook would fail open')]
 
 
+@pytest.mark.parametrize('command', [
+    'uv run --python 3.13 hooks/guard.py', 'python3 hooks/guard.py', 'python3.13 -u hooks/guard.py'])
+def test_hook_scripts_executable_check_a_script_behind_a_runner(tmp_path, command):
+    files = {'hooks/guard.py': '#!/usr/bin/env python3\n',
+             'hooks/README.md': json_block(hooks_tree('PreToolUse', command))}
+    root = tracked_repo(tmp_path, files, executable={'hooks/guard.py'})
+    assert cc.check_hook_scripts_executable(root, ['hooks/README.md', 'hooks/guard.py'], {}) == []
+    gone = command.replace('guard.py', 'gone.py')
+    write_tree(root, {'hooks/README.md': json_block(hooks_tree('PreToolUse', gone))})
+    assert cc.check_hook_scripts_executable(root, ['hooks/README.md', 'hooks/guard.py'], {}) == [
+        cc.Finding('hooks/README.md', f"JSON block at line 1: PreToolUse command 'hooks/gone.py' "
+                                      'names no hook script in the repo')]
+
+
+def test_hook_scripts_executable_report_a_dangling_link_instead_of_crashing(tmp_path):
+    root = git_repo(tmp_path, {'hooks/real.sh': '#!/bin/sh\n'})
+    os.symlink('nowhere.sh', root / 'hooks/link.sh')
+    assert cc.check_hook_scripts_executable(root, ['hooks/link.sh'], {}) == [
+        cc.Finding('hooks/link.sh', 'is a dangling link, so the hook cannot run')]
+
+
 def test_hook_scripts_executable_pass_on_the_repo():
     assert real_check('hook-scripts-executable') == []
 
@@ -1966,6 +1987,12 @@ def test_kept_files_setup_error_without_git_has_no_stderr(tmp_path, monkeypatch)
     monkeypatch.setenv('PATH', str(tmp_path / 'empty'))
     with pytest.raises(cc.SetupError, match='cannot list the files git keeps'):
         cc.kept_files(root)
+
+
+def test_index_modes_setup_error_carries_gits_reason(tmp_path, monkeypatch):
+    root = no_git_repo(tmp_path, monkeypatch)
+    with pytest.raises(cc.SetupError, match='cannot read the git index modes.*not a git repository'):
+        cc.index_modes(root, ['hooks/gate.sh'])
 
 
 def test_main_exits_2_when_git_cannot_list_files(tmp_path, monkeypatch, capsys):

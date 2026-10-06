@@ -298,6 +298,14 @@ def git_env() -> dict[str, str]:
     return {name: value for name, value in os.environ.items() if name not in local}
 
 
+def git_reason(exc: Exception) -> str:
+    '''git's own words when it ran and failed (stderr is bytes there), else the
+    exception's text.'''
+    if isinstance(exc, subprocess.CalledProcessError) and exc.stderr:
+        return os.fsdecode(exc.stderr).strip()
+    return str(exc)
+
+
 def kept_files(root: Path) -> list[str]:
     '''Repo-relative POSIX paths of the files git keeps under root: tracked, or
     untracked and not ignored, as install.py's kept_files lists them (R2.3).'''
@@ -306,10 +314,7 @@ def kept_files(root: Path) -> list[str]:
             ['git', 'ls-files', '--cached', '--others', '--exclude-standard', '-z'],
             cwd=root, env=git_env(), capture_output=True, check=True).stdout
     except (OSError, subprocess.CalledProcessError) as exc:
-        # git's own words, when it ran and failed: stderr is bytes here.
-        reason = (os.fsdecode(exc.stderr).strip()
-                  if isinstance(exc, subprocess.CalledProcessError) and exc.stderr else str(exc))
-        raise SetupError(f'cannot list the files git keeps under {root} ({reason})') from None
+        raise SetupError(f'cannot list the files git keeps under {root} ({git_reason(exc)})') from None
     paths = [os.fsdecode(entry) for entry in listing.split(b'\0') if entry]
     # --cached also lists tracked files deleted from the working tree.
     return sorted(p for p in paths if (root / p).exists() or (root / p).is_symlink())
@@ -991,7 +996,7 @@ def index_modes(root: Path, paths: list[str]) -> dict[str, str]:
         listing = subprocess.run(['git', 'ls-files', '-s', '-z', '--', *paths], cwd=root,
                                  env=git_env(), capture_output=True, check=True).stdout
     except (OSError, subprocess.CalledProcessError) as exc:
-        raise SetupError(f'cannot read the git index modes under {root} ({exc})') from None
+        raise SetupError(f'cannot read the git index modes under {root} ({git_reason(exc)})') from None
     modes: dict[str, str] = {}
     for entry in listing.split(b'\0'):
         head, _, path = os.fsdecode(entry).partition('\t')
@@ -1012,6 +1017,8 @@ def check_hook_scripts_executable(root: Path, files: list[str], params: dict) ->
             if modes[f] != '100755':
                 out.append(Finding(f, f'git index mode is {modes[f]}, not 100755, so the hook '
                                       'fails open where it is installed'))
+        elif not (root / f).exists():
+            out.append(Finding(f, 'is a dangling link, so the hook cannot run'))
         elif not (root / f).stat().st_mode & 0o100:
             out.append(Finding(f, 'untracked and not executable, so the hook would fail open'))
     names = {PurePosixPath(f).name for f in scripts}
@@ -1021,9 +1028,10 @@ def check_hook_scripts_executable(root: Path, files: list[str], params: dict) ->
             words = shlex.split(hook.command)
         except ValueError:
             continue
-        name = PurePosixPath(words[0]).name if words else ''
+        word = script_word(words)
+        name = PurePosixPath(word).name if word else ''
         if name.endswith(('.sh', '.py')) and name not in names:
-            out.append(Finding(hook.file, f'{hook.where}{hook.event} command {words[0]!r} names '
+            out.append(Finding(hook.file, f'{hook.where}{hook.event} command {word!r} names '
                                           'no hook script in the repo'))
     return out
 
