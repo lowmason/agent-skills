@@ -22,10 +22,15 @@ Run: uv run --python 3.13 python build/cc_guide/cli.py <subcommand>
       The only writer of baseline.json and the guide's stamp region (R7).
       Always the working tree; nothing is committed. rebaseline takes each
       KEY as check prints it, a key hash for a block check could not name.
+      A listed rebaseline refuses while an unlisted baselined block on the
+      same page has also changed, since the page's snapshot would not hold
+      that block's baselined text: list it too, or rebaseline the whole
+      page. It also refuses to overwrite a snapshot page that holds other
+      text.
 
 After reviewing what check reported, record it in R8.8's order: accept,
-rebaseline, advance or audited, then stamp; then run lint and
-build/check_conformance.py. advance and audited can move the oldest
+rebaseline, advance, then audited for an audited group, then stamp; then run
+lint and build/check_conformance.py. advance and audited can move the oldest
 `checked`, which the stamp names, so stamp follows them. A missing page
 needs a manifest.toml edit first: rebaseline keeps its entries. `checked`
 and `audited` record the day the check or audit was done, not the
@@ -52,8 +57,17 @@ from state import (BASELINE, BOOTSTRAP_DATE, BOOTSTRAP_RELEASE, MANIFEST, SetupE
 REPO = Path(__file__).resolve().parents[2]
 
 
+REBASELINE_HELP = '''Re-hash GROUP's selected blocks from latest/ (all of them, or the listed
+PAGE / 'PAGE › KEY' refs) and snapshot those pages to the cache.
+
+A listed run refuses while an unlisted baselined block on the same page has
+also changed since the baseline: list it too, or rebaseline the whole page.
+It also refuses to overwrite a snapshot page that holds different text.'''
+
+
 def parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(prog='cli.py', description='Claude Code guide drift detector (Stage 1).')
+    p = argparse.ArgumentParser(prog='cli.py', description=__doc__,
+                                formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument('--cache', type=Path, help='cache root (default: ~/.cache/agent-skills/cc-guide)')
     sub = p.add_subparsers(dest='command', required=True)
     sub.add_parser('lint').add_argument('--ref')
@@ -68,7 +82,7 @@ def parser() -> argparse.ArgumentParser:
     init.add_argument('--release', default=BOOTSTRAP_RELEASE)
     init.add_argument('--date', default=BOOTSTRAP_DATE)
     init.add_argument('--force', action='store_true')
-    rb = b.add_parser('rebaseline')
+    rb = b.add_parser('rebaseline', formatter_class=argparse.RawDescriptionHelpFormatter, description=REBASELINE_HELP)
     rb.add_argument('group')
     rb.add_argument('refs', nargs='*')
     adv = b.add_parser('advance')

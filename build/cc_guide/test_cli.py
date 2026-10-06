@@ -52,6 +52,21 @@ def test_lint_exits_zero_clean_one_on_a_violation_and_two_on_a_setup_error(world
     assert capsys.readouterr() == ('', f'cc-guide: {state.BASELINE}: not found in the working tree\n')
 
 
+def test_help_shows_the_module_docstring_and_the_rebaseline_refusal(capsys):
+    for argv in (['--help'], ['baseline', 'rebaseline', '--help']):
+        with pytest.raises(SystemExit) as stop:
+            cli.main(argv)
+        assert stop.value.code == 0
+        out = ' '.join(capsys.readouterr().out.split())
+        assert 'unlisted baselined block' in out
+        assert 'the whole page' in out
+    with pytest.raises(SystemExit):
+        cli.main(['--help'])
+    out = capsys.readouterr().out
+    assert '  lint [--ref REF]\n' in out  # the docstring's line breaks survive
+    assert 'Offline gate over the guide, manifest.toml and baseline.json (R5)' in out
+
+
 def test_check_reads_main_unless_told_otherwise(tmp_path, docs_dir, monkeypatch, capsys):
     repo = fixture_repo(tmp_path / 'repo', {GUIDE_PATH: guide_text()})
     write_tree(repo, {state.MANIFEST: MANIFEST_TOML,

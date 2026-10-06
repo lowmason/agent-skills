@@ -592,8 +592,10 @@ R6.9 **Exit codes**, following `check_snippets.py`, so a crash or network
 failure never looks clean:
 - 0: nothing is due;
 - 1: at least one item is due;
-- 2: an error (network, parse, an invalid manifest or baseline, an
-  unresolvable anchor).
+- 2: an error (network, parse, an invalid manifest or baseline). A guide
+  anchor problem is a lint failure, so `check` exits 1 on it (R6.2, R6.7), as
+  it does on a citation naming a missing ID (R5); `baseline` exits 2 on an ID
+  it cannot resolve (R7).
 
 R6.10 `check` never writes inside the repo. Its writes go under
 `~/.cache/agent-skills/cc-guide/` only; `--hook` also writes the notice (R9).
@@ -613,7 +615,11 @@ that drops or remaps it, since `rebaseline` keeps a missing page's entries
 (owner, plan 38, 2026-10-04).
 - `init`: R2.6.
 - `rebaseline <group> [<block keys>]`: re-hash the group's selected blocks,
-  all of them or the listed keys, from `latest/`, and snapshot those pages to
+  all of them or the listed keys, from `latest/`. A listed run refuses while
+  an unlisted baselined block on the same page has also changed, since the
+  page's snapshot would not hold that block's baselined text; the refusal
+  names it, and the run must list it too or take the whole page (owner
+  ruling 7, plan 38). It snapshots those pages to
   `~/.cache/agent-skills/cc-guide/<release>/docs/`, refusing to overwrite a
   snapshot page that holds different bytes, since another group's `snapshot`
   pointer may name it. A key is listed as

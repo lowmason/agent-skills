@@ -26,11 +26,13 @@ the drift detector (`specs/claude-code-drift-automation.md`): `manifest.toml`
 is the owner's configuration, `baseline.json` its state, written only by
 `cli.py baseline`, and `cli.py --help` lists the subcommands. `check` fetches
 the docs into `~/.cache/agent-skills/cc-guide/`, never into the repo, and
-reads `main`'s commit unless given `--worktree`. After reviewing what it
-reports, record the review in this order: `baseline accept`,
-`baseline rebaseline`, `baseline advance` or `baseline audited`, then
-`baseline stamp`; then run `cli.py lint` and `check_conformance.py`. A
-missing page needs a `manifest.toml` edit first. A correction that resolves a
-conformance gap removes its `[[exception]]` in the same change. Nothing is
-committed for you. `cd build && pytest` collects this suite too, so module and
+reads `main`'s commit unless given `--ref` or `--worktree`. After reviewing
+what it reports, record the review in this order: `baseline accept`,
+`baseline rebaseline`, `baseline advance`, `baseline audited` for an audited
+group, then `baseline stamp`; then run `cli.py lint` and
+`check_conformance.py`. A listed `rebaseline` refuses while an unlisted
+baselined block on the same page has also changed: list it too, or
+rebaseline the whole page. A missing page needs a `manifest.toml` edit first.
+A correction that resolves a conformance gap removes its `[[exception]]`, or
+narrows its `artifacts`, in the same change. Nothing is committed for you. `cd build && pytest` collects this suite too, so module and
 test basenames stay unique across `build/`.
