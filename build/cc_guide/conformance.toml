@@ -407,19 +407,6 @@ evidence = 'Audit row S-99; owner gate 2026-10-04.'
 tracked_in = "deferred item: reconcile requesting-code-review with the guide's skip for small watched changes"
 
 [[exception]]
-id = 'network-rebuild-ungated'
-type = 'gap'
-sections = ['lean.expensive-ops']
-artifacts = [
-    'skills/geographic-codes/SKILL.md',
-    'skills/classification-codes/SKILL.md',
-]
-guide = 'Gate costly or networked commands behind a manual skill or a deny rule.'
-reason = 'Both skills rebuild data/ from the network when it is missing, with no manual gate.'
-evidence = 'Audit rows S-104, S-105; owner gate 2026-10-04.'
-tracked_in = 'deferred item: gate the geographic-codes and classification-codes network rebuilds'
-
-[[exception]]
 id = 'explore-capitalised-name'
 type = 'deviation'
 sections = ['subagents.frontmatter']
@@ -444,24 +431,14 @@ evidence = 'Audit rows A-12 to A-15, H-34; specs/completed/readonly-agent-guard.
 revisit = 'When permission rules can be scoped to an agent type.'
 
 [[exception]]
-id = 'debugger-lacks-write'
-type = 'gap'
-sections = ['subagents.tools']
-artifacts = ['agents/debugger.md']
-guide = 'An implementer agent gets Read, Write, Edit and Bash.'
-reason = 'debugger has Edit and Bash but not Write, yet it is told to create a failing test; the recorded reason covers Edit only.'
-evidence = 'Audit row A-18; owner gate 2026-10-04.'
-tracked_in = 'deferred item: give debugger Write or record why not'
-
-[[exception]]
 id = 'docs-writer-holds-bash'
-type = 'gap'
+type = 'deviation'
 sections = ['subagents.tools']
 artifacts = ['agents/docs-writer.md']
 guide = 'A documentation agent does not need Bash.'
-reason = 'docs-writer holds Bash with no recorded reason.'
-evidence = 'Audit row A-20; owner gate 2026-10-04.'
-tracked_in = 'deferred item: drop Bash from docs-writer or record why it needs it'
+reason = 'docs-writer must verify every claim against the source, and runbook commands and git history can be checked only by running them; it stays outside the read-only guard on purpose.'
+evidence = 'Audit row A-20; owner decision at the /deferred pass, 2026-10-05; specs/completed/readonly-agent-guard.md.'
+revisit = 'When docs-writer stops documenting commands, or Bash can be scoped to read-only use per agent.'
 
 [[exception]]
 id = 'task-reviewer-sonnet-floor'
@@ -495,47 +472,6 @@ reason = 'The Gemini TOML adapters are generated from commands/*.md, and /deferr
 evidence = 'Audit rows A-38 to A-40; owner gate 2026-10-04.'
 revisit = 'When the Gemini adapters can be generated from skills.'
 
-# Four hooks/README.md gaps share one deferred item.
-[[exception]]
-id = 'hooks-readme-home-unquoted'
-type = 'gap'
-sections = ['hooks.patterns']
-artifacts = ['hooks/README.md']
-guide = 'A hook command double-quotes the variable that locates its script.'
-reason = "The read-only guard's install command leaves $HOME unquoted; hook-dir-quoted checks only $CLAUDE_PROJECT_DIR."
-evidence = 'Audit row H-18; owner gate 2026-10-04.'
-tracked_in = 'deferred item: fix four hooks/README.md inaccuracies'
-
-[[exception]]
-id = 'hooks-readme-exit-claim'
-type = 'gap'
-sections = ['hooks.pitfalls']
-artifacts = ['hooks/README.md']
-guide = 'A hook blocks with exit 2 or with a JSON deny decision.'
-reason = 'hooks/README.md says only exit 2 blocks, beside a hook that blocks by JSON deny.'
-evidence = 'Audit row H-24; owner gate 2026-10-04.'
-tracked_in = 'deferred item: fix four hooks/README.md inaccuracies'
-
-[[exception]]
-id = 'hooks-readme-no-verify-step'
-type = 'gap'
-sections = ['hooks.pitfalls']
-artifacts = ['hooks/README.md']
-guide = 'A gate fails open on a bad path, so trigger each gate once after installing it.'
-reason = 'The install path for the blocking hooks ends at the settings merge, with no step to trigger each one.'
-evidence = 'Audit row H-27; owner gate 2026-10-04.'
-tracked_in = 'deferred item: fix four hooks/README.md inaccuracies'
-
-[[exception]]
-id = 'hooks-readme-auto-mode-allow'
-type = 'gap'
-sections = ['rules.settings']
-artifacts = ['hooks/README.md']
-guide = 'Auto mode sets aside broad allow rules for script runners.'
-reason = 'hooks/README.md says the allowlist spares the uv forms a prompt, which holds only in manual mode.'
-evidence = 'Audit row H-48; owner gate 2026-10-04.'
-tracked_in = 'deferred item: fix four hooks/README.md inaccuracies'
-
 [[exception]]
 id = 'guard-stdlib-only'
 type = 'deviation'
@@ -546,17 +482,7 @@ reason = 'The guard must run on the Python 3.9 floor under the system interprete
 evidence = 'Audit row H-32; specs/completed/readonly-agent-guard.md; owner gate 2026-10-04.'
 revisit = 'When the guard needs a third-party dependency.'
 
-# rules/clean-code-python.md stays path-scoped (owner gate); its label is a gap.
-[[exception]]
-id = 'clean-code-rule-always-on-label'
-type = 'gap'
-sections = ['rules.rules-files']
-artifacts = ['rules/clean-code-python.md']
-guide = 'A rule with paths loads only when a matching file is read or edited.'
-reason = 'The rule is titled always-on but is path-scoped (the 2026-10-03 repo audit, D12).'
-evidence = 'Audit row H-38; owner gate 2026-10-04.'
-tracked_in = "deferred item: relabel clean-code-python's always-on title"
-
+# rules/clean-code-python.md stays path-scoped (owner gate).
 [[exception]]
 id = 'clean-code-rule-path-scoped'
 type = 'deviation'

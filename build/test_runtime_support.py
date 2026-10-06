@@ -48,7 +48,7 @@ def test_gemini_agent_adapter_maps_tools_and_inherits_model():
   assert frontmatter['name'] == 'debugger'
   assert frontmatter['kind'] == 'local'
   assert frontmatter['tools'] == [
-    'read_file', 'replace', 'run_shell_command', 'grep_search', 'glob'
+    'read_file', 'write_file', 'replace', 'run_shell_command', 'grep_search', 'glob'
   ]
   assert 'model' not in frontmatter
   assert 'Reproduce first' in body

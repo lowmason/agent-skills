@@ -67,8 +67,14 @@ Then add to that repo's `.claude/settings.json` (merge if it exists):
 }
 ```
 
+Then trigger each blocking hook once to confirm it is wired: a hook command that does
+not resolve fails open, so a typo in the path above disables the gate silently. Ask
+Claude to run `python -c 'print(1)'` (uv-guard should block it) and to end a turn with
+a lint error in a `.py` file (ruff-check should block the stop).
+
 Optionally pair with a permission allowlist in the same file so the `uv` forms don't
-prompt:
+prompt. This holds in manual permission mode only: auto mode sets aside broad allow
+rules for script runners such as `uv run`, so there the allowlist has no effect:
 
 ```json
 { "permissions": { "allow": ["Bash(uv run:*)", "Bash(uv add:*)", "Bash(uv sync:*)"] } }
@@ -87,8 +93,10 @@ re-copy when you update a template here.
 - **`ruff-fix.sh` is best-effort.** PostToolUse runs *after* the write and cannot undo
   it; if `uv run ruff` errors (e.g. the file isn't in a uv project) it silently no-ops.
   `ruff-check.sh` (Stop) is the backstop for anything `--fix` can't resolve.
-- **Exit codes matter:** only exit 2 blocks and feeds stderr to Claude; exit 1 just
-  logs. All three follow that convention.
+- **Exit codes matter:** a hook blocks either by exiting 2, which feeds stderr to
+  Claude, or by printing a JSON `permissionDecision: "deny"` (as `readonly-agent-guard.py`
+  below does); any other non-zero exit, such as 1, just logs and lets the call through.
+  All three hooks here use exit 2.
 
 # Agent contract hooks
 
@@ -118,8 +126,13 @@ then in `~/.claude/settings.json`:
 
 ```json
 { "hooks": { "PreToolUse": [ { "matcher": "Bash", "hooks": [
-  { "type": "command", "command": "$HOME/.claude/hooks/readonly-agent-guard.py" } ] } ] } }
+  { "type": "command", "command": "\"$HOME\"/.claude/hooks/readonly-agent-guard.py" } ] } ] } }
 ```
+
+Then trigger it once: run `./hooks/probe-readonly-guard.sh` (Gate B under **Tests**
+below), which dispatches a guarded agent against the installed hook. A wrong path or a
+missing execute bit fails open, so without this step a broken install looks like a
+working one.
 
 Global is safe here in a way the ruff/uv hooks are not: the guard's first act is to
 check the payload's `agent_type`, and it exits 0 immediately unless that names one of

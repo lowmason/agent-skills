@@ -1,7 +1,7 @@
 ---
 name: debugger
 description: Fixes one self-contained, reproducible failure in an isolated context — a named failing test or a crashing script where the dispatch carries everything needed to reproduce. Reproduces first, isolates the root cause, applies the minimal fix, and leaves all changes uncommitted. Not for exploratory debugging that needs main-session context.
-tools: Read, Edit, Bash, Grep, Glob
+tools: Read, Write, Edit, Bash, Grep, Glob
 model: sonnet
 ---
 

@@ -4,6 +4,7 @@ description: Fixes one self-contained, reproducible failure in an isolated conte
 kind: local
 tools:
 - read_file
+- write_file
 - replace
 - run_shell_command
 - grep_search

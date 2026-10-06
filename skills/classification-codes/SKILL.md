@@ -34,7 +34,9 @@ Code→referent mappings are arbitrary, dense, and vintage-dependent — exactly
 confabulates most fluently (a no-skill control asserted "for certain" that `449210` sits in a
 hardware-store group; it is Electronics and Appliance Retailers). Grep for point lookups; load
 with Polars for hierarchy, membership, or concordance work. If a file below is missing,
-`MANIFEST.md` says why (`NOT BUILT`) — rebuild it (see *Rebuilding*) rather than guessing.
+`MANIFEST.md` says why (`NOT BUILT`). Ask the user before rebuilding it (see *Rebuilding the
+data*): the default build downloads from Census and BLS, while `--offline` rebuilds from the
+committed `sources/` cache with no network. Never guess a code instead.
 
 ## Files
 

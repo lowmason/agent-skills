@@ -5,6 +5,10 @@ problem falls **outside** the deep families (reinforcement learning, deep genera
 kernels, nonparametric Bayes, optimization internals, causal inference, etc.), use this procedure to
 navigate the books and pyprobml directly and produce a *verified* recommendation.
 
+A causal *design or identification* question (did X cause Y, which design identifies the effect,
+are these data enough) is not long tail: use the recommend-causal-design skill instead. This
+procedure covers the mechanics of causal models in the books, not the choice of research design.
+
 This is the only runtime branch that touches the PDFs, and it is the exception, not the rule. The
 local PDFs are **optional**: if they are absent, fall back to pyprobml + the public book site.
 

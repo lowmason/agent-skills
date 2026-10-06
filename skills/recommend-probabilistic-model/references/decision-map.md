@@ -18,6 +18,7 @@ If a problem doesn't fit any row, it's the long tail → `drill-down.md`.
 | Many correlated variables → compress / common signal | Dimensionality reduction & factor models | `families/factor-models.md` |
 | Discover unlabeled groups / regimes / density | Mixtures & clustering | `families/mixtures-clustering.md` |
 | Dependency structure among variables / network data | Graphical models | `families/graphical-models.md` |
+| Estimate a causal effect: did X cause Y, which design identifies it | *(other skill)* | the recommend-causal-design skill |
 | RL, deep generative, causal discovery, exotic kernels… | *(route-only)* | `drill-down.md` |
 
 ## 2. Data signal → the choice *within* a family
