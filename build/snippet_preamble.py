@@ -12,7 +12,7 @@ Sized to be fast: 1 chain, 100 warmup / 200 draws, purely so `mcmc` and
 `idata` exist with realistic structure -- it is NOT a model worth
 interpreting. 200 draws is chosen to keep LOO's Pareto-k estimates sane.
 
-Measured against the skill on 2026-10-03 (re-measure whenever this file or
+Measured against the skill on 2026-10-05 (re-measure whenever this file or
 the skill changes; a stale coverage claim is worse than none): 78 fenced
 python blocks, all 78 parse. 4 are norun-exempt and 40 are advisory --
 18 name-incomplete, 9 naming variables outside the fixtures, 7 model-body
@@ -44,7 +44,9 @@ name in the set is carried.
 NAMED_FIXTURES holds per-block fixtures for blocks written against more than
 the running example. A block opts in with `fixture=<name>` in its fence info
 string (```python fixture=comparison); its code runs between PREAMBLE and the
-block. A name not defined here fails the gate at every tier.
+block. A name not defined here fails the gate at every tier. Only the names a
+fixture leaves bound at module level are in scope for its blocks, so a fixture
+`del`s its construction helpers (see COMPARISON_FIXTURE).
 '''
 
 from typing import NamedTuple
@@ -180,6 +182,12 @@ models = {"m1": idata_1, "m2": idata_2, "m3": idata_3}
 # only diffs the per-observation ELPD of two fits over the same observations,
 # so any two of these fits satisfy what it assumes.
 idata_m2, idata_m3 = idata_2, idata_3
+
+# The helpers above exist to build the fits, not to be called by a doc block:
+# delete them so a block calling an undefined fit(...) raises here, as it would
+# for a reader, instead of running GREEN against this fixture's helper.
+# check_snippets._module_names honours the del when deciding what is bound.
+del model_wide, model_robust, fit
 '''
 
 # Per-block fixtures, keyed by the name a block selects. Only the blocks that
