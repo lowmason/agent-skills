@@ -316,6 +316,83 @@ def test_an_unknown_fixture_fails_the_gate(tmp_path):
     assert check_snippets.main([str(path)]) == 1
 
 
+def test_all_skills_select_known_fixtures():
+    '''Positive control for fixture_errors: every shipped block's fixture
+    selection is well-formed and names a fixture snippet_preamble defines. Also
+    guards the five shipped `fixture=comparison` blocks.'''
+    root = Path(__file__).resolve().parent.parent / 'skills'
+    errs = [e for md in sorted(root.rglob('*.md'))
+            for e in check_snippets.fixture_errors(md)]
+    assert errs == [], errs
+
+
+def test_a_known_fixture_selection_is_not_an_error(tmp_path):
+    _, path = _annotated_block(tmp_path, 'fixture=comparison', 'x = 1')
+    assert check_snippets.fixture_errors(path) == []
+
+
+def test_a_norun_marker_after_a_fixture_fails_the_gate(tmp_path):
+    '''`fixture=x norun <reason>` used to drop the norun silently: _marker read
+    only the first token, so the block ran and its audit line was lost.'''
+    _, path = _annotated_block(tmp_path, 'fixture=comparison norun needs a GPU', 'x = 1')
+    errors = check_snippets.fixture_errors(path)
+    assert len(errors) == 1 and 'norun' in errors[0], errors
+    assert check_snippets.main([str(path)]) == 1
+
+
+def test_a_noparse_marker_after_a_fixture_fails_the_gate(tmp_path):
+    _, path = _annotated_block(tmp_path, 'fixture=comparison noparse excerpt', 'x = 1')
+    errors = check_snippets.fixture_errors(path)
+    assert len(errors) == 1 and 'noparse' in errors[0], errors
+
+
+def test_a_norun_reason_naming_a_fixture_is_free_text(tmp_path):
+    '''A leading marker makes the rest of the info string a reason. It used to
+    be scanned for `fixture=`, so an unknown name in prose failed the gate.'''
+    block, path = _annotated_block(
+        tmp_path, 'norun superseded by fixture=no_such_fixture', 'x = 1')
+    assert check_snippets.fixture_name(block) is None
+    assert check_snippets.fixture_errors(path) == []
+    assert check_snippets.main([str(path)]) == 0
+    assert 'fixture=no_such_fixture' in check_snippets.exempt_report(path)[0]
+
+
+def test_a_misspelled_fixture_key_fails_the_gate(tmp_path):
+    '''Deliberate failure, not an advisory: a typo'd key would otherwise leave
+    the block plain and surface only under --run.'''
+    for info in ('fixtures=comparison', 'Fixture=comparison', 'fixture=',
+                 'fixture', 'fixture:comparison'):
+        _, path = _annotated_block(tmp_path, info, 'x = 1')
+        errors = check_snippets.fixture_errors(path)
+        if info == 'fixture:comparison':
+            # A colon is not the key=value shape; it is ordinary free text.
+            assert errors == [], (info, errors)
+            continue
+        assert len(errors) == 1 and 'malformed' in errors[0], (info, errors)
+        assert check_snippets.main([str(path)]) == 1, info
+
+
+def test_two_fixture_selections_fail_the_gate(tmp_path):
+    _, path = _annotated_block(tmp_path, 'fixture=comparison fixture=comparison', 'x = 1')
+    errors = check_snippets.fixture_errors(path)
+    assert len(errors) == 1 and 'more than one' in errors[0], errors
+
+
+def test_other_info_string_tokens_stay_legal(tmp_path):
+    '''deep-learning blocks carry `cpu-example`, mintlify-style ones
+    `theme={null}`; neither is a marker or a fixture key.'''
+    for info in ('cpu-example', 'theme={null}', 'cpu-example fixture=comparison',
+                 'fixture=comparison some trailing note'):
+        _, path = _annotated_block(tmp_path, info, 'x = 1')
+        assert check_snippets.fixture_errors(path) == [], info
+
+
+def test_a_fixture_leading_block_still_selects_its_fixture(tmp_path):
+    block, _ = _annotated_block(tmp_path, 'fixture=comparison a note', 'x = 1')
+    assert check_snippets.fixture_name(block) == 'comparison'
+    assert check_snippets.is_exempt(block) is False
+
+
 @requires_stack
 def test_a_named_fixture_runs_between_the_preamble_and_the_block(tmp_path, monkeypatch):
     '''The fixture can use what the preamble binds (N = 40), and the block can
@@ -323,7 +400,10 @@ def test_a_named_fixture_runs_between_the_preamble_and_the_block(tmp_path, monke
     from snippet_preamble import Fixture
     monkeypatch.setitem(check_snippets.NAMED_FIXTURES, 'tiny',
                         Fixture(code='tiny_name = N + 1\n', variables=frozenset()))
-    _, path = _annotated_block(tmp_path, 'fixture=tiny', 'assert tiny_name == 41')
+    block, path = _annotated_block(tmp_path, 'fixture=tiny', 'assert tiny_name == 41')
+    # run_errors skips a block it cannot run and returns [] for it, so without
+    # this the final assertion would hold even if nothing executed.
+    assert check_snippets.runnable(block), check_snippets._unrunnable_reason(block)
     assert check_snippets.run_errors(path, timeout=300) == []
 
 
@@ -340,7 +420,7 @@ def test_the_comparison_fixture_binds_every_name_its_blocks_use():
     import ast
 
     from snippet_preamble import NAMED_FIXTURES
-    bound = check_snippets._bound_by(ast.parse(NAMED_FIXTURES['comparison'].code))
+    bound = check_snippets._module_names(ast.parse(NAMED_FIXTURES['comparison'].code))
     assert {'mcmc_1', 'mcmc_2', 'mcmc_3', 'idata_1', 'idata_2', 'idata_3',
             'models', 'idata_m2', 'idata_m3'} <= bound
 
@@ -352,3 +432,87 @@ def test_the_comparison_blocks_select_the_comparison_fixture():
         block = _skill_block(relpath, needle)
         assert check_snippets.fixture_name(block) == 'comparison', needle
         assert check_snippets.runnable(block), check_snippets._unrunnable_reason(block)
+
+
+def test_a_fixtures_locals_do_not_bind_names_for_its_blocks(tmp_path, monkeypatch):
+    '''Only a fixture's MODULE-level names are in scope for the block. A
+    parameter, a function local or a comprehension target is not, so a block
+    that uses one is reported unbound instead of admitted and run against it.'''
+    from snippet_preamble import Fixture
+    code = ('def make(arg):\n    inner = arg\n    return inner\n'
+            'value = make(1)\n'
+            'both = [item for item in (value,)]\n')
+    monkeypatch.setitem(check_snippets.NAMED_FIXTURES, 'tiny',
+                        Fixture(code=code, variables=frozenset()))
+    ok, _ = _annotated_block(tmp_path, 'fixture=tiny', 'print(make(value), both)')
+    assert check_snippets.runnable(ok), check_snippets._unrunnable_reason(ok)
+    for local in ('inner', 'arg', 'item'):
+        block, _ = _annotated_block(tmp_path, 'fixture=tiny', f'print({local})')
+        assert f"unbound names ['{local}']" in check_snippets._unrunnable_reason(block)
+
+
+def test_a_helper_the_fixture_deletes_is_not_bound(tmp_path, monkeypatch):
+    from snippet_preamble import Fixture
+    code = 'def helper():\n    return 1\n\nvalue = helper()\ndel helper\n'
+    monkeypatch.setitem(check_snippets.NAMED_FIXTURES, 'tiny',
+                        Fixture(code=code, variables=frozenset()))
+    keeps, _ = _annotated_block(tmp_path, 'fixture=tiny', 'print(value)')
+    assert check_snippets.runnable(keeps), check_snippets._unrunnable_reason(keeps)
+    calls, _ = _annotated_block(tmp_path, 'fixture=tiny', 'print(helper())')
+    assert "unbound names ['helper']" in check_snippets._unrunnable_reason(calls)
+
+
+def test_the_comparison_fixtures_helpers_are_not_bound_for_a_block(tmp_path):
+    '''fit/model_wide/model_robust are module-level in the fixture, so only the
+    fixture's `del` keeps a doc block from calling an undefined `fit(...)` and
+    running GREEN against the fixture's helper. run/variant/key are locals.'''
+    for name in ('fit', 'model_wide', 'model_robust', 'run', 'variant', 'key'):
+        block, _ = _annotated_block(tmp_path, 'fixture=comparison', f'print({name})')
+        assert f"unbound names ['{name}']" in check_snippets._unrunnable_reason(block), name
+
+
+def test_the_preamble_binds_module_level_names_only(tmp_path):
+    '''`per_draw` is a local of the preamble's add_log_prior, `params` its
+    parameter: neither is in scope for a doc block. `add_log_prior` is.'''
+    ok, _ = _annotated_block(tmp_path, '', 'idata = add_log_prior(idata, model, mcmc, x, y=y)')
+    assert check_snippets.runnable(ok), check_snippets._unrunnable_reason(ok)
+    for local in ('per_draw', 'params', 'flat'):
+        block, _ = _annotated_block(tmp_path, '', f'print({local})')
+        assert f"unbound names ['{local}']" in check_snippets._unrunnable_reason(block), local
+
+
+def test_module_names_follow_binding_forms_and_deletes():
+    import ast
+    tree = ast.parse(
+        'import os.path\nimport numpy as np\nfrom a import b as c\n'
+        'x, (y, *z) = 1, (2, 3)\nw: int = 1\nw += 1\n'
+        'for i in range(2):\n    j = i\n'
+        'with open("f") as fh:\n    pass\n'
+        'try:\n    pass\nexcept Exception as err:\n    pass\n'
+        'if (n := 3):\n    q = 1\n'
+        'def f(param):\n    local = 1\n'
+        'class K:\n    attr = 1\n'
+        'sq = [e for e in range(3)]\n'
+        'gone = 1\ndel gone\n')
+    assert check_snippets._module_names(tree) == {
+        'os', 'np', 'c', 'x', 'y', 'z', 'w', 'i', 'j', 'fh', 'err', 'n', 'q',
+        'f', 'K', 'sq'}
+
+
+@requires_stack
+def test_the_comparison_fixtures_helpers_are_gone_at_run_time(tmp_path):
+    '''The static check keeps a block calling `fit` from being admitted; the
+    fixture's `del` makes the same call raise if it were ever executed.'''
+    import os
+    import subprocess
+    import sys
+
+    from snippet_preamble import NAMED_FIXTURES, PREAMBLE
+    check = ('\nfor helper in ("fit", "model_wide", "model_robust"):\n'
+             '    assert helper not in globals(), helper\n'
+             'assert "models" in globals()\n')
+    program = PREAMBLE + NAMED_FIXTURES['comparison'].code + check
+    proc = subprocess.run([sys.executable, '-c', program], cwd=tmp_path,
+                          capture_output=True, text=True, timeout=300,
+                          env={**os.environ, 'MPLBACKEND': 'Agg'})
+    assert proc.returncode == 0, proc.stderr[-2000:]

@@ -48,3 +48,13 @@ def test_fenced_lines_follow_the_closing_rule():
     line closes it, so lines 1-5 are fenced and line 6 is not.'''
     text = '````markdown\n```python\nx = 1\n```\n````\nafter\n'
     assert fences.fenced_lines(text) == {1, 2, 3, 4, 5}
+
+
+def test_fenced_lines_run_an_unclosed_fence_to_the_end():
+    text = '# Title\n```bash\n## inside\nmore'
+    assert fences.fenced_lines(text) == {2, 3, 4}
+
+
+def test_fenced_lines_count_the_blank_last_line_of_an_unclosed_fence():
+    '''A trailing newline leaves an empty last line, and the fence still holds it.'''
+    assert fences.fenced_lines('```bash\nbody\n') == {1, 2, 3}

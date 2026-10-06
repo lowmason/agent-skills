@@ -309,7 +309,8 @@ Run these in order — each script's output feeds the next. They operate on the 
 # 1. Run convergence + LOO + PPC checks (writes diagnostics.json)
 python <this-skill-dir>/scripts/diagnose_model.py --idata <slug>/inference_data.nc --output <slug>/diagnostics.json
 
-# 2. Run calibration check (writes calibration.json + pit_ecdf.png + pit_coverage.png)
+# 2. Run calibration check (writes calibration.json + pit_ecdf.png + pit_coverage.png;
+#    with --loo-pit the figures are loo_pit_ecdf.png + loo_pit_coverage.png instead)
 python <this-skill-dir>/scripts/calibration_check.py --idata <slug>/inference_data.nc --output <slug>/calibration.json --save-plots --plot-dir <slug>/
 
 # 3. Interpret the JSON outputs into qualitative ratings + suggested next steps

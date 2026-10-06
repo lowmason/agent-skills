@@ -11,8 +11,16 @@ list stays auditable: `norun` (execution only, parsing still applies) and
 
 A third fence token, `fixture=<name>`, opts a block into a per-block fixture
 from snippet_preamble.NAMED_FIXTURES, run between the preamble and the block.
-It exempts nothing. An unknown name fails at every tier, since a typo would
-otherwise quietly drop the block from --run.
+It exempts nothing.
+
+The info string is tokenised once (_parse_info). A LEADING `norun`/`noparse`
+makes the rest of the string free-text reason: nothing in it is read as a
+fixture selection. Otherwise a `norun`/`noparse` token anywhere but first, a
+malformed fixture token (`fixtures=x`, `Fixture=x`, a bare `fixture=` or
+`fixture`), more than one `fixture=` token, and an unknown fixture name all
+fail at every tier. Each would otherwise drop an exemption or quietly leave
+the block out of --run. Other tokens (`cpu-example`, `theme={null}`) are
+ignored, and so is trailing prose after a `fixture=<name>`.
 
 Scope honesty, since the motivating backlog item overstates it. Of audit
 12-audit_7_20_26's three findings this gate reaches exactly ONE: C1, whose
@@ -48,6 +56,7 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
+from typing import NamedTuple
 
 from fences import (CodeBlock, iter_code_blocks,  # noqa: F401  (re-exported)
                     strip_fenced_blocks)
@@ -56,7 +65,7 @@ from snippet_preamble import FIXTURE_VARS, NAMED_FIXTURES, PINNED, PREAMBLE
 NORUN = 'norun'
 NOPARSE = 'noparse'
 TICK_NAME_RE = re.compile(r'`([A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)+)')
-FIXTURE_RE = re.compile(r'(?:^|\s)fixture=(\S+)')
+MARKERS = (NORUN, NOPARSE)
 # Optional per SKILL.md:50-53 -- absent from a clean env by design, so an
 # unimportable chain rooted in one of these is an advisory, never a failure.
 # Same standing as the blackjax/dynamax norun blocks.
@@ -105,10 +114,38 @@ def parse_errors(path: Path) -> list[str]:
     return out
 
 
+class _Info(NamedTuple):
+    marker: str | None   # a leading norun/noparse, else None
+    reason: str          # free text after a leading marker
+    fixtures: tuple      # names from well-formed `fixture=<name>` tokens
+    problems: tuple      # grammar violations; fixture_errors fails each
+
+
+def _parse_info(info: str) -> _Info:
+    '''Tokenise a fence info string once (grammar: module docstring).'''
+    tokens = info.split()
+    if tokens and tokens[0] in MARKERS:
+        return _Info(tokens[0], info.strip()[len(tokens[0]):].strip(), (), ())
+    fixtures, problems = [], []
+    for token in tokens:
+        if token in MARKERS:
+            problems.append(f'{token} must lead the info string, or it is '
+                            f'silently dropped (put it first; the rest is its reason)')
+        key, eq, value = token.partition('=')
+        if key.lower() in ('fixture', 'fixtures'):
+            if key == 'fixture' and eq and value:
+                fixtures.append(value)
+            else:
+                problems.append(f'malformed fixture token {token!r} '
+                                f'(expected fixture=<name>)')
+    if len(fixtures) > 1:
+        problems.append(f'more than one fixture selected ({", ".join(fixtures)})')
+    return _Info(None, '', tuple(fixtures), tuple(problems))
+
+
 def _marker(block) -> str | None:
     '''The exemption marker leading the fence info string, or None.'''
-    head = block.info.split(None, 1)[:1]
-    return head[0] if head and head[0] in (NORUN, NOPARSE) else None
+    return _parse_info(block.info).marker
 
 
 def is_exempt(block) -> bool:
@@ -146,14 +183,14 @@ def exempt_report(path: Path) -> list[str]:
         if m is None:
             continue
         what = 'not parsed or executed' if m == NOPARSE else 'not executed'
-        out.append(f'{path}:{b.line}: {what}: {b.info[len(m):].strip()}')
+        out.append(f'{path}:{b.line}: {what}: {_parse_info(b.info).reason}')
     return out
 
 
 def fixture_name(block) -> str | None:
     '''The named fixture a block selects with `fixture=<name>`, or None.'''
-    m = FIXTURE_RE.search(block.info)
-    return m.group(1) if m else None
+    fixtures = _parse_info(block.info).fixtures
+    return fixtures[0] if fixtures else None
 
 
 def _fixture(block):
@@ -164,22 +201,25 @@ def _fixture(block):
 
 
 def _fixture_names(fixture) -> set[str]:
-    '''Names a named fixture binds; empty when the block selects none.'''
-    return _bound_by(ast.parse(fixture.code)) if fixture else set()
+    '''Names a named fixture leaves bound at module level (its helpers' locals
+    and anything it `del`s are not); empty when the block selects none.'''
+    return _module_names(ast.parse(fixture.code)) if fixture else set()
 
 
 def fixture_errors(path: Path) -> list[str]:
-    '''One failure per block selecting a fixture snippet_preamble lacks. An
-    unknown fixture name must fail, not quietly drop the block from execution.
-    A malformed key (`fixtures=x`, a bare `fixture=`) is not detected: the block
-    stays plain and surfaces as an advisory under --run.'''
+    '''One failure per fence-info grammar violation (_parse_info: a non-leading
+    marker, a malformed or repeated fixture token) and per block selecting a
+    fixture snippet_preamble lacks. Each must fail, not quietly drop a block's
+    exemption or its execution.'''
     out = []
     for block in iter_code_blocks(path.read_text()):
-        name = fixture_name(block)
-        if name and name not in NAMED_FIXTURES:
-            known = ', '.join(sorted(NAMED_FIXTURES)) or 'none'
-            out.append(f'{path}:{block.line}: unknown fixture {name!r} '
-                       f'(known: {known})')
+        info = _parse_info(block.info)
+        out += [f'{path}:{block.line}: {problem}' for problem in info.problems]
+        for name in info.fixtures:
+            if name not in NAMED_FIXTURES:
+                known = ', '.join(sorted(NAMED_FIXTURES)) or 'none'
+                out.append(f'{path}:{block.line}: unknown fixture {name!r} '
+                           f'(known: {known})')
     return out
 
 
@@ -293,13 +333,60 @@ def _bound_by(tree) -> set[str]:
     return names
 
 
+_SCOPES = (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)
+_COMPREHENSIONS = (ast.ListComp, ast.SetComp, ast.DictComp, ast.GeneratorExp)
+
+
+def _module_names(tree) -> set[str]:
+    '''Names bound in module scope when `tree` has run, in source order.
+
+    Unlike _bound_by this does not enter a def or class body, a lambda, or a
+    comprehension's own targets, so function locals and parameters do not
+    count; a module-level `del` removes a name. A walrus inside a comprehension
+    does bind in module scope and is kept. Straight-line approximation: a
+    `del` inside an if/try branch is applied unconditionally.
+    '''
+    names: set[str] = set()
+
+    def visit(node):
+        if isinstance(node, _SCOPES):
+            names.add(node.name)
+            return
+        if isinstance(node, ast.Lambda):
+            return
+        if isinstance(node, _COMPREHENSIONS):
+            names.update(n.target.id for n in ast.walk(node)
+                         if isinstance(n, ast.NamedExpr))
+            return
+        if isinstance(node, ast.Delete):
+            names.difference_update(
+                n.id for n in ast.walk(node)
+                if isinstance(n, ast.Name) and isinstance(n.ctx, ast.Del))
+            return
+        if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store):
+            names.add(node.id)
+        elif isinstance(node, ast.alias) and node.name != '*':
+            names.add((node.asname or node.name).split('.')[0])
+        elif isinstance(node, ast.ExceptHandler) and node.name:
+            names.add(node.name)
+        elif isinstance(node, (ast.MatchAs, ast.MatchStar)) and node.name:
+            names.add(node.name)
+        elif isinstance(node, ast.MatchMapping) and node.rest:
+            names.add(node.rest)
+        for child in ast.iter_child_nodes(node):
+            visit(child)
+
+    visit(tree)
+    return names
+
+
 _PREAMBLE_NAMES = None
 
 
 def _preamble_names() -> set[str]:
     global _PREAMBLE_NAMES
     if _PREAMBLE_NAMES is None:
-        _PREAMBLE_NAMES = _bound_by(ast.parse(PREAMBLE)) | set(dir(builtins))
+        _PREAMBLE_NAMES = _module_names(ast.parse(PREAMBLE)) | set(dir(builtins))
     return _PREAMBLE_NAMES
 
 
@@ -368,7 +455,7 @@ def _module_level_primitive(tree) -> str | None:
 def _unrunnable_reason(block) -> str:
     '''Why --run cannot execute this block; empty string when it can.'''
     if is_exempt(block):
-        return f'{NORUN}: {block.info[len(NORUN):].strip()}'
+        return f'{_marker(block)}: {_parse_info(block.info).reason}'
     try:
         tree = ast.parse(block.code)
     except SyntaxError:

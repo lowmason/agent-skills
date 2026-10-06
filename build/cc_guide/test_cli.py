@@ -44,11 +44,27 @@ def test_lint_exits_zero_clean_one_on_a_violation_and_two_on_a_setup_error(world
     assert capsys.readouterr() == (
         'section alpha.overview: text differs from its text_hash; record it with'
         ' `uv run --python 3.13 python build/cc_guide/cli.py baseline accept alpha.overview --substantive`'
-        ' (flags its citers) or `... --editorial`\n', '')
+        ' (flags its citers) or'
+        ' `uv run --python 3.13 python build/cc_guide/cli.py baseline accept alpha.overview --editorial`\n', '')
     assert main(cache, 'lint', '--ref', 'main') == 0
     (repo / state.BASELINE).unlink()
     assert main(cache, 'lint') == 2
     assert capsys.readouterr() == ('', f'cc-guide: {state.BASELINE}: not found in the working tree\n')
+
+
+def test_help_shows_the_module_docstring_and_the_rebaseline_refusal(capsys):
+    for argv in (['--help'], ['baseline', 'rebaseline', '--help']):
+        with pytest.raises(SystemExit) as stop:
+            cli.main(argv)
+        assert stop.value.code == 0
+        out = ' '.join(capsys.readouterr().out.split())
+        assert 'unlisted baselined block' in out
+        assert 'the whole page' in out
+    with pytest.raises(SystemExit):
+        cli.main(['--help'])
+    out = capsys.readouterr().out
+    assert '  lint [--ref REF]\n' in out  # the docstring's line breaks survive
+    assert 'Offline gate over the guide, manifest.toml and baseline.json (R5)' in out
 
 
 def test_check_reads_main_unless_told_otherwise(tmp_path, docs_dir, monkeypatch, capsys):
@@ -132,6 +148,20 @@ def test_accept_writes_only_the_named_sections_hash_and_changed(world):
     assert dirty(repo) == [state.BASELINE]
 
 
+def test_an_editorial_accept_needs_no_cached_changelog_but_a_substantive_one_does(world, tmp_path, capsys):
+    repo, _, _ = world
+    guide = repo / GUIDE_PATH
+    guide.write_text(guide.read_text().replace('Alpha uses', 'Alpha now uses'))
+    git(repo, 'commit', '-qam', 'edit the guide')
+    empty = tmp_path / 'empty-cache'
+    assert main(empty, 'baseline', 'accept', 'alpha.overview', '--substantive') == 2
+    assert capsys.readouterr() == ('', 'cc-guide: no cached changelog: run check, or restore the 2.1.288 snapshot\n')
+    assert dirty(repo) == []
+    assert main(empty, 'baseline', 'accept', 'alpha.overview', '--editorial') == 0
+    assert dirty(repo) == [state.BASELINE]
+    assert main(empty, 'lint') == 0
+
+
 def test_rebaseline_writes_the_baseline_and_a_cache_snapshot_only(world):
     repo, cache, folder = world
     write_tree(state.latest_docs(cache), {'tools.md': DOCS['tools.md'].replace('alpha jobs', 'alpha batches')})
@@ -142,6 +172,24 @@ def test_rebaseline_writes_the_baseline_and_a_cache_snapshot_only(world):
     snapshot = state.snapshot_docs(cache, '2.1.902')
     assert sorted(p.name for p in snapshot.iterdir()) == ['env-vars.md', 'tools.md']
     assert (snapshot / 'tools.md').read_bytes() == (state.latest_docs(cache) / 'tools.md').read_bytes()
+
+
+def test_rebaseline_refuses_to_overwrite_a_snapshot_page_holding_other_text(world, capsys):
+    repo, cache, _ = world
+    latest = state.latest_docs(cache)
+    write_tree(latest, {'tools.md': DOCS['tools.md'].replace('alpha jobs', 'alpha batches')})
+    held = state.snapshot_docs(cache, '2.1.902') / 'tools.md'
+    write_tree(state.snapshot_docs(cache, '2.1.902'), {'tools.md': DOCS['tools.md']})
+    before = (repo / state.BASELINE).read_bytes()
+    assert main(cache, 'baseline', 'rebaseline', 'alpha') == 2
+    assert capsys.readouterr() == ('', f'cc-guide: tools: {held} already holds different text, which another'
+                                       ' group may have baselined; it is never overwritten\n')
+    assert held.read_text() == DOCS['tools.md']
+    assert not (held.parent / 'env-vars.md').exists()  # nothing of the run was written
+    assert (repo / state.BASELINE).read_bytes() == before
+    write_tree(state.snapshot_docs(cache, '2.1.902'), {'tools.md': (latest / 'tools.md').read_text()})
+    assert main(cache, 'baseline', 'rebaseline', 'alpha') == 0  # identical bytes are not a conflict
+    assert (held.parent / 'env-vars.md').is_file()
 
 
 def test_rebaseline_names_a_gone_block_from_the_cached_snapshot(world, capsys):

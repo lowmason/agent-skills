@@ -46,7 +46,8 @@ def test_a_text_change_names_both_accept_commands(docs_dir):
     violations, _ = run(guide_text().replace('Alpha uses', 'Alpha now uses'), fixture_state(docs_dir))
     assert violations == [
         f'section alpha.overview: text differs from its text_hash; record it with '
-        f'`{CLI} baseline accept alpha.overview --substantive` (flags its citers) or `... --editorial`']
+        f'`{CLI} baseline accept alpha.overview --substantive` (flags its citers) or '
+        f'`{CLI} baseline accept alpha.overview --editorial`']
 
 
 def test_a_rewrap_is_not_a_text_change(docs_dir):

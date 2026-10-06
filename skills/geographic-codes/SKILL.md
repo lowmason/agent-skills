@@ -34,7 +34,9 @@ same architecture, same prime directive.
 never answer one without a reference date.** County-equivalents changed code or name on 16
 distinct dates since 1990 and CBSAs were re-delineated by seven OMB bulletins since 2013; a code
 that is right today was wrong for part of any multi-year panel. Grep for point lookups; load
-with Polars for as-of, membership, or panel work. If `data/` is missing, rebuild it first.
+with Polars for as-of, membership, or panel work. If `data/` is missing, ask the user before
+rebuilding it (see *Rebuilding the data*): the default build downloads from Census and OMB,
+while `--offline` rebuilds from the committed `sources/` cache with no network.
 
 ## Files
 

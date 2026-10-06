@@ -194,6 +194,11 @@
   waits on the partner's decision to revise the VOID rule or isolate the exemplar step
   before any re-run, since plan 36 ran VOID. This branch retires the other formerly
   aged item, the DL/NLP template extension, as no-change; it does not touch this one.
+- 2026-10-05 — finished `chore/deferred-quick-fixes` (/deferred quick fixes) with 1 item
+  aged >45d, carried on the partner's reason given twice today: the synthesize-mode
+  scenario-verification successor (71d) waits on the partner's decision to revise
+  the VOID rule or isolate the exemplar step before any re-run of plan 36. This
+  branch does not touch it.
 
 ## 11-delegation-frontmatter-rollout — 2026-07-19
 - [x] Haiku-pinned `Explore` override agent (fork-isolation upgrade; plan "Out of
@@ -1407,7 +1412,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       and `~/research-wiki` now has three modified, uncommitted files in its own repo.
 
 ## 27-deferment-loop-hardening — 2026-09-08
-- [ ] Sync these skills to the work environment, where the backlog problem
+- [x] Sync these skills to the work environment, where the backlog problem
       actually lives (309 open items across five alt-nfp repos; this repo is at
       21 open / 77% closure, so nothing here exercises the fix at scale).
       Overwrite rather than merge: writing-plans' Plan Completion Protocol
@@ -1416,7 +1421,9 @@ declined as YAGNI (zero instances in a one-page wiki).
       backlog nudges firing. Owner-only — needs the work machine.
       Size: quick-fix. Done when: deferred_stats.py runs in each alt-nfp repo
       off the synced skills.
-- [ ] Verify the source review's §1.1 backlog table with the new reporter.
+      → retired 2026-10-05 (/deferred): the premise does not hold — the owner
+      confirmed there is no work machine, so there is nothing to sync to.
+- [x] Verify the source review's §1.1 backlog table with the new reporter.
       The review that motivated this plan cited 309 open items, `stats` at 17%
       closure and `model` with 29 items aged >45d, but the same review also
       reported two guardrails that have never existed in this repo, so its
@@ -1425,12 +1432,17 @@ declined as YAGNI (zero instances in a one-page wiki).
       check. Owner-only — needs the work machine.
       Size: quick-fix. Done when: the reporter has been run in all five
       alt-nfp repos and the real closure rates and aged tails recorded.
-- [ ] R5 — per-repo WIP cap on open deferred items, forcing a drain before the
+      → retired 2026-10-05 (/deferred): the premise does not hold — the owner
+      confirmed there is no work machine, so the five-repo run cannot happen.
+- [x] R5 — per-repo WIP cap on open deferred items, forcing a drain before the
       next completion may append. Consciously fenced out of this plan as the
       escalation rather than the opening move (source review §2, R5): it is the
       most reliable fix and the most disruptive, and can block legitimate work.
       Size: design. Revisit if: closure rate measured by deferred_stats.py is
       still flat or falling in the work repos 60 days after the sync above.
+      → retired 2026-10-05 (/deferred): the premise does not hold — its trigger
+      was measured in the work repos after a sync, and the owner confirmed there
+      is no work machine, so neither can occur.
 - [x] Trim `skills/subagent-driven-development/SKILL.md` from 586 lines to
       under the ~500-line guideline; candidates to move to `references/` are
       Model Selection, Fix Rounds, Durable Progress and Context Checkpoints.
@@ -1760,7 +1772,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       error, test first.
       Size: quick-fix. Revisit if: a masked or missing-observation model reports a calibration
       verdict, or a run exits with the broadcast error.
-- [ ] The fair-rated spread step is direction-blind (plan 34 final-review recommendation,
+- [x] The fair-rated spread step is direction-blind (plan 34 final-review recommendation,
       pre-existing; filed after completion at the owner's request). `_spread_step` in
       `skills/bayesian-workflow/scripts/check_diagnostics.py` gives every fair-rated spread
       finding (not well calibrated, |`mean_coverage_deviation`| ≤ `COVERAGE_DEVIATION_FAIR` =
@@ -1777,7 +1789,10 @@ declined as YAGNI (zero instances in a one-page wiki).
       Size: quick-fix. Done when: a fair-rated over-confident and a fair-rated under-confident
       finding each get a step whose remedy moves the predictive in the right direction, with
       both tests updated.
-- [ ] `--loo-pit` figures don't match the report template's filenames (plan 34 final-review
+      → done 2026-10-05 (/deferred quick fix): the fair step now splits by direction:
+      milder widening (likelihood) advice when over-confident, milder tightening
+      (prior) advice when under-confident; both tests updated.
+- [x] `--loo-pit` figures don't match the report template's filenames (plan 34 final-review
       recommendation, pre-existing; filed after completion at the owner's request). With
       `--loo-pit --save-plots`, `skills/bayesian-workflow/scripts/calibration_check.py` (the
       `prefix = "loo_pit"` line in `main()`, present at d9bea91) writes `loo_pit_ecdf.png` and
@@ -1794,9 +1809,11 @@ declined as YAGNI (zero instances in a one-page wiki).
       safe).
       Size: quick-fix. Done when: a report written after a `--loo-pit --save-plots` run links
       figures that exist.
+      → done 2026-10-05 (/deferred quick fix): reporting.md and SKILL.md name the
+      loo_pit_* figures; the template links whichever set exists, or both.
 
 ## 33-snippet-per-block-fixtures — 2026-10-03
-- [ ] The `fixture=` info-string grammar is looser than the exemption-marker grammar. The code
+- [x] The `fixture=` info-string grammar is looser than the exemption-marker grammar. The code
       is `build/check_snippets.py`: `FIXTURE_RE`, `fixture_name`, `fixture_errors` and
       `_marker`. There are three edge cases. No shipped block hits any of them today.
       (a) `fixture=x norun <reason>` silently drops the `norun`. `_marker` reads only the
@@ -1812,7 +1829,10 @@ declined as YAGNI (zero instances in a one-page wiki).
       non-leading marker or a malformed `fixture` token is a failure.
       Size: quick-fix. Done when: each of (a)-(c) either fails the gate or is pinned by a test as
       deliberate.
-- [ ] The stack-gated test `test_a_named_fixture_runs_between_the_preamble_and_the_block`
+      → done 2026-10-05 (/deferred quick fix): the info string is tokenised once
+      (_parse_info): (a) and (c) fail the gate, (b) is free-text reason; legal forms
+      pinned by tests.
+- [x] The stack-gated test `test_a_named_fixture_runs_between_the_preamble_and_the_block`
       (`build/test_check_snippets.py`) can pass vacuously. `run_errors` returns `[]` for a block
       it skips as not runnable, so the test's final `== []` holds even if nothing ran. Two
       regressions would have to coincide, because the sibling non-stack test pins `runnable()`
@@ -1821,7 +1841,9 @@ declined as YAGNI (zero instances in a one-page wiki).
       returns, and `assert check_snippets.runnable(block)` before the final assertion.
       Size: quick-fix. Done when: the test asserts the block is runnable before it asserts no
       errors.
-- [ ] `fixture_errors` (`build/check_snippets.py`) has no positive control. No pytest asserts
+      → done 2026-10-05 (/deferred quick fix): the test asserts runnable(block) before
+      asserting no errors.
+- [x] `fixture_errors` (`build/check_snippets.py`) has no positive control. No pytest asserts
       `fixture_errors(path) == []` for a block that selects a KNOWN fixture. A regression that
       flagged every `fixture=` selection would therefore pass
       `test_an_unknown_fixture_fails_the_gate`, and only Tier 1, outside pytest, would catch it.
@@ -1831,6 +1853,8 @@ declined as YAGNI (zero instances in a one-page wiki).
       shipped `fixture=comparison` blocks.
       Size: quick-fix. Done when: a pytest asserts `fixture_errors` finds nothing in the shipped
       skills.
+      → done 2026-10-05 (/deferred quick fix): test_all_skills_select_known_fixtures
+      added, plus a known-fixture positive control.
 - [ ] Named fixtures have no mechanical honesty pin.
       `test_every_fixture_var_is_carried_by_the_fixture_idata` (`build/test_check_snippets.py`)
       checks `FIXTURE_VARS` only against the preamble's `idata`. There are two gaps, and
@@ -1861,7 +1885,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       → done in plan 38 (decision 21, at its completion gate): the snippet-gate comment names
       the `fixture=<name>` token and says named fixtures live in `build/snippet_preamble.py`'s
       `NAMED_FIXTURES`.
-- [ ] A named fixture's helper names count as bound for every block that selects the fixture.
+- [x] A named fixture's helper names count as bound for every block that selects the fixture.
       `_fixture_names` (`build/check_snippets.py`) uses `_bound_by`, which walks function
       bodies, parameters and comprehension targets. So for a `fixture=comparison` block,
       `COMPARISON_FIXTURE` (`build/snippet_preamble.py`) also "binds" two kinds of name:
@@ -1877,6 +1901,9 @@ declined as YAGNI (zero instances in a one-page wiki).
         them raises.
       Size: quick-fix. Done when: a block that uses a fixture-local or helper name it does not
       define is reported as unbound, pinned by a test.
+      → done 2026-10-05 (/deferred quick fix): _module_names counts module-level
+      bindings only, for fixtures and the preamble; COMPARISON_FIXTURE dels its
+      helpers; Tier 3 re-measured unchanged.
 - [ ] No pytest executes `COMPARISON_FIXTURE` (`build/snippet_preamble.py`). Plan 33's two
       comparison tests are static: they check binding and fence selection. A stack change that
       breaks the fixture's two extra fits would leave the pytest suite green. Only the roughly
@@ -1956,14 +1983,17 @@ declined as YAGNI (zero instances in a one-page wiki).
       `build/cc_guide/conformance.toml` in the same change; or the owner re-records that
       exception as a deviation with a reason. Either way, `build/check_conformance.py`
       passes.
-- [ ] Gate the geographic-codes and classification-codes network rebuilds (plan 35 audit
+- [x] Gate the geographic-codes and classification-codes network rebuilds (plan 35 audit
       rows S-104, S-105): both SKILL.md files (line 37 each) rebuild `data/` from the
       network when it is missing, with no manual gate (`lean.expensive-ops`). Size:
       quick-fix. Done when: each rebuild asks first or runs only from a manual entry point,
       and exception `network-rebuild-ungated` is removed from
       `build/cc_guide/conformance.toml` in the same change, with
       `build/check_conformance.py` passing.
-- [ ] Give debugger Write or record why not (plan 35 audit row A-18): `agents/debugger.md`
+      → done 2026-10-05 (/deferred quick fix): both skills ask before a network
+      rebuild and name the --offline cache rebuild (owner: ask first); exception
+      removed.
+- [x] Give debugger Write or record why not (plan 35 audit row A-18): `agents/debugger.md`
       has Edit and Bash but not Write, yet its body tells it to create a failing test when
       none exists; the recorded archetype reason
       (specs/completed/agents-and-commands-expansion.md) covers Edit only. Size: quick-fix.
@@ -1972,13 +2002,17 @@ declined as YAGNI (zero instances in a one-page wiki).
       `build/cc_guide/conformance.toml` in the same change; or the owner re-records that
       exception as a deviation with a reason. Either way, `build/check_conformance.py`
       passes.
-- [ ] Drop Bash from docs-writer or record why it needs it (plan 35 audit row A-20):
+      → done 2026-10-05 (/deferred quick fix): debugger lists Write (owner's choice),
+      Gemini adapter regenerated; exception removed.
+- [x] Drop Bash from docs-writer or record why it needs it (plan 35 audit row A-20):
       `agents/docs-writer.md` holds Bash with no recorded reason (`subagents.tools`); it is
       deliberately outside the read-only guard (specs/completed/readonly-agent-guard.md).
       Size: quick-fix. Done when: docs-writer drops Bash, the adapters are regenerated, and
       exception `docs-writer-holds-bash` is removed from `build/cc_guide/conformance.toml`
       in the same change; or the owner re-records that exception as a deviation with a
       reason. Either way, `build/check_conformance.py` passes.
+      → done 2026-10-05 (/deferred quick fix): docs-writer keeps Bash; the gap is
+      re-recorded as a deviation with the owner's reason.
 - [ ] Scope code-reviewer and task-reviewer findings to correctness and requirement gaps
       (plan 35 audit rows A-33, A-34): `agents/code-reviewer.md` and
       `agents/task-reviewer.md` invite findings beyond correctness and requirement gaps
@@ -1989,7 +2023,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       `build/cc_guide/conformance.toml` in the same change; or the owner re-records that
       exception as a deviation with a reason. Either way, `build/check_conformance.py`
       passes.
-- [ ] Fix four hooks/README.md inaccuracies (plan 35 audit rows H-18, H-24, H-27, H-48), as
+- [x] Fix four hooks/README.md inaccuracies (plan 35 audit rows H-18, H-24, H-27, H-48), as
       of the 2026-10-04 audit: the read-only guard's install command leaves `$HOME` unquoted
       (:121); the README says only exit 2 blocks, beside a hook that blocks by JSON deny
       (:90); the blocking hooks' install path has no step to trigger each one once (:39-78);
@@ -2000,7 +2034,11 @@ declined as YAGNI (zero instances in a one-page wiki).
       `hooks-readme-home-unquoted`, `hooks-readme-exit-claim`, `hooks-readme-no-verify-step`
       and `hooks-readme-auto-mode-allow` is removed from `build/cc_guide/conformance.toml`
       in the same change, with `build/check_conformance.py` passing.
-- [ ] Relabel clean-code-python's always-on title (plan 35 audit row H-38; the 2026-10-03
+      → done 2026-10-05 (/deferred quick fix): all four fixed and the four exceptions
+      removed; the $CLAUDE_PROJECT_DIR lines stay unquoted as drift known drift #3.
+      Owner still to re-apply the quoted guard command to ~/.claude/settings.json (row
+      O-16).
+- [x] Relabel clean-code-python's always-on title (plan 35 audit row H-38; the 2026-10-03
       repo audit's D12): `rules/clean-code-python.md` (shared by its `.claude/rules/` link)
       and the root README call the rule always-on, but its `paths` load it only on a `.py`
       read or edit, and compaction can summarise it away. The owner kept it path-scoped at
@@ -2008,6 +2046,8 @@ declined as YAGNI (zero instances in a one-page wiki).
       `.py` reads and edits, and exception `clean-code-rule-always-on-label` is removed from
       `build/cc_guide/conformance.toml` in the same change, with
       `build/check_conformance.py` passing.
+      → done 2026-10-05 (/deferred quick fix): the rule title and README say it loads
+      on .py reads and edits; exception removed.
 - [ ] Settle where enforceAvailableModels belongs (plan 35 audit row H-51; guide note H-57):
       `.claude/settings.json` sets `enforceAvailableModels`, while the guide places its
       effect in managed settings, and whether the key is honoured elsewhere is guide note
@@ -2026,7 +2066,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       --check`, and exception `commit-lints-in-prose` is removed from
       `build/cc_guide/conformance.toml` in the same change, with
       `build/check_conformance.py` passing.
-- [ ] Close the conformance lint's untested branches (plan 35 per-task reviews T1-m2, T2-m2,
+- [x] Close the conformance lint's untested branches (plan 35 per-task reviews T1-m2, T2-m2,
       T3-m0, T3-m1, T4-m4, T5-m2, T6-m1, T7-m1, T7-m6 and the final review; triaged defer).
       Add red-first tests in `build/test_check_conformance.py` and `build/test_fences.py`
       for: the stray-anchor loop's `n not in fenced` clause; `<!-- cc-guide:` never matching
@@ -2041,183 +2081,251 @@ declined as YAGNI (zero instances in a one-page wiki).
       null `paths` on an always-on rule; sorted output; the never-stale-on-unwaivable rule;
       and `parse_exceptions`' field branches. Size: quick-fix. Done when: each listed
       branch has a red-first test.
-- [ ] Make an unreadable conformance register a setup error (plan 35 review T2-m1):
+      → done 2026-10-05 (/deferred quick fix): every listed branch has a test, each
+      shown red by mutation; none was buggy.
+- [x] Make an unreadable conformance register a setup error (plan 35 review T2-m1):
       `load_register` in `build/check_conformance.py` catches only FileNotFoundError, so a
       PermissionError escapes as a traceback (exit 1), while `load_guide` catches OSError.
       Size: quick-fix. Done when: any OSError reading the register raises SetupError (exit
       2), with a red-first test.
-- [ ] Keep git's reason when the conformance lint cannot list files (plan 35 review T3-m2):
+      → done 2026-10-05 (/deferred quick fix): any OSError reading the register is a
+      SetupError (exit 2).
+- [x] Keep git's reason when the conformance lint cannot list files (plan 35 review T3-m2):
       `kept_files` in `build/check_conformance.py` raises SetupError without git's stderr,
       so exit 2 names no cause. Size: quick-fix. Done when: the SetupError message carries
       git's stderr, with a red-first test.
-- [ ] Validate conformance waiver paths against the waived check's files (plan 35 review
+      → done 2026-10-05 (/deferred quick fix): kept_files' SetupError carries git's
+      stderr (shared git_reason helper).
+- [x] Validate conformance waiver paths against the waived check's files (plan 35 review
       T7-m3): `parse_exceptions` in `build/check_conformance.py` checks an explicit waiver
       path only against the disk, so a `./`-prefixed, absolute, directory, ignored or
       wrong-kind path is accepted and surfaces later as a misleading stale-waiver line.
       Size: quick-fix. Done when: a waiver path must be one of its check's kind files, with
       red-first tests.
-- [ ] Add a section-fit integrity rule to the conformance register (plan 35 final review):
+      → done 2026-10-05 (/deferred quick fix): a waiver path must be one of its
+      check's kind files.
+- [x] Add a section-fit integrity rule to the conformance register (plan 35 final review):
       nothing checks that a `[[check]]`'s sections belong to its kinds' sections, or that an
       exception's sections are governed by its artifacts' kinds. Every check fits today; one
       exception does not (`writing-skills-guide-gaps` cites `rules.hierarchy` on a skill,
       from audit row S-107). Size: quick-fix. Done when: `build/check_conformance.py`
       enforces the fit with red-first tests, and the one misfit is resolved by a map change
       or a re-cite.
-- [ ] Teach hook-dir-quoted two more expansion forms (plan 35 completion gate; conformance
+      → done 2026-10-05 (/deferred quick fix): check and exception section fit
+      enforced; writing-skills-guide-gaps re-cited from rules.hierarchy (owner
+      approved).
+- [x] Teach hook-dir-quoted two more expansion forms (plan 35 completion gate; conformance
       spec R3.4, limit 1): `unquoted_var_uses` in `build/check_conformance.py` misses
       `${CLAUDE_PROJECT_DIR:-…}`-style expansions (a false negative) and flags a correctly
       quoted use inside `$(…)` (a false positive, which fails correct hook code). Size:
       quick-fix. Done when: both forms are handled, with red-first tests, and the lint still
       passes on the repo.
-- [ ] Let stop-hook-guard see past a runner (plan 35 completion gate; conformance spec R3.4,
+      → done 2026-10-05 (/deferred quick fix): shell_expansions handles ${VAR:-…}
+      forms and quoting inside $(…).
+- [x] Let stop-hook-guard see past a runner (plan 35 completion gate; conformance spec R3.4,
       limit 2): the check's first-word rule rejects Stop commands like `uv run <script>`,
       yet the guide's hooks.pitfalls advises uv inline-dependency scripts for Python hooks,
       so a Stop hook written the guide's way fails the lint. Size: quick-fix. Done when: the
       check resolves the script after a known runner (`uv run`, `python3`), with red-first
       tests.
-- [ ] Add the `compaction-window` conformance check (plan 35 audit §6, d2, seat check S#2):
+      → done 2026-10-05 (/deferred quick fix): script_word resolves the script after
+      uv run / python runners.
+- [x] Add the `compaction-window` conformance check (plan 35 audit §6, d2, seat check S#2):
       estimated body tokens above 5,000, plus critical-sounding headings (STOP, Red Flags,
       Critical and similar) past that offset. Today 3 bodies and 6 headings. Size:
       quick-fix. Done when: the check is in `CHECKS` in `build/check_conformance.py`, with a
       `[[check]]` entry in `build/cc_guide/conformance.toml` and red-first tests.
-- [ ] Add the `description-person` conformance check (plan 35 audit §6, d3, seat check S#3):
+      → done 2026-10-05 (/deferred quick fix): `compaction-window` is in CHECKS with
+      its [[check]] entry and red-first tests; writing-skills' findings waived under
+      portability Stage D (owner).
+- [x] Add the `description-person` conformance check (plan 35 audit §6, d3, seat check S#3):
       first- or second-person pronouns in a description, outside quoted phrases. Today 7
       (S-21 to S-27). Size: quick-fix. Done when: the check is in `CHECKS` in
       `build/check_conformance.py`, with a `[[check]]` entry in
       `build/cc_guide/conformance.toml` and red-first tests.
-- [ ] Add the `trigger-phrase-presence` conformance check (plan 35 audit §6, d4, seat check
+      → done 2026-10-05 (/deferred quick fix): `description-person` is in CHECKS with
+      its [[check]] entry and red-first tests; description-second-person attached.
+- [x] Add the `trigger-phrase-presence` conformance check (plan 35 audit §6, d4, seat check
       S#4): a description has a quoted phrase or a "Trigger on" list. Heuristic. Today 9
       lack both. Size: quick-fix. Done when: the check is in `CHECKS` in
       `build/check_conformance.py`, with a `[[check]]` entry in
       `build/cc_guide/conformance.toml` and red-first tests.
+      → done 2026-10-05 (/deferred quick fix): `trigger-phrase-presence` is in CHECKS
+      with its [[check]] entry and red-first tests; the house Use when list style
+      recorded as deviation descriptions-trigger-list-style (owner).
 - [ ] Add the `listing-aggregate` conformance check (plan 35 audit §6, d5, seat check S#5):
       the summed name and description characters against window × fraction. Today 21,297
       characters across 35 skills. It needs the unit the guide leaves open (guide note
       S-109). Size: quick-fix. Blocked until guide note S-109 settles the listing budget's
       unit. Done when: the check is in `CHECKS` in `build/check_conformance.py`, with a
       `[[check]]` entry in `build/cc_guide/conformance.toml` and red-first tests.
-- [ ] Add the `substitution-hazard` conformance check (plan 35 audit §6, d6, seat check
+- [x] Add the `substitution-hazard` conformance check (plan 35 audit §6, d6, seat check
       S#6): an unescaped `$ARGUMENTS`, `$<digit>`, `${CLAUDE_...}` or render-time shell
       token in a SKILL.md body. Today 0; it would guard against regressions. Size:
       quick-fix. Done when: the check is in `CHECKS` in `build/check_conformance.py`, with a
       `[[check]]` entry in `build/cc_guide/conformance.toml` and red-first tests.
-- [ ] Add the `orphan-bundled-file` conformance check (plan 35 audit §6, d7, seat check
+      → done 2026-10-05 (/deferred quick fix): `substitution-hazard` is in CHECKS with
+      its [[check]] entry and red-first tests.
+- [x] Add the `orphan-bundled-file` conformance check (plan 35 audit §6, d7, seat check
       S#7): a file under a skill directory that no SKILL.md or reference names, excluding
       tests and READMEs. Today 2. Size: quick-fix. Done when: the check is in `CHECKS` in
       `build/check_conformance.py`, with a `[[check]]` entry in
       `build/cc_guide/conformance.toml` and red-first tests.
+      → done 2026-10-05 (/deferred quick fix): `orphan-bundled-file` is in CHECKS with
+      its [[check]] entry and red-first tests; INSTALL.md exempt, industry_codes.csv a
+      gap under audit H1 (owner).
 - [ ] Add the `dmi-handoff-consistency` conformance check (plan 35 audit §6, d9, seat check
       S#9): a skill that sets `disable-model-invocation: true` is never named as a handoff
       elsewhere. Size: quick-fix. Done when: the check is in `CHECKS` in
       `build/check_conformance.py`, with a `[[check]]` entry in
       `build/cc_guide/conformance.toml` and red-first tests.
-- [ ] Add the `skill-command-name-collision` conformance check (plan 35 audit §6, d10, seat
+- [x] Add the `skill-command-name-collision` conformance check (plan 35 audit §6, d10, seat
       check S#10): no `commands/*.md` stem equals a `skills/*/` directory name. Today 0.
       Size: quick-fix. Done when: the check is in `CHECKS` in `build/check_conformance.py`,
       with a `[[check]]` entry in `build/cc_guide/conformance.toml` and red-first tests.
-- [ ] Add the `command-frontmatter-keys` conformance check (plan 35 audit §6, d11, seat
+      → done 2026-10-05 (/deferred quick fix): `skill-command-name-collision` is in
+      CHECKS with its [[check]] entry and red-first tests.
+- [x] Add the `command-frontmatter-keys` conformance check (plan 35 audit §6, d11, seat
       check A#1): command keys are a subset of the skill fields, with no `name` or `paths`.
       Today 0. Size: quick-fix. Done when: the check is in `CHECKS` in
       `build/check_conformance.py`, with a `[[check]]` entry in
       `build/cc_guide/conformance.toml` and red-first tests.
-- [ ] Add the `agent-name-form` conformance check (plan 35 audit §6, d12, seat check A#3):
+      → done 2026-10-05 (/deferred quick fix): `command-frontmatter-keys` is in CHECKS
+      with its [[check]] entry and red-first tests.
+- [x] Add the `agent-name-form` conformance check (plan 35 audit §6, d12, seat check A#3):
       an agent name is lowercase-hyphenated unless a register allow-list names it. Today it
       flags only `Explore` (A-04). Size: quick-fix. Done when: the check is in `CHECKS` in
       `build/check_conformance.py`, with a `[[check]]` entry in
       `build/cc_guide/conformance.toml` and red-first tests.
-- [ ] Add the `agent-model-available` conformance check (plan 35 audit §6, d13, seat check
+      → done 2026-10-05 (/deferred quick fix): `agent-name-form` is in CHECKS with its
+      [[check]] entry and red-first tests (Explore allow-listed).
+- [x] Add the `agent-model-available` conformance check (plan 35 audit §6, d13, seat check
       A#4): each agent's model alias appears in `availableModels`. Today 0. Size: quick-fix.
       Done when: the check is in `CHECKS` in `build/check_conformance.py`, with a
       `[[check]]` entry in `build/cc_guide/conformance.toml` and red-first tests.
-- [ ] Add the `agent-name-unique` conformance check (plan 35 audit §6, d14, seat check A#5):
+      → done 2026-10-05 (/deferred quick fix): `agent-model-available` is in CHECKS
+      with its [[check]] entry and red-first tests.
+- [x] Add the `agent-name-unique` conformance check (plan 35 audit §6, d14, seat check A#5):
       no name repeats across `agents/` and `.claude/agents/`. Today `.claude/agents/` does
       not exist. Size: quick-fix. Done when: the check is in `CHECKS` in
       `build/check_conformance.py`, with a `[[check]]` entry in
       `build/cc_guide/conformance.toml` and red-first tests.
+      → done 2026-10-05 (/deferred quick fix): `agent-name-unique` is in CHECKS with
+      its [[check]] entry and red-first tests.
 - [ ] Add the `haiku-retirement-date` conformance check (plan 35 audit §6, d15, seat check
       A#6): warn on Haiku pins from 2026-10-15. Today it would flag explore.md and
       test-runner.md. Size: quick-fix. Done when: the check is in `CHECKS` in
       `build/check_conformance.py`, with a `[[check]]` entry in
       `build/cc_guide/conformance.toml` and red-first tests.
-- [ ] Add the `command-substitution-tokens` conformance check (plan 35 audit §6, d16, seat
+- [x] Add the `command-substitution-tokens` conformance check (plan 35 audit §6, d16, seat
       check A#7): substitution or render-time shell tokens in a command body that the
       command does not declare. Today 0. Size: quick-fix. Done when: the check is in
       `CHECKS` in `build/check_conformance.py`, with a `[[check]]` entry in
       `build/cc_guide/conformance.toml` and red-first tests.
+      → done 2026-10-05 (/deferred quick fix): `command-substitution-tokens` is in
+      CHECKS with its [[check]] entry and red-first tests.
 - [ ] Add the `agent-effort-level` conformance check (plan 35 audit §6, d17, seat check
       A#8): blocked until the guide lists the effort levels. Two agents use `xhigh`. Size:
       quick-fix. Blocked until the guide lists the valid effort levels. Done when: the check
       is in `CHECKS` in `build/check_conformance.py`, with a `[[check]]` entry in
       `build/cc_guide/conformance.toml` and red-first tests.
-- [ ] Add the `hook-var-quoted` conformance check (plan 35 audit §6, d18, seat check H#1):
+- [x] Add the `hook-var-quoted` conformance check (plan 35 audit §6, d18, seat check H#1):
       generalise `hook-dir-quoted` to any unquoted `$VAR` at the start of a script path,
       `$HOME` included. It would catch README:121 (H-18). Size: quick-fix. Done when: the
       check is in `CHECKS` in `build/check_conformance.py`, with a `[[check]]` entry in
       `build/cc_guide/conformance.toml` and red-first tests.
+      → done 2026-10-05 (/deferred quick fix): `hook-var-quoted` is in CHECKS with its
+      [[check]] entry and red-first tests ($CLAUDE_PROJECT_DIR left to
+      hook-dir-quoted).
 - [ ] Add the `managed-only-keys` conformance check (plan 35 audit §6, d19, seat check H#2):
       `enforceAvailableModels` in non-managed settings (H-51). It needs guide note H-57
       settled first. Size: quick-fix. Blocked until guide note H-57 settles whether the key
       is managed-only. Done when: the check is in `CHECKS` in `build/check_conformance.py`,
       with a `[[check]]` entry in `build/cc_guide/conformance.toml` and red-first tests.
-- [ ] Add the `rule-always-on-claim` conformance check (plan 35 audit §6, d20, seat check
+- [x] Add the `rule-always-on-claim` conformance check (plan 35 audit §6, d20, seat check
       H#3): a path-scoped rule whose text calls itself always-on (H-38). Size: quick-fix.
       Done when: the check is in `CHECKS` in `build/check_conformance.py`, with a
       `[[check]]` entry in `build/cc_guide/conformance.toml` and red-first tests.
-- [ ] Add the `hook-readme-exit-claims` conformance check (plan 35 audit §6, d21, seat check
+      → done 2026-10-05 (/deferred quick fix): `rule-always-on-claim` is in CHECKS
+      with its [[check]] entry and red-first tests.
+- [x] Add the `hook-readme-exit-claims` conformance check (plan 35 audit §6, d21, seat check
       H#4): a hooks README that says only exit 2 blocks, while it also documents a
       `permissionDecision` deny (H-24). Size: quick-fix. Done when: the check is in `CHECKS`
       in `build/check_conformance.py`, with a `[[check]]` entry in
       `build/cc_guide/conformance.toml` and red-first tests.
-- [ ] Add the `hook-scripts-executable` conformance check (plan 35 audit §6, d22, seat check
+      → done 2026-10-05 (/deferred quick fix): `hook-readme-exit-claims` is in CHECKS
+      with its [[check]] entry and red-first tests.
+- [x] Add the `hook-scripts-executable` conformance check (plan 35 audit §6, d22, seat check
       H#5): every wired hook script exists with mode 100755. Today all five do. Size:
       quick-fix. Done when: the check is in `CHECKS` in `build/check_conformance.py`, with a
       `[[check]]` entry in `build/cc_guide/conformance.toml` and red-first tests.
-- [ ] Add the `hook-python-deps` conformance check (plan 35 audit §6, d23, seat check H#6):
+      → done 2026-10-05 (/deferred quick fix): `hook-scripts-executable` is in CHECKS
+      with its [[check]] entry and red-first tests, runner-aware.
+- [x] Add the `hook-python-deps` conformance check (plan 35 audit §6, d23, seat check H#6):
       hook Python is stdlib-only or declares a PEP 723 block. The guard would pass, which
       turns H-32 into a recorded fact. Size: quick-fix. Done when: the check is in `CHECKS`
       in `build/check_conformance.py`, with a `[[check]]` entry in
       `build/cc_guide/conformance.toml` and red-first tests.
-- [ ] Add the `allow-rule-compound-operators` conformance check (plan 35 audit §6, d24, seat
+      → done 2026-10-05 (/deferred quick fix): `hook-python-deps` is in CHECKS with
+      its [[check]] entry and red-first tests.
+- [x] Add the `allow-rule-compound-operators` conformance check (plan 35 audit §6, d24, seat
       check H#7): an unquoted `&&`, `||`, `;`, `|` or `&` in an allow rule. It would apply
       only to a gitignored per-machine settings file, so it can only be a local check. Size:
       quick-fix. Done when: the check is in `CHECKS` in `build/check_conformance.py`, with a
       `[[check]]` entry in `build/cc_guide/conformance.toml` and red-first tests.
-- [ ] Add the `inert-runner-allow-rules` conformance check (plan 35 audit §6, d25, seat
+      → done 2026-10-05 (/deferred quick fix): `allow-rule-compound-operators` is in
+      CHECKS with its [[check]] entry and red-first tests over committed allow rules
+      only; settings.local.json never affects the result.
+- [x] Add the `inert-runner-allow-rules` conformance check (plan 35 audit §6, d25, seat
       check H#8): runner-style allow snippets that claim to spare prompts, which auto mode
       sets aside (H-48). Size: quick-fix. Done when: the check is in `CHECKS` in
       `build/check_conformance.py`, with a `[[check]]` entry in
       `build/cc_guide/conformance.toml` and red-first tests.
-- [ ] Add the `hook-install-verify-step` conformance check (plan 35 audit §6, d26, seat
+      → done 2026-10-05 (/deferred quick fix): `inert-runner-allow-rules` is in CHECKS
+      with its [[check]] entry and red-first tests.
+- [x] Add the `hook-install-verify-step` conformance check (plan 35 audit §6, d26, seat
       check H#9): install docs for a blocking hook name a trigger-it-once step (H-27).
       Heuristic. Size: quick-fix. Done when: the check is in `CHECKS` in
       `build/check_conformance.py`, with a `[[check]]` entry in
       `build/cc_guide/conformance.toml` and red-first tests.
-- [ ] Add the `builtin-name-shadow` conformance check (plan 35 audit §6, d27, seat check
+      → done 2026-10-05 (/deferred quick fix): `hook-install-verify-step` is in CHECKS
+      with its [[check]] entry and red-first tests.
+- [x] Add the `builtin-name-shadow` conformance check (plan 35 audit §6, d27, seat check
       C#2): no skill or command takes a built-in command's name. It needs a register list.
       Today 0 against the three the guide names. Size: quick-fix. Done when: the check is in
       `CHECKS` in `build/check_conformance.py`, with a `[[check]]` entry in
       `build/cc_guide/conformance.toml` and red-first tests.
-- [ ] Add the `reserved-skill-name` conformance check (plan 35 audit §6, d28, seat check
+      → done 2026-10-05 (/deferred quick fix): `builtin-name-shadow` is in CHECKS with
+      its [[check]] entry and red-first tests.
+- [x] Add the `reserved-skill-name` conformance check (plan 35 audit §6, d28, seat check
       C#3): no `skills/synced/`. Absent today. Size: quick-fix. Done when: the check is in
       `CHECKS` in `build/check_conformance.py`, with a `[[check]]` entry in
       `build/cc_guide/conformance.toml` and red-first tests.
-- [ ] Add the `claude-md-import-resolves` conformance check (plan 35 audit §6, d29, seat
+      → done 2026-10-05 (/deferred quick fix): `reserved-skill-name` is in CHECKS with
+      its [[check]] entry and red-first tests.
+- [x] Add the `claude-md-import-resolves` conformance check (plan 35 audit §6, d29, seat
       check C#4): each `@` import in a claude-md file resolves, within 4 hops, using a
       fence-aware scan. Today a fence-aware scan passes; a naive one would flag the
       `@needs_pilot` comment in CLAUDE.md's llm-wiki suite notes. Size: quick-fix.
       Done when: the check is in `CHECKS` in `build/check_conformance.py`, with a
       `[[check]]` entry in `build/cc_guide/conformance.toml` and red-first tests.
-- [ ] Add the `local-md-ignored` conformance check (plan 35 audit §6, d30, seat check C#5):
+      → done 2026-10-05 (/deferred quick fix): `claude-md-import-resolves` is in
+      CHECKS with its [[check]] entry and red-first tests, fence- and code-span-aware.
+- [x] Add the `local-md-ignored` conformance check (plan 35 audit §6, d30, seat check C#5):
       `CLAUDE.local.md` is gitignored. Today it is not, and no such file exists. Size:
       quick-fix. Done when: the check is in `CHECKS` in `build/check_conformance.py`, with a
       `[[check]]` entry in `build/cc_guide/conformance.toml` and red-first tests.
-- [ ] Add the `claude-md-count-claims` conformance check (plan 35 audit §6, d31, seat check
+      → done 2026-10-05 (/deferred quick fix): `local-md-ignored` is in CHECKS with
+      its [[check]] entry and red-first tests; .gitignore now ignores CLAUDE.local.md.
+- [x] Add the `claude-md-count-claims` conformance check (plan 35 audit §6, d31, seat check
       C#6): lines in claude-md files that state a test, pass or skip count. Today the
       count is 0 apart from the provenance-pinned originals note, so the check would only
       guard against regressions. The "(19 originals" note is pinned by the test from
       `c67278d` on `main`, so it would need an allow-list. Size: quick-fix. Done when: the
       check is in `CHECKS` in `build/check_conformance.py`, with a `[[check]]` entry in
       `build/cc_guide/conformance.toml` and red-first tests.
+      → done 2026-10-05 (/deferred quick fix): `claude-md-count-claims` is in CHECKS
+      with its [[check]] entry and red-first tests (originals note allow-listed).
 - [ ] Verify guide note S-108 with `/cc-guide verify skills.progressive-disclosure` once
       drift lands (plan 35 audit §7): the guide's line 122 says the listing (name and
       description) is always loaded, which contradicts line 111, under which overflowing
@@ -2275,17 +2383,22 @@ declined as YAGNI (zero instances in a one-page wiki).
       recorded only in `build/cc_guide/conformance.toml`, not beside the artifacts they
       cover. Size: design. Revisit if: drift's R4.5 load check shows a SKILL.md frontmatter
       comment loads in all three runtimes.
-- [ ] The conformance rule kind misses nested rules (plan 35, latent): its glob
+- [x] The conformance rule kind misses nested rules (plan 35, latent): its glob
       `.claude/rules/*.md` (conformance spec R2.3) skips rules in subdirectories, which
       `rules.rules-files` says are discovered recursively, and git lists a symlinked
       directory under `.claude/rules/` as one entry that no `.md` glob reaches, so
       `rule-paths`' check that each `.claude/rules/` link resolves inside the repo never
       sees it. No such entry exists today. Size: quick-fix. Done when: the rule kind and
       `rule-paths` cover both cases, with red-first tests.
-- [ ] Keeping the Claude Code guide current is the drift spec's work (conformance spec, Out
+      → done 2026-10-05 (/deferred quick fix): the rule kind globs .claude/rules/**
+      and rule-paths checks symlinked directories.
+- [x] Keeping the Claude Code guide current is the drift spec's work (conformance spec, Out
       of scope); this item only points to `specs/claude-code-drift-automation.md`. Size:
       plan. Revisit if: the drift spec's stages stall or are dropped, leaving nothing that
       keeps the guide current.
+      → retired 2026-10-05 (/deferred): a pointer with no action of its own; the drift
+      spec is live and its Stage 1 merged (add1995, plans/completed/38-…), so its stages
+      and their own deferred items track keeping the guide current.
 - [ ] The guide's §8 `TODO(owner)` (conformance spec, Out of scope): the default-model
       stance in `specs/guides/claude-code-customization-guide.md` is the owner's call. The
       drift spec logs the same item at its own completion; keep one. Size: design. Done
@@ -2308,12 +2421,15 @@ declined as YAGNI (zero instances in a one-page wiki).
       example does not cover runs in fresh contexts with no-guidance controls against the
       shipped skill, and the record says whether uptake of the causal graph and the status
       contract generalizes.
-- [ ] Point `recommend-probabilistic-model` back to `recommend-causal-design` for design and
+- [x] Point `recommend-probabilistic-model` back to `recommend-causal-design` for design and
       identification questions (code-reviewer, merge review). Its decision map's
       route-only row and `references/drill-down.md` send causal questions to the PML
       drill-down. A bare-name pointer closes the routing loop and adds no
       install-dependency edge. Size: quick-fix. Done when: the pointer is in place and the
       dependency-drift check passes.
+      → done 2026-10-05 (/deferred quick fix): decision-map.md and drill-down.md route
+      causal design questions to recommend-causal-design by bare name; dependency
+      drift passes.
 
 ## audit-3-10-26 follow-ups (no plan; branch claude/stoic-lewin-bcece7) — 2026-10-04
 - [ ] Watch Haiku 4.5's retirement (specs/audit-3-10-26.md F13). As of the audit,
@@ -2333,7 +2449,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       Haiku 4.5, or a newer Haiku ships.
 
 ## 38-claude-code-drift-automation — 2026-10-05
-- [ ] Stale cached pages after a manifest change (Codex, plan 38's final review; deferred
+- [x] Stale cached pages after a manifest change (Codex, plan 38's final review; deferred
       by the owner at the completion gate). `check.live_docs` in
       `build/cc_guide/check.py` refetches every mapped page only when the changelog head
       moves, and `latest/fetch.json` records one head for the whole cache. A page cached
@@ -2345,7 +2461,9 @@ declined as YAGNI (zero instances in a one-page wiki).
       does not map (or record the head per page), with a test and a clause in drift spec
       R6.3. Size: quick-fix. Done when: a page mapped again after a head move is
       refetched, pinned by a test.
-- [ ] `baseline accept` command fixes (plan 38's final review, T8-m3 and FR-m1; deferred
+      → done 2026-10-05 (/deferred quick fix): a head move deletes cached pages the
+      manifest does not map; R6.3 clause and test.
+- [x] `baseline accept` command fixes (plan 38's final review, T8-m3 and FR-m1; deferred
       by the owner at the completion gate). (a) `build/cc_guide/lint.py` prints the
       editorial outcome as `... --editorial`, which cannot be pasted and run, while drift
       spec R5 asks for "the `baseline accept` command for each outcome"; the message is
@@ -2355,7 +2473,9 @@ declined as YAGNI (zero instances in a one-page wiki).
       changelog" where no cache exists. Size: quick-fix. Done when: lint prints both
       full commands, and an editorial accept runs without a cached changelog, each
       pinned by a test.
-- [ ] Guard rebaseline's snapshot against overwrites (plan 38, Task 7's review; the
+      → done 2026-10-05 (/deferred quick fix): lint prints both full accept commands;
+      an editorial accept needs no cached changelog.
+- [x] Guard rebaseline's snapshot against overwrites (plan 38, Task 7's review; the
       route corrected by the final review). `baseline rebaseline` (the snapshot loop in
       `build/cc_guide/cli.py`) copies each page into `<cache>/<release>/docs/` with
       `write_bytes`, overwriting a file that another group's `snapshot` pointer may still
@@ -2369,7 +2489,9 @@ declined as YAGNI (zero instances in a one-page wiki).
       overwrite also costs naming: check and rebaseline then name a missing block on
       that page by its key hash, never by a wrong key. Size: quick-fix. Done when: the
       guard and its test land.
-- [ ] Say the bookkeeping rules where readers look (plan 38's final review: T10-m4,
+      → done 2026-10-05 (/deferred quick fix): rebaseline refuses to overwrite a
+      differing snapshot page (SetupError), checked before any write.
+- [x] Say the bookkeeping rules where readers look (plan 38's final review: T10-m4,
       T14-m1, T14-m2, FR-m2). (a) `build/cc_guide/cli.py --help` shows none of the
       module docstring; pass `description=__doc__` with `RawDescriptionHelpFormatter`.
       (b) Owner ruling 7's refusal (a listed `rebaseline` refuses while an unlisted
@@ -2382,6 +2504,9 @@ declined as YAGNI (zero instances in a one-page wiki).
       under exit 2, while Stage 1 sends every anchor problem through `lint`, at exit 1;
       say whether it means Stage 2's citations. Size: quick-fix. Done when: each of
       (a)-(d) reads true against the code.
+      → done 2026-10-05 (/deferred quick fix): (a)-(d) done: --help shows the
+      docstring, ruling 7 is in R7/help/build/CLAUDE.md, the flow paragraph corrected,
+      R6.9 reworded.
 - [ ] Sections created after `baseline init` (plan 38, T7-m3). No R7 subcommand adds a
       guide section created after init, so a new section needs `init --force`, which
       rebuilds every hash. `baseline.derive_changed` (`build/cc_guide/baseline.py`)

@@ -69,7 +69,7 @@ hooks and path-scoped rules remain Claude-specific. See
 
 ### Clean-code family (rule catalog adapted from Robert C. Martin's *Clean Code*)
 
-Proactive-cleanup counterpart to `tech-debt`: standards applied in the flow of normal editing, bounded by consent. The rule *codes* come from Martin's Ch. 17 catalog (cited by code only — no book prose); the curation defers mechanical rules to ruff and keeps the judgment-level ones, tuned to Polars/JAX. A third artifact, the [`clean-code-python`](rules/clean-code-python.md) rule, injects the always-on Python guardrails on every `*.py` edit (see [Rules](#rules)).
+Proactive-cleanup counterpart to `tech-debt`: standards applied in the flow of normal editing, bounded by consent. The rule *codes* come from Martin's Ch. 17 catalog (cited by code only — no book prose); the curation defers mechanical rules to ruff and keeps the judgment-level ones, tuned to Polars/JAX. A third artifact, the [`clean-code-python`](rules/clean-code-python.md) rule, loads the Python guardrails whenever a `*.py` file is read or edited (see [Rules](#rules)).
 
 | Skill | Description |
 |-------|-------------|
@@ -158,7 +158,7 @@ This repo keeps rule sources in `rules/` and commits a relative symlink from `.c
 
 | Rule | Scope | What it injects |
 |------|-------|-----------------|
-| [`clean-code-python.md`](rules/clean-code-python.md) | `**/*.py` | Always-on Python guardrails — single quotes, 4-space indent, Polars-over-pandas, method-style Polars expressions, lazy evaluation, NumPyro+JAX, named constants (G25). Cross-references the `clean-code` catalog by rule code. |
+| [`clean-code-python.md`](rules/clean-code-python.md) | `**/*.py` | Python guardrails, loaded on `.py` reads and edits — single quotes, 4-space indent, Polars-over-pandas, method-style Polars expressions, lazy evaluation, NumPyro+JAX, named constants (G25). Cross-references the `clean-code` catalog by rule code. |
 
 To use a rule in another project, copy it into that repo's `.claude/rules/` (project-level is the verified mechanism; user-level `~/.claude/rules/` support is version-dependent — see the rule's commit history for probe results).
 

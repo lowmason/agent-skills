@@ -288,14 +288,21 @@ def _build_summary(report: dict) -> dict:
 
 
 def _spread_step(finding: str, rating: str) -> str:
-    """The spread step: specific when the calibration rating is poor, general when fair."""
+    """The spread step: the direction's full remedy when poor, a milder form when fair."""
+    over = finding.startswith(OVER_CONFIDENT_PREFIX)
     if rating != "poor":
+        if over:
+            return (
+                "Calibration is fair but not excellent and slightly over-confident — "
+                "consider a heavier-tailed or more dispersed likelihood, or a missing "
+                "variance component such as group-level variation."
+            )
         return (
-            "Calibration is fair but not excellent — consider tightening priors, "
-            "switching to a heavier-tailed likelihood, or running a sensitivity "
-            "check on the most informative observations."
+            "Calibration is fair but not excellent and slightly under-confident — "
+            "consider tighter, better-informed priors, or a missing predictor that "
+            "would explain the remaining spread."
         )
-    if finding.startswith(OVER_CONFIDENT_PREFIX):
+    if over:
         return (
             "Calibration is over-confident — likelihood is too narrow for the "
             "data. Consider StudentT for continuous outcomes with heavy tails, "

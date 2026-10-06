@@ -87,7 +87,9 @@ def live_docs(manifest: Manifest, cache: Path, fetch: Fetch, now: datetime) -> D
     '''R6.3-R6.4: fetch the changelog and llms.txt; then every mapped page if
     the changelog head moved since the last fetch, else only the mapped pages
     latest/docs lacks. Pages overwrite latest/docs. A 404 or a failed fetch
-    removes the stale copy, so a later run fetches the page again.'''
+    removes the stale copy, so a later run fetches the page again; a head move
+    also removes every cached page this manifest does not map, since the one
+    recorded head would otherwise vouch for it later.'''
     folder = latest_docs(cache)
     folder.mkdir(parents=True, exist_ok=True)
     record = fetch_record(cache)
@@ -100,6 +102,13 @@ def live_docs(manifest: Manifest, cache: Path, fetch: Fetch, now: datetime) -> D
         fetched[name] = body.decode('utf-8')
     head = releases_of(fetched[CHANGELOG])[0].label
     pages = manifest.pages()
+    if head != previous:
+        # A page this manifest does not map would keep the old head's text, and a later run that
+        # maps it again would find it and compare it as current.
+        keep = {CHANGELOG, LLMS, *map(page_file, pages)}
+        for stale in folder.glob('*.md'):
+            if stale.name not in keep:
+                stale.unlink()
     todo = pages if head != previous else [p for p in pages if not (folder / page_file(p)).is_file()]
 
     def get(page: str):
