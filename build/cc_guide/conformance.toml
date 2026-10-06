@@ -62,8 +62,8 @@ sections = [
 ]
 
 [kinds.rule]
-description = 'Rules files: the canonical rules/ templates and the project .claude/rules/ links.'
-globs = ['rules/*.md', '.claude/rules/*.md']
+description = 'Rules files: the canonical rules/ templates and everything under the project .claude/rules/, nested rules and symlinked directories included.'
+globs = ['rules/*.md', '.claude/rules/**']
 sections = [
     'rules.rules-files', 'rules.hierarchy', 'mechanisms.overview',
     'lean.session-hygiene', 'context.overview',
@@ -132,7 +132,7 @@ id = 'rule-paths'
 kind = 'rule'
 sections = ['rules.rules-files']
 type = 'advice'
-rule = 'A rules file sets a non-empty paths list so it loads lazily, unless always_on lists it; a .claude/rules/ link resolves inside the repo.'
+rule = 'A rules file sets a non-empty paths list so it loads lazily, unless always_on lists it; a .claude/rules/ link, to a file or a directory, resolves inside the repo.'
 enforced_by = 'check_conformance'
 always_on = []
 

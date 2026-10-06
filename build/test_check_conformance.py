@@ -122,7 +122,7 @@ sections = ['a.one']
 
 [kinds.rule]
 description = 'Rules files.'
-globs = ['rules/*.md', '.claude/rules/*.md']
+globs = ['rules/*.md', '.claude/rules/**']
 sections = ['a.one']
 
 [kinds.settings]
@@ -1377,3 +1377,63 @@ def test_waiver_path_of_the_wrong_kind_for_a_multi_kind_check_fails(tmp_path):
         UNWAIVED,
         f'{cc.REGISTER}: exception (-): exception hook-dir: artifact agents/a.md is not one of '
         'the files check hook-dir-quoted covers (kind: hook, settings)']
+
+
+# ---- #82: nested rules and symlinked rule directories -----------------------
+
+RULE_ENTRIES = ['.claude/rules/top.md', '.claude/rules/sub/nested.md', '.claude/rules/sub/deep/n.md',
+                '.claude/rules/dirlink', '.claude/rules/sub/dirlink', '.claude/rules/notes.txt',
+                'rules/py.md', 'rules/sub/x.md', '.claude/rulesx/y.md', '.claude/other/z.md']
+
+
+def test_real_rule_kind_covers_nested_rules_and_symlinked_directories():
+    reg, _ = cc.parse_register(cc.load_register(cc.REPO))
+    assert cc.kind_files(reg, sorted(RULE_ENTRIES))['rule'] == sorted([
+        '.claude/rules/top.md', '.claude/rules/sub/nested.md', '.claude/rules/sub/deep/n.md',
+        '.claude/rules/dirlink', '.claude/rules/sub/dirlink', '.claude/rules/notes.txt', 'rules/py.md'])
+
+
+def rules_repo(tmp_path):
+    '''A repo with nested rules, a directory link inside the repo, one outside
+    it, a dangling one, and a stray non-Markdown file.'''
+    root = tmp_path / 'repo'
+    write_tree(root, {
+        'rules/shared/a.md': RULE,
+        '.claude/rules/top.md': RULE,
+        '.claude/rules/sub/bare.md': 'No frontmatter.\n',
+        '.claude/rules/notes.txt': 'Not a rule, and no paths.\n'})
+    write_tree(tmp_path, {'elsewhere/out.md': RULE})
+    os.symlink('../../rules/shared', root / '.claude/rules/inside')
+    os.symlink('../../../elsewhere', root / '.claude/rules/outside')
+    os.symlink('../../../../elsewhere', root / '.claude/rules/sub/outside-nested')
+    os.symlink('../../rules/missing', root / '.claude/rules/dangling')
+    os.symlink('../../../elsewhere/out.md', root / '.claude/rules/link.txt')
+    return root
+
+
+def test_rule_paths_covers_nested_rules_and_directory_links(tmp_path):
+    root = rules_repo(tmp_path)
+    files = ['.claude/rules/dangling', '.claude/rules/inside', '.claude/rules/notes.txt',
+             '.claude/rules/outside', '.claude/rules/sub/bare.md',
+             '.claude/rules/sub/outside-nested', '.claude/rules/top.md']
+    outside = 'link resolves outside the repo, so Claude Code treats it as an external import'
+    assert cc.check_rule_paths(root, files, {'always_on': []}) == [
+        cc.Finding('.claude/rules/dangling', 'link target does not exist', waivable=False),
+        cc.Finding('.claude/rules/outside', outside),
+        cc.Finding('.claude/rules/sub/outside-nested', outside),
+        cc.Finding('.claude/rules/sub/bare.md',
+                   'frontmatter sets no non-empty paths list, so the rule loads in every session'),
+    ]
+
+
+def test_a_symlinked_directory_inside_the_repo_is_not_read_as_a_rule(tmp_path):
+    root = rules_repo(tmp_path)
+    assert cc.check_rule_paths(root, ['.claude/rules/inside'], {'always_on': []}) == []
+
+
+def test_a_non_markdown_file_is_not_a_rule(tmp_path):
+    root = rules_repo(tmp_path)
+    '''Neither a regular file nor a link to a file outside the repo, since
+    Claude Code discovers only .md files.'''
+    files = ['.claude/rules/link.txt', '.claude/rules/notes.txt']
+    assert cc.check_rule_paths(root, files, {'always_on': []}) == []

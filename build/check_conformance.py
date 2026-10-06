@@ -571,13 +571,16 @@ def check_rule_paths(root: Path, files: list[str], params: dict) -> list[Finding
     readable: list[str] = []
     for f in files:
         path = root / f
-        if (f.startswith('.claude/rules/') and path.is_symlink()
+        # A rule is a .md file; a symlinked directory holds rules, and git
+        # lists it as one entry with no .md suffix. Any other file is no rule.
+        entry = f.endswith('.md') or path.is_dir()
+        if (f.startswith('.claude/rules/') and path.is_symlink() and entry
                 and not path.resolve().is_relative_to(root.resolve())):
             out.append(Finding(f, 'link resolves outside the repo, so Claude Code treats '
                                   'it as an external import'))
         elif not path.exists():
             out.append(Finding(f, 'link target does not exist', waivable=False))
-        else:
+        elif entry and not path.is_dir():
             readable.append(f)
     for f, text in read_artifacts(root, readable, out):
         paths = (frontmatter(text) or {}).get('paths')
