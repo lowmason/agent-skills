@@ -33,8 +33,8 @@ os.makedirs(results_dir, exist_ok=True)
 ├── trace.png                    # az.plot_trace(idata, var_names=[...])
 ├── forest.png                   # az.plot_forest of posteriors
 ├── posterior_predictive.png     # azp.plot_ppc_dist(idata)
-├── pit_ecdf.png                 # calibration_check.py --save-plots
-├── pit_coverage.png             # calibration_check.py --save-plots
+├── pit_ecdf.png                 # calibration_check.py --save-plots (loo_pit_ecdf.png with --loo-pit)
+├── pit_coverage.png             # calibration_check.py --save-plots (loo_pit_coverage.png with --loo-pit)
 ├── psense.png                   # azp.plot_psense_dist (if sensitivity ran)
 ├── summary.csv                  # az.summary(idata).to_csv
 ├── diagnostics.json             # diagnose_model.py output
@@ -160,6 +160,8 @@ The posterior predictive distribution shows what the fitted model implies the da
 **Assessment:** <1–3 sentences — does the posterior predictive cover the observed data? Any systematic miss (under-dispersed, missing tails, missing modes)? If misspecification is visible, state which aspect of the data the model fails to reproduce.>
 
 ## Calibration
+
+<If calibration_check.py ran with `--loo-pit`, it wrote `loo_pit_ecdf.png` and `loo_pit_coverage.png` instead; link those two figures below.>
 
 ![PIT ECDF](pit_ecdf.png)
 
