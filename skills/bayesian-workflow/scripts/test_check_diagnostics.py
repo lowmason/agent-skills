@@ -128,10 +128,24 @@ def test_under_confident_calibration_keeps_its_prior_advice():
     assert "predictions are too uncertain" in step
 
 
-@pytest.mark.parametrize("finding, deviation", [(OVER, FAIR_OVER), (UNDER, FAIR_UNDER)], ids=["over", "under"])
-def test_a_fair_spread_finding_gets_the_fair_step(finding, deviation):
-    (step,) = _calibration_steps(_calibration([finding], deviation))
+def test_a_fair_over_confident_finding_gets_a_milder_widening_step():
+    # Over-confident: the predictive is too narrow, so every remedy must widen it.
+    (step,) = _calibration_steps(_calibration([OVER], FAIR_OVER))
     assert "fair but not excellent" in step
+    assert "heavier-tailed" in step
+    assert "variance component" in step
+    assert "tightening priors" not in step
+    assert "Tighten" not in step
+
+
+def test_a_fair_under_confident_finding_gets_a_milder_tightening_step():
+    # Under-confident: the predictive is too wide, so every remedy must narrow it.
+    (step,) = _calibration_steps(_calibration([UNDER], FAIR_UNDER))
+    assert "fair but not excellent" in step
+    assert "tighter" in step
+    assert "missing predictor" in step
+    assert "heavier-tailed" not in step
+    assert "StudentT" not in step
 
 
 def test_over_confidence_after_a_shift_is_re_checked_not_treated():
