@@ -13,6 +13,7 @@ violation on stdout; 2 when the guide or the register is missing or is not
 valid TOML, or git cannot list the repo's files, so a broken setup never looks
 clean. Field-level register problems are violations, not errors.
 '''
+import ast
 import fnmatch
 import json
 import os
@@ -755,6 +756,471 @@ def check_reserved_skill_name(root: Path, files: list[str], params: dict) -> lis
             for path, name in sorted(dirs.items()) if name in reserved]
 
 
+# Checks from the plan 35 audit, section 6 (#50-#52, #54, #58-#64, #67-#69).
+# Each reads only what git keeps, so a gitignored per-machine file such as
+# .claude/settings.local.json never changes a result.
+
+AGENT_NAME_RE = re.compile(r'[a-z0-9]+(?:-[a-z0-9]+)*')
+SETTINGS_FILE = '.claude/settings.json'
+
+
+def check_agent_name_form(root: Path, files: list[str], params: dict) -> list[Finding]:
+    allow = set(params['allow'])
+    out: list[Finding] = []
+    for f, text in read_artifacts(root, files, out):
+        fm = frontmatter(text)
+        if fm is None:
+            continue  # agent-fields reports it
+        name = fm.get('name')
+        if name is None:
+            out.append(Finding(f, 'frontmatter sets no name'))
+        elif str(name) not in allow and not AGENT_NAME_RE.fullmatch(str(name)):
+            out.append(Finding(f, f'name {name!r} is not a lowercase-hyphenated ID'))
+    return out
+
+
+def check_agent_name_unique(root: Path, files: list[str], params: dict) -> list[Finding]:
+    owners: dict[str, list[str]] = {}
+    out: list[Finding] = []
+    for f, text in read_artifacts(root, files, out):
+        name = (frontmatter(text) or {}).get('name')
+        if name is not None:
+            owners.setdefault(str(name), []).append(f)
+    for name, same in sorted(owners.items()):
+        for f in same if len(same) > 1 else ():
+            others = ', '.join(o for o in same if o != f)
+            out.append(Finding(f, f'name {name!r} is also the name of {others}'))
+    return out
+
+
+def check_agent_model_available(root: Path, files: list[str], params: dict) -> list[Finding]:
+    exempt = set(params['exempt'])
+    out: list[Finding] = []
+    available: list[str] | None = None  # None: no availableModels, so no restriction
+    if SETTINGS_FILE in files:
+        for _, source in read_artifacts(root, [SETTINGS_FILE], out):
+            try:
+                data = json.loads(source)
+            except json.JSONDecodeError as exc:
+                out.append(Finding(SETTINGS_FILE, f'file does not parse ({exc.msg})', waivable=False))
+                continue
+            listed = data.get('availableModels') if isinstance(data, dict) else None
+            if listed is None:
+                continue
+            if _str_list(listed, nonempty=False):
+                available = listed
+            else:
+                out.append(Finding(SETTINGS_FILE, 'availableModels is not a list of strings'))
+    if available is None:
+        return out
+    for f, text in read_artifacts(root, [f for f in files if f.endswith('.md')], out):
+        model = (frontmatter(text) or {}).get('model')
+        if model is None or str(model) in exempt or FULL_MODEL_RE.fullmatch(str(model)):
+            continue
+        if str(model) not in available:
+            out.append(Finding(f, f'model {model!r} is not in availableModels ({", ".join(available)}) '
+                                  f'of {SETTINGS_FILE}'))
+    return out
+
+
+# $ARGUMENTS, $ARGUMENTS[n] and $n, unless a backslash escapes the $.
+ARG_TOKEN_RE = re.compile(r'(?<!\\)\$(?:ARGUMENTS(?:\[\d+\])?|\d+)')
+SHELL_INLINE_RE = re.compile(r'!`[^`\n]+`')
+SHELL_FENCE_RE = re.compile(r'^[ \t]*`{3,}!')
+
+
+def body_lines(text: str) -> list[tuple[int, str]]:
+    '''(line number, line) for each line after the leading frontmatter.'''
+    m = FRONTMATTER_RE.match(text)
+    first = text.count('\n', 0, m.end()) + 1 if m else 1
+    return list(enumerate(text[m.end() if m else 0:].split('\n'), start=first))
+
+
+def check_command_substitution_tokens(root: Path, files: list[str], params: dict) -> list[Finding]:
+    '''A command declares the arguments it reads with argument-hint or arguments,
+    and pre-approves its render-time shell with an allowed-tools Bash entry.
+    $name tokens and ${CLAUDE_*} built-ins need no declaration, so they are not
+    checked.'''
+    out: list[Finding] = []
+    for f, text in read_artifacts(root, files, out):
+        fm = frontmatter(text) or {}
+        takes_args = bool(fm.get('argument-hint') or fm.get('arguments'))
+        allowed = fm.get('allowed-tools')
+        pre_approved = re.search(r'\bBash\b', ' '.join(allowed) if isinstance(allowed, list)
+                                 else str(allowed or '')) is not None
+        seen: set[str] = set()
+        for n, line in body_lines(text):
+            if not takes_args:
+                for token in ARG_TOKEN_RE.findall(line):
+                    if token not in seen:
+                        seen.add(token)
+                        out.append(Finding(f, f'line {n}: {token} is substituted, but frontmatter '
+                                              'sets neither argument-hint nor arguments'))
+            if not pre_approved and 'shell' not in seen and (
+                    SHELL_INLINE_RE.search(line) or SHELL_FENCE_RE.match(line)):
+                seen.add('shell')
+                out.append(Finding(f, f'line {n}: render-time shell runs, but frontmatter '
+                                      'sets no allowed-tools Bash entry'))
+    return out
+
+def check_rule_always_on_claim(root: Path, files: list[str], params: dict) -> list[Finding]:
+    phrases = [p.lower() for p in params['phrases']]
+    out: list[Finding] = []
+    for f, text in read_artifacts(root, [f for f in files if not (root / f).is_symlink()], out):
+        if not _str_list((frontmatter(text) or {}).get('paths')):
+            continue  # a rule without paths does load in every session
+        for n, line in body_lines(text):
+            lowered = line.lower()
+            for phrase in phrases:
+                at = lowered.find(phrase)
+                while at != -1:
+                    if not re.search(r"(?:\bnot|n't|\bnever|\bno longer)\s+(?:\w+\s+)?$", lowered[:at]):
+                        out.append(Finding(f, f'line {n}: path-scoped rule says {phrase!r}, but '
+                                              'paths load it lazily'))
+                        break
+                    at = lowered.find(phrase, at + 1)
+    return out
+
+
+ONLY_EXIT_2_RE = re.compile(
+    r'\bonly\s+(?:an?\s+)?exit(?:ing|s)?\s+(?:code\s+)?2\b'
+    r'|\bexit(?:ing|s)?\s+(?:code\s+)?2\s+(?:is\s+the\s+only|alone)\b'
+    r'|\bonly\s+(?:way|thing)\s+to\s+block\b', re.I)
+PERMISSION_DENY_RE = re.compile(r'permissionDecision\W{0,6}deny')
+
+
+def check_hook_readme_exit_claims(root: Path, files: list[str], params: dict) -> list[Finding]:
+    '''A README that says only exit 2 blocks contradicts a permissionDecision deny
+    it documents: in its own text, or in a hook script it names.'''
+    scripts = [f for f in files if f.endswith(('.sh', '.py'))]
+    out: list[Finding] = []
+    for f, text in read_artifacts(root, [f for f in files if f.endswith('.md')], out):
+        claim = ONLY_EXIT_2_RE.search(text)
+        if not claim:
+            continue
+        line = text.count('\n', 0, claim.start()) + 1
+        deny = PERMISSION_DENY_RE.search(text)
+        if deny:
+            out.append(Finding(f, f'line {line}: says only exit 2 blocks, but line '
+                                  f'{text.count(chr(10), 0, deny.start()) + 1} documents a '
+                                  'permissionDecision deny'))
+            continue
+        named = [s for s in scripts if PurePosixPath(s).name in text]
+        for s, source in read_artifacts(root, named, out):
+            if PERMISSION_DENY_RE.search(source):
+                out.append(Finding(f, f'line {line}: says only exit 2 blocks, but {s}, which it '
+                                      'documents, blocks with a permissionDecision deny'))
+    return out
+
+
+def index_modes(root: Path, paths: list[str]) -> dict[str, str]:
+    '''The git index mode of each tracked path, as `git ls-files -s` lists it.'''
+    if not paths:
+        return {}
+    try:
+        listing = subprocess.run(['git', 'ls-files', '-s', '-z', '--', *paths], cwd=root,
+                                 env=git_env(), capture_output=True, check=True).stdout
+    except (OSError, subprocess.CalledProcessError) as exc:
+        raise SetupError(f'cannot read the git index modes under {root} ({exc})') from None
+    modes: dict[str, str] = {}
+    for entry in listing.split(b'\0'):
+        head, _, path = os.fsdecode(entry).partition('\t')
+        if path:
+            modes[path] = head.split()[0]
+    return modes
+
+
+def check_hook_scripts_executable(root: Path, files: list[str], params: dict) -> list[Finding]:
+    '''Every hook script git keeps has index mode 100755, and every .sh or .py
+    command a hooks tree wires names one. A tracked file is judged by its index
+    mode; an untracked one by its working-tree owner execute bit.'''
+    scripts = sorted(f for f in files if f.endswith(('.sh', '.py')))
+    modes = index_modes(root, scripts)
+    out: list[Finding] = []
+    for f in scripts:
+        if f in modes:
+            if modes[f] != '100755':
+                out.append(Finding(f, f'git index mode is {modes[f]}, not 100755, so the hook '
+                                      'fails open where it is installed'))
+        elif not (root / f).stat().st_mode & 0o100:
+            out.append(Finding(f, 'untracked and not executable, so the hook would fail open'))
+    names = {PurePosixPath(f).name for f in scripts}
+    found, _ = hook_commands(root, files)  # hook-dir-quoted reports parse failures
+    for hook in found:
+        try:
+            words = shlex.split(hook.command)
+        except ValueError:
+            continue
+        name = PurePosixPath(words[0]).name if words else ''
+        if name.endswith(('.sh', '.py')) and name not in names:
+            out.append(Finding(hook.file, f'{hook.where}{hook.event} command {words[0]!r} names '
+                                          'no hook script in the repo'))
+    return out
+
+
+PEP_723_RE = re.compile(r'(?m)^# /// script$\s(?:^#(?:| .*)$\s)+^# ///$')
+
+
+def imported_modules(node: ast.AST) -> list[str]:
+    '''Top-level names an import statement brings in; relative imports bring none.'''
+    if isinstance(node, ast.Import):
+        return [a.name.split('.')[0] for a in node.names]
+    if isinstance(node, ast.ImportFrom) and node.level == 0 and node.module:
+        return [node.module.split('.')[0]]
+    return []
+
+
+def check_hook_python_deps(root: Path, files: list[str], params: dict) -> list[Finding]:
+    '''A hook script imports only the standard library or a sibling file, unless
+    it carries a PEP 723 script block. A block that is present counts as the
+    declaration; its dependency list is not read.'''
+    scripts = [f for f in files if f.endswith('.py')]
+    siblings = {PurePosixPath(f).stem for f in scripts}
+    out: list[Finding] = []
+    for f, text in read_artifacts(root, scripts, out):
+        try:
+            tree = ast.parse(text)
+        except SyntaxError as exc:
+            out.append(Finding(f, f'cannot parse: {exc.msg} (line {exc.lineno})', waivable=False))
+            continue
+        outside = sorted({name for node in ast.walk(tree) for name in imported_modules(node)}
+                         - sys.stdlib_module_names - siblings)
+        if outside and not PEP_723_RE.search(text):
+            out.append(Finding(f, f'imports {", ".join(outside)}, outside the standard library, '
+                                  'and declares no PEP 723 script block'))
+    return out
+
+
+def json_documents(root: Path, files: list[str]) -> list[tuple[str, str, object]]:
+    '''(file, where, data) for each parseable ```json block of the Markdown files
+    and each parseable JSON file; hook-dir-quoted reports what fails to parse.'''
+    docs: list[tuple[str, str, object]] = []
+    for f, text in read_artifacts(root, [f for f in files if f.endswith(('.md', '.json'))], []):
+        blocks = ([(f'JSON block at line {b.line}: ', b.code) for b in iter_code_blocks(text, ('json',))]
+                  if f.endswith('.md') else [('', text)])
+        for where, source in blocks:
+            try:
+                docs.append((f, where, json.loads(source)))
+            except json.JSONDecodeError:
+                continue
+    return docs
+
+
+def allow_rules(data: object) -> list[str]:
+    '''The Bash rule patterns, without Bash( and ), in permissions.allow.'''
+    permissions = data.get('permissions') if isinstance(data, dict) else None
+    allowed = permissions.get('allow') if isinstance(permissions, dict) else None
+    rules = [r for r in (allowed if isinstance(allowed, list) else ()) if isinstance(r, str)]
+    return [m.group(1) for r in rules if (m := re.fullmatch(r'Bash\((.*)\)', r, re.S))]
+
+
+def unquoted_operators(pattern: str) -> list[str]:
+    '''The command-separating operators outside quotes in a rule pattern. A `&`
+    touching `>` or `<` is a redirection, as in 2>&1.'''
+    found: list[str] = []
+    quote = ''
+    i = 0
+    while i < len(pattern):
+        ch = pattern[i]
+        if ch == '\\' and quote != "'":
+            i += 2
+            continue
+        if not quote and ch in '\'"':
+            quote = ch
+        elif ch == quote:
+            quote = ''
+        elif not quote:
+            if pattern[i:i + 2] in ('&&', '||', '|&'):
+                found.append(pattern[i:i + 2])
+                i += 2
+                continue
+            redirect = ch == '&' and (pattern[i - 1:i] in ('<', '>') or pattern[i + 1:i + 2] == '>')
+            if ch in ';|&' and not redirect:
+                found.append(ch)
+        i += 1
+    return found
+
+
+def check_allow_rule_compound_operators(root: Path, files: list[str], params: dict) -> list[Finding]:
+    '''An allow rule must match every part of a compound command, so a rule that
+    spells a separator can never match. Reads the committed settings file and
+    the settings JSON documented in Markdown. kept_files drops the gitignored
+    .claude/settings.local.json, so a developer's own rules never count.'''
+    out: list[Finding] = []
+    for f, where, data in json_documents(root, files):
+        for pattern in allow_rules(data):
+            ops = unquoted_operators(pattern)
+            if ops:
+                out.append(Finding(f, f'{where}allow rule Bash({pattern}) holds an unquoted '
+                                      f'{", ".join(sorted(set(ops)))}, which Claude Code splits '
+                                      'compound commands on, so it never matches'))
+    return out
+
+
+def paragraph_before(text: str, line: int) -> str:
+    '''The paragraph that ends just above 1-based line, joined into one line.'''
+    lines = text.split('\n')
+    i = line - 2
+    while i >= 0 and not lines[i].strip():
+        i -= 1
+    para: list[str] = []
+    while i >= 0 and lines[i].strip() and not lines[i].startswith(('#', '`' * 3)):
+        para.append(lines[i].strip())
+        i -= 1
+    return ' '.join(reversed(para))
+
+
+def check_inert_runner_allow_rules(root: Path, files: list[str], params: dict) -> list[Finding]:
+    '''A broad runner allow rule in a README snippet whose lead-in says it spares
+    prompts, without naming auto or manual mode. Auto mode sets such rules aside.'''
+    runners = params['runners']
+    out: list[Finding] = []
+    for f, text in read_artifacts(root, [f for f in files if f.endswith('.md')], out):
+        for b in iter_code_blocks(text, ('json',)):
+            try:
+                data = json.loads(b.code)
+            except json.JSONDecodeError:
+                continue
+            broad = [f'Bash({pattern})' for pattern in allow_rules(data) for runner in runners
+                     if pattern.startswith(runner) and pattern[len(runner):].strip() in ('', ':*', '*')]
+            lead = paragraph_before(text, b.line)
+            if broad and re.search(r'\bprompt', lead, re.I) and not re.search(r'\b(?:auto|manual)\b', lead, re.I):
+                out.append(Finding(f, f'JSON block at line {b.line}: {", ".join(broad)} is said to spare '
+                                      'prompts, but auto mode sets broad runner rules aside and the '
+                                      'text names no mode'))
+    return out
+
+
+def check_hook_install_verify_step(root: Path, files: list[str], params: dict) -> list[Finding]:
+    '''Each JSON block that wires a blocking event is followed, before the next
+    heading or the next wiring block, by text telling the reader to trigger the
+    hook once. A heuristic: the words trigger and once (or each) within a sentence.'''
+    blocking = set(params['blocking_events'])
+    step = re.compile(r'\btrigger\w*\b[^.]{0,80}\b(?:once|each)\b|\b(?:once|each)\b[^.]{0,80}\btrigger',
+                      re.I)
+    out: list[Finding] = []
+    for f, text in read_artifacts(root, [f for f in files if f.endswith('.md')], out):
+        lines = text.split('\n')
+        fenced = fenced_lines(text)
+        wiring = []
+        for b in iter_code_blocks(text, ('json',)):
+            try:
+                hooks = json.loads(b.code).get('hooks')
+            except (json.JSONDecodeError, AttributeError):
+                continue
+            events = sorted(set(hooks) & blocking) if isinstance(hooks, dict) else []
+            if hooks:
+                wiring.append((b.line, b.line + b.code.count('\n') + 1, events))
+        for k, (start, end, events) in enumerate(wiring):
+            if not events:
+                continue
+            stop = wiring[k + 1][0] if k + 1 < len(wiring) else len(lines) + 1
+            window = []
+            for n in range(end + 1, stop):
+                if n not in fenced and lines[n - 1].startswith('#'):
+                    break
+                window.append(lines[n - 1])
+            if not step.search(' '.join(window)):
+                out.append(Finding(f, f'JSON block at line {start}: wires {", ".join(events)}, but no '
+                                      'step telling the reader to trigger the hook once follows '
+                                      'before the next heading'))
+    return out
+
+
+INLINE_CODE_RE = re.compile(r'(`+)(.+?)\1')
+IMPORT_RE = re.compile(r'(?<![\w/.@-])@([^\s`]+)')
+
+
+def import_targets(text: str) -> list[tuple[int, str]]:
+    '''(line, path) for each @path import: outside fenced blocks and inline code
+    spans, not glued to a word (so not an email address), trailing punctuation dropped.'''
+    fenced = fenced_lines(text)
+    found: list[tuple[int, str]] = []
+    for n, line in enumerate(text.split('\n'), start=1):
+        if n in fenced:
+            continue
+        bare = INLINE_CODE_RE.sub(lambda m: ' ' * len(m.group(0)), line)
+        for m in IMPORT_RE.finditer(bare):
+            target = m.group(1).rstrip('.,;:!?)]}\'"')
+            if target:
+                found.append((n, target))
+    return found
+
+
+def check_claude_md_import_resolves(root: Path, files: list[str], params: dict) -> list[Finding]:
+    '''Each @ import resolves, relative to the importing file, within max_hops
+    hops. Targets under ~ or at an absolute path depend on the machine, so they
+    are not followed. A finding is reported on the CLAUDE.md file the chain starts at.'''
+    max_hops = params['max_hops']
+    out: list[Finding] = []
+
+    def show(path: Path) -> str:
+        return os.path.relpath(path, root)
+
+    def walk(origin: str, path: Path, text: str, hops: int, chain: tuple[Path, ...]) -> None:
+        for n, target in import_targets(text):
+            if target.startswith(('~', '/')):
+                continue
+            where = f'{show(path)} line {n}'
+            dest = Path(os.path.normpath(path.parent / target))
+            if hops + 1 > max_hops:
+                out.append(Finding(origin, f'{where}: import @{target} is hop {hops + 1}, past the '
+                                           f'{max_hops}-hop limit'))
+            elif not dest.is_file():
+                out.append(Finding(origin, f'{where}: import @{target} does not resolve'))
+            elif dest not in chain:
+                try:
+                    walk(origin, dest, dest.read_text(encoding='utf-8'), hops + 1, (*chain, dest))
+                except (OSError, UnicodeDecodeError):
+                    continue  # an imported file that is not text is a leaf
+
+    for f, text in read_artifacts(root, files, out):
+        walk(f, root / f, text, 0, (root / f,))
+    return out
+
+
+def check_local_md_ignored(root: Path, files: list[str], params: dict) -> list[Finding]:
+    '''CLAUDE.local.md, beside each CLAUDE.md, is ignored by a committed .gitignore.
+    The file need not exist: git check-ignore reads the path against the patterns.
+    The user's global excludes file is switched off so the result does not depend
+    on it; .git/info/exclude is private too, so a source other than .gitignore fails.'''
+    out: list[Finding] = []
+    for f in files:
+        if PurePosixPath(f).name != 'CLAUDE.md':
+            continue
+        local = str(PurePosixPath(f).with_name('CLAUDE.local.md'))
+        try:
+            result = subprocess.run(
+                ['git', '-c', 'core.excludesFile=/dev/null', 'check-ignore', '-v', '--', local],
+                cwd=root, env=git_env(), capture_output=True, text=True)
+        except OSError as exc:
+            raise SetupError(f'cannot run git check-ignore under {root} ({exc})') from None
+        if result.returncode == 1:
+            out.append(Finding(f, f'{local} is not gitignored, so a personal file would be committed'))
+        elif result.returncode != 0:
+            raise SetupError(f'git check-ignore failed under {root}: {result.stderr.strip()}')
+        else:
+            source = result.stdout.split(':', 1)[0]
+            if PurePosixPath(source).name != '.gitignore':
+                out.append(Finding(f, f'{local} is ignored only by {source}, which is not committed'))
+    return out
+
+
+def check_claude_md_count_claims(root: Path, files: list[str], params: dict) -> list[Finding]:
+    '''A line that states a number of tests, passes, skips or the like goes stale
+    as the repo changes. Every line counts, fenced blocks included; a line
+    holding an allow substring is exempt.'''
+    nouns = sorted(params['nouns'], key=len, reverse=True)
+    count = re.compile(r'\b\d[\d,]*\s+(?:' + '|'.join(re.escape(n) for n in nouns) + r')\b', re.I)
+    out: list[Finding] = []
+    for f, text in read_artifacts(root, files, out):
+        for n, line in enumerate(text.split('\n'), start=1):
+            m = count.search(line)
+            if m and not any(a in line for a in params['allow']):
+                out.append(Finding(f, f'line {n}: states a count ({m.group(0)!r}) that goes stale'))
+    return out
+
+
 # Each check_conformance check: its function and the parameters the register
 # must give it ('integer', or 'strings' for a list of strings).
 CHECKS = {
@@ -775,6 +1241,20 @@ CHECKS = {
     'command-frontmatter-keys': (check_command_frontmatter_keys, {'fields': 'strings'}),
     'builtin-name-shadow': (check_builtin_name_shadow, {'builtins': 'strings'}),
     'reserved-skill-name': (check_reserved_skill_name, {'reserved': 'strings'}),
+    'agent-name-form': (check_agent_name_form, {'allow': 'strings'}),
+    'agent-name-unique': (check_agent_name_unique, {}),
+    'agent-model-available': (check_agent_model_available, {'exempt': 'strings'}),
+    'command-substitution-tokens': (check_command_substitution_tokens, {}),
+    'rule-always-on-claim': (check_rule_always_on_claim, {'phrases': 'strings'}),
+    'hook-readme-exit-claims': (check_hook_readme_exit_claims, {}),
+    'hook-scripts-executable': (check_hook_scripts_executable, {}),
+    'hook-python-deps': (check_hook_python_deps, {}),
+    'allow-rule-compound-operators': (check_allow_rule_compound_operators, {}),
+    'inert-runner-allow-rules': (check_inert_runner_allow_rules, {'runners': 'strings'}),
+    'hook-install-verify-step': (check_hook_install_verify_step, {'blocking_events': 'strings'}),
+    'claude-md-import-resolves': (check_claude_md_import_resolves, {'max_hops': 'integer'}),
+    'local-md-ignored': (check_local_md_ignored, {}),
+    'claude-md-count-claims': (check_claude_md_count_claims, {'nouns': 'strings', 'allow': 'strings'}),
 }
 PARAM_TYPES = {
     'integer': (lambda v: isinstance(v, int) and not isinstance(v, bool), 'an integer'),

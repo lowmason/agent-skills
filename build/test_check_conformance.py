@@ -91,7 +91,7 @@ def test_real_guide_carries_the_drift_r11_anchors():
 
 
 # A three-section fixture guide and a register that maps it. FIXTURE_REGISTER
-# carries all seven check_conformance checks and one check_frontmatter entry,
+# carries every check_conformance check and one check_frontmatter entry,
 # so a fixture repo built on it is clean until a test adds a violation.
 FIXTURE_GUIDE = (
     '# Fixture guide\n\n'
@@ -298,6 +298,129 @@ sections = ['a.overview']
 type = 'fact'
 rule = 'Known tools.'
 enforced_by = 'check_frontmatter'
+
+# The checks below are tested by direct calls. Those bound to the settings kind
+# stay off the fixture repos on purpose: no run() fixture populates it, so the
+# exact-output tests above keep their expected lists.
+[[check]]
+id = 'agent-name-form'
+kind = 'agent'
+sections = ['a.overview']
+type = 'fact'
+rule = 'Lowercase-hyphenated names.'
+enforced_by = 'check_conformance'
+allow = ['Explore']
+
+[[check]]
+id = 'agent-model-available'
+kind = ['agent', 'settings']
+sections = ['a.overview']
+type = 'fact'
+rule = 'Models are available.'
+enforced_by = 'check_conformance'
+exempt = ['inherit']
+
+[[check]]
+id = 'agent-name-unique'
+kind = 'settings'
+sections = ['a.one']
+type = 'fact'
+rule = 'Names are unique.'
+enforced_by = 'check_conformance'
+
+[[check]]
+id = 'command-substitution-tokens'
+kind = 'settings'
+sections = ['a.one']
+type = 'fact'
+rule = 'Declare substitution tokens.'
+enforced_by = 'check_conformance'
+
+[[check]]
+id = 'rule-always-on-claim'
+kind = 'rule'
+sections = ['a.one']
+type = 'fact'
+rule = 'Fixture entry.'
+enforced_by = 'check_conformance'
+phrases = ['always-on']
+
+[[check]]
+id = 'hook-readme-exit-claims'
+kind = 'hook'
+sections = ['a.one']
+type = 'fact'
+rule = 'Fixture entry.'
+enforced_by = 'check_conformance'
+
+[[check]]
+id = 'hook-scripts-executable'
+kind = 'settings'
+sections = ['a.one']
+type = 'fact'
+rule = 'Fixture entry.'
+enforced_by = 'check_conformance'
+
+[[check]]
+id = 'hook-python-deps'
+kind = 'hook'
+sections = ['a.one']
+type = 'fact'
+rule = 'Fixture entry.'
+enforced_by = 'check_conformance'
+
+[[check]]
+id = 'allow-rule-compound-operators'
+kind = ['hook', 'settings']
+sections = ['a.one']
+type = 'fact'
+rule = 'Fixture entry.'
+enforced_by = 'check_conformance'
+
+[[check]]
+id = 'inert-runner-allow-rules'
+kind = 'hook'
+sections = ['a.one']
+type = 'fact'
+rule = 'Fixture entry.'
+enforced_by = 'check_conformance'
+runners = ['uv run']
+
+[[check]]
+id = 'hook-install-verify-step'
+kind = 'settings'
+sections = ['a.one']
+type = 'fact'
+rule = 'Fixture entry.'
+enforced_by = 'check_conformance'
+blocking_events = ['PreToolUse', 'Stop']
+
+[[check]]
+id = 'claude-md-import-resolves'
+kind = 'claude-md'
+sections = ['a.one']
+type = 'fact'
+rule = 'Fixture entry.'
+enforced_by = 'check_conformance'
+max_hops = 4
+
+[[check]]
+id = 'local-md-ignored'
+kind = 'settings'
+sections = ['a.one']
+type = 'advice'
+rule = 'Fixture entry.'
+enforced_by = 'check_conformance'
+
+[[check]]
+id = 'claude-md-count-claims'
+kind = 'claude-md'
+sections = ['a.one']
+type = 'advice'
+rule = 'Fixture entry.'
+enforced_by = 'check_conformance'
+nouns = ['tests']
+allow = []
 """
 
 
@@ -360,7 +483,13 @@ def test_register_field_problems_are_violations():
         'compaction-window', 'description-person', 'trigger-phrase-presence',
         'substitution-hazard', 'orphan-bundled-file', 'skill-command-name-collision',
         'command-frontmatter-keys', 'builtin-name-shadow', 'reserved-skill-name',
-        'known-agent-tools']
+        'known-agent-tools',
+        'agent-name-form', 'agent-model-available', 'agent-name-unique',
+        'command-substitution-tokens', 'rule-always-on-claim',
+        'hook-readme-exit-claims', 'hook-scripts-executable', 'hook-python-deps',
+        'allow-rule-compound-operators', 'inert-runner-allow-rules',
+        'hook-install-verify-step', 'claude-md-import-resolves', 'local-md-ignored',
+        'claude-md-count-claims']
     assert reg.checks[0].params == {'limit': 200}
 
 
@@ -1179,3 +1308,605 @@ def test_new_skill_checks_run_through_the_register(tmp_path):
     for check in ('substitution-hazard', 'skill-command-name-collision', 'command-frontmatter-keys',
                   'builtin-name-shadow', 'reserved-skill-name', 'orphan-bundled-file'):
         assert any(f': {check} (' in line for line in lines), (check, lines)
+
+
+# --- Audit section 6 checks: agents and commands (#50, #51, #52, #54) ---
+
+
+def real_check(check_id, **override):
+    '''Run a register check over the real repo, with params from the register
+    unless overridden, so a test can show that a parameter does real work.'''
+    reg, _ = cc.parse_register(cc.load_register(cc.REPO))
+    check = next(c for c in reg.checks if c.id == check_id)
+    kinds = cc.kind_files(reg, cc.kept_files(cc.REPO))
+    files = sorted({f for kind in check.kinds for f in kinds[kind]})
+    return cc.CHECKS[check_id][0](cc.REPO, files, {**check.params, **override})
+
+
+def agent_text(name, extra=''):
+    return f'---\nname: {name}\ndescription: D.\n{extra}---\n'
+
+
+def test_agent_name_form_passes_lowercase_hyphenated_and_allowed_names(tmp_path):
+    write_tree(tmp_path, {
+        'agents/a.md': agent_text('code-reviewer'),
+        'agents/b.md': agent_text('Explore'),
+        'agents/c.md': agent_text('v2-runner'),
+    })
+    files = ['agents/a.md', 'agents/b.md', 'agents/c.md']
+    assert cc.check_agent_name_form(tmp_path, files, {'allow': ['Explore']}) == []
+
+
+def test_agent_name_form_flags_other_forms_and_a_missing_name(tmp_path):
+    write_tree(tmp_path, {
+        'agents/a.md': agent_text('Explore'),
+        'agents/b.md': agent_text('test_runner'),
+        'agents/c.md': agent_text('Two Words'),
+        'agents/d.md': '---\ndescription: D.\n---\n',
+        'agents/e.md': 'No frontmatter.\n',
+    })
+    files = [f'agents/{x}.md' for x in 'abcde']
+    assert cc.check_agent_name_form(tmp_path, files, {'allow': []}) == [
+        cc.Finding('agents/a.md', "name 'Explore' is not a lowercase-hyphenated ID"),
+        cc.Finding('agents/b.md', "name 'test_runner' is not a lowercase-hyphenated ID"),
+        cc.Finding('agents/c.md', "name 'Two Words' is not a lowercase-hyphenated ID"),
+        cc.Finding('agents/d.md', 'frontmatter sets no name'),
+    ]
+
+
+def test_agent_name_form_allow_list_does_real_work_on_the_repo():
+    assert real_check('agent-name-form') == []
+    assert real_check('agent-name-form', allow=[]) == [
+        cc.Finding('agents/explore.md', "name 'Explore' is not a lowercase-hyphenated ID")]
+
+
+def test_agent_name_unique_passes_distinct_names(tmp_path):
+    write_tree(tmp_path, {
+        'agents/a.md': agent_text('alpha'),
+        '.claude/agents/b.md': agent_text('beta'),
+        'agents/c.md': 'No frontmatter.\n',
+    })
+    files = ['.claude/agents/b.md', 'agents/a.md', 'agents/c.md']
+    assert cc.check_agent_name_unique(tmp_path, files, {}) == []
+
+
+def test_agent_name_unique_flags_a_name_repeated_across_directories(tmp_path):
+    write_tree(tmp_path, {
+        'agents/a.md': agent_text('alpha'),
+        '.claude/agents/a.md': agent_text('alpha'),
+        'agents/b.md': agent_text('beta'),
+    })
+    files = ['.claude/agents/a.md', 'agents/a.md', 'agents/b.md']
+    assert cc.check_agent_name_unique(tmp_path, files, {}) == [
+        cc.Finding('.claude/agents/a.md', "name 'alpha' is also the name of agents/a.md"),
+        cc.Finding('agents/a.md', "name 'alpha' is also the name of .claude/agents/a.md"),
+    ]
+
+
+def test_agent_name_unique_passes_on_the_repo():
+    assert real_check('agent-name-unique') == []
+
+
+MODEL_PARAMS = {'exempt': ['inherit']}
+
+
+def settings_text(**keys):
+    return json.dumps(keys)
+
+
+def test_agent_model_available_passes(tmp_path):
+    write_tree(tmp_path, {
+        '.claude/settings.json': settings_text(availableModels=['sonnet', 'opus']),
+        'agents/a.md': agent_text('a', 'model: opus\n'),
+        'agents/b.md': agent_text('b', 'model: inherit\n'),
+        'agents/c.md': agent_text('c', 'model: claude-sonnet-5-5\n'),
+        'agents/d.md': agent_text('d'),
+    })
+    files = ['.claude/settings.json'] + [f'agents/{x}.md' for x in 'abcd']
+    assert cc.check_agent_model_available(tmp_path, files, MODEL_PARAMS) == []
+
+
+def test_agent_model_available_flags_an_alias_outside_the_list(tmp_path):
+    write_tree(tmp_path, {
+        '.claude/settings.json': settings_text(availableModels=['sonnet', 'opus']),
+        'agents/a.md': agent_text('a', 'model: haiku  # cheap\n'),
+        'agents/b.md': agent_text('b', 'model: sonnet\n'),
+    })
+    files = ['.claude/settings.json', 'agents/a.md', 'agents/b.md']
+    assert cc.check_agent_model_available(tmp_path, files, MODEL_PARAMS) == [
+        cc.Finding('agents/a.md', "model 'haiku' is not in availableModels (sonnet, opus) of .claude/settings.json")]
+
+
+def test_agent_model_available_without_a_list_restricts_nothing(tmp_path):
+    write_tree(tmp_path, {
+        '.claude/settings.json': settings_text(model='opus'),
+        'agents/a.md': agent_text('a', 'model: haiku\n'),
+    })
+    assert cc.check_agent_model_available(
+        tmp_path, ['.claude/settings.json', 'agents/a.md'], MODEL_PARAMS) == []
+    assert cc.check_agent_model_available(tmp_path, ['agents/a.md'], MODEL_PARAMS) == []
+
+
+def test_agent_model_available_flags_a_broken_settings_file(tmp_path):
+    write_tree(tmp_path, {
+        '.claude/settings.json': '{"availableModels": ',
+        'agents/a.md': agent_text('a', 'model: haiku\n'),
+    })
+    assert cc.check_agent_model_available(
+        tmp_path, ['.claude/settings.json', 'agents/a.md'], MODEL_PARAMS) == [
+        cc.Finding('.claude/settings.json', 'file does not parse (Expecting value)', waivable=False)]
+    write_tree(tmp_path, {'.claude/settings.json': settings_text(availableModels='opus')})
+    assert cc.check_agent_model_available(
+        tmp_path, ['.claude/settings.json', 'agents/a.md'], MODEL_PARAMS) == [
+        cc.Finding('.claude/settings.json', 'availableModels is not a list of strings')]
+
+
+def test_agent_model_available_passes_on_the_repo():
+    assert real_check('agent-model-available') == []
+
+
+def command_text(body, **frontmatter):
+    head = ''.join(f'{k}: {v}\n' for k, v in frontmatter.items())
+    return f'---\ndescription: D.\ndisable-model-invocation: true\n{head}---\n{body}'
+
+
+def test_command_substitution_tokens_pass_when_declared_or_not_tokens(tmp_path):
+    write_tree(tmp_path, {
+        'commands/hinted.md': command_text('Fix $ARGUMENTS, then $0.\n', **{'argument-hint': '[n]'}),
+        'commands/named.md': command_text('Fix $issue ($ARGUMENTS[0]).\n', arguments='[issue]'),
+        'commands/plain.md': command_text(
+            'Costs \\$1.00. Name $issue stays text; ${CLAUDE_SKILL_DIR} needs no declaration.\n'),
+        'commands/shell.md': command_text('Branch: !`git branch --show-current`\n',
+                                          **{'allowed-tools': 'Bash(git branch *)'}),
+        'commands/block.md': command_text('```!\ngit status\n```\n',
+                                          **{'allowed-tools': '[Read, Bash(git status)]'}),
+    })
+    files = [f'commands/{n}.md' for n in ('block', 'hinted', 'named', 'plain', 'shell')]
+    assert cc.check_command_substitution_tokens(tmp_path, files, {}) == []
+
+
+def test_command_substitution_tokens_flag_undeclared_arguments_and_shell(tmp_path):
+    write_tree(tmp_path, {
+        'commands/args.md': command_text('Intro.\nFix $ARGUMENTS and $1; again $ARGUMENTS[2].\nRepeat $1.\n'),
+        'commands/inline.md': command_text('Branch: !`git branch`\n', **{'allowed-tools': 'Read'}),
+        'commands/block.md': command_text('Run:\n```!\ngit status\n```\n'),
+    })
+    files = [f'commands/{n}.md' for n in ('args', 'block', 'inline')]
+    note = 'frontmatter sets neither argument-hint nor arguments'
+    assert cc.check_command_substitution_tokens(tmp_path, files, {}) == [
+        cc.Finding('commands/args.md', f'line 6: $ARGUMENTS is substituted, but {note}'),
+        cc.Finding('commands/args.md', f'line 6: $1 is substituted, but {note}'),
+        cc.Finding('commands/args.md', f'line 6: $ARGUMENTS[2] is substituted, but {note}'),
+        cc.Finding('commands/block.md', 'line 6: render-time shell runs, but frontmatter sets no allowed-tools Bash entry'),
+        cc.Finding('commands/inline.md', 'line 6: render-time shell runs, but frontmatter sets no allowed-tools Bash entry'),
+    ]
+
+
+def test_command_substitution_tokens_pass_on_the_repo():
+    assert real_check('command-substitution-tokens') == []
+
+
+# --- Audit section 6 checks: hooks, rules and settings (#58 to #64) ---
+
+ALWAYS_ON_PARAMS = {'phrases': ['always-on', 'always on', 'every session', 'every turn',
+                                'every edit', 'every python edit']}
+
+
+def test_rule_always_on_claim_passes(tmp_path):
+    root = tmp_path / 'repo'
+    write_tree(root, {
+        'rules/py.md': RULE.replace('Rule.', '# Python conventions (loaded on .py reads)\n\nThis rule is not always-on.\n'),
+        'rules/core.md': 'Always-on guardrails, loaded every session.\n',
+        'rules/bare.md': '---\ndescription: D.\n---\n\nStanding rules, always on.\n',
+    })
+    (root / '.claude/rules').mkdir(parents=True)
+    os.symlink('../../rules/py.md', root / '.claude/rules/py.md')
+    files = ['.claude/rules/py.md', 'rules/bare.md', 'rules/core.md', 'rules/py.md']
+    assert cc.check_rule_always_on_claim(root, files, ALWAYS_ON_PARAMS) == []
+
+
+def test_rule_always_on_claim_flags_a_path_scoped_rule_that_says_it(tmp_path):
+    root = tmp_path / 'repo'
+    write_tree(root, {'rules/py.md': RULE.replace(
+        'Rule.', '# Python conventions (always-on)\n\nStanding guardrails injected on every Python edit.\n')})
+    (root / '.claude/rules').mkdir(parents=True)
+    os.symlink('../../rules/py.md', root / '.claude/rules/py.md')
+    assert cc.check_rule_always_on_claim(root, ['.claude/rules/py.md', 'rules/py.md'], ALWAYS_ON_PARAMS) == [
+        cc.Finding('rules/py.md', "line 6: path-scoped rule says 'always-on', but paths load it lazily"),
+        cc.Finding('rules/py.md', "line 8: path-scoped rule says 'every python edit', but paths load it lazily"),
+    ]
+
+
+def test_rule_always_on_claim_passes_on_the_repo():
+    assert real_check('rule-always-on-claim') == []
+
+
+OLD_EXIT_CLAIM = ('- **Exit codes matter:** only exit 2 blocks and feeds stderr to Claude; exit 1 just\n'
+                  '  logs. All three follow that convention.\n')
+NEW_EXIT_CLAIM = ('- **Exit codes matter:** a hook blocks either by exiting 2 or by printing a JSON\n'
+                  '  `permissionDecision: "deny"`; any other non-zero exit, such as 1, just logs.\n')
+GUARD_DOC = 'The guard prints `"permissionDecision": "deny"` on PreToolUse.\n'
+
+
+def test_hook_readme_exit_claims_pass(tmp_path):
+    write_tree(tmp_path, {
+        'hooks/README.md': NEW_EXIT_CLAIM + GUARD_DOC,
+        'hooks/other.md': OLD_EXIT_CLAIM,  # no deny documented, so the claim is true
+    })
+    assert cc.check_hook_readme_exit_claims(tmp_path, ['hooks/README.md', 'hooks/other.md'], {}) == []
+
+
+@pytest.mark.parametrize('claim', [
+    OLD_EXIT_CLAIM,
+    'Blocking: exit 2 is the only way to stop a call.\n',
+    'The only way to block a call is exit 2.\n',
+])
+def test_hook_readme_exit_claims_flag_only_exit_2_beside_a_deny(tmp_path, claim):
+    write_tree(tmp_path, {'hooks/README.md': 'Intro.\n\n' + claim + GUARD_DOC})
+    line = 3 + claim.count('\n')
+    assert cc.check_hook_readme_exit_claims(tmp_path, ['hooks/README.md'], {}) == [
+        cc.Finding('hooks/README.md',
+                   f'line 3: says only exit 2 blocks, but line {line} documents a permissionDecision deny')]
+
+
+def test_hook_readme_exit_claims_flag_a_deny_in_a_script_the_readme_names(tmp_path):
+    write_tree(tmp_path, {
+        'hooks/README.md': OLD_EXIT_CLAIM + '\n## guard.py\n\nPreToolUse hook.\n',
+        'hooks/guard.py': "print(json.dumps({'hookSpecificOutput': {'permissionDecision': 'deny'}}))\n",
+        'hooks/quiet.py': 'sys.exit(2)\n',
+    })
+    files = ['hooks/README.md', 'hooks/guard.py', 'hooks/quiet.py']
+    assert cc.check_hook_readme_exit_claims(tmp_path, files, {}) == [
+        cc.Finding('hooks/README.md', 'line 1: says only exit 2 blocks, but hooks/guard.py, which it '
+                                      'documents, blocks with a permissionDecision deny')]
+    write_tree(tmp_path, {'hooks/README.md': OLD_EXIT_CLAIM + '\nOnly quiet.py is installed.\n'})
+    assert cc.check_hook_readme_exit_claims(tmp_path, files, {}) == []
+
+
+def test_hook_readme_exit_claims_pass_on_the_repo():
+    assert real_check('hook-readme-exit-claims') == []
+
+
+def tracked_repo(root, files, executable=()):
+    '''git-init root, add the files, and pin each .sh or .py file's index mode to
+    100755 when listed in executable and to 100644 otherwise, whatever the
+    filesystem says.'''
+    git_repo(root, files)
+    env = cc.git_env()
+    subprocess.run(['git', 'add', '-A'], cwd=root, env=env, check=True)
+    for name in files:
+        if name.endswith(('.sh', '.py')):
+            flag = '--chmod=+x' if name in executable else '--chmod=-x'
+            subprocess.run(['git', 'update-index', flag, name], cwd=root, env=env, check=True)
+    return root
+
+
+def test_hook_scripts_executable_pass(tmp_path):
+    root = tracked_repo(tmp_path, {
+        'hooks/guard.py': '#!/usr/bin/env python3\n',
+        'hooks/gate.sh': '#!/bin/sh\n',
+        'hooks/README.md': json_block(hooks_tree('PreToolUse', '"$CLAUDE_PROJECT_DIR"/.claude/hooks/gate.sh'))
+        + json_block(hooks_tree('Stop', 'uv run ruff check .')),
+    }, executable={'hooks/guard.py', 'hooks/gate.sh'})
+    files = ['hooks/README.md', 'hooks/gate.sh', 'hooks/guard.py']
+    assert cc.check_hook_scripts_executable(root, files, {}) == []
+
+
+def test_hook_scripts_executable_flag_a_plain_mode_and_a_missing_wired_script(tmp_path):
+    root = tracked_repo(tmp_path, {
+        'hooks/guard.py': '#!/usr/bin/env python3\n',
+        'hooks/gate.sh': '#!/bin/sh\n',
+        'hooks/README.md': json_block(hooks_tree('PreToolUse', '$CLAUDE_PROJECT_DIR/.claude/hooks/gone.sh')),
+    }, executable={'hooks/gate.sh'})
+    files = ['hooks/README.md', 'hooks/gate.sh', 'hooks/guard.py']
+    assert cc.check_hook_scripts_executable(root, files, {}) == [
+        cc.Finding('hooks/guard.py', 'git index mode is 100644, not 100755, so the hook fails open where it is installed'),
+        cc.Finding('hooks/README.md', "JSON block at line 1: PreToolUse command "
+                                      "'$CLAUDE_PROJECT_DIR/.claude/hooks/gone.sh' names no hook script in the repo"),
+    ]
+
+
+def test_hook_scripts_executable_judge_an_untracked_script_by_its_execute_bit(tmp_path):
+    root = tracked_repo(tmp_path, {'hooks/kept.sh': '#!/bin/sh\n'}, executable={'hooks/kept.sh'})
+    write_tree(root, {'hooks/new.sh': '#!/bin/sh\n', 'hooks/new-x.sh': '#!/bin/sh\n'})
+    (root / 'hooks/new.sh').chmod(0o644)
+    (root / 'hooks/new-x.sh').chmod(0o755)
+    files = ['hooks/kept.sh', 'hooks/new-x.sh', 'hooks/new.sh']
+    assert cc.check_hook_scripts_executable(root, files, {}) == [
+        cc.Finding('hooks/new.sh', 'untracked and not executable, so the hook would fail open')]
+
+
+def test_hook_scripts_executable_pass_on_the_repo():
+    assert real_check('hook-scripts-executable') == []
+
+
+STDLIB_HOOK = '#!/usr/bin/env python3\nfrom __future__ import annotations\nimport json, sys\nimport os.path\n'
+PEP_723 = '# /// script\n# dependencies = ["pyyaml"]\n# ///\n'
+
+
+def test_hook_python_deps_pass(tmp_path):
+    write_tree(tmp_path, {
+        'hooks/stdlib.py': STDLIB_HOOK + 'from . import sibling\nimport helper\n',
+        'hooks/helper.py': 'import re\n',
+        'hooks/pep723.py': '#!/usr/bin/env -S uv run --script\n' + PEP_723 + 'import yaml\n',
+    })
+    files = ['hooks/helper.py', 'hooks/pep723.py', 'hooks/stdlib.py']
+    assert cc.check_hook_python_deps(tmp_path, files, {}) == []
+
+
+def test_hook_python_deps_flag_third_party_imports_without_a_block(tmp_path):
+    write_tree(tmp_path, {
+        'hooks/a.py': 'import json\nimport yaml\n\n\ndef f():\n    from requests.auth import HTTPBasicAuth\n',
+        'hooks/b.py': '# /// not-a-script\n# x = 1\n# ///\nimport numpy\n',
+        'hooks/broken.py': 'def (:\n',
+    })
+    assert cc.check_hook_python_deps(tmp_path, ['hooks/a.py', 'hooks/b.py', 'hooks/broken.py'], {}) == [
+        cc.Finding('hooks/a.py', 'imports requests, yaml, outside the standard library, and declares no PEP 723 script block'),
+        cc.Finding('hooks/b.py', 'imports numpy, outside the standard library, and declares no PEP 723 script block'),
+        cc.Finding('hooks/broken.py', 'cannot parse: invalid syntax (line 1)', waivable=False),
+    ]
+
+
+def test_hook_python_deps_pass_on_the_repo():
+    assert real_check('hook-python-deps') == []
+
+
+@pytest.mark.parametrize('pattern, ops', [
+    ('uv run:*', []),
+    ('git status && rm -rf x', ['&&']),
+    ('a || b', ['||']),
+    ('a; b', [';']),
+    ('a | b', ['|']),
+    ('a |& b', ['|&']),
+    ('a & b', ['&']),
+    ('echo "a && b; c"', []),
+    ("echo 'a | b'", []),
+    ('echo a\\;b', []),
+    ('make 2>&1', []),
+    ('make &> out', []),
+    ('a && b | c', ['&&', '|']),
+])
+def test_unquoted_operators_track_shell_quoting(pattern, ops):
+    assert cc.unquoted_operators(pattern) == ops
+
+
+def test_allow_rule_compound_operators_pass(tmp_path):
+    write_tree(tmp_path, {
+        '.claude/settings.json': json.dumps({'permissions': {
+            'allow': ['Bash(uv run:*)', 'Bash(echo "a && b")', 'Read(./a;b)'],
+            'deny': ['Bash(rm -rf / && echo)']}}),
+        'hooks/README.md': json_block({'permissions': {'allow': ['Bash(uv add:*)']}}),
+    })
+    assert cc.check_allow_rule_compound_operators(
+        tmp_path, ['.claude/settings.json', 'hooks/README.md'], {}) == []
+
+
+def test_allow_rule_compound_operators_flag_unquoted_separators(tmp_path):
+    write_tree(tmp_path, {
+        '.claude/settings.json': json.dumps({'permissions': {'allow': ['Bash(cd x && git status)']}}),
+        'hooks/README.md': 'Add:\n\n' + json_block({'permissions': {'allow': ['Bash(a | b; c)', 'Bash(ok)']}}),
+    })
+    note = 'which Claude Code splits compound commands on, so it never matches'
+    assert cc.check_allow_rule_compound_operators(
+        tmp_path, ['.claude/settings.json', 'hooks/README.md'], {}) == [
+        cc.Finding('.claude/settings.json', f'allow rule Bash(cd x && git status) holds an unquoted &&, {note}'),
+        cc.Finding('hooks/README.md', f'JSON block at line 3: allow rule Bash(a | b; c) holds an unquoted ;, |, {note}'),
+    ]
+
+
+def test_allow_rule_compound_operators_never_read_the_local_settings_file(tmp_path):
+    '''settings.local.json is gitignored, so kept_files never lists it and no
+    kind globs it: a developer's private rules cannot change the lint's result.'''
+    root = git_repo(tmp_path, {
+        '.gitignore': '**/.claude/settings.local.json\n',
+        '.claude/settings.json': '{}',
+        '.claude/settings.local.json': json.dumps({'permissions': {'allow': ['Bash(a && b)']}}),
+    })
+    assert '.claude/settings.local.json' not in cc.kept_files(root)
+    reg, _ = cc.parse_register(cc.load_register(cc.REPO))
+    assert not any(cc.PurePosixPath('.claude/settings.local.json').full_match(g)
+                   for kind in reg.kinds.values() for g in kind.globs)
+
+
+def test_allow_rule_compound_operators_pass_on_the_repo():
+    assert real_check('allow-rule-compound-operators') == []
+
+
+RUNNER_PARAMS = {'runners': ['uv run', 'npx', 'npm run']}
+ALLOW_UV = json_block({'permissions': {'allow': ['Bash(uv run:*)', 'Bash(uv add:*)']}})
+
+
+def test_inert_runner_allow_rules_pass(tmp_path):
+    write_tree(tmp_path, {
+        'hooks/README.md': (
+            "Pair with an allowlist so the uv forms don't prompt. This holds in manual\n"
+            'permission mode only; auto mode sets broad runner rules aside:\n\n' + ALLOW_UV
+            + '\nAllow just the one build:\n\n'
+            + json_block({'permissions': {'allow': ['Bash(npm run build)']}})
+            + "\nSpare prompts for git:\n\n"
+            + json_block({'permissions': {'allow': ['Bash(git status:*)']}})
+            + '\nPair with an allowlist:\n\n' + ALLOW_UV),
+    })
+    assert cc.check_inert_runner_allow_rules(tmp_path, ['hooks/README.md'], RUNNER_PARAMS) == []
+
+
+def test_inert_runner_allow_rules_flag_a_runner_rule_said_to_spare_prompts(tmp_path):
+    write_tree(tmp_path, {
+        'hooks/README.md': ("Optionally pair with a permission allowlist so the `uv` forms don't\n"
+                            'prompt:\n\n' + ALLOW_UV
+                            + '\nSkip prompts for npx:\n\n' + json_block({'permissions': {'allow': ['Bash(npx *)']}})),
+    })
+    note = 'is said to spare prompts, but auto mode sets broad runner rules aside and the text names no mode'
+    assert cc.check_inert_runner_allow_rules(tmp_path, ['hooks/README.md'], RUNNER_PARAMS) == [
+        cc.Finding('hooks/README.md', f'JSON block at line 4: Bash(uv run:*) {note}'),
+        cc.Finding('hooks/README.md', f'JSON block at line 17: Bash(npx *) {note}'),
+    ]
+
+
+def test_inert_runner_allow_rules_pass_on_the_repo():
+    assert real_check('inert-runner-allow-rules') == []
+
+
+BLOCKING = {'blocking_events': ['PreToolUse', 'Stop', 'UserPromptSubmit']}
+WIRE = json_block(hooks_tree('PreToolUse', '"$CLAUDE_PROJECT_DIR"/.claude/hooks/a.sh'))
+
+
+def test_hook_install_verify_step_pass(tmp_path):
+    write_tree(tmp_path, {
+        'hooks/README.md': (
+            '## Install\n\n' + WIRE + '\nThen trigger each blocking hook once to confirm it\nis wired.\n\n'
+            '## Other\n\n' + json_block(hooks_tree('PostToolUse', 'fmt.sh')) + '\nNo step needed.\n\n'
+            '## Guard\n\n' + WIRE + '\n```bash\n# a comment, not a heading\n```\n'
+            'Run the probe: trigger it once.\n'),
+    })
+    assert cc.check_hook_install_verify_step(tmp_path, ['hooks/README.md'], BLOCKING) == []
+
+
+def test_hook_install_verify_step_flag_a_blocking_block_with_no_step(tmp_path):
+    write_tree(tmp_path, {
+        'hooks/README.md': (
+            '## Install\n\n' + WIRE + '\nDone.\n\n## Later\n\nTrigger it once.\n\n'
+            + json_block({'hooks': {'Stop': [], 'PreToolUse': [{'hooks': []}]}})
+            + '\nPrefer cp.\n'),
+    })
+    assert cc.check_hook_install_verify_step(tmp_path, ['hooks/README.md'], BLOCKING) == [
+        cc.Finding('hooks/README.md', 'JSON block at line 3: wires PreToolUse, but no step telling '
+                                      'the reader to trigger the hook once follows before the next heading'),
+        cc.Finding('hooks/README.md', 'JSON block at line 26: wires PreToolUse, Stop, but no step telling '
+                                      'the reader to trigger the hook once follows before the next heading'),
+    ]
+
+
+def test_hook_install_verify_step_pass_on_the_repo():
+    assert real_check('hook-install-verify-step') == []
+
+
+# --- Audit section 6 checks: CLAUDE.md files (#67, #68, #69) ---
+
+IMPORT_PARAMS = {'max_hops': 4}
+
+
+def test_import_targets_skip_fences_code_spans_and_emails():
+    text = ('See @docs/a.md, and (@docs/b.md).\n'
+            'Mention `@docs/c.md` without importing it, or ``@d`` too.\n'
+            'Mail me@example.com or write @ alone.\n'
+            f'{FENCE}bash\n# @needs_pilot tests read a wiki\n{FENCE}\n'
+            '@docs/e.md.\n')
+    assert cc.import_targets(text) == [(1, 'docs/a.md'), (1, 'docs/b.md'), (7, 'docs/e.md')]
+
+
+def test_claude_md_import_resolves_pass(tmp_path):
+    write_tree(tmp_path, {
+        'CLAUDE.md': f'Read @docs/a.md.\n\n{FENCE}bash\n# @needs_pilot tests\n{FENCE}\nNot an import: `@x`.\n'
+                     'Home: @~/notes.md and @/etc/hosts are not followed.\n',
+        'docs/a.md': 'See @b.md\n',
+        'docs/b.md': 'Back to @a.md\n',
+    })
+    assert cc.check_claude_md_import_resolves(tmp_path, ['CLAUDE.md'], IMPORT_PARAMS) == []
+
+
+def test_claude_md_import_resolves_flags_a_missing_file_in_the_chain(tmp_path):
+    write_tree(tmp_path, {
+        'CLAUDE.md': 'Intro.\n@gone.md\n@docs/a.md\n',
+        'docs/a.md': 'Line.\n@missing.md\n',
+        'build/CLAUDE.md': '@../docs/a.md\n',
+    })
+    assert cc.check_claude_md_import_resolves(
+        tmp_path, ['CLAUDE.md', 'build/CLAUDE.md'], IMPORT_PARAMS) == [
+        cc.Finding('CLAUDE.md', 'CLAUDE.md line 2: import @gone.md does not resolve'),
+        cc.Finding('CLAUDE.md', 'docs/a.md line 2: import @missing.md does not resolve'),
+        cc.Finding('build/CLAUDE.md', 'docs/a.md line 2: import @missing.md does not resolve'),
+    ]
+
+
+def test_claude_md_import_resolves_stops_at_the_hop_limit(tmp_path):
+    write_tree(tmp_path, {
+        'CLAUDE.md': '@h1.md\n',
+        'h1.md': '@h2.md\n', 'h2.md': '@h3.md\n', 'h3.md': '@h4.md\n', 'h4.md': '@h5.md\n',
+        'h5.md': 'Leaf.\n',
+    })
+    assert cc.check_claude_md_import_resolves(tmp_path, ['CLAUDE.md'], IMPORT_PARAMS) == [
+        cc.Finding('CLAUDE.md', 'h4.md line 1: import @h5.md is hop 5, past the 4-hop limit')]
+    assert cc.check_claude_md_import_resolves(tmp_path, ['CLAUDE.md'], {'max_hops': 5}) == []
+
+
+def test_claude_md_import_resolves_passes_on_the_repo():
+    text = (cc.REPO / 'CLAUDE.md').read_text()
+    assert '@needs_pilot' in text  # a naive scan would flag this, so the test means something
+    assert real_check('claude-md-import-resolves') == []
+
+
+def ignored_repo(tmp_path, ignore):
+    return git_repo(tmp_path, {'CLAUDE.md': 'x\n', 'build/CLAUDE.md': 'y\n', '.gitignore': ignore})
+
+
+def test_local_md_ignored_pass(tmp_path):
+    root = ignored_repo(tmp_path, 'CLAUDE.local.md\n')
+    assert cc.check_local_md_ignored(root, ['CLAUDE.md', 'build/CLAUDE.md'], {}) == []
+
+
+def test_local_md_ignored_flags_each_directory_that_does_not_ignore_it(tmp_path):
+    root = ignored_repo(tmp_path, '/CLAUDE.local.md\n')
+    assert cc.check_local_md_ignored(root, ['CLAUDE.md', 'build/CLAUDE.md'], {}) == [
+        cc.Finding('build/CLAUDE.md', 'build/CLAUDE.local.md is not gitignored, so a personal file would be committed')]
+
+
+def test_local_md_ignored_does_not_count_private_ignore_sources(tmp_path):
+    root = ignored_repo(tmp_path, '*.pyc\n')
+    (root / '.git/info/exclude').write_text('CLAUDE.local.md\n')
+    elsewhere = tmp_path.parent / f'{tmp_path.name}-global-ignore'
+    elsewhere.write_text('CLAUDE.local.md\n')
+    subprocess.run(['git', 'config', 'core.excludesFile', str(elsewhere)],
+                   cwd=root, env=cc.git_env(), check=True)
+    assert cc.check_local_md_ignored(root, ['CLAUDE.md'], {}) == [
+        cc.Finding('CLAUDE.md', 'CLAUDE.local.md is ignored only by .git/info/exclude, which is not committed')]
+    (root / '.git/info/exclude').write_text('')
+    assert cc.check_local_md_ignored(root, ['CLAUDE.md'], {}) == [
+        cc.Finding('CLAUDE.md', 'CLAUDE.local.md is not gitignored, so a personal file would be committed')]
+
+
+def test_local_md_ignored_outside_a_repo_is_a_setup_error(tmp_path):
+    write_tree(tmp_path, {'CLAUDE.md': 'x\n'})
+    with pytest.raises(cc.SetupError, match='git check-ignore failed'):
+        cc.check_local_md_ignored(tmp_path, ['CLAUDE.md'], {})
+
+
+def test_local_md_ignored_passes_on_the_repo():
+    assert real_check('local-md-ignored') == []
+    shown = subprocess.run(['git', 'check-ignore', '-v', 'CLAUDE.local.md'], cwd=cc.REPO,
+                           env=cc.git_env(), capture_output=True, text=True, check=True).stdout
+    assert shown.startswith('.gitignore:')
+
+
+COUNT_PARAMS = {'nouns': ['test', 'tests', 'test functions', 'passed', 'skipped', 'originals'],
+                'allow': ['originals, kept in sync']}
+
+
+def test_claude_md_count_claims_pass(tmp_path):
+    write_tree(tmp_path, {'CLAUDE.md': (
+        'Run the tests with pytest; its summary line gives the counts.\n'
+        'Python 3.13 and 2 spaces.\n'
+        '(19 originals, kept in sync with NOTICE)\n')})
+    assert cc.check_claude_md_count_claims(tmp_path, ['CLAUDE.md'], COUNT_PARAMS) == []
+
+
+def test_claude_md_count_claims_flag_counts_even_inside_fences(tmp_path):
+    write_tree(tmp_path, {'CLAUDE.md': (
+        'Intro.\n'
+        f'{FENCE}bash\n'
+        '# Full build-directory tests: 182 tests\n'
+        '# (58 passed, 3 skipped) with the stack\n'
+        f'{FENCE}\n'
+        'The 1,204 test functions all pass.\n'
+        'Skip 4 originals now.\n')})
+    assert cc.check_claude_md_count_claims(tmp_path, ['CLAUDE.md'], COUNT_PARAMS) == [
+        cc.Finding('CLAUDE.md', "line 3: states a count ('182 tests') that goes stale"),
+        cc.Finding('CLAUDE.md', "line 4: states a count ('58 passed') that goes stale"),
+        cc.Finding('CLAUDE.md', "line 6: states a count ('1,204 test functions') that goes stale"),
+        cc.Finding('CLAUDE.md', "line 7: states a count ('4 originals') that goes stale"),
+    ]
+
+
+def test_claude_md_count_claims_allow_list_does_real_work_on_the_repo():
+    assert real_check('claude-md-count-claims') == []
+    assert any('originals' in f.message for f in real_check('claude-md-count-claims', allow=[]))

@@ -350,6 +350,188 @@ rule = 'No skill directory takes a name reserved for synced claude.ai skills.'
 enforced_by = 'check_conformance'
 reserved = ['synced']
 
+# Plan 35 audit section 6 checks (/deferred pass 2026-10-05), agents and commands.
+
+# The guide's subagent table calls the name a unique lowercase-hyphenated ID.
+# allow lists the names a deviation exception covers: Explore overrides the
+# built-in Explore agent only under that spelling.
+[[check]]
+id = 'agent-name-form'
+kind = 'agent'
+sections = ['subagents.frontmatter']
+type = 'fact'
+rule = 'An agent name is a lowercase-hyphenated ID, unless allow lists it.'
+enforced_by = 'check_conformance'
+allow = ['Explore']
+
+# availableModels restricts every place a model can be named, and an agent's
+# model field is one. A full claude- ID is not compared, and exempt lists the
+# values that name no model.
+[[check]]
+id = 'agent-model-available'
+kind = ['agent', 'settings']
+sections = ['lean.model-routing']
+type = 'fact'
+rule = "An agent's model alias appears in availableModels in the project settings, when that key is set."
+enforced_by = 'check_conformance'
+exempt = ['inherit']
+
+# A project agent beats a personal one of the same name, so a name that
+# repeats across agents/ and .claude/agents/ hides one definition.
+[[check]]
+id = 'agent-name-unique'
+kind = 'agent'
+sections = ['subagents.frontmatter', 'subagents.overview']
+type = 'fact'
+rule = 'No agent name repeats across agents/ and .claude/agents/.'
+enforced_by = 'check_conformance'
+
+# $ARGUMENTS, $ARGUMENTS[n] and $n are substituted before Claude sees the
+# body, and a render-time shell command is permission-checked, so the guide
+# has the file pre-approve it in allowed-tools. A command declares the first
+# with argument-hint or arguments, and the second with a Bash entry in
+# allowed-tools. A $name is text unless arguments lists it, and the
+# ${CLAUDE_*} built-ins need no declaration, so neither is checked.
+[[check]]
+id = 'command-substitution-tokens'
+kind = 'command'
+sections = ['skills.arguments']
+type = 'fact'
+rule = 'A command that uses $ARGUMENTS or $<digit> sets argument-hint or arguments, and one that runs render-time shell sets allowed-tools with a Bash entry.'
+enforced_by = 'check_conformance'
+
+# Plan 35 audit section 6 checks, hooks, rules and settings.
+
+# A rule with paths loads lazily, so a path-scoped rule that calls itself
+# always-on misdescribes how it loads. phrases are matched case-insensitively
+# as plain text, and a phrase that follows not, never or n't is skipped.
+[[check]]
+id = 'rule-always-on-claim'
+kind = 'rule'
+sections = ['rules.rules-files']
+type = 'fact'
+rule = 'A rule that sets paths does not call itself always-on or every-session.'
+enforced_by = 'check_conformance'
+phrases = [
+    'always-on', 'always on', 'every session', 'every turn', 'every edit',
+    'every python edit',
+]
+
+# The guide's pitfalls bullet lets a hook block with exit 2 or a JSON deny.
+[[check]]
+id = 'hook-readme-exit-claims'
+kind = 'hook'
+sections = ['hooks.pitfalls', 'hooks.exit-codes']
+type = 'fact'
+rule = 'A hooks README that documents a permissionDecision deny does not say only exit 2 blocks.'
+enforced_by = 'check_conformance'
+
+# A script git cannot run fails open: the pitfalls section says a mistyped
+# path or a crash lets the call through, and hooks/README.md names a missing
+# execute bit. A tracked script is judged by its git index mode, an untracked
+# one by its working-tree owner execute bit.
+[[check]]
+id = 'hook-scripts-executable'
+kind = ['hook', 'settings']
+sections = ['hooks.pitfalls']
+type = 'advice'
+rule = 'Every hook script has git index mode 100755, and every .sh or .py command a hooks tree wires names a script in hooks/.'
+enforced_by = 'check_conformance'
+
+# The guide keeps hook dependencies out of the project environment with
+# single-file scripts that declare them inline. A script that imports only the
+# standard library has none to declare; a PEP 723 block counts as declaring.
+[[check]]
+id = 'hook-python-deps'
+kind = 'hook'
+sections = ['hooks.pitfalls']
+type = 'advice'
+rule = 'Hook Python imports only the standard library, or carries a PEP 723 script block.'
+enforced_by = 'check_conformance'
+
+# Claude Code splits a compound command on its separators and an allow rule
+# must match every part, so a rule that spells a separator never matches. Reads
+# the committed settings file and the settings JSON in Markdown. The per-machine
+# .claude/settings.local.json is gitignored, so the lint never reads it.
+[[check]]
+id = 'allow-rule-compound-operators'
+kind = ['hook', 'settings']
+sections = ['rules.settings']
+type = 'fact'
+rule = 'No allow rule holds an unquoted &&, ||, ;, |, |& or &.'
+enforced_by = 'check_conformance'
+
+# Auto mode sets broad runner rules aside. A runner rule is broad when it
+# ends at the runner, or at :* or * after it.
+[[check]]
+id = 'inert-runner-allow-rules'
+kind = 'hook'
+sections = ['rules.settings']
+type = 'fact'
+rule = 'A README that offers a broad runner allow rule as sparing prompts names the permission mode where that holds.'
+enforced_by = 'check_conformance'
+runners = [
+    'uv run', 'uvx', 'npm run', 'npx', 'pnpm run', 'yarn run', 'bun run',
+    'poetry run', 'pipx run',
+]
+
+# The events whose rows in the guide's events table say exit 2 blocks.
+[[check]]
+id = 'hook-install-verify-step'
+kind = 'hook'
+sections = ['hooks.pitfalls']
+type = 'advice'
+rule = 'Install text that wires a blocking hook tells the reader to trigger it once, before the next heading.'
+enforced_by = 'check_conformance'
+blocking_events = [
+    'PreToolUse', 'UserPromptSubmit', 'Stop', 'SubagentStop', 'PreCompact',
+    'ConfigChange',
+]
+
+# Plan 35 audit section 6 checks, CLAUDE.md files.
+
+# The guide's imports go at most 4 hops deep, and backticks escape one. The
+# scan skips fenced blocks and inline code, so a mention in either is not an
+# import, and a ~ or absolute target depends on the machine, so it is not followed.
+[[check]]
+id = 'claude-md-import-resolves'
+kind = 'claude-md'
+sections = ['rules.hierarchy']
+type = 'fact'
+rule = 'Each @ import in a CLAUDE.md file resolves to a file, within the guide hop limit.'
+enforced_by = 'check_conformance'
+max_hops = 4
+
+# CLAUDE.local.md is personal and the guide leaves the gitignore line to you.
+# The check asks git about the path beside each CLAUDE.md, so the file need
+# not exist, and counts only a committed .gitignore, never a global or
+# .git/info/exclude rule that lives on one machine.
+[[check]]
+id = 'local-md-ignored'
+kind = 'claude-md'
+sections = ['rules.hierarchy']
+type = 'advice'
+rule = 'CLAUDE.local.md, beside each CLAUDE.md, is ignored by a committed .gitignore.'
+enforced_by = 'check_conformance'
+
+# A count of tests, passes or skips is a fast-changing detail the guide says to
+# leave out of CLAUDE.md, and one that no longer matches misleads. nouns are
+# the words a number must precede to count; originals is the skill count that
+# check_provenance.py and test_check_provenance.py pin against NOTICE, so allow
+# exempts that note by its wording, without its number.
+[[check]]
+id = 'claude-md-count-claims'
+kind = 'claude-md'
+sections = ['rules.claude-md']
+type = 'advice'
+rule = 'A CLAUDE.md line does not state a test, pass, skip or similar count, unless allow exempts it.'
+enforced_by = 'check_conformance'
+nouns = [
+    'test', 'tests', 'test functions', 'passed', 'passes', 'skipped', 'skips',
+    'failed', 'failures', 'xfailed', 'originals',
+]
+allow = ['originals — keep in sync']
+
 # ---------------------------------------------------------------------------
 # Exceptions, decided by the owner at the plan 35 gate (2026-10-04) on the
 # audit in specs/claude-code-conformance-audit-2026-10-04.md. A deviation is
