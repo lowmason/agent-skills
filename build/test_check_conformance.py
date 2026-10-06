@@ -146,6 +146,11 @@ description = 'Every file under a skill.'
 globs = ['skills/*/**']
 sections = ['a.one']
 
+[kinds.parked]
+description = 'A kind no fixture file matches, so a check bound to it never runs in run().'
+globs = ['parked/never/*.md']
+sections = ['a.one']
+
 [unmapped]
 'b.overview' = 'Governs no fixture file.'
 
@@ -300,8 +305,8 @@ type = 'fact'
 rule = 'Known tools.'
 enforced_by = 'check_frontmatter'
 
-# The checks below are tested by direct calls. Those bound to the settings kind
-# stay off the fixture repos on purpose: no run() fixture populates it, so the
+# The checks below are tested by direct calls. Those bound to the parked kind,
+# which no fixture file matches, stay off the fixture repos on purpose, so the
 # exact-output tests above keep their expected lists.
 [[check]]
 id = 'agent-name-form'
@@ -323,7 +328,7 @@ exempt = ['inherit']
 
 [[check]]
 id = 'agent-name-unique'
-kind = 'settings'
+kind = 'parked'
 sections = ['a.one']
 type = 'fact'
 rule = 'Names are unique.'
@@ -331,7 +336,7 @@ enforced_by = 'check_conformance'
 
 [[check]]
 id = 'command-substitution-tokens'
-kind = 'settings'
+kind = 'parked'
 sections = ['a.one']
 type = 'fact'
 rule = 'Declare substitution tokens.'
@@ -356,7 +361,7 @@ enforced_by = 'check_conformance'
 
 [[check]]
 id = 'hook-scripts-executable'
-kind = 'settings'
+kind = 'parked'
 sections = ['a.one']
 type = 'fact'
 rule = 'Fixture entry.'
@@ -389,7 +394,7 @@ runners = ['uv run']
 
 [[check]]
 id = 'hook-install-verify-step'
-kind = 'settings'
+kind = 'parked'
 sections = ['a.one']
 type = 'fact'
 rule = 'Fixture entry.'
@@ -407,7 +412,7 @@ max_hops = 4
 
 [[check]]
 id = 'local-md-ignored'
-kind = 'settings'
+kind = 'parked'
 sections = ['a.one']
 type = 'advice'
 rule = 'Fixture entry.'
@@ -486,7 +491,7 @@ def test_register_field_problems_are_violations():
         f'{cc.REGISTER}: register (-): check rule-paths: enforced_by must be check_conformance or check_frontmatter',
         f'{cc.REGISTER}: register (-): check hook-dir-quoted: kind names no [kinds] table: nonesuch',
     ]
-    assert sorted(reg.kinds) == ['claude-md', 'command', 'hook', 'rule', 'settings', 'skill', 'skill-bundle']
+    assert sorted(reg.kinds) == ['claude-md', 'command', 'hook', 'parked', 'rule', 'settings', 'skill', 'skill-bundle']
     assert [c.id for c in reg.checks] == [
         'claude-md-size', 'stop-hook-guard', 'agent-fields',
         'readonly-agent-tools', 'bash-search-tools',
@@ -2268,9 +2273,7 @@ def test_a_file_in_two_of_a_checks_kinds_is_checked_once(tmp_path):
                                         "globs = ['.claude/settings.json', 'hooks/README.md']")
     root = fixture_repo(tmp_path, {'hooks/README.md': json_block(
         hooks_tree('PreToolUse', '$CLAUDE_PROJECT_DIR/a.sh'))}, register=register)
-    # The fixture README also trips two hook checks this test is not about.
-    unrelated = (': hook-install-verify-step (', ': hook-scripts-executable (')
-    assert [line for line in cc.run(root) if not any(u in line for u in unrelated)] == [
+    assert cc.run(root) == [
         'hooks/README.md: hook-dir-quoted (a.one): JSON block at line 1: '
         'PreToolUse command leaves $CLAUDE_PROJECT_DIR unquoted']
 
@@ -2557,9 +2560,7 @@ def test_waiver_path_that_is_a_check_file_passes(tmp_path):
         'hooks/README.md': json_block(hooks_tree('PreToolUse', '$CLAUDE_PROJECT_DIR/a.sh')),
         '.claude/settings.json': json.dumps(hooks_tree('PreToolUse', '$CLAUDE_PROJECT_DIR/a.sh'))},
         register=FIXTURE_REGISTER + exception_toml(hook_gap))
-    # The fixture names a hook script it does not ship, which this test is not about.
-    unrelated = (': hook-install-verify-step (', ': hook-scripts-executable (')
-    assert [line for line in cc.run(root) if not any(u in line for u in unrelated)] == []
+    assert cc.run(root) == []
 
 
 def test_waiver_path_of_the_wrong_kind_for_a_multi_kind_check_fails(tmp_path):
