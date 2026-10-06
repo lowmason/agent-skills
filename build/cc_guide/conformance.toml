@@ -238,6 +238,56 @@ type = 'fact'
 rule = 'Descriptions stay within the listing cap; the repo enforces the stricter 1,024-character Agent Skills cap.'
 enforced_by = 'check_frontmatter'
 
+# Plan 35 audit section 6 checks (/deferred pass 2026-10-05), agents and commands.
+
+# The guide's subagent table calls the name a unique lowercase-hyphenated ID.
+# allow lists the names a deviation exception covers: Explore overrides the
+# built-in Explore agent only under that spelling.
+[[check]]
+id = 'agent-name-form'
+kind = 'agent'
+sections = ['subagents.frontmatter']
+type = 'fact'
+rule = 'An agent name is a lowercase-hyphenated ID, unless allow lists it.'
+enforced_by = 'check_conformance'
+allow = ['Explore']
+
+# availableModels restricts every place a model can be named, and an agent's
+# model field is one. A full claude- ID is not compared, and exempt lists the
+# values that name no model.
+[[check]]
+id = 'agent-model-available'
+kind = ['agent', 'settings']
+sections = ['subagents.frontmatter', 'lean.model-routing']
+type = 'fact'
+rule = "An agent's model alias appears in availableModels in the project settings, when that key is set."
+enforced_by = 'check_conformance'
+exempt = ['inherit']
+
+# A project agent beats a personal one of the same name, so a name that
+# repeats across agents/ and .claude/agents/ hides one definition.
+[[check]]
+id = 'agent-name-unique'
+kind = 'agent'
+sections = ['subagents.frontmatter', 'subagents.overview']
+type = 'fact'
+rule = 'No agent name repeats across agents/ and .claude/agents/.'
+enforced_by = 'check_conformance'
+
+# $ARGUMENTS, $ARGUMENTS[n] and $n are substituted before Claude sees the
+# body, and a render-time shell command is permission-checked, so the guide
+# has the file pre-approve it in allowed-tools. A command declares the first
+# with argument-hint or arguments, and the second with a Bash entry in
+# allowed-tools. A $name is text unless arguments lists it, and the
+# ${CLAUDE_*} built-ins need no declaration, so neither is checked.
+[[check]]
+id = 'command-substitution-tokens'
+kind = 'command'
+sections = ['skills.arguments']
+type = 'fact'
+rule = 'A command that uses $ARGUMENTS or $<digit> sets argument-hint or arguments, and one that runs render-time shell sets allowed-tools with a Bash entry.'
+enforced_by = 'check_conformance'
+
 # ---------------------------------------------------------------------------
 # Exceptions, decided by the owner at the plan 35 gate (2026-10-04) on the
 # audit in specs/claude-code-conformance-audit-2026-10-04.md. A deviation is

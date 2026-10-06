@@ -531,6 +531,113 @@ def check_rule_paths(root: Path, files: list[str], params: dict) -> list[Finding
     return out
 
 
+# Checks from the plan 35 audit, section 6 (#50-#52, #54, #58-#64, #67-#69).
+# Each reads only what git keeps, so a gitignored per-machine file such as
+# .claude/settings.local.json never changes a result.
+
+AGENT_NAME_RE = re.compile(r'[a-z0-9]+(?:-[a-z0-9]+)*')
+SETTINGS_FILE = '.claude/settings.json'
+
+
+def check_agent_name_form(root: Path, files: list[str], params: dict) -> list[Finding]:
+    allow = set(params['allow'])
+    out: list[Finding] = []
+    for f, text in read_artifacts(root, files, out):
+        fm = frontmatter(text)
+        if fm is None:
+            continue  # agent-fields reports it
+        name = fm.get('name')
+        if name is None:
+            out.append(Finding(f, 'frontmatter sets no name'))
+        elif str(name) not in allow and not AGENT_NAME_RE.fullmatch(str(name)):
+            out.append(Finding(f, f'name {name!r} is not a lowercase-hyphenated ID'))
+    return out
+
+
+def check_agent_name_unique(root: Path, files: list[str], params: dict) -> list[Finding]:
+    owners: dict[str, list[str]] = {}
+    out: list[Finding] = []
+    for f, text in read_artifacts(root, files, out):
+        name = (frontmatter(text) or {}).get('name')
+        if name is not None:
+            owners.setdefault(str(name), []).append(f)
+    for name, same in sorted(owners.items()):
+        for f in same if len(same) > 1 else ():
+            others = ', '.join(o for o in same if o != f)
+            out.append(Finding(f, f'name {name!r} is also the name of {others}'))
+    return out
+
+
+def check_agent_model_available(root: Path, files: list[str], params: dict) -> list[Finding]:
+    exempt = set(params['exempt'])
+    out: list[Finding] = []
+    available: list[str] | None = None  # None: no availableModels, so no restriction
+    if SETTINGS_FILE in files:
+        for _, source in read_artifacts(root, [SETTINGS_FILE], out):
+            try:
+                data = json.loads(source)
+            except json.JSONDecodeError as exc:
+                out.append(Finding(SETTINGS_FILE, f'file does not parse ({exc.msg})', waivable=False))
+                continue
+            listed = data.get('availableModels') if isinstance(data, dict) else None
+            if listed is None:
+                continue
+            if _str_list(listed, nonempty=False):
+                available = listed
+            else:
+                out.append(Finding(SETTINGS_FILE, 'availableModels is not a list of strings'))
+    if available is None:
+        return out
+    for f, text in read_artifacts(root, [f for f in files if f.endswith('.md')], out):
+        model = (frontmatter(text) or {}).get('model')
+        if model is None or str(model) in exempt or FULL_MODEL_RE.fullmatch(str(model)):
+            continue
+        if str(model) not in available:
+            out.append(Finding(f, f'model {model!r} is not in availableModels ({", ".join(available)}) '
+                                  f'of {SETTINGS_FILE}'))
+    return out
+
+
+# $ARGUMENTS, $ARGUMENTS[n] and $n, unless a backslash escapes the $.
+ARG_TOKEN_RE = re.compile(r'(?<!\\)\$(?:ARGUMENTS(?:\[\d+\])?|\d+)')
+SHELL_INLINE_RE = re.compile(r'!`[^`\n]+`')
+SHELL_FENCE_RE = re.compile(r'^[ \t]*`{3,}!')
+
+
+def body_lines(text: str) -> list[tuple[int, str]]:
+    '''(line number, line) for each line after the leading frontmatter.'''
+    m = FRONTMATTER_RE.match(text)
+    first = text.count('\n', 0, m.end()) + 1 if m else 1
+    return list(enumerate(text[m.end() if m else 0:].split('\n'), start=first))
+
+
+def check_command_substitution_tokens(root: Path, files: list[str], params: dict) -> list[Finding]:
+    '''A command declares the arguments it reads with argument-hint or arguments,
+    and pre-approves its render-time shell with an allowed-tools Bash entry.
+    $name tokens and ${CLAUDE_*} built-ins need no declaration, so they are not
+    checked.'''
+    out: list[Finding] = []
+    for f, text in read_artifacts(root, files, out):
+        fm = frontmatter(text) or {}
+        takes_args = bool(fm.get('argument-hint') or fm.get('arguments'))
+        allowed = fm.get('allowed-tools')
+        pre_approved = re.search(r'\bBash\b', ' '.join(allowed) if isinstance(allowed, list)
+                                 else str(allowed or '')) is not None
+        seen: set[str] = set()
+        for n, line in body_lines(text):
+            if not takes_args:
+                for token in ARG_TOKEN_RE.findall(line):
+                    if token not in seen:
+                        seen.add(token)
+                        out.append(Finding(f, f'line {n}: {token} is substituted, but frontmatter '
+                                              'sets neither argument-hint nor arguments'))
+            if not pre_approved and 'shell' not in seen and (
+                    SHELL_INLINE_RE.search(line) or SHELL_FENCE_RE.match(line)):
+                seen.add('shell')
+                out.append(Finding(f, f'line {n}: render-time shell runs, but frontmatter '
+                                      'sets no allowed-tools Bash entry'))
+    return out
+
 # Each check_conformance check: its function and the parameters the register
 # must give it ('integer', or 'strings' for a list of strings).
 CHECKS = {
@@ -541,6 +648,10 @@ CHECKS = {
     'agent-fields': (check_agent_fields, {'fields': 'strings', 'models': 'strings'}),
     'readonly-agent-tools': (check_readonly_agent_tools, {'forbidden_tools': 'strings'}),
     'bash-search-tools': (check_bash_search_tools, {}),
+    'agent-name-form': (check_agent_name_form, {'allow': 'strings'}),
+    'agent-name-unique': (check_agent_name_unique, {}),
+    'agent-model-available': (check_agent_model_available, {'exempt': 'strings'}),
+    'command-substitution-tokens': (check_command_substitution_tokens, {}),
 }
 PARAM_TYPES = {
     'integer': (lambda v: isinstance(v, int) and not isinstance(v, bool), 'an integer'),

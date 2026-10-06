@@ -201,6 +201,40 @@ sections = ['a.overview']
 type = 'fact'
 rule = 'Known tools.'
 enforced_by = 'check_frontmatter'
+
+[[check]]
+id = 'agent-name-form'
+kind = 'agent'
+sections = ['a.overview']
+type = 'fact'
+rule = 'Lowercase-hyphenated names.'
+enforced_by = 'check_conformance'
+allow = ['Explore']
+
+[[check]]
+id = 'agent-model-available'
+kind = ['agent', 'settings']
+sections = ['a.overview']
+type = 'fact'
+rule = 'Models are available.'
+enforced_by = 'check_conformance'
+exempt = ['inherit']
+
+[[check]]
+id = 'agent-name-unique'
+kind = 'settings'
+sections = ['a.one']
+type = 'fact'
+rule = 'Names are unique.'
+enforced_by = 'check_conformance'
+
+[[check]]
+id = 'command-substitution-tokens'
+kind = 'settings'
+sections = ['a.one']
+type = 'fact'
+rule = 'Declare substitution tokens.'
+enforced_by = 'check_conformance'
 """
 
 
@@ -259,7 +293,9 @@ def test_register_field_problems_are_violations():
     assert sorted(reg.kinds) == ['claude-md', 'hook', 'rule', 'settings']
     assert [c.id for c in reg.checks] == [
         'claude-md-size', 'stop-hook-guard', 'agent-fields',
-        'readonly-agent-tools', 'bash-search-tools', 'known-agent-tools']
+        'readonly-agent-tools', 'bash-search-tools', 'known-agent-tools',
+        'agent-name-form', 'agent-model-available', 'agent-name-unique',
+        'command-substitution-tokens']
     assert reg.checks[0].params == {'limit': 200}
 
 
@@ -800,3 +836,179 @@ def test_exception_field_rules(tmp_path, changes, expected):
 def test_repo_passes():
     '''The real repo, with the register the owner gate filled, is clean (R3.5).'''
     assert cc.run(cc.REPO) == []
+
+
+# --- Audit section 6 checks: agents and commands (#50, #51, #52, #54) ---
+
+
+def real_check(check_id, **override):
+    '''Run a register check over the real repo, with params from the register
+    unless overridden, so a test can show that a parameter does real work.'''
+    reg, _ = cc.parse_register(cc.load_register(cc.REPO))
+    check = next(c for c in reg.checks if c.id == check_id)
+    kinds = cc.kind_files(reg, cc.kept_files(cc.REPO))
+    files = sorted({f for kind in check.kinds for f in kinds[kind]})
+    return cc.CHECKS[check_id][0](cc.REPO, files, {**check.params, **override})
+
+
+def agent_text(name, extra=''):
+    return f'---\nname: {name}\ndescription: D.\n{extra}---\n'
+
+
+def test_agent_name_form_passes_lowercase_hyphenated_and_allowed_names(tmp_path):
+    write_tree(tmp_path, {
+        'agents/a.md': agent_text('code-reviewer'),
+        'agents/b.md': agent_text('Explore'),
+        'agents/c.md': agent_text('v2-runner'),
+    })
+    files = ['agents/a.md', 'agents/b.md', 'agents/c.md']
+    assert cc.check_agent_name_form(tmp_path, files, {'allow': ['Explore']}) == []
+
+
+def test_agent_name_form_flags_other_forms_and_a_missing_name(tmp_path):
+    write_tree(tmp_path, {
+        'agents/a.md': agent_text('Explore'),
+        'agents/b.md': agent_text('test_runner'),
+        'agents/c.md': agent_text('Two Words'),
+        'agents/d.md': '---\ndescription: D.\n---\n',
+        'agents/e.md': 'No frontmatter.\n',
+    })
+    files = [f'agents/{x}.md' for x in 'abcde']
+    assert cc.check_agent_name_form(tmp_path, files, {'allow': []}) == [
+        cc.Finding('agents/a.md', "name 'Explore' is not a lowercase-hyphenated ID"),
+        cc.Finding('agents/b.md', "name 'test_runner' is not a lowercase-hyphenated ID"),
+        cc.Finding('agents/c.md', "name 'Two Words' is not a lowercase-hyphenated ID"),
+        cc.Finding('agents/d.md', 'frontmatter sets no name'),
+    ]
+
+
+def test_agent_name_form_allow_list_does_real_work_on_the_repo():
+    assert real_check('agent-name-form') == []
+    assert real_check('agent-name-form', allow=[]) == [
+        cc.Finding('agents/explore.md', "name 'Explore' is not a lowercase-hyphenated ID")]
+
+
+def test_agent_name_unique_passes_distinct_names(tmp_path):
+    write_tree(tmp_path, {
+        'agents/a.md': agent_text('alpha'),
+        '.claude/agents/b.md': agent_text('beta'),
+        'agents/c.md': 'No frontmatter.\n',
+    })
+    files = ['.claude/agents/b.md', 'agents/a.md', 'agents/c.md']
+    assert cc.check_agent_name_unique(tmp_path, files, {}) == []
+
+
+def test_agent_name_unique_flags_a_name_repeated_across_directories(tmp_path):
+    write_tree(tmp_path, {
+        'agents/a.md': agent_text('alpha'),
+        '.claude/agents/a.md': agent_text('alpha'),
+        'agents/b.md': agent_text('beta'),
+    })
+    files = ['.claude/agents/a.md', 'agents/a.md', 'agents/b.md']
+    assert cc.check_agent_name_unique(tmp_path, files, {}) == [
+        cc.Finding('.claude/agents/a.md', "name 'alpha' is also the name of agents/a.md"),
+        cc.Finding('agents/a.md', "name 'alpha' is also the name of .claude/agents/a.md"),
+    ]
+
+
+def test_agent_name_unique_passes_on_the_repo():
+    assert real_check('agent-name-unique') == []
+
+
+MODEL_PARAMS = {'exempt': ['inherit']}
+
+
+def settings_text(**keys):
+    return json.dumps(keys)
+
+
+def test_agent_model_available_passes(tmp_path):
+    write_tree(tmp_path, {
+        '.claude/settings.json': settings_text(availableModels=['sonnet', 'opus']),
+        'agents/a.md': agent_text('a', 'model: opus\n'),
+        'agents/b.md': agent_text('b', 'model: inherit\n'),
+        'agents/c.md': agent_text('c', 'model: claude-sonnet-5-5\n'),
+        'agents/d.md': agent_text('d'),
+    })
+    files = ['.claude/settings.json'] + [f'agents/{x}.md' for x in 'abcd']
+    assert cc.check_agent_model_available(tmp_path, files, MODEL_PARAMS) == []
+
+
+def test_agent_model_available_flags_an_alias_outside_the_list(tmp_path):
+    write_tree(tmp_path, {
+        '.claude/settings.json': settings_text(availableModels=['sonnet', 'opus']),
+        'agents/a.md': agent_text('a', 'model: haiku  # cheap\n'),
+        'agents/b.md': agent_text('b', 'model: sonnet\n'),
+    })
+    files = ['.claude/settings.json', 'agents/a.md', 'agents/b.md']
+    assert cc.check_agent_model_available(tmp_path, files, MODEL_PARAMS) == [
+        cc.Finding('agents/a.md', "model 'haiku' is not in availableModels (sonnet, opus) of .claude/settings.json")]
+
+
+def test_agent_model_available_without_a_list_restricts_nothing(tmp_path):
+    write_tree(tmp_path, {
+        '.claude/settings.json': settings_text(model='opus'),
+        'agents/a.md': agent_text('a', 'model: haiku\n'),
+    })
+    assert cc.check_agent_model_available(
+        tmp_path, ['.claude/settings.json', 'agents/a.md'], MODEL_PARAMS) == []
+    assert cc.check_agent_model_available(tmp_path, ['agents/a.md'], MODEL_PARAMS) == []
+
+
+def test_agent_model_available_flags_a_broken_settings_file(tmp_path):
+    write_tree(tmp_path, {
+        '.claude/settings.json': '{"availableModels": ',
+        'agents/a.md': agent_text('a', 'model: haiku\n'),
+    })
+    assert cc.check_agent_model_available(
+        tmp_path, ['.claude/settings.json', 'agents/a.md'], MODEL_PARAMS) == [
+        cc.Finding('.claude/settings.json', 'file does not parse (Expecting value)', waivable=False)]
+    write_tree(tmp_path, {'.claude/settings.json': settings_text(availableModels='opus')})
+    assert cc.check_agent_model_available(
+        tmp_path, ['.claude/settings.json', 'agents/a.md'], MODEL_PARAMS) == [
+        cc.Finding('.claude/settings.json', 'availableModels is not a list of strings')]
+
+
+def test_agent_model_available_passes_on_the_repo():
+    assert real_check('agent-model-available') == []
+
+
+def command_text(body, **frontmatter):
+    head = ''.join(f'{k}: {v}\n' for k, v in frontmatter.items())
+    return f'---\ndescription: D.\ndisable-model-invocation: true\n{head}---\n{body}'
+
+
+def test_command_substitution_tokens_pass_when_declared_or_not_tokens(tmp_path):
+    write_tree(tmp_path, {
+        'commands/hinted.md': command_text('Fix $ARGUMENTS, then $0.\n', **{'argument-hint': '[n]'}),
+        'commands/named.md': command_text('Fix $issue ($ARGUMENTS[0]).\n', arguments='[issue]'),
+        'commands/plain.md': command_text(
+            'Costs \\$1.00. Name $issue stays text; ${CLAUDE_SKILL_DIR} needs no declaration.\n'),
+        'commands/shell.md': command_text('Branch: !`git branch --show-current`\n',
+                                          **{'allowed-tools': 'Bash(git branch *)'}),
+        'commands/block.md': command_text('```!\ngit status\n```\n',
+                                          **{'allowed-tools': '[Read, Bash(git status)]'}),
+    })
+    files = [f'commands/{n}.md' for n in ('block', 'hinted', 'named', 'plain', 'shell')]
+    assert cc.check_command_substitution_tokens(tmp_path, files, {}) == []
+
+
+def test_command_substitution_tokens_flag_undeclared_arguments_and_shell(tmp_path):
+    write_tree(tmp_path, {
+        'commands/args.md': command_text('Intro.\nFix $ARGUMENTS and $1; again $ARGUMENTS[2].\nRepeat $1.\n'),
+        'commands/inline.md': command_text('Branch: !`git branch`\n', **{'allowed-tools': 'Read'}),
+        'commands/block.md': command_text('Run:\n```!\ngit status\n```\n'),
+    })
+    files = [f'commands/{n}.md' for n in ('args', 'block', 'inline')]
+    note = 'frontmatter sets neither argument-hint nor arguments'
+    assert cc.check_command_substitution_tokens(tmp_path, files, {}) == [
+        cc.Finding('commands/args.md', f'line 6: $ARGUMENTS is substituted, but {note}'),
+        cc.Finding('commands/args.md', f'line 6: $1 is substituted, but {note}'),
+        cc.Finding('commands/args.md', f'line 6: $ARGUMENTS[2] is substituted, but {note}'),
+        cc.Finding('commands/block.md', 'line 6: render-time shell runs, but frontmatter sets no allowed-tools Bash entry'),
+        cc.Finding('commands/inline.md', 'line 6: render-time shell runs, but frontmatter sets no allowed-tools Bash entry'),
+    ]
+
+
+def test_command_substitution_tokens_pass_on_the_repo():
+    assert real_check('command-substitution-tokens') == []
