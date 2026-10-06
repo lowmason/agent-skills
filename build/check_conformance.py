@@ -259,6 +259,12 @@ def section_violations(reg: Register, anchors: list[str]) -> list[Violation]:
     cite('[unmapped]', reg.unmapped)
     for check in reg.checks:
         cite(f'check {check.id}', check.sections)
+        governed = {sid for k in check.kinds for sid in reg.kinds[k].sections}
+        for sid in check.sections:
+            if sid in known and sid not in governed:
+                out.append(Violation(REGISTER, 'section-fit', sid,
+                                     f'check {check.id} cites a section that none of its kinds '
+                                     f'governs (kinds: {", ".join(check.kinds)})'))
     mapped = {sid for kind in reg.kinds.values() for sid in kind.sections}
     for sid in anchors:
         if sid in mapped and sid in reg.unmapped:
@@ -765,6 +771,15 @@ def parse_exceptions(raw: dict, reg: Register, anchors: list[str], files: list[s
                 if not any(PurePosixPath(f).full_match(a) for f in files):
                     problems.append(f'artifact glob {a} matches no file')
                     artifacts_ok = False
+        if artifacts_ok and _str_list(sections):
+            names = sorted(name for name, kfiles in covered.items()
+                           if any(PurePosixPath(f).full_match(a) for a in artifacts for f in kfiles))
+            governed = {sid for name in names for sid in reg.kinds[name].sections}
+            for sid in sections:
+                if sid in known and sid not in governed:
+                    out.append(Violation(REGISTER, 'section-fit', sid,
+                                         f'{label} cites a section that none of its artifacts\' '
+                                         f'kinds governs (kinds: {", ".join(names) or "none"})'))
         for problem in problems:
             out.append(Violation(REGISTER, 'exception', '-', f'{label}: {problem}'))
         if _nonempty_str(eid) and check_ok and artifacts_ok:

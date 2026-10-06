@@ -1437,3 +1437,69 @@ def test_a_non_markdown_file_is_not_a_rule(tmp_path):
     Claude Code discovers only .md files.'''
     files = ['.claude/rules/link.txt', '.claude/rules/notes.txt']
     assert cc.check_rule_paths(root, files, {'always_on': []}) == []
+
+
+# ---- #38: a check's and an exception's sections fit their kinds -------------
+
+
+def fit_line(sid, who, kinds, what='kinds'):
+    return (f'{cc.REGISTER}: section-fit ({sid}): {who} cites a section that none of its '
+            f'{what} governs (kinds: {kinds})')
+
+
+def test_check_sections_must_be_governed_by_its_kinds():
+    raw = tomllib.loads(FIXTURE_REGISTER)
+    raw['check'][0]['sections'] = ['a.one', 'a.overview']  # claude-md governs a.one only
+    reg, _ = cc.parse_register(raw)
+    assert rendered(cc.section_violations(reg, FIXTURE_ANCHORS)) == [
+        fit_line('a.overview', 'check claude-md-size', 'claude-md')]
+
+
+def test_a_multi_kind_check_needs_only_one_kind_to_govern_each_section():
+    raw = tomllib.loads(FIXTURE_REGISTER)
+    raw['kinds']['settings']['sections'] = ['a.one', 'a.overview']
+    raw['check'][2]['sections'] = ['a.overview']  # hook-dir-quoted: hook and settings
+    reg, _ = cc.parse_register(raw)
+    assert cc.section_violations(reg, FIXTURE_ANCHORS) == []
+    raw['kinds']['settings']['sections'] = ['a.one']
+    reg, _ = cc.parse_register(raw)
+    assert rendered(cc.section_violations(reg, FIXTURE_ANCHORS)) == [
+        fit_line('a.overview', 'check hook-dir-quoted', 'hook, settings')]
+
+
+def test_a_check_section_with_no_anchor_is_not_also_a_fit_violation():
+    raw = tomllib.loads(FIXTURE_REGISTER)
+    raw['check'][0]['sections'] = ['a.typo']
+    reg, _ = cc.parse_register(raw)
+    assert [v.check for v in cc.section_violations(reg, FIXTURE_ANCHORS)] == ['section-id']
+
+
+def test_exception_sections_must_be_governed_by_its_artifacts_kinds(tmp_path):
+    '''b.overview is a real anchor, but no kind governs it.'''
+    root = fixture_repo(tmp_path, {'agents/a.md': GREP_BESIDE_BASH},
+                        register=FIXTURE_REGISTER + exception_toml({**GAP, 'sections': ['a.overview', 'b.overview']}))
+    assert cc.run(root) == [fit_line('b.overview', 'exception grep-beside-bash', 'agent', 'artifacts\' kinds')]
+
+
+def test_exception_sections_may_come_from_any_of_its_artifacts_kinds(tmp_path):
+    '''The union over the artifacts: a.overview from the agent, a.one from CLAUDE.md.'''
+    mixed = {**GAP, 'id': 'mixed', 'type': 'deviation', 'check': None, 'tracked_in': None,
+             'revisit': 'later', 'sections': ['a.overview', 'a.one'],
+             'artifacts': ['agents/a.md', 'CLAUDE.md']}
+    root = fixture_repo(tmp_path, {'agents/a.md': GREP_BESIDE_BASH, 'CLAUDE.md': 'Short.\n'},
+                        register=FIXTURE_REGISTER + exception_toml(GAP) + exception_toml(mixed))
+    assert cc.run(root) == []
+
+
+def test_exception_artifacts_in_no_kind_govern_no_section(tmp_path):
+    stray = {**GAP, 'id': 'stray', 'type': 'deviation', 'check': None, 'tracked_in': None,
+             'revisit': 'later', 'artifacts': ['docs/*.md']}
+    root = fixture_repo(tmp_path, {'docs/x.md': 'Doc.\n'}, register=FIXTURE_REGISTER + exception_toml(stray))
+    assert cc.run(root) == [fit_line('a.overview', 'exception stray', 'none', 'artifacts\' kinds')]
+
+
+def test_a_misfit_exception_still_waives_its_check(tmp_path):
+    '''The fit rule reports; it does not disable the waiver.'''
+    root = fixture_repo(tmp_path, {'agents/a.md': GREP_BESIDE_BASH},
+                        register=FIXTURE_REGISTER + exception_toml({**GAP, 'sections': ['b.overview']}))
+    assert cc.run(root) == [fit_line('b.overview', 'exception grep-beside-bash', 'agent', 'artifacts\' kinds')]

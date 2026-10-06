@@ -11,7 +11,8 @@
 # matched with PurePath.full_match against the files git keeps, so `*` stays
 # inside one path segment and every glob is anchored at the repo root.
 # A [[check]]'s `kind` names one kind, or lists several when one check spans
-# kinds.
+# kinds. A [[check]]'s sections must be governed by its kinds, and an
+# [[exception]]'s by the kinds of its artifacts (the lint's section-fit rule).
 
 [guide]
 path = 'specs/guides/claude-code-customization-guide.md'
@@ -328,9 +329,9 @@ tracked_in = 'deferred item: gate or make manual-only the four ungated side-effe
 [[exception]]
 id = 'writing-skills-guide-gaps'
 type = 'gap'
-sections = ['skills.overview', 'skills.listing-budget', 'skills.progressive-disclosure', 'rules.hierarchy']
+sections = ['skills.overview', 'skills.listing-budget', 'skills.progressive-disclosure']
 artifacts = ['skills/writing-skills/SKILL.md']
-guide = 'A SKILL.md body stays well under 500 lines with critical rules near the top; overflowing descriptions are dropped from the listing; @ imports are documented for CLAUDE.md only.'
+guide = 'A SKILL.md body stays well under 500 lines with critical rules near the top; overflowing descriptions are dropped from the listing; a bundled file loads only when the body points at it.'
 reason = 'writing-skills departs from the guide on body length, the listing budget, critical-rules-first and @ loading; its @ loading claim is unsupported rather than contradicted, and Stage D verifies or drops it.'
 evidence = 'Audit rows S-02, S-58, S-67, S-68, S-107; owner gate 2026-10-04.'
 tracked_in = 'portability Stage D'
