@@ -1331,3 +1331,49 @@ def test_stop_hook_guard_still_flags_a_runner_with_no_repo_script(tmp_path, comm
     assert cc.check_stop_hook_guard(tmp_path, ['hooks/README.md', 'hooks/ruff-check.py'], {}) == [
         cc.Finding('hooks/README.md', f'JSON block at line 1: Stop command {command!r} '
                                       'names no hook script in the repo')]
+
+
+# ---- #37: a waiver path must be one of its check's files --------------------
+
+
+def not_covered(path, check='bash-search-tools', kinds='agent'):
+    return field_error(f'artifact {path} is not one of the files check {check} covers (kind: {kinds})')
+
+
+@pytest.mark.parametrize('artifact, message', [
+    ('./agents/a.md', lambda root: not_covered('./agents/a.md')),
+    (None, lambda root: not_covered(str(root / 'agents/a.md'))),  # absolute
+    ('agents', lambda root: not_covered('agents')),
+    ('agents/ignored.md', lambda root: not_covered('agents/ignored.md')),
+    ('CLAUDE.md', lambda root: not_covered('CLAUDE.md')),
+    ('agents/../agents/a.md', lambda root: not_covered('agents/../agents/a.md')),
+])
+def test_waiver_path_must_be_one_of_its_checks_files(tmp_path, artifact, message):
+    artifact = artifact or str(tmp_path / 'agents/a.md')
+    root = fixture_repo(tmp_path, {
+        'agents/a.md': GREP_BESIDE_BASH, 'agents/ignored.md': GREP_BESIDE_BASH,
+        'CLAUDE.md': 'Short.\n', '.gitignore': 'agents/ignored.md\n'},
+        register=FIXTURE_REGISTER + exception_toml({**GAP, 'artifacts': [artifact]}))
+    assert cc.run(root) == [UNWAIVED, message(root)]
+
+
+def test_waiver_path_that_is_a_check_file_passes(tmp_path):
+    '''A multi-kind check accepts a path from either kind.'''
+    hook_gap = {**GAP, 'id': 'hook-dir', 'check': 'hook-dir-quoted', 'sections': ['a.one'],
+                'artifacts': ['hooks/README.md', '.claude/settings.json'], 'protects': None}
+    root = fixture_repo(tmp_path, {
+        'hooks/README.md': json_block(hooks_tree('PreToolUse', '$CLAUDE_PROJECT_DIR/a.sh')),
+        '.claude/settings.json': json.dumps(hooks_tree('PreToolUse', '$CLAUDE_PROJECT_DIR/a.sh'))},
+        register=FIXTURE_REGISTER + exception_toml(hook_gap))
+    assert cc.run(root) == []
+
+
+def test_waiver_path_of_the_wrong_kind_for_a_multi_kind_check_fails(tmp_path):
+    hook_gap = {**GAP, 'id': 'hook-dir', 'check': 'hook-dir-quoted', 'sections': ['a.one'],
+                'artifacts': ['agents/a.md'], 'protects': None}
+    root = fixture_repo(tmp_path, {'agents/a.md': GREP_BESIDE_BASH},
+                        register=FIXTURE_REGISTER + exception_toml(hook_gap))
+    assert cc.run(root) == [
+        UNWAIVED,
+        f'{cc.REGISTER}: exception (-): exception hook-dir: artifact agents/a.md is not one of '
+        'the files check hook-dir-quoted covers (kind: hook, settings)']

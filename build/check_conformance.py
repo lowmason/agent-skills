@@ -681,6 +681,8 @@ def parse_exceptions(raw: dict, reg: Register, anchors: list[str], files: list[s
     if not isinstance(raw_exceptions, list):
         return [], [Violation(REGISTER, 'register', '-', '[[exception]] must be an array of tables')]
     conformance = {c.id for c in reg.checks if c.enforced_by == 'check_conformance'}
+    covered = kind_files(reg, files)
+    check_kinds = {c.id: c.kinds for c in reg.checks if c.enforced_by == 'check_conformance'}
     known = set(anchors)
     out: list[Violation] = []
     entries: list[ExceptionEntry] = []
@@ -750,6 +752,10 @@ def parse_exceptions(raw: dict, reg: Register, anchors: list[str], files: list[s
                     artifacts_ok = False
                 elif not ((root / a).exists() or (root / a).is_symlink()):
                     problems.append(f'artifact {a} does not exist')
+                    artifacts_ok = False
+                elif check_ok and a not in {f for k in check_kinds[check] for f in covered.get(k, [])}:
+                    problems.append(f'artifact {a} is not one of the files check {check} covers '
+                                    f'(kind: {", ".join(check_kinds[check])})')
                     artifacts_ok = False
         else:
             for a in artifacts:
