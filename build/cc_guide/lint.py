@@ -46,7 +46,7 @@ def hash_problems(guide_text: str, state: dict) -> list[str]:
         if recorded and text_hash(s.text) != recorded:
             out.append(f'section {s.id}: text differs from its text_hash; record it with '
                        f'`{CLI} baseline accept {s.id} --substantive` (flags its citers) '
-                       f'or `... --editorial`')
+                       f'or `{CLI} baseline accept {s.id} --editorial`')
     return out
 
 

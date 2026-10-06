@@ -154,7 +154,8 @@ def run_baseline(args, cache: Path, today: date) -> int:
         print(f'regenerated the stamp region in {manifest.guide}')
         return 0
     if args.action == 'accept':
-        newest = newest_releases(cache)[0].label
+        # Only --substantive sets `changed`, from the newest release; an editorial accept needs no cache.
+        newest = newest_releases(cache)[0].label if args.substantive else None
         new = baseline.accept(state, guide_text, args.ids, args.substantive, newest)
     elif args.action == 'advance':
         labels = {r.label for r in newest_releases(cache)}

@@ -44,7 +44,8 @@ def test_lint_exits_zero_clean_one_on_a_violation_and_two_on_a_setup_error(world
     assert capsys.readouterr() == (
         'section alpha.overview: text differs from its text_hash; record it with'
         ' `uv run --python 3.13 python build/cc_guide/cli.py baseline accept alpha.overview --substantive`'
-        ' (flags its citers) or `... --editorial`\n', '')
+        ' (flags its citers) or'
+        ' `uv run --python 3.13 python build/cc_guide/cli.py baseline accept alpha.overview --editorial`\n', '')
     assert main(cache, 'lint', '--ref', 'main') == 0
     (repo / state.BASELINE).unlink()
     assert main(cache, 'lint') == 2
@@ -130,6 +131,20 @@ def test_accept_writes_only_the_named_sections_hash_and_changed(world):
                                                   'sections.alpha.overview.changed'}
     assert load(repo)['sections']['alpha.overview']['changed'] == '2.1.902'
     assert dirty(repo) == [state.BASELINE]
+
+
+def test_an_editorial_accept_needs_no_cached_changelog_but_a_substantive_one_does(world, tmp_path, capsys):
+    repo, _, _ = world
+    guide = repo / GUIDE_PATH
+    guide.write_text(guide.read_text().replace('Alpha uses', 'Alpha now uses'))
+    git(repo, 'commit', '-qam', 'edit the guide')
+    empty = tmp_path / 'empty-cache'
+    assert main(empty, 'baseline', 'accept', 'alpha.overview', '--substantive') == 2
+    assert capsys.readouterr() == ('', 'cc-guide: no cached changelog: run check, or restore the 2.1.288 snapshot\n')
+    assert dirty(repo) == []
+    assert main(empty, 'baseline', 'accept', 'alpha.overview', '--editorial') == 0
+    assert dirty(repo) == [state.BASELINE]
+    assert main(empty, 'lint') == 0
 
 
 def test_rebaseline_writes_the_baseline_and_a_cache_snapshot_only(world):
