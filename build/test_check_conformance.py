@@ -294,6 +294,33 @@ type = 'fact'
 rule = 'Fixture entry.'
 enforced_by = 'check_conformance'
 blocking_events = ['PreToolUse', 'Stop']
+
+[[check]]
+id = 'claude-md-import-resolves'
+kind = 'claude-md'
+sections = ['a.one']
+type = 'fact'
+rule = 'Fixture entry.'
+enforced_by = 'check_conformance'
+max_hops = 4
+
+[[check]]
+id = 'local-md-ignored'
+kind = 'settings'
+sections = ['a.one']
+type = 'advice'
+rule = 'Fixture entry.'
+enforced_by = 'check_conformance'
+
+[[check]]
+id = 'claude-md-count-claims'
+kind = 'claude-md'
+sections = ['a.one']
+type = 'advice'
+rule = 'Fixture entry.'
+enforced_by = 'check_conformance'
+nouns = ['tests']
+allow = []
 """
 
 
@@ -357,7 +384,8 @@ def test_register_field_problems_are_violations():
         'command-substitution-tokens', 'rule-always-on-claim',
         'hook-readme-exit-claims', 'hook-scripts-executable', 'hook-python-deps',
         'allow-rule-compound-operators', 'inert-runner-allow-rules',
-        'hook-install-verify-step']
+        'hook-install-verify-step', 'claude-md-import-resolves', 'local-md-ignored',
+        'claude-md-count-claims']
     assert reg.checks[0].params == {'limit': 200}
 
 
@@ -1369,3 +1397,134 @@ def test_hook_install_verify_step_flag_a_blocking_block_with_no_step(tmp_path):
 
 def test_hook_install_verify_step_pass_on_the_repo():
     assert real_check('hook-install-verify-step') == []
+
+
+# --- Audit section 6 checks: CLAUDE.md files (#67, #68, #69) ---
+
+IMPORT_PARAMS = {'max_hops': 4}
+
+
+def test_import_targets_skip_fences_code_spans_and_emails():
+    text = ('See @docs/a.md, and (@docs/b.md).\n'
+            'Mention `@docs/c.md` without importing it, or ``@d`` too.\n'
+            'Mail me@example.com or write @ alone.\n'
+            f'{FENCE}bash\n# @needs_pilot tests read a wiki\n{FENCE}\n'
+            '@docs/e.md.\n')
+    assert cc.import_targets(text) == [(1, 'docs/a.md'), (1, 'docs/b.md'), (7, 'docs/e.md')]
+
+
+def test_claude_md_import_resolves_pass(tmp_path):
+    write_tree(tmp_path, {
+        'CLAUDE.md': f'Read @docs/a.md.\n\n{FENCE}bash\n# @needs_pilot tests\n{FENCE}\nNot an import: `@x`.\n'
+                     'Home: @~/notes.md and @/etc/hosts are not followed.\n',
+        'docs/a.md': 'See @b.md\n',
+        'docs/b.md': 'Back to @a.md\n',
+    })
+    assert cc.check_claude_md_import_resolves(tmp_path, ['CLAUDE.md'], IMPORT_PARAMS) == []
+
+
+def test_claude_md_import_resolves_flags_a_missing_file_in_the_chain(tmp_path):
+    write_tree(tmp_path, {
+        'CLAUDE.md': 'Intro.\n@gone.md\n@docs/a.md\n',
+        'docs/a.md': 'Line.\n@missing.md\n',
+        'build/CLAUDE.md': '@../docs/a.md\n',
+    })
+    assert cc.check_claude_md_import_resolves(
+        tmp_path, ['CLAUDE.md', 'build/CLAUDE.md'], IMPORT_PARAMS) == [
+        cc.Finding('CLAUDE.md', 'CLAUDE.md line 2: import @gone.md does not resolve'),
+        cc.Finding('CLAUDE.md', 'docs/a.md line 2: import @missing.md does not resolve'),
+        cc.Finding('build/CLAUDE.md', 'docs/a.md line 2: import @missing.md does not resolve'),
+    ]
+
+
+def test_claude_md_import_resolves_stops_at_the_hop_limit(tmp_path):
+    write_tree(tmp_path, {
+        'CLAUDE.md': '@h1.md\n',
+        'h1.md': '@h2.md\n', 'h2.md': '@h3.md\n', 'h3.md': '@h4.md\n', 'h4.md': '@h5.md\n',
+        'h5.md': 'Leaf.\n',
+    })
+    assert cc.check_claude_md_import_resolves(tmp_path, ['CLAUDE.md'], IMPORT_PARAMS) == [
+        cc.Finding('CLAUDE.md', 'h4.md line 1: import @h5.md is hop 5, past the 4-hop limit')]
+    assert cc.check_claude_md_import_resolves(tmp_path, ['CLAUDE.md'], {'max_hops': 5}) == []
+
+
+def test_claude_md_import_resolves_passes_on_the_repo():
+    text = (cc.REPO / 'CLAUDE.md').read_text()
+    assert '@needs_pilot' in text  # a naive scan would flag this, so the test means something
+    assert real_check('claude-md-import-resolves') == []
+
+
+def ignored_repo(tmp_path, ignore):
+    return git_repo(tmp_path, {'CLAUDE.md': 'x\n', 'build/CLAUDE.md': 'y\n', '.gitignore': ignore})
+
+
+def test_local_md_ignored_pass(tmp_path):
+    root = ignored_repo(tmp_path, 'CLAUDE.local.md\n')
+    assert cc.check_local_md_ignored(root, ['CLAUDE.md', 'build/CLAUDE.md'], {}) == []
+
+
+def test_local_md_ignored_flags_each_directory_that_does_not_ignore_it(tmp_path):
+    root = ignored_repo(tmp_path, '/CLAUDE.local.md\n')
+    assert cc.check_local_md_ignored(root, ['CLAUDE.md', 'build/CLAUDE.md'], {}) == [
+        cc.Finding('build/CLAUDE.md', 'build/CLAUDE.local.md is not gitignored, so a personal file would be committed')]
+
+
+def test_local_md_ignored_does_not_count_private_ignore_sources(tmp_path):
+    root = ignored_repo(tmp_path, '*.pyc\n')
+    (root / '.git/info/exclude').write_text('CLAUDE.local.md\n')
+    elsewhere = tmp_path.parent / f'{tmp_path.name}-global-ignore'
+    elsewhere.write_text('CLAUDE.local.md\n')
+    subprocess.run(['git', 'config', 'core.excludesFile', str(elsewhere)],
+                   cwd=root, env=cc.git_env(), check=True)
+    assert cc.check_local_md_ignored(root, ['CLAUDE.md'], {}) == [
+        cc.Finding('CLAUDE.md', 'CLAUDE.local.md is ignored only by .git/info/exclude, which is not committed')]
+    (root / '.git/info/exclude').write_text('')
+    assert cc.check_local_md_ignored(root, ['CLAUDE.md'], {}) == [
+        cc.Finding('CLAUDE.md', 'CLAUDE.local.md is not gitignored, so a personal file would be committed')]
+
+
+def test_local_md_ignored_outside_a_repo_is_a_setup_error(tmp_path):
+    write_tree(tmp_path, {'CLAUDE.md': 'x\n'})
+    with pytest.raises(cc.SetupError, match='git check-ignore failed'):
+        cc.check_local_md_ignored(tmp_path, ['CLAUDE.md'], {})
+
+
+def test_local_md_ignored_passes_on_the_repo():
+    assert real_check('local-md-ignored') == []
+    shown = subprocess.run(['git', 'check-ignore', '-v', 'CLAUDE.local.md'], cwd=cc.REPO,
+                           env=cc.git_env(), capture_output=True, text=True, check=True).stdout
+    assert shown.startswith('.gitignore:')
+
+
+COUNT_PARAMS = {'nouns': ['test', 'tests', 'test functions', 'passed', 'skipped', 'originals'],
+                'allow': ['originals, kept in sync']}
+
+
+def test_claude_md_count_claims_pass(tmp_path):
+    write_tree(tmp_path, {'CLAUDE.md': (
+        'Run the tests with pytest; its summary line gives the counts.\n'
+        'Python 3.13 and 2 spaces.\n'
+        '(19 originals, kept in sync with NOTICE)\n')})
+    assert cc.check_claude_md_count_claims(tmp_path, ['CLAUDE.md'], COUNT_PARAMS) == []
+
+
+def test_claude_md_count_claims_flag_counts_even_inside_fences(tmp_path):
+    write_tree(tmp_path, {'CLAUDE.md': (
+        'Intro.\n'
+        f'{FENCE}bash\n'
+        '# Full build-directory tests: 182 tests\n'
+        '# (58 passed, 3 skipped) with the stack\n'
+        f'{FENCE}\n'
+        'The 1,204 test functions all pass.\n'
+        'Skip 4 originals now.\n')})
+    assert cc.check_claude_md_count_claims(tmp_path, ['CLAUDE.md'], COUNT_PARAMS) == [
+        cc.Finding('CLAUDE.md', "line 3: states a count ('182 tests') that goes stale"),
+        cc.Finding('CLAUDE.md', "line 4: states a count ('58 passed') that goes stale"),
+        cc.Finding('CLAUDE.md', "line 6: states a count ('1,204 test functions') that goes stale"),
+        cc.Finding('CLAUDE.md', "line 7: states a count ('4 originals') that goes stale"),
+    ]
+
+
+def test_claude_md_count_claims_allow_list_does_real_work_on_the_repo():
+    assert real_check('claude-md-count-claims') == []
+    assert any('originals' in f.message for f in real_check('claude-md-count-claims', allow=[]))

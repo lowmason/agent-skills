@@ -903,6 +903,101 @@ def check_hook_install_verify_step(root: Path, files: list[str], params: dict) -
     return out
 
 
+INLINE_CODE_RE = re.compile(r'(`+)(.+?)\1')
+IMPORT_RE = re.compile(r'(?<![\w/.@-])@([^\s`]+)')
+
+
+def import_targets(text: str) -> list[tuple[int, str]]:
+    '''(line, path) for each @path import: outside fenced blocks and inline code
+    spans, not glued to a word (so not an email address), trailing punctuation dropped.'''
+    fenced = fenced_lines(text)
+    found: list[tuple[int, str]] = []
+    for n, line in enumerate(text.split('\n'), start=1):
+        if n in fenced:
+            continue
+        bare = INLINE_CODE_RE.sub(lambda m: ' ' * len(m.group(0)), line)
+        for m in IMPORT_RE.finditer(bare):
+            target = m.group(1).rstrip('.,;:!?)]}\'"')
+            if target:
+                found.append((n, target))
+    return found
+
+
+def check_claude_md_import_resolves(root: Path, files: list[str], params: dict) -> list[Finding]:
+    '''Each @ import resolves, relative to the importing file, within max_hops
+    hops. Targets under ~ or at an absolute path depend on the machine, so they
+    are not followed. A finding is reported on the CLAUDE.md file the chain starts at.'''
+    max_hops = params['max_hops']
+    out: list[Finding] = []
+
+    def show(path: Path) -> str:
+        return os.path.relpath(path, root)
+
+    def walk(origin: str, path: Path, text: str, hops: int, chain: tuple[Path, ...]) -> None:
+        for n, target in import_targets(text):
+            if target.startswith(('~', '/')):
+                continue
+            where = f'{show(path)} line {n}'
+            dest = Path(os.path.normpath(path.parent / target))
+            if hops + 1 > max_hops:
+                out.append(Finding(origin, f'{where}: import @{target} is hop {hops + 1}, past the '
+                                           f'{max_hops}-hop limit'))
+            elif not dest.is_file():
+                out.append(Finding(origin, f'{where}: import @{target} does not resolve'))
+            elif dest not in chain:
+                try:
+                    walk(origin, dest, dest.read_text(encoding='utf-8'), hops + 1, (*chain, dest))
+                except (OSError, UnicodeDecodeError):
+                    continue  # an imported file that is not text is a leaf
+
+    for f, text in read_artifacts(root, files, out):
+        walk(f, root / f, text, 0, (root / f,))
+    return out
+
+
+def check_local_md_ignored(root: Path, files: list[str], params: dict) -> list[Finding]:
+    '''CLAUDE.local.md, beside each CLAUDE.md, is ignored by a committed .gitignore.
+    The file need not exist: git check-ignore reads the path against the patterns.
+    The user's global excludes file is switched off so the result does not depend
+    on it; .git/info/exclude is private too, so a source other than .gitignore fails.'''
+    out: list[Finding] = []
+    for f in files:
+        if PurePosixPath(f).name != 'CLAUDE.md':
+            continue
+        local = str(PurePosixPath(f).with_name('CLAUDE.local.md'))
+        try:
+            result = subprocess.run(
+                ['git', '-c', 'core.excludesFile=/dev/null', 'check-ignore', '-v', '--', local],
+                cwd=root, env=git_env(), capture_output=True, text=True)
+        except OSError as exc:
+            raise SetupError(f'cannot run git check-ignore under {root} ({exc})') from None
+        if result.returncode == 1:
+            out.append(Finding(f, f'{local} is not gitignored, so a personal file would be committed'))
+        elif result.returncode != 0:
+            raise SetupError(f'git check-ignore failed under {root}: {result.stderr.strip()}')
+        else:
+            source = result.stdout.split(':', 1)[0]
+            if PurePosixPath(source).name != '.gitignore':
+                out.append(Finding(f, f'{local} is ignored only by {source}, which is not committed'))
+    return out
+
+
+def check_claude_md_count_claims(root: Path, files: list[str], params: dict) -> list[Finding]:
+    '''A line that states a number of tests, passes, skips or the like goes stale
+    as the repo changes. Every line counts, fenced blocks included; a line
+    holding an allow substring is exempt.'''
+    nouns = sorted(params['nouns'], key=len, reverse=True)
+    count = re.compile(r'\b\d[\d,]*\s+(?:' + '|'.join(re.escape(n) for n in nouns) + r')\b', re.I)
+    out: list[Finding] = []
+    for f, text in read_artifacts(root, files, out):
+        for n, line in enumerate(text.split('\n'), start=1):
+            m = count.search(line)
+            if m and not any(a in line for a in params['allow']):
+                out.append(Finding(f, f'line {n}: states a count ({m.group(0)!r}) that goes stale'))
+    return out
+
+
+
 # Each check_conformance check: its function and the parameters the register
 # must give it ('integer', or 'strings' for a list of strings).
 CHECKS = {
@@ -924,6 +1019,9 @@ CHECKS = {
     'allow-rule-compound-operators': (check_allow_rule_compound_operators, {}),
     'inert-runner-allow-rules': (check_inert_runner_allow_rules, {'runners': 'strings'}),
     'hook-install-verify-step': (check_hook_install_verify_step, {'blocking_events': 'strings'}),
+    'claude-md-import-resolves': (check_claude_md_import_resolves, {'max_hops': 'integer'}),
+    'local-md-ignored': (check_local_md_ignored, {}),
+    'claude-md-count-claims': (check_claude_md_count_claims, {'nouns': 'strings', 'allow': 'strings'}),
 }
 PARAM_TYPES = {
     'integer': (lambda v: isinstance(v, int) and not isinstance(v, bool), 'an integer'),

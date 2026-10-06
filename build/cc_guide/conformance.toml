@@ -376,6 +376,50 @@ blocking_events = [
     'ConfigChange',
 ]
 
+# Plan 35 audit section 6 checks, CLAUDE.md files.
+
+# The guide's imports go at most 4 hops deep, and backticks escape one. The
+# scan skips fenced blocks and inline code, so a mention in either is not an
+# import, and a ~ or absolute target depends on the machine, so it is not followed.
+[[check]]
+id = 'claude-md-import-resolves'
+kind = 'claude-md'
+sections = ['rules.hierarchy']
+type = 'fact'
+rule = 'Each @ import in a CLAUDE.md file resolves to a file, within the guide hop limit.'
+enforced_by = 'check_conformance'
+max_hops = 4
+
+# CLAUDE.local.md is personal and the guide leaves the gitignore line to you.
+# The check asks git about the path beside each CLAUDE.md, so the file need
+# not exist, and counts only a committed .gitignore, never a global or
+# .git/info/exclude rule that lives on one machine.
+[[check]]
+id = 'local-md-ignored'
+kind = 'claude-md'
+sections = ['rules.hierarchy']
+type = 'advice'
+rule = 'CLAUDE.local.md, beside each CLAUDE.md, is ignored by a committed .gitignore.'
+enforced_by = 'check_conformance'
+
+# A count of tests, passes or skips is a fast-changing detail the guide says to
+# leave out of CLAUDE.md, and one that no longer matches misleads. nouns are
+# the words a number must precede to count; originals is the skill count that
+# check_provenance.py and test_check_provenance.py pin against NOTICE, so allow
+# exempts that note by its wording, without its number.
+[[check]]
+id = 'claude-md-count-claims'
+kind = 'claude-md'
+sections = ['rules.claude-md']
+type = 'advice'
+rule = 'A CLAUDE.md line does not state a test, pass, skip or similar count, unless allow exempts it.'
+enforced_by = 'check_conformance'
+nouns = [
+    'test', 'tests', 'test functions', 'passed', 'passes', 'skipped', 'skips',
+    'failed', 'failures', 'xfailed', 'originals',
+]
+allow = ['originals — keep in sync']
+
 # ---------------------------------------------------------------------------
 # Exceptions, decided by the owner at the plan 35 gate (2026-10-04) on the
 # audit in specs/claude-code-conformance-audit-2026-10-04.md. A deviation is
