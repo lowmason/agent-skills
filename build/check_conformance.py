@@ -13,6 +13,7 @@ violation on stdout; 2 when the guide or the register is missing or is not
 valid TOML, or git cannot list the repo's files, so a broken setup never looks
 clean. Field-level register problems are violations, not errors.
 '''
+import ast
 import json
 import os
 import re
@@ -638,6 +639,270 @@ def check_command_substitution_tokens(root: Path, files: list[str], params: dict
                                       'sets no allowed-tools Bash entry'))
     return out
 
+def check_rule_always_on_claim(root: Path, files: list[str], params: dict) -> list[Finding]:
+    phrases = [p.lower() for p in params['phrases']]
+    out: list[Finding] = []
+    for f, text in read_artifacts(root, [f for f in files if not (root / f).is_symlink()], out):
+        if not _str_list((frontmatter(text) or {}).get('paths')):
+            continue  # a rule without paths does load in every session
+        for n, line in body_lines(text):
+            lowered = line.lower()
+            for phrase in phrases:
+                at = lowered.find(phrase)
+                while at != -1:
+                    if not re.search(r"(?:\bnot|n't|\bnever|\bno longer)\s+(?:\w+\s+)?$", lowered[:at]):
+                        out.append(Finding(f, f'line {n}: path-scoped rule says {phrase!r}, but '
+                                              'paths load it lazily'))
+                        break
+                    at = lowered.find(phrase, at + 1)
+    return out
+
+
+ONLY_EXIT_2_RE = re.compile(
+    r'\bonly\s+(?:an?\s+)?exit(?:ing|s)?\s+(?:code\s+)?2\b'
+    r'|\bexit(?:ing|s)?\s+(?:code\s+)?2\s+(?:is\s+the\s+only|alone)\b'
+    r'|\bonly\s+(?:way|thing)\s+to\s+block\b', re.I)
+PERMISSION_DENY_RE = re.compile(r'permissionDecision\W{0,6}deny')
+
+
+def check_hook_readme_exit_claims(root: Path, files: list[str], params: dict) -> list[Finding]:
+    '''A README that says only exit 2 blocks contradicts a permissionDecision deny
+    it documents: in its own text, or in a hook script it names.'''
+    scripts = [f for f in files if f.endswith(('.sh', '.py'))]
+    out: list[Finding] = []
+    for f, text in read_artifacts(root, [f for f in files if f.endswith('.md')], out):
+        claim = ONLY_EXIT_2_RE.search(text)
+        if not claim:
+            continue
+        line = text.count('\n', 0, claim.start()) + 1
+        deny = PERMISSION_DENY_RE.search(text)
+        if deny:
+            out.append(Finding(f, f'line {line}: says only exit 2 blocks, but line '
+                                  f'{text.count(chr(10), 0, deny.start()) + 1} documents a '
+                                  'permissionDecision deny'))
+            continue
+        named = [s for s in scripts if PurePosixPath(s).name in text]
+        for s, source in read_artifacts(root, named, out):
+            if PERMISSION_DENY_RE.search(source):
+                out.append(Finding(f, f'line {line}: says only exit 2 blocks, but {s}, which it '
+                                      'documents, blocks with a permissionDecision deny'))
+    return out
+
+
+def index_modes(root: Path, paths: list[str]) -> dict[str, str]:
+    '''The git index mode of each tracked path, as `git ls-files -s` lists it.'''
+    if not paths:
+        return {}
+    try:
+        listing = subprocess.run(['git', 'ls-files', '-s', '-z', '--', *paths], cwd=root,
+                                 env=git_env(), capture_output=True, check=True).stdout
+    except (OSError, subprocess.CalledProcessError) as exc:
+        raise SetupError(f'cannot read the git index modes under {root} ({exc})') from None
+    modes: dict[str, str] = {}
+    for entry in listing.split(b'\0'):
+        head, _, path = os.fsdecode(entry).partition('\t')
+        if path:
+            modes[path] = head.split()[0]
+    return modes
+
+
+def check_hook_scripts_executable(root: Path, files: list[str], params: dict) -> list[Finding]:
+    '''Every hook script git keeps has index mode 100755, and every .sh or .py
+    command a hooks tree wires names one. A tracked file is judged by its index
+    mode; an untracked one by its working-tree owner execute bit.'''
+    scripts = sorted(f for f in files if f.endswith(('.sh', '.py')))
+    modes = index_modes(root, scripts)
+    out: list[Finding] = []
+    for f in scripts:
+        if f in modes:
+            if modes[f] != '100755':
+                out.append(Finding(f, f'git index mode is {modes[f]}, not 100755, so the hook '
+                                      'fails open where it is installed'))
+        elif not (root / f).stat().st_mode & 0o100:
+            out.append(Finding(f, 'untracked and not executable, so the hook would fail open'))
+    names = {PurePosixPath(f).name for f in scripts}
+    found, _ = hook_commands(root, files)  # hook-dir-quoted reports parse failures
+    for hook in found:
+        try:
+            words = shlex.split(hook.command)
+        except ValueError:
+            continue
+        name = PurePosixPath(words[0]).name if words else ''
+        if name.endswith(('.sh', '.py')) and name not in names:
+            out.append(Finding(hook.file, f'{hook.where}{hook.event} command {words[0]!r} names '
+                                          'no hook script in the repo'))
+    return out
+
+
+PEP_723_RE = re.compile(r'(?m)^# /// script$\s(?:^#(?:| .*)$\s)+^# ///$')
+
+
+def imported_modules(node: ast.AST) -> list[str]:
+    '''Top-level names an import statement brings in; relative imports bring none.'''
+    if isinstance(node, ast.Import):
+        return [a.name.split('.')[0] for a in node.names]
+    if isinstance(node, ast.ImportFrom) and node.level == 0 and node.module:
+        return [node.module.split('.')[0]]
+    return []
+
+
+def check_hook_python_deps(root: Path, files: list[str], params: dict) -> list[Finding]:
+    '''A hook script imports only the standard library or a sibling file, unless
+    it carries a PEP 723 script block. A block that is present counts as the
+    declaration; its dependency list is not read.'''
+    scripts = [f for f in files if f.endswith('.py')]
+    siblings = {PurePosixPath(f).stem for f in scripts}
+    out: list[Finding] = []
+    for f, text in read_artifacts(root, scripts, out):
+        try:
+            tree = ast.parse(text)
+        except SyntaxError as exc:
+            out.append(Finding(f, f'cannot parse: {exc.msg} (line {exc.lineno})', waivable=False))
+            continue
+        outside = sorted({name for node in ast.walk(tree) for name in imported_modules(node)}
+                         - sys.stdlib_module_names - siblings)
+        if outside and not PEP_723_RE.search(text):
+            out.append(Finding(f, f'imports {", ".join(outside)}, outside the standard library, '
+                                  'and declares no PEP 723 script block'))
+    return out
+
+
+def json_documents(root: Path, files: list[str]) -> list[tuple[str, str, object]]:
+    '''(file, where, data) for each parseable ```json block of the Markdown files
+    and each parseable JSON file; hook-dir-quoted reports what fails to parse.'''
+    docs: list[tuple[str, str, object]] = []
+    for f, text in read_artifacts(root, [f for f in files if f.endswith(('.md', '.json'))], []):
+        blocks = ([(f'JSON block at line {b.line}: ', b.code) for b in iter_code_blocks(text, ('json',))]
+                  if f.endswith('.md') else [('', text)])
+        for where, source in blocks:
+            try:
+                docs.append((f, where, json.loads(source)))
+            except json.JSONDecodeError:
+                continue
+    return docs
+
+
+def allow_rules(data: object) -> list[str]:
+    '''The Bash rule patterns, without Bash( and ), in permissions.allow.'''
+    permissions = data.get('permissions') if isinstance(data, dict) else None
+    allowed = permissions.get('allow') if isinstance(permissions, dict) else None
+    rules = [r for r in (allowed if isinstance(allowed, list) else ()) if isinstance(r, str)]
+    return [m.group(1) for r in rules if (m := re.fullmatch(r'Bash\((.*)\)', r, re.S))]
+
+
+def unquoted_operators(pattern: str) -> list[str]:
+    '''The command-separating operators outside quotes in a rule pattern. A `&`
+    touching `>` or `<` is a redirection, as in 2>&1.'''
+    found: list[str] = []
+    quote = ''
+    i = 0
+    while i < len(pattern):
+        ch = pattern[i]
+        if ch == '\\' and quote != "'":
+            i += 2
+            continue
+        if not quote and ch in '\'"':
+            quote = ch
+        elif ch == quote:
+            quote = ''
+        elif not quote:
+            if pattern[i:i + 2] in ('&&', '||', '|&'):
+                found.append(pattern[i:i + 2])
+                i += 2
+                continue
+            redirect = ch == '&' and (pattern[i - 1:i] in ('<', '>') or pattern[i + 1:i + 2] == '>')
+            if ch in ';|&' and not redirect:
+                found.append(ch)
+        i += 1
+    return found
+
+
+def check_allow_rule_compound_operators(root: Path, files: list[str], params: dict) -> list[Finding]:
+    '''An allow rule must match every part of a compound command, so a rule that
+    spells a separator can never match. Reads the committed settings file and
+    the settings JSON documented in Markdown. kept_files drops the gitignored
+    .claude/settings.local.json, so a developer's own rules never count.'''
+    out: list[Finding] = []
+    for f, where, data in json_documents(root, files):
+        for pattern in allow_rules(data):
+            ops = unquoted_operators(pattern)
+            if ops:
+                out.append(Finding(f, f'{where}allow rule Bash({pattern}) holds an unquoted '
+                                      f'{", ".join(sorted(set(ops)))}, which Claude Code splits '
+                                      'compound commands on, so it never matches'))
+    return out
+
+
+def paragraph_before(text: str, line: int) -> str:
+    '''The paragraph that ends just above 1-based line, joined into one line.'''
+    lines = text.split('\n')
+    i = line - 2
+    while i >= 0 and not lines[i].strip():
+        i -= 1
+    para: list[str] = []
+    while i >= 0 and lines[i].strip() and not lines[i].startswith(('#', '`' * 3)):
+        para.append(lines[i].strip())
+        i -= 1
+    return ' '.join(reversed(para))
+
+
+def check_inert_runner_allow_rules(root: Path, files: list[str], params: dict) -> list[Finding]:
+    '''A broad runner allow rule in a README snippet whose lead-in says it spares
+    prompts, without naming auto or manual mode. Auto mode sets such rules aside.'''
+    runners = params['runners']
+    out: list[Finding] = []
+    for f, text in read_artifacts(root, [f for f in files if f.endswith('.md')], out):
+        for b in iter_code_blocks(text, ('json',)):
+            try:
+                data = json.loads(b.code)
+            except json.JSONDecodeError:
+                continue
+            broad = [f'Bash({pattern})' for pattern in allow_rules(data) for runner in runners
+                     if pattern.startswith(runner) and pattern[len(runner):].strip() in ('', ':*', '*')]
+            lead = paragraph_before(text, b.line)
+            if broad and re.search(r'\bprompt', lead, re.I) and not re.search(r'\b(?:auto|manual)\b', lead, re.I):
+                out.append(Finding(f, f'JSON block at line {b.line}: {", ".join(broad)} is said to spare '
+                                      'prompts, but auto mode sets broad runner rules aside and the '
+                                      'text names no mode'))
+    return out
+
+
+def check_hook_install_verify_step(root: Path, files: list[str], params: dict) -> list[Finding]:
+    '''Each JSON block that wires a blocking event is followed, before the next
+    heading or the next wiring block, by text telling the reader to trigger the
+    hook once. A heuristic: the words trigger and once (or each) within a sentence.'''
+    blocking = set(params['blocking_events'])
+    step = re.compile(r'\btrigger\w*\b[^.]{0,80}\b(?:once|each)\b|\b(?:once|each)\b[^.]{0,80}\btrigger',
+                      re.I)
+    out: list[Finding] = []
+    for f, text in read_artifacts(root, [f for f in files if f.endswith('.md')], out):
+        lines = text.split('\n')
+        fenced = fenced_lines(text)
+        wiring = []
+        for b in iter_code_blocks(text, ('json',)):
+            try:
+                hooks = json.loads(b.code).get('hooks')
+            except (json.JSONDecodeError, AttributeError):
+                continue
+            events = sorted(set(hooks) & blocking) if isinstance(hooks, dict) else []
+            if hooks:
+                wiring.append((b.line, b.line + b.code.count('\n') + 1, events))
+        for k, (start, end, events) in enumerate(wiring):
+            if not events:
+                continue
+            stop = wiring[k + 1][0] if k + 1 < len(wiring) else len(lines) + 1
+            window = []
+            for n in range(end + 1, stop):
+                if n not in fenced and lines[n - 1].startswith('#'):
+                    break
+                window.append(lines[n - 1])
+            if not step.search(' '.join(window)):
+                out.append(Finding(f, f'JSON block at line {start}: wires {", ".join(events)}, but no '
+                                      'step telling the reader to trigger the hook once follows '
+                                      'before the next heading'))
+    return out
+
+
 # Each check_conformance check: its function and the parameters the register
 # must give it ('integer', or 'strings' for a list of strings).
 CHECKS = {
@@ -652,6 +917,13 @@ CHECKS = {
     'agent-name-unique': (check_agent_name_unique, {}),
     'agent-model-available': (check_agent_model_available, {'exempt': 'strings'}),
     'command-substitution-tokens': (check_command_substitution_tokens, {}),
+    'rule-always-on-claim': (check_rule_always_on_claim, {'phrases': 'strings'}),
+    'hook-readme-exit-claims': (check_hook_readme_exit_claims, {}),
+    'hook-scripts-executable': (check_hook_scripts_executable, {}),
+    'hook-python-deps': (check_hook_python_deps, {}),
+    'allow-rule-compound-operators': (check_allow_rule_compound_operators, {}),
+    'inert-runner-allow-rules': (check_inert_runner_allow_rules, {'runners': 'strings'}),
+    'hook-install-verify-step': (check_hook_install_verify_step, {'blocking_events': 'strings'}),
 }
 PARAM_TYPES = {
     'integer': (lambda v: isinstance(v, int) and not isinstance(v, bool), 'an integer'),

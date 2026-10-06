@@ -235,6 +235,65 @@ sections = ['a.one']
 type = 'fact'
 rule = 'Declare substitution tokens.'
 enforced_by = 'check_conformance'
+
+[[check]]
+id = 'rule-always-on-claim'
+kind = 'rule'
+sections = ['a.one']
+type = 'fact'
+rule = 'Fixture entry.'
+enforced_by = 'check_conformance'
+phrases = ['always-on']
+
+[[check]]
+id = 'hook-readme-exit-claims'
+kind = 'hook'
+sections = ['a.one']
+type = 'fact'
+rule = 'Fixture entry.'
+enforced_by = 'check_conformance'
+
+[[check]]
+id = 'hook-scripts-executable'
+kind = 'settings'
+sections = ['a.one']
+type = 'fact'
+rule = 'Fixture entry.'
+enforced_by = 'check_conformance'
+
+[[check]]
+id = 'hook-python-deps'
+kind = 'hook'
+sections = ['a.one']
+type = 'fact'
+rule = 'Fixture entry.'
+enforced_by = 'check_conformance'
+
+[[check]]
+id = 'allow-rule-compound-operators'
+kind = ['hook', 'settings']
+sections = ['a.one']
+type = 'fact'
+rule = 'Fixture entry.'
+enforced_by = 'check_conformance'
+
+[[check]]
+id = 'inert-runner-allow-rules'
+kind = 'hook'
+sections = ['a.one']
+type = 'fact'
+rule = 'Fixture entry.'
+enforced_by = 'check_conformance'
+runners = ['uv run']
+
+[[check]]
+id = 'hook-install-verify-step'
+kind = 'settings'
+sections = ['a.one']
+type = 'fact'
+rule = 'Fixture entry.'
+enforced_by = 'check_conformance'
+blocking_events = ['PreToolUse', 'Stop']
 """
 
 
@@ -295,7 +354,10 @@ def test_register_field_problems_are_violations():
         'claude-md-size', 'stop-hook-guard', 'agent-fields',
         'readonly-agent-tools', 'bash-search-tools', 'known-agent-tools',
         'agent-name-form', 'agent-model-available', 'agent-name-unique',
-        'command-substitution-tokens']
+        'command-substitution-tokens', 'rule-always-on-claim',
+        'hook-readme-exit-claims', 'hook-scripts-executable', 'hook-python-deps',
+        'allow-rule-compound-operators', 'inert-runner-allow-rules',
+        'hook-install-verify-step']
     assert reg.checks[0].params == {'limit': 200}
 
 
@@ -1012,3 +1074,298 @@ def test_command_substitution_tokens_flag_undeclared_arguments_and_shell(tmp_pat
 
 def test_command_substitution_tokens_pass_on_the_repo():
     assert real_check('command-substitution-tokens') == []
+
+
+# --- Audit section 6 checks: hooks, rules and settings (#58 to #64) ---
+
+ALWAYS_ON_PARAMS = {'phrases': ['always-on', 'always on', 'every session', 'every turn',
+                                'every edit', 'every python edit']}
+
+
+def test_rule_always_on_claim_passes(tmp_path):
+    root = tmp_path / 'repo'
+    write_tree(root, {
+        'rules/py.md': RULE.replace('Rule.', '# Python conventions (loaded on .py reads)\n\nThis rule is not always-on.\n'),
+        'rules/core.md': 'Always-on guardrails, loaded every session.\n',
+        'rules/bare.md': '---\ndescription: D.\n---\n\nStanding rules, always on.\n',
+    })
+    (root / '.claude/rules').mkdir(parents=True)
+    os.symlink('../../rules/py.md', root / '.claude/rules/py.md')
+    files = ['.claude/rules/py.md', 'rules/bare.md', 'rules/core.md', 'rules/py.md']
+    assert cc.check_rule_always_on_claim(root, files, ALWAYS_ON_PARAMS) == []
+
+
+def test_rule_always_on_claim_flags_a_path_scoped_rule_that_says_it(tmp_path):
+    root = tmp_path / 'repo'
+    write_tree(root, {'rules/py.md': RULE.replace(
+        'Rule.', '# Python conventions (always-on)\n\nStanding guardrails injected on every Python edit.\n')})
+    (root / '.claude/rules').mkdir(parents=True)
+    os.symlink('../../rules/py.md', root / '.claude/rules/py.md')
+    assert cc.check_rule_always_on_claim(root, ['.claude/rules/py.md', 'rules/py.md'], ALWAYS_ON_PARAMS) == [
+        cc.Finding('rules/py.md', "line 6: path-scoped rule says 'always-on', but paths load it lazily"),
+        cc.Finding('rules/py.md', "line 8: path-scoped rule says 'every python edit', but paths load it lazily"),
+    ]
+
+
+def test_rule_always_on_claim_passes_on_the_repo():
+    assert real_check('rule-always-on-claim') == []
+
+
+OLD_EXIT_CLAIM = ('- **Exit codes matter:** only exit 2 blocks and feeds stderr to Claude; exit 1 just\n'
+                  '  logs. All three follow that convention.\n')
+NEW_EXIT_CLAIM = ('- **Exit codes matter:** a hook blocks either by exiting 2 or by printing a JSON\n'
+                  '  `permissionDecision: "deny"`; any other non-zero exit, such as 1, just logs.\n')
+GUARD_DOC = 'The guard prints `"permissionDecision": "deny"` on PreToolUse.\n'
+
+
+def test_hook_readme_exit_claims_pass(tmp_path):
+    write_tree(tmp_path, {
+        'hooks/README.md': NEW_EXIT_CLAIM + GUARD_DOC,
+        'hooks/other.md': OLD_EXIT_CLAIM,  # no deny documented, so the claim is true
+    })
+    assert cc.check_hook_readme_exit_claims(tmp_path, ['hooks/README.md', 'hooks/other.md'], {}) == []
+
+
+@pytest.mark.parametrize('claim', [
+    OLD_EXIT_CLAIM,
+    'Blocking: exit 2 is the only way to stop a call.\n',
+    'The only way to block a call is exit 2.\n',
+])
+def test_hook_readme_exit_claims_flag_only_exit_2_beside_a_deny(tmp_path, claim):
+    write_tree(tmp_path, {'hooks/README.md': 'Intro.\n\n' + claim + GUARD_DOC})
+    line = 3 + claim.count('\n')
+    assert cc.check_hook_readme_exit_claims(tmp_path, ['hooks/README.md'], {}) == [
+        cc.Finding('hooks/README.md',
+                   f'line 3: says only exit 2 blocks, but line {line} documents a permissionDecision deny')]
+
+
+def test_hook_readme_exit_claims_flag_a_deny_in_a_script_the_readme_names(tmp_path):
+    write_tree(tmp_path, {
+        'hooks/README.md': OLD_EXIT_CLAIM + '\n## guard.py\n\nPreToolUse hook.\n',
+        'hooks/guard.py': "print(json.dumps({'hookSpecificOutput': {'permissionDecision': 'deny'}}))\n",
+        'hooks/quiet.py': 'sys.exit(2)\n',
+    })
+    files = ['hooks/README.md', 'hooks/guard.py', 'hooks/quiet.py']
+    assert cc.check_hook_readme_exit_claims(tmp_path, files, {}) == [
+        cc.Finding('hooks/README.md', 'line 1: says only exit 2 blocks, but hooks/guard.py, which it '
+                                      'documents, blocks with a permissionDecision deny')]
+    write_tree(tmp_path, {'hooks/README.md': OLD_EXIT_CLAIM + '\nOnly quiet.py is installed.\n'})
+    assert cc.check_hook_readme_exit_claims(tmp_path, files, {}) == []
+
+
+def test_hook_readme_exit_claims_pass_on_the_repo():
+    assert real_check('hook-readme-exit-claims') == []
+
+
+def tracked_repo(root, files, executable=()):
+    '''git-init root, add the files, and pin each .sh or .py file's index mode to
+    100755 when listed in executable and to 100644 otherwise, whatever the
+    filesystem says.'''
+    git_repo(root, files)
+    env = cc.git_env()
+    subprocess.run(['git', 'add', '-A'], cwd=root, env=env, check=True)
+    for name in files:
+        if name.endswith(('.sh', '.py')):
+            flag = '--chmod=+x' if name in executable else '--chmod=-x'
+            subprocess.run(['git', 'update-index', flag, name], cwd=root, env=env, check=True)
+    return root
+
+
+def test_hook_scripts_executable_pass(tmp_path):
+    root = tracked_repo(tmp_path, {
+        'hooks/guard.py': '#!/usr/bin/env python3\n',
+        'hooks/gate.sh': '#!/bin/sh\n',
+        'hooks/README.md': json_block(hooks_tree('PreToolUse', '"$CLAUDE_PROJECT_DIR"/.claude/hooks/gate.sh'))
+        + json_block(hooks_tree('Stop', 'uv run ruff check .')),
+    }, executable={'hooks/guard.py', 'hooks/gate.sh'})
+    files = ['hooks/README.md', 'hooks/gate.sh', 'hooks/guard.py']
+    assert cc.check_hook_scripts_executable(root, files, {}) == []
+
+
+def test_hook_scripts_executable_flag_a_plain_mode_and_a_missing_wired_script(tmp_path):
+    root = tracked_repo(tmp_path, {
+        'hooks/guard.py': '#!/usr/bin/env python3\n',
+        'hooks/gate.sh': '#!/bin/sh\n',
+        'hooks/README.md': json_block(hooks_tree('PreToolUse', '$CLAUDE_PROJECT_DIR/.claude/hooks/gone.sh')),
+    }, executable={'hooks/gate.sh'})
+    files = ['hooks/README.md', 'hooks/gate.sh', 'hooks/guard.py']
+    assert cc.check_hook_scripts_executable(root, files, {}) == [
+        cc.Finding('hooks/guard.py', 'git index mode is 100644, not 100755, so the hook fails open where it is installed'),
+        cc.Finding('hooks/README.md', "JSON block at line 1: PreToolUse command "
+                                      "'$CLAUDE_PROJECT_DIR/.claude/hooks/gone.sh' names no hook script in the repo"),
+    ]
+
+
+def test_hook_scripts_executable_judge_an_untracked_script_by_its_execute_bit(tmp_path):
+    root = tracked_repo(tmp_path, {'hooks/kept.sh': '#!/bin/sh\n'}, executable={'hooks/kept.sh'})
+    write_tree(root, {'hooks/new.sh': '#!/bin/sh\n', 'hooks/new-x.sh': '#!/bin/sh\n'})
+    (root / 'hooks/new.sh').chmod(0o644)
+    (root / 'hooks/new-x.sh').chmod(0o755)
+    files = ['hooks/kept.sh', 'hooks/new-x.sh', 'hooks/new.sh']
+    assert cc.check_hook_scripts_executable(root, files, {}) == [
+        cc.Finding('hooks/new.sh', 'untracked and not executable, so the hook would fail open')]
+
+
+def test_hook_scripts_executable_pass_on_the_repo():
+    assert real_check('hook-scripts-executable') == []
+
+
+STDLIB_HOOK = '#!/usr/bin/env python3\nfrom __future__ import annotations\nimport json, sys\nimport os.path\n'
+PEP_723 = '# /// script\n# dependencies = ["pyyaml"]\n# ///\n'
+
+
+def test_hook_python_deps_pass(tmp_path):
+    write_tree(tmp_path, {
+        'hooks/stdlib.py': STDLIB_HOOK + 'from . import sibling\nimport helper\n',
+        'hooks/helper.py': 'import re\n',
+        'hooks/pep723.py': '#!/usr/bin/env -S uv run --script\n' + PEP_723 + 'import yaml\n',
+    })
+    files = ['hooks/helper.py', 'hooks/pep723.py', 'hooks/stdlib.py']
+    assert cc.check_hook_python_deps(tmp_path, files, {}) == []
+
+
+def test_hook_python_deps_flag_third_party_imports_without_a_block(tmp_path):
+    write_tree(tmp_path, {
+        'hooks/a.py': 'import json\nimport yaml\n\n\ndef f():\n    from requests.auth import HTTPBasicAuth\n',
+        'hooks/b.py': '# /// not-a-script\n# x = 1\n# ///\nimport numpy\n',
+        'hooks/broken.py': 'def (:\n',
+    })
+    assert cc.check_hook_python_deps(tmp_path, ['hooks/a.py', 'hooks/b.py', 'hooks/broken.py'], {}) == [
+        cc.Finding('hooks/a.py', 'imports requests, yaml, outside the standard library, and declares no PEP 723 script block'),
+        cc.Finding('hooks/b.py', 'imports numpy, outside the standard library, and declares no PEP 723 script block'),
+        cc.Finding('hooks/broken.py', 'cannot parse: invalid syntax (line 1)', waivable=False),
+    ]
+
+
+def test_hook_python_deps_pass_on_the_repo():
+    assert real_check('hook-python-deps') == []
+
+
+@pytest.mark.parametrize('pattern, ops', [
+    ('uv run:*', []),
+    ('git status && rm -rf x', ['&&']),
+    ('a || b', ['||']),
+    ('a; b', [';']),
+    ('a | b', ['|']),
+    ('a |& b', ['|&']),
+    ('a & b', ['&']),
+    ('echo "a && b; c"', []),
+    ("echo 'a | b'", []),
+    ('echo a\\;b', []),
+    ('make 2>&1', []),
+    ('make &> out', []),
+    ('a && b | c', ['&&', '|']),
+])
+def test_unquoted_operators_track_shell_quoting(pattern, ops):
+    assert cc.unquoted_operators(pattern) == ops
+
+
+def test_allow_rule_compound_operators_pass(tmp_path):
+    write_tree(tmp_path, {
+        '.claude/settings.json': json.dumps({'permissions': {
+            'allow': ['Bash(uv run:*)', 'Bash(echo "a && b")', 'Read(./a;b)'],
+            'deny': ['Bash(rm -rf / && echo)']}}),
+        'hooks/README.md': json_block({'permissions': {'allow': ['Bash(uv add:*)']}}),
+    })
+    assert cc.check_allow_rule_compound_operators(
+        tmp_path, ['.claude/settings.json', 'hooks/README.md'], {}) == []
+
+
+def test_allow_rule_compound_operators_flag_unquoted_separators(tmp_path):
+    write_tree(tmp_path, {
+        '.claude/settings.json': json.dumps({'permissions': {'allow': ['Bash(cd x && git status)']}}),
+        'hooks/README.md': 'Add:\n\n' + json_block({'permissions': {'allow': ['Bash(a | b; c)', 'Bash(ok)']}}),
+    })
+    note = 'which Claude Code splits compound commands on, so it never matches'
+    assert cc.check_allow_rule_compound_operators(
+        tmp_path, ['.claude/settings.json', 'hooks/README.md'], {}) == [
+        cc.Finding('.claude/settings.json', f'allow rule Bash(cd x && git status) holds an unquoted &&, {note}'),
+        cc.Finding('hooks/README.md', f'JSON block at line 3: allow rule Bash(a | b; c) holds an unquoted ;, |, {note}'),
+    ]
+
+
+def test_allow_rule_compound_operators_never_read_the_local_settings_file(tmp_path):
+    '''settings.local.json is gitignored, so kept_files never lists it and no
+    kind globs it: a developer's private rules cannot change the lint's result.'''
+    root = git_repo(tmp_path, {
+        '.gitignore': '**/.claude/settings.local.json\n',
+        '.claude/settings.json': '{}',
+        '.claude/settings.local.json': json.dumps({'permissions': {'allow': ['Bash(a && b)']}}),
+    })
+    assert '.claude/settings.local.json' not in cc.kept_files(root)
+    reg, _ = cc.parse_register(cc.load_register(cc.REPO))
+    assert not any(cc.PurePosixPath('.claude/settings.local.json').full_match(g)
+                   for kind in reg.kinds.values() for g in kind.globs)
+
+
+def test_allow_rule_compound_operators_pass_on_the_repo():
+    assert real_check('allow-rule-compound-operators') == []
+
+
+RUNNER_PARAMS = {'runners': ['uv run', 'npx', 'npm run']}
+ALLOW_UV = json_block({'permissions': {'allow': ['Bash(uv run:*)', 'Bash(uv add:*)']}})
+
+
+def test_inert_runner_allow_rules_pass(tmp_path):
+    write_tree(tmp_path, {
+        'hooks/README.md': (
+            "Pair with an allowlist so the uv forms don't prompt. This holds in manual\n"
+            'permission mode only; auto mode sets broad runner rules aside:\n\n' + ALLOW_UV
+            + '\nAllow just the one build:\n\n'
+            + json_block({'permissions': {'allow': ['Bash(npm run build)']}})
+            + "\nSpare prompts for git:\n\n"
+            + json_block({'permissions': {'allow': ['Bash(git status:*)']}})
+            + '\nPair with an allowlist:\n\n' + ALLOW_UV),
+    })
+    assert cc.check_inert_runner_allow_rules(tmp_path, ['hooks/README.md'], RUNNER_PARAMS) == []
+
+
+def test_inert_runner_allow_rules_flag_a_runner_rule_said_to_spare_prompts(tmp_path):
+    write_tree(tmp_path, {
+        'hooks/README.md': ("Optionally pair with a permission allowlist so the `uv` forms don't\n"
+                            'prompt:\n\n' + ALLOW_UV
+                            + '\nSkip prompts for npx:\n\n' + json_block({'permissions': {'allow': ['Bash(npx *)']}})),
+    })
+    note = 'is said to spare prompts, but auto mode sets broad runner rules aside and the text names no mode'
+    assert cc.check_inert_runner_allow_rules(tmp_path, ['hooks/README.md'], RUNNER_PARAMS) == [
+        cc.Finding('hooks/README.md', f'JSON block at line 4: Bash(uv run:*) {note}'),
+        cc.Finding('hooks/README.md', f'JSON block at line 17: Bash(npx *) {note}'),
+    ]
+
+
+def test_inert_runner_allow_rules_pass_on_the_repo():
+    assert real_check('inert-runner-allow-rules') == []
+
+
+BLOCKING = {'blocking_events': ['PreToolUse', 'Stop', 'UserPromptSubmit']}
+WIRE = json_block(hooks_tree('PreToolUse', '"$CLAUDE_PROJECT_DIR"/.claude/hooks/a.sh'))
+
+
+def test_hook_install_verify_step_pass(tmp_path):
+    write_tree(tmp_path, {
+        'hooks/README.md': (
+            '## Install\n\n' + WIRE + '\nThen trigger each blocking hook once to confirm it\nis wired.\n\n'
+            '## Other\n\n' + json_block(hooks_tree('PostToolUse', 'fmt.sh')) + '\nNo step needed.\n\n'
+            '## Guard\n\n' + WIRE + '\n```bash\n# a comment, not a heading\n```\n'
+            'Run the probe: trigger it once.\n'),
+    })
+    assert cc.check_hook_install_verify_step(tmp_path, ['hooks/README.md'], BLOCKING) == []
+
+
+def test_hook_install_verify_step_flag_a_blocking_block_with_no_step(tmp_path):
+    write_tree(tmp_path, {
+        'hooks/README.md': (
+            '## Install\n\n' + WIRE + '\nDone.\n\n## Later\n\nTrigger it once.\n\n'
+            + json_block({'hooks': {'Stop': [], 'PreToolUse': [{'hooks': []}]}})
+            + '\nPrefer cp.\n'),
+    })
+    assert cc.check_hook_install_verify_step(tmp_path, ['hooks/README.md'], BLOCKING) == [
+        cc.Finding('hooks/README.md', 'JSON block at line 3: wires PreToolUse, but no step telling '
+                                      'the reader to trigger the hook once follows before the next heading'),
+        cc.Finding('hooks/README.md', 'JSON block at line 26: wires PreToolUse, Stop, but no step telling '
+                                      'the reader to trigger the hook once follows before the next heading'),
+    ]
+
+
+def test_hook_install_verify_step_pass_on_the_repo():
+    assert real_check('hook-install-verify-step') == []

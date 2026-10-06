@@ -288,6 +288,94 @@ type = 'fact'
 rule = 'A command that uses $ARGUMENTS or $<digit> sets argument-hint or arguments, and one that runs render-time shell sets allowed-tools with a Bash entry.'
 enforced_by = 'check_conformance'
 
+# Plan 35 audit section 6 checks, hooks, rules and settings.
+
+# A rule with paths loads lazily, so a path-scoped rule that calls itself
+# always-on misdescribes how it loads. phrases are matched case-insensitively
+# as plain text, and a phrase that follows not, never or n't is skipped.
+[[check]]
+id = 'rule-always-on-claim'
+kind = 'rule'
+sections = ['rules.rules-files']
+type = 'fact'
+rule = 'A rule that sets paths does not call itself always-on or every-session.'
+enforced_by = 'check_conformance'
+phrases = [
+    'always-on', 'always on', 'every session', 'every turn', 'every edit',
+    'every python edit',
+]
+
+# The guide's pitfalls bullet lets a hook block with exit 2 or a JSON deny.
+[[check]]
+id = 'hook-readme-exit-claims'
+kind = 'hook'
+sections = ['hooks.pitfalls', 'hooks.exit-codes']
+type = 'fact'
+rule = 'A hooks README that documents a permissionDecision deny does not say only exit 2 blocks.'
+enforced_by = 'check_conformance'
+
+# A script git cannot run fails open: the pitfalls section says a mistyped
+# path or a crash lets the call through, and hooks/README.md names a missing
+# execute bit. A tracked script is judged by its git index mode, an untracked
+# one by its working-tree owner execute bit.
+[[check]]
+id = 'hook-scripts-executable'
+kind = ['hook', 'settings']
+sections = ['hooks.pitfalls']
+type = 'advice'
+rule = 'Every hook script has git index mode 100755, and every .sh or .py command a hooks tree wires names a script in hooks/.'
+enforced_by = 'check_conformance'
+
+# The guide keeps hook dependencies out of the project environment with
+# single-file scripts that declare them inline. A script that imports only the
+# standard library has none to declare; a PEP 723 block counts as declaring.
+[[check]]
+id = 'hook-python-deps'
+kind = 'hook'
+sections = ['hooks.pitfalls']
+type = 'advice'
+rule = 'Hook Python imports only the standard library, or carries a PEP 723 script block.'
+enforced_by = 'check_conformance'
+
+# Claude Code splits a compound command on its separators and an allow rule
+# must match every part, so a rule that spells a separator never matches. Reads
+# the committed settings file and the settings JSON in Markdown. The per-machine
+# .claude/settings.local.json is gitignored, so the lint never reads it.
+[[check]]
+id = 'allow-rule-compound-operators'
+kind = ['hook', 'settings']
+sections = ['rules.settings']
+type = 'fact'
+rule = 'No allow rule holds an unquoted &&, ||, ;, |, |& or &.'
+enforced_by = 'check_conformance'
+
+# Auto mode sets broad runner rules aside. A runner rule is broad when it
+# ends at the runner, or at :* or * after it.
+[[check]]
+id = 'inert-runner-allow-rules'
+kind = 'hook'
+sections = ['rules.settings']
+type = 'fact'
+rule = 'A README that offers a broad runner allow rule as sparing prompts names the permission mode where that holds.'
+enforced_by = 'check_conformance'
+runners = [
+    'uv run', 'uvx', 'npm run', 'npx', 'pnpm run', 'yarn run', 'bun run',
+    'poetry run', 'pipx run',
+]
+
+# The events whose rows in the guide's events table say exit 2 blocks.
+[[check]]
+id = 'hook-install-verify-step'
+kind = 'hook'
+sections = ['hooks.pitfalls']
+type = 'advice'
+rule = 'Install text that wires a blocking hook tells the reader to trigger it once, before the next heading.'
+enforced_by = 'check_conformance'
+blocking_events = [
+    'PreToolUse', 'UserPromptSubmit', 'Stop', 'SubagentStop', 'PreCompact',
+    'ConfigChange',
+]
+
 # ---------------------------------------------------------------------------
 # Exceptions, decided by the owner at the plan 35 gate (2026-10-04) on the
 # audit in specs/claude-code-conformance-audit-2026-10-04.md. A deviation is
