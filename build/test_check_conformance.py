@@ -825,3 +825,34 @@ def test_main_exits_2_when_the_register_cannot_be_read(tmp_path, capsys):
     captured = capsys.readouterr()
     assert captured.out == ''
     assert captured.err.startswith(f'{cc.REGISTER}: cannot read')
+
+
+def no_git_repo(tmp_path, monkeypatch):
+    '''A fixture tree that is not a git repo, however the tests are run.'''
+    monkeypatch.setenv('GIT_CEILING_DIRECTORIES', str(tmp_path.parent))
+    monkeypatch.setenv('LC_ALL', 'C')
+    write_tree(tmp_path, {'guide.md': FIXTURE_GUIDE, cc.REGISTER: FIXTURE_REGISTER})
+    return tmp_path
+
+
+def test_kept_files_setup_error_carries_gits_reason(tmp_path, monkeypatch):
+    root = no_git_repo(tmp_path, monkeypatch)
+    with pytest.raises(cc.SetupError, match='not a git repository'):
+        cc.kept_files(root)
+
+
+def test_kept_files_setup_error_without_git_has_no_stderr(tmp_path, monkeypatch):
+    '''No git binary: an OSError, so there is no stderr to carry.'''
+    root = no_git_repo(tmp_path, monkeypatch)
+    monkeypatch.setenv('PATH', str(tmp_path / 'empty'))
+    with pytest.raises(cc.SetupError, match='cannot list the files git keeps'):
+        cc.kept_files(root)
+
+
+def test_main_exits_2_when_git_cannot_list_files(tmp_path, monkeypatch, capsys):
+    root = no_git_repo(tmp_path, monkeypatch)
+    assert cc.main(root) == 2
+    captured = capsys.readouterr()
+    assert captured.out == ''
+    assert 'cannot list the files git keeps' in captured.err
+    assert 'not a git repository' in captured.err

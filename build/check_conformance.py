@@ -296,7 +296,10 @@ def kept_files(root: Path) -> list[str]:
             ['git', 'ls-files', '--cached', '--others', '--exclude-standard', '-z'],
             cwd=root, env=git_env(), capture_output=True, check=True).stdout
     except (OSError, subprocess.CalledProcessError) as exc:
-        raise SetupError(f'cannot list the files git keeps under {root} ({exc})') from None
+        # git's own words, when it ran and failed: stderr is bytes here.
+        reason = (os.fsdecode(exc.stderr).strip()
+                  if isinstance(exc, subprocess.CalledProcessError) and exc.stderr else str(exc))
+        raise SetupError(f'cannot list the files git keeps under {root} ({reason})') from None
     paths = [os.fsdecode(entry) for entry in listing.split(b'\0') if entry]
     # --cached also lists tracked files deleted from the working tree.
     return sorted(p for p in paths if (root / p).exists() or (root / p).is_symlink())
