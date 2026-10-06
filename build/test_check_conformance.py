@@ -91,7 +91,7 @@ def test_real_guide_carries_the_drift_r11_anchors():
 
 
 # A three-section fixture guide and a register that maps it. FIXTURE_REGISTER
-# carries all seven check_conformance checks and one check_frontmatter entry,
+# carries every check_conformance check and one check_frontmatter entry,
 # so a fixture repo built on it is clean until a test adds a violation.
 FIXTURE_GUIDE = (
     '# Fixture guide\n\n'
@@ -202,6 +202,9 @@ type = 'fact'
 rule = 'Known tools.'
 enforced_by = 'check_frontmatter'
 
+# The checks below are tested by direct calls. Those bound to the settings kind
+# stay off the fixture repos on purpose: no run() fixture populates it, so the
+# exact-output tests above keep their expected lists.
 [[check]]
 id = 'agent-name-form'
 kind = 'agent'

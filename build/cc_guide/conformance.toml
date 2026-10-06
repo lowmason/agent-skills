@@ -258,7 +258,7 @@ allow = ['Explore']
 [[check]]
 id = 'agent-model-available'
 kind = ['agent', 'settings']
-sections = ['subagents.frontmatter', 'lean.model-routing']
+sections = ['lean.model-routing']
 type = 'fact'
 rule = "An agent's model alias appears in availableModels in the project settings, when that key is set."
 enforced_by = 'check_conformance'
