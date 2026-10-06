@@ -194,6 +194,11 @@
   waits on the partner's decision to revise the VOID rule or isolate the exemplar step
   before any re-run, since plan 36 ran VOID. This branch retires the other formerly
   aged item, the DL/NLP template extension, as no-change; it does not touch this one.
+- 2026-10-05 — finished `chore/deferred-quick-fixes` (/deferred quick fixes) with 1 item
+  aged >45d, carried on the partner's reason given twice today: the synthesize-mode
+  scenario-verification successor (71d) waits on the partner's decision to revise
+  the VOID rule or isolate the exemplar step before any re-run of plan 36. This
+  branch does not touch it.
 
 ## 11-delegation-frontmatter-rollout — 2026-07-19
 - [x] Haiku-pinned `Explore` override agent (fork-isolation upgrade; plan "Out of
