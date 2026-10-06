@@ -187,6 +187,13 @@
   rule or isolate the exemplar step before any re-run, since plan 36 ran VOID. (2) The
   DL/NLP template extension (71d): it waits on a real DL/NLP target; plan 32 confirmed
   on 2026-10-05 that the deep-learning skills do not supersede it.
+- 2026-10-05 — finished `chore/dl-nlp-template-decision` (no plan) with 1 item aged
+  >45d, carried on the reason the partner approved for it at plan 36's gate the same
+  day, which they chose again for this branch: the synthesize-mode
+  scenario-verification successor (71d, filed under the original 2026-07-26 section)
+  waits on the partner's decision to revise the VOID rule or isolate the exemplar step
+  before any re-run, since plan 36 ran VOID. This branch retires the other formerly
+  aged item, the DL/NLP template extension, as no-change; it does not touch this one.
 
 ## 11-delegation-frontmatter-rollout — 2026-07-19
 - [x] Haiku-pinned `Explore` override agent (fork-isolation upgrade; plan "Out of
