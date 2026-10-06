@@ -302,7 +302,7 @@ sections = ['skills.progressive-disclosure']
 type = 'advice'
 rule = 'A bundled file under a skill directory is named by a file in that skill.'
 enforced_by = 'check_conformance'
-exempt = ['SKILL.md', 'README.md']
+exempt = ['SKILL.md', 'README.md', 'INSTALL.md']
 tests = ['test_*', '*_test.py', 'conftest.py', 'tests/*']
 
 # On a name collision the skill wins, so the command file would never run.
@@ -841,9 +841,8 @@ reason = 'CLAUDE.md is the one file Codex and Gemini read, so its Python-style l
 evidence = 'Audit rows C-33, C-34; owner gate 2026-10-04.'
 revisit = 'When Codex and Gemini can load that content from a rule or a skill.'
 
-# PROPOSED (owner decision): the findings the new skill checks report today
-# that no earlier exception covers. Each is a gap for now; the owner may
-# instead fix the file or record a deviation.
+# The findings the new skill checks reported on their first run, decided by the
+# owner at the /deferred pass (2026-10-05).
 [[exception]]
 id = 'writing-skills-late-critical-headings'
 type = 'gap'
@@ -851,13 +850,13 @@ check = 'compaction-window'
 sections = ['skills.progressive-disclosure']
 artifacts = ['skills/writing-skills/SKILL.md']
 guide = 'Put critical instructions near the top of a SKILL.md; compaction re-attaches only its first 5,000 tokens.'
-reason = 'The body is about 7,177 tokens, and two critical-sounding headings start past the first 5,000: Create Red Flags List (line 544) and STOP: Before Moving to Next Skill (line 630).'
-evidence = 'Audit §6 d2; /deferred pass 2026-10-05.'
-tracked_in = 'PROPOSED: owner decides gap, fix or deviation; see also writing-skills-guide-gaps (portability Stage D)'
+reason = 'The body is about 7,177 tokens, and STOP: Before Moving to Next Skill (line 630) starts past the first 5,000. Create Red Flags List (line 544) is also flagged, but it is authoring advice, a false positive of the heading heuristic.'
+evidence = 'Audit §6 d2; owner decision at the /deferred pass, 2026-10-05.'
+tracked_in = 'portability Stage D, with writing-skills-guide-gaps'
 
 [[exception]]
-id = 'descriptions-without-trigger-phrases'
-type = 'gap'
+id = 'descriptions-trigger-list-style'
+type = 'deviation'
 check = 'trigger-phrase-presence'
 sections = ['skills.description']
 artifacts = [
@@ -874,20 +873,17 @@ artifacts = [
     'skills/writing-skills/SKILL.md',
 ]
 guide = 'Pack a description with concrete trigger phrases that mirror how requests are phrased.'
-reason = 'Eleven descriptions hold neither a quoted phrase nor a Trigger on list; the check is a heuristic, so a description may name its triggers in another form.'
-evidence = 'Audit §6 d4; /deferred pass 2026-10-05.'
-tracked_in = 'PROPOSED: owner decides gap, fix or deviation'
+reason = 'These descriptions name their triggers in the house Use when … list form that writing-skills requires, which the heuristic does not read as trigger phrases.'
+evidence = 'Audit §6 d4; deviation description-when-only; owner decision at the /deferred pass, 2026-10-05.'
+revisit = 'When trigger-eval suites exist, or a description here loses its Use when list.'
 
 [[exception]]
-id = 'unnamed-bundled-files'
+id = 'industry-codes-csv-unreferenced'
 type = 'gap'
 check = 'orphan-bundled-file'
 sections = ['skills.progressive-disclosure']
-artifacts = [
-    'skills/classification-codes/industry_codes.csv',
-    'skills/llm-wiki/INSTALL.md',
-]
+artifacts = ['skills/classification-codes/industry_codes.csv']
 guide = 'Bundled files load only when the body points at them, by name in prose.'
-reason = 'No file in either skill (tests aside) names these two files, by file name or by directory.'
-evidence = 'Audit §6 d7; /deferred pass 2026-10-05.'
-tracked_in = 'PROPOSED: owner decides gap, fix or deviation'
+reason = 'No file in classification-codes names industry_codes.csv; it sits outside data/ and MANIFEST, with no recorded source.'
+evidence = 'Audit §6 d7; specs/audit-3-10-26.md H1; owner decision at the /deferred pass, 2026-10-05.'
+tracked_in = 'specs/audit-3-10-26.md H1: the owner moves the file to bls-data-context as a documented table, or deletes it'
