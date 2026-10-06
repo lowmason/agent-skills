@@ -98,10 +98,11 @@ def known(state: dict, ids) -> None:
         raise SetupError(f'unknown section IDs: {", ".join(unknown)}')
 
 
-def accept(state: dict, guide_text: str, ids, substantive: bool, newest: str,
+def accept(state: dict, guide_text: str, ids, substantive: bool, newest: str | None,
            citer_stamps: dict[str, list[str]] | None = None) -> dict:
     '''R7 accept: record each section's current text_hash. Substantive also
-    sets a new `changed` (R2.4), which flags the section's citers. Stage 1 has
+    sets a new `changed` (R2.4), which flags the section's citers; only it
+    reads `newest`, which an editorial accept may leave None. Stage 1 has
     no citations, so cli.py passes none; Stage 2 passes the index's stamps.'''
     known(state, ids)
     by_id = {s.id: s for s in sections(guide_text)}
