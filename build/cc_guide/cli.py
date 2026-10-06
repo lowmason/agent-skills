@@ -174,9 +174,14 @@ def run_baseline(args, cache: Path, today: date) -> int:
                                                 latest_docs(cache), release, partial(snapshot_text, cache))
         target = snapshot_docs(cache, release)
         target.mkdir(parents=True, exist_ok=True)
-        for page in pages:
-            name = page_file(page)
-            (target / name).write_bytes((latest_docs(cache) / name).read_bytes())
+        copies = [(page, target / page_file(page), (latest_docs(cache) / page_file(page)).read_bytes())
+                  for page in pages]
+        for page, held, body in copies:  # all checked before any write
+            if held.is_file() and held.read_bytes() != body:
+                raise SetupError(f'{page}: {held} already holds different text, which another group may have '
+                                 'baselined; it is never overwritten')
+        for _, held, body in copies:
+            held.write_bytes(body)
         for line in notes:
             print(f'note: {line}', file=sys.stderr)
     baseline_path.write_text(dump_baseline(new), encoding='utf-8')

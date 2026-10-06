@@ -614,7 +614,9 @@ that drops or remaps it, since `rebaseline` keeps a missing page's entries
 - `init`: R2.6.
 - `rebaseline <group> [<block keys>]`: re-hash the group's selected blocks,
   all of them or the listed keys, from `latest/`, and snapshot those pages to
-  `~/.cache/agent-skills/cc-guide/<release>/docs/`. A key is listed as
+  `~/.cache/agent-skills/cc-guide/<release>/docs/`, refusing to overwrite a
+  snapshot page that holds different bytes, since another group's `snapshot`
+  pointer may name it. A key is listed as
   `check` prints it, so a block `check` could name only by its key hash is
   listed by that hash (R2.3).
 - `advance <ids> --to <release>`: set `checked`.

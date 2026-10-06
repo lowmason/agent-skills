@@ -159,6 +159,24 @@ def test_rebaseline_writes_the_baseline_and_a_cache_snapshot_only(world):
     assert (snapshot / 'tools.md').read_bytes() == (state.latest_docs(cache) / 'tools.md').read_bytes()
 
 
+def test_rebaseline_refuses_to_overwrite_a_snapshot_page_holding_other_text(world, capsys):
+    repo, cache, _ = world
+    latest = state.latest_docs(cache)
+    write_tree(latest, {'tools.md': DOCS['tools.md'].replace('alpha jobs', 'alpha batches')})
+    held = state.snapshot_docs(cache, '2.1.902') / 'tools.md'
+    write_tree(state.snapshot_docs(cache, '2.1.902'), {'tools.md': DOCS['tools.md']})
+    before = (repo / state.BASELINE).read_bytes()
+    assert main(cache, 'baseline', 'rebaseline', 'alpha') == 2
+    assert capsys.readouterr() == ('', f'cc-guide: tools: {held} already holds different text, which another'
+                                       ' group may have baselined; it is never overwritten\n')
+    assert held.read_text() == DOCS['tools.md']
+    assert not (held.parent / 'env-vars.md').exists()  # nothing of the run was written
+    assert (repo / state.BASELINE).read_bytes() == before
+    write_tree(state.snapshot_docs(cache, '2.1.902'), {'tools.md': (latest / 'tools.md').read_text()})
+    assert main(cache, 'baseline', 'rebaseline', 'alpha') == 0  # identical bytes are not a conflict
+    assert (held.parent / 'env-vars.md').is_file()
+
+
 def test_rebaseline_names_a_gone_block_from_the_cached_snapshot(world, capsys):
     repo, cache, _ = world
     write_tree(state.snapshot_docs(cache, '2.1.900'), {'tools.md': DOCS['tools.md']})
