@@ -877,13 +877,3 @@ reason = 'These descriptions name their triggers in the house Use when … list 
 evidence = 'Audit §6 d4; deviation description-when-only; owner decision at the /deferred pass, 2026-10-05.'
 revisit = 'When trigger-eval suites exist, or a description here loses its Use when list.'
 
-[[exception]]
-id = 'industry-codes-csv-unreferenced'
-type = 'gap'
-check = 'orphan-bundled-file'
-sections = ['skills.progressive-disclosure']
-artifacts = ['skills/classification-codes/industry_codes.csv']
-guide = 'Bundled files load only when the body points at them, by name in prose.'
-reason = 'No file in classification-codes names industry_codes.csv; it sits outside data/ and MANIFEST, with no recorded source.'
-evidence = 'Audit §6 d7; specs/audit-3-10-26.md H1; owner decision at the /deferred pass, 2026-10-05.'
-tracked_in = 'specs/audit-3-10-26.md H1: the owner moves the file to bls-data-context as a documented table, or deletes it'
