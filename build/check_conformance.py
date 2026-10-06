@@ -940,7 +940,9 @@ def check_command_substitution_tokens(root: Path, files: list[str], params: dict
 def check_rule_always_on_claim(root: Path, files: list[str], params: dict) -> list[Finding]:
     phrases = [p.lower() for p in params['phrases']]
     out: list[Finding] = []
-    for f, text in read_artifacts(root, [f for f in files if not (root / f).is_symlink()], out):
+    # A rule is a .md file (as in rule-paths); a link repeats its target's text.
+    rules = [f for f in files if f.endswith('.md') and not (root / f).is_symlink()]
+    for f, text in read_artifacts(root, rules, out):
         if not _str_list((frontmatter(text) or {}).get('paths')):
             continue  # a rule without paths does load in every session
         for n, line in body_lines(text):
@@ -1276,8 +1278,12 @@ def check_local_md_ignored(root: Path, files: list[str], params: dict) -> list[F
         elif result.returncode != 0:
             raise SetupError(f'git check-ignore failed under {root}: {result.stderr.strip()}')
         else:
-            source = result.stdout.split(':', 1)[0]
-            if PurePosixPath(source).name != '.gitignore':
+            # -v prints `source:line:pattern<TAB>path`; a pattern starting with
+            # `!` is the last match, a negation that leaves the path unignored.
+            source, _, pattern = result.stdout.split('\t', 1)[0].split(':', 2)
+            if pattern.startswith('!'):
+                out.append(Finding(f, f'{local} is not gitignored, so a personal file would be committed'))
+            elif PurePosixPath(source).name != '.gitignore':
                 out.append(Finding(f, f'{local} is ignored only by {source}, which is not committed'))
     return out
 
@@ -1287,7 +1293,7 @@ def check_claude_md_count_claims(root: Path, files: list[str], params: dict) -> 
     as the repo changes. Every line counts, fenced blocks included; a line
     holding an allow substring is exempt.'''
     nouns = sorted(params['nouns'], key=len, reverse=True)
-    count = re.compile(r'\b\d[\d,]*\s+(?:' + '|'.join(re.escape(n) for n in nouns) + r')\b', re.I)
+    count = re.compile(r'(?<![\d.])\b\d[\d,]*\s+(?:' + '|'.join(re.escape(n) for n in nouns) + r')\b', re.I)
     out: list[Finding] = []
     for f, text in read_artifacts(root, files, out):
         for n, line in enumerate(text.split('\n'), start=1):
@@ -1444,10 +1450,10 @@ def parse_exceptions(raw: dict, reg: Register, anchors: list[str], files: list[s
     covered = kind_files(reg, files)
     check_kinds = {c.id: c.kinds for c in reg.checks if c.enforced_by == 'check_conformance'}
     known = set(anchors)
-    # A kind with an unusable table is a register violation already, and the
+    # A missing or unusable [kinds] table is a register violation already, and the
     # artifacts' kinds cannot be known without it, so the fit rule waits.
     raw_kinds = raw.get('kinds')
-    unusable_kinds = isinstance(raw_kinds, dict) and set(raw_kinds) != set(reg.kinds)
+    unusable_kinds = not isinstance(raw_kinds, dict) or set(raw_kinds) != set(reg.kinds)
     out: list[Violation] = []
     entries: list[ExceptionEntry] = []
     ids: list[str] = []

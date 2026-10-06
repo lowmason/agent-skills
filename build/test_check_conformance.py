@@ -1527,6 +1527,15 @@ def test_rule_always_on_claim_flags_a_path_scoped_rule_that_says_it(tmp_path):
     ]
 
 
+def test_rule_always_on_claim_ignores_a_file_that_is_not_markdown(tmp_path):
+    '''.claude/rules/** also yields non-.md files, which are no rule (as rule-paths).'''
+    root = tmp_path / 'repo'
+    write_tree(root, {'.claude/rules/notes.txt': RULE.replace('Rule.', 'This is always-on.\n')})
+    (root / '.claude/rules/blob.bin').write_bytes(b'\xff\xfe\x00')
+    files = ['.claude/rules/blob.bin', '.claude/rules/notes.txt']
+    assert cc.check_rule_always_on_claim(root, files, ALWAYS_ON_PARAMS) == []
+
+
 def test_rule_always_on_claim_passes_on_the_repo():
     assert real_check('rule-always-on-claim') == []
 
@@ -1896,6 +1905,13 @@ def test_local_md_ignored_does_not_count_private_ignore_sources(tmp_path):
         cc.Finding('CLAUDE.md', 'CLAUDE.local.md is not gitignored, so a personal file would be committed')]
 
 
+def test_local_md_ignored_flags_a_negated_pattern_as_not_ignored(tmp_path):
+    '''check-ignore -v exits 0 and names the negation, though the file is not ignored.'''
+    root = ignored_repo(tmp_path, 'CLAUDE.local.md\n!CLAUDE.local.md\n')
+    assert cc.check_local_md_ignored(root, ['CLAUDE.md'], {}) == [
+        cc.Finding('CLAUDE.md', 'CLAUDE.local.md is not gitignored, so a personal file would be committed')]
+
+
 def test_local_md_ignored_outside_a_repo_is_a_setup_error(tmp_path):
     write_tree(tmp_path, {'CLAUDE.md': 'x\n'})
     with pytest.raises(cc.SetupError, match='git check-ignore failed'):
@@ -1936,6 +1952,12 @@ def test_claude_md_count_claims_flag_counts_even_inside_fences(tmp_path):
         cc.Finding('CLAUDE.md', "line 6: states a count ('1,204 test functions') that goes stale"),
         cc.Finding('CLAUDE.md', "line 7: states a count ('4 originals') that goes stale"),
     ]
+
+
+def test_claude_md_count_claims_ignore_the_tail_of_a_version_number(tmp_path):
+    write_tree(tmp_path, {'CLAUDE.md': 'Python 3.13 tests run under uv.\nNow 13 tests.\n'})
+    assert cc.check_claude_md_count_claims(tmp_path, ['CLAUDE.md'], COUNT_PARAMS) == [
+        cc.Finding('CLAUDE.md', "line 2: states a count ('13 tests') that goes stale")]
 
 
 def test_claude_md_count_claims_allow_list_does_real_work_on_the_repo():
@@ -2513,6 +2535,18 @@ def test_waiver_path_must_be_one_of_its_checks_files(tmp_path, artifact, message
         'CLAUDE.md': 'Short.\n', '.gitignore': 'agents/ignored.md\n'},
         register=FIXTURE_REGISTER + exception_toml({**GAP, 'artifacts': [artifact]}))
     assert cc.run(root) == [UNWAIVED, message(root)]
+
+
+@pytest.mark.parametrize('kinds_head', ['', "kinds = 'oops'\n"])
+def test_a_register_without_a_kinds_table_skips_the_section_fit_rule(tmp_path, kinds_head):
+    '''[kinds] absent or not a table is one register error; the fit rule, which
+    needs the kinds, adds nothing on top of it.'''
+    start, end = FIXTURE_REGISTER.index('[kinds.agent]'), FIXTURE_REGISTER.index('[unmapped]')
+    register = kinds_head + FIXTURE_REGISTER[:start] + FIXTURE_REGISTER[end:] + exception_toml(GAP)
+    root = fixture_repo(tmp_path, {'agents/a.md': GREP_BESIDE_BASH}, register=register)
+    lines = cc.run(root)
+    assert f'{cc.REGISTER}: register (-): [kinds] must be a table of kinds' in lines
+    assert [line for line in lines if 'section-fit' in line] == []
 
 
 def test_waiver_path_that_is_a_check_file_passes(tmp_path):
