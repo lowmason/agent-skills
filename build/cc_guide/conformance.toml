@@ -646,3 +646,54 @@ guide = 'Guidance for certain files belongs in a path-scoped rule, and sometimes
 reason = 'CLAUDE.md is the one file Codex and Gemini read, so its Python-style line and Commands block stay (conformance spec Decision 1, R4.3).'
 evidence = 'Audit rows C-33, C-34; owner gate 2026-10-04.'
 revisit = 'When Codex and Gemini can load that content from a rule or a skill.'
+
+# PROPOSED (owner decision): the findings the new skill checks report today
+# that no earlier exception covers. Each is a gap for now; the owner may
+# instead fix the file or record a deviation.
+[[exception]]
+id = 'writing-skills-late-critical-headings'
+type = 'gap'
+check = 'compaction-window'
+sections = ['skills.progressive-disclosure']
+artifacts = ['skills/writing-skills/SKILL.md']
+guide = 'Put critical instructions near the top of a SKILL.md; compaction re-attaches only its first 5,000 tokens.'
+reason = 'The body is about 7,177 tokens, and two critical-sounding headings start past the first 5,000: Create Red Flags List (line 544) and STOP: Before Moving to Next Skill (line 630).'
+evidence = 'Audit §6 d2; /deferred pass 2026-10-05.'
+tracked_in = 'PROPOSED: owner decides gap, fix or deviation; see also writing-skills-guide-gaps (portability Stage D)'
+
+[[exception]]
+id = 'descriptions-without-trigger-phrases'
+type = 'gap'
+check = 'trigger-phrase-presence'
+sections = ['skills.description']
+artifacts = [
+    'skills/deep-learning/SKILL.md',
+    'skills/dispatching-parallel-agents/SKILL.md',
+    'skills/evaluate-deep-learning/SKILL.md',
+    'skills/executing-plans/SKILL.md',
+    'skills/optimize-jax/SKILL.md',
+    'skills/receiving-code-review/SKILL.md',
+    'skills/requesting-code-review/SKILL.md',
+    'skills/systematic-debugging/SKILL.md',
+    'skills/test-driven-development/SKILL.md',
+    'skills/using-git-worktrees/SKILL.md',
+    'skills/writing-skills/SKILL.md',
+]
+guide = 'Pack a description with concrete trigger phrases that mirror how requests are phrased.'
+reason = 'Eleven descriptions hold neither a quoted phrase nor a Trigger on list; the check is a heuristic, so a description may name its triggers in another form.'
+evidence = 'Audit §6 d4; /deferred pass 2026-10-05.'
+tracked_in = 'PROPOSED: owner decides gap, fix or deviation'
+
+[[exception]]
+id = 'unnamed-bundled-files'
+type = 'gap'
+check = 'orphan-bundled-file'
+sections = ['skills.progressive-disclosure']
+artifacts = [
+    'skills/classification-codes/industry_codes.csv',
+    'skills/llm-wiki/INSTALL.md',
+]
+guide = 'Bundled files load only when the body points at them, by name in prose.'
+reason = 'No file in either skill (tests aside) names these two files, by file name or by directory.'
+evidence = 'Audit §6 d7; /deferred pass 2026-10-05.'
+tracked_in = 'PROPOSED: owner decides gap, fix or deviation'
