@@ -130,6 +130,21 @@ description = 'Project settings.'
 globs = ['.claude/settings.json']
 sections = ['a.one']
 
+[kinds.skill]
+description = 'Skills.'
+globs = ['skills/*/SKILL.md']
+sections = ['a.one']
+
+[kinds.command]
+description = 'Commands.'
+globs = ['commands/*.md']
+sections = ['a.one']
+
+[kinds.skill-bundle]
+description = 'Every file under a skill.'
+globs = ['skills/*/**']
+sections = ['a.one']
+
 [unmapped]
 'b.overview' = 'Governs no fixture file.'
 
@@ -195,6 +210,88 @@ rule = 'No Grep or Glob beside Bash.'
 enforced_by = 'check_conformance'
 
 [[check]]
+id = 'compaction-window'
+kind = 'skill'
+sections = ['a.one']
+type = 'advice'
+rule = 'Fixture rule.'
+enforced_by = 'check_conformance'
+tokens = 5000
+chars_per_token = 4
+headings = ['STOP', 'Red Flags']
+
+[[check]]
+id = 'description-person'
+kind = 'skill'
+sections = ['a.one']
+type = 'advice'
+rule = 'Fixture rule.'
+enforced_by = 'check_conformance'
+pronouns = ['i', 'we', 'you', 'your']
+
+[[check]]
+id = 'trigger-phrase-presence'
+kind = 'skill'
+sections = ['a.one']
+type = 'advice'
+rule = 'Fixture rule.'
+enforced_by = 'check_conformance'
+markers = ['trigger on']
+
+[[check]]
+id = 'substitution-hazard'
+kind = 'skill'
+sections = ['a.one']
+type = 'advice'
+rule = 'Fixture rule.'
+enforced_by = 'check_conformance'
+
+[[check]]
+id = 'orphan-bundled-file'
+kind = 'skill-bundle'
+sections = ['a.one']
+type = 'advice'
+rule = 'Fixture rule.'
+enforced_by = 'check_conformance'
+exempt = ['SKILL.md', 'README.md']
+tests = ['test_*']
+
+[[check]]
+id = 'skill-command-name-collision'
+kind = ['skill', 'command']
+sections = ['a.one']
+type = 'advice'
+rule = 'Fixture rule.'
+enforced_by = 'check_conformance'
+
+[[check]]
+id = 'command-frontmatter-keys'
+kind = 'command'
+sections = ['a.one']
+type = 'advice'
+rule = 'Fixture rule.'
+enforced_by = 'check_conformance'
+fields = ['description', 'model']
+
+[[check]]
+id = 'builtin-name-shadow'
+kind = ['skill', 'command']
+sections = ['a.one']
+type = 'advice'
+rule = 'Fixture rule.'
+enforced_by = 'check_conformance'
+builtins = ['help', 'model', 'compact']
+
+[[check]]
+id = 'reserved-skill-name'
+kind = 'skill-bundle'
+sections = ['a.one']
+type = 'advice'
+rule = 'Fixture rule.'
+enforced_by = 'check_conformance'
+reserved = ['synced']
+
+[[check]]
 id = 'known-agent-tools'
 kind = 'agent'
 sections = ['a.overview']
@@ -256,10 +353,14 @@ def test_register_field_problems_are_violations():
         f'{cc.REGISTER}: register (-): check rule-paths: enforced_by must be check_conformance or check_frontmatter',
         f'{cc.REGISTER}: register (-): check hook-dir-quoted: kind names no [kinds] table: nonesuch',
     ]
-    assert sorted(reg.kinds) == ['claude-md', 'hook', 'rule', 'settings']
+    assert sorted(reg.kinds) == ['claude-md', 'command', 'hook', 'rule', 'settings', 'skill', 'skill-bundle']
     assert [c.id for c in reg.checks] == [
         'claude-md-size', 'stop-hook-guard', 'agent-fields',
-        'readonly-agent-tools', 'bash-search-tools', 'known-agent-tools']
+        'readonly-agent-tools', 'bash-search-tools',
+        'compaction-window', 'description-person', 'trigger-phrase-presence',
+        'substitution-hazard', 'orphan-bundled-file', 'skill-command-name-collision',
+        'command-frontmatter-keys', 'builtin-name-shadow', 'reserved-skill-name',
+        'known-agent-tools']
     assert reg.checks[0].params == {'limit': 200}
 
 
@@ -800,3 +901,281 @@ def test_exception_field_rules(tmp_path, changes, expected):
 def test_repo_passes():
     '''The real repo, with the register the owner gate filled, is clean (R3.5).'''
     assert cc.run(cc.REPO) == []
+
+
+# ---------------------------------------------------------------------------
+# Skill and command checks: compaction-window, description-person,
+# trigger-phrase-presence, substitution-hazard, orphan-bundled-file,
+# skill-command-name-collision, command-frontmatter-keys, builtin-name-shadow,
+# reserved-skill-name.
+# ---------------------------------------------------------------------------
+
+def skill_md(description='Use when testing.', body='Body.\n', **extra):
+    '''A SKILL.md with a one-line description and any further frontmatter keys.'''
+    keys = ''.join(f'{k}: {v}\n' for k, v in extra.items())
+    return f'---\nname: s\ndescription: {description}\n{keys}---\n{body}'
+
+
+WINDOW_PARAMS = {'tokens': 20, 'chars_per_token': 1,
+                 'headings': ['STOP', 'Red Flags', 'Critical']}
+
+
+def test_compaction_window_passes_a_short_body_and_late_ordinary_headings(tmp_path):
+    write_tree(tmp_path, {
+        'skills/a/SKILL.md': skill_md(body='## Short\nShort.\n'),
+        'skills/b/SKILL.md': skill_md(body='## Steps\n' + 'x' * 30 + '\n## Reference\nMore.\n'),
+    })
+    files = ['skills/a/SKILL.md', 'skills/b/SKILL.md']
+    # b is over the 20-token window but its late heading is not critical-sounding.
+    assert cc.check_compaction_window(tmp_path, files[:1], WINDOW_PARAMS) == []
+    assert [f.message for f in cc.check_compaction_window(tmp_path, files[1:], WINDOW_PARAMS)] == [
+        'body is about 59 tokens; compaction re-attaches only the first 20']
+
+
+def test_compaction_window_flags_a_critical_heading_past_the_window(tmp_path):
+    body = ('## Red Flags\nEarly, inside the window.\n'
+            + 'x' * 30 + '\n'
+            + '## STOP: Before Moving On\nLate.\n'
+            + f'{FENCE}\n## Critical inside a fence\n{FENCE}\n'
+            + '## Critical Rules\nLate.\n')
+    write_tree(tmp_path, {'skills/a/SKILL.md': skill_md(body=body)})
+    found = cc.check_compaction_window(tmp_path, ['skills/a/SKILL.md'], WINDOW_PARAMS)
+    assert [(f.file, f.message) for f in found] == [
+        ('skills/a/SKILL.md', f'body is about {len(body)} tokens; compaction re-attaches only the first 20'),
+        ('skills/a/SKILL.md', "line 8: heading '## STOP: Before Moving On' starts past the first 20 tokens, so compaction drops it"),
+        ('skills/a/SKILL.md', "line 13: heading '## Critical Rules' starts past the first 20 tokens, so compaction drops it"),
+    ]
+
+
+def test_compaction_window_ignores_headings_when_the_body_fits(tmp_path):
+    write_tree(tmp_path, {'skills/a/SKILL.md': skill_md(body='## STOP\nAll early.\n')})
+    assert cc.check_compaction_window(tmp_path, ['skills/a/SKILL.md'], WINDOW_PARAMS) == []
+
+
+PERSON_PARAMS = {'pronouns': ['i', 'we', 'you', 'your']}
+
+
+def test_description_person_passes_third_person_and_quoted_pronouns(tmp_path):
+    write_tree(tmp_path, {
+        'skills/a/SKILL.md': skill_md('Use when the user asks "can you help" or \'how should we test\'; Trigger on `your` code.'),
+        'skills/b/SKILL.md': skill_md("Use when a user's data is stale; it doesn't re-run."),
+        'skills/c/SKILL.md': 'No frontmatter.\n',
+    })
+    files = ['skills/a/SKILL.md', 'skills/b/SKILL.md', 'skills/c/SKILL.md']
+    assert cc.check_description_person(tmp_path, files, PERSON_PARAMS) == []
+
+
+def test_description_person_flags_pronouns_outside_quotes(tmp_path):
+    write_tree(tmp_path, {
+        'skills/a/SKILL.md': skill_md('Use when you are stuck and your tests fail.'),
+        'skills/b/SKILL.md': skill_md('Use when stuck.', when_to_use="We're sure; I think"),
+        'skills/c/SKILL.md': skill_md('Use when "you" ask, or you do.'),
+    })
+    files = ['skills/a/SKILL.md', 'skills/b/SKILL.md', 'skills/c/SKILL.md']
+    assert cc.check_description_person(tmp_path, files, PERSON_PARAMS) == [
+        cc.Finding('skills/a/SKILL.md', "description uses first- or second-person 'you', 'your' outside quoted phrases"),
+        cc.Finding('skills/b/SKILL.md', "description uses first- or second-person 'i', 'we' outside quoted phrases"),
+        cc.Finding('skills/c/SKILL.md', "description uses first- or second-person 'you' outside quoted phrases"),
+    ]
+
+
+TRIGGER_PARAMS = {'markers': ['trigger on', 'triggers on', 'trigger when']}
+
+
+def test_trigger_phrase_presence_passes_quoted_phrases_and_trigger_lists(tmp_path):
+    write_tree(tmp_path, {
+        'skills/a/SKILL.md': skill_md('Use when asked to "profile this dataset".'),
+        'skills/b/SKILL.md': skill_md("Use when asked: 'ingest', 'lint'."),
+        'skills/c/SKILL.md': skill_md('Use when tuning. Trigger on: grid search, Optuna.'),
+        'skills/d/SKILL.md': skill_md('Use when tuning.', when_to_use='Triggers on cross-validation.'),
+    })
+    files = [f'skills/{c}/SKILL.md' for c in 'abcd']
+    assert cc.check_trigger_phrase_presence(tmp_path, files, TRIGGER_PARAMS) == []
+
+
+def test_trigger_phrase_presence_flags_a_description_with_neither(tmp_path):
+    write_tree(tmp_path, {
+        'skills/a/SKILL.md': skill_md('Use when implementing any feature.'),
+        'skills/b/SKILL.md': skill_md("Use when a user's request is vague; it won't say."),
+    })
+    assert cc.check_trigger_phrase_presence(
+        tmp_path, ['skills/a/SKILL.md', 'skills/b/SKILL.md'], TRIGGER_PARAMS) == [
+        cc.Finding('skills/a/SKILL.md', 'description has neither a quoted trigger phrase nor a "Trigger on" list'),
+        cc.Finding('skills/b/SKILL.md', 'description has neither a quoted trigger phrase nor a "Trigger on" list'),
+    ]
+
+
+def test_substitution_hazard_passes_escaped_and_plain_text(tmp_path):
+    write_tree(tmp_path, {'skills/a/SKILL.md': skill_md(
+        body='Costs \\$1.00 and \\$ARGUMENTS stay literal; so does $HOME or $name here.\n'
+             'A bang alone ! and `code` pass.\n', arguments='[issue]')})
+    assert cc.check_substitution_hazard(tmp_path, ['skills/a/SKILL.md'], {}) == []
+
+
+def test_substitution_hazard_flags_each_substitution_and_shell_token(tmp_path):
+    body = ('Run for $ARGUMENTS now.\n'
+            'First arg $0 and second $1.\n'
+            'Dir ${CLAUDE_SKILL_DIR}/x and ${CLAUDE_SESSION_ID}.\n'
+            'Declared $issue works.\n'
+            'Status: !`git status`\n'
+            f'{FENCE}!\ngit log\n{FENCE}\n'
+            f'{FENCE}bash\necho $ARGUMENTS\n{FENCE}\n')
+    write_tree(tmp_path, {'skills/a/SKILL.md': skill_md(body=body, arguments='[issue]')})
+    found = cc.check_substitution_hazard(tmp_path, ['skills/a/SKILL.md'], {})
+    assert [f.message for f in found] == [
+        "line 6: '$ARGUMENTS' is substituted when the skill loads; escape it as \\$ARGUMENTS",
+        "line 7: '$0' is substituted when the skill loads; escape it as \\$0",
+        "line 7: '$1' is substituted when the skill loads; escape it as \\$1",
+        "line 8: '${CLAUDE_SKILL_DIR}' is substituted when the skill loads; escape it as \\${CLAUDE_SKILL_DIR}",
+        "line 8: '${CLAUDE_SESSION_ID}' is substituted when the skill loads; escape it as \\${CLAUDE_SESSION_ID}",
+        "line 9: '$issue' is substituted when the skill loads; escape it as \\$issue",
+        "line 10: '!`git status`' runs a shell command at render time, before Claude sees the body",
+        'line 11: a ```! fence runs a shell command at render time, before Claude sees the body',
+        "line 15: '$ARGUMENTS' is substituted when the skill loads; escape it as \\$ARGUMENTS",
+    ]
+
+
+BUNDLE_PARAMS = {'exempt': ['SKILL.md', 'README.md'],
+                 'tests': ['test_*', '*_test.py', 'conftest.py', 'tests/*']}
+
+
+def test_orphan_bundled_file_passes_files_named_by_file_name_or_directory(tmp_path):
+    tree = {
+        'skills/a/SKILL.md': 'Read `references/x.md`; sources live in `data/`; run scripts/run.sh.\n',
+        'skills/a/references/x.md': 'See also z.md for detail.\n',
+        'skills/a/references/z.md': 'Detail.\n',
+        'skills/a/data/d.csv': '1,2\n',
+        'skills/a/scripts/run.sh': 'echo\n',
+        'skills/a/scripts/test_run.py': '',
+        'skills/a/README.md': 'Readme.\n',
+    }
+    write_tree(tmp_path, tree)
+    assert cc.check_orphan_bundled_file(tmp_path, sorted(tree), BUNDLE_PARAMS) == []
+
+
+def test_orphan_bundled_file_flags_files_nothing_names(tmp_path):
+    tree = {
+        'skills/a/SKILL.md': 'Read `references/x.md`.\n',
+        'skills/a/references/x.md': 'Self mention of x.md does not count.\n',
+        'skills/a/references/y.md': 'Unnamed.\n',
+        'skills/a/notes.txt': 'Unnamed.\n',
+        'skills/a/scripts/test_a.py': 'mentions notes.txt, but tests name nothing\n',
+        'skills/b/SKILL.md': 'Names nothing; y.md belongs to skill a.\n',
+        'skills/b/data.bin': '',
+    }
+    write_tree(tmp_path, tree)
+    assert cc.check_orphan_bundled_file(tmp_path, sorted(tree), BUNDLE_PARAMS) == [
+        cc.Finding('skills/a/notes.txt', 'no file in the skill names notes.txt, by file name or by its directory'),
+        cc.Finding('skills/a/references/y.md', 'no file in the skill names y.md, by file name or by its directory'),
+        cc.Finding('skills/b/data.bin', 'no file in the skill names data.bin, by file name or by its directory'),
+    ]
+
+
+def test_orphan_bundled_file_does_not_match_a_longer_file_name(tmp_path):
+    tree = {'skills/a/SKILL.md': 'See `references/metadata.md`.\n',
+            'skills/a/references/metadata.md': 'Named.\n',
+            'skills/a/references/data.md': 'Not named: metadata.md contains data.md only as a suffix.\n'}
+    write_tree(tmp_path, tree)
+    assert cc.check_orphan_bundled_file(tmp_path, sorted(tree), BUNDLE_PARAMS) == [
+        cc.Finding('skills/a/references/data.md', 'no file in the skill names data.md, by file name or by its directory')]
+
+
+def test_skill_command_name_collision_passes_distinct_names(tmp_path):
+    files = ['skills/deploy/SKILL.md', 'commands/ship.md']
+    assert cc.check_skill_command_name_collision(tmp_path, files, {}) == []
+
+
+def test_skill_command_name_collision_flags_a_shared_name(tmp_path):
+    files = ['skills/deploy/SKILL.md', 'commands/deploy.md', 'commands/ship.md',
+             '.claude/skills/ship/SKILL.md']
+    assert cc.check_skill_command_name_collision(tmp_path, files, {}) == [
+        cc.Finding('commands/deploy.md', 'command /deploy shares its name with skills/deploy/SKILL.md, '
+                                         'and on a name collision the skill wins'),
+        cc.Finding('commands/ship.md', 'command /ship shares its name with .claude/skills/ship/SKILL.md, '
+                                       'and on a name collision the skill wins'),
+    ]
+
+
+COMMAND_PARAMS = {'fields': ['description', 'argument-hint', 'allowed-tools', 'model',
+                             'disable-model-invocation']}
+
+
+def test_command_frontmatter_keys_pass(tmp_path):
+    write_tree(tmp_path, {
+        'commands/a.md': '---\ndescription: A.\nargument-hint: x\ndisable-model-invocation: true\n---\nBody.\n',
+        'commands/b.md': 'No frontmatter; the filename is the name.\n',
+    })
+    assert cc.check_command_frontmatter_keys(
+        tmp_path, ['commands/a.md', 'commands/b.md'], COMMAND_PARAMS) == []
+
+
+def test_command_frontmatter_keys_flag_name_paths_and_unknown_keys(tmp_path):
+    write_tree(tmp_path, {
+        'commands/a.md': '---\nname: a\ndescription: A.\npaths: [x]\ncolour: red\n---\n',
+        'commands/b.md': '---\ndescription: [unclosed\n---\n',
+    })
+    assert cc.check_command_frontmatter_keys(
+        tmp_path, ['commands/a.md', 'commands/b.md'], COMMAND_PARAMS) == [
+        cc.Finding('commands/a.md', "frontmatter key 'name' is not allowed in a command: the filename is its name"),
+        cc.Finding('commands/a.md', "frontmatter key 'paths' is not allowed in a command"),
+        cc.Finding('commands/a.md', "frontmatter key 'colour' is not a documented skill field"),
+        cc.Finding('commands/b.md', 'frontmatter does not parse as YAML'),
+    ]
+
+
+SHADOW_PARAMS = {'builtins': ['help', 'model', 'compact']}
+
+
+def test_builtin_name_shadow_passes_other_names(tmp_path):
+    write_tree(tmp_path, {'skills/deploy/SKILL.md': skill_md(), 'commands/ship.md': 'Body.\n'})
+    files = ['skills/deploy/SKILL.md', 'commands/ship.md']
+    assert cc.check_builtin_name_shadow(tmp_path, files, SHADOW_PARAMS) == []
+
+
+def test_builtin_name_shadow_flags_skill_directories_names_and_command_stems(tmp_path):
+    write_tree(tmp_path, {
+        'skills/help/SKILL.md': skill_md(),
+        'skills/other/SKILL.md': '---\nname: compact\ndescription: D.\n---\n',
+        'commands/model.md': 'Body.\n',
+    })
+    files = ['commands/model.md', 'skills/help/SKILL.md', 'skills/other/SKILL.md']
+    assert cc.check_builtin_name_shadow(tmp_path, files, SHADOW_PARAMS) == [
+        cc.Finding('commands/model.md', 'command /model takes the name of the built-in /model, '
+                                        'and a skill or command with a built-in name replaces it'),
+        cc.Finding('skills/help/SKILL.md', 'skill /help takes the name of the built-in /help, '
+                                           'and a skill or command with a built-in name replaces it'),
+        cc.Finding('skills/other/SKILL.md', 'skill /compact takes the name of the built-in /compact, '
+                                            'and a skill or command with a built-in name replaces it'),
+    ]
+
+
+def test_reserved_skill_name_passes_ordinary_skill_directories():
+    files = ['skills/a/SKILL.md', 'skills/a/references/synced.md', 'skills/synced.md']
+    assert cc.check_reserved_skill_name(None, files, {'reserved': ['synced']}) == []
+
+
+def test_reserved_skill_name_flags_a_reserved_directory_once():
+    files = ['skills/a/SKILL.md', 'skills/synced/x/SKILL.md', 'skills/synced/y.md',
+             '.claude/skills/synced/SKILL.md']
+    assert cc.check_reserved_skill_name(None, files, {'reserved': ['synced']}) == [
+        cc.Finding('.claude/skills/synced', "directory name 'synced' is reserved for claude.ai skills "
+                                            'synced into terminal sessions'),
+        cc.Finding('skills/synced', "directory name 'synced' is reserved for claude.ai skills "
+                                    'synced into terminal sessions'),
+    ]
+
+
+def test_new_skill_checks_run_through_the_register(tmp_path):
+    '''Each new check is registered, reads the kinds the register gives it, and
+    reports through run(); the fixture repo is otherwise clean.'''
+    files = {
+        'skills/help/SKILL.md': skill_md('Use when asked "help me".', body='Cost $1.\n'),
+        'commands/help.md': '---\nname: help\n---\nBody.\n',
+        'skills/synced/SKILL.md': skill_md('Use when asked "sync".'),
+        'skills/help/notes.txt': 'Nothing names me.\n',
+    }
+    root = fixture_repo(tmp_path, files)
+    lines = cc.run(root)
+    for check in ('substitution-hazard', 'skill-command-name-collision', 'command-frontmatter-keys',
+                  'builtin-name-shadow', 'reserved-skill-name', 'orphan-bundled-file'):
+        assert any(f': {check} (' in line for line in lines), (check, lines)

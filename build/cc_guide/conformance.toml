@@ -94,6 +94,11 @@ description = 'install.py, which places skills, agents and commands for each run
 globs = ['install.py']
 sections = ['skills.locations', 'subagents.overview', 'commands.overview']
 
+[kinds.skill-bundle]
+description = 'Every file kept under a skill directory: the SKILL.md plus its references, scripts and data.'
+globs = ['skills/*/**', '.claude/skills/*/**']
+sections = ['skills.locations', 'skills.progressive-disclosure']
+
 # ---------------------------------------------------------------------------
 # Sections that govern no repo file, each with its reason. Disjoint from the
 # kinds' sections; together they cover every anchor.
@@ -238,6 +243,113 @@ type = 'fact'
 rule = 'Descriptions stay within the listing cap; the repo enforces the stricter 1,024-character Agent Skills cap.'
 enforced_by = 'check_frontmatter'
 
+# Compaction re-attaches only the first 5,000 tokens of an invoked skill, so
+# the body should fit and its critical sections should open it. The token
+# estimate is characters / chars_per_token, a rough gauge; headings is the
+# critical-sounding words (matched whole, any case) that flag a heading.
+[[check]]
+id = 'compaction-window'
+kind = 'skill'
+sections = ['skills.progressive-disclosure']
+type = 'advice'
+rule = 'A SKILL.md body fits the compaction window, and no critical-sounding heading starts past it.'
+enforced_by = 'check_conformance'
+tokens = 5000
+chars_per_token = 4
+headings = ['STOP', 'Red Flags', 'Critical', 'Gotchas', 'Iron Law', 'Hard Gate', 'Warning']
+
+# Pronouns are matched whole and in any case, outside quoted phrases and code
+# spans. `us` is left out: it reads as the country in `US data`.
+[[check]]
+id = 'description-person'
+kind = 'skill'
+sections = ['skills.description']
+type = 'advice'
+rule = 'A description (with when_to_use) uses no first- or second-person pronoun outside quoted phrases.'
+enforced_by = 'check_conformance'
+pronouns = ['i', 'me', 'my', 'mine', 'we', 'our', 'ours', 'you', 'your', 'yours']
+
+# A heuristic: the guide asks for concrete trigger phrases, and the repo's
+# descriptions give them as quoted phrases or a Trigger on list.
+[[check]]
+id = 'trigger-phrase-presence'
+kind = 'skill'
+sections = ['skills.description']
+type = 'advice'
+rule = 'A description holds a quoted phrase or a Trigger on list (a heuristic for concrete trigger phrases).'
+enforced_by = 'check_conformance'
+markers = ['trigger on', 'triggers on', 'trigger when', 'triggers when']
+
+# The guide gives a backslash-dollar escape and exempts no fenced code, so the
+# check scans the whole body. Declared `arguments` names count as well.
+[[check]]
+id = 'substitution-hazard'
+kind = 'skill'
+sections = ['skills.arguments']
+type = 'fact'
+rule = 'A SKILL.md body has no unescaped $ARGUMENTS, $<digit>, ${CLAUDE_...} or declared $name, and no render-time shell command.'
+enforced_by = 'check_conformance'
+
+# Tier three loads a bundled file only when the body points at it. A file is
+# named when another text file in its skill, tests aside, gives its file name
+# or its directory with a trailing slash. exempt files need no naming; tests
+# neither need it nor count as naming anything.
+[[check]]
+id = 'orphan-bundled-file'
+kind = 'skill-bundle'
+sections = ['skills.progressive-disclosure']
+type = 'advice'
+rule = 'A bundled file under a skill directory is named by a file in that skill.'
+enforced_by = 'check_conformance'
+exempt = ['SKILL.md', 'README.md']
+tests = ['test_*', '*_test.py', 'conftest.py', 'tests/*']
+
+# On a name collision the skill wins, so the command file would never run.
+[[check]]
+id = 'skill-command-name-collision'
+kind = ['skill', 'command']
+sections = ['commands.overview']
+type = 'fact'
+rule = 'No commands/*.md filename stem equals a skill directory name.'
+enforced_by = 'check_conformance'
+
+# fields is the guide's skill frontmatter table less `name` and `paths`, which
+# a command does not take.
+[[check]]
+id = 'command-frontmatter-keys'
+kind = 'command'
+sections = ['commands.overview', 'skills.frontmatter']
+type = 'fact'
+rule = 'Command frontmatter keys are skill fields, never name or paths.'
+enforced_by = 'check_conformance'
+fields = [
+    'description', 'when_to_use', 'argument-hint', 'arguments', 'allowed-tools',
+    'disallowed-tools', 'model', 'effort', 'context', 'agent', 'background',
+    'disable-model-invocation', 'user-invocable', 'hooks', 'shell', 'license',
+    'compatibility', 'metadata',
+]
+
+# The three built-ins the guide names; a skill with a built-in's name replaces
+# it in a local terminal session.
+[[check]]
+id = 'builtin-name-shadow'
+kind = ['skill', 'command']
+sections = ['commands.overview']
+type = 'fact'
+rule = 'No skill or command takes the name of a built-in command the guide names.'
+enforced_by = 'check_conformance'
+builtins = ['help', 'model', 'compact']
+
+# ~/.claude/skills/synced/ holds skills synced from a claude.ai account.
+[[check]]
+id = 'reserved-skill-name'
+kind = 'skill-bundle'
+sections = ['skills.locations']
+type = 'fact'
+rule = 'No skill directory takes a name reserved for synced claude.ai skills.'
+enforced_by = 'check_conformance'
+reserved = ['synced']
+
 # ---------------------------------------------------------------------------
 # Exceptions, decided by the owner at the plan 35 gate (2026-10-04) on the
 # audit in specs/claude-code-conformance-audit-2026-10-04.md. A deviation is
@@ -348,6 +460,7 @@ revisit = 'When portability Stage D revises writing-skills.'
 [[exception]]
 id = 'description-second-person'
 type = 'gap'
+check = 'description-person'
 sections = ['skills.description']
 artifacts = [
     'skills/clean-coder/SKILL.md',
@@ -366,6 +479,7 @@ tracked_in = 'deferred item: rewrite seven skill descriptions in the third perso
 [[exception]]
 id = 'critical-rules-past-compaction'
 type = 'gap'
+check = 'compaction-window'
 sections = ['skills.progressive-disclosure']
 artifacts = [
     'skills/subagent-driven-development/SKILL.md',
