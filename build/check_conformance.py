@@ -13,6 +13,7 @@ violation on stdout; 2 when the guide or the register is missing or is not
 valid TOML, or git cannot list the repo's files, so a broken setup never looks
 clean. Field-level register problems are violations, not errors.
 '''
+import fnmatch
 import json
 import os
 import re
@@ -531,6 +532,229 @@ def check_rule_paths(root: Path, files: list[str], params: dict) -> list[Finding
     return out
 
 
+# Quoted phrases in a skill description: double or curly quotes, or single quotes
+# that open at a word boundary, so an apostrophe inside a word never opens one.
+QUOTED_PHRASE_RE = re.compile(
+    r"\"[^\"\n]+\"|“[^”\n]+”|(?<!\w)'(?:[^'\n]|(?<=\w)'(?=\w))+'(?!\w)")
+INLINE_CODE_RE = re.compile(r'`[^`\n]*`')
+ANY_HEADING_RE = re.compile(r'#{1,6}[ \t]')
+# The substitutions the guide lists that need no declaration: $ARGUMENTS, a
+# positional $0, $1, ..., and a ${CLAUDE_...} session variable. A leading
+# backslash escapes one. Declared argument names are added per file.
+SUBSTITUTION_BASE = r'ARGUMENTS\b|\d+|\{CLAUDE_\w+\}'
+INLINE_SHELL_RE = re.compile(r'!`[^`\n]+`')
+SHELL_FENCE_RE = re.compile(r'^[ \t]*`{3,}!')
+SKILL_PATH_RE = re.compile(r'(?:\.claude/)?skills/([^/]+)/SKILL\.md')
+SKILL_DIR_RE = re.compile(r'((?:\.claude/)?skills/([^/]+))/.+')
+
+
+def skill_body(text: str) -> tuple[str, int]:
+    '''The text after the leading frontmatter and how many lines the
+    frontmatter took, so a body line number maps to a file line number.'''
+    m = FRONTMATTER_RE.match(text)
+    return (text[m.end():], text[:m.end()].count('\n')) if m else (text, 0)
+
+
+def description_text(fm: dict) -> str:
+    '''description and when_to_use, which the guide says share one listing entry.'''
+    return ' '.join(str(fm[k]) for k in ('description', 'when_to_use') if fm.get(k) is not None)
+
+
+def check_compaction_window(root: Path, files: list[str], params: dict) -> list[Finding]:
+    tokens, per_token = params['tokens'], params['chars_per_token']
+    window = tokens * per_token
+    heading = re.compile(r'\b(?:' + '|'.join(re.escape(w) for w in params['headings']) + r')\b', re.I)
+    out: list[Finding] = []
+    for f, text in read_artifacts(root, files, out):
+        body, first = skill_body(text)
+        if len(body) <= window:
+            continue
+        out.append(Finding(f, f'body is about {len(body) // per_token} tokens; '
+                              f'compaction re-attaches only the first {tokens}'))
+        fenced = fenced_lines(body)
+        offset = 0
+        for n, line in enumerate(body.split('\n'), start=1):
+            if offset >= window and n not in fenced and ANY_HEADING_RE.match(line) and heading.search(line):
+                out.append(Finding(f, f'line {first + n}: heading {line.strip()!r} starts past the '
+                                      f'first {tokens} tokens, so compaction drops it'))
+            offset += len(line) + 1
+    return out
+
+
+def check_description_person(root: Path, files: list[str], params: dict) -> list[Finding]:
+    pronoun = re.compile(r"(?<![\w'])(?:" + '|'.join(re.escape(p) for p in params['pronouns']) + r')(?!\w)',
+                         re.I)
+    out: list[Finding] = []
+    for f, text in read_artifacts(root, files, out):
+        fm = frontmatter(text)
+        if fm is None:
+            continue  # check_frontmatter owns a missing or broken frontmatter
+        bare = INLINE_CODE_RE.sub('', QUOTED_PHRASE_RE.sub('', description_text(fm)))
+        found = sorted({m.group(0).lower() for m in pronoun.finditer(bare)})
+        if found:
+            out.append(Finding(f, 'description uses first- or second-person '
+                                  f'{", ".join(repr(p) for p in found)} outside quoted phrases'))
+    return out
+
+
+def check_trigger_phrase_presence(root: Path, files: list[str], params: dict) -> list[Finding]:
+    # A heuristic: it finds the two forms the repo's descriptions use, a quoted
+    # phrase and a "Trigger on" list, and misses any other way to name a trigger.
+    markers = [m.lower() for m in params['markers']]
+    out: list[Finding] = []
+    for f, text in read_artifacts(root, files, out):
+        fm = frontmatter(text)
+        if fm is None:
+            continue
+        desc = description_text(fm)
+        if not QUOTED_PHRASE_RE.search(desc) and not any(m in desc.lower() for m in markers):
+            out.append(Finding(f, 'description has neither a quoted trigger phrase nor a "Trigger on" list'))
+    return out
+
+
+def check_substitution_hazard(root: Path, files: list[str], params: dict) -> list[Finding]:
+    # Substitution and !`command` rendering are preprocessing of the whole
+    # body: the guide gives no fenced-code exemption and names `\$` as the
+    # only escape, so a fenced $ARGUMENTS is still a hazard.
+    out: list[Finding] = []
+    for f, text in read_artifacts(root, files, out):
+        body, first = skill_body(text)
+        declared = (frontmatter(text) or {}).get('arguments')
+        names = declared.split() if isinstance(declared, str) else [str(a) for a in declared or []]
+        names = [re.escape(n.strip('[],')) + r'\b' for n in names if n.strip('[],')]
+        token = re.compile(r'(?<!\\)\$(?:' + '|'.join([SUBSTITUTION_BASE, *names]) + ')')
+        for n, line in enumerate(body.split('\n'), start=1):
+            where = f'line {first + n}'
+            for m in token.finditer(line):
+                out.append(Finding(f, f'{where}: {m.group(0)!r} is substituted when the skill loads; '
+                                      f'escape it as \\{m.group(0)}'))
+            for m in INLINE_SHELL_RE.finditer(line):
+                out.append(Finding(f, f'{where}: {m.group(0)!r} runs a shell command at render time, '
+                                      'before Claude sees the body'))
+            if SHELL_FENCE_RE.match(line):
+                out.append(Finding(f, f'{where}: a ```! fence runs a shell command at render time, '
+                                      'before Claude sees the body'))
+    return out
+
+
+def _matches_any(rel: str, patterns: list[str]) -> bool:
+    return any(fnmatch.fnmatchcase(rel, p) or fnmatch.fnmatchcase(PurePosixPath(rel).name, p)
+               for p in patterns)
+
+
+def _names(text: str, word: str, directory: bool = False) -> bool:
+    '''Whether text mentions word as a whole file name, or as a directory
+    written with its trailing slash and not as the start of a longer path.'''
+    tail = r'/(?![\w.-])' if directory else r'(?![\w-])'
+    return re.search(r'(?<![\w.-])' + re.escape(word) + tail, text) is not None
+
+
+def check_orphan_bundled_file(root: Path, files: list[str], params: dict) -> list[Finding]:
+    # A file counts as named when any other text file in its skill, tests
+    # aside, mentions its file name, or the directory it sits in.
+    by_skill: dict[str, list[str]] = {}
+    for f in files:
+        parts = PurePosixPath(f).parts
+        at = parts.index('skills')
+        if len(parts) > at + 2:
+            by_skill.setdefault('/'.join(parts[:at + 2]), []).append('/'.join(parts[at + 2:]))
+    out: list[Finding] = []
+    for skill, rels in sorted(by_skill.items()):
+        texts: dict[str, str] = {}
+        for rel in rels:
+            if _matches_any(rel, params['tests']):
+                continue
+            try:
+                texts[rel] = (root / skill / rel).read_text(encoding='utf-8')
+            except (OSError, UnicodeDecodeError):
+                pass  # a binary or dangling file names nothing
+        for rel in sorted(rels):
+            if _matches_any(rel, params['exempt']) or _matches_any(rel, params['tests']):
+                continue
+            parts = PurePosixPath(rel).parts
+            dirs = ['/'.join(parts[:i]) for i in range(1, len(parts))]
+            if not any(_names(text, parts[-1]) or any(_names(text, d, directory=True) for d in dirs)
+                       for other, text in texts.items() if other != rel):
+                out.append(Finding(f'{skill}/{rel}', f'no file in the skill names {parts[-1]}, '
+                                                     'by file name or by its directory'))
+    return out
+
+
+def skill_names(files: list[str]) -> dict[str, str]:
+    '''Each skill's directory name and the SKILL.md that holds it.'''
+    out: dict[str, str] = {}
+    for f in files:
+        m = SKILL_PATH_RE.fullmatch(f)
+        if m:
+            out.setdefault(m.group(1), f)
+    return out
+
+
+def command_names(files: list[str]) -> dict[str, str]:
+    '''Each command's filename stem and its file.'''
+    return {PurePosixPath(f).stem: f for f in files
+            if f.startswith('commands/') and f.endswith('.md') and f.count('/') == 1}
+
+
+def check_skill_command_name_collision(root: Path, files: list[str], params: dict) -> list[Finding]:
+    skills = skill_names(files)
+    return [Finding(f, f'command /{name} shares its name with {skills[name]}, '
+                       'and on a name collision the skill wins')
+            for name, f in command_names(files).items() if name in skills]
+
+
+def check_command_frontmatter_keys(root: Path, files: list[str], params: dict) -> list[Finding]:
+    fields = set(params['fields'])
+    out: list[Finding] = []
+    for f, text in read_artifacts(root, files, out):
+        fm = frontmatter(text)
+        if fm is None:
+            if FRONTMATTER_RE.match(text):
+                out.append(Finding(f, 'frontmatter does not parse as YAML'))
+            continue  # no frontmatter is allowed: every field is optional
+        for key in fm:
+            if key == 'name':
+                out.append(Finding(f, f'frontmatter key {key!r} is not allowed in a command: '
+                                      'the filename is its name'))
+            elif key == 'paths':
+                out.append(Finding(f, f'frontmatter key {key!r} is not allowed in a command'))
+            elif key not in fields:
+                out.append(Finding(f, f'frontmatter key {key!r} is not a documented skill field'))
+    return out
+
+
+def check_builtin_name_shadow(root: Path, files: list[str], params: dict) -> list[Finding]:
+    builtins = {b.lower() for b in params['builtins']}
+    message = ('{kind} /{name} takes the name of the built-in /{name}, '
+               'and a skill or command with a built-in name replaces it')
+    out: list[Finding] = []
+    for f in files:
+        commands = command_names([f])
+        names = list(commands)
+        kind = 'command'
+        if not commands:
+            kind = 'skill'
+            skill = SKILL_PATH_RE.fullmatch(f)
+            names = [skill.group(1)] if skill else []
+            for _, text in read_artifacts(root, [f] if skill else [], out):
+                declared = (frontmatter(text) or {}).get('name')
+                if isinstance(declared, str) and declared not in names:
+                    names.append(declared)
+        for name in names:
+            if name.lower() in builtins:
+                out.append(Finding(f, message.format(kind=kind, name=name)))
+                break
+    return out
+
+
+def check_reserved_skill_name(root: Path, files: list[str], params: dict) -> list[Finding]:
+    reserved = set(params['reserved'])
+    dirs = {m.group(1): m.group(2) for f in files if (m := SKILL_DIR_RE.fullmatch(f))}
+    return [Finding(path, f'directory name {name!r} is reserved for claude.ai skills '
+                          'synced into terminal sessions')
+            for path, name in sorted(dirs.items()) if name in reserved]
+
+
 # Each check_conformance check: its function and the parameters the register
 # must give it ('integer', or 'strings' for a list of strings).
 CHECKS = {
@@ -541,6 +765,16 @@ CHECKS = {
     'agent-fields': (check_agent_fields, {'fields': 'strings', 'models': 'strings'}),
     'readonly-agent-tools': (check_readonly_agent_tools, {'forbidden_tools': 'strings'}),
     'bash-search-tools': (check_bash_search_tools, {}),
+    'compaction-window': (check_compaction_window, {
+        'tokens': 'integer', 'chars_per_token': 'integer', 'headings': 'strings'}),
+    'description-person': (check_description_person, {'pronouns': 'strings'}),
+    'trigger-phrase-presence': (check_trigger_phrase_presence, {'markers': 'strings'}),
+    'substitution-hazard': (check_substitution_hazard, {}),
+    'orphan-bundled-file': (check_orphan_bundled_file, {'exempt': 'strings', 'tests': 'strings'}),
+    'skill-command-name-collision': (check_skill_command_name_collision, {}),
+    'command-frontmatter-keys': (check_command_frontmatter_keys, {'fields': 'strings'}),
+    'builtin-name-shadow': (check_builtin_name_shadow, {'builtins': 'strings'}),
+    'reserved-skill-name': (check_reserved_skill_name, {'reserved': 'strings'}),
 }
 PARAM_TYPES = {
     'integer': (lambda v: isinstance(v, int) and not isinstance(v, bool), 'an integer'),
