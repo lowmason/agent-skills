@@ -201,6 +201,14 @@ sections = ['a.overview']
 type = 'fact'
 rule = 'Known tools.'
 enforced_by = 'check_frontmatter'
+
+[[check]]
+id = 'hook-var-quoted'
+kind = ['hook', 'settings']
+sections = ['a.one']
+type = 'advice'
+rule = 'Quote a variable that starts a script path.'
+enforced_by = 'check_conformance'
 """
 
 
@@ -259,7 +267,7 @@ def test_register_field_problems_are_violations():
     assert sorted(reg.kinds) == ['claude-md', 'hook', 'rule', 'settings']
     assert [c.id for c in reg.checks] == [
         'claude-md-size', 'stop-hook-guard', 'agent-fields',
-        'readonly-agent-tools', 'bash-search-tools', 'known-agent-tools']
+        'readonly-agent-tools', 'bash-search-tools', 'known-agent-tools', 'hook-var-quoted']
     assert reg.checks[0].params == {'limit': 200}
 
 
@@ -986,7 +994,7 @@ def check_with(**fields):
 def test_check_without_an_id_is_labelled_by_position():
     reg, violations = cc.parse_register(check_with(id=''))
     assert [v.message for v in violations] == ['check #1: id must be a non-empty string']
-    assert 'claude-md-size' not in [c.id for c in reg.checks] and len(reg.checks) == 7
+    assert 'claude-md-size' not in [c.id for c in reg.checks] and len(reg.checks) == 8
 
 
 def test_check_rule_is_required_but_not_structural():
@@ -1503,3 +1511,90 @@ def test_a_misfit_exception_still_waives_its_check(tmp_path):
     root = fixture_repo(tmp_path, {'agents/a.md': GREP_BESIDE_BASH},
                         register=FIXTURE_REGISTER + exception_toml({**GAP, 'sections': ['b.overview']}))
     assert cc.run(root) == [fit_line('b.overview', 'exception grep-beside-bash', 'agent', 'artifacts\' kinds')]
+
+
+# ---- #56: hook-var-quoted ----------------------------------------------------
+
+
+@pytest.mark.parametrize('command, uses', [
+    ('"$HOME"/.claude/hooks/a.sh', []),
+    ('"${HOME}/.claude/hooks/a.sh"', []),
+    ('$HOME/.claude/hooks/a.sh', [('HOME', 'unquoted')]),
+    ('${HOME}/.claude/hooks/a.sh', [('HOME', 'unquoted')]),
+    ('${HOME:-/x}/a.sh', [('HOME', 'unquoted')]),
+    ('"$HOME"/a.sh $OTHER/b.sh', [('OTHER', 'unquoted')]),
+    ('$A/a.sh $B/b.sh', [('A', 'unquoted'), ('B', 'unquoted')]),
+    ("'$HOME'/a.sh", [('HOME', 'single-quoted')]),
+    ("'$HOME/a.sh'", [('HOME', 'single-quoted')]),
+    ('uv run --project=$REPO/tools "$REPO"/a.py', [('REPO', 'unquoted')]),
+    ('python3 --dir=$HOME/x a.py', [('HOME', 'unquoted')]),
+    ('uv run "$(dirname "$HOME")/a.py"', []),
+    ('$(cat "$HOME/x")/a.sh', []),
+    # not the start of a path, or not a path at all
+    ('echo $HOME', []),
+    ('echo $HOME done', []),
+    ('a/$HOME/b.sh', []),
+    ('x$HOME/b.sh', []),
+    ('\\$HOME/a.sh', []),
+    ('$1/a.sh', []),
+    # CLAUDE_PROJECT_DIR belongs to hook-dir-quoted
+    ('$CLAUDE_PROJECT_DIR/a.sh', []),
+    ('${CLAUDE_PROJECT_DIR}/a.sh $HOME/b.sh', [('HOME', 'unquoted')]),
+])
+def test_unquoted_path_vars(command, uses):
+    assert cc.unquoted_path_vars(command) == uses
+
+
+def test_hook_var_quoted_passes(tmp_path):
+    write_tree(tmp_path, {
+        'hooks/README.md': json_block(hooks_tree('PreToolUse', '"$HOME"/.claude/hooks/a.sh')),
+        '.claude/settings.json': json.dumps(hooks_tree('Stop', '"${HOME}/b.sh" --flag $VAR')),
+    })
+    assert cc.check_hook_var_quoted(tmp_path, ['.claude/settings.json', 'hooks/README.md'], {}) == []
+
+
+def test_hook_var_quoted_flags_unquoted_and_single_quoted_uses(tmp_path):
+    write_tree(tmp_path, {
+        'hooks/README.md': 'Wiring:\n\n' + json_block({'hooks': {
+            'PreToolUse': [{'matcher': 'Bash', 'hooks': [
+                {'type': 'command', 'command': '$HOME/.claude/hooks/a.sh'}]}],
+            'Stop': [{'hooks': [
+                {'type': 'command', 'command': "'$HOME'/.claude/hooks/b.sh"}]}],
+        }}),
+        '.claude/settings.json': json.dumps(hooks_tree('PostToolUse', '${TOOLS_DIR}/c.sh')),
+    })
+    assert cc.check_hook_var_quoted(tmp_path, ['.claude/settings.json', 'hooks/README.md'], {}) == [
+        cc.Finding('.claude/settings.json', 'PostToolUse command leaves $TOOLS_DIR unquoted at the start of a path'),
+        cc.Finding('hooks/README.md', 'JSON block at line 3: PreToolUse command leaves $HOME unquoted at the start of a path'),
+        cc.Finding('hooks/README.md', 'JSON block at line 3: Stop command leaves $HOME single-quoted at the start of a path'),
+    ]
+
+
+def test_hook_var_quoted_leaves_parse_failures_to_hook_dir_quoted(tmp_path):
+    write_tree(tmp_path, {'hooks/README.md': BROKEN_BLOCK})
+    assert cc.check_hook_var_quoted(tmp_path, ['hooks/README.md'], {}) == []
+
+
+def test_an_unquoted_project_dir_is_reported_by_hook_dir_quoted_alone(tmp_path):
+    root = fixture_repo(tmp_path, {'hooks/README.md': json_block(
+        hooks_tree('PreToolUse', '$CLAUDE_PROJECT_DIR/a.sh'))})
+    assert cc.run(root) == [
+        'hooks/README.md: hook-dir-quoted (a.one): JSON block at line 1: '
+        'PreToolUse command leaves $CLAUDE_PROJECT_DIR unquoted']
+
+
+def test_hook_var_quoted_runs_through_the_register(tmp_path):
+    root = fixture_repo(tmp_path, {'hooks/README.md': json_block(
+        hooks_tree('PreToolUse', '$HOME/.claude/hooks/a.sh'))})
+    assert cc.run(root) == [
+        'hooks/README.md: hook-var-quoted (a.one): JSON block at line 1: '
+        'PreToolUse command leaves $HOME unquoted at the start of a path']
+
+
+def test_hook_var_quoted_can_be_waived(tmp_path):
+    waiver = {**GAP, 'id': 'home-unquoted', 'check': 'hook-var-quoted', 'sections': ['a.one'],
+              'artifacts': ['hooks/README.md'], 'protects': None}
+    root = fixture_repo(tmp_path, {'hooks/README.md': json_block(
+        hooks_tree('PreToolUse', '$HOME/.claude/hooks/a.sh'))},
+        register=FIXTURE_REGISTER + exception_toml(waiver))
+    assert cc.run(root) == []

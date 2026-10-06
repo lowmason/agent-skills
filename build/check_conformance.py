@@ -599,6 +599,34 @@ def check_rule_paths(root: Path, files: list[str], params: dict) -> list[Finding
     return out
 
 
+# The guide's Pattern 1 quotes $CLAUDE_PROJECT_DIR, which hook-dir-quoted
+# already checks, so the general check leaves that variable to it.
+PATH_START_BLOCKED = frozenset('_/.-~')
+QUOTES_THEN_SLASH_RE = re.compile(r'[\'"]*/')
+
+
+def unquoted_path_vars(command: str) -> list[tuple[str, str]]:
+    '''(name, state) of each $NAME or ${NAME...} other than CLAUDE_PROJECT_DIR
+    that starts a path in a shell command and is not double-quoted: it follows
+    no word character, `/`, `.`, `-` or `~`, and a `/` comes right after it
+    (past any closing quote). `$HOME/x` and `'$HOME'/x` qualify; `echo $HOME`,
+    `a/$HOME/x` and a variable inside double quotes do not.'''
+    return [(name, state) for name, state, start, end in shell_expansions(command)
+            if name != 'CLAUDE_PROJECT_DIR'
+            and (start == 0 or not (command[start - 1].isalnum() or command[start - 1] in PATH_START_BLOCKED))
+            and QUOTES_THEN_SLASH_RE.match(command, end)]
+
+
+def check_hook_var_quoted(root: Path, files: list[str], params: dict) -> list[Finding]:
+    found, _ = hook_commands(root, files)  # hook-dir-quoted reports parse failures
+    out: list[Finding] = []
+    for hook in found:
+        for name, state in unquoted_path_vars(hook.command):
+            out.append(Finding(hook.file, f'{hook.where}{hook.event} command leaves '
+                                          f'${name} {state} at the start of a path'))
+    return out
+
+
 # Each check_conformance check: its function and the parameters the register
 # must give it ('integer', or 'strings' for a list of strings).
 CHECKS = {
@@ -609,6 +637,7 @@ CHECKS = {
     'agent-fields': (check_agent_fields, {'fields': 'strings', 'models': 'strings'}),
     'readonly-agent-tools': (check_readonly_agent_tools, {'forbidden_tools': 'strings'}),
     'bash-search-tools': (check_bash_search_tools, {}),
+    'hook-var-quoted': (check_hook_var_quoted, {}),
 }
 PARAM_TYPES = {
     'integer': (lambda v: isinstance(v, int) and not isinstance(v, bool), 'an integer'),

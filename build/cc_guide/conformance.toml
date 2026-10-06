@@ -239,6 +239,17 @@ type = 'fact'
 rule = 'Descriptions stay within the listing cap; the repo enforces the stricter 1,024-character Agent Skills cap.'
 enforced_by = 'check_frontmatter'
 
+# The guide's Pattern 1 quotes the project-dir variable so a path with spaces
+# survives word splitting; the same holds for any variable that starts a
+# script path, $HOME included. $CLAUDE_PROJECT_DIR stays with hook-dir-quoted.
+[[check]]
+id = 'hook-var-quoted'
+kind = ['hook', 'settings']
+sections = ['hooks.patterns']
+type = 'advice'
+rule = 'A hook command keeps any other variable that starts a script path inside double quotes.'
+enforced_by = 'check_conformance'
+
 # ---------------------------------------------------------------------------
 # Exceptions, decided by the owner at the plan 35 gate (2026-10-04) on the
 # audit in specs/claude-code-conformance-audit-2026-10-04.md. A deviation is
