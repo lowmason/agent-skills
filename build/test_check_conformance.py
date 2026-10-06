@@ -856,3 +856,383 @@ def test_main_exits_2_when_git_cannot_list_files(tmp_path, monkeypatch, capsys):
     assert captured.out == ''
     assert 'cannot list the files git keeps' in captured.err
     assert 'not a git repository' in captured.err
+
+
+# ---- #34: branches the first pass left untested ---------------------------
+
+
+def test_anchor_like_line_inside_a_fence_is_not_a_stray_anchor():
+    text = f'## A\n<!-- cc: a.overview -->\n\n{FENCE}markdown\n<!-- cc: a.sample -->\n{FENCE}\n'
+    sections, violations = cc.guide_sections(text, 'guide.md')
+    assert [s.id for s in sections] == ['a.overview']
+    assert violations == []
+
+
+def test_cc_guide_markers_are_never_anchors():
+    '''Drift Stage 2 puts <!-- cc-guide: --> lines beside the anchors; they
+    must read as neither a stray nor a malformed anchor.'''
+    text = ('## A\n<!-- cc: a.overview -->\n<!-- cc-guide: sha=abc123 -->\n\nBody.\n'
+            '<!-- cc-guide: stamp -->\n### B\n<!-- cc: a.one -->\n')
+    sections, violations = cc.guide_sections(text, 'guide.md')
+    assert [s.id for s in sections] == ['a.overview', 'a.one']
+    assert violations == []
+
+
+def test_cc_guide_marker_directly_under_a_heading_is_no_anchor():
+    '''The marker is not an anchor: the heading lacks one, and says so, instead
+    of reporting a malformed anchor.'''
+    text = '## A\n<!-- cc-guide: sha=abc123 -->\n<!-- cc: a.overview -->\n'
+    _, violations = cc.guide_sections(text, 'guide.md')
+    assert rendered(violations) == [
+        "guide.md: anchor (-): line 1: heading '## A' has no anchor on its next line",
+        'guide.md: anchor (-): line 3: anchor is not directly under a heading',
+    ]
+
+
+@pytest.mark.parametrize('text', ['## A', '## A\n'])
+def test_heading_on_the_last_line_has_no_anchor(text):
+    sections, violations = cc.guide_sections(text, 'guide.md')
+    assert [s.id for s in sections] == [None]
+    assert rendered(violations) == [
+        "guide.md: anchor (-): line 1: heading '## A' has no anchor on its next line"]
+
+
+def test_unmapped_and_check_citations_must_name_anchors():
+    raw = tomllib.loads(FIXTURE_REGISTER)
+    raw['unmapped']['z.gone'] = 'Cited by mistake.'
+    raw['check'][0]['sections'] = ['a.typo']
+    reg, _ = cc.parse_register(raw)
+    assert rendered(cc.section_violations(reg, FIXTURE_ANCHORS)) == [
+        f'{cc.REGISTER}: section-id (z.gone): [unmapped] cites a section with no anchor in the guide',
+        f'{cc.REGISTER}: section-id (a.typo): check claude-md-size cites a section with no anchor in the guide',
+    ]
+
+
+@pytest.mark.parametrize('raw', [
+    {}, {'guide': 'guide.md'}, {'guide': {}}, {'guide': {'path': ''}}, {'guide': {'path': 7}}])
+def test_missing_guide_path_is_a_setup_error(tmp_path, raw):
+    with pytest.raises(cc.SetupError, match=r'\[guide\] path is missing'):
+        cc.load_guide(tmp_path, raw)
+
+
+def test_main_exits_2_when_the_register_names_no_guide(tmp_path, capsys):
+    root = fixture_repo(tmp_path, register=FIXTURE_REGISTER.replace("[guide]\npath = 'guide.md'\n", ''))
+    assert cc.main(root) == 2
+    assert capsys.readouterr().err == f'{cc.REGISTER}: [guide] path is missing\n'
+
+
+def raw_register(**changes):
+    '''The fixture register as a dict, with top-level keys replaced.'''
+    return {**tomllib.loads(FIXTURE_REGISTER), **changes}
+
+
+def register_problems(raw):
+    return [v.message for v in cc.parse_register(raw)[1]]
+
+
+@pytest.mark.parametrize('raw, expected', [
+    (raw_register(kinds=['agent']), ['[kinds] must be a table of kinds']),
+    (raw_register(kinds={'agent': 'text'}), ['kinds.agent must be a table']),
+    (raw_register(unmapped='text'), ['[unmapped] must be a table']),
+    (raw_register(check={'id': 'x'}), ['[[check]] must be an array of tables']),
+    (raw_register(check=['text']), ['check #1 must be a table']),
+])
+def test_register_shape_problems_are_violations(raw, expected):
+    assert expected[0] in register_problems(raw)
+
+
+def test_register_shape_problems_leave_nothing_usable():
+    reg, _ = cc.parse_register({'kinds': 'x', 'unmapped': 'x', 'check': 'x'})
+    assert (reg.kinds, reg.unmapped, reg.checks) == ({}, {}, [])
+
+
+def kind_with(**fields):
+    raw = tomllib.loads(FIXTURE_REGISTER)
+    raw['kinds']['agent'] = {'description': 'Agents.', 'globs': ['agents/*.md'],
+                             'sections': ['a.overview'], **fields}
+    return raw
+
+
+def test_exclude_must_be_a_list_of_strings():
+    reg, violations = cc.parse_register(kind_with(exclude='hooks/test_*.py'))
+    assert [v.message for v in violations] == ['kinds.agent: exclude must be a list of strings']
+    assert 'agent' not in reg.kinds
+
+
+def test_a_kind_without_exclude_gets_an_empty_list():
+    reg, violations = cc.parse_register(kind_with())
+    assert violations == [] and reg.kinds['agent'].exclude == []
+
+
+def test_kind_sections_must_be_a_non_empty_list():
+    reg, violations = cc.parse_register(kind_with(sections=[]))
+    assert [v.message for v in violations] == [
+        'kinds.agent: sections must be a non-empty list of strings']
+    assert 'agent' not in reg.kinds
+
+
+def test_kind_description_is_required_but_not_structural():
+    reg, violations = cc.parse_register(kind_with(description='  '))
+    assert [v.message for v in violations] == ['kinds.agent: description must be a non-empty string']
+    assert 'agent' in reg.kinds
+
+
+def check_with(**fields):
+    raw = tomllib.loads(FIXTURE_REGISTER)
+    raw['check'][0] = {**raw['check'][0], **fields}
+    return raw
+
+
+def test_check_without_an_id_is_labelled_by_position():
+    reg, violations = cc.parse_register(check_with(id=''))
+    assert [v.message for v in violations] == ['check #1: id must be a non-empty string']
+    assert 'claude-md-size' not in [c.id for c in reg.checks] and len(reg.checks) == 7
+
+
+def test_check_rule_is_required_but_not_structural():
+    reg, violations = cc.parse_register(check_with(rule=' '))
+    assert [v.message for v in violations] == ['check claude-md-size: rule must be a non-empty string']
+    assert reg.checks[0].id == 'claude-md-size'
+
+
+@pytest.mark.parametrize('fields, message', [
+    ({'kind': 'agent'}, None),
+    ({'kind': ['agent', 'rule']}, None),
+    ({'kind': 5}, 'check claude-md-size: kind must name a kind, or list kinds'),
+    ({'kind': []}, 'check claude-md-size: kind must name a kind, or list kinds'),
+    ({'sections': 'a.one'}, 'check claude-md-size: sections must be a non-empty list of strings'),
+])
+def test_check_kind_and_sections_shapes(fields, message):
+    reg, violations = cc.parse_register(check_with(**fields))
+    assert [v.message for v in violations] == ([message] if message else [])
+    assert (reg.checks[0].id == 'claude-md-size') == (message is None)
+
+
+def test_kept_files_lists_untracked_files_and_drops_deleted_ones(tmp_path):
+    '''--cached lists a tracked file deleted from the working tree; kept_files
+    does not, and keeps a dangling symlink, which exists() calls missing.'''
+    root = git_repo(tmp_path, {'gone.md': 'x\n', 'stays.md': 'x\n'})
+    subprocess.run(['git', 'add', '.'], cwd=root, env=cc.git_env(), check=True)
+    (root / 'gone.md').unlink()
+    os.symlink('nowhere.md', root / 'dangling.md')
+    (root / 'untracked.md').write_text('x\n')
+    assert cc.kept_files(root) == ['dangling.md', 'stays.md', 'untracked.md']
+
+
+def test_stop_hook_guard_reads_only_stop_hooks(tmp_path):
+    write_tree(tmp_path, {'hooks/README.md': json_block(hooks_tree('PreToolUse', 'uv run ruff check .'))})
+    assert cc.check_stop_hook_guard(tmp_path, ['hooks/README.md'], {}) == []
+
+
+def test_stop_hook_guard_survives_a_command_shlex_rejects(tmp_path):
+    write_tree(tmp_path, {
+        'hooks/README.md': json_block(hooks_tree('Stop', '"$CLAUDE_PROJECT_DIR/.claude/hooks/ruff-check.sh')),
+        'hooks/ruff-check.sh': STOP_SCRIPT,
+    })
+    assert cc.check_stop_hook_guard(tmp_path, ['hooks/README.md', 'hooks/ruff-check.sh'], {}) == [
+        cc.Finding('hooks/README.md', 'JSON block at line 1: Stop command '
+                   "'\"$CLAUDE_PROJECT_DIR/.claude/hooks/ruff-check.sh' names no hook script in the repo")]
+
+
+def test_stop_hook_guard_leaves_parse_failures_to_hook_dir_quoted(tmp_path):
+    write_tree(tmp_path, {'hooks/README.md': f'{FENCE}json\n{{"hooks": }}\n{FENCE}\n'})
+    assert cc.check_stop_hook_guard(tmp_path, ['hooks/README.md'], {}) == []
+
+
+BROKEN_BLOCK = f'{FENCE}json\n{{"hooks": }}\n{FENCE}\n'
+BROKEN_LINE = ('hooks/README.md: hook-dir-quoted (a.one): '
+               'JSON block at line 1 does not parse (Expecting value)')
+
+
+def test_a_parse_failure_is_reported_once_when_both_hook_checks_run(tmp_path):
+    root = fixture_repo(tmp_path, {'hooks/README.md': BROKEN_BLOCK})
+    assert cc.run(root) == [BROKEN_LINE]
+
+
+def test_parse_failure_goes_quiet_without_hook_dir_quoted_but_the_run_is_not_clean(tmp_path):
+    '''stop-hook-guard drops parse failures, so with hook-dir-quoted's entry
+    gone nothing reports the block, yet the missing entry fails the run.'''
+    start = FIXTURE_REGISTER.index("[[check]]\nid = 'hook-dir-quoted'")
+    end = FIXTURE_REGISTER.index("[[check]]\nid = 'stop-hook-guard'")
+    root = fixture_repo(tmp_path, {'hooks/README.md': BROKEN_BLOCK},
+                        register=FIXTURE_REGISTER[:start] + FIXTURE_REGISTER[end:])
+    assert cc.run(root) == [
+        'build/check_conformance.py: check-impl (-): implementation hook-dir-quoted has no [[check]] entry']
+
+
+def test_unparseable_json_file_is_a_violation(tmp_path):
+    write_tree(tmp_path, {'.claude/settings.json': '{"hooks": }'})
+    assert cc.check_hook_dir_quoted(tmp_path, ['.claude/settings.json'], {}) == [
+        cc.Finding('.claude/settings.json', 'file does not parse (Expecting value)', waivable=False)]
+
+
+@pytest.mark.parametrize('command, states', [
+    ("echo '\\' $CLAUDE_PROJECT_DIR/a.sh", ['unquoted']),
+    ("echo '\\$CLAUDE_PROJECT_DIR'", ['single-quoted']),
+    ('"$CLAUDE_PROJECT_DIR"/a.sh "$CLAUDE_PROJECT_DIR"', []),
+    ('$CLAUDE_PROJECT_DIR/a.sh $CLAUDE_PROJECT_DIR/b.sh', ['unquoted', 'unquoted']),
+    ('"$CLAUDE_PROJECT_DIR"/a.sh $CLAUDE_PROJECT_DIR/b.sh', ['unquoted']),
+    ("$CLAUDE_PROJECT_DIR/a.sh '${CLAUDE_PROJECT_DIR}'", ['unquoted', 'single-quoted']),
+])
+def test_unquoted_var_uses_reports_every_use(command, states):
+    assert cc.unquoted_var_uses(command, 'CLAUDE_PROJECT_DIR') == states
+
+
+def test_each_unquoted_use_is_its_own_finding(tmp_path):
+    write_tree(tmp_path, {'hooks/README.md': json_block(
+        hooks_tree('Stop', '$CLAUDE_PROJECT_DIR/a.sh $CLAUDE_PROJECT_DIR/b.sh'))})
+    assert cc.check_hook_dir_quoted(tmp_path, ['hooks/README.md'], {}) == [
+        cc.Finding('hooks/README.md', 'JSON block at line 1: Stop command leaves $CLAUDE_PROJECT_DIR unquoted')] * 2
+
+
+def test_a_file_in_two_of_a_checks_kinds_is_checked_once(tmp_path):
+    register = FIXTURE_REGISTER.replace("globs = ['.claude/settings.json']",
+                                        "globs = ['.claude/settings.json', 'hooks/README.md']")
+    root = fixture_repo(tmp_path, {'hooks/README.md': json_block(
+        hooks_tree('PreToolUse', '$CLAUDE_PROJECT_DIR/a.sh'))}, register=register)
+    assert cc.run(root) == [
+        'hooks/README.md: hook-dir-quoted (a.one): JSON block at line 1: '
+        'PreToolUse command leaves $CLAUDE_PROJECT_DIR unquoted']
+
+
+def test_a_check_listed_twice_runs_once(tmp_path):
+    register = FIXTURE_REGISTER + """
+[[check]]
+id = 'hook-dir-quoted'
+kind = ['hook', 'settings']
+sections = ['a.one']
+type = 'advice'
+rule = 'Listed twice.'
+enforced_by = 'check_conformance'
+"""
+    root = fixture_repo(tmp_path, {'hooks/README.md': json_block(
+        hooks_tree('PreToolUse', '$CLAUDE_PROJECT_DIR/a.sh'))}, register=register)
+    assert cc.run(root) == [
+        f'{cc.REGISTER}: duplicate-id (-): check ID hook-dir-quoted appears 2 times',
+        'hooks/README.md: hook-dir-quoted (a.one): JSON block at line 1: '
+        'PreToolUse command leaves $CLAUDE_PROJECT_DIR unquoted',
+    ]
+
+
+PATHS_RULES = {
+    'rules/empty.md': '---\npaths: []\n---\nRule.\n',
+    'rules/scalar.md': '---\npaths: src/*.py\n---\nRule.\n',
+    'rules/null.md': '---\npaths:\n---\nRule.\n',
+    'rules/absent.md': '---\ndescription: x\n---\nRule.\n',
+}
+
+
+def test_rule_paths_on_an_always_on_rule_flags_any_paths_value_but_null(tmp_path):
+    '''An always-on rule must not set paths: an empty list or a scalar counts as
+    setting it; a bare `paths:` (null) and an absent key do not.'''
+    write_tree(tmp_path, PATHS_RULES)
+    files = sorted(PATHS_RULES)
+    assert cc.check_rule_paths(tmp_path, files, {'always_on': files}) == [
+        cc.Finding('rules/empty.md', 'always_on lists this rule, but it sets paths'),
+        cc.Finding('rules/scalar.md', 'always_on lists this rule, but it sets paths'),
+    ]
+
+
+def test_rule_paths_on_a_lazy_rule_flags_empty_scalar_null_and_absent_paths(tmp_path):
+    write_tree(tmp_path, PATHS_RULES)
+    files = sorted(PATHS_RULES)
+    message = 'frontmatter sets no non-empty paths list, so the rule loads in every session'
+    assert cc.check_rule_paths(tmp_path, files, {'always_on': []}) == [
+        cc.Finding(f, message) for f in files]
+
+
+def test_output_is_sorted_not_in_discovery_order(tmp_path):
+    '''A register violation is found before a file violation; the output sorts
+    them by file, so agents/ comes first.'''
+    register = FIXTURE_REGISTER.replace("[unmapped]\n'b.overview' = 'Governs no fixture file.'\n", '')
+    root = fixture_repo(tmp_path, {'agents/a.md': GREP_BESIDE_BASH}, register=register)
+    lines = cc.run(root)
+    assert [line.split(':')[0] for line in lines] == ['agents/a.md', cc.REGISTER]
+
+
+def test_waiver_is_not_stale_when_its_file_could_not_be_read(tmp_path):
+    '''The waived file's only finding is unwaivable (a block that does not
+    parse), so the check could not evaluate it: the waiver is neither stale
+    nor does it hide the finding.'''
+    hook_gap = {**GAP, 'id': 'hook-dir', 'check': 'hook-dir-quoted', 'sections': ['a.one'],
+                'artifacts': ['hooks/README.md'], 'protects': None}
+    root = fixture_repo(tmp_path, {'hooks/README.md': BROKEN_BLOCK},
+                        register=FIXTURE_REGISTER + exception_toml(hook_gap))
+    assert cc.run(root) == [BROKEN_LINE]
+
+
+def exception_register(raw_exception):
+    '''FIXTURE_REGISTER with one [[exception]] built from a dict (so a value TOML
+    helper cannot spell, such as a boolean, still reaches parse_exceptions).'''
+    raw = tomllib.loads(FIXTURE_REGISTER)
+    raw['exception'] = raw_exception
+    return raw
+
+
+def parse_exception_problems(raw, tmp_path):
+    reg, _ = cc.parse_register(raw)
+    write_tree(tmp_path, {'agents/a.md': GREP_BESIDE_BASH, 'CLAUDE.md': 'Short.\n'})
+    entries, violations = cc.parse_exceptions(
+        raw, reg, FIXTURE_ANCHORS, ['agents/a.md', 'CLAUDE.md'], tmp_path)
+    return entries, [v.message for v in violations]
+
+
+def clean_gap(**changes):
+    return {k: v for k, v in {**GAP, **changes}.items() if v is not None}
+
+
+def test_exceptions_must_be_an_array_of_tables(tmp_path):
+    entries, problems = parse_exception_problems(exception_register('text'), tmp_path)
+    assert (entries, problems) == ([], ['[[exception]] must be an array of tables'])
+
+
+def test_an_exception_entry_must_be_a_table(tmp_path):
+    entries, problems = parse_exception_problems(exception_register([7, clean_gap()]), tmp_path)
+    assert problems == ['exception #1 must be a table']
+    assert [e.id for e in entries] == ['grep-beside-bash']
+
+
+@pytest.mark.parametrize('changes, problem', [
+    ({'id': ''}, 'exception #1: id must be a non-empty string'),
+    ({'type': None}, 'exception grep-beside-bash: type must be deviation or gap'),
+    ({'guide': ' '}, 'exception grep-beside-bash: guide must be a non-empty string'),
+    ({'reason': None}, 'exception grep-beside-bash: reason must be a non-empty string'),
+    ({'sections': 'a.overview'}, 'exception grep-beside-bash: sections must be a non-empty list of strings'),
+    ({'sections': []}, 'exception grep-beside-bash: sections must be a non-empty list of strings'),
+    ({'protects': 'gemini'}, 'exception grep-beside-bash: protects may list only codex and gemini'),
+    ({'artifacts': None}, 'exception grep-beside-bash: artifacts must be a non-empty list of strings'),
+    ({'artifacts': []}, 'exception grep-beside-bash: artifacts must be a non-empty list of strings'),
+    ({'artifacts': 'agents/a.md'}, 'exception grep-beside-bash: artifacts must be a non-empty list of strings'),
+    ({'ceiling': True}, 'exception grep-beside-bash: ceiling applies only to a numeric check (claude-md-size)'),
+])
+def test_exception_field_problems_are_violations(tmp_path, changes, problem):
+    entries, problems = parse_exception_problems(exception_register([clean_gap(**changes)]), tmp_path)
+    assert problems == [problem]
+    # A usable id alone never keeps the entry: an unusable id or artifacts list drops it.
+    if 'id' in changes or 'artifacts' in changes:
+        assert entries == []
+
+
+def test_a_boolean_ceiling_is_not_an_integer_ceiling(tmp_path):
+    waiver = clean_gap(id='md-size', check='claude-md-size', sections=['a.one'],
+                       artifacts=['CLAUDE.md'], protects=['gemini'], ceiling=True)
+    entries, problems = parse_exception_problems(exception_register([waiver]), tmp_path)
+    assert problems == ['exception md-size: a waiver of claude-md-size needs an integer ceiling']
+    assert [(e.id, e.ceiling) for e in entries] == [('md-size', None)]
+
+
+def test_a_numeric_waiver_keeps_its_ceiling(tmp_path):
+    waiver = clean_gap(id='md-size', check='claude-md-size', sections=['a.one'],
+                       artifacts=['CLAUDE.md'], protects=None, ceiling=225)
+    entries, problems = parse_exception_problems(exception_register([waiver]), tmp_path)
+    assert problems == []
+    assert [(e.id, e.check, e.artifacts, e.ceiling) for e in entries] == [
+        ('md-size', 'claude-md-size', ['CLAUDE.md'], 225)]
+
+
+def test_a_checkless_exception_matches_artifacts_by_glob(tmp_path):
+    deviation = clean_gap(id='tools', type='deviation', check=None, tracked_in=None,
+                          revisit='later', artifacts=['agents/*.md', 'CLAUDE.md'])
+    entries, problems = parse_exception_problems(exception_register([deviation]), tmp_path)
+    assert problems == []
+    assert [(e.id, e.check, e.ceiling) for e in entries] == [('tools', None, None)]
