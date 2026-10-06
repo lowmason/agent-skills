@@ -91,7 +91,7 @@ def test_real_guide_carries_the_drift_r11_anchors():
 
 
 # A three-section fixture guide and a register that maps it. FIXTURE_REGISTER
-# carries all seven check_conformance checks and one check_frontmatter entry,
+# carries all eight check_conformance checks and one check_frontmatter entry,
 # so a fixture repo built on it is clean until a test adds a violation.
 FIXTURE_GUIDE = (
     '# Fixture guide\n\n'
@@ -1598,3 +1598,15 @@ def test_hook_var_quoted_can_be_waived(tmp_path):
         hooks_tree('PreToolUse', '$HOME/.claude/hooks/a.sh'))},
         register=FIXTURE_REGISTER + exception_toml(waiver))
     assert cc.run(root) == []
+
+
+def test_a_broken_kind_adds_no_fit_noise_and_crashes_nothing(tmp_path):
+    '''A check may name a kind whose table is unusable (no globs): parse_register
+    keeps the check but drops the kind. The register problem and its section-map
+    consequence are the reports; the section-fit rule skips the check and the
+    exception, and the waiver path rule does not call the agent path uncovered.'''
+    register = FIXTURE_REGISTER.replace("globs = ['agents/*.md']\n", '') + exception_toml(GAP)
+    root = fixture_repo(tmp_path, {'agents/a.md': GREP_BESIDE_BASH}, register=register)
+    assert cc.run(root) == [
+        f'{cc.REGISTER}: register (-): kinds.agent: globs must be a non-empty list of strings',
+        f'{cc.REGISTER}: section-map (a.overview): section is neither mapped to a kind nor listed in [unmapped]']

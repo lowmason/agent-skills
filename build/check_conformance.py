@@ -259,6 +259,8 @@ def section_violations(reg: Register, anchors: list[str]) -> list[Violation]:
     cite('[unmapped]', reg.unmapped)
     for check in reg.checks:
         cite(f'check {check.id}', check.sections)
+        if not all(k in reg.kinds for k in check.kinds):
+            continue  # a kind with an unusable table is already a register violation
         governed = {sid for k in check.kinds for sid in reg.kinds[k].sections}
         for sid in check.sections:
             if sid in known and sid not in governed:
@@ -722,6 +724,10 @@ def parse_exceptions(raw: dict, reg: Register, anchors: list[str], files: list[s
     covered = kind_files(reg, files)
     check_kinds = {c.id: c.kinds for c in reg.checks if c.enforced_by == 'check_conformance'}
     known = set(anchors)
+    # A kind with an unusable table is a register violation already, and the
+    # artifacts' kinds cannot be known without it, so the fit rule waits.
+    raw_kinds = raw.get('kinds')
+    unusable_kinds = isinstance(raw_kinds, dict) and set(raw_kinds) != set(reg.kinds)
     out: list[Violation] = []
     entries: list[ExceptionEntry] = []
     ids: list[str] = []
@@ -791,7 +797,8 @@ def parse_exceptions(raw: dict, reg: Register, anchors: list[str], files: list[s
                 elif not ((root / a).exists() or (root / a).is_symlink()):
                     problems.append(f'artifact {a} does not exist')
                     artifacts_ok = False
-                elif check_ok and a not in {f for k in check_kinds[check] for f in covered.get(k, [])}:
+                elif (check_ok and all(k in reg.kinds for k in check_kinds[check])
+                      and a not in {f for k in check_kinds[check] for f in covered.get(k, [])}):
                     problems.append(f'artifact {a} is not one of the files check {check} covers '
                                     f'(kind: {", ".join(check_kinds[check])})')
                     artifacts_ok = False
@@ -800,7 +807,7 @@ def parse_exceptions(raw: dict, reg: Register, anchors: list[str], files: list[s
                 if not any(PurePosixPath(f).full_match(a) for f in files):
                     problems.append(f'artifact glob {a} matches no file')
                     artifacts_ok = False
-        if artifacts_ok and _str_list(sections):
+        if artifacts_ok and _str_list(sections) and not unusable_kinds:
             names = sorted(name for name, kfiles in covered.items()
                            if any(PurePosixPath(f).full_match(a) for a in artifacts for f in kfiles))
             governed = {sid for name in names for sid in reg.kinds[name].sections}
