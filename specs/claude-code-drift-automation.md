@@ -541,7 +541,10 @@ due immediately (R6.7).
 
 R6.3 **Fetch gate.** Fetch `changelog.md` and `llms.txt` on every run. When
 the changelog head matches the last fetch's, fetch only mapped pages missing
-from `latest/docs/`; otherwise refetch every mapped page. Compare (R6.5) and
+from `latest/docs/`; otherwise refetch every mapped page and delete the cached
+pages this manifest does not map, since `fetch.json` records one head for the
+whole cache and a page left behind would vouch for old text when a later run,
+on another ref's manifest, maps it again. Compare (R6.5) and
 the due rules (R6.7) always run: a guide or manifest edit changes the
 selection, and a changelog batch or an audit comes due by elapsed time alone.
 

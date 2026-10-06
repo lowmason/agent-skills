@@ -242,6 +242,28 @@ def test_the_fetch_gate_refetches_every_page_only_when_the_head_moves(tmp_path, 
     assert len(log) == 2 + len(MANIFEST.pages())
 
 
+def test_a_page_unmapped_by_a_head_move_is_refetched_when_mapped_again(tmp_path, docs_dir):
+    '''R6.3: runs on main and on --worktree share one cache with different manifests, so a
+    page left unmapped by a head move must not come back as current, with the old head's text.'''
+    cache, log = tmp_path / 'cache', []
+    narrow = state.parse_manifest(MANIFEST_TOML.replace("'env-vars', 'platform:pricing'", "'env-vars'"))
+    check.live_docs(MANIFEST, cache, serving(docs_dir, log), NOW)
+    cached = state.latest_docs(cache) / 'platform_pricing.md'
+    assert cached.is_file()
+    head_b = DOCS['changelog.md'].replace(
+        '<Update label="2.1.902"', '<Update label="2.1.903" description="October 3, 2026">\n</Update>\n'
+        '<Update label="2.1.902"')
+    write_tree(docs_dir, {'changelog.md': head_b, 'platform_pricing.md': 'Pricing text at head B.\n'})
+    check.live_docs(narrow, cache, serving(docs_dir, log), NOW)
+    assert not cached.exists()
+    assert (state.latest_docs(cache) / 'changelog.md').is_file()
+    log.clear()
+    got = check.live_docs(MANIFEST, cache, serving(docs_dir, log), NOW)
+    assert log == [MANIFEST.sources['changelog'], MANIFEST.sources['llms'],
+                   docs.page_url('platform:pricing', MANIFEST.sources)]
+    assert got.pages['platform:pricing'] == 'Pricing text at head B.\n'
+
+
 def test_a_404_removes_the_stale_copy_and_reads_as_a_missing_page(tmp_path, docs_dir):
     cache = tmp_path / 'cache'
     s = fixture_state(docs_dir)
