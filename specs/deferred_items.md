@@ -209,6 +209,11 @@
   synthesize-mode scenario-verification successor (74d) waits on the partner's
   decision to revise the VOID rule or isolate the exemplar step before any re-run of
   plan 36. This branch touches only build/ and specs/.
+- 2026-10-08 — finished `chore/deferred-quickfixes-2026-10-08` (/deferred quick fixes)
+  with 1 item aged >45d, carried on the same reason the partner chose again for this
+  branch: the synthesize-mode scenario-verification successor (74d) waits on the
+  partner's decision to revise the VOID rule or isolate the exemplar step before any
+  re-run of plan 36. This branch does not touch it.
 
 ## 11-delegation-frontmatter-rollout — 2026-07-19
 - [x] Haiku-pinned `Explore` override agent (fork-isolation upgrade; plan "Out of
