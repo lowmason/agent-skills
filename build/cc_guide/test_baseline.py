@@ -55,11 +55,27 @@ def test_derive_changed_refuses_a_section_the_refresh_lacks():
 
 
 def history(ref):
+    '''The guide at ref, read where it lived before 79ad04f moved it. A clone
+    without ref (a shallow one) skips; any other git failure fails.'''
+    present = subprocess.run(['git', 'cat-file', '-e', f'{ref}^{{commit}}'], cwd=REPO, capture_output=True)
+    if present.returncode != 0:
+        pytest.skip(f'{ref} is not in this clone (a shallow clone?)')
     proc = subprocess.run(['git', 'show', f'{ref}:{baseline.OLD_GUIDE_PATH}'], cwd=REPO,
                           capture_output=True, encoding='utf-8')
     if proc.returncode != 0:
-        pytest.skip(f'{ref} is not in this clone (a shallow clone?)')
+        pytest.fail(f'git show {ref}:{baseline.OLD_GUIDE_PATH} failed: {proc.stderr.strip()}')
     return proc.stdout
+
+
+def test_history_skips_only_for_a_commit_this_clone_lacks(monkeypatch):
+    '''A missing path at a present commit fails rather than hiding as a skip.'''
+    with pytest.raises(pytest.skip.Exception):
+        history('0' * 40)
+    monkeypatch.setattr(baseline, 'OLD_GUIDE_PATH', 'no/such/guide.md')
+    with pytest.raises((pytest.skip.Exception, pytest.fail.Exception)) as err:
+        history('HEAD')
+    assert err.type is pytest.fail.Exception
+    assert 'no/such/guide.md' in str(err.value)
 
 
 def test_r11_derivation_from_the_real_history():
@@ -112,7 +128,9 @@ def test_accept_records_the_hash_and_substantive_also_sets_changed(docs_dir):
     assert editorial['sections']['alpha.overview']['changed'] == '2.1.900'
     substantive = baseline.accept(s, edited, ['alpha.overview'], True, '2.1.902')
     assert substantive['sections']['alpha.overview']['changed'] == '2.1.902'
-    bumped = baseline.accept(s, edited, ['alpha.overview'], True, '2.1.902', {'alpha.overview': ['2.1.902']})
+    assert (substantive['sections']['alpha.overview']['text_hash']
+            == editorial['sections']['alpha.overview']['text_hash'])
+    bumped =baseline.accept(s, edited, ['alpha.overview'], True, '2.1.902', {'alpha.overview': ['2.1.902']})
     assert bumped['sections']['alpha.overview']['changed'] == '2.1.902.1'
     assert s == fixture_state(docs_dir)
 
@@ -146,6 +164,13 @@ def test_audited_sets_audited_and_checked_for_the_groups_sections(docs_dir):
     assert str(err.value) == 'unknown group gamma'
 
 
+def test_audited_never_moves_checked_backwards(docs_dir):
+    s = baseline.advance(fixture_state(docs_dir), ['alpha.reference'], '2.1.902', {'2.1.902'}, '2026-10-04')
+    with pytest.raises(state.SetupError) as err:
+        baseline.audited(s, MANIFEST, 'alpha', '2.1.901', '2026-10-05')
+    assert str(err.value) == '2.1.901 is older than the checked release of alpha.reference'
+
+
 def latest_from(tmp_path, **edits):
     folder = tmp_path / 'latest'
     write_tree(folder, {**DOCS, **edits})
@@ -169,6 +194,42 @@ def test_a_full_rebaseline_rehashes_drops_deselected_and_refreshes_llms(tmp_path
     assert new['llms'] == ['env-vars', 'events', 'new-page', 'plugins/components', 'tools']
 
 
+def test_a_bare_page_ref_rebaselines_that_whole_page_and_refreshes_llms(tmp_path, docs_dir):
+    '''A listed run may name a whole page, so its two changed blocks need no
+    listing. Like every run it refreshes the llms.txt slugs; unlike a full
+    run it keeps a page the group no longer maps.'''
+    s = fixture_state(docs_dir)
+    s['groups']['alpha']['blocks']['retired'] = {blocks.key_hash('Retired'): '1' * 16}
+    tools = DOCS['tools.md'].replace('runs alpha jobs', 'runs alpha batches').replace('Runs fast.', 'Runs faster.')
+    latest = latest_from(tmp_path, **{
+        'tools.md': tools,
+        'llms.txt': DOCS['llms.txt'] + '- [New](https://code.claude.com/docs/en/new-page.md): New.\n'})
+    new, pages, notes = baseline.rebaseline(s, MANIFEST, guide_text(), 'alpha', ['tools'], latest, '2.1.902')
+    old, alpha = s['groups']['alpha'], new['groups']['alpha']
+    assert alpha['blocks']['tools'] == fixture_state(latest)['groups']['alpha']['blocks']['tools']
+    assert alpha['blocks']['tools'] != old['blocks']['tools']
+    assert (alpha['blocks']['env-vars'], alpha['blocks']['retired']) == (old['blocks']['env-vars'],
+                                                                          old['blocks']['retired'])
+    assert alpha['snapshot'] == {'tools': '2.1.902', 'env-vars': '2.1.900'}
+    assert (pages, notes) == (['tools'], [])
+    assert new['llms'] == ['env-vars', 'events', 'new-page', 'plugins/components', 'tools']
+
+
+@pytest.mark.parametrize('group, refs, fetched, message', [
+    ('gamma', [], True, 'unknown group gamma'),
+    ('alpha', ['nowhere'], True, 'nowhere is neither mapped to nor baselined in alpha'),
+    ('alpha', [], False, '{llms}: no latest fetch; run check first'),
+])
+def test_rebaseline_refuses_an_unknown_group_or_page_and_a_missing_fetch(tmp_path, docs_dir, group, refs,
+                                                                         fetched, message):
+    latest = latest_from(tmp_path)
+    if not fetched:
+        (latest / 'llms.txt').unlink()
+    with pytest.raises(state.SetupError) as err:
+        baseline.rebaseline(fixture_state(docs_dir), MANIFEST, guide_text(), group, refs, latest, '2.1.902')
+    assert str(err.value) == message.format(llms=latest / 'llms.txt')
+
+
 def test_a_listed_rebaseline_touches_only_listed_blocks_and_refuses_other_changes(tmp_path, docs_dir):
     s = fixture_state(docs_dir)
     # `--slow` is a new selected row the run does not list, so it stays out.
@@ -188,7 +249,7 @@ def test_a_listed_rebaseline_touches_only_listed_blocks_and_refuses_other_change
     latest = latest_from(tmp_path, **{'tools.md': faster.replace('runs alpha jobs', 'runs alpha batches')})
     with pytest.raises(state.SetupError) as err:
         baseline.rebaseline(s, MANIFEST, guide_text(), 'alpha', ['tools › ' + row], latest, '2.1.902')
-    assert str(err.value) == ('tools: also changed since the baseline: tools › Tools;'
+    assert str(err.value) == ('tools: also changed or gone since the baseline: tools › Tools;'
                               ' list them too, or rebaseline the whole page')
 
 
@@ -203,7 +264,7 @@ def test_a_listed_rebaseline_takes_checks_refs_for_blocks_gone_from_the_page(tmp
         with pytest.raises(state.SetupError) as err:
             baseline.rebaseline(s, MANIFEST, guide_text(), 'alpha', ['tools › ' + row], latest, '2.1.902',
                                 snapshot=snapshot)
-        assert str(err.value) == (f'tools: also changed since the baseline: tools › {name};'
+        assert str(err.value) == (f'tools: also changed or gone since the baseline: tools › {name};'
                                   ' list them too, or rebaseline the whole page')
     refs = ['tools › ' + row, 'tools › ' + blocks.key_hash(options)]
     new, pages, _ = baseline.rebaseline(s, MANIFEST, guide_text(), 'alpha', refs, latest, '2.1.902')
@@ -222,6 +283,23 @@ def test_rebaseline_keeps_a_missing_page_and_drops_an_unmapped_one(tmp_path, doc
     assert pages == ['env-vars', 'platform:pricing']
     assert notes == ['events: missing page; kept its entries. Drop or remap it in manifest.toml first',
                      'retired: no longer mapped to beta; dropped its baselined blocks']
+
+
+def test_a_listed_ref_to_an_unmapped_page_drops_the_page_or_only_its_listed_blocks(tmp_path, docs_dir):
+    s = fixture_state(docs_dir)
+    retired, kept = hashed('Retired', 'Retired › Kept')
+    s['groups']['beta']['blocks']['retired'] = {retired: '1' * 16, kept: '2' * 16}
+    s['groups']['beta']['snapshot']['retired'] = '2.1.900'
+    latest = latest_from(tmp_path)
+    new, pages, notes = baseline.rebaseline(s, MANIFEST, guide_text(), 'beta', ['retired › Retired'], latest,
+                                            '2.1.902')
+    assert new['groups']['beta']['blocks']['retired'] == {kept: '2' * 16}
+    assert new['groups']['beta']['snapshot']['retired'] == '2.1.900'
+    assert (pages, notes) == ([], ['retired: no longer mapped to beta; dropped the listed blocks'])
+    new, pages, notes = baseline.rebaseline(s, MANIFEST, guide_text(), 'beta', ['retired'], latest, '2.1.902')
+    assert ('retired' in new['groups']['beta']['blocks'], 'retired' in new['groups']['beta']['snapshot']) == (
+        False, False)
+    assert (pages, notes) == ([], ['retired: no longer mapped to beta; dropped its baselined blocks'])
 
 
 def test_stamp_regenerates_only_the_region(docs_dir):

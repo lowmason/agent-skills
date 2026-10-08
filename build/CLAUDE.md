@@ -31,7 +31,7 @@ what it reports, record the review in this order: `baseline accept`,
 `baseline rebaseline`, `baseline advance`, `baseline audited` for an audited
 group, then `baseline stamp`; then run `cli.py lint` and
 `check_conformance.py`. A listed `rebaseline` refuses while an unlisted
-baselined block on the same page has also changed: list it too, or
+baselined block on the same page has also changed or gone: list it too, or
 rebaseline the whole page. A missing page needs a `manifest.toml` edit first.
 A correction that resolves a conformance gap removes its `[[exception]]`, or
 narrows its `artifacts`, in the same change. Nothing is committed for you.

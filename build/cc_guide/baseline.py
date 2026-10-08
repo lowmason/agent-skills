@@ -95,7 +95,16 @@ def init(manifest: Manifest, guide_text: str, docs: Path, release: str, day: str
 def known(state: dict, ids) -> None:
     unknown = [sid for sid in ids if sid not in state['sections']]
     if unknown:
-        raise SetupError(f'unknown section IDs: {", ".join(unknown)}')
+        names = ', '.join(unknown)
+        raise SetupError(f'unknown section IDs: {names}')
+
+
+def check_forward(state: dict, ids, to: str) -> None:
+    '''advance and audited never move a section's `checked` backwards.'''
+    behind = [sid for sid in ids if version_key(to) < version_key(state['sections'][sid]['checked']['release'])]
+    if behind:
+        names = ', '.join(behind)
+        raise SetupError(f'{to} is older than the checked release of {names}')
 
 
 def accept(state: dict, guide_text: str, ids, substantive: bool, newest: str | None,
@@ -123,9 +132,7 @@ def advance(state: dict, ids, to: str, labels: set[str], day: str) -> dict:
     known(state, ids)
     if to not in labels:
         raise SetupError(f'{to} is not a release in the newest cached changelog')
-    behind = [sid for sid in ids if version_key(to) < version_key(state['sections'][sid]['checked']['release'])]
-    if behind:
-        raise SetupError(f'{to} is older than the checked release of {", ".join(behind)}')
+    check_forward(state, ids, to)
     new = copy.deepcopy(state)
     for sid in ids:
         new['sections'][sid]['checked'] = {'release': to, 'date': day}
@@ -134,15 +141,29 @@ def advance(state: dict, ids, to: str, labels: set[str], day: str) -> dict:
 
 def audited(state: dict, manifest: Manifest, group: str, release: str, day: str) -> dict:
     '''R7 audited: set `audited` for the group's sections to the current
-    release and day, and advance their `checked` to it.'''
+    release and day, and advance their `checked` to it, never backwards.'''
     if group not in manifest.groups:
         raise SetupError(f'unknown group {group}')
-    known(state, manifest.groups[group].sections)
+    ids = manifest.groups[group].sections
+    known(state, ids)
+    check_forward(state, ids, release)
     new = copy.deepcopy(state)
-    for sid in manifest.groups[group].sections:
+    for sid in ids:
         new['sections'][sid]['audited'] = {'release': release, 'date': day}
         new['sections'][sid]['checked'] = {'release': release, 'date': day}
     return new
+
+
+def _drop(g: dict, page: str, keys: set[str] | None, group: str) -> str:
+    '''Drop baselined blocks of a page the group no longer maps: all of them
+    with the page's snapshot, or only the listed keys. Returns the note.'''
+    if keys is None:
+        g['blocks'].pop(page)
+        g['snapshot'].pop(page, None)
+        return f'{page}: no longer mapped to {group}; dropped its baselined blocks'
+    for key in keys:
+        g['blocks'][page].pop(key, None)
+    return f'{page}: no longer mapped to {group}; dropped the listed blocks'
 
 
 def rebaseline(state: dict, manifest: Manifest, guide_text: str, group: str, refs: list[str],
@@ -151,9 +172,9 @@ def rebaseline(state: dict, manifest: Manifest, guide_text: str, group: str, ref
     them or the listed refs: `<page>`, or `<page> › <key>` as check prints a
     block, a key hash for a block check could not name. A listed key that is
     no longer selected leaves the baseline. A listed run refuses when an
-    unlisted baselined block on the page changed too, since the page's
-    snapshot would then not hold its baselined text; the refusal names a gone
-    block from `snapshot`, as check does. Returns the new state, the pages to
+    unlisted baselined block on the page also changed or is gone, since the
+    page's snapshot would then not hold its baselined text; the refusal names
+    a gone block from `snapshot`, as check does. Returns the new state, the pages to
     snapshot to <release>/docs, and notes.
 
     A missing page keeps its entries: it needs a manifest edit, not a
@@ -184,13 +205,7 @@ def rebaseline(state: dict, manifest: Manifest, guide_text: str, group: str, ref
         if page not in mapped:
             if page not in g['blocks']:
                 raise SetupError(f'{page} is neither mapped to nor baselined in {group}')
-            if keys is None:
-                g['blocks'].pop(page)
-                g['snapshot'].pop(page, None)
-            else:
-                for key in keys:
-                    g['blocks'][page].pop(key, None)
-            notes.append(f'{page}: no longer mapped to {group}; dropped its baselined blocks')
+            notes.append(_drop(g, page, keys, group))
             continue
         path = latest / page_file(page)
         if not path.is_file() or (not is_platform(page) and page not in slugs):
@@ -208,7 +223,7 @@ def rebaseline(state: dict, manifest: Manifest, guide_text: str, group: str, ref
                      if k not in keys and hashes.get(k) != h]
             if moved:
                 listed = ', '.join(moved)
-                raise SetupError(f'{page}: also changed since the baseline: {listed};'
+                raise SetupError(f'{page}: also changed or gone since the baseline: {listed};'
                                  ' list them too, or rebaseline the whole page')
             merged = {**g['blocks'].get(page, {})}
             for key in keys:
@@ -222,9 +237,7 @@ def rebaseline(state: dict, manifest: Manifest, guide_text: str, group: str, ref
         snap.append(page)
     if not refs:
         for page in [p for p in g['blocks'] if p not in mapped]:
-            g['blocks'].pop(page)
-            g['snapshot'].pop(page, None)
-            notes.append(f'{page}: no longer mapped to {group}; dropped its baselined blocks')
+            notes.append(_drop(g, page, None, group))
     new['llms'] = sorted(slugs)
     return new, snap, notes
 

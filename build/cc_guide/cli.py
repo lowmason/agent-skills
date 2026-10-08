@@ -23,10 +23,10 @@ Run: uv run --python 3.13 python build/cc_guide/cli.py <subcommand>
       Always the working tree; nothing is committed. rebaseline takes each
       KEY as check prints it, a key hash for a block check could not name.
       A listed rebaseline refuses while an unlisted baselined block on the
-      same page has also changed, since the page's snapshot would not hold
-      that block's baselined text: list it too, or rebaseline the whole
-      page. It also refuses to overwrite a snapshot page that holds other
-      text.
+      same page has also changed or gone, since the page's snapshot would
+      not hold that block's baselined text: list it too, or rebaseline the
+      whole page. It also refuses to overwrite a snapshot page that holds
+      other text.
 
 After reviewing what check reported, record it in R8.8's order: accept,
 rebaseline, advance, then audited for an audited group, then stamp; then run
@@ -61,8 +61,8 @@ REBASELINE_HELP = '''Re-hash GROUP's selected blocks from latest/ (all of them, 
 PAGE / 'PAGE › KEY' refs) and snapshot those pages to the cache.
 
 A listed run refuses while an unlisted baselined block on the same page has
-also changed since the baseline: list it too, or rebaseline the whole page.
-It also refuses to overwrite a snapshot page that holds different text.'''
+also changed or gone since the baseline: list it too, or rebaseline the whole
+page. It also refuses to overwrite a snapshot page that holds different text.'''
 
 
 def parser() -> argparse.ArgumentParser:

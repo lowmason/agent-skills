@@ -60,6 +60,7 @@ def test_help_shows_the_module_docstring_and_the_rebaseline_refusal(capsys):
         assert stop.value.code == 0
         out = ' '.join(capsys.readouterr().out.split())
         assert 'unlisted baselined block' in out
+        assert 'also changed or gone' in out
         assert 'the whole page' in out
     with pytest.raises(SystemExit):
         cli.main(['--help'])
@@ -219,8 +220,8 @@ def test_rebaseline_names_a_gone_block_from_the_cached_snapshot(world, capsys):
     write_tree(state.snapshot_docs(cache, '2.1.900'), {'tools.md': DOCS['tools.md']})
     write_tree(state.latest_docs(cache), {'tools.md': DOCS['tools.md'].replace('## Options', '## Flags')})
     assert main(cache, 'baseline', 'rebaseline', 'alpha', 'tools › Tools › Options › `--fast`') == 2
-    assert capsys.readouterr() == ('', 'cc-guide: tools: also changed since the baseline: tools › Tools › Options;'
-                                       ' list them too, or rebaseline the whole page\n')
+    assert capsys.readouterr() == ('', 'cc-guide: tools: also changed or gone since the baseline:'
+                                       ' tools › Tools › Options; list them too, or rebaseline the whole page\n')
     assert dirty(repo) == []
 
 
