@@ -17,9 +17,10 @@ GUIDE = 'specs/guides/claude-code-customization-guide.md'
 FENCE = '`' * 3
 
 # The 38 section IDs of the drift spec's R1.1 table, in heading order
-# (specs/claude-code-drift-automation.md). Pinned here as R1.2's oracle; the
-# lint itself validates the register against the guide's anchors, never
-# against this list.
+# (specs/claude-code-drift-automation.md). Pinned here as R1.2's oracle, and
+# only here: the guide is read with cc_guide/guide.py's grammar, whose own
+# suite imports nothing from build/ (drift R12.1). The lint itself validates
+# the register against the guide's anchors, never against this list.
 R11_IDS = [
     'context.overview', 'mechanisms.overview',
     'skills.overview', 'skills.locations', 'skills.frontmatter',
@@ -73,12 +74,13 @@ def test_anchor_not_directly_under_a_heading_is_a_violation():
         'guide.md: anchor (-): line 3: anchor is not directly under a heading']
 
 
-def test_repeated_anchor_id_is_a_violation():
+def test_repeated_anchor_id_is_a_violation_and_resolves_as_guide_py_does():
     text = '## A\n<!-- cc: a.one -->\n## B\n<!-- cc: a.one -->\n'
     sections, violations = cc.guide_sections(text, 'guide.md')
     assert [s.id for s in sections] == ['a.one', None]
+    assert [s.id for s in sections] == [s.id for s in cc.guide.sections(text)]
     assert rendered(violations) == [
-        'guide.md: anchor (a.one): line 4: anchor repeats line 2']
+        'guide.md: anchor (a.one): line 4: anchor a.one repeats line 2']
 
 
 def test_real_guide_carries_the_drift_r11_anchors():

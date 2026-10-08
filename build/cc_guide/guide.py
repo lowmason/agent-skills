@@ -36,14 +36,26 @@ class Section(NamedTuple):
     prose: str           # the same lines less fenced ones, for terms
 
 
-def sections(text: str) -> list[Section]:
-    '''The guide's ## and ### headings outside fenced code (R1.1), each with
-    its anchor's ID and its text. A ## section runs to its first ###; the last
-    section runs to the end of the file.'''
+class AnchorProblem(NamedTuple):
+    line: int        # 1-based line the problem is on
+    id: str | None   # the repeated anchor's ID; None for every other problem
+    message: str     # the problem, without its line
+
+
+def scan(text: str) -> tuple[list[Section], list[AnchorProblem]]:
+    '''R1.1's grammar, read once for both this package and
+    build/check_conformance.py: the guide's ## and ### headings outside fenced
+    code, each with its anchor's ID and its text, and every anchor problem.
+    A ## section runs to its first ###; the last section runs to the end of
+    the file. A repeated anchor IDs only its first heading, since every
+    reader keys sections by ID.'''
     lines = text.split('\n')
     fenced = fenced_lines(lines)
     starts = [i for i, line in enumerate(lines) if i not in fenced and HEADING_RE.match(line)]
-    out: list[Section] = []
+    found: list[Section] = []
+    problems: list[AnchorProblem] = []
+    under: set[int] = set()
+    first: dict[str, int] = {}
     parent = None
     for n, start in enumerate(starts):
         end = starts[n + 1] if n + 1 < len(starts) else len(lines)
@@ -51,40 +63,41 @@ def sections(text: str) -> list[Section]:
         is_sub = lines[start].startswith('###')
         if not is_sub:
             parent = heading
-        anchor = ANCHOR_RE.match(lines[start + 1]) if start + 1 < end else None
+        nxt = lines[start + 1] if start + 1 < end else ''
+        anchor = ANCHOR_RE.match(nxt)
+        sid = None
+        if anchor:
+            under.add(start + 1)
+            if anchor.group(1) in first:
+                problems.append(AnchorProblem(start + 2, anchor.group(1),
+                                              f'anchor {anchor.group(1)} repeats line {first[anchor.group(1)]}'))
+            else:
+                first[anchor.group(1)] = start + 2
+                sid = anchor.group(1)
+        elif ANCHOR_LIKE_RE.match(nxt):
+            under.add(start + 1)
+            problems.append(AnchorProblem(start + 2, None, f'malformed anchor {nxt.strip()!r}'))
+        else:
+            problems.append(AnchorProblem(start + 1, None, f'heading {heading!r} has no anchor on its next line'))
         body = [i for i in range(start, end) if not (anchor and i == start + 1)]
-        out.append(Section(start + 1, heading, parent if is_sub else None,
-                           anchor.group(1) if anchor else None,
-                           '\n'.join(lines[i] for i in body),
-                           '\n'.join(lines[i] for i in body if i not in fenced)))
-    return out
+        found.append(Section(start + 1, heading, parent if is_sub else None, sid,
+                             '\n'.join(lines[i] for i in body),
+                             '\n'.join(lines[i] for i in body if i not in fenced)))
+    problems += [AnchorProblem(i + 1, None, 'anchor is not directly under a heading')
+                 for i, line in enumerate(lines)
+                 if i not in fenced and i not in under and ANCHOR_LIKE_RE.match(line)]
+    return found, problems
+
+
+def sections(text: str) -> list[Section]:
+    '''The guide's sections (R1.1), as scan reads them.'''
+    return scan(text)[0]
 
 
 def anchor_problems(text: str) -> list[str]:
     '''R1.1 as the lint states it: every heading has exactly one well-formed
     anchor on its next line, and no anchor repeats or stands anywhere else.'''
-    lines = text.split('\n')
-    fenced = fenced_lines(lines)
-    problems: list[str] = []
-    under: set[int] = set()
-    first: dict[str, int] = {}
-    for s in sections(text):
-        nxt = lines[s.line] if s.line < len(lines) else ''
-        if s.id is not None:
-            under.add(s.line)
-            if s.id in first:
-                problems.append(f'guide line {s.line + 1}: anchor {s.id} repeats line {first[s.id]}')
-            else:
-                first[s.id] = s.line + 1
-        elif ANCHOR_LIKE_RE.match(nxt):
-            under.add(s.line)
-            problems.append(f'guide line {s.line + 1}: malformed anchor {nxt.strip()!r}')
-        else:
-            problems.append(f'guide line {s.line}: heading {s.heading!r} has no anchor on its next line')
-    for i, line in enumerate(lines):
-        if i not in fenced and i not in under and ANCHOR_LIKE_RE.match(line):
-            problems.append(f'guide line {i + 1}: anchor is not directly under a heading')
-    return problems
+    return [f'guide line {p.line}: {p.message}' for p in scan(text)[1]]
 
 
 def text_hash(section_text: str) -> str:

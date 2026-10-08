@@ -30,21 +30,13 @@ import yaml
 from check_frontmatter import READONLY_HEADING
 from fences import fenced_lines, iter_code_blocks
 
+# The guide's anchor grammar is cc_guide/guide.py's (drift R1.1). Drift R12.1
+# bars only cc_guide importing from build/, so the lint reads it from there.
+sys.path.insert(0, str(Path(__file__).resolve().parent / 'cc_guide'))
+import guide  # noqa: E402
+
 REPO = Path(__file__).resolve().parent.parent
 REGISTER = 'build/cc_guide/conformance.toml'
-# A ## or ### ATX heading. The guide's sections are exactly these (drift R1.1).
-HEADING_RE = re.compile(r'^#{2,3}[ \t]')
-# A well-formed anchor: two or more dot-separated [a-z0-9-] segments.
-ANCHOR_RE = re.compile(r'^<!-- cc: ([a-z0-9-]+(?:\.[a-z0-9-]+)+) -->$')
-# Anything meant as an anchor, well-formed or not. `cc-guide:` (drift's
-# citation and stamp markers) does not match: `cc` must be followed by `:`.
-ANCHOR_LIKE_RE = re.compile(r'^<!--\s*cc:')
-
-
-class Section(NamedTuple):
-    line: int  # 1-based line of the heading
-    heading: str
-    id: str | None  # None when the heading has no well-formed, unique anchor
 
 
 class Violation(NamedTuple):
@@ -59,41 +51,12 @@ class Violation(NamedTuple):
         return f'{self.file}: {self.check} ({self.section}): {self.message}'
 
 
-def guide_sections(text: str, path: str) -> tuple[list[Section], list[Violation]]:
-    '''The guide's ## and ### headings outside fenced code, each with the ID of
-    the anchor on its next line, plus one violation per missing, malformed,
-    stray or repeated anchor (R1.1, R3.3 rule 1).'''
-    lines = text.split('\n')
-    fenced = fenced_lines(text)
-    sections: list[Section] = []
-    out: list[Violation] = []
-    under_heading: set[int] = set()
-    first_line: dict[str, int] = {}
-    for n, line in enumerate(lines, start=1):
-        if n in fenced or not HEADING_RE.match(line):
-            continue
-        nxt = lines[n] if n < len(lines) else ''
-        anchor = None
-        m = ANCHOR_RE.match(nxt)
-        if m:
-            under_heading.add(n + 1)
-            if m.group(1) in first_line:
-                out.append(Violation(path, 'anchor', m.group(1),
-                                     f'line {n + 1}: anchor repeats line {first_line[m.group(1)]}'))
-            else:
-                first_line[m.group(1)] = n + 1
-                anchor = m.group(1)
-        elif ANCHOR_LIKE_RE.match(nxt):
-            under_heading.add(n + 1)
-            out.append(Violation(path, 'anchor', '-', f'line {n + 1}: malformed anchor {nxt.strip()!r}'))
-        else:
-            out.append(Violation(path, 'anchor', '-',
-                                 f'line {n}: heading {line.strip()!r} has no anchor on its next line'))
-        sections.append(Section(n, line.strip(), anchor))
-    for n, line in enumerate(lines, start=1):
-        if n not in fenced and n not in under_heading and ANCHOR_LIKE_RE.match(line):
-            out.append(Violation(path, 'anchor', '-', f'line {n}: anchor is not directly under a heading'))
-    return sections, out
+def guide_sections(text: str, path: str) -> tuple[list[guide.Section], list[Violation]]:
+    '''The guide's sections, read with guide.py's grammar (drift R1.1), plus
+    one violation per missing, malformed, stray or repeated anchor (R3.3
+    rule 1). A repeated anchor IDs only its first heading.'''
+    sections, problems = guide.scan(text)
+    return sections, [Violation(path, 'anchor', p.id or '-', f'line {p.line}: {p.message}') for p in problems]
 
 
 class SetupError(Exception):

@@ -10,26 +10,6 @@ from cc_fixtures import FENCE, FIXTURE_STAMP, GUIDE_IDS, guide_text, isolated_ho
 REPO = Path(__file__).resolve().parents[2]
 REAL_GUIDE = REPO / 'specs/guides/claude-code-customization-guide.md'
 
-# The 38 section IDs of the drift spec's R1.1 table, in heading order. The
-# conformance suite pins the same list; this suite imports nothing from
-# build/ (R12.1), so it keeps its own copy.
-R11_IDS = [
-    'context.overview', 'mechanisms.overview',
-    'skills.overview', 'skills.locations', 'skills.frontmatter',
-    'skills.description', 'skills.listing-budget',
-    'skills.progressive-disclosure', 'skills.arguments', 'skills.iterating',
-    'commands.overview',
-    'subagents.overview', 'subagents.frontmatter', 'subagents.tools',
-    'subagents.models', 'subagents.isolation',
-    'rules.overview', 'rules.claude-md', 'rules.hierarchy',
-    'rules.rules-files', 'rules.auto-memory', 'rules.settings',
-    'hooks.overview', 'hooks.events', 'hooks.exit-codes', 'hooks.handlers',
-    'hooks.configuration', 'hooks.patterns', 'hooks.pitfalls',
-    'lean.overview', 'lean.measure', 'lean.session-hygiene', 'lean.caching',
-    'lean.model-routing', 'lean.mcp', 'lean.ceremony', 'lean.expensive-ops',
-    'reading.overview',
-]
-
 
 def by_id(text):
     return {s.id: s for s in guide.sections(text)}
@@ -61,6 +41,29 @@ def test_anchor_problems_name_missing_malformed_repeated_and_stray_anchors():
         "guide line 6: malformed anchor '<!-- cc: Bad_ID -->'",
         'guide line 8: anchor a.one repeats line 2',
         'guide line 10: anchor is not directly under a heading',
+    ]
+
+
+def test_a_repeated_anchor_ids_only_its_first_heading():
+    '''Every reader keys sections by ID, so a repeat must not merge two
+    sections into one entry (owner ruling, plan 39).'''
+    text = '\n'.join(['## A', '<!-- cc: a.one -->', 'Alpha.', '## B', '<!-- cc: a.one -->', 'Beta.'])
+    found = guide.sections(text)
+    assert [(s.heading, s.id) for s in found] == [('## A', 'a.one'), ('## B', None)]
+    assert found[1].text == '## B\nBeta.'
+
+
+def test_scan_returns_the_sections_and_each_problems_line_and_id():
+    text = '\n'.join(['## A', '<!-- cc: a.one -->', '### B', 'body', '### C',
+                      '<!-- cc: Bad_ID -->', '### D', '<!-- cc: a.one -->', '',
+                      '<!-- cc: a.two -->'])
+    found, problems = guide.scan(text)
+    assert [s.id for s in found] == ['a.one', None, None, None]
+    assert problems == [
+        guide.AnchorProblem(3, None, "heading '### B' has no anchor on its next line"),
+        guide.AnchorProblem(6, None, "malformed anchor '<!-- cc: Bad_ID -->'"),
+        guide.AnchorProblem(8, 'a.one', 'anchor a.one repeats line 2'),
+        guide.AnchorProblem(10, None, 'anchor is not directly under a heading'),
     ]
 
 
@@ -128,9 +131,8 @@ def test_render_stamp_names_the_oldest_checked_and_audited():
         'oldest full re-verification 2026-08-01, at 2.1.9.')
 
 
-def test_real_guide_splits_into_the_38_r11_ids_in_order():
-    assert [s.id for s in guide.sections(REAL_GUIDE.read_text(encoding='utf-8'))] == R11_IDS
-
-
 def test_real_guide_has_no_anchor_problems():
+    '''build/test_check_conformance.py pins the guide's 38 IDs in order,
+    read with this module's grammar (R1.2); this suite imports nothing from
+    build/ (R12.1).'''
     assert guide.anchor_problems(REAL_GUIDE.read_text(encoding='utf-8')) == []
