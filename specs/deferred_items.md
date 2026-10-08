@@ -2194,10 +2194,12 @@ declined as YAGNI (zero instances in a one-page wiki).
       → done 2026-10-08 (/deferred quick fix): `dmi-handoff-consistency` is in CHECKS with
       its [[check]] entry and red-first tests. A handoff is the skill's bare name in any
       other skill, bundle, agent, command, rule or CLAUDE.md Markdown file; a path into the
-      skill and a typed `/name` are not. Commands are not targets. It finds nothing today,
-      because ALLOWED_KEYS rejects the key on a SKILL.md; with writing-plans marked
-      manual-only in a scratch copy it flagged 9 real referrers. The register comment ties
-      its premise to guide note S-110.
+      skill and a typed `/name` are not. Commands are not targets. It finds nothing today
+      on `skills/*/SKILL.md`, because ALLOWED_KEYS rejects the key there; `.claude/skills/`
+      is not linted for it. With writing-plans marked manual-only in a scratch copy it
+      flagged 9 files that name it, some of them mentions rather than handoffs. Drift
+      citation lines and human docs still match it: see the deferred-2026-10-08 section.
+      The register comment ties its premise to guide note S-110.
 - [x] Add the `skill-command-name-collision` conformance check (plan 35 audit §6, d10, seat
       check S#10): no `commands/*.md` stem equals a `skills/*/` directory name. Today 0.
       Size: quick-fix. Done when: the check is in `CHECKS` in `build/check_conformance.py`,
@@ -2715,3 +2717,23 @@ declined as YAGNI (zero instances in a one-page wiki).
       `test_calibration_check.py`. Size: quick-fix. Done when: a NaN posterior-predictive
       draw exits with a JSON error naming its count on both PIT paths, with a test for
       each.
+- [ ] `dmi-handoff-consistency` matches drift citation lines and reads human docs (whole-
+      branch review of chore/deferred-2026-10-08; deferred at the owner's call because
+      plan 39's pre-flight pins `build/check_conformance.py` and
+      `build/test_check_conformance.py` by content hash). The bare-name regex in
+      `check_dmi_handoff_consistency` allows a `:` after the name, so it matches `cc-guide`
+      in drift R4.1's `# cc-guide: <id> @<ver>` and `<!-- cc-guide: … -->` lines. Once
+      R8.1's `.claude/skills/cc-guide/SKILL.md` sets `disable-model-invocation: true`
+      (`check_frontmatter.py` lints only `skills/`), every cited SKILL.md, agent, command
+      and CLAUDE.md is a finding; a fixture repo reproduced 3. Findings attach to the
+      target skill, so the only waiver switches the check off for cc-guide. It also reads
+      skill READMEs and INSTALL.md, which `HUMAN_DOCS` in `build/test_runtime_support.py`
+      treats as human docs. Fix: before matching, drop lines that begin, after
+      indentation, with `# cc-guide:` or `<!-- cc-guide:` (R5's grammar), and skip
+      README.md and INSTALL.md; red first, with a test on a skill named `cc-guide` and
+      optionally one on a leading-hyphen name (`re-ship`); then trim the deferral from the
+      `[[check]]` comment in `build/cc_guide/conformance.toml`. Order: land it after plan
+      39 executes (an earlier change to either file fails that plan's pre-flight) and
+      before drift R4.1 or R8.1 lands, or portability R1.1 adds the key to the SKILL.md
+      key set. Size: quick-fix. Done when: a citation-shaped line and a README or
+      INSTALL.md that name a manual-only skill yield no finding, with a test for each.
