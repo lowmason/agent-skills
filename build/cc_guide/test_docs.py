@@ -13,7 +13,7 @@ def test_versions_order_as_integer_tuples_with_four_components():
     assert sorted(labels, key=docs.version_key) == ['2.1.9', '2.1.10', '2.1.288', '2.1.288.1', '2.1.289']
 
 
-@pytest.mark.parametrize('label', ['2.1.x', '', '2.1.288-beta', 'v2.1.288', '2.1.288\n'])
+@pytest.mark.parametrize('label', ['2.1.x', '', '2.1.288-beta', 'v2.1.288', '2.1.288\n', '\u0662.\u0661.\u0662'])
 def test_version_key_rejects_what_is_not_a_label(label):
     with pytest.raises(ValueError):
         docs.version_key(label)

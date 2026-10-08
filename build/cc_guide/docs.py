@@ -13,7 +13,7 @@ CHANGELOG = 'changelog.md'
 LLMS = 'llms.txt'
 PLATFORM = 'platform:'
 
-LABEL_RE = re.compile(r'\d+(?:\.\d+)+')
+LABEL_RE = re.compile(r'[0-9]+(?:\.[0-9]+)+')
 UPDATE_RE = re.compile(r'^<Update label="([^"]*)" description="([^"]*)">\s*$')
 BULLET_RE = re.compile(r'^\s*\* (.*)$')
 LLMS_RE = re.compile(r'\(https://code\.claude\.com/docs/en/([^)\s]+)\.md\)')
