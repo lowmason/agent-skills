@@ -209,6 +209,11 @@
   synthesize-mode scenario-verification successor (74d) waits on the partner's
   decision to revise the VOID rule or isolate the exemplar step before any re-run of
   plan 36. This branch touches only build/ and specs/.
+- 2026-10-08 — finished `chore/deferred-quickfixes-2026-10-08` (/deferred quick fixes)
+  with 1 item aged >45d, carried on the same reason the partner chose again for this
+  branch: the synthesize-mode scenario-verification successor (74d) waits on the
+  partner's decision to revise the VOID rule or isolate the exemplar step before any
+  re-run of plan 36. This branch does not touch it.
 
 ## 11-delegation-frontmatter-rollout — 2026-07-19
 - [x] Haiku-pinned `Explore` override agent (fork-isolation upgrade; plan "Out of
@@ -2708,7 +2713,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       described with the current templates.
 
 ## deferred-2026-10-08 (no plan; /deferred pass, branch chore/deferred-2026-10-08) — 2026-10-08
-- [ ] `calibration_check.py` reads NaN posterior-predictive draws as draws above `y`
+- [x] `calibration_check.py` reads NaN posterior-predictive draws as draws above `y`
       (found while fixing "`calibration_check.py` never guards against non-finite inputs"
       in the 34-calibration-check-verdicts section; outside that item's scope, logged at
       the owner's call). In `pit_values`, a NaN draw compares false under both `<` and
@@ -2726,7 +2731,8 @@ declined as YAGNI (zero instances in a one-page wiki).
       `test_calibration_check.py`. Size: quick-fix. Done when: a NaN posterior-predictive
       draw exits with a JSON error naming its count on both PIT paths, with a test for
       each.
-- [ ] `dmi-handoff-consistency` matches drift citation lines and reads human docs (whole-
+      → done 2026-10-08 (/deferred quick fix)
+- [x] `dmi-handoff-consistency` matches drift citation lines and reads human docs (whole-
       branch review of chore/deferred-2026-10-08; deferred at the owner's call because
       plan 39's pre-flight pins `build/check_conformance.py` and
       `build/test_check_conformance.py` by content hash). The bare-name regex in
@@ -2746,6 +2752,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       before drift R4.1 or R8.1 lands, or portability R1.1 adds the key to the SKILL.md
       key set. Size: quick-fix. Done when: a citation-shaped line and a README or
       INSTALL.md that name a manual-only skill yield no finding, with a test for each.
+      → done 2026-10-08 (/deferred quick fix)
 
 ## 39-cc-guide-hardening — 2026-10-08
 - [ ] One fence rule for `build/check_conformance.py` (plan 39's final review, T1-1;
@@ -2760,10 +2767,11 @@ declined as YAGNI (zero instances in a one-page wiki).
       Size: plan. Revisit if: a fence that one rule reads and the other does not causes
       a missed or spurious conformance finding, or an artifact kind starts matching
       `specs/guides/`.
-- [ ] A repeated missing ID is listed twice (plan 39's final review, T2-1; deferred at the
+- [x] A repeated missing ID is listed twice (plan 39's final review, T2-1; deferred at the
       owner's call). `baseline.accept`, `known` and `check_forward` in
       `build/cc_guide/baseline.py` each list a missing ID once per time it is passed, so
       `accept a.x a.x` names `a.x` twice in its `cc-guide:` line. Fix: deduplicate with
       `dict.fromkeys(ids)` before building each message, red first, with one test per
       function in `build/cc_guide/test_baseline.py`. Size: quick-fix. Done when: a
       repeated missing ID appears once in each refusal, with a test for each.
+      → done 2026-10-08 (/deferred quick fix)

@@ -345,6 +345,17 @@ def main():
             file=sys.stderr,
         )
 
+    # A NaN draw compares false under both < and ==, so it counts as neither below nor
+    # tied with y and skews the PIT silently on both paths. An infinite draw ranks.
+    draws = dt["posterior_predictive"][var_name].values
+    nan_draws = np.isnan(draws)
+    if nan_draws.any():
+        _exit_with_error(
+            f"{nan_draws.sum()} of {nan_draws.size} posterior_predictive draws of '{var_name}' "
+            "are NaN, and a NaN draw has no rank against y. Look for NaN in the model's "
+            "predictive output (a NaN parameter draw or an invalid distribution argument)."
+        )
+
     # One set of PIT values feeds the JSON verdict and both figures.
     ci_prob = args.ci_prob
     pit = pit_values(dt, var_name, use_loo=args.loo_pit)

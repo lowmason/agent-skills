@@ -1306,6 +1306,36 @@ def test_dmi_handoff_consistency_flags_every_file_that_names_a_manual_only_skill
     ]
 
 
+def test_dmi_handoff_consistency_ignores_drift_citation_lines(tmp_path):
+    # Drift R4.1's citations name the guide, not a skill, so a manual-only
+    # cc-guide skill must not flag every cited file; a bare handoff still does.
+    files = dmi_files(tmp_path, {
+        '.claude/skills/cc-guide/SKILL.md': skill_md(**{'disable-model-invocation': 'true'}),
+        'skills/plan/SKILL.md': skill_md(body='Plan.\n').replace(
+            '\n---\n', '\n# cc-guide: skills.frontmatter @2.1.288\n---\n', 1),
+        'agents/runner.md': agent_text('runner').replace(
+            '\n---\n', '\n  # cc-guide: subagents.frontmatter @2.1.288\n---\n', 1),
+        'CLAUDE.md': '<!-- cc-guide: context.overview @2.1.288 -->\n# Notes\n',
+        'commands/go.md': 'Run the cc-guide skill when done.\n',
+    })
+    assert cc.check_dmi_handoff_consistency(tmp_path, files, {}) == [
+        cc.Finding('.claude/skills/cc-guide/SKILL.md',
+                   'sets disable-model-invocation: true, but commands/go.md names cc-guide, '
+                   'and Claude cannot invoke a manual-only skill'),
+    ]
+
+
+def test_dmi_handoff_consistency_skips_readmes_and_install_guides(tmp_path):
+    # Human docs (test_runtime_support's HUMAN_DOCS) are not agent-facing.
+    files = dmi_files(tmp_path, {
+        'skills/ship/SKILL.md': skill_md(**{'disable-model-invocation': 'true'}),
+        'skills/ship/README.md': 'Use the ship skill.\n',
+        'skills/plan/README.md': 'Then use the ship skill.\n',
+        'skills/plan/INSTALL.md': 'Install the ship skill too.\n',
+    })
+    assert cc.check_dmi_handoff_consistency(tmp_path, files, {}) == []
+
+
 COMMAND_PARAMS = {'fields': ['description', 'argument-hint', 'allowed-tools', 'model',
                              'disable-model-invocation']}
 
