@@ -130,7 +130,7 @@ def test_accept_records_the_hash_and_substantive_also_sets_changed(docs_dir):
     assert substantive['sections']['alpha.overview']['changed'] == '2.1.902'
     assert (substantive['sections']['alpha.overview']['text_hash']
             == editorial['sections']['alpha.overview']['text_hash'])
-    bumped =baseline.accept(s, edited, ['alpha.overview'], True, '2.1.902', {'alpha.overview': ['2.1.902']})
+    bumped = baseline.accept(s, edited, ['alpha.overview'], True, '2.1.902', {'alpha.overview': ['2.1.902']})
     assert bumped['sections']['alpha.overview']['changed'] == '2.1.902.1'
     assert s == fixture_state(docs_dir)
 
