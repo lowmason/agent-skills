@@ -44,7 +44,7 @@ def test_every_manifest_problem_is_reported_at_once():
     with pytest.raises(state.SetupError) as err:
         state.parse_manifest(text)
     assert str(err.value).split('\n') == [
-        f'{state.MANIFEST}: unknown table or key {"stray"!r}',
+        f"{state.MANIFEST}: unknown table or key 'stray'",
         f'{state.MANIFEST}: [sources] llms must be an https URL',
         f'{state.MANIFEST}: [cadence] changelog_days must be a positive integer',
         f'{state.MANIFEST}: [groups.beta] alpha.reference is already in group alpha',
@@ -77,6 +77,35 @@ def test_a_mis_shaped_table_reports_its_shape_and_nothing_else():
 ])
 def test_a_date_is_yyyy_mm_dd_and_nothing_else_fromisoformat_takes(value, ok):
     assert state.is_iso_date(value) is ok
+
+
+PROBE = "\n[[probe]]\nid = 'p'\nsections = ['beta.reference']\n"
+
+
+@pytest.mark.parametrize('edit, problem', [
+    (lambda t: t.replace('[groups.alpha]', '[groups.Alpha]'), '[groups.Alpha] group IDs are [a-z0-9-]'),
+    (lambda t: t.replace('[groups.alpha]', "[groups.'alpha!']"), '[groups.alpha!] group IDs are [a-z0-9-]'),
+    (lambda t: t.replace("['alpha.overview', 'alpha.reference']", "['alpha', 'alpha.reference']"),
+     "[groups.alpha] 'alpha' is not a section ID"),
+    (lambda t: t.replace("['alpha.overview', 'alpha.reference']", '["alpha.overview\\n", \'alpha.reference\']'),
+     "[groups.alpha] 'alpha.overview\\n' is not a section ID"),
+    (lambda t: t.replace("all = ['tools']\nterms = ['env-vars']\n", ''), '[groups.alpha] maps no page'),
+    (lambda t: t.replace('[groups.alpha]', '[groups.alpha]\nextra = 1'),
+     '[groups.alpha] holds only sections, all and terms'),
+    (lambda t: t.split('[groups.alpha]')[0], '[groups] must hold at least one group'),
+    (lambda t: t + "\n[sections.'gamma.one']\nextra_terms = ['x']\n", "[sections.'gamma.one'] is not in any group"),
+    (lambda t: t.replace("reason = 'Duplicates the changelog.'", ''),
+     '[[exclusion]] needs a page pattern and a reason'),
+    (lambda t: t + PROBE + PROBE, '[[probe]] needs a unique id'),
+    (lambda t: t + PROBE.replace('beta.reference', 'gamma.one'),
+     '[[probe]] p: sections must name grouped sections; files is a list'),
+    (lambda t: t + PROBE + "files = 'agents/a.md'\n",
+     '[[probe]] p: sections must name grouped sections; files is a list'),
+])
+def test_each_manifest_rule_names_its_table(edit, problem):
+    with pytest.raises(state.SetupError) as err:
+        state.parse_manifest(edit(MANIFEST_TOML))
+    assert str(err.value) == f'{state.MANIFEST}: {problem}'
 
 
 def test_a_page_listed_under_both_marks_is_a_problem():
@@ -123,6 +152,22 @@ def test_a_valid_baseline_parses_and_a_broken_one_is_a_setup_error():
     assert str(err.value) == f'{state.BASELINE}: not valid JSON ({cause.value})'
 
 
+@pytest.mark.parametrize('changes, problem', [
+    ({'sections': {'alpha.overview': {**SECTION, 'text_hash': SECTION['text_hash'] + '\n'}}},
+     'section alpha.overview: needs checked, changed, audited and text_hash'),
+    ({'groups': {'alpha': {'blocks': {'tools': {'1' * 17: '0' * 16}}, 'snapshot': {}}}},
+     'group alpha: needs blocks (page -> key hash -> block hash) and snapshot (page -> release)'),
+    ({'groups': {'alpha': {'blocks': {'tools': {'1' * 16: '0' * 16 + '\n'}}, 'snapshot': {}}}},
+     'group alpha: needs blocks (page -> key hash -> block hash) and snapshot (page -> release)'),
+])
+def test_a_hash_must_be_the_whole_string(changes, problem):
+    '''The hash patterns state.py shares are unanchored, so a check that
+    matched only a prefix would take a 17th character or a trailing newline.'''
+    with pytest.raises(state.SetupError) as err:
+        state.parse_baseline(baseline_text(**changes))
+    assert str(err.value) == f'{state.BASELINE}: {problem}'
+
+
 def test_dump_baseline_keeps_insertion_order_and_utf8():
     raw = {'sections': {}, 'groups': {'g': {'blocks': {'p': {'T › b': '1' * 16, 'T › a': '2' * 16}},
                                             'snapshot': {}}}, 'llms': []}
@@ -151,17 +196,50 @@ def test_an_unreadable_probe_row_is_a_setup_error():
 
 
 def test_a_source_reads_the_working_tree_or_a_commit(tmp_path):
-    repo = fixture_repo(tmp_path / 'repo', {'a.txt': 'committed\n'})
+    repo = fixture_repo(tmp_path / 'repo', {'a.txt': 'committed\n', 'sub/b.txt': 'b\n'})
     (repo / 'a.txt').write_text('edited\n')
+    assert (state.Source(repo).label, state.Source(repo, 'main').label) == ('the working tree', 'main')
     assert state.Source(repo).read('a.txt') == 'edited\n'
     assert state.Source(repo, 'main').read('a.txt') == 'committed\n'
     assert state.Source(repo, 'main').read('absent.txt') is None
+    assert state.Source(repo).read('sub') is None
+    assert state.Source(repo, 'main').read('sub') is None  # a tree, not a file
     with pytest.raises(state.SetupError) as err:
         state.Source(repo, 'main').require('absent.txt')
     assert str(err.value) == 'absent.txt: not found in main'
     with pytest.raises(state.SetupError) as err:
         state.Source(repo, 'no-such-ref')
     assert str(err.value) == f'no-such-ref: not a commit in {repo}'
+
+
+def test_a_source_file_that_is_not_utf8_is_a_setup_error(tmp_path):
+    repo = fixture_repo(tmp_path / 'repo', {'a.txt': 'text\n'})
+    (repo / 'a.txt').write_bytes(b'\xff')
+    git(repo, 'commit', '-qam', 'bytes')
+    with pytest.raises(state.SetupError) as err:
+        state.Source(repo).read('a.txt')
+    assert str(err.value) == f"{repo / 'a.txt'}: not UTF-8 text (invalid start byte at byte 0)"
+    with pytest.raises(state.SetupError) as err:
+        state.Source(repo, 'main').read('a.txt')
+    assert str(err.value) == 'main:a.txt: not UTF-8 text (invalid start byte at byte 0)'
+
+
+def test_the_fixture_git_helper_reports_gits_stderr(tmp_path):
+    repo = fixture_repo(tmp_path / 'repo', {'a.txt': 'text\n'})
+    with pytest.raises(RuntimeError) as err:
+        git(repo, 'rev-parse', '--verify', 'no-such-ref')
+    assert 'Needed a single revision' in str(err.value)
+
+
+def test_group_terms_fall_back_to_extra_terms_for_a_section_the_guide_lacks():
+    grouped = "['beta.overview', 'beta.reference', 'beta.extra']"
+    m = state.parse_manifest(MANIFEST_TOML.replace("['beta.overview', 'beta.reference']", grouped)
+                             + "\n[sections.'beta.extra']\nextra_terms = ['EXTRA']\n")
+    assert state.group_terms(m, guide_text())['beta']['beta.extra'] == {'EXTRA'}
+
+
+def test_the_fetch_record_sits_beside_latest_docs(tmp_path):
+    assert state.fetch_record(tmp_path) == tmp_path / 'latest' / 'fetch.json'
 
 
 def test_group_terms_join_the_manifest_and_the_guide():

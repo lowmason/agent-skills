@@ -10,9 +10,9 @@ from datetime import date
 from pathlib import Path
 from typing import Callable, NamedTuple
 
-from blocks import CELL_SPLIT_RE, key_names, page_blocks
+from blocks import CELL_SPLIT_RE, HASH_RE, key_names, page_blocks
 from docs import page_file, version_key
-from guide import section_terms, sections
+from guide import ID_RE, TEXT_HASH_RE, section_terms, sections
 
 MANIFEST = 'build/cc_guide/manifest.toml'
 BASELINE = 'build/cc_guide/baseline.json'
@@ -20,10 +20,8 @@ PROBES = 'build/cc_guide/PROBES.md'
 MARKS = ('all', 'terms')
 SOURCE_KEYS = ('docs_base', 'llms', 'changelog', 'platform_base')
 CADENCE_KEYS = ('changelog_days', 'probe_days', 'audit_days')
-ID_RE = re.compile(r'^[a-z0-9-]+(?:\.[a-z0-9-]+)+$')
-GROUP_RE = re.compile(r'^[a-z0-9-]+$')
-HASH_RE = re.compile(r'^[0-9a-f]{16}$')
-TEXT_HASH_RE = re.compile(r'^sha256:[0-9a-f]{64}$')
+TABLES = ('guide', 'sources', 'cadence', 'groups', 'sections', 'exclusion', 'probe')
+GROUP_RE = re.compile(r'[a-z0-9-]+')
 DATE_RE = re.compile(r'\d{4}-\d{2}-\d{2}')
 
 # The bootstrap snapshot (R2.6): the 2026-10-03 refresh read the docs at
@@ -38,7 +36,7 @@ class SetupError(Exception):
 
 class Source:
     '''Reads repo files from the working tree (ref None) or from a commit
-    through `git show` (R6.1).'''
+    through `git cat-file` (R6.1).'''
 
     def __init__(self, repo: Path, ref: str | None = None):
         self.repo, self.ref = repo, ref
@@ -53,12 +51,19 @@ class Source:
         return 'the working tree' if self.ref is None else self.ref
 
     def read(self, path: str) -> str | None:
+        '''The file's text, or None when no file is there; a directory is no
+        file. A file that is not UTF-8 is a SetupError naming it.'''
         if self.ref is None:
             p = self.repo / path
-            return p.read_text(encoding='utf-8') if p.is_file() else None
-        proc = subprocess.run(['git', 'show', f'{self.ref}:{path}'], cwd=self.repo,
-                              capture_output=True, encoding='utf-8')
-        return proc.stdout if proc.returncode == 0 else None
+            return read_utf8(p) if p.is_file() else None
+        proc = subprocess.run(['git', 'cat-file', 'blob', f'{self.ref}:{path}'], cwd=self.repo,
+                              capture_output=True)
+        if proc.returncode != 0:
+            return None
+        try:
+            return proc.stdout.decode('utf-8')
+        except UnicodeDecodeError as exc:
+            raise SetupError(f'{self.ref}:{path}: not UTF-8 text ({exc.reason} at byte {exc.start})') from None
 
     def require(self, path: str) -> str:
         text = self.read(path)
@@ -69,7 +74,13 @@ class Source:
 
 class Group(NamedTuple):
     sections: list[str]
-    pages: dict[str, str]  # page -> mark, in manifest order
+    pages: dict[str, str]  # page -> mark: the `all` pages, then the `terms` pages
+
+
+def mapped_pages(groups: dict[str, 'Group']) -> list[str]:
+    '''Every mapped page once: group by group, each group's `all` pages
+    before its `terms` pages.'''
+    return list(dict.fromkeys(p for g in groups.values() for p in g.pages))
 
 
 class Manifest(NamedTuple):
@@ -82,8 +93,7 @@ class Manifest(NamedTuple):
     probes: dict[str, tuple[list[str], list[str]]]  # probe -> (sections, files)
 
     def pages(self) -> list[str]:
-        '''Every mapped page once, in manifest order.'''
-        return list(dict.fromkeys(p for g in self.groups.values() for p in g.pages))
+        return mapped_pages(self.groups)
 
     def group_of(self) -> dict[str, str]:
         return {sid: gid for gid, g in self.groups.items() for sid in g.sections}
@@ -91,6 +101,10 @@ class Manifest(NamedTuple):
 
 def _strings(value) -> bool:
     return isinstance(value, list) and all(isinstance(v, str) and v for v in value)
+
+
+def _positive(value) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool) and value > 0
 
 
 def _table(raw: dict, key: str, problems: list[str]) -> dict | None:
@@ -113,40 +127,53 @@ def _tables(raw: dict, key: str, problems: list[str]) -> list[dict]:
     return []
 
 
-def parse_manifest(text: str) -> Manifest:
-    '''manifest.toml (R2.2), validated. Raises SetupError listing every
-    problem, so an invalid manifest exits 2.'''
-    try:
-        raw = tomllib.loads(text)
-    except tomllib.TOMLDecodeError as exc:
-        raise SetupError(f'{MANIFEST}: not valid TOML ({exc})') from None
-    problems: list[str] = []
-    unknown = set(raw) - {'guide', 'sources', 'cadence', 'groups', 'sections', 'exclusion', 'probe'}
-    problems += [f'unknown table or key {k!r}' for k in sorted(unknown)]
-    guide_table = _table(raw, 'guide', problems)
-    guide_path = None if guide_table is None else guide_table.get('path')
-    if guide_table is not None and not (isinstance(guide_path, str) and guide_path):
+def _header(raw: dict, problems: list[str]) -> tuple[str | None, dict[str, str], dict[str, int]]:
+    '''[guide], [sources] and [cadence] (R2.2).'''
+    guide = _table(raw, 'guide', problems)
+    path = None if guide is None else guide.get('path')
+    if guide is not None and not (isinstance(path, str) and path):
         problems.append('[guide] path must be a non-empty string')
     sources = _table(raw, 'sources', problems)
-    for k in SOURCE_KEYS if sources is not None else ():
-        if not (isinstance(sources.get(k), str) and sources[k].startswith('https://')):
-            problems.append(f'[sources] {k} must be an https URL')
+    if sources is not None:
+        problems += [f'[sources] {k} must be an https URL' for k in SOURCE_KEYS
+                     if not (isinstance(sources.get(k), str) and sources[k].startswith('https://'))]
     cadence = _table(raw, 'cadence', problems)
-    for k in CADENCE_KEYS if cadence is not None else ():
-        v = cadence.get(k)
-        if not (isinstance(v, int) and not isinstance(v, bool) and v > 0):
-            problems.append(f'[cadence] {k} must be a positive integer')
+    if cadence is not None:
+        problems += [f'[cadence] {k} must be a positive integer' for k in CADENCE_KEYS
+                     if not _positive(cadence.get(k))]
+    return path, dict(sources or {}), dict(cadence or {})
+
+
+def _pages(g: dict, where: str, problems: list[str]) -> dict[str, str]:
+    '''One group's pages, page -> mark: its `all` pages, then its `terms` pages.'''
+    pages: dict[str, str] = {}
+    for mark in MARKS:
+        listed = g.get(mark, [])
+        if not _strings(listed):
+            problems.append(f'{where} {mark} must be a list of pages')
+            continue
+        for page in listed:
+            if page in pages:
+                problems.append(f'{where} {page} is listed twice')
+            pages[page] = mark
+    if not pages:
+        problems.append(f'{where} maps no page')
+    return pages
+
+
+def _groups(raw: dict, problems: list[str]) -> tuple[dict[str, Group], dict[str, str]]:
+    '''[groups.<id>] (R2.5): the groups, and each section's one group.'''
     groups: dict[str, Group] = {}
     owner: dict[str, str] = {}
     raw_groups = raw.get('groups')
     if not isinstance(raw_groups, dict) or not raw_groups:
         problems.append('[groups] must hold at least one group')
-        raw_groups = {}
+        return groups, owner
     for gid, g in raw_groups.items():
         where = f'[groups.{gid}]'
-        if not GROUP_RE.match(gid):
+        if not GROUP_RE.fullmatch(gid):
             problems.append(f'{where} group IDs are [a-z0-9-]')
-        if not isinstance(g, dict) or set(g) - {'sections', 'all', 'terms'}:
+        if not isinstance(g, dict) or set(g) - {'sections', *MARKS}:
             problems.append(f'{where} holds only sections, all and terms')
             continue
         secs = g.get('sections')
@@ -154,25 +181,18 @@ def parse_manifest(text: str) -> Manifest:
             problems.append(f'{where} sections must be a non-empty list of section IDs')
             secs = []
         for sid in secs:
-            if not ID_RE.match(sid):
+            if not ID_RE.fullmatch(sid):
                 problems.append(f'{where} {sid!r} is not a section ID')
             elif sid in owner:
                 problems.append(f'{where} {sid} is already in group {owner[sid]}')
             else:
                 owner[sid] = gid
-        pages: dict[str, str] = {}
-        for mark in MARKS:
-            listed = g.get(mark, [])
-            if not _strings(listed):
-                problems.append(f'{where} {mark} must be a list of pages')
-                continue
-            for page in listed:
-                if page in pages:
-                    problems.append(f'{where} {page} is listed twice')
-                pages[page] = mark
-        if not pages:
-            problems.append(f'{where} maps no page')
-        groups[gid] = Group(list(secs), pages)
+        groups[gid] = Group(list(secs), _pages(g, where, problems))
+    return groups, owner
+
+
+def _terms(raw: dict, owner: dict[str, str], problems: list[str]) -> dict[str, tuple[list[str], list[str]]]:
+    '''[sections.<id>]: a grouped section's extra and exclude terms (R3.6).'''
     terms: dict[str, tuple[list[str], list[str]]] = {}
     for sid, t in (_table(raw, 'sections', problems) or {}).items():
         if sid not in owner:
@@ -183,6 +203,11 @@ def parse_manifest(text: str) -> Manifest:
             problems.append(f'[sections.{sid!r}] holds only extra_terms and exclude_terms, as lists')
             continue
         terms[sid] = (extra, exclude)
+    return terms
+
+
+def _exclusions(raw: dict, mapped: list[str], problems: list[str]) -> list[tuple[str, str]]:
+    '''[[exclusion]]: page patterns no group may map, each with its reason.'''
     exclusions: list[tuple[str, str]] = []
     for e in _tables(raw, 'exclusion', problems):
         page, reason = e.get('page'), e.get('reason')
@@ -190,11 +215,13 @@ def parse_manifest(text: str) -> Manifest:
             problems.append('[[exclusion]] needs a page pattern and a reason')
             continue
         exclusions.append((page, reason))
-    mapped = list(dict.fromkeys(p for g in groups.values() for p in g.pages))
-    for page in mapped:
-        for pattern, _ in exclusions:
-            if fnmatch.fnmatchcase(page, pattern):
-                problems.append(f'page {page} is mapped but matches exclusion {pattern!r}')
+    problems += [f'page {page} is mapped but matches exclusion {pattern!r}'
+                 for page in mapped for pattern, _ in exclusions if fnmatch.fnmatchcase(page, pattern)]
+    return exclusions
+
+
+def _probes(raw: dict, owner: dict[str, str], problems: list[str]) -> dict[str, tuple[list[str], list[str]]]:
+    '''[[probe]]: each registered probe's sections and files (R10.1).'''
     probes: dict[str, tuple[list[str], list[str]]] = {}
     for p in _tables(raw, 'probe', problems):
         pid, secs, files = p.get('id'), p.get('sections'), p.get('files', [])
@@ -205,9 +232,25 @@ def parse_manifest(text: str) -> Manifest:
             problems.append(f'[[probe]] {pid}: sections must name grouped sections; files is a list')
             continue
         probes[pid] = (secs, files)
+    return probes
+
+
+def parse_manifest(text: str) -> Manifest:
+    '''manifest.toml (R2.2), validated. Raises SetupError listing every
+    problem, so an invalid manifest exits 2.'''
+    try:
+        raw = tomllib.loads(text)
+    except tomllib.TOMLDecodeError as exc:
+        raise SetupError(f'{MANIFEST}: not valid TOML ({exc})') from None
+    problems = [f'unknown table or key {k!r}' for k in sorted(set(raw) - set(TABLES))]
+    guide_path, sources, cadence = _header(raw, problems)
+    groups, owner = _groups(raw, problems)
+    terms = _terms(raw, owner, problems)
+    exclusions = _exclusions(raw, mapped_pages(groups), problems)
+    probes = _probes(raw, owner, problems)
     if problems:
         raise SetupError('\n'.join(f'{MANIFEST}: {p}' for p in problems))
-    return Manifest(guide_path, dict(sources), dict(cadence), groups, terms, exclusions, probes)
+    return Manifest(guide_path, sources, cadence, groups, terms, exclusions, probes)
 
 
 def is_iso_date(value) -> bool:
@@ -252,14 +295,14 @@ def parse_baseline(text: str) -> dict:
     for sid, s in raw['sections'].items():
         ok = (isinstance(s, dict) and set(s) == {'checked', 'changed', 'audited', 'text_hash'}
               and _stamp(s['checked']) and _stamp(s['audited']) and is_label(s['changed'])
-              and isinstance(s['text_hash'], str) and TEXT_HASH_RE.match(s['text_hash']))
+              and isinstance(s['text_hash'], str) and TEXT_HASH_RE.fullmatch(s['text_hash']))
         if not ok:
             problems.append(f'section {sid}: needs checked, changed, audited and text_hash')
     for gid, g in raw['groups'].items():
         ok = (isinstance(g, dict) and set(g) == {'blocks', 'snapshot'}
               and isinstance(g['blocks'], dict) and isinstance(g['snapshot'], dict))
         if ok:
-            ok = all(isinstance(keys, dict) and all(HASH_RE.match(k) and isinstance(h, str) and HASH_RE.match(h)
+            ok = all(isinstance(keys, dict) and all(HASH_RE.fullmatch(k) and isinstance(h, str) and HASH_RE.fullmatch(h)
                                                     for k, h in keys.items())
                      for keys in g['blocks'].values())
             ok = ok and all(is_label(r) for r in g['snapshot'].values())

@@ -9,7 +9,11 @@ from docs import version_key
 
 # A ## or ### ATX heading. The guide's sections are exactly these (R1.1).
 HEADING_RE = re.compile(r'^(#{2,3})[ \t]')
-ANCHOR_RE = re.compile(r'^<!-- cc: ([a-z0-9-]+(?:\.[a-z0-9-]+)+) -->$')
+# A section ID: two or more dot-separated [a-z0-9-] segments (R1.1).
+ID_RE = re.compile(r'[a-z0-9-]+(?:\.[a-z0-9-]+)+')
+ANCHOR_RE = re.compile(rf'^<!-- cc: ({ID_RE.pattern}) -->$')
+# What text_hash returns.
+TEXT_HASH_RE = re.compile(r'sha256:[0-9a-f]{64}')
 # Anything meant as an anchor, well-formed or not. The stamp markers do not
 # match: `cc` must be followed by `:`.
 ANCHOR_LIKE_RE = re.compile(r'^<!--\s*cc:')

@@ -18,6 +18,9 @@ EMPTY_CELL = '(row)'
 # Each key component is capped like R3.6's terms, which keeps printed keys
 # short. baseline.json commits only each key's key_hash() (R2.3).
 KEY_PART_MAX = 60
+# block_hash and key_hash keep this many hex characters of SHA-256 (R3.5).
+HASH_CHARS = 16
+HASH_RE = re.compile(rf'[0-9a-f]{{{HASH_CHARS}}}')
 
 FENCE_OPEN_RE = re.compile(r'^[ \t]*(`{3,}|~{3,})')
 ATX_RE = re.compile(r'^ {0,3}(#{1,6})(?:[ \t]+(.*?))?(?:[ \t]+#+)?[ \t]*$')
@@ -75,14 +78,14 @@ def normalize(text: str) -> str:
 def block_hash(text: str) -> str:
     '''R3.5 step 4: the first 16 hex characters of SHA-256 over the
     normalized text, as UTF-8.'''
-    return hashlib.sha256(normalize(text).encode('utf-8')).hexdigest()[:16]
+    return hashlib.sha256(normalize(text).encode('utf-8')).hexdigest()[:HASH_CHARS]
 
 
 def key_hash(key: str) -> str:
     '''A block key as baseline.json stores it (R2.3), so the repo holds no
     docs text: R3.5 step 4's hash over the key as it is, since key_part has
     already normalized it.'''
-    return hashlib.sha256(key.encode('utf-8')).hexdigest()[:16]
+    return hashlib.sha256(key.encode('utf-8')).hexdigest()[:HASH_CHARS]
 
 
 def key_names(keys: Iterable[str]) -> dict[str, str]:

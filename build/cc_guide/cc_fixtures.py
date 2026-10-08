@@ -5,6 +5,10 @@ autouse fixture in the importing module, so no test reaches the real
 ~/.cache. Fence strings are built from FENCE, FENCE4 and TILDE, so no line of
 this file is itself a fence.
 '''
+import json
+import os
+import subprocess
+
 import pytest
 
 FENCE = '`' * 3
@@ -244,13 +248,16 @@ def write_tree(root, files: dict) -> None:
 
 
 def git(repo, *args: str) -> str:
-    '''git in a fixture repo, with an identity and none of the caller's GIT_ variables.'''
-    import os
-    import subprocess
+    '''git in a fixture repo, with an identity and none of the caller's GIT_
+    variables. A failure raises RuntimeError carrying git's stderr.'''
     env = {k: v for k, v in os.environ.items() if not k.startswith('GIT_')}
-    return subprocess.run(['git', '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid',
+    proc = subprocess.run(['git', '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid',
                            '-c', 'commit.gpgsign=false', '-c', 'init.defaultBranch=main', *args],
-                          cwd=repo, env=env, capture_output=True, text=True, check=True).stdout
+                          cwd=repo, env=env, capture_output=True, text=True)
+    if proc.returncode != 0:
+        command = ' '.join(args)
+        raise RuntimeError(f'git {command} failed: {proc.stderr.strip()}')
+    return proc.stdout
 
 
 def fixture_repo(root, files: dict):
@@ -348,7 +355,6 @@ def drift_repo(root, folder):
 
 def prime_cache(cache, folder, head: str = '2.1.902') -> None:
     '''A cache whose latest/ holds folder's files, as a live check leaves it.'''
-    import json
     import state
     write_tree(state.latest_docs(cache), {p.name: p.read_text(encoding='utf-8') for p in folder.iterdir()})
     state.fetch_record(cache).write_text(json.dumps({'fetched_at': '2026-10-04T12:00:00+00:00',
