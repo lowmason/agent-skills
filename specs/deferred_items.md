@@ -2760,10 +2760,11 @@ declined as YAGNI (zero instances in a one-page wiki).
       Size: plan. Revisit if: a fence that one rule reads and the other does not causes
       a missed or spurious conformance finding, or an artifact kind starts matching
       `specs/guides/`.
-- [ ] A repeated missing ID is listed twice (plan 39's final review, T2-1; deferred at the
+- [x] A repeated missing ID is listed twice (plan 39's final review, T2-1; deferred at the
       owner's call). `baseline.accept`, `known` and `check_forward` in
       `build/cc_guide/baseline.py` each list a missing ID once per time it is passed, so
       `accept a.x a.x` names `a.x` twice in its `cc-guide:` line. Fix: deduplicate with
       `dict.fromkeys(ids)` before building each message, red first, with one test per
       function in `build/cc_guide/test_baseline.py`. Size: quick-fix. Done when: a
       repeated missing ID appears once in each refusal, with a test for each.
+      → done 2026-10-08 (/deferred quick fix)

@@ -93,7 +93,7 @@ def init(manifest: Manifest, guide_text: str, docs: Path, release: str, day: str
 
 
 def known(state: dict, ids) -> None:
-    unknown = [sid for sid in ids if sid not in state['sections']]
+    unknown = [sid for sid in dict.fromkeys(ids) if sid not in state['sections']]
     if unknown:
         names = ', '.join(unknown)
         raise SetupError(f'unknown section IDs: {names}')
@@ -101,7 +101,7 @@ def known(state: dict, ids) -> None:
 
 def check_forward(state: dict, ids, to: str) -> None:
     '''advance and audited never move a section's `checked` backwards.'''
-    behind = [sid for sid in ids if version_key(to) < version_key(state['sections'][sid]['checked']['release'])]
+    behind = [sid for sid in dict.fromkeys(ids) if version_key(to) < version_key(state['sections'][sid]['checked']['release'])]
     if behind:
         names = ', '.join(behind)
         raise SetupError(f'{to} is older than the checked release of {names}')
@@ -115,7 +115,7 @@ def accept(state: dict, guide_text: str, ids, substantive: bool, newest: str | N
     no citations, so cli.py passes none; Stage 2 passes the index's stamps.'''
     known(state, ids)
     by_id = {s.id: s for s in sections(guide_text) if s.id}
-    absent = ', '.join(sid for sid in ids if sid not in by_id)
+    absent = ', '.join(sid for sid in dict.fromkeys(ids) if sid not in by_id)
     if absent:
         raise SetupError(f'section IDs not in the guide: {absent}')
     new = copy.deepcopy(state)

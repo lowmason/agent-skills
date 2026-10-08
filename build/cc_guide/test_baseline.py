@@ -135,6 +135,26 @@ def test_accept_records_the_hash_and_substantive_also_sets_changed(docs_dir):
     assert s == fixture_state(docs_dir)
 
 
+def test_known_names_a_repeated_unknown_id_once(docs_dir):
+    with pytest.raises(state.SetupError) as err:
+        baseline.known(fixture_state(docs_dir), ['beta.zzz', 'beta.zzz'])
+    assert str(err.value) == 'unknown section IDs: beta.zzz'
+
+
+def test_check_forward_names_a_repeated_id_once(docs_dir):
+    s = baseline.advance(fixture_state(docs_dir), ['beta.overview'], '2.1.902', {'2.1.902'}, '2026-10-04')
+    with pytest.raises(state.SetupError) as err:
+        baseline.check_forward(s, ['beta.overview', 'beta.overview'], '2.1.901')
+    assert str(err.value) == '2.1.901 is older than the checked release of beta.overview'
+
+
+def test_accept_names_a_repeated_absent_id_once(docs_dir):
+    without = guide_text().replace('<!-- cc: alpha.overview -->', '')
+    with pytest.raises(state.SetupError) as err:
+        baseline.accept(fixture_state(docs_dir), without, ['alpha.overview', 'alpha.overview'], False, None)
+    assert str(err.value) == 'section IDs not in the guide: alpha.overview'
+
+
 def test_advance_sets_checked_on_the_day_of_the_check(docs_dir):
     s = fixture_state(docs_dir)
     labels = {'2.1.900', '2.1.901', '2.1.902'}
