@@ -2690,3 +2690,23 @@ declined as YAGNI (zero instances in a one-page wiki).
       session whose cwd was never this repo.
       Size: design. Revisit if: a real RAG or fine-tuned-classifier target is
       described with the current templates.
+
+## deferred-2026-10-08 (no plan; /deferred pass, branch chore/deferred-2026-10-08) — 2026-10-08
+- [ ] `calibration_check.py` reads NaN posterior-predictive draws as draws above `y`
+      (found while fixing "`calibration_check.py` never guards against non-finite inputs"
+      in the 34-calibration-check-verdicts section; outside that item's scope, logged at
+      the owner's call). In `pit_values`, a NaN draw compares false under both `<` and
+      `==`, so the PPC path counts it as neither below nor tied, and the LOO path through
+      `arviz_stats.loo_pit` ends the same way. The guards that item added check only the
+      observed values and the final PITs, which stay finite. A probe on the suite's
+      calibrated `_normal_model` (2 chains × 500 draws, 200 observations) exited 0 with a
+      wrong verdict on both PIT paths: every draw of 10 observations NaN read as
+      "over-confident"; 30% of all draws NaN read as "biased (predictions too high)" and
+      "under-confident". Infinite draws rank correctly (+inf above `y`, -inf below), so
+      the guard may be NaN-only. Fix: in `main()`, before `pit_values`, exit with a JSON
+      error naming the count of NaN draws in `dt["posterior_predictive"][var_name]` (or
+      reuse `_exit_if_not_finite`), red first on both paths; touches
+      `skills/bayesian-workflow/scripts/calibration_check.py` and
+      `test_calibration_check.py`. Size: quick-fix. Done when: a NaN posterior-predictive
+      draw exits with a JSON error naming its count on both PIT paths, with a test for
+      each.
