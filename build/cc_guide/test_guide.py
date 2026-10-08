@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 import guide
-from cc_fixtures import FENCE, FIXTURE_STAMP, GUIDE_IDS, guide_text, isolated_home  # noqa: F401
+from cc_fixtures import FENCE, FIXTURE_STAMP, GUIDE_IDS, TILDE, guide_text, isolated_home  # noqa: F401
 
 REPO = Path(__file__).resolve().parents[2]
 REAL_GUIDE = REPO / 'specs/guides/claude-code-customization-guide.md'
@@ -30,6 +30,17 @@ def test_a_fenced_hash_line_stays_inside_its_section():
     reference = by_id(guide_text())['alpha.reference']
     assert '## not a heading inside a fence' in reference.text
     assert '## not a heading inside a fence' not in reference.prose
+
+
+def test_a_heading_in_a_tilde_or_an_indented_fence_is_no_section():
+    text = '\n'.join(['## A', '<!-- cc: a.one -->', TILDE, '## not a heading', TILDE,
+                      '  ' + FENCE, '### nor this', '  ' + FENCE])
+    assert [s.heading for s in guide.sections(text)] == ['## A']
+
+
+def test_an_anchor_like_line_inside_a_fence_is_no_stray_anchor():
+    text = '\n'.join(['## A', '<!-- cc: a.one -->', FENCE + 'markdown', '<!-- cc: a.sample -->', FENCE])
+    assert guide.anchor_problems(text) == []
 
 
 def test_anchor_problems_name_missing_malformed_repeated_and_stray_anchors():
@@ -94,6 +105,12 @@ def test_terms_keep_three_to_sixty_characters_and_drop_stop_terms():
     assert guide.section_terms(by_id(guide_text())['alpha.overview']) == {'ALPHA_TOOL'}
 
 
+def test_terms_keep_three_and_sixty_characters_and_drop_two_and_sixty_one():
+    sixty, sixty_one = 'x' * 60, 'y' * 61
+    text = '\n'.join(['## A', '<!-- cc: a.one -->', f'`ab` `abc` `{sixty}` `{sixty_one}`'])
+    assert guide.section_terms(guide.sections(text)[0]) == {'abc', sixty}
+
+
 def test_terms_skip_fenced_code_and_apply_extra_and_exclude_terms():
     reference = by_id(guide_text())['alpha.reference']
     assert guide.section_terms(reference) == {'ALPHA_ENV', 'a `tick` inside'}
@@ -117,6 +134,26 @@ def test_the_stamp_region_reads_and_rewrites_between_its_markers():
 ])
 def test_a_missing_doubled_reversed_or_fenced_marker_means_no_region(broken):
     assert guide.stamp_content(broken(guide_text())) is None
+
+
+def test_with_stamp_raises_without_a_region():
+    with pytest.raises(ValueError) as err:
+        guide.with_stamp('## A\n', '> New stamp.')
+    assert str(err.value) == 'the guide has no stamp region'
+
+
+def test_render_stamp_breaks_a_tie_on_the_other_field():
+    '''Equal `checked` releases go to the earlier date; equal `audited`
+    dates go to the older release.'''
+    states = {
+        'a.one': {'checked': {'release': '2.1.9', 'date': '2026-09-09'},
+                  'audited': {'release': '2.1.10', 'date': '2026-08-01'}},
+        'a.two': {'checked': {'release': '2.1.9', 'date': '2026-09-05'},
+                  'audited': {'release': '2.1.9', 'date': '2026-08-01'}},
+    }
+    assert guide.render_stamp(states) == (
+        '> Checked against the Claude Code docs and changelog through 2.1.9 on 2026-09-05; '
+        'oldest full re-verification 2026-08-01, at 2.1.9.')
 
 
 def test_render_stamp_names_the_oldest_checked_and_audited():

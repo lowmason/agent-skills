@@ -91,6 +91,31 @@ def test_every_table_row_keeps_its_headers_cell_count(docs_dir):
         f'guide line {line}: table row has 3 cells; its header has 2']
 
 
+def test_pipe_lines_without_a_separator_row_or_inside_a_fence_are_no_table(docs_dir):
+    '''A table starts at a | line followed by a separator row (plan 38,
+    decision 12), and fenced lines are code.'''
+    text = guide_text() + f'| a | b |\n| c |\n\n{FENCE}\n| a | b |\n|---|---|\n| c |\n{FENCE}\n'
+    assert run(text, synced(text, fixture_state(docs_dir)))[0] == []
+
+
+def test_a_row_ending_in_an_escaped_pipe_counts_its_cells():
+    assert lint.cell_count('| x | y\\|') == 2
+    assert lint.cell_count('| x | y\\| |') == 2
+
+
+def test_an_unclosed_json_block_runs_to_the_end(docs_dir):
+    text = guide_text() + f'{FENCE}json\n{{"a": 1,}}\n'
+    line = len(text.split('\n')) - 2
+    assert run(text, synced(text, fixture_state(docs_dir)))[0] == [
+        f'guide line {line}: json block does not parse (Illegal trailing comma before end of object)']
+
+
+def test_a_section_missing_from_the_manifest_alone_is_named(docs_dir):
+    manifest = state.parse_manifest(MANIFEST_TOML.replace("'beta.overview', 'beta.reference'", "'beta.overview'"))
+    violations, _ = run(guide_text(), fixture_state(docs_dir), manifest=manifest)
+    assert violations == ['section beta.reference: missing from manifest.toml']
+
+
 def test_every_json_block_must_parse(docs_dir):
     text = guide_text().replace('{"beta": true}', '{"beta": true,}')
     line = text.split('\n').index(FENCE + 'json') + 1
