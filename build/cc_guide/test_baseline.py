@@ -253,6 +253,23 @@ def test_a_listed_rebaseline_touches_only_listed_blocks_and_refuses_other_change
                               ' list them too, or rebaseline the whole page')
 
 
+def test_an_empty_key_ref_rebaselines_that_block_not_its_page(tmp_path, docs_dir):
+    '''Check prints a block keyed '' (a bare `#` heading) as `page + SEP`; that
+    ref names the block, so the refusal for other changed blocks still runs.'''
+    s = fixture_state(docs_dir)
+    row = 'Tools › Options › `--fast`'
+    faster = DOCS['tools.md'].replace('Runs fast.', 'Runs faster.') + '\n#\n\nBare.\n'
+    latest = latest_from(tmp_path, **{'tools.md': faster})
+    bare = 'tools' + baseline.SEP
+    with pytest.raises(state.SetupError) as err:
+        baseline.rebaseline(s, MANIFEST, guide_text(), 'alpha', [bare], latest, '2.1.902')
+    assert str(err.value) == ('tools: also changed or gone since the baseline: tools › ' + row + ';'
+                              ' list them too, or rebaseline the whole page')
+    new, pages, _ = baseline.rebaseline(s, MANIFEST, guide_text(), 'alpha', [bare, 'tools › ' + row], latest,
+                                        '2.1.902')
+    assert pages == ['tools']
+
+
 def test_a_listed_rebaseline_takes_checks_refs_for_blocks_gone_from_the_page(tmp_path, docs_dir):
     '''A block gone from the page is listed as check names it: by the key
     read back from its snapshot, or by its key hash when there is none. The

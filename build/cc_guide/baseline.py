@@ -192,8 +192,8 @@ def rebaseline(state: dict, manifest: Manifest, guide_text: str, group: str, ref
     stored = state['groups'].get(group, {}).get('blocks', {})
     targets: dict[str, set[str] | None] = {}
     for ref in refs or list(mapped):
-        page, _, key = ref.partition(SEP)
-        if not key:
+        page, sep, key = ref.partition(SEP)
+        if not sep:
             targets[page] = None
         elif targets.get(page, set()) is not None:
             targets.setdefault(page, set()).add(key if key in stored.get(page, {}) else key_hash(key))
@@ -219,7 +219,7 @@ def rebaseline(state: dict, manifest: Manifest, guide_text: str, group: str, ref
             found = page_blocks(text)
             live = key_names(found)
             hashes = {key_hash(k): block_hash(t) for k, t in found.items()}
-            moved = [page + SEP + (live.get(k) or name(page, k)) for k, h in g['blocks'].get(page, {}).items()
+            moved = [page + SEP + (live[k] if k in live else name(page, k)) for k, h in g['blocks'].get(page, {}).items()
                      if k not in keys and hashes.get(k) != h]
             if moved:
                 listed = ', '.join(moved)
