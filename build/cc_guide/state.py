@@ -340,6 +340,30 @@ def fetch_record(cache: Path) -> Path:
     return cache / 'latest' / 'fetch.json'
 
 
+def read_utf8(path: Path) -> str:
+    '''A cached or local docs file's text. A file that is not UTF-8 is a
+    SetupError naming it, so it prints one cc-guide: line.'''
+    try:
+        return path.read_text(encoding='utf-8')
+    except UnicodeDecodeError as exc:
+        raise SetupError(f'{path}: not UTF-8 text ({exc.reason} at byte {exc.start})') from None
+
+
+def read_fetch(cache: Path) -> dict | None:
+    '''The last fetch's record (R6.4), or None before the first fetch. A
+    record that does not parse, or names no changelog head, is a SetupError.'''
+    path = fetch_record(cache)
+    if not path.is_file():
+        return None
+    try:
+        record = json.loads(read_utf8(path))
+    except json.JSONDecodeError as exc:
+        raise SetupError(f'{path}: not valid JSON ({exc}); delete it and run check') from None
+    if not (isinstance(record, dict) and is_label(record.get('changelog_head'))):
+        raise SetupError(f'{path}: names no changelog_head release; delete it and run check')
+    return record
+
+
 def snapshot_docs(cache: Path, release: str) -> Path:
     return cache / release / 'docs'
 
@@ -356,7 +380,7 @@ def no_snapshot(page: str, release: str) -> None:
 def snapshot_text(cache: Path, page: str, release: str) -> str | None:
     '''The cache's Snapshot: the page as <release>/docs holds it.'''
     path = snapshot_docs(cache, release) / page_file(page)
-    return path.read_text(encoding='utf-8') if path.is_file() else None
+    return read_utf8(path) if path.is_file() else None
 
 
 def block_namer(state: dict, group: str, snapshot: Snapshot) -> Callable[[str, str], str]:

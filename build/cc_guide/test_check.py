@@ -264,6 +264,33 @@ def test_a_page_unmapped_by_a_head_move_is_refetched_when_mapped_again(tmp_path,
     assert got.pages['platform:pricing'] == 'Pricing text at head B.\n'
 
 
+def test_a_corrupt_fetch_record_is_a_setup_error(tmp_path, docs_dir):
+    cache = tmp_path / 'cache'
+    record = state.fetch_record(cache)
+    record.parent.mkdir(parents=True)
+    record.write_text('[]')
+    with pytest.raises(state.SetupError) as err:
+        check.live_docs(MANIFEST, cache, serving(docs_dir), NOW)
+    assert str(err.value) == f'{record}: names no changelog_head release; delete it and run check'
+
+
+def test_docs_read_as_other_than_utf8_are_a_setup_error_or_a_fetch_error(tmp_path, docs_dir):
+    '''A local or cached file is a SetupError naming it; a fetched one is a
+    fetch error, so a page is left unread and uncached, as on a failed fetch.'''
+    (docs_dir / 'tools.md').write_bytes(b'\xff\xfe')
+    with pytest.raises(state.SetupError) as err:
+        offline(docs_dir)
+    assert str(err.value) == f"{docs_dir / 'tools.md'}: not UTF-8 text (invalid start byte at byte 0)"
+    cache = tmp_path / 'cache'
+    got = check.live_docs(MANIFEST, cache, serving(docs_dir), NOW)
+    assert (got.errors, got.unread) == ([f"{docs.page_url('tools', MANIFEST.sources)}: not UTF-8 text"], {'tools'})
+    assert not (state.latest_docs(cache) / 'tools.md').exists()
+    (docs_dir / 'changelog.md').write_bytes(b'\xff\xfe')
+    with pytest.raises(check.FetchError) as err:
+        check.live_docs(MANIFEST, cache, serving(docs_dir), NOW)
+    assert str(err.value) == f"{MANIFEST.sources['changelog']}: not UTF-8 text"
+
+
 def test_a_404_removes_the_stale_copy_and_reads_as_a_missing_page(tmp_path, docs_dir):
     cache = tmp_path / 'cache'
     s = fixture_state(docs_dir)

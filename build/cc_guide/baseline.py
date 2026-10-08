@@ -7,7 +7,7 @@ from pathlib import Path
 from blocks import SEP, block_hash, key_hash, key_names, page_blocks, select
 from docs import is_platform, page_file, parse_llms, version_key
 from guide import NO_STAMP, anchor_problems, render_stamp, sections, stamp_bounds, text_hash, with_stamp
-from state import Manifest, SetupError, Snapshot, block_namer, group_terms, no_snapshot
+from state import Manifest, SetupError, Snapshot, block_namer, group_terms, no_snapshot, read_utf8
 
 # R11.1: the July guide (verified at 2.1.219) and the refresh (at 2.1.288),
 # both read at the guide's path before 79ad04f moved it.
@@ -74,7 +74,7 @@ def init(manifest: Manifest, guide_text: str, docs: Path, release: str, day: str
     terms = group_terms(manifest, guide_text)
     llms = docs / 'llms.txt'
     state: dict = {'sections': {}, 'groups': {},
-                   'llms': sorted(parse_llms(llms.read_text(encoding='utf-8'))) if llms.is_file() else []}
+                   'llms': sorted(parse_llms(read_utf8(llms))) if llms.is_file() else []}
     for s in sections(guide_text):
         state['sections'][s.id] = {'checked': {'release': release, 'date': day},
                                    'changed': changed[s.id],
@@ -86,7 +86,7 @@ def init(manifest: Manifest, guide_text: str, docs: Path, release: str, day: str
         for page, mark in group.pages.items():
             path = docs / page_file(page)
             if path.is_file():
-                blocks[page] = select_blocks(path.read_text(encoding='utf-8'), mark, watched)
+                blocks[page] = select_blocks(read_utf8(path), mark, watched)
                 snapshot[page] = release
         state['groups'][gid] = {'blocks': blocks, 'snapshot': snapshot}
     return state
@@ -165,7 +165,7 @@ def rebaseline(state: dict, manifest: Manifest, guide_text: str, group: str, ref
     llms_path = latest / 'llms.txt'
     if not llms_path.is_file():
         raise SetupError(f'{llms_path}: no latest fetch; run check first')
-    slugs = parse_llms(llms_path.read_text(encoding='utf-8'))
+    slugs = parse_llms(read_utf8(llms_path))
     mapped = manifest.groups[group].pages
     watched = set().union(*group_terms(manifest, guide_text)[group].values())
     stored = state['groups'].get(group, {}).get('blocks', {})
@@ -196,7 +196,7 @@ def rebaseline(state: dict, manifest: Manifest, guide_text: str, group: str, ref
         if not path.is_file() or (not is_platform(page) and page not in slugs):
             notes.append(f'{page}: missing page; kept its entries. Drop or remap it in manifest.toml first')
             continue
-        text = path.read_text(encoding='utf-8')
+        text = read_utf8(path)
         chosen = select_blocks(text, mapped[page], watched)
         if keys is None:
             g['blocks'][page] = chosen

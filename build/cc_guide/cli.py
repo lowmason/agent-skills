@@ -37,7 +37,7 @@ and `audited` record the day the check or audit was done, not the
 release's date.
 '''
 import argparse
-import json
+
 import subprocess
 import sys
 import traceback
@@ -51,8 +51,8 @@ from docs import page_file
 from guide import render_stamp
 from lint import lint
 from state import (BASELINE, BOOTSTRAP_DATE, BOOTSTRAP_RELEASE, MANIFEST, SetupError, Source, default_cache,
-                   dump_baseline, fetch_record, is_iso_date, is_label, latest_docs, newest_changelog,
-                   parse_baseline, parse_manifest, snapshot_docs, snapshot_text)
+                   dump_baseline, is_iso_date, is_label, latest_docs, newest_changelog, parse_baseline,
+                   parse_manifest, read_fetch, read_utf8, snapshot_docs, snapshot_text)
 
 REPO = Path(__file__).resolve().parents[2]
 
@@ -105,7 +105,7 @@ def cached_releases(cache: Path):
     path = newest_changelog(cache)
     if path is None:
         return None
-    return releases_of(path.read_text(encoding='utf-8'), str(path))
+    return releases_of(read_utf8(path), str(path))
 
 
 def newest_releases(cache: Path):
@@ -184,10 +184,10 @@ def run_baseline(args, cache: Path, today: date) -> int:
     elif args.action == 'audited':
         new = baseline.audited(state, manifest, args.group, newest_releases(cache)[0].label, day)
     else:
-        record = fetch_record(cache)
-        if not record.is_file():
+        record = read_fetch(cache)
+        if record is None:
             raise SetupError('no latest fetch: run check first')
-        release = json.loads(record.read_text(encoding='utf-8'))['changelog_head']
+        release = record['changelog_head']
         if release == BOOTSTRAP_RELEASE:
             raise SetupError(f'{snapshot_docs(cache, release)} is the bootstrap snapshot, which is never '
                              'written (R2.6): run check to fetch a newer release first')

@@ -185,5 +185,14 @@ def test_the_newest_changelog_is_latest_else_the_bootstrap_snapshot(tmp_path):
     assert state.newest_changelog(tmp_path) == latest
 
 
+def test_a_snapshot_page_read_as_other_than_utf8_is_a_setup_error(tmp_path):
+    page = state.snapshot_docs(tmp_path, '2.1.900') / 'tools.md'
+    page.parent.mkdir(parents=True)
+    page.write_bytes(b'ok \xff')
+    with pytest.raises(state.SetupError) as err:
+        state.snapshot_text(tmp_path, 'tools', '2.1.900')
+    assert str(err.value) == f'{page}: not UTF-8 text (invalid start byte at byte 3)'
+
+
 def test_the_default_cache_follows_home(isolated_home):
     assert state.default_cache() == isolated_home / '.cache' / 'agent-skills' / 'cc-guide'

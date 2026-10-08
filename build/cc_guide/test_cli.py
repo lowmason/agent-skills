@@ -288,6 +288,33 @@ def test_accepting_a_section_the_guide_no_longer_has_is_one_error_line(world, ca
     assert dirty(repo) == [GUIDE_PATH]
 
 
+def test_a_corrupt_fetch_record_is_one_error_line(world, capsys):
+    _, cache, _ = world
+    record = state.fetch_record(cache)
+    record.write_text('{')
+    with pytest.raises(json.JSONDecodeError) as cause:
+        json.loads('{')
+    assert main(cache, 'baseline', 'rebaseline', 'alpha') == 2
+    assert capsys.readouterr() == ('', f'cc-guide: {record}: not valid JSON ({cause.value}); delete it and run check\n')
+    record.write_text('{}')
+    assert main(cache, 'baseline', 'rebaseline', 'alpha') == 2
+    assert capsys.readouterr() == ('', f'cc-guide: {record}: names no changelog_head release;'
+                                       ' delete it and run check\n')
+
+
+def test_non_utf8_cached_docs_are_one_error_line(world, capsys):
+    repo, cache, _ = world
+    page = state.latest_docs(cache) / 'tools.md'
+    page.write_bytes(b'\xff\xfe')
+    assert main(cache, 'baseline', 'rebaseline', 'alpha') == 2
+    assert capsys.readouterr() == ('', f'cc-guide: {page}: not UTF-8 text (invalid start byte at byte 0)\n')
+    changelog = state.latest_docs(cache) / 'changelog.md'
+    changelog.write_bytes(b'\xff\xfe')
+    assert main(cache, 'lint') == 2
+    assert capsys.readouterr() == ('', f'cc-guide: {changelog}: not UTF-8 text (invalid start byte at byte 0)\n')
+    assert dirty(repo) == []
+
+
 def test_a_crash_exits_two_never_one(world, monkeypatch, capsys):
     '''R6.9: an unexpected exception must not read as 1, "due".'''
     _, cache, _ = world

@@ -18,7 +18,7 @@ from docs import CHANGELOG, LLMS, Release, is_platform, page_file, page_url, par
 from lint import lint
 from state import (BASELINE, MANIFEST, PROBES, Manifest, ProbeRow, SetupError, Snapshot, Source, block_namer,
                    fetch_record, group_terms, latest_docs, no_snapshot, parse_baseline, parse_manifest, parse_probes,
-                   snapshot_text)
+                   read_fetch, read_utf8, snapshot_text)
 
 USER_AGENT = 'agent-skills-cc-guide/1 (Claude Code docs drift check)'
 TIMEOUT = 30
@@ -49,6 +49,14 @@ def http_get(url: str) -> tuple[int, bytes]:
     raise FetchError(f'{url}: {error}')
 
 
+def utf8(body: bytes) -> str | None:
+    '''A fetched body as UTF-8 text, or None when it is not.'''
+    try:
+        return body.decode('utf-8')
+    except UnicodeDecodeError:
+        return None
+
+
 class Docs(NamedTuple):
     changelog: str
     llms: str
@@ -75,7 +83,7 @@ def offline_docs(manifest: Manifest, folder: Path) -> Docs:
     names them. A page file that is absent is a missing page.'''
     def read(name: str) -> str | None:
         path = folder / name
-        return path.read_text(encoding='utf-8') if path.is_file() else None
+        return read_utf8(path) if path.is_file() else None
     changelog, llms = read(CHANGELOG), read(LLMS)
     if changelog is None or llms is None:
         raise SetupError(f'{folder}: needs {CHANGELOG} and {LLMS}')
@@ -92,14 +100,17 @@ def live_docs(manifest: Manifest, cache: Path, fetch: Fetch, now: datetime) -> D
     recorded head would otherwise vouch for it later.'''
     folder = latest_docs(cache)
     folder.mkdir(parents=True, exist_ok=True)
-    record = fetch_record(cache)
-    previous = json.loads(record.read_text(encoding='utf-8')).get('changelog_head') if record.is_file() else None
+    record = read_fetch(cache)
+    previous = record['changelog_head'] if record else None
     fetched = {}
     for name, url in ((CHANGELOG, manifest.sources['changelog']), (LLMS, manifest.sources['llms'])):
         status, body = fetch(url)
         if status != 200:
             raise FetchError(f'{url}: HTTP {status}')
-        fetched[name] = body.decode('utf-8')
+        text = utf8(body)
+        if text is None:
+            raise FetchError(f'{url}: not UTF-8 text')
+        fetched[name] = text
     head = releases_of(fetched[CHANGELOG])[0].label
     pages = manifest.pages()
     if head != previous:
@@ -123,6 +134,8 @@ def live_docs(manifest: Manifest, cache: Path, fetch: Fetch, now: datetime) -> D
         path = folder / page_file(page)
         if error is None and got[0] not in (200, 404):
             error = f'{page_url(page, manifest.sources)}: HTTP {got[0]}'
+        if error is None and got[0] == 200 and utf8(got[1]) is None:
+            error = f'{page_url(page, manifest.sources)}: not UTF-8 text'
         if error is not None:
             errors.append(error)
             unread.add(page)
@@ -133,10 +146,9 @@ def live_docs(manifest: Manifest, cache: Path, fetch: Fetch, now: datetime) -> D
             path.write_bytes(got[1])
     for name, text in fetched.items():
         (folder / name).write_text(text, encoding='utf-8')
-    record.write_text(json.dumps({'fetched_at': now.isoformat(timespec='seconds'),
-                                  'changelog_head': head}, indent=1) + '\n', encoding='utf-8')
-    texts = {p: (folder / page_file(p)).read_text(encoding='utf-8')
-             if (folder / page_file(p)).is_file() else None for p in pages}
+    fetch_record(cache).write_text(json.dumps({'fetched_at': now.isoformat(timespec='seconds'),
+                                               'changelog_head': head}, indent=1) + '\n', encoding='utf-8')
+    texts = {p: read_utf8(folder / page_file(p)) if (folder / page_file(p)).is_file() else None for p in pages}
     return Docs(fetched[CHANGELOG], fetched[LLMS], texts, 'live', errors, unread)
 
 
