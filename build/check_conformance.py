@@ -32,6 +32,8 @@ from fences import fenced_lines, iter_code_blocks
 
 # The guide's anchor grammar is cc_guide/guide.py's (drift R1.1). Drift R12.1
 # bars only cc_guide importing from build/, so the lint reads it from there.
+# The guide is read with guide.py's grammar, fence rule included (blocks.fenced_lines:
+# backtick or tilde, any indentation); artifacts keep fences.py's.
 sys.path.insert(0, str(Path(__file__).resolve().parent / 'cc_guide'))
 import guide  # noqa: E402
 
