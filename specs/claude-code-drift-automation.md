@@ -616,10 +616,10 @@ that drops or remaps it, since `rebaseline` keeps a missing page's entries
 - `init`: R2.6.
 - `rebaseline <group> [<block keys>]`: re-hash the group's selected blocks,
   all of them or the listed keys, from `latest/`. A listed run refuses while
-  an unlisted baselined block on the same page has also changed, since the
-  page's snapshot would not hold that block's baselined text; the refusal
-  names it, and the run must list it too or take the whole page (owner
-  ruling 7, plan 38). It snapshots those pages to
+  an unlisted baselined block on the same page has also changed or gone,
+  since the page's snapshot would not hold that block's baselined text; the
+  refusal names it, and the run must list it too or take the whole page
+  (owner ruling 7, plan 38). It snapshots those pages to
   `~/.cache/agent-skills/cc-guide/<release>/docs/`, refusing to overwrite a
   snapshot page that holds different bytes, since another group's `snapshot`
   pointer may name it. A key is listed as
