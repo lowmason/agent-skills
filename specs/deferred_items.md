@@ -2555,7 +2555,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       not survive a squash merge. Size: design. Done when: drift spec R7 says how a
       section created after init enters `baseline.json`, and the history test no longer
       depends on the working-tree guide's headings.
-- [ ] Unify the guide's anchor grammar (owner ruling 4, plan 38). `build/cc_guide/guide.py`
+- [x] Unify the guide's anchor grammar (owner ruling 4, plan 38). `build/cc_guide/guide.py`
       repeats `build/check_conformance.py`'s R1.1 anchor grammar: `ANCHOR_RE` and
       `ANCHOR_LIKE_RE` are identical in both, `guide.anchor_problems` repeats
       `check_conformance.guide_sections`' classifier and messages, and `test_guide.py`
@@ -2565,7 +2565,8 @@ declined as YAGNI (zero instances in a one-page wiki).
       `guide.py`'s grammar. Size: plan. Done when: `check_conformance.py` uses
       `guide.py`'s grammar, the duplicated patterns and the copied ID list are gone, and
       a repeated anchor resolves the same way in both.
-- [ ] Every input error prints a `cc-guide:` line (plan 38's final review: T7-m1, T8-m1,
+      → done in plan 39 (2026-10-08, chore/cc-guide-hardening).
+- [x] Every input error prints a `cc-guide:` line (plan 38's final review: T7-m1, T8-m1,
       T10-m2, T10-m3, T10-m6, T6-m10, FR-m4). These all exit 2, within the CLI
       contract, but print a traceback: `baseline stamp` on a guide with no stamp region
       (`guide.with_stamp`'s bare `ValueError`); an emptied baseline reaching
@@ -2581,6 +2582,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       `[sources]` or `[cadence]` table reports its shape problem, then every per-field
       check against the `{}` fallback. Files: under `build/cc_guide/`. Size: plan. Done
       when: each path prints one `cc-guide:` line, or is refused up front, with a test.
+      → done in plan 39 (2026-10-08, chore/cc-guide-hardening).
 - [ ] check's report and inputs, for Stage 4's hook and notice (plan 38's final review:
       T9-m3, T6-m3, FR-m3). (a) `check` writes `reports/<sha12>.json` only at its end,
       so a `SetupError` or a crash leaves the previous report, with its old exit, for
@@ -2601,7 +2603,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       `build/cc_guide/state.py`, `build/cc_guide/check.py`. Size: plan. Done when:
       Stage 5's plan validates outcomes against R10's vocabulary, schedules ERROR as not
       passed, and settles R10.1 against R10.2.
-- [ ] Test coverage and edge cases in `build/cc_guide/` (plan 38's final review triage:
+- [x] Test coverage and edge cases in `build/cc_guide/` (plan 38's final review triage:
       each regression would surface as an error or a visible finding, or has no
       realistic trigger today). Coverage: `test_blocks.py` pins neither sha256[:16] nor
       a hashed newline (T3-m2), nor `KEY_PART_MAX`'s 60/61 boundary (T3-m3);
@@ -2632,7 +2634,8 @@ declined as YAGNI (zero instances in a one-page wiki).
       bare `#` heading prints as a page (T9-m4); a fence opener whose info string holds
       backticks opens a fence CommonMark would not, giving coarser blocks only (FR-m5).
       Size: plan. Done when: each is tested, fixed, or recorded as needing no action.
-- [ ] Style, DRY and naming in `build/cc_guide/` (plan 38's final review triage).
+      → done in plan 39 (2026-10-08, chore/cc-guide-hardening).
+- [x] Style, DRY and naming in `build/cc_guide/` (plan 38's final review triage).
       `blocks.py` reads the fence 4-tuple by position and leaves `select`'s `terms`
       unannotated (T3-m5). `state.py`'s "manifest order" comment is wrong, since
       `Group.pages` lists `all` marks before `terms` marks (T6-m4); `ID_RE`, `HASH_RE`
@@ -2651,6 +2654,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       path (T9-m6, plan-mandated). `releases_of`'s `source` parameter shadows
       `state.Source` (T10-m7). Size: plan. Done when: each is tidied or recorded as
       needing no action.
+      → done in plan 39 (2026-10-08, chore/cc-guide-hardening).
 
 ## cc-guide-hashed-keys (no plan; branch feat/cc-guide-hashed-keys) — 2026-10-05
 - [ ] Mark baseline.json's format so older code refuses it (the branch's review,
@@ -2737,3 +2741,24 @@ declined as YAGNI (zero instances in a one-page wiki).
       before drift R4.1 or R8.1 lands, or portability R1.1 adds the key to the SKILL.md
       key set. Size: quick-fix. Done when: a citation-shaped line and a README or
       INSTALL.md that name a manual-only skill yield no finding, with a test for each.
+
+## 39-cc-guide-hardening — 2026-10-08
+- [ ] One fence rule for `build/check_conformance.py` (plan 39's final review, T1-1;
+      deferred at the owner's call). Since plan 39 Task 1, the guide is read through
+      `cc_guide/guide.scan`, which uses `cc_guide/blocks.fenced_lines`: backtick or
+      tilde, any indentation, 0-based. Artifacts still use `build/fences.py`'s
+      `fenced_lines`, which takes column-0 backticks only and is 1-based, at
+      `check_conformance.py`'s three call sites. No file is read under both rules
+      today, because no kind glob matches `specs/guides/`, and the comment above the
+      `sys.path.insert` names the split. Unifying the rules means choosing one rule and
+      indexing base, then re-running the conformance suite against every artifact kind.
+      Size: plan. Revisit if: a fence that one rule reads and the other does not causes
+      a missed or spurious conformance finding, or an artifact kind starts matching
+      `specs/guides/`.
+- [ ] A repeated missing ID is listed twice (plan 39's final review, T2-1; deferred at the
+      owner's call). `baseline.accept`, `known` and `check_forward` in
+      `build/cc_guide/baseline.py` each list a missing ID once per time it is passed, so
+      `accept a.x a.x` names `a.x` twice in its `cc-guide:` line. Fix: deduplicate with
+      `dict.fromkeys(ids)` before building each message, red first, with one test per
+      function in `build/cc_guide/test_baseline.py`. Size: quick-fix. Done when: a
+      repeated missing ID appears once in each refusal, with a test for each.

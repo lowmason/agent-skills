@@ -1,5 +1,7 @@
 # Claude Code Guide Tooling Hardening Implementation Plan
 
+**Status: COMPLETE (2026-10-08)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 > **Where this runs.** This plan lands on `main` with the merge of `chore/deferred-2026-10-08`, which also carries the quick fixes it builds on. Run the pre-flight in Global Constraints ("Worktree"), then create the worktree by hand from the main checkout and execute there:
@@ -173,7 +175,7 @@ Every file is modified; none is created or deleted.
   - `sections(text)` is `scan(text)[0]`, and `anchor_problems(text)` renders `scan(text)[1]` as `guide line {line}: {message}`. Both keep their signatures.
 - In `check_conformance.py`: the module imports `guide` from `build/cc_guide/` by putting that directory on `sys.path`. `guide_sections(text, path)` keeps its signature and returns `(list[guide.Section], list[Violation])`; each anchor problem becomes `Violation(path, 'anchor', id or '-', 'line {line}: {message}')`. Its own `HEADING_RE`, `ANCHOR_RE`, `ANCHOR_LIKE_RE` and `Section` go.
 
-- [ ] **Step 1: Write the failing tests.** Apply these edits in order. They add the repeated-anchor and `scan` tests, drop `test_guide.py`'s copied ID list (`build/test_check_conformance.py` keeps the oracle), and make the conformance test cross-check `guide.py`.
+- [x] **Step 1: Write the failing tests.** Apply these edits in order. They add the repeated-anchor and `scan` tests, drop `test_guide.py`'s copied ID list (`build/test_check_conformance.py` keeps the oracle), and make the conformance test cross-check `guide.py`.
 
 **Edit 1.** `build/cc_guide/test_guide.py` (in or near `REAL_GUIDE`). Replace:
 
@@ -321,7 +323,7 @@ def test_repeated_anchor_id_is_a_violation_and_resolves_as_guide_py_does():
         'guide.md: anchor (a.one): line 4: anchor a.one repeats line 2']
 ````
 
-- [ ] **Step 2: Run the suites and confirm RED.**
+- [x] **Step 2: Run the suites and confirm RED.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-39-cc-guide-hardening/build/cc_guide && uv run --python 3.13 --with pytest python -m pytest -q -rf`
 Expected: `2 failed, 148 passed`. Both fixes:
@@ -331,7 +333,7 @@ Expected: `2 failed, 148 passed`. Both fixes:
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-39-cc-guide-hardening/build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q -rf test_check_conformance.py`
 Expected: `1 failed, 344 passed`. The fix: `test_repeated_anchor_id_is_a_violation_and_resolves_as_guide_py_does`, with `AttributeError: module 'check_conformance' has no attribute 'guide'`.
 
-- [ ] **Step 3: Implement.** Apply these edits in order. `scan` replaces `sections` and `anchor_problems`, which become thin readers of it, and `check_conformance.py` imports it.
+- [x] **Step 3: Implement.** Apply these edits in order. `scan` replaces `sections` and `anchor_problems`, which become thin readers of it, and `check_conformance.py` imports it.
 
 **Edit 1.** `build/cc_guide/guide.py` (in or near `sections`). Replace:
 
@@ -537,14 +539,14 @@ def guide_sections(text: str, path: str) -> tuple[list[guide.Section], list[Viol
     return sections, [Violation(path, 'anchor', p.id or '-', f'line {p.line}: {p.message}') for p in problems]
 ````
 
-- [ ] **Step 4: Run the suites and the two lints, and confirm GREEN.**
+- [x] **Step 4: Run the suites and the two lints, and confirm GREEN.**
 
 Run the two Step 2 commands again. Expected: `150 passed` (+1: two tests added, one removed), and `345 passed`.
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-39-cc-guide-hardening && uv run --python 3.13 --with pyyaml python build/check_conformance.py; echo "exit=$?"; uv run --python 3.13 python build/cc_guide/cli.py lint; echo "exit=$?"`
 Expected: `exit=0` twice. The lint prints `note: release-label check skipped: no changelog to read` on stderr when no changelog is cached; that is fine.
 
-- [ ] **Step 5: Commit.**
+- [x] **Step 5: Commit.**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-39-cc-guide-hardening && [ "$(git branch --show-current)" = chore/cc-guide-hardening ] && git add build/cc_guide/guide.py build/cc_guide/test_guide.py build/check_conformance.py build/test_check_conformance.py && git commit -m "refactor(cc_guide): read the guide's anchors with one grammar
@@ -574,7 +576,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Produces: `guide.NO_STAMP = f'needs one stamp region, a {STAMP_OPEN} line then a {STAMP_CLOSE} line'`. Lint's missing-region violation and `baseline stamp`'s refusal both read `guide: {NO_STAMP}`.
 - `baseline.stamp` raises `SetupError(f'guide: {NO_STAMP}')` without a region. `baseline.accept` raises `SetupError('section IDs not in the guide: <ids>')` for IDs the baseline knows but the guide lacks. `state.parse_baseline` reports `sections must hold at least one section`.
 
-- [ ] **Step 1: Write the failing tests.** Apply these edits in order: an import of the stamp markers, and three CLI tests.
+- [x] **Step 1: Write the failing tests.** Apply these edits in order: an import of the stamp markers, and three CLI tests.
 
 **Edit 1.** `build/cc_guide/test_cli.py`. Replace:
 
@@ -634,7 +636,7 @@ def test_accepting_a_section_the_guide_no_longer_has_is_one_error_line(world, ca
 def test_a_crash_exits_two_never_one(world, monkeypatch, capsys):
 ````
 
-- [ ] **Step 2: Run the suite and confirm RED.**
+- [x] **Step 2: Run the suite and confirm RED.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-39-cc-guide-hardening/build/cc_guide && uv run --python 3.13 --with pytest python -m pytest -q -rf`
 Expected: `3 failed, 150 passed`. All three are fixes, and each fails because stderr holds a traceback instead of the `cc-guide:` line:
@@ -642,7 +644,7 @@ Expected: `3 failed, 150 passed`. All three are fixes, and each fails because st
 - `test_cli.py::test_an_emptied_baseline_is_one_error_line`: `ValueError: min() iterable argument is empty`, from `guide.render_stamp`.
 - `test_cli.py::test_accepting_a_section_the_guide_no_longer_has_is_one_error_line`: `KeyError: 'alpha.overview'`, from `baseline.accept`.
 
-- [ ] **Step 3: Implement.** Apply these edits in order.
+- [x] **Step 3: Implement.** Apply these edits in order.
 
 **Edit 1.** `build/cc_guide/baseline.py`. Replace:
 
@@ -741,11 +743,11 @@ with:
         problems.append('sections must hold at least one section')
 ````
 
-- [ ] **Step 4: Run the suite and confirm GREEN.**
+- [x] **Step 4: Run the suite and confirm GREEN.**
 
 Run the Step 2 command again. Expected: `153 passed` (+3).
 
-- [ ] **Step 5: Commit.**
+- [x] **Step 5: Commit.**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-39-cc-guide-hardening && [ "$(git branch --show-current)" = chore/cc-guide-hardening ] && git add build/cc_guide/guide.py build/cc_guide/baseline.py build/cc_guide/lint.py build/cc_guide/state.py build/cc_guide/test_cli.py && git commit -m "fix(cc_guide): one error line for a missing stamp region, an empty baseline or an absent ID
@@ -781,7 +783,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `baseline init: --date '<v>' is not a YYYY-MM-DD date`;
   - `baseline init: without --docs it reads the 2.1.288 bootstrap snapshot, so --release must be 2.1.288`.
 
-- [ ] **Step 1: Write the failing tests.** Apply these edits in order.
+- [x] **Step 1: Write the failing tests.** Apply these edits in order.
 
 **Edit 1.** `build/cc_guide/test_cli.py` (in or near `test_init_derives_changed_and_refuses_to_overwrite_without_force`). Replace:
 
@@ -896,7 +898,7 @@ def test_a_date_is_yyyy_mm_dd_and_nothing_else_fromisoformat_takes(value, ok):
     assert state.is_iso_date(value) is ok
 ````
 
-- [ ] **Step 2: Run the suite and confirm RED.**
+- [x] **Step 2: Run the suite and confirm RED.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-39-cc-guide-hardening/build/cc_guide && uv run --python 3.13 --with pytest python -m pytest -q -rf`
 Expected: `12 failed, 152 passed`. All are fixes:
@@ -904,7 +906,7 @@ Expected: `12 failed, 152 passed`. All are fixes:
 - `test_state.py::test_every_manifest_problem_is_reported_at_once` and `test_state.py::test_a_mis_shaped_table_reports_its_shape_and_nothing_else`. After a table's shape problem, each field check still runs against the `{}` fallback and adds lines such as `[guide] path must be a non-empty string`.
 - `test_state.py::test_a_date_is_yyyy_mm_dd_and_nothing_else_fromisoformat_takes`, all six cases: `AttributeError: module 'state' has no attribute 'is_iso_date'`.
 
-- [ ] **Step 3: Implement.** Apply these edits in order.
+- [x] **Step 3: Implement.** Apply these edits in order.
 
 **Edit 1.** `build/cc_guide/cli.py`. Replace:
 
@@ -1095,11 +1097,11 @@ with:
             ok = ok and all(is_label(r) for r in g['snapshot'].values())
 ````
 
-- [ ] **Step 4: Run the suite and confirm GREEN.**
+- [x] **Step 4: Run the suite and confirm GREEN.**
 
 Run the Step 2 command again. Expected: `164 passed` (+11).
 
-- [ ] **Step 5: Commit.**
+- [x] **Step 5: Commit.**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-39-cc-guide-hardening && [ "$(git branch --show-current)" = chore/cc-guide-hardening ] && git add build/cc_guide/state.py build/cc_guide/cli.py build/cc_guide/test_state.py build/cc_guide/test_cli.py && git commit -m "fix(cc_guide): refuse bad init arguments up front; report a mis-shaped table once
@@ -1136,7 +1138,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `offline_docs` reads through `read_utf8`.
 - `cli.cached_releases` and `rebaseline` read through `read_utf8` and `read_fetch`, and `baseline.init` and `baseline.rebaseline` through `read_utf8`. `cli.py` drops its now-unused `json` and `fetch_record` imports.
 
-- [ ] **Step 1: Write the failing tests.** Apply these edits in order.
+- [x] **Step 1: Write the failing tests.** Apply these edits in order.
 
 **Edit 1.** `build/cc_guide/test_check.py` (in or near `test_a_page_unmapped_by_a_head_move_is_refetched_when_mapped_again`). Replace:
 
@@ -1255,7 +1257,7 @@ def test_a_snapshot_page_read_as_other_than_utf8_is_a_setup_error(tmp_path):
 def test_the_default_cache_follows_home(isolated_home):
 ````
 
-- [ ] **Step 2: Run the suite and confirm RED.**
+- [x] **Step 2: Run the suite and confirm RED.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-39-cc-guide-hardening/build/cc_guide && uv run --python 3.13 --with pytest python -m pytest -q -rf`
 Expected: `5 failed, 164 passed`. All five are fixes:
@@ -1265,7 +1267,8 @@ Expected: `5 failed, 164 passed`. All five are fixes:
 - `test_cli.py::test_non_utf8_cached_docs_are_one_error_line`: stderr is a `UnicodeDecodeError` traceback.
 - `test_state.py::test_a_snapshot_page_read_as_other_than_utf8_is_a_setup_error`: `UnicodeDecodeError`.
 
-- [ ] **Step 3: Implement.** Apply these edits in order.
+- [x] **Step 3: Implement.** Apply these edits in order.
+> Deviation: the plan writes Edit 13's pure deletion of `import json` as an empty replacement, which left a blank line in cli.py's stdlib imports; the prototype deletes the line outright. Fixed after the final review in 9fc8136. Every later dispatch read an empty replacement as "delete the lines with their line ending".
 
 **Edit 1.** `build/cc_guide/baseline.py`. Replace:
 
@@ -1587,11 +1590,11 @@ def snapshot_text(cache: Path, page: str, release: str) -> str | None:
     return read_utf8(path) if path.is_file() else None
 ````
 
-- [ ] **Step 4: Run the suite and confirm GREEN.**
+- [x] **Step 4: Run the suite and confirm GREEN.**
 
 Run the Step 2 command again. Expected: `169 passed` (+5).
 
-- [ ] **Step 5: Commit.**
+- [x] **Step 5: Commit.**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-39-cc-guide-hardening && [ "$(git branch --show-current)" = chore/cc-guide-hardening ] && git add build/cc_guide/state.py build/cc_guide/check.py build/cc_guide/cli.py build/cc_guide/baseline.py build/cc_guide/test_state.py build/cc_guide/test_check.py build/cc_guide/test_cli.py && git commit -m "fix(cc_guide): one error line for unreadable cached docs or fetch record
@@ -1621,7 +1624,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - `docs.parse_changelog` errors read `line {n}: …`. The caller prefixes the file, so check says `changelog: line 8: …` where it said `changelog: changelog line 8: …`. A repeat reads `line {n}: release label {label} repeats line {first}` (T4-m3).
 - `cc_fixtures.LLMS_TEXT` gains a `/docs/_llms/` index line and a platform line, which every `llms.txt` reader must skip. The first edit's old text starts at `CHANGELOG_TEXT`'s closing `])`, but only `LLMS_TEXT` changes.
 
-- [ ] **Step 1: Write the failing tests.** Apply these edits in order.
+- [x] **Step 1: Write the failing tests.** Apply these edits in order.
 
 **Edit 1.** `build/cc_guide/cc_fixtures.py` (in or near `CHANGELOG_TEXT`). Replace:
 
@@ -1880,7 +1883,7 @@ def test_a_release_keeps_only_its_bullets():
     assert docs.parse_changelog(text)[0].bullets == ['one', 'two']
 ````
 
-- [ ] **Step 2: Run the suite and confirm RED.**
+- [x] **Step 2: Run the suite and confirm RED.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-39-cc-guide-hardening/build/cc_guide && uv run --python 3.13 --with pytest python -m pytest -q -rf`
 Expected: `10 failed, 168 passed`. The fixes:
@@ -1894,7 +1897,7 @@ The pins, which pass now:
 - `test_blocks.py`: `test_block_hash_is_sha256_over_the_normalized_lines_joined_by_newlines` (T3-m2), `test_a_key_part_of_sixty_characters_is_kept_and_one_of_sixty_one_is_cut` (T3-m3) and `test_a_link_whose_title_wraps_to_the_next_line_keeps_its_target` (T3-m6, no action).
 - `test_docs.py`: `test_a_bullet_after_a_closed_release_belongs_to_no_release` (T4-m4) and `test_a_release_keeps_only_its_bullets` (T4-m5, no action).
 
-- [ ] **Step 3: Implement.** Apply these edits in order.
+- [x] **Step 3: Implement.** Apply these edits in order.
 
 **Edit 1.** `build/cc_guide/blocks.py`. Replace:
 
@@ -2090,14 +2093,14 @@ with:
 
 ````
 
-- [ ] **Step 4: Run the suite and confirm GREEN.**
+- [x] **Step 4: Run the suite and confirm GREEN.**
 
 Run the Step 2 command again. Expected: `178 passed` (+9: thirteen tests added, and the four cases of `test_changelog_rejects_a_bad_date_a_bad_label_a_repeat_or_an_unknown_tag` replaced).
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-39-cc-guide-hardening && uv run --python 3.13 python build/cc_guide/cli.py lint; echo "exit=$?"`
 Expected: `exit=0`.
 
-- [ ] **Step 5: Commit.**
+- [x] **Step 5: Commit.**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-39-cc-guide-hardening && [ "$(git branch --show-current)" = chore/cc-guide-hardening ] && git add build/cc_guide/blocks.py build/cc_guide/docs.py build/cc_guide/cc_fixtures.py build/cc_guide/test_blocks.py build/cc_guide/test_docs.py build/cc_guide/test_check.py build/cc_guide/test_cli.py && git commit -m "fix(cc_guide): CommonMark backtick fences, whole-string labels, numbered changelog errors
@@ -2134,7 +2137,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - `lint(guide_text, manifest, state, labels)` keeps its signature and its violation order: anchors, ID sets, text hashes, the stamp region, labels, tables, json. It returns `[NO_CHANGELOG]` as its notes when `labels` is `None`.
 - `stamp_problems` compares `guide.stamp_content(...)` with the rendered stamp (T8-m2). `cell_count` loses its dead `\|` guard (T8-m5), and `id_set_problems` joins its names before the f-string (T8-m8).
 
-- [ ] **Step 1: Write the failing tests.** Apply these edits in order.
+- [x] **Step 1: Write the failing tests.** Apply these edits in order.
 
 **Edit 1.** `build/cc_guide/test_guide.py`. Replace:
 
@@ -2276,7 +2279,7 @@ def test_a_section_missing_from_the_manifest_alone_is_named(docs_dir):
 def test_every_json_block_must_parse(docs_dir):
 ````
 
-- [ ] **Step 2: Run the suite and confirm RED.**
+- [x] **Step 2: Run the suite and confirm RED.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-39-cc-guide-hardening/build/cc_guide && uv run --python 3.13 --with pytest python -m pytest -q -rf`
 Expected: `1 failed, 186 passed`. The fix: `test_lint.py::test_pipe_lines_without_a_separator_row_or_inside_a_fence_are_no_table`. Lint reads `| a | b |` over `| c |` as a table without a separator row and flags the row (T8-m4).
@@ -2285,7 +2288,7 @@ The pins, which pass now:
 - `test_guide.py`: `test_a_heading_in_a_tilde_or_an_indented_fence_is_no_section` (T5-m2), `test_an_anchor_like_line_inside_a_fence_is_no_stray_anchor`, `test_terms_keep_three_and_sixty_characters_and_drop_two_and_sixty_one`, `test_with_stamp_raises_without_a_region` and `test_render_stamp_breaks_a_tie_on_the_other_field` (T5-m3).
 - `test_lint.py`: `test_a_row_ending_in_an_escaped_pipe_counts_its_cells`, `test_an_unclosed_json_block_runs_to_the_end` and `test_a_section_missing_from_the_manifest_alone_is_named` (T8-m7).
 
-- [ ] **Step 3: Implement.** Apply these edits in order. Besides the fix, they refactor under green: T8-m2, T8-m5, T8-m6 and T8-m8.
+- [x] **Step 3: Implement.** Apply these edits in order. Besides the fix, they refactor under green: T8-m2, T8-m5, T8-m6 and T8-m8.
 
 **Edit 1.** `build/cc_guide/lint.py`. Replace:
 
@@ -2466,14 +2469,14 @@ def lint(guide_text: str, manifest: Manifest, state: dict,
     return violations, [NO_CHANGELOG] if labels is None else []
 ````
 
-- [ ] **Step 4: Run the suite and the lint, and confirm GREEN.**
+- [x] **Step 4: Run the suite and the lint, and confirm GREEN.**
 
 Run the Step 2 command again. Expected: `187 passed` (+9).
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-39-cc-guide-hardening && uv run --python 3.13 python build/cc_guide/cli.py lint; echo "exit=$?"`
 Expected: `exit=0`.
 
-- [ ] **Step 5: Commit.**
+- [x] **Step 5: Commit.**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-39-cc-guide-hardening && [ "$(git branch --show-current)" = chore/cc-guide-hardening ] && git add build/cc_guide/lint.py build/cc_guide/test_guide.py build/cc_guide/test_lint.py && git commit -m "refactor(cc_guide): one function per lint check; a table needs its separator row
@@ -2512,7 +2515,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `Source.read` in ref mode runs `git cat-file blob <ref>:<path>`, so a directory reads as `None`. Bytes that are not UTF-8 raise `SetupError(f'{ref}:{path}: not UTF-8 text (…)')`. In the working tree it reads through `read_utf8`.
 - In `cc_fixtures.py`: `git(repo, *args)` raises `RuntimeError(f'git {command} failed: {stderr}')`, so a failing fixture command shows git's stderr. `json`, `os` and `subprocess` become top-level imports.
 
-- [ ] **Step 1: Write the failing tests.** Apply these edits in order.
+- [x] **Step 1: Write the failing tests.** Apply these edits in order.
 
 **Edit 1.** `build/cc_guide/test_state.py` (in or near `test_every_manifest_problem_is_reported_at_once`). Replace:
 
@@ -2668,7 +2671,7 @@ def test_the_fetch_record_sits_beside_latest_docs(tmp_path):
     assert state.fetch_record(tmp_path) == tmp_path / 'latest' / 'fetch.json'
 ````
 
-- [ ] **Step 2: Run the suite and confirm RED.**
+- [x] **Step 2: Run the suite and confirm RED.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-39-cc-guide-hardening/build/cc_guide && uv run --python 3.13 --with pytest python -m pytest -q -rf`
 Expected: `6 failed, 200 passed`. The fixes:
@@ -2681,7 +2684,7 @@ The pins, which pass now:
 - The other eleven cases of `test_each_manifest_rule_names_its_table`, including `alpha!`, and case `changes1` of `test_a_hash_must_be_the_whole_string` (the 17-character key).
 - `test_group_terms_fall_back_to_extra_terms_for_a_section_the_guide_lacks` and `test_the_fetch_record_sits_beside_latest_docs`.
 
-- [ ] **Step 3: Implement.** Apply these edits in order. The `parse_manifest` split, the moved patterns and the `Group` comment are refactors under green.
+- [x] **Step 3: Implement.** Apply these edits in order. The `parse_manifest` split, the moved patterns and the `Group` comment are refactors under green.
 
 **Edit 1.** `build/cc_guide/blocks.py` (in or near `KEY_PART_MAX`). Replace:
 
@@ -3221,14 +3224,14 @@ with:
             ok = all(isinstance(keys, dict) and all(HASH_RE.fullmatch(k) and isinstance(h, str) and HASH_RE.fullmatch(h)
 ````
 
-- [ ] **Step 4: Run the suite and the lints, and confirm GREEN.**
+- [x] **Step 4: Run the suite and the lints, and confirm GREEN.**
 
 Run the Step 2 command again. Expected: `206 passed` (+19).
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-39-cc-guide-hardening && uv run --python 3.13 --with pyyaml python build/check_conformance.py; echo "exit=$?"; uv run --python 3.13 python build/cc_guide/cli.py lint; echo "exit=$?"`
 Expected: `exit=0` twice.
 
-- [ ] **Step 5: Commit.**
+- [x] **Step 5: Commit.**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-39-cc-guide-hardening && [ "$(git branch --show-current)" = chore/cc-guide-hardening ] && git add build/cc_guide/state.py build/cc_guide/guide.py build/cc_guide/blocks.py build/cc_guide/cc_fixtures.py build/cc_guide/test_state.py && git commit -m "refactor(cc_guide): one owner per grammar; split parse_manifest; read blobs only
@@ -3263,7 +3266,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - The listed-rebaseline refusal reads `{page}: also changed or gone since the baseline: {refs}; list them too, or rebaseline the whole page` (T7-m8). `cli.py`'s module docstring, its `REBASELINE_HELP` and `build/CLAUDE.md` say "changed or gone" to match. The drift spec's R7 is left alone (Global Constraints).
 - `test_baseline.history(ref)` skips only when `git cat-file -e <ref>^{commit}` fails. Any other git failure fails the test with git's stderr (T7-m2).
 
-- [ ] **Step 1: Write the failing tests.** Apply these edits in order.
+- [x] **Step 1: Write the failing tests.** Apply these edits in order.
 
 **Edit 1.** `build/cc_guide/test_baseline.py` (in or near `history`). Replace:
 
@@ -3529,7 +3532,7 @@ def test_rebaseline_names_a_gone_block_from_the_cached_snapshot(world, capsys):
     assert dirty(repo) == []
 ````
 
-- [ ] **Step 2: Run the suite and confirm RED.**
+- [x] **Step 2: Run the suite and confirm RED.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-39-cc-guide-hardening/build/cc_guide && uv run --python 3.13 --with pytest python -m pytest -q -rf`
 Expected: `7 failed, 206 passed`. The fixes:
@@ -3541,7 +3544,7 @@ Expected: `7 failed, 206 passed`. The fixes:
 
 The pins, which pass now: `test_a_bare_page_ref_rebaselines_that_whole_page_and_refreshes_llms`, the three cases of `test_rebaseline_refuses_an_unknown_group_or_page_and_a_missing_fetch`, and the new substantive `text_hash` assertion in `test_accept_records_the_hash_and_substantive_also_sets_changed`.
 
-- [ ] **Step 3: Implement.** Apply these edits in order. The last one rewrites `test_baseline.history`, the fix for T7-m2.
+- [x] **Step 3: Implement.** Apply these edits in order. The last one rewrites `test_baseline.history`, the fix for T7-m2.
 
 **Edit 1.** `build/CLAUDE.md`. Replace:
 
@@ -3761,14 +3764,14 @@ def history(ref):
     return proc.stdout
 ````
 
-- [ ] **Step 4: Run the suite and the lints, and confirm GREEN.**
+- [x] **Step 4: Run the suite and the lints, and confirm GREEN.**
 
 Run the Step 2 command again. Expected: `213 passed` (+7).
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-39-cc-guide-hardening && uv run --python 3.13 --with pyyaml python build/check_conformance.py; echo "exit=$?"; uv run --python 3.13 --with pyyaml python build/check_frontmatter.py; echo "exit=$?"`
 Expected: `exit=0` twice. `build/CLAUDE.md` changed.
 
-- [ ] **Step 5: Commit.**
+- [x] **Step 5: Commit.**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-39-cc-guide-hardening && [ "$(git branch --show-current)" = chore/cc-guide-hardening ] && git add build/cc_guide/baseline.py build/cc_guide/cli.py build/CLAUDE.md build/cc_guide/test_baseline.py build/cc_guide/test_cli.py && git commit -m "fix(cc_guide): audited never moves checked back; name gone blocks in the refusal
@@ -3802,7 +3805,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - `summary` prints each finding's ref with `Finding(**f).ref()`, so an empty key from a bare `#` heading prints as a block, `page › ` (T9-m4).
 - `test_check.py` builds the guide's path from `cc_fixtures.GUIDE_PATH` (T9-m6), and its fake `serving` takes `codes={url: status}`.
 
-- [ ] **Step 1: Write the failing tests.** Apply these edits in order.
+- [x] **Step 1: Write the failing tests.** Apply these edits in order.
 
 **Edit 1.** `build/cc_guide/test_check.py`. Replace:
 
@@ -3975,7 +3978,7 @@ def test_the_summary_prints_a_block_keyed_by_a_bare_heading_as_a_block(tmp_path,
     assert '  [beta] new events ›  (candidates: beta.overview, beta.reference)' in check.summary(report, path)
 ````
 
-- [ ] **Step 2: Run the suite and confirm RED.**
+- [x] **Step 2: Run the suite and confirm RED.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-39-cc-guide-hardening/build/cc_guide && uv run --python 3.13 --with pytest python -m pytest -q -rf`
 Expected: `2 failed, 215 passed`. The fixes:
@@ -3984,7 +3987,7 @@ Expected: `2 failed, 215 passed`. The fixes:
 
 The pins, which pass now: `test_a_baselined_page_its_group_no_longer_maps_is_deselected` (T9-m5), `test_an_answer_other_than_200_or_404_is_an_http_error` and the new `HTTP 500` case in `test_http_get_retries_once_and_reports_any_other_failure` (T9-m9).
 
-- [ ] **Step 3: Implement.** Apply these edits in order. The constants and the rename are refactors under green.
+- [x] **Step 3: Implement.** Apply these edits in order. The constants and the rename are refactors under green.
 
 **Edit 1.** `build/cc_guide/check.py` (in or near `TIMEOUT`). Replace:
 
@@ -4165,11 +4168,11 @@ with:
         lines += [f"  [{f['group']}] {f['kind']} {Finding(**f).ref()}"
 ````
 
-- [ ] **Step 4: Run the suite and confirm GREEN.**
+- [x] **Step 4: Run the suite and confirm GREEN.**
 
 Run the Step 2 command again. Expected: `217 passed` (+4).
 
-- [ ] **Step 5: Commit.**
+- [x] **Step 5: Commit.**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-39-cc-guide-hardening && [ "$(git branch --show-current)" = chore/cc-guide-hardening ] && git add build/cc_guide/check.py build/cc_guide/test_check.py && git commit -m "fix(cc_guide): refuse an llms.txt with no code pages; print empty keys as blocks
@@ -4198,7 +4201,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Produces a test helper, `history_repo(tmp_path, monkeypatch)`: a fixture repo holding R11.1's two old guides, then the anchored guide and its manifest but no baseline, with `cli.REPO`, `baseline.JULY` and `baseline.REFRESH` pointed at it. Both `init` tests use it.
 - No module changes: every test this task touches is a pin.
 
-- [ ] **Step 1: Write the tests.** Apply these edits in order:
+- [x] **Step 1: Write the tests.** Apply these edits in order:
   - The help test captures each command's help once (T10-m8).
   - The init test pins its success line and its `--force` refusal, and a new test pins the missing bootstrap snapshot.
   - The advance test, renamed, pins its stdout and the stale-stamp message.
@@ -4388,12 +4391,12 @@ def test_rebaseline_without_a_fetch_is_one_error_line(world, tmp_path, capsys):
     assert dirty(repo) == []
 ````
 
-- [ ] **Step 2: Run the suite.**
+- [x] **Step 2: Run the suite.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-39-cc-guide-hardening/build/cc_guide && uv run --python 3.13 --with pytest python -m pytest -q -rf`
 Expected: `219 passed` (+2: three tests added, one renamed away). All are pins. Any failure is a plan defect.
 
-- [ ] **Step 3: Commit.**
+- [x] **Step 3: Commit.**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-39-cc-guide-hardening && [ "$(git branch --show-current)" = chore/cc-guide-hardening ] && git add build/cc_guide/test_cli.py && git commit -m "test(cc_guide): pin the CLI's refusals and its full output
@@ -4414,7 +4417,8 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 **Controller task.** It runs every gate. Nothing is committed unless a fix is needed.
 
-- [ ] **Step 1: The suites.**
+- [x] **Step 1: The suites.**
+> Deviation: the final counts are 221 passed in `build/cc_guide` and 760 in `build`, which is +72 rather than +70. The final review's fix wave added `test_an_empty_key_ref_rebaselines_that_block_not_its_page` (acf3858, 6b844df), and the completion gate's `LABEL_RE` fix added one `version_key` case (73ed2de).
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-39-cc-guide-hardening/build/cc_guide && uv run --python 3.13 --with pytest python -m pytest -q`
 Expected: the baseline's count +70 (`219 passed` from 149).
@@ -4422,19 +4426,20 @@ Expected: the baseline's count +70 (`219 passed` from 149).
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-39-cc-guide-hardening/build && uv run --python 3.13 --with pytest --with numpy --with polars --with pyyaml python -m pytest -q -rf`
 Expected: the failures are exactly the four named in Global Constraints ("Baseline and counts"), the skips are unchanged, and passed is the baseline's +70.
 
-- [ ] **Step 2: Every lint.** Each command `cd`s by absolute path, so the order does not matter.
+- [x] **Step 2: Every lint.** Each command `cd`s by absolute path, so the order does not matter.
   - `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-39-cc-guide-hardening && uv run --python 3.13 --with pyyaml python build/check_conformance.py`: exit 0.
   - `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-39-cc-guide-hardening && uv run --python 3.13 python build/cc_guide/cli.py lint`: exit 0.
   - `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-39-cc-guide-hardening && uv run --python 3.13 --with pyyaml python build/check_frontmatter.py`: exit 0.
   - `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-39-cc-guide-hardening && uv run --python 3.13 python build/check_provenance.py`: exit 0.
   - `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-39-cc-guide-hardening/build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_runtime_support.py -k declared_dependencies`: `1 passed`.
 
-- [ ] **Step 3: Repo hygiene.**
+- [x] **Step 3: Repo hygiene.**
 
 Run: `cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-39-cc-guide-hardening && git status --short && git diff --stat main...HEAD | tail -1 && grep -rnE --include='*.py' '^[[:space:]]*(# cc-guide:|<!-- cc-guide:)' build/cc_guide; echo "exit=$?"`
 Expected: no `git status` output (`.sdd/` is gitignored); `20 files changed`; no grep match, and `exit=1`.
 
-- [ ] **Step 4: Request the final review** per subagent-driven-development: the whole-branch `code-reviewer`, from `main`'s merge-base to `HEAD`, and a Codex second opinion if the owner wants one. There is no PR bot review on this repo. Then run the Plan Completion Protocol below.
+- [x] **Step 4: Request the final review** per subagent-driven-development: the whole-branch `code-reviewer`, from `main`'s merge-base to `HEAD`, and a Codex second opinion if the owner wants one. There is no PR bot review on this repo. Then run the Plan Completion Protocol below.
+> Deviation: the final review ran two seats, the Opus code-reviewer and Codex (gpt-6-astra via `-m`, base 44712e0: "Codex reviewed 7e29e1b", no findings). The code-reviewer found that an empty-key ref (`page › `, which Task 9's `summary` now prints) was rebaselined as the whole page, bypassing R7's refusal; this was the parse half of T9-m4. It was fixed by branching on the separator (acf3858, 6b844df). The fix wave also added the T1-1 comment in check_conformance.py (a5821ac). At the gate the owner chose to fix `LABEL_RE`'s non-ASCII `\d` (73ed2de) and to revise the drift spec's R7 to "changed or gone" (6502c2a), overriding "Leave alone" for that phrase.
 
 ---
 
