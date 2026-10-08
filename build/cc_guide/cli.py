@@ -37,7 +37,6 @@ and `audited` record the day the check or audit was done, not the
 release's date.
 '''
 import argparse
-
 import subprocess
 import sys
 import traceback
