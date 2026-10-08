@@ -51,8 +51,8 @@ from docs import page_file
 from guide import render_stamp
 from lint import lint
 from state import (BASELINE, BOOTSTRAP_DATE, BOOTSTRAP_RELEASE, MANIFEST, SetupError, Source, default_cache,
-                   dump_baseline, fetch_record, latest_docs, newest_changelog, parse_baseline, parse_manifest,
-                   snapshot_docs, snapshot_text)
+                   dump_baseline, fetch_record, is_iso_date, is_label, latest_docs, newest_changelog,
+                   parse_baseline, parse_manifest, snapshot_docs, snapshot_text)
 
 REPO = Path(__file__).resolve().parents[2]
 
@@ -151,6 +151,13 @@ def run_baseline(args, cache: Path, today: date) -> int:
     baseline_path = REPO / BASELINE
     day = today.isoformat()
     if args.action == 'init':
+        if not is_label(args.release):
+            raise SetupError(f'baseline init: --release {args.release!r} is not a release label')
+        if not is_iso_date(args.date):
+            raise SetupError(f'baseline init: --date {args.date!r} is not a YYYY-MM-DD date')
+        if args.docs is None and args.release != BOOTSTRAP_RELEASE:
+            raise SetupError(f'baseline init: without --docs it reads the {BOOTSTRAP_RELEASE} bootstrap snapshot,'
+                             f' so --release must be {BOOTSTRAP_RELEASE}')
         if baseline_path.exists() and not args.force:
             raise SetupError(f'{BASELINE} exists; init rebuilds it from scratch only with --force')
         changed = baseline.derive_changed(git_show(baseline.JULY[0], baseline.OLD_GUIDE_PATH),

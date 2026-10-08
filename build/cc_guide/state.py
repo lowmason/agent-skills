@@ -24,6 +24,7 @@ ID_RE = re.compile(r'^[a-z0-9-]+(?:\.[a-z0-9-]+)+$')
 GROUP_RE = re.compile(r'^[a-z0-9-]+$')
 HASH_RE = re.compile(r'^[0-9a-f]{16}$')
 TEXT_HASH_RE = re.compile(r'^sha256:[0-9a-f]{64}$')
+DATE_RE = re.compile(r'\d{4}-\d{2}-\d{2}')
 
 # The bootstrap snapshot (R2.6): the 2026-10-03 refresh read the docs at
 # 2.1.288 and checked them that day. 2.1.288 itself shipped on 2026-10-02.
@@ -92,13 +93,14 @@ def _strings(value) -> bool:
     return isinstance(value, list) and all(isinstance(v, str) and v for v in value)
 
 
-def _table(raw: dict, key: str, problems: list[str]) -> dict:
-    '''raw[key] if it is a TOML table, else one listed problem and {}.'''
+def _table(raw: dict, key: str, problems: list[str]) -> dict | None:
+    '''raw[key] when it is a TOML table, {} when it is absent; else one
+    listed problem and None, so the caller skips the table's fields.'''
     value = raw.get(key, {})
     if isinstance(value, dict):
         return value
     problems.append(f'[{key}] must be a table')
-    return {}
+    return None
 
 
 def _tables(raw: dict, key: str, problems: list[str]) -> list[dict]:
@@ -121,15 +123,16 @@ def parse_manifest(text: str) -> Manifest:
     problems: list[str] = []
     unknown = set(raw) - {'guide', 'sources', 'cadence', 'groups', 'sections', 'exclusion', 'probe'}
     problems += [f'unknown table or key {k!r}' for k in sorted(unknown)]
-    guide_path = _table(raw, 'guide', problems).get('path')
-    if not isinstance(guide_path, str) or not guide_path:
+    guide_table = _table(raw, 'guide', problems)
+    guide_path = None if guide_table is None else guide_table.get('path')
+    if guide_table is not None and not (isinstance(guide_path, str) and guide_path):
         problems.append('[guide] path must be a non-empty string')
     sources = _table(raw, 'sources', problems)
-    for k in SOURCE_KEYS:
+    for k in SOURCE_KEYS if sources is not None else ():
         if not (isinstance(sources.get(k), str) and sources[k].startswith('https://')):
             problems.append(f'[sources] {k} must be an https URL')
     cadence = _table(raw, 'cadence', problems)
-    for k in CADENCE_KEYS:
+    for k in CADENCE_KEYS if cadence is not None else ():
         v = cadence.get(k)
         if not (isinstance(v, int) and not isinstance(v, bool) and v > 0):
             problems.append(f'[cadence] {k} must be a positive integer')
@@ -171,7 +174,7 @@ def parse_manifest(text: str) -> Manifest:
             problems.append(f'{where} maps no page')
         groups[gid] = Group(list(secs), pages)
     terms: dict[str, tuple[list[str], list[str]]] = {}
-    for sid, t in _table(raw, 'sections', problems).items():
+    for sid, t in (_table(raw, 'sections', problems) or {}).items():
         if sid not in owner:
             problems.append(f'[sections.{sid!r}] is not in any group')
         shaped = isinstance(t, dict) and not set(t) - {'extra_terms', 'exclude_terms'}
@@ -207,25 +210,30 @@ def parse_manifest(text: str) -> Manifest:
     return Manifest(guide_path, dict(sources), dict(cadence), groups, terms, exclusions, probes)
 
 
-def _iso(value) -> bool:
+def is_iso_date(value) -> bool:
+    '''A YYYY-MM-DD date. date.fromisoformat alone also takes 20260902 and
+    week dates such as 2026-W36-3.'''
+    if not (isinstance(value, str) and DATE_RE.fullmatch(value)):
+        return False
     try:
         date.fromisoformat(value)
-        return isinstance(value, str)
-    except (TypeError, ValueError):
+    except ValueError:
         return False
+    return True
 
 
-def _label(value) -> bool:
+def is_label(value) -> bool:
+    '''A release label (R2.4).'''
     try:
         version_key(value)
-        return True
     except (TypeError, ValueError):
         return False
+    return True
 
 
 def _stamp(value) -> bool:
     return (isinstance(value, dict) and set(value) == {'release', 'date'}
-            and _label(value['release']) and _iso(value['date']))
+            and is_label(value['release']) and is_iso_date(value['date']))
 
 
 def parse_baseline(text: str) -> dict:
@@ -243,7 +251,7 @@ def parse_baseline(text: str) -> dict:
         problems.append('sections must hold at least one section')
     for sid, s in raw['sections'].items():
         ok = (isinstance(s, dict) and set(s) == {'checked', 'changed', 'audited', 'text_hash'}
-              and _stamp(s['checked']) and _stamp(s['audited']) and _label(s['changed'])
+              and _stamp(s['checked']) and _stamp(s['audited']) and is_label(s['changed'])
               and isinstance(s['text_hash'], str) and TEXT_HASH_RE.match(s['text_hash']))
         if not ok:
             problems.append(f'section {sid}: needs checked, changed, audited and text_hash')
@@ -254,7 +262,7 @@ def parse_baseline(text: str) -> dict:
             ok = all(isinstance(keys, dict) and all(HASH_RE.match(k) and isinstance(h, str) and HASH_RE.match(h)
                                                     for k, h in keys.items())
                      for keys in g['blocks'].values())
-            ok = ok and all(_label(r) for r in g['snapshot'].values())
+            ok = ok and all(is_label(r) for r in g['snapshot'].values())
         if not ok:
             problems.append(f'group {gid}: needs blocks (page -> key hash -> block hash)'
                             ' and snapshot (page -> release)')

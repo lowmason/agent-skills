@@ -56,11 +56,27 @@ def test_every_manifest_problem_is_reported_at_once():
         state.parse_manifest(shapes)
     assert str(err.value).split('\n') == [
         f'{state.MANIFEST}: [guide] must be a table',
-        f'{state.MANIFEST}: [guide] path must be a non-empty string',
         f"{state.MANIFEST}: [sections.'alpha.overview'] holds only extra_terms and exclude_terms, as lists",
         f'{state.MANIFEST}: [[exclusion]] must be an array of tables',
         f'{state.MANIFEST}: [[probe]] must be an array of tables',
     ]
+
+
+def test_a_mis_shaped_table_reports_its_shape_and_nothing_else():
+    groups = MANIFEST_TOML[MANIFEST_TOML.index('[groups.alpha]'):]
+    with pytest.raises(state.SetupError) as err:
+        state.parse_manifest("guide = 'x'\nsources = 1\ncadence = 1\n\n" + groups)
+    assert str(err.value).split('\n') == [f'{state.MANIFEST}: [guide] must be a table',
+                                          f'{state.MANIFEST}: [sources] must be a table',
+                                          f'{state.MANIFEST}: [cadence] must be a table']
+
+
+@pytest.mark.parametrize('value, ok', [
+    ('2026-09-02', True), ('20260902', False), ('2026-W36-3', False), ('2026-02-30', False),
+    ('2026-09-02\n', False), (20260902, False),
+])
+def test_a_date_is_yyyy_mm_dd_and_nothing_else_fromisoformat_takes(value, ok):
+    assert state.is_iso_date(value) is ok
 
 
 def test_a_page_listed_under_both_marks_is_a_problem():

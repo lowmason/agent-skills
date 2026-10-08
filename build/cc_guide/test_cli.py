@@ -106,6 +106,27 @@ def test_init_derives_changed_and_refuses_to_overwrite_without_force(tmp_path, d
     assert main(cache, *argv, '--force') == 0
 
 
+@pytest.mark.parametrize('flag, value, message', [
+    ('--release', '2.1.x', "--release '2.1.x' is not a release label"),
+    ('--date', '20260902', "--date '20260902' is not a YYYY-MM-DD date"),
+    ('--date', '2026-W36-3', "--date '2026-W36-3' is not a YYYY-MM-DD date"),
+])
+def test_init_refuses_a_bad_release_or_date_up_front(world, capsys, flag, value, message):
+    repo, cache, folder = world
+    (repo / state.BASELINE).unlink()  # so the --force guard is not what refuses
+    assert main(cache, 'baseline', 'init', '--docs', str(folder), flag, value) == 2
+    assert capsys.readouterr() == ('', f'cc-guide: baseline init: {message}\n')
+    assert not (repo / state.BASELINE).exists()
+
+
+def test_init_without_docs_takes_only_the_bootstrap_release(world, capsys):
+    repo, cache, _ = world
+    (repo / state.BASELINE).unlink()
+    assert main(cache, 'baseline', 'init', '--release', '2.1.902') == 2
+    assert capsys.readouterr() == ('', 'cc-guide: baseline init: without --docs it reads the 2.1.288 bootstrap'
+                                       ' snapshot, so --release must be 2.1.288\n')
+
+
 def changed_fields(old, new):
     out = {f'sections.{i}.{k}' for i in old['sections'] for k in old['sections'][i]
            if old['sections'][i][k] != new['sections'][i][k]}
