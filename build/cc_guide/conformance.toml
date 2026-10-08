@@ -314,6 +314,26 @@ type = 'fact'
 rule = 'No commands/*.md filename stem equals a skill directory name.'
 enforced_by = 'check_conformance'
 
+# A manual-only skill fires only when typed, so Claude cannot follow a bare-name
+# handoff to it (portability Decision 3; the disable-model-invocation row in
+# skills.frontmatter). A path into the skill or a typed /name is not a handoff.
+# Commands are not targets: their mentions are the human's /name to type.
+# Findings attach to the target skill, so a waiver here silences every file that
+# names it. Idle on skills/*/SKILL.md while check_frontmatter's ALLOWED_KEYS
+# rejects the key there, but .claude/skills/ is not linted for it. Deferred
+# (deferred-2026-10-08): drift R4.1's `cc-guide:` citation lines match the
+# regex, so R8.1's manual-only cc-guide skill would flag every cited file, and
+# skill READMEs and INSTALL.md, human docs, are read too. Guide note S-110 (who
+# may invoke a manual skill) can move this premise; revisit the check when the
+# drift verification judges it.
+[[check]]
+id = 'dmi-handoff-consistency'
+kind = ['skill', 'skill-bundle', 'agent', 'command', 'claude-md', 'rule']
+sections = ['skills.frontmatter', 'commands.overview']
+type = 'fact'
+rule = 'No other agent-facing Markdown file names a skill that sets disable-model-invocation: true.'
+enforced_by = 'check_conformance'
+
 # fields is the guide's skill frontmatter table less `name` and `paths`, which
 # a command does not take.
 [[check]]

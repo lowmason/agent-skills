@@ -199,6 +199,11 @@
   scenario-verification successor (71d) waits on the partner's decision to revise
   the VOID rule or isolate the exemplar step before any re-run of plan 36. This
   branch does not touch it.
+- 2026-10-08 — finished `chore/deferred-2026-10-08` (/deferred quick fixes and plan 39)
+  with 1 item aged >45d, carried on the same reason the partner chose again for this
+  branch: the synthesize-mode scenario-verification successor (74d) waits on the
+  partner's decision to revise the VOID rule or isolate the exemplar step before any
+  re-run of plan 36. This branch does not touch it.
 
 ## 11-delegation-frontmatter-rollout — 2026-07-19
 - [x] Haiku-pinned `Explore` override agent (fork-isolation upgrade; plan "Out of
@@ -1756,7 +1761,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       1.3.2 (checked 2026-10-03).
       Size: quick-fix. Revisit if: arviz-plots changes its default figure layout, or the owner
       wants the saved figures to depart from `plot_ppc_pit` parity.
-- [ ] `calibration_check.py` never guards against non-finite inputs (plan 34 final-review
+- [x] `calibration_check.py` never guards against non-finite inputs (plan 34 final-review
       Minor, pre-existing; deferred at the completion gate, the owner's call). In
       `skills/bayesian-workflow/scripts/calibration_check.py`, a NaN observed `y` makes both
       `predicted < observed` and `predicted == observed` false in `pit_values`, so that
@@ -1772,6 +1777,13 @@ declined as YAGNI (zero instances in a one-page wiki).
       error, test first.
       Size: quick-fix. Revisit if: a masked or missing-observation model reports a calibration
       verdict, or a run exits with the broadcast error.
+      → done 2026-10-08 (/deferred quick fix; promoted from a watch item at the owner's
+      selection, because the failure is a silent wrong verdict): `main()` exits with a JSON
+      error naming the count of non-finite observed values, on both PIT paths, before any
+      PIT is computed, and names a non-finite PIT, which finite observations can still
+      get from the log-likelihood on the LOO path, before pot_c sees it. Red first: the four
+      NaN/inf observed cases exited 0 with a verdict, and the NaN-PIT case exited with the
+      broadcast error.
 - [x] The fair-rated spread step is direction-blind (plan 34 final-review recommendation,
       pre-existing; filed after completion at the owner's request). `_spread_step` in
       `skills/bayesian-workflow/scripts/check_diagnostics.py` gives every fair-rated spread
@@ -2174,11 +2186,20 @@ declined as YAGNI (zero instances in a one-page wiki).
       → done 2026-10-05 (/deferred quick fix): `orphan-bundled-file` is in CHECKS with
       its [[check]] entry and red-first tests; INSTALL.md exempt, industry_codes.csv a
       gap under audit H1 (owner).
-- [ ] Add the `dmi-handoff-consistency` conformance check (plan 35 audit §6, d9, seat check
+- [x] Add the `dmi-handoff-consistency` conformance check (plan 35 audit §6, d9, seat check
       S#9): a skill that sets `disable-model-invocation: true` is never named as a handoff
       elsewhere. Size: quick-fix. Done when: the check is in `CHECKS` in
       `build/check_conformance.py`, with a `[[check]]` entry in
       `build/cc_guide/conformance.toml` and red-first tests.
+      → done 2026-10-08 (/deferred quick fix): `dmi-handoff-consistency` is in CHECKS with
+      its [[check]] entry and red-first tests. A handoff is the skill's bare name in any
+      other skill, bundle, agent, command, rule or CLAUDE.md Markdown file; a path into the
+      skill and a typed `/name` are not. Commands are not targets. It finds nothing today
+      on `skills/*/SKILL.md`, because ALLOWED_KEYS rejects the key there; `.claude/skills/`
+      is not linted for it. With writing-plans marked manual-only in a scratch copy it
+      flagged 9 files that name it, some of them mentions rather than handoffs. Drift
+      citation lines and human docs still match it: see the deferred-2026-10-08 section.
+      The register comment ties its premise to guide note S-110.
 - [x] Add the `skill-command-name-collision` conformance check (plan 35 audit §6, d10, seat
       check S#10): no `commands/*.md` stem equals a `skills/*/` directory name. Today 0.
       Size: quick-fix. Done when: the check is in `CHECKS` in `build/check_conformance.py`,
@@ -2212,11 +2233,19 @@ declined as YAGNI (zero instances in a one-page wiki).
       `build/cc_guide/conformance.toml` and red-first tests.
       → done 2026-10-05 (/deferred quick fix): `agent-name-unique` is in CHECKS with
       its [[check]] entry and red-first tests.
-- [ ] Add the `haiku-retirement-date` conformance check (plan 35 audit §6, d15, seat check
+- [x] Add the `haiku-retirement-date` conformance check (plan 35 audit §6, d15, seat check
       A#6): warn on Haiku pins from 2026-10-15. Today it would flag explore.md and
       test-runner.md. Size: quick-fix. Done when: the check is in `CHECKS` in
       `build/check_conformance.py`, with a `[[check]]` entry in
       `build/cc_guide/conformance.toml` and red-first tests.
+      → retired 2026-10-08 (/deferred): the premise does not hold. This pass settled the
+      question the audit-3-10-26 Haiku item left to triage: a retirement notice governs,
+      not the date, because a "not sooner than" window is not a retirement. The
+      deprecations page, fetched 2026-10-08, lists `claude-haiku-5-5` as Active and still
+      gives `claude-haiku-4-5-20251001` only a "not sooner than October 15, 2026" window,
+      and a probe dispatch the same day showed the `haiku` alias pinned by explore.md and
+      test-runner.md resolving to `claude-haiku-5-5` (that item's done note). A date
+      trigger would warn on pins that follow the alias to a current model.
 - [x] Add the `command-substitution-tokens` conformance check (plan 35 audit §6, d16, seat
       check A#7): substitution or render-time shell tokens in a command body that the
       command does not declare. Today 0. Size: quick-fix. Done when: the check is in
@@ -2432,7 +2461,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       drift passes.
 
 ## audit-3-10-26 follow-ups (no plan; branch claude/stoic-lewin-bcece7) — 2026-10-04
-- [ ] Watch Haiku 4.5's retirement (specs/audit-3-10-26.md F13). As of the audit,
+- [x] Watch Haiku 4.5's retirement (specs/audit-3-10-26.md F13). As of the audit,
       <https://platform.claude.com/docs/en/about-claude/model-deprecations> opens its
       retirement window "not sooner than October 15, 2026", and no newer Haiku exists.
       Exposed: the `model: haiku` pins on `agents/explore.md` and `agents/test-runner.md`,
@@ -2447,6 +2476,15 @@ declined as YAGNI (zero instances in a one-page wiki).
       no Haiku remains, the two pins need repointing and SDD's cheap tier a new home, and
       this becomes a plan. Revisit if: the deprecations page posts a retirement date for
       Haiku 4.5, or a newer Haiku ships.
+      → done 2026-10-08 (/deferred quick fix): a newer Haiku shipped. The deprecations
+      page, fetched 2026-10-08, lists `claude-haiku-5-5` as Active (no retirement before
+      October 7, 2027). One Explore dispatch on Claude Code that day ran all four of its
+      model turns on `claude-haiku-5-5`, read from `message.model` in the subagent
+      transcript, so the `haiku` alias the two pins and SDD's cheap tier use already
+      follows the newer model, and nothing needs repointing. The date-triggered
+      `haiku-retirement-date` check above was retired in the same pass: the notice
+      governs. Guide note A-53 (the alias's behaviour at retirement) stays open for the
+      drift verification.
 
 ## 38-claude-code-drift-automation — 2026-10-05
 - [x] Stale cached pages after a manifest change (Codex, plan 38's final review; deferred
@@ -2659,3 +2697,43 @@ declined as YAGNI (zero instances in a one-page wiki).
       session whose cwd was never this repo.
       Size: design. Revisit if: a real RAG or fine-tuned-classifier target is
       described with the current templates.
+
+## deferred-2026-10-08 (no plan; /deferred pass, branch chore/deferred-2026-10-08) — 2026-10-08
+- [ ] `calibration_check.py` reads NaN posterior-predictive draws as draws above `y`
+      (found while fixing "`calibration_check.py` never guards against non-finite inputs"
+      in the 34-calibration-check-verdicts section; outside that item's scope, logged at
+      the owner's call). In `pit_values`, a NaN draw compares false under both `<` and
+      `==`, so the PPC path counts it as neither below nor tied, and the LOO path through
+      `arviz_stats.loo_pit` ends the same way. The guards that item added check only the
+      observed values and the final PITs, which stay finite. A probe on the suite's
+      calibrated `_normal_model` (2 chains × 500 draws, 200 observations) exited 0 with a
+      wrong verdict on both PIT paths: every draw of 10 observations NaN read as
+      "over-confident"; 30% of all draws NaN read as "biased (predictions too high)" and
+      "under-confident". Infinite draws rank correctly (+inf above `y`, -inf below), so
+      the guard may be NaN-only. Fix: in `main()`, before `pit_values`, exit with a JSON
+      error naming the count of NaN draws in `dt["posterior_predictive"][var_name]` (or
+      reuse `_exit_if_not_finite`), red first on both paths; touches
+      `skills/bayesian-workflow/scripts/calibration_check.py` and
+      `test_calibration_check.py`. Size: quick-fix. Done when: a NaN posterior-predictive
+      draw exits with a JSON error naming its count on both PIT paths, with a test for
+      each.
+- [ ] `dmi-handoff-consistency` matches drift citation lines and reads human docs (whole-
+      branch review of chore/deferred-2026-10-08; deferred at the owner's call because
+      plan 39's pre-flight pins `build/check_conformance.py` and
+      `build/test_check_conformance.py` by content hash). The bare-name regex in
+      `check_dmi_handoff_consistency` allows a `:` after the name, so it matches `cc-guide`
+      in drift R4.1's `# cc-guide: <id> @<ver>` and `<!-- cc-guide: … -->` lines. Once
+      R8.1's `.claude/skills/cc-guide/SKILL.md` sets `disable-model-invocation: true`
+      (`check_frontmatter.py` lints only `skills/`), every cited SKILL.md, agent, command
+      and CLAUDE.md is a finding; a fixture repo reproduced 3. Findings attach to the
+      target skill, so the only waiver switches the check off for cc-guide. It also reads
+      skill READMEs and INSTALL.md, which `HUMAN_DOCS` in `build/test_runtime_support.py`
+      treats as human docs. Fix: before matching, drop lines that begin, after
+      indentation, with `# cc-guide:` or `<!-- cc-guide:` (R5's grammar), and skip
+      README.md and INSTALL.md; red first, with a test on a skill named `cc-guide` and
+      optionally one on a leading-hyphen name (`re-ship`); then trim the deferral from the
+      `[[check]]` comment in `build/cc_guide/conformance.toml`. Order: land it after plan
+      39 executes (an earlier change to either file fails that plan's pre-flight) and
+      before drift R4.1 or R8.1 lands, or portability R1.1 adds the key to the SKILL.md
+      key set. Size: quick-fix. Done when: a citation-shaped line and a README or
+      INSTALL.md that name a manual-only skill yield no finding, with a test for each.

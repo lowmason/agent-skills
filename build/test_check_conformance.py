@@ -271,6 +271,14 @@ rule = 'Fixture rule.'
 enforced_by = 'check_conformance'
 
 [[check]]
+id = 'dmi-handoff-consistency'
+kind = ['skill', 'skill-bundle', 'agent', 'command', 'claude-md', 'rule']
+sections = ['a.one']
+type = 'advice'
+rule = 'Fixture rule.'
+enforced_by = 'check_conformance'
+
+[[check]]
 id = 'command-frontmatter-keys'
 kind = 'command'
 sections = ['a.one']
@@ -497,6 +505,7 @@ def test_register_field_problems_are_violations():
         'readonly-agent-tools', 'bash-search-tools',
         'compaction-window', 'description-person', 'trigger-phrase-presence',
         'substitution-hazard', 'orphan-bundled-file', 'skill-command-name-collision',
+        'dmi-handoff-consistency',
         'command-frontmatter-keys', 'builtin-name-shadow', 'reserved-skill-name',
         'known-agent-tools',
         'agent-name-form', 'agent-model-available', 'agent-name-unique',
@@ -1050,8 +1059,8 @@ def test_repo_passes():
 # ---------------------------------------------------------------------------
 # Skill and command checks: compaction-window, description-person,
 # trigger-phrase-presence, substitution-hazard, orphan-bundled-file,
-# skill-command-name-collision, command-frontmatter-keys, builtin-name-shadow,
-# reserved-skill-name.
+# skill-command-name-collision, dmi-handoff-consistency, command-frontmatter-keys,
+# builtin-name-shadow, reserved-skill-name.
 # ---------------------------------------------------------------------------
 
 def skill_md(description='Use when testing.', body='Body.\n', **extra):
@@ -1240,6 +1249,61 @@ def test_skill_command_name_collision_flags_a_shared_name(tmp_path):
     ]
 
 
+def dmi_files(root, tree):
+    write_tree(root, tree)
+    return sorted(tree)
+
+
+def test_dmi_handoff_consistency_passes_when_no_skill_is_manual_only(tmp_path):
+    files = dmi_files(tmp_path, {
+        'skills/ship/SKILL.md': skill_md(),
+        'skills/plan/SKILL.md': skill_md(body='Then use the ship skill.\n'),
+    })
+    assert cc.check_dmi_handoff_consistency(tmp_path, files, {}) == []
+
+
+def test_dmi_handoff_consistency_passes_a_false_or_absent_key_and_bad_frontmatter(tmp_path):
+    files = dmi_files(tmp_path, {
+        'skills/ship/SKILL.md': skill_md(**{'disable-model-invocation': 'false'}),
+        'skills/deploy/SKILL.md': '---\ndescription: [unclosed\ndisable-model-invocation: true\n---\n',
+        'skills/plan/SKILL.md': skill_md(body='Use the ship skill, then the deploy skill.\n'),
+    })
+    assert cc.check_dmi_handoff_consistency(tmp_path, files, {}) == []
+
+
+def test_dmi_handoff_consistency_ignores_its_own_directory_paths_and_typed_names(tmp_path):
+    # Reading another skill's file and the user typing /ship both still work.
+    files = dmi_files(tmp_path, {
+        'skills/ship/SKILL.md': skill_md(body='Ship is manual: the ship skill runs when typed.\n',
+                                         **{'disable-model-invocation': 'true'}),
+        'skills/ship/references/steps.md': 'The ship skill steps.\n',
+        'skills/plan/SKILL.md': skill_md(body='Read ../ship/references/steps.md and skills/ship/SKILL.md; '
+                                              'your partner types `/ship`.\n'),
+        'skills/plan/notes.txt': 'Not agent-facing Markdown: use the ship skill.\n',
+        'skills/plan/data.md': '',
+    })
+    (tmp_path / 'skills/plan/data.md').write_bytes(b'\xff\xfe use the ship skill')
+    assert cc.check_dmi_handoff_consistency(tmp_path, files, {}) == []
+
+
+def test_dmi_handoff_consistency_flags_every_file_that_names_a_manual_only_skill(tmp_path):
+    files = dmi_files(tmp_path, {
+        'skills/ship/SKILL.md': skill_md(**{'disable-model-invocation': 'true'}),
+        'skills/plan/SKILL.md': skill_md(body='**REQUIRED SUB-SKILL:** Use ship.\n'),
+        'skills/plan/references/next.md': 'Hand off to `ship`.\n',
+        'agents/runner.md': agent_text('runner') + 'Invoke the ship skill.\n',
+        'commands/go.md': 'Run the ship skill when done.\n',
+        'CLAUDE.md': 'Follow the ship skill.\n',
+        'rules/r.md': 'Shipping is not ship-it, nor shipments.\n',
+    })
+    message = 'sets disable-model-invocation: true, but {} names ship, and Claude cannot invoke a manual-only skill'
+    assert cc.check_dmi_handoff_consistency(tmp_path, files, {}) == [
+        cc.Finding('skills/ship/SKILL.md', message.format(f))
+        for f in ['CLAUDE.md', 'agents/runner.md', 'commands/go.md',
+                  'skills/plan/SKILL.md', 'skills/plan/references/next.md']
+    ]
+
+
 COMMAND_PARAMS = {'fields': ['description', 'argument-hint', 'allowed-tools', 'model',
                              'disable-model-invocation']}
 
@@ -1317,11 +1381,14 @@ def test_new_skill_checks_run_through_the_register(tmp_path):
         'commands/help.md': '---\nname: help\n---\nBody.\n',
         'skills/synced/SKILL.md': skill_md('Use when asked "sync".'),
         'skills/help/notes.txt': 'Nothing names me.\n',
+        'skills/ship/SKILL.md': skill_md('Use when asked "ship it".', **{'disable-model-invocation': 'true'}),
+        'CLAUDE.md': 'Use the ship skill.\n',
     }
     root = fixture_repo(tmp_path, files)
     lines = cc.run(root)
     for check in ('substitution-hazard', 'skill-command-name-collision', 'command-frontmatter-keys',
-                  'builtin-name-shadow', 'reserved-skill-name', 'orphan-bundled-file'):
+                  'builtin-name-shadow', 'reserved-skill-name', 'orphan-bundled-file',
+                  'dmi-handoff-consistency'):
         assert any(f': {check} (' in line for line in lines), (check, lines)
 
 
