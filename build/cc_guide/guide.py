@@ -15,6 +15,8 @@ ANCHOR_RE = re.compile(r'^<!-- cc: ([a-z0-9-]+(?:\.[a-z0-9-]+)+) -->$')
 ANCHOR_LIKE_RE = re.compile(r'^<!--\s*cc:')
 STAMP_OPEN = '<!-- cc-guide:stamp -->'
 STAMP_CLOSE = '<!-- /cc-guide:stamp -->'
+# What a guide without a stamp region lacks, as lint and `baseline stamp` say it.
+NO_STAMP = f'needs one stamp region, a {STAMP_OPEN} line then a {STAMP_CLOSE} line'
 BACKTICKS_RE = re.compile(r'`+')
 TERM_MIN, TERM_MAX = 3, 60
 # R3.6's generic words: its four examples, plus each single lowercase word or

@@ -11,6 +11,7 @@ import cli
 import state
 from cc_fixtures import (DOCS, GUIDE_IDS, GUIDE_PATH, MANIFEST_TOML, docs_dir, drift_repo,  # noqa: F401
                          fixture_repo, git, guide_text, isolated_home, prime_cache, write_tree)
+from guide import STAMP_CLOSE, STAMP_OPEN
 
 
 @pytest.fixture
@@ -237,6 +238,33 @@ def test_a_malformed_or_empty_cached_changelog_exits_two(world, capsys):
     changelog.write_text('# Changelog\n')
     assert main(cache, 'lint') == 2
     assert capsys.readouterr() == ('', f'cc-guide: {changelog}: no <Update> release blocks\n')
+
+
+def test_stamp_without_a_stamp_region_is_one_error_line(world, capsys):
+    repo, cache, _ = world
+    guide = repo / GUIDE_PATH
+    guide.write_text(guide.read_text().replace(STAMP_OPEN + '\n', '').replace(STAMP_CLOSE + '\n', ''))
+    assert main(cache, 'baseline', 'stamp') == 2
+    assert capsys.readouterr() == ('', f'cc-guide: guide: needs one stamp region, a {STAMP_OPEN} line'
+                                       f' then a {STAMP_CLOSE} line\n')
+
+
+def test_an_emptied_baseline_is_one_error_line(world, capsys):
+    repo, cache, _ = world
+    emptied = load(repo)
+    emptied['sections'] = {}
+    (repo / state.BASELINE).write_text(json.dumps(emptied))
+    assert main(cache, 'lint') == 2
+    assert capsys.readouterr() == ('', f'cc-guide: {state.BASELINE}: sections must hold at least one section\n')
+
+
+def test_accepting_a_section_the_guide_no_longer_has_is_one_error_line(world, capsys):
+    repo, cache, _ = world
+    guide = repo / GUIDE_PATH
+    guide.write_text(guide.read_text().replace('<!-- cc: alpha.overview -->', '<!-- cc: alpha.renamed -->'))
+    assert main(cache, 'baseline', 'accept', 'alpha.overview', '--editorial') == 2
+    assert capsys.readouterr() == ('', 'cc-guide: section IDs not in the guide: alpha.overview\n')
+    assert dirty(repo) == [GUIDE_PATH]
 
 
 def test_a_crash_exits_two_never_one(world, monkeypatch, capsys):

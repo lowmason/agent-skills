@@ -4,7 +4,7 @@ import json
 import re
 
 from blocks import CELL_SPLIT_RE, fence_spans, fenced_lines
-from guide import STAMP_CLOSE, STAMP_OPEN, anchor_problems, render_stamp, sections, stamp_bounds, text_hash
+from guide import NO_STAMP, anchor_problems, render_stamp, sections, stamp_bounds, text_hash
 from state import Manifest
 
 CLI = 'uv run --python 3.13 python build/cc_guide/cli.py'
@@ -55,7 +55,7 @@ def stamp_problems(guide_text: str, state: dict) -> list[str]:
     baseline.json (R1.2, R5).'''
     bounds = stamp_bounds(guide_text)
     if bounds is None:
-        return [f'guide: needs one stamp region, a {STAMP_OPEN} line then a {STAMP_CLOSE} line']
+        return [f'guide: {NO_STAMP}']
     first = min((s.line for s in sections(guide_text)), default=None)
     if first is not None and bounds[1] + 1 >= first:
         return ['guide: the stamp region must sit before the first section']

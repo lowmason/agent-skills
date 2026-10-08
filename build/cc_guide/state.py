@@ -239,6 +239,8 @@ def parse_baseline(text: str) -> dict:
     if (not isinstance(raw, dict) or set(raw) != {'sections', 'groups', 'llms'}
             or not isinstance(raw['sections'], dict) or not isinstance(raw['groups'], dict)):
         raise SetupError(f'{BASELINE}: holds exactly sections, groups and llms')
+    if not raw['sections']:
+        problems.append('sections must hold at least one section')
     for sid, s in raw['sections'].items():
         ok = (isinstance(s, dict) and set(s) == {'checked', 'changed', 'audited', 'text_hash'}
               and _stamp(s['checked']) and _stamp(s['audited']) and _label(s['changed'])

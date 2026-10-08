@@ -6,7 +6,7 @@ from pathlib import Path
 
 from blocks import SEP, block_hash, key_hash, key_names, page_blocks, select
 from docs import is_platform, page_file, parse_llms, version_key
-from guide import anchor_problems, render_stamp, sections, text_hash, with_stamp
+from guide import NO_STAMP, anchor_problems, render_stamp, sections, stamp_bounds, text_hash, with_stamp
 from state import Manifest, SetupError, Snapshot, block_namer, group_terms, no_snapshot
 
 # R11.1: the July guide (verified at 2.1.219) and the refresh (at 2.1.288),
@@ -105,7 +105,10 @@ def accept(state: dict, guide_text: str, ids, substantive: bool, newest: str | N
     reads `newest`, which an editorial accept may leave None. Stage 1 has
     no citations, so cli.py passes none; Stage 2 passes the index's stamps.'''
     known(state, ids)
-    by_id = {s.id: s for s in sections(guide_text)}
+    by_id = {s.id: s for s in sections(guide_text) if s.id}
+    absent = ', '.join(sid for sid in ids if sid not in by_id)
+    if absent:
+        raise SetupError(f'section IDs not in the guide: {absent}')
     new = copy.deepcopy(state)
     for sid in ids:
         new['sections'][sid]['text_hash'] = text_hash(by_id[sid].text)
@@ -228,4 +231,6 @@ def rebaseline(state: dict, manifest: Manifest, guide_text: str, group: str, ref
 
 def stamp(guide_text: str, state: dict) -> str:
     '''R7 stamp: the guide with its stamp region regenerated (R1.2).'''
+    if stamp_bounds(guide_text) is None:
+        raise SetupError(f'guide: {NO_STAMP}')
     return with_stamp(guide_text, render_stamp(state['sections']))
