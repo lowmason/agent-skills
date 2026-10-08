@@ -2226,11 +2226,19 @@ declined as YAGNI (zero instances in a one-page wiki).
       `build/cc_guide/conformance.toml` and red-first tests.
       → done 2026-10-05 (/deferred quick fix): `agent-name-unique` is in CHECKS with
       its [[check]] entry and red-first tests.
-- [ ] Add the `haiku-retirement-date` conformance check (plan 35 audit §6, d15, seat check
+- [x] Add the `haiku-retirement-date` conformance check (plan 35 audit §6, d15, seat check
       A#6): warn on Haiku pins from 2026-10-15. Today it would flag explore.md and
       test-runner.md. Size: quick-fix. Done when: the check is in `CHECKS` in
       `build/check_conformance.py`, with a `[[check]]` entry in
       `build/cc_guide/conformance.toml` and red-first tests.
+      → retired 2026-10-08 (/deferred): the premise does not hold. This pass settled the
+      question the audit-3-10-26 Haiku item left to triage: a retirement notice governs,
+      not the date, because a "not sooner than" window is not a retirement. The
+      deprecations page, fetched 2026-10-08, lists `claude-haiku-5-5` as Active and still
+      gives `claude-haiku-4-5-20251001` only a "not sooner than October 15, 2026" window,
+      and a probe dispatch the same day showed the `haiku` alias pinned by explore.md and
+      test-runner.md resolving to `claude-haiku-5-5` (that item's done note). A date
+      trigger would warn on pins that follow the alias to a current model.
 - [x] Add the `command-substitution-tokens` conformance check (plan 35 audit §6, d16, seat
       check A#7): substitution or render-time shell tokens in a command body that the
       command does not declare. Today 0. Size: quick-fix. Done when: the check is in
@@ -2446,7 +2454,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       drift passes.
 
 ## audit-3-10-26 follow-ups (no plan; branch claude/stoic-lewin-bcece7) — 2026-10-04
-- [ ] Watch Haiku 4.5's retirement (specs/audit-3-10-26.md F13). As of the audit,
+- [x] Watch Haiku 4.5's retirement (specs/audit-3-10-26.md F13). As of the audit,
       <https://platform.claude.com/docs/en/about-claude/model-deprecations> opens its
       retirement window "not sooner than October 15, 2026", and no newer Haiku exists.
       Exposed: the `model: haiku` pins on `agents/explore.md` and `agents/test-runner.md`,
@@ -2461,6 +2469,15 @@ declined as YAGNI (zero instances in a one-page wiki).
       no Haiku remains, the two pins need repointing and SDD's cheap tier a new home, and
       this becomes a plan. Revisit if: the deprecations page posts a retirement date for
       Haiku 4.5, or a newer Haiku ships.
+      → done 2026-10-08 (/deferred quick fix): a newer Haiku shipped. The deprecations
+      page, fetched 2026-10-08, lists `claude-haiku-5-5` as Active (no retirement before
+      October 7, 2027). One Explore dispatch on Claude Code that day ran all four of its
+      model turns on `claude-haiku-5-5`, read from `message.model` in the subagent
+      transcript, so the `haiku` alias the two pins and SDD's cheap tier use already
+      follows the newer model, and nothing needs repointing. The date-triggered
+      `haiku-retirement-date` check above was retired in the same pass: the notice
+      governs. Guide note A-53 (the alias's behaviour at retirement) stays open for the
+      drift verification.
 
 ## 38-claude-code-drift-automation — 2026-10-05
 - [x] Stale cached pages after a manifest change (Codex, plan 38's final review; deferred
