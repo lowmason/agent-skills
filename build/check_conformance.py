@@ -746,6 +746,10 @@ def check_skill_command_name_collision(root: Path, files: list[str], params: dic
 
 
 DMI_KEY = 'disable-model-invocation'
+# Drift R4.1's citation lines name the guide, not a skill (R5's grammar).
+CITATION_LINE_RE = re.compile(r'^[ \t]*(?:#|<!--)[ \t]*cc-guide:.*$', re.MULTILINE)
+# Human docs, as test_runtime_support's HUMAN_DOCS: not agent-facing.
+HUMAN_DOCS = frozenset({'README.md', 'INSTALL.md'})
 
 
 def check_dmi_handoff_consistency(root: Path, files: list[str], params: dict) -> list[Finding]:
@@ -763,9 +767,9 @@ def check_dmi_handoff_consistency(root: Path, files: list[str], params: dict) ->
         return []
     texts: dict[str, str] = {}
     for f in files:
-        if f.endswith('.md'):
+        if f.endswith('.md') and PurePosixPath(f).name not in HUMAN_DOCS:
             try:
-                texts[f] = (root / f).read_text(encoding='utf-8')
+                texts[f] = CITATION_LINE_RE.sub('', (root / f).read_text(encoding='utf-8'))
             except (OSError, UnicodeDecodeError):
                 pass  # a file that cannot be read names nothing
     out: list[Finding] = []

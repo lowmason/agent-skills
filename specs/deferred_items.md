@@ -2726,7 +2726,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       `test_calibration_check.py`. Size: quick-fix. Done when: a NaN posterior-predictive
       draw exits with a JSON error naming its count on both PIT paths, with a test for
       each.
-- [ ] `dmi-handoff-consistency` matches drift citation lines and reads human docs (whole-
+- [x] `dmi-handoff-consistency` matches drift citation lines and reads human docs (whole-
       branch review of chore/deferred-2026-10-08; deferred at the owner's call because
       plan 39's pre-flight pins `build/check_conformance.py` and
       `build/test_check_conformance.py` by content hash). The bare-name regex in
@@ -2746,6 +2746,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       before drift R4.1 or R8.1 lands, or portability R1.1 adds the key to the SKILL.md
       key set. Size: quick-fix. Done when: a citation-shaped line and a README or
       INSTALL.md that name a manual-only skill yield no finding, with a test for each.
+      → done 2026-10-08 (/deferred quick fix)
 
 ## 39-cc-guide-hardening — 2026-10-08
 - [ ] One fence rule for `build/check_conformance.py` (plan 39's final review, T1-1;
