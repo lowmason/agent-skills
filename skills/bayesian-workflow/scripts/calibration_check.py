@@ -230,6 +230,15 @@ def _exit_with_error(message) -> NoReturn:
     sys.exit(1)
 
 
+def _exit_if_not_finite(values, what, var_name, cause) -> None:
+    """Exit with a JSON error when any of `values` is NaN or inf, naming how many."""
+    bad = ~np.isfinite(values)
+    if bad.any():
+        _exit_with_error(
+            f"{bad.sum()} of {bad.size} {what} of '{var_name}' are not finite (NaN or inf). {cause}"
+        )
+
+
 def main():
     parser = argparse.ArgumentParser(description="Bayesian model calibration check")
     parser.add_argument(
@@ -317,6 +326,16 @@ def main():
             "az.from_numpyro(mcmc, ...) writes it by default; keep it when saving the netCDF."
         )
 
+    # A NaN y compares false against every draw, so its PPC-PIT would land silently in
+    # the bottom cell; masked or missing observations carry NaN into observed_data.
+    _exit_if_not_finite(
+        dt["observed_data"][var_name].values,
+        "observed values",
+        var_name,
+        "A missing or masked observation has no PIT: drop it from observed_data and "
+        "posterior_predictive before the check.",
+    )
+
     # plot_ppc_pit warns on binary data; this script bypasses it, so it warns itself.
     if np.isin(dt["observed_data"][var_name].values, (0, 1)).all():
         print(
@@ -329,6 +348,14 @@ def main():
     # One set of PIT values feeds the JSON verdict and both figures.
     ci_prob = args.ci_prob
     pit = pit_values(dt, var_name, use_loo=args.loo_pit)
+    # Finite observations can still get a non-finite LOO-PIT, which pot_c would turn
+    # into an opaque broadcast error.
+    _exit_if_not_finite(
+        pit,
+        "PIT values",
+        var_name,
+        "Look for NaN or inf in the log_likelihood and posterior_predictive groups.",
+    )
     try:
         assessment = assess_pit(pit, ci_prob=ci_prob)
     except ValueError as e:

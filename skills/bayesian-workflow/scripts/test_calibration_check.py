@@ -54,6 +54,7 @@ CONCENTRATED_SD_OF_MEAN = 1e-4
 GRID_SEED = 3
 PER_OBSERVATION_PRIOR_SD = 0.7
 DISCRETE_RATE = 3.0
+N_NON_FINITE = 10  # of N_OBS: the reviewer's probe that read a NaN fixture as over-confident
 # A calibrated model is still flagged at ci_prob=0.99 on a few percent of seeds: each of
 # the two pot_c tests has its own false-alarm rate. The data and the PIT randomization
 # are both seeded, and pot_c is deterministic given the PIT values, so the outcome for
@@ -513,6 +514,29 @@ def test_cli_reports_too_few_observations_as_a_json_error(monkeypatch, capsys):
     exit_code, output, _ = _run_cli(monkeypatch, capsys, data)
     assert exit_code == 1
     assert 'at least 2' in output['error']
+
+
+@PIT_PATHS
+@pytest.mark.parametrize('bad', [np.nan, np.inf], ids=['nan', 'inf'])
+def test_cli_names_non_finite_observations_as_a_json_error(monkeypatch, capsys, use_loo, bad):
+    # A NaN y compares false against every draw, so its PIT would land silently in the
+    # bottom cell, and the verdict would read the misses as over-confidence.
+    data = _normal_model(0.0, TRUE_SCALE)
+    data['observed_data']['y'].values[:N_NON_FINITE] = bad
+    exit_code, output, _ = _run_cli(monkeypatch, capsys, data, *(['--loo-pit'] if use_loo else []))
+    assert exit_code == 1
+    assert f"{N_NON_FINITE} of {N_OBS} observed values of 'y' are not finite" in output['error']
+
+
+def test_cli_names_non_finite_loo_pit_values_as_a_json_error(monkeypatch, capsys):
+    # Finite observations can still get a non-finite LOO-PIT, from a NaN in the
+    # log-likelihood; pot_c would raise an opaque broadcast error on it.
+    pit = calibration_check.pit_values(_normal_model(0.0, TRUE_SCALE), 'y', use_loo=True)
+    pit[:N_NON_FINITE] = np.nan
+    monkeypatch.setattr(calibration_check, 'pit_values', lambda *_args, **_kwargs: pit)
+    exit_code, output, _ = _run_cli(monkeypatch, capsys, _normal_model(0.0, TRUE_SCALE), '--loo-pit')
+    assert exit_code == 1
+    assert f"{N_NON_FINITE} of {N_OBS} PIT values of 'y' are not finite" in output['error']
 
 
 def test_n_observations_counts_every_pooled_pit_value(monkeypatch, capsys):

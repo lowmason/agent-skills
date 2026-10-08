@@ -1756,7 +1756,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       1.3.2 (checked 2026-10-03).
       Size: quick-fix. Revisit if: arviz-plots changes its default figure layout, or the owner
       wants the saved figures to depart from `plot_ppc_pit` parity.
-- [ ] `calibration_check.py` never guards against non-finite inputs (plan 34 final-review
+- [x] `calibration_check.py` never guards against non-finite inputs (plan 34 final-review
       Minor, pre-existing; deferred at the completion gate, the owner's call). In
       `skills/bayesian-workflow/scripts/calibration_check.py`, a NaN observed `y` makes both
       `predicted < observed` and `predicted == observed` false in `pit_values`, so that
@@ -1772,6 +1772,13 @@ declined as YAGNI (zero instances in a one-page wiki).
       error, test first.
       Size: quick-fix. Revisit if: a masked or missing-observation model reports a calibration
       verdict, or a run exits with the broadcast error.
+      → done 2026-10-08 (/deferred quick fix; promoted from a watch item at the owner's
+      selection, because the failure is a silent wrong verdict): `main()` exits with a JSON
+      error naming the count of non-finite observed values, on both PIT paths, before any
+      PIT is computed, and names a non-finite PIT, which finite observations can still
+      get from the log-likelihood on the LOO path, before pot_c sees it. Red first: the four
+      NaN/inf observed cases exited 0 with a verdict, and the NaN-PIT case exited with the
+      broadcast error.
 - [x] The fair-rated spread step is direction-blind (plan 34 final-review recommendation,
       pre-existing; filed after completion at the owner's request). `_spread_step` in
       `skills/bayesian-workflow/scripts/check_diagnostics.py` gives every fair-rated spread
