@@ -11,7 +11,7 @@ import blocks
 import check
 import docs
 import state
-from cc_fixtures import (DOCS, ENV_PAGE, MANIFEST_TOML, docs_dir, drift_repo,  # noqa: F401
+from cc_fixtures import (DOCS, ENV_PAGE, GUIDE_PATH, MANIFEST_TOML, docs_dir, drift_repo,  # noqa: F401
                          fixture_snapshot, fixture_state, git, guide_text, isolated_home, write_tree)
 
 MANIFEST = state.parse_manifest(MANIFEST_TOML)
@@ -88,6 +88,16 @@ def test_deselection_is_informational_only_while_the_block_is_unchanged(docs_dir
                           'env-vars.md': ENV_PAGE.replace('see [events](/docs/en/events)', 'see events')
                           .replace('| `BETA_ENV` |', '| `GAMMA_ENV` |')})
     assert findings(docs_dir, s)[0] == [('beta', 'missing', f'env-vars › {ENV} › `BETA_ENV`', ['beta.overview'])]
+
+
+def test_a_baselined_page_its_group_no_longer_maps_is_deselected(docs_dir):
+    '''Until a full rebaseline drops it, the page's blocks are informational,
+    named from its snapshot.'''
+    s = fixture_state(docs_dir)
+    s['groups']['beta']['blocks']['tools'] = s['groups']['alpha']['blocks']['tools']
+    s['groups']['beta']['snapshot']['tools'] = '2.1.900'
+    assert findings(docs_dir, s) == ([], {'alpha': [], 'beta': [
+        'tools › Tools', 'tools › Tools › Options', 'tools › Tools › Options › `--fast`']})
 
 
 def test_a_page_missing_from_llms_or_the_docs_is_one_finding(docs_dir):
@@ -209,16 +219,23 @@ def test_http_get_retries_once_and_reports_any_other_failure(monkeypatch):
     with pytest.raises(check.FetchError) as err:
         check.http_get(url)
     assert str(err.value) == f'{url}: IncompleteRead(0 bytes read)'
-    assert sent == [(url, 'agent-skills-cc-guide/1 (Claude Code docs drift check)', 30)] * 5
+    outcomes[:] = [http.client.IncompleteRead(b''), urllib.error.HTTPError(url, 500, 'Server Error', {}, None)]
+    with pytest.raises(check.FetchError) as err:
+        check.http_get(url)
+    assert str(err.value) == f'{url}: HTTP 500'
+    assert sent == [(url, 'agent-skills-cc-guide/1 (Claude Code docs drift check)', 30)] * 7
 
 
-def serving(folder, log=None, fail=()):
-    '''A fake fetch serving folder's files by URL; unknown URLs are 404.'''
+def serving(folder, log=None, fail=(), codes=None):
+    '''A fake fetch serving folder's files by URL; unknown URLs are 404, and
+    a URL in `codes` answers with its status and no body.'''
     def fetch(url):
         if log is not None:
             log.append(url)
         if url in fail:
             raise check.FetchError(f'{url}: timed out')
+        if codes and url in codes:
+            return codes[url], b''
         path = folder / URLS.get(url, 'absent')
         return (200, path.read_bytes()) if path.is_file() else (404, b'')
     return fetch
@@ -291,6 +308,33 @@ def test_docs_read_as_other_than_utf8_are_a_setup_error_or_a_fetch_error(tmp_pat
     assert str(err.value) == f"{MANIFEST.sources['changelog']}: not UTF-8 text"
 
 
+def test_an_answer_other_than_200_or_404_is_an_http_error(tmp_path, docs_dir):
+    '''A page so answered is left unread and uncached; the changelog so
+    answered fails the fetch.'''
+    cache, url = tmp_path / 'cache', docs.page_url('tools', MANIFEST.sources)
+    got = check.live_docs(MANIFEST, cache, serving(docs_dir, codes={url: 500}), NOW)
+    assert (got.errors, got.unread) == ([f'{url}: HTTP 500'], {'tools'})
+    assert not (state.latest_docs(cache) / 'tools.md').exists()
+    changelog = MANIFEST.sources['changelog']
+    with pytest.raises(check.FetchError) as err:
+        check.live_docs(MANIFEST, cache, serving(docs_dir, codes={changelog: 503}), NOW)
+    assert str(err.value) == f'{changelog}: HTTP 503'
+
+
+def test_an_llms_txt_listing_no_code_page_is_an_error_not_every_page_missing(tmp_path, docs_dir):
+    '''A local copy is a setup error. A fetched one is a fetch error, which
+    leaves the cache as it was.'''
+    write_tree(docs_dir, {'llms.txt': '# Fixture docs\n'})
+    with pytest.raises(state.SetupError) as err:
+        offline(docs_dir)
+    assert str(err.value) == f"{docs_dir / 'llms.txt'}: lists no code pages"
+    cache = tmp_path / 'cache'
+    with pytest.raises(check.FetchError) as err:
+        check.live_docs(MANIFEST, cache, serving(docs_dir), NOW)
+    assert str(err.value) == f"{MANIFEST.sources['llms']}: lists no code pages"
+    assert not state.fetch_record(cache).exists()
+
+
 def test_a_404_removes_the_stale_copy_and_reads_as_a_missing_page(tmp_path, docs_dir):
     cache = tmp_path / 'cache'
     s = fixture_state(docs_dir)
@@ -339,7 +383,7 @@ def test_a_changed_block_or_a_lint_failure_is_due_at_once(tmp_path, docs_dir):
     write_tree(docs_dir, {'events.md': DOCS['events.md'].replace('fires on beta', 'fires on gamma')})
     assert run_check(repo, tmp_path / 'cache', docs_dir)[0] == 1
     write_tree(docs_dir, DOCS)
-    guide = repo / 'specs/guides/claude-code-customization-guide.md'
+    guide = repo / GUIDE_PATH
     guide.write_text(guide.read_text().replace('Alpha uses', 'Alpha now uses'))
     code, report, _ = run_check(repo, tmp_path / 'cache', docs_dir)
     assert (code, report['due']['lint']) == (1, 1)
@@ -406,3 +450,12 @@ def test_llms_slugs_added_and_removed_since_the_baseline_are_listed(tmp_path, do
     write_tree(docs_dir, {'llms.txt': DOCS['llms.txt'].replace('plugins/components', 'plugins/parts')})
     _, report, _ = run_check(repo, tmp_path / 'cache', docs_dir)
     assert report['llms'] == {'added': ['plugins/parts'], 'removed': ['plugins/components']}
+
+
+def test_the_summary_prints_a_block_keyed_by_a_bare_heading_as_a_block(tmp_path, docs_dir):
+    '''A bare `#` heading keys its block with the empty string, which still
+    names a block of the page, not the page.'''
+    repo = drift_repo(tmp_path / 'repo', docs_dir)
+    write_tree(docs_dir, {'events.md': DOCS['events.md'] + '#\n\nA bare heading.\n'})
+    _, report, path = run_check(repo, tmp_path / 'cache', docs_dir)
+    assert '  [beta] new events ›  (candidates: beta.overview, beta.reference)' in check.summary(report, path)

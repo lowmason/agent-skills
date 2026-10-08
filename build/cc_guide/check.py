@@ -22,6 +22,8 @@ from state import (BASELINE, MANIFEST, PROBES, Manifest, ProbeRow, SetupError, S
 
 USER_AGENT = 'agent-skills-cc-guide/1 (Claude Code docs drift check)'
 TIMEOUT = 30
+ATTEMPTS = 2  # R6.4: one retry
+HTTP_OK, HTTP_NOT_FOUND = 200, 404
 WORKERS = 8
 Fetch = Callable[[str], tuple[int, bytes]]
 
@@ -36,13 +38,13 @@ def http_get(url: str) -> tuple[int, bytes]:
     (404, b''); any other failure raises FetchError.'''
     request = urllib.request.Request(url, headers={'User-Agent': USER_AGENT})
     error = ''
-    for _ in range(2):
+    for _ in range(ATTEMPTS):
         try:
             with urllib.request.urlopen(request, timeout=TIMEOUT) as response:
                 return response.status, response.read()
         except urllib.error.HTTPError as exc:
-            if exc.code == 404:
-                return 404, b''
+            if exc.code == HTTP_NOT_FOUND:
+                return HTTP_NOT_FOUND, b''
             error = f'HTTP {exc.code}'
         except (OSError, http.client.HTTPException) as exc:
             error = str(exc)
@@ -66,27 +68,31 @@ class Docs(NamedTuple):
     unread: set[str]              # pages whose fetch failed; never compared
 
 
-def releases_of(changelog_text: str, source: str = 'changelog') -> list[Release]:
+def releases_of(changelog_text: str, where: str = 'changelog') -> list[Release]:
     '''The changelog's releases, newest first. A changelog that does not
-    parse, or holds no release, is a SetupError naming its source.'''
+    parse, or holds no release, is a SetupError naming where it was read.'''
     try:
         releases = parse_changelog(changelog_text)
     except ValueError as exc:
-        raise SetupError(f'{source}: {exc}') from None
+        raise SetupError(f'{where}: {exc}') from None
     if not releases:
-        raise SetupError(f'{source}: no <Update> release blocks')
+        raise SetupError(f'{where}: no <Update> release blocks')
     return releases
 
 
 def offline_docs(manifest: Manifest, folder: Path) -> Docs:
     '''R6.1 --docs: the docs read from a local directory, named as the cache
-    names them. A page file that is absent is a missing page.'''
+    names them. A page file that is absent is a missing page; an llms.txt
+    that lists no code page is a SetupError, since every code page would
+    read as missing.'''
     def read(name: str) -> str | None:
         path = folder / name
         return read_utf8(path) if path.is_file() else None
     changelog, llms = read(CHANGELOG), read(LLMS)
     if changelog is None or llms is None:
         raise SetupError(f'{folder}: needs {CHANGELOG} and {LLMS}')
+    if not parse_llms(llms):
+        raise SetupError(f'{folder / LLMS}: lists no code pages')
     return Docs(changelog, llms, {p: read(page_file(p)) for p in manifest.pages()},
                 str(folder), [], set())
 
@@ -97,7 +103,8 @@ def live_docs(manifest: Manifest, cache: Path, fetch: Fetch, now: datetime) -> D
     latest/docs lacks. Pages overwrite latest/docs. A 404 or a failed fetch
     removes the stale copy, so a later run fetches the page again; a head move
     also removes every cached page this manifest does not map, since the one
-    recorded head would otherwise vouch for it later.'''
+    recorded head would otherwise vouch for it later. An llms.txt that lists
+    no code page is a FetchError, raised before the cache changes.'''
     folder = latest_docs(cache)
     folder.mkdir(parents=True, exist_ok=True)
     record = read_fetch(cache)
@@ -105,12 +112,14 @@ def live_docs(manifest: Manifest, cache: Path, fetch: Fetch, now: datetime) -> D
     fetched = {}
     for name, url in ((CHANGELOG, manifest.sources['changelog']), (LLMS, manifest.sources['llms'])):
         status, body = fetch(url)
-        if status != 200:
+        if status != HTTP_OK:
             raise FetchError(f'{url}: HTTP {status}')
         text = utf8(body)
         if text is None:
             raise FetchError(f'{url}: not UTF-8 text')
         fetched[name] = text
+    if not parse_llms(fetched[LLMS]):
+        raise FetchError(f"{manifest.sources['llms']}: lists no code pages")
     head = releases_of(fetched[CHANGELOG])[0].label
     pages = manifest.pages()
     if head != previous:
@@ -132,15 +141,15 @@ def live_docs(manifest: Manifest, cache: Path, fetch: Fetch, now: datetime) -> D
     errors, unread = [], set()
     for page, got, error in results:
         path = folder / page_file(page)
-        if error is None and got[0] not in (200, 404):
+        if error is None and got[0] not in (HTTP_OK, HTTP_NOT_FOUND):
             error = f'{page_url(page, manifest.sources)}: HTTP {got[0]}'
-        if error is None and got[0] == 200 and utf8(got[1]) is None:
+        if error is None and got[0] == HTTP_OK and utf8(got[1]) is None:
             error = f'{page_url(page, manifest.sources)}: not UTF-8 text'
         if error is not None:
             errors.append(error)
             unread.add(page)
             path.unlink(missing_ok=True)
-        elif got[0] == 404:
+        elif got[0] == HTTP_NOT_FOUND:
             path.unlink(missing_ok=True)
         else:
             path.write_bytes(got[1])
@@ -351,7 +360,7 @@ def summary(report: dict, path: Path) -> list[str]:
         lines.append(f"blocks: {counts['changed']} changed, {counts['missing']} missing, {counts['new']} new, "
                      f"{counts['missing-page']} missing pages"
                      f"; {sum(map(len, report['deselected'].values()))} deselected (informational)")
-        lines += [f"  [{f['group']}] {f['kind']} {f['page'] + (SEP + f['key'] if f['key'] else '')}"
+        lines += [f"  [{f['group']}] {f['kind']} {Finding(**f).ref()}"
                   f" (candidates: {', '.join(f['candidates'])})" for f in kinds]
         llms = report['llms']
         lines.append(f"llms.txt since the baseline: {len(llms['added'])} added, {len(llms['removed'])} removed")
