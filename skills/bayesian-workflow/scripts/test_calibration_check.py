@@ -526,17 +526,21 @@ def test_cli_names_non_finite_observations_as_a_json_error(monkeypatch, capsys, 
     exit_code, output, _ = _run_cli(monkeypatch, capsys, data, *(['--loo-pit'] if use_loo else []))
     assert exit_code == 1
     assert f"{N_NON_FINITE} of {N_OBS} observed values of 'y' are not finite" in output['error']
+    assert 'log_likelihood' in output['error']  # --loo-pit needs it dropped there too
 
 
-def test_cli_names_non_finite_loo_pit_values_as_a_json_error(monkeypatch, capsys):
-    # Finite observations can still get a non-finite LOO-PIT, from a NaN in the
-    # log-likelihood; pot_c would raise an opaque broadcast error on it.
-    pit = calibration_check.pit_values(_normal_model(0.0, TRUE_SCALE), 'y', use_loo=True)
-    pit[:N_NON_FINITE] = np.nan
-    monkeypatch.setattr(calibration_check, 'pit_values', lambda *_args, **_kwargs: pit)
-    exit_code, output, _ = _run_cli(monkeypatch, capsys, _normal_model(0.0, TRUE_SCALE), '--loo-pit')
+@pytest.mark.parametrize('bad', [np.nan, -np.inf], ids=['nan', 'neg-inf'])
+def test_cli_names_non_finite_loo_pit_values_as_a_json_error(monkeypatch, capsys, bad):
+    # Finite observations can still get a non-finite LOO-PIT, from a NaN or -inf in one
+    # draw's log-likelihood; pot_c would raise an opaque broadcast error on it. A bad
+    # posterior_predictive draw never does: its PITs stay finite, so the error omits it.
+    data = _normal_model(0.0, TRUE_SCALE)
+    data['log_likelihood']['y'].values[0, 0, :N_NON_FINITE] = bad
+    exit_code, output, _ = _run_cli(monkeypatch, capsys, data, '--loo-pit')
     assert exit_code == 1
     assert f"{N_NON_FINITE} of {N_OBS} PIT values of 'y' are not finite" in output['error']
+    assert 'log_likelihood' in output['error']
+    assert 'posterior_predictive' not in output['error']
 
 
 def test_n_observations_counts_every_pooled_pit_value(monkeypatch, capsys):

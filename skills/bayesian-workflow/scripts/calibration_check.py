@@ -332,8 +332,8 @@ def main():
         dt["observed_data"][var_name].values,
         "observed values",
         var_name,
-        "A missing or masked observation has no PIT: drop it from observed_data and "
-        "posterior_predictive before the check.",
+        "A missing or masked observation has no PIT: drop it from observed_data, "
+        "posterior_predictive and, for --loo-pit, log_likelihood before the check.",
     )
 
     # plot_ppc_pit warns on binary data; this script bypasses it, so it warns itself.
@@ -348,13 +348,13 @@ def main():
     # One set of PIT values feeds the JSON verdict and both figures.
     ci_prob = args.ci_prob
     pit = pit_values(dt, var_name, use_loo=args.loo_pit)
-    # Finite observations can still get a non-finite LOO-PIT, which pot_c would turn
-    # into an opaque broadcast error.
+    # Finite observations can still get a non-finite LOO-PIT, from a NaN or -inf
+    # log-likelihood draw, which pot_c would turn into an opaque broadcast error.
     _exit_if_not_finite(
         pit,
         "PIT values",
         var_name,
-        "Look for NaN or inf in the log_likelihood and posterior_predictive groups.",
+        "Look for NaN or -inf in the log_likelihood group.",
     )
     try:
         assessment = assess_pit(pit, ci_prob=ci_prob)
