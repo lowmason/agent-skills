@@ -268,6 +268,7 @@ def test_an_empty_key_ref_rebaselines_that_block_not_its_page(tmp_path, docs_dir
     new, pages, _ = baseline.rebaseline(s, MANIFEST, guide_text(), 'alpha', [bare, 'tools › ' + row], latest,
                                         '2.1.902')
     assert pages == ['tools']
+    assert blocks.key_hash('') in new['groups']['alpha']['blocks']['tools']
 
 
 def test_a_listed_rebaseline_takes_checks_refs_for_blocks_gone_from_the_page(tmp_path, docs_dir):
