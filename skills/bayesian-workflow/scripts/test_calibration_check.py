@@ -529,6 +529,29 @@ def test_cli_names_non_finite_observations_as_a_json_error(monkeypatch, capsys, 
     assert 'log_likelihood' in output['error']  # --loo-pit needs it dropped there too
 
 
+@PIT_PATHS
+def test_cli_names_nan_posterior_predictive_draws_as_a_json_error(monkeypatch, capsys, use_loo):
+    # A NaN draw compares false under both < and ==, so it counts as neither below nor
+    # tied with y: the PITs stay finite and the verdict comes back wrong, exit 0.
+    data = _normal_model(0.0, TRUE_SCALE)
+    data['posterior_predictive']['y'].values[:, :, :N_NON_FINITE] = np.nan
+    exit_code, output, _ = _run_cli(monkeypatch, capsys, data, *(['--loo-pit'] if use_loo else []))
+    assert exit_code == 1
+    n_nan, n_draws = N_CHAIN * N_DRAW * N_NON_FINITE, N_CHAIN * N_DRAW * N_OBS
+    assert f"{n_nan} of {n_draws} posterior_predictive draws of 'y' are NaN" in output['error']
+
+
+@PIT_PATHS
+@pytest.mark.parametrize('bad', [np.inf, -np.inf], ids=['inf', 'neg-inf'])
+def test_cli_ranks_infinite_posterior_predictive_draws(monkeypatch, capsys, use_loo, bad):
+    # Unlike NaN, an infinite draw ranks: +inf above y, -inf below. So it is not an error.
+    data = _normal_model(0.0, TRUE_SCALE)
+    data['posterior_predictive']['y'].values[0, 0, :N_NON_FINITE] = bad
+    exit_code, output, _ = _run_cli(monkeypatch, capsys, data, *(['--loo-pit'] if use_loo else []))
+    assert exit_code == 0
+    assert 'error' not in output
+
+
 @pytest.mark.parametrize('bad', [np.nan, -np.inf], ids=['nan', 'neg-inf'])
 def test_cli_names_non_finite_loo_pit_values_as_a_json_error(monkeypatch, capsys, bad):
     # Finite observations can still get a non-finite LOO-PIT, from a NaN or -inf in one

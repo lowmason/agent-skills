@@ -2708,7 +2708,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       described with the current templates.
 
 ## deferred-2026-10-08 (no plan; /deferred pass, branch chore/deferred-2026-10-08) — 2026-10-08
-- [ ] `calibration_check.py` reads NaN posterior-predictive draws as draws above `y`
+- [x] `calibration_check.py` reads NaN posterior-predictive draws as draws above `y`
       (found while fixing "`calibration_check.py` never guards against non-finite inputs"
       in the 34-calibration-check-verdicts section; outside that item's scope, logged at
       the owner's call). In `pit_values`, a NaN draw compares false under both `<` and
@@ -2726,6 +2726,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       `test_calibration_check.py`. Size: quick-fix. Done when: a NaN posterior-predictive
       draw exits with a JSON error naming its count on both PIT paths, with a test for
       each.
+      → done 2026-10-08 (/deferred quick fix)
 - [x] `dmi-handoff-consistency` matches drift citation lines and reads human docs (whole-
       branch review of chore/deferred-2026-10-08; deferred at the owner's call because
       plan 39's pre-flight pins `build/check_conformance.py` and
