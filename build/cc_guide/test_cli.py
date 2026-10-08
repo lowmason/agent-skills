@@ -54,19 +54,18 @@ def test_lint_exits_zero_clean_one_on_a_violation_and_two_on_a_setup_error(world
 
 
 def test_help_shows_the_module_docstring_and_the_rebaseline_refusal(capsys):
+    outs = []
     for argv in (['--help'], ['baseline', 'rebaseline', '--help']):
         with pytest.raises(SystemExit) as stop:
             cli.main(argv)
         assert stop.value.code == 0
-        out = ' '.join(capsys.readouterr().out.split())
+        outs.append(capsys.readouterr().out)
+    for out in (' '.join(o.split()) for o in outs):
         assert 'unlisted baselined block' in out
         assert 'also changed or gone' in out
         assert 'the whole page' in out
-    with pytest.raises(SystemExit):
-        cli.main(['--help'])
-    out = capsys.readouterr().out
-    assert '  lint [--ref REF]\n' in out  # the docstring's line breaks survive
-    assert 'Offline gate over the guide, manifest.toml and baseline.json (R5)' in out
+    assert '  lint [--ref REF]\n' in outs[0]  # the docstring's line breaks survive
+    assert 'Offline gate over the guide, manifest.toml and baseline.json (R5)' in outs[0]
 
 
 def test_check_reads_main_unless_told_otherwise(tmp_path, docs_dir, monkeypatch, capsys):
@@ -82,7 +81,9 @@ def test_check_reads_main_unless_told_otherwise(tmp_path, docs_dir, monkeypatch,
     assert main(cache, 'check', '--worktree', '--docs', str(docs_dir)) == 0
 
 
-def test_init_derives_changed_and_refuses_to_overwrite_without_force(tmp_path, docs_dir, monkeypatch):
+def history_repo(tmp_path, monkeypatch):
+    '''A repo holding R11.1's two old guides, then the anchored guide and its
+    manifest but no baseline, with cli and baseline pointed at it.'''
     old = '\n'.join(line for line in guide_text().split('\n') if not line.startswith('<!-- cc: '))
     repo = fixture_repo(tmp_path / 'repo', {baseline.OLD_GUIDE_PATH: old.replace('Set `ALPHA_ENV`', 'Set `OLD`')})
     july = git(repo, 'rev-parse', 'HEAD').strip()
@@ -95,16 +96,32 @@ def test_init_derives_changed_and_refuses_to_overwrite_without_force(tmp_path, d
     monkeypatch.setattr(cli, 'REPO', repo)
     monkeypatch.setattr(baseline, 'JULY', (july, '2.1.219'))
     monkeypatch.setattr(baseline, 'REFRESH', (refresh, '2.1.288'))
+    return repo
+
+
+def test_init_derives_changed_and_refuses_to_overwrite_without_force(tmp_path, docs_dir, monkeypatch, capsys):
+    repo = history_repo(tmp_path, monkeypatch)
     cache = tmp_path / 'cache'
     argv = ('baseline', 'init', '--docs', str(docs_dir), '--release', '2.1.900', '--date', '2026-09-02')
     assert main(cache, *argv) == 0
+    assert capsys.readouterr() == (f'wrote {state.BASELINE} from {docs_dir}; next: baseline stamp\n', '')
     assert dirty(repo) == [state.BASELINE]
     written = load(repo)
     assert {i: s['changed'] for i, s in written['sections'].items()} == {
         'alpha.overview': '2.1.219', 'alpha.reference': '2.1.288',
         'beta.overview': '2.1.219', 'beta.reference': '2.1.219'}
     assert main(cache, *argv) == 2
+    assert capsys.readouterr() == ('', f'cc-guide: {state.BASELINE} exists; init rebuilds it from scratch'
+                                       ' only with --force\n')
     assert main(cache, *argv, '--force') == 0
+
+
+def test_init_without_docs_needs_the_bootstrap_snapshot_directory(tmp_path, monkeypatch, capsys):
+    repo = history_repo(tmp_path, monkeypatch)
+    cache = tmp_path / 'cache'
+    assert main(cache, 'baseline', 'init') == 2
+    assert capsys.readouterr() == ('', f"cc-guide: {state.snapshot_docs(cache, '2.1.288')}: no snapshot directory\n")
+    assert dirty(repo) == []
 
 
 @pytest.mark.parametrize('flag, value, message', [
@@ -135,12 +152,16 @@ def changed_fields(old, new):
     return out | ({'llms'} if old['llms'] != new['llms'] else set())
 
 
-def test_advance_writes_only_the_named_sections_checked(world):
+def test_advance_writes_only_the_named_sections_checked_and_says_when_the_stamp_is_stale(world, capsys):
     repo, cache, _ = world
     before = load(repo)
     assert main(cache, 'baseline', 'advance', 'beta.overview', '--to', '2.1.902') == 0
     assert dirty(repo) == [state.BASELINE]
     assert changed_fields(before, load(repo)) == {'sections.beta.overview.checked'}
+    assert capsys.readouterr() == (f'updated {state.BASELINE}\n', '')  # the oldest checked is unchanged
+    assert main(cache, 'baseline', 'advance', *GUIDE_IDS, '--to', '2.1.902') == 0
+    assert capsys.readouterr() == (f'updated {state.BASELINE}\n',
+                                   'the stamp region is now stale: run baseline stamp\n')
 
 
 def test_audited_writes_only_the_groups_audited_and_checked(world, capsys):
@@ -151,9 +172,10 @@ def test_audited_writes_only_the_groups_audited_and_checked(world, capsys):
     assert changed_fields(before, load(repo)) == {
         'sections.alpha.overview.audited', 'sections.alpha.overview.checked',
         'sections.alpha.reference.audited', 'sections.alpha.reference.checked'}
-    assert capsys.readouterr().err == ''  # beta's sections still hold the oldest dates
+    assert capsys.readouterr() == (f'updated {state.BASELINE}\n', '')  # beta's sections still hold the oldest dates
     assert main(cache, 'baseline', 'audited', 'beta', today=date(2026, 10, 4)) == 0
-    assert capsys.readouterr().err == 'the stamp region is now stale: run baseline stamp\n'
+    assert capsys.readouterr() == (f'updated {state.BASELINE}\n',
+                                   'the stamp region is now stale: run baseline stamp\n')
 
 
 def test_accept_writes_only_the_named_sections_hash_and_changed(world):
@@ -236,6 +258,13 @@ def test_stamp_writes_only_the_guides_stamp_region(world):
                     'oldest full re-verification 2026-09-02, at 2.1.900.',
                     '+> Checked against the Claude Code docs and changelog through 2.1.902 on 2026-10-04; '
                     'oldest full re-verification 2026-09-02, at 2.1.900.']
+
+
+def test_rebaseline_without_a_fetch_is_one_error_line(world, tmp_path, capsys):
+    repo, _, _ = world
+    assert main(tmp_path / 'empty-cache', 'baseline', 'rebaseline', 'alpha') == 2
+    assert capsys.readouterr() == ('', 'cc-guide: no latest fetch: run check first\n')
+    assert dirty(repo) == []
 
 
 def test_rebaseline_never_writes_the_bootstrap_snapshot(world, capsys):
