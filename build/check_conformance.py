@@ -780,6 +780,40 @@ def check_skill_command_name_collision(root: Path, files: list[str], params: dic
             for name, f in command_names(files).items() if name in skills]
 
 
+DMI_KEY = 'disable-model-invocation'
+
+
+def check_dmi_handoff_consistency(root: Path, files: list[str], params: dict) -> list[Finding]:
+    # A bare name is a handoff. A path into the skill (skills/x/, ../x/) and a typed
+    # /x are not: reading its files and the user's own invocation still work.
+    manual: dict[str, str] = {}
+    for name, f in skill_names(files).items():
+        try:
+            fm = frontmatter((root / f).read_text(encoding='utf-8'))
+        except (OSError, UnicodeDecodeError):
+            continue  # an unreadable SKILL.md is other checks' finding
+        if fm is not None and fm.get(DMI_KEY) is True:
+            manual[name] = f
+    if not manual:
+        return []
+    texts: dict[str, str] = {}
+    for f in files:
+        if f.endswith('.md'):
+            try:
+                texts[f] = (root / f).read_text(encoding='utf-8')
+            except (OSError, UnicodeDecodeError):
+                pass  # a file that cannot be read names nothing
+    out: list[Finding] = []
+    for name, skill_file in sorted(manual.items()):
+        own = f'{PurePosixPath(skill_file).parent}/'
+        bare = re.compile(r'(?<![\w./-])' + re.escape(name) + r'(?![\w/-])')
+        out.extend(Finding(skill_file, f'sets {DMI_KEY}: true, but {f} names {name}, '
+                                       'and Claude cannot invoke a manual-only skill')
+                   for f, text in sorted(texts.items())
+                   if not f.startswith(own) and bare.search(text))
+    return out
+
+
 def check_command_frontmatter_keys(root: Path, files: list[str], params: dict) -> list[Finding]:
     fields = set(params['fields'])
     out: list[Finding] = []
@@ -1348,6 +1382,7 @@ CHECKS = {
     'substitution-hazard': (check_substitution_hazard, {}),
     'orphan-bundled-file': (check_orphan_bundled_file, {'exempt': 'strings', 'tests': 'strings'}),
     'skill-command-name-collision': (check_skill_command_name_collision, {}),
+    'dmi-handoff-consistency': (check_dmi_handoff_consistency, {}),
     'command-frontmatter-keys': (check_command_frontmatter_keys, {'fields': 'strings'}),
     'builtin-name-shadow': (check_builtin_name_shadow, {'builtins': 'strings'}),
     'reserved-skill-name': (check_reserved_skill_name, {'reserved': 'strings'}),

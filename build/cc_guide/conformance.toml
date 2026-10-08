@@ -314,6 +314,20 @@ type = 'fact'
 rule = 'No commands/*.md filename stem equals a skill directory name.'
 enforced_by = 'check_conformance'
 
+# A manual-only skill fires only when typed, so Claude cannot follow a bare-name
+# handoff to it (portability Decision 3). A path into the skill or a typed /name
+# is not a handoff. Commands are not targets: their mentions are the human's
+# /name to type. Finds nothing while check_frontmatter's ALLOWED_KEYS rejects
+# the key on a SKILL.md. Guide note S-110 (who may invoke a manual skill) can
+# move this premise; revisit the check when the drift verification judges it.
+[[check]]
+id = 'dmi-handoff-consistency'
+kind = ['skill', 'skill-bundle', 'agent', 'command', 'claude-md', 'rule']
+sections = ['commands.overview']
+type = 'fact'
+rule = 'No other agent-facing Markdown file names a skill that sets disable-model-invocation: true.'
+enforced_by = 'check_conformance'
+
 # fields is the guide's skill frontmatter table less `name` and `paths`, which
 # a command does not take.
 [[check]]

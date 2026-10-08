@@ -2181,11 +2181,18 @@ declined as YAGNI (zero instances in a one-page wiki).
       → done 2026-10-05 (/deferred quick fix): `orphan-bundled-file` is in CHECKS with
       its [[check]] entry and red-first tests; INSTALL.md exempt, industry_codes.csv a
       gap under audit H1 (owner).
-- [ ] Add the `dmi-handoff-consistency` conformance check (plan 35 audit §6, d9, seat check
+- [x] Add the `dmi-handoff-consistency` conformance check (plan 35 audit §6, d9, seat check
       S#9): a skill that sets `disable-model-invocation: true` is never named as a handoff
       elsewhere. Size: quick-fix. Done when: the check is in `CHECKS` in
       `build/check_conformance.py`, with a `[[check]]` entry in
       `build/cc_guide/conformance.toml` and red-first tests.
+      → done 2026-10-08 (/deferred quick fix): `dmi-handoff-consistency` is in CHECKS with
+      its [[check]] entry and red-first tests. A handoff is the skill's bare name in any
+      other skill, bundle, agent, command, rule or CLAUDE.md Markdown file; a path into the
+      skill and a typed `/name` are not. Commands are not targets. It finds nothing today,
+      because ALLOWED_KEYS rejects the key on a SKILL.md; with writing-plans marked
+      manual-only in a scratch copy it flagged 9 real referrers. The register comment ties
+      its premise to guide note S-110.
 - [x] Add the `skill-command-name-collision` conformance check (plan 35 audit §6, d10, seat
       check S#10): no `commands/*.md` stem equals a `skills/*/` directory name. Today 0.
       Size: quick-fix. Done when: the check is in `CHECKS` in `build/check_conformance.py`,
