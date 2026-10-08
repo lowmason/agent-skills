@@ -13,7 +13,7 @@ CHANGELOG = 'changelog.md'
 LLMS = 'llms.txt'
 PLATFORM = 'platform:'
 
-LABEL_RE = re.compile(r'^\d+(?:\.\d+)+$')
+LABEL_RE = re.compile(r'\d+(?:\.\d+)+')
 UPDATE_RE = re.compile(r'^<Update label="([^"]*)" description="([^"]*)">\s*$')
 BULLET_RE = re.compile(r'^\s*\* (.*)$')
 LLMS_RE = re.compile(r'\(https://code\.claude\.com/docs/en/([^)\s]+)\.md\)')
@@ -22,7 +22,7 @@ LLMS_RE = re.compile(r'\(https://code\.claude\.com/docs/en/([^)\s]+)\.md\)')
 def version_key(label: str) -> tuple[int, ...]:
     '''R2.4: versions compare as integer tuples, so 2.1.288.1 sorts after
     2.1.288 and before 2.1.289.'''
-    if not LABEL_RE.match(label):
+    if not LABEL_RE.fullmatch(label):
         raise ValueError(f'not a release label: {label!r}')
     return tuple(int(part) for part in label.split('.'))
 
@@ -36,9 +36,11 @@ class Release(NamedTuple):
 def parse_changelog(text: str) -> list[Release]:
     '''R6.6: the changelog's <Update label="X" description="Month D, YYYY">
     blocks with their `* ` bullets, newest first by version. Raises
-    ValueError on an unparseable label or date, an <Update> tag it cannot
-    read, or a repeated label.'''
+    ValueError, naming the line, on an unparseable label or date, an
+    <Update> tag it cannot read, or a repeated label; the caller names the
+    file.'''
     releases: list[Release] = []
+    first: dict[str, int] = {}
     current: Release | None = None
     for n, line in enumerate(text.split('\n'), start=1):
         m = UPDATE_RE.match(line)
@@ -48,18 +50,18 @@ def parse_changelog(text: str) -> list[Release]:
                 version_key(label)
                 when = datetime.strptime(described, '%B %d, %Y').date()
             except ValueError as exc:
-                raise ValueError(f'changelog line {n}: {exc}') from None
+                raise ValueError(f'line {n}: {exc}') from None
+            if label in first:
+                raise ValueError(f'line {n}: release label {label} repeats line {first[label]}')
+            first[label] = n
             current = Release(label, when, [])
             releases.append(current)
         elif line.lstrip().startswith('<Update'):
-            raise ValueError(f'changelog line {n}: unrecognized <Update> tag')
+            raise ValueError(f'line {n}: unrecognized <Update> tag')
         elif line.strip() == '</Update>':
             current = None
         elif current is not None and (b := BULLET_RE.match(line)):
             current.bullets.append(b.group(1).strip())
-    labels = [r.label for r in releases]
-    if len(set(labels)) != len(labels):
-        raise ValueError('changelog repeats a release label')
     return sorted(releases, key=lambda r: version_key(r.label), reverse=True)
 
 

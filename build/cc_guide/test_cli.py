@@ -255,7 +255,7 @@ def test_a_malformed_or_empty_cached_changelog_exits_two(world, capsys):
     assert main(cache, 'lint') == 2
     with pytest.raises(ValueError) as cause:
         datetime.strptime('2026-10-01', '%B %d, %Y')
-    assert capsys.readouterr() == ('', f'cc-guide: {changelog}: changelog line 8: {cause.value}\n')
+    assert capsys.readouterr() == ('', f'cc-guide: {changelog}: line 8: {cause.value}\n')
     changelog.write_text('# Changelog\n')
     assert main(cache, 'lint') == 2
     assert capsys.readouterr() == ('', f'cc-guide: {changelog}: no <Update> release blocks\n')

@@ -9,6 +9,8 @@ terms select.
 '''
 import hashlib
 import re
+from collections.abc import Iterable
+from typing import NamedTuple
 
 SEP = ' › '
 INTRO = '(intro)'
@@ -24,25 +26,34 @@ SEPARATOR_RE = re.compile(r'^\|?[ \t]*:?-+:?[ \t]*(?:\|[ \t]*:?-+:?[ \t]*)*\|?$'
 CELL_SPLIT_RE = re.compile(r'(?<!\\)\|')
 
 
+class _Opener(NamedTuple):
+    char: str     # ` or ~
+    length: int   # the opening run's length
+    line: int     # 0-based index of the opening line
+    info: str     # the info string
+
+
 def fence_spans(lines: list[str]) -> list[tuple[int, int | None, str]]:
     '''Each fenced code block as (open, close, info): 0-based line indexes,
     close None when the fence never closes (R3.1). A fence opens on three or
     more backticks or tildes at any indentation, and closes only on a line
-    holding nothing but a run of the same character at least as long.'''
+    holding nothing but a run of the same character at least as long. As in
+    CommonMark, a backtick opener's info string holds no backtick.'''
     spans: list[tuple[int, int | None, str]] = []
-    fence: tuple[str, int, int, str] | None = None  # char, length, open, info
+    fence: _Opener | None = None
     for i, line in enumerate(lines):
         if fence is None:
             m = FENCE_OPEN_RE.match(line)
-            if m:
-                fence = (m.group(1)[0], len(m.group(1)), i, line[m.end():].strip())
+            info = line[m.end():] if m else ''
+            if m and not (m.group(1)[0] == '`' and '`' in info):
+                fence = _Opener(m.group(1)[0], len(m.group(1)), i, info.strip())
             continue
         s = line.strip()
-        if s and set(s) == {fence[0]} and len(s) >= fence[1]:
-            spans.append((fence[2], i, fence[3]))
+        if s and set(s) == {fence.char} and len(s) >= fence.length:
+            spans.append((fence.line, i, fence.info))
             fence = None
     if fence is not None:
-        spans.append((fence[2], None, fence[3]))
+        spans.append((fence.line, None, fence.info))
     return spans
 
 
@@ -74,7 +85,7 @@ def key_hash(key: str) -> str:
     return hashlib.sha256(key.encode('utf-8')).hexdigest()[:16]
 
 
-def key_names(keys) -> dict[str, str]:
+def key_names(keys: Iterable[str]) -> dict[str, str]:
     '''Key hash -> key over `keys`, to name baselined blocks.'''
     return {key_hash(k): k for k in keys}
 
@@ -164,7 +175,7 @@ def page_blocks(text: str) -> dict[str, str]:
     return blocks
 
 
-def contains_term(key: str, text: str, terms) -> bool:
+def contains_term(key: str, text: str, terms: Iterable[str]) -> bool:
     '''Case-sensitive substring match of any term in a block's key or text.'''
     return any(t in key or t in text for t in terms)
 

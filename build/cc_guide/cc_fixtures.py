@@ -129,6 +129,8 @@ CHANGELOG_TEXT = '\n'.join([
 ])
 
 
+# Two lines are not code pages: a translation index under /docs/_llms/, as
+# the real llms.txt lists them, and a platform page.
 LLMS_TEXT = '\n'.join([
     '# Fixture docs',
     '',
@@ -136,6 +138,8 @@ LLMS_TEXT = '\n'.join([
     '- [Events](https://code.claude.com/docs/en/events.md): The events page.',
     '- [Environment variables](https://code.claude.com/docs/en/env-vars.md): Variables.',
     '- [Plugin parts](https://code.claude.com/docs/en/plugins/components.md): A nested slug.',
+    '- [Fixture docs in French](https://code.claude.com/docs/_llms/fr.md): An index, not a page.',
+    '- [Pricing](https://platform.claude.com/docs/en/pricing.md): A platform page.',
     '',
 ])
 

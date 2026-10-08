@@ -378,7 +378,7 @@ def test_a_malformed_changelog_is_a_setup_error(tmp_path, docs_dir):
         datetime.strptime('2026-10-01', '%B %d, %Y')
     with pytest.raises(state.SetupError) as err:
         run_check(repo, tmp_path / 'cache', docs_dir)
-    assert str(err.value) == f'changelog: changelog line 8: {cause.value}'
+    assert str(err.value) == f'changelog: line 8: {cause.value}'
 
 
 def test_the_report_is_keyed_by_the_baseline_hash_and_check_writes_only_its_cache_files(tmp_path, docs_dir):

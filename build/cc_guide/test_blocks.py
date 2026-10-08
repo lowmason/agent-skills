@@ -1,5 +1,7 @@
 '''Tests for blocks.py: fences, page splitting, keys, normalization, hashing
 and selection (drift spec R3).'''
+import hashlib
+
 import blocks
 from cc_fixtures import (ENV_PAGE, FENCE, FENCE4, PLATFORM_PAGE, TABLE_PAGE,  # noqa: F401
                          TILDE, isolated_home)
@@ -25,6 +27,14 @@ def test_fence_spans_carry_each_openers_info_string():
 
 def test_an_unclosed_fence_runs_to_the_end():
     assert blocks.fenced_lines(['a', TILDE, '## b', 'c']) == {1, 2, 3}
+
+
+def test_a_backtick_in_a_backtick_openers_info_string_opens_no_fence():
+    '''CommonMark: a backtick fence's info string holds no backtick, so such
+    a line is inline code. A tilde fence's info string may hold one. No
+    cached docs page or guide line had such an opener on 2026-10-08.'''
+    assert blocks.fenced_lines([FENCE + 'x`y', '# heading', FENCE]) == {2}
+    assert blocks.fenced_lines([TILDE + 'x`y', '# heading', TILDE]) == {0, 1, 2}
 
 
 def test_the_documentation_index_preamble_is_dropped():
@@ -106,11 +116,29 @@ def test_block_hash_is_sixteen_hex_of_the_normalized_text():
     assert blocks.block_hash('Use [it](/a) later.') != h
 
 
+def test_block_hash_is_sha256_over_the_normalized_lines_joined_by_newlines():
+    assert blocks.block_hash('a') == hashlib.sha256(b'a').hexdigest()[:16]
+    assert blocks.block_hash(' a \n\n b ') == hashlib.sha256(b'a\nb').hexdigest()[:16]
+
+
+def test_a_link_whose_title_wraps_to_the_next_line_keeps_its_target():
+    '''LINK_RE stops at a newline (plan 38, ruling 2), so code such as
+    f[k](\\nx,\\n) is never read as a link. A wrapped link title therefore
+    keeps its target too. None of the 133 cached docs pages had one on
+    2026-10-08, so this is recorded as needing no action (plan 39).'''
+    assert blocks.normalize('[a](/x\n"Title")') == '[a](/x\n"Title")'
+
+
 def test_key_parts_drop_link_targets_and_cap_at_sixty_characters():
     assert blocks.key_part('[Hooks](/docs/en/hooks)  page') == '[Hooks]() page'
     long = 'word ' * 20
     assert blocks.key_part(long) == long[:59] + '…'
     assert len(blocks.key_part(long)) == 60
+
+
+def test_a_key_part_of_sixty_characters_is_kept_and_one_of_sixty_one_is_cut():
+    assert blocks.key_part('x' * 60) == 'x' * 60
+    assert blocks.key_part('x' * 61) == 'x' * 59 + '…'
 
 
 def test_a_key_hash_is_sixteen_hex_of_sha256_over_the_key_and_names_map_back():
