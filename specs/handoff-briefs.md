@@ -65,9 +65,11 @@ When a derive-roadmap roadmap stages the work, the DAG becomes a loop with two
 more boundaries, and neither carries context today (owner, 2026-10-09):
 
 - **B3**, stage execution (subagent-driven-development | executing-plans) →
-  derive-roadmap's Resume. No process skill names a roadmap: `grep -n -i
+  derive-roadmap's Resume. No process step acts on a roadmap: `grep -rn -i
   roadmap` over writing-plans, subagent-driven-development, executing-plans
-  and finishing-a-development-branch finds nothing. The stage plan's header
+  and finishing-a-development-branch finds only
+  `skills/writing-plans/references/deferred-backlog.md:80-82`, which puts live
+  roadmap stages outside `/deferred`'s scope. The stage plan's header
   carries derive-roadmap's `Roadmap:` line, and the next step is left
   user-initiated (`skills/derive-roadmap/SKILL.md:112`).
 - **B4**, derive-roadmap's Resume → brainstorming | writing-plans for the next
@@ -676,11 +678,14 @@ for each runtime. The plan reminds the owner and does not run it.
 ### R7 — Roadmap loop (C5)
 
 Added by the 2026-10-09 amendment (owner, 2026-10-09). A **roadmap stage** is a
-plan whose header carries a line that begins
+plan whose header carries a line that reads, after any `> ` blockquote prefix,
 `Roadmap: specs/<name>-roadmap.md, Stage N`: derive-roadmap's Rollout stamp
 (`skills/derive-roadmap/references/roadmap-format.md:54-55`), copied by
 writing-plans from the stage spec's Rollout note or, under R7.4, from the B4
-handoff line. Every other plan completes as it does today.
+handoff line. Here and below, `N` is the roadmap's own stage label, which may
+be alphanumeric: the real header line is
+`> Roadmap: specs/bls-stats-merge-roadmap.md, Stage S2.2 — …` (alt-nfp-stats'
+plan 28). Every other plan completes as it does today.
 
 **R7.1 Completion step (writing-plans).** The Plan Completion Protocol gains
 step `3a`, after step 3 (deferred items), so that steps 4 and 5 keep their
@@ -702,6 +707,11 @@ entries is Resume's (R7.3).
   It cites and never restates spec text. When nothing differs it reads
   `None: shipped as the roadmap's Produces states.`, and for the last stage
   `None: last stage.`
+
+  Items deferred into a later stage are ordinary deferred items, appended by
+  step 3 like any plan's; the bullet only cites them. The roadmap's stages
+  themselves stay outside `/deferred`'s scope
+  (`skills/writing-plans/references/deferred-backlog.md:80-82`).
 - **Tick and stamp.** The stage's box in the roadmap is ticked, and under its
   entry go:
 
@@ -777,15 +787,20 @@ writing-plans are unchanged as B4's receivers (Decision 16).
 **R7.6 Gates and tests.**
 
 - R7.5 and R7.4's §4 sentence ship whatever the gates decide (Decision 17).
-- C5a gates R7.1–R7.2, and C5b gates R7.3–R7.4 (R5.1). Their fixtures are
-  hand-written throwaway git repositories, pre-registered with the other
-  prompts under `~/.cache/agent-skills/handoffs/red/`. Nothing is copied from
-  alt-nfp-stats.
+- C5a gates R7.1–R7.2, and C5b gates R7.3–R7.4 (R5.1). Each go/no-go reads
+  its positive arm only: the negative arm is checked at GREEN, where the new
+  text must not fire. Their fixtures are hand-written throwaway git
+  repositories, pre-registered with the other prompts under
+  `~/.cache/agent-skills/handoffs/red/`. Their stage plans use the real header
+  form (a `> ` prefix and an alphanumeric label such as `S2.2b`). Nothing is
+  copied from alt-nfp-stats.
 - Step `3a` joins R5.4's writing-plans campaign. The new text in
   subagent-driven-development, executing-plans and derive-roadmap is
   micro-tested under writing-skills against a no-guidance control, under the
   pressures "plan the next stage while you're here", "just merge and keep
   going", and sunk cost.
+- These micro-tests and R5.4's campaign run under R5.1's **Where** rule:
+  sessions launched from a plain terminal outside the repo (Channel 5).
 - C5 adds no script and no pytest.
 
 **R7.7 Sync points.**
@@ -948,9 +963,12 @@ Re-verified on 2026-10-09 against `main@15f49ab`, for the amendment:
 - **Pointers that moved, now corrected above:** the guide's TODO(owner) is at
   `:418` and its account-default line at `:429`; the NO-GO precedent is
   `specs/plans/completed/0-recommend-model-and-effort.md`.
-- **Roadmap surfaces.** `grep -n -i roadmap` finds nothing in writing-plans,
-  subagent-driven-development, executing-plans or
-  finishing-a-development-branch. derive-roadmap's go/no-go sentence is
+- **Roadmap surfaces.** `grep -rn -i roadmap` over writing-plans,
+  subagent-driven-development, executing-plans and
+  finishing-a-development-branch finds only
+  `writing-plans/references/deferred-backlog.md:80-82`, mirrored in
+  `commands/deferred.md:12-14`: live roadmap stages are outside `/deferred`'s
+  scope. derive-roadmap's go/no-go sentence is
   `SKILL.md:112-113`, its routing `:108-110` and `:122-123`, and its Rollout
   stamp `references/roadmap-format.md:54-55` (the COMPLETE stamp `:57-60`). The
   only other copy of the Rollout line is
