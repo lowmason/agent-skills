@@ -7,8 +7,8 @@ and R2.4's default recommendation. Designed
 section by section in one brainstorming session, from the plan-38 handoff of
 the same day. **Amended 2026-10-09:** a second brainstorming session added the
 roadmap loop (B3 and B4, component C5, R7, Decisions 12–18), approved section by
-section; the written amendment awaits the owner's review. Nothing here has been
-implemented. The evidence lives outside
+section; the owner then approved the written amendment (2026-10-09). Nothing
+here has been implemented. The evidence lives outside
 this public repo, in `~/.cache/agent-skills/handoff-brief/`: `scouts.md` (the
 repo's handoff surfaces, the authoring rules, per-runtime delivery),
 `example-plan38-prompt.md` (the worked example) and `example-plan38-review.txt`
