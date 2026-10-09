@@ -5,7 +5,10 @@ including the self-review's changes to the approved sections: R2.5 and R4.9
 moved so each component stands alone, behavioral gate criteria for C1 and C2,
 and R2.4's default recommendation. Designed
 section by section in one brainstorming session, from the plan-38 handoff of
-the same day. Nothing here has been implemented. The evidence lives outside
+the same day. **Amended 2026-10-09:** a second brainstorming session added the
+roadmap loop (B3 and B4, component C5, R7, Decisions 12–18), approved section by
+section; the written amendment awaits the owner's review. Nothing here has been
+implemented. The evidence lives outside
 this public repo, in `~/.cache/agent-skills/handoff-brief/`: `scouts.md` (the
 repo's handoff surfaces, the authoring rules, per-runtime delivery),
 `example-plan38-prompt.md` (the worked example) and `example-plan38-review.txt`
@@ -56,15 +59,37 @@ brief. It adds four components, each gated and shipped on its own:
 | C2 | Plan review and decision home | writing-plans: header, template, Execution Handoff |
 | C3 | Premise-free model line (audit-3-10-26 D14) | writing-plans `:166-184` |
 | C4 | Sender skill `prepare-handoff` | new original skill |
+| C5 | Roadmap loop (B3, B4) | writing-plans' completion protocol, subagent-driven-development, executing-plans, derive-roadmap |
 
-These skills are unchanged: brainstorming, subagent-driven-development,
-executing-plans, derive-roadmap and describe-critique-methodology. This work
-never touches `specs/claude-code-drift-automation.md`, any plan-38 file, or
+When a derive-roadmap roadmap stages the work, the DAG becomes a loop with two
+more boundaries, and neither carries context today (owner, 2026-10-09):
+
+- **B3**, stage execution (subagent-driven-development | executing-plans) →
+  derive-roadmap's Resume. No process skill names a roadmap: `grep -n -i
+  roadmap` over writing-plans, subagent-driven-development, executing-plans
+  and finishing-a-development-branch finds nothing. The stage plan's header
+  carries derive-roadmap's `Roadmap:` line, and the next step is left
+  user-initiated (`skills/derive-roadmap/SKILL.md:112`).
+- **B4**, derive-roadmap's Resume → brainstorming | writing-plans for the next
+  stage. The skill routes by bare name per the stage's ROUTING line
+  (`:108-110`, `:122-123`) and says nothing of what the next session needs.
+
+alt-nfp-stats worked both by hand: its stage plans grew a `## Handoff to later
+stages` section, each `Stage N: COMPLETE` stamp points at it, and Resume
+amended later stage entries with "Resolved at resume" notes
+(`alt-nfp-stats:specs/bls-stats-merge-roadmap.md:806-815`; that repo's plan 28).
+C5 makes that practice the skills' text.
+
+These skills are unchanged: brainstorming, describe-critique-methodology and
+finishing-a-development-branch. C5 edits subagent-driven-development,
+executing-plans and derive-roadmap (R7). This work never touches
+`specs/claude-code-drift-automation.md`, any plan-38 file, or
 `~/.claude/CLAUDE.md`.
 
 ## Decisions and alternatives
 
-All were settled with the owner on 2026-10-04.
+Decisions 1–11 were settled with the owner on 2026-10-04, and 12–18 on
+2026-10-09.
 
 1. **Trigger: sender-only context.** A brief is warranted when the sending
    session holds decisions, gates, defaults or constraints that are not in the
@@ -120,7 +145,7 @@ All were settled with the owner on 2026-10-04.
      decision is the riskiest kind.
 7. **RED baselines run at plan pre-flight, gated per component, each with a
    named fallback.** This is the shape of the NO-GO in
-   `specs/plans/completed/recommend-model-and-effort.md`.
+   `specs/plans/completed/0-recommend-model-and-effort.md`.
    - *Rejected:* measuring before the spec.
    - *Rejected:* per-task RED only.
 8. **Parity: one skill body for all three runtimes.**
@@ -136,7 +161,7 @@ All were settled with the owner on 2026-10-04.
 9. **D14: premise-free wording.** The handoff keeps the history-cost reason,
    drops every model-tier claim, and says to choose the execution model at
    launch. This closes audit-3-10-26 D14 without settling the guide's
-   TODO(owner) (`specs/guides/claude-code-customization-guide.md:411`), which
+   TODO(owner) (`specs/guides/claude-code-customization-guide.md:418`), which
    stays open.
    - *Rejected:* settling the default-model stance here.
    - *Rejected:* keeping the sentence verbatim and micro-testing text with a
@@ -158,6 +183,61 @@ All were settled with the owner on 2026-10-04.
     The rest is gated on behavior: C1's judgment step, C2's decision home, and
     C4 per failure, with its trigger (C4a) and its recipe (C4b) gated
     separately.
+12. **Roadmap trigger: the plan is a stage.** B3 fires only when the executed
+    plan's header carries derive-roadmap's `Roadmap:` line. Any other plan
+    finishes as it does today.
+    - *Rejected:* any live roadmap in `specs/`. It fires on every plan in such
+      a repo, stages or not.
+    - *Rejected:* a stage handoff, plus a bare mention of the roadmap for
+      plans that are not stages.
+13. **Roadmap context: committed carriers.** B3's context is the plan's
+    `## Handoff to later stages` and the roadmap's tick and stamp; B4's is the
+    next stage's roadmap entry, amended at Resume. Each handoff line names its
+    carrier, and only what cannot be committed goes to prepare-handoff. This is
+    Decision 1's sort applied to the loop, and alt-nfp-stats' practice.
+    - *Rejected:* a brief at every stage, which overrides Decision 1.
+    - *Rejected:* a pasteable context block in the final message, which no
+      later session can find.
+14. **B3 fires after merge only.** Resume re-validates later stages against
+    what shipped, so it waits until main holds the stage. A PR or a kept
+    branch defers the resume to its merge; a discarded branch hands off
+    nothing (R7.2).
+    - *Rejected:* after finishing, whatever the outcome.
+    - *Rejected:* at the end of the plan-completion protocol, before finishing,
+      where the next stage could start from a main that lacks this one.
+15. **derive-roadmap chains onward (B4).** Its Resume amends and commits the
+    next stage's entry, then hands off to that stage's ROUTING skill with the
+    line the receiver must carry. The owner first chose receiver-only edits to
+    derive-roadmap, then extended them to B4 in the same session.
+    - *Rejected:* no derive-roadmap edits.
+    - *Rejected:* receiver-only edits, which leave B4 routing by bare name.
+16. **B4's receivers stay unchanged.** brainstorming and writing-plans are not
+    edited. The B4 handoff line names the `Roadmap:` line to carry, which also
+    covers a stage routed to writing-plans with no stage spec. On the planning
+    side this keeps the in-artifact carrier of
+    `specs/completed/methodology-pipeline-skills.md`'s Req 10 (`:173-178`),
+    which the 2026-09-28 retirement of its deferred item confirmed
+    (`specs/deferred_items.md`, section 19-methodology-pipeline-skills).
+    - *Rejected:* a roadmap-stage line in brainstorming and writing-plans,
+      which reopens Req 10 and adds brainstorming to the edited set.
+    - *Rejected:* a prepare-handoff brief for every stage.
+17. **C5 is gated in two parts, its format ungated.** R7.5 and §4's stance
+    sentence clarify a format and ship whatever the gates decide. The
+    execution side (C5a, R7.1–R7.2) and Resume's side (C5b, R7.3–R7.4) are
+    gated separately on pre-flight baselines. R7.1 is the writing-plans
+    protocol edit that Req 10 rejected for v1, to be revisited "only if the
+    carrier proves fragile in the first real roadmap" (`:173-175`). C5a's gate
+    is that condition, measured: if the control already writes the Handoff
+    section and stamp from the header line alone, R7.1 does not ship.
+    - *Rejected:* one gate for all of C5.
+    - *Rejected:* shipping C5 ungated as a missing wire. alt-nfp-stats'
+      sessions ticked stages and wrote Handoff sections without guidance, so a
+      control may pass.
+18. **One spec, one plan.** C5 is a phase of this spec's plan, between C1–C3
+    and C4, so one pre-flight batch and one writing-plans campaign cover it.
+    The plan may still split at writing-plans' Scope Check.
+    - *Rejected:* a separate spec for the roadmap loop.
+    - *Rejected:* committing now to two plans.
 
 Also confirmed with the owner:
 
@@ -178,10 +258,17 @@ skills/prepare-handoff/
   references/fact-checker.md       new: R4.5
   references/cold-reader.md        new: R4.5
 skills/writing-plans/
-  SKILL.md                         modified: R1.2-R1.3, R2, R3, R4.9
+  SKILL.md                         modified: R1.2-R1.3, R2, R3, R4.9, R7.1
   scripts/entry_check.py           new: R1.1
   scripts/test_entry_check.py      new: R5.6
-NOTICE, CLAUDE.md, README.md       modified: R6.1-R6.3
+skills/subagent-driven-development/
+  SKILL.md                         modified: R7.2
+skills/executing-plans/
+  SKILL.md                         modified: R7.2
+skills/derive-roadmap/
+  SKILL.md                         modified: R7.3-R7.4, R4.9
+  references/roadmap-format.md     modified: R7.5
+NOTICE, CLAUDE.md, README.md       modified: R6.1-R6.3, R7.7
 specs/superpowers-drift-spec.md    modified: R6.5
 ```
 
@@ -327,7 +414,7 @@ handoff brief or prompt, instead of on the handoff moment.
 |---|---|
 | In the artifact | Nothing. The brief may point to it by section. |
 | Recomputable by the receiver's entry check (status, commits since, files naming the artifact, plan ids) | Nothing. |
-| Amendable now, with the owner approving the exact wording now | Amend and commit: a spec amendment tagged `(owner, YYYY-MM-DD)`, a `## Decisions` entry (the plan itself, if C2 did not ship), a deviation line in the subagent-driven-development ledger, or the derive-roadmap roadmap file. |
+| Amendable now, with the owner approving the exact wording now | Amend and commit: a spec amendment tagged `(owner, YYYY-MM-DD)`, a `## Decisions` entry (the plan itself, if C2 did not ship), a deviation line in the subagent-driven-development ledger, a stage plan's `## Handoff to later stages` (R7.1), or the derive-roadmap roadmap file. |
 | Everything else | The brief. |
 
 "Everything else" includes:
@@ -431,6 +518,11 @@ out of a public repo, goes to prepare-handoff. The sentence goes in the
 plan-review stage when C2 has shipped. writing-plans therefore never names the
 skill before it exists.
 
+The same phase adds one sentence to each of C5's two senders, where they have
+shipped (owner, 2026-10-09): to R7.1's step `3a`, and to derive-roadmap's
+Resume (R7.3). Context for a later stage that cannot be committed goes to
+prepare-handoff.
+
 ### R5 — Tests and gates
 
 **R5.1 Pre-flight.** The plan's first task runs the no-guidance baselines.
@@ -454,6 +546,8 @@ skill before it exists.
 | C2 | the owner gives decisions at plan review, one of them spec-level, and the session is then cleared | after `/clear`, the plan does not show which decisions were taken, by whom, when, or where each applies; or the spec-level one changes the spec without the owner approving its wording | R2.2–R2.5 are not added; R2.1 still ships |
 | C4a | positive: a session holds decisions taken after approval, with the wording to be approved at plan review; negative: a fresh B1 with nothing held | positive: "/clear, invoke writing-plans", with the decisions lost; negative: a brief written anyway | R5.2 |
 | C4b | the control is asked to write the plan-38 handoff | a restated artifact; a Reading presented as You said; unchecked claims; missing gates | R5.2 |
+| C5a | positive: a fixture roadmap stage plan, every task ticked and the final review resolved, with one deviation that changes a later stage's `Consumes`; the prompt is to complete the plan and merge locally. Negative: a plan that is not a stage, in a repo with a live roadmap | positive: no Handoff section, or one that drops the deviation; no stamp, or one that does not point at the section; a resume handoff before the merge, or none; the next stage planned or named. Negative: any roadmap handoff | R7.1–R7.2 are not added |
+| C5b | positive: "resume the roadmap" on a fixture whose stamped stage has a Handoff bullet that changes the next stage's `Consumes`, and that stage routes to writing-plans with no stage spec. Negative: a stamped stage whose Handoff section reads `None` | positive: the Handoff section unread; the stage entry unamended; the amendment uncommitted; no `Roadmap:` line passed to writing-plans; the stage planned or brainstormed in the same session. Negative: any stage entry amended | R7.3–R7.4 are not added |
 
 **R5.2 Outcomes.** C4 is gated per failure:
 
@@ -469,7 +563,7 @@ could pass them:
 
 - **C3**, whatever C2's gate decides. Its current text asserts a cheaper
   default, which is false wherever the default is Opus: the repo's
-  `.claude/settings.json` sets `"model": "opus"`, and the guide's `:422` gives
+  `.claude/settings.json` sets `"model": "opus"`, and the guide's `:429` gives
   Opus 5.5 as the account default on most plans. Its micro-test checks for no
   regression (R5.4).
 - **R1.3's id check**, with the script's `plan ids:` field. The `:22` rule
@@ -564,7 +658,8 @@ only the superpowers-drift spec's description of it.
 
 **R6.4** prepare-handoff names writing-plans, subagent-driven-development and
 derive-roadmap by bare skill name only, with no path into them, and
-writing-plans names prepare-handoff the same way. Neither `install.py`'s
+writing-plans and derive-roadmap (R4.9) name prepare-handoff the same way.
+C5's own mentions follow R7.7. Neither `install.py`'s
 `DEPENDENCIES` nor `SOFT_REFERENCES` changes, and the dependency-drift test
 confirms it.
 
@@ -578,13 +673,141 @@ confirms it.
 **R6.6** After the merge, the owner runs `install.py` to link prepare-handoff
 for each runtime. The plan reminds the owner and does not run it.
 
+### R7 — Roadmap loop (C5)
+
+Added by the 2026-10-09 amendment (owner, 2026-10-09). A **roadmap stage** is a
+plan whose header carries a line that begins
+`Roadmap: specs/<name>-roadmap.md, Stage N`: derive-roadmap's Rollout stamp
+(`skills/derive-roadmap/references/roadmap-format.md:54-55`), copied by
+writing-plans from the stage spec's Rollout note or, under R7.4, from the B4
+handoff line. Every other plan completes as it does today.
+
+**R7.1 Completion step (writing-plans).** The Plan Completion Protocol gains
+step `3a`, after step 3 (deferred items), so that steps 4 and 5 keep their
+numbers and it can cite this plan's deferrals. It runs only for a roadmap
+stage, and it matches the line's start, so the current tail ("…re-validate
+later stages against what shipped") triggers it. It reads that tail, for the
+completing session, as writing the Handoff section; editing later stage
+entries is Resume's (R7.3).
+
+- **Handoff section.** The plan gains `## Handoff to later stages`, with one
+  bullet for each later stage whose `Consumes` this stage feeds. Each bullet
+  gives:
+  - what that stage consumes, as built: names, paths, interfaces;
+  - where that differs from this stage's roadmap `Produces`;
+  - traps and refusals found in execution;
+  - items deferred into that stage, by their `specs/deferred_items.md`
+    section.
+
+  It cites and never restates spec text. When nothing differs it reads
+  `None: shipped as the roadmap's Produces states.`, and for the last stage
+  `None: last stage.`
+- **Tick and stamp.** The stage's box in the roadmap is ticked, and under its
+  entry go:
+
+  ```
+  > Stage N: COMPLETE (YYYY-MM-DD) — implemented by plan <id> (specs/plans/completed/<file>). Its Handoff section names what <stages> consume.
+  > Next: resume the roadmap.
+  ```
+
+  The second sentence is dropped when the section reads `None`. The path is
+  the plan's retired path, since step 5 moves the plan.
+- These edits land with the protocol's other commits. A merge or PR carries
+  them, and a discarded branch takes them with it.
+
+**R7.2 B3 handoff (subagent-driven-development, executing-plans).** After
+finishing-a-development-branch, a roadmap stage's session ends by outcome:
+
+| Outcome | Final message |
+|---|---|
+| Merged locally | "Stage N of `<roadmap>` is merged. Next: /clear (or a fresh session), then resume the roadmap: derive-roadmap on `<roadmap>`." Then it stops. |
+| PR opened | "Resume the roadmap once `<PR>` merges." |
+| Kept | "Stage N is complete on `<branch>` but unmerged. Resume the roadmap after it merges." |
+| Discarded | No handoff. The stamp went with the branch. |
+
+The session never plans, brainstorms or names the next stage, and it makes no
+model-tier claim (C3). subagent-driven-development carries this in its Plan
+Completion and Integration sections; executing-plans gains a Step 6.
+
+**R7.3 Resume (derive-roadmap §5).**
+
+- **Inputs.** For each stage stamped COMPLETE since the last resume: the stamp,
+  and its plan's `## Handoff to later stages`. A stamp still outranks the fuzzy
+  plan-name fallback.
+- **Amendments.** Every unticked stage is re-validated against what shipped,
+  as now. When a Handoff bullet changes a later stage's `Spec`, `Consumes`,
+  `Produces` or `Exit`, that entry is amended: it cites `plan <id>, Handoff`,
+  marks settled points `(Resolved at resume, YYYY-MM-DD)`, and never restates.
+- **Partition changes.** A stage added, split, dropped or reordered is not an
+  amendment. It goes to the owner as one batched question before anything
+  routes.
+- **Commit.** The amendments are committed on the current branch before the
+  handoff, so the fresh session reads them.
+
+**R7.4 B4 handoff (derive-roadmap §4 and §5).** After §4's approval of the
+partition, and after §5's reconcile:
+
+- the next stage is the first unticked one whose `Consumes` are all met;
+- the final message reads "Next: /clear (or a fresh session), then
+  `<ROUTING skill>` on Stage N of `specs/<name>-roadmap.md`", and names the
+  line the receiver carries:
+  - ROUTING brainstorming: the new stage spec's Rollout note carries the
+    `Roadmap:` line;
+  - ROUTING writing-plans: the plan header carries it, and the plan is scoped
+    to the stage entry's `Spec` refs. This covers a stage with no stage spec;
+- then it stops. Launching that session is the owner's go/no-go;
+- with every stage ticked, it goes to §6's completion review, as now.
+
+§4's sentence on the between-stages go/no-go
+(`skills/derive-roadmap/SKILL.md:112-113`) becomes: a completed stage's
+execution session recommends the resume (R7.2), and the owner decides by
+launching it; a stage is never volunteered outside a resume. brainstorming and
+writing-plans are unchanged as B4's receivers (Decision 16).
+
+**R7.5 Format (`roadmap-format.md`).**
+
+- The COMPLETE stamp sits under the stage's entry in the roadmap and takes
+  R7.1's optional Handoff clause.
+- A stage entry's fields may cite `plan <id>, Handoff` and carry
+  `(Resolved at resume, YYYY-MM-DD)` notes.
+- The `Roadmap:` line's wording does not change.
+  `skills/describe-critique-methodology/references/spec-synthesis.md:50-51`
+  holds an identical copy, and that skill stays unedited.
+
+**R7.6 Gates and tests.**
+
+- R7.5 and R7.4's §4 sentence ship whatever the gates decide (Decision 17).
+- C5a gates R7.1–R7.2, and C5b gates R7.3–R7.4 (R5.1). Their fixtures are
+  hand-written throwaway git repositories, pre-registered with the other
+  prompts under `~/.cache/agent-skills/handoffs/red/`. Nothing is copied from
+  alt-nfp-stats.
+- Step `3a` joins R5.4's writing-plans campaign. The new text in
+  subagent-driven-development, executing-plans and derive-roadmap is
+  micro-tested under writing-skills against a no-guidance control, under the
+  pressures "plan the next stage while you're here", "just merge and keep
+  going", and sunk cost.
+- C5 adds no script and no pytest.
+
+**R7.7 Sync points.**
+
+- `NOTICE` gains a superpowers change-list entry: writing-plans' step `3a` and
+  the B3 handoff in subagent-driven-development and executing-plans are
+  original local additions, since upstream has no roadmap. derive-roadmap is
+  an original, so its edits change nothing in `NOTICE`.
+- Every new cross-skill mention is a bare skill name, never a section of
+  another skill (not "derive-roadmap's §5"). Neither `DEPENDENCIES` nor
+  `SOFT_REFERENCES` changes, and the dependency-drift test confirms it.
+- C5 changes no CLAUDE.md line, README row or runtime adapter.
+
 ## Sequencing and execution constraints
 
-1. **Pre-flight:** R5.3's `/context` check and R5.1's baselines, then go or
-   no-go per component.
+1. **Pre-flight:** R5.3's `/context` check and R5.1's baselines, C5a's and
+   C5b's included, then go or no-go per component.
 2. **C1, C2 and C3 in writing-plans:** R1.1 red-first, the R5.4 campaign,
    R6.1's adoption and script entries, and R6.5.
-3. **C4:** R4, R5.5, R5.7, R6.1's originals entry, R6.2 and R6.3.
+3. **C5:** R7, gated per R7.6 (owner, 2026-10-09).
+4. **C4:** R4, R5.5, R5.7, R6.1's originals entry, R6.2, R6.3, and R4.9's
+   sentences.
 
 Constraints:
 
@@ -596,16 +819,23 @@ Constraints:
   - writing-plans names prepare-handoff only in C4's phase (R4.9), so it never
     names a skill that does not exist.
   - If C1's gate is a no-go, R4.3's second bin reads "the receiver's checks".
-- **Coordinate with plan 38.** It is in flight and rewrites the root CLAUDE.md
-  to under 200 lines, removing its count comments. This plan touches two of
-  those lines (R6.2). Whichever merges second rebases and re-checks the
-  200-line limit.
+  - C5a and C5b stand alone, and R7.5 ships whatever either decides. If C5a
+    is a no-go, Resume still reads whatever Handoff sections and stamps the
+    completing sessions write.
+- **Plan 38 has merged** (lowmason/agent-skills#21, `add1995`), so the root
+  CLAUDE.md is already under 200 lines and carries no count comments. R6.2's
+  two edits keep it under the `claude-md-size` limit (updated 2026-10-09; this
+  bullet first coordinated with plan 38 in flight).
 - **Check plan ids by hand.** This spec's own plan cannot use C1, which does
   not exist yet. Check every ref, and every worktree's `specs/plans/` with
-  untracked files included. Plan 38 holds 38.
+  untracked files included. On 2026-10-09 only `main` and `origin/main`
+  existed, in one worktree, the highest id was 39, and the next free id was 40.
 - **Worktree.** Execute in a worktree created with `git worktree add` under
   `.claude/worktrees/`, from the main checkout, never with `EnterWorktree`. Put
-  a branch check in the same command as every commit.
+  a branch check in the same command as every commit. C5 edits
+  subagent-driven-development and executing-plans, the skills that run the
+  plan, and `~/.claude/skills` resolves to the main checkout, so the
+  executing session keeps their old text until the merge.
 - **Test counts.** State test changes as +N deltas, never as absolute totals.
 - **Leave alone:** `specs/claude-code-drift-automation.md` and every plan-38
   file.
@@ -648,19 +878,36 @@ Constraints:
    that plan's line 40.
 4. **Probe.** The R5.5 planted-defect probe passes.
 5. **Smoke runs.** The R5.7 smoke runs pass.
-6. **Gates.** The R5.8 gates pass.
+6. **B3 on a fixture** (where C5a ships). On C5a's positive fixture, a GREEN
+   session writes a Handoff section that names the affected later stage, ticks
+   and stamps the roadmap, merges, and ends with the resume line. On the PR
+   outcome it defers the resume to the merge. A plan that is not a stage
+   produces no roadmap text.
+7. **B4 on a fixture** (where C5b ships). On C5b's positive fixture, a GREEN
+   Resume reads the section, amends the consuming stage's entry with a
+   citation and a `Resolved at resume` note, commits, and ends with the
+   writing-plans route naming the `Roadmap:` line to carry. A partition change
+   produces one batched question instead of a route.
+8. **Shape check.** The section and stamp R7.1 prescribes match alt-nfp-stats'
+   plan 28 `## Handoff to later stages` and its S2.2 stamp
+   (`alt-nfp-stats:specs/bls-stats-merge-roadmap.md:806-815`). The check is
+   read-only, and its result goes in the plan's notes.
+9. **Gates.** The R5.8 gates pass.
 
 ## Out of scope
 
 - Choosing which approved spec to plan next.
 - Upstream's executing-plans rebuild (Native mode), and superpowers-drift
   findings 4, 7, 9 and 10.
-- Edits to brainstorming, subagent-driven-development, executing-plans,
-  derive-roadmap or describe-critique-methodology.
+- Edits to brainstorming, describe-critique-methodology or
+  finishing-a-development-branch.
+- Rewording the `Roadmap:` line (R7.5).
+- Re-partitioning a roadmap, which stays the owner's (R7.3), and choosing
+  among stages beyond R7.4's dependency rule.
 - Delivery by SessionStart hook, `--append-system-prompt-file`, deep link,
   `/compact`, forks or desktop-app automation. `scouts.md`'s delivery section
   records why each falls short of a pasted user turn.
-- The guide's default-model stance (TODO(owner), `:411`).
+- The guide's default-model stance (TODO(owner), `:418`).
 
 ## Sources and verification notes
 
@@ -688,4 +935,32 @@ Re-verified on 2026-10-04 against `main@7137e5e`:
   installed under `~/.claude/skills`. The three deep-learning skills are in
   `skills/` but not installed there.
 - **A stale pointer.** audit-3-10-26's D14 cites the guide's TODO(owner) at
-  `:377`. It now sits at `:411`.
+  `:377`. It sat at `:411` on 2026-10-04.
+
+Re-verified on 2026-10-09 against `main@15f49ab`, for the amendment:
+
+- **Pointers that hold:** brainstorming `:37`, `:66`, `:134-143`; writing-plans
+  `:22`, `:160-192`, `:167`, `:169`, `:175-176`, `:183-184`;
+  subagent-driven-development `:128-140`; plan 35's `:40` and `:3336`;
+  superpowers-drift `:278`, `:435`, `:552`; `NOTICE:241-254` and `:273`;
+  audit-3-10-26 `:936`; plan 36's `:17`; the Codex guide's `:317`; CLAUDE.md
+  `:26` (the originals bullet) and the writing-plans suite comment.
+- **Pointers that moved, now corrected above:** the guide's TODO(owner) is at
+  `:418` and its account-default line at `:429`; the NO-GO precedent is
+  `specs/plans/completed/0-recommend-model-and-effort.md`.
+- **Roadmap surfaces.** `grep -n -i roadmap` finds nothing in writing-plans,
+  subagent-driven-development, executing-plans or
+  finishing-a-development-branch. derive-roadmap's go/no-go sentence is
+  `SKILL.md:112-113`, its routing `:108-110` and `:122-123`, and its Rollout
+  stamp `references/roadmap-format.md:54-55` (the COMPLETE stamp `:57-60`). The
+  only other copy of the Rollout line is
+  `skills/describe-critique-methodology/references/spec-synthesis.md:50-51`.
+- **alt-nfp-stats practice.** The COMPLETE stamps sit under each stage entry
+  of `specs/bls-stats-merge-roadmap.md`, not in the stage specs. Stage specs
+  written by brainstorming carry the `Roadmap:` line (for example
+  `specs/bls-stats-merge-s2.3.md`). Stage S2.2's entry (`:806-815`) cites
+  "plan 27, Handoff" and carries "Resolved at resume" notes. That repo's plan
+  28 has the `## Handoff to later stages` section that its stamp points at.
+- **Refs.** `git for-each-ref` lists `refs/heads/main`,
+  `refs/remotes/origin/HEAD` and `refs/remotes/origin/main`; there is one
+  worktree, and the highest plan id is 39.
