@@ -302,7 +302,8 @@ below; amending later stages' entries is derive-roadmap's job, at the resume.
   that differs from this stage's roadmap `Produces`; traps and refusals found
   in execution; and items deferred into that stage, by their
   `specs/deferred_items.md` section. Cite the spec; never restate it. When
-  nothing differs, the section reads
+  nothing differs and no trap, refusal or deferred item applies to a later
+  stage, the section reads
   `None: shipped as the roadmap's Produces states.`; for the last stage,
   `None: last stage.`
 - **Tick and stamp.** Tick the stage's box in the roadmap, and put this stamp
