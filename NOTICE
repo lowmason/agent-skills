@@ -368,6 +368,10 @@ Changes from upstream:
     section, the roadmap's stage is ticked and stamped, and the session
     ends by recommending that the roadmap be resumed. These are original
     local additions: upstream has no roadmap.
+  - writing-plans names prepare-handoff, an original skill (above), as
+    the home for a decision the plan cannot hold, such as one that must
+    stay out of a public repository; and, where step 3a shipped, for
+    context about a later roadmap stage that cannot be committed.
 
     brainstorming/
     dispatching-parallel-agents/

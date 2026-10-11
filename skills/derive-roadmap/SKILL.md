@@ -151,7 +151,8 @@ what actually shipped:
   approve-or-amend. Name no stage's routing in it; route only after the
   answer.
 - **Commit** the amendments on the current branch before the handoff, so the
-  fresh session reads them.
+  fresh session reads them. Context for a later stage that cannot be
+  committed goes to prepare-handoff.
 
 Then hand off the next stage (§4). With every stage ticked, go to §6.
 

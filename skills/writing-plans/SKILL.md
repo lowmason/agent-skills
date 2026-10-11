@@ -203,6 +203,8 @@ Apply each decision your human partner takes, and log it in `## Decisions`:
   for the spec, each edit tagged `(owner, plan <id>, YYYY-MM-DD)`, the spec's
   status line untouched. Show your partner the exact wording; it is approved
   at this review.
+- **Private** (it cannot be written into the plan, such as a decision that
+  must stay out of a public repository): it goes to prepare-handoff instead.
 
 Re-run Self-Review on whatever changed, then move to the execution choice once
 your partner approves the plan.
@@ -324,7 +326,8 @@ below; amending later stages' entries is derive-roadmap's job, at the resume.
   > Next: resume the roadmap.
   ```
 
-These edits land with the protocol's other commits.
+These edits land with the protocol's other commits. Context for a later stage
+that cannot be committed goes to prepare-handoff.
 
 **4. Backlog triage.** Report backlog health, then bring the triage to your
 human partner rather than waiting to be asked for it. Run from the repo root:
