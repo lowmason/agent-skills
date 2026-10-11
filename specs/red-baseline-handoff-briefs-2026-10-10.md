@@ -12,7 +12,7 @@
 Pre-registered in `~/.cache/agent-skills/handoffs/red/PROTOCOL.md`, freeze `42a9d20328a26624afb084fcfc68ae70645065bf93be4b56ac91741a20996b08`, before any rep ran.
 - Your human partner launched every rep from a plain terminal, as a `claude -p` session (2.1.296; the plan assumed 2.1.295) with `--setting-sources project,local --strict-mcp-config`.
 - Each rep loaded kit k-a (the skill text at `b376f7b`) through `--add-dir`, in its own fixture repo.
-- Isolation gap, found on 2026-10-11 in GREEN Phase 1: the owner's user-level `CLAUDE.md` and `rules/aws-agent-toolkit.md` loaded into every rep (pilot, RED and GREEN), despite `--setting-sources project,local`, which the planning probe had found to exclude them. The personal skill listing and the memory index did not load. RED and GREEN share the condition, which also matches the owner's real sessions. Two consequences: the C1 and C4a NO-GO results may owe part of the baseline's good behavior to those instructions, and the C3-d remarks about running execution on Sonnet come from that file's model-routing section, not from writing-plans.
+- Isolation gap, found on 2026-10-11 in GREEN Phase 1: the owner's user-level `CLAUDE.md` and `rules/aws-agent-toolkit.md` loaded into every rep (pilot, RED and GREEN), despite `--setting-sources project,local`, which the planning probe expected to exclude them. The personal skill listing and the memory index did not load. RED and GREEN share the condition, which also matches the owner's real sessions. Two consequences: the C1 and C4a NO-GO results may owe part of the baseline's good behavior to those instructions, and the C3-d remarks about running execution on Sonnet appear to come from that file's model-routing section (inferred from the wording), not from writing-plans.
 - Models: opus at xhigh effort for the planning arms, sonnet at medium effort for the stage-execution arms.
 - A failure counts as observed at 2 or more of 5 valid reps.
 - Voids: 7 of the 49 RED reps (r010–r058).
@@ -82,7 +82,7 @@ C1 was NO-GO, so no `c1`, `p1` or `v3` arm ran.
 - Voids: 3 of 18 reps (r062 `c2`; r064 and r067 `p2`), each on the path audit: two read the user-level settings file, and one subagent touched the reps parent directory's `.gitignore`. Replaced by r074–r076. Cost: $70.20 for the phase.
 - C3, on `c2`: C3-a 5, C3-b 4, C3-c 5, C3-d 4 of 5, against RED's 5, 5, 5, 1. `tally.py` reports C3 FAIL, because C3-d needs 5 of 5.
   - r059 C3-b: the handoff offers only subagent-driven execution, not the inline option.
-  - r074 C3-d: states that execution runs on Sonnet because of the user's settings. r061 said nearly the same and was scored PASS, so the verdict rests on one borderline call.
+  - r074 C3-d: states that execution runs on Sonnet because of the user's settings. r060 and r061 said nearly the same and were scored PASS, so the verdict rests on one borderline call.
   - Owner override (2026-10-11): C3 ships as written — the C3-d remark comes from the owner's own model-routing instructions loading into the rep, which no edit to the skill can remove; no REFACTOR round was run.
 - REFACTOR: none.
 
