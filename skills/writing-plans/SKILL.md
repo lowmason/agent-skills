@@ -22,6 +22,17 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 **Save plans to:** `specs/plans/<id>-<spec-name>.md` — `<id>` is the `next free:` id that `uv run --no-project --python 3.13 python <this-skill-dir>/scripts/entry_check.py` prints under `plan ids:`, run from the repo root. It reads every branch, remote-tracking ref and worktree, untracked plans included, because ids are allocated per branch and collide. A collision it reports is your human partner's call. `<spec-name>` matches the spec the plan implements. When the plan is fully executed, run the Plan Completion Protocol (below).
 - (User preferences for plan location override this default)
 
+## Starting From a Handoff Brief
+
+When the session began from a handoff brief:
+
+- Read the artifact at or after the brief's earliest commit.
+- Log each of the brief's decisions in `## Decisions` with source `brief`,
+  applied where its Home says.
+- Settle each default the brief flags in the plan, and list it for your human
+  partner's review.
+- Honor the brief's owner gates and its leave-alone list.
+
 ## Scope Check
 
 If the spec covers multiple independent subsystems, it should have been broken into sub-project specs during design. If it wasn't, suggest breaking this into separate plans — one per subsystem. Each plan should produce working, testable software on its own.
@@ -78,6 +89,12 @@ independently testable deliverable.
 naming and copy rules, platform requirements — one line each, with exact
 values copied verbatim from the spec. Every task's requirements implicitly
 include this section.]
+
+## Decisions
+
+[One line per decision your human partner took after the spec was approved:
+`- **D<n>** (owner, <brief | plan review>, YYYY-MM-DD): <decision>. Applied in: <Task N | Global Constraints | Task N (spec amendment)>.`
+An empty section reads `None.`]
 
 ---
 ```
@@ -165,6 +182,26 @@ After saving the plan, hand off to execution. The plan file is a complete,
 zero-context handoff — you wrote it assuming the engineer knows nothing about
 this codebase — so execution does not need this planning session's history.
 
+### 1. Plan review
+
+**"Plan complete and saved to `specs/plans/<id>-<spec-name>.md`. Please review
+it before anything runs."**
+
+Apply each decision your human partner takes, and log it in `## Decisions`:
+
+- **Plan-level** (it changes tasks or Global Constraints): edit them, and log
+  where it applies.
+- **Spec-level** (it changes what the spec requires): never edit the spec
+  while planning. Add an amendment task: exact replace-this-with-that blocks
+  for the spec, each edit tagged `(owner, plan <id>, YYYY-MM-DD)`, the spec's
+  status line untouched. Show your partner the exact wording; it is approved
+  at this review.
+
+Re-run Self-Review on whatever changed, then move to the execution choice once
+your partner approves the plan.
+
+### 2. Execution choice
+
 **Recommend a fresh session for execution.** A planning session accumulates
 context; carrying it into execution makes every execution turn re-read that
 planning history at cache-read cost. Starting execution fresh drops it. Choose
@@ -172,18 +209,20 @@ the execution model when you launch it: `claude --model <m>`, `codex -m <m>`
 or `gemini -m <m>`. `/clear` keeps the current model, and `/model` saves a new
 default for later sessions.
 
-**"Plan complete and saved to `specs/plans/<id>-<spec-name>.md`.**
+Recommend one option, with a reason drawn from this plan: Subagent-Driven by
+default, Inline when the tasks are tightly coupled.
 
-**Recommended: `/clear` (or open a new session) and execute against the saved
+**"Recommended: `/clear` (or open a new session) and execute against the saved
 plan** — a fresh session drops this planning conversation. Two execution
 options, either session:
 
-**1. Subagent-Driven (recommended)** - a fresh subagent per task, two-stage review between tasks
+**1. Subagent-Driven** - a fresh subagent per task, two-stage review between tasks
 
 **2. Inline Execution** - I execute the tasks myself, in plan order (executing-plans)
 
-Continuing in THIS session works too, but costs more on a long plan: every
-execution turn re-reads the full planning history. **Which approach?"**
+I recommend <1 or 2>, because <a reason drawn from this plan>. Continuing in
+THIS session works too, but costs more on a long plan: every execution turn
+re-reads the full planning history. **Which approach?"**
 
 **If Subagent-Driven chosen:**
 - **REQUIRED SUB-SKILL:** Use subagent-driven-development

@@ -346,9 +346,20 @@ Changes from upstream:
     the next free one. Both are original works by Lowell Mason under
     the same MIT terms, as deferred_stats.py is (above). The skill's
     id rule now takes the next free id from that report.
-  - One change was later adopted FROM upstream v6.3.0 (#2086), read at
-    upstream 8ca22db: the plan header's `**Spec:**` line, placed after
-    Tech Stack, naming the spec the plan implements or `none`.
+  - Two changes were later adopted FROM upstream, both read at upstream
+    8ca22db: the plan header's `**Spec:**` line (v6.3.0, #2086), placed
+    after Tech Stack, naming the spec the plan implements or `none`; and
+    the partner plan-review stage of writing-plans' Execution Handoff
+    (v6.4.1, #2258 and #2318), which asks the partner to review the saved
+    plan before the execution choice, then recommends one option with a
+    reason drawn from the plan. Three parts diverge deliberately.
+    Decisions taken at review are logged in a local `## Decisions`
+    section of the plan, saying who took each, when, and where it
+    applies, beside a local section for starting from a handoff brief.
+    A decision that changes the spec becomes a tagged amendment task,
+    never an edit made during planning. And there is no Native mode:
+    this repo's executing-plans is not ported (finding 11 of
+    specs/superpowers-drift-spec.md).
 
     brainstorming/
     dispatching-parallel-agents/

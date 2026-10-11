@@ -434,7 +434,9 @@ What upstream's version does:
 
 The writing-plans handoff (#2258, #2318) now asks the partner to review the
 saved plan before anything runs. It offers Subagent-driven and Native, says what
-each costs, and recommends one with a reason drawn from the plan.
+each costs, and recommends one with a reason drawn from the plan. Plan 40
+adopted this handoff half without Native mode (`specs/handoff-briefs.md`
+R2.2–R2.4); the executing-plans port below stays open.
 
 Ours (`executing-plans/SKILL.md`, 122 lines) has no workspace or ledger.
 Progress lives in todos, so a `/clear` or compaction mid-plan loses its place —
@@ -554,7 +556,7 @@ transferable idea.
 Under this repo's proportional-process rule:
 
 - **Done:** findings 1, 2, 5, and 6, through plan 22 (2026-09-03); finding 8's
-  `Spec:` pointer, through plan 40.
+  `Spec:` pointer and finding 11's handoff half, through plan 40.
 - **Fix directly, no spec:** two items, both small, mechanical, and verified
   by probe.
   - Finding 8's `find-polluter.sh`: the three-part script fix, a deterministic
@@ -571,8 +573,9 @@ Under this repo's proportional-process rule:
   together. Unchanged in kind: a discipline skill that touches the specs
   lifecycle, micro-tested before deployment.
 - **Decide first:** finding 7. Two items hang on it:
-  - Finding 11, the executing-plans port, which merits its own spec once 7 is
-    settled. Finding 13's TDD wording travels with it, micro-tested.
+  - Finding 11's executing-plans port, which merits its own spec once 7 is
+    settled; its handoff half was adopted by plan 40. Finding 13's TDD wording
+    travels with it, micro-tested.
   - Finding 14, which stays declined unless 7 goes to rulings.
 - **Prospective only:** finding 3. Adopt the falsifiability material if you
   want the guidance; do not take the compression without clearing upstream's
