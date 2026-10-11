@@ -117,7 +117,8 @@ volunteer a stage outside a resume.
 
 - The next stage is the first unticked one whose `Consumes` are all met.
 - End with "Next: /clear (or a fresh session), then <ROUTING skill> on Stage N
-  of `specs/<name>-roadmap.md`", and name the line the receiver carries:
+  of `specs/<name>-roadmap.md`", and quote the line the receiver carries,
+  `Roadmap: specs/<name>-roadmap.md, Stage N`:
   - ROUTING brainstorming: the new stage spec's Rollout note carries the
     `Roadmap:` line.
   - ROUTING writing-plans: the plan header carries it, and the plan is scoped
@@ -138,6 +139,9 @@ what actually shipped:
 - **Amend.** When a Handoff bullet changes a later stage's `Spec`, `Consumes`,
   `Produces` or `Exit`, amend that entry: cite `plan <id>, Handoff`, mark each
   settled point `(Resolved at resume, YYYY-MM-DD)`, and never restate.
+  Amend only from Handoff bullets: a section reading `None`, or a plan with
+  none, changes no later entry; a shipped difference no bullet names goes to
+  the Ask.
 - **Ask.** A stage added, split, dropped or reordered is not an amendment. Put
   every such change to your human partner as one batched question, before
   anything routes.
