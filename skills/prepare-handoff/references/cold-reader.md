@@ -20,10 +20,14 @@ Make overreach its own pass, one decision at a time. It does not stall you:
 you would act on the decision as if the owner had said all of it. Take the
 owner's words for the decision (its "You said" field, or its headline when the
 brief keeps none apart) and set them beside what the decision asks you to do:
-its steps, its done-when conditions, its scope. Report each step, condition or
-scope that the owner's words do not carry but the brief states as the owner's
-decision, as overreach, or as an ambiguity when the owner may well have meant
-it.
+its steps, its done-when conditions, its scope. Go through the decision's own
+text sentence by sentence, not only the lines elsewhere in the brief that
+mention it, and do not stop at the first hit: a decision can overreach in
+several places. For its done-when, ask where the owner's words would let you
+stop, and whether the brief makes you do more before you may call it finished.
+Report each step, condition or scope that the owner's words do not carry but
+the brief states as the owner's decision, as overreach, or as an ambiguity when
+the owner may well have meant it.
 
 Report each as one block, numbered from 0:
 
