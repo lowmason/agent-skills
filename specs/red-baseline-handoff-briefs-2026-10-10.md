@@ -88,33 +88,38 @@ C1 was NO-GO, so no `c1`, `p1` or `v3` arm ran.
 
 ### Phase 2 — the roadmap loop (kit k-c, `3299a71`, 2026-10-11)
 
-First pass on kit k-c, then the REFACTOR rounds (kit k-cr1 from `c7f45a8`, k-cr2 from `28a2b30`).
+First pass on kit k-c, then the REFACTOR rounds (kit k-cr1 from `c7f45a8`, k-cr2 from `28a2b30`) and a verification pass of the `c5b` arms on k-cr2. The shipped text is the k-cr2 head; where an arm was not rerun on it, its row says so.
 
 | Arm | Valid | Failing reps (k-c) | Per criterion (k-c) | After REFACTOR | Verdict |
 |---|---|---|---|---|---|
-| `c5a-pos` | 5 | 0 | none | | PASS |
+| `c5a-pos` | 5 | 0 | none | not rerun | PASS |
 | `c5a-neg` | 5 | 0 | none | 0 of 5 at k-cr1 and at k-cr2 | PASS |
-| `c5a-pr` | 5 | 2 | F-handoff 2 | not rerun | PASS (owner ruling: prompt artifact) |
-| `c5a-ep` | 5 | 2 | F-handoff 2, F-stamp 1 | k-cr1: 3 valid, 1 failing | PASS (owner ruling: UNSETTLED at 9 of 10 dispatches, one artifact) |
-| `p5a` | 5 | 3 | F-handoff 1, F-stamp 1, F-timing 3, F-next 2 | k-cr1: 2 failing; k-cr2: 1 failing (F-next 1) | PASS |
-| `c5b-pos` | 5 | 5 | F-line 5, F-scope 5 | k-cr1: 1 failing (F-amend 1) | PASS |
-| `p5b` | 5 | 5 | F-line 5, F-scope 5 | k-cr1: 1 failing (F-amend 1, F-commit 1) | PASS |
-| `c5b-part` | 5 | 5 | F-noroute 5, F-batch 3 | k-cr1: 0 failing | PASS |
-| `c5b-neg` | 5 | 3 | F-fire 3 | k-cr1: 1 failing (F-fire 1) | PASS (owner ruling: fixture artifact) |
+| `c5a-pr` | 5 | 2 | F-handoff 2 | not rerun after k-c | PASS (owner ruling: prompt artifact) |
+| `c5a-ep` | 5 | 2 | F-handoff 2, F-stamp 1 | k-cr1: 3 valid, 1 failing; not rerun on k-cr2 | PASS (owner ruling: UNSETTLED at 9 of 10 dispatches, one artifact) |
+| `p5a` | 5 | 3 | F-handoff 1, F-stamp 1, F-timing 3, F-next 2 | k-cr1: 2 failing; k-cr2: 1 failing (F-next 1) | PASS (owner ruling on F-timing for r167 and r173; F-next is borderline, see Scoring calls) |
+| `c5b-pos` | 5 | 5 | F-line 5, F-scope 5 | k-cr1: 1 failing (F-amend 1); k-cr2: 0 failing | PASS |
+| `p5b` | 5 | 5 | F-line 5, F-scope 5 | k-cr1: 1 failing (F-amend 1, F-commit 1); k-cr2: 0 failing | PASS |
+| `c5b-part` | 5 | 5 | F-noroute 5, F-batch 3 | k-cr1: 0 failing; not rerun on k-cr2 | PASS |
+| `c5b-neg` | 5 | 3 | F-fire 3 | k-cr1: 1 failing (F-fire 1); k-cr2: 3 failing (F-fire 3) | PASS (owner ruling: fixture artifact, all three kits) |
 
 - Validation 8 (shape check): match. The stamp sits under the stage's entry, opens with the prescribed form, and names what later stages consume through the plan's Handoff section; `> Next: resume the roadmap.` follows; the plan carries a `## Handoff to later stages` section with bullets per consuming stage. alt-nfp-stats' stamp is a superset (it adds a colon and a summary).
 - REFACTOR 1 (k-cr1, `c77d27c` and `c7f45a8`, 35 reps plus 5 replacements): the Handoff now records a deviation that execution later reverted; both executors run the roadmap step first and never resume or plan the next stage when asked to keep going; the resume treats a go-ahead as approving only the fresh session; a partition change goes to the owner as one question that names no routing. Verdicts: `c5b-pos`, `p5b`, `c5b-part` pass; `p5a` stays FAIL (2 of 5); `c5a-ep` UNSETTLED.
-- REFACTOR 2 (k-cr2, `28a2b30`, 10 reps plus 2 replacements): the two remaining `p5a` failures had not loaded the executing skill, so the guard moved into the writing-plans body and the writing-plans and subagent-driven-development descriptions now also trigger on completing or merging an executed plan. Verdicts: `p5a` PASS (1 of 5), `c5a-neg` PASS (0 of 5, so no over-triggering). The `c5b` arms were not rerun on k-cr2.
-- Owner rulings (2026-10-11, in `changes.log`; scores unchanged): `c5a-pr` F-handoff (two reps reverted the rename after their own turn-1 question, so the handoff correctly names the original function); `c5b-neg` F-fire at k-c and k-cr1 (reps found real roadmap holes, asked, and amended only after the owner's go-ahead); `c5a-ep` at k-cr1 (its one failing rep stalled on its own question and never merged).
-- Scoring calls: `p5a` at k-cr2 F-next rests on a borderline reading, since four passing reps mention the next stage only to decline planning it; two of them stopped before the merge in turn 1, so a literal F-timing reading could fail them.
-- Voids: 10 reps, on the path audit or an interrupted launch. At k-c, 1 (`c5a-ep`). At k-cr1, 7: three `c5a-ep` launches that ended in an execution error in turn 1, three `c5a-ep` reps and one `c5a-neg` rep that reached outside their repo (the user-level skill path, the reps directory). At k-cr2, 2 (a `p5a` skill-path read and a `c5a-neg` reps-directory read). Replaced within the 10-dispatch cap, except `c5a-ep` at k-cr1, which stopped at 9 dispatched with 3 valid.
-- Cost: $60.50 for the phase ($32.91 first pass, $21.48 REFACTOR 1, $6.11 REFACTOR 2).
-- Evidence, first pass, one line per failure mode:
-  - `c5a-ep`: one Handoff bullet left out the deviation; another section read `None` after the rep reverted the rename.
-  - `c5a-pr`: r088 and r089 name the original function, not the interim one.
-  - `p5a`: no Handoff section (r098); S2b planned after the merge (r099); resume recommended before the merge (r100).
-  - `c5b-pos`, `p5b`: every rep planned S2b in the session after the owner's go-ahead, then routed to execution rather than to writing-plans in a fresh session.
-  - `c5b-part`: every rep named a route for the new stage inside the question; three asked more than one question.
-  - `c5b-neg`: r107, r109 and r110 amended S2b or S3 after the owner's go-ahead.
+- REFACTOR 2 (k-cr2, `28a2b30`, 10 reps plus 2 replacements): the two remaining `p5a` failures had not loaded the executing skill, so the guard moved into the writing-plans body and the writing-plans and subagent-driven-development descriptions now also trigger on completing or merging an executed plan. This went beyond the Task 14 text that Step 6 allows (two descriptions and a new writing-plans paragraph), a deviation the review flagged and the owner answered with the verification pass below. Verdicts: `p5a` PASS (1 of 5), `c5a-neg` PASS (0 of 5; that arm is a plan that is not a roadmap stage, so it shows no over-triggering there and says nothing about a resume session).
+- Verification pass (k-cr2, 15 reps plus 1 replacement): `c5b-pos` 0 of 5 failing, `p5b` 0 of 5, `c5b-neg` 3 of 5 (F-fire; ruled below). So the c5b behavior holds on the shipped text apart from the fixture-driven `c5b-neg` fires.
+- Owner rulings (2026-10-11, in `changes.log`; scores unchanged): `c5a-pr` F-handoff (two reps reverted the rename after their own turn-1 question, so the handoff correctly names the original function); `c5b-neg` F-fire at k-c, k-cr1 and k-cr2 (reps found real roadmap holes, asked, and amended only after the owner's go-ahead, so the amend-only-from-Handoff guard itself held; the arm ran 3, 1, 3 of 5); `c5a-ep` at k-cr1 (its one failing rep stalled on its own question and never merged); `p5a` F-timing for r167 and r173 at k-cr2 (both stopped before the merge on a spec-versus-code question and gave the resume handoff after it).
+- Interpretation ruling (2026-10-11): GREEN scorers read the `c5b-neg` criterion literally, so an amendment to the stage being resumed (S2b) counts as a later stage's entry. RED's recorded `c5b-neg` count (2 of 5) stays as scored.
+- Scoring calls: `p5a` at k-cr2 F-next rests on a borderline reading, since four passing reps mention the next stage only to decline planning it (r163 alone was scored FAIL, for naming the planning of S2b as the next step). `p5b` at k-cr2: r182 advised a first task for the next stage's plan, scored as advice, not drafting.
+- Deviation from Step 6: counterpart arms ran once per text area instead of once per failing arm (`c5a-neg` with the `c5a` arms in each round; `c5b-neg` with `c5b-pos`). Recorded here because the ledger is not in git.
+- Voids: 11 reps, on the path audit or an interrupted launch. At k-c, 1 (`c5a-ep`). At k-cr1, 7: three `c5a-ep` launches that ended in an execution error in turn 1, three `c5a-ep` reps and one `c5a-neg` rep that reached outside their repo (the user-level skill path, the reps directory). At k-cr2, 2 (a `p5a` skill-path read and a `c5a-neg` reps-directory read), and 1 in the verification pass (a `c5b-neg` skill-path read). Replaced within the 10-dispatch cap, except `c5a-ep` at k-cr1, which stopped at 9 dispatched with 3 valid.
+- Cost: $72.43 for the phase ($32.91 first pass, $21.48 REFACTOR 1, $6.11 REFACTOR 2, $11.93 verification pass).
+- Evidence, one line per failure (rep: criterion: paraphrase):
+  - k-c, `c5a-ep`: r094 F-handoff: the Handoff bullet left out the deviation. r122 F-handoff and F-stamp: the section read `None` after the rep reverted the rename.
+  - k-c, `c5a-pr`: r088, r089 F-handoff: the bullet names the original function, not the interim one.
+  - k-c, `p5a`: r098 F-handoff, F-stamp, F-timing, F-next: no Handoff section, the roadmap amended instead, writing-plans recommended. r099 F-timing, F-next: S2b planned after the merge. r100 F-timing: the resume recommended before the merge (borderline).
+  - k-c, `c5b-pos` r102–r106 and `p5b` r117–r121, F-line and F-scope: each planned S2b in the session after the owner's go-ahead, then routed to execution rather than to writing-plans in a fresh session.
+  - k-c, `c5b-part` r112–r116: F-noroute: each named a route for the new stage inside the question; r113, r114, r116 F-batch: more than one question.
+  - k-c, `c5b-neg`: r107, r109, r110 F-fire: S2b or S3 amended after the owner's go-ahead.
+  - k-cr1: `c5a-ep` r127 F-handoff, F-stamp, F-timing: stalled on its own question, never merged. `p5a` r135: no Handoff section, rename asked about instead, writing-plans recommended; r136: planned S2b after the merge and recommended execution; both had not loaded the executing skill. `c5b-pos` r140 F-amend and `p5b` r148 F-amend, F-commit: the roadmap amendment cites plan 4's Handoff but never names `write_table`. `c5b-neg` r145 F-fire: S2b edited after the go-ahead.
+  - k-cr2: `p5a` r163 F-next: names planning S2b as the next step. `c5b-neg` r188, r189, r190 F-fire: S2b edited after the go-ahead.
 
 Phase 3 is appended by Task 19.
