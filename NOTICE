@@ -97,6 +97,7 @@ The following skills are original works by Lowell Mason, MIT licensed:
     deep-learning/
     evaluate-deep-learning/
     optimize-jax/
+    prepare-handoff/
 
 deep-learning/, evaluate-deep-learning/, and optimize-jax/ are original
 works by Lowell Mason, MIT licensed. Their training, evaluation and JAX
