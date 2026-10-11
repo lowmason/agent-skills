@@ -301,9 +301,11 @@ below; amending later stages' entries is derive-roadmap's job, at the resume.
   gives what that stage consumes as built (names, paths, interfaces); where
   that differs from this stage's roadmap `Produces`; traps and refusals found
   in execution; and items deferred into that stage, by their
-  `specs/deferred_items.md` section. Cite the spec; never restate it. When
-  nothing differs and no trap, refusal or deferred item applies to a later
-  stage, the section reads
+  `specs/deferred_items.md` section. Take differences from the plan's
+  deviation notes and ledger, not the final code alone: one that execution
+  reverted still gets its bullet, saying the interim name is gone. Cite the
+  spec; never restate it. When nothing differs and no trap, refusal or
+  deferred item applies to a later stage, the section reads
   `None: shipped as the roadmap's Produces states.`; for the last stage,
   `None: last stage.`
 - **Tick and stamp.** Tick the stage's box in the roadmap, and put this stamp

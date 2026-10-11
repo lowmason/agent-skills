@@ -97,7 +97,8 @@ finishing-a-development-branch:
 | Kept | "Stage N is complete on `<branch>` but unmerged. Resume the roadmap after it merges." |
 | Discarded | No handoff: the stamp went with the branch. |
 
-Never plan, brainstorm or name the next stage, and make no model-tier claim.
+Even when asked to keep going, never resume the roadmap here or plan,
+brainstorm or name the next stage, and make no model-tier claim.
 Any other plan ends at Step 5.
 
 ## When to Stop and Ask for Help
