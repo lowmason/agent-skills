@@ -109,12 +109,13 @@ Present the stage partition for approval before stage 1. On approval, hand
 off the first stage per its ROUTING line, by bare skill name, in a fresh
 session — then STOP.
 
-The between-stages go/no-go is user-initiated via "resume the roadmap". Do
-not volunteer the next stage.
+Between stages, the completed stage's execution session recommends resuming
+the roadmap, and your human partner decides by launching the resume. Never
+volunteer a stage outside a resume.
 
 ## 5. Resume (reconcile)
 
-On re-entry, for each stage: the stage stamp in its spec's Rollout note
+On re-entry, for each stage: the stage stamp under its roadmap entry
 ("Stage N: COMPLETE (date) — implemented by plan <id> (path)") is
 authoritative. A fuzzy match against `specs/plans/completed/` is FALLBACK
 only — never let it overrule a stamp.
