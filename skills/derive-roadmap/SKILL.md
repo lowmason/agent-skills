@@ -113,6 +113,17 @@ Between stages, the completed stage's execution session recommends resuming
 the roadmap, and your human partner decides by launching the resume. Never
 volunteer a stage outside a resume.
 
+**Handing off a stage**, after §4's approval or §5's reconcile:
+
+- The next stage is the first unticked one whose `Consumes` are all met.
+- End with "Next: /clear (or a fresh session), then <ROUTING skill> on Stage N
+  of `specs/<name>-roadmap.md`", and name the line the receiver carries:
+  - ROUTING brainstorming: the new stage spec's Rollout note carries the
+    `Roadmap:` line.
+  - ROUTING writing-plans: the plan header carries it, and the plan is scoped
+    to the stage entry's `Spec` refs. This covers a stage with no stage spec.
+- Then stop. Launching that session is your human partner's go/no-go.
+
 ## 5. Resume (reconcile)
 
 On re-entry, for each stage: the stage stamp under its roadmap entry
@@ -120,8 +131,20 @@ On re-entry, for each stage: the stage stamp under its roadmap entry
 authoritative. A fuzzy match against `specs/plans/completed/` is FALLBACK
 only — never let it overrule a stamp.
 
-Re-validate every unticked stage against what actually shipped, then route
-the next one per its ROUTING line.
+For each stage stamped COMPLETE since the last resume, read the stamp and its
+plan's `## Handoff to later stages`. Re-validate every unticked stage against
+what actually shipped:
+
+- **Amend.** When a Handoff bullet changes a later stage's `Spec`, `Consumes`,
+  `Produces` or `Exit`, amend that entry: cite `plan <id>, Handoff`, mark each
+  settled point `(Resolved at resume, YYYY-MM-DD)`, and never restate.
+- **Ask.** A stage added, split, dropped or reordered is not an amendment. Put
+  every such change to your human partner as one batched question, before
+  anything routes.
+- **Commit** the amendments on the current branch before the handoff, so the
+  fresh session reads them.
+
+Then hand off the next stage (§4). With every stage ticked, go to §6.
 
 **Parking is a first-class exit.** Remaining unticked stages append to
 `specs/deferred_items.md` as self-contained items; the roadmap moves to
@@ -154,7 +177,7 @@ When improvement directions are diffuse, route to creative-thinking.
 |---|---|
 | A spec carrying the Synthesize-mode header (`REQUIRED NEXT SKILL`) | Gap analysis → partition → roadmap, or single-stage exit |
 | Gaps that fit one cycle | NO roadmap file — hand to brainstorming or writing-plans |
-| A document carrying the roadmap header (`REQUIRED SKILL … resume via its reconcile step`) | Reconcile via stamps, route the next unticked stage |
+| A document carrying the roadmap header (`REQUIRED SKILL … resume via its reconcile step`) | Reconcile via stamps and Handoff sections, amend and commit, then hand off the next stage |
 | Every stage ticked | Completion review, then retire |
 | A stage to actually build | Not this skill — brainstorming or writing-plans, by bare name |
 
