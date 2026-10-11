@@ -123,7 +123,10 @@ volunteer a stage outside a resume.
     `Roadmap:` line.
   - ROUTING writing-plans: the plan header carries it, and the plan is scoped
     to the stage entry's `Spec` refs. This covers a stage with no stage spec.
-- Then stop. Launching that session is your human partner's go/no-go.
+- Then stop. Launching that session is your human partner's go/no-go. A
+  go-ahead, or a request to keep going, approves that fresh session and
+  nothing more: never plan, spec or brainstorm the stage in a resume session.
+  Repeat the "Next:" line and stop.
 
 ## 5. Resume (reconcile)
 
@@ -143,8 +146,10 @@ what actually shipped:
   none, changes no later entry; a shipped difference no bullet names goes to
   the Ask.
 - **Ask.** A stage added, split, dropped or reordered is not an amendment. Put
-  every such change to your human partner as one batched question, before
-  anything routes.
+  every such change to your human partner as ONE question, not a numbered
+  list: state the changes with your proposed default and ask for a single
+  approve-or-amend. Name no stage's routing in it; route only after the
+  answer.
 - **Commit** the amendments on the current branch before the handoff, so the
   fresh session reads them.
 
