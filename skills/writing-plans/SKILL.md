@@ -203,8 +203,9 @@ Apply each decision your human partner takes, and log it in `## Decisions`:
   for the spec, each edit tagged `(owner, plan <id>, YYYY-MM-DD)`, the spec's
   status line untouched. Show your partner the exact wording; it is approved
   at this review.
-- **Private** (it cannot be written into the plan, such as a decision that
-  must stay out of a public repository): it goes to prepare-handoff instead.
+- **Private** (a name, fact or decision that must stay out of a public
+  repository, even when the plan can work without it): it goes to
+  prepare-handoff, not into the plan and not only into your own memory.
 
 Re-run Self-Review on whatever changed, then move to the execution choice once
 your partner approves the plan.

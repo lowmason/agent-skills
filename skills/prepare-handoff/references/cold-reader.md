@@ -16,6 +16,15 @@ Read it as the receiver would, and report what would mislead or stall you:
 - **overreach:** the sender's reading presented as the owner's words, or a
   decision that goes further than what the owner said.
 
+Make overreach its own pass, one decision at a time. It does not stall you:
+you would act on the decision as if the owner had said all of it. Take the
+owner's words for the decision (its "You said" field, or its headline when the
+brief keeps none apart) and set them beside what the decision asks you to do:
+its steps, its done-when conditions, its scope. Report each step, condition or
+scope that the owner's words do not carry but the brief states as the owner's
+decision, as overreach, or as an ambiguity when the owner may well have meant
+it.
+
 Report each as one block, numbered from 0:
 
 ```
