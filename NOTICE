@@ -339,6 +339,13 @@ Changes from upstream:
     finishing-a-development-branch. The recipe all three follow,
     requesting-code-review/codex-review.md, is an original work by Lowell
     Mason under the same MIT terms.
+  - writing-plans gained a second reporter not present upstream:
+    writing-plans/scripts/entry_check.py and its tests
+    (writing-plans/scripts/test_entry_check.py), which report the plan
+    ids in use on every branch, remote-tracking ref and worktree, and
+    the next free one. Both are original works by Lowell Mason under
+    the same MIT terms, as deferred_stats.py is (above). The skill's
+    id rule now takes the next free id from that report.
 
     brainstorming/
     dispatching-parallel-agents/

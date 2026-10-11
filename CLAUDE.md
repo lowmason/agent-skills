@@ -93,7 +93,7 @@ cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytes
 # describe-critique-methodology decoupling-check tests
 cd skills/describe-critique-methodology/scripts && uv run --python 3.13 --with pytest python -m pytest -q
 
-# writing-plans deferred-backlog stats tests (stdlib only)
+# writing-plans deferred-backlog stats and entry-check tests (stdlib only; the entry-check tests build throwaway git repos)
 cd skills/writing-plans/scripts && uv run --python 3.13 --with pytest python -m pytest -q
 
 # geographic-codes build tests; the per-vintage workbook tests read the committed sources/

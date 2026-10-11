@@ -19,7 +19,7 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 
 **Context:** If working in an isolated worktree, it should have been created via the `using-git-worktrees` skill at execution time.
 
-**Save plans to:** `specs/plans/<id>-<spec-name>.md` — `<id>` is the next integer (check `specs/plans/` and `specs/plans/completed/`, take the highest existing `<id>` + 1); `<spec-name>` matches the spec the plan implements. When the plan is fully executed, run the Plan Completion Protocol (below).
+**Save plans to:** `specs/plans/<id>-<spec-name>.md` — `<id>` is the `next free:` id that `uv run --no-project --python 3.13 python <this-skill-dir>/scripts/entry_check.py` prints under `plan ids:`, run from the repo root. It reads every branch, remote-tracking ref and worktree, untracked plans included, because ids are allocated per branch and collide. A collision it reports is your human partner's call. `<spec-name>` matches the spec the plan implements. When the plan is fully executed, run the Plan Completion Protocol (below).
 - (User preferences for plan location override this default)
 
 ## Scope Check
