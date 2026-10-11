@@ -3,8 +3,9 @@ name: writing-plans
 description: >
   Use when you have a spec, design doc, or requirements for a multi-step task and need an
   implementation plan before touching code — "write a plan", "plan this feature", "break this
-  into tasks", a finished spec in specs/ awaiting its plan, or before handing work to subagents
-  or a separate execution session.
+  into tasks", a finished spec in specs/ awaiting its plan, before handing work to subagents
+  or a separate execution session, or when an executed plan is to be completed, retired or merged
+  ("complete the plan"), including a roadmap stage's handoff.
 ---
 
 # Writing Plans
@@ -21,6 +22,12 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 
 **Save plans to:** `specs/plans/<id>-<spec-name>.md` — `<id>` is the `next free:` id that `uv run --no-project --python 3.13 python <this-skill-dir>/scripts/entry_check.py` prints under `plan ids:`, run from the repo root. It reads every branch, remote-tracking ref and worktree, untracked plans included, because ids are allocated per branch and collide. A collision it reports is your human partner's call. `<spec-name>` matches the spec the plan implements. When the plan is fully executed, run the Plan Completion Protocol (below).
 - (User preferences for plan location override this default)
+
+**A roadmap stage you just finished is never planned past.** If this session
+executed, completed or merged a stage of a `specs/*-roadmap.md`, then even when
+told to keep going or to plan the next stage, do not plan, brainstorm or name
+it: run the Plan Completion Protocol below (step 3a included) before any merge,
+and end with the resume handoff, naming no next stage.
 
 ## Starting From a Handoff Brief
 

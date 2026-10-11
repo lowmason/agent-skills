@@ -3,8 +3,8 @@ name: subagent-driven-development
 description: >
   Use when executing an implementation plan task-by-task in the current session. Trigger on:
   "execute this plan", "implement the plan", a plan header naming subagent-driven-development
-  as the required sub-skill, a specs/plans/*.md handoff from writing-plans, or resuming a
-  partially executed plan. Not for tightly coupled tasks needing one continuous context, or
+  as the required sub-skill, a specs/plans/*.md handoff from writing-plans, resuming a
+  partially executed plan, or completing and merging one. Not for tightly coupled tasks needing one continuous context, or
   partner-requested direct execution (use executing-plans).
 ---
 
