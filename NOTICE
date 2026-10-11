@@ -346,6 +346,9 @@ Changes from upstream:
     the next free one. Both are original works by Lowell Mason under
     the same MIT terms, as deferred_stats.py is (above). The skill's
     id rule now takes the next free id from that report.
+  - One change was later adopted FROM upstream v6.3.0 (#2086), read at
+    upstream 8ca22db: the plan header's `**Spec:**` line, placed after
+    Tech Stack, naming the spec the plan implements or `none`.
 
     brainstorming/
     dispatching-parallel-agents/

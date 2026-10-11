@@ -70,6 +70,8 @@ independently testable deliverable.
 
 **Tech Stack:** [Key technologies/libraries]
 
+**Spec:** [Path to the spec or design doc this plan implements, or `none`. The plan argues from the spec, so executors read both.]
+
 ## Global Constraints
 
 [The spec's project-wide requirements — version floors, dependency limits,
@@ -164,24 +166,24 @@ zero-context handoff — you wrote it assuming the engineer knows nothing about
 this codebase — so execution does not need this planning session's history.
 
 **Recommend a fresh session for execution.** A planning session accumulates
-context and usually runs on a stronger, pricier model tier; carrying it into
-execution makes every execution turn re-read that planning history at cache-read
-cost and inherit the pricier model. Starting execution fresh drops both.
+context; carrying it into execution makes every execution turn re-read that
+planning history at cache-read cost. Starting execution fresh drops it. Choose
+the execution model when you launch it: `claude --model <m>`, `codex -m <m>`
+or `gemini -m <m>`. `/clear` keeps the current model, and `/model` saves a new
+default for later sessions.
 
 **"Plan complete and saved to `specs/plans/<id>-<spec-name>.md`.**
 
 **Recommended: `/clear` (or open a new session) and execute against the saved
-plan** — a fresh session drops this planning conversation and lets execution run
-on the standard model default (planning belongs on the stronger tier; execution
-does not). Two execution options, either session:
+plan** — a fresh session drops this planning conversation. Two execution
+options, either session:
 
 **1. Subagent-Driven (recommended)** - a fresh subagent per task, two-stage review between tasks
 
 **2. Inline Execution** - I execute the tasks myself, in plan order (executing-plans)
 
 Continuing in THIS session works too, but costs more on a long plan: every
-execution turn re-reads the full planning history and inherits this session's
-model. **Which approach?"**
+execution turn re-reads the full planning history. **Which approach?"**
 
 **If Subagent-Driven chosen:**
 - **REQUIRED SUB-SKILL:** Use subagent-driven-development
