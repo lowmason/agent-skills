@@ -311,6 +311,15 @@ review findings, deferred-Minor confirmations — to build its batched questions
 and the `specs/deferred_items.md` entries. Deleting the workspace first
 destroys the protocol's input.
 
+**A roadmap stage** (its plan header carries a `Roadmap:` line) ends by the
+outcome of finishing-a-development-branch. Merged locally: "Stage N of
+`<roadmap>` is merged. Next: /clear (or a fresh session), then resume the
+roadmap: derive-roadmap on `<roadmap>`." Then stop. PR opened: "Resume the
+roadmap once `<PR>` merges." Kept: "Stage N is complete on `<branch>` but
+unmerged. Resume the roadmap after it merges." Discarded: no handoff, since
+the stamp went with the branch. Never plan, brainstorm or name the next
+stage, and make no model-tier claim.
+
 ## File Handoffs
 
 Everything you paste into a dispatch prompt — and everything a subagent
@@ -482,7 +491,7 @@ what it costs: [references/advantages.md](references/advantages.md).
 - **requesting-code-review** - Code review template and Codex second-opinion recipe for the final whole-branch review
 - **finishing-a-development-branch** - Integrates the branch after the plan-completion protocol
 
-**After all tasks:** run the plan-completion protocol, then use finishing-a-development-branch to integrate the branch (merge / PR / cleanup) and remove any worktree.
+**After all tasks:** run the plan-completion protocol, then use finishing-a-development-branch to integrate the branch (merge / PR / cleanup) and remove any worktree. For a roadmap stage, end with the resume handoff in Plan Completion.
 
 **Subagents follow TDD** (red → green → refactor) for each task.
 

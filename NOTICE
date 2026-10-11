@@ -360,6 +360,13 @@ Changes from upstream:
     never an edit made during planning. And there is no Native mode:
     this repo's executing-plans is not ported (finding 11 of
     specs/superpowers-drift-spec.md).
+  - writing-plans' Plan Completion Protocol gained a step 3a, and
+    subagent-driven-development and executing-plans a closing handoff,
+    for a plan that is a stage of a derive-roadmap roadmap. The plan
+    records what later stages consume in a `## Handoff to later stages`
+    section, the roadmap's stage is ticked and stamped, and the session
+    ends by recommending that the roadmap be resumed. These are original
+    local additions: upstream has no roadmap.
 
     brainstorming/
     dispatching-parallel-agents/

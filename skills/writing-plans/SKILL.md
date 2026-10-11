@@ -290,6 +290,32 @@ When a later plan implements an item, tick its box with a pointer
 (`- [x] … → done in plan 12`). Never delete items — the file doubles as a
 history of consciously-deferred work.
 
+**3a. Hand off a roadmap stage.** Only when the plan's header carries a line
+that reads, after any `> ` prefix, `Roadmap: specs/<name>-roadmap.md, Stage N`
+(N may be alphanumeric, such as `S2.2b`). For this session, that line's
+"re-validate later stages against what shipped" means writing the section
+below; amending later stages' entries is derive-roadmap's job, at the resume.
+
+- **Handoff section.** Add `## Handoff to later stages` to the plan, with one
+  bullet for each later stage whose `Consumes` this stage feeds. Each bullet
+  gives what that stage consumes as built (names, paths, interfaces); where
+  that differs from this stage's roadmap `Produces`; traps and refusals found
+  in execution; and items deferred into that stage, by their
+  `specs/deferred_items.md` section. Cite the spec; never restate it. When
+  nothing differs, the section reads
+  `None: shipped as the roadmap's Produces states.`; for the last stage,
+  `None: last stage.`
+- **Tick and stamp.** Tick the stage's box in the roadmap, and put this stamp
+  under its entry. The path is the plan's retired path, since step 5 moves
+  the plan. Drop the second sentence when the section reads `None`.
+
+  ```
+  > Stage N: COMPLETE (YYYY-MM-DD) — implemented by plan <id> (specs/plans/completed/<file>). Its Handoff section names what <stages> consume.
+  > Next: resume the roadmap.
+  ```
+
+These edits land with the protocol's other commits.
+
 **4. Backlog triage.** Report backlog health, then bring the triage to your
 human partner rather than waiting to be asked for it. Run from the repo root:
 

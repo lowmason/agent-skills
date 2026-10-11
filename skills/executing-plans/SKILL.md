@@ -85,6 +85,21 @@ Once the plan is complete and retired:
 - **REQUIRED SUB-SKILL:** Use finishing-a-development-branch
 - Follow that skill to verify tests, present options, execute choice
 
+### Step 6: Hand Off a Roadmap Stage
+
+When the plan's header carries a `Roadmap:` line, end by the outcome of
+finishing-a-development-branch:
+
+| Outcome | Final message |
+|---|---|
+| Merged locally | "Stage N of `<roadmap>` is merged. Next: /clear (or a fresh session), then resume the roadmap: derive-roadmap on `<roadmap>`." Then stop. |
+| PR opened | "Resume the roadmap once `<PR>` merges." |
+| Kept | "Stage N is complete on `<branch>` but unmerged. Resume the roadmap after it merges." |
+| Discarded | No handoff: the stamp went with the branch. |
+
+Never plan, brainstorm or name the next stage, and make no model-tier claim.
+Any other plan ends at Step 5.
+
 ## When to Stop and Ask for Help
 
 **STOP executing immediately when:**
