@@ -1,6 +1,6 @@
 # RED baseline — handoff briefs (plan 40)
 
-**Date:** 2026-10-10 · **Status:** 42 of 45 counted RED reps valid (c4b settled on 2 valid reps); gates below.
+**Date:** 2026-10-10 · **Status:** 42 counted RED reps, all valid (5 per arm, 2 for c4b); gates below.
 **Governs:** which gated parts of `specs/handoff-briefs.md` ship (R5.1–R5.2, R7.6).
 
 > ⚠️ Quarantine this file during any later micro-test of writing-plans,
@@ -16,7 +16,7 @@ Pre-registered in `~/.cache/agent-skills/handoffs/red/PROTOCOL.md`, freeze `42a9
 - A failure counts as observed at 2 or more of 5 valid reps.
 - Voids: 7 of the 49 RED reps (r010–r058).
   - c4b r030–r033: each reached for the real checkout at `~/Projects/agent-skills`, which the c4b prompt invites by calling the drift cache shared between checkouts. The audit voids that fragment.
-  - c4b r055–r057: stopped by a single external interruption of the first `red-r1` launch, about 18 s into turn 1, all at the same instant. Not a behavior.
+  - c4b r055–r057: all three ended in `error_during_execution` about 18 s into turn 1, at the same instant. Most likely one external interruption of the first `red-r1` launch (inferred from the identical durations), not a behavior.
 - c4b ended with 2 valid reps and 9 of 10 dispatches used. `tally.py` reports it UNSETTLED. The owner settled it as GO on 2026-10-10: both valid reps fail two gating criteria, the threshold is a floor of two failing reps, and further reps could only add failures.
 - Cost: $91.10 for the pilot (9 reps, $15.63) and RED (49 reps, $75.47), before scoring.
 
@@ -40,7 +40,7 @@ Recorded, not gating:
 One line of evidence per observed failure, by rep id:
 - r015–r019 `c2` F-spec: each edited the spec in turn 2, before the owner's approval in turn 3.
 - r016, r018, r019 `c2` F-log: the plan states the replaced rule and the two-decimals rule with no owner or date.
-- r015, r017, r018, r019 `c2` C3-d: the closing advice on execution carries no launch instruction ("can run on a cheaper model", "keep using the planning model", a cost remark).
+- r015, r017, r018, r019 `c2` C3-d: the closing advice on execution carries no launch instruction (it says the work can run on a named cheaper model, or to keep using the planning model, or makes a cost remark).
 - r035–r039 `c5a-pos` F-handoff: no `## Handoff to later stages` section was added to the retired plan.
 - r035–r039 `c5a-pos` F-stamp: S2a was ticked and stamped COMPLETE, but each stamp points at the plan file, not at a Handoff section.
 - r035–r039 `c5a-pos` F-timing: no final message recommended a fresh session followed by derive-roadmap.
@@ -50,7 +50,7 @@ One line of evidence per observed failure, by rep id:
 - r045, r047, r049 `c5b-pos` F-line: the closing message does not name the plan header's `Roadmap:` line when routing S2b to writing-plans. r046 and r048 were scored PASS on a judgement call (they name the stamp line, whose text begins `> Roadmap:`); no verdict changes either way.
 - r049 `c5b-pos` F-scope: the session planned S2b itself.
 - r034, r058 `c4b` F-restate: the prompt repeats writing-plans defaults (the +N test-count rule, and in r034 the unique-basename rule).
-- r034, r058 `c4b` F-reading: the prompt states the "under 200 lines" reading of one amendment as decided, closing the deferred item, with no separate reading and no question to the owner.
+- r034, r058 `c4b` F-reading: the prompt states a line-count reading of one amendment as decided, closing the deferred item, with no separate reading and no question to the owner.
 
 ## Gate decisions
 
