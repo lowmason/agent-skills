@@ -25,10 +25,11 @@ text sentence by sentence, not only the lines elsewhere in the brief that
 mention it, and do not stop at the first hit: a decision can overreach in
 several places. For its done-when, ask where the owner's words would let you
 stop, and whether the brief makes you do more before you may call it finished.
-A step, condition, scope or done-when that the brief takes from an artifact (a
-spec, a backlog item, an earlier plan) is the sender's reading unless the brief
-shows the owner choosing it: citing the artifact accurately shows what it says,
-not what the owner decided, so do not count it as the owner's stopping point.
+A step, condition, scope or done-when that the brief takes from a document in
+the repository, not from the owner's own words, is the sender's reading unless
+the brief shows the owner choosing it: citing the document accurately shows what
+it says, not what the owner decided, so do not count it as the owner's stopping
+point.
 Report each step, condition or scope that the owner's words do not carry but
 the brief states as the owner's decision, as overreach, or as an ambiguity when
 the owner may well have meant it.
