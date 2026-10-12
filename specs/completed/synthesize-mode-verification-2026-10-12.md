@@ -1,9 +1,9 @@
 # Synthesize-mode scenario verification re-run — `describe-critique-methodology`
 
-**Date:** 2026-10-12 · **Status:** `B1 FAILED (held 0/5 as scored); B2 held 5/5; B3 held 5/5 as scored, pending the owner's R8 ruling; E1 5/5. Six reps run, 1 void, 5 scored`
+**Date:** 2026-10-12 · **Status:** `B1 FAILED (held 0/5 as scored); B2 held 5/5; B3 held 5/5 (R8 ruled a pass by the owner); E1 5/5. Six reps run, 1 void, 5 scored`
 **Governs:** whether `describe-critique-methodology` Synthesize mode's triage ordering, locator
-discipline and derive-roadmap handoff hold in practice. B2 is verified on this fixture. B3 is verified
-as scored, and the one post-hoc reading behind it (R8) is put to the owner (Decision). B1 is a recorded failure, driven by one rule (R2, table coverage) that the skill leaves undefined: it
+discipline and derive-roadmap handoff hold in practice. B2 and B3 are verified on this fixture; the
+one post-hoc reading behind B3 (R8) was ruled a pass by the owner (Rulings). B1 is a recorded failure, driven by one rule (R2, table coverage) that the skill leaves undefined: it
 asks for a table "covering every critique point" and never says what a point is. Resolving that is a
 separate writing-skills cycle (Disposition).
 
@@ -393,8 +393,8 @@ between them. That is the fork in the Disposition item.
   the fifth tells the new session where to start (quoted below). Each points back at the spec's own
   Rollout-note ordering, and none lays out a staged breakdown, so I scored R8 as a pass for all five.
   If the owner reads those remarks as drafting stages, B3 could fail in up to 5 of 5. This reading was
-  made after seeing the transcripts, so it is put to the owner as an explicit ruling at the plan-completion
-  gate (see the Rulings line at the end of this record).
+  made after seeing the transcripts, so it went to the owner as an explicit ruling at the plan-completion
+  gate, and the owner ruled it a pass for all five (Rulings at the end of this record).
 - *B2 is not sensitive.* Both R4-R7 and M3 hold in every rep, and every locator resolves.
 
 ## Qualitative evidence
@@ -470,14 +470,15 @@ an omission.
 
 ## Disposition
 
-No change to the skill in this plan. One deferred item for the failed behaviour, in the schema of
-`skills/writing-plans/references/deferred-backlog.md`. The controller enters it in
-`specs/deferred_items.md` at plan completion; this record does not edit that file.
+No change to the skill in this plan. Two deferred items, in the schema of
+`skills/writing-plans/references/deferred-backlog.md`: one for the failed behaviour and one for the
+staleness-check void path. The controller enters them in `specs/deferred_items.md` at plan completion; this
+record does not edit that file.
 
 - [ ] Synthesize mode never defines what a "critique point" is for the triage table, so the table covers the
       critique's asks and drops claims that live only in its Key Findings or Details (B1 failed, held 0/5 as
-      scored of 5 valid reps, in plan 42's re-run; 1/5 on a lenient reading). `skills/describe-critique-methodology/SKILL.md`
-      § Synthesize mode step 2 and `references/spec-synthesis.md` § Critique triage table ("ONE batched table
+      scored of 5 valid reps, in plan 42's re-run; 1/5 on a lenient reading).
+      `skills/describe-critique-methodology/SKILL.md` § Synthesize mode step 2 and `references/spec-synthesis.md` § Critique triage table ("ONE batched table
       covering every critique point"). Four reps left pay-frequency composition (Details C gap 3's first
       clause) out of the table, all five left CES's analyst-mediated treatment of atypical reports (Key
       Finding 2) to an anchor on an evidence row, reps 1, 2 and 4 did the same for Key Finding 4, reps 2 and
@@ -485,18 +486,38 @@ No change to the skill in this plan. One deferred item for the failed behaviour,
       decision (history handling) in its turn-2 message. Every miss is a point that the critique's numbered
       Recommendations do not carry (a Key Finding, an evidence figure, or a clause of the Details prose).
       The same reps triaged before any spec text (5/5) and stated the adjudication status above the table
-      (5/5), so ordering holds and coverage granularity does not. See `specs/completed/synthesize-mode-verification-2026-10-12.md` for
-      the traces. Size: design. Done when: the owner has chosen the fork and it is done. Either (a) the skill
+      (5/5), so ordering holds and coverage granularity does not. See
+      `specs/completed/synthesize-mode-verification-2026-10-12.md` for the traces. Size: design. Done when: the owner has chosen the fork and it is done. Either (a) the skill
       defines a point as every distinct claim, with a compound point split and a coverage check against the
       critique's own enumeration (a writing-skills RED→GREEN cycle), and a re-run on this fixture holds B1 in
       at least 4 of 5 valid reps; or (b) the owner revises the R2 rubric to score the critique's asks
       (Recommendations, governance, change-asking caveats, numbered Details asks) and records the revised
       bar.
+- [ ] Synthesize mode's staleness check is a second path to a VOID rep in a scenario verification. Step 1 of
+      `skills/describe-critique-methodology/SKILL.md` § Synthesize mode has the rep check the "git log
+      touching the described system", and on this machine that system lives in `alt-nfp-model` and
+      `alt-nfp-stats*`, which the pre-registered VOID rule lists. In plan 42's re-run four of six reps searched outside
+      their repo for it; rep-3's content `Grep` for `nfp_series` over `~/Projects` returned 13 file paths,
+      including `alt-nfp-*` and `specs/completed/synthesize-mode-verification-2026-10-05.md`, and voided
+      the rep. That is production-faithful behaviour penalised by the rule, as plan 36 found for the exemplar
+      step, and it will recur in about one rep in six. The kit has a related gap: `grade.py` (outside the
+      repo, `~/.cache/ctl-q9/`, rebuilt from plan 42 Task 2) cannot see a rep reading a sibling rep's
+      directory, which matters in a parallel batch. See
+      `specs/completed/synthesize-mode-verification-2026-10-12.md`, Validity and Qualitative evidence.
+      Size: design. Revisit if: a Synthesize scenario re-run is scheduled (the first item above needs
+      one). At that point decide, before the run, whether a `Grep` that only lists matching file names
+      counts as exposure or the staleness check is pointed at an isolated copy, and give the rebuilt
+      `grade.py` a sibling-directory VOID check.
 
-**Rulings.** R8 (whether the handoff remarks about the roadmap's first stage count as drafting stages;
-B3's verdict turns on it): pending the owner's ruling at the plan-completion gate. This line is updated
-when the owner rules.
+**Rulings** (the owner, at the plan-completion gate, 2026-10-12):
+- *R8 passes for all five reps.* The remarks about the roadmap's first stage point derive-roadmap at where
+  to start; no rep drafts a roadmap, stages or a plan. B3 is held 5/5.
+- *The pre-registered 50-point key stands.* B1 stays FAILED as scored, and the choice between the two
+  forks is deferred in the first item above.
+- *Observations not filed as items:* rep-6's post-approval decisions (it changed a triage verdict after
+  approval and disclosed it afterwards; R3 passes, one rep in five, and there is no stated behaviour to
+  close it against), and the kit's sibling-read check as its own item (it is folded into the staleness item's
+  closure). Whether either becomes an item later is the owner's call.
 
-Not turned into items: the staleness-check void path, rep-6's post-approval decisions and the kit's
-missing sibling-read check are recorded above as observations. Whether any is worth an item is the owner's
-call at the completion gate.
+The deferred-item selection was delegated to the executor ("your recommendation?"); the executor's choices
+are the ones recorded here.
