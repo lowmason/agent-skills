@@ -51,6 +51,7 @@ The audit rows are C-31 and C-32 in `specs/claude-code-conformance-audit-2026-10
 ## Decisions
 
 - **D1** (owner, plan writing, 2026-10-11): use a git hook plus CI, rather than either alone or a Claude Code hook. The hook fails open only when uv cannot run, for example in a sandbox that cannot reach the uv cache; CI is the authority. Applied in: Global Constraints, Tasks 1–3.
+- **D2** (owner, execution pre-flight, 2026-10-12): the plan's Task 1 name assertions could not fail, because the runner echoes `== <name>` for every check, so `'check_frontmatter' in result.stdout + result.stderr` holds for any refusal. The two refusal tests now assert the name on the runner's `commit lints failed:` line through `failed_names()`, and `test_runner_fails_closed_without_uv` asserts that line names all six checks (`CHECKS`). Applied in: Task 1 Step 1.
 
 ---
 
@@ -91,6 +92,8 @@ REPO = Path(__file__).resolve().parent.parent
 RUNNER = Path('build/run_commit_lints.sh')
 HOOK = Path('build/githooks/pre-commit')
 GENERATED = Path('runtimes/gemini/agents/code-reviewer.md')
+CHECKS = {'check_frontmatter', 'check_provenance', 'check_snippets',
+          'check_conformance', 'declared_dependencies', 'sync_runtime_assets'}
 
 
 def clean_env(**extra):
@@ -111,6 +114,16 @@ def head(repo):
 
 def commit(repo, *args, env=None):
     return git(repo, 'commit', '--quiet', *args, env=env, check=False)
+
+
+def failed_names(result):
+    '''The check names on the runner's `commit lints failed:` line; empty if none.
+
+    The runner echoes `== <name>` for every check it runs, so matching a name
+    anywhere in the output cannot tell a failed check from one that passed.
+    '''
+    match = re.search(r'^commit lints failed: (.*)$', result.stderr, re.MULTILINE)
+    return set(match.group(1).split()) if match else set()
 
 
 def no_uv_path(tmp_path):
@@ -158,7 +171,7 @@ def test_frontmatter_violation_is_refused(clone):
     result = commit(clone, '-am', 'bad frontmatter')
     assert result.returncode != 0
     assert head(clone) == before
-    assert 'check_frontmatter' in result.stdout + result.stderr
+    assert 'check_frontmatter' in failed_names(result), result.stderr
 
 
 def test_runtimes_hand_edit_is_refused(clone):
@@ -168,7 +181,7 @@ def test_runtimes_hand_edit_is_refused(clone):
     result = commit(clone, '-am', 'hand edit')
     assert result.returncode != 0
     assert head(clone) == before
-    assert 'sync_runtime_assets' in result.stdout + result.stderr
+    assert 'sync_runtime_assets' in failed_names(result), result.stderr
 
 
 def test_hook_fails_open_without_uv(clone, tmp_path):
@@ -185,6 +198,7 @@ def test_runner_fails_closed_without_uv(clone, tmp_path):
     result = subprocess.run(['bash', str(clone / RUNNER)], cwd=clone,
                             capture_output=True, text=True, env=env)
     assert result.returncode != 0
+    assert failed_names(result) == CHECKS, result.stderr
 ```
 
 - [ ] **Step 2: Run the tests and watch them fail**
