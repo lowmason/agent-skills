@@ -78,8 +78,9 @@ class Source:
     def grep(self, pattern: str, exclude) -> list[str]:
         '''The tracked files outside the excluded paths holding a line that
         matches the extended regex pattern, read where this source reads
-        (R6.1). Binary files are skipped. A git failure is a SetupError.'''
-        args = ['git', 'grep', '-l', '-z', '-I', '-E', '-e', pattern]
+        (R6.1). Binary files are skipped, and git's color settings never
+        wrap a name in escapes. A git failure is a SetupError.'''
+        args = ['git', 'grep', '--no-color', '-l', '-z', '-I', '-E', '-e', pattern]
         if self.ref is not None:
             args.append(self.ref)
         args += ['--', '.', *(f':(exclude){path}' for path in exclude)]

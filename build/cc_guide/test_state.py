@@ -307,6 +307,27 @@ def test_citing_files_reads_tracked_files_outside_the_excluded_trees_once(tmp_pa
     assert committed['hooks/gate.sh'] == '#!/bin/sh\n' + CITE + '\nexit 0\n'
 
 
+@pytest.mark.parametrize('key', ['color.grep', 'color.ui'])
+def test_the_scan_names_files_plainly_under_forced_git_color(tmp_path, key):
+    '''Under color.grep=always or color.ui=always, git wraps each name that
+    `git grep -l` prints in ANSI escapes, even into a pipe. The setting goes
+    in the fixture repo's own config: isolated_home hides only the user's.'''
+    repo = fixture_repo(tmp_path / 'repo', {'hooks/gate.sh': '#!/bin/sh\n' + CITE + '\nexit 0\n', 'notes.md': 'text\n'})
+    git(repo, 'config', key, 'always')
+    assert state.Source(repo).grep(state.CITE_SHAPED_ERE, ()) == ['hooks/gate.sh']
+    assert state.Source(repo, 'main').grep(state.CITE_SHAPED_ERE, ()) == ['hooks/gate.sh']
+
+
+@pytest.mark.parametrize('key', ['color.grep', 'color.ui'])
+def test_the_citing_files_are_read_under_forced_git_color(tmp_path, key):
+    '''An escaped name names no file, so citing_files raised SetupError and
+    the lint, a commit gate, exited 2 for as long as any file cited the guide.'''
+    repo = fixture_repo(tmp_path / 'repo', {'hooks/gate.sh': '#!/bin/sh\n' + CITE + '\nexit 0\n', 'notes.md': 'text\n'})
+    git(repo, 'config', key, 'always')
+    for ref in (None, 'main'):
+        assert list(state.citing_files(state.Source(repo, ref), 'guide.md')) == ['hooks/gate.sh']
+
+
 def test_no_citation_anywhere_reads_no_file(tmp_path):
     repo = fixture_repo(tmp_path / 'repo', {'a.txt': 'text\n'})
     assert state.citing_files(state.Source(repo), 'guide.md') == {}
