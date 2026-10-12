@@ -218,6 +218,11 @@
   carried on the partner's stated reason ("No project to baseline against"): the
   synthesize-mode scenario-verification successor (77d) has no project to run a
   baseline against. This branch does not touch it.
+- 2026-10-12 — finished `worktree-plan-41-commit-lints` (plan 41), opened as a PR, with
+  1 item aged >45d, carried on the partner's chosen reason (acknowledge: plan 42
+  settles it): the synthesize-mode scenario-verification successor (78d) is settled by
+  live plan 42 (`specs/plans/42-synthesize-mode-verification-rerun.md`), which executes
+  it and has not run yet. This branch does not touch it.
 
 ## 11-delegation-frontmatter-rollout — 2026-07-19
 - [x] Haiku-pinned `Explore` override agent (fork-isolation upgrade; plan "Out of
