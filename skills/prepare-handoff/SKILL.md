@@ -3,9 +3,8 @@ name: prepare-handoff
 description: >
   Use when writing a handoff brief or handoff prompt for a fresh session — a
   spec to planning, a plan to execution, an SDD or roadmap checkpoint, or
-  "/clear and continue" — or, while planning or handing off, when a name, fact or
-  decision must stay out of a public repository, even if the work can proceed
-  without it.
+  "/clear and continue" — or, while planning or handing off, when a decision
+  must stay out of a public repository.
 license: MIT
 metadata:
   author: Lowell Mason

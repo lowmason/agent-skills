@@ -142,6 +142,13 @@ def test_missing_spec_exits_2(repo):
     assert 'no such spec: specs/nope.md' in done.stderr
 
 
+def test_spec_outside_repo_exits_2(repo, tmp_path):
+    spec = write(tmp_path, 'elsewhere/spec.md', '# Elsewhere\n')
+    done = check(repo, str(spec))
+    assert done.returncode == 2
+    assert 'spec is outside this repository' in done.stderr
+
+
 def test_repo_without_plans_starts_at_1(tmp_path):
     root = tmp_path / 'empty'
     root.mkdir()

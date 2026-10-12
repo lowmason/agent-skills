@@ -48,7 +48,7 @@ point settled at a resume carries `(Resolved at resume, YYYY-MM-DD)`.
 **ROUTING** is `brainstorming` when the stage's design space is open, and
 `writing-plans` when the spec fully determines it. Name the skill bare.
 
-## Stage-spec Rollout stamp
+## Stage stamps
 
 Every stage spec's Rollout note carries this line, which writing-plans then
 copies verbatim into the stage plan's header:

@@ -312,8 +312,8 @@ and the `specs/deferred_items.md` entries. Deleting the workspace first
 destroys the protocol's input.
 
 **A roadmap stage** (its plan header carries a `Roadmap:` line) runs the
-protocol's roadmap step first, even when told to just merge, then ends by the
-outcome of finishing-a-development-branch. Merged locally: "Stage N of
+protocol, step 3a included, before any merge, even when told to just merge, then
+ends by the outcome of finishing-a-development-branch. Merged locally: "Stage N of
 `<roadmap>` is merged. Next: /clear (or a fresh session), then resume the
 roadmap: derive-roadmap on `<roadmap>`." Then stop. PR opened: "Resume the
 roadmap once `<PR>` merges." Kept: "Stage N is complete on `<branch>` but

@@ -13,7 +13,8 @@ given a spec path, any plan whose name ends in the spec's stem.
 
 A reporter, like deferred_stats.py: it is read-only and exits 0 whenever it
 prints a report. It exits 2 only when it cannot run: outside a git
-repository, or given a spec path that does not exist.
+repository, given a spec path that does not exist or is not a file, or given
+a spec outside this repository.
 '''
 
 from __future__ import annotations
@@ -139,6 +140,8 @@ def main(argv: list[str] | None = None) -> int:
         root = repo_root(Path.cwd())
         spec = None
         if args.spec is not None:
+            if args.spec.is_dir():
+                raise CannotRun(f'not a file: {args.spec}')
             if not args.spec.is_file():
                 raise CannotRun(f'no such spec: {args.spec}')
             try:

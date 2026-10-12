@@ -150,7 +150,8 @@ what actually shipped:
   list: state the changes with your proposed default and ask for a single
   approve-or-amend. Name no stage's routing in it; route only after the
   answer.
-- **Commit** the amendments on the current branch before the handoff, so the
+- **Commit** the amendments, and whatever your partner approved at the Ask,
+  on the current branch before the handoff, so the
   fresh session reads them. Context for a later stage that cannot be
   committed goes to prepare-handoff.
 
