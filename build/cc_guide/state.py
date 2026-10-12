@@ -17,6 +17,10 @@ from guide import ID_RE, TEXT_HASH_RE, section_terms, sections
 MANIFEST = 'build/cc_guide/manifest.toml'
 BASELINE = 'build/cc_guide/baseline.json'
 PROBES = 'build/cc_guide/PROBES.md'
+# R4.2's excluded trees, which the citation scan never reads.
+UNCITED = ('specs', 'runtimes', 'review')
+# guide.CITE_SHAPED_RE, spelled for `git grep -E`.
+CITE_SHAPED_ERE = '^[[:blank:]]*(#|<!--)[[:blank:]]*cc-guide:'
 MARKS = ('all', 'terms')
 SOURCE_KEYS = ('docs_base', 'llms', 'changelog', 'platform_base')
 CADENCE_KEYS = ('changelog_days', 'probe_days', 'audit_days')
@@ -70,6 +74,22 @@ class Source:
         if text is None:
             raise SetupError(f'{path}: not found in {self.label}')
         return text
+
+    def grep(self, pattern: str, exclude) -> list[str]:
+        '''The tracked files outside the excluded paths holding a line that
+        matches the extended regex pattern, read where this source reads
+        (R6.1). Binary files are skipped. A git failure is a SetupError.'''
+        args = ['git', 'grep', '-l', '-z', '-I', '-E', '-e', pattern]
+        if self.ref is not None:
+            args.append(self.ref)
+        args += ['--', '.', *(f':(exclude){path}' for path in exclude)]
+        proc = subprocess.run(args, cwd=self.repo, capture_output=True)
+        if proc.returncode == 1:
+            return []
+        if proc.returncode != 0:
+            raise SetupError(f"git grep in {self.label}: {proc.stderr.decode('utf-8', 'replace').strip()}")
+        prefix = '' if self.ref is None else f'{self.ref}:'
+        return [name.removeprefix(prefix) for name in proc.stdout.decode('utf-8').split('\0') if name]
 
 
 class Group(NamedTuple):
@@ -448,3 +468,10 @@ def newest_changelog(cache: Path) -> Path | None:
         if path.is_file():
             return path
     return None
+
+
+def citing_files(source: Source, guide_path: str) -> dict[str, str]:
+    '''The files R5's citation scan reads, path -> text: tracked files
+    outside R4.2's excluded trees and the guide that hold a citation-shaped
+    line. A tracked symlink is git's link text, so it is never read twice.'''
+    return {path: source.require(path) for path in source.grep(CITE_SHAPED_ERE, (*UNCITED, guide_path))}

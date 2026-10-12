@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 '''cc_guide: the drift detector for specs/guides/claude-code-customization-guide.md
-(Stage 1 of specs/claude-code-drift-automation-spec.md).
+and the citations that point at it (Stages 1 and 2 of
+specs/claude-code-drift-automation-spec.md).
 
 Run: uv run --python 3.13 python build/cc_guide/cli.py <subcommand>
 
   lint [--ref REF]
-      Offline gate over the guide, manifest.toml and baseline.json (R5). Reads
-      the working tree unless --ref names a commit. Exit 0 clean, 1 with one
-      line per violation, 2 on a setup error.
+      Offline gate over the guide, manifest.toml, baseline.json and every
+      citation (R5). Reads the working tree unless --ref names a commit. Exit
+      0 clean, 1 with one line per violation, 2 on a setup error. A citation
+      stamped below a cited section's `changed` prints STALE <file> <ids> on
+      stderr, which never changes the exit.
   check [--ref REF | --worktree] [--docs DIR]
       Fetch the docs when the changelog head moved, compare, and report what
       is due (R6). Reads main's commit unless --ref or --worktree says
@@ -47,11 +50,11 @@ from pathlib import Path
 import baseline
 from check import check, http_get, releases_of, summary
 from docs import page_file
-from guide import render_stamp
-from lint import lint
-from state import (BASELINE, BOOTSTRAP_DATE, BOOTSTRAP_RELEASE, MANIFEST, SetupError, Source, default_cache,
-                   dump_baseline, is_iso_date, is_label, latest_docs, newest_changelog, parse_baseline,
-                   parse_manifest, read_fetch, read_utf8, snapshot_docs, snapshot_text)
+from guide import read_citations, render_stamp
+from lint import lint, stale_lines
+from state import (BASELINE, BOOTSTRAP_DATE, BOOTSTRAP_RELEASE, MANIFEST, SetupError, Source, citing_files,
+                   default_cache, dump_baseline, is_iso_date, is_label, latest_docs, newest_changelog,
+                   parse_baseline, parse_manifest, read_fetch, read_utf8, snapshot_docs, snapshot_text)
 
 REPO = Path(__file__).resolve().parents[2]
 
@@ -126,12 +129,15 @@ def run_lint(args, cache: Path) -> int:
     manifest = parse_manifest(source.require(MANIFEST))
     state = parse_baseline(source.require(BASELINE))
     releases = cached_releases(cache)
+    files = citing_files(source, manifest.guide)
     violations, notes = lint(source.require(manifest.guide), manifest, state,
-                             None if releases is None else {r.label for r in releases})
+                             None if releases is None else {r.label for r in releases}, files)
     for line in violations:
         print(line)
     for line in notes:
         print(f'note: {line}', file=sys.stderr)
+    for line in stale_lines(read_citations(files)[0], state):
+        print(line, file=sys.stderr)
     return 1 if violations else 0
 
 

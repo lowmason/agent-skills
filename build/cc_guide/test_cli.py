@@ -65,7 +65,7 @@ def test_help_shows_the_module_docstring_and_the_rebaseline_refusal(capsys):
         assert 'also changed or gone' in out
         assert 'the whole page' in out
     assert '  lint [--ref REF]\n' in outs[0]  # the docstring's line breaks survive
-    assert 'Offline gate over the guide, manifest.toml and baseline.json (R5)' in outs[0]
+    assert 'Offline gate over the guide, manifest.toml, baseline.json and every' in outs[0]
 
 
 def test_check_reads_main_unless_told_otherwise(tmp_path, docs_dir, monkeypatch, capsys):
@@ -385,3 +385,22 @@ def test_the_repo_lints_clean(capsys):
     '''R5: the suite enforces the lint on the repo itself. HOME is isolated,
     so no changelog is cached and the release-label check is skipped.'''
     assert cli.main(['lint']) == 0, capsys.readouterr().out
+
+
+def cited(repo, files):
+    write_tree(repo, files)
+    git(repo, 'add', '-A')
+    git(repo, 'commit', '-qm', 'cite the guide')
+
+
+def test_lint_prints_stale_on_stderr_and_lints_the_citations_at_its_ref(world, capsys):
+    '''R5: STALE lines go to stderr and never change the exit; a misplaced
+    citation is a violation; --ref reads the committed citations.'''
+    repo, cache, _ = world
+    cited(repo, {'hooks/gate.sh': '#!/bin/sh\n# cc-guide: alpha.overview alpha.reference @2.1.899\nexit 0\n'})
+    assert main(cache, 'lint') == 0
+    assert capsys.readouterr() == ('', 'STALE hooks/gate.sh alpha.overview\n')
+    write_tree(repo, {'hooks/gate.sh': '#!/bin/sh\nexit 0\n# cc-guide: alpha.overview @2.1.899\n'})
+    assert main(cache, 'lint') == 1
+    assert capsys.readouterr().out == 'hooks/gate.sh:3: a citation goes on a line before the first line of code (R4.1)\n'
+    assert main(cache, 'lint', '--ref', 'main') == 0

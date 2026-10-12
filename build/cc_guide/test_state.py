@@ -274,3 +274,58 @@ def test_a_snapshot_page_read_as_other_than_utf8_is_a_setup_error(tmp_path):
 
 def test_the_default_cache_follows_home(isolated_home):
     assert state.default_cache() == isolated_home / '.cache' / 'agent-skills' / 'cc-guide'
+
+
+CITE = '# cc-guide: alpha.overview @2.1.900'
+
+
+def test_citing_files_reads_tracked_files_outside_the_excluded_trees_once(tmp_path):
+    '''R4.2 and R5: the scan reads tracked files outside specs/, runtimes/,
+    review/ and the guide. A tracked symlink is git's link text, so the file
+    it points at is read once, in the working tree and at a ref alike.'''
+    repo = fixture_repo(tmp_path / 'repo', {
+        'hooks/gate.sh': '#!/bin/sh\n' + CITE + '\nexit 0\n',
+        'rules/style.md': '---\npaths: x\n' + CITE + '\n---\n',
+        'notes.md': 'No citation here.\n',
+        'specs/plan.md': CITE + '\n',
+        'runtimes/agent.md': CITE + '\n',
+        'review/r.md': CITE + '\n',
+        'specs/guides/claude-code-customization-guide.md': '<!-- cc-guide:stamp -->\n',
+    })
+    (repo / '.claude' / 'rules').mkdir(parents=True)
+    (repo / '.claude' / 'rules' / 'style.md').symlink_to('../../rules/style.md')
+    git(repo, 'add', '-A')
+    git(repo, 'commit', '-qm', 'link the rule')
+    (repo / 'hooks' / 'gate.sh').write_text('#!/bin/sh\nexit 0\n' + CITE + '\n')
+    (repo / 'hooks' / 'new.sh').write_text(CITE + '\n')
+    guide_path = 'specs/guides/claude-code-customization-guide.md'
+    tree = state.citing_files(state.Source(repo), guide_path)
+    assert sorted(tree) == ['hooks/gate.sh', 'rules/style.md']
+    assert tree['hooks/gate.sh'] == '#!/bin/sh\nexit 0\n' + CITE + '\n'
+    committed = state.citing_files(state.Source(repo, 'main'), guide_path)
+    assert sorted(committed) == ['hooks/gate.sh', 'rules/style.md']
+    assert committed['hooks/gate.sh'] == '#!/bin/sh\n' + CITE + '\nexit 0\n'
+
+
+def test_no_citation_anywhere_reads_no_file(tmp_path):
+    repo = fixture_repo(tmp_path / 'repo', {'a.txt': 'text\n'})
+    assert state.citing_files(state.Source(repo), 'guide.md') == {}
+    assert state.citing_files(state.Source(repo, 'main'), 'guide.md') == {}
+
+
+def test_the_git_pattern_matches_the_python_pattern(tmp_path):
+    '''CITE_SHAPED_ERE is guide.CITE_SHAPED_RE spelled for git grep -E.'''
+    import guide
+    lines = ['# cc-guide: x', '  # cc-guide: x', '\t#cc-guide:', '<!--cc-guide: x', '<!--  cc-guide: x',
+             'x # cc-guide: x', "'# cc-guide: x'", '## cc-guide: x', '<!-- /cc-guide:stamp -->', '#  cc-guide x']
+    repo = fixture_repo(tmp_path / 'repo', {f'f{n}.txt': line + '\n' for n, line in enumerate(lines)})
+    found = set(state.Source(repo).grep(state.CITE_SHAPED_ERE, ()))
+    assert found == {f'f{n}.txt' for n, line in enumerate(lines) if guide.CITE_SHAPED_RE.match(line)}
+    assert len(found) == 5
+
+
+def test_a_git_grep_failure_is_a_setup_error(tmp_path):
+    repo = fixture_repo(tmp_path / 'repo', {'a.txt': 'text\n'})
+    with pytest.raises(state.SetupError) as err:
+        state.Source(repo).grep('(', ())
+    assert str(err.value).startswith('git grep in the working tree: ')

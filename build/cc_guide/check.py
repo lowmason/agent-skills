@@ -17,8 +17,8 @@ from blocks import SEP, block_hash, candidates, key_hash, key_names, page_blocks
 from docs import CHANGELOG, LLMS, Release, is_platform, page_file, page_url, parse_changelog, parse_llms, version_key
 from lint import lint
 from state import (BASELINE, MANIFEST, PROBES, Manifest, ProbeRow, SetupError, Snapshot, Source, block_namer,
-                   fetch_record, group_terms, latest_docs, no_snapshot, parse_baseline, parse_manifest, parse_probes,
-                   read_fetch, read_utf8, snapshot_text)
+                   citing_files, fetch_record, group_terms, latest_docs, no_snapshot, parse_baseline,
+                   parse_manifest, parse_probes, read_fetch, read_utf8, snapshot_text)
 
 USER_AGENT = 'agent-skills-cc-guide/1 (Claude Code docs drift check)'
 TIMEOUT = 30
@@ -303,6 +303,7 @@ def check(source: Source, cache: Path, *, docs_dir: Path | None, today: date, no
     guide_text = source.require(manifest.guide)
     rows = parse_probes(source.read(PROBES))
     terms = group_terms(manifest, guide_text)
+    files = citing_files(source, manifest.guide)
     errors: list[str] = []
     try:
         docs = offline_docs(manifest, docs_dir) if docs_dir else live_docs(manifest, cache, fetch, now)
@@ -314,7 +315,7 @@ def check(source: Source, cache: Path, *, docs_dir: Path | None, today: date, no
                     'docs': docs.origin if docs else None,
                     'hashes': {'manifest': sha256(manifest_text), 'baseline': sha256(baseline_text),
                                'guide': sha256(guide_text)}}
-    violations, notes = lint(guide_text, manifest, state, {r.label for r in releases} if releases else None)
+    violations, notes = lint(guide_text, manifest, state, {r.label for r in releases} if releases else None, files)
     report['lint'] = {'violations': violations, 'notes': notes}
     due = {'lint': len(violations)}
     if docs is not None:

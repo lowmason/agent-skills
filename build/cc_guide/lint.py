@@ -1,10 +1,12 @@
-'''`lint`: the offline gate over the guide, manifest.toml and baseline.json
-(drift spec R5). Its citation rules and STALE lines are Stage 2's.'''
+'''`lint`: the offline gate over the guide, manifest.toml, baseline.json and
+the citations that point at the guide (drift spec R5).'''
 import json
 import re
 
 from blocks import CELL_SPLIT_RE, fence_spans, fenced_lines, is_table_start
-from guide import NO_STAMP, anchor_problems, render_stamp, sections, stamp_bounds, stamp_content, text_hash
+from docs import version_key
+from guide import (NO_STAMP, Citation, anchor_problems, file_citation, render_stamp, sections, stamp_bounds,
+                   stamp_content, text_hash)
 from state import Manifest
 
 CLI = 'uv run --python 3.13 python build/cc_guide/cli.py'
@@ -103,15 +105,60 @@ def json_problems(lines: list[str]) -> list[str]:
     return out
 
 
-def lint(guide_text: str, manifest: Manifest, state: dict,
-         labels: set[str] | None) -> tuple[list[str], list[str]]:
-    '''R5 without its citation rules: (violations, notes). `labels` are the
-    newest changelog's release labels, None when there is no changelog to
-    read, which skips the label check with a note. The caller parses the
-    changelog, so a malformed one is a setup error there.'''
+def citation_problems(guide_text: str, files: dict[str, str]) -> list[str]:
+    '''R5's citation rules over the files the scan found: each citation
+    parses, cites guide sections, sits where R4.1 puts it, and appears once
+    per file. In path order, each file's problems together.'''
+    ids = {s.id for s in sections(guide_text) if s.id}
+    out = []
+    for path in sorted(files):
+        citation, problems = file_citation(path, files[path])
+        out += problems
+        if citation is not None:
+            out += [f'{path}:{citation.line}: cites {sid}, which is not a guide section'
+                    for sid in citation.ids if sid not in ids]
+    return out
+
+
+def stale_citations(citations: list[Citation], state: dict) -> list[tuple[str, list[str]]]:
+    '''R5: each citing file whose stamp is below a cited section's
+    `changed`, with those sections. A section baseline.json lacks is a lint
+    violation, never stale.'''
+    out = []
+    for c in citations:
+        behind = [sid for sid in c.ids if sid in state['sections']
+                  and version_key(c.stamp) < version_key(state['sections'][sid]['changed'])]
+        if behind:
+            out.append((c.path, behind))
+    return out
+
+
+def stale_lines(citations: list[Citation], state: dict) -> list[str]:
+    '''R5's `STALE <file> <ids>` lines, which never change the exit code.'''
+    return [f"STALE {path} {' '.join(ids)}" for path, ids in stale_citations(citations, state)]
+
+
+def stale_by_section(citations: list[Citation], state: dict) -> dict[str, list[str]]:
+    '''R6.8's stale backlog: each section's stale citing files, sections in
+    baseline.json's (the guide's) order.'''
+    by: dict[str, list[str]] = {}
+    for path, ids in stale_citations(citations, state):
+        for sid in ids:
+            by.setdefault(sid, []).append(path)
+    return {sid: by[sid] for sid in state['sections'] if sid in by}
+
+
+def lint(guide_text: str, manifest: Manifest, state: dict, labels: set[str] | None,
+         files: dict[str, str]) -> tuple[list[str], list[str]]:
+    '''R5: (violations, notes). `labels` are the newest changelog's release
+    labels, None when there is no changelog to read, which skips the label
+    check with a note; the caller parses the changelog, so a malformed one is
+    a setup error there. `files` are the citation scan's, path -> text
+    (state.citing_files). Stale citations are not violations: callers print
+    them (stale_lines) or report them (stale_by_section).'''
     lines = guide_text.split('\n')
     violations = (anchor_problems(guide_text) + id_set_problems(guide_text, manifest, state)
                   + hash_problems(guide_text, state) + stamp_problems(guide_text, state)
                   + (label_problems(lines, labels) if labels is not None else [])
-                  + table_problems(lines) + json_problems(lines))
+                  + table_problems(lines) + json_problems(lines) + citation_problems(guide_text, files))
     return violations, [NO_CHANGELOG] if labels is None else []

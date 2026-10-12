@@ -1,6 +1,6 @@
-'''Tests for baseline.py: R2.4's stamp rule, R11.1's derivation, and each
-`baseline` subcommand's effect on the state (drift spec R7). The write sets
-on disk are test_cli.py's.'''
+'''Tests for baseline.py: R2.4's stamp rule, R11.1's derivation and R12.3's
+replay over it, and each `baseline` subcommand's effect on the state or a
+citing file (drift spec R7). The write sets on disk are test_cli.py's.'''
 import subprocess
 from pathlib import Path
 
@@ -9,6 +9,7 @@ import pytest
 import baseline
 import blocks
 import guide
+import lint
 import state
 from cc_fixtures import (DOCS, FIXTURE_CHANGED, GUIDE_IDS, MANIFEST_TOML, docs_dir,  # noqa: F401
                          fixture_snapshot, fixture_state, guide_text, isolated_home, write_tree)
@@ -85,6 +86,23 @@ def test_r11_derivation_from_the_real_history():
         'lean.ceremony', 'lean.overview', 'rules.auto-memory', 'rules.overview',
         'skills.description', 'skills.overview']
     assert sum(1 for release in changed.values() if release == '2.1.288') == 32
+
+
+def test_the_replay_flags_the_citers_of_drifted_sections_and_not_the_control():
+    '''R12.3: with `changed` derived from the real history as R11.1 does,
+    fixture citers stamped @2.1.219 of subagents.tools and hooks.patterns
+    are stale, and a control citing skills.description is not.'''
+    changed = baseline.derive_changed(
+        history(baseline.JULY[0]), history(baseline.REFRESH[0]),
+        (REPO / 'specs/guides/claude-code-customization-guide.md').read_text(encoding='utf-8'))
+    s = {'sections': {sid: {'changed': release} for sid, release in changed.items()}}
+    citations, problems = guide.read_citations({
+        'agents/replay.md': '---\nname: replay\n# cc-guide: subagents.tools @2.1.219\n---\n',
+        'hooks/replay.sh': '#!/bin/sh\n# cc-guide: hooks.patterns @2.1.219\n',
+        'skills/control/SKILL.md': '---\nname: control\n# cc-guide: skills.description @2.1.219\n---\n'})
+    assert problems == []
+    assert lint.stale_citations(citations, s) == [('agents/replay.md', ['subagents.tools']),
+                                                   ('hooks/replay.sh', ['hooks.patterns'])]
 
 
 def test_init_baselines_each_groups_selected_blocks(docs_dir):

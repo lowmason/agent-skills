@@ -1,4 +1,4 @@
-'''Tests for lint.py: every R5 rule but the citation rules (Stage 2's).'''
+'''Tests for lint.py: every R5 rule, the citation rules included, and STALE.'''
 import pytest
 
 import baseline
@@ -14,8 +14,8 @@ LABELS = {r.label for r in docs.parse_changelog(CHANGELOG_TEXT)}
 CLI = 'uv run --python 3.13 python build/cc_guide/cli.py'
 
 
-def run(text, s, labels=LABELS, manifest=MANIFEST):
-    return lint.lint(text, manifest, s, labels)
+def run(text, s, labels=LABELS, manifest=MANIFEST, files=None):
+    return lint.lint(text, manifest, s, labels, files or {})
 
 
 def synced(text, s):
@@ -131,3 +131,36 @@ def test_an_anchor_problem_fails_the_lint(docs_dir):
     violations, _ = run(text, fixture_state(docs_dir))
     assert violations == [f"guide line {line}: heading '{heading}' has no anchor on its next line",
                           'section beta.reference: missing from the guide']
+
+
+def test_citation_problems_fail_the_lint_after_the_guide_checks(docs_dir):
+    '''R5: every citation parses, cites guide sections, sits where R4.1 puts
+    it and appears once per file; each file's problems come together, files
+    in path order.'''
+    files = {'hooks/b.sh': '#!/bin/sh\nexit 0\n# cc-guide: alpha.overview @2.1.900\n',
+             'agents/a.md': '---\nname: a\n# cc-guide: alpha.overview gamma.overview @2.1.900\n---\n'}
+    assert run(guide_text(), fixture_state(docs_dir), files=files)[0] == [
+        'agents/a.md:3: cites gamma.overview, which is not a guide section',
+        'hooks/b.sh:3: a citation goes on a line before the first line of code (R4.1)']
+
+
+def test_well_placed_citations_lint_clean_and_stale_ones_are_reported_apart(docs_dir):
+    '''R5: a stamp below a cited section's `changed` is STALE, which is no
+    violation. Stamps compare as versions, so 2.1.900.1 is not stale against
+    2.1.900.'''
+    s = fixture_state(docs_dir)
+    files = {'hooks/old.sh': '# cc-guide: alpha.overview alpha.reference beta.overview @2.1.899\n',
+             'hooks/new.sh': '# cc-guide: alpha.overview @2.1.900.1\n',
+             'CLAUDE.md': '<!-- cc-guide: beta.reference @2.1.900 -->\n# Notes\n'}
+    assert run(guide_text(), s, files=files) == ([], [])
+    citations, _ = guide.read_citations(files)
+    assert lint.stale_lines(citations, s) == ['STALE hooks/old.sh alpha.overview beta.overview']
+    assert lint.stale_by_section(citations, s) == {'alpha.overview': ['hooks/old.sh'],
+                                                   'beta.overview': ['hooks/old.sh']}
+
+
+def test_a_citation_of_a_section_the_baseline_lacks_is_a_violation_never_stale(docs_dir):
+    s = fixture_state(docs_dir)
+    del s['sections']['beta.reference']
+    citations, _ = guide.read_citations({'hooks/a.sh': '# cc-guide: beta.reference @2.1.800\n'})
+    assert lint.stale_citations(citations, s) == []
