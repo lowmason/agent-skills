@@ -178,7 +178,7 @@ def test_well_placed_citations_lint_clean_and_stale_ones_are_reported_apart(docs
                                                    'beta.overview': ['hooks/old.sh']}
 
 
-def test_a_citation_of_a_section_the_baseline_lacks_is_a_violation_never_stale(docs_dir):
+def test_a_citation_of_a_section_the_baseline_lacks_is_never_stale(docs_dir):
     s = fixture_state(docs_dir)
     del s['sections']['beta.reference']
     citations, _ = guide.read_citations({'hooks/a.sh': '# cc-guide: beta.reference @2.1.800\n'})

@@ -344,7 +344,8 @@ def test_real_roster_matches_the_real_agents():
     assert check_readonly_roster() == []
 
 
-CITATION = '#' + ' cc-guide: skills.frontmatter @2.1.219'
+CITATION_PREFIX = '#' + ' cc-guide:'
+CITATION = CITATION_PREFIX + ' skills.frontmatter @2.1.219'
 
 
 def test_a_drift_citation_comment_passes_every_frontmatter_check(tmp_path):
@@ -380,7 +381,7 @@ def test_every_frontmatter_citation_leaves_the_parsed_frontmatter_unchanged():
         if lines[0] != '---' or '---' not in lines[1:]:
             continue
         front = lines[1:lines.index('---', 1)]
-        kept = [line for line in front if not line.startswith(CITATION[:11])]
+        kept = [line for line in front if not line.startswith(CITATION_PREFIX)]
         if kept != front:
             cited.append(name)
             # Each line ends in a newline, as it does before the closing ---.
