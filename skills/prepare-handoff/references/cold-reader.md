@@ -43,3 +43,9 @@ PROBLEM: <what goes wrong for the receiver>
 SUGGEST: <replacement text, or the question to put to the owner>
 EVIDENCE: <the brief's own lines, or path:line in the repository>
 ```
+
+If you report no blocks, reply with this line alone:
+
+```
+NO FINDINGS
+```
