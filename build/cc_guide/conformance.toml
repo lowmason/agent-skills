@@ -219,12 +219,15 @@ type = 'fact'
 rule = 'context, when present, is fork.'
 enforced_by = 'check_frontmatter'
 
+# Auto mode ignores Haiku 4.5 but supports Haiku 5.5, and the haiku alias means
+# 5.5 on the Anthropic API and 4.5 on the other providers the docs list. The
+# ban stays for portability (owner, 2026-10-12).
 [[check]]
 id = 'no-haiku-skill-model'
 kind = ['skill', 'command']
 sections = ['skills.frontmatter']
 type = 'fact'
-rule = 'No skill or command sets a Haiku model, since auto mode ignores it.'
+rule = 'No skill or command sets a Haiku model: auto mode ignores Haiku 4.5, and the haiku alias means Haiku 5.5 on the Anthropic API but Haiku 4.5 on the other providers the docs list, so a pin would apply on one and be ignored on another.'
 enforced_by = 'check_frontmatter'
 
 [[check]]
