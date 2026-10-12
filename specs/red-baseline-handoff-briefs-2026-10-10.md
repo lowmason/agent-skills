@@ -1,6 +1,6 @@
 # RED baseline — handoff briefs (plan 40)
 
-**Date:** 2026-10-10 · **Status:** 42 counted RED reps, all valid (5 per arm, 2 for c4b); gates below.
+**Date:** 2026-10-10 · **Status:** COMPLETE (2026-10-11) — 265 reps registered across the pilot, RED and GREEN (about $577 of API spend; counts per phase below); gates below.
 **Governs:** which gated parts of `specs/handoff-briefs.md` ship (R5.1–R5.2, R7.6).
 
 > ⚠️ Quarantine this file during any later micro-test of writing-plans,
@@ -153,14 +153,28 @@ First pass on kit k-d, then REFACTOR rounds on `cr` (kits k-dr1 from `38c6538`, 
 
 ### R5.7 smoke runs (2026-10-11)
 
-Run by the owner from a plain terminal, in a workspace copy of the skill at the branch head (Codex `.agents/skills/`, Gemini `.gemini/skills/`), on the t3 fixture, with a prompt that names the skill so that the runs test the runtime's mechanics, not the description's trigger. The Codex model comes from its session log; the Gemini CLI does not record it.
+Run by the owner from a plain terminal, in a workspace copy of the skill at the branch head (Codex `.agents/skills/`, Gemini `.gemini/skills/`), on the t3 fixture, with a prompt that names the skill so that the runs test the runtime's mechanics, not the description's trigger. The Codex model comes from its session log.
 
 | Runtime | Model | Skill loaded | Brief written | Launch line starts on the brief |
 |---|---|---|---|---|
 | Codex | gpt-6-sol (main session); reviewers gpt-6-astra; launch-line session gpt-6-astra | yes | yes, at `~/.cache/agent-skills/handoffs/codex-smoke/` | yes |
-| Gemini | CLI default (not recorded) | yes, found by listing and reading the workspace skill directory | yes, at `~/.cache/agent-skills/handoffs/gemini-smoke/` | yes (model call then failed, see below) |
+| Gemini | Auto, the CLI default (the status line showed `Auto`; the chat files do not record a name) | yes, found by listing and reading the workspace skill directory | yes, at `~/.cache/agent-skills/handoffs/gemini-smoke/` | yes (model call then failed, see below) |
 
 - Codex: the skill dispatched a fact-checker and a cold reader as sub-agents, both completed; the spec stayed unchanged. The launch-line session received the brief as its first turn, planned from it, and stopped at the owner plan review with the spec still unchanged, so the brief's gates held across the fresh session. Hook failures with exit code 127 appeared throughout the run; they come from a command missing in the owner's Codex setup, not from the skill.
 - Gemini findings (not a REFACTOR round: R5.7 checks portability): no reviewer was dispatched, though the closing message says the brief was fact-checked and cold-read; the model checked the line numbers and the commit itself and read the two templates, where the skill says to ask the owner for a fresh session with the filled template when the runtime cannot dispatch subagents. Its model recommendation named stale models. The launch line's first turn was the brief; the model call then failed with an API error and the CLI asked for an API key, a runtime-side authentication problem, so what a Gemini session does with the brief was not observed.
 
-Task 21 closes this record.
+## Acceptance (spec, Validation and acceptance)
+
+| # | Validation | Result | Where |
+|---|---|---|---|
+| 1 | Plan 38 through the design | UNSETTLED: 3 valid reps, 2 pass every criterion, 1 fails four; shipped disclosed by owner ruling | Phase 3, `v1` |
+| 2 | Negative case | PASS (5 of 5 valid, 0 briefs written); measured before the description was widened and later anchored | Phase 3, `c4a-neg` |
+| 3 | Entry check on this repo | script: not run, C1 NO-GO (the script ships `plan ids:` only); agent: not run, C1 NO-GO | Task 8 skipped; Phase 1 had no `v3` arm |
+| 4 | Probe | PASS: `fc` 4 of 4 valid on both probes; `cr` 5 of 5 on both after three REFACTOR rounds, confirmed at k-dr4 | Phase 3, `fc` and `cr` |
+| 5 | Smoke runs | Codex: PASS on all three checks. Gemini: skill loaded and brief written, launch line starts on the brief, but no reviewer was dispatched and the model call failed on authentication | R5.7 smoke runs |
+| 6 | B3 on a fixture | PASS: `c5a-pos`, `c5a-neg` pass; `c5a-pr` and `c5a-ep` pass by owner ruling; `p5a` passes after two REFACTOR rounds (F-timing ruled for two reps) | Phase 2 |
+| 7 | B4 on a fixture | PASS: `c5b-pos`, `p5b`, `c5b-part` pass, and `c5b-pos`/`p5b` hold on the shipped text; `c5b-neg` passes by owner ruling | Phase 2 |
+| 8 | Shape check | match | Phase 2 |
+| 9 | Gates | pass: the six-command gate block and `sync_runtime_assets.py --check` exit 0; scope check shows only the planned paths, and the leave-alone paths are unchanged | Task 21 |
+
+Open items for the whole-branch review and the owner, all recorded above: `v1` and `b2` UNSETTLED at 3 valid reps; the private-fact trigger goes beyond R4.9 and is untested; Validation 1 measured the cold reader before the REFACTOR changes; Gemini's missing reviewer dispatch; 34 of 70 Phase 3 reps voided by the harness, not by the skill.
