@@ -1,5 +1,7 @@
 # Commit Lints from a Hook and CI Implementation Plan
 
+**Status: COMPLETE (2026-10-12)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Run this repository's six before-commit lints automatically, and retire conformance exception `commit-lints-in-prose`. A versioned git pre-commit hook gives fast local feedback. A GitHub Actions workflow is the authority on what reaches `main`.
@@ -52,6 +54,7 @@ The audit rows are C-31 and C-32 in `specs/claude-code-conformance-audit-2026-10
 
 - **D1** (owner, plan writing, 2026-10-11): use a git hook plus CI, rather than either alone or a Claude Code hook. The hook fails open only when uv cannot run, for example in a sandbox that cannot reach the uv cache; CI is the authority. Applied in: Global Constraints, Tasks 1–3.
 - **D2** (owner, execution pre-flight, 2026-10-12): the plan's Task 1 name assertions could not fail, because the runner echoes `== <name>` for every check, so `'check_frontmatter' in result.stdout + result.stderr` holds for any refusal. The two refusal tests now assert the name on the runner's `commit lints failed:` line through `failed_names()`, and `test_runner_fails_closed_without_uv` asserts that line names all six checks (`CHECKS`). Applied in: Task 1 Step 1.
+- **D3** (owner, plan-completion gate, 2026-10-12): the final whole-branch review (Opus, with a Codex pass that found no defects) returned "ready to merge with fixes". The owner chose one fix wave (4cf95d6) covering the doc and docstring wording, a test pinning the committed `100755` mode, a test for the uv-present-but-broken fail-open branch, a pass-message assertion, hermetic git config in the tests, and `persist-credentials: false` plus a job timeout in the workflow. The owner also deferred "CI is the authority on what reaches `main`" as a `design` item, because no required status check enforces it and that is a repo-settings decision. Left as written, with no action: M8 (the pin test checks SHA shape, not value), M9 (workflow constants sit mid-file) and M10 (module-level `import yaml`). Applied in: Tasks 1–3 deviation notes.
 
 ---
 
@@ -68,7 +71,9 @@ The audit rows are C-31 and C-32 in `specs/claude-code-conformance-audit-2026-10
   - `build/githooks/pre-commit` prints `pre-commit: ... commit lints skipped (CI still runs them)` and exits 0 when uv cannot run. Otherwise it hands off to the runner.
   - Task 2 consumes the runner's invocation string, `bash build/run_commit_lints.sh`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
+
+> Deviation: D2 made the refusal and no-uv tests assert on the runner's `commit lints failed:` line. The final-review fix wave (4cf95d6, D3) then added a committed-`100755`-mode test, a uv-present-but-broken fail-open test and a pass-message assertion in `test_clean_commit_passes`, renamed `no_uv_path` to `restricted_path(tmp_path, broken_uv=False)`, made `clean_env()` default `GIT_CONFIG_GLOBAL=/dev/null` and `GIT_CONFIG_NOSYSTEM=1`, and corrected the docstring's "about a minute" (3 tests run the lint set in a clone, about 10 s warm).
 
 Create `build/test_commit_lints.py`:
 
@@ -201,12 +206,12 @@ def test_runner_fails_closed_without_uv(clone, tmp_path):
     assert failed_names(result) == CHECKS, result.stderr
 ```
 
-- [ ] **Step 2: Run the tests and watch them fail**
+- [x] **Step 2: Run the tests and watch them fail**
 
 Run: `cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q -rfE test_commit_lints.py`
 Expected: no test passes. `test_runner_and_hook_are_executable` fails, and the five clone tests error in the fixture with `FileNotFoundError` for `build/run_commit_lints.sh`. Read each failure line. A test that errors for any other reason is a test bug: fix it before going on.
 
-- [ ] **Step 3: Write the runner**
+- [x] **Step 3: Write the runner**
 
 Create `build/run_commit_lints.sh`:
 
@@ -243,7 +248,7 @@ fi
 echo 'commit lints passed'
 ```
 
-- [ ] **Step 4: Write the hook**
+- [x] **Step 4: Write the hook**
 
 Create `build/githooks/pre-commit`:
 
@@ -269,17 +274,17 @@ exec bash "$root/build/run_commit_lints.sh"
 
 Then make both executable: `chmod +x build/run_commit_lints.sh build/githooks/pre-commit`
 
-- [ ] **Step 5: Run the tests and watch them pass**
+- [x] **Step 5: Run the tests and watch them pass**
 
 Run: `cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q -rfE test_commit_lints.py`
 Expected: 6 passed. If `test_clean_commit_passes` fails, read the runner's `== <name>` sections in the failure output to find the check that failed on a clean clone, and report it: the committed HEAD should pass all six.
 
-- [ ] **Step 6: Run the runner on the worktree, and time it**
+- [x] **Step 6: Run the runner on the worktree, and time it**
 
 Run, from the worktree root: `time bash build/run_commit_lints.sh`
 Expected: `commit lints passed` and exit 0. Record the wall time in the ledger. If it is over 60 s, stop and report: a slower hook is an owner decision on scoping.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add build/run_commit_lints.sh build/githooks/pre-commit build/test_commit_lints.py
@@ -300,7 +305,7 @@ This commit is the first one made after `build/githooks/pre-commit` exists, but 
 - Consumes: `bash build/run_commit_lints.sh` (Task 1).
 - Produces: a workflow job that runs the runner on `pull_request` and on `push` to `main`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `build/test_commit_lints.py`. The import goes with the file's other imports at the top; the rest goes at the end:
 
@@ -332,12 +337,14 @@ def test_workflow_pins_actions_and_runs_the_runner():
     assert any(step.get('run') == f'bash {RUNNER}' for step in steps)
 ```
 
-- [ ] **Step 2: Run them and watch them fail**
+- [x] **Step 2: Run them and watch them fail**
 
 Run: `cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q -rfE test_commit_lints.py -k workflow`
 Expected: 2 failed, each with `FileNotFoundError` for `.github/workflows/lints.yml`.
 
-- [ ] **Step 3: Write the workflow**
+- [x] **Step 3: Write the workflow**
+
+> Deviation: the fix wave (4cf95d6, D3) added `persist-credentials: false` to the checkout step and `timeout-minutes: 10` to the job, with `test_workflow_bounds_the_job_and_drops_checkout_credentials` pinning both (together with Task 1's two tests, +3 over the 8 the plan expects).
 
 Create `.github/workflows/lints.yml`:
 
@@ -361,12 +368,12 @@ jobs:
       - run: bash build/run_commit_lints.sh
 ```
 
-- [ ] **Step 4: Run the tests and watch them pass**
+- [x] **Step 4: Run the tests and watch them pass**
 
 Run: `cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q -rfE test_commit_lints.py`
 Expected: 8 passed (+2).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add .github/workflows/lints.yml build/test_commit_lints.py
@@ -388,7 +395,7 @@ The workflow first runs when the branch's pull request opens. finishing-a-develo
 - Consumes: the runner, hook and workflow paths (Tasks 1–2).
 - Produces: the closure condition: the exception is gone and `check_conformance.py` passes.
 
-- [ ] **Step 1: Delete the exception**
+- [x] **Step 1: Delete the exception**
 
 In `build/cc_guide/conformance.toml`, delete this block and the blank line after it:
 
@@ -407,7 +414,9 @@ tracked_in = 'deferred item: run the before-commit lints from a hook or CI'
 Run: `uv run --python 3.13 --with pyyaml python build/check_conformance.py`
 Expected: exit 0. If it fails, read the finding before going on: a check that needs the exception means the gap is not closed.
 
-- [ ] **Step 2: Document the hook in `CLAUDE.md`**
+- [x] **Step 2: Document the hook in `CLAUDE.md`**
+
+> Deviation: the fix wave (4cf95d6, D3) dropped "once per clone" from the comment block, since the `core.hooksPath` setting is shared by every worktree. The block now says that enabling the hook is an owner step and that the hook lints the working tree, untracked files included. It also rewrote the test-command comment: three tests run the lint set in a throwaway clone, about 10 s warm. `CLAUDE.md` ends at 184 lines.
 
 In `CLAUDE.md`, replace this line:
 
@@ -431,7 +440,9 @@ Then, directly after the line `uv run --python 3.13 --with pyyaml python build/c
 cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_commit_lints.py
 ```
 
-- [ ] **Step 3: Document the files in `build/CLAUDE.md`**
+- [x] **Step 3: Document the files in `build/CLAUDE.md`**
+
+> Deviation: the fix wave (4cf95d6, D3) reworded the paragraph's last sentence: `test_commit_lints.py` drives the runner and hook through throwaway clones and checks the workflow's triggers and pins.
 
 In `build/CLAUDE.md`, after the paragraph ending `so a skill edit can fail it.` (line 21), insert a blank line and this paragraph:
 
@@ -442,14 +453,14 @@ open only when uv cannot run, and `../.github/workflows/lints.yml` runs it in
 CI. `test_commit_lints.py` drives both through throwaway clones.
 ```
 
-- [ ] **Step 4: Run the gates**
+- [x] **Step 4: Run the gates**
 
 Run, from the worktree root:
 - `wc -l CLAUDE.md`. Expected: under 200 (177 at plan time plus 6).
 - `bash build/run_commit_lints.sh`. Expected: `commit lints passed`.
 - `cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q -rfE test_commit_lints.py test_runtime_support.py`. Expected: all pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add build/cc_guide/conformance.toml CLAUDE.md build/CLAUDE.md

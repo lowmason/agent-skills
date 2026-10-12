@@ -2083,7 +2083,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       the gap is void; either way exception `enforce-available-models-project` is removed
       from `build/cc_guide/conformance.toml` in the same change, with
       `build/check_conformance.py` passing.
-- [ ] Run the before-commit lints from a hook or CI (plan 35 audit rows C-31, C-32):
+- [x] Run the before-commit lints from a hook or CI (plan 35 audit rows C-31, C-32):
       CLAUDE.md's "run before committing" lints and `build/CLAUDE.md`'s rule against
       hand-editing `runtimes/` are prose that no hook or CI enforces
       (`mechanisms.overview`); the repo has no CI. Size: plan. Done when: a hook or CI runs
@@ -2092,6 +2092,9 @@ declined as YAGNI (zero instances in a one-page wiki).
       --check`, and exception `commit-lints-in-prose` is removed from
       `build/cc_guide/conformance.toml` in the same change, with
       `build/check_conformance.py` passing.
+      → done in plan 41 (2026-10-12): `build/run_commit_lints.sh` runs all six, run by
+      `build/githooks/pre-commit` (the owner enables it) and `.github/workflows/lints.yml`;
+      exception `commit-lints-in-prose` is removed and `check_conformance.py` passes.
 - [x] Close the conformance lint's untested branches (plan 35 per-task reviews T1-m2, T2-m2,
       T3-m0, T3-m1, T4-m4, T5-m2, T6-m1, T7-m1, T7-m6 and the final review; triaged defer).
       Add red-first tests in `build/test_check_conformance.py` and `build/test_fences.py`
@@ -2834,3 +2837,46 @@ declined as YAGNI (zero instances in a one-page wiki).
       → done 2026-10-11 (/deferred quick fix): both now read "Amend it, and commit
       where the home is tracked"; the retired spec's R4.3 row carries the
       `(owner, 2026-10-11)` tag.
+
+## 41-commit-lints-hook-and-ci — 2026-10-12
+- [ ] Make the `commit-lints` CI check required, or record that CI is advisory (plan 41
+      final review, owner gate 2026-10-12; triaged defer): the plan's Goal calls
+      `.github/workflows/lints.yml` the authority on what reaches `main`, but no required
+      status check enforces it, and a local merge plus push to `main` is checked only
+      after it lands. Making it required is a repo-settings decision (ruleset or branch
+      protection) that stays the owner's; no agent changes settings. See
+      `specs/plans/completed/41-commit-lints-hook-and-ci.md`. Size: design. Done when: the
+      owner has either required `commit-lints` on `main` or recorded that the check is
+      advisory.
+- [ ] First real commit in a linked worktree with the hook enabled (plan 41 final review,
+      recommendation 4; owner-only): the tests cover plain clones, but in a linked
+      worktree the git directory is `.git/worktrees/<name>`, and git exports its
+      repo-local variables to hooks, which `build/run_commit_lints.sh` unsets before the
+      checks. Enabling the hook is the owner's step
+      (`git -C ~/Projects/agent-skills config core.hooksPath build/githooks`). Size:
+      quick-fix. Done when: one clean commit in a linked worktree prints
+      `commit lints passed`, and one commit with deliberately broken skill frontmatter is
+      refused.
+- [ ] `build/githooks/pre-commit` polish (plan 41 final-review Minor M5 and the re-review
+      note; triaged defer): the uv probe (`uv run --no-project --python 3.13 python -c
+      pass`) discards uv's output, so a skip caused by, for example, being offline with
+      Python 3.13 not cached gives no reason; and the header comment says "Enable once per
+      clone" while CLAUDE.md now calls enabling an owner step that writes shared config.
+      Size: quick-fix. Done when: the skip message names uv's last stderr line (with a
+      test in `build/test_commit_lints.py` using the `broken_uv` stub) and the header
+      comment matches CLAUDE.md.
+- [ ] `test_frontmatter_violation_is_refused` breaks the YAML instead of emptying the
+      description (plan 41 final-review Minor M4, confirmed; triaged defer):
+      `build/test_commit_lints.py` rewrites the one `description:` line of
+      `skills/explore-data/SKILL.md`, but that description is a folded `>` block whose
+      continuation lines are left orphaned, so `check_frontmatter.py` fails on "not valid
+      YAML" and the empty-description rule is never exercised. Size: quick-fix. Done
+      when: the test edits a skill with a one-line description, or replaces the whole
+      folded block, and the failure it provokes is the empty-description finding.
+- [ ] Nothing pins the runner's environment unset (plan 41 final-review Minor M1; triaged
+      defer): `build/run_commit_lints.sh` runs `unset $(git rev-parse --local-env-vars)`
+      before the checks, but no test fails if it is deleted. The plan's stated reason (the
+      `declared_dependencies` test builds git repositories) does not hold for the selected
+      test, which runs no git, and a bogus `GIT_DIR` breaks the runner's own
+      `git rev-parse` first, so a discriminating test is hard. Size: quick-fix. Revisit
+      if: one of the six checks starts running git in a temporary repository.
