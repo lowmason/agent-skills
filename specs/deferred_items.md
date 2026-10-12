@@ -2405,6 +2405,14 @@ declined as YAGNI (zero instances in a one-page wiki).
       lines 209 and 214 still recommend Haiku, and it leaves the alias's behaviour at
       retirement unstated. Size: quick-fix. Done when: `/cc-guide verify subagents.models`
       (drift R8.5) has judged the note.
+      → hand-checked 2026-10-12, ahead of the 2026-10-15 window (plan 43, Timing): nothing breaks
+      that day. On the Anthropic API `haiku` has resolved to Haiku 5.5 (`claude-haiku-5-5`, Active,
+      retirement not sooner than 2027-10-07) since v2.1.293 (this machine's CLI is 2.1.296), and
+      Haiku 4.5's 2026-10-15 is a "not sooner than" floor with no retirement scheduled. Claude
+      Platform on AWS, Amazon Bedrock, Google Cloud's Agent Platform and Microsoft Foundry still
+      map `haiku` to Haiku 4.5. The guide still describes Haiku 4.5 as the Haiku in
+      `subagents.models` (line 211: 200K window, $1/$5) and in `lean.model-routing`'s price table
+      (line 438), so the item stays open for the verify run.
 - [ ] Verify guide note A-54 with `/cc-guide verify subagents.isolation` once drift lands
       (plan 35 audit §7): the guide's line 219 says custom agents load CLAUDE.md and git
       status while the built-in Explore skips both, without saying which applies to line
