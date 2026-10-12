@@ -1,5 +1,7 @@
 # Claude Code Drift Automation, Stage 2 (Wiring) Implementation Plan
 
+**Status: COMPLETE (2026-10-12)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 > **Where this runs.** This plan reaches `main` through its own PR. After that merges, create the worktree from the main checkout (Global Constraints, "Worktree") and execute there: `/Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-stage2`, on branch `feat/cc-drift-stage2`. Start the execution session with that worktree as its working directory, not the main checkout: subagent-driven-development's `sdd-workspace` and `review-package` take the repo root and `HEAD` from the shell's working directory, so launched from the main checkout they would write the SDD workspace there and diff `main`. Below, **`W`** names that absolute path in prose. Every command spells the path out, because a worktree-isolated session refuses compound shell (`&&`, `$(...)`).
@@ -294,7 +296,7 @@ Every one sits in a file the sweep stamps stale, so Stage 3's `files` batches re
 
 Each edit is tagged `(owner, plan 43, 2026-10-12)`; the status line stays untouched.
 
-- [ ] **Step 1: Widen R4.1's first row (D1)**
+- [x] **Step 1: Widen R4.1's first row (D1)**
 
 **Edit** `specs/claude-code-drift-automation-spec.md` — replace:
 
@@ -308,7 +310,7 @@ with:
 | Markdown with frontmatter: `SKILL.md`, `agents/*.md`, `commands/*.md`, `rules/*.md`, `.claude/skills/*/SKILL.md`, `.claude/agents/*.md` (owner, plan 43, 2026-10-12) | `# cc-guide: …` as a YAML comment at column 0, the last line inside the frontmatter |
 ```
 
-- [ ] **Step 2: Say what a skill's citation covers (D2, D4)**
+- [x] **Step 2: Say what a skill's citation covers (D2, D4)**
 
 **Edit** `specs/claude-code-drift-automation-spec.md` — replace:
 
@@ -327,7 +329,7 @@ load the same way and carry none of their own, while its scripts carry their
 own (owner, plan 43, 2026-10-12).
 ```
 
-- [ ] **Step 3: The lint joins the commit lints (D3)**
+- [x] **Step 3: The lint joins the commit lints (D3)**
 
 **Edit** `specs/claude-code-drift-automation-spec.md` — replace:
 
@@ -345,7 +347,7 @@ runs it as the seventh commit lint, so the pre-commit hook and CI enforce it
 (owner, plan 43, 2026-10-12).
 ```
 
-- [ ] **Step 4: Correct the out-of-scope note on CI (D3)**
+- [x] **Step 4: Correct the out-of-scope note on CI (D3)**
 
 **Edit** `specs/claude-code-drift-automation-spec.md` — replace:
 
@@ -362,7 +364,9 @@ with:
   runs there (owner, plan 43, 2026-10-12).
 ```
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
+
+> Deviation: every commit in this run ends with `Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>`, the executing session's model, not the `Claude Opus 5.5` the commit blocks show (Global Constraints, trailer rule).
 
 Confirm the branch (Global Constraints), then:
 
@@ -388,7 +392,7 @@ git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-st
   - `guide.by_section(citations) -> dict[str, list[Citation]]`.
   - Problem messages begin `<path>:<line>: `.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 **Create** `build/cc_guide/test_citations.py`:
 
@@ -532,12 +536,14 @@ def test_read_citations_runs_in_path_order_and_by_section_groups_them():
         'hooks.pitfalls': ['hooks/a.sh'], 'hooks.patterns': ['hooks/a.sh', 'hooks/b.sh']}
 ```
 
-- [ ] **Step 2: Run them; expect 33 failures**
+- [x] **Step 2: Run them; expect 33 failures**
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-stage2/build/cc_guide --python 3.13 --with pytest python -m pytest -q test_citations.py`
 Expected: `33 failed`, each an `AttributeError: module 'guide' has no attribute …` (`file_citation`, `CITE_SHAPED_RE`, `read_citations` or `HASH_FORM`).
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
+
+> Deviation: the final review tightened the stamp pattern to R2.4's three or four numeric parts (54b81f2, with tests): `@3.0` had parsed clean and would have raised `IndexError` in `accept --substantive`.
 
 **Edit** `build/cc_guide/guide.py` — replace:
 
@@ -713,12 +719,12 @@ def by_section(citations: list[Citation]) -> dict[str, list[Citation]]:
     return out
 ```
 
-- [ ] **Step 4: Run the suite; expect +33**
+- [x] **Step 4: Run the suite; expect +33**
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-stage2/build/cc_guide --python 3.13 --with pytest python -m pytest -q`
 Expected: all pass, 33 more than the recorded baseline.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-stage2 add build/cc_guide/guide.py build/cc_guide/test_citations.py
@@ -749,7 +755,9 @@ git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-st
   - `lint.stale_by_section(citations, state) -> dict[str, list[str]]`;
   - `lint.lint(guide_text, manifest, state, labels, files) -> (violations, notes)`, where `files` is now required.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
+
+> Deviation: the fix wave renamed one test here, `test_a_citation_of_a_section_the_baseline_lacks_is_a_violation_never_stale` to `..._is_never_stale` (f759c79), and changed the label tests to cover the note rule (2c0421f) and its three-part limit (1000221).
 
 **Append** to `build/cc_guide/test_state.py`:
 
@@ -969,7 +977,7 @@ def test_the_replay_flags_the_citers_of_drifted_sections_and_not_the_control():
 def test_init_baselines_each_groups_selected_blocks(docs_dir):
 ```
 
-- [ ] **Step 2: Run them; expect 27 failures**
+- [x] **Step 2: Run them; expect 27 failures**
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-stage2/build/cc_guide --python 3.13 --with pytest python -m pytest -q`
 Expected: `27 failed`. Reconcile by file:
@@ -981,7 +989,9 @@ Expected: `27 failed`. Reconcile by file:
 - `test_cli.py` 2: the help test's new assertion, and `test_lint_prints_stale…` (no `STALE` on stderr).
 - `test_baseline.py` 1: the replay, `AttributeError: module 'lint' has no attribute 'stale_citations'`. Where the history is unavailable it skips instead; record that.
 
-- [ ] **Step 3: Implement the scan (`state.py`)**
+- [x] **Step 3: Implement the scan (`state.py`)**
+
+> Deviation: the final review added `--no-color` to `Source.grep`'s git arguments (216183b, with a forced-colour fixture test): under `color.grep=always` git wrapped file names in ANSI escapes and the commit-gating lint exited 2.
 
 **Edit** `build/cc_guide/state.py` — replace:
 
@@ -1049,7 +1059,9 @@ def citing_files(source: Source, guide_path: str) -> dict[str, str]:
     return {path: source.require(path) for path in source.grep(CITE_SHAPED_ERE, (*UNCITED, guide_path))}
 ```
 
-- [ ] **Step 4: Implement the rules (`lint.py`)**
+- [x] **Step 4: Implement the rules (`lint.py`)**
+
+> Deviation: owner decision at the completion gate (2026-10-12): the release-label rule treats a three-part label newer than the cached changelog's newest release as a `note:` on stderr, not a violation (2c0421f, limited to three parts in 1000221). Spec R5 still reads as written; amending it is deferred.
 
 **Edit** `build/cc_guide/lint.py` — replace:
 
@@ -1158,7 +1170,7 @@ def lint(guide_text: str, manifest: Manifest, state: dict, labels: set[str] | No
     return violations, [NO_CHANGELOG] if labels is None else []
 ```
 
-- [ ] **Step 5: Pass the files through (`check.py`, `cli.py`)**
+- [x] **Step 5: Pass the files through (`check.py`, `cli.py`)**
 
 **Edit** `build/cc_guide/check.py` — replace:
 
@@ -1302,7 +1314,7 @@ with:
 # reports what is due (exit 1 = due; reads main unless --worktree)
 ```
 
-- [ ] **Step 6: Run the suites; expect +9 in cc_guide**
+- [x] **Step 6: Run the suites; expect +9 in cc_guide**
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-stage2/build/cc_guide --python 3.13 --with pytest python -m pytest -q`
 Expected: all pass, 42 above the recorded baseline: Task 2's 33, plus 9 here (4 in `test_state.py`, 3 in `test_lint.py`, 1 in `test_cli.py`, 1 in `test_baseline.py`).
@@ -1310,7 +1322,7 @@ Expected: all pass, 42 above the recorded baseline: Task 2's 33, plus 9 here (4 
 Then run the repo lint: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-stage2 --python 3.13 python build/cc_guide/cli.py lint`
 Expected: exit 0 with no `STALE` line (no citation exists yet).
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-stage2 add build/cc_guide/state.py build/cc_guide/lint.py build/cc_guide/check.py build/cc_guide/cli.py build/cc_guide/test_state.py build/cc_guide/test_lint.py build/cc_guide/test_cli.py build/cc_guide/test_baseline.py CLAUDE.md
@@ -1334,7 +1346,7 @@ git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-st
   - `report['citing']` maps each candidate section of a finding, in guide order, to its citing files. It is present when the docs were read.
   - The summary prints `stale citations: …` after the lint line, and `files citing a candidate section:` after the findings.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 **Edit** `build/cc_guide/test_check.py` — replace:
 
@@ -1411,7 +1423,7 @@ def test_check_reads_citations_at_its_inputs_and_lints_them(tmp_path, docs_dir):
     assert (code, report['lint']['violations'], report['stale']) == (0, [], {'alpha.overview': ['hooks/old.sh']})
 ```
 
-- [ ] **Step 2: Run them; expect 3 failures**
+- [x] **Step 2: Run them; expect 3 failures**
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-stage2/build/cc_guide --python 3.13 --with pytest python -m pytest -q test_check.py`
 Expected: `3 failed`:
@@ -1419,7 +1431,7 @@ Expected: `3 failed`:
 - `test_the_report_lists…` (`KeyError: 'stale'`);
 - `test_check_reads_citations…` (its first assertion passes, since Task 3 lints the files; it then fails on `KeyError: 'stale'`).
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 **Edit** `build/cc_guide/check.py` — replace:
 
@@ -1542,12 +1554,12 @@ with:
             lines += [f"  {sid}: {', '.join(paths)}" for sid, paths in citing.items()]
 ```
 
-- [ ] **Step 4: Run the suite; expect +2**
+- [x] **Step 4: Run the suite; expect +2**
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-stage2/build/cc_guide --python 3.13 --with pytest python -m pytest -q`
 Expected: all pass, 44 above the recorded baseline.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-stage2 add build/cc_guide/check.py build/cc_guide/test_check.py
@@ -1575,7 +1587,7 @@ git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-st
   - `cli.repo_path(name: str) -> str`;
   - `baseline accept … --substantive` refuses, exit 2 and nothing written, while any citation fails to parse: a broken citation has no stamp for the new `changed` to exceed (R2.4).
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 **Append** to `build/cc_guide/test_baseline.py`:
 
@@ -1679,7 +1691,7 @@ def test_a_substantive_accept_refuses_while_a_citation_is_broken(world, capsys):
     assert dirty(repo) == [GUIDE_PATH]
 ```
 
-- [ ] **Step 2: Run them; expect 11 failures**
+- [x] **Step 2: Run them; expect 11 failures**
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-stage2/build/cc_guide --python 3.13 --with pytest python -m pytest -q test_baseline.py test_cli.py`
 Expected: `11 failed`:
@@ -1690,7 +1702,7 @@ Expected: `11 failed`:
   - the accept test (`'2.1.902' != '2.1.902.1'`);
   - the broken-citation accept test, which today's accept lets through (`assert 0 == 2`).
 
-- [ ] **Step 3: Implement `cite` (`baseline.py`)**
+- [x] **Step 3: Implement `cite` (`baseline.py`)**
 
 **Edit** `build/cc_guide/baseline.py` — replace:
 
@@ -1759,7 +1771,7 @@ def cite(path: str, text: str, state: dict) -> tuple[str, str]:
     return '\n'.join(lines), stamp
 ```
 
-- [ ] **Step 4: Wire the CLI (`cli.py`)**
+- [x] **Step 4: Wire the CLI (`cli.py`)**
 
 **Edit** `build/cc_guide/cli.py` — replace:
 
@@ -1881,12 +1893,12 @@ After reviewing such a file, `cli.py baseline cite <file>` restamps it.
 Nothing is committed for you.
 ```
 
-- [ ] **Step 5: Run the suite; expect +10**
+- [x] **Step 5: Run the suite; expect +10**
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-stage2/build/cc_guide --python 3.13 --with pytest python -m pytest -q`
 Expected: all pass, 54 above the recorded baseline. That is +2 in `test_baseline.py` and +8 new tests in `test_cli.py`; the help test was already counted.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-stage2 add build/cc_guide/baseline.py build/cc_guide/cli.py build/cc_guide/test_baseline.py build/cc_guide/test_cli.py build/CLAUDE.md
@@ -1904,7 +1916,7 @@ git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-st
 **Interfaces:**
 - Produces: `check_conformance.comment_lines(text: str) -> set[int]` (1-based); `import_targets` now skips those lines.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 **Edit** `build/test_check_conformance.py` — replace:
 
@@ -1935,12 +1947,12 @@ def test_import_targets_skip_block_level_html_comments_only():
 def test_claude_md_import_resolves_pass(tmp_path):
 ```
 
-- [ ] **Step 2: Run it; expect 1 failure**
+- [x] **Step 2: Run it; expect 1 failure**
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-stage2/build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_conformance.py -k block_level`
 Expected: `1 failed`. `import_targets` also returns `(1, '2.1.219')` and `(4, 'docs/x.md')`.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 **Edit** `build/check_conformance.py` — replace:
 
@@ -2008,7 +2020,7 @@ def import_targets(text: str) -> list[tuple[int, str]]:
     return found
 ```
 
-- [ ] **Step 4: Run the conformance suite and lint**
+- [x] **Step 4: Run the conformance suite and lint**
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-stage2/build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_conformance.py`
 Expected: all pass, +1.
@@ -2016,7 +2028,7 @@ Expected: all pass, +1.
 Then run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-stage2 --python 3.13 --with pyyaml python build/check_conformance.py`
 Expected: exit 0.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-stage2 add build/check_conformance.py build/test_check_conformance.py
@@ -2035,7 +2047,7 @@ git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-st
 **Interfaces:**
 - Produces: the runner check name `cc_guide_lint`, which appears on `commit lints failed:` lines.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 **Edit** `build/test_commit_lints.py` — replace:
 
@@ -2076,7 +2088,7 @@ def test_misplaced_drift_citation_is_refused(clone):
 def test_hook_fails_open_without_uv(clone, tmp_path):
 ```
 
-- [ ] **Step 2: Run them; expect 2 failures**
+- [x] **Step 2: Run them; expect 2 failures**
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-stage2/build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_commit_lints.py`
 Expected: `2 failed`:
@@ -2085,7 +2097,9 @@ Expected: `2 failed`:
 
 The clone holds HEAD, which has Tasks 2–5's lint, but the working-tree runner it copies lacks the seventh check. Both tests need Tasks 2–5 committed, which the order guarantees.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
+
+> Deviation: the final review corrected the CLAUDE.md comment's claim that the hook lints untracked drafts; the drift lint reads tracked files only (cb855c4).
 
 **Edit** `build/run_commit_lints.sh` — replace:
 
@@ -2154,7 +2168,7 @@ with:
 `run_commit_lints.sh` runs the seven commit lints that the root `CLAUDE.md`
 ```
 
-- [ ] **Step 4: Run the commit-lint tests and the runner**
+- [x] **Step 4: Run the commit-lint tests and the runner**
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-stage2/build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_commit_lints.py`
 Expected: all pass, +1.
@@ -2162,7 +2176,7 @@ Expected: all pass, +1.
 Then run: `bash /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-stage2/build/run_commit_lints.sh`
 Expected: `== cc_guide_lint` appears, then `commit lints passed`.
 
-- [ ] **Step 5: Commit** (this commit is the first the hook lints with seven checks)
+- [x] **Step 5: Commit** (this commit is the first the hook lints with seven checks)
 
 ```bash
 git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-stage2 add build/run_commit_lints.sh build/githooks/pre-commit build/test_commit_lints.py CLAUDE.md build/CLAUDE.md
@@ -2180,7 +2194,9 @@ git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-st
 
 The R4.5 load check ran before this task (Planning record) and passed in all three runtimes.
 
-- [ ] **Step 1: Write the frontmatter tests**
+- [x] **Step 1: Write the frontmatter tests**
+
+> Deviation: the fix wave replaced the `CITATION[:11]` slice with a named `CITATION_PREFIX` constant (f759c79).
 
 **Edit** `build/test_check_frontmatter.py` — replace:
 
@@ -2249,7 +2265,7 @@ def test_every_frontmatter_citation_leaves_the_parsed_frontmatter_unchanged():
     assert cited, 'no tracked frontmatter carries a citation, so this test checked nothing'
 ```
 
-- [ ] **Step 2: Run them; expect 1 failure, 2 passes by design**
+- [x] **Step 2: Run them; expect 1 failure, 2 passes by design**
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-stage2/build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_frontmatter.py`
 Expected: `1 failed`. `test_every_frontmatter_citation…` fails with `no tracked frontmatter carries a citation, so this test checked nothing`.
@@ -2258,7 +2274,7 @@ The other two pass at once, and that is the design, not a plan defect:
 - `test_a_drift_citation_comment_passes…` is R12.4's pin that `check_frontmatter.py`, unchanged, never sees the comment;
 - `test_an_indented_citation…` pins the YAML fact the column-0 rule rests on.
 
-- [ ] **Step 3: Save the sweep script**
+- [x] **Step 3: Save the sweep script**
 
 Save this as `/Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-stage2/.sdd/43-claude-code-drift-automation/sweep.py`. The `.sdd/` directory is gitignored and never committed. `TABLE` is the sweep table above, row for row.
 
@@ -2357,7 +2373,7 @@ if __name__ == '__main__':
     sys.exit(main())
 ```
 
-- [ ] **Step 4: Run the sweep**
+- [x] **Step 4: Run the sweep**
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-stage2 --python 3.13 python .sdd/43-claude-code-drift-automation/sweep.py`
 Expected: 41 `cited <path>` lines, then `41 files cited`.
@@ -2368,7 +2384,7 @@ Then confirm the diff is one added line per file and no mode change:
 - `git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-stage2 diff --shortstat -- . ':(exclude)build/test_check_frontmatter.py'` prints `41 files changed, 41 insertions(+)`;
 - `git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-stage2 diff --summary` prints nothing.
 
-- [ ] **Step 5: Record it in NOTICE (S5)**
+- [x] **Step 5: Record it in NOTICE (S5)**
 
 **Edit** `NOTICE` — replace:
 
@@ -2392,7 +2408,7 @@ with:
     (specs/claude-code-drift-automation-spec.md, R4). No parsed field changed.
 ```
 
-- [ ] **Step 6: Run every gate**
+- [x] **Step 6: Run every gate**
 
 Run each:
 - the frontmatter tests: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-stage2/build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_frontmatter.py`. Expected: all pass, +3.
@@ -2400,7 +2416,7 @@ Run each:
 - `bash /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-stage2/build/run_commit_lints.sh`. Expected: `commit lints passed`, and `sync_runtime_assets` reports no adapter change.
 - `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-stage2/hooks --python 3.13 --with pytest python -m pytest -q`, then `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-stage2/hooks --python /usr/bin/python3 --with pytest python -m pytest -q`. Expected: both unchanged from the baseline you recorded. The guard and its tests gained a comment line and must still run on 3.9.
 
-- [ ] **Step 7: Commit** (the hook runs all seven lints on it)
+- [x] **Step 7: Commit** (the hook runs all seven lints on it)
 
 ```bash
 git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-stage2 add -u
@@ -2415,13 +2431,14 @@ git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-st
 
 **Files:** none changed. This task produces the completion report's evidence.
 
-- [ ] **Step 1: The load check (Validation 2, first bullet).** Already done (Planning record). Restate the result and the evidence path in the completion report.
-- [ ] **Step 2: The replay (Validation 2, second bullet).** In the full cc_guide run, `test_the_replay_flags_the_citers_of_drifted_sections_and_not_the_control` passed, not skipped. Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-stage2/build/cc_guide --python 3.13 --with pytest python -m pytest -q -rs test_baseline.py`. Expected: all pass, no `SKIPPED` line.
-- [ ] **Step 3: The stale backlog (Validation 2, third bullet).** Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-stage2 --python 3.13 python build/cc_guide/cli.py check --worktree`. This is a live fetch (R6.4).
+- [x] **Step 1: The load check (Validation 2, first bullet).** Already done (Planning record). Restate the result and the evidence path in the completion report.
+- [x] **Step 2: The replay (Validation 2, second bullet).** In the full cc_guide run, `test_the_replay_flags_the_citers_of_drifted_sections_and_not_the_control` passed, not skipped. Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-stage2/build/cc_guide --python 3.13 --with pytest python -m pytest -q -rs test_baseline.py`. Expected: all pass, no `SKIPPED` line.
+- [x] **Step 3: The stale backlog (Validation 2, third bullet).** Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-stage2 --python 3.13 python build/cc_guide/cli.py check --worktree`. This is a live fetch (R6.4).
   - Its summary prints `stale citations: 41 file(s) under 21 section(s), informational`, with `subagents.tools` listing all 7 agents and `hooks.patterns` listing `hooks/README.md` and `hooks/ruff-check.sh`.
   - The exit is 1 if anything else is due (2.1.290 and later are untriaged), never 2.
   - Read `report['citing']` in the report path the summary prints, and confirm it is a mapping.
-- [ ] **Step 4: Every existing gate (Validation 6).** Run each, and record each outcome against the baseline:
+  > Deviation: the summary's lists were supersets of the plan's wording: `subagents.tools` listed the 7 agents plus `build/check_frontmatter.py`, and `hooks.patterns` listed 8 files, not two. The 41-file and 21-section totals matched, `report['citing']` was a mapping of 38 entries, and the exit was 1 (changelog releases from 2.1.290 untriaged), never 2.
+- [x] **Step 4: Every existing gate (Validation 6).** Run each, and record each outcome against the baseline:
   - the build suite (+59, the 4 known failures only);
   - the cc_guide suite (+54);
   - `hooks/` on both interpreters (unchanged);
@@ -2429,8 +2446,10 @@ git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-st
   - `uv run --python 3.13 --with pyyaml python build/check_conformance.py` (exit 0).
 
   `check_snippets.py skills/` (Tier 1), `check_frontmatter.py`, `check_provenance.py`, the dependency-drift test and `sync_runtime_assets.py --check` are inside the runner.
-- [ ] **Step 5: The coverage gaps (Validation 2, R4.3).** Put the Planning record's list of 23 gaps in the completion report for the owner, who decides for each whether to extend the guide (a new section, verified like any `/cc-guide verify` run) or leave it uncovered. Add any gap execution found.
-- [ ] **Step 6: Hygiene.**
+
+  > Deviation: counts are after the fix wave (216183b to 1000221, +18 tests): the build suite 853 passed (+77 over the 776 baseline) with the 4 known failures, cc_guide 296 (+72), hooks 274 on both interpreters, all seven commit lints passing. Task 9's own run, before the fix wave, read 835 and 278.
+- [x] **Step 5: The coverage gaps (Validation 2, R4.3).** Put the Planning record's list of 23 gaps in the completion report for the owner, who decides for each whether to extend the guide (a new section, verified like any `/cc-guide verify` run) or leave it uncovered. Add any gap execution found.
+- [x] **Step 6: Hygiene.**
   - `git -C <W> status --porcelain --untracked-files=normal` prints nothing.
   - No line outside `specs/` begins with a citation except the 41: `git -C <W> grep -c -E '^[[:blank:]]*(#|<!--)[[:blank:]]*cc-guide:' -- . ':(exclude)specs'` lists exactly those 41 files, `:1` each.
 

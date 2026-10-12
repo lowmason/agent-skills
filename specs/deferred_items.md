@@ -2924,3 +2924,72 @@ declined as YAGNI (zero instances in a one-page wiki).
       one). At that point decide, before the run, whether a `Grep` that only lists matching file names
       counts as exposure or the staleness check is pointed at an isolated copy, and give the rebuilt
       `grade.py` a sibling-directory VOID check.
+
+## 43-claude-code-drift-automation — 2026-10-12
+- [ ] Review the 41 files the drift sweep stamped stale (drift R11.6; plan 43). `cli.py lint`
+      prints one `STALE` line per file (41 files under 21 sections) and `cli.py check` lists
+      them: no file cites only sections whose `changed` is 2.1.219, so every citer starts in the
+      backlog, which is the review the refresh skipped. It tracks itself through `lint` and the
+      report, so this is one item, not one per file. The drift the sweep found is in
+      `specs/plans/completed/43-claude-code-drift-automation.md` under "Drift the sweep found"
+      (`README.md:147` and `:164`, `.claude/settings.json:4`, two skills' session-model claims,
+      the size of `skills/subagent-driven-development/SKILL.md`), plus the three known drifts:
+      `Grep, Glob` in the agents' tool lists, `hooks/ruff-check.sh`'s `stop_hook_active` branch
+      and the unquoted `$CLAUDE_PROJECT_DIR` in `hooks/README.md`. Size: plan. Done when:
+      Stage 3's `files` batches have reviewed each file and restamped it with `baseline cite`,
+      and `cli.py lint` prints no `STALE` line.
+- [ ] Newline handling in the citation reader (plan 43's final review, issue 4, folding in the
+      CRLF note from Task 5's review). `build/cc_guide/guide.py` (`file_citation`, near line
+      306) strips both ends, so a trailing space or `\r` is reported as "an indented citation;
+      it starts at column 0". Working-tree reads go through `read_utf8`, which turns CRLF into
+      LF, while ref reads go through `git cat-file`, which keeps the bytes, so a CRLF citing file
+      lints clean in the hook but fails `check` at `main` with the wrong message; and
+      `baseline cite` (`build/cc_guide/cli.py`) would rewrite a CRLF file's every line ending.
+      Latent: `git ls-files --eol` lists no tracked CRLF file. Fix: `lstrip()` for the
+      indentation test, a message of its own for trailing whitespace, one decoding on both read
+      paths, and `newline=''` in the `cite` write. Size: quick-fix. Revisit if: a tracked CRLF
+      file or a citation line with trailing whitespace appears.
+- [ ] An HTML-form citation can sit above a rules file's frontmatter (plan 43's final review,
+      issue 5). `guide.py` (near line 269) decides whether a file has frontmatter from its
+      content, not its kind, so a `rules/*.md` file with `<!-- cc-guide: ... -->` on line 1 passes
+      as "Markdown without frontmatter", pushing its frontmatter off line 1 and silently
+      dropping its `paths:` scoping. `build/check_frontmatter.py` reports a missing frontmatter
+      block for skills, agents and commands only; nothing checks rules or `.claude/**`. Fix:
+      refuse the HTML form for the R4.1 first-row kinds (`SKILL.md`, `agents/`, `commands/`,
+      `rules/`, `.claude/skills|agents`), with a test. Size: quick-fix. Done when: `lint` reports
+      an HTML-form citation in any of those kinds.
+- [ ] A citation in on-demand Markdown lints clean (plan 43's final review, issue 7). The
+      amended drift spec R4.1 says Markdown a skill loads on demand (`references/`, or beside
+      `SKILL.md`) carries no citation of its own, because the skill's `SKILL.md` citation covers
+      it, but an HTML-form citation in a `references/*.md` file lints clean. Size: quick-fix.
+      Done when: `lint` flags a citation in on-demand Markdown, or the owner records that the
+      convention is deliberately unenforced. Raise it in Stage 3's `files` batches if the
+      duplicate citations appear first.
+- [ ] `baseline cite` stamps files `lint` never reads (plan 43, Task 5's review). `cli.py`
+      (`run_baseline`'s `cite` branch, near line 202) resolves each name with `tree.require`,
+      which reads any working-tree file, so an untracked file or one under R4.2's excluded trees
+      (`specs/`, `runtimes/`, `review/`, `.claude/worktrees/`) is stamped and no lint or check
+      ever reads the stamp. Duplicates are removed by argument text, not by resolved path
+      (`rules/x.md` with its `.claude/` symlink prints two `stamped` lines), and the
+      outside-the-repo test covers an absolute path only. Fix: refuse a path `citing_files`
+      would skip, deduplicate on `repo_path(name)`, add a `../x` case. Size: quick-fix. Done
+      when: `cite` refuses a file the lint's scan would skip, with a test.
+- [ ] Style and typing minors in the citation code (plan 43's per-task and final reviews).
+      `build/cc_guide/state.py:92`: a non-UTF-8 tracked file name raises `UnicodeDecodeError`
+      from the `git grep` decode, not a `cc-guide:` `SetupError`. `state.py:78`: `exclude` has no
+      annotation (`tuple[str, ...]`). `cli.py:132-139`: each citing file is parsed twice, in `lint`
+      and again for the `STALE` lines. `test_state.py:331` asserts `startswith` where the rule is
+      exact equality (git's error text varies by version), and `test_state.py:318` imports
+      `guide` inside the function. `check.py`'s `summary()` comprehension reuses the name `path`
+      of its parameter. `CLAUDE.md:126` is a 169-character comment line where its neighbours wrap
+      near 118; reflowing it makes the file 187 lines, under the 190 ceiling. Size: quick-fix.
+      Revisit if: a later change touches `state.py`, `check.py`, `cli.py` or the commit-lint
+      comments in `CLAUDE.md`.
+- [ ] Drift spec R5 and the `lint` help lag the label-note rule (plan 43, completion gate
+      decision (a), 2026-10-12). `specs/claude-code-drift-automation-spec.md` R5 (near lines
+      523-526) still says every `2.1.NNN` in the guide must be a changelog release label.
+      `build/cc_guide/lint.py` now treats a three-part label newer than the cached changelog's
+      newest release as a `note:` on stderr (exit unchanged), and any other unlisted token,
+      such as `2.1.902.1`, as a violation whatever the head; the `lint` help in
+      `build/cc_guide/cli.py` (lines 13-15) could say "three-part". Size: quick-fix. Done when:
+      R5 records the note rule and the three-part limit, and the help matches.
