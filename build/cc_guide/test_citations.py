@@ -117,6 +117,24 @@ def test_a_four_part_stamp_is_a_well_formed_citation():
     assert (citation.stamp, problems) == ('2.1.288.1', [])
 
 
+@pytest.mark.parametrize('stamp, parses', [
+    ('2.1.219', True), ('2.1.219.1', True), ('3.0', False), ('2.1', False), ('2.1.219.1.1', False),
+])
+def test_a_stamp_has_three_or_four_parts(stamp, parses):
+    '''R2.4: a stamp is a release of three parts, plus the fourth that
+    `baseline accept` adds. A shorter one lints clean and then crashes
+    next_changed, which indexes the fourth part it lacks. Both forms share
+    the stamp pattern.'''
+    hash_found = read('hooks/demo.sh', '#!/bin/sh', f'# cc-guide: hooks.patterns @{stamp}', 'exit 0')
+    html_found = read('README.md', f'<!-- cc-guide: hooks.patterns @{stamp} -->', '# Readme')
+    if parses:
+        assert hash_found == (guide.Citation('hooks/demo.sh', 2, ('hooks.patterns',), stamp), [])
+        assert html_found == (guide.Citation('README.md', 1, ('hooks.patterns',), stamp), [])
+    else:
+        assert hash_found == (None, [f'hooks/demo.sh:2: malformed citation; the form is {guide.HASH_FORM}'])
+        assert html_found == (None, [f'README.md:1: malformed citation; the form is {guide.HTML_FORM}'])
+
+
 @pytest.mark.parametrize('line, shaped', [
     ('# cc-guide: x', True), ('  # cc-guide: x', True), ('\t#cc-guide:', True), ('<!--cc-guide: x', True),
     ('<!-- cc-guide:stamp -->', True), ('<!-- /cc-guide:stamp -->', False), ('x  # cc-guide: x', False),

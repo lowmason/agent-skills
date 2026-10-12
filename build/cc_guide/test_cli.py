@@ -11,7 +11,7 @@ import cli
 import state
 from cc_fixtures import (DOCS, GUIDE_IDS, GUIDE_PATH, MANIFEST_TOML, docs_dir, drift_repo,  # noqa: F401
                          fixture_repo, git, guide_text, isolated_home, prime_cache, write_tree)
-from guide import STAMP_CLOSE, STAMP_OPEN
+from guide import HASH_FORM, STAMP_CLOSE, STAMP_OPEN
 
 
 @pytest.fixture
@@ -490,4 +490,22 @@ def test_a_substantive_accept_refuses_while_a_citation_is_broken(world, capsys):
     assert capsys.readouterr() == ('', (
         'cc-guide: a substantive accept needs every citation to parse (R2.4); fix these first:\n'
         'hooks/gate.sh:3: a citation goes on a line before the first line of code (R4.1)\n'))
+    assert dirty(repo) == [GUIDE_PATH]
+
+
+def test_a_two_part_stamp_is_a_lint_violation_so_no_accept_reaches_it(world, capsys):
+    '''R2.4: a stamp of two parts parsed and linted clean, then crashed a
+    substantive accept: next_changed, given 3.0 above every release, indexes a
+    fourth part it lacks. The stamp is malformed now, so lint names it and the
+    accept refuses with one error and writes nothing but the edit.'''
+    repo, cache, _ = world
+    cited(repo, {'hooks/gate.sh': '#!/bin/sh\n# cc-guide: alpha.overview @3.0\nexit 0\n'})
+    malformed = f'hooks/gate.sh:2: malformed citation; the form is {HASH_FORM}\n'
+    assert main(cache, 'lint') == 1
+    assert capsys.readouterr() == (malformed, '')
+    guide = repo / GUIDE_PATH
+    guide.write_text(guide.read_text().replace('Alpha uses', 'Alpha now uses'))
+    assert main(cache, 'baseline', 'accept', 'alpha.overview', '--substantive') == 2
+    assert capsys.readouterr() == ('', 'cc-guide: a substantive accept needs every citation to parse (R2.4);'
+                                       f' fix these first:\n{malformed}')
     assert dirty(repo) == [GUIDE_PATH]

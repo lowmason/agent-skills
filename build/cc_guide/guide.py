@@ -191,7 +191,10 @@ def render_stamp(section_states: dict[str, dict]) -> str:
 # R5's citation-shaped line: after indentation, `#` or `<!--`, then
 # `cc-guide:`. Looser than R4.1's two forms, so a near-miss is still read.
 CITE_SHAPED_RE = re.compile(r'^[ \t]*(?:#|<!--)[ \t]*cc-guide:')
-CITE_BODY = rf'cc-guide: (?P<ids>{ID_RE.pattern}(?: {ID_RE.pattern})*) @(?P<stamp>[0-9]+(?:\.[0-9]+)+)'
+# R2.4's stamp: a three-part release, plus the fourth part `baseline accept` adds.
+# A shorter one would lint clean and then crash baseline.next_changed.
+STAMP_PATTERN = r'[0-9]+\.[0-9]+\.[0-9]+(?:\.[0-9]+)?'
+CITE_BODY = rf'cc-guide: (?P<ids>{ID_RE.pattern}(?: {ID_RE.pattern})*) @(?P<stamp>{STAMP_PATTERN})'
 HASH_CITE_RE = re.compile(rf'# {CITE_BODY}')
 HTML_CITE_RE = re.compile(rf'<!-- {CITE_BODY} -->')
 HASH_FORM = '`# cc-guide: <id> [<id> …] @<version>`'
