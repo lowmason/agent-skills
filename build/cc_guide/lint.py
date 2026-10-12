@@ -12,6 +12,8 @@ from state import Manifest
 CLI = 'uv run --python 3.13 python build/cc_guide/cli.py'
 # A 2.1.NNN version, not inside a longer number; a trailing period is prose.
 VERSION_RE = re.compile(r'(?<![\d.])2\.1\.\d+(?:\.\d+)*(?!\d)')
+# Claude Code ships three-part releases. A fourth part is baseline's own counter (R2.4).
+RELEASE_PARTS = 3
 NO_CHANGELOG = 'release-label check skipped: no changelog to read'
 
 
@@ -68,28 +70,43 @@ def stamp_problems(guide_text: str, state: dict) -> list[str]:
     return []
 
 
+def newest_label(labels: set[str]) -> str | None:
+    '''The newest of the changelog's release labels, compared as versions
+    (R2.4), or None when it lists none.'''
+    return max(labels, key=version_key, default=None)
+
+
 def unlisted_labels(lines: list[str], labels: set[str]) -> list[tuple[int, str, bool]]:
     '''Each 2.1.NNN in the guide that the changelog does not list, as (line
-    number, label, newer): whether it is newer than the changelog's newest
-    release. Versions compare as integer tuples (R2.4).'''
-    head = max(map(version_key, labels), default=None)
-    return [(n, v, head is not None and version_key(v) > head)
+    number, label, newer): whether it may be a release newer than the
+    changelog's newest, which this changelog cannot judge. Only a three-part
+    label may be: a fourth part is baseline's own counter (R2.4), the shape it
+    writes into stamps and never a release, so such a token is judged
+    whatever the head.'''
+    head = newest_label(labels)
+
+    def newer(label: str) -> bool:
+        return (head is not None and len(label.split('.')) == RELEASE_PARTS
+                and version_key(label) > version_key(head))
+    return [(n, v, newer(v))
             for n, line in enumerate(lines, start=1) for v in VERSION_RE.findall(line) if v not in labels]
 
 
 def label_problems(lines: list[str], labels: set[str]) -> list[str]:
     '''Every 2.1.NNN in the guide is a changelog release label (R5), unless it
-    is newer than the changelog's newest release: label_notes reports those.'''
+    is a three-part label newer than the changelog's newest release:
+    label_notes reports those.'''
     return [f'guide line {n}: {v} is not a changelog release label'
             for n, v, newer in unlisted_labels(lines, labels) if not newer]
 
 
 def label_notes(lines: list[str], labels: set[str]) -> list[str]:
-    '''A 2.1.NNN newer than the changelog's newest release cannot be judged:
-    an older changelog, such as a stale cache, cannot say whether that release
-    exists. It is a note, never a violation (owner, plan 43 final review,
-    2026-10-12).'''
-    newest = max(labels, key=version_key, default='')
+    '''A three-part 2.1.NNN newer than the changelog's newest release cannot be
+    judged: an older changelog, such as a stale cache, cannot say whether that
+    release exists. It is a note, never a violation (owner, plan 43 final
+    review, 2026-10-12). A four-part token stays a violation: it is baseline's
+    own stamp shape (R2.4), never a release.'''
+    newest = newest_label(labels)
     return [f"guide line {n}: {v} is newer than the changelog's newest release {newest}; not checked"
             for n, v, newer in unlisted_labels(lines, labels) if newer]
 
@@ -172,9 +189,9 @@ def lint(guide_text: str, manifest: Manifest, state: dict, labels: set[str] | No
          files: dict[str, str]) -> tuple[list[str], list[str]]:
     '''R5: (violations, notes). `labels` are the newest changelog's release
     labels, None when there is no changelog to read, which skips the label
-    check with a note; a label newer than the newest of them is a note too
-    (label_notes). The caller parses the changelog, so a malformed one is a
-    setup error there. `files` are the citation scan's, path -> text
+    check with a note; a three-part label newer than the newest of them is a
+    note too (label_notes). The caller parses the changelog, so a malformed
+    one is a setup error there. `files` are the citation scan's, path -> text
     (state.citing_files). Stale citations are not violations: callers print
     them (stale_lines) or report them (stale_by_section).'''
     lines = guide_text.split('\n')

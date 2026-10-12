@@ -74,18 +74,21 @@ def test_the_stamp_region_must_exist_and_precede_the_first_section(docs_dir):
 @pytest.mark.parametrize('prose, flagged, noted', [
     ('Fixed in 2.1.899.', ['2.1.899'], []),
     ('Since 2.1.901, and 2.1.902.', [], []),
+    # A fourth part is the baseline's own counter (R2.4): the shape it writes into stamps, never a
+    # release. Such a token, and any longer one, is a violation whatever the changelog's head, 2.1.902.
     ('A stamp 2.1.901.1 is no label.', ['2.1.901.1'], []),
-    # Newer than the changelog's newest release, 2.1.902: a note, not a violation.
+    ('A stamp 2.1.902.1 is no label.', ['2.1.902.1'], []),
+    ('Five parts, 2.1.950.1.1, are no label either.', ['2.1.950.1.1'], []),
+    # A three-part label newer than the changelog's newest release: a note, not a violation.
     ('Fixed in 2.1.950.', [], ['2.1.950']),
     ('Not 12.1.900 or 2.1.9001x.', [], ['2.1.9001']),
-    ('A stamp 2.1.902.1 sorts after the newest release.', [], ['2.1.902.1']),
     ('Fixed in 2.1.899, shipped in 2.1.950.', ['2.1.899'], ['2.1.950']),
 ])
-def test_every_2_1_version_must_be_a_release_label(docs_dir, prose, flagged, noted):
-    '''R5: a 2.1.NNN the changelog lacks is a violation, unless it is newer than
-    the changelog's newest release. An older changelog cannot say whether that
-    release exists, so the label is a note (owner, plan 43 final review,
-    2026-10-12).'''
+def test_an_unlisted_label_is_a_violation_unless_it_is_a_newer_three_part_release(docs_dir, prose, flagged, noted):
+    '''R5: a 2.1.NNN the changelog lacks is a violation, unless it is a
+    three-part label newer than the changelog's newest release. An older
+    changelog cannot say whether that release exists, so the label is a note
+    (owner, plan 43 final review, 2026-10-12).'''
     text = guide_text() + prose + '\n'
     line = len(text.split('\n')) - 1
     assert run(text, synced(text, fixture_state(docs_dir))) == (
