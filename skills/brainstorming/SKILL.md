@@ -6,6 +6,7 @@ description: >
   code, scaffolding a project, or invoking an implementation skill. Trigger on "let's build",
   "add a feature", "create a tool", "I have an idea", or any request that would otherwise jump
   straight to implementation, however simple it looks.
+# cc-guide: lean.session-hygiene @2.1.219
 ---
 
 # Brainstorming Ideas Into Designs

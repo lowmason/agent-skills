@@ -6,6 +6,7 @@ description: >
   skill that fails to trigger or over-triggers, tightening a description, structuring references/
   and scripts/, pressure-testing a discipline skill, or micro-testing wording changes against a
   no-guidance baseline.
+# cc-guide: skills.locations skills.frontmatter skills.description skills.listing-budget skills.progressive-disclosure subagents.isolation @2.1.219
 ---
 
 # Writing Skills

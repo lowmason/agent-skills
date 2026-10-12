@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# cc-guide: skills.frontmatter skills.arguments commands.overview subagents.frontmatter subagents.tools rules.hierarchy rules.rules-files rules.settings hooks.exit-codes hooks.configuration hooks.patterns hooks.pitfalls lean.model-routing @2.1.288
 '''Claude Code guide conformance lint.
 
 Checks the repo's Claude Code artifacts against the register,

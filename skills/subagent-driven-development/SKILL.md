@@ -6,6 +6,7 @@ description: >
   as the required sub-skill, a specs/plans/*.md handoff from writing-plans, resuming a
   partially executed plan, or completing and merging one. Not for tightly coupled tasks needing one continuous context, or
   partner-requested direct execution (use executing-plans).
+# cc-guide: subagents.frontmatter subagents.models subagents.isolation lean.session-hygiene lean.model-routing @2.1.219
 ---
 
 # Subagent-Driven Development
