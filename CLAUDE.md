@@ -123,7 +123,7 @@ cd hooks && uv run --python 3.13 --with pytest python -m pytest -q && uv run --p
 # Commit lints: these three, the dependency-drift test, snippet Tier 1, sync_runtime_assets.py --check and the drift
 # lint (cli.py lint, below) make seven. build/run_commit_lints.sh runs all seven; build/githooks/pre-commit runs it on
 # each commit once enabled (an owner step: git config core.hooksPath build/githooks writes repo config every worktree
-# reads); the hook lints the working tree, untracked drafts included. .github/workflows/lints.yml: PRs and main.
+# reads); the hook lints the working tree, untracked drafts included except by the drift lint, which reads tracked files only. .github/workflows/lints.yml: PRs and main.
 # Frontmatter, provenance and guide-conformance lints (run before committing any Claude Code artifact)
 uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
 uv run --python 3.13 python build/check_provenance.py
