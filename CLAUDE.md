@@ -120,14 +120,15 @@ cd skills/subagent-driven-development/scripts && uv run --python 3.13 --with pyt
 cd hooks && uv run --python 3.13 --with pytest python -m pytest -q && uv run --python /usr/bin/python3 --with pytest python -m pytest -q
 
 # Commit lints: these three, the dependency-drift test, snippet Tier 1 and sync_runtime_assets.py --check make six.
-# build/run_commit_lints.sh runs all six; build/githooks/pre-commit runs it on each commit once enabled (once per
-# clone: git config core.hooksPath build/githooks); .github/workflows/lints.yml runs it on pull requests and main.
+# build/run_commit_lints.sh runs all six; build/githooks/pre-commit runs it on each commit once enabled (an owner step:
+# git config core.hooksPath build/githooks writes repo config every worktree reads); the hook lints the working tree,
+# untracked files included, so a broken untracked draft can block any commit. .github/workflows/lints.yml: PRs and main.
 # Frontmatter, provenance and guide-conformance lints (run before committing any Claude Code artifact)
 uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
 uv run --python 3.13 python build/check_provenance.py
 uv run --python 3.13 --with pyyaml python build/check_conformance.py
 
-# Commit-lint runner, hook and workflow tests: throwaway clones, each running the full lint set (about a minute)
+# Commit-lint runner, hook and workflow tests: three of them run the full lint set in a throwaway clone (about 10 s warm)
 cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_commit_lints.py
 
 # Claude Code guide drift detector (build/cc_guide/): its suite; lint, run before committing a change to the guide or
