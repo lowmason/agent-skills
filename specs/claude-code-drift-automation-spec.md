@@ -523,7 +523,12 @@ instead). Exit 0 when clean; exit 1 with one line per violation.
 - Guide quality: every `2.1.NNN` in the guide is a changelog release label;
   every table has consistent column counts; every JSON code block parses. The
   label check reads the newest cached changelog (`latest/`, else the 2.1.288
-  snapshot) and is skipped with a note when there is none.
+  snapshot) and is skipped with a note when there is none. A three-part label
+  newer than that changelog's newest release is one the cache cannot judge, so
+  it prints a `note:` line on stderr and leaves the exit alone; any other
+  label the changelog does not list stays a violation, a four-part token such
+  as `2.1.902.1` included, since that is the shape `baseline` writes into
+  stamps and never a release (owner, plan 43, 2026-10-12).
 
 Stale citations, whose stamp is below a cited section's `changed`, print as
 `STALE <file> <ids>` on stderr and do not change the exit code. A test in the
