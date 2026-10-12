@@ -71,17 +71,36 @@ def test_the_stamp_region_must_exist_and_precede_the_first_section(docs_dir):
     assert run(late, synced(late, s))[0] == ['guide: the stamp region must sit before the first section']
 
 
-@pytest.mark.parametrize('prose, flagged', [
-    ('Fixed in 2.1.950.', ['2.1.950']),
-    ('Since 2.1.901, and 2.1.902.', []),
-    ('Not 12.1.900 or 2.1.9001x.', ['2.1.9001']),
-    ('A stamp 2.1.902.1 is no label.', ['2.1.902.1']),
+@pytest.mark.parametrize('prose, flagged, noted', [
+    ('Fixed in 2.1.899.', ['2.1.899'], []),
+    ('Since 2.1.901, and 2.1.902.', [], []),
+    ('A stamp 2.1.901.1 is no label.', ['2.1.901.1'], []),
+    # Newer than the changelog's newest release, 2.1.902: a note, not a violation.
+    ('Fixed in 2.1.950.', [], ['2.1.950']),
+    ('Not 12.1.900 or 2.1.9001x.', [], ['2.1.9001']),
+    ('A stamp 2.1.902.1 sorts after the newest release.', [], ['2.1.902.1']),
+    ('Fixed in 2.1.899, shipped in 2.1.950.', ['2.1.899'], ['2.1.950']),
 ])
-def test_every_2_1_version_must_be_a_release_label(docs_dir, prose, flagged):
+def test_every_2_1_version_must_be_a_release_label(docs_dir, prose, flagged, noted):
+    '''R5: a 2.1.NNN the changelog lacks is a violation, unless it is newer than
+    the changelog's newest release. An older changelog cannot say whether that
+    release exists, so the label is a note (owner, plan 43 final review,
+    2026-10-12).'''
     text = guide_text() + prose + '\n'
     line = len(text.split('\n')) - 1
-    assert run(text, synced(text, fixture_state(docs_dir)))[0] == [
-        f'guide line {line}: {v} is not a changelog release label' for v in flagged]
+    assert run(text, synced(text, fixture_state(docs_dir))) == (
+        [f'guide line {line}: {v} is not a changelog release label' for v in flagged],
+        [f"guide line {line}: {v} is newer than the changelog's newest release 2.1.902; not checked"
+         for v in noted])
+
+
+def test_the_newest_release_is_compared_by_version_not_as_text():
+    '''2.1.100 is newer than 2.1.99, though it sorts before it as text.'''
+    lines = ['Since 2.1.100, not 2.1.98, and 2.1.101.']
+    labels = {'2.1.99', '2.1.100'}
+    assert lint.label_problems(lines, labels) == ['guide line 1: 2.1.98 is not a changelog release label']
+    assert lint.label_notes(lines, labels) == [
+        "guide line 1: 2.1.101 is newer than the changelog's newest release 2.1.100; not checked"]
 
 
 def test_every_table_row_keeps_its_headers_cell_count(docs_dir):

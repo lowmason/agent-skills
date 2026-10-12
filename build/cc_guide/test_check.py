@@ -390,6 +390,19 @@ def test_a_changed_block_or_a_lint_failure_is_due_at_once(tmp_path, docs_dir):
     assert (code, report['due']['lint']) == (1, 1)
 
 
+def test_a_label_newer_than_the_changelog_just_read_is_a_note_that_is_not_due(tmp_path, docs_dir):
+    '''R6.2: check lints with the changelog it read. A guide label above that
+    changelog's newest release cannot be judged, so the report carries a note
+    and the lint term stays 0.'''
+    repo = drift_repo(tmp_path / 'repo', docs_dir)
+    guide = repo / GUIDE_PATH
+    guide.write_text(guide.read_text().replace('First verified at 2.1.900.', 'First verified at 2.1.950.'))
+    code, report, _ = run_check(repo, tmp_path / 'cache', docs_dir)
+    assert (code, report['due']['lint'], report['lint']) == (0, 0, {
+        'violations': [],
+        'notes': ["guide line 9: 2.1.950 is newer than the changelog's newest release 2.1.902; not checked"]})
+
+
 def test_check_names_a_missing_block_from_the_cached_snapshot(tmp_path, docs_dir):
     repo = drift_repo(tmp_path / 'repo', docs_dir)
     cache = tmp_path / 'cache'

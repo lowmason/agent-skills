@@ -53,6 +53,29 @@ def test_lint_exits_zero_clean_one_on_a_violation_and_two_on_a_setup_error(world
     assert capsys.readouterr() == ('', f'cc-guide: {state.BASELINE}: not found in the working tree\n')
 
 
+@pytest.mark.usefixtures('world')  # the committed repo, with cli pointed at it
+def test_a_label_newer_than_the_cached_changelog_is_a_note_not_a_violation(tmp_path, capsys):
+    '''With only the bootstrap snapshot cached, a changelog that ends before the
+    guide's labels, lint called each of them "not a changelog release label" and
+    exited 1, so every local commit was refused. Such a label cannot be judged:
+    it is a note on stderr and the exit stays 0 (owner, plan 43 final review,
+    2026-10-12).'''
+    snapshot_only = tmp_path / 'snapshot-only-cache'
+    write_tree(state.snapshot_docs(snapshot_only, '2.1.288'), {
+        'changelog.md': '<Update label="2.1.899" description="August 1, 2026">\n  * A bullet\n</Update>\n'})
+    assert main(snapshot_only, 'lint') == 0
+    note = "note: guide line {}: 2.1.900 is newer than the changelog's newest release 2.1.899; not checked\n"
+    assert capsys.readouterr() == ('', note.format(6) * 2 + note.format(9))  # line 6 names 2.1.900 twice
+
+
+def test_an_unlisted_label_below_the_cached_changelogs_newest_release_is_still_a_violation(world, capsys):
+    repo, cache, _ = world
+    guide = repo / GUIDE_PATH
+    guide.write_text(guide.read_text().replace('First verified at 2.1.900.', 'First verified at 2.1.899.'))
+    assert main(cache, 'lint') == 1
+    assert capsys.readouterr() == ('guide line 9: 2.1.899 is not a changelog release label\n', '')
+
+
 def test_help_shows_the_module_docstring_and_the_rebaseline_refusal(capsys):
     outs = []
     for argv in (['--help'], ['baseline', 'rebaseline', '--help']):
