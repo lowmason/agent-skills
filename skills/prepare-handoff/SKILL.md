@@ -28,7 +28,7 @@ Put each thing the next session needs into one bin:
 |---|---|
 | In the artifact | Nothing. The brief may point to it by section. |
 | Recomputable by the receiver's checks: status, commits since, files naming the artifact, plan ids | Nothing. |
-| Amendable now, with your human partner approving the exact wording now | Amend and commit it: a spec amendment tagged `(owner, YYYY-MM-DD)`, a `## Decisions` entry in the plan, a deviation line in the subagent-driven-development ledger, a stage plan's `## Handoff to later stages`, or a derive-roadmap roadmap. |
+| Amendable now, with your human partner approving the exact wording now | Amend it, and commit where the home is tracked: a spec amendment tagged `(owner, YYYY-MM-DD)`, a `## Decisions` entry in the plan, a deviation line in the subagent-driven-development ledger, a stage plan's `## Handoff to later stages`, or a derive-roadmap roadmap. |
 | Everything else | The brief. |
 
 Everything else includes decisions whose wording your partner approves later,
