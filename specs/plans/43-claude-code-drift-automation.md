@@ -57,7 +57,7 @@ Every task's requirements implicitly include this section.
   - `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-stage2/build/cc_guide --python 3.13 --with pytest python -m pytest -q`
   - `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-stage2/hooks --python 3.13 --with pytest python -m pytest -q`
   - A worktree lacks the gitignored `build/.scratch/`, so four tests in `test_verify_citations.py` fail there and stay failing throughout: `test_true_negative_flags_bad_refs`, `test_empty_text_has_no_failures`, `test_chapter_fallback_passes_gate_a_but_is_flagged` and `test_known_good_fallback_is_not_flagged`. They are not this plan's to fix.
-  - Every expected change below is a **+N delta over the baseline you record**. This plan adds **+58 tests** to the build directory. Of those, +53 are in `build/cc_guide/` (Tasks 2–5); the other five are `test_check_conformance.py` +1 (Task 6), `test_commit_lints.py` +1 (Task 7) and `test_check_frontmatter.py` +3 (Task 8). `hooks/` gains none.
+  - Every expected change below is a **+N delta over the baseline you record**. This plan adds **+59 tests** to the build directory. Of those, +54 are in `build/cc_guide/` (Tasks 2–5); the other five are `test_check_conformance.py` +1 (Task 6), `test_commit_lints.py` +1 (Task 7) and `test_check_frontmatter.py` +3 (Task 8). `hooks/` gains none.
 - **Test-first.** Each task writes its tests first, runs them, and reconciles the run against the step's prediction before writing code: the counts, and each failure's cause.
   - The predictions were observed by replaying this plan's edit blocks, task by task, against a clean checkout of `b5a209d` while the plan was written.
   - A test that passes at its RED step is a plan defect: fix the assertion so it fails for the stated reason, and report the deviation. Task 8 names its two exceptions, which pin existing behaviour that R12.4 requires to stay unchanged.
@@ -90,6 +90,7 @@ Every task's requirements implicitly include this section.
 - **D1** (owner, planning, 2026-10-12): a rules file with frontmatter (`rules/*.md`) cites like a skill: a `# cc-guide:` YAML comment as the frontmatter's last line. R4.1's first row widens to Markdown with frontmatter. The tracked symlink `.claude/rules/clean-code-python.md` is git's link text, so the scan reads the rule once. Applied in: Task 1 (spec amendment), Task 2, Task 8.
 - **D2** (owner, planning, 2026-10-12): a skill's `SKILL.md` citation covers its `references/`, which carry none of their own. Its scripts carry their own line. Applied in: Task 1 (spec amendment), Task 8.
 - **D3** (owner, planning, 2026-10-12): `cli.py lint` joins the commit lints as the seventh, so the pre-commit hook and CI enforce citation placement. Applied in: Task 1 (spec amendment), Task 7.
+- **D4** (owner, plan review, 2026-10-12): D2 widens from `references/` to every Markdown file a skill loads on demand, in `references/` or beside `SKILL.md`, after the Codex review found Claude Code facts in `requesting-code-review/code-reviewer.md` and SDD's prompt templates. `requesting-code-review`'s citation gains `subagents.models` for `code-reviewer.md`. Applied in: Task 1 (spec amendment), Task 8.
 
 ---
 
@@ -126,7 +127,7 @@ Two follow-up probes ran the same day, recorded in the same README:
 
 Every task was built and run in a throwaway clone of `b5a209d` (`~/.cache/agent-skills/scratch/plan43-proto`). These totals are what that clone saw, a record and not a target; the tasks state deltas, measured against the baseline the execution session records:
 - baseline, in a fresh clone of `b5a209d`: the build directory 776 passed, 4 failed and 11 skipped; `build/cc_guide/` 224 passed; `hooks/` 274 passed;
-- after all nine tasks: the build directory 834 passed (+58), with the 4 known failures; `build/cc_guide/` 277 passed (+53); `hooks/` 274 on both interpreters; `test_commit_lints.py` 12 passed (+1);
+- after all nine tasks: the build directory 835 passed (+59), with the 4 known failures; `build/cc_guide/` 278 passed (+54); `hooks/` 274 on both interpreters; `test_commit_lints.py` 12 passed (+1);
 - `build/run_commit_lints.sh`: all seven lints pass after the sweep;
 - `cli.py lint`: exit 0 and 41 `STALE` lines.
 
@@ -146,7 +147,7 @@ This plan's code blocks are cut from that clone's files.
   - Markdown without frontmatter: line 1 ("at the top");
   - TOML: line 1;
   - Markdown with frontmatter: the line before the closing `---`.
-- **S4. A skill's `README.md` or `INSTALL.md` carries its own HTML citation.** D2 covers `references/` only: those files are not loaded on demand like references, and nothing loads a README into context. This applies to `skills/bayesian-workflow/README.md` and `skills/llm-wiki/INSTALL.md`.
+- **S4. A skill's `README.md` or `INSTALL.md` carries its own HTML citation.** D2 and D4 cover the Markdown a skill loads on demand; nothing loads a README or INSTALL file into context, so neither is covered. This applies to `skills/bayesian-workflow/README.md` and `skills/llm-wiki/INSTALL.md`.
 - **S5. NOTICE gains one bullet** in the superpowers changes list. It names the seven superpowers skills and the two superpowers-derived agents that now carry a citation comment, and says no parsed field changed.
   - The sweep also cites two other adapted works: `bayesian-workflow` (its `SKILL.md` and `README.md`) and the clean-code family's `rules/clean-code-python.md`. Their NOTICE entries describe what was adapted and from whom; neither keeps a change-by-change list, which the superpowers section does. A citation comment adds no adapted material, so neither entry gains a bullet.
 - **S6. `cite` takes one or more files**, read from the repo root as `lint` and `check` print them. A symlink is stamped at its target. Every file is checked before any is written.
@@ -203,7 +204,7 @@ Every listed file starts stale: no file cites only sections whose `changed` is 2
 | `skills/brainstorming/SKILL.md` | `lean.session-hygiene` | `@2.1.219` |
 | `skills/dispatching-parallel-agents/SKILL.md` | `subagents.frontmatter` `subagents.models` `subagents.isolation` | `@2.1.219` |
 | `skills/executing-plans/SKILL.md` | `subagents.frontmatter` | `@2.1.219` |
-| `skills/requesting-code-review/SKILL.md` | `subagents.frontmatter` `subagents.isolation` | `@2.1.219` |
+| `skills/requesting-code-review/SKILL.md` | `subagents.frontmatter` `subagents.models` `subagents.isolation` | `@2.1.219` |
 | `skills/subagent-driven-development/SKILL.md` | `subagents.frontmatter` `subagents.models` `subagents.isolation` `lean.session-hygiene` `lean.model-routing` | `@2.1.219` |
 | `skills/writing-plans/SKILL.md` | `lean.session-hygiene` `lean.model-routing` | `@2.1.219` |
 | `skills/writing-skills/SKILL.md` | `skills.locations` `skills.frontmatter` `skills.description` `skills.listing-budget` `skills.progressive-disclosure` `subagents.isolation` | `@2.1.219` |
@@ -259,7 +260,7 @@ Facts the cited files rely on that no guide section states:
     - per-spawn effort;
     - resuming a finished subagent;
     - nested dispatch.
-18. Bash `run_in_background` and its notification, and detached processes surviving between calls. Files: `requesting-code-review`, `brainstorming`.
+18. Bash `run_in_background` and its notification, and detached processes surviving between calls. Files: `requesting-code-review` (`codex-review.md`), `brainstorming` (`visual-companion.md`).
 19. Worktree and session mechanics. Files: `using-git-worktrees`, `finishing-a-development-branch`, `requesting-code-review`, `subagent-driven-development`.
     - worktree isolation refusing variable-built commands;
     - `EnterWorktree` and `ExitWorktree`;
@@ -286,7 +287,7 @@ Every one sits in a file the sweep stamps stale, so Stage 3's `files` batches re
 
 ---
 
-### Task 1: Spec amendments (D1–D3)
+### Task 1: Spec amendments (D1–D4)
 
 **Files:**
 - Modify: `specs/claude-code-drift-automation-spec.md` (R4.1, R5, Out of scope)
@@ -307,7 +308,7 @@ with:
 | Markdown with frontmatter: `SKILL.md`, `agents/*.md`, `commands/*.md`, `rules/*.md`, `.claude/skills/*/SKILL.md`, `.claude/agents/*.md` (owner, plan 43, 2026-10-12) | `# cc-guide: …` as a YAML comment at column 0, the last line inside the frontmatter |
 ```
 
-- [ ] **Step 2: Say what a skill's citation covers (D2)**
+- [ ] **Step 2: Say what a skill's citation covers (D2, D4)**
 
 **Edit** `specs/claude-code-drift-automation-spec.md` — replace:
 
@@ -321,8 +322,9 @@ with:
 ```text
 Citations never go in a skill or agent body: bodies reach Codex and Gemini
 verbatim and cost tokens on every load. A skill's `SKILL.md` citation covers
-its `references/`, which load the same way, while its scripts carry their own
-(owner, plan 43, 2026-10-12).
+the Markdown files it loads on demand, in `references/` or beside it, which
+load the same way and carry none of their own, while its scripts carry their
+own (owner, plan 43, 2026-10-12).
 ```
 
 - [ ] **Step 3: The lint joins the commit lints (D3)**
@@ -1570,7 +1572,8 @@ git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-st
 - Produces:
   - `baseline.cite(path: str, text: str, state: dict) -> tuple[str, str]`, returning the new text and the stamp;
   - the CLI `baseline cite FILE [FILE ...]`;
-  - `cli.repo_path(name: str) -> str`.
+  - `cli.repo_path(name: str) -> str`;
+  - `baseline accept … --substantive` refuses, exit 2 and nothing written, while any citation fails to parse: a broken citation has no stamp for the new `changed` to exceed (R2.4).
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -1660,17 +1663,32 @@ def test_a_substantive_accept_keeps_changed_above_every_citers_stamp(world):
     guide.write_text(guide.read_text().replace('Alpha uses', 'Alpha now uses'))
     assert main(cache, 'baseline', 'accept', 'alpha.overview', '--substantive') == 0
     assert load(repo)['sections']['alpha.overview']['changed'] == '2.1.902.1'
+
+
+def test_a_substantive_accept_refuses_while_a_citation_is_broken(world, capsys):
+    '''R2.4: a citation that does not parse yields no stamp for `changed` to
+    exceed, so the accept refuses until the lint passes, and writes nothing.'''
+    repo, cache, _ = world
+    cited(repo, {'hooks/gate.sh': '#!/bin/sh\nexit 0\n# cc-guide: alpha.overview @2.1.902\n'})
+    guide = repo / GUIDE_PATH
+    guide.write_text(guide.read_text().replace('Alpha uses', 'Alpha now uses'))
+    assert main(cache, 'baseline', 'accept', 'alpha.overview', '--substantive') == 2
+    assert capsys.readouterr() == ('', (
+        'cc-guide: a substantive accept needs every citation to parse (R2.4); fix these first:\n'
+        'hooks/gate.sh:3: a citation goes on a line before the first line of code (R4.1)\n'))
+    assert dirty(repo) == [GUIDE_PATH]
 ```
 
-- [ ] **Step 2: Run them; expect 10 failures**
+- [ ] **Step 2: Run them; expect 11 failures**
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-stage2/build/cc_guide --python 3.13 --with pytest python -m pytest -q test_baseline.py test_cli.py`
-Expected: `10 failed`:
+Expected: `11 failed`:
 - `test_baseline.py` 2: `AttributeError: module 'baseline' has no attribute 'cite'`;
-- `test_cli.py` 8:
+- `test_cli.py` 9:
   - the help test's new assertion;
   - six `cite` tests that end in `SystemExit: 2` from argparse (`invalid choice: 'cite'`);
-  - the accept test (`'2.1.902' != '2.1.902.1'`).
+  - the accept test (`'2.1.902' != '2.1.902.1'`);
+  - the broken-citation accept test, which today's accept lets through (`assert 0 == 2`).
 
 - [ ] **Step 3: Implement `cite` (`baseline.py`)**
 
@@ -1838,8 +1856,11 @@ with:
         newest, stamps = None, None
         if args.substantive:
             newest = newest_releases(cache)[0].label
-            cited = by_section(read_citations(citing_files(tree, manifest.guide))[0])
-            stamps = {sid: [c.stamp for c in cs] for sid, cs in cited.items()}
+            citations, problems = read_citations(citing_files(tree, manifest.guide))
+            if problems:  # a citation that does not parse has no stamp to stay above
+                raise SetupError('a substantive accept needs every citation to parse (R2.4); fix these first:\n'
+                                 + '\n'.join(problems))
+            stamps = {sid: [c.stamp for c in cs] for sid, cs in by_section(citations).items()}
         new = baseline.accept(state, guide_text, args.ids, args.substantive, newest, stamps)
 ```
 
@@ -1860,10 +1881,10 @@ After reviewing such a file, `cli.py baseline cite <file>` restamps it.
 Nothing is committed for you.
 ```
 
-- [ ] **Step 5: Run the suite; expect +9**
+- [ ] **Step 5: Run the suite; expect +10**
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-stage2/build/cc_guide --python 3.13 --with pytest python -m pytest -q`
-Expected: all pass, 53 above the recorded baseline. That is +2 in `test_baseline.py` and +7 new tests in `test_cli.py`; the help test was already counted.
+Expected: all pass, 54 above the recorded baseline. That is +2 in `test_baseline.py` and +8 new tests in `test_cli.py`; the help test was already counted.
 
 - [ ] **Step 6: Commit**
 
@@ -2280,7 +2301,7 @@ TABLE = [
     ('skills/brainstorming/SKILL.md', 'lean.session-hygiene', '2.1.219'),
     ('skills/dispatching-parallel-agents/SKILL.md', 'subagents.frontmatter subagents.models subagents.isolation', '2.1.219'),
     ('skills/executing-plans/SKILL.md', 'subagents.frontmatter', '2.1.219'),
-    ('skills/requesting-code-review/SKILL.md', 'subagents.frontmatter subagents.isolation', '2.1.219'),
+    ('skills/requesting-code-review/SKILL.md', 'subagents.frontmatter subagents.models subagents.isolation', '2.1.219'),
     ('skills/subagent-driven-development/SKILL.md', 'subagents.frontmatter subagents.models subagents.isolation lean.session-hygiene lean.model-routing', '2.1.219'),
     ('skills/writing-plans/SKILL.md', 'lean.session-hygiene lean.model-routing', '2.1.219'),
     ('skills/writing-skills/SKILL.md', 'skills.locations skills.frontmatter skills.description skills.listing-budget skills.progressive-disclosure subagents.isolation', '2.1.219'),
@@ -2401,8 +2422,8 @@ git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-43-cc-drift-st
   - The exit is 1 if anything else is due (2.1.290 and later are untriaged), never 2.
   - Read `report['citing']` in the report path the summary prints, and confirm it is a mapping.
 - [ ] **Step 4: Every existing gate (Validation 6).** Run each, and record each outcome against the baseline:
-  - the build suite (+58, the 4 known failures only);
-  - the cc_guide suite (+53);
+  - the build suite (+59, the 4 known failures only);
+  - the cc_guide suite (+54);
   - `hooks/` on both interpreters (unchanged);
   - `build/run_commit_lints.sh` (all seven pass);
   - `uv run --python 3.13 --with pyyaml python build/check_conformance.py` (exit 0).
