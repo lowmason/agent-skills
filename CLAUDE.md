@@ -119,10 +119,10 @@ cd skills/subagent-driven-development/scripts && uv run --python 3.13 --with pyt
 # and the floor goes untested. Gate B is the live probe, ./hooks/probe-readonly-guard.sh, which spawns claude -p
 cd hooks && uv run --python 3.13 --with pytest python -m pytest -q && uv run --python /usr/bin/python3 --with pytest python -m pytest -q
 
-# Commit lints: these three, the dependency-drift test, snippet Tier 1 and sync_runtime_assets.py --check make six.
-# build/run_commit_lints.sh runs all six; build/githooks/pre-commit runs it on each commit once enabled (an owner step:
-# git config core.hooksPath build/githooks writes repo config every worktree reads); the hook lints the working tree,
-# untracked files included, so a broken untracked draft can block any commit. .github/workflows/lints.yml: PRs and main.
+# Commit lints: these three, the dependency-drift test, snippet Tier 1, sync_runtime_assets.py --check and the drift
+# lint (cli.py lint, below) make seven. build/run_commit_lints.sh runs all seven; build/githooks/pre-commit runs it on
+# each commit once enabled (an owner step: git config core.hooksPath build/githooks writes repo config every worktree
+# reads); the hook lints the working tree, untracked drafts included. .github/workflows/lints.yml: PRs and main.
 # Frontmatter, provenance and guide-conformance lints (run before committing any Claude Code artifact)
 uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
 uv run --python 3.13 python build/check_provenance.py
