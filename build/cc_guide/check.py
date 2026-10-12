@@ -1,7 +1,7 @@
 '''`check`: fetch the docs when the changelog head moved, compare each group's
-selected blocks with the baseline, list each section's untriaged releases,
-and report what is due (drift spec R6). R6.8's citing-file lists are Stage
-2's, `--hook` (R6.10) Stage 4's and `packets` (R6.11) Stage 3's.'''
+selected blocks with the baseline, list each section's untriaged releases
+and the files citing it, and report what is due (drift spec R6). `--hook`
+(R6.10) is Stage 4's and `packets` (R6.11) Stage 3's.'''
 import hashlib
 import http.client
 import json
@@ -15,7 +15,8 @@ from typing import Callable, NamedTuple
 
 from blocks import SEP, block_hash, candidates, key_hash, key_names, page_blocks, select
 from docs import CHANGELOG, LLMS, Release, is_platform, page_file, page_url, parse_changelog, parse_llms, version_key
-from lint import lint
+from guide import by_section, read_citations
+from lint import lint, stale_by_section
 from state import (BASELINE, MANIFEST, PROBES, Manifest, ProbeRow, SetupError, Snapshot, Source, block_namer,
                    citing_files, fetch_record, group_terms, latest_docs, no_snapshot, parse_baseline,
                    parse_manifest, parse_probes, read_fetch, read_utf8, snapshot_text)
@@ -304,6 +305,7 @@ def check(source: Source, cache: Path, *, docs_dir: Path | None, today: date, no
     rows = parse_probes(source.read(PROBES))
     terms = group_terms(manifest, guide_text)
     files = citing_files(source, manifest.guide)
+    citations, _ = read_citations(files)
     errors: list[str] = []
     try:
         docs = offline_docs(manifest, docs_dir) if docs_dir else live_docs(manifest, cache, fetch, now)
@@ -317,16 +319,20 @@ def check(source: Source, cache: Path, *, docs_dir: Path | None, today: date, no
                                'guide': sha256(guide_text)}}
     violations, notes = lint(guide_text, manifest, state, {r.label for r in releases} if releases else None, files)
     report['lint'] = {'violations': violations, 'notes': notes}
+    report['stale'] = stale_by_section(citations, state)
     due = {'lint': len(violations)}
     if docs is not None:
         errors += docs.errors
         findings, deselected = compare(manifest, state, terms, docs, partial(snapshot_text, cache))
         pending = untriaged(state, releases)
         slugs = parse_llms(docs.llms)
+        cited = by_section(citations)
+        flagged = {sid for f in findings for sid in f.candidates}
         report.update({
             'latest_release': releases[0].label,
             'findings': {gid: [f._asdict() for f in findings if f.group == gid] for gid in manifest.groups},
             'deselected': deselected,
+            'citing': {sid: [c.path for c in cited.get(sid, [])] for sid in state['sections'] if sid in flagged},
             'llms': {'added': sorted(slugs - set(state['llms'])), 'removed': sorted(set(state['llms']) - slugs)},
             'untriaged': pending,
             'releases': release_notes(releases, {l for ls in pending.values() for l in ls}, terms),
@@ -355,6 +361,11 @@ def summary(report: dict, path: Path) -> list[str]:
     violations = report['lint']['violations']
     lines.append('lint: clean' if not violations else f'lint: {len(violations)} violation(s), due')
     lines += [f'  {v}' for v in violations]
+    stale = report['stale']
+    files = {path for paths in stale.values() for path in paths}
+    lines.append('stale citations: none' if not stale else
+                 f'stale citations: {len(files)} file(s) under {len(stale)} section(s), informational')
+    lines += [f"  {sid}: {', '.join(paths)}" for sid, paths in stale.items()]
     if 'findings' in report:
         kinds = [f for group in report['findings'].values() for f in group]
         counts = {k: sum(1 for f in kinds if f['kind'] == k) for k in ('changed', 'missing', 'new', 'missing-page')}
@@ -363,6 +374,10 @@ def summary(report: dict, path: Path) -> list[str]:
                      f"; {sum(map(len, report['deselected'].values()))} deselected (informational)")
         lines += [f"  [{f['group']}] {f['kind']} {Finding(**f).ref()}"
                   f" (candidates: {', '.join(f['candidates'])})" for f in kinds]
+        citing = {sid: paths for sid, paths in report['citing'].items() if paths}
+        if citing:
+            lines.append('files citing a candidate section:')
+            lines += [f"  {sid}: {', '.join(paths)}" for sid, paths in citing.items()]
         llms = report['llms']
         lines.append(f"llms.txt since the baseline: {len(llms['added'])} added, {len(llms['removed'])} removed")
         batch = due['changelog']
