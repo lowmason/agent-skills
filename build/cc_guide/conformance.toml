@@ -841,16 +841,6 @@ evidence = 'Audit rows H-51, H-57; owner gate 2026-10-04.'
 tracked_in = 'deferred item: settle where enforceAvailableModels belongs'
 
 [[exception]]
-id = 'commit-lints-in-prose'
-type = 'gap'
-sections = ['mechanisms.overview']
-artifacts = ['CLAUDE.md', 'build/CLAUDE.md']
-guide = 'A deterministic, machine-checkable rule belongs in a hook, not in prose.'
-reason = 'The before-commit lints and the rule against hand-editing runtimes/ are prose that no hook or CI enforces.'
-evidence = 'Audit rows C-31, C-32; owner gate 2026-10-04.'
-tracked_in = 'deferred item: run the before-commit lints from a hook or CI'
-
-[[exception]]
 id = 'claude-md-serves-codex-gemini'
 type = 'deviation'
 sections = ['mechanisms.overview']
