@@ -1,10 +1,11 @@
 # Synthesize-mode scenario verification re-run — `describe-critique-methodology`
 
-**Date:** 2026-10-12 · **Status:** `B1 FAILED (held 1/5); B2 held 5/5; B3 held 5/5; E1 5/5. Six reps run, 1 void, 5 scored`
+**Date:** 2026-10-12 · **Status:** `B1 FAILED (held 0/5 as scored); B2 held 5/5; B3 held 5/5; E1 5/5. Six reps run, 1 void, 5 scored`
 **Governs:** whether `describe-critique-methodology` Synthesize mode's triage ordering, locator
 discipline and derive-roadmap handoff hold in practice. B2 and B3 are verified on this fixture.
-B1 is a recorded failure, driven by one rule (R2, table coverage). Fixing it is a separate
-writing-skills cycle (Disposition).
+B1 is a recorded failure, driven by one rule (R2, table coverage) that the skill leaves undefined: it
+asks for a table "covering every critique point" and never says what a point is. Resolving that is a
+separate writing-skills cycle (Disposition).
 
 > ⚠️ **Quarantine this file during any future micro-test of `describe-critique-methodology`.**
 > It names the skill, the behaviours under test, the pass bar and the failures. Its name matches
@@ -261,25 +262,41 @@ plan file exists. R1-R8 were scored by reading.
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | 1 | yes | yes | yes | yes | yes | yes | **NO** | yes | yes | yes | yes | yes | yes | **fail** | pass | pass | 2 | `specs/calibration.md` |
 | 2 | yes | yes | yes | yes | yes | yes | **NO** | **NO** | yes | yes | yes | yes | yes | **fail** | pass | pass | 2 | `specs/calibration.md` |
-| 4 | yes | yes | yes | yes | yes | yes | yes | yes | yes | yes | yes | yes | yes | pass | pass | pass | 2 | `specs/calibration.md` |
+| 4 | yes | yes | yes | yes | yes | yes | **NO** | yes | yes | yes | yes | yes | yes | **fail** | pass | pass | 2 | `specs/calibration.md` |
 | 5 | yes | yes | yes | yes | yes | yes | **NO** | yes | yes | yes | yes | yes | yes | **fail** | pass | pass | 2 | `specs/calibration.md` |
 | 6 | yes | yes | yes | yes | yes | yes | **NO** | yes | yes | yes | yes | yes | yes | **fail** | pass | pass | 2 | `specs/calibration.md` |
 
 Each spec sits in its rep's repo, `~/.cache/nfp-notes/rep-<n>/`, on a new branch `spec/calibration`
 with two commits (`git status` clean in all five).
 
-**R2 detail** (the table is read against the frozen 50-point key; a bare section anchor with no
-description of the claim does not count):
+**R2 detail.** The table is read against the frozen 50-point key, with one rule applied to every rep: a
+point counts when a row names or describes its distinct claim. A row that only cites a section anchor, or
+names the programs involved without stating the claim, does not count. An earlier keyword pass over the
+tables was too loose (it counted `global`, `ADP` and `variance` as matches), so every table was read in
+full, and rep-4's 24 rows were checked by hand against all 50 points.
 - **C3c, pay-frequency composition.** Absent from the whole turn-1 message and from the spec in reps 1,
   2 and 6; rep-5's spec mentions only a pay-period convention ("the pay period including the 12th"),
   a different matter. Rep-4's `T21` names it: "mix of pay frequencies". Reps 1, 2, 5 and 6 each have a
   paid-or-active, multi-establishment row that cites `§C.3` but never describes the pay-frequency claim.
-- **Other points missing from the table** (these do not change any rep's R2 result, which C3c already
-  fails): A7 (collapse size before geography) in reps 2 and 6; B3 (the QWI "10 or more jobs" figure) in
-  rep 6.
-- **Marginal, scored as covered:** rep-4's KF2 is cited only through the anchor "R KF 1-5", with CES
-  practice named in `T6` (kept as pass); B7 (n_eff admits a small-employer provider's small cells) is
-  not a separate row in reps 1 and 5; A9 in rep-5.
+- **KF2, CES's analyst-mediated treatment of atypical reports.** Stated in no rep's table. Each cites it
+  only through an anchor on an "evidence" row (quoted below), so R2 fails for every rep on this point as
+  well. KF4 (FRB and ADP validate the architecture) is stated as a claim only in rep-6 (row 23); in reps
+  1, 2, 4 and 5 it is an anchor plus program names.
+- **Other points missing from the table:** A7 (collapse size before geography) in reps 2 and 6; B3 (the
+  QWI "10 or more jobs" figure) in rep 6.
+- **Marginal, not counted as misses:** B7 (n_eff admits a small-employer provider's small cells) is not a
+  separate row in reps 1, 4 and 5; A9 (the QCEW-weighting principle stays global) is not named in reps 4
+  and 5.
+- **Rep 4, hand-checked.** Every ask is covered: Recommendations 1-10, the governance recommendation, both
+  change-asking caveats, and every Details A-D item except the marginal B7 and A9. It misses only the
+  evidence-level KF2 and KF4, and marginally B7 and A9. That is a few points short of "covers every
+  point", so R2 fails for rep-4 as written.
+- **The pattern in the misses.** Every point missed in any rep sits in the Key Findings or in the Details
+  prose and is never restated as an ask. C3c is in Details C gap 3's first sentence, while the gap's own
+  asks are "(a) state whether emp counts are paid or active" and "(b) flag or stratify multi-establishment
+  records", and Recommendation 9 omits pay frequency too. A7 appears only in Details A as "consider
+  collapsing size before geography", and never reached a Recommendation. B3 is evidence, and KF2 and KF4
+  are Key Findings. The reps' tables track the critique's asks.
 
 **R3 detail.** Rep-2's turn 2 raises a new owner decision that was not in its triage message (quoted
 below). The other four reps put every needs-user-adjudication question in the triage message and ask
@@ -319,7 +336,7 @@ Against the pre-registered bar (a behaviour holds in at least 4 of 5 valid reps)
 
 | Behaviour | Result | Verdict |
 |---|---|---|
-| **B1: triage before spec text** | 1 of 5 (rep-4 only) | **FAILED** |
+| **B1: triage before spec text** | 0 of 5 as scored | **FAILED** |
 | **B2: locator discipline** | 5 of 5 | **held** |
 | **B3: routing header and handoff** | 5 of 5 | **held** |
 | E1 (observed, unscored) | 5 of 5 read exactly the two named exemplars | the Task 1 edit works |
@@ -327,20 +344,30 @@ Against the pre-registered bar (a behaviour holds in at least 4 of 5 valid reps)
 **B1 in detail.** B1 has four parts, and three hold: the triage table precedes every write to the spec
 (M1, 5/5), every rep states above the table whether the critique was adjudicated (R1, 5/5), and four of
 five put every adjudication question in the table's message (R3). What fails is R2, table coverage
-(1/5): four reps leave the pay-frequency clause of the critique's third gap out of the table, and reps 2
-and 6 also drop other distinct points. The reps behaved as the skill asks. They
-compressed a compound critique point into the two clauses they treated as its substance.
+(0/5 as scored): C3c is missing in four reps, KF2 in all five, and reps 2 and 6 also drop A7 (and rep 6
+B3).
+
+What the failure is about: the skill asks for "ONE batched table covering every critique point" and never
+says what a point is. The reps took the critique's asks as the points (its ten Recommendations, the
+governance recommendation, the change-asking caveats and the numbered asks in Details), and every point
+they missed is a claim in the Key Findings or the Details prose that the critique never turns into an
+ask (R2 detail, "The pattern in the misses"). The frozen key counts 50 distinct claims. So the failure is
+a mismatch between the key's unit and the unit the reps chose, and the skill gives no basis for choosing
+between them. That is the fork in the Disposition item.
 
 **How sensitive each verdict is to the readings I chose:**
-- *B1 fails under every reading tried.* As scored it holds in 1 of 5. If C3c is excused (the old
-  49-point reading, which merged it into the paid-or-active point) and marginal omissions are excused,
-  reps 1, 4 and 5 pass R2, but rep-2 still fails R3 and A7 and rep-6 fails A7 and B3, giving 3 of 5. If
-  an anchor-only KF2 also fails, B1 is 0 of 5. None reaches 4.
+- *B1 fails under every reading tried.* As scored it holds in 0 of 5. A lenient reading that counts a
+  KF anchor with its evidence named as covering that finding gives rep-4 a pass, so 1 of 5. If C3c is
+  also excused (the old 49-point reading, which merged it into the paid-or-active point) and the marginal
+  omissions are excused, reps 1, 4 and 5 pass R2, but rep-2 still fails R3 and A7 and rep-6 fails A7 and
+  B3, giving 3 of 5. None reaches 4.
 - *B3 depends on how R8 is read.* All five final turns are a single turn with no tool calls, and none
   drafts a roadmap, stages or a plan. Four also say what the roadmap's first stage should settle, and
   the fifth tells the new session where to start (quoted below). Each points back at the spec's own
   Rollout-note ordering, and none lays out a staged breakdown, so I scored R8 as a pass for all five.
-  If the owner reads those remarks as drafting stages, B3 could fail in up to 5 of 5.
+  If the owner reads those remarks as drafting stages, B3 could fail in up to 5 of 5. This reading was
+  made after seeing the transcripts, so it is put to the owner as an explicit ruling at the plan-completion
+  gate (see the Rulings line at the end of this record).
 - *B2 is not sensitive.* Both R4-R7 and M3 hold in every rep, and every locator resolves.
 
 ## Qualitative evidence
@@ -356,6 +383,12 @@ compressed a compound critique point into the two clauses they treated as its su
   client records that span several establishments (R Rec 9, R §C.3)".
 - The rep that kept it, rep 4, `T21`: "Paid vs. active employment; clients with several establishments; mix of
   pay frequencies (R Rec 9, §C.3)".
+- KF2, the critique's text: "CES treatment of "atypical" reports — which the document explicitly mirrors — is
+  analyst-mediated and cell-dependent, not a fixed global rule." Rep 4, `T22`, the only row that carries it:
+  "FRB/ADP/QuickBooks evidence; limits of ADP/Paychex documentation (R KF 1-5, Caveats 1-2) | accept (no
+  action) | Evidence behind the rows above, not requirements." Rep 2, row 22: "R KF2, KF4, KF5: CES,
+  ADP-FRB and QuickBooks practice | accept as evidence | Citations supporting the design; no requirement of
+  their own."
 - A7, rep 2, row 16: "R §A 7.4: per-industry collapse order and collapsed-share cap | **reject for now**".
   Rep 6, row 12: "Per-industry collapse order and collapsed-share cap (R §A) | accept, scoped". The critique's
   words: "consider collapsing *size* before *geography* in industries where size is the dominant confounder".
@@ -404,21 +437,27 @@ No change to the skill in this plan. One deferred item for the failed behaviour,
 `skills/writing-plans/references/deferred-backlog.md`. The controller enters it in
 `specs/deferred_items.md` at plan completion; this record does not edit that file.
 
-- [ ] Synthesize mode's triage table drops sub-claims of compound critique points, and one rep asked an
-      adjudication question after the table message (B1 failed, held 1/5 of 5 valid reps, in plan 42's
-      re-run). `skills/describe-critique-methodology/SKILL.md` § Synthesize mode step 2 and
-      `references/spec-synthesis.md` § triage table. Four reps left pay-frequency composition (Details C,
-      gap 3's first clause) out of the table, folding the gap into its paid-or-active and
-      multi-establishment clauses; reps 2 and 6 also dropped the collapse-size-before-geography point and
-      the QWI figure respectively; rep 2 raised a new owner decision (history handling) in its turn-2
-      message. The same reps triaged before any spec text (5/5) and stated the adjudication status above the
-      table (5/5), so ordering holds and coverage granularity does not. See
-      `specs/completed/synthesize-mode-verification-2026-10-12.md` for the traces. Size: design.
-      Done when: a writing-skills RED→GREEN cycle changes the skill so the table has one row per
-      distinct claim, with a compound point split, plus a coverage check against the critique's own
-      enumeration, and a re-run on this fixture holds B1 in at least 4 of 5 valid reps; or the owner
-      decides instead that the R2 rubric's 50-point granularity is the wrong bar and records the revised
-      one.
+- [ ] Synthesize mode never defines what a "critique point" is for the triage table, so the table covers the
+      critique's asks and drops claims that live only in its Key Findings or Details (B1 failed, held 0/5 as
+      scored of 5 valid reps, in plan 42's re-run; 1/5 on a lenient reading). `skills/describe-critique-methodology/SKILL.md`
+      § Synthesize mode step 2 and `references/spec-synthesis.md` § Critique triage table ("ONE batched table
+      covering every critique point"). Four reps left pay-frequency composition (Details C gap 3's first
+      clause) out of the table, all five left CES's analyst-mediated treatment of atypical reports (Key
+      Finding 2) to an anchor on an evidence row, reps 2 and 6 dropped collapse-size-before-geography, rep 6
+      dropped the QWI figure, and rep 2 raised a new owner decision (history handling) in its turn-2
+      message. Every miss is a claim the critique never turns into an ask. The same reps triaged before any
+      spec text (5/5) and stated the adjudication status above the table (5/5), so ordering holds and
+      coverage granularity does not. See `specs/completed/synthesize-mode-verification-2026-10-12.md` for
+      the traces. Size: design. Done when: the owner has chosen the fork and it is done. Either (a) the skill
+      defines a point as every distinct claim, with a compound point split and a coverage check against the
+      critique's own enumeration (a writing-skills RED→GREEN cycle), and a re-run on this fixture holds B1 in
+      at least 4 of 5 valid reps; or (b) the owner revises the R2 rubric to score the critique's asks
+      (Recommendations, governance, change-asking caveats, numbered Details asks) and records the revised
+      bar.
+
+**Rulings.** R8 (whether the handoff remarks about the roadmap's first stage count as drafting stages;
+B3's verdict turns on it): pending the owner's ruling at the plan-completion gate. This line is updated
+when the owner rules.
 
 Not turned into items: the staleness-check void path and rep-6's post-approval decisions are recorded
 above as observations. Whether either is worth an item is the owner's call at the completion gate.
