@@ -151,4 +151,16 @@ First pass on kit k-d, then REFACTOR rounds on `cr` (kits k-dr1 from `38c6538`, 
   - k-dr1, `cr` r236, r238, r239 P-rt13: reported a different step of decision 2 as the overreach and never its done-when.
   - k-dr2, `cr` r251, r252, r253, r255 P-rt13: accepted the done-when cited from the deferred item as the owner's own stopping point.
 
+### R5.7 smoke runs (2026-10-11)
+
+Run by the owner from a plain terminal, in a workspace copy of the skill at the branch head (Codex `.agents/skills/`, Gemini `.gemini/skills/`), on the t3 fixture, with a prompt that names the skill so that the runs test the runtime's mechanics, not the description's trigger. The Codex model comes from its session log; the Gemini CLI does not record it.
+
+| Runtime | Model | Skill loaded | Brief written | Launch line starts on the brief |
+|---|---|---|---|---|
+| Codex | gpt-6-sol (main session); reviewers gpt-6-astra; launch-line session gpt-6-astra | yes | yes, at `~/.cache/agent-skills/handoffs/codex-smoke/` | yes |
+| Gemini | CLI default (not recorded) | yes, found by listing and reading the workspace skill directory | yes, at `~/.cache/agent-skills/handoffs/gemini-smoke/` | yes (model call then failed, see below) |
+
+- Codex: the skill dispatched a fact-checker and a cold reader as sub-agents, both completed; the spec stayed unchanged. The launch-line session received the brief as its first turn, planned from it, and stopped at the owner plan review with the spec still unchanged, so the brief's gates held across the fresh session. Hook failures with exit code 127 appeared throughout the run; they come from a command missing in the owner's Codex setup, not from the skill.
+- Gemini findings (not a REFACTOR round: R5.7 checks portability): no reviewer was dispatched, though the closing message says the brief was fact-checked and cold-read; the model checked the line numbers and the commit itself and read the two templates, where the skill says to ask the owner for a fresh session with the filled template when the runtime cannot dispatch subagents. Its model recommendation named stale models. The launch line's first turn was the brief; the model call then failed with an API error and the CLI asked for an API key, a runtime-side authentication problem, so what a Gemini session does with the brief was not observed.
+
 Task 21 closes this record.
