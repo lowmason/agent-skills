@@ -3,7 +3,7 @@
 **Skills · slash commands · subagents · rules · hooks — built and run on a token budget**
 
 <!-- cc-guide:stamp -->
-> Checked against the Claude Code docs and changelog through 2.1.289 on 2026-10-05; oldest full re-verification 2026-10-03, at 2.1.288.
+> Checked against the Claude Code docs and changelog through 2.1.296 on 2026-10-12; oldest full re-verification 2026-10-03, at 2.1.288.
 <!-- /cc-guide:stamp -->
 
 > First verified in July 2026, at Claude Code 2.1.219, 58 releases before the full re-verification at 2.1.288 against the official documentation (code.claude.com/docs) and Anthropic's pricing pages. Claude Code changes quickly: items marked ⚠ are the most version-sensitive — confirm them against your installed version (`claude --version`, `/doctor`) before depending on exact numbers or field names.
@@ -88,7 +88,7 @@ Among the first three, a same-name skill shadows the lower-precedence one. Skill
 | `arguments` | Named positional args usable as `$name` in the body |
 | `allowed-tools` | Tools pre-approved for the turn the skill runs (clears next user message) |
 | `disallowed-tools` | Tools removed while the skill is active |
-| `model` / `effort` | Per-turn model and reasoning-effort override (respects `availableModels`). A `model` that differs from the session's makes that turn a full cache miss. In auto mode, a `model` that auto mode doesn't support (Haiku) is ignored and the session model runs — the behavior since 2.1.259, which also fixed a bug that ignored skill `model:` in interactive sessions ⚠ |
+| `model` / `effort` | Per-turn model and reasoning-effort override (respects `availableModels`). A `model` that differs from the session's makes that turn a full cache miss. In auto mode, a `model` that auto mode doesn't support (Haiku 4.5 and earlier; Haiku 5.5 is supported, and `haiku` resolves to it on the Anthropic API since 2.1.293) is ignored and the session model runs — the behavior since 2.1.259, which also fixed a bug that ignored skill `model:` in interactive sessions ⚠ |
 | `context: fork` | Run the body in an isolated subagent that doesn't see the conversation — the instructions must stand alone |
 | `agent` | Which agent type executes a forked skill (default `general-purpose`) |
 | `background` | For forked skills: `false` blocks the turn for the result; `true` (default, 2.1.218+) runs in background ⚠ |
@@ -181,7 +181,7 @@ Subagent definitions are Markdown files in `~/.claude/agents/` (personal) or `.c
 | `tools` | Allowlist (omit to inherit all, MCP tools included); `Agent(worker, researcher)` restricts spawnable types only for an agent run as the main thread (`--agent`) |
 | `disallowedTools` | Subtractive alternative to `tools` (applied first when both are set) |
 | `model` | `sonnet` \| `opus` \| `haiku` \| `fable` \| full ID \| `inherit`. Resolution order: a per-spawn `model` Claude passes → this field → `CLAUDE_CODE_SUBAGENT_MODEL` → the main model ⚠ |
-| `effort` | `low` … `max` reasoning effort for this agent (levels vary by model) |
+| `effort` | `low` … `max` reasoning effort for this agent (levels vary by model); a per-spawn `effort` Claude passes (2.1.292+) overrides it, and `CLAUDE_CODE_EFFORT_LEVEL` outranks both |
 | `permissionMode` | `default`, `acceptEdits`, `auto`, `dontAsk`, `bypassPermissions`, `plan` — ignored when the parent runs in `bypassPermissions`, `acceptEdits`, or auto mode |
 | `maxTurns` | Turn cap; at the limit the output comes back marked partial and can be resumed |
 | `skills` | Skills whose **full content is preloaded** at start — costly; only for what the role always needs |
@@ -208,7 +208,7 @@ A documentation agent doesn't need `Bash`; a review agent doesn't need `Write`. 
 ### Route models by role
 <!-- cc: subagents.models -->
 
-Haiku 4.5 lists at a quarter of Opus 5.5's per-token price ($1/$5 vs $4/$20 per MTok) and half of Sonnet 5.5's, yet scored 73.3% on SWE-bench Verified at its October 2025 launch — cheap delegation costs little quality on mechanical work. Two caveats ⚠: Haiku's window is 200K tokens against 1M for the current Fable, Opus, and Sonnet (a subagent's window follows its own model, not the parent's), and its retirement window opens 2026-10-15. A sensible default split:
+Since 2.1.293 the `haiku` alias resolves to Haiku 5.5 on the Anthropic API: $0.10/$0.50 per MTok for prompts up to 100K tokens — a fortieth of Opus 5.5's price ($4/$20) and a twentieth of Sonnet 5.5's — with a 1M window, aimed by Anthropic at high-volume, latency-sensitive work such as classification, extraction, and routing. Its predecessor Haiku 4.5, which lists at a quarter of Opus 5.5's per-token price ($1/$5), scored 73.3% on SWE-bench Verified at its October 2025 launch — evidence that cheap delegation costs little quality on mechanical work. Two caveats ⚠: on Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry, and Claude Platform on AWS, `haiku` still resolves to Haiku 4.5, now a legacy model whose 200K window trails the 1M of the current Fable, Opus, Sonnet, and Haiku 5.5 (a subagent's window follows its own model, not the parent's) and whose retirement window opens 2026-10-15; and Haiku 5.5 bills every rate at 5× once a prompt passes 100K tokens, cache reads and writes included. A sensible default split:
 
 - **Haiku**: test-running, formatting checks, mechanical review, classification, search/exploration.
 - **Sonnet**: implementation.
@@ -261,7 +261,7 @@ Claude Code keeps per-project memory in `~/.claude/projects/<project>/memory/`. 
 ### Settings precedence and permission rules
 <!-- cc: rules.settings -->
 
-`settings.json` resolves highest-to-lowest: **managed → command-line args → `.claude/settings.local.json` → `.claude/settings.json` → `~/.claude/settings.json`**.
+`settings.json` resolves highest-to-lowest: **managed → `--settings` JSON → `.claude/settings.local.json` → `.claude/settings.json` → `~/.claude/settings.json`** (other flags, such as `--model`, set one thing for the session and aren't part of this stack).
 
 Permissions **merge across levels** — a deny anywhere wins; no other level can re-allow it. (One exception, 2.1.287+: an installed mod that handles `tool.check` can approve a call that a deny rule or a non-managed hook refused, unless managed settings or a Team/Enterprise login apply ⚠.) Evaluation order is `deny → ask → allow`, first match wins. Syntax details worth memorizing:
 
@@ -305,7 +305,7 @@ Current builds document 33 events (the newest, `PreModelSwitch` / `PostModelSwit
 
 - **Exit 0** — success; stdout may be plain text (becomes context on `SessionStart`/`UserPromptSubmit`) or structured JSON. JSON-looking output that fails to parse is a hook error (2.1.248+).
 - **Exit 2** — block, on blockable events. The message is your JSON `reason` if you give one, otherwise stderr; tool events and `Stop` show it to Claude, most other events only to the user.
-- **Other exits** — non-blocking error: the action proceeds, and the first stderr line surfaces in the transcript.
+- **Other exits** — non-blocking error: the action proceeds, and the first stderr line surfaces in the transcript. On a `command` or `http` hook, `onFailure: "block"` (2.1.295+) makes such a failure do what exit 2 does on that event — on `PermissionRequest`, where exit 2 is ignored, it denies the request — except for the events and hooks listed under Pitfalls, where it has no effect.
 
 JSON on stdout unlocks finer control: universal fields (`continue`, `stopReason`, `systemMessage`; `suppressOutput` is still accepted but now does nothing) plus event-specific `hookSpecificOutput` — `permissionDecision` / `updatedInput` on `PreToolUse`, `updatedToolOutput` on `PostToolUse`, `additionalContext` for injected context. `decision` / `reason` stay top-level; a top-level `additionalContext` is silently ignored. Injected text — `additionalContext`, `systemMessage`, plain stdout — is capped at 10,000 characters per hook; the overflow arrives as a file path plus a short preview. Stop hooks receive `stop_hook_active: true` whenever Claude is already continuing because of a stop hook — **check it (or the transcript) to avoid blocking on a condition that can never resolve**; the 8-block cap is only the backstop.
 
@@ -322,7 +322,7 @@ JSON on stdout unlocks finer control: universal fields (`continue`, `stopReason`
 ### Configuration
 <!-- cc: hooks.configuration -->
 
-Hooks live in any settings level (user / project / local / managed — entries merge across levels), in plugins, and in **frontmatter**: a skill's hooks register when it's invoked and stay for the rest of the session (`once: true`, honored only there, removes one after its first successful run); an agent's hooks run only while that agent does. Per-hook fields: `matcher` (plain names or `A|B` lists match exactly; anything else is a regex over the event's field — tool name, session source, agent type), `if` (permission-rule syntax over tool arguments, e.g. `Bash(git *)`; honored only on tool events — elsewhere a hook with `if` never runs), `timeout`, `statusMessage`. `disableAllHooks: true` switches off user, project, local, and plugin hooks for debugging; managed hooks keep running unless it's set in managed settings.
+Hooks live in any settings level (user / project / local / managed — entries merge across levels), in plugins, and in **frontmatter**: a skill's hooks register when it's invoked and stay for the rest of the session (`once: true`, honored only there, removes one after its first successful run); an agent's hooks run only while that agent does. Per-hook fields: `matcher` (plain names or `A|B` lists match exactly; anything else is a regex over the event's field — tool name, session source, agent type), `if` (permission-rule syntax over tool arguments, e.g. `Bash(git *)`; honored only on tool events — elsewhere a hook with `if` never runs), `timeout`, `onFailure` (`"continue"` by default; `"block"` makes a failed `command` or `http` hook block, 2.1.295+), `statusMessage`. `disableAllHooks: true` switches off user, project, local, and plugin hooks for debugging; managed hooks keep running unless it's set in managed settings.
 
 ### Patterns
 <!-- cc: hooks.patterns -->
@@ -374,8 +374,8 @@ exit 0
 <!-- cc: hooks.pitfalls -->
 
 - `PostToolUse` runs *after* the edit — it can fix or report, not prevent. Pair it with a `Stop` gate for rules that must hold at turn end. A `Write|Edit` matcher also misses files that Bash or an outside process rewrites.
-- Blocking requires **exit 2** (stderr carries the message) or a JSON deny/block decision; exit 1 is a non-blocking error — the action proceeds.
-- **Gates fail open**: a mistyped script path, a crash, or a timeout lets the call through. Trigger each gate once to prove it blocks.
+- Blocking requires **exit 2** (stderr carries the message) or a JSON deny/block decision; exit 1 is a non-blocking error — the action proceeds, unless the hook sets `onFailure: "block"` (next bullet).
+- **Gates fail open** by default: a mistyped script path, a crash, or a timeout lets the call through. On a `command` or `http` hook, `"onFailure": "block"` (2.1.295+) turns each of those into a block — it has no effect on `Stop`, `SubagentStop`, `TaskCompleted`, `TeammateIdle`, or background (`async`) command hooks. Either way, trigger each gate once to prove it blocks.
 - `if` filtering is best-effort — enforce a hard allow/deny with a permission rule and keep hooks for logic and corrective messages.
 - `@`-referenced files are read without a tool call, so no `PreToolUse` hook sees them — guard secrets with a `Read` deny rule.
 - Hooks run inline — keep them fast, or the session drags on every event (`async: true` backgrounds a command hook but gives up blocking).
@@ -402,12 +402,12 @@ exit 0
 ### Caching: automatic, but don't fight it
 <!-- cc: lean.caching -->
 
-Claude Code caches in three layers (system prompt + tools / project context / conversation). Economics per MTok of base input: cache **reads cost 0.1×** on most models — **0.05× on Opus 5.5, 0.025× on Fable 5.1** — while 5-minute-TTL **writes cost 1.25×** and 1-hour writes 2×. A 5-minute write repays itself after one cache read, a 1-hour write after two. TTL depends on how you authenticate ⚠: **on a subscription, within your plan's included usage, the main conversation gets the 1-hour TTL automatically; subagents, compaction, and other background requests stay at 5 minutes, as does API-key and cloud-provider auth.** `ENABLE_PROMPT_CACHING_1H=1` requests 1 hour for everything, subagents included (at 2× writes); `promptCacheTtl` / `subagentPromptCacheTtl` set each bucket separately.
+Claude Code caches in three layers (system prompt + tools / project context / conversation). Economics per MTok of base input: cache **reads cost 0.1×** on most models — **0.05× on Opus 5.5 and Sonnet 5.5, 0.025× on Fable 5.1** — while 5-minute-TTL **writes cost 1.25×** and 1-hour writes 2×. A 5-minute write repays itself after one cache read, a 1-hour write after two. TTL depends on how you authenticate ⚠: **on a subscription, within your plan's included usage, the main conversation gets the 1-hour TTL automatically; subagents, compaction, and other background requests stay at 5 minutes, as does API-key and cloud-provider auth.** `ENABLE_PROMPT_CACHING_1H=1` requests 1 hour for everything, subagents included (at 2× writes); `promptCacheTtl` / `subagentPromptCacheTtl` set each bucket separately.
 
 What invalidates the cache mid-session ⚠:
 
 - **Breaks it:** `/model` (each model has its own cache) — including a skill or command whose `model:` differs from the session's, for that turn; the first `/fast` in a conversation; a new Claude Code version (applied at next launch); and, only when tool schemas load upfront (tool search off), connecting or removing an MCP server or a deny rule that removes a whole tool.
-- **Safe now:** `/effort` on Opus 5.5, Sonnet 5.5, and Fable 5.1 (API key or subscription); toggling the advisor; plugin skills, commands, agents, and hooks; scoped permission rules. `/compact` rebuilds the conversation layer and reloads CLAUDE.md and memory from disk.
+- **Safe now:** `/effort` on Opus 5.5, Sonnet 5.5, Haiku 5.5, and Fable 5.1 (API key or subscription); toggling the advisor; plugin skills, commands, agents, and hooks; scoped permission rules. `/compact` rebuilds the conversation layer and reloads CLAUDE.md and memory from disk.
 - **Editing CLAUDE.md mid-session** doesn't break the cache — but the edit doesn't apply until `/clear`, `/compact`, or a restart.
 
 The practical rule: **pick your model and server set at session start and leave them alone**, and front-load stable context.
@@ -415,15 +415,15 @@ The practical rule: **pick your model and server set at session start and leave 
 ### Model routing
 <!-- cc: lean.model-routing -->
 
-<!-- TODO(owner): decide the default-model stance in the first bullet below. Evidence as of 2026-10-03: the account default is now Opus 5.5 at medium effort; the costs docs still say Sonnet handles most coding and costs less; Opus 5.5 and Sonnet 5.5 charge the same $0.20/MTok for cached reads, so Sonnet saves only on output, cache writes, and fresh input (2x each). -->
+<!-- TODO(owner): decide the default-model stance in the first bullet below. Evidence as of 2026-10-03: the account default is now Opus 5.5 at medium effort; the costs docs still say Sonnet handles most coding and costs less; as of 2026-10-12 (2.1.296) Sonnet 5.5 cached reads bill $0.10/MTok against Opus 5.5's $0.20, so Sonnet is exactly half of Opus on every token class (the two matched on cached reads on 2026-10-03). -->
 
 Match the model to the phase, not the session:
 
 - **Default to Sonnet-class** for routine implementation; escalate deliberately rather than idling on Opus.
-- **`opusplan`** runs Opus in plan mode and Sonnet in execution — strong reasoning where it counts, cheaper tokens for the long implementation tail. Each phase switch is a full cache miss, and with Opus 5.5 and Sonnet 5.5 charging the same for cached reads, the savings now come only from output, cache writes, and fresh input — measure before assuming it wins.
+- **`opusplan`** runs Opus in plan mode and Sonnet in execution — strong reasoning where it counts, cheaper tokens for the long implementation tail. Each phase switch is a full cache miss, but Sonnet 5.5 now bills half of Opus 5.5 at every rate, cached reads included, so the execution tail is cheaper throughout — measure before assuming it wins.
 - **The advisor** (`/advisor`, `advisorModel`; experimental, Anthropic API only) lets a cheaper main model consult a stronger one at decision points — e.g. Sonnet main with an Opus advisor. Toggling it keeps the main cache, but each consultation re-reads the transcript uncached ⚠.
 - **Haiku for mechanical subagents** (see §5) — this is where per-agent `model:` earns its keep.
-- **Raise `/effort` before escalating the model.** The diagnostic order for disappointing output: missing context → effort → model. On Opus 5.5, Sonnet 5.5, and Fable 5.1 an effort change keeps the cache, and Opus 5.5 and Sonnet 5.5 start at `medium`, so headroom is one command away; the level is saved per model (`modelSettings`).
+- **Raise `/effort` before escalating the model.** The diagnostic order for disappointing output: missing context → effort → model. On Opus 5.5, Sonnet 5.5, Haiku 5.5, and Fable 5.1 an effort change keeps the cache, and Opus 5.5, Sonnet 5.5, and Haiku 5.5 start at `medium`, so headroom is one command away; the level is saved per model (`modelSettings`).
 - **Fast mode (`/fast`)** ⚠ is the same model — Opus 5.5 by default since 2.1.280 — up to ~2.5× faster at 2× the price ($8/$40 per MTok): a latency lever, not a capability one. The first toggle in a conversation re-reads the context uncached at fast rates; on subscriptions it bills usage credits only.
 
 Pinning and defaults: model precedence runs `/model` → `--model` → `ANTHROPIC_MODEL` → the `model` setting, and the account default is now Opus 5.5 on most plans and providers ⚠. `ANTHROPIC_DEFAULT_OPUS_MODEL` / `_SONNET_MODEL` / `_HAIKU_MODEL` / `_FABLE_MODEL` control what each alias resolves to (alias targets differ by provider); `CLAUDE_CODE_SUBAGENT_MODEL` sets the subagent fallback; `availableModels` restricts every place a model can be named, subagent and skill models and the advisor included (`enforceAvailableModels`, in managed settings, extends it to the Default option). `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1` cuts network chatter (updates, telemetry, error reports), not model calls — and because it stops feature-flag fetching, it also switches the advisor off ⚠.
@@ -434,10 +434,11 @@ List prices (October 2026, per MTok) ⚠:
 |---|---|---|---|---|
 | Fable 5.1 | $10.00 | $50.00 | $0.25 (0.025×) | $12.50 / $20.00 |
 | Opus 5.5 | $4.00 | $20.00 | $0.20 (0.05×) | $5.00 / $8.00 |
-| Sonnet 5.5 | $2.00 | $10.00 | $0.20 (0.1×) | $2.50 / $4.00 |
+| Sonnet 5.5 | $2.00 | $10.00 | $0.10 (0.05×) | $2.50 / $4.00 |
+| Haiku 5.5 (prompts up to 100K) | $0.10 | $0.50 | $0.01 (0.1×) | $0.125 / $0.20 |
 | Haiku 4.5 | $1.00 | $5.00 | $0.10 (0.1×) | $1.25 / $2.00 |
 
-(Opus 5.5 and Sonnet 5.5 cost the same per cached-read token, so in a cache-heavy session Sonnet's discount applies only to output, writes, and fresh input. Claude models from 4.7 on use a tokenizer that yields roughly 30% more tokens for the same text, so per-token comparisons with older models such as Haiku 4.5 understate the gap. Batch API runs at 50% of list.)
+(Sonnet 5.5 now costs exactly half of Opus 5.5 at every rate in the table. Haiku 5.5 is priced by prompt length: its row covers prompts up to 100K tokens (cache reads and writes count toward that length), and a longer prompt bills every rate at 5×. Claude models from 4.7 on use a tokenizer that yields roughly 30% more tokens for the same text, so per-token comparisons with older models such as Haiku 4.5 understate the gap. Batch API runs at 50% of list.)
 
 ### MCP hygiene
 <!-- cc: lean.mcp -->
