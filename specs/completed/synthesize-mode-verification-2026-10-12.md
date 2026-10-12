@@ -1,9 +1,9 @@
 # Synthesize-mode scenario verification re-run — `describe-critique-methodology`
 
-**Date:** 2026-10-12 · **Status:** `B1 FAILED (held 0/5 as scored); B2 held 5/5; B3 held 5/5; E1 5/5. Six reps run, 1 void, 5 scored`
+**Date:** 2026-10-12 · **Status:** `B1 FAILED (held 0/5 as scored); B2 held 5/5; B3 held 5/5 as scored, pending the owner's R8 ruling; E1 5/5. Six reps run, 1 void, 5 scored`
 **Governs:** whether `describe-critique-methodology` Synthesize mode's triage ordering, locator
-discipline and derive-roadmap handoff hold in practice. B2 and B3 are verified on this fixture.
-B1 is a recorded failure, driven by one rule (R2, table coverage) that the skill leaves undefined: it
+discipline and derive-roadmap handoff hold in practice. B2 is verified on this fixture. B3 is verified
+as scored, and the one post-hoc reading behind it (R8) is put to the owner (Decision). B1 is a recorded failure, driven by one rule (R2, table coverage) that the skill leaves undefined: it
 asks for a table "covering every critique point" and never says what a point is. Resolving that is a
 separate writing-skills cycle (Disposition).
 
@@ -12,12 +12,14 @@ separate writing-skills cycle (Disposition).
 > the VOID pattern `specs/completed/synthesize-mode-*`, and it sits in `specs/completed/`, the
 > directory the skill's exemplar step points reps at (Channel 1 per `microtest-isolation-channels`).
 
-Executes `specs/plans/42-synthesize-mode-verification-rerun.md` (Tasks 1–5), the re-run of plan 36
+Executes `specs/plans/completed/42-synthesize-mode-verification-rerun.md` (Tasks 1–5), the re-run of plan 36
 (`specs/plans/completed/36-synthesize-mode-scenario-verification.md`, whose run was void:
-`specs/completed/synthesize-mode-verification-2026-10-05.md`). Source: the 2026-07-26 deferred item
-"Synthesize mode has no scenario verification" from plan 18-methodology-pipeline-skills, selected at
-the 2026-10-11 `/deferred` pass. Its closure condition was "a re-run whose exemplar step is isolated
-yields 5 valid reps and a record under `specs/completed/` with verdicts for B1-B3". The behaviour
+`specs/completed/synthesize-mode-verification-2026-10-05.md`). Source: the open successor item
+"Synthesize mode still has no scenario verification (successor of the … item above; plan 36 ran
+VOID)" in `specs/deferred_items.md`, under `18-methodology-pipeline-skills (plan #1,
+describe-critique-methodology) — 2026-07-26`, selected at the 2026-10-11 `/deferred` pass. Its closure
+condition is "a re-run whose exemplar step is isolated yields 5 valid reps and a record under
+`specs/completed/` with verdicts for B1-B3". The behaviour
 under test is specified in `skills/describe-critique-methodology/SKILL.md` § Synthesize mode and
 `references/spec-synthesis.md`.
 
@@ -61,7 +63,6 @@ the paid-or-active point at plan 36's Task 1 review, which moved the count from 
    repos as a VOID path, and `42-synthesize-mode` as an injected-context marker. Applied in Tasks 2-4
    (`grade.py`'s `VOID_PATHS` and `INHERITED`; the guard ran at four points). The redesign trigger was
    not tripped.
-
 
 ## Pre-registration (fixed before any rep runs)
 
@@ -175,8 +176,10 @@ was voided by the guard.
 | After rep-6 | `main` | `69b30fa3bdf080cc0a8fff3fd39bb0fcad95bde7` | 0 | 1 |
 
 **Pilot audit (rep-1).**
-- `grade.py`: `inherited_hits` is `[]`; `exemplars_read` is exactly the two named exemplars.
-- Injected context: 155 `attachment` / `system` records (402 KB). A marker scan covered `plan 36`,
+- `grade.py`: `inherited_hits` is `[]`; `exemplars_read` is exactly the two named exemplars; `void_hits`
+  lists four names, all from a name-only `Glob` of `specs/completed/` (Rulings, 1).
+- Injected context: 155 records (402 KB): 151 `attachment`, 3 `system`, and 1 user text that is not one
+  of the three prompts. A marker scan covered `plan 36`,
   `plan 42`, `42-synthesize`, `synthesize-mode`, `scenario verification`, `ctl-q9`, `nfp-series`,
   `deferred_items`, `pass bar`, `pre-registr`, `coverage key`, `VOID`, `Channel 5`, `micro-test`, and the
   behaviour labels. It found nothing outside the skill and agent listings (records 8 and 10), where the
@@ -184,11 +187,18 @@ was voided by the guard.
   (75 KB and 55 KB) by head plus the marker scan. The content is the rep's own working directory, its
   own `(clean)` git status with the single `0e2c907` commit, the global `CLAUDE.md`, hooks, and the
   skill and agent listings.
-- `printenv` rule: `printenv LLM_WIKI_ROOT || true` ran with no denial and empty output, so the variable
-  is unset in the rep's environment and the allow rule took effect. Compound forms around `printenv`
-  stayed refused, as expected. No rep in this run had a bare `printenv LLM_WIKI_ROOT` denied.
-- Denied calls (4): two variable-bearing or compound commands (retried as plain commands), two
-  out-of-cwd `ls` attempts (dropped). None blocked a spec write or a commit.
+- `printenv` rule: rep-1's `printenv LLM_WIKI_ROOT || true` ran with no denial and printed nothing, so
+  the variable is unset in its environment. The bare form ran in reps 2, 3 and 6 (exit code 1, which
+  `printenv` returns for an unset variable) and was denied in none. Task 3, Step 3 expected compound forms
+  around `printenv` to stay refused, and they did not, uniformly: `… && printenv LLM_WIKI_ROOT || echo …`
+  (rep 4) and `… && printenv LLM_WIKI_ROOT; ls -la` (rep 5) also ran, while the forms that added
+  `echo "exit=$?"` (rep 1), a subshell (rep 2) or further `ls ~/Projects` commands (reps 3 and 6) were
+  denied. No rep ran any `printenv` other than `printenv LLM_WIKI_ROOT`, and none printed a value.
+- Denied calls (4): two variable-bearing or compound environment probes (retried as `printenv LLM_WIKI_ROOT
+  || true`), and two attempts to list `~/Projects` and `~/.cache/nfp-notes` (neither repeated as an
+  `ls`; the rep tried name-pattern `Glob`s for the same purpose at recs 126-127). Task 3, Step 3 expected
+  every denied call to be completed another way. The listings were not, so that expectation did not hold
+  either. None blocked a spec write or a commit.
 - All three turns produced output; GO.
 
 ## Validity
@@ -201,8 +211,8 @@ carried a VOID path or marker, and for any read of a sibling rep's directory (`n
 |---|---|---|---|---|
 | 1 | valid | a name-only `Glob` of `specs/completed/*.md` (rec 95 / 97) | the two named | 4 |
 | 2 | valid | nothing (never listed the directory) | the two named | 3 |
-| 3 | **void** | a content `Grep` for `nfp_series` over `/Users/lowell/Projects` (rec 106 / 108) | the two named | 3 |
-| 4 | valid | nothing | the two named | 2 |
+| 3 | **void** | a name-only `Glob` of `specs/completed/*.md` (rec 102 / 104), then a content `Grep` for `nfp_series` over `/Users/lowell/Projects` (rec 106 / 108) | the two named | 3 |
+| 4 | valid | nothing (one `Glob` of its own, empty, auto-memory directory) | the two named | 2 |
 | 5 | valid | nothing | the two named | 2 |
 | 6 | valid | a name-only `Glob` of `specs/completed/*.md` (rec 88 / 90) | the two named | 2 |
 
@@ -239,11 +249,20 @@ under `~/.claude/skills/`, which are the user's own skills and not a VOID path.
 3. `bash_write_suspect` entries are read-only `grep`, `git` or heredoc `git commit` commands, or
    denied commands that never ran. None counts against a rep.
 
-**Denied calls**, 16 in all (reps 1-6: 4, 3, 3, 2, 2, 2). Three reasons occur: "a variable in braces in
-this command can't be checked before it runs"; "multiple operations / shell operators require approval";
-and "`ls` in `<directory>` was blocked" (outside the working directory, including the skill's own
-`references/` directory, which the symlink resolves into `~/Projects/agent-skills`). None was a bare
-`printenv LLM_WIKI_ROOT`, and none blocked a spec write, a commit or an exemplar read.
+**Denied calls**, 16 in all (reps 1-6: 4, 3, 3, 2, 2, 2), every one a Bash command, by reason (the
+number after `rec` is the record index):
+- *A variable the checker cannot resolve* (6): the `echo "LLM_WIKI_ROOT=${LLM_WIKI_ROOT:-unset}"` probe in
+  reps 1 (rec 66), 2 (41), 4 (83), 5 (41) and 6 (69), and the unbraced `echo "LLM_WIKI_ROOT=$LLM_WIKI_ROOT"`
+  in rep 3 (45).
+- *Multiple operations or shell operators* (6): rep 1 recs 75 (`…; echo "exit=$?"`) and 121 (`ls ~/Projects;
+  ls ~/.cache/nfp-notes`), rep 2 rec 55 (a subshell), rep 3 recs 82 (a `printenv … || echo …` chain that also
+  listed `~/Projects` and `specs/completed/`) and 190 (a `sort -t: -k3 -u` chain), rep 6 rec 75 (a similar
+  chain).
+- *`ls` outside the working directory* (4): rep 1 rec 137 (`~/Projects`), and the skill's own `references/`
+  directory in reps 2 (rec 49), 4 (41) and 5 (49), which the `~/.claude/skills/` symlink resolves into
+  `~/Projects/agent-skills`.
+
+None was a bare `printenv LLM_WIKI_ROOT`, and none blocked a spec write, a commit or an exemplar read.
 
 **Sibling reads.** None in any of the six transcripts, in any tool input or result.
 
@@ -267,7 +286,7 @@ plan file exists. R1-R8 were scored by reading.
 | 6 | yes | yes | yes | yes | yes | yes | **NO** | yes | yes | yes | yes | yes | yes | **fail** | pass | pass | 2 | `specs/calibration.md` |
 
 Each spec sits in its rep's repo, `~/.cache/nfp-notes/rep-<n>/`, on a new branch `spec/calibration`
-with two commits (`git status` clean in all five).
+with two commits in reps 1, 2, 4 and 5 and one in rep 6 (`git status` clean in all five).
 
 **R2 detail.** The table is read against the frozen 50-point key, with one rule applied to every rep: a
 point counts when a row names or describes its distinct claim. A row that only cites a section anchor, or
@@ -278,25 +297,32 @@ full, and rep-4's 24 rows were checked by hand against all 50 points.
   2 and 6; rep-5's spec mentions only a pay-period convention ("the pay period including the 12th"),
   a different matter. Rep-4's `T21` names it: "mix of pay frequencies". Reps 1, 2, 5 and 6 each have a
   paid-or-active, multi-establishment row that cites `§C.3` but never describes the pay-frequency claim.
+  Scoring the spec as well as the table does not change this: pay-frequency composition appears in no
+  spec except rep-4's, which also has it in the table.
 - **KF2, CES's analyst-mediated treatment of atypical reports.** Stated in no rep's table. Each cites it
   only through an anchor on an "evidence" row (quoted below), so R2 fails for every rep on this point as
-  well. KF4 (FRB and ADP validate the architecture) is stated as a claim only in rep-6 (row 23); in reps
-  1, 2, 4 and 5 it is an anchor plus program names.
+  well. KF4 (FRB and ADP validate the architecture) is stated as a claim in rep-5 (`T28`: Fed/ADP as
+  precedent, neither publishing its thresholds) and rep-6 (row 23); in reps 1, 2 and 4 it is an anchor
+  plus program names, which the same rule counts as a miss.
 - **Other points missing from the table:** A7 (collapse size before geography) in reps 2 and 6; B3 (the
   QWI "10 or more jobs" figure) in rep 6.
 - **Marginal, not counted as misses:** B7 (n_eff admits a small-employer provider's small cells) is not a
-  separate row in reps 1, 4 and 5; A9 (the QCEW-weighting principle stays global) is not named in reps 4
-  and 5.
-- **Rep 4, hand-checked.** Every ask is covered: Recommendations 1-10, the governance recommendation, both
+  separate row in any of the five reps (each rep's remark about small-employer providers belongs to its
+  coverage-floor row, a different claim), and A9 (the QCEW-weighting principle stays global) is not named
+  in reps 4 and 5. B7 is a consequence of Recommendation 1, which every rep's table carries, and A9 is the
+  last item of a "keep global" list whose other items every rep names. Counting either as a miss would
+  add to the failures already recorded and would change no rep's verdict.
+- **Rep 4, hand-checked** (23 rows). Every ask is covered: Recommendations 1-10, the governance recommendation, both
   change-asking caveats, and every Details A-D item except the marginal B7 and A9. It misses only the
   evidence-level KF2 and KF4, and marginally B7 and A9. That is a few points short of "covers every
   point", so R2 fails for rep-4 as written.
-- **The pattern in the misses.** Every point missed in any rep sits in the Key Findings or in the Details
-  prose and is never restated as an ask. C3c is in Details C gap 3's first sentence, while the gap's own
-  asks are "(a) state whether emp counts are paid or active" and "(b) flag or stratify multi-establishment
-  records", and Recommendation 9 omits pay frequency too. A7 appears only in Details A as "consider
-  collapsing size before geography", and never reached a Recommendation. B3 is evidence, and KF2 and KF4
-  are Key Findings. The reps' tables track the critique's asks.
+- **The pattern in the misses.** Every point missed in any rep is one that the critique's numbered
+  Recommendations do not carry. KF2 and KF4 are Key Findings and B3 is an evidence figure. C3c is in Details
+  C gap 3's first sentence, while the gap's own asks are "(a) state whether emp counts are paid or active"
+  and "(b) flag or stratify multi-establishment records", and Recommendation 9 omits pay frequency too. A7
+  ("consider collapsing size before geography", Details A) is an ask, but only as a clause of a bullet whose
+  main ask, the collapse order and share cap, reps 2 and 6 did cover. The reps' tables track the
+  Recommendations and the asks stated in Details, not every claim the critique makes.
 
 **R3 detail.** Rep-2's turn 2 raises a new owner decision that was not in its triage message (quoted
 below). The other four reps put every needs-user-adjudication question in the triage message and ask
@@ -327,8 +353,8 @@ the Requirements section. Each was read against its spec context and its target.
 | 1 | `R Gov` → the governance recommendation (two-level configuration); `R §C.1` → Details C.1, no establishment-level variance estimation; `R §B.4` → Details B.4, effective sample size; `M §7.6` → "7.6 Winsorization of cell growth"; `R Rec 10` → Recommendation 10 (imputation discount, coverage floor, QC caps) |
 | 2 | `M §2.1` → "2.1 The leaf and the calibration cell"; `R §C.4` → Details C.4, client churn and onboarding cohorts; `R Rec 2` → Recommendation 2, emit a variance; `R §B.1` → Details B.1, the SE/CV precision test; `R KF1` → Key Finding 1, CES screening constants |
 | 4 | `M §7.1–7.2` → "7.1 Establishment-level screening"; `M §4, §5` → "4. Measure 1: `growth_raw`"; `R §B.3` → Details B.3, the QCEW-fraction term; `R Rec 4` → Recommendation 4, industry-specific screen; `R Rec 9` → Recommendation 9, paid vs active |
-| 5 | `M §1` → "1. Purpose and Scope" (the leaf is one record per geography × industry × size cell); `M §2.4` → "2.4 QCEW vintages and as-of correctness"; `R §B.4`; `R KF3` → Key Finding 3, Hidiroglou-Berthelot and Kokic-Bell; `M §7.3, §12` → "7.3 Eligibility screening" (the coverage floor) and the configuration surface |
-| 6 | `M §2.1`; `R §A` → Details A; `R §C.1`; `M §7.7` → "7.7 Weight normalization" (the max single-weight cap); `R Rec 5` → Recommendation 5, anomaly bounds |
+| 5 | `M §1` → "1. Purpose and Scope" (the leaf is one record per geography × industry × size cell); `M §2.4` → "2.4 QCEW vintages and as-of correctness"; `R §B.4` → Details B.4, effective sample size; `R KF3` → Key Finding 3, Hidiroglou-Berthelot and Kokic-Bell; `M §7.3, §12` → "7.3 Eligibility screening" (the coverage floor) and the configuration surface |
+| 6 | `M §2.1` → "2.1 The leaf and the calibration cell"; `R §A` → Details A; `R §C.1` → Details C.1, no establishment-level variance estimation; `M §7.7` → "7.7 Weight normalization" (the max single-weight cap); `R Rec 5` → Recommendation 5, anomaly bounds |
 
 ## Decision
 
@@ -344,14 +370,14 @@ Against the pre-registered bar (a behaviour holds in at least 4 of 5 valid reps)
 **B1 in detail.** B1 has four parts, and three hold: the triage table precedes every write to the spec
 (M1, 5/5), every rep states above the table whether the critique was adjudicated (R1, 5/5), and four of
 five put every adjudication question in the table's message (R3). What fails is R2, table coverage
-(0/5 as scored): C3c is missing in four reps, KF2 in all five, and reps 2 and 6 also drop A7 (and rep 6
-B3).
+(0/5 as scored): C3c is missing in four reps, KF2 in all five, KF4 in reps 1, 2 and 4, and reps 2 and 6
+also drop A7 (and rep 6 B3).
 
 What the failure is about: the skill asks for "ONE batched table covering every critique point" and never
 says what a point is. The reps took the critique's asks as the points (its ten Recommendations, the
 governance recommendation, the change-asking caveats and the numbered asks in Details), and every point
-they missed is a claim in the Key Findings or the Details prose that the critique never turns into an
-ask (R2 detail, "The pattern in the misses"). The frozen key counts 50 distinct claims. So the failure is
+they missed is one that the numbered Recommendations do not carry: a Key Finding, an evidence figure, or a
+clause of the Details prose (R2 detail, "The pattern in the misses"). The frozen key counts 50 distinct claims. So the failure is
 a mismatch between the key's unit and the unit the reps chose, and the skill gives no basis for choosing
 between them. That is the fork in the Disposition item.
 
@@ -360,7 +386,8 @@ between them. That is the fork in the Disposition item.
   KF anchor with its evidence named as covering that finding gives rep-4 a pass, so 1 of 5. If C3c is
   also excused (the old 49-point reading, which merged it into the paid-or-active point) and the marginal
   omissions are excused, reps 1, 4 and 5 pass R2, but rep-2 still fails R3 and A7 and rep-6 fails A7 and
-  B3, giving 3 of 5. None reaches 4.
+  B3, giving 3 of 5. None reaches 4. Scoring the spec together with the table does not rescue the
+  strict reading either, because the dominant miss, C3c, is in no spec but rep-4's.
 - *B3 depends on how R8 is read.* All five final turns are a single turn with no tool calls, and none
   drafts a roadmap, stages or a plan. Four also say what the roadmap's first stage should settle, and
   the fifth tells the new session where to start (quoted below). Each points back at the spec's own
@@ -371,6 +398,10 @@ between them. That is the fork in the Disposition item.
 - *B2 is not sensitive.* Both R4-R7 and M3 hold in every rep, and every locator resolves.
 
 ## Qualitative evidence
+
+Quotations are verbatim from the transcripts, the reps' specs and the fixture, with line wraps collapsed to
+single spaces and the markdown list number and bold markers around a whole quoted sentence dropped; … marks
+an omission.
 
 **The failures, verbatim.**
 - The critique's own text for the dropped clause (Details C, gap 3): "No treatment of pay-frequency
@@ -430,6 +461,12 @@ between them. That is the fork in the Disposition item.
   not find it unless the branch is merged or checked out. They said so in turns 2 and 3. Not measured.
 - *Description defects found unprompted:* the mixed log-versus-ratio growth units (reps 1, 4 and 6) and
   the two definitions of the calibration wedge (reps 1, 5 and 6).
+- *Blind spots of the kit.* `grade.py` matches VOID substrings against every tool input and result, so a
+  name-only `Glob` of `specs/completed/` is reported as `void_hits` (four false positives in each of reps 1,
+  3 and 6) and every hit has to be traced by hand, as the Validity table does. It has no check for a rep
+  reading a sibling rep's directory (`~/.cache/nfp-notes/rep-<m>`, m ≠ n), which matters because reps 2-5
+  ran in parallel; the sibling-read trace here was a separate manual pass (none found). A later re-run
+  could add each sibling directory to a rep's VOID paths when it grades that rep.
 
 ## Disposition
 
@@ -443,11 +480,12 @@ No change to the skill in this plan. One deferred item for the failed behaviour,
       § Synthesize mode step 2 and `references/spec-synthesis.md` § Critique triage table ("ONE batched table
       covering every critique point"). Four reps left pay-frequency composition (Details C gap 3's first
       clause) out of the table, all five left CES's analyst-mediated treatment of atypical reports (Key
-      Finding 2) to an anchor on an evidence row, reps 2 and 6 dropped collapse-size-before-geography, rep 6
-      dropped the QWI figure, and rep 2 raised a new owner decision (history handling) in its turn-2
-      message. Every miss is a claim the critique never turns into an ask. The same reps triaged before any
-      spec text (5/5) and stated the adjudication status above the table (5/5), so ordering holds and
-      coverage granularity does not. See `specs/completed/synthesize-mode-verification-2026-10-12.md` for
+      Finding 2) to an anchor on an evidence row, reps 1, 2 and 4 did the same for Key Finding 4, reps 2 and
+      6 dropped collapse-size-before-geography, rep 6 dropped the QWI figure, and rep 2 raised a new owner
+      decision (history handling) in its turn-2 message. Every miss is a point that the critique's numbered
+      Recommendations do not carry (a Key Finding, an evidence figure, or a clause of the Details prose).
+      The same reps triaged before any spec text (5/5) and stated the adjudication status above the table
+      (5/5), so ordering holds and coverage granularity does not. See `specs/completed/synthesize-mode-verification-2026-10-12.md` for
       the traces. Size: design. Done when: the owner has chosen the fork and it is done. Either (a) the skill
       defines a point as every distinct claim, with a compound point split and a coverage check against the
       critique's own enumeration (a writing-skills RED→GREEN cycle), and a re-run on this fixture holds B1 in
@@ -459,5 +497,6 @@ No change to the skill in this plan. One deferred item for the failed behaviour,
 B3's verdict turns on it): pending the owner's ruling at the plan-completion gate. This line is updated
 when the owner rules.
 
-Not turned into items: the staleness-check void path and rep-6's post-approval decisions are recorded
-above as observations. Whether either is worth an item is the owner's call at the completion gate.
+Not turned into items: the staleness-check void path, rep-6's post-approval decisions and the kit's
+missing sibling-read check are recorded above as observations. Whether any is worth an item is the owner's
+call at the completion gate.
