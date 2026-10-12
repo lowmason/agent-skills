@@ -1,6 +1,8 @@
 # Handoff briefs — Design Spec
 
-**Status: DESIGN APPROVED (2026-10-04).** The owner approved the written spec,
+**Status: COMPLETE (2026-10-11)** — implemented via plan 40 (retired to specs/plans/completed/40-handoff-briefs.md); shipped: the prepare-handoff skill and changes to writing-plans, derive-roadmap, subagent-driven-development and executing-plans, gated per the RED record (specs/completed/red-baseline-handoff-briefs-2026-10-10.md).
+
+**Status at design time: DESIGN APPROVED (2026-10-04).** The owner approved the written spec,
 including the self-review's changes to the approved sections: R2.5 and R4.9
 moved so each component stands alone, behavioral gate criteria for C1 and C2,
 and R2.4's default recommendation. Designed

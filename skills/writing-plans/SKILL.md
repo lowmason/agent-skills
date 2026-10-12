@@ -3,8 +3,9 @@ name: writing-plans
 description: >
   Use when you have a spec, design doc, or requirements for a multi-step task and need an
   implementation plan before touching code — "write a plan", "plan this feature", "break this
-  into tasks", a finished spec in specs/ awaiting its plan, or before handing work to subagents
-  or a separate execution session.
+  into tasks", a finished spec in specs/ awaiting its plan, before handing work to subagents
+  or a separate execution session, or when an executed plan is to be completed, retired or merged
+  ("complete the plan"), including a roadmap stage's handoff.
 ---
 
 # Writing Plans
@@ -19,8 +20,25 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 
 **Context:** If working in an isolated worktree, it should have been created via the `using-git-worktrees` skill at execution time.
 
-**Save plans to:** `specs/plans/<id>-<spec-name>.md` — `<id>` is the next integer (check `specs/plans/` and `specs/plans/completed/`, take the highest existing `<id>` + 1); `<spec-name>` matches the spec the plan implements. When the plan is fully executed, run the Plan Completion Protocol (below).
+**Save plans to:** `specs/plans/<id>-<spec-name>.md` — `<id>` is the `next free:` id that `uv run --no-project --python 3.13 python <this-skill-dir>/scripts/entry_check.py` prints under `plan ids:`, run from the repo root. It reads every branch, remote-tracking ref and worktree, untracked plans included, because ids are allocated per branch and collide. A collision it reports is your human partner's call. `<spec-name>` matches the spec the plan implements. When the plan is fully executed, run the Plan Completion Protocol (below).
 - (User preferences for plan location override this default)
+
+**A roadmap stage you just finished is never planned past.** If this session
+executed, completed or merged a stage of a `specs/*-roadmap.md`, then even when
+told to keep going or to plan the next stage, do not plan, brainstorm or name
+it: run the Plan Completion Protocol below (step 3a included) before any merge,
+and end with the resume handoff, naming no next stage.
+
+## Starting From a Handoff Brief
+
+When the session began from a handoff brief:
+
+- Read the artifact at or after the brief's earliest commit.
+- Log each of the brief's decisions in `## Decisions` with source `brief`,
+  applied where its Home says.
+- Settle each default the brief flags in the plan, and list it for your human
+  partner's review.
+- Honor the brief's owner gates and its leave-alone list.
 
 ## Scope Check
 
@@ -70,12 +88,20 @@ independently testable deliverable.
 
 **Tech Stack:** [Key technologies/libraries]
 
+**Spec:** [Path to the spec or design doc this plan implements, or `none`. The plan argues from the spec, so executors read both.]
+
 ## Global Constraints
 
 [The spec's project-wide requirements — version floors, dependency limits,
 naming and copy rules, platform requirements — one line each, with exact
 values copied verbatim from the spec. Every task's requirements implicitly
 include this section.]
+
+## Decisions
+
+[One line per decision your human partner took after the spec was approved:
+`- **D<n>** (owner, <brief | plan review>, YYYY-MM-DD): <decision>. Applied in: <Task N | Global Constraints | Task N (spec amendment)>.`
+An empty section reads `None.`]
 
 ---
 ```
@@ -163,25 +189,50 @@ After saving the plan, hand off to execution. The plan file is a complete,
 zero-context handoff — you wrote it assuming the engineer knows nothing about
 this codebase — so execution does not need this planning session's history.
 
+### 1. Plan review
+
+**"Plan complete and saved to `specs/plans/<id>-<spec-name>.md`. Please review
+it before anything runs."**
+
+Apply each decision your human partner takes, and log it in `## Decisions`:
+
+- **Plan-level** (it changes tasks or Global Constraints): edit them, and log
+  where it applies.
+- **Spec-level** (it changes what the spec requires): never edit the spec
+  while planning. Add an amendment task: exact replace-this-with-that blocks
+  for the spec, each edit tagged `(owner, plan <id>, YYYY-MM-DD)`, the spec's
+  status line untouched. Show your partner the exact wording; it is approved
+  at this review.
+- **Private** (while planning or handing off, a decision that must stay out of a
+  public repository): log no text of it in the plan; it goes to
+  prepare-handoff, not into the plan and not only into your own memory.
+
+Re-run Self-Review on whatever changed, then move to the execution choice once
+your partner approves the plan.
+
+### 2. Execution choice
+
 **Recommend a fresh session for execution.** A planning session accumulates
-context and usually runs on a stronger, pricier model tier; carrying it into
-execution makes every execution turn re-read that planning history at cache-read
-cost and inherit the pricier model. Starting execution fresh drops both.
+context; carrying it into execution makes every execution turn re-read that
+planning history at cache-read cost. Starting execution fresh drops it. Choose
+the execution model when you launch it: `claude --model <m>`, `codex -m <m>`
+or `gemini -m <m>`. `/clear` keeps the current model, and `/model` saves a new
+default for later sessions.
 
-**"Plan complete and saved to `specs/plans/<id>-<spec-name>.md`.**
+Recommend one option, with a reason drawn from this plan: Subagent-Driven by
+default, Inline when the tasks are tightly coupled.
 
-**Recommended: `/clear` (or open a new session) and execute against the saved
-plan** — a fresh session drops this planning conversation and lets execution run
-on the standard model default (planning belongs on the stronger tier; execution
-does not). Two execution options, either session:
+**"Recommended: `/clear` (or open a new session) and execute against the saved
+plan** — a fresh session drops this planning conversation. Two execution
+options, either session:
 
-**1. Subagent-Driven (recommended)** - a fresh subagent per task, two-stage review between tasks
+**1. Subagent-Driven** - a fresh subagent per task, two-stage review between tasks
 
 **2. Inline Execution** - I execute the tasks myself, in plan order (executing-plans)
 
-Continuing in THIS session works too, but costs more on a long plan: every
-execution turn re-reads the full planning history and inherits this session's
-model. **Which approach?"**
+I recommend <1 or 2>, because <a reason drawn from this plan>. Continuing in
+THIS session works too, but costs more on a long plan: every execution turn
+re-reads the full planning history. **Which approach?"**
 
 **If Subagent-Driven chosen:**
 - **REQUIRED SUB-SKILL:** Use subagent-driven-development
@@ -248,6 +299,36 @@ cannot state a closure condition is not deferrable — resolve it now or drop it
 When a later plan implements an item, tick its box with a pointer
 (`- [x] … → done in plan 12`). Never delete items — the file doubles as a
 history of consciously-deferred work.
+
+**3a. Hand off a roadmap stage.** Only when the plan's header carries a line
+that reads, after any `> ` prefix, `Roadmap: specs/<name>-roadmap.md, Stage N`
+(N may be alphanumeric, such as `S2.2b`). For this session, that line's
+"re-validate later stages against what shipped" means writing the section
+below; amending later stages' entries is derive-roadmap's job, at the resume.
+
+- **Handoff section.** Add `## Handoff to later stages` to the plan, with one
+  bullet for each later stage whose `Consumes` this stage feeds. Each bullet
+  gives what that stage consumes as built (names, paths, interfaces); where
+  that differs from this stage's roadmap `Produces`; traps and refusals found
+  in execution; and items deferred into that stage, by their
+  `specs/deferred_items.md` section. Take differences from the plan's
+  deviation notes and ledger, not the final code alone: one that execution
+  reverted still gets its bullet, saying the interim name is gone. Cite the
+  spec; never restate it. When nothing differs and no trap, refusal or
+  deferred item applies to a later stage, the section reads
+  `None: shipped as the roadmap's Produces states.`; for the last stage,
+  `None: last stage.`
+- **Tick and stamp.** Tick the stage's box in the roadmap, and put this stamp
+  under its entry. The path is the plan's retired path, since step 5 moves
+  the plan. Drop the second sentence when the section reads `None`.
+
+  ```
+  > Stage N: COMPLETE (YYYY-MM-DD) — implemented by plan <id> (specs/plans/completed/<file>). Its Handoff section names what <stages> consume.
+  > Next: resume the roadmap.
+  ```
+
+These edits land with the protocol's other commits. Context for a later stage
+that cannot be committed goes to prepare-handoff.
 
 **4. Backlog triage.** Report backlog health, then bring the triage to your
 human partner rather than waiting to be asked for it. Run from the repo root:

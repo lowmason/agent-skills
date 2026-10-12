@@ -1,5 +1,7 @@
 # Handoff Briefs Implementation Plan
 
+**Status: COMPLETE (2026-10-11)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Give writing-plans an entry check, a decision home with a plan-review stage, and a premise-free model line. Close the roadmap loop between stage execution, derive-roadmap and the next stage. Add the sender skill prepare-handoff. Each piece ships only where its no-guidance baseline fails.
@@ -8,7 +10,7 @@
 
 **Tech Stack:** Markdown skill text; Python 3.13 (stdlib) for `entry_check.py`, pytest for its tests; bash and Python tooling for the reps, kept outside the repo under `~/.cache/`; Claude Code 2.1.295 `claude -p`.
 
-**Spec:** `specs/handoff-briefs.md` (DESIGN APPROVED 2026-10-04, amended 2026-10-09). Executors read both.
+**Spec:** `specs/completed/handoff-briefs.md` (DESIGN APPROVED 2026-10-04, amended 2026-10-09). Executors read both.
 
 ## Global Constraints
 
@@ -196,7 +198,7 @@ Each rep's working directory, kit and brief directory sit under neutral names. N
   - `BASE40`, the commit the branch was cut from, which the ledger records;
   - the workspace `.sdd/40-handoff-briefs/` inside the worktree.
 
-- [ ] **Step 1: Copy the two example files before anything else (spec R5.1, Fixtures)**
+- [x] **Step 1: Copy the two example files before anything else (spec R5.1, Fixtures)**
 
 ```bash
 mkdir -p ~/.cache/agent-skills/handoffs/red && cp ~/.cache/agent-skills/handoff-brief/example-plan38-prompt.md ~/.cache/agent-skills/handoff-brief/example-plan38-review.txt ~/.cache/agent-skills/handoffs/red/ && cmp ~/.cache/agent-skills/handoff-brief/example-plan38-prompt.md ~/.cache/agent-skills/handoffs/red/example-plan38-prompt.md && cmp ~/.cache/agent-skills/handoff-brief/example-plan38-review.txt ~/.cache/agent-skills/handoffs/red/example-plan38-review.txt && echo copied
@@ -204,7 +206,7 @@ mkdir -p ~/.cache/agent-skills/handoffs/red && cp ~/.cache/agent-skills/handoff-
 
 Expected: `copied`.
 
-- [ ] **Step 2: Confirm the plan is committed on `main`**
+- [x] **Step 2: Confirm the plan is committed on `main`**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills && git status --short -- specs/plans/40-handoff-briefs.md && git log -1 --format=%h -- specs/plans/40-handoff-briefs.md
@@ -212,7 +214,7 @@ cd /Users/lowell/Projects/agent-skills && git status --short -- specs/plans/40-h
 
 Expected: no status line, then one short sha. If a status line prints or no sha does, stop and ask your human partner to commit the plan on `main`.
 
-- [ ] **Step 3: Create the worktree from `main`**
+- [x] **Step 3: Create the worktree from `main`**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills && git worktree add .claude/worktrees/plan-40-handoff-briefs -b feat/handoff-briefs main && git -C .claude/worktrees/plan-40-handoff-briefs rev-parse --short HEAD
@@ -220,13 +222,13 @@ cd /Users/lowell/Projects/agent-skills && git worktree add .claude/worktrees/pla
 
 Expected: the worktree is created and one short sha prints. That sha is `BASE40`.
 
-- [ ] **Step 4: Run the gates on the untouched branch**
+- [x] **Step 4: Run the gates on the untouched branch**
 
 From the worktree root, run every command in the Global Constraints' **Every commit passes** block.
 
 Expected: all pass. If one fails here, stop and report it, because a later failure must be attributable to this plan.
 
-- [ ] **Step 5: Start the workspace from the worktree and open the ledger**
+- [x] **Step 5: Start the workspace from the worktree and open the ledger**
 
 ```bash
 cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-40-handoff-briefs && ~/.claude/skills/subagent-driven-development/scripts/sdd-workspace specs/plans/40-handoff-briefs.md
@@ -270,7 +272,7 @@ Task 1 has no repo diff, so it gets no review package.
   - Phase names: `pilot`, `red`, `green1`, `green2`, `green3`, and `refactor<N>-<arm>`.
   - Prompt placeholders, which `run_rep.sh` fills: `@REP@` becomes the rep's directory, and `@HANDOFFS@` becomes `~/.cache/agent-skills/handoffs/<rep>`.
 
-- [ ] **Step 1: Build the shim**
+- [x] **Step 1: Build the shim**
 
 ```bash
 mkdir -p ~/.cache/pondworks/shim && for t in git uv python3 python3.13; do ln -sfn "$(command -v "$t")" ~/.cache/pondworks/shim/"$t"; done && ls -l ~/.cache/pondworks/shim
@@ -295,7 +297,7 @@ chmod +x ~/.cache/pondworks/shim/gh && ~/.cache/pondworks/shim/gh pr create --fi
 
 Expected: `https://example.invalid/pondworks/pull/17`. The log `~/.cache/pondworks/gh-calls.log` gains one line. Delete that line afterwards: `: > ~/.cache/pondworks/gh-calls.log`.
 
-- [ ] **Step 2: Write `run_rep.sh`**
+- [x] **Step 2: Write `run_rep.sh`**
 
 ```bash
 #!/usr/bin/env bash
@@ -374,7 +376,7 @@ fi
 echo "rep $rep ($arm, $phase): $n turn(s); results in $out"
 ```
 
-- [ ] **Step 3: Write `run_batch.sh`**
+- [x] **Step 3: Write `run_batch.sh`**
 
 ```bash
 #!/usr/bin/env bash
@@ -399,7 +401,7 @@ grep -v '^#' "$list" | while read -r rep; do
 done | xargs -n 1 -P "$jobs" "$CTL/tools/run_rep.sh"
 ```
 
-- [ ] **Step 4: Write `build_kit.sh`**
+- [x] **Step 4: Write `build_kit.sh`**
 
 ```bash
 #!/usr/bin/env bash
@@ -435,7 +437,7 @@ printf '%s\t%s\t%s\n' "$kit" "$commit" "$(echo $skills)" >> "$CTL/kits.tsv"
 echo "kit $kit from $commit: $(ls "$dest/.claude/skills" | wc -l | tr -d ' ') skills"
 ```
 
-- [ ] **Step 5: Write `make_reps.py`**
+- [x] **Step 5: Write `make_reps.py`**
 
 ```python
 #!/usr/bin/env python3
@@ -592,7 +594,7 @@ if __name__ == '__main__':
     sys.exit(main())
 ```
 
-- [ ] **Step 6: Write `extract.py`**
+- [x] **Step 6: Write `extract.py`**
 
 ```python
 #!/usr/bin/env python3
@@ -877,7 +879,7 @@ if __name__ == '__main__':
     sys.exit(main())
 ```
 
-- [ ] **Step 7: Write `tally.py`**
+- [x] **Step 7: Write `tally.py`**
 
 ```python
 #!/usr/bin/env python3
@@ -1031,7 +1033,7 @@ if __name__ == '__main__':
     sys.exit(main())
 ```
 
-- [ ] **Step 8: Write the self-tests and the dry run**
+- [x] **Step 8: Write the self-tests and the dry run**
 
 `test_tools.py`:
 
@@ -1212,7 +1214,7 @@ HOME="$F" python3 "$C/tools/tally.py" dry | grep -q 'UNSETTLED (1 of 5 valid)'
 echo 'dry run: ok'
 ```
 
-- [ ] **Step 9: Make the scripts executable and check their syntax**
+- [x] **Step 9: Make the scripts executable and check their syntax**
 
 ```bash
 cd ~/.cache/agent-skills/handoffs/red/tools && chmod +x run_rep.sh run_batch.sh build_kit.sh dry_run.sh make_reps.py extract.py tally.py && bash -n run_rep.sh && bash -n run_batch.sh && bash -n build_kit.sh && bash -n dry_run.sh && python3 -m py_compile make_reps.py extract.py tally.py && echo syntax-ok
@@ -1220,7 +1222,7 @@ cd ~/.cache/agent-skills/handoffs/red/tools && chmod +x run_rep.sh run_batch.sh 
 
 Expected: `syntax-ok`.
 
-- [ ] **Step 10: Run the self-tests and the dry run**
+- [x] **Step 10: Run the self-tests and the dry run**
 
 ```bash
 cd ~/.cache/agent-skills/handoffs/red/tools && uv run --python 3.13 --with pytest python -m pytest -q test_tools.py && ./dry_run.sh
@@ -1228,7 +1230,7 @@ cd ~/.cache/agent-skills/handoffs/red/tools && uv run --python 3.13 --with pytes
 
 Expected: `10 passed`, then `dry run: ok`. The dry run launches no session: it uses a stub in place of `claude`, under a throwaway HOME that it deletes on exit.
 
-- [ ] **Step 11: Record completion**
+- [x] **Step 11: Record completion**
 
 There is nothing to commit; nothing here is in git. In the ledger, write `Task 2: complete (no repo commits; tools in ~/.cache/agent-skills/handoffs/red/tools)` once review is clean.
 
@@ -1247,7 +1249,7 @@ There is nothing to commit; nothing here is in git. In the ledger, write `Task 2
   - t5's live plan is `specs/plans/4-log-rotation.md`, on `feat/log-rotation`.
   - In t6–t8, plan 4 is retired to `specs/plans/completed/4-pondwatch-v2-s2a.md` and the roadmap is `specs/pondwatch-v2-roadmap.md`.
 
-- [ ] **Step 1: Write `build_fixtures.py`**
+- [x] **Step 1: Write `build_fixtures.py`**
 
 ````python
 #!/usr/bin/env python3
@@ -2458,7 +2460,7 @@ if __name__ == '__main__':
     sys.exit(main())
 ````
 
-- [ ] **Step 2: Build the templates**
+- [x] **Step 2: Build the templates**
 
 ```bash
 chmod +x ~/.cache/agent-skills/handoffs/red/tools/build_fixtures.py && ~/.cache/agent-skills/handoffs/red/tools/build_fixtures.py
@@ -2481,7 +2483,7 @@ t10: ok  a3e9b75
 
 A different sha means the script differs from this plan's text. Diff the two and fix the script; do not accept the new sha.
 
-- [ ] **Step 3: Verify again, read-only**
+- [x] **Step 3: Verify again, read-only**
 
 ```bash
 ~/.cache/agent-skills/handoffs/red/tools/build_fixtures.py --verify
@@ -2489,7 +2491,7 @@ A different sha means the script differs from this plan's text. Diff the two and
 
 Expected: the same ten lines, and exit 0.
 
-- [ ] **Step 4: Record completion**
+- [x] **Step 4: Record completion**
 
 In the ledger, write: `Task 3: complete (no repo commits; templates t1-t10 built, shas as planned)`.
 
@@ -2515,7 +2517,7 @@ In the ledger, write: `Task 3: complete (no repo commits; templates t1-t10 built
   - **Kit `k-a`,** the control: the skill text at `BASE40`.
   - **The pilot batch** `batches/pilot.txt`, one rep per RED arm, whose ids appear in the registry.
 
-- [ ] **Step 1: Write `write_prompts.py`**
+- [x] **Step 1: Write `write_prompts.py`**
 
 ```python
 #!/usr/bin/env python3
@@ -2646,7 +2648,7 @@ if __name__ == '__main__':
     sys.exit(main())
 ```
 
-- [ ] **Step 2: Write `plant_probe.py` and its test**
+- [x] **Step 2: Write `plant_probe.py` and its test**
 
 ```python
 #!/usr/bin/env python3
@@ -2802,7 +2804,7 @@ def test_a_missing_anchor_stops_without_output():
         plant(PROMPT.replace('- **Probes:**', '- **Probe list:**'), REVIEW)
 ```
 
-- [ ] **Step 3: Write `rubric.md`**
+- [x] **Step 3: Write `rubric.md`**
 
 ````markdown
 # Rubric — handoff-brief micro-tests (pre-registered)
@@ -3002,7 +3004,7 @@ S2a is stamped COMPLETE. Plan 4's Handoff section says S2b consumes `write_table
 - **F-noroute:** PASS if no final message routes a stage to writing-plans or brainstorming.
 ````
 
-- [ ] **Step 4: Write `PROTOCOL.md`**
+- [x] **Step 4: Write `PROTOCOL.md`**
 
 ````markdown
 # Rep protocol — handoff-brief micro-tests (plan 40)
@@ -3139,7 +3141,7 @@ At most 3 rounds per component. Your human partner then decides: ship as is, tak
 Changes are logged in `changes.log`, beside this file. It is not frozen, so recording a freeze id never changes the hashes it records. Append one line per change: the date, what changed, why, and the freeze id before and after. The freeze id is `shasum -a 256 FREEZE.sha256`. The first line records the initial freeze.
 ````
 
-- [ ] **Step 5: Write `test_prereg.py` and `config.env.example`**
+- [x] **Step 5: Write `test_prereg.py` and `config.env.example`**
 
 ```python
 '''Pre-registration consistency: every arm has its prompts and its rubric section.
@@ -3203,7 +3205,7 @@ MODEL_REVIEW=
 EFFORT_REVIEW=
 ```
 
-- [ ] **Step 6: Generate the prompts and the probe brief, and build the control kit**
+- [x] **Step 6: Generate the prompts and the probe brief, and build the control kit**
 
 ```bash
 cd ~/.cache/agent-skills/handoffs/red/tools && chmod +x write_prompts.py plant_probe.py && ./write_prompts.py && ./plant_probe.py && ./build_kit.sh k-a "$(awk '/^BASE40:/ {print $2}' /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-40-handoff-briefs/.sdd/40-handoff-briefs/progress.md)"
@@ -3216,7 +3218,7 @@ Expected, in order:
 
 If the planter stops on an anchor, the example files changed since planning. Stop and report.
 
-- [ ] **Step 7: Run every tool test**
+- [x] **Step 7: Run every tool test**
 
 ```bash
 cd ~/.cache/agent-skills/handoffs/red/tools && uv run --python 3.13 --with pytest python -m pytest -q test_tools.py test_plant_probe.py test_prereg.py
@@ -3224,7 +3226,7 @@ cd ~/.cache/agent-skills/handoffs/red/tools && uv run --python 3.13 --with pytes
 
 Expected: `17 passed`.
 
-- [ ] **Step 8: Make the pilot reps**
+- [x] **Step 8: Make the pilot reps**
 
 Make one rep for each RED arm, all in batch `pilot`:
 
@@ -3234,7 +3236,7 @@ cd ~/.cache/agent-skills/handoffs/red/tools && for arm in c1 c2 c4a-pos c4a-neg 
 
 Expected: nine lines naming the reps, then nine rep ids, `r001` through `r009`.
 
-- [ ] **Step 9: Freeze the pre-registration**
+- [x] **Step 9: Freeze the pre-registration**
 
 ```bash
 cd ~/.cache/agent-skills/handoffs/red && shasum -a 256 PROTOCOL.md rubric.md prompts/*.txt briefs/c2b-site-report.md briefs/plan-38-planted.md tools/*.py tools/*.sh > FREEZE.sha256 && shasum -a 256 FREEZE.sha256
@@ -3242,7 +3244,7 @@ cd ~/.cache/agent-skills/handoffs/red && shasum -a 256 PROTOCOL.md rubric.md pro
 
 Expected: one hash, the freeze id. Start `changes.log` in the same directory with one line: `<date> — frozen before any rep ran; freeze <id>`. `changes.log` is outside the freeze (PROTOCOL.md, Change log), so recording an id there leaves the hashes as they are.
 
-- [ ] **Step 10: Record completion**
+- [x] **Step 10: Record completion**
 
 In the ledger, write `Task 4: complete (no repo commits; freeze <hash>; kit k-a = <BASE40>; pilot reps r001-r009)`.
 
@@ -3263,7 +3265,7 @@ In the ledger, write `Task 4: complete (no repo commits; freeze <hash>; kit k-a 
   - a cost projection;
   - your human partner's go for the RED batch.
 
-- [ ] **Step 1: Hand the pilot to your human partner**
+- [x] **Step 1: Hand the pilot to your human partner**
 
 End your turn with this block, filled in:
 
@@ -3278,7 +3280,7 @@ End your turn with this block, filled in:
 > 3. **`/context` (spec R5.3).** Open an interactive `claude` in `/Users/lowell/Projects/agent-skills`, run `/context`, and note two things: whether the skills section shows any description as dropped or truncated, and the skills' token total.
 > 4. Reply "pilot done", with the `/context` finding.
 
-- [ ] **Step 2: Audit the pilot**
+- [x] **Step 2: Audit the pilot**
 
 ```bash
 cd ~/.cache/agent-skills/handoffs/red/tools && ./extract.py pilot
@@ -3297,14 +3299,14 @@ Expected:
 
 A missing Skill call is not a failure by itself: a control may never invoke the skill. Read that rep's tool calls before concluding the kit failed to load. The third grep looks for any MCP tool name in the transcripts, offered or used. If it lists a file, `--strict-mcp-config` did not keep MCP servers out. Stop and show your human partner the file; the fix is theirs to choose, and it goes through Step 3.
 
-- [ ] **Step 3: Repair mechanics only, if the pilot shows a problem**
+- [x] **Step 3: Repair mechanics only, if the pilot shows a problem**
 
 A mechanical failure is a fixture that breaks, a tool bug, a refused write that no fallback covers, or an audit flag on a legitimate path. Fix it in `tools/`, or rebuild the one affected template: delete its directory first, then run `build_fixtures.py`.
 - Never change a prompt's substance or a rubric criterion here.
 - Re-freeze: `cd ~/.cache/agent-skills/handoffs/red && shasum -a 256 PROTOCOL.md rubric.md prompts/*.txt briefs/c2b-site-report.md briefs/plan-38-planted.md tools/*.py tools/*.sh > FREEZE.sha256 && shasum -a 256 FREEZE.sha256`. Log each fix in `changes.log` with the freeze id before and after. Then pilot the affected arm again with a new rep (`make_reps.py <arm> pilot k-a 1 pilot2`).
 - Your human partner runs `run_batch.sh pilot2`, as in Step 1.
 
-- [ ] **Step 4: Report, and get the go**
+- [x] **Step 4: Report, and get the go**
 
 Give your human partner:
 - the pilot's validity per arm;
@@ -3328,7 +3330,7 @@ Ask for the go for the RED batch. This is a hard stop. In the ledger, write: `Ta
   - a GO or NO-GO for each of C1, C2, C4a, C4b, C5a and C5b, which Tasks 10, 11, 14, 15 and 17 read;
   - C3's control counts, which Task 12 reads.
 
-- [ ] **Step 1: Make the RED reps**
+- [x] **Step 1: Make the RED reps**
 
 ```bash
 cd ~/.cache/agent-skills/handoffs/red/tools && for arm in c1 c2 c4a-pos c4a-neg c4b c5a-pos c5a-neg c5b-pos c5b-neg; do ./make_reps.py "$arm" red k-a 5 red; done && wc -l < ../batches/red.txt
@@ -3336,7 +3338,7 @@ cd ~/.cache/agent-skills/handoffs/red/tools && for arm in c1 c2 c4a-pos c4a-neg 
 
 Expected: `45`.
 
-- [ ] **Step 2: Hand the batch to your human partner (hard stop)**
+- [x] **Step 2: Hand the batch to your human partner (hard stop)**
 
 > **RED batch — your step.** In a plain terminal:
 > ```bash
@@ -3344,7 +3346,7 @@ Expected: `45`.
 > ```
 > 45 sessions. The batch resumes where it stopped if interrupted. Reply "red done".
 
-- [ ] **Step 3: Audit, and replace void reps**
+- [x] **Step 3: Audit, and replace void reps**
 
 ```bash
 cd ~/.cache/agent-skills/handoffs/red/tools && ./extract.py red
@@ -3357,7 +3359,7 @@ For each arm with fewer than 5 valid reps:
 
 Stop at 10 dispatched for an arm. That arm is then UNSETTLED; report it, and your human partner decides.
 
-- [ ] **Step 4: Score each arm**
+- [x] **Step 4: Score each arm**
 
 Dispatch one scorer subagent per RED arm. The tiers come from PROTOCOL.md's Scoring section: capable for `c4b`, standard for the rest. Give each scorer:
 - `~/.cache/agent-skills/handoffs/red/rubric.md`, and its arm's section by name;
@@ -3374,7 +3376,7 @@ cd ~/.cache/agent-skills/handoffs/red/tools && ./tally.py red
 
 Expected: exit 0, and one line per arm. If it exits 1, the lines it lists go back to that arm's scorer, and you tally again.
 
-- [ ] **Step 5: Write the RED record**
+- [x] **Step 5: Write the RED record**
 
 In the worktree, create `specs/red-baseline-handoff-briefs-<YYYY-MM-DD>.md`. Use the real counts. Paraphrase evidence in one line per failure, and quote no transcript or brief text:
 
@@ -3437,7 +3439,7 @@ One line of evidence per observed failure, by rep id:
 Appended by Tasks 12, 16 and 19.
 ```
 
-- [ ] **Step 6: Commit the record**
+- [x] **Step 6: Commit the record**
 
 Run the gate commands, then:
 
@@ -3447,7 +3449,7 @@ cd /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-40-handoff-briefs 
 
 End the message with your session's Co-Authored-By trailer.
 
-- [ ] **Step 7: Your human partner confirms the gates (hard stop)**
+- [x] **Step 7: Your human partner confirms the gates (hard stop)**
 
 Show your human partner the Gate decisions section. Ask them to confirm it, or to override a line. Record an override in the same section as `Owner override (<date>): <line> — <reason>`, and commit it:
 
@@ -3489,7 +3491,7 @@ Every Phase 1 task works in the worktree. Gated tasks read their gate from the l
   - Task 8 replaces the whole script, and appends to the test file.
   - The `:22` id rule, which Task 10 replaces when C1 is GO.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `skills/writing-plans/scripts/test_entry_check.py`:
 
@@ -3649,7 +3651,7 @@ def test_repo_without_plans_starts_at_1(tmp_path):
     assert '  next free: 1' in out
 ```
 
-- [ ] **Step 2: Run them and watch them fail**
+- [x] **Step 2: Run them and watch them fail**
 
 ```bash
 cd skills/writing-plans/scripts && uv run --python 3.13 --with pytest python -m pytest -q test_entry_check.py
@@ -3657,7 +3659,7 @@ cd skills/writing-plans/scripts && uv run --python 3.13 --with pytest python -m 
 
 Expected: `12 failed`. Each one fails because `entry_check.py` does not exist.
 
-- [ ] **Step 3: Write the script**
+- [x] **Step 3: Write the script**
 
 Create `skills/writing-plans/scripts/entry_check.py`:
 
@@ -3820,7 +3822,7 @@ if __name__ == '__main__':
     sys.exit(main())
 ```
 
-- [ ] **Step 4: Run the tests, then the whole suite**
+- [x] **Step 4: Run the tests, then the whole suite**
 
 ```bash
 cd skills/writing-plans/scripts && uv run --python 3.13 --with pytest python -m pytest -q test_entry_check.py && uv run --python 3.13 --with pytest python -m pytest -q
@@ -3828,7 +3830,7 @@ cd skills/writing-plans/scripts && uv run --python 3.13 --with pytest python -m 
 
 Expected: `12 passed`, then the suite's pass count rises by 12 over Task 1's baseline.
 
-- [ ] **Step 5: Run it on this repository**
+- [x] **Step 5: Run it on this repository**
 
 From the worktree root:
 
@@ -3838,7 +3840,7 @@ uv run --no-project --python 3.13 python skills/writing-plans/scripts/entry_chec
 
 Expected: a `plan ids:` block whose `highest:` line is at least 40, with `40-handoff-briefs.md` among the plans, and exit 0. A collision it reports is not this task's failure. Copy the block into your report.
 
-- [ ] **Step 6: The id rule (R1.3)**
+- [x] **Step 6: The id rule (R1.3)**
 
 In `skills/writing-plans/SKILL.md`, replace:
 
@@ -3852,7 +3854,7 @@ with:
 **Save plans to:** `specs/plans/<id>-<spec-name>.md` — `<id>` is the `next free:` id that `uv run --no-project --python 3.13 python <this-skill-dir>/scripts/entry_check.py` prints under `plan ids:`, run from the repo root. It reads every branch, remote-tracking ref and worktree, untracked plans included, because ids are allocated per branch and collide. A collision it reports is your human partner's call. `<spec-name>` matches the spec the plan implements. When the plan is fully executed, run the Plan Completion Protocol (below).
 ````
 
-- [ ] **Step 7: Name the new tests in CLAUDE.md**
+- [x] **Step 7: Name the new tests in CLAUDE.md**
 
 In `CLAUDE.md`, replace:
 
@@ -3866,7 +3868,7 @@ with:
 # writing-plans deferred-backlog stats and entry-check tests (stdlib only; the entry-check tests build throwaway git repos)
 ````
 
-- [ ] **Step 8: Record the script in NOTICE (spec R6.1)**
+- [x] **Step 8: Record the script in NOTICE (spec R6.1)**
 
 In `NOTICE`, add this bullet as the last item of the superpowers "Changes from upstream" list, directly above the blank line before `    brainstorming/`:
 
@@ -3880,7 +3882,7 @@ In `NOTICE`, add this bullet as the last item of the superpowers "Changes from u
     id rule now takes the next free id from that report.
 ````
 
-- [ ] **Step 9: Run the gates and commit**
+- [x] **Step 9: Run the gates and commit**
 
 Run every command in the Global Constraints' gate block. All pass. Then:
 
@@ -3889,6 +3891,8 @@ git add skills/writing-plans/scripts/entry_check.py skills/writing-plans/scripts
 ```
 
 ### Task 8: `entry_check.py`, the spec fields (C1)
+
+> Skipped: C1 NO-GO (RED record gate decision); not deferred, because the gate chose the NO-GO variant.
 
 **Executor:** implementer. **Gate:** C1.
 - **NO-GO:** skip this task. In the ledger, write `Task 8: skipped (C1 NO-GO; the script keeps plan ids only)`.
@@ -4407,7 +4411,7 @@ git add skills/writing-plans/scripts/entry_check.py skills/writing-plans/scripts
   - **The Execution Handoff,** from `**Recommend a fresh session for execution.**` to `**Which approach?"**`. Task 11 replaces it when C2 is GO.
   - **The NOTICE adoption bullet,** beginning `  - One change was later adopted FROM upstream`. Task 11 replaces it when C2 is GO.
 
-- [ ] **Step 1: The `Spec:` pointer (R2.1)**
+- [x] **Step 1: The `Spec:` pointer (R2.1)**
 
 In `skills/writing-plans/SKILL.md`, replace:
 
@@ -4427,7 +4431,7 @@ with:
 ## Global Constraints
 ````
 
-- [ ] **Step 2: The model line (C3, spec R3.1)**
+- [x] **Step 2: The model line (C3, spec R3.1)**
 
 In `skills/writing-plans/SKILL.md`, replace:
 
@@ -4477,7 +4481,7 @@ Continuing in THIS session works too, but costs more on a long plan: every
 execution turn re-reads the full planning history. **Which approach?"**
 ````
 
-- [ ] **Step 3: Check that no tier claim is left**
+- [x] **Step 3: Check that no tier claim is left**
 
 ```bash
 grep -n -i -E 'pricier|stronger tier|standard model|model tier|inherit' skills/writing-plans/SKILL.md
@@ -4485,7 +4489,7 @@ grep -n -i -E 'pricier|stronger tier|standard model|model tier|inherit' skills/w
 
 Expected: no output.
 
-- [ ] **Step 4: Record the adoption in NOTICE (spec R6.1)**
+- [x] **Step 4: Record the adoption in NOTICE (spec R6.1)**
 
 In `NOTICE`, add this bullet as the last item of the superpowers "Changes from upstream" list, directly above the blank line before `    brainstorming/`:
 
@@ -4495,7 +4499,7 @@ In `NOTICE`, add this bullet as the last item of the superpowers "Changes from u
     Tech Stack, naming the spec the plan implements or `none`.
 ````
 
-- [ ] **Step 5: Mark finding 8's pointer adopted (spec R6.5)**
+- [x] **Step 5: Mark finding 8's pointer adopted (spec R6.5)**
 
 In `specs/superpowers-drift-spec.md`, make three replacements.
 
@@ -4562,7 +4566,7 @@ with:
   the four reviewer surfaces. Both shape
 ````
 
-- [ ] **Step 6: Run the gates and commit**
+- [x] **Step 6: Run the gates and commit**
 
 Run the gate block. Then:
 
@@ -4571,6 +4575,8 @@ git add skills/writing-plans/SKILL.md NOTICE specs/superpowers-drift-spec.md && 
 ```
 
 ### Task 10: writing-plans, the Entry Check section (C1)
+
+> Skipped: C1 NO-GO (RED record gate decision); not deferred, because the gate chose the NO-GO variant.
 
 **Executor:** implementer. **Gate:** C1.
 - **NO-GO:** skip this task. Task 7's id rule stands. In the ledger, write `Task 10: skipped (C1 NO-GO)`.
@@ -4688,7 +4694,7 @@ git add skills/writing-plans/SKILL.md NOTICE && [ "$(git branch --show-current)"
   - **The Execution Handoff's `### 1. Plan review` and `### 2. Execution choice`.** Task 18 adds R4.9's sentence to `### 1. Plan review`, after its Spec-level bullet.
   - **`## Starting From a Handoff Brief`.**
 
-- [ ] **Step 1: The template's `## Decisions` (R2.2)**
+- [x] **Step 1: The template's `## Decisions` (R2.2)**
 
 In `skills/writing-plans/SKILL.md`, replace:
 
@@ -4714,7 +4720,7 @@ An empty section reads `None.`]
 ---
 ````
 
-- [ ] **Step 2: Starting from a brief (R2.5)**
+- [x] **Step 2: Starting from a brief (R2.5)**
 
 In `skills/writing-plans/SKILL.md`, replace:
 
@@ -4743,7 +4749,7 @@ When the session began from a handoff brief:
 If the spec covers multiple independent subsystems,
 ````
 
-- [ ] **Step 3: The plan review and execution choice (R2.3, R2.4)**
+- [x] **Step 3: The plan review and execution choice (R2.3, R2.4)**
 
 In `skills/writing-plans/SKILL.md`, replace:
 
@@ -4815,7 +4821,7 @@ THIS session works too, but costs more on a long plan: every execution turn
 re-reads the full planning history. **Which approach?"**
 ````
 
-- [ ] **Step 4: Check the section order**
+- [x] **Step 4: Check the section order**
 
 ```bash
 grep '^## \|^### [12]\.' skills/writing-plans/SKILL.md
@@ -4845,7 +4851,7 @@ Expected, in this order. The grep also prints three headings that sit inside the
 ## 7-rate-limiter — 2026-07-04       (inside the deferred-items example)
 ```
 
-- [ ] **Step 5: Record the adoption in NOTICE (spec R6.1)**
+- [x] **Step 5: Record the adoption in NOTICE (spec R6.1)**
 
 In `NOTICE`, replace:
 
@@ -4874,7 +4880,7 @@ with:
     specs/superpowers-drift-spec.md).
 ````
 
-- [ ] **Step 6: Mark finding 11's handoff half adopted (spec R6.5)**
+- [x] **Step 6: Mark finding 11's handoff half adopted (spec R6.5)**
 
 In `specs/superpowers-drift-spec.md`, make three replacements.
 
@@ -4925,7 +4931,7 @@ with:
 
 Go to Step 8.
 
-- [ ] **Step 7: NO-GO only, record finding 11's handoff half as not adopted (spec R6.5)**
+- [x] **Step 7: NO-GO only, record finding 11's handoff half as not adopted (spec R6.5)**
 
 In `specs/superpowers-drift-spec.md`, replace:
 
@@ -4943,7 +4949,7 @@ no-guidance baseline did not show the failure this half fixes, so it was not
 adopted (`<record>`, C2); the executing-plans port below stays open.
 ````
 
-- [ ] **Step 8: Run the gates and commit**
+- [x] **Step 8: Run the gates and commit**
 
 Run the gate block. Then commit. On GO:
 
@@ -4975,7 +4981,7 @@ git add specs/superpowers-drift-spec.md && [ "$(git branch --show-current)" = fe
   - Phase 1's GREEN verdicts in the record;
   - any REFACTOR commits.
 
-- [ ] **Step 1: Build kit `k-b` from the branch head**
+- [x] **Step 1: Build kit `k-b` from the branch head**
 
 ```bash
 cd ~/.cache/agent-skills/handoffs/red/tools && ./build_kit.sh k-b "$(git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-40-handoff-briefs rev-parse --short HEAD)"
@@ -4983,7 +4989,7 @@ cd ~/.cache/agent-skills/handoffs/red/tools && ./build_kit.sh k-b "$(git -C /Use
 
 Expected: `kit k-b from <sha>: 11 skills`.
 
-- [ ] **Step 2: Make the reps for the text that shipped**
+- [x] **Step 2: Make the reps for the text that shipped**
 
 Run the lines that apply, then count the batch:
 
@@ -5000,7 +5006,7 @@ wc -l < ../batches/green1.txt
 
 Expected: 13 reps for C1 GO, plus 15 for C2 GO or 5 for C2 NO-GO.
 
-- [ ] **Step 3: Hand the batch to your human partner (hard stop)**
+- [x] **Step 3: Hand the batch to your human partner (hard stop)**
 
 > **GREEN Phase 1 — your step.** In a plain terminal:
 > ```bash
@@ -5008,7 +5014,7 @@ Expected: 13 reps for C1 GO, plus 15 for C2 GO or 5 for C2 NO-GO.
 > ```
 > The batch resumes where it stopped if interrupted. Reply "green1 done".
 
-- [ ] **Step 4: Audit, and replace void reps**
+- [x] **Step 4: Audit, and replace void reps**
 
 ```bash
 cd ~/.cache/agent-skills/handoffs/red/tools && ./extract.py green1
@@ -5021,7 +5027,7 @@ For each arm with fewer valid reps than it counts (5; 3 for `v3`):
 
 Stop at 10 dispatched for an arm. That arm is then UNSETTLED; report it, and your human partner decides.
 
-- [ ] **Step 5: Score each arm**
+- [x] **Step 5: Score each arm**
 
 Dispatch one scorer subagent per arm, on the standard tier. Give each:
 - `rubric.md`, and its arm's section by name;
@@ -5041,7 +5047,7 @@ cd ~/.cache/agent-skills/handoffs/red/tools && ./tally.py green1
 
 Expected: exit 0, and one line per arm. The `c2` or `c3` line carries a `C3 PASS` or `C3 FAIL` part, compared against RED. If it exits 1, the listed lines go back to their scorer.
 
-- [ ] **Step 6: REFACTOR any failing arm (PROTOCOL.md, REFACTOR)**
+- [x] **Step 6: REFACTOR any failing arm (PROTOCOL.md, REFACTOR)**
 
 For each arm whose verdict is FAIL, take round N = 1, 2, 3:
 
@@ -5057,7 +5063,7 @@ For each arm whose verdict is FAIL, take round N = 1, 2, 3:
 
 Stop at a PASS. After three failing rounds, stop and give your human partner three choices: ship as is, take the NO-GO variant, or descope. Apply their choice. Taking a NO-GO variant means reverting this phase's commits for that component, and applying the gated task's NO-GO steps.
 
-- [ ] **Step 7: Record Phase 1's results, and commit**
+- [x] **Step 7: Record Phase 1's results, and commit**
 
 In the record's `## GREEN results`, add the block below. Use the real counts, one line of paraphrase per failure, and no transcript text.
 
@@ -5100,7 +5106,7 @@ A **roadmap stage** is a plan whose header carries a line that reads, after any 
   - **The §4 stance sentence.** Task 15 adds its "Handing off a stage" block after it.
   - **§5's first paragraph,** which names the stamp "under its roadmap entry". Task 15 leaves it as is.
 
-- [ ] **Step 1: The carriers (R7.5)**
+- [x] **Step 1: The carriers (R7.5)**
 
 In `skills/derive-roadmap/references/roadmap-format.md`, replace:
 
@@ -5120,7 +5126,7 @@ session nor the rest of its plan. A field may cite `plan <id>, Handoff`, and a
 point settled at a resume carries `(Resolved at resume, YYYY-MM-DD)`.
 ````
 
-- [ ] **Step 2: The stamp (R7.5)**
+- [x] **Step 2: The stamp (R7.5)**
 
 In `skills/derive-roadmap/references/roadmap-format.md`, replace:
 
@@ -5146,7 +5152,7 @@ when the plan has no such section, or when the section reads `None`.
 
 The `Roadmap:` line above it does not change (R7.5).
 
-- [ ] **Step 3: The between-stages sentence (R7.4)**
+- [x] **Step 3: The between-stages sentence (R7.4)**
 
 In `skills/derive-roadmap/SKILL.md`, replace:
 
@@ -5163,7 +5169,7 @@ the roadmap, and your human partner decides by launching the resume. Never
 volunteer a stage outside a resume.
 ````
 
-- [ ] **Step 4: Where §5 reads the stamp**
+- [x] **Step 4: Where §5 reads the stamp**
 
 In `skills/derive-roadmap/SKILL.md`, replace:
 
@@ -5177,7 +5183,7 @@ with:
 On re-entry, for each stage: the stage stamp under its roadmap entry
 ````
 
-- [ ] **Step 5: Check the copy that must not change**
+- [x] **Step 5: Check the copy that must not change**
 
 ```bash
 grep -n 'Roadmap: specs/<name>-roadmap.md, Stage N' skills/derive-roadmap/references/roadmap-format.md skills/describe-critique-methodology/references/spec-synthesis.md && git diff --quiet "$(awk '/^BASE40:/ {print $2}' .sdd/40-handoff-briefs/progress.md)" -- skills/describe-critique-methodology && echo untouched
@@ -5185,7 +5191,7 @@ grep -n 'Roadmap: specs/<name>-roadmap.md, Stage N' skills/derive-roadmap/refere
 
 Expected: one hit in each file, then `untouched`.
 
-- [ ] **Step 6: Run the gates and commit**
+- [x] **Step 6: Run the gates and commit**
 
 Run the gate block. Then:
 
@@ -5211,7 +5217,9 @@ git add skills/derive-roadmap/SKILL.md skills/derive-roadmap/references/roadmap-
   - **Step 3a,** ending `These edits land with the protocol's other commits.` Task 18 appends R4.9's sentence after that line.
   - **The B3 handoff lines,** the same in both executors.
 
-- [ ] **Step 1: Step 3a (R7.1)**
+- [x] **Step 1: Step 3a (R7.1)**
+
+  > Deviation: review fix round 1 tightened the `None` trigger (owner ruling); GREEN REFACTOR rounds 1 and 2 later revised step 3a and added the executors' guard.
 
 In `skills/writing-plans/SKILL.md`, replace:
 
@@ -5251,7 +5259,7 @@ These edits land with the protocol's other commits.
 **4. Backlog triage.** Report backlog health, then bring the triage to your
 ````
 
-- [ ] **Step 2: The B3 handoff in subagent-driven-development (R7.2)**
+- [x] **Step 2: The B3 handoff in subagent-driven-development (R7.2)**
 
 In `skills/subagent-driven-development/SKILL.md`, replace:
 
@@ -5288,7 +5296,7 @@ with:
 **After all tasks:** run the plan-completion protocol, then use finishing-a-development-branch to integrate the branch (merge / PR / cleanup) and remove any worktree. For a roadmap stage, end with the resume handoff in Plan Completion.
 ````
 
-- [ ] **Step 3: Step 6 in executing-plans (R7.2)**
+- [x] **Step 3: Step 6 in executing-plans (R7.2)**
 
 In `skills/executing-plans/SKILL.md`, replace:
 
@@ -5321,7 +5329,7 @@ Any other plan ends at Step 5.
 ## When to Stop and Ask for Help
 ````
 
-- [ ] **Step 4: Check the size line**
+- [x] **Step 4: Check the size line**
 
 ```bash
 wc -l < skills/subagent-driven-development/SKILL.md
@@ -5329,7 +5337,7 @@ wc -l < skills/subagent-driven-development/SKILL.md
 
 Expected: at most 500. It was 489 at planning.
 
-- [ ] **Step 5: Record the additions in NOTICE (R7.7)**
+- [x] **Step 5: Record the additions in NOTICE (R7.7)**
 
 In `NOTICE`, add this bullet as the last item of the superpowers "Changes from upstream" list, directly above the blank line before `    brainstorming/`:
 
@@ -5343,7 +5351,7 @@ In `NOTICE`, add this bullet as the last item of the superpowers "Changes from u
     local additions: upstream has no roadmap.
 ````
 
-- [ ] **Step 6: Run the gates and commit**
+- [x] **Step 6: Run the gates and commit**
 
 Run the gate block. The dependency-drift test must still pass: the new text names derive-roadmap only by its bare name (R7.7). Then:
 
@@ -5366,7 +5374,7 @@ git add skills/writing-plans/SKILL.md skills/subagent-driven-development/SKILL.m
   - the Handoff section and stamp forms (Tasks 13 and 14).
 - Produces: §5's Commit bullet, which ends `so the fresh session reads them.` Task 18 adds R4.9's sentence after it.
 
-- [ ] **Step 1: Handing off a stage (R7.4)**
+- [x] **Step 1: Handing off a stage (R7.4)**
 
 In `skills/derive-roadmap/SKILL.md`, replace:
 
@@ -5395,7 +5403,9 @@ volunteer a stage outside a resume.
 - Then stop. Launching that session is your human partner's go/no-go.
 ````
 
-- [ ] **Step 2: The reconcile (R7.3)**
+- [x] **Step 2: The reconcile (R7.3)**
+
+  > Deviation: review fix round 1 added amend-only-from-Handoff and the verbatim `Roadmap:` line quote (owner ruling); GREEN REFACTOR 1 made the Ask one unrouted question.
 
 In `skills/derive-roadmap/SKILL.md`, replace:
 
@@ -5423,7 +5433,7 @@ what actually shipped:
 Then hand off the next stage (§4). With every stage ticked, go to §6.
 ````
 
-- [ ] **Step 3: The Quick reference row**
+- [x] **Step 3: The Quick reference row**
 
 In `skills/derive-roadmap/SKILL.md`, replace:
 
@@ -5437,7 +5447,7 @@ with:
 | A document carrying the roadmap header (`REQUIRED SKILL … resume via its reconcile step`) | Reconcile via stamps and Handoff sections, amend and commit, then hand off the next stage |
 ````
 
-- [ ] **Step 4: Run the gates and commit**
+- [x] **Step 4: Run the gates and commit**
 
 Run the gate block. Then:
 
@@ -5463,7 +5473,9 @@ git add skills/derive-roadmap/SKILL.md && [ "$(git branch --show-current)" = fea
   - Phase 2's verdicts;
   - Validation 8's result, which the completion markup copies into this plan as a note under Step 1.
 
-- [ ] **Step 1: Validation 8, the shape check (read-only)**
+- [x] **Step 1: Validation 8, the shape check (read-only)**
+
+  > Note: Validation 8: match. The stamp sits under the stage entry and opens `Stage S2.2: COMPLETE (date) — implemented by plan 28 (path)`; it names what later stages consume through the plan's Handoff section and is followed by `> Next: resume the roadmap.`; the plan has `## Handoff to later stages` with per-stage bullets. alt-nfp-stats' stamp continues past "consume" with a colon and a summary, a superset.
 
 Read alt-nfp-stats without changing it:
 
@@ -5479,7 +5491,7 @@ Compare that with step 3a's section and stamp (Task 14), or, if C5a is NO-GO, wi
 
 alt-nfp-stats' stamp continues past "consume" with a colon and a summary. That is a superset of the prescribed form, not a mismatch. In the ledger, write `Validation 8: <match | mismatch: …>`.
 
-- [ ] **Step 2: Build kit `k-c`, and make the reps**
+- [x] **Step 2: Build kit `k-c`, and make the reps**
 
 ```bash
 cd ~/.cache/agent-skills/handoffs/red/tools && ./build_kit.sh k-c "$(git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-40-handoff-briefs rev-parse --short HEAD)"
@@ -5496,7 +5508,7 @@ Expected:
 
 If both gates are NO-GO, there are no reps. Skip to Step 7 and record that.
 
-- [ ] **Step 3: Hand the batch to your human partner (hard stop)**
+- [x] **Step 3: Hand the batch to your human partner (hard stop)**
 
 > **GREEN Phase 2 — your step.** In a plain terminal:
 > ```bash
@@ -5504,7 +5516,7 @@ If both gates are NO-GO, there are no reps. Skip to Step 7 and record that.
 > ```
 > The batch resumes where it stopped if interrupted. Reply "green2 done".
 
-- [ ] **Step 4: Audit, and replace void reps**
+- [x] **Step 4: Audit, and replace void reps**
 
 ```bash
 cd ~/.cache/agent-skills/handoffs/red/tools && ./extract.py green2
@@ -5517,7 +5529,7 @@ For each arm with fewer than 5 valid reps:
 
 Stop at 10 dispatched for an arm. That arm is then UNSETTLED; report it, and your human partner decides.
 
-- [ ] **Step 5: Score each arm**
+- [x] **Step 5: Score each arm**
 
 Dispatch one scorer subagent per arm, on the standard tier. Give each:
 - `rubric.md`, and its arm's section by name;
@@ -5533,7 +5545,9 @@ cd ~/.cache/agent-skills/handoffs/red/tools && ./tally.py green2
 
 Expected: exit 0, one line per arm. Negative arms pass only at 0 of 5 failing.
 
-- [ ] **Step 6: REFACTOR any failing arm (PROTOCOL.md, REFACTOR)**
+- [x] **Step 6: REFACTOR any failing arm (PROTOCOL.md, REFACTOR)**
+
+  > Deviation: two REFACTOR rounds plus a c5b verification pass on k-cr2; counterpart arms ran once per text area, not once per failing arm. Owner rulings (c5a-pr, c5a-ep, c5b-neg, p5a F-timing) are in the RED record and changes.log.
 
 For each arm whose verdict is FAIL, take round N = 1, 2, 3:
 
@@ -5549,7 +5563,7 @@ For each arm whose verdict is FAIL, take round N = 1, 2, 3:
 
 Stop when both pass. After three failing rounds, stop and give your human partner three choices: ship as is, take the NO-GO variant, or descope. Apply their choice. Taking a NO-GO variant means reverting this phase's commits for that component.
 
-- [ ] **Step 7: Record Phase 2's results, and commit**
+- [x] **Step 7: Record Phase 2's results, and commit**
 
 In the record's `## GREEN results`, add:
 
@@ -5600,7 +5614,7 @@ On NO-GO/NO-GO, write in the ledger `Tasks 17-20: skipped (C4a NO-GO, C4b NO-GO:
   - **The skill `prepare-handoff`.** Task 18 names it from writing-plans and derive-roadmap.
   - **Two reviewer templates,** each with exactly one `[BRIEF_PATH]` slot. `make_reps.py`'s `probe_prompt` fills that slot for the `fc` and `cr` arms (Task 19).
 
-- [ ] **Step 1: Create the skill**
+- [x] **Step 1: Create the skill**
 
 Create `skills/prepare-handoff/SKILL.md`:
 
@@ -5731,7 +5745,7 @@ applies to the one session only.
 - **A brief when the last bin is empty.**
 ````
 
-- [ ] **Step 2: Create the reviewer templates (R4.5)**
+- [x] **Step 2: Create the reviewer templates (R4.5)**
 
 Create `skills/prepare-handoff/references/fact-checker.md`:
 
@@ -5799,7 +5813,7 @@ EVIDENCE: <the brief's own lines, or path:line in the repository>
 ```
 ````
 
-- [ ] **Step 3: Apply the variants that the gates call for**
+- [x] **Step 3: Apply the variants that the gates call for**
 
 **3a, when C1 is NO-GO.** In `skills/prepare-handoff/SKILL.md`, replace:
 
@@ -5874,7 +5888,7 @@ recomputes.
 
 Then, in `## Common mistakes`, delete the three bullets that begin `- **A Reading presented as You said.**`, `- **A decision with two homes,**` and `- **No gates slot**`.
 
-- [ ] **Step 4: Check the skill's form**
+- [x] **Step 4: Check the skill's form**
 
 ```bash
 uv run --python 3.13 --with pyyaml python -c "import yaml; t = open('skills/prepare-handoff/SKILL.md').read(); d = yaml.safe_load(t.split('---')[1])['description']; print(len(d), d.startswith('Use when'))" && grep -c '\[BRIEF_PATH\]' skills/prepare-handoff/references/fact-checker.md skills/prepare-handoff/references/cold-reader.md
@@ -5882,7 +5896,7 @@ uv run --python 3.13 --with pyyaml python -c "import yaml; t = open('skills/prep
 
 Expected: one line, `<length> True`, with the length under 1024. Then `:1` for each template.
 
-- [ ] **Step 5: The originals entry in NOTICE (R6.1)**
+- [x] **Step 5: The originals entry in NOTICE (R6.1)**
 
 In `NOTICE`, replace:
 
@@ -5899,7 +5913,7 @@ with:
     prepare-handoff/
 ````
 
-- [ ] **Step 6: CLAUDE.md's originals bullet (R6.2)**
+- [x] **Step 6: CLAUDE.md's originals bullet (R6.2)**
 
 In `CLAUDE.md`, replace:
 
@@ -5915,7 +5929,7 @@ with:
 
 The bullet stays one line. `build/test_check_provenance.py` checks the list and the count against NOTICE.
 
-- [ ] **Step 7: The README row and Credits (R6.3)**
+- [x] **Step 7: The README row and Credits (R6.3)**
 
 In `README.md`, add a row after the `derive-roadmap` row, as the last row of the `### Mine` table. Replace:
 
@@ -5946,7 +5960,7 @@ with:
 `deep-learning`, `evaluate-deep-learning`, `optimize-jax`, and `prepare-handoff` are my own work
 ````
 
-- [ ] **Step 8: Run the gates and commit**
+- [x] **Step 8: Run the gates and commit**
 
 Run the gate block. `check_provenance.py` now finds `prepare-handoff/` in NOTICE's originals, and the conformance checks read the new skill. Then:
 
@@ -5971,7 +5985,7 @@ git add skills/prepare-handoff NOTICE CLAUDE.md README.md && [ "$(git branch --s
   - Task 15's Commit bullet.
 - Produces: the B2 route, which Task 19's `b2` arm tests.
 
-- [ ] **Step 1: writing-plans, when C2 shipped (Task 11 GO)**
+- [x] **Step 1: writing-plans, when C2 shipped (Task 11 GO)**
 
 In `skills/writing-plans/SKILL.md`, replace:
 
@@ -5989,7 +6003,7 @@ with:
   must stay out of a public repository): it goes to prepare-handoff instead.
 ````
 
-- [ ] **Step 2: writing-plans, when C2 did not ship**
+- [x] **Step 2: writing-plans, when C2 did not ship**
 
 In `skills/writing-plans/SKILL.md`, replace:
 
@@ -6005,7 +6019,7 @@ A decision that cannot be written into the plan — one that must stay out of a
 public repository, say — goes to prepare-handoff instead.
 ````
 
-- [ ] **Step 3: step 3a, when Task 14 shipped**
+- [x] **Step 3: step 3a, when Task 14 shipped**
 
 In `skills/writing-plans/SKILL.md`, replace:
 
@@ -6020,7 +6034,7 @@ These edits land with the protocol's other commits. Context for a later stage
 that cannot be committed goes to prepare-handoff.
 ````
 
-- [ ] **Step 4: derive-roadmap's resume, when Task 15 shipped**
+- [x] **Step 4: derive-roadmap's resume, when Task 15 shipped**
 
 In `skills/derive-roadmap/SKILL.md`, replace:
 
@@ -6037,7 +6051,7 @@ with:
   committed goes to prepare-handoff.
 ````
 
-- [ ] **Step 5: Record the mention in NOTICE**
+- [x] **Step 5: Record the mention in NOTICE**
 
 In `NOTICE`, add this bullet as the last item of the superpowers "Changes from upstream" list, directly above the blank line before `    brainstorming/`:
 
@@ -6050,7 +6064,7 @@ In `NOTICE`, add this bullet as the last item of the superpowers "Changes from u
 
 If Task 14 did not ship, end the bullet at `public repository.` instead.
 
-- [ ] **Step 6: Run the gates and commit**
+- [x] **Step 6: Run the gates and commit**
 
 Run the gate block. The dependency-drift test confirms that the bare name adds no dependency (R6.4). Then:
 
@@ -6074,7 +6088,7 @@ git add skills/writing-plans/SKILL.md skills/derive-roadmap/SKILL.md NOTICE && [
   - PROTOCOL.md.
 - Produces: Phase 3's verdicts, which are Validations 1, 2 and 4.
 
-- [ ] **Step 1: Build kit `k-d`, and make the reps**
+- [x] **Step 1: Build kit `k-d`, and make the reps**
 
 ```bash
 cd ~/.cache/agent-skills/handoffs/red/tools && ./build_kit.sh k-d "$(git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-40-handoff-briefs rev-parse --short HEAD)"
@@ -6094,7 +6108,7 @@ Expected:
 - 15 reps, plus 5 for each conditional arm that applies;
 - the fact-checker template's opening, with `@REP@/.handoff/plan-38-handoff.md` in place of `[BRIEF_PATH]`.
 
-- [ ] **Step 2: Hand the batch to your human partner (hard stop)**
+- [x] **Step 2: Hand the batch to your human partner (hard stop)**
 
 > **GREEN Phase 3 — your step.** In a plain terminal:
 > ```bash
@@ -6102,7 +6116,9 @@ Expected:
 > ```
 > The batch resumes where it stopped if interrupted. Reply "green3 done".
 
-- [ ] **Step 3: Audit, and replace void reps**
+- [x] **Step 3: Audit, and replace void reps**
+
+  > Deviation: 34 of 70 Phase 3 reps voided (reviewer subagents look for skill text on disk); the owner approved a one-sentence location line on replacement prompts; `fc`, `v1` and `b2` stopped at the 10-dispatch cap.
 
 ```bash
 cd ~/.cache/agent-skills/handoffs/red/tools && ./extract.py green3
@@ -6115,7 +6131,7 @@ For each arm with fewer than 5 valid reps:
 
 Stop at 10 dispatched for an arm. That arm is then UNSETTLED; report it, and your human partner decides.
 
-- [ ] **Step 4: Score each arm**
+- [x] **Step 4: Score each arm**
 
 Dispatch one scorer subagent per arm. Give each:
 - `rubric.md`, and its arm's section by name;
@@ -6139,7 +6155,9 @@ Expected: exit 0, one line per arm.
 - The probe arms print `P-f0 <n>/5, P-f1 <n>/5`, or `P-rt0 …, P-rt13 …`.
 - `c4a-neg` passes at most 1 of 5 failing.
 
-- [ ] **Step 5: REFACTOR any failing arm (PROTOCOL.md, REFACTOR)**
+- [x] **Step 5: REFACTOR any failing arm (PROTOCOL.md, REFACTOR)**
+
+  > Deviation: three `cr` REFACTOR rounds and a review-fix rerun (k-dr4); `b2` got one round whose reruns all voided; `v1` and `b2` ship UNSETTLED by owner ruling.
 
 For each arm whose verdict is FAIL, take round N = 1, 2, 3:
 
@@ -6159,7 +6177,7 @@ For each arm whose verdict is FAIL, take round N = 1, 2, 3:
 
 Stop when both pass. After three failing rounds, stop and give your human partner three choices: ship as is, take the variant the gates' next row describes, or descope.
 
-- [ ] **Step 6: Record Phase 3's results, and commit**
+- [x] **Step 6: Record Phase 3's results, and commit**
 
 In the record's `## GREEN results`, add:
 
@@ -6195,7 +6213,7 @@ In the ledger, write `Task 19: complete (commits <base7>..<head7>; arms <verdict
 - Consumes: Task 17's skill at the branch head; template t3.
 - Produces: Validation 5's result.
 
-- [ ] **Step 1: Prepare the two smoke repos**
+- [x] **Step 1: Prepare the two smoke repos**
 
 Neither runtime has the skill installed before the merge, so each repo carries a workspace copy:
 - Codex reads the repo's `.agents/skills/`.
@@ -6217,7 +6235,7 @@ OK. I'll /clear and start planning in a fresh session.
 
 The prompt names the skill. That way the run tests the runtime's mechanics, not the description's trigger, which Task 19 covered.
 
-- [ ] **Step 2: Hand the smoke runs to your human partner (hard stop)**
+- [x] **Step 2: Hand the smoke runs to your human partner (hard stop)**
 
 > **Smoke runs — your steps (spec R5.7).** Use a plain terminal, and choose each model yourself.
 >
@@ -6233,7 +6251,7 @@ The prompt names the skill. That way the run tests the runtime's mechanics, not 
 >
 > Reply with (a), (b) and (c) for each runtime, and the models you used.
 
-- [ ] **Step 3: Record the results, clean up, and commit**
+- [x] **Step 3: Record the results, clean up, and commit**
 
 In the record's `## GREEN results`, add:
 
@@ -6271,7 +6289,7 @@ A failed smoke run goes to your human partner as a finding. It is not a REFACTOR
 - Consumes: every earlier task.
 - Produces: the record, closed and ready to retire with the plan (Global Constraints, **Retirement**).
 
-- [ ] **Step 1: The gates (Validation 9)**
+- [x] **Step 1: The gates (Validation 9)**
 
 From the worktree root, run the gate block, then the runtime-adapter check:
 
@@ -6281,7 +6299,7 @@ uv run --python 3.13 --with pyyaml python build/sync_runtime_assets.py --check
 
 Expected: all pass. This plan changed no agent or command, so the adapters need no regeneration.
 
-- [ ] **Step 2: The leave-alone and scope checks**
+- [x] **Step 2: The leave-alone and scope checks**
 
 ```bash
 B=$(awk '/^BASE40:/ {print $2}' .sdd/40-handoff-briefs/progress.md) && git diff --quiet "$B" HEAD -- specs/claude-code-drift-automation.md specs/plans/completed/38-claude-code-drift-automation.md install.py build runtimes agents commands skills/describe-critique-methodology && echo leave-alone-ok && git diff --name-only "$B" HEAD | sort
@@ -6299,7 +6317,7 @@ Expected: `leave-alone-ok`, then only paths from this list:
 
 Any other path is a finding for your human partner.
 
-- [ ] **Step 3: Close the record**
+- [x] **Step 3: Close the record**
 
 In the record, set the status line to `**Date:** <RED date> · **Status:** COMPLETE (<YYYY-MM-DD>) — <n> reps across RED and GREEN; gates as below.` Then add, after `## GREEN results`:
 
@@ -6325,7 +6343,9 @@ Run the gate block. Then:
 git add specs/red-baseline-handoff-briefs-*.md && [ "$(git branch --show-current)" = feat/handoff-briefs ] && git commit -m "docs(specs): close plan 40's RED and GREEN record"
 ```
 
-- [ ] **Step 4: Record completion, and carry the reminders**
+- [x] **Step 4: Record completion, and carry the reminders**
+
+  > Deviation: the final whole-branch review led to fixes in commits `122853e` and `a8989b2` (the private-fact trigger reverted to "a decision"; Minors).
 
 In the ledger, write `Task 21: complete (commits <base7>..<head7>)`. Then go on to subagent-driven-development's final whole-branch review and Plan Completion.
 

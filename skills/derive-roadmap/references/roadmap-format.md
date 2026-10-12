@@ -39,14 +39,16 @@ these fields and nothing else:
       ROUTING: brainstorming | writing-plans
 ```
 
-**Consumes/Produces are load-bearing.** The roadmap and the spec are the
-ONLY cross-stage carriers — a stage's implementer sees neither the previous
-stage's session nor its plan.
+**Consumes/Produces are load-bearing.** The roadmap, the spec and each
+completed stage plan's `## Handoff to later stages` section are the ONLY
+cross-stage carriers — a stage's implementer sees neither the previous stage's
+session nor the rest of its plan. A field may cite `plan <id>, Handoff`, and a
+point settled at a resume carries `(Resolved at resume, YYYY-MM-DD)`.
 
 **ROUTING** is `brainstorming` when the stage's design space is open, and
 `writing-plans` when the spec fully determines it. Name the skill bare.
 
-## Stage-spec Rollout stamp
+## Stage stamps
 
 Every stage spec's Rollout note carries this line, which writing-plans then
 copies verbatim into the stage plan's header:
@@ -54,7 +56,11 @@ copies verbatim into the stage plan's header:
 > Roadmap: specs/<name>-roadmap.md, Stage N — on plan completion, tick the
 > stage and re-validate later stages against what shipped.
 
-On completion the stamp becomes authoritative:
+On completion, a stamp goes under the stage's entry in the roadmap, the one
+addition to its fields, and it is authoritative:
 
-> Stage N: COMPLETE (YYYY-MM-DD) — implemented by plan <id> (path).
+> Stage N: COMPLETE (YYYY-MM-DD) — implemented by plan <id> (path). Its Handoff section names what <stages> consume.
 > Next: resume the roadmap.
+
+The second sentence points at the plan's `## Handoff to later stages`. Drop it
+when the plan has no such section, or when the section reads `None`.

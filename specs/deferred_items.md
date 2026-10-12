@@ -214,6 +214,10 @@
   branch: the synthesize-mode scenario-verification successor (74d) waits on the
   partner's decision to revise the VOID rule or isolate the exemplar step before any
   re-run of plan 36. This branch does not touch it.
+- 2026-10-11 — finished `feat/handoff-briefs` (plan 40) with 1 item aged >45d,
+  carried on the partner's stated reason ("No project to baseline against"): the
+  synthesize-mode scenario-verification successor (77d) has no project to run a
+  baseline against. This branch does not touch it.
 
 ## 11-delegation-frontmatter-rollout — 2026-07-19
 - [x] Haiku-pinned `Explore` override agent (fork-isolation upgrade; plan "Out of
@@ -2775,3 +2779,51 @@ declined as YAGNI (zero instances in a one-page wiki).
       function in `build/cc_guide/test_baseline.py`. Size: quick-fix. Done when: a
       repeated missing ID appears once in each refusal, with a test for each.
       → done 2026-10-08 (/deferred quick fix)
+
+## 40-handoff-briefs — 2026-10-11
+- [ ] Re-run `v1`, `b2` and `c4a-neg` on the shipped prepare-handoff text. GREEN
+      Phase 3 ended with `v1` and `b2` UNSETTLED at 3 valid reps each (10
+      dispatched), and `c4a-neg` was last scored before the description was
+      widened and then anchored. 34 of 70 Phase 3 reps voided because the
+      reviewer subagents that the skill dispatches look for the skill text on
+      disk, mostly under the user-level skill path (which holds the old skills),
+      so the harness needs a fix first (for example, putting the kit's skills
+      where the subagents look, or an owner-approved audit rule for read-only
+      skill-text reads). See `specs/completed/red-baseline-handoff-briefs-2026-10-10.md`
+      (Phase 3 and Acceptance) and `~/.cache/agent-skills/handoffs/red/changes.log`.
+      Size: design. Done when: each of the three arms has 5 valid reps on the
+      shipped skills and a recorded verdict.
+- [ ] `skills/writing-plans/SKILL.md` lines 26-30 (the paragraph "A roadmap stage
+      you just finished is never planned past") says "do not plan, brainstorm or
+      name it", yet step 3a requires the Handoff bullets and the stamp to name the
+      later stages; the same verb is at `skills/subagent-driven-development/SKILL.md`
+      (roadmap-stage paragraph) and `skills/executing-plans/SKILL.md` Step 6, from
+      spec R7.2. The paragraph also gives no path for a session that has already
+      merged. Suggested rewording: "route to it" for "name it", a note that step
+      3a's bullets and stamp still name the stages they feed, and "if already
+      merged, run the protocol on the merged branch now". Size: quick-fix. Done
+      when: reworded in all three files and a `p5a` run (5 reps plus `c5a-neg`) on
+      the new text passes.
+- [ ] `skills/subagent-driven-development/SKILL.md` sits at exactly 500 of its
+      500-line maximum, with a long unwrapped description line; any edit there has
+      to be net-zero. Trim the file (or move a section to `references/`) before its
+      next content change. Size: quick-fix. Revisit if: the next edit to that file
+      needs a line (done when it is back under 490 lines).
+- [ ] `skills/derive-roadmap/SKILL.md` §5 (the resume) has two gaps found in
+      review. "Each stage stamped COMPLETE since the last resume" has no marker for
+      the last resume (suggested: each stamped stage whose Handoff no entry yet
+      cites). And no rule covers a roadmap where no unticked stage has its
+      Consumes met. Size: plan. Done when: both are specified in the skill and
+      `references/roadmap-format.md` and a fixture shows each behaving as
+      specified.
+- [ ] `skills/prepare-handoff/references/cold-reader.md` has no output form for a
+      clean read (`fact-checker.md` has `VERIFIED OK`), so a sender cannot tell a
+      clean read from a truncated one. Add a "NO FINDINGS" line after the report
+      blocks. Size: quick-fix. Done when: added and a `cr` run (5 reps, planted
+      probe) still passes both criteria.
+- [ ] `skills/prepare-handoff/SKILL.md` §1 says "Amend and commit it", but one
+      listed home is a deviation line in the subagent-driven-development ledger,
+      which is gitignored (`.gitignore`) and deleted at completion; the wording is
+      spec R4.3's (`specs/completed/handoff-briefs.md`). Size: quick-fix. Done
+      when: the spec and the skill both read "amend it, and commit where the home
+      is tracked".

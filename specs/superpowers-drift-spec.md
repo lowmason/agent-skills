@@ -51,7 +51,7 @@ disposition.
 | 5 | Every task gets its own dispatch | **Adopted** — plan 22 |
 | 6 | SDD review loop has no round cap | **Adopted** — plan 22, with a deliberate ladder divergence |
 | 7 | Pre-flight conflicts stall for a human | Partly adopted (fix-round rulings); premise corrected; still a decision |
-| 8 | Smaller items | `find-polluter.sh` still broken — its "fix directly" disposition was never carried out; two items now partly covered |
+| 8 | Smaller items | `find-polluter.sh` still broken — its "fix directly" disposition was never carried out; two items now partly covered; the `Spec:` pointer adopted by plan 40 |
 
 ## Dismissed without further review
 
@@ -275,12 +275,12 @@ stands.
   output so the count is 0. Add the deterministic test upstream added, in our
   directory-scoped convention. Anchor the invocation as
   `<this-skill-dir>/find-polluter.sh`.
-- **Plan `Spec:` header pointer — still absent.** Upstream has carried it since
-  v6.3.0 (#2086). Its executing-plans now reads the spec at setup and ledgers a
-  missing one, so rulings made without it are marked provisional. Our plan
-  header (`writing-plans/SKILL.md:58-77`) has no such line. Plan 22 did not take
-  it, and our `<id>-<spec-name>` naming couples plan and spec only by
-  convention. Small, and it composes with finding 9.
+- **Plan `Spec:` header pointer — adopted by plan 40.** Upstream has carried it
+  since v6.3.0 (#2086). Our plan header now carries `**Spec:** <path>`, or
+  `none`, after Tech Stack (`specs/handoff-briefs.md` R2.1). Upstream's
+  executing-plans also reads the spec at setup and ledgers a missing one, so
+  rulings made without it are marked provisional; that half belongs to finding
+  11's port.
 - **`finishing-a-development-branch` still advertises "Discard this work"** in
   both completion menus, now `:160` (4-option) and `:172` (detached HEAD).
   Upstream demoted discard to explicit-request-only, on the grounds that
@@ -434,7 +434,9 @@ What upstream's version does:
 
 The writing-plans handoff (#2258, #2318) now asks the partner to review the
 saved plan before anything runs. It offers Subagent-driven and Native, says what
-each costs, and recommends one with a reason drawn from the plan.
+each costs, and recommends one with a reason drawn from the plan. Plan 40
+adopted this handoff half without Native mode (`specs/handoff-briefs.md`
+R2.2–R2.4); the executing-plans port below stays open.
 
 Ours (`executing-plans/SKILL.md`, 122 lines) has no workspace or ledger.
 Progress lives in todos, so a `/clear` or compaction mid-plan loses its place —
@@ -553,16 +555,17 @@ transferable idea.
 
 Under this repo's proportional-process rule:
 
-- **Done:** findings 1, 2, 5, and 6, through plan 22 (2026-09-03).
+- **Done:** findings 1, 2, 5, and 6, through plan 22 (2026-09-03); finding 8's
+  `Spec:` pointer and finding 11's handoff half, through plan 40.
 - **Fix directly, no spec:** two items, both small, mechanical, and verified
   by probe.
   - Finding 8's `find-polluter.sh`: the three-part script fix, a deterministic
     test, and the invocation anchor. This was the first pass's disposition, and
     it is still undone.
   - Finding 12's `review-package` range guards, with tests.
-- **Spec candidate, planning surface:** findings 9 and 10, plus finding 8's
-  `Spec:` pointer. They share the writing-plans plan template and self-review,
-  and finding 10 also reaches the four reviewer surfaces. Both shape
+- **Spec candidate, planning surface:** findings 9 and 10. They share the
+  writing-plans plan template and self-review, and finding 10 also reaches
+  the four reviewer surfaces. Both shape
   discipline-skill behavior, so they need writing-skills' pressure-test and
   micro-test. Upstream's planted-defect probe and its unnamed-input crash eval
   are ready controls.
@@ -570,8 +573,9 @@ Under this repo's proportional-process rule:
   together. Unchanged in kind: a discipline skill that touches the specs
   lifecycle, micro-tested before deployment.
 - **Decide first:** finding 7. Two items hang on it:
-  - Finding 11, the executing-plans port, which merits its own spec once 7 is
-    settled. Finding 13's TDD wording travels with it, micro-tested.
+  - Finding 11's executing-plans port, which merits its own spec once 7 is
+    settled; its handoff half was adopted by plan 40. Finding 13's TDD wording
+    travels with it, micro-tested.
   - Finding 14, which stays declined unless 7 goes to rulings.
 - **Prospective only:** finding 3. Adopt the falsifiability material if you
   want the guidance; do not take the compression without clearing upstream's

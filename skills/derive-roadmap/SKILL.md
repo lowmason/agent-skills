@@ -109,18 +109,53 @@ Present the stage partition for approval before stage 1. On approval, hand
 off the first stage per its ROUTING line, by bare skill name, in a fresh
 session — then STOP.
 
-The between-stages go/no-go is user-initiated via "resume the roadmap". Do
-not volunteer the next stage.
+Between stages, the completed stage's execution session recommends resuming
+the roadmap, and your human partner decides by launching the resume. Never
+volunteer a stage outside a resume.
+
+**Handing off a stage**, after §4's approval or §5's reconcile:
+
+- The next stage is the first unticked one whose `Consumes` are all met.
+- End with "Next: /clear (or a fresh session), then <ROUTING skill> on Stage N
+  of `specs/<name>-roadmap.md`", and quote the line the receiver carries,
+  `Roadmap: specs/<name>-roadmap.md, Stage N`:
+  - ROUTING brainstorming: the new stage spec's Rollout note carries the
+    `Roadmap:` line.
+  - ROUTING writing-plans: the plan header carries it, and the plan is scoped
+    to the stage entry's `Spec` refs. This covers a stage with no stage spec.
+- Then stop. Launching that session is your human partner's go/no-go. A
+  go-ahead, or a request to keep going, approves that fresh session and
+  nothing more: never plan, spec or brainstorm the stage in a resume session.
+  Repeat the "Next:" line and stop.
 
 ## 5. Resume (reconcile)
 
-On re-entry, for each stage: the stage stamp in its spec's Rollout note
+On re-entry, for each stage: the stage stamp under its roadmap entry
 ("Stage N: COMPLETE (date) — implemented by plan <id> (path)") is
 authoritative. A fuzzy match against `specs/plans/completed/` is FALLBACK
 only — never let it overrule a stamp.
 
-Re-validate every unticked stage against what actually shipped, then route
-the next one per its ROUTING line.
+For each stage stamped COMPLETE since the last resume, read the stamp and its
+plan's `## Handoff to later stages`. Re-validate every unticked stage against
+what actually shipped:
+
+- **Amend.** When a Handoff bullet changes a later stage's `Spec`, `Consumes`,
+  `Produces` or `Exit`, amend that entry: cite `plan <id>, Handoff`, mark each
+  settled point `(Resolved at resume, YYYY-MM-DD)`, and never restate.
+  Amend only from Handoff bullets: a section reading `None`, or a plan with
+  none, changes no later entry; a shipped difference no bullet names goes to
+  the Ask.
+- **Ask.** A stage added, split, dropped or reordered is not an amendment. Put
+  every such change to your human partner as ONE question, not a numbered
+  list: state the changes with your proposed default and ask for a single
+  approve-or-amend. Name no stage's routing in it; route only after the
+  answer.
+- **Commit** the amendments, and whatever your partner approved at the Ask,
+  on the current branch before the handoff, so the
+  fresh session reads them. Context for a later stage that cannot be
+  committed goes to prepare-handoff.
+
+Then hand off the next stage (§4). With every stage ticked, go to §6.
 
 **Parking is a first-class exit.** Remaining unticked stages append to
 `specs/deferred_items.md` as self-contained items; the roadmap moves to
@@ -153,7 +188,7 @@ When improvement directions are diffuse, route to creative-thinking.
 |---|---|
 | A spec carrying the Synthesize-mode header (`REQUIRED NEXT SKILL`) | Gap analysis → partition → roadmap, or single-stage exit |
 | Gaps that fit one cycle | NO roadmap file — hand to brainstorming or writing-plans |
-| A document carrying the roadmap header (`REQUIRED SKILL … resume via its reconcile step`) | Reconcile via stamps, route the next unticked stage |
+| A document carrying the roadmap header (`REQUIRED SKILL … resume via its reconcile step`) | Reconcile via stamps and Handoff sections, amend and commit, then hand off the next stage |
 | Every stage ticked | Completion review, then retire |
 | A stage to actually build | Not this skill — brainstorming or writing-plans, by bare name |
 
