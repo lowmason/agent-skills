@@ -22,7 +22,7 @@ You write test cases (pressure scenarios with subagents), watch them fail (basel
 
 **Background:** This skill applies the **RED-GREEN-REFACTOR cycle** to documentation — write a failing test (a pressure scenario), watch it fail (baseline behavior), write the minimal skill that makes it pass, then refactor to close loopholes. The same Iron Law holds: no skill change without a failing test first.
 
-**Official guidance:** For Anthropic's official skill authoring best practices, see anthropic-best-practices.md. This document provides additional patterns and guidelines that complement the TDD-focused approach in this skill.
+**Official guidance:** For Anthropic's official skill authoring best practices, see [Skill authoring best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices). That page provides additional patterns and guidelines that complement the TDD-focused approach in this skill.
 
 ## What is a Skill?
 

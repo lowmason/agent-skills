@@ -2446,10 +2446,14 @@ declined as YAGNI (zero instances in a one-page wiki).
       stance in `specs/guides/claude-code-customization-guide.md` is the owner's call. The
       drift spec logs the same item at its own completion; keep one. Size: design. Done
       when: the owner decides it and the `TODO(owner)` comment leaves the guide.
-- [ ] The provenance of `skills/writing-skills/anthropic-best-practices.md` (conformance
+- [x] The provenance of `skills/writing-skills/anthropic-best-practices.md` (conformance
       spec, Out of scope): the file reads like an Anthropic docs page, and NOTICE does not
       attribute it. Size: design. Done when: the owner records the file's source and NOTICE
       matches, or the file is replaced.
+      → done 2026-10-11 (/deferred quick fix): the owner chose replacement. The file came
+      in with the superpowers vendoring (2f283ae) and reproduced Anthropic's "Skill
+      authoring best practices" page; it is removed, writing-skills line 25 links to the
+      live page, and NOTICE's superpowers changes list records the removal.
 - [ ] A distilled `references/` file for writing-skills (conformance spec Decision 10).
       Size: plan. Revisit if: writing-skills is split below 500 body lines (a portability
       Out-of-scope item; R1.7's body-length warning).

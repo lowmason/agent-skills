@@ -372,6 +372,12 @@ Changes from upstream:
     the home for a decision the plan cannot hold, such as one that must
     stay out of a public repository; and, where step 3a shipped, for
     context about a later roadmap stage that cannot be committed.
+  - writing-skills/anthropic-best-practices.md came in with the
+    vendoring at 2f283ae and reproduced Anthropic's "Skill authoring
+    best practices" docs page. It was removed on 2026-10-11: rather than
+    redistribute Anthropic's text, writing-skills now links to the live
+    page (https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices).
+    The file remains in this repo's git history.
 
     brainstorming/
     dispatching-parallel-agents/
