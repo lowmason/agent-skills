@@ -52,8 +52,8 @@ The behaviour under test is specified in `skills/describe-critique-methodology/S
 - **D1** (owner, /deferred pass, 2026-10-11): isolate the exemplar step by naming two exemplars in `spec-synthesis.md`. The VOID rule is not relaxed: reading the skill's own design spec still voids a rep. Applied in: Task 1, Pre-registration.
 - **D2** (owner, plan writing, 2026-10-11): the exemplars are `delegation-frontmatter-rollout.md` and `skill-model-pin-removal.md`. They replace `calibration-check-verdicts.md`, which has no Requirements, Verification or Rollout note. Applied in: Task 1.
 - **D3** (owner, plan writing, 2026-10-11): `run_rep.sh` unsets `LLM_WIKI_ROOT` and allows exactly `Bash(printenv LLM_WIKI_ROOT)`. A bare `printenv` stays refused, because the whole environment could carry a VOID path. Applied in: Task 2, Pre-registration.
-- **D4** (planner default, for plan review, 2026-10-11): do not add `Projects/alt-nfp` (no `-model`) to the VOID list. `~/Projects/alt-nfp` does not exist (checked 2026-10-11), so no read can hit it. Applied in: Pre-registration.
-- **D5** (planner default, for plan review, 2026-10-11): add the pre-registration's three new rules: the shared-checkout guard, the pilot redesign trigger, and `.cache/nfp-series` as a VOID path. Applied in: Pre-registration, Tasks 2–4.
+- **D4** (owner, plan review, 2026-10-11): do not add `Projects/alt-nfp` (no `-model`) to the VOID list. `~/Projects/alt-nfp` does not exist (checked 2026-10-11), so no read can hit it. Applied in: Pre-registration.
+- **D5** (owner, plan review, 2026-10-11): add the pre-registration's three new rules: the shared-checkout guard, the pilot redesign trigger, and `.cache/nfp-series` as a VOID path. Applied in: Pre-registration, Tasks 2–4.
 
 ## Pre-registration (fixed before any rep runs)
 
