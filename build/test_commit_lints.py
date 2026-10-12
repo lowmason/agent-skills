@@ -12,6 +12,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+import yaml
 
 REPO = Path(__file__).resolve().parent.parent
 RUNNER = Path('build/run_commit_lints.sh')
@@ -124,3 +125,26 @@ def test_runner_fails_closed_without_uv(clone, tmp_path):
                             capture_output=True, text=True, env=env)
     assert result.returncode != 0
     assert failed_names(result) == CHECKS, result.stderr
+
+
+WORKFLOW = REPO / '.github' / 'workflows' / 'lints.yml'
+PINNED = re.compile(r'^[\w.-]+/[\w.-]+@[0-9a-f]{40}$')
+
+
+def workflow():
+    return yaml.safe_load(WORKFLOW.read_text())
+
+
+def test_workflow_triggers_and_permissions():
+    wf = workflow()
+    on = wf.get('on', wf.get(True))  # YAML 1.1 reads a bare `on` key as True
+    assert set(on) == {'push', 'pull_request'}
+    assert on['push']['branches'] == ['main']
+    assert wf['permissions'] == {'contents': 'read'}
+
+
+def test_workflow_pins_actions_and_runs_the_runner():
+    steps = [step for job in workflow()['jobs'].values() for step in job['steps']]
+    uses = [step['uses'] for step in steps if 'uses' in step]
+    assert uses and all(PINNED.match(u) for u in uses), uses
+    assert any(step.get('run') == f'bash {RUNNER}' for step in steps)
