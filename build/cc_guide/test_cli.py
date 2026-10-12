@@ -90,6 +90,8 @@ def test_help_shows_the_module_docstring_and_the_rebaseline_refusal(capsys):
     assert '  lint [--ref REF]\n' in outs[0]  # the docstring's line breaks survive
     assert 'Offline gate over the guide, manifest.toml, baseline.json and every' in outs[0]
     assert '  baseline cite FILE [FILE ...]\n' in outs[0]
+    assert ('A three-part guide release label newer than the cached changelog'
+            in ' '.join(outs[0].split()))  # the label note is for a release only
 
 
 def test_check_reads_main_unless_told_otherwise(tmp_path, docs_dir, monkeypatch, capsys):

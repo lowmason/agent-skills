@@ -2985,7 +2985,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       near 118; reflowing it makes the file 187 lines, under the 190 ceiling. Size: quick-fix.
       Revisit if: a later change touches `state.py`, `check.py`, `cli.py` or the commit-lint
       comments in `CLAUDE.md`.
-- [ ] Drift spec R5 and the `lint` help lag the label-note rule (plan 43, completion gate
+- [x] Drift spec R5 and the `lint` help lag the label-note rule (plan 43, completion gate
       decision (a), 2026-10-12). `specs/claude-code-drift-automation-spec.md` R5 (near lines
       523-526) still says every `2.1.NNN` in the guide must be a changelog release label.
       `build/cc_guide/lint.py` now treats a three-part label newer than the cached changelog's
@@ -2993,3 +2993,6 @@ declined as YAGNI (zero instances in a one-page wiki).
       such as `2.1.902.1`, as a violation whatever the head; the `lint` help in
       `build/cc_guide/cli.py` (lines 13-15) could say "three-part". Size: quick-fix. Done when:
       R5 records the note rule and the three-part limit, and the help matches.
+      → done 2026-10-12 (direct quick fix, branch docs/drift-r5-label-note): R5 records the
+      note rule and the three-part limit, the `lint` help says "three-part" and that any other
+      unlisted label is a violation, and `test_cli.py` pins the wording.

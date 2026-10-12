@@ -10,9 +10,10 @@ Run: uv run --python 3.13 python build/cc_guide/cli.py <subcommand>
       citation (R5). Reads the working tree unless --ref names a commit. Exit
       0 clean, 1 with one line per violation, 2 on a setup error. A citation
       stamped below a cited section's `changed` prints STALE <file> <ids> on
-      stderr, which never changes the exit. A guide release label newer than
-      the cached changelog's newest release, which the cache cannot judge,
-      prints a `note:` line there, also without changing the exit.
+      stderr, which never changes the exit. A three-part guide release label
+      newer than the cached changelog's newest release, which the cache cannot
+      judge, prints a `note:` line there, also without changing the exit; any
+      other label the changelog does not list is a violation.
   check [--ref REF | --worktree] [--docs DIR]
       Fetch the docs when the changelog head moved, compare, and report what
       is due (R6). Reads main's commit unless --ref or --worktree says
