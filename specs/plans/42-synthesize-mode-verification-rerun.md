@@ -1,5 +1,7 @@
 # Synthesize-Mode Scenario Verification Re-run Implementation Plan
 
+**Status: COMPLETE (2026-10-12)** — executed via executing-plans; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Re-run plan 36's Synthesize-mode scenario verification with its exemplar step isolated, and record B1–B3 verdicts from 5 valid reps. "Isolated" means `references/spec-synthesis.md` now names its two exemplars.
@@ -134,11 +136,11 @@ Any of the following voids the reps run since the previous check: the branch is 
 **Interfaces:**
 - Produces: the exemplar sentence that E1 observes, in the form `read two retired exemplars in the agent-skills repo's specs/completed/ directory, delegation-frontmatter-rollout.md and skill-model-pin-removal.md`. Task 2 verifies it through `~/.claude/skills/`.
 
-- [ ] **Step 1: Confirm the failing evidence**
+- [x] **Step 1: Confirm the failing evidence**
 
 writing-skills requires a failing test before a skill edit, and plan 36's run is this edit's failing test. Read `specs/completed/synthesize-mode-verification-2026-10-05.md` § Validity: all 5 reps opened the skill's own design spec through the unnamed-exemplar sentence. No new RED run is needed. This plan's run, through E1, is the GREEN check.
 
-- [ ] **Step 2: Edit the sentence**
+- [x] **Step 2: Edit the sentence**
 
 In `skills/describe-critique-methodology/references/spec-synthesis.md`, replace:
 
@@ -161,7 +163,7 @@ cites it rather than restating it).
 
 Name only these two files. Do not mention the skill's own design spec, even as a prohibition: naming it would draw reps to it.
 
-- [ ] **Step 3: Run the commit lints**
+- [x] **Step 3: Run the commit lints**
 
 From the worktree root, run the six commit lints. If plan 41 has merged, `bash build/run_commit_lints.sh` runs all six. Otherwise, run:
 
@@ -176,14 +178,14 @@ uv run --python 3.13 --with pyyaml python build/sync_runtime_assets.py --check
 
 Expected: every command exits 0.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add skills/describe-critique-methodology/references/spec-synthesis.md
 git commit -m "docs(describe-critique-methodology): name the two spec exemplars"
 ```
 
-- [ ] **Step 5: Checkpoint — the owner lands Task 1 on `main`**
+- [x] **Step 5: Checkpoint — the owner lands Task 1 on `main`**
 
 Report to the owner: "Task 1's commit must be on `main` before the pilot, because reps load the skill through `~/.claude/skills/`, which symlinks into the main checkout. Please land it, either as a pull request of this commit alone or by fast-forwarding local `main` to it, and tell me when it is there." Task 2 can run meanwhile. Its last step checks this landing.
 
@@ -206,7 +208,7 @@ Report to the owner: "Task 1's commit must be on `main` before the pilot, becaus
   - Two environment variables, `GRADE_SESSIONS` and `GRADE_REPOS`, override where `grade.py` looks. They default to `~/.cache/ctl-q9/sessions` and `~/.cache/nfp-notes`.
   - `run_rep.sh <n>` runs rep *n* from `~/.cache/nfp-notes/rep-<n>`.
 
-- [ ] **Step 1: Archive plan 36's run**
+- [x] **Step 1: Archive plan 36's run**
 
 ```bash
 mkdir -p ~/.cache/ctl-q9/run-2026-10-05
@@ -217,7 +219,7 @@ ls ~/.cache/ctl-q9/run-2026-10-05/sessions | wc -l
 
 Expected: `10`.
 
-- [ ] **Step 2: Make the grader's run location configurable**
+- [x] **Step 2: Make the grader's run location configurable**
 
 In `~/.cache/ctl-q9/grade.py`, add `import os` after `import json`. Then replace:
 
@@ -246,7 +248,7 @@ with:
     sid = (SESSIONS / f'rep-{n}.id').read_text().strip()
 ```
 
-- [ ] **Step 3: Watch the denial count fail on plan 36's run**
+- [x] **Step 3: Watch the denial count fail on plan 36's run**
 
 ```bash
 GRADE_SESSIONS=~/.cache/ctl-q9/run-2026-10-05/sessions GRADE_REPOS=~/.cache/nfp-series python3 ~/.cache/ctl-q9/grade.py 1 2 3 4 5 | python3 -c 'import json, sys; print(sum(json.loads(line)["permission_denials"] for line in sys.stdin))'
@@ -254,7 +256,7 @@ GRADE_SESSIONS=~/.cache/ctl-q9/run-2026-10-05/sessions GRADE_REPOS=~/.cache/nfp-
 
 Expected: `0`. That is the bug: these five transcripts hold 24 records with `toolDenialKind: "user-rejected"` (6, 4, 4, 6 and 4, counted 2026-10-11).
 
-- [ ] **Step 4: Count denials by `toolDenialKind`**
+- [x] **Step 4: Count denials by `toolDenialKind`**
 
 In `grade`, replace:
 
@@ -310,7 +312,7 @@ with:
         'denied_calls': denied_calls,
 ```
 
-- [ ] **Step 5: Watch the denial count pass**
+- [x] **Step 5: Watch the denial count pass**
 
 Run the Step 3 command again. Expected: `24`. Then read rep-1's list:
 
@@ -320,7 +322,7 @@ GRADE_SESSIONS=~/.cache/ctl-q9/run-2026-10-05/sessions GRADE_REPOS=~/.cache/nfp-
 
 Expected: `6`, then six lines, each starting `Bash: `. Among them is a `printenv LLM_WIKI_ROOT` call.
 
-- [ ] **Step 6: Add the new VOID path and marker**
+- [x] **Step 6: Add the new VOID path and marker**
 
 In `grade.py`, replace:
 
@@ -343,7 +345,7 @@ INHERITED = ('36-synthesize-mode', '42-synthesize-mode', 'synthesize-mode-verifi
 
 Then `python3 -m py_compile ~/.cache/ctl-q9/grade.py`. Expected: no output.
 
-- [ ] **Step 7: Build the ten fresh rep repos and session ids**
+- [x] **Step 7: Build the ten fresh rep repos and session ids**
 
 Run this block once for each `n` from 1 to 10, as plain commands, with `n` written in literally. In a worktree-isolated session, loops of git commands may be refused, so run them one at a time.
 
@@ -369,7 +371,7 @@ ls -d ~/.claude/projects/-Users-lowell--cache-nfp-notes-* 2>/dev/null | wc -l
 
 Expected: `10`, `10`, one commit line, and `0`. The last value confirms that Claude Code holds no project state for the new paths.
 
-- [ ] **Step 8: Replace `run_rep.sh`**
+- [x] **Step 8: Replace `run_rep.sh`**
 
 Write `~/.cache/ctl-q9/run_rep.sh`:
 
@@ -404,7 +406,7 @@ Then `chmod +x ~/.cache/ctl-q9/run_rep.sh` and `bash -n ~/.cache/ctl-q9/run_rep.
 
 Plan 36 passed the allowed tools as one space-separated string. They are now one argument per rule, because the `printenv` rule contains a space. Task 3's pilot audit checks that the rule took effect.
 
-- [ ] **Step 9: Run the grep gate**
+- [x] **Step 9: Run the grep gate**
 
 The gate covers what reps can read: the fixture repos and the two exemplars the skill now names.
 
@@ -423,12 +425,12 @@ for p in 'Projects/agent-skills/specs/deferred_items.md' 'Projects/agent-skills/
 
 Expected: `0`. Both files returned 0 on 2026-10-11. A hit sends the exemplar choice back to the owner before the pilot.
 
-- [ ] **Step 10: Smoke-test the transcript lookup**
+- [x] **Step 10: Smoke-test the transcript lookup**
 
 Run: `python3 ~/.cache/ctl-q9/grade.py 1`
 Expected: `expected one transcript for <uuid>, found 0`. That shows the lookup is live and that no rep has run yet.
 
-- [ ] **Step 11: Checkpoint — record the guard and hand the pilot to the owner**
+- [x] **Step 11: Checkpoint — record the guard and hand the pilot to the owner**
 
 Confirm the owner has landed Task 1 (Task 1, Step 5). Then record the guard's first values in the ledger:
 
@@ -454,15 +456,17 @@ Then report to the owner: "Kit ready. Please run `bash ~/.cache/ctl-q9/run_pilot
 - Consumes: `grade.py` (Task 2), and the guard values from Task 2, Step 11.
 - Produces: a go/no-go for the batch, with the audit notes that Task 5 copies into the record.
 
-- [ ] **Step 1: The owner runs the pilot**
+- [x] **Step 1: The owner runs the pilot**
 
 The owner runs `bash ~/.cache/ctl-q9/run_pilot.sh` and reports `rep-1 done`. If it errors, collect `~/.cache/ctl-q9/results/rep-1.turn*.json` and stop: the mechanism failed, not the skill.
 
-- [ ] **Step 2: Re-check the guard**
+- [x] **Step 2: Re-check the guard**
 
 Run Task 2, Step 11's four commands. Expected: `main`, the same tree hash, `0` and `1`. Any difference voids rep-1 under the guard.
 
-- [ ] **Step 3: Grade the pilot mechanically**
+- [x] **Step 3: Grade the pilot mechanically**
+
+> Deviation: the expected values did not all hold. Rep-1's `void_hits` listed four names from a name-only `Glob` of `specs/completed/` (false positives, ruled not void), two denied out-of-cwd `ls` calls were not redone, and compound forms around `printenv` ran in reps 1, 4 and 5 instead of staying refused (the bare form ran in reps 2, 3 and 6). None changed the GO; see the record's Dispatch.
 
 Run: `python3 ~/.cache/ctl-q9/grade.py 1`
 Expected, before you read any behavioural field:
@@ -473,13 +477,13 @@ Expected, before you read any behavioural field:
 - Compound forms such as `printenv LLM_WIKI_ROOT; echo …` are still refused by the exact-match rule (plan-36 reps ran them). Their denial is expected and is not a NO-GO.
 - `exemplars_read`: record it. The expected value is the two named exemplars.
 
-- [ ] **Step 4: Read what the pilot was handed**
+- [x] **Step 4: Read what the pilot was handed**
 
 Run: `python3 ~/.cache/ctl-q9/grade.py --injected 1`
 
 Read the file it prints, `~/.cache/ctl-q9/results/rep-1.injected.jsonl`, in full rather than by grep. It holds every `attachment` and `system` record, plus every user text that is not one of the three turn prompts. The pilot passes this audit only if none of it mentions this plan, the deferred item or the expected behaviours. The global `~/.claude/CLAUDE.md`, the skill listing and the rep repo's own git status are expected there, and are not contamination.
 
-- [ ] **Step 5: Decide**
+- [x] **Step 5: Decide**
 
 - **GO:** Steps 2–4 are all clean, and all three turns produced output. rep-1 counts as the first rep if it is not void.
 - **NO-GO:** inherited context names this plan or the item. Stop and report: Channel 5 has a path this plan did not foresee.
@@ -487,7 +491,7 @@ Read the file it prints, `~/.cache/ctl-q9/results/rep-1.injected.jsonl`, in full
 - **STOP (redesign trigger):** rep-1 is void because it followed the skill's own procedure to a VOID path, such as a VOID-listed spec opened while looking for exemplars. Run no batch. Go to Task 5 and record the run as VOID, with the cause and the transcript evidence.
 - **GO:** rep-1 is void for any other cause. Record which path voided it and how, because that path will recur.
 
-- [ ] **Step 6: Checkpoint — hand the batch to the owner**
+- [x] **Step 6: Checkpoint — hand the batch to the owner**
 
 On GO, report the audit and ask: "Please run `bash ~/.cache/ctl-q9/run_batch.sh` from a plain terminal and tell me when it prints `batch done`."
 
@@ -499,25 +503,27 @@ On GO, report the audit and ask: "Please run `bash ~/.cache/ctl-q9/run_batch.sh`
 - Consumes: `grade.py`, the VOID rule, the guard and the replacement rule (Pre-registration).
 - Produces: a set of exactly 5 valid reps, or a void run.
 
-- [ ] **Step 1: The owner runs the batch**
+- [x] **Step 1: The owner runs the batch**
 
 The owner runs `bash ~/.cache/ctl-q9/run_batch.sh` and reports `batch done`.
 
-- [ ] **Step 2: Re-check the guard**
+- [x] **Step 2: Re-check the guard**
 
 Run Task 2, Step 11's four commands. Expected: `main`, the same tree hash, `0` and `1`. Any difference voids reps 2–5.
 
-- [ ] **Step 3: Grade every rep and apply the VOID rule**
+- [x] **Step 3: Grade every rep and apply the VOID rule**
+
+> Deviation: three rulings were fixed after the pilot and before the batch (a name-only `Glob` listing does not void; a relative pointer inside an allowed exemplar does not void; read-only `bash_write_suspect` entries do not count), and rep-3 was voided on a content `Grep` whose result carried VOID paths. See the record's Validity.
 
 Run: `python3 ~/.cache/ctl-q9/grade.py 1 2 3 4 5`
 
 A rep is void if `void_hits` or `inherited_hits` is non-empty. For each void rep, open its transcript at the first hit and confirm that it reads a VOID path or carries a marker. A false match, such as a bare listing, is not a void: record why. Record each rep's `exemplars_read` and `denied_calls`.
 
-- [ ] **Step 4: Replace void reps, if any**
+- [x] **Step 4: Replace void reps, if any**
 
 For each void rep, ask the owner to run `bash ~/.cache/ctl-q9/run_rep.sh <k>` for the next unused *k* (6, 7, …). After each one, re-check the guard, then grade it. Stop at rep-10. With fewer than 5 valid reps after rep-10, skip to Task 5 and record the run as void.
 
-- [ ] **Step 5: Fix the valid set**
+- [x] **Step 5: Fix the valid set**
 
 The first 5 valid reps by number are the scored set. Note the batching, and every void with its cause, for the record.
 
@@ -532,7 +538,9 @@ The first 5 valid reps by number are the scored set. Note the batching, and ever
 - Consumes: the scored set and the audit notes (Tasks 3–4), and `coverage-key.md`.
 - Produces: the record, and a verdict per behaviour that the Plan Completion Protocol acts on.
 
-- [ ] **Step 1: Score the manual rubric for each scored rep**
+- [x] **Step 1: Score the manual rubric for each scored rep**
+
+> Deviation: an early keyword pass over the triage tables was too loose, so R2 was scored by reading every table in full under one rule (a point counts only when a row names or describes its distinct claim), and rep-4 was re-scored from pass to fail (B1 1/5 became 0/5).
 
 For each rep, read its turn-1 output (`results/rep-<n>.turn1.json`, field `result`), its spec, and its turn-3 output. Score:
 - R1: the adjudication status is stated above the table.
@@ -552,11 +560,11 @@ The mechanical checks are heuristics, so read before counting any check that cam
 
 Where reading shows the property holds, score it true and note why.
 
-- [ ] **Step 2: Compute the verdicts**
+- [x] **Step 2: Compute the verdicts**
 
 Per rep: B1 = M1 ∧ R1 ∧ R2 ∧ R3; B2 = M3 ∧ R4 ∧ R5 ∧ R6 ∧ R7; B3 = M2 ∧ M4 ∧ M5 ∧ R8. A behaviour holds when it passes in at least 4 of the 5 scored reps. Also report E1: how many scored reps read exactly the two named exemplars.
 
-- [ ] **Step 3: Write the record**
+- [x] **Step 3: Write the record**
 
 Create `specs/completed/synthesize-mode-verification-<YYYY-MM-DD>.md` with these sections:
 - **Header**: Date, Status (for example "B1 held 5/5, B2 held 4/5, B3 failed 2/5", or "VOID"), and Governs ("whether describe-critique-methodology Synthesize mode's triage ordering, locator discipline and derive-roadmap handoff hold in practice").
@@ -575,14 +583,16 @@ Create `specs/completed/synthesize-mode-verification-<YYYY-MM-DD>.md` with these
 - **Qualitative evidence**: verbatim quotes for every failure, plus any notable behaviour the pass bar does not capture.
 - **Disposition**: for each failed behaviour, the deferred item it becomes. Use the Deferred-item schema in `skills/writing-plans/references/deferred-backlog.md`, normally `Size: design` with `Done when:` set to a skill change verified by a writing-skills cycle.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
+
+> Deviation: the record commit `00bfe6b` was amended to `6ab30a0` and corrected twice after the whole-plan review (`24b79c3`, `a861827`); the last one carries the owner's R8 and R2 rulings and a second deferred item.
 
 ```bash
 git add specs/completed/synthesize-mode-verification-*.md
 git commit -m "docs(specs): record the synthesize-mode scenario verification re-run"
 ```
 
-- [ ] **Step 5: Report**
+- [x] **Step 5: Report**
 
 Report the three verdicts, E1, the void count and the record's path. Failed behaviours go to the Plan Completion Protocol's resolve-before-defer gate as leftovers.
 
