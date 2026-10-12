@@ -115,6 +115,14 @@ def test_plan_named_for_the_spec_is_listed(repo):
     assert '  plans for this spec: 3-widget-export.md (main, worktree ' in out
 
 
+def test_plan_named_before_a_spec_suffix_rename_is_listed(repo):
+    write(repo, 'specs/widget-export-spec.md', '# Widget export\n')
+    write(repo, 'specs/plans/completed/3-widget-export.md', '# Plan 3\n')
+    commit(repo, 'a -spec spec and the plan named before its rename')
+    out = check(repo, 'specs/widget-export-spec.md').stdout
+    assert '  plans for this spec: 3-widget-export.md (main, worktree ' in out
+
+
 def test_spec_with_no_plan_reads_none(repo):
     write(repo, 'specs/gadget.md', '# Gadget\n')
     commit(repo, 'a spec with no plan')

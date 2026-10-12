@@ -105,8 +105,10 @@ def describe(plans: list[Plan]) -> str:
 
 
 def names_spec(plan: Plan, stem: str) -> bool:
+    # A trailing -spec is a filename convention, not part of the spec's name, so a
+    # plan named before a spec gained the suffix still counts.
     name = PLAN_RE.match(plan.name)['name']
-    return name == stem or name.endswith(f'-{stem}')
+    return any(name == s or name.endswith(f'-{s}') for s in {stem, stem.removesuffix('-spec')})
 
 
 def format_plan_ids(by_id: dict[int, list[Plan]], stem: str | None) -> list[str]:
