@@ -1,6 +1,6 @@
-'''Tests for baseline.py: R2.4's stamp rule, R11.1's derivation, and each
-`baseline` subcommand's effect on the state (drift spec R7). The write sets
-on disk are test_cli.py's.'''
+'''Tests for baseline.py: R2.4's stamp rule, R11.1's derivation and R12.3's
+replay over it, and each `baseline` subcommand's effect on the state or a
+citing file (drift spec R7). The write sets on disk are test_cli.py's.'''
 import subprocess
 from pathlib import Path
 
@@ -9,6 +9,7 @@ import pytest
 import baseline
 import blocks
 import guide
+import lint
 import state
 from cc_fixtures import (DOCS, FIXTURE_CHANGED, GUIDE_IDS, MANIFEST_TOML, docs_dir,  # noqa: F401
                          fixture_snapshot, fixture_state, guide_text, isolated_home, write_tree)
@@ -85,6 +86,23 @@ def test_r11_derivation_from_the_real_history():
         'lean.ceremony', 'lean.overview', 'rules.auto-memory', 'rules.overview',
         'skills.description', 'skills.overview']
     assert sum(1 for release in changed.values() if release == '2.1.288') == 32
+
+
+def test_the_replay_flags_the_citers_of_drifted_sections_and_not_the_control():
+    '''R12.3: with `changed` derived from the real history as R11.1 does,
+    fixture citers stamped @2.1.219 of subagents.tools and hooks.patterns
+    are stale, and a control citing skills.description is not.'''
+    changed = baseline.derive_changed(
+        history(baseline.JULY[0]), history(baseline.REFRESH[0]),
+        (REPO / 'specs/guides/claude-code-customization-guide.md').read_text(encoding='utf-8'))
+    s = {'sections': {sid: {'changed': release} for sid, release in changed.items()}}
+    citations, problems = guide.read_citations({
+        'agents/replay.md': '---\nname: replay\n# cc-guide: subagents.tools @2.1.219\n---\n',
+        'hooks/replay.sh': '#!/bin/sh\n# cc-guide: hooks.patterns @2.1.219\n',
+        'skills/control/SKILL.md': '---\nname: control\n# cc-guide: skills.description @2.1.219\n---\n'})
+    assert problems == []
+    assert lint.stale_citations(citations, s) == [('agents/replay.md', ['subagents.tools']),
+                                                   ('hooks/replay.sh', ['hooks.patterns'])]
 
 
 def test_init_baselines_each_groups_selected_blocks(docs_dir):
@@ -345,3 +363,23 @@ def test_stamp_regenerates_only_the_region(docs_dir):
     stamped = baseline.stamp(guide_text(), s)
     assert guide.stamp_content(stamped) == guide.render_stamp(s['sections'])
     assert stamped == guide_text(guide.render_stamp(s['sections']))
+
+
+def test_cite_stamps_the_highest_changed_and_changes_nothing_else(docs_dir):
+    '''R7 cite: versions compare as tuples, so 2.1.900.1 outranks 2.1.900.'''
+    s = fixture_state(docs_dir)
+    text = '#!/bin/sh\n# A gate.\n# cc-guide: alpha.reference alpha.overview @2.1.219\nexit 0\n'
+    assert baseline.cite('hooks/gate.sh', text, s) == (text.replace('@2.1.219', '@2.1.900'), '2.1.900')
+    s['sections']['alpha.reference']['changed'] = '2.1.900.1'
+    assert baseline.cite('hooks/gate.sh', text, s)[1] == '2.1.900.1'
+
+
+def test_cite_refuses_a_file_it_cannot_stamp(docs_dir):
+    s = fixture_state(docs_dir)
+    for text, message in [('exit 0\n', 'hooks/gate.sh: carries no citation'),
+                          ('# cc-guide: gamma.overview @2.1.219\n', 'hooks/gate.sh: unknown section IDs: gamma.overview'),
+                          ('exit 0\n# cc-guide: alpha.overview @2.1.219\n',
+                           'hooks/gate.sh:2: a citation goes on a line before the first line of code (R4.1)')]:
+        with pytest.raises(state.SetupError) as err:
+            baseline.cite('hooks/gate.sh', text, s)
+        assert str(err.value) == message

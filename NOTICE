@@ -378,6 +378,14 @@ Changes from upstream:
     redistribute Anthropic's text, writing-skills now links to the live
     page (https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices).
     The file remains in this repo's git history.
+  - Seven of these skills' SKILL.md files (brainstorming,
+    dispatching-parallel-agents, executing-plans, requesting-code-review,
+    subagent-driven-development, writing-plans, writing-skills), and
+    agents/code-reviewer.md and agents/task-reviewer.md, gained one
+    `# cc-guide:` YAML comment as the last frontmatter line on 2026-10-12.
+    It names the sections of this repo's Claude Code guide that the file
+    rests on, so a docs change flags it for review
+    (specs/claude-code-drift-automation-spec.md, R4). No parsed field changed.
 
     brainstorming/
     dispatching-parallel-agents/

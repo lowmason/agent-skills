@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Pre-commit: run the six commit lints (build/run_commit_lints.sh) on the working
+# Pre-commit: run the seven commit lints (build/run_commit_lints.sh) on the working
 # tree. Enable once per clone: git config core.hooksPath build/githooks
 # Fails open, with a warning, only when uv itself cannot run here (missing, or a
 # sandbox that blocks its cache); .github/workflows/lints.yml still gates what

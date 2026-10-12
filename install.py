@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# cc-guide: skills.locations commands.overview subagents.overview @2.1.219
 '''Install this repository's skills and runtime-native companion assets.
 
 Examples:

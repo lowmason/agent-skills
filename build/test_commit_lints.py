@@ -23,7 +23,7 @@ RUNNER = Path('build/run_commit_lints.sh')
 HOOK = Path('build/githooks/pre-commit')
 GENERATED = Path('runtimes/gemini/agents/code-reviewer.md')
 CHECKS = {'check_frontmatter', 'check_provenance', 'check_snippets',
-          'check_conformance', 'declared_dependencies', 'sync_runtime_assets'}
+          'check_conformance', 'declared_dependencies', 'sync_runtime_assets', 'cc_guide_lint'}
 
 
 def clean_env(**extra):
@@ -136,6 +136,19 @@ def test_runtimes_hand_edit_is_refused(clone):
     assert result.returncode != 0
     assert head(clone) == before
     assert 'sync_runtime_assets' in failed_names(result), result.stderr
+
+
+def test_misplaced_drift_citation_is_refused(clone):
+    '''The seventh lint is the drift tool's: a citation after a script's first
+    line of code is a violation (drift spec R5).'''
+    script = clone / 'build' / 'smoke_test.py'
+    script.write_text(script.read_text() + '#' + ' cc-guide: hooks.events @2.1.219\n')
+    git(clone, 'add', 'build/smoke_test.py')
+    before = head(clone)
+    result = commit(clone, '-m', 'misplaced citation')
+    assert result.returncode != 0
+    assert failed_names(result) == {'cc_guide_lint'}, result.stderr
+    assert head(clone) == before
 
 
 def test_hook_fails_open_without_uv(clone, tmp_path):

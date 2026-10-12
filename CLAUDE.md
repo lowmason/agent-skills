@@ -1,3 +1,4 @@
+<!-- cc-guide: skills.locations @2.1.219 -->
 # CLAUDE.md
 
 This file is the canonical maintainer guide for Claude Code, Codex, and Gemini CLI when working in this repository. `AGENTS.md` points Codex here and `GEMINI.md` imports it.
@@ -119,10 +120,10 @@ cd skills/subagent-driven-development/scripts && uv run --python 3.13 --with pyt
 # and the floor goes untested. Gate B is the live probe, ./hooks/probe-readonly-guard.sh, which spawns claude -p
 cd hooks && uv run --python 3.13 --with pytest python -m pytest -q && uv run --python /usr/bin/python3 --with pytest python -m pytest -q
 
-# Commit lints: these three, the dependency-drift test, snippet Tier 1 and sync_runtime_assets.py --check make six.
-# build/run_commit_lints.sh runs all six; build/githooks/pre-commit runs it on each commit once enabled (an owner step:
-# git config core.hooksPath build/githooks writes repo config every worktree reads); the hook lints the working tree,
-# untracked files included, so a broken untracked draft can block any commit. .github/workflows/lints.yml: PRs and main.
+# Commit lints: these three, the dependency-drift test, snippet Tier 1, sync_runtime_assets.py --check and the drift
+# lint (cli.py lint, below) make seven. build/run_commit_lints.sh runs all seven; build/githooks/pre-commit runs it on
+# each commit once enabled (an owner step: git config core.hooksPath build/githooks writes repo config every worktree
+# reads); the hook lints the working tree, untracked drafts included except by the drift lint, which reads tracked files only. .github/workflows/lints.yml: PRs and main.
 # Frontmatter, provenance and guide-conformance lints (run before committing any Claude Code artifact)
 uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
 uv run --python 3.13 python build/check_provenance.py
@@ -131,8 +132,9 @@ uv run --python 3.13 --with pyyaml python build/check_conformance.py
 # Commit-lint runner, hook and workflow tests: three of them run the full lint set in a throwaway clone (about 10 s warm)
 cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_commit_lints.py
 
-# Claude Code guide drift detector (build/cc_guide/): its suite; lint, run before committing a change to the guide or
-# build/cc_guide/; check, which fetches the docs and reports what is due (exit 1 = due; reads main unless --worktree)
+# Claude Code guide drift detector (build/cc_guide/): its suite; lint, run before committing a change to the guide, to
+# build/cc_guide/ or to a file carrying a citation (its STALE lines never fail it); check, which fetches the docs and
+# reports what is due (exit 1 = due; reads main unless --worktree)
 cd build/cc_guide && uv run --python 3.13 --with pytest python -m pytest -q
 uv run --python 3.13 python build/cc_guide/cli.py lint
 uv run --python 3.13 python build/cc_guide/cli.py check

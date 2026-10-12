@@ -1,5 +1,6 @@
 '''Tests for check.py: compare, the changelog, every due rule, the fetch gate,
-the report and exit codes (drift spec R6, R12.3's row fixture).'''
+the report with its citing files and stale backlog, and exit codes (drift
+spec R6, R12.3's row fixture).'''
 import http.client
 import json
 import urllib.error
@@ -389,6 +390,19 @@ def test_a_changed_block_or_a_lint_failure_is_due_at_once(tmp_path, docs_dir):
     assert (code, report['due']['lint']) == (1, 1)
 
 
+def test_a_label_newer_than_the_changelog_just_read_is_a_note_that_is_not_due(tmp_path, docs_dir):
+    '''R6.2: check lints with the changelog it read. A guide label above that
+    changelog's newest release cannot be judged, so the report carries a note
+    and the lint term stays 0.'''
+    repo = drift_repo(tmp_path / 'repo', docs_dir)
+    guide = repo / GUIDE_PATH
+    guide.write_text(guide.read_text().replace('First verified at 2.1.900.', 'First verified at 2.1.950.'))
+    code, report, _ = run_check(repo, tmp_path / 'cache', docs_dir)
+    assert (code, report['due']['lint'], report['lint']) == (0, 0, {
+        'violations': [],
+        'notes': ["guide line 9: 2.1.950 is newer than the changelog's newest release 2.1.902; not checked"]})
+
+
 def test_check_names_a_missing_block_from_the_cached_snapshot(tmp_path, docs_dir):
     repo = drift_repo(tmp_path / 'repo', docs_dir)
     cache = tmp_path / 'cache'
@@ -434,8 +448,8 @@ def test_the_report_is_keyed_by_the_baseline_hash_and_check_writes_only_its_cach
     _, report, path = run_check(repo, cache, docs_dir)
     baseline_sha = report['hashes']['baseline']
     assert path == cache / 'reports' / f'{baseline_sha[:12]}.json'
-    assert set(report) == {'generated_at', 'inputs', 'docs', 'hashes', 'lint', 'latest_release', 'findings',
-                           'deselected', 'llms', 'untriaged', 'releases', 'due', 'errors', 'exit'}
+    assert set(report) == {'generated_at', 'inputs', 'docs', 'hashes', 'lint', 'stale', 'latest_release', 'findings',
+                           'deselected', 'citing', 'llms', 'untriaged', 'releases', 'due', 'errors', 'exit'}
     assert git(repo, 'status', '--porcelain') == ''
     assert written() == [f'reports/{baseline_sha[:12]}.json']
     run_check(repo, cache, fetch=serving(docs_dir))
@@ -459,3 +473,46 @@ def test_the_summary_prints_a_block_keyed_by_a_bare_heading_as_a_block(tmp_path,
     write_tree(docs_dir, {'events.md': DOCS['events.md'] + '#\n\nA bare heading.\n'})
     _, report, path = run_check(repo, tmp_path / 'cache', docs_dir)
     assert '  [beta] new events ›  (candidates: beta.overview, beta.reference)' in check.summary(report, path)
+
+
+def citing_repo(root, folder):
+    '''The drift repo plus three committed citers: one stale against
+    alpha.overview (changed 2.1.900), two current.'''
+    repo = drift_repo(root, folder)
+    write_tree(repo, {'hooks/old.sh': '#!/bin/sh\n# cc-guide: alpha.overview @2.1.899\nexit 0\n',
+                      'agents/beta.md': '---\nname: beta\n# cc-guide: beta.overview beta.reference @2.1.900\n---\n',
+                      'CLAUDE.md': '<!-- cc-guide: beta.reference @2.1.900 -->\n# Notes\n'})
+    git(repo, 'add', '-A')
+    git(repo, 'commit', '-qm', 'cite the guide')
+    return repo
+
+
+def test_the_report_lists_each_candidate_sections_citers_and_the_stale_backlog(tmp_path, docs_dir):
+    '''R6.8: the citing files of every candidate section, from the index at
+    the same inputs, and the stale backlog by section. Stale citations are
+    never due (R6.7).'''
+    repo = citing_repo(tmp_path / 'repo', docs_dir)
+    code, report, _ = run_check(repo, tmp_path / 'cache', docs_dir)
+    assert (code, report['stale'], report['citing']) == (0, {'alpha.overview': ['hooks/old.sh']}, {})
+    write_tree(docs_dir, {'events.md': DOCS['events.md'].replace('fires on beta', 'fires on gamma')})
+    code, report, path = run_check(repo, tmp_path / 'cache', docs_dir)
+    assert [(f['kind'], f['candidates']) for f in report['findings']['beta']] == [('changed', ['beta.reference'])]
+    assert (code, report['citing']) == (1, {'beta.reference': ['CLAUDE.md', 'agents/beta.md']})
+    lines = check.summary(report, path)
+    assert lines[2:4] == ['stale citations: 1 file(s) under 1 section(s), informational',
+                          '  alpha.overview: hooks/old.sh']
+    at = lines.index('files citing a candidate section:')
+    assert lines[at + 1] == '  beta.reference: CLAUDE.md, agents/beta.md'
+
+
+def test_check_reads_citations_at_its_inputs_and_lints_them(tmp_path, docs_dir):
+    '''R6.1-R6.2: the citation index comes from the same ref as the rest, and
+    a misplaced citation is a lint failure, due at once.'''
+    repo = citing_repo(tmp_path / 'repo', docs_dir)
+    write_tree(repo, {'hooks/old.sh': '#!/bin/sh\nexit 0\n# cc-guide: alpha.overview @2.1.899\n'})
+    code, report, _ = run_check(repo, tmp_path / 'cache', docs_dir)
+    assert (code, report['lint']['violations']) == (
+        1, ['hooks/old.sh:3: a citation goes on a line before the first line of code (R4.1)'])
+    code, report, _ = check.check(state.Source(repo, 'main'), tmp_path / 'cache', docs_dir=docs_dir,
+                                  today=date(2026, 9, 10), now=NOW, fetch=None)
+    assert (code, report['lint']['violations'], report['stale']) == (0, [], {'alpha.overview': ['hooks/old.sh']})

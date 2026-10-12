@@ -1,7 +1,10 @@
-'''The guide: its anchored sections, their text hashes and terms, and the
-stamp region (drift spec R1, R2.3, R3.6).'''
+'''The guide: its anchored sections, their text hashes and terms, the stamp
+region, and the citations that point at its sections (drift spec R1, R2.3,
+R3.6, R4).'''
+import ast
 import hashlib
 import re
+import warnings
 from typing import NamedTuple
 
 from blocks import fenced_lines
@@ -183,3 +186,154 @@ def render_stamp(section_states: dict[str, dict]) -> str:
     return (f"> Checked against the Claude Code docs and changelog through {checked['release']} "
             f"on {checked['date']}; oldest full re-verification {audited['date']}, "
             f"at {audited['release']}.")
+
+
+# R5's citation-shaped line: after indentation, `#` or `<!--`, then
+# `cc-guide:`. Looser than R4.1's two forms, so a near-miss is still read.
+CITE_SHAPED_RE = re.compile(r'^[ \t]*(?:#|<!--)[ \t]*cc-guide:')
+# R2.4's stamp: a three-part release, plus the fourth part `baseline accept` adds.
+# A shorter one would lint clean and then crash baseline.next_changed.
+STAMP_PATTERN = r'[0-9]+\.[0-9]+\.[0-9]+(?:\.[0-9]+)?'
+CITE_BODY = rf'cc-guide: (?P<ids>{ID_RE.pattern}(?: {ID_RE.pattern})*) @(?P<stamp>{STAMP_PATTERN})'
+HASH_CITE_RE = re.compile(rf'# {CITE_BODY}')
+HTML_CITE_RE = re.compile(rf'<!-- {CITE_BODY} -->')
+HASH_FORM = '`# cc-guide: <id> [<id> …] @<version>`'
+HTML_FORM = '`<!-- cc-guide: <id> [<id> …] @<version> -->`'
+FRONTMATTER = '---'
+PEP723_OPEN, PEP723_CLOSE = '# /// script', '# ///'
+
+
+class Citation(NamedTuple):
+    path: str              # repo-relative
+    line: int              # 1-based
+    ids: tuple[str, ...]   # as written
+    stamp: str             # the release the file was last reviewed against
+
+
+class Slot(NamedTuple):
+    '''Where R4.1 lets one file carry its citation.'''
+    lines: frozenset[int]  # 0-based lines the citation may sit on
+    form: re.Pattern       # HASH_CITE_RE or HTML_CITE_RE
+    shape: str             # the form, as messages print it
+    place: str             # the rule, as messages print it
+
+
+def first_code(lines: list[str]) -> int:
+    '''The first line that is neither blank nor a `#` comment, or len(lines).'''
+    return next((i for i, line in enumerate(lines)
+                 if line.strip() and not line.lstrip().startswith('#')), len(lines))
+
+
+def pep723_lines(lines: list[str]) -> set[int]:
+    '''The lines of each PEP 723 block, markers included; an unclosed one
+    runs to the end.'''
+    out: set[int] = set()
+    start = None
+    for i, line in enumerate(lines):
+        if start is None and line.rstrip() == PEP723_OPEN:
+            start = i
+        elif start is not None and line.rstrip() == PEP723_CLOSE:
+            out.update(range(start, i + 1))
+            start = None
+    if start is not None:
+        out.update(range(start, len(lines)))
+    return out
+
+
+def python_lines(lines: list[str]) -> frozenset[int] | str:
+    '''The lines before a Python file's first line of code, less its module
+    docstring and any PEP 723 block; or why the file cannot be read.'''
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore', SyntaxWarning)
+            body = ast.parse('\n'.join(lines)).body
+    except SyntaxError as exc:
+        return f'does not parse as Python ({exc.msg})'
+    doc = range(0)
+    if body and isinstance(body[0], ast.Expr) and isinstance(body[0].value, ast.Constant) \
+            and isinstance(body[0].value.value, str):
+        doc = range(body[0].lineno - 1, body[0].end_lineno)
+        body = body[1:]
+    first = len(lines)
+    if body:
+        first = min([body[0].lineno] + [d.lineno for d in getattr(body[0], 'decorator_list', [])]) - 1
+    block = pep723_lines(lines)
+    return frozenset(i for i in range(first) if i not in doc and i not in block)
+
+
+def citation_slot(path: str, lines: list[str]) -> Slot | str:
+    '''R4.1's placement for the file at path, or why it can carry no
+    citation. Markdown with frontmatter (skills, agents, commands, rules)
+    takes a YAML comment as the frontmatter's last line; other Markdown an
+    HTML comment on its first line; TOML, shell and Python a `#` line before
+    the first key or line of code.'''
+    name = path.rsplit('/', 1)[-1]
+    if name.endswith('.md'):
+        if lines[0] != FRONTMATTER:
+            return Slot(frozenset({0}), HTML_CITE_RE, HTML_FORM, 'the first line')
+        close = next((i for i in range(1, len(lines)) if lines[i] == FRONTMATTER), None)
+        if close is None:
+            return 'its frontmatter never closes'
+        return Slot(frozenset({close - 1} - {0}), HASH_CITE_RE, HASH_FORM, 'the last line inside the frontmatter')
+    if name.endswith('.toml'):
+        return Slot(frozenset(range(first_code(lines))), HASH_CITE_RE, HASH_FORM, 'a line before the first key or table')
+    if name.endswith('.py'):
+        found = python_lines(lines)
+        if isinstance(found, str):
+            return found
+        return Slot(found, HASH_CITE_RE, HASH_FORM,
+                    'a line before the first line of code, outside the docstring and any PEP 723 block')
+    if name.endswith('.sh') or lines[0].startswith('#!'):
+        return Slot(frozenset(range(first_code(lines))), HASH_CITE_RE, HASH_FORM, 'a line before the first line of code')
+    return 'R4.1 gives this kind of file no citation'
+
+
+def file_citation(path: str, text: str) -> tuple[Citation | None, list[str]]:
+    '''R4.1 and R5 for one file: its citation, and every problem with its
+    citation-shaped lines. The citation is None unless the file has exactly
+    one such line, well-formed, at column 0, where R4.1 puts it.'''
+    lines = text.split('\n')
+    shaped = [i for i, line in enumerate(lines) if CITE_SHAPED_RE.match(line)]
+    if not shaped:
+        return None, []
+    slot = citation_slot(path, lines)
+    problems = [f'{path}:{i + 1}: a second citation; a file carries one' for i in shaped[1:]]
+    i = shaped[0]
+    where = f'{path}:{i + 1}'
+    if isinstance(slot, str):
+        return None, [f'{where}: no citation can go here: {slot}'] + problems
+    if i not in slot.lines:
+        return None, [f'{where}: a citation goes on {slot.place} (R4.1)'] + problems
+    match = slot.form.fullmatch(lines[i])
+    if match is None:
+        indented = slot.form.fullmatch(lines[i].strip()) is not None
+        return None, [f'{where}: an indented citation; it starts at column 0' if indented
+                      else f'{where}: malformed citation; the form is {slot.shape}'] + problems
+    ids = tuple(match['ids'].split(' '))
+    twice = sorted({sid for sid in ids if ids.count(sid) > 1})
+    if twice:
+        problems.insert(0, f"{where}: cites {', '.join(twice)} twice")
+    if problems:
+        return None, problems
+    return Citation(path, i + 1, ids, match['stamp']), []
+
+
+def read_citations(files: dict[str, str]) -> tuple[list[Citation], list[str]]:
+    '''Each file's citation and problems (R4.1, R5), in path order.'''
+    citations: list[Citation] = []
+    problems: list[str] = []
+    for path in sorted(files):
+        citation, found = file_citation(path, files[path])
+        problems += found
+        if citation is not None:
+            citations.append(citation)
+    return citations, problems
+
+
+def by_section(citations: list[Citation]) -> dict[str, list[Citation]]:
+    '''Each cited section's citations, in the citations' order.'''
+    out: dict[str, list[Citation]] = {}
+    for citation in citations:
+        for sid in citation.ids:
+            out.setdefault(sid, []).append(citation)
+    return out

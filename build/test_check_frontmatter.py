@@ -1,4 +1,7 @@
+import subprocess
 from pathlib import Path
+
+import yaml
 
 from check_frontmatter import (
     check_agent_file,
@@ -339,3 +342,49 @@ def test_load_readonly_roster_reads_the_real_guard():
 def test_real_roster_matches_the_real_agents():
     # The bidirectional assert against the shipped guard and agents/.
     assert check_readonly_roster() == []
+
+
+CITATION_PREFIX = '#' + ' cc-guide:'
+CITATION = CITATION_PREFIX + ' skills.frontmatter @2.1.219'
+
+
+def test_a_drift_citation_comment_passes_every_frontmatter_check(tmp_path):
+    '''Drift spec R12.4: a `# cc-guide:` YAML comment as the last frontmatter
+    line passes check_frontmatter.py, which never sees it.'''
+    d = make_skill(tmp_path, 'cited-skill', f'name: cited-skill\ndescription: >\n  Use when testing.\n{CITATION}')
+    assert check_skill(d) == []
+    agent = tmp_path / 'cited-agent.md'
+    agent.write_text(f'---\nname: cited-agent\ndescription: Use when testing.\ntools: Read\n{CITATION}\n---\n\nBody.\n')
+    assert check_agent_file(agent) == []
+    command = tmp_path / 'cited-command.md'
+    command.write_text(f'---\ndescription: Do a thing.\ndisable-model-invocation: true\n{CITATION}\n---\n\nBody.\n')
+    assert check_command_file(command) == []
+
+
+def test_an_indented_citation_would_join_a_folded_description():
+    '''Why the drift lint wants column 0: indented, the line is description text.'''
+    folded = 'name: x\ndescription: >\n  Use when testing.\n'
+    assert yaml.safe_load(folded + CITATION + '\n') == yaml.safe_load(folded)
+    assert yaml.safe_load(folded + '  ' + CITATION + '\n') != yaml.safe_load(folded)
+
+
+def test_every_frontmatter_citation_leaves_the_parsed_frontmatter_unchanged():
+    '''Drift spec R4.1: each tracked Markdown file whose frontmatter carries a
+    citation parses to the same mapping without that line.'''
+    listed = subprocess.run(['git', 'ls-files', '-z', '*.md'], cwd=REPO, capture_output=True, check=True)
+    cited = []
+    for name in filter(None, listed.stdout.decode().split('\0')):
+        path = REPO / name
+        if path.is_symlink() or not path.is_file():
+            continue
+        lines = path.read_text(encoding='utf-8').split('\n')
+        if lines[0] != '---' or '---' not in lines[1:]:
+            continue
+        front = lines[1:lines.index('---', 1)]
+        kept = [line for line in front if not line.startswith(CITATION_PREFIX)]
+        if kept != front:
+            cited.append(name)
+            # Each line ends in a newline, as it does before the closing ---.
+            assert yaml.safe_load(''.join(f'{line}\n' for line in kept)) == yaml.safe_load(
+                ''.join(f'{line}\n' for line in front)), name
+    assert cited, 'no tracked frontmatter carries a citation, so this test checked nothing'

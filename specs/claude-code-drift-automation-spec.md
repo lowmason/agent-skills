@@ -448,13 +448,16 @@ last review.
 
 | File | Placement |
 |---|---|
-| `SKILL.md`, `agents/*.md`, `commands/*.md`, `.claude/skills/*/SKILL.md`, `.claude/agents/*.md` | `# cc-guide: …` as a YAML comment, the last line inside the frontmatter |
+| Markdown with frontmatter: `SKILL.md`, `agents/*.md`, `commands/*.md`, `rules/*.md`, `.claude/skills/*/SKILL.md`, `.claude/agents/*.md` (owner, plan 43, 2026-10-12) | `# cc-guide: …` as a YAML comment at column 0, the last line inside the frontmatter |
 | `*.sh`, `*.py` | a `# cc-guide: …` line before the first line of code. Only a shebang, comments, blank lines, a PEP 723 block (never inside it) and a Python module docstring may precede it |
 | Markdown without frontmatter (CLAUDE.md, READMEs) | a block-level `<!-- cc-guide: … -->` at the top |
 | TOML (`build/cc_guide/conformance.toml`) | a `# cc-guide: …` line before the first key or table, preceded only by comments and blank lines (conformance R6 D2) |
 
 Citations never go in a skill or agent body: bodies reach Codex and Gemini
-verbatim and cost tokens on every load.
+verbatim and cost tokens on every load. A skill's `SKILL.md` citation covers
+the Markdown files it loads on demand, in `references/` or beside it, which
+load the same way and carry none of their own, while its scripts carry their
+own (owner, plan 43, 2026-10-12).
 
 R4.2 **Scope.** A file qualifies when its correctness rests on a Claude Code
 fact that can change between versions; naming Claude Code is not enough.
@@ -526,7 +529,9 @@ Stale citations, whose stamp is below a cited section's `changed`, print as
 `STALE <file> <ids>` on stderr and do not change the exit code. A test in the
 suite runs `lint` against the repo, so the suite enforces it. CLAUDE.md's
 Commands section gains the invocation, to run before committing a change to
-the guide or to any file carrying a citation.
+the guide or to any file carrying a citation. `build/run_commit_lints.sh`
+runs it as the seventh commit lint, so the pre-commit hook and CI enforce it
+(owner, plan 43, 2026-10-12).
 
 ### R6 — `check`
 
@@ -1108,8 +1113,9 @@ Constraints:
 - The multi-vendor best-practices spec (retired to
   `specs/completed/agent-skills-best-practices.md` in `79ad04f`), and the
   guide's §8 `TODO(owner)`.
-- Anything automatic and outward-facing (commits, PRs, issues), and CI, which
-  the repo does not have.
+- Anything automatic and outward-facing (commits, PRs, issues). Plan 41 added
+  CI, which runs `lint` among the commit lints; `check`, which fetches, never
+  runs there (owner, plan 43, 2026-10-12).
 - Widening `check_frontmatter.py` to `.claude/skills` and `.claude/agents`:
   its portability rules, such as the portability spec's R1.6 invocation parity
   with Codex, do not fit a Claude-only skill.

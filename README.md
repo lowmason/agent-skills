@@ -1,3 +1,4 @@
+<!-- cc-guide: skills.locations commands.overview subagents.overview subagents.models rules.rules-files hooks.events hooks.exit-codes hooks.configuration @2.1.219 -->
 # agent-skills
 
 My personal collection of [Agent Skills](https://agentskills.io/specification) for

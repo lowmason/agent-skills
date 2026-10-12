@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# cc-guide: skills.frontmatter skills.arguments commands.overview subagents.frontmatter subagents.tools rules.hierarchy rules.rules-files rules.settings hooks.exit-codes hooks.configuration hooks.patterns hooks.pitfalls lean.model-routing @2.1.288
 '''Claude Code guide conformance lint.
 
 Checks the repo's Claude Code artifacts against the register,
@@ -1210,15 +1211,37 @@ def check_hook_install_verify_step(root: Path, files: list[str], params: dict) -
 
 
 IMPORT_RE = re.compile(r'(?<![\w/.@-])@([^\s`]+)')
+# A block-level HTML comment opens a line, after at most three spaces (CommonMark HTML block 2).
+COMMENT_OPEN_RE = re.compile(r'^ {0,3}<!--')
+
+
+def comment_lines(text: str) -> set[int]:
+    '''1-based lines inside block-level HTML comments, outside fenced blocks:
+    from a line opening one through the first line holding `-->`. Claude Code
+    expands no import there (probed on 2.1.296; plan 43); an unclosed comment
+    runs to the end.'''
+    fenced = fenced_lines(text)
+    out: set[int] = set()
+    open_at = None
+    for n, line in enumerate(text.split('\n'), start=1):
+        if open_at is None and n not in fenced and COMMENT_OPEN_RE.match(line):
+            open_at = n
+        if open_at is not None:
+            out.add(n)
+            tail = line[line.index('<!--') + 4:] if n == open_at else line
+            if '-->' in tail:
+                open_at = None
+    return out
 
 
 def import_targets(text: str) -> list[tuple[int, str]]:
-    '''(line, path) for each @path import: outside fenced blocks and inline code
-    spans, not glued to a word (so not an email address), trailing punctuation dropped.'''
-    fenced = fenced_lines(text)
+    '''(line, path) for each @path import: outside fenced blocks, block-level
+    HTML comments and inline code spans, not glued to a word (so not an email
+    address), trailing punctuation dropped.'''
+    skipped = fenced_lines(text) | comment_lines(text)
     found: list[tuple[int, str]] = []
     for n, line in enumerate(text.split('\n'), start=1):
-        if n in fenced:
+        if n in skipped:
             continue
         bare = INLINE_CODE_RE.sub(lambda m: ' ' * len(m.group(0)), line)
         for m in IMPORT_RE.finditer(bare):

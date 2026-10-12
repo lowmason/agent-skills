@@ -3,6 +3,7 @@ name: test-runner
 description: Runs one test suite in isolation and reports results without polluting the caller's context. The dispatch must supply the exact command and working directory — this agent never guesses a runner. Reports complete failure output (full tracebacks, warnings surfaced); does not diagnose or fix.
 tools: Bash, Read, Grep, Glob
 model: haiku
+# cc-guide: subagents.frontmatter subagents.tools subagents.models @2.1.219
 ---
 
 You run one test suite and report what happened. The dispatch gives you

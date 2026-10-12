@@ -1,15 +1,19 @@
-'''`lint`: the offline gate over the guide, manifest.toml and baseline.json
-(drift spec R5). Its citation rules and STALE lines are Stage 2's.'''
+'''`lint`: the offline gate over the guide, manifest.toml, baseline.json and
+the citations that point at the guide (drift spec R5).'''
 import json
 import re
 
 from blocks import CELL_SPLIT_RE, fence_spans, fenced_lines, is_table_start
-from guide import NO_STAMP, anchor_problems, render_stamp, sections, stamp_bounds, stamp_content, text_hash
+from docs import version_key
+from guide import (NO_STAMP, Citation, anchor_problems, file_citation, render_stamp, sections, stamp_bounds,
+                   stamp_content, text_hash)
 from state import Manifest
 
 CLI = 'uv run --python 3.13 python build/cc_guide/cli.py'
 # A 2.1.NNN version, not inside a longer number; a trailing period is prose.
 VERSION_RE = re.compile(r'(?<![\d.])2\.1\.\d+(?:\.\d+)*(?!\d)')
+# Claude Code ships three-part releases. A fourth part is baseline's own counter (R2.4).
+RELEASE_PARTS = 3
 NO_CHANGELOG = 'release-label check skipped: no changelog to read'
 
 
@@ -66,10 +70,45 @@ def stamp_problems(guide_text: str, state: dict) -> list[str]:
     return []
 
 
-def label_problems(lines: list[str], labels: set[str]) -> list[str]:
-    '''Every 2.1.NNN in the guide is a changelog release label (R5).'''
-    return [f'guide line {n}: {v} is not a changelog release label'
+def newest_label(labels: set[str]) -> str | None:
+    '''The newest of the changelog's release labels, compared as versions
+    (R2.4), or None when it lists none.'''
+    return max(labels, key=version_key, default=None)
+
+
+def unlisted_labels(lines: list[str], labels: set[str]) -> list[tuple[int, str, bool]]:
+    '''Each 2.1.NNN in the guide that the changelog does not list, as (line
+    number, label, newer): whether it may be a release newer than the
+    changelog's newest, which this changelog cannot judge. Only a three-part
+    label may be: a fourth part is baseline's own counter (R2.4), the shape it
+    writes into stamps and never a release, so such a token is judged
+    whatever the head.'''
+    head = newest_label(labels)
+
+    def newer(label: str) -> bool:
+        return (head is not None and len(label.split('.')) == RELEASE_PARTS
+                and version_key(label) > version_key(head))
+    return [(n, v, newer(v))
             for n, line in enumerate(lines, start=1) for v in VERSION_RE.findall(line) if v not in labels]
+
+
+def label_problems(lines: list[str], labels: set[str]) -> list[str]:
+    '''Every 2.1.NNN in the guide is a changelog release label (R5), unless it
+    is a three-part label newer than the changelog's newest release:
+    label_notes reports those.'''
+    return [f'guide line {n}: {v} is not a changelog release label'
+            for n, v, newer in unlisted_labels(lines, labels) if not newer]
+
+
+def label_notes(lines: list[str], labels: set[str]) -> list[str]:
+    '''A three-part 2.1.NNN newer than the changelog's newest release cannot be
+    judged: an older changelog, such as a stale cache, cannot say whether that
+    release exists. It is a note, never a violation (owner, plan 43 final
+    review, 2026-10-12). A four-part token stays a violation: it is baseline's
+    own stamp shape (R2.4), never a release.'''
+    newest = newest_label(labels)
+    return [f"guide line {n}: {v} is newer than the changelog's newest release {newest}; not checked"
+            for n, v, newer in unlisted_labels(lines, labels) if newer]
 
 
 def table_problems(lines: list[str]) -> list[str]:
@@ -103,15 +142,61 @@ def json_problems(lines: list[str]) -> list[str]:
     return out
 
 
-def lint(guide_text: str, manifest: Manifest, state: dict,
-         labels: set[str] | None) -> tuple[list[str], list[str]]:
-    '''R5 without its citation rules: (violations, notes). `labels` are the
-    newest changelog's release labels, None when there is no changelog to
-    read, which skips the label check with a note. The caller parses the
-    changelog, so a malformed one is a setup error there.'''
+def citation_problems(guide_text: str, files: dict[str, str]) -> list[str]:
+    '''R5's citation rules over the files the scan found: each citation
+    parses, cites guide sections, sits where R4.1 puts it, and appears once
+    per file. In path order, each file's problems together.'''
+    ids = {s.id for s in sections(guide_text) if s.id}
+    out = []
+    for path in sorted(files):
+        citation, problems = file_citation(path, files[path])
+        out += problems
+        if citation is not None:
+            out += [f'{path}:{citation.line}: cites {sid}, which is not a guide section'
+                    for sid in citation.ids if sid not in ids]
+    return out
+
+
+def stale_citations(citations: list[Citation], state: dict) -> list[tuple[str, list[str]]]:
+    '''R5: each citing file whose stamp is below a cited section's
+    `changed`, with those sections. A section baseline.json lacks is a lint
+    violation, never stale.'''
+    out = []
+    for c in citations:
+        behind = [sid for sid in c.ids if sid in state['sections']
+                  and version_key(c.stamp) < version_key(state['sections'][sid]['changed'])]
+        if behind:
+            out.append((c.path, behind))
+    return out
+
+
+def stale_lines(citations: list[Citation], state: dict) -> list[str]:
+    '''R5's `STALE <file> <ids>` lines, which never change the exit code.'''
+    return [f"STALE {path} {' '.join(ids)}" for path, ids in stale_citations(citations, state)]
+
+
+def stale_by_section(citations: list[Citation], state: dict) -> dict[str, list[str]]:
+    '''R6.8's stale backlog: each section's stale citing files, sections in
+    baseline.json's (the guide's) order.'''
+    by: dict[str, list[str]] = {}
+    for path, ids in stale_citations(citations, state):
+        for sid in ids:
+            by.setdefault(sid, []).append(path)
+    return {sid: by[sid] for sid in state['sections'] if sid in by}
+
+
+def lint(guide_text: str, manifest: Manifest, state: dict, labels: set[str] | None,
+         files: dict[str, str]) -> tuple[list[str], list[str]]:
+    '''R5: (violations, notes). `labels` are the newest changelog's release
+    labels, None when there is no changelog to read, which skips the label
+    check with a note; a three-part label newer than the newest of them is a
+    note too (label_notes). The caller parses the changelog, so a malformed
+    one is a setup error there. `files` are the citation scan's, path -> text
+    (state.citing_files). Stale citations are not violations: callers print
+    them (stale_lines) or report them (stale_by_section).'''
     lines = guide_text.split('\n')
     violations = (anchor_problems(guide_text) + id_set_problems(guide_text, manifest, state)
                   + hash_problems(guide_text, state) + stamp_problems(guide_text, state)
                   + (label_problems(lines, labels) if labels is not None else [])
-                  + table_problems(lines) + json_problems(lines))
-    return violations, [NO_CHANGELOG] if labels is None else []
+                  + table_problems(lines) + json_problems(lines) + citation_problems(guide_text, files))
+    return violations, [NO_CHANGELOG] if labels is None else label_notes(lines, labels)

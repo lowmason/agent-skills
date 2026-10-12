@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# cc-guide: hooks.exit-codes hooks.pitfalls @2.1.219
 # Gate B — a live check that Claude Code actually delivers the agent identity in
 # the PreToolUse payload and honours the guard's denial on the installed binary.
 # Gate A (test_readonly_agent_guard.py) can pass perfectly against a hook Claude

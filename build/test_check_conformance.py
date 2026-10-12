@@ -1939,6 +1939,23 @@ def test_import_targets_skip_fences_code_spans_and_emails():
     assert cc.import_targets(text) == [(1, 'docs/a.md'), (1, 'docs/b.md'), (7, 'docs/e.md')]
 
 
+def test_import_targets_skip_block_level_html_comments_only():
+    '''Claude Code expands no import inside a block-level HTML comment (probed
+    on 2.1.296), so a drift citation's @<version> there is no import. A comment
+    inside a line is not block-level and is still read.'''
+    text = ('<!-- cc-guide: skills.locations @2.1.219 -->\n'
+            '# Title\n'
+            '   <!-- a maintainer note\n'
+            '   naming @docs/x.md\n'
+            '   -->\n'
+            'Inline <!-- @docs/y.md --> is not block-level.\n'
+            '    <!-- four spaces is code, @docs/z.md -->\n'
+            f'{FENCE}html\n<!-- fenced, so no comment opens\n{FENCE}\n'
+            '@docs/w.md\n')
+    assert cc.import_targets(text) == [(6, 'docs/y.md'), (7, 'docs/z.md'), (11, 'docs/w.md')]
+    assert cc.comment_lines('<!-- open, never closed\n@docs/a.md') == {1, 2}
+
+
 def test_claude_md_import_resolves_pass(tmp_path):
     write_tree(tmp_path, {
         'CLAUDE.md': f'Read @docs/a.md.\n\n{FENCE}bash\n# @needs_pilot tests\n{FENCE}\nNot an import: `@x`.\n'
