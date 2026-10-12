@@ -124,29 +124,31 @@ First pass on kit k-c, then the REFACTOR rounds (kit k-cr1 from `c7f45a8`, k-cr2
 
 ### Phase 3 — prepare-handoff (kit k-d, `7b9df04`, 2026-10-11)
 
-First pass on kit k-d, then REFACTOR rounds on `cr` (kits k-dr1 from `38c6538`, k-dr2 from `c283c54`, k-dr3 from `2b2a74b`) and one on `b2`. C4a was NO-GO, so no `c4a-pos` arm ran. The arms and what they check: `c4a-neg` (no brief when nothing is held, Validation 2), `fc` and `cr` (the planted-defect probe, Validation 4), `v1` (the plan-38 handoff through the skill, Validation 1), `b2` (a decision that must stay out of the public repo).
+First pass on kit k-d, then REFACTOR rounds on `cr` (kits k-dr1 from `38c6538`, k-dr2 from `c283c54`, k-dr3 from `2b2a74b`), one on `b2`, and a verification run of `cr` after the review fix (k-dr4 from `6678a92`). C4a was NO-GO, so no `c4a-pos` arm ran. The arms and what they check: `c4a-neg` (no brief when nothing is held, Validation 2), `fc` and `cr` (the planted-defect probe, Validation 4), `v1` (the plan-38 handoff through the skill, Validation 1), `b2` (a decision that must stay out of the public repo).
 
 | Arm | Valid | Failing reps | Per criterion | After REFACTOR | Verdict |
 |---|---|---|---|---|---|
 | `c4a-neg` | 5 | 0 | F-brief 0 | k-dr1 counterpart: 1 valid, not scored | PASS |
 | `fc` | 4 | 0 | P-f0 4/4, P-f1 4/4 | not needed | PASS (owner ruling: 4 valid of 10 dispatched, all pass) |
-| `cr` | 5 | 5 | P-rt0 5/5, P-rt13 0/5 | k-dr1: P-rt13 2/5; k-dr2: 1/5; k-dr3: P-rt0 5/5, P-rt13 5/5 | PASS after three rounds |
+| `cr` | 5 | 5 | P-rt0 5/5, P-rt13 0/5 | k-dr1: P-rt13 2/5; k-dr2: 1/5; k-dr3: P-rt0 5/5, P-rt13 5/5; k-dr4 (example reworded): 5/5 on both | PASS after three rounds, confirmed at k-dr4 |
 | `v1` | 3 | 1 | F-restate 1, F-unchecked 1, V1-home 1, V1-sort 1 | none | UNSETTLED, shipped disclosed (owner ruling) |
 | `b2` | 3 | 1 | B2-route 1 (B2-out 0) | k-dr1: 0 valid of 5, wording untested | UNSETTLED, shipped disclosed (owner ruling) |
 
-- Validation 1 (`v1`): UNSETTLED. Two of three valid reps pass every criterion; one fails four. Validation 2 (`c4a-neg`): PASS. Validation 4 (`fc`, `cr`): PASS; `cr` needed all three REFACTOR rounds.
+- Validation 1 (`v1`): UNSETTLED. Two of three valid reps pass every criterion; one fails four. Validation 2 (`c4a-neg`): PASS. Validation 4 (`fc`, `cr`): PASS; `cr` needed all three REFACTOR rounds and passes again on the reworded text.
 - REFACTOR 1 (k-dr1, `38c6538`): the cold-reader template gains a per-decision overreach pass, comparing each decision with the owner's words; the writing-plans Private bullet and the prepare-handoff description now route a name, fact or decision that must stay out of a public repository to the skill even when the work can proceed without it. `cr` P-rt13 rose from 0 to 2 of 5; the `b2` reruns all voided, so that wording is untested.
 - REFACTOR 2 (k-dr2, `c283c54`): the overreach pass walks the decision's own text sentence by sentence and checks its done-when against where the owner's words would stop. `cr` P-rt13 fell to 1 of 5; the readers took a done-when cited from a repo artifact as the owner's.
 - REFACTOR 3 (k-dr3, `2b2a74b`): a step, condition, scope or done-when that the brief takes from an artifact is the sender's reading unless the brief shows the owner choosing it. `cr` passes both criteria in all five reps. `fc`, `v1` and `c4a-neg` were not rerun on the cold-reader changes, which touch only the cold-reader template.
+- Review fix (`6678a92`, owner-approved): the third round's example list for a repository artifact included a word close to the planted artifact, so it now says "a document in the repository"; `cr` then passed 5 of 5 on both criteria at k-dr4 (5 valid of 5). The same commit anchored the private-fact trigger, in the prepare-handoff description and the writing-plans Private bullet, to "while planning or handing off". That trigger goes beyond requirement R4.9, which speaks of a decision only, and is untested; the whole-branch review should weigh its over-triggering risk (a task like keeping an address out of a commit, or the global secrets rule).
+- Not measured on the shipped text: Validation 1 (`v1`) ran the cold reader as it stood at k-d, before any REFACTOR change, so the shipped reader's stricter overreach pass has no run on a brief without planted defects and its false-positive rate is unknown; Validation 2 (`c4a-neg`) passed at k-d, before the description was widened and later anchored, and the only run on the widened description is one valid unscored rep (k-dr1 counterpart).
 - Owner rulings (2026-10-11, in `changes.log`; scores unchanged): `fc` settled PASS at 4 valid reps; `v1` and `b2` ship as UNSETTLED with the evidence above and no further reps.
 - Deviation from the frozen prompts: after the first batch voided heavily, the owner approved one added sentence at the end of the turn-1 prompt of every `fc`, `cr`, `v1` and `b2` rep made afterwards, saying the repository is the working directory and nothing outside it is part of the task. The new prompt files sit outside the freeze, no frozen file changed, and reps made before the change keep their original prompt.
 - Voids: 34 of 70 reps (17 of the first 25, 5 of 17 in the first replacement batch, all 3 of the second, 9 of the 15 REFACTOR 1 reps; none in rounds 2 and 3). The cause is structural to this harness: the reviewer subagents that the skill dispatches look for the skill text on disk, mostly under the user-level skill path (which holds the old skills), and some list the reps directory, the shared handoffs directory or the live checkout. The better the skill routed, the more reps voided. The audit was left as frozen; `v1` and `b2` stop at the 10-dispatch cap.
-- Cost: $334.09 for the phase ($127.05 first batch, $103.34 first replacement batch, $16.44 second, $69.20 REFACTOR 1, $8.94 REFACTOR 2, $9.12 REFACTOR 3).
+- Cost: $342.79 for the phase, 75 reps ($127.05 first batch, $103.34 first replacement batch, $16.44 second, $69.20 REFACTOR 1, $8.94 REFACTOR 2, $9.12 REFACTOR 3, $8.70 k-dr4).
 - Evidence, one line per failure (rep: criterion: paraphrase):
-  - k-d, `cr`: r201, r205, r222, r223, r224 P-rt13: each flagged other overreach, padding or ambiguity and never said decision 2 goes beyond "fewer lines".
+  - k-d, `cr`: r201, r205, r222, r223, r224 P-rt13: each flagged other overreach, padding or ambiguity and never said decision 2 goes beyond the owner's stated aim.
   - k-d, `v1` r229: F-restate repeats a default the planning skill already applies; F-unchecked states a spec is approved when its status line says the written spec still awaits review; V1-home gives one decision two approvals; V1-sort leaves two pieces of the sender's analysis in the readings instead of the traps.
   - k-d, `b2` r213 B2-route: never invoked the skill; it kept the name out of the repo with a memory file and a grep check, judging that the plan could work around the name.
   - k-dr1, `cr` r236, r238, r239 P-rt13: reported a different step of decision 2 as the overreach and never its done-when.
   - k-dr2, `cr` r251, r252, r253, r255 P-rt13: accepted the done-when cited from the deferred item as the owner's own stopping point.
 
-Phase 3 is closed by Task 19.
+Task 21 closes this record.
