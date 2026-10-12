@@ -214,6 +214,10 @@
   branch: the synthesize-mode scenario-verification successor (74d) waits on the
   partner's decision to revise the VOID rule or isolate the exemplar step before any
   re-run of plan 36. This branch does not touch it.
+- 2026-10-11 — finished `feat/handoff-briefs` (plan 40) with 1 item aged >45d,
+  carried on the partner's stated reason ("No project to baseline against"): the
+  synthesize-mode scenario-verification successor (77d) has no project to run a
+  baseline against. This branch does not touch it.
 
 ## 11-delegation-frontmatter-rollout — 2026-07-19
 - [x] Haiku-pinned `Explore` override agent (fork-isolation upgrade; plan "Out of
