@@ -363,3 +363,23 @@ def test_stamp_regenerates_only_the_region(docs_dir):
     stamped = baseline.stamp(guide_text(), s)
     assert guide.stamp_content(stamped) == guide.render_stamp(s['sections'])
     assert stamped == guide_text(guide.render_stamp(s['sections']))
+
+
+def test_cite_stamps_the_highest_changed_and_changes_nothing_else(docs_dir):
+    '''R7 cite: versions compare as tuples, so 2.1.900.1 outranks 2.1.900.'''
+    s = fixture_state(docs_dir)
+    text = '#!/bin/sh\n# A gate.\n# cc-guide: alpha.reference alpha.overview @2.1.219\nexit 0\n'
+    assert baseline.cite('hooks/gate.sh', text, s) == (text.replace('@2.1.219', '@2.1.900'), '2.1.900')
+    s['sections']['alpha.reference']['changed'] = '2.1.900.1'
+    assert baseline.cite('hooks/gate.sh', text, s)[1] == '2.1.900.1'
+
+
+def test_cite_refuses_a_file_it_cannot_stamp(docs_dir):
+    s = fixture_state(docs_dir)
+    for text, message in [('exit 0\n', 'hooks/gate.sh: carries no citation'),
+                          ('# cc-guide: gamma.overview @2.1.219\n', 'hooks/gate.sh: unknown section IDs: gamma.overview'),
+                          ('exit 0\n# cc-guide: alpha.overview @2.1.219\n',
+                           'hooks/gate.sh:2: a citation goes on a line before the first line of code (R4.1)')]:
+        with pytest.raises(state.SetupError) as err:
+            baseline.cite('hooks/gate.sh', text, s)
+        assert str(err.value) == message

@@ -40,6 +40,11 @@ group, then `baseline stamp`; then run `cli.py lint` and
 baselined block on the same page has also changed or gone: list it too, or
 rebaseline the whole page. A missing page needs a `manifest.toml` edit first.
 A correction that resolves a conformance gap removes its `[[exception]]`, or
-narrows its `artifacts`, in the same change. Nothing is committed for you.
+narrows its `artifacts`, in the same change. Files whose correctness rests
+on a Claude Code fact carry a `cc-guide:` citation naming the guide sections
+they rely on (the spec's R4.1 places it); `cli.py lint` checks each one and
+prints `STALE` for a file reviewed before a cited section last changed.
+After reviewing such a file, `cli.py baseline cite <file>` restamps it.
+Nothing is committed for you.
 `cd build && pytest` collects this suite too, so module and test basenames
 stay unique across `build/`.

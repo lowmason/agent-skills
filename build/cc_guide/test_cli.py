@@ -66,6 +66,7 @@ def test_help_shows_the_module_docstring_and_the_rebaseline_refusal(capsys):
         assert 'the whole page' in out
     assert '  lint [--ref REF]\n' in outs[0]  # the docstring's line breaks survive
     assert 'Offline gate over the guide, manifest.toml, baseline.json and every' in outs[0]
+    assert '  baseline cite FILE [FILE ...]\n' in outs[0]
 
 
 def test_check_reads_main_unless_told_otherwise(tmp_path, docs_dir, monkeypatch, capsys):
@@ -404,3 +405,66 @@ def test_lint_prints_stale_on_stderr_and_lints_the_citations_at_its_ref(world, c
     assert main(cache, 'lint') == 1
     assert capsys.readouterr().out == 'hooks/gate.sh:3: a citation goes on a line before the first line of code (R4.1)\n'
     assert main(cache, 'lint', '--ref', 'main') == 0
+
+
+def test_cite_stamps_each_file_at_its_sections_highest_changed_and_writes_only_those_files(world, capsys):
+    '''R7 cite: alpha.overview changed at 2.1.900 and alpha.reference at
+    2.1.899, so a file citing both is stamped @2.1.900. Paths are read from
+    the repo root, so a symlink is stamped at its target.'''
+    repo, cache, _ = world
+    cited(repo, {'hooks/gate.sh': '#!/bin/sh\n# cc-guide: alpha.overview alpha.reference @2.1.219\nexit 0\n',
+                 'rules/style.md': '---\npaths: x\n# cc-guide: alpha.reference @2.1.219\n---\n'})
+    (repo / '.claude').mkdir()
+    (repo / '.claude' / 'style.md').symlink_to('../rules/style.md')
+    git(repo, 'add', '-A')
+    git(repo, 'commit', '-qm', 'link the rule')
+    assert main(cache, 'baseline', 'cite', 'hooks/gate.sh', str(repo / '.claude' / 'style.md')) == 0
+    assert capsys.readouterr().out == 'stamped hooks/gate.sh @2.1.900\nstamped rules/style.md @2.1.899\n'
+    assert dirty(repo) == ['hooks/gate.sh', 'rules/style.md']
+    assert (repo / 'hooks/gate.sh').read_text() == (
+        '#!/bin/sh\n# cc-guide: alpha.overview alpha.reference @2.1.900\nexit 0\n')
+    assert main(cache, 'lint') == 0
+    assert capsys.readouterr() == ('', '')
+
+
+@pytest.mark.parametrize('files, args, message', [
+    ({'hooks/gate.sh': '#!/bin/sh\nexit 0\n'}, ['hooks/gate.sh'], 'hooks/gate.sh: carries no citation'),
+    ({'hooks/gate.sh': '#!/bin/sh\n# cc-guide: gamma.overview @2.1.219\n'}, ['hooks/gate.sh'],
+     'hooks/gate.sh: unknown section IDs: gamma.overview'),
+    ({'hooks/gate.sh': '#!/bin/sh\nexit 0\n# cc-guide: alpha.overview @2.1.219\n'}, ['hooks/gate.sh'],
+     'hooks/gate.sh:3: a citation goes on a line before the first line of code (R4.1)'),
+    ({}, ['hooks/none.sh'], 'hooks/none.sh: not found in the working tree'),
+    ({}, ['/etc/hosts'], '/etc/hosts: not a file in {repo}'),
+], ids=['uncited', 'unknown-id', 'misplaced', 'absent', 'outside'])
+def test_cite_refuses_with_one_error_line_and_writes_nothing(world, capsys, files, args, message):
+    repo, cache, _ = world
+    good = {'hooks/ok.sh': '#!/bin/sh\n# cc-guide: alpha.overview @2.1.219\n'}
+    cited(repo, {**good, **files})
+    assert main(cache, 'baseline', 'cite', 'hooks/ok.sh', *args) == 2
+    assert capsys.readouterr() == ('', f'cc-guide: {message.format(repo=repo)}\n')
+    assert dirty(repo) == []
+
+
+def test_a_substantive_accept_keeps_changed_above_every_citers_stamp(world):
+    '''R2.4: a citer already stamped at the newest release forces a fourth
+    component, so the new `changed` still flags it.'''
+    repo, cache, _ = world
+    cited(repo, {'hooks/gate.sh': '#!/bin/sh\n# cc-guide: alpha.overview @2.1.902\n'})
+    guide = repo / GUIDE_PATH
+    guide.write_text(guide.read_text().replace('Alpha uses', 'Alpha now uses'))
+    assert main(cache, 'baseline', 'accept', 'alpha.overview', '--substantive') == 0
+    assert load(repo)['sections']['alpha.overview']['changed'] == '2.1.902.1'
+
+
+def test_a_substantive_accept_refuses_while_a_citation_is_broken(world, capsys):
+    '''R2.4: a citation that does not parse yields no stamp for `changed` to
+    exceed, so the accept refuses until the lint passes, and writes nothing.'''
+    repo, cache, _ = world
+    cited(repo, {'hooks/gate.sh': '#!/bin/sh\nexit 0\n# cc-guide: alpha.overview @2.1.902\n'})
+    guide = repo / GUIDE_PATH
+    guide.write_text(guide.read_text().replace('Alpha uses', 'Alpha now uses'))
+    assert main(cache, 'baseline', 'accept', 'alpha.overview', '--substantive') == 2
+    assert capsys.readouterr() == ('', (
+        'cc-guide: a substantive accept needs every citation to parse (R2.4); fix these first:\n'
+        'hooks/gate.sh:3: a citation goes on a line before the first line of code (R4.1)\n'))
+    assert dirty(repo) == [GUIDE_PATH]

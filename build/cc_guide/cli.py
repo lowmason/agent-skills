@@ -22,7 +22,12 @@ Run: uv run --python 3.13 python build/cc_guide/cli.py <subcommand>
   baseline audited GROUP
   baseline accept ID [ID ...] (--substantive | --editorial)
   baseline stamp
-      The only writer of baseline.json and the guide's stamp region (R7).
+  baseline cite FILE [FILE ...]
+      The only writer of baseline.json, the guide's stamp region and citation
+      stamps (R7). cite stamps each file's citation at the highest `changed`
+      among its cited sections, after a review; FILE is repo-relative, as
+      lint and check print it. accept --substantive keeps a new `changed`
+      above every citer's stamp (R2.4).
       Always the working tree; nothing is committed. rebaseline takes each
       KEY as check prints it, a key hash for a block check could not name.
       A listed rebaseline refuses while an unlisted baselined block on the
@@ -50,7 +55,7 @@ from pathlib import Path
 import baseline
 from check import check, http_get, releases_of, summary
 from docs import page_file
-from guide import read_citations, render_stamp
+from guide import by_section, read_citations, render_stamp
 from lint import lint, stale_lines
 from state import (BASELINE, BOOTSTRAP_DATE, BOOTSTRAP_RELEASE, MANIFEST, SetupError, Source, citing_files,
                    default_cache, dump_baseline, is_iso_date, is_label, latest_docs, newest_changelog,
@@ -97,6 +102,7 @@ def parser() -> argparse.ArgumentParser:
     kind.add_argument('--substantive', action='store_true')
     kind.add_argument('--editorial', action='store_true')
     b.add_parser('stamp')
+    b.add_parser('cite').add_argument('files', nargs='+')
     return p
 
 
@@ -122,6 +128,16 @@ def git_show(ref: str, path: str) -> str:
     if proc.returncode != 0:
         raise SetupError(f'R11.1 needs {ref}:{path}, which this clone lacks (a shallow clone?)')
     return proc.stdout
+
+
+def repo_path(name: str) -> str:
+    '''A FILE argument as a repo-relative path. A relative one is read from
+    the repo root, as lint and check print paths.'''
+    full = (REPO / name).resolve()
+    try:
+        return full.relative_to(REPO.resolve()).as_posix()
+    except ValueError:
+        raise SetupError(f'{name}: not a file in {REPO}') from None
 
 
 def run_lint(args, cache: Path) -> int:
@@ -179,10 +195,27 @@ def run_baseline(args, cache: Path, today: date) -> int:
         guide_path.write_text(baseline.stamp(guide_text, state), encoding='utf-8')
         print(f'regenerated the stamp region in {manifest.guide}')
         return 0
+    if args.action == 'cite':
+        stamped = []
+        for name in dict.fromkeys(args.files):
+            path = repo_path(name)
+            stamped.append((path, *baseline.cite(path, tree.require(path), state)))
+        for path, text, stamp in stamped:  # all checked before any write
+            (REPO / path).write_text(text, encoding='utf-8')
+            print(f'stamped {path} @{stamp}')
+        return 0
     if args.action == 'accept':
-        # Only --substantive sets `changed`, from the newest release; an editorial accept needs no cache.
-        newest = newest_releases(cache)[0].label if args.substantive else None
-        new = baseline.accept(state, guide_text, args.ids, args.substantive, newest)
+        # Only --substantive sets `changed`, from the newest release and above every citer's stamp (R2.4);
+        # an editorial accept needs no cache.
+        newest, stamps = None, None
+        if args.substantive:
+            newest = newest_releases(cache)[0].label
+            citations, problems = read_citations(citing_files(tree, manifest.guide))
+            if problems:  # a citation that does not parse has no stamp to stay above
+                raise SetupError('a substantive accept needs every citation to parse (R2.4); fix these first:\n'
+                                 + '\n'.join(problems))
+            stamps = {sid: [c.stamp for c in cs] for sid, cs in by_section(citations).items()}
+        new = baseline.accept(state, guide_text, args.ids, args.substantive, newest, stamps)
     elif args.action == 'advance':
         labels = {r.label for r in newest_releases(cache)}
         new = baseline.advance(state, args.ids, args.to, labels, day)

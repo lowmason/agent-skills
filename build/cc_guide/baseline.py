@@ -1,12 +1,14 @@
 '''`baseline`: the only writer of baseline.json and of the guide's stamp
-region (drift spec R7). These functions return new state; cli.py writes it
-to the working tree, and nothing is committed. `cite` is Stage 2's.'''
+region, and of citation stamps (drift spec R7). These functions return new
+state or text; cli.py writes it to the working tree, and nothing is
+committed.'''
 import copy
 from pathlib import Path
 
 from blocks import SEP, block_hash, key_hash, key_names, page_blocks, select
 from docs import is_platform, page_file, parse_llms, version_key
-from guide import NO_STAMP, anchor_problems, render_stamp, sections, stamp_bounds, text_hash, with_stamp
+from guide import (NO_STAMP, anchor_problems, file_citation, render_stamp, sections, stamp_bounds, text_hash,
+                   with_stamp)
 from state import Manifest, SetupError, Snapshot, block_namer, group_terms, no_snapshot, read_utf8
 
 # R11.1: the July guide (verified at 2.1.219) and the refresh (at 2.1.288),
@@ -111,8 +113,8 @@ def accept(state: dict, guide_text: str, ids, substantive: bool, newest: str | N
            citer_stamps: dict[str, list[str]] | None = None) -> dict:
     '''R7 accept: record each section's current text_hash. Substantive also
     sets a new `changed` (R2.4), which flags the section's citers; only it
-    reads `newest`, which an editorial accept may leave None. Stage 1 has
-    no citations, so cli.py passes none; Stage 2 passes the index's stamps.'''
+    reads `newest`, which an editorial accept may leave None, and
+    `citer_stamps`, each section's citers' review stamps.'''
     known(state, ids)
     by_id = {s.id: s for s in sections(guide_text) if s.id}
     absent = ', '.join(sid for sid in dict.fromkeys(ids) if sid not in by_id)
@@ -247,3 +249,23 @@ def stamp(guide_text: str, state: dict) -> str:
     if stamp_bounds(guide_text) is None:
         raise SetupError(f'guide: {NO_STAMP}')
     return with_stamp(guide_text, render_stamp(state['sections']))
+
+
+def cite(path: str, text: str, state: dict) -> tuple[str, str]:
+    '''R7 cite: the file's text with its citation stamped at the highest
+    `changed` among its cited sections, and that stamp. A file without one
+    well-formed, well-placed citation, or citing a section baseline.json
+    lacks, is a SetupError (R6.9: exit 2).'''
+    citation, problems = file_citation(path, text)
+    if problems:
+        raise SetupError('\n'.join(problems))
+    if citation is None:
+        raise SetupError(f'{path}: carries no citation')
+    try:
+        known(state, citation.ids)
+    except SetupError as exc:
+        raise SetupError(f'{path}: {exc}') from None
+    stamp = max((state['sections'][sid]['changed'] for sid in citation.ids), key=version_key)
+    lines = text.split('\n')
+    lines[citation.line - 1] = lines[citation.line - 1].replace(f'@{citation.stamp}', f'@{stamp}')
+    return '\n'.join(lines), stamp
