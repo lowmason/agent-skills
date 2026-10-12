@@ -298,7 +298,7 @@
     "release": "2.1.288",
     "date": "2026-10-03"
    },
-   "text_hash": "sha256:a89ce3a38be6a96f818fe93b9c89af1a55194576903427af35cb762cb0d1709b"
+   "text_hash": "sha256:620e2103fa200a2bffb045c5bfa759ddc5b2c037bd074efd4632b1f624339799"
   },
   "hooks.handlers": {
    "checked": {
