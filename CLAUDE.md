@@ -119,10 +119,16 @@ cd skills/subagent-driven-development/scripts && uv run --python 3.13 --with pyt
 # and the floor goes untested. Gate B is the live probe, ./hooks/probe-readonly-guard.sh, which spawns claude -p
 cd hooks && uv run --python 3.13 --with pytest python -m pytest -q && uv run --python /usr/bin/python3 --with pytest python -m pytest -q
 
+# Commit lints: these three, the dependency-drift test, snippet Tier 1 and sync_runtime_assets.py --check make six.
+# build/run_commit_lints.sh runs all six; build/githooks/pre-commit runs it on each commit once enabled (once per
+# clone: git config core.hooksPath build/githooks); .github/workflows/lints.yml runs it on pull requests and main.
 # Frontmatter, provenance and guide-conformance lints (run before committing any Claude Code artifact)
 uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
 uv run --python 3.13 python build/check_provenance.py
 uv run --python 3.13 --with pyyaml python build/check_conformance.py
+
+# Commit-lint runner, hook and workflow tests: throwaway clones, each running the full lint set (about a minute)
+cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_commit_lints.py
 
 # Claude Code guide drift detector (build/cc_guide/): its suite; lint, run before committing a change to the guide or
 # build/cc_guide/; check, which fetches the docs and reports what is due (exit 1 = due; reads main unless --worktree)

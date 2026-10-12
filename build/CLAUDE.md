@@ -20,6 +20,11 @@ are `../agents/*.md` and `../commands/*.md`; never edit `../runtimes/` by hand.
 (not READMEs or install guides) against `../install.py`'s `DEPENDENCIES`, so a
 skill edit can fail it.
 
+`run_commit_lints.sh` runs the six commit lints that the root `CLAUDE.md`
+lists and fails closed. `githooks/pre-commit` runs it as a git hook, failing
+open only when uv cannot run, and `../.github/workflows/lints.yml` runs it in
+CI. `test_commit_lints.py` drives both through throwaway clones.
+
 `cc_guide/` holds two tools for `specs/guides/claude-code-customization-guide.md`.
 `conformance.toml` is the register `check_conformance.py` reads. The rest is
 the drift detector (`specs/claude-code-drift-automation.md`): `manifest.toml`
