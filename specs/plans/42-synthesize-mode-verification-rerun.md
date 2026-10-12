@@ -415,6 +415,14 @@ grep -lic 'derive-roadmap\|locator\|design provenance\|required next skill\|tria
 
 Expected: `0` and `0`. Both exemplars returned 0 on 2026-10-11. A hit means a file names a measured behaviour: inspect it and report before continuing.
 
+Every rep that follows the skill reads both exemplars. If either one contained a VOID path or a marker, every such rep would be void by construction. Check both:
+
+```bash
+for p in 'Projects/agent-skills/specs/deferred_items.md' 'Projects/agent-skills/specs/plans/' 'Projects/agent-skills/specs/completed/methodology-pipeline-skills.md' 'Projects/agent-skills/specs/completed/audit_9_2_26.md' 'Projects/agent-skills/specs/completed/red-baseline-' 'Projects/agent-skills/specs/completed/synthesize-mode-' 'Projects/agent-skills/.claude/' 'Projects/alt-nfp-model' 'Projects/alt-nfp-stats' 'Projects/archive/alt_nfp' '.cache/ctl-q9' '.cache/nfp-series' '36-synthesize-mode' '42-synthesize-mode' 'synthesize-mode-verification' 'scenario verification'; do grep -l -i -F -- "$p" ~/Projects/agent-skills/specs/completed/delegation-frontmatter-rollout.md ~/Projects/agent-skills/specs/completed/skill-model-pin-removal.md; done | wc -l
+```
+
+Expected: `0`. Both files returned 0 on 2026-10-11. A hit sends the exemplar choice back to the owner before the pilot.
+
 - [ ] **Step 10: Smoke-test the transcript lookup**
 
 Run: `python3 ~/.cache/ctl-q9/grade.py 1`
@@ -460,7 +468,9 @@ Run: `python3 ~/.cache/ctl-q9/grade.py 1`
 Expected, before you read any behavioural field:
 - `inherited_hits` is `[]`.
 - `void_hits` is `[]`.
-- Every entry in `denied_calls` is a command that the rep then completed another way, and none is `Bash: {"command": "printenv LLM_WIKI_ROOT"...}`. A denied `printenv LLM_WIKI_ROOT` means the allow rule did not take effect. That is NO-GO: fix the mechanism and re-run the pilot as rep-6.
+- Every entry in `denied_calls` is a command that the rep then completed another way.
+- No denied call's command is exactly `printenv LLM_WIKI_ROOT`. If one is, the allow rule did not take effect. That is NO-GO: fix the mechanism and re-run the pilot as rep-6.
+- Compound forms such as `printenv LLM_WIKI_ROOT; echo …` are still refused by the exact-match rule (plan-36 reps ran them). Their denial is expected and is not a NO-GO.
 - `exemplars_read`: record it. The expected value is the two named exemplars.
 
 - [ ] **Step 4: Read what the pilot was handed**
