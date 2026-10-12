@@ -180,3 +180,12 @@ Run by the owner from a plain terminal, in a workspace copy of the skill at the 
 | 9 | Gates | pass: the six-command gate block and `sync_runtime_assets.py --check` exit 0; scope check shows only the planned paths, and the leave-alone paths are unchanged | Task 21 |
 
 Open items for the whole-branch review and the owner, all recorded above: `v1` and `b2` UNSETTLED at 3 valid reps; the private-fact trigger, reverted at the final review to "a decision" to match R4.9, is untested for the original `b2` miss; Validation 1 measured the cold reader before the REFACTOR changes; Gemini's missing reviewer dispatch; 34 of 70 Phase 3 reps voided by the harness, not by the skill.
+
+## Addendum: the re-run audit rule (owner, 2026-10-11)
+
+The owner fixed this rule at the 2026-10-11 `/deferred` pass, before any rep of the re-run of `v1`, `b2` and `c4a-neg` on the shipped skills (the plan-40 section of `specs/deferred_items.md`). It changes the Phase 3 audit in one place, and binds all three arms alike:
+
+- A read-only read (Read, Grep, Glob, `cat`, `head`, `ls`) of a file under `~/.claude/skills/<skill>/` does not void a rep. Neither does a read of the same file reached through that symlink, under `~/Projects/agent-skills/skills/<skill>/`. Phase 3 voided these reads because the path then held the old skills. Since plan 40 merged (78af979), each `~/.claude/skills/<skill>` resolves to the shipped text in the main checkout.
+- Everything else the frozen audit voids still voids: any other path in the checkout (`specs/`, `build/`, this record), the reps directory, the shared handoffs directory and the user-level settings file.
+- Only fresh reps count. Phase 3's 34 voids read the old text; they stay void and are not re-scored.
+- Before the first rep and after the last, record the main checkout's branch and the tree hash of `skills/` at HEAD (`git -C ~/Projects/agent-skills rev-parse HEAD:skills`). If the branch is not `main`, or the hash changed, or `git -C ~/Projects/agent-skills diff --quiet HEAD -- skills/` fails, the reps run in between are void. The rule keys on `skills/`, not on HEAD, so that a sibling's commit elsewhere does not void a batch.
