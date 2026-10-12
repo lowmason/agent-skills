@@ -418,7 +418,7 @@ handoff brief or prompt, instead of on the handoff moment.
 |---|---|
 | In the artifact | Nothing. The brief may point to it by section. |
 | Recomputable by the receiver's entry check (status, commits since, files naming the artifact, plan ids) | Nothing. |
-| Amendable now, with the owner approving the exact wording now | Amend and commit: a spec amendment tagged `(owner, YYYY-MM-DD)`, a `## Decisions` entry (the plan itself, if C2 did not ship), a deviation line in the subagent-driven-development ledger, a stage plan's `## Handoff to later stages` (R7.1), or the derive-roadmap roadmap file. |
+| Amendable now, with the owner approving the exact wording now | Amend it, and commit where the home is tracked (owner, 2026-10-11): a spec amendment tagged `(owner, YYYY-MM-DD)`, a `## Decisions` entry (the plan itself, if C2 did not ship), a deviation line in the subagent-driven-development ledger, a stage plan's `## Handoff to later stages` (R7.1), or the derive-roadmap roadmap file. |
 | Everything else | The brief. |
 
 "Everything else" includes:

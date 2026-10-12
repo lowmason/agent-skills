@@ -2821,9 +2821,12 @@ declined as YAGNI (zero instances in a one-page wiki).
       clean read from a truncated one. Add a "NO FINDINGS" line after the report
       blocks. Size: quick-fix. Done when: added and a `cr` run (5 reps, planted
       probe) still passes both criteria.
-- [ ] `skills/prepare-handoff/SKILL.md` §1 says "Amend and commit it", but one
+- [x] `skills/prepare-handoff/SKILL.md` §1 says "Amend and commit it", but one
       listed home is a deviation line in the subagent-driven-development ledger,
       which is gitignored (`.gitignore`) and deleted at completion; the wording is
       spec R4.3's (`specs/completed/handoff-briefs.md`). Size: quick-fix. Done
       when: the spec and the skill both read "amend it, and commit where the home
       is tracked".
+      → done 2026-10-11 (/deferred quick fix): both now read "Amend it, and commit
+      where the home is tracked"; the retired spec's R4.3 row carries the
+      `(owner, 2026-10-11)` tag.
