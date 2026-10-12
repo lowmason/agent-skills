@@ -881,7 +881,7 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       docstring's ">=3-char non-Greek base" sentence was rewritten in the same
       pass — the fix made it false, and this repo treats an overpromising
       docstring as a real defect. describe-critique-methodology suite +4.
-- [ ] **Synthesize mode still has no scenario verification (successor of the
+- [x] **Synthesize mode still has no scenario verification (successor of the
       "Synthesize mode has no scenario verification" item above; plan 36
       ran VOID).** The locator discipline, the triage-table-before-spec-text
       ordering and the derive-roadmap handoff of `describe-critique-methodology`
@@ -908,6 +908,10 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       `Projects/alt-nfp` (no `-model`) to the VOID list. Size: design.
       Done when: a re-run whose exemplar step is isolated yields 5 valid reps
       and a record under `specs/completed/` with verdicts for B1-B3.
+      → done in plan 42: 5 valid reps (1, 2, 4, 5 and 6; rep-3 was void) and a record
+      with verdicts for B1-B3, `specs/completed/synthesize-mode-verification-2026-10-12.md`.
+      B1 FAILED (0/5 as scored); B2 and B3 held 5/5. The B1 failure and the
+      staleness-check void path are filed as successors in plan 42's section below.
 
 ## 19-methodology-pipeline-skills — 2026-07-30
 
@@ -2885,3 +2889,38 @@ declined as YAGNI (zero instances in a one-page wiki).
       test, which runs no git, and a bogus `GIT_DIR` breaks the runner's own
       `git rev-parse` first, so a discriminating test is hard. Size: quick-fix. Revisit
       if: one of the six checks starts running git in a temporary repository.
+
+## 42-synthesize-mode-verification-rerun — 2026-10-12
+- [ ] Synthesize mode never defines what a "critique point" is for the triage table, so the table covers the
+      critique's asks and drops claims that live only in its Key Findings or Details (B1 failed, held 0/5 as
+      scored of 5 valid reps, in plan 42's re-run; 1/5 on a lenient reading).
+      `skills/describe-critique-methodology/SKILL.md` § Synthesize mode step 2 and `references/spec-synthesis.md` § Critique triage table ("ONE batched table
+      covering every critique point"). Four reps left pay-frequency composition (Details C gap 3's first
+      clause) out of the table, all five left CES's analyst-mediated treatment of atypical reports (Key
+      Finding 2) to an anchor on an evidence row, reps 1, 2 and 4 did the same for Key Finding 4, reps 2 and
+      6 dropped collapse-size-before-geography, rep 6 dropped the QWI figure, and rep 2 raised a new owner
+      decision (history handling) in its turn-2 message. Every miss is a point that the critique's numbered
+      Recommendations do not carry (a Key Finding, an evidence figure, or a clause of the Details prose).
+      The same reps triaged before any spec text (5/5) and stated the adjudication status above the table
+      (5/5), so ordering holds and coverage granularity does not. See
+      `specs/completed/synthesize-mode-verification-2026-10-12.md` for the traces. Size: design. Done when: the owner has chosen the fork and it is done. Either (a) the skill
+      defines a point as every distinct claim, with a compound point split and a coverage check against the
+      critique's own enumeration (a writing-skills RED→GREEN cycle), and a re-run on this fixture holds B1 in
+      at least 4 of 5 valid reps; or (b) the owner revises the R2 rubric to score the critique's asks
+      (Recommendations, governance, change-asking caveats, numbered Details asks) and records the revised
+      bar.
+- [ ] Synthesize mode's staleness check is a second path to a VOID rep in a scenario verification. Step 1 of
+      `skills/describe-critique-methodology/SKILL.md` § Synthesize mode has the rep check the "git log
+      touching the described system", and on this machine that system lives in `alt-nfp-model` and
+      `alt-nfp-stats*`, which the pre-registered VOID rule lists. In plan 42's re-run four of six reps searched outside
+      their repo for it; rep-3's content `Grep` for `nfp_series` over `~/Projects` returned 13 file paths,
+      including `alt-nfp-*` and `specs/completed/synthesize-mode-verification-2026-10-05.md`, and voided
+      the rep. That is production-faithful behaviour penalised by the rule, as plan 36 found for the exemplar
+      step, and it will recur in about one rep in six. The kit has a related gap: `grade.py` (outside the
+      repo, `~/.cache/ctl-q9/`, rebuilt from plan 42 Task 2) cannot see a rep reading a sibling rep's
+      directory, which matters in a parallel batch. See
+      `specs/completed/synthesize-mode-verification-2026-10-12.md`, Validity and Qualitative evidence.
+      Size: design. Revisit if: a Synthesize scenario re-run is scheduled (the first item above needs
+      one). At that point decide, before the run, whether a `Grep` that only lists matching file names
+      counts as exposure or the staleness check is pointed at an isolated copy, and give the rebuilt
+      `grade.py` a sibling-directory VOID check.
