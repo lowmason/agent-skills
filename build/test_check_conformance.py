@@ -17,7 +17,7 @@ GUIDE = 'specs/guides/claude-code-customization-guide.md'
 FENCE = '`' * 3
 
 # The 38 section IDs of the drift spec's R1.1 table, in heading order
-# (specs/claude-code-drift-automation.md). Pinned here as R1.2's oracle, and
+# (specs/claude-code-drift-automation-spec.md). Pinned here as R1.2's oracle, and
 # only here: the guide is read with cc_guide/guide.py's grammar, whose own
 # suite imports nothing from build/ (drift R12.1). The lint itself validates
 # the register against the guide's anchors, never against this list.

@@ -24,7 +24,7 @@ implemented.
 ## Purpose and scope
 
 `specs/guides/claude-code-customization-guide.md` (the guide) is the hub for
-Claude Code facts; `specs/agent-skills-portability.md` already says it governs
+Claude Code facts; `specs/agent-skills-portability-spec.md` already says it governs
 them.
 Every file whose correctness rests on a Claude Code fact that can change
 between versions cites the guide section it relies on, so when a section
@@ -1138,8 +1138,9 @@ Constraints:
   `specs/guides/` in `79ad04f`) is the hub; `91474f6` is its July version. `9f85f08`'s message records the refresh: every changed fact
   traced to a verbatim doc quote, 151 of 151 re-grepped, five July claims
   corrected.
-- `specs/agent-skills-portability.md` at `b0ee62e` supplies R1.1, R1.2, R1.4,
-  R1.6, R1.8 and R3 as cited above.
+- `specs/agent-skills-portability.md` (since renamed
+  `specs/agent-skills-portability-spec.md`) at `b0ee62e` supplies R1.1, R1.2,
+  R1.4, R1.6, R1.8 and R3 as cited above.
 - `specs/claude-code-guide-upkeep.md` at `024d430` (tag
   `archive/cc-guide-upkeep`) supplies the block model,
   triage, the audit, the verifier contract, the due rules, the probe
