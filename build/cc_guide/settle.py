@@ -25,14 +25,17 @@ triage's settled.json in the packet; `baseline` records the outcome.
   when its triage held it, or when `--hold` names it; a file is held, not
   cited, the same way. A row outside the packet's sections holds nothing:
   the run neither reviews nor advances that section, and its triage may
-  have advanced it already. A hold keeps `accept`, for the text the run
-  changed.
+  have advanced it already, and a none line for such a section is no
+  unparseable line. A row whose guide line is in no section, past the
+  guide's last line included, holds every section in the packet. A hold
+  keeps `accept`, for the text the run changed.
 
 A row's fields are split on `|`. A quote field that opens with `"` runs to
 the first `"` followed by `|` or the end of the line, so a quote may hold `|`
 and `"`; the last field takes the rest of the line. `-` marks an empty
 field. A leading list marker, and a Markdown table's outer pipes, header
-rows and separator rows, are ignored. A line holding `|` that is no row is
+rows and separator rows, are ignored; a line whose every field is a column
+name (COLUMNS) is a header row. A line holding `|` that is no row is
 listed as unparseable, never dropped in silence.
 '''
 import json
@@ -83,6 +86,10 @@ CHANGELOG_REF_RE = re.compile(re.escape(CHANGELOG) + r':[1-9][0-9]*')
 # A broken triage line's words that may name a section, a block, a bullet (`2.1.297#3`, never its release) or a release.
 NAME_RE = re.compile(r'[\w.#-]+')
 HEADERS = ('item', 'release', 'l<line>', 'file:line', 'file line', 'section')
+# Column names: the report formats' own, less `none`, and a table header's usual ones. A line whose every field
+# is one is a header, as an echoed B or C template and a table's own header row are; no row is such a line.
+COLUMNS = frozenset(f.strip().strip('"').lower() for form in FORMATS for f in form.split('|')) - {'none'} | {
+    'line', 'claim', 'verdict', 'doc', 'quote', 'wording', 'file'}
 LEFT_OUT = 'left out (no surviving row, no none line)'
 
 
@@ -138,9 +145,18 @@ def report_lines(text: str) -> list[str]:
         if '|' not in line or SEPARATOR_RE.match(line):
             continue
         first = (split_row(line, 2) or [''])[0].lower()
-        if first not in HEADERS:
+        if first not in HEADERS and not header_row(line):
             out.append(line.strip())
     return out
+
+
+def header_row(line: str) -> bool:
+    '''Whether every field of a line, its outer pipes dropped, is a column
+    name.'''
+    s = line.strip()
+    s = s[1:] if s.startswith('|') else s
+    s = s[:-1] if s.endswith('|') else s
+    return all(f.strip().strip('"').lower() in COLUMNS for f in s.split('|'))
 
 
 def none_line(line: str) -> bool:
@@ -154,6 +170,7 @@ class Packet(NamedTuple):
     report: str
     guide: str
     ids: list[str]  # the guide's section IDs, in guide order
+    spans: dict[str, tuple[int, int]]  # each section's guide lines, 1-based, never past the guide's last line
 
 
 def read_packet(folder: Path) -> Packet:
@@ -164,8 +181,10 @@ def read_packet(folder: Path) -> Packet:
                              if name == REPORT else f'{folder / name}: not found; not a packet')
     index = json.loads((folder / INDEX).read_text(encoding='utf-8'))
     guide = (folder / GUIDE).read_text(encoding='utf-8')
+    last = len(guide.splitlines())
+    spans = {sid: (first, min(end, last)) for sid, (first, end) in section_lines(guide).items()}
     return Packet(folder, index, (folder / REPORT).read_text(encoding='utf-8'), guide,
-                  [s.id for s in sections(guide) if s.id])
+                  [s.id for s in sections(guide) if s.id], spans)
 
 
 def command(p: Packet, *words: str) -> str:
@@ -419,8 +438,9 @@ def settle_triage(p: Packet) -> Settled:
 
 def section_at(p: Packet, line: int) -> str | None:
     '''The section whose lines hold a guide line, by the ranges the packet
-    gives its verifier; None before the first section or past the end.'''
-    return next((sid for sid, (first, last) in section_lines(p.guide).items() if first <= line <= last), None)
+    gives its verifier; None before the first section or past the guide's
+    last line.'''
+    return next((sid for sid, (first, last) in p.spans.items() if first <= line <= last), None)
 
 
 def todo_reaches(guide: str) -> list[tuple[int, int]]:
@@ -432,13 +452,12 @@ def todo_reaches(guide: str) -> list[tuple[int, int]]:
     an example, not one.'''
     lines = guide.split('\n')
     fenced = fenced_lines(lines)  # 0-based
-    ends = [last for first, last in section_lines(guide).values()]
-    starts = [first for first, last in section_lines(guide).values()]
+    spans = list(section_lines(guide).values())
     out = []
     for n, text in enumerate(lines, start=1):
         if TODO not in text or n - 1 in fenced:
             continue
-        end = next((e for s, e in zip(starts, ends) if s <= n <= e), None)
+        end = next((e for s, e in spans if s <= n <= e), None)
         if end is None:
             continue
         item = next((m for m in range(n + 1, end + 1)
@@ -510,12 +529,12 @@ def settle_review(p: Packet, hold: tuple[str, ...]) -> Settled:
                 unverified.append(f'unparseable: {line}')
             continue
         if first in p.ids:  # `<section> | none`: the section holds no checkable claim
-            if first in scope and none_line(line):
-                answered.add(first)
-            else:
+            if not none_line(line):
                 unverified.append(f'unparseable: {line}')
-                if first in scope:
-                    held.add(first)
+                hold_inside(first)
+            elif first in scope:
+                answered.add(first)
+            # one for a section outside the packet's sections says nothing this run reviews, so it holds nothing
             continue
         m = LINE_REF_RE.fullmatch(first)
         row = split_row(line, 6, VERIFY_QUOTES) if m else None

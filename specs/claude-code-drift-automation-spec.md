@@ -854,8 +854,16 @@ field ends at the next `|`, and the last field takes the rest of the line;
 `-` marks an empty field. A table's outer pipes, header rows and separator
 rows are ignored; any other line holding `|` that is no row is listed as
 unparseable. A leading list marker (`- `, `* `, `+ `, `1. `, `1) `) is no
-part of a row, so a report written as a list parses (owner, plan 44,
-2026-10-13). A triage source quote counts only within its own item's text. A
+part of a row, so a report written as a list parses. A line whose every
+field is a column name of the report formats, or one of a table header's
+usual names (`Line`, `Claim`, `Verdict`, `Doc`, `Quote`, `Wording`, `File`),
+is a header row, as an echoed `B | version | one line | changelog.md:line`
+or `C | omission` template and a table's own header row are. In verify and
+audit, an A row whose line is past the guide's last line falls in no
+section, and a well-formed `<section> | none` line for a section outside
+the packet holds nothing and is no unparseable line, so it leaves the exit
+at 0 (owner, plan 44, 2026-10-13). A triage source quote counts only
+within its own item's text. A
 NOISE row whose source quote, or a guide quote it gives, fails sends its
 section and its block's candidate sections to verify. A bullet's triage row
 that does not parse, or a bullet's NOISE row whose quote fails, sends the

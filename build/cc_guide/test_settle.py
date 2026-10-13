@@ -533,7 +533,9 @@ def test_a_todo_owner_reaches_through_the_first_list_item_after_it(world, tmp_pa
 
 @pytest.mark.parametrize('line', ['L99x | a claim | STALE | tools.md:5 | "runs" | x',
                                   # Review finding 11: past the guide's end is in no section.
-                                  'L999 | an invented claim | WRONG | tools.md:5 | "runs alpha batches" | Else.'])
+                                  'L999 | an invented claim | WRONG | tools.md:5 | "runs alpha batches" | Else.',
+                                  # m1 (final review): the fixture guide has 40 lines, so line 41 is past its end.
+                                  'L41 | an invented claim | WRONG | tools.md:5 | "runs alpha batches" | Else.'])
 def test_an_unattributable_line_holds_every_section(world, tmp_path, line):
     out = review(world, tmp_path)
     result = settled(out, line, GOOD, 'alpha.reference | none')
@@ -600,6 +602,69 @@ def test_a_broken_b_or_c_row_is_unparseable_and_holds_nothing(world, tmp_path):
         f'  unparseable: {r}' for r in rows]
     assert not any(line.startswith('held') for line in result.lines)
     assert not result.clean
+
+
+@pytest.mark.parametrize('extra', [
+    ('beta.overview | none',),  # m3: a well-formed none line for a section outside the packet
+    ('C | omission', 'B | version | one line | changelog.md:line'),  # m2: the B and C templates, echoed
+    ('| Line | Claim | Verdict | Doc | Quote | Wording |', '|---|---|---|---|---|---|'),  # m9: a table's header
+], ids=['none-outside', 'templates', 'table-header'])
+def test_a_line_that_says_nothing_about_the_packet_holds_nothing(world, tmp_path, extra):
+    '''m2, m3 and m9 (final review): such a line is no unparseable row, so
+    the report settles as it would without it.'''
+    out = review(world, tmp_path)
+    alone = settled(out, GOOD, 'alpha.reference | none')
+    assert alone.clean
+    assert settled(out, GOOD, 'alpha.reference | none', *extra) == alone
+
+
+CONFIRMS = 'L19 | Set ALPHA_ENV | CONFIRMED | tools.md:5 | "runs alpha batches" | -'
+
+
+@pytest.mark.parametrize('extra, holds', [
+    ('L19 | x | BOGUS | tools.md:5 | "runs alpha batches" | Else.', True),  # an attributable A row that does not parse
+    ('L19 | x | WRONG | tools.md:5 | "fabricated" | Else.', True),  # a discarded correction
+    ('L19 | stance | JUDGMENT (mechanism STALE) | tools.md:5 | "fabricated" | -', True),  # a discarded mechanism row
+    ('L19 | x | CONFIRMED | tools.md:5 | "fabricated" | -', False),  # a discarded confirmation holds nothing
+    ('L19 | x | STALE | tools.md:5 | "runs alpha batches" | -', True),  # a correction with no wording
+    ('L19 | stance | JUDGMENT (mechanism STALE) | tools.md:5 | "runs alpha batches" | -', True),  # a mechanism row
+    ('alpha.reference | some', True),  # a none line in the packet that does not say none
+], ids=['unparseable', 'discarded-correction', 'discarded-mechanism', 'discarded-confirmation', 'no-wording',
+        'mechanism', 'broken-none'])
+def test_each_hold_rule_alone_holds_its_section(world, tmp_path, extra, holds):
+    '''I3 (final review): a CONFIRMED row answers alpha.reference, so the
+    rule under test is the only thing that holds it.'''
+    out = review(world, tmp_path, settled_triage=triage_file(tmp_path))
+    result = settled(out, GOOD, CONFIRMS, extra)
+    advance = ['alpha.overview'] + ([] if holds else ['alpha.reference'])
+    assert [line for line in result.lines if line.startswith(('held', f'  {CLI} baseline advance'))] == [
+        *(['held, neither advanced nor audited: alpha.reference'] if holds else []),
+        f"  {CLI} baseline advance {' '.join(advance)} --to 2.1.902"]
+
+
+def test_a_discarded_row_outside_the_packet_holds_nothing(world, tmp_path):
+    '''I3, S24: a discarded correction to a section outside the packet, one
+    its triage cleared, holds nothing, so the block that section resolves is
+    rebaselined.'''
+    saved = triage_file(tmp_path, verify=['alpha.reference'], cleared=['alpha.overview'])
+    out = review(world, tmp_path, sids=('alpha.reference',), settled_triage=saved)
+    result = settled(out, 'alpha.reference | none',
+                     'L14 | Alpha uses ALPHA_TOOL | WRONG | tools.md:5 | "fabricated" | Else.')
+    assert [line for line in result.lines if 'baseline' in line] == [
+        f"  {CLI} baseline rebaseline alpha 'tools › Tools'", f'  {CLI} baseline advance alpha.reference --to 2.1.902',
+        f'  {CLI} baseline stamp']
+    assert not any(line.startswith('held') for line in result.lines)
+
+
+def test_a_block_waits_until_every_candidate_is_resolved(world, tmp_path):
+    '''I3: the Retry block's candidates are both beta sections, so holding
+    either keeps it from being rebaselined.'''
+    latest(world, {'events.md': DOCS['events.md'] + RETRY})
+    out = packets.verify(load(world), tmp_path / 'v', ['beta.overview', 'beta.reference'], None)[0]
+    (out / packets.REPORT).write_text('beta.overview | none\nbeta.reference | none\n')
+    assert [line for line in settle.settle(out).lines if 'rebaseline' in line] == [
+        f"  {CLI} baseline rebaseline beta 'events › Events › Retry'"]
+    assert not any('rebaseline' in line for line in settle.settle(out, ['beta.reference']).lines)
 
 
 def test_a_quote_a_row_need_not_give_is_still_checked_when_given(world, tmp_path):
@@ -789,7 +854,8 @@ def test_a_files_report_lists_contradictions_and_cites_the_file(world, tmp_path)
 
 def test_a_statement_that_opens_with_a_quote_still_parses(world, tmp_path):
     out = packets.files(load(world), tmp_path / 'f', [])[0]
-    result = settled(out, 'hooks/gate.sh:3 | "exit 0": it always succeeds | alpha.overview | "## 1. Alpha" | consistent')
+    result = settled(out, 'hooks/gate.sh:3 | "exit 0": it always succeeds | alpha.overview | "## 1. Alpha" | '
+                          'consistent')
     assert result.lines[1] == 'report: 1 consistent, 0 contradiction(s), 0 not covered, 0 unverified'
     assert result.clean
 
@@ -802,6 +868,24 @@ def test_a_discarded_contradiction_holds_the_file_uncited(world, tmp_path):
             'a cited section was left out') in result.lines
     assert not any('cite' in line for line in result.lines if line.startswith('  '))
     assert '  unparseable: other/file.sh:1 | x | alpha.overview | "## 1. Alpha" | consistent' in result.lines
+
+
+CONSISTENT = 'hooks/gate.sh:1 | a shell script | alpha.overview | "## 1. Alpha" | consistent'
+
+
+@pytest.mark.parametrize('extra, held', [
+    ('hooks/gate.sh:3 | exits 0 | alpha.overview | "not in the guide" | contradicts', True),  # discarded contradicts
+    ('hooks/gate.sh:3 | exits 0 | alpha.overview | "not in the guide" | consistent', False),  # discarded consistent
+    ('alpha.overview | some', True),  # a none line that does not say none
+], ids=['discarded-contradicts', 'discarded-consistent', 'broken-none'])
+def test_each_files_hold_rule_alone_holds_the_file(world, tmp_path, extra, held):
+    '''I3 (final review): a consistent row answers alpha.overview, so the
+    rule under test is the only thing that holds the file.'''
+    out = packets.files(load(world), tmp_path / 'f', [])[0]
+    result = settled(out, CONSISTENT, extra)
+    assert [line for line in result.lines if line.startswith(('held', f'  {CLI}'))] == (
+        ['held, not cited: hooks/gate.sh: a discarded or unparseable row might have changed it', f'  {CLI} lint']
+        if held else [f'  {CLI} baseline cite hooks/gate.sh', f'  {CLI} lint'])
 
 
 def test_a_files_row_on_a_section_the_file_does_not_cite_holds_it(world, tmp_path):
@@ -884,8 +968,8 @@ def test_a_packet_built_on_another_cache_names_it_in_every_command(world, tmp_pa
     words = shlex.split(settled(out, *rows).lines[4])
     args = cli.parser().parse_args(words[words.index('build/cc_guide/cli.py') + 1:])
     assert (args.cache, args.command, args.action, args.ids, args.to) == (
-        other.resolve(), 'baseline', 'advance', ['alpha.overview', 'alpha.reference', 'beta.overview', 'beta.reference'],
-        '2.1.901')
+        other.resolve(), 'baseline', 'advance', ['alpha.overview', 'alpha.reference', 'beta.overview',
+                                                 'beta.reference'], '2.1.901')
     v = packets.verify(packets.load(state.Source(world[0]), other, NOW), tmp_path / 'v', ['alpha.overview'], None)[0]
     assert [line for line in settled(v, GOOD).lines if line.startswith('  ') and 'cli.py' in line] == [
         f'  {named} baseline accept alpha.overview --substantive   # only the sections you changed',
