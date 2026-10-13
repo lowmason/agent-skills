@@ -350,14 +350,15 @@ def test_a_broken_row_flags_what_it_names_beside_a_valid_row_for_its_block(world
     assert not result.clean
 
 
-@pytest.mark.parametrize('later', [(), ('2.1.901 | none',)], ids=['alone', 'then-none'])
-def test_a_broken_coverage_line_flags_its_sections_and_leaves_its_release_uncovered(world, tmp_path, later):
+@pytest.mark.parametrize('earlier, later', [((), ()), ((), ('2.1.901 | none',)), (('2.1.901 | none',), ())],
+                         ids=['alone', 'then-none', 'none-first'])
+def test_a_broken_coverage_line_flags_its_sections_and_leaves_its_release_uncovered(world, tmp_path, earlier, later):
     '''I1 (a) and (b): a coverage line that does not parse flags each
-    section it names, and its release stays uncovered whatever a later line
-    says about it.'''
+    section it names, and its release stays uncovered whatever another line
+    says about it, before or after it (fix round 1, C).'''
     out = triage(world, tmp_path)
     broken = '2.1.901 | alpha.overview; beta.overview'
-    result = settled(out, broken, *later, '2.1.902 | none')
+    result = settled(out, *earlier, broken, *later, '2.1.902 | none')
     assert result.lines == [
         f'cc-guide settle: triage, {out}',
         'report: 0 item(s) answered, 1 of 2 release(s) covered; 0 quote(s) not found; 1 unparseable line(s); '
@@ -371,6 +372,38 @@ def test_a_broken_coverage_line_flags_its_sections_and_leaves_its_release_uncove
         *TAIL,
         f'verify: /cc-guide verify alpha.overview alpha.reference beta.overview; {VERIFY_LINE}']
     assert not result.clean
+
+
+def test_a_release_a_broken_row_only_mentions_stays_covered(world, tmp_path):
+    '''Fix round 1, B: only a coverage line that does not parse leaves its
+    release uncovered. A broken row whose text mentions 2.1.901 still flags
+    the section and block it names, and `2.1.901 | none` covers 2.1.901. A
+    broken row that names only a release can do nothing with it, so it holds
+    the whole packet.'''
+    latest(world, {'tools.md': DOCS['tools.md'].replace('runs alpha jobs', 'runs alpha batches')})
+    out = triage(world, tmp_path)
+    broken = 'B1 | TOUCHES | alpha.overview | 14 | "Alpha uses" | "runs alpha batches | it moved in 2.1.901'
+    result = settled(out, broken, '2.1.901 | none', '2.1.902 | none')
+    assert result.lines == [
+        f'cc-guide settle: triage, {out}',
+        'report: 0 item(s) answered, 2 of 2 release(s) covered; 0 quote(s) not found; 1 unparseable line(s); '
+        '1 left out',
+        f'  unparseable row: {broken}',
+        'UNSURE or TOUCHES alpha.overview: B1: its row does not parse; B1: no row',
+        'then, in this order (R8.8):',
+        f'  {CLI} baseline advance alpha.reference beta.overview beta.reference --to 2.1.902',
+        *TAIL,
+        f'verify: /cc-guide verify alpha.overview; {VERIFY_LINE}']
+    only = 'the 2.1.901 bullets | all noise'
+    alone = settled(out, 'B1 | NOISE | - | - | - | "runs alpha batches" | a wording change', only, '2.1.901 | none',
+                    '2.1.902 | none')
+    why = 'a row that does not parse names no section, block or bullet'
+    assert [line for line in alone.lines if line.startswith(('report', 'UNSURE', 'nothing'))] == [
+        'report: 1 item(s) answered, 2 of 2 release(s) covered; 0 quote(s) not found; 1 unparseable line(s); '
+        '0 left out',
+        *(f'UNSURE or TOUCHES {sid}: {why}' for sid in ('alpha.overview', 'alpha.reference', 'beta.overview',
+                                                         'beta.reference')),
+        'nothing to record']
 
 
 def test_a_report_written_as_a_list_parses_as_rows(world, tmp_path):
@@ -402,7 +435,7 @@ def test_a_broken_line_that_names_nothing_sends_every_section_in_the_packet_to_v
     stray = 'the remaining items | all noise'
     result = settled(out, 'B1 | NOISE | - | - | - | "runs alpha batches" | a wording change', stray,
                      '2.1.901 | none', '2.1.902 | none')
-    why = 'a line that does not parse names no item, release or section'
+    why = 'a row that does not parse names no section, block or bullet'
     assert result.lines == [
         f'cc-guide settle: triage, {out}',
         'report: 1 item(s) answered, 2 of 2 release(s) covered; 0 quote(s) not found; 1 unparseable line(s); '
@@ -824,7 +857,7 @@ def test_an_audit_ends_with_audited_unless_a_section_is_held(world, tmp_path):
                      'alpha.reference | none')
     assert result.lines[0] == f'cc-guide settle: audit alpha, {out}'
     assert [line for line in result.lines if 'baseline' in line][:2] == [
-        f"  {CLI} baseline rebaseline alpha 'tools › Tools'", f'  {CLI} baseline audited alpha']
+        f"  {CLI} baseline rebaseline alpha 'tools › Tools'", f'  {CLI} baseline audited alpha --to 2.1.902']
     held = settled(out, 'L14 | Alpha uses ALPHA_TOOL | PARTIAL | tools.md:5 | "absent" | Partly.')
     assert not any('audited' in line for line in held.lines if line.startswith('  '))
 

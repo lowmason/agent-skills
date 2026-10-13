@@ -9,9 +9,10 @@ triage's settled.json in the packet; `baseline` records the outcome.
   TOUCHES, and a block row's failed quote takes every candidate of its
   block with it. A source quote counts only within its own item's text. A
   line that does not parse still flags each section it names and each
-  candidate of a block it names, leaves a release it names uncovered, and
-  sends a bullet it names to its hints; one that names none of these
-  sends every section in the packet. It names the sections for verify, and
+  candidate of a block it names, and sends a bullet it names to its hints;
+  a coverage line that does not parse leaves its release uncovered, and a
+  row that does not parse and names no section, block or bullet sends
+  every section in the packet. It names the sections for verify, and
   prints the rebaseline and advance commands for the rest; a group's
   blocks wait while a section a row for one of them flagged, in any group,
   is flagged. An owner item stops the advance below its release.
@@ -25,18 +26,25 @@ triage's settled.json in the packet; `baseline` records the outcome.
   when its triage held it, or when `--hold` names it; a file is held, not
   cited, the same way. A row outside the packet's sections holds nothing:
   the run neither reviews nor advances that section, and its triage may
-  have advanced it already, and a none line for such a section is no
-  unparseable line. A row whose guide line is in no section, past the
-  guide's last line included, holds every section in the packet. A hold
-  keeps `accept`, for the text the run changed.
+  have advanced it already. A row whose guide line is in no section, past
+  the guide's last line included, holds every section in the packet. A
+  hold keeps `accept`, for the text the run changed.
 
 A row's fields are split on `|`. A quote field that opens with `"` runs to
 the first `"` followed by `|` or the end of the line, so a quote may hold `|`
 and `"`; the last field takes the rest of the line. `-` marks an empty
-field. A leading list marker, and a Markdown table's outer pipes, header
-rows and separator rows, are ignored; a line whose every field is a column
-name (COLUMNS) is a header row. A line holding `|` that is no row is
-listed as unparseable, never dropped in silence.
+field. A leading list marker and a Markdown table's outer pipes are no part
+of a row. Settle drops these lines without listing them, so they never move
+the exit to 1:
+- a table's separator rows;
+- header rows: a line whose first field is a header word (HEADERS), or
+  whose every field is a column name (COLUMNS). The second takes in a
+  table's own header row and an echoed template, among them a C row whose
+  only text is one column name (`C | statement`) and a B row shaped like
+  the template (`B | version | one line | changelog.md:line`);
+- in verify and audit, a well-formed `<section> | none` line for a section
+  outside the packet.
+Any other line holding `|` that is no row is listed as unparseable.
 '''
 import json
 import re
@@ -232,7 +240,7 @@ class Tally:
         self.by_block: dict[str, set[str]] = {}  # block item -> the sections its rows flagged, in any group
         self.broken_blocks: list[tuple[str, str, str]] = []  # (block, why, detail): a broken line names the block
         self.spoiled: set[str] = set()  # releases a broken line names, never covered
-        self.stray: list[str] = []  # broken lines that name no item, release or section
+        self.stray: list[str] = []  # broken rows that name no section, block or bullet
 
     def named(self, item: str) -> str:
         if item in self.blocks:
@@ -254,8 +262,9 @@ class Tally:
         '''A line that does not parse is listed, and still fails safe on what
         it names: each section goes to verify; each block's candidates do too
         once a row answers that block (one with no row goes as `no row`); a
-        release stays uncovered; a bullet falls back to its hints. A line
-        that names none of these holds the whole packet.'''
+        bullet falls back to its hints. A coverage line's releases stay
+        uncovered; a release a broken row only mentions does not. A row that
+        names no section, block or bullet holds the whole packet.'''
         self.notes.append(f'unparseable {kind}: {line}')
         self.unparseable += 1
         names = {name.rstrip('.') for name in NAME_RE.findall(line)}
@@ -263,7 +272,7 @@ class Tally:
         sids = [sid for sid in self.p.ids if sid in names]
         blocks = [item for item in self.blocks if item in names]
         bullets = [item for item in self.bullets if item in names]
-        releases = [label for label in self.releases if label in names]
+        releases = [label for label in self.releases if label in names] if kind == 'coverage line' else []
         if not (sids or blocks or bullets or releases):
             self.stray.append(line)
             return
@@ -370,7 +379,7 @@ class Tally:
                 self.flag(sid, why, f'{why}; its bullets that hint at it: {hinting}')
             if not r['hits']:
                 self.owner.append((label, f"{why}, and its bullets hit no section's terms"))
-        why = 'a line that does not parse names no item, release or section'
+        why = 'a row that does not parse names no section, block or bullet'
         for line in self.stray:
             for sid in self.scope:
                 self.flag(sid, why, f'{why}: {line}')
@@ -609,7 +618,7 @@ def settle_review(p: Packet, hold: tuple[str, ...]) -> Settled:
     advance = [sid for sid in scope if sid not in held
                and not (target and sid in checked and version_key(checked[sid]) > version_key(target))]
     if mode == 'audit' and not any(sid in held for sid in scope):
-        steps.append(command(p, 'baseline', 'audited', index['group']))
+        steps.append(command(p, 'baseline', 'audited', index['group'], '--to', index['head']))
     elif mode == 'verify' and target and advance:
         steps.append(command(p, 'baseline', 'advance', *advance, '--to', target))
     steps += [command(p, 'baseline', 'stamp'), command(p, 'lint'), CONFORMANCE]

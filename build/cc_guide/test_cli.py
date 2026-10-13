@@ -204,6 +204,22 @@ def test_audited_writes_only_the_groups_audited_and_checked(world, capsys):
                                    'the stamp region is now stale: run baseline stamp\n')
 
 
+def test_audited_to_records_the_named_release_and_refuses_one_the_changelog_lacks(world, capsys):
+    '''m7 (final review): settle names the audit packet's head with --to, so
+    a fetch after the packet was built never moves the audit past what the
+    verifier saw.'''
+    repo, cache, _ = world
+    assert main(cache, 'baseline', 'audited', 'alpha', '--to', '2.1.901', today=date(2026, 10, 4)) == 0
+    written = load(repo)['sections']
+    assert [written[sid][k] for sid in ('alpha.overview', 'alpha.reference') for k in ('audited', 'checked')] == [
+        {'release': '2.1.901', 'date': '2026-10-04'}] * 4
+    capsys.readouterr()
+    before = (repo / state.BASELINE).read_bytes()
+    assert main(cache, 'baseline', 'audited', 'beta', '--to', '2.1.950') == 2
+    assert capsys.readouterr() == ('', 'cc-guide: 2.1.950 is not a release in the newest cached changelog\n')
+    assert (repo / state.BASELINE).read_bytes() == before
+
+
 def test_accept_writes_only_the_named_sections_hash_and_changed(world):
     repo, cache, _ = world
     guide = repo / GUIDE_PATH

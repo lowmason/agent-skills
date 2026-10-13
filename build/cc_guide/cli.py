@@ -22,7 +22,7 @@ Run: uv run --python 3.13 python build/cc_guide/cli.py <subcommand>
   baseline init [--docs DIR] [--release LABEL] [--date YYYY-MM-DD] [--force]
   baseline rebaseline GROUP [PAGE | 'PAGE › KEY' ...]
   baseline advance ID [ID ...] --to RELEASE
-  baseline audited GROUP
+  baseline audited GROUP [--to RELEASE]
   baseline accept ID [ID ...] (--substantive | --editorial)
   baseline stamp
   baseline cite FILE [FILE ...]
@@ -30,7 +30,9 @@ Run: uv run --python 3.13 python build/cc_guide/cli.py <subcommand>
       stamps (R7). cite stamps each file's citation at the highest `changed`
       among its cited sections, after a review; FILE is repo-relative, as
       lint and check print it. accept --substantive keeps a new `changed`
-      above every citer's stamp (R2.4).
+      above every citer's stamp (R2.4). audited records the newest cached
+      release, or the release --to names, which settle sets to the audit
+      packet's head.
       Always the working tree; nothing is committed. rebaseline takes each
       KEY as check prints it, a key hash for a block check could not name.
       A listed rebaseline refuses while an unlisted baselined block on the
@@ -126,7 +128,9 @@ def parser() -> argparse.ArgumentParser:
     adv = b.add_parser('advance')
     adv.add_argument('ids', nargs='+')
     adv.add_argument('--to', required=True)
-    b.add_parser('audited').add_argument('group')
+    aud = b.add_parser('audited')
+    aud.add_argument('group')
+    aud.add_argument('--to', metavar='RELEASE', help='the release audited (default: the newest cached one)')
     acc = b.add_parser('accept')
     acc.add_argument('ids', nargs='+')
     kind = acc.add_mutually_exclusive_group(required=True)
@@ -268,7 +272,11 @@ def run_baseline(args, cache: Path, today: date) -> int:
         labels = {r.label for r in newest_releases(cache)}
         new = baseline.advance(state, args.ids, args.to, labels, day)
     elif args.action == 'audited':
-        new = baseline.audited(state, manifest, args.group, newest_releases(cache)[0].label, day)
+        releases = newest_releases(cache)
+        release = args.to or releases[0].label
+        if release not in {r.label for r in releases}:
+            raise SetupError(f'{release} is not a release in the newest cached changelog')
+        new = baseline.audited(state, manifest, args.group, release, day)
     else:
         record = read_fetch(cache)
         if record is None:

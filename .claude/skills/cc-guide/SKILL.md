@@ -59,7 +59,7 @@ Every mode handles each packet the same way:
 
 ## audit [<group>]
 
-As verify, from `cli.py check --worktree` and then `cli.py packets --audit [<group>]`: no group means the due one, and packets refuses when none is due, while a named group is audited even then. It costs about \$2.50–5.30. Settle's commands put `baseline audited <group>` where verify's put advance, and `stamp`, lint and `check_conformance.py` still follow it.
+As verify, from `cli.py check --worktree` and then `cli.py packets --audit [<group>]`: no group means the due one, and packets refuses when none is due, while a named group is audited even then. It costs about \$2.50–5.30. Settle's commands put `baseline audited <group> --to <head>`, at the packet's head release, where verify's put advance, and `stamp`, lint and `check_conformance.py` still follow it.
 
 ## files [<paths>]
 

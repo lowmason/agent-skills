@@ -652,8 +652,12 @@ that drops or remaps it, since `rebaseline` keeps a missing page's entries
   `check` prints it, so a block `check` could name only by its key hash is
   listed by that hash (R2.3).
 - `advance <ids> --to <release>`: set `checked`.
-- `audited <group>`: set `audited` for the group's sections to the current
-  release and date, and advance their `checked` to it.
+- `audited <group> [--to <release>]`: set `audited` for the group's sections
+  to the current release, or the release `--to` names, which must be in the
+  newest cached changelog, and the date, and advance their `checked` to it.
+  `settle` prints `--to` with the audit packet's head, so a fetch after the
+  packet was built never moves the audit past what the verifier saw (owner,
+  plan 44, 2026-10-13).
 - `accept <ids> --substantive | --editorial`: record the new `text_hash`. With
   `--substantive`, also set `changed` per R2.4.
 - `stamp`: regenerate the stamp region.
@@ -722,12 +726,14 @@ R8.4 **`/cc-guide triage`.**
    section (owner, plan 44, 2026-10-13). A line that does not parse loses
    nothing it names: each section ID it names goes to verify, and so does
    each candidate of a block item it names (a block with no row that parses
-   goes as an omitted one, step 4); a bullet item it names falls back to its
-   hints; and a release it names stays uncovered, whatever a later line says
-   about it. A line that does not parse and names no section, block, bullet
-   or release sends every section in the packet to verify, so nothing
-   advances, as an A row whose line falls in no section holds a verify
-   packet (R8.8 step 1) (owner, plan 44, 2026-10-13).
+   goes as an omitted one, step 4); and a bullet item it names falls back to
+   its hints. A coverage line that does not parse leaves each release it
+   names uncovered, whatever another line says about it; a release a broken
+   row only mentions stays as its own coverage line leaves it. A row that
+   does not parse and names no section, block or bullet sends every section
+   in the packet to verify, so nothing advances, as an A row whose line
+   falls in no section holds a verify packet (R8.8 step 1) (owner, plan 44,
+   2026-10-13).
 6. **Resolution, in the same run.**
    - Every section with no TOUCHES or UNSURE row is advanced to the newest
      triaged release. Its group's affected blocks are rebaselined once every
