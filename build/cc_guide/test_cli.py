@@ -452,6 +452,25 @@ def test_cite_stamps_each_file_at_its_sections_highest_changed_and_writes_only_t
     assert capsys.readouterr() == ('', '')
 
 
+def test_cite_refuses_a_file_the_lint_never_reads_and_stamps_a_symlink_and_its_target_once(world, capsys):
+    '''A stamp on a file the lint's scan skips would never be checked
+    (deferred: `baseline cite` stamps files `lint` never reads).'''
+    repo, cache, _ = world
+    cited(repo, {'rules/style.md': '---\npaths: x\n# cc-guide: alpha.reference @2.1.219\n---\n',
+                 'specs/notes.md': '<!-- cc-guide: alpha.overview @2.1.219 -->\n'})
+    (repo / '.claude').mkdir()
+    (repo / '.claude' / 'style.md').symlink_to('../rules/style.md')
+    write_tree(repo, {'hooks/new.sh': '#!/bin/sh\n# cc-guide: alpha.overview @2.1.219\n'})
+    assert main(cache, 'baseline', 'cite', 'rules/style.md', '.claude/style.md') == 0
+    assert capsys.readouterr().out == 'stamped rules/style.md @2.1.899\n'
+    for name in ('hooks/new.sh', 'specs/notes.md'):
+        assert main(cache, 'baseline', 'cite', 'rules/style.md', name) == 2
+        assert capsys.readouterr() == ('', f'cc-guide: {name}: the lint never reads it (untracked, or under specs/,'
+                                           ' runtimes/ or review/), so its stamp would never be checked\n')
+    assert main(cache, 'baseline', 'cite', '../outside.sh') == 2
+    assert capsys.readouterr() == ('', f'cc-guide: ../outside.sh: not a file in {repo}\n')
+
+
 @pytest.mark.parametrize('files, args, message', [
     ({'hooks/gate.sh': '#!/bin/sh\nexit 0\n'}, ['hooks/gate.sh'], 'hooks/gate.sh: carries no citation'),
     ({'hooks/gate.sh': '#!/bin/sh\n# cc-guide: gamma.overview @2.1.219\n'}, ['hooks/gate.sh'],

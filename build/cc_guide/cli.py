@@ -62,7 +62,7 @@ from pathlib import Path
 import baseline
 from check import check, http_get, releases_of, summary
 from docs import page_file
-from guide import by_section, read_citations, render_stamp
+from guide import CITE_SHAPED_RE, by_section, read_citations, render_stamp
 from lint import lint, stale_lines
 from quotes import check_rows
 from state import (BASELINE, BOOTSTRAP_DATE, BOOTSTRAP_RELEASE, MANIFEST, SetupError, Source, citing_files,
@@ -206,10 +206,14 @@ def run_baseline(args, cache: Path, today: date) -> int:
         print(f'regenerated the stamp region in {manifest.guide}')
         return 0
     if args.action == 'cite':
+        readable = citing_files(tree, manifest.guide)
         stamped = []
-        for name in dict.fromkeys(args.files):
-            path = repo_path(name)
-            stamped.append((path, *baseline.cite(path, tree.require(path), state)))
+        for path in dict.fromkeys(map(repo_path, args.files)):  # a symlink and its target are one file
+            text = tree.require(path)
+            if path not in readable and any(CITE_SHAPED_RE.match(line) for line in text.split('\n')):
+                raise SetupError(f'{path}: the lint never reads it (untracked, or under specs/, runtimes/ or '
+                                 'review/), so its stamp would never be checked')
+            stamped.append((path, *baseline.cite(path, text, state)))
         for path, text, stamp in stamped:  # all checked before any write
             (REPO / path).write_text(text, encoding='utf-8')
             print(f'stamped {path} @{stamp}')
