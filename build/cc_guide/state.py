@@ -75,11 +75,12 @@ class Source:
             raise SetupError(f'{path}: not found in {self.label}')
         return text
 
-    def grep(self, pattern: str, exclude) -> list[str]:
+    def grep(self, pattern: str, exclude: tuple[str, ...]) -> list[str]:
         '''The tracked files outside the excluded paths holding a line that
         matches the extended regex pattern, read where this source reads
         (R6.1). Binary files are skipped, and git's color settings never
-        wrap a name in escapes. A git failure is a SetupError.'''
+        wrap a name in escapes. A git failure, or a file name that is not
+        UTF-8, is a SetupError.'''
         args = ['git', 'grep', '--no-color', '-l', '-z', '-I', '-E', '-e', pattern]
         if self.ref is not None:
             args.append(self.ref)
@@ -89,8 +90,13 @@ class Source:
             return []
         if proc.returncode != 0:
             raise SetupError(f"git grep in {self.label}: {proc.stderr.decode('utf-8', 'replace').strip()}")
+        try:
+            names = proc.stdout.decode('utf-8').split('\0')
+        except UnicodeDecodeError as exc:
+            raise SetupError(f'git grep in {self.label}: a tracked file name is not UTF-8 text '
+                             f'({exc.reason} at byte {exc.start})') from None
         prefix = '' if self.ref is None else f'{self.ref}:'
-        return [name.removeprefix(prefix) for name in proc.stdout.decode('utf-8').split('\0') if name]
+        return [name.removeprefix(prefix) for name in names if name]
 
 
 class Group(NamedTuple):

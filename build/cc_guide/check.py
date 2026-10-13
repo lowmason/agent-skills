@@ -364,7 +364,7 @@ def summary(report: dict, path: Path) -> list[str]:
     lines.append('lint: clean' if not violations else f'lint: {len(violations)} violation(s), due')
     lines += [f'  {v}' for v in violations]
     stale = report['stale']
-    files = {path for paths in stale.values() for path in paths}
+    files = {name for paths in stale.values() for name in paths}
     lines.append('stale citations: none' if not stale else
                  f'stale citations: {len(files)} file(s) under {len(stale)} section(s), informational')
     lines += [f"  {sid}: {', '.join(paths)}" for sid, paths in stale.items()]

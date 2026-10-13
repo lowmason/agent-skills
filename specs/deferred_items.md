@@ -3027,7 +3027,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       when: `cite` refuses a file the lint's scan would skip, with a test.
       → done in plan 44 (Task 4): `cite` refuses a file the lint never reads and stamps a
       symlink and its target once, deduplicating on `repo_path`, with tests.
-- [ ] Style and typing minors in the citation code (plan 43's per-task and final reviews).
+- [x] Style and typing minors in the citation code (plan 43's per-task and final reviews).
       `build/cc_guide/state.py:92`: a non-UTF-8 tracked file name raises `UnicodeDecodeError`
       from the `git grep` decode, not a `cc-guide:` `SetupError`. `state.py:78`: `exclude` has no
       annotation (`tuple[str, ...]`). `cli.py:132-139`: each citing file is parsed twice, in `lint`
@@ -3040,6 +3040,13 @@ declined as YAGNI (zero instances in a one-page wiki).
       comments in `CLAUDE.md`.
       → re-deferred by plan 44 (2026-10-13): none of the lines it names was edited, though plan
       44 touched each file; `test_state.py:331`'s `startswith` is now near line 366.
+      → done 2026-10-13 (/deferred quick fix), except the double parse: `Source.grep` raises a
+      `SetupError` for a tracked name that is not UTF-8 (red first, with a test that tracks such
+      a name through `update-index --cacheinfo`); `exclude` is `tuple[str, ...]`; the git-grep
+      failure test asserts the part of the message the code controls, since git's own text
+      follows it; `import guide` is at module level; `summary()`'s comprehension names its
+      variable `name`; `CLAUDE.md`'s long comment line is reflowed (187 lines). The double parse
+      is re-deferred below, under the 2026-10-13 /deferred pass.
 - [x] Drift spec R5 and the `lint` help lag the label-note rule (plan 43, completion gate
       decision (a), 2026-10-12). `specs/claude-code-drift-automation-spec.md` R5 (near lines
       523-526) still says every `2.1.NNN` in the guide must be a changelog release label.
@@ -3231,3 +3238,14 @@ declined as YAGNI (zero instances in a one-page wiki).
       stop `none` inside "nonessential". The cc-guide skill's verify step 4 now says to write a
       short common word unformatted and, when such a term is needed, to ask the owner for an
       `exclude_terms` entry in `build/cc_guide/manifest.toml`.
+
+## deferred-2026-10-13 (no plan; /deferred pass, branch chore/deferred-2026-10-13) — 2026-10-13
+
+- [ ] `cli.py lint` parses each citing file twice (split from the citation-code style minors,
+      plan 43's reviews). `lint.py`'s `citation_problems` calls `guide.file_citation` for each
+      file, and `cli.py` then calls `guide.read_citations` for the `STALE` lines, which parses
+      each file again; `check.py` does the same (`read_citations`, then `lint`). Sharing one
+      parse changes `lint()`'s signature across `lint.py`, `cli.py`, `check.py` and
+      `test_lint.py`, for about 45 small files that parse in milliseconds, so it was left out of
+      the quick fix. Size: quick-fix. Revisit if: lint's run time becomes noticeable, or
+      `lint()`'s signature changes for another reason.
