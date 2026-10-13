@@ -2873,7 +2873,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       `(owner, 2026-10-11)` tag.
 
 ## 41-commit-lints-hook-and-ci — 2026-10-12
-- [ ] Make the `commit-lints` CI check required, or record that CI is advisory (plan 41
+- [x] Make the `commit-lints` CI check required, or record that CI is advisory (plan 41
       final review, owner gate 2026-10-12; triaged defer): the plan's Goal calls
       `.github/workflows/lints.yml` the authority on what reaches `main`, but no required
       status check enforces it, and a local merge plus push to `main` is checked only
@@ -2882,6 +2882,11 @@ declined as YAGNI (zero instances in a one-page wiki).
       `specs/plans/completed/41-commit-lints-hook-and-ci.md`. Size: design. Done when: the
       owner has either required `commit-lints` on `main` or recorded that the check is
       advisory.
+      → done 2026-10-13 (/deferred, owner decision): the check stays advisory. The pre-commit
+      hook is the gate, and a merge commit git makes without a conflict, which runs no
+      pre-commit hook, is checked by CI after it lands. `CLAUDE.md`'s commit-lint comment and the hook's header now say so, in
+      place of the header's "gates what reaches main". Revisit if: a red `lints` run lands on
+      `main`.
 - [ ] First real commit in a linked worktree with the hook enabled (plan 41 final review,
       recommendation 4; owner-only): the tests cover plain clones, but in a linked
       worktree the git directory is `.git/worktrees/<name>`, and git exports its

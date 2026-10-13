@@ -4,8 +4,9 @@
 # writes the repo config, which every worktree reads.
 # Fails open, with a warning, only when uv itself cannot run here (missing, or a
 # sandbox that blocks its cache; the warning names uv's last stderr line);
-# .github/workflows/lints.yml still gates what reaches main. A lint failure blocks
-# the commit; git commit --no-verify skips the hook deliberately.
+# .github/workflows/lints.yml still runs them on PRs and main, as an advisory check
+# rather than a required one. A lint failure blocks the commit; git commit
+# --no-verify skips the hook deliberately.
 root="$(git rev-parse --show-toplevel)" || exit 1
 if ! command -v uv >/dev/null 2>&1; then
   echo 'pre-commit: uv not found; commit lints skipped (CI still runs them)' >&2
