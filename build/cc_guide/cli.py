@@ -38,6 +38,16 @@ Run: uv run --python 3.13 python build/cc_guide/cli.py <subcommand>
       not hold that block's baselined text: list it too, or rebaseline the
       whole page. It also refuses to overwrite a snapshot page that holds
       other text.
+  packets (--triage [--through RELEASE] | --verify [ID ...] [--from DIR]
+           | --audit [GROUP] | --files [FILE ...]) [--out DIR]
+      Write the packets /cc-guide hands its verifier (R6.11), from check
+      --worktree's inputs: run check --worktree first, since packets never
+      fetch. --verify and --audit copy their groups' pages to the head
+      release's snapshot, which the verifier greps. --verify with no IDs
+      takes the sections the settled triage --from names sent on. --audit
+      with no group takes the due one, and refuses when none is due. --out
+      defaults to a new directory under the cache's packets/, and is refused
+      inside any checkout. Exit 0, or 2 on an error.
   quotes --in DIR
       Read `file<TAB>quote` rows on stdin and print FOUND file:line or
       MISSING file for each, a quote counting only within one line of the
@@ -60,7 +70,8 @@ from functools import partial
 from pathlib import Path
 
 import baseline
-from check import check, http_get, releases_of, summary
+import packets
+from check import check, due_audit, http_get, releases_of, summary
 from docs import page_file
 from guide import CITE_SHAPED_RE, by_section, read_citations, render_stamp
 from lint import lint, stale_lines
@@ -112,6 +123,15 @@ def parser() -> argparse.ArgumentParser:
     kind.add_argument('--editorial', action='store_true')
     b.add_parser('stamp')
     b.add_parser('cite').add_argument('files', nargs='+')
+    k = sub.add_parser('packets')
+    mode = k.add_mutually_exclusive_group(required=True)
+    mode.add_argument('--triage', action='store_true')
+    mode.add_argument('--verify', nargs='*', metavar='ID')
+    mode.add_argument('--audit', nargs='?', const='', metavar='GROUP')
+    mode.add_argument('--files', nargs='*', metavar='FILE')
+    k.add_argument('--through', metavar='RELEASE')
+    k.add_argument('--from', dest='settled', type=Path, metavar='DIR')
+    k.add_argument('--out', type=Path)
     sub.add_parser('quotes').add_argument('--in', dest='root', type=Path, required=True)
     return p
 
@@ -253,6 +273,37 @@ def run_baseline(args, cache: Path, today: date) -> int:
     return 0
 
 
+def run_packets(args, cache: Path, today: date, now: datetime) -> int:
+    if args.through and not args.triage:
+        raise SetupError('--through goes with --triage')
+    if args.settled and args.verify is None:
+        raise SetupError('--from goes with --verify')
+    mode = next(m for m in ('triage', 'verify', 'audit', 'files') if getattr(args, m) not in (None, False))
+    world = packets.load(Source(REPO), cache, now)
+    out = args.out or cache / 'packets' / f"{now.strftime('%Y%m%dT%H%M%S')}-{mode}"
+    if mode == 'triage':
+        made = packets.triage(world, out, args.through)
+        if made is None:
+            print('nothing to triage: no untriaged release and no block finding')
+            return 0
+        made = [made]
+    elif mode == 'verify':
+        made = packets.verify(world, out, args.verify, args.settled and args.settled / packets.SETTLED)
+    elif mode == 'audit':
+        group = args.audit
+        if not group:
+            due = due_audit(world.manifest, world.state, world.manifest.cadence['audit_days'], today)
+            if not due['due']:
+                raise SetupError(f"no audit is due before {due['due_from']}: name a group to audit one anyway")
+            group = due['group']
+        made = [packets.audit(world, out, group)]
+    else:
+        made = packets.files(world, out, [repo_path(name) for name in args.files])
+    for folder in made:
+        print(f'wrote {mode} packet {folder}')
+    return 0
+
+
 def run_quotes(args) -> int:
     if not args.root.is_dir():
         raise SetupError(f'{args.root}: not a directory')
@@ -271,6 +322,8 @@ def main(argv=None, *, today: date | None = None, now: datetime | None = None, f
             return run_lint(args, cache)
         if args.command == 'check':
             return run_check(args, cache, today, now, fetch or http_get)
+        if args.command == 'packets':
+            return run_packets(args, cache, today, now)
         if args.command == 'quotes':
             return run_quotes(args)
         return run_baseline(args, cache, today)

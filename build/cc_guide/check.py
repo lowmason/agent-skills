@@ -1,7 +1,7 @@
 '''`check`: fetch the docs when the changelog head moved, compare each group's
 selected blocks with the baseline, list each section's untriaged releases
 and the files citing it, and report what is due (drift spec R6). `--hook`
-(R6.10) is Stage 4's and `packets` (R6.11) Stage 3's.'''
+(R6.10) is Stage 4's; packets.py builds R6.11's packets from these parts.'''
 import hashlib
 import http.client
 import json
