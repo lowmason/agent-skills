@@ -748,7 +748,9 @@ R8.4 **`/cc-guide triage`.**
      rebaselines it. The run, not settle, closes this: it verifies both
      groups, settles the other group's packet first, and leaves the block
      out of its own group's `rebaseline` while that section is held or
-     deferred, so the next triage shows the block again. Carrying the block
+     deferred, skipping the command when no ref is left, since a
+     `rebaseline` with no refs takes the whole group (R7), so the next
+     triage shows the block again. Carrying the block
      into every flagged group's verify packet was declined (owner,
      2026-10-13).
    - Any TOUCHES or UNSURE goes to `verify` now.
