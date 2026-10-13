@@ -6,7 +6,7 @@ Per <skill>/SKILL.md: the frontmatter must parse as YAML (catches unquoted-
 scalar breakage), name must equal the directory name (<=64 chars, lowercase
 letters/digits/hyphens), description must be present and <=1024 chars (Agent
 Skills spec cap), keys must be spec-valid, context must be in CONTEXT_VALUES,
-model must not be haiku or a claude-haiku-* ID (auto mode drops it), and every
+model must not be haiku or a claude-haiku-* ID (not portable across providers), and every
 relative markdown-link target plus every backticked references/ or scripts/
 path must exist.
 
@@ -31,11 +31,14 @@ ALLOWED_KEYS = {'name', 'description', 'license', 'allowed-tools', 'metadata',
 # an isolated subagent). Any other value is a typo that silently no-ops at
 # runtime, so it fails here instead — widen this set if the spec grows one.
 CONTEXT_VALUES = frozenset({'fork'})
-# A skill or command `model:` that auto mode cannot run: the bare `haiku` alias
-# or any claude-haiku-* model ID, matched whole and case-insensitively. Auto
-# mode drops such a model and the turn keeps the session model, so the pin
-# silently no-ops at runtime; it fails here instead. agents/*.md are not checked
-# — a subagent's Haiku pin does apply. See specs/completed/skill-model-pin-removal.md.
+# A skill or command `model:` that is a Haiku: the bare `haiku` alias or any
+# claude-haiku-* model ID, matched whole and case-insensitively. Auto mode drops
+# Haiku 4.5 and keeps the session model, and the `haiku` alias means Haiku 5.5 on
+# the Anthropic API but 4.5 on the other providers, so such a pin would apply on
+# one and be ignored on another; it fails here instead. The ban is deliberately
+# broader than what auto mode drops (owner, 2026-10-12, the register's
+# no-haiku-skill-model). agents/*.md are not checked — a subagent's Haiku pin does
+# apply. See specs/completed/skill-model-pin-removal.md.
 AUTO_MODE_DROPPED_MODEL_RE = re.compile(r'haiku|claude-haiku-.+', re.IGNORECASE)
 # One number, two different reasons — which is why the two messages below name
 # different ones. For a SKILL.md it is the Agent Skills standard's cap
@@ -61,13 +64,15 @@ TICK_PATH_RE = re.compile(r'`((?:references|scripts)/[A-Za-z0-9._/-]+)`')
 
 
 def _check_model_pin(md: Path, fm: dict) -> list[str]:
-    '''Fail a skill or command `model:` that auto mode drops (AUTO_MODE_DROPPED_MODEL_RE).'''
+    '''Fail a skill or command `model:` that is a Haiku (AUTO_MODE_DROPPED_MODEL_RE).'''
     model = fm.get('model')
     if model is None or not AUTO_MODE_DROPPED_MODEL_RE.fullmatch(str(model)):
         return []
-    return [f'{md}: model {model!r} is inert: auto mode drops a Haiku skill or command '
-            'model and keeps the session model; put cheap work on a model-pinned '
-            'subagent instead (specs/completed/skill-model-pin-removal.md)']
+    return [f'{md}: model {model!r} is not portable: auto mode drops Haiku 4.5 and '
+            'keeps the session model, and the haiku alias means Haiku 5.5 on the '
+            'Anthropic API but 4.5 on other providers, so the pin applies on one '
+            'and is ignored on another; put cheap work on a model-pinned subagent '
+            'instead (specs/completed/skill-model-pin-removal.md)']
 
 
 def check_skill(skill_dir: Path) -> list[str]:
