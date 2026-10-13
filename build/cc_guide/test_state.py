@@ -7,6 +7,7 @@ from datetime import date
 import pytest
 
 import blocks
+import guide
 import state
 from cc_fixtures import (MANIFEST_TOML, docs_dir, fixture_repo, fixture_snapshot, fixture_state, git,  # noqa: F401
                          guide_text, isolated_home, write_tree)
@@ -350,7 +351,6 @@ def test_no_citation_anywhere_reads_no_file(tmp_path):
 
 def test_the_git_pattern_matches_the_python_pattern(tmp_path):
     '''CITE_SHAPED_ERE is guide.CITE_SHAPED_RE spelled for git grep -E.'''
-    import guide
     lines = ['# cc-guide: x', '  # cc-guide: x', '\t#cc-guide:', '<!--cc-guide: x', '<!--  cc-guide: x',
              'x # cc-guide: x', "'# cc-guide: x'", '## cc-guide: x', '<!-- /cc-guide:stamp -->', '#  cc-guide x']
     repo = fixture_repo(tmp_path / 'repo', {f'f{n}.txt': line + '\n' for n, line in enumerate(lines)})
@@ -363,7 +363,23 @@ def test_a_git_grep_failure_is_a_setup_error(tmp_path):
     repo = fixture_repo(tmp_path / 'repo', {'a.txt': 'text\n'})
     with pytest.raises(state.SetupError) as err:
         state.Source(repo).grep('(', ())
-    assert str(err.value).startswith('git grep in the working tree: ')
+    where, sep, reason = str(err.value).partition(': ')  # git's own text, which varies by version, follows
+    assert (where, sep) == ('git grep in the working tree', ': ')
+    assert reason
+
+
+def test_a_tracked_name_that_is_not_utf8_is_a_setup_error(tmp_path):
+    '''A tree entry's name is raw bytes to git, so a commit can track one that
+    the checkout's file system may refuse (macOS's does); the decode of git
+    grep's output raised UnicodeDecodeError instead of the module's
+    SetupError. The message names the entry, escaped.'''
+    repo = fixture_repo(tmp_path / 'repo', {'a.txt': CITE + '\n'})
+    blob = git(repo, 'rev-parse', 'HEAD:a.txt').strip()
+    git(repo, 'update-index', '--add', '--cacheinfo', f'100644,{blob},bad\udcff.txt')
+    git(repo, 'commit', '-qm', 'a name that is not UTF-8')
+    with pytest.raises(state.SetupError) as err:
+        state.Source(repo, 'main').grep(state.CITE_SHAPED_ERE, ())
+    assert str(err.value) == r'git grep in main: a tracked file name is not UTF-8 text: bad\xff.txt'
 
 
 def test_a_snapshot_names_each_baselined_block_and_gives_its_text(docs_dir):

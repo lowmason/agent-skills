@@ -74,8 +74,9 @@ sections = [
 [kinds.settings]
 description = 'Project settings committed to the repo.'
 globs = ['.claude/settings.json']
-# lean.model-routing governs the settings file, except its TODO(owner)
-# bullet, which is the owner's open question and binds nothing.
+# lean.model-routing governs the settings file, its default-model bullet
+# included since the owner settled it (2026-10-13). The file's opus model pin
+# fits that stance: Opus by default, Sonnet chosen per execution session.
 sections = [
     'rules.settings', 'hooks.configuration', 'lean.model-routing',
     'hooks.patterns', 'hooks.exit-codes', 'mechanisms.overview',
