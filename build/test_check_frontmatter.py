@@ -174,8 +174,10 @@ def test_model_and_effort_keys_allowed(tmp_path):
 
 
 def test_haiku_model_on_a_skill_is_rejected(tmp_path):
-    # Auto mode drops a skill `model` it cannot run and keeps the session model,
-    # so the pin is inert (specs/completed/skill-model-pin-removal.md).
+    # The reason is portability, not inertness: auto mode drops Haiku 4.5 and keeps
+    # the session model, and the `haiku` alias means Haiku 5.5 on the Anthropic API
+    # but 4.5 on the other providers, so a pin would apply on one and not another
+    # (specs/completed/skill-model-pin-removal.md; the register's no-haiku-skill-model).
     d = make_skill(
         tmp_path,
         'haiku-skill',
@@ -185,9 +187,26 @@ def test_haiku_model_on_a_skill_is_rejected(tmp_path):
     assert len(errs) == 1, errs
     msg = errs[0]
     assert msg.startswith(f"{d / 'SKILL.md'}: model 'haiku' ")
-    assert 'auto mode drops a Haiku skill or command model and keeps the session model' in msg
+    assert 'is not portable' in msg
+    assert 'auto mode drops Haiku 4.5 and keeps the session model' in msg
+    assert 'Haiku 5.5 on the Anthropic API but 4.5 on other providers' in msg
     assert 'model-pinned subagent' in msg
     assert 'specs/completed/skill-model-pin-removal.md' in msg
+
+
+def test_haiku_5_5_model_id_on_a_skill_is_rejected_as_not_portable(tmp_path):
+    # Auto mode supports Haiku 5.5, so this ID is not dropped; the ban is broader
+    # than the drop on purpose (owner, 2026-10-12), and the message must not claim
+    # the pin is inert.
+    d = make_skill(
+        tmp_path,
+        'haiku-5-5-skill',
+        'name: haiku-5-5-skill\ndescription: Use when testing pins.\nmodel: claude-haiku-5-5',
+    )
+    errs = check_skill(d)
+    assert len(errs) == 1, errs
+    assert 'is not portable' in errs[0], errs
+    assert 'inert' not in errs[0], errs
 
 
 def test_haiku_model_id_on_a_skill_is_rejected(tmp_path):
