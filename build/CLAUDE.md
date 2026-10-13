@@ -41,10 +41,15 @@ baselined block on the same page has also changed or gone: list it too, or
 rebaseline the whole page. A missing page needs a `manifest.toml` edit first.
 A correction that resolves a conformance gap removes its `[[exception]]`, or
 narrows its `artifacts`, in the same change. Files whose correctness rests
-on a Claude Code fact carry a `cc-guide:` citation naming the guide sections
-they rely on (the spec's R4.1 places it); `cli.py lint` checks each one and
-prints `STALE` for a file reviewed before a cited section last changed.
-After reviewing such a file, `cli.py baseline cite <file>` restamps it.
+on a Claude Code fact carry a citation comment naming the guide sections
+they rely on (the spec's R4.1 gives its form and place); `cli.py lint` checks
+each one and prints `STALE` for a file reviewed before a cited section last
+changed. After reviewing such a file, `cli.py baseline cite <file>` restamps
+it. The `/cc-guide` skill in `../.claude/skills/` acts on what `check`
+reports: `cli.py packets` writes the packets its verifier agent reads, under
+the cache, and `cli.py settle` re-greps the verifier's quotes (`cli.py quotes`
+checks single rows), applies the spec's fail-safe and discard rules, and
+prints the corrections and the `baseline` commands that follow.
 Nothing is committed for you.
 `cd build && pytest` collects this suite too, so module and test basenames
 stay unique across `build/`.
