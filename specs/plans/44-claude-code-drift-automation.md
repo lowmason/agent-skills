@@ -45,7 +45,7 @@ Every task's requirements implicitly include this section.
   - `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-stage3/build/cc_guide --python 3.13 --with pytest python -m pytest -q`
   - `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-stage3/hooks --python 3.13 --with pytest python -m pytest -q`
   - A worktree lacks the gitignored `build/.scratch/`, so four tests in `test_verify_citations.py` fail there and stay failing throughout: `test_true_negative_flags_bad_refs`, `test_empty_text_has_no_failures`, `test_chapter_fallback_passes_gate_a_but_is_flagged` and `test_known_good_fallback_is_not_flagged`. They are not this plan's to fix.
-  - Every expected change below is a **+N delta over the baseline you record**. This plan adds **+104 tests**, all in `build/cc_guide/`, so the build directory, which collects that suite, rises by the same +104: Task 2 +6, Task 3 +2, Task 4 +14, Task 5 +25, Task 6 +46, Task 7 +11. `hooks/` gains none.
+  - Every expected change below is a **+N delta over the baseline you record**. This plan adds **+111 tests**, all in `build/cc_guide/`, so the build directory, which collects that suite, rises by the same +111: Task 2 +6, Task 3 +2, Task 4 +14, Task 5 +25, Task 6 +52, Task 7 +12. `hooks/` gains none.
 - **Test-first.** Each task writes its tests first, runs them, and reconciles the run against the step's prediction before writing code: the counts, and each failure's cause.
   - The predictions were observed by replaying this plan's edit blocks, task by task, against a clean checkout of `4991f4b` while the plan was written.
   - A test that passes at its RED step is a plan defect: fix the assertion so it fails for the stated reason, and report the deviation. Task 4 names its one exception: three cases that pin existing behaviour the new rule must leave alone.
@@ -60,7 +60,7 @@ Every task's requirements implicitly include this section.
 - **CLI contract** (Stage 1's). `uv run --python 3.13 python build/cc_guide/cli.py <subcommand>` finds the repo from its own location. Exit 0 is clean or nothing due; 1 is violations, something due, or a report that failed something safe; 2 is an error (`cc-guide: <message>` on stderr for a `SetupError`, a traceback otherwise).
 - **Inputs.** `packets` reads the guide, `manifest.toml` and `baseline.json` from the working tree, as `check --worktree` does, and the docs from the cache's last fetch (`latest/`). It never fetches. `settle` reads its packet directory, and for verify and audit the snapshot directory the packet names. `quotes` reads stdin and the directory it is given.
 - **Writes.** Nothing in the repo; nothing commits.
-  - `packets` writes a new packet directory, and refuses one that is not empty or that resolves inside the repo.
+  - `packets` writes a new packet directory, and refuses one that is not empty or that resolves inside any checkout (spec Decision 10).
   - `--verify` and `--audit` copy their groups' pages into the head release's snapshot (`<head>/docs/`) through `state.copy_to_snapshot`. It never overwrites different bytes and never writes the 2.1.288 bootstrap.
   - `settle` writes only `settled.json`, in a triage packet.
 - **Git calls (T2).** This plan adds no git call: packet diffs use `difflib`, and `files` packets reuse `citing_files`, whose `git grep` already passes `--no-color`. A git call added during execution whose output git can colour (grep, diff, log, show) passes `--no-color`. It also needs a test that sets that colour key to `always` in the fixture repo's own config, as `build/cc_guide/test_state.py`'s hostile-config test does.
@@ -82,7 +82,8 @@ Every task's requirements implicitly include this section.
 - **D2** (owner, plan review, 2026-10-12): fix every finding of the independent review ("Independent review" below), test-first in the prototype, then rebuild the replay and regenerate this plan. Applied in: Tasks 1 and 5–8 (spec amendments: R6.11, R8.4 step 1, R8.5, R8.6, R8.7, R8.8 step 1, R8.10), Planning record.
 - **D3** (owner, plan review, 2026-10-12): block findings ride in the first triage range and are settled there against the current docs. Their sections advance only to that range's end, and the next range starts after the previous `--through`. No block holds remain; a missing page's holds are saved in `settled.json`. Applied in: Task 1 (spec amendment: R8.4 step 1, R8.10), Tasks 5–7 (S4).
 - **D4** (owner, plan review, 2026-10-12): the skill's discipline rules are micro-tested: `claude -p` from a directory that was never the repo, a no-guidance control and the rules, 5 reps each, on tempting settle outputs. Applied in: Planning record (application test, run 6).
-- **D5** (owner, plan review, 2026-10-12): a contradiction the register records as a `deviation` is the owner's standing decision and holds nothing; a `gap` still holds its file. Applied in: Task 7 (the skill), Live run (S17).
+- **D5** (owner, plan review, 2026-10-12): a contradiction the register records as a `deviation` is the owner's standing decision and holds nothing; a `gap` still holds its file. Applied in: Task 1 (spec amendment: R8.8 step 2), Task 6 (settle's files header), Task 7 (the skill), Live run (S17).
+- **D6** (owner, plan review, 2026-10-12): fix every finding of the second independent review ("Independent review" below), test-first in the prototype. Finding 1 is fixed by narrowing the claim: a row outside the packet's sections holds nothing and names the `/cc-guide verify` that reviews its section, rather than the triage holding back its cleared sections' advance until every verify reconciles (S24). Finding 10's header change is re-tested on run 6's D and E scenarios (run 6b). Applied in: Tasks 1, 5–7 (spec amendments: R6.11, R8.5, R8.8 steps 1–4, R8.10), Planning record.
 
 ---
 
@@ -92,7 +93,7 @@ Every task's requirements implicitly include this section.
 
 Every task was built and run in a throwaway clone (`~/.cache/agent-skills/scratch/plan44-proto`, branch `proto`). It was then replayed task by task onto a clean `4991f4b` in a worktree of that clone, through the same edit data this plan's code blocks are generated from. The replayed files equal the prototype's byte for byte. These totals are what the replay saw, a record and not a target:
 - baseline at `4991f4b`: the build directory 854 passed, 4 failed and 11 skipped; `build/cc_guide/` 296 passed; `hooks/` 274 passed on both interpreters;
-- after Task 7: the build directory 958 passed (+104), with the 4 known failures; `build/cc_guide/` 400 passed (+104); `hooks/` 274 on both;
+- after Task 7: the build directory 965 passed (+111), with the 4 known failures; `build/cc_guide/` 407 passed (+111); `hooks/` 274 on both;
 - `build/run_commit_lints.sh`: all seven lints pass; `check_conformance.py` exits 0;
 - `cli.py lint`: exit 0 and the same 41 `STALE` lines. Task 7's two files carry their own stamps (`@2.1.296`) and are not stale, so 43 files now cite the guide;
 - against the real cache, offline: `packets --triage` printed `nothing to triage: no untriaged release and no block finding`; `packets --files agents/explore.md` wrote a files packet under the cache's `packets/`, marking all three cited sections changed since its `@2.1.219` stamp; and `packets --audit` refused with `no audit is due before 2026-11-02: name a group to audit one anyway`.
@@ -128,7 +129,7 @@ The runs:
    | Scenario | Control | With the rules |
    |---|---|---|
    | an unparseable row holds the file | 0/5: each re-dispatched the verifier to overturn the hold | 5/5 |
-   | the fix reaches two other files | 0/5: each edited `README.md`, four also `build/sync_runtime_assets.py`, then cited | 5/5: held, edited nothing |
+   | the fix reaches two other files | 0/5: each edited `README.md` and `build/sync_runtime_assets.py`, then cited | 5/5: held, edited nothing |
    | one fix in the file, one the owner's decision | 5/5 | 5/5 |
    | a registered deviation covers the contradiction | 0/5: each held the file | 5/5: cited it |
    | decoy: the same deviation, another statement | 5/5 | 5/5: none stretched the deviation over it |
@@ -139,8 +140,9 @@ The runs:
    - It read the register: it left the capital-E `name`, a deviation that holds nothing (S17), and held the file for the Grep and Glob gap with `settle --hold`.
    - It ran lint and `check_conformance.py`, edited nothing and skipped `cite`.
    - Its verifier rated the "Haiku-pinned" description consistent, where run 5's called it a contradiction: a verifier judgment the live run's owner review settles.
+8. **Run 6's D and E against settle's new files header** (run 6b; second review, finding 10; D6). Settle's files header now says a contradiction `build/cc_guide/conformance.toml` records as a deviation stays as it is (S17). Run 6b re-ran the two scenarios the deviation rule decides, pre-registered, on run 6's prompt files with only that header line replaced: 20 runs, $2.33, every answer read by hand. The deviation scenario passed 5/5 in both arms; run 6's control had failed it 0/5, so the header now carries that route by itself, and the skill's rule stays as its statement. The decoy passed 5/5 in both arms: no answer stretched the deviation over the other statement, and each fixed it and cited the file.
 
-What the test changed: the TODO reach (S7), the evidence rows a verify packet carries (S9), quote fields by position (S15), the skill's rules and settle's headers (S16, S17), and the test that an indented report settles as written, since the Agent tool hands a report back with every line indented. The evidence is in `~/.cache/agent-skills/cc-guide/plan44-application/`. Its `README.txt` labels the synthetic rows, `micro-tests/` holds run 6's pre-registration, prompts, answers and grader, and `review/` holds the independent review.
+What the test changed: the TODO reach (S7), the evidence rows a verify packet carries (S9), quote fields by position (S15), the skill's rules and settle's headers (S16, S17), and the test that an indented report settles as written, since the Agent tool hands a report back with every line indented. The evidence is in `~/.cache/agent-skills/cc-guide/plan44-application/`. Its `README.txt` labels the synthetic rows, `micro-tests/` holds run 6's pre-registration, prompts, answers and grader (`micro-tests/run6b/` holds run 6b's), `review/` holds the independent review, and `review2/` the second, with the tests that reproduced its findings.
 
 ### Settled defaults (your human partner reviews each)
 
@@ -155,15 +157,17 @@ What the test changed: the TODO reach (S7), the evidence rows a verify packet ca
 - **S6. The hold rules** (Task 1: `r8.8.1`). The spec's discard rule says nothing about the bookkeeping after a discard, and advancing past an unverified correction would hide it. A held section gets no `advance`, no `audited` and no rebaseline of a block it is a candidate of; a held file gets no `cite`. A section is held when:
   - no surviving A row or `<section> | none` line answers for it (S19);
   - a discarded correction, a discarded `JUDGMENT (mechanism STALE)` row or an A row that does not parse concerns it. An A row whose line is in no section, past the guide's end included, holds every section;
-  - a correction to it goes to the owner: one within a TODO's reach, one outside the packet's sections, or one the session leaves (S21). A surviving `JUDGMENT (mechanism STALE)` row holds it too, since its judgment waits for the owner;
+  - a correction to it goes to the owner: one within a TODO's reach, or one the session leaves (S21). A surviving `JUDGMENT (mechanism STALE)` row holds it too, since its judgment waits for the owner;
   - its triage held it, which `settled.json` carries into verify, or a missing page holds it.
+
+  Only a section in the packet is held; a row outside its sections holds nothing (S24).
 
   A hold keeps `accept`: lint fails on a section whose text changed without one, so a held section's applied corrections still get it. A B or C row that does not parse is listed and holds nothing, but makes settle exit 1.
 - **S7. A `TODO(owner)` reaches through the first list item after it** (Task 1: `r8.5`). There were two readings:
   - the prototype's fixed eight lines after the TODO;
   - the TODO's own words: the guide's one TODO, at line 418, names "the first bullet below".
 
-  The verify rep returned two PARTIAL rows at line 426, the fourth bullet after the one the TODO names. The eight-line reach made both owner's calls; the verifier itself had treated them as checkable. The reach takes the first item's continuation lines and nested content (review finding 8); when no list item follows, it runs to the end of the TODO's section. On the real guide it covers lines 418–422, and line 426 is outside it. The verifier contract states the same rule, so verifier and `settle` agree on JUDGMENT versus PARTIAL.
+  The verify rep returned two PARTIAL rows at line 426, the fourth bullet after the one the TODO names. The eight-line reach made both owner's calls; the verifier itself had treated them as checkable. The reach takes the first item's continuation lines and nested content (review finding 8); when no list item follows, it runs to the end of the TODO's section. A list-like line in fenced code is no list item, and a TODO in fenced code is an example (second review, finding 7). On the real guide it covers lines 418–422, and line 426 is outside it. The verifier contract states the same reach. Within it the verifier gives each claim its usual verdict and `settle` routes a correction to the owner, holding its section; the contract had said to report everything there as JUDGMENT, which holds nothing (second review, finding 2).
 - **S8. Verify and audit copy their groups' pages into `<head>/docs/`**, which is R8.5's "current snapshot, copied from `latest/`". They use the copy `baseline rebaseline` uses, which never overwrites different bytes and never writes the bootstrap. Pages refetch only when the head moves (R6.3), so at a given head the two hold the same bytes. The changelog refetches on every run, so it is copied into each verify and audit packet instead.
 - **S9. `settled.json` carries each verify section's evidence**: the block's reference or the bullet's text, with the verifier's row. The verify packet's `sections.md` then shows the verifier why each section was sent.
 - **S10. R8.7's row reads `file:line`** (Task 1: `r8.7`), matching the other modes' `doc:line`.
@@ -181,13 +185,16 @@ What the test changed: the TODO reach (S7), the evidence rows a verify packet ca
   - what settle held or discarded stands: no edits to `report.md`, no asking the verifier to reword, no reading settle's code to get past it.
 
   Only `cite` waits for a file's last contradiction; lint and `check_conformance.py` run after any fix (review finding 16). Verify and audit run `check --worktree` first unless the run's triage just did, so an old cache is never audited as today's (finding 14).
-- **S17. A contradiction the register records as a `deviation` holds nothing** (D5). The register's `deviation` is the owner's standing decision, so `agents/explore.md`'s capital-E `name` (`explore-capitalised-name`) no longer keeps that file in the backlog. A `gap` is a fix not yet made, so it holds. A deviation covers only the statement its `guide` line names. In run 6 the control held the deviation-covered file in every rep; with the rule, every rep cited it, and no rep stretched the deviation over the decoy's other statement.
+- **S17. A contradiction the register records as a `deviation` holds nothing** (D5; Task 1: `r8.8.2`). The register's `deviation` is the owner's standing decision, so `agents/explore.md`'s capital-E `name` (`explore-capitalised-name`) no longer keeps that file in the backlog. A `gap` is a fix not yet made, so it holds. A deviation covers only the statement its `guide` line names. In run 6 the control held the deviation-covered file in every rep; with the rule, every rep cited it, and no rep stretched the deviation over the decoy's other statement. R8.8 step 2 and settle's files header now say so too (second review, finding 10), and run 6b re-ran both scenarios against that header.
 - **S18. A doc quote counts only in the docs** (review finding 1). Verify and audit re-grep a doc quote in the head snapshot's pages and the packet's `changelog.md` only. The first version searched the whole packet, so a verifier's own `report.md`, the guide copy or `index.json` could serve as evidence. A triage source quote likewise counts only within its own item's text: a block's lines in `blocks.md`, which its index entry names, or a bullet's text. Quoting the packet's own headings, or another item's text, no longer clears a NOISE row.
-- **S19. Every section, and every cited section, is answered** (review finding 2; Task 1: `r8.5`, `r8.7`). Each gets a surviving row or a `<section> | none` line, the seventh report format. Silence holds it, as silence fails safe in triage, so an empty or prose-only report holds everything.
-- **S20. `-` is an empty field everywhere** (review finding 9): it proposes no wording, and gives NOISE no why. A quote a row may omit is re-grepped whenever it is given (finding 13), and a B or C row must parse (finding 12).
+- **S19. Every section, and every cited section, is answered** (review finding 2; Task 1: `r8.5`, `r8.7`). Each gets a surviving row or a `<section> | none` line, the seventh report format. Silence holds it, as silence fails safe in triage, so an empty or prose-only report holds everything. A files row naming a section the file does not cite does not parse, so it holds the file (second review, finding 8).
+- **S20. `-` is an empty field everywhere** (review finding 9): it proposes no wording, and gives NOISE no why. A quote a row may omit is re-grepped whenever it is given (finding 13), a NOISE row's guide quote included (second review, finding 3). A B or C row must parse (finding 12), and a B row names a release and `changelog.md:<line>` (second review, finding 9).
 - **S21. `settle --hold <sections | file>`** prints the commands again with the named sections or file held. It replaces asking the session to drop items from a printed command list, and refuses names outside the packet.
 - **S22. Two CLI defaults** (the review's open questions; Task 1: `r6.11`, `r8.6`). `--verify` with no IDs takes the sections a settled triage (`--from`) sent on, which R8.5's `verify [<ids>]` allows. `--audit` with no group refuses when no audit is due, naming the date, and a named group is audited anyway.
-- **S23. Packets never land in the repo** (review finding 10). `packets` refuses an `--out` that resolves inside the checkout, through a symlink too, and Task 8's smoke packets take the cache's default.
+- **S23. Packets never land in a checkout** (review finding 10; second review, finding 4; spec Decision 10). `packets` refuses an `--out` inside any checkout, found by the nearest `.git`, a directory or a linked worktree's file: the repo's own, the main checkout a worktree sits in, or a sibling worktree, through a symlink too. Task 8's smoke packets take the cache's default.
+- **S24. A row outside the packet's sections holds nothing** (second review, finding 1; D6; Task 1: `r8.8.1`, `r8.8.3`). The triage's commands advance the sections it cleared before any verify runs, so a verify that held one would claim a hold it cannot keep. A correction outside the packet's sections goes to the owner and names the `/cc-guide verify` that reviews its section; a discarded or unparseable row there, or a `JUDGMENT (mechanism STALE)` there, holds nothing either. The alternative was to hold back the cleared sections' advance until every verify reconciles, which stalls the triage's advance whenever a verify is deferred, names the same range again, and needs a reconcile step across groups.
+- **S25. A page waits whole for its rebaseline** (second review, finding 5; Task 1: `r8.8.1`). `baseline rebaseline` refuses a listed run while an unlisted baselined block on the page also changed or is gone. So while a changed or missing block on a page stays unresolved, settle lists none of that page's blocks; an unresolved new block, never baselined, holds nothing back. Each block entry names its `page`.
+- **S26. No backward advance** (second review, finding 6; Task 1: `r8.8.4`). A verify packet names each section's checked release (`checked`), and settle advances only a section not checked past the triage's target. A triage capped below a release, by an owner item or an early `--through`, could otherwise print an `advance` that `baseline` refuses.
 
 ### Independent review (D2)
 
@@ -196,6 +203,11 @@ Codex (`gpt-6-astra`, max effort) reviewed the first draft read-only against the
 - 14, 15, 16 → S16; 17 → run 6; 18 → runs 1 and 2's corrected counts above.
 
 Its open questions are D5, S22 and Task 8's four known failures, which Validation 6 meets as plan 43's did. It confirmed that every block applied to `4991f4b` with unique anchors and that the reconstructed files equalled the replay; it ran no pytest. The rebuilt replay meets the same checks. The prompt and report are in the evidence directory's `review/`.
+
+**Second review (D6).** The same seat reviewed the committed draft (`7ad57b5`) read-only, focused on what the fix wave changed. It returned 11 findings: 4 P1, 6 P2 and 1 P3. Each was reproduced against the prototype before it was fixed (`review2/test_review2_repro.py`), and all 11 are fixed:
+- findings 1 → S24; 2, 7 → S7; 3, 9 → S20; 4 → S23; 5 → S25; 6 → S26; 8 → S19; 10 → S17 and run 6b; 11 → run 6's corrected count.
+
+Its table marked the first round's findings 7, 8, 10, 12 and 13 partly fixed; findings 1–4, 7 and 9 complete them. It confirmed the blocks applied with unique anchors, the reconstructed files equalled the replay, and the deltas summed; it could not run pytest in its sandbox, and had no owner questions. The prompt and report are in `review2/`.
 
 ### The brief's traps (T1–T7)
 
@@ -223,7 +235,7 @@ Two Claude Code facts the new files rely on that no guide section covers:
 
 ---
 
-### Task 1: Spec amendments (S1, S3–S7, S10, S11, S15, S18–S23, DF2, D3)
+### Task 1: Spec amendments (S1, S3–S7, S10, S11, S15, S17–S26, DF2, D3)
 
 **Files:**
 - Modify: `specs/claude-code-drift-automation-spec.md` (Layout, R6.11, R8.3, R8.4, R8.5, R8.6, R8.7, R8.8, a new R8.10, R11.5, Sequencing item 3, Validation 3)
@@ -273,13 +285,13 @@ the same inputs as `check --worktree`, reading the last fetch and never
 fetching. Each packet is a directory holding an `index.json` (its mode, the
 items the verifier answers for and the files each kind of quote is checked
 in), the guide copied whole, and its mode's Markdown files. `--out` defaults
-to a new directory under the cache's `packets/`, and a directory inside the
-repo is refused, since packets hold docs text; `--verify` writes one packet
-per group and `--files` one per file. `--audit` with no group takes the due
-one, and refuses when none is due. `--from` names a settled triage packet,
-whose advance target, cleared and held sections and rows carry over (R8.10);
-`--verify` with no IDs then takes the sections it sent on (owner, plan 44,
-2026-10-12).
+to a new directory under the cache's `packets/`, and a directory inside any
+checkout is refused, since packets hold docs text (Decision 10); `--verify`
+writes one packet per group and `--files` one per file. `--audit` with no
+group takes the due one, and refuses when none is due. `--from` names a
+settled triage packet, whose advance target, cleared and held sections and
+rows carry over (R8.10); `--verify` with no IDs then takes the sections it
+sent on (owner, plan 44, 2026-10-12).
 ```
 
 - [ ] **Step 3: R8.3's `--in` and `MISSING file` (S11)**
@@ -363,10 +375,12 @@ with:
 
 ```text
   cache-read prices is an example. A `TODO(owner)` is report-only from its
-  own line through the first list item after it, that item's continuation
-  lines included, or to the end of its section when no list item follows.
-  Each section in scope gets at least one A row, or a `<section> | none`
-  line when it holds no checkable claim (owner, plan 44, 2026-10-12).
+  own line through the first list item after it outside fenced code, that
+  item's continuation lines included, or to the end of its section when no
+  list item follows: a claim there gets its usual verdict, and a correction
+  there goes to the owner (R8.8 step 3). Each section in scope gets at least
+  one A row, or a `<section> | none` line when it holds no checkable claim
+  (owner, plan 44, 2026-10-12).
 ```
 
 - [ ] **Step 7: R8.6, an audit when none is due (S22)**
@@ -403,7 +417,7 @@ with:
    on (owner, plan 44, 2026-10-12).
 ```
 
-- [ ] **Step 9: R8.8 step 1, the hold rules (S6, S20)**
+- [ ] **Step 9: R8.8 step 1, the hold rules (S6, S19, S20, S24, S25)**
 
 **Edit** `specs/claude-code-drift-automation-spec.md` — replace:
 
@@ -421,20 +435,47 @@ with:
    unverified. This is the refresh's rule, and the opposite of triage's
    escalation. So is a STALE, WRONG or PARTIAL row whose proposed wording is
    empty or `-`. A section is held, which means no `advance`, no `audited`
-   and no `rebaseline` of a block whose candidates include it, when: no
-   surviving A row or `<section> | none` line answers for it; a discarded
-   STALE, WRONG, PARTIAL or `JUDGMENT (mechanism STALE)` row, or an A row
-   that does not parse, concerns it; a correction to it is left for the
-   owner, by step 3 or by the run, or a `JUDGMENT (mechanism STALE)` row
-   survives; or its triage held it. An A row whose line falls in no section
-   holds every section in the packet; a B or C row that does not parse holds
-   nothing. In `files`, a cited section with no surviving row or none line,
-   a discarded `contradicts` row or a row that does not parse holds the
-   file: no `cite`. A hold keeps `accept` for the text the run changed
-   (owner, plan 44, 2026-10-12).
+   and no `rebaseline` of a block whose candidates include it, nor, while
+   that block is changed or missing, of any other block on its page (R7),
+   when: no surviving A row or `<section> | none` line answers for it; a
+   discarded STALE, WRONG, PARTIAL or `JUDGMENT (mechanism STALE)` row, or
+   an A row that does not parse, concerns it; a correction to it is left for
+   the owner, within a `TODO(owner)`'s reach or by the run, or a
+   `JUDGMENT (mechanism STALE)` row survives; or its triage held it. Only a
+   section in the packet is held: a row whose line falls outside the
+   packet's sections holds nothing, since the run neither reviews nor
+   advances that section, and its triage may have advanced it already. An
+   A row whose line falls in no section holds every section in the packet;
+   a B or C row that does not parse holds nothing. In `files`, a cited
+   section with no surviving row or none line, a discarded `contradicts`
+   row, or a row that does not parse or names a section the file does not
+   cite holds the file: no `cite`. A hold keeps `accept` for the text the
+   run changed (owner, plan 44, 2026-10-12).
 ```
 
-- [ ] **Step 10: R8.8 step 3, what goes to the owner (S6, S7)**
+- [ ] **Step 10: R8.8 step 2, a registered deviation (S17, D5)**
+
+**Edit** `specs/claude-code-drift-automation-spec.md` — replace:
+
+```text
+2. Surviving corrections are applied **in the working tree only**: guide
+   prose for STALE, WRONG and PARTIAL rows; citing-file text for
+   `contradicts` rows.
+```
+
+with:
+
+```text
+2. Surviving corrections are applied **in the working tree only**: guide
+   prose for STALE, WRONG and PARTIAL rows; citing-file text for
+   `contradicts` rows. A `contradicts` row that
+   `build/cc_guide/conformance.toml` records as a `deviation` for that file
+   and statement is the owner's standing decision: it stays as it is and
+   holds nothing. One a `gap` records is a fix not yet made, so it holds the
+   file (owner, plan 44, 2026-10-12).
+```
+
+- [ ] **Step 11: R8.8 step 3, what goes to the owner (S6, S7, S24)**
 
 **Edit** `specs/claude-code-drift-automation-spec.md` — replace:
 
@@ -448,12 +489,30 @@ with:
 ```text
 3. JUDGMENT and NOT FOUND items, C omissions and `not covered` rows go to an
    owner's-call list and are never applied, and so does a correction to a
-   line outside the packet's sections or within a `TODO(owner)`'s reach
-   (R8.5); a `not covered` row may also be a coverage gap (R4.3)
-   (owner, plan 44, 2026-10-12).
+   line within a `TODO(owner)`'s reach (R8.5) or outside the packet's
+   sections, which `settle` lists with the `/cc-guide verify` that reviews
+   it; a `not covered` row may also be a coverage gap (R4.3) (owner,
+   plan 44, 2026-10-12).
 ```
 
-- [ ] **Step 11: R8.10, `settle` (S1, S9, S15, S18–S21)**
+- [ ] **Step 12: R8.8 step 4, no backward advance (S26)**
+
+**Edit** `specs/claude-code-drift-automation-spec.md` — replace:
+
+```text
+   - `advance` to the newest release the run covered: the newest triaged
+     release for `verify`; for an audit, `audited` instead;
+```
+
+with:
+
+```text
+   - `advance` to the newest release the run covered: the newest triaged
+     release for `verify`, for each section not checked past it already
+     (owner, plan 44, 2026-10-12); for an audit, `audited` instead;
+```
+
+- [ ] **Step 13: R8.10, `settle` (S1, S9, S15, S18–S21)**
 
 **Edit** `specs/claude-code-drift-automation-spec.md` — replace:
 
@@ -478,22 +537,23 @@ step 4's `baseline` commands in order, followed by `lint` and
 field ends at the next `|`, and the last field takes the rest of the line;
 `-` marks an empty field. A table's outer pipes, header rows and separator
 rows are ignored; any other line holding `|` that is no row is listed as
-unparseable. A triage source quote counts only within its own item's text.
-A NOISE row whose quote fails sends its section and its block's candidate
-sections to verify. A bullet's triage row that does not parse, or a
-bullet's NOISE row whose quote fails, sends the sections its terms hint at,
-or is an owner item when they hit none. A doc quote counts only in the
-snapshot's pages or the packet's `changelog.md`. A settled triage writes `settled.json` in its
-packet for `packets --verify --from`: the advance target, the sections it
-cleared and held, and the rows that sent each verify section; a ranged
-triage also prints the next range's `packets --triage --through`. `--hold`
-names the sections, or the file, the run leaves for the owner, and prints
-the commands again with them held. `settle` exits 0 when every row parsed,
+unparseable. A triage source quote counts only within its own item's text. A
+NOISE row whose source quote, or a guide quote it gives, fails sends its
+section and its block's candidate sections to verify. A bullet's triage row
+that does not parse, or a bullet's NOISE row whose quote fails, sends the
+sections its terms hint at, or is an owner item when they hit none. A doc
+quote counts only in the snapshot's pages or the packet's `changelog.md`. A
+settled triage writes `settled.json` in its packet for
+`packets --verify --from`: the advance target, the sections it cleared and
+held, and the rows that sent each verify section; a ranged triage also
+prints the next range's `packets --triage --through`. `--hold` names the
+sections, or the file, the run leaves for the owner, and prints the
+commands again with them held. `settle` exits 0 when every row parsed,
 every quote was found, and nothing was discarded or left out; 1 otherwise.
 It applies nothing and commits nothing.
 ```
 
-- [ ] **Step 12: R11.5's first triage (DF2, D1)**
+- [ ] **Step 14: R11.5's first triage (DF2, D1)**
 
 **Edit** `specs/claude-code-drift-automation-spec.md` — replace:
 
@@ -513,7 +573,7 @@ with:
   leaves the block out still sends every candidate section to verify.
 ```
 
-- [ ] **Step 13: Sequencing item 3's first jobs (DF1, DF2)**
+- [ ] **Step 15: Sequencing item 3's first jobs (DF1, DF2)**
 
 **Edit** `specs/claude-code-drift-automation-spec.md` — replace:
 
@@ -530,7 +590,7 @@ with:
    (owner, plan 44, 2026-10-12).
 ```
 
-- [ ] **Step 14: Validation 3's triage bullet (DF2)**
+- [ ] **Step 16: Validation 3's triage bullet (DF2)**
 
 **Edit** `specs/claude-code-drift-automation-spec.md` — replace:
 
@@ -546,7 +606,7 @@ with:
      (owner, plan 44, 2026-10-12).
 ```
 
-- [ ] **Step 15: Lint and commit**
+- [ ] **Step 17: Lint and commit**
 
 Run `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-stage3 --python 3.13 python build/cc_guide/cli.py lint`. Expected: exit 0 (the spec sits outside the citation scan, and no label changed). Confirm the branch (Global Constraints), then:
 
@@ -1377,10 +1437,10 @@ git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-st
   - `packets.verify(world, out: Path, ids: list[str], settled: Path | None) -> list[Path]` (empty `ids` takes the settled triage's `verify` list);
   - `packets.audit(world, out: Path, group: str) -> Path`;
   - `packets.files(world, out: Path, paths: list[str]) -> list[Path]`;
-  - every writer refuses an `out` that resolves inside the repo: `<out>: inside the repo; packets hold docs text, so they live outside it`;
+  - `packets.checkout_of(path: Path) -> Path | None`, the nearest folder holding a `.git`; every writer refuses an `out` that resolves inside a checkout: `<out>: inside the checkout <root>; packets hold docs text, so they live outside every checkout`;
   - `index.json`, per mode: every packet has `mode`, `inputs`, `generated_at`, `head` and `quotes`;
-    - triage adds `newest`, `next_through`, `groups`, `blocks` (item, group, kind, ref, key_hash, candidates, and `lines`, the 1-based `[first, last]` spans of `blocks.md` holding its text), `releases` (label, date, pending, hits, bullets with item, hints and text), `held` and `owner`; its `quotes` are `guide` and `source`;
-    - verify adds `group`, `sections`, `lines`, `docs`, `advance_to`, `cleared`, `held` and `blocks`; its `quotes` are `guide` (`guide.md`), `changelog` (`changelog.md`) and `docs` (the snapshot directory);
+    - triage adds `newest`, `next_through`, `groups`, `blocks` (item, group, kind, ref, page, key_hash, candidates, and `lines`, the 1-based `[first, last]` spans of `blocks.md` holding its text), `releases` (label, date, pending, hits, bullets with item, hints and text), `held` and `owner`; its `quotes` are `guide` and `source`;
+    - verify adds `group`, `sections`, `lines`, `checked` (each section's checked release), `docs`, `advance_to`, `cleared`, `held` and `blocks`; its `quotes` are `guide` (`guide.md`), `changelog` (`changelog.md`) and `docs` (the snapshot directory);
     - audit adds `group`, `sections`, `lines`, `docs`, `releases`, `held` and `blocks`, with verify's `quotes`;
     - files adds `file`, `copy`, `stamp`, `sections`, `lines` and `changed`.
 
@@ -1472,8 +1532,8 @@ def test_a_changed_block_shows_its_text_and_a_diff_against_its_snapshot(world, t
     # lines: blocks.md's lines that hold the block's own text, the only lines
     # its source quote may come from.
     assert index(out)['blocks'] == [{'item': 'B1', 'group': 'alpha', 'kind': 'changed', 'ref': 'tools › Tools',
-                                     'key_hash': blocks.key_hash('Tools'), 'candidates': ['alpha.overview'],
-                                     'lines': [[9, 10], [15, 20]]}]
+                                     'page': 'tools', 'key_hash': blocks.key_hash('Tools'),
+                                     'candidates': ['alpha.overview'], 'lines': [[9, 10], [15, 20]]}]
     assert (out / 'blocks.md').read_text().split('\n') == [
         '# Block findings', '',
         '## B1 · changed · [alpha] tools › Tools', '',
@@ -1607,10 +1667,13 @@ def test_a_verify_packet_per_group_copies_the_groups_pages_to_the_head_snapshot(
     assert sorted(p.name for p in head.iterdir()) == ['env-vars.md', 'events.md', 'platform_pricing.md', 'tools.md']
     assert (head / 'tools.md').read_text() == DOCS['tools.md']
     i = index(made[0])
-    assert {k: i[k] for k in ('mode', 'group', 'sections', 'lines', 'docs', 'advance_to', 'cleared', 'held',
-                              'blocks')} == {
+    # checked: each section's checked release, so settle never advances one
+    # past the triage's target backwards (second review, finding 6).
+    assert {k: i[k] for k in ('mode', 'group', 'sections', 'lines', 'checked', 'docs', 'advance_to', 'cleared',
+                              'held', 'blocks')} == {
         'mode': 'verify', 'group': 'alpha', 'sections': ['alpha.overview'], 'lines': {'alpha.overview': [11, 15]},
-        'docs': str(head), 'advance_to': None, 'cleared': [], 'held': [], 'blocks': []}
+        'checked': {'alpha.overview': '2.1.900'}, 'docs': str(head), 'advance_to': None, 'cleared': [], 'held': [],
+        'blocks': []}
     # A doc quote comes from the snapshot's pages or the packet's changelog,
     # never from the report, the guide copy or the index.
     assert i['quotes'] == {'guide': ['guide.md'], 'changelog': ['changelog.md'], 'docs': [str(head)]}
@@ -1679,16 +1742,32 @@ def test_verify_needs_section_ids_or_a_triage_that_sent_some(world, tmp_path):
     assert str(err.value) == f"{tmp_path / 't' / packets.SETTLED}: its triage sent no section to verify"
 
 
-def test_a_packet_never_lands_inside_the_repo(world, tmp_path):
-    '''Review finding 10: packets hold docs text, so a destination inside
-    the checkout is refused, through a symlink too.'''
+def test_a_packet_never_lands_inside_a_checkout(world, tmp_path):
+    '''Review finding 10, and the second review's finding 4: packets hold
+    docs text, so a destination inside any checkout is refused (spec
+    Decision 10), through a symlink too: the repo's own, the main checkout
+    a worktree sits in, and a sibling worktree, whose `.git` is a file.'''
     repo, _ = world
     (tmp_path / 'link').symlink_to(repo)
     for out in (repo / 'packets', tmp_path / 'link' / 'packets'):
         with pytest.raises(state.SetupError) as err:
             packets.triage(load(world), out, None)
-        assert str(err.value) == f'{out}: inside the repo; packets hold docs text, so they live outside it'
+        assert str(err.value) == (f'{out}: inside the checkout {repo.resolve()}; packets hold docs text, so they '
+                                  'live outside every checkout')
     assert not (repo / 'packets').exists()
+    main = tmp_path / 'main'
+    (main / '.git').mkdir(parents=True)
+    worktree, sibling = main / 'wt' / 'one', main / 'wt' / 'two'
+    for root in (worktree, sibling):
+        root.mkdir(parents=True)
+        (root / '.git').write_text(f'gitdir: {main}/.git/worktrees/{root.name}\n')
+    for out, checkout in ((main / 'packets', main), (sibling / 'packets', sibling)):
+        with pytest.raises(state.SetupError) as err:
+            packets.new_dir(out, worktree)
+        assert str(err.value) == (f'{out}: inside the checkout {checkout.resolve()}; packets hold docs text, so '
+                                  'they live outside every checkout')
+        assert not out.exists()
+    assert packets.new_dir(tmp_path / 'cache' / 'packets', worktree).is_dir()
 
 
 def test_an_audit_packet_holds_every_section_its_untriaged_releases_and_its_blocks(world, tmp_path):
@@ -1781,7 +1860,7 @@ verifier answers for and where each kind of quote is checked; `settle`
 reads it back beside the verifier's report.md. Its Markdown files hold what
 the verifier reads. The guide is copied whole, so a line number in a packet
 is a line number in the guide. Packets hold docs text, so they live under
-the cache, never in the repo.
+the cache, never in a checkout.
 
 The inputs are check --worktree's: the working tree, and the docs and
 snapshots check left in the cache. Packets never fetch: run check first.
@@ -1858,12 +1937,22 @@ def fenced(text: str) -> list[str]:
     return [fence, *text.split('\n'), fence]
 
 
+def checkout_of(path: Path) -> Path | None:
+    '''The checkout holding path: the nearest folder, path itself included,
+    with a `.git`, a directory or a linked worktree's file.'''
+    return next((p for p in (path, *path.parents) if (p / '.git').exists()), None)
+
+
 def new_dir(out: Path, repo: Path) -> Path:
-    '''An empty directory for a run, outside the repo, since packets hold
-    docs text. An existing one must be empty, so a report from an earlier
-    run is never settled against a new packet.'''
-    if out.resolve().is_relative_to(repo.resolve()):
-        raise SetupError(f'{out}: inside the repo; packets hold docs text, so they live outside it')
+    '''An empty directory for a run, outside every checkout (spec Decision
+    10), since packets hold docs text: the repo's, the main checkout a
+    worktree sits in, and any other. An existing one must be empty, so a
+    report from an earlier run is never settled against a new packet.'''
+    where = out.resolve()
+    inside = checkout_of(where) or (repo.resolve() if where.is_relative_to(repo.resolve()) else None)
+    if inside is not None:
+        raise SetupError(f'{out}: inside the checkout {inside}; packets hold docs text, so they live outside '
+                         'every checkout')
     if out.exists() and (not out.is_dir() or any(out.iterdir())):
         raise SetupError(f'{out}: not an empty directory; packets never write over an earlier packet')
     out.mkdir(parents=True, exist_ok=True)
@@ -1918,8 +2007,8 @@ def block_item(world: World, item: str, f: Finding) -> tuple[dict, list[str]]:
         show(f'Baselined text, from the {release} snapshot (the block has left the page):', then)
     elif f.kind != 'new':
         lines += ['No cached snapshot holds its baselined text.', '']
-    entry = {'item': item, 'group': f.group, 'kind': f.kind, 'ref': f.ref(), 'key_hash': f.key_hash,
-             'candidates': f.candidates, 'lines': spans}
+    entry = {'item': item, 'group': f.group, 'kind': f.kind, 'ref': f.ref(), 'page': f.page,
+             'key_hash': f.key_hash, 'candidates': f.candidates, 'lines': spans}
     return entry, lines
 
 
@@ -2036,7 +2125,8 @@ def verify(world: World, out: Path, ids: list[str], settled: Path | None) -> lis
     finding of the group, the changelog, and the group's pages copied to the
     head release's snapshot. From a settled triage, `advance_to`, `cleared`
     and `held` carry over for settle's bookkeeping, and no IDs means the
-    sections it sent on.'''
+    sections it sent on. `checked` names each section's checked release, so
+    settle never advances one backwards.'''
     if settled and not settled.is_file():
         raise SetupError(f'{settled}: not found; run settle on the triage packet first')
     triaged = json.loads(settled.read_text(encoding='utf-8')) if settled else {}
@@ -2060,7 +2150,8 @@ def verify(world: World, out: Path, ids: list[str], settled: Path | None) -> lis
         entries, block_lines = block_items(world, found)
         lines, section_md = section_list(world, sids, {sid: triage_notes(triaged, sid) for sid in sids})
         index = header(world, 'verify') | {
-            'group': gid, 'sections': sids, 'lines': lines, 'docs': str(docs),
+            'group': gid, 'sections': sids, 'lines': lines,
+            'checked': {sid: world.state['sections'][sid]['checked']['release'] for sid in sids}, 'docs': str(docs),
             'advance_to': triaged.get('advance_to'), 'cleared': triaged.get('cleared', []),
             'held': [sid for sid in world.manifest.groups[gid].sections if sid in holds],
             'quotes': {'guide': [GUIDE], 'changelog': [CHANGELOG], 'docs': [str(docs)]}, 'blocks': entries,
@@ -2158,7 +2249,7 @@ with:
       takes the sections the settled triage --from names sent on. --audit
       with no group takes the due one, and refuses when none is due. --out
       defaults to a new directory under the cache's packets/, and is refused
-      inside the repo. Exit 0, or 2 on an error.
+      inside any checkout. Exit 0, or 2 on an error.
   quotes --in DIR
 ```
 
@@ -2280,7 +2371,7 @@ git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-st
 - Modify: `build/cc_guide/cli.py` (module docstring; imports; `parser`; a new `run_settle`; `main`)
 
 **Interfaces:**
-- Consumes: Task 2's `quotes.QuoteFiles`; Task 5's file-name constants, `packets.section_lines` and `index.json` keys; `lint.CLI`; `guide.sections`; `docs.version_key`.
+- Consumes: Task 2's `quotes.QuoteFiles`; Task 5's file-name constants, `packets.section_lines` and `index.json` keys; `lint.CLI`; `guide.sections`; `blocks.fenced_lines`; `docs.version_key`, `docs.LABEL_RE` and `docs.CHANGELOG`.
 - Produces (Task 7 reads these):
   - the seven report formats `settle.TRIAGE_ROW`, `COVERAGE_ROW`, `VERIFY_ROW`, `CHANGELOG_ROW`, `OMISSION_ROW`, `FILES_ROW` and `NONE_ROW` (`section | none`), and `settle.FORMATS`, the tuple of all seven;
   - each row's quote fields by index, `settle.TRIAGE_QUOTES` `(4, 5)`, `VERIFY_QUOTES` `(4,)` and `FILES_QUOTES` `(3,)`;
@@ -2293,15 +2384,17 @@ git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-st
 
 **Create** `build/cc_guide/test_settle.py`:
 
-```python
+````python
 '''Tests for settle.py and `cli.py settle`: the report grammar, triage's
 completeness and fail-safe rules, the discard rule for verify, audit and
 files, and the bookkeeping each prints (drift spec R8.4-R8.8, R11.5).'''
 import json
+import shlex
 from datetime import datetime, timezone
 
 import pytest
 
+import baseline
 import cli
 import packets
 import settle
@@ -2564,6 +2657,19 @@ def test_a_source_quote_counts_only_within_its_own_item(world, tmp_path):
     assert "UNSURE or TOUCHES beta.overview: 2.1.902#1: its NOISE row's source quote was not found" in result.lines
 
 
+def test_a_noise_rows_guide_quote_is_checked_when_given(world, tmp_path):
+    '''Second review, finding 3: a NOISE row may leave its guide quote out,
+    but one it gives must be found, or the row becomes UNSURE.'''
+    latest(world, {'tools.md': DOCS['tools.md'].replace('runs alpha jobs', 'runs alpha batches')})
+    out = triage(world, tmp_path)
+    noise = 'B1 | NOISE | alpha.overview | 14 | "guide fiction" | "runs alpha batches" | harmless'
+    result = settled(out, noise, '2.1.901 | none', '2.1.902 | none')
+    assert f'  quote not found, NOISE becomes UNSURE: {noise}' in result.lines
+    assert "UNSURE or TOUCHES alpha.overview: B1: its NOISE row's guide quote was not found" in result.lines
+    assert not any('rebaseline' in line for line in result.lines)
+    assert not result.clean
+
+
 def test_a_noise_row_whose_why_is_a_dash_does_not_parse(world, tmp_path):
     latest(world, {'tools.md': DOCS['tools.md'].replace('runs alpha jobs', 'runs alpha batches')})
     out = triage(world, tmp_path)
@@ -2647,8 +2753,8 @@ def test_a_correction_next_to_a_todo_owner_or_outside_the_packet_is_the_owners_c
     assert result.lines[3:6] == [
         "owner's call, never applied:",
         '  L19 alpha.reference STALE (next to a TODO(owner), report-only): Set ALPHA_ENV → Set ALPHA_ENV twice.',
-        "  L14 alpha.overview STALE (outside this packet's sections): Alpha uses ALPHA_TOOL → "
-        'Alpha batches with `ALPHA_TOOL`.']
+        "  L14 alpha.overview STALE (outside this packet's sections, so it holds nothing; "
+        '/cc-guide verify alpha.overview reviews it): Alpha uses ALPHA_TOOL → Alpha batches with `ALPHA_TOOL`.']
 
 
 def test_a_todo_owner_reaches_through_the_first_list_item_after_it(world, tmp_path):
@@ -2728,7 +2834,10 @@ def test_a_dash_is_no_proposed_wording(world, tmp_path):
 def test_a_broken_b_or_c_row_is_unparseable_and_holds_nothing(world, tmp_path):
     '''Review finding 12.'''
     out = review(world, tmp_path)
-    rows = ['B | 2.1.297', 'B | 2.1.901 | adds ALPHA_ENV | changelog', 'C | -']
+    rows = ['B | 2.1.297', 'B | 2.1.901 | adds ALPHA_ENV | changelog', 'C | -',
+            # Second review, finding 9: only a release label and a changelog.md line.
+            'B | 2.1.901 | adds ALPHA_ENV | report.md:1', 'B | banana | adds ALPHA_ENV | changelog.md:14',
+            'B | 2.1.901 | adds ALPHA_ENV | changelog.md:0']
     result = settled(out, GOOD, 'alpha.reference | none', *rows)
     assert [line for line in result.lines if line.startswith('  unparseable')] == [
         f'  unparseable: {r}' for r in rows]
@@ -2760,16 +2869,35 @@ def todo_guide(out, lines):
 
 
 def test_a_correction_left_for_the_owner_holds_its_section(world, tmp_path):
-    '''Review finding 7: a correction next to a TODO(owner), or outside the
-    packet's sections, is the owner's call, so it holds its section: no
-    advance, and no rebaseline of a block it is a candidate of.'''
+    '''Review finding 7: a correction next to a TODO(owner) is the owner's
+    call, so it holds its section: no advance, and no rebaseline of a block
+    it is a candidate of. One outside the packet's sections holds nothing
+    (second review, finding 1): the packet neither reviews nor advances its
+    section, so the block its triage cleared is rebaselined.'''
     saved = triage_file(tmp_path, verify=['alpha.reference'], cleared=['alpha.overview'])
     out = review(world, tmp_path, sids=('alpha.reference',), settled_triage=saved)
     todo_guide(out, ['<!-- TODO(owner): decide the alpha stance -->', '- Set `ALPHA_ENV`.', ''])
     near = 'L19 | Set ALPHA_ENV | STALE | tools.md:5 | "runs alpha batches" | Set ALPHA_ENV twice.'
     result = settled(out, near, GOOD)
-    assert 'held, neither advanced nor audited: alpha.overview alpha.reference' in result.lines
-    assert [line for line in result.lines if 'baseline' in line] == [f'  {CLI} baseline stamp']
+    assert 'held, neither advanced nor audited: alpha.reference' in result.lines
+    assert [line for line in result.lines if 'baseline' in line] == [
+        f"  {CLI} baseline rebaseline alpha 'tools › Tools'", f'  {CLI} baseline stamp']
+
+
+def test_a_correction_outside_the_packet_never_claims_a_hold_its_triage_already_advanced(world, tmp_path):
+    '''Second review, finding 1: the triage's commands advanced the sections
+    it cleared before this verify ran, so a correction in one of them is the
+    owner's call with a verify of its own, never a hold.'''
+    out = triage(world, tmp_path)
+    settled(out, '2.1.901 | alpha.overview', '2.1.902 | none')
+    v = review(world, tmp_path, sids=('alpha.overview',), settled_triage=out / packets.SETTLED)
+    wrong = 'L19 | Set ALPHA_ENV | WRONG | tools.md:5 | "runs alpha batches" | Set it twice.'
+    result = settled(v, 'L14 | Alpha uses ALPHA_TOOL | CONFIRMED | tools.md:5 | "runs alpha batches" | -', wrong)
+    assert ("  L19 alpha.reference WRONG (outside this packet's sections, so it holds nothing; "
+            '/cc-guide verify alpha.reference reviews it): Set ALPHA_ENV → Set it twice.') in result.lines
+    assert not any(line.startswith('held') for line in result.lines)
+    assert f'  {CLI} baseline advance alpha.overview --to 2.1.902' in result.lines
+    assert result.clean
 
 
 def test_a_todo_owner_reach_covers_its_first_items_continuation_lines(world, tmp_path):
@@ -2785,6 +2913,21 @@ def test_a_todo_owner_reach_covers_its_first_items_continuation_lines(world, tmp
         '  L21 alpha.reference STALE: Run alpha batches → Run them twice. (tools.md:5: "runs alpha batches")',
         "owner's call, never applied:",
         '  L20 alpha.reference STALE (next to a TODO(owner), report-only): ALPHA_ENV wraps → Set it once.']
+
+
+def test_a_fenced_example_never_ends_a_todo_reach(world, tmp_path):
+    '''Second review, finding 7: a list-like line inside fenced code is no
+    list item, so the reach runs on to the first real one.'''
+    out = review(world, tmp_path, sids=('alpha.reference',))
+    todo_guide(out, ['<!-- TODO(owner): decide the default in the first bullet -->', '```text',
+                     '- illustrative syntax', '```', '', '- Alpha default is old.',
+                     "  This continuation needs the owner's decision."])
+    assert settle.todo_reaches((out / packets.GUIDE).read_text()) == [(18, 24)]
+    row = 'L24 | the owner decides | STALE | tools.md:5 | "runs alpha batches" | Decide it.'
+    result = settled(out, row)
+    assert ('  L24 alpha.reference STALE (next to a TODO(owner), report-only): the owner decides → Decide it.'
+            in result.lines)
+    assert 'held, neither advanced nor audited: alpha.reference' in result.lines
 
 
 def test_hold_settles_again_with_a_declined_correction_held_and_keeps_its_accept(world, tmp_path):
@@ -2815,6 +2958,43 @@ def test_a_verify_packet_holds_what_its_triage_held(world, tmp_path):
     assert not any('rebaseline' in line for line in result.lines)
 
 
+def test_a_page_with_an_unresolved_changed_block_is_never_rebaselined(world, tmp_path):
+    '''Second review, finding 5: baseline rebaselines a page's changed
+    blocks together, so while one is held, settle lists none of that page's,
+    and every command it does print, baseline runs.'''
+    tools = DOCS['tools.md'].replace('runs alpha jobs', 'runs alpha batches').replace(
+        '| `--fast` | Runs fast. |', '| `--fast` | Runs fast with `ALPHA_ENV`. |')
+    latest(world, {'tools.md': tools})
+    w = load(world)
+    out = packets.verify(w, tmp_path / 'v', ['alpha.overview', 'alpha.reference'], triage_file(tmp_path))[0]
+    (out / packets.REPORT).write_text('L14 | Alpha uses ALPHA_TOOL | CONFIRMED | tools.md:5 | "runs alpha batches" | -'
+                                      '\nalpha.reference | none\n')
+    assert not any('rebaseline' in line for line in settle.settle(out, hold=['alpha.overview']).lines)
+    whole = [line for line in settle.settle(out).lines if 'rebaseline' in line]
+    assert whole == [f"  {CLI} baseline rebaseline alpha 'tools › Tools' 'tools › Tools › Options › `--fast`'"]
+    refs = shlex.split(whole[0])[shlex.split(whole[0]).index('rebaseline') + 2:]
+    new, _, _ = baseline.rebaseline(w.state, w.manifest, w.guide, 'alpha', refs, state.latest_docs(world[1]),
+                                    '2.1.902')  # baseline refuses a page listed in part
+    assert new != w.state
+
+
+def test_verify_never_advances_a_section_past_its_triages_target_backwards(world, tmp_path):
+    '''Second review, finding 6: a section checked past the triage's capped
+    target is verified but not advanced.'''
+    repo = world[0]
+    baselined = state.parse_baseline((repo / state.BASELINE).read_text())
+    baselined['sections']['alpha.overview']['checked'] = {'release': '2.1.902', 'date': '2026-10-04'}
+    (repo / state.BASELINE).write_text(state.dump_baseline(baselined))
+    latest(world, {'tools.md': DOCS['tools.md'].replace('runs alpha jobs', 'runs alpha batches')})
+    out = triage(world, tmp_path)
+    settled(out, 'B1 | TOUCHES | alpha.overview | 14 | "Alpha uses `ALPHA_TOOL`" | "runs alpha batches" | moved',
+            '2.1.902#2 | broken', '2.1.901 | none', '2.1.902 | none')
+    v = packets.verify(load(world), tmp_path / 'v', [], out / packets.SETTLED)[0]
+    result = settled(v, 'L14 | Alpha uses ALPHA_TOOL | CONFIRMED | tools.md:5 | "runs alpha batches" | -')
+    assert not any(' advance ' in line for line in result.lines)
+    assert f"  {CLI} baseline rebaseline alpha 'tools › Tools'" in result.lines
+
+
 def test_an_audit_ends_with_audited_unless_a_section_is_held(world, tmp_path):
     latest(world, {'tools.md': DOCS['tools.md'].replace('runs alpha jobs', 'runs alpha batches')})
     out = packets.audit(load(world), tmp_path / 'a', 'alpha')
@@ -2843,7 +3023,8 @@ def test_a_files_report_lists_contradictions_and_cites_the_file(world, tmp_path)
         "owner's call, never applied:",
         '  hooks/gate.sh:2 (alpha.overview, not covered; a coverage gap?): the launchd PATH',
         'unverified, discarded:',
-        'then, in this order (R8.8), once every contradiction is fixed in hooks/gate.sh; for one you leave for the '
+        'then, in this order (R8.8), once every contradiction is fixed in hooks/gate.sh, unless '
+        'build/cc_guide/conformance.toml records it as a deviation, which stays as it is; for one you leave for the '
         'owner, settle again with --hold hooks/gate.sh, which skips its cite:',
         f'  {CLI} baseline cite hooks/gate.sh', f'  {CLI} lint', f'  {CONFORMANCE}']
     assert result.clean
@@ -2864,6 +3045,17 @@ def test_a_discarded_contradiction_holds_the_file_uncited(world, tmp_path):
             'a cited section was left out') in result.lines
     assert not any('cite' in line for line in result.lines if line.startswith('  '))
     assert '  unparseable: other/file.sh:1 | x | alpha.overview | "## 1. Alpha" | consistent' in result.lines
+
+
+def test_a_files_row_on_a_section_the_file_does_not_cite_holds_it(world, tmp_path):
+    '''Second review, finding 8: a files review covers the cited sections
+    only, so a row naming another section does not parse.'''
+    out = packets.files(load(world), tmp_path / 'f', [])[0]
+    beta = 'hooks/gate.sh:1 | Beta contradicts | beta.reference | "`BetaEvent` fires." | contradicts'
+    result = settled(out, 'alpha.overview | none', beta)
+    assert f'  unparseable: {beta}' in result.lines
+    assert 'held, not cited: hooks/gate.sh: a discarded or unparseable row might have changed it' in result.lines
+    assert not any('cite' in line for line in result.lines if line.startswith('  '))
 
 
 @pytest.mark.parametrize('rows', [(), ('No report could be produced.',)])
@@ -2908,7 +3100,7 @@ def test_the_cli_exits_on_the_report_and_two_without_one(world, tmp_path, capsys
     capsys.readouterr()
     assert cli.main(['settle', str(out), '--hold', 'alpha.overview']) == 2
     assert capsys.readouterr() == ('', 'cc-guide: --hold goes with a verify, audit or files packet\n')
-```
+````
 
 - [ ] **Step 2: Run them to verify they fail**
 
@@ -2939,7 +3131,10 @@ triage's settled.json in the packet; `baseline` records the outcome.
   held, neither advanced nor audited, when it is left out, when a discarded
   row would have changed it, when a correction to it is left for the owner,
   when its triage held it, or when `--hold` names it; a file is held, not
-  cited, the same way. A hold keeps `accept`, for the text the run changed.
+  cited, the same way. A row outside the packet's sections holds nothing:
+  the run neither reviews nor advances that section, and its triage may
+  have advanced it already. A hold keeps `accept`, for the text the run
+  changed.
 
 A row's fields are split on `|`. A quote field that opens with `"` runs to
 the first `"` followed by `|` or the end of the line, so a quote may hold `|`
@@ -2955,7 +3150,8 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import NamedTuple
 
-from docs import version_key
+from blocks import fenced_lines
+from docs import CHANGELOG, LABEL_RE, version_key
 from guide import sections
 from lint import CLI
 from packets import BLOCKS, GUIDE, INDEX, REPORT, SETTLED, section_lines
@@ -2991,6 +3187,7 @@ CLOSE_QUOTE_RE = re.compile(r'"[ \t]*(?:\||$)')
 SEPARATOR_RE = re.compile(r'^[\s|:-]+$')
 LINE_REF_RE = re.compile(r'L(\d+)')
 DOC_REF_RE = re.compile(r'(.+):(\d+)')
+CHANGELOG_REF_RE = re.compile(re.escape(CHANGELOG) + r':[1-9][0-9]*')
 HEADERS = ('item', 'release', 'l<line>', 'file:line', 'file line', 'section')
 LEFT_OUT = 'left out (no surviving row, no none line)'
 
@@ -3168,10 +3365,13 @@ class Tally:
         guide_ok = self.files.find_any(self.p.index['quotes']['guide'], unquote(row[4])) is not None
         source_ok = self.source_found(item, unquote(row[5]))
         if verdict == 'NOISE':
-            if not source_ok:  # never clears its item: UNSURE for its section and every candidate or hint
+            # A NOISE row's failed quote, its source quote or a guide quote it
+            # gives, never clears its item: UNSURE for its section and every
+            # candidate or hint.
+            if not source_ok or (unquote(row[4]) and not guide_ok):
                 self.failed += 1
                 self.notes.append(f'quote not found, NOISE becomes UNSURE: {line}')
-                why = "its NOISE row's source quote was not found"
+                why = f"its NOISE row's {'guide' if source_ok else 'source'} quote was not found"
                 if sid:
                     self.flag(sid, f'{item}: {why}', f'{self.named(item)}: {why}: {line}')
                 if item in self.blocks:
@@ -3272,20 +3472,23 @@ def section_at(p: Packet, line: int) -> str | None:
 def todo_reaches(guide: str) -> list[tuple[int, int]]:
     '''R8.5: each TODO(owner)'s reach, 1-based and inclusive. The guide's
     one TODO names "the first bullet below", so a TODO reaches from its own
-    line through the first list item after it, with its continuation lines
-    and nested content, or to the end of its section when no list item
-    follows; never past its section.'''
+    line through the first list item after it outside fenced code, with its
+    continuation lines and nested content, or to the end of its section when
+    no list item follows; never past its section. A TODO in fenced code is
+    an example, not one.'''
     lines = guide.split('\n')
+    fenced = fenced_lines(lines)  # 0-based
     ends = [last for first, last in section_lines(guide).values()]
     starts = [first for first, last in section_lines(guide).values()]
     out = []
     for n, text in enumerate(lines, start=1):
-        if TODO not in text:
+        if TODO not in text or n - 1 in fenced:
             continue
         end = next((e for s, e in zip(starts, ends) if s <= n <= e), None)
         if end is None:
             continue
-        item = next((m for m in range(n + 1, end + 1) if LIST_ITEM_RE.match(lines[m - 1])), None)
+        item = next((m for m in range(n + 1, end + 1)
+                     if m - 1 not in fenced and LIST_ITEM_RE.match(lines[m - 1])), None)
         if item is None:
             out.append((n, end))
             continue
@@ -3327,11 +3530,20 @@ def settle_review(p: Packet, hold: tuple[str, ...]) -> Settled:
     held = set(index.get('held', [])) | set(hold)
     answered: set[str] = set()
     whole_held = False
+
+    def hold_inside(sid: str) -> None:
+        '''A row holds its section only inside the packet's sections: the run
+        neither reviews nor advances any other, and its triage may have
+        advanced it already.'''
+        if sid in scope:
+            held.add(sid)
+
     for line in report_lines(p.report):
         first = (split_row(line, 2) or [''])[0]
         if first == 'B':
             row = split_row(line, 4)
-            if row is None or not (given(row[1]) and given(row[2]) and DOC_REF_RE.fullmatch(row[3])):
+            if row is None or not (LABEL_RE.fullmatch(given(row[1])) and given(row[2])
+                                   and CHANGELOG_REF_RE.fullmatch(row[3])):
                 unverified.append(f'unparseable: {line}')
             else:
                 changelog.append(' | '.join(row[1:]))
@@ -3358,43 +3570,49 @@ def settle_review(p: Packet, hold: tuple[str, ...]) -> Settled:
         sid = section_at(p, n) if m else None
         if row is None or verdict not in VERIFY_VERDICTS or sid is None:
             unverified.append(f'unparseable: {line}')
-            if sid is not None:
-                held.add(sid)
-            else:
+            if sid is None:
                 whole_held = True
+            else:
+                hold_inside(sid)
             continue
         quote, wording = unquote(row[4]), given(row[5])
         if (quote or verdict not in ('NOT FOUND', 'JUDGMENT')) and not found(row[3], quote):
             unverified.append(f'quote not found, discarded: {line}')
             if verdict in (*CORRECTIONS, MECHANISM):
-                held.add(sid)
+                hold_inside(sid)
             continue
         if verdict in CORRECTIONS and not wording:
             unverified.append(f'no proposed wording, discarded: {line}')
-            held.add(sid)
+            hold_inside(sid)
             continue
         answered.add(sid)
         where = f'L{n} {sid} {verdict}'
         near = any(a <= n <= b for a, b in reaches)
         if verdict == 'CONFIRMED':
             confirmed += 1
-        elif verdict in CORRECTIONS and sid in scope and not near:
+        elif verdict in CORRECTIONS and sid not in scope:
+            owner.append(f"{where} (outside this packet's sections, so it holds nothing; /cc-guide verify {sid} "
+                         f'reviews it): {row[1]} → {wording}')
+        elif verdict in CORRECTIONS and not near:
             corrections.append((sid, f'{where}: {row[1]} → {wording} ({row[3]}: "{quote}")'))
         elif verdict in CORRECTIONS:  # listed for the owner, so it holds its section
-            why = 'next to a TODO(owner), report-only' if sid in scope else 'outside this packet\'s sections'
-            owner.append(f'{where} ({why}): {row[1]} → {wording}')
+            owner.append(f'{where} (next to a TODO(owner), report-only): {row[1]} → {wording}')
             held.add(sid)
         else:
             owner.append(f'{where}: {row[1]}' + (f' ({row[3]}: "{quote}")' if quote else ''))
             if verdict == MECHANISM:  # a judgment whose mechanism moved waits for the owner
-                held.add(sid)
+                hold_inside(sid)
     if whole_held:
         held |= set(scope)
     left = [sid for sid in scope if sid not in answered]
     held |= set(left)
     fixed = list(dict.fromkeys(sid for sid, _ in corrections))
     resolved = {sid for sid in [*scope, *cleared] if sid not in held}
-    refs = [b['ref'] for b in index['blocks'] if set(b['candidates']) <= resolved]
+    ready = [b for b in index['blocks'] if set(b['candidates']) <= resolved]
+    # baseline rebaselines a page's changed and missing blocks together, so a
+    # page that keeps one unresolved waits whole (R7)
+    waiting = {b['page'] for b in index['blocks'] if b['kind'] != 'new' and b not in ready}
+    refs = [b['ref'] for b in ready if b['page'] not in waiting]
     mode = index['mode']
     out = [f"cc-guide settle: {mode} {index['group']}, {p.folder}",
            f'report: {confirmed} confirmed, {len(corrections)} correction(s), {len(owner)} owner\'s call, '
@@ -3405,7 +3623,7 @@ def settle_review(p: Packet, hold: tuple[str, ...]) -> Settled:
     out += ['changelog items (B):'] + [f'  {c}' for c in changelog]
     if left:
         out.append(f"{LEFT_OUT}, so held: {' '.join(left)}")
-    shown = [sid for sid in p.ids if sid in held and (sid in scope or sid in cleared)]
+    shown = [sid for sid in scope if sid in held]
     if shown:
         out.append(f"held, neither advanced nor audited: {' '.join(shown)}")
     steps = []
@@ -3413,11 +3631,14 @@ def settle_review(p: Packet, hold: tuple[str, ...]) -> Settled:
         steps.append(command('baseline', 'accept', *fixed, '--substantive') + '   # only the sections you changed')
     if refs:
         steps.append(command('baseline', 'rebaseline', index['group'], *refs))
-    advance = [sid for sid in scope if sid not in held]
+    # a section checked past the triage's target is not advanced backwards
+    target, checked = index.get('advance_to'), index.get('checked', {})
+    advance = [sid for sid in scope if sid not in held
+               and not (target and sid in checked and version_key(checked[sid]) > version_key(target))]
     if mode == 'audit' and not any(sid in held for sid in scope):
         steps.append(command('baseline', 'audited', index['group']))
-    elif mode == 'verify' and index.get('advance_to') and advance:
-        steps.append(command('baseline', 'advance', *advance, '--to', index['advance_to']))
+    elif mode == 'verify' and target and advance:
+        steps.append(command('baseline', 'advance', *advance, '--to', target))
     steps += [command('baseline', 'stamp'), command('lint'), CONFORMANCE]
     out.append('then, in this order (R8.8), once every correction is applied; for one you leave for the owner, '
                'settle again with --hold <section>, which holds the section and keeps its accept:')
@@ -3450,7 +3671,7 @@ def settle_files(p: Packet, hold: tuple[str, ...]) -> Settled:
         row = split_row(line, 5, FILES_QUOTES)
         ref = DOC_REF_RE.fullmatch(row[0]) if row else None
         verdict = row[4].strip().lower() if row else ''
-        if ref is None or ref.group(1) != path or verdict not in FILES_VERDICTS or row[2] not in p.ids:
+        if ref is None or ref.group(1) != path or verdict not in FILES_VERDICTS or row[2] not in index['sections']:
             unverified.append(f'unparseable: {line}')
             discarded = True
             continue
@@ -3482,8 +3703,9 @@ def settle_files(p: Packet, hold: tuple[str, ...]) -> Settled:
         out.append(f"held, not cited: {path}: {'; '.join(reasons)}")
     else:
         steps.insert(0, command('baseline', 'cite', path))
-    out.append(f'then, in this order (R8.8), once every contradiction is fixed in {path}; for one you leave for '
-               f'the owner, settle again with --hold {path}, which skips its cite:')
+    out.append(f'then, in this order (R8.8), once every contradiction is fixed in {path}, unless '
+               'build/cc_guide/conformance.toml records it as a deviation, which stays as it is; for one you leave '
+               f'for the owner, settle again with --hold {path}, which skips its cite:')
     out += [f'  {s}' for s in steps]
     return Settled(out, not unverified and not left, None)
 
@@ -3605,7 +3827,7 @@ with:
 - [ ] **Step 5: Run the suite to verify it passes**
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-stage3/build/cc_guide --python 3.13 --with pytest python -m pytest -q`
-Expected: all pass, +93 over the baseline.
+Expected: all pass, +99 over the baseline.
 
 - [ ] **Step 6: Commit**
 
@@ -3680,6 +3902,15 @@ def test_the_verifier_runs_on_sonnet_with_read_only_search_tools_and_no_claude_m
             'omitClaudeMd: true'} <= set(frontmatter(AGENT))
 
 
+def test_the_verifier_reports_a_todo_reach_with_its_usual_verdict():
+    '''Second review, finding 2: settle lists a correction within a
+    TODO(owner)'s reach for the owner and holds its section, so the verifier
+    keeps its STALE, WRONG or PARTIAL there rather than turning it into a
+    JUDGMENT that holds nothing.'''
+    (rule,) = [line for line in (REPO / AGENT).read_text(encoding='utf-8').split('\n') if 'TODO(owner)' in line]
+    assert 'usual verdict' in rule and 'JUDGMENT' not in rule
+
+
 @pytest.mark.parametrize('form', settle.FORMATS)
 def test_the_skill_and_the_verifier_state_the_report_formats_settle_parses(form):
     for path in (AGENT, FORMATS):
@@ -3689,7 +3920,7 @@ def test_the_skill_and_the_verifier_state_the_report_formats_settle_parses(form)
 - [ ] **Step 2: Run them to verify they fail**
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-stage3/build/cc_guide --python 3.13 --with pytest python -m pytest -q test_skill_files.py`
-Expected: `11 failed`, every one a `FileNotFoundError` for `.claude/agents/cc-guide-verifier.md` (9, seven of them the format cases) or `.claude/skills/cc-guide/SKILL.md` (2).
+Expected: `12 failed`, every one a `FileNotFoundError` for `.claude/agents/cc-guide-verifier.md` (10, seven of them the format cases) or `.claude/skills/cc-guide/SKILL.md` (2).
 
 - [ ] **Step 3: Write the verifier**
 
@@ -3718,7 +3949,7 @@ The dispatch names your mode and the packet directory. Read the packet's `index.
 - Proposed wording is your own paraphrase, never a sentence from the docs. `-` proposes nothing.
 - Absence of evidence is NOT FOUND, never WRONG.
 - A claim is checkable when a doc page could confirm or refute it: names, defaults, numbers, behaviour, precedence, syntax. A recommendation is JUDGMENT and gets no proposed wording. When a judgment rests on a mechanism, check the mechanism; if it moved, report `JUDGMENT (mechanism STALE)` with its quote.
-- A `TODO(owner)` is report-only from its own line through the first list item after it, that item's continuation lines included, or to the end of its section when no list item follows: report what you find there as JUDGMENT.
+- A `TODO(owner)` is report-only from its own line through the first list item after it outside fenced code, that item's continuation lines included, or to the end of its section when no list item follows: report what you find there with its usual verdict, and settle lists it for the owner.
 
 ## The report
 
@@ -3853,7 +4084,7 @@ As verify, from `cli.py check --worktree` and then `cli.py packets --audit [<gro
 
 ## Packets
 
-A packet is a directory under `~/.cache/agent-skills/cc-guide/packets/`, by default `<YYYYMMDDTHHMMSS>-<mode>/`; verify and files runs hold one packet per group or file in it. `packets` refuses a directory inside the repo, or one that is not empty. Every packet holds:
+A packet is a directory under `~/.cache/agent-skills/cc-guide/packets/`, by default `<YYYYMMDDTHHMMSS>-<mode>/`; verify and files runs hold one packet per group or file in it. `packets` refuses a directory inside any checkout, or one that is not empty. Every packet holds:
 
 - `index.json`: `mode`, `inputs` (the working tree), `generated_at`, `head` (the changelog head the docs were fetched at), the items the verifier answers for, and `quotes`, the files each kind of quote is re-grepped in.
 - `guide.md`: the guide, copied whole, so its line numbers are the guide's.
@@ -3862,8 +4093,8 @@ Then, by mode:
 
 | Mode | Files | `index.json` also names |
 |---|---|---|
-| triage | `blocks.md` (each changed, missing or new docs block, B1, B2, ...: its current text, and its baselined text from the page's snapshot, as a diff or whole), `releases.md` (every bullet of each untriaged release, `<release>#<n>`, with term hints) | `blocks` (item, group, kind, ref, key hash, candidate sections, and `lines`, the lines of `blocks.md` that hold its text), `releases` (label, date, the sections each is untriaged for, hints, hits), `newest`, `next_through`, `groups`, `held`, `owner` |
-| verify | per group: `sections.md` (the sections' guide lines and the triage rows that sent them), `blocks.md`, `changelog.md` | `group`, `sections`, `lines`, `docs` (the head release's snapshot, where the group's pages were copied), `advance_to`, `cleared` and `held` (from `--from`, and the sections a missing page holds), `blocks` |
+| triage | `blocks.md` (each changed, missing or new docs block, B1, B2, ...: its current text, and its baselined text from the page's snapshot, as a diff or whole), `releases.md` (every bullet of each untriaged release, `<release>#<n>`, with term hints) | `blocks` (item, group, kind, ref, page, key hash, candidate sections, and `lines`, the lines of `blocks.md` that hold its text), `releases` (label, date, the sections each is untriaged for, hints, hits), `newest`, `next_through`, `groups`, `held`, `owner` |
+| verify | per group: `sections.md` (the sections' guide lines and the triage rows that sent them), `blocks.md`, `changelog.md` | `group`, `sections`, `lines`, `checked` (each section's checked release), `docs` (the head release's snapshot, where the group's pages were copied), `advance_to`, `cleared` and `held` (from `--from`, and the sections a missing page holds), `blocks` |
 | audit | `sections.md`, `blocks.md`, `releases.md` (the releases untriaged for the group), `changelog.md` | `group`, `sections`, `lines`, `docs`, `releases`, `held`, `blocks` |
 | files | per file: `cited_<name>` (the file's copy), `sections.md` (its cited sections' text, each marked when it changed after the file's stamp) | `file`, `copy`, `stamp`, `sections`, `lines`, `changed` |
 
@@ -3892,10 +4123,10 @@ Files, one row per statement that rests on a cited section, and a none line for 
 
 ## What settle does with a report
 
-- **Triage fails safe.** A block with no row becomes UNSURE for each of its candidate sections. A release with no coverage line becomes UNSURE for each section its bullets' terms hit, or an owner item when they hit none. A row whose quote is not found becomes UNSURE, handled as TOUCHES; a source quote counts only within its own item's text, and a NOISE row whose quote fails sends its section and every candidate or hint on, or is an owner item when there are none. A bullet's row that does not parse falls back to its hints the same way. An owner item stops the advance below its release. Each TOUCHES or UNSURE section goes to verify. Every other section with an untriaged release in the packet advances to the range's newest one, unless a missing page holds it, and a group's blocks are rebaselined once none of its sections goes to verify or is held. `settled.json` keeps the advance target, the sections cleared, the sections held and the rows each verify section carries, for `packets --verify --from`.
-- **Verify, audit and files discard.** A row whose quote is not found is discarded and listed as unverified, and so is a quote a row need not give but gives. A doc quote counts only in the `docs` snapshot's pages or the packet's `changelog.md`. A STALE, WRONG or PARTIAL row whose proposed wording is empty or `-` is discarded too. A surviving STALE, WRONG or PARTIAL row is a correction to apply, unless its line sits within a `TODO(owner)`'s reach (from the TODO through the first list item after it, continuation lines included, or to the end of the section when none follows) or outside the packet's sections; then it is the owner's call, with every JUDGMENT, NOT FOUND, C row and not-covered row. A B or C row that does not parse is listed as unparseable and holds nothing.
-- **Holds.** A section is held, neither advanced nor audited, and no block whose candidates include it is rebaselined, when: no surviving row or none line answers for it; a discarded STALE, WRONG, PARTIAL or `JUDGMENT (mechanism STALE)` row, or an A row that does not parse, concerns it; a correction to it is left for the owner, or a `JUDGMENT (mechanism STALE)` row survives; its triage or a missing page held it; or `settle --hold` names it. An A row whose line falls in no section holds every section in the packet. A file is held, not cited, when a cited section has no surviving row or none line, a discarded `contradicts` row or a row that does not parse concerns it, or `settle --hold` names it. A hold keeps `accept`, for the text the run did change.
-- **Bookkeeping**, in R8.8's order: `baseline accept --substantive` for the sections whose text changed, `rebaseline` for the resolved blocks, `advance` to the triage's newest release (verify after a triage) or `audited` (audit), `cite` (files), `stamp`; then `cli.py lint` and `build/check_conformance.py`. A ranged triage ends with the next range's `packets --triage --through` command.
+- **Triage fails safe.** A block with no row becomes UNSURE for each of its candidate sections. A release with no coverage line becomes UNSURE for each section its bullets' terms hit, or an owner item when they hit none. A row whose quote is not found becomes UNSURE, handled as TOUCHES; a source quote counts only within its own item's text, and a NOISE row whose source quote, or a guide quote it gives, fails sends its section and every candidate or hint on, or is an owner item when there are none. A bullet's row that does not parse falls back to its hints the same way. An owner item stops the advance below its release. Each TOUCHES or UNSURE section goes to verify. Every other section with an untriaged release in the packet advances to the range's newest one, unless a missing page holds it, and a group's blocks are rebaselined once none of its sections goes to verify or is held. `settled.json` keeps the advance target, the sections cleared, the sections held and the rows each verify section carries, for `packets --verify --from`.
+- **Verify, audit and files discard.** A row whose quote is not found is discarded and listed as unverified, and so is a quote a row need not give but gives. A doc quote counts only in the `docs` snapshot's pages or the packet's `changelog.md`. A STALE, WRONG or PARTIAL row whose proposed wording is empty or `-` is discarded too. A surviving STALE, WRONG or PARTIAL row is a correction to apply, unless its line sits within a `TODO(owner)`'s reach (from the TODO through the first list item after it outside fenced code, continuation lines included, or to the end of the section when none follows) or outside the packet's sections; then it is the owner's call, with every JUDGMENT, NOT FOUND, C row and not-covered row, and one outside the packet's sections names the `/cc-guide verify` that reviews it. A B row needs a release and `changelog.md:<line>`; a B or C row that does not parse is listed as unparseable and holds nothing.
+- **Holds.** A section is held, neither advanced nor audited, and no block whose candidates include it is rebaselined, nor, while that block is changed or missing, any other block on its page, when: no surviving row or none line answers for it; a discarded STALE, WRONG, PARTIAL or `JUDGMENT (mechanism STALE)` row, or an A row that does not parse, concerns it; a correction to it is left for the owner, or a `JUDGMENT (mechanism STALE)` row survives; its triage or a missing page held it; or `settle --hold` names it. An A row whose line falls in no section holds every section in the packet; a row outside the packet's sections holds nothing, since the run neither reviews nor advances that section and its triage may have advanced it already. A file is held, not cited, when a cited section has no surviving row or none line, a discarded `contradicts` row or a row that does not parse concerns it, a row names a section the file does not cite, or `settle --hold` names it. A hold keeps `accept`, for the text the run did change.
+- **Bookkeeping**, in R8.8's order: `baseline accept --substantive` for the sections whose text changed, `rebaseline` for the resolved blocks, `advance` to the triage's newest release (verify after a triage), for each section not checked past it, or `audited` (audit), `cite` (files), `stamp`; then `cli.py lint` and `build/check_conformance.py`. A ranged triage ends with the next range's `packets --triage --through` command.
 ```
 
 - [ ] **Step 5: Watch the register trip (T4)**
@@ -3945,7 +4176,7 @@ with:
 - [ ] **Step 7: Run the tests and the register**
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-stage3/build/cc_guide --python 3.13 --with pytest python -m pytest -q`
-Expected: all pass, +104 over the baseline.
+Expected: all pass, +111 over the baseline.
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-stage3 --python 3.13 --with pyyaml python build/check_conformance.py`
 Expected: exit 0.
@@ -3966,8 +4197,8 @@ git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-st
 **Files:** none changed. This task produces the completion report's evidence.
 
 - [ ] **Step 1: Every existing gate (Validation 6).** Run each, and record each outcome against the baseline:
-  - the build suite (+104, the 4 known failures only);
-  - the cc_guide suite (+104);
+  - the build suite (+111, the 4 known failures only);
+  - the cc_guide suite (+111);
   - `hooks/` on both interpreters (unchanged): `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-stage3/hooks --python 3.13 --with pytest python -m pytest -q`, then the same with `--python /usr/bin/python3`;
   - `bash /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-stage3/build/run_commit_lints.sh` (all seven pass; it runs `check_frontmatter.py`, `check_provenance.py`, `check_snippets.py skills/` Tier 1, the dependency-drift test, `sync_runtime_assets.py --check` and `cli.py lint`);
   - `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-stage3 --python 3.13 --with pyyaml python build/check_conformance.py` (exit 0).
