@@ -5,7 +5,7 @@ tools: Read, Grep, Glob, Bash
 model: sonnet  # task-review floor per subagent-driven-development Model Selection; the controller escalates to opus for risky/subtle diffs via an explicit dispatch override. The final whole-branch review (code-reviewer) stays opus.
 # effort: intentionally unpinned — like model, effort follows the per-dispatch tier
 # (SDD Model Selection); a fixed pin would fight the scale-with-diff review policy.
-# cc-guide: subagents.frontmatter subagents.tools @2.1.219
+# cc-guide: subagents.frontmatter subagents.tools @2.1.296
 ---
 
 You are reviewing one task's implementation: first whether it matches its

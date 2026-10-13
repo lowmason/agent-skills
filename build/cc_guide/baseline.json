@@ -171,14 +171,14 @@
   "subagents.models": {
    "checked": {
     "release": "2.1.296",
-    "date": "2026-10-12"
+    "date": "2026-10-13"
    },
-   "changed": "2.1.296",
+   "changed": "2.1.296.1",
    "audited": {
-    "release": "2.1.288",
-    "date": "2026-10-03"
+    "release": "2.1.296",
+    "date": "2026-10-13"
    },
-   "text_hash": "sha256:ae5d9d1edc2915eb2f631eb969a14a063a3b1548ae27968d3f69e73f53d6205e"
+   "text_hash": "sha256:8c65f611de6234ab45563e46cf4d1830659ec54ce4d4c91ca54c5079840ea233"
   },
   "subagents.isolation": {
    "checked": {
@@ -387,26 +387,26 @@
   "lean.caching": {
    "checked": {
     "release": "2.1.296",
-    "date": "2026-10-12"
+    "date": "2026-10-13"
    },
    "changed": "2.1.296",
    "audited": {
-    "release": "2.1.288",
-    "date": "2026-10-03"
+    "release": "2.1.296",
+    "date": "2026-10-13"
    },
-   "text_hash": "sha256:83bed5d9914ba2710804ccfb04de8c873a94b4b72f3e6540b4ce7c34cdfa49d1"
+   "text_hash": "sha256:361c3cdcb5e18c57cde991466263223ea5917b12a5f3eb7de50e2d1f30a9de12"
   },
   "lean.model-routing": {
    "checked": {
     "release": "2.1.296",
-    "date": "2026-10-12"
+    "date": "2026-10-13"
    },
    "changed": "2.1.296",
    "audited": {
-    "release": "2.1.288",
-    "date": "2026-10-03"
+    "release": "2.1.296",
+    "date": "2026-10-13"
    },
-   "text_hash": "sha256:dddd4e670109066dc9300156dd2338cd47a57cdc793419eda657e8088626b49e"
+   "text_hash": "sha256:0c641d00ec269d9989fa23fa3da80fe2fb74c472da8c5fc1e6403b99499e6552"
   },
   "lean.mcp": {
    "checked": {
@@ -447,12 +447,12 @@
   "reading.overview": {
    "checked": {
     "release": "2.1.296",
-    "date": "2026-10-12"
+    "date": "2026-10-13"
    },
    "changed": "2.1.288",
    "audited": {
-    "release": "2.1.288",
-    "date": "2026-10-03"
+    "release": "2.1.296",
+    "date": "2026-10-13"
    },
    "text_hash": "sha256:0f646e8db934e0365ad79a3467453e3c8c57efc5c49000b3ba548817cebf41ef"
   }

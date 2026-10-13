@@ -1047,8 +1047,10 @@ R11.5 **First jobs.**
   - **#2, `hooks/ruff-check.sh`.** The guide's Pattern 3 presents both
     behaviours as valid: exit 0 whenever `stop_hook_active` is set (one attempt
     per turn, the fix never re-checked), or re-run the check and block while it
-    still fails (bounded by the 8-block cap). The owner chooses, and the
-    script's comment states the choice.
+    still fails (the 8-block cap does not bound that loop: it counts only blocks
+    with no tool call between them, so every fix that edits a file starts the
+    count over, and the hook must cap its own retries) (owner, live run,
+    2026-10-13). The owner chooses, and the script's comment states the choice.
   - **#3, `hooks/README.md` lines 56, 60, 64.** Quote `$CLAUDE_PROJECT_DIR`
     as the guide's Pattern 1 does.
   - Fixing #1 or #3 also removes or narrows the register exception that tracks

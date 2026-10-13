@@ -25,7 +25,7 @@ Acts on what `check` reports for `specs/guides/claude-code-customization-guide.m
 - Never paste a packet into a dispatch prompt; name its directory, and the verifier reads it.
 - State the number of verifiers before dispatching. Above 6, ask the owner first or take a subset.
 - Apply only what settle lists as a correction or a contradiction, and never an owner's-call item. Edit only the guide in verify and audit, and only the reviewed file in files. Two follow-ons belong to the same fix: removing or narrowing the `[[exception]]` it resolves in `build/cc_guide/conformance.toml` (After any mode), and, for a canonical agent or command, regenerating `runtimes/` with `uv run --python 3.13 --with pyyaml python build/sync_runtime_assets.py`. A fix that would reach any other file is the owner's call.
-- A listed item you leave for the owner, because it needs a decision (R11.5's #1 and #2) or would reach another file, holds its section or file: run `cli.py settle <packet> --hold <section or file>`, and run the commands it prints in place of the first ones.
+- A listed item you leave for the owner, because it needs a decision or would reach another file, holds its section or file: run `cli.py settle <packet> --hold <section or file>`, and run the commands it prints in place of the first ones.
 - In files, a contradiction that `build/cc_guide/conformance.toml` records as a `deviation` for that file and statement is the owner's standing decision: leave it as it is, and it holds nothing. One the register records as a `gap` is still open, so it holds the file. A deviation covers only the statement its `guide` line names; any other contradiction in the file is handled as if no entry named it.
 
 ## Pick the mode
