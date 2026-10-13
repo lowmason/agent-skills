@@ -3059,7 +3059,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       corrections are applied. C is done: all nine files are reviewed and the three known drifts
       settled. D, the owner's review of this diff, is left. The item stays open for Validation
       3's triage bullet, which waits for the next release.
-- [ ] A cross-group block can still be rebaselined by its own group's verify (plan 44's fix
+- [x] A cross-group block can still be rebaselined by its own group's verify (plan 44's fix
       wave, the I2 residual; owner deferred 2026-10-13). The owner's design (a) holds a group's
       rebaseline in triage while a section that a row for one of its blocks flagged in another
       group is still flagged (`build/cc_guide/settle.py`, `crossing` in `settle_triage`). But if
@@ -3075,6 +3075,14 @@ declined as YAGNI (zero instances in a one-page wiki).
       unresolved. This reopens the owner's choice of design (a) over (b) and amends spec R8.4
       step 6 / R8.10, so it is the owner's decision. Size: design. Done when: the owner decides,
       and if (b) is chosen, that test passes and the spec states the rule.
+      → done 2026-10-13 (owner decision, `chore/cc-drift-triage-2026-10-13`): design (a) stays,
+      with an operating rule in place of code. The fix above would never rebaseline such a block:
+      a verify packet's `cleared` is its triage's, which never holds a flagged section, and the
+      other group's packet does not carry the block, so it would return at every triage. Spec
+      R8.4 step 6 now states the residual, and the cc-guide skill's triage step 4 tells the run
+      to verify both groups, settle the other group's packet first, and leave the block out of
+      its own group's `rebaseline` while that section is held or deferred. Carrying the block
+      into every flagged group's verify packet (design (b)) was declined.
 - [ ] Split settle.py's report grammar into its own module (plan 44's fix wave, item 14; owner
       deferred 2026-10-13). `build/cc_guide/settle.py` is 726 lines and holds the report grammar
       (`split_row`, `unquote`, `given`, `report_lines`, `header_row`, `none_line`, the `FORMATS`,
@@ -3140,3 +3148,50 @@ declined as YAGNI (zero instances in a one-page wiki).
       them, not to run them one at a time. Size: quick-fix. Done when: that step says to run
       them one at a time, never in a parallel batch, with `build/cc_guide/test_skill_files.py`
       and `check_frontmatter.py` passing.
+
+## cc-drift-triage-2026-10-13 (no plan; /cc-guide triage, branch chore/cc-drift-triage-2026-10-13) — 2026-10-13
+
+- [ ] The guide's load trigger for path-scoped rules is out of date (`/cc-guide verify`, packet
+      `20261013T175307-verify`, rules group). Guide line 252 (`rules.rules-files`) says a
+      `paths` rule loads when Claude reads or edits a matching file; line 399
+      (`lean.session-hygiene`, overview group) says such a rule reloads when Claude reads,
+      writes or edits its trigger file. The docs name the Read, Write and Edit tools, and the
+      same verifier's changelog rows add 2.1.288 (Write and Edit load rules) and 2.1.293 (a
+      single-file `cat`, `head`, `tail`, `sed -n` or `grep` view in Bash loads them too). The
+      verifier still rated line 252's trigger CONFIRMED, so a re-verify may pass it again, and
+      this item rests on the text rather than on a verdict. Size: quick-fix. Done when: line
+      252 names the triggers the docs give, line 399 agrees with it or says why it differs,
+      each changed section has had `baseline accept --substantive` and `stamp`, and `cli.py
+      lint` and `check_conformance.py` pass.
+- [ ] Six owner's-call rows from the follow-on verify (`/cc-guide verify`, packet
+      `20261013T175307-verify`). Settle lists such rows and never applies them, and the
+      session that ran the verify has ended, so this is their only record. Rules group,
+      each a missing statement (C row): (1) near line 252, a rule whose `paths` frontmatter
+      does not parse loads as if it had none, so it is always loaded, and `claude --debug`
+      shows the error; (2) the L252 correction already says an over-budget brace pattern
+      matches no files, but an unreadable bracket pattern also matches nothing, with no
+      warning, while the rule's other patterns keep working; (3) near line 249, user and
+      project rules both load and neither overrides the other, so on a conflict Claude may
+      follow either, which calls for a keep-them-consistent note. Overview group, line 391
+      (`lean.measure`): (4) the community `ccusage` tool is NOT FOUND for the second run in a
+      row, as expected for a tool the docs do not cover: keep it as the guide's own pointer or
+      drop it; (5) "establish a baseline before optimizing anything" is a JUDGMENT row, the
+      guide's own advice; (6) `/skill-doctor` is recommended without its conditions: it needs
+      2.1.252 or later and cannot run while feature-flag fetching is off (C row). Size:
+      quick-fix each. Done when: the owner has ruled on all six, and each statement added to
+      the guide went through `/cc-guide`'s accept and stamp with `cli.py lint` passing.
+- [ ] A short backticked word in a guide section makes unrelated docs blocks due (`/cc-guide
+      verify`, overview group, 2026-10-13). `section_terms` (`build/cc_guide/guide.py`, near
+      line 143) makes every backticked span of 3 to 60 characters outside fenced code a watch
+      term, less `STOP_TERMS` (line 33, measured on the 2.1.288 snapshot) and the section's
+      `exclude_terms` in `build/cc_guide/manifest.toml`. The matcher (`build/cc_guide/blocks.py`,
+      near line 182) then makes a block a candidate when any term is a case-sensitive substring
+      of its key or text. A correction that wrote `none` in backticks at line 391 made 23
+      unrelated blocks due, one through "nonessential"; writing the word unformatted cleared
+      them, so the guide's formatting now carries an unwritten rule. Options: add such words to
+      `STOP_TERMS` (a code change for every section, best re-measured), a per-section
+      `exclude_terms` entry (owner configuration), a higher `TERM_MIN` (which also drops real
+      short terms), or matching short single-word terms on word boundaries (an amendment to
+      spec R3.6). Size: design. Done when: the owner picks one, and a test shows that a
+      section term `none` no longer makes a block that contains it only inside "nonessential"
+      a candidate.
