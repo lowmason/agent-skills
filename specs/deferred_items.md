@@ -2705,13 +2705,15 @@ declined as YAGNI (zero instances in a one-page wiki).
       any later format change. Files: `build/cc_guide/state.py`, `baseline.py`, their
       tests, R2.3. Size: quick-fix. Revisit if: an open branch predates the merge, or
       baseline.json's format changes again.
-- [ ] Carry each missing block's key hash into Stage 3's packets (the branch's review,
+- [x] Carry each missing block's key hash into Stage 3's packets (the branch's review,
       recommendation 3). A missing block's finding holds its readable name, or its key
       hash when check could not read one, and `packets` (R6.11) will need that block's
       baselined text from its page's snapshot, the same lookup `state.block_namer` does.
       Files: `build/cc_guide/check.py`'s `Finding` and the packet builder. Size: part of
       Stage 3's plan. Done when: the packet builder reads a missing block's snapshot
       text by key hash.
+      → done in plan 44: `check.Finding.key_hash` and `state.baselined_text` (Task 3),
+      which `packets` reads (Task 5).
 
 ## dl-nlp-template-decision (no plan; brainstorming, branch chore/dl-nlp-template-decision) — 2026-10-05
 - [ ] **RAG and fine-tuned-classifier targets for the methodology templates
@@ -2957,7 +2959,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       indentation test, a message of its own for trailing whitespace, one decoding on both read
       paths, and `newline=''` in the `cite` write. Size: quick-fix. Revisit if: a tracked CRLF
       file or a citation line with trailing whitespace appears.
-- [ ] An HTML-form citation can sit above a rules file's frontmatter (plan 43's final review,
+- [x] An HTML-form citation can sit above a rules file's frontmatter (plan 43's final review,
       issue 5). `guide.py` (near line 269) decides whether a file has frontmatter from its
       content, not its kind, so a `rules/*.md` file with `<!-- cc-guide: ... -->` on line 1 passes
       as "Markdown without frontmatter", pushing its frontmatter off line 1 and silently
@@ -2966,14 +2968,18 @@ declined as YAGNI (zero instances in a one-page wiki).
       refuse the HTML form for the R4.1 first-row kinds (`SKILL.md`, `agents/`, `commands/`,
       `rules/`, `.claude/skills|agents`), with a test. Size: quick-fix. Done when: `lint` reports
       an HTML-form citation in any of those kinds.
-- [ ] A citation in on-demand Markdown lints clean (plan 43's final review, issue 7). The
+      → done in plan 44 (Task 4): `citation_slot` refuses the HTML form for the frontmatter
+      kinds (`guide.FRONTMATTER_KINDS`), with tests.
+- [x] A citation in on-demand Markdown lints clean (plan 43's final review, issue 7). The
       amended drift spec R4.1 says Markdown a skill loads on demand (`references/`, or beside
       `SKILL.md`) carries no citation of its own, because the skill's `SKILL.md` citation covers
       it, but an HTML-form citation in a `references/*.md` file lints clean. Size: quick-fix.
       Done when: `lint` flags a citation in on-demand Markdown, or the owner records that the
       convention is deliberately unenforced. Raise it in Stage 3's `files` batches if the
       duplicate citations appear first.
-- [ ] `baseline cite` stamps files `lint` never reads (plan 43, Task 5's review). `cli.py`
+      → done in plan 44 (Task 4): `lint` flags a citation in the Markdown a skill loads on
+      demand (`guide.SKILL_MARKDOWN`); a README or INSTALL file still cites itself.
+- [x] `baseline cite` stamps files `lint` never reads (plan 43, Task 5's review). `cli.py`
       (`run_baseline`'s `cite` branch, near line 202) resolves each name with `tree.require`,
       which reads any working-tree file, so an untracked file or one under R4.2's excluded trees
       (`specs/`, `runtimes/`, `review/`, `.claude/worktrees/`) is stamped and no lint or check
@@ -2982,6 +2988,8 @@ declined as YAGNI (zero instances in a one-page wiki).
       outside-the-repo test covers an absolute path only. Fix: refuse a path `citing_files`
       would skip, deduplicate on `repo_path(name)`, add a `../x` case. Size: quick-fix. Done
       when: `cite` refuses a file the lint's scan would skip, with a test.
+      → done in plan 44 (Task 4): `cite` refuses a file the lint never reads and stamps a
+      symlink and its target once, deduplicating on `repo_path`, with tests.
 - [ ] Style and typing minors in the citation code (plan 43's per-task and final reviews).
       `build/cc_guide/state.py:92`: a non-UTF-8 tracked file name raises `UnicodeDecodeError`
       from the `git grep` decode, not a `cc-guide:` `SetupError`. `state.py:78`: `exclude` has no
@@ -2993,6 +3001,8 @@ declined as YAGNI (zero instances in a one-page wiki).
       near 118; reflowing it makes the file 187 lines, under the 190 ceiling. Size: quick-fix.
       Revisit if: a later change touches `state.py`, `check.py`, `cli.py` or the commit-lint
       comments in `CLAUDE.md`.
+      → re-deferred by plan 44 (2026-10-13): none of the lines it names was edited, though plan
+      44 touched each file; `test_state.py:331`'s `startswith` is now near line 366.
 - [x] Drift spec R5 and the `lint` help lag the label-note rule (plan 43, completion gate
       decision (a), 2026-10-12). `specs/claude-code-drift-automation-spec.md` R5 (near lines
       523-526) still says every `2.1.NNN` in the guide must be a changelog release label.
@@ -3004,3 +3014,69 @@ declined as YAGNI (zero instances in a one-page wiki).
       → done 2026-10-12 (direct quick fix, branch docs/drift-r5-label-note): R5 records the
       note rule and the three-part limit, the `lint` help says "three-part" and that any other
       unlisted label is a violation, and `test_cli.py` pins the wording.
+
+## 44-claude-code-drift-automation — 2026-10-13
+- [ ] Run drift Stage 3's first jobs (plan 44's Live run). After plan 44 merges, from a fresh
+      worktree (`git -C /Users/lowell/Projects/agent-skills worktree add
+      .claude/worktrees/cc-drift-first-jobs -b chore/cc-drift-first-jobs origin/main`, then a
+      session started there so `/cc-guide` and `cc-guide-verifier` load from its `.claude/`), run
+      steps A–D of the "Live run" section of
+      `specs/plans/completed/44-claude-code-drift-automation.md`: A, triage any untriaged release
+      or block finding; B, `/cc-guide audit models` (A-53, H-57) with the expected positives that
+      section lists; C, the first `files` batch on the three known drifts (the 7 `agents/*.md`
+      files, `hooks/ruff-check.sh`, `hooks/README.md`); D, the owner's review of the uncommitted
+      diff. The section's "Left for later runs" list stays open. In step C, confirm the session
+      holds `agents/explore.md` with `settle --hold` for its Grep and Glob gap (#1), as the
+      retired plan's line 4264 expects. Run 6b tested settle's new files header only on
+      deviations (line 145). Under the earlier header, run 7 held the file for this gap (line
+      142). Size: plan. Done when: Validation 3 passes as plan 44's Task 1 amends it. The
+      owner's decisions on #1 and #2 are recorded, the fixes applied and those files left the
+      backlog, the audit's A/B/C report is in hand, and the owner has reviewed the split diff.
+- [ ] A cross-group block can still be rebaselined by its own group's verify (plan 44's fix
+      wave, the I2 residual; owner deferred 2026-10-13). The owner's design (a) holds a group's
+      rebaseline in triage while a section that a row for one of its blocks flagged in another
+      group is still flagged (`build/cc_guide/settle.py`, `crossing` in `settle_triage`). But if
+      the same triage also sends one of the block's own-group sections to verify,
+      `packets --verify --from` writes that group's packet with the block in it, and
+      `settle_review`'s `ready` (settle.py, near line 599) checks only the block's candidates: the
+      verify index does not record which sections the triage rows for that block flagged, so the
+      block is rebaselined while the other group's section is still held or deferred. Fix: have
+      `packets.verify` (`build/cc_guide/packets.py`) carry each block's row-flagged sections from
+      `settled.json` into the verify index, and have `ready` require them resolved too (close to
+      the owner's design (b)); test: an alpha block with TOUCHES rows naming `beta.overview` and
+      `alpha.overview`, where alpha's verify must not rebaseline it while `beta.overview` is
+      unresolved. Size: quick-fix. Done when: that test passes and spec R8.4 step 6 / R8.10
+      state the rule.
+- [ ] Split settle.py's report grammar into its own module (plan 44's fix wave, item 14; owner
+      deferred 2026-10-13). `build/cc_guide/settle.py` is 726 lines and holds the report grammar
+      (`split_row`, `unquote`, `given`, `report_lines`, `header_row`, `none_line`, the `FORMATS`,
+      `HEADERS` and `COLUMNS` constants and the row regexes) beside the three modes. Deferred
+      because it fixes no defect and moves `settle.FORMATS`, which
+      `build/cc_guide/test_skill_files.py` pins against the verifier agent and formats.md. Size:
+      quick-fix. Revisit if: settle.py gains a report form or a grammar rule, or passes about 750
+      lines. Done when: settle.py imports the grammar from its own module (for example
+      `report_grammar.py`), the grammar tests move with it, the `FORMATS` pin still resolves, and
+      the cc_guide suite passes with no expected string changed.
+- [ ] `packets --files` with no paths refuses the whole batch for one bad citer (plan 44's fix
+      wave re-review, Minor). `build/cc_guide/packets.py`'s `files` pre-check (near lines
+      371-375) raises a `SetupError` when any citing file names a section ID in neither the
+      baseline nor the guide, so one such citer blocks every other file in a backlog batch. It
+      replaced a `KeyError` traceback and tells the owner to run `lint`, which reports the bad
+      citation. Fix if it bites: skip and list the bad citer, building packets for the rest.
+      Size: quick-fix. Revisit if: a live `files` batch is refused for one citer.
+- [ ] A marked-up coverage line gets mixed labels (plan 44's fix wave re-review, Minor). A
+      triage line such as `**2.1.901** | alpha.overview` is handled as a coverage line, but
+      `build/cc_guide/settle.py` still notes it as `unparseable row:` and gives its named
+      section the reason "a row that does not parse names it", while its release's hits say
+      "its coverage line does not parse". The `[bold]` and `[colon]` cases in
+      `build/cc_guide/test_settle.py` pin the current wording. Wording only; the fail-safe is
+      right. Size: quick-fix. Revisit if: the owner finds a live triage's reasons confusing.
+- [ ] An audit cannot be recorded after its group was advanced past the packet's head (plan
+      44's fix wave re-review, Minor). `baseline audited GROUP --to <head>` (`build/cc_guide/cli.py`)
+      goes through `baseline.py`'s `check_forward`, so when a triage advances the group's
+      sections past the audit packet's head between `packets --audit` and `settle`, the printed
+      command exits 2 ("... is older than the checked release of ...") and the audit is not
+      recorded; `.claude/skills/cc-guide/SKILL.md` does not mention the case. Recording
+      `audited` while leaving a newer `checked` alone needs a `baseline.py` change; the simpler
+      remedy is for the skill to tell the owner to rebuild the audit packet. Size: quick-fix.
+      Revisit if: a live audit's `audited --to` is refused this way.
