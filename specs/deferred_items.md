@@ -2083,7 +2083,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       `build/check_conformance.py` passing.
       → done 2026-10-05 (/deferred quick fix): the rule title and README say it loads
       on .py reads and edits; exception removed.
-- [ ] Settle where enforceAvailableModels belongs (plan 35 audit row H-51; guide note H-57):
+- [x] Settle where enforceAvailableModels belongs (plan 35 audit row H-51; guide note H-57):
       `.claude/settings.json` sets `enforceAvailableModels`, while the guide places its
       effect in managed settings, and whether the key is honoured elsewhere is guide note
       H-57. The owner's user-level settings set it too (row O-13, outside the repo). Size:
@@ -2092,6 +2092,11 @@ declined as YAGNI (zero instances in a one-page wiki).
       the gap is void; either way exception `enforce-available-models-project` is removed
       from `build/cc_guide/conformance.toml` in the same change, with
       `build/check_conformance.py` passing.
+      → done 2026-10-13 (`/cc-guide audit models`, then an owner-directed correction, not
+      a verify): the 2.1.296 settings reference gives the key Scope "Any file", read from
+      the managed source alone once an organization deploys managed settings, so project
+      settings honour it and the gap is void. `lean.model-routing` now says so; exception
+      removed, `check_conformance.py` passing.
 - [x] Run the before-commit lints from a hook or CI (plan 35 audit rows C-31, C-32):
       CLAUDE.md's "run before committing" lints and `build/CLAUDE.md`'s rule against
       hand-editing `runtimes/` are prose that no hook or CI enforces
@@ -2418,11 +2423,16 @@ declined as YAGNI (zero instances in a one-page wiki).
       status while the built-in Explore skips both, without saying which applies to line
       214's Explore override. Size: quick-fix. Done when: `/cc-guide verify
       subagents.isolation` (drift R8.5) has judged the note.
-- [ ] Verify guide note H-57 with `/cc-guide verify lean.model-routing` once drift lands
+- [x] Verify guide note H-57 with `/cc-guide verify lean.model-routing` once drift lands
       (plan 35 audit §7): the guide's line 422 leaves open whether `enforceAvailableModels`
       is honoured only in managed settings; the enforce-available-models-project item waits
       on it. Size: quick-fix. Done when: `/cc-guide verify lean.model-routing` (drift R8.5)
       has judged the note.
+      → done 2026-10-13 (`/cc-guide audit models` and the owner's enforceAvailableModels
+      decision, in place of a verify): the audit judged `lean.model-routing` against the
+      2.1.296 snapshot, whose settings reference gives the key Scope "Any file", read from the
+      managed source alone once an organization deploys managed settings. The section now says
+      so, and the enforce-available-models-project item above is done.
 - [ ] Verify guide note H-58 with `/cc-guide verify hooks.patterns` once drift lands (plan
       35 audit §7): the guide's line 362 endorses a Stop gate that re-blocks until the
       8-block cap, while line 303 says to check `stop_hook_active`; the stop-hook-guard
@@ -2948,6 +2958,18 @@ declined as YAGNI (zero instances in a one-page wiki).
       and the unquoted `$CLAUDE_PROJECT_DIR` in `hooks/README.md`. Size: plan. Done when:
       Stage 3's `files` batches have reviewed each file and restamped it with `baseline cite`,
       and `cli.py lint` prints no `STALE` line.
+      → progress 2026-10-13 (`/cc-guide files`, the first files batch, R11.5): the three known
+      drifts are settled. #3 is fixed: `hooks/README.md`'s install snippet quotes
+      `$CLAUDE_PROJECT_DIR` and exception `hook-dir-unquoted` is removed. #2 is decided:
+      `hooks/ruff-check.sh` keeps one attempt per turn and its comment says so. #1 is recorded
+      as deviation `grep-glob-beside-bash` (owner's standing decision: the entries are inert in
+      Claude Code and keep the Gemini adapters' search tools). `hooks/README.md`,
+      `hooks/ruff-check.sh` and `agents/explore.md` are restamped; the rest of the backlog stays.
+      → progress 2026-10-13 (`/cc-guide files`, `chore/cc-drift-first-jobs`): all nine files of
+      the three known drifts are restamped (the seven `agents/*.md`, `hooks/README.md`,
+      `hooks/ruff-check.sh`). `cli.py lint` now prints 33 `STALE` lines: the 41 at the start,
+      less those nine, plus `.claude/agents/cc-guide-verifier.md`, which the audit's
+      `subagents.models` change made stale.
 - [ ] Newline handling in the citation reader (plan 43's final review, issue 4, folding in the
       CRLF note from Task 5's review). `build/cc_guide/guide.py` (`file_citation`, near line
       306) strips both ends, so a trailing space or `\r` is reported as "an indented citation;
@@ -3032,6 +3054,11 @@ declined as YAGNI (zero instances in a one-page wiki).
       142). Size: plan. Done when: Validation 3 passes as plan 44's Task 1 amends it. The
       owner's decisions on #1 and #2 are recorded, the fixes applied and those files left the
       backlog, the audit's A/B/C report is in hand, and the owner has reviewed the split diff.
+      → progress 2026-10-13 (`chore/cc-drift-first-jobs`): A has nothing to triage until the
+      first release after 2.1.296. B is done: `/cc-guide audit models` ran and the owner's
+      corrections are applied. C is done: all nine files are reviewed and the three known drifts
+      settled. D, the owner's review of this diff, is left. The item stays open for Validation
+      3's triage bullet, which waits for the next release.
 - [ ] A cross-group block can still be rebaselined by its own group's verify (plan 44's fix
       wave, the I2 residual; owner deferred 2026-10-13). The owner's design (a) holds a group's
       rebaseline in triage while a section that a row for one of its blocks flagged in another
@@ -3081,3 +3108,35 @@ declined as YAGNI (zero instances in a one-page wiki).
       `audited` while leaving a newer `checked` alone needs a `baseline.py` change; the simpler
       remedy is for the skill to tell the owner to rebuild the audit packet. Size: quick-fix.
       Revisit if: a live audit's `audited --to` is refused this way.
+- [ ] The audit verifier's omission recall was 3 of 7 known positives (plan 44's Live run,
+      step B, 2026-10-13). `/cc-guide audit models` (packet `20261013T113847-audit`, 2.1.296
+      snapshot) found the effort-change cache caveat and `ANTHROPIC_DEFAULT_MODEL` as PARTIAL
+      rows, and `CLAUDE_CODE_WORKFLOW_SUBAGENT_MODEL` as a B and a C row. It missed
+      `deniedModels` beside `availableModels`, the defect the Live run names (the verify rep
+      missed it too), and also `max` effort lasting the current session only, a top-level
+      `effortLevel` no longer counting for Opus 5.5, and Sonnet 4.5's deprecation behind the
+      partner-platform `sonnet` alias. Each was a PARTIAL on a claim the packet held (guide
+      lines 427 and 430), so R8.5's four-C-row cap did not cause the misses; the owner applied
+      all four by hand. Settle's quote re-grep guards precision, not recall. Size: plan (a
+      verifier-contract change is micro-tested under writing-skills). Done when: a change to
+      `.claude/agents/cc-guide-verifier.md` or to the audit packets lets an audit of the
+      pre-fix guide (`5bd78a7`) against the 2.1.296 snapshot report at least `deniedModels`.
+      Files mode missed one too (2026-10-13, `/cc-guide files`, packet
+      `20261013T121854-files`): the `hooks/README.md` verifier rated the unquoted
+      `$CLAUDE_PROJECT_DIR` (known drift #3) not covered, saying the guide never requires
+      quoting, though the guide's Pattern 1 quotes it and `check_conformance.py`'s
+      `hook-dir-quoted` enforces it. Settle never applies a not-covered row, so the fix landed
+      only because the owner directed it. A files verifier also broke the row grammar
+      (2026-10-13, packet `20261013T124015-files`): the `agents/test-runner.md` verifier wrote a
+      line range, `agents/test-runner.md:14-16`, where a files row's `file:line` takes one line,
+      so settle held the file. The contract's files row (`.claude/agents/cc-guide-verifier.md`,
+      near line 63) could say "one line number, never a range".
+- [ ] `build/cc_guide/baseline.json` writers have no lock (2026-10-13, `/cc-guide audit
+      models`). Each `cli.py baseline` subcommand reads, modifies and rewrites the file
+      (`stamp` rewrites the guide's stamp region), so two run in one parallel tool batch can
+      lose a write. The session ran `accept` and `audited` in parallel; this time the result
+      matched a sequential rerun, but nothing prevents the loss. `.claude/skills/cc-guide/SKILL.md`'s
+      "Dispatch, save, settle" step 4 says to run settle's commands in the order it prints
+      them, not to run them one at a time. Size: quick-fix. Done when: that step says to run
+      them one at a time, never in a parallel batch, with `build/cc_guide/test_skill_files.py`
+      and `check_frontmatter.py` passing.

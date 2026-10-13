@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
-# cc-guide: hooks.events hooks.exit-codes hooks.patterns @2.1.219
+# cc-guide: hooks.events hooks.exit-codes hooks.patterns @2.1.296
 # Stop hook — before the turn ends, surface ruff lint errors that --fix could not
 # auto-resolve (e.g. undefined names, unused-but-referenced, complexity rules).
 #
 # Exit 2 feeds stderr back to Claude so it fixes them and continues.
-# `stop_hook_active` guards against an infinite fix->stop->fix loop.
+# One attempt per turn: when `stop_hook_active` is set, exit 0 without re-running
+# ruff, so the fix is not re-checked until the next turn ends. This gives up a
+# guaranteed-clean stop in exchange for never looping.
 #
 # Install into a real Python/uv repo (see README.md). Reads hook JSON on stdin.
 set -uo pipefail

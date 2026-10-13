@@ -154,7 +154,8 @@ rule = 'A hook command keeps $CLAUDE_PROJECT_DIR inside double quotes.'
 enforced_by = 'check_conformance'
 
 # A Stop hook that ignores stop_hook_active can block on a condition that
-# never resolves, until the block cap stops it.
+# never resolves. The 8-block cap counts only blocks with no tool call between
+# them, so every fix attempt that edits a file starts the count over.
 [[check]]
 id = 'stop-hook-guard'
 kind = ['hook', 'settings']
@@ -578,7 +579,7 @@ enforced_by = 'check_conformance'
 # All seven agents list Grep and Glob beside Bash (drift's known drift #1).
 [[exception]]
 id = 'grep-glob-beside-bash'
-type = 'gap'
+type = 'deviation'
 check = 'bash-search-tools'
 sections = ['subagents.tools']
 artifacts = [
@@ -587,23 +588,10 @@ artifacts = [
     'agents/test-runner.md',
 ]
 guide = 'On macOS, Linux and WSL an agent that lists Bash gets no Grep or Glob.'
-reason = 'The Gemini adapters map Grep and Glob to working tools, so deleting them from the canonical files would regress Gemini.'
-evidence = 'Drift spec R11.5 #1; audit rows L-02 to L-08.'
+reason = 'The entries are inert in Claude Code and keep the Gemini adapters, which map Grep and Glob to working search tools.'
+evidence = 'Drift spec R11.5 #1; audit rows L-02 to L-08; owner decision 2026-10-13 (first files batch).'
 protects = ['gemini']
-tracked_in = 'drift Stage 3, first files batch (drift spec R11.5 #1)'
-
-# hooks/README.md's install snippet leaves $CLAUDE_PROJECT_DIR unquoted
-# three times (drift's known drift #3).
-[[exception]]
-id = 'hook-dir-unquoted'
-type = 'gap'
-check = 'hook-dir-quoted'
-sections = ['hooks.patterns']
-artifacts = ['hooks/README.md']
-guide = 'A hook command keeps $CLAUDE_PROJECT_DIR in double quotes.'
-reason = 'The README install snippet predates the quoted pattern.'
-evidence = 'Drift spec R11.5 #3; audit rows L-09 to L-11.'
-tracked_in = 'drift Stage 3, first files batch (drift spec R11.5 #3)'
+revisit = 'If the Gemini adapters stop mapping Grep and Glob, or Claude Code grants them beside Bash again.'
 
 # writing-skills keeps descriptions trigger-only on tested evidence.
 [[exception]]
@@ -833,16 +821,6 @@ guide = 'Rules that apply across projects live in ~/.claude/rules/.'
 reason = 'The rule ships per repo by the project-level-only decision in specs/deferred_items.md, though its last bullet names work repos.'
 evidence = 'Audit row H-41; owner gate 2026-10-04.'
 revisit = 'If the rule moves to ~/.claude/rules.'
-
-[[exception]]
-id = 'enforce-available-models-project'
-type = 'gap'
-sections = ['lean.model-routing']
-artifacts = ['.claude/settings.json']
-guide = 'enforceAvailableModels is documented as a managed-settings key.'
-reason = 'It is set in project settings; whether it takes effect there turns on guide note H-57.'
-evidence = 'Audit rows H-51, H-57; owner gate 2026-10-04.'
-tracked_in = 'deferred item: settle where enforceAvailableModels belongs'
 
 [[exception]]
 id = 'claude-md-serves-codex-gemini'

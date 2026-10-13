@@ -1,4 +1,4 @@
-<!-- cc-guide: subagents.frontmatter rules.settings hooks.events hooks.exit-codes hooks.configuration hooks.patterns hooks.pitfalls @2.1.219 -->
+<!-- cc-guide: subagents.frontmatter rules.settings hooks.events hooks.exit-codes hooks.configuration hooks.patterns hooks.pitfalls @2.1.296 -->
 # Hooks
 
 Two categories live here, and they install differently. Read the category before
@@ -54,15 +54,15 @@ Then add to that repo's `.claude/settings.json` (merge if it exists):
   "hooks": {
     "PreToolUse": [
       { "matcher": "Bash", "hooks": [
-        { "type": "command", "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/uv-guard.sh" } ] }
+        { "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/uv-guard.sh" } ] }
     ],
     "PostToolUse": [
       { "matcher": "Write|Edit", "hooks": [
-        { "type": "command", "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/ruff-fix.sh" } ] }
+        { "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/ruff-fix.sh" } ] }
     ],
     "Stop": [
       { "hooks": [
-        { "type": "command", "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/ruff-check.sh" } ] }
+        { "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/ruff-check.sh" } ] }
     ]
   }
 }
@@ -96,8 +96,10 @@ re-copy when you update a template here.
   `ruff-check.sh` (Stop) is the backstop for anything `--fix` can't resolve.
 - **Exit codes matter:** a hook blocks either by exiting 2, which feeds stderr to
   Claude, or by printing a JSON `permissionDecision: "deny"` (as `readonly-agent-guard.py`
-  below does); any other non-zero exit, such as 1, just logs and lets the call through.
-  `uv-guard.sh` and `ruff-check.sh` block with exit 2; `ruff-fix.sh` never blocks.
+  below does); any other non-zero exit, such as 1, just logs and lets the call through,
+  unless the hook sets `"onFailure": "block"` (2.1.295+), which makes it act as exit 2
+  does on that event, though not on `Stop`. `uv-guard.sh` and `ruff-check.sh` block with
+  exit 2; `ruff-fix.sh` never blocks.
 
 # Agent contract hooks
 
