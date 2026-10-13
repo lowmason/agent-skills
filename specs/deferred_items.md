@@ -1949,10 +1949,11 @@ declined as YAGNI (zero instances in a one-page wiki).
       two extra NUTS fits in the stack-gated suite.
       Size: quick-fix. Revisit if: a `PINNED` refresh or a Tier 3 run breaks the comparison
       fixture without a pytest failure.
-      → retired 2026-10-13: the optional fix exists. `build/test_check_snippets.py`'s
-      `test_the_comparison_fixtures_helpers_are_gone_at_run_time` (`@requires_stack`, added in
-      f7b68af on 2026-10-05) runs the preamble and the comparison fixture in a subprocess, both
-      extra fits included, and asserts it exits 0.
+      → retired 2026-10-13: the risk is covered, though not by the fix the item sketched.
+      `build/test_check_snippets.py`'s `test_the_comparison_fixtures_helpers_are_gone_at_run_time`
+      (`@requires_stack`, added in f7b68af on 2026-10-05) runs the preamble and the comparison
+      fixture directly in a subprocess, not through `check_snippets.run_errors`, both extra fits
+      included, and asserts it exits 0.
 
 ## 35-claude-code-guide-conformance — 2026-10-04
 - [x] Bring the root CLAUDE.md under 200 lines (plan 35 audit rows L-01, C-02 to C-05). It
@@ -2933,10 +2934,11 @@ declined as YAGNI (zero instances in a one-page wiki).
       test in `build/test_commit_lints.py` using the `broken_uv` stub) and the header
       comment matches CLAUDE.md.
       → done 2026-10-13 (/deferred quick fix): the probe keeps uv's stderr and the skip
-      message names its last line, taken with a bash expansion because the hook's PATH may
-      lack tail; the `broken_uv` stub now prints two stderr lines, and
-      `test_hook_fails_open_when_uv_cannot_run` asserts the last one appears and the first
-      does not (red first: the old message named no reason). The header says enabling is the
+      message names its last line, trimmed of the indent uv gives a closing "Caused by:" line,
+      using bash expansions because the hook's PATH may lack tail; the `broken_uv` stub now
+      prints two stderr lines, the last indented, and `test_hook_fails_open_when_uv_cannot_run`
+      asserts the trimmed last one appears and the first does not (red first, twice: the old
+      message named no reason, then kept the indent). The header says enabling is the
       owner's step and writes the repo config every worktree reads.
 - [x] `test_frontmatter_violation_is_refused` breaks the YAML instead of emptying the
       description (plan 41 final-review Minor M4, confirmed; triaged defer):

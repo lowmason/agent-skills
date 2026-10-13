@@ -238,7 +238,7 @@
     "release": "2.1.288",
     "date": "2026-10-03"
    },
-   "text_hash": "sha256:c6d7ee8a36317e74d3cabe82aea65ff3696f6fe7804b709b2100491ce619be38"
+   "text_hash": "sha256:5c30a0cf14fdafc3052870a20bbd2fa90e5cae0488e36361ebadccdc51bc2a8d"
   },
   "rules.auto-memory": {
    "checked": {
@@ -406,7 +406,7 @@
     "release": "2.1.296",
     "date": "2026-10-13"
    },
-   "text_hash": "sha256:7e1f2366a9d6f963a46b18de91b0adf2502db9c5cbfc9fd6695f68bdea431c03"
+   "text_hash": "sha256:94564d684536bcb14b049ab018a2704f5de5701edb54171e6b21e885c36fd923"
   },
   "lean.mcp": {
    "checked": {

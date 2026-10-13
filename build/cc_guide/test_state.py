@@ -370,15 +370,16 @@ def test_a_git_grep_failure_is_a_setup_error(tmp_path):
 
 def test_a_tracked_name_that_is_not_utf8_is_a_setup_error(tmp_path):
     '''A tree entry's name is raw bytes to git, so a commit can track one that
-    no file system would hold; the decode of git grep's output raised
-    UnicodeDecodeError instead of the module's SetupError.'''
+    the checkout's file system may refuse (macOS's does); the decode of git
+    grep's output raised UnicodeDecodeError instead of the module's
+    SetupError. The message names the entry, escaped.'''
     repo = fixture_repo(tmp_path / 'repo', {'a.txt': CITE + '\n'})
     blob = git(repo, 'rev-parse', 'HEAD:a.txt').strip()
     git(repo, 'update-index', '--add', '--cacheinfo', f'100644,{blob},bad\udcff.txt')
     git(repo, 'commit', '-qm', 'a name that is not UTF-8')
     with pytest.raises(state.SetupError) as err:
         state.Source(repo, 'main').grep(state.CITE_SHAPED_ERE, ())
-    assert str(err.value) == 'git grep in main: a tracked file name is not UTF-8 text (invalid start byte at byte 19)'
+    assert str(err.value) == r'git grep in main: a tracked file name is not UTF-8 text: bad\xff.txt'
 
 
 def test_a_snapshot_names_each_baselined_block_and_gives_its_text(docs_dir):

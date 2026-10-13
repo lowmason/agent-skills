@@ -22,9 +22,10 @@ REPO = Path(__file__).resolve().parent.parent
 RUNNER = Path('build/run_commit_lints.sh')
 HOOK = Path('build/githooks/pre-commit')
 GENERATED = Path('runtimes/gemini/agents/code-reviewer.md')
-# What the broken-uv stub prints to stderr: the hook should name the last line only.
+# What the broken-uv stub prints to stderr: the hook should name the last line only,
+# trimmed, since uv indents a closing "Caused by:" line.
 UV_NOISE = 'uv: noise before the reason'
-UV_REASON = 'error: no cached Python 3.13 and uv is offline'
+UV_REASON = 'Caused by: no cached Python 3.13 and uv is offline'
 CHECKS = {'check_frontmatter', 'check_provenance', 'check_snippets',
           'check_conformance', 'declared_dependencies', 'sync_runtime_assets', 'cc_guide_lint'}
 
@@ -68,8 +69,8 @@ def failed_names(result):
 def restricted_path(tmp_path, broken_uv=False):
     '''A PATH directory holding git and bash, and no uv unless broken_uv.
 
-    With broken_uv the directory also holds a uv that prints UV_NOISE then UV_REASON
-    to stderr and exits 1, so `command -v uv` finds it and running it fails.
+    With broken_uv the directory also holds a uv that prints UV_NOISE then UV_REASON,
+    indented, to stderr and exits 1, so `command -v uv` finds it and running it fails.
     '''
     bindir = tmp_path / 'bin'
     bindir.mkdir()
@@ -77,7 +78,7 @@ def restricted_path(tmp_path, broken_uv=False):
         (bindir / tool).symlink_to(shutil.which(tool))
     if broken_uv:
         uv = bindir / 'uv'
-        uv.write_text(f'#!/bin/sh\necho {UV_NOISE!r} >&2\necho {UV_REASON!r} >&2\nexit 1\n')
+        uv.write_text(f"#!/bin/sh\necho {UV_NOISE!r} >&2\necho {'  ' + UV_REASON!r} >&2\nexit 1\n")
         uv.chmod(0o755)
     return str(bindir)
 
@@ -175,8 +176,8 @@ def test_hook_fails_open_when_uv_cannot_run(clone, tmp_path):
     assert head(clone) != before
     assert 'commit lints skipped' in result.stderr
     assert 'uv cannot run here' in result.stderr, result.stderr
-    # The skip names why: uv's last stderr line, not the lines before it.
-    assert UV_REASON in result.stderr, result.stderr
+    # The skip names why: uv's last stderr line, trimmed, not the lines before it.
+    assert f'({UV_REASON})' in result.stderr, result.stderr
     assert UV_NOISE not in result.stderr, result.stderr
 
 

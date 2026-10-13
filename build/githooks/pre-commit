@@ -14,6 +14,7 @@ if ! command -v uv >/dev/null 2>&1; then
 fi
 if ! probe="$(cd "$root" && uv run --no-project --python 3.13 python -c pass 2>&1 >/dev/null)"; then
   reason="${probe##*$'\n'}" # bash builtins only: the hook's PATH may lack tail
+  reason="${reason#"${reason%%[![:space:]]*}"}" # uv indents a closing "Caused by:" line
   echo "pre-commit: uv cannot run here${reason:+ ($reason)}; commit lints skipped (CI still runs them)" >&2
   exit 0
 fi

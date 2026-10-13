@@ -90,13 +90,16 @@ class Source:
             return []
         if proc.returncode != 0:
             raise SetupError(f"git grep in {self.label}: {proc.stderr.decode('utf-8', 'replace').strip()}")
-        try:
-            names = proc.stdout.decode('utf-8').split('\0')
-        except UnicodeDecodeError as exc:
-            raise SetupError(f'git grep in {self.label}: a tracked file name is not UTF-8 text '
-                             f'({exc.reason} at byte {exc.start})') from None
         prefix = '' if self.ref is None else f'{self.ref}:'
-        return [name.removeprefix(prefix) for name in names if name]
+        names = []
+        for raw in filter(None, proc.stdout.split(b'\0')):
+            try:
+                name = raw.decode('utf-8')
+            except UnicodeDecodeError:
+                shown = raw.decode('utf-8', 'backslashreplace').removeprefix(prefix)
+                raise SetupError(f'git grep in {self.label}: a tracked file name is not UTF-8 text: {shown}') from None
+            names.append(name.removeprefix(prefix))
+        return names
 
 
 class Group(NamedTuple):
