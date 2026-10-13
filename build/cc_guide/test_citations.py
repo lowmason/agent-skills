@@ -33,6 +33,32 @@ def test_markdown_with_frontmatter_cites_on_its_last_frontmatter_line(path):
                 'Body.') == cited(path, 5)
 
 
+@pytest.mark.parametrize('path', ['skills/demo/SKILL.md', 'agents/demo.md', 'commands/demo.md',
+                                  'rules/demo.md', '.claude/skills/demo/SKILL.md', '.claude/agents/demo.md'])
+def test_a_frontmatter_kind_never_takes_an_html_citation_above_its_frontmatter(path):
+    '''An HTML-form citation on line 1 linted clean and pushed the
+    frontmatter off line 1, which drops a rule's `paths:` scoping (deferred:
+    An HTML-form citation can sit above a rules file's frontmatter).'''
+    assert read(path, HTML, '---', 'paths: x', '---') == (
+        None, [f'{path}:1: no citation can go here: its kind cites as the last line of a frontmatter that opens'
+               ' the file'])
+
+
+@pytest.mark.parametrize('path', ['skills/demo/references/notes.md', 'skills/demo/notes.md',
+                                  'skills/demo/scripts/usage.md', '.claude/skills/demo/references/formats.md'])
+def test_markdown_a_skill_loads_on_demand_carries_no_citation(path):
+    '''R4.1: its SKILL.md's citation covers it (deferred: A citation in
+    on-demand Markdown lints clean).'''
+    assert read(path, HTML, 'Notes.') == (
+        None, [f"{path}:1: no citation can go here: its skill loads it on demand, so the skill's SKILL.md citation"
+               ' covers it'])
+
+
+@pytest.mark.parametrize('path', ['skills/demo/README.md', 'skills/demo/INSTALL.md', 'notes/demo.md'])
+def test_a_skills_readme_or_install_guide_and_other_markdown_still_cite_on_line_one(path):
+    assert read(path, HTML, 'Text.') == cited(path, 1)
+
+
 def test_a_frontmatter_citation_anywhere_else_is_misplaced():
     path = 'skills/demo/SKILL.md'
     assert read(path, '---', HASH, 'name: demo', '---', 'Body.') == misplaced(path, 2, FRONT)

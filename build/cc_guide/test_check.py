@@ -68,6 +68,20 @@ def test_a_missing_block_is_named_from_its_snapshot_else_by_its_key_hash(docs_di
     assert findings(docs_dir, s, hex_term, state.no_snapshot)[0] == [unnamed, body]
 
 
+def test_each_block_finding_carries_its_key_hash(docs_dir):
+    '''A packet reads a missing block's baselined text by key hash, which a
+    name read back from a snapshot does not carry when the snapshot is gone.'''
+    s = fixture_state(docs_dir)
+    write_tree(docs_dir, {'events.md': DOCS['events.md'].replace('## Payload', '## Body').replace('on beta', 'on all')})
+    found, _ = check.compare(MANIFEST, s, TERMS, offline(docs_dir), state.no_snapshot)
+    assert [(f.kind, f.key_hash) for f in found] == [
+        ('changed', blocks.key_hash('Events')), ('missing', blocks.key_hash('Events › Payload')),
+        ('new', blocks.key_hash('Events › Body'))]
+    (docs_dir / 'events.md').unlink()
+    found, _ = check.compare(MANIFEST, s, TERMS, offline(docs_dir), state.no_snapshot)
+    assert [(f.kind, f.key_hash) for f in found] == [('missing-page', None)]
+
+
 def test_deselection_is_informational_only_while_the_block_is_unchanged(docs_dir):
     '''R3.7: a baselined block its group's terms no longer select is
     deselected only while its text is unchanged. A docs edit that drops a

@@ -204,6 +204,22 @@ def test_audited_writes_only_the_groups_audited_and_checked(world, capsys):
                                    'the stamp region is now stale: run baseline stamp\n')
 
 
+def test_audited_to_records_the_named_release_and_refuses_one_the_changelog_lacks(world, capsys):
+    '''m7 (final review): settle names the audit packet's head with --to, so
+    a fetch after the packet was built never moves the audit past what the
+    verifier saw.'''
+    repo, cache, _ = world
+    assert main(cache, 'baseline', 'audited', 'alpha', '--to', '2.1.901', today=date(2026, 10, 4)) == 0
+    written = load(repo)['sections']
+    assert [written[sid][k] for sid in ('alpha.overview', 'alpha.reference') for k in ('audited', 'checked')] == [
+        {'release': '2.1.901', 'date': '2026-10-04'}] * 4
+    capsys.readouterr()
+    before = (repo / state.BASELINE).read_bytes()
+    assert main(cache, 'baseline', 'audited', 'beta', '--to', '2.1.950') == 2
+    assert capsys.readouterr() == ('', 'cc-guide: 2.1.950 is not a release in the newest cached changelog\n')
+    assert (repo / state.BASELINE).read_bytes() == before
+
+
 def test_accept_writes_only_the_named_sections_hash_and_changed(world):
     repo, cache, _ = world
     guide = repo / GUIDE_PATH
@@ -407,6 +423,19 @@ def test_bookkeeping_alone_brings_check_to_exit_zero(world):
     assert main(cache, 'check', '--docs', str(folder), today=today) == 1
 
 
+def test_packets_with_nothing_to_triage_exits_zero_and_writes_nothing(world, capsys):
+    '''m5 (final review): every section checked through the head and no
+    block finding is no packet, and exit 0.'''
+    repo, cache, _ = world
+    s = state.parse_baseline((repo / state.BASELINE).read_text())
+    for section in s['sections'].values():
+        section['checked'] = {'release': '2.1.902', 'date': '2026-10-04'}
+    (repo / state.BASELINE).write_text(state.dump_baseline(s))
+    assert main(cache, 'packets', '--triage') == 0
+    assert capsys.readouterr() == ('nothing to triage: no untriaged release and no block finding\n', '')
+    assert not (cache / 'packets').exists()
+
+
 def test_the_repo_lints_clean(capsys):
     '''R5: the suite enforces the lint on the repo itself. HOME is isolated,
     so no changelog is cached and the release-label check is skipped.'''
@@ -450,6 +479,25 @@ def test_cite_stamps_each_file_at_its_sections_highest_changed_and_writes_only_t
         '#!/bin/sh\n# cc-guide: alpha.overview alpha.reference @2.1.900\nexit 0\n')
     assert main(cache, 'lint') == 0
     assert capsys.readouterr() == ('', '')
+
+
+def test_cite_refuses_a_file_the_lint_never_reads_and_stamps_a_symlink_and_its_target_once(world, capsys):
+    '''A stamp on a file the lint's scan skips would never be checked
+    (deferred: `baseline cite` stamps files `lint` never reads).'''
+    repo, cache, _ = world
+    cited(repo, {'rules/style.md': '---\npaths: x\n# cc-guide: alpha.reference @2.1.219\n---\n',
+                 'specs/notes.md': '<!-- cc-guide: alpha.overview @2.1.219 -->\n'})
+    (repo / '.claude').mkdir()
+    (repo / '.claude' / 'style.md').symlink_to('../rules/style.md')
+    write_tree(repo, {'hooks/new.sh': '#!/bin/sh\n# cc-guide: alpha.overview @2.1.219\n'})
+    assert main(cache, 'baseline', 'cite', 'rules/style.md', '.claude/style.md') == 0
+    assert capsys.readouterr().out == 'stamped rules/style.md @2.1.899\n'
+    for name in ('hooks/new.sh', 'specs/notes.md'):
+        assert main(cache, 'baseline', 'cite', 'rules/style.md', name) == 2
+        assert capsys.readouterr() == ('', f'cc-guide: {name}: the lint never reads it (untracked, or under specs/,'
+                                           ' runtimes/ or review/), so its stamp would never be checked\n')
+    assert main(cache, 'baseline', 'cite', '../outside.sh') == 2
+    assert capsys.readouterr() == ('', f'cc-guide: ../outside.sh: not a file in {repo}\n')
 
 
 @pytest.mark.parametrize('files, args, message', [

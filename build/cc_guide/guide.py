@@ -5,6 +5,7 @@ import ast
 import hashlib
 import re
 import warnings
+from pathlib import PurePosixPath
 from typing import NamedTuple
 
 from blocks import fenced_lines
@@ -201,6 +202,14 @@ HASH_FORM = '`# cc-guide: <id> [<id> …] @<version>`'
 HTML_FORM = '`<!-- cc-guide: <id> [<id> …] @<version> -->`'
 FRONTMATTER = '---'
 PEP723_OPEN, PEP723_CLOSE = '# /// script', '# ///'
+# R4.1's first row: these kinds cite inside a frontmatter that opens the file,
+# so an HTML-form citation on line 1 would push their frontmatter down.
+FRONTMATTER_KINDS = ('skills/*/SKILL.md', '.claude/skills/*/SKILL.md', 'agents/*.md', '.claude/agents/*.md',
+                     'commands/*.md', 'rules/*.md')
+# R4.1: the Markdown a skill loads on demand carries no citation, since its
+# SKILL.md's covers it; a README or INSTALL file loads nowhere, so it cites itself.
+SKILL_MARKDOWN = ('skills/*/**/*.md', '.claude/skills/*/**/*.md')
+SELF_CITED = ('SKILL.md', 'README.md', 'INSTALL.md')
 
 
 class Citation(NamedTuple):
@@ -264,12 +273,18 @@ def python_lines(lines: list[str]) -> frozenset[int] | str:
 def citation_slot(path: str, lines: list[str]) -> Slot | str:
     '''R4.1's placement for the file at path, or why it can carry no
     citation. Markdown with frontmatter (skills, agents, commands, rules)
-    takes a YAML comment as the frontmatter's last line; other Markdown an
-    HTML comment on its first line; TOML, shell and Python a `#` line before
-    the first key or line of code.'''
+    takes a YAML comment as the frontmatter's last line, and those kinds
+    always open with one; other Markdown an HTML comment on its first line,
+    except the Markdown a skill loads on demand; TOML, shell and Python a `#`
+    line before the first key or line of code.'''
     name = path.rsplit('/', 1)[-1]
     if name.endswith('.md'):
+        kind = PurePosixPath(path)
+        if name not in SELF_CITED and any(kind.full_match(g) for g in SKILL_MARKDOWN):
+            return "its skill loads it on demand, so the skill's SKILL.md citation covers it"
         if lines[0] != FRONTMATTER:
+            if any(kind.full_match(g) for g in FRONTMATTER_KINDS):
+                return 'its kind cites as the last line of a frontmatter that opens the file'
             return Slot(frozenset({0}), HTML_CITE_RE, HTML_FORM, 'the first line')
         close = next((i for i in range(1, len(lines)) if lines[i] == FRONTMATTER), None)
         if close is None:

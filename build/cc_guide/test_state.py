@@ -6,9 +6,10 @@ from datetime import date
 
 import pytest
 
+import blocks
 import state
-from cc_fixtures import (MANIFEST_TOML, fixture_repo, git, guide_text,  # noqa: F401
-                         isolated_home)
+from cc_fixtures import (MANIFEST_TOML, docs_dir, fixture_repo, fixture_snapshot, fixture_state, git,  # noqa: F401
+                         guide_text, isolated_home, write_tree)
 
 STAMP = {'release': '2.1.900', 'date': '2026-09-02'}
 SECTION = {'checked': STAMP, 'changed': '2.1.900', 'audited': STAMP, 'text_hash': 'sha256:' + 'a' * 64}
@@ -272,6 +273,19 @@ def test_a_snapshot_page_read_as_other_than_utf8_is_a_setup_error(tmp_path):
     assert str(err.value) == f'{page}: not UTF-8 text (invalid start byte at byte 3)'
 
 
+def test_the_snapshot_copy_checks_every_file_before_it_writes_any(tmp_path):
+    '''M5.1 (final review, I3): the second file's conflict refuses the copy
+    before the first file is written.'''
+    write_tree(state.latest_docs(tmp_path), {'a.md': 'new a\n', 'b.md': 'new b\n'})
+    held = state.snapshot_docs(tmp_path, '2.1.902')
+    write_tree(held, {'b.md': 'old b\n'})
+    with pytest.raises(state.SetupError) as err:
+        state.copy_to_snapshot(tmp_path, '2.1.902', {'a': 'a.md', 'b': 'b.md'})
+    assert str(err.value) == (f"b: {held / 'b.md'} already holds different text, which another group may have "
+                              'baselined; it is never overwritten')
+    assert sorted(p.name for p in held.iterdir()) == ['b.md']
+
+
 def test_the_default_cache_follows_home(isolated_home):
     assert state.default_cache() == isolated_home / '.cache' / 'agent-skills' / 'cc-guide'
 
@@ -350,3 +364,16 @@ def test_a_git_grep_failure_is_a_setup_error(tmp_path):
     with pytest.raises(state.SetupError) as err:
         state.Source(repo).grep('(', ())
     assert str(err.value).startswith('git grep in the working tree: ')
+
+
+def test_a_snapshot_names_each_baselined_block_and_gives_its_text(docs_dir):
+    '''A packet shows a missing block's baselined text, read from the page's
+    snapshot by key hash with the lookup that names it (R2.3).'''
+    s = fixture_state(docs_dir)
+    payload = blocks.key_hash('Events › Payload')
+    assert state.block_namer(s, 'beta', fixture_snapshot)('events', payload) == 'Events › Payload'
+    assert state.baselined_text(s, 'beta', fixture_snapshot)('events', payload) == (
+        '## Payload\nThe payload carries `BETA_ENV`.')
+    assert state.block_namer(s, 'beta', state.no_snapshot)('events', payload) == payload
+    assert state.baselined_text(s, 'beta', state.no_snapshot)('events', payload) is None
+    assert state.baselined_text(s, 'beta', fixture_snapshot)('events', '0' * 16) is None

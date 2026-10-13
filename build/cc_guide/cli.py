@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-'''cc_guide: the drift detector for specs/guides/claude-code-customization-guide.md
-and the citations that point at it (Stages 1 and 2 of
-specs/claude-code-drift-automation-spec.md).
+'''cc_guide: the drift detector for specs/guides/claude-code-customization-guide.md,
+the citations that point at it, and the deterministic half of /cc-guide
+(Stages 1 to 3 of specs/claude-code-drift-automation-spec.md).
 
 Run: uv run --python 3.13 python build/cc_guide/cli.py <subcommand>
 
@@ -22,7 +22,7 @@ Run: uv run --python 3.13 python build/cc_guide/cli.py <subcommand>
   baseline init [--docs DIR] [--release LABEL] [--date YYYY-MM-DD] [--force]
   baseline rebaseline GROUP [PAGE | 'PAGE › KEY' ...]
   baseline advance ID [ID ...] --to RELEASE
-  baseline audited GROUP
+  baseline audited GROUP [--to RELEASE]
   baseline accept ID [ID ...] (--substantive | --editorial)
   baseline stamp
   baseline cite FILE [FILE ...]
@@ -30,7 +30,9 @@ Run: uv run --python 3.13 python build/cc_guide/cli.py <subcommand>
       stamps (R7). cite stamps each file's citation at the highest `changed`
       among its cited sections, after a review; FILE is repo-relative, as
       lint and check print it. accept --substantive keeps a new `changed`
-      above every citer's stamp (R2.4).
+      above every citer's stamp (R2.4). audited records the newest cached
+      release, or the release --to names, which settle sets to the audit
+      packet's head.
       Always the working tree; nothing is committed. rebaseline takes each
       KEY as check prints it, a key hash for a block check could not name.
       A listed rebaseline refuses while an unlisted baselined block on the
@@ -38,6 +40,30 @@ Run: uv run --python 3.13 python build/cc_guide/cli.py <subcommand>
       not hold that block's baselined text: list it too, or rebaseline the
       whole page. It also refuses to overwrite a snapshot page that holds
       other text.
+  packets (--triage [--through RELEASE] | --verify [ID ...] [--from DIR]
+           | --audit [GROUP] | --files [FILE ...]) [--out DIR]
+      Write the packets /cc-guide hands its verifier (R6.11), from check
+      --worktree's inputs: run check --worktree first, since packets never
+      fetch. --verify and --audit copy their groups' pages to the head
+      release's snapshot, which the verifier greps. --verify with no IDs
+      takes the sections the settled triage --from names sent on. --audit
+      with no group takes the due one, and refuses when none is due. --out
+      defaults to a new directory under the cache's packets/, and is refused
+      inside any checkout. Exit 0, or 2 on an error.
+  quotes --in DIR
+      Read `file<TAB>quote` rows on stdin and print FOUND file:line or
+      MISSING file for each, a quote counting only within one line of the
+      file under DIR (R8.3). Exit 0 when all are found, 1 on any miss.
+  settle DIR [--hold ID | FILE ...]
+      Settle a packet against the verifier's report, saved as DIR/report.md:
+      re-grep every quote, apply triage's completeness rules or the discard
+      rule, and print the corrections, the owner's-call items and the
+      baseline commands that follow, in R8.8's order. --hold names the
+      sections, or the file, the session leaves for the owner: they are held,
+      neither advanced, audited nor cited. Writes nothing but a settled
+      triage's DIR/settled.json. Exit 0 when every row parsed and every quote
+      was found, with nothing discarded or left out; 1 otherwise; 2 on an
+      error.
 
 After reviewing what check reported, record it in R8.8's order: accept,
 rebaseline, advance, then audited for an audited group, then stamp; then run
@@ -56,13 +82,17 @@ from functools import partial
 from pathlib import Path
 
 import baseline
-from check import check, http_get, releases_of, summary
+import packets
+from check import check, due_audit, http_get, releases_of, summary
 from docs import page_file
-from guide import by_section, read_citations, render_stamp
+from guide import CITE_SHAPED_RE, by_section, read_citations, render_stamp
 from lint import lint, stale_lines
+from quotes import check_rows
+from settle import settle
 from state import (BASELINE, BOOTSTRAP_DATE, BOOTSTRAP_RELEASE, MANIFEST, SetupError, Source, citing_files,
-                   default_cache, dump_baseline, is_iso_date, is_label, latest_docs, newest_changelog,
-                   parse_baseline, parse_manifest, read_fetch, read_utf8, snapshot_docs, snapshot_text)
+                   copy_to_snapshot, default_cache, dump_baseline, is_iso_date, is_label, latest_docs,
+                   newest_changelog, parse_baseline, parse_manifest, read_fetch, read_utf8, snapshot_docs,
+                   snapshot_text, writable_snapshot)
 
 REPO = Path(__file__).resolve().parents[2]
 
@@ -98,7 +128,9 @@ def parser() -> argparse.ArgumentParser:
     adv = b.add_parser('advance')
     adv.add_argument('ids', nargs='+')
     adv.add_argument('--to', required=True)
-    b.add_parser('audited').add_argument('group')
+    aud = b.add_parser('audited')
+    aud.add_argument('group')
+    aud.add_argument('--to', metavar='RELEASE', help='the release audited (default: the newest cached one)')
     acc = b.add_parser('accept')
     acc.add_argument('ids', nargs='+')
     kind = acc.add_mutually_exclusive_group(required=True)
@@ -106,6 +138,19 @@ def parser() -> argparse.ArgumentParser:
     kind.add_argument('--editorial', action='store_true')
     b.add_parser('stamp')
     b.add_parser('cite').add_argument('files', nargs='+')
+    k = sub.add_parser('packets')
+    mode = k.add_mutually_exclusive_group(required=True)
+    mode.add_argument('--triage', action='store_true')
+    mode.add_argument('--verify', nargs='*', metavar='ID')
+    mode.add_argument('--audit', nargs='?', const='', metavar='GROUP')
+    mode.add_argument('--files', nargs='*', metavar='FILE')
+    k.add_argument('--through', metavar='RELEASE')
+    k.add_argument('--from', dest='settled', type=Path, metavar='DIR')
+    k.add_argument('--out', type=Path)
+    sub.add_parser('quotes').add_argument('--in', dest='root', type=Path, required=True)
+    s = sub.add_parser('settle')
+    s.add_argument('folder', type=Path)
+    s.add_argument('--hold', nargs='+', default=[], metavar='ID')
     return p
 
 
@@ -199,10 +244,14 @@ def run_baseline(args, cache: Path, today: date) -> int:
         print(f'regenerated the stamp region in {manifest.guide}')
         return 0
     if args.action == 'cite':
+        readable = citing_files(tree, manifest.guide)
         stamped = []
-        for name in dict.fromkeys(args.files):
-            path = repo_path(name)
-            stamped.append((path, *baseline.cite(path, tree.require(path), state)))
+        for path in dict.fromkeys(map(repo_path, args.files)):  # a symlink and its target are one file
+            text = tree.require(path)
+            if path not in readable and any(CITE_SHAPED_RE.match(line) for line in text.split('\n')):
+                raise SetupError(f'{path}: the lint never reads it (untracked, or under specs/, runtimes/ or '
+                                 'review/), so its stamp would never be checked')
+            stamped.append((path, *baseline.cite(path, text, state)))
         for path, text, stamp in stamped:  # all checked before any write
             (REPO / path).write_text(text, encoding='utf-8')
             print(f'stamped {path} @{stamp}')
@@ -223,27 +272,20 @@ def run_baseline(args, cache: Path, today: date) -> int:
         labels = {r.label for r in newest_releases(cache)}
         new = baseline.advance(state, args.ids, args.to, labels, day)
     elif args.action == 'audited':
-        new = baseline.audited(state, manifest, args.group, newest_releases(cache)[0].label, day)
+        releases = newest_releases(cache)
+        release = args.to or releases[0].label
+        if release not in {r.label for r in releases}:
+            raise SetupError(f'{release} is not a release in the newest cached changelog')
+        new = baseline.audited(state, manifest, args.group, release, day)
     else:
         record = read_fetch(cache)
         if record is None:
             raise SetupError('no latest fetch: run check first')
         release = record['changelog_head']
-        if release == BOOTSTRAP_RELEASE:
-            raise SetupError(f'{snapshot_docs(cache, release)} is the bootstrap snapshot, which is never '
-                             'written (R2.6): run check to fetch a newer release first')
+        writable_snapshot(cache, release)
         new, pages, notes = baseline.rebaseline(state, manifest, guide_text, args.group, args.refs,
                                                 latest_docs(cache), release, partial(snapshot_text, cache))
-        target = snapshot_docs(cache, release)
-        target.mkdir(parents=True, exist_ok=True)
-        copies = [(page, target / page_file(page), (latest_docs(cache) / page_file(page)).read_bytes())
-                  for page in pages]
-        for page, held, body in copies:  # all checked before any write
-            if held.is_file() and held.read_bytes() != body:
-                raise SetupError(f'{page}: {held} already holds different text, which another group may have '
-                                 'baselined; it is never overwritten')
-        for _, held, body in copies:
-            held.write_bytes(body)
+        copy_to_snapshot(cache, release, {page: page_file(page) for page in pages})
         for line in notes:
             print(f'note: {line}', file=sys.stderr)
     baseline_path.write_text(dump_baseline(new), encoding='utf-8')
@@ -251,6 +293,51 @@ def run_baseline(args, cache: Path, today: date) -> int:
         print('the stamp region is now stale: run baseline stamp', file=sys.stderr)
     print(f'updated {BASELINE}')
     return 0
+
+
+def run_packets(args, cache: Path, today: date, now: datetime) -> int:
+    if args.through and not args.triage:
+        raise SetupError('--through goes with --triage')
+    if args.settled and args.verify is None:
+        raise SetupError('--from goes with --verify')
+    mode = next(m for m in ('triage', 'verify', 'audit', 'files') if getattr(args, m) not in (None, False))
+    world = packets.load(Source(REPO), cache, now)
+    out = args.out or cache / 'packets' / f"{now.strftime('%Y%m%dT%H%M%S')}-{mode}"
+    if mode == 'triage':
+        made = packets.triage(world, out, args.through)
+        if made is None:
+            print('nothing to triage: no untriaged release and no block finding')
+            return 0
+        made = [made]
+    elif mode == 'verify':
+        made = packets.verify(world, out, args.verify, args.settled and args.settled / packets.SETTLED)
+    elif mode == 'audit':
+        group = args.audit
+        if not group:
+            due = due_audit(world.manifest, world.state, world.manifest.cadence['audit_days'], today)
+            if not due['due']:
+                raise SetupError(f"no audit is due before {due['due_from']}: name a group to audit one anyway")
+            group = due['group']
+        made = [packets.audit(world, out, group)]
+    else:
+        made = packets.files(world, out, [repo_path(name) for name in args.files])
+    for folder in made:
+        print(f'wrote {mode} packet {folder}')
+    return 0
+
+
+def run_quotes(args) -> int:
+    if not args.root.is_dir():
+        raise SetupError(f'{args.root}: not a directory')
+    lines, ok = check_rows(args.root, sys.stdin)
+    print('\n'.join(lines))
+    return 0 if ok else 1
+
+
+def run_settle(args) -> int:
+    result = settle(args.folder, args.hold)
+    print('\n'.join(result.lines))
+    return 0 if result.clean else 1
 
 
 def main(argv=None, *, today: date | None = None, now: datetime | None = None, fetch=None) -> int:
@@ -263,6 +350,12 @@ def main(argv=None, *, today: date | None = None, now: datetime | None = None, f
             return run_lint(args, cache)
         if args.command == 'check':
             return run_check(args, cache, today, now, fetch or http_get)
+        if args.command == 'packets':
+            return run_packets(args, cache, today, now)
+        if args.command == 'quotes':
+            return run_quotes(args)
+        if args.command == 'settle':
+            return run_settle(args)
         return run_baseline(args, cache, today)
     except SetupError as exc:
         print(f'cc-guide: {exc}', file=sys.stderr)

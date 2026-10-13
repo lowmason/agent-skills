@@ -1,7 +1,7 @@
 '''`check`: fetch the docs when the changelog head moved, compare each group's
 selected blocks with the baseline, list each section's untriaged releases
 and the files citing it, and report what is due (drift spec R6). `--hook`
-(R6.10) is Stage 4's and `packets` (R6.11) Stage 3's.'''
+(R6.10) is Stage 4's; packets.py builds R6.11's packets from these parts.'''
 import hashlib
 import http.client
 import json
@@ -168,6 +168,7 @@ class Finding(NamedTuple):
     page: str
     key: str | None         # None for a missing page
     candidates: list[str]
+    key_hash: str | None    # the key as baseline.json stores it (R2.3); None for a missing page
 
     def ref(self) -> str:
         return self.page if self.key is None else self.page + SEP + self.key
@@ -196,7 +197,7 @@ def compare(manifest: Manifest, state: dict, terms: dict, docs: Docs,
                 continue
             text = docs.pages.get(page)
             if text is None or (not is_platform(page) and page not in slugs):
-                findings.append(Finding(gid, 'missing-page', page, None, list(sec_terms)))
+                findings.append(Finding(gid, 'missing-page', page, None, list(sec_terms), None))
                 continue
             found = page_blocks(text)
             live = key_names(found)
@@ -208,14 +209,15 @@ def compare(manifest: Manifest, state: dict, terms: dict, docs: Docs,
                     gone = name(page, kh)
                     # A block named only by its hash matches no term: every section is a candidate.
                     cands = list(sec_terms) if gone == kh else candidates(gone, '', sec_terms)
-                    findings.append(Finding(gid, 'missing', page, gone, cands))
+                    findings.append(Finding(gid, 'missing', page, gone, cands, kh))
                 elif block_hash(found[key]) != recorded:
-                    findings.append(Finding(gid, 'changed', page, key, candidates(key, found[key], sec_terms)))
+                    findings.append(Finding(gid, 'changed', page, key, candidates(key, found[key], sec_terms), kh))
                 elif key not in chosen:
                     info.append(page + SEP + key)
             for key in found:
                 if key in chosen and key_hash(key) not in old:
-                    findings.append(Finding(gid, 'new', page, key, candidates(key, found[key], sec_terms)))
+                    findings.append(Finding(gid, 'new', page, key, candidates(key, found[key], sec_terms),
+                                            key_hash(key)))
         for page in base:
             if page not in group.pages:
                 info += [page + SEP + name(page, kh) for kh in base[page]]

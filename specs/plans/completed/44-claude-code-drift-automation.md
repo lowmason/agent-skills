@@ -1,5 +1,7 @@
 # Claude Code Drift Automation, Stage 3 (Act) Implementation Plan
 
+**Status: COMPLETE (2026-10-13)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 > **Where this runs.** This plan reaches `main` through its own PR. After that merges, create the worktree from the main checkout (Global Constraints, "Worktree") and execute there: `/Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-stage3`, on branch `feat/cc-drift-stage3`. Start the execution session with that worktree as its working directory, not the main checkout: subagent-driven-development's `sdd-workspace` and `review-package` take the repo root and `HEAD` from the shell's working directory, so launched from the main checkout they would write the SDD workspace there and diff `main`. Below, **`W`** names that absolute path in prose. Every command spells the path out, because a worktree-isolated session refuses compound shell (`&&`, `$(...)`).
@@ -242,7 +244,7 @@ Two Claude Code facts the new files rely on that no guide section covers:
 
 Each edit is tagged `(owner, plan 44, 2026-10-12)`; the status line stays untouched. Your human partner approves this wording at plan review.
 
-- [ ] **Step 1: The Layout names `settle` and its modules (S1, S2)**
+- [x] **Step 1: The Layout names `settle` and its modules (S1, S2)**
 
 **Edit** `specs/claude-code-drift-automation-spec.md` — replace:
 
@@ -265,7 +267,7 @@ with:
     (`blocks.py`) (owner, plan 44, 2026-10-12);
 ```
 
-- [ ] **Step 2: R6.11's grammar and packet layout (S3, S4, S22, S23)**
+- [x] **Step 2: R6.11's grammar and packet layout (S3, S4, S22, S23)**
 
 **Edit** `specs/claude-code-drift-automation-spec.md` — replace:
 
@@ -294,7 +296,7 @@ rows carry over (R8.10); `--verify` with no IDs then takes the sections it
 sent on (owner, plan 44, 2026-10-12).
 ```
 
-- [ ] **Step 3: R8.3's `--in` and `MISSING file` (S11)**
+- [x] **Step 3: R8.3's `--in` and `MISSING file` (S11)**
 
 **Edit** `specs/claude-code-drift-automation-spec.md` — replace:
 
@@ -311,7 +313,7 @@ files under `<dir>` and prints `FOUND file:line` or `MISSING file` per row,
 exiting 1 on any miss (owner, plan 44, 2026-10-12).
 ```
 
-- [ ] **Step 4: R8.4 step 1, the missing block's text and the ranges (S4, T5, D3)**
+- [x] **Step 4: R8.4 step 1, the missing block's text and the ranges (S4, T5, D3)**
 
 **Edit** `specs/claude-code-drift-automation-spec.md` — replace:
 
@@ -345,7 +347,7 @@ with:
    are held (owner, plan 44, 2026-10-12).
 ```
 
-- [ ] **Step 5: R8.4 step 4, the owner cap (S5)**
+- [x] **Step 5: R8.4 step 4, the owner cap (S5)**
 
 **Edit** `specs/claude-code-drift-automation-spec.md` — replace:
 
@@ -362,7 +364,7 @@ with:
    release (owner, plan 44, 2026-10-12). Silence never counts as NOISE.
 ```
 
-- [ ] **Step 6: R8.5, the TODO reach and the none line (S7, S19)**
+- [x] **Step 6: R8.5, the TODO reach and the none line (S7, S19)**
 
 **Edit** `specs/claude-code-drift-automation-spec.md` — replace:
 
@@ -383,7 +385,7 @@ with:
   (owner, plan 44, 2026-10-12).
 ```
 
-- [ ] **Step 7: R8.6, an audit when none is due (S22)**
+- [x] **Step 7: R8.6, an audit when none is due (S22)**
 
 **Edit** `specs/claude-code-drift-automation-spec.md` — replace:
 
@@ -399,7 +401,7 @@ when none is due, `packets` refuses, and a named group is audited anyway
 (owner, plan 44, 2026-10-12).
 ```
 
-- [ ] **Step 8: R8.7's row form and none line (S10, S19)**
+- [x] **Step 8: R8.7's row form and none line (S10, S19)**
 
 **Edit** `specs/claude-code-drift-automation-spec.md` — replace:
 
@@ -417,7 +419,7 @@ with:
    on (owner, plan 44, 2026-10-12).
 ```
 
-- [ ] **Step 9: R8.8 step 1, the hold rules (S6, S19, S20, S24, S25)**
+- [x] **Step 9: R8.8 step 1, the hold rules (S6, S19, S20, S24, S25)**
 
 **Edit** `specs/claude-code-drift-automation-spec.md` — replace:
 
@@ -453,7 +455,7 @@ with:
    run changed (owner, plan 44, 2026-10-12).
 ```
 
-- [ ] **Step 10: R8.8 step 2, a registered deviation (S17, D5)**
+- [x] **Step 10: R8.8 step 2, a registered deviation (S17, D5)**
 
 **Edit** `specs/claude-code-drift-automation-spec.md` — replace:
 
@@ -475,7 +477,7 @@ with:
    file (owner, plan 44, 2026-10-12).
 ```
 
-- [ ] **Step 11: R8.8 step 3, what goes to the owner (S6, S7, S24)**
+- [x] **Step 11: R8.8 step 3, what goes to the owner (S6, S7, S24)**
 
 **Edit** `specs/claude-code-drift-automation-spec.md` — replace:
 
@@ -495,7 +497,7 @@ with:
    plan 44, 2026-10-12).
 ```
 
-- [ ] **Step 12: R8.8 step 4, no backward advance (S26)**
+- [x] **Step 12: R8.8 step 4, no backward advance (S26)**
 
 **Edit** `specs/claude-code-drift-automation-spec.md` — replace:
 
@@ -512,7 +514,9 @@ with:
      (owner, plan 44, 2026-10-12); for an audit, `audited` instead;
 ```
 
-- [ ] **Step 13: R8.10, `settle` (S1, S9, S15, S18–S21)**
+- [x] **Step 13: R8.10, `settle` (S1, S9, S15, S18–S21)**
+
+> Deviation: the final review's fix wave (owner, 2026-10-13) amended the spec again: R6.11 (a packet's `cache` key, `--out` checked before any snapshot write, `--from` refusing a cleared ID), R7 (`baseline audited GROUP --to RELEASE`), R8.4 steps 5–6 (a failed block-row quote sends every candidate on; a broken line flags what it names, a broken coverage line leaves its release uncovered, a line naming nothing holds the packet; a block that flags another group's section holds its own group's rebaseline) and R8.10 (list markers stripped, template and table headers skipped, a line past the guide's end holds every section, an outside-the-packet none line holds nothing, printed commands carry a non-default `--cache`), each tagged `(owner, plan 44, 2026-10-13)`.
 
 **Edit** `specs/claude-code-drift-automation-spec.md` — replace:
 
@@ -553,7 +557,7 @@ every quote was found, and nothing was discarded or left out; 1 otherwise.
 It applies nothing and commits nothing.
 ```
 
-- [ ] **Step 14: R11.5's first triage (DF2, D1)**
+- [x] **Step 14: R11.5's first triage (DF2, D1)**
 
 **Edit** `specs/claude-code-drift-automation-spec.md` — replace:
 
@@ -573,7 +577,7 @@ with:
   leaves the block out still sends every candidate section to verify.
 ```
 
-- [ ] **Step 15: Sequencing item 3's first jobs (DF1, DF2)**
+- [x] **Step 15: Sequencing item 3's first jobs (DF1, DF2)**
 
 **Edit** `specs/claude-code-drift-automation-spec.md` — replace:
 
@@ -590,7 +594,7 @@ with:
    (owner, plan 44, 2026-10-12).
 ```
 
-- [ ] **Step 16: Validation 3's triage bullet (DF2)**
+- [x] **Step 16: Validation 3's triage bullet (DF2)**
 
 **Edit** `specs/claude-code-drift-automation-spec.md` — replace:
 
@@ -606,7 +610,9 @@ with:
      (owner, plan 44, 2026-10-12).
 ```
 
-- [ ] **Step 17: Lint and commit**
+- [x] **Step 17: Lint and commit**
+
+> Deviation: the commits for Tasks 1–7 end with `Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>`, the executing session's model then, not the `Claude Opus 5.5` the commit blocks show (Global Constraints, trailer rule). The session moved to Opus 5.5 for the final review's fix wave, whose six commits (f775b22..b970318) end with `Claude Opus 5.5`.
 
 Run `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-stage3 --python 3.13 python build/cc_guide/cli.py lint`. Expected: exit 0 (the spec sits outside the citation scan, and no label changed). Confirm the branch (Global Constraints), then:
 
@@ -629,7 +635,7 @@ git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-st
   - `quotes.check_rows(root: Path, rows: Iterable[str]) -> tuple[list[str], bool]`: `FOUND file:line` or `MISSING file` per `file<TAB>quote` row, skipping blank and `#` rows, and whether all were found;
   - `cli.py quotes --in DIR`: exit 0 when all are found, 1 on any miss, 2 when DIR is not a directory (`cc-guide: DIR: not a directory`).
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 **Create** `build/cc_guide/test_quotes.py`:
 
@@ -702,12 +708,12 @@ def test_the_cli_exits_one_on_any_miss_and_two_without_a_directory(root, monkeyp
     assert capsys.readouterr() == ('', f"cc-guide: {root / 'nope'}: not a directory\n")
 ```
 
-- [ ] **Step 2: Run them to verify they fail**
+- [x] **Step 2: Run them to verify they fail**
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-stage3/build/cc_guide --python 3.13 --with pytest python -m pytest -q test_quotes.py`
 Expected: `1 error` during collection, `ModuleNotFoundError: No module named 'quotes'`.
 
-- [ ] **Step 3: Write `quotes.py`**
+- [x] **Step 3: Write `quotes.py`**
 
 **Create** `build/cc_guide/quotes.py`:
 
@@ -769,7 +775,7 @@ def check_rows(root: Path, rows: Iterable[str]) -> tuple[list[str], bool]:
     return out, not any(o.startswith('MISSING') for o in out)
 ```
 
-- [ ] **Step 4: Wire `quotes` into the CLI**
+- [x] **Step 4: Wire `quotes` into the CLI**
 
 **Edit** `build/cc_guide/cli.py` — replace:
 
@@ -869,12 +875,12 @@ with:
             return run_quotes(args)
 ```
 
-- [ ] **Step 5: Run the suite to verify it passes**
+- [x] **Step 5: Run the suite to verify it passes**
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-stage3/build/cc_guide --python 3.13 --with pytest python -m pytest -q`
 Expected: all pass, +6 over the baseline.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 Confirm the branch, then:
 
@@ -903,7 +909,7 @@ git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-st
   - `state.writable_snapshot(cache: Path, release: str) -> Path`, refusing the bootstrap with the message `rebaseline` gave before;
   - `state.copy_to_snapshot(cache: Path, release: str, files: dict[str, str]) -> Path`: label → cache file name, every file checked before any is written, the refusal message `rebaseline` gave before.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 **Edit** `build/cc_guide/test_check.py` — replace:
 
@@ -977,12 +983,12 @@ def test_a_snapshot_names_each_baselined_block_and_gives_its_text(docs_dir):
     assert state.baselined_text(s, 'beta', fixture_snapshot)('events', '0' * 16) is None
 ```
 
-- [ ] **Step 2: Run them to verify they fail**
+- [x] **Step 2: Run them to verify they fail**
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-stage3/build/cc_guide --python 3.13 --with pytest python -m pytest -q test_check.py::test_each_block_finding_carries_its_key_hash test_state.py::test_a_snapshot_names_each_baselined_block_and_gives_its_text`
 Expected: `2 failed`: `AttributeError: 'Finding' object has no attribute 'key_hash'` and `AttributeError: module 'state' has no attribute 'baselined_text'`.
 
-- [ ] **Step 3: Carry the key hash, read the snapshot's blocks, share the copy**
+- [x] **Step 3: Carry the key hash, read the snapshot's blocks, share the copy**
 
 **Edit** `build/cc_guide/check.py` — replace:
 
@@ -1180,12 +1186,12 @@ with:
         copy_to_snapshot(cache, release, {page: page_file(page) for page in pages})
 ```
 
-- [ ] **Step 4: Run the suite to verify it passes**
+- [x] **Step 4: Run the suite to verify it passes**
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-stage3/build/cc_guide --python 3.13 --with pytest python -m pytest -q`
 Expected: all pass, +8 over the baseline. The existing `rebaseline` tests pin the refactored copy's refusals, word for word.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 Confirm the branch, then:
 
@@ -1211,7 +1217,7 @@ git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-st
 
 These fold in three deferred items from plan 43 (`specs/deferred_items.md`): "An HTML-form citation can sit above a rules file's frontmatter", "A citation in on-demand Markdown lints clean" and "`baseline cite` stamps files `lint` never reads".
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 **Edit** `build/cc_guide/test_citations.py` — replace:
 
@@ -1288,7 +1294,7 @@ def test_cite_refuses_a_file_the_lint_never_reads_and_stamps_a_symlink_and_its_t
 @pytest.mark.parametrize('files, args, message', [
 ```
 
-- [ ] **Step 2: Run them to verify they fail**
+- [x] **Step 2: Run them to verify they fail**
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-stage3/build/cc_guide --python 3.13 --with pytest python -m pytest -q -rf test_citations.py test_cli.py`
 Expected: `11 failed`, every other test in the two files passing.
@@ -1296,7 +1302,7 @@ Expected: `11 failed`, every other test in the two files passing.
 - `test_cite_refuses_…` fails because `stamped rules/style.md @2.1.899` prints twice.
 - **The named exception:** the three `test_a_skills_readme_or_install_guide_and_other_markdown_still_cite_on_line_one` cases pass here. They pin the behaviour the new rule must leave alone: a README, an INSTALL guide and Markdown outside a skill keep their line-1 HTML citation.
 
-- [ ] **Step 3: Teach `citation_slot` the kinds, and guard `cite`**
+- [x] **Step 3: Teach `citation_slot` the kinds, and guard `cite`**
 
 **Edit** `build/cc_guide/guide.py` — replace:
 
@@ -1401,7 +1407,7 @@ with:
             stamped.append((path, *baseline.cite(path, text, state)))
 ```
 
-- [ ] **Step 4: Run the suite and the repo lint**
+- [x] **Step 4: Run the suite and the repo lint**
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-stage3/build/cc_guide --python 3.13 --with pytest python -m pytest -q`
 Expected: all pass, +22 over the baseline.
@@ -1409,7 +1415,7 @@ Expected: all pass, +22 over the baseline.
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-stage3 --python 3.13 python build/cc_guide/cli.py lint`
 Expected: exit 0. No tracked file breaks the stricter placement rules.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 Confirm the branch, then:
 
@@ -1444,7 +1450,7 @@ git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-st
     - audit adds `group`, `sections`, `lines`, `docs`, `releases`, `held` and `blocks`, with verify's `quotes`;
     - files adds `file`, `copy`, `stamp`, `sections`, `lines` and `changed`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 **Create** `build/cc_guide/test_packets.py`:
 
@@ -1843,12 +1849,14 @@ def test_the_cli_writes_verify_audit_and_files_packets(world, monkeypatch, capsy
     assert capsys.readouterr()[0].split('\n')[-2] == f"wrote verify packet {tmp_path / 'w' / 'beta'}"
 `````
 
-- [ ] **Step 2: Run them to verify they fail**
+- [x] **Step 2: Run them to verify they fail**
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-stage3/build/cc_guide --python 3.13 --with pytest python -m pytest -q test_packets.py`
 Expected: `1 error` during collection, `ModuleNotFoundError: No module named 'packets'`.
 
-- [ ] **Step 3: Write `packets.py`**
+- [x] **Step 3: Write `packets.py`**
+
+> Deviation: the final review's fix wave (owner, 2026-10-13; f775b22) changed this code: `index.json` records the resolved `cache`; `--verify` and `--audit` check `--out` (`check_out`) before writing the head snapshot; `files` refuses a cited ID in neither the baseline nor the guide, and `read_settled` a malformed `settled.json`, with a `SetupError`; `--verify --from` refuses an ID the triage cleared. `test_state.py` gained the all-checked-before-any-write test for `copy_to_snapshot`.
 
 **Create** `build/cc_guide/packets.py`:
 
@@ -2215,7 +2223,7 @@ def files(world: World, out: Path, paths: list[str]) -> list[Path]:
     return made
 ```
 
-- [ ] **Step 4: Wire `packets` into the CLI**
+- [x] **Step 4: Wire `packets` into the CLI**
 
 **Edit** `build/cc_guide/check.py` — replace:
 
@@ -2348,12 +2356,12 @@ with:
             return run_quotes(args)
 ```
 
-- [ ] **Step 5: Run the suite to verify it passes**
+- [x] **Step 5: Run the suite to verify it passes**
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-stage3/build/cc_guide --python 3.13 --with pytest python -m pytest -q`
 Expected: all pass, +47 over the baseline.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 Confirm the branch, then:
 
@@ -2380,7 +2388,9 @@ git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-st
   - `settle.settle(folder: Path, hold: Iterable[str] = ()) -> Settled(lines: list[str], clean: bool, saved: dict | None)`, which writes `settled.json` for a triage (`advance_to`, `verify`, `cleared`, `held`, `rows`);
   - `cli.py settle DIR [--hold ID | FILE ...]`: exit 0 when clean, 1 otherwise, 2 on a setup error such as a missing `report.md`, a `--hold` name outside the packet, or `--hold` on a triage.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
+
+> Deviation: in the fix wave (owner, 2026-10-13), `test_settle.py`'s `world` fixture builds its cache at `state.default_cache()` under the isolated HOME instead of `tmp_path / 'cache'`. The overlay allowed changing only tests that pinned a reversed behaviour; this change kept every pinned command string byte-identical once commands could carry `--cache`, and weakened no assertion. Sixteen of the wave's new cases (13 isolating hold-rule tests, `copy_to_snapshot`'s included, and 3 untested-edge tests) pin behaviour the code already had, so they passed at RED. Each was proven instead by a mutant it kills (60 of 60 killed). One shell loop polled the harness output, against the overlay's plain-command rule, with no effect on the code.
 
 **Create** `build/cc_guide/test_settle.py`:
 
@@ -3102,12 +3112,14 @@ def test_the_cli_exits_on_the_report_and_two_without_one(world, tmp_path, capsys
     assert capsys.readouterr() == ('', 'cc-guide: --hold goes with a verify, audit or files packet\n')
 ````
 
-- [ ] **Step 2: Run them to verify they fail**
+- [x] **Step 2: Run them to verify they fail**
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-stage3/build/cc_guide --python 3.13 --with pytest python -m pytest -q test_settle.py`
 Expected: `1 error` during collection, `ModuleNotFoundError: No module named 'settle'`.
 
-- [ ] **Step 3: Write `settle.py`**
+- [x] **Step 3: Write `settle.py`**
+
+> Deviation: Task 6's review found plan-mandated defects in this code (fail-safe gaps and untested hold rules), and the final review confirmed them. Task 6 stayed open, and the owner had them fixed test-first in one wave after the final review (c335f36, f67869d, fe606b8, 16ee8ec, b970318): a failed block-row quote flags every candidate; a broken line flags the sections and blocks it names, a broken coverage line leaves its release uncovered, and a line that names nothing holds the packet; list markers are stripped; a block whose row flags another group's section holds its own group's rebaseline (the owner's design (a)); `section_at` stops at the guide's end; template and table headers are skipped; an outside-the-packet none line holds nothing; printed commands carry a non-default `--cache`; 13 isolating tests pin the hold rules. A mutation harness killed 60 of 60 mutants. The replay no longer matches `settle.py`, `packets.py` or their tests.
 
 **Create** `build/cc_guide/settle.py`:
 
@@ -3738,7 +3750,9 @@ def settle(folder: Path, hold: Iterable[str] = ()) -> Settled:
     raise SetupError(f'{folder / INDEX}: unknown mode {mode!r}')
 ````
 
-- [ ] **Step 4: Wire `settle` into the CLI**
+- [x] **Step 4: Wire `settle` into the CLI**
+
+> Deviation: the owner approved `baseline audited GROUP --to RELEASE` (2026-10-13; fe606b8), refusing a release the newest cached changelog lacks as `advance` does, so settle prints `audited <group> --to <head>` and an audit is recorded at the release its packet reviewed, not the cache's newest. `baseline.py` is unchanged.
 
 **Edit** `build/cc_guide/cli.py` — replace:
 
@@ -3824,12 +3838,12 @@ with:
             return run_settle(args)
 ```
 
-- [ ] **Step 5: Run the suite to verify it passes**
+- [x] **Step 5: Run the suite to verify it passes**
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-stage3/build/cc_guide --python 3.13 --with pytest python -m pytest -q`
 Expected: all pass, +99 over the baseline.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 Confirm the branch, then:
 
@@ -3853,7 +3867,7 @@ git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-st
 
 The skill's description quotes its trigger phrases (`trigger-phrase-presence`). Its body escapes each `$` before a digit (`\$0.05`), because the `substitution-hazard` check reads `$0` as a positional argument. The agent's body has no `## Read-only contract` heading, which would put it in the read-only guard's roster semantics; without Bash it needs none (R8.1).
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 **Create** `build/cc_guide/test_skill_files.py`:
 
@@ -3917,12 +3931,12 @@ def test_the_skill_and_the_verifier_state_the_report_formats_settle_parses(form)
         assert form in (REPO / path).read_text(encoding='utf-8'), f'{path} lacks {form!r}'
 ```
 
-- [ ] **Step 2: Run them to verify they fail**
+- [x] **Step 2: Run them to verify they fail**
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-stage3/build/cc_guide --python 3.13 --with pytest python -m pytest -q test_skill_files.py`
 Expected: `12 failed`, every one a `FileNotFoundError` for `.claude/agents/cc-guide-verifier.md` (10, seven of them the format cases) or `.claude/skills/cc-guide/SKILL.md` (2).
 
-- [ ] **Step 3: Write the verifier**
+- [x] **Step 3: Write the verifier**
 
 **Create** `.claude/agents/cc-guide-verifier.md`:
 
@@ -3995,7 +4009,9 @@ The cited file's copy is the file `index.json` names as `copy`; its line numbers
 `file` is the path `index.json` names as `file`, as in `hooks/README.md:56`. A not-covered row may leave its quote `-`. A cited section with no row and no none line holds the file, as if unreviewed.
 ```
 
-- [ ] **Step 4: Write the skill and its formats reference**
+- [x] **Step 4: Write the skill and its formats reference**
+
+> Deviation: the fix wave amended `references/formats.md` (Packets' `cache` key; Reports' list of lines dropped without listing; "What settle does with a report"; Bookkeeping's capped `advance_to` and `audited --to`) and `SKILL.md` (the audit paragraph, and "that file and statement" for R8.8 step 2).
 
 **Create** `.claude/skills/cc-guide/SKILL.md`:
 
@@ -4129,12 +4145,12 @@ Files, one row per statement that rests on a cited section, and a none line for 
 - **Bookkeeping**, in R8.8's order: `baseline accept --substantive` for the sections whose text changed, `rebaseline` for the resolved blocks, `advance` to the triage's newest release (verify after a triage), for each section not checked past it, or `audited` (audit), `cite` (files), `stamp`; then `cli.py lint` and `build/check_conformance.py`. A ranged triage ends with the next range's `packets --triage --through` command.
 ```
 
-- [ ] **Step 5: Watch the register trip (T4)**
+- [x] **Step 5: Watch the register trip (T4)**
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-stage3 --python 3.13 --with pyyaml python build/check_conformance.py`
 Expected: exit 1, with one finding: `.claude/skills/cc-guide/SKILL.md: dmi-handoff-consistency (skills.frontmatter, commands.overview): sets disable-model-invocation: true, but build/CLAUDE.md names cc-guide, and Claude cannot invoke a manual-only skill`.
 
-- [ ] **Step 6: Reword the docs**
+- [x] **Step 6: Reword the docs**
 
 **Edit** `build/CLAUDE.md` — replace:
 
@@ -4173,7 +4189,7 @@ with:
 
 `build/CLAUDE.md` gains 5 lines; `CLAUDE.md` gains none (DF3).
 
-- [ ] **Step 7: Run the tests and the register**
+- [x] **Step 7: Run the tests and the register**
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-stage3/build/cc_guide --python 3.13 --with pytest python -m pytest -q`
 Expected: all pass, +111 over the baseline.
@@ -4181,7 +4197,7 @@ Expected: all pass, +111 over the baseline.
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-stage3 --python 3.13 --with pyyaml python build/check_conformance.py`
 Expected: exit 0.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 Confirm the branch, then:
 
@@ -4196,22 +4212,26 @@ git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-st
 
 **Files:** none changed. This task produces the completion report's evidence.
 
-- [ ] **Step 1: Every existing gate (Validation 6).** Run each, and record each outcome against the baseline:
+- [x] **Step 1: Every existing gate (Validation 6).** Run each, and record each outcome against the baseline:
+
   - the build suite (+111, the 4 known failures only);
   - the cc_guide suite (+111);
   - `hooks/` on both interpreters (unchanged): `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-stage3/hooks --python 3.13 --with pytest python -m pytest -q`, then the same with `--python /usr/bin/python3`;
   - `bash /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-stage3/build/run_commit_lints.sh` (all seven pass; it runs `check_frontmatter.py`, `check_provenance.py`, `check_snippets.py skills/` Tier 1, the dependency-drift test, `sync_runtime_assets.py --check` and `cli.py lint`);
   - `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-stage3 --python 3.13 --with pyyaml python build/check_conformance.py` (exit 0).
-- [ ] **Step 2: The new commands against the real cache, offline.** Each reads `~/.cache/agent-skills/cc-guide/latest/` and fetches nothing. The packets go to the cache's default `packets/` directory, never into the worktree (S23).
+
+> Deviation: re-run after the fix wave, at b970318: the build suite 1005 passed (+151: this plan's +111 and the wave's +40), with the 4 known failures and 11 skipped; cc_guide 447 (+151); `hooks/` 274 on both interpreters; all seven commit lints and `check_conformance.py` pass. Steps 2 and 3 gave the same results as before, and the files packet's `index.json` now carries `cache`.
+
+- [x] **Step 2: The new commands against the real cache, offline.** Each reads `~/.cache/agent-skills/cc-guide/latest/` and fetches nothing. The packets go to the cache's default `packets/` directory, never into the worktree (S23).
   - `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-stage3 --python 3.13 python build/cc_guide/cli.py packets --triage`: exit 0. It prints either `nothing to triage: no untriaged release and no block finding`, or `wrote triage packet …` when a release has landed since 2.1.296.
   - `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-stage3 --python 3.13 python build/cc_guide/cli.py packets --files agents/explore.md`: exit 0. It prints `wrote files packet /Users/lowell/.cache/agent-skills/cc-guide/packets/<stamp>-files/agents__explore.md`. That packet's `index.json` names `stamp` `2.1.219` and the three sections the file cites.
   - `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-stage3 --python 3.13 python build/cc_guide/cli.py packets --audit`: exit 2 with `cc-guide: no audit is due before 2026-11-02: name a group to audit one anyway`, until that date.
   - Record the packet paths in the completion report; they hold the guide and one cited file, so the owner may delete them.
-- [ ] **Step 3: Hygiene.**
+- [x] **Step 3: Hygiene.**
   - `git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-stage3 status --porcelain --untracked-files=normal` prints nothing (`.sdd/` is gitignored).
   - `git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-stage3 grep -c -E '^[[:blank:]]*(#|<!--)[[:blank:]]*cc-guide:' -- . ':(exclude)specs'` lists 43 files, `:1` each: the 41 that plan 43's sweep cited, plus Task 7's two.
   - `cli.py lint` prints the same 41 `STALE` lines as at the baseline, none naming a `.claude/` file.
-- [ ] **Step 4: The coverage gaps (R4.3).** Put G1 and G2 (Planning record) in the completion report for the owner, with any gap execution found.
+- [x] **Step 4: The coverage gaps (R4.3).** Put G1 and G2 (Planning record) in the completion report for the owner, with any gap execution found.
 
 ---
 
