@@ -88,11 +88,11 @@ def checkout_of(path: Path) -> Path | None:
     return next((p for p in (path, *path.parents) if (p / '.git').exists()), None)
 
 
-def new_dir(out: Path, repo: Path) -> Path:
-    '''An empty directory for a run, outside every checkout (spec Decision
-    10), since packets hold docs text: the repo's, the main checkout a
-    worktree sits in, and any other. An existing one must be empty, so a
-    report from an earlier run is never settled against a new packet.'''
+def check_out(out: Path, repo: Path) -> None:
+    '''Refuse a run's directory inside any checkout (spec Decision 10),
+    since packets hold docs text: the repo's, the main checkout a worktree
+    sits in, and any other. An existing one must be empty, so a report from
+    an earlier run is never settled against a new packet. Writes nothing.'''
     where = out.resolve()
     inside = checkout_of(where) or (repo.resolve() if where.is_relative_to(repo.resolve()) else None)
     if inside is not None:
@@ -100,6 +100,11 @@ def new_dir(out: Path, repo: Path) -> Path:
                          'every checkout')
     if out.exists() and (not out.is_dir() or any(out.iterdir())):
         raise SetupError(f'{out}: not an empty directory; packets never write over an earlier packet')
+
+
+def new_dir(out: Path, repo: Path) -> Path:
+    '''An empty directory for a run, once check_out allows it.'''
+    check_out(out, repo)
     out.mkdir(parents=True, exist_ok=True)
     return out
 
@@ -113,8 +118,10 @@ def write_packet(world: World, out: Path, index: dict, files: dict[str, str | li
 
 
 def header(world: World, mode: str) -> dict:
+    '''Every index's opening keys. `cache` is the cache the packet was built
+    on, which settle names in its commands when it is not the default.'''
     return {'mode': mode, 'inputs': world.source.label, 'generated_at': world.now.isoformat(timespec='seconds'),
-            'head': world.head}
+            'head': world.head, 'cache': str(world.cache.resolve())}
 
 
 def page_holds(world: World) -> set[str]:
@@ -264,28 +271,44 @@ def known_sections(world: World, ids: list[str]) -> None:
         raise SetupError(f"unknown section IDs: {', '.join(unknown)}")
 
 
+def read_settled(path: Path) -> dict:
+    '''A settled triage's settled.json, as settle wrote it.'''
+    if not path.is_file():
+        raise SetupError(f'{path}: not found; run settle on the triage packet first')
+    try:
+        triaged = json.loads(path.read_text(encoding='utf-8'))
+    except json.JSONDecodeError as exc:
+        raise SetupError(f'{path}: not valid JSON ({exc}); settle the triage packet again') from None
+    if not isinstance(triaged, dict) or triaged.get('mode') != 'triage':
+        raise SetupError(f'{path}: not a settled triage')
+    return triaged
+
+
 def verify(world: World, out: Path, ids: list[str], settled: Path | None) -> list[Path]:
     '''R8.5's packets, one per group of the named sections: the guide, the
     sections' lines with the triage rows that sent them here, every block
     finding of the group, the changelog, and the group's pages copied to the
     head release's snapshot. From a settled triage, `advance_to`, `cleared`
     and `held` carry over for settle's bookkeeping, and no IDs means the
-    sections it sent on. `checked` names each section's checked release, so
-    settle never advances one backwards.'''
-    if settled and not settled.is_file():
-        raise SetupError(f'{settled}: not found; run settle on the triage packet first')
-    triaged = json.loads(settled.read_text(encoding='utf-8')) if settled else {}
-    if settled and triaged.get('mode') != 'triage':
-        raise SetupError(f'{settled}: not a settled triage')
+    sections it sent on; a section it cleared is refused, since its own
+    commands advance it. `checked` names each section's checked release, so
+    settle never advances one backwards. --out is checked before the
+    snapshot is written.'''
+    triaged = read_settled(settled) if settled else {}
     if not ids and not settled:
         raise SetupError('--verify needs section IDs, or --from a settled triage')
     ids = list(ids) or triaged.get('verify', [])
     if not ids:
         raise SetupError(f'{settled}: its triage sent no section to verify')
     known_sections(world, ids)
+    again = [sid for sid in dict.fromkeys(ids) if sid in triaged.get('cleared', [])]
+    if again:
+        raise SetupError(f"{settled}: its triage cleared {', '.join(again)}, which its own commands advance; "
+                         'verify without --from')
     holds = page_holds(world) | set(triaged.get('held', []))
     owner = world.manifest.group_of()
     groups = [gid for gid in world.manifest.groups if any(owner[sid] == gid for sid in ids)]
+    check_out(out, world.source.repo)
     docs = group_docs(world, groups)
     new_dir(out, world.source.repo)
     made = []
@@ -309,10 +332,12 @@ def verify(world: World, out: Path, ids: list[str], settled: Path | None) -> lis
 def audit(world: World, out: Path, group: str) -> Path:
     '''R8.6's packet: every section of the group, all its pages copied to the
     head release's snapshot, every bullet of each release untriaged for its
-    sections, the changelog, and the group's block findings.'''
+    sections, the changelog, and the group's block findings. --out is
+    checked before the snapshot is written.'''
     if group not in world.manifest.groups:
         raise SetupError(f'unknown group {group}')
     sids = world.manifest.groups[group].sections
+    check_out(out, world.source.repo)
     docs = group_docs(world, [group])
     pending = {sid: ls for sid, ls in untriaged(world.state, world.releases).items() if sid in sids}
     labels = sorted({label for ls in pending.values() for label in ls}, key=version_key)
@@ -332,7 +357,8 @@ def files(world: World, out: Path, paths: list[str]) -> list[Path]:
     '''R8.7's packets, one per file: a copy of the file, the guide, and its
     cited sections' lines and text, each marked when it changed after the
     file's stamp. No paths: the stale backlog. A path must be a citing file
-    the lint reads.'''
+    the lint reads, citing only sections both the baseline and the guide
+    hold.'''
     citations, _ = read_citations(citing_files(world.source, world.manifest.guide))
     by_path = {c.path: c for c in citations}
     targets = list(dict.fromkeys(paths)) or [path for path, _ in stale_citations(citations, world.state)]
@@ -342,6 +368,11 @@ def files(world: World, out: Path, paths: list[str]) -> list[Path]:
     if not targets:
         raise SetupError('no stale citation: name the files to review')
     texts = {s.id: s.text for s in sections(world.guide) if s.id}
+    for path in targets:
+        lacking = [sid for sid in by_path[path].ids if sid not in world.state['sections'] or sid not in texts]
+        if lacking:
+            raise SetupError(f"{path}: cites section IDs the baseline or the guide lacks: {', '.join(lacking)}; "
+                             'run lint')
     new_dir(out, world.source.repo)
     made = []
     for path in targets:

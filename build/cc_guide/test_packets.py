@@ -2,16 +2,17 @@
 index settle reads back, the triage split by release range, and the
 snapshot copy verify and audit make (drift spec R6.11, R8.4-R8.7).'''
 import json
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 
 import pytest
 
 import blocks
 import cli
 import packets
+import settle
 import state
 from cc_fixtures import (DOCS, FIXTURE_RELEASE, GUIDE_PATH, MANIFEST_TOML, docs_dir, fixture_repo,  # noqa: F401
-                         fixture_state, guide_text, isolated_home, prime_cache, write_tree)
+                         fixture_state, git, guide_text, isolated_home, prime_cache, write_tree)
 
 NOW = datetime(2026, 10, 4, 12, 0, tzinfo=timezone.utc)
 ALL = ['alpha.overview', 'alpha.reference', 'beta.overview', 'beta.reference']
@@ -390,3 +391,114 @@ def test_the_cli_writes_verify_audit_and_files_packets(world, monkeypatch, capsy
     write_tree(tmp_path / 't', {packets.SETTLED: json.dumps({'mode': 'triage', 'verify': ['beta.overview']})})
     assert cli.main([*base, '--verify', '--from', str(tmp_path / 't'), '--out', str(tmp_path / 'w')], now=NOW) == 0
     assert capsys.readouterr()[0].split('\n')[-2] == f"wrote verify packet {tmp_path / 'w' / 'beta'}"
+
+
+def test_a_refused_out_leaves_the_head_snapshot_unwritten(world, tmp_path):
+    '''m4 (final review): verify and audit check --out before they copy the
+    groups' pages to the head release's snapshot, so a refused --out leaves
+    the cache as it was.'''
+    repo, cache = world
+    write_tree(tmp_path / 'full', {'report.md': 'old'})
+    refusals = {tmp_path / 'full': f"{tmp_path / 'full'}: not an empty directory; packets never write over an "
+                                   'earlier packet',
+                repo / 'packets': f"{repo / 'packets'}: inside the checkout {repo.resolve()}; packets hold docs text, "
+                                  'so they live outside every checkout'}
+    for out, message in refusals.items():
+        for make in (lambda: packets.verify(load(world), out, ['alpha.overview'], None),
+                     lambda: packets.audit(load(world), out, 'alpha')):
+            with pytest.raises(state.SetupError) as err:
+                make()
+            assert str(err.value) == message
+    assert not state.snapshot_docs(cache, '2.1.902').exists()
+    assert not (repo / 'packets').exists()
+
+
+def test_verify_from_a_triage_refuses_a_section_the_triage_cleared(world, tmp_path):
+    '''m8 (final review): the triage's own commands advance the sections it
+    cleared, so --from never takes one into a verify again (S24).'''
+    out = packets.triage(load(world), tmp_path / 'p', None)
+    (out / packets.REPORT).write_text('2.1.901 | alpha.overview\n2.1.902 | none\n')
+    settle.settle(out)
+    with pytest.raises(state.SetupError) as err:
+        packets.verify(load(world), tmp_path / 'v', ['alpha.overview', 'alpha.reference'], out / packets.SETTLED)
+    assert str(err.value) == (f'{out / packets.SETTLED}: its triage cleared alpha.reference, which its own commands '
+                              'advance; verify without --from')
+    assert not (tmp_path / 'v').exists()
+
+
+def test_a_settled_file_that_is_no_settled_triage_is_one_error_line(world, tmp_path):
+    '''m5 (final review): never a JSONDecodeError or an AttributeError.'''
+    path = tmp_path / 't' / packets.SETTLED
+    write_tree(tmp_path / 't', {packets.SETTLED: '{'})
+    with pytest.raises(json.JSONDecodeError) as cause:
+        json.loads('{')
+    with pytest.raises(state.SetupError) as err:
+        packets.verify(load(world), tmp_path / 'v', [], path)
+    assert str(err.value) == f'{path}: not valid JSON ({cause.value}); settle the triage packet again'
+    path.write_text('[]')
+    with pytest.raises(state.SetupError) as err:
+        packets.verify(load(world), tmp_path / 'v', [], path)
+    assert str(err.value) == f'{path}: not a settled triage'
+
+
+@pytest.mark.parametrize('renamed, cited', [(False, 'gamma.overview'), (True, 'beta.renamed'),
+                                            (True, 'beta.reference')],
+                         ids=['in-neither', 'guide-only', 'baseline-only'])
+def test_files_refuses_a_citer_naming_a_section_the_baseline_or_the_guide_lacks(world, tmp_path, renamed, cited):
+    '''m5 (final review): a cited ID the lint would flag is one error line
+    naming it, never a KeyError, and no packet is written.'''
+    repo, _ = world
+    write_tree(repo, {'hooks/bad.sh': '#!/bin/sh\n' + '#' + f' cc-guide: {cited} @2.1.900\nexit 0\n'})
+    git(repo, 'add', '-A')
+    git(repo, 'commit', '-qm', 'cite')
+    if renamed:
+        guide = repo / GUIDE_PATH
+        guide.write_text(guide.read_text().replace('<!-- cc: beta.reference -->', '<!-- cc: beta.renamed -->'))
+    with pytest.raises(state.SetupError) as err:
+        packets.files(load(world), tmp_path / 'f', ['hooks/bad.sh'])
+    assert str(err.value) == f'hooks/bad.sh: cites section IDs the baseline or the guide lacks: {cited}; run lint'
+    assert not (tmp_path / 'f').exists()
+
+
+def changelog(count: int) -> str:
+    '''A changelog of 2.1.900 and the `count` releases after it, newest
+    first, one day apart, each with one bullet that hits no section's terms.'''
+    days = [date(2026, 9, 1) + timedelta(days=n) for n in range(count + 1)]
+    return '\n'.join(f'<Update label="2.1.{900 + n}" description="{d:%B} {d.day}, {d.year}">\n  * Fixed item {n}\n'
+                     '</Update>\n' for n, d in reversed(list(enumerate(days))))
+
+
+def test_a_range_takes_twenty_releases_and_the_twenty_first_needs_through(world, tmp_path):
+    '''m5 (final review): RANGE is 20, and a range of exactly 20 needs no
+    --through.'''
+    latest(world, {'changelog.md': changelog(20)})
+    i = index(packets.triage(load(world), tmp_path / 'a', None))
+    assert (len(i['releases']), i['newest'], i['next_through']) == (20, '2.1.920', None)
+    latest(world, {'changelog.md': changelog(21)})
+    with pytest.raises(state.SetupError) as err:
+        packets.triage(load(world), tmp_path / 'b', None)
+    assert str(err.value) == ('21 untriaged releases after 2.1.900: take them in ranges of 20, the first with '
+                              '--through 2.1.920, or all at once with --through 2.1.921')
+    assert index(packets.triage(load(world), tmp_path / 'c', '2.1.920'))['next_through'] == '2.1.921'
+
+
+def test_each_range_names_the_next_ranges_through(world, tmp_path):
+    '''m5 (final review): once a range's commands advance its sections, the
+    next triage counts from there, and each range names the next one's end.'''
+    repo, _ = world
+    latest(world, {'changelog.md': changelog(5)})
+    with pytest.raises(state.SetupError) as err:
+        packets.triage(load(world), tmp_path / 'a', None, size=2)
+    assert str(err.value) == ('5 untriaged releases after 2.1.900: take them in ranges of 2, the first with '
+                              '--through 2.1.902, or all at once with --through 2.1.905')
+    assert index(packets.triage(load(world), tmp_path / 'b', '2.1.902', size=2))['next_through'] == '2.1.904'
+    s = state.parse_baseline((repo / state.BASELINE).read_text())
+    for section in s['sections'].values():
+        section['checked'] = {'release': '2.1.902', 'date': '2026-10-04'}
+    (repo / state.BASELINE).write_text(state.dump_baseline(s))
+    with pytest.raises(state.SetupError) as err:
+        packets.triage(load(world), tmp_path / 'c', None, size=2)
+    assert str(err.value) == ('3 untriaged releases after 2.1.902: take them in ranges of 2, the first with '
+                              '--through 2.1.904, or all at once with --through 2.1.905')
+    i = index(packets.triage(load(world), tmp_path / 'd', '2.1.904', size=2))
+    assert ([r['label'] for r in i['releases']], i['next_through']) == (['2.1.903', '2.1.904'], '2.1.905')

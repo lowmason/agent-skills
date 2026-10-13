@@ -42,7 +42,7 @@ from guide import sections
 from lint import CLI
 from packets import BLOCKS, GUIDE, INDEX, REPORT, SETTLED, section_lines
 from quotes import QuoteFiles
-from state import SetupError
+from state import SetupError, default_cache
 
 # The report formats, as the verifier's contract (.claude/agents/cc-guide-verifier.md)
 # and the skill's references/formats.md state them; a test pins all three together.
@@ -158,8 +158,12 @@ def read_packet(folder: Path) -> Packet:
                   [s.id for s in sections(guide) if s.id])
 
 
-def command(*words: str) -> str:
-    return CLI + ' ' + ' '.join(shlex.quote(w) for w in words)
+def command(p: Packet, *words: str) -> str:
+    '''A cli.py command for the packet. One built on a cache other than the
+    default names it, as the root option --cache, before the subcommand.'''
+    cache = p.index.get('cache')
+    root = ('--cache', cache) if cache and Path(cache).resolve() != default_cache().resolve() else ()
+    return CLI + ' ' + ' '.join(shlex.quote(w) for w in (*root, *words))
 
 
 CONFORMANCE = 'uv run --python 3.13 --with pyyaml python build/check_conformance.py'
@@ -328,12 +332,12 @@ def settle_triage(p: Packet) -> Settled:
     out += [f'owner: {o}' for _, o in t.owner]
     if held:
         out.append(f"held, never advanced here: {' '.join(sorted(held, key=order.index))}")
-    steps = [command('baseline', 'rebaseline', gid, *refs) for gid, refs in rebaseline.items()]
+    steps = [command(p, 'baseline', 'rebaseline', gid, *refs) for gid, refs in rebaseline.items()]
     if advance and target:
-        steps.append(command('baseline', 'advance', *advance, '--to', target))
+        steps.append(command(p, 'baseline', 'advance', *advance, '--to', target))
     if steps:
         out.append('then, in this order (R8.8):')
-        out += [f'  {s}' for s in [*steps, command('baseline', 'stamp'), command('lint'), CONFORMANCE]]
+        out += [f'  {s}' for s in [*steps, command(p, 'baseline', 'stamp'), command(p, 'lint'), CONFORMANCE]]
     else:
         out.append('nothing to record')
     if verify:
@@ -341,7 +345,7 @@ def settle_triage(p: Packet) -> Settled:
                    'so the next triage shows them again')
     if index.get('next_through'):
         out.append('next range, once these commands are run: '
-                   + command('packets', '--triage', '--through', index['next_through']))
+                   + command(p, 'packets', '--triage', '--through', index['next_through']))
     saved = {'mode': 'triage', 'advance_to': target, 'verify': verify, 'cleared': cleared,
              'held': sorted(held, key=order.index), 'rows': {sid: t.evidence[sid] for sid in verify}}
     return Settled(out, not t.failed and not t.unparseable and not omitted, saved)
@@ -514,18 +518,18 @@ def settle_review(p: Packet, hold: tuple[str, ...]) -> Settled:
         out.append(f"held, neither advanced nor audited: {' '.join(shown)}")
     steps = []
     if fixed:
-        steps.append(command('baseline', 'accept', *fixed, '--substantive') + '   # only the sections you changed')
+        steps.append(command(p, 'baseline', 'accept', *fixed, '--substantive') + '   # only the sections you changed')
     if refs:
-        steps.append(command('baseline', 'rebaseline', index['group'], *refs))
+        steps.append(command(p, 'baseline', 'rebaseline', index['group'], *refs))
     # a section checked past the triage's target is not advanced backwards
     target, checked = index.get('advance_to'), index.get('checked', {})
     advance = [sid for sid in scope if sid not in held
                and not (target and sid in checked and version_key(checked[sid]) > version_key(target))]
     if mode == 'audit' and not any(sid in held for sid in scope):
-        steps.append(command('baseline', 'audited', index['group']))
+        steps.append(command(p, 'baseline', 'audited', index['group']))
     elif mode == 'verify' and target and advance:
-        steps.append(command('baseline', 'advance', *advance, '--to', target))
-    steps += [command('baseline', 'stamp'), command('lint'), CONFORMANCE]
+        steps.append(command(p, 'baseline', 'advance', *advance, '--to', target))
+    steps += [command(p, 'baseline', 'stamp'), command(p, 'lint'), CONFORMANCE]
     out.append('then, in this order (R8.8), once every correction is applied; for one you leave for the owner, '
                'settle again with --hold <section>, which holds the section and keeps its accept:')
     out += [f'  {s}' for s in steps]
@@ -584,11 +588,11 @@ def settle_files(p: Packet, hold: tuple[str, ...]) -> Settled:
     out += ['unverified, discarded:'] + [f'  {u}' for u in unverified]
     if left:
         out.append(f"{LEFT_OUT}: {' '.join(left)}")
-    steps = [command('lint'), CONFORMANCE]
+    steps = [command(p, 'lint'), CONFORMANCE]
     if reasons:
         out.append(f"held, not cited: {path}: {'; '.join(reasons)}")
     else:
-        steps.insert(0, command('baseline', 'cite', path))
+        steps.insert(0, command(p, 'baseline', 'cite', path))
     out.append(f'then, in this order (R8.8), once every contradiction is fixed in {path}, unless '
                'build/cc_guide/conformance.toml records it as a deviation, which stays as it is; for one you leave '
                f'for the owner, settle again with --hold {path}, which skips its cite:')

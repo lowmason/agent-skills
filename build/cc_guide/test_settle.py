@@ -25,11 +25,13 @@ RETRY = '## Retry\n\nA retry resends `BETA_ENV` with each `BetaEvent`.\n'
 
 
 @pytest.fixture
-def world(tmp_path, docs_dir):
+def world(tmp_path, docs_dir, isolated_home):
+    '''A committed fixture repo, and a cache at the default path under the
+    isolated HOME, so settle's commands name no --cache (CX-1).'''
     repo = fixture_repo(tmp_path / 'repo', {GUIDE_PATH: guide_text(), state.MANIFEST: MANIFEST_TOML,
                                             state.BASELINE: state.dump_baseline(fixture_state(docs_dir)),
                                             'hooks/gate.sh': CITER})
-    cache = tmp_path / 'cache'
+    cache = state.default_cache()
     write_tree(state.snapshot_docs(cache, FIXTURE_RELEASE), DOCS)
     prime_cache(cache, docs_dir)
     return repo, cache
@@ -713,3 +715,40 @@ def test_the_cli_exits_on_the_report_and_two_without_one(world, tmp_path, capsys
     capsys.readouterr()
     assert cli.main(['settle', str(out), '--hold', 'alpha.overview']) == 2
     assert capsys.readouterr() == ('', 'cc-guide: --hold goes with a verify, audit or files packet\n')
+
+
+def test_a_packet_built_on_another_cache_names_it_in_every_command(world, tmp_path, docs_dir):
+    '''CX-1 (Codex, final review): `--cache` is the root parser's option, so
+    a packet records the cache it was built on, and every cli.py command
+    settle prints names a cache other than the default before its
+    subcommand. The default cache's commands, and a packet made before the
+    key, name none.'''
+    other = tmp_path / 'other'
+    write_tree(state.snapshot_docs(other, FIXTURE_RELEASE), DOCS)
+    prime_cache(other, docs_dir)
+    write_tree(state.latest_docs(other), {'tools.md': DOCS['tools.md'].replace('runs alpha jobs', 'runs alpha batches')})
+    out = packets.triage(packets.load(state.Source(world[0]), other, NOW), tmp_path / 'p', '2.1.901')
+    index = json.loads((out / packets.INDEX).read_text())
+    assert index['cache'] == str(other.resolve())
+    rows = ('B1 | NOISE | - | - | - | "runs alpha batches" | a wording change', '2.1.901 | none')
+    named = f'{CLI} --cache {shlex.quote(str(other.resolve()))}'
+    assert settled(out, *rows).lines[2:] == [
+        'then, in this order (R8.8):',
+        f"  {named} baseline rebaseline alpha 'tools › Tools'",
+        f'  {named} baseline advance alpha.overview alpha.reference beta.overview beta.reference --to 2.1.901',
+        f'  {named} baseline stamp', f'  {named} lint', f'  {CONFORMANCE}',
+        f'next range, once these commands are run: {named} packets --triage --through 2.1.902']
+    words = shlex.split(settled(out, *rows).lines[4])
+    args = cli.parser().parse_args(words[words.index('build/cc_guide/cli.py') + 1:])
+    assert (args.cache, args.command, args.action, args.ids) == (
+        other.resolve(), 'baseline', 'advance', ['alpha.overview', 'alpha.reference', 'beta.overview', 'beta.reference'])
+    v = packets.verify(packets.load(state.Source(world[0]), other, NOW), tmp_path / 'v', ['alpha.overview'], None)[0]
+    assert [line for line in settled(v, GOOD).lines if line.startswith('  ') and 'cli.py' in line] == [
+        f'  {named} baseline accept alpha.overview --substantive   # only the sections you changed',
+        f"  {named} baseline rebaseline alpha 'tools › Tools'", f'  {named} baseline stamp', f'  {named} lint']
+    (out / packets.INDEX).write_text(json.dumps({key: value for key, value in index.items() if key != 'cache'}))
+    assert not any('--cache' in line for line in settled(out, *rows).lines)
+    latest(world, {'tools.md': DOCS['tools.md'].replace('runs alpha jobs', 'runs alpha batches')})
+    default = packets.triage(load(world), tmp_path / 'd', '2.1.901')
+    assert json.loads((default / packets.INDEX).read_text())['cache'] == str(state.default_cache().resolve())
+    assert not any('--cache' in line for line in settled(default, *rows).lines)

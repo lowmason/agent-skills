@@ -624,7 +624,11 @@ writes one packet per group and `--files` one per file. `--audit` with no
 group takes the due one, and refuses when none is due. `--from` names a
 settled triage packet, whose advance target, cleared and held sections and
 rows carry over (R8.10); `--verify` with no IDs then takes the sections it
-sent on (owner, plan 44, 2026-10-12).
+sent on (owner, plan 44, 2026-10-12). `--from` refuses a named section the
+triage cleared, since the triage's own commands advance it; `--verify` and
+`--audit` check `--out` before they copy any page to the snapshot; and every
+`index.json` records the cache the packet was built on (owner, plan 44,
+2026-10-13).
 
 ### R7 — `baseline`
 
@@ -849,7 +853,11 @@ prints the next range's `packets --triage --through`. `--hold` names the
 sections, or the file, the run leaves for the owner, and prints the
 commands again with them held. `settle` exits 0 when every row parsed,
 every quote was found, and nothing was discarded or left out; 1 otherwise.
-It applies nothing and commits nothing.
+It applies nothing and commits nothing. Every `cli.py` command it prints
+names the packet's recorded cache as the root option `--cache <path>`,
+before the subcommand, when that cache is not the default one; a packet
+recording none, or the default, prints the commands as before (owner,
+plan 44, 2026-10-13).
 
 ### R9 — Trigger (`notice.sh` and `.claude/settings.json`)
 

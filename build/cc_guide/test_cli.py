@@ -407,6 +407,19 @@ def test_bookkeeping_alone_brings_check_to_exit_zero(world):
     assert main(cache, 'check', '--docs', str(folder), today=today) == 1
 
 
+def test_packets_with_nothing_to_triage_exits_zero_and_writes_nothing(world, capsys):
+    '''m5 (final review): every section checked through the head and no
+    block finding is no packet, and exit 0.'''
+    repo, cache, _ = world
+    s = state.parse_baseline((repo / state.BASELINE).read_text())
+    for section in s['sections'].values():
+        section['checked'] = {'release': '2.1.902', 'date': '2026-10-04'}
+    (repo / state.BASELINE).write_text(state.dump_baseline(s))
+    assert main(cache, 'packets', '--triage') == 0
+    assert capsys.readouterr() == ('nothing to triage: no untriaged release and no block finding\n', '')
+    assert not (cache / 'packets').exists()
+
+
 def test_the_repo_lints_clean(capsys):
     '''R5: the suite enforces the lint on the repo itself. HOME is isolated,
     so no changelog is cached and the release-label check is skipped.'''

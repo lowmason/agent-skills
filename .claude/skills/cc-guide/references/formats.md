@@ -4,9 +4,9 @@
 
 ## Packets
 
-A packet is a directory under `~/.cache/agent-skills/cc-guide/packets/`, by default `<YYYYMMDDTHHMMSS>-<mode>/`; verify and files runs hold one packet per group or file in it. `packets` refuses a directory inside any checkout, or one that is not empty. Every packet holds:
+A packet is a directory under `~/.cache/agent-skills/cc-guide/packets/`, by default `<YYYYMMDDTHHMMSS>-<mode>/`; verify and files runs hold one packet per group or file in it. `packets` refuses a directory inside any checkout, or one that is not empty, and verify and audit check it before they copy any page to the head release's snapshot. Every packet holds:
 
-- `index.json`: `mode`, `inputs` (the working tree), `generated_at`, `head` (the changelog head the docs were fetched at), the items the verifier answers for, and `quotes`, the files each kind of quote is re-grepped in.
+- `index.json`: `mode`, `inputs` (the working tree), `generated_at`, `head` (the changelog head the docs were fetched at), `cache` (the cache the packet was built on: settle's `cli.py` commands name it as `cli.py --cache <path> <subcommand>` when it is not the default cache), the items the verifier answers for, and `quotes`, the files each kind of quote is re-grepped in.
 - `guide.md`: the guide, copied whole, so its line numbers are the guide's.
 
 Then, by mode:
@@ -17,6 +17,8 @@ Then, by mode:
 | verify | per group: `sections.md` (the sections' guide lines and the triage rows that sent them), `blocks.md`, `changelog.md` | `group`, `sections`, `lines`, `checked` (each section's checked release), `docs` (the head release's snapshot, where the group's pages were copied), `advance_to`, `cleared` and `held` (from `--from`, and the sections a missing page holds), `blocks` |
 | audit | `sections.md`, `blocks.md`, `releases.md` (the releases untriaged for the group), `changelog.md` | `group`, `sections`, `lines`, `docs`, `releases`, `held`, `blocks` |
 | files | per file: `cited_<name>` (the file's copy), `sections.md` (its cited sections' text, each marked when it changed after the file's stamp) | `file`, `copy`, `stamp`, `sections`, `lines`, `changed` |
+
+`packets --verify <ids> --from <triage>` refuses an ID the triage cleared, since the triage's own commands advance it: verify it without `--from`.
 
 A triage range counts the untriaged releases after the newest release any section is checked through. With more than 20 of them, `packets --triage` refuses and names the `--through` of the first range of 20; `--through <release>` takes the untriaged releases up to that one, and the range's `next_through` names the next range's, the 20th untriaged release after its own. A section deferred in an earlier range shows its earlier releases again, since they stay untriaged for it, but they do not count toward the 20, so a later session never names the same first range again. Block findings ride in every range, so the first range settles them against the current docs. A missing page needs a `manifest.toml` edit, so it is an `owner` item whose sections are held.
 
