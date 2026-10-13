@@ -213,10 +213,11 @@ scripts were session-local (`/tmp/ccdrift-probe/`).
     `uv run --python 3.13 python build/cc_guide/cli.py <subcommand>`. It finds
     the repo from its own location, never from the working directory. Its
     subcommands, named in code font below, are `lint`, `check`, `packets`,
-    `quotes`, `baseline <sub>`, `probes` and `binaries`. Each one's logic lives
-    in its own module (`lint.py`, `check.py`, `baseline.py`, `quotes.py`,
-    `probes.py`), on shared parsers for the guide, anchors and citations
-    (`guide.py`) and for docs blocks (`blocks.py`);
+    `quotes`, `settle`, `baseline <sub>`, `probes` and `binaries`. Each one's
+    logic lives in its own module (`lint.py`, `check.py`, `packets.py`,
+    `quotes.py`, `settle.py`, `baseline.py`, `probes.py`), on shared parsers
+    for the guide, anchors and citations (`guide.py`) and for docs blocks
+    (`blocks.py`) (owner, plan 44, 2026-10-12);
   - `manifest.toml` and `baseline.json` (R2), `PROBES.md` (R10) and
     `notice.sh` (R9);
   - the tests and their hand-written fixtures (R12).
@@ -610,9 +611,20 @@ failure never looks clean:
 R6.10 `check` never writes inside the repo. Its writes go under
 `~/.cache/agent-skills/cc-guide/` only; `--hook` also writes the notice (R9).
 
-R6.11 **Packets.** `packets --triage | --verify <ids> | --audit <group> |
---files [<paths>] --out <dir>` writes the files the skill hands to its
-verifier (R8), from the same inputs as `check --worktree`.
+R6.11 **Packets.** `packets --triage [--through <release>] | --verify [<ids>]
+[--from <dir>] | --audit [<group>] | --files [<paths>]`, with an optional
+`--out <dir>`, writes the files the skill hands to its verifier (R8), from
+the same inputs as `check --worktree`, reading the last fetch and never
+fetching. Each packet is a directory holding an `index.json` (its mode, the
+items the verifier answers for and the files each kind of quote is checked
+in), the guide copied whole, and its mode's Markdown files. `--out` defaults
+to a new directory under the cache's `packets/`, and a directory inside any
+checkout is refused, since packets hold docs text (Decision 10); `--verify`
+writes one packet per group and `--files` one per file. `--audit` with no
+group takes the due one, and refuses when none is due. `--from` names a
+settled triage packet, whose advance target, cleared and held sections and
+rows carry over (R8.10); `--verify` with no IDs then takes the sections it
+sent on (owner, plan 44, 2026-10-12).
 
 ### R7 — `baseline`
 
@@ -662,17 +674,30 @@ R8.2 **Packets are files** (R6.11), never inlined into the dispatch prompt,
 where the dispatching session would pay for them as output tokens. The
 verifier reads them.
 
-R8.3 **`quotes`** reads `file<TAB>quote` rows on stdin against a named file
-set and prints `FOUND file:line` or `MISSING` per row, exiting 1 on any miss.
+R8.3 **`quotes --in <dir>`** reads `file<TAB>quote` rows on stdin against the
+files under `<dir>` and prints `FOUND file:line` or `MISSING file` per row,
+exiting 1 on any miss (owner, plan 44, 2026-10-12).
 A quote must match within a single line, the method that found 151 of 151 in
 the refresh. It succeeds the snapshot's `check/qcheck.py`.
 
 R8.4 **`/cc-guide triage`.**
 1. Run `check --worktree`, then `packets --triage`: the whole guide with line
-   numbers; each changed, missing or new block's current text, with a unified
-   diff against its snapshot when that is cached; and every bullet of every
-   untriaged release, with term hits marked. After a long absence, split it by
-   release range.
+   numbers; each changed or new block's current text, with a unified diff
+   against its snapshot when that is cached, and each missing block's
+   baselined text, read from its page's snapshot by key hash; and every bullet
+   of every untriaged release, with term hits marked. After a long absence,
+   split it by release range. A range counts the untriaged releases after
+   the newest release any section is checked through; above 20 of them
+   `packets --triage` refuses and names the `--through <release>` of the
+   first range of 20, and each settled range names the next one's, the 20th
+   untriaged release after its own. A range takes every release up to its
+   `--through` that is untriaged for some section, so a section deferred in
+   an earlier range shows its earlier releases again, without their counting
+   toward the 20. Block findings belong to no release and
+   show the current docs, so they ride in every range, and the first range
+   settles them; their sections advance only to that range's end. A missing
+   page needs a `manifest.toml` edit, so it is an owner item whose sections
+   are held (owner, plan 44, 2026-10-12).
 2. Dispatch one `cc-guide-verifier` in triage mode, at about $0.05–0.20 a
    weekly batch.
 3. **Output.**
@@ -684,7 +709,8 @@ R8.4 **`/cc-guide triage`.**
 4. **Completeness, checked deterministically.** An omitted block row makes the
    block UNSURE for each of its candidate sections. A release with no coverage
    line becomes UNSURE for every section whose terms its bullets hit, or an
-   owner item when they hit none. Silence never counts as NOISE.
+   owner item when they hit none; an owner item stops the advance below its
+   release (owner, plan 44, 2026-10-12). Silence never counts as NOISE.
 5. `quotes` re-greps every quote, guide quotes against the guide and source
    quotes against the packet. A row whose quote fails becomes UNSURE, which is
    handled as TOUCHES: triage fails safe.
@@ -715,10 +741,17 @@ R8.5 **`/cc-guide verify [<ids>]`.**
   syntax. Recommendations get JUDGMENT and never a proposed wording. When a
   judgment rests on a mechanism, the mechanism is checked and reported as
   `JUDGMENT (mechanism STALE)` with its quote; the `opusplan` bullet resting on
-  cache-read prices is an example. Lines next to a `TODO(owner)` are
-  report-only.
+  cache-read prices is an example. A `TODO(owner)` is report-only from its
+  own line through the first list item after it outside fenced code, that
+  item's continuation lines included, or to the end of its section when no
+  list item follows: a claim there gets its usual verdict, and a correction
+  there goes to the owner (R8.8 step 3). Each section in scope gets at least
+  one A row, or a `<section> | none` line when it holds no checkable claim
+  (owner, plan 44, 2026-10-12).
 
-R8.6 **`/cc-guide audit [<group>]`.** With no argument, the due group (R6.7).
+R8.6 **`/cc-guide audit [<group>]`.** With no argument, the due group (R6.7);
+when none is due, `packets` refuses, and a named group is audited anyway
+(owner, plan 44, 2026-10-12).
 The verifier checks every claim in the group's sections against all its pages
 and its changelog since `checked`, under the same contract. About $2.50–5.30.
 
@@ -727,25 +760,54 @@ batches under the same ask-above-6 rule.
 1. Each packet holds the file and its cited sections' current text, marking
    the sections changed since its stamp.
 2. One verifier per file returns rows of
-   `file line | statement | section | "verbatim guide quote" | consistent / contradicts / not covered`.
+   `file:line | statement | section | "verbatim guide quote" | consistent / contradicts / not covered`,
+   and a `<section> | none` line for each cited section no statement rests
+   on (owner, plan 44, 2026-10-12).
 3. Guide quotes are re-checked against the guide at the inputs' ref.
 
 R8.8 **Post-processing for `verify`, `audit` and `files`**, all
 deterministic:
-1. `quotes` re-greps every quote. A row whose quote fails is discarded and
-   listed as unverified. This is the refresh's rule, and the opposite of
-   triage's escalation.
+1. `quotes` re-greps every quote, and a quote a row may omit is re-grepped
+   when it is given. A row whose quote fails is discarded and listed as
+   unverified. This is the refresh's rule, and the opposite of triage's
+   escalation. So is a STALE, WRONG or PARTIAL row whose proposed wording is
+   empty or `-`. A section is held, which means no `advance`, no `audited`
+   and no `rebaseline` of a block whose candidates include it, nor, while
+   that block is changed or missing, of any other block on its page (R7),
+   when: no surviving A row or `<section> | none` line answers for it; a
+   discarded STALE, WRONG, PARTIAL or `JUDGMENT (mechanism STALE)` row, or
+   an A row that does not parse, concerns it; a correction to it is left for
+   the owner, within a `TODO(owner)`'s reach or by the run, or a
+   `JUDGMENT (mechanism STALE)` row survives; or its triage held it. Only a
+   section in the packet is held: a row whose line falls outside the
+   packet's sections holds nothing, since the run neither reviews nor
+   advances that section, and its triage may have advanced it already. An
+   A row whose line falls in no section holds every section in the packet;
+   a B or C row that does not parse holds nothing. In `files`, a cited
+   section with no surviving row or none line, a discarded `contradicts`
+   row, or a row that does not parse or names a section the file does not
+   cite holds the file: no `cite`. A hold keeps `accept` for the text the
+   run changed (owner, plan 44, 2026-10-12).
 2. Surviving corrections are applied **in the working tree only**: guide
    prose for STALE, WRONG and PARTIAL rows; citing-file text for
-   `contradicts` rows.
-3. JUDGMENT items and `not covered` rows go to an owner's-call list and are
-   never applied; a `not covered` row may also be a coverage gap (R4.3).
+   `contradicts` rows. A `contradicts` row that
+   `build/cc_guide/conformance.toml` records as a `deviation` for that file
+   and statement is the owner's standing decision: it stays as it is and
+   holds nothing. One a `gap` records is a fix not yet made, so it holds the
+   file (owner, plan 44, 2026-10-12).
+3. JUDGMENT and NOT FOUND items, C omissions and `not covered` rows go to an
+   owner's-call list and are never applied, and so does a correction to a
+   line within a `TODO(owner)`'s reach (R8.5) or outside the packet's
+   sections, which `settle` lists with the `/cc-guide verify` that reviews
+   it; a `not covered` row may also be a coverage gap (R4.3) (owner,
+   plan 44, 2026-10-12).
 4. Bookkeeping, through `baseline`:
    - `accept --substantive` for each section whose prose changed, which flags
      its citers;
    - `rebaseline` for the affected blocks;
    - `advance` to the newest release the run covered: the newest triaged
-     release for `verify`; for an audit, `audited` instead;
+     release for `verify`, for each section not checked past it already
+     (owner, plan 44, 2026-10-12); for an audit, `audited` instead;
    - `cite` for each reviewed file;
    - then `stamp`.
 5. Run `lint` and `build/check_conformance.py`.
@@ -761,6 +823,33 @@ correction. Otherwise the register's both-ways match fails the fix as a stale
 waiver (conformance R6 D5).
 
 R8.9 **`/cc-guide probes`** runs `probes` (R10).
+
+R8.10 **`settle <packet> [--hold <ids or file>]`** is the deterministic step
+between a verifier's report and the bookkeeping (owner, plan 44,
+2026-10-12). The skill saves the report unchanged as `report.md` in its
+packet. `settle` parses its rows, re-greps every quote as `quotes` does,
+applies R8.4 steps 4-6 to a triage and R8.8 steps 1-3 to the other modes,
+and prints the corrections, the owner's-call items, what it held, and R8.8
+step 4's `baseline` commands in order, followed by `lint` and
+`check_conformance.py`. A row splits on `|`: a quote field that opens with
+`"` runs to the first `"` followed by `|` or the end of the line, any other
+field ends at the next `|`, and the last field takes the rest of the line;
+`-` marks an empty field. A table's outer pipes, header rows and separator
+rows are ignored; any other line holding `|` that is no row is listed as
+unparseable. A triage source quote counts only within its own item's text. A
+NOISE row whose source quote, or a guide quote it gives, fails sends its
+section and its block's candidate sections to verify. A bullet's triage row
+that does not parse, or a bullet's NOISE row whose quote fails, sends the
+sections its terms hint at, or is an owner item when they hit none. A doc
+quote counts only in the snapshot's pages or the packet's `changelog.md`. A
+settled triage writes `settled.json` in its packet for
+`packets --verify --from`: the advance target, the sections it cleared and
+held, and the rows that sent each verify section; a ranged triage also
+prints the next range's `packets --triage --through`. `--hold` names the
+sections, or the file, the run leaves for the owner, and prints the
+commands again with them held. `settle` exits 0 when every row parsed,
+every quote was found, and nothing was discarded or left out; 1 otherwise.
+It applies nothing and commits nothing.
 
 ### R9 — Trigger (`notice.sh` and `.claude/settings.json`)
 
@@ -902,8 +991,12 @@ R11.4 **First runs.**
   `hooks/README.md`.
 
 R11.5 **First jobs.**
-- Triage the backlog since 2.1.288. 2.1.289's deny/ask-rule notes should come
-  back TOUCHES for `rules.settings` and `hooks.pitfalls`.
+- Triage the untriaged backlog; PRs #23 and #38 triaged 2.1.289 to 2.1.296 by
+  hand (owner, plan 44, 2026-10-12). The worked example is now a hand-written
+  fixture modelled on 2.1.293, where Haiku 5.5 became the `haiku` alias on
+  the Anthropic API: the release's bullet hints one section while the docs
+  block that changed names more, and a verifier that answers the bullet and
+  leaves the block out still sends every candidate section to verify.
 - The first `files` batch is the three known drifts. The reviewer starts from
   these considerations:
   - **#1, `Grep, Glob` beside `Bash` in all 7 agents.** In Claude Code on
@@ -1017,8 +1110,9 @@ Five stages, in order; each is one plan.
 3. **Act.** R8 apart from `/cc-guide probes`, R6.11's `packets`, `quotes`,
    and R11.5. Stage 1 carries R7 but `cite`, which Stage 2 adds, and
    `packets` moved here because its formats live in R8
-   (owner, plan 38, 2026-10-04). Its first jobs are triaging the backlog
-   since 2.1.288 and the first `files` batch.
+   (owner, plan 38, 2026-10-04). Its first jobs, run after its merge, are
+   triaging the untriaged backlog, one `audit` and the first `files` batch
+   (owner, plan 44, 2026-10-12).
 4. **Notice.** R9, R6.10's `check --hook`, which writes R9's notice, and
    R12.5 (owner, plan 38, 2026-10-04). It comes after Stage 3, so the notice
    points at a skill that exists.
@@ -1085,7 +1179,9 @@ Constraints:
    - The stale backlog includes the three known drift files, and the coverage
      gaps are listed for the owner.
 3. **Stage 3.**
-   - Triaging the backlog since 2.1.288 produces quote-checked rows.
+   - Triaging the untriaged backlog produces quote-checked rows; while
+     `check` shows nothing untriaged, this waits for the next release
+     (owner, plan 44, 2026-10-12).
    - One `audit` produces the A/B/C report.
    - The first `files` batch handles the three known drifts: the owner's
      decisions on #1 and #2 are recorded, the fixes are applied, and those files
