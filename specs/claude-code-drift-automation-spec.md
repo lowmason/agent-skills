@@ -717,11 +717,24 @@ R8.4 **`/cc-guide triage`.**
    release (owner, plan 44, 2026-10-12). Silence never counts as NOISE.
 5. `quotes` re-greps every quote, guide quotes against the guide and source
    quotes against the packet. A row whose quote fails becomes UNSURE, which is
-   handled as TOUCHES: triage fails safe.
+   handled as TOUCHES: triage fails safe. A block's row whose quote fails
+   sends every candidate section of the block to verify, not only its own
+   section (owner, plan 44, 2026-10-13). A line that does not parse loses
+   nothing it names: each section ID it names goes to verify, and so does
+   each candidate of a block item it names (a block with no row that parses
+   goes as an omitted one, step 4); a bullet item it names falls back to its
+   hints; and a release it names stays uncovered, whatever a later line says
+   about it. A line that does not parse and names no section, block, bullet
+   or release sends every section in the packet to verify, so nothing
+   advances, as an A row whose line falls in no section holds a verify
+   packet (R8.8 step 1) (owner, plan 44, 2026-10-13).
 6. **Resolution, in the same run.**
    - Every section with no TOUCHES or UNSURE row is advanced to the newest
      triaged release. Its group's affected blocks are rebaselined once every
-     flagged section of that group is resolved.
+     flagged section of that group is resolved, and no section that a row
+     for one of those blocks flagged, in any group, is still flagged, since
+     another group's verify packet never carries them (owner, plan 44,
+     2026-10-13).
    - Any TOUCHES or UNSURE goes to `verify` now.
    - Deferred: nothing advances, and the next triage shows it again.
 
@@ -840,7 +853,9 @@ step 4's `baseline` commands in order, followed by `lint` and
 field ends at the next `|`, and the last field takes the rest of the line;
 `-` marks an empty field. A table's outer pipes, header rows and separator
 rows are ignored; any other line holding `|` that is no row is listed as
-unparseable. A triage source quote counts only within its own item's text. A
+unparseable. A leading list marker (`- `, `* `, `+ `, `1. `, `1) `) is no
+part of a row, so a report written as a list parses (owner, plan 44,
+2026-10-13). A triage source quote counts only within its own item's text. A
 NOISE row whose source quote, or a guide quote it gives, fails sends its
 section and its block's candidate sections to verify. A bullet's triage row
 that does not parse, or a bullet's NOISE row whose quote fails, sends the

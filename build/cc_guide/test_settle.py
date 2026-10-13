@@ -294,6 +294,148 @@ def test_a_noise_row_whose_why_is_a_dash_does_not_parse(world, tmp_path):
     assert 'UNSURE or TOUCHES alpha.overview: B1: no row' in result.lines
 
 
+VERIFY_LINE = 'or defer it, and those sections do not advance, so the next triage shows them again'
+
+
+def test_a_block_rows_failed_quote_sends_every_candidate_to_verify(world, tmp_path):
+    '''C1 (final review): a TOUCHES or UNSURE block row whose quote fails
+    never clears the block's other candidates, so a verify of the row's own
+    section alone never rebaselines the block.'''
+    latest(world, {'events.md': DOCS['events.md'] + RETRY})
+    out = triage(world, tmp_path)
+    slip = ('B1 | TOUCHES | beta.overview | 31 | "| `BETA_ENV` | on |" | "A retry resends BETA_ENV" | '
+            'retries now resend it')
+    result = settled(out, slip, '2.1.901 | none', '2.1.902 | beta.overview')
+    assert result.lines == [
+        f'cc-guide settle: triage, {out}',
+        'report: 1 item(s) answered, 2 of 2 release(s) covered; 1 quote(s) not found; 0 unparseable line(s); '
+        '0 left out',
+        f'  quote not found, TOUCHES becomes UNSURE: {slip}',
+        'UNSURE or TOUCHES beta.overview: B1: TOUCHES, quote not found; 2.1.902: its coverage line names it',
+        'UNSURE or TOUCHES beta.reference: B1: TOUCHES, quote not found',
+        'then, in this order (R8.8):',
+        f'  {CLI} baseline advance alpha.overview alpha.reference --to 2.1.902',
+        *TAIL,
+        f'verify: /cc-guide verify beta.overview beta.reference; {VERIFY_LINE}']
+    saved = json.loads((out / packets.SETTLED).read_text())
+    assert (saved['verify'], saved['cleared']) == (['beta.overview', 'beta.reference'],
+                                                   ['alpha.overview', 'alpha.reference'])
+    v = packets.verify(load(world), tmp_path / 'v', [], out / packets.SETTLED)[0]
+    follow = settled(v, 'L31 | BETA_ENV on | CONFIRMED | env-vars.md:14 | "Turns on beta" | -')
+    assert [line for line in follow.lines if 'baseline' in line] == [
+        f'  {CLI} baseline advance beta.overview --to 2.1.902', f'  {CLI} baseline stamp']
+
+
+def test_a_broken_row_flags_what_it_names_beside_a_valid_row_for_its_block(world, tmp_path):
+    '''I1 (a): a line that does not parse still flags each section it names,
+    and each candidate of a block it names that another row answered, so
+    that block is not rebaselined.'''
+    latest(world, {'events.md': DOCS['events.md'] + RETRY})
+    out = triage(world, tmp_path)
+    broken = ('B1 | TOUCHES | beta.reference | 40 | "`BetaEvent` fires." | "with each `BetaEvent` | '
+              'the payload now retries')
+    result = settled(out, 'B1 | NOISE | - | - | - | "A retry resends `BETA_ENV`" | retries are not claimed', broken,
+                     '2.1.901 | none', '2.1.902 | none')
+    assert result.lines == [
+        f'cc-guide settle: triage, {out}',
+        'report: 1 item(s) answered, 2 of 2 release(s) covered; 0 quote(s) not found; 1 unparseable line(s); '
+        '0 left out',
+        f'  unparseable row: {broken}',
+        'UNSURE or TOUCHES beta.overview: B1: its row does not parse',
+        'UNSURE or TOUCHES beta.reference: B1: its row does not parse',
+        'then, in this order (R8.8):',
+        f'  {CLI} baseline advance alpha.overview alpha.reference --to 2.1.902',
+        *TAIL,
+        f'verify: /cc-guide verify beta.overview beta.reference; {VERIFY_LINE}']
+    assert not result.clean
+
+
+@pytest.mark.parametrize('later', [(), ('2.1.901 | none',)], ids=['alone', 'then-none'])
+def test_a_broken_coverage_line_flags_its_sections_and_leaves_its_release_uncovered(world, tmp_path, later):
+    '''I1 (a) and (b): a coverage line that does not parse flags each
+    section it names, and its release stays uncovered whatever a later line
+    says about it.'''
+    out = triage(world, tmp_path)
+    broken = '2.1.901 | alpha.overview; beta.overview'
+    result = settled(out, broken, *later, '2.1.902 | none')
+    assert result.lines == [
+        f'cc-guide settle: triage, {out}',
+        'report: 0 item(s) answered, 1 of 2 release(s) covered; 0 quote(s) not found; 1 unparseable line(s); '
+        '1 left out',
+        f'  unparseable coverage line: {broken}',
+        'UNSURE or TOUCHES alpha.overview: 2.1.901: its coverage line does not parse',
+        'UNSURE or TOUCHES alpha.reference: 2.1.901: its coverage line does not parse',
+        'UNSURE or TOUCHES beta.overview: 2.1.901: its coverage line does not parse',
+        'then, in this order (R8.8):',
+        f'  {CLI} baseline advance beta.reference --to 2.1.902',
+        *TAIL,
+        f'verify: /cc-guide verify alpha.overview alpha.reference beta.overview; {VERIFY_LINE}']
+    assert not result.clean
+
+
+def test_a_report_written_as_a_list_parses_as_rows(world, tmp_path):
+    '''I1 (d): a leading list marker is no part of a row.'''
+    out = triage(world, tmp_path)
+    touches = ('2.1.902#2 | TOUCHES | alpha.overview | 14 | "Alpha uses" | "Fixed a crash" | '
+               'the crash fix changes the alpha default')
+    result = settled(out, f'- {touches}', '* 2.1.901 | none', '1) 2.1.902 | alpha.overview')
+    assert result.lines == [
+        f'cc-guide settle: triage, {out}',
+        'report: 1 item(s) answered, 2 of 2 release(s) covered; 0 quote(s) not found; 0 unparseable line(s); '
+        '0 left out',
+        'UNSURE or TOUCHES alpha.overview: 2.1.902#2: TOUCHES; 2.1.902: its coverage line names it',
+        'then, in this order (R8.8):',
+        f'  {CLI} baseline advance alpha.reference beta.overview beta.reference --to 2.1.902',
+        *TAIL,
+        f'verify: /cc-guide verify alpha.overview; {VERIFY_LINE}']
+    assert result.clean
+    assert settle.report_lines('+ alpha.overview | none\n2. B | 2.1.901 | x | changelog.md:14') == [
+        'alpha.overview | none', 'B | 2.1.901 | x | changelog.md:14']
+
+
+def test_a_broken_line_that_names_nothing_sends_every_section_in_the_packet_to_verify(world, tmp_path):
+    '''I1 (c): a line that does not parse and names no item, release or
+    section holds the whole packet, as verify's unattributable line does:
+    every section goes to verify, and nothing advances or is rebaselined.'''
+    latest(world, {'tools.md': DOCS['tools.md'].replace('runs alpha jobs', 'runs alpha batches')})
+    out = triage(world, tmp_path)
+    stray = 'the remaining items | all noise'
+    result = settled(out, 'B1 | NOISE | - | - | - | "runs alpha batches" | a wording change', stray,
+                     '2.1.901 | none', '2.1.902 | none')
+    why = 'a line that does not parse names no item, release or section'
+    assert result.lines == [
+        f'cc-guide settle: triage, {out}',
+        'report: 1 item(s) answered, 2 of 2 release(s) covered; 0 quote(s) not found; 1 unparseable line(s); '
+        '0 left out',
+        f'  unparseable row: {stray}',
+        *(f'UNSURE or TOUCHES {sid}: {why}' for sid in ('alpha.overview', 'alpha.reference', 'beta.overview',
+                                                         'beta.reference')),
+        'nothing to record',
+        f'verify: /cc-guide verify alpha.overview alpha.reference beta.overview beta.reference; {VERIFY_LINE}']
+    assert not result.clean
+
+
+def test_a_block_row_that_flags_another_groups_section_holds_the_blocks_rebaseline(world, tmp_path):
+    '''I2 (owner's design a): beta's verify packet carries none of alpha's
+    blocks, so an alpha block whose row sends beta.overview to verify is not
+    rebaselined while beta.overview stays flagged.'''
+    latest(world, {'tools.md': DOCS['tools.md'].replace('runs alpha jobs', 'runs alpha batches')})
+    out = triage(world, tmp_path)
+    cross = ('B1 | TOUCHES | beta.overview | 31 | "| `BETA_ENV` | on |" | "runs alpha batches" | '
+             'the tool now reads BETA_ENV')
+    result = settled(out, cross, '2.1.901 | none', '2.1.902 | none')
+    assert result.lines == [
+        f'cc-guide settle: triage, {out}',
+        'report: 1 item(s) answered, 2 of 2 release(s) covered; 0 quote(s) not found; 0 unparseable line(s); '
+        '0 left out',
+        'UNSURE or TOUCHES beta.overview: B1: TOUCHES',
+        'then, in this order (R8.8):',
+        f'  {CLI} baseline advance alpha.overview alpha.reference beta.reference --to 2.1.902',
+        *TAIL,
+        f'verify: /cc-guide verify beta.overview; {VERIFY_LINE}']
+    assert result.clean
+
+
 # ---- verify and audit --------------------------------------------------------
 
 def review(world, tmp_path, sids=('alpha.overview', 'alpha.reference'), settled_triage=None):
@@ -726,7 +868,8 @@ def test_a_packet_built_on_another_cache_names_it_in_every_command(world, tmp_pa
     other = tmp_path / 'other'
     write_tree(state.snapshot_docs(other, FIXTURE_RELEASE), DOCS)
     prime_cache(other, docs_dir)
-    write_tree(state.latest_docs(other), {'tools.md': DOCS['tools.md'].replace('runs alpha jobs', 'runs alpha batches')})
+    batches = DOCS['tools.md'].replace('runs alpha jobs', 'runs alpha batches')
+    write_tree(state.latest_docs(other), {'tools.md': batches})
     out = packets.triage(packets.load(state.Source(world[0]), other, NOW), tmp_path / 'p', '2.1.901')
     index = json.loads((out / packets.INDEX).read_text())
     assert index['cache'] == str(other.resolve())
@@ -740,15 +883,16 @@ def test_a_packet_built_on_another_cache_names_it_in_every_command(world, tmp_pa
         f'next range, once these commands are run: {named} packets --triage --through 2.1.902']
     words = shlex.split(settled(out, *rows).lines[4])
     args = cli.parser().parse_args(words[words.index('build/cc_guide/cli.py') + 1:])
-    assert (args.cache, args.command, args.action, args.ids) == (
-        other.resolve(), 'baseline', 'advance', ['alpha.overview', 'alpha.reference', 'beta.overview', 'beta.reference'])
+    assert (args.cache, args.command, args.action, args.ids, args.to) == (
+        other.resolve(), 'baseline', 'advance', ['alpha.overview', 'alpha.reference', 'beta.overview', 'beta.reference'],
+        '2.1.901')
     v = packets.verify(packets.load(state.Source(world[0]), other, NOW), tmp_path / 'v', ['alpha.overview'], None)[0]
     assert [line for line in settled(v, GOOD).lines if line.startswith('  ') and 'cli.py' in line] == [
         f'  {named} baseline accept alpha.overview --substantive   # only the sections you changed',
         f"  {named} baseline rebaseline alpha 'tools › Tools'", f'  {named} baseline stamp', f'  {named} lint']
     (out / packets.INDEX).write_text(json.dumps({key: value for key, value in index.items() if key != 'cache'}))
     assert not any('--cache' in line for line in settled(out, *rows).lines)
-    latest(world, {'tools.md': DOCS['tools.md'].replace('runs alpha jobs', 'runs alpha batches')})
+    latest(world, {'tools.md': batches})
     default = packets.triage(load(world), tmp_path / 'd', '2.1.901')
     assert json.loads((default / packets.INDEX).read_text())['cache'] == str(state.default_cache().resolve())
     assert not any('--cache' in line for line in settled(default, *rows).lines)

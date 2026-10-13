@@ -6,9 +6,15 @@ triage's settled.json in the packet; `baseline` records the outcome.
 
 - triage fails safe: a block the report leaves out, a release with no
   coverage line and a row whose quote fails all become UNSURE, handled as
-  TOUCHES. A source quote counts only within its own item's text. It names
-  the sections for verify, and prints the rebaseline and advance commands
-  for the rest. An owner item stops the advance below its release.
+  TOUCHES, and a block row's failed quote takes every candidate of its
+  block with it. A source quote counts only within its own item's text. A
+  line that does not parse still flags each section it names and each
+  candidate of a block it names, leaves a release it names uncovered, and
+  sends a bullet it names to its hints; one that names none of these
+  sends every section in the packet. It names the sections for verify, and
+  prints the rebaseline and advance commands for the rest; a group's
+  blocks wait while a section a row for one of them flagged, in any group,
+  is flagged. An owner item stops the advance below its release.
 - verify, audit and files discard a row whose quote fails, a quote a row
   need not give included, and list it as unverified. Surviving corrections
   are listed to apply; JUDGMENT, NOT FOUND, omissions and not-covered rows
@@ -25,9 +31,9 @@ triage's settled.json in the packet; `baseline` records the outcome.
 A row's fields are split on `|`. A quote field that opens with `"` runs to
 the first `"` followed by `|` or the end of the line, so a quote may hold `|`
 and `"`; the last field takes the rest of the line. `-` marks an empty
-field. A Markdown table's outer pipes, header rows and separator rows are
-ignored. A line holding `|` that is no row is listed as unparseable, never
-dropped in silence.
+field. A leading list marker, and a Markdown table's outer pipes, header
+rows and separator rows, are ignored. A line holding `|` that is no row is
+listed as unparseable, never dropped in silence.
 '''
 import json
 import re
@@ -74,6 +80,8 @@ SEPARATOR_RE = re.compile(r'^[\s|:-]+$')
 LINE_REF_RE = re.compile(r'L(\d+)')
 DOC_REF_RE = re.compile(r'(.+):(\d+)')
 CHANGELOG_REF_RE = re.compile(re.escape(CHANGELOG) + r':[1-9][0-9]*')
+# A broken triage line's words that may name a section, a block, a bullet (`2.1.297#3`, never its release) or a release.
+NAME_RE = re.compile(r'[\w.#-]+')
 HEADERS = ('item', 'release', 'l<line>', 'file:line', 'file line', 'section')
 LEFT_OUT = 'left out (no surviving row, no none line)'
 
@@ -121,10 +129,12 @@ def given(field: str) -> str:
 
 
 def report_lines(text: str) -> list[str]:
-    '''The report's lines that may be rows: those holding `|`, less table
-    separators and header rows.'''
+    '''The report's lines that may be rows: those holding `|`, each less a
+    leading list marker, less table separators and header rows.'''
     out = []
-    for line in text.split('\n'):
+    for raw in text.split('\n'):
+        marker = LIST_ITEM_RE.match(raw)
+        line = raw[marker.end():] if marker else raw
         if '|' not in line or SEPARATOR_RE.match(line):
             continue
         first = (split_row(line, 2) or [''])[0].lower()
@@ -196,19 +206,60 @@ class Tally:
         self.answered: set[str] = set()
         self.covered: dict[str, list[str]] = {}
         self.failed = self.unparseable = 0
+        # The sections in the packet: every block's candidates and every section a release is untriaged for.
+        within = {sid for b in p.index['blocks'] for sid in b['candidates']} | {
+            sid for r in p.index['releases'] for sid in r['pending']}
+        self.scope = [sid for sid in p.ids if sid in within]
+        self.by_block: dict[str, set[str]] = {}  # block item -> the sections its rows flagged, in any group
+        self.broken_blocks: list[tuple[str, str, str]] = []  # (block, why, detail): a broken line names the block
+        self.spoiled: set[str] = set()  # releases a broken line names, never covered
+        self.stray: list[str] = []  # broken lines that name no item, release or section
 
     def named(self, item: str) -> str:
         if item in self.blocks:
             return f"{item}, block {self.blocks[item]['ref']}"
         return f"{item}, bullet \"{self.bullets[item]['text']}\""
 
-    def flag(self, sid: str, why: str, detail: str) -> None:
+    def flag(self, sid: str, why: str, detail: str, item: str | None = None) -> None:
         self.flags.setdefault(sid, []).append(why)
         self.evidence.setdefault(sid, []).append(detail)
+        if item in self.blocks:
+            self.by_block.setdefault(item, set()).add(sid)
+
+    def candidates(self, item: str, why: str, detail: str) -> None:
+        '''Every candidate of a block whose row fails safe goes to verify.'''
+        for sid in self.blocks[item]['candidates']:
+            self.flag(sid, why, detail, item)
 
     def broken(self, line: str, kind: str) -> None:
+        '''A line that does not parse is listed, and still fails safe on what
+        it names: each section goes to verify; each block's candidates do too
+        once a row answers that block (one with no row goes as `no row`); a
+        release stays uncovered; a bullet falls back to its hints. A line
+        that names none of these holds the whole packet.'''
         self.notes.append(f'unparseable {kind}: {line}')
         self.unparseable += 1
+        names = {name.rstrip('.') for name in NAME_RE.findall(line)}
+        first = (split_row(line, 2) or [''])[0]
+        sids = [sid for sid in self.p.ids if sid in names]
+        blocks = [item for item in self.blocks if item in names]
+        bullets = [item for item in self.bullets if item in names]
+        releases = [label for label in self.releases if label in names]
+        if not (sids or blocks or bullets or releases):
+            self.stray.append(line)
+            return
+        known = first in self.blocks or first in self.bullets or first in self.releases
+        why = f'{first}: its {kind} does not parse' if known else f'a {kind} that does not parse names it'
+        for sid in sids:
+            self.flag(sid, why, f'{why}: {line}')
+        for item in blocks:
+            self.by_block.setdefault(item, set()).update(sids)
+            said = why if item == first else f'{item}: a {kind} that does not parse names it'
+            self.broken_blocks.append((item, said, f'{said}: {line}'))
+        for item in bullets:
+            self.fallback(item, 'its row does not parse' if item == first else f'a {kind} that does not parse '
+                          'names it', line)
+        self.spoiled.update(releases)
 
     def fallback(self, item: str, why: str, line: str) -> None:
         '''A bullet whose row says nothing safe goes to verify for each
@@ -234,7 +285,7 @@ class Tally:
         rest = split_row(line, 2)[1]
         listed = [s.strip() for s in rest.split(',')] if rest.strip().lower() != 'none' else []
         if '|' in rest or any(s not in self.p.ids for s in listed):
-            self.broken(line, 'coverage line')
+            self.broken(line, 'coverage line')  # its release stays uncovered (fail_safe)
             return
         self.covered[label] = listed
         for sid in listed:
@@ -247,9 +298,7 @@ class Tally:
         if not (row is not None and verdict in TRIAGE_VERDICTS
                 and (sid in self.p.ids or (verdict == 'NOISE' and not sid))
                 and (verdict != 'NOISE' or given(row[6]))):
-            self.broken(line, 'row')
-            if item in self.bullets:  # a bullet's row is optional, so a broken one falls back to its hints
-                self.fallback(item, 'its row does not parse', line)
+            self.broken(line, 'row')  # a broken bullet row falls back to the bullet's hints
             return
         self.answered.add(item)
         guide_ok = self.files.find_any(self.p.index['quotes']['guide'], unquote(row[4])) is not None
@@ -263,36 +312,49 @@ class Tally:
                 self.notes.append(f'quote not found, NOISE becomes UNSURE: {line}')
                 why = f"its NOISE row's {'guide' if source_ok else 'source'} quote was not found"
                 if sid:
-                    self.flag(sid, f'{item}: {why}', f'{self.named(item)}: {why}: {line}')
+                    self.flag(sid, f'{item}: {why}', f'{self.named(item)}: {why}: {line}', item)
                 if item in self.blocks:
-                    for target in self.blocks[item]['candidates']:
-                        if target != sid:
-                            self.flag(target, f'{item}: {why}', f'{self.named(item)}: {why}: {line}')
+                    self.candidates(item, f'{item}: {why}', f'{self.named(item)}: {why}: {line}')
                 elif not sid or self.bullets[item]['hints']:
                     self.fallback(item, why, line)
             return
-        if not (guide_ok and source_ok):
+        ok = guide_ok and source_ok
+        if not ok:
             self.failed += 1
             self.notes.append(f'quote not found, {verdict} becomes UNSURE: {line}')
-        self.flag(sid, f'{item}: {verdict}' + ('' if guide_ok and source_ok else ', quote not found'),
-                  f'{self.named(item)}: {line}')
+        why = f'{item}: {verdict}' + ('' if ok else ', quote not found')
+        self.flag(sid, why, f'{self.named(item)}: {line}', item)
+        if not ok and item in self.blocks:  # a failed quote clears none of the block's candidates either
+            self.candidates(item, why, f'{self.named(item)}: {line}')
 
     def fail_safe(self) -> list[str]:
         '''Silence never counts as NOISE: each block with no row and each
-        release with no coverage line goes to verify. Returns them.'''
+        release with no coverage line, or none that parses, goes to verify,
+        and so does each candidate of an answered block a broken line names.
+        A broken line that names nothing holds the whole packet. Returns the
+        blocks and releases left out.'''
+        for label in self.spoiled:
+            self.covered.pop(label, None)
         for item, b in self.blocks.items():
             if item not in self.answered:
                 for sid in b['candidates']:
                     self.flag(sid, f'{item}: no row', f'{self.named(item)}: no row')
+        for item, why, detail in self.broken_blocks:
+            if item in self.answered:
+                self.candidates(item, why, detail)
         for label, r in self.releases.items():
             if label in self.covered:
                 continue
+            why = f'{label}: ' + ('its coverage line does not parse' if label in self.spoiled else 'no coverage line')
             for sid in r['hits']:
                 hinting = '; '.join(f"\"{b['text']}\"" for b in r['bullets'] if sid in b['hints'])
-                self.flag(sid, f'{label}: no coverage line',
-                          f'{label}: no coverage line; its bullets that hint at it: {hinting}')
+                self.flag(sid, why, f'{why}; its bullets that hint at it: {hinting}')
             if not r['hits']:
-                self.owner.append((label, f"{label}: no coverage line, and its bullets hit no section's terms"))
+                self.owner.append((label, f"{why}, and its bullets hit no section's terms"))
+        why = 'a line that does not parse names no item, release or section'
+        for line in self.stray:
+            for sid in self.scope:
+                self.flag(sid, why, f'{why}: {line}')
         return [i for i in self.blocks if i not in self.answered] + [r for r in self.releases if r not in self.covered]
 
 
@@ -316,19 +378,20 @@ def settle_triage(p: Packet) -> Settled:
     target = labels[-1] if labels else None
     advance = [sid for sid in order if sid not in t.flags and sid not in held
                and any(sid in t.releases[label]['pending'] for label in labels)]
+    # A group's blocks also wait while a section a row for one of them flagged,
+    # in any group, is flagged: another group's verify packet never carries them.
+    crossing = {b['group'] for b in index['blocks'] if any(s in t.flags for s in t.by_block.get(b['item'], ()))}
     rebaseline = {gid: [b['ref'] for b in index['blocks'] if b['group'] == gid]
                   for gid, sids in index['groups'].items()
                   if any(b['group'] == gid for b in index['blocks'])
-                  and not any(s in t.flags or s in held for s in sids)}
-    scope = {sid for b in index['blocks'] for sid in b['candidates']} | {
-        sid for r in index['releases'] for sid in r['pending']}
-    cleared = [sid for sid in order if sid in scope and sid not in t.flags and sid not in held]
+                  and not any(s in t.flags or s in held for s in sids) and gid not in crossing}
+    cleared = [sid for sid in t.scope if sid not in t.flags and sid not in held]
 
     out = [f'cc-guide settle: triage, {p.folder}',
            f'report: {len(t.answered)} item(s) answered, {len(t.covered)} of {len(t.releases)} release(s) covered; '
            f'{t.failed} quote(s) not found; {t.unparseable} unparseable line(s); {len(omitted)} left out']
     out += [f'  {n}' for n in t.notes]
-    out += [f'UNSURE or TOUCHES {sid}: ' + '; '.join(t.flags[sid]) for sid in verify]
+    out += [f'UNSURE or TOUCHES {sid}: ' + '; '.join(dict.fromkeys(t.flags[sid])) for sid in verify]
     out += [f'owner: {o}' for _, o in t.owner]
     if held:
         out.append(f"held, never advanced here: {' '.join(sorted(held, key=order.index))}")
@@ -347,7 +410,8 @@ def settle_triage(p: Packet) -> Settled:
         out.append('next range, once these commands are run: '
                    + command(p, 'packets', '--triage', '--through', index['next_through']))
     saved = {'mode': 'triage', 'advance_to': target, 'verify': verify, 'cleared': cleared,
-             'held': sorted(held, key=order.index), 'rows': {sid: t.evidence[sid] for sid in verify}}
+             'held': sorted(held, key=order.index),
+             'rows': {sid: list(dict.fromkeys(t.evidence[sid])) for sid in verify}}
     return Settled(out, not t.failed and not t.unparseable and not omitted, saved)
 
 
