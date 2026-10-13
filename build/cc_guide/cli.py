@@ -66,8 +66,9 @@ from guide import by_section, read_citations, render_stamp
 from lint import lint, stale_lines
 from quotes import check_rows
 from state import (BASELINE, BOOTSTRAP_DATE, BOOTSTRAP_RELEASE, MANIFEST, SetupError, Source, citing_files,
-                   default_cache, dump_baseline, is_iso_date, is_label, latest_docs, newest_changelog,
-                   parse_baseline, parse_manifest, read_fetch, read_utf8, snapshot_docs, snapshot_text)
+                   copy_to_snapshot, default_cache, dump_baseline, is_iso_date, is_label, latest_docs,
+                   newest_changelog, parse_baseline, parse_manifest, read_fetch, read_utf8, snapshot_docs,
+                   snapshot_text, writable_snapshot)
 
 REPO = Path(__file__).resolve().parents[2]
 
@@ -235,21 +236,10 @@ def run_baseline(args, cache: Path, today: date) -> int:
         if record is None:
             raise SetupError('no latest fetch: run check first')
         release = record['changelog_head']
-        if release == BOOTSTRAP_RELEASE:
-            raise SetupError(f'{snapshot_docs(cache, release)} is the bootstrap snapshot, which is never '
-                             'written (R2.6): run check to fetch a newer release first')
+        writable_snapshot(cache, release)
         new, pages, notes = baseline.rebaseline(state, manifest, guide_text, args.group, args.refs,
                                                 latest_docs(cache), release, partial(snapshot_text, cache))
-        target = snapshot_docs(cache, release)
-        target.mkdir(parents=True, exist_ok=True)
-        copies = [(page, target / page_file(page), (latest_docs(cache) / page_file(page)).read_bytes())
-                  for page in pages]
-        for page, held, body in copies:  # all checked before any write
-            if held.is_file() and held.read_bytes() != body:
-                raise SetupError(f'{page}: {held} already holds different text, which another group may have '
-                                 'baselined; it is never overwritten')
-        for _, held, body in copies:
-            held.write_bytes(body)
+        copy_to_snapshot(cache, release, {page: page_file(page) for page in pages})
         for line in notes:
             print(f'note: {line}', file=sys.stderr)
     baseline_path.write_text(dump_baseline(new), encoding='utf-8')

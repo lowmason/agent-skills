@@ -10,7 +10,7 @@ from datetime import date
 from pathlib import Path
 from typing import Callable, NamedTuple
 
-from blocks import CELL_SPLIT_RE, HASH_RE, key_names, page_blocks
+from blocks import CELL_SPLIT_RE, HASH_RE, key_hash, page_blocks
 from docs import page_file, version_key
 from guide import ID_RE, TEXT_HASH_RE, section_terms, sections
 
@@ -447,18 +447,62 @@ def snapshot_text(cache: Path, page: str, release: str) -> str | None:
     return read_utf8(path) if path.is_file() else None
 
 
+def snapshot_blocks(state: dict, group: str, snapshot: Snapshot) -> Callable[[str], dict[str, tuple[str, str]]]:
+    '''Reads one group's snapshot pages, page -> {key hash: (key, normalized
+    text)}: each page as the release in the group's `snapshot` holds it
+    (R2.3), {} when no snapshot holds it. Each page is read once.'''
+    releases = state['groups'].get(group, {}).get('snapshot', {})
+    held: dict[str, dict[str, tuple[str, str]]] = {}
+
+    def read(page: str) -> dict[str, tuple[str, str]]:
+        if page not in held:
+            text = snapshot(page, releases[page]) if page in releases else None
+            held[page] = {} if text is None else {key_hash(k): (k, body) for k, body in page_blocks(text).items()}
+        return held[page]
+    return read
+
+
 def block_namer(state: dict, group: str, snapshot: Snapshot) -> Callable[[str, str], str]:
     '''Names one group's baselined blocks, (page, key hash) -> key: the key
     read back from the page's snapshot (R2.3), else the key hash itself.'''
-    releases = state['groups'].get(group, {}).get('snapshot', {})
-    names: dict[str, dict[str, str]] = {}
+    read = snapshot_blocks(state, group, snapshot)
+    return lambda page, kh: read(page).get(kh, (kh, ''))[0]
 
-    def name(page: str, kh: str) -> str:
-        if page not in names:
-            text = snapshot(page, releases[page]) if page in releases else None
-            names[page] = {} if text is None else key_names(page_blocks(text))
-        return names[page].get(kh, kh)
-    return name
+
+def baselined_text(state: dict, group: str, snapshot: Snapshot) -> Callable[[str, str], str | None]:
+    '''Reads one group's baselined blocks' text, (page, key hash) -> the
+    block's normalized text as the page's snapshot holds it, else None. A
+    block gone from the page has no current text, so a packet shows this.'''
+    read = snapshot_blocks(state, group, snapshot)
+    return lambda page, kh: read(page).get(kh, (kh, None))[1]
+
+
+def writable_snapshot(cache: Path, release: str) -> Path:
+    '''<release>/docs, which rebaseline and packets may write; the bootstrap
+    snapshot is never written (R2.6).'''
+    target = snapshot_docs(cache, release)
+    if release == BOOTSTRAP_RELEASE:
+        raise SetupError(f'{target} is the bootstrap snapshot, which is never '
+                         'written (R2.6): run check to fetch a newer release first')
+    return target
+
+
+def copy_to_snapshot(cache: Path, release: str, files: dict[str, str]) -> Path:
+    '''Copy latest/docs files into <release>/docs, returning that directory.
+    `files` maps the name a message gives each file to its cache file name.
+    A file already there with different bytes is never overwritten, since
+    another group's `snapshot` may name it. Every file is checked before any
+    is written.'''
+    target = writable_snapshot(cache, release)
+    copies = [(label, target / name, (latest_docs(cache) / name).read_bytes()) for label, name in files.items()]
+    for label, held, body in copies:
+        if held.is_file() and held.read_bytes() != body:
+            raise SetupError(f'{label}: {held} already holds different text, which another group may have '
+                             'baselined; it is never overwritten')
+    target.mkdir(parents=True, exist_ok=True)
+    for _, held, body in copies:
+        held.write_bytes(body)
+    return target
 
 
 def newest_changelog(cache: Path) -> Path | None:
