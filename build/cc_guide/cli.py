@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-'''cc_guide: the drift detector for specs/guides/claude-code-customization-guide.md
-and the citations that point at it (Stages 1 and 2 of
-specs/claude-code-drift-automation-spec.md).
+'''cc_guide: the drift detector for specs/guides/claude-code-customization-guide.md,
+the citations that point at it, and the deterministic half of /cc-guide
+(Stages 1 to 3 of specs/claude-code-drift-automation-spec.md).
 
 Run: uv run --python 3.13 python build/cc_guide/cli.py <subcommand>
 
@@ -38,6 +38,10 @@ Run: uv run --python 3.13 python build/cc_guide/cli.py <subcommand>
       not hold that block's baselined text: list it too, or rebaseline the
       whole page. It also refuses to overwrite a snapshot page that holds
       other text.
+  quotes --in DIR
+      Read `file<TAB>quote` rows on stdin and print FOUND file:line or
+      MISSING file for each, a quote counting only within one line of the
+      file under DIR (R8.3). Exit 0 when all are found, 1 on any miss.
 
 After reviewing what check reported, record it in R8.8's order: accept,
 rebaseline, advance, then audited for an audited group, then stamp; then run
@@ -60,6 +64,7 @@ from check import check, http_get, releases_of, summary
 from docs import page_file
 from guide import by_section, read_citations, render_stamp
 from lint import lint, stale_lines
+from quotes import check_rows
 from state import (BASELINE, BOOTSTRAP_DATE, BOOTSTRAP_RELEASE, MANIFEST, SetupError, Source, citing_files,
                    default_cache, dump_baseline, is_iso_date, is_label, latest_docs, newest_changelog,
                    parse_baseline, parse_manifest, read_fetch, read_utf8, snapshot_docs, snapshot_text)
@@ -106,6 +111,7 @@ def parser() -> argparse.ArgumentParser:
     kind.add_argument('--editorial', action='store_true')
     b.add_parser('stamp')
     b.add_parser('cite').add_argument('files', nargs='+')
+    sub.add_parser('quotes').add_argument('--in', dest='root', type=Path, required=True)
     return p
 
 
@@ -253,6 +259,14 @@ def run_baseline(args, cache: Path, today: date) -> int:
     return 0
 
 
+def run_quotes(args) -> int:
+    if not args.root.is_dir():
+        raise SetupError(f'{args.root}: not a directory')
+    lines, ok = check_rows(args.root, sys.stdin)
+    print('\n'.join(lines))
+    return 0 if ok else 1
+
+
 def main(argv=None, *, today: date | None = None, now: datetime | None = None, fetch=None) -> int:
     args = parser().parse_args(argv)
     try:
@@ -263,6 +277,8 @@ def main(argv=None, *, today: date | None = None, now: datetime | None = None, f
             return run_lint(args, cache)
         if args.command == 'check':
             return run_check(args, cache, today, now, fetch or http_get)
+        if args.command == 'quotes':
+            return run_quotes(args)
         return run_baseline(args, cache, today)
     except SetupError as exc:
         print(f'cc-guide: {exc}', file=sys.stderr)
