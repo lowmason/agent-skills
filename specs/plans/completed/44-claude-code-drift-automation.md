@@ -2390,6 +2390,8 @@ git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-44-cc-drift-st
 
 - [x] **Step 1: Write the failing tests**
 
+> Deviation: in the fix wave (owner, 2026-10-13), `test_settle.py`'s `world` fixture builds its cache at `state.default_cache()` under the isolated HOME instead of `tmp_path / 'cache'`. The overlay allowed changing only tests that pinned a reversed behaviour; this change kept every pinned command string byte-identical once commands could carry `--cache`, and weakened no assertion. Sixteen of the wave's new cases (13 isolating hold-rule tests, `copy_to_snapshot`'s included, and 3 untested-edge tests) pin behaviour the code already had, so they passed at RED. Each was proven instead by a mutant it kills (60 of 60 killed). One shell loop polled the harness output, against the overlay's plain-command rule, with no effect on the code.
+
 **Create** `build/cc_guide/test_settle.py`:
 
 ````python

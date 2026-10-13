@@ -3027,7 +3027,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       files, `hooks/ruff-check.sh`, `hooks/README.md`); D, the owner's review of the uncommitted
       diff. The section's "Left for later runs" list stays open. In step C, confirm the session
       holds `agents/explore.md` with `settle --hold` for its Grep and Glob gap (#1), as the
-      retired plan's line 4264 expects. Run 6b tested settle's new files header only on
+      retired plan's line 4266 expects. Run 6b tested settle's new files header only on
       deviations (line 145). Under the earlier header, run 7 held the file for this gap (line
       142). Size: plan. Done when: Validation 3 passes as plan 44's Task 1 amends it. The
       owner's decisions on #1 and #2 are recorded, the fixes applied and those files left the
@@ -3045,8 +3045,9 @@ declined as YAGNI (zero instances in a one-page wiki).
       `settled.json` into the verify index, and have `ready` require them resolved too (close to
       the owner's design (b)); test: an alpha block with TOUCHES rows naming `beta.overview` and
       `alpha.overview`, where alpha's verify must not rebaseline it while `beta.overview` is
-      unresolved. Size: quick-fix. Done when: that test passes and spec R8.4 step 6 / R8.10
-      state the rule.
+      unresolved. This reopens the owner's choice of design (a) over (b) and amends spec R8.4
+      step 6 / R8.10, so it is the owner's decision. Size: design. Done when: the owner decides,
+      and if (b) is chosen, that test passes and the spec states the rule.
 - [ ] Split settle.py's report grammar into its own module (plan 44's fix wave, item 14; owner
       deferred 2026-10-13). `build/cc_guide/settle.py` is 726 lines and holds the report grammar
       (`split_row`, `unquote`, `given`, `report_lines`, `header_row`, `none_line`, the `FORMATS`,
