@@ -46,7 +46,7 @@ Every mode handles each packet the same way:
 1. Run `cli.py check --worktree`. Exit 2 is an error to fix first.
 2. Run `cli.py packets --triage`. "nothing to triage" ends the mode. Above 20 untriaged releases after the newest checked one, it refuses and names the `--through` of the first range of 20: build that one.
 3. Dispatch one verifier, about \$0.05–0.20, then save and settle.
-4. Settle's `verify:` line names the sections a TOUCHES or UNSURE row sent on. Verify them now with `cli.py packets --verify --from <triage packet directory>`, which takes those sections, or tell the owner they are deferred: they do not advance, so the next triage shows them again.
+4. Settle's `verify:` line names the sections a TOUCHES or UNSURE row sent on. Verify them now with `cli.py packets --verify --from <triage packet directory>`, which takes those sections, or tell the owner they are deferred: they do not advance, so the next triage shows them again. When the TOUCHES or UNSURE rows for one block name sections of two groups (`build/cc_guide/manifest.toml` lists each group's sections), its own group's settle checks only that group (spec R8.4 step 6): verify both groups in this run, settle the other group's packet first, and if that section ends held or deferred, leave the block's ref out of its own group's `rebaseline`, with the rest of its page if `rebaseline` then refuses the page.
 5. Settle's `owner:` lines go to the owner. Its advance stops below the oldest release one names.
 6. A ranged triage's settle ends with `next range`. Once its commands have run and its verify is done or deferred, build that range the same way.
 

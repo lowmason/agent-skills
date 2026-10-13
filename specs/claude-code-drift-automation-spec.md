@@ -742,6 +742,14 @@ R8.4 **`/cc-guide triage`.**
      flagged section of that group is resolved, and no section that a row
      for one of those blocks flagged, in any group, is still flagged, since
      another group's verify packet never carries them (owner, plan 44,
+     2026-10-13). Such a block then goes to its own group's verify, which
+     settles it on its candidates alone (R8.8 step 1), so a section another
+     group's row flagged can still be held or deferred when that verify
+     rebaselines it. The run, not settle, closes this: it verifies both
+     groups, settles the other group's packet first, and leaves the block
+     out of its own group's `rebaseline` while that section is held or
+     deferred, so the next triage shows the block again. Carrying the block
+     into every flagged group's verify packet was declined (owner,
      2026-10-13).
    - Any TOUCHES or UNSURE goes to `verify` now.
    - Deferred: nothing advances, and the next triage shows it again.

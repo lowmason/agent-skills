@@ -3059,7 +3059,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       corrections are applied. C is done: all nine files are reviewed and the three known drifts
       settled. D, the owner's review of this diff, is left. The item stays open for Validation
       3's triage bullet, which waits for the next release.
-- [ ] A cross-group block can still be rebaselined by its own group's verify (plan 44's fix
+- [x] A cross-group block can still be rebaselined by its own group's verify (plan 44's fix
       wave, the I2 residual; owner deferred 2026-10-13). The owner's design (a) holds a group's
       rebaseline in triage while a section that a row for one of its blocks flagged in another
       group is still flagged (`build/cc_guide/settle.py`, `crossing` in `settle_triage`). But if
@@ -3075,6 +3075,14 @@ declined as YAGNI (zero instances in a one-page wiki).
       unresolved. This reopens the owner's choice of design (a) over (b) and amends spec R8.4
       step 6 / R8.10, so it is the owner's decision. Size: design. Done when: the owner decides,
       and if (b) is chosen, that test passes and the spec states the rule.
+      → done 2026-10-13 (owner decision, `chore/cc-drift-triage-2026-10-13`): design (a) stays,
+      with an operating rule in place of code. The fix above would never rebaseline such a block:
+      a verify packet's `cleared` is its triage's, which never holds a flagged section, and the
+      other group's packet does not carry the block, so it would return at every triage. Spec
+      R8.4 step 6 now states the residual, and the cc-guide skill's triage step 4 tells the run
+      to verify both groups, settle the other group's packet first, and leave the block out of
+      its own group's `rebaseline` while that section is held or deferred. Carrying the block
+      into every flagged group's verify packet (design (b)) was declined.
 - [ ] Split settle.py's report grammar into its own module (plan 44's fix wave, item 14; owner
       deferred 2026-10-13). `build/cc_guide/settle.py` is 726 lines and holds the report grammar
       (`split_row`, `unquote`, `given`, `report_lines`, `header_row`, `none_line`, the `FORMATS`,
