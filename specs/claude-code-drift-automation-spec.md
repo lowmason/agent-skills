@@ -727,9 +727,11 @@ R8.4 **`/cc-guide triage`.**
    nothing it names: each section ID it names goes to verify, and so does
    each candidate of a block item it names (a block with no row that parses
    goes as an omitted one, step 4); and a bullet item it names falls back to
-   its hints. A coverage line that does not parse leaves each release it
-   names uncovered, whatever another line says about it; a release a broken
-   row only mentions stays as its own coverage line leaves it. A row that
+   its hints. A line that does not parse and whose first field names a
+   release, however it marks the label up (`**<release>**`, `<release>:`),
+   is a coverage line: it leaves each release it names uncovered, whatever
+   another line says about it. A release a broken row mentions only after
+   its first field stays as its own coverage line leaves it. A row that
    does not parse and names no section, block or bullet sends every section
    in the packet to verify, so nothing advances, as an A row whose line
    falls in no section holds a verify packet (R8.8 step 1) (owner, plan 44,

@@ -374,12 +374,38 @@ def test_a_broken_coverage_line_flags_its_sections_and_leaves_its_release_uncove
     assert not result.clean
 
 
+@pytest.mark.parametrize('broken, named, rest, sent', [
+    ('**2.1.901** | alpha.overview', ['alpha.overview'], 'beta.overview beta.reference',
+     'alpha.overview alpha.reference'),
+    ('2.1.901: | alpha.overview', ['alpha.overview'], 'beta.overview beta.reference',
+     'alpha.overview alpha.reference'),
+    ('the 2.1.901 bullets | all noise', [], 'alpha.overview beta.overview beta.reference', 'alpha.reference'),
+], ids=['bold', 'colon', 'prose'])
+def test_a_broken_line_that_opens_with_a_release_leaves_it_uncovered(world, tmp_path, broken, named, rest, sent):
+    '''Fix round 1, B: a broken line whose first field names a release is a
+    coverage line however it marks the label up, so `2.1.901 | none` beside
+    it still leaves 2.1.901 uncovered, as at f67869d.'''
+    out = triage(world, tmp_path)
+    result = settled(out, broken, '2.1.901 | none', '2.1.902 | none')
+    assert result.lines == [
+        f'cc-guide settle: triage, {out}',
+        'report: 0 item(s) answered, 1 of 2 release(s) covered; 0 quote(s) not found; 1 unparseable line(s); '
+        '1 left out',
+        f'  unparseable row: {broken}',
+        *(f'UNSURE or TOUCHES {sid}: a row that does not parse names it' for sid in named),
+        'UNSURE or TOUCHES alpha.reference: 2.1.901: its coverage line does not parse',
+        'then, in this order (R8.8):',
+        f'  {CLI} baseline advance {rest} --to 2.1.902',
+        *TAIL,
+        f'verify: /cc-guide verify {sent}; {VERIFY_LINE}']
+
+
 def test_a_release_a_broken_row_only_mentions_stays_covered(world, tmp_path):
     '''Fix round 1, B: only a coverage line that does not parse leaves its
-    release uncovered. A broken row whose text mentions 2.1.901 still flags
-    the section and block it names, and `2.1.901 | none` covers 2.1.901. A
-    broken row that names only a release can do nothing with it, so it holds
-    the whole packet.'''
+    release uncovered. A broken row whose text mentions 2.1.901 after its
+    first field still flags the section and block it names, and
+    `2.1.901 | none` covers 2.1.901. A broken row that only mentions a
+    release can do nothing with it, so it holds the whole packet.'''
     latest(world, {'tools.md': DOCS['tools.md'].replace('runs alpha jobs', 'runs alpha batches')})
     out = triage(world, tmp_path)
     broken = 'B1 | TOUCHES | alpha.overview | 14 | "Alpha uses" | "runs alpha batches | it moved in 2.1.901'
@@ -394,7 +420,7 @@ def test_a_release_a_broken_row_only_mentions_stays_covered(world, tmp_path):
         f'  {CLI} baseline advance alpha.reference beta.overview beta.reference --to 2.1.902',
         *TAIL,
         f'verify: /cc-guide verify alpha.overview; {VERIFY_LINE}']
-    only = 'the 2.1.901 bullets | all noise'
+    only = 'the remaining bullets | all noise, 2.1.901 included'
     alone = settled(out, 'B1 | NOISE | - | - | - | "runs alpha batches" | a wording change', only, '2.1.901 | none',
                     '2.1.902 | none')
     why = 'a row that does not parse names no section, block or bullet'

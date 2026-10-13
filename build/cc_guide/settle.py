@@ -10,9 +10,10 @@ triage's settled.json in the packet; `baseline` records the outcome.
   block with it. A source quote counts only within its own item's text. A
   line that does not parse still flags each section it names and each
   candidate of a block it names, and sends a bullet it names to its hints;
-  a coverage line that does not parse leaves its release uncovered, and a
-  row that does not parse and names no section, block or bullet sends
-  every section in the packet. It names the sections for verify, and
+  one whose first field names a release, however it marks the label up, is
+  a coverage line and leaves each release it names uncovered, and a row
+  that does not parse and names no section, block or bullet sends every
+  section in the packet. It names the sections for verify, and
   prints the rebaseline and advance commands for the rest; a group's
   blocks wait while a section a row for one of them flagged, in any group,
   is flagged. An owner item stops the advance below its release.
@@ -34,14 +35,15 @@ A row's fields are split on `|`. A quote field that opens with `"` runs to
 the first `"` followed by `|` or the end of the line, so a quote may hold `|`
 and `"`; the last field takes the rest of the line. `-` marks an empty
 field. A leading list marker and a Markdown table's outer pipes are no part
-of a row. Settle drops these lines without listing them, so they never move
-the exit to 1:
-- a table's separator rows;
-- header rows: a line whose first field is a header word (HEADERS), or
-  whose every field is a column name (COLUMNS). The second takes in a
-  table's own header row and an echoed template, among them a C row whose
-  only text is one column name (`C | statement`) and a B row shaped like
-  the template (`B | version | one line | changelog.md:line`);
+of a row, and a line without `|` is prose, never a row. Settle drops these
+lines without listing them, so they never move the exit to 1:
+- separator rows: a line of only `|`, `-`, `:` and spaces;
+- header rows, in any letter case: a line whose first field is a header
+  word (HEADERS), or whose every field is a column name (COLUMNS). The
+  second takes in a table's own header row and an echoed template, among
+  them a C row whose only text is one column name (`C | statement`) and a
+  B row shaped like the template
+  (`B | version | one line | changelog.md:line`);
 - in verify and audit, a well-formed `<section> | none` line for a section
   outside the packet.
 Any other line holding `|` that is no row is listed as unparseable.
@@ -262,9 +264,11 @@ class Tally:
         '''A line that does not parse is listed, and still fails safe on what
         it names: each section goes to verify; each block's candidates do too
         once a row answers that block (one with no row goes as `no row`); a
-        bullet falls back to its hints. A coverage line's releases stay
-        uncovered; a release a broken row only mentions does not. A row that
-        names no section, block or bullet holds the whole packet.'''
+        bullet falls back to its hints. A line whose first field names a
+        release is a coverage line, however it marks the label up, and every
+        release it names stays uncovered; a release a broken row mentions only
+        after its first field does not. A row that names no section, block or
+        bullet holds the whole packet.'''
         self.notes.append(f'unparseable {kind}: {line}')
         self.unparseable += 1
         names = {name.rstrip('.') for name in NAME_RE.findall(line)}
@@ -272,7 +276,9 @@ class Tally:
         sids = [sid for sid in self.p.ids if sid in names]
         blocks = [item for item in self.blocks if item in names]
         bullets = [item for item in self.bullets if item in names]
-        releases = [label for label in self.releases if label in names] if kind == 'coverage line' else []
+        lead = {name.rstrip('.') for name in NAME_RE.findall(first)}
+        coverage = any(label in lead for label in self.releases)
+        releases = [label for label in self.releases if label in names] if coverage else []
         if not (sids or blocks or bullets or releases):
             self.stray.append(line)
             return
