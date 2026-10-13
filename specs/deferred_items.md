@@ -2891,7 +2891,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       quick-fix. Done when: one clean commit in a linked worktree prints
       `commit lints passed`, and one commit with deliberately broken skill frontmatter is
       refused.
-- [ ] `build/githooks/pre-commit` polish (plan 41 final-review Minor M5 and the re-review
+- [x] `build/githooks/pre-commit` polish (plan 41 final-review Minor M5 and the re-review
       note; triaged defer): the uv probe (`uv run --no-project --python 3.13 python -c
       pass`) discards uv's output, so a skip caused by, for example, being offline with
       Python 3.13 not cached gives no reason; and the header comment says "Enable once per
@@ -2899,7 +2899,13 @@ declined as YAGNI (zero instances in a one-page wiki).
       Size: quick-fix. Done when: the skip message names uv's last stderr line (with a
       test in `build/test_commit_lints.py` using the `broken_uv` stub) and the header
       comment matches CLAUDE.md.
-- [ ] `test_frontmatter_violation_is_refused` breaks the YAML instead of emptying the
+      → done 2026-10-13 (/deferred quick fix): the probe keeps uv's stderr and the skip
+      message names its last line, taken with a bash expansion because the hook's PATH may
+      lack tail; the `broken_uv` stub now prints two stderr lines, and
+      `test_hook_fails_open_when_uv_cannot_run` asserts the last one appears and the first
+      does not (red first: the old message named no reason). The header says enabling is the
+      owner's step and writes the repo config every worktree reads.
+- [x] `test_frontmatter_violation_is_refused` breaks the YAML instead of emptying the
       description (plan 41 final-review Minor M4, confirmed; triaged defer):
       `build/test_commit_lints.py` rewrites the one `description:` line of
       `skills/explore-data/SKILL.md`, but that description is a folded `>` block whose
@@ -2907,6 +2913,10 @@ declined as YAGNI (zero instances in a one-page wiki).
       YAML" and the empty-description rule is never exercised. Size: quick-fix. Done
       when: the test edits a skill with a one-line description, or replaces the whole
       folded block, and the failure it provokes is the empty-description finding.
+      → done 2026-10-13 (/deferred quick fix): the test's pattern now replaces the whole folded
+      block, continuation lines included, and it asserts `check_frontmatter.py`'s
+      `missing description` finding for the skill (red first: the old edit produced the
+      not-valid-YAML error instead).
 - [ ] Nothing pins the runner's environment unset (plan 41 final-review Minor M1; triaged
       defer): `build/run_commit_lints.sh` runs `unset $(git rev-parse --local-env-vars)`
       before the checks, but no test fails if it is deleted. The plan's stated reason (the

@@ -1,17 +1,19 @@
 #!/usr/bin/env bash
 # Pre-commit: run the seven commit lints (build/run_commit_lints.sh) on the working
-# tree. Enable once per clone: git config core.hooksPath build/githooks
+# tree. Enabling it is the owner's step: git config core.hooksPath build/githooks
+# writes the repo config, which every worktree reads.
 # Fails open, with a warning, only when uv itself cannot run here (missing, or a
-# sandbox that blocks its cache); .github/workflows/lints.yml still gates what
-# reaches main. A lint failure blocks the commit; git commit --no-verify skips
-# the hook deliberately.
+# sandbox that blocks its cache; the warning names uv's last stderr line);
+# .github/workflows/lints.yml still gates what reaches main. A lint failure blocks
+# the commit; git commit --no-verify skips the hook deliberately.
 root="$(git rev-parse --show-toplevel)" || exit 1
 if ! command -v uv >/dev/null 2>&1; then
   echo 'pre-commit: uv not found; commit lints skipped (CI still runs them)' >&2
   exit 0
 fi
-if ! (cd "$root" && uv run --no-project --python 3.13 python -c pass) >/dev/null 2>&1; then
-  echo 'pre-commit: uv cannot run here; commit lints skipped (CI still runs them)' >&2
+if ! probe="$(cd "$root" && uv run --no-project --python 3.13 python -c pass 2>&1 >/dev/null)"; then
+  reason="${probe##*$'\n'}" # bash builtins only: the hook's PATH may lack tail
+  echo "pre-commit: uv cannot run here${reason:+ ($reason)}; commit lints skipped (CI still runs them)" >&2
   exit 0
 fi
 exec bash "$root/build/run_commit_lints.sh"
