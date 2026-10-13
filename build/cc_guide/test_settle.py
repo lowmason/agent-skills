@@ -453,8 +453,8 @@ def test_a_report_written_as_a_list_parses_as_rows(world, tmp_path):
 
 
 def test_a_broken_line_that_names_nothing_sends_every_section_in_the_packet_to_verify(world, tmp_path):
-    '''I1 (c): a line that does not parse and names no item, release or
-    section holds the whole packet, as verify's unattributable line does:
+    '''I1 (c): a line that does not parse and names no section, block or
+    bullet holds the whole packet, as verify's unattributable line does:
     every section goes to verify, and nothing advances or is rebaselined.'''
     latest(world, {'tools.md': DOCS['tools.md'].replace('runs alpha jobs', 'runs alpha batches')})
     out = triage(world, tmp_path)
