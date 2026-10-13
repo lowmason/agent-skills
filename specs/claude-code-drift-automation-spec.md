@@ -1264,7 +1264,7 @@ Constraints:
   is per guide, so a second guide could be added later with its own sources.
 - The multi-vendor best-practices spec (retired to
   `specs/completed/agent-skills-best-practices.md` in `79ad04f`), and the
-  guide's §8 `TODO(owner)`.
+  guide's §8 `TODO(owner)`, which the owner settled on 2026-10-13.
 - Anything automatic and outward-facing (commits, PRs, issues). Plan 41 added
   CI, which runs `lint` among the commit lints; `check`, which fetches, never
   runs there (owner, plan 43, 2026-10-12).

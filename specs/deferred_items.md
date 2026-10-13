@@ -2472,10 +2472,15 @@ declined as YAGNI (zero instances in a one-page wiki).
       → retired 2026-10-05 (/deferred): a pointer with no action of its own; the drift
       spec is live and its Stage 1 merged (add1995, plans/completed/38-…), so its stages
       and their own deferred items track keeping the guide current.
-- [ ] The guide's §8 `TODO(owner)` (conformance spec, Out of scope): the default-model
+- [x] The guide's §8 `TODO(owner)` (conformance spec, Out of scope): the default-model
       stance in `specs/guides/claude-code-customization-guide.md` is the owner's call. The
       drift spec logs the same item at its own completion; keep one. Size: design. Done
       when: the owner decides it and the `TODO(owner)` comment leaves the guide.
+      → done 2026-10-13 (/deferred quick fix): the owner chose a phase-based stance.
+      `lean.model-routing`'s first bullet now says to plan, design and review on Opus, the
+      account default, and to implement a written plan on Sonnet-class at half the price; the
+      `TODO(owner)` comment is gone. `build/cc_guide/conformance.toml`'s settings comment no
+      longer excepts the bullet, and the drift spec's Out of scope list notes it is settled.
 - [x] The provenance of `skills/writing-skills/anthropic-best-practices.md` (conformance
       spec, Out of scope): the file reads like an Anthropic docs page, and NOTICE does not
       attribute it. Size: design. Done when: the owner records the file's source and NOTICE
@@ -3151,7 +3156,7 @@ declined as YAGNI (zero instances in a one-page wiki).
 
 ## cc-drift-triage-2026-10-13 (no plan; /cc-guide triage, branch chore/cc-drift-triage-2026-10-13) — 2026-10-13
 
-- [ ] The guide's load trigger for path-scoped rules is out of date (`/cc-guide verify`, packet
+- [x] The guide's load trigger for path-scoped rules is out of date (`/cc-guide verify`, packet
       `20261013T175307-verify`, rules group). Guide line 252 (`rules.rules-files`) says a
       `paths` rule loads when Claude reads or edits a matching file; line 399
       (`lean.session-hygiene`, overview group) says such a rule reloads when Claude reads,
@@ -3163,7 +3168,13 @@ declined as YAGNI (zero instances in a one-page wiki).
       252 names the triggers the docs give, line 399 agrees with it or says why it differs,
       each changed section has had `baseline accept --substantive` and `stamp`, and `cli.py
       lint` and `check_conformance.py` pass.
-- [ ] Six owner's-call rows from the follow-on verify (`/cc-guide verify`, packet
+      → done 2026-10-13 (/deferred quick fix): line 252 now says a `paths` rule loads when
+      Claude reads, writes or edits a matching file, a single-file Bash read included since
+      2.1.293, as the 2.1.296 snapshot's memory page gives it. Line 399 already agrees: the
+      context-window page uses the same "reads, writes, or edits". `rules.rules-files` was
+      accepted as substantive and stamped; `lint`, `check_conformance.py` and `check
+      --worktree` pass, with no new block due.
+- [x] Six owner's-call rows from the follow-on verify (`/cc-guide verify`, packet
       `20261013T175307-verify`). Settle lists such rows and never applies them, and the
       session that ran the verify has ended, so this is their only record. Rules group,
       each a missing statement (C row): (1) near line 252, a rule whose `paths` frontmatter
@@ -3180,6 +3191,12 @@ declined as YAGNI (zero instances in a one-page wiki).
       2.1.252 or later and cannot run while feature-flag fetching is off (C row). Size:
       quick-fix each. Done when: the owner has ruled on all six, and each statement added to
       the guide went through `/cc-guide`'s accept and stamp with `cli.py lint` passing.
+      → done 2026-10-13 (/deferred quick fix): the owner added (1), (2), (3) and (6) and kept
+      (4) and (5) as written. Each added statement was checked against the 2.1.296 snapshot.
+      (2) states only what the docs give, a pattern that matches nothing while the rule's other
+      patterns keep working; the docs do not say the failure is silent. Every added term is
+      unformatted or under three characters, so no new watch term made a block due.
+      `rules.rules-files` and `lean.measure` were accepted as substantive and stamped.
 - [ ] A short backticked word in a guide section makes unrelated docs blocks due (`/cc-guide
       verify`, overview group, 2026-10-13). `section_terms` (`build/cc_guide/guide.py`, near
       line 143) makes every backticked span of 3 to 60 characters outside fenced code a watch

@@ -249,9 +249,9 @@ Files load broad → specific and are **concatenated, never overridden**: manage
 `.claude/rules/*.md` (project) and `~/.claude/rules/*.md` (personal) hold focused rule files:
 
 - **Without `paths`**: loaded at session start, alongside CLAUDE.md.
-- **With `paths` globs** (`**` wildcards and brace expansion supported): loaded lazily, only when Claude reads or edits matching files — the cheap way to carry per-area conventions. Compaction summarizes them away, so a rule that must persist should drop `paths` or move to the root CLAUDE.md. Brace expansion is bounded: a rule's whole `paths` list shares one budget of 1,000 expanded patterns and 4 MiB, and a pattern that would exceed it is used unexpanded, so its literal braces match no files.
+- **With `paths` globs** (`**` wildcards and brace expansion supported): loaded lazily, only when Claude reads, writes, or edits a matching file (a Bash command that counts as a read, such as cat or head on a single file, included since 2.1.293) — the cheap way to carry per-area conventions. Compaction summarizes them away, so a rule that must persist should drop `paths` or move to the root CLAUDE.md. Brace expansion is bounded: a rule's whole `paths` list shares one budget of 1,000 expanded patterns and 4 MiB, and a pattern that would exceed it is used unexpanded, so its literal braces match no files. A `[` that can't open a bracket expression also makes its pattern match nothing (escape a literal one as `\[`); either way the rule's other patterns keep working. Frontmatter that doesn't parse as YAML is ignored, so the rule loads every session as if it had no `paths`; claude --debug shows the parse error.
 
-Rules are discovered recursively, so subdirectory organization works. A symlinked rule whose target lies outside the project counts as an external import: it loads only after you approve external imports for the project, and then only if it has no `paths` (2.1.284+) ⚠. Keep cross-project rules in `~/.claude/rules/` instead.
+Rules are discovered recursively, so subdirectory organization works. A symlinked rule whose target lies outside the project counts as an external import: it loads only after you approve external imports for the project, and then only if it has no `paths` (2.1.284+) ⚠. Keep cross-project rules in `~/.claude/rules/` instead. User rules load before project rules and neither set overrides the other: when two conflict, Claude may follow either, so keep them consistent.
 
 ### Auto memory
 <!-- cc: rules.auto-memory -->
@@ -388,7 +388,7 @@ exit 0
 ### Know your numbers first
 <!-- cc: lean.measure -->
 
-`/context` (what's loaded), `/usage` (session tokens and estimated cost — computed locally at list price, or at your contracted rates while an administrator's managed `modelPricing` table is in effect; an estimate either way, not your bill; `/cost` and `/stats` are aliases), `/doctor` (listing cost, plus unused skills, MCP servers, and plugins), `/skill-doctor` (per-skill cost and usage). The status line can render live `current_usage` including cache reads/writes. For continuous tracking: OpenTelemetry (`CLAUDE_CODE_ENABLE_TELEMETRY=1` plus an OTLP exporter, endpoint, and protocol (`OTEL_EXPORTER_OTLP_PROTOCOL` or a per-signal one; there is no default) exports `claude_code.token.usage` and `claude_code.cost.usage`; set it in your shell, user, or managed settings — since 2.1.282, project and local settings can't turn export on, choose its destination, or capture content, though an off value there, such as an exporter selector set to none, still applies) or the community `ccusage` tool. Establish a baseline before optimizing anything.
+`/context` (what's loaded), `/usage` (session tokens and estimated cost — computed locally at list price, or at your contracted rates while an administrator's managed `modelPricing` table is in effect; an estimate either way, not your bill; `/cost` and `/stats` are aliases), `/doctor` (listing cost, plus unused skills, MCP servers, and plugins), `/skill-doctor` (per-skill cost and usage; 2.1.252+, and unavailable in a session that skips feature-flag fetching). The status line can render live `current_usage` including cache reads/writes. For continuous tracking: OpenTelemetry (`CLAUDE_CODE_ENABLE_TELEMETRY=1` plus an OTLP exporter, endpoint, and protocol (`OTEL_EXPORTER_OTLP_PROTOCOL` or a per-signal one; there is no default) exports `claude_code.token.usage` and `claude_code.cost.usage`; set it in your shell, user, or managed settings — since 2.1.282, project and local settings can't turn export on, choose its destination, or capture content, though an off value there, such as an exporter selector set to none, still applies) or the community `ccusage` tool. Establish a baseline before optimizing anything.
 
 ### Session hygiene
 <!-- cc: lean.session-hygiene -->
@@ -416,11 +416,9 @@ The practical rule: **pick your model and server set at session start and leave 
 ### Model routing
 <!-- cc: lean.model-routing -->
 
-<!-- TODO(owner): decide the default-model stance in the first bullet below. Evidence as of 2026-10-03: the account default is now Opus 5.5 at medium effort; the costs docs still say Sonnet handles most coding and costs less; as of 2026-10-12 (2.1.296) Sonnet 5.5 cached reads bill $0.10/MTok against Opus 5.5's $0.20, so Sonnet is exactly half of Opus on every token class (the two matched on cached reads on 2026-10-03). -->
-
 Match the model to the phase, not the session:
 
-- **Default to Sonnet-class** for routine implementation; escalate deliberately rather than idling on Opus.
+- **Plan on Opus, execute on Sonnet.** Opus 5.5, the account default on most plans, earns its price on planning, design, and review; implementing a written plan runs well on Sonnet-class at half the price on every token class. Escalate a Sonnet session deliberately, not by habit.
 - **`opusplan`** runs Opus in plan mode and Sonnet in execution — strong reasoning where it counts, cheaper tokens for the long implementation tail. Each phase switch is a full cache miss, but Sonnet 5.5 now bills half of Opus 5.5 at every rate, cached reads included, so the execution tail is cheaper throughout — measure before assuming it wins.
 - **The advisor** (`/advisor`, `advisorModel`; experimental, Anthropic API only) lets a cheaper main model consult a stronger one at decision points — e.g. Sonnet main with an Opus advisor. Toggling it keeps the main cache, but each consultation re-reads the transcript uncached ⚠.
 - **Haiku for mechanical subagents** (see §5) — this is where per-agent `model:` earns its keep.
