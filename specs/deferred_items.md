@@ -1939,7 +1939,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       → done 2026-10-05 (/deferred quick fix): _module_names counts module-level
       bindings only, for fixtures and the preamble; COMPARISON_FIXTURE dels its
       helpers; Tier 3 re-measured unchanged.
-- [ ] No pytest executes `COMPARISON_FIXTURE` (`build/snippet_preamble.py`). Plan 33's two
+- [x] No pytest executes `COMPARISON_FIXTURE` (`build/snippet_preamble.py`). Plan 33's two
       comparison tests are static: they check binding and fence selection. A stack change that
       breaks the fixture's two extra fits would leave the pytest suite green. Only the roughly
       3-minute Tier 3 `--run` gate executes the fixture, and the preamble docstring already
@@ -1949,6 +1949,10 @@ declined as YAGNI (zero instances in a one-page wiki).
       two extra NUTS fits in the stack-gated suite.
       Size: quick-fix. Revisit if: a `PINNED` refresh or a Tier 3 run breaks the comparison
       fixture without a pytest failure.
+      → retired 2026-10-13: the optional fix exists. `build/test_check_snippets.py`'s
+      `test_the_comparison_fixtures_helpers_are_gone_at_run_time` (`@requires_stack`, added in
+      f7b68af on 2026-10-05) runs the preamble and the comparison fixture in a subprocess, both
+      extra fits included, and asserts it exits 0.
 
 ## 35-claude-code-guide-conformance — 2026-10-04
 - [x] Bring the root CLAUDE.md under 200 lines (plan 35 audit rows L-01, C-02 to C-05). It
@@ -1993,6 +1997,9 @@ declined as YAGNI (zero instances in a one-page wiki).
       Done when: both sit within the first 5,000 tokens, and exception
       `critical-rules-past-compaction` is removed from `build/cc_guide/conformance.toml` in
       the same change, with `build/check_conformance.py` passing.
+      → SDD bundle (owner, 2026-10-13): this item's subagent-driven-development half, the
+      roadmap-stage rewording and the 500-line trim below are together the SDD bundle plan
+      that plans 43 and 44 cite as H26/P2/P3/Q2, labels no tracked file defines.
 - [ ] Enforce the model-on-dispatch rule with a hook (plan 35 audit row S-94):
       `skills/subagent-driven-development/SKILL.md` says to always specify the model
       explicitly when dispatching. The rule is machine-checkable (the Agent tool's `model`
@@ -2405,7 +2412,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       (plan 35 audit §7): the guide's line 175 requires lowercase-hyphenated agent names,
       while line 214 defines a custom `Explore` with a capital E. Size: quick-fix. Done
       when: `/cc-guide verify subagents.frontmatter` (drift R8.5) has judged the note.
-- [ ] Verify guide note A-53 with `/cc-guide verify subagents.models` once drift lands (plan
+- [x] Verify guide note A-53 with `/cc-guide verify subagents.models` once drift lands (plan
       35 audit §7): the guide's line 207 opens Haiku's retirement window on 2026-10-15 while
       lines 209 and 214 still recommend Haiku, and it leaves the alias's behaviour at
       retirement unstated. Size: quick-fix. Done when: `/cc-guide verify subagents.models`
@@ -2418,6 +2425,12 @@ declined as YAGNI (zero instances in a one-page wiki).
       map `haiku` to Haiku 4.5. The guide still describes Haiku 4.5 as the Haiku in
       `subagents.models` (line 211: 200K window, $1/$5) and in `lean.model-routing`'s price table
       (line 438), so the item stays open for the verify run.
+      → retired 2026-10-13: `/cc-guide audit models` (packet `20261013T113847-audit`, 2.1.296
+      snapshot) judged `subagents.models` line 211 claim by claim in place of a verify: `haiku`
+      resolving to Haiku 5.5 on the Anthropic API, Haiku 4.5 as a legacy model with a 200K
+      window and its retirement window, and the alias still meaning Haiku 4.5 on the other
+      platforms. The line now says all of it, and the price table lists both models; H-57 was
+      closed the same way in #42.
 - [ ] Verify guide note A-54 with `/cc-guide verify subagents.isolation` once drift lands
       (plan 35 audit §7): the guide's line 219 says custom agents load CLAUDE.md and git
       status while the built-in Explore skips both, without saying which applies to line
@@ -2433,11 +2446,16 @@ declined as YAGNI (zero instances in a one-page wiki).
       2.1.296 snapshot, whose settings reference gives the key Scope "Any file", read from the
       managed source alone once an organization deploys managed settings. The section now says
       so, and the enforce-available-models-project item above is done.
-- [ ] Verify guide note H-58 with `/cc-guide verify hooks.patterns` once drift lands (plan
+- [x] Verify guide note H-58 with `/cc-guide verify hooks.patterns` once drift lands (plan
       35 audit §7): the guide's line 362 endorses a Stop gate that re-blocks until the
       8-block cap, while line 303 says to check `stop_hook_active`; the stop-hook-guard
       check enforces only line 303's reading. Size: quick-fix. Done when: `/cc-guide verify
       hooks.patterns` (drift R8.5) has judged the note.
+      → retired 2026-10-13: the contradiction is gone. The guide's line 310 says to check
+      `stop_hook_active` and calls the 8-block cap only a backstop, and the stop-gate pattern
+      (line 369) sets out both choices, exiting on `stop_hook_active` or re-checking with a
+      retry cap of the hook's own, and says the cap does not bound a re-checking loop. No
+      verify of `hooks.patterns` ran; the owner judged one would only re-confirm that text.
 - [ ] Verify guide note C-40 with `/cc-guide verify mechanisms.overview` once drift lands
       (plan 35 audit §7): the guide's line 48 says a PostToolUse hook runs the linter every
       time, which overstates: line 369 says a Write/Edit matcher misses Bash rewrites, and
@@ -2845,11 +2863,15 @@ declined as YAGNI (zero instances in a one-page wiki).
       merged, run the protocol on the merged branch now". Size: quick-fix. Done
       when: reworded in all three files and a `p5a` run (5 reps plus `c5a-neg`) on
       the new text passes.
+      → SDD bundle (owner, 2026-10-13): part of the SDD bundle plan, with the 500-line trim
+      below and the subagent-driven-development half of the compaction-cut item above.
 - [ ] `skills/subagent-driven-development/SKILL.md` sits at exactly 500 of its
       500-line maximum, with a long unwrapped description line; any edit there has
       to be net-zero. Trim the file (or move a section to `references/`) before its
       next content change. Size: quick-fix. Revisit if: the next edit to that file
       needs a line (done when it is back under 490 lines).
+      → SDD bundle (owner, 2026-10-13): part of the SDD bundle plan, with the roadmap-stage
+      rewording above and the subagent-driven-development half of the compaction-cut item.
 - [ ] `skills/derive-roadmap/SKILL.md` §5 (the resume) has two gaps found in
       review. "Each stage stamped COMPLETE since the last resume" has no marker for
       the last resume (suggested: each stamped stage whose Handoff no entry yet
@@ -2887,7 +2909,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       pre-commit hook, is checked by CI after it lands. `CLAUDE.md`'s commit-lint comment and the hook's header now say so, in
       place of the header's "gates what reaches main". Revisit if: a red `lints` run lands on
       `main`.
-- [ ] First real commit in a linked worktree with the hook enabled (plan 41 final review,
+- [x] First real commit in a linked worktree with the hook enabled (plan 41 final review,
       recommendation 4; owner-only): the tests cover plain clones, but in a linked
       worktree the git directory is `.git/worktrees/<name>`, and git exports its
       repo-local variables to hooks, which `build/run_commit_lints.sh` unsets before the
@@ -2896,6 +2918,12 @@ declined as YAGNI (zero instances in a one-page wiki).
       quick-fix. Done when: one clean commit in a linked worktree prints
       `commit lints passed`, and one commit with deliberately broken skill frontmatter is
       refused.
+      → done 2026-10-13 (/deferred quick fix): with `core.hooksPath` set, every commit of
+      lowmason/agent-skills#43 and of this pass, each made in a linked worktree, printed
+      `commit lints passed`. In worktree `deferred-2026-10-13`, a commit with
+      `skills/tech-debt/SKILL.md`'s name set to `Tech_Debt` exited 1 with `commit lints
+      failed: check_frontmatter` (the name does not match its directory) and left HEAD
+      unchanged; the file was restored.
 - [x] `build/githooks/pre-commit` polish (plan 41 final-review Minor M5 and the re-review
       note; triaged defer): the uv probe (`uv run --no-project --python 3.13 python -c
       pass`) discards uv's output, so a skip caused by, for example, being offline with
