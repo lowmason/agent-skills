@@ -3144,7 +3144,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       line range, `agents/test-runner.md:14-16`, where a files row's `file:line` takes one line,
       so settle held the file. The contract's files row (`.claude/agents/cc-guide-verifier.md`,
       near line 63) could say "one line number, never a range".
-- [ ] `build/cc_guide/baseline.json` writers have no lock (2026-10-13, `/cc-guide audit
+- [x] `build/cc_guide/baseline.json` writers have no lock (2026-10-13, `/cc-guide audit
       models`). Each `cli.py baseline` subcommand reads, modifies and rewrites the file
       (`stamp` rewrites the guide's stamp region), so two run in one parallel tool batch can
       lose a write. The session ran `accept` and `audited` in parallel; this time the result
@@ -3153,6 +3153,9 @@ declined as YAGNI (zero instances in a one-page wiki).
       them, not to run them one at a time. Size: quick-fix. Done when: that step says to run
       them one at a time, never in a parallel batch, with `build/cc_guide/test_skill_files.py`
       and `check_frontmatter.py` passing.
+      → done 2026-10-13 (/deferred quick fix): step 4 now says to run them in order and one at a
+      time, never in a parallel batch, since each `baseline` command rewrites the file.
+      `test_skill_files.py` and `check_frontmatter.py` pass.
 
 ## cc-drift-triage-2026-10-13 (no plan; /cc-guide triage, branch chore/cc-drift-triage-2026-10-13) — 2026-10-13
 
@@ -3197,7 +3200,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       patterns keep working; the docs do not say the failure is silent. Every added term is
       unformatted or under three characters, so no new watch term made a block due.
       `rules.rules-files` and `lean.measure` were accepted as substantive and stamped.
-- [ ] A short backticked word in a guide section makes unrelated docs blocks due (`/cc-guide
+- [x] A short backticked word in a guide section makes unrelated docs blocks due (`/cc-guide
       verify`, overview group, 2026-10-13). `section_terms` (`build/cc_guide/guide.py`, near
       line 143) makes every backticked span of 3 to 60 characters outside fenced code a watch
       term, less `STOP_TERMS` (line 33, measured on the 2.1.288 snapshot) and the section's
@@ -3212,3 +3215,9 @@ declined as YAGNI (zero instances in a one-page wiki).
       spec R3.6). Size: design. Done when: the owner picks one, and a test shows that a
       section term `none` no longer makes a block that contains it only inside "nonessential"
       a candidate.
+      → done 2026-10-13 (/deferred, owner decision): the owner chose case by case and no
+      matcher change, so the test above is not written. A false match costs one triage; each
+      narrowing option risks a missed one, and matching only at a word's start would not even
+      stop `none` inside "nonessential". The cc-guide skill's verify step 4 now says to write a
+      short common word unformatted and, when such a term is needed, to ask the owner for an
+      `exclude_terms` entry in `build/cc_guide/manifest.toml`.

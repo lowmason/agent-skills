@@ -39,7 +39,7 @@ Every mode handles each packet the same way:
 1. Dispatch the Agent tool with subagent type `cc-guide-verifier` and the prompt `Mode: <mode>. Packet: <absolute packet directory>. Read its index.json first, then follow your contract and return only the report.` Dispatch several packets in one message, so they run in parallel.
 2. Save the verifier's reply, unchanged, as `report.md` in its packet directory, with the Write tool.
 3. Run `cli.py settle <packet directory>`. Exit 0: every row parsed, every quote was found, and nothing was discarded or left out. Exit 1: settle failed something safe; read its UNSURE, unverified, unparseable and left-out lines. Exit 2: a setup error to fix before going on. What settle held or discarded stands: never edit `report.md`, ask the verifier to reword a row, or read settle's code to get past it. Report it to the owner; the next run takes it up again.
-4. Run the commands settle prints, in the order it prints them.
+4. Run the commands settle prints, in the order it prints them and one at a time, never in a parallel batch: each `baseline` command rewrites `build/cc_guide/baseline.json`, so two at once can lose a write.
 
 ## triage
 
@@ -55,7 +55,7 @@ Every mode handles each packet the same way:
 1. Run `cli.py check --worktree`, unless a triage in this run just did.
 2. Run `cli.py packets --verify <ids>`. It writes one packet per group, about \$0.30–1 each.
 3. Dispatch, save and settle each.
-4. Apply each correction settle lists to the guide in the working tree, checking it against its quote. Then run settle's commands: `accept --substantive` only for the sections whose text you changed (lint names any you missed), then rebaseline, advance, stamp, lint and `check_conformance.py`.
+4. Apply each correction settle lists to the guide in the working tree, checking it against its quote. Write a short common word unformatted: a backticked span of 3 to 60 characters that `STOP_TERMS` (`build/cc_guide/guide.py`) does not list becomes a watch term, matched as a substring of each docs block, so a backticked `none` makes every block with "nonessential" due. If such a term is needed, ask the owner for an `exclude_terms` entry in `build/cc_guide/manifest.toml`. Then run settle's commands: `accept --substantive` only for the sections whose text you changed (lint names any you missed), then rebaseline, advance, stamp, lint and `check_conformance.py`.
 
 ## audit [<group>]
 
