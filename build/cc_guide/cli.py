@@ -52,6 +52,16 @@ Run: uv run --python 3.13 python build/cc_guide/cli.py <subcommand>
       Read `file<TAB>quote` rows on stdin and print FOUND file:line or
       MISSING file for each, a quote counting only within one line of the
       file under DIR (R8.3). Exit 0 when all are found, 1 on any miss.
+  settle DIR [--hold ID | FILE ...]
+      Settle a packet against the verifier's report, saved as DIR/report.md:
+      re-grep every quote, apply triage's completeness rules or the discard
+      rule, and print the corrections, the owner's-call items and the
+      baseline commands that follow, in R8.8's order. --hold names the
+      sections, or the file, the session leaves for the owner: they are held,
+      neither advanced, audited nor cited. Writes nothing but a settled
+      triage's DIR/settled.json. Exit 0 when every row parsed and every quote
+      was found, with nothing discarded or left out; 1 otherwise; 2 on an
+      error.
 
 After reviewing what check reported, record it in R8.8's order: accept,
 rebaseline, advance, then audited for an audited group, then stamp; then run
@@ -76,6 +86,7 @@ from docs import page_file
 from guide import CITE_SHAPED_RE, by_section, read_citations, render_stamp
 from lint import lint, stale_lines
 from quotes import check_rows
+from settle import settle
 from state import (BASELINE, BOOTSTRAP_DATE, BOOTSTRAP_RELEASE, MANIFEST, SetupError, Source, citing_files,
                    copy_to_snapshot, default_cache, dump_baseline, is_iso_date, is_label, latest_docs,
                    newest_changelog, parse_baseline, parse_manifest, read_fetch, read_utf8, snapshot_docs,
@@ -133,6 +144,9 @@ def parser() -> argparse.ArgumentParser:
     k.add_argument('--from', dest='settled', type=Path, metavar='DIR')
     k.add_argument('--out', type=Path)
     sub.add_parser('quotes').add_argument('--in', dest='root', type=Path, required=True)
+    s = sub.add_parser('settle')
+    s.add_argument('folder', type=Path)
+    s.add_argument('--hold', nargs='+', default=[], metavar='ID')
     return p
 
 
@@ -312,6 +326,12 @@ def run_quotes(args) -> int:
     return 0 if ok else 1
 
 
+def run_settle(args) -> int:
+    result = settle(args.folder, args.hold)
+    print('\n'.join(result.lines))
+    return 0 if result.clean else 1
+
+
 def main(argv=None, *, today: date | None = None, now: datetime | None = None, fetch=None) -> int:
     args = parser().parse_args(argv)
     try:
@@ -326,6 +346,8 @@ def main(argv=None, *, today: date | None = None, now: datetime | None = None, f
             return run_packets(args, cache, today, now)
         if args.command == 'quotes':
             return run_quotes(args)
+        if args.command == 'settle':
+            return run_settle(args)
         return run_baseline(args, cache, today)
     except SetupError as exc:
         print(f'cc-guide: {exc}', file=sys.stderr)
