@@ -16,7 +16,7 @@ license: MIT
 metadata:
   author: Lowell Mason
   version: "1.0"
-# cc-guide: lean.session-hygiene lean.model-routing @2.1.219
+# cc-guide: lean.session-hygiene lean.model-routing @2.1.296
 ---
 
 # Develop a Testing Strategy
@@ -250,9 +250,10 @@ not need this planning conversation.
    is not.
 2. **Then `/clear` and implement in a fresh session** against that file, via
    test-driven-development. A fresh session drops this strategy discussion
-   (re-read every turn otherwise) and lets implementation run on the standard
-   model default. Persist the plan *before* you clear — clearing first would
-   discard the deliverable the handoff depends on.
+   (re-read every turn otherwise) and lets you launch implementation on a
+   Sonnet-class model (`claude --model sonnet`). Persist the plan *before*
+   you clear — clearing first would discard the deliverable the handoff
+   depends on.
 
 ## Common mistakes and anti-patterns
 

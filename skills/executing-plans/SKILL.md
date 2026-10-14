@@ -4,7 +4,7 @@ description: >
   Use when you have a written implementation plan to execute yourself, task by task, in the
   current session — e.g. a plan file from writing-plans in specs/plans/ — because tasks are
   tightly coupled or your human partner asked for direct execution rather than subagent dispatch
-# cc-guide: subagents.frontmatter @2.1.219
+# cc-guide: subagents.frontmatter @2.1.296
 ---
 
 # Executing Plans

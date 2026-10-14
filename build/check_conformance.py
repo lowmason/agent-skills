@@ -917,8 +917,8 @@ def body_lines(text: str) -> list[tuple[int, str]]:
 def check_command_substitution_tokens(root: Path, files: list[str], params: dict) -> list[Finding]:
     '''A command declares the arguments it reads with argument-hint or arguments,
     and pre-approves its render-time shell with an allowed-tools Bash entry.
-    $name tokens and ${CLAUDE_*} built-ins need no declaration, so they are not
-    checked.'''
+    A $name token is declared by the arguments list it comes from, and
+    ${CLAUDE_*} built-ins need no declaration, so neither is checked.'''
     out: list[Finding] = []
     for f, text in read_artifacts(root, files, out):
         fm = frontmatter(text) or {}
@@ -1098,8 +1098,9 @@ def allow_rules(data: object) -> list[str]:
 
 
 def unquoted_operators(pattern: str) -> list[str]:
-    '''The command-separating operators outside quotes in a rule pattern. A `&`
-    touching `>` or `<` is a redirection, as in 2>&1.'''
+    '''The command-separating operators outside quotes in a rule pattern, apart
+    from a newline, which this does not detect. A `&` touching `>` or `<` is a
+    redirection, as in 2>&1.'''
     found: list[str] = []
     quote = ''
     i = 0
