@@ -2061,8 +2061,13 @@ declined as YAGNI (zero instances in a one-page wiki).
       `agents/task-reviewer.md` invite findings beyond correctness and requirement gaps
       (structure, polish), against `subagents.isolation`. Both drive
       subagent-driven-development's review loop, so a change shifts review behaviour and
-      should be micro-tested. Size: plan. Done when: both prompts scope their findings as
-      the guide advises, and exception `reviewers-flag-beyond-correctness` is removed from
+      should be micro-tested. Since 2026-10-13 the gap also names the two skills that
+      dispatch them: `skills/requesting-code-review/SKILL.md` (about line 86, a workflow
+      expecting Minor findings, with a magic-number nit as its example) and
+      `skills/subagent-driven-development/SKILL.md` (about lines 14, 260 and 454, Minor
+      findings ledgered), from the /cc-guide files pass. Size: plan. Done when: both
+      prompts and both skills scope their findings as the guide advises, and exception
+      `reviewers-flag-beyond-correctness` is removed from
       `build/cc_guide/conformance.toml` in the same change; or the owner re-records that
       exception as a deviation with a reason. Either way, `build/check_conformance.py`
       passes.
