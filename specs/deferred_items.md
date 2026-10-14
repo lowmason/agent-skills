@@ -3201,6 +3201,16 @@ declined as YAGNI (zero instances in a one-page wiki).
       line range, `agents/test-runner.md:14-16`, where a files row's `file:line` takes one line,
       so settle held the file. The contract's files row (`.claude/agents/cc-guide-verifier.md`,
       near line 63) could say "one line number, never a range".
+      > plan 45: still open. Plan 45's contract change (`0b76543`, the verdicts defined by a
+      > failure test) FAILED its gate on 2026-10-14: `deniedModels` (P11) was hit in 0 of 2
+      > valid changed-arm reps and 0 of 2 control reps on this audit packet, so the needed 4 of
+      > 5 was unreachable and the second wave was skipped by owner ruling; no rep in either arm
+      > wrote any row naming it. Precision (changed 2 UNSUPPORTED, control 1) and retention held.
+      > The two observations above met plan 45's closure rule (DF20) on the changed arm but do
+      > not close, because the gate failed: `hooks/README.md`'s unquoted variable hit in 3 of 3
+      > (control 0 of 3) with neither negative control flagged, and `agents/test-runner.md`'s
+      > single-line row in 3 of 3 (control 1 of 3). See
+      > `specs/completed/verifier-recall-verification-2026-10-14.md`.
 - [x] `build/cc_guide/baseline.json` writers have no lock (2026-10-13, `/cc-guide audit
       models`). Each `cli.py baseline` subcommand reads, modifies and rewrites the file
       (`stamp` rewrites the guide's stamp region), so two run in one parallel tool batch can
@@ -3382,3 +3392,48 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       design (a triage pass). Done when: each row is ruled a guide addition (through
       `/cc-guide`'s accept and stamp), a register entry, or no action, with the rulings
       recorded on this item.
+
+## 45-claude-code-drift-automation — 2026-10-14
+- [ ] A files verifier may rate one of two checkable statements on a source line and leave
+      the other unrated (plan 45, DF17, deferred at planning). Evidence: `README.md:163` in
+      `~/.cache/agent-skills/cc-guide/packets/20261013T205255-files/README.md/`, whose report
+      rated one of the line's two claims and left its trigger clause unrated (`report.md:21`).
+      A rule giving each statement its own files row in `.claude/agents/cc-guide-verifier.md`
+      would change row volume and precision in every files rep, and its only fixture is that
+      eight-section README packet, so it was kept out of plan 45's contract change. See
+      `specs/plans/completed/45-claude-code-drift-automation.md`, DF17 and the Planning
+      record's Diagnosis. Size: design. Done when: the owner has decided whether files rows go
+      one per checkable statement, and, if so, the rule is in the verifier's files contract
+      with a test in `build/cc_guide/test_skill_files.py` and a scored run on the README packet.
+- [ ] A files-mode miss that settle does not hold leads to `baseline cite`, which clears the
+      file's STALE flag and hides the miss until its guide section changes again (plan 45,
+      deferred at planning; Planning record, "Diagnosis" in
+      `specs/plans/completed/45-claude-code-drift-automation.md`). The 2026-10-13 files pass
+      restamped `rules/clean-code-python.md` and `hooks/README.md` while they still carried
+      the drift its verifiers missed, because settle held neither file. A files miss therefore
+      costs more than a hold. Possible remedies: hold a file whose report has any not-covered
+      row, a check before `baseline cite`, or a skill step in `.claude/skills/cc-guide/SKILL.md`.
+      Size: design. Done when: the owner has chosen a remedy and it is applied.
+- [ ] The audit verifier writes no B row for the changelog entries behind P11 (`deniedModels`
+      beside `availableModels`, the audit packet's `changelog.md:1288`) and P8 (a top-level
+      `effortLevel` no longer counting for Opus 5.5, `changelog.md:1702`), though the packet's
+      changelog carries both (plan 45's key, `specs/plans/completed/45-claude-code-drift-automation.md`
+      "Ground-truth key"). Borne out by plan 45's gate on 2026-10-14: none of the 4 valid audit
+      reps (r32-r35, both arms) wrote any row naming `deniedModels`, and none wrote a B row for
+      P8's entry; P7's entry (`changelog.md:224`) did get a B row (r33), so it is not in this
+      item. A changelog-to-guide pass in audit mode could surface the omission the failure test
+      did not. See `specs/completed/verifier-recall-verification-2026-10-14.md`. Size: design.
+      Done when: a change to the verifier or the audit packets has an audit of the pre-fix guide
+      (`5bd78a7`) against the 2.1.296 snapshot write a B row for both entries, or report P11 as
+      a correction, in at least 4 of 5 valid reps.
+- [ ] The files rule has no precision fixture outside its own fixtures' domain. Plan 45's cheap
+      checkpoint on 2026-10-14 turned on contested readings of the changed arm's
+      `hooks/README.md` rows: r11 and r27 kept 3 and 4 `contradicts` rows on cases that are
+      hypothetical for that file or that the quoted passage does not give, rated UNSUPPORTED
+      (0 under the nearest other reading), which tripped the checkpoint's ceiling of 2 and needed
+      an owner ruling. A precision fixture whose file shares no domain with the guide sections
+      the changed rule was written against would measure the files rule's false-contradiction
+      rate without those contested readings. See
+      `specs/completed/verifier-recall-verification-2026-10-14.md`, Result and Decision. Size:
+      plan. Done when: such a fixture, its packet and a pre-registered precision key exist, and
+      a scored run reports the files rule's UNSUPPORTED count on it for both arms.
