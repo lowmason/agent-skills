@@ -3205,12 +3205,17 @@ declined as YAGNI (zero instances in a one-page wiki).
       > failure test) FAILED its gate on 2026-10-14: `deniedModels` (P11) was hit in 0 of 2
       > valid changed-arm reps and 0 of 2 control reps on this audit packet, so the needed 4 of
       > 5 was unreachable and the second wave was skipped by owner ruling; no rep in either arm
-      > wrote any row naming it. Precision (changed 2 UNSUPPORTED, control 1) and retention held.
-      > The two observations above met plan 45's closure rule (DF20) on the changed arm but do
-      > not close, because the gate failed: `hooks/README.md`'s unquoted variable hit in 3 of 3
-      > (control 0 of 3) with neither negative control flagged, and `agents/test-runner.md`'s
-      > single-line row in 3 of 3 (control 1 of 3). See
-      > `specs/completed/verifier-recall-verification-2026-10-14.md`.
+      > wrote any row naming it. Precision (changed 2 UNSUPPORTED, control 1) and retention held,
+      > on those 2 + 2 reps. The two observations above met plan 45's closure rule (DF20) on the
+      > changed arm but do not close, because the gate failed: `hooks/README.md`'s unquoted
+      > variable hit in 3 of 3 (control 0 of 3) with neither negative control flagged, and
+      > `agents/test-runner.md` passed by the registered rule in 3 of 3 (control 1 of 3). The
+      > control's two runner failures were section none-lines settle could not parse, not line
+      > ranges; no rep in either arm wrote a range row, so the range defect never reproduced and
+      > the one-line rule is untested. Files-mode precision cost: the changed readme reps kept 8
+      > UNSUPPORTED `contradicts` rows (control 0), which settle would print as edits to apply.
+      > See `specs/completed/verifier-recall-verification-2026-10-14.md`; the B-row item under
+      > `45-claude-code-drift-automation — 2026-10-14` shares this item's `deniedModels` done-when.
 - [x] `build/cc_guide/baseline.json` writers have no lock (2026-10-13, `/cc-guide audit
       models`). Each `cli.py baseline` subcommand reads, modifies and rewrites the file
       (`stamp` rewrites the guide's stamp region), so two run in one parallel tool batch can
@@ -3425,7 +3430,9 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       did not. See `specs/completed/verifier-recall-verification-2026-10-14.md`. Size: design.
       Done when: a change to the verifier or the audit packets has an audit of the pre-fix guide
       (`5bd78a7`) against the 2.1.296 snapshot write a B row for both entries, or report P11 as
-      a correction, in at least 4 of 5 valid reps.
+      a correction, in at least 4 of 5 valid reps. Its P11 branch overlaps the open item "The
+      audit verifier's omission recall was 3 of 7 known positives" (section
+      `44-claude-code-drift-automation — 2026-10-13`); close both together when P11 is met.
 - [ ] The files rule has no precision fixture outside its own fixtures' domain. Plan 45's cheap
       checkpoint on 2026-10-14 turned on contested readings of the changed arm's
       `hooks/README.md` rows: r11 and r27 kept 3 and 4 `contradicts` rows on cases that are

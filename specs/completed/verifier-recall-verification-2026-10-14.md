@@ -1,6 +1,6 @@
 # Verifier-recall verification — the cc-guide verifier's failure-test contract
 
-**Date:** 2026-10-14 · **Status:** `FAIL (P11: changed 0/2, control 0/2 valid gate reps; PASS needed 4/5, unreachable after wave 1; gate2 skipped by owner ruling). Cheap arms (b)-(e) met DF20 on the changed arm; DF7 and DF8 held on the 2 + 2 gate reps`
+**Date:** 2026-10-14 · **Status:** `FAIL (P11: changed 0/2, control 0/2 valid gate reps; PASS needed 4/5, unreachable after wave 1; gate2 skipped by owner ruling). Cheap arms (b)-(e) met DF20 on the changed arm, (c) by the registered rule only (the range defect never reproduced); files-mode precision tripped checkpoint condition 5 as registered (changed readme 8 UNSUPPORTED contradicts, control 0); DF7 and DF8 held on the 2 + 2 gate reps, given ruling 6`
 **Governs:** `.claude/agents/cc-guide-verifier.md` (plan 45)
 
 > The raw replies, reports, sheets and transcripts stay in the kit `K` =
@@ -8,7 +8,7 @@
 > `changes.log`), outside this repository. This record carries counts, claim labels, line pointers
 > and paths only: no text from a report, a packet or the docs.
 
-Executes `specs/plans/45-claude-code-drift-automation.md`, Tasks 3-5 (the runs) and Task 6 (this
+Executes `e32a06f:specs/plans/45-claude-code-drift-automation.md`, Tasks 3-5 (the runs) and Task 6 (this
 record). Source: the open item "The audit verifier's omission recall was 3 of 7 known positives"
 in `specs/deferred_items.md`, under `44-claude-code-drift-automation — 2026-10-13`, whose done-when
 is an audit of the pre-fix guide (`5bd78a7`) against the 2.1.296 snapshot that reports at least
@@ -47,13 +47,14 @@ stamp, which never reaches the verifier's prompt.
 ## Pre-registration
 
 The plan's "Pre-registration (fixed before any rep runs)" section and its Settled defaults
-DF2-DF21 (`specs/plans/45-claude-code-drift-automation.md`, lines 154-185 and 252-324), landed in
-commit `e32a06f` and merged to `main` as `9773468` (lowmason/agent-skills#46). The ground-truth key
-P1-P14 is at lines 109-140 of the same file.
+DF2-DF21 (Planning record, "Settled defaults"), in
+`e32a06f:specs/plans/45-claude-code-drift-automation.md` (lines 154-185 and 252-324 at
+`e32a06f`), merged to `main` as `9773468` (lowmason/agent-skills#46). The ground-truth key P1-P14
+is the Planning record's "Ground-truth key" in the same file (lines 109-140 at `e32a06f`).
 
 **Logged changes and rulings** (`K/changes.log`, all 2026-10-14). The pre-registration allows two
-pilot-stage rulings and says no post-hoc rulings; every entry after the pilot below is therefore a
-deviation from it, marked with when it fell relative to the results it could touch.
+pilot-stage rulings and says no post-hoc rulings; every entry after the pilot below except 3 is
+therefore a deviation from it, marked with when it fell relative to the results it could touch.
 
 1. **Kit guards before the freeze** (owner ruling at Task 2's review): `run.result_line` and
    `grade.load` guarded against a truncated line, `check_binary` refuses a missing held binary
@@ -74,13 +75,16 @@ deviation from it, marked with when it fell relative to the results it could tou
 6. **V2 treats the rep's own session tool-results directory as inside.** Claude Code saved an
    oversized Grep result of the rep's own packet changelog under that rep's session and had the
    verifier Read it back (r32, r35). r32 and r35 were first graded VOID, then regraded blind before
-   unblinding (kit 52).
+   unblinding (kit 52). After r32's and r35's V2 grades, blind to arm, before unblinding; it changed
+   those two reps' validity.
 7. **Gate2 skipped.** After wave 1 the changed arm had 0 of 2 P11 hits, so 4 of 5 was unreachable;
    the owner ruled the gate FAIL on wave 1 (a deviation from Task 5 Step 3). After wave 1's results.
 
 The docs snapshot's `shasum -a 256` listing and `~/.claude/settings.json`'s hash were recorded before
-each hand-over and after each batch (probe and pilot, cheap, spare, gate1, gate1redo) and were
-unchanged every time (`K/changes.log`, listings cited as unchanged, not reproduced).
+each hand-over and after each batch (probe and pilot, cheap, spare, gate1redo) and were unchanged
+every time (`K/changes.log`, listings cited as unchanged, not reproduced). Gate1 has no after-batch
+entry of its own: the gate1redo hand-over listing (`K/changes.log:342`), taken after gate1 ran,
+served as that check.
 
 ## Dispatch
 
@@ -153,13 +157,15 @@ Run total **$36.86 of the $100 ceiling**.
 ## Validity
 
 **Voids.**
-- **r13 (readme, changed): VOID, V2 as graded.** Its Glob of `/Users/lowell/Projects/agent-skills/hooks/`
-  was refused by the fence; the grader's `listed_paths` matched that path inside the refusal's own
-  error text. No outside content returned. Replaced by spare r27 under the pre-registered rule, and kept
-  void after ruling 4 changed the grader (the regenerated sheet now prints no void for it).
-- **r28-r31 (audit, gate1): VOID, V6** (no result record, no report): each verifier was stopped about
-  10 minutes after the main session's last turn by the `-p` background-wait ceiling. Replaced by
-  gate1redo outside the spare count (ruling 5).
+- **r13 (readme, changed): VOID, V2 as graded.** Its Glob of
+  `/Users/lowell/Projects/agent-skills/hooks/` was refused by the fence; the grader's
+  `listed_paths` matched that path inside the refusal's own error text. No outside content
+  returned. Replaced by spare r27 under the pre-registered rule, and kept void after ruling 4
+  changed the grader (the regenerated sheet now prints no void for it).
+- **r28-r31 (audit, gate1): VOID, V6**, no report: each verifier was stopped about 10 minutes after
+  the main session's last turn by the `-p` background-wait ceiling. The grader as then written also
+  found no result record (the record was not on the stream's last line). Replaced by gate1redo
+  outside the spare count (ruling 5).
 - **r32, r35 (audit, control): first VOID under V2**, for a Read of their own session's saved tool
   result; valid after ruling 6, regraded blind before unblinding.
 
@@ -184,10 +190,16 @@ calls: none but r13's.
 | (b) readme | B2 found (key) | 2/3 (r09, r11; r27 in substance only) | 1/3 (r12) | (retention) | |
 | (b) readme | N1 or N2 flagged | 0/3 | 0/3 | | |
 | (b) readme | UNSUPPORTED `contradicts` | 8 (r09 1, r11 3, r27 4) | 0 | | |
-| (c) runner | passes | 3/3 | 1/3 (r16, r19 fail: `unparseable:` hold lines) | passes in all 3 | yes |
+| (c) runner | passes | 3/3 | 1/3 (r16, r19 fail: 3 `unparseable:` none-lines each) | passes in all 3 | yes (registered rule) |
 | (c) runner | UNSUPPORTED | 0 | 1 (r18) | | |
 | (e) pyrule | E1 hits | 3/3 | 0/3 | hit in ≥ 2 of 3 | yes |
 | (e) pyrule | UNSUPPORTED `contradicts` | 0 | 0 | | |
+
+(c) passed by the registered rule, 3/3 against 1/3, but the control's two failures were none-line
+formatting: r16 and r19 each wrote 3 section none-lines that settle could not parse
+(`K/sheets/r16.txt:16-18`, `K/sheets/r19.txt:16-18`), not line ranges. No rep in either arm wrote
+a range row, so the original range defect never reproduced and the one-line rule's effect is
+untested; the added contract text does not address none-lines.
 
 r27's B2: its `hooks/README.md:97` row is B2 in substance and SUPPORTED, but the key as registered
 needs the row to name `onFailure`, so it is scored not found.
@@ -197,6 +209,11 @@ notes): the newline-split row on `:89`, the memory-re-enables-Write/Edit rows on
 `:191`/`:192`, and r27's `:141` row on the main-session guard. Each was rated UNSUPPORTED because the
 case it adds is hypothetical for this file or not given by the passage its quote comes from; under
 the nearest other reading each is SUPPORTED and the changed readme total is 0 (r09 0, r11 0, r27 0).
+The `:89` rows (r09, r11, r27) have independent confirmation: the final review's Codex seat (Codex
+final review, 2026-10-14) found them false contradictions, since the hook already splits on
+newlines. This matters beyond the tally: settle prints a files rep's `contradicts` rows as fixes to
+apply in the working tree (`build/cc_guide/settle.py:674-675`, `:684`), so each false contradiction
+becomes a proposed edit. DF7's ceiling covers only the audit, and was measured on 2 + 2 reps.
 
 **Correction volume (DF21, report only)**, median / total over valid reps:
 
@@ -233,7 +250,8 @@ correction in r32-r35 was SUPPORTED, against the pointers listed in `K/RESULTS.m
 
 ## Decision
 
-The PASS rule (plan, Pre-registration, "Decision rules"), clause by clause:
+The PASS rule (`e32a06f:specs/plans/45-claude-code-drift-automation.md`, Pre-registration,
+"Decision rules"), clause by clause:
 
 | Clause | Needed | Observed | Holds |
 |---|---|---|---|
@@ -258,20 +276,35 @@ is decided by P11, which no rep in either arm reported under any reading. Under 
 reading of the contested cheap readme rows, the checkpoint's condition 5 would not have held, and
 the run would have gone to the gate without a stop.
 
-**What the result says.** The contract change fixes the four cheap defects on its packets: (d) and
-(e), the calibration miss in both modes, go from 1/3 and 0/3 to 3/3; (b) from 0/3 to 3/3 with no
-negative control flagged; (c) from 1/3 to 3/3. It does not reach the audit's gate omission: neither
-arm, on either contract, wrote a row of any kind on `deniedModels`, though the audit packet's
-changelog carries the entry (`changelog.md:1288`, the key's pointer). The audit's correction volume
-roughly doubled on the changed arm (median 16.5 against 7), with precision inside DF7's ceiling.
+The DF7 and DF8 "holds" depend on ruling 6: r32 and r35 are the control's only valid gate reps, and
+without that ruling neither clause can be evaluated. The FAIL verdict does not depend on it, since
+the changed arm's 0 of 2 on P11 is unaffected.
+
+**What the result says.** The contract change fixes three of the cheap defects on their packets: (d)
+and (e), the calibration miss in both modes, go from 1/3 and 0/3 to 3/3; (b) from 0/3 to 3/3 with no
+negative control flagged. (c) passed by the registered rule, 3/3 against 1/3, but the control's
+failures were none-line formatting and the range defect never reproduced, so the one-line rule is
+untested. Files-mode precision has a cost: under the registered reading checkpoint condition 5
+tripped, the changed (b) reps keeping 8 UNSUPPORTED `contradicts` rows (r11 3, r27 4, r09 1) against
+the control's 0, above the per-rep ceiling of 2, and settle turns each into a proposed edit
+(`build/cc_guide/settle.py:674-675`, `:684`); the Codex final review (2026-10-14) independently
+found the `:89` rows false. DF7 covers only the audit, on 2 + 2 reps. It does not reach the audit's
+gate omission: neither arm, on either contract, wrote a row of any kind on `deniedModels`, though
+the audit packet's changelog carries the entry (`changelog.md:1288`, the key's pointer). The
+audit's correction volume roughly doubled on the changed arm (median 16.5 against 7), with
+precision inside DF7's ceiling.
 
 ## Disposition
 
 The item "The audit verifier's omission recall was 3 of 7 known positives" stays open in
 `specs/deferred_items.md` with a `> plan 45:` note giving these counts and this record's path. Its
 (b) and (c) observations met DF20 on the changed arm, but nothing closes, because the gate failed.
-Whether Task 1's contract change lands (it held DF7 and DF8 and fixed (b)-(e)) is the owner's
-decision at integration.
+Whether Task 1's contract change lands is the owner's decision at integration. It held DF7 and DF8
+(on 2 + 2 reps, given ruling 6) and fixed (b), (d) and (e); (c) passed only by the registered rule.
+Against it: in files mode it tripped checkpoint condition 5 as registered (changed readme 8
+UNSUPPORTED `contradicts`, r11 3 and r27 4 above the per-rep ceiling of 2, control 0), each of which
+settle would print as an edit to apply (`build/cc_guide/settle.py:674-675`, `:684`), and DF7 does
+not cover files mode; the Codex final review (2026-10-14) confirmed the `:89` rows false.
 
 New items, in the schema of `skills/writing-plans/references/deferred-backlog.md`, under
 `## 45-claude-code-drift-automation — 2026-10-14`:
@@ -286,6 +319,6 @@ New items, in the schema of `skills/writing-plans/references/deferred-backlog.md
 4. A fixture-domain-free precision fixture for the files rule (borne out: the cheap checkpoint
    turned on contested readings of the changed readme reps' rows). Size: plan.
 
-The backlog carries each in full, with its closure condition. Not filed: P12's two pages (P12 was 0 in every rep, both arms)
-and verify-mode `doc:line` ranges (DF14; this run has no evidence on them). P7 is not in the B-row
-item: r33 wrote a B row for its changelog entry (`changelog.md:224`).
+The backlog carries each in full, with its closure condition. Not filed: P12's two pages (P12 was 0
+in every rep, both arms) and verify-mode `doc:line` ranges (DF14; this run has no evidence on
+them). P7 is not in the B-row item: r33 wrote a B row for its changelog entry (`changelog.md:224`).
