@@ -1,4 +1,4 @@
-<!-- cc-guide: skills.locations @2.1.219 -->
+<!-- cc-guide: skills.locations @2.1.288 -->
 # CLAUDE.md
 
 This file is the canonical maintainer guide for Claude Code, Codex, and Gemini CLI when working in this repository. `AGENTS.md` points Codex here and `GEMINI.md` imports it.

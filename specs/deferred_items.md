@@ -2061,8 +2061,13 @@ declined as YAGNI (zero instances in a one-page wiki).
       `agents/task-reviewer.md` invite findings beyond correctness and requirement gaps
       (structure, polish), against `subagents.isolation`. Both drive
       subagent-driven-development's review loop, so a change shifts review behaviour and
-      should be micro-tested. Size: plan. Done when: both prompts scope their findings as
-      the guide advises, and exception `reviewers-flag-beyond-correctness` is removed from
+      should be micro-tested. Since 2026-10-13 the gap also names the two skills that
+      dispatch them: `skills/requesting-code-review/SKILL.md` (about line 86, a workflow
+      expecting Minor findings, with a magic-number nit as its example) and
+      `skills/subagent-driven-development/SKILL.md` (about lines 14, 260 and 454, Minor
+      findings ledgered), from the /cc-guide files pass. Size: plan. Done when: both
+      prompts and both skills scope their findings as the guide advises, and exception
+      `reviewers-flag-beyond-correctness` is removed from
       `build/cc_guide/conformance.toml` in the same change; or the owner re-records that
       exception as a deviation with a reason. Either way, `build/check_conformance.py`
       passes.
@@ -3284,3 +3289,96 @@ declined as YAGNI (zero instances in a one-page wiki).
       `test_lint.py`, for about 45 small files that parse in milliseconds, so it was left out of
       the quick fix. Size: quick-fix. Revisit if: lint's run time becomes noticeable, or
       `lint()`'s signature changes for another reason.
+
+## cc-guide-files-backlog (no plan; /cc-guide files, branch worktree-cc-guide-files-backlog) — 2026-10-13
+
+Six files stay held after this pass, so `check` keeps listing them as stale citations until
+the items below clear: `build/cc_guide/conformance.toml`, `build/check_conformance.py`,
+`build/check_frontmatter.py`, `skills/requesting-code-review/SKILL.md`,
+`skills/subagent-driven-development/SKILL.md` and `skills/writing-skills/SKILL.md`. Line
+numbers are as of packets `20261013T205255-files` and `20261013T221211-files`, under
+`~/.cache/agent-skills/cc-guide/packets/`. Once an item clears a file's last open
+contradiction, run `/cc-guide files <file>` so the file is cited.
+
+- [ ] The two frontmatter lints split an agent's `tools` string on every comma
+      (`build/check_conformance.py:324`, `tool_list`; `build/check_frontmatter.py:158`).
+      The guide's `Agent(worker, researcher)` entry (`subagents.frontmatter`) then becomes
+      two tokens. `check_frontmatter.py` also flags any name outside its eight known tools,
+      which rejects that entry and every MCP tool name. No agent here uses either form yet,
+      so no result is wrong today. Size: quick-fix. Done when: both lints split only on
+      commas outside parentheses, `check_frontmatter.py` accepts `Agent(...)` and `mcp__`
+      names, each fix has a test that fails without it, and both files' contradictions
+      are cleared.
+- [ ] `build/check_frontmatter.py`'s SKILL.md key set (`ALLOWED_KEYS`, line 28; the unknown-key
+      report, lines 107 and 108). It is described as the spec-valid key set but omits the
+      Agent Skills field `compatibility`, a plain bug. It also rejects two Claude Code fields
+      the guide documents: `agent`, which names the agent type a `context: fork` skill runs
+      on, and `disable-model-invocation`, which the guide says to set on side-effecting skills.
+      writing-skills (about line 104) states the stricter key set as the repo's rule. Size:
+      quick-fix for `compatibility`; the owner decides the other two. Done when:
+      `compatibility` is accepted with a test; for `agent` and `disable-model-invocation`,
+      the owner either allows them, with writing-skills' key list and the lint's tests
+      updated together, or records a deviation in `build/cc_guide/conformance.toml`.
+      → Note: the gap `side-effecting-skills-ungated` (deferred item above, "Gate or make
+      manual-only the four ungated side-effecting skills") needs `disable-model-invocation`
+      to pass this lint if that item makes a skill manual-only.
+- [ ] Two `hook-scripts-executable` messages leave out the condition on failing open
+      (`build/check_conformance.py:1023`, `:1028`). They say a non-executable hook script
+      "fails open", but since 2.1.295 a hook that sets `"onFailure": "block"` blocks instead
+      (`hooks.pitfalls`). `build/test_check_conformance.py:1726` and `:1739` assert both
+      messages verbatim, so the change touches both files. Size: quick-fix. Done when: both
+      messages say the hook fails open by default (unless it sets `onFailure: block`), and
+      the tests assert the new wording.
+- [ ] `unquoted_operators` (`build/check_conformance.py`, about line 1100) does not detect a
+      newline, although the guide (`rules.settings`) lists newlines among the separators
+      that an allow rule must match on every side. The docstring now says so; the
+      `allow-rule-compound-operators` check stays blind to a multi-line rule. Size:
+      quick-fix. Done when: an unquoted newline in a `Bash(...)` rule is reported, with a
+      test, and the docstring's caveat is gone.
+- [ ] Stop-hook guard design (`build/cc_guide/conformance.toml:165`, check `stop-hook-guard`;
+      `build/check_conformance.py:534`). The rule and the check flag a Stop hook script that
+      never reads `stop_hook_active`. The guide accepts checking the transcript instead
+      (`hooks.exit-codes`), and its Pattern 3 recommends capping retries in the hook itself,
+      for example with a per-session attempt counter (`hooks.patterns`); neither needs the
+      flag. The rule text and the check must change together. Size: design. Done when: the
+      owner picks what counts as a loop guard (the flag, a transcript read, an attempt
+      counter, or a waiver per hook), the rule and the check agree on it, a test covers each
+      accepted form, and both files' contradictions are cleared.
+- [ ] Three subagent-driven-development decisions, outside the register
+      (`skills/subagent-driven-development/SKILL.md`). (1) Line 219: an implementer already
+      at `capable` has only fresh context and higher effort left, with no model step; the guide
+      names a Fable step above Opus (`subagents.models`). The Agent tool's `model` option
+      listed `fable` on 2026-10-13 (seen in its schema, not dispatched). (2) Line 487 (also lines 268–269): never fix by hand,
+      and dispatch a fix subagent even for a one-line fix, where the guide lists trivial
+      single-file edits as delegation that burns tokens (`subagents.isolation`). (3) Line 403:
+      after compaction the controller follows the ledger-recovery protocol (about lines
+      365–407), which likely sits past the 5,000-token cut of a re-attached skill, and the
+      skill never says to re-invoke itself (`lean.session-hygiene`). The SDD half of "Move
+      critical sections above the compaction cut" (above) covers the placement, but not the
+      re-invoke instruction. Size: design. Done when: the owner rules on each, and each
+      ruling is applied to the skill (micro-tested, as a discipline skill) or recorded as a
+      deviation in `build/cc_guide/conformance.toml`.
+- [ ] writing-skills' Discovery Workflow (`skills/writing-skills/SKILL.md:690`) says
+      future agents find a skill by grepping descriptions and browsing categories. Claude
+      Code instead reads an always-loaded listing of each skill's name and description
+      (`skills.description`). writing-skills is a discipline skill, so the rewording is
+      micro-tested first. It may fold into portability Stage D, which already owns the
+      `writing-skills-guide-gaps` gap that holds line 223. Size: quick-fix. Done when: the
+      step describes the listing, with a micro-test showing no behaviour change, or Stage D
+      takes the line over.
+- [ ] Triage 48 not-covered rows from this pass: statements the guide does not address,
+      each a possible coverage gap (spec R4.3) or a repo fact to leave alone. Settle lists
+      them as the owner's call and never applies them. By file:
+      `build/cc_guide/conformance.toml` (13: lines 115, 143, 240, 243, 250, 297, 325, 417,
+      520, 561, 627, 652, 749); `build/check_conformance.py` (10: lines 555, 672, 795, 856,
+      918, 1102, 1130, 1219, 1256, 1355, before this branch's docstring fix moved those past
+      1101 down one); `build/check_frontmatter.py` (2: 92, 95);
+      `skills/requesting-code-review/SKILL.md` (1: 42);
+      `skills/subagent-driven-development/SKILL.md` (4: 158, 162, 237, 456);
+      `skills/writing-skills/SKILL.md` (16: 88, 299, 102, 103, 104 twice, 105, 106, 108, 110,
+      162, 188, 281, 232, 596 twice); `hooks/ruff-fix.sh` (2: 4, 11). The rows' wording is in
+      each packet's report, re-printed by `cli.py settle <packet>`. The packets live in the
+      cache, so rebuild them with `cli.py packets --files <file>` if it is cleared. Size:
+      design (a triage pass). Done when: each row is ruled a guide addition (through
+      `/cc-guide`'s accept and stamp), a register entry, or no action, with the rulings
+      recorded on this item.

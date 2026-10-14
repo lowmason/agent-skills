@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# cc-guide: hooks.events hooks.exit-codes hooks.patterns @2.1.219
+# cc-guide: hooks.events hooks.exit-codes hooks.patterns @2.1.296
 # PreToolUse(Bash) — enforce uv-first tooling. Blocks (exit 2) the clearest
 # violations and injects the corrected form into Claude's context, so the model
 # retries with the right command instead of you re-explaining it every session.

@@ -730,10 +730,10 @@ tracked_in = "deferred item: reconcile requesting-code-review with the guide's s
 id = 'explore-capitalised-name'
 type = 'deviation'
 sections = ['subagents.frontmatter']
-artifacts = ['agents/explore.md']
+artifacts = ['agents/explore.md', 'build/check_frontmatter.py']
 guide = 'An agent name is a unique lowercase-hyphenated ID.'
-reason = 'Only the capitalised name Explore overrides the built-in Explore agent, as probed on Claude Code 2.1.219.'
-evidence = 'Audit row A-04; owner gate 2026-10-04.'
+reason = 'Only the capitalised name Explore overrides the built-in Explore agent, as probed on Claude Code 2.1.219; check_frontmatter.py requires that name of agents/explore.md.'
+evidence = 'Audit row A-04; owner gate 2026-10-04; check_frontmatter.py added by owner decision after the /cc-guide files pass, 2026-10-13.'
 revisit = 'Re-probe after Claude Code binary updates, as agents/explore.md says.'
 
 [[exception]]
@@ -771,13 +771,31 @@ evidence = 'Audit row A-26; owner gate 2026-10-04.'
 revisit = 'If the per-spawn model override stops applying.'
 
 [[exception]]
+id = 'review-sonnet-floor'
+type = 'deviation'
+sections = ['subagents.models']
+artifacts = [
+    'agents/task-reviewer.md',
+    'skills/requesting-code-review/SKILL.md',
+    'skills/subagent-driven-development/SKILL.md',
+]
+guide = 'Mechanical review runs on Haiku.'
+reason = 'Reviews floor at Sonnet, so a small mechanical diff reviews at standard; the controller escalates to Opus per dispatch.'
+evidence = '/cc-guide files settle, packet 20261013T205255-files (requesting-code-review:46, subagent-driven-development:165); owner decision 2026-10-13.'
+revisit = 'If a Haiku review of a mechanical diff is shown to catch what a Sonnet review does.'
+
+[[exception]]
 id = 'reviewers-flag-beyond-correctness'
 type = 'gap'
 sections = ['subagents.isolation']
-artifacts = ['agents/code-reviewer.md', 'agents/task-reviewer.md']
+artifacts = [
+    'agents/code-reviewer.md', 'agents/task-reviewer.md',
+    'skills/requesting-code-review/SKILL.md',
+    'skills/subagent-driven-development/SKILL.md',
+]
 guide = 'Tell a reviewer to flag only correctness and requirement gaps.'
-reason = 'Both reviewers invite findings beyond correctness and requirement gaps.'
-evidence = 'Audit rows A-33, A-34; owner gate 2026-10-04.'
+reason = 'Both reviewers, and the two skills that dispatch them, invite findings beyond correctness and requirement gaps.'
+evidence = 'Audit rows A-33, A-34; owner gate 2026-10-04; the two skills added by owner decision after the /cc-guide files pass (requesting-code-review:86, subagent-driven-development:14), 2026-10-13.'
 tracked_in = 'deferred item: scope code-reviewer and task-reviewer findings to correctness and requirement gaps'
 
 [[exception]]

@@ -1,4 +1,4 @@
-<!-- cc-guide: skills.locations commands.overview subagents.overview subagents.models rules.rules-files hooks.events hooks.exit-codes hooks.configuration @2.1.219 -->
+<!-- cc-guide: skills.locations commands.overview subagents.overview subagents.models rules.rules-files hooks.events hooks.exit-codes hooks.configuration @2.1.296.1 -->
 # agent-skills
 
 My personal collection of [Agent Skills](https://agentskills.io/specification) for
@@ -71,7 +71,7 @@ hooks and path-scoped rules remain Claude-specific. See
 
 ### Clean-code family (rule catalog adapted from Robert C. Martin's *Clean Code*)
 
-Proactive-cleanup counterpart to `tech-debt`: standards applied in the flow of normal editing, bounded by consent. The rule *codes* come from Martin's Ch. 17 catalog (cited by code only — no book prose); the curation defers mechanical rules to ruff and keeps the judgment-level ones, tuned to Polars/JAX. A third artifact, the [`clean-code-python`](rules/clean-code-python.md) rule, loads the Python guardrails whenever a `*.py` file is read or edited (see [Rules](#rules)).
+Proactive-cleanup counterpart to `tech-debt`: standards applied in the flow of normal editing, bounded by consent. The rule *codes* come from Martin's Ch. 17 catalog (cited by code only — no book prose); the curation defers mechanical rules to ruff and keeps the judgment-level ones, tuned to Polars/JAX. A third artifact, the [`clean-code-python`](rules/clean-code-python.md) rule, loads the Python guardrails whenever a `*.py` file is read, written or edited (see [Rules](#rules)).
 
 | Skill | Description |
 |-------|-------------|
@@ -145,7 +145,7 @@ each is copied into a target repo and registered in *that* repo's
 | [`ruff-check.sh`](hooks/ruff-check.sh) | `Stop` | Runs `uv run ruff check .`; exit 2 feeds whatever `--fix` couldn't resolve back to Claude. Guarded by `stop_hook_active` against loops. |
 | [`uv-guard.sh`](hooks/uv-guard.sh) | `PreToolUse` (`Bash`) | Blocks `pip install` and bare `python` / `pytest`, injecting the `uv …` form instead. Escape hatch: `no-uv-guard` anywhere in the command. |
 
-All three read the hook JSON payload from stdin with `jq`. Only **exit 2** blocks a tool call and feeds stderr back to Claude — exit 1 merely logs.
+All three read the hook JSON payload from stdin with `jq`. Blocking takes **exit 2**, which feeds stderr back to Claude, or a JSON deny decision; exit 1 merely logs, unless the hook sets `"onFailure": "block"` (2.1.295+), which has no effect on a `Stop` hook such as `ruff-check.sh`.
 
 > [!WARNING]
 > **Don't install these globally, and don't wire them into this repo.** A hook registered in `~/.claude/settings.json` fires in *every* project, including non-Python ones. And `agent-skills` itself has no root `pyproject.toml` — its bundled scripts run on `uv run --with` inline deps, so `ruff check` would have no config to run against and `uv-guard.sh` would fight the very invocation the repo intends. Install per work-repo instead.
@@ -154,15 +154,15 @@ All three read the hook JSON payload from stdin with `jq`. Only **exit 2** block
 
 ## Rules
 
-Rule files live in [`rules/`](rules/): standing conventions injected automatically, without a skill invocation. Claude Code loads a project's `.claude/rules/*.md` natively — a rule with a `paths:` frontmatter glob loads only when a matching file is read or edited; a rule without frontmatter loads at session start (verified against Claude Code 2.1.218).
+Rule files live in [`rules/`](rules/): standing conventions injected automatically, without a skill invocation. Claude Code loads a project's `.claude/rules/*.md` natively — a rule with a `paths:` frontmatter glob loads only when a matching file is read, written or edited; a rule without frontmatter loads at session start (native loading verified against Claude Code 2.1.218).
 
 This repo keeps rule sources in `rules/` and commits a relative symlink from `.claude/rules/` so the rules apply here too:
 
 | Rule | Scope | What it injects |
 |------|-------|-----------------|
-| [`clean-code-python.md`](rules/clean-code-python.md) | `**/*.py` | Python guardrails, loaded on `.py` reads and edits — single quotes, 4-space indent, Polars-over-pandas, method-style Polars expressions, lazy evaluation, NumPyro+JAX, named constants (G25). Cross-references the `clean-code` catalog by rule code. |
+| [`clean-code-python.md`](rules/clean-code-python.md) | `**/*.py` | Python guardrails, loaded on `.py` reads, writes and edits — single quotes, 4-space indent, Polars-over-pandas, method-style Polars expressions, lazy evaluation, NumPyro+JAX, named constants (G25). Cross-references the `clean-code` catalog by rule code. |
 
-To use a rule in another project, copy it into that repo's `.claude/rules/` (project-level is the verified mechanism; user-level `~/.claude/rules/` support is version-dependent — see the rule's commit history for probe results).
+To use a rule in another project, copy it into that repo's `.claude/rules/` (rules here ship project-level only, by decision; user-level `~/.claude/rules/` also loaded in the 2.1.218 probe — see the rule's commit history).
 
 ## Installation
 

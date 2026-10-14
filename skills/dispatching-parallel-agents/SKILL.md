@@ -5,7 +5,7 @@ description: >
   worked sequentially: multiple test files failing with different root causes, several subsystems
   broken independently, or a batch of self-contained fixes or investigations that could run as
   parallel subagents.
-# cc-guide: subagents.frontmatter subagents.models subagents.isolation @2.1.219
+# cc-guide: subagents.frontmatter subagents.models subagents.isolation @2.1.296.1
 ---
 
 # Dispatching Parallel Agents
@@ -84,7 +84,7 @@ Subagent (general-purpose, model=<haiku|sonnet|opus>): "Fix tool-approval-race-c
 # All three run concurrently.
 ```
 
-Multiple dispatch calls in one response = parallel execution. One per response = sequential.
+Multiple dispatch calls in one response = parallel execution. Where a dispatch blocks until its agent returns, one per response = sequential.
 
 ### 4. Review and Integrate
 

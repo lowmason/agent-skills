@@ -9,14 +9,15 @@ license: MIT
 metadata:
   author: Lowell Mason
   version: "1.0"
-# cc-guide: subagents.isolation rules.auto-memory lean.session-hygiene lean.model-routing @2.1.219
+# cc-guide: subagents.isolation rules.auto-memory lean.session-hygiene lean.model-routing @2.1.296
 ---
 
 # prepare-handoff
 
 ## Overview
 
-A fresh session reads only what it is pointed at. Before handing work on,
+Beyond what loads every session (instruction files, memory), a fresh session
+reads only what it is pointed at. Before handing work on,
 sort what the next session needs. Most of it is already in the artifact, is
 recomputed by the receiving session, or can be committed now. Only the rest
 goes in a brief: a short file the next session starts from, never committed.

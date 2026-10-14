@@ -1,12 +1,12 @@
 ---
 paths:
   - '**/*.py'
-# cc-guide: rules.rules-files @2.1.219
+# cc-guide: rules.rules-files @2.1.296
 ---
 
-# Python conventions (loaded on .py reads and edits)
+# Python conventions (loaded on .py reads, writes and edits)
 
-Standing guardrails loaded when a Python file is read or edited. The full judgment-level
+Standing guardrails loaded when a Python file is read, written or edited. The full judgment-level
 catalog is the clean-code skill (open it for naming / function / comment /
 test decisions); cite fixes by rule code (e.g. G25). Opportunistic cleanup of
 code outside the task is gated by the clean-coder skill.
