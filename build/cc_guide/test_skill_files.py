@@ -55,3 +55,46 @@ def test_the_verifier_reports_a_todo_reach_with_its_usual_verdict():
 def test_the_skill_and_the_verifier_state_the_report_formats_settle_parses(form):
     for path in (AGENT, FORMATS):
         assert form in (REPO / path).read_text(encoding='utf-8'), f'{path} lacks {form!r}'
+
+
+def contract_part(heading: str) -> str:
+    '''The verifier's text under one `###` heading, up to the next.'''
+    text = (REPO / AGENT).read_text(encoding='utf-8')
+    start = text.index(f'### {heading}\n')
+    end = text.find('\n### ', start + 1)
+    return text[start:] if end == -1 else text[start:end]
+
+
+@pytest.mark.parametrize('verdict', ['CONFIRMED', 'PARTIAL', 'STALE', 'WRONG'])
+def test_the_verifier_defines_each_verdict_a_correction_turns_on(verdict):
+    '''Plan 45: an audit rated true claims CONFIRMED while the passage it
+    quoted gave a case they get wrong, since nothing defined the verdicts.'''
+    assert f'{verdict}: ' in contract_part('verify and audit')
+
+
+@pytest.mark.parametrize('verdict', ['consistent', 'contradicts', 'not covered'])
+def test_the_verifier_defines_each_files_verdict(verdict):
+    '''Plan 45: a files verifier rated a statement not covered that departed
+    from the guide's own example.'''
+    assert f'`{verdict}`: ' in contract_part('files')
+
+
+@pytest.mark.parametrize('part', ['verify and audit', 'files'])
+def test_each_mode_rates_by_the_same_failure_test(part):
+    '''Plan 45: a files verifier wrote that a statement left out cases the
+    guide gives, and still rated it consistent.'''
+    assert 'as worded would get that case wrong' in contract_part(part)
+    assert 'each further item' in contract_part(part)
+
+
+def test_a_files_choice_that_differs_from_an_example_is_no_failure():
+    '''Plan 45, review finding 3: a file that states a choice of its own,
+    which a guide example makes differently, must not be rated contradicts.'''
+    assert 'is no failure' in contract_part('files')
+
+
+@pytest.mark.parametrize('path', [AGENT, FORMATS])
+def test_a_files_row_gives_one_line_number(path):
+    '''Plan 45: settle reads a files row's `file:line` with one line number,
+    and a range is unparseable, which holds the file.'''
+    assert 'gives one line number' in (REPO / path).read_text(encoding='utf-8')

@@ -56,6 +56,17 @@ A block with no row, and a release with no coverage line, go to verify as UNSURE
 - B, one row per changelog item that changes a claim in scope.
 - C, at most four rows: omissions that would change the guide's existing advice.
 
+Rate each A row this way:
+
+- Take the claim as its guide line states it, and work through its passage: the doc line's paragraph, the rest of the doc section that holds it, from its heading to the next heading that is not one of its subheadings, and what the other pages you have opened say of the names in the claim.
+- The cases to test are the passage's exceptions, conditions and limits, and the further items it gives for the same job. A claim fails in a case when someone who followed its guide line as worded would get that case wrong.
+- A claim that gives the items for a job fails in the case of each further item its passage gives for that job, unless its guide line marks them as examples.
+- CONFIRMED: a doc line supports the claim, and the claim fails in no case. `doc:line` and the quote give that line.
+- PARTIAL: a doc line supports the claim in the case it describes, and the claim fails in a further case. `doc:line` and the quote give the line that gives that case, and the proposed wording covers it.
+- STALE: a doc line shows the claim failing in the case it describes, and a changelog or doc line records the change. WRONG: a doc line shows that failure, and no line records the claim ever holding.
+- An omission that makes a claim in scope fail in a case goes on that claim's row as PARTIAL; C rows hold the omissions no A row carries.
+- Last, before you return the report, rate again each A row whose claim one of your B rows changes, with that B row's item as one more case.
+
 ### files
 
 The cited file's copy is the file `index.json` names as `copy`; its line numbers are the file's. `sections.md` holds the sections it cites, each marked when it changed after the file's stamp. Give one row per statement in the file that rests on a cited section, and a none line for each cited section no statement rests on:
@@ -64,3 +75,12 @@ The cited file's copy is the file `index.json` names as `copy`; its line numbers
     section | none
 
 `file` is the path `index.json` names as `file`, as in `hooks/README.md:56`. A not-covered row may leave its quote `-`. A cited section with no row and no none line holds the file, as if unreviewed.
+
+- A row's `file:line` gives one line number, the line its statement starts on.
+- A statement fails in a case when someone who followed it as worded would get that case wrong. The cases to test are the cited sections' exceptions, conditions and limits, and the further items they give for the same job.
+- A statement that gives the items for a job fails in the case of each further item the cited sections give for that job, unless it marks them as examples.
+- A statement of a choice the file makes for itself fails when the choice does not do what the file says it does. A choice that differs from an example's is no failure.
+- A cited section's examples are evidence, as its prose is. Compare each part of the statement that a cited example also has and that uses a name or value Claude Code supplies or reads.
+- `consistent`: the statement fails in no case the prose gives, and each such part does what the file says it does for every value Claude Code could supply.
+- `contradicts`: the statement fails in a case the prose gives, or such a part fails to do what the file says it does for some value Claude Code could supply, where the example's part does it. The quote gives the guide line that gives the case, or the example's line.
+- `not covered`: nothing in the cited sections' prose or examples bears on the statement.
