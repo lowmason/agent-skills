@@ -674,8 +674,7 @@ R8.1 **Files.**
   `tools: Read, Grep, Glob` and `omitClaudeMd: true`, with a short description
   saying that only `/cc-guide` dispatches it, since every session in this repo
   lists it. Its body holds the contract: the modes, the report formats, the
-  accuracy and JUDGMENT rules, the verdict definitions of R8.5 and R8.7
-  (owner, plan 45, 2026-10-14), and never editing a file. Without `Bash` it
+  accuracy and JUDGMENT rules, and never editing a file. Without `Bash` it
   keeps Grep and Glob on macOS and stays outside the read-only guard's remit.
 - Both carry citations. `check_frontmatter.py` stays unchanged (R12.4).
 
@@ -768,28 +767,10 @@ R8.5 **`/cc-guide verify [<ids>]`.**
   - **A.** `L<line> | claim ≤12 words | CONFIRMED / STALE / WRONG / PARTIAL / NOT FOUND / JUDGMENT | doc:line | "verbatim quote ≤25 words" | proposed wording`.
     Proposed wording appears only for STALE, WRONG and PARTIAL; it is the
     verifier's own paraphrase, never a doc sentence. Absence of evidence alone
-    is NOT FOUND, never WRONG. Each A row is rated against its claim's
-    passage: the doc line's paragraph, the rest of the doc section that holds
-    it, and what the other pages the verifier opened say of the names in the
-    claim. A claim fails in a case when someone who followed its guide line as
-    worded would get that case wrong; the cases are the passage's exceptions,
-    conditions and limits and the further items it gives for the same job. A
-    claim that gives the items for a job fails in the case of each further
-    item its passage gives for that job, unless its guide line marks them as
-    examples. CONFIRMED: a doc line supports the claim and it fails in no case.
-    PARTIAL: a doc line supports it in the case it describes and it fails in
-    a further case, which its quote and proposed wording give. STALE: a doc
-    line shows it failing in the case it describes, and a changelog or doc
-    line records the change; WRONG: a doc line shows that failure and no line
-    records the claim ever holding. Before returning, the verifier rates
-    again each A row whose claim one of its B rows changes, with that item as
-    one more case (owner, plan 45, 2026-10-14).
+    is NOT FOUND, never WRONG.
   - **B.** Changelog items that change a claim in scope: version, one line,
     changelog line number.
-  - **C.** At most four omissions that would change existing advice. An
-    omission that makes a claim in scope fail in a case is that claim's
-    PARTIAL, and C rows hold the omissions no A row carries (owner, plan 45,
-    2026-10-14).
+  - **C.** At most four omissions that would change existing advice.
 - **Facts versus judgment.** A claim is checkable when a doc page could
   confirm or refute it: names, defaults, numbers, behaviour, precedence,
   syntax. Recommendations get JUDGMENT and never a proposed wording. When a
@@ -816,24 +797,7 @@ batches under the same ask-above-6 rule.
 2. One verifier per file returns rows of
    `file:line | statement | section | "verbatim guide quote" | consistent / contradicts / not covered`,
    and a `<section> | none` line for each cited section no statement rests
-   on (owner, plan 44, 2026-10-12). A row's `file:line` gives one line
-   number, the line its statement starts on. A statement fails in a case
-   when someone who followed it as worded would get that case wrong, as an
-   A row's claim does (R8.5); the cases are the cited sections' exceptions,
-   conditions and limits and the further items they give for the same job,
-   and a statement that gives the items for a job fails in the case of each
-   further item unless it marks them as examples. A statement of a choice
-   the file makes for itself fails when the choice does not do what the file
-   says it does; a choice that differs from an example's is no failure. A
-   cited section's examples are evidence, as its prose is: a statement
-   `contradicts` a section when it fails in a case the prose gives, or when
-   a part of it that an example also has, and that uses a name or value
-   Claude Code supplies or reads, fails to do what the file says it does for
-   some value Claude Code could supply where the example's part does it; it
-   is `consistent` when it fails in no case the prose gives and each such
-   part does what the file says it does for every value Claude Code could
-   supply, and `not covered` when nothing in the cited sections' prose or
-   examples bears on it (owner, plan 45, 2026-10-14).
+   on (owner, plan 44, 2026-10-12).
 3. Guide quotes are re-checked against the guide at the inputs' ref.
 
 R8.8 **Post-processing for `verify`, `audit` and `files`**, all
@@ -1149,11 +1113,6 @@ R12.4 **Repo tests.** `lint` passes on the repo. A `SKILL.md` carrying a
 citation passes `check_frontmatter.py`. The suite checks its own `.claude/`
 frontmatter: the skill sets `disable-model-invocation: true`, and the agent
 sets `tools: Read, Grep, Glob`, `model: sonnet` and `omitClaudeMd: true`.
-It also checks that the agent defines each verdict R8.5 and R8.7 define,
-that both modes rate by the same failure test and item rule, that a files
-choice differing from an example's is no failure, and that the agent and the
-skill's formats say a files row gives one line number (owner, plan 45,
-2026-10-14).
 `check_frontmatter.py`, the dependency-drift test and
 `sync_runtime_assets.py --check` stay unchanged.
 
