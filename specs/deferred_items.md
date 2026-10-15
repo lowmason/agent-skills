@@ -3206,7 +3206,8 @@ declined as YAGNI (zero instances in a one-page wiki).
       > valid changed-arm reps and 0 of 2 control reps on this audit packet, so the needed 4 of
       > 5 was unreachable and the second wave was skipped by owner ruling; no rep in either arm
       > wrote any row naming it. Precision (changed 2 UNSUPPORTED, control 1) and retention held,
-      > on those 2 + 2 reps. The two observations above met plan 45's closure rule (DF20) on the
+      > on those 2 + 2 reps, given ruling 6. The owner reverted the change at plan completion
+      > (2026-10-15). The two observations above met plan 45's closure rule (DF20) on the
       > changed arm but do not close, because the gate failed: `hooks/README.md`'s unquoted
       > variable hit in 3 of 3 (control 0 of 3) with neither negative control flagged, and
       > `agents/test-runner.md` passed by the registered rule in 3 of 3 (control 1 of 3). The
@@ -3444,3 +3445,16 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       `specs/completed/verifier-recall-verification-2026-10-14.md`, Result and Decision. Size:
       plan. Done when: such a fixture, its packet and a pre-registered precision key exist, and
       a scored run reports the files rule's UNSUPPORTED count on it for both arms.
+- [ ] The files rule must take its reference case from the component the file describes. Plan
+      45's changed arm (`0b76543`, reverted in `8947e50`) told the files verifier to compare a
+      statement with the guide's cases for the same job; in r09, r11 and r27 that let it apply
+      Claude Code's permission-matcher command splitting to the repo's own `hooks/uv-guard.sh`
+      and keep a `contradicts` row on `hooks/README.md:89`, which is false: the hook splits on
+      newlines in its own read loop (the Codex final review, 2026-10-14, probed it). settle
+      prints such a row as an edit to apply. Any revision of the files rule should scope its
+      reference cases to the component and configuration the file describes, with this case as
+      a fixed negative control. See
+      `specs/completed/verifier-recall-verification-2026-10-14.md`, Disposition. Size: plan.
+      Done when: a revised files rule carries that scope with a test in
+      `build/cc_guide/test_skill_files.py`, and a scored cheap batch on the readme packet keeps
+      no `contradicts` row on `hooks/README.md:89` and no changed rep above 2 UNSUPPORTED.

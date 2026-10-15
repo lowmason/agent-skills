@@ -1,5 +1,7 @@
 # Verifier Recall (cc-guide verifier contract) Implementation Plan
 
+**Status: COMPLETE (2026-10-15)** — executed via subagent-driven-development; gate FAIL (record `specs/completed/verifier-recall-verification-2026-10-14.md`), Task 1 reverted by the owner; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking. Tasks 1 and 2 go to implementer subagents. Tasks 3–6 are run by the controller itself: they hand steps to the owner, read results by hand and write the record, so no implementer subagent takes them.
 
 > **Where this runs.** This plan lands on `main` first, by its own PR (D5). Then create the worktree from the main checkout (Global Constraints, "Worktree") and execute there: `/Users/lowell/Projects/agent-skills/.claude/worktrees/plan-45-verifier-recall`, on branch `feat/verifier-recall`. Start the execution session with that worktree as its working directory: subagent-driven-development's `sdd-workspace` and `review-package` take the repo root and `HEAD` from the shell's working directory. Below, **`W`** names that worktree, **`K`** the evidence kit `/Users/lowell/.cache/agent-skills/scratch/plan45` (outside every checkout), and **`R`** the rep root `/private/tmp/q7r`. Every command spells its paths out, since a worktree-isolated session refuses compound shell (`&&`, `$(...)`).
@@ -338,7 +340,7 @@ No post-hoc rulings.
 
 Each spec edit is tagged `(owner, plan 45, 2026-10-14)`; the status line stays untouched. Your human partner approves this wording at plan review.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `/Users/lowell/Projects/agent-skills/.claude/worktrees/plan-45-verifier-recall/build/cc_guide/test_skill_files.py`, after `test_the_skill_and_the_verifier_state_the_report_formats_settle_parses`:
 
@@ -388,7 +390,7 @@ def test_a_files_row_gives_one_line_number(path):
     assert 'gives one line number' in (REPO / path).read_text(encoding='utf-8')
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-45-verifier-recall/build/cc_guide --python 3.13 --with pytest python -m pytest -q test_skill_files.py`
 
@@ -399,7 +401,7 @@ Expected: `12 failed, 12 passed`. Each failure is an `AssertionError` on an abse
 - `test_a_files_choice_that_differs_from_an_example_is_no_failure`;
 - `test_a_files_row_gives_one_line_number` for both paths.
 
-- [ ] **Step 3: Add the verify and audit recipe to the verifier**
+- [x] **Step 3: Add the verify and audit recipe to the verifier**
 
 **Edit** `.claude/agents/cc-guide-verifier.md` — replace:
 
@@ -424,7 +426,7 @@ Rate each A row this way:
 - Last, before you return the report, rate again each A row whose claim one of your B rows changes, with that B row's item as one more case.
 ```
 
-- [ ] **Step 4: Add the files failure test, its item rule and choice guard, the files verdicts and the one-line rule**
+- [x] **Step 4: Add the files failure test, its item rule and choice guard, the files verdicts and the one-line rule**
 
 **Edit** `.claude/agents/cc-guide-verifier.md` — replace:
 
@@ -463,13 +465,13 @@ with:
 A files row's `file:line` gives one line number, the line its statement starts on: settle reads a range as no row, which holds the file.
 ```
 
-- [ ] **Step 5: Run the suite to verify it passes**
+- [x] **Step 5: Run the suite to verify it passes**
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-45-verifier-recall/build/cc_guide --python 3.13 --with pytest python -m pytest -q`
 
 Expected: all pass, at the baseline +12. The existing TODO(owner) and FORMATS tests stay green.
 
-- [ ] **Step 6: Amend the spec**
+- [x] **Step 6: Amend the spec**
 
 **Edit** `specs/claude-code-drift-automation-spec.md` (R8.1) — replace:
 
@@ -574,7 +576,7 @@ skill's formats say a files row gives one line number (owner, plan 45,
 `check_frontmatter.py`, the dependency-drift test and
 ```
 
-- [ ] **Step 7: The term gate (Channel 3)**
+- [x] **Step 7: The term gate (Channel 3)**
 
 The changed arm's added text must name no fixture answer, no term of this plan's context, and nothing a contract rule forbids. Run this single-line command. It reads only the added lines of the uncommitted diff, so the `+++` headers, whose paths hold `cc-guide`, are not searched:
 
@@ -584,14 +586,16 @@ uv run --no-project --python 3.13 python -I -c 'import re, subprocess; d = subpr
 
 Expected: `22 added lines, 0 hits`. The line count is the positive control: 0 lines means the diff was not read, so the gate did not run. Any hit is a finding: reword the added text and rerun Steps 5 and 7.
 
-- [ ] **Step 8: Run the lints**
+- [x] **Step 8: Run the lints**
 
 Run, from `W`:
 - `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-45-verifier-recall --python 3.13 --with pyyaml python build/check_conformance.py`: expect exit 0.
 - `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-45-verifier-recall --python 3.13 python build/cc_guide/cli.py lint`: expect exit 0 and the same `STALE` lines as the ledger's pre-Task-1 snapshot (Global Constraints, "Baseline and counts"). On `2e9ee0f` that is 6 lines, none of them the verifier; a later pass that lands on `main` first may change them, and the snapshot is the reference.
 - `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-45-verifier-recall --python 3.13 --with pyyaml python build/check_frontmatter.py`: expect exit 0.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
+
+> Deviation: the owner reverted this commit at plan completion (`8947e50`, 2026-10-15), after the gate FAILed (Task 6 Step 5).
 
 Confirm the branch (`branch --show-current` prints `feat/verifier-recall`), then:
 
@@ -619,7 +623,7 @@ The commit hook runs the seven commit lints. Expect `commit lints passed`.
 
 `K` holds the scoring key, so no rep may read it. The fence and V2 enforce that. Nothing to commit: the task reviewer reads `K`'s files and the test output.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `K/test_kit.py`:
 
@@ -985,13 +989,13 @@ def test_compare_lines_name_what_differs_from_production_part_by_part():
                        f"('{common.MODEL}', '{common.EFFORT}', '{common.TRANSCRIPT_VERSION}')"
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `uv run --directory /Users/lowell/.cache/agent-skills/scratch/plan45 --no-project --python 3.13 --with pytest python -B -m pytest -q -p no:cacheprovider`
 
 Expected: one collection error, `ModuleNotFoundError: No module named 'build'`.
 
-- [ ] **Step 3: Write `K/common.py`**
+- [x] **Step 3: Write `K/common.py`**
 
 ```python
 '''Paths, packets, prompts and the rep schedule shared by plan 45's kit
@@ -1050,7 +1054,7 @@ MARKERS = ('deniedModels', 'Sonnet 4.5', 'effortLevel', 'CLAUDE_PROJECT_DIR', 'c
            'deferred_items', 'specs/plans', '45-claude-code', 'verifier-recall', 'cc-guide-refresh', 'plan45')
 ```
 
-- [ ] **Step 4: Write `K/key.py`**
+- [x] **Step 4: Write `K/key.py`**
 
 ```python
 '''Plan 45's scoring key: the known positives in each packet, by claim, as
@@ -1113,7 +1117,7 @@ KEY = {
 }
 ```
 
-- [ ] **Step 5: Write `K/build.py`**
+- [x] **Step 5: Write `K/build.py`**
 
 ```python
 '''Build plan 45's rep directories: build.py <batch>, or build.py spare <rid>
@@ -1242,7 +1246,7 @@ if __name__ == '__main__':
     main(sys.argv[1:])
 ```
 
-- [ ] **Step 6: Write `K/run.py`**
+- [x] **Step 6: Write `K/run.py`**
 
 ```python
 '''Run one batch of plan 45's reps: run.py <batch>, under Python 3.13, from a plain
@@ -1368,7 +1372,7 @@ if __name__ == '__main__':
     main(sys.argv[1:])
 ```
 
-- [ ] **Step 7: Write `K/grade.py`**
+- [x] **Step 7: Write `K/grade.py`**
 
 ```python
 '''Grade plan 45's reps: grade.py control | <batch> | context <rid> |
@@ -1813,13 +1817,15 @@ if __name__ == '__main__':
     main(sys.argv[1:])
 ```
 
-- [ ] **Step 8: Run the tests to verify they pass**
+- [x] **Step 8: Run the tests to verify they pass**
+
+> Deviation: the kit gained guards and tests before the freeze (owner ruling at Task 2's review: result_line/load guards, check_binary, the CLAUDE pin), so it passed 47 tests, not 43; later rulings took it to 48, 51 and 52.
 
 Run: `uv run --directory /Users/lowell/.cache/agent-skills/scratch/plan45 --no-project --python 3.13 --with pytest python -B -m pytest -q -p no:cacheprovider`
 
 Expected: `43 passed`.
 
-- [ ] **Step 9: Run the positive control**
+- [x] **Step 9: Run the positive control**
 
 Run: `uv run --directory /Users/lowell/.cache/agent-skills/scratch/plan45 --no-project --python 3.13 python -B grade.py control`
 
@@ -1847,7 +1853,7 @@ A `MISMATCH`, or every quote unverified, means the scorer reads the wrong packet
 - Consumes: Task 1's commit (the changed arm), and Task 2's kit.
 - Produces: the frozen kit, the probe's and the pilot's sheets, and the pilot's rulings.
 
-- [ ] **Step 1: Copy the arms**
+- [x] **Step 1: Copy the arms**
 
 Run `git -C /Users/lowell/Projects/agent-skills show 938993c:.claude/agents/cc-guide-verifier.md` and save its output as `K/arms/control.md`, with the Write tool, unchanged. Do the same for `git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-45-verifier-recall show HEAD:.claude/agents/cc-guide-verifier.md`, saved as `K/arms/changed.md`. Then check:
 - `git -C /Users/lowell/Projects/agent-skills hash-object /Users/lowell/.cache/agent-skills/scratch/plan45/arms/control.md` prints `ae9e2e2e29f31421dbf02ddaf62d6910c39d33ba`;
@@ -1856,7 +1862,7 @@ Run `git -C /Users/lowell/Projects/agent-skills show 938993c:.claude/agents/cc-g
 
 **Stop and ask the owner** if the diff shows anything else: a body line that is not Task 1's, or a frontmatter change beyond the stamp. Then the arms differ by more than the contract change, and the control would not be the production contract the changed arm amends.
 
-- [ ] **Step 2: Write the fence probe's arm and its canary**
+- [x] **Step 2: Write the fence probe's arm and its canary**
 
 Create `K/canary.txt` holding one line, `canary-` followed by a fresh `uuid.uuid4().hex`; generate it with `python3 -c "import uuid; print('canary-' + uuid.uuid4().hex)"`. Create `K/arms/probe.md`:
 
@@ -1879,15 +1885,15 @@ This run tests a read fence, not a guide. Whatever the dispatch asks, make exact
 Then return four lines, one per call: its number, and `returned` or `refused`. Never quote what a call returned.
 ````
 
-- [ ] **Step 3: Freeze**
+- [x] **Step 3: Freeze**
 
 First confirm the held binary. The planner copied `/Users/lowell/.local/share/claude/versions/2.1.296` to `/Users/lowell/.cache/agent-skills/scratch/plan45-bin/2.1.296` with `cp -p` on 2026-10-14, because the updater prunes old versions: 2.1.265, the PATH's version on 2026-10-03, was gone by then. `shasum -a 256 /Users/lowell/.cache/agent-skills/scratch/plan45-bin/2.1.296` must print `c9b5341637becbd423ddffc5b254afb645682a3868cb708bbc6cc0e7bb419937`, and `/Users/lowell/.cache/agent-skills/scratch/plan45-bin/2.1.296 --version` must print `2.1.296 (Claude Code)`. If the held copy is missing and `versions/2.1.296` still has that hash, `mkdir -p` its directory, copy it there with `cp -p`, and check again. Otherwise, or if anything else prints, **stop**: which version the reps run is the owner's call, made and logged before the freeze. Then run `shasum -a 256` over `K/common.py`, `K/key.py`, `K/build.py`, `K/run.py`, `K/grade.py`, `K/test_kit.py`, `K/arms/*.md`, `/Users/lowell/.cache/agent-skills/scratch/plan45-bin/2.1.296` and `/Users/lowell/.claude/settings.json` (absolute paths), and save the output as `K/FREEZE.sha256` with the Write tool. Create `K/changes.log` with one line: `<date> freeze <sha256 of FREEZE.sha256>; plan 45 at <the commit this plan landed in>`. Create `K/RESULTS.md` with the heading `# Plan 45 hand verdicts` and nothing else.
 
-- [ ] **Step 4: Build the probe and the pilot**
+- [x] **Step 4: Build the probe and the pilot**
 
 Run, from `K`: `uv run --directory /Users/lowell/.cache/agent-skills/scratch/plan45 --no-project --python 3.13 python -B build.py probe`, then the same with `pilot`. Expect `r01 rules built` and `r02 rules built`. Record `shasum -a 256 /Users/lowell/.cache/agent-skills/cc-guide/2.1.296/docs/*` and `shasum -a 256 /Users/lowell/.claude/settings.json` in `K/changes.log` as the listings before the first run. Every later hand-over and every finished batch records the same two (Global Constraints, "Production fidelity").
 
-- [ ] **Step 5: The owner's spend gate — hard stop**
+- [x] **Step 5: The owner's spend gate — hard stop**
 
 End the turn with this, and wait:
 
@@ -1901,7 +1907,7 @@ End the turn with this, and wait:
 
 Record the owner's answer and the approved ceiling in `K/changes.log` as `owner go <date>: ceiling $<n>`, and write the number alone (for example `100`) to `K/ceiling.txt` with the Write tool. Proceed only on a clear yes.
 
-- [ ] **Step 6: The owner runs the probe and the pilot**
+- [x] **Step 6: The owner runs the probe and the pilot**
 
 Record both listings (Global Constraints, "Production fidelity") first, and again when the batch is done. Then hand over:
 
@@ -1909,7 +1915,7 @@ Record both listings (Global Constraints, "Production fidelity") first, and agai
 > `uv run --directory /Users/lowell/.cache/agent-skills/scratch/plan45 --no-project --python 3.13 python -B run.py probe`, then `uv run --directory /Users/lowell/.cache/agent-skills/scratch/plan45 --no-project --python 3.13 python -B run.py pilot`
 > Each prints `r0N exit 0 cost …` and `total so far: $… of $…`. Tell me when both are done.
 
-- [ ] **Step 7: Read the probe**
+- [x] **Step 7: Read the probe**
 
 Run: `uv run --directory /Users/lowell/.cache/agent-skills/scratch/plan45 --no-project --python 3.13 python -B grade.py probe`
 
@@ -1927,7 +1933,7 @@ The pilot redesign trigger: **stop and report to the owner, running no batch**, 
 
 The route is then the owner's call (DF4). Call 2 returning does not stop the run: V2 still voids any rep that reads outside, and the record notes the exemption.
 
-- [ ] **Step 8: Read the pilot and compare it with production**
+- [x] **Step 8: Read the pilot and compare it with production**
 
 Run: `uv run --directory /Users/lowell/.cache/agent-skills/scratch/plan45 --no-project --python 3.13 python -B grade.py pilot`, then `uv run --directory /Users/lowell/.cache/agent-skills/scratch/plan45 --no-project --python 3.13 python -B grade.py compare r02 /Users/lowell/.claude/projects/-Users-lowell-Projects-agent-skills/f3828a8d-d37d-4dc3-89f2-31819ce23470/subagents/agent-a9d4a3fdeb9e1fb16.jsonl`
 
@@ -1963,11 +1969,11 @@ An Agent parameter that changes nothing the verifier sees, or how a `-p` result 
 - Consumes: the frozen kit; the pilot's rulings.
 - Produces: per-arm counts for (b) to (e), and the checkpoint report.
 
-- [ ] **Step 1: Build the batch**
+- [x] **Step 1: Build the batch**
 
 Run: `uv run --directory /Users/lowell/.cache/agent-skills/scratch/plan45 --no-project --python 3.13 python -B build.py cheap`. Expect `r03`–`r26` built.
 
-- [ ] **Step 2: The owner runs it**
+- [x] **Step 2: The owner runs it**
 
 Record both listings (Global Constraints, "Production fidelity") first, and again when the batch is done.
 
@@ -1975,7 +1981,7 @@ Record both listings (Global Constraints, "Production fidelity") first, and agai
 
 Check the running total against the approved ceiling, and note any rep printed as held: it is the owner's call.
 
-- [ ] **Step 3: Grade blind, and record every verdict**
+- [x] **Step 3: Grade blind, and record every verdict**
 
 Run: `uv run --directory /Users/lowell/.cache/agent-skills/scratch/plan45 --no-project --python 3.13 python -B grade.py cheap`. For each sheet, without opening `plan.json` or running `unblind`:
 - **Validity.** Trace each injected hit with `uv run --directory /Users/lowell/.cache/agent-skills/scratch/plan45 --no-project --python 3.13 python -B grade.py context <rid>`, never by opening a verifier transcript before unblinding: its first prompt part is the arm's contract. A path or a tool name is not content. Confirm `void: none`, or record the void and its cause.
@@ -1987,11 +1993,13 @@ Run: `uv run --directory /Users/lowell/.cache/agent-skills/scratch/plan45 --no-p
 
 Write one block per rep into `K/RESULTS.md`, listing the rid, valid or VOID (with cause), each verdict with a one-line reason, the cost and the advisor calls. Reread every flagged match before counting: a template echo or a quoted example can look like a hit.
 
-- [ ] **Step 4: Replace void reps**
+- [x] **Step 4: Replace void reps**
+
+> Deviation (ruling 4): r13 voided on a refused Glob's own error text; `grade.listed_paths` now skips refused calls (+1 test). r13 stayed void and spare r27 replaced it.
 
 For each void rep, run `uv run --directory /Users/lowell/.cache/agent-skills/scratch/plan45 --no-project --python 3.13 python -B build.py spare <rid>`, which takes the void rep's packet and arm from `plan.json` without printing the arm. Then record both listings and ask the owner to run `uv run --directory /Users/lowell/.cache/agent-skills/scratch/plan45 --no-project --python 3.13 python -B run.py spare` from a plain terminal, recording them again when it is done, and grade it as in Step 3 with `grade.py spare`. `build.py` refuses a third spare for a packet and arm; that packet's result is then UNSETTLED.
 
-- [ ] **Step 5: Unblind and tally**
+- [x] **Step 5: Unblind and tally**
 
 Run: `uv run --directory /Users/lowell/.cache/agent-skills/scratch/plan45 --no-project --python 3.13 python -B grade.py unblind`. Tally per packet and arm:
 - (d) D1 hits;
@@ -2004,7 +2012,7 @@ Run: `uv run --directory /Users/lowell/.cache/agent-skills/scratch/plan45 --no-p
 
 Add the tally to `K/RESULTS.md`, and check the batch's listings in `K/changes.log` against Task 3's: a change stops the run until the owner rules.
 
-- [ ] **Step 6: The checkpoint — report to the owner**
+- [x] **Step 6: The checkpoint — report to the owner**
 
 Report the tally. When any Pre-registration checkpoint condition holds, **stop**: the changed arm missing (d) or (e) in 2 or more of 3, failing (c) in any rep, flagging N1 or N2 in 2 or more of 3, or a changed (b) or (e) rep with more than 2 UNSUPPORTED. The owner decides whether to proceed to the gate, revise the wording, or stop. Otherwise, report and proceed to Task 5.
 
@@ -2026,13 +2034,17 @@ A revision is a new round, never an edit to this one, and it needs the owner's g
 - Consumes: the frozen kit; the changed arm as Task 4 left it.
 - Produces: the gate's tally and its PASS or FAIL.
 
-- [ ] **Step 1: Build and run the first wave**
+- [x] **Step 1: Build and run the first wave**
+
+> Deviation (ruling 5): gate1 r28-r31 were all void: `claude -p` stops background agents 10 minutes after the last turn. The kit sets `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=2280000`, `run.result_line` reads the result record wherever it sits, and batch `gate1redo` (r32-r35) replaced the four outside the spare count. No after-gate1 listing was recorded; the gate1redo hand-over listing served as that check (Global Constraints, "Production fidelity").
 
 Run: `uv run --directory /Users/lowell/.cache/agent-skills/scratch/plan45 --no-project --python 3.13 python -B build.py gate1`. Record both listings (Global Constraints, "Production fidelity") first, and again when the batch is done. Then hand over:
 
 > **Your step.** From a plain terminal: `uv run --directory /Users/lowell/.cache/agent-skills/scratch/plan45 --no-project --python 3.13 python -B run.py gate1`. It runs 4 audit reps, two at a time, for about $12–22, and takes about 12–25 minutes. Tell me when it prints `total so far`.
 
-- [ ] **Step 2: Grade the first wave blind, then check the stop rule**
+- [x] **Step 2: Grade the first wave blind, then check the stop rule**
+
+> Deviation (ruling 6): r32 and r35 voided by V2 on reading back their own oversized Grep results from the rep's session `tool-results/`; V2 now treats that directory as inside, and both were regraded blind before unblinding. Valid wave: P11 0/2 changed, 0/2 control.
 
 Run `grade.py gate1` as in Task 4 Step 3. For each sheet, read:
 - every P11 candidate against the gate's hit definition, SUPPORTED included;
@@ -2043,9 +2055,13 @@ Record the verdicts in `K/RESULTS.md`, and check the wave's listings in `K/chang
 
 - [ ] **Step 3: Build and run the second wave**
 
+> Skipped: owner ruling 7 — the changed arm's 0/2 on P11 made 4 of 5 unreachable, so the gate FAILed on wave 1; not deferred (a revision round would run its own gate).
+
 Run `build.py gate2`; record both listings; then hand over the same step with `run.py gate2` (6 reps, about $18–33), and record them again when it is done.
 
 - [ ] **Step 4: Grade, replace and tally**
+
+> Skipped: no second wave (Step 3); wave 1 was graded, replaced and tallied under Steps 1-2.
 
 Grade `gate2` blind as in Step 2, record the verdicts, and replace its void reps as in Task 4 Step 4 (`build.py spare <rid>`, then `run.py spare`), grading the spares blind. Then run `grade.py unblind` and tally per arm over the valid reps:
 - P11 hits (and B-only mentions);
@@ -2056,7 +2072,7 @@ Grade `gate2` blind as in Step 2, record the verdicts, and replace its void reps
 
 Check the batch's listings in `K/changes.log` against Task 3's: a change stops the run until the owner rules.
 
-- [ ] **Step 5: Apply the decision rules**
+- [x] **Step 5: Apply the decision rules**
 
 Apply the Pre-registration's PASS rule, as written. Write the outcome in `K/RESULTS.md` as `GATE: PASS` or `GATE: FAIL (<the clause that failed>)`, with each clause's numbers. Report to the owner.
 
@@ -2072,7 +2088,7 @@ Apply the Pre-registration's PASS rule, as written. Write the outcome in `K/RESU
 **Interfaces:**
 - Consumes: `K/RESULTS.md`, `K/changes.log`, and the run's costs.
 
-- [ ] **Step 1: Write the record**
+- [x] **Step 1: Write the record**
 
 Create the record in `W`, in the house format of `specs/completed/synthesize-mode-verification-2026-10-12.md`, but with **counts, claim labels and pointers only**: no quote from a report, a packet or the docs. Its sections:
 1. **Header:** date, status (PASS, FAIL or UNSETTLED), "Governs: `.claude/agents/cc-guide-verifier.md` (plan 45)", and a blockquote noting that the raw replies stay in `K`.
@@ -2084,7 +2100,7 @@ Create the record in `W`, in the house format of `specs/completed/synthesize-mod
 7. **Decision:** the PASS rule clause by clause, with the numbers, and how the verdict would move under the nearest other reading of a contested row.
 8. **Disposition:** what is deferred, in the backlog schema (Step 2).
 
-- [ ] **Step 2: Update the backlog**
+- [x] **Step 2: Update the backlog**
 
 In `specs/deferred_items.md`:
 - **On PASS:** tick the item at `:3181` with `→ done in plan 45`, and add one line: the gate's counts and the record's path. Its (b) and (c) observations close with it when their arms meet DF20; one that does not is re-filed as an open item in this plan's section. (d)'s own item is already ticked and (e) has none, so the record reports them.
@@ -2100,7 +2116,9 @@ Further candidates, each only if the run bears it out:
 - verify-mode `doc:line` ranges (DF14);
 - a fixture-domain-free precision fixture for the files rule.
 
-- [ ] **Step 3: Commit the record and the backlog**
+- [x] **Step 3: Commit the record and the backlog**
+
+> Deviation: the final review's findings were fixed in a second commit, `ef35fbf`.
 
 Confirm the branch, then:
 
@@ -2112,7 +2130,7 @@ git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-45-verifier-re
 git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-45-verifier-recall commit -m "docs(specs): plan 45's verifier-recall verification record" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
-- [ ] **Step 4: The plan completion protocol**
+- [x] **Step 4: The plan completion protocol**
 
 Run writing-plans' Plan Completion Protocol:
 1. the resolve-before-defer gate;
@@ -2124,6 +2142,8 @@ Run writing-plans' Plan Completion Protocol:
 The spec stays in `specs/`: Stages 4–5 remain.
 
 - [ ] **Step 5: Integration**
+
+> Pending: runs after this markup via finishing-a-development-branch; the owner chose to revert Task 1 first (`8947e50`).
 
 Use finishing-a-development-branch. The branch holds the contract change (Task 1), the record and the backlog. **On FAIL, the contract change lands only on the owner's decision.** Offer to revert Task 1's commit on the branch before integrating, or to keep it as a no-regression change if the precision and retention clauses held. Before a Codex seat on the branch, if the owner wants one, ask for its model. Remove `W` from the main checkout once merged, and leave `K` and `R` for the owner to delete.
 

@@ -8,8 +8,8 @@
 > `changes.log`), outside this repository. This record carries counts, claim labels, line pointers
 > and paths only: no text from a report, a packet or the docs.
 
-Executes `e32a06f:specs/plans/45-claude-code-drift-automation.md`, Tasks 3-5 (the runs) and Task 6 (this
-record). Source: the open item "The audit verifier's omission recall was 3 of 7 known positives"
+Executes `e32a06f:specs/plans/45-claude-code-drift-automation.md`, Tasks 3-5 (the runs) and
+Task 6 (this record). Source: the open item "The audit verifier's omission recall was 3 of 7 known positives"
 in `specs/deferred_items.md`, under `44-claude-code-drift-automation — 2026-10-13`, whose done-when
 is an audit of the pre-fix guide (`5bd78a7`) against the 2.1.296 snapshot that reports at least
 `deniedModels` (P11). The change under test is Task 1's commit `0b76543` (the verdicts defined by a
@@ -299,7 +299,9 @@ precision inside DF7's ceiling.
 The item "The audit verifier's omission recall was 3 of 7 known positives" stays open in
 `specs/deferred_items.md` with a `> plan 45:` note giving these counts and this record's path. Its
 (b) and (c) observations met DF20 on the changed arm, but nothing closes, because the gate failed.
-Whether Task 1's contract change lands is the owner's decision at integration. It held DF7 and DF8
+Whether Task 1's contract change landed was the owner's decision at plan completion: the owner
+reverted it (2026-10-15, before integration), so `.claude/agents/cc-guide-verifier.md` stays at the
+control arm. For the record, the change held DF7 and DF8
 (on 2 + 2 reps, given ruling 6) and fixed (b), (d) and (e); (c) passed only by the registered rule.
 Against it: in files mode it tripped checkpoint condition 5 as registered (changed readme 8
 UNSUPPORTED `contradicts`, r11 3 and r27 4 above the per-rep ceiling of 2, control 0), each of which
@@ -318,6 +320,9 @@ New items, in the schema of `skills/writing-plans/references/deferred-backlog.md
    rep named `deniedModels` in any row, and none wrote a B row for P8's entry). Size: design.
 4. A fixture-domain-free precision fixture for the files rule (borne out: the cheap checkpoint
    turned on contested readings of the changed readme reps' rows). Size: plan.
+5. The files rule's reference case must apply to the component the file describes (the Codex final
+   review's finding on the changed arm's files-rule wording; the `:89` rows applied Claude Code's
+   permission-matcher splitting to the repo's own hook). Added at plan completion. Size: plan.
 
 The backlog carries each in full, with its closure condition. Not filed: P12's two pages (P12 was 0
 in every rep, both arms) and verify-mode `doc:line` ranges (DF14; this run has no evidence on
