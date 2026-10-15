@@ -1119,8 +1119,9 @@ def test_compaction_window_ignores_headings_when_the_body_fits(tmp_path):
 
 # Each critical span starts at its marker and runs to the next `## ` heading
 # (or the paragraph's blank line, for a bold-led paragraph). Plan 46 moved
-# these inside the compaction window; the register's exception waives only
-# the body-length finding, so these tests are what pins the placement.
+# these inside the compaction window. The register's exception waives
+# compaction-window per file, heading findings included, and no commit lint
+# runs this file, so these tests pin the placement when the suite runs.
 CRITICAL_SPANS = {
     'skills/subagent-driven-development/SKILL.md': ['## Red Flags', '**A roadmap stage**'],
     'skills/bayesian-workflow/SKILL.md': ['## Critical rules', '## Common gotchas'],
