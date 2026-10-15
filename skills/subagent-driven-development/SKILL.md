@@ -279,8 +279,10 @@ roadmap: derive-roadmap on `<roadmap>`." Then stop. PR opened: "Resume the
 roadmap once `<PR>` merges." Kept: "Stage N is complete on `<branch>` but
 unmerged. Resume the roadmap after it merges." Discarded: no handoff, since
 the stamp went with the branch. Even when asked to keep going, never resume
-the roadmap here or plan, brainstorm or name the next stage, and make no
-model-tier claim.
+the roadmap here or plan, brainstorm or route to the next stage (step 3a's
+Handoff bullets and stamp still name the stages they feed), and make no
+model-tier claim. A stage this session finds already merged when it starts,
+with the protocol not yet run, runs the protocol on the merged branch now.
 
 ## Constructing Reviewer Prompts
 
