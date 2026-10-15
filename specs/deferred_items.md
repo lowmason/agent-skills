@@ -1726,7 +1726,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       line that mutates, or the guard is promoted from guardrail toward sandbox.
 
 ## 31-skill-model-pin-removal — 2026-09-28
-- [ ] Watch the two `effort: xhigh` skill pins (`skills/bayesian-workflow/SKILL.md`,
+- [x] Watch the two `effort: xhigh` skill pins (`skills/bayesian-workflow/SKILL.md`,
       `skills/tune-hyperparameters/SKILL.md`), which plan 31 kept (its spec's "Out of scope",
       specs/completed/skill-model-pin-removal.md). Auto mode does not restrict effort, and
       their rationale (effort composes with a Sonnet session) still holds, but the evidence
@@ -1738,6 +1738,10 @@ declined as YAGNI (zero instances in a one-page wiki).
       completion gate (the owner's call) so /deferred keeps seeing it after the spec retired.
       Size: quick-fix. Revisit if: the session default moves off xhigh, or a skill turn is
       seen running at a lower effort than its session because of a pin.
+      → done 2026-10-15 (/deferred quick fix): kept both pins, by the owner's decision. The
+      watch fired when settings.json moved Opus 5.5 to `effortLevel: "medium"` (Sonnet 5.5 stays
+      `xhigh`), so on Opus the pins now raise these two heavy skills to xhigh. That raise is
+      deliberate, and on Sonnet the pins are no-ops. Frontmatter unchanged.
 
 ## 34-calibration-check-verdicts — 2026-10-03
 - [ ] Shrink the SBC paragraph's version-pinned detail once upstream settles: the "What that
