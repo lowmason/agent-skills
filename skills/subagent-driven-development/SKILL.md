@@ -24,29 +24,10 @@ ledger and the tool results carry the record.
 
 ## When to Use
 
-```dot
-digraph when_to_use {
-    "Have implementation plan?" [shape=diamond];
-    "Tasks mostly independent?" [shape=diamond];
-    "Stay in this session?" [shape=diamond];
-    "subagent-driven-development" [shape=box];
-    "Separate parallel session" [shape=box];
-    "Manual execution or design first" [shape=box];
-
-    "Have implementation plan?" -> "Tasks mostly independent?" [label="yes"];
-    "Have implementation plan?" -> "Manual execution or design first" [label="no"];
-    "Tasks mostly independent?" -> "Stay in this session?" [label="yes"];
-    "Tasks mostly independent?" -> "Manual execution or design first" [label="no - tightly coupled"];
-    "Stay in this session?" -> "subagent-driven-development" [label="yes"];
-    "Stay in this session?" -> "Separate parallel session" [label="no"];
-}
-```
-
-**Why same-session (vs. a separate parallel session):**
-- Same session (no context switch)
-- Fresh subagent per task (no context pollution)
-- Review after each task (spec compliance + code quality), broad review at the end
-- Faster iteration (no human-in-loop between tasks)
+You have an implementation plan whose tasks are mostly independent and you
+are staying in this session. The decision graph and the trade-offs against
+manual execution or a separate session:
+[references/advantages.md](references/advantages.md).
 
 ## The Process
 
