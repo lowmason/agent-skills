@@ -28,7 +28,7 @@ from typing import NamedTuple
 
 import yaml
 
-from check_frontmatter import READONLY_HEADING
+from check_frontmatter import READONLY_HEADING, split_tools
 from fences import fenced_lines, iter_code_blocks
 
 # The guide's anchor grammar is cc_guide/guide.py's (drift R1.1). Drift R12.1
@@ -321,8 +321,9 @@ def tool_list(fm: dict) -> list[str] | None:
     tools = fm.get('tools')
     if tools is None:
         return None
-    items = tools if isinstance(tools, list) else str(tools).split(',')
-    return [str(t).strip() for t in items if str(t).strip()]
+    if not isinstance(tools, list):
+        return split_tools(str(tools))
+    return [str(t).strip() for t in tools if str(t).strip()]
 
 
 def read_artifacts(root: Path, files: list[str], out: list[Finding]):
@@ -1020,12 +1021,14 @@ def check_hook_scripts_executable(root: Path, files: list[str], params: dict) ->
     for f in scripts:
         if f in modes:
             if modes[f] != '100755':
-                out.append(Finding(f, f'git index mode is {modes[f]}, not 100755, so the hook '
-                                      'fails open where it is installed'))
+                out.append(Finding(f, f'git index mode is {modes[f]}, not 100755, so where it is '
+                                      'installed the hook fails open by default (one that sets '
+                                      '"onFailure": "block" blocks instead)'))
         elif not (root / f).exists():
             out.append(Finding(f, 'is a dangling link, so the hook cannot run'))
         elif not (root / f).stat().st_mode & 0o100:
-            out.append(Finding(f, 'untracked and not executable, so the hook would fail open'))
+            out.append(Finding(f, 'untracked and not executable, so the hook would fail open by '
+                                  'default (one that sets "onFailure": "block" would block instead)'))
     names = {PurePosixPath(f).name for f in scripts}
     found, _ = hook_commands(root, files)  # hook-dir-quoted reports parse failures
     for hook in found:
@@ -1098,8 +1101,9 @@ def allow_rules(data: object) -> list[str]:
 
 
 def unquoted_operators(pattern: str) -> list[str]:
-    '''The command-separating operators outside quotes in a rule pattern, apart
-    from a newline, which this does not detect. A `&` touching `>` or `<` is a
+    '''The command-separating operators outside quotes in a rule pattern. An
+    unquoted newline is reported as the word `newline`; a backslash-newline is a
+    line continuation, not a separator. A `&` touching `>` or `<` is a
     redirection, as in 2>&1.'''
     found: list[str] = []
     quote = ''
@@ -1121,6 +1125,8 @@ def unquoted_operators(pattern: str) -> list[str]:
             redirect = ch == '&' and (pattern[i - 1:i] in ('<', '>') or pattern[i + 1:i + 2] == '>')
             if ch in ';|&' and not redirect:
                 found.append(ch)
+            elif ch == '\n':
+                found.append('newline')
         i += 1
     return found
 
@@ -1135,7 +1141,8 @@ def check_allow_rule_compound_operators(root: Path, files: list[str], params: di
         for pattern in allow_rules(data):
             ops = unquoted_operators(pattern)
             if ops:
-                out.append(Finding(f, f'{where}allow rule Bash({pattern}) holds an unquoted '
+                shown = pattern.replace('\n', '\\n')
+                out.append(Finding(f, f'{where}allow rule Bash({shown}) holds an unquoted '
                                       f'{", ".join(sorted(set(ops)))}, which Claude Code splits '
                                       'compound commands on, so it never matches'))
     return out

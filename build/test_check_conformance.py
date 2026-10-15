@@ -663,6 +663,16 @@ def test_unreadable_artifacts_are_unwaivable_findings(tmp_path):
     ]
 
 
+@pytest.mark.parametrize('tools, expected', [
+    ('Read, Grep', ['Read', 'Grep']),
+    ('Read, Agent(worker, researcher), Bash', ['Read', 'Agent(worker, researcher)', 'Bash']),
+    (['Read', 'Agent(worker, researcher)'], ['Read', 'Agent(worker, researcher)']),
+    ('mcp__github__search, Read', ['mcp__github__search', 'Read']),
+])
+def test_tool_list_splits_only_on_commas_outside_parentheses(tools, expected):
+    assert cc.tool_list({'tools': tools}) == expected
+
+
 def test_bash_search_tools_pass(tmp_path):
     write_tree(tmp_path, {
         'agents/shell.md': '---\nname: shell\ntools: Read, Bash\n---\n',
@@ -1723,7 +1733,8 @@ def test_hook_scripts_executable_flag_a_plain_mode_and_a_missing_wired_script(tm
     }, executable={'hooks/gate.sh'})
     files = ['hooks/README.md', 'hooks/gate.sh', 'hooks/guard.py']
     assert cc.check_hook_scripts_executable(root, files, {}) == [
-        cc.Finding('hooks/guard.py', 'git index mode is 100644, not 100755, so the hook fails open where it is installed'),
+        cc.Finding('hooks/guard.py', 'git index mode is 100644, not 100755, so where it is installed the hook fails '
+                                     'open by default (one that sets "onFailure": "block" blocks instead)'),
         cc.Finding('hooks/README.md', "JSON block at line 1: PreToolUse command "
                                       "'$CLAUDE_PROJECT_DIR/.claude/hooks/gone.sh' names no hook script in the repo"),
     ]
@@ -1736,7 +1747,8 @@ def test_hook_scripts_executable_judge_an_untracked_script_by_its_execute_bit(tm
     (root / 'hooks/new-x.sh').chmod(0o755)
     files = ['hooks/kept.sh', 'hooks/new-x.sh', 'hooks/new.sh']
     assert cc.check_hook_scripts_executable(root, files, {}) == [
-        cc.Finding('hooks/new.sh', 'untracked and not executable, so the hook would fail open')]
+        cc.Finding('hooks/new.sh', 'untracked and not executable, so the hook would fail open by default '
+                                   '(one that sets "onFailure": "block" would block instead)')]
 
 
 @pytest.mark.parametrize('command', [
@@ -1809,9 +1821,23 @@ def test_hook_python_deps_pass_on_the_repo():
     ('make 2>&1', []),
     ('make &> out', []),
     ('a && b | c', ['&&', '|']),
+    ('git status\nrm -rf x', ['newline']),
+    ('echo "a\nb"', []),
+    ("echo 'a\nb'", []),
+    ('make \\\nall', []),
 ])
 def test_unquoted_operators_track_shell_quoting(pattern, ops):
     assert cc.unquoted_operators(pattern) == ops
+
+
+def test_allow_rule_compound_operators_flag_an_unquoted_newline(tmp_path):
+    write_tree(tmp_path, {
+        '.claude/settings.json': json.dumps({'permissions': {'allow': ['Bash(git status\nrm x)']}}),
+    })
+    assert cc.check_allow_rule_compound_operators(tmp_path, ['.claude/settings.json'], {}) == [
+        cc.Finding('.claude/settings.json', 'allow rule Bash(git status\\nrm x) holds an unquoted newline, '
+                                            'which Claude Code splits compound commands on, so it never matches'),
+    ]
 
 
 def test_allow_rule_compound_operators_pass(tmp_path):

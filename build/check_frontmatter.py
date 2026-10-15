@@ -26,7 +26,7 @@ from fences import strip_fenced_blocks
 
 REPO = Path(__file__).resolve().parent.parent
 ALLOWED_KEYS = {'name', 'description', 'license', 'allowed-tools', 'metadata',
-                'when_to_use', 'model', 'effort', 'context'}
+                'when_to_use', 'model', 'effort', 'context', 'compatibility'}
 # `fork` is the only value Claude Code documents for `context` (run the skill in
 # an isolated subagent). Any other value is a typo that silently no-ops at
 # runtime, so it fails here instead — widen this set if the spec grows one.
@@ -51,6 +51,32 @@ NAME_RE = re.compile(r'^[a-z0-9]+(-[a-z0-9]+)*$')
 KNOWN_AGENT_TOOLS = {
     'Read', 'Grep', 'Glob', 'Bash', 'Write', 'Edit', 'WebFetch', 'WebSearch',
 }
+# Beyond the built-ins above, a tools entry may be an MCP tool (mcp__<server>
+# or mcp__<server>__<tool>) or Agent, bare or naming the spawnable agent types
+# as `Agent(worker, researcher)` (the guide's subagents.frontmatter).
+AGENT_RESTRICTION_RE = re.compile(r'Agent(\([^()]*\))?')
+MCP_TOOL_PREFIX = 'mcp__'
+
+
+def split_tools(tools: str) -> list[str]:
+    '''A comma-separated tools string's entries, splitting only on commas
+    outside parentheses, so `Agent(worker, researcher)` stays one entry.'''
+    entries, depth, start = [], 0, 0
+    for i, ch in enumerate(tools):
+        if ch == '(':
+            depth += 1
+        elif ch == ')':
+            depth = max(depth - 1, 0)
+        elif ch == ',' and depth == 0:
+            entries.append(tools[start:i])
+            start = i + 1
+    entries.append(tools[start:])
+    return [e.strip() for e in entries if e.strip()]
+
+
+def known_agent_tool(tool: str) -> bool:
+    return (tool in KNOWN_AGENT_TOOLS or tool.startswith(MCP_TOOL_PREFIX)
+            or AGENT_RESTRICTION_RE.fullmatch(tool) is not None)
 GUARD_PATH = REPO / 'hooks' / 'readonly-agent-guard.py'
 # Load-bearing marker, not a label: an agents/*.md carrying this heading is
 # asserted to be in the guard's roster, and vice versa. debugger.md and
@@ -155,7 +181,7 @@ def check_agent_file(md: Path) -> list[str]:
             f'{md}: description is {len(desc)} chars (listing budget {DESCRIPTION_CAP})')
     tools = fm.get('tools')
     if tools is not None:
-        unknown = [t.strip() for t in str(tools).split(',') if t.strip() not in KNOWN_AGENT_TOOLS]
+        unknown = [t for t in split_tools(str(tools)) if not known_agent_tool(t)]
         if unknown:
             errs.append(f'{md}: unknown tools {unknown}')
     return errs
