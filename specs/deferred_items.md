@@ -3217,6 +3217,21 @@ declined as YAGNI (zero instances in a one-page wiki).
       > UNSUPPORTED `contradicts` rows (control 0), which settle would print as edits to apply.
       > See `specs/completed/verifier-recall-verification-2026-10-14.md`; the B-row item under
       > `45-claude-code-drift-automation — 2026-10-14` shares this item's `deniedModels` done-when.
+      >
+      > plan 45 transcripts (2026-10-15): the P11 miss looks like a judgment failure, not a
+      > discovery one. In 3 of the 4 valid gate reps (r32, r33, r35) `deniedModels` text was in
+      > the verifier's own context (6-8 raw mentions each in its transcript; r33 cited
+      > `model-config.md:272` for guide line 429, about 60 lines above the `deniedModels`
+      > section), yet no rep flagged its absence from line 429. A direction for the next
+      > revision: when a guide line describes a family of related settings (an allow list, its
+      > deny list, an enforcement switch), have the verifier list the family's members from the
+      > docs section it cites and either account for each in the line or write a correction for
+      > the one left out. Caveats: 2 + 2 reps, and the counts are raw string matches, not
+      > confirmed reads; the rule must stay generic (no `availableModels` or `deniedModels` in
+      > the contract, re-run plan 45's term gate) or it leaks the fixture; "account for every
+      > member" can raise volume and false corrections, so a revision keeps DF7's precision
+      > clauses and a cheap checkpoint; it targets P11, which alone decides this item's
+      > done-when, not the other misses.
 - [x] `build/cc_guide/baseline.json` writers have no lock (2026-10-13, `/cc-guide audit
       models`). Each `cli.py baseline` subcommand reads, modifies and rewrites the file
       (`stamp` rewrites the guide's stamp region), so two run in one parallel tool batch can
