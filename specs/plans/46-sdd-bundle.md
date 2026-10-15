@@ -19,7 +19,7 @@
 - **Execute in a worktree, never the main checkout.** This plan edits the skills that execute it. The controller loads subagent-driven-development and writing-plans through `~/.claude/skills`, which links to the main checkout, so the main checkout stays on an unedited `main` until merge. The SDD scripts resolve the repo from the shell's cwd, so `cd <worktree> &&` before `sdd-workspace` / `review-package`.
 - **Commit moves separately.** A section move is a commit of its own, with no wording change. Its proof is a sorted-line diff against the parent commit that shows no added or removed line, except the blank-line adjustments named in the task.
 - **Section placement must hold at both ends.** Each moved critical section must end inside the window, not only start inside it. The window is `tokens × chars_per_token` = 5,000 × 4 = 20,000 body characters (`compaction-window` in `build/cc_guide/conformance.toml`). The `**A roadmap stage**` paragraph of `subagent-driven-development` must end inside the window too.
-- **No frontmatter edits** to `skills/bayesian-workflow/SKILL.md`. A concurrent session (O1, the `effort:` pin decision) owns its frontmatter. Rebase onto `main` after O1 merges.
+- **No frontmatter edits** to `skills/bayesian-workflow/SKILL.md`. Its `effort: xhigh` pin was kept by owner decision (PR #49, 2026-10-15).
 - **Do not `cli.py baseline cite`** any edited file. `subagent-driven-development/SKILL.md` and `writing-skills/SKILL.md` keep their pending STALE review.
 - **Test counts are deltas** (+N), never absolute pytest totals.
 - **Run the seven commit lints before each commit:** `bash build/run_commit_lints.sh`. The STALE lines it prints are pre-existing and never fail it.
@@ -31,10 +31,9 @@
 - **D1** (owner, plan review, 2026-10-15): Move up and narrow. The critical sections move inside the window, and exception `critical-rules-past-compaction` stays, narrowed to body length. Both bodies stay over 20,000 characters, and moving body text into `references/` becomes a new deferred item at completion. Applied in: Task 1, Task 2.
 - **D2** (owner, plan review, 2026-10-15): The `p5a` (5 reps) + `c5a-neg` run is the gate for Task 3. It runs in plan 40's kit, launched by the owner outside Claude Code. Applied in: Task 4.
 
-**Open for plan review** (settle these before execution):
-- **R1.** Moving `subagent-driven-development`'s "When to Use" digraph and "Why same-session" bullets into `references/advantages.md` takes 24 body lines out. That is the line trim. The description already states when to use the skill, and `advantages.md` already says it is rationale for choosing the skill.
-- **R2.** `## Constructing Reviewer Prompts` (about 3,900 characters) moves below `## Plan Completion`, so Red Flags and the roadmap paragraph fit the window. Constructing Reviewer Prompts then straddles the 20,000 mark. Its heading is not a critical-sounding heading, and it is reached by name from the Red Flags list and from Fix Rounds.
-- **R3.** The narrowed exception's id `critical-rules-past-compaction` stops being true. Rename it to `skill-body-past-compaction`? (Nothing outside `conformance.toml`, the dated audit record and the deferred item cites the id.)
+- **D3** (owner, plan review, 2026-10-15): Move `subagent-driven-development`'s "When to Use" digraph into `references/advantages.md`, and drop the "Why same-session" bullets that file already covers. This is the line trim. Applied in: Task 2.
+- **D4** (owner, plan review, 2026-10-15): `## Constructing Reviewer Prompts` moves below `## Plan Completion`, so Red Flags and the roadmap-stage paragraph fit the window. It then straddles the 20,000 mark. Applied in: Task 2.
+- **D5** (owner, plan review, 2026-10-15): Rename the narrowed exception from `critical-rules-past-compaction` to `skill-body-past-compaction`. Leave the dated audit record (`specs/claude-code-conformance-audit-2026-10-04.md`) as written. Applied in: Task 2.
 
 ---
 
@@ -230,7 +229,7 @@ evidence = 'Audit rows S-69, S-70; owner gate 2026-10-04; owner decision D1, pla
 tracked_in = 'deferred item: fit the subagent-driven-development and bayesian-workflow bodies inside the compaction window'
 ```
 
-If R3 was approved at plan review, also change `id = 'critical-rules-past-compaction'` to `id = 'skill-body-past-compaction'`. Then run `grep -rn critical-rules-past-compaction build/` and expect no output.
+Also change `id = 'critical-rules-past-compaction'` to `id = 'skill-body-past-compaction'` (D5). Then run `grep -rn critical-rules-past-compaction build/` and expect no output.
 
 Run: `uv run --python 3.13 --with pyyaml python build/check_conformance.py`. Expected: exit 0.
 
@@ -243,7 +242,8 @@ git commit -m "refactor(subagent-driven-development): move Red Flags into the co
 Red Flags moves above The Process and Constructing Reviewer Prompts below
 Plan Completion, so Red Flags and the roadmap-stage paragraph both end
 inside the first 5,000 tokens. Section order only. The exception now
-waives only the body-length finding (plan 46, D1).
+waives only the body-length finding, renamed skill-body-past-compaction
+(plan 46, D1, D5).
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
@@ -434,7 +434,7 @@ Then run: `~/.cache/agent-skills/handoffs/red/tools/tally.py plan46`. Expected: 
 ## Completion notes for the Plan Completion Protocol
 
 - Tick the four bundle items with `→ done in plan 46`:
-  - "Move critical sections above the compaction cut": record D1. Its literal done-when, removing the exception, was replaced by narrowing it.
+  - "Move critical sections above the compaction cut": record D1 and D5. Its literal done-when, removing the exception, was replaced by narrowing and renaming it.
   - The writing-plans rewording.
   - The 500-line trim.
   - The `p5a` verification.
