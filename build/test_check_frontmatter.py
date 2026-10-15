@@ -110,6 +110,25 @@ def test_agent_file_clean(tmp_path):
     assert check_agent_file(good) == []
 
 
+def test_agent_tools_accept_agent_restrictions_and_mcp_tools(tmp_path):
+    md = tmp_path / 'lead.md'
+    md.write_text('---\nname: lead\ndescription: Leads.\n'
+                  'tools: Read, Agent(worker, researcher), Agent, mcp__github__search_code\n---\nbody\n')
+    assert check_agent_file(md) == []
+
+
+def test_agent_tools_still_flag_an_unknown_tool_beside_an_agent_restriction(tmp_path):
+    md = tmp_path / 'lead.md'
+    md.write_text('---\nname: lead\ndescription: Leads.\ntools: Agent(worker, researcher), Bogus\n---\nbody\n')
+    assert check_agent_file(md) == [f"{md}: unknown tools ['Bogus']"]
+
+
+def test_compatibility_key_allowed(tmp_path):
+    d = make_skill(tmp_path, 'compat-skill',
+                   'name: compat-skill\ndescription: Use when testing.\ncompatibility: Requires Python 3.13')
+    assert check_skill(d) == []
+
+
 def make_agent(tmp_path: Path, name: str, description: str) -> Path:
     md = tmp_path / f'{name}.md'
     md.write_text(
