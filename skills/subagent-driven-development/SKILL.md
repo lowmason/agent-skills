@@ -29,6 +29,45 @@ are staying in this session. The decision graph and the trade-offs against
 manual execution or a separate session:
 [references/advantages.md](references/advantages.md).
 
+## Red Flags
+
+**Never:**
+- Start implementation on main/master branch without explicit user consent
+- Skip task review, or accept a report missing either verdict (spec compliance AND task quality are both required)
+- Proceed with unfixed issues
+- Dispatch multiple implementation subagents in parallel (conflicts)
+- Make a subagent read the whole plan file (hand it its task brief —
+  `scripts/task-brief` — instead)
+- Skip scene-setting context (subagent needs to understand where task fits)
+- Ignore a NEEDS_CONTEXT report (answer the questions and re-dispatch before moving on)
+- Accept "close enough" on spec compliance (reviewer found spec issues = not done)
+- Skip review loops (reviewer found issues = implementer fixes = review again)
+- Let implementer self-review replace actual review (both are needed)
+- Tell a reviewer what not to flag, or pre-rate a finding's severity — see **Constructing Reviewer Prompts**
+- Dispatch a task reviewer without a diff file — generate it first
+  (`<this-skill-dir>/scripts/review-package PLAN_FILE BASE HEAD`) and name the path it reports in
+  the prompt, the path alone and not its whole summary line
+- Move to next task while the review has open Critical/Important issues
+- Re-dispatch a task the progress ledger already marks complete — check
+  the ledger (and `git log`) after any compaction or resume
+
+**If subagent reports NEEDS_CONTEXT:**
+- Answer every question clearly and completely
+- Re-dispatch with the same brief plus the answers
+- Add the context the brief was missing so the second run can one-shot it
+
+**If reviewer finds issues:**
+- Dispatch a fix subagent with the findings — resumed or fresh per **Fix
+  Rounds** (prompt per Constructing Reviewer Prompts)
+- Reviewer reviews again (scoped re-review, not a fresh full review — see Fix Rounds)
+- Repeat up to the five-attempt cap, then adjudicate what's still open (see Fix Rounds)
+- Don't skip the re-review
+
+**If subagent fails task:**
+- Dispatch a fix subagent with specific instructions — resumed or fresh per
+  **Fix Rounds**
+- Don't try to fix manually (context pollution)
+
 ## The Process
 
 ```dot
@@ -206,6 +245,43 @@ ones as work, and park the rest in the ledger with your reasoning
 (`Ruling: <what you decided> — <why> — <what it costs if wrong>`). Stop for your
 human partner only when every path forward is a guess.
 
+## Plan Completion
+
+After the final whole-branch review resolves, run the plan-completion
+protocol from the writing-plans skill (its "Plan Completion Protocol"
+section): resolve-before-defer gate → plan markup → deferred items →
+retire. The gate's batched questions are this skill's one deliberate human
+checkpoint — fold any question sets already pending (plan-mandated
+findings, deferred-Minor confirmations) into the same batch, so your human
+partner gets at most one round-trip. Review findings the final review left
+unfixed feed the gate. This is compatible with Continuous execution: "all
+tasks complete" is a sanctioned stop.
+
+When the plan-completion protocol has finished and the final review's fixes
+are merged, delete this plan's workspace — the `$WORKSPACE` you resolved at
+skill start: `rm -rf "$WORKSPACE"`. If a `/clear` and relaunch since then left
+you without that variable, re-run `<this-skill-dir>/scripts/sdd-workspace <plan-file>`; it is
+idempotent and reprints the same path. Git history is the record now. Sibling
+directories under `.sdd/` belong to other plans — leave them alone, and never
+`rm -rf .sdd` itself.
+
+Order matters. The delete runs **after** the protocol, never before: the
+resolve-before-defer gate reads this run's leftovers — the ledger, unfixed
+review findings, deferred-Minor confirmations — to build its batched questions
+and the `specs/deferred_items.md` entries. Deleting the workspace first
+destroys the protocol's input.
+
+**A roadmap stage** (its plan header carries a `Roadmap:` line) runs the
+protocol, step 3a included, before any merge, even when told to just merge, then
+ends by the outcome of finishing-a-development-branch. Merged locally: "Stage N of
+`<roadmap>` is merged. Next: /clear (or a fresh session), then resume the
+roadmap: derive-roadmap on `<roadmap>`." Then stop. PR opened: "Resume the
+roadmap once `<PR>` merges." Kept: "Stage N is complete on `<branch>` but
+unmerged. Resume the roadmap after it merges." Discarded: no handoff, since
+the stamp went with the branch. Even when asked to keep going, never resume
+the roadmap here or plan, brainstorm or name the next stage, and make no
+model-tier claim.
+
 ## Constructing Reviewer Prompts
 
 Per-task reviews are task-scoped gates. The broad review happens once, at the
@@ -266,43 +342,6 @@ final whole-branch review. When you fill a reviewer template:
   finding.
   Per-finding fixers each rebuild context and re-run suites; a real
   session's final-review fix wave cost more than all its tasks combined.
-
-## Plan Completion
-
-After the final whole-branch review resolves, run the plan-completion
-protocol from the writing-plans skill (its "Plan Completion Protocol"
-section): resolve-before-defer gate → plan markup → deferred items →
-retire. The gate's batched questions are this skill's one deliberate human
-checkpoint — fold any question sets already pending (plan-mandated
-findings, deferred-Minor confirmations) into the same batch, so your human
-partner gets at most one round-trip. Review findings the final review left
-unfixed feed the gate. This is compatible with Continuous execution: "all
-tasks complete" is a sanctioned stop.
-
-When the plan-completion protocol has finished and the final review's fixes
-are merged, delete this plan's workspace — the `$WORKSPACE` you resolved at
-skill start: `rm -rf "$WORKSPACE"`. If a `/clear` and relaunch since then left
-you without that variable, re-run `<this-skill-dir>/scripts/sdd-workspace <plan-file>`; it is
-idempotent and reprints the same path. Git history is the record now. Sibling
-directories under `.sdd/` belong to other plans — leave them alone, and never
-`rm -rf .sdd` itself.
-
-Order matters. The delete runs **after** the protocol, never before: the
-resolve-before-defer gate reads this run's leftovers — the ledger, unfixed
-review findings, deferred-Minor confirmations — to build its batched questions
-and the `specs/deferred_items.md` entries. Deleting the workspace first
-destroys the protocol's input.
-
-**A roadmap stage** (its plan header carries a `Roadmap:` line) runs the
-protocol, step 3a included, before any merge, even when told to just merge, then
-ends by the outcome of finishing-a-development-branch. Merged locally: "Stage N of
-`<roadmap>` is merged. Next: /clear (or a fresh session), then resume the
-roadmap: derive-roadmap on `<roadmap>`." Then stop. PR opened: "Resume the
-roadmap once `<PR>` merges." Kept: "Stage N is complete on `<branch>` but
-unmerged. Resume the roadmap after it merges." Discarded: no handoff, since
-the stamp went with the branch. Even when asked to keep going, never resume
-the roadmap here or plan, brainstorm or name the next stage, and make no
-model-tier claim.
 
 ## File Handoffs
 
@@ -427,45 +466,6 @@ failed spec review, a fix round and a scoped re-review on Task 2:
 
 What this buys against manual execution and a separate parallel session, and
 what it costs: [references/advantages.md](references/advantages.md).
-
-## Red Flags
-
-**Never:**
-- Start implementation on main/master branch without explicit user consent
-- Skip task review, or accept a report missing either verdict (spec compliance AND task quality are both required)
-- Proceed with unfixed issues
-- Dispatch multiple implementation subagents in parallel (conflicts)
-- Make a subagent read the whole plan file (hand it its task brief —
-  `scripts/task-brief` — instead)
-- Skip scene-setting context (subagent needs to understand where task fits)
-- Ignore a NEEDS_CONTEXT report (answer the questions and re-dispatch before moving on)
-- Accept "close enough" on spec compliance (reviewer found spec issues = not done)
-- Skip review loops (reviewer found issues = implementer fixes = review again)
-- Let implementer self-review replace actual review (both are needed)
-- Tell a reviewer what not to flag, or pre-rate a finding's severity — see **Constructing Reviewer Prompts**
-- Dispatch a task reviewer without a diff file — generate it first
-  (`<this-skill-dir>/scripts/review-package PLAN_FILE BASE HEAD`) and name the path it reports in
-  the prompt, the path alone and not its whole summary line
-- Move to next task while the review has open Critical/Important issues
-- Re-dispatch a task the progress ledger already marks complete — check
-  the ledger (and `git log`) after any compaction or resume
-
-**If subagent reports NEEDS_CONTEXT:**
-- Answer every question clearly and completely
-- Re-dispatch with the same brief plus the answers
-- Add the context the brief was missing so the second run can one-shot it
-
-**If reviewer finds issues:**
-- Dispatch a fix subagent with the findings — resumed or fresh per **Fix
-  Rounds** (prompt per Constructing Reviewer Prompts)
-- Reviewer reviews again (scoped re-review, not a fresh full review — see Fix Rounds)
-- Repeat up to the five-attempt cap, then adjudicate what's still open (see Fix Rounds)
-- Don't skip the re-review
-
-**If subagent fails task:**
-- Dispatch a fix subagent with specific instructions — resumed or fresh per
-  **Fix Rounds**
-- Don't try to fix manually (context pollution)
 
 ## Integration
 
