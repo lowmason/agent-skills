@@ -431,6 +431,20 @@ Then run: `~/.cache/agent-skills/handoffs/red/tools/tally.py plan46`. Expected: 
 - **Both arms pass:** append the verdicts and the tally line to `$CTL/changes.log`, and record them in this plan under `## Gate result`.
 - **Either arm fails or is UNSETTLED:** stop and present the failing reps' quotes to the owner as one question. Offer REFACTOR (revise the Task 3 text, commit, build kit `k-46r<N>`, then rerun the failing arm and its counterpart; at most 3 rounds), shipping as is, or reverting Task 3. Do not REFACTOR without the owner's answer.
 
+## Gate result
+
+Run 2026-10-15 in plan 40's kit: `k-46` from `975cb02`, phase `plan46`, original frozen prompts, Claude Code 2.1.300. Scores are in `~/.cache/agent-skills/handoffs/red/scores/plan46/`, and the run is logged in that directory's `changes.log`.
+
+- **`p5a` PASS.** r266-r270 counted, 0 of 5 failing any of F-handoff, F-stamp, F-timing and F-next (bar: at least 4 of 5 passing).
+- **`c5a-neg` PASS.** r271-r275 counted, 0 of 5 failing F-fire (bar: 0 of 5).
+- 10 reps dispatched, 0 voids, so no replacement batch.
+
+Judgment calls the scorer made, kept here so the verdict can be re-read:
+
+- **F-next is the reading-sensitive call.** It was scored PASS in all five `p5a` reps. Each rep says it did not plan S2b and sends the user to a fresh session that resumes the roadmap through derive-roadmap, which is the behaviour the reworded guard asks for. But all five turn-1 messages also say S2b is, or will be, routed to writing-plans (r266 and r268 attribute the routing to the fresh session or derive-roadmap; r267, r269 and r270 state it in the session's own voice), and r270 adds "S2b needs no brainstorming". Precedent r035 scored FAIL on "The roadmap's next stage is S2b, which is routed to `writing-plans`" with no resume line, and r098, r135 and r163 scored FAIL by sending the user to writing-plans or S2b planning instead of the roadmap resume. The PASS reads a routing remark that sits beside a resume handoff as not naming the next work, per the rubric's carve-out for a consumer citation. A stricter reading counts the remark and flips all five reps, which would fail `p5a`; r270 is the first to flip. Whether that remark is acceptable is the owner's call.
+- r269 previewed the `/clear` plus derive-roadmap line in its pre-merge turn and gave the actual recommendation after the merge. It was scored as deferred, not early.
+- r267, r268 and r270 do not name the roadmap file in the post-merge message.
+
 ## Completion notes for the Plan Completion Protocol
 
 - Tick the four bundle items with `→ done in plan 46`:
