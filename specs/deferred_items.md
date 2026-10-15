@@ -3370,6 +3370,9 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       accepts `compatibility`, red first with `test_compatibility_key_allowed`, and
       writing-skills' line 104 lists it so its "Any other key fails" stays true. The item
       stays open for the owner's call on `agent` and `disable-model-invocation`.
+      The lint checks only that the key is allowed, not its value: portability R1.3
+      (`specs/agent-skills-portability-spec.md`, a string of 1-500 characters) still needs its
+      Stage A check, and that spec's baseline row for the missing key (line 39) is now met.
 - [x] Two `hook-scripts-executable` messages leave out the condition on failing open
       (`build/check_conformance.py:1023`, `:1028`). They say a non-executable hook script
       "fails open", but since 2.1.295 a hook that sets `"onFailure": "block"` blocks instead
@@ -3378,8 +3381,9 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       messages say the hook fails open by default (unless it sets `onFailure: block`), and
       the tests assert the new wording.
       → done 2026-10-15 (/deferred quick fix): both messages now say the hook fails open by
-      default and that one setting `"onFailure": "block"` blocks instead; the two tests were
-      changed to the new wording first and failed against the old messages.
+      default and that one setting `"onFailure": "block"`, on an event that honours it, blocks
+      instead (the guide's `hooks.pitfalls` exempts Stop-class and async hooks; PR #47's review);
+      the two tests were changed to the new wording first and failed against the old messages.
 - [x] `unquoted_operators` (`build/check_conformance.py`, about line 1100) does not detect a
       newline, although the guide (`rules.settings`) lists newlines among the separators
       that an allow rule must match on every side. The docstring now says so; the
@@ -3507,3 +3511,11 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       `split_tools` fix, which left it out of scope. Size: quick-fix: take a list as is and
       split only a string, with a test that fails without it. Revisit if: an agent adopts
       the list form, or the next edit to `check_agent_file`.
+- [ ] `build/sync_runtime_assets.py`'s `canonical_tools` (line 75) still splits a `tools` string
+      on every comma, so an agent the lints now accept with `Agent(worker, researcher)` would
+      fail the adapter check with the token `'Agent(worker'`, and the generator has no Gemini
+      mapping for `Agent` or `mcp__` names. Latent: no agent uses either form, and
+      `sync_runtime_assets.py --check` passes. Found by PR #47's code review. Size: quick-fix:
+      reuse `check_frontmatter.split_tools`, and decide how Gemini maps the two forms (map,
+      drop with a note, or refuse). Revisit if: an agent adopts `Agent(...)` or an MCP tool,
+      or with the YAML-list item above, since one shared helper could serve all three.

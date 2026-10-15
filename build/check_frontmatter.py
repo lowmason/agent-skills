@@ -56,6 +56,16 @@ KNOWN_AGENT_TOOLS = {
 # as `Agent(worker, researcher)` (the guide's subagents.frontmatter).
 AGENT_RESTRICTION_RE = re.compile(r'Agent(\([^()]*\))?')
 MCP_TOOL_PREFIX = 'mcp__'
+GUARD_PATH = REPO / 'hooks' / 'readonly-agent-guard.py'
+# Load-bearing marker, not a label: an agents/*.md carrying this heading is
+# asserted to be in the guard's roster, and vice versa. debugger.md and
+# docs-writer.md use a plain '## Contract' because theirs are not read-only.
+READONLY_HEADING = '## Read-only contract'
+# Anchored links (`](path.md#frag)`) are intentionally skipped, not validated —
+# the fragment part isn't checked, only the path before it (see LINK_RE below,
+# which already excludes '#' from the captured group).
+LINK_RE = re.compile(r'\]\(([^)#\s]+)\)')
+TICK_PATH_RE = re.compile(r'`((?:references|scripts)/[A-Za-z0-9._/-]+)`')
 
 
 def split_tools(tools: str) -> list[str]:
@@ -75,18 +85,9 @@ def split_tools(tools: str) -> list[str]:
 
 
 def known_agent_tool(tool: str) -> bool:
+    '''A built-in tool, an MCP tool, or Agent with or without its type list.'''
     return (tool in KNOWN_AGENT_TOOLS or tool.startswith(MCP_TOOL_PREFIX)
             or AGENT_RESTRICTION_RE.fullmatch(tool) is not None)
-GUARD_PATH = REPO / 'hooks' / 'readonly-agent-guard.py'
-# Load-bearing marker, not a label: an agents/*.md carrying this heading is
-# asserted to be in the guard's roster, and vice versa. debugger.md and
-# docs-writer.md use a plain '## Contract' because theirs are not read-only.
-READONLY_HEADING = '## Read-only contract'
-# Anchored links (`](path.md#frag)`) are intentionally skipped, not validated —
-# the fragment part isn't checked, only the path before it (see LINK_RE below,
-# which already excludes '#' from the captured group).
-LINK_RE = re.compile(r'\]\(([^)#\s]+)\)')
-TICK_PATH_RE = re.compile(r'`((?:references|scripts)/[A-Za-z0-9._/-]+)`')
 
 
 def _check_model_pin(md: Path, fm: dict) -> list[str]:

@@ -1023,12 +1023,14 @@ def check_hook_scripts_executable(root: Path, files: list[str], params: dict) ->
             if modes[f] != '100755':
                 out.append(Finding(f, f'git index mode is {modes[f]}, not 100755, so where it is '
                                       'installed the hook fails open by default (one that sets '
-                                      '"onFailure": "block" blocks instead)'))
+                                      '"onFailure": "block", on an event that honours it, '
+                                      'blocks instead)'))
         elif not (root / f).exists():
             out.append(Finding(f, 'is a dangling link, so the hook cannot run'))
         elif not (root / f).stat().st_mode & 0o100:
             out.append(Finding(f, 'untracked and not executable, so the hook would fail open by '
-                                  'default (one that sets "onFailure": "block" would block instead)'))
+                                  'default (one that sets "onFailure": "block", on an event that '
+                                  'honours it, would block instead)'))
     names = {PurePosixPath(f).name for f in scripts}
     found, _ = hook_commands(root, files)  # hook-dir-quoted reports parse failures
     for hook in found:

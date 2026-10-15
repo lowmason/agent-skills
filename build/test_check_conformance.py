@@ -1734,7 +1734,8 @@ def test_hook_scripts_executable_flag_a_plain_mode_and_a_missing_wired_script(tm
     files = ['hooks/README.md', 'hooks/gate.sh', 'hooks/guard.py']
     assert cc.check_hook_scripts_executable(root, files, {}) == [
         cc.Finding('hooks/guard.py', 'git index mode is 100644, not 100755, so where it is installed the hook fails '
-                                     'open by default (one that sets "onFailure": "block" blocks instead)'),
+                                     'open by default (one that sets "onFailure": "block", on an event that '
+                                     'honours it, blocks instead)'),
         cc.Finding('hooks/README.md', "JSON block at line 1: PreToolUse command "
                                       "'$CLAUDE_PROJECT_DIR/.claude/hooks/gone.sh' names no hook script in the repo"),
     ]
@@ -1748,7 +1749,8 @@ def test_hook_scripts_executable_judge_an_untracked_script_by_its_execute_bit(tm
     files = ['hooks/kept.sh', 'hooks/new-x.sh', 'hooks/new.sh']
     assert cc.check_hook_scripts_executable(root, files, {}) == [
         cc.Finding('hooks/new.sh', 'untracked and not executable, so the hook would fail open by default '
-                                   '(one that sets "onFailure": "block" would block instead)')]
+                                   '(one that sets "onFailure": "block", on an event that honours it, '
+                                   'would block instead)')]
 
 
 @pytest.mark.parametrize('command', [
