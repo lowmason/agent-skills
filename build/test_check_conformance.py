@@ -1117,6 +1117,42 @@ def test_compaction_window_ignores_headings_when_the_body_fits(tmp_path):
     assert cc.check_compaction_window(tmp_path, ['skills/a/SKILL.md'], WINDOW_PARAMS) == []
 
 
+# Each critical span starts at its marker and runs to the next `## ` heading
+# (or the paragraph's blank line, for a bold-led paragraph). Plan 46 moved
+# these inside the compaction window; the register's exception waives only
+# the body-length finding, so these tests are what pins the placement.
+CRITICAL_SPANS = {
+    'skills/subagent-driven-development/SKILL.md': ['## Red Flags', '**A roadmap stage**'],
+    'skills/bayesian-workflow/SKILL.md': ['## Critical rules', '## Common gotchas'],
+}
+
+
+def _window_params():
+    register = cc.load_register(cc.REPO)
+    return next(c for c in register['check'] if c['id'] == 'compaction-window')
+
+
+@pytest.mark.parametrize('skill', sorted(CRITICAL_SPANS))
+def test_real_skill_has_no_critical_heading_past_the_compaction_window(skill):
+    found = cc.check_compaction_window(cc.REPO, [skill], _window_params())
+    assert [f.message for f in found if 'starts past' in f.message] == []
+
+
+@pytest.mark.parametrize('skill', sorted(CRITICAL_SPANS))
+def test_real_skill_critical_spans_end_inside_the_compaction_window(skill):
+    params = _window_params()
+    window = params['tokens'] * params['chars_per_token']
+    body, _ = cc.skill_body((cc.REPO / skill).read_text(encoding='utf-8'))
+    for marker in CRITICAL_SPANS[skill]:
+        start = body.index(marker)
+        if marker.startswith('## '):
+            end = body.find('\n## ', start + 1)
+        else:
+            end = body.find('\n\n', start)
+        end = len(body) if end == -1 else end
+        assert end <= window, f'{marker!r} ends at {end}, past {window}'
+
+
 PERSON_PARAMS = {'pronouns': ['i', 'we', 'you', 'your']}
 
 
