@@ -321,9 +321,7 @@ def tool_list(fm: dict) -> list[str] | None:
     tools = fm.get('tools')
     if tools is None:
         return None
-    if not isinstance(tools, list):
-        return split_tools(str(tools))
-    return [str(t).strip() for t in tools if str(t).strip()]
+    return split_tools(tools)
 
 
 def read_artifacts(root: Path, files: list[str], out: list[Finding]):

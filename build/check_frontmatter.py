@@ -68,9 +68,13 @@ LINK_RE = re.compile(r'\]\(([^)#\s]+)\)')
 TICK_PATH_RE = re.compile(r'`((?:references|scripts)/[A-Za-z0-9._/-]+)`')
 
 
-def split_tools(tools: str) -> list[str]:
-    '''A comma-separated tools string's entries, splitting only on commas
-    outside parentheses, so `Agent(worker, researcher)` stays one entry.'''
+def split_tools(tools: object) -> list[str]:
+    '''A tools value's entries. A YAML list is taken entry by entry; anything
+    else is read as a comma-separated string, split only on commas outside
+    parentheses, so `Agent(worker, researcher)` stays one entry.'''
+    if isinstance(tools, list):
+        return [str(t).strip() for t in tools if str(t).strip()]
+    tools = str(tools)
     entries, depth, start = [], 0, 0
     for i, ch in enumerate(tools):
         if ch == '(':
@@ -182,7 +186,7 @@ def check_agent_file(md: Path) -> list[str]:
             f'{md}: description is {len(desc)} chars (listing budget {DESCRIPTION_CAP})')
     tools = fm.get('tools')
     if tools is not None:
-        unknown = [t for t in split_tools(str(tools)) if not known_agent_tool(t)]
+        unknown = [t for t in split_tools(tools) if not known_agent_tool(t)]
         if unknown:
             errs.append(f'{md}: unknown tools {unknown}')
     return errs

@@ -54,6 +54,39 @@ def test_gemini_agent_adapter_maps_tools_and_inherits_model():
   assert 'Reproduce first' in body
 
 
+def test_canonical_tools_keeps_an_agent_restriction_whole():
+  sync = load_sync_module()
+  assert sync.canonical_tools('Read, Agent(worker, researcher), Bash') == [
+    'Read', 'Agent(worker, researcher)', 'Bash'
+  ]
+  assert sync.canonical_tools(['Read', 'Grep']) == ['Read', 'Grep']
+  assert sync.canonical_tools(None) == []
+
+
+def test_gemini_agent_adapter_drops_claude_only_tools_with_a_note(tmp_path):
+  sync = load_sync_module()
+  source = tmp_path / 'lead.md'
+  source.write_text(
+    '---\nname: lead\ndescription: Leads.\n'
+    'tools: Read, Agent(worker, researcher), mcp__github__search_code\n---\nbody\n'
+  )
+  rendered = sync.render_gemini_agent(source)
+  adapter = tmp_path / 'adapter.md'
+  adapter.write_text(rendered)
+  frontmatter, _ = sync.read_frontmatter(adapter)
+  assert frontmatter['tools'] == ['read_file']
+  assert ('# Claude-only tools dropped (no Gemini mapping): '
+          'Agent(worker, researcher), mcp__github__search_code\n---\n') in rendered
+
+
+def test_gemini_agent_adapter_refuses_an_unknown_tool(tmp_path):
+  sync = load_sync_module()
+  source = tmp_path / 'lead.md'
+  source.write_text('---\nname: lead\ndescription: Leads.\ntools: Read, Bogus\n---\nbody\n')
+  with pytest.raises(ValueError, match="no Gemini mapping for tool 'Bogus'"):
+    sync.render_gemini_agent(source)
+
+
 def test_gemini_command_adapter_passes_arguments():
   data = tomllib.loads((REPO / 'runtimes/gemini/commands/fix-issue.toml').read_text())
   assert data['description'].startswith('Fix a GitHub issue')

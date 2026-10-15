@@ -281,6 +281,50 @@ def test_every_fixture_var_is_carried_by_the_fixture_idata():
     assert proc.returncode == 0, proc.stderr[-2000:]
 
 
+def _fixture_vars_not_carried(fixture):
+    '''The names in fixture.variables that no InferenceData the fixture binds
+    carries, in any group. The preamble's own `idata` counts only where the
+    fixture rebinds it under a new name, so a fixture cannot borrow
+    FIXTURE_VARS' coverage for a variable its own fits lack.'''
+    import json
+    import os
+    import subprocess
+    import sys
+
+    from snippet_preamble import PREAMBLE
+    snapshot = '\n_before = set(globals())\n'
+    check = (
+        '\nimport json, xarray\n'
+        'carried = {name for key, value in list(globals().items())'
+        ' if key not in _before and isinstance(value, xarray.DataTree)'
+        ' for node in value.children.values() for name in node.data_vars}\n'
+        f'print(json.dumps(sorted(set({sorted(fixture.variables)!r}) - carried)))\n')
+    proc = subprocess.run([sys.executable, '-c', PREAMBLE + snapshot + fixture.code + check],
+                          capture_output=True, text=True, timeout=600,
+                          env={**os.environ, 'MPLBACKEND': 'Agg'})
+    assert proc.returncode == 0, proc.stderr[-2000:]
+    return json.loads(proc.stdout.strip().splitlines()[-1])
+
+
+@requires_stack
+@pytest.mark.parametrize('name', sorted(check_snippets.NAMED_FIXTURES))
+def test_every_named_fixture_var_is_carried_by_the_fixtures_idata(name):
+    '''A named fixture's `variables` is its honesty half: each declared name
+    must be carried by an InferenceData the fixture itself binds.'''
+    assert _fixture_vars_not_carried(check_snippets.NAMED_FIXTURES[name]) == []
+
+
+@requires_stack
+def test_the_named_fixture_honesty_check_reports_an_uncarried_var():
+    '''Negative control: the check above would catch a fixture declaring a
+    variable its fits do not carry, and accepts one they do.'''
+    from snippet_preamble import Fixture
+    rebound = 'idata_tiny = idata\n'
+    assert _fixture_vars_not_carried(
+        Fixture(code=rebound, variables=frozenset({'beta', 'not_a_var'}))) == ['not_a_var']
+    assert _fixture_vars_not_carried(Fixture(code='', variables=frozenset({'beta'}))) == ['beta']
+
+
 def _annotated_block(tmp_path, info, code):
     '''A one-block markdown file whose fence info string is `python <info>`.'''
     path = tmp_path / 'block.md'

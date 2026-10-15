@@ -1890,7 +1890,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       skills.
       → done 2026-10-05 (/deferred quick fix): test_all_skills_select_known_fixtures
       added, plus a known-fixture positive control.
-- [ ] Named fixtures have no mechanical honesty pin.
+- [x] Named fixtures have no mechanical honesty pin.
       `test_every_fixture_var_is_carried_by_the_fixture_idata` (`build/test_check_snippets.py`)
       checks `FIXTURE_VARS` only against the preamble's `idata`. There are two gaps, and
       neither is exposed today.
@@ -1907,6 +1907,14 @@ declined as YAGNI (zero instances in a one-page wiki).
       whether `_required_vars` should be judged per idata object.
       Size: quick-fix. Revisit if: a named fixture declares a non-empty `variables`, or a
       `fixture=comparison` block reads a group other than posterior or log_likelihood.
+      → done 2026-10-15 (/deferred quick fix), gap (a): the new
+      `test_every_named_fixture_var_is_carried_by_the_fixtures_idata` is parametrised over
+      `NAMED_FIXTURES` and checks each declared variable against the InferenceData objects the
+      fixture itself binds (the preamble's `idata` counts only when rebound). A negative control
+      shows the check discriminates, and declaring an uncarried variable on `comparison` failed
+      the parametrised case on its assertion (checked, then reverted). Gap (b), judging
+      `_required_vars` per idata object, was not decided here; it is carried below under
+      `deferred-quick-fixes-2026-10-15`.
 - [x] Root `CLAUDE.md`'s snippet-gate notes describe the two exemption markers (`norun`,
       `noparse`) but never mention the `fixture=<name>` fence token that plan 33 added. Nothing
       there is false, because `fixture=` opts nothing out. A maintainer who reads only
@@ -3504,14 +3512,18 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       no `contradicts` row on `hooks/README.md:89` and no changed rep above 2 UNSUPPORTED.
 
 ## deferred-2026-10-15 (no plan; /deferred pass, branch chore/deferred-2026-10-15) — 2026-10-15
-- [ ] `build/check_frontmatter.py`'s `check_agent_file` reads a YAML-list `tools` through
+- [x] `build/check_frontmatter.py`'s `check_agent_file` reads a YAML-list `tools` through
       `str(tools)`, so `tools: [Read, Grep]` is reported as `unknown tools ["['Read'",
       "'Grep']"]` (reproduced 2026-10-15), while `check_conformance.py`'s `tool_list`
       accepts the list form. No agent here uses it. Found in review of this pass's
       `split_tools` fix, which left it out of scope. Size: quick-fix: take a list as is and
       split only a string, with a test that fails without it. Revisit if: an agent adopts
       the list form, or the next edit to `check_agent_file`.
-- [ ] `build/sync_runtime_assets.py`'s `canonical_tools` (line 75) still splits a `tools` string
+      → done 2026-10-15 (/deferred quick fix): `split_tools` now takes a YAML list as is and
+      splits only a string, so all three readers (`check_agent_file`, `check_conformance.py`'s
+      `tool_list`, `sync_runtime_assets.py`'s `canonical_tools`) share it. Red first with
+      `test_agent_tools_accept_a_yaml_list` and its unknown-tool twin.
+- [x] `build/sync_runtime_assets.py`'s `canonical_tools` (line 75) still splits a `tools` string
       on every comma, so an agent the lints now accept with `Agent(worker, researcher)` would
       fail the adapter check with the token `'Agent(worker'`, and the generator has no Gemini
       mapping for `Agent` or `mcp__` names. Latent: no agent uses either form, and
@@ -3519,3 +3531,22 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       reuse `check_frontmatter.split_tools`, and decide how Gemini maps the two forms (map,
       drop with a note, or refuse). Revisit if: an agent adopts `Agent(...)` or an MCP tool,
       or with the YAML-list item above, since one shared helper could serve all three.
+      → done 2026-10-15 (/deferred quick fix): `canonical_tools` reuses `split_tools`, and the
+      Gemini adapter drops `Agent`/`Agent(...)` and `mcp__` names (owner's choice), recording
+      them in a `# Claude-only tools dropped (no Gemini mapping): …` frontmatter comment; any
+      other unmapped tool is still refused. Red first with
+      `test_canonical_tools_keeps_an_agent_restriction_whole` and
+      `test_gemini_agent_adapter_drops_claude_only_tools_with_a_note`; `--check` is unchanged.
+
+## deferred-quick-fixes-2026-10-15 (no plan; /deferred quick fixes, branch chore/deferred-quick-fixes-2026-10-15) — 2026-10-15
+- [ ] `check_snippets.runnable` judges a block's fixture variables by name only, not per idata
+      object: `_required_vars` (`build/check_snippets.py`) collects literal names, and
+      `FIXTURE_VARS | fixture.variables` admits them whichever object they are read from. So a
+      `fixture=comparison` block reading `idata_2.prior["beta"]` is admitted, because `beta` is
+      in `FIXTURE_VARS`, though the comparison fits have no prior group, and would then raise: a
+      loud failure, but a false doc defect. Gap (b) of the named-fixture honesty item (section
+      `33-snippet-per-block-fixtures`), whose gap (a) the 2026-10-15 quick fix closed. Deferred
+      because it is a decision: judging per object means mapping each fixture's names to the
+      objects and groups that carry them. Size: design. Revisit if: a `fixture=comparison`
+      block reads a group other than posterior or log_likelihood, or a named fixture declares
+      a non-empty `variables`.
