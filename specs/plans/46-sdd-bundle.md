@@ -433,7 +433,7 @@ Then run: `~/.cache/agent-skills/handoffs/red/tools/tally.py plan46`. Expected: 
 
 ## Gate result
 
-Run 2026-10-15 in plan 40's kit: `k-46` from `975cb02`, phase `plan46`, original frozen prompts, Claude Code 2.1.300. Scores are in `~/.cache/agent-skills/handoffs/red/scores/plan46/`, and the run is logged in that directory's `changes.log`.
+Run 2026-10-15 in plan 40's kit: `k-46` from `975cb02`, phase `plan46`, original frozen prompts, Claude Code 2.1.300. Scores are in `~/.cache/agent-skills/handoffs/red/scores/plan46/`, and the run is logged in `~/.cache/agent-skills/handoffs/red/changes.log`.
 
 - **`p5a` PASS.** r266-r270 counted, 0 of 5 failing any of F-handoff, F-stamp, F-timing and F-next (bar: at least 4 of 5 passing).
 - **`c5a-neg` PASS.** r271-r275 counted, 0 of 5 failing F-fire (bar: 0 of 5).
@@ -441,9 +441,16 @@ Run 2026-10-15 in plan 40's kit: `k-46` from `975cb02`, phase `plan46`, original
 
 Judgment calls the scorer made, kept here so the verdict can be re-read:
 
-- **F-next is the reading-sensitive call.** It was scored PASS in all five `p5a` reps. Each rep says it did not plan S2b and sends the user to a fresh session that resumes the roadmap through derive-roadmap, which is the behaviour the reworded guard asks for. But all five turn-1 messages also say S2b is, or will be, routed to writing-plans (r266 and r268 attribute the routing to the fresh session or derive-roadmap; r267, r269 and r270 state it in the session's own voice), and r270 adds "S2b needs no brainstorming". Precedent r035 scored FAIL on "The roadmap's next stage is S2b, which is routed to `writing-plans`" with no resume line, and r098, r135 and r163 scored FAIL by sending the user to writing-plans or S2b planning instead of the roadmap resume. The PASS reads a routing remark that sits beside a resume handoff as not naming the next work, per the rubric's carve-out for a consumer citation. A stricter reading counts the remark and flips all five reps, which would fail `p5a`; r270 is the first to flip. Whether that remark is acceptable is the owner's call.
+- **F-next is the reading-sensitive call.** It was scored PASS in all five `p5a` reps. Each rep says it did not plan S2b and sends the user to a fresh session that resumes the roadmap through derive-roadmap, which is the behaviour the reworded guard asks for. But all five turn-1 messages also say S2b is, or will be, routed to writing-plans (r266 and r268 attribute the routing to the fresh session or derive-roadmap; r267, r269 and r270 state it in the session's own voice), and r270 adds "S2b needs no brainstorming". Precedent r035 scored FAIL on "The roadmap's next stage is S2b, which is routed to `writing-plans`" with no resume line, and r098, r135 and r163 scored FAIL by sending the user to writing-plans or S2b planning instead of the roadmap resume. The PASS reads a routing remark that sits beside a resume handoff as not naming the next work, per the rubric's carve-out for a consumer citation. A stricter reading counts the remark and flips all five reps, which would fail `p5a`; r270 is the first to flip.
+  - **Owner ruling (2026-10-15):** "Accept the F-next PASS: a routing remark beside a correct resume handoff is not naming the next work." No frozen file was edited and the scores stand as recorded; the ruling is also in `changes.log`. No REFACTOR round opened.
 - r269 previewed the `/clear` plus derive-roadmap line in its pre-merge turn and gave the actual recommendation after the merge. It was scored as deferred, not early.
 - r267, r268 and r270 do not name the roadmap file in the post-merge message.
+
+What the gate did not cover (D2 set its scope; the whole-plan review raised it):
+
+- No prompt in the kit starts a session from a stage that is already merged, so the new "A stage this session finds already merged when it starts" sentence shipped without a behavioural test. `p5a` merges inside the session and `c5a-neg` is not a roadmap stage.
+- `c5a-ep`, the executing-plans arm, was not rerun, so the executing-plans wording shipped on `p5a`'s evidence alone.
+- The gate ran against the reworded text as committed in `975cb02`. Two readings of that text stay open, and any change to it reopens the gate: executing-plans says "step 3a" without saying it is writing-plans' protocol step, and "the merged branch" can mean the deleted feature branch or the branch it merged into. Both are in the deferred items.
 
 ## Completion notes for the Plan Completion Protocol
 
