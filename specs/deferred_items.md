@@ -2310,11 +2310,16 @@ declined as YAGNI (zero instances in a one-page wiki).
       → done 2026-10-05 (/deferred quick fix): `hook-var-quoted` is in CHECKS with its
       [[check]] entry and red-first tests ($CLAUDE_PROJECT_DIR left to
       hook-dir-quoted).
-- [ ] Add the `managed-only-keys` conformance check (plan 35 audit §6, d19, seat check H#2):
+- [x] Add the `managed-only-keys` conformance check (plan 35 audit §6, d19, seat check H#2):
       `enforceAvailableModels` in non-managed settings (H-51). It needs guide note H-57
       settled first. Size: quick-fix. Blocked until guide note H-57 settles whether the key
       is managed-only. Done when: the check is in `CHECKS` in `build/check_conformance.py`,
       with a `[[check]]` entry in `build/cc_guide/conformance.toml` and red-first tests.
+      → retired 2026-10-15: H-57 settled the premise the other way. The guide's line 428
+      (`lean.model-routing`) now says `enforceAvailableModels` is "honoured in any settings
+      file", so the check would have nothing to flag, and 3c10cb4 (plan 44's live run)
+      removed exception `enforce-available-models-project`. The same line makes
+      `deniedModels` managed-only; a check for that key would be a new item, not this one.
 - [x] Add the `rule-always-on-claim` conformance check (plan 35 audit §6, d20, seat check
       H#3): a path-scoped rule whose text calls itself always-on (H-38). Size: quick-fix.
       Done when: the check is in `CHECKS` in `build/check_conformance.py`, with a
@@ -3331,7 +3336,7 @@ numbers are as of packets `20261013T205255-files` and `20261013T221211-files`, u
 `~/.cache/agent-skills/cc-guide/packets/`. Once an item clears a file's last open
 contradiction, run `/cc-guide files <file>` so the file is cited.
 
-- [ ] The two frontmatter lints split an agent's `tools` string on every comma
+- [x] The two frontmatter lints split an agent's `tools` string on every comma
       (`build/check_conformance.py:324`, `tool_list`; `build/check_frontmatter.py:158`).
       The guide's `Agent(worker, researcher)` entry (`subagents.frontmatter`) then becomes
       two tokens. `check_frontmatter.py` also flags any name outside its eight known tools,
@@ -3340,6 +3345,14 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       commas outside parentheses, `check_frontmatter.py` accepts `Agent(...)` and `mcp__`
       names, each fix has a test that fails without it, and both files' contradictions
       are cleared.
+      → done 2026-10-15 (/deferred quick fix): `split_tools` in `build/check_frontmatter.py`
+      splits on commas outside parentheses, and `check_conformance.py`'s `tool_list` uses it;
+      `known_agent_tool` accepts bare `Agent`, `Agent(...)` and `mcp__` names. Red first: the
+      new `test_tool_list_splits_only_on_commas_outside_parentheses` and the two
+      `test_agent_tools_*` tests failed before the fix. That clears this item's contradiction
+      in both files. Neither file is ready for `/cc-guide files` yet (this section's header):
+      `check_frontmatter.py` still has the key-set item below, and `check_conformance.py` the
+      stop-hook guard design and its not-covered rows.
 - [ ] `build/check_frontmatter.py`'s SKILL.md key set (`ALLOWED_KEYS`, line 28; the unknown-key
       report, lines 107 and 108). It is described as the spec-valid key set but omits the
       Agent Skills field `compatibility`, a plain bug. It also rejects two Claude Code fields
@@ -3353,19 +3366,31 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       → Note: the gap `side-effecting-skills-ungated` (deferred item above, "Gate or make
       manual-only the four ungated side-effecting skills") needs `disable-model-invocation`
       to pass this lint if that item makes a skill manual-only.
-- [ ] Two `hook-scripts-executable` messages leave out the condition on failing open
+      → progress 2026-10-15 (/deferred quick fix, the `compatibility` half): `ALLOWED_KEYS`
+      accepts `compatibility`, red first with `test_compatibility_key_allowed`, and
+      writing-skills' line 104 lists it so its "Any other key fails" stays true. The item
+      stays open for the owner's call on `agent` and `disable-model-invocation`.
+- [x] Two `hook-scripts-executable` messages leave out the condition on failing open
       (`build/check_conformance.py:1023`, `:1028`). They say a non-executable hook script
       "fails open", but since 2.1.295 a hook that sets `"onFailure": "block"` blocks instead
       (`hooks.pitfalls`). `build/test_check_conformance.py:1726` and `:1739` assert both
       messages verbatim, so the change touches both files. Size: quick-fix. Done when: both
       messages say the hook fails open by default (unless it sets `onFailure: block`), and
       the tests assert the new wording.
-- [ ] `unquoted_operators` (`build/check_conformance.py`, about line 1100) does not detect a
+      → done 2026-10-15 (/deferred quick fix): both messages now say the hook fails open by
+      default and that one setting `"onFailure": "block"` blocks instead; the two tests were
+      changed to the new wording first and failed against the old messages.
+- [x] `unquoted_operators` (`build/check_conformance.py`, about line 1100) does not detect a
       newline, although the guide (`rules.settings`) lists newlines among the separators
       that an allow rule must match on every side. The docstring now says so; the
       `allow-rule-compound-operators` check stays blind to a multi-line rule. Size:
       quick-fix. Done when: an unquoted newline in a `Bash(...)` rule is reported, with a
       test, and the docstring's caveat is gone.
+      → done 2026-10-15 (/deferred quick fix): an unquoted newline is reported as `newline`,
+      and the finding prints the rule with `\n` escaped. A quoted newline or a
+      backslash-newline continuation passes. Red first: the new parametrize case and
+      `test_allow_rule_compound_operators_flag_an_unquoted_newline` failed before the fix, and
+      the docstring's caveat is gone.
 - [ ] Stop-hook guard design (`build/cc_guide/conformance.toml:165`, check `stop-hook-guard`;
       `build/check_conformance.py:534`). The rule and the check flag a Stop hook script that
       never reads `stop_hook_active`. The guide accepts checking the transcript instead
@@ -3473,3 +3498,12 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       Done when: a revised files rule carries that scope with a test in
       `build/cc_guide/test_skill_files.py`, and a scored cheap batch on the readme packet keeps
       no `contradicts` row on `hooks/README.md:89` and no changed rep above 2 UNSUPPORTED.
+
+## deferred-2026-10-15 (no plan; /deferred pass, branch chore/deferred-2026-10-15) — 2026-10-15
+- [ ] `build/check_frontmatter.py`'s `check_agent_file` reads a YAML-list `tools` through
+      `str(tools)`, so `tools: [Read, Grep]` is reported as `unknown tools ["['Read'",
+      "'Grep']"]` (reproduced 2026-10-15), while `check_conformance.py`'s `tool_list`
+      accepts the list form. No agent here uses it. Found in review of this pass's
+      `split_tools` fix, which left it out of scope. Size: quick-fix: take a list as is and
+      split only a string, with a test that fails without it. Revisit if: an agent adopts
+      the list form, or the next edit to `check_agent_file`.
