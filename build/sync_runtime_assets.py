@@ -19,6 +19,8 @@ from pathlib import Path
 
 import yaml
 
+from check_frontmatter import AGENT_RESTRICTION_RE, MCP_TOOL_PREFIX, split_tools
+
 
 REPO = Path(__file__).resolve().parent.parent
 CANONICAL_AGENTS = REPO / 'agents'
@@ -70,9 +72,13 @@ def portable_description(description: str) -> str:
 def canonical_tools(value: object) -> list[str]:
   if value is None:
     return []
-  if isinstance(value, list):
-    return [str(item) for item in value]
-  return [item.strip() for item in str(value).split(',') if item.strip()]
+  return split_tools(value)
+
+
+def claude_only_tool(tool: str) -> bool:
+  '''Agent and MCP tools have no Gemini equivalent here: Gemini names MCP
+  tools by its own configured servers and has no Agent restriction form.'''
+  return tool.startswith(MCP_TOOL_PREFIX) or AGENT_RESTRICTION_RE.fullmatch(tool) is not None
 
 
 def render_codex_agent(path: Path) -> str:
@@ -92,8 +98,11 @@ def render_codex_agent(path: Path) -> str:
 
 def render_gemini_agent(path: Path) -> str:
   frontmatter, body = read_frontmatter(path)
-  tools = []
+  tools, dropped = [], []
   for tool in canonical_tools(frontmatter.get('tools')):
+    if claude_only_tool(tool):
+      dropped.append(tool)
+      continue
     try:
       tools.append(TOOL_MAP[tool])
     except KeyError as exc:
@@ -110,6 +119,8 @@ def render_gemini_agent(path: Path) -> str:
     allow_unicode=True,
     width=1000,
   ).rstrip()
+  if dropped:
+    yaml_text += f'\n# Claude-only tools dropped (no Gemini mapping): {", ".join(dropped)}'
   return f'---\n{yaml_text}\n---\n\n{body}'
 
 

@@ -117,6 +117,18 @@ def test_agent_tools_accept_agent_restrictions_and_mcp_tools(tmp_path):
     assert check_agent_file(md) == []
 
 
+def test_agent_tools_accept_a_yaml_list(tmp_path):
+    md = tmp_path / 'lead.md'
+    md.write_text('---\nname: lead\ndescription: Leads.\ntools: [Read, Grep]\n---\nbody\n')
+    assert check_agent_file(md) == []
+
+
+def test_agent_tools_in_a_yaml_list_still_flag_an_unknown_tool(tmp_path):
+    md = tmp_path / 'lead.md'
+    md.write_text('---\nname: lead\ndescription: Leads.\ntools: [Read, Bogus]\n---\nbody\n')
+    assert check_agent_file(md) == [f"{md}: unknown tools ['Bogus']"]
+
+
 def test_agent_tools_still_flag_an_unknown_tool_beside_an_agent_restriction(tmp_path):
     md = tmp_path / 'lead.md'
     md.write_text('---\nname: lead\ndescription: Leads.\ntools: Agent(worker, researcher), Bogus\n---\nbody\n')
