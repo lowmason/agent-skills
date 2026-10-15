@@ -1,5 +1,7 @@
 # SDD Bundle Implementation Plan
 
+**Status: COMPLETE (2026-10-15)** — executed via executing-plans; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Move the critical sections of `subagent-driven-development` and `bayesian-workflow` inside the 5,000-token compaction window. Reword the roadmap-stage guard in three skills. Bring `subagent-driven-development/SKILL.md` under 490 lines. Verify the reworded guard with a `p5a` + `c5a-neg` run.
@@ -47,7 +49,9 @@
 - Consumes: `cc.check_compaction_window(root, files, params)`, `cc.load_register(root)`, `cc.skill_body(text) -> (body, frontmatter_line_count)`, all in `build/check_conformance.py`.
 - Produces: `CRITICAL_SPANS` (dict, file → list of start markers) and the two parametrised tests. Task 2 makes the SDD cases pass.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
+
+> Deviation: the tests use `cc.REPO`, as this file's other real-repo tests do, instead of a new `REPO` and a `pathlib` import, and sit after the last compaction-window test (line 1117), since line 1110 is inside a test.
 
 Append to `build/test_check_conformance.py`. Add `from pathlib import Path` to the imports if it is absent.
 
@@ -90,7 +94,9 @@ def test_real_skill_critical_spans_end_inside_the_compaction_window(skill):
         assert end <= window, f'{marker!r} ends at {end}, past {window}'
 ```
 
-- [ ] **Step 2: Run them to verify they fail for the right reason**
+- [x] **Step 2: Run them to verify they fail for the right reason**
+
+> Deviation: the span offsets were 22,180 and 29,430, one less than the 22,181 and 29,431 predicted, because the plan counted where the next heading starts; the failure reasons otherwise matched.
 
 Run: `cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q -rf test_check_conformance.py -k 'real_skill'`
 
@@ -100,7 +106,7 @@ Expected: 4 failed.
 
 Read each failure message. Confirm it names the marker and, for the span tests, an offset over 20000. A failure for any other reason, such as a `KeyError` from the register, means the test is wrong: fix the test, not the skill.
 
-- [ ] **Step 3: Reorder bayesian-workflow**
+- [x] **Step 3: Reorder bayesian-workflow**
 
 Cut each whole section (heading through the line before the next `## ` heading, including its trailing blank line) and paste it so the H2 order becomes:
 
@@ -119,7 +125,9 @@ Leave the frontmatter and the `# Bayesian Workflow` title untouched. Do not edit
 
 Expected offsets afterwards: Critical rules starts near 4,372, and Common gotchas ends near 16,373.
 
-- [ ] **Step 4: Check that the move changed no wording**
+- [x] **Step 4: Check that the move changed no wording**
+
+> Deviation: the moved `np` comment now preceded the import and was reported; the owner approved rewording it in the review (`728cba5`).
 
 Run: `diff <(git show HEAD:skills/bayesian-workflow/SKILL.md | sort) <(sort skills/bayesian-workflow/SKILL.md)`
 
@@ -127,7 +135,7 @@ Expected: no output. Section moves keep every line, blank lines included.
 
 Then read the moved Critical rules code block ("After fitting the model, predict for new predictors"). It now precedes the model template, and its comment says ``# `np` imported at the top of this workflow``. If that comment now misleads a reader, do not reword it in this commit. Report it to the controller, and the controller asks the owner.
 
-- [ ] **Step 5: Run the bayesian tests and the snippet gate**
+- [x] **Step 5: Run the bayesian tests and the snippet gate**
 
 Run: `cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q -rf test_check_conformance.py -k 'real_skill'`. Expected: the 2 bayesian cases pass, and the 2 SDD cases still fail.
 
@@ -135,7 +143,7 @@ Run: `uv run --python 3.13 python build/check_snippets.py skills/` (Tier 1). Exp
 
 Run: `uv run --python 3.13 --with "arviz>=1.0" --with arviz-base --with arviz-stats --with arviz-plots --with numpyro --with jax python build/check_snippets.py --api skills/bayesian-workflow/` (Tier 2). Expected: exit 0.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add build/test_check_conformance.py skills/bayesian-workflow/SKILL.md
@@ -160,7 +168,9 @@ The pre-commit hook runs the commit lints. The new SDD failures are pytest failu
 - Consumes: Task 1's `test_real_skill_*` tests (the SDD cases are currently red).
 - Produces: SDD body with the H2 order below; `wc -l` < 490.
 
-- [ ] **Step 1: Move the "When to Use" digraph and bullets into advantages.md**
+- [x] **Step 1: Move the "When to Use" digraph and bullets into advantages.md**
+
+> Deviation: the move left `advantages.md` with one H2 and an intro that pointed back at the section now linking to it, so the owner approved a `## Trade-offs` heading and an intro reword in the review (`927f4fc`).
 
 In `skills/subagent-driven-development/SKILL.md`, cut lines 27-50: the ```` ```dot ```` block `digraph when_to_use`, the blank line after it, the `**Why same-session (vs. a separate parallel session):**` line, its four bullets and the blank line after them. That leaves `## When to Use` (line 25) and its blank line 26, followed directly by `## The Process`. After line 26, insert these four lines and a blank line:
 
@@ -174,7 +184,7 @@ manual execution or a separate session:
 
 In `skills/subagent-driven-development/references/advantages.md`, insert the cut digraph block, verbatim, directly after the intro paragraph (the one ending "not procedure for running it."), under a new heading `## When to use`. The four "Why same-session" bullets are already covered by the file's **vs. Executing Plans** list, so drop them rather than duplicate them. The one bullet with no counterpart there, "Review after each task (spec compliance + code quality), broad review at the end", is covered by **Quality gates**.
 
-- [ ] **Step 2: Commit the move**
+- [x] **Step 2: Commit the move**
 
 Run: `wc -l skills/subagent-driven-development/SKILL.md`. Expected: 501 − 24 + 5 = 482.
 
@@ -185,7 +195,7 @@ git commit -m "refactor(subagent-driven-development): move the When to Use graph
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
-- [ ] **Step 3: Reorder sections**
+- [x] **Step 3: Reorder sections**
 
 Make the H2 order:
 
@@ -203,7 +213,7 @@ Make the H2 order:
 
 The order of the remaining sections is unchanged.
 
-- [ ] **Step 4: Prove the reorder is a pure move, then run the tests**
+- [x] **Step 4: Prove the reorder is a pure move, then run the tests**
 
 Run: `diff <(git show HEAD:skills/subagent-driven-development/SKILL.md | sort) <(sort skills/subagent-driven-development/SKILL.md)`. Expected: no output.
 
@@ -211,7 +221,9 @@ Run: `cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pyt
 
 If the SDD span test still fails on `**A roadmap stage**`, stop and report the offset. Do not trim wording to make it fit.
 
-- [ ] **Step 5: Narrow the exception**
+- [x] **Step 5: Narrow the exception**
+
+> Deviation: the `reason` text differs from the plan's, because `apply_waivers` waives per check and file and no commit lint runs the placement tests; the review changed it (`13a2ec8`).
 
 In `build/cc_guide/conformance.toml`, replace:
 
@@ -233,7 +245,9 @@ Also change `id = 'critical-rules-past-compaction'` to `id = 'skill-body-past-co
 
 Run: `uv run --python 3.13 --with pyyaml python build/check_conformance.py`. Expected: exit 0.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
+
+> Deviation: the whole-plan review also led to commits outside the plan's steps: NOTICE now records the dropped bullets and the digraph move (`4333471`), and two `build/` comments that cited moved lines now cite sections (`13a2ec8`).
 
 ```bash
 git add skills/subagent-driven-development/SKILL.md build/cc_guide/conformance.toml
@@ -264,7 +278,7 @@ The fix has three parts:
 - Say so explicitly.
 - Cover a session that finds the stage already merged. Scope that clause to what the session finds **when it starts**, so a prompt saying "just merge it" can never be read as permission to merge before the protocol.
 
-- [ ] **Step 1: writing-plans**
+- [x] **Step 1: writing-plans**
 
 Replace:
 
@@ -289,7 +303,7 @@ session finds already merged when it starts, with the protocol not yet run,
 runs the protocol on the merged branch now.
 ```
 
-- [ ] **Step 2: subagent-driven-development**
+- [x] **Step 2: subagent-driven-development**
 
 Replace:
 
@@ -309,7 +323,7 @@ model-tier claim. A stage this session finds already merged when it starts,
 with the protocol not yet run, runs the protocol on the merged branch now.
 ```
 
-- [ ] **Step 3: executing-plans**
+- [x] **Step 3: executing-plans**
 
 Replace:
 
@@ -328,7 +342,7 @@ session finds already merged when it starts, with the protocol not yet run,
 runs the protocol on the merged branch now.
 ```
 
-- [ ] **Step 4: Verify placement, line count and lints**
+- [x] **Step 4: Verify placement, line count and lints**
 
 Run: `cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q -rf test_check_conformance.py -k 'real_skill'`. Expected: 4 passed.
 
@@ -338,7 +352,7 @@ Run: `bash build/run_commit_lints.sh`. Expected: `commit lints passed`.
 
 Run: `cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_runtime_support.py -k declared_dependencies`. Expected: passes. No cross-skill reference was added.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/writing-plans/SKILL.md skills/subagent-driven-development/SKILL.md skills/executing-plans/SKILL.md
@@ -363,7 +377,7 @@ This task is run by the controller and the owner, not an implementer subagent. P
 - Each arm gets at most 10 dispatches. An arm left with fewer than 5 valid reps is UNSETTLED, and the owner decides.
 - The prompts are the original frozen ones (`p5a.t1.txt`, `c5a-neg.t1.txt`, `c5a.t2-merge.txt`), unchanged, so the results compare with the k-cr2 runs.
 
-- [ ] **Step 1: Build the kit from the final commit**
+- [x] **Step 1: Build the kit from the final commit**
 
 `build_kit.sh` reads `$MAIN/.claude/worktrees/plan-40-handoff-briefs`, which no longer exists. Recreate that path as a detached worktree, so no frozen tool is edited:
 
@@ -375,7 +389,7 @@ git -C /Users/lowell/Projects/agent-skills worktree add --detach .claude/worktre
 
 Expected: `kit k-46 from <K>: 12 skills`.
 
-- [ ] **Step 2: Log the run before any rep runs**
+- [x] **Step 2: Log the run before any rep runs**
 
 Append to `$CTL/changes.log`:
 
@@ -385,7 +399,7 @@ Append to `$CTL/changes.log`:
 
 Then run `git -C /Users/lowell/Projects/agent-skills worktree remove .claude/worktrees/plan-40-handoff-briefs`.
 
-- [ ] **Step 3: Register the reps**
+- [x] **Step 3: Register the reps**
 
 ```bash
 ~/.cache/agent-skills/handoffs/red/tools/make_reps.py p5a plan46 k-46 5 plan46
@@ -394,7 +408,9 @@ Then run `git -C /Users/lowell/Projects/agent-skills worktree remove .claude/wor
 
 Expected: 10 new rows in `$CTL/registry.tsv`, and 10 rep ids in `$CTL/batches/plan46.txt`.
 
-- [ ] **Step 4: Owner launches the batch (stop here)**
+- [x] **Step 4: Owner launches the batch (stop here)**
+
+> Deviation: the launch command was given as an env prefix, `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=3600000 .../run_batch.sh -j 2 plan46`, in place of a separate `export`; the environment the reps inherit is the same.
 
 `run_rep.sh` refuses to run while `CLAUDECODE` is set, so the owner runs this from a plain terminal outside Claude Code. The app's Terminal panel will not work. The ceiling variable keeps `claude -p` from killing background subagents 10 minutes after the main turn. `run_rep.sh` runs `env PATH=… claude`, which passes it through.
 
@@ -405,7 +421,7 @@ export CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=3600000
 
 The controller ends its turn here and resumes when the owner reports that the batch finished.
 
-- [ ] **Step 5: Audit, and replace voids**
+- [x] **Step 5: Audit, and replace voids**
 
 Run: `~/.cache/agent-skills/handoffs/red/tools/extract.py plan46`.
 
@@ -416,7 +432,7 @@ For each arm with fewer than 5 valid reps:
 
 Stop at 10 dispatched per arm. Expect some voids on `~/.claude/skills` reads: p5a had them at k-cr2.
 
-- [ ] **Step 6: Score and tally**
+- [x] **Step 6: Score and tally**
 
 For each arm, dispatch one scorer subagent with model `sonnet` (the protocol's standard tier) and the prompt below. Fill in `<arm>`, `<section>` and the extract paths, and send nothing else:
 
@@ -426,7 +442,7 @@ Score the valid extracts below against $CTL/rubric.md, section "<section>" (for 
 
 Then run: `~/.cache/agent-skills/handoffs/red/tools/tally.py plan46`. Expected: the counts and verdicts per arm. Any line whose quote does not appear in its extract is rejected; dispatch a rescore for it.
 
-- [ ] **Step 7: Decide**
+- [x] **Step 7: Decide**
 
 - **Both arms pass:** append the verdicts and the tally line to `$CTL/changes.log`, and record them in this plan under `## Gate result`.
 - **Either arm fails or is UNSETTLED:** stop and present the failing reps' quotes to the owner as one question. Offer REFACTOR (revise the Task 3 text, commit, build kit `k-46r<N>`, then rerun the failing arm and its counterpart; at most 3 rounds), shipping as is, or reverting Task 3. Do not REFACTOR without the owner's answer.
