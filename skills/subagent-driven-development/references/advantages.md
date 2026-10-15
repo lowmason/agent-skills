@@ -1,6 +1,6 @@
 # Advantages and cost
 
-What this skill buys against the two alternatives SKILL.md § When to Use
+What this skill buys against the two alternatives that § When to use, below,
 weighs — manual execution and a separate parallel session — and what it costs.
 Rationale for choosing the skill, not procedure for running it.
 
@@ -23,6 +23,8 @@ digraph when_to_use {
     "Stay in this session?" -> "Separate parallel session" [label="no"];
 }
 ```
+
+## Trade-offs
 
 **vs. Manual execution:**
 - Subagents follow TDD naturally
