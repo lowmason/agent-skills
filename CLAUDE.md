@@ -147,7 +147,8 @@ cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q
 
 # Critical-section placement: compaction-window exceptions waive per file, heading findings included, so these tests
 # pin the critical sections of two skills (CRITICAL_SPANS) and the late headings the owner accepted in writing-skills
-# (ACKNOWLEDGED_LATE), both in test_check_conformance.py
+# (ACKNOWLEDGED_LATE), both in test_check_conformance.py. Removing an exception removes its files' rows; when the last
+# compaction-window exception goes, retire this lint and these tests with it
 cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_conformance.py -k test_real_skill
 
 # Snippet gate: three tiers, cheapest first, each including those above. Tier 1 covers all of skills/; Tiers 2 and 3

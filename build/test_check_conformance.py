@@ -1123,7 +1123,9 @@ def test_compaction_window_ignores_headings_when_the_body_fits(tmp_path):
 # compaction-window per file, heading findings included, so the
 # critical_placement commit lint (build/run_commit_lints.sh) runs the
 # test_real_skill_* tests below to pin the placement: these spans, and the
-# accepted late headings in ACKNOWLEDGED_LATE.
+# accepted late headings in ACKNOWLEDGED_LATE. Removing an exception removes
+# its files' rows from both tables; when the last compaction-window exception
+# goes, retire the lint and the test_real_skill_* tests with it.
 CRITICAL_SPANS = {
     'skills/subagent-driven-development/SKILL.md': ['## Red Flags', '**A roadmap stage**'],
     'skills/bayesian-workflow/SKILL.md': ['## Critical rules', '## Common gotchas'],
@@ -1151,11 +1153,14 @@ def test_real_skill_spans_match_the_compaction_waiver():
     waived = sorted({a for e in exceptions if e.get('check') == 'compaction-window' for a in e.get('artifacts', [])})
     assert waived, ('no compaction-window exception remains: retire the critical_placement commit lint, '
                     'CRITICAL_SPANS, ACKNOWLEDGED_LATE and the test_real_skill_* tests with it')
-    assert not set(CRITICAL_SPANS) & set(ACKNOWLEDGED_LATE), 'a file is in both CRITICAL_SPANS and ACKNOWLEDGED_LATE'
-    guarded = sorted([*CRITICAL_SPANS, *ACKNOWLEDGED_LATE])
-    assert waived == guarded, (f'compaction-window exceptions waive {waived}, but the placement tests guard {guarded}: '
-                               'add each missing file to CRITICAL_SPANS or ACKNOWLEDGED_LATE, and remove a row '
-                               'whose exception is gone')
+    both = sorted(set(CRITICAL_SPANS) & set(ACKNOWLEDGED_LATE))
+    assert not both, f'{both} in both CRITICAL_SPANS and ACKNOWLEDGED_LATE: a file belongs in one table'
+    guarded = {*CRITICAL_SPANS, *ACKNOWLEDGED_LATE}
+    unguarded, orphaned = sorted(set(waived) - guarded), sorted(guarded - set(waived))
+    assert not unguarded, (f'{unguarded} waived by a compaction-window exception but in neither CRITICAL_SPANS '
+                           'nor ACKNOWLEDGED_LATE: add a row')
+    assert not orphaned, (f'{orphaned} in CRITICAL_SPANS or ACKNOWLEDGED_LATE but waived by no compaction-window '
+                          'exception: remove the row')
 
 
 @pytest.mark.parametrize('skill', sorted(CRITICAL_SPANS))
@@ -1190,7 +1195,8 @@ def test_real_skill_late_headings_match_the_acknowledged_set(skill):
     late, acknowledged = _late_headings(skill), sorted(ACKNOWLEDGED_LATE[skill])
     assert late == acknowledged, (f'{skill} has late critical headings {late}, but ACKNOWLEDGED_LATE lists '
                                   f'{acknowledged}: a new late heading belongs inside the compaction window; '
-                                  'a heading that is gone comes off the list, and the exception goes once none remain')
+                                  'a heading that is gone comes off the list, and the row and its exception '
+                                  'go once the body fits the window')
 
 
 PERSON_PARAMS = {'pronouns': ['i', 'we', 'you', 'your']}
