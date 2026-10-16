@@ -182,6 +182,20 @@ def test_late_critical_section_is_refused(clone):
             'compaction_window[skills/subagent-driven-development/SKILL.md]') in result.stderr, result.stderr
 
 
+def test_late_heading_in_acknowledged_file_is_refused(clone):
+    '''The writing-skills waiver is per file, so check_conformance alone passes a new
+    critical heading past the compaction window; the placement tests catch it.'''
+    skill = clone / 'skills' / 'writing-skills' / 'SKILL.md'
+    skill.write_text(skill.read_text() + '\n## Warning\n\nA late critical heading.\n')
+    before = head(clone)
+    result = commit(clone, '-am', 'late warning')
+    assert result.returncode != 0, result.stderr
+    assert head(clone) == before
+    assert failed_names(result) == {'critical_placement'}, result.stderr
+    assert ('FAILED test_check_conformance.py::test_real_skill_late_headings_match_the_acknowledged_set'
+            '[skills/writing-skills/SKILL.md]') in result.stderr, result.stderr
+
+
 def test_hook_fails_open_without_uv(clone, tmp_path):
     env = clean_env(PATH=restricted_path(tmp_path))
     before = head(clone)
