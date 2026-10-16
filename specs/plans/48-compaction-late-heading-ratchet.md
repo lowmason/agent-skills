@@ -1,5 +1,7 @@
 # Late-Heading Ratchet Implementation Plan
 
+**Status: COMPLETE (2026-10-16)** — executed via executing-plans; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Close the hole where exception `writing-skills-late-critical-headings` hides a new critical heading that starts past the compaction window in `skills/writing-skills/SKILL.md`. The existing `critical_placement` commit lint will also run a test that pins the two accepted late headings by text, and the coupling test will cover every `compaction-window` exception.
@@ -44,7 +46,7 @@ None.
 - Consumes: the `clone` fixture, `head(repo)`, `commit(repo, *args)` and `failed_names(result) -> set[str]` in `build/test_commit_lints.py`. `_window_params()`, `cc.check_compaction_window(root, files, params)` and the already-imported `ast` in `build/test_check_conformance.py`. The check's message form `line N: heading '<text>' starts past the first 5000 tokens, so compaction drops it`.
 - Produces: `ACKNOWLEDGED_LATE` (dict, file to a list of heading texts), `_late_headings(skill) -> list[str]` (the sorted late heading texts of a skill), and `test_real_skill_late_headings_match_the_acknowledged_set(skill)`, which the existing `-k test_real_skill` selection picks up by name. Task 2 consumes `ACKNOWLEDGED_LATE`.
 
-- [ ] **Step 1: Record the baselines**
+- [x] **Step 1: Record the baselines**
 
 Run each and write the counts down; later steps are checked against them.
 
@@ -52,7 +54,7 @@ Run each and write the counts down; later steps are checked against them.
 - `uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_conformance.py`: the planning session saw `362 passed`.
 - `uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_conformance.py -k test_real_skill`: the planning session saw `5 passed, 357 deselected`.
 
-- [ ] **Step 2: Write the failing end-to-end test**
+- [x] **Step 2: Write the failing end-to-end test**
 
 In `build/test_commit_lints.py`, insert this test after `test_late_critical_section_is_refused` and before `def test_hook_fails_open_without_uv(clone, tmp_path):`, with two blank lines on each side:
 
@@ -71,13 +73,13 @@ def test_late_heading_in_acknowledged_file_is_refused(clone):
             '[skills/writing-skills/SKILL.md]') in result.stderr, result.stderr
 ```
 
-- [ ] **Step 3: Run it to verify it fails for the right reason**
+- [x] **Step 3: Run it to verify it fails for the right reason**
 
 Run: `uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_commit_lints.py -k late_heading_in_acknowledged`
 
 Expected: `1 failed, 13 deselected`. The test fails at `assert result.returncode != 0`, showing `assert 0 != 0`, and the captured stderr ends with `5 passed, 357 deselected` under `== critical_placement` and then `commit lints passed`. The commit succeeded: that is the hole. If it fails at any other line, stop. The RED is not demonstrating the hole, so find out why before going on.
 
-- [ ] **Step 4: Add the table, the helper and the equality test**
+- [x] **Step 4: Add the table, the helper and the equality test**
 
 In `build/test_check_conformance.py`, insert this after the `CRITICAL_SPANS` dict and before `def _window_params():`, with one blank line above it and two below:
 
@@ -108,13 +110,15 @@ def test_real_skill_late_headings_match_the_acknowledged_set(skill):
                                   'a heading that is gone comes off the list, and the exception goes once none remain')
 ```
 
-- [ ] **Step 5: Run the placement selection**
+> Deviation: after the whole-plan review (`ad4c5d7`), the equality message ends "and the row and its exception go once the body fits the window". The exception also waives the length finding, so an emptied list does not free it; spec R2's wording ("removing the exception once no row remains") is not followed there.
+
+- [x] **Step 5: Run the placement selection**
 
 Run: `uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_conformance.py -k test_real_skill`
 
 Expected: `6 passed, 357 deselected`: +1 relative to Step 1. The test guards a state that is already correct, so it passes at once. Steps 6 to 8 give it real REDs.
 
-- [ ] **Step 6: Mutation RED, a new late heading**
+- [x] **Step 6: Mutation RED, a new late heading**
 
 In `skills/writing-skills/SKILL.md`, temporarily append this after the last line (a blank line, then the heading and one body line):
 
@@ -126,7 +130,7 @@ Late.
 
 Run the Step 5 command. Expected: `1 failed, 5 passed, 357 deselected`. `test_real_skill_late_headings_match_the_acknowledged_set[skills/writing-skills/SKILL.md]` fails with `late critical headings ['## STOP: Before Moving to Next Skill', '## Warning', '### Create Red Flags List']`, against the two acknowledged ones. Restore with `git checkout -- skills/writing-skills/SKILL.md`, then run `git diff --quiet skills/writing-skills/SKILL.md` and expect exit 0.
 
-- [ ] **Step 7: Mutation RED, a row removed**
+- [x] **Step 7: Mutation RED, a row removed**
 
 In `build/test_check_conformance.py`, temporarily change the `ACKNOWLEDGED_LATE` row to drop its second heading:
 
@@ -136,7 +140,7 @@ In `build/test_check_conformance.py`, temporarily change the `ACKNOWLEDGED_LATE`
 
 Run the Step 5 command. Expected: `1 failed, 5 passed`. The equality test fails with the late headings `['## STOP: Before Moving to Next Skill', '### Create Red Flags List']` against `['### Create Red Flags List']`. Restore the row exactly as Step 4 wrote it.
 
-- [ ] **Step 8: Mutation RED, a row for a heading that is gone**
+- [x] **Step 8: Mutation RED, a row for a heading that is gone**
 
 In the same row, temporarily add a heading the file does not have:
 
@@ -146,7 +150,7 @@ In the same row, temporarily add a heading the file does not have:
 
 Run the Step 5 command. Expected: `1 failed, 5 passed`, with `'## Gone'` among the acknowledged headings in the message. This proves the test is an equality, not a subset check. Restore the row exactly as Step 4 wrote it, then run `git diff build/test_check_conformance.py` and confirm it shows only the table, `_late_headings` and the new test.
 
-- [ ] **Step 9: Commit the ratchet**
+- [x] **Step 9: Commit the ratchet**
 
 Run `bash build/run_commit_lints.sh`: exit 0, last line `commit lints passed`, and under `== critical_placement` the line `6 passed, 357 deselected`. Then:
 
@@ -157,7 +161,7 @@ git commit -m "test(conformance): ratchet the accepted late headings in writing-
 
 Before running it, append one more `-m` argument to that `git commit`: the executing session's own `Co-Authored-By:` line, as Global Constraints says. This commit comes before the end-to-end test is committed because the `clone` fixture reads `HEAD`.
 
-- [ ] **Step 10: Run the end-to-end test and time the suite**
+- [x] **Step 10: Run the end-to-end test and time the suite**
 
 Run: `uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_commit_lints.py -k late_heading_in_acknowledged`
 
@@ -165,7 +169,7 @@ Expected: `1 passed, 13 deselected`. The commit is now refused with only `critic
 
 Then run the whole file twice and note the second run's time (the first can be slow on a cold uv cache; the planning session saw 22.79 s then 15.15 s): `uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_commit_lints.py`. Expected: `14 passed` both times, +1 relative to Step 1. Round the second run's seconds to the nearest 5. The docs say "about 15": if your figure is 15, edit nothing. Otherwise replace `about 15 s warm` in `CLAUDE.md` (line 134) and `about 15 seconds` in the module docstring of `build/test_commit_lints.py` (line 10) with your figure, and add both files to Step 11's commit.
 
-- [ ] **Step 11: Verify and commit the end-to-end test**
+- [x] **Step 11: Verify and commit the end-to-end test**
 
 Run `bash build/run_commit_lints.sh` (exit 0, `commit lints passed`). Then:
 
@@ -190,11 +194,11 @@ Before running it, append the executing session's own `Co-Authored-By:` line as 
 - Consumes: `CRITICAL_SPANS`, `ACKNOWLEDGED_LATE` (Task 1) and `cc.load_register(root) -> dict` in `build/test_check_conformance.py`. Task 1's `-k test_real_skill` selection.
 - Produces: `test_real_skill_spans_match_the_compaction_waiver`, keeping its name, now comparing all `compaction-window` exceptions to both tables. No new test names, so the lint's selection count stays at 6.
 
-- [ ] **Step 1: Record the baselines**
+- [x] **Step 1: Record the baselines**
 
 After Task 1: `-k test_real_skill` selects `6 passed, 357 deselected`; `test_check_conformance.py` runs `363 passed`; `test_commit_lints.py` runs `14 passed`. Task 2 changes none of these counts.
 
-- [ ] **Step 2: Replace the coupling test**
+- [x] **Step 2: Replace the coupling test**
 
 In `build/test_check_conformance.py`, replace:
 
@@ -228,13 +232,15 @@ def test_real_skill_spans_match_the_compaction_waiver():
                                'whose exception is gone')
 ```
 
-- [ ] **Step 3: Run it on the real files**
+> Deviation: after the whole-plan review (`ad4c5d7`), the coupling test's messages name the file and the side that lacks it, as spec R4 requires: `both`, `unguarded` and `orphaned` replace the single `waived == guarded` comparison. The failures it covers are unchanged, and Steps 4 and 5 were re-run against the new messages, plus a deleted-row mutation for `unguarded`.
+
+- [x] **Step 3: Run it on the real files**
 
 Run: `uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_conformance.py -k test_real_skill`
 
 Expected: `6 passed, 357 deselected`. The test guards a state that is already correct, so it passes at once. Steps 4 to 6 give it real REDs.
 
-- [ ] **Step 4: Mutation RED, a file nothing waives**
+- [x] **Step 4: Mutation RED, a file nothing waives**
 
 In `build/test_check_conformance.py`, temporarily add a row to `ACKNOWLEDGED_LATE` for a skill that fits the window (an empty list, so the equality test still passes for it):
 
@@ -244,7 +250,7 @@ In `build/test_check_conformance.py`, temporarily add a row to `ACKNOWLEDGED_LAT
 
 Run the Step 3 command. Expected: `1 failed, 6 passed, 357 deselected`. Only `test_real_skill_spans_match_the_compaction_waiver` fails, and its message lists `skills/brainstorming/SKILL.md` among the files the tests guard but no exception waives. Remove the row exactly.
 
-- [ ] **Step 5: Mutation RED, a file in both tables**
+- [x] **Step 5: Mutation RED, a file in both tables**
 
 Temporarily add this row to `ACKNOWLEDGED_LATE`:
 
@@ -254,11 +260,11 @@ Temporarily add this row to `ACKNOWLEDGED_LATE`:
 
 Run the Step 3 command. Expected: `1 failed, 6 passed`. The coupling test fails with `a file is in both CRITICAL_SPANS and ACKNOWLEDGED_LATE`. Remove the row exactly.
 
-- [ ] **Step 6: Mutation RED, no exception left**
+- [x] **Step 6: Mutation RED, no exception left**
 
 Confirm `git diff --quiet build/cc_guide/conformance.toml` exits 0. Then temporarily replace both occurrences of `check = 'compaction-window'` in `build/cc_guide/conformance.toml` with `check = 'compaction-window-x'` (one replace-all), and run the Step 3 command. Expected: `1 failed, 5 passed, 357 deselected`. The coupling test fails with `no compaction-window exception remains: retire the critical_placement commit lint, …`. Restore with `git checkout -- build/cc_guide/conformance.toml`, confirm `git diff --quiet build/cc_guide/conformance.toml` exits 0, then rerun the Step 3 command and expect `6 passed, 357 deselected`. Run `git diff build/test_check_conformance.py` and confirm it shows only the replaced coupling test.
 
-- [ ] **Step 7: Refresh the register and the text**
+- [x] **Step 7: Refresh the register and the text**
 
 `build/test_check_conformance.py`, the comment above `CRITICAL_SPANS`. Replace:
 
@@ -332,14 +338,16 @@ with:
       lint count back to seven. Size: plan.
 ```
 
-- [ ] **Step 8: Verify**
+> Deviation: after the whole-plan review (`ad4c5d7`), the `CRITICAL_SPANS` comment and the `CLAUDE.md` block also say that removing an exception removes its files' rows and that the lint retires with the last `compaction-window` exception, since spec R7 asks all three texts for both; `CLAUDE.md` is therefore 194 lines, not 193. The backlog note names `test_late_heading_in_acknowledged_file_is_refused` where the replacement text says "the other refusal test".
+
+- [x] **Step 8: Verify**
 
 Run each and check its result:
 - `uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_conformance.py`: `363 passed`, the same count as after Task 1.
 - `wc -l CLAUDE.md`: `193` (below the 200-line `claude-md-size` limit).
 - `bash build/run_commit_lints.sh`: exit 0, last line `commit lints passed`, and under `== critical_placement` the line `6 passed, 357 deselected`.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add build/test_check_conformance.py build/cc_guide/conformance.toml CLAUDE.md specs/deferred_items.md
@@ -348,6 +356,6 @@ git commit -m "test(conformance): guard every compaction-window waiver, not one 
 
 Before running it, append the executing session's own `Co-Authored-By:` line as one more `-m` argument.
 
-- [ ] **Step 10: Confirm the clones see the committed coupling test**
+- [x] **Step 10: Confirm the clones see the committed coupling test**
 
 The refusal tests clone `HEAD`, so run them against the commit you just made: `uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_commit_lints.py` Expected: `14 passed`. If a refusal test now fails, the coupling test or a table disagrees with the register: fix that before the review.
