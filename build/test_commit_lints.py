@@ -176,6 +176,10 @@ def test_late_critical_section_is_refused(clone):
     assert failed_names(result) == {'critical_placement'}, result.stderr
     assert ('FAILED test_check_conformance.py::test_real_skill_has_no_critical_heading_past_the_'
             'compaction_window[skills/subagent-driven-development/SKILL.md]') in result.stderr, result.stderr
+    # The span-end leg too: `-k test_real_skill` exits 0 while any test matches, so
+    # renaming this one test alone would otherwise drop its gate without a failure.
+    assert ('FAILED test_check_conformance.py::test_real_skill_critical_spans_end_inside_the_'
+            'compaction_window[skills/subagent-driven-development/SKILL.md]') in result.stderr, result.stderr
 
 
 def test_hook_fails_open_without_uv(clone, tmp_path):

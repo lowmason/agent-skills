@@ -3579,9 +3579,12 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       and 21.0k, so a compaction late in a plan can drop them. subagent-driven-development
       is a discipline skill, so its moves are micro-tested under writing-skills. Removing
       the exception fails `test_real_skill_spans_match_the_compaction_waiver` by design
-      (plan 47): in the same change, retire the `critical_placement` commit lint, the
-      `test_real_skill_*` tests and `CRITICAL_SPANS` in `build/test_check_conformance.py`,
-      and set the lint count back to seven where plan 47 raised it. Size: plan.
+      (plan 47): in the same change, retire the `critical_placement` commit lint (its
+      runner line, its `CHECKS` entry and `test_late_critical_section_is_refused` in
+      `build/test_commit_lints.py`, and the "Critical-section placement" block in
+      `CLAUDE.md`), the `test_real_skill_*` tests and `CRITICAL_SPANS` in
+      `build/test_check_conformance.py`, and set the lint count back to seven where plan 47
+      raised it. Size: plan.
       Done when: both bodies are at most 20,000 characters and the exception is removed with
       `build/check_conformance.py` passing.
 - [ ] Run the placement tests in a commit lint (plan 46 review): `apply_waivers`

@@ -1139,8 +1139,9 @@ def test_real_skill_spans_match_the_compaction_waiver():
     adding a file to the waiver without a CRITICAL_SPANS entry fails here.'''
     exceptions = cc.load_register(cc.REPO)['exception']
     waived = next((e['artifacts'] for e in exceptions if e.get('id') == 'skill-body-past-compaction'), None)
-    assert waived is not None, ('exception skill-body-past-compaction is gone: retire the '
-                                'critical_placement commit lint and the test_real_skill_* tests with it')
+    assert waived is not None, ('exception skill-body-past-compaction is gone: if it was renamed, update this id; '
+                                'if the bodies now fit the window, retire the critical_placement commit lint '
+                                'and the test_real_skill_* tests with it')
     assert sorted(waived) == sorted(CRITICAL_SPANS)
 
 
