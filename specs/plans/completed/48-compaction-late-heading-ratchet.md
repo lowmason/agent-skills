@@ -10,7 +10,7 @@
 
 **Tech Stack:** Python 3.13 + pytest (`build/test_check_conformance.py`, `build/test_commit_lints.py`); TOML (`build/cc_guide/conformance.toml`); Markdown (`CLAUDE.md`, `specs/deferred_items.md`).
 
-**Spec:** `specs/compaction-late-heading-ratchet.md` (approved 2026-10-16). Requirements R1 to R7 map to the tasks as follows: R1, R2 and R5 to Task 1; R3 holds throughout (the existing tests stay as they are); R4, R6 and R7 to Task 2.
+**Spec:** `specs/completed/compaction-late-heading-ratchet.md` (approved 2026-10-16). Requirements R1 to R7 map to the tasks as follows: R1, R2 and R5 to Task 1; R3 holds throughout (the existing tests stay as they are); R4, R6 and R7 to Task 2.
 
 ## Global Constraints
 

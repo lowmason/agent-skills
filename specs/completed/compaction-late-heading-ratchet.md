@@ -1,6 +1,6 @@
 # Late-heading ratchet for the compaction-window waivers
 
-**Status: DESIGN APPROVED (2026-10-16); written spec awaiting review.**
+**Status: COMPLETE (2026-10-16)** — implemented by plan 48 (`specs/plans/completed/48-compaction-late-heading-ratchet.md`) and retired here. Design approved 2026-10-16 (D1, D2). One implementation difference: R2's failure message says the row and its exception go once the body fits the window, not "once no row remains", because the exception also waives the length finding; the plan's deviation notes record it.
 
 ## Goal
 
