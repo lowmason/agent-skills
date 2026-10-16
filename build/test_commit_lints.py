@@ -3,11 +3,11 @@
 Each hook test clones this repository's HEAD into a temporary directory,
 copies in the working-tree runner and hook (so the tests exercise the files
 under edit), points core.hooksPath at the hook, and commits. Only the clean
-commit and the two refusal tests run the full lint set in their clone; the two
+commit and the refusal tests run the full lint set in their clone; the two
 no-uv tests and the broken-uv test stop before any lint runs. The mode and
 workflow tests read the repository's files without cloning, and the workflow
 tests parse .github/workflows/lints.yml statically. With a warm uv cache the
-file takes about 10 seconds.
+file takes about 15 seconds.
 '''
 import os
 import re
@@ -27,7 +27,8 @@ GENERATED = Path('runtimes/gemini/agents/code-reviewer.md')
 UV_NOISE = 'uv: noise before the reason'
 UV_REASON = 'Caused by: no cached Python 3.13 and uv is offline'
 CHECKS = {'check_frontmatter', 'check_provenance', 'check_snippets',
-          'check_conformance', 'declared_dependencies', 'sync_runtime_assets', 'cc_guide_lint'}
+          'check_conformance', 'declared_dependencies', 'sync_runtime_assets', 'cc_guide_lint',
+          'critical_placement'}
 
 
 def clean_env(**extra):
@@ -157,6 +158,24 @@ def test_misplaced_drift_citation_is_refused(clone):
     assert result.returncode != 0
     assert failed_names(result) == {'cc_guide_lint'}, result.stderr
     assert head(clone) == before
+
+
+def test_late_critical_section_is_refused(clone):
+    '''The eighth lint runs the placement tests. Exception skill-body-past-compaction
+    waives compaction-window per file, heading findings included, so check_conformance
+    alone passes a Red Flags section moved past the compaction window.'''
+    skill = clone / 'skills' / 'subagent-driven-development' / 'SKILL.md'
+    text = skill.read_text()
+    start = text.index('\n## Red Flags\n') + 1
+    end = text.index('\n## ', start) + 1
+    skill.write_text(text[:start] + text[end:] + '\n' + text[start:end])
+    before = head(clone)
+    result = commit(clone, '-am', 'late red flags')
+    assert result.returncode != 0, result.stderr
+    assert head(clone) == before
+    assert failed_names(result) == {'critical_placement'}, result.stderr
+    assert ('FAILED test_check_conformance.py::test_real_skill_has_no_critical_heading_past_the_'
+            'compaction_window[skills/subagent-driven-development/SKILL.md]') in result.stderr, result.stderr
 
 
 def test_hook_fails_open_without_uv(clone, tmp_path):

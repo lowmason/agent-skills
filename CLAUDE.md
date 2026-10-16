@@ -120,17 +120,18 @@ cd skills/subagent-driven-development/scripts && uv run --python 3.13 --with pyt
 # and the floor goes untested. Gate B is the live probe, ./hooks/probe-readonly-guard.sh, which spawns claude -p
 cd hooks && uv run --python 3.13 --with pytest python -m pytest -q && uv run --python /usr/bin/python3 --with pytest python -m pytest -q
 
-# Commit lints: these three, the dependency-drift test, snippet Tier 1, sync_runtime_assets.py --check and the drift
-# lint (cli.py lint, below) make seven. build/run_commit_lints.sh runs all seven; build/githooks/pre-commit runs it on
-# each commit once enabled (an owner step: git config core.hooksPath build/githooks writes repo config every worktree
-# reads); the hook lints the working tree, untracked drafts included except by the drift lint, which reads tracked
-# files only. .github/workflows/lints.yml runs them on PRs and main as an advisory check; the hook is the gate.
+# Commit lints: these three, the dependency-drift test, snippet Tier 1, sync_runtime_assets.py --check, the drift
+# lint (cli.py lint, below) and the placement tests (below) make eight. build/run_commit_lints.sh runs all eight;
+# build/githooks/pre-commit runs it on each commit once enabled (an owner step: git config core.hooksPath build/githooks
+# writes repo config every worktree reads); the hook lints the working tree, untracked drafts included except by the
+# drift lint, which reads tracked files only. .github/workflows/lints.yml runs them on PRs and main as an advisory
+# check; the hook is the gate.
 # Frontmatter, provenance and guide-conformance lints (run before committing any Claude Code artifact)
 uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
 uv run --python 3.13 python build/check_provenance.py
 uv run --python 3.13 --with pyyaml python build/check_conformance.py
 
-# Commit-lint runner, hook and workflow tests: three of them run the full lint set in a throwaway clone (about 10 s warm)
+# Commit-lint runner, hook and workflow tests: the clean and refusal tests run the full lint set in clones (about 15 s warm)
 cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_commit_lints.py
 
 # Claude Code guide drift detector (build/cc_guide/): its suite; lint, run before committing a change to the guide, to
@@ -143,6 +144,10 @@ uv run --python 3.13 python build/cc_guide/cli.py check
 # Dependency drift: skill and command text vs install.py's DEPENDENCIES (run before committing a skill
 # change that adds or drops a cross-skill or /command reference)
 cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_runtime_support.py -k declared_dependencies
+
+# Critical-section placement: exception skill-body-past-compaction waives compaction-window per file, heading findings
+# included, so these tests pin the critical sections of the two skills in test_check_conformance.py's CRITICAL_SPANS
+cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_conformance.py -k test_real_skill
 
 # Snippet gate: three tiers, cheapest first, each including those above. Tier 1 covers all of skills/; Tiers 2 and 3
 # only skills/bayesian-workflow, whose stack they import. build/check_snippets.py documents the fence markers (norun,
