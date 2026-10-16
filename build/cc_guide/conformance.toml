@@ -860,7 +860,7 @@ check = 'compaction-window'
 sections = ['skills.progressive-disclosure']
 artifacts = ['skills/writing-skills/SKILL.md']
 guide = 'Put critical instructions near the top of a SKILL.md; compaction re-attaches only its first 5,000 tokens.'
-reason = 'The body is about 7,177 tokens, and STOP: Before Moving to Next Skill (line 630) starts past the first 5,000. Create Red Flags List (line 544) is also flagged, but it is authoring advice, a false positive of the heading heuristic.'
+reason = 'The body is about 7,200 tokens, and two headings start past the first 5,000: STOP: Before Moving to Next Skill, a real critical section the owner accepted there, and Create Red Flags List, which is authoring advice and a false positive of the heading heuristic. The waiver is per check and file, so it also hides a new late heading; the critical_placement commit lint runs test_real_skill_late_headings_match_the_acknowledged_set in build/test_check_conformance.py, which fails unless exactly those two start past the window.'
 evidence = 'Audit §6 d2; owner decision at the /deferred pass, 2026-10-05.'
 tracked_in = 'portability Stage D, with writing-skills-guide-gaps'
 

@@ -145,8 +145,9 @@ uv run --python 3.13 python build/cc_guide/cli.py check
 # change that adds or drops a cross-skill or /command reference)
 cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_runtime_support.py -k declared_dependencies
 
-# Critical-section placement: exception skill-body-past-compaction waives compaction-window per file, heading findings
-# included, so these tests pin the critical sections of the two skills in test_check_conformance.py's CRITICAL_SPANS
+# Critical-section placement: compaction-window exceptions waive per file, heading findings included, so these tests
+# pin the critical sections of two skills (CRITICAL_SPANS) and the late headings the owner accepted in writing-skills
+# (ACKNOWLEDGED_LATE), both in test_check_conformance.py
 cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_conformance.py -k test_real_skill
 
 # Snippet gate: three tiers, cheapest first, each including those above. Tier 1 covers all of skills/; Tiers 2 and 3

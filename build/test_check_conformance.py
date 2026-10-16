@@ -1119,10 +1119,11 @@ def test_compaction_window_ignores_headings_when_the_body_fits(tmp_path):
 
 # Each critical span starts at its marker and runs to the next `## ` heading
 # (or the paragraph's blank line, for a bold-led paragraph). Plan 46 moved
-# these inside the compaction window. The register's exception waives
+# these inside the compaction window. The register's exceptions waive
 # compaction-window per file, heading findings included, so the
 # critical_placement commit lint (build/run_commit_lints.sh) runs the
-# test_real_skill_* tests below to pin the placement.
+# test_real_skill_* tests below to pin the placement: these spans, and the
+# accepted late headings in ACKNOWLEDGED_LATE.
 CRITICAL_SPANS = {
     'skills/subagent-driven-development/SKILL.md': ['## Red Flags', '**A roadmap stage**'],
     'skills/bayesian-workflow/SKILL.md': ['## Critical rules', '## Common gotchas'],
@@ -1143,14 +1144,18 @@ def _window_params():
 
 
 def test_real_skill_spans_match_the_compaction_waiver():
-    '''The critical_placement lint guards exactly the files the exception waives:
-    adding a file to the waiver without a CRITICAL_SPANS entry fails here.'''
+    '''The critical_placement lint guards exactly the files the compaction-window
+    exceptions waive: a waived file in neither CRITICAL_SPANS nor ACKNOWLEDGED_LATE
+    fails here, and so does a row whose exception is gone.'''
     exceptions = cc.load_register(cc.REPO)['exception']
-    waived = next((e['artifacts'] for e in exceptions if e.get('id') == 'skill-body-past-compaction'), None)
-    assert waived is not None, ('exception skill-body-past-compaction is gone: if it was renamed, update this id; '
-                                'if the bodies now fit the window, retire the critical_placement commit lint '
-                                'and the test_real_skill_* tests with it')
-    assert sorted(waived) == sorted(CRITICAL_SPANS)
+    waived = sorted({a for e in exceptions if e.get('check') == 'compaction-window' for a in e.get('artifacts', [])})
+    assert waived, ('no compaction-window exception remains: retire the critical_placement commit lint, '
+                    'CRITICAL_SPANS, ACKNOWLEDGED_LATE and the test_real_skill_* tests with it')
+    assert not set(CRITICAL_SPANS) & set(ACKNOWLEDGED_LATE), 'a file is in both CRITICAL_SPANS and ACKNOWLEDGED_LATE'
+    guarded = sorted([*CRITICAL_SPANS, *ACKNOWLEDGED_LATE])
+    assert waived == guarded, (f'compaction-window exceptions waive {waived}, but the placement tests guard {guarded}: '
+                               'add each missing file to CRITICAL_SPANS or ACKNOWLEDGED_LATE, and remove a row '
+                               'whose exception is gone')
 
 
 @pytest.mark.parametrize('skill', sorted(CRITICAL_SPANS))
