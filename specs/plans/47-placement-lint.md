@@ -1,5 +1,7 @@
 # Placement Lint Implementation Plan
 
+**Status: COMPLETE (2026-10-16)** — executed via executing-plans; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Close the hole where exception `skill-body-past-compaction` hides a critical section moved past the compaction window. An eighth commit lint, `critical_placement`, will run the placement tests. A new test will tie those tests to the exception's artifacts.
@@ -46,7 +48,7 @@
 - Consumes: the `clone` fixture, `head(repo)`, `commit(repo, *args)` and `failed_names(result) -> set[str]` in `build/test_commit_lints.py`. The parametrised tests `test_real_skill_has_no_critical_heading_past_the_compaction_window` and `test_real_skill_critical_spans_end_inside_the_compaction_window` in `build/test_check_conformance.py`.
 - Produces: the runner check named `critical_placement`. It runs `pytest -q test_check_conformance.py -k test_real_skill` from `build/`. Task 2's test joins that selection by name.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 In `build/test_commit_lints.py`, replace the `CHECKS` set (lines 29-30):
 
@@ -84,7 +86,9 @@ def test_late_critical_section_is_refused(clone):
             'compaction_window[skills/subagent-driven-development/SKILL.md]') in result.stderr, result.stderr
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail for the right reasons**
+> Deviation: after the whole-plan review (`431e037`), `test_late_critical_section_is_refused` also asserts the span-end test's `FAILED` line. `-k test_real_skill` exits 0 while any test matches, so renaming `test_real_skill_critical_spans_end_inside_the_compaction_window` alone dropped its gate without a failure (observed: `3 passed`, exit 0).
+
+- [x] **Step 2: Run the tests to verify they fail for the right reasons**
 
 Run: `uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_commit_lints.py -k "late_critical or fails_closed_without_uv"`
 
@@ -92,7 +96,7 @@ Expected: `2 failed`, each for the reason below. The planning session observed b
 - `test_late_critical_section_is_refused` fails at `assert result.returncode != 0`, showing `assert 0 != 0`, and the captured stderr ends `commit lints passed`. The commit succeeded: that is the hole. If it fails at any other line, stop. The RED is not demonstrating the hole, so find out why before going on.
 - `test_runner_fails_closed_without_uv` fails at `assert failed_names(result) == CHECKS`. Its `commit lints failed:` line lists the seven current names, without `critical_placement`.
 
-- [ ] **Step 3: Add the lint to the runner**
+- [x] **Step 3: Add the lint to the runner**
 
 In `build/run_commit_lints.sh`, replace line 2:
 
@@ -119,19 +123,19 @@ run cc_guide_lint uv run --python 3.13 python build/cc_guide/cli.py lint
 run critical_placement bash -c 'cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_conformance.py -k test_real_skill'
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run: `uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_commit_lints.py -k "late_critical or fails_closed_without_uv or clean_commit"`
 
 Expected: `3 passed`. `test_clean_commit_passes` proves that the eighth lint passes on the unedited repo.
 
-- [ ] **Step 5: Run the whole commit-lint suite and note its time**
+- [x] **Step 5: Run the whole commit-lint suite and note its time**
 
 Run: `uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_commit_lints.py`
 
 Expected: every test passes, with +1 passed relative to the suite before this task. Note the seconds on pytest's summary line: Step 6 writes them into two docs. The planning session measured 17.3 s before this task, so expect about 20 s. Round the observed figure to the nearest 5 s, and write that figure wherever Step 6 says `about 20`.
 
-- [ ] **Step 6: Update the text that counts or describes the lints**
+- [x] **Step 6: Update the text that counts or describes the lints**
 
 `build/githooks/pre-commit`, line 2. Replace:
 
@@ -263,7 +267,9 @@ with:
 reason = 'Both bodies run past the first 5,000 tokens. Plan 46 moved their critical sections inside it. The waiver is per check and file, so it also covers a heading finding in these two files; the critical_placement commit lint runs test_real_skill_* in build/test_check_conformance.py to keep those sections inside the window.'
 ```
 
-- [ ] **Step 7: Verify**
+> Deviation: the observed suite time was 12.68 s (10.31 s before the task), which rounds to 15 s by Step 5's rule, so `CLAUDE.md` and the `test_commit_lints.py` docstring say "about 15" where the text above shows 20.
+
+- [x] **Step 7: Verify**
 
 Run each and check its result:
 - `uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_conformance.py`: every test passes, with the same count as before (the edit is a comment).
@@ -271,7 +277,7 @@ Run each and check its result:
 - `wc -l CLAUDE.md`: 192 (below the 200-line `claude-md-size` limit).
 - `bash build/run_commit_lints.sh`: exit 0, last line `commit lints passed`. Under `== critical_placement`, pytest's summary line reads `passed, … deselected`, with no `failed` and no error.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add build/test_commit_lints.py build/run_commit_lints.sh build/githooks/pre-commit CLAUDE.md build/CLAUDE.md build/test_check_conformance.py build/cc_guide/conformance.toml
@@ -292,7 +298,7 @@ Before running it, append one more `-m` argument to that `git commit`: the execu
 - Consumes: `CRITICAL_SPANS` (dict, file → list of markers) and `cc.load_register(root) -> dict` in `build/test_check_conformance.py`. Task 1's `critical_placement` lint, which selects tests by the `test_real_skill` substring.
 - Produces: `test_real_skill_spans_match_the_compaction_waiver`. Under `-k test_real_skill` it is selected, so the eighth lint runs it.
 
-- [ ] **Step 1: Write the test**
+- [x] **Step 1: Write the test**
 
 Insert after the `_window_params()` function, before `@pytest.mark.parametrize('skill', sorted(CRITICAL_SPANS))`, with two blank lines on each side:
 
@@ -307,13 +313,15 @@ def test_real_skill_spans_match_the_compaction_waiver():
     assert sorted(waived) == sorted(CRITICAL_SPANS)
 ```
 
-- [ ] **Step 2: Run it on the real files**
+> Deviation: after the review (`431e037`), the failure message also covers a renamed exception ("if it was renamed, update this id; if the bodies now fit the window, retire …"), since "retire the lint" would reopen the hole after a rename. The `exception skill-body-past-compaction is gone` text is unchanged.
+
+- [x] **Step 2: Run it on the real files**
 
 Run: `uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_conformance.py -k test_real_skill`
 
 Expected: all pass, with +1 selected relative to Task 1's run of the same command. This test guards a state that is already correct, so it passes at once. Steps 3 and 4 give it a real RED.
 
-- [ ] **Step 3: Mutation RED, the spans side**
+- [x] **Step 3: Mutation RED, the spans side**
 
 In `build/test_check_conformance.py`, temporarily delete this line from `CRITICAL_SPANS`:
 
@@ -323,11 +331,11 @@ In `build/test_check_conformance.py`, temporarily delete this line from `CRITICA
 
 Run the Step 2 command. Expected: `test_real_skill_spans_match_the_compaction_waiver` FAILS with a list diff naming `'skills/bayesian-workflow/SKILL.md'`. Restore the line exactly, then rerun Step 2's command and expect all to pass again.
 
-- [ ] **Step 4: Mutation RED, the register side**
+- [x] **Step 4: Mutation RED, the register side**
 
 Confirm `git diff --quiet build/cc_guide/conformance.toml` exits 0, since Task 1 committed it. Then temporarily change `id = 'skill-body-past-compaction'` to `id = 'skill-body-past-compaction-x'` in `build/cc_guide/conformance.toml`, and run Step 2's command. Expected: `test_real_skill_spans_match_the_compaction_waiver` FAILS, and its message includes `exception skill-body-past-compaction is gone`. Restore with `git checkout -- build/cc_guide/conformance.toml`. Then rerun Step 2's command and expect all to pass.
 
-- [ ] **Step 5: Record the coupling in the sibling deferred item**
+- [x] **Step 5: Record the coupling in the sibling deferred item**
 
 In `specs/deferred_items.md`, in the item that begins `- [ ] Fit the subagent-driven-development and bayesian-workflow bodies inside the`, replace:
 
@@ -347,13 +355,15 @@ with:
 
 Leave this plan's own item (the second `- [ ]` in that section) unticked. The Plan Completion Protocol ticks it.
 
-- [ ] **Step 6: Verify**
+> Deviation: after the review (`431e037`), the retirement list also names `build/test_commit_lints.py`'s `CHECKS` entry and `test_late_critical_section_is_refused`, and the "Critical-section placement" block in `CLAUDE.md`.
+
+- [x] **Step 6: Verify**
 
 - `uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_conformance.py`: every test passes, +1 relative to Task 1's Step 7 run.
 - `git diff --quiet build/cc_guide/conformance.toml`: exits 0 (the mutation is restored).
 - `bash build/run_commit_lints.sh`: exit 0, last line `commit lints passed`.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add build/test_check_conformance.py specs/deferred_items.md

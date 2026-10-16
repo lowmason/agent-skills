@@ -3587,7 +3587,7 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       raised it. Size: plan.
       Done when: both bodies are at most 20,000 characters and the exception is removed with
       `build/check_conformance.py` passing.
-- [ ] Run the placement tests in a commit lint (plan 46 review): `apply_waivers`
+- [x] Run the placement tests in a commit lint (plan 46 review): `apply_waivers`
       (`build/check_conformance.py`) waives per check and file, so exception
       `skill-body-past-compaction` also covers a critical heading that slips past the window
       in either skill, and the only guard is `test_real_skill_*` in
@@ -3599,6 +3599,11 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       the length finding. Size: plan. Done when: a test that moves Red Flags past 20,000
       characters fails a commit lint or the conformance check with the exception in place; or
       the previous item removes the exception.
+      → done in plan 47 (2026-10-16): `critical_placement`, the eighth commit lint in
+      `build/run_commit_lints.sh`, runs the `test_real_skill_*` tests, and
+      `test_late_critical_section_is_refused` moves Red Flags past 20,000 characters and
+      expects only that lint to fail. The waiver semantics are unchanged, so the exception
+      stays until the previous item removes it.
 - [ ] Settle the wording and the test gap of the reworded roadmap-stage guard (plan 46
       review): (a) `skills/executing-plans/SKILL.md` Step 6 says "step 3a's Handoff bullets
       and stamp" without naming writing-plans' Plan Completion Protocol, and executing-plans
@@ -3614,3 +3619,21 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       (see the Gate result in `specs/plans/completed/46-sdd-bundle.md`). Size: plan. Done
       when: the wording is settled and `p5a`, `c5a-ep` and `c5a-neg` meet their
       pre-registered bars on it, with the already-merged prompt in the kit.
+
+## 47-placement-lint — 2026-10-16
+- [ ] Cover the second per-file `compaction-window` waiver in the placement guard (plan
+      47 review, reviewer recommendation; deferred at the completion gate by the owner,
+      and out of scope under D1): exception `writing-skills-late-critical-headings` in
+      `build/cc_guide/conformance.toml` waives `compaction-window` for
+      `skills/writing-skills/SKILL.md` per file, as `skill-body-past-compaction` does for
+      the two skills `critical_placement` guards. A late `## Iron Law` or `## STOP` added
+      to that file therefore passes every commit lint, and
+      `test_real_skill_spans_match_the_compaction_waiver`, which is keyed to one exception
+      id, would not notice. The file's existing late `STOP: Before Moving to Next Skill`
+      is the owner's accepted gap (decision 2026-10-05, tracked in portability Stage D),
+      so a guard must acknowledge it, not fail on it. One shape: assert that every
+      `compaction-window` exception's `artifacts` are in `CRITICAL_SPANS` or on an
+      explicit acknowledged list. Size: design. Done when: the owner decides whether the
+      guard widens, and either a late critical heading added to
+      `skills/writing-skills/SKILL.md` fails a commit lint or the item is dropped with the
+      reason recorded.
