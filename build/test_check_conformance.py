@@ -1120,8 +1120,9 @@ def test_compaction_window_ignores_headings_when_the_body_fits(tmp_path):
 # Each critical span starts at its marker and runs to the next `## ` heading
 # (or the paragraph's blank line, for a bold-led paragraph). Plan 46 moved
 # these inside the compaction window. The register's exception waives
-# compaction-window per file, heading findings included, and no commit lint
-# runs this file, so these tests pin the placement when the suite runs.
+# compaction-window per file, heading findings included, so the
+# critical_placement commit lint (build/run_commit_lints.sh) runs the
+# test_real_skill_* tests below to pin the placement.
 CRITICAL_SPANS = {
     'skills/subagent-driven-development/SKILL.md': ['## Red Flags', '**A roadmap stage**'],
     'skills/bayesian-workflow/SKILL.md': ['## Critical rules', '## Common gotchas'],
@@ -1131,6 +1132,17 @@ CRITICAL_SPANS = {
 def _window_params():
     register = cc.load_register(cc.REPO)
     return next(c for c in register['check'] if c['id'] == 'compaction-window')
+
+
+def test_real_skill_spans_match_the_compaction_waiver():
+    '''The critical_placement lint guards exactly the files the exception waives:
+    adding a file to the waiver without a CRITICAL_SPANS entry fails here.'''
+    exceptions = cc.load_register(cc.REPO)['exception']
+    waived = next((e['artifacts'] for e in exceptions if e.get('id') == 'skill-body-past-compaction'), None)
+    assert waived is not None, ('exception skill-body-past-compaction is gone: if it was renamed, update this id; '
+                                'if the bodies now fit the window, retire the critical_placement commit lint '
+                                'and the test_real_skill_* tests with it')
+    assert sorted(waived) == sorted(CRITICAL_SPANS)
 
 
 @pytest.mark.parametrize('skill', sorted(CRITICAL_SPANS))
