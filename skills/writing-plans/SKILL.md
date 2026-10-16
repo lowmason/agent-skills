@@ -26,9 +26,12 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 
 **A roadmap stage you just finished is never planned past.** If this session
 executed, completed or merged a stage of a `specs/*-roadmap.md`, then even when
-told to keep going or to plan the next stage, do not plan, brainstorm or name
-it: run the Plan Completion Protocol below (step 3a included) before any merge,
-and end with the resume handoff, naming no next stage.
+told to keep going or to plan the next stage, do not plan, brainstorm or route
+to it: run the Plan Completion Protocol below (step 3a included) before any
+merge, and end with the resume handoff, routing to no next stage. Step 3a's
+Handoff bullets and stamp still name the later stages they feed. A stage this
+session finds already merged when it starts, with the protocol not yet run,
+runs the protocol on the merged branch now.
 
 ## Starting From a Handoff Brief
 

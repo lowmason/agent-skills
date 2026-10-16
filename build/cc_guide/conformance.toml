@@ -683,7 +683,7 @@ evidence = 'Audit rows S-21 to S-27; owner gate 2026-10-04.'
 tracked_in = 'deferred item: rewrite seven skill descriptions in the third person'
 
 [[exception]]
-id = 'critical-rules-past-compaction'
+id = 'skill-body-past-compaction'
 type = 'gap'
 check = 'compaction-window'
 sections = ['skills.progressive-disclosure']
@@ -692,9 +692,9 @@ artifacts = [
     'skills/bayesian-workflow/SKILL.md',
 ]
 guide = 'Put critical instructions near the top of a SKILL.md; compaction re-attaches only its first 5,000 tokens.'
-reason = 'Critical sections of both skills sit past the first 5,000 tokens.'
-evidence = 'Audit rows S-69, S-70; owner gate 2026-10-04.'
-tracked_in = 'deferred item: move critical sections above the compaction cut in two skills'
+reason = 'Both bodies run past the first 5,000 tokens. Plan 46 moved their critical sections inside it, pinned by test_real_skill_* in build/test_check_conformance.py, which no commit lint runs. The waiver is per check and file, so it also covers a heading finding in these two files.'
+evidence = 'Audit rows S-69, S-70; owner gate 2026-10-04; owner decision D1, plan 46, 2026-10-15.'
+tracked_in = 'deferred item: fit the subagent-driven-development and bayesian-workflow bodies inside the compaction window'
 
 [[exception]]
 id = 'dispatch-model-in-prose'

@@ -77,7 +77,7 @@ OPTIONAL_MODULES = frozenset({'funsor', 'blackjax', 'dynamax'})
 # assertion that it runs, and stays checked.
 DOCUMENTED_ABSENT = {
     'az.plot_ppc': 'removed from the ArviZ 1.x umbrella; SKILL.md porting table',
-    'az.waic': 'removed from ArviZ 1.x, use LOO; SKILL.md:84, model-comparison.md',
+    'az.waic': 'removed from ArviZ 1.x, use LOO; SKILL.md Stack compatibility table, model-comparison.md',
 }
 API_REMEDIATION = ('uv run --python 3.13 --with "arviz>=1.0" --with arviz-base '
                    '--with arviz-stats --with arviz-plots --with numpyro '

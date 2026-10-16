@@ -301,6 +301,19 @@ Changes from upstream:
     only -- the moved text is verbatim, carrying the same authorship and
     MIT terms as the sections it came from, and no wording was rewritten
     in the move.
+  - Plan 46 (2026-10-15) later reordered and trimmed that SKILL.md so its
+    Red Flags section and roadmap-stage paragraph sit inside the first
+    5,000 tokens that compaction re-attaches. Red Flags moved up, to follow
+    When to Use, and Constructing Reviewer Prompts moved down, to follow
+    Plan Completion; both moves are verbatim. The upstream When to Use
+    decision graph moved verbatim into references/advantages.md, under a
+    new "When to use" heading, and a four-line pointer paragraph written
+    here replaced it in SKILL.md. The four upstream "Why same-session"
+    bullets that followed the graph were dropped, because advantages.md's
+    "vs. Executing Plans" and Quality gates lists carry their substance;
+    the one exception is the end-of-plan broad review, which advantages.md
+    does not repeat and The Process still names. Unlike the split above,
+    this is not a layout change only.
   - writing-plans and finishing-a-development-branch invoked the
     deferred_stats.py reporter through a hard-coded ~/.claude/skills/
     path, which exists only on a Claude Code install. That path was never

@@ -2002,7 +2002,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       third person, and exception `description-second-person` is removed from
       `build/cc_guide/conformance.toml` in the same change, with
       `build/check_conformance.py` passing.
-- [ ] Move critical sections above the compaction cut in two skills (plan 35 audit rows
+- [x] Move critical sections above the compaction cut in two skills (plan 35 audit rows
       S-69, S-70): compaction re-attaches only the first 5,000 tokens of a SKILL.md body
       (`skills.progressive-disclosure`), but the Red Flags section of
       `skills/subagent-driven-development/SKILL.md` (about 6.6k tokens in) and the Common
@@ -2013,6 +2013,13 @@ declined as YAGNI (zero instances in a one-page wiki).
       → SDD bundle (owner, 2026-10-13): this item's subagent-driven-development half, the
       roadmap-stage rewording and the 500-line trim below are together the SDD bundle plan
       that plans 43 and 44 cite as H26/P2/P3/Q2, labels no tracked file defines.
+      → done in plan 46 (2026-10-15): the Red Flags, roadmap-stage, Critical rules and
+      Common gotchas spans now end inside the first 20,000 body characters, pinned by
+      `test_real_skill_*` in `build/test_check_conformance.py`. The literal done-when
+      (remove the exception) was replaced by owner decisions D1 and D5: both bodies are
+      still over 20,000 characters, so the exception stays, renamed
+      `skill-body-past-compaction`; moving the body text out is the first item of the
+      `46-sdd-bundle` section below.
 - [ ] Enforce the model-on-dispatch rule with a hook (plan 35 audit row S-94):
       `skills/subagent-driven-development/SKILL.md` says to always specify the model
       explicitly when dispatching. The rule is machine-checkable (the Agent tool's `model`
@@ -2875,7 +2882,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       (Phase 3 and Acceptance) and `~/.cache/agent-skills/handoffs/red/changes.log`.
       Size: design. Done when: each of the three arms has 5 valid reps on the
       shipped skills and a recorded verdict.
-- [ ] `skills/writing-plans/SKILL.md` lines 26-30 (the paragraph "A roadmap stage
+- [x] `skills/writing-plans/SKILL.md` lines 26-30 (the paragraph "A roadmap stage
       you just finished is never planned past") says "do not plan, brainstorm or
       name it", yet step 3a requires the Handoff bullets and the stamp to name the
       later stages; the same verb is at `skills/subagent-driven-development/SKILL.md`
@@ -2888,13 +2895,18 @@ declined as YAGNI (zero instances in a one-page wiki).
       the new text passes.
       → SDD bundle (owner, 2026-10-13): part of the SDD bundle plan, with the 500-line trim
       below and the subagent-driven-development half of the compaction-cut item above.
-- [ ] `skills/subagent-driven-development/SKILL.md` sits at exactly 500 of its
+      → done in plan 46 (2026-10-15): reworded in all three files (975cb02); on kit k-46,
+      `p5a` 0 of 5 failing and `c5a-neg` 0 of 5 failing, no voids. The F-next call was
+      reading-sensitive and the owner ruled it stands (plan 46's Gate result).
+- [x] `skills/subagent-driven-development/SKILL.md` sits at exactly 500 of its
       500-line maximum, with a long unwrapped description line; any edit there has
       to be net-zero. Trim the file (or move a section to `references/`) before its
       next content change. Size: quick-fix. Revisit if: the next edit to that file
       needs a line (done when it is back under 490 lines).
       → SDD bundle (owner, 2026-10-13): part of the SDD bundle plan, with the roadmap-stage
       rewording above and the subagent-driven-development half of the compaction-cut item.
+      → done in plan 46 (2026-10-15): the When to Use graph moved to
+      `references/advantages.md`; the file is 484 lines, under 490.
 - [ ] `skills/derive-roadmap/SKILL.md` §5 (the resume) has two gaps found in
       review. "Each stage stamped COMPLETE since the last resume" has no marker for
       the last resume (suggested: each stamped stage whose Handoff no entry yet
@@ -3417,14 +3429,14 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       counter, or a waiver per hook), the rule and the check agree on it, a test covers each
       accepted form, and both files' contradictions are cleared.
 - [ ] Three subagent-driven-development decisions, outside the register
-      (`skills/subagent-driven-development/SKILL.md`). (1) Line 219: an implementer already
+      (`skills/subagent-driven-development/SKILL.md`). (1) Line 239 (line numbers refreshed after plan 46's reorder): an implementer already
       at `capable` has only fresh context and higher effort left, with no model step; the guide
       names a Fable step above Opus (`subagents.models`). The Agent tool's `model` option
-      listed `fable` on 2026-10-13 (seen in its schema, not dispatched). (2) Line 487 (also lines 268–269): never fix by hand,
+      listed `fable` on 2026-10-13 (seen in its schema, not dispatched). (2) Line 69 (also lines 327–328): never fix by hand,
       and dispatch a fix subagent even for a one-line fix, where the guide lists trivial
-      single-file edits as delegation that burns tokens (`subagents.isolation`). (3) Line 403:
+      single-file edits as delegation that burns tokens (`subagents.isolation`). (3) Line 425:
       after compaction the controller follows the ledger-recovery protocol (about lines
-      365–407), which likely sits past the 5,000-token cut of a re-attached skill, and the
+      387–429), which likely sits past the 5,000-token cut of a re-attached skill, and the
       skill never says to re-invoke itself (`lean.session-hygiene`). The SDD half of "Move
       critical sections above the compaction cut" (above) covers the placement, but not the
       re-invoke instruction. Size: design. Done when: the owner rules on each, and each
@@ -3554,3 +3566,44 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       objects and groups that carry them. Size: design. Revisit if: a `fixture=comparison`
       block reads a group other than posterior or log_likelihood, or a named fixture declares
       a non-empty `variables`.
+
+## 46-sdd-bundle — 2026-10-15
+- [ ] Fit the subagent-driven-development and bayesian-workflow bodies inside the
+      compaction window (plan 46 D1): the critical sections now end inside the first
+      20,000 body characters, but the bodies are still about 30k and 33k characters, so
+      exception `skill-body-past-compaction` in `build/cc_guide/conformance.toml` stays.
+      Moving about 10k and 13k characters of body text into `references/` would let it go.
+      Move first the two end-of-plan bullets of subagent-driven-development's Constructing
+      Reviewer Prompts ("The final whole-branch review has two seats…", "dispatch ONE fix
+      subagent"): plan 46's D4 reorder pushed them from offsets 16.6k and 17.4k to 20.3k
+      and 21.0k, so a compaction late in a plan can drop them. subagent-driven-development
+      is a discipline skill, so its moves are micro-tested under writing-skills. Size: plan.
+      Done when: both bodies are at most 20,000 characters and the exception is removed with
+      `build/check_conformance.py` passing.
+- [ ] Run the placement tests in a commit lint (plan 46 review): `apply_waivers`
+      (`build/check_conformance.py`) waives per check and file, so exception
+      `skill-body-past-compaction` also covers a critical heading that slips past the window
+      in either skill, and the only guard is `test_real_skill_*` in
+      `build/test_check_conformance.py`, which neither `build/run_commit_lints.sh` nor
+      `.github/workflows/lints.yml` runs. An edit that moves Red Flags or Critical rules back
+      past 20,000 characters passes the hook and CI. Either an eighth commit lint runs the
+      tests (touching the runner, the workflow, `build/test_commit_lints.py` and the "seven
+      lints" text in `CLAUDE.md` and `build/CLAUDE.md`), or the register learns to waive only
+      the length finding. Size: plan. Done when: a test that moves Red Flags past 20,000
+      characters fails a commit lint or the conformance check with the exception in place; or
+      the previous item removes the exception.
+- [ ] Settle the wording and the test gap of the reworded roadmap-stage guard (plan 46
+      review): (a) `skills/executing-plans/SKILL.md` Step 6 says "step 3a's Handoff bullets
+      and stamp" without naming writing-plans' Plan Completion Protocol, and executing-plans
+      numbers its own steps; (b) "runs the protocol on the merged branch now", in
+      writing-plans, subagent-driven-development and executing-plans, can mean the deleted
+      feature branch or the branch it merged into, and "when it starts" has two possible
+      antecedents; (c) no prompt in plan 40's kit starts a session from an already-merged
+      stage and `c5a-ep` was not rerun, so the already-merged sentence and the
+      executing-plans wording shipped without a behavioural test. Any rewording reopens the
+      gate (`p5a` passed 0 of 5 failing on the text as committed in 975cb02), so it is one
+      change: reword, add a prompt that starts from an already-merged stage, and rerun
+      `p5a`, `c5a-ep` and `c5a-neg`. Also open: the `p5a` F-next pass is reading-sensitive
+      (see the Gate result in `specs/plans/completed/46-sdd-bundle.md`). Size: plan. Done
+      when: the wording is settled and `p5a`, `c5a-ep` and `c5a-neg` meet their
+      pre-registered bars on it, with the already-merged prompt in the kit.
