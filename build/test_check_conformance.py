@@ -1134,6 +1134,16 @@ def _window_params():
     return next(c for c in register['check'] if c['id'] == 'compaction-window')
 
 
+def test_real_skill_spans_match_the_compaction_waiver():
+    '''The critical_placement lint guards exactly the files the exception waives:
+    adding a file to the waiver without a CRITICAL_SPANS entry fails here.'''
+    exceptions = cc.load_register(cc.REPO)['exception']
+    waived = next((e['artifacts'] for e in exceptions if e.get('id') == 'skill-body-past-compaction'), None)
+    assert waived is not None, ('exception skill-body-past-compaction is gone: retire the '
+                                'critical_placement commit lint and the test_real_skill_* tests with it')
+    assert sorted(waived) == sorted(CRITICAL_SPANS)
+
+
 @pytest.mark.parametrize('skill', sorted(CRITICAL_SPANS))
 def test_real_skill_has_no_critical_heading_past_the_compaction_window(skill):
     found = cc.check_compaction_window(cc.REPO, [skill], _window_params())
