@@ -1119,13 +1119,24 @@ def test_compaction_window_ignores_headings_when_the_body_fits(tmp_path):
 
 # Each critical span starts at its marker and runs to the next `## ` heading
 # (or the paragraph's blank line, for a bold-led paragraph). Plan 46 moved
-# these inside the compaction window. The register's exception waives
+# these inside the compaction window. The register's exceptions waive
 # compaction-window per file, heading findings included, so the
 # critical_placement commit lint (build/run_commit_lints.sh) runs the
-# test_real_skill_* tests below to pin the placement.
+# test_real_skill_* tests below to pin the placement: these spans, and the
+# accepted late headings in ACKNOWLEDGED_LATE. Removing an exception removes
+# its files' rows from both tables; when the last compaction-window exception
+# goes, retire the lint and the test_real_skill_* tests with it.
 CRITICAL_SPANS = {
     'skills/subagent-driven-development/SKILL.md': ['## Red Flags', '**A roadmap stage**'],
     'skills/bayesian-workflow/SKILL.md': ['## Critical rules', '## Common gotchas'],
+}
+
+# Late critical headings the owner accepted past the compaction window, by exact
+# text. The register's writing-skills waiver is per file, so it hides a new late
+# heading too; the equality test below fails on one, and on a heading that is
+# gone. Moving the STOP section inside the window is portability Stage D's work.
+ACKNOWLEDGED_LATE = {
+    'skills/writing-skills/SKILL.md': ['### Create Red Flags List', '## STOP: Before Moving to Next Skill'],
 }
 
 
@@ -1135,14 +1146,21 @@ def _window_params():
 
 
 def test_real_skill_spans_match_the_compaction_waiver():
-    '''The critical_placement lint guards exactly the files the exception waives:
-    adding a file to the waiver without a CRITICAL_SPANS entry fails here.'''
+    '''The critical_placement lint guards exactly the files the compaction-window
+    exceptions waive: a waived file in neither CRITICAL_SPANS nor ACKNOWLEDGED_LATE
+    fails here, and so does a row whose exception is gone.'''
     exceptions = cc.load_register(cc.REPO)['exception']
-    waived = next((e['artifacts'] for e in exceptions if e.get('id') == 'skill-body-past-compaction'), None)
-    assert waived is not None, ('exception skill-body-past-compaction is gone: if it was renamed, update this id; '
-                                'if the bodies now fit the window, retire the critical_placement commit lint '
-                                'and the test_real_skill_* tests with it')
-    assert sorted(waived) == sorted(CRITICAL_SPANS)
+    waived = sorted({a for e in exceptions if e.get('check') == 'compaction-window' for a in e.get('artifacts', [])})
+    assert waived, ('no compaction-window exception remains: retire the critical_placement commit lint, '
+                    'CRITICAL_SPANS, ACKNOWLEDGED_LATE and the test_real_skill_* tests with it')
+    both = sorted(set(CRITICAL_SPANS) & set(ACKNOWLEDGED_LATE))
+    assert not both, f'{both} in both CRITICAL_SPANS and ACKNOWLEDGED_LATE: a file belongs in one table'
+    guarded = {*CRITICAL_SPANS, *ACKNOWLEDGED_LATE}
+    unguarded, orphaned = sorted(set(waived) - guarded), sorted(guarded - set(waived))
+    assert not unguarded, (f'{unguarded} waived by a compaction-window exception but in neither CRITICAL_SPANS '
+                           'nor ACKNOWLEDGED_LATE: add a row')
+    assert not orphaned, (f'{orphaned} in CRITICAL_SPANS or ACKNOWLEDGED_LATE but waived by no compaction-window '
+                          'exception: remove the row')
 
 
 @pytest.mark.parametrize('skill', sorted(CRITICAL_SPANS))
@@ -1164,6 +1182,21 @@ def test_real_skill_critical_spans_end_inside_the_compaction_window(skill):
             end = body.find('\n\n', start)
         end = len(body) if end == -1 else end
         assert end <= window, f'{marker!r} ends at {end}, past {window}'
+
+
+def _late_headings(skill):
+    found = cc.check_compaction_window(cc.REPO, [skill], _window_params())
+    return sorted(ast.literal_eval(f.message.split('heading ', 1)[1].rsplit(' starts past', 1)[0])
+                  for f in found if 'starts past' in f.message)
+
+
+@pytest.mark.parametrize('skill', sorted(ACKNOWLEDGED_LATE))
+def test_real_skill_late_headings_match_the_acknowledged_set(skill):
+    late, acknowledged = _late_headings(skill), sorted(ACKNOWLEDGED_LATE[skill])
+    assert late == acknowledged, (f'{skill} has late critical headings {late}, but ACKNOWLEDGED_LATE lists '
+                                  f'{acknowledged}: a new late heading belongs inside the compaction window; '
+                                  'a heading that is gone comes off the list, and the row and its exception '
+                                  'go once the body fits the window')
 
 
 PERSON_PARAMS = {'pronouns': ['i', 'we', 'you', 'your']}

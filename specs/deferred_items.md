@@ -3579,12 +3579,14 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       and 21.0k, so a compaction late in a plan can drop them. subagent-driven-development
       is a discipline skill, so its moves are micro-tested under writing-skills. Removing
       the exception fails `test_real_skill_spans_match_the_compaction_waiver` by design
-      (plan 47): in the same change, retire the `critical_placement` commit lint (its
-      runner line, its `CHECKS` entry and `test_late_critical_section_is_refused` in
-      `build/test_commit_lints.py`, and the "Critical-section placement" block in
-      `CLAUDE.md`), the `test_real_skill_*` tests and `CRITICAL_SPANS` in
-      `build/test_check_conformance.py`, and set the lint count back to seven where plan 47
-      raised it. Size: plan.
+      (plan 47): in the same change, remove the two files' rows from `CRITICAL_SPANS` in
+      `build/test_check_conformance.py` and `test_late_critical_section_is_refused` from
+      `build/test_commit_lints.py`. While `writing-skills-late-critical-headings` stays, so
+      does the `critical_placement` commit lint (plan 48). When the last `compaction-window`
+      exception goes, retire the lint too: its runner line, its `CHECKS` entry and
+      `test_late_heading_in_acknowledged_file_is_refused` in `build/test_commit_lints.py`,
+      the "Critical-section placement" block in `CLAUDE.md`, the `test_real_skill_*` tests
+      and `ACKNOWLEDGED_LATE`, and set the lint count back to seven. Size: plan.
       Done when: both bodies are at most 20,000 characters and the exception is removed with
       `build/check_conformance.py` passing.
 - [x] Run the placement tests in a commit lint (plan 46 review): `apply_waivers`
@@ -3621,7 +3623,7 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       pre-registered bars on it, with the already-merged prompt in the kit.
 
 ## 47-placement-lint — 2026-10-16
-- [ ] Cover the second per-file `compaction-window` waiver in the placement guard (plan
+- [x] Cover the second per-file `compaction-window` waiver in the placement guard (plan
       47 review, reviewer recommendation; deferred at the completion gate by the owner,
       and out of scope under D1): exception `writing-skills-late-critical-headings` in
       `build/cc_guide/conformance.toml` waives `compaction-window` for
@@ -3637,3 +3639,41 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       guard widens, and either a late critical heading added to
       `skills/writing-skills/SKILL.md` fails a commit lint or the item is dropped with the
       reason recorded.
+      → done in plan 48 (2026-10-16): the owner chose to ratchet the two accepted late
+      headings by text. `ACKNOWLEDGED_LATE` and
+      `test_real_skill_late_headings_match_the_acknowledged_set` in
+      `build/test_check_conformance.py` fail unless exactly those two start past the
+      window, `test_real_skill_spans_match_the_compaction_waiver` now covers every
+      `compaction-window` exception, and `test_late_heading_in_acknowledged_file_is_refused`
+      appends a `## Warning` to `skills/writing-skills/SKILL.md` in a clone and expects only
+      `critical_placement` to fail. The exception stays until portability Stage D moves
+      the STOP section inside the window.
+
+## 48-compaction-late-heading-ratchet — 2026-10-16
+- [ ] Close the blind spots of the `compaction-window` heading heuristic (plan 48 review,
+      reviewer recommendation; deferred at the completion gate because the spec's
+      non-goals bar any change to `check_compaction_window`):
+      `check_compaction_window` in `build/check_conformance.py` reports a late heading only
+      when the line matches `ANY_HEADING_RE` (`#{1,6}[ \t]` at column 0) and contains a
+      register word with `\b` boundaries. These forms therefore pass every lint, in
+      `writing-skills` (`ACKNOWLEDGED_LATE`) and in the two `CRITICAL_SPANS` skills alike:
+      an indented ATX heading (` ## Warning`), a setext heading, a singular or plural of a
+      listed word (`## Warnings`, `## Red Flag`, `## Gotcha`), and a bold-led critical
+      paragraph (the form `**A roadmap stage**` takes in `CRITICAL_SPANS`). Changing the
+      check means editing it and its unit tests in `build/test_check_conformance.py`, and
+      re-running it over `skills/` first, since new matches may need placement or waiver
+      decisions. Size: plan. Done when: each form is reported past the window, with a test
+      for each, and any new match is placed or waived; or the owner records the forms as
+      accepted limits.
+- [ ] Pin the `_late_headings` parse with a positive control (plan 48 review, reviewer
+      Minor; deferred at the completion gate as unneeded today): `_late_headings` in
+      `build/test_check_conformance.py` reads the heading out of the check's message with
+      `split`, `rsplit` and `ast.literal_eval`. While a row is non-empty, a reworded
+      message fails closed (the parsed list is empty, or the parse raises). Once
+      `ACKNOWLEDGED_LATE['skills/writing-skills/SKILL.md']` is empty while its exception
+      stays, a reworded message passes vacuously. `test_compaction_window_flags_a_critical_heading_past_the_window`
+      pins the wording, but only in the full suite, not in the `-k test_real_skill` commit
+      lint. Fix: give `_late_headings` `root` and `params` arguments, and add a
+      `test_real_skill_…` test on a `tmp_path` skill with a known late heading, so the
+      lint selects it. Size: quick-fix. Revisit if: portability Stage D empties a row while
+      its exception stays, or the check's message wording changes.
