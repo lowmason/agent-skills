@@ -31,7 +31,8 @@
 
 ## Decisions
 
-None.
+- **D1** (owner, plan review, 2026-10-17): the plan is approved as written, settled defaults DF1–DF9 included, with Task 2's spec amendments A1–A6 worded as shown. Applied in: Tasks 1–10, Task 2 (spec amendment).
+- **D2** (owner, plan review, 2026-10-17): Q1 takes option (b). `rebaseline` is to refuse when `fetch.json`'s head differs from the head of the packet it settles, as `audited --to` already does for audits. That change belongs to Stage 3's tools, not this stage, so this plan logs it as a deferred item at completion. Until it lands, the Global Constraint against a live refresh during a `/cc-guide` run stays. Applied in: Planning record (Q1), Plan completion notes.
 
 ---
 
@@ -92,7 +93,7 @@ Every code block in Tasks 2–8 was replayed, in task order, onto a throwaway cl
   - (b) Guard it in Stage 3's tools: `settle` prints `rebaseline --head <packet head>`, and `rebaseline` refuses when `fetch.json`'s head differs, as `audited --to` already does for audits. This is a follow-up plan, logged as a deferred item.
   - (c) Accept it and document an operating rule in `build/CLAUDE.md`: finish a `/cc-guide` run's rebaseline before starting another session in the repo.
 
-  The plan as written takes (c)'s rule only as the Global Constraint above, which covers this plan's own live steps. Plan review picks one; (a) adds a task here, (b) adds a deferred item at completion.
+  The plan applies (c)'s rule only as the Global Constraint above, which covers this plan's own live steps. **Decided: (b) (D2).** The guard is logged as a deferred item at completion (Plan completion notes), and no task is added here.
 
 ### Coverage gaps (R4.3; listed in the completion report for the owner)
 
@@ -1810,6 +1811,27 @@ The session's own `refresh` replaces it with the real notice.
 ## Plan completion notes
 
 - **Step 1, gate.** Leftovers that need the owner go to them in one batch. That includes Task 1's `claude -p` observation for Stage 5, and the coverage gaps G1–G5, with any gap execution found.
-- **Step 3, deferred items.** Tick "check's report and inputs, for Stage 4's hook and notice" (section `38-claude-code-drift-automation`) with: `→ done in plan 49: (a) needs no fix for the hook, since check --hook writes the notice and its record on every exit path and nothing in the hook reads the report; (b) refresh runs the check without its caller's GIT_* variables, and Source is unchanged because the pre-commit lint relies on git's environment; (c) check runs the audit due rule when the fetch fails.` Append items only for what this plan deferred.
+- **Step 3, deferred items.** Tick "check's report and inputs, for Stage 4's hook and notice" (section `38-claude-code-drift-automation`) with: `→ done in plan 49: (a) needs no fix for the hook, since check --hook writes the notice and its record on every exit path and nothing in the hook reads the report; (b) refresh runs the check without its caller's GIT_* variables, and Source is unchanged because the pre-commit lint relies on git's environment; (c) check runs the audit due rule when the fetch fails.` Then append this plan's section, which holds at least D2's item:
+
+  ```markdown
+  - [ ] Pin `baseline rebaseline` to its packet's head (plan 49, Q1, owner decision D2). A
+        session start can now refetch the docs: `notice.sh refresh` runs `check --hook`
+        once the hook's last good check is a day old, and when the changelog head has
+        moved, that rewrites the shared `~/.cache/agent-skills/cc-guide/latest/`. A manual
+        `check` can do the same. `baseline rebaseline` (`build/cc_guide/baseline.py`,
+        `cli.py`'s `run_baseline`) re-hashes from `latest/` at whatever head
+        `fetch.json` holds, so a refetch between a `/cc-guide` verify and the rebaseline
+        `settle` prints records hashes for docs text the verifier never read. Only
+        `baseline audited` is pinned, through `--to` (plan 44). Fix: `settle`
+        (`build/cc_guide/settle.py`) prints `rebaseline --head <the packet's index.json
+        head>`, and `rebaseline` refuses when `fetch.json`'s `changelog_head` differs,
+        naming both heads. This amends drift spec R7 and R8.8. Until it lands, finish a
+        `/cc-guide` run's rebaseline before starting another session in the repo. Size:
+        plan. Done when: `rebaseline --head` refuses a moved head with a test in
+        `build/cc_guide/test_cli.py`, `settle` prints the flag with a test in
+        `build/cc_guide/test_settle.py`, and the spec states the rule.
+  ```
+
+  Append further items only for what execution deferred.
 - **Step 4, triage.** The backlog holds 62 open items at `b7beaa1`, over the 20-item threshold, so the triage proposal runs.
 - **Step 5, retire.** `git mv` this plan to `specs/plans/completed/`. The spec stays in `specs/`, since Stage 5 (probes) remains. Re-point this plan's relative links, if any, for the new depth.
