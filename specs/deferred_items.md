@@ -3129,7 +3129,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       unlisted label is a violation, and `test_cli.py` pins the wording.
 
 ## 44-claude-code-drift-automation — 2026-10-13
-- [ ] Run drift Stage 3's first jobs (plan 44's Live run). After plan 44 merges, from a fresh
+- [x] Run drift Stage 3's first jobs (plan 44's Live run). After plan 44 merges, from a fresh
       worktree (`git -C /Users/lowell/Projects/agent-skills worktree add
       .claude/worktrees/cc-drift-first-jobs -b chore/cc-drift-first-jobs origin/main`, then a
       session started there so `/cc-guide` and `cc-guide-verifier` load from its `.claude/`), run
@@ -3150,6 +3150,11 @@ declined as YAGNI (zero instances in a one-page wiki).
       corrections are applied. C is done: all nine files are reviewed and the three known drifts
       settled. D, the owner's review of this diff, is left. The item stays open for Validation
       3's triage bullet, which waits for the next release.
+      → done 2026-10-17 (`claude/elated-taussig-004443`): D landed with lowmason/agent-skills#42
+      (c2867bd). Validation 3's triage bullet is met: `/cc-guide triage` took 2.1.299–2.1.302,
+      the first releases after 2.1.296, with 172 block findings in one packet, and settle exited
+      0 (195 items answered, 4 of 4 releases covered, 0 quotes not found, 0 unparseable, 0 left
+      out; 2.1.299's coverage line stood as written).
 - [x] A cross-group block can still be rebaselined by its own group's verify (plan 44's fix
       wave, the I2 residual; owner deferred 2026-10-13). The owner's design (a) holds a group's
       rebaseline in triage while a section that a row for one of its blocks flagged in another
