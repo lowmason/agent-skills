@@ -32,7 +32,9 @@ Every task's requirements include these.
 
 ## Decisions
 
-None yet. The plan review settles Q1.
+- **D1** (owner, plan review, 2026-10-18): Q1 option (a): the `build/cc_guide` suite is named `cc_guide`, after its directory, as `build` and `hooks` are named. Applied in: Task 1 (spec amendment), Tasks 5 and 7.
+- **D2** (owner, plan review, 2026-10-18): the nine settled defaults, DF1 to DF9, stand as written. Applied in: Tasks 2 to 7.
+- **D3** (owner, plan review, 2026-10-18): plan 52's Q4 (where `CLAUDE.md` finds room) is option (c), as the owner chose in this plan's brainstorming (spec decision 2). Plan 52's D6 on `main` records option (a), "approved by merging PR #58"; asked which record stands, the owner chose (c). Plan 52's planning session amends its D6 and its Task 6. Applied in: Couplings.
 
 ---
 
@@ -48,6 +50,7 @@ None yet. The plan review settles Q1.
 - **`dmi-handoff-consistency`** (`build/check_conformance.py`) fails when an agent-facing Markdown file names a manual-only skill by its bare name. `.claude/skills/cc-guide` is manual-only, so a `CLAUDE.md` line that names a suite `cc-guide` fails the conformance lint. The prototype showed it (`check_conformance.py` exit 1). See Q1.
 - **`build/test_commit_lints.py`** clones `HEAD` and copies in only the working-tree runner and hook. So `run_suites.py` and `suites.toml` must be committed before Task 6's tests run; Tasks 2–5 commit them.
 - **The refusal case.** `skills/tech-debt/scripts/` holds only `scan.sh`, and `orphan-bundled-file` exempts `test_*` files, so a first `test_scan.py` there trips only the new lint. Against the unchanged runner, the new test and `test_runner_fails_closed_without_uv` fail; with the ninth lint, the whole file passes.
+- **`main` moved** to `87e43fc` during planning: PR #58 merged plan 52's plan, and PR #59 its Q2 amendment and review decisions. Only `specs/plans/52-write-with-asd-ste100.md` changed, so every `CLAUDE.md` fact above still holds.
 - **Plan 53's `CLAUDE.md` anchors** are line 133 (the frontmatter-lint comment), the attribution paragraph and the `bayesian-workflow` provenance bullet. None lies in the lines that Task 7 deletes.
 
 ### Prototype and replay
@@ -55,7 +58,8 @@ None yet. The plan review settles Q1.
 On 2026-10-18 the code in Tasks 2–7 was written and run in a scratch clone of `151ea9f`. Tasks 2–5 were then replayed from this plan's blocks in a fresh clone. Each red and green state printed the Expected line given below, and the assembled `run_suites.py` and `test_run_suites.py` were byte-identical to the prototype. On the prototype:
 - Task 6's two red failures and its green run were confirmed;
 - Task 7's edits ended `CLAUDE.md` at 145 lines, with `check_conformance.py` and all nine commit lints passing;
-- the comparison found every suite the same, direct and through the runner, the build suite included (both exit 1, with the same 4 `.scratch` failures).
+- the comparison script, as Task 7 gives it, found all 18 suites the same, direct and through the runner, the build suite included (both exit 1, with the same 4 `.scratch` failures).
+- one `--all` run printed the `skip cc_guide` line, passed every run except `build (3.13)` (the `.scratch` failures) and ended `suite runs failed: build (3.13)` with exit 1.
 
 ### Settled defaults (the owner reviews these)
 
@@ -69,15 +73,15 @@ On 2026-10-18 the code in Tasks 2–7 was written and run in a scratch clone of 
 - **DF8, the comparison covers every suite**, not only hooks, build and bayesian-workflow (spec Testing). It costs about 6 minutes.
 - **DF9, the import test's control.** The control becomes "line 1 starts with `<!-- cc-guide: ` and contains ` @`" (R5.4). It needs no `re` import.
 
-### Open questions for plan review
+### Plan-review questions (settled)
 
 - **Q1, the name of the `build/cc_guide` suite.** The spec calls it `cc-guide` (R2.2, the R2.3 table, R3.6 and R5.1). That is also the name of the manual-only `/cc-guide` skill, and the `dmi-handoff-consistency` lint refuses a bare `cc-guide` in `CLAUDE.md`, where R5.1 puts the suite's name.
-  - (a) Name the suite `cc_guide`, after its directory, as `build` and `hooks` are named. Task 1 amends the spec. Recommended, and the plan carries (a).
+  - (a) Name the suite `cc_guide`, after its directory, as `build` and `hooks` are named. Task 1 amends the spec. The owner chose (a) (D1).
   - (b) Keep `cc-guide`, and keep the drift-detector comment's "its suite" unchanged. Task 1 instead amends only R5.1's row, to "Drop line 145; the comment is unchanged". Any later mention of the suite in an agent-facing Markdown file would trip the lint again.
 
 ### Couplings
 
-- **Plan 52 (write-with-asd-ste100).** The owner chose its Q4 (where `CLAUDE.md` finds room) as option (c) on 2026-10-18 (spec decision 2), so this plan lands first. Plan 52's Task 6 then drops its `CLAUDE.md:commands-moved` and `CLAUDE.md:commands` edits and adds this registry entry, before `writing-plans` in name order:
+- **Plan 52 (write-with-asd-ste100).** The owner chose its Q4 (where `CLAUDE.md` finds room) as option (c) on 2026-10-18 (spec decision 2), and kept (c) at this plan's review over plan 52's own D6, which records option (a) (D3). So this plan lands first, and plan 52's planning session amends its D6 and its Task 6. Plan 52's Task 6 then drops its `CLAUDE.md:commands-moved` and `CLAUDE.md:commands` edits and adds this registry entry, before `writing-plans` in name order:
 
 ```toml
 [[suite]]
@@ -155,7 +159,7 @@ uv run --directory build --python 3.13 --with pytest --with numpy --with polars 
 
 Expected: a summary line to write down for Task 7. In a worktree there is no `build/.scratch/`, so it reads `4 failed, … passed, … skipped`, and the four `FAILED` lines are `test_verify_citations.py`'s ground-truth tests (`FileNotFoundError`). Where `build/.scratch/` exists, no test fails.
 
-- [ ] **Step 5: Amend the spec (Q1).** Under Q1 (b), make only the fourth edit, with the (b) text. Make four replacements in `specs/test-suite-registry.md`.
+- [ ] **Step 5: Amend the spec (D1).** Make four replacements in `specs/test-suite-registry.md`.
 
 Replace
 
@@ -201,16 +205,10 @@ Replace
 | 141–145 | Drop line 145, the `cd build/cc_guide && …` command. The comment names the suite `run_suites.py cc-guide` instead of "its suite". |
 ````
 
-with (Q1 (a))
+with
 
 ````markdown
 | 141–145 | Drop line 145, the `cd build/cc_guide && …` command. The comment names the suite `cc_guide` instead of "its suite" (owner, plan 54, 2026-10-18): a bare `cc-guide` in `CLAUDE.md` names the manual-only `/cc-guide` skill, which the `dmi-handoff-consistency` check refuses. |
-````
-
-or with (Q1 (b))
-
-````markdown
-| 141–145 | Drop line 145, the `cd build/cc_guide && …` command. The comment is unchanged (owner, plan 54, 2026-10-18): a bare `cc-guide` in `CLAUDE.md` names the manual-only `/cc-guide` skill, which the `dmi-handoff-consistency` check refuses. |
 ````
 
 Then confirm that no stale name is left:
@@ -219,7 +217,7 @@ Then confirm that no stale name is left:
 grep -n -e 'cc-guide' specs/test-suite-registry.md
 ```
 
-Expected under (a): only lines that name the `/cc-guide` skill, the `<!-- cc-guide: … -->` stamp, or the amendment's own reason. No line names a suite `cc-guide`.
+Expected: only lines that name the `/cc-guide` skill, the `<!-- cc-guide: … -->` stamp, or the amendment's own reason. No line names a suite `cc-guide`.
 
 - [ ] **Step 6: Commit.**
 
@@ -228,7 +226,7 @@ git add specs/test-suite-registry.md
 ```
 
 ```bash
-git commit -m "docs(specs): name the build/cc_guide suite cc_guide (plan 54, Q1)" -m "A bare cc-guide in CLAUDE.md names the manual-only /cc-guide skill, which dmi-handoff-consistency refuses, so the suite takes its directory's name, as build and hooks do."
+git commit -m "docs(specs): name the build/cc_guide suite cc_guide (plan 54, D1)" -m "A bare cc-guide in CLAUDE.md names the manual-only /cc-guide skill, which dmi-handoff-consistency refuses, so the suite takes its directory's name, as build and hooks do."
 ```
 
 ### Task 2: The registry model
@@ -1027,7 +1025,7 @@ uv run --directory build --python 3.13 --with pytest python -m pytest -q test_ru
 
 Expected: `1 failed, 50 passed`. The failure is `FileNotFoundError: … build/suites.toml`.
 
-- [ ] **Step 3: Write the registry.** Create `build/suites.toml`. Each entry carries its `CLAUDE.md` command and comment (spec R2.3). Under Q1 (b), the `cc_guide` entry's name is `cc-guide`, and it sorts after `build` either way.
+- [ ] **Step 3: Write the registry.** Create `build/suites.toml`. Each entry carries its `CLAUDE.md` command and comment (spec R2.3).
 
 ```toml
 # Test-suite registry: one [[suite]] table for each directory-scoped pytest suite,
@@ -1586,7 +1584,7 @@ with
 # .github/workflows/lints.yml runs them on PRs and main as an advisory check; the hook is the gate.
 ````
 
-Replace (Q1 (a) only; under (b), leave this line unchanged)
+Replace
 
 ````markdown
 # Claude Code guide drift detector (build/cc_guide/): its suite; lint, run before committing a change to the guide, to
@@ -1640,7 +1638,7 @@ Expected: `145 CLAUDE.md`, or 145 plus whatever another plan added (Task 1, Step
 uv run --python 3.13 --with pyyaml python build/check_conformance.py
 ```
 
-Expected: exit 0. A `dmi-handoff-consistency` finding that names `cc-guide` means that a bare `cc-guide` is left in `CLAUDE.md` (Q1).
+Expected: exit 0. A `dmi-handoff-consistency` finding that names `cc-guide` means that a bare `cc-guide` is left in `CLAUDE.md` (D1).
 
 ```bash
 uv run --directory build --python 3.13 --with pytest --with numpy --with polars --with pyyaml python -m pytest -q -rf
