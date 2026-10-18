@@ -399,6 +399,41 @@ Changes from upstream:
     It names the sections of this repo's Claude Code guide that the file
     rests on, so a docs change flags it for review
     (specs/claude-code-drift-automation-spec.md, R4). No parsed field changed.
+  - Five fixes were later adopted FROM upstream (plan 50, 2026-10-18),
+    each read at the upstream commit named here and each shown failing
+    here, by a test or a probe, before it was ported. From v6.2.0,
+    systematic-debugging/find-polluter.sh's pattern handling (6015d37,
+    #2011, fixing issue #2008; and c8921b5): a leading ./ is stripped, the
+    pattern is matched both as given and with **/ collapsed, so
+    src/**/*.test.ts also finds src/top.test.ts, and an empty match counts
+    as no files rather than one. From v6.4.1, review-package's two range
+    guards (99f9f00, #2136, fixing issue #2050), which exit 3 when BASE is
+    not an ancestor of HEAD or the range is empty. From v7.0.0:
+    sdd-workspace writes its .gitignore only when none exists (19e54c0,
+    #2399); brainstorming's server.cjs inserts each screen through a
+    replacer function, so $' and $& in a screen stay literal (ddd35ab,
+    #2364); and systematic-debugging/SKILL.md's multi-layer diagnostic
+    example reports whether IDENTITY is set without printing its value
+    (e592b34, #2380). The lines taken are upstream's verbatim, including
+    find-polluter.sh's new comments and find command. Three parts diverge
+    deliberately. find-polluter.sh keeps its local TEST_CMD, and when no
+    test file matches it says no test ran and exits 2, where upstream
+    reports "Found 0" and still ends on its all-clear line with exit 0.
+    sdd-workspace keeps this repo's .sdd/ rather than upstream's
+    .superpowers/sdd/, and 19e54c0's CDPATH respelling is not taken,
+    since this copy never sets CDPATH. And the tests are this repo's
+    pytest, not upstream's: test_find_polluter.py (new) adapts the cases
+    of upstream's test-find-polluter.sh; test_sdd_scripts.py's
+    range-guard tests cover upstream's two cases, using a sibling branch
+    that carries a file and adding the swapped range, and its .gitignore
+    test uses upstream's committed-ignore setup; and
+    brainstorming/scripts/test_server.py (new) takes ddd35ab's token list,
+    loading server.cjs through a Module._compile harness so that file
+    keeps upstream's one-line change. Separately, and not from upstream,
+    root-cause-tracing.md's find-polluter.sh call now carries the
+    <this-skill-dir>/ anchor the bundled-script-path entry above gave the
+    other skills; upstream's #2301 prefixes bash but still resolves the
+    path against the user's repository.
 
     brainstorming/
     dispatching-parallel-agents/
