@@ -142,6 +142,22 @@ def test_workspace_ignores_itself_so_artifacts_never_reach_git_status(repo):
     assert '.sdd' not in status
 
 
+def test_workspace_leaves_a_committed_gitignore_alone(repo):
+    """A repository may commit its own .sdd/.gitignore, for instance to keep
+    progress ledgers under version control. Writing '*' on every run
+    reverted that file in the working tree."""
+    own = '*\n!.gitignore\n!*/\n!*/progress.md\n'
+    (repo / '.sdd').mkdir()
+    (repo / '.sdd' / '.gitignore').write_text(own)
+    git('add', '.sdd/.gitignore', 'plan.md', cwd=repo)
+    git('commit', '-qm', 'version the ledgers', cwd=repo)
+    result = run(WORKSPACE, repo / 'plan.md', cwd=repo)
+    assert result.returncode == 0
+    assert (repo / '.sdd' / '.gitignore').read_text() == own
+    status = run('git', 'status', '--porcelain', '--', '.sdd/.gitignore', cwd=repo)
+    assert status.stdout == ''
+
+
 def test_workspace_separates_two_plans_in_one_working_tree(repo):
     """The bug this change exists to fix: a flat workspace let a second plan
     read the first plan's ledger as its own progress and skip live tasks."""
