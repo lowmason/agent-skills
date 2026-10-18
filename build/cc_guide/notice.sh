@@ -122,7 +122,7 @@ check_now() {
     count=$(cat "$cache/unfinished" 2>/dev/null)
     case $count in ''|*[!0-9]*) count=0 ;; esac
     count=$((count + 1))
-    { printf '%s\n' "$count" > "$cache/unfinished"; } 2>/dev/null
+    { printf '%s\n' "$count" > "$cache/.unfinished.$$.tmp" && mv -f "$cache/.unfinished.$$.tmp" "$cache/unfinished"; } 2>/dev/null || rm -f "$cache/.unfinished.$$.tmp" 2>/dev/null
     if [ "$count" -ge "$UNFINISHED_LIMIT" ]; then
         fail_notice "the drift check did not finish $count times in a row" 'run build/cc_guide/cli.py check'
     fi

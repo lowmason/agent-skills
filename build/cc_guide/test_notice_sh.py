@@ -251,3 +251,25 @@ def test_refresh_runs_the_check_without_the_callers_git_variables(fake_uv):
     home, env = fake_uv
     quiet(sh(home, 'refresh', env={**env, 'GIT_DIR': '/nonexistent', 'GIT_INDEX_FILE': '/nonexistent/index'}))
     assert (home / 'uv-git-env').read_text() == ''
+
+
+def test_refresh_replaces_unfinished_by_renaming_a_temp_file_in_the_cache(fake_uv, tmp_path):
+    '''refresh replaces unfinished by mv -f of a hidden temp file in the cache (the file contract).'''
+    home, env = fake_uv
+    cache = cache_of(home)
+    stubs = tmp_path / 'stubs'
+    stubs.mkdir()
+    log = tmp_path / 'mv.log'
+    log.touch()
+    stub = stubs / 'mv'
+    stub.write_text(f'#!/bin/sh\n{{ printf \'%s\\n\' "$@"; echo --; }} >> {log}\nexec /bin/mv "$@"\n')
+    stub.chmod(0o755)
+    path = env['PATH']
+    quiet(sh(home, 'refresh', env={**env, 'PATH': f'{stubs}:{path}', 'FAKE_UV': 'fail'}))
+    calls = [call.splitlines() for call in log.read_text().split('--\n')[:-1]]
+    onto = [args for args in calls if args[-1] == str(cache / 'unfinished')]
+    assert len(onto) == 1, 'unfinished is replaced by exactly one mv'
+    temp = Path(onto[0][-2])
+    assert (temp.parent, temp.name[0], temp.suffix) == (cache, '.', '.tmp')
+    assert (cache / 'unfinished').read_text() == '1\n'
+    assert not [entry for entry in cache.iterdir() if entry.suffix == '.tmp']
