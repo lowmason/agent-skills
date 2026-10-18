@@ -1,7 +1,8 @@
 '''`check`: fetch the docs when the changelog head moved, compare each group's
 selected blocks with the baseline, list each section's untriaged releases
-and the files citing it, and report what is due (drift spec R6). `--hook`
-(R6.10) is Stage 4's; packets.py builds R6.11's packets from these parts.'''
+and the files citing it, and report what is due (drift spec R6). For
+`--hook` (R6.10), notice.py turns the report into the session-start notice;
+packets.py builds R6.11's packets from these parts.'''
 import hashlib
 import http.client
 import json
@@ -341,8 +342,9 @@ def check(source: Source, cache: Path, *, docs_dir: Path | None, today: date, no
         })
         due.update({'blocks': len(findings),
                     'changelog': due_changelog(state, releases, manifest.cadence['changelog_days'], today),
-                    'probes': due_probes(manifest, rows, releases[0].label, manifest.cadence['probe_days'], today),
-                    'audit': due_audit(manifest, state, manifest.cadence['audit_days'], today)})
+                    'probes': due_probes(manifest, rows, releases[0].label, manifest.cadence['probe_days'], today)})
+    # R6.3: the due rules always run. The audit clock needs only the baseline, so a failed fetch keeps it.
+    due['audit'] = due_audit(manifest, state, manifest.cadence['audit_days'], today)
     report['due'] = due
     report['errors'] = errors
     anything = (due['lint'] or due.get('blocks') or (due.get('changelog') or {}).get('due')
@@ -388,8 +390,8 @@ def summary(report: dict, path: Path) -> list[str]:
                      f"({batch['oldest_date']}); batch due from {batch['due_from']}" + (', due' if batch['due'] else ''))
         lines.append('probes: none due' if not due['probes'] else
                      'probes: ' + '; '.join(f"{p['probe']} ({p['why']})" for p in due['probes']))
-        audit = due['audit']
-        lines.append(f"audit: {audit['group']} due from {audit['due_from']}" + (', due' if audit['due'] else ''))
+    audit = due['audit']
+    lines.append(f"audit: {audit['group']} due from {audit['due_from']}" + (', due' if audit['due'] else ''))
     lines += [f'error: {e}' for e in report['errors']]
     lines.append({0: 'nothing due', 1: 'something is due', 2: 'error'}[report['exit']] + f'; report {path}')
     return lines
