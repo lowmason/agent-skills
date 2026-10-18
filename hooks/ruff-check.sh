@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# cc-guide: hooks.events hooks.exit-codes hooks.patterns @2.1.296
+# cc-guide: hooks.events hooks.exit-codes hooks.patterns @2.1.302
 # Stop hook — before the turn ends, surface ruff lint errors that --fix could not
 # auto-resolve (e.g. undefined names, unused-but-referenced, complexity rules).
 #

@@ -4,7 +4,7 @@ description: Use for reviews dispatched by the requesting-code-review skill and 
 tools: Read, Grep, Glob, Bash
 model: opus
 effort: xhigh
-# cc-guide: subagents.frontmatter subagents.tools @2.1.296
+# cc-guide: subagents.frontmatter subagents.tools @2.1.302
 ---
 
 You are a Senior Code Reviewer with expertise in software architecture,

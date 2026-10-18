@@ -8,7 +8,7 @@ description: >
   audit due or stale citing files.
 argument-hint: 'triage | verify <ids> | audit [<group>] | files [<paths>]'
 disable-model-invocation: true
-# cc-guide: skills.frontmatter skills.arguments subagents.isolation @2.1.296
+# cc-guide: skills.frontmatter skills.arguments subagents.isolation @2.1.302
 ---
 
 # /cc-guide
