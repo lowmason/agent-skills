@@ -1,5 +1,7 @@
 # Superpowers Upstream Fixes Implementation Plan
 
+**Status: COMPLETE (2026-10-18)** — executed via executing-plans; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Port five small, probe-verified obra/superpowers bug fixes into this repo's adapted copies, showing each bug failing before it is fixed.
@@ -57,7 +59,9 @@ Upstream: `6015d37` (PR #2011, fixing issue #2008) and `c8921b5`, released in v6
 - Consumes: nothing from other tasks.
 - Produces: exit status 2 from `find-polluter.sh` when no test file matches. Task 6's `NOTICE` entry describes it.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
+
+> Deviation: after the whole-branch review, the fixture also gained a top-level `test_root.py`, and `test_documented_pytest_pattern_still_matches` now expects it ("Found 2 test files"): RED on the ported script under both bashes, GREEN after af6cf7b.
 
 Create `skills/systematic-debugging/test_find_polluter.py`:
 
@@ -191,7 +195,7 @@ def test_names_the_polluter_after_running_clean_tests_first(bash, project, tmp_p
     assert result.returncode == 1
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `cd skills/systematic-debugging && uv run --python 3.13 --with pytest python -m pytest -q`
 
@@ -204,7 +208,9 @@ Expected, with two distinct bashes (+4 test functions, +10 cases): 8 failed, 2 p
 
 With one bash, halve the counts.
 
-- [ ] **Step 3: Port the fix**
+- [x] **Step 3: Port the fix**
+
+> Deviation: Codex's review found that the `./` prefix drops top-level files from `'*/test_*.py'` (the old `-path` matched `./test_x.py`, its `*` taking the `.`), so af6cf7b added the bare pattern as a third `-path` alternative. The header also notes the several-`**/` limit and says a 0 is clean only if no test was skipped, and the no-match hint names example patterns (review Minors 1, 2 and 6).
 
 In `skills/systematic-debugging/find-polluter.sh`, after the header's last `TEST_CMD` example line (`#   TEST_CMD='go test'     ./find-polluter.sh '.git' '*_test.go'`), add:
 
@@ -246,12 +252,14 @@ TOTAL=$(printf '%s\n' "$TEST_FILES" | wc -l | tr -d ' ')
 
 The two comments and the `find` line are upstream's (`c8921b5`); the empty branch is this port's (S4).
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run: `cd skills/systematic-debugging && uv run --python 3.13 --with pytest python -m pytest -q`
 Expected: 10 passed (5 with one bash). A failure under `/bin/bash` alone means the `${…//…/}` substitution misbehaves on bash 3.2: stop and report it.
 
-- [ ] **Step 5: Re-anchor the invocation and record the suite's command**
+- [x] **Step 5: Re-anchor the invocation and record the suite's command**
+
+> Deviation: CLAUDE.md's two new entries, this one and Task 3's, share one comment line. With separate entries the file reached 202 lines, and `check_conformance.py`'s claude-md-size rule (fewer than 200) blocked Task 3's commit. It is now 199.
 
 In `skills/systematic-debugging/root-cause-tracing.md`, replace line 102:
 
@@ -277,7 +285,9 @@ In `CLAUDE.md`'s Commands block, after the `subagent-driven-development dispatch
 cd skills/systematic-debugging && uv run --python 3.13 --with pytest python -m pytest -q
 ```
 
-- [ ] **Step 6: Lint and commit**
+- [x] **Step 6: Lint and commit**
+
+> Deviation: the repo's pre-commit hook runs `build/run_commit_lints.sh` on every commit, so in every task the lints ran there, once per commit, not by hand; each commit printed `commit lints passed`.
 
 ```bash
 bash build/run_commit_lints.sh
@@ -299,7 +309,7 @@ Upstream: `99f9f00` (PR #2136, fixing issue #2050), released in v6.4.1. Bug: wit
 - Consumes: nothing from other tasks.
 - Produces: exit status 3 from `review-package` on an empty or non-descendant range, with `empty commit range` or `HEAD is not a descendant of BASE` on stderr, and no package written.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to the review-package section of `test_sdd_scripts.py`, after `test_review_package_rejects_a_missing_plan_file`:
 
@@ -348,12 +358,12 @@ def test_review_package_rejects_a_base_that_is_not_an_ancestor(repo, base, head)
     assert not out.exists()
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `cd skills/subagent-driven-development/scripts && uv run --python 3.13 --with pytest python -m pytest -q`
 Expected (+2 test functions, +3 cases): 3 failed, every other test passed. Each failure is `assert 0 == 3`: the script wrote a package and exited 0.
 
-- [ ] **Step 3: Port the guards**
+- [x] **Step 3: Port the guards**
 
 In `skills/subagent-driven-development/scripts/review-package`, after line 23 (`git rev-parse --verify --quiet "$head" … exit 2; }`) and before `if [ $# -eq 4 ]; then`, insert upstream's lines verbatim:
 
@@ -367,12 +377,12 @@ git merge-base --is-ancestor "$base" "$head" || { echo "HEAD is not a descendant
 
 They sit before the `sdd-workspace` call and the write, so a rejected range leaves no package behind.
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run: `cd skills/subagent-driven-development/scripts && uv run --python 3.13 --with pytest python -m pytest -q`
 Expected: all passed, 0 failed. The existing exit-2 tests stay green because the plan-file and revision checks run first.
 
-- [ ] **Step 5: Lint and commit**
+- [x] **Step 5: Lint and commit**
 
 ```bash
 bash build/run_commit_lints.sh
@@ -395,7 +405,7 @@ Upstream: `ddd35ab` (PR #2364), released in v7.0.0. Bug: `wrapInFrame` (`skills/
 - Consumes: nothing from other tasks.
 - Produces: nothing other tasks use. `wrapInFrame` stays unexported; only the test harness exports it, in memory.
 
-- [ ] **Step 1: Probe the bug as the brief describes**
+- [x] **Step 1: Probe the bug as the brief describes**
 
 From the repo root:
 
@@ -413,7 +423,7 @@ console.log("verbatim:", page.includes(process.argv[2]), "| headers:", page.spli
 
 Expected today: `verbatim: false | headers: 1 | placeholder restored: true` (`$'` splices in the rest of the frame, `$&` the placeholder itself).
 
-- [ ] **Step 2: Write the failing test**
+- [x] **Step 2: Write the failing test**
 
 Create `skills/brainstorming/scripts/test_server.py`:
 
@@ -478,12 +488,12 @@ def test_wrap_in_frame_inserts_replacement_tokens_literally():
     assert '<!-- CONTENT -->' not in page
 ```
 
-- [ ] **Step 3: Run the test to verify it fails**
+- [x] **Step 3: Run the test to verify it fails**
 
 Run: `cd skills/brainstorming/scripts && uv run --python 3.13 --with pytest python -m pytest -q`
 Expected (+1 test): 1 failed, on `assert fragment in page`. If it fails anywhere else (the harness's return code, a missing export), the RED is for the wrong reason: fix the harness first.
 
-- [ ] **Step 4: Port the fix**
+- [x] **Step 4: Port the fix**
 
 In `skills/brainstorming/scripts/server.cjs:223`, replace:
 
@@ -497,12 +507,14 @@ with upstream's:
   return renderBranding(frameTemplate).replace('<!-- CONTENT -->', () => content);
 ```
 
-- [ ] **Step 5: Run the test to verify it passes, and re-run the probe**
+- [x] **Step 5: Run the test to verify it passes, and re-run the probe**
 
 Run: `cd skills/brainstorming/scripts && uv run --python 3.13 --with pytest python -m pytest -q`
 Expected: 1 passed. Re-run Step 1's probe: `verbatim: true | headers: 1 | placeholder restored: false`.
 
-- [ ] **Step 6: Record the suite's command**
+- [x] **Step 6: Record the suite's command**
+
+> Deviation: listed under Task 1's comment line, not a comment of its own; see Task 1 Step 5.
 
 In `CLAUDE.md`'s Commands block, after the entry Task 1 added, add:
 
@@ -511,7 +523,7 @@ In `CLAUDE.md`'s Commands block, after the entry Task 1 added, add:
 cd skills/brainstorming/scripts && uv run --python 3.13 --with pytest python -m pytest -q
 ```
 
-- [ ] **Step 7: Lint and commit**
+- [x] **Step 7: Lint and commit**
 
 ```bash
 bash build/run_commit_lints.sh
@@ -532,7 +544,7 @@ Upstream: `e592b34` (PR #2380), released in v7.0.0. Bug: `skills/systematic-debu
 - Consumes: nothing from other tasks.
 - Produces: nothing other tasks use.
 
-- [ ] **Step 1: Probe the current lines RED, with a dummy value only**
+- [x] **Step 1: Probe the current lines RED, with a dummy value only**
 
 `env -i` empties the environment, so no real variable can reach the output:
 
@@ -543,7 +555,7 @@ env -i PATH=/usr/bin:/bin /bin/bash -c 'echo "IDENTITY: ${IDENTITY:+SET}${IDENTI
 
 Expected: the first prints `IDENTITY: SETdummy-not-a-secret` and `IDENTITY=dummy-not-a-secret` (the value leaks twice); the second prints `IDENTITY: UNSET` and `IDENTITY not in environment`.
 
-- [ ] **Step 2: Replace the two lines with upstream's**
+- [x] **Step 2: Replace the two lines with upstream's**
 
 In `skills/systematic-debugging/SKILL.md`, replace line 98:
 
@@ -569,7 +581,7 @@ with:
    printenv IDENTITY >/dev/null 2>&1 && echo "IDENTITY in environment" || echo "IDENTITY not in environment"
 ```
 
-- [ ] **Step 3: Probe the new lines GREEN**
+- [x] **Step 3: Probe the new lines GREEN**
 
 ```bash
 env -i PATH=/usr/bin:/bin IDENTITY=dummy-not-a-secret /bin/bash -c 'echo "IDENTITY: $([ -n "${IDENTITY:-}" ] && echo SET || echo UNSET)"; printenv IDENTITY >/dev/null 2>&1 && echo "IDENTITY in environment" || echo "IDENTITY not in environment"'
@@ -578,7 +590,7 @@ env -i PATH=/usr/bin:/bin /bin/bash -c 'echo "IDENTITY: $([ -n "${IDENTITY:-}" ]
 
 Expected: `IDENTITY: SET` and `IDENTITY in environment`, with no `dummy-not-a-secret` anywhere; then `IDENTITY: UNSET` and `IDENTITY not in environment`.
 
-- [ ] **Step 4: Lint and commit**
+- [x] **Step 4: Lint and commit**
 
 ```bash
 bash build/run_commit_lints.sh
@@ -600,7 +612,7 @@ Upstream: `19e54c0` (PR #2399), released in v7.0.0. Bug: `skills/subagent-driven
 - Consumes: nothing from other tasks.
 - Produces: nothing other tasks use. A fresh repository still gets `*\n`, which the existing tests pin.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Add to the sdd-workspace section of `test_sdd_scripts.py`, after `test_workspace_ignores_itself_so_artifacts_never_reach_git_status`:
 
@@ -621,12 +633,12 @@ def test_workspace_leaves_a_committed_gitignore_alone(repo):
     assert status.stdout == ''
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `cd skills/subagent-driven-development/scripts && uv run --python 3.13 --with pytest python -m pytest -q`
 Expected (+1 test): 1 failed, on the content assertion (`'*\n' == '*\n!.gitignore\n…'`).
 
-- [ ] **Step 3: Port the fix**
+- [x] **Step 3: Port the fix**
 
 In `sdd-workspace`, replace line 47:
 
@@ -642,12 +654,12 @@ with upstream's:
 [ -e "$base/.gitignore" ] || printf '*\n' > "$base/.gitignore"
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run: `cd skills/subagent-driven-development/scripts && uv run --python 3.13 --with pytest python -m pytest -q`
 Expected: all passed, 0 failed.
 
-- [ ] **Step 5: Lint and commit**
+- [x] **Step 5: Lint and commit**
 
 ```bash
 bash build/run_commit_lints.sh
@@ -667,7 +679,9 @@ The message body names upstream `19e54c0` (#2399, v7.0.0) and the trailer.
 - Consumes: the upstream commits, releases and divergences Tasks 1–5 name.
 - Produces: nothing.
 
-- [ ] **Step 1: Add the NOTICE entry**
+- [x] **Step 1: Add the NOTICE entry**
+
+> Deviation: 6d63f75 corrected the entry after review. #2136's guards are "for the failure reported in issue #2050", which was closed as a duplicate on 2026-08-18, before #2136 merged. The entry also names which commits are ancestors of their release tag and which are dev-branch commits, and records the third `-path` alternative. It no longer calls the find command upstream's verbatim.
 
 After the entry that ends `(specs/claude-code-drift-automation-spec.md, R4). No parsed field changed.`, add:
 
@@ -706,7 +720,9 @@ After the entry that ends `(specs/claude-code-drift-automation-spec.md, R4). No 
     against the user's repository.
 ```
 
-- [ ] **Step 2: Check D7's condition**
+- [x] **Step 2: Check D7's condition**
+
+> Deviation: D7's condition held. While the plan ran, f9ae68d reached local main as c3a9cf7, and was pushed later. The app's sync tool fetches origin/main, which did not yet have c3a9cf7, so a local `git merge --no-ff main` (e737aa4) brought the revision in. The range touched only two `specs/` files. The markers landed in dbdfa61, and 6d63f75 added two review clauses.
 
 ```bash
 git fetch origin main
@@ -716,7 +732,9 @@ git merge-base --is-ancestor f9ae68d origin/main && echo merged-origin || echo n
 
 If neither prints `merged-…`, leave `specs/superpowers-drift-spec.md` alone and record that in the completion report. If either does, bring the branch up to date with the base branch first (`sync_with_base_branch` in an app worktree), then mark findings 8 (the `find-polluter.sh` item), 12 (the range guards and the `.gitignore` item) and 16 adopted by plan 50, in their sections, in the status table and in the Suggested disposition's "Done" line, and commit that with the `NOTICE` entry.
 
-- [ ] **Step 3: Lint and commit**
+- [x] **Step 3: Lint and commit**
+
+> Deviation: the NOTICE commit (9b27af6) went in before the merge, so the drift-spec markers have their own commit (dbdfa61) rather than sharing it.
 
 ```bash
 bash build/run_commit_lints.sh
@@ -727,3 +745,10 @@ git commit -m "docs(notice): record the five superpowers fixes adopted in plan 5
 ## Completion
 
 After Task 6, executing-plans' Step 3 reviews the whole branch (code-reviewer and Codex, launched together, BASE `git merge-base main HEAD`), then the writing-plans Plan Completion Protocol runs. No merge, push or PR: the integration choice is the owner's.
+
+Review record (BASE c3a9cf7, HEAD dbdfa61):
+- **Codex reviewed dbdfa61.** It ran with gpt-6-astra, a per-run override the owner approved; the Codex config was not edited. One P2, the drop of top-level matches, fixed in af6cf7b.
+- **code-reviewer (opus):** ready to merge, with no Critical or Important findings.
+  - Minors 1, 3, 4, 5 and 6 were fixed in af6cf7b and 6d63f75.
+  - Minor 2 (an all-skip run still ends on the all-clear) and the recommendation that SDD's SKILL.md say what exit 3 means were deferred to `specs/deferred_items.md`, section `50-superpowers-upstream-fixes`.
+  - Minor 7 was dropped. It concerns review-package's "not a descendant" message for a tree or blob argument. That line is upstream's verbatim, and it still exits non-zero before anything is written.

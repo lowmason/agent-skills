@@ -3849,3 +3849,27 @@ all 20 named a type.
       `test_check.py`: the audit-on-failed-fetch test asserts `audit` is present but not
       that `blocks`, `changelog` and `probes` are absent. Size: plan. Done when: each
       gap has a test, or the owner records it as not needed.
+
+## 50-superpowers-upstream-fixes — 2026-10-18
+- [ ] find-polluter.sh still ends on its all-clear when the pollution exists before the
+      first test (plan 50 code review, Minor 2). Every test is then skipped with a warning
+      line, and the run ends "✅ No polluter found - all tests clean!" with exit 0. The
+      documented '.git' check, run from a repository root, hits this. The behaviour was
+      there before plan 50 and is identical upstream. Plan 50's brief and audit X3 named
+      only the empty-match all-clear, so plan 50 only made the header say a 0 is clean only
+      if no test was skipped. To do, in skills/systematic-debugging/find-polluter.sh: exit
+      non-zero before the loop when the pollution already exists, and never end on the
+      all-clear after a skip. Add a case to test_find_polluter.py, and record the new
+      divergence from upstream in NOTICE's plan 50 entry. Size: quick-fix. Done when: a run
+      whose pollution exists before the first test exits non-zero without the all-clear
+      line, and a test pins it.
+- [ ] skills/subagent-driven-development/SKILL.md does not say what review-package's exit
+      3 means (plan 50 code review, recommendation). Since plan 50, review-package stops
+      with exit 3 on an empty or non-descendant BASE..HEAD range: a DONE task with no
+      commit, say, or an implementer that committed to the wrong branch. It reports "empty
+      commit range" or "HEAD is not a descendant of BASE". The DONE-status and File
+      Handoffs text gives the controller no next step for this; upstream documents none
+      either. Wording that tells the controller what to do shapes behaviour, so it needs
+      writing-skills' micro-test against a no-guidance control. Size: plan. Revisit if: a
+      controller mishandles an exit 3, for example by dispatching the reviewer without a
+      package or by re-running the same range.
