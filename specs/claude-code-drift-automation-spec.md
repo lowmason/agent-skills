@@ -218,8 +218,9 @@ scripts were session-local (`/tmp/ccdrift-probe/`).
     `quotes.py`, `settle.py`, `baseline.py`, `probes.py`), on shared parsers
     for the guide, anchors and citations (`guide.py`) and for docs blocks
     (`blocks.py`) (owner, plan 44, 2026-10-12);
-  - `manifest.toml` and `baseline.json` (R2), `PROBES.md` (R10) and
-    `notice.sh` (R9);
+  - `manifest.toml` and `baseline.json` (R2), `PROBES.md` (R10),
+    `notice.sh` (R9), and `notice.py`, which writes the notice for
+    `check --hook` (owner, plan 49, 2026-10-17);
   - the tests and their hand-written fixtures (R12).
 - `.claude/skills/cc-guide/` and `.claude/agents/cc-guide-verifier.md` (R8).
 - `.claude/settings.json` gains the hook pair (R9).
@@ -228,8 +229,10 @@ scripts were session-local (`/tmp/ccdrift-probe/`).
   - `latest/docs/`: the last fetch;
   - `<release>/docs/`: the snapshots `baseline rebaseline` takes;
   - `reports/<baseline-sha12>.json` (R6.8);
-  - `notice.json` and its digest, `notice-shown`, `last-check.json` and the
-    `lock/` directory (R9);
+  - `notice.json` and its digest `notice.digest`, `notice-shown`,
+    `last-check.json`, `unfinished` and the `lock/` directory (R9);
+    `notice.py`'s docstring says which side writes each, and in what order
+    (owner, plan 49, 2026-10-17);
   - `packets/<run>/` and `probes/<run>/`.
 
   Page files are named by slug, with `/` replaced by `_` and platform pages
@@ -475,7 +478,8 @@ fact that can change between versions; naming Claude Code is not enough.
   landed first, so Stage 2 adds both citation lines (conformance R6 D3).
 - The plan's sweep fixes the exact list, including this system's own files.
   JSON holds no comments, so `build/cc_guide/notice.sh` carries the citation
-  for the settings wiring.
+  for `.claude/settings.json`, its model keys included; a review of that
+  citation reads the settings file too (owner, plan 49, 2026-10-17).
 - Excluded: `specs/`, `runtimes/`, `review/`.
 
 R4.3 **Coverage gaps.** A relied-upon fact that no section covers is listed in
@@ -610,6 +614,9 @@ failure never looks clean:
 
 R6.10 `check` never writes inside the repo. Its writes go under
 `~/.cache/agent-skills/cc-guide/` only; `--hook` also writes the notice (R9).
+`--hook` writes the notice and `last-check.json` on every exit, a setup error
+or a crash included, and `--run <id>`, accepted only with `--hook`, records
+the run's ID in `last-check.json` (owner, plan 49, 2026-10-17).
 
 R6.11 **Packets.** `packets --triage [--through <release>] | --verify [<ids>]
 [--from <dir>] | --audit [<group>] | --files [<paths>]`, with an optional
@@ -926,12 +933,21 @@ R9.3 **`refresh`**, async.
   ago (`last-check.json`), or when another session holds the lock (an atomic
   `mkdir` lock, broken when older than an hour).
 - Otherwise it looks for `uv` on PATH, then in `~/.local/bin` and
-  `/opt/homebrew/bin`, and runs `cli.py check --hook` through
-  `uv run --python 3.13` under an overall time budget, since `timeout` is not
-  enforced on async hooks. It locates `cli.py` from its own directory, never
-  from the hook's working directory: a relative path would repeat drift #3's
-  class of bug. When `uv` is missing, it writes a fixed error notice itself.
-  It exits 0.
+  `/opt/homebrew/bin`, and runs `cli.py check --hook --run <id>` through
+  `uv run --python 3.13` under an overall time budget of 300 seconds, since
+  `timeout` is not enforced on async hooks. It locates `cli.py` from its own
+  directory, never from the hook's working directory: a relative path would
+  repeat drift #3's class of bug. It runs the check with none of its caller's
+  `GIT_*` variables. When `uv` is missing, it writes a fixed error notice
+  itself. It exits 0 (owner, plan 49, 2026-10-17: the run ID, the budget's
+  value and the `GIT_*` rule).
+- A run that leaves no `last-check.json` naming its ID is unfinished: the
+  budget stopped it, `uv` failed, or Python failed before `check --hook`
+  could write. `refresh` counts unfinished runs in `unfinished`, and a
+  finished run clears the count. Two variables exist for the tests:
+  `CC_GUIDE_UV_FALLBACK`, a colon-separated list that replaces the two
+  fallback directories, and `CC_GUIDE_BUDGET`, the budget in seconds
+  (owner, plan 49, 2026-10-17).
 - `check --hook` writes `notice.json` and `last-check.json` and prints
   nothing: an async hook's output would reach only Claude.
 
@@ -939,8 +955,10 @@ R9.4 **The notice.**
 - Exit 0: the notice is empty, and `show` prints nothing.
 - Exit 1: one line under 300 characters naming every due item, for example
   `cc-guide · 2 docs blocks changed (hooks.events, rules.settings) · 9 releases untriaged (oldest 8 d) · probes due 2 · audit due: hooks → /cc-guide`.
-- Exit 2, no `uv`, or three failed checks in a row: an error line with the age
-  of the last good check. A failure is never silent.
+- Exit 2, no `uv`, or three unfinished runs in a row (R9.3): an error line
+  with the age of the last good check. `check --hook` writes it for an exit 2,
+  a setup error or a crash; `refresh` writes it for the other two. A failure
+  is never silent (owner, plan 49, 2026-10-17).
 - The stale backlog is not part of the notice; the lint and the report carry
   it.
 - Because `check --hook` reads `main` (R6.1), the notice keeps naming work the
