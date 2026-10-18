@@ -18,10 +18,10 @@
 - **Order.** Task 1 (amendments), Task 2 (Stage D's RED baseline, before any edit to writing-skills), Stage A (Tasks 3–7), Stage B (Tasks 8–9), Stage C (Tasks 10–13), Task 14 (Stage D's edit), Task 15 (acceptance). Each task leaves every gate green at its commit, so Stage A's rules are "green on arrival" (Sequencing) task by task.
 - **Gates before every commit.** `bash build/run_commit_lints.sh` runs the eight commit lints and ends `commit lints passed`. Its `STALE` lines never fail it.
 - **Test counts are deltas** (+N), never absolute totals. Each expected summary line below is what the replay printed on top of `d70e0b3`; on a later base the absolute counts may differ, the deltas may not.
-- **CLAUDE.md stays under 200 lines** (check `claude-md-size`, which fails at 200). It has 199 at `d70e0b3`, and this plan adds none: Task 7 names `--strict` in an existing comment (Q3 (a)), and Tasks 8 and 9 extend existing lines. Plan 52 (write-with-asd-ste100, written in parallel) adds 4 and must make room itself; plan 51 (drift automation) leaves the file alone. If another plan lands first and the check fails, stop and ask the owner where to make room (the conformance spec's rule R6 P1: trim elsewhere, never raise the limit).
+- **CLAUDE.md stays under 200 lines** (check `claude-md-size`, which fails at 200). It has 199 at `d70e0b3`, and this plan adds none: Task 7 names `--strict` in an existing comment (D7), and Tasks 8 and 9 extend existing lines. Plan 52 (write-with-asd-ste100, written in parallel) adds 4 and must make room itself; plan 51 (drift automation) leaves the file alone. If another plan lands first and the check fails, stop and ask the owner where to make room (the conformance spec's rule R6 P1: trim elsewhere, never raise the limit).
 - **A `# cc-guide:` citation stays last.** Fifteen SKILL.md files end their frontmatter with a `# cc-guide:` comment, the citation form that the drift-automation spec's R4 puts last. Two frontmatter edits land in such files, Task 4's metadata block (seven superpowers skills) and Task 12's `compatibility` line (`bayesian-workflow`, `track-model-experiments`, `writing-plans`), and both helper scripts insert above the citation.
 - **Values copied verbatim from the spec:**
-  - R1.1: `SPEC_KEYS = {name, description, license, compatibility, metadata, allowed-tools}`; `HOST_KEYS = {when_to_use, model, effort, context, disable-model-invocation}`, plus `agent` if plan review answers Q1 (the `agent` key; Planning record) with (a).
+  - R1.1: `SPEC_KEYS = {name, description, license, compatibility, metadata, allowed-tools}`; `HOST_KEYS = {when_to_use, model, effort, context, disable-model-invocation}`, plus `agent` (D5).
   - R1.3: `compatibility` is "a string of 1–500 characters after stripping".
   - R1.4's metadata: `author: 'Jesse Vincent'`, `adapted_by: 'Lowell Mason'`, `source: 'https://github.com/obra/superpowers'`.
   - R1.7: "A `SKILL.md` body (the lines after the closing frontmatter `---`) over 500 lines prints one `WARN` line to stderr and does not change the exit code."
@@ -41,7 +41,11 @@
 - **D1** (owner, brief, 2026-10-18): The owner approved the design (2026-10-03) and the written spec (2026-10-18). The status-header change that records it lands separately, so this plan never edits that header. Applied in: Global Constraints, Task 1.
 - **D2** (owner, brief, 2026-10-18): Push or merge nothing without the owner's go-ahead. Applied in: Global Constraints.
 - **D3** (owner, brief, 2026-10-18): The JAX skills and `recommend-causal-design` have merged, so the spec's "coordinate with the in-flight JAX spec" now means this plan brings them into conformance. Applied in: Task 1 (A8), Task 8 (`recommend-causal-design`'s license copy).
-- **D4** (owner, brief, 2026-10-18): The open call in the backlog item "`build/check_frontmatter.py`'s SKILL.md key set" is settled at this plan's gate: allow `agent` and `disable-model-invocation`, or record deviations. Applied in: Planning record (Q1); after the gate, Tasks 1, 3 and 4.
+- **D4** (owner, brief, 2026-10-18): The open call in the backlog item "`build/check_frontmatter.py`'s SKILL.md key set" is settled at this plan's gate: allow `agent` and `disable-model-invocation`, or record deviations. Applied in: D5.
+- **D5** (owner, plan review, 2026-10-18): `build/check_frontmatter.py` accepts the `agent` key: it joins `HOST_KEYS`, its test and writing-skills' key list, amendment A1 adds it to the spec's R1.1, and `--strict` flags it like the other Claude Code keys. Applied in: Task 1 (spec amendment A1), Task 3, Task 4.
+- **D6** (owner, plan review, 2026-10-18): Validation 6 governs only writing-skills' description guidance; Stage A's key-list, template and checklist edits fall outside it. Applied in: Task 1 (spec amendment A10), Task 15.
+- **D7** (owner, plan review, 2026-10-18): Task 7 names `--strict` in the frontmatter lint's existing CLAUDE.md comment and adds no line. Applied in: Task 7.
+- **D8** (owner, plan review, 2026-10-18): writing-skills' note carries the Codex cut that Task 14 measures when it runs, with the 2026-10-03 figures kept as history, and amendment A3 records this in the spec's R2.3. Applied in: Task 1 (spec amendment A3), Task 14.
 
 ---
 
@@ -69,7 +73,7 @@
 
 - **Prototype.** Every change was built in task order on a throwaway clone of `e9325de` (`~/.cache/agent-skills/scratch/portability-proto`), each RED run before its implementation.
 - **Patch replay.** On a second fresh clone of `e9325de`, every patch applied in plan order: each RED came out as its step predicts, and all eight commit lints passed after every task. The final tree matched the prototype's except for one stale register comment, which Task 3 now drops.
-- **Re-base.** On `d70e0b3` all 111 patches matched exactly once again. Two were re-anchored for plan 50: Task 4's NOTICE entry now follows plan 50's entry, and Task 7's CLAUDE.md change extends a comment instead of adding a line (Q3 (a)).
+- **Re-base.** On `d70e0b3` all 111 patches matched exactly once again. Two were re-anchored for plan 50: Task 4's NOTICE entry now follows plan 50's entry, and Task 7's CLAUDE.md change extends a comment instead of adding a line (D7).
 - **Plan-text replay** (on `d70e0b3`, with this file committed on top). A script lifted every edit and create block out of this file, applied them in task and step order, ran each step's command as written (with the scratch paths mapped into a sandbox), and compared each output with the expectation the step states. It skipped only the micro-test reps of Tasks 2 and 14 and the two commits that record their results (Tasks 2 and 13). Every RED and GREEN count, lint report and helper output matched; each task's commit left the tree clean, so every `git add` list is complete; and after Task 12 the tree equalled the patch replay's, outside `specs/`.
 - **Suites.** The `build/` suite went from 1083 passed to 1121 (+38: +31 frontmatter, +7 provenance). Its only failures, before and after, are the 4 `test_verify_citations.py` tests that need the gitignored `build/.scratch/`. The nine changed skills' script suites kept their counts.
 - **Execution proof.** Task 13's script: all 17 scripts exited 0 under Python 3.14.0; inside the hostile project the headered copy exited 0 and the header-less control exited 1 under CPython 3.10.19.
@@ -99,7 +103,9 @@
 - **DF19. The Discovery Workflow item stays in the backlog:** Validation 6, even as amended, lets Stage D change only description guidance, and that rewording needs its own micro-test.
 - **DF20. The register's Stage D debts move to a rewrite item.** `writing-skills-guide-gaps` and `writing-skills-late-critical-headings` are `tracked_in` "portability Stage D", and `writing-skills-tdd-for-docs` revisits "When portability Stage D revises writing-skills". R2.3 allows Stage D a note and at most one checklist line, so it closes none of those gaps. Task 14 re-points both `tracked_in` values to a new deferred item, "Split and rewrite writing-skills against the guide", which takes in the spec's out-of-scope "Splitting writing-skills"; sets the deviation's revisit to that rewrite; and, where the gap's reason says Stage D verifies or drops writing-skills' `@` loading claim, says the rewrite does. If wrong: leave all three on Stage D, which will have finished.
 
-### Open questions for plan review
+### Questions settled at plan review
+
+The owner answered all four on 2026-10-18, each with option (a): Q1 as D5, Q2 as D6, Q3 as D7 and Q4 as D8. The questions stay here as asked.
 
 - **Q1. The `agent` key** (D4; backlog "`build/check_frontmatter.py`'s SKILL.md key set"). R1.1 already lists `disable-model-invocation`, so the open call is `agent`, which names the agent type a `context: fork` skill runs on. No skill sets it.
   - (a) Allow it. Amendment A1 adds it to R1.1; Tasks 3 and 4 put it in `HOST_KEYS`, its test and writing-skills' key list; `--strict` flags it like the other host keys. **Recommended:** the guide documents it, and the item's own closure condition pairs allowing it with the key list and tests, as Tasks 3 and 4 do.
@@ -128,7 +134,7 @@ The other amendments (A2, A4–A9, A11) correct counts and facts the spec states
 - **Drift-automation citations.** The fifteen SKILL.md citation lines (the drift-automation spec's R4) are on `main`, hence the "citation stays last" constraint.
 - **Plan 50 and the superpowers drift assessment** (`specs/superpowers-drift-spec.md`). Plan 50 adopted three of its findings and merged before this plan was written (Facts, "Branches"). A later adoption of upstream text into a superpowers skill keeps this plan's frontmatter, license copies and invocations, and NOTICE records both changes.
 - **Backlog items.**
-  - "`build/check_frontmatter.py`'s SKILL.md key set" (`specs/deferred_items.md`, section cc-guide-files-backlog) closes with Q1's answer; it is ticked at completion.
+  - "`build/check_frontmatter.py`'s SKILL.md key set" (`specs/deferred_items.md`, section cc-guide-files-backlog) closes with D5; it is ticked at completion.
   - "Gate or make manual-only the four ungated side-effecting skills" (section 35-claude-code-guide-conformance, from plan 35's audit of the skills against the Claude Code guide) waits on Stage A. After Task 3, `disable-model-invocation` passes the lint, and after Task 5, R1.6 requires a paired `agents/openai.yaml`; completion adds that note to the item.
   - "writing-skills' Discovery Workflow" stays open (DF19).
   - "Pin the `_late_headings` parse with a positive control" (section 48-compaction-late-heading-ratchet, from plan 48's review) is revisited only "if portability Stage D empties a row while its exception stays". Task 14's note lands above the window's edge and no row changes, so it is not triggered.
@@ -139,7 +145,7 @@ The other amendments (A2, A4–A9, A11) correct counts and facts the spec states
 
 ### CLAUDE.md line budget
 
-199 lines at `d70e0b3` (plan 50 added 4), and still 199 after this plan: Task 7 extends a comment instead of adding a line (Q3 (a)), and Tasks 8 and 9 extend the provenance paragraph and a provenance bullet. Plan 52 (write-with-asd-ste100) adds 4, so it must make room or the owner settles the order at integration.
+199 lines at `d70e0b3` (plan 50 added 4), and still 199 after this plan: Task 7 extends a comment instead of adding a line (D7), and Tasks 8 and 9 extend the provenance paragraph and a provenance bullet. Plan 52 (write-with-asd-ste100) adds 4, so it must make room or the owner settles the order at integration.
 
 ---
 
@@ -149,10 +155,10 @@ The other amendments (A2, A4–A9, A11) correct counts and facts the spec states
 - Modify: `specs/agent-skills-portability-spec.md` (R1.1, R2.1, R2.3, R3.1, R3.5, R3.7, R3.8, Sequencing, Validation 4 and 6, Out of scope)
 
 **Interfaces:**
-- Consumes: the plan-review answers to Q1, Q2 and Q4.
+- Consumes: decisions D5, D6 and D8.
 - Produces: a spec whose counts and rules match Tasks 2–15.
 
-Each edit is tagged `(owner, plan 53, 2026-10-18)`; the status block stays untouched (D1). A1, A3 and A10 stand only under Q1 (a), Q4 (a) and Q2 (a): before this task runs, drop or reword any amendment whose question was answered otherwise.
+Each edit is tagged `(owner, plan 53, 2026-10-18)`; the status block stays untouched (D1). A1, A10 and A3 carry the plan-review decisions D5, D6 and D8.
 
 - [ ] **Step 1: Apply the edits,** each an exact replace of the block shown.
 
@@ -577,8 +583,6 @@ git commit -m "docs(specs): RED baseline for description openings (portability R
 **Interfaces:**
 - Produces, in `check_frontmatter.py`: `SPEC_KEYS: frozenset[str]`; `HOST_KEYS: frozenset[str]`, which Task 7's `strict_violations` reads; `COMPATIBILITY_CAP = 500`; `ANGLE_BRACKET_RE`; `_check_value_shapes(sk: Path, fm: dict) -> list[str]`.
 
-Under Q1 (b): drop `'agent'` from `HOST_KEYS` and from `test_spec_and_host_keys_are_allowed`, end writing-skills' sentence after the `disable-model-invocation` clause, and add Q1 (b)'s `[[exception]]` to `build/cc_guide/conformance.toml`.
-
 - [ ] **Step 1: Write the failing tests.**
 
 **Edit `build/test_check_frontmatter.py`: insert before the line `def make_agent(tmp_path: Path, name: str, description: str) -> Path:`:**
@@ -810,8 +814,6 @@ git commit -m "feat(build): spec and host frontmatter key sets and value shapes 
 **Interfaces:**
 - Consumes: Task 3's `check_skill` layout.
 - Produces: `_check_license(sk: Path, fm: dict) -> list[str]`; `make_skill(tmp_path, name, frontmatter, *, licensed=True)` in the tests, which later tasks' tests use.
-
-Under Q1 (b): drop the `agent` clause from writing-skills' optional-keys sentence and from the NOTICE entry's last sentence.
 
 - [ ] **Step 1: Write the failing test.**
 
@@ -1418,13 +1420,11 @@ git commit -m "feat(build): warn on a SKILL.md body over 500 lines (portability 
 **Files:**
 - Modify: `build/check_frontmatter.py` (new `RESERVED_NAME_WORDS`, `strict_violations`; `main` takes `--strict`; docstring)
 - Test: `build/test_check_frontmatter.py` (+2)
-- Modify: `CLAUDE.md` (Commands: the frontmatter lint's comment names `--strict`; no line added, Q3 (a))
+- Modify: `CLAUDE.md` (Commands: the frontmatter lint's comment names `--strict`; no line added, D7)
 
 **Interfaces:**
 - Consumes: Task 3's `HOST_KEYS`.
 - Produces: `strict_violations(skill_dir: Path) -> list[str]`; `main(argv: list[str] | None = None) -> int`.
-
-Under Q3 (b): replace Step 3's CLAUDE.md edit with the command line `uv run --python 3.13 --with pyyaml python build/check_frontmatter.py --strict`, added after the frontmatter lint's command, and remove the line the owner named; `wc -l CLAUDE.md` then still prints 199.
 
 - [ ] **Step 1: Write the failing tests.**
 
@@ -3542,7 +3542,7 @@ git commit -m "docs(specs): record plan 53's execution proof (portability R3.8)"
 **Interfaces:**
 - Consumes: Task 2's verdict and kit.
 
-- [ ] **Step 1: Re-measure the Codex cut** (Q4 (a)), with the real HOME. Run `codex --version` and `mkdir -p /tmp/portability-stage-d/neutral`, then `env -C /tmp/portability-stage-d/neutral codex debug prompt-input > /tmp/portability-stage-d/codex-prompt.json`: `env -C` runs Codex from a directory outside every repository without moving this session. Then:
+- [ ] **Step 1: Re-measure the Codex cut** (D8), with the real HOME. Run `codex --version` and `mkdir -p /tmp/portability-stage-d/neutral`, then `env -C /tmp/portability-stage-d/neutral codex debug prompt-input > /tmp/portability-stage-d/codex-prompt.json`: `env -C` runs Codex from a directory outside every repository without moving this session. Then:
 
 **Create `/tmp/portability-stage-d/kit/codex_cut.py`:**
 
@@ -3794,5 +3794,5 @@ Task 13 records the log here.
   - Trigger-eval suites; distribution channels; Codex adapters for `/deferred`, `/fix-issue` and `/license-audit`; tables of contents for long `references/` files; a versioning policy; license travel for single-file agents: as the spec words them.
   - Skill security scanning: "The repo has no CI" no longer holds; `.github/workflows/lints.yml` (plan 41's advisory CI) runs the commit lints only.
   - "Split and rewrite writing-skills against the guide", in place of the spec's "Splitting writing-skills": split the body below 500 lines (R1.7's warning) and close the register gaps `writing-skills-guide-gaps` and `writing-skills-late-critical-headings`, which Task 14 points at it (DF20), verifying or dropping the skill's `@` loading claim on the way.
-- **Backlog to tick:** "`build/check_frontmatter.py`'s SKILL.md key set" (section cc-guide-files-backlog), done in plan 53 under Q1's answer. Add a progress note to "Gate or make manual-only the four ungated side-effecting skills" (section 35-claude-code-guide-conformance): Stage A landed, and a manual-only skill now needs `agents/openai.yaml` with `policy.allow_implicit_invocation: false` (R1.6).
+- **Backlog to tick:** "`build/check_frontmatter.py`'s SKILL.md key set" (section cc-guide-files-backlog), done in plan 53 under D5 (`agent` allowed beside `disable-model-invocation`). Add a progress note to "Gate or make manual-only the four ungated side-effecting skills" (section 35-claude-code-guide-conformance): Stage A landed, and a manual-only skill now needs `agents/openai.yaml` with `policy.allow_implicit_invocation: false` (R1.6).
 - **Owner steps after merge:** refresh each wiki's installed llm-wiki scripts (DF15).
