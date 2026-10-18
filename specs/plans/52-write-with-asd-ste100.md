@@ -49,7 +49,7 @@ Measured on 2026-10-18 with Claude Code 2.1.302, from new folders under `/tmp`.
 - The prompt cache had a 1-hour lifetime, so runs of one arm inside an hour share cached input.
 - The inherit probe on Opus 5.5 at medium effort: the canary answered, `tools: []`, `mcp_servers: []`, output style Explanatory, advisor `claude-opus-5-5`. It loaded `~/.claude/CLAUDE.md` (User), `~/.claude/rules/aws-agent-toolkit.md` (User) and the canary rule (Project), and two SessionStart plugin hooks ran. Cost $0.050.
 - One priced run of each kind: Opus 5.5 at medium, `function-question` $0.080 (1 turn) and `doc-clean` $0.109 (3 turns). Sonnet 5.5 at xhigh, $0.049 and $0.342 (7 turns, one advisor call). Both `doc-clean` runs passed every mechanical check. The rough projection for all runs is about $28 on Opus and about $26 on Sonnet, before judges and re-runs.
-- The owner's settings on 2026-10-18: `~/.claude/settings.json` sets `model: sonnet`, `modelSettings` (Opus medium, Sonnet xhigh), `advisorModel: opus`, `outputStyle: Explanatory` and `permissions.defaultMode: auto`. The repo's `.claude/settings.json` sets `model: opus`, which a run in `/tmp` does not read.
+- The owner's settings on 2026-10-18: `~/.claude/settings.json` sets `model: sonnet`, with medium effort for Opus and xhigh for Sonnet. The repo's `.claude/settings.json` sets `model: opus`, which a run in `/tmp` does not read.
 - The pinned `ste-lint.py --selftest` passes under Python 3.13 and under `/usr/bin/python3` 3.9.6.
 
 ### Prototype and replay
@@ -57,8 +57,8 @@ Measured on 2026-10-18 with Claude Code 2.1.302, from new folders under `/tmp`.
 Everything in this plan ran before the plan was written, in a scratch clone of `main` and a scratch kit folder.
 
 - **Kit.** `test_kit.py`: 31 passed, with stub dry runs of both phases. Three mutations were caught: no `--strict-mcp-config` (1 failure), `<` for `<=` in the per-100-words test (2), and no substring test for literal text (3).
-- **Repo edits.** All 31 edit blocks applied exactly once. The installer tests went RED with 8 failed and 1 passed (the guard test, see Task 9), then GREEN. The drift test passed, and a changed habit line failed it. The linter tests passed (5). The `build/cc_guide/` suite passed (500). In the full `build/` suite only the 4 ground-truth tests of `test_verify_citations.py` failed, which need the gitignored `build/.scratch/` (CLAUDE.md says this). `bash build/run_commit_lints.sh` printed `commit lints passed`.
-- **Replay.** After assembly, a planning-time helper ran this plan's own bash blocks, step by step, in a fresh clone of `main` at `c3a9cf7` with a fresh kit folder: Task 1, Steps 2 to 5; Task 2, Steps 1 to 5; Task 6, every step but Step 6; Task 8, with `rules/short.md` standing in for the decided `rules/chosen.md`; and Task 9. Every stated expectation held: the five fetch digests, the 31 kit tests, the RED counts (5 linter tests, 2 drift tests, and 8 installer tests with the 1 guard passing), `CLAUDE.md` at 199 lines, `commit lints passed` in each task, and +11 passes in the full `build/` suite against unchanged `main`, with the same 4 `build/.scratch/` failures. The first replay exposed one vacuous check: `grep -c -F -f` on a license file matched every line through the pattern file's blank lines. Task 6, Step 9 now tests containment, which fails on a one-character change. Not replayed: the hold and fingerprint steps, every `claude -p` call (Tasks 3, 4, 5 and 7), Task 10 and Task 11.
+- **Repo edits.** All 32 edit blocks applied exactly once. The installer tests went RED with 8 failed and 1 passed (the guard test, see Task 9), then GREEN. The drift test passed, and a changed habit line failed it. The linter tests passed (5). The `build/cc_guide/` suite passed (500). In the full `build/` suite only the 4 ground-truth tests of `test_verify_citations.py` failed, which need the gitignored `build/.scratch/` (CLAUDE.md says this). `bash build/run_commit_lints.sh` printed `commit lints passed`.
+- **Replay.** After assembly, a planning-time helper ran this plan's own bash blocks, step by step, in a fresh clone of `main` at `d70e0b3` (after PR #56) with a fresh kit folder: Task 1, Steps 2 to 5; Task 2, Steps 1 to 5; Task 6, every step but Step 6; Task 8, with `rules/short.md` standing in for the decided `rules/chosen.md`; and Task 9. Every stated expectation held: the five fetch digests, the 31 kit tests, the RED counts (5 linter tests, 2 drift tests, and 8 installer tests with the 1 guard passing), `CLAUDE.md` at 199 lines before Task 6 and 197 after it, `commit lints passed` in each task, and +11 passes in the full `build/` suite against unchanged `main`, with the same 4 `build/.scratch/` failures. Four earlier replays at `c3a9cf7`, before PR #56 merged, differed only in `CLAUDE.md`. The first of them exposed one vacuous check: `grep -c -F -f` on a license file matched every line through the pattern file's blank lines. Task 6, Step 9 now tests containment, which fails on a one-character change. Not replayed: the hold and fingerprint steps, every `claude -p` call (Tasks 3, 4, 5 and 7), Task 10 and Task 11.
 
 ### Settled defaults
 
@@ -73,7 +73,7 @@ Each default below is the plan's choice where the spec left one open. "If wrong"
 - **DF7, hand reading.** Only a run that fails a habit on raw counts raises flags. The executing session reads them itself, and reader subagents may take a phase above 400 flags. If wrong: flag passing runs too, at a larger reading cost.
 - **DF8, judges.** Blinded `claude -p --json-schema` calls on the run model. A judge's fail becomes a flag for the hand reading, and a pass stands. If wrong: read every reply by hand.
 - **DF9, the paragraph edit.** The case runs with the `Read,Edit` tools in a throwaway git repo. If wrong: a no-tool form cannot check bytes outside the paragraph.
-- **DF10, tool runs.** The owner's default permission mode (auto) applies, and the skill copy sits beside the repo through `--add-dir`. If wrong: pass `--permission-mode` in `command()`.
+- **DF10, tool runs.** The kit passes no `--permission-mode`, so the owner's default permission mode applies, as in real sessions. The skill copy sits beside the repo through `--add-dir`. If wrong: pass `--permission-mode` in `command()`.
 - **DF11, the pilot.** As `PREREGISTRATION.md` says. The rules-phase pilot runs count as rep 1. If wrong: void them before the full runs.
 - **DF12, the live install.** After the merge, from the main checkout, as symlinks, checked through a saved transcript's `instructions` attachment (Task 11). If wrong: a symlink into a removed worktree dangles.
 - **DF13, wording.** The skill and rule text say "the user", not "the owner". If wrong: the text addresses only this repo's owner.
@@ -82,12 +82,13 @@ Each default below is the plan's choice where the spec left one open. "If wrong"
 - **DF16, sentence caps for the agent cases.** 25 words for Examples A and B (descriptions) and 20 for Example C (an instruction), from the strict rule set. If wrong: change `agent_cases()` in `cases.py` before the first run.
 - **DF17, dropping habits.** A habit leaves the rule through its sentences in `HABIT_LINES` (`kit.py`). If wrong: edit `chosen.md` by hand, which the test record must then explain.
 - **DF18, the linter call.** `python3 <this-skill-dir>/scripts/ste-lint.py --json`, so it also runs under `/usr/bin/python3`. If wrong: see Coupling (a).
-- **DF19, `CLAUDE.md` size.** 195 lines on `main` at `c3a9cf7`, 199 after Task 6. The `claude-md-size` check fails at 200. See Coupling (e).
+- **DF19, `CLAUDE.md` size.** 199 lines on `main` at `d70e0b3`, after PR #56 (plan 50). The `claude-md-size` check fails at 200. Task 6 folds seven stdlib-only test suites, the linter's among them, into one group, so the file ends at 197 with the provenance bullet. If wrong: see Q4 and Coupling (e).
 - **DF20, the test record.** `specs/write-with-asd-ste100-test-record.md`. If wrong: rename it in Task 10 and in the completion steps.
 - **DF21, re-runs.** After a wording fix, only the failing cases run again, in the arm `skill-r1`. If wrong: re-run all 18 cases.
 - **DF22, kit location.** The kit lives in `~/.cache/agent-skills/scratch/write-with-asd-ste100-kit/`, and runs go to `/tmp/ste-kit-runs/` (`STE_KIT_RUNS` overrides). Neither name carries a plan id, so a renumbered plan needs no kit change. If wrong: move the folder, and change `RUNS` in `kit.py` before the first run.
 - **DF23, citing the standard.** The skill cites ASD-STE100 by issue (Issue 9) and gives no rule numbers, because no rule number can be checked without the standard. If wrong: add rule numbers from the owner's copy.
 - **DF24, the run model.** Opus 5.5 (`claude-opus-5-5`) at medium effort. See Q1.
+- **DF25, the `license` key.** `SKILL.md`'s frontmatter carries `license: MIT`, before the closing `# cc-guide:` comment. All 24 skills that carry the key use this value, `recommend-causal-design` (also adapted from MIT sources) among them. It also meets R1, the portability spec's frontmatter requirement, and the skill's `name` and `description` hold no `<` or `>`, which R1 forbids. If wrong: drop the line.
 
 ### Open questions for plan review
 
@@ -102,18 +103,40 @@ Each default below is the plan's choice where the spec left one open. "If wrong"
 - **Q3, the license file names.** See Coupling (c).
   - (a) As the spec says: `skills/write-with-asd-ste100/LICENSE` is a copy of `LICENSE-write-with-asd-ste100-sources`. `skills/recommend-causal-design/LICENSE` already has this form (a copy of `LICENSE-causal-design-sources`). The plan carries (a), and recommends it: the portability plan must handle that skill anyway, and it changes every skill's license files.
   - (b) Adopt the portability spec's R4.1 now: `skills/write-with-asd-ste100/LICENSE` is a copy of the root `LICENSE`, and `skills/write-with-asd-ste100/LICENSE-write-with-asd-ste100-sources` is a copy of the sources file. This needs a spec amendment (the Files table), a changed link in `SKILL.md`'s Sources section, and the NOTICE sentence that names the copy.
+- **Q4, room in `CLAUDE.md`.** PR #56 (plan 50, the superpowers upstream fixes) merged into `main` as `d70e0b3` on 2026-10-18 and left `CLAUDE.md` at 199 lines. The `claude-md-size` check fails at 200, and `build/check_conformance.py` exits 1 on any finding, so the commit lints fail too. The spec requires two additions, the provenance bullet and the linter's test command. Even with the command under an existing comment, the file reaches 201. See Coupling (e).
+  - (a) Fold the six stdlib-only suites that have their own entries, and the new linter suite, into one group under one comment (Appendix D, `CLAUDE.md:commands-moved` and `CLAUDE.md:commands`). Every command and every note stays. The file ends at 197, which leaves room for the portability plan's one new line. The plan carries (a), and recommends it.
+  - (b) Keep every existing line, and record a deviation. `CLAUDE.md` allows a deviation only on the owner's decision. Task 6 then drops `CLAUDE.md:commands-moved`, takes `CLAUDE.md:commands` from this plan's first commit (`2b93c70`), which gives the linter its own three-line entry, and adds the block below at the end of `build/cc_guide/conformance.toml`. The file ends at 203.
+  - (c) First move the per-suite test commands out of the root `CLAUDE.md`, as a separate change. That frees about 50 lines for later plans. But a nested `CLAUDE.md` loads only when Claude reads files below it, and Codex and Gemini reach the root file through `AGENTS.md` and `GEMINI.md`. Task 6 waits for that change, and its two `commands` edits change to match it.
+
+The block for Q4 (b). The check allows a waiver of `claude-md-size` only with an integer `ceiling`:
+
+```toml
+# CLAUDE.md lists one test command for each suite, which outgrows the docs' size target.
+[[exception]]
+id = 'claude-md-over-size-target'
+type = 'deviation'
+check = 'claude-md-size'
+sections = ['rules.claude-md']
+artifacts = ['CLAUDE.md']
+guide = 'Each CLAUDE.md file stays under the docs size target of 200 lines.'
+reason = 'The Commands block lists every test suite, and the write-with-asd-ste100 spec adds a provenance bullet and a test suite.'
+evidence = 'Owner decision at the plan 52 review, <date>.'
+revisit = 'When the per-suite test commands move out of the root CLAUDE.md.'
+ceiling = 205
+```
 
 ### Couplings
 
-- **(a) R3, the portability spec's self-contained-scripts requirement.** `specs/agent-skills-portability-spec.md` was approved on 2026-10-18 and has no plan yet. Its R3.7 lint would require a PEP 723 header on every `skills/*/scripts/*.py` with a `__main__` guard. The vendored `ste-lint.py` has one at line 680, and its bytes are pinned. The same lint would flag `SKILL.md`'s bare `python3 <this-skill-dir>/scripts/ste-lint.py` call, because R3.5 wants `uv run`. Whichever of the two plans lands second needs an exception for this vendored file. Task 1 checks whether R3 has landed. If it has, Task 6's lints fail: stop and ask the owner. If it has not, the completion steps log a deferred item for the portability plan.
+- **(a) R3, the portability spec's self-contained-scripts requirement.** `specs/agent-skills-portability-spec.md` was approved on 2026-10-18, and its plan was still being written when this plan was revised (see Plan ID). Its R3.7 lint would require a PEP 723 header on every `skills/*/scripts/*.py` with a `__main__` guard. The vendored `ste-lint.py` has one at line 680, and its bytes are pinned. The same lint would flag `SKILL.md`'s bare `python3 <this-skill-dir>/scripts/ste-lint.py` call, because R3.5 wants `uv run`. Whichever of the two plans lands second needs an exception for this vendored file: the portability planning session's note names a `VENDORED_SCRIPTS` table in `build/check_frontmatter.py`, which exempts a listed file from the two header rules, and the second lander adds `skills/write-with-asd-ste100/scripts/ste-lint.py` to it. Task 1 checks whether R3 has landed. If it has, Task 6's lints fail: stop and ask the owner. If it has not, the completion steps log a deferred item for the portability plan.
 - **(b) The rule's reach.** The always-on rule loads in every later `claude -p` and subagent run. That includes other skills' micro-tests: the rule is the same in both arms, but it changes their baseline context (spec, Consequences to know). Task 11 records this in the owner's notes on test isolation.
-- **(c) R4, the portability spec's license-copies requirement.** R4.1 wants each skill's `LICENSE` to be byte-identical to the root `LICENSE`, and every other license copy to keep its root name. This plan's spec puts the upstream notices in `skills/write-with-asd-ste100/LICENSE`, as `skills/recommend-causal-design/LICENSE` already does for its sources. See Q3. Task 1 checks whether R4 has landed.
+- **(c) R4, the portability spec's license-copies requirement.** R4.1 wants each skill's `LICENSE` to be byte-identical to the root `LICENSE`, and every other license copy to keep its root name. This plan's spec puts the upstream notices in `skills/write-with-asd-ste100/LICENSE`, as `skills/recommend-causal-design/LICENSE` already does for its sources. Under R4, whoever lands second renames that copy to `skills/write-with-asd-ste100/LICENSE-write-with-asd-ste100-sources`, adds a copy of the root `LICENSE` as `skills/write-with-asd-ste100/LICENSE`, adds a `BUNDLED_LICENSES` row in `build/check_provenance.py` for the sources file, and points `SKILL.md`'s Sources link at the sources copy. The portability planning session's note says that its Stage B renames `recommend-causal-design` the same way. See Q3. Task 1 checks whether R4 has landed.
 - **(d) `build/cc_guide/conformance.toml`.** Task 8 and Task 9 edit it. The planning brief said that a parallel drift-automation plan might touch the installer entry. That plan is 51 (`51-claude-code-drift-automation.md`, in another worktree), and on 2026-10-18 it did not edit the file. If an edit block fails there, read the current text and merge by hand.
-- **(e) `CLAUDE.md`'s 200-line limit.** Plan 50 (`50-superpowers-upstream-fixes.md`, in another worktree) adds two test commands, about 7 lines, to `CLAUDE.md`'s Commands block. This plan adds 4. Together they pass the limit. Task 1 records the current line count. If the file has more than 195 lines when Task 6 starts, stop and ask the owner where to make room.
+- **(e) `CLAUDE.md`'s 200-line limit.** PR #56 (plan 50, `50-superpowers-upstream-fixes.md`) merged into `main` as `d70e0b3` on 2026-10-18 and added 4 lines, so `CLAUDE.md` has 199. The portability plan adds 1 line net (its planning session's note, which counted from 195), so it now fails on its own unless the file shrinks first. Under Q4 (a) this plan ends the file at 197, and the two plans' `CLAUDE.md` edits touch different lines. Task 1 records the count. If a Task 6 edit does not match, or the file ends at 200 lines or more, stop and ask the owner.
+- **(f) R1, the portability spec's frontmatter requirement.** Every `SKILL.md` must carry a non-empty `license`, and no `<` or `>` in its `name` or `description`. DF25 meets it now, so this coupling needs no action.
 
 ### Plan ID
 
-The plan-id check (`skills/writing-plans/scripts/entry_check.py`) printed "next free: 52" on 2026-10-18. Plan 50 (`50-superpowers-upstream-fixes.md`, worktree `exciting-ritchie-bd33d6`) and plan 51 (`51-claude-code-drift-automation.md`, worktree `suspicious-ptolemy-161633`) were in other worktrees. The kit, the block markers and the branch name carry no plan id. A renumbering at integration changes only this file's name and the mentions of "plan 52".
+The plan-id check (`skills/writing-plans/scripts/entry_check.py`) printed "next free: 52" on 2026-10-18. Plan 50 (`50-superpowers-upstream-fixes.md`) and plan 51 (`51-claude-code-drift-automation.md`, worktree `suspicious-ptolemy-161633`) were in other worktrees. Plan 50 has since merged as PR #56 and is retired. A re-run after this plan's first commit reported a collision: the portability planning session's uncommitted `52-agent-skills-portability.md` (worktree `intelligent-yonath-9539a3`) also took 52, and the next free id was 53. The owner settles the collision at integration. The kit, the block markers and the branch name carry no plan id. A renumbering changes only this file's name, the plan path in its commands and the mentions of "plan 52".
 
 ### The linter's reach
 
@@ -171,7 +194,7 @@ git log -1 --format='%h %s' -- specs/plans/52-write-with-asd-ste100.md
 git status --short
 ```
 
-Expected: the execution branch (`feat/write-with-asd-ste100` when the Execution handoff made the worktree), the commit that added this plan, and no changes.
+Expected: the execution branch (`feat/write-with-asd-ste100` when the Execution handoff made the worktree), the last commit that changed this plan, and no changes.
 
 - [ ] **Step 2: Check that nothing is installed early**
 
@@ -189,7 +212,7 @@ wc -l < CLAUDE.md
 bash build/run_commit_lints.sh
 ```
 
-Expected: a `passed` count for `test_runtime_support.py` (write it down; Task 9 adds 9), `195` lines, and `commit lints passed`. More than 195 lines: Coupling (e) is live, so stop before Task 6 and ask the owner.
+Expected: a `passed` count for `test_runtime_support.py` (write it down; Task 9 adds 9), `199` lines, and `commit lints passed`. `195` means that the worktree lacks PR #56: make it again from an up-to-date `main` (Execution handoff). Any other count means that `CLAUDE.md` changed after planning: read Coupling (e) and the Q4 decision before Task 6.
 
 - [ ] **Step 4: Check the portability couplings**
 
@@ -480,7 +503,7 @@ uv run --directory ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit --no-
 cat ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit/rules/chosen.md
 ```
 
-Expected: a table of pooled passes for each habit in each arm, then `rule form: <short|listed>; habits the no-rule arm passes in every pooled run: <list or none>; the standard line <stays|leaves>`, and the text of `rules/chosen.md`. `a pooled count is not complete`: fill the void slots first. Tell the owner the decision, in one short paragraph that gives each habit's plain meaning.
+Expected: a table of pooled passes for each habit in each arm, then `rule form: <short|listed>; habits the no-rule arm passes in every pooled run: <list or none>; the standard line <stays|leaves>`, and the text of `rules/chosen.md`. `a pooled count is not complete`: fill the void slots first. If `rules/chosen.md` has no `- ` lines (every habit left the rule), stop and ask the owner: Task 8's drift test needs a habit list, and the rule text must not be edited by hand. Otherwise, tell the owner the decision, in one short paragraph that gives each habit's plain meaning.
 
 ### Task 5: Skill baseline
 
@@ -606,7 +629,7 @@ python3 skills/write-with-asd-ste100/scripts/ste-lint.py skills/write-with-asd-s
 python3 skills/write-with-asd-ste100/scripts/ste-lint.py skills/write-with-asd-ste100/references/examples.md
 ```
 
-Expected before any Step 6 change, as each summary line: `2 violations (1 hard, baseline 0), 1303 words` for `SKILL.md` (the passive "is known" inside the active-voice habit line, and the quoted "spin up"), `6 violations (6 hard, baseline 0), 483 words` for `agent-mode.md` (the quoted bad examples of the six-habit scan), `0 violations` for `strict.md` and `document-rewrite.md`, and `28 violations (9 hard, baseline 0), 830 words` for `examples.md` (Before texts, quoted words, and After texts that keep their source's passive or perfect tense under the meaning rules). The linter exits 1 when a file has a hard finding, which is expected here. Read every finding in text that Step 6 added, and fix any that is not of those kinds.
+Expected before any Step 6 change, as each summary line: `2 violations (1 hard, baseline 0), 1305 words` for `SKILL.md` (the passive "is known" inside the active-voice habit line, and the quoted "spin up"), `6 violations (6 hard, baseline 0), 483 words` for `agent-mode.md` (the quoted bad examples of the six-habit scan), `0 violations` for `strict.md` and `document-rewrite.md`, and `28 violations (9 hard, baseline 0), 830 words` for `examples.md` (Before texts, quoted words, and After texts that keep their source's passive or perfect tense under the meaning rules). The linter exits 1 when a file has a hard finding, which is expected here. Read every finding in text that Step 6 added, and fix any that is not of those kinds.
 
 - [ ] **Step 9: Write the license files**
 
@@ -626,11 +649,11 @@ Expected: `[('LICENSE.danyuchn', True), ('LICENSE.prithivrajmu', True)]`.
 - [ ] **Step 10: Record the provenance and the docs**
 
 ```bash
-uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit/extract_plan_files.py specs/plans/52-write-with-asd-ste100.md . NOTICE:skill-block CLAUDE.md:sources CLAUDE.md:bullet CLAUDE.md:commands README.md:skill-row README.md:credits README.md:license
+uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit/extract_plan_files.py specs/plans/52-write-with-asd-ste100.md . NOTICE:skill-block CLAUDE.md:sources CLAUDE.md:bullet CLAUDE.md:commands-moved CLAUDE.md:commands README.md:skill-row README.md:credits README.md:license
 wc -l < CLAUDE.md
 ```
 
-Expected: seven `edited` lines, then `199`.
+Expected: eight `edited` lines, then `197`. A line `<KEY>: the old text occurs N times`, or a count of 200 or more, means that `CLAUDE.md` changed after planning: stop and ask the owner (Coupling (e)).
 
 - [ ] **Step 11: Run the checks**
 
@@ -644,7 +667,7 @@ uv run --no-project --python 3.13 python build/cc_guide/cli.py lint
 bash build/run_commit_lints.sh
 ```
 
-Expected: no output from the frontmatter, provenance and conformance checks, only the existing `WARN` lines from the snippet check, no `FAIL` from `cli.py lint` (`STALE` lines never fail it), and `commit lints passed`. If the frontmatter check flags `ste-lint.py` or the `python3` call, Coupling (a) is live: stop and ask the owner.
+Expected: no output from the frontmatter, provenance and conformance checks, only the existing `WARN` lines from the snippet check, no `FAIL` from `cli.py lint` (`STALE` lines never fail it), and `commit lints passed`. If the frontmatter check flags `ste-lint.py` or the `python3` call, Coupling (a) is live: stop and ask the owner. The same holds for any new frontmatter rule from the portability plan.
 
 - [ ] **Step 12: Commit**
 
@@ -883,7 +906,7 @@ Add `kit.py decide-skill skill-r1` when Task 7 re-ran cases. `decide-rule` print
 Write `specs/write-with-asd-ste100-test-record.md` with these sections, in this order. Paste each command's output into a `text` block where the section says so.
 
 1. **Title and status.** `# write-with-asd-ste100 test record`, then one line: the plan (`specs/plans/52-write-with-asd-ste100.md`), the spec, and the dates of the first and last run.
-2. **Setup.** The Claude Code version, the held binary's sha256 (first 12 characters), the model and the effort, from `KIT/state.json`. What every run inherited, from `KIT/inherit.json`: the instruction files with their types, the hooks, the output style and the advisor model. Never the value of `session_context`. Every difference from this plan's "Facts measured while planning", from `KIT/notes/deviations.md`.
+2. **Setup.** The Claude Code version, the held binary's sha256 (first 12 characters), the model and the effort, from `KIT/state.json`. What every run inherited, from `KIT/inherit.json`: the instruction files with their types, the hook names (not their command lines, which show local paths), the output style and the advisor model. Never the value of `session_context`. Every difference from this plan's "Facts measured while planning", from `KIT/notes/deviations.md`.
 3. **Case set.** The 7 everyday cases, written for this plan. The 12 cases from prithivrajmu/asd-ste100's `evals/cases.json` at `d93237679681a74873bdee4f1a7869f728968dbd`, credited to Prithiv M U and Dustin Yuchen Teng (MIT): name each case id. Examples A to C of danyuchn/asd-ste100-skill's `examples/before-after.md` at `3944283c183eea13fe5bd902b572da3b4de8bf44`, credited to Dustin Yuchen Teng (MIT). The 3 document cases, written for this plan.
 4. **Rule arms.** `decide-rule`'s output (`text` block). The decision in plain words: the rule form, each habit that left and why, and whether the standard line stayed. The path of the rule: `rules/write-with-asd-ste100.md`.
 5. **Hand reading.** Step 1's flag counts (`text` block), with one sentence on what most `justified` verdicts had in common.
@@ -983,11 +1006,13 @@ rm -r /tmp/ste-live-check ~/.claude/projects/*ste-live-check*
 
 Recommended: **Inline Execution** with the executing-plans skill, in a fresh Sonnet session (D1). Tasks 2 to 5 and Task 7 are one measurement campaign: each step reads the kit state that the step before left, the hand reading needs the executing session's own judgment and the blinding of `keys/`, and two owner gates sit inside it. Only Tasks 6, 8 and 9 write repository code.
 
-Make the worktree by hand, from `main` once the owner has merged this plan, and before that from the planning branch `claude/elegant-bassi-20474d`. The commands use `"$PWD"` for the worktree path, so a worktree elsewhere works too.
+Make the worktree by hand, after the owner merges this plan into `main`:
 
 ```bash
 git -C ~/Projects/agent-skills worktree add -b feat/write-with-asd-ste100 .claude/worktrees/write-with-asd-ste100 main
 ```
+
+`main` must hold `d70e0b3` (PR #56) or later, and Task 1, Step 3 checks this through `CLAUDE.md`'s line count. Do not make the worktree from the planning branch, `claude/elegant-bassi-20474d`: it starts at `e9325de`, before PR #56, so its `CLAUDE.md` lacks the lines that Task 6's edits expect. The plan's commands use `"$PWD"` for the worktree path, so a worktree elsewhere works too.
 
 Then, in a terminal:
 
@@ -1010,7 +1035,7 @@ Append these items to `specs/deferred_items.md` under `## 52-write-with-asd-ste1
 - [ ] A lint check for bare labels (the spec's Out of scope). Deferred because a regex cannot tell "O6" from "S3", "EC2" or "Q4". Size: design. Revisit if: a rule can separate labels from product and period names.
 - [ ] prithivrajmu's HTML and video guides (the spec's Out of scope, Decision 4). Size: plan. Revisit if: the owner asks for HTML pages or explainer videos.
 - [ ] Restyling the repo's existing documents (the spec's Out of scope, Decision 3). The rule changes existing text only when the user asks. Size: plan. Revisit if: the owner asks for a restyle of named documents.
-- [ ] An exception for the vendored `skills/write-with-asd-ste100/scripts/ste-lint.py` in the portability plan: R3, the portability spec's self-contained-scripts requirement, would require a PEP 723 header and a `uv run` call, but the file's bytes are pinned to danyuchn's commit `3944283c`. Also R4.1's license-copy names (Coupling (c), Q3). See `specs/agent-skills-portability-spec.md` (R3.1, R3.5, R3.7, R4.1). Size: quick-fix. Done when: the portability plan exempts the file and settles the skill's license copies.
+- [ ] Portability work for this skill, if the portability plan lands second (Couplings (a) and (c)). R3, the self-contained-scripts requirement: add `skills/write-with-asd-ste100/scripts/ste-lint.py` to `VENDORED_SCRIPTS` in `build/check_frontmatter.py`, because its bytes are pinned to danyuchn's commit `3944283c`, and settle the skill's `python3` call against R3.5 and its `compatibility` value. R4, the license-copies requirement: rename the skill's `LICENSE` copy to `LICENSE-write-with-asd-ste100-sources`, add the root `LICENSE` copy and a `BUNDLED_LICENSES` row, and re-point the Sources link. See `specs/agent-skills-portability-spec.md` (R3.1, R3.5, R3.7, R4.1, R4.2). Size: quick-fix. Done when: the portability plan has done each of these for this skill.
 - [ ] A drift review of both upstreams against the pinned commits (the spec's Consequences to know): danyuchn/asd-ste100-skill at `3944283c` and prithivrajmu/asd-ste100 at `d9323767`, both active. Size: quick-fix. Revisit if: either repository changes its linter, rule sets or license.
 
 ---
@@ -3140,6 +3165,7 @@ To rewrite a text or a document, to write text for an agent reader, or to apply 
 ---
 name: write-with-asd-ste100
 description: Use when a request names ASD-STE100, Simplified Technical English, STE, "80% STE", or strict or full STE. Also use it for a request for Karpathy-style writing or plain technical English, or for a rewrite of a text or a file in STE. Use it too for text that another agent or a program must parse. Examples are a prompt, a tool description, a subagent brief and an error string. Trigger on "rewrite this in STE", "make this 80% STE", "agent mode", "strict STE" and "plain technical English". Not for everyday replies, which the always-on rule shapes.
+license: MIT
 # cc-guide: skills.description skills.arguments skills.progressive-disclosure @2.1.302
 ---
 
@@ -3745,21 +3771,60 @@ New text:
 - **`write-with-asd-ste100`** and `rules/write-with-asd-ste100.md` — adapted from danyuchn's `asd-ste100-skill` and prithivrajmu's `asd-ste100` (MIT), with both notices in `LICENSE-write-with-asd-ste100-sources`; `scripts/ste-lint.py` is danyuchn's linter, copied unchanged, the one file exempt from the repo's Python style.
 ```
 
+#### `CLAUDE.md:commands-moved`
+
+<!-- extract-edit: CLAUDE.md:commands-moved -->
+Old text:
+
+```markdown
+cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest -q
+
+# describe-critique-methodology decoupling-check tests
+cd skills/describe-critique-methodology/scripts && uv run --python 3.13 --with pytest python -m pytest -q
+
+# writing-plans deferred-backlog stats and entry-check tests (stdlib only; the entry-check tests build throwaway git repos)
+cd skills/writing-plans/scripts && uv run --python 3.13 --with pytest python -m pytest -q
+
+```
+
+New text:
+
+```markdown
+cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest -q
+
+```
+
 #### `CLAUDE.md:commands`
 
 <!-- extract-edit: CLAUDE.md:commands -->
 Old text:
 
 ```markdown
-cd skills/describe-critique-methodology/scripts && uv run --python 3.13 --with pytest python -m pytest -q
+# design-architecture ADR-scaffolder tests (stdlib only)
+cd skills/design-architecture/scripts && uv run --python 3.13 --with pytest python -m pytest -q
+
+# subagent-driven-development dispatch-script tests (stdlib only; they drive its bash scripts)
+cd skills/subagent-driven-development/scripts && uv run --python 3.13 --with pytest python -m pytest -q
+
+# systematic-debugging find-polluter.sh and brainstorming server tests (stdlib only; the second needs node, else skips)
+cd skills/systematic-debugging && uv run --python 3.13 --with pytest python -m pytest -q
+cd skills/brainstorming/scripts && uv run --python 3.13 --with pytest python -m pytest -q
 ```
 
 New text:
 
 ```markdown
+# Stdlib-only suites, one per line: describe-critique-methodology's decoupling check, writing-plans' deferred-backlog
+# stats and entry check (the entry-check tests build throwaway git repos), design-architecture's ADR scaffolder,
+# subagent-driven-development's dispatch scripts (the tests drive its bash scripts), systematic-debugging's
+# find-polluter.sh, brainstorming's server (it needs node, else skips) and write-with-asd-ste100's vendored linter
+# (pinned bytes, self-test under 3.13 and /usr/bin/python3, JSON report)
 cd skills/describe-critique-methodology/scripts && uv run --python 3.13 --with pytest python -m pytest -q
-
-# write-with-asd-ste100 linter tests (stdlib only): pinned bytes, self-test under 3.13 and /usr/bin/python3, JSON report
+cd skills/writing-plans/scripts && uv run --python 3.13 --with pytest python -m pytest -q
+cd skills/design-architecture/scripts && uv run --python 3.13 --with pytest python -m pytest -q
+cd skills/subagent-driven-development/scripts && uv run --python 3.13 --with pytest python -m pytest -q
+cd skills/systematic-debugging && uv run --python 3.13 --with pytest python -m pytest -q
+cd skills/brainstorming/scripts && uv run --python 3.13 --with pytest python -m pytest -q
 cd skills/write-with-asd-ste100/scripts && uv run --python 3.13 --with pytest python -m pytest -q
 ```
 
