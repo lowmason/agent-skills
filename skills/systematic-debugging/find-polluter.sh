@@ -8,6 +8,9 @@
 #   TEST_CMD=pytest        ./find-polluter.sh '.git' '*/test_*.py'   # default
 #   TEST_CMD='npm test'    ./find-polluter.sh '.git' 'src/**/*.test.ts'
 #   TEST_CMD='go test'     ./find-polluter.sh '.git' '*_test.go'
+#
+# Exit status: 0 when no polluter is found, 1 when one is (or on a usage
+# error), 2 when no test file matches the pattern, so no test ran.
 
 set -e
 
@@ -27,9 +30,23 @@ echo "Test pattern: $TEST_PATTERN"
 echo "Test command: $TEST_CMD"
 echo ""
 
-# Get list of test files
-TEST_FILES=$(find . -path "$TEST_PATTERN" | sort)
-TOTAL=$(echo "$TEST_FILES" | wc -l | tr -d ' ')
+# Get list of test files (find . emits ./-prefixed paths, so accept the
+# pattern written with or without a leading ./)
+TEST_PATTERN="${TEST_PATTERN#./}"
+# find -path can't match '**/' against zero directory levels, so a pattern
+# like src/**/*.test.ts would skip src/top.test.ts; also try the pattern
+# with '**/' collapsed to cover files directly under the base directory.
+TEST_FILES=$(find . \( -path "./$TEST_PATTERN" -o -path "./${TEST_PATTERN//\*\*\//}" \) | sort -u)
+if [ -z "$TEST_FILES" ]; then
+  # An empty result is no files, not one, and nothing ran: never fall
+  # through to the all-clear below.
+  echo "Found 0 test files"
+  echo ""
+  echo "❌ No test files match that pattern, so no test ran. This is not an all-clear."
+  echo "   find -path matches the pattern against ./-prefixed paths from this directory."
+  exit 2
+fi
+TOTAL=$(printf '%s\n' "$TEST_FILES" | wc -l | tr -d ' ')
 
 echo "Found $TOTAL test files"
 echo ""

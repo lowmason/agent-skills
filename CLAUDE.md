@@ -113,6 +113,10 @@ cd skills/design-architecture/scripts && uv run --python 3.13 --with pytest pyth
 # subagent-driven-development dispatch-script tests (stdlib only; they drive its bash scripts)
 cd skills/subagent-driven-development/scripts && uv run --python 3.13 --with pytest python -m pytest -q
 
+# systematic-debugging find-polluter.sh tests (stdlib only; they drive the script in throwaway git projects,
+# under /bin/bash and the PATH's bash when those differ)
+cd skills/systematic-debugging && uv run --python 3.13 --with pytest python -m pytest -q
+
 # read-only agent guard tests (Gate A: classifier units, payload contract). The guard is stdlib only and must stay
 # 3.9-compatible, so run BOTH: the first runs each contract test through the hook's shebang on the test's PATH and on
 # launchd's /usr/bin-first PATH (under uv run the shebang resolves to uv's pinned python); the second runs the whole
