@@ -449,7 +449,8 @@ This spec fixes these rules now, before any run.
   fewer on every other habit.
 - **Habits the model already follows.** A habit that the no-rule arm passes in every pooled run
   leaves the rule. The skill may keep it. The line that names the standard leaves only if every
-  prose habit qualifies.
+  prose habit qualifies. The literal-text and existing-text lines never leave: they guard against
+  an effect of the rule itself, which the no-rule arm cannot show. (owner, plan 52, 2026-10-18)
 - **No new guidance without a failure.** A skill case that the baseline passes in 5 of 5 runs receives
   no guidance beyond the approved design.
 - **Pass.** The skill passes a case when at least 4 of 5 runs meet every check. A failing case receives
