@@ -4,8 +4,12 @@ Dock started: no inherited environment, only HOME and launchd's PATH. notice.py
 writes the files the script reads, so the shell-and-Python file contract is
 tested across the two languages.'''
 import json
+import os
+import re
 import subprocess
-from datetime import datetime
+import sys
+import time
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import pytest
@@ -113,3 +117,137 @@ def test_show_without_home_and_an_unknown_subcommand_both_exit_zero(tmp_path):
                          capture_output=True, text=True, timeout=60))
     proc = sh(tmp_path, 'bogus')
     assert (proc.returncode, proc.stdout) == (0, '')
+
+
+NO_UV = 'the drift check cannot run: no uv on PATH, in ~/.local/bin or in /opt/homebrew/bin'
+FOUND = 'cc-guide · 1 docs block changed (alpha.overview) → /cc-guide'
+
+# A stand-in for uv. It records how it was called, then finishes as check --hook would
+# (through notice.py, so the file contract is the real one), hangs, or fails before Python.
+FAKE_UV = '''#!/bin/sh
+printf '%s\\n' "$0" > "$HOME/uv-path"
+printf '%s\\n' "$@" > "$HOME/uv-args"
+env | grep '^GIT_' > "$HOME/uv-git-env"
+case "${{FAKE_UV:-finish}}" in
+    finish) exec "{python}" "{finish}" "$@" ;;
+    hang) exec sleep 30 ;;
+    *) exit 2 ;;
+esac
+'''
+
+FINISH = '''import sys
+from datetime import datetime
+from pathlib import Path
+sys.path.insert(0, {here!r})
+import notice
+run = sys.argv[sys.argv.index('--run') + 1]
+cache = Path.home() / '.cache' / 'agent-skills' / 'cc-guide'
+notice.write_notice(cache, {found!r})
+notice.record_check(cache, 1, datetime.now().astimezone(), run)
+'''
+
+
+@pytest.fixture
+def fake_uv(tmp_path):
+    '''A HOME, and the variables that put the stand-in uv first on launchd's
+    PATH with no fallback directory.'''
+    home = tmp_path / 'home'
+    home.mkdir()
+    finish = tmp_path / 'finish.py'
+    finish.write_text(FINISH.format(here=str(HERE), found=FOUND), encoding='utf-8')
+    bin_dir = tmp_path / 'bin'
+    bin_dir.mkdir()
+    uv = bin_dir / 'uv'
+    uv.write_text(FAKE_UV.format(python=sys.executable, finish=finish))
+    uv.chmod(0o755)
+    return home, {'PATH': f'{bin_dir}:{LAUNCHD_PATH}', 'CC_GUIDE_UV_FALLBACK': str(tmp_path / 'nowhere')}
+
+
+@pytest.mark.parametrize('shell', SHELLS)
+def test_refresh_runs_check_hook_through_uv_by_absolute_path_and_show_follows(fake_uv, shell):
+    home, env = fake_uv
+    quiet(sh(home, 'refresh', shell=shell, env=env))
+    args = (home / 'uv-args').read_text().splitlines()
+    assert args[:-1] == ['run', '--python', '3.13', 'python', str(HERE / 'cli.py'), 'check', '--hook', '--run']
+    assert re.fullmatch(r'\d+\.\d+', args[-1])
+    cache = cache_of(home)
+    assert notice.read_last_check(cache)['run'] == args[-1]
+    assert not (cache / 'unfinished').exists()
+    assert not (cache / 'lock').exists()
+    assert shown(sh(home, 'show', shell=shell)) == FOUND
+
+
+def test_refresh_waits_a_day_after_a_good_check(fake_uv):
+    home, env = fake_uv
+    cache = cache_of(home)
+    notice.record_check(cache, 0, datetime.now().astimezone() - timedelta(hours=23), 'earlier')
+    quiet(sh(home, 'refresh', env=env))
+    assert not (home / 'uv-args').exists()
+    notice.record_check(cache, 0, datetime.now().astimezone() - timedelta(hours=25), 'earlier')
+    quiet(sh(home, 'refresh', env=env))
+    assert (home / 'uv-args').exists()
+
+
+def test_refresh_leaves_a_fresh_lock_alone_and_breaks_one_over_an_hour_old(fake_uv):
+    home, env = fake_uv
+    lock = cache_of(home) / 'lock'
+    lock.mkdir(parents=True)
+    quiet(sh(home, 'refresh', env=env))
+    assert lock.is_dir()
+    assert not (home / 'uv-args').exists()
+    old = time.time() - 2 * 3600
+    os.utime(lock, (old, old))
+    quiet(sh(home, 'refresh', env=env))
+    assert (home / 'uv-args').exists()
+    assert not lock.exists()
+
+
+def test_refresh_looks_in_each_fallback_directory_in_order(fake_uv, tmp_path):
+    home, env = fake_uv
+    stand_in = Path(env['PATH'].split(':')[0]) / 'uv'
+    first, second = tmp_path / 'first', tmp_path / 'second'
+    second.mkdir()
+    (second / 'uv').write_bytes(stand_in.read_bytes())
+    (second / 'uv').chmod(0o755)
+    quiet(sh(home, 'refresh', env={'CC_GUIDE_UV_FALLBACK': f'{first}:{second}'}))
+    assert (home / 'uv-path').read_text().strip() == str(second / 'uv')
+
+
+def test_refresh_without_uv_leaves_the_fixed_error_notice(fake_uv):
+    home, _ = fake_uv
+    notice.record_check(cache_of(home), 1, datetime.now().astimezone() - timedelta(days=2, hours=1), 'old')
+    quiet(sh(home, 'refresh', env={'CC_GUIDE_UV_FALLBACK': str(home / 'nowhere')}))
+    assert shown(sh(home, 'show')) == f'cc-guide · {NO_UV} · last good check 2 d ago → install uv'
+
+
+def test_refresh_stops_a_check_past_its_budget_and_counts_the_run_unfinished(fake_uv):
+    home, env = fake_uv
+    started = time.monotonic()
+    quiet(sh(home, 'refresh', env={**env, 'FAKE_UV': 'hang', 'CC_GUIDE_BUDGET': '1'}))
+    assert time.monotonic() - started < 10
+    cache = cache_of(home)
+    assert (cache / 'unfinished').read_text() == '1\n'
+    assert not (cache / notice.NOTICE).exists()
+
+
+def test_three_unfinished_runs_in_a_row_leave_the_error_notice_and_a_finished_run_clears_them(fake_uv):
+    home, env = fake_uv
+    cache = cache_of(home)
+    for count in (1, 2):
+        quiet(sh(home, 'refresh', env={**env, 'FAKE_UV': 'fail'}))
+        assert (cache / 'unfinished').read_text() == f'{count}\n'
+        assert not (cache / notice.NOTICE).exists()
+    quiet(sh(home, 'refresh', env={**env, 'FAKE_UV': 'fail'}))
+    assert shown(sh(home, 'show')) == ('cc-guide · the drift check did not finish 3 times in a row · '
+                                       'no good check yet → run build/cc_guide/cli.py check')
+    quiet(sh(home, 'refresh', env=env))
+    assert not (cache / 'unfinished').exists()
+    assert shown(sh(home, 'show')) == FOUND
+
+
+def test_refresh_runs_the_check_without_the_callers_git_variables(fake_uv):
+    '''Deferred item "check's report and inputs", part b: a caller's GIT_DIR
+    or GIT_INDEX_FILE would point check's git reads somewhere else.'''
+    home, env = fake_uv
+    quiet(sh(home, 'refresh', env={**env, 'GIT_DIR': '/nonexistent', 'GIT_INDEX_FILE': '/nonexistent/index'}))
+    assert (home / 'uv-git-env').read_text() == ''
