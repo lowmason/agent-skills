@@ -84,6 +84,30 @@ def test_show_still_prints_when_it_cannot_record_the_day(tmp_path):
     assert shown(sh(tmp_path, 'show')) == 'cc-guide · stuck → /cc-guide'
 
 
+@pytest.mark.parametrize('shell', SHELLS)
+def test_show_replaces_notice_shown_by_renaming_a_temp_file_in_the_cache(tmp_path, shell):
+    '''Each cache file is replaced by mv -f of a hidden temp file in its own directory (the file contract).'''
+    cache = cache_of(tmp_path)
+    notice.write_notice(cache, 'cc-guide · renamed → /cc-guide')
+    stubs = tmp_path / 'stubs'
+    stubs.mkdir()
+    log = tmp_path / 'mv.log'
+    log.touch()
+    stub = stubs / 'mv'
+    stub.write_text(f'#!/bin/sh\n{{ printf \'%s\\n\' "$@"; echo --; }} >> {log}\nexec /bin/mv "$@"\n')
+    stub.chmod(0o755)
+    assert shown(sh(tmp_path, 'show', shell=shell, env={'PATH': f'{stubs}:{LAUNCHD_PATH}'})) == 'cc-guide · renamed → /cc-guide'
+    calls = log.read_text().split('--\n')[:-1]
+    assert len(calls) == 1, 'notice-shown is replaced by exactly one mv'
+    args = calls[0].splitlines()
+    assert args[-1] == str(cache / 'notice-shown')
+    temp = Path(args[-2])
+    assert (temp.parent, temp.name[0], temp.suffix) == (cache, '.', '.tmp')
+    digest = (cache / notice.DIGEST).read_text().strip()
+    assert (cache / 'notice-shown').read_text() == f"{datetime.now().strftime('%Y-%m-%d')} {digest}\n"
+    assert not [path for path in cache.iterdir() if path.suffix == '.tmp']
+
+
 def test_show_without_home_and_an_unknown_subcommand_both_exit_zero(tmp_path):
     quiet(subprocess.run(['/bin/sh', str(SCRIPT), 'show'], env={'PATH': LAUNCHD_PATH}, cwd=tmp_path,
                          capture_output=True, text=True, timeout=60))

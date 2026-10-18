@@ -23,7 +23,7 @@ show() {
     today=$(date +%Y-%m-%d)
     [ "$(cat "$cache/notice-shown" 2>/dev/null)" = "$today $digest" ] && return 0
     printf '%s\n' "$text"
-    { printf '%s %s\n' "$today" "$digest" > "$cache/notice-shown"; } 2>/dev/null
+    { printf '%s %s\n' "$today" "$digest" > "$cache/.notice-shown.$$.tmp" && mv -f "$cache/.notice-shown.$$.tmp" "$cache/notice-shown"; } 2>/dev/null || rm -f "$cache/.notice-shown.$$.tmp" 2>/dev/null
     return 0
 }
 
