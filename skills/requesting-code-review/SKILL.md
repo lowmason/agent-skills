@@ -5,7 +5,7 @@ description: >
   merging a branch or opening a PR, when reviewing a commit range (BASE..HEAD) against its plan
   or requirements, when stuck and wanting a fresh pass on recent commits, or after fixing a
   complex bug.
-# cc-guide: subagents.frontmatter subagents.models subagents.isolation @2.1.219
+# cc-guide: subagents.frontmatter subagents.models subagents.isolation @2.1.302
 ---
 
 # Requesting Code Review

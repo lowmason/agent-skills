@@ -1,7 +1,7 @@
 ---
 description: Triage specs/deferred_items.md — group unticked items, then sort each into retire / quick fix / plan / design / hold so the ceremony matches the item; brainstorming only for items that record an open design decision
 disable-model-invocation: true
-# cc-guide: skills.frontmatter commands.overview @2.1.296
+# cc-guide: skills.frontmatter commands.overview @2.1.302
 ---
 
 Triage the deferred-work backlog in the current project. The triage pass

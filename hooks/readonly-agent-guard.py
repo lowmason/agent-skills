@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# cc-guide: hooks.events hooks.exit-codes hooks.patterns @2.1.296
+# cc-guide: hooks.events hooks.exit-codes hooks.patterns @2.1.302
 """PreToolUse(Bash) guard enforcing the read-only agents' Bash contract.
 
 Five agents (see READONLY_AGENTS) declare that they will not mutate the working

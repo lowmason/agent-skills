@@ -1553,9 +1553,9 @@ def test_agent_name_form_flags_other_forms_and_a_missing_name(tmp_path):
     })
     files = [f'agents/{x}.md' for x in 'abcde']
     assert cc.check_agent_name_form(tmp_path, files, {'allow': []}) == [
-        cc.Finding('agents/a.md', "name 'Explore' is not a lowercase-hyphenated ID"),
-        cc.Finding('agents/b.md', "name 'test_runner' is not a lowercase-hyphenated ID"),
-        cc.Finding('agents/c.md', "name 'Two Words' is not a lowercase-hyphenated ID"),
+        cc.Finding('agents/a.md', "name 'Explore' is not a lowercase-hyphenated ID, the repo convention"),
+        cc.Finding('agents/b.md', "name 'test_runner' is not a lowercase-hyphenated ID, the repo convention"),
+        cc.Finding('agents/c.md', "name 'Two Words' is not a lowercase-hyphenated ID, the repo convention"),
         cc.Finding('agents/d.md', 'frontmatter sets no name'),
     ]
 
@@ -1563,7 +1563,7 @@ def test_agent_name_form_flags_other_forms_and_a_missing_name(tmp_path):
 def test_agent_name_form_allow_list_does_real_work_on_the_repo():
     assert real_check('agent-name-form') == []
     assert real_check('agent-name-form', allow=[]) == [
-        cc.Finding('agents/explore.md', "name 'Explore' is not a lowercase-hyphenated ID")]
+        cc.Finding('agents/explore.md', "name 'Explore' is not a lowercase-hyphenated ID, the repo convention")]
 
 
 def test_agent_name_unique_passes_distinct_names(tmp_path):

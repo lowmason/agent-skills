@@ -1,4 +1,4 @@
-<!-- cc-guide: subagents.frontmatter rules.settings hooks.events hooks.exit-codes hooks.configuration hooks.patterns hooks.pitfalls @2.1.296 -->
+<!-- cc-guide: subagents.frontmatter rules.settings hooks.events hooks.exit-codes hooks.configuration hooks.patterns hooks.pitfalls @2.1.302 -->
 # Hooks
 
 Two categories live here, and they install differently. Read the category before
@@ -98,8 +98,11 @@ re-copy when you update a template here.
   Claude, or by printing a JSON `permissionDecision: "deny"` (as `readonly-agent-guard.py`
   below does); any other non-zero exit, such as 1, just logs and lets the call through,
   unless the hook sets `"onFailure": "block"` (2.1.295+), which makes it act as exit 2
-  does on that event, though not on `Stop`. `uv-guard.sh` and `ruff-check.sh` block with
-  exit 2; `ruff-fix.sh` never blocks.
+  does on that event, though not on `Stop`. A shell-form `PreToolUse` or
+  `PermissionRequest` command hook on Windows without Git Bash (2.1.299+) also blocks
+  when it fails, and a non-zero exit that prints schema-valid JSON is decided by that
+  JSON instead. `uv-guard.sh` and `ruff-check.sh` block with exit 2; `ruff-fix.sh` never
+  blocks.
 
 # Agent contract hooks
 

@@ -3689,6 +3689,57 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       lint selects it. Size: quick-fix. Revisit if: portability Stage D empties a row while
       its exception stays, or the check's message wording changes.
 
+## fork-mode-fresh-dispatch (no plan; /cc-guide files follow-up, branch claude/elated-solomon-284dad) — 2026-10-18
+
+The 2026-10-17 /cc-guide files pass (packets `20261017T205239-files`, under
+`~/.cache/agent-skills/cc-guide/packets/`) found three places that ask for a fresh-context
+subagent without ruling out a fork. Since Claude Code 2.1.302, fork mode is on by default in
+claude -p, the Agent SDK, the desktop app and VS Code as well as the terminal, so the
+dispatching model may request the `fork` type, which inherits the whole conversation (guide
+`subagents.isolation`; an Agent call with no type still gets `general-purpose`). The owner ruled
+on each on 2026-10-18. Two were micro-tested first: decision-only `claude -p --model opus --tools
+""` runs from `/tmp/fork-micro/run`, 5 reps per arm, the fork offered with its documented
+description and the owner asking to keep spend down. Kit, pre-registration and results:
+`~/.cache/agent-skills/scratch/fork-micro/`. Neither control chose a fork, so neither wording was
+authored. In 16 of the 20 reps (10 of 10 for writing-skills, 6 of 10 for prepare-handoff) the
+model said an omitted `subagent_type` would create a fork, which the 2.1.302 docs contradict;
+all 20 named a type.
+
+- [ ] Name a non-fork type in writing-skills' Micro-Test step 1 once a fork is seen there
+      (`skills/writing-skills/SKILL.md:596`): "a raw API call, or a single-shot subagent if
+      you don't have API access" leaves the type to the dispatcher. Owner ruling: defer on the
+      micro-test result. Control 0/5 fork and treatment 0/5 fork (all 10 reps named
+      `general-purpose`), so by the section's own step 2 there is nothing to fix. The tested
+      treatment: "a raw API call or `claude -p`, or failing both a single-shot subagent of a
+      named type that starts fresh (`general-purpose`), never `fork`: a fork inherits this
+      conversation, the draft under test included." writing-skills stays held in the cc-guide
+      backlog for its other reasons; no restamp. Not tested: Sonnet, or a live
+      Agent call whose type the model is not asked about. Size: quick-fix. Revisit if: a
+      session or a micro-test rep is seen picking the fork.
+- [ ] Name a fresh, non-fork type for prepare-handoff's reviewers once a fork is seen there
+      (`skills/prepare-handoff/SKILL.md:78-79`, step 3): "dispatch the reviewers in parallel
+      as read-only subagents, with no model pinned" names no type, and a forked cold reader
+      would break its template's premise ("no memory, no earlier conversation",
+      `references/cold-reader.md:5`). Owner ruling: micro-test, then reword only if the
+      control picks fork. Control 0/5 fork and treatment 0/5 fork (all 10 reps chose `Plan`
+      for both reviewers), so it is deferred. The tested treatment, runtime-neutral since
+      Codex and Gemini share the skill: "read-only subagents that start fresh (never a fork,
+      or any type that inherits this conversation), with no model pinned". Size: quick-fix.
+      Revisit if: a session or a micro-test rep is seen picking the fork, as for the
+      writing-skills item.
+- [ ] Rule out the fork in subagent-driven-development's "Why subagents" line once SDD is next
+      edited (`skills/subagent-driven-development/SKILL.md:16`): it says subagents "should
+      never inherit your session's context or history" but does not name the `fork` type.
+      Owner ruling: defer, untested, because its dispatch templates already name a type:
+      `implementer-prompt.md:6` `general-purpose`, `task-reviewer-prompt.md:18` `task-reviewer`
+      (`:73` falls back to `general-purpose`), `re-review-prompt.md:8-9` the same pair, and
+      requesting-code-review's `code-reviewer.md:8` `code-reviewer` (else `general-purpose`) for
+      the final review. Two SKILL.md dispatches cite no template: the fresh implementer of fix
+      rounds 4-5 (:227) and the batch implementer (:125). The clause proposed at the ruling:
+      "so dispatch each as the type its template names, never as a fork". SDD stays held in the
+      cc-guide backlog, so no restamp. Words added at :16 move the critical sections below it, so run the
+      critical-placement lint after the edit. Size: quick-fix. Revisit at the next SDD edit.
+
 ## 49-claude-code-drift-automation — 2026-10-18
 - [ ] Pin `baseline rebaseline` to its packet's head (plan 49, Q1, owner decision D2). A
       session start can now refetch the docs: `notice.sh refresh` runs `check --hook`

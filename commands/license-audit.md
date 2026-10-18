@@ -1,7 +1,7 @@
 ---
 description: Audit the current repo's licensing and attribution — run its mechanical gates where present, then judgment checks on NOTICE/LICENSE sync, license compatibility, and uncredited-adaptation risks. Read-only — reports findings, never edits.
 disable-model-invocation: true
-# cc-guide: skills.frontmatter commands.overview @2.1.296
+# cc-guide: skills.frontmatter commands.overview @2.1.302
 ---
 
 Audit licensing and attribution in the current repo. Read-only: report

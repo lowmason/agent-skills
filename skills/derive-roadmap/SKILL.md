@@ -10,7 +10,7 @@ license: MIT
 metadata:
   author: Lowell Mason
   version: "1.0"
-# cc-guide: lean.session-hygiene @2.1.296
+# cc-guide: lean.session-hygiene @2.1.302
 ---
 
 # derive-roadmap
