@@ -1,12 +1,16 @@
 # Agent-skills portability — Design Spec
 
-**Status: DESIGN APPROVED (2026-10-03); written spec awaiting review.**
+**Status: APPROVED (2026-10-18).** The owner approved the design on 2026-10-03
+and the written spec on 2026-10-18. Next step: an implementation plan from the
+writing-plans skill.
 The owner approved all five design sections in a brainstorming pass over
 `specs/completed/agent-skills-best-practices.md` (a September 2026 survey of
 Agent Skills portability across Claude Code, Codex, Gemini CLI, Cursor, Copilot,
-and others). This document is the handoff for implementation planning; nothing
-here has been implemented. The survey is this spec's input; it was retired
-ahead of the spec, to `specs/completed/` in `79ad04f` (2026-10-03).
+and others). This document is the handoff for implementation planning. One
+piece has landed since: a 2026-10-15 quick fix made `build/check_frontmatter.py`
+accept `compatibility`, and R1.3's check of its value is still to do. The
+survey is this spec's input; it was retired ahead of the spec, to
+`specs/completed/` in `79ad04f` (2026-10-03).
 
 ## Purpose and scope
 
