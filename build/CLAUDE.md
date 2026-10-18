@@ -50,6 +50,13 @@ reports: `cli.py packets` writes the packets its verifier agent reads, under
 the cache, and `cli.py settle` re-greps the verifier's quotes (`cli.py quotes`
 checks single rows), applies the spec's fail-safe and discard rules, and
 prints the corrections and the `baseline` commands that follow.
+`notice.sh` is the session-start pair that `../.claude/settings.json` wires on
+the `startup` matcher. `show` prints the notice `check --hook` last wrote,
+once a day per notice. The async `refresh` runs `check --hook` once the last
+good check is a day old, and leaves an error notice when it cannot, so a
+failure is never silent. `notice.py` writes the notice, and its docstring
+lists the cache files the shell and Python share. The notice reads `main`, so
+it keeps naming work `/cc-guide` resolved until that work is committed.
 Nothing is committed for you.
 `cd build && pytest` collects this suite too, so module and test basenames
 stay unique across `build/`.

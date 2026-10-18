@@ -273,3 +273,13 @@ def test_refresh_replaces_unfinished_by_renaming_a_temp_file_in_the_cache(fake_u
     assert (temp.parent, temp.name[0], temp.suffix) == (cache, '.', '.tmp')
     assert (cache / 'unfinished').read_text() == '1\n'
     assert not [entry for entry in cache.iterdir() if entry.suffix == '.tmp']
+
+
+def test_the_project_settings_wire_the_pair_on_startup():
+    '''R9.1: one SessionStart group on the startup matcher, show and then an
+    async refresh, each naming this script through the quoted project dir.'''
+    settings = json.loads((REPO / '.claude' / 'settings.json').read_text())
+    assert settings['hooks']['SessionStart'] == [{'matcher': 'startup', 'hooks': [
+        {'type': 'command', 'command': '"$CLAUDE_PROJECT_DIR"/build/cc_guide/notice.sh show'},
+        {'type': 'command', 'command': '"$CLAUDE_PROJECT_DIR"/build/cc_guide/notice.sh refresh', 'async': True},
+    ]}]
