@@ -854,7 +854,8 @@ def check_agent_name_form(root: Path, files: list[str], params: dict) -> list[Fi
         if name is None:
             out.append(Finding(f, 'frontmatter sets no name'))
         elif str(name) not in allow and not AGENT_NAME_RE.fullmatch(str(name)):
-            out.append(Finding(f, f'name {name!r} is not a lowercase-hyphenated ID'))
+            out.append(Finding(f, f'name {name!r} is not a lowercase-hyphenated ID, '
+                                  'the repo convention'))
     return out
 
 

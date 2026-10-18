@@ -378,15 +378,18 @@ reserved = ['synced']
 
 # Plan 35 audit section 6 checks (/deferred pass 2026-10-05), agents and commands.
 
-# The guide's subagent table calls the name a unique lowercase-hyphenated ID.
-# allow lists the names a deviation exception covers: Explore overrides the
-# built-in Explore agent only under that spelling.
+# The guide's subagent table asks only for a unique ID of at most 256
+# characters with no colon; a lowercase-hyphenated name is this repo's own
+# convention (owner decision, 2026-10-17). allow lists the names exempt from
+# it: Explore overrides the built-in Explore agent only under that spelling,
+# as probed on Claude Code 2.1.219; re-probe after binary updates, as
+# agents/explore.md says.
 [[check]]
 id = 'agent-name-form'
 kind = 'agent'
 sections = ['subagents.frontmatter']
-type = 'fact'
-rule = 'An agent name is a lowercase-hyphenated ID, unless allow lists it.'
+type = 'advice'
+rule = 'An agent name is a lowercase-hyphenated ID, the repo convention, unless allow lists it.'
 enforced_by = 'check_conformance'
 allow = ['Explore']
 
@@ -725,16 +728,6 @@ guide = 'Skip review for a small change you watched being made.'
 reason = 'requesting-code-review requires review before every merge to main.'
 evidence = 'Audit row S-99; owner gate 2026-10-04.'
 tracked_in = "deferred item: reconcile requesting-code-review with the guide's skip for small watched changes"
-
-[[exception]]
-id = 'explore-capitalised-name'
-type = 'deviation'
-sections = ['subagents.frontmatter']
-artifacts = ['agents/explore.md', 'build/check_frontmatter.py']
-guide = 'An agent name is a unique lowercase-hyphenated ID.'
-reason = 'Only the capitalised name Explore overrides the built-in Explore agent, as probed on Claude Code 2.1.219; check_frontmatter.py requires that name of agents/explore.md.'
-evidence = 'Audit row A-04; owner gate 2026-10-04; check_frontmatter.py added by owner decision after the /cc-guide files pass, 2026-10-13.'
-revisit = 'Re-probe after Claude Code binary updates, as agents/explore.md says.'
 
 [[exception]]
 id = 'readonly-agents-hold-bash'
