@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 '''cc_guide: the drift detector for specs/guides/claude-code-customization-guide.md,
 the citations that point at it, and the deterministic half of /cc-guide
-(Stages 1 to 3 of specs/claude-code-drift-automation-spec.md).
+(Stages 1 to 4 of specs/claude-code-drift-automation-spec.md).
 
 Run: uv run --python 3.13 python build/cc_guide/cli.py <subcommand>
 
@@ -14,11 +14,14 @@ Run: uv run --python 3.13 python build/cc_guide/cli.py <subcommand>
       newer than the cached changelog's newest release, which the cache cannot
       judge, prints a `note:` line there, also without changing the exit; any
       other label the changelog does not list is a violation.
-  check [--ref REF | --worktree] [--docs DIR]
+  check [--ref REF | --worktree] [--docs DIR] [--hook [--run ID]]
       Fetch the docs when the changelog head moved, compare, and report what
       is due (R6). Reads main's commit unless --ref or --worktree says
       otherwise; --docs DIR runs offline against a local copy. Writes only
       under the cache. Exit 0 nothing due, 1 something due, 2 an error.
+      --hook prints nothing, even on an error, and leaves the session-start
+      notice and last-check.json in the cache instead (R9). notice.sh
+      refresh passes --run, the ID it then looks for in last-check.json.
   baseline init [--docs DIR] [--release LABEL] [--date YYYY-MM-DD] [--force]
   baseline rebaseline GROUP [PAGE | 'PAGE › KEY' ...]
   baseline advance ID [ID ...] --to RELEASE
@@ -82,6 +85,7 @@ from functools import partial
 from pathlib import Path
 
 import baseline
+import notice
 import packets
 from check import check, due_audit, http_get, releases_of, summary
 from docs import page_file
@@ -116,6 +120,8 @@ def parser() -> argparse.ArgumentParser:
     where.add_argument('--ref', default='main')
     where.add_argument('--worktree', action='store_true')
     c.add_argument('--docs', type=Path)
+    c.add_argument('--hook', action='store_true')
+    c.add_argument('--run', metavar='ID')
     b = sub.add_parser('baseline').add_subparsers(dest='action', required=True)
     init = b.add_parser('init')
     init.add_argument('--docs', type=Path)
@@ -206,10 +212,28 @@ def run_lint(args, cache: Path) -> int:
 
 
 def run_check(args, cache: Path, today: date, now: datetime, fetch) -> int:
+    if args.run is not None and not args.hook:
+        raise SetupError('--run goes with --hook')
     source = Source(REPO, None if args.worktree else args.ref)
     code, report, path = check(source, cache, docs_dir=args.docs, today=today, now=now, fetch=fetch)
-    print('\n'.join(summary(report, path)))
+    if args.hook:
+        notice.after_check(cache, code, report, now, today, args.run)
+    else:
+        print('\n'.join(summary(report, path)))
     return code
+
+
+def hook_failure(cache: Path | None, reason: str, now: datetime | None, run: str | None) -> int:
+    '''check --hook on a setup error or a crash: the error notice and the
+    record, printing nothing (R9.3, R9.4). With no cache to write to, or a
+    write that fails, this run stays out of last-check.json, which notice.sh
+    refresh counts as unfinished.'''
+    if cache is not None:
+        try:
+            notice.after_failure(cache, reason, now or datetime.now().astimezone(), run)
+        except OSError:
+            pass
+    return 2
 
 
 def run_baseline(args, cache: Path, today: date) -> int:
@@ -342,6 +366,8 @@ def run_settle(args) -> int:
 
 def main(argv=None, *, today: date | None = None, now: datetime | None = None, fetch=None) -> int:
     args = parser().parse_args(argv)
+    hook = args.command == 'check' and args.hook
+    cache = None
     try:
         cache = args.cache or default_cache()
         now = now or datetime.now().astimezone()
@@ -358,9 +384,13 @@ def main(argv=None, *, today: date | None = None, now: datetime | None = None, f
             return run_settle(args)
         return run_baseline(args, cache, today)
     except SetupError as exc:
+        if hook:
+            return hook_failure(cache, str(exc), now, args.run)
         print(f'cc-guide: {exc}', file=sys.stderr)
         return 2
-    except Exception:  # R6.9: a crash must never read as 0, clean, or 1, due
+    except Exception as exc:  # R6.9: a crash must never read as 0, clean, or 1, due
+        if hook:
+            return hook_failure(cache, f'{type(exc).__name__}: {exc}', now, args.run)
         traceback.print_exc()
         return 2
 

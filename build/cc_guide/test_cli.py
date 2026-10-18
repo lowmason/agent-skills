@@ -2,12 +2,13 @@
 `baseline` subcommand's write set, and the manual bookkeeping that brings
 check to exit 0 (drift spec R5, R6.1, R7; Validation 1).'''
 import json
-from datetime import date, datetime
+from datetime import date, datetime, timedelta, timezone
 
 import pytest
 
 import baseline
 import cli
+import notice
 import state
 from cc_fixtures import (DOCS, GUIDE_IDS, GUIDE_PATH, MANIFEST_TOML, docs_dir, drift_repo,  # noqa: F401
                          fixture_repo, git, guide_text, isolated_home, prime_cache, write_tree)
@@ -105,6 +106,83 @@ def test_check_reads_main_unless_told_otherwise(tmp_path, docs_dir, monkeypatch,
     assert main(cache, 'check', '--docs', str(docs_dir)) == 2
     assert capsys.readouterr() == ('', f'cc-guide: {state.MANIFEST}: not found in main\n')
     assert main(cache, 'check', '--worktree', '--docs', str(docs_dir)) == 0
+
+
+HOOK_NOW = datetime(2026, 9, 27, 9, 0, tzinfo=timezone.utc)
+
+
+def hook(cache, *argv, today=date(2026, 9, 27)):
+    '''check --hook as notice.sh refresh runs it, at HOOK_NOW.'''
+    return cli.main(['--cache', str(cache), 'check', '--hook', *argv], today=today, now=HOOK_NOW)
+
+
+def shown(cache):
+    return json.loads((cache / notice.NOTICE).read_text())['systemMessage']
+
+
+def test_check_hook_prints_nothing_and_leaves_the_notice_then_the_record(world, capsys):
+    repo, cache, docs = world
+    assert hook(cache, '--run', 'r1', '--docs', str(docs)) == 1
+    assert capsys.readouterr() == ('', '')
+    assert shown(cache) == 'cc-guide · 2 releases untriaged (oldest 7 d) → /cc-guide'
+    record = notice.read_last_check(cache)
+    assert (record['run'], record['exit'], record['ok_epoch']) == ('r1', 1, int(HOOK_NOW.timestamp()))
+    assert hook(cache, '--run', 'r2', '--docs', str(docs), today=date(2026, 9, 10)) == 0
+    assert capsys.readouterr() == ('', '')
+    assert (cache / notice.NOTICE).read_text() == ''
+    assert git(repo, 'status', '--porcelain') == ''
+
+
+def test_check_hook_turns_a_setup_error_into_the_error_line(tmp_path, docs_dir, monkeypatch, capsys):
+    '''A setup error raised before check() returns still leaves the notice
+    and the record, so the hook never shows a stale report's outcome
+    (deferred item "check's report and inputs", part a).'''
+    repo = fixture_repo(tmp_path / 'repo', {GUIDE_PATH: guide_text()})
+    monkeypatch.setattr(cli, 'REPO', repo)
+    cache = tmp_path / 'cache'
+    earlier = HOOK_NOW - timedelta(days=3)
+    notice.record_check(cache, 0, earlier, 'r0')
+    assert hook(cache, '--run', 'r1', '--docs', str(docs_dir)) == 2
+    assert capsys.readouterr() == ('', '')
+    assert shown(cache) == (f'cc-guide · check failed: {state.MANIFEST}: not found in main · '
+                            'last good check 3 d ago → run build/cc_guide/cli.py check')
+    record = notice.read_last_check(cache)
+    assert (record['run'], record['exit'], record['ok_epoch']) == ('r1', 2, int(earlier.timestamp()))
+
+
+def test_check_hook_turns_a_crash_into_the_error_line(world, monkeypatch, capsys):
+    _, cache, docs = world
+
+    def boom(*args, **kwargs):
+        raise RuntimeError('boom')
+    monkeypatch.setattr(cli, 'check', boom)
+    assert hook(cache, '--run', 'r1', '--docs', str(docs)) == 2
+    assert capsys.readouterr() == ('', '')
+    assert shown(cache) == ('cc-guide · check failed: RuntimeError: boom · no good check yet'
+                            ' → run build/cc_guide/cli.py check')
+    assert notice.read_last_check(cache)['run'] == 'r1'
+
+
+def test_run_goes_with_hook(world, capsys):
+    _, cache, docs = world
+    assert main(cache, 'check', '--run', 'r1', '--docs', str(docs)) == 2
+    assert capsys.readouterr() == ('', 'cc-guide: --run goes with --hook\n')
+
+
+def test_check_hook_writes_only_its_cache_files(world):
+    '''R6.10: the report, the notice, its digest and the record, all in the
+    cache, and nothing in the repo.'''
+    repo, cache, docs = world
+
+    def files():
+        return {p.relative_to(cache).as_posix() for p in cache.rglob('*') if p.is_file()}
+    before = files()
+    hook(cache, '--run', 'r1', '--docs', str(docs))
+    added = files() - before
+    reports = {name for name in added if name.startswith('reports/')}
+    assert len(reports) == 1
+    assert sorted(added - reports) == [notice.LAST_CHECK, notice.DIGEST, notice.NOTICE]
+    assert git(repo, 'status', '--porcelain') == ''
 
 
 def history_repo(tmp_path, monkeypatch):
