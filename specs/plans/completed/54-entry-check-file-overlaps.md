@@ -637,7 +637,7 @@ Expected: the first hunk header starts at line 6 (`@@ -6 +6 @@` or later), so li
 
 - [x] **Step 4: Run the tests to verify they pass**
 
-> Deviation: 40 passed (+13) at 52b72ff, and 49 (+22 in all) after the review fixes.
+> Deviation: 40 passed (+13) at 52b72ff, 49 (+22 in all) after the review fixes, and 51 (+24 in all) after the finishing-gate fix (c399b65).
 
 Run: `uv run --directory skills/writing-plans/scripts --python 3.13 --with pytest python -m pytest -q`
 
@@ -937,8 +937,10 @@ overlapping files:
 
 Plan 52's count fell from 27 to 20 when D6 dropped its seven `KIT/…` paths.
 
+**Finishing gate (2026-10-18, base `52b72ff`, head `240b9c7`).** Codex ran with the same per-run flags, exited 0 on its first launch and returned one P2 (`Codex reviewed 240b9c7`). Without `-z`, `git ls-tree` C-quotes a name with non-ASCII bytes, so D6's root filter missed a root directory such as `café/` that only a ref holds. Fixed in `c399b65` (+2 tests): both `ls-tree` calls now pass `-z`. The plan-file listing had the same gap: a plan whose filename has such bytes was dropped wherever only a ref held it, in the plan-ids scan since before this branch. The real run's `overlapping files:` field is unchanged.
+
 **Cross-plan notes.**
 
 - **Plan id 54 collides.** `54-test-suite-registry.md` (branch `claude/sweet-shamir-525703`, worktree `exciting-ritchie-bd33d6`) was committed while this plan was in its final review, and the `plan ids:` field reports the collision. It is the owner's call, settled at integration.
 - **This plan names two files that no commit here edits.** Its Task 2 names `skills/writing-plans/SKILL.md` and `NOTICE`, but the edits to them were skipped. Under D5 the plan stays live until its branch merges, so until then the report lists both files as shared with plans 52 and 53.
-- **Plan 53's suite count is stale.** Plan 53's Task 10 Step 6 records 27 tests for the writing-plans suite. After this branch merges the suite has 49. Plan 53 compares against "the count it had before this task", so its executor should take the count at that point.
+- **Plan 53's suite count is stale.** Plan 53's Task 10 Step 6 records 27 tests for the writing-plans suite. After this branch merges the suite has 51. Plan 53 compares against "the count it had before this task", so its executor should take the count at that point.
