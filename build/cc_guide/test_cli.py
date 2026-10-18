@@ -3,6 +3,7 @@
 check to exit 0 (drift spec R5, R6.1, R7; Validation 1).'''
 import json
 from datetime import date, datetime, timedelta, timezone
+from pathlib import Path
 
 import pytest
 
@@ -183,6 +184,30 @@ def test_check_hook_writes_only_its_cache_files(world):
     assert len(reports) == 1
     assert sorted(added - reports) == [notice.LAST_CHECK, notice.DIGEST, notice.NOTICE]
     assert git(repo, 'status', '--porcelain') == ''
+
+
+@pytest.mark.parametrize('failure, code', [
+    pytest.param(None, 1, id='normal-exit'),
+    pytest.param(state.SetupError('no manifest'), 2, id='setup-error'),
+    pytest.param(RuntimeError('boom'), 2, id='crash'),
+])
+def test_check_hook_renames_the_record_into_place_after_the_notice_and_its_digest(world, monkeypatch, failure, code):
+    '''The handshake: last-check.json is written last of all, on every exit.'''
+    _, cache, docs = world
+    if failure is not None:
+        def fail(*args, **kwargs):
+            raise failure
+        monkeypatch.setattr(cli, 'check', fail)
+    order = []
+    real = notice.os.replace  # the global os module: other renames land here too
+
+    def replace(src, dst):
+        order.append(Path(dst).name)
+        real(src, dst)
+    monkeypatch.setattr(notice.os, 'replace', replace)
+    assert hook(cache, '--run', 'r1', '--docs', str(docs)) == code
+    written = (notice.NOTICE, notice.DIGEST, notice.LAST_CHECK)
+    assert [name for name in order if name in written] == list(written)
 
 
 def history_repo(tmp_path, monkeypatch):
