@@ -84,7 +84,7 @@ sections = [
 ]
 
 [kinds.claude-md]
-description = 'Always-loaded CLAUDE.md files.'
+description = 'CLAUDE.md files: the root one always loads, build/CLAUDE.md once Claude reads or edits a file under build/.'
 globs = ['CLAUDE.md', 'build/CLAUDE.md']
 sections = [
     'rules.claude-md', 'rules.hierarchy', 'context.overview',
@@ -175,9 +175,9 @@ rule = 'Agent frontmatter uses only documented fields, and model is an alias or 
 enforced_by = 'check_conformance'
 fields = [
     'name', 'description', 'tools', 'disallowedTools', 'model', 'effort',
-    'permissionMode', 'maxTurns', 'skills', 'mcpServers', 'hooks', 'memory',
-    'background', 'isolation', 'omitClaudeMd', 'experimental', 'color',
-    'initialPrompt',
+    'permissionMode', 'maxTurns', 'autoCompactWindow', 'skills', 'mcpServers',
+    'hooks', 'memory', 'background', 'isolation', 'omitClaudeMd', 'experimental',
+    'color', 'initialPrompt',
 ]
 models = ['sonnet', 'opus', 'haiku', 'fable', 'inherit']
 

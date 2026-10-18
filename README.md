@@ -145,7 +145,7 @@ each is copied into a target repo and registered in *that* repo's
 | [`ruff-check.sh`](hooks/ruff-check.sh) | `Stop` | Runs `uv run ruff check .`; exit 2 feeds whatever `--fix` couldn't resolve back to Claude. Guarded by `stop_hook_active` against loops. |
 | [`uv-guard.sh`](hooks/uv-guard.sh) | `PreToolUse` (`Bash`) | Blocks `pip install` and bare `python` / `pytest`, injecting the `uv …` form instead. Escape hatch: `no-uv-guard` anywhere in the command. |
 
-All three read the hook JSON payload from stdin with `jq`. Blocking takes **exit 2**, which feeds stderr back to Claude, or a JSON deny decision; exit 1 merely logs, unless the hook sets `"onFailure": "block"` (2.1.295+), which has no effect on a `Stop` hook such as `ruff-check.sh`.
+All three read the hook JSON payload from stdin with `jq`. Blocking takes **exit 2**, which feeds stderr back to Claude, or a JSON deny decision; exit 1 merely logs, unless the hook sets `"onFailure": "block"` (2.1.295+), which has no effect on a `Stop` hook such as `ruff-check.sh`. A shell-form `PreToolUse` or `PermissionRequest` command hook on Windows without Git Bash (2.1.299+) also blocks when it fails.
 
 > [!WARNING]
 > **Don't install these globally, and don't wire them into this repo.** A hook registered in `~/.claude/settings.json` fires in *every* project, including non-Python ones. And `agent-skills` itself has no root `pyproject.toml` — its bundled scripts run on `uv run --with` inline deps, so `ruff check` would have no config to run against and `uv-guard.sh` would fight the very invocation the repo intends. Install per work-repo instead.
