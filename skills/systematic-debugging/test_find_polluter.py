@@ -32,12 +32,13 @@ GIT_ENV = {**os.environ, 'GIT_CONFIG_GLOBAL': '/dev/null', 'GIT_CONFIG_NOSYSTEM'
 @pytest.fixture
 def project(tmp_path):
     """A throwaway git project: a top-level and a nested TypeScript test, and
-    one pytest file a directory down."""
+    a pytest file at the top level and one a directory down."""
     root = tmp_path / 'project'
     (root / 'src' / 'sub').mkdir(parents=True)
     (root / 'tests').mkdir()
     (root / 'src' / 'top.test.ts').write_text("test('top')\n")
     (root / 'src' / 'sub' / 'b.test.ts').write_text("test('nested')\n")
+    (root / 'test_root.py').write_text('def test_root():\n    pass\n')
     (root / 'tests' / 'test_a.py').write_text('def test_a():\n    pass\n')
     subprocess.run(['git', 'init', '-q', str(root)], check=True, env=GIT_ENV)
     return root
@@ -89,12 +90,14 @@ def test_globstar_pattern_runs_top_level_and_nested_tests(bash, project, tmp_pat
 
 @pytest.mark.parametrize('bash', BASHES)
 def test_documented_pytest_pattern_still_matches(bash, project, tmp_path):
-    """root-cause-tracing.md's '*/test_*.py' worked before the fix, which is
-    why the bug hid on a pytest stack. The ./ prefix must not break it."""
+    """root-cause-tracing.md's '*/test_*.py' worked before the fix, top-level
+    files included: its leading '*' takes the '.' of ./test_root.py. That is
+    why the bug hid on a pytest stack, and why the ./ prefix alone, which
+    makes '*/' mean "at least one directory", would drop top-level tests."""
     runner, log = make_runner(tmp_path)
     result = find_polluter(bash, project, '*/test_*.py', runner)
-    assert 'Found 1 test files' in result.stdout
-    assert ran(log) == ['./tests/test_a.py']
+    assert 'Found 2 test files' in result.stdout
+    assert ran(log) == ['./test_root.py', './tests/test_a.py']
     assert result.returncode == 0
 
 
