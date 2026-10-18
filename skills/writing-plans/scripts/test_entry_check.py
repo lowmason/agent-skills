@@ -455,3 +455,36 @@ def test_plans_sort_by_id_and_a_given_plan_without_one_comes_last(repo, tmp_path
         '  shared:',
         '    src/app.py: 2-second.md, 1draft.md',
     ]
+
+
+def test_a_root_name_git_would_quote_counts_on_a_ref(repo):
+    git(repo, 'config', 'core.quotePath', 'true')
+    write(repo, 'specs/plans/2-second.md', plan('- Modify: `café/app.py`'))
+    write(repo, 'specs/plans/3-third.md', plan('- Modify: `café/app.py`'))
+    commit(repo, 'two plans name a file in café/')
+    git(repo, 'checkout', '-q', '-b', 'side')
+    write(repo, 'café/app.py', '')
+    commit(repo, 'café/ on a side branch only')
+    git(repo, 'checkout', '-q', 'main')
+    assert overlaps(check(repo).stdout) == [
+        '  live plans: 2-second.md (1 path); 3-third.md (1 path)',
+        '  shared:',
+        '    café/app.py: 2-second.md, 3-third.md',
+    ]
+
+
+def test_a_plan_name_git_would_quote_is_read_on_a_ref(repo):
+    git(repo, 'config', 'core.quotePath', 'true')
+    write(repo, 'specs/plans/2-second.md', plan('- Modify: `src/app.py`'))
+    commit(repo, 'plan 2 names src/app.py')
+    git(repo, 'checkout', '-q', '-b', 'side')
+    write(repo, 'specs/plans/3-crème.md', plan('- Modify: `src/app.py`'))
+    commit(repo, 'plan 3 on a side branch only')
+    git(repo, 'checkout', '-q', 'main')
+    out = check(repo).stdout
+    assert '  highest: 3 — 3-crème.md (side)\n' in out
+    assert overlaps(out) == [
+        '  live plans: 2-second.md (1 path); 3-crème.md (1 path)',
+        '  shared:',
+        '    src/app.py: 2-second.md, 3-crème.md',
+    ]

@@ -77,6 +77,13 @@ def git_out(root: Path, *args: str) -> str:
     return done.stdout
 
 
+def nul_split(out: str) -> list[str]:
+    '''The entries of a git listing run with -z, which prints each path as it is.
+    Without -z, git C-quotes a path with unusual bytes (café comes out as a quoted
+    octal escape), and the quoted form matches no name a plan writes.'''
+    return [entry for entry in out.split('\0') if entry]
+
+
 def repo_root(cwd: Path) -> Path:
     done = git(cwd, 'rev-parse', '--show-toplevel')
     if done.returncode != 0:
@@ -125,9 +132,9 @@ def plan_sightings(root: Path, refs: list[str], trees: list[Path]) -> list[Sight
     seen = []
     for ref in refs:
         short = ref.removeprefix('refs/heads/').removeprefix('refs/remotes/')
-        listing = git(root, 'ls-tree', '-r', ref, '--', 'specs/plans')
-        for line in listing.stdout.splitlines():
-            meta, _, path = line.partition('\t')
+        listing = git(root, 'ls-tree', '-r', '-z', ref, '--', 'specs/plans')
+        for entry in nul_split(listing.stdout):
+            meta, _, path = entry.partition('\t')
             seen.append(Sighting(path, short, ref=ref, blob=meta.split()[-1]))
     for tree in trees:
         plans = tree / 'specs' / 'plans'
@@ -217,7 +224,7 @@ def root_names(root: Path, refs: list[str], trees: list[Path]) -> set[str]:
     '''The names at the root of every ref and every worktree.'''
     names = set()
     for ref in refs:
-        names.update(git(root, 'ls-tree', '--name-only', ref).stdout.splitlines())
+        names.update(nul_split(git(root, 'ls-tree', '-z', '--name-only', ref).stdout))
     for tree in trees:
         with suppress(OSError):  # a worktree removed since git listed it
             names.update(path.name for path in tree.iterdir())
