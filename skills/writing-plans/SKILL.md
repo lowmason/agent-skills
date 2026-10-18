@@ -6,7 +6,7 @@ description: >
   into tasks", a finished spec in specs/ awaiting its plan, before handing work to subagents
   or a separate execution session, or when an executed plan is to be completed, retired or merged
   ("complete the plan"), including a roadmap stage's handoff.
-# cc-guide: lean.session-hygiene lean.model-routing @2.1.296
+# cc-guide: lean.session-hygiene lean.model-routing @2.1.302
 ---
 
 # Writing Plans
