@@ -32,7 +32,7 @@
 ## Decisions
 
 - **D1** (owner, plan review, 2026-10-17): the plan is approved as written, settled defaults DF1–DF9 included, with Task 2's spec amendments A1–A6 worded as shown. Applied in: Tasks 1–10, Task 2 (spec amendment).
-- **D2** (owner, plan review, 2026-10-17): Q1 takes option (b). `rebaseline` is to refuse when `fetch.json`'s head differs from the head of the packet it settles, as `audited --to` already does for audits. That change belongs to Stage 3's tools, not this stage, so this plan logs it as a deferred item at completion. Until it lands, the Global Constraint against a live refresh during a `/cc-guide` run stays. Applied in: Planning record (Q1), Plan completion notes.
+- **D2** (owner, plan review, 2026-10-17): Q1 takes option (b). `rebaseline` is to refuse when `fetch.json`'s head differs from the head of the packet it settles, as `audited --to` already does for audits. That change belongs to Stage 3's tools, not this stage, so this plan logs it as a deferred item at completion. No interim rule until it lands (owner, 2026-10-17). The follow-up amends drift spec R7 and R8.8 (owner, 2026-10-17). Applied in: Planning record (Q1), Plan completion notes.
 
 ---
 
@@ -93,7 +93,7 @@ Every code block in Tasks 2–8 was replayed, in task order, onto a throwaway cl
   - (b) Guard it in Stage 3's tools: `settle` prints `rebaseline --head <packet head>`, and `rebaseline` refuses when `fetch.json`'s head differs, as `audited --to` already does for audits. This is a follow-up plan, logged as a deferred item.
   - (c) Accept it and document an operating rule in `build/CLAUDE.md`: finish a `/cc-guide` run's rebaseline before starting another session in the repo.
 
-  The plan applies (c)'s rule only as the Global Constraint above, which covers this plan's own live steps. **Decided: (b) (D2).** The guard is logged as a deferred item at completion (Plan completion notes), and no task is added here.
+  The plan applies (c)'s rule only as the Global Constraint above, which covers this plan's own live steps. **Decided: (b) (D2), with no interim rule.** The guard is logged as a deferred item at completion (Plan completion notes), and no task is added here.
 
 ### Coverage gaps (R4.3; listed in the completion report for the owner)
 
@@ -1825,9 +1825,8 @@ The session's own `refresh` replaces it with the real notice.
         `baseline audited` is pinned, through `--to` (plan 44). Fix: `settle`
         (`build/cc_guide/settle.py`) prints `rebaseline --head <the packet's index.json
         head>`, and `rebaseline` refuses when `fetch.json`'s `changelog_head` differs,
-        naming both heads. This amends drift spec R7 and R8.8. Until it lands, finish a
-        `/cc-guide` run's rebaseline before starting another session in the repo. Size:
-        plan. Done when: `rebaseline --head` refuses a moved head with a test in
+        naming both heads. This amends drift spec R7 and R8.8. Size: plan. Done when:
+        `rebaseline --head` refuses a moved head with a test in
         `build/cc_guide/test_cli.py`, `settle` prints the flag with a test in
         `build/cc_guide/test_settle.py`, and the spec states the rule.
   ```
