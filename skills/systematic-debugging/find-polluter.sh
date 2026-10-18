@@ -8,6 +8,14 @@
 #   TEST_CMD=pytest        ./find-polluter.sh '.git' '*/test_*.py'   # default
 #   TEST_CMD='npm test'    ./find-polluter.sh '.git' 'src/**/*.test.ts'
 #   TEST_CMD='go test'     ./find-polluter.sh '.git' '*_test.go'
+#
+# The pattern is matched with find -path from the current directory, with or
+# without a leading ./. Each '**/' may also match no directory, but with
+# several only the all-or-none variants are tried: run mixed ones separately.
+#
+# Exit status: 1 when a test creates the pollution (or on a usage error), 2
+# when no test file matches the pattern, so no test ran, 0 otherwise. A 0 is
+# clean only if no test was skipped because the pollution already existed.
 
 set -e
 
@@ -27,9 +35,26 @@ echo "Test pattern: $TEST_PATTERN"
 echo "Test command: $TEST_CMD"
 echo ""
 
-# Get list of test files
-TEST_FILES=$(find . -path "$TEST_PATTERN" | sort)
-TOTAL=$(echo "$TEST_FILES" | wc -l | tr -d ' ')
+# Get list of test files (find . emits ./-prefixed paths, so accept the
+# pattern written with or without a leading ./)
+TEST_PATTERN="${TEST_PATTERN#./}"
+# find -path can't match '**/' against zero directory levels, so a pattern
+# like src/**/*.test.ts would skip src/top.test.ts; also try the pattern
+# with '**/' collapsed to cover files directly under the base directory.
+# The bare pattern, as this script matched it before, stays a third
+# alternative: a leading '*' still takes the '.', so '*/test_*.py' keeps
+# finding a top-level ./test_x.py, which the ./ prefix alone would drop.
+TEST_FILES=$(find . \( -path "./$TEST_PATTERN" -o -path "./${TEST_PATTERN//\*\*\//}" -o -path "$TEST_PATTERN" \) | sort -u)
+if [ -z "$TEST_FILES" ]; then
+  # An empty result is no files, not one, and nothing ran: never fall
+  # through to the all-clear below.
+  echo "Found 0 test files"
+  echo ""
+  echo "❌ No test files match that pattern, so no test ran. This is not an all-clear."
+  echo "   find -path matches it from this directory, as in 'src/**/*.test.ts' or '*/test_*.py'."
+  exit 2
+fi
+TOTAL=$(printf '%s\n' "$TEST_FILES" | wc -l | tr -d ' ')
 
 echo "Found $TOTAL test files"
 echo ""

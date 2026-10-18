@@ -64,11 +64,11 @@ guide (`4efba4e`) shifted anchors by one.
 | 5 | Every task gets its own dispatch | **Adopted** — plan 22 |
 | 6 | SDD review loop has no round cap | **Adopted** — plan 22, with a deliberate ladder divergence |
 | 7 | Pre-flight conflicts stall for a human | Partly adopted (fix-round rulings); premise corrected; still a decision |
-| 8 | Smaller items | `find-polluter.sh` still broken, its "fix directly" disposition still not carried out; two items partly covered; the `Spec:` pointer adopted by plan 40 |
+| 8 | Smaller items | `find-polluter.sh` **fixed** — plan 50; two items partly covered; the `Spec:` pointer adopted by plan 40 |
 | 9 | writing-plans asks for code transcripts | Open; both plans written since that implement their own spec show the pattern; its tier premise re-sourced |
 | 10 | Reviewers grade the spec's silence | Open; upstream unchanged |
 | 11 | executing-plans was rebuilt as a ledgered native mode | Handoff half adopted by plan 40; the port is open and waits on 7; upstream has since fixed `task-done` |
-| 12 | SDD script hardening | `review-package` range guards still not done; v7.0.0 adds a low-exposure `.gitignore` overwrite |
+| 12 | SDD script hardening | `review-package` range guards and v7.0.0's create-only `.gitignore` **adopted** — plan 50; the basename collision stays decided (M2) |
 | 13 | TDD does not say what "other tests" means | Open; travels with 11 |
 | 14 | Nested controller on Claude Code | Not adopted; premise narrowed to non-fork subagents |
 | 15 | diagnosing-superpowers | Not adopted |
@@ -351,10 +351,16 @@ stands.
 
 ### 8. Smaller items
 
-- **`find-polluter.sh` is still broken; the first pass's "fix directly"
-  disposition is still not carried out.** The only commit touching the file is
-  still the layout move (`5fee1d7`), so the 2026-10-03 probe stands. It showed
-  the bug is worse than first described:
+- **`find-polluter.sh` — fixed by plan 50 (2026-10-18).** Plan 50 ported the
+  three-part fix with a deterministic test and anchored the invocation as
+  `<this-skill-dir>/find-polluter.sh`; where no test file matches, the port
+  exits 2 rather than taking upstream's all-clear path. Its review found that
+  upstream's `./` prefix drops top-level files from `*/test_*.py`, so the port
+  also keeps the bare pattern as a third match (`NOTICE`). The record
+  below is this revision's, from before the fix. The first pass's "fix
+  directly" disposition was still not carried out: the only commit touching
+  the file was still the layout move (`5fee1d7`), so the 2026-10-03 probe
+  stood. It showed the bug is worse than first described:
   - A pattern matching nothing prints "Found 1 test files", runs no test, and
     ends "✅ No polluter found - all tests clean!" — a false all-clear on any
     typo in the pattern.
@@ -592,8 +598,10 @@ execution runs in a fresh session on a model chosen at launch.
 
 Four upstream fixes to the scripts plan 22 touched, judged separately:
 
-- **`review-package` accepts empty and non-descendant ranges — verified gap,
-  still open.** The script has not changed since the 2026-10-03 probes:
+- **`review-package` accepts empty and non-descendant ranges — adopted by
+  plan 50 (2026-10-18)**, upstream's guards verbatim with a test for each. The
+  record below is from before the fix: the script had not changed since the
+  2026-10-03 probes:
   - Probe, BASE == HEAD: it wrote `review-<sha>..<sha>.diff` with "0 commit(s)"
     and exited 0.
   - Probe, BASE on a sibling branch: it wrote a package whose diff carries the
@@ -605,7 +613,8 @@ Four upstream fixes to the scripts plan 22 touched, judged separately:
   `git rev-list --count`. Our argument order is already upstream's, so the
   guards drop in after `review-package:22-23`, with a test for each.
 - **`sdd-workspace` overwrites a committed `.gitignore` — verified, low
-  (v7.0.0, #2399, `19e54c0`).** `sdd-workspace:47` writes `*` to
+  (v7.0.0, #2399, `19e54c0`); adopted by plan 50 (2026-10-18).** Before the
+  fix, `sdd-workspace:47` wrote `*` to
   `.sdd/.gitignore` on every run. Probe, 2026-10-18: in a scratch repository
   that committed its own `.sdd/.gitignore`, one run left the file modified,
   cut back to `*`. This repo never commits that file, since it deletes each
@@ -629,9 +638,9 @@ Four upstream fixes to the scripts plan 22 touched, judged separately:
   because some marketplace packagers strip exec bits. Our installs keep them:
   symlinks do, and `install.py --copy` uses `shutil.copy2`. The live issue in
   this class is path resolution, not exec bits. `find-polluter.sh` (finding 8)
-  is the instance that matters; the `./render-graphs.js` call at
-  `writing-skills/SKILL.md:337-338` is the same pattern in an authoring-only
-  context.
+  was the instance that mattered, and plan 50 anchored it; the
+  `./render-graphs.js` call at `writing-skills/SKILL.md:337-338` is the same
+  pattern in an authoring-only context.
 
 ### 13. TDD does not say what "other tests" means
 
@@ -705,7 +714,12 @@ v7.0.0's main change, the brainstorming rebuild, is finding 4's new upstream
 baseline, and finding 4 is rewritten above. Its `task-done` and `sdd-workspace`
 fixes join findings 11 and 12. One finding is new.
 
-### 16. Two v7.0.0 bug fixes apply to our copies as they stand
+### 16. Two v7.0.0 bug fixes apply to our copies as they stand — adopted
+
+Plan 50 (2026-10-18) ported both fixes verbatim, with a regression test for the
+companion server (`brainstorming/scripts/test_server.py`) and a dummy-value
+probe for the debugging example; `NOTICE` records them. The record below is
+from before the fix.
 
 Both verified by probe on 2026-10-18.
 
@@ -739,17 +753,16 @@ Under this repo's proportional-process rule:
 
 - **Done:** findings 1, 2, 5, and 6, through plan 22 (2026-09-03); finding 8's
   `Spec:` pointer and finding 11's handoff half, through plan 40 (merged
-  2026-10-12).
-- **Fix directly, no spec:** four items, all small, mechanical, and verified
-  by probe. Together they fit one plan without a spec.
+  2026-10-12). Through plan 50 (2026-10-18), the four "fix directly, no spec"
+  items, in one plan without a spec:
   - Finding 8's `find-polluter.sh`: the three-part script fix, a deterministic
-    test, and the invocation anchor. This was the first pass's disposition, and
-    it is still undone.
+    test, and the invocation anchor, the first pass's disposition.
   - Finding 12's `review-package` range guards, with tests. With the item
-    above, this is the 2026-10-03 audit's X3.
+    above, this closes the 2026-10-03 audit's X3.
   - Finding 16's two fixes: the companion server's replacer function and the
     debugging example.
-  - Optionally, finding 12's create-only `.gitignore` in `sdd-workspace`.
+  - Finding 12's create-only `.gitignore` in `sdd-workspace`, the optional
+    item.
 - **Spec candidate, planning surface:** findings 9 and 10. They share the
   writing-plans plan template and self-review, and finding 10 also reaches
   the four reviewer surfaces. Both shape

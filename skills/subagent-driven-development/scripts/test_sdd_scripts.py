@@ -142,6 +142,22 @@ def test_workspace_ignores_itself_so_artifacts_never_reach_git_status(repo):
     assert '.sdd' not in status
 
 
+def test_workspace_leaves_a_committed_gitignore_alone(repo):
+    """A repository may commit its own .sdd/.gitignore, for instance to keep
+    progress ledgers under version control. Writing '*' on every run
+    reverted that file in the working tree."""
+    own = '*\n!.gitignore\n!*/\n!*/progress.md\n'
+    (repo / '.sdd').mkdir()
+    (repo / '.sdd' / '.gitignore').write_text(own)
+    git('add', '.sdd/.gitignore', 'plan.md', cwd=repo)
+    git('commit', '-qm', 'version the ledgers', cwd=repo)
+    result = run(WORKSPACE, repo / 'plan.md', cwd=repo)
+    assert result.returncode == 0
+    assert (repo / '.sdd' / '.gitignore').read_text() == own
+    status = run('git', 'status', '--porcelain', '--', '.sdd/.gitignore', cwd=repo)
+    assert status.stdout == ''
+
+
 def test_workspace_separates_two_plans_in_one_working_tree(repo):
     """The bug this change exists to fix: a flat workspace let a second plan
     read the first plan's ledger as its own progress and skip live tasks."""
@@ -418,3 +434,47 @@ def test_review_package_rejects_a_missing_plan_file(repo):
     result = run(REVIEW_PACKAGE, 'HEAD', 'HEAD', repo / 'p.diff', cwd=repo)
     assert result.returncode == 2
     assert 'no such plan file' in result.stderr
+
+
+def test_review_package_rejects_an_empty_range(repo):
+    """BASE == HEAD passes the ancestry guard (a commit is its own ancestor),
+    so only the count guard stands between it and a "0 commit(s)" package a
+    reviewer could pass as clean work."""
+    (repo / 'a.txt').write_text('one\n')
+    git('add', 'a.txt', 'plan.md', cwd=repo)
+    git('commit', '-qm', 'first', cwd=repo)
+    out = repo / 'p.diff'
+    result = run(REVIEW_PACKAGE, repo / 'plan.md', 'HEAD', 'HEAD', out, cwd=repo)
+    assert result.returncode == 3
+    assert 'empty commit range' in result.stderr
+    assert not out.exists()
+
+
+@pytest.mark.parametrize(
+    'base, head',
+    [
+        # BASE on a sibling branch: HEAD is a commit past the fork point, so
+        # the range is non-empty and only the ancestry guard can fire. The
+        # package would show the sibling's file as a phantom deletion.
+        ('sibling', 'HEAD'),
+        # BASE and HEAD swapped, the audit's case.
+        ('HEAD', 'HEAD~1'),
+    ],
+)
+def test_review_package_rejects_a_base_that_is_not_an_ancestor(repo, base, head):
+    (repo / 'a.txt').write_text('one\n')
+    git('add', 'a.txt', 'plan.md', cwd=repo)
+    git('commit', '-qm', 'first', cwd=repo)
+    git('checkout', '-qb', 'sibling', cwd=repo)
+    (repo / 'sibling.txt').write_text('only on the sibling\n')
+    git('add', 'sibling.txt', cwd=repo)
+    git('commit', '-qm', 'sibling work', cwd=repo)
+    git('checkout', '-q', '-', cwd=repo)
+    (repo / 'a.txt').write_text('one\ntwo\n')
+    git('add', 'a.txt', cwd=repo)
+    git('commit', '-qm', 'second', cwd=repo)
+    out = repo / 'p.diff'
+    result = run(REVIEW_PACKAGE, repo / 'plan.md', base, head, out, cwd=repo)
+    assert result.returncode == 3
+    assert 'not a descendant' in result.stderr
+    assert not out.exists()

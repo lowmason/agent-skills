@@ -44,5 +44,7 @@ root=$(git rev-parse --show-toplevel)
 base="$root/.sdd"
 dir="$base/$slug"
 mkdir -p "$dir"
-printf '*\n' > "$base/.gitignore"
+# Create-only: a repo may commit its own .gitignore here (e.g. to version
+# progress.md ledgers); overwriting it would revert that on every run.
+[ -e "$base/.gitignore" ] || printf '*\n' > "$base/.gitignore"
 cd "$dir" && pwd
