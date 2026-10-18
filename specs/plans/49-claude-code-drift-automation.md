@@ -1,5 +1,7 @@
 # Claude Code Drift Automation, Stage 4 (the Notice) Implementation Plan
 
+**Status: COMPLETE (2026-10-18)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Show the owner what the drift check finds due, once a day, at the start of a Claude Code session in this repo, without delaying the session and without ever failing silently.
@@ -33,6 +35,12 @@
 
 - **D1** (owner, plan review, 2026-10-17): the plan is approved as written, settled defaults DF1–DF9 included, with Task 2's spec amendments A1–A6 worded as shown. Applied in: Tasks 1–10, Task 2 (spec amendment).
 - **D2** (owner, plan review, 2026-10-17): Q1 takes option (b). `rebaseline` is to refuse when `fetch.json`'s head differs from the head of the packet it settles, as `audited --to` already does for audits. That change belongs to Stage 3's tools, not this stage, so this plan logs it as a deferred item at completion. No interim rule until it lands (owner, 2026-10-17). The follow-up amends drift spec R7 and R8.8 (owner, 2026-10-17). Applied in: Planning record (Q1), Plan completion notes.
+- **D3** (owner, Task 1 gate, 2026-10-17): "Accept the CLI result for the Task 1 gate. Record it as a CLI-only pass with the Desktop display untested, go on with Task 2, and rely on Task 10's live Desktop run." Applied in: Task 1 (Result), Task 10.
+- **D4** (owner, Task 10, 2026-10-18): "Option B: finish the plan as built. Record the Desktop gap in the completion report and add a deferred item for a Desktop-visible channel, then run the completion protocol." Applied in: Task 10 (Result), Plan completion notes (deferred item), the completion report.
+- **D5** (owner, final-review gate, 2026-10-18): "Fix now": kill the check in the signal trap, count the run before it launches, and clear the count when the run finishes. Applied in: Task 7 (`refresh`, `0e24d50`).
+- **D6** (owner, final-review gate, 2026-10-18): "Tighten now": doc-only edits that say the notice shows in terminal sessions only, note that a Desktop-first day also hides it from the terminal, qualify "never silent" and "once a day", and add one clause to spec Decision 8; the root `CLAUDE.md` stays under 200 lines. Applied in: Task 8 Step 3 (`build/CLAUDE.md`, `CLAUDE.md`, spec Decision 8, the `--hook` docstring in `cli.py`; `e5a8bdf`, `d4f9879`).
+- **D7** (owner, final-review gate, 2026-10-18): "Add now": the cheap missing tests, in one test-only round. Applied in: Tasks 4 and 7 (`test_notice.py`, `test_notice_sh.py`; `c8afce6`).
+- **D8** (owner, final-review gate, 2026-10-18): "Keep as built": DF4's error wording stays, so during a persistent failure the error notice shows at every session start; recorded in the completion report. Applied in: Task 7 (`refresh`'s error notice).
 
 ---
 
@@ -137,7 +145,7 @@ Every file is replaced by renaming a temporary file over it: `os.replace` in Pyt
 - Consumes: nothing.
 - Produces: the gate's result, recorded under this task as a `> Result:` line. Every later task depends on a pass.
 
-- [ ] **Step 1: Build the probe repo.** Create `/tmp/cc-notice-probe/probe-show.sh`:
+- [x] **Step 1: Build the probe repo.** Create `/tmp/cc-notice-probe/probe-show.sh`:
 
 ```sh
 #!/bin/sh
@@ -179,13 +187,19 @@ git -C /tmp/cc-notice-probe add -A
 git -C /tmp/cc-notice-probe -c user.name=Probe -c user.email=probe@example.invalid -c commit.gpgsign=false commit -qm probe
 ```
 
-- [ ] **Step 2: The owner starts a new Desktop Code session in `/tmp/cc-notice-probe`, without a worktree.** Ask in the conversation, and wait for the answer. The owner reports:
+- [x] **Step 2: The owner starts a new Desktop Code session in `/tmp/cc-notice-probe`, without a worktree.** Ask in the conversation, and wait for the answer. The owner reports:
   - whether `cc-notice-probe: a synchronous SessionStart hook on startup reached you` appeared, and where;
   - whether the async line appeared. It should not.
 
   The app may ask the owner to trust the folder first.
-- [ ] **Step 3: The owner starts a second new Desktop session on the same repo, in an app worktree.** Ask, wait, and record the same two observations.
-- [ ] **Step 4: Confirm the async hook ran.** Run `cat /tmp/cc-notice-probe-async.log`: it holds one line per session started in Steps 2 and 3.
+
+> Deviation: the owner ran it as a terminal CLI session in iTerm (Claude Code 2.1.300, transcript entrypoint "cli"), not as a Desktop session, so the Desktop display went untested here (D3).
+
+- [x] **Step 3: The owner starts a second new Desktop session on the same repo, in an app worktree.** Ask, wait, and record the same two observations.
+
+> Deviation: also a CLI session in iTerm, not an app worktree session. The synchronous line showed again and the async one did not; whether it ran in a `claude --worktree` worktree is unverified.
+
+- [x] **Step 4: Confirm the async hook ran.** Run `cat /tmp/cc-notice-probe-async.log`: it holds one line per session started in Steps 2 and 3.
 - [ ] **Step 5 (record only): does `startup` fire under `claude -p`?** Running it needs `/tmp/cc-notice-probe` as the working directory, and a Bash `cd` there would move this session. So ask the owner to run these from a terminal, or to skip the step:
 
 ```bash
@@ -197,14 +211,24 @@ claude -p --tools "" "Reply with the word OK."
 ```
 
 Then run `cat /tmp/cc-notice-probe-async.log`. A new line means `startup` fires under `-p`. Record the answer and `claude --version` either way; nothing in this plan depends on it.
-- [ ] **Step 6: The gate.** If the synchronous line appeared in both Step 2 and Step 3, record `> Result: PASS (<date>, Claude Code <version>)`, and go on. Otherwise, stop and tell the owner that spec Decision 8's premise fails in the Desktop app, quoting what each session showed. Do not start Task 2: the trigger needs a redesign, which is the owner's call.
-- [ ] **Step 7: Clean up**, once the owner has closed or archived the probe sessions:
+
+> Skipped: the owner did not run it, so whether `startup` fires under `claude -p` stays unknown → deferred (a Stage 5 observation).
+
+- [x] **Step 6: The gate.** If the synchronous line appeared in both Step 2 and Step 3, record `> Result: PASS (<date>, Claude Code <version>)`, and go on. Otherwise, stop and tell the owner that spec Decision 8's premise fails in the Desktop app, quoting what each session showed. Do not start Task 2: the trigger needs a redesign, which is the owner's call.
+
+> Result: PASS, CLI only (2026-10-17, Claude Code 2.1.300): the CLI showed the synchronous line as "SessionStart:startup says: …" and not the async one, and the async hook ran in both sessions (the log holds two lines). The Desktop display was untested; Task 10 is its check.
+
+> Deviation: the owner accepted the CLI result for this gate (D3); Steps 2 and 3 asked for Desktop sessions, so the plan's own requirement was not met here.
+
+- [x] **Step 7: Clean up**, once the owner has closed or archived the probe sessions:
 
 ```bash
 rm -rf /tmp/cc-notice-probe /tmp/cc-notice-probe-async.log
 ```
 
 If an app worktree of the probe repo remains, `git worktree list` from a terminal shows it; remove it through the app.
+
+> Deviation: run on 2026-10-18, after Task 10, once `lsof +D /tmp/cc-notice-probe` showed that no process used the probe repo. The owner was not asked whether the probe sessions were closed; that check stood in for the question.
 
 ---
 
@@ -215,7 +239,7 @@ If an app worktree of the probe repo remains, `git worktree list` from a termina
 
 Each edit is tagged `(owner, plan 49, 2026-10-17)`; the status line stays untouched. Your human partner approves this wording at plan review. Make each edit with an exact replace of the block shown.
 
-- [ ] **Step 1 (A1): the Layout names `notice.py`.** Replace:
+- [x] **Step 1 (A1): the Layout names `notice.py`.** Replace:
 
 ```text
   - `manifest.toml` and `baseline.json` (R2), `PROBES.md` (R10) and
@@ -230,7 +254,7 @@ with:
     `check --hook` (owner, plan 49, 2026-10-17);
 ```
 
-- [ ] **Step 2 (A2): the Layout's cache files.** Replace:
+- [x] **Step 2 (A2): the Layout's cache files.** Replace:
 
 ```text
   - `notice.json` and its digest, `notice-shown`, `last-check.json` and the
@@ -246,7 +270,7 @@ with:
     (owner, plan 49, 2026-10-17);
 ```
 
-- [ ] **Step 3 (A3): R6.10's `--hook` and `--run`.** Replace:
+- [x] **Step 3 (A3): R6.10's `--hook` and `--run`.** Replace:
 
 ```text
 R6.10 `check` never writes inside the repo. Its writes go under
@@ -263,7 +287,7 @@ or a crash included, and `--run <id>`, accepted only with `--hook`, records
 the run's ID in `last-check.json` (owner, plan 49, 2026-10-17).
 ```
 
-- [ ] **Step 4 (A4): R9.3's run ID, budget, `GIT_*` rule, unfinished runs and test seams.** Replace:
+- [x] **Step 4 (A4): R9.3's run ID, budget, `GIT_*` rule, unfinished runs and test seams.** Replace:
 
 ```text
 - Otherwise it looks for `uv` on PATH, then in `~/.local/bin` and
@@ -296,7 +320,7 @@ with:
   (owner, plan 49, 2026-10-17).
 ```
 
-- [ ] **Step 5 (A5): R9.4's error line.** Replace:
+- [x] **Step 5 (A5): R9.4's error line.** Replace:
 
 ```text
 - Exit 2, no `uv`, or three failed checks in a row: an error line with the age
@@ -312,7 +336,7 @@ with:
   is never silent (owner, plan 49, 2026-10-17).
 ```
 
-- [ ] **Step 6 (A6): R4.2's carrier for the settings file.** Replace:
+- [x] **Step 6 (A6): R4.2's carrier for the settings file.** Replace:
 
 ```text
   JSON holds no comments, so `build/cc_guide/notice.sh` carries the citation
@@ -327,7 +351,7 @@ with:
   citation reads the settings file too (owner, plan 49, 2026-10-17).
 ```
 
-- [ ] **Step 7: Check and commit.** Run `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice --python 3.13 python build/cc_guide/cli.py lint`: exit 0, since the spec is outside the citation scan. Run `git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice diff --stat`: only the spec changed, with six hunks. Run `bash /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice/build/run_commit_lints.sh`, then:
+- [x] **Step 7: Check and commit.** Run `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice --python 3.13 python build/cc_guide/cli.py lint`: exit 0, since the spec is outside the citation scan. Run `git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice diff --stat`: only the spec changed, with six hunks. Run `bash /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice/build/run_commit_lints.sh`, then:
 
 ```bash
 git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice add specs/claude-code-drift-automation-spec.md
@@ -346,7 +370,7 @@ git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notic
 - Consumes: `check.check(...)`, `check.summary(report, path)`, and `test_check.py`'s `run_check`, `serving`, `drift_repo` and `MANIFEST`.
 - Produces: `report['due']['audit']` on every `check` that reaches the due rules, a failed fetch included. Task 4's `due_message` reads it.
 
-- [ ] **Step 1: Record the baselines.** Run each and write the counts down:
+- [x] **Step 1: Record the baselines.** Run each and write the counts down:
 
 ```bash
 uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice/build/cc_guide --python 3.13 --with pytest python -m pytest -q
@@ -355,7 +379,7 @@ uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49
 
 The second is the build directory's suite. A fresh worktree lacks the gitignored `build/.scratch/`, so `test_verify_citations.py`'s ground-truth tests fail or skip there; note which, and compare against them later.
 
-- [ ] **Step 2: Write the failing test.** In `build/cc_guide/test_check.py`, after `test_a_network_failure_exits_two_and_is_reported`, insert:
+- [x] **Step 2: Write the failing test.** In `build/cc_guide/test_check.py`, after `test_a_network_failure_exits_two_and_is_reported`, insert:
 
 ```python
 def test_a_failed_fetch_still_runs_the_audit_due_rule(tmp_path, docs_dir):
@@ -369,12 +393,12 @@ def test_a_failed_fetch_still_runs_the_audit_due_rule(tmp_path, docs_dir):
     assert 'audit: alpha due from 2026-10-02, due' in check.summary(report, path)
 ```
 
-- [ ] **Step 3: Run it and watch it fail.**
+- [x] **Step 3: Run it and watch it fail.**
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice/build/cc_guide --python 3.13 --with pytest python -m pytest -q test_check.py -k audit_due_rule`
 Expected: FAIL with `KeyError: 'audit'`, since `report['due']` holds only `lint` when the fetch fails.
 
-- [ ] **Step 4: Run the audit rule outside the docs branch.** In `build/cc_guide/check.py`, replace:
+- [x] **Step 4: Run the audit rule outside the docs branch.** In `build/cc_guide/check.py`, replace:
 
 ```python
         due.update({'blocks': len(findings),
@@ -417,7 +441,7 @@ with:
 
 The `due` keys keep their order (`lint`, `blocks`, `changelog`, `probes`, `audit`), and the summary prints the audit line in the same place as before.
 
-- [ ] **Step 4b: Correct the module docstring.** In `build/cc_guide/check.py`, replace:
+- [x] **Step 4b: Correct the module docstring.** In `build/cc_guide/check.py`, replace:
 
 ```python
 and the files citing it, and report what is due (drift spec R6). `--hook`
@@ -432,12 +456,12 @@ and the files citing it, and report what is due (drift spec R6). For
 packets.py builds R6.11's packets from these parts.'''
 ```
 
-- [ ] **Step 5: Run the suite.**
+- [x] **Step 5: Run the suite.**
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice/build/cc_guide --python 3.13 --with pytest python -m pytest -q`
 Expected: the baseline +1, all passing.
 
-- [ ] **Step 6: Commit.** Run `bash /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice/build/run_commit_lints.sh`, then:
+- [x] **Step 6: Commit.** Run `bash /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice/build/run_commit_lints.sh`, then:
 
 ```bash
 git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice add build/cc_guide/check.py build/cc_guide/test_check.py
@@ -465,7 +489,7 @@ git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notic
   - `after_check(cache: Path, code: int, report: dict, now: datetime, today: date, run: str | None) -> None`;
   - `after_failure(cache: Path, reason: str, now: datetime, run: str | None) -> None`.
 
-- [ ] **Step 1: Write the failing tests.** Create `build/cc_guide/test_notice.py`:
+- [x] **Step 1: Write the failing tests.** Create `build/cc_guide/test_notice.py`:
 
 ```python
 '''Tests for notice.py: the notice's line for each outcome (drift spec R9.4,
@@ -618,12 +642,12 @@ def test_after_failure_writes_the_error_line_and_records_an_exit_two(tmp_path):
     assert (record['run'], record['exit']) == ('r9', 2)
 ```
 
-- [ ] **Step 2: Run them and watch them fail.**
+- [x] **Step 2: Run them and watch them fail.**
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice/build/cc_guide --python 3.13 --with pytest python -m pytest -q test_notice.py`
 Expected: a collection error, `ModuleNotFoundError: No module named 'notice'`.
 
-- [ ] **Step 3: Write the module.** Create `build/cc_guide/notice.py`:
+- [x] **Step 3: Write the module.** Create `build/cc_guide/notice.py`:
 
 ```python
 '''The session-start notice (drift spec R9): the line `check --hook` leaves
@@ -798,12 +822,12 @@ def after_failure(cache: Path, reason: str, now: datetime, run: str | None) -> N
     record_check(cache, 2, now, run)
 ```
 
-- [ ] **Step 4: Run the tests.**
+- [x] **Step 4: Run the tests.**
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice/build/cc_guide --python 3.13 --with pytest python -m pytest -q test_notice.py`
 Expected: 14 passed. Then the whole cc_guide suite: the baseline +15.
 
-- [ ] **Step 5: Commit.** Run `bash /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice/build/run_commit_lints.sh`, then:
+- [x] **Step 5: Commit.** Run `bash /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice/build/run_commit_lints.sh`, then:
 
 ```bash
 git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice add build/cc_guide/notice.py build/cc_guide/test_notice.py
@@ -822,7 +846,7 @@ git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notic
 - Consumes: from Task 4, `notice.after_check(cache, code, report, now, today, run)`, `notice.after_failure(cache, reason, now, run)`, `notice.read_last_check`, `notice.record_check`, `notice.NOTICE` and `notice.LAST_CHECK`.
 - Produces: `cli.py check --hook [--run ID]`, which prints nothing on any exit and leaves `notice.json`, `notice.digest` and `last-check.json` in the cache. `--run` without `--hook` is a setup error, exit 2. Task 7's `refresh` runs `check --hook --run <id>`.
 
-- [ ] **Step 1: Write the failing tests.** In `build/cc_guide/test_cli.py`, change the imports from:
+- [x] **Step 1: Write the failing tests.** In `build/cc_guide/test_cli.py`, change the imports from:
 
 ```python
 import json
@@ -929,12 +953,12 @@ def test_check_hook_writes_only_its_cache_files(world):
     assert git(repo, 'status', '--porcelain') == ''
 ```
 
-- [ ] **Step 2: Run them and watch them fail.**
+- [x] **Step 2: Run them and watch them fail.**
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice/build/cc_guide --python 3.13 --with pytest python -m pytest -q test_cli.py -k "hook or run_goes"`
 Expected: 5 failed, each with argparse's `unrecognized arguments: --hook` (or `--run`) and `SystemExit: 2`.
 
-- [ ] **Step 3: Implement.** In `build/cc_guide/cli.py`:
+- [x] **Step 3: Implement.** In `build/cc_guide/cli.py`:
 
 Replace the docstring's third line:
 
@@ -1092,17 +1116,19 @@ with:
         return 2
 ```
 
-- [ ] **Step 4: Run the tests.**
+- [x] **Step 4: Run the tests.**
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice/build/cc_guide --python 3.13 --with pytest python -m pytest -q`
 Expected: the baseline +20 (Task 3's 1, Task 4's 14, these 5), all passing. Then run `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice --python 3.13 python build/cc_guide/cli.py check --help`: the `check` usage line ends `[--hook] [--run ID]`.
 
-- [ ] **Step 5: Commit.** Run `bash /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice/build/run_commit_lints.sh`, then:
+- [x] **Step 5: Commit.** Run `bash /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice/build/run_commit_lints.sh`, then:
 
 ```bash
 git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice add build/cc_guide/cli.py build/cc_guide/test_cli.py
 git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice commit -m "feat(cc_guide): add check --hook, which leaves the notice on every exit"
 ```
+
+> Deviation: fix round 1 (`2b80760`) added a parametrized test (3 cases) of the write order notice, digest, `last-check.json` for every `check --hook` exit path, which no brief test pinned. The cc_guide suite stood at 471 after it.
 
 ---
 
@@ -1117,7 +1143,7 @@ git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notic
 - Consumes: from Task 4, `notice.write_notice` and `notice.DIGEST`, which write the fixtures `show` reads.
 - Produces: `notice.sh show`, and the test helpers `cache_of(home)`, `sh(home, *args, shell, env, timeout)`, `shown(proc) -> str` and `quiet(proc)`, plus the constants `HERE`, `SCRIPT`, `REPO`, `LAUNCHD_PATH` and `SHELLS`. Task 7 extends this file and these helpers.
 
-- [ ] **Step 1: Write the failing tests.** Create `build/cc_guide/test_notice_sh.py`:
+- [x] **Step 1: Write the failing tests.** Create `build/cc_guide/test_notice_sh.py`:
 
 ```python
 '''Tests for notice.sh, the drift check's session-start pair (drift spec
@@ -1213,12 +1239,12 @@ def test_show_without_home_and_an_unknown_subcommand_both_exit_zero(tmp_path):
     assert (proc.returncode, proc.stdout) == (0, '')
 ```
 
-- [ ] **Step 2: Run them and watch them fail.**
+- [x] **Step 2: Run them and watch them fail.**
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice/build/cc_guide --python 3.13 --with pytest python -m pytest -q test_notice_sh.py`
 Expected: every test fails. `sh` exits 127 (`notice.sh: No such file or directory`), and `env -i` cannot find the script.
 
-- [ ] **Step 3: Write the script.** Create `build/cc_guide/notice.sh`:
+- [x] **Step 3: Write the script.** Create `build/cc_guide/notice.sh`:
 
 ```sh
 #!/bin/sh
@@ -1257,7 +1283,9 @@ esac
 exit 0
 ```
 
-- [ ] **Step 4: Make it executable, track it, and run the tests.** The hook runs the script by path, so its execute bit matters in the working tree and in git's index:
+> Deviation: `show` records `notice-shown` by writing a temporary file and renaming it over with `mv -f`, as the File contract says, where the script above redirects straight into the file (ruling: the File contract outranks the task text; fix round `4f2994b`, +2 tests, cc_guide 481).
+
+- [x] **Step 4: Make it executable, track it, and run the tests.** The hook runs the script by path, so its execute bit matters in the working tree and in git's index:
 
 ```bash
 chmod +x /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice/build/cc_guide/notice.sh
@@ -1266,7 +1294,7 @@ git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notic
 
 Run `git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice ls-files -s build/cc_guide/notice.sh`: its mode is `100755`. Run the Step 2 command. Expected: 8 passed on a machine with `/bin/dash` (6 without it, since two tests run once per shell).
 
-- [ ] **Step 5: Cite it.** The file is tracked now, so `baseline cite` accepts it:
+- [x] **Step 5: Cite it.** The file is tracked now, so `baseline cite` accepts it:
 
 ```bash
 uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice --python 3.13 python build/cc_guide/cli.py baseline cite build/cc_guide/notice.sh
@@ -1274,7 +1302,7 @@ uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49
 
 It prints `stamped build/cc_guide/notice.sh @<release>`, where `<release>` is the highest `changed` among the seven cited sections on this branch's baseline (2.1.296 at `b7beaa1`). Run `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice --python 3.13 python build/cc_guide/cli.py lint`: exit 0, with no `STALE` line naming `notice.sh`. Re-run the Step 2 command: all pass.
 
-- [ ] **Step 6: Admit the script to the register's hook kind.** In `build/cc_guide/conformance.toml`, replace:
+- [x] **Step 6: Admit the script to the register's hook kind.** In `build/cc_guide/conformance.toml`, replace:
 
 ```toml
 [kinds.hook]
@@ -1299,7 +1327,7 @@ uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49
 
 Expected: `check_conformance.py` exits 0, and the suite passes at its baseline count. If any check now reports `build/cc_guide/notice.sh`, stop and bring the finding to the owner; do not add a register exception.
 
-- [ ] **Step 7: Commit.** Run `bash /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice/build/run_commit_lints.sh`, then:
+- [x] **Step 7: Commit.** Run `bash /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice/build/run_commit_lints.sh`, then:
 
 ```bash
 git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice add build/cc_guide/notice.sh build/cc_guide/test_notice_sh.py build/cc_guide/conformance.toml
@@ -1320,7 +1348,7 @@ Check `git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drif
 - Consumes: from Task 5, `cli.py check --hook --run <id>`. From Task 4, `notice.write_notice`, `notice.record_check`, `notice.read_last_check` and `notice.NOTICE`. From Task 6, the helpers in `test_notice_sh.py`.
 - Produces: `notice.sh refresh`. Task 8 wires it into the settings as an async hook.
 
-- [ ] **Step 1: Write the failing tests.** In `build/cc_guide/test_notice_sh.py`, replace the imports:
+- [x] **Step 1: Write the failing tests.** In `build/cc_guide/test_notice_sh.py`, replace the imports:
 
 ```python
 import json
@@ -1479,12 +1507,12 @@ def test_refresh_runs_the_check_without_the_callers_git_variables(fake_uv):
     assert (home / 'uv-git-env').read_text() == ''
 ```
 
-- [ ] **Step 2: Run them and watch them fail.**
+- [x] **Step 2: Run them and watch them fail.**
 
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice/build/cc_guide --python 3.13 --with pytest python -m pytest -q test_notice_sh.py`
 Expected: Task 6's 8 still pass, and the 9 new tests fail. `refresh` is still an unknown subcommand, so `quiet` fails on the usage line in stderr, and the assertions on `uv-args` fail.
 
-- [ ] **Step 3: Replace the script.** Replace `build/cc_guide/notice.sh` with the text below. Keep the citation line's stamp as Task 6 set it: the `@2.1.296` below is `b7beaa1`'s value, so if your line reads otherwise, keep yours.
+- [x] **Step 3: Replace the script.** Replace `build/cc_guide/notice.sh` with the text below. Keep the citation line's stamp as Task 6 set it: the `@2.1.296` below is `b7beaa1`'s value, so if your line reads otherwise, keep yours.
 
 ```sh
 #!/bin/sh
@@ -1641,7 +1669,11 @@ esac
 exit 0
 ```
 
-- [ ] **Step 4: Run the tests.**
+> Deviation: three overrides of the script text above. It keeps Task 6's fixed `show`, keeps the `@2.1.302` stamp (the text's `@2.1.296` is `b7beaa1`'s value, before the triage), and keeps mode 100755. It also writes `unfinished` by a temporary file and `mv -f`, under the same ruling as Task 6 (fix round `b094bd9`, +1 test, cc_guide 491).
+
+> Deviation: after the final review (D5), `refresh` counts a run before it starts, clears the count when the run finishes or a good check under a day old is on record, and its HUP, INT and TERM trap kills the check (`0e24d50`, +5 tests). The script text above is the pre-review form. The tests added after the review (D7, `c8afce6`, +3) bring cc_guide to 500.
+
+- [x] **Step 4: Run the tests.**
 
 Run the Step 2 command. Expected: 17 passed on a machine with `/bin/dash` (14 without it). Most refresh tests take about a second each, since the budget loop polls once a second. Then run `git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice ls-files -s build/cc_guide/notice.sh`: still `100755`. The verbatim block above carries `b7beaa1`'s stamp, so restamp it against this branch's baseline. When the stamp is already current, this changes nothing:
 
@@ -1651,7 +1683,7 @@ uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49
 
 Run `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice --python 3.13 python build/cc_guide/cli.py lint`: exit 0, with no `STALE` line for `notice.sh`.
 
-- [ ] **Step 5: Commit.** Run `bash /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice/build/run_commit_lints.sh`, then:
+- [x] **Step 5: Commit.** Run `bash /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice/build/run_commit_lints.sh`, then:
 
 ```bash
 git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice add build/cc_guide/notice.sh build/cc_guide/test_notice_sh.py
@@ -1672,7 +1704,7 @@ git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notic
 - Consumes: `notice.sh show` and `notice.sh refresh` (Tasks 6 and 7), and `REPO` in `test_notice_sh.py`.
 - Produces: the committed SessionStart wiring that Task 10 exercises live.
 
-- [ ] **Step 1: Write the failing test.** Append to `build/cc_guide/test_notice_sh.py`:
+- [x] **Step 1: Write the failing test.** Append to `build/cc_guide/test_notice_sh.py`:
 
 ```python
 def test_the_project_settings_wire_the_pair_on_startup():
@@ -1688,7 +1720,7 @@ def test_the_project_settings_wire_the_pair_on_startup():
 Run: `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice/build/cc_guide --python 3.13 --with pytest python -m pytest -q test_notice_sh.py -k wire_the_pair`
 Expected: FAIL with `KeyError: 'hooks'`.
 
-- [ ] **Step 2: Wire the settings.** Add a `hooks` key to `.claude/settings.json`, and leave its other keys as they are. At `b7beaa1` the file becomes:
+- [x] **Step 2: Wire the settings.** Add a `hooks` key to `.claude/settings.json`, and leave its other keys as they are. At `b7beaa1` the file becomes:
 
 ```json
 {
@@ -1711,7 +1743,7 @@ Expected: FAIL with `KeyError: 'hooks'`.
 
 Re-run the Step 1 command: PASS. Run `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice --python 3.13 --with pyyaml python build/check_conformance.py`: exit 0. That covers `hook-dir-quoted`, `hook-var-quoted`, and `hook-scripts-executable`, which needs Task 6's register glob.
 
-- [ ] **Step 3: The docs.** In `build/CLAUDE.md`, replace:
+- [x] **Step 3: The docs.** In `build/CLAUDE.md`, replace:
 
 ```markdown
 prints the corrections and the `baseline` commands that follow.
@@ -1747,13 +1779,20 @@ with:
 
 Run `wc -l /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice/CLAUDE.md`: 195.
 
-- [ ] **Step 4: Owner gate (R9.5).** In the conversation, show the owner the `.claude/settings.json` diff (`git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice diff .claude/settings.json`). Say that from the next session start in this repo or its worktrees, the pair runs on every new session, and the async half fetches the docs at most once a day. Ask for their confirmation to commit it. Wait for a clear yes in the conversation; a ledger entry or this plan's text is not one. If they decline, stop and record why.
-- [ ] **Step 5: Commit.** Run the whole cc_guide suite: the baseline +38 on a machine with `/bin/dash` (+35 without it). Run `bash /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice/build/run_commit_lints.sh`, then:
+> Deviation: after the final review (D6) the `notice.sh` paragraph in `build/CLAUDE.md` and the drift-detector comment in `CLAUDE.md` say the notice shows in terminal sessions only and qualify "never silent" and "once a day" (`e5a8bdf`, `d4f9879`); `CLAUDE.md` stays at 195 lines. Spec Decision 8 and the `--hook` docstring in `cli.py` got matching wording.
+
+- [x] **Step 4: Owner gate (R9.5).** In the conversation, show the owner the `.claude/settings.json` diff (`git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice diff .claude/settings.json`). Say that from the next session start in this repo or its worktrees, the pair runs on every new session, and the async half fetches the docs at most once a day. Ask for their confirmation to commit it. Wait for a clear yes in the conversation; a ledger entry or this plan's text is not one. If they decline, stop and record why.
+
+> Result: confirmed by the owner in the conversation on 2026-10-18, verbatim: "Yes, I confirm: commit the SessionStart wiring in .claude/settings.json as shown, with the other Task 8 changes."
+
+- [x] **Step 5: Commit.** Run the whole cc_guide suite: the baseline +38 on a machine with `/bin/dash` (+35 without it). Run `bash /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice/build/run_commit_lints.sh`, then:
 
 ```bash
 git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice add .claude/settings.json build/cc_guide/test_notice_sh.py build/CLAUDE.md CLAUDE.md
 git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice commit -m "feat(cc_guide): wire the drift notice into SessionStart"
 ```
+
+> Deviation: the controller made the commit (`361de62`), because the implementer declined to commit on a confirmation relayed to it. The cc_guide suite stood at 492, which is +44 on the 448 baseline and not the +38 above: the fix rounds of Tasks 5, 6 and 7 added +3, +2 and +1 tests.
 
 ---
 
@@ -1761,26 +1800,34 @@ git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notic
 
 **Files:** none changed. This task produces the completion report's evidence.
 
-- [ ] **Step 1: Every existing gate (Validation 6).** Run each, and record each outcome against Task 3's baselines:
+- [x] **Step 1: Every existing gate (Validation 6).** Run each, and record each outcome against Task 3's baselines:
   - the cc_guide suite (+38 with `/bin/dash`, +35 without);
   - the build directory's suite, which collects the cc_guide suite too (the same +N, plus only the known `test_verify_citations.py` failures or skips);
   - `bash /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice/build/run_commit_lints.sh` (all eight pass);
   - `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice --python 3.13 --with pyyaml python build/sync_runtime_assets.py --check` (no adapter change).
-- [ ] **Step 2: `refresh` against the real cache, as launchd would run it.** Run `ls /Users/lowell/.cache/agent-skills/cc-guide/last-check.json`. If it exists and is under a day old, `refresh` will exit at once; note that, and skip to Step 3. Otherwise run:
+
+> Result: 2026-10-18 at `361de62`: cc_guide 492 passed; the build suite 4 failed, 1075 passed, 13 skipped (baseline 4 / 1031 / 13; the four are the `test_verify_citations.py` ground-truth tests, which need the gitignored `build/.scratch/`); all eight commit lints pass; `sync_runtime_assets.py --check` prints nothing. After the fix wave, at `d4f9879`: cc_guide 500 passed (+52 on the baseline).
+
+- [x] **Step 2: `refresh` against the real cache, as launchd would run it.** Run `ls /Users/lowell/.cache/agent-skills/cc-guide/last-check.json`. If it exists and is under a day old, `refresh` will exit at once; note that, and skip to Step 3. Otherwise run:
 
 ```bash
 /usr/bin/env -i HOME=/Users/lowell PATH=/usr/bin:/bin /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice/build/cc_guide/notice.sh refresh
 ```
 
 Expected: exit 0, and nothing printed. It finds `uv` in `/opt/homebrew/bin`, fetches the docs and takes a few seconds. Then run `cat /Users/lowell/.cache/agent-skills/cc-guide/last-check.json`: a `run` of the form `<pid>.<epoch>`, and an `exit` of 0 or 1. If it reads 2, the notice names why.
-- [ ] **Step 3: `show` against the real cache.** Run this twice:
+- [x] **Step 3: `show` against the real cache.** Run this twice:
 
 ```bash
 /usr/bin/env -i HOME=/Users/lowell PATH=/usr/bin:/bin /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice/build/cc_guide/notice.sh show
 ```
 
 The first run prints the notice's JSON, or nothing when `last-check.json` says exit 0. The second prints nothing. Record the line, which is under 300 characters, in the completion report.
-- [ ] **Step 4: Hygiene.** Run `git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice status --porcelain`: it prints nothing. Run `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice --python 3.13 python build/cc_guide/cli.py lint`: exit 0, with no `STALE` line naming `notice.sh`.
+
+> Result: 2026-10-18. Step 2: `refresh`, run as launchd would (`env -i HOME=… PATH=/usr/bin:/bin`) against the real cache, exited 0 and printed nothing; `last-check.json` held run `37566.1792334404` with exit 0; no `lock/` or `unfinished` was left; `latest/` was untouched, since the changelog head had not moved. Step 3: `show` printed nothing on both runs, because nothing is due on `main` after the triage, so there was no line to record.
+
+- [x] **Step 4: Hygiene.** Run `git -C /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice status --porcelain`: it prints nothing. Run `uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice --python 3.13 python build/cc_guide/cli.py lint`: exit 0, with no `STALE` line naming `notice.sh`.
+
+> Result: `status --porcelain` was empty; `cli.py lint` printed only the 37 STALE lines of the pending files pass, none naming `notice.sh`.
 
 ---
 
@@ -1788,7 +1835,7 @@ The first run prints the notice's JSON, or nothing when `last-check.json` says e
 
 **Files:** none changed.
 
-- [ ] **Step 1: Prepare the cache.** Remove the two files that would keep a new session quiet:
+- [x] **Step 1: Prepare the cache.** Remove the two files that would keep a new session quiet:
 
 ```bash
 rm -f /Users/lowell/.cache/agent-skills/cc-guide/notice-shown /Users/lowell/.cache/agent-skills/cc-guide/last-check.json
@@ -1801,10 +1848,18 @@ uv run --directory /Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49
 ```
 
 The session's own `refresh` replaces it with the real notice.
-- [ ] **Step 2: The owner starts a new Desktop session in `/Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice`.** Ask in the conversation, and wait. The owner reports the line shown at the session's start, if any.
-- [ ] **Step 3: Confirm `refresh` ran.** Within a minute or two, run `cat /Users/lowell/.cache/agent-skills/cc-guide/last-check.json`: a `run` of the form `<pid>.<epoch>`. Run `ls /Users/lowell/.cache/agent-skills/cc-guide/`: no `lock` directory remains.
+- [x] **Step 2: The owner starts a new Desktop session in `/Users/lowell/Projects/agent-skills/.claude/worktrees/plan-49-drift-notice`.** Ask in the conversation, and wait. The owner reports the line shown at the session's start, if any.
+
+> Deviation: the first session was an iTerm CLI session (Claude Code 2.1.302), not Desktop, and it showed the stand-in. The Desktop session was started afterwards from this app, with the worktree as its working directory (Claude Code 2.1.299, entrypoint `claude-desktop`), after a changed stand-in text was written so the notice would show again. A first card session had run in the main checkout, which has no hooks, and proved nothing.
+
+- [x] **Step 3: Confirm `refresh` ran.** Within a minute or two, run `cat /Users/lowell/.cache/agent-skills/cc-guide/last-check.json`: a `run` of the form `<pid>.<epoch>`. Run `ls /Users/lowell/.cache/agent-skills/cc-guide/`: no `lock` directory remains.
 - [ ] **Step 4: Once a day.** The owner starts further new sessions in the same worktree until two in a row have started with the same notice; the second shows nothing. If Step 3's `refresh` replaced the stand-in, the next session shows the real notice once, because a changed notice shows again; the one after shows nothing. Record each session's observation.
-- [ ] **Step 5: Record the result** under this task: `> Result: <date>, Claude Code <version>: <what each session showed>`. If the notice never appeared, or appeared twice for the same notice on the same day, stop and bring it to the owner before the Plan Completion Protocol.
+
+> Skipped: never observed live. Nothing is due on `main`, so the real `refresh` leaves an empty notice and a second session could not show the same notice for the right reason; the owner chose to finish as built (D4). The once-a-day half rests on the offline tests (`test_notice_sh.py`, R12.5) and Task 9's runs → deferred.
+
+- [x] **Step 5: Record the result** under this task: `> Result: <date>, Claude Code <version>: <what each session showed>`. If the notice never appeared, or appeared twice for the same notice on the same day, stop and bring it to the owner before the Plan Completion Protocol.
+
+> Result: 2026-10-18, Claude Code 2.1.302 (iTerm CLI) and 2.1.299 (Desktop): the CLI showed "SessionStart:startup says: cc-guide · live acceptance stand-in → /cc-guide", and its `refresh` ran (exit 0, no lock left). The Desktop app ran the hook (a `hook_success` record, exit 0, 55 ms) but displayed nothing in the default transcript view. Brought to the owner before the protocol, who chose to finish as built (D4).
 
 ---
 
