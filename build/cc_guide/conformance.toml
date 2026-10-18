@@ -54,8 +54,8 @@ sections = [
 ]
 
 [kinds.hook]
-description = 'Hook scripts and the README that documents their wiring.'
-globs = ['hooks/*.sh', 'hooks/*.py', 'hooks/README.md']
+description = 'Hook scripts, the README that documents their wiring, and the drift notice script.'
+globs = ['hooks/*.sh', 'hooks/*.py', 'hooks/README.md', 'build/cc_guide/notice.sh']
 exclude = ['hooks/test_*.py']
 sections = [
     'hooks.overview', 'hooks.events', 'hooks.exit-codes', 'hooks.handlers',

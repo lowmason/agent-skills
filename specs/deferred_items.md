@@ -2684,7 +2684,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       check against the `{}` fallback. Files: under `build/cc_guide/`. Size: plan. Done
       when: each path prints one `cc-guide:` line, or is refused up front, with a test.
       → done in plan 39 (2026-10-08, chore/cc-guide-hardening).
-- [ ] check's report and inputs, for Stage 4's hook and notice (plan 38's final review:
+- [x] check's report and inputs, for Stage 4's hook and notice (plan 38's final review:
       T9-m3, T6-m3, FR-m3). (a) `check` writes `reports/<sha12>.json` only at its end,
       so a `SetupError` or a crash leaves the previous report, with its old exit, for
       consumers. (b) `state.Source`'s git calls inherit the caller's `GIT_*`
@@ -2694,6 +2694,12 @@ declined as YAGNI (zero instances in a one-page wiki).
       the exit is 2 either way. Files: `build/cc_guide/check.py`,
       `build/cc_guide/state.py`. Size: plan. Done when: Stage 4's plan settles each, or
       records why its hook does not need it.
+      → done in plan 49 (2026-10-18, feat/plan-49-drift-notice): (a) needs no fix for the
+      hook, since `check --hook` writes the notice and its record on every exit path and
+      nothing in the hook reads the report; (b) `refresh` runs the check without its
+      caller's `GIT_*` variables, and `Source` is unchanged because the pre-commit lint
+      relies on git's environment; (c) `check` runs the audit due rule when the fetch
+      fails.
 - [ ] The probe registry's gaps, for Stage 5 (owner rulings 6 and 9, plan 38). (a)
       `state.parse_probes` accepts any outcome word, and `check.due_probes` schedules
       ERROR and unknown words like PASS, so an ERROR-only probe reads as passed (drift
@@ -3733,3 +3739,113 @@ all 20 named a type.
       "so dispatch each as the type its template names, never as a fork". SDD stays held in the
       cc-guide backlog, so no restamp. Words added at :16 move the critical sections below it, so run the
       critical-placement lint after the edit. Size: quick-fix. Revisit at the next SDD edit.
+
+## 49-claude-code-drift-automation — 2026-10-18
+- [ ] Pin `baseline rebaseline` to its packet's head (plan 49, Q1, owner decision D2). A
+      session start can now refetch the docs: `notice.sh refresh` runs `check --hook`
+      once the hook's last good check is a day old, and when the changelog head has
+      moved, that rewrites the shared `~/.cache/agent-skills/cc-guide/latest/`. A manual
+      `check` can do the same. `baseline rebaseline` (`build/cc_guide/baseline.py`,
+      `cli.py`'s `run_baseline`) re-hashes from `latest/` at whatever head
+      `fetch.json` holds, so a refetch between a `/cc-guide` verify and the rebaseline
+      `settle` prints records hashes for docs text the verifier never read. Only
+      `baseline audited` is pinned, through `--to` (plan 44). Fix: `settle`
+      (`build/cc_guide/settle.py`) prints `rebaseline --head <the packet's index.json
+      head>`, and `rebaseline` refuses when `fetch.json`'s `changelog_head` differs,
+      naming both heads. This amends drift spec R7 and R8.8. Settle with it whether two
+      `check --hook` runs can safely share `latest/` (final review O3): `refresh`'s lock
+      stops two refreshes, but a manual `check` or a `/cc-guide` run can overlap one. See
+      `specs/plans/completed/49-claude-code-drift-automation.md`, Q1. Size: plan. Done
+      when: `rebaseline --head` refuses a moved head with a test in
+      `build/cc_guide/test_cli.py`, `settle` prints the flag with a test in
+      `build/cc_guide/test_settle.py`, and the spec states the rule.
+- [ ] A Desktop-visible channel for the drift notice (plan 49, Task 10 and the final
+      review; owner decision D4, option B). In the Desktop app (Claude Code 2.1.299,
+      2026-10-18) the SessionStart hook runs and its `systemMessage` is recorded in the
+      transcript (a `hook_success` attachment, exit 0, 55 ms), but the default
+      transcript view displays nothing; the CLI shows it as `SessionStart:startup says:
+      …`. Desktop's verbose view was not tried. `notice.sh show` records `notice-shown`
+      right after printing, whether or not the surface displayed the line, so a day that
+      starts in Desktop spends each new notice's once-a-day slot, and a terminal session
+      later that day shows nothing. Plan 49 shipped terminal-only and said so in
+      `build/CLAUDE.md`, `CLAUDE.md` and spec Decision 8. Work: pick a channel Desktop
+      shows (one shape: SessionStart's plain stdout, which reaches Claude as context, so
+      the first reply can name the notice) and a way for `show` to tell the surfaces
+      apart so it records `notice-shown` only where the line was displayed. Files:
+      `build/cc_guide/notice.sh`, `.claude/settings.json`, spec R9 and Decision 8,
+      `build/CLAUDE.md`. Size: design. Done when: the owner decides the channel, and a new
+      Desktop session shows the notice at its start, or terminal-only is recorded as the
+      accepted scope.
+- [ ] Does `startup` fire under `claude -p`? (plan 49 Task 1 Step 5, skipped by the owner;
+      a Stage 5 probe candidate.) If it does, every `claude -p` run with this repo or one of
+      its worktrees as the working directory runs `show` and `refresh`: a live docs
+      fetch and writes to the shared cache. To check, from a terminal in the
+      repo run `claude -p --tools "" "Reply with the word OK."` and see whether
+      `~/.cache/agent-skills/cc-guide/last-check.json`'s `run` changes or `notice-shown`
+      is rewritten (write a stand-in notice first, as plan 49 Task 10 Step 1 does).
+      Size: quick-fix. Done when: the answer and `claude --version` are recorded as a
+      Stage 5 probe (in the registry that stage creates) or in the `notice.sh` paragraph
+      of `build/CLAUDE.md`.
+- [ ] Guide coverage for what `notice.sh` relies on (plan 49, coverage gaps G1 to G5, drift
+      spec R4.3, plus the gaps execution found). No guide section covers: G1 the
+      `startup` value of SessionStart's matcher (seen: CLI and Desktop both ran the hook
+      as `SessionStart:startup`); G2 where a hook's `systemMessage` is shown (seen: the
+      CLI shows it, Desktop only records it); G3 an `async: true` hook's output reaching
+      only Claude (seen: the CLI showed no async message); G4 `timeout` not being
+      enforced on an async command hook (not tested; `refresh` keeps its own 300 s
+      budget); G5 a Dock-launched session giving its hooks launchd's `PATH` (not
+      observed directly; `show` is tested under that `PATH`). Execution added two:
+      whether `startup` fires under `claude -p` (the item above) and how Claude Code ends
+      an async hook, by signalling its shell or otherwise (the signal trap added in
+      plan 49's final-review fix assumes a signal). Files: the sections
+      `hooks.configuration`, `hooks.exit-codes` and `hooks.handlers` of
+      `specs/guides/claude-code-customization-guide.md`, edited through `/cc-guide`.
+      Size: design. Done when: the owner decides, per gap, whether the guide
+      covers it, and each covered gap has a section citing the docs, or is recorded as
+      left uncovered.
+- [ ] Observe the once-a-day half of the notice in real sessions (plan 49 Task 10 Step 4,
+      skipped: never observed live, and the owner chose to finish as built). Nothing is
+      due on `main`, so the real `refresh` leaves an empty notice, and the plan's
+      second-session check had nothing to show. The half rests on the offline tests
+      (`test_notice_sh.py`, R12.5) and two `show` runs against the real cache. Owner-only:
+      write a stand-in notice with `notice.write_notice` and remove `notice-shown` (plan
+      49 Task 10 Step 1), start two terminal sessions in this repo on one day, and watch
+      that the first shows it and the second shows nothing. Then restore the cache with
+      `notice.write_notice(cache, None)`. Size: quick-fix. Done when: the owner has seen
+      both sessions and ticks this item with the result.
+- [ ] `notice.sh` and `notice.py` robustness Minors (plan 49 task reviews and final review;
+      left at the completion gate because none needed a fix before merge). In
+      `build/cc_guide/notice.sh`: `fail_notice` has no cleanup if a write fails, so it can
+      leave a stray `.notice.<pid>.tmp`, and if the `notice.json` move succeeds but the
+      digest write fails, `notice.digest` keeps the old digest and the new error stays
+      hidden until the next day when the old digest was already shown (and `cksum <
+      notice.json` is the one stderr write left unsilenced); two refreshes can both break
+      a stale lock and both `mkdir` it (rare); nothing escalates past TERM if a check
+      ignores it, and a SIGKILLed refresh leaves its lock for up to 60 minutes; a signal
+      landing between the `&` and the `pid=$!` that follows it (the launch window) leaves
+      the check running; a signalled run's notice arrives a session late; an unset `HOME`
+      makes the cache `/.cache/agent-skills/cc-guide` (tidier: `[ -n "${HOME:-}" ] ||
+      exit 0`); a directory at `notice-shown` collects a stray `.notice-shown.<pid>.tmp`
+      on every run; `uv run` searches upward for a project (`--no-project` would stop
+      it). In `build/cc_guide/cli.py` and `notice.py`: `finished_at` and `ok_epoch` record
+      the check's start time (`cli.py`'s `now`), so a long check ages up to the budget
+      early; `replace` leaves a `.name.<pid>.tmp` when a write fails; a worktree session
+      runs its own `cli.py` against `main`'s data in the shared cache. Size: plan.
+      Revisit if: a stray temp file or a lock older than an hour shows up in
+      `~/.cache/agent-skills/cc-guide/`, or a failure the notice should have named stays
+      silent.
+- [ ] Test-coverage gaps in the drift notice (plan 49 task reviews; left at the completion
+      gate). `check --hook`, in `build/cc_guide/test_cli.py`: no CLI-level test of
+      `check()` returning 2 (a `FetchError`); none for `--hook` when `default_cache()`
+      fails (nothing is written, by design) or for `hook_failure`'s double `OSError`
+      pass; the write-order spy filters on `Path(dst).name`, not on `dst.parent ==
+      cache`; the older write-order test keeps a name (`…_leaves_the_notice_then_the_record`)
+      that reads only final contents; the setup-error case raises a synthetic
+      `SetupError` from a patched `cli.check`. `notice.sh show`, in
+      `build/cc_guide/test_notice_sh.py`: nothing pins reading the digest before the
+      notice, or the `-f` on `mv`; the empty-notice and no-`HOME` tests would pass on a
+      wrong cache path (their siblings guard it); the failed-redirect, no-`HOME` and
+      `unfinished`-rename tests run under `/bin/sh` only, not over `SHELLS`. In
+      `test_check.py`: the audit-on-failed-fetch test asserts `audit` is present but not
+      that `blocks`, `changelog` and `probes` are absent. Size: plan. Done when: each
+      gap has a test, or the owner records it as not needed.

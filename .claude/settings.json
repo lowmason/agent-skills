@@ -1,5 +1,16 @@
 {
     "model": "opus",
     "availableModels": ["sonnet", "opus", "haiku", "fable"],
-    "enforceAvailableModels": true
+    "enforceAvailableModels": true,
+    "hooks": {
+        "SessionStart": [
+            {
+                "matcher": "startup",
+                "hooks": [
+                    { "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/build/cc_guide/notice.sh show" },
+                    { "type": "command", "command": "\"$CLAUDE_PROJECT_DIR\"/build/cc_guide/notice.sh refresh", "async": true }
+                ]
+            }
+        ]
+    }
 }

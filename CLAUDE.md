@@ -136,7 +136,8 @@ cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q
 
 # Claude Code guide drift detector (build/cc_guide/): its suite; lint, run before committing a change to the guide, to
 # build/cc_guide/ or to a file carrying a citation (its STALE lines never fail it); check, which fetches the docs and
-# reports what is due (exit 1 = due; reads main unless --worktree); /cc-guide acts on what it reports
+# reports what is due (exit 1 = due; reads main unless --worktree); /cc-guide acts on what it reports; a SessionStart
+# hook (build/cc_guide/notice.sh) runs check --hook once the last good check is a day old; its notice shows in terminal sessions only
 cd build/cc_guide && uv run --python 3.13 --with pytest python -m pytest -q
 uv run --python 3.13 python build/cc_guide/cli.py lint
 uv run --python 3.13 python build/cc_guide/cli.py check
