@@ -354,7 +354,9 @@ stands.
 - **`find-polluter.sh` — fixed by plan 50 (2026-10-18).** Plan 50 ported the
   three-part fix with a deterministic test and anchored the invocation as
   `<this-skill-dir>/find-polluter.sh`; where no test file matches, the port
-  exits 2 rather than taking upstream's all-clear path (`NOTICE`). The record
+  exits 2 rather than taking upstream's all-clear path. Its review found that
+  upstream's `./` prefix drops top-level files from `*/test_*.py`, so the port
+  also keeps the bare pattern as a third match (`NOTICE`). The record
   below is this revision's, from before the fix. The first pass's "fix
   directly" disposition was still not carried out: the only commit touching
   the file was still the layout move (`5fee1d7`), so the 2026-10-03 probe
@@ -636,9 +638,9 @@ Four upstream fixes to the scripts plan 22 touched, judged separately:
   because some marketplace packagers strip exec bits. Our installs keep them:
   symlinks do, and `install.py --copy` uses `shutil.copy2`. The live issue in
   this class is path resolution, not exec bits. `find-polluter.sh` (finding 8)
-  is the instance that matters; the `./render-graphs.js` call at
-  `writing-skills/SKILL.md:337-338` is the same pattern in an authoring-only
-  context.
+  was the instance that mattered, and plan 50 anchored it; the
+  `./render-graphs.js` call at `writing-skills/SKILL.md:337-338` is the same
+  pattern in an authoring-only context.
 
 ### 13. TDD does not say what "other tests" means
 
