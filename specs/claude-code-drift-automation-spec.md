@@ -147,8 +147,12 @@ scripts were session-local (`/tmp/ccdrift-probe/`).
    Sonnet pass reads every bullet of the untriaged releases, batched weekly.
 8. **Trigger: a SessionStart hook pair in this repo.** A synchronous `show`
    prints a precomputed `systemMessage`, the only hook channel shown to the
-   user, at most once a day. An async `refresh` recomputes it without delaying
-   the session. Rejected:
+   user in the terminal, at most once a day. The Desktop app runs the hook and
+   records the message but does not display it, and `show` marks a notice
+   shown when it prints, so a Desktop session that starts first on a day also
+   uses that day's showing up for the terminal (owner, plan 49, 2026-10-18,
+   from Task 10's live run); a Desktop-visible channel is a deferred item. An
+   async `refresh` recomputes it without delaying the session. Rejected:
    - one synchronous hook that runs the check inline (the guide-upkeep draft):
      Claude's first response waits for SessionStart hooks, so a fetch would
      delay it;

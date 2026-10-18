@@ -19,9 +19,10 @@ Run: uv run --python 3.13 python build/cc_guide/cli.py <subcommand>
       is due (R6). Reads main's commit unless --ref or --worktree says
       otherwise; --docs DIR runs offline against a local copy. Writes only
       under the cache. Exit 0 nothing due, 1 something due, 2 an error.
-      --hook prints nothing, even on an error, and leaves the session-start
-      notice and last-check.json in the cache instead (R9). notice.sh
-      refresh passes --run, the ID it then looks for in last-check.json.
+      --hook prints nothing, even on an error (a bad command line still gets
+      argparse's usage on stderr), and leaves the session-start notice and
+      last-check.json in the cache instead (R9). notice.sh refresh passes
+      --run, the ID it then looks for in last-check.json.
   baseline init [--docs DIR] [--release LABEL] [--date YYYY-MM-DD] [--force]
   baseline rebaseline GROUP [PAGE | 'PAGE › KEY' ...]
   baseline advance ID [ID ...] --to RELEASE
