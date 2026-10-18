@@ -25,13 +25,15 @@ strict form for text that another agent or a program must parse.
   still. The [post](https://x.com/karpathy/status/2105819303471976479) itself could not be read
   (HTTP 402), so this summary rests on
   [news coverage](https://searchenginejournal.com/karpathy-llm-aircraft-manual-writing/591813).
-- **Two public skills apply the tip, each for a different reader.**
-  - [danyuchn/asd-ste100-skill](https://github.com/danyuchn/asd-ste100-skill) rewrites text for an
-    agent reader: tool descriptions, error messages, inter-agent instructions and system prompts.
-    It has a strict mode and a structural linter.
-  - [prithivrajmu/asd-ste100](https://github.com/prithivrajmu/asd-ste100) explains and rewrites for
-    a human reader at 80% STE. It started from the first skill. It adds explain and summarize tasks,
-    a strict level, media guidance and 14 eval cases.
+- **Two public skills, each for a different reader.**
+  - [danyuchn/asd-ste100-skill](https://github.com/danyuchn/asd-ste100-skill) applies STE to text
+    for an agent reader: tool descriptions, error messages, inter-agent instructions and system
+    prompts. It has a strict mode and a structural linter. Its repository dates from 2026-07-20,
+    before Karpathy's post, and it does not cite him. It reached the idea on its own.
+  - [prithivrajmu/asd-ste100](https://github.com/prithivrajmu/asd-ste100) applies Karpathy's tip.
+    Its repository dates from the day of the post, and it credits danyuchn's skill as its starting
+    point. It explains and rewrites for a human reader at 80% STE. It adds explain and summarize
+    tasks, a strict level, media guidance and 14 eval cases.
 - **The owner's own complaint.** Replies and records cite items by a bare label, such as "O6", and
   never say what the item is. The reader must open another document to decode the label. This repo
   shows the problem: the status line of `specs/completed/verifier-recall-verification-2026-10-14.md`
@@ -295,6 +297,12 @@ entry, `write-with-asd-ste100`.
 The plan picks the command-line shape, such as the flag that installs rules. The existing installer
 tests must keep passing.
 
+Two citation records must follow the change. Today `install.py`'s `# cc-guide:` comment and the
+installer entry in `build/cc_guide/conformance.toml` both name three guide sections: skill
+locations, commands and subagents. Once the installer places rules, it also rests on the guide's
+sections on rule files (`rules.rules-files`) and on the rules hierarchy (`rules.hierarchy`). Both
+records gain those two sections, and the installer entry's description gains rules.
+
 ## Provenance
 
 - `NOTICE` gains a block for `write-with-asd-ste100/` and `rules/write-with-asd-ste100.md`. It
@@ -340,6 +348,11 @@ set and the baseline runs.
   whose transcript shows a read outside that folder is void, and it runs again.
 - All arms use one model, pinned with `--model` and recorded with its version. Use the owner's
   default session model.
+- Every run inherits the owner's user-level setup. That includes the Explanatory output style, the
+  session-start hooks that add the explanatory and learning instructions, the global `CLAUDE.md`
+  and the existing AWS rule in `~/.claude/rules/`. This background is the same in every arm, and
+  the owner's real sessions have it too. The first probe records exactly what a run inherits, and
+  the test record lists it.
 
 ### Order
 
@@ -353,6 +366,11 @@ set and the baseline runs.
 
 The case set below implies about 285 runs. The rule arms take 105 (7 cases, 3 arms, 5 runs). The
 skill arms take 180 (18 cases, 2 arms, 5 runs).
+
+Earlier micro-tests in this repo cost about $0.07 per call, but those calls returned short,
+decision-only answers. These runs write full replies and rewrites, so each call costs more. The
+plan first runs one case per arm as a pilot and projects the total cost from it. It then asks the
+owner before it starts the full set.
 
 ### Everyday cases (rule arms)
 
@@ -368,7 +386,8 @@ skill arms take 180 (18 cases, 2 arms, 5 runs).
 
 ### Skill cases (skill arms)
 
-prithivrajmu's 12 non-media cases keep their upstream checks:
+prithivrajmu's 12 non-media cases keep their upstream checks. Their source is `evals/cases.json` in
+prithivrajmu/asd-ste100, at the pinned commit.
 
 | Upstream ID | What it checks |
 |---|---|
@@ -385,7 +404,8 @@ prithivrajmu's 12 non-media cases keep their upstream checks:
 | `summary-with-caveat` | One sentence that keeps the partial scope and the unconfirmed cause. |
 | `conditional-diagram` | A small Mermaid diagram with a text equivalent and no invented paths. |
 
-New cases:
+New cases. The three agent-mode cases are Examples A, B and C in Part 2 of `examples/before-after.md`
+in danyuchn/asd-ste100-skill, at the pinned commit.
 
 | Case | Check |
 |---|---|
@@ -396,21 +416,40 @@ New cases:
 
 ### Scoring
 
-- The linter scores structure: sentence length, semicolons, phrasal verbs, nouns made from verbs,
-  marketing adjectives, passive voice, compound tenses and synonym rotation.
+- The linter scores structure. Run it with `--json` on each reply. Its output gives the finding
+  counts for each of its rules and the word count.
 - A small script checks labels, and checks literal spans byte for byte.
 - Read every flagged match in full before it counts. Automated counts alone overstate both failure
-  and success.
-- A run passes a habit when no finding of that kind survives the hand read.
+  and success. A finding that the hand read shows to be justified does not count. One example is a
+  passive verb whose actor the source does not name.
+- Score the whole reply, including any Insight blocks, because the owner reads them.
+
+Each habit has a pass test for one run, and a fixed set of cases that score it. The six prose cases
+are the everyday cases other than the paragraph edit.
+
+| Habit | A run passes when | Scored on |
+|---|---|---|
+| Sentence length | at most 1 sentence above 25 words for each 100 words of prose | the six prose cases |
+| Semicolons | the prose has no semicolon | the six prose cases |
+| Plain words | no phrasal-verb, noun-from-verb or marketing-adjective finding survives | the six prose cases |
+| Active voice | at most 1 surviving passive-voice finding for each 100 words | the six prose cases |
+| Simple tenses | at most 1 surviving compound-tense finding for each 100 words | the six prose cases |
+| Labels | each supplied label has its meaning at first mention, and the reply invents no meaning | the two label cases |
+| Literal text | each code span that the reply takes from the source matches it byte for byte | the function question and the commit message |
+| Existing text | every byte outside the edited paragraph stays the same | the paragraph edit |
 
 ### Decision rules
 
 This spec fixes these rules now, before any run.
 
-- **Rule form.** For each scored habit, count the runs out of 5 that pass. The listed habits replace
-  the short rule only if they pass at least 2 more runs on some habit and fewer runs on none.
-- **Habits the model already follows.** A habit that the no-rule arm follows in 5 of 5 runs leaves
-  the rule. The skill may keep it.
+- **Counting unit.** Pool the runs for each habit: every run of every case that scores it. A prose
+  habit therefore has 30 runs in each arm (6 cases, 5 runs each).
+- **Rule form.** The listed habits replace the short rule only if two things hold. They pass at
+  least 20 percentage points more of the pooled runs on some habit. They pass at most 10 points
+  fewer on every other habit.
+- **Habits the model already follows.** A habit that the no-rule arm passes in every pooled run
+  leaves the rule. The skill may keep it. The line that names the standard leaves only if every
+  prose habit qualifies.
 - **No new guidance without a failure.** A skill case that the baseline passes in 5 of 5 runs receives
   no guidance beyond the approved design.
 - **Pass.** The skill passes a case when at least 4 of 5 runs meet every check. A failing case receives
