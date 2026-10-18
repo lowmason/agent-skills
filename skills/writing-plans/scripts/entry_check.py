@@ -14,24 +14,28 @@ id used by two different plan filenames, and, given a spec path, any plan
 whose name ends in the spec's stem.
 
 ``overlapping files:`` lists the live plans, each with the number of repo
-paths it names, then each path that two or more of them name. A plan is live
-when no copy of it, on any ref or in any worktree, sits under
-``specs/plans/completed/``; its paths are the union over its copies. Outside
-fenced code, a plan names a path with a backticked span outside parentheses
-on a ``- Create:``, ``- Modify:`` or ``- Test:`` line, with the first span of
-an Edit header (``**Edit `PATH`: replace**``), and with the PATH of an
+paths it names, then each path that two or more of them name. A plan stays
+live until the default branch (the branch ``origin/HEAD`` names, else
+``main`` or ``master``) has it under ``specs/plans/completed/``, so a plan
+retired on a branch not yet merged still counts; with no default branch, a
+copy under ``completed/`` anywhere retires it. A plan's paths are the union
+over its copies, and a copy that cannot be read adds none. Outside fenced
+code, a plan names a path with a backticked span outside parentheses on a
+``- Create``, ``- Modify`` or ``- Test`` line (a qualifier may come before
+the colon), with the first span of an Edit line (``**Edit `PATH`: replace**``,
+or the same as a heading or plain text), and with the PATH of an
 ``<!-- extract-file: PATH -->`` or ``<!-- extract-edit: PATH:LABEL -->``
-line. A ``:LINE`` or ``:START-END`` suffix is dropped, and a path without a
-slash counts only when some ref or worktree has an entry of that name at its
-root. Paths match as written, and a file set named only in prose ("the 13
+line. A ``:LINE`` or ``:START-END`` suffix is dropped, and a path counts only
+when its first component is an entry at the root of some ref or worktree.
+Paths match as written, and a file set named only in prose ("the 13
 superpowers SKILL.md files") is not seen, so ``shared: none`` does not prove
 that two plans touch different files. ``--plan`` adds a plan saved outside
 ``specs/plans/``; given the filename of a live plan, it is that plan.
 
 A reporter, like deferred_stats.py: it is read-only and exits 0 whenever it
 prints a report. It exits 2 only when it cannot run: outside a git
-repository, given a spec or plan path that does not exist or is not a file,
-or given a spec outside this repository.
+repository, when a git command it needs fails, given a spec or plan path that
+does not exist or is not a file, or given a spec outside this repository.
 '''
 
 from __future__ import annotations
@@ -40,6 +44,7 @@ import argparse
 import re
 import subprocess
 import sys
+from contextlib import suppress
 from dataclasses import dataclass, field
 from pathlib import Path, PurePosixPath
 
@@ -90,17 +95,13 @@ class Sighting:
     '''One copy of a file under specs/plans: a blob on a ref, or a file in a worktree.'''
     path: str
     where: str
+    ref: str = ''
     blob: str = ''
     file: Path | None = None
 
     @property
     def name(self) -> str:
         return PurePosixPath(self.path).name
-
-    def text(self, root: Path) -> str:
-        if self.file is not None:
-            return self.file.read_text(encoding='utf-8', errors='replace')
-        return git_out(root, 'cat-file', 'blob', self.blob)
 
 
 def ref_names(root: Path) -> list[str]:
@@ -127,7 +128,7 @@ def plan_sightings(root: Path, refs: list[str], trees: list[Path]) -> list[Sight
         listing = git(root, 'ls-tree', '-r', ref, '--', 'specs/plans')
         for line in listing.stdout.splitlines():
             meta, _, path = line.partition('\t')
-            seen.append(Sighting(path, short, blob=meta.split()[-1]))
+            seen.append(Sighting(path, short, ref=ref, blob=meta.split()[-1]))
     for tree in trees:
         plans = tree / 'specs' / 'plans'
         if plans.is_dir():
@@ -180,21 +181,35 @@ def format_plan_ids(by_id: dict[int, list[Plan]], stem: str | None) -> list[str]
     return lines
 
 
-def live_plan_texts(root: Path, sightings: list[Sighting]) -> dict[str, set[str]]:
-    '''The texts of each live plan's copies, by filename. A plan is live when no copy
-    of it sits under specs/plans/completed/: a merged planning branch keeps a live
-    copy of a plan that main has since retired.'''
-    retired = {s.name for s in sightings if s.path.startswith(RETIRED)}
+def default_branch_refs(root: Path, refs: list[str]) -> set[str]:
+    '''The refs of the default branch: the branch origin/HEAD names, else main or
+    master, as a local branch and on origin.'''
+    head = git(root, 'symbolic-ref', '-q', '--short', 'refs/remotes/origin/HEAD').stdout.strip()
+    names = [head.removeprefix('origin/')] if head else ['main', 'master']
+    wanted = {f'refs/{kind}/{name}' for name in names for kind in ('heads', 'remotes/origin')}
+    return wanted.intersection(refs)
+
+
+def live_plan_texts(root: Path, sightings: list[Sighting], trunk: set[str]) -> dict[str, set[str]]:
+    '''The texts of each live plan's copies, by filename. A plan is retired once the
+    default branch (trunk) has it under specs/plans/completed/: a plan retired on a
+    branch not yet merged has edits the default branch lacks, and a merged planning
+    branch keeps a live copy of a plan that the default branch has since retired.
+    With no default branch, a copy under completed/ anywhere retires the plan.'''
+    retired = {s.name for s in sightings if s.path.startswith(RETIRED) and (s.ref in trunk or not trunk)}
     texts: dict[str, set[str]] = {}
-    blobs_read: set[str] = set()
+    blob_texts: dict[str, str] = {}
     for s in sightings:
         if s.name in retired or not PLAN_RE.match(s.name):
             continue
-        if s.blob:
-            if s.blob in blobs_read:
-                continue
-            blobs_read.add(s.blob)
-        texts.setdefault(s.name, set()).add(s.text(root))
+        copies = texts.setdefault(s.name, set())
+        if s.file is None:
+            if s.blob not in blob_texts:
+                blob_texts[s.blob] = git_out(root, 'cat-file', 'blob', s.blob)
+            copies.add(blob_texts[s.blob])
+            continue
+        with suppress(OSError):  # moved or removed since the scan, or a dangling link
+            copies.add(s.file.read_text(encoding='utf-8', errors='replace'))
     return texts
 
 
@@ -204,25 +219,26 @@ def root_names(root: Path, refs: list[str], trees: list[Path]) -> set[str]:
     for ref in refs:
         names.update(git(root, 'ls-tree', '--name-only', ref).stdout.splitlines())
     for tree in trees:
-        if tree.is_dir():
+        with suppress(OSError):  # a worktree removed since git listed it
             names.update(path.name for path in tree.iterdir())
     return names
 
 
 def unfenced_lines(text: str) -> list[str]:
-    '''The lines outside fenced code. A fence closes only on a bare run of its own
-    character at least as long as the opening run, so a four-backtick block can
-    hold three-backtick ones.'''
+    '''The lines outside fenced code. A backtick fence's info string holds no backtick,
+    so a line that starts with an inline ```span``` opens nothing. A fence closes only
+    on a bare run of its own character at least as long as the opening run, so a
+    four-backtick block can hold three-backtick ones.'''
     lines, fence = [], ''
     for line in text.splitlines():
         m = FENCE_RE.match(line)
-        if not fence:
-            if m:
-                fence = m['fence']
-            else:
-                lines.append(line)
-        elif m and m['fence'][0] == fence[0] and len(m['fence']) >= len(fence) and not m['info'].strip():
-            fence = ''
+        if fence:
+            if m and m['fence'][0] == fence[0] and len(m['fence']) >= len(fence) and not m['info'].strip():
+                fence = ''
+        elif m and not (m['fence'][0] == '`' and '`' in m['info']):
+            fence = m['fence']
+        else:
+            lines.append(line)
     return lines
 
 
@@ -241,12 +257,11 @@ def spans_outside_parens(text: str) -> list[str]:
 
 
 def repo_path(span: str, names_at_root: set[str]) -> str | None:
-    '''The repo path a span names, or None. A span without a slash names one only
-    when it is an entry at some tree's root: NOTICE does, a bare SKILL.md does not.'''
+    '''The repo path a span names, or None. Its first component must be an entry at
+    some tree's root: NOTICE and skills/x/SKILL.md name one; a bare SKILL.md, a
+    scratch KIT/kit.py, /etc/hosts and ~/notes.md do not.'''
     path = LINE_SUFFIX_RE.sub('', span.strip()).removeprefix('./')
-    if not path or path.startswith(('/', '~')) or any(c.isspace() for c in path):
-        return None
-    if '/' not in path and path not in names_at_root:
+    if any(c.isspace() for c in path) or path.split('/', 1)[0] not in names_at_root:
         return None
     return path
 
@@ -294,7 +309,7 @@ def format_overlaps(paths_by_plan: dict[str, set[str]]) -> list[str]:
 def report(root: Path, spec: Path | None, plan: Path | None) -> list[str]:
     refs, trees = ref_names(root), worktree_paths(root)
     sightings = plan_sightings(root, refs, trees)
-    texts = live_plan_texts(root, sightings)
+    texts = live_plan_texts(root, sightings, default_branch_refs(root, refs))
     if plan is not None:
         texts.setdefault(plan.name, set()).add(plan.read_text(encoding='utf-8', errors='replace'))
     names_at_root = root_names(root, refs, trees)
