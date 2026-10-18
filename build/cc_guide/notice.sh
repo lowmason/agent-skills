@@ -94,17 +94,26 @@ find_uv() {
     return 1
 }
 
-# Run check --hook through uv under the budget, then see whether it finished: a finished run
-# leaves its ID in last-check.json, which notice.py writes last of all.
+# Count the run unfinished, then run check --hook through uv under the budget and see whether
+# it finished: a finished run leaves its ID in last-check.json, which notice.py writes last of
+# all. The run is counted before it starts, since a refresh ended mid-check never gets past it.
 check_now() {
     for name in $(env | sed -n 's/^\(GIT_[A-Za-z0-9_]*\)=.*/\1/p'); do
         unset "$name"   # a caller's GIT_DIR or GIT_INDEX_FILE would redirect check's git reads
     done
     budget=${CC_GUIDE_BUDGET:-$BUDGET}
     case $budget in ''|*[!0-9]*) budget=$BUDGET ;; esac
+    before=$(cat "$cache/unfinished" 2>/dev/null)
+    case $before in ''|*[!0-9]*) before=0 ;; esac
+    if [ "$before" -ge "$UNFINISHED_LIMIT" ]; then
+        fail_notice "the drift check did not finish $before times in a row" 'run build/cc_guide/cli.py check'
+    fi
+    count=$((before + 1))
+    { printf '%s\n' "$count" > "$cache/.unfinished.$$.tmp" && mv -f "$cache/.unfinished.$$.tmp" "$cache/unfinished"; } 2>/dev/null || rm -f "$cache/.unfinished.$$.tmp" 2>/dev/null
     id="$$.$(date +%s)"
     "$1" run --python 3.13 python "$here/cli.py" check --hook --run "$id" </dev/null >/dev/null 2>&1 &
     pid=$!
+    trap 'kill "$pid" 2>/dev/null; exit 0' HUP INT TERM   # a signalled refresh takes its check with it
     waited=0
     while kill -0 "$pid" 2>/dev/null; do
         if [ "$waited" -ge "$budget" ]; then
@@ -116,27 +125,31 @@ check_now() {
     done
     wait "$pid" 2>/dev/null
     if grep -qF "\"run\": \"$id\"" "$cache/last-check.json" 2>/dev/null; then
-        rm -f "$cache/unfinished"
+        rm -f "$cache/unfinished" 2>/dev/null
         return 0
     fi
-    count=$(cat "$cache/unfinished" 2>/dev/null)
-    case $count in ''|*[!0-9]*) count=0 ;; esac
-    count=$((count + 1))
-    { printf '%s\n' "$count" > "$cache/.unfinished.$$.tmp" && mv -f "$cache/.unfinished.$$.tmp" "$cache/unfinished"; } 2>/dev/null || rm -f "$cache/.unfinished.$$.tmp" 2>/dev/null
     if [ "$count" -ge "$UNFINISHED_LIMIT" ]; then
         fail_notice "the drift check did not finish $count times in a row" 'run build/cc_guide/cli.py check'
     fi
     return 0
 }
 
+# While a good check under a day old is on record no refresh runs a check, so a stored count of
+# unfinished runs is stale: each return on a fresh check removes it.
 refresh() {
     mkdir -p "$cache" 2>/dev/null || return 0
-    fresh && return 0
+    if fresh; then
+        rm -f "$cache/unfinished" 2>/dev/null
+        return 0
+    fi
     lock="$cache/lock"
     take_lock || return 0
     trap 'rm -rf "$lock"' EXIT
     trap 'exit 0' HUP INT TERM
-    fresh && return 0   # another session may have finished a check while this one waited
+    if fresh; then   # another session may have finished a check while this one waited
+        rm -f "$cache/unfinished" 2>/dev/null
+        return 0
+    fi
     if ! uv=$(find_uv); then
         fail_notice 'the drift check cannot run: no uv on PATH, in ~/.local/bin or in /opt/homebrew/bin' 'install uv'
         return 0

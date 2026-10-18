@@ -3,9 +3,11 @@ R9.2, R9.3, R12.5). Each run is made as Claude Code makes it from an app the
 Dock started: no inherited environment, only HOME and launchd's PATH. notice.py
 writes the files the script reads, so the shell-and-Python file contract is
 tested across the two languages.'''
+import contextlib
 import json
 import os
 import re
+import signal
 import subprocess
 import sys
 import time
@@ -128,6 +130,7 @@ FAKE_UV = '''#!/bin/sh
 printf '%s\\n' "$0" > "$HOME/uv-path"
 printf '%s\\n' "$@" > "$HOME/uv-args"
 env | grep '^GIT_' > "$HOME/uv-git-env"
+printf '%s\\n' "$$" > "$HOME/uv-pid"
 case "${{FAKE_UV:-finish}}" in
     finish) exec "{python}" "{finish}" "$@" ;;
     hang) exec sleep 30 ;;
@@ -243,6 +246,124 @@ def test_three_unfinished_runs_in_a_row_leave_the_error_notice_and_a_finished_ru
     quiet(sh(home, 'refresh', env=env))
     assert not (cache / 'unfinished').exists()
     assert shown(sh(home, 'show')) == FOUND
+
+
+START_SECONDS = 15    # how long the stand-in uv may take to record its PID
+STOP_SECONDS = 5      # how long a signalled refresh's check may take to go
+
+
+def recorded_pid(home: Path, proc: subprocess.Popen) -> int:
+    '''The PID the stand-in uv recorded, once all of it is written. The
+    redirect creates the file before printf fills it.'''
+    deadline = time.monotonic() + START_SECONDS
+    while time.monotonic() < deadline and proc.poll() is None:
+        text = (home / 'uv-pid').read_text() if (home / 'uv-pid').exists() else ''
+        if text.endswith('\n') and text.strip().isdigit():
+            return int(text)
+        time.sleep(0.05)
+    raise AssertionError('the stand-in uv never recorded its PID')
+
+
+def gone(pid: int) -> bool:
+    '''True once pid is no process, polled for up to STOP_SECONDS: a killed
+    child answers as a zombie until it is reaped.'''
+    deadline = time.monotonic() + STOP_SECONDS
+    while time.monotonic() < deadline:
+        try:
+            os.kill(pid, 0)
+        except ProcessLookupError:
+            return True
+        time.sleep(0.05)
+    return False
+
+
+def signalled_refresh(home: Path, env: dict, shell: str = '/bin/sh'):
+    '''refresh run as sh() runs it and sent SIGTERM once the stand-in uv has
+    started: the finished run, and whether the check was gone within
+    STOP_SECONDS. A check still alive is killed before this returns, so a
+    failing test leaves no sleep behind.'''
+    proc = subprocess.Popen([shell, str(SCRIPT), 'refresh'], env={'HOME': str(home), 'PATH': LAUNCHD_PATH, **env},
+                            cwd=home, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    pid, stopped = None, False
+    try:
+        pid = recorded_pid(home, proc)
+        proc.send_signal(signal.SIGTERM)
+        out, err = proc.communicate(timeout=START_SECONDS)
+        stopped = gone(pid)
+    finally:
+        if proc.poll() is None:
+            proc.kill()
+            proc.wait()
+        if pid is not None and not stopped:
+            with contextlib.suppress(ProcessLookupError):
+                os.kill(pid, signal.SIGKILL)
+    return subprocess.CompletedProcess(proc.args, proc.returncode, out, err), stopped
+
+
+@pytest.mark.parametrize('shell', SHELLS)
+def test_a_signalled_refresh_stops_its_check_and_the_run_stays_counted(fake_uv, shell):
+    '''However Claude Code ends an async hook, the check refresh started goes
+    with it, and the run is counted unfinished (R9.3).'''
+    home, env = fake_uv
+    proc, stopped = signalled_refresh(home, {**env, 'FAKE_UV': 'hang'}, shell)
+    quiet(proc)
+    assert stopped, 'the check outlived the refresh that started it'
+    cache = cache_of(home)
+    assert not (cache / 'lock').exists()
+    assert (cache / 'unfinished').read_text() == '1\n'
+
+
+def test_three_unfinished_runs_leave_the_error_notice_before_the_next_check_starts(fake_uv):
+    '''A refresh ended mid-check never reaches the code after its check, so
+    the runs before it earn their notice as it starts (R9.4).'''
+    home, env = fake_uv
+    cache = cache_of(home)
+    cache.mkdir(parents=True)
+    (cache / 'unfinished').write_text('3\n')
+    proc, stopped = signalled_refresh(home, {**env, 'FAKE_UV': 'hang'})
+    quiet(proc)
+    assert stopped
+    assert shown(sh(home, 'show')) == ('cc-guide · the drift check did not finish 3 times in a row · '
+                                       'no good check yet → run build/cc_guide/cli.py check')
+    assert (cache / 'unfinished').read_text() == '4\n'
+
+
+def test_a_good_check_under_a_day_old_clears_a_stale_count(fake_uv):
+    '''No refresh runs a check while a good one under a day old is on record,
+    so a count stored then is stale.'''
+    home, env = fake_uv
+    cache = cache_of(home)
+    notice.record_check(cache, 0, datetime.now().astimezone(), 'r0')
+    (cache / 'unfinished').write_text('2\n')
+    quiet(sh(home, 'refresh', env=env))
+    assert not (cache / 'unfinished').exists()
+    assert not (home / 'uv-args').exists()
+
+
+def test_a_good_check_recorded_while_refresh_takes_the_lock_clears_a_stale_count(fake_uv, tmp_path):
+    '''The second look at the record, once refresh holds the lock: a find
+    stub breaks an old lock and, as it does, puts another session's good
+    check on record.'''
+    home, env = fake_uv
+    cache = cache_of(home)
+    lock = cache / 'lock'
+    lock.mkdir(parents=True)
+    old = time.time() - 2 * 3600
+    os.utime(lock, (old, old))
+    (cache / 'unfinished').write_text('2\n')
+    staged = tmp_path / 'staged'
+    notice.record_check(staged, 0, datetime.now().astimezone(), 'other')
+    stubs = tmp_path / 'stubs'
+    stubs.mkdir()
+    stub = stubs / 'find'
+    stub.write_text(f"#!/bin/sh\n/bin/cp '{staged / notice.LAST_CHECK}' '{cache / notice.LAST_CHECK}'\n"
+                    'exec /usr/bin/find "$@"\n')
+    stub.chmod(0o755)
+    path = env['PATH']
+    quiet(sh(home, 'refresh', env={**env, 'PATH': f'{stubs}:{path}'}))
+    assert not (cache / 'unfinished').exists()
+    assert not (home / 'uv-args').exists()
+    assert not lock.exists()
 
 
 def test_refresh_runs_the_check_without_the_callers_git_variables(fake_uv):

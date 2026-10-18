@@ -13,7 +13,9 @@ The cache files the two languages share, under ~/.cache/agent-skills/cc-guide/:
 - last-check.json: written here alone, last of all, so a run ID in it means
   the notice is in place. refresh reads two of its lines without a JSON
   parser: ` "run": "<id>",` and ` "ok_epoch": <seconds>`, the last good check.
-- unfinished: refresh's count of runs in a row that never wrote last-check.json.
+- unfinished: refresh's count of runs in a row that have not written
+  last-check.json, raised as each run starts; a finished run removes it,
+  and so does a good check under a day old.
 - lock/: refresh's lock directory.
 Each file is replaced by renaming a temporary file over it, in both
 languages, so no reader sees a partial file.'''
