@@ -48,6 +48,13 @@ def quiet(proc) -> None:
     assert (proc.returncode, proc.stdout, proc.stderr) == (0, '', '')
 
 
+def shell_today(home: Path) -> str:
+    '''Today as the script's date gives it, in the environment sh() gives the
+    script: the system zone, whatever this process's TZ says.'''
+    return subprocess.run(['/bin/date', '+%Y-%m-%d'], env={'HOME': str(home), 'PATH': LAUNCHD_PATH},
+                          capture_output=True, text=True, check=True, timeout=60).stdout.strip()
+
+
 @pytest.mark.parametrize('shell', SHELLS)
 def test_show_prints_a_notice_once_a_day_and_a_changed_notice_again(tmp_path, shell):
     notice.write_notice(cache_of(tmp_path), 'cc-guide · first → /cc-guide')
@@ -73,7 +80,7 @@ def test_a_notice_shown_on_an_earlier_day_shows_again(tmp_path):
     digest = (cache / notice.DIGEST).read_text().strip()
     (cache / 'notice-shown').write_text(f'2000-01-01 {digest}\n')
     assert shown(sh(tmp_path, 'show')) == 'cc-guide · again → /cc-guide'
-    assert (cache / 'notice-shown').read_text() == f"{datetime.now().strftime('%Y-%m-%d')} {digest}\n"
+    assert (cache / 'notice-shown').read_text() == f'{shell_today(tmp_path)} {digest}\n'
 
 
 @pytest.mark.parametrize('shell', SHELLS)
@@ -110,7 +117,7 @@ def test_show_replaces_notice_shown_by_renaming_a_temp_file_in_the_cache(tmp_pat
     temp = Path(args[-2])
     assert (temp.parent, temp.name[0], temp.suffix) == (cache, '.', '.tmp')
     digest = (cache / notice.DIGEST).read_text().strip()
-    assert (cache / 'notice-shown').read_text() == f"{datetime.now().strftime('%Y-%m-%d')} {digest}\n"
+    assert (cache / 'notice-shown').read_text() == f'{shell_today(tmp_path)} {digest}\n'
     assert not [path for path in cache.iterdir() if path.suffix == '.tmp']
 
 
@@ -124,29 +131,38 @@ def test_show_without_home_and_an_unknown_subcommand_both_exit_zero(tmp_path):
 NO_UV = 'the drift check cannot run: no uv on PATH, in ~/.local/bin or in /opt/homebrew/bin'
 FOUND = 'cc-guide · 1 docs block changed (alpha.overview) → /cc-guide'
 
-# A stand-in for uv. It records how it was called, then finishes as check --hook would
-# (through notice.py, so the file contract is the real one), hangs, or fails before Python.
+CHECK_ERROR = 'the docs fetch timed out'
+
+# A stand-in for uv. It prints noise refresh must discard and records how it was called, then
+# finishes as check --hook would (through notice.py, so the file contract is the real one) with
+# an exit 1 or, for finish2, a recorded exit 2; hangs; or fails before Python.
 FAKE_UV = '''#!/bin/sh
+echo noise
+echo noise >&2
 printf '%s\\n' "$0" > "$HOME/uv-path"
 printf '%s\\n' "$@" > "$HOME/uv-args"
 env | grep '^GIT_' > "$HOME/uv-git-env"
 printf '%s\\n' "$$" > "$HOME/uv-pid"
 case "${{FAKE_UV:-finish}}" in
-    finish) exec "{python}" "{finish}" "$@" ;;
+    finish|finish2) exec "{python}" "{finish}" "$@" ;;
     hang) exec sleep 30 ;;
     *) exit 2 ;;
 esac
 '''
 
-FINISH = '''import sys
+FINISH = '''import os
+import sys
 from datetime import datetime
 from pathlib import Path
 sys.path.insert(0, {here!r})
 import notice
 run = sys.argv[sys.argv.index('--run') + 1]
 cache = Path.home() / '.cache' / 'agent-skills' / 'cc-guide'
-notice.write_notice(cache, {found!r})
-notice.record_check(cache, 1, datetime.now().astimezone(), run)
+if os.environ.get('FAKE_UV') == 'finish2':
+    notice.after_failure(cache, {failed!r}, datetime.now().astimezone(), run)
+else:
+    notice.write_notice(cache, {found!r})
+    notice.record_check(cache, 1, datetime.now().astimezone(), run)
 '''
 
 
@@ -157,7 +173,7 @@ def fake_uv(tmp_path):
     home = tmp_path / 'home'
     home.mkdir()
     finish = tmp_path / 'finish.py'
-    finish.write_text(FINISH.format(here=str(HERE), found=FOUND), encoding='utf-8')
+    finish.write_text(FINISH.format(here=str(HERE), found=FOUND, failed=CHECK_ERROR), encoding='utf-8')
     bin_dir = tmp_path / 'bin'
     bin_dir.mkdir()
     uv = bin_dir / 'uv'
@@ -231,6 +247,22 @@ def test_refresh_stops_a_check_past_its_budget_and_counts_the_run_unfinished(fak
     cache = cache_of(home)
     assert (cache / 'unfinished').read_text() == '1\n'
     assert not (cache / notice.NOTICE).exists()
+    assert not (cache / 'lock').exists()
+
+
+def test_an_exit_two_the_check_records_is_a_finished_run_and_clears_the_count(fake_uv):
+    '''A check that fails but records its exit 2 has finished: only a run
+    that leaves no record is unfinished (R9.3).'''
+    home, env = fake_uv
+    cache = cache_of(home)
+    cache.mkdir(parents=True)
+    (cache / 'unfinished').write_text('2\n')
+    quiet(sh(home, 'refresh', env={**env, 'FAKE_UV': 'finish2'}))
+    assert not (cache / 'unfinished').exists()
+    record = notice.read_last_check(cache)
+    assert (record['exit'], record['run']) == (2, (home / 'uv-args').read_text().splitlines()[-1])
+    assert shown(sh(home, 'show')) == (f'cc-guide · check failed: {CHECK_ERROR} · no good check yet → '
+                                       'run build/cc_guide/cli.py check')
 
 
 def test_three_unfinished_runs_in_a_row_leave_the_error_notice_and_a_finished_run_clears_them(fake_uv):
@@ -393,6 +425,27 @@ def test_refresh_replaces_unfinished_by_renaming_a_temp_file_in_the_cache(fake_u
     temp = Path(onto[0][-2])
     assert (temp.parent, temp.name[0], temp.suffix) == (cache, '.', '.tmp')
     assert (cache / 'unfinished').read_text() == '1\n'
+    assert not [entry for entry in cache.iterdir() if entry.suffix == '.tmp']
+
+
+def test_a_failed_rename_leaves_no_temp_file_and_no_output(fake_uv, tmp_path):
+    '''The failure branches of show's and refresh's renames: with an mv that
+    fails, each run is silent but for show's notice, writes neither file and
+    leaves no temp file in the cache.'''
+    home, env = fake_uv
+    cache = cache_of(home)
+    stubs = tmp_path / 'stubs'
+    stubs.mkdir()
+    (stubs / 'mv').write_text('#!/bin/sh\nexit 1\n')
+    (stubs / 'mv').chmod(0o755)
+    notice.write_notice(cache, 'cc-guide · unrecorded → /cc-guide')
+    assert shown(sh(home, 'show', env={'PATH': f'{stubs}:{LAUNCHD_PATH}'})) == 'cc-guide · unrecorded → /cc-guide'
+    assert not (cache / 'notice-shown').exists()
+    assert not [entry for entry in cache.iterdir() if entry.suffix == '.tmp']
+    path = env['PATH']
+    quiet(sh(home, 'refresh', env={**env, 'PATH': f'{stubs}:{path}', 'FAKE_UV': 'fail'}))
+    assert (home / 'uv-args').exists()
+    assert not (cache / 'unfinished').exists()
     assert not [entry for entry in cache.iterdir() if entry.suffix == '.tmp']
 
 

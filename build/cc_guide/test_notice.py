@@ -62,6 +62,20 @@ def test_a_report_at_todays_scale_stays_under_the_limit_and_counts_what_it_left_
     assert len(named.group(1).split(', ')) + int(named.group(2)) == 38
 
 
+def test_a_name_that_fills_the_line_is_named_and_one_a_character_longer_is_counted():
+    '''The last character of room: a section name that brings the line to
+    LIMIT - 1 characters is named in full, and one a character longer goes
+    into "+N more".'''
+    empty = 'cc-guide · 2 docs blocks changed (a.one, ) → /cc-guide'
+    fills = 'b.' + 'x' * (notice.LIMIT - 1 - len(empty) - len('b.'))
+    exact = notice.due_message(report(findings=[('a.one',), (fills,)]), TODAY)
+    assert exact == f'cc-guide · 2 docs blocks changed (a.one, {fills}) → /cc-guide'
+    assert len(exact) == notice.LIMIT - 1
+    over = notice.due_message(report(findings=[('a.one',), (fills + 'x',)]), TODAY)
+    assert over == 'cc-guide · 2 docs blocks changed (a.one, +1 more) → /cc-guide'
+    assert len(over) <= notice.LIMIT - 1
+
+
 def test_the_error_line_names_the_reason_and_the_age_of_the_last_good_check():
     assert notice.error_message('https://example.invalid/changelog.md: timed out',
                                 EPOCH - 3 * notice.DAY - 5, EPOCH) == (
@@ -72,6 +86,7 @@ def test_the_error_line_names_the_reason_and_the_age_of_the_last_good_check():
 
 
 def test_a_long_reason_is_cut_to_keep_the_line_under_the_limit():
+    assert notice.LIMIT == 300   # R9.4: "under 300 characters"
     got = notice.error_message('x' * 1000 + '\nsecond line', None, EPOCH)
     assert len(got) == notice.LIMIT - 1
     assert '\n' not in got
