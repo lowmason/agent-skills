@@ -1,5 +1,7 @@
 # Entry-Check File Overlaps Implementation Plan
 
+**Status: COMPLETE (2026-10-18)** — executed via executing-plans; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Make writing-plans' entry check report which live plans edit the same files, so two plans written in parallel learn about a shared file at planning time instead of at merge time.
@@ -12,9 +14,9 @@
 
 **Design choices beyond the brief** (your human partner may overrule any of them at review):
 
-1. **A plan retired anywhere is not live.** A plan with a copy under `specs/plans/completed/` on any ref or in any worktree is not live, because a merged planning branch keeps a live copy after `main` retires the plan: `claude/agent-skills-handoff-plan-3a6a7b` still holds plan 45 outside `completed/`. A live plan's paths are the union over all its copies, so an uncommitted edit in a worktree counts.
+1. **A plan retired anywhere is not live.** A plan with a copy under `specs/plans/completed/` on any ref or in any worktree is not live, because a merged planning branch keeps a live copy after `main` retires the plan: `claude/agent-skills-handoff-plan-3a6a7b` still holds plan 45 outside `completed/`. A live plan's paths are the union over all its copies, so an uncommitted edit in a worktree counts. *Superseded at the final review by D5.*
 2. **What names a path.** On a Files line, only backticked spans outside parentheses count, because parentheses hold identifiers (plan 53 writes `` `build/check_frontmatter.py` (module docstring; `ALLOWED_KEYS` becomes `SPEC_KEYS` …) ``). An Edit header gives only the span right after `Edit `, because a second span is often code (`` insert before the line `def make_agent(…) -> Path:` ``). An `extract-edit` key splits on its last colon, as plan 52's `extract_plan_files.py` does. Fenced code is skipped, so test fixtures and examples name nothing, and a fence closes only on a run of its own character at least as long as the one that opened it, so a four-backtick block can hold three-backtick ones.
-3. **A path without a slash counts only when a ref or worktree has that name at its root.** That keeps `NOTICE`, `CLAUDE.md` and `README.md`, and drops a bare `SKILL.md` ("the 13 superpowers `SKILL.md` files") and identifiers outside parentheses (plan 51's `` `rebaseline` ``). The cost is that a new root file that two plans would both create is not seen until one of them commits it.
+3. **A path without a slash counts only when a ref or worktree has that name at its root.** That keeps `NOTICE`, `CLAUDE.md` and `README.md`, and drops a bare `SKILL.md` ("the 13 superpowers `SKILL.md` files") and identifiers outside parentheses (plan 51's `` `rebaseline` ``). The cost is that a new root file that two plans would both create is not seen until one of them commits it. *Superseded at the final review by D6, which applies the same root test to every path's first component.*
 4. **A `live plans:` line counts each plan's paths.** A plan written in a style the parser does not read shows 0 paths instead of hiding behind `shared: none`.
 5. **Matching is exact,** after a `:LINE` or `:START-END` suffix is dropped. A file set named only in prose ("the 15 header-less runnable scripts") is not seen. The docstring says so, and so must every report of a run: `shared: none` does not prove that two plans are disjoint.
 6. **`--plan` names a plan, not a second copy.** Given a file with the filename of a live plan, it is that plan, so a plan never overlaps itself.
@@ -43,6 +45,10 @@
 - **D2** (owner, brief, 2026-10-18): The check also accepts a plan file to compare against the others (`--plan PATH`), because at entry the plan being written may not exist yet. Applied in: Task 1.
 - **D3** (owner, brief, 2026-10-18): The script stays read-only and stdlib-only, and its tests go in `skills/writing-plans/scripts`. Applied in: Global Constraints.
 - **D4** (owner, brief, 2026-10-18): A change to writing-plans' SKILL.md text follows the writing-skills skill, and this small, well-specified change gets a plan but no spec. Applied in: Task 2.
+- **D5** (owner, final review, 2026-10-18): Only on default branch: a plan is retired only when the default branch (origin/HEAD's target, else main or master) has it under `completed/`. Plan 45 stays excluded; a plan retired on an open PR stays listed. Applied in: Task 1 (review fix acb0047), in place of design choice 1.
+- **D6** (owner, final review, 2026-10-18): First part at a root: a path counts only when its first component is an entry at some ref's or worktree's root. Drops `KIT/…`, keeps `rules/…`; a plan's brand-new top-level directory would be missed. Applied in: Task 1 (review fix acb0047), in place of design choice 3.
+- **D7** (owner, final review, 2026-10-18): Defer it: `- Rename:`, `- Delete:` and `- Move:` lines are logged in `specs/deferred_items.md`, because adding the verbs as-is would also pick up the skill-relative paths those lines carry. Applied in: plan completion (deferred items).
+- **D8** (owner, finishing, 2026-10-18): Leave it: NOTICE's entry_check bullet stays as it is. It records provenance (an original MIT work), not a feature list, and SKILL.md is unchanged. Applied in: Task 2 (Step 5 not run); the final review's NOTICE finding was not applied.
 
 ---
 
@@ -65,7 +71,9 @@
 
   `live plans: none` when there is none, `shared: none` when no path is shared, and `(1 path)` for one. Plans sort by id, then filename; a `--plan` file whose name has no id sorts last. Paths sort as strings. The CLI is `entry_check.py [SPEC] [--plan PLAN]`; a `--plan` path that does not exist exits 2 with `no such plan: <path>`, and a directory exits 2 with `not a file: <path>`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
+
+> Deviation: the final review added 9 tests (acb0047). The repo fixture now commits `src/` and `tests/`, which D6 needs, and `test_a_plan_retired_on_any_ref_is_not_live` became `test_a_plan_retired_on_the_default_branch_is_not_live`.
 
 In `skills/writing-plans/scripts/test_entry_check.py`, add these two helpers after `check` (before the `repo` fixture):
 
@@ -264,13 +272,15 @@ def test_repo_without_plans_has_no_live_plans(tmp_path):
     assert overlaps(check(root).stdout) == ['  live plans: none', '  shared: none']
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `uv run --directory skills/writing-plans/scripts --python 3.13 --with pytest python -m pytest -q`
 
 Expected: 14 failed, every other test passes. Read each failure's reason: the renamed test fails its `'\noverlapping files:\n'` assertion; the tests that call `overlaps` fail with `IndexError` (no such field), the two `--plan` comparison tests because argparse rejects `--plan` and prints nothing; `test_missing_plan_exits_2` and `test_plan_that_is_a_directory_exits_2` fail on stderr, which reads `unrecognized arguments`. A test that fails for any other reason is not RED: fix the test first.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
+
+> Deviation: the final review changed the code (acb0047): D5's default-branch retirement (a new `default_branch_refs`, a `ref` field on `Sighting`), D6's root-anchored paths, a blob-text cache shared by every plan name in place of `Sighting.text` (Codex P2), `OSError` tolerance for worktree copies and worktree roots, and no fence opened by a line that starts with an inline triple-backtick span. The docstring follows the code.
 
 Replace the whole of `skills/writing-plans/scripts/entry_check.py` with the following. Lines 1-5 are unchanged (Global Constraints, coupling (a)):
 
@@ -625,13 +635,15 @@ git diff -U0 skills/writing-plans/scripts/entry_check.py | head -8
 
 Expected: the first hunk header starts at line 6 (`@@ -6 +6 @@` or later), so lines 1-5 are untouched.
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
+
+> Deviation: 40 passed (+13) at 52b72ff, and 49 (+22 in all) after the review fixes.
 
 Run: `uv run --directory skills/writing-plans/scripts --python 3.13 --with pytest python -m pytest -q`
 
 Expected: every test passes, +13 over the count before Step 1.
 
-- [ ] **Step 5: Run the report against this repository**
+- [x] **Step 5: Run the report against this repository**
 
 Run: `uv run --no-project --python 3.13 python skills/writing-plans/scripts/entry_check.py`
 
@@ -646,7 +658,7 @@ uv run --no-project --python 3.13 python skills/writing-plans/scripts/entry_chec
 
 Expected: `plan54-copy.md` has no leading id, so it is listed last as a plan of its own, with the same path count as plan 54, and every path plan 54 names is shared by both. That shows `--plan` reads a file the scan cannot see. Delete the copy afterwards: `rm /tmp/plan54-copy.md`.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 bash build/run_commit_lints.sh
@@ -676,7 +688,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 The failure under test: after the plan is saved, the planner hands it to the human partner without checking whether another live plan edits the same files. At entry the new plan does not exist yet, so the entry check cannot report its overlaps. Only a rerun after the plan is saved can. writing-skills' Match the Form to the Failure classes this as an element omitted from output the agent already produces (the plan-review message), so the fix is structural: a slot in the message template, filled from a rerun that a conditional keyed to an observable predicate (where the plan is saved) sets up.
 
-- [ ] **Step 1: Build the micro-test kit outside the repository**
+- [x] **Step 1: Build the micro-test kit outside the repository**
 
 `/tmp/plan54-micro/run` is the working directory for every rep. It is never the repository, and each rep runs `claude -p --tools ""`, which cannot read files. Write `/tmp/plan54-micro/scenario.md`:
 
@@ -736,7 +748,7 @@ grep -c 'entry_check\|overlapping files' /tmp/plan54-micro/prompt-control.md
 
 Expected: the count is 3: the skill's **Save plans to** line, the scenario's line that says the check ran, and the scenario's `overlapping files:` line. Nothing else names the check. No line of either prompt may name the expected behavior ("rerun", "shared with", "other live plans"): `grep -n -i 'rerun\|shared with\|other live plans' /tmp/plan54-micro/prompt-control.md` prints nothing.
 
-- [ ] **Step 2: Run the RED control: five reps**
+- [x] **Step 2: Run the RED control: five reps**
 
 Run in the background. The reps are independent, so they run in parallel:
 
@@ -750,7 +762,7 @@ Then print each reply and its cost:
 for f in /tmp/plan54-micro/control-*.json; do echo "== $f"; uv run --no-project --python 3.13 python -c "import json, sys; d = json.load(open(sys.argv[1])); print(d['result']); print('COST', d['total_cost_usd'])" "$f"; done
 ```
 
-- [ ] **Step 3: Score the control by hand**
+- [x] **Step 3: Score the control by hand**
 
 Read every reply in full. These rules are fixed before any reply is read:
 
@@ -761,6 +773,8 @@ Read every reply in full. These rules are fixed before any reply is read:
 If the control passes in 4 or 5 reps, planners already do this unprompted: skip Steps 4-8, change no skill text, and record the five results in the completion notes. Otherwise go on.
 
 - [ ] **Step 4: Edit the skill**
+
+> Skipped: Step 3's rule. The RED control passed 5 of 5, so no skill text changed; nothing is deferred.
 
 **Edit `skills/writing-plans/SKILL.md`: replace**
 
@@ -788,6 +802,8 @@ Please review it before anything runs."**
 
 - [ ] **Step 5: Record the change in NOTICE**
 
+> Skipped: Step 3's rule. The RED control passed 5 of 5, so no skill text changed; nothing is deferred.
+
 The plan-review stage is a part that NOTICE says was adopted from upstream, and the entry check is an original work. NOTICE records the plan-review addition with the reporter, as it records prepare-handoff's addition to the same stage in a bullet of its own.
 
 **Edit `NOTICE`: replace**
@@ -814,6 +830,8 @@ The plan-review stage is a part that NOTICE says was adopted from upstream, and 
 
 - [ ] **Step 6: Run the GREEN arm: five reps**
 
+> Skipped: Step 3's rule. The RED control passed 5 of 5, so no skill text changed; nothing is deferred.
+
 ```bash
 uv run --no-project --python 3.13 python /tmp/plan54-micro/build_prompt.py skills/writing-plans/SKILL.md /tmp/plan54-micro/prompt-green.md
 diff /tmp/plan54-micro/prompt-control.md /tmp/plan54-micro/prompt-green.md
@@ -831,6 +849,8 @@ for f in /tmp/plan54-micro/green-*.json; do echo "== $f"; uv run --no-project --
 
 - [ ] **Step 7: Score GREEN by hand**
 
+> Skipped: Step 3's rule. The RED control passed 5 of 5, so no skill text changed; nothing is deferred.
+
 Read every reply under Step 3's rules. GREEN passes when:
 
 - at least 4 of 5 reps PASS;
@@ -840,6 +860,8 @@ Read every reply under Step 3's rules. GREEN passes when:
 Also record whether the passing reps converge on one rerun command. Five different command shapes mean that the wording does not bind. If GREEN fails, revise the Step 4 wording once, rebuild `prompt-green.md` and rerun the five reps. If it fails again, stop and bring both rounds to your human partner.
 
 - [ ] **Step 8: Check and commit**
+
+> Skipped: Step 3's rule. The RED control passed 5 of 5, so no skill text changed; nothing is deferred.
 
 ```bash
 bash build/run_commit_lints.sh
@@ -855,3 +877,68 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
 Record both arms in the completion notes: each rep's verdict with a one-line quote of the deciding text, the costs and the date.
+
+## Completion notes
+
+**Task 1, Step 5 (2026-10-18, at `52b72ff`).** The run against this repository printed:
+
+```text
+overlapping files:
+  live plans: 51-claude-code-drift-automation.md (9 paths); 52-write-with-asd-ste100.md (27 paths); 53-agent-skills-portability.md (31 paths); 54-entry-check-file-overlaps.md (4 paths)
+  shared:
+    CLAUDE.md: 52-write-with-asd-ste100.md, 53-agent-skills-portability.md
+    NOTICE: 52-write-with-asd-ste100.md, 53-agent-skills-portability.md, 54-entry-check-file-overlaps.md
+    README.md: 52-write-with-asd-ste100.md, 53-agent-skills-portability.md
+    build/cc_guide/conformance.toml: 52-write-with-asd-ste100.md, 53-agent-skills-portability.md
+    skills/writing-plans/SKILL.md: 53-agent-skills-portability.md, 54-entry-check-file-overlaps.md
+```
+
+Every known overlap is listed, and plan 45 is not. `build/cc_guide/conformance.toml` (plans 52 and 53) is an overlap that the 2026-10-18 hand check did not name. Plan 52's count includes seven `KIT/…` scratch-kit paths and two kit-relative `rules/*.md` markers. Plan 53's count includes the templated `specs/red-baseline-description-openings-<run-date>.md`. The report cannot see two things: `skills/writing-plans/scripts/entry_check.py`, which plan 53's Task 10 changes through a code block, and plan 53's new root file `LICENSE-andorra`. With `--plan` on a copy saved as `/tmp/plan54-copy.md`, the copy came last with 4 paths and shared all four with plan 54. A run took 0.45 s.
+
+**Task 2, the RED control (2026-10-18).** Five reps of `claude -p --model opus --tools ""` (Claude Code 2.1.302, model `claude-opus-5-5`) ran from `/tmp/plan54-micro/run`. Each was one decision-only turn with the unedited SKILL.md body inline. All five PASS. Each reran `entry_check.py` before the plan-review message and put a shared-files line in that message:
+
+1. PASS: "The run at session start happened before plan 54 existed, so its `shared: none` doesn't cover the files this plan touches."
+2. PASS: "That first run also couldn't compare files: it reported `shared: none` while my plan had no Files lines."
+3. PASS: "I ran `entry_check.py` before plan 54 existed, so its `shared: none` couldn't compare plan 54's files with anything."
+4. PASS: "Its `shared: none` was worked out without plan 54's Files lines, so it couldn't have caught any overlap with them."
+5. PASS: "When I first ran `entry_check.py`, plan 54 didn't exist yet. So its `shared: none` result couldn't check whether my files overlap with plans 52 and 53."
+
+All five also rechecked the id for a collision. The five reps cost $1.61, and a one-line smoke test cost $0.23. Under Step 3's rule (4 or 5 of 5), Steps 4-8 were skipped, so `skills/writing-plans/SKILL.md` and `NOTICE` are unchanged. The reps keyed on Task 1's own output, a `shared: none` computed before their plan existed. Each rep saw that output next to the question. A long session, where the entry output is many turns back, was not tested.
+
+**Process.** The plan was executed inline (executing-plans) in the session that wrote it, without the Execution Handoff's separate plan-review stop. The session brief's done-criteria called for the implementation. The owner chose a PR, and the PR is the review point.
+
+**Final review (2026-10-18, base `456e3fb`, head `52b72ff`).** Two seats ran. The code-reviewer (Opus) returned "With fixes". Codex ran with `-m gpt-6-astra -c model_reasoning_effort=xhigh`, the owner's per-run choice because the config still names `gpt-6.1-sol`, exited 0 on its first launch and returned one P2 (`Codex reviewed 52b72ff`). The dispositions, all in `acb0047` unless stated:
+
+- Codex P2: two differently named plans with identical text on a ref shared one blob read, so the second dropped out. Fixed: a blob's text is cached and added to every plan name.
+- Review 1: NOTICE no longer describes the script fully. Not applied, because the owner had ruled to leave NOTICE as it is (D8).
+- Review 2: a plan retired on an unmerged branch dropped out. Fixed per D5, with tests for a side-branch retirement, for `origin/HEAD` naming the default branch, and for the fallback when no default branch exists.
+- Review 3: scratch-kit paths were counted. Fixed per D6. Plan 52's kit-relative `rules/short.md` and `rules/listed.md` still count, because `rules/` exists at the root.
+- Review 4: `- Rename:`, `- Delete:` and `- Move:` lines are not read. Deferred per D7.
+- Review 5: a new root entry is missed until some ref or worktree has it. Accepted as the cost of D6.
+- Review 6: an `OSError` on a vanished or dangling worktree copy crashed the report. Fixed: such a copy adds no paths.
+- Review 7: the docstring understated the accepted forms and the exit-2 cases. Fixed.
+- Review 8: a line that starts with an inline triple-backtick span opened a fence. Fixed.
+- Review 9: some behaviour was untested. Tests added for tilde fences, a heading Edit line, the `./`, `/`, `~` and whitespace spellings, `(0 paths)`, and id order with an id-less `--plan` file last.
+- Review 10: the cross-plan notes, below.
+
+**After the review fixes (`acb0047`), the real run printed:**
+
+```text
+overlapping files:
+  live plans: 51-claude-code-drift-automation.md (9 paths); 52-write-with-asd-ste100.md (20 paths); 53-agent-skills-portability.md (31 paths); 54-entry-check-file-overlaps.md (4 paths); 54-test-suite-registry.md (9 paths)
+  shared:
+    CLAUDE.md: 52-write-with-asd-ste100.md, 53-agent-skills-portability.md, 54-test-suite-registry.md
+    NOTICE: 52-write-with-asd-ste100.md, 53-agent-skills-portability.md, 54-entry-check-file-overlaps.md
+    README.md: 52-write-with-asd-ste100.md, 53-agent-skills-portability.md
+    build/CLAUDE.md: 51-claude-code-drift-automation.md, 54-test-suite-registry.md
+    build/cc_guide/conformance.toml: 52-write-with-asd-ste100.md, 53-agent-skills-portability.md
+    skills/writing-plans/SKILL.md: 53-agent-skills-portability.md, 54-entry-check-file-overlaps.md
+```
+
+Plan 52's count fell from 27 to 20 when D6 dropped its seven `KIT/…` paths.
+
+**Cross-plan notes.**
+
+- **Plan id 54 collides.** `54-test-suite-registry.md` (branch `claude/sweet-shamir-525703`, worktree `exciting-ritchie-bd33d6`) was committed while this plan was in its final review, and the `plan ids:` field reports the collision. It is the owner's call, settled at integration.
+- **This plan names two files that no commit here edits.** Its Task 2 names `skills/writing-plans/SKILL.md` and `NOTICE`, but the edits to them were skipped. Under D5 the plan stays live until its branch merges, so until then the report lists both files as shared with plans 52 and 53.
+- **Plan 53's suite count is stale.** Plan 53's Task 10 Step 6 records 27 tests for the writing-plans suite. After this branch merges the suite has 49. Plan 53 compares against "the count it had before this task", so its executor should take the count at that point.
