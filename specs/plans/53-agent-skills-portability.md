@@ -14,11 +14,11 @@
 
 - **The spec's status block is not edited.** "The status-header change that records this is being landed separately, so do not edit that header." (brief; D1) It landed as `3bb71df`. Task 1's amendments start below it.
 - **Push or merge nothing without the owner's go-ahead** (brief; D2).
-- **The worktree.** Execute in this plan's worktree, `/Users/lowell/Projects/agent-skills/.claude/worktrees/intelligent-yonath-9539a3`, on branch `claude/intelligent-yonath-9539a3`, or in a worktree cut from `main` after this plan merges. Never in the shared checkout: the plan edits skills the executing session loads (writing-plans, finishing-a-development-branch, writing-skills), and `~/.claude/skills` resolves to the main checkout (spec Sequencing, "Work in a worktree"). Start the execution session with the worktree as its working directory. Every command below runs from the worktree root, and paths outside the repo are absolute. Never `cd`: a Bash `cd` persists across calls and moves the session.
+- **The worktree.** Execute in a worktree whose branch holds this file's latest commit on `claude/intelligent-yonath-9539a3`: this plan's own worktree (`/Users/lowell/Projects/agent-skills/.claude/worktrees/intelligent-yonath-9539a3`), a worktree cut from that branch, or one cut from `main` once the owner fast-forwards or merges the branch into it. A session started from `main` before then lacks this file. Never in the shared checkout: the plan edits skills the executing session loads (writing-plans, finishing-a-development-branch, writing-skills), and `~/.claude/skills` resolves to the main checkout (spec Sequencing, "Work in a worktree"). Start the execution session with the worktree as its working directory. Every command below runs from the worktree root, and paths outside the repo are absolute. Never `cd`: a Bash `cd` persists across calls and moves the session.
 - **Order.** Task 1 (amendments), Task 2 (Stage D's RED baseline, before any edit to writing-skills), Stage A (Tasks 3–7), Stage B (Tasks 8–9), Stage C (Tasks 10–13), Task 14 (Stage D's edit), Task 15 (acceptance). Each task leaves every gate green at its commit, so Stage A's rules are "green on arrival" (Sequencing) task by task.
 - **Gates before every commit.** `bash build/run_commit_lints.sh` runs the eight commit lints and ends `commit lints passed`. Its `STALE` lines never fail it.
 - **Test counts are deltas** (+N), never absolute totals. Each expected summary line below is what the replay printed on top of `d70e0b3`; on a later base the absolute counts may differ, the deltas may not.
-- **CLAUDE.md stays under 200 lines** (check `claude-md-size`, which fails at 200). It has 199 at `d70e0b3`, and this plan adds none: Task 7 names `--strict` in an existing comment (DF20), and Tasks 8 and 9 extend existing lines. Plan 52 (write-with-asd-ste100, written in parallel) adds 4 and must make room itself; plan 51 (drift automation) leaves the file alone. If another plan lands first and the check fails, stop and ask the owner where to make room (the conformance spec's rule R6 P1: trim elsewhere, never raise the limit).
+- **CLAUDE.md stays under 200 lines** (check `claude-md-size`, which fails at 200). It has 199 at `d70e0b3`, and this plan adds none: Task 7 names `--strict` in an existing comment (Q3 (a)), and Tasks 8 and 9 extend existing lines. Plan 52 (write-with-asd-ste100, written in parallel) adds 4 and must make room itself; plan 51 (drift automation) leaves the file alone. If another plan lands first and the check fails, stop and ask the owner where to make room (the conformance spec's rule R6 P1: trim elsewhere, never raise the limit).
 - **A `# cc-guide:` citation stays last.** Fifteen SKILL.md files end their frontmatter with a `# cc-guide:` comment, the citation form that the drift-automation spec's R4 puts last. Two frontmatter edits land in such files, Task 4's metadata block (seven superpowers skills) and Task 12's `compatibility` line (`bayesian-workflow`, `track-model-experiments`, `writing-plans`), and both helper scripts insert above the citation.
 - **Values copied verbatim from the spec:**
   - R1.1: `SPEC_KEYS = {name, description, license, compatibility, metadata, allowed-tools}`; `HOST_KEYS = {when_to_use, model, effort, context, disable-model-invocation}`, plus `agent` if plan review answers Q1 (the `agent` key; Planning record) with (a).
@@ -69,7 +69,7 @@
 
 - **Prototype.** Every change was built in task order on a throwaway clone of `e9325de` (`~/.cache/agent-skills/scratch/portability-proto`), each RED run before its implementation.
 - **Patch replay.** On a second fresh clone of `e9325de`, every patch applied in plan order: each RED came out as its step predicts, and all eight commit lints passed after every task. The final tree matched the prototype's except for one stale register comment, which Task 3 now drops.
-- **Re-base.** On `d70e0b3` all 111 patches matched exactly once again. Two were re-anchored for plan 50: Task 4's NOTICE entry now follows plan 50's entry, and Task 7's CLAUDE.md change extends a comment instead of adding a line (DF20).
+- **Re-base.** On `d70e0b3` all 111 patches matched exactly once again. Two were re-anchored for plan 50: Task 4's NOTICE entry now follows plan 50's entry, and Task 7's CLAUDE.md change extends a comment instead of adding a line (Q3 (a)).
 - **Plan-text replay** (on `d70e0b3`, with this file committed on top). A script lifted every edit and create block out of this file, applied them in task and step order, ran each step's command as written (with the scratch paths mapped into a sandbox), and compared each output with the expectation the step states. It skipped only the micro-test reps of Tasks 2 and 14 and the two commits that record their results (Tasks 2 and 13). Every RED and GREEN count, lint report and helper output matched; each task's commit left the tree clean, so every `git add` list is complete; and after Task 12 the tree equalled the patch replay's, outside `specs/`.
 - **Suites.** The `build/` suite went from 1083 passed to 1121 (+38: +31 frontmatter, +7 provenance). Its only failures, before and after, are the 4 `test_verify_citations.py` tests that need the gitignored `build/.scratch/`. The nine changed skills' script suites kept their counts.
 - **Execution proof.** Task 13's script: all 17 scripts exited 0 under Python 3.14.0; inside the hostile project the headered copy exited 0 and the header-less control exited 1 under CPython 3.10.19.
@@ -97,7 +97,7 @@
 - **DF17. NOTICE** gains an entry for each superpowers file this plan changes: Task 4 (metadata, writing-skills' key list), Task 11 (writing-plans' and finishing-a-development-branch's invocations), Task 12 (their `compatibility`), Task 14 (writing-skills' note).
 - **DF18. Validation 5 runs before merge,** against a scratch HOME holding an `install.py codex --copy` of the branch's skills, since the real `~/.agents/skills` links the main checkout. Gemini reads the same directory.
 - **DF19. The Discovery Workflow item stays in the backlog:** Validation 6, even as amended, lets Stage D change only description guidance, and that rewording needs its own micro-test.
-- **DF20. Task 7 names `--strict` in the frontmatter lint's comment instead of adding a command line,** so CLAUDE.md stays at 199 lines; plan 50 used the last free lines. The comment is R1.9's "one line on when to use it" and carries the invocation. If wrong: add the command line back and trim a line elsewhere, which the owner picks (R6 P1).
+- **DF20. The register's Stage D debts move to a rewrite item.** `writing-skills-guide-gaps` and `writing-skills-late-critical-headings` are `tracked_in` "portability Stage D", and `writing-skills-tdd-for-docs` revisits "When portability Stage D revises writing-skills". R2.3 allows Stage D a note and at most one checklist line, so it closes none of those gaps. Task 14 re-points both `tracked_in` values to a new deferred item, "Split and rewrite writing-skills against the guide", which takes in the spec's out-of-scope "Splitting writing-skills"; sets the deviation's revisit to that rewrite; and, where the gap's reason says Stage D verifies or drops writing-skills' `@` loading claim, says the rewrite does. If wrong: leave all three on Stage D, which will have finished.
 
 ### Open questions for plan review
 
@@ -105,7 +105,9 @@
   - (a) Allow it. Amendment A1 adds it to R1.1; Tasks 3 and 4 put it in `HOST_KEYS`, its test and writing-skills' key list; `--strict` flags it like the other host keys. **Recommended:** the guide documents it, and the item's own closure condition pairs allowing it with the key list and tests, as Tasks 3 and 4 do.
   - (b) Record a deviation. Drop A1; Task 3's `HOST_KEYS` and test omit `agent`, writing-skills' sentence drops its `agent` clause, and the register gains a `[[exception]]` with `type = 'deviation'`, `id = 'skill-agent-key-rejected'`, `sections = ['skills.frontmatter']`, `artifacts = ['skills/*/SKILL.md']`, guide `A context: fork skill may name its agent type with agent.` and reason `No skill forks to a named agent, so the lint keeps the key out until one needs it.`
 - **Q2. Validation 6 against Stage A's writing-skills edits.** Validation 6 says writing-skills changes "only as R2.3's outcome branch allows", but Stage A must update writing-skills' frontmatter key list (`license` required, `disable-model-invocation` and `agent` accepted), or the skill misstates the lint. (a) Amend Validation 6 to cover R2's description guidance only (A10). **Recommended.** (b) Leave writing-skills' key list stale.
-- **Q3. The register's Stage D debts.** `writing-skills-guide-gaps` and `writing-skills-late-critical-headings` are `tracked_in` "portability Stage D", and `writing-skills-tdd-for-docs` revisits "When portability Stage D revises writing-skills". R2.3 allows Stage D a note and at most one checklist line, so it closes none of those gaps. (a) In Task 14, re-point both `tracked_in` values to a new deferred item, "Split and rewrite writing-skills against the guide", which takes in the spec's out-of-scope "Splitting writing-skills"; set the deviation's revisit to that rewrite; and where the gap's reason says Stage D verifies or drops writing-skills' `@` loading claim, say the rewrite does. **Recommended.** (b) Leave them pointing at a finished stage.
+- **Q3. Where `--strict` goes in CLAUDE.md** (R1.9; the conformance spec's rule R6 P1 leaves the room to the owner). Plan 50 left CLAUDE.md at 199 lines and the `claude-md-size` check fails at 200, so R1.9's planned command line no longer fits.
+  - (a) Name it in the existing comment: Task 7 extends the frontmatter lint's comment with `; add --strict to the first, a report and not a gate, when preparing a claude.ai upload or a spec-only validator run`, and adds no line. **Recommended:** nothing else in CLAUDE.md moves, and that comment is R1.9's "one line on when to use it".
+  - (b) Add `uv run --python 3.13 --with pyyaml python build/check_frontmatter.py --strict` as its own line and remove a line the owner names; Task 7 then makes both edits.
 - **Q4. R2.3's Codex figures.** R2.3 names the 2026-10-03 cut (156–164 characters, 93 skills, Codex 0.154); on 2026-10-18 it is 316–320, 105 skills, Codex 0.163. (a) Amend R2.3 (A3): the note carries the cut re-measured when it is written (Task 14 Step 1), with the old figures kept as history. **Recommended.** (b) Write the spec's figures as they stand.
 
 The other amendments (A2, A4–A9, A11) correct counts and facts the spec states as of 2026-10-03; they are approved with the plan.
@@ -137,7 +139,7 @@ The other amendments (A2, A4–A9, A11) correct counts and facts the spec states
 
 ### CLAUDE.md line budget
 
-199 lines at `d70e0b3` (plan 50 added 4), and still 199 after this plan: Task 7 extends a comment instead of adding a line (DF20), and Tasks 8 and 9 extend the provenance paragraph and a provenance bullet. Plan 52 (write-with-asd-ste100) adds 4, so it must make room or the owner settles the order at integration.
+199 lines at `d70e0b3` (plan 50 added 4), and still 199 after this plan: Task 7 extends a comment instead of adding a line (Q3 (a)), and Tasks 8 and 9 extend the provenance paragraph and a provenance bullet. Plan 52 (write-with-asd-ste100) adds 4, so it must make room or the owner settles the order at integration.
 
 ---
 
@@ -1416,11 +1418,13 @@ git commit -m "feat(build): warn on a SKILL.md body over 500 lines (portability 
 **Files:**
 - Modify: `build/check_frontmatter.py` (new `RESERVED_NAME_WORDS`, `strict_violations`; `main` takes `--strict`; docstring)
 - Test: `build/test_check_frontmatter.py` (+2)
-- Modify: `CLAUDE.md` (Commands: the frontmatter lint's comment names `--strict`; no line added, DF20)
+- Modify: `CLAUDE.md` (Commands: the frontmatter lint's comment names `--strict`; no line added, Q3 (a))
 
 **Interfaces:**
 - Consumes: Task 3's `HOST_KEYS`.
 - Produces: `strict_violations(skill_dir: Path) -> list[str]`; `main(argv: list[str] | None = None) -> int`.
+
+Under Q3 (b): replace Step 3's CLAUDE.md edit with the command line `uv run --python 3.13 --with pyyaml python build/check_frontmatter.py --strict`, added after the frontmatter lint's command, and remove the line the owner named; `wc -l CLAUDE.md` then still prints 199.
 
 - [ ] **Step 1: Write the failing tests.**
 
@@ -3528,7 +3532,7 @@ git commit -m "docs(specs): record plan 53's execution proof (portability R3.8)"
 
 ---
 
-### Task 14: Stage D's edit (R2.3) and the register (Q3)
+### Task 14: Stage D's edit (R2.3) and the register (DF20)
 
 **Files:**
 - Modify: `skills/writing-skills/SKILL.md` (the Token Efficiency `description` bullet; on the at-most-3/5 branch, also the checklist), `NOTICE`, `build/cc_guide/conformance.toml` (three exceptions)
@@ -3656,7 +3660,7 @@ Run `uv run --no-project --python 3.13 --with pyyaml python /tmp/portability-sta
 ```
 
   Then build the GREEN prompt from the edited tree: `uv run --no-project --python 3.13 python /tmp/portability-stage-d/kit/build_prompt.py . /tmp/portability-stage-d/green-prompt.txt`; run `/tmp/portability-stage-d/kit/run_reps.sh /tmp/portability-stage-d/green-prompt.txt /tmp/portability-stage-d/green 5` in the background; read with `show_reps.py`, under Task 2's rule. At least 4/5 must pass (R2.3). Record the arm in the red-baseline file under a `## GREEN` heading, in the Result table's form, and update its Status line. If fewer than 4/5 pass, stop and ask the owner: R2.3 sets no fallback.
-- [ ] **Step 4: The register** (Q3 (a)). Stage D closes none of the writing-skills gaps, so their pointers move to the deferred item that completion logs.
+- [ ] **Step 4: The register** (DF20). Stage D closes none of the writing-skills gaps, so their pointers move to the deferred item that completion logs.
 
 **Edit `build/cc_guide/conformance.toml`: replace**
 
@@ -3789,6 +3793,6 @@ Task 13 records the log here.
 - **Deferred items to log** (the spec's Out of scope, with two changes):
   - Trigger-eval suites; distribution channels; Codex adapters for `/deferred`, `/fix-issue` and `/license-audit`; tables of contents for long `references/` files; a versioning policy; license travel for single-file agents: as the spec words them.
   - Skill security scanning: "The repo has no CI" no longer holds; `.github/workflows/lints.yml` (plan 41's advisory CI) runs the commit lints only.
-  - "Split and rewrite writing-skills against the guide", in place of the spec's "Splitting writing-skills": split the body below 500 lines (R1.7's warning) and close the register gaps `writing-skills-guide-gaps` and `writing-skills-late-critical-headings`, which Task 14 points at it (Q3), verifying or dropping the skill's `@` loading claim on the way.
+  - "Split and rewrite writing-skills against the guide", in place of the spec's "Splitting writing-skills": split the body below 500 lines (R1.7's warning) and close the register gaps `writing-skills-guide-gaps` and `writing-skills-late-critical-headings`, which Task 14 points at it (DF20), verifying or dropping the skill's `@` loading claim on the way.
 - **Backlog to tick:** "`build/check_frontmatter.py`'s SKILL.md key set" (section cc-guide-files-backlog), done in plan 53 under Q1's answer. Add a progress note to "Gate or make manual-only the four ungated side-effecting skills" (section 35-claude-code-guide-conformance): Stage A landed, and a manual-only skill now needs `agents/openai.yaml` with `policy.allow_implicit_invocation: false` (R1.6).
 - **Owner steps after merge:** refresh each wiki's installed llm-wiki scripts (DF15).
