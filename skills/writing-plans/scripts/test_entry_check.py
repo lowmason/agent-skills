@@ -44,6 +44,16 @@ def check(cwd: Path, *args: str, env: dict[str, str] | None = None) -> subproces
     )
 
 
+def plan(*lines: str) -> str:
+    '''A plan's text: a title, then the given lines.'''
+    return '\n'.join(['# Plan', '', *lines, ''])
+
+
+def overlaps(out: str) -> list[str]:
+    '''The lines of the report's last field, overlapping files:, after its header.'''
+    return out.split('overlapping files:\n', 1)[1].splitlines()
+
+
 @pytest.fixture
 def repo(tmp_path: Path) -> Path:
     root = tmp_path / 'repo'
@@ -51,14 +61,17 @@ def repo(tmp_path: Path) -> Path:
     git(root, 'init', '-q')
     write(root, 'specs/plans/completed/1-first.md', '# Plan 1\n')
     write(root, 'specs/plans/2-second.md', '# Plan 2\n')
-    commit(root, 'plans 1 and 2')
+    write(root, 'src/app.py', '')
+    write(root, 'tests/test_app.py', '')
+    commit(root, 'plans 1 and 2, and the files plans name')
     return root
 
 
-def test_without_a_spec_only_plan_ids_print(repo):
+def test_without_a_spec_plan_ids_then_overlapping_files_print(repo):
     done = check(repo)
     assert done.returncode == 0
     assert done.stdout.startswith('plan ids:\n')
+    assert '\noverlapping files:\n' in done.stdout
     assert 'status:' not in done.stdout
 
 
@@ -166,3 +179,312 @@ def test_repo_without_plans_starts_at_1(tmp_path):
     out = check(root).stdout
     assert '  highest: none' in out
     assert '  next free: 1' in out
+
+
+def test_a_path_two_live_plans_name_is_shared(repo):
+    write(repo, 'specs/plans/2-second.md', plan('- Modify: `src/app.py`', '- Test: `tests/test_app.py`'))
+    commit(repo, 'plan 2 names its files')
+    git(repo, 'checkout', '-q', '-b', 'side')
+    write(repo, 'specs/plans/3-third.md', plan('- Modify: `src/app.py`', '- Create: `src/new.py`'))
+    commit(repo, 'plan 3 on a side branch')
+    git(repo, 'checkout', '-q', 'main')
+    assert overlaps(check(repo).stdout) == [
+        '  live plans: 2-second.md (2 paths); 3-third.md (2 paths)',
+        '  shared:',
+        '    src/app.py: 2-second.md, 3-third.md',
+    ]
+
+
+def test_a_plan_retired_on_the_default_branch_is_not_live(repo):
+    write(repo, 'specs/plans/2-second.md', plan('- Modify: `src/app.py`'))
+    commit(repo, 'plan 2 names src/app.py')
+    git(repo, 'branch', 'planning')
+    git(repo, 'mv', 'specs/plans/2-second.md', 'specs/plans/completed/2-second.md')
+    write(repo, 'specs/plans/3-third.md', plan('- Modify: `src/app.py`'))
+    commit(repo, 'retire plan 2; plan 3 names src/app.py too')
+    assert overlaps(check(repo).stdout) == ['  live plans: 3-third.md (1 path)', '  shared: none']
+
+
+def test_spans_in_parentheses_name_no_paths(repo):
+    write(repo, 'specs/plans/2-second.md', plan('- Modify: `src/app.py` (`main`, and `src/util.py` for its helper)'))
+    write(repo, 'specs/plans/3-third.md', plan('- Modify: `src/app.py`, `src/util.py`'))
+    commit(repo, 'two plans')
+    assert overlaps(check(repo).stdout) == [
+        '  live plans: 2-second.md (1 path); 3-third.md (2 paths)',
+        '  shared:',
+        '    src/app.py: 2-second.md, 3-third.md',
+    ]
+
+
+def test_line_suffixes_drop_and_a_qualified_modify_counts(repo):
+    write(repo, 'specs/plans/2-second.md', plan(
+        '- Modify: `src/app.py:10-20`',
+        '- Modify, on one branch only: `src/flag.py`',
+    ))
+    write(repo, 'specs/plans/3-third.md', plan('- Test: `src/app.py:7`', '- Create: `src/flag.py`'))
+    commit(repo, 'two plans')
+    assert overlaps(check(repo).stdout) == [
+        '  live plans: 2-second.md (2 paths); 3-third.md (2 paths)',
+        '  shared:',
+        '    src/app.py: 2-second.md, 3-third.md',
+        '    src/flag.py: 2-second.md, 3-third.md',
+    ]
+
+
+def test_edit_headers_and_extract_markers_name_paths(repo):
+    write(repo, 'NOTICE', 'Notice\n')
+    write(repo, 'specs/plans/2-second.md', plan(
+        '**Edit `src/app.py`: replace the block that `src/lib/mirror.py` copies**',
+        '<!-- extract-edit: NOTICE:credits -->',
+        '<!-- extract-file: src/new.py -->',
+    ))
+    write(repo, 'specs/plans/3-third.md', plan('- Modify: `src/app.py`, `NOTICE`, `src/new.py`, `src/lib/mirror.py`'))
+    commit(repo, 'two plans and a NOTICE')
+    assert overlaps(check(repo).stdout) == [
+        '  live plans: 2-second.md (3 paths); 3-third.md (4 paths)',
+        '  shared:',
+        '    NOTICE: 2-second.md, 3-third.md',
+        '    src/app.py: 2-second.md, 3-third.md',
+        '    src/new.py: 2-second.md, 3-third.md',
+    ]
+
+
+def test_fenced_code_names_no_paths(repo):
+    write(repo, 'specs/plans/2-second.md', plan(
+        '````markdown',
+        '```python',
+        '- Modify: `src/inner.py`',
+        '```',
+        '- Modify: `src/still-fenced.py`',
+        '<!-- extract-file: src/fenced-marker.py -->',
+        '````',
+        '- Modify: `src/after.py`',
+    ))
+    write(repo, 'specs/plans/3-third.md', plan(
+        '- Modify: `src/inner.py`, `src/still-fenced.py`, `src/fenced-marker.py`, `src/after.py`',
+    ))
+    commit(repo, 'a plan with nested fences')
+    assert overlaps(check(repo).stdout) == [
+        '  live plans: 2-second.md (1 path); 3-third.md (4 paths)',
+        '  shared:',
+        '    src/after.py: 2-second.md, 3-third.md',
+    ]
+
+
+def test_a_path_without_a_slash_counts_only_at_a_root(repo):
+    write(repo, 'NOTICE', 'Notice\n')
+    write(repo, 'specs/plans/2-second.md', plan('- Modify: the 13 `SKILL.md` files, `NOTICE`, `LICENSE-extra`'))
+    write(repo, 'specs/plans/3-third.md', plan('- Modify: every `SKILL.md`, `NOTICE`, `LICENSE-extra`'))
+    commit(repo, 'two plans and a NOTICE')
+    git(repo, 'checkout', '-q', '-b', 'side')
+    write(repo, 'LICENSE-extra', 'License\n')
+    commit(repo, 'a root file on a side branch only')
+    git(repo, 'checkout', '-q', 'main')
+    assert overlaps(check(repo).stdout) == [
+        '  live plans: 2-second.md (2 paths); 3-third.md (2 paths)',
+        '  shared:',
+        '    LICENSE-extra: 2-second.md, 3-third.md',
+        '    NOTICE: 2-second.md, 3-third.md',
+    ]
+
+
+def test_a_plans_copies_are_unioned(repo, tmp_path):
+    write(repo, 'specs/plans/2-second.md', plan('- Modify: `src/a.py`'))
+    write(repo, 'specs/plans/3-third.md', plan('- Modify: `src/b.py`'))
+    commit(repo, 'plans 2 and 3')
+    other = tmp_path / 'other'
+    git(repo, 'worktree', 'add', '-q', '-b', 'wt', str(other))
+    write(other, 'specs/plans/3-third.md', plan('- Modify: `src/a.py`'))
+    assert overlaps(check(repo).stdout) == [
+        '  live plans: 2-second.md (1 path); 3-third.md (2 paths)',
+        '  shared:',
+        '    src/a.py: 2-second.md, 3-third.md',
+    ]
+
+
+def test_a_plan_given_with_plan_is_compared(repo, tmp_path):
+    write(repo, 'specs/plans/2-second.md', plan('- Modify: `src/app.py`'))
+    commit(repo, 'plan 2')
+    draft = write(tmp_path, 'drafts/4-draft.md', plan('- Modify: `src/app.py`'))
+    assert overlaps(check(repo, '--plan', str(draft)).stdout) == [
+        '  live plans: 2-second.md (1 path); 4-draft.md (1 path)',
+        '  shared:',
+        '    src/app.py: 2-second.md, 4-draft.md',
+    ]
+
+
+def test_a_live_plan_given_with_plan_does_not_overlap_itself(repo):
+    write(repo, 'specs/plans/2-second.md', plan('- Modify: `src/app.py`'))
+    commit(repo, 'plan 2')
+    out = check(repo, '--plan', 'specs/plans/2-second.md').stdout
+    assert overlaps(out) == ['  live plans: 2-second.md (1 path)', '  shared: none']
+
+
+def test_missing_plan_exits_2(repo):
+    done = check(repo, '--plan', 'specs/plans/nope.md')
+    assert done.returncode == 2
+    assert 'no such plan: specs/plans/nope.md' in done.stderr
+
+
+def test_plan_that_is_a_directory_exits_2(repo):
+    done = check(repo, '--plan', 'specs')
+    assert done.returncode == 2
+    assert 'not a file: specs' in done.stderr
+
+
+def test_repo_without_plans_has_no_live_plans(tmp_path):
+    root = tmp_path / 'empty'
+    root.mkdir()
+    git(root, 'init', '-q')
+    write(root, 'README.md', '# Empty\n')
+    commit(root, 'readme only')
+    assert overlaps(check(root).stdout) == ['  live plans: none', '  shared: none']
+
+
+def test_a_plan_retired_only_on_a_side_branch_stays_live(repo):
+    write(repo, 'specs/plans/2-second.md', plan('- Modify: `src/app.py`'))
+    commit(repo, 'plan 2 names src/app.py')
+    git(repo, 'checkout', '-q', '-b', 'execution')
+    git(repo, 'mv', 'specs/plans/2-second.md', 'specs/plans/completed/2-second.md')
+    commit(repo, 'retire plan 2 before its branch merges')
+    git(repo, 'checkout', '-q', 'main')
+    write(repo, 'specs/plans/3-third.md', plan('- Modify: `src/app.py`'))
+    commit(repo, 'plan 3 names src/app.py too')
+    assert overlaps(check(repo).stdout) == [
+        '  live plans: 2-second.md (1 path); 3-third.md (1 path)',
+        '  shared:',
+        '    src/app.py: 2-second.md, 3-third.md',
+    ]
+
+
+def test_the_default_branch_is_the_one_origin_head_names(repo):
+    write(repo, 'specs/plans/2-second.md', plan('- Modify: `src/app.py`'))
+    write(repo, 'specs/plans/3-third.md', plan('- Modify: `src/app.py`'))
+    commit(repo, 'plans 2 and 3 name src/app.py')
+    git(repo, 'checkout', '-q', '-b', 'trunk')
+    git(repo, 'mv', 'specs/plans/2-second.md', 'specs/plans/completed/2-second.md')
+    commit(repo, 'retire plan 2 on trunk')
+    git(repo, 'update-ref', 'refs/remotes/origin/trunk', 'HEAD')
+    git(repo, 'symbolic-ref', 'refs/remotes/origin/HEAD', 'refs/remotes/origin/trunk')
+    git(repo, 'checkout', '-q', 'main')
+    assert overlaps(check(repo).stdout) == ['  live plans: 3-third.md (1 path)', '  shared: none']
+
+
+def test_without_a_default_branch_a_retired_copy_anywhere_retires(tmp_path):
+    root = tmp_path / 'develop-only'
+    root.mkdir()
+    git(root, 'init', '-q', '-b', 'develop')
+    write(root, 'src/app.py', '')
+    write(root, 'specs/plans/completed/1-first.md', '# Plan 1\n')
+    write(root, 'specs/plans/2-second.md', plan('- Modify: `src/app.py`'))
+    commit(root, 'plans 1 and 2')
+    git(root, 'branch', 'planning')
+    git(root, 'mv', 'specs/plans/2-second.md', 'specs/plans/completed/2-second.md')
+    write(root, 'specs/plans/3-third.md', plan('- Modify: `src/app.py`'))
+    commit(root, 'retire plan 2 on develop')
+    assert overlaps(check(root).stdout) == ['  live plans: 3-third.md (1 path)', '  shared: none']
+
+
+def test_two_plans_with_the_same_text_on_a_ref_both_count(repo):
+    git(repo, 'checkout', '-q', '-b', 'side')
+    write(repo, 'specs/plans/3-third.md', plan('- Modify: `src/app.py`'))
+    write(repo, 'specs/plans/4-fourth.md', plan('- Modify: `src/app.py`'))
+    commit(repo, 'two plans with the same text')
+    git(repo, 'checkout', '-q', 'main')
+    assert overlaps(check(repo).stdout) == [
+        '  live plans: 2-second.md (0 paths); 3-third.md (1 path); 4-fourth.md (1 path)',
+        '  shared:',
+        '    src/app.py: 3-third.md, 4-fourth.md',
+    ]
+
+
+def test_an_unreadable_plan_copy_is_listed_with_no_paths(repo):
+    os.symlink('missing.md', repo / 'specs' / 'plans' / '5-dangling.md')
+    done = check(repo)
+    assert done.returncode == 0
+    assert overlaps(done.stdout) == ['  live plans: 2-second.md (0 paths); 5-dangling.md (0 paths)', '  shared: none']
+
+
+def test_an_inline_triple_backtick_span_opens_no_fence(repo):
+    write(repo, 'specs/plans/2-second.md', plan('```inline``` code, not a fence', '- Modify: `src/app.py`'))
+    write(repo, 'specs/plans/3-third.md', plan('- Modify: `src/app.py`'))
+    commit(repo, 'a plan with an inline triple-backtick span')
+    assert overlaps(check(repo).stdout) == [
+        '  live plans: 2-second.md (1 path); 3-third.md (1 path)',
+        '  shared:',
+        '    src/app.py: 2-second.md, 3-third.md',
+    ]
+
+
+def test_a_path_counts_only_when_its_first_part_is_at_a_root(repo):
+    write(repo, 'specs/plans/2-second.md', plan('- Create: `KIT/kit.py`, `src/app.py`'))
+    write(repo, 'specs/plans/3-third.md', plan('- Create: `KIT/kit.py`, `src/app.py`'))
+    commit(repo, 'two plans that name a scratch kit outside the repository')
+    assert overlaps(check(repo).stdout) == [
+        '  live plans: 2-second.md (1 path); 3-third.md (1 path)',
+        '  shared:',
+        '    src/app.py: 2-second.md, 3-third.md',
+    ]
+
+
+def test_tilde_fences_heading_edits_and_path_spellings(repo):
+    write(repo, 'specs/plans/2-second.md', plan(
+        '~~~text',
+        '- Modify: `src/fenced.py`',
+        '~~~',
+        '### Edit `src/app.py`',
+        '- Modify: `./src/util.py`, `/etc/hosts`, `~/notes.md`, `src/has space.py`',
+    ))
+    write(repo, 'specs/plans/3-third.md', plan('- Modify: `src/fenced.py`, `src/app.py`, `src/util.py`'))
+    commit(repo, 'a plan with a tilde fence, a heading Edit and odd spellings')
+    assert overlaps(check(repo).stdout) == [
+        '  live plans: 2-second.md (2 paths); 3-third.md (3 paths)',
+        '  shared:',
+        '    src/app.py: 2-second.md, 3-third.md',
+        '    src/util.py: 2-second.md, 3-third.md',
+    ]
+
+
+def test_plans_sort_by_id_and_a_given_plan_without_one_comes_last(repo, tmp_path):
+    write(repo, 'specs/plans/2-second.md', plan('- Modify: `src/app.py`'))
+    write(repo, 'specs/plans/10-tenth.md', plan('- Test: `tests/test_app.py`'))
+    commit(repo, 'plans 2 and 10')
+    draft = write(tmp_path, '1draft.md', plan('- Modify: `src/app.py`'))
+    assert overlaps(check(repo, '--plan', str(draft)).stdout) == [
+        '  live plans: 2-second.md (1 path); 10-tenth.md (1 path); 1draft.md (1 path)',
+        '  shared:',
+        '    src/app.py: 2-second.md, 1draft.md',
+    ]
+
+
+def test_a_root_name_git_would_quote_counts_on_a_ref(repo):
+    git(repo, 'config', 'core.quotePath', 'true')
+    write(repo, 'specs/plans/2-second.md', plan('- Modify: `café/app.py`'))
+    write(repo, 'specs/plans/3-third.md', plan('- Modify: `café/app.py`'))
+    commit(repo, 'two plans name a file in café/')
+    git(repo, 'checkout', '-q', '-b', 'side')
+    write(repo, 'café/app.py', '')
+    commit(repo, 'café/ on a side branch only')
+    git(repo, 'checkout', '-q', 'main')
+    assert overlaps(check(repo).stdout) == [
+        '  live plans: 2-second.md (1 path); 3-third.md (1 path)',
+        '  shared:',
+        '    café/app.py: 2-second.md, 3-third.md',
+    ]
+
+
+def test_a_plan_name_git_would_quote_is_read_on_a_ref(repo):
+    git(repo, 'config', 'core.quotePath', 'true')
+    write(repo, 'specs/plans/2-second.md', plan('- Modify: `src/app.py`'))
+    commit(repo, 'plan 2 names src/app.py')
+    git(repo, 'checkout', '-q', '-b', 'side')
+    write(repo, 'specs/plans/3-crème.md', plan('- Modify: `src/app.py`'))
+    commit(repo, 'plan 3 on a side branch only')
+    git(repo, 'checkout', '-q', 'main')
+    out = check(repo).stdout
+    assert '  highest: 3 — 3-crème.md (side)\n' in out
+    assert overlaps(out) == [
+        '  live plans: 2-second.md (1 path); 3-crème.md (1 path)',
+        '  shared:',
+        '    src/app.py: 2-second.md, 3-crème.md',
+    ]

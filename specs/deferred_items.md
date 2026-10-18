@@ -3873,3 +3873,17 @@ all 20 named a type.
       writing-skills' micro-test against a no-guidance control. Size: plan. Revisit if: a
       controller mishandles an exit 3, for example by dispatching the reviewer without a
       package or by re-running the same range.
+
+## 54-entry-check-file-overlaps — 2026-10-18
+- [ ] Read `- Rename:`, `- Delete:` and `- Move:` Files lines in `entry_check.py`'s
+      overlap report (final review, item 4; owner deferred it, plan 54's D7). The report
+      reads only `- Create:`, `- Modify:` and `- Test:` lines (D1). So a path that a live
+      plan renames, deletes or moves is not reported: plan 53's line 1610 renames
+      `skills/recommend-causal-design/LICENSE` that way. Adding the verbs as-is would
+      also count the skill-relative names those lines carry; the same line's `SKILL.md`,
+      `README.md` and `references/sources.md` would match the root `README.md`. The work
+      needs a rule for skill-relative names first. See
+      specs/plans/completed/54-entry-check-file-overlaps.md; touches
+      skills/writing-plans/scripts/entry_check.py (`FILES_LINE_RE`, `named_paths`) and
+      test_entry_check.py. Size: design. Revisit if: a missed overlap traces to a Rename,
+      Delete or Move line.
