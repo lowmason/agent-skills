@@ -326,3 +326,73 @@ def test_no_diagnostics_means_no_all_clear():
     steps = _steps(None)
     assert "convergence (not run)" in _one_step(steps, "No specific next step applies")
     assert not _proceeds(steps)
+
+
+def _report_and_steps(diag):
+    report = check_diagnostics(diagnostics=diag, calibration=WELL_CALIBRATED, psense=LOW_PSENSE)
+    return report, suggest_next_steps(report)
+
+
+def test_tree_depth_saturation_gets_a_step_not_the_all_clear():
+    diag = _clean_diagnostics()
+    diag["convergence"].update(all_ok=False, treedepth={"checked": True, "ok": False, "n_max": 8000, "pct": 100.0})
+    report, steps = _report_and_steps(diag)
+    step = _one_step(steps, "Tree depth hit max_tree_depth")
+    assert "100.0%" in step and "8000" in step
+    assert "treedepth saturation" in report["summary"]["convergence"]
+    assert "some parameters" not in report["summary"]["convergence"]
+    assert not _proceeds(steps)
+
+
+def test_low_e_bfmi_gets_a_step_not_the_all_clear():
+    diag = _clean_diagnostics()
+    diag["convergence"].update(all_ok=False, bfmi={"checked": True, "ok": False, "failed_chains": [0, 2]})
+    report, steps = _report_and_steps(diag)
+    step = _one_step(steps, "E-BFMI is low")
+    assert "chain(s) 0, 2" in step and "plot_energy" in step
+    assert "low E-BFMI" in report["summary"]["convergence"]
+    assert not _proceeds(steps)
+
+
+@pytest.mark.parametrize(
+    "block, label",
+    [("treedepth", "tree depth"), ("bfmi", "E-BFMI"), ("divergences", "divergences")],
+)
+def test_a_sampler_check_that_never_ran_is_named_not_passed(block, label):
+    diag = _clean_diagnostics()
+    diag["convergence"][block] = {"checked": False}
+    report, steps = _report_and_steps(diag)
+    assert _proceeds(steps)
+    assert label in _one_step(steps, "Not checked:")
+    assert f"not checked: {label}" in report["summary"]["convergence"]
+
+
+def test_a_missing_sampler_block_counts_as_not_checked():
+    diag = _clean_diagnostics()
+    del diag["convergence"]["treedepth"]
+    assert "tree depth" in _one_step(_steps(diag), "Not checked:")
+
+
+def test_a_sampler_block_without_a_checked_key_counts_as_checked():
+    # A diagnostics.json written before checked existed.
+    diag = _clean_diagnostics()
+    diag["convergence"]["treedepth"] = {"ok": True, "n_max": 0, "pct": 0.0}
+    steps = _steps(diag)
+    assert len(steps) == 1 and _proceeds(steps), steps
+
+
+def test_an_unchecked_divergence_count_is_not_reported_as_zero():
+    diag = _clean_diagnostics()
+    diag["convergence"]["divergences"] = {"checked": False}
+    assert "no divergences" not in check_diagnostics(diagnostics=diag)["summary"]["convergence"]
+
+
+def test_the_convergence_summary_names_parameters_and_sampler_flags():
+    diag = _clean_diagnostics()
+    diag["convergence"].update(
+        all_ok=False,
+        rhat={"ok": False, "max": 1.02, "problematic_params": ["a"]},
+        treedepth={"checked": True, "ok": False, "n_max": 4000, "pct": 100.0},
+    )
+    report, _ = _report_and_steps(diag)
+    assert "flags on a; max treedepth saturation" in report["summary"]["convergence"]

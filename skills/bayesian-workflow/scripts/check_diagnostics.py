@@ -55,6 +55,18 @@ PSENSE_REMEDY = (
     "conclusion is policy-relevant"
 )
 
+# problematic_params entries that are sampler flags, not parameter names.
+NON_PARAM_TOKENS = ("divergence", "e-bfmi", "treedepth", "=")
+
+# The sampler-stat blocks diagnose_model.py marks {"checked": False} when their stat is
+# missing: block key, the label the report uses, and how to get the stat.
+SAMPLER_CHECKS = (
+    ("treedepth", "tree depth",
+     "collect num_steps in extra_fields so az.from_numpyro writes reached_max_tree_depth"),
+    ("bfmi", "E-BFMI", "collect energy in extra_fields; the check needs arviz-stats >= 1.0"),
+    ("divergences", "divergences", "the InferenceData has no diverging sample stat"),
+)
+
 # calibration_check.FINDINGS labels, routed by prefix. This is a copy, not an import:
 # importing calibration_check would pull the ArviZ stack into this pure-JSON reader.
 # test_calibration_check.py's contract test keeps the two in step.
@@ -62,6 +74,32 @@ BIASED_PREFIX = "biased ("
 OVER_CONFIDENT_PREFIX = "over-confident ("
 UNDER_CONFIDENT_PREFIX = "under-confident ("
 SHAPE_MISMATCH_PREFIX = "shape mismatch ("
+
+
+def _split_flags(problematic: list) -> tuple[list[str], list[str]]:
+    """Split problematic_params into (parameter names, sampler flags)."""
+    named, flags = [], []
+    for p in problematic:
+        (flags if any(tok in str(p).lower() for tok in NON_PARAM_TOKENS) else named).append(str(p))
+    return named, flags
+
+
+def _flag_phrase(named: list[str], flags: list[str]) -> str:
+    """'flags on a, b; max treedepth saturation': parameter names first, then sampler flags."""
+    return "; ".join(([f"flags on {', '.join(named[:3])}"] if named else []) + flags)
+
+
+def _unchecked_sampler_checks(conv: dict) -> list[str]:
+    """Labels of the sampler checks that never ran.
+
+    A block marked checked: false, or no block at all, never ran. A block with
+    no checked key comes from a diagnostics.json written before the key existed,
+    and counts as checked.
+    """
+    return [
+        label for key, label, _ in SAMPLER_CHECKS
+        if not conv.get(key, {}).get("checked", key in conv)
+    ]
 
 
 def _rate_convergence(conv: dict) -> tuple[str, list[str]]:
@@ -252,6 +290,10 @@ def check_diagnostics(
             # percent of post-warmup transitions that diverged; drives the
             # target_accept_prob gate in suggest_next_steps
             "divergence_pct": float((conv_in.get("divergences") or {}).get("pct", 0.0) or 0.0),
+            # the blocks the tree-depth and E-BFMI steps quote
+            "treedepth": conv_in.get("treedepth", {}),
+            "bfmi": conv_in.get("bfmi", {}),
+            "unchecked": _unchecked_sampler_checks(conv_in),
         }
         loo_in = diagnostics.get("loo", {})
         report["loo"] = {
@@ -293,20 +335,25 @@ def _build_summary(report: dict) -> dict:
 
     if "convergence" in report:
         r = report["convergence"]
+        named, flags = _split_flags(r["problematic_params"])
+        unchecked = r.get("unchecked", [])
         if r["rating"] == "excellent":
-            s["convergence"] = "All convergence diagnostics passed (R-hat ≤ 1.01, ESS adequate, no divergences)."
+            passed = "R-hat ≤ 1.01, ESS adequate" + ("" if "divergences" in unchecked else ", no divergences")
+            if unchecked:
+                s["convergence"] = (
+                    f"Convergence diagnostics that ran passed ({passed}); "
+                    f"not checked: {', '.join(unchecked)}."
+                )
+            else:
+                s["convergence"] = f"All convergence diagnostics passed ({passed})."
         elif r["rating"] == "good":
             s["convergence"] = "Convergence diagnostics broadly pass; minor flags worth noting."
         elif r["rating"] == "fair":
-            _np = ("divergence", "e-bfmi", "treedepth", "=")
-            named = [p for p in r["problematic_params"] if not any(tok in str(p).lower() for tok in _np)]
-            params = ", ".join(named[:3]) or "some parameters"
-            s["convergence"] = f"Convergence is fair — flags on {params}. Inspect before trusting the posterior."
+            flagged = _flag_phrase(named, flags) or "flags on some parameters"
+            s["convergence"] = f"Convergence is fair — {flagged}. Inspect before trusting the posterior."
         else:
-            _np = ("divergence", "e-bfmi", "treedepth", "=")
-            named = [p for p in r["problematic_params"] if not any(tok in str(p).lower() for tok in _np)]
-            params = ", ".join(named[:3]) or "multiple parameters"
-            s["convergence"] = f"Poor convergence on {params}. Posterior should not be interpreted until resolved."
+            flagged = _flag_phrase(named, flags) or "flags on multiple parameters"
+            s["convergence"] = f"Poor convergence — {flagged}. Posterior should not be interpreted until resolved."
 
     if "precision" in report:
         r = report["precision"]
@@ -407,7 +454,8 @@ def _calibration_steps(cal: dict) -> list[str]:
 
 def _not_checked(report: dict) -> list[str]:
     """'check (how to run it)' for each optional check that did not run."""
-    missing = []
+    unchecked = report.get("convergence", {}).get("unchecked", [])
+    missing = [f"{label} ({remedy})" for _, label, remedy in SAMPLER_CHECKS if label in unchecked]
     if report.get("psense", {}).get("rating", "not computed") == "not computed":
         missing.append(f"prior sensitivity ({PSENSE_REMEDY})")
     return missing
@@ -457,10 +505,7 @@ def suggest_next_steps(report: dict) -> list[str]:
         # Non-parameter flags (divergences, E-BFMI, treedepth) are surfaced
         # separately — keep them out of the per-parameter R-hat/ESS message so
         # it never interpolates a flag phrase where a parameter name belongs.
-        _non_param = ("divergence", "e-bfmi", "treedepth", "=")
-        named_params = [
-            p for p in params if not any(tok in str(p).lower() for tok in _non_param)
-        ]
+        named_params, _ = _split_flags(params)
 
         if has_divergences:
             pct = float(conv.get("divergence_pct", 0.0) or 0.0)
@@ -492,6 +537,25 @@ def suggest_next_steps(report: dict) -> list[str]:
                 "init_strategy=numpyro.infer.init_to_median, or warm-start NUTS from an SVI "
                 "AutoNormal fit (or blackjax.pathfinder). "
                 "Check for multimodality with az.plot_rank(idata) (runs on both ArviZ stacks)."
+            )
+        td = conv.get("treedepth", {})
+        if not td.get("ok", True):
+            steps.append(
+                f"Tree depth hit max_tree_depth on {td.get('pct', 0.0):.1f}% of transitions "
+                f"({td.get('n_max', 0)}) — those trajectories were cut short, so the sampler "
+                "explores slowly. Saturation is an efficiency warning, not a validity failure, "
+                "but check the geometry before raising max_tree_depth on the NUTS kernel: an "
+                "improper or near-improper posterior saturates every transition, and a higher "
+                "limit never helps there (references/diagnostics.md, Failure signatures)."
+            )
+        bfmi = conv.get("bfmi", {})
+        if not bfmi.get("ok", True):
+            chains = ", ".join(str(c) for c in bfmi.get("failed_chains", []))
+            steps.append(
+                f"E-BFMI is low on chain(s) {chains} — those chains explore the energy "
+                "distribution poorly, often because of heavy tails or a funnel. Plot "
+                "az.plot_energy(idata), then work the escalation ladder in "
+                "references/diagnostics.md, starting from its Failure signatures table."
             )
 
     # ── Monte Carlo precision ─────────────────────────────────────────

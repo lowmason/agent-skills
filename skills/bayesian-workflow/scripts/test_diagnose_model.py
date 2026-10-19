@@ -188,3 +188,58 @@ def test_no_diverging_stat_marks_divergences_not_checked(both_paths):
     conv = diagnose_model.check_convergence(_idata(stats={"lp": np.zeros((4, 500))}))
     assert conv["divergences"] == {"checked": False}
     assert conv["all_ok"] is True
+
+
+WELL_CALIBRATED = {
+    "assessment": {
+        "findings": [],
+        "well_calibrated": True,
+        "mean_coverage_deviation": 0.0012,
+        "calibration_diagnosis": "well-calibrated",
+    },
+}
+LOW_PSENSE = {"prior": {"mu": 0.01}, "likelihood": {"mu": 0.02}}
+
+
+def _complete_idata(**stats):
+    """An InferenceData on which every check runs and passes: LOO, PPC and all three
+    sampler checks. A keyword replaces one sample stat; None drops it."""
+    rng = np.random.default_rng(3)
+    y = rng.normal(size=20)
+    mu = rng.normal(size=(4, 500))
+    sample_stats = {"diverging": CALM, "reached_max_tree_depth": CALM, "energy": rng.normal(size=(4, 500))}
+    sample_stats.update(stats)
+    return az.from_dict({
+        "posterior": {"mu": mu},
+        "sample_stats": {k: v for k, v in sample_stats.items() if v is not None},
+        # a narrow log-likelihood keeps every Pareto k small
+        "log_likelihood": {"y": -0.5 * (y - 0.1 * mu[..., None]) ** 2 - 0.5 * np.log(2 * np.pi)},
+        "posterior_predictive": {"y": rng.normal(size=(4, 500, 20))},
+        "observed_data": {"y": y},
+    })
+
+
+def _read_back(idata):
+    """diagnose_model's report read by check_diagnostics, as step 3 of SKILL.md's pipeline does."""
+    report = cd.check_diagnostics(diagnostics=generate_report(idata), calibration=WELL_CALIBRATED, psense=LOW_PSENSE)
+    return report, cd.suggest_next_steps(report)
+
+
+def test_a_complete_clean_run_reads_back_as_the_all_clear():
+    # The control for the two tests below.
+    _, steps = _read_back(_complete_idata())
+    assert len(steps) == 1 and "proceed to interpretation" in steps[0], steps
+
+
+def test_a_saturated_numpyro_run_reads_back_as_saturation():
+    report, steps = _read_back(_complete_idata(reached_max_tree_depth=SATURATED))
+    assert any(s.startswith("Tree depth hit max_tree_depth on 100.0%") for s in steps), steps
+    assert not any("proceed to interpretation" in s for s in steps)
+    assert "treedepth saturation" in report["summary"]["convergence"]
+
+
+def test_a_run_without_the_tree_depth_flag_reads_back_as_not_checked():
+    report, steps = _read_back(_complete_idata(reached_max_tree_depth=None))
+    assert "proceed to interpretation" in steps[0]
+    assert any(s.startswith("Not checked: tree depth") for s in steps), steps
+    assert "not checked: tree depth" in report["summary"]["convergence"]
