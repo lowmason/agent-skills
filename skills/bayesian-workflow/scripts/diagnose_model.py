@@ -162,11 +162,7 @@ def check_convergence(idata):
         min_bulk = int(min(float(ess_bulk_vals[v].min()) for v in ess_bulk_vals.data_vars))
         min_tail = int(min(float(ess_tail_vals[v].min()) for v in ess_tail_vals.data_vars))
         stats = _sample_stats(idata)
-        treedepth = _treedepth_block(stats)
-        return {
-            # has_errors misses NumPyro's tree-depth flag, so fold the block in here:
-            # check_diagnostics rates "excellent" on all_ok before it reads any block.
-            "all_ok": not has_errors and treedepth.get("ok", True),
+        results = {
             "method": "arviz_stats.diagnose",
             "rhat": {
                 "ok": len(rhat_bad) == 0,
@@ -176,9 +172,17 @@ def check_convergence(idata):
             "ess_bulk": {"ok": len(bad_bulk) == 0, "problematic_params": bad_bulk, "min": min_bulk},
             "ess_tail": {"ok": len(bad_tail) == 0, "problematic_params": bad_tail, "min": min_tail},
             "divergences": _divergence_block(stats),
-            "treedepth": treedepth,
+            "treedepth": _treedepth_block(stats),
             "bfmi": _bfmi_block(d),
         }
+        # has_errors misses the tail ESS and NumPyro's tree-depth flag, so fold every
+        # block in, as the fallback does: check_diagnostics rates "excellent" on all_ok
+        # before it reads any block. An unchecked block has no ok key and counts as passing.
+        all_ok = not has_errors and all(
+            results[k].get("ok", True)
+            for k in ["rhat", "ess_bulk", "ess_tail", "divergences", "treedepth", "bfmi"]
+        )
+        return {"all_ok": all_ok, **results}
 
     # Fallback for arviz-stats < 1.0.0 (classic ArviZ-only environments)
     summary = az.summary(idata)

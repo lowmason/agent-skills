@@ -256,6 +256,47 @@ def test_a_run_without_the_tree_depth_flag_reads_back_as_not_checked():
     assert "not checked: tree depth" in report["summary"]["convergence"]
 
 
+def _bursty_tail_draws(n_chains=4, n_draws=500, seed=26, share=0.2, length=10, shift=4.0):
+    """Draws whose extremes come in bursts while the centre mixes freely.
+
+    A two-state Markov chain switches bursts on (stationary share ``share``, mean
+    length ``length``). Each draw in a burst is a unit normal pushed out by
+    ``shift`` times an i.i.d. random sign. The sign keeps the bulk ESS near
+    n_chains * n_draws, and the bursts pull the tail ESS under 100 * n_chains.
+    At the defaults bulk ESS is 1753, tail ESS 283 and R-hat 1.004.
+    """
+    rng = np.random.default_rng(seed)
+    leave = 1 / length
+    enter = share * leave / (1 - share)
+    in_burst = np.zeros((n_chains, n_draws))
+    in_burst[:, 0] = rng.random(n_chains) < share
+    u = rng.random((n_chains, n_draws))
+    for t in range(1, n_draws):
+        in_burst[:, t] = np.where(in_burst[:, t - 1] == 1, u[:, t] >= leave, u[:, t] < enter)
+    sign = rng.choice([-1.0, 1.0], size=(n_chains, n_draws))
+    return rng.normal(size=(n_chains, n_draws)) + shift * in_burst * sign
+
+
+def test_low_tail_ess_with_passing_bulk_ess_fails_all_ok_on_both_paths(both_paths):
+    idata = _idata(extra={"bursty": _bursty_tail_draws()})
+    if both_paths:
+        # The premise: arviz_stats.diagnose rates this run clean, so only the tail ESS block can fail it.
+        has_errors, _ = diagnose_model.azs.diagnose(idata, return_diagnostics=True, show_diagnostics=False)
+        assert not has_errors
+    conv = diagnose_model.check_convergence(idata)
+    assert conv["ess_bulk"]["ok"] is True
+    assert conv["ess_tail"]["ok"] is False
+    assert conv["ess_tail"]["problematic_params"] == ["bursty"]
+    assert conv["all_ok"] is False
+    # check_diagnostics rates "excellent" on all_ok, so the writer's flag must not stay True.
+    diagnostics = generate_report(_complete_idata())
+    diagnostics["convergence"] = conv
+    report = cd.check_diagnostics(diagnostics=diagnostics, calibration=WELL_CALIBRATED, psense=LOW_PSENSE)
+    steps = cd.suggest_next_steps(report)
+    assert not any("proceed to interpretation" in s for s in steps), steps
+    assert any(s.startswith("R-hat or ESS flags on bursty") for s in steps), steps
+
+
 def test_the_pareto_k_threshold_follows_loo():
     assert diagnose_model.pareto_k_threshold(4000) == 0.7
     assert diagnose_model.pareto_k_threshold(800) == pytest.approx(1 - 1 / math.log10(800))
