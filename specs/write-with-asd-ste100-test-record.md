@@ -7,8 +7,9 @@ This record holds the numbers and decisions of the test campaign that chose the 
 ## 1. Result in brief
 
 - The rule arms chose the **listed form** of the rule, with two habits removed: plain words and simple tenses. The win is narrow (section 4).
-- The skill baseline (the chosen rule, no skill) passed 8 of 18 cases. The skill arm passed 16 of 18. After one wording fix and a re-run of the two failing cases, all 18 pass (sections 6 to 8). Only those two cases ran against the text with the fix. The other 16 results come from the skill text before the fix.
-- 297 measured runs and 36 judge calls cost $18.12 in total (section 9).
+- The skill baseline (the chosen rule, no skill) passed 8 of 18 cases. The skill arm passed 16 of 18. After one wording fix and a re-run of the two failing cases, all 18 pass (sections 6 to 8).
+- The whole-branch review then found four more defects in the skill's text, and four fixes followed (section 7). A re-run of the three agent cases against the final text passed all three at 5 of 5 (section 8, `skill-r2`). Only one of the four fixes can reach those cases. The other three fixes were not measured. The other 15 results come from the skill text at commit `6c20306`, before any fix.
+- 312 measured runs and 39 judge calls cost $19.11 in total (section 9).
 - The pre-registered hand-reading table needed two owner-approved changes to its `V3` row, the row for a tool run that touched a path outside its own run folder (section 2).
 
 ## 2. Setup
@@ -19,7 +20,7 @@ This record holds the numbers and decisions of the test campaign that chose the 
   - Hooks: two `SessionStart:startup` plugin hooks (names only).
   - Output style: Explanatory. Advisor model: `claude-opus-5-5`. No MCP servers, and no tools in a no-tool run.
   - The probe cost $0.0500, as planned.
-- The owner kept their settings, plugins, skill set and the skill descriptions on `main` unchanged until the skill arm ended. The kit's setup check (a hash of the settings, the instruction files, the rules, the skill names, the plugin file and the held binary) reported "unchanged" before every batch. It does not hash the skill descriptions, so the executing session compared `main`'s commit by hand: `main` stayed at `87e43fc` through the skill arm. It then moved to `7f866df` (merged pull requests #60 to #62 and a backlog change), before the re-run of two cases. A diff of `main`'s `skills/*/SKILL.md` files showed no changed description.
+- The owner kept their settings, plugins, skill set and the skill descriptions on `main` unchanged until the skill arm ended. The kit's setup check (a hash of the settings, the instruction files, the rules, the skill names, the plugin file and the held binary) reported "unchanged" before every batch. It does not hash the skill descriptions, so the executing session compared `main`'s commit by hand: `main` stayed at `87e43fc` through the skill arm. It then moved to `7f866df` (merged pull requests #60 to #62 and a backlog change), before the re-run of two cases. A diff of `main`'s `skills/*/SKILL.md` files showed no changed description. `main` moved once more, to `76565db` (pull request #63), before the re-run of the three agent cases. Since `87e43fc`, only `skills/writing-plans/scripts/entry_check.py` and its test had changed under `skills/`, `rules/` and `agents/`. No sibling checkout had an uncommitted edit there, and the setup check said "unchanged". Those runs have no tools, so they inherit only the skill listing.
 
 Differences from the plan's "Facts measured while planning":
 
@@ -160,11 +161,22 @@ The seven cases that passed 5 of 5 (`authentication-not-login`, `conditions-and-
 
   > Reply with the rewritten text, then only `Kept as-is:` lines and flags for gaps or compound tenses. Keep every sentence of the reply, notes included, to 20 words or fewer.
 
-  It restates the spec's `Output` contract and takes the lower of the strict set's two limits, so that one number covers both cases. It touches none of the lines that the rule repeats, uses no test-case word (`kit.py overlap`: 0), and adds no linter finding. The one added-action failure in `agent-tool-description` (one run) was left alone, because "No new facts" already covers it.
+  It condenses the `Output` section of `references/agent-mode.md`, which those runs cannot open, and takes the lower of the strict set's two limits, so that one number covers both cases. The review later found that it left out two parts of that section (the next bullet). It touches none of the lines that the rule repeats, uses no test-case word (`kit.py overlap`: 0), and adds no linter finding. The one added-action failure in `agent-tool-description` (one run) was left alone, because "No new facts" already covers it.
+- **After the whole-branch review: four fixes (commit `a95900d`).** The review (a code-reviewer subagent and a Codex seat) found four defects in text that the campaign had measured. The owner approved all four, and a re-run of the three agent cases.
+  1. The Task 7 line above was too strict. Its "only" dropped the ambiguity flag that the Caveats rule requires, and the changes table that `agent-mode.md` allows. Its 20-word cap also covered the rewrite, where descriptions may have 25 words. It named no mode. The new line reads:
+
+     > In agent mode, reply with the rewritten text. Then add only `Kept as-is:` lines, flags and, when the request asks for it, the changes table. A flag marks a gap, an ambiguity or a compound tense. Keep every sentence after the rewritten text to 20 words or fewer.
+
+     The owner approved this meaning as one sentence of about 30 words. The commit splits it into four sentences, because the skill's own rule splits a sentence above 25 words.
+  2. `references/agent-mode.md` called the linter without `python3`. The script has mode 100644, so the bare call exits with code 126.
+  3. `references/examples.md` called the bare command "right" for "you should leave it". That contradicts the rule "Keep modality", which the baseline failed in 5 of 5 runs of `strict-without-reference`. The example now keeps "should".
+  4. `references/document-rewrite.md`, step 3, allowed an in-place rewrite of a tracked symbolic link. Both git checks pass for a link whose target has uncommitted edits (reproduced in a throwaway repository). A new check, `test ! -L <path>`, sends a link to the copy branch.
+
+  Only fix 1 can reach the three no-tool agent cases, which read `SKILL.md` alone. The checks after the commit were `kit.py overlap` (0 case words), the linter (the same violation counts, with 1352 words in `SKILL.md`) and the eight commit lints. Fixes 2 to 4 are unmeasured. The re-run cases cannot open those files. The document cases ran before fix 4 and use plain files, so they never take its new branch.
 
 ## 8. Skill arm
 
-The skill arm runs the chosen rule and the committed skill (the commit before the wording fix). `skill-r1` re-ran the two failing cases against the commit with the fix.
+The skill arm runs the chosen rule and the committed skill (the commit before the wording fix). `skill-r1` re-ran the two failing cases against the commit with the fix. After the whole-branch review, `skill-r2` re-ran the three agent cases against the commit with the four review fixes. The first table is the `skill` arm, the second is `skill-r1`, and the third is `skill-r2`.
 
 ```text
 authentication-not-login         5/5 PASS
@@ -192,9 +204,17 @@ agent-tool-description           5/5 PASS
 agent-instruction                4/5 PASS
 ```
 
+```text
+agent-tool-description           5/5 PASS
+agent-error-message              5/5 PASS
+agent-instruction                5/5 PASS
+```
+
 - The baseline passed 8 cases and failed 10. The skill arm passed 16 and failed 2. After the one fix, both re-run cases pass, so all 18 pass. No case failed twice, so nothing went to the owner.
+- `skill-r2` raised no flags. Each of its 15 runs passed the sentence cap and every judge check, so no flag needed a hand reading. No case fell below 4 of 5. `skill-r2`, not `skill-r1`, is the result for the shipped `SKILL.md`, and only for the three cases that it re-ran.
+- An unscored reading, outside the pre-registered checks: the executing session read 9 of the 15 `skill-r2` replies (all five of `agent-instruction`, and the first two of each other case). In `agent-instruction`, 2 of 5 replies keep "should" (runs 3 and 4). The other 3 turn it into a bare command (runs 1 and 5) or "must" (run 2), and run 1 flags its own change. The case's checks cover the conditions and the "sometimes" hedge, not the strength of "should", so all five pass. The no-tool runs read `SKILL.md` alone. Its meaning rules keep every hedge, while the rule "Keep modality" sits only in `agent-mode.md`. This is a gap and not a failure, and it is a deferred item (see the plan's completion list).
 - The one failing `skill-r1` run of `agent-instruction` wrote a note that names the upstream job as the producer of a partial artifact, where the source is passive and names no actor.
-- The kit froze each arm's copy of the skill at its first run: the `skill` arm at commit `6c20306` and `skill-r1` at `f851963`, whose `SKILL.md` hash equals the committed file.
+- The kit froze each arm's copy of the skill at its first run: the `skill` arm at commit `6c20306`, `skill-r1` at `f851963` and `skill-r2` at `a95900d`. The `SKILL.md` hash of each frozen copy equals the committed file.
 
 ## 9. Costs, voids and advisor calls
 
@@ -206,10 +226,11 @@ skill/baseline: 90 runs, $4.47 (largest $0.14), 0 void, 0 advisor calls, tools: 
 skill/pilot: 2 runs, $0.20 (largest $0.14), 0 void, 0 advisor calls, tools: Bash, Edit, Write; cases under 5 good runs: doc-clean, uncertainty-chain
 skill/skill: 90 runs, $5.17 (largest $0.19), 0 void, 0 advisor calls, tools: Bash, Write; cases under 5 good runs: none
 skill/skill-r1: 10 runs, $0.64 (largest $0.10), 0 void, 0 advisor calls, tools: none; cases under 5 good runs: none
+skill/skill-r2: 15 runs, $0.75 (largest $0.10), 0 void, 0 advisor calls, tools: none; cases under 5 good runs: none
 0 runs moved aside in all
 ```
 
-- Total: $18.12. That is $14.86 for 297 scored runs, $3.21 for 36 judge calls and $0.05 for the inherit probe. The owner approved about $22.14 plus judge calls and re-runs.
+- Total: $19.11. That is $15.61 for 312 scored runs, $3.45 for 39 judge calls and $0.05 for the inherit probe. The owner approved about $22.14 plus judge calls and re-runs.
 - No run was void and none was moved aside. The `V3` flags were all `justified` (section 2), so none voided a run.
 - No run called the advisor tool.
 - The `skill/pilot` arm priced the campaign and never counts toward a result.
