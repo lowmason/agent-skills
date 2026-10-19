@@ -5,9 +5,10 @@ Use this procedure when a request names a file to rewrite.
 1. Read the file that the request names.
 2. If the file is a skill (`SKILL.md`), a subagent definition or a slash-command file, stop. A rewrite of it is a skill edit, so hand off to the writing-skills skill. If that skill is not available, say why you did not rewrite the file.
 3. Choose the target.
-   - Rewrite the file in place when git tracks it and it has no uncommitted edits. Run both commands. The first must succeed, and the second must print nothing.
+   - Rewrite the file in place when it is not a symbolic link, git tracks it and it has no uncommitted edits. Run all three commands. The first two must succeed, and the third must print nothing.
 
      ```bash
+     test ! -L <path>
      git ls-files --error-unmatch <path>
      git status --porcelain -- <path>
      ```

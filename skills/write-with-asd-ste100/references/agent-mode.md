@@ -37,4 +37,4 @@ An instruction tells the reader to do something. A description says what is true
 
 ## The linter
 
-Run `<this-skill-dir>/scripts/ste-lint.py` on the draft for a mechanical first pass. It never flags a hedge, and a hedge must stay.
+Run `python3 <this-skill-dir>/scripts/ste-lint.py` on the draft for a mechanical first pass. It never flags a hedge, and a hedge must stay.

@@ -87,10 +87,10 @@ Before:
 After:
 
 > 1. Check the draft.
-> 2. If the draft has blocking comments, leave it as it is and post a note for the writer.
+> 2. If the draft has blocking comments, you should leave it as it is and post a note for the writer.
 > 3. If the draft has no blocking comments, mark it approved.
 
-Each condition comes before its action. "You should leave it" becomes the command "leave it", which is right in an instruction to the agent that acts.
+Each condition comes before its action. The source says "you should leave it", so step 2 keeps "should". A bare command would be stronger than the source.
 
 ## Strict STE: safety text
 

@@ -93,7 +93,7 @@ Answer in the requested language. Outside English, apply the same clarity rules,
 ## Agent mode and strict STE
 
 - Agent mode applies the strict rule set in [references/agent-mode.md](references/agent-mode.md) to every agent-facing text. It starts with a scan for six habits.
-- Reply with the rewritten text, then only `Kept as-is:` lines and flags for gaps or compound tenses. Keep every sentence of the reply, notes included, to 20 words or fewer.
+- In agent mode, reply with the rewritten text. Then add only `Kept as-is:` lines, flags and, when the request asks for it, the changes table. A flag marks a gap, an ambiguity or a compound tense. Keep every sentence after the rewritten text to 20 words or fewer.
 - For human text that the request calls "strict", "100%" or "full STE", apply the strict rule set and [references/strict.md](references/strict.md).
 - Strict STE needs the standard and its dictionary. Without the user's copy, give a strict-style draft and a one-line note that says what was not checked. Never claim compliance. Never invent a dictionary approval or a rule number.
 
