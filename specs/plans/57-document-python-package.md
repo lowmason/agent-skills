@@ -29,7 +29,7 @@ These come from the spec unless a line says otherwise. Every task's requirements
 - **Commands.** Run every command from the execution worktree's root. Never `cd`: the shell's folder resets after each command, and a `cd` into another worktree moves the session there. Shell variables do not persist between commands, so each command spells out its paths. The shell is zsh. It has no `PIPESTATUS`, and it splits `$(…)` into words but never `$VAR`.
 - **Push or merge nothing** without the owner's go-ahead (repo convention).
 - **Test counts** are deltas (+N), never totals (repo convention).
-- **Commit trailer.** Each commit message ends with the executing session's own `Co-Authored-By:` line. Check it with `git log -1 --format=%B`.
+- **Commit trailer.** Each commit message ends with the executing session's own `Co-Authored-By:` line. Add it as the last `-m` of each `git commit` in this plan, because the commands here leave it out. Subagent-authored commits keep that same line. Check it with `git log -1 --format=%B`.
 - **Python style:** single quotes, f-strings and named constants. The kit and `build/` run on Python 3.13 (repo convention).
 
 ## Decisions
@@ -63,7 +63,7 @@ Measured on 2026-10-19 on the owner's Mac, from scratch folders outside the repo
 
 Everything in this plan ran before the plan was written, in scratch folders outside the repository, except the spike's great-docs commands and every `claude -p` call.
 
-- **Kit.** `transcript.py` read the canary probe's real stream-json transcript. A positive control (the canary renamed to this skill) printed `listed, TRIGGERED`, and a planted repository path printed `VOID`. `run.py`'s staging made a repo with one commit, no remote and no tags, with the skill copy excluded from git and no `__pycache__` copied. `gate.py` printed a `FAIL` for each check on a fixture without great-docs, with pydoclint's findings as the evidence. `fill_slots.py` filled the SKILL.md template with four value sets that together cover every variant, and each result passed the frontmatter, conformance and snippet checks.
+- **Kit.** `transcript.py` read the canary probe's real stream-json transcript. A positive control (the canary renamed to this skill) printed `listed, TRIGGERED`. A planted repository path and a planted permission denial each printed `VOID`. `run.py`'s `tool_env` found `uv`, `git` and `quarto` on the kit's fixed `PATH`, and it refused a `PATH` without them. `run.py`'s staging made a repo with one commit, no remote and no tags, with the skill copy excluded from git and no `__pycache__` copied. `gate.py` printed a `FAIL` for each check on a fixture without great-docs, with pydoclint's findings as the evidence. `fill_slots.py` filled the SKILL.md template with four value sets that together cover every variant, and each result passed the frontmatter, conformance and snippet checks.
 - **Replay.** After assembly, a planning-time script ran this plan's own blocks and commands in a fresh clone of this branch at `e72f284`, with `KIT` and `SPIKE` moved under `/tmp/plan57-replay/`. All of its 61 checks passed:
   - The extractor cut itself out of the plan and reproduced its own block. Every file block matched its prototype byte for byte.
   - A1 and A2 applied once each and left three tags.
@@ -83,7 +83,7 @@ Each default below is the plan's choice where the spec left one open. "If wrong"
 
 - **DF1, one bundle commit.** See Global Constraints. If wrong: the commit lints fail on every partial commit.
 - **DF2, spike values as slots.** SKILL.md and the spike's spec amendments carry `{{KEY}}` slots. `fill_slots.py` fills them from the spike record's Values table, so no value is typed twice. If wrong: fill by hand, and lose the replayed checks.
-- **DF3, amendment tags.** As Global Constraints says. The two planning amendments (A1, A2) are approved at plan review, and the spike's amendments follow the spec's V1 table. If wrong: retag the blocks in Appendix C.
+- **DF3, amendment tags.** As Global Constraints says. The two planning amendments (A1, A2) need the owner's approval at plan review, and the spike's amendments follow the spec's V1 table. If wrong: retag the blocks in Appendix C.
 - **DF4, the order of the stops.** `preflight.py` checks the layout first, then Quarto, then the pin, the range and the fetch. A `docs` or `both` layout and a missing Quarto stop the work even before the pin, because a pin fixes neither. If wrong: reorder `next_step()`.
 - **DF5, the `skills:` key** prints the cached `skills/` folder, which holds the five official skill folders. If wrong: print the version folder.
 - **DF6, `requires-python = '>=3.11'`.** See "Facts measured while planning". `tomllib` also needs 3.11.
@@ -120,7 +120,7 @@ Each default below is the plan's choice where the spec left one open. "If wrong"
 
 ### Amendments
 
-Both are approved at plan review, and Task 1, Step 4 applies them before the spike.
+Both need the owner's approval at plan review. Task 1, Step 4 applies them before the spike.
 
 - **A1, the script count** (spec, Sequencing item 5). The spec says that `preflight.py` makes 18 runnable scripts. Plan 52's vendored `ste-lint.py` landed after plan 53 counted 17, so `preflight.py` makes 19. The line that Task 5 adds to plan 53, as the spec's D8 asks, says 19.
 - **A2, the `compatibility` text** (R1.4). Q1's option (c).
@@ -849,7 +849,7 @@ git -C /tmp/dpp-e2e/e2e-1/gdfixture diff
 uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/document-python-package-kit/gate.py specs/verification/57-great-docs-0.17.0.md /tmp/dpp-e2e/e2e-1/gdfixture src/gdfixture; echo "exit $?"
 ```
 
-Expected: the files that the run changed, and the gate's three lines. When the final message calls the docs done, all three say `PASS` and the exit is 0. Otherwise each check that the message names as failing says `FAIL`. Judge E1 to E7 (`PREREGISTRATION.md`) and record each in `KIT/RESULTS.md` with its evidence. A void run is repeated once as `e2e-2`. A failed criterion gets one wording change (as in Step 3) and one more run, `e2e-r1`. A second failure: stop and ask the owner.
+Expected: the files that the run changed, and the gate's three lines. When the final message calls the docs done, all three say `PASS` and the exit is 0. Otherwise each check that the message names as failing says `FAIL`. Judge E1 to E7 (`PREREGISTRATION.md`) and record each in `KIT/RESULTS.md` with its evidence. A void run is repeated once as `e2e-2`. A second void run: stop and ask the owner. A failed criterion gets one wording change (as in Step 3) and one more run, `e2e-r1`. A second failure: stop and ask the owner.
 
 - [ ] **Step 6: Record and commit**
 
@@ -956,7 +956,13 @@ Then go to "Plan completion". Push or merge nothing without the owner's go-ahead
 
 ## Execution handoff
 
-Recommended: **Subagent-Driven**, with the subagent-driven-development skill, in a fresh Sonnet session (D1). Each task reads and writes files that the next task reads: the fixture's tags, the spike record's Values table, the kit and its results. So a fresh subagent per task needs no planning history. Subagents also keep the spike's logs and the 50 or more test replies out of the controller's context. The controller relays every "stop and ask the owner" to the owner, and it never decides one itself.
+Recommended: **Inline Execution**, with the executing-plans skill, in a fresh Sonnet session (D1). As in plan 52, the tasks that test things are one measurement campaign:
+
+- RED (Task 2) and GREEN (Task 4) compare only when one reader applies `PREREGISTRATION.md`'s reading rules to both arms.
+- The spike's builds and the kit's runs take minutes to an hour, in the background. The session that starts a run must wait for it and read it.
+- Tasks 1, 2 and 4 hold stops that go to the owner.
+
+The cost is context: one session reads the spike's logs and about 50 replies.
 
 The execution worktree must hold this plan and the spec's commits, which today sit only on `claude/great-docs-skill-design-19335c` (D2). After the owner merges that branch into `main`, make the worktree by hand:
 
@@ -970,9 +976,9 @@ Then, in a terminal:
 cd ~/Projects/agent-skills/.claude/worktrees/document-python-package && claude --model sonnet
 ```
 
-First message: "Execute specs/plans/57-document-python-package.md with the subagent-driven-development skill, from Task 1."
+First message: "Execute specs/plans/57-document-python-package.md with the executing-plans skill, from Task 1."
 
-If the owner chooses Inline Execution, the first message names the executing-plans skill instead.
+If the owner chooses Subagent-Driven instead, the first message names the subagent-driven-development skill. Tasks 1, 2 and 4 then stay with the controller, which runs the spike and the kit and reads every reply itself. Subagents take Tasks 3, 5 and 6. Tasks 3 and 5 write their files with the extractor from this plan file, so `task-brief` needs no appendix text. The controller relays every "stop and ask the owner" to the owner, and it never decides one itself.
 
 ## Plan completion
 
@@ -1678,6 +1684,7 @@ and are not committed. Each answer quotes the lines it rests on.
 
 - Added `"""` lines, default settings: TO-RECORD
 - Added `"""` lines, `quote-style = 'single'`: TO-RECORD
+- Added `"""` lines, `quote-style = 'preserve'`: TO-RECORD
 - Answer: TO-RECORD
 
 ### S7: the completeness tool
@@ -1708,7 +1715,7 @@ amendments. A `|` inside a value is written `\|`.
 | CELL_ERROR | `TO-RECORD` | S3: `fails`, `log` or `site` |
 | CELL_ERROR_MARKER | `TO-RECORD` | S3: the marker, or `none` for `fails` |
 | FREEZE_DIR | `TO-RECORD` | S4: the folder from the package root, with a trailing `/` |
-| RUFF_REWRITES_DOCSTRINGS | `TO-RECORD` | S6: `no`, `yes` or `default` |
+| RUFF_REWRITES_DOCSTRINGS | `TO-RECORD` | S6: `no`, `single`, `preserve` or `yes` |
 | COMPLETENESS_TOOL | `TO-RECORD` | S7: `pydoclint` or `numpydoc` |
 | COMPLETENESS_PIN | `TO-RECORD` | S7: the requirement for the `docs` group |
 | COMPLETENESS_COMMAND | `TO-RECORD` | S7: the gate command, with `<package-dir>` |
@@ -2369,8 +2376,8 @@ VARIANTS = {
     'INIT_SENTENCE': ('INIT_DEFAULT_WORKS', {
         'yes': 'With no config to delete, `--force` only skips the `.gitignore` prompt, and\n'
                '`</dev/null` keeps any other prompt from waiting.',
-        'no': 'With no config to delete, `--force` deletes nothing. The piped input answers\n'
-              'the prompts that `init` still asks, so it never waits.',
+        'no': "The piped input answers `init`'s prompts, the `.gitignore` prompt among them,\n"
+              'so it never waits.',
     }),
     'D300_BULLET': ('RUFF_REWRITES_DOCSTRINGS', {
         'no': "- If the package enables ruff's pydocstyle (`D`) rules and keeps `'''` docstrings, "
@@ -2612,7 +2619,11 @@ def stage(tag: str, dest: Path, skill_dir: Path) -> None:
 
 def tool_env(base: Path) -> dict[str, str]:
     '''The scrubbed environment with a fresh XDG_CACHE_HOME under base, so that the
-    preflight's fetch lands there. UV_CACHE_DIR keeps uv's usual cache.'''
+    preflight's fetch lands there. UV_CACHE_DIR keeps uv's usual cache. Every tool
+    that the skill runs must be on RUN_PATH.'''
+    missing = [t for t in ('uv', 'git', 'quarto') if shutil.which(t, path=RUN_PATH) is None]
+    if missing:
+        sys.exit(f"not on the kit's PATH ({RUN_PATH}): {', '.join(missing)}")
     uv_cache = subprocess.run(['uv', 'cache', 'dir'], capture_output=True, text=True,
                               check=True).stdout.strip()
     return {**scrubbed_env(), 'XDG_CACHE_HOME': str(base / 'xdg'), 'UV_CACHE_DIR': uv_cache}
@@ -2808,7 +2819,8 @@ skills prints one line per transcript: whether the run's init record listed
 the skill, and whether the run called the Skill tool with it. e2e prints each
 tool call in order (Skill calls by name, Bash commands with ok or ERR from
 their tool results, file tools by path), a VOID line when a tool input names
-the repository checkout, and then the final result record.
+the repository checkout, a VOID line for each tool call that the permission
+check denied, and then the final result record.
 '''
 from __future__ import annotations
 
@@ -2871,6 +2883,9 @@ def e2e(path: Path) -> None:
     if final is None:
         print('no result record: the run did not finish')
         return
+    for denial in final.get('permission_denials') or []:
+        print(f"VOID: the permission check denied {denial.get('tool_name')}: "
+              f"{json.dumps(denial.get('tool_input'))[:120]}")
     print(f"\nresult: is_error={final.get('is_error')} turns={final.get('num_turns')} "
           f"cost=${final.get('total_cost_usd', 0):.2f}\n{final.get('result') or ''}")
 
@@ -3130,8 +3145,9 @@ Pass criteria, read from `transcript.py e2e` and from the run's repo:
 - E7. `gate.py` in the run's repo afterwards agrees with the final message.
 
 The run is void when `transcript.py` prints `VOID` (a tool input names the
-repository checkout) or the run ends with no result record. A void run is
-repeated once under a new run name. A failed criterion gets one wording
+repository checkout, or the permission check denied a tool call) or the run
+ends with no result record. A void run is repeated once under a new run name.
+A second void run: stop and ask the owner. A failed criterion gets one wording
 change and one more run, `e2e-r1`. A second failure: stop and ask the owner.
 ```
 
