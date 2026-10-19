@@ -570,7 +570,11 @@ selection, and a changelog batch or an audit comes due by elapsed time alone.
 R6.4 **Fetch.** Parallel GETs, a 30-second timeout, one retry, and a
 User-Agent that names the tool and carries no personal data. Pages are written
 to `~/.cache/agent-skills/cc-guide/latest/docs/`, overwriting, with the fetch
-time and changelog head recorded beside them.
+time and changelog head recorded beside them after the last page, so a
+recorded head names a finished fetch. Every session and checkout shares this
+`latest/` (Decision 10), and the last fetch wins: of the commands that read
+it, only `rebaseline` turns what it reads into baseline state, so it alone
+is pinned to a packet's head (R7) (owner, plan 51, 2026-10-18).
 
 R6.5 **Compare.** For each group, report its changed, missing and new blocks
 as findings, each with its candidate sections (R3.7), and its deselected
@@ -651,7 +655,8 @@ failure. A missing page (R6.5) clears only through a `manifest.toml` edit
 that drops or remaps it, since `rebaseline` keeps a missing page's entries
 (owner, plan 38, 2026-10-04).
 - `init`: R2.6.
-- `rebaseline <group> [<block keys>]`: re-hash the group's selected blocks,
+- `rebaseline <group> [<block keys>] [--head <release>]`: re-hash the
+  group's selected blocks,
   all of them or the listed keys, from `latest/`. A listed run refuses while
   an unlisted baselined block on the same page has also changed or gone,
   since the page's snapshot would not hold that block's baselined text; the
@@ -661,7 +666,13 @@ that drops or remaps it, since `rebaseline` keeps a missing page's entries
   snapshot page that holds different bytes, since another group's `snapshot`
   pointer may name it. A key is listed as
   `check` prints it, so a block `check` could name only by its key hash is
-  listed by that hash (R2.3).
+  listed by that hash (R2.3). `--head` names the release a review read the
+  docs at: the run refuses, naming both releases and writing nothing, when
+  `fetch.json`'s `changelog_head` is another one, since any `check` (a
+  session start's `refresh`, a manual run, another `/cc-guide` run) may have
+  refetched `latest/` after the review. `settle` prints `--head` with the
+  packet's head, as it prints `audited --to` (owner, plan 49 decision D2,
+  2026-10-17).
 - `advance <ids> --to <release>`: set `checked`.
 - `audited <group> [--to <release>]`: set `audited` for the group's sections
   to the current release, or the release `--to` names, which must be in the
@@ -850,7 +861,12 @@ deterministic:
 4. Bookkeeping, through `baseline`:
    - `accept --substantive` for each section whose prose changed, which flags
      its citers;
-   - `rebaseline` for the affected blocks;
+   - `rebaseline` for the affected blocks, with `--head` naming the packet's
+     head (R7) (owner, plan 49 decision D2, 2026-10-17). One that refuses,
+     because a later fetch moved `latest/`, is skipped and the rest still
+     run, since none of them hashes docs text: the blocks keep their
+     baseline, and the next `check` compares them again (owner, plan 51,
+     2026-10-18);
    - `advance` to the newest release the run covered: the newest triaged
      release for `verify`, for each section not checked past it already
      (owner, plan 44, 2026-10-12); for an audit, `audited` instead;
