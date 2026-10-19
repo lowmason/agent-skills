@@ -19,9 +19,12 @@ Exit status: 0 when everything passes; 1 when a run fails or --check finds a pro
 2 for a usage error, an unknown suite name or an invalid registry.
 Design: specs/test-suite-registry.md.
 '''
+import os
 import shlex
+import subprocess
 from collections.abc import Sequence
 from dataclasses import dataclass
+from fnmatch import fnmatchcase
 from pathlib import Path, PurePosixPath
 
 REPO = Path(__file__).resolve().parent.parent
@@ -133,3 +136,51 @@ def container(suite: Suite, suites: Sequence[Suite]) -> Suite | None:
     path = PurePosixPath(suite.dir)
     return next((other for other in suites
                  if other.dir != suite.dir and path.is_relative_to(other.dir)), None)
+
+
+def git_env() -> dict[str, str]:
+    '''os.environ without git's repo-local variables, as check_conformance.git_env:
+    a hook may export GIT_DIR or GIT_INDEX_FILE for another repository.'''
+    local = subprocess.run(['git', 'rev-parse', '--local-env-vars'],
+                           capture_output=True, text=True, check=True).stdout.split()
+    return {name: value for name, value in os.environ.items() if name not in local}
+
+
+def pytest_dirs(root: Path) -> set[str] | None:
+    '''The directories that hold a pytest file, among the files git keeps under root
+    (tracked, or untracked and not ignored); None when git fails.'''
+    try:
+        listing = subprocess.run(
+            ['git', 'ls-files', '--cached', '--others', '--exclude-standard', '-z'],
+            cwd=root, env=git_env(), capture_output=True, check=True).stdout
+    except (OSError, subprocess.CalledProcessError):
+        return None
+    paths = [os.fsdecode(entry) for entry in listing.split(b'\0') if entry]
+    # --cached also lists tracked files deleted from the working tree.
+    return {str(PurePosixPath(p).parent) for p in paths
+            if any(fnmatchcase(PurePosixPath(p).name, pattern) for pattern in TEST_FILE_PATTERNS)
+            and (root / p).is_file()}
+
+
+def check(root: Path, data: dict) -> list[str]:
+    '''The --check findings: the registry's problems, then any test directory that
+    no registered suite directory contains.'''
+    problems = [f'{REGISTRY}: {p}' for p in validate(data)]
+    if problems:
+        return problems
+    suites = parse(data)
+    names = [s.name for s in suites]
+    problems += [f'{REGISTRY}: suites are not sorted by name: {b!r} comes after {a!r}'
+                 for a, b in zip(names, names[1:]) if a > b][:1]
+    found = pytest_dirs(root)
+    if found is None:
+        return [*problems, f'{REGISTRY}: git ls-files failed, so the test directories are unknown']
+    for suite in suites:
+        if not (root / suite.dir).is_dir():
+            problems.append(f'{REGISTRY}: {suite.name}: {suite.dir} is not a directory')
+        elif not any(PurePosixPath(d).is_relative_to(suite.dir) for d in found):
+            problems.append(f'{REGISTRY}: {suite.name}: {suite.dir} holds no pytest file')
+    problems += [f'{d}: holds pytest files, but no suite in {REGISTRY} contains it'
+                 for d in sorted(found)
+                 if not any(PurePosixPath(d).is_relative_to(s.dir) for s in suites)]
+    return problems
