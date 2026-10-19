@@ -24,7 +24,7 @@ Every task's requirements include these.
 - **`CLAUDE.md` stays under 200 lines** (check `claude-md-size`). It has 199 at `151ea9f`; Task 7 ends it at 145.
 - **Test counts are deltas** (+N) for the suites that exist today. `build/test_run_suites.py` is new, so its counts below are exact: the replay printed them (Planning record).
 - **Simple commands.** Every command below is one command, with no `cd … &&`, pipe or loop, because a worktree-isolated session refuses compound shell. Use `uv run --directory <dir> …` where a command must run in a directory.
-- **Helper scripts** (the audit, the comparison and the shrink) live in the plan's SDD workspace, `.sdd/54-test-suite-registry/` in the execution worktree, which git ignores. They are one-time aids and are never committed.
+- **Helper scripts** (the audit, the comparison and the shrink) live in the plan's SDD workspace, `.sdd/55-test-suite-registry/` in the execution worktree, which git ignores. They are one-time aids and are never committed.
 - **Python style:** single quotes, f-strings, 4-space indentation, named constants; `build/` stays on Python 3.13.
 - **Commit trailer.** Each commit message ends with the executing session's own `Co-Authored-By:` line, added as the last `-m`; subagent-authored commits keep that same line. Check with `git log -1 --format=%B`.
 - **Push or merge nothing** without the owner's go-ahead.
@@ -35,6 +35,7 @@ Every task's requirements include these.
 - **D1** (owner, plan review, 2026-10-18): Q1 option (a): the `build/cc_guide` suite is named `cc_guide`, after its directory, as `build` and `hooks` are named. Applied in: Task 1 (spec amendment), Tasks 5 and 7.
 - **D2** (owner, plan review, 2026-10-18): the nine settled defaults, DF1 to DF9, stand as written. Applied in: Tasks 2 to 7.
 - **D3** (owner, plan review, 2026-10-18): plan 52's Q4 (where `CLAUDE.md` finds room) is option (c), as the owner chose in this plan's brainstorming (spec decision 2). Plan 52's D6 on `main` records option (a), "approved by merging PR #58"; asked which record stands, the owner chose (c). Plan 52's planning session amends its D6 and its Task 6. Applied in: Couplings.
+- **D4** (owner, after the merge, 2026-10-18): the option "Renumber registry to 55": this plan becomes `55-test-suite-registry.md`, and its own references to 54 follow (the spec-amendment tags, the `.sdd` workspace, the execution branch name and the commit subjects). The entry-check plan keeps 54: it claimed the number first, and the deferred-items backlog already cites it. Applied in: the file name, Global Constraints, File structure, Tasks 1–7, Execution handoff, and Plan ID.
 
 ---
 
@@ -99,6 +100,8 @@ notes = ['Tests for the vendored linter: its pinned bytes, its self-test under 3
 
 `entry_check.py` printed "next free: 54" and "collisions: none" on 2026-10-18, with every branch, remote-tracking ref and worktree read.
 
+The entry-check overlap plan took 54 too. It was committed as `cb091e5` at 19:16 -0400, before this plan's `9d8e71d` at 19:38, and both merged that night: PR #60, then PR #61 as `fca3433`. `entry_check.py` then reported the collision and printed "next free: 55", and the owner renumbered this plan to 55 (D4). The shared note keeps its file name, `plan-54-suite-registry-for-plan-52.md` (Plan completion). PR #60 changed none of the files that this plan's tasks edit: between `151ea9f` and `fca3433`, `CLAUDE.md`, `build/`, `hooks/` and the spec are unchanged, so the Facts above still hold.
+
 ## File structure
 
 | File | Responsibility | Task |
@@ -110,7 +113,7 @@ notes = ['Tests for the vendored linter: its pinned bytes, its self-test under 3
 | `build/run_commit_lints.sh`, `build/test_commit_lints.py` | The ninth lint and its tests | 6 |
 | `build/CLAUDE.md` | "nine", and a paragraph on the registry | 6 |
 | `CLAUDE.md`, `build/test_check_conformance.py` | The Commands block, and the import test's control | 7 |
-| `.sdd/54-test-suite-registry/` (ignored) | The audit, comparison and shrink scripts | 5, 7 |
+| `.sdd/55-test-suite-registry/` (ignored) | The audit, comparison and shrink scripts | 5, 7 |
 
 ---
 
@@ -170,7 +173,7 @@ Replace
 with
 
 ````markdown
-| `name` | string | yes | The name that the runner takes. A skill's suite uses the skill's name; the others take their directory's name: `build`, `cc_guide` and `hooks` (owner, plan 54, 2026-10-18). |
+| `name` | string | yes | The name that the runner takes. A skill's suite uses the skill's name; the others take their directory's name: `build`, `cc_guide` and `hooks` (owner, plan 55, 2026-10-18). |
 ````
 
 Replace
@@ -182,7 +185,7 @@ Replace
 with
 
 ````markdown
-| `cc_guide` (owner, plan 54, 2026-10-18) | `build/cc_guide` | — | — | default |
+| `cc_guide` (owner, plan 55, 2026-10-18) | `build/cc_guide` | — | — | default |
 ````
 
 Replace
@@ -196,7 +199,7 @@ with
 
 ````markdown
 R3.6 **`--all`** runs every suite except one whose `dir` lies inside another suite's `dir`. Today that is
-`cc_guide` (owner, plan 54, 2026-10-18): `cd build && pytest` collects `build/cc_guide` already.
+`cc_guide` (owner, plan 55, 2026-10-18): `cd build && pytest` collects `build/cc_guide` already.
 ````
 
 Replace
@@ -208,7 +211,7 @@ Replace
 with
 
 ````markdown
-| 141–145 | Drop line 145, the `cd build/cc_guide && …` command. The comment names the suite `cc_guide` instead of "its suite" (owner, plan 54, 2026-10-18): a bare `cc-guide` in `CLAUDE.md` names the manual-only `/cc-guide` skill, which the `dmi-handoff-consistency` check refuses. |
+| 141–145 | Drop line 145, the `cd build/cc_guide && …` command. The comment names the suite `cc_guide` instead of "its suite" (owner, plan 55, 2026-10-18): a bare `cc-guide` in `CLAUDE.md` names the manual-only `/cc-guide` skill, which the `dmi-handoff-consistency` check refuses. |
 ````
 
 Then confirm that no stale name is left:
@@ -226,7 +229,7 @@ git add specs/test-suite-registry.md
 ```
 
 ```bash
-git commit -m "docs(specs): name the build/cc_guide suite cc_guide (plan 54, D1)" -m "A bare cc-guide in CLAUDE.md names the manual-only /cc-guide skill, which dmi-handoff-consistency refuses, so the suite takes its directory's name, as build and hooks do."
+git commit -m "docs(specs): name the build/cc_guide suite cc_guide (plan 55, D1)" -m "A bare cc-guide in CLAUDE.md names the manual-only /cc-guide skill, which dmi-handoff-consistency refuses, so the suite takes its directory's name, as build and hooks do."
 ```
 
 ### Task 2: The registry model
@@ -515,7 +518,7 @@ git add build/run_suites.py build/test_run_suites.py
 ```
 
 ```bash
-git commit -m "feat(build): the test-suite registry's model: validation, runs and nesting (plan 54)"
+git commit -m "feat(build): the test-suite registry's model: validation, runs and nesting (plan 55)"
 ```
 
 ### Task 3: The coverage check
@@ -698,7 +701,7 @@ git add build/run_suites.py build/test_run_suites.py
 ```
 
 ```bash
-git commit -m "feat(build): the registry's coverage check over the files git keeps (plan 54)"
+git commit -m "feat(build): the registry's coverage check over the files git keeps (plan 55)"
 ```
 
 ### Task 4: The command line
@@ -993,7 +996,7 @@ git add build/run_suites.py build/test_run_suites.py
 ```
 
 ```bash
-git commit -m "feat(build): run_suites.py's command line: --list, named runs, --all and --check (plan 54)"
+git commit -m "feat(build): run_suites.py's command line: --list, named runs, --all and --check (plan 55)"
 ```
 
 ### Task 5: The registry and the command audit
@@ -1001,7 +1004,7 @@ git commit -m "feat(build): run_suites.py's command line: --list, named runs, --
 **Files:**
 - Create: `build/suites.toml`
 - Modify: `build/test_run_suites.py` (append at the end)
-- Scratch: `.sdd/54-test-suite-registry/audit_commands.py` (never committed)
+- Scratch: `.sdd/55-test-suite-registry/audit_commands.py` (never committed)
 
 **Interfaces:**
 - Consumes: `check`, `REPO`, `REGISTRY` (Tasks 2–4).
@@ -1197,10 +1200,10 @@ uv run --python 3.13 python build/run_suites.py --check
 
 Expected: `suite registry ok`, exit 0.
 
-- [ ] **Step 6: Write and run the audit.** Create `.sdd/54-test-suite-registry/audit_commands.py`:
+- [ ] **Step 6: Write and run the audit.** Create `.sdd/55-test-suite-registry/audit_commands.py`:
 
 ```python
-'''Plan 54 Stage 2 audit (scratch, never committed).
+'''Plan 55 Stage 2 audit (scratch, never committed).
 
 Run from the worktree root, before CLAUDE.md loses its per-suite commands:
     uv run --no-project --python 3.13 python <path to this file>
@@ -1276,7 +1279,7 @@ sys.exit(1 if missing or extra or wrong_extras else 0)
 ```
 
 ```bash
-uv run --no-project --python 3.13 python .sdd/54-test-suite-registry/audit_commands.py
+uv run --no-project --python 3.13 python .sdd/55-test-suite-registry/audit_commands.py
 ```
 
 Expected: exit 0, `check 1: 19 CLAUDE.md commands, 19 registry runs` with no `only in` line, and `check 2: 0 suites whose comment deps differ from their extras`. With plan 52's entry, the counts are 20. Then read each printed `== <suite>` group. Every clause of each `comment:` line must appear in that suite's `note:` lines, its extras or its `pythons`, apart from the suite's own name. The comment of `systematic-debugging` also covers `brainstorming`, and `cc_guide` has no comment of its own. A missing clause fails the step: add it to the notes, and run Step 5 again.
@@ -1292,7 +1295,7 @@ git add build/suites.toml build/test_run_suites.py
 ```
 
 ```bash
-git commit -m "feat(build): register the directory suites in build/suites.toml (plan 54)" -m "Each entry carries its CLAUDE.md command and comment. A one-time audit matched every CLAUDE.md suite command to a registry run, with none left over."
+git commit -m "feat(build): register the directory suites in build/suites.toml (plan 55)" -m "Each entry carries its CLAUDE.md command and comment. A one-time audit matched every CLAUDE.md suite command to a registry run, with none left over."
 ```
 
 ### Task 6: The ninth commit lint
@@ -1415,7 +1418,7 @@ git add build/run_commit_lints.sh build/test_commit_lints.py build/CLAUDE.md
 ```
 
 ```bash
-git commit -m "feat(build): run_suites.py --check is the ninth commit lint (plan 54)" -m "A directory that holds pytest files cannot be committed until build/suites.toml registers it."
+git commit -m "feat(build): run_suites.py --check is the ninth commit lint (plan 55)" -m "A directory that holds pytest files cannot be committed until build/suites.toml registers it."
 ```
 
 ### Task 7: The `CLAUDE.md` Commands block
@@ -1423,7 +1426,7 @@ git commit -m "feat(build): run_suites.py --check is the ninth commit lint (plan
 **Files:**
 - Modify: `CLAUDE.md` (line 60; lines 66–125; lines 127–132; lines 141 and 145)
 - Modify: `build/test_check_conformance.py` (`test_claude_md_import_resolves_passes_on_the_repo`)
-- Scratch: `.sdd/54-test-suite-registry/compare_runs.py` and `shrink_claude_md.py` (never committed)
+- Scratch: `.sdd/55-test-suite-registry/compare_runs.py` and `shrink_claude_md.py` (never committed)
 
 **Interfaces:**
 - Consumes: the registry (Task 5), `run_suites.py` (Task 4), the lint named `suite_registry` (Task 6), and the build baseline (Task 1, Step 4).
@@ -1432,15 +1435,15 @@ git commit -m "feat(build): run_suites.py --check is the ninth commit lint (plan
 - [ ] **Step 1: Re-run the audit.** `CLAUDE.md` must not have changed since Task 5.
 
 ```bash
-uv run --no-project --python 3.13 python .sdd/54-test-suite-registry/audit_commands.py
+uv run --no-project --python 3.13 python .sdd/55-test-suite-registry/audit_commands.py
 ```
 
 Expected: exit 0, with the same counts as Task 5.
 
-- [ ] **Step 2: Compare direct and runner runs.** Create `.sdd/54-test-suite-registry/compare_runs.py`:
+- [ ] **Step 2: Compare direct and runner runs.** Create `.sdd/55-test-suite-registry/compare_runs.py`:
 
 ```python
-'''Plan 54, Task 7: compare direct and runner runs (scratch, never committed).
+'''Plan 55, Task 7: compare direct and runner runs (scratch, never committed).
 
 Run from the worktree root while CLAUDE.md still lists the per-suite commands:
     uv run --no-project --python 3.13 python <path to this file> [NAME ...]
@@ -1487,7 +1490,7 @@ sys.exit(1 if mismatched else 0)
 Run it in the background, because it takes about 6 minutes:
 
 ```bash
-uv run --no-project --python 3.13 python .sdd/54-test-suite-registry/compare_runs.py
+uv run --no-project --python 3.13 python .sdd/55-test-suite-registry/compare_runs.py
 ```
 
 Expected: exit 0, and `<suite>: same` for every suite, the build suite included. The build suite's `direct` and `runner` lines show the same summary as Task 1, Step 4, plus the passes from this plan's new tests. Write the 18 result pairs down for the completion report.
@@ -1500,10 +1503,10 @@ uv run --python 3.13 python build/run_suites.py --all
 
 Expected: a `skip cc_guide: the build suite collects build/cc_guide` line. Then one `== <suite> (<python>)` header per run, with each suite's notes after its first header. The last line is `suite runs passed`. In a worktree without `build/.scratch/`, it is instead `suite runs failed: build (3.13)` on stderr, with exit 1, matching Step 2.
 
-- [ ] **Step 4: Replace the per-suite commands.** Create `.sdd/54-test-suite-registry/shrink_claude_md.py`:
+- [ ] **Step 4: Replace the per-suite commands.** Create `.sdd/55-test-suite-registry/shrink_claude_md.py`:
 
 ```python
-'''Plan 54, Task 7: replace CLAUDE.md's per-suite commands (scratch, never committed).
+'''Plan 55, Task 7: replace CLAUDE.md's per-suite commands (scratch, never committed).
 
 Run from the worktree root, after the Stage 2 audit passes:
     uv run --no-project --python 3.13 python <path to this file>
@@ -1543,7 +1546,7 @@ print(f'replaced lines {start + 1}-{end + 1} with {len(BLOCK.splitlines())}; del
 ```
 
 ```bash
-uv run --no-project --python 3.13 python .sdd/54-test-suite-registry/shrink_claude_md.py
+uv run --no-project --python 3.13 python .sdd/55-test-suite-registry/shrink_claude_md.py
 ```
 
 Expected: `replaced lines 66-125 with 7; deleted line 145`.
@@ -1659,7 +1662,7 @@ git add CLAUDE.md build/test_check_conformance.py
 ```
 
 ```bash
-git commit -m "docs: CLAUDE.md points at run_suites.py instead of listing each suite (plan 54)" -m "build/suites.toml now carries each suite's command and notes. The one-time audit matched every removed command to a registry run, and every suite gave the same result direct and through the runner. CLAUDE.md drops from 199 lines to 145."
+git commit -m "docs: CLAUDE.md points at run_suites.py instead of listing each suite (plan 55)" -m "build/suites.toml now carries each suite's command and notes. The one-time audit matched every removed command to a registry run, and every suite gave the same result direct and through the runner. CLAUDE.md drops from 199 lines to 145."
 ```
 
 ---
@@ -1681,7 +1684,7 @@ git commit -m "docs: CLAUDE.md points at run_suites.py instead of listing each s
 
 ## Execution handoff
 
-Execute in a fresh session on Sonnet (the owner's routing: plan on Opus, execute on Sonnet), with this plan file as the handoff. Make the worktree from an up-to-date `main` after the plan merges, on a branch such as `feat/plan-54-suite-registry`. Subagent-driven development fits: each task has its own red and green cycle and its own commit, and only Task 7's comparison step runs long. Tasks 2–4 grow the same two files in order, so run them one at a time.
+Execute in a fresh session on Sonnet (the owner's routing: plan on Opus, execute on Sonnet), with this plan file as the handoff. Make the worktree from an up-to-date `main` after the plan merges, on a branch such as `feat/plan-55-suite-registry`. Subagent-driven development fits: each task has its own red and green cycle and its own commit, and only Task 7's comparison step runs long. Tasks 2–4 grow the same two files in order, so run them one at a time.
 
 ## Plan completion
 
