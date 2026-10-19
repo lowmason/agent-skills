@@ -22,11 +22,12 @@ The generator translates manifest syntax and Gemini tool names only. Codex and G
 
 ## Provenance is load-bearing — preserve it
 
-Skills come from five sources with distinct attribution, all tracked in `NOTICE`. **Read `NOTICE` before moving, renaming, or substantially rewriting any skill**, and keep it in sync:
+Skills come from six sources with distinct attribution, all tracked in `NOTICE`. **Read `NOTICE` before moving, renaming, or substantially rewriting any skill**, and keep it in sync:
 
 - **Lowell's originals** (MIT, `LICENSE`): `develop-testing-strategy`, `validate-data`, `explore-data`, `tech-debt`, `design-architecture`, `bls-data-context`, `recommend-probabilistic-model`, `recommend-visualization`, `track-model-experiments`, `tune-hyperparameters`, `creative-thinking`, `llm-wiki`, `describe-critique-methodology`, `derive-roadmap`, `classification-codes`, `geographic-codes`, `deep-learning`, `evaluate-deep-learning`, `optimize-jax`, `prepare-handoff`. (20 originals — keep in sync with `NOTICE`, which is authoritative.)
 - **`bayesian-workflow`** — adapted from Alexandre Andorra's PyMC skill, ported to NumPyro+JAX (MIT).
 - **`recommend-causal-design`** — planning workflow selectively adapted from Robson Tigre's `causal-planner` and Alexandre Andorra's `causal-inference` (MIT); newly written method references and memo contract, with both source notices in `LICENSE-causal-design-sources`.
+- **`write-with-asd-ste100`** and `rules/write-with-asd-ste100.md` — adapted from danyuchn's `asd-ste100-skill` and prithivrajmu's `asd-ste100` (MIT), with both notices in `LICENSE-write-with-asd-ste100-sources`; `scripts/ste-lint.py` is danyuchn's linter, copied unchanged, the one file exempt from the repo's Python style.
 - **superpowers skills** (MIT, © 2025 Jesse Vincent, `LICENSE-superpowers`): the 13 process skills (`brainstorming`, `writing-plans`, `test-driven-development`, etc.). These were adapted from the upstream `superpowers` plugin.
 - **clean-code family** — `clean-coder`, `clean-code`, and `rules/clean-code-python.md` adapt Robert C. Martin's *Clean Code* rule catalog (2008), cited by rule code only, no book prose; `clean-coder` also cites Beck's *Tidy First?*, Fowler's opportunistic refactoring, and Ousterhout's *APOSD* by idea only.
 
@@ -91,12 +92,6 @@ cd skills/bayesian-workflow/scripts && uv run --python 3.13 --with pytest --with
 # @needs_pilot tests read a pilot wiki at $LLM_WIKI_ROOT (default ~/research-wiki) and skip without one
 cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest -q
 
-# describe-critique-methodology decoupling-check tests
-cd skills/describe-critique-methodology/scripts && uv run --python 3.13 --with pytest python -m pytest -q
-
-# writing-plans deferred-backlog stats and entry-check tests (stdlib only; the entry-check tests build throwaway git repos)
-cd skills/writing-plans/scripts && uv run --python 3.13 --with pytest python -m pytest -q
-
 # geographic-codes build tests; the per-vintage workbook tests read the committed sources/
 cd skills/geographic-codes/scripts && uv run --python 3.13 --with pytest --with polars --with fastexcel python -m pytest -q
 
@@ -107,15 +102,18 @@ cd skills/classification-codes/scripts && uv run --python 3.13 --with pytest --w
 # shadows the stdlib `profile` module, but the repo-wide reason above is why this cd's in
 cd skills/explore-data/scripts && uv run --python 3.13 --with pytest --with polars python -m pytest -q
 
-# design-architecture ADR-scaffolder tests (stdlib only)
+# Stdlib-only suites, one per line: describe-critique-methodology's decoupling check, writing-plans' deferred-backlog
+# stats and entry check (the entry-check tests build throwaway git repos), design-architecture's ADR scaffolder,
+# subagent-driven-development's dispatch scripts (the tests drive its bash scripts), systematic-debugging's
+# find-polluter.sh, brainstorming's server (it needs node, else skips) and write-with-asd-ste100's vendored linter
+# (pinned bytes, self-test under 3.13 and /usr/bin/python3, JSON report)
+cd skills/describe-critique-methodology/scripts && uv run --python 3.13 --with pytest python -m pytest -q
+cd skills/writing-plans/scripts && uv run --python 3.13 --with pytest python -m pytest -q
 cd skills/design-architecture/scripts && uv run --python 3.13 --with pytest python -m pytest -q
-
-# subagent-driven-development dispatch-script tests (stdlib only; they drive its bash scripts)
 cd skills/subagent-driven-development/scripts && uv run --python 3.13 --with pytest python -m pytest -q
-
-# systematic-debugging find-polluter.sh and brainstorming server tests (stdlib only; the second needs node, else skips)
 cd skills/systematic-debugging && uv run --python 3.13 --with pytest python -m pytest -q
 cd skills/brainstorming/scripts && uv run --python 3.13 --with pytest python -m pytest -q
+cd skills/write-with-asd-ste100/scripts && uv run --python 3.13 --with pytest python -m pytest -q
 
 # read-only agent guard tests (Gate A: classifier units, payload contract). The guard is stdlib only and must stay
 # 3.9-compatible, so run BOTH: the first runs each contract test through the hook's shebang on the test's PATH and on

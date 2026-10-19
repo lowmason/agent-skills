@@ -360,6 +360,71 @@ def test_companions_keep_the_dependency_closure(tmp_path, skill, required):
   assert required <= links
 
 
+USER_RULE = 'write-with-asd-ste100'
+
+
+def test_full_claude_install_places_only_the_user_rules(tmp_path):
+  result = run_install(tmp_path, 'claude', skills=())
+  assert result.returncode == 0, result.stdout + result.stderr
+  rule = tmp_path / '.claude/rules' / f'{USER_RULE}.md'
+  assert rule.is_symlink() and rule.resolve() == REPO / 'rules' / f'{USER_RULE}.md'
+  assert [path.name for path in (tmp_path / '.claude/rules').iterdir()] == [f'{USER_RULE}.md']
+
+
+def test_rule_flag_installs_the_rule_and_the_skills_it_names(tmp_path):
+  result = run_install(tmp_path, 'claude', '--rule', USER_RULE, skills=())
+  assert result.returncode == 0, result.stdout + result.stderr
+  assert installed_links(tmp_path) == {f'.claude/rules/{USER_RULE}.md', f'.claude/skills/{USER_RULE}'}
+
+
+@pytest.mark.parametrize('runtime', ['codex', 'gemini'])
+def test_other_runtimes_place_no_rule(tmp_path, runtime):
+  result = run_install(tmp_path, runtime, '--rule', USER_RULE, skills=())
+  assert result.returncode == 0, result.stdout + result.stderr
+  assert installed_links(tmp_path) == {f'.agents/skills/{USER_RULE}'}
+
+
+def test_all_places_the_rule_for_claude_only(tmp_path):
+  result = run_install(tmp_path, 'all', '--rule', USER_RULE, skills=())
+  assert result.returncode == 0, result.stdout + result.stderr
+  assert installed_links(tmp_path) == {
+    f'.claude/rules/{USER_RULE}.md',
+    f'.claude/skills/{USER_RULE}',
+    f'.agents/skills/{USER_RULE}',
+  }
+
+
+def test_copy_copies_the_rule_file(tmp_path):
+  result = run_install(tmp_path, 'claude', '--rule', USER_RULE, '--copy', skills=())
+  assert result.returncode == 0, result.stdout + result.stderr
+  rule = tmp_path / '.claude/rules' / f'{USER_RULE}.md'
+  assert rule.is_file() and not rule.is_symlink()
+  assert rule.read_bytes() == (REPO / 'rules' / f'{USER_RULE}.md').read_bytes()
+
+
+def test_a_project_level_rule_is_refused_and_nothing_installs(tmp_path):
+  result = run_install(tmp_path, 'claude', '--rule', 'clean-code-python', skills=())
+  assert result.returncode == 1
+  assert 'unknown rule(s): clean-code-python' in result.stderr
+  assert tree(tmp_path) == []
+
+
+def test_skill_selection_alone_places_no_rule(tmp_path):
+  result = run_install(tmp_path, 'claude', skills=(USER_RULE,))
+  assert result.returncode == 0, result.stdout + result.stderr
+  assert installed_links(tmp_path) == {f'.claude/skills/{USER_RULE}'}
+
+
+def test_declared_dependencies_match_user_rule_text(monkeypatch):
+  install = load_install(monkeypatch)
+  assert install.USER_RULES, 'no user-level rule is declared, so the loop below would check nothing'
+  skills = {path.name for path in (REPO / 'skills').iterdir() if (path / 'SKILL.md').is_file()}
+  names = '|'.join(sorted(map(re.escape, skills), key=len, reverse=True))
+  for rule, declared in install.USER_RULES.items():
+    text = (REPO / 'rules' / f'{rule}.md').read_text()
+    assert set(declared) == set(re.findall(rf'(?<![\w/-])({names})(?![\w-])', text)), rule
+
+
 TEXT_SUFFIXES = {'.md', '.py', '.sh', '.js', '.cjs'}
 # Agents load a skill's SKILL.md, references, and scripts; READMEs and install
 # guides are for people, so their links are not dependencies.

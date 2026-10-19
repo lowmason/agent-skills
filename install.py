@@ -1,18 +1,22 @@
 #!/usr/bin/env python3
-# cc-guide: skills.locations commands.overview subagents.overview @2.1.288
-'''Install this repository's skills and runtime-native companion assets.
+# cc-guide: skills.locations commands.overview subagents.overview rules.rules-files rules.hierarchy @2.1.302
+'''Install this repository's skills, runtime-native companion assets and user-level rules.
 
 Examples:
   python3 install.py codex
   python3 install.py gemini --skill bayesian-workflow
   python3 install.py gemini --skill bayesian-workflow --companions
+  python3 install.py claude --rule write-with-asd-ste100
   python3 install.py all --copy
 
 Symlinks are the default, so edits to installed items are live; re-run after a
 pull that adds skills, agents, or commands.
-A full install also includes each runtime's companion agents and commands.
+A full install also includes each runtime's companion agents and commands, and
+for Claude the user-level rules in USER_RULES.
 --skill installs the named skills plus what they cannot work without (the
 DEPENDENCIES table in install.py); other companions only with --companions.
+--rule installs a user-level rule (Claude only) and the skills it names, in
+the same way.
 The installer never replaces a path it does not already manage, and a copy
 manages none, so --copy needs old copies removed first. It checks every
 destination before writing, so a conflict leaves nothing half-installed.
@@ -61,6 +65,15 @@ DEPENDENCIES: dict[str, tuple[str, ...]] = {
   'skill:writing-plans': ('command:deferred',),
 }
 
+# Rules that install at user level, for Claude only, each with the skills that
+# it names: a user-level rule loads in every session, so a skill it points to
+# must be installed with it. Every other rule in rules/ stays project-level, as
+# README.md records. build/test_runtime_support.py checks each entry against
+# the skill names in its rule's text.
+USER_RULES: dict[str, tuple[str, ...]] = {
+  'write-with-asd-ste100': ('write-with-asd-ste100',),
+}
+
 # .gitignore's generic entries, fixed here, for --copy where git keeps none of
 # a skill's files; patterns added to .gitignore later do not apply.
 FALLBACK_IGNORES = (
@@ -95,6 +108,21 @@ def selected_skills(requested: list[str] | None) -> list[str]:
   if unknown:
     raise InstallError(
       f'unknown skill(s): {", ".join(unknown)}; available: {", ".join(available)}'
+    )
+  return list(dict.fromkeys(requested))
+
+
+def rule_names() -> list[str]:
+  '''The user-level rules whose files exist in rules/.'''
+  return sorted(name for name in USER_RULES if (REPO / 'rules' / f'{name}.md').is_file())
+
+
+def selected_rules(requested: list[str]) -> list[str]:
+  available = rule_names()
+  unknown = sorted(set(requested) - set(available))
+  if unknown:
+    raise InstallError(
+      f'unknown rule(s): {", ".join(unknown)}; available: {", ".join(available) or "none"}'
     )
   return list(dict.fromkeys(requested))
 
@@ -135,12 +163,18 @@ def runtime_items(
   *,
   companions: bool,
   commands: Collection[str] = (),
+  rules: Collection[str] = (),
 ) -> list[InstallItem]:
   runtimes = REPO / 'runtimes'
+  rule_items: list[InstallItem] = []
   if runtime == 'claude':
     skill_root = home / '.claude' / 'skills'
     agent_items = file_items(REPO / 'agents', '.md', home / '.claude' / 'agents')
     command_items = file_items(REPO / 'commands', '.md', home / '.claude' / 'commands')
+    rule_items = [
+      InstallItem(REPO / 'rules' / f'{name}.md', home / '.claude' / 'rules' / f'{name}.md')
+      for name in rules
+    ]
   elif runtime == 'codex':
     skill_root = home / '.agents' / 'skills'
     agent_items = file_items(
@@ -159,8 +193,9 @@ def runtime_items(
     raise InstallError(f'unsupported runtime: {runtime}')
   skill_items = [InstallItem(REPO / 'skills' / name, skill_root / name) for name in skills]
   if companions:
-    return skill_items + agent_items + command_items
-  return skill_items + [item for item in command_items if item.source.stem in commands]
+    return skill_items + rule_items + agent_items + command_items
+  required = [item for item in command_items if item.source.stem in commands]
+  return skill_items + rule_items + required
 
 
 def plan(
@@ -170,11 +205,14 @@ def plan(
   *,
   companions: bool,
   commands: Collection[str] = (),
+  rules: Collection[str] = (),
 ) -> list[InstallItem]:
   runtimes = ('claude', 'codex', 'gemini') if runtime == 'all' else (runtime,)
   by_location: dict[Path, InstallItem] = {}
   for name in runtimes:
-    items = runtime_items(name, home, skills, companions=companions, commands=commands)
+    items = runtime_items(
+      name, home, skills, companions=companions, commands=commands, rules=rules
+    )
     for item in items:
       location = physical_location(item.destination)
       existing = by_location.get(location)
@@ -380,10 +418,19 @@ def main(argv: list[str] | None = None) -> int:
     'unless --companions is given',
   )
   parser.add_argument(
+    '--rule',
+    action='append',
+    dest='rules',
+    metavar='NAME',
+    help='install this user-level rule (repeatable; Claude only) and the skills '
+    'it names, instead of everything; other companions are then skipped unless '
+    '--companions is given',
+  )
+  parser.add_argument(
     '--companions',
     action=argparse.BooleanOptionalAction,
     help="also install the runtime's agents and commands; "
-    'default: on for a full install, off with --skill; turning it off '
+    'default: on for a full install, off with --skill or --rule; turning it off '
     'also drops the commands a skill requires',
   )
   parser.add_argument(
@@ -399,11 +446,14 @@ def main(argv: list[str] | None = None) -> int:
     help=argparse.SUPPRESS,
   )
   args = parser.parse_args(argv)
-  companions = not args.skills if args.companions is None else args.companions
+  selective = bool(args.skills or args.rules)
+  companions = not selective if args.companions is None else args.companions
   try:
-    skills = selected_skills(args.skills)
+    rules = selected_rules(args.rules or []) if selective else rule_names()
+    named = (args.skills or []) + [skill for rule in rules for skill in USER_RULES[rule]]
+    skills = selected_skills(named if selective else None)
     commands: list[str] = []
-    if args.skills:
+    if selective:
       # --companions installs every command, so their dependencies come too.
       every_command = [path.stem for path in files(REPO / 'commands', '.md')]
       skills, commands = with_dependencies(skills, every_command if companions else ())
@@ -415,6 +465,7 @@ def main(argv: list[str] | None = None) -> int:
       skills,
       companions=companions,
       commands=commands,
+      rules=rules,
     )
     # Decide each copy's files once, so the symlink check sees what is copied.
     # A linked source is refused whole, so its target is never scanned.

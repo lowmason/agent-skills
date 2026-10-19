@@ -1,7 +1,9 @@
 # write-with-asd-ste100 — Design Spec
 
-**Status:** Design approved in brainstorming on 2026-10-18. Next step: an implementation plan from the
-writing-plans skill.
+**Status: COMPLETE (2026-10-18)** — implemented by plan 52 (`specs/plans/completed/52-write-with-asd-ste100.md`) and
+retired here. Design approved in brainstorming on 2026-10-18. The always-on rule's form and the skill's text were
+chosen by pre-registered test runs (`specs/write-with-asd-ste100-test-record.md`). Task 11 of the plan, the live
+install, runs after the merge.
 
 ## What this builds
 
@@ -319,7 +321,7 @@ records gain those two sections, and the installer entry's description gains rul
   - **Newly written by Lowell Mason (MIT):** the audience switch, the always-on rule, the label rule,
     the document-rewrite procedure and the examples.
 - The test record that holds the eval cases credits prithivrajmu too.
-- **ASD-STE100.** The skill cites the standard by issue and rule number, in original wording. It
+- **ASD-STE100.** The skill cites the standard by issue (Issue 9) and gives no rule number, in original wording. It
   bundles nothing from the specification or its dictionary. Both upstreams leave the dictionary out
   for the same reason. As danyuchn's skill reports, Issue 9 allows reproduction only with ASD's
   written authority, or by eight listed kinds of organization. This repo is none of them.
@@ -449,7 +451,8 @@ This spec fixes these rules now, before any run.
   fewer on every other habit.
 - **Habits the model already follows.** A habit that the no-rule arm passes in every pooled run
   leaves the rule. The skill may keep it. The line that names the standard leaves only if every
-  prose habit qualifies.
+  prose habit qualifies. The literal-text and existing-text lines never leave: they guard against
+  an effect of the rule itself, which the no-rule arm cannot show. (owner, plan 52, 2026-10-18)
 - **No new guidance without a failure.** A skill case that the baseline passes in 5 of 5 runs receives
   no guidance beyond the approved design.
 - **Pass.** The skill passes a case when at least 4 of 5 runs meet every check. A failing case receives
