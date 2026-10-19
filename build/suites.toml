@@ -1,0 +1,149 @@
+# Test-suite registry: one [[suite]] table for each directory-scoped pytest suite,
+# sorted by name. build/run_suites.py reads it, and `run_suites.py --check`, a
+# commit lint, fails when a directory that holds pytest files lies inside no
+# registered suite directory. Design: specs/test-suite-registry.md (R2).
+#
+#   name     the name run_suites.py takes
+#   dir      the repo-relative directory pytest runs from
+#   with     the default --with deps, in the order a run passes them; includes pytest
+#   extras   optional: the deps that unlock skips, added only by --extras
+#   pythons  optional: one run per interpreter, in order (default ['3.13'])
+#   notes    optional: what the suite covers or needs; --list prints them, and a run
+#            prints them after its first header
+
+[[suite]]
+name = 'bayesian-workflow'
+dir = 'skills/bayesian-workflow/scripts'
+with = ['pytest', 'arviz', 'arviz-stats', 'numpy', 'xarray']
+extras = ['matplotlib']
+notes = [
+    'Script tests: MCSE precision, divergence-gate and calibration next steps and verdicts, figures, --ci-prob, --loo-pit group checks.',
+    '--extras (matplotlib) runs the figure test.',
+    'CALIBRATION_SWEEP=1 runs the pre-registered acceptance sweep over both paths (seeds 0-99, about 1.5 min; -s prints its counts).',
+    "arviz's \"invalid value encountered in scalar divide\" warnings on the constant-parameter fixture are expected, not silenced.",
+]
+
+[[suite]]
+name = 'brainstorming'
+dir = 'skills/brainstorming/scripts'
+with = ['pytest']
+notes = ['Server tests (stdlib only); they need node, else skip.']
+
+[[suite]]
+name = 'build'
+dir = 'build'
+with = ['pytest', 'numpy', 'polars', 'pyyaml']
+extras = ['arviz>=1.0', 'arviz-base', 'arviz-stats', 'arviz-plots', 'numpyro', 'jax', 'matplotlib']
+notes = [
+    'Every build-directory test, build/cc_guide/ included. Without --extras, the snippet tests that need the stack skip.',
+    "A fresh clone or worktree lacks the gitignored build/.scratch/, so test_verify_citations.py's ground-truth tests fail or skip there.",
+]
+
+[[suite]]
+name = 'cc_guide'
+dir = 'build/cc_guide'
+with = ['pytest']
+notes = ["The Claude Code guide drift detector's tests. The build suite collects them too, so --all runs them there."]
+
+[[suite]]
+name = 'classification-codes'
+dir = 'skills/classification-codes/scripts'
+with = ['pytest', 'polars']
+notes = ['Build tests (fixtures are in-memory frames, so no workbook reader is needed).']
+
+[[suite]]
+name = 'describe-critique-methodology'
+dir = 'skills/describe-critique-methodology/scripts'
+with = ['pytest']
+notes = ['Decoupling-check tests.']
+
+[[suite]]
+name = 'design-architecture'
+dir = 'skills/design-architecture/scripts'
+with = ['pytest']
+notes = ['ADR-scaffolder tests (stdlib only).']
+
+[[suite]]
+name = 'explore-data'
+dir = 'skills/explore-data/scripts'
+with = ['pytest', 'polars']
+notes = [
+    "profile.py tests (its --json contract is recommend-visualization's input).",
+    "profile.py shadows the stdlib profile module, but the repo-wide reason in CLAUDE.md's Commands section is why it runs from its own directory.",
+]
+
+[[suite]]
+name = 'geographic-codes'
+dir = 'skills/geographic-codes/scripts'
+with = ['pytest', 'polars', 'fastexcel']
+notes = ['Build tests; the per-vintage workbook tests read the committed sources/.']
+
+[[suite]]
+name = 'hooks'
+dir = 'hooks'
+with = ['pytest']
+pythons = ['3.13', '/usr/bin/python3']
+notes = [
+    'Read-only agent guard tests (Gate A: classifier units, payload contract).',
+    "The guard is stdlib only and must stay 3.9-compatible, so both runs matter: the 3.13 run tests each contract through the hook's shebang on the test's PATH and on launchd's /usr/bin-first PATH (under uv run the shebang resolves to uv's pinned python); the /usr/bin/python3 run tests the whole suite under the 3.9 floor.",
+    'Where /usr/bin/python3 is missing or not 3.9, the launchd-PATH runs skip (-rs shows why) and the floor goes untested.',
+    'Gate B is the live probe, ./hooks/probe-readonly-guard.sh, which spawns claude -p.',
+]
+
+[[suite]]
+name = 'llm-wiki'
+dir = 'skills/llm-wiki/scripts'
+with = ['pytest']
+notes = [
+    'Bundled wiki-script tests (bootstrap, lint, session and specs distillers; stdlib only).',
+    'The @needs_pilot tests read a pilot wiki at $LLM_WIKI_ROOT (default ~/research-wiki) and skip without one.',
+]
+
+[[suite]]
+name = 'recommend-probabilistic-model'
+dir = 'skills/recommend-probabilistic-model/scripts'
+with = ['pytest', 'numpy', 'polars']
+notes = ['Signal-extractor tests.']
+
+[[suite]]
+name = 'recommend-visualization'
+dir = 'skills/recommend-visualization/scripts'
+with = ['pytest', 'numpy', 'polars']
+notes = ['Router tests.']
+
+[[suite]]
+name = 'subagent-driven-development'
+dir = 'skills/subagent-driven-development/scripts'
+with = ['pytest']
+notes = ['Dispatch-script tests (stdlib only; they drive its bash scripts).']
+
+[[suite]]
+name = 'systematic-debugging'
+dir = 'skills/systematic-debugging'
+with = ['pytest']
+notes = ['find-polluter.sh tests (stdlib only).']
+
+[[suite]]
+name = 'track-model-experiments'
+dir = 'skills/track-model-experiments/scripts'
+with = ['pytest', 'numpy', 'polars', 'arviz', 'numpyro', 'h5netcdf', 'h5py']
+notes = [
+    'Ledger/compare tests (~20–50 s, depending on the uv cache).',
+    'They round-trip InferenceData to .nc, so they need the full numpyro + NetCDF-writer chain.',
+]
+
+[[suite]]
+name = 'tune-hyperparameters'
+dir = 'skills/tune-hyperparameters/scripts'
+with = ['pytest', 'numpy', 'polars']
+extras = ['scikit-learn', 'optuna']
+notes = [
+    'CV-splitter tests; --extras (scikit-learn, optuna) runs their skips.',
+    'The package is scikit-learn: --with sklearn fails.',
+]
+
+[[suite]]
+name = 'writing-plans'
+dir = 'skills/writing-plans/scripts'
+with = ['pytest']
+notes = ['Deferred-backlog stats and entry-check tests (stdlib only; the entry-check tests build throwaway git repos).']

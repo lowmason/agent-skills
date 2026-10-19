@@ -297,3 +297,10 @@ def test_a_run_that_cannot_start_fails(tmp_path, capsys):
     [run] = rs.runs(rs.Suite('ghost', 'missing', ('pytest',)))
     assert rs.run_subprocess(tmp_path, run) == 1
     assert 'ghost (3.13): cannot start' in capsys.readouterr().err
+
+
+# --- the real registry ---
+
+def test_the_real_registry_passes_check():
+    data = tomllib.loads((rs.REPO / rs.REGISTRY).read_text(encoding='utf-8'))
+    assert rs.check(rs.REPO, data) == []
