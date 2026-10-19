@@ -3,8 +3,22 @@
 **Status: DRAFT (2026-10-19).** The owner approved the four design sections in a
 brainstorming session on 2026-10-19. This written spec waits for the owner's
 review. Next step: an implementation plan from the writing-plans skill.
-One detail changed while writing: the preflight script reads the great-docs
-version from `uv.lock`, not with `importlib.metadata` (R3.2 gives the reason).
+
+These changes were made after the sections were approved, while writing and in
+a review pass against the v0.17.0 source:
+
+1. The preflight script reads the great-docs version from `uv.lock`, not with
+   `importlib.metadata` (R3.2 gives the reason).
+2. A package with no pin is the normal first state, so the script exits 0 with
+   `next: pin`. The approved text listed it as a stop (R3.7).
+3. The API-reference check moved from `init` to `build`, because the 0.17.0
+   source skips the API reference during `build` (R4.3, R4.9, S1, S2).
+4. R2 now lists each official instruction that the layer overrides, and it
+   bans running the official skills' scripts.
+5. The owner chose D8 (plan 53) on 2026-10-19.
+6. The file is `specs/document-python-package-spec.md`, not the approved
+   `specs/document-python-package.md`. The three live specs in `specs/` all
+   use the `-spec` suffix.
 
 ## Purpose and scope
 
@@ -62,7 +76,9 @@ These facts were read on 2026-10-19 from tag `v0.17.0` (commit
 | The URL route reads `/.well-known/agent-skills/` on a docs site | `great_docs/_skill_install.py:138` |
 | The tag's own CLI reference lists 7 commands. The 0.17.0 CLI also has `lint`, `check-links`, `proofread`, `seo`, `freeze`, `api-diff` and more | `skills/great-docs/references/cli-reference.md`, and the `add_command` calls in `great_docs/cli.py` |
 | `init` has only `--project-path` and `--force`. `--force` deletes an existing `great-docs.yml`, and it also skips the `.gitignore` prompt | `great_docs/cli.py:156`, `great_docs/core.py:753` and `:804` |
-| The `.gitignore` prompt calls `input()` with no `EOFError` guard, so no stdin means exit 1. The later package-name prompt catches `EOFError` | `great_docs/core.py:829`, `:11289` |
+| The `.gitignore` prompt calls `input()` with no `EOFError` guard, so no stdin means exit 1. The package-name prompt (next row) catches `EOFError` | `great_docs/core.py:829`, `:11289` |
+| The package-name prompt runs during `build`, not `init`. With no stdin, `build` prints "Skipping API reference configuration" and goes on with no API reference. Three other messages also mean that `build` went on with no API reference | `great_docs/core.py:568`, `:11247`, `:11259`, `:11267`, `:11292`, `:11327`, `:15861` |
+| The official `great-docs` skill bundles `scripts/setup-env.sh`, which makes a venv and runs `pip install great-docs` with no pin. Its SKILL.md also gives `pip install --upgrade great-docs` and `pip install -e .` | `skills/great-docs/scripts/setup-env.sh`, `skills/great-docs/SKILL.md:31`, `:178`–`:179`, `:315` |
 | `lint` exits 1 only when it finds errors | `great_docs/cli.py:2577` |
 | `lint` errors: a config error, a missing docstring on a public export, a broken `%seealso` reference. Warnings: a missing docstring on a public method, a style mismatch, an unknown directive | `great_docs/_lint.py:104`–`:165`, `:247`, `:269`, `:315`, `:406`, `:458` |
 | With a `uv.lock`, `setup-github-pages` writes a workflow that runs `uv sync` and then `uv pip install great-docs`, the latest release with no pin | `great_docs/cli.py:1442`, `:1448`–`:1450` |
@@ -82,6 +98,7 @@ These facts were read on 2026-10-19 from tag `v0.17.0` (commit
 | D5 | The package's auto-generated `SKILL.md` | Keep Great Docs' default (on) | Turn it off, or keep it on with a review step |
 | D6 | ADRs in a repo with a Great Docs site | `specs/adr/`, off the site | `docs/adr/` as a site section, or generic wording |
 | D7 | Skill shape | SKILL.md plus one tested preflight script | Prose only, or a gate script as well |
+| D8 | How plan 53 learns of this skill, if this skill lands first | One dated line in plan 53's Global Constraints (sequencing item 5) | Land after plan 53, or leave plan 53 alone |
 
 ## Requirements
 
@@ -136,6 +153,18 @@ SKILL.md states this order, highest first:
 
 The skill never reads main-branch text or the docs site's skills, and it never
 runs `great-docs skill install`.
+
+The cached skills' `scripts/` folders are for reference only. The agent never
+runs them. SKILL.md names each official instruction that the layer overrides:
+
+| The official skills say | The layer does instead |
+|---|---|
+| `pip install great-docs`, or `pip install --upgrade great-docs` / `uv pip install --upgrade great-docs` | The pinned `docs` group and `uv lock` (R4.2). No upgrade outside the tested range |
+| `pip install -e .` before a build | `uv sync` and `uv run`, which install the project itself |
+| Run `scripts/setup-env.sh` | Never run it. R4.2 replaces it |
+| Run `scripts/run-build.sh`, or a bare `great-docs build` | `uv run great-docs build </dev/null` inside the gate (R4.9) |
+| `great-docs init --force` to reset a config | Never run `init` when a config exists (R4.3) |
+| A bare `great-docs <command>` | `uv run great-docs <command>` |
 
 ### R3 — `scripts/preflight.py`
 
@@ -215,10 +244,9 @@ again, so that it fetches the official skills and names the next step.
 R4.3 **Init, only when the layout is `none`.** Run
 `uv run great-docs init --force </dev/null`. Here `--force` only skips the
 `.gitignore` prompt, because no config exists for it to delete. After `init`,
-check three things: `great-docs.yml` has `parser: numpy`, discovery used
-`__all__`, and the output does not say that the API reference was skipped. When
-a config exists, never run `init`. Edit `great-docs.yml` as `configure-site`
-describes.
+check two things: `great-docs.yml` has `parser: numpy`, and it lists the
+package's `__all__` exports. When a config exists, never run `init`. Edit
+`great-docs.yml` as `configure-site` describes.
 
 R4.4 **Docstrings.**
 
@@ -263,11 +291,19 @@ generated `uv pip install great-docs` line, because `uv sync` already installs
 the pinned `docs` group (R4.2). Do this again after every regeneration of the
 workflow.
 
-R4.9 **Gate.** The work is done only when all three of these exit 0, run from
-the package root:
+R4.9 **Gate.** The work is done only when all three of these checks pass, run
+from the package root:
 
 1. `uv run great-docs lint`
-2. `uv run great-docs build`
+2. `uv run great-docs build </dev/null`. The `</dev/null` keeps any prompt from
+   waiting for input. The build check passes only when all three of these hold:
+   - The command exits 0.
+   - Its output has none of the four lines that skip the API reference:
+     - "Skipping API reference configuration"
+     - "API reference skipped (non-Python project)"
+     - "No documentable exports found — skipping API reference"
+     - "API reference disabled (reference: false), skipping"
+   - The built site has its API reference index page (the path comes from S2).
 3. the completeness check over the `__all__` exports (the tool and its command
    come from S7)
 
@@ -290,9 +326,9 @@ problem.
   (preflight): the report gives git's error. The skill never falls back to main,
   the docs site or `skill install`.
 - **Quarto is missing** (preflight): the report points to Quarto's install page.
-- **`init` says it skipped the API reference** (the agent reads `init`'s output).
 - **A gate check fails** (the agent): the work is not done. The report names the
-  check and gives its output.
+  check and gives its output. A build that skipped the API reference is a
+  failed gate check (R4.9).
 
 ### R6 — Repo integration
 
@@ -346,10 +382,11 @@ as hard (`DEPENDENCIES`) or soft (`SOFT_REFERENCES`, with a reason).
    header and runs with `uv run`, its folder carries a `LICENSE` copy, and its
    frontmatter carries `license`. Plan 53's planning record counts 17 runnable
    scripts, and `preflight.py` makes 18. If this skill lands first, its plan
-   adds one dated line to plan 53's Global Constraints. The line names
+   adds one dated line to plan 53's Global Constraints (D8). The line names
    `document-python-package/scripts/preflight.py` as a script that already
-   conforms and says that the skill's `LICENSE` copy already exists. If plan 53
-   lands first, nothing extra is needed.
+   conforms. It also says that the skill's `LICENSE` copy already exists and
+   that plan 53's executor should expect 18 scripts. If plan 53 lands first,
+   nothing extra is needed.
 
 ## Validation and acceptance
 
@@ -361,8 +398,8 @@ dated tag, before the next task starts.
 
 | # | Question | If the answer contradicts the spec |
 |---|---|---|
-| S1 | Does `init --force </dev/null` exit 0, write `.gitignore` and configure the API reference? | R4.3 changes its command |
-| S2 | Does `build` succeed end to end? | The plan stops and the owner decides |
+| S1 | Does `init --force </dev/null` exit 0, write `.gitignore` and list the `__all__` exports in `great-docs.yml`? | R4.3 changes its command |
+| S2 | Does `build </dev/null` succeed end to end, and where in the built site is the API reference index page? | If the build fails, the plan stops and the owner decides. The page's path goes into R4.9 |
 | S3 | Does a failing `{python}` cell fail the build, in a docstring and in a page? | The gate (R4.9) gains a check that fails on a cell error |
 | S4 | Where does `_freeze/` land? | R4.7 names the path |
 | S5 | With `docs` in `default-groups`, does `uv sync` install the pin? | R4.8 changes the workflow's `uv sync` to `uv sync --group docs` |
