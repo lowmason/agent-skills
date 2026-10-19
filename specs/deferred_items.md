@@ -4949,10 +4949,11 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
 
 ## 55-test-suite-registry — 2026-10-18
 - [ ] Run the registered suites in CI (the spec's Out of scope).
-      `.github/workflows/lints.yml` runs the commit lints on PRs and `main`. It runs no
-      pytest suite. Today `run_suites.py --all` runs them by hand. CI would need node, a 3.9
-      `/usr/bin/python3` and `build/.scratch/`. See specs/completed/test-suite-registry.md.
-      Size: design. Revisit if: the owner wants suites in CI.
+      `.github/workflows/lints.yml` runs the commit lints on PRs and `main`. Two of those
+      lints run a pytest selection, but no registered suite runs in full. Today
+      `run_suites.py --all` runs them by hand. CI would need node, a 3.9 `/usr/bin/python3`
+      and `build/.scratch/`. See specs/completed/test-suite-registry.md. Size: design.
+      Revisit if: the owner wants suites in CI.
 - [ ] Add parallel runs, per-suite timeouts and machine-readable output to
       `build/run_suites.py` (the spec's Out of scope). Today `--all` runs the suites one
       after the other, with no time limit, and prints text only. See
