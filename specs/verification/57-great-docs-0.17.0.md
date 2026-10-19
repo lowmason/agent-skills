@@ -75,6 +75,27 @@ Paths below are from the fixture's root.
 - Answer: a failing cell fails the build, in a docstring and in a page.
   `DOCSTRING_CELLS_RUN` = `yes`, `CELL_ERROR` = `fails` and
   `CELL_ERROR_MARKER` = `none`.
+- Freeze probe (plan 57, D10 and D11). Every build prints
+  `Freeze mode: auto`, and the generated `great-docs.yml` says
+  `#   : auto - (default) re-render only when the source changes`. The
+  `s3-page` build listed `[6/9] reference/summarize.qmd` with no
+  `Executing 'summarize.quarto_ipynb'` line after it, while the new page
+  printed `Executing 'failing.quarto_ipynb'`. A probe then added a line to the
+  `summarize` example that appends `ran;` to a file outside the fixture:
+  - Build A, the docstring changed: `exit 0`, the file held `ran;`.
+  - Build B, no change: `exit 0`, the file still held `ran;`. The example did
+    not run.
+  - Build C, after `_freeze/` and `great-docs/` were deleted: `exit 0`, the
+    file held `ran;ran;`.
+  - Build E, the docstring restored and `summarize`'s body changed to raise
+    `RuntimeError('body broken')`: `exit 0`, no `body broken` line in the log,
+    and the page still showed `{'mean': 20.0, 'min': 10.0, 'max': 30.0}`.
+  So docstring examples are frozen like the user-guide pages. They run when
+  their docstring changes and on a build with no `_freeze/` cache. A change to
+  the function body alone reuses the frozen output, so the build check does
+  not catch an example that no longer runs (D11, deferred). `core.py` was
+  restored after each probe, and its logs are `s3-probe-a.log` to
+  `s3-probe-e.log`.
 
 ### S4: the freeze cache
 

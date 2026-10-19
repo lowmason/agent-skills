@@ -287,8 +287,10 @@ shapes the prose.
 
 R4.7 **Executed examples.**
 
-- Docstring examples run on every build (spike S3, plan 57, 2026-10-19).
-  Keep them fast and deterministic: no MCMC, no network, fixed seeds.
+- Docstring examples run when their docstring changes, and on any build with
+  no `_freeze/` cache, such as CI without a committed cache
+  (spike S3, plan 57, 2026-10-19). Keep them fast and deterministic: no MCMC,
+  no network, fixed seeds.
 - Put slow work, such as MCMC, in user-guide pages under `freeze: auto`. Commit
   the `_freeze/` cache (spike S4, plan 57, 2026-10-19), so that CI
   renders the pages without running the code again.

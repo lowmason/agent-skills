@@ -43,6 +43,8 @@ These come from the spec unless a line says otherwise. Every task's requirements
 - **D7** (owner, brief, 2026-10-19): a SKILL.md change from the final whole-branch review, after GREEN: "The fix waits for you. You then choose: re-run GREEN for the scenarios it touches, or ship it with the skill-test record naming the text that GREEN did not measure." Applied in: the whole-branch review (executing-plans, Step 3).
 - **D8** (owner, brief, 2026-10-19): the execution model: "Since it is inline, run using opus." The execution session runs on Opus, in place of the Sonnet in D1 and D5. Applied in: Execution handoff.
 - **D9** (owner, execution session, 2026-10-19): the execution worktree. The app started the execution session in its own worktree, `keen-kilby-445f76`, on `claude/agent-skills-handoff-execution-187eb5`, where its Edit tool cannot write to a second worktree. The owner chose: "I run git merge --ff-only feat/document-python-package on this session's branch (it has no commits, so it moves to 407d1e0) and execute here. At the end you decide how feat/document-python-package gets the commits (a fast-forward of that worktree, or this branch as the PR branch)." So "the execution branch" in Task 1, Step 1 and "the execution worktree" in Global Constraints mean this worktree and branch, and `feat/document-python-package` stays at `407d1e0`. Applied in: every task, and finishing-a-development-branch.
+- **D10** (owner, execution session, 2026-10-19): the docstring-example sentence. A spike S3 probe on the scratch fixture showed that great-docs 0.17.0 freezes docstring examples by default (`Freeze mode: auto`). An example ran when its docstring changed and when no `_freeze/` existed. It did not run on an unchanged rebuild. So "Docstring examples run on every build" was wrong. The owner chose: "Before Step 6, I replace the sentence in the spec's R4.7 and in fill_slots.py's `yes` text (and its block in the plan), add the probe to the spike record's S3, and log it as D10. GREEN then measures the corrected text." Applied in: Appendix D (`fill_slots.py`), the spec's R4.7 and the spike record's S3. Deviation: R4.7 was corrected by hand after Task 1, Step 19, so Appendix C's `s3-docstrings-run` block keeps the text that Step 19 applied, not the text that ships.
+- **D11** (owner, execution session, 2026-10-19): the frozen-example gap. The same probe showed that after a change to a function's body, with its docstring unchanged, the build exits 0 and the page shows the stale frozen output. So a broken example can pass the gate's build check. The owner chose: "I record it in the spike record and add a deferred item (size: design). Plan 57 adds no gate change, because no RED reply showed this failure (DF14)." Applied in: the spike record's S3, and Plan completion.
 
 ---
 
@@ -994,6 +996,7 @@ Run writing-plans' Plan Completion Protocol after Task 6 and the final review, b
 
 - [ ] A new spike for great-docs 0.18 (the spec's Out of scope: the post-migration `docs/` layout). The skill stops on any version outside `>=0.17.0,<0.18` and on a `docs` or `both` layout. Widening the range takes a new spike against the new release, a new range in `skills/document-python-package/scripts/preflight.py` (`LOWEST`, `FIRST_EXCLUDED`, `RANGE`) and in SKILL.md, and a check of the five official skills at the new tag. Size: plan. Revisit if: PyPI publishes great-docs 0.18.0 or later.
 - [ ] Internal hosts and package indexes (the spec's D1 and Out of scope). The skill covers github.com, PyPI and GitHub Pages only. Size: design. Revisit if: the owner documents a package that is not public.
+- [ ] A gate check for stale frozen examples (D11). great-docs 0.17.0 freezes every executed page by default (`Freeze mode: auto`), docstring examples included. After a change to a function's body with its docstring unchanged, `uv run great-docs build` exits 0 and the page shows the stale frozen output, so the gate's build check passes a broken example. A fix might build with `freeze: false` in `great-docs.yml` inside the gate, or check the examples another way. Evidence: the spike record's S3 (`specs/verification/57-great-docs-0.17.0.md`). Size: design. Revisit if: an agent or a user ships a docstring example that no longer runs, or the owner wants the gate to prove that every example runs.
 - [ ] Curating the package's published `SKILL.md` (the spec's D5 and Out of scope). Great Docs publishes one by default, and this skill keeps that default with no review step. Size: design. Revisit if: the owner wants to review or edit the generated skill.
 
 ---
@@ -2409,8 +2412,9 @@ VARIANTS = {
         'no': 'The site takes its meta description from {{META_SOURCE}}, not from this paragraph.',
     }),
     'DOCSTRING_EXAMPLES_BULLET': ('DOCSTRING_CELLS_RUN', {
-        'yes': '- Docstring examples run on every build. Keep them fast and deterministic: '
-               'no MCMC, no network, fixed seeds.',
+        'yes': '- Docstring examples run when their docstring changes, and on any build with no '
+               '`{{FREEZE_DIR}}` cache, such as CI without a committed cache. Keep them fast and '
+               'deterministic: no MCMC, no network, fixed seeds.',
         'no': '- The build shows docstring examples but never runs them. Run each one before '
               'you commit it, and keep it fast and deterministic: no MCMC, no network, fixed seeds.',
     }),
