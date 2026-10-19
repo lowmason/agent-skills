@@ -65,18 +65,18 @@ print(loo)
 - `pareto_k`: Per-observation diagnostic. Flags influential or poorly-fit observations.
 - `elpd_i`: Per-observation ELPD (a DataArray) — the basis for pointwise model comparison.
 
-**Pareto k diagnostic** — Critical for trusting LOO results:
+**Pareto k diagnostic** — Critical for trusting LOO results. The threshold depends on the number of posterior draws S (chains × draws): `good_k = min(1 − 1/log10(S), 0.7)`, which is 0.7 above about 2,200 draws and about 0.66 at 4 × 200 (<https://mc-stan.org/loo/reference/pareto-k-diagnostic.html>; the old fixed 0.5 band is retired). ArviZ 1.x reports it as `loo.good_k`, and `diagnose_model.py` writes it to `diagnostics.json → loo.pareto_k.good_k`.
 
 | Pareto k | Interpretation | Action |
 |---|---|---|
-| < 0.5 | Reliable | Trust LOO estimate |
-| 0.5–0.7 | Marginally reliable | Investigate flagged observations |
-| > 0.7 (or > `loo.good_k`) | Unreliable for that observation | Use K-fold CV or moment matching |
+| ≤ `good_k` | Reliable | Trust the LOO estimate |
+| `good_k` < k ≤ 0.7 | Unreliable, but only because S is small | Run more draws: above about 2,200, `good_k` reaches 0.7 |
+| > 0.7 | Unreliable for that observation; more draws do not help | Get exact values for those points: `azs.reloo` (one refit per flagged point) or `azs.loo_kfold` (K refits), both through an `azs.SamplingWrapper` subclass for your model, or `azs.loo_moment_match` with your model's log-density functions (it builds them itself only for PyMC and Bambi). Or use a more robust likelihood |
 
 ```python
 # Find problematic observations
 pareto_k = loo.pareto_k.values
-bad_obs = np.where(pareto_k > 0.7)[0]
+bad_obs = np.where(pareto_k > loo.good_k)[0]
 print(f"Observations with high Pareto k: {bad_obs}")
 
 # Visualize (pass the LOO object, not the InferenceData)

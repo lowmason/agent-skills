@@ -1,5 +1,7 @@
 # Diagnostics Harness Verdicts Implementation Plan
 
+**Status: COMPLETE (2026-10-19)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Stop bayesian-workflow's two diagnostics scripts from reporting a clean result for checks that never ran or that failed (audit-3-10-26 X1 and X2), and move their Pareto-k bands to loo's sample-size threshold (F8).
@@ -31,6 +33,7 @@ Every task's requirements include these.
 - **D1** (owner, planning, 2026-10-18): Pareto-k, the option "Sample-size cutoff": "Cut at loo's current threshold, min(1 − 1/log10 S, 0.7). diagnose_model.py computes it from the draw count, so every ArviZ version still gives the same rating and the recorded reason holds. It stays 0.7 at 4×1000 draws and is about 0.656 at the 4×200 exploring size. reloo and loo_moment_match already default to it. The JSON carries it as good_k." The bands, as the option showed them: k ≤ good_k is reliable, so LOO rates excellent; good_k < k ≤ 0.7 is unreliable, so LOO rates fair with a "more draws may fix it" step; k > 0.7 or a non-finite k is unreliable, so LOO rates poor with the remedies named. Applied in: Task 4.
 - **D2** (owner, planning, 2026-10-18): checks that never ran, the option "All three": "Tree depth (no reached_max_tree_depth), E-BFMI (no energy, which NumPyro stores only if extra_fields asks for it) and divergences (no diverging, as on a hand-built BlackJAX InferenceData). Each writes checked: false, and the all-clear names it." Applied in: Tasks 2 and 3.
 - **D3** (owner, plan review, 2026-10-19): the two scope extras, the option "Keep as planned": "Keep both extras in plan 56 as planned: the E-BFMI next step (DF11) and the narrow writer verdict (DF12)." Applied in: Task 3 (DF11) and Task 1 (DF12), unchanged.
+- **D4** (owner, brief, 2026-10-19): the ten settled defaults, the option "Approved as written": "The execution session logs D4 in the plan's Decisions section and builds DF1–DF10 as written." Applied in: Tasks 1–4, unchanged.
 
 ---
 
@@ -124,7 +127,7 @@ The audit's B3 grouped section 34 with X1, X2 and F8 when four of its items were
 - Produces, in `diagnose_model.py`: `REL_MCSE_OK = 0.05`, and two overall issues: "Max relative MCSE … is above the 0.05 bar — run more draws before reporting" and "LOO not computed: <error>".
 - Produces, in the tests: `_clean_diagnostics()`, `WELL_CALIBRATED`, `LOW_PSENSE`, `_steps`, `_one_step`, `_proceeds` (reader tests); `PASSING_PRECISION`, `_stub_checks` and `test_the_two_scripts_share_their_thresholds` (writer tests).
 
-- [ ] **Step 1: Confirm the base.**
+- [x] **Step 1: Confirm the base.**
 
 ```bash
 git diff --stat 668b8c3 -- skills/bayesian-workflow/
@@ -132,7 +135,7 @@ git diff --stat 668b8c3 -- skills/bayesian-workflow/
 
 Expected: no output. If plan 53 landed first, the two scripts and `references/diagnostics.md` show its header and invocation lines. Read Couplings, then go on: the replace blocks still match.
 
-- [ ] **Step 2: Record the baseline.**
+- [x] **Step 2: Record the baseline.**
 
 ```bash
 uv run --directory skills/bayesian-workflow/scripts --python 3.13 --with pytest --with arviz --with arviz-stats --with numpy --with xarray python -m pytest -q
@@ -140,7 +143,7 @@ uv run --directory skills/bayesian-workflow/scripts --python 3.13 --with pytest 
 
 Expected: `129 passed, 3 skipped` at `668b8c3`, plus arviz's expected "invalid value encountered" warnings. Write down what it prints: every later count is a delta from it.
 
-- [ ] **Step 3: Write the failing tests.**
+- [x] **Step 3: Write the failing tests.**
 
 Append to the end of `skills/bayesian-workflow/scripts/test_check_diagnostics.py`, after two blank lines:
 
@@ -344,7 +347,7 @@ def test_the_two_scripts_share_their_thresholds():
     assert diagnose_model.REL_MCSE_OK == cd.REL_MCSE_OK
 ````
 
-- [ ] **Step 4: Run them and see them fail.**
+- [x] **Step 4: Run them and see them fail.**
 
 ```bash
 uv run --directory skills/bayesian-workflow/scripts --python 3.13 --with pytest --with arviz --with arviz-stats --with numpy --with xarray python -m pytest -q -rf
@@ -354,7 +357,7 @@ Expected: `13 failed`, and passed is the baseline +3. The three that pass are th
 - In `test_check_diagnostics.py`, ten tests fail on `_one_step`'s `assert len(hits) == 1`, and the printed steps list holds the all-clear (the bug): `test_a_failing_mcse_gets_a_precision_step_not_the_all_clear`, `test_precision_that_never_ran_is_named_not_passed[no_block]` and `[no_usable_param]`, `test_a_loo_that_never_ran_quotes_its_remedy[error]` and `[no_section]`, `test_without_calibration_there_is_no_all_clear`, `test_the_all_clear_names_prior_sensitivity_when_it_did_not_run[not_passed]` and `[empty]`, `test_a_rating_that_did_not_pass_blocks_the_all_clear_even_without_a_step`, `test_no_diagnostics_means_no_all_clear`. The `[empty]` case also shows the old "Consider running prior sensitivity" step.
 - In `test_diagnose_model.py`: `test_report_overall_flags_a_failing_mcse` and `test_report_overall_flags_a_loo_that_never_ran` (`assert not overall["ok"]`: today's verdict is "Model is ready for interpretation."), and `test_the_two_scripts_share_their_thresholds` (`AttributeError: module 'diagnose_model' has no attribute 'REL_MCSE_OK'`).
 
-- [ ] **Step 5: Implement the reader's half.** Make nine replacements in `skills/bayesian-workflow/scripts/check_diagnostics.py`.
+- [x] **Step 5: Implement the reader's half.** Make nine replacements in `skills/bayesian-workflow/scripts/check_diagnostics.py`.
 
 Replace in `skills/bayesian-workflow/scripts/check_diagnostics.py`:
 
@@ -658,7 +661,7 @@ with:
     return steps
 ````
 
-- [ ] **Step 6: Implement the writer's half.** Make two replacements in `skills/bayesian-workflow/scripts/diagnose_model.py`.
+- [x] **Step 6: Implement the writer's half.** Make two replacements in `skills/bayesian-workflow/scripts/diagnose_model.py`.
 
 Replace in `skills/bayesian-workflow/scripts/diagnose_model.py`:
 
@@ -704,9 +707,9 @@ with:
         issues.append(f"LOO not computed: {report['loo'].get('error', 'no LOO result')}")
 ````
 
-- [ ] **Step 7: Run the suite: green.** Same command as Step 4. Expected: no failures; passed is the baseline +16; skipped is unchanged.
+- [x] **Step 7: Run the suite: green.** Same command as Step 4. Expected: no failures; passed is the baseline +16; skipped is unchanged.
 
-- [ ] **Step 8: Fix the MCSE row in the report template.** Its parenthetical "≥ 1 stable digit" reads as if it were the bar, but a relative MCSE of 0.058 also has one stable digit and fails the bar.
+- [x] **Step 8: Fix the MCSE row in the report template.** Its parenthetical "≥ 1 stable digit" reads as if it were the bar, but a relative MCSE of 0.058 also has one stable digit and fails the bar.
 
 Replace in `skills/bayesian-workflow/references/reporting.md`:
 
@@ -720,7 +723,7 @@ with:
 | Max relative MCSE | <e.g., 0.02 (β₁)> | ≤ 0.05 (from `diagnostics.json → precision`; `check_diagnostics.py` flags a higher value) | <✓ / ✗> |
 ````
 
-- [ ] **Step 9: Commit.**
+- [x] **Step 9: Commit.**
 
 ```bash
 git add skills/bayesian-workflow/scripts/check_diagnostics.py skills/bayesian-workflow/scripts/diagnose_model.py skills/bayesian-workflow/scripts/test_check_diagnostics.py skills/bayesian-workflow/scripts/test_diagnose_model.py skills/bayesian-workflow/references/reporting.md
@@ -741,7 +744,7 @@ git commit -m "fix(bayesian-workflow): no all-clear when MCSE fails or LOO, prec
 - Produces, in `diagnose_model.py`: `TREEDEPTH_FLAGS = ("reached_max_tree_depth", "reached_max_treedepth")`; `_sample_stats(idata)`; `_divergence_block(stats)`, `_treedepth_block(stats)` and `_bfmi_block(diagnosed)`. The three blocks in `check_convergence`'s result, on both paths: `divergences` is `{"checked": True, "count": int, "pct": float, "ok": bool}`, `treedepth` is `{"checked": True, "ok": bool, "n_max": int, "pct": float}` and `bfmi` is `{"checked": True, "ok": bool, "failed_chains": list[int]}`, or `{"checked": False}` when the sample stat is missing. `all_ok` includes tree depth on both paths.
 - Produces, in the tests: `_idata(..., stats=None)`, `CALM`, `SATURATED` and the fixture `both_paths`.
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
 
 Replace in `skills/bayesian-workflow/scripts/test_diagnose_model.py`:
 
@@ -852,7 +855,7 @@ def test_no_diverging_stat_marks_divergences_not_checked(both_paths):
     assert conv["all_ok"] is True
 ````
 
-- [ ] **Step 2: Run them and see them fail.**
+- [x] **Step 2: Run them and see them fail.**
 
 ```bash
 uv run --directory skills/bayesian-workflow/scripts --python 3.13 --with pytest --with arviz --with arviz-stats --with numpy --with xarray python -m pytest -q -rf
@@ -862,7 +865,7 @@ Expected: `15 failed`, and passed is unchanged from Task 1's green run. All 15 n
 - On the fallback path (`[fallback]`): `KeyError: 'treedepth'` in the four tree-depth cases and `KeyError: 'bfmi'` in the E-BFMI case, because that path writes neither block. The two divergence cases fail on a block with no `checked` key.
 - On the diagnose path (`[diagnose]`, and `test_an_energy_stat_gives_a_checked_e_bfmi_block`): each block lacks `checked`. The `[diagnose-numpyro]` saturation case shows X2 itself: `{'ok': True, 'n_max': 0, 'pct': 0.0}` for 2,000 saturated draws.
 
-- [ ] **Step 3: Implement.** Make five replacements in `skills/bayesian-workflow/scripts/diagnose_model.py`.
+- [x] **Step 3: Implement.** Make five replacements in `skills/bayesian-workflow/scripts/diagnose_model.py`.
 
 Replace in `skills/bayesian-workflow/scripts/diagnose_model.py`:
 
@@ -1056,9 +1059,11 @@ with:
     results["method"] = "manual"
 ````
 
-- [ ] **Step 4: Run the suite: green.** Same command as Step 2. Expected: no failures; passed is +15 over Task 1's green run.
+> Deviation: the final review found that `arviz_stats.diagnose` rates ESS from bulk ESS alone, so this step's `all_ok` left a low tail ESS passing. The owner approved folding every block's `ok` into `all_ok` on this path, as the fallback path does (commit `4d53a78`, with a both-paths test). That goes past X2's tree-depth scope.
 
-- [ ] **Step 5: Correct the tree-depth notes in the diagnostics reference.** They tell the reader to inspect tree depth by hand because nothing reports it.
+- [x] **Step 4: Run the suite: green.** Same command as Step 2. Expected: no failures; passed is +15 over Task 1's green run.
+
+- [x] **Step 5: Correct the tree-depth notes in the diagnostics reference.** They tell the reader to inspect tree depth by hand because nothing reports it.
 
 Replace in `skills/bayesian-workflow/references/diagnostics.md`:
 
@@ -1091,7 +1096,7 @@ with:
 | Chains drift to ±1e20, R-hat ≈ 3, most transitions hit max tree depth (`diagnose_model.py`'s `treedepth` block; `azs.diagnose` alone skips it on the `from_numpyro` path, above) | **Improper or near-improper posterior** — a site under `dist.ImproperUniform`, or a `Normal(0, 100)`-class prior on a logistic coefficient whose classes are separated | Give every site a proper prior on the scale the parameter actually lives on (`Normal(0, 2.5)` for a standardized logistic coefficient). Raising `max_tree_depth` never helps here |
 ````
 
-- [ ] **Step 6: Commit.**
+- [x] **Step 6: Commit.**
 
 ```bash
 git add skills/bayesian-workflow/scripts/diagnose_model.py skills/bayesian-workflow/scripts/test_diagnose_model.py skills/bayesian-workflow/references/diagnostics.md
@@ -1112,7 +1117,7 @@ git commit -m "fix(bayesian-workflow): read NumPyro's tree-depth flag and mark s
 - Produces, in `check_diagnostics.py`: `NON_PARAM_TOKENS`; `SAMPLER_CHECKS`, a tuple of `(block key, label, how to get the stat)`; `_split_flags(problematic: list) -> tuple[list[str], list[str]]`; `_flag_phrase(named: list[str], flags: list[str]) -> str`; `_unchecked_sampler_checks(conv: dict) -> list[str]`; `report["convergence"]["treedepth"]`, `["bfmi"]` and `["unchecked"]`. New step prefixes: "Tree depth hit max_tree_depth" and "E-BFMI is low".
 - Produces, in the tests: `_report_and_steps` (reader tests); `_complete_idata(**stats)` and `_read_back` (writer tests).
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
 
 Append to the end of `skills/bayesian-workflow/scripts/test_check_diagnostics.py`, after two blank lines:
 
@@ -1245,7 +1250,7 @@ def test_a_run_without_the_tree_depth_flag_reads_back_as_not_checked():
     assert "not checked: tree depth" in report["summary"]["convergence"]
 ````
 
-- [ ] **Step 2: Run them and see them fail.**
+- [x] **Step 2: Run them and see them fail.**
 
 ```bash
 uv run --directory skills/bayesian-workflow/scripts --python 3.13 --with pytest --with arviz --with arviz-stats --with numpy --with xarray python -m pytest -q -rf
@@ -1257,7 +1262,7 @@ Expected: `10 failed`, and passed is +2 over Task 2's green run. The two that pa
 - `test_an_unchecked_divergence_count_is_not_reported_as_zero`: the summary still says "no divergences".
 - `test_the_convergence_summary_names_parameters_and_sampler_flags`: the summary reads "Convergence is fair — flags on a." and drops the saturation.
 
-- [ ] **Step 3: Implement.** Make seven replacements in `skills/bayesian-workflow/scripts/check_diagnostics.py`.
+- [x] **Step 3: Implement.** Make seven replacements in `skills/bayesian-workflow/scripts/check_diagnostics.py`.
 
 Replace in `skills/bayesian-workflow/scripts/check_diagnostics.py`:
 
@@ -1459,9 +1464,9 @@ with:
     # ── Monte Carlo precision ─────────────────────────────────────────
 ````
 
-- [ ] **Step 4: Run the suite: green.** Same command as Step 2. Expected: no failures; passed is +12 over Task 2's green run.
+- [x] **Step 4: Run the suite: green.** Same command as Step 2. Expected: no failures; passed is +12 over Task 2's green run.
 
-- [ ] **Step 5: Commit.**
+- [x] **Step 5: Commit.**
 
 ```bash
 git add skills/bayesian-workflow/scripts/check_diagnostics.py skills/bayesian-workflow/scripts/test_check_diagnostics.py skills/bayesian-workflow/scripts/test_diagnose_model.py
@@ -1482,7 +1487,7 @@ git commit -m "fix(bayesian-workflow): give tree-depth saturation and low E-BFMI
 - Produces, in `diagnose_model.py`: `PARETO_K_MAX = 0.7`; `pareto_k_threshold(n_samples) -> float`; `summarize_pareto_k(pareto_k, n_samples) -> dict`, with keys `max`, `good_k`, `n_bad` (finite k above `good_k`), `n_high` (finite k above 0.7), `n_nonfinite` and `ok`, and no `n_marginal`.
 - Produces, in `check_diagnostics.py`: `PARETO_K_MAX = 0.7`; `_high_pareto_k(pk: dict) -> int`; LOO rated from the counts: poor for any k > 0.7 or non-finite k, fair when every flagged k is between `good_k` and 0.7, excellent otherwise. New step prefixes: "LOO Pareto-k > 0.7 for N observation(s)" and "LOO Pareto-k is above the sample-size threshold".
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
 
 Append to the end of `skills/bayesian-workflow/scripts/test_check_diagnostics.py`, after two blank lines:
 
@@ -1588,7 +1593,9 @@ def test_check_loo_carries_good_k_and_drops_the_0_5_band():
     assert "n_high" in pareto_k and "n_marginal" not in pareto_k
 ````
 
-- [ ] **Step 2: Run them and see them fail.**
+> Deviation: the step-prefix test reads "…threshold 0.6555", not "0.66", after the `:g` change in commit `d2c5a49`. The same commit added a test for S = 2,000 (`good_k` 0.6971) and the first test for the writer's Pareto-k verdict line.
+
+- [x] **Step 2: Run them and see them fail.**
 
 ```bash
 uv run --directory skills/bayesian-workflow/scripts --python 3.13 --with pytest --with arviz --with arviz-stats --with numpy --with xarray python -m pytest -q -rf
@@ -1602,7 +1609,7 @@ Expected: `8 failed`, and passed is one less than Task 3's green run, because th
 - `test_the_pareto_k_threshold_follows_loo` and `test_pareto_k_counts_against_the_sample_size_threshold`: `AttributeError` for `pareto_k_threshold` and `summarize_pareto_k`.
 - `test_check_loo_carries_good_k_and_drops_the_0_5_band`: `KeyError: 'good_k'`.
 
-- [ ] **Step 3: Implement the writer's half.** Make four replacements in `skills/bayesian-workflow/scripts/diagnose_model.py`.
+- [x] **Step 3: Implement the writer's half.** Make four replacements in `skills/bayesian-workflow/scripts/diagnose_model.py`.
 
 Replace in `skills/bayesian-workflow/scripts/diagnose_model.py`:
 
@@ -1747,7 +1754,9 @@ with:
             parts.append(f"{n_bad} observation(s) with Pareto k above {loo_pk['good_k']:.2f}")
 ````
 
-- [ ] **Step 4: Implement the reader's half.** Make five replacements in `skills/bayesian-workflow/scripts/check_diagnostics.py`.
+> Deviation: the writer's verdict line prints `good_k` with `:g`, not `:.2f` (commit `d2c5a49`). At S = 2,000 the plan's `:.2f` printed 0.70 for a `good_k` of 0.6971.
+
+- [x] **Step 4: Implement the reader's half.** Make five replacements in `skills/bayesian-workflow/scripts/check_diagnostics.py`.
 
 Replace in `skills/bayesian-workflow/scripts/check_diagnostics.py`:
 
@@ -1923,9 +1932,11 @@ with:
 
 The old poor-branch fallback ("LOO flags a problem …") goes because it can no longer run: a poor rating now always has a k > 0.7 or a non-finite k.
 
-- [ ] **Step 5: Run the suite: green.** Same command as Step 2. Expected: no failures; passed is +7 over Task 3's green run, so +50 over the baseline.
+> Deviation: the reader's fair step prints `good_k` with `:g`, not `:.2f` (commit `d2c5a49`). At S = 2,000 the plan's `:.2f` printed 0.70 for a `good_k` of 0.6971.
 
-- [ ] **Step 6: Update the docs.**
+- [x] **Step 5: Run the suite: green.** Same command as Step 2. Expected: no failures; passed is +7 over Task 3's green run, so +50 over the baseline.
+
+- [x] **Step 6: Update the docs.**
 
 Replace in `skills/bayesian-workflow/references/model-criticism.md`:
 
@@ -2012,7 +2023,7 @@ with:
     └── test_check_diagnostics.py     # pytest: a next step for each failed or missing check; the all-clear only when every required check passed
 ````
 
-- [ ] **Step 7: Check the edited snippet.** Tier 1 parses every fenced block, including the one Step 6 changed.
+- [x] **Step 7: Check the edited snippet.** Tier 1 parses every fenced block, including the one Step 6 changed.
 
 ```bash
 uv run --python 3.13 python build/check_snippets.py skills/
@@ -2020,7 +2031,7 @@ uv run --python 3.13 python build/check_snippets.py skills/
 
 Expected: exit 0. Its `WARN` lines are the ones `main` prints too.
 
-- [ ] **Step 8: Commit.**
+- [x] **Step 8: Commit.**
 
 ```bash
 git add skills/bayesian-workflow/scripts/diagnose_model.py skills/bayesian-workflow/scripts/check_diagnostics.py skills/bayesian-workflow/scripts/test_check_diagnostics.py skills/bayesian-workflow/scripts/test_diagnose_model.py skills/bayesian-workflow/references/model-criticism.md skills/bayesian-workflow/references/reporting.md skills/bayesian-workflow/README.md
@@ -2039,7 +2050,7 @@ git commit -m "feat(bayesian-workflow): rate Pareto k against loo's sample-size 
 - Consumes: Tasks 1–4.
 - Produces: no committed file. This task's outputs are the Expected lines below, for the final review.
 
-- [ ] **Step 1: Write the fit script.** It fits one small regression twice. `saturated.nc` runs NUTS with `max_tree_depth=1` and collects `num_steps`, so every draw hits the limit. `unchecked.nc` runs the default NUTS without `num_steps`, so `az.from_numpyro` writes no tree-depth flag.
+- [x] **Step 1: Write the fit script.** It fits one small regression twice. `saturated.nc` runs NUTS with `max_tree_depth=1` and collects `num_steps`, so every draw hits the limit. `unchecked.nc` runs the default NUTS without `num_steps`, so `az.from_numpyro` writes no tree-depth flag.
 
 Create `.sdd/56-diagnostics-harness-verdicts/fit.py`:
 
@@ -2084,7 +2095,7 @@ for name, (kernel_kwargs, extra_fields) in runs.items():
     print(name, 'saved')
 ````
 
-- [ ] **Step 2: Fit both runs** on the pinned stack (`build/snippet_preamble.py`'s `PINNED`). It takes about a minute.
+- [x] **Step 2: Fit both runs** on the pinned stack (`build/snippet_preamble.py`'s `PINNED`). It takes about a minute.
 
 ```bash
 uv run --python 3.13 --with 'arviz==1.3.0' --with arviz-base --with 'arviz-stats==1.3.2' --with 'arviz-plots==1.3.1' --with 'numpyro==0.21.0' --with 'jax==0.11.1' --with numpy --with xarray --with scipy --with h5netcdf --with h5py --with matplotlib python .sdd/56-diagnostics-harness-verdicts/fit.py .sdd/56-diagnostics-harness-verdicts
@@ -2092,7 +2103,7 @@ uv run --python 3.13 --with 'arviz==1.3.0' --with arviz-base --with 'arviz-stats
 
 Expected: `saturated saved`, then `unchecked saved`.
 
-- [ ] **Step 3: Run the pipeline on the saturated run**, as `SKILL.md`'s Utility scripts section runs it.
+- [x] **Step 3: Run the pipeline on the saturated run**, as `SKILL.md`'s Utility scripts section runs it.
 
 ```bash
 uv run --python 3.13 --with 'arviz==1.3.0' --with arviz-base --with 'arviz-stats==1.3.2' --with numpy --with h5netcdf --with h5py python skills/bayesian-workflow/scripts/diagnose_model.py --idata .sdd/56-diagnostics-harness-verdicts/saturated.nc --output .sdd/56-diagnostics-harness-verdicts/saturated-diag.json
@@ -2111,14 +2122,14 @@ Expected:
 - In the last command's output, the convergence line ends "max treedepth saturation. Inspect before trusting the posterior." On the planning Mac it read "Convergence is fair — flags on a; max treedepth saturation. …", because `a`'s R-hat there was 1.011, which also put an R-hat step first. Another platform may not flag `a`.
 - One suggested step starts "Tree depth hit max_tree_depth on 100.0% of transitions (4000)". No step says "proceed to interpretation".
 
-- [ ] **Step 4: Run the pipeline on the unchecked run.** Use the three commands of Step 3, with `unchecked` in place of `saturated` in every path.
+- [x] **Step 4: Run the pipeline on the unchecked run.** Use the three commands of Step 3, with `unchecked` in place of `saturated` in every path.
 
 Expected:
 - `unchecked-diag.json` holds `"treedepth": {"checked": false}`, a bfmi and a divergences block with `"checked": true`, and `"all_ok": true`. Its overall recommendation is "Model is ready for interpretation."
 - The convergence line reads "Convergence diagnostics that ran passed (R-hat ≤ 1.01, ESS adequate, no divergences); not checked: tree depth."
 - Step 1 is the all-clear. Step 2 starts "Not checked: tree depth (collect num_steps in extra_fields so az.from_numpyro writes reached_max_tree_depth); prior sensitivity (run psense_summary(idata) …".
 
-- [ ] **Step 5: Run the suite on the pinned stack and under Python 3.11.**
+- [x] **Step 5: Run the suite on the pinned stack and under Python 3.11.**
 
 ```bash
 uv run --directory skills/bayesian-workflow/scripts --python 3.13 --with pytest --with 'arviz==1.3.0' --with arviz-base --with 'arviz-stats==1.3.2' --with numpy --with xarray python -m pytest -q
@@ -2132,7 +2143,9 @@ uv run --directory skills/bayesian-workflow/scripts --python 3.11 --with pytest 
 
 Expected: every test passes, none skipped. That is plan 53's 3.11 floor for the stdlib-only reader.
 
-- [ ] **Step 6: Run snippet Tiers 2 and 3**, since Task 4 changed a fence in `model-criticism.md`. Tier 3 takes minutes.
+> Deviation: at the final head `4d53a78` the pinned suite reads `183 passed, 3 skipped` (+54 over the baseline), not Task 4's 179, because the two gate fixes add 4 tests. The Python 3.11 run reads 48 passed. Steps 3 and 4 ran at `6043d59`. The writer was re-run on both fits at `4d53a78`, and its convergence and LOO blocks were identical.
+
+- [x] **Step 6: Run snippet Tiers 2 and 3**, since Task 4 changed a fence in `model-criticism.md`. Tier 3 takes minutes.
 
 ```bash
 uv run --python 3.13 --with "arviz>=1.0" --with arviz-base --with arviz-stats --with arviz-plots --with numpyro --with jax python build/check_snippets.py --api skills/bayesian-workflow/
@@ -2144,7 +2157,7 @@ uv run --python 3.13 --with 'arviz==1.3.0' --with arviz-base --with 'arviz-stats
 
 Expected: both exit 0. Tier 3 still prints `WARN skills/bayesian-workflow/references/model-criticism.md:76: not executed: unbound names ['loo']` for the Pareto-k snippet, as on `main` (Facts).
 
-- [ ] **Step 7: Run the commit lints.**
+- [x] **Step 7: Run the commit lints.**
 
 ```bash
 bash build/run_commit_lints.sh

@@ -5,15 +5,22 @@ cd skills/bayesian-workflow/scripts && uv run --python 3.13 --with pytest --with
 """
 
 import json
+import math
 
 import arviz as az
 import numpy as np
+import pytest
 
+import check_diagnostics as cd
+import diagnose_model
 from diagnose_model import _json_default, check_precision, generate_report
 
 
-def _idata(n_chains=4, n_draws=500, seed=0, extra=None):
-    """Synthetic InferenceData with i.i.d. unit-normal draws (ESS ~ n_chains * n_draws)."""
+def _idata(n_chains=4, n_draws=500, seed=0, extra=None, stats=None):
+    """Synthetic InferenceData with i.i.d. unit-normal draws (ESS ~ n_chains * n_draws).
+
+    ``stats`` replaces the default sample_stats, which hold only ``diverging``.
+    """
     rng = np.random.default_rng(seed)
     post = {
         "mu": rng.normal(size=(n_chains, n_draws)),
@@ -21,7 +28,8 @@ def _idata(n_chains=4, n_draws=500, seed=0, extra=None):
     }
     if extra:
         post.update(extra)
-    stats = {"diverging": np.zeros((n_chains, n_draws), dtype=bool)}
+    if stats is None:
+        stats = {"diverging": np.zeros((n_chains, n_draws), dtype=bool)}
     # arviz 1.x from_dict takes ONE dict of groups (the 0.23 kwargs form raises TypeError)
     return az.from_dict({"posterior": post, "sample_stats": stats})
 
@@ -81,3 +89,231 @@ def test_generate_report_carries_precision_and_serializes():
     assert "precision" in report
     assert report["precision"]["params"]["mu"]["stable_digits"] == 1
     json.dumps(report, default=_json_default)  # must not raise
+
+
+PASSING_PRECISION = {
+    "params": {"mu": {"rel_mcse": 0.02, "stable_digits": 1}},
+    "max_rel_mcse": 0.02,
+    "max_rel_mcse_param": "mu",
+    "min_stable_digits": 1,
+}
+
+
+def _stub_checks(monkeypatch, **results):
+    """Stub generate_report's four checks with passing results, overridden by ``results``."""
+    passing = {
+        "check_convergence": {"all_ok": True},
+        "check_loo": {"computed": True, "pareto_k": {"ok": True}},
+        "check_posterior_predictive": {"available": True},
+        "check_precision": PASSING_PRECISION,
+    }
+    passing.update(results)
+    for name, result in passing.items():
+        monkeypatch.setattr(diagnose_model, name, lambda idata, result=result: result)
+
+
+def test_report_overall_passes_when_every_check_passes(monkeypatch):
+    # The control: each test below changes one check from these.
+    _stub_checks(monkeypatch)
+    overall = generate_report(None)["overall"]
+    assert overall["ok"] and overall["recommendation"] == "Model is ready for interpretation."
+
+
+def test_report_overall_flags_a_failing_mcse(monkeypatch):
+    _stub_checks(monkeypatch, check_precision={**PASSING_PRECISION, "max_rel_mcse": 0.058})
+    overall = generate_report(None)["overall"]
+    assert not overall["ok"]
+    assert any("0.058 on mu" in issue for issue in overall["issues"]), overall
+
+
+def test_report_overall_flags_a_loo_that_never_ran(monkeypatch):
+    error = "No log_likelihood group in the InferenceData. Rebuild it with az.from_numpyro(...)."
+    _stub_checks(monkeypatch, check_loo={"computed": False, "error": error})
+    overall = generate_report(None)["overall"]
+    assert not overall["ok"]
+    assert any(issue.startswith("LOO not computed") and error in issue for issue in overall["issues"]), overall
+
+
+def test_report_overall_prints_the_pareto_k_threshold_unrounded(monkeypatch):
+    # good_k is 0.6971 at S = 2,000 (4 x 500): ":.2f" printed it as 0.70.
+    pareto_k = {"ok": False, "good_k": 0.6971, "n_bad": 1, "n_nonfinite": 0}
+    _stub_checks(monkeypatch, check_loo={"computed": True, "pareto_k": pareto_k})
+    overall = generate_report(None)["overall"]
+    assert not overall["ok"]
+    assert any("1 observation(s) with Pareto k above 0.6971" in issue for issue in overall["issues"]), overall
+
+
+def test_the_two_scripts_share_their_thresholds():
+    assert diagnose_model.REL_MCSE_OK == cd.REL_MCSE_OK
+    assert diagnose_model.PARETO_K_MAX == cd.PARETO_K_MAX
+
+
+CALM = np.zeros((4, 500), dtype=bool)
+SATURATED = np.ones((4, 500), dtype=bool)
+
+
+@pytest.fixture(params=[True, False], ids=["diagnose", "fallback"])
+def both_paths(request, monkeypatch):
+    """Run check_convergence on the arviz_stats.diagnose path, then on the manual fallback."""
+    monkeypatch.setattr(diagnose_model, "HAS_DIAGNOSE", request.param)
+    return request.param
+
+
+@pytest.mark.parametrize("flag", ["reached_max_tree_depth", "reached_max_treedepth"], ids=["numpyro", "cmdstan"])
+def test_a_saturated_run_fails_tree_depth_on_both_paths(both_paths, flag):
+    conv = diagnose_model.check_convergence(_idata(stats={"diverging": CALM, flag: SATURATED}))
+    assert conv["treedepth"] == {"checked": True, "ok": False, "n_max": 2000, "pct": 100.0}
+    assert conv["all_ok"] is False
+
+
+def test_a_calm_numpyro_run_passes_tree_depth(both_paths):
+    conv = diagnose_model.check_convergence(_idata(stats={"diverging": CALM, "reached_max_tree_depth": CALM}))
+    assert conv["treedepth"] == {"checked": True, "ok": True, "n_max": 0, "pct": 0.0}
+    assert conv["all_ok"] is True
+
+
+def test_no_tree_depth_flag_is_marked_not_checked(both_paths):
+    conv = diagnose_model.check_convergence(_idata())
+    assert conv["treedepth"] == {"checked": False}
+    assert conv["all_ok"] is True
+
+
+def test_no_energy_stat_marks_e_bfmi_not_checked(both_paths):
+    assert diagnose_model.check_convergence(_idata())["bfmi"] == {"checked": False}
+
+
+def test_an_energy_stat_gives_a_checked_e_bfmi_block():
+    # Only the arviz_stats.diagnose path computes E-BFMI; i.i.d. energy is far above 0.3.
+    energy = np.random.default_rng(1).normal(size=(4, 500))
+    conv = diagnose_model.check_convergence(_idata(stats={"diverging": CALM, "energy": energy}))
+    assert conv["bfmi"] == {"checked": True, "ok": True, "failed_chains": []}
+
+
+def test_a_diverging_stat_gives_a_checked_divergence_block(both_paths):
+    assert diagnose_model.check_convergence(_idata())["divergences"] == {
+        "checked": True, "count": 0, "pct": 0.0, "ok": True,
+    }
+
+
+def test_no_diverging_stat_marks_divergences_not_checked(both_paths):
+    conv = diagnose_model.check_convergence(_idata(stats={"lp": np.zeros((4, 500))}))
+    assert conv["divergences"] == {"checked": False}
+    assert conv["all_ok"] is True
+
+
+WELL_CALIBRATED = {
+    "assessment": {
+        "findings": [],
+        "well_calibrated": True,
+        "mean_coverage_deviation": 0.0012,
+        "calibration_diagnosis": "well-calibrated",
+    },
+}
+LOW_PSENSE = {"prior": {"mu": 0.01}, "likelihood": {"mu": 0.02}}
+
+
+def _complete_idata(**stats):
+    """An InferenceData on which every check runs and passes: LOO, PPC and all three
+    sampler checks. A keyword replaces one sample stat; None drops it."""
+    rng = np.random.default_rng(3)
+    y = rng.normal(size=20)
+    mu = rng.normal(size=(4, 500))
+    sample_stats = {"diverging": CALM, "reached_max_tree_depth": CALM, "energy": rng.normal(size=(4, 500))}
+    sample_stats.update(stats)
+    return az.from_dict({
+        "posterior": {"mu": mu},
+        "sample_stats": {k: v for k, v in sample_stats.items() if v is not None},
+        # a narrow log-likelihood keeps every Pareto k small
+        "log_likelihood": {"y": -0.5 * (y - 0.1 * mu[..., None]) ** 2 - 0.5 * np.log(2 * np.pi)},
+        "posterior_predictive": {"y": rng.normal(size=(4, 500, 20))},
+        "observed_data": {"y": y},
+    })
+
+
+def _read_back(idata):
+    """diagnose_model's report read by check_diagnostics, as step 3 of SKILL.md's pipeline does."""
+    report = cd.check_diagnostics(diagnostics=generate_report(idata), calibration=WELL_CALIBRATED, psense=LOW_PSENSE)
+    return report, cd.suggest_next_steps(report)
+
+
+def test_a_complete_clean_run_reads_back_as_the_all_clear():
+    # The control for the two tests below.
+    _, steps = _read_back(_complete_idata())
+    assert len(steps) == 1 and "proceed to interpretation" in steps[0], steps
+
+
+def test_a_saturated_numpyro_run_reads_back_as_saturation():
+    report, steps = _read_back(_complete_idata(reached_max_tree_depth=SATURATED))
+    assert any(s.startswith("Tree depth hit max_tree_depth on 100.0%") for s in steps), steps
+    assert not any("proceed to interpretation" in s for s in steps)
+    assert "treedepth saturation" in report["summary"]["convergence"]
+
+
+def test_a_run_without_the_tree_depth_flag_reads_back_as_not_checked():
+    report, steps = _read_back(_complete_idata(reached_max_tree_depth=None))
+    assert "proceed to interpretation" in steps[0]
+    assert any(s.startswith("Not checked: tree depth") for s in steps), steps
+    assert "not checked: tree depth" in report["summary"]["convergence"]
+
+
+def _bursty_tail_draws(n_chains=4, n_draws=500, seed=26, share=0.2, length=10, shift=4.0):
+    """Draws whose extremes come in bursts while the centre mixes freely.
+
+    A two-state Markov chain switches bursts on (stationary share ``share``, mean
+    length ``length``). Each draw in a burst is a unit normal pushed out by
+    ``shift`` times an i.i.d. random sign. The sign keeps the bulk ESS near
+    n_chains * n_draws, and the bursts pull the tail ESS under 100 * n_chains.
+    At the defaults bulk ESS is 1753, tail ESS 283 and R-hat 1.004.
+    """
+    rng = np.random.default_rng(seed)
+    leave = 1 / length
+    enter = share * leave / (1 - share)
+    in_burst = np.zeros((n_chains, n_draws))
+    in_burst[:, 0] = rng.random(n_chains) < share
+    u = rng.random((n_chains, n_draws))
+    for t in range(1, n_draws):
+        in_burst[:, t] = np.where(in_burst[:, t - 1] == 1, u[:, t] >= leave, u[:, t] < enter)
+    sign = rng.choice([-1.0, 1.0], size=(n_chains, n_draws))
+    return rng.normal(size=(n_chains, n_draws)) + shift * in_burst * sign
+
+
+def test_low_tail_ess_with_passing_bulk_ess_fails_all_ok_on_both_paths(both_paths):
+    idata = _idata(extra={"bursty": _bursty_tail_draws()})
+    if both_paths:
+        # The premise: arviz_stats.diagnose rates this run clean, so only the tail ESS block can fail it.
+        has_errors, _ = diagnose_model.azs.diagnose(idata, return_diagnostics=True, show_diagnostics=False)
+        assert not has_errors
+    conv = diagnose_model.check_convergence(idata)
+    assert conv["ess_bulk"]["ok"] is True
+    assert conv["ess_tail"]["ok"] is False
+    assert conv["ess_tail"]["problematic_params"] == ["bursty"]
+    assert conv["all_ok"] is False
+    # check_diagnostics rates "excellent" on all_ok, so the writer's flag must not stay True.
+    diagnostics = generate_report(_complete_idata())
+    diagnostics["convergence"] = conv
+    report = cd.check_diagnostics(diagnostics=diagnostics, calibration=WELL_CALIBRATED, psense=LOW_PSENSE)
+    steps = cd.suggest_next_steps(report)
+    assert not any("proceed to interpretation" in s for s in steps), steps
+    assert any(s.startswith("R-hat or ESS flags on bursty") for s in steps), steps
+
+
+def test_the_pareto_k_threshold_follows_loo():
+    assert diagnose_model.pareto_k_threshold(4000) == 0.7
+    assert diagnose_model.pareto_k_threshold(800) == pytest.approx(1 - 1 / math.log10(800))
+    assert 0.655 < diagnose_model.pareto_k_threshold(800) < 0.656
+
+
+def test_pareto_k_counts_against_the_sample_size_threshold():
+    k = [0.2, 0.68, 0.9, float("nan")]
+    assert diagnose_model.summarize_pareto_k(k, 800) == {
+        "max": 0.9, "good_k": 0.6555, "n_bad": 2, "n_high": 1, "n_nonfinite": 1, "ok": False,
+    }
+    assert diagnose_model.summarize_pareto_k(k, 4000) == {
+        "max": 0.9, "good_k": 0.7, "n_bad": 1, "n_high": 1, "n_nonfinite": 1, "ok": False,
+    }
+
+
+def test_check_loo_carries_good_k_and_drops_the_0_5_band():
+    pareto_k = diagnose_model.check_loo(_complete_idata())["pareto_k"]
+    assert pareto_k["good_k"] == round(diagnose_model.pareto_k_threshold(2000), 4)
+    assert "n_high" in pareto_k and "n_marginal" not in pareto_k

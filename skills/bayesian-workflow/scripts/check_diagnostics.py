@@ -31,12 +31,43 @@ RHAT_OK = 1.01
 DIVERGENCE_OK = 0
 DIVERGENCE_FAIR = 0.005  # < 0.5% of post-warmup draws
 DIVERGENCE_GATE_PCT = 1.0  # percent; above this, raising target_accept_prob rarely helps (Gelman et al. 2026, §12.3)
-PARETO_K_OK = 0.5
-PARETO_K_FAIR = 0.7
 COVERAGE_DEVIATION_OK = 0.02
 COVERAGE_DEVIATION_FAIR = 0.05
 PSENSE_OK = 0.05
 PSENSE_FAIR = 0.10
+
+# The report's own published bar for the largest relative MCSE (references/reporting.md,
+# Sampling and Convergence), so unlike the levels above it is quoted in the next step.
+# diagnose_model.py keeps a copy for its overall verdict; test_diagnose_model.py pins the two.
+REL_MCSE_OK = 0.05
+
+# loo's sample-size Pareto-k threshold (good_k, which diagnose_model.py writes) never
+# exceeds 0.7, and above 0.7 more draws do not help. A copy, pinned like REL_MCSE_OK.
+PARETO_K_MAX = 0.7
+
+# The checks the all-clear requires: report section, label, and the ratings that pass.
+REQUIRED_CHECKS = (
+    ("convergence", "convergence", ("excellent", "good")),
+    ("precision", "Monte Carlo precision", ("excellent",)),
+    ("loo", "LOO", ("excellent",)),
+    ("calibration", "calibration", ("excellent",)),
+)
+PSENSE_REMEDY = (
+    "run psense_summary(idata) and pass it with --psense, before publication if any "
+    "conclusion is policy-relevant"
+)
+
+# problematic_params entries that are sampler flags, not parameter names.
+NON_PARAM_TOKENS = ("divergence", "e-bfmi", "treedepth", "=")
+
+# The sampler-stat blocks diagnose_model.py marks {"checked": False} when their stat is
+# missing: block key, the label the report uses, and how to get the stat.
+SAMPLER_CHECKS = (
+    ("treedepth", "tree depth",
+     "collect num_steps in extra_fields so az.from_numpyro writes reached_max_tree_depth"),
+    ("bfmi", "E-BFMI", "collect energy in extra_fields; the check needs arviz-stats >= 1.0"),
+    ("divergences", "divergences", "the InferenceData has no diverging sample stat"),
+)
 
 # calibration_check.FINDINGS labels, routed by prefix. This is a copy, not an import:
 # importing calibration_check would pull the ArviZ stack into this pure-JSON reader.
@@ -45,6 +76,32 @@ BIASED_PREFIX = "biased ("
 OVER_CONFIDENT_PREFIX = "over-confident ("
 UNDER_CONFIDENT_PREFIX = "under-confident ("
 SHAPE_MISMATCH_PREFIX = "shape mismatch ("
+
+
+def _split_flags(problematic: list) -> tuple[list[str], list[str]]:
+    """Split problematic_params into (parameter names, sampler flags)."""
+    named, flags = [], []
+    for p in problematic:
+        (flags if any(tok in str(p).lower() for tok in NON_PARAM_TOKENS) else named).append(str(p))
+    return named, flags
+
+
+def _flag_phrase(named: list[str], flags: list[str]) -> str:
+    """'flags on a, b; max treedepth saturation': parameter names first, then sampler flags."""
+    return "; ".join(([f"flags on {', '.join(named[:3])}"] if named else []) + flags)
+
+
+def _unchecked_sampler_checks(conv: dict) -> list[str]:
+    """Labels of the sampler checks that never ran.
+
+    A block marked checked: false, or no block at all, never ran. A block with
+    no checked key comes from a diagnostics.json written before the key existed,
+    and counts as checked.
+    """
+    return [
+        label for key, label, _ in SAMPLER_CHECKS
+        if not conv.get(key, {}).get("checked", key in conv)
+    ]
 
 
 def _rate_convergence(conv: dict) -> tuple[str, list[str]]:
@@ -97,29 +154,32 @@ def _rate_convergence(conv: dict) -> tuple[str, list[str]]:
     return rating, issues
 
 
+def _high_pareto_k(pk: dict) -> int:
+    """Finite k > 0.7. A file written before good_k had no n_high, and its n_bad meant this."""
+    return pk.get("n_high", pk.get("n_bad", 0))
+
+
 def _rate_loo(loo: dict) -> str:
-    """Return a qualitative rating for the LOO Pareto-k diagnostic."""
+    """Return a qualitative rating for the LOO Pareto-k diagnostic.
+
+    Rated from diagnose_model.py's counts against loo's sample-size threshold
+    good_k: poor for any k > 0.7 or non-finite k, which more draws cannot fix;
+    fair when every flagged k lies between good_k and 0.7, which more draws can.
+    """
     if not loo or not loo.get("computed"):
         return "not computed"
 
     pk = loo.get("pareto_k", {})
-    n_bad = pk.get("n_bad", 0)
-    n_nonfinite = pk.get("n_nonfinite", 0)
-    pk_max = pk.get("max")
-
-    # Any bad point caps the rating at poor — whether a finite k > 0.7 or a
-    # non-finite k that LOO could not estimate. A low max over the *remaining*
-    # points doesn't redeem an unreliable observation. pk_max is None only when
-    # every point is non-finite.
-    if n_bad > 0 or n_nonfinite > 0:
+    # Any bad point caps the rating — a low max over the *remaining* points
+    # doesn't redeem an unreliable observation. max is None only when every
+    # point is non-finite.
+    if _high_pareto_k(pk) > 0 or pk.get("n_nonfinite", 0) > 0:
         return "poor"
-    if pk_max is None:
+    if pk.get("max") is None:
         return "not computed"
-    if pk_max <= PARETO_K_OK:
-        return "excellent"
-    if pk_max <= PARETO_K_FAIR:
+    if pk.get("n_bad", 0) > 0:
         return "fair"
-    return "poor"
+    return "excellent"
 
 
 def _rate_calibration(cal: dict) -> tuple[str, str]:
@@ -182,6 +242,23 @@ def _rate_psense(ps: dict) -> tuple[str, list[str]]:
     return "strong sensitivity", flagged
 
 
+def _rate_precision(prec: dict | None) -> dict:
+    """Rate Monte Carlo precision against REL_MCSE_OK.
+
+    "not computed" when diagnostics.json has no precision block, or one with no
+    usable parameter: check_precision then reports max_rel_mcse 0.0, which
+    would otherwise pass.
+    """
+    if not prec or not prec.get("params"):
+        return {"rating": "not computed"}
+    worst = float(prec.get("max_rel_mcse", 0.0))
+    return {
+        "rating": "excellent" if worst <= REL_MCSE_OK else "poor",
+        "max_rel_mcse": worst,
+        "max_rel_mcse_param": prec.get("max_rel_mcse_param"),
+    }
+
+
 def check_diagnostics(
     diagnostics: dict | None = None,
     calibration: dict | None = None,
@@ -193,7 +270,8 @@ def check_diagnostics(
     ----------
     diagnostics : dict, optional
         Output of ``diagnose_model.generate_report()``. Provides
-        ``convergence``, ``loo``, and ``posterior_predictive`` sub-reports.
+        ``convergence``, ``loo``, ``posterior_predictive`` and ``precision``
+        sub-reports.
     calibration : dict, optional
         Output of ``calibration_check.py``.
     psense : dict, optional
@@ -203,7 +281,8 @@ def check_diagnostics(
     -------
     dict
         Structured assessment with sections: ``convergence``, ``loo``,
-        ``calibration``, ``psense``, plus ``summary`` (one-line per section).
+        ``posterior_predictive``, ``precision``, ``calibration``, ``psense``,
+        plus ``summary`` (one-line per section).
     """
     report: dict = {}
 
@@ -216,18 +295,25 @@ def check_diagnostics(
             # percent of post-warmup transitions that diverged; drives the
             # target_accept_prob gate in suggest_next_steps
             "divergence_pct": float((conv_in.get("divergences") or {}).get("pct", 0.0) or 0.0),
+            # the blocks the tree-depth and E-BFMI steps quote
+            "treedepth": conv_in.get("treedepth", {}),
+            "bfmi": conv_in.get("bfmi", {}),
+            "unchecked": _unchecked_sampler_checks(conv_in),
         }
         loo_in = diagnostics.get("loo", {})
         report["loo"] = {
             "rating": _rate_loo(loo_in),
-            # carry the Pareto-k breakdown so suggest_next_steps can distinguish
-            # finite k > 0.7 from non-finite (could-not-estimate) points.
+            # carry the Pareto-k breakdown so suggest_next_steps can tell k above
+            # good_k, k > 0.7 and non-finite (could-not-estimate) points apart.
             "pareto_k": loo_in.get("pareto_k", {}),
+            # diagnose_model.py's reason when LOO did not run; the next step quotes it
+            "error": loo_in.get("error", ""),
         }
         ppc = diagnostics.get("posterior_predictive", {})
         report["posterior_predictive"] = {
             "available": bool(ppc.get("available", False)),
         }
+        report["precision"] = _rate_precision(diagnostics.get("precision"))
 
     if calibration is not None:
         cal_rating, cal_diagnosis = _rate_calibration(calibration)
@@ -254,20 +340,35 @@ def _build_summary(report: dict) -> dict:
 
     if "convergence" in report:
         r = report["convergence"]
+        named, flags = _split_flags(r["problematic_params"])
+        unchecked = r.get("unchecked", [])
         if r["rating"] == "excellent":
-            s["convergence"] = "All convergence diagnostics passed (R-hat ≤ 1.01, ESS adequate, no divergences)."
+            passed = "R-hat ≤ 1.01, ESS adequate" + ("" if "divergences" in unchecked else ", no divergences")
+            if unchecked:
+                s["convergence"] = (
+                    f"Convergence diagnostics that ran passed ({passed}); "
+                    f"not checked: {', '.join(unchecked)}."
+                )
+            else:
+                s["convergence"] = f"All convergence diagnostics passed ({passed})."
         elif r["rating"] == "good":
             s["convergence"] = "Convergence diagnostics broadly pass; minor flags worth noting."
         elif r["rating"] == "fair":
-            _np = ("divergence", "e-bfmi", "treedepth", "=")
-            named = [p for p in r["problematic_params"] if not any(tok in str(p).lower() for tok in _np)]
-            params = ", ".join(named[:3]) or "some parameters"
-            s["convergence"] = f"Convergence is fair — flags on {params}. Inspect before trusting the posterior."
+            flagged = _flag_phrase(named, flags) or "flags on some parameters"
+            s["convergence"] = f"Convergence is fair — {flagged}. Inspect before trusting the posterior."
         else:
-            _np = ("divergence", "e-bfmi", "treedepth", "=")
-            named = [p for p in r["problematic_params"] if not any(tok in str(p).lower() for tok in _np)]
-            params = ", ".join(named[:3]) or "multiple parameters"
-            s["convergence"] = f"Poor convergence on {params}. Posterior should not be interpreted until resolved."
+            flagged = _flag_phrase(named, flags) or "flags on multiple parameters"
+            s["convergence"] = f"Poor convergence — {flagged}. Posterior should not be interpreted until resolved."
+
+    if "precision" in report:
+        r = report["precision"]
+        if r["rating"] == "not computed":
+            s["precision"] = "Monte Carlo precision: not computed."
+        else:
+            s["precision"] = (
+                f"Monte Carlo precision: {r['rating']} (max relative MCSE "
+                f"{r['max_rel_mcse']:.3f} on {r['max_rel_mcse_param']}; bar ≤ {REL_MCSE_OK})."
+            )
 
     if "loo" in report:
         s["loo"] = f"LOO Pareto-k: {report['loo']['rating']}."
@@ -356,6 +457,43 @@ def _calibration_steps(cal: dict) -> list[str]:
     return steps
 
 
+def _not_checked(report: dict) -> list[str]:
+    """'check (how to run it)' for each optional check that did not run."""
+    unchecked = report.get("convergence", {}).get("unchecked", [])
+    missing = [f"{label} ({remedy})" for _, label, remedy in SAMPLER_CHECKS if label in unchecked]
+    if report.get("psense", {}).get("rating", "not computed") == "not computed":
+        missing.append(f"prior sensitivity ({PSENSE_REMEDY})")
+    return missing
+
+
+def _closing_steps(report: dict) -> list[str]:
+    """The all-clear when every required check ran and passed; otherwise what blocks it.
+
+    Reached only when no other step was added, so a required section that is
+    missing, or that did not pass without adding a step of its own, still
+    blocks the all-clear.
+    """
+    unresolved = [
+        f"{label} ({report.get(key, {}).get('rating', 'not run')})"
+        for key, label, passing in REQUIRED_CHECKS
+        if report.get(key, {}).get("rating", "not run") not in passing
+    ]
+    if unresolved:
+        return [
+            "No specific next step applies, but not every required check ran and passed: "
+            f"{', '.join(unresolved)}. Resolve these before interpreting the posterior."
+        ]
+    steps = [
+        "All diagnostics are within acceptable bounds — proceed to "
+        "interpretation. Translate posteriors into decision-relevant terms "
+        "and document the model assumptions in the report."
+    ]
+    missing = _not_checked(report)
+    if missing:
+        steps.append(f"Not checked: {'; '.join(missing)}. Say so in the report.")
+    return steps
+
+
 def suggest_next_steps(report: dict) -> list[str]:
     """Combine the interpreted report into an ordered, actionable list.
 
@@ -372,10 +510,7 @@ def suggest_next_steps(report: dict) -> list[str]:
         # Non-parameter flags (divergences, E-BFMI, treedepth) are surfaced
         # separately — keep them out of the per-parameter R-hat/ESS message so
         # it never interpolates a flag phrase where a parameter name belongs.
-        _non_param = ("divergence", "e-bfmi", "treedepth", "=")
-        named_params = [
-            p for p in params if not any(tok in str(p).lower() for tok in _non_param)
-        ]
+        named_params, _ = _split_flags(params)
 
         if has_divergences:
             pct = float(conv.get("divergence_pct", 0.0) or 0.0)
@@ -408,23 +543,70 @@ def suggest_next_steps(report: dict) -> list[str]:
                 "AutoNormal fit (or blackjax.pathfinder). "
                 "Check for multimodality with az.plot_rank(idata) (runs on both ArviZ stacks)."
             )
+        td = conv.get("treedepth", {})
+        if not td.get("ok", True):
+            steps.append(
+                f"Tree depth hit max_tree_depth on {td.get('pct', 0.0):.1f}% of transitions "
+                f"({td.get('n_max', 0)}) — those trajectories were cut short, so the sampler "
+                "explores slowly. Saturation is an efficiency warning, not a validity failure, "
+                "but check the geometry before raising max_tree_depth on the NUTS kernel: an "
+                "improper or near-improper posterior saturates every transition, and a higher "
+                "limit never helps there (references/diagnostics.md, Failure signatures)."
+            )
+        bfmi = conv.get("bfmi", {})
+        if not bfmi.get("ok", True):
+            chains = ", ".join(str(c) for c in bfmi.get("failed_chains", []))
+            steps.append(
+                f"E-BFMI is low on chain(s) {chains} — those chains explore the energy "
+                "distribution poorly, often because of heavy tails or a funnel. Plot "
+                "az.plot_energy(idata), then work the escalation ladder in "
+                "references/diagnostics.md, starting from its Failure signatures table."
+            )
+
+    # ── Monte Carlo precision ─────────────────────────────────────────
+    prec = report.get("precision", {})
+    if prec.get("rating") == "poor":
+        steps.append(
+            f"Monte Carlo precision is short of the report's bar: max relative MCSE "
+            f"{prec['max_rel_mcse']:.3f} on {prec['max_rel_mcse_param']}, above {REL_MCSE_OK} "
+            "(references/reporting.md, Sampling and Convergence). Run more draws before "
+            "reporting — halving the MCSE costs about four times the draws — and round each "
+            "reported value to its stable_digits in diagnostics.json → precision."
+        )
+    elif prec.get("rating") == "not computed":
+        steps.append(
+            "Monte Carlo precision was not checked — diagnostics.json has no precision block "
+            "with a usable parameter. Re-run diagnose_model.py, which writes it, before filling "
+            "the report's MCSE row."
+        )
 
     # ── Calibration ───────────────────────────────────────────────────
+    if "calibration" not in report:
+        steps.append(
+            "Calibration was not checked — run calibration_check.py and pass its JSON with "
+            "--calibration. Calibration is mandatory for every model "
+            "(references/model-criticism.md), and the report's all-clear depends on it "
+            "(references/reporting.md)."
+        )
     steps.extend(_calibration_steps(report.get("calibration", {})))
 
     # ── LOO ───────────────────────────────────────────────────────────
     loo = report.get("loo", {})
     loo_rating = loo.get("rating", "not computed")
     loo_pk = loo.get("pareto_k", {})
-    n_high = loo_pk.get("n_bad", 0)
+    n_high = _high_pareto_k(loo_pk)
     n_nonfinite = loo_pk.get("n_nonfinite", 0)
     if loo_rating == "poor":
         if n_high:
             steps.append(
-                "LOO Pareto-k > 0.7 for some observations — these points are highly "
-                "influential. Inspect them (often outliers or high-leverage), consider "
-                "a more robust likelihood (StudentT), or refit excluding them to test "
-                "sensitivity. Use az.loo(idata, pointwise=True) and az.plot_khat(loo)."
+                f"LOO Pareto-k > {PARETO_K_MAX} for {n_high} observation(s) — PSIS-LOO is "
+                "unreliable there, and more draws will not fix it. Inspect them with "
+                "az.plot_khat(loo) (often outliers or high-leverage points) and consider a "
+                "more robust likelihood (StudentT). For exact values at those points, refit "
+                "with azs.reloo (one refit per flagged point) or azs.loo_kfold (K refits) "
+                "through an azs.SamplingWrapper subclass for your model, or run "
+                "azs.loo_moment_match with your model's log-density functions (it builds "
+                "them itself only for PyMC and Bambi)."
             )
         if n_nonfinite:
             steps.append(
@@ -433,17 +615,20 @@ def suggest_next_steps(report: dict) -> list[str]:
                 "co-occurs with sampling problems, so fix convergence first; then "
                 "inspect those points and consider a more robust likelihood (StudentT)."
             )
-        if not n_high and not n_nonfinite:
-            steps.append(
-                "LOO flags a problem — inspect the pointwise Pareto-k with "
-                "az.loo(idata, pointwise=True) and az.plot_khat(loo)."
-            )
     elif loo_rating == "fair":
         steps.append(
-            "LOO Pareto-k between 0.5 and 0.7 for some observations — borderline. "
-            "Identify the points and decide whether they're substantively important; "
-            "consider a robust likelihood if they reflect a tail-heavy data process."
+            f"LOO Pareto-k is above the sample-size threshold {loo_pk.get('good_k', PARETO_K_MAX):g} "
+            f"but at most {PARETO_K_MAX} for {loo_pk.get('n_bad', 0)} observation(s) — PSIS-LOO "
+            "is not reliable there yet, but more draws may fix it: the threshold rises to "
+            f"{PARETO_K_MAX} at about 2,200 draws in total (loo's Pareto-k diagnostic). Re-run "
+            "with more draws before trusting or comparing LOO."
         )
+    elif loo_rating == "not computed" and "loo" in report:
+        reason = loo.get("error") or (
+            "diagnostics.json has no LOO result; re-run diagnose_model.py on an "
+            "InferenceData with a log_likelihood group."
+        )
+        steps.append(f"LOO was not computed, so the Pareto-k check never ran — {reason}")
 
     # ── PPC availability ──────────────────────────────────────────────
     if not report.get("posterior_predictive", {}).get("available", True):
@@ -470,18 +655,9 @@ def suggest_next_steps(report: dict) -> list[str]:
             "Conclusions for those parameters depend partly on the prior."
         )
 
-    # ── Default if nothing is wrong ───────────────────────────────────
+    # ── Closing: the all-clear only when every required check ran and passed ──
     if not steps:
-        steps.append(
-            "All diagnostics are within acceptable bounds — proceed to "
-            "interpretation. Translate posteriors into decision-relevant terms "
-            "and document the model assumptions in the report."
-        )
-        if report.get("psense", {}).get("rating") == "not computed":
-            steps.append(
-                "Consider running prior sensitivity (`psense_summary(idata)`) "
-                "before publication, especially if any conclusions are policy-relevant."
-            )
+        steps.extend(_closing_steps(report))
 
     return steps
 

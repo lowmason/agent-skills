@@ -94,9 +94,9 @@ bayesian-workflow/
     ├── diagnose_model.py             # Post-sampling diagnostics report incl. MCSE precision block (writes diagnostics.json)
     ├── calibration_check.py          # Calibration plots from InferenceData (writes calibration.json)
     ├── check_diagnostics.py          # Interprets diagnostics + calibration into qualitative ratings + suggested next steps
-    ├── test_diagnose_model.py        # pytest: precision block (run from scripts/)
+    ├── test_diagnose_model.py        # pytest: precision, sampler-stat and Pareto-k blocks; the report's verdict (run from scripts/)
     ├── test_calibration_check.py     # pytest: calibration verdicts on both PIT paths + --loo-pit group checks
-    └── test_check_diagnostics.py     # pytest: divergence-fraction gate + calibration advice in suggested next steps
+    └── test_check_diagnostics.py     # pytest: a next step for each failed or missing check; the all-clear only when every required check passed
 ```
 
 ## License

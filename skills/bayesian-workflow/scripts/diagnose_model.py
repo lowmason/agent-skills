@@ -28,6 +28,19 @@ try:
 except ImportError:
     HAS_DIAGNOSE = False
 
+# The report's bar for the largest relative MCSE (references/reporting.md, Sampling and
+# Convergence). check_diagnostics.py keeps a copy; test_diagnose_model.py pins the two.
+REL_MCSE_OK = 0.05
+
+# loo's sample-size Pareto-k threshold never exceeds 0.7, and above 0.7 more draws do
+# not help. check_diagnostics.py keeps a copy; test_diagnose_model.py pins the two.
+PARETO_K_MAX = 0.7
+
+# The tree-depth saturation flags, NumPyro's first: az.from_numpyro writes
+# reached_max_tree_depth (when num_steps is collected), while arviz_stats.diagnose
+# reads only the CmdStan-style reached_max_treedepth.
+TREEDEPTH_FLAGS = ("reached_max_tree_depth", "reached_max_treedepth")
+
 
 def _json_default(o):
     """Coerce stray numpy scalars/arrays so json.dumps never chokes.
@@ -74,24 +87,60 @@ def _max_from_dataset(ds):
         return None
 
 
+def _sample_stats(idata):
+    """The sample_stats group, or None when the InferenceData has none."""
+    return idata.sample_stats if "sample_stats" in _group_names(idata) else None
+
+
+def _divergence_block(stats):
+    """Divergences from sample_stats; {"checked": False} without a diverging stat."""
+    if stats is None or "diverging" not in stats:
+        return {"checked": False}
+    flags = stats["diverging"]
+    n_div = int(flags.sum())
+    return {"checked": True, "count": n_div, "pct": round(100 * n_div / int(flags.size), 2), "ok": n_div == 0}
+
+
+def _treedepth_block(stats):
+    """Tree-depth saturation from either TREEDEPTH_FLAGS stat; {"checked": False} without one.
+
+    An unchecked block carries no ok key, so check_diagnostics can tell it from
+    a pass, and from ok: None, which it reads as saturation.
+    """
+    flag = next((f for f in TREEDEPTH_FLAGS if stats is not None and f in stats), None)
+    if flag is None:
+        return {"checked": False}
+    hits = stats[flag]
+    n_max = int(hits.sum())
+    return {"checked": True, "ok": n_max == 0, "n_max": n_max, "pct": round(100 * n_max / int(hits.size), 2)}
+
+
+def _bfmi_block(diagnosed):
+    """E-BFMI from arviz_stats.diagnose's results; {"checked": False} when it had no energy stat."""
+    if "bfmi" not in diagnosed:
+        return {"checked": False}
+    failed = [int(c) for c in diagnosed["bfmi"].get("failed_chains", [])]
+    return {"checked": True, "ok": not failed, "failed_chains": failed}
+
+
 def check_convergence(idata):
     """Run all convergence diagnostics. Returns structured results.
 
     Both code paths emit the SAME serializable schema so ``check_diagnostics.py``
-    has a single contract to consume: ``rhat`` / ``ess_bulk`` / ``ess_tail`` /
-    ``divergences`` each carry ``ok`` and ``problematic_params``; the
-    ``arviz_stats.diagnose`` path additionally reports ``bfmi`` and ``treedepth``
-    (the ``treedepth`` block is populated only when ``sample_stats`` carries
-    ``reached_max_treedepth``; NumPyro idata uses ``tree_depth`` instead, so on
-    that path treedepth stays ``ok``/0).
+    has a single contract to consume: ``rhat`` / ``ess_bulk`` / ``ess_tail`` each
+    carry ``ok`` and ``problematic_params``. ``divergences``, ``treedepth`` and
+    ``bfmi`` carry ``checked``: a block whose sample stat is missing (``diverging``;
+    either of ``TREEDEPTH_FLAGS``; ``energy``) is just ``{"checked": False}``, so
+    an unchecked block never reads as passed. Only the ``arviz_stats.diagnose``
+    path computes E-BFMI; the fallback always marks it unchecked.
     No numpy scalars, numpy arrays, or xarray objects leak into the dict — those
     are not JSON-serializable and would crash the report writer.
     """
     # Use arviz_stats.diagnose() if available — it covers R-hat, ESS,
-    # divergences, and E-BFMI in one call. (It only reports tree-depth
-    # saturation when sample_stats carries CmdStan-style
-    # "reached_max_treedepth"; NumPyro idata uses "tree_depth", so the
-    # treedepth block stays ok/0 on that path.)
+    # divergences, and E-BFMI in one call. It reads tree depth only from the
+    # CmdStan-style "reached_max_treedepth", while az.from_numpyro writes
+    # "reached_max_tree_depth", so both paths take the treedepth block from
+    # sample_stats themselves.
     if HAS_DIAGNOSE:
         # show_diagnostics=False keeps stdout clean so the JSON report can be
         # piped there when --output is omitted.
@@ -112,13 +161,8 @@ def check_convergence(idata):
                     if float(ess_tail_vals[v].min()) < thresh]
         min_bulk = int(min(float(ess_bulk_vals[v].min()) for v in ess_bulk_vals.data_vars))
         min_tail = int(min(float(ess_tail_vals[v].min()) for v in ess_tail_vals.data_vars))
-        div = d.get("divergent", {})
-        n_div = int(div.get("n_divergent", 0))
-        td = d.get("treedepth", {})
-        n_td = int(td.get("n_max", 0))
-        failed_chains = [int(c) for c in d.get("bfmi", {}).get("failed_chains", [])]
-        return {
-            "all_ok": not has_errors,
+        stats = _sample_stats(idata)
+        results = {
             "method": "arviz_stats.diagnose",
             "rhat": {
                 "ok": len(rhat_bad) == 0,
@@ -127,18 +171,18 @@ def check_convergence(idata):
             },
             "ess_bulk": {"ok": len(bad_bulk) == 0, "problematic_params": bad_bulk, "min": min_bulk},
             "ess_tail": {"ok": len(bad_tail) == 0, "problematic_params": bad_tail, "min": min_tail},
-            "divergences": {
-                "count": n_div,
-                "pct": round(float(div.get("pct", 0.0)), 2),
-                "ok": n_div == 0,
-            },
-            "treedepth": {
-                "ok": n_td == 0,
-                "n_max": n_td,
-                "pct": round(float(td.get("pct", 0.0)), 2),
-            },
-            "bfmi": {"ok": len(failed_chains) == 0, "failed_chains": failed_chains},
+            "divergences": _divergence_block(stats),
+            "treedepth": _treedepth_block(stats),
+            "bfmi": _bfmi_block(d),
         }
+        # has_errors misses the tail ESS and NumPyro's tree-depth flag, so fold every
+        # block in, as the fallback does: check_diagnostics rates "excellent" on all_ok
+        # before it reads any block. An unchecked block has no ok key and counts as passing.
+        all_ok = not has_errors and all(
+            results[k].get("ok", True)
+            for k in ["rhat", "ess_bulk", "ess_tail", "divergences", "treedepth", "bfmi"]
+        )
+        return {"all_ok": all_ok, **results}
 
     # Fallback for arviz-stats < 1.0.0 (classic ArviZ-only environments)
     summary = az.summary(idata)
@@ -166,20 +210,14 @@ def check_convergence(idata):
         },
     }
 
-    # Divergences
-    if "diverging" in idata.sample_stats:
-        n_div = int(idata.sample_stats["diverging"].sum())
-        total_samples = int(idata.sample_stats["diverging"].size)
-        results["divergences"] = {
-            "count": n_div,
-            "pct": round(100 * n_div / total_samples, 2),
-            "ok": n_div == 0,
-        }
-    else:
-        results["divergences"] = {"count": 0, "pct": 0.0, "ok": True}
+    stats = _sample_stats(idata)
+    results["divergences"] = _divergence_block(stats)
+    results["treedepth"] = _treedepth_block(stats)
+    results["bfmi"] = {"checked": False}  # E-BFMI needs arviz_stats.diagnose
 
     results["all_ok"] = all(
-        results[k]["ok"] for k in ["rhat", "ess_bulk", "ess_tail", "divergences"]
+        results[k].get("ok", True)
+        for k in ["rhat", "ess_bulk", "ess_tail", "divergences", "treedepth"]
     )
     results["method"] = "manual"
 
@@ -217,6 +255,41 @@ def _loo_field(loo, *names):
     return None
 
 
+def pareto_k_threshold(n_samples):
+    """loo's sample-size Pareto-k threshold, min(1 - 1/log10(S), 0.7); see references/model-criticism.md.
+
+    Computed here from S = chains x draws rather than read from the ELPDData, so
+    the same idata gets the same cutoff on ArviZ 0.23 and 1.x. It is 0.7 above
+    about 2,200 draws and about 0.656 at the 4 x 200 exploring size.
+    """
+    return min(1 - 1 / math.log10(n_samples), PARETO_K_MAX)
+
+
+def summarize_pareto_k(pareto_k, n_samples):
+    """The diagnostics.json pareto_k block, counted against pareto_k_threshold.
+
+    n_bad counts each finite k above good_k, where loo calls PSIS-LOO
+    unreliable; n_high counts those above 0.7, which more draws cannot fix. A
+    non-finite k means PSIS could not estimate that point at all (arviz 1.x
+    returns NaN there): it is counted apart in n_nonfinite, and max runs over
+    the finite values only, so no bare NaN reaches the JSON (json.dumps would
+    emit `NaN`, which is invalid JSON).
+    """
+    pareto_k = np.asarray(pareto_k, dtype=float)
+    finite = pareto_k[np.isfinite(pareto_k)]
+    n_nonfinite = int(pareto_k.size - finite.size)
+    good_k = pareto_k_threshold(n_samples)
+    n_bad = int(np.sum(finite > good_k))
+    return {
+        "max": float(finite.max()) if finite.size else None,
+        "good_k": round(good_k, 4),
+        "n_bad": n_bad,
+        "n_high": int(np.sum(finite > PARETO_K_MAX)),
+        "n_nonfinite": n_nonfinite,
+        "ok": n_bad == 0 and n_nonfinite == 0,
+    }
+
+
 def check_loo(idata):
     """Run LOO-CV and check Pareto k diagnostics.
 
@@ -236,37 +309,15 @@ def check_loo(idata):
                 ),
             }
         loo = az.loo(idata, pointwise=True)
-        pareto_k = np.asarray(_loo_field(loo, "pareto_k"), dtype=float)
         elpd = _loo_field(loo, "elpd_loo", "elpd")
         se = _loo_field(loo, "se")
         p_loo = _loo_field(loo, "p_loo", "p")
-
-        # A non-finite Pareto-k means the importance-sampling LOO for that point
-        # could not be estimated — arviz 1.x returns NaN there, where arviz 0.23
-        # sometimes smoothed it to a finite value. Keep it DISTINCT from a finite
-        # k > 0.7 (different diagnosis, different fix), and take the max over the
-        # finite values only, so a bare NaN never leaks into the JSON report
-        # (json.dumps emits `NaN`, which is invalid JSON).
-        finite = pareto_k[np.isfinite(pareto_k)]
-        n_nonfinite = int(pareto_k.size - finite.size)
-
-        # Pareto-k cutoff is held at the classic 0.7 (not arviz 1.x's
-        # data-dependent good_k) so the same idata yields the same rating on both
-        # the PyMC 5 and PyMC 6 stacks — cross-version equivalence over novelty.
-        # n_bad counts ONLY finite k > 0.7, so the "k > 0.7" wording downstream is
-        # always literally true; non-finite points are reported via n_nonfinite.
-        n_high = int(np.sum(finite > 0.7))
+        n_samples = int(idata.posterior.sizes["chain"]) * int(idata.posterior.sizes["draw"])
         results = {
             "elpd": float(elpd) if elpd is not None else None,
             "se": float(se) if se is not None else None,
             "p_loo": float(p_loo) if p_loo is not None else None,
-            "pareto_k": {
-                "max": float(finite.max()) if finite.size else None,
-                "n_bad": n_high,
-                "n_marginal": int(np.sum((finite > 0.5) & (finite <= 0.7))),
-                "n_nonfinite": n_nonfinite,
-                "ok": n_high == 0 and n_nonfinite == 0,
-            },
+            "pareto_k": summarize_pareto_k(_loo_field(loo, "pareto_k"), n_samples),
             "computed": True,
         }
     except Exception as e:
@@ -352,13 +403,21 @@ def generate_report(idata):
     issues = []
     if not report["convergence"]["all_ok"]:
         issues.append("Convergence issues detected — results may be unreliable")
+    prec = report["precision"]
+    if prec["params"] and prec["max_rel_mcse"] > REL_MCSE_OK:
+        issues.append(
+            f"Max relative MCSE {prec['max_rel_mcse']:.3f} on {prec['max_rel_mcse_param']} "
+            f"is above the {REL_MCSE_OK} bar — run more draws before reporting"
+        )
+    if not report["loo"].get("computed"):
+        issues.append(f"LOO not computed: {report['loo'].get('error', 'no LOO result')}")
     loo_pk = report["loo"].get("pareto_k", {}) if report["loo"].get("computed") else {}
     if loo_pk and not loo_pk.get("ok", True):
-        n_high = loo_pk.get("n_bad", 0)
+        n_bad = loo_pk.get("n_bad", 0)
         n_nf = loo_pk.get("n_nonfinite", 0)
         parts = []
-        if n_high:
-            parts.append(f"{n_high} observation(s) with Pareto k > 0.7")
+        if n_bad:
+            parts.append(f"{n_bad} observation(s) with Pareto k above {loo_pk['good_k']:g}")
         if n_nf:
             parts.append(
                 f"{n_nf} observation(s) with non-finite Pareto k (LOO could not be estimated)"

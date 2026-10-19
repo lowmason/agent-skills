@@ -45,9 +45,10 @@ path; a clean `azs.diagnose` result already covers energy. (Earlier PyMC-stack g
 mentioned tree-depth here. Tree-depth is the one check `diagnose` skips on the
 numpyro/`az.from_numpyro` path: it looks for a `reached_max_treedepth` sample stat, but
 `az.from_numpyro` emits `reached_max_tree_depth` instead, so the tree-depth branch never fires.
-Inspect tree-depth separately via `idata.sample_stats["tree_depth"]` — see Energy diagnostics
-below.) If `azs.diagnose` is not available (arviz-stats < 1.0.0), fall back to the manual checks
-below.
+`scripts/diagnose_model.py` reads either flag itself and reports saturation in its `treedepth`
+block. `az.from_numpyro` writes the flag only when `num_steps` is in `extra_fields`, as in our
+sampling flow; without it the block reads `checked: false`.) If `azs.diagnose` is not available
+(arviz-stats < 1.0.0), fall back to the manual checks below.
 
 ## Exploration runs vs. the final run
 
@@ -136,7 +137,7 @@ What the diagnostics look like for the common ways a fit goes wrong, what each u
 
 | Signature | Usual cause | Check / fix in NumPyro |
 |---|---|---|
-| Chains drift to ±1e20, R-hat ≈ 3, most transitions hit max tree depth (read that one yourself from `idata.sample_stats["tree_depth"]` — it is the check `azs.diagnose` skips on the `from_numpyro` path, above) | **Improper or near-improper posterior** — a site under `dist.ImproperUniform`, or a `Normal(0, 100)`-class prior on a logistic coefficient whose classes are separated | Give every site a proper prior on the scale the parameter actually lives on (`Normal(0, 2.5)` for a standardized logistic coefficient). Raising `max_tree_depth` never helps here |
+| Chains drift to ±1e20, R-hat ≈ 3, most transitions hit max tree depth (`diagnose_model.py`'s `treedepth` block; `azs.diagnose` alone skips it on the `from_numpyro` path, above) | **Improper or near-improper posterior** — a site under `dist.ImproperUniform`, or a `Normal(0, 100)`-class prior on a logistic coefficient whose classes are separated | Give every site a proper prior on the scale the parameter actually lives on (`Normal(0, 2.5)` for a standardized logistic coefficient). Raising `max_tree_depth` never helps here |
 | One site's marginal is indistinguishable from its prior — no shrinkage, no correlation with anything — while everything else converges; only under an improper prior (`dist.ImproperUniform`) does it random-walk without bound | **Unused parameter** — sampled but never reaches the likelihood (a typo, or a branch that never uses it), so nothing but its prior constrains it | `numpyro.render_model(model, model_args=...)` shows the orphan node with no path to `y_obs`; delete the site or wire it in |
 | Sampling slow (many leapfrog steps), ESS lower than expected, *no* warnings; pair plot shows a straight-line ridge with correlation ≈ ±1 | **Aliased parameters** — two sites play one role: an intercept plus a constant predictor column; item ability vs. item difficulty with no anchor; mixture components that swap labels (K! equivalent modes), or mixture weights identified only through their sum until the components separate | Only a sum, a ratio, or an unordered set is identified. Drop one, anchor a reference level, use a sum-to-zero contrast, or add a prior that separates them — see the identifiability rule in SKILL.md |
 | Slow, bulk-ESS in the low hundreds where thousands are expected, strong intercept–slope correlation | **Uncentered predictors** — the intercept means "outcome at x = 0", far outside the data | Center (and scale) predictors before the fit; the book's own regression example gains ~3× ESS and >20× speed from centering alone. `dense_mass=True` is the second-best fix |
