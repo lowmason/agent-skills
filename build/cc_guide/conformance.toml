@@ -93,9 +93,12 @@ sections = [
 ]
 
 [kinds.installer]
-description = 'install.py, which places skills, agents and commands for each runtime.'
+description = 'install.py, which places skills, agents and commands for each runtime, and user-level rules for Claude.'
 globs = ['install.py']
-sections = ['skills.locations', 'subagents.overview', 'commands.overview']
+sections = [
+    'skills.locations', 'subagents.overview', 'commands.overview', 'rules.rules-files',
+    'rules.hierarchy',
+]
 
 [kinds.skill-bundle]
 description = 'Every file kept under a skill directory: the SKILL.md plus its references, scripts and data.'

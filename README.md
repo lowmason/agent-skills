@@ -198,6 +198,7 @@ conflicting path at once. Useful options:
 python3 install.py codex --skill bayesian-workflow                # just this skill; repeat --skill as needed
 python3 install.py claude --skill finishing-a-development-branch  # plus its dependencies (see below)
 python3 install.py codex --skill bayesian-workflow --companions   # the skill plus Codex's agents
+python3 install.py claude --rule write-with-asd-ste100           # the user-level rule and the skill it names
 python3 install.py claude --no-companions                         # every skill, no agents or commands
 python3 install.py all --dry-run                                  # inspect without writing
 python3 install.py gemini --copy                                  # frozen copies instead of symlinks (see below)
@@ -214,6 +215,13 @@ and commands unless you add `--companions`. A full install includes every
 companion unless you add `--no-companions`, which leaves out all agents and
 commands, required ones included. The table is `DEPENDENCIES` in `install.py`.
 
+A full Claude install also places the user-level rules, today only
+`write-with-asd-ste100`, in `~/.claude/rules/`. `--rule NAME` installs one of
+them with the skills that it names and their dependencies. Like `--skill`, it
+skips the runtime's other agents and commands unless you add `--companions`.
+Codex and Gemini installs place no rule. The table is `USER_RULES` in
+`install.py`.
+
 `--copy` installs the same skills, agents, and commands a link install would,
 including any that git ignores whole; agents and commands are copied as they
 are. Within a skill it copies the files git keeps (tracked, or untracked and
@@ -226,11 +234,11 @@ repository or submodule, which it cannot copy file by file. It never replaces
 an existing destination, a previous copy included, so remove old copies before
 re-running it.
 
-| Runtime | Skills | Agents | Commands |
-|---------|--------|--------|----------|
-| Claude Code | `~/.claude/skills/` | `~/.claude/agents/*.md` | `~/.claude/commands/*.md` |
-| Codex | `~/.agents/skills/` | `~/.codex/agents/*.toml` | — |
-| Gemini CLI | `~/.agents/skills/` | `~/.gemini/agents/*.md` | `~/.gemini/commands/*.toml` |
+| Runtime | Skills | Agents | Commands | Rules |
+|---------|--------|--------|----------|-------|
+| Claude Code | `~/.claude/skills/` | `~/.claude/agents/*.md` | `~/.claude/commands/*.md` | `~/.claude/rules/*.md` (user-level rules only) |
+| Codex | `~/.agents/skills/` | `~/.codex/agents/*.toml` | — | — |
+| Gemini CLI | `~/.agents/skills/` | `~/.gemini/agents/*.md` | `~/.gemini/commands/*.toml` | — |
 
 Codex and Gemini deliberately share the cross-runtime `~/.agents/skills/`
 installation. This matches [Codex's local skill discovery](https://developers.openai.com/codex/skills)
@@ -276,7 +284,10 @@ Then merge the `hooks` block from [`hooks/README.md`](hooks/README.md) into that
 
 ### Claude Code rules
 
-Project-level, per repo:
+`write-with-asd-ste100.md` is user-level: a full `python3 install.py claude` places it, and
+`python3 install.py claude --rule write-with-asd-ste100` places it with its skill alone.
+
+The path-scoped rules are project-level, per repo:
 
 ```bash
 mkdir -p <target-repo>/.claude/rules
