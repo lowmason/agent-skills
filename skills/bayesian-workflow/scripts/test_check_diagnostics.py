@@ -396,3 +396,47 @@ def test_the_convergence_summary_names_parameters_and_sampler_flags():
     )
     report, _ = _report_and_steps(diag)
     assert "flags on a; max treedepth saturation" in report["summary"]["convergence"]
+
+
+def _with_pareto_k(**pareto_k):
+    diag = _clean_diagnostics()
+    diag["loo"]["pareto_k"] = pareto_k
+    return diag
+
+
+def test_pareto_k_between_good_k_and_0_7_asks_for_more_draws():
+    # good_k is about 0.656 at S = 800 draws, loo's exploring size here.
+    report, steps = _report_and_steps(
+        _with_pareto_k(max=0.68, good_k=0.6555, n_bad=3, n_high=0, n_nonfinite=0, ok=False)
+    )
+    assert report["loo"]["rating"] == "fair"
+    step = _one_step(steps, "LOO Pareto-k is above the sample-size threshold 0.66")
+    assert "3 observation(s)" in step and "more draws" in step
+    assert not _proceeds(steps)
+
+
+def test_pareto_k_above_0_7_names_the_remedies():
+    report, steps = _report_and_steps(
+        _with_pareto_k(max=0.92, good_k=0.7, n_bad=2, n_high=2, n_nonfinite=0, ok=False)
+    )
+    assert report["loo"]["rating"] == "poor"
+    step = _one_step(steps, "LOO Pareto-k > 0.7 for 2 observation(s)")
+    for remedy in ("azs.reloo", "azs.loo_kfold", "azs.loo_moment_match", "azs.SamplingWrapper"):
+        assert remedy in step
+
+
+def test_the_retired_0_5_band_no_longer_flags():
+    report, steps = _report_and_steps(
+        _with_pareto_k(max=0.62, good_k=0.7, n_bad=0, n_high=0, n_nonfinite=0, ok=True)
+    )
+    assert report["loo"]["rating"] == "excellent"
+    assert len(steps) == 1 and _proceeds(steps), steps
+
+
+def test_a_diagnostics_file_without_good_k_reads_n_bad_as_above_0_7():
+    # Written before good_k existed: n_bad then counted only k > 0.7.
+    report, steps = _report_and_steps(
+        _with_pareto_k(max=0.81, n_bad=1, n_marginal=2, n_nonfinite=0, ok=False)
+    )
+    assert report["loo"]["rating"] == "poor"
+    assert "azs.reloo" in _one_step(steps, "LOO Pareto-k > 0.7 for 1 observation(s)")

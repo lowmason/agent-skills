@@ -5,6 +5,7 @@ cd skills/bayesian-workflow/scripts && uv run --python 3.13 --with pytest --with
 """
 
 import json
+import math
 
 import arviz as az
 import numpy as np
@@ -135,6 +136,7 @@ def test_report_overall_flags_a_loo_that_never_ran(monkeypatch):
 
 def test_the_two_scripts_share_their_thresholds():
     assert diagnose_model.REL_MCSE_OK == cd.REL_MCSE_OK
+    assert diagnose_model.PARETO_K_MAX == cd.PARETO_K_MAX
 
 
 CALM = np.zeros((4, 500), dtype=bool)
@@ -243,3 +245,25 @@ def test_a_run_without_the_tree_depth_flag_reads_back_as_not_checked():
     assert "proceed to interpretation" in steps[0]
     assert any(s.startswith("Not checked: tree depth") for s in steps), steps
     assert "not checked: tree depth" in report["summary"]["convergence"]
+
+
+def test_the_pareto_k_threshold_follows_loo():
+    assert diagnose_model.pareto_k_threshold(4000) == 0.7
+    assert diagnose_model.pareto_k_threshold(800) == pytest.approx(1 - 1 / math.log10(800))
+    assert 0.655 < diagnose_model.pareto_k_threshold(800) < 0.656
+
+
+def test_pareto_k_counts_against_the_sample_size_threshold():
+    k = [0.2, 0.68, 0.9, float("nan")]
+    assert diagnose_model.summarize_pareto_k(k, 800) == {
+        "max": 0.9, "good_k": 0.6555, "n_bad": 2, "n_high": 1, "n_nonfinite": 1, "ok": False,
+    }
+    assert diagnose_model.summarize_pareto_k(k, 4000) == {
+        "max": 0.9, "good_k": 0.7, "n_bad": 1, "n_high": 1, "n_nonfinite": 1, "ok": False,
+    }
+
+
+def test_check_loo_carries_good_k_and_drops_the_0_5_band():
+    pareto_k = diagnose_model.check_loo(_complete_idata())["pareto_k"]
+    assert pareto_k["good_k"] == round(diagnose_model.pareto_k_threshold(2000), 4)
+    assert "n_high" in pareto_k and "n_marginal" not in pareto_k

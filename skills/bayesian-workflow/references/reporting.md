@@ -219,7 +219,8 @@ Use these as a reference when filling in the final section. The harness in `scri
 - Divergences concentrated near a boundary parameter → "Reparameterize the affected parameter as non-centered (`LocScaleReparam`), or replace `HalfCauchy` with `Gamma(2, …)` for scale priors."
 - High R-hat with bimodal trace → "Run more draws and use `init_strategy=init_to_median`; consider whether the posterior is genuinely multimodal (label-switching, ordering identifiability)."
 - Poor PIT calibration with good convergence → "Likelihood is misspecified — consider StudentT for heavy tails, NegBinomial for overdispersed counts, or hierarchical structure for grouped variation."
-- LOO Pareto k > 0.7 for some observations → "Investigate the influential points (often outliers or leverage). Consider a more robust likelihood or refit excluding the worst points to test sensitivity."
+- LOO Pareto k > 0.7 for some observations → "PSIS-LOO is unreliable there, and more draws will not fix it. Inspect the points (often outliers or leverage), consider a more robust likelihood, and get exact values with `azs.reloo` or `azs.loo_kfold` (refits through an `azs.SamplingWrapper`) or `azs.loo_moment_match`."
+- LOO Pareto k above `good_k` but at most 0.7 (fewer than about 2,200 draws) → "Re-run with more draws before trusting or comparing LOO."
 - Strong prior sensitivity on a parameter → "Either justify the informative prior with domain knowledge, or widen the prior and refit. Report both runs if the substantive conclusion changes."
 - Posterior shows non-identifiability (parameters perfectly correlated) → "Either combine the components or restructure data so they're separately identified — see `references/diagnostics.md` on identifiability."
 
@@ -293,7 +294,7 @@ Use this structure for written reports. Adapt sections as needed.
 - **Posterior predictive check**: [Figure + assessment]
 - **LOO-CV**: ELPD = [X] (SE = [Y]), p = [Z]
 - **Calibration**: [Figure + assessment]
-- **Pareto k**: all < 0.5 ✓ (or list problematic observations)
+- **Pareto k**: all ≤ `good_k` (min(1 − 1/log10 S, 0.7), from `diagnostics.json → loo.pareto_k`) ✓ (or list problematic observations)
 
 ### Model comparison (if applicable)
 | Model | ELPD | SE | ΔELPD | Weight |

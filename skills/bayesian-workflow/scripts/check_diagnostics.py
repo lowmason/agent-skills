@@ -31,8 +31,6 @@ RHAT_OK = 1.01
 DIVERGENCE_OK = 0
 DIVERGENCE_FAIR = 0.005  # < 0.5% of post-warmup draws
 DIVERGENCE_GATE_PCT = 1.0  # percent; above this, raising target_accept_prob rarely helps (Gelman et al. 2026, §12.3)
-PARETO_K_OK = 0.5
-PARETO_K_FAIR = 0.7
 COVERAGE_DEVIATION_OK = 0.02
 COVERAGE_DEVIATION_FAIR = 0.05
 PSENSE_OK = 0.05
@@ -42,6 +40,10 @@ PSENSE_FAIR = 0.10
 # Sampling and Convergence), so unlike the levels above it is quoted in the next step.
 # diagnose_model.py keeps a copy for its overall verdict; test_diagnose_model.py pins the two.
 REL_MCSE_OK = 0.05
+
+# loo's sample-size Pareto-k threshold (good_k, which diagnose_model.py writes) never
+# exceeds 0.7, and above 0.7 more draws do not help. A copy, pinned like REL_MCSE_OK.
+PARETO_K_MAX = 0.7
 
 # The checks the all-clear requires: report section, label, and the ratings that pass.
 REQUIRED_CHECKS = (
@@ -152,29 +154,32 @@ def _rate_convergence(conv: dict) -> tuple[str, list[str]]:
     return rating, issues
 
 
+def _high_pareto_k(pk: dict) -> int:
+    """Finite k > 0.7. A file written before good_k had no n_high, and its n_bad meant this."""
+    return pk.get("n_high", pk.get("n_bad", 0))
+
+
 def _rate_loo(loo: dict) -> str:
-    """Return a qualitative rating for the LOO Pareto-k diagnostic."""
+    """Return a qualitative rating for the LOO Pareto-k diagnostic.
+
+    Rated from diagnose_model.py's counts against loo's sample-size threshold
+    good_k: poor for any k > 0.7 or non-finite k, which more draws cannot fix;
+    fair when every flagged k lies between good_k and 0.7, which more draws can.
+    """
     if not loo or not loo.get("computed"):
         return "not computed"
 
     pk = loo.get("pareto_k", {})
-    n_bad = pk.get("n_bad", 0)
-    n_nonfinite = pk.get("n_nonfinite", 0)
-    pk_max = pk.get("max")
-
-    # Any bad point caps the rating at poor — whether a finite k > 0.7 or a
-    # non-finite k that LOO could not estimate. A low max over the *remaining*
-    # points doesn't redeem an unreliable observation. pk_max is None only when
-    # every point is non-finite.
-    if n_bad > 0 or n_nonfinite > 0:
+    # Any bad point caps the rating — a low max over the *remaining* points
+    # doesn't redeem an unreliable observation. max is None only when every
+    # point is non-finite.
+    if _high_pareto_k(pk) > 0 or pk.get("n_nonfinite", 0) > 0:
         return "poor"
-    if pk_max is None:
+    if pk.get("max") is None:
         return "not computed"
-    if pk_max <= PARETO_K_OK:
-        return "excellent"
-    if pk_max <= PARETO_K_FAIR:
+    if pk.get("n_bad", 0) > 0:
         return "fair"
-    return "poor"
+    return "excellent"
 
 
 def _rate_calibration(cal: dict) -> tuple[str, str]:
@@ -298,8 +303,8 @@ def check_diagnostics(
         loo_in = diagnostics.get("loo", {})
         report["loo"] = {
             "rating": _rate_loo(loo_in),
-            # carry the Pareto-k breakdown so suggest_next_steps can distinguish
-            # finite k > 0.7 from non-finite (could-not-estimate) points.
+            # carry the Pareto-k breakdown so suggest_next_steps can tell k above
+            # good_k, k > 0.7 and non-finite (could-not-estimate) points apart.
             "pareto_k": loo_in.get("pareto_k", {}),
             # diagnose_model.py's reason when LOO did not run; the next step quotes it
             "error": loo_in.get("error", ""),
@@ -589,15 +594,19 @@ def suggest_next_steps(report: dict) -> list[str]:
     loo = report.get("loo", {})
     loo_rating = loo.get("rating", "not computed")
     loo_pk = loo.get("pareto_k", {})
-    n_high = loo_pk.get("n_bad", 0)
+    n_high = _high_pareto_k(loo_pk)
     n_nonfinite = loo_pk.get("n_nonfinite", 0)
     if loo_rating == "poor":
         if n_high:
             steps.append(
-                "LOO Pareto-k > 0.7 for some observations — these points are highly "
-                "influential. Inspect them (often outliers or high-leverage), consider "
-                "a more robust likelihood (StudentT), or refit excluding them to test "
-                "sensitivity. Use az.loo(idata, pointwise=True) and az.plot_khat(loo)."
+                f"LOO Pareto-k > {PARETO_K_MAX} for {n_high} observation(s) — PSIS-LOO is "
+                "unreliable there, and more draws will not fix it. Inspect them with "
+                "az.plot_khat(loo) (often outliers or high-leverage points) and consider a "
+                "more robust likelihood (StudentT). For exact values at those points, refit "
+                "with azs.reloo (one refit per flagged point) or azs.loo_kfold (K refits) "
+                "through an azs.SamplingWrapper subclass for your model, or run "
+                "azs.loo_moment_match with your model's log-density functions (it builds "
+                "them itself only for PyMC and Bambi)."
             )
         if n_nonfinite:
             steps.append(
@@ -606,16 +615,13 @@ def suggest_next_steps(report: dict) -> list[str]:
                 "co-occurs with sampling problems, so fix convergence first; then "
                 "inspect those points and consider a more robust likelihood (StudentT)."
             )
-        if not n_high and not n_nonfinite:
-            steps.append(
-                "LOO flags a problem — inspect the pointwise Pareto-k with "
-                "az.loo(idata, pointwise=True) and az.plot_khat(loo)."
-            )
     elif loo_rating == "fair":
         steps.append(
-            "LOO Pareto-k between 0.5 and 0.7 for some observations — borderline. "
-            "Identify the points and decide whether they're substantively important; "
-            "consider a robust likelihood if they reflect a tail-heavy data process."
+            f"LOO Pareto-k is above the sample-size threshold {loo_pk.get('good_k', PARETO_K_MAX):.2f} "
+            f"but at most {PARETO_K_MAX} for {loo_pk.get('n_bad', 0)} observation(s) — PSIS-LOO "
+            "is not reliable there yet, but more draws may fix it: the threshold rises to "
+            f"{PARETO_K_MAX} at about 2,200 draws in total (loo's Pareto-k diagnostic). Re-run "
+            "with more draws before trusting or comparing LOO."
         )
     elif loo_rating == "not computed" and "loo" in report:
         reason = loo.get("error") or (

@@ -32,6 +32,10 @@ except ImportError:
 # Convergence). check_diagnostics.py keeps a copy; test_diagnose_model.py pins the two.
 REL_MCSE_OK = 0.05
 
+# loo's sample-size Pareto-k threshold never exceeds 0.7, and above 0.7 more draws do
+# not help. check_diagnostics.py keeps a copy; test_diagnose_model.py pins the two.
+PARETO_K_MAX = 0.7
+
 # The tree-depth saturation flags, NumPyro's first: az.from_numpyro writes
 # reached_max_tree_depth (when num_steps is collected), while arviz_stats.diagnose
 # reads only the CmdStan-style reached_max_treedepth.
@@ -247,6 +251,41 @@ def _loo_field(loo, *names):
     return None
 
 
+def pareto_k_threshold(n_samples):
+    """loo's sample-size Pareto-k threshold, min(1 - 1/log10(S), 0.7); see references/model-criticism.md.
+
+    Computed here from S = chains x draws rather than read from the ELPDData, so
+    the same idata gets the same cutoff on ArviZ 0.23 and 1.x. It is 0.7 above
+    about 2,200 draws and about 0.656 at the 4 x 200 exploring size.
+    """
+    return min(1 - 1 / math.log10(n_samples), PARETO_K_MAX)
+
+
+def summarize_pareto_k(pareto_k, n_samples):
+    """The diagnostics.json pareto_k block, counted against pareto_k_threshold.
+
+    n_bad counts each finite k above good_k, where loo calls PSIS-LOO
+    unreliable; n_high counts those above 0.7, which more draws cannot fix. A
+    non-finite k means PSIS could not estimate that point at all (arviz 1.x
+    returns NaN there): it is counted apart in n_nonfinite, and max runs over
+    the finite values only, so no bare NaN reaches the JSON (json.dumps would
+    emit `NaN`, which is invalid JSON).
+    """
+    pareto_k = np.asarray(pareto_k, dtype=float)
+    finite = pareto_k[np.isfinite(pareto_k)]
+    n_nonfinite = int(pareto_k.size - finite.size)
+    good_k = pareto_k_threshold(n_samples)
+    n_bad = int(np.sum(finite > good_k))
+    return {
+        "max": float(finite.max()) if finite.size else None,
+        "good_k": round(good_k, 4),
+        "n_bad": n_bad,
+        "n_high": int(np.sum(finite > PARETO_K_MAX)),
+        "n_nonfinite": n_nonfinite,
+        "ok": n_bad == 0 and n_nonfinite == 0,
+    }
+
+
 def check_loo(idata):
     """Run LOO-CV and check Pareto k diagnostics.
 
@@ -266,37 +305,15 @@ def check_loo(idata):
                 ),
             }
         loo = az.loo(idata, pointwise=True)
-        pareto_k = np.asarray(_loo_field(loo, "pareto_k"), dtype=float)
         elpd = _loo_field(loo, "elpd_loo", "elpd")
         se = _loo_field(loo, "se")
         p_loo = _loo_field(loo, "p_loo", "p")
-
-        # A non-finite Pareto-k means the importance-sampling LOO for that point
-        # could not be estimated — arviz 1.x returns NaN there, where arviz 0.23
-        # sometimes smoothed it to a finite value. Keep it DISTINCT from a finite
-        # k > 0.7 (different diagnosis, different fix), and take the max over the
-        # finite values only, so a bare NaN never leaks into the JSON report
-        # (json.dumps emits `NaN`, which is invalid JSON).
-        finite = pareto_k[np.isfinite(pareto_k)]
-        n_nonfinite = int(pareto_k.size - finite.size)
-
-        # Pareto-k cutoff is held at the classic 0.7 (not arviz 1.x's
-        # data-dependent good_k) so the same idata yields the same rating on both
-        # the PyMC 5 and PyMC 6 stacks — cross-version equivalence over novelty.
-        # n_bad counts ONLY finite k > 0.7, so the "k > 0.7" wording downstream is
-        # always literally true; non-finite points are reported via n_nonfinite.
-        n_high = int(np.sum(finite > 0.7))
+        n_samples = int(idata.posterior.sizes["chain"]) * int(idata.posterior.sizes["draw"])
         results = {
             "elpd": float(elpd) if elpd is not None else None,
             "se": float(se) if se is not None else None,
             "p_loo": float(p_loo) if p_loo is not None else None,
-            "pareto_k": {
-                "max": float(finite.max()) if finite.size else None,
-                "n_bad": n_high,
-                "n_marginal": int(np.sum((finite > 0.5) & (finite <= 0.7))),
-                "n_nonfinite": n_nonfinite,
-                "ok": n_high == 0 and n_nonfinite == 0,
-            },
+            "pareto_k": summarize_pareto_k(_loo_field(loo, "pareto_k"), n_samples),
             "computed": True,
         }
     except Exception as e:
@@ -392,11 +409,11 @@ def generate_report(idata):
         issues.append(f"LOO not computed: {report['loo'].get('error', 'no LOO result')}")
     loo_pk = report["loo"].get("pareto_k", {}) if report["loo"].get("computed") else {}
     if loo_pk and not loo_pk.get("ok", True):
-        n_high = loo_pk.get("n_bad", 0)
+        n_bad = loo_pk.get("n_bad", 0)
         n_nf = loo_pk.get("n_nonfinite", 0)
         parts = []
-        if n_high:
-            parts.append(f"{n_high} observation(s) with Pareto k > 0.7")
+        if n_bad:
+            parts.append(f"{n_bad} observation(s) with Pareto k above {loo_pk['good_k']:.2f}")
         if n_nf:
             parts.append(
                 f"{n_nf} observation(s) with non-finite Pareto k (LOO could not be estimated)"
