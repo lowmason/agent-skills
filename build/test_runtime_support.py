@@ -417,6 +417,7 @@ def test_skill_selection_alone_places_no_rule(tmp_path):
 
 def test_declared_dependencies_match_user_rule_text(monkeypatch):
   install = load_install(monkeypatch)
+  assert install.USER_RULES, 'no user-level rule is declared, so the loop below would check nothing'
   skills = {path.name for path in (REPO / 'skills').iterdir() if (path / 'SKILL.md').is_file()}
   names = '|'.join(sorted(map(re.escape, skills), key=len, reverse=True))
   for rule, declared in install.USER_RULES.items():

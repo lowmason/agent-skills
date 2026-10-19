@@ -7,9 +7,9 @@ This record holds the numbers and decisions of the test campaign that chose the 
 ## 1. Result in brief
 
 - The rule arms chose the **listed form** of the rule, with two habits removed: plain words and simple tenses. The win is narrow (section 4).
-- The skill baseline (the chosen rule, no skill) passed 8 of 18 cases. The skill arm passed 16 of 18. After one wording fix and a re-run of the two failing cases, all 18 pass (sections 6 to 8).
+- The skill baseline (the chosen rule, no skill) passed 8 of 18 cases. The skill arm passed 16 of 18. After one wording fix and a re-run of the two failing cases, all 18 pass (sections 6 to 8). Only those two cases ran against the text with the fix. The other 16 results come from the skill text before the fix.
 - 297 measured runs and 36 judge calls cost $18.12 in total (section 9).
-- The pre-registered hand-reading table needed two owner-approved changes to its `V3` row (section 2).
+- The pre-registered hand-reading table needed two owner-approved changes to its `V3` row, the row for a tool run that touched a path outside its own run folder (section 2).
 
 ## 2. Setup
 
