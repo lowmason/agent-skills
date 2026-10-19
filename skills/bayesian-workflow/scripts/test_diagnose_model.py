@@ -8,14 +8,18 @@ import json
 
 import arviz as az
 import numpy as np
+import pytest
 
 import check_diagnostics as cd
 import diagnose_model
 from diagnose_model import _json_default, check_precision, generate_report
 
 
-def _idata(n_chains=4, n_draws=500, seed=0, extra=None):
-    """Synthetic InferenceData with i.i.d. unit-normal draws (ESS ~ n_chains * n_draws)."""
+def _idata(n_chains=4, n_draws=500, seed=0, extra=None, stats=None):
+    """Synthetic InferenceData with i.i.d. unit-normal draws (ESS ~ n_chains * n_draws).
+
+    ``stats`` replaces the default sample_stats, which hold only ``diverging``.
+    """
     rng = np.random.default_rng(seed)
     post = {
         "mu": rng.normal(size=(n_chains, n_draws)),
@@ -23,7 +27,8 @@ def _idata(n_chains=4, n_draws=500, seed=0, extra=None):
     }
     if extra:
         post.update(extra)
-    stats = {"diverging": np.zeros((n_chains, n_draws), dtype=bool)}
+    if stats is None:
+        stats = {"diverging": np.zeros((n_chains, n_draws), dtype=bool)}
     # arviz 1.x from_dict takes ONE dict of groups (the 0.23 kwargs form raises TypeError)
     return az.from_dict({"posterior": post, "sample_stats": stats})
 
@@ -130,3 +135,56 @@ def test_report_overall_flags_a_loo_that_never_ran(monkeypatch):
 
 def test_the_two_scripts_share_their_thresholds():
     assert diagnose_model.REL_MCSE_OK == cd.REL_MCSE_OK
+
+
+CALM = np.zeros((4, 500), dtype=bool)
+SATURATED = np.ones((4, 500), dtype=bool)
+
+
+@pytest.fixture(params=[True, False], ids=["diagnose", "fallback"])
+def both_paths(request, monkeypatch):
+    """Run check_convergence on the arviz_stats.diagnose path, then on the manual fallback."""
+    monkeypatch.setattr(diagnose_model, "HAS_DIAGNOSE", request.param)
+    return request.param
+
+
+@pytest.mark.parametrize("flag", ["reached_max_tree_depth", "reached_max_treedepth"], ids=["numpyro", "cmdstan"])
+def test_a_saturated_run_fails_tree_depth_on_both_paths(both_paths, flag):
+    conv = diagnose_model.check_convergence(_idata(stats={"diverging": CALM, flag: SATURATED}))
+    assert conv["treedepth"] == {"checked": True, "ok": False, "n_max": 2000, "pct": 100.0}
+    assert conv["all_ok"] is False
+
+
+def test_a_calm_numpyro_run_passes_tree_depth(both_paths):
+    conv = diagnose_model.check_convergence(_idata(stats={"diverging": CALM, "reached_max_tree_depth": CALM}))
+    assert conv["treedepth"] == {"checked": True, "ok": True, "n_max": 0, "pct": 0.0}
+    assert conv["all_ok"] is True
+
+
+def test_no_tree_depth_flag_is_marked_not_checked(both_paths):
+    conv = diagnose_model.check_convergence(_idata())
+    assert conv["treedepth"] == {"checked": False}
+    assert conv["all_ok"] is True
+
+
+def test_no_energy_stat_marks_e_bfmi_not_checked(both_paths):
+    assert diagnose_model.check_convergence(_idata())["bfmi"] == {"checked": False}
+
+
+def test_an_energy_stat_gives_a_checked_e_bfmi_block():
+    # Only the arviz_stats.diagnose path computes E-BFMI; i.i.d. energy is far above 0.3.
+    energy = np.random.default_rng(1).normal(size=(4, 500))
+    conv = diagnose_model.check_convergence(_idata(stats={"diverging": CALM, "energy": energy}))
+    assert conv["bfmi"] == {"checked": True, "ok": True, "failed_chains": []}
+
+
+def test_a_diverging_stat_gives_a_checked_divergence_block(both_paths):
+    assert diagnose_model.check_convergence(_idata())["divergences"] == {
+        "checked": True, "count": 0, "pct": 0.0, "ok": True,
+    }
+
+
+def test_no_diverging_stat_marks_divergences_not_checked(both_paths):
+    conv = diagnose_model.check_convergence(_idata(stats={"lp": np.zeros((4, 500))}))
+    assert conv["divergences"] == {"checked": False}
+    assert conv["all_ok"] is True

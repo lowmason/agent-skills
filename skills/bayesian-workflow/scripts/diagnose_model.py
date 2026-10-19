@@ -32,6 +32,11 @@ except ImportError:
 # Convergence). check_diagnostics.py keeps a copy; test_diagnose_model.py pins the two.
 REL_MCSE_OK = 0.05
 
+# The tree-depth saturation flags, NumPyro's first: az.from_numpyro writes
+# reached_max_tree_depth (when num_steps is collected), while arviz_stats.diagnose
+# reads only the CmdStan-style reached_max_treedepth.
+TREEDEPTH_FLAGS = ("reached_max_tree_depth", "reached_max_treedepth")
+
 
 def _json_default(o):
     """Coerce stray numpy scalars/arrays so json.dumps never chokes.
@@ -78,24 +83,60 @@ def _max_from_dataset(ds):
         return None
 
 
+def _sample_stats(idata):
+    """The sample_stats group, or None when the InferenceData has none."""
+    return idata.sample_stats if "sample_stats" in _group_names(idata) else None
+
+
+def _divergence_block(stats):
+    """Divergences from sample_stats; {"checked": False} without a diverging stat."""
+    if stats is None or "diverging" not in stats:
+        return {"checked": False}
+    flags = stats["diverging"]
+    n_div = int(flags.sum())
+    return {"checked": True, "count": n_div, "pct": round(100 * n_div / int(flags.size), 2), "ok": n_div == 0}
+
+
+def _treedepth_block(stats):
+    """Tree-depth saturation from either TREEDEPTH_FLAGS stat; {"checked": False} without one.
+
+    An unchecked block carries no ok key, so check_diagnostics can tell it from
+    a pass, and from ok: None, which it reads as saturation.
+    """
+    flag = next((f for f in TREEDEPTH_FLAGS if stats is not None and f in stats), None)
+    if flag is None:
+        return {"checked": False}
+    hits = stats[flag]
+    n_max = int(hits.sum())
+    return {"checked": True, "ok": n_max == 0, "n_max": n_max, "pct": round(100 * n_max / int(hits.size), 2)}
+
+
+def _bfmi_block(diagnosed):
+    """E-BFMI from arviz_stats.diagnose's results; {"checked": False} when it had no energy stat."""
+    if "bfmi" not in diagnosed:
+        return {"checked": False}
+    failed = [int(c) for c in diagnosed["bfmi"].get("failed_chains", [])]
+    return {"checked": True, "ok": not failed, "failed_chains": failed}
+
+
 def check_convergence(idata):
     """Run all convergence diagnostics. Returns structured results.
 
     Both code paths emit the SAME serializable schema so ``check_diagnostics.py``
-    has a single contract to consume: ``rhat`` / ``ess_bulk`` / ``ess_tail`` /
-    ``divergences`` each carry ``ok`` and ``problematic_params``; the
-    ``arviz_stats.diagnose`` path additionally reports ``bfmi`` and ``treedepth``
-    (the ``treedepth`` block is populated only when ``sample_stats`` carries
-    ``reached_max_treedepth``; NumPyro idata uses ``tree_depth`` instead, so on
-    that path treedepth stays ``ok``/0).
+    has a single contract to consume: ``rhat`` / ``ess_bulk`` / ``ess_tail`` each
+    carry ``ok`` and ``problematic_params``. ``divergences``, ``treedepth`` and
+    ``bfmi`` carry ``checked``: a block whose sample stat is missing (``diverging``;
+    either of ``TREEDEPTH_FLAGS``; ``energy``) is just ``{"checked": False}``, so
+    an unchecked block never reads as passed. Only the ``arviz_stats.diagnose``
+    path computes E-BFMI; the fallback always marks it unchecked.
     No numpy scalars, numpy arrays, or xarray objects leak into the dict — those
     are not JSON-serializable and would crash the report writer.
     """
     # Use arviz_stats.diagnose() if available — it covers R-hat, ESS,
-    # divergences, and E-BFMI in one call. (It only reports tree-depth
-    # saturation when sample_stats carries CmdStan-style
-    # "reached_max_treedepth"; NumPyro idata uses "tree_depth", so the
-    # treedepth block stays ok/0 on that path.)
+    # divergences, and E-BFMI in one call. It reads tree depth only from the
+    # CmdStan-style "reached_max_treedepth", while az.from_numpyro writes
+    # "reached_max_tree_depth", so both paths take the treedepth block from
+    # sample_stats themselves.
     if HAS_DIAGNOSE:
         # show_diagnostics=False keeps stdout clean so the JSON report can be
         # piped there when --output is omitted.
@@ -116,13 +157,12 @@ def check_convergence(idata):
                     if float(ess_tail_vals[v].min()) < thresh]
         min_bulk = int(min(float(ess_bulk_vals[v].min()) for v in ess_bulk_vals.data_vars))
         min_tail = int(min(float(ess_tail_vals[v].min()) for v in ess_tail_vals.data_vars))
-        div = d.get("divergent", {})
-        n_div = int(div.get("n_divergent", 0))
-        td = d.get("treedepth", {})
-        n_td = int(td.get("n_max", 0))
-        failed_chains = [int(c) for c in d.get("bfmi", {}).get("failed_chains", [])]
+        stats = _sample_stats(idata)
+        treedepth = _treedepth_block(stats)
         return {
-            "all_ok": not has_errors,
+            # has_errors misses NumPyro's tree-depth flag, so fold the block in here:
+            # check_diagnostics rates "excellent" on all_ok before it reads any block.
+            "all_ok": not has_errors and treedepth.get("ok", True),
             "method": "arviz_stats.diagnose",
             "rhat": {
                 "ok": len(rhat_bad) == 0,
@@ -131,17 +171,9 @@ def check_convergence(idata):
             },
             "ess_bulk": {"ok": len(bad_bulk) == 0, "problematic_params": bad_bulk, "min": min_bulk},
             "ess_tail": {"ok": len(bad_tail) == 0, "problematic_params": bad_tail, "min": min_tail},
-            "divergences": {
-                "count": n_div,
-                "pct": round(float(div.get("pct", 0.0)), 2),
-                "ok": n_div == 0,
-            },
-            "treedepth": {
-                "ok": n_td == 0,
-                "n_max": n_td,
-                "pct": round(float(td.get("pct", 0.0)), 2),
-            },
-            "bfmi": {"ok": len(failed_chains) == 0, "failed_chains": failed_chains},
+            "divergences": _divergence_block(stats),
+            "treedepth": treedepth,
+            "bfmi": _bfmi_block(d),
         }
 
     # Fallback for arviz-stats < 1.0.0 (classic ArviZ-only environments)
@@ -170,20 +202,14 @@ def check_convergence(idata):
         },
     }
 
-    # Divergences
-    if "diverging" in idata.sample_stats:
-        n_div = int(idata.sample_stats["diverging"].sum())
-        total_samples = int(idata.sample_stats["diverging"].size)
-        results["divergences"] = {
-            "count": n_div,
-            "pct": round(100 * n_div / total_samples, 2),
-            "ok": n_div == 0,
-        }
-    else:
-        results["divergences"] = {"count": 0, "pct": 0.0, "ok": True}
+    stats = _sample_stats(idata)
+    results["divergences"] = _divergence_block(stats)
+    results["treedepth"] = _treedepth_block(stats)
+    results["bfmi"] = {"checked": False}  # E-BFMI needs arviz_stats.diagnose
 
     results["all_ok"] = all(
-        results[k]["ok"] for k in ["rhat", "ess_bulk", "ess_tail", "divergences"]
+        results[k].get("ok", True)
+        for k in ["rhat", "ess_bulk", "ess_tail", "divergences", "treedepth"]
     )
     results["method"] = "manual"
 
