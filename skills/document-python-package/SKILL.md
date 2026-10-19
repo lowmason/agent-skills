@@ -102,6 +102,11 @@ The pin's range equals the preflight's range. uv's default for
 `uv sync`, locally or in CI, skips the pin. Then run the preflight again: it
 fetches the official skills and names the next step.
 
+great-docs 0.17.0 needs Python 3.11 or later. If `uv lock` fails because
+`requires-python` allows an older Python, stop and report it. Never raise
+`requires-python` to make the lock pass: that drops Python versions that the
+package's users rely on.
+
 numpydoc reads its checks from `pyproject.toml`. Add this table with the pin:
 
 ```toml
@@ -176,7 +181,7 @@ The docs are done only when all three checks pass, run from the package root:
      - `No documentable exports found — skipping API reference`
      - `API reference disabled (reference: false), skipping`
    - `great-docs/_site/reference/index.html` exists.
-3. `uv run numpydoc lint $(git ls-files '<package-dir>/*.py')` exits 0. `<package-dir>` is the folder that holds the package's `__init__.py`, so the check covers every `__all__` export.
+3. `uv run numpydoc lint $(git ls-files --cached --others --exclude-standard '<package-dir>/*.py')` exits 0. `<package-dir>` is the folder that holds the package's `__init__.py`, so the check covers every `__all__` export, including modules that git does not track yet.
 
 After the gate, run `uv run great-docs check-links`, and
 `uv run great-docs proofread` when `harper-cli` is installed. Report what they

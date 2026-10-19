@@ -153,6 +153,12 @@ Paths below are from the fixture's root.
   section, and report nothing on `summarize`, `Ratio` or `Ratio.value`. So both
   qualify. Only numpydoc also reports `Ratio.as_tuple`'s missing docstring
   (line 82). The rule chooses numpydoc. `COMPLETENESS_PIN` = `numpydoc>=1.11`.
+- The gate command (plan 57, D13): plain `git ls-files` lists tracked files
+  only. With an untracked `src/gdfixture/sub/extra.py` in the fixture,
+  `git ls-files 'src/gdfixture/*.py'` printed only `__init__.py` and `core.py`.
+  `git ls-files --cached --others --exclude-standard 'src/gdfixture/*.py'` also
+  printed `src/gdfixture/sub/extra.py`. So `COMPLETENESS_COMMAND` uses the
+  second form. The probe file was deleted afterwards.
 
 ### S8: the README on the built site
 
@@ -189,7 +195,7 @@ amendments. A `|` inside a value is written `\|`.
 | RUFF_REWRITES_DOCSTRINGS | `preserve` | S6: `no`, `single`, `preserve` or `yes` |
 | COMPLETENESS_TOOL | `numpydoc` | S7: `pydoclint` or `numpydoc` |
 | COMPLETENESS_PIN | `numpydoc>=1.11` | S7: the requirement for the `docs` group |
-| COMPLETENESS_COMMAND | `uv run numpydoc lint $(git ls-files '<package-dir>/*.py')` | S7: the gate command, with `<package-dir>` |
+| COMPLETENESS_COMMAND | `uv run numpydoc lint $(git ls-files --cached --others --exclude-standard '<package-dir>/*.py')` | S7: the gate command, with `<package-dir>`. Changed by plan 57's D13 |
 | HERO_BADGES | `no` | S8: `yes` or `no` |
 | META_FROM_FIRST_PARAGRAPH | `yes` | S8: `yes` or `no` |
 | META_SOURCE | `none` | S8: the source, or `none` for `yes` |

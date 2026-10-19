@@ -316,9 +316,11 @@ from the package root:
      - "API reference disabled (reference: false), skipping"
    - The built site has its API reference index page, `great-docs/_site/reference/index.html`
      (spike S2, plan 57, 2026-10-19).
-3. `uv run numpydoc lint $(git ls-files '<package-dir>/*.py')`, the completeness check, where `<package-dir>` is
-   the folder that holds the package's `__init__.py`, so that it covers every
-   `__all__` export (spike S7, plan 57, 2026-10-19)
+3. `uv run numpydoc lint $(git ls-files --cached --others --exclude-standard '<package-dir>/*.py')`,
+   the completeness check, where `<package-dir>` is the folder that holds the
+   package's `__init__.py`, so that it covers every `__all__` export
+   (spike S7, plan 57, 2026-10-19). The `--others --exclude-standard` flags
+   add modules that git does not track yet (owner, plan 57, 2026-10-19).
 
 After the gate, `uv run great-docs check-links` runs, and so does
 `uv run great-docs proofread` when `harper-cli` is installed. Both report
@@ -339,6 +341,11 @@ problem.
   (preflight): the report gives git's error. The skill never falls back to main,
   the docs site or `skill install`.
 - **Quarto is missing** (preflight): the report points to Quarto's install page.
+- **`uv lock` fails because `requires-python` allows a Python below 3.11** (the
+  agent, at the pin, R4.2): great-docs 0.17.0 needs Python 3.11 or later. The
+  report gives uv's error. The skill never raises `requires-python` to make the
+  lock pass, because that drops Python versions that the package's users rely
+  on (owner, plan 57, 2026-10-19).
 - **A gate check fails** (the agent): the work is not done. The report names the
   check and gives its output. A build that skipped the API reference is a
   failed gate check (R4.9).
