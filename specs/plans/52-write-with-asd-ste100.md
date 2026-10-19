@@ -30,6 +30,10 @@ These come from the spec unless a line says otherwise. Every task's requirements
 
 - **D1** (owner, brief, 2026-10-18): Execution runs on Sonnet, in a fresh session separate from planning, with this plan file as the handoff. Applied in: Execution handoff.
 - **D2** (owner, brief, 2026-10-18): At first use, give the plain meaning of every label, for example "R3, the self-contained-scripts requirement". Applied in: every task that writes prose for the owner (the test record, commit messages, reports).
+- **D3** (owner, plan review, 2026-10-18): Q1 option (a): every test run uses Opus 5.5 (`claude-opus-5-5`) at medium effort. Approved by merging this plan as PR #58. Applied in: Task 2, Step 6.
+- **D4** (owner, plan review, 2026-10-18): Q2 option (b): keep both guard lines as guards that never leave the rule. Applied in: Task 2, Step 8 (spec amendment), Task 4, Step 5, and Appendix B (`GUARDS` in `kit.py`, `test_dropped_habits`, `PREREGISTRATION.md`).
+- **D5** (owner, plan review, 2026-10-18): Q3 option (a): as the spec says, `skills/write-with-asd-ste100/LICENSE` is a copy of `LICENSE-write-with-asd-ste100-sources`. Approved by merging PR #58. Applied in: Task 6.
+- **D6** (owner, plan review, 2026-10-18): Q4 option (a): fold the six stdlib-only suites that have their own entries, and the new linter suite, into one group under one comment, so `CLAUDE.md` ends at 197 lines. Approved by merging PR #58. Applied in: Task 6 (Appendix D, `CLAUDE.md:commands-moved` and `CLAUDE.md:commands`).
 
 ---
 
@@ -57,9 +61,9 @@ Measured on 2026-10-18 with Claude Code 2.1.302, from new folders under `/tmp`.
 Everything in this plan ran before the plan was written, in a scratch clone of `main` and a scratch kit folder.
 
 - **Kit.** `test_kit.py`: 31 passed, with stub dry runs of both phases. Three mutations were caught: no `--strict-mcp-config` (1 failure), `<` for `<=` in the per-100-words test (2), and no substring test for literal text (3).
-- **Repo edits.** All 32 edit blocks applied exactly once. The installer tests went RED with 8 failed and 1 passed (the guard test, see Task 9), then GREEN. The drift test passed, and a changed habit line failed it. The linter tests passed (5). The `build/cc_guide/` suite passed (500). In the full `build/` suite only the 4 ground-truth tests of `test_verify_citations.py` failed, which need the gitignored `build/.scratch/` (CLAUDE.md says this). `bash build/run_commit_lints.sh` printed `commit lints passed`.
-- **Replay.** After assembly, a planning-time helper ran this plan's own bash blocks, step by step, in a fresh clone of `main` at `d70e0b3` (after PR #56) with a fresh kit folder: Task 1, Steps 2 to 5; Task 2, Steps 1 to 5; Task 6, every step but Step 6; Task 8, with `rules/short.md` standing in for the decided `rules/chosen.md`; and Task 9. Every stated expectation held: the five fetch digests, the 31 kit tests, the RED counts (5 linter tests, 2 drift tests, and 8 installer tests with the 1 guard passing), `CLAUDE.md` at 199 lines before Task 6 and 197 after it, `commit lints passed` in each task, and +11 passes in the full `build/` suite against unchanged `main`, with the same 4 `build/.scratch/` failures. Four earlier replays at `c3a9cf7`, before PR #56 merged, differed only in `CLAUDE.md`. The first of them exposed one vacuous check: `grep -c -F -f` on a license file matched every line through the pattern file's blank lines. Task 6, Step 9 now tests containment, which fails on a one-character change. Not replayed: the hold and fingerprint steps, every `claude -p` call (Tasks 3, 4, 5 and 7), Task 10 and Task 11.
-- **Plan 53.** This plan's 32 edit blocks and plan 53's 19 edits to the four files that both plans change (`CLAUDE.md`, `NOTICE`, `README.md` and `build/cc_guide/conformance.toml`) were applied to copies of `main` at `d70e0b3`, in both landing orders. Every block matched exactly once, and `CLAUDE.md` ended at 197 lines.
+- **Repo edits.** All 33 edit blocks applied exactly once. The installer tests went RED with 8 failed and 1 passed (the guard test, see Task 9), then GREEN. The drift test passed, and a changed habit line failed it. The linter tests passed (5). The `build/cc_guide/` suite passed (500). In the full `build/` suite only the 4 ground-truth tests of `test_verify_citations.py` failed, which need the gitignored `build/.scratch/` (CLAUDE.md says this). `bash build/run_commit_lints.sh` printed `commit lints passed`.
+- **Replay.** After assembly, a planning-time helper ran this plan's own bash blocks, step by step, in a fresh clone of `main` at `aca0f3d` with a fresh kit folder: Task 1, Steps 2 to 5; Task 2, Steps 1 to 5 and 8; Task 6, every step but Step 6; Task 8, with `rules/short.md` standing in for the decided `rules/chosen.md`; and Task 9. Every stated expectation held: the five fetch digests, the 31 kit tests, the spec amendment (one edit, and the new sentence once in the spec and once in `PREREGISTRATION.md`), the RED counts (5 linter tests, 2 drift tests, and 8 installer tests with the 1 guard passing), `CLAUDE.md` at 199 lines before Task 6 and 197 after it, `commit lints passed` in each task, and +11 passes in the full `build/` suite against unchanged `main`, with the same 4 `build/.scratch/` failures. Five earlier replays, four at `c3a9cf7` before PR #56 merged and one at `d70e0b3`, differed only in `CLAUDE.md` and in Task 2, Step 8, which they did not have. The first of them exposed one vacuous check: `grep -c -F -f` on a license file matched every line through the pattern file's blank lines. Task 6, Step 9 now tests containment, which fails on a one-character change. Not replayed: the hold and fingerprint steps, every `claude -p` call (Tasks 3, 4, 5 and 7), Task 10 and Task 11.
+- **Plan 53.** This plan's edit blocks and plan 53's 19 edits to the four files that both plans change (`CLAUDE.md`, `NOTICE`, `README.md` and `build/cc_guide/conformance.toml`) were applied to copies of `main` at `d70e0b3`, in both landing orders. Every block matched exactly once, and `CLAUDE.md` ended at 197 lines.
 
 ### Settled defaults
 
@@ -81,7 +85,7 @@ Each default below is the plan's choice where the spec left one open. "If wrong"
 - **DF14, the overlap gate.** `kit.py overlap` checks that no skill file uses a word that identifies a test case (Channel 3, examples that reuse test fixtures). Expected: 0 case words. If wrong: a run can meet its answer in the skill text.
 - **DF15, drift tests.** The habit-line test is `build/test_rule_habits.py`. The rule-to-skill test is in `build/test_runtime_support.py`, with `declared_dependencies` in its name, so the commit lints run it. If wrong: move them, and update the commit-lint selection.
 - **DF16, sentence caps for the agent cases.** 25 words for Examples A and B (descriptions) and 20 for Example C (an instruction), from the strict rule set. If wrong: change `agent_cases()` in `cases.py` before the first run.
-- **DF17, dropping habits.** A habit leaves the rule through its sentences in `HABIT_LINES` (`kit.py`). If wrong: edit `chosen.md` by hand, which the test record must then explain.
+- **DF17, dropping habits.** A habit leaves the rule through its sentences in `HABIT_LINES` (`kit.py`). The two guard lines in `GUARDS` never leave (D4). If wrong: edit `chosen.md` by hand, which the test record must then explain.
 - **DF18, the linter call.** `python3 <this-skill-dir>/scripts/ste-lint.py --json`, so it also runs under `/usr/bin/python3`. If wrong: see Coupling (a).
 - **DF19, `CLAUDE.md` size.** 199 lines on `main` at `d70e0b3`, after PR #56 (plan 50). The `claude-md-size` check fails at 200. Task 6 folds seven stdlib-only test suites, the linter's among them, into one group, so the file ends at 197 with the provenance bullet. If wrong: see Q4 and Coupling (e).
 - **DF20, the test record.** `specs/write-with-asd-ste100-test-record.md`. If wrong: rename it in Task 10 and in the completion steps.
@@ -91,23 +95,27 @@ Each default below is the plan's choice where the spec left one open. "If wrong"
 - **DF24, the run model.** Opus 5.5 (`claude-opus-5-5`) at medium effort. See Q1.
 - **DF25, the `license` key.** `SKILL.md`'s frontmatter carries `license: MIT`, before the closing `# cc-guide:` comment. All 24 skills that carry the key use this value, `recommend-causal-design` (also adapted from MIT sources) among them. It also meets R1, the portability spec's frontmatter requirement, and the skill's `name` and `description` hold no `<` or `>`, which R1 forbids. If wrong: drop the line.
 
-### Open questions for plan review
+### Plan review questions
+
+The owner decided all four on 2026-10-18, and D3 to D6 log the choices.
 
 - **Q1, the model for every run.** The spec says "Use the owner's default session model", and two settings files disagree.
   - (a) Opus 5.5 at medium effort. The repo's `.claude/settings.json` and the owner's stated routing say Opus. About $28 for the runs.
   - (b) Sonnet 5.5 at xhigh effort. `~/.claude/settings.json` says `model: sonnet` today, which may be a default that a typed `/model sonnet` saved. About $26.
-  - The plan carries (a), and recommends it. For (b), change the `kit.py hold` command in Task 2, Step 6, to `--model claude-sonnet-5-5 --effort xhigh`.
+  - Decided at plan review: (a) (D3).
 - **Q2, the two guard lines.** "Leave code, commands, identifiers, paths, URLs, API fields and quoted errors unchanged." and "Change existing text only when the user asks."
-  - (a) As the spec says: each line leaves the rule when the no-rule arm passes its habit in every pooled run. The plan carries (a).
+  - (a) As the spec says: each line leaves the rule when the no-rule arm passes its habit in every pooled run.
   - (b) Keep both lines as guards that never leave. The risk that they guard against comes from the rule's own style pressure, and a no-rule run cannot show it. Recommended.
-  - For (b), the plan review adds an amendment task. Spec edit, in Decision rules, after the "Habits the model already follows" bullet's last sentence: "The literal-text and existing-text lines never leave: they guard against an effect of the rule itself, which the no-rule arm cannot show. (owner, plan 52, <date>)". Kit edits, before the first run: `GUARDS = ('literal-text', 'existing-text')` in `kit.py`, `dropped_habits()` skips them, `test_dropped_habits` gains that case, and `PREREGISTRATION.md` gains the same sentence.
+  - Decided at plan review: (b) (D4). Task 2, Step 8 adds the sentence to the spec's decision rules (Appendix D, Task 2 edits). Appendix B holds the kit's side: `GUARDS` in `kit.py`, which `dropped_habits()` skips, a guard case in `test_dropped_habits`, and the same sentence in `PREREGISTRATION.md`.
 - **Q3, the license file names.** See Coupling (c).
   - (a) As the spec says: `skills/write-with-asd-ste100/LICENSE` is a copy of `LICENSE-write-with-asd-ste100-sources`. `skills/recommend-causal-design/LICENSE` already has this form (a copy of `LICENSE-causal-design-sources`). The plan carries (a), and recommends it: the portability plan must handle that skill anyway, and it changes every skill's license files.
   - (b) Adopt the portability spec's R4.1 now: `skills/write-with-asd-ste100/LICENSE` is a copy of the root `LICENSE`, and `skills/write-with-asd-ste100/LICENSE-write-with-asd-ste100-sources` is a copy of the sources file. This needs a spec amendment (the Files table), a changed link in `SKILL.md`'s Sources section, and the NOTICE sentence that names the copy.
+  - Decided at plan review: (a) (D5).
 - **Q4, room in `CLAUDE.md`.** PR #56 (plan 50, the superpowers upstream fixes) merged into `main` as `d70e0b3` on 2026-10-18 and left `CLAUDE.md` at 199 lines. The `claude-md-size` check fails at 200, and `build/check_conformance.py` exits 1 on any finding, so the commit lints fail too. The spec requires two additions, the provenance bullet and the linter's test command. Even with the command under an existing comment, the file reaches 201. See Coupling (e).
   - (a) Fold the six stdlib-only suites that have their own entries, and the new linter suite, into one group under one comment (Appendix D, `CLAUDE.md:commands-moved` and `CLAUDE.md:commands`). Every command and every note stays. The file ends at 197, with 2 lines to spare: plan 53, the portability plan, adds none. The plan carries (a), and recommends it.
   - (b) Keep every existing line, and record a deviation. `CLAUDE.md` allows a deviation only on the owner's decision. Task 6 then drops `CLAUDE.md:commands-moved`, takes `CLAUDE.md:commands` from this plan's first commit (`2b93c70`), which gives the linter its own three-line entry, and adds the block below at the end of `build/cc_guide/conformance.toml`. The file ends at 203.
   - (c) First move the per-suite test commands out of the root `CLAUDE.md`, as a separate change. That frees about 50 lines for later plans. But a nested `CLAUDE.md` loads only when Claude reads files below it, and Codex and Gemini reach the root file through `AGENTS.md` and `GEMINI.md`. Task 6 waits for that change, and its two `commands` edits change to match it.
+  - Decided at plan review: (a) (D6).
 
 The block for Q4 (b). The check allows a waiver of `claude-md-size` only with an integer `ceiling`:
 
@@ -161,6 +169,7 @@ In the repository:
 
 | Path | Task |
 |---|---|
+| `specs/write-with-asd-ste100.md` | Modify, Task 2, Step 8: the D4 amendment (Appendix D) |
 | `skills/write-with-asd-ste100/SKILL.md`, `references/agent-mode.md`, `references/strict.md`, `references/document-rewrite.md`, `references/examples.md` | Create, Task 6 (Appendix C) |
 | `skills/write-with-asd-ste100/scripts/ste-lint.py` | Create, Task 6: a copy of the kit's fetched `upstream/ste-lint.py` |
 | `skills/write-with-asd-ste100/scripts/test_ste_lint.py` | Create, Task 6 (Appendix C) |
@@ -237,6 +246,7 @@ Expected: the commit "feat(rules): clean-code-python path-scoped rule + project-
 **Files (outside the repository):**
 - Create: `KIT/extract_plan_files.py` (cut from this task's block), `KIT/kit.py`, `KIT/cases.py`, `KIT/test_kit.py`, `KIT/PREREGISTRATION.md`, `KIT/rules/short.md`, `KIT/rules/listed.md` (Appendix B)
 - Made by commands: `KIT/upstream/` (5 files), `KIT/bin/claude-<version>`, `KIT/state.json`
+- Modify, in the repository: `specs/write-with-asd-ste100.md` (Step 8, the D4 amendment, Appendix D)
 
 **Interfaces:**
 - Consumes: `gh` with read access to public GitHub repositories, and `claude` on `PATH`.
@@ -393,6 +403,20 @@ uv run --directory ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit --no-
 
 Expected: a JSON fingerprint, then `fingerprint unchanged`. From now on, a change to `~/.claude/settings.json`, `~/.claude/CLAUDE.md`, the user rules, the user skills, the plugins or the held binary stops every run (V4): ask the owner before you record again.
 
+- [ ] **Step 8: Amend the spec (D4)**
+
+Plan review chose Q2 (b): the two guard lines never leave the rule. The spec's decision rules gain the sentence that `KIT/PREREGISTRATION.md` already holds, so both are fixed before the first run. The spec's status line stays as it is.
+
+```bash
+uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit/extract_plan_files.py specs/plans/52-write-with-asd-ste100.md . specs/write-with-asd-ste100.md:guard-lines
+grep -c 'The literal-text and existing-text lines never leave' specs/write-with-asd-ste100.md ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit/PREREGISTRATION.md
+bash build/run_commit_lints.sh
+git add specs/write-with-asd-ste100.md
+git commit -m "docs(specs): keep the guard lines in the write-with-asd-ste100 rule" -m "Plan 52's review chose Q2 (b), its decision D4: the literal-text and existing-text lines never leave the rule. They guard against an effect of the rule itself, which the no-rule arm cannot show."
+```
+
+Expected: `edited specs/write-with-asd-ste100.md:guard-lines`, then two lines that each end in `:1`, one for the spec and one for `PREREGISTRATION.md`, then `commit lints passed`.
+
 ### Task 3: Inherit probe and pilot (owner gate)
 
 **Files:** none in the repository. `KIT/inherit.json`, the pilot's runs in `KIT/out/`.
@@ -502,9 +526,10 @@ Expected: `<N> verdicts merged; 0 flags still unread`. A `count` verdict on a V3
 ```bash
 uv run --directory ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit --no-project --python 3.13 python kit.py decide-rule
 cat ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit/rules/chosen.md
+grep -c -F -e 'Leave code, commands, identifiers, paths, URLs, API fields and quoted errors unchanged.' -e 'Change existing text only when the user asks.' ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit/rules/chosen.md
 ```
 
-Expected: a table of pooled passes for each habit in each arm, then `rule form: <short|listed>; habits the no-rule arm passes in every pooled run: <list or none>; the standard line <stays|leaves>`, and the text of `rules/chosen.md`. `a pooled count is not complete`: fill the void slots first. If `rules/chosen.md` has no `- ` lines (every habit left the rule), stop and ask the owner: Task 8's drift test needs a habit list, and the rule text must not be edited by hand. Otherwise, tell the owner the decision, in one short paragraph that gives each habit's plain meaning.
+Expected: a table of pooled passes for each habit in each arm, then `rule form: <short|listed>; habits that leave the rule: <list or none>; the standard line <stays|leaves>`, the text of `rules/chosen.md`, and `2`: both guard lines stay (D4). `a pooled count is not complete`: fill the void slots first. Any count other than `2`: stop and ask the owner, because the kit is at fault and the rule text must not be edited by hand. Then tell the owner the decision, in one short paragraph that gives each habit's plain meaning.
 
 ### Task 5: Skill baseline
 
@@ -909,7 +934,7 @@ Write `specs/write-with-asd-ste100-test-record.md` with these sections, in this 
 1. **Title and status.** `# write-with-asd-ste100 test record`, then one line: the plan (`specs/plans/52-write-with-asd-ste100.md`), the spec, and the dates of the first and last run.
 2. **Setup.** The Claude Code version, the held binary's sha256 (first 12 characters), the model and the effort, from `KIT/state.json`. What every run inherited, from `KIT/inherit.json`: the instruction files with their types, the hook names (not their command lines, which show local paths), the output style and the advisor model. Never the value of `session_context`. Every difference from this plan's "Facts measured while planning", from `KIT/notes/deviations.md`.
 3. **Case set.** The 7 everyday cases, written for this plan. The 12 cases from prithivrajmu/asd-ste100's `evals/cases.json` at `d93237679681a74873bdee4f1a7869f728968dbd`, credited to Prithiv M U and Dustin Yuchen Teng (MIT): name each case id. Examples A to C of danyuchn/asd-ste100-skill's `examples/before-after.md` at `3944283c183eea13fe5bd902b572da3b4de8bf44`, credited to Dustin Yuchen Teng (MIT). The 3 document cases, written for this plan.
-4. **Rule arms.** `decide-rule`'s output (`text` block). The decision in plain words: the rule form, each habit that left and why, and whether the standard line stayed. The path of the rule: `rules/write-with-asd-ste100.md`.
+4. **Rule arms.** `decide-rule`'s output (`text` block). The decision in plain words: the rule form, each habit that left and why, whether the standard line stayed, and that the two guard lines stay by D4. The path of the rule: `rules/write-with-asd-ste100.md`.
 5. **Hand reading.** Step 1's flag counts (`text` block), with one sentence on what most `justified` verdicts had in common.
 6. **Skill baseline.** `decide-skill baseline`'s output (`text` block), and the failures from `KIT/notes/baseline-failures.md`.
 7. **Skill text changes.** Each entry of `KIT/notes/wording.md`, or "None: the approved design covered every recorded failure."
@@ -1001,7 +1026,8 @@ rm -r /tmp/ste-live-check ~/.claude/projects/*ste-live-check*
 
 - **Spec coverage.** Files and changed files: Tasks 6, 8, 9 and 10, and the completion steps for `specs/deferred_items.md`. Frontmatter, audiences, meaning rules, both rule sets, strict for human readers, tasks, document rewrite and "When something is missing": `SKILL.md` and its references (Task 6, Appendix C). The always-on rule's boundary, pointer, two forms and "No drift": `rules/short.md` and `rules/listed.md` (Appendix B), Task 4 and Task 8. Installation and runtimes, with both citation records: Task 9, and Task 8's README rules section. Provenance: Task 6 and the test record's credits (Task 10). Testing (isolation, order, cases, scoring, decision rules, repo checks, records): Tasks 2 to 10, `PREREGISTRATION.md`, and the live check in Task 11. Done when: Task 11 and the completion steps. Consequences to know: Coupling (b) and Task 11, Step 4. Out of scope: the deferred items below.
 - **Placeholders.** The angle-bracket fields in commands (`<arm>`, `<case>-<rep>`, `<failing case ids>`) come from a kit output named in the same step. The test record's content comes from the kit's outputs, which Task 10 names section by section.
-- **Names across tasks.** `USER_RULES`, `rule_names()`, `selected_rules()`, `--rule`, `rules/chosen.md`, `KIT`, `skill-r1` and the block keys match between the tasks and the appendices.
+- **Names across tasks.** `USER_RULES`, `rule_names()`, `selected_rules()`, `--rule`, `rules/chosen.md`, `GUARDS`, `KIT`, `skill-r1` and the block keys match between the tasks and the appendices.
+- **Plan review.** D3 to D6 log Q1 to Q4. D4 changes three places, all before the first run: the spec (Task 2, Step 8, Appendix D), the kit (`GUARDS`, `dropped_habits()` and `test_dropped_habits`, Appendix B) and `PREREGISTRATION.md`, whose new sentence matches the spec's word for word. Task 4, Step 5 checks that `rules/chosen.md` keeps both guard lines.
 
 ## Execution handoff
 
@@ -1133,6 +1159,9 @@ HABIT_RULES = {
 }
 PER_100_WORDS = frozenset({'sentence-length', 'active-voice', 'simple-tenses'})
 HABITS = tuple(HABIT_RULES) + ('labels', 'literal-text', 'existing-text')
+# Lines that never leave the rule: they guard against an effect of the rule itself,
+# which the no-rule arm cannot show.
+GUARDS = ('literal-text', 'existing-text')
 POOLED_RUNS = {**{h: 30 for h in HABIT_RULES}, 'labels': 10, 'literal-text': 10, 'existing-text': 5}
 VOID_CHECKS = ('V3', 'V5')
 PLANNED = {('rules', False): 90, ('rules', True): 15, ('skill', False): 150, ('skill', True): 30}
@@ -2089,8 +2118,10 @@ def rule_form(rate: dict) -> str:
 
 
 def dropped_habits(tallies: dict) -> list:
-    '''Habits that the no-rule arm passes in every pooled run.'''
-    return [h for h in HABITS if tallies['none'][h][1] and tallies['none'][h][0] == tallies['none'][h][1]]
+    '''Habits that leave the rule: the no-rule arm passes them in every pooled run.
+    The GUARDS lines never leave.'''
+    return [h for h in HABITS if h not in GUARDS
+            and tallies['none'][h][1] and tallies['none'][h][0] == tallies['none'][h][1]]
 
 
 def chosen_rule(text: str, dropped: list, standard_line_leaves: bool) -> str:
@@ -2137,7 +2168,7 @@ def cmd_decide_rule(_args) -> int:
     for habit in HABITS:
         print(f'{habit:16}' + ''.join(f'{tallies[a][habit][0]:>6}/{tallies[a][habit][1]:<3}{rate[a][habit]:5.1f}%'
                                       for a in RULE_ARMS))
-    print(f"rule form: {decision['form']}; habits the no-rule arm passes in every pooled run: "
+    print(f"rule form: {decision['form']}; habits that leave the rule: "
           f"{', '.join(decision['dropped']) or 'none'}; the standard line "
           f"{'leaves' if decision['standard_line_leaves'] else 'stays'}")
     return 0
@@ -2817,6 +2848,9 @@ def test_dropped_habits():
     tallies['none']['semicolons'] = [30, 30]
     tallies['none']['labels'] = [9, 10]
     assert kit.dropped_habits(tallies) == ['semicolons']
+    for guard in kit.GUARDS:
+        tallies['none'][guard] = [kit.POOLED_RUNS[guard], kit.POOLED_RUNS[guard]]
+    assert kit.dropped_habits(tallies) == ['semicolons']
 
 
 def test_chosen_rule_drops_lines():
@@ -3092,7 +3126,7 @@ The six prose cases are the everyday cases other than the paragraph edit. The li
 
 - **Counting unit.** Pool the runs for each habit: every run of every case that scores it. A prose habit therefore has 30 runs in each arm (6 cases, 5 runs each).
 - **Rule form.** The listed habits replace the short rule only if two things hold. They pass at least 20 percentage points more of the pooled runs on some habit. They pass at most 10 points fewer on every other habit.
-- **Habits the model already follows.** A habit that the no-rule arm passes in every pooled run leaves the rule. The skill may keep it. The line that names the standard leaves only if every prose habit qualifies.
+- **Habits the model already follows.** A habit that the no-rule arm passes in every pooled run leaves the rule. The skill may keep it. The line that names the standard leaves only if every prose habit qualifies. The literal-text and existing-text lines never leave: they guard against an effect of the rule itself, which the no-rule arm cannot show. (owner, plan 52, 2026-10-18)
 - **No new guidance without a failure.** A skill case that the baseline passes in 5 of 5 runs receives no guidance beyond the approved design.
 - **Pass.** The skill passes a case when at least 4 of 5 runs meet every check. A failing case receives one wording fix and a re-run. A second failure goes to the owner.
 
@@ -3100,7 +3134,7 @@ A per-100-words test passes when 100 × the surviving count ≤ the linter's wor
 
 The literal-text check flags every inline code span that the source does not hold byte for byte, and in the function question every line inside a fence too. It skips example literals: a quoted string of up to 12 characters, or a bare number. It also flags each match of the case's stems (`cases.py`) that the source does not hold, anywhere in the reply. The hand reading then separates new text (`justified`) from changed source text (`count`).
 
-`kit.py decide-rule` applies the first three rules and writes `rules/chosen.md`. A habit leaves the rule through its lines in `HABIT_LINES` (`kit.py`). The line that names the standard leaves only when all five prose habits leave.
+`kit.py decide-rule` applies the first three rules and writes `rules/chosen.md`. A habit leaves the rule through its lines in `HABIT_LINES` (`kit.py`). The line that names the standard leaves only when all five prose habits leave. `GUARDS` (`kit.py`) names the two lines that never leave.
 
 ## Pilot
 
@@ -3687,6 +3721,28 @@ def test_each_habit_line_is_in_the_skill_word_for_word():
 ## Appendix D: edits to existing files
 
 Each edit replaces its old text, which occurs exactly once, with its new text. They apply in the order that each task's step lists.
+
+### Task 2 edits
+
+#### `specs/write-with-asd-ste100.md:guard-lines`
+
+<!-- extract-edit: specs/write-with-asd-ste100.md:guard-lines -->
+Old text:
+
+```markdown
+- **Habits the model already follows.** A habit that the no-rule arm passes in every pooled run
+  leaves the rule. The skill may keep it. The line that names the standard leaves only if every
+  prose habit qualifies.
+```
+
+New text:
+
+```markdown
+- **Habits the model already follows.** A habit that the no-rule arm passes in every pooled run
+  leaves the rule. The skill may keep it. The line that names the standard leaves only if every
+  prose habit qualifies. The literal-text and existing-text lines never leave: they guard against
+  an effect of the rule itself, which the no-rule arm cannot show. (owner, plan 52, 2026-10-18)
+```
 
 ### Task 6 edits
 
