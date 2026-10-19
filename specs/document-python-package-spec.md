@@ -132,9 +132,12 @@ Validation V3 micro-tests the final wording. The draft:
 > Pages. Also triggers when a repo has a great-docs.yml file or a great-docs/
 > build folder.
 
-R1.4 **`compatibility`** (500 characters at most): "Requires uv, git, Quarto
-and great-docs >=0.17.0,<0.18. The preflight script needs Python >=3.11 and
-fetches Posit's official Great Docs skills from github.com."
+R1.4 **`compatibility`** (500 characters at most): "Requires uv to run bundled
+scripts (dependencies are declared inline); Python 3.11+. Also requires git,
+Quarto and great-docs >=0.17.0,<0.18, and the preflight script fetches Posit's
+official Great Docs skills from github.com." The first sentence is the
+portability spec's R3.6 string, with the floor that R3.1 sets here
+(owner, plan 57, 2026-10-19).
 
 R1.5 **Length.** SKILL.md stays under writing-skills' 500-line guideline. The
 target is about 250 lines.
@@ -382,12 +385,15 @@ as hard (`DEPENDENCIES`) or soft (`SOFT_REFERENCES`, with a reason).
    the portability spec's R1–R4 from its first commit. Its script has a PEP 723
    header and runs with `uv run`, its folder carries a `LICENSE` copy, and its
    frontmatter carries `license`. Plan 53's planning record counts 17 runnable
-   scripts, and `preflight.py` makes 18. If this skill lands first, its plan
+   scripts. Plan 52's vendored `write-with-asd-ste100/scripts/ste-lint.py`
+   landed after that count and makes 18, so `preflight.py` makes 19
+   (owner, plan 57, 2026-10-19). If this skill lands first, its plan
    adds one dated line to plan 53's Global Constraints (D8). The line names
    `document-python-package/scripts/preflight.py` as a script that already
    conforms. It also says that the skill's `LICENSE` copy already exists and
-   that plan 53's executor should expect 18 scripts. If plan 53 lands first,
-   nothing extra is needed.
+   that plan 53's executor should expect 19 scripts
+   (owner, plan 57, 2026-10-19). If plan 53 lands first, nothing extra is
+   needed.
 
 ## Validation and acceptance
 
