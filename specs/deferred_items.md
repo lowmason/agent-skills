@@ -5132,3 +5132,53 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       omits unchecked sampler checks. Real output can barely reach this case. Fix: rate by blocks
       when `all_ok` is false but no block flags, or have the writer record which check failed. Size:
       design. Revisit if: a real `diagnostics.json` shows `all_ok` false with every block ok.
+
+## 57-document-python-package — 2026-10-19
+- [ ] A new spike for great-docs 0.18 (the spec's Out of scope: the post-migration `docs/`
+      layout). The skill stops on any version outside `>=0.17.0,<0.18` and on a `docs` or `both`
+      layout. Widening the range takes a new spike against the new release, a new range in
+      `skills/document-python-package/scripts/preflight.py` (`LOWEST`, `FIRST_EXCLUDED`, `RANGE`)
+      and in SKILL.md, and a check of the five official skills at the new tag. Size: plan.
+      Revisit if: PyPI publishes great-docs 0.18.0 or later.
+- [ ] Internal hosts and package indexes (the spec's D1 and Out of scope). The skill covers
+      github.com, PyPI and GitHub Pages only. Size: design. Revisit if: the owner documents a
+      package that is not public.
+- [ ] A gate check for stale frozen examples (plan 57's D11). great-docs 0.17.0 freezes every
+      executed page by default (`Freeze mode: auto`), docstring examples included. After a change
+      to a function's body with its docstring unchanged, `uv run great-docs build` exits 0 and the
+      page shows the stale frozen output, so the gate's build check passes a broken example. A
+      committed `_freeze/` cache, which SKILL.md advises for slow pages, also holds the
+      docstring-example output (the spike's S4), so CI reuses it too. A fix might build with
+      `freeze: false` in `great-docs.yml` inside the gate, or check the examples another way.
+      Evidence: the spike record's S3 and S4 (`specs/verification/57-great-docs-0.17.0.md`).
+      Size: design. Revisit if: an agent or a user ships a docstring example that no longer runs,
+      or the owner wants the gate to prove that every example runs.
+- [ ] Packages whose `requires-python` allows Python below 3.11 (plan 57's D12). great-docs
+      0.17.0 needs Python 3.11 or later, so the pin fails `uv lock` for them, and the skill now
+      stops. Support could mark both pins with `; python_version >= '3.11'` (the D6 reviewer's
+      probe resolved a `>=3.9` package that way) and run the docs commands on a 3.11+
+      interpreter. The local `uv run` path on an older interpreter is untested. Size: plan.
+      Revisit if: the owner documents a public package that still supports Python 3.10 or older.
+- [ ] A uv workspace member (plan 57's D6 review). `preflight.py` reads `uv.lock` only from the
+      folder it runs in. In a uv workspace the lock sits at the workspace root, so a member
+      package stays at `next: pin` after it is pinned and locked. The spec does not cover
+      workspaces. Size: plan. Revisit if: the owner documents a package that is a member of a uv
+      workspace.
+- [ ] Curating the package's published `SKILL.md` (the spec's D5 and Out of scope). Great Docs
+      publishes one by default, and this skill keeps that default with no review step. Size:
+      design. Revisit if: the owner wants to review or edit the generated skill.
+- [ ] Gate check 3 lints more than the Docstrings section asks for (plan 57's final review,
+      Important; the owner chose to defer it). `uv run numpydoc lint $(git ls-files --cached
+      --others --exclude-standard '<package-dir>/*.py')` checks every module, class and function
+      node in the package folder, and the `exclude` regex `\._\w+$` matches only private names. A
+      probe with numpydoc 1.11.0 and the skill's table gave `GL08` on a nested function inside a
+      documented public function, on a public function in a private module (`_internal.helper`),
+      and on an in-package test module and its test function. SKILL.md's Docstrings section asks
+      only for the `__all__` exports and the public methods of exported classes. So on a typical
+      package, check 3 fails on names that the skill never mentions, and the agent may widen
+      `exclude` on its own. The check fails closed. Options: one Docstrings sentence that names
+      what check 3 covers, an `exclude_files` pattern for in-package tests, or a rule for what the
+      agent may add to `exclude`. Each changes SKILL.md (plan 57's D7), so it needs a GREEN re-run
+      or a record of the text that GREEN did not measure. Size: design. Revisit if: an agent or a
+      user hits check 3 on a nested function, a private module or an in-package test in a real
+      package.
