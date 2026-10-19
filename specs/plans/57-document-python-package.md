@@ -36,6 +36,8 @@ These come from the spec unless a line says otherwise. Every task's requirements
 
 - **D1** (owner, brief, 2026-10-19): Planning runs on Opus. Execution runs on Sonnet in a fresh session, with this plan file as the handoff. Applied in: Execution handoff.
 - **D2** (owner, brief, 2026-10-19): This plan is committed on `claude/great-docs-skill-design-19335c`, which also holds the spec's three unpushed commits (`475f5d0`, `3cdb38f` and `e72f284`). Applied in: Execution handoff.
+- **D3** (owner, plan review, 2026-10-19): Q1's option (c). The `compatibility` text is the portability spec's house string with Python 3.11+, then git, Quarto, the version range and the network fetch. The owner also approved amendments A1 (19 runnable scripts) and A2 (R1.4's new text) as worded. Applied in: Task 1 (spec amendment), Appendix B (SKILL.md).
+- **D4** (owner, plan review, 2026-10-19): The settled defaults DF1 to DF28 stand as written. Applied in: Planning record (Settled defaults), and the tasks that each default names.
 
 ---
 
@@ -79,11 +81,11 @@ Everything in this plan ran before the plan was written, in scratch folders outs
 
 ### Settled defaults
 
-Each default below is the plan's choice where the spec left one open. "If wrong" says what changes.
+Each default below is the plan's choice where the spec left one open. "If wrong" says what changes. The owner approved all of them as written at plan review (D4).
 
 - **DF1, one bundle commit.** See Global Constraints. If wrong: the commit lints fail on every partial commit.
 - **DF2, spike values as slots.** SKILL.md and the spike's spec amendments carry `{{KEY}}` slots. `fill_slots.py` fills them from the spike record's Values table, so no value is typed twice. If wrong: fill by hand, and lose the replayed checks.
-- **DF3, amendment tags.** As Global Constraints says. The two planning amendments (A1, A2) need the owner's approval at plan review, and the spike's amendments follow the spec's V1 table. If wrong: retag the blocks in Appendix C.
+- **DF3, amendment tags.** As Global Constraints says. The owner approved the two planning amendments (A1, A2) at plan review (D3), and the spike's amendments follow the spec's V1 table. If wrong: retag the blocks in Appendix C.
 - **DF4, the order of the stops.** `preflight.py` checks the layout first, then Quarto, then the pin, the range and the fetch. A `docs` or `both` layout and a missing Quarto stop the work even before the pin, because a pin fixes neither. If wrong: reorder `next_step()`.
 - **DF5, the `skills:` key** prints the cached `skills/` folder, which holds the five official skill folders. If wrong: print the version folder.
 - **DF6, `requires-python = '>=3.11'`.** See "Facts measured while planning". `tomllib` also needs 3.11.
@@ -116,11 +118,11 @@ Each default below is the plan's choice where the spec left one open. "If wrong"
   - (a) R1.4's text as it stands. It names uv, so the portability lint (R3.7) accepts it.
   - (b) The house string alone, with `3.11`. It drops git, Quarto, the range and the network fetch.
   - (c) Both: the house string, then the rest. Amendment A2 (Appendix C) changes R1.4 to "Requires uv to run bundled scripts (dependencies are declared inline); Python 3.11+. Also requires git, Quarto and great-docs >=0.17.0,<0.18, and the preflight script fetches Posit's official Great Docs skills from github.com." The plan carries (c), and recommends it: the skill matches the other skills with scripts and keeps every fact.
-  - For (a), drop the key `specs/document-python-package-spec.md:a2-compatibility` from Task 1, Step 4, and put R1.4's text into Appendix B's SKILL.md. For (b), change A2's new text and SKILL.md to the house string alone.
+  - The owner chose (c) at plan review (D3).
 
 ### Amendments
 
-Both need the owner's approval at plan review. Task 1, Step 4 applies them before the spike.
+The owner approved both at plan review (D3). Task 1, Step 4 applies them before the spike.
 
 - **A1, the script count** (spec, Sequencing item 5). The spec says that `preflight.py` makes 18 runnable scripts. Plan 52's vendored `ste-lint.py` landed after plan 53 counted 17, so `preflight.py` makes 19. The line that Task 5 adds to plan 53, as the spec's D8 asks, says 19.
 - **A2, the `compatibility` text** (R1.4). Q1's option (c).
@@ -953,6 +955,7 @@ Then go to "Plan completion". Push or merge nothing without the owner's go-ahead
 - **Spec coverage.** Purpose and the four additions: SKILL.md (Appendix B) with `preflight.py`, the conventions, the gate and the hand-offs. "Why a layer is needed": SKILL.md's opening and its override table. D1 to D8 (the spec's decisions): public hosts in the skill's scope line (D1), the version-keyed cache in `preflight.py` (D2), the range and its stop (D3), the three-check gate with non-blocking `check-links` and `proofread` (D4), no curation step and `author-skills` only on request (D5), the ADR bullet in Task 5 (D6), SKILL.md plus one tested script (D7), and the plan 53 line in Task 5 (D8). R1 (files and frontmatter): Task 3 and Global Constraints, with R1.4 through Q1 and A2. R2 (authority): SKILL.md's "Which text wins". R3 (the preflight): Appendix B's script and its 24 tests, and Task 3, Step 5's real fetch. R4 (workflow): SKILL.md's sections, with the spike's values. R5 (stops): the preflight's `stop:` lines and the gate's failure rule. R6 (repo integration): Task 3 (NOTICE, CLAUDE.md, the suite, no `DEPENDENCIES` entry) and Task 5 (README.md, design-architecture). Sequencing: Global Constraints' Order line and the task order, with A1 for item 5. V1: Task 1. V2: Appendix B's tests. V3: Tasks 2 and 4, `PREREGISTRATION.md`. V4: Task 6. Out of scope: the deferred items in "Plan completion".
 - **Placeholders.** `{{KEY}}` slots are execution-time values from the spike record, by design (Global Constraints). `TO-RECORD` markers belong to the two record skeletons, and Tasks 1, 2 and 4 check that none is left. Angle-bracket fields in prose (`<version>`, `<package-dir>`) name a value that the same step prints or defines.
 - **Names across tasks.** `KIT`, `SPIKE`, `FIX`, the tags `pristine` and `configured`, the Values keys, the arms `red`, `green`, `green-r1`, `green-r2`, `trigger`, `trigger-r1` and `e2e`, the block keys, and the functions `locked_version`, `in_range`, `config_layout`, `quarto_version`, `cache_root`, `fetch_skills` and `next_step` match between the tasks and the appendices.
+- **Plan review.** D3 logs Q1's option (c) with amendments A1 and A2, and D4 logs DF1 to DF28 as written. Neither changes a task, because the plan already carried (c), A1, A2 and the defaults.
 
 ## Execution handoff
 
