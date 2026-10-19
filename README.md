@@ -1,25 +1,31 @@
 <!-- cc-guide: skills.locations commands.overview subagents.overview subagents.models rules.rules-files hooks.events hooks.exit-codes hooks.configuration @2.1.302 -->
 # agent-skills
 
-My personal collection of [Agent Skills](https://agentskills.io/specification) for
+This repo is my personal collection of [Agent Skills](https://agentskills.io/specification) for
 **Claude Code, Codex, and Gemini CLI**.
 
-Each skill is a self-contained directory under [`skills/`](skills/) with a
-`SKILL.md` (plus any `references/`, `scripts/`, or bundled `data/` tables it
-needs). All three runtimes discover the same skill source and load the full body
-only when its description matches the task or you invoke it explicitly.
+Each skill is a self-contained directory under [`skills/`](skills/). It holds a `SKILL.md`, plus
+any `references/`, `scripts/`, or bundled `data/` tables that it needs. All three runtimes find the
+same skill source. A runtime loads a skill's full body only when the skill's description matches
+the task, or when you invoke the skill explicitly.
 
 > [!IMPORTANT]
-> **These skills are opinionated — about my environment and my process.** They work best if you share (or deliberately adopt) those opinions. Read a skill's `SKILL.md` before installing it, and edit what doesn't fit — it's all plain markdown. Three assumptions to know about:
+> **These skills have strong opinions about my environment and my process.** They work best if you share those opinions, or if you choose to adopt them. Read a skill's `SKILL.md` before you install it, and edit what does not fit. It is all plain Markdown. Know these three assumptions:
 >
-> - **The process skills impose a spec-driven lifecycle.** `brainstorming`, `writing-plans`, `executing-plans`, and `subagent-driven-development` (plus the `/deferred` command) drive every feature through spec → plan → implementation → retirement, and will create and maintain that structure in your project: specs as markdown in `specs/`, plans in `specs/plans/<id>-<spec-name>.md` (auto-numbered), finished work retired to `specs/completed/` and `specs/plans/completed/`, and consciously-deferred work appended to `specs/deferred_items.md`. If your projects don't follow that layout, these skills will start building it.
-> - **The review steps send code to OpenAI when the Codex CLI is present.** `executing-plans`, `subagent-driven-development`, and `finishing-a-development-branch` run a read-only Codex CLI second-opinion review (`codex exec review`) whenever `codex` is on your `PATH`. The review is agentic, so it sends the branch diff *and* whatever repository files and command output Codex reads while reviewing to OpenAI under your Codex login. Where code egress is governed, keep `codex` off that machine or delete the step.
-> - **The data & modeling skills assume my stack.** Polars (not pandas), NumPyro + JAX (not PyMC), Python 3.13, and Altair/matplotlib/plotly for charts. `bls-data-context`, `classification-codes`, and `geographic-codes` are domain-specific to US federal statistics (BLS employment programs; NAICS, SOC, and Census occupation codes; FIPS and CBSA geography), and `validate-data` is tuned to the BLS side.
+> - **The process skills impose a spec-driven lifecycle.** `brainstorming`, `writing-plans`, `executing-plans`, and `subagent-driven-development`, with the `/deferred` command, drive every feature through spec → plan → implementation → retirement. They create and maintain this structure in your project:
+>   - specs, as Markdown files in `specs/`
+>   - plans, in `specs/plans/<id>-<spec-name>.md`, numbered automatically
+>   - finished work, retired to `specs/completed/` and `specs/plans/completed/`
+>   - work that you consciously defer, appended to `specs/deferred_items.md`
+>
+>   If your projects do not use that layout, these skills start to build it.
+> - **The review steps send code to OpenAI when the Codex CLI is present.** `executing-plans`, `subagent-driven-development`, and `finishing-a-development-branch` run a read-only second-opinion review with the Codex CLI (`codex exec review`) whenever `codex` is on your `PATH`. The review is agentic. It sends the branch diff to OpenAI under your Codex login, *and* every repository file and command output that Codex reads during the review. Where code egress is governed, keep `codex` off that machine or remove the step.
+> - **The data and modeling skills assume my stack.** That stack is Polars (not pandas), NumPyro + JAX (not PyMC), Python 3.13, and Altair, matplotlib, and plotly for charts. Three skills are specific to US federal statistics. `bls-data-context` covers the BLS (Bureau of Labor Statistics) employment programs. `classification-codes` covers the NAICS, SOC, and Census occupation codes. `geographic-codes` covers FIPS and CBSA geography. `validate-data` is tuned to the BLS side.
 
 ## Layout
 
-Skills are the center of the repo, but it also carries runtime-specific agent,
-command, hook, and instruction assets:
+Skills are the center of the repo. The repo also carries runtime-specific agents, commands, hooks,
+and instruction files:
 
 ```
 agent-skills/
@@ -27,18 +33,18 @@ agent-skills/
 ├── agents/      # subagent definitions (reviewers + security/search/test/debug/docs — see Agents below)
 ├── commands/    # slash commands (/deferred, /fix-issue, /license-audit — see Commands below)
 ├── runtimes/    # generated Codex/Gemini agent and command adapters
-├── hooks/       # deterministic gates for Python/uv work repos (see Hooks below)
+├── hooks/       # Claude Code hooks: gates for Python/uv work repos + the read-only agent guard (see Hooks below)
 ├── rules/       # rule files: path-scoped via .claude/rules/, one user-level (see Rules below)
-├── build/       # citation-verification tooling for recommend-probabilistic-model
+├── build/       # lints and commit gates, the adapter generator, the Claude Code guide's drift detector, citation checks
 ├── specs/       # design records + implementation plans (retired work under completed/)
 └── install.py   # safe installer for Claude, Codex, Gemini, or all three (idempotent when linking)
 ```
 
-The canonical skill bodies are portable. Agent manifests are generated from
-[`agents/`](agents/) because the runtimes use different file formats and tool
-names; Gemini command TOML is generated from [`commands/`](commands/). Claude's
-hooks and rules remain Claude-specific. See
-[Installation](#installation) and the compatibility notes below.
+The canonical skill bodies are portable. The runtimes use different file formats and tool names,
+so `build/sync_runtime_assets.py` generates the Codex and Gemini agent files from
+[`agents/`](agents/). It also generates Gemini's TOML commands from [`commands/`](commands/). The
+hooks and rules stay specific to Claude Code. See [Installation](#installation) and the
+compatibility notes below.
 
 ## Skills
 
@@ -46,125 +52,155 @@ hooks and rules remain Claude-specific. See
 
 | Skill | Description |
 |-------|-------------|
-| [`bayesian-workflow`](skills/bayesian-workflow/) | Opinionated Bayesian modeling workflow with NumPyro (JAX) and ArviZ. Encodes guardrails most agents skip — prior/posterior predictive checks, LOO-PIT calibration, prior-sensitivity checks, 94% HDI, non-centered parameterizations, reproducible PRNGKey seeds — and walks the full loop from formulating a model to reporting results. *(adapted from Alexandre Andorra's PyMC skill — see Credits)* |
-| [`deep-learning`](skills/deep-learning/) | Design, implement, train, fine-tune, and diagnose neural models in JAX. Uses Flax NNX, Optax, and Orbax by default, with focused sequence, scientific, vision, geometric, generative, and LLM references. |
+| [`bayesian-workflow`](skills/bayesian-workflow/) | An opinionated Bayesian modeling workflow with NumPyro (JAX) and ArviZ. It walks the full loop, from formulating a model to reporting results. It encodes guardrails that most agents skip: prior and posterior predictive checks, LOO-PIT calibration, prior-sensitivity checks, 94% HDI, non-centered parameterizations, and reproducible PRNGKey seeds. It bundles three scripts. `diagnose_model.py` and `calibration_check.py` write their results as JSON. `check_diagnostics.py` turns that JSON into qualitative ratings and ordered next steps for the report. *(Adapted from Alexandre Andorra's PyMC skill. See Credits.)* |
+| [`deep-learning`](skills/deep-learning/) | Design, implement, train, fine-tune, and diagnose neural models in JAX. It uses Flax NNX, Optax, and Orbax by default. Its focused references cover sequence, scientific, vision, geometric, generative, and LLM topics. |
 | [`evaluate-deep-learning`](skills/evaluate-deep-learning/) | Evaluate neural models and research claims with explicit held-out inputs, metrics, leakage checks, comparable budgets, seed variation, domain checks, and experiment records. |
-| [`optimize-jax`](skills/optimize-jax/) | Reproduce, profile, and improve JAX execution: tracing, compilation, memory, precision, sharding, and generation/cache performance, with measured changes and correctness parity. |
-| [`recommend-probabilistic-model`](skills/recommend-probabilistic-model/) | Given a problem and its data, recommend a probabilistic-ML method grounded in Kevin Murphy's *Probabilistic Machine Learning* books — a thin decision-map router over 8 deep families (regression/GLMs/counts, hierarchical, time-series/state-space, GPs, factor models, classification, mixtures, graphical models) with **verified** §refs + pyprobml notebooks, a family-conditional regularization/selection step, and a structured handoff to `bayesian-workflow`. Recommends and points; it doesn't fit. |
-| [`recommend-causal-design`](skills/recommend-causal-design/) | Choose a causal research design before estimation: define the requested effect, make the causal diagram and identification assumptions explicit, compare credible designs, and write a recommendation memo with diagnostics, sensitivity plans and an implementation handoff. Covers experiments, adjustment/weighting, IV, RDD, DiD, synthetic control, interrupted time series and longitudinal regimes; keeps local effects separate from population targets and provides an evidence plan when identification fails. Planning workflow selectively adapted from Robson Tigre and Alexandre Andorra (MIT). |
-| [`recommend-visualization`](skills/recommend-visualization/) | Given an `explore-data` profile and an intent (trend, comparison, distribution, correlation, part-to-whole, ranking, geographic, flow), recommend the right chart by conditioning on the data's *signals* — cardinality, row count, skew, panel shape, null rates — then write the code. A pure, unit-tested `(intent × signal) → ranked candidates` router that ships the **encoding map** (field → channel), grounded in perceptual theory, routing Phase-2 code to **Altair** / **matplotlib** / **plotly**. The visualization sibling of `recommend-probabilistic-model`: one recommends a model, this recommends a view — and carries through to code. |
-| [`track-model-experiments`](skills/track-model-experiments/) | Keep a per-analysis ledger of Bayesian model variants and rank them. A human-authored `experiments.md` records *what changed and why* across `churn-logistic → v2 → v3`; a bundled `compare_experiments.py` loads each variant's saved InferenceData, ranks them with `az.compare`, extracts convergence diagnostics, and stamps the winner back into the ledger — guarding the two ways the comparison goes silently wrong (variants fit to different observations, or a missing `log_likelihood` group). The iteration layer above `bayesian-workflow`: it owns the variant ledger and the stopping rule; `bayesian-workflow`'s `model-comparison.md` owns the ELPD statistics. |
-| [`tune-hyperparameters`](skills/tune-hyperparameters/) | Tune model hyperparameters without leaking or overfitting — classify the *regime* first (predictive search vs. inference diagnostic), then tune the right objective with the right guard. Ships a bundled `PurgedTimeSeriesSplit` (`time_series_cv.py`): forward-chaining CV with an embargo gap and an optional label-horizon *purge*, feeding a manual, seeded **Optuna** objective (verified against the installed version) for regime-A predictive search; a thin decision table routes regime-B inference knobs (NUTS/SVI/optax) to `bayesian-workflow`. Guards **temporal** leakage only; graduates a tuned winner to a `track-model-experiments` variant row, and defers revision/vintage leakage to `develop-testing-strategy`. |
-| [`creative-thinking`](skills/creative-thinking/) | Divergent target-finding for when the goal itself is fuzzy — the analysis, the estimand, the objective, or the approach space. Delivers a *map* of genuinely distinct candidate targets (sketched in ≤3 lines each, with named selection criteria and at least one candidate that escapes the map's own organizing frame) instead of converging on the first plausible one. Sorts gating questions by where the answer lives: user-held facts (data access, consuming decision) get asked first with a one-line-per-direction preview; modeling judgments are absorbed provisionally with flip-marked candidates. Runs ahead of `brainstorming`'s narrowing and `tune-hyperparameters`' mechanics; hands the picked target off unchanged. Eval-tested against a no-skill baseline (RED→GREEN, two human-reviewed iterations). |
-| [`develop-testing-strategy`](skills/develop-testing-strategy/) | Design a test strategy from *invariants* (not coverage %) for web scrapers, Polars pipelines, and NumPyro/PyMC models — recorded fixtures, schema/null/key assertions, determinism, SBC-lite, golden-master parity. |
-| [`validate-data`](skills/validate-data/) | QA a dataset or analysis before it ships — schema/integrity, reproducibility, benchmark reconciliation, and methodology/bias checks. Polars-first, tuned to BLS data and as-of/vintage correctness. |
-| [`explore-data`](skills/explore-data/) | Profile a new dataset with Polars before analysis — null rates, key uniqueness, distributions, duplicates, quality flags, panel balance. Bundles a reusable `profile.py`. |
-| [`tech-debt`](skills/tech-debt/) | Audit, categorize, and prioritize tech debt in research/data codebases; the DELETE-vs-HARDEN triage. Bundles a `scan.sh` sweep for debt signals. |
-| [`design-architecture`](skills/design-architecture/) | Author or evaluate Architecture Decision Records (ADRs) for data & modeling systems (e.g. NumPyro/JAX vs PyMC, store layout, vintage data model). Bundles an ADR scaffolder. |
-| [`bls-data-context`](skills/bls-data-context/) | Canonical reference for the BLS employment/wage programs (QCEW, CES, SAE, JOLTS, BED, OEWS, ECI, ECEC, CPS) — program selector, cross-cutting concepts (jobs-vs-persons, place-of-work, vintage/benchmark, units), reconciliation rules, and nine full per-program references loaded on demand. |
-| [`classification-codes`](skills/classification-codes/) | The NAICS (2012, 2017, 2022) and SOC (2010, 2018) classification systems, their official vintage concordances, and the Census occupation code lists (the ACS/CPS `OCC` variable, expanded to detailed SOC) as tidy, greppable CSVs under `data/`, built from the Census/BLS workbooks by a bundled, validated `build.py` (sources archived with sha256 in `MANIFEST.md`). The SKILL.md carries the semantics agents get wrong — ranged sectors (`31-33`), SOC's trailing-zero levels, "All Other" residuals, `link_type`-routed vintage bridging with no weights — and a `references/revision-process.md` on how the ECPC and SOCPC create and revise codes (Federal Register cycle, NAICS 2027, SOC 2028). Prime directive: codes and titles come from `data/`, never from model memory. |
-| [`geographic-codes`](skills/geographic-codes/) | U.S. statistical geography as interval-stamped reference tables under `data/` — FIPS states and territories, county-equivalents (counties, parishes, boroughs and census areas, independent cities, municipios, Connecticut planning regions), and CBSAs with their metropolitan divisions and CSAs — every county-equivalent and CBSA row carrying a half-open `[valid_from, valid_to)` so the question is always "valid at this reference date", never "which vintage file do I open". Built from the Census county gazetteer and OMB's seven "List 1" delineation workbooks (bulletins 13-01 through 23-01) by a bundled, validated `build.py` (sources archived with sha256 in `MANIFEST.md`); `counties.csv` is synthesized by playing a hand-curated, Census-verified `seeds/county_changes.csv` forward from 1990. The SKILL.md carries the semantics agents get wrong — CBSA ≠ MSA, metropolitan-division double-counting, independent cities outside any county, spelling corrections vs. renames, the Connecticut county retirement (87 FR 34235), NECTAs' discontinuation, and `valid_from` as the federal-statistics date rather than state law or a BLS program's adoption date — and a `references/how-geographies-are-defined.md` on OMB's qualification rules and revision clocks. Sibling of `classification-codes`, same architecture, same prime directive: codes and names come from `data/`, never from model memory, and never without a reference date. |
-| [`llm-wiki`](skills/llm-wiki/) | Maintain a personal research wiki (the Karpathy LLM-wiki pattern) as a citation-audited knowledge base instead of a folder of unread PDFs. A source is ingested as a `status: unverified` page; claims are promoted onto concept pages carrying inline `[slug §x]` locators; the **quarantine rule** forbids an unverified summary from ever becoming grounds for another page, and a contradiction keeps *both* claims with an entry in `open-questions.md` rather than overwriting. Every mutating operation appends to `log.md`. The wiki root (`$LLM_WIKI_ROOT`) owns its normative `SCHEMA.md`, so the skill stays generic and a second root — work vs. personal, content never crossing — reuses it unchanged. Bundles stdlib-only `bootstrap_wiki.py` (seeds a fresh root, never overwrites content), `lint_wiki.py` (mechanical gate before any status flip), and `distill_sessions.py` (turns Claude Code transcripts into ingestable capture notes), plus an [`INSTALL.md`](skills/llm-wiki/INSTALL.md) for fresh machines. |
-| [`describe-critique-methodology`](skills/describe-critique-methodology/) | Leg 1 of the methodology-critique loop: write a system- or module-level **methodological description** of a codebase — math and prose deliberately decoupled from the code (notation table, data-generating story, estimation procedure, assumptions, evaluation criteria, open questions) — carry it to a Claude Chat **Research** critique, then **synthesize** description + adjudicated critique into a house-format spec routed onward to `derive-roadmap`. Two modes (Describe / Synthesize) joined by routing headers in the artifacts themselves; bundles an advisory `check_decoupling.py`. Stats/Bayesian/nowcast scope in v1. |
-| [`derive-roadmap`](skills/derive-roadmap/) | Leg 2 of the methodology-critique loop: takes a synthesized spec and the system it describes and partitions the distance between them into staged spec→plan→implementation cycles. Runs a one-time gap analysis over every numbered requirement (`references/gap-rubric.md`: implemented-as-specified / implemented-differently / missing / in-code-but-not-in-spec), sequences stages by dependency and information order rather than the spec's own priority ranking, and — unless the gaps fit a single cycle, which gets no roadmap file at all — writes a brevity-budgeted `specs/<name>-roadmap.md` (`references/roadmap-format.md`) that cites spec §-refs instead of restating them. Every stage routes onward to `brainstorming` or `writing-plans` by bare name; this skill never designs a stage. Resumes via authoritative stage stamps, and supports a first-class PARKED exit that folds unticked stages into `specs/deferred_items.md`. |
-| [`prepare-handoff`](skills/prepare-handoff/) | The sending half of a handoff between sessions. Before a fresh session takes over a spec, a plan or a checkpoint, it sorts what that session needs into four bins: already in the artifact, recomputed by the receiver, amendable and committed now, or everything else. Only the last goes into a brief, never committed. Fact-checker and cold-reader templates review the brief, and the final message gives one launch line per runtime, with the model left to the owner. |
+| [`optimize-jax`](skills/optimize-jax/) | Reproduce, profile, and improve JAX execution: tracing, compilation, memory, precision, sharding, and generation and cache performance. It measures every change and keeps correctness parity. |
+| [`recommend-probabilistic-model`](skills/recommend-probabilistic-model/) | Given a problem and its data, recommend a probabilistic-ML method grounded in Kevin Murphy's *Probabilistic Machine Learning* books. The skill is a thin decision-map router over 8 deep families: regression/GLMs/counts, hierarchical, time-series/state-space, GPs, factor models, classification, mixtures, and graphical models. It gives **verified** § references and pyprobml notebooks, a regularization and selection step that depends on the chosen family, and a structured handoff to `bayesian-workflow`. It bundles `characterize.py`, which computes the modeling signals that `explore-data`'s `profile.py` does not, such as overdispersion and class balance. It recommends and points. It does not fit a model. |
+| [`recommend-causal-design`](skills/recommend-causal-design/) | Choose a causal research design before estimation. The skill defines the requested effect, and it makes the causal diagram and the identification assumptions explicit. It compares credible designs and writes a recommendation memo with diagnostics, sensitivity plans, and an implementation handoff. It covers experiments, adjustment and weighting, instrumental variables (IV), regression discontinuity (RDD), difference-in-differences (DiD), synthetic control, interrupted time series, and longitudinal regimes. It keeps local effects separate from population targets. When identification fails, it gives an evidence plan. Its planning workflow is selectively adapted from Robson Tigre and Alexandre Andorra (MIT). |
+| [`recommend-visualization`](skills/recommend-visualization/) | Given an `explore-data` profile and an intent (trend, comparison, distribution, correlation, part-to-whole, ranking, geographic, flow), recommend the right chart, then write the code. The recommendation conditions on the data's *signals*: cardinality, row count, skew, panel shape, and null rates. Its core is a pure, unit-tested `(intent × signal) → ranked candidates` router. The router ships the **encoding map** (field → channel), grounded in perceptual theory. It routes the code phase (Phase 2) to **Altair**, **matplotlib**, or **plotly**. The skill is the visualization sibling of `recommend-probabilistic-model`. That skill recommends a model. This one recommends a view and carries it through to code. |
+| [`track-model-experiments`](skills/track-model-experiments/) | Keep a ledger of Bayesian model variants for each analysis, and rank the variants. A human-written `experiments.md` records *what changed and why* across `churn-logistic → v2 → v3`. A bundled `compare_experiments.py` loads each variant's saved InferenceData, ranks the variants with `az.compare`, extracts convergence diagnostics, and stamps the winner back into the ledger. It guards the two ways that the comparison goes silently wrong: variants fit to different observations, or a missing `log_likelihood` group. The skill is the iteration layer above `bayesian-workflow`. It owns the variant ledger and the stopping rule. `bayesian-workflow`'s `model-comparison.md` owns the ELPD statistics. |
+| [`tune-hyperparameters`](skills/tune-hyperparameters/) | Tune model hyperparameters without leakage or overfitting. First classify the *regime*: predictive search (regime A) or inference diagnostic (regime B). Then tune the right objective with the right guard. For regime A, the skill bundles a `PurgedTimeSeriesSplit` (`time_series_cv.py`). It gives forward-chaining cross-validation with an embargo gap and an optional label-horizon *purge*. It feeds a manual, seeded **Optuna** objective (verified against the installed version). For regime B, a thin decision table routes the inference knobs (NUTS, SVI, optax) to `bayesian-workflow`. The skill guards **temporal** leakage only. It graduates a tuned winner to a `track-model-experiments` variant row, and it leaves revision and vintage leakage to `develop-testing-strategy`. |
+| [`creative-thinking`](skills/creative-thinking/) | Divergent target-finding for when the goal itself is fuzzy: the analysis, the estimand, the objective, or the approach space. Instead of converging on the first plausible target, the skill delivers a *map* of genuinely distinct candidate targets. It sketches each candidate in 3 lines or fewer and names the selection criteria. At least one candidate escapes the map's own organizing frame. It sorts gating questions by where the answer lives. It asks first for facts that the user holds (data access, the consuming decision), with a one-line preview for each direction. It absorbs modeling judgments provisionally, and it marks the candidates that would flip under the other answer. It runs ahead of `brainstorming`'s narrowing and `tune-hyperparameters`' mechanics, and it hands the chosen target off unchanged. It was eval-tested against a no-skill baseline (RED→GREEN, two human-reviewed iterations). |
+| [`develop-testing-strategy`](skills/develop-testing-strategy/) | Design a test strategy from *invariants*, not coverage %, for web scrapers, Polars pipelines, and NumPyro/PyMC models. Its methods include recorded fixtures, schema/null/key assertions, determinism, SBC-lite (parameter recovery on simulated data), and golden-master parity. |
+| [`validate-data`](skills/validate-data/) | QA a dataset or an analysis before it ships: schema/integrity, reproducibility, benchmark reconciliation, and methodology/bias checks. It is Polars-first, and it is tuned to BLS data and to as-of/vintage correctness. |
+| [`explore-data`](skills/explore-data/) | Profile a new dataset with Polars before analysis: null rates, key uniqueness, distributions, duplicates, quality flags, and panel balance. It bundles a reusable `profile.py`. |
+| [`tech-debt`](skills/tech-debt/) | Audit, categorize, and prioritize tech debt in research and data codebases, with the DELETE-vs-HARDEN triage. It bundles `scan.sh`, a sweep for debt signals. |
+| [`design-architecture`](skills/design-architecture/) | Write or evaluate Architecture Decision Records (ADRs) for data and modeling systems, for example NumPyro/JAX vs PyMC, a store layout, or a vintage data model. It bundles an ADR scaffolder. |
+| [`bls-data-context`](skills/bls-data-context/) | The canonical reference for the BLS employment and wage programs (QCEW, CES, SAE, JOLTS, BED, OEWS, ECI, ECEC, CPS). It gives a program selector, cross-cutting concepts (jobs vs. persons, place of work, vintage and benchmark, units), and reconciliation rules. Ten references load on demand. Nine are full references, one for each program. The tenth covers data acquisition for all the programs: API v2, LABSTAT flat files, and release feeds. |
+| [`classification-codes`](skills/classification-codes/) | The NAICS (2012, 2017, 2022) and SOC (2010, 2018) classification systems, their official vintage concordances, and the Census occupation code lists. All of them are tidy, greppable CSVs under `data/`. The Census lists are the ACS/CPS `OCC` variable, expanded to detailed SOC. A bundled, validated `build.py` builds the CSVs from the Census and BLS workbooks. It archives the sources and records their sha256 in `MANIFEST.md`. The SKILL.md carries the semantics that agents get wrong: ranged sectors (`31-33`), SOC's trailing-zero levels, and "All Other" residuals. It also covers vintage bridging, which `link_type` routes, with no weights. `references/revision-process.md` explains how the ECPC (Economic Classification Policy Committee) and the SOCPC (SOC Policy Committee) create and revise codes. It covers the Federal Register cycle, NAICS 2027, and SOC 2028. The prime directive: codes and titles come from `data/`, never from model memory. |
+| [`geographic-codes`](skills/geographic-codes/) | U.S. statistical geography as interval-stamped reference tables under `data/`. The tables cover FIPS states and territories, county-equivalents, and CBSAs with their metropolitan divisions and CSAs. The county-equivalents are counties, parishes, boroughs and census areas, independent cities, municipios, and Connecticut planning regions. Every county-equivalent row and every CBSA row carries a half-open `[valid_from, valid_to)`. So the question is always "valid at this reference date", never "which vintage file do I open". A bundled, validated `build.py` builds the tables from the Census county gazetteer and OMB's seven "List 1" delineation workbooks (bulletins 13-01 through 23-01). It archives the sources and records their sha256 in `MANIFEST.md`. To synthesize `counties.csv`, the build plays a hand-curated, Census-verified `seeds/county_changes.csv` forward from 1990. The SKILL.md carries the semantics that agents get wrong: CBSA ≠ MSA, and double-counting of metropolitan divisions with their parent CBSA. It also covers independent cities outside any county, spelling corrections vs. renames, the Connecticut county retirement (87 FR 34235), and the discontinuation of NECTAs. It treats `valid_from` as the federal-statistics date, not the date in state law or a BLS program's adoption date. `references/how-geographies-are-defined.md` covers OMB's qualification rules and revision clocks. The skill is a sibling of `classification-codes`, with the same architecture. It has the same prime directive: codes and names come from `data/`, never from model memory, and never without a reference date. |
+| [`llm-wiki`](skills/llm-wiki/) | Maintain a personal research wiki (the Karpathy LLM-wiki pattern) as a citation-audited knowledge base instead of a folder of unread PDFs. The skill ingests a source as a `status: unverified` page. It promotes claims onto concept pages that carry inline `[slug §x]` locators. The **quarantine rule** forbids an unverified summary from ever becoming grounds for another page. A contradiction keeps *both* claims, with an entry in `open-questions.md`, instead of an overwrite. Every operation that changes the wiki appends to `log.md`. The wiki root (`$LLM_WIKI_ROOT`) owns its normative `SCHEMA.md`, so the skill stays generic. A second root, for example work vs. personal with no content crossing between them, reuses the skill unchanged. A supervised harvest turns a repo's `specs/` corpus (specs, plans, deferred items) into a `raw/specs/` digest, one repo at a time. The skill bundles four stdlib-only scripts. `bootstrap_wiki.py` seeds a fresh root and never overwrites content. `lint_wiki.py` is the mechanical gate before any status flip. `distill_sessions.py` turns Claude Code transcripts into capture notes to ingest. `distill_specs.py` runs the harvest's mechanical inventory and assembly steps. An [`INSTALL.md`](skills/llm-wiki/INSTALL.md) covers fresh machines. |
+| [`describe-critique-methodology`](skills/describe-critique-methodology/) | Leg 1 of the methodology-critique loop. Write a system-level or module-level **methodological description** of a codebase. Its math and prose are deliberately decoupled from the code: a notation table, the data-generating story, the estimation procedure, assumptions, evaluation criteria, and open questions. Carry the description to a Claude Chat **Research** critique. Then **synthesize** the description and the adjudicated critique into a house-format spec, routed onward to `derive-roadmap`. Routing headers in the artifacts themselves join the two modes (Describe and Synthesize). The skill bundles an advisory `check_decoupling.py`. In v1, its scope is statistical, Bayesian, and nowcast work. |
+| [`derive-roadmap`](skills/derive-roadmap/) | Leg 2 of the methodology-critique loop. It takes a synthesized spec and the system that the spec describes, and it partitions the distance between them into staged spec→plan→implementation cycles. It runs a one-time gap analysis over every numbered requirement. The rubric in `references/gap-rubric.md` has four classes: implemented-as-specified, implemented-differently, missing, and in-code-but-not-in-spec. The skill orders stages by dependency and information order, not by the spec's own priority ranking. When the gaps fit a single cycle, it writes no roadmap file at all. Otherwise it writes a brevity-budgeted `specs/<name>-roadmap.md` (`references/roadmap-format.md`) that cites the spec's § references instead of restating them. Every stage routes onward to `brainstorming` or `writing-plans` by bare name. This skill never designs a stage. It resumes from authoritative stage stamps, and it supports a first-class PARKED exit that folds unticked stages into `specs/deferred_items.md`. |
+| [`prepare-handoff`](skills/prepare-handoff/) | The sending half of a handoff between sessions. Before a fresh session takes over a spec, a plan, or a checkpoint, the skill sorts what that session needs into four bins. The bins are: already in the artifact, recomputed by the receiver, amendable and committed now, or everything else. Only the last bin goes into a brief, which is never committed. Fact-checker and cold-reader templates review the brief. The final message gives one launch line for each runtime, and it leaves the choice of model to the owner. |
 | [`write-with-asd-ste100`](skills/write-with-asd-ste100/) | Write and rewrite in ASD-STE100 Simplified Technical English (STE), the controlled English of aircraft maintenance manuals. Human mode, the default, writes about 80% of the way to the standard, after a tip from Andrej Karpathy. Agent mode applies strict rules to prompts, tool descriptions, subagent briefs and error strings. The skill rewrites a text, or a whole file in place (left uncommitted) or as a `.ste` copy beside it. It also explains, summarizes and draws small Mermaid diagrams, and it never claims dictionary compliance. It bundles danyuchn's structural linter, unchanged. A user-level rule carries the everyday habits and a label rule into every session (see [Rules](#rules)). Adapted from danyuchn and prithivrajmu (MIT). |
 
 ### Clean-code family (rule catalog adapted from Robert C. Martin's *Clean Code*)
 
-Proactive-cleanup counterpart to `tech-debt`: standards applied in the flow of normal editing, bounded by consent. The rule *codes* come from Martin's Ch. 17 catalog (cited by code only — no book prose); the curation defers mechanical rules to ruff and keeps the judgment-level ones, tuned to Polars/JAX. A third artifact, the [`clean-code-python`](rules/clean-code-python.md) rule, loads the Python guardrails whenever a `*.py` file is read, written or edited (see [Rules](#rules)).
+This family is the proactive-cleanup counterpart to `tech-debt`. It applies standards in the flow of normal editing, and consent bounds how far it goes. Most rule *codes* come from Martin's Chapter 17 catalog, cited by code only, with no book prose. The exception is the Modules category (rules M1–M4, on module and subpackage granularity), which is adapted from Mancuso Lab's `python-module-design` skill (see [Credits](#credits)). The curation leaves mechanical rules to ruff and keeps the judgment-level ones, tuned to Polars and JAX. A third artifact, the [`clean-code-python`](rules/clean-code-python.md) rule, loads the Python guardrails whenever a `*.py` file is read, written or edited (see [Rules](#rules)).
 
 | Skill | Description |
 |-------|-------------|
-| [`clean-coder`](skills/clean-coder/) | Opportunistic cleanup with a consent gate: in-scope fixes apply directly; anything adjacent goes through announce → list (`file:line` + rule code) → ask → apply-on-yes. Beck's *Tidy First?* supplies the spine — tidyings and behavior changes never share a commit, and a stopping rule caps the cascade, deferring bigger findings to `tech-debt`. Pressure-tested against a no-skill baseline on six gate scenarios. |
-| [`clean-code`](skills/clean-code/) | The curated standards catalog `clean-coder` applies: Martin's N/F/G/C/T rules dispositioned keep / defer-to-ruff / drop, with stack-tuned examples (Polars fluent chains are not Demeter violations; `jax.lax.switch` is G23's dispatch; comments carrying design intent survive C3). Five per-category references load on demand; every fix cites its rule code. |
+| [`clean-coder`](skills/clean-coder/) | Opportunistic cleanup with a consent gate. In-scope fixes apply directly. Anything adjacent goes through announce → list (`file:line` + rule code) → ask → apply-on-yes. Beck's *Tidy First?* supplies the spine: tidyings and behavior changes never share a commit, and a stopping rule caps the cascade and defers bigger findings to `tech-debt`. It was pressure-tested against a no-skill baseline on six gate scenarios. |
+| [`clean-code`](skills/clean-code/) | The curated standards catalog that `clean-coder` applies. It gives each of Martin's Names, Functions, General, Comments, and Tests rules (N/F/G/C/T) one disposition: keep, defer to ruff, or drop. Its examples are tuned to the stack. Polars fluent chains are not Law of Demeter violations. `jax.lax.switch` is the dispatch that G23 (dispatch over if/elif chains) asks for. Comments that carry design intent survive C3 (no redundant comments). A sixth category, Modules (M1–M4), comes from Mancuso Lab. Six per-category references load on demand, and every fix cites its rule code. |
 
 ### Adapted from [superpowers](https://github.com/obra/superpowers) (Jesse Vincent, MIT)
 
-Adapted from Jesse Vincent's superpowers skills — process disciplines for planning, TDD, debugging, code review, and skill authoring. I rewrote cross-skill references from the `superpowers:` plugin namespace to bare skill names, removed unused authoring scaffolding, and dropped the plugin-bootstrap skill so these work as standalone personal skills. Beyond that mechanical cleanup, I rewired the planning and execution skills around the spec-driven lifecycle described at the top of this README (the `specs/` layout, auto-numbered plans, and a plan-completion protocol that marks up the plan, logs deferred items, and retires the spec) — upstream does not impose that workflow. Attribution and license: [`NOTICE`](NOTICE) and [`LICENSE-superpowers`](LICENSE-superpowers).
+These skills are adapted from Jesse Vincent's superpowers skills. They are process disciplines for planning, TDD (test-driven development), debugging, code review, and skill authoring. I made three mechanical changes so that they work as standalone personal skills:
+
+- I rewrote cross-skill references from the `superpowers:` plugin namespace to bare skill names.
+- I removed unused authoring scaffolding.
+- I dropped the plugin-bootstrap skill.
+
+Beyond that cleanup, I rewired the planning and execution skills around the spec-driven lifecycle at the top of this README. The lifecycle has the `specs/` layout, auto-numbered plans, and a plan-completion protocol that marks up the plan, logs deferred items, and retires the spec. Upstream does not impose that workflow. For attribution and license, see [`NOTICE`](NOTICE) and [`LICENSE-superpowers`](LICENSE-superpowers).
 
 > [!NOTE]
-> These overlap with the upstream **superpowers plugin**. If you also run that plugin, these personal copies duplicate it under the same names (bare here vs. the plugin's `superpowers:` namespace) — use one source to avoid redundancy.
+> These skills overlap with the upstream **superpowers plugin**. If you also run that plugin, these personal copies duplicate it under the same names: bare names here, and the `superpowers:` namespace in the plugin. Use one source to avoid the duplication.
 
 | Skill | Description |
 |-------|-------------|
 | [`brainstorming`](skills/brainstorming/) | Explore intent, requirements, and design before any creative or build work. |
-| [`writing-plans`](skills/writing-plans/) | Turn a spec into a written implementation plan before touching code. |
-| [`executing-plans`](skills/executing-plans/) | Execute a written plan directly in the current session — for tightly coupled plans or partner-requested direct execution. |
+| [`writing-plans`](skills/writing-plans/) | Turn a spec into a written implementation plan before you touch code. |
+| [`executing-plans`](skills/executing-plans/) | Execute a written plan directly in the current session. Use it for tightly coupled plans, or when your partner asks for direct execution. |
 | [`subagent-driven-development`](skills/subagent-driven-development/) | Execute plans with independent tasks in the current session. |
 | [`dispatching-parallel-agents`](skills/dispatching-parallel-agents/) | Fan out 2+ independent tasks with no shared state. |
 | [`test-driven-development`](skills/test-driven-development/) | Write tests before implementation for any feature or bugfix. |
-| [`systematic-debugging`](skills/systematic-debugging/) | Diagnose bugs and test failures methodically before proposing fixes. |
-| [`verification-before-completion`](skills/verification-before-completion/) | Run verification and confirm output before claiming work is done. |
-| [`requesting-code-review`](skills/requesting-code-review/) | Get work reviewed when completing features or before merging. Also carries the Codex CLI second-opinion recipe (`codex-review.md`): the plan executors run it beside `code-reviewer`, and branch finishing runs it before merge or PR. It is skipped with a notice where the `codex` CLI is absent. |
+| [`systematic-debugging`](skills/systematic-debugging/) | Diagnose bugs and test failures methodically before you propose fixes. |
+| [`verification-before-completion`](skills/verification-before-completion/) | Run the verification and check its output before you claim that work is done. |
+| [`requesting-code-review`](skills/requesting-code-review/) | Get work reviewed when you complete a feature or before you merge. It also carries the recipe for the Codex CLI second-opinion review (`codex-review.md`). The plan executors run that review beside `code-reviewer`, and branch finishing runs it before a merge or a PR. Where the `codex` CLI is absent, the review is skipped with a notice. |
 | [`receiving-code-review`](skills/receiving-code-review/) | Handle review feedback with rigor instead of blind agreement. |
-| [`finishing-a-development-branch`](skills/finishing-a-development-branch/) | Decide how to integrate completed work (merge, PR, or cleanup); merge and PR are gated on a Codex second-opinion review. |
+| [`finishing-a-development-branch`](skills/finishing-a-development-branch/) | Decide how to integrate completed work: merge, PR, or cleanup. A Codex second-opinion review gates the merge and the PR. |
 | [`using-git-worktrees`](skills/using-git-worktrees/) | Create an isolated workspace for feature work. |
 | [`writing-skills`](skills/writing-skills/) | Create, edit, and verify agent skills. |
 
 ## Agents
 
-Canonical subagent definitions live in [`agents/`](agents/). Claude loads these
-files directly; generated Codex TOML and Gemini Markdown adapters live under
-[`runtimes/`](runtimes/). The adapters keep the same system-prompt body, map
-Gemini's tool identifiers, declare read-only sandboxes in Codex where required,
-and inherit the active runtime model instead of carrying Claude model names.
+The canonical subagent definitions live in [`agents/`](agents/). Claude Code loads these files
+directly. The generated Codex TOML and Gemini Markdown adapters live under
+[`runtimes/`](runtimes/). The adapters keep the same system-prompt body and map Gemini's tool
+identifiers. They declare read-only sandboxes in Codex where required. They inherit the active
+runtime model instead of carrying Claude model names.
+
+Five agents are read-only: `code-reviewer`, `task-reviewer`, `security-auditor`, `Explore`, and
+`test-runner`. They keep a shell, and each runtime handles that shell differently:
+
+- **Claude Code:** their `tools:` lists hold no `Write` or `Edit`. The read-only agent guard, once
+  you install it (see [Hooks](#hooks)), denies Bash commands that change files or git state. The
+  guard is a guardrail against drift from the contract, not a sandbox.
+- **Codex:** each adapter sets `sandbox_mode = "read-only"`.
+- **Gemini CLI:** each adapter lists `run_shell_command` with no restriction.
 
 | Agent | Description |
 |-------|-------------|
-| [`code-reviewer`](agents/code-reviewer.md) | Read-only reviewer for diff-based reviews against a plan, spec, or requirements — dispatched by `requesting-code-review`, and by `subagent-driven-development` for its final whole-branch review (per-task reviews go to `task-reviewer`). No edit tools; inspects history via `git show`/`git diff` and reports Critical/Important/Minor findings with a merge verdict. |
-| [`task-reviewer`](agents/task-reviewer.md) | Read-only task-scoped reviewer for `subagent-driven-development`'s per-task gate — checks one task's diff against its brief for spec compliance and code quality, returning both verdicts. Carries the full review contract so dispatches only need the task's brief, report, and diff paths. |
-| [`security-auditor`](agents/security-auditor.md) | Read-only security reviewer for a diff, branch, or repo — injection, committed secrets and credential handling, insecure deserialization, TLS verification, dependency risks. Severity-ranked findings with file:line and concrete remediation; Opus-pinned like `code-reviewer`. |
-| [`explore`](agents/explore.md) | ⚠ Haiku-pinned **override of the built-in `Explore` agent** — same read-only fan-out-search contract, plus a structured output contract (`path:line` refs with relevance notes, no file dumps). The frontmatter `name: Explore` (capital E) is what shadows the built-in — resolution keys on the name field, case-sensitively; shadowing is version-sensitive (probed on Claude Code 2.1.219), so re-probe after binary updates. |
-| [`test-runner`](agents/test-runner.md) | Runs one test suite in isolation and reports complete failure output — full tracebacks never truncated, warnings surfaced as findings, no diagnosis. The dispatch supplies the exact command; it never guesses a runner. Haiku-pinned. |
-| [`debugger`](agents/debugger.md) | Fixes one self-contained, reproducible failure in an isolated context — reproduce → isolate the root cause → failing test → minimal fix — and leaves all changes uncommitted for review. Sonnet-pinned. |
-| [`docs-writer`](agents/docs-writer.md) | Writes grounded technical docs in an isolated context — READMEs, analysis writeups (methods → results → caveats), docstrings under the clean-code comment discipline, general guides. Reads the code first, flags unverified claims, never commits. Sonnet-pinned. |
+| [`code-reviewer`](agents/code-reviewer.md) | A read-only reviewer for diff-based reviews against a plan, a spec, or requirements. `requesting-code-review` dispatches it, and so does `subagent-driven-development` for its final whole-branch review. Per-task reviews go to `task-reviewer`. It has no edit tools. It inspects history with `git show` and `git diff`, and it reports Critical, Important, and Minor findings with a merge verdict. Opus-pinned. |
+| [`task-reviewer`](agents/task-reviewer.md) | A read-only, task-scoped reviewer for `subagent-driven-development`'s per-task gate. It checks one task's diff against its brief for spec compliance and code quality, and it returns both verdicts. It carries the full review contract, so a dispatch needs only the paths of the task's brief, report, and diff. Sonnet is its floor. For a risky or subtle diff, the controller escalates the review to Opus. |
+| [`security-auditor`](agents/security-auditor.md) | A read-only security reviewer for a diff, a branch, or a repo. It covers injection, committed secrets and credential handling, insecure deserialization, TLS verification, and dependency risks. It ranks findings by severity, each with file:line and a concrete remediation. Opus-pinned, like `code-reviewer`. |
+| [`explore`](agents/explore.md) | ⚠ A Haiku-pinned **override of the built-in `Explore` agent**. It keeps the same read-only fan-out-search contract and adds a structured output contract: `path:line` refs with relevance notes, and no file dumps. The frontmatter `name: Explore` (capital E) is what shadows the built-in. Claude Code resolves agents by the name field, case-sensitively. Shadowing depends on the version (probed on Claude Code 2.1.219), so probe again after a binary update. |
+| [`test-runner`](agents/test-runner.md) | Runs one test suite in isolation and reports the complete failure output. It never truncates a traceback, it reports warnings as findings, and it does not diagnose. The dispatch supplies the exact command. The agent never guesses a runner. Haiku-pinned. |
+| [`debugger`](agents/debugger.md) | Fixes one self-contained, reproducible failure in an isolated context: reproduce → isolate the root cause → failing test → minimal fix. It leaves all changes uncommitted for review. Sonnet-pinned. |
+| [`docs-writer`](agents/docs-writer.md) | Writes grounded technical docs in an isolated context: READMEs, analysis write-ups (methods → results → caveats), docstrings under the clean-code comment discipline, and general guides. It reads the code first, flags unverified claims, and never commits. Sonnet-pinned. |
 
 ## Commands
 
-Slash commands live in [`commands/`](commands/) for Claude. Generated Gemini
-TOML commands live in [`runtimes/gemini/commands/`](runtimes/gemini/commands/)
-and preserve user arguments through `{{args}}`. Codex has no equivalent command
-adapter in this repo; its reusable workflows are invoked as skills.
+The slash commands for Claude Code live in [`commands/`](commands/). The generated Gemini TOML
+commands live in [`runtimes/gemini/commands/`](runtimes/gemini/commands/), and they pass user
+arguments through `{{args}}`. This repo has no command adapter for Codex. In Codex, you invoke the
+reusable workflows as skills.
 
 | Command | Description |
 |---------|-------------|
-| [`/deferred`](commands/deferred.md) | Triage `specs/deferred_items.md` in the current project: group unticked items by theme, then sort each into retire / quick fix / plan / design / hold so the ceremony matches the item — brainstorming only for items that record an open design decision. The triage is read-only; on the user's selection it retires or quick-fixes items (ticking them with a dated suffix) and routes the rest to writing-plans or brainstorming. Plan-implemented items are still ticked by the plan-completion protocol. |
-| [`/fix-issue`](commands/fix-issue.md) | Fix a GitHub issue end-to-end: `gh issue view` → classify (bugs only — feature-shaped issues route to `brainstorming`) → fix branch → systematic-debugging + TDD + verification → PR linking `Fixes #N`. Stops gracefully without `gh` or a GitHub remote. |
-| [`/license-audit`](commands/license-audit.md) | Audit the current repo's licensing and attribution: run its mechanical gates where present, then judgment checks — NOTICE ↔ artifact sync, LICENSE consistency, copyleft/NC compatibility flags, uncredited-adaptation risks. Read-only. |
+| [`/deferred`](commands/deferred.md) | Triage `specs/deferred_items.md` in the current project. It groups the unticked items by theme. Then it sorts each item into retire, quick fix, plan, design, or hold, so that the ceremony matches the item. Only items that record an open design decision go to brainstorming. The triage itself is read-only. On the user's selection, the command retires or quick-fixes items, ticks them with a dated suffix, and routes the rest to writing-plans or brainstorming. The plan-completion protocol still ticks the items that a plan implements. |
+| [`/fix-issue`](commands/fix-issue.md) | Fix a GitHub issue end to end: `gh issue view` → classify → fix branch → systematic-debugging + TDD + verification → a PR that links `Fixes #N`. It fixes bugs only, and it routes a feature-shaped issue to `brainstorming`. Without `gh` or a GitHub remote, it stops gracefully. |
+| [`/license-audit`](commands/license-audit.md) | Audit the current repo's licensing and attribution. It runs the repo's mechanical gates where they exist. Then it makes judgment checks: NOTICE ↔ artifact sync, LICENSE consistency, flags for copyleft and NonCommercial (NC) compatibility, and the risk of uncredited adaptations. Read-only. |
 
 ## Hooks
 
-Hook scripts live in [`hooks/`](hooks/). They're **Claude Code templates for your
-Python/uv work repos**, not cross-runtime config and not config for this one —
-each is copied into a target repo and registered in *that* repo's
-`.claude/settings.json`.
+Hook scripts live in [`hooks/`](hooks/). They are Claude Code hooks, not cross-runtime config. They
+fall into two groups, which install differently:
+
+- The **project tooling hooks** (`ruff-fix.sh`, `ruff-check.sh`, `uv-guard.sh`) are **templates for
+  your Python/uv work repos**, not config for this repo. You copy each one into a target repo and
+  register it in *that* repo's `.claude/settings.json`.
+- The **read-only agent guard** (`readonly-agent-guard.py`) is an agent contract hook. It enforces
+  the contract of the five read-only agents (see [Agents](#agents)). You install it once, globally,
+  in `~/.claude`.
 
 | Hook | Event | What it does |
 |------|-------|--------------|
-| [`ruff-fix.sh`](hooks/ruff-fix.sh) | `PostToolUse` (`Write`/`Edit`) | Runs `uv run ruff check --fix` + `ruff format` on the edited `*.py`. Best-effort: `PostToolUse` fires *after* the write and can't undo it. |
-| [`ruff-check.sh`](hooks/ruff-check.sh) | `Stop` | Runs `uv run ruff check .`; exit 2 feeds whatever `--fix` couldn't resolve back to Claude. Guarded by `stop_hook_active` against loops. |
-| [`uv-guard.sh`](hooks/uv-guard.sh) | `PreToolUse` (`Bash`) | Blocks `pip install` and bare `python` / `pytest`, injecting the `uv …` form instead. Escape hatch: `no-uv-guard` anywhere in the command. |
+| [`ruff-fix.sh`](hooks/ruff-fix.sh) | `PostToolUse` (`Write`/`Edit`) | Runs `uv run ruff check --fix` + `ruff format` on the edited `*.py`. It is best-effort: `PostToolUse` fires *after* the write and cannot undo it. |
+| [`ruff-check.sh`](hooks/ruff-check.sh) | `Stop` | Runs `uv run ruff check .`. Exit 2 feeds back to Claude whatever `--fix` could not resolve. `stop_hook_active` guards it against loops. |
+| [`uv-guard.sh`](hooks/uv-guard.sh) | `PreToolUse` (`Bash`) | Blocks `pip install` and bare `python` / `pytest`, and injects the `uv …` form instead. Escape hatch: `no-uv-guard` anywhere in the command. |
+| [`readonly-agent-guard.py`](hooks/readonly-agent-guard.py) | `PreToolUse` (`Bash`) | For the five read-only agents, denies Bash commands that change files or git state, such as `git checkout`, `git stash`, `git reset`, and `sed -i`. For every other agent, and for the main session, it exits at once and does nothing. Install it globally, by symlink. Then run [`probe-readonly-guard.sh`](hooks/probe-readonly-guard.sh) once, because a wrong path or a missing execute bit fails open. |
 
-All three read the hook JSON payload from stdin with `jq`. Blocking takes **exit 2**, which feeds stderr back to Claude, or a JSON deny decision; exit 1 merely logs, unless the hook sets `"onFailure": "block"` (2.1.295+), which has no effect on a `Stop` hook such as `ruff-check.sh`. A shell-form `PreToolUse` or `PermissionRequest` command hook on Windows without Git Bash (2.1.299+) also blocks when it fails.
+The three project tooling hooks read the hook JSON payload from stdin with `jq`. The guard is
+Python and needs no `jq`. To block, a hook uses **exit 2**, which feeds stderr back to Claude, or
+it prints a JSON deny decision, as the guard does. Exit 1 only logs, unless the hook sets
+`"onFailure": "block"` (2.1.295+). That setting has no effect on a `Stop` hook such as
+`ruff-check.sh`. A shell-form `PreToolUse` or `PermissionRequest` command hook on Windows without
+Git Bash (2.1.299+) also blocks when it fails.
 
 > [!WARNING]
-> **Don't install these globally, and don't wire them into this repo.** A hook registered in `~/.claude/settings.json` fires in *every* project, including non-Python ones. And `agent-skills` itself has no root `pyproject.toml` — its bundled scripts run on `uv run --with` inline deps, so `ruff check` would have no config to run against and `uv-guard.sh` would fight the very invocation the repo intends. Install per work-repo instead.
+> **Do not install the project tooling hooks globally, and do not wire them into this repo.** A hook registered in `~/.claude/settings.json` fires in *every* project, including non-Python ones. Also, `agent-skills` itself has no root `pyproject.toml`. Its bundled scripts run on `uv run --with` inline deps. So `ruff check` would have no config to run against, and `uv-guard.sh` would fight the very invocation that the repo intends. Install them per work repo instead. The read-only agent guard is the exception: it is global by design, and it acts only on the five read-only agents.
 
-[`hooks/README.md`](hooks/README.md) carries the copy-in procedure, the settings JSON to merge, an optional permission allowlist so the `uv` forms stop prompting, and each script's known limits (notably that `uv-guard.sh` is a first-token heuristic, not a shell parser).
+[`hooks/README.md`](hooks/README.md) has the details for both groups. It gives the copy-in
+procedure, the settings JSON to merge, and an optional permission allowlist that stops the `uv`
+forms from prompting in manual permission mode. It also gives the guard's global install and tests,
+and each script's known limits. One notable limit: `uv-guard.sh` is a first-token heuristic, not a
+shell parser.
 
 ## Rules
 
-Rule files live in [`rules/`](rules/): standing conventions injected automatically, without a skill invocation. Claude Code loads a project's `.claude/rules/*.md` natively — a rule with a `paths:` frontmatter glob loads only when a matching file is read, written or edited; a rule without frontmatter loads at session start (native loading verified against Claude Code 2.1.218).
+Rule files live in [`rules/`](rules/). They hold standing conventions that load automatically, with no skill invocation. Claude Code loads a project's `.claude/rules/*.md` natively. A rule with a `paths:` frontmatter glob loads only when a matching file is read, written or edited. A rule without frontmatter loads at session start. (Native loading was verified against Claude Code 2.1.218.)
 
 This repo keeps rule sources in `rules/`. A path-scoped rule applies here through a committed relative symlink from `.claude/rules/`. The user-level rule applies here, as in every project, from `~/.claude/rules/`:
 
 | Rule | Scope | What it injects |
 |------|-------|-----------------|
-| [`clean-code-python.md`](rules/clean-code-python.md) | `**/*.py` | Python guardrails, loaded on `.py` reads, writes and edits — single quotes, 4-space indent, Polars-over-pandas, method-style Polars expressions, lazy evaluation, NumPyro+JAX, named constants (G25). Cross-references the `clean-code` catalog by rule code. |
-| [`write-with-asd-ste100.md`](rules/write-with-asd-ste100.md) | every session, user-level | The everyday writing habits of the `write-with-asd-ste100` skill for replies and for prose files written for people, the label rule, and a pointer to the skill for rewrites, agent-facing text and strict STE. |
+| [`clean-code-python.md`](rules/clean-code-python.md) | `**/*.py` | Python guardrails, loaded on `.py` reads, writes and edits: single quotes, 4-space indent, Polars over pandas, method-style Polars expressions, lazy evaluation, NumPyro+JAX, and named constants (G25). It cross-references the `clean-code` catalog by rule code. |
+| [`write-with-asd-ste100.md`](rules/write-with-asd-ste100.md) | every session, user-level | The everyday writing habits of the `write-with-asd-ste100` skill, for replies and for prose files written for people. It also carries the label rule, and a pointer to the skill for rewrites, agent-facing text and strict STE. |
 
-Rules here ship project-level, by the decision that commit `7aa454f` took when it added the Python rule. To use a path-scoped rule in another project, copy it into that repo's `.claude/rules/` (user-level `~/.claude/rules/` also loaded in the 2.1.218 probe; see that commit's message).
+Rules here ship project-level. Commit `7aa454f` made that decision when it added the Python rule. To use a path-scoped rule in another project, copy it into that repo's `.claude/rules/`. (User-level `~/.claude/rules/` also loaded in the 2.1.218 probe. See that commit's message.)
 
 `write-with-asd-ste100.md` is the one exception. It shapes every reply and every prose file, and an "all output" rule only works at user level. So `install.py` places it in `~/.claude/rules/`, for Claude Code only: Codex and Gemini get the skill without the rule. It is not linked into this repo's `.claude/rules/`, because a second copy there would load it twice in this repo.
 
@@ -176,8 +212,8 @@ Clone the repository somewhere stable:
 git clone https://github.com/lowmason/agent-skills.git ~/agent-skills
 ```
 
-Then use the installer for one runtime or all three. It installs every skill plus
-that runtime's supported agents and commands:
+Then run the installer for one runtime or for all three. It installs every skill, plus that
+runtime's supported agents and commands:
 
 ```bash
 cd ~/agent-skills
@@ -187,11 +223,10 @@ python3 install.py claude
 # or: python3 install.py all
 ```
 
-Symlinks are the default, so edits to installed skills are live; re-run the
-installer after a pull that adds skills, agents, or commands. It is idempotent
-for symlinks that already point at the matching item in this checkout and
-refuses to overwrite any other existing file or directory. It checks every
-destination before writing, so a conflict installs nothing and lists every
+Symlinks are the default, so edits to installed skills are live. Run the installer again after a
+pull that adds skills, agents, or commands. It is idempotent for symlinks that already point at the
+matching item in this checkout. It refuses to overwrite any other existing file or directory. It
+checks every destination before it writes, so a conflict installs nothing and lists every
 conflicting path at once. Useful options:
 
 ```bash
@@ -204,16 +239,15 @@ python3 install.py all --dry-run                                  # inspect with
 python3 install.py gemini --copy                                  # frozen copies instead of symlinks (see below)
 ```
 
-`--skill` also installs what the named skills cannot work without, and what
-those need in turn: sibling skills whose scripts or files they use, and the
-`/deferred` command where the runtime has commands (Claude Code, Gemini CLI).
-So `--skill finishing-a-development-branch` brings `writing-plans`,
-`requesting-code-review`, and `/deferred`, and `--skill derive-roadmap` brings
-`writing-plans`, which `/deferred` needs, even where the command itself is not
-installed (Codex, or `--no-companions`). It skips the runtime's other agents
-and commands unless you add `--companions`. A full install includes every
-companion unless you add `--no-companions`, which leaves out all agents and
-commands, required ones included. The table is `DEPENDENCIES` in `install.py`.
+`--skill` also installs what the named skills cannot work without, and what those need in turn.
+That means the sibling skills whose scripts or files they use, and the `/deferred` command where
+the runtime has commands (Claude Code, Gemini CLI). For example,
+`--skill finishing-a-development-branch` brings `writing-plans`, `requesting-code-review`, and
+`/deferred`. `--skill derive-roadmap` brings `writing-plans`, which `/deferred` needs, even where
+the command itself is not installed (Codex, or `--no-companions`). `--skill` skips the runtime's other agents
+and commands unless you add `--companions`. A full install includes every companion unless you add
+`--no-companions`. That option leaves out all agents and commands, required ones included. The
+table is `DEPENDENCIES` in `install.py`.
 
 A full Claude install also places the user-level rules, today only
 `write-with-asd-ste100`, in `~/.claude/rules/`. `--rule NAME` installs one of
@@ -222,17 +256,16 @@ skips the runtime's other agents and commands unless you add `--companions`.
 Codex and Gemini installs place no rule. The table is `USER_RULES` in
 `install.py`.
 
-`--copy` installs the same skills, agents, and commands a link install would,
-including any that git ignores whole; agents and commands are copied as they
-are. Within a skill it copies the files git keeps (tracked, or untracked and
-not ignored). Where git keeps none of a skill's files (no git, not a checkout,
-or a skill git ignores whole), it copies everything except a fixed list of
-generic names from this repo's `.gitignore`, such as caches and virtualenvs;
-patterns you add to `.gitignore` later do not apply there. It installs nothing
-if anything it would copy is a symlink, which a copy would follow, or a nested
-repository or submodule, which it cannot copy file by file. It never replaces
-an existing destination, a previous copy included, so remove old copies before
-re-running it.
+`--copy` installs the same skills, agents, and commands that a link install would, including any
+that git ignores whole. It copies agents and commands as they are. Within a skill, it copies the
+files that git keeps: tracked files, and untracked files that git does not ignore. Sometimes git
+keeps none of a skill's files: there is no git, the directory is not a checkout, or git ignores the
+skill whole. Then `--copy` copies everything except a fixed list of generic names from this repo's
+`.gitignore`, such as caches and virtualenvs. Patterns that you add to `.gitignore` later do not
+apply there. It installs nothing if anything that it would copy is a symlink, because a copy would
+follow the link. It also installs nothing if it finds a nested repository or submodule, because it
+cannot copy one file by file. It never replaces an existing destination, a previous copy included,
+so remove old copies before you run it again.
 
 | Runtime | Skills | Agents | Commands | Rules |
 |---------|--------|--------|----------|-------|
@@ -253,8 +286,8 @@ mkdir -p ~/.agents/skills
 ln -s ~/agent-skills/skills/bayesian-workflow ~/.agents/skills/bayesian-workflow
 ```
 
-For Claude Code, use `~/.claude/skills/` instead. To scope a skill to one
-project, use `.agents/skills/` for Codex/Gemini or `.claude/skills/` for Claude:
+For Claude Code, use `~/.claude/skills/` instead. To scope a skill to one project, use
+`.agents/skills/` for Codex and Gemini, or `.claude/skills/` for Claude Code:
 
 ```bash
 mkdir -p .agents/skills
@@ -263,29 +296,29 @@ ln -s ~/agent-skills/skills/bayesian-workflow .agents/skills/bayesian-workflow
 
 ### Verify
 
-Use `/skills` in Claude or Codex and `/skills list` in Gemini. Gemini agents and
-commands can be checked with `/agents list` and `/commands list`; use the
-corresponding `reload` command after changing generated files. Codex reads its
-TOML agents when a new session starts.
+Use `/skills` in Claude Code or Codex, and `/skills list` in Gemini. In Gemini, check agents with
+`/agents list` and commands with `/commands list`. After you change generated files, use the
+matching `reload` command. Codex reads its TOML agents when a new session starts.
 
-Project instruction entrypoints are included too: Codex reads [`AGENTS.md`](AGENTS.md),
-while Gemini reads [`GEMINI.md`](GEMINI.md), which imports the canonical
-maintainer guide.
+The repo also includes project instruction entrypoints. Codex reads [`AGENTS.md`](AGENTS.md).
+Gemini reads [`GEMINI.md`](GEMINI.md), which imports the canonical maintainer guide.
 
 ### Claude Code hooks
 
-Hooks break the pattern above — **don't symlink them into `~/.claude/`**, or they'll fire in every project you open (see the warning under [Hooks](#hooks)). Copy them into the work repo that wants them:
+The project tooling hooks break the pattern above. **Do not symlink them into `~/.claude/`**, or they fire in every project that you open (see the warning under [Hooks](#hooks)). Copy them into the work repo that wants them:
 
 ```bash
 mkdir -p .claude/hooks && cp ~/agent-skills/hooks/{ruff-fix,ruff-check,uv-guard}.sh .claude/hooks/ && chmod +x .claude/hooks/*.sh
 ```
 
-Then merge the `hooks` block from [`hooks/README.md`](hooks/README.md) into that repo's `.claude/settings.json`. Prefer `cp` over a symlink here: a copy means editing a template can't silently change the gates in every repo at once — re-copy when you actually want the update.
+Then merge the `hooks` block from [`hooks/README.md`](hooks/README.md) into that repo's `.claude/settings.json`. Prefer `cp` to a symlink here. With a copy, an edit to a template cannot silently change the gates in every repo at once. Copy the hooks again when you want the update.
+
+The read-only agent guard is the opposite case, and `install.py` does not install it. You symlink it once into `~/.claude/hooks/` and register it in `~/.claude/settings.json`, so it covers every project. A symlink keeps the guard in step with the agent files that it enforces, which are themselves symlinked from this repo. [`hooks/README.md`](hooks/README.md) gives the commands, the settings entry, and the live probe to run after the install.
 
 ### Claude Code rules
 
-`write-with-asd-ste100.md` is user-level: a full `python3 install.py claude` places it, and
-`python3 install.py claude --rule write-with-asd-ste100` places it with its skill alone.
+`write-with-asd-ste100.md` is user-level. A full `python3 install.py claude` places it.
+`python3 install.py claude --rule write-with-asd-ste100` places it with only its skill.
 
 The path-scoped rules are project-level, per repo:
 
@@ -294,27 +327,29 @@ mkdir -p <target-repo>/.claude/rules
 cp ~/agent-skills/rules/clean-code-python.md <target-repo>/.claude/rules/
 ```
 
-In this repo the committed `.claude/rules/clean-code-python.md` symlink already wires the rule up — nothing to install.
+In this repo, the committed `.claude/rules/clean-code-python.md` symlink already wires the rule up. There is nothing to install.
 
 ## Credits
 
 - **My original skills** — `develop-testing-strategy`, `validate-data`, `explore-data`, `tech-debt`, `design-architecture`, `bls-data-context`, `recommend-probabilistic-model`, `recommend-visualization`, `track-model-experiments`, `tune-hyperparameters`, `creative-thinking`, `llm-wiki`, `describe-critique-methodology`, `derive-roadmap`, `classification-codes`, `geographic-codes`, `deep-learning`, `evaluate-deep-learning`, `optimize-jax`, and `prepare-handoff` are my own work, MIT licensed (see [`LICENSE`](LICENSE)).
-- **deep-learning**, **evaluate-deep-learning**, and **optimize-jax** — my own original JAX training, evaluation, execution and research-generation workflows, focused references, record contracts, prose, runnable examples and synthetic checks (MIT). The [Orchestra AI Research Skills suite](https://github.com/Orchestra-Research/AI-Research-SKILLs) is coverage inspiration by reference to scope only; no Orchestra prose/code is adapted or reproduced. Primary documentation/papers are cited without bundled copies, model weights or datasets. CPU fixtures and hardware/checkpoint recipe limits are recorded separately (see [`NOTICE`](NOTICE)).
-- **Public-domain data** — the `data/` tables in `classification-codes` and `geographic-codes` are derived from U.S. Census Bureau, U.S. Bureau of Labor Statistics, and Office of Management and Budget publications (the NAICS and SOC structure and concordance workbooks, the Census occupation code lists, the county gazetteer, and the "List 1" CBSA delineation workbooks). Those publications are works of the United States Government and in the public domain under 17 U.S.C. § 105. Each skill's `scripts/build.py` keeps the exact source bytes in `sources/` as the audit copy, with URL, sha256, and retrieval time in `MANIFEST.md`, and derives `data/` from them; the parsing code, the seed tables, the hand-curated county change log, and all prose are my own work, MIT (see [`NOTICE`](NOTICE)).
-- **Cited-only sources** — `recommend-probabilistic-model` cites Kevin Murphy's *Probabilistic Machine Learning* books (CC-BY-NC-ND) by section number only, and `bayesian-workflow` cites the Gelman/Betancourt/Gabry workflow papers (Betancourt's under CC BY-NC 4.0) by author-year — no text is reproduced and no copies are bundled (see [`NOTICE`](NOTICE)).
-- **Clean-code family** — `clean-coder`, `clean-code`, and `rules/clean-code-python.md` adapt the rule-catalog concept from Robert C. Martin's *Clean Code* (Prentice Hall, 2008), cited **by rule code and short title only** — no book prose is reproduced. `clean-coder` additionally cites Kent Beck's *Tidy First?* (O'Reilly, 2023), Martin Fowler's opportunistic-refactoring note, and John Ousterhout's *A Philosophy of Software Design* (2nd ed., 2021) by idea only (see [`NOTICE`](NOTICE)).
-- **llm-wiki** — my own work (MIT). It implements the LLM-wiki pattern from [Andrej Karpathy](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f)'s public idea file, and adopts a simplified per-claim citation-audit form from [kfchou/wiki-skills](https://github.com/kfchou/wiki-skills) — both **by reference to the idea only**; no external prose or code is reproduced and no copies are bundled. Its bundled `scripts/` are my own work under the same terms (see [`NOTICE`](NOTICE)).
-- **bayesian-workflow** — adapted from [Alexandre Andorra](https://alexandorra.github.io/)'s original **PyMC** Bayesian-workflow skill (MIT licensed). I ported it to **NumPyro + JAX** and expanded the visualization guidance.
-- **recommend-causal-design** — planning workflow selectively adapted from [Robson Tigre's causal-planner](https://github.com/RobsonTigre/everyday-causal-skills) and [Alexandre Andorra's causal-inference](https://github.com/Learning-Bayesian-Statistics/baygent-skills), both MIT licensed. Method references and the memo contract are newly written; primary literature is cited without reproducing or bundling it. Both full upstream notices are in [`LICENSE-causal-design-sources`](LICENSE-causal-design-sources); exact source commits and adaptation scope are in [`NOTICE`](NOTICE).
-- **write-with-asd-ste100** — adapted from [danyuchn/asd-ste100-skill](https://github.com/danyuchn/asd-ste100-skill) (Dustin Yuchen Teng) and [prithivrajmu/asd-ste100](https://github.com/prithivrajmu/asd-ste100) (Dustin Yuchen Teng and Prithiv M U), both MIT licensed. `scripts/ste-lint.py` is danyuchn's linter, copied unchanged. The 80% style follows [a post by Andrej Karpathy](https://x.com/karpathy/status/2105819303471976479), cited by idea only. The skill cites ASD-STE100 by issue and bundles nothing from the standard or its dictionary. The skill's test record under `specs/` credits prithivrajmu's eval cases. Both full upstream notices are in [`LICENSE-write-with-asd-ste100-sources`](LICENSE-write-with-asd-ste100-sources); exact source commits and adaptation scope are in [`NOTICE`](NOTICE).
-- **superpowers skills** — the 13 process skills are adapted from the [superpowers](https://github.com/obra/superpowers) project by [Jesse Vincent](https://github.com/obra), MIT licensed, © 2025; my modifications under the same MIT terms. The [`code-reviewer`](agents/code-reviewer.md) and [`task-reviewer`](agents/task-reviewer.md) agents are distilled from the adapted `requesting-code-review` and `subagent-driven-development` reviewer templates, same terms. See [`LICENSE-superpowers`](LICENSE-superpowers) and [`NOTICE`](NOTICE).
+- **deep-learning**, **evaluate-deep-learning**, and **optimize-jax** — my own original work (MIT). That covers their JAX training, evaluation, execution and research-generation workflows, focused references, record contracts, prose, runnable examples and synthetic checks. The [Orchestra AI Research Skills suite](https://github.com/Orchestra-Research/AI-Research-SKILLs) is coverage inspiration, by reference to scope only. No Orchestra prose or code is adapted or reproduced. Primary documentation and papers are cited without bundled copies, model weights or datasets. CPU fixtures and the limits of the hardware and checkpoint recipes are recorded separately (see [`NOTICE`](NOTICE)).
+- **Public-domain data** — the `data/` tables in `classification-codes` and `geographic-codes` are derived from publications of the U.S. Census Bureau, the U.S. Bureau of Labor Statistics, and the Office of Management and Budget. These are the NAICS and SOC structure and concordance workbooks, the Census occupation code lists, the county gazetteer, and the "List 1" CBSA delineation workbooks. Those publications are works of the United States Government and in the public domain under 17 U.S.C. § 105. Each skill's `scripts/build.py` keeps the exact source bytes in `sources/` as the audit copy, with URL, sha256, and retrieval time in `MANIFEST.md`. It derives `data/` from them. The parsing code, the seed tables, the hand-curated county change log, and all prose are my own work, MIT (see [`NOTICE`](NOTICE)).
+- **Cited-only sources** — `recommend-probabilistic-model` cites Kevin Murphy's *Probabilistic Machine Learning* books (CC-BY-NC-ND) by section number only. `bayesian-workflow` cites the *Bayesian Workflow* book by Gelman, Vehtari, McElreath et al. (2026) by chapter and section number only. It cites the Gelman et al. (2020), Betancourt (CC BY-NC 4.0), and Gabry et al. workflow papers by author-year. `recommend-visualization` cites the visualization literature by author-year only. No text is reproduced, and no copies are bundled (see [`NOTICE`](NOTICE)).
+- **Clean-code family** — `clean-coder`, `clean-code`, and `rules/clean-code-python.md` adapt the rule-catalog concept from Robert C. Martin's *Clean Code* (Prentice Hall, 2008). They cite it **by rule code and short title only**, and they reproduce no book prose. `clean-coder` also cites Kent Beck's *Tidy First?* (O'Reilly, 2023), Martin Fowler's opportunistic-refactoring note, and John Ousterhout's *A Philosophy of Software Design* (2nd ed., 2021), by idea only (see [`NOTICE`](NOTICE)).
+- **llm-wiki** — my own work (MIT). It implements the LLM-wiki pattern from [Andrej Karpathy](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f)'s public idea file. It adopts a simplified per-claim citation-audit form from [kfchou/wiki-skills](https://github.com/kfchou/wiki-skills). It takes both **by reference to the idea only**: no external prose or code is reproduced, and no copies are bundled. Its bundled `scripts/` are my own work under the same terms (see [`NOTICE`](NOTICE)).
+- **bayesian-workflow** — adapted from [Alexandre Andorra](https://alexandorra.github.io/)'s original **PyMC** Bayesian-workflow skill (MIT licensed). I ported it to **NumPyro + JAX** and expanded the visualization guidance. Its `references/model-comparison.md` documents four `arviz_stats` APIs that the `model-evaluation` skill in pymc-labs/python-analytics-skills (Chris Fonnesbeck) pointed out. That repository ships no LICENSE text, so the skill takes the idea only and reproduces nothing from it.
+- **Mancuso Lab's coding-skills** — two skills adapt material from [mancusolab/coding-skills](https://github.com/mancusolab/coding-skills) (MIT, © 2026 Mancuso Lab), and a third takes one idea from it. `bayesian-workflow`'s `references/jax-numerics.md` adapts precision and stability rules from its `jax-equinox-numerics` and `jax-project-engineering` skills. `clean-code`'s Modules category (M1–M4) adapts four rules from its `python-module-design` skill. `tech-debt`'s "Unguarded join cardinality" signal takes only the idea of the "Make join contracts explicit" rule in its `polars-data-engineering` skill. The upstream license text is in [`LICENSE-coding-skills`](LICENSE-coding-skills), and the exact scope is in [`NOTICE`](NOTICE).
+- **recommend-causal-design** — its planning workflow is selectively adapted from [Robson Tigre's causal-planner](https://github.com/RobsonTigre/everyday-causal-skills) and [Alexandre Andorra's causal-inference](https://github.com/Learning-Bayesian-Statistics/baygent-skills), both MIT licensed. The method references and the memo contract are newly written. The skill cites the primary literature without reproducing or bundling it. Both full upstream notices are in [`LICENSE-causal-design-sources`](LICENSE-causal-design-sources). The exact source commits and the scope of the adaptation are in [`NOTICE`](NOTICE).
+- **write-with-asd-ste100** — adapted from [danyuchn/asd-ste100-skill](https://github.com/danyuchn/asd-ste100-skill) (Dustin Yuchen Teng) and [prithivrajmu/asd-ste100](https://github.com/prithivrajmu/asd-ste100) (Dustin Yuchen Teng and Prithiv M U), both MIT licensed. `scripts/ste-lint.py` is danyuchn's linter, copied unchanged. The 80% style follows [a post by Andrej Karpathy](https://x.com/karpathy/status/2105819303471976479), cited by idea only. The skill cites ASD-STE100 by issue and bundles nothing from the standard or its dictionary. The skill's test record under `specs/` credits prithivrajmu's eval cases. Both full upstream notices are in [`LICENSE-write-with-asd-ste100-sources`](LICENSE-write-with-asd-ste100-sources). The exact source commits and the scope of the adaptation are in [`NOTICE`](NOTICE).
+- **superpowers skills** — the 13 process skills are adapted from the [superpowers](https://github.com/obra/superpowers) project by [Jesse Vincent](https://github.com/obra), MIT licensed, © 2025. My modifications are under the same MIT terms. The [`code-reviewer`](agents/code-reviewer.md) and [`task-reviewer`](agents/task-reviewer.md) agents are distilled from the adapted `requesting-code-review` and `subagent-driven-development` reviewer templates, under the same terms. See [`LICENSE-superpowers`](LICENSE-superpowers) and [`NOTICE`](NOTICE).
 
 ## License
 
-Everything I wrote here is MIT licensed; per-skill attribution is tracked in [`NOTICE`](NOTICE):
+Everything I wrote here is MIT licensed. [`NOTICE`](NOTICE) tracks the attribution for each skill:
 
 - **My original skills and `bayesian-workflow`** — MIT, © Lowell Mason; full text in [`LICENSE`](LICENSE). (`bayesian-workflow` is an adaptation of Alexandre Andorra's PyMC skill.)
-- **`recommend-causal-design`** — MIT; adaptations by Lowell Mason, with source copyrights and permission notices for Robson Tigre and Learning Bayesian Statistics retained in [`LICENSE-causal-design-sources`](LICENSE-causal-design-sources).
-- **`write-with-asd-ste100`** and its rule — MIT; adaptations by Lowell Mason, with source copyrights and permission notices for Dustin Yuchen Teng and Prithiv M U retained in [`LICENSE-write-with-asd-ste100-sources`](LICENSE-write-with-asd-ste100-sources).
-- **superpowers skills** — MIT, © 2025 Jesse Vincent ([superpowers](https://github.com/obra/superpowers)); full text in [`LICENSE-superpowers`](LICENSE-superpowers).
+- **`recommend-causal-design`** — MIT. The adaptations are by Lowell Mason. [`LICENSE-causal-design-sources`](LICENSE-causal-design-sources) keeps the source copyrights and permission notices for Robson Tigre and Learning Bayesian Statistics.
+- **`write-with-asd-ste100`** and its rule — MIT. The adaptations are by Lowell Mason. [`LICENSE-write-with-asd-ste100-sources`](LICENSE-write-with-asd-ste100-sources) keeps the source copyrights and permission notices for Dustin Yuchen Teng and Prithiv M U.
+- **superpowers skills** — MIT, © 2025 Jesse Vincent ([superpowers](https://github.com/obra/superpowers)). The full text is in [`LICENSE-superpowers`](LICENSE-superpowers).
+- **Mancuso Lab material** in `bayesian-workflow` and `clean-code` — MIT, © 2026 Mancuso Lab ([coding-skills](https://github.com/mancusolab/coding-skills)). The adaptations are by Lowell Mason. The full upstream text is in [`LICENSE-coding-skills`](LICENSE-coding-skills).
 - **Bundled U.S. Government data** — the verbatim `sources/` audit copies in `classification-codes` and `geographic-codes` are works of the United States Government, in the public domain under 17 U.S.C. § 105, and carry no license of mine; the `data/` tables derived from them, the build scripts, the seed tables, and all prose are MIT (see [`NOTICE`](NOTICE)).
