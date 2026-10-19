@@ -4146,7 +4146,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       edit. The description change needs a micro-test. Size: quick-fix. Done when: the
       boundary is in the description and micro-tested, or the lifecycle spec has replaced
       it.
-- [ ] `check_diagnostics.py` says "proceed to interpretation" when key checks never ran
+- [x] `check_diagnostics.py` says "proceed to interpretation" when key checks never ran
       (audit-3-10-26 X1, found 2026-10-03; re-verified 2026-10-18 by probes on the pinned
       stack; the two post-audit commits to the script, `515254a` and `cbdee74`, touched only
       the calibration steps). In `skills/bayesian-workflow/scripts/check_diagnostics.py` the
@@ -4170,7 +4170,13 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       two scripts and test files. Plan 53 (not executed) adds PEP 723 headers to both
       scripts. Size: plan. Done when: a report with no LOO, or with a failing MCSE, gets no
       all-clear, and tests pin each case.
-- [ ] Tree depth reports `ok` on NumPyro output that was never checked (audit-3-10-26 X2, found
+      → done in plan 56 (2026-10-19): `check_diagnostics.py` now reads the `precision` block and
+      LOO's `error`. It gives a failing MCSE, a missing precision block, an uncomputed LOO and a
+      missing `--calibration` each its own next step. It prints the all-clear only when convergence,
+      precision, LOO and calibration all ran and passed, and a "Not checked:" step names prior
+      sensitivity when it did not run. `diagnose_model.py`'s verdict lists a failing MCSE and an
+      uncomputed LOO. Commit `790c731`.
+- [x] Tree depth reports `ok` on NumPyro output that was never checked (audit-3-10-26 X2, found
       2026-10-03; re-verified 2026-10-18 by probes on the pinned and the latest stack;
       `diagnose_model.py` is byte-identical to the audit's copy). NumPyro writes
       `reached_max_tree_depth` into `sample_stats`, but `arviz_stats.diagnose` looks only for
@@ -4189,7 +4195,14 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       efficiency concern, so this is medium severity, but "passed" is false. One plan with X1
       and F8. Size: plan. Done when: a saturated NumPyro run reports saturation, an unchecked
       one reports "not checked", and tests pin both.
-- [ ] Owner call, then fix: bayesian-workflow's Pareto-k bands keep the retired 0.5
+      → done in plan 56 (2026-10-19): `diagnose_model.py` reads either tree-depth flag from
+      `sample_stats` on both paths. The divergences, treedepth and E-BFMI blocks carry `checked`,
+      and a block with no stat is `{"checked": false}`. `all_ok` folds in every block on the
+      `arviz_stats.diagnose` path, which also closed a tail-ESS gap that the final review found.
+      `check_diagnostics.py` gives tree-depth saturation and a low E-BFMI their own next steps and
+      names the checks that never ran. Commits `10e9c5a`, `96d88dc` and `4d53a78`. Acceptance on a
+      saturated and an unchecked NumPyro fit matched.
+- [x] Owner call, then fix: bayesian-workflow's Pareto-k bands keep the retired 0.5
       "borderline" band (audit-3-10-26 F8, found 2026-10-03; re-verified 2026-10-18). The
       current threshold is `min(1 - 1/log10(S), 0.7)`, 0.7 at S = 4,000 and about 0.656 at
       S = 800 (<https://mc-stan.org/loo/reference/pareto-k-diagnostic.html>; arviz-stats
@@ -4204,6 +4217,10 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       name the three remedies in the high-k step and model-criticism.md. One plan with X1 and
       X2. Size: plan. Done when: the owner has decided, the bands match the decision, and the
       remedies are named.
+      → done in plan 56 (2026-10-19): both scripts rate Pareto k against `good_k = min(1 - 1/log10
+      S, 0.7)`, computed from the draw count and carried in the JSON with `n_bad`, `n_high` and
+      `n_nonfinite`. The 0.5 band and `n_marginal` are gone. The high-k step names `reloo`,
+      `loo_kfold` and `loo_moment_match`. Commits `6043d59` and `d2c5a49`.
 - [ ] Align bayesian-workflow's ELPD-difference rules with current LOO guidance and its own
       `diag_diff` (audit-3-10-26 F3, found 2026-10-03; re-verified 2026-10-18). (a)
       `skills/bayesian-workflow/references/model-comparison.md:81-83` reads "< 2×dse
@@ -5015,3 +5032,77 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       breaks loudly if that directory ever gets a registered suite, so add a precondition
       assert. New tests move the plan's test counts, so write a small plan first. Size:
       plan. Done when: each gap has a test or is declined in writing.
+
+## 56-diagnostics-harness-verdicts — 2026-10-19
+
+From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`, then the fix wave
+`4d53a78`). The owner chose which findings to fix. These are the rest. Line anchors are at
+`6043d59`.
+
+- [ ] `check_precision` drops a small-scale parameter on classic ArviZ 0.23 (Codex P2 in plan 56's
+      final review, found 2026-10-19). In `skills/bayesian-workflow/scripts/diagnose_model.py`,
+      `check_precision` reads `az.summary(idata)`. On arviz 0.23.4 that table rounds `mcse_mean` to
+      three decimals, so a parameter with sd near 0.01 shows `mcse_mean` 0.000 and the function
+      skips it (`mcse <= 0`). If it skips every parameter, plan 56's reader says "Monte Carlo
+      precision was not checked" and withholds the all-clear (a false block, the safe direction). If
+      it skips some, the largest relative MCSE ignores them. The pinned arviz 1.3.0 keeps the value
+      (`0.00016` for the same data), so the pinned stack is not affected. Deferred because the code
+      predates plan 56 and plan 53 gives this script `arviz>=1.0`. Fix: ask `az.summary` for
+      unrounded values (check the `round_to` option on both stacks) and add a small-scale test.
+      Size: quick-fix. Done when: `check_precision` keeps a parameter with sd near 0.01 on arviz
+      0.23 and a test pins it, or plan 53 drops the 0.23 path and this item closes with that reason.
+- [ ] A `diagnostics.json` with no `convergence` section gets the all-clear (final-review Minor,
+      2026-10-19; departs from plan 56's DF2). `_rate_convergence` in
+      `skills/bayesian-workflow/scripts/check_diagnostics.py` returns "excellent" when the section
+      is empty, and the summary then says R-hat and ESS passed although they never ran. DF2 makes
+      convergence a required check, and the `_closing_steps` docstring says a missing required
+      section blocks the all-clear. `diagnose_model.py` cannot write such a file today, because
+      `check_convergence` has no try/except, so it takes a hand-edited or foreign file. Fix: rate an
+      absent section "not computed", give it a summary line and add a test. Size: quick-fix. Done
+      when: a file with no convergence section gets a next step and no all-clear, and a test pins
+      it.
+- [ ] Two bayesian-workflow references still state a fixed 0.7 Pareto-k cutoff (final-review item
+      G3, 2026-10-19). `skills/bayesian-workflow/references/model-comparison.md:220` has the
+      worked-example sentence "No observations had Pareto k > 0.7." and
+      `references/visualize.md:257` says "k > 0.7 (or > loo.good_k)". Plan 56 moved both scripts to
+      `good_k = min(1 - 1/log10 S, 0.7)`, which reaches 0.7 only at about 2,200 draws in total.
+      Neither sentence is wrong at final-size runs, and both files sat outside plan 56's file list.
+      Fix: name `good_k` first in both sentences. Size: quick-fix. Done when: both files name
+      `good_k` as the cutoff and the Tier 1 snippet check passes.
+- [ ] A run with R-hat flags and an unchecked sampler check never names the unchecked check
+      (final-review item G4, 2026-10-19). Plan 56's "Not checked:" step comes only from
+      `_closing_steps` in `skills/bayesian-workflow/scripts/check_diagnostics.py`, which runs when
+      no other step exists, and the fair or poor convergence line omits it as well. Decision D2
+      words the rule as "the all-clear names it", so the build matches D2. Deferred as a design
+      call: should a partial-run report also say what did not run? Size: design. Done when: the
+      owner decides, and either every run's steps and summary name the unchecked checks, or the
+      decision to keep D2's wording is recorded here.
+- [ ] `SKILL.md` calls `calibration_check.py` optional, but plan 56's DF1 withholds the all-clear
+      without `--calibration` (final-review Minor, 2026-10-19).
+      `skills/bayesian-workflow/SKILL.md:77` reads "(and optionally `calibration_check.py` …". The
+      pipeline at `:335` passes the flag, so the main flow works. Plan 56 could not edit `SKILL.md`,
+      because plan 53 edits it. Fix: drop "optionally" when plan 53 lands, or in the next pass over
+      `SKILL.md`. Size: quick-fix. Done when: the sentence matches DF1.
+- [ ] `diagnostics.json` carries `convergence.rhat.max` as `null` on a clean run (plan 56 Task 5
+      side note, 2026-10-19; it predates the plan). In the acceptance run on the unchecked, clean
+      fit, `check_convergence` in `skills/bayesian-workflow/scripts/diagnose_model.py` wrote `null`,
+      because `_max_from_dataset(d.get("rhat", {}).get("rhat_values"))` found no values. So the
+      report's "Max R-hat" row cannot be filled from the JSON on a clean run. Size: quick-fix. Done
+      when: the writer computes the maximum R-hat itself, as it already recomputes ESS, and a test
+      pins a non-null value on a clean run.
+- [ ] Test gaps that plan 56's reviews left (Minor findings, 2026-10-19), all in
+      `skills/bayesian-workflow/scripts/`. (a) `test_diagnose_model.py` has no test for a failing
+      E-BFMI, an `energy` stat with a non-empty `failed_chains` and `ok` false. (b) No test runs the
+      manual fallback path end to end, and none covers an InferenceData with no `sample_stats`
+      group. (c) `test_an_energy_stat_gives_a_checked_e_bfmi_block` has no `both_paths` fixture and
+      no `skipif(not HAS_DIAGNOSE)`, so it fails without arviz-stats instead of skipping. (d)
+      `WELL_CALIBRATED` and `LOW_PSENSE` are declared in both test files. Size: quick-fix. Done
+      when: each gap has a test or is declined in writing here.
+- [ ] The writer's verdict and the reader's rating can disagree in the reverse direction
+      (final-review Minor, 2026-10-19). Plan 56's DF12 covers only a writer that says "ready" while
+      the reader blocks. The reverse needs `all_ok` false with no flagged block: `_rate_convergence`
+      in `skills/bayesian-workflow/scripts/check_diagnostics.py` then rates "good", which passes the
+      all-clear gate, while the writer says "Convergence issues detected". The "good" summary also
+      omits unchecked sampler checks. Real output can barely reach this case. Fix: rate by blocks
+      when `all_ok` is false but no block flags, or have the writer record which check failed. Size:
+      design. Revisit if: a real `diagnostics.json` shows `all_ok` false with every block ok.
