@@ -22,7 +22,7 @@ The generator translates manifest syntax and Gemini tool names only. Codex and G
 
 ## Provenance is load-bearing — preserve it
 
-Skills come from six sources with distinct attribution, all tracked in `NOTICE`. **Read `NOTICE` before moving, renaming, or substantially rewriting any skill**, and keep it in sync:
+Skills come from six sources with distinct attribution, and a seventh contributes to three skills, all tracked in `NOTICE`. **Read `NOTICE` before moving, renaming, or substantially rewriting any skill**, and keep it in sync:
 
 - **Lowell's originals** (MIT, `LICENSE`): `develop-testing-strategy`, `validate-data`, `explore-data`, `tech-debt`, `design-architecture`, `bls-data-context`, `recommend-probabilistic-model`, `recommend-visualization`, `track-model-experiments`, `tune-hyperparameters`, `creative-thinking`, `llm-wiki`, `describe-critique-methodology`, `derive-roadmap`, `classification-codes`, `geographic-codes`, `deep-learning`, `evaluate-deep-learning`, `optimize-jax`, `prepare-handoff`. (20 originals — keep in sync with `NOTICE`, which is authoritative.)
 - **`bayesian-workflow`** — adapted from Alexandre Andorra's PyMC skill, ported to NumPyro+JAX (MIT).
@@ -30,6 +30,7 @@ Skills come from six sources with distinct attribution, all tracked in `NOTICE`.
 - **`write-with-asd-ste100`** and `rules/write-with-asd-ste100.md` — adapted from danyuchn's `asd-ste100-skill` and prithivrajmu's `asd-ste100` (MIT), with both notices in `LICENSE-write-with-asd-ste100-sources`; `scripts/ste-lint.py` is danyuchn's linter, copied unchanged, the one file exempt from the repo's Python style.
 - **superpowers skills** (MIT, © 2025 Jesse Vincent, `LICENSE-superpowers`): the 13 process skills (`brainstorming`, `writing-plans`, `test-driven-development`, etc.). These were adapted from the upstream `superpowers` plugin.
 - **clean-code family** — `clean-coder`, `clean-code`, and `rules/clean-code-python.md` adapt Robert C. Martin's *Clean Code* rule catalog (2008), cited by rule code only, no book prose; `clean-coder` also cites Beck's *Tidy First?*, Fowler's opportunistic refactoring, and Ousterhout's *APOSD* by idea only.
+- **Mancuso Lab's `coding-skills`** (MIT, © 2026 Mancuso Lab, `LICENSE-coding-skills`) — contributes to three skills: `bayesian-workflow`'s `references/jax-numerics.md` and `clean-code`'s Modules rules (M1–M4, `references/modules.md`) adapt its rules, and `tech-debt`'s "Unguarded join cardinality" signal takes only the idea of one.
 
 Two invariants from that adaptation that must not silently regress:
 - **Cross-skill references use bare skill names** (`use the writing-plans skill`), never the upstream `superpowers:` plugin namespace.

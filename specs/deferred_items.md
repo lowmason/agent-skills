@@ -4742,7 +4742,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       `skills/bls-data-context/references/ingest.md` acquisition mechanics. Options: new
       skills, or accept those. Size: design. Done when: the owner decides each, recorded here,
       and a "build" answer has a brainstorming item or a spec.
-- [ ] Make the root README agree with the read-only agent guard's global install
+- [x] Make the root README agree with the read-only agent guard's global install
       (audit-3-10-26 D3, found 2026-10-03; re-verified 2026-10-18). `README.md` never names
       `hooks/readonly-agent-guard.py`. Its layout line (`:30`) and Hooks intro (`:137-140`)
       describe hooks as project tooling copied into a target repo, its table (`:142-146`)
@@ -4757,7 +4757,16 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       Tasks 6, 8 and 9; plan 53's R4.4 credits), so land after them or rebase; both files
       carry cc-guide citation lines, so restamp them and run the guide lint. Size: quick-fix.
       Done when: the README describes the guard's install and no warning contradicts it.
-- [ ] Say in the README that Gemini's read-only agents have no shell restriction
+      → done 2026-10-19 (direct quick fix in the README rewrite, branch
+      claude/readme-rewrite-bd6b70): the layout line, the Hooks intro and the Hooks table name
+      `readonly-agent-guard.py` as an agent contract hook, with its global symlink install and
+      `probe-readonly-guard.sh`. Both warnings now cover only the three project tooling hooks,
+      and the Agents section says that the guard enforces the read-only contract on Claude Code.
+      Plan 53's (portability) two README anchors, the License bullets for the original skills
+      and for the U.S. Government data, stay byte-identical. Not done: the optional
+      `install.py claude` reminder, and the citation restamp (`cli.py baseline cite README.md`).
+      `cli.py lint` passes, and README.md is not STALE.
+- [x] Say in the README that Gemini's read-only agents have no shell restriction
       (audit-3-10-26 D6, found 2026-10-03; re-verified 2026-10-18). The Gemini adapters of
       the five read-only agents under `runtimes/gemini/agents/` list `run_shell_command`
       with no restriction, where Codex gets `sandbox_mode = "read-only"`
@@ -4767,6 +4776,13 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       enforced by the guard, Codex by its sandbox, Gemini only by its approval settings. A
       generated Gemini policy file is a later design question. Size: quick-fix. Done when:
       the README states how each runtime enforces read-only.
+      → done 2026-10-19 (direct quick fix in the README rewrite, branch
+      claude/readme-rewrite-bd6b70): the Agents section lists how each runtime treats the five
+      read-only agents' shell. Claude Code has the guard, Codex has `sandbox_mode = "read-only"`,
+      and each Gemini adapter lists `run_shell_command` with no restriction. Unlike the
+      suggested sentence, the README does not say that Gemini's approval settings limit the
+      risk, because nobody re-checked that. The generated Gemini policy file, which this item
+      calls a later design question, is not addressed here.
 - [ ] Owner call: retire or verify the Gemini customization guide (audit-3-10-26 D5 and its
       Decision 8, found 2026-10-03; re-verified 2026-10-18).
       `specs/guides/gemini-customization-guide.md` (54 lines, unchanged since it was committed
@@ -4813,7 +4829,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       expected baseline, so a skip changes their numbers and the `build` suite's notes in
       `build/suites.toml`. Size: quick-fix. Done when: the example passes in a fresh worktree,
       and the owner's choice is applied or recorded.
-- [ ] Credit mancusolab/coding-skills in CLAUDE.md and the README (audit-3-10-26 D10, found
+- [x] Credit mancusolab/coding-skills in CLAUDE.md and the README (audit-3-10-26 D10, found
       2026-10-03; re-verified 2026-10-18; the "three sources" count was fixed in `26f7a52`).
       `LICENSE-coding-skills` (MIT, Mancuso Lab) sits at the root and NOTICE records three
       adaptations (`NOTICE:33-36`, `:176-177`, `:187-189`), but CLAUDE.md and README.md
@@ -4825,6 +4841,16 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       in place on lines neither plan quotes, or fold the change into plan 53's Task 9.
       Decide whether Mancuso counts in CLAUDE.md's "five sources". Size: quick-fix. Done
       when: both files credit the source and name its license file.
+      → done 2026-10-19 (direct quick fix in the README rewrite, branch
+      claude/readme-rewrite-bd6b70): the README's Credits gain a Mancuso Lab bullet that says
+      what each of the three skills takes, and its License list gains a bullet that names
+      `LICENSE-coding-skills`. The clean-code family intro and the `clean-code` row name the
+      Modules rules (M1–M4) as Mancuso Lab material. CLAUDE.md gains a seventh provenance
+      bullet that names `LICENSE-coding-skills` and the three skills, and is now 147 of 200
+      lines. No edit touches a line that plan 53 quotes. Decision, taken in the rewrite and
+      confirmed by the owner on 2026-10-19: Mancuso counts as a seventh, contributing source.
+      Each of the other six owns whole skills and Mancuso owns none, so CLAUDE.md now reads
+      "six sources with distinct attribution, and a seventh contributes to three skills".
 - [ ] Fix five one-line doc slips (audit-3-10-26 D11 and D15, found 2026-10-03, and a D13
       banner that went stale later, found 2026-10-18; all re-verified 2026-10-18).
       (a) `README.md:32` still describes `build/` as "citation-verification tooling for
