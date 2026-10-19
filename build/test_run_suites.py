@@ -179,3 +179,121 @@ def test_check_fails_closed_outside_a_git_repository(tmp_path):
     (tmp_path / 'build').mkdir()
     (tmp_path / 'build' / 'suites.toml').write_text(FIXTURE)
     assert findings(tmp_path) == ['build/suites.toml: git ls-files failed, so the test directories are unknown']
+
+
+# --- the command line ---
+
+class FakeRuns:
+    '''Records each run's label and returns its exit code (0 unless given).'''
+
+    def __init__(self, codes=None):
+        self.codes = codes or {}
+        self.labels = []
+        self.argvs = []
+
+    def __call__(self, root, run):
+        self.labels.append(run.label)
+        self.argvs.append(run.argv)
+        return self.codes.get(run.label, 0)
+
+
+@pytest.fixture
+def repo(tmp_path):
+    (tmp_path / 'build').mkdir()
+    (tmp_path / 'build' / 'suites.toml').write_text(FIXTURE)
+    return tmp_path
+
+
+def test_a_named_suite_runs_once_per_python(repo, capsys):
+    fake = FakeRuns()
+    assert rs.main(['tools-inner'], root=repo, run_one=fake) == 0
+    assert fake.labels == ['tools-inner (3.13)', 'tools-inner (/usr/bin/python3)']
+    assert capsys.readouterr().out.splitlines()[-1] == 'suite runs passed'
+
+
+def test_a_failed_run_does_not_stop_the_next(repo, capsys):
+    fake = FakeRuns({'tools-inner (3.13)': 1})
+    assert rs.main(['tools-inner', 'alpha'], root=repo, run_one=fake) == 1
+    assert fake.labels == ['tools-inner (3.13)', 'tools-inner (/usr/bin/python3)', 'alpha (3.13)']
+    assert capsys.readouterr().err.splitlines()[-1] == 'suite runs failed: tools-inner (3.13)'
+
+
+def test_no_tests_collected_counts_as_a_failure(repo):
+    assert rs.main(['alpha'], root=repo, run_one=FakeRuns({'alpha (3.13)': 5})) == 1
+
+
+def test_the_notes_follow_the_first_header(repo, capsys):
+    rs.main(['alpha'], root=repo, run_one=FakeRuns())
+    assert capsys.readouterr().out.splitlines()[:2] == ['== alpha (3.13)', 'note: Reads a pilot wiki, else skips.']
+
+
+def test_extras_and_pytest_args_reach_the_run(repo):
+    fake = FakeRuns()
+    rs.main(['alpha', '--extras', '--', '-k', 'x'], root=repo, run_one=fake)
+    assert fake.argvs == [('uv', 'run', '--python', '3.13', '--with', 'pytest', '--with', 'polars',
+                           '--with', 'arviz>=1.0', 'python', '-m', 'pytest', '-q', '-k', 'x')]
+
+
+def test_all_skips_a_suite_inside_another(repo, capsys):
+    fake = FakeRuns()
+    assert rs.main(['--all'], root=repo, run_one=fake) == 0
+    assert fake.labels == ['alpha (3.13)', 'outer (3.13)']
+    assert 'skip tools-inner: the outer suite collects tools/inner' in capsys.readouterr().out
+
+
+def test_list_prints_commands_extras_and_notes_and_runs_nothing(repo, capsys):
+    fake = FakeRuns()
+    assert rs.main(['--list', 'alpha'], root=repo, run_one=fake) == 0
+    assert fake.labels == []
+    assert capsys.readouterr().out.splitlines() == [
+        'alpha: skills/alpha/scripts',
+        '  cd skills/alpha/scripts && uv run --python 3.13 --with pytest --with polars python -m pytest -q',
+        '  extras: arviz>=1.0',
+        '  note: Reads a pilot wiki, else skips.',
+    ]
+
+
+def test_an_unknown_suite_exits_2(repo, capsys):
+    assert rs.main(['nope'], root=repo, run_one=FakeRuns()) == 2
+    assert 'unknown suite: nope' in capsys.readouterr().err
+
+
+def test_an_invalid_registry_stops_a_run_with_exit_2(repo, capsys):
+    (repo / 'build' / 'suites.toml').write_text(FIXTURE.replace('with', 'wtih', 1))
+    fake = FakeRuns()
+    assert rs.main(['outer'], root=repo, run_one=fake) == 2
+    assert fake.labels == []
+    assert "build/suites.toml: suite 1 (alpha): unknown key 'wtih'" in capsys.readouterr().err
+
+
+def test_a_missing_registry_exits_2_for_a_run_and_1_for_check(tmp_path):
+    assert rs.main(['alpha'], root=tmp_path, run_one=FakeRuns()) == 2
+    assert rs.main(['--check'], root=tmp_path) == 1
+
+
+@pytest.mark.parametrize('argv', [
+    [], ['--', '-x'], ['--check', 'alpha'], ['--check', '--extras'], ['--check', '--', '-x'],
+    ['--all', 'alpha'], ['--list', '--all'],
+])
+def test_usage_errors_exit_2(repo, argv):
+    with pytest.raises(SystemExit) as stop:
+        rs.main(argv, root=repo, run_one=FakeRuns())
+    assert stop.value.code == 2
+
+
+def test_check_mode_prints_ok_and_exits_0(tmp_path, capsys):
+    assert rs.main(['--check'], root=git_repo(tmp_path, COVERED)) == 0
+    assert capsys.readouterr().out == 'suite registry ok\n'
+
+
+def test_check_mode_prints_each_finding_and_exits_1(tmp_path, capsys):
+    root = git_repo(tmp_path, {**COVERED, 'skills/beta/scripts/test_b.py': ''})
+    assert rs.main(['--check'], root=root) == 1
+    assert capsys.readouterr().out == (
+        'skills/beta/scripts: holds pytest files, but no suite in build/suites.toml contains it\n')
+
+
+def test_a_run_that_cannot_start_fails(tmp_path, capsys):
+    [run] = rs.runs(rs.Suite('ghost', 'missing', ('pytest',)))
+    assert rs.run_subprocess(tmp_path, run) == 1
+    assert 'ghost (3.13): cannot start' in capsys.readouterr().err

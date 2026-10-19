@@ -19,10 +19,13 @@ Exit status: 0 when everything passes; 1 when a run fails or --check finds a pro
 2 for a usage error, an unknown suite name or an invalid registry.
 Design: specs/test-suite-registry.md.
 '''
+import argparse
 import os
 import shlex
 import subprocess
-from collections.abc import Sequence
+import sys
+import tomllib
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from fnmatch import fnmatchcase
 from pathlib import Path, PurePosixPath
@@ -184,3 +187,119 @@ def check(root: Path, data: dict) -> list[str]:
                  for d in sorted(found)
                  if not any(PurePosixPath(d).is_relative_to(s.dir) for s in suites)]
     return problems
+
+
+RunOne = Callable[[Path, Run], int]
+
+
+def run_subprocess(root: Path, run: Run) -> int:
+    '''Start one run in its suite's directory, with this process's environment.'''
+    try:
+        return subprocess.run(run.argv, cwd=root / run.suite.dir).returncode
+    except OSError as exc:
+        print(f'{run.label}: cannot start: {exc}', file=sys.stderr, flush=True)
+        return 1
+
+
+def execute(root: Path, suites: Sequence[Suite], extras: bool, pytest_args: Sequence[str],
+            run_one: RunOne) -> int:
+    '''Every run of every suite, in order; a failure does not stop the next run.'''
+    failed: list[str] = []
+    for suite in suites:
+        for i, run in enumerate(runs(suite, extras, pytest_args)):
+            print(f'== {run.label}', flush=True)
+            if i == 0:
+                for note in suite.notes:
+                    print(f'note: {note}', flush=True)
+            if run_one(root, run) != 0:
+                failed.append(run.label)
+    if failed:
+        print(f'suite runs failed: {", ".join(failed)}', file=sys.stderr)
+        return 1
+    print('suite runs passed')
+    return 0
+
+
+def list_suites(suites: Sequence[Suite], extras: bool, pytest_args: Sequence[str]) -> None:
+    for suite in suites:
+        print(f'{suite.name}: {suite.dir}')
+        for run in runs(suite, extras, pytest_args):
+            print(f'  {run.shell()}')
+        if suite.extras:
+            print(f'  extras: {" ".join(suite.extras)}')
+        for note in suite.notes:
+            print(f'  note: {note}')
+
+
+def parse_args(argv: list[str]) -> tuple[argparse.Namespace, tuple[str, ...]]:
+    '''The options, and the pytest arguments that follow a `--`.'''
+    pytest_args: tuple[str, ...] = ()
+    if '--' in argv:
+        cut = argv.index('--')
+        argv, pytest_args = argv[:cut], tuple(argv[cut + 1:])
+    parser = argparse.ArgumentParser(
+        prog='run_suites.py', epilog='Arguments after -- go to pytest in every run.',
+        description="Run the repo's pytest suites from build/suites.toml.")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument('--list', action='store_true',
+                      help="print each suite's commands, extras and notes; runs nothing")
+    mode.add_argument('--all', action='store_true',
+                      help="run every suite, except one inside another suite's directory")
+    mode.add_argument('--check', action='store_true',
+                      help='validate the registry and its coverage (a commit lint)')
+    parser.add_argument('--extras', action='store_true',
+                        help='add the deps that unlock skips')
+    parser.add_argument('names', nargs='*', metavar='NAME', help='a suite to run or list')
+    args = parser.parse_args(argv)
+    if args.check and (args.names or args.extras or pytest_args):
+        parser.error('--check takes no suite names, --extras or pytest arguments')
+    if args.all and args.names:
+        parser.error('--all takes no suite names')
+    if not (args.list or args.all or args.check or args.names):
+        parser.error('name a suite, or use --list, --all or --check')
+    return args, pytest_args
+
+
+def main(argv: Sequence[str] | None = None, root: Path = REPO,
+         run_one: RunOne = run_subprocess) -> int:
+    args, pytest_args = parse_args(list(sys.argv[1:] if argv is None else argv))
+    try:
+        data = tomllib.loads((root / REGISTRY).read_text(encoding='utf-8'))
+    except (OSError, UnicodeDecodeError, tomllib.TOMLDecodeError) as exc:
+        print(f'{REGISTRY}: cannot read: {exc}', file=sys.stderr)
+        return 1 if args.check else 2
+    if args.check:
+        problems = check(root, data)
+        for problem in problems:
+            print(problem)
+        if problems:
+            return 1
+        print('suite registry ok')
+        return 0
+    problems = validate(data)
+    if problems:
+        for problem in problems:
+            print(f'{REGISTRY}: {problem}', file=sys.stderr)
+        return 2
+    suites = parse(data)
+    by_name = {suite.name: suite for suite in suites}
+    unknown = [name for name in args.names if name not in by_name]
+    if unknown:
+        print(f'unknown suite: {", ".join(unknown)} (--list names them all)', file=sys.stderr)
+        return 2
+    chosen = [by_name[name] for name in args.names] or suites
+    if args.list:
+        list_suites(chosen, args.extras, pytest_args)
+        return 0
+    if args.all:
+        chosen = []
+        for suite in suites:
+            if outer := container(suite, suites):
+                print(f'skip {suite.name}: the {outer.name} suite collects {suite.dir}')
+            else:
+                chosen.append(suite)
+    return execute(root, chosen, args.extras, pytest_args, run_one)
+
+
+if __name__ == '__main__':
+    sys.exit(main())
