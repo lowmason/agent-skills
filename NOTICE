@@ -134,6 +134,7 @@ The following skills are original works by Lowell Mason, MIT licensed:
     evaluate-deep-learning/
     optimize-jax/
     prepare-handoff/
+    document-python-package/
 
 deep-learning/, evaluate-deep-learning/, and optimize-jax/ are original
 works by Lowell Mason, MIT licensed. Their training, evaluation and JAX
@@ -192,6 +193,14 @@ scripts/ (bootstrap_wiki.py, lint_wiki.py, distill_sessions.py and their tests)
 and scripts/schema-template.md are Lowell Mason's own work under the same MIT
 terms; the bootstrap seeds them into a wiki root, and they carry no third-party
 code.
+
+document-python-package/ is an original work by Lowell Mason (MIT). At run
+time, its scripts/preflight.py fetches the official Great Docs skills from
+posit-dev/great-docs (MIT, Copyright (c) 2026 Posit Software, PBC). It takes
+them from the release tag that matches the installed great-docs version, keeps
+them in a cache outside this repository, and records the tag's commit. The
+skill bundles, reproduces and adapts none of their text. It only names those
+skills and sends the agent to them.
 
 The clean-code family — the two skills and one rule file listed below —
 adapts the rule-catalog concept and rule codes from Robert C. Martin,
