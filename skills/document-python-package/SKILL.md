@@ -54,7 +54,7 @@ official skills) and, last, `next:`.
 
 Exit 1 is a stop:
 
-- **Version outside `>=0.17.0,<0.18`.** Pin back into the range and run `uv lock`. Widening the range is a repo change after a new spike, never a decision at run time.
+- **Version outside `>=0.17.0,<0.18`.** Report the version and the range. The fix is to pin back into the range and run `uv lock`. Widening the range is a repo change after a new spike, never a decision at run time.
 - **Layout `docs` or `both`.** Report the paths. That layout belongs to an unreleased great-docs.
 - **Fetch failed** (no network, no tag, no git). Report git's error. Never fall back to the main branch, the docs site or `great-docs skill install`.
 - **Quarto missing.** Point the user to https://quarto.org/docs/get-started/.

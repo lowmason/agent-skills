@@ -41,6 +41,7 @@ CONFIG = 'great-docs.yml'
 CONFIG_PATHS = {'root': CONFIG, 'docs': f'docs/{CONFIG}'}
 QUARTO_INSTALL = 'https://quarto.org/docs/get-started/'
 QUARTO_TIMEOUT_S = 60
+GIT_TIMEOUT_S = 60
 NONE = 'none'
 STOP = 'stop: '
 
@@ -97,11 +98,15 @@ def cache_root() -> Path:
 
 def _git(*args: str) -> str:
     # GIT_TERMINAL_PROMPT=0: a bad URL fails at once instead of asking for a password.
+    # The timeout turns a stalled connection into a stop instead of a hang.
     env = {**os.environ, 'GIT_TERMINAL_PROMPT': '0'}
     try:
-        proc = subprocess.run(['git', *args], capture_output=True, text=True, env=env)
+        proc = subprocess.run(['git', *args], capture_output=True, text=True, env=env,
+                              timeout=GIT_TIMEOUT_S)
     except FileNotFoundError:
         raise FetchError('git is not installed') from None
+    except subprocess.TimeoutExpired:
+        raise FetchError(f'git timed out after {GIT_TIMEOUT_S} s') from None
     if proc.returncode != 0:
         raise FetchError(' '.join(proc.stderr.split()) or f'git exited {proc.returncode}')
     return proc.stdout.strip()

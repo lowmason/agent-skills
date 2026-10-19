@@ -794,6 +794,13 @@ git log -1 --format=%B
 
 Expected: one commit with the whole bundle, and the commit trailer at the end of the message.
 
+> **Deviation (D6 review, 2026-10-19).** The bundle commit is `945f22d`. The code-reviewer agent (Opus) reviewed `c020195..945f22d` against the spec, the spike record and this task. It found nothing Critical, one Important item and nine Minor ones. Three fixes landed inside D6's limits, in one commit after the bundle:
+> - `preflight.py` gets `GIT_TIMEOUT_S = 60`, and a timeout becomes a `stop:` line (R5: a fetch that fails stops). A new test stalls a fake git, and a mutation that drops the branch fails it.
+> - Two tests cover existing stop branches: no git, and a tag with no `skills/`.
+> - SKILL.md's version stop now follows R5: "Report the version and the range. The fix is to pin back into the range and run `uv lock`." Before, it told the agent to pin back, against its own "Stop and report the line".
+>
+> The suite now has 27 tests, not 24: Task 6 expects `27 passed` (+27). Declined: uncaught exceptions for a malformed `uv.lock`, an unwritable cache or two preflights at once (each fails closed with exit 1, and R5 lists none of them); the `default-groups` comment (it is R4.2's own text, imprecise but not wrong); `freeze: auto` in a page's front matter (a probe page with it built with `exit 0` and froze); NOTICE's "installed" (owner-approved R6.1 wording, and the locked version is the installed one). A uv workspace member, whose `uv.lock` sits at the workspace root, goes to Plan completion as a deferred item. Two items need the owner: a pin that fails `uv lock` when `requires-python` allows Python below 3.11, and a gate command that skips untracked modules (`git ls-files` lists tracked files only).
+
 ### Task 4: GREEN, the trigger test and the end-to-end run
 
 **Files:**
@@ -997,6 +1004,7 @@ Run writing-plans' Plan Completion Protocol after Task 6 and the final review, b
 - [ ] A new spike for great-docs 0.18 (the spec's Out of scope: the post-migration `docs/` layout). The skill stops on any version outside `>=0.17.0,<0.18` and on a `docs` or `both` layout. Widening the range takes a new spike against the new release, a new range in `skills/document-python-package/scripts/preflight.py` (`LOWEST`, `FIRST_EXCLUDED`, `RANGE`) and in SKILL.md, and a check of the five official skills at the new tag. Size: plan. Revisit if: PyPI publishes great-docs 0.18.0 or later.
 - [ ] Internal hosts and package indexes (the spec's D1 and Out of scope). The skill covers github.com, PyPI and GitHub Pages only. Size: design. Revisit if: the owner documents a package that is not public.
 - [ ] A gate check for stale frozen examples (D11). great-docs 0.17.0 freezes every executed page by default (`Freeze mode: auto`), docstring examples included. After a change to a function's body with its docstring unchanged, `uv run great-docs build` exits 0 and the page shows the stale frozen output, so the gate's build check passes a broken example. A fix might build with `freeze: false` in `great-docs.yml` inside the gate, or check the examples another way. Evidence: the spike record's S3 (`specs/verification/57-great-docs-0.17.0.md`). Size: design. Revisit if: an agent or a user ships a docstring example that no longer runs, or the owner wants the gate to prove that every example runs.
+- [ ] A uv workspace member (D6 review). `preflight.py` reads `uv.lock` only from the folder it runs in. In a uv workspace the lock sits at the workspace root, so a member package stays at `next: pin` after it is pinned and locked. The spec does not cover workspaces. Size: plan. Revisit if: the owner documents a package that is a member of a uv workspace.
 - [ ] Curating the package's published `SKILL.md` (the spec's D5 and Out of scope). Great Docs publishes one by default, and this skill keeps that default with no review step. Size: design. Revisit if: the owner wants to review or edit the generated skill.
 
 ---

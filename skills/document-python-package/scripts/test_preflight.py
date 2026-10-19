@@ -16,6 +16,8 @@ import pytest
 import preflight
 
 GIT = shutil.which('git')
+SLEEP = shutil.which('sleep')
+STALL_S = 30  # longer than any timeout a test sets, so only the timeout ends the call
 QUARTO_VERSION = '1.10.19'
 TAG = 'v0.17.0'
 STOP_FETCH = 'next: stop: fetching the official skills failed: '
@@ -183,6 +185,40 @@ def test_a_failed_clone_leaves_no_cache_folder(pkg, tmp_path, capsys):
     assert len(lines[-1]) > len(STOP_FETCH)  # git's error follows
     parent = cache_dir(tmp_path).parent
     assert (list(parent.iterdir()) if parent.exists() else []) == []
+
+
+def test_git_missing_stops(pkg, tmp_path, capsys):
+    lock(pkg, '0.17.0')
+    (tmp_path / 'bin' / 'git').unlink()
+    code, lines = run(capsys, '--remote', (tmp_path / 'no-such-remote.git').as_uri())
+    assert (code, lines[-1]) == (1, f'{STOP_FETCH}git is not installed')
+
+
+def test_a_stalled_git_stops_and_leaves_no_cache_folder(pkg, tmp_path, monkeypatch, capsys):
+    lock(pkg, '0.17.0')
+    stalled = tmp_path / 'bin' / 'git'
+    stalled.unlink()
+    stalled.write_text(f'#!/bin/sh\nexec {SLEEP} {STALL_S}\n')
+    stalled.chmod(0o755)
+    monkeypatch.setattr(preflight, 'GIT_TIMEOUT_S', 1)
+    code, lines = run(capsys, '--remote', (tmp_path / 'no-such-remote.git').as_uri())
+    assert (code, lines[-1]) == (1, f'{STOP_FETCH}git timed out after 1 s')
+    parent = cache_dir(tmp_path).parent
+    assert (list(parent.iterdir()) if parent.exists() else []) == []
+
+
+def test_a_tag_without_skills_stops(pkg, tmp_path, capsys):
+    lock(pkg, '0.17.0')
+    work = tmp_path / 'work-no-skills'
+    work.mkdir()
+    (work / 'README.md').write_text('no skills/ here\n')
+    git('init', '--quiet', '--initial-branch', 'main', cwd=work)
+    git('add', '.', cwd=work)
+    git('commit', '--quiet', '--message', 'no skills', cwd=work)
+    git('tag', '--annotate', TAG, '--message', TAG, cwd=work)
+    code, lines = run(capsys, '--remote', work.as_uri())
+    assert (code, lines[-1]) == (1, f'{STOP_FETCH}tag {TAG} has no skills/ folder')
+    assert list(cache_dir(tmp_path).parent.iterdir()) == []
 
 
 def test_a_cache_folder_without_source_is_fetched_again(pkg, tmp_path, bare, capsys):
