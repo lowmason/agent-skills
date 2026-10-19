@@ -2102,8 +2102,10 @@ def test_claude_md_import_resolves_stops_at_the_hop_limit(tmp_path):
 
 
 def test_claude_md_import_resolves_passes_on_the_repo():
-    text = (cc.REPO / 'CLAUDE.md').read_text()
-    assert '@needs_pilot' in text  # a naive scan would flag this, so the test means something
+    first = (cc.REPO / 'CLAUDE.md').read_text().split('\n', 1)[0]
+    # A naive scan would read the cc-guide stamp's @<version> as an import, so the test
+    # means something; a restamp changes the version but not the form.
+    assert first.startswith('<!-- cc-guide: ') and ' @' in first, first
     assert real_check('claude-md-import-resolves') == []
 
 

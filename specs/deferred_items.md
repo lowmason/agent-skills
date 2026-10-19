@@ -3911,12 +3911,12 @@ is Size design, a watch item has a Revisit if, and an owner call opens the Done 
 in theme order: superpowers drift; the model lifecycle (tune, track and the comparator);
 bayesian-workflow; producers and routing; script bugs; data skills; process; docs; licensing and
 repository hygiene. After this pass, PR #61 added the test-suite registry plan, which PR #62
-renumbered to plan 55 (`specs/plans/55-test-suite-registry.md`, not executed). It replaces
-CLAUDE.md's per-suite commands (lines 66–125) and shrinks the file from 199 lines to about 145.
-Once it lands, the items below that cite CLAUDE.md lines or its 199-line limit re-anchor: D8
-(the snippet-tier wording), D9 (the "Single test" example), D10 (the Mancuso credit), F9 (the
-snippet pin bump) and B11 (the floating snippet tier). D9's pointer to `CLAUDE.md:66-68` then
-moves to the registry's notes for the `build` suite.
+renumbered to plan 55 (`specs/plans/completed/55-test-suite-registry.md`). Plan 55 ran on
+2026-10-18. It replaced CLAUDE.md's per-suite commands (lines 66–125) and cut the file from 199
+lines to 146 (197 after plan 52's merge). It then re-anchored the items below that cited
+CLAUDE.md lines or its 199-line limit: D8 (the snippet-tier wording), D9 (the "Single test"
+example), D10 (the Mancuso credit), F9 (the snippet pin bump) and B11 (the floating snippet
+tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the `build` suite.
 
 - [ ] Decide superpowers drift finding 7: may a plan conflict take a recorded ruling so execution
       continues, instead of stopping for the owner? (audit-3-10-26 B5, found 2026-10-03; drift
@@ -4243,14 +4243,14 @@ moves to the registry's notes for the `build` suite.
       runs under the snippet gate.
 - [ ] Bump the snippet gate's pinned stack (audit-3-10-26 F9, found 2026-10-03; re-verified
       2026-10-18). `build/snippet_preamble.py:199-203` (`PINNED`, "Verified resolving
-      2026-09-08") and CLAUDE.md's Tier 3 command (`:167-168`) still pin arviz 1.3.0,
+      2026-09-08") and CLAUDE.md's Tier 3 command (`:114-115`) still pin arviz 1.3.0,
       arviz-stats 1.3.2, arviz-plots 1.3.1, numpyro 0.21.0 and jax 0.11.1, with arviz-base
       floating; newer releases exist (on 2026-10-18 an unpinned resolve gave numpyro 0.22.0,
       jax 0.11.2 and arviz-stats 1.3.3). `Hurdle*` (the F4 item) needs numpyro 0.22, and
       `lfo_cv` (the lifecycle spec's criterion) is in arviz-stats 1.3.3, not 1.3.2. Nothing
       ties the two pin lists together. Bump both in one change, re-run Tier 3 (minutes) and
       the stack-gated build tests, and re-measure the block counts at
-      `snippet_preamble.py:15-22`. Edit CLAUDE.md in place (199 of 200 lines). Size:
+      `snippet_preamble.py:15-22`. Edit CLAUDE.md in place (146 of 200 lines). Size:
       quick-fix. Done when: Tier 3 passes on the new pins in both places.
 - [ ] Give Gaussian processes a home in bayesian-workflow and point recommend-probabilistic-model
       at it (audit-3-10-26 G11, found 2026-10-03; re-verified 2026-10-18; the rpm half
@@ -4634,9 +4634,9 @@ moves to the registry's notes for the `build` suite.
       execution tier") has no reply. Build: `--run --floating` runs the harnessed set unpinned,
       prints failures as stderr WARN lines and exits 0, with a test in
       `build/test_check_snippets.py`; it would surface lag in `PINNED`
-      (`build/snippet_preamble.py`; see F9 in this section). CLAUDE.md is at 199 of its
-      200-line limit, so a new command line needs a trim. Retire: a deviation note in plan 29's
-      record. Size: quick-fix. Done when: the owner picks one and it lands.
+      (`build/snippet_preamble.py`; see F9 in this section). CLAUDE.md is at 146 of its
+      200-line limit, so a new command line fits without a trim. Retire: a deviation note in
+      plan 29's record. Size: quick-fix. Done when: the owner picks one and it lands.
 - [ ] Pin `task-brief`'s heading-level boundary with a test (audit-3-10-26 B10, found
       2026-10-03; first noted in a closure note in section `21-audit_9_2_26`, 2026-09-03).
       Changing `<= tlvl` to `< tlvl` at `skills/subagent-driven-development/scripts/task-brief:48`
@@ -4770,19 +4770,19 @@ moves to the registry's notes for the `build` suite.
       The owner kept the rule path-scoped. Add one clause to both. Size: quick-fix. Done
       when: both mention it, or the owner declines the clause.
 - [ ] Correct CLAUDE.md's claim that each snippet tier includes the ones above it
-      (audit-3-10-26 D8, found 2026-10-03; re-verified 2026-10-18). `CLAUDE.md:159` says
-      "three tiers, cheapest first, each including those above", and `:165` and `:167`
+      (audit-3-10-26 D8, found 2026-10-03; re-verified 2026-10-18). `CLAUDE.md:106` says
+      "three tiers, cheapest first, each including those above", and `:112` and `:114`
       ("Tier 2 (+ resolve …", "Tier 3 (+ execute …") read the same way, as does
       `build/check_snippets.py`'s docstring (`:39-42`); but `main()` keeps the flags
       independent (`if args.api:` at `:555`, `if args.run:` at `:567`), so `--run` never
-      runs the `--api` checks. Reword in place (CLAUDE.md is at 199 of its 200-line limit):
+      runs the `--api` checks. Reword in place (CLAUDE.md is at 146 of its 200-line limit):
       the tiers are separate commands, and a full check runs all three. Making `--run` imply
       `--api` instead is a behaviour change with its own tests in
       `build/test_check_snippets.py`. Size: quick-fix. Done when: CLAUDE.md and the
       docstring describe the tiers as they run.
 - [ ] Fix CLAUDE.md's "Single test" example, which fails in every fresh worktree, and decide
       how the citation tests behave without `build/.scratch` (audit-3-10-26 D9 and its
-      Decision 6, found 2026-10-03; re-verified 2026-10-18). `CLAUDE.md:178-179` documents
+      Decision 6, found 2026-10-03; re-verified 2026-10-18). `CLAUDE.md:125-126` documents
       `test_verify_citations.py::test_true_negative_flags_bad_refs`, which fails without the
       gitignored `build/.scratch/` ground truth; run on 2026-10-18 the module gave 4 failed,
       2 passed, 1 skipped, all four failures a FileNotFoundError on a `.scratch` file
@@ -4793,9 +4793,9 @@ moves to the registry's notes for the `build` suite.
       that passes everything is worse than none"). `test_empty_text_has_no_failures` needs
       no ground truth and fails only because `verify_text` loads notebooks unconditionally
       (`build/verify_citations.py:75`). Plans 52 and 53 record the four failures as the
-      expected baseline, so a skip changes their numbers and `CLAUDE.md:66-68`. Size:
-      quick-fix. Done when: the example passes in a fresh worktree, and the owner's choice
-      is applied or recorded.
+      expected baseline, so a skip changes their numbers and the `build` suite's notes in
+      `build/suites.toml`. Size: quick-fix. Done when: the example passes in a fresh worktree,
+      and the owner's choice is applied or recorded.
 - [ ] Credit mancusolab/coding-skills in CLAUDE.md and the README (audit-3-10-26 D10, found
       2026-10-03; re-verified 2026-10-18; the "three sources" count was fixed in `26f7a52`).
       `LICENSE-coding-skills` (MIT, Mancuso Lab) sits at the root and NOTICE records three
@@ -4803,7 +4803,7 @@ moves to the registry's notes for the `build` suite.
       never name the source: CLAUDE.md's provenance bullets (`:25-31`) and the README's
       Credits (`:284-294`) and License (`:296-303`) lists omit it. Add it to all three. Plan
       53 copies the license file into the skills that use it (Task 8) but adds no credit
-      line. CLAUDE.md is at 199 of 200 lines, and plans 52 and 53 replace exact lines here
+      line. CLAUDE.md is at 146 of 200 lines, and plans 52 and 53 replace exact lines here
       (CLAUDE.md `:25`, `:28`, `:29`, `:37`; README `:293`, `:300`, `:301`, `:303`), so edit
       in place on lines neither plan quotes, or fold the change into plan 53's Task 9.
       Decide whether Mancuso counts in CLAUDE.md's "five sources". Size: quick-fix. Done
@@ -4946,3 +4946,72 @@ moves to the registry's notes for the `build` suite.
       take a document case in the kit's `cases.py` that names a tracked symbolic link, and a
       run of the document cases. Size: plan. Revisit if: the skill's cases run again for any
       reason, and add the case then.
+
+## 55-test-suite-registry — 2026-10-18
+- [ ] Run the registered suites in CI (the spec's Out of scope).
+      `.github/workflows/lints.yml` runs the commit lints on PRs and `main`. Two of those
+      lints run a pytest selection, but no registered suite runs in full. Today
+      `run_suites.py --all` runs them by hand. CI would need node, a 3.9 `/usr/bin/python3`
+      and `build/.scratch/`. See specs/completed/test-suite-registry.md. Size: design.
+      Revisit if: the owner wants suites in CI.
+- [ ] Add parallel runs, per-suite timeouts and machine-readable output to
+      `build/run_suites.py` (the spec's Out of scope). Today `--all` runs the suites one
+      after the other, with no time limit, and prints text only. See
+      specs/completed/test-suite-registry.md. Size: plan. Revisit if: `--all` gets slow or a
+      tool needs to parse its results.
+- [ ] Move the lint, snippet, JAX, smoke, rebuild and citation commands into the runner (the
+      spec's Out of scope). Plan 55 moved only the commands for the directory-scoped pytest
+      suites out of the root `CLAUDE.md`. The other commands stay in its Commands block. See
+      specs/completed/test-suite-registry.md. Size: design. Revisit if: `CLAUDE.md` nears
+      its 200-line limit again.
+- [ ] Share the git helpers that `build/run_suites.py`, `build/check_conformance.py` and
+      `install.py` each carry as a separate copy (final review of plan 55). The owner ruled
+      that the copy stands, because the plan mandated it. `git_env()` removes git's
+      repo-local variables from the environment. It and the `git ls-files --cached --others
+      --exclude-standard -z` listing now exist three times. Plan 55 copied them into the
+      runner on purpose. `check_conformance.py` imports pyyaml, and the runner must stay
+      stdlib-only. The fix is one stdlib-only module in `build/`. `check_conformance.py` and
+      `run_suites.py` would import it. `install.py` can stay standalone. Size: plan. Revisit
+      if: a fourth copy appears, or `check_conformance.py` changes its git helpers.
+- [ ] Replace the commit-lint count "nine" with count-free wording (final review of plan
+      55). The count is written in four places: `CLAUDE.md:77`, `build/CLAUDE.md:23`,
+      `build/run_commit_lints.sh:2` and `build/githooks/pre-commit:2`. A tenth lint needs
+      all four edits. Plan 55 found the hook's comment stale only because a task reviewer
+      asked. Each place can say "the commit lints" instead. Size: quick-fix. Revisit if: a
+      tenth lint is added. Make the wording count-free in that change.
+- [ ] Harden `build/run_suites.py` (final review of plan 55, Minors). No defect shows in the
+      tree today. (a) `--check` counts any test file under a registered suite directory.
+      Pytest's default `norecursedirs` skips some directory names while it recurses: `.*`,
+      `build`, `dist`, `node_modules`, `venv`, `*.egg`, `_darcs`, `CVS` and `{arch}`. A file
+      such as `skills/x/scripts/build/test_y.py` would pass the check and never run. On
+      2026-10-18, none of the 50 test files in the tree was hidden this way. Skip those
+      names in `pytest_dirs()`, or state the limit in the docstring. (b) `validate()`
+      accepts a `with`, `extras` or `pythons` value that starts with `-`. uv would read it
+      as an option. Refuse it, and keep the shell form character for character, so do not
+      use `--with=dep`. (c) `run_suites.py alpha --extras beta` exits 2 with "unrecognized
+      arguments", because an option may not sit between suite names. `parse_intermixed_args`
+      may fix this. (d) The fail-closed message drops git's own stderr. (e) Exit codes are
+      bare literals (clean-code rule G25: use a named constant). `list_suites()` and
+      `main()` have no docstrings. The `[...][:1]` idiom, which reports only the first
+      out-of-order pair, is unexplained. (f) The module docstring says "From any directory
+      in the repo" beside root-relative paths. Size: plan. Done when: each part is fixed or
+      declined in writing.
+- [ ] Close the test gaps in `build/test_run_suites.py` (task reviews and final review of
+      plan 55). A mutation check on 2026-10-18 deleted the `is_file()` guard, which skips
+      tracked files that were removed from the working tree. All 51 tests stayed green.
+      Deleting `--cached` is caught by `test_the_real_registry_passes_check`. These cases
+      also have no test: the `validate()` branches for a non-list `suite`, a non-table
+      entry, an absolute `dir`, a non-string `name` or `dir`, and wrong element types in
+      `extras` or `pythons`. Notes that print before the run and after the first header
+      (`FakeRuns` prints nothing, so two mutations stay green). `--list` with `--extras`,
+      with `--` arguments and with no names. `run_subprocess()` on success: the cwd, the
+      return code and the environment passthrough. A registry with malformed TOML. The tests
+      also depend on the environment in two places.
+      `test_check_fails_closed_outside_a_git_repository` assumes that pytest's `tmp_path`
+      lies outside any git work tree, so set `GIT_CEILING_DIRECTORIES`. The `--check`
+      fixtures read the user's global git excludes, so set `GIT_CONFIG_GLOBAL=/dev/null` and
+      `GIT_CONFIG_NOSYSTEM=1`, as `clean_env` in `build/test_commit_lints.py` does. Last,
+      `test_unregistered_suite_is_refused` plants its file in `skills/tech-debt/scripts`. It
+      breaks loudly if that directory ever gets a registered suite, so add a precondition
+      assert. New tests move the plan's test counts, so write a small plan first. Size:
+      plan. Done when: each gap has a test or is declined in writing.

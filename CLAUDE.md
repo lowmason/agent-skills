@@ -58,76 +58,26 @@ A skill's references into other skills and to commands are install dependencies;
 
 ## Commands
 
-There is no root test runner or repo-wide `pyproject`, and the scientific deps (numpy, polars, pytest) aren't installed into the interpreter directly. Run everything through `uv run` pinned to the Homebrew Python 3.13, supplying deps inline. Tests use **bare imports** and are **directory-scoped** — run pytest from inside the relevant directory, not the repo root: each suite pins its own inline deps, and a repo-root collection fails outright anyway, since `geographic-codes` and `classification-codes` both ship a `test_build.py` whose basenames collide under pytest's prepend import mode with no `__init__.py`. Comments name the extra `--with` deps that unlock a suite's skips; pytest's summary line gives the counts.
+There is no repo-wide `pyproject`, and the scientific deps (numpy, polars, pytest) aren't installed into the interpreter directly. Run everything through `uv run` pinned to the Homebrew Python 3.13, supplying deps inline. Tests use **bare imports** and are **directory-scoped** — each suite runs pytest from inside its own directory with its own inline deps, never from the repo root: a repo-root collection fails outright, since `geographic-codes` and `classification-codes` both ship a `test_build.py` whose basenames collide under pytest's prepend import mode with no `__init__.py`. `build/suites.toml` registers each suite (its directory, its `--with` deps, the extras that unlock its skips, and its notes), and `build/run_suites.py` runs them, printing a suite's notes before its output; pytest's summary line gives the counts.
 
 ```bash
 # Cross-runtime adapters, installer, and DEPENDENCIES drift
 cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_runtime_support.py
 
-# Full build-directory tests. The snippet tests that need the stack skip unless you add --with "arviz>=1.0"
-# --with arviz-base --with arviz-stats --with arviz-plots --with numpyro --with jax --with matplotlib. A fresh clone
-# or worktree lacks the gitignored build/.scratch/, so test_verify_citations.py's ground-truth tests fail or skip there
-cd build && uv run --python 3.13 --with pytest --with numpy --with polars --with pyyaml python -m pytest -q
+# Directory suites (build/suites.toml): --list prints each suite's exact command, extras and notes; name one or more
+# suites to run them (--extras adds the deps that unlock skips; arguments after -- go to pytest, e.g. a test node ID),
+# or --all for every suite. --check, a commit lint, fails when a directory holding tests is not registered
+uv run --python 3.13 python build/run_suites.py --list
+uv run --python 3.13 python build/run_suites.py <name> [--extras] [-- <pytest args>]
+uv run --python 3.13 python build/run_suites.py --all
+uv run --python 3.13 python build/run_suites.py --check
 
-# recommend-probabilistic-model signal-extractor tests
-cd skills/recommend-probabilistic-model/scripts && uv run --python 3.13 --with pytest --with numpy --with polars python -m pytest -q
-
-# recommend-visualization router tests
-cd skills/recommend-visualization/scripts && uv run --python 3.13 --with pytest --with numpy --with polars python -m pytest -q
-
-# tune-hyperparameters CV-splitter tests; its skips need --with scikit-learn --with optuna (--with sklearn fails)
-cd skills/tune-hyperparameters/scripts && uv run --python 3.13 --with pytest --with numpy --with polars python -m pytest -q
-
-# track-model-experiments ledger/compare tests (~20–50 s, depending on the uv cache). They round-trip
-# InferenceData to .nc, so they need the full numpyro + NetCDF-writer chain
-cd skills/track-model-experiments/scripts && uv run --python 3.13 --with pytest --with numpy --with polars --with arviz --with numpyro --with h5netcdf --with h5py python -m pytest -q
-
-# bayesian-workflow script tests (MCSE precision, divergence-gate and calibration next steps and verdicts, figures,
-# --ci-prob, --loo-pit group checks). --with matplotlib runs the figure test; CALIBRATION_SWEEP=1 runs the
-# pre-registered acceptance sweep over both paths (seeds 0-99, about 1.5 min; -s prints its counts). arviz's
-# "invalid value encountered in scalar divide" warnings on the constant-parameter fixture are expected, not silenced
-cd skills/bayesian-workflow/scripts && uv run --python 3.13 --with pytest --with arviz --with arviz-stats --with numpy --with xarray python -m pytest -q
-
-# llm-wiki bundled wiki-script tests (bootstrap, lint, session and specs distillers; stdlib only). The
-# @needs_pilot tests read a pilot wiki at $LLM_WIKI_ROOT (default ~/research-wiki) and skip without one
-cd skills/llm-wiki/scripts && uv run --python 3.13 --with pytest python -m pytest -q
-
-# geographic-codes build tests; the per-vintage workbook tests read the committed sources/
-cd skills/geographic-codes/scripts && uv run --python 3.13 --with pytest --with polars --with fastexcel python -m pytest -q
-
-# classification-codes build tests (fixtures are in-memory frames, so no workbook reader is needed)
-cd skills/classification-codes/scripts && uv run --python 3.13 --with pytest --with polars python -m pytest -q
-
-# explore-data profile.py tests (its --json contract is recommend-visualization's input). profile.py
-# shadows the stdlib `profile` module, but the repo-wide reason above is why this cd's in
-cd skills/explore-data/scripts && uv run --python 3.13 --with pytest --with polars python -m pytest -q
-
-# Stdlib-only suites, one per line: describe-critique-methodology's decoupling check, writing-plans' deferred-backlog
-# stats and entry check (the entry-check tests build throwaway git repos), design-architecture's ADR scaffolder,
-# subagent-driven-development's dispatch scripts (the tests drive its bash scripts), systematic-debugging's
-# find-polluter.sh, brainstorming's server (it needs node, else skips) and write-with-asd-ste100's vendored linter
-# (pinned bytes, self-test under 3.13 and /usr/bin/python3, JSON report)
-cd skills/describe-critique-methodology/scripts && uv run --python 3.13 --with pytest python -m pytest -q
-cd skills/writing-plans/scripts && uv run --python 3.13 --with pytest python -m pytest -q
-cd skills/design-architecture/scripts && uv run --python 3.13 --with pytest python -m pytest -q
-cd skills/subagent-driven-development/scripts && uv run --python 3.13 --with pytest python -m pytest -q
-cd skills/systematic-debugging && uv run --python 3.13 --with pytest python -m pytest -q
-cd skills/brainstorming/scripts && uv run --python 3.13 --with pytest python -m pytest -q
-cd skills/write-with-asd-ste100/scripts && uv run --python 3.13 --with pytest python -m pytest -q
-
-# read-only agent guard tests (Gate A: classifier units, payload contract). The guard is stdlib only and must stay
-# 3.9-compatible, so run BOTH: the first runs each contract test through the hook's shebang on the test's PATH and on
-# launchd's /usr/bin-first PATH (under uv run the shebang resolves to uv's pinned python); the second runs the whole
-# suite under the 3.9 floor. Where /usr/bin/python3 is missing or not 3.9, the launchd-PATH runs skip (-rs shows why)
-# and the floor goes untested. Gate B is the live probe, ./hooks/probe-readonly-guard.sh, which spawns claude -p
-cd hooks && uv run --python 3.13 --with pytest python -m pytest -q && uv run --python /usr/bin/python3 --with pytest python -m pytest -q
-
-# Commit lints: these three, the dependency-drift test, snippet Tier 1, sync_runtime_assets.py --check, the drift
-# lint (cli.py lint, below) and the placement tests (below) make eight. build/run_commit_lints.sh runs all eight;
-# build/githooks/pre-commit runs it on each commit once enabled (an owner step: git config core.hooksPath build/githooks
-# writes repo config every worktree reads); the hook lints the working tree, untracked drafts included except by the
-# drift lint, which reads tracked files only. .github/workflows/lints.yml runs them on PRs and main as an advisory
-# check; the hook is the gate.
+# Commit lints: these three, the suite-registry check (run_suites.py --check, above), the dependency-drift test,
+# snippet Tier 1, sync_runtime_assets.py --check, the drift lint (cli.py lint, below) and the placement tests (below)
+# make nine. build/run_commit_lints.sh runs all nine; build/githooks/pre-commit runs it on each commit once enabled
+# (an owner step: git config core.hooksPath build/githooks writes repo config every worktree reads); the hook lints
+# the working tree, untracked drafts included except by the drift lint, which reads tracked files only.
+# .github/workflows/lints.yml runs them on PRs and main as an advisory check; the hook is the gate.
 # Frontmatter, provenance and guide-conformance lints (run before committing any Claude Code artifact)
 uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
 uv run --python 3.13 python build/check_provenance.py
@@ -136,11 +86,10 @@ uv run --python 3.13 --with pyyaml python build/check_conformance.py
 # Commit-lint runner, hook and workflow tests: the clean and refusal tests run the full lint set in clones (about 15 s warm)
 cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_commit_lints.py
 
-# Claude Code guide drift detector (build/cc_guide/): its suite; lint, run before committing a change to the guide, to
+# Claude Code guide drift detector (build/cc_guide/): suite cc_guide; lint, run before committing a change to the guide, to
 # build/cc_guide/ or to a file carrying a citation (its STALE lines never fail it); check, which fetches the docs and
 # reports what is due (exit 1 = due; reads main unless --worktree); /cc-guide acts on what it reports; a SessionStart
 # hook (build/cc_guide/notice.sh) runs check --hook once the last good check is a day old; its notice shows in terminal sessions only
-cd build/cc_guide && uv run --python 3.13 --with pytest python -m pytest -q
 uv run --python 3.13 python build/cc_guide/cli.py lint
 uv run --python 3.13 python build/cc_guide/cli.py check
 

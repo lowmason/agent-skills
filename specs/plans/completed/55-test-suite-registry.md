@@ -1,5 +1,7 @@
 # Test-suite registry and runner Implementation Plan
 
+**Status: COMPLETE (2026-10-18)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Register every directory-scoped pytest suite in `build/suites.toml`, list, run and check the suites with a stdlib-only `build/run_suites.py` whose `--check` becomes the ninth commit lint, and replace the root `CLAUDE.md`'s per-suite commands with the runner's commands.
@@ -8,7 +10,7 @@
 
 **Tech Stack:** Python 3.13 through `uv run`; the runner uses the stdlib only (`tomllib`, `argparse`, `subprocess`, `shlex`); pytest; git; bash (`build/run_commit_lints.sh`).
 
-**Spec:** [`specs/test-suite-registry.md`](../test-suite-registry.md)
+**Spec:** [`specs/completed/test-suite-registry.md`](../../completed/test-suite-registry.md)
 
 ## Global Constraints
 
@@ -126,7 +128,7 @@ The entry-check overlap plan took 54 too. It was committed as `cb091e5` at 19:16
 - Consumes: nothing.
 - Produces: the base facts that Tasks 5 and 7 check against, and a spec that names the suite `cc_guide`.
 
-- [ ] **Step 1: Confirm the base.** Run each command:
+- [x] **Step 1: Confirm the base.** Run each command:
 
 ```bash
 wc -l CLAUDE.md
@@ -138,7 +140,7 @@ grep -n -e '^There is no root test runner' -e '^# Full build-directory tests' -e
 
 Expected: `199 CLAUDE.md`, then the six lines at 60, 66, 125, 127, 141 and 145. If any of them moved, another plan changed `CLAUDE.md`: read the plan's Couplings section, and use the new numbers wherever a step names a line.
 
-- [ ] **Step 2: Check for plan 52's suite.**
+- [x] **Step 2: Check for plan 52's suite.**
 
 ```bash
 git ls-files skills/write-with-asd-ste100/scripts
@@ -146,7 +148,7 @@ git ls-files skills/write-with-asd-ste100/scripts
 
 Expected: no output. If it lists test files, plan 52 landed first: Task 5, Step 4 adds its entry.
 
-- [ ] **Step 3: Run the commit lints.**
+- [x] **Step 3: Run the commit lints.**
 
 ```bash
 bash build/run_commit_lints.sh
@@ -154,7 +156,7 @@ bash build/run_commit_lints.sh
 
 Expected: the last line is `commit lints passed`.
 
-- [ ] **Step 4: Record the build suite's baseline.** It takes about a minute.
+- [x] **Step 4: Record the build suite's baseline.** It takes about a minute.
 
 ```bash
 uv run --directory build --python 3.13 --with pytest --with numpy --with polars --with pyyaml python -m pytest -q -rf
@@ -162,7 +164,7 @@ uv run --directory build --python 3.13 --with pytest --with numpy --with polars 
 
 Expected: a summary line to write down for Task 7. In a worktree there is no `build/.scratch/`, so it reads `4 failed, … passed, … skipped`, and the four `FAILED` lines are `test_verify_citations.py`'s ground-truth tests (`FileNotFoundError`). Where `build/.scratch/` exists, no test fails.
 
-- [ ] **Step 5: Amend the spec (D1).** Make four replacements in `specs/test-suite-registry.md`.
+- [x] **Step 5: Amend the spec (D1).** Make four replacements in `specs/test-suite-registry.md`.
 
 Replace
 
@@ -222,7 +224,7 @@ grep -n -e 'cc-guide' specs/test-suite-registry.md
 
 Expected: only lines that name the `/cc-guide` skill, the `<!-- cc-guide: … -->` stamp, or the amendment's own reason. No line names a suite `cc-guide`.
 
-- [ ] **Step 6: Commit.**
+- [x] **Step 6: Commit.**
 
 ```bash
 git add specs/test-suite-registry.md
@@ -248,7 +250,7 @@ git commit -m "docs(specs): name the build/cc_guide suite cc_guide (plan 55, D1)
 
 The module docstring describes the finished module. Tasks 3 and 4 add the functions it names, and some constants wait for them too.
 
-- [ ] **Step 1: Write the failing tests.** Create `build/test_run_suites.py`:
+- [x] **Step 1: Write the failing tests.** Create `build/test_run_suites.py`:
 
 ```python
 '''Tests for run_suites.py, the runner and commit lint for build/suites.toml.
@@ -357,7 +359,7 @@ def test_container_compares_path_parts_not_string_prefixes():
     assert rs.container(other, [build, other]) is None
 ```
 
-- [ ] **Step 2: Run them to see them fail.**
+- [x] **Step 2: Run them to see them fail.**
 
 ```bash
 uv run --directory build --python 3.13 --with pytest python -m pytest -q test_run_suites.py
@@ -365,7 +367,7 @@ uv run --directory build --python 3.13 --with pytest python -m pytest -q test_ru
 
 Expected: `1 error`, a collection error: `ModuleNotFoundError: No module named 'run_suites'`.
 
-- [ ] **Step 3: Write the module.** Create `build/run_suites.py`:
+- [x] **Step 3: Write the module.** Create `build/run_suites.py`:
 
 ```python
 '''Run the repo's directory-scoped pytest suites from their registry, build/suites.toml.
@@ -505,9 +507,9 @@ def container(suite: Suite, suites: Sequence[Suite]) -> Suite | None:
                  if other.dir != suite.dir and path.is_relative_to(other.dir)), None)
 ```
 
-- [ ] **Step 4: Run the tests.** Same command as Step 2. Expected: `21 passed`.
+- [x] **Step 4: Run the tests.** Same command as Step 2. Expected: `21 passed`.
 
-- [ ] **Step 5: Gates and commit.**
+- [x] **Step 5: Gates and commit.**
 
 ```bash
 bash build/run_commit_lints.sh
@@ -531,7 +533,7 @@ git commit -m "feat(build): the test-suite registry's model: validation, runs an
 - Consumes: `validate`, `parse`, `REGISTRY`, `TEST_FILE_PATTERNS` (Task 2).
 - Produces: `git_env() -> dict[str, str]`, `pytest_dirs(root: Path) -> set[str] | None`, and `check(root: Path, data: dict) -> list[str]`, which returns finished finding lines. Each registry problem starts `build/suites.toml: `; an uncovered directory reads `<dir>: holds pytest files, but no suite in build/suites.toml contains it`. The tests gain `git_repo(root, files)`, `findings(root)` and `COVERED`.
 
-- [ ] **Step 1: Write the failing tests.** In `build/test_run_suites.py`, replace the line `import tomllib` with these two lines:
+- [x] **Step 1: Write the failing tests.** In `build/test_run_suites.py`, replace the line `import tomllib` with these two lines:
 
 ```python
 import subprocess
@@ -617,7 +619,7 @@ def test_check_fails_closed_outside_a_git_repository(tmp_path):
     assert findings(tmp_path) == ['build/suites.toml: git ls-files failed, so the test directories are unknown']
 ```
 
-- [ ] **Step 2: Run them to see them fail.**
+- [x] **Step 2: Run them to see them fail.**
 
 ```bash
 uv run --directory build --python 3.13 --with pytest python -m pytest -q test_run_suites.py
@@ -625,7 +627,7 @@ uv run --directory build --python 3.13 --with pytest python -m pytest -q test_ru
 
 Expected: `9 failed, 21 passed`. Eight fail with `AttributeError: module 'run_suites' has no attribute 'git_env'`, and one with `… no attribute 'check'`.
 
-- [ ] **Step 3: Write the check.** In `build/run_suites.py`, replace the import block (from `import shlex` through `from pathlib import Path, PurePosixPath`) with:
+- [x] **Step 3: Write the check.** In `build/run_suites.py`, replace the import block (from `import shlex` through `from pathlib import Path, PurePosixPath`) with:
 
 ```python
 import os
@@ -688,9 +690,9 @@ def check(root: Path, data: dict) -> list[str]:
     return problems
 ```
 
-- [ ] **Step 4: Run the tests.** Same command as Step 2. Expected: `30 passed`.
+- [x] **Step 4: Run the tests.** Same command as Step 2. Expected: `30 passed`.
 
-- [ ] **Step 5: Gates and commit.**
+- [x] **Step 5: Gates and commit.**
 
 ```bash
 bash build/run_commit_lints.sh
@@ -714,7 +716,7 @@ git commit -m "feat(build): the registry's coverage check over the files git kee
 - Consumes: everything in Tasks 2 and 3.
 - Produces: `RunOne = Callable[[Path, Run], int]`, `run_subprocess(root, run) -> int`, `execute(root, suites, extras, pytest_args, run_one) -> int`, `list_suites(suites, extras, pytest_args) -> None`, `parse_args(argv) -> (Namespace, tuple[str, ...])`, and `main(argv=None, root=REPO, run_one=run_subprocess) -> int`. The output lines are `== <label>`, `note: <text>`, `suite runs passed` (stdout), `suite runs failed: <labels>` (stderr), `skip <name>: the <outer> suite collects <dir>`, and `suite registry ok`.
 
-- [ ] **Step 1: Write the failing tests.** Append this block to the end of `build/test_run_suites.py`, with two blank lines before it:
+- [x] **Step 1: Write the failing tests.** Append this block to the end of `build/test_run_suites.py`, with two blank lines before it:
 
 ```python
 # --- the command line ---
@@ -835,7 +837,7 @@ def test_a_run_that_cannot_start_fails(tmp_path, capsys):
     assert 'ghost (3.13): cannot start' in capsys.readouterr().err
 ```
 
-- [ ] **Step 2: Run them to see them fail.**
+- [x] **Step 2: Run them to see them fail.**
 
 ```bash
 uv run --directory build --python 3.13 --with pytest python -m pytest -q test_run_suites.py
@@ -843,7 +845,7 @@ uv run --directory build --python 3.13 --with pytest python -m pytest -q test_ru
 
 Expected: `20 failed, 30 passed`. Nineteen fail with `AttributeError: module 'run_suites' has no attribute 'main'`, and one with `… no attribute 'run_subprocess'`.
 
-- [ ] **Step 3: Write the command line.** In `build/run_suites.py`, replace the import block with:
+- [x] **Step 3: Write the command line.** In `build/run_suites.py`, replace the import block with:
 
 ```python
 import argparse
@@ -977,7 +979,7 @@ if __name__ == '__main__':
     sys.exit(main())
 ```
 
-- [ ] **Step 4: Run the tests.** Same command as Step 2. Expected: `50 passed`. Then:
+- [x] **Step 4: Run the tests.** Same command as Step 2. Expected: `50 passed`. Then:
 
 ```bash
 uv run --python 3.13 python build/run_suites.py --list
@@ -985,7 +987,7 @@ uv run --python 3.13 python build/run_suites.py --list
 
 Expected: exit 2 and `build/suites.toml: cannot read: …`, because the registry arrives in Task 5.
 
-- [ ] **Step 5: Gates and commit.**
+- [x] **Step 5: Gates and commit.**
 
 ```bash
 bash build/run_commit_lints.sh
@@ -1010,7 +1012,7 @@ git commit -m "feat(build): run_suites.py's command line: --list, named runs, --
 - Consumes: `check`, `REPO`, `REGISTRY` (Tasks 2–4).
 - Produces: the registry that Tasks 6 and 7 rely on, with suite names `bayesian-workflow`, `brainstorming`, `build`, `cc_guide`, `classification-codes`, `describe-critique-methodology`, `design-architecture`, `explore-data`, `geographic-codes`, `hooks`, `llm-wiki`, `recommend-probabilistic-model`, `recommend-visualization`, `subagent-driven-development`, `systematic-debugging`, `track-model-experiments`, `tune-hyperparameters` and `writing-plans`.
 
-- [ ] **Step 1: Write the failing test.** Append this block to the end of `build/test_run_suites.py`, with two blank lines before it:
+- [x] **Step 1: Write the failing test.** Append this block to the end of `build/test_run_suites.py`, with two blank lines before it:
 
 ```python
 # --- the real registry ---
@@ -1020,7 +1022,7 @@ def test_the_real_registry_passes_check():
     assert rs.check(rs.REPO, data) == []
 ```
 
-- [ ] **Step 2: Run it to see it fail.**
+- [x] **Step 2: Run it to see it fail.**
 
 ```bash
 uv run --directory build --python 3.13 --with pytest python -m pytest -q test_run_suites.py
@@ -1028,7 +1030,7 @@ uv run --directory build --python 3.13 --with pytest python -m pytest -q test_ru
 
 Expected: `1 failed, 50 passed`. The failure is `FileNotFoundError: … build/suites.toml`.
 
-- [ ] **Step 3: Write the registry.** Create `build/suites.toml`. Each entry carries its `CLAUDE.md` command and comment (spec R2.3).
+- [x] **Step 3: Write the registry.** Create `build/suites.toml`. Each entry carries its `CLAUDE.md` command and comment (spec R2.3).
 
 ```toml
 # Test-suite registry: one [[suite]] table for each directory-scoped pytest suite,
@@ -1182,7 +1184,7 @@ with = ['pytest']
 notes = ['Deferred-backlog stats and entry-check tests (stdlib only; the entry-check tests build throwaway git repos).']
 ```
 
-- [ ] **Step 4: Plan 52's entry, only if Task 1, Step 2 listed files.** Add this entry just before the `writing-plans` entry, which keeps the name order:
+- [x] **Step 4: Plan 52's entry, only if Task 1, Step 2 listed files.** Add this entry just before the `writing-plans` entry, which keeps the name order:
 
 ```toml
 [[suite]]
@@ -1192,7 +1194,9 @@ with = ['pytest']
 notes = ['Tests for the vendored linter: its pinned bytes, its self-test under 3.13 and /usr/bin/python3, and its JSON report.']
 ```
 
-- [ ] **Step 5: Run the tests and the check.** Same command as Step 2. Expected: `51 passed`. Then:
+> Deviation: Task 1, Step 2 listed no files, so Task 5 skipped this step. Plan 52 then merged to `main` (PR #64, `7731167`). The entry went in after that, as its own commit, `1694542`, before Task 7.
+
+- [x] **Step 5: Run the tests and the check.** Same command as Step 2. Expected: `51 passed`. Then:
 
 ```bash
 uv run --python 3.13 python build/run_suites.py --check
@@ -1200,7 +1204,7 @@ uv run --python 3.13 python build/run_suites.py --check
 
 Expected: `suite registry ok`, exit 0.
 
-- [ ] **Step 6: Write and run the audit.** Create `.sdd/55-test-suite-registry/audit_commands.py`:
+- [x] **Step 6: Write and run the audit.** Create `.sdd/55-test-suite-registry/audit_commands.py`:
 
 ```python
 '''Plan 55 Stage 2 audit (scratch, never committed).
@@ -1284,7 +1288,9 @@ uv run --no-project --python 3.13 python .sdd/55-test-suite-registry/audit_comma
 
 Expected: exit 0, `check 1: 19 CLAUDE.md commands, 19 registry runs` with no `only in` line, and `check 2: 0 suites whose comment deps differ from their extras`. With plan 52's entry, the counts are 20. Then read each printed `== <suite>` group. Every clause of each `comment:` line must appear in that suite's `note:` lines, its extras or its `pythons`, apart from the suite's own name. The comment of `systematic-debugging` also covers `brainstorming`, and `cc_guide` has no comment of its own. A missing clause fails the step: add it to the notes, and run Step 5 again.
 
-- [ ] **Step 7: Gates and commit.**
+> Deviation: after plan 52's entry, the audit found 20 commands and 20 runs. Task 5 had found 19 and 19. Plan 52's `CLAUDE.md` comment is headed "Stdlib-only suites". The notes of `describe-critique-methodology` and `write-with-asd-ste100` do not say "stdlib only". The plan's text for both notes is verbatim, and `with = ['pytest']` shows the fact. The task reviewer accepted this.
+
+- [x] **Step 7: Gates and commit.**
 
 ```bash
 bash build/run_commit_lints.sh
@@ -1309,7 +1315,7 @@ git commit -m "feat(build): register the directory suites in build/suites.toml (
 - Consumes: `run_suites.py --check` and the committed registry (Tasks 4 and 5).
 - Produces: the lint named `suite_registry`, which Task 7's `CLAUDE.md` text names.
 
-- [ ] **Step 1: Write the failing tests.** In `build/test_commit_lints.py`, replace
+- [x] **Step 1: Write the failing tests.** In `build/test_commit_lints.py`, replace
 
 ```python
           'critical_placement'}
@@ -1339,7 +1345,7 @@ def test_unregistered_suite_is_refused(clone):
             'contains it') in result.stderr, result.stderr
 ```
 
-- [ ] **Step 2: Run them to see them fail.** It takes about 20 seconds.
+- [x] **Step 2: Run them to see them fail.** It takes about 20 seconds.
 
 ```bash
 uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_commit_lints.py -k "unregistered_suite or fails_closed_without_uv"
@@ -1347,7 +1353,7 @@ uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pyt
 
 Expected: `2 failed`. `test_unregistered_suite_is_refused` fails at `assert result.returncode != 0` (`assert 0 != 0`: the commit went through), and `test_runner_fails_closed_without_uv` fails because `suite_registry` is missing from the failed set.
 
-- [ ] **Step 3: Add the lint.** In `build/run_commit_lints.sh`, replace
+- [x] **Step 3: Add the lint.** In `build/run_commit_lints.sh`, replace
 
 ```bash
 # The eight commit lints that CLAUDE.md lists under Commands. Fails closed: exit 1
@@ -1365,7 +1371,7 @@ Then, after the `run critical_placement …` line, add:
 run suite_registry uv run --python 3.13 python build/run_suites.py --check
 ```
 
-- [ ] **Step 4: Run the tests.**
+- [x] **Step 4: Run the tests.**
 
 ```bash
 uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_commit_lints.py
@@ -1373,7 +1379,7 @@ uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pyt
 
 Expected: every test passes, +1 on the Task 1 base.
 
-- [ ] **Step 5: Update `build/CLAUDE.md`.** Replace
+- [x] **Step 5: Update `build/CLAUDE.md`.** Replace
 
 ````markdown
 `run_commit_lints.sh` runs the eight commit lints that the root `CLAUDE.md`
@@ -1405,7 +1411,7 @@ pytest files is not registered, so a new suite adds its `[[suite]]` entry in
 the same change.
 ````
 
-- [ ] **Step 6: Gates and commit.**
+- [x] **Step 6: Gates and commit.**
 
 ```bash
 bash build/run_commit_lints.sh
@@ -1432,7 +1438,7 @@ git commit -m "feat(build): run_suites.py --check is the ninth commit lint (plan
 - Consumes: the registry (Task 5), `run_suites.py` (Task 4), the lint named `suite_registry` (Task 6), and the build baseline (Task 1, Step 4).
 - Produces: the finished Commands block.
 
-- [ ] **Step 1: Re-run the audit.** `CLAUDE.md` must not have changed since Task 5.
+- [x] **Step 1: Re-run the audit.** `CLAUDE.md` must not have changed since Task 5.
 
 ```bash
 uv run --no-project --python 3.13 python .sdd/55-test-suite-registry/audit_commands.py
@@ -1440,7 +1446,9 @@ uv run --no-project --python 3.13 python .sdd/55-test-suite-registry/audit_comma
 
 Expected: exit 0, with the same counts as Task 5.
 
-- [ ] **Step 2: Compare direct and runner runs.** Create `.sdd/55-test-suite-registry/compare_runs.py`:
+> Deviation: `CLAUDE.md` had changed since Task 5. Plan 52 had merged and folded seven suites under one comment, so the file had 197 lines, not 199. The audit ran after the registry gained plan 52's entry. It printed 20 commands and 20 runs, where Task 5 printed 19 and 19.
+
+- [x] **Step 2: Compare direct and runner runs.** Create `.sdd/55-test-suite-registry/compare_runs.py`:
 
 ```python
 '''Plan 55, Task 7: compare direct and runner runs (scratch, never committed).
@@ -1495,7 +1503,9 @@ uv run --no-project --python 3.13 python .sdd/55-test-suite-registry/compare_run
 
 Expected: exit 0, and `<suite>: same` for every suite, the build suite included. The build suite's `direct` and `runner` lines show the same summary as Task 1, Step 4, plus the passes from this plan's new tests. Write the 18 result pairs down for the completion report.
 
-- [ ] **Step 3: Run `--all` once.** It takes about 3 minutes; run it in the background.
+> Deviation: there are 19 result pairs, not 18, because plan 52's suite is registered. All 19 read `same`.
+
+- [x] **Step 3: Run `--all` once.** It takes about 3 minutes; run it in the background.
 
 ```bash
 uv run --python 3.13 python build/run_suites.py --all
@@ -1503,7 +1513,7 @@ uv run --python 3.13 python build/run_suites.py --all
 
 Expected: a `skip cc_guide: the build suite collects build/cc_guide` line. Then one `== <suite> (<python>)` header per run, with each suite's notes after its first header. The last line is `suite runs passed`. In a worktree without `build/.scratch/`, it is instead `suite runs failed: build (3.13)` on stderr, with exit 1, matching Step 2.
 
-- [ ] **Step 4: Replace the per-suite commands.** Create `.sdd/55-test-suite-registry/shrink_claude_md.py`:
+- [x] **Step 4: Replace the per-suite commands.** Create `.sdd/55-test-suite-registry/shrink_claude_md.py`:
 
 ```python
 '''Plan 55, Task 7: replace CLAUDE.md's per-suite commands (scratch, never committed).
@@ -1551,7 +1561,9 @@ uv run --no-project --python 3.13 python .sdd/55-test-suite-registry/shrink_clau
 
 Expected: `replaced lines 66-125 with 7; deleted line 145`.
 
-- [ ] **Step 5: Edit the rest of the Commands block.** Make three replacements in `CLAUDE.md`.
+> Deviation: the script printed `replaced lines 67-123 with 7; deleted line 143`, not `66-125` and `145`. Plan 52's merge had moved the anchors, and the replacement also removed plan 52's fold (spec R5.2). The script needed no change.
+
+- [x] **Step 5: Edit the rest of the Commands block.** Make three replacements in `CLAUDE.md`.
 
 Replace
 
@@ -1599,7 +1611,7 @@ with
 # Claude Code guide drift detector (build/cc_guide/): suite cc_guide; lint, run before committing a change to the guide, to
 ````
 
-- [ ] **Step 6: See the import test fail.** Step 4 removed the llm-wiki note, and with it the test's `@needs_pilot` control.
+- [x] **Step 6: See the import test fail.** Step 4 removed the llm-wiki note, and with it the test's `@needs_pilot` control.
 
 ```bash
 uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_conformance.py -k claude_md_import_resolves_passes_on_the_repo
@@ -1607,7 +1619,7 @@ uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pyt
 
 Expected: `1 failed`, at `assert '@needs_pilot' in text`.
 
-- [ ] **Step 7: Move the control to the stamp.** In `build/test_check_conformance.py`, replace
+- [x] **Step 7: Move the control to the stamp.** In `build/test_check_conformance.py`, replace
 
 ```python
 def test_claude_md_import_resolves_passes_on_the_repo():
@@ -1629,7 +1641,7 @@ def test_claude_md_import_resolves_passes_on_the_repo():
 
 Then run Step 6's command again. Expected: `1 passed`.
 
-- [ ] **Step 8: Gates.** Run each command.
+- [x] **Step 8: Gates.** Run each command.
 
 ```bash
 wc -l CLAUDE.md
@@ -1655,7 +1667,9 @@ bash build/run_commit_lints.sh
 
 Expected: the last line is `commit lints passed`.
 
-- [ ] **Step 9: Commit.**
+> Deviation: the build suite printed `4 failed, 1146 passed, 13 skipped`. The step expected the Task 1 baseline plus 52 passes, which is 1135. Plan 52's merge added 11 passing tests. The baseline was measured again at `1694542`, and Task 7 added no test. `CLAUDE.md` has 146 lines, which the step allows ("145 plus whatever another plan added").
+
+- [x] **Step 9: Commit.**
 
 ```bash
 git add CLAUDE.md build/test_check_conformance.py
@@ -1664,6 +1678,8 @@ git add CLAUDE.md build/test_check_conformance.py
 ```bash
 git commit -m "docs: CLAUDE.md points at run_suites.py instead of listing each suite (plan 55)" -m "build/suites.toml now carries each suite's command and notes. The one-time audit matched every removed command to a registry run, and every suite gave the same result direct and through the runner. CLAUDE.md drops from 199 lines to 145."
 ```
+
+> Deviation: the commit also stages `build/githooks/pre-commit`. Its line 2 said "run the eight commit lints" and now says "nine". That file is not on the plan's list, and the owner chose to fix it here. The commit message says that `CLAUDE.md` drops from 197 lines to 146.
 
 ---
 
@@ -1697,3 +1713,7 @@ Run the writing-plans Plan Completion Protocol after the final review, then:
   `build/run_suites.py`'s docstring line `Design: specs/test-suite-registry.md.` and `build/suites.toml`'s header
   line `# registered suite directory. Design: specs/test-suite-registry.md (R2).` both become
   `specs/completed/test-suite-registry.md`.
+
+> Deviation: the retire commit also changes "eight" to "nine" on line 19 of `specs/plans/53-agent-skills-portability.md`. That line is the Global Constraint "Gates before every commit". The file is not on this plan's list, and the owner chose this change at the completion gate on 2026-10-18. Lines 75 and 81 of that plan are history and stay as written.
+
+> Deviation: the merge commit `ed4426f` has the app's default message and no `Co-Authored-By:` line. The app made it when it synced `main`, which brought in plan 52. At that commit, `run_suites.py --check` fails. Plan 52's suite is not registered until `1694542`.
