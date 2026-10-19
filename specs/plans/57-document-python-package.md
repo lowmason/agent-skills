@@ -38,6 +38,10 @@ These come from the spec unless a line says otherwise. Every task's requirements
 - **D2** (owner, brief, 2026-10-19): This plan is committed on `claude/great-docs-skill-design-19335c`, which also holds the spec's three unpushed commits (`475f5d0`, `3cdb38f` and `e72f284`). Applied in: Execution handoff.
 - **D3** (owner, plan review, 2026-10-19): Q1's option (c). The `compatibility` text is the portability spec's house string with Python 3.11+, then git, Quarto, the version range and the network fetch. The owner also approved amendments A1 (19 runnable scripts) and A2 (R1.4's new text) as worded. Applied in: Task 1 (spec amendment), Appendix B (SKILL.md).
 - **D4** (owner, plan review, 2026-10-19): The settled defaults DF1 to DF28 stand as written. Applied in: Planning record (Settled defaults), and the tasks that each default names.
+- **D5** (owner, brief, 2026-10-19): Inline Execution: "One Sonnet session runs Tasks 1 to 6 with the executing-plans skill." Applied in: Execution handoff.
+- **D6** (owner, brief, 2026-10-19): a code review of Task 3's bundle commit before Task 4: "After Task 3's bundle commit, the code-reviewer agent reviews that commit. Fixes that hold up land before Task 4, so GREEN measures the text that ships." Applied in: between Task 3 and Task 4.
+- **D7** (owner, brief, 2026-10-19): a SKILL.md change from the final whole-branch review, after GREEN: "The fix waits for you. You then choose: re-run GREEN for the scenarios it touches, or ship it with the skill-test record naming the text that GREEN did not measure." Applied in: the whole-branch review (executing-plans, Step 3).
+- **D8** (owner, brief, 2026-10-19): the execution model: "Since it is inline, run using opus." The execution session runs on Opus, in place of the Sonnet in D1 and D5. Applied in: Execution handoff.
 
 ---
 
