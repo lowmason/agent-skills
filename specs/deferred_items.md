@@ -4946,3 +4946,71 @@ moves to the registry's notes for the `build` suite.
       take a document case in the kit's `cases.py` that names a tracked symbolic link, and a
       run of the document cases. Size: plan. Revisit if: the skill's cases run again for any
       reason, and add the case then.
+
+## 55-test-suite-registry — 2026-10-18
+- [ ] Run the registered suites in CI (the spec's Out of scope).
+      `.github/workflows/lints.yml` runs the commit lints on PRs and `main`. It runs no
+      pytest suite. Today `run_suites.py --all` runs them by hand. CI would need node, a 3.9
+      `/usr/bin/python3` and `build/.scratch/`. See specs/completed/test-suite-registry.md.
+      Size: design. Revisit if: the owner wants suites in CI.
+- [ ] Add parallel runs, per-suite timeouts and machine-readable output to
+      `build/run_suites.py` (the spec's Out of scope). Today `--all` runs the suites one
+      after the other, with no time limit, and prints text only. See
+      specs/completed/test-suite-registry.md. Size: plan. Revisit if: `--all` gets slow or a
+      tool needs to parse its results.
+- [ ] Move the lint, snippet, JAX, smoke, rebuild and citation commands into the runner (the
+      spec's Out of scope). Plan 55 moved only the commands for the directory-scoped pytest
+      suites out of the root `CLAUDE.md`. The other commands stay in its Commands block. See
+      specs/completed/test-suite-registry.md. Size: design. Revisit if: `CLAUDE.md` nears
+      its 200-line limit again.
+- [ ] Share the git helpers that `build/run_suites.py`, `build/check_conformance.py` and
+      `install.py` each carry as a separate copy (final review of plan 55). The owner ruled
+      that the copy stands, because the plan mandated it. `git_env()` removes git's
+      repo-local variables from the environment. It and the `git ls-files --cached --others
+      --exclude-standard -z` listing now exist three times. Plan 55 copied them into the
+      runner on purpose. `check_conformance.py` imports pyyaml, and the runner must stay
+      stdlib-only. The fix is one stdlib-only module in `build/`. `check_conformance.py` and
+      `run_suites.py` would import it. `install.py` can stay standalone. Size: plan. Revisit
+      if: a fourth copy appears, or `check_conformance.py` changes its git helpers.
+- [ ] Replace the commit-lint count "nine" with count-free wording (final review of plan
+      55). The count is written in four places: `CLAUDE.md:77`, `build/CLAUDE.md:23`,
+      `build/run_commit_lints.sh:2` and `build/githooks/pre-commit:2`. A tenth lint needs
+      all four edits. Plan 55 found the hook's comment stale only because a task reviewer
+      asked. Each place can say "the commit lints" instead. Size: quick-fix. Revisit if: a
+      tenth lint is added. Make the wording count-free in that change.
+- [ ] Harden `build/run_suites.py` (final review of plan 55, Minors). No defect shows in the
+      tree today. (a) `--check` counts any test file under a registered suite directory.
+      Pytest's default `norecursedirs` skips some directory names while it recurses: `.*`,
+      `build`, `dist`, `node_modules`, `venv`, `*.egg`, `_darcs`, `CVS` and `{arch}`. A file
+      such as `skills/x/scripts/build/test_y.py` would pass the check and never run. On
+      2026-10-18, none of the 50 test files in the tree was hidden this way. Skip those
+      names in `pytest_dirs()`, or state the limit in the docstring. (b) `validate()`
+      accepts a `with`, `extras` or `pythons` value that starts with `-`. uv would read it
+      as an option. Refuse it, and keep the shell form character for character, so do not
+      use `--with=dep`. (c) `run_suites.py alpha --extras beta` exits 2 with "unrecognized
+      arguments", because an option may not sit between suite names. `parse_intermixed_args`
+      may fix this. (d) The fail-closed message drops git's own stderr. (e) Exit codes are
+      bare literals (clean-code rule G25: use a named constant). `list_suites()` and
+      `main()` have no docstrings. The `[...][:1]` idiom, which reports only the first
+      out-of-order pair, is unexplained. (f) The module docstring says "From any directory
+      in the repo" beside root-relative paths. Size: plan. Done when: each part is fixed or
+      declined in writing.
+- [ ] Close the test gaps in `build/test_run_suites.py` (task reviews and final review of
+      plan 55). A mutation check on 2026-10-18 deleted the `is_file()` guard, which skips
+      tracked files that were removed from the working tree. All 51 tests stayed green.
+      Deleting `--cached` is caught by `test_the_real_registry_passes_check`. These cases
+      also have no test: the `validate()` branches for a non-list `suite`, a non-table
+      entry, an absolute `dir`, a non-string `name` or `dir`, and wrong element types in
+      `extras` or `pythons`. Notes that print before the run and after the first header
+      (`FakeRuns` prints nothing, so two mutations stay green). `--list` with `--extras`,
+      with `--` arguments and with no names. `run_subprocess()` on success: the cwd, the
+      return code and the environment passthrough. A registry with malformed TOML. The tests
+      also depend on the environment in two places.
+      `test_check_fails_closed_outside_a_git_repository` assumes that pytest's `tmp_path`
+      lies outside any git work tree, so set `GIT_CEILING_DIRECTORIES`. The `--check`
+      fixtures read the user's global git excludes, so set `GIT_CONFIG_GLOBAL=/dev/null` and
+      `GIT_CONFIG_NOSYSTEM=1`, as `clean_env` in `build/test_commit_lints.py` does. Last,
+      `test_unregistered_suite_is_refused` plants its file in `skills/tech-debt/scripts`. It
+      breaks loudly if that directory ever gets a registered suite, so add a precondition
+      assert. New tests move the plan's test counts, so write a small plan first. Size:
+      plan. Done when: each gap has a test or is declined in writing.
