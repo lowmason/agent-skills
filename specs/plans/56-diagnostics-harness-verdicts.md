@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python 3.13 through `uv run`; ArviZ 1.x (arviz-base, arviz-stats) and NumPy in `diagnose_model.py`; the stdlib only in `check_diagnostics.py`; pytest; NumPyro and JAX for the acceptance run.
 
-**Spec:** none. The three backlog items carry their own fixes: `specs/deferred_items.md`, section `audit-3-10-26 routing (no plan; re-verification pass, branch claude/quizzical-hermann-814d89) — 2026-10-18`, items X1, X2 and F8. That section is not on `main` yet. It is commit `4b683a4` on branch `claude/quizzical-hermann-814d89`, unpushed until the owner approves, so read it with `git show 4b683a4:specs/deferred_items.md`. The findings themselves are in `specs/audit-3-10-26.md`: §X1, §X2, F8 in the F table, and §B3.
+**Spec:** none. The three backlog items carry their own fixes: `specs/deferred_items.md`, section `audit-3-10-26 routing (no plan; re-verification pass, branch claude/quizzical-hermann-814d89) — 2026-10-18`, items X1, X2 and F8. That section came from commit `4b683a4` and reached `main` in PR #63 (merge `76565db`). The findings themselves are in `specs/audit-3-10-26.md`: §X1, §X2, F8 in the F table, and §B3.
 
 ## Global Constraints
 
@@ -22,7 +22,7 @@ Every task's requirements include these.
 - **Simple commands.** Every command is one command, with no `cd … &&`, pipe or loop, because a worktree-isolated session refuses compound shell. `uv run --directory <dir>` runs pytest from the suite's directory, so the tests' bare imports work.
 - **Find code by its text, not by line number.** Plan 53 inserts a shebang and a PEP 723 block at the top of both scripts, which shifts every line. Each replace block below quotes the exact text to find, and it occurs once in the file at that point of the plan.
 - **Match each file's style.** Both scripts and their tests use double quotes throughout, so new code there does too (DF10). The acceptance script, which is never committed, uses single quotes.
-- **Leave these alone**: `CLAUDE.md` (199 of 200 lines, and plans 52, 53 and 55 edit it), the skill's `SKILL.md` (plan 53 edits its invocations and frontmatter), `calibration_check.py`, and `skills/tune-hyperparameters/SKILL.md:142` (backlog item G4, which belongs to the G-A plan).
+- **Leave these alone**: `CLAUDE.md` (plan 53 edits it), the skill's `SKILL.md` (plan 53 edits its invocations and frontmatter), `calibration_check.py`, and `skills/tune-hyperparameters/SKILL.md:142` (backlog item G4, which belongs to the G-A plan).
 - **Commit trailer.** Each commit message ends with the executing session's own `Co-Authored-By:` line, added as the last `-m`. Subagent-authored commits keep that same line. Check with `git log -1 --format=%B`.
 - **Push or merge nothing** without the owner's go-ahead.
 
@@ -58,6 +58,8 @@ A script then replayed this plan's blocks in a fresh clone of `668b8c3`, one ste
 - Task 5's commands, run as written from the clone's root, printed every Expected line of its Steps 2–4. The pinned-stack suite, the 3.11 run and Tier 2 passed there too.
 - Tier 3 and the commit lints were not re-run there, because the Markdown they read is byte-identical to the prototype's.
 
+On 2026-10-19 the replay ran again on `main` at `f80783d`, after plans 52 and 55 had merged. Nothing under `skills/bayesian-workflow/` had changed, so the files came out byte-identical. The registry run (`build/run_suites.py bayesian-workflow`) printed 179 passed and 3 skipped. All nine commit lints passed, both with the plan file alone and after the replay.
+
 ### Settled defaults (the owner reviews these)
 
 - **DF1, the all-clear needs calibration.** Without `--calibration`, the reader adds "Calibration was not checked …" instead of an all-clear that lists calibration as missing. `references/reporting.md` makes the all-clear conditional on good calibration, and `references/model-criticism.md` says calibration is mandatory for every model. The backlog item's fix reads "build the all-clear from the sections present and list the rest"; this is the stricter reading.
@@ -86,9 +88,9 @@ The audit's B3 grouped section 34 with X1, X2 and F8 when four of its items were
 ### Couplings
 
 - **Plan 53 (portability, not executed).** Its Task 10 adds `#!/usr/bin/env python3` and a PEP 723 block at the top of both scripts. `check_diagnostics.py` gets `>=3.11` with no dependencies; `diagnose_model.py` gets `>=3.12` with arviz, numpy, h5netcdf and h5py. Its Task 11 rewrites one line of `references/diagnostics.md`, the `python <this-skill-dir>/scripts/diagnose_model.py` command, to `uv run`. Neither touches text that this plan replaces, and this plan keeps both headers valid (Global Constraints). Whichever plan lands second, line numbers shift by the header's length, which is why every block here quotes text.
-- **Plan 55 (test-suite registry, not executed).** It replaces `CLAUDE.md`'s per-suite commands with `uv run --python 3.13 python build/run_suites.py bayesian-workflow`, which runs the same suite command this plan uses. Its registry note for the suite lists what the tests cover. After both land, the note may add the all-clear and sampler-stat tests; nothing depends on it.
+- **Plan 55 (test-suite registry, merged in PR #65).** `uv run --python 3.13 python build/run_suites.py bayesian-workflow` runs the same suite command that this plan uses. Plan 55 also added a ninth commit lint, `suite_registry`. It passes with this plan's changes, because they add no test directory. The suite's notes in `build/suites.toml` list what the tests cover. They could later name the all-clear and sampler-stat tests. Nothing checks them.
 - **The G-A plan (backlog items G4 and X7 in the routing section).** G4(c) needs a tree-depth rule for tune-hyperparameters that a user can check: after this plan, that rule can point at `diagnostics.json → convergence.treedepth`. X7's fixture for `compare_experiments.py` is to be "written by diagnose_model.py", so write it after this plan lands: the JSON gains `checked`, `good_k` and `n_high`, and drops `n_marginal`.
-- **The routing section (`4b683a4`).** This plan's completion ticks X1, X2 and F8 there, so that commit must be on `main` by then (Plan completion).
+- **The routing section.** This plan's completion ticks X1, X2 and F8 there. The section reached `main` in PR #63.
 
 ### Plan ID
 
@@ -2173,5 +2175,5 @@ Execute in a fresh session on Sonnet (the owner's routing: plan on Opus, execute
 
 Run the writing-plans Plan Completion Protocol after the final review, then:
 
-- **Tick the three backlog items.** In `specs/deferred_items.md`, section `audit-3-10-26 routing (no plan; re-verification pass, branch claude/quizzical-hermann-814d89) — 2026-10-18`, tick X1, X2 and F8 (`- [x] … → done in plan 56`). That section arrives with commit `4b683a4`: if it is not on `main` yet, ask the owner before you merge it here.
+- **Tick the three backlog items.** In `specs/deferred_items.md`, section `audit-3-10-26 routing (no plan; re-verification pass, branch claude/quizzical-hermann-814d89) — 2026-10-18`, tick X1, X2 and F8 (`- [x] … → done in plan 56`). That section is on `main` since PR #63.
 - **Retire this plan.** There is no spec to retire with it.
