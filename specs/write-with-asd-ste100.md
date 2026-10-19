@@ -319,7 +319,7 @@ records gain those two sections, and the installer entry's description gains rul
   - **Newly written by Lowell Mason (MIT):** the audience switch, the always-on rule, the label rule,
     the document-rewrite procedure and the examples.
 - The test record that holds the eval cases credits prithivrajmu too.
-- **ASD-STE100.** The skill cites the standard by issue and rule number, in original wording. It
+- **ASD-STE100.** The skill cites the standard by issue (Issue 9) and gives no rule number, in original wording. It
   bundles nothing from the specification or its dictionary. Both upstreams leave the dictionary out
   for the same reason. As danyuchn's skill reports, Issue 9 allows reproduction only with ASD's
   written authority, or by eight listed kinds of organization. This repo is none of them.
