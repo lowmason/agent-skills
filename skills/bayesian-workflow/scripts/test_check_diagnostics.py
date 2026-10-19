@@ -410,8 +410,19 @@ def test_pareto_k_between_good_k_and_0_7_asks_for_more_draws():
         _with_pareto_k(max=0.68, good_k=0.6555, n_bad=3, n_high=0, n_nonfinite=0, ok=False)
     )
     assert report["loo"]["rating"] == "fair"
-    step = _one_step(steps, "LOO Pareto-k is above the sample-size threshold 0.66")
+    step = _one_step(steps, "LOO Pareto-k is above the sample-size threshold 0.6555")
     assert "3 observation(s)" in step and "more draws" in step
+    assert not _proceeds(steps)
+
+
+def test_the_pareto_k_threshold_is_printed_unrounded():
+    # good_k is 0.6971 at S = 2,000 (4 x 500): "0.70" would put a point at k 0.699 above 0.70.
+    report, steps = _report_and_steps(
+        _with_pareto_k(max=0.699, good_k=0.6971, n_bad=1, n_high=0, n_nonfinite=0, ok=False)
+    )
+    assert report["loo"]["rating"] == "fair"
+    step = _one_step(steps, "LOO Pareto-k is above the sample-size threshold 0.6971")
+    assert "1 observation(s)" in step
     assert not _proceeds(steps)
 
 

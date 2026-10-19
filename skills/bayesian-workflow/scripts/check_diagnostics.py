@@ -617,7 +617,7 @@ def suggest_next_steps(report: dict) -> list[str]:
             )
     elif loo_rating == "fair":
         steps.append(
-            f"LOO Pareto-k is above the sample-size threshold {loo_pk.get('good_k', PARETO_K_MAX):.2f} "
+            f"LOO Pareto-k is above the sample-size threshold {loo_pk.get('good_k', PARETO_K_MAX):g} "
             f"but at most {PARETO_K_MAX} for {loo_pk.get('n_bad', 0)} observation(s) — PSIS-LOO "
             "is not reliable there yet, but more draws may fix it: the threshold rises to "
             f"{PARETO_K_MAX} at about 2,200 draws in total (loo's Pareto-k diagnostic). Re-run "

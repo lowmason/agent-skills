@@ -134,6 +134,15 @@ def test_report_overall_flags_a_loo_that_never_ran(monkeypatch):
     assert any(issue.startswith("LOO not computed") and error in issue for issue in overall["issues"]), overall
 
 
+def test_report_overall_prints_the_pareto_k_threshold_unrounded(monkeypatch):
+    # good_k is 0.6971 at S = 2,000 (4 x 500): ":.2f" printed it as 0.70.
+    pareto_k = {"ok": False, "good_k": 0.6971, "n_bad": 1, "n_nonfinite": 0}
+    _stub_checks(monkeypatch, check_loo={"computed": True, "pareto_k": pareto_k})
+    overall = generate_report(None)["overall"]
+    assert not overall["ok"]
+    assert any("1 observation(s) with Pareto k above 0.6971" in issue for issue in overall["issues"]), overall
+
+
 def test_the_two_scripts_share_their_thresholds():
     assert diagnose_model.REL_MCSE_OK == cd.REL_MCSE_OK
     assert diagnose_model.PARETO_K_MAX == cd.PARETO_K_MAX

@@ -413,7 +413,7 @@ def generate_report(idata):
         n_nf = loo_pk.get("n_nonfinite", 0)
         parts = []
         if n_bad:
-            parts.append(f"{n_bad} observation(s) with Pareto k above {loo_pk['good_k']:.2f}")
+            parts.append(f"{n_bad} observation(s) with Pareto k above {loo_pk['good_k']:g}")
         if n_nf:
             parts.append(
                 f"{n_nf} observation(s) with non-finite Pareto k (LOO could not be estimated)"
