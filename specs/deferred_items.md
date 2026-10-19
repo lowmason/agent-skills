@@ -3910,13 +3910,13 @@ re-taken at `aca0f3d`. Routes follow the audit's: its "direct fix" is Size quick
 is Size design, a watch item has a Revisit if, and an owner call opens the Done when. Items run
 in theme order: superpowers drift; the model lifecycle (tune, track and the comparator);
 bayesian-workflow; producers and routing; script bugs; data skills; process; docs; licensing and
-repository hygiene. After this pass, PR #61 added the test-suite registry plan
-(`specs/plans/54-test-suite-registry.md`, not executed): it replaces CLAUDE.md's per-suite
-commands (lines 66–125) and shrinks the file from 199 lines to about 145. Once it lands, the
-items below that cite CLAUDE.md lines or its 199-line limit re-anchor: D8 (the snippet-tier
-wording), D9 (the "Single test" example), D10 (the Mancuso credit), F9 (the snippet pin bump)
-and B11 (the floating snippet tier). D9's pointer to `CLAUDE.md:66-68` then moves to the
-registry's notes for the `build` suite.
+repository hygiene. After this pass, PR #61 added the test-suite registry plan, which PR #62
+renumbered to plan 55 (`specs/plans/55-test-suite-registry.md`, not executed). It replaces
+CLAUDE.md's per-suite commands (lines 66–125) and shrinks the file from 199 lines to about 145.
+Once it lands, the items below that cite CLAUDE.md lines or its 199-line limit re-anchor: D8
+(the snippet-tier wording), D9 (the "Single test" example), D10 (the Mancuso credit), F9 (the
+snippet pin bump) and B11 (the floating snippet tier). D9's pointer to `CLAUDE.md:66-68` then
+moves to the registry's notes for the `build` suite.
 
 - [ ] Decide superpowers drift finding 7: may a plan conflict take a recorded ruling so execution
       continues, instead of stopping for the owner? (audit-3-10-26 B5, found 2026-10-03; drift
