@@ -1,11 +1,12 @@
 # document-python-package — Design Spec
 
-**Status: DRAFT (2026-10-19).** The owner approved the four design sections in a
-brainstorming session on 2026-10-19. This written spec waits for the owner's
-review. Next step: an implementation plan from the writing-plans skill.
+**Status: APPROVED (2026-10-19).** The owner approved the four design sections in
+a brainstorming session on 2026-10-19, and approved this written spec the same
+day. Next step: an implementation plan from the writing-plans skill.
 
 These changes were made after the sections were approved, while writing and in
-a review pass against the v0.17.0 source:
+a review pass against the v0.17.0 source. The owner approved them with the
+written spec:
 
 1. The preflight script reads the great-docs version from `uv.lock`, not with
    `importlib.metadata` (R3.2 gives the reason).
