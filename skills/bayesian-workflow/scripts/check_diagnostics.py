@@ -38,6 +38,23 @@ COVERAGE_DEVIATION_FAIR = 0.05
 PSENSE_OK = 0.05
 PSENSE_FAIR = 0.10
 
+# The report's own published bar for the largest relative MCSE (references/reporting.md,
+# Sampling and Convergence), so unlike the levels above it is quoted in the next step.
+# diagnose_model.py keeps a copy for its overall verdict; test_diagnose_model.py pins the two.
+REL_MCSE_OK = 0.05
+
+# The checks the all-clear requires: report section, label, and the ratings that pass.
+REQUIRED_CHECKS = (
+    ("convergence", "convergence", ("excellent", "good")),
+    ("precision", "Monte Carlo precision", ("excellent",)),
+    ("loo", "LOO", ("excellent",)),
+    ("calibration", "calibration", ("excellent",)),
+)
+PSENSE_REMEDY = (
+    "run psense_summary(idata) and pass it with --psense, before publication if any "
+    "conclusion is policy-relevant"
+)
+
 # calibration_check.FINDINGS labels, routed by prefix. This is a copy, not an import:
 # importing calibration_check would pull the ArviZ stack into this pure-JSON reader.
 # test_calibration_check.py's contract test keeps the two in step.
@@ -182,6 +199,23 @@ def _rate_psense(ps: dict) -> tuple[str, list[str]]:
     return "strong sensitivity", flagged
 
 
+def _rate_precision(prec: dict | None) -> dict:
+    """Rate Monte Carlo precision against REL_MCSE_OK.
+
+    "not computed" when diagnostics.json has no precision block, or one with no
+    usable parameter: check_precision then reports max_rel_mcse 0.0, which
+    would otherwise pass.
+    """
+    if not prec or not prec.get("params"):
+        return {"rating": "not computed"}
+    worst = float(prec.get("max_rel_mcse", 0.0))
+    return {
+        "rating": "excellent" if worst <= REL_MCSE_OK else "poor",
+        "max_rel_mcse": worst,
+        "max_rel_mcse_param": prec.get("max_rel_mcse_param"),
+    }
+
+
 def check_diagnostics(
     diagnostics: dict | None = None,
     calibration: dict | None = None,
@@ -193,7 +227,8 @@ def check_diagnostics(
     ----------
     diagnostics : dict, optional
         Output of ``diagnose_model.generate_report()``. Provides
-        ``convergence``, ``loo``, and ``posterior_predictive`` sub-reports.
+        ``convergence``, ``loo``, ``posterior_predictive`` and ``precision``
+        sub-reports.
     calibration : dict, optional
         Output of ``calibration_check.py``.
     psense : dict, optional
@@ -203,7 +238,8 @@ def check_diagnostics(
     -------
     dict
         Structured assessment with sections: ``convergence``, ``loo``,
-        ``calibration``, ``psense``, plus ``summary`` (one-line per section).
+        ``posterior_predictive``, ``precision``, ``calibration``, ``psense``,
+        plus ``summary`` (one-line per section).
     """
     report: dict = {}
 
@@ -223,11 +259,14 @@ def check_diagnostics(
             # carry the Pareto-k breakdown so suggest_next_steps can distinguish
             # finite k > 0.7 from non-finite (could-not-estimate) points.
             "pareto_k": loo_in.get("pareto_k", {}),
+            # diagnose_model.py's reason when LOO did not run; the next step quotes it
+            "error": loo_in.get("error", ""),
         }
         ppc = diagnostics.get("posterior_predictive", {})
         report["posterior_predictive"] = {
             "available": bool(ppc.get("available", False)),
         }
+        report["precision"] = _rate_precision(diagnostics.get("precision"))
 
     if calibration is not None:
         cal_rating, cal_diagnosis = _rate_calibration(calibration)
@@ -268,6 +307,16 @@ def _build_summary(report: dict) -> dict:
             named = [p for p in r["problematic_params"] if not any(tok in str(p).lower() for tok in _np)]
             params = ", ".join(named[:3]) or "multiple parameters"
             s["convergence"] = f"Poor convergence on {params}. Posterior should not be interpreted until resolved."
+
+    if "precision" in report:
+        r = report["precision"]
+        if r["rating"] == "not computed":
+            s["precision"] = "Monte Carlo precision: not computed."
+        else:
+            s["precision"] = (
+                f"Monte Carlo precision: {r['rating']} (max relative MCSE "
+                f"{r['max_rel_mcse']:.3f} on {r['max_rel_mcse_param']}; bar ≤ {REL_MCSE_OK})."
+            )
 
     if "loo" in report:
         s["loo"] = f"LOO Pareto-k: {report['loo']['rating']}."
@@ -356,6 +405,42 @@ def _calibration_steps(cal: dict) -> list[str]:
     return steps
 
 
+def _not_checked(report: dict) -> list[str]:
+    """'check (how to run it)' for each optional check that did not run."""
+    missing = []
+    if report.get("psense", {}).get("rating", "not computed") == "not computed":
+        missing.append(f"prior sensitivity ({PSENSE_REMEDY})")
+    return missing
+
+
+def _closing_steps(report: dict) -> list[str]:
+    """The all-clear when every required check ran and passed; otherwise what blocks it.
+
+    Reached only when no other step was added, so a required section that is
+    missing, or that did not pass without adding a step of its own, still
+    blocks the all-clear.
+    """
+    unresolved = [
+        f"{label} ({report.get(key, {}).get('rating', 'not run')})"
+        for key, label, passing in REQUIRED_CHECKS
+        if report.get(key, {}).get("rating", "not run") not in passing
+    ]
+    if unresolved:
+        return [
+            "No specific next step applies, but not every required check ran and passed: "
+            f"{', '.join(unresolved)}. Resolve these before interpreting the posterior."
+        ]
+    steps = [
+        "All diagnostics are within acceptable bounds — proceed to "
+        "interpretation. Translate posteriors into decision-relevant terms "
+        "and document the model assumptions in the report."
+    ]
+    missing = _not_checked(report)
+    if missing:
+        steps.append(f"Not checked: {'; '.join(missing)}. Say so in the report.")
+    return steps
+
+
 def suggest_next_steps(report: dict) -> list[str]:
     """Combine the interpreted report into an ordered, actionable list.
 
@@ -409,7 +494,31 @@ def suggest_next_steps(report: dict) -> list[str]:
                 "Check for multimodality with az.plot_rank(idata) (runs on both ArviZ stacks)."
             )
 
+    # ── Monte Carlo precision ─────────────────────────────────────────
+    prec = report.get("precision", {})
+    if prec.get("rating") == "poor":
+        steps.append(
+            f"Monte Carlo precision is short of the report's bar: max relative MCSE "
+            f"{prec['max_rel_mcse']:.3f} on {prec['max_rel_mcse_param']}, above {REL_MCSE_OK} "
+            "(references/reporting.md, Sampling and Convergence). Run more draws before "
+            "reporting — halving the MCSE costs about four times the draws — and round each "
+            "reported value to its stable_digits in diagnostics.json → precision."
+        )
+    elif prec.get("rating") == "not computed":
+        steps.append(
+            "Monte Carlo precision was not checked — diagnostics.json has no precision block "
+            "with a usable parameter. Re-run diagnose_model.py, which writes it, before filling "
+            "the report's MCSE row."
+        )
+
     # ── Calibration ───────────────────────────────────────────────────
+    if "calibration" not in report:
+        steps.append(
+            "Calibration was not checked — run calibration_check.py and pass its JSON with "
+            "--calibration. Calibration is mandatory for every model "
+            "(references/model-criticism.md), and the report's all-clear depends on it "
+            "(references/reporting.md)."
+        )
     steps.extend(_calibration_steps(report.get("calibration", {})))
 
     # ── LOO ───────────────────────────────────────────────────────────
@@ -444,6 +553,12 @@ def suggest_next_steps(report: dict) -> list[str]:
             "Identify the points and decide whether they're substantively important; "
             "consider a robust likelihood if they reflect a tail-heavy data process."
         )
+    elif loo_rating == "not computed" and "loo" in report:
+        reason = loo.get("error") or (
+            "diagnostics.json has no LOO result; re-run diagnose_model.py on an "
+            "InferenceData with a log_likelihood group."
+        )
+        steps.append(f"LOO was not computed, so the Pareto-k check never ran — {reason}")
 
     # ── PPC availability ──────────────────────────────────────────────
     if not report.get("posterior_predictive", {}).get("available", True):
@@ -470,18 +585,9 @@ def suggest_next_steps(report: dict) -> list[str]:
             "Conclusions for those parameters depend partly on the prior."
         )
 
-    # ── Default if nothing is wrong ───────────────────────────────────
+    # ── Closing: the all-clear only when every required check ran and passed ──
     if not steps:
-        steps.append(
-            "All diagnostics are within acceptable bounds — proceed to "
-            "interpretation. Translate posteriors into decision-relevant terms "
-            "and document the model assumptions in the report."
-        )
-        if report.get("psense", {}).get("rating") == "not computed":
-            steps.append(
-                "Consider running prior sensitivity (`psense_summary(idata)`) "
-                "before publication, especially if any conclusions are policy-relevant."
-            )
+        steps.extend(_closing_steps(report))
 
     return steps
 

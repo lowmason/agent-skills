@@ -9,6 +9,8 @@ import json
 import arviz as az
 import numpy as np
 
+import check_diagnostics as cd
+import diagnose_model
 from diagnose_model import _json_default, check_precision, generate_report
 
 
@@ -81,3 +83,50 @@ def test_generate_report_carries_precision_and_serializes():
     assert "precision" in report
     assert report["precision"]["params"]["mu"]["stable_digits"] == 1
     json.dumps(report, default=_json_default)  # must not raise
+
+
+PASSING_PRECISION = {
+    "params": {"mu": {"rel_mcse": 0.02, "stable_digits": 1}},
+    "max_rel_mcse": 0.02,
+    "max_rel_mcse_param": "mu",
+    "min_stable_digits": 1,
+}
+
+
+def _stub_checks(monkeypatch, **results):
+    """Stub generate_report's four checks with passing results, overridden by ``results``."""
+    passing = {
+        "check_convergence": {"all_ok": True},
+        "check_loo": {"computed": True, "pareto_k": {"ok": True}},
+        "check_posterior_predictive": {"available": True},
+        "check_precision": PASSING_PRECISION,
+    }
+    passing.update(results)
+    for name, result in passing.items():
+        monkeypatch.setattr(diagnose_model, name, lambda idata, result=result: result)
+
+
+def test_report_overall_passes_when_every_check_passes(monkeypatch):
+    # The control: each test below changes one check from these.
+    _stub_checks(monkeypatch)
+    overall = generate_report(None)["overall"]
+    assert overall["ok"] and overall["recommendation"] == "Model is ready for interpretation."
+
+
+def test_report_overall_flags_a_failing_mcse(monkeypatch):
+    _stub_checks(monkeypatch, check_precision={**PASSING_PRECISION, "max_rel_mcse": 0.058})
+    overall = generate_report(None)["overall"]
+    assert not overall["ok"]
+    assert any("0.058 on mu" in issue for issue in overall["issues"]), overall
+
+
+def test_report_overall_flags_a_loo_that_never_ran(monkeypatch):
+    error = "No log_likelihood group in the InferenceData. Rebuild it with az.from_numpyro(...)."
+    _stub_checks(monkeypatch, check_loo={"computed": False, "error": error})
+    overall = generate_report(None)["overall"]
+    assert not overall["ok"]
+    assert any(issue.startswith("LOO not computed") and error in issue for issue in overall["issues"]), overall
+
+
+def test_the_two_scripts_share_their_thresholds():
+    assert diagnose_model.REL_MCSE_OK == cd.REL_MCSE_OK

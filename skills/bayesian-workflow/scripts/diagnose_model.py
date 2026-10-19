@@ -28,6 +28,10 @@ try:
 except ImportError:
     HAS_DIAGNOSE = False
 
+# The report's bar for the largest relative MCSE (references/reporting.md, Sampling and
+# Convergence). check_diagnostics.py keeps a copy; test_diagnose_model.py pins the two.
+REL_MCSE_OK = 0.05
+
 
 def _json_default(o):
     """Coerce stray numpy scalars/arrays so json.dumps never chokes.
@@ -352,6 +356,14 @@ def generate_report(idata):
     issues = []
     if not report["convergence"]["all_ok"]:
         issues.append("Convergence issues detected — results may be unreliable")
+    prec = report["precision"]
+    if prec["params"] and prec["max_rel_mcse"] > REL_MCSE_OK:
+        issues.append(
+            f"Max relative MCSE {prec['max_rel_mcse']:.3f} on {prec['max_rel_mcse_param']} "
+            f"is above the {REL_MCSE_OK} bar — run more draws before reporting"
+        )
+    if not report["loo"].get("computed"):
+        issues.append(f"LOO not computed: {report['loo'].get('error', 'no LOO result')}")
     loo_pk = report["loo"].get("pareto_k", {}) if report["loo"].get("computed") else {}
     if loo_pk and not loo_pk.get("ok", True):
         n_high = loo_pk.get("n_bad", 0)

@@ -197,3 +197,132 @@ def test_a_legacy_calibration_file_falls_back_to_its_diagnosis(diagnosis, findin
 def test_a_legacy_over_confident_file_keeps_its_likelihood_advice():
     (step,) = _calibration_steps(_legacy_calibration(OVER, POOR_OVER))
     assert "likelihood is too narrow" in step
+
+
+def _clean_diagnostics():
+    """diagnose_model.py output in which every check ran and passed."""
+    return {
+        "convergence": {
+            "all_ok": True,
+            "method": "arviz_stats.diagnose",
+            "rhat": {"ok": True, "max": None, "problematic_params": []},
+            "ess_bulk": {"ok": True, "min": 1800, "problematic_params": []},
+            "ess_tail": {"ok": True, "min": 1700, "problematic_params": []},
+            "divergences": {"checked": True, "count": 0, "pct": 0.0, "ok": True},
+            "treedepth": {"checked": True, "ok": True, "n_max": 0, "pct": 0.0},
+            "bfmi": {"checked": True, "ok": True, "failed_chains": []},
+        },
+        "loo": {
+            "computed": True,
+            "elpd": -120.4,
+            "se": 6.2,
+            "p_loo": 3.1,
+            "pareto_k": {"max": 0.31, "good_k": 0.7, "n_bad": 0, "n_high": 0, "n_nonfinite": 0, "ok": True},
+        },
+        "posterior_predictive": {"available": True},
+        "precision": {
+            "params": {"mu": {"rel_mcse": 0.021, "stable_digits": 1}},
+            "max_rel_mcse": 0.021,
+            "max_rel_mcse_param": "mu",
+            "min_stable_digits": 1,
+        },
+    }
+
+
+WELL_CALIBRATED = _calibration([], 0.0012)
+LOW_PSENSE = {"prior": {"mu": 0.01}, "likelihood": {"mu": 0.02}}
+
+
+def _steps(diagnostics, calibration=WELL_CALIBRATED, psense=LOW_PSENSE):
+    return suggest_next_steps(
+        check_diagnostics(diagnostics=diagnostics, calibration=calibration, psense=psense)
+    )
+
+
+def _one_step(steps, prefix):
+    hits = [s for s in steps if s.startswith(prefix)]
+    assert len(hits) == 1, steps
+    return hits[0]
+
+
+def _proceeds(steps):
+    return any("proceed to interpretation" in s for s in steps)
+
+
+def test_a_clean_report_gets_the_all_clear_alone():
+    # The control: each test below changes one input from these.
+    steps = _steps(_clean_diagnostics())
+    assert len(steps) == 1 and _proceeds(steps), steps
+
+
+def test_a_failing_mcse_gets_a_precision_step_not_the_all_clear():
+    diag = _clean_diagnostics()
+    diag["precision"].update(max_rel_mcse=0.058, max_rel_mcse_param="beta[1]")
+    steps = _steps(diag)
+    step = _one_step(steps, "Monte Carlo precision")
+    assert "0.058 on beta[1]" in step and "0.05" in step
+    assert not _proceeds(steps)
+
+
+def test_an_mcse_at_the_bar_passes():
+    diag = _clean_diagnostics()
+    diag["precision"]["max_rel_mcse"] = 0.05
+    assert _proceeds(_steps(diag))
+
+
+@pytest.mark.parametrize(
+    "precision",
+    [None, {"params": {}, "max_rel_mcse": 0.0, "max_rel_mcse_param": None, "min_stable_digits": None}],
+    ids=["no_block", "no_usable_param"],
+)
+def test_precision_that_never_ran_is_named_not_passed(precision):
+    diag = _clean_diagnostics()
+    if precision is None:
+        del diag["precision"]
+    else:
+        diag["precision"] = precision
+    steps = _steps(diag)
+    assert "diagnose_model.py" in _one_step(steps, "Monte Carlo precision was not checked")
+    assert not _proceeds(steps)
+
+
+@pytest.mark.parametrize("loo", ["error", "no_section"])
+def test_a_loo_that_never_ran_quotes_its_remedy(loo):
+    diag = _clean_diagnostics()
+    if loo == "error":
+        diag["loo"] = {
+            "computed": False,
+            "error": "No log_likelihood group in the InferenceData. Rebuild it with "
+            "az.from_numpyro(mcmc, log_likelihood=True, ...) and re-save the netCDF.",
+        }
+    else:
+        del diag["loo"]
+    steps = _steps(diag)
+    assert "log_likelihood" in _one_step(steps, "LOO was not computed")
+    assert not _proceeds(steps)
+
+
+def test_without_calibration_there_is_no_all_clear():
+    steps = _steps(_clean_diagnostics(), calibration=None)
+    assert "--calibration" in _one_step(steps, "Calibration was not checked")
+    assert not _proceeds(steps)
+
+
+@pytest.mark.parametrize("psense", [None, {}], ids=["not_passed", "empty"])
+def test_the_all_clear_names_prior_sensitivity_when_it_did_not_run(psense):
+    steps = _steps(_clean_diagnostics(), psense=psense)
+    assert _proceeds(steps)
+    assert "prior sensitivity" in _one_step(steps, "Not checked:")
+
+
+def test_a_rating_that_did_not_pass_blocks_the_all_clear_even_without_a_step():
+    # A legacy calibration file that rates fair but names no finding adds no step.
+    steps = _steps(_clean_diagnostics(), calibration=_legacy_calibration("", FAIR_OVER))
+    assert "calibration (fair)" in _one_step(steps, "No specific next step applies")
+    assert not _proceeds(steps)
+
+
+def test_no_diagnostics_means_no_all_clear():
+    steps = _steps(None)
+    assert "convergence (not run)" in _one_step(steps, "No specific next step applies")
+    assert not _proceeds(steps)

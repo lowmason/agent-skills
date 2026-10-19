@@ -128,7 +128,7 @@ The prior predictive distribution shows the data the model would generate before
 | Min ESS (bulk) | <e.g., 1840> | ≥ 100 × n_chains | <✓ / ✗> |
 | Min ESS (tail) | <e.g., 1620> | ≥ 100 × n_chains | <✓ / ✗> |
 | Divergences | <e.g., 0> | 0 (or near zero) | <✓ / ✗> |
-| Max relative MCSE | <e.g., 0.02 (β₁)> | ≤ 0.05 (≥ 1 stable digit; from `diagnostics.json → precision`) | <✓ / ✗> |
+| Max relative MCSE | <e.g., 0.02 (β₁)> | ≤ 0.05 (from `diagnostics.json → precision`; `check_diagnostics.py` flags a higher value) | <✓ / ✗> |
 
 ![Trace](trace.png)
 
