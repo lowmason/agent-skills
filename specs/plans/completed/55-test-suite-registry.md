@@ -10,7 +10,7 @@
 
 **Tech Stack:** Python 3.13 through `uv run`; the runner uses the stdlib only (`tomllib`, `argparse`, `subprocess`, `shlex`); pytest; git; bash (`build/run_commit_lints.sh`).
 
-**Spec:** [`specs/test-suite-registry.md`](../test-suite-registry.md)
+**Spec:** [`specs/completed/test-suite-registry.md`](../../completed/test-suite-registry.md)
 
 ## Global Constraints
 

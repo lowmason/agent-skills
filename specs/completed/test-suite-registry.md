@@ -1,7 +1,8 @@
 # Test-suite registry and runner — Design Spec
 
-**Status:** Design approved in brainstorming on 2026-10-18. Next step: an implementation plan from the
-writing-plans skill (`entry_check.py` reported plan id 54 as next free on 2026-10-18).
+**Status: COMPLETE (2026-10-18)** — implemented by plan 55 (`specs/plans/completed/55-test-suite-registry.md`) and
+retired here. Design approved in brainstorming on 2026-10-18. The plan was first numbered 54. Its Decision D4
+records the change to 55.
 
 ## What this builds
 
