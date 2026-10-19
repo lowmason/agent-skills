@@ -1,5 +1,7 @@
 # write-with-asd-ste100 Implementation Plan
 
+**Status: COMPLETE (2026-10-18)** — executed via executing-plans; deferred items in specs/deferred_items.md. Task 11 runs after the merge.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Ship the `write-with-asd-ste100` skill and its always-on user-level rule, with the rule's form and any extra skill wording decided by pre-registered `claude -p` test runs.
@@ -8,7 +10,7 @@
 
 **Tech Stack:** Python 3.13 through `uv run` (kit, tests, lints); `install.py`, stdlib only and still runnable by `/usr/bin/python3` 3.9; Claude Code `claude -p` (a held copy, 2.1.302 when planned); pytest; danyuchn's `ste-lint.py`, pinned and unchanged.
 
-**Spec:** [`specs/write-with-asd-ste100.md`](../write-with-asd-ste100.md)
+**Spec:** [`specs/completed/write-with-asd-ste100.md`](../../completed/write-with-asd-ste100.md)
 
 ## Global Constraints
 
@@ -34,6 +36,7 @@ These come from the spec unless a line says otherwise. Every task's requirements
 - **D4** (owner, plan review, 2026-10-18): Q2 option (b): keep both guard lines as guards that never leave the rule. Applied in: Task 2, Step 8 (spec amendment), Task 4, Step 5, and Appendix B (`GUARDS` in `kit.py`, `test_dropped_habits`, `PREREGISTRATION.md`).
 - **D5** (owner, plan review, 2026-10-18): Q3 option (a): as the spec says, `skills/write-with-asd-ste100/LICENSE` is a copy of `LICENSE-write-with-asd-ste100-sources`. Approved by merging PR #58. Applied in: Task 6.
 - **D6** (owner, plan review, 2026-10-18): Q4 option (a): fold the six stdlib-only suites that have their own entries, and the new linter suite, into one group under one comment, so `CLAUDE.md` ends at 197 lines. Approved by merging PR #58. Applied in: Task 6 (Appendix D, `CLAUDE.md:commands-moved` and `CLAUDE.md:commands`).
+- **D7** (owner, execution brief, 2026-10-18): Task 6 ran as written, with plan review question 4's option (a): fold the stdlib-only suite commands into one group, so `CLAUDE.md` ends at 197 lines. Plan 55 (the test-suite registry plan) records option (c) in its D3 and says plan 52 would be amended, but that amendment had not landed when execution started, so the owner chose "Run as written". Applied in: Task 6, Step 10. Plan 55's Task 7 edits `CLAUDE.md` after this merge, so it must read the current text (its own "Another plan landed first" step).
 
 ---
 
@@ -196,7 +199,7 @@ In the repository:
 - Consumes: the execution worktree on the branch `feat/write-with-asd-ste100` (see Execution handoff).
 - Produces: the baseline test counts for Tasks 6, 8 and 9, and which couplings are live.
 
-- [ ] **Step 1: Check the worktree and the plan**
+- [x] **Step 1: Check the worktree and the plan**
 
 ```bash
 git branch --show-current
@@ -206,7 +209,7 @@ git status --short
 
 Expected: the execution branch (`feat/write-with-asd-ste100` when the Execution handoff made the worktree), the last commit that changed this plan, and no changes.
 
-- [ ] **Step 2: Check that nothing is installed early**
+- [x] **Step 2: Check that nothing is installed early**
 
 ```bash
 ls ~/.claude/rules/ ~/.claude/skills/ | grep -c write-with-asd-ste100
@@ -214,7 +217,7 @@ ls ~/.claude/rules/ ~/.claude/skills/ | grep -c write-with-asd-ste100
 
 Expected: `0`. Any other number: stop and ask the owner, because a user-level copy contaminates every run.
 
-- [ ] **Step 3: Record the baseline counts**
+- [x] **Step 3: Record the baseline counts**
 
 ```bash
 uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_runtime_support.py
@@ -224,7 +227,7 @@ bash build/run_commit_lints.sh
 
 Expected: a `passed` count for `test_runtime_support.py` (write it down; Task 9 adds 9), `199` lines, and `commit lints passed`. `195` means that the worktree lacks PR #56: make it again from an up-to-date `main` (Execution handoff). Any other count means that `CLAUDE.md` changed after planning: read Coupling (e) and the Q4 decision before Task 6.
 
-- [ ] **Step 4: Check the portability couplings**
+- [x] **Step 4: Check the portability couplings**
 
 ```bash
 grep -l '^# /// script' skills/*/scripts/*.py
@@ -233,7 +236,7 @@ find skills -maxdepth 2 -name 'LICENSE*'
 
 Expected: the two `build.py` scripts (`classification-codes`, `geographic-codes`), and `skills/recommend-causal-design/LICENSE` alone. More PEP 723 headers mean that R3, the portability spec's self-contained-scripts work, has landed: Coupling (a) is live. More license files mean that R4, its license-copies work, has landed: Coupling (c) is live. Tell the owner before Task 6.
 
-- [ ] **Step 5: Read the decision that the README cites**
+- [x] **Step 5: Read the decision that the README cites**
 
 ```bash
 git show --no-patch 7aa454f
@@ -252,7 +255,7 @@ Expected: the commit "feat(rules): clean-code-python path-scoped rule + project-
 - Consumes: `gh` with read access to public GitHub repositories, and `claude` on `PATH`.
 - Produces: `kit.py` and its subcommands, which every later campaign task runs as `uv run --directory ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit --no-project --python 3.13 python kit.py <subcommand>`. `rules/short.md` and `rules/listed.md`. `upstream/ste-lint.py` (the file that Task 6 copies). `state.json` with the held binary, version, model and effort.
 
-- [ ] **Step 1: Cut the extractor out of this plan**
+- [x] **Step 1: Cut the extractor out of this plan**
 
 The extractor's block follows the command. The command cuts it out of the plan, so nobody retypes it:
 
@@ -342,7 +345,7 @@ if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))
 ```
 
-- [ ] **Step 2: Check the extractor against its block**
+- [x] **Step 2: Check the extractor against its block**
 
 ```bash
 uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit/extract_plan_files.py specs/plans/52-write-with-asd-ste100.md /tmp/ste-extract-check extract_plan_files.py
@@ -351,7 +354,7 @@ cmp ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit/extract_plan_files.p
 
 Expected: `wrote extract_plan_files.py`, and `cmp` prints nothing: the extractor reproduces its own block byte for byte.
 
-- [ ] **Step 3: Extract the kit**
+- [x] **Step 3: Extract the kit**
 
 ```bash
 uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit/extract_plan_files.py specs/plans/52-write-with-asd-ste100.md ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit kit.py cases.py test_kit.py PREREGISTRATION.md rules/short.md rules/listed.md
@@ -359,7 +362,7 @@ uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/write-wit
 
 Expected: six lines, `wrote kit.py` to `wrote rules/listed.md`.
 
-- [ ] **Step 4: Fetch the pinned upstream files**
+- [x] **Step 4: Fetch the pinned upstream files**
 
 ```bash
 uv run --directory ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit --no-project --python 3.13 python kit.py fetch
@@ -377,7 +380,7 @@ fetched LICENSE.prithivrajmu: 1106 bytes, sha256 92dfe5227cc7
 
 A sha256 mismatch stops the command: stop and ask the owner.
 
-- [ ] **Step 5: Run the kit's tests**
+- [x] **Step 5: Run the kit's tests**
 
 ```bash
 uv run --directory ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit --no-project --python 3.13 --with pytest python -m pytest -q -rfs test_kit.py
@@ -385,7 +388,7 @@ uv run --directory ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit --no-
 
 Expected: `31 passed`.
 
-- [ ] **Step 6: Hold the binary and fix the run settings**
+- [x] **Step 6: Hold the binary and fix the run settings**
 
 ```bash
 claude --version
@@ -394,7 +397,7 @@ uv run --directory ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit --no-
 
 Expected: the version, then `held Claude Code <version> at …/bin/claude-<version>; model claude-opus-5-5, effort medium`. The model and effort follow Q1. A version other than 2.1.302: compare Task 3, Step 1's probe output with "Facts measured while planning" before the pilot, and write each difference into `KIT/notes/deviations.md`.
 
-- [ ] **Step 7: Record the fingerprint**
+- [x] **Step 7: Record the fingerprint**
 
 ```bash
 uv run --directory ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit --no-project --python 3.13 python kit.py fingerprint --record
@@ -403,7 +406,7 @@ uv run --directory ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit --no-
 
 Expected: a JSON fingerprint, then `fingerprint unchanged`. From now on, a change to `~/.claude/settings.json`, `~/.claude/CLAUDE.md`, the user rules, the user skills, the plugins or the held binary stops every run (V4): ask the owner before you record again.
 
-- [ ] **Step 8: Amend the spec (D4)**
+- [x] **Step 8: Amend the spec (D4)**
 
 Plan review chose Q2 (b): the two guard lines never leave the rule. The spec's decision rules gain the sentence that `KIT/PREREGISTRATION.md` already holds, so both are fixed before the first run. The spec's status line stays as it is.
 
@@ -425,7 +428,7 @@ Expected: `edited specs/write-with-asd-ste100.md:guard-lines`, then two lines th
 - Consumes: Task 2's `state.json` and fingerprint.
 - Produces: `inherit.json` (Task 10 reports it), rep 1 of `function-question` in each rule arm and of `paragraph-edit` in `short`, and the cost projection that the owner approves.
 
-- [ ] **Step 1: Run the inherit probe**
+- [x] **Step 1: Run the inherit probe**
 
 ```bash
 uv run --directory ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit --no-project --python 3.13 python kit.py inherit
@@ -433,7 +436,7 @@ uv run --directory ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit --no-
 
 Expected: JSON with `"canary_answered": true`, `"tools": []`, `"mcp_servers": []`, the held model, and `instructions` that list `~/.claude/CLAUDE.md` and `~/.claude/rules/aws-agent-toolkit.md` as `User` and the canary rule as `Project`. Exit 0. A missing canary or a non-empty tool list: stop and ask the owner.
 
-- [ ] **Step 2: Run the rules-phase pilot**
+- [x] **Step 2: Run the rules-phase pilot**
 
 ```bash
 uv run --directory ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit --no-project --python 3.13 python kit.py run rules none --cases function-question --reps 1
@@ -443,7 +446,7 @@ uv run --directory ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit --no-
 
 Expected: one line for each run, such as `rules/none/function-question-1: ok $0.080`. `FAILED twice`: run the same command again. `COST ALARM`: stop and ask the owner.
 
-- [ ] **Step 3: Run the skill-phase pilot**
+- [x] **Step 3: Run the skill-phase pilot**
 
 ```bash
 uv run --directory ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit --no-project --python 3.13 python kit.py run skill pilot --cases uncertainty-chain,doc-clean --reps 1
@@ -451,7 +454,7 @@ uv run --directory ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit --no-
 
 Expected: two `ok` lines. The pilot never counts.
 
-- [ ] **Step 4: Score the pilot and project the cost**
+- [x] **Step 4: Score the pilot and project the cost**
 
 ```bash
 uv run --directory ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit --no-project --python 3.13 python kit.py score rules
@@ -461,7 +464,7 @@ uv run --directory ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit --no-
 
 Expected: `4 runs scored, … 0 void`, `2 runs scored, 0 flags, 0 void`, then four projection lines and `projected runs: $…; add 36 judge calls, …`.
 
-- [ ] **Step 5: Owner gate: approve the projection**
+- [x] **Step 5: Owner gate: approve the projection**
 
 Show the owner the projection, the pilot's costs and the inherit probe's summary. Ask: "Approve the full campaign at about $<projection> plus judges and re-runs?" Do not start Task 4 without a yes.
 
@@ -473,7 +476,7 @@ Show the owner the projection, the pilot's costs and the inherit probe's summary
 - Consumes: Task 3's pilot runs (kept as rep 1) and the owner's approval.
 - Produces: `KIT/rules/chosen.md`, the rule that Task 5, Task 7 and Task 8 use, and `decisions/rules.json`.
 
-- [ ] **Step 1: Run the three arms**
+- [x] **Step 1: Run the three arms**
 
 Run the arms one after another, each as a background command. Each prints one line for each of its 35 runs (7 cases, 5 runs). The pilot's runs print `kept`.
 
@@ -485,7 +488,7 @@ uv run --directory ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit --no-
 
 Expected: `ok` or `kept` lines. `FAILED twice`: run the same command again later. `COST ALARM`: stop and ask the owner. `refusing to run`: the fingerprint changed (V4), so stop and ask the owner.
 
-- [ ] **Step 2: Score**
+- [x] **Step 2: Score**
 
 ```bash
 uv run --directory ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit --no-project --python 3.13 python kit.py score rules
@@ -500,7 +503,9 @@ uv run --directory ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit --no-
 
 Then repeat Step 1's command for that arm, and Step 2.
 
-- [ ] **Step 3: Read every flag**
+- [x] **Step 3: Read every flag**
+
+> Deviation: in 10 of the 15 `label-unknown` flag contexts the run's working folder named its arm, so those arms were visible during the reading. The kit's flag rows also keep only the first-mention sentence for the `labels` check. Both are logged in `KIT/notes/deviations.md` and in the test record, sections 2 and 5.
 
 Read `KIT/flags/rules.tsv` row by row, under the table in `KIT/PREREGISTRATION.md` (Hand reading). Each row gives the check, the finding and its context. Write one verdict for each flag into `KIT/marks/rules.json`, in this form:
 
@@ -513,7 +518,7 @@ Read `KIT/flags/rules.tsv` row by row, under the table in `KIT/PREREGISTRATION.m
 
 Do not open `KIT/keys/` before every verdict in the phase is in. Above 400 flags, you may give the reading to reader subagents, one for each check, each with only that check's rows and the table. Read every reason they give before you merge.
 
-- [ ] **Step 4: Merge the verdicts**
+- [x] **Step 4: Merge the verdicts**
 
 ```bash
 uv run --directory ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit --no-project --python 3.13 python kit.py mark rules marks/rules.json
@@ -521,7 +526,7 @@ uv run --directory ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit --no-
 
 Expected: `<N> verdicts merged; 0 flags still unread`. A `count` verdict on a V3 or V5 flag makes the run void: void it, run again, score again, and read the new flags.
 
-- [ ] **Step 5: Decide the rule**
+- [x] **Step 5: Decide the rule**
 
 ```bash
 uv run --directory ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit --no-project --python 3.13 python kit.py decide-rule
@@ -539,7 +544,7 @@ Expected: a table of pooled passes for each habit in each arm, then `rule form: 
 - Consumes: `KIT/rules/chosen.md` (Task 4).
 - Produces: `decisions/skill-baseline.json` and `notes/baseline-failures.md`, which bound Task 6's wording step.
 
-- [ ] **Step 1: Run the baseline arm**
+- [x] **Step 1: Run the baseline arm**
 
 In the background:
 
@@ -549,7 +554,7 @@ uv run --directory ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit --no-
 
 Expected: 90 lines (18 cases, 5 runs), each `ok`. Handle `FAILED twice`, `COST ALARM` and `refusing to run` as in Task 4.
 
-- [ ] **Step 2: Judge and score**
+- [x] **Step 2: Judge and score**
 
 ```bash
 uv run --directory ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit --no-project --python 3.13 python kit.py judge baseline
@@ -558,7 +563,9 @@ uv run --directory ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit --no-
 
 Expected: 17 lines `<case>: judged $…` (`doc-dirty` has no judged check), then `92 runs scored, <N> flags, <V> void` (90 baseline runs and the 2 pilot runs). `FAILED twice` on a judge: run the same command again. Handle `VOID` lines as in Task 4, with the phase `skill` and the arm `baseline`. A `VOID` line for the `pilot` arm needs no action.
 
-- [ ] **Step 3: Read and merge the flags**
+- [x] **Step 3: Read and merge the flags**
+
+> Deviation: the owner amended the pre-registered `V3` row of `KIT/PREREGISTRATION.md` (2026-10-18), because the baseline's tool runs probed for the skill that the rule names. All 19 `V3` flags are `justified` under the amended row. The test record, section 2, has the text.
 
 Read every row of `KIT/flags/skill.tsv` as in Task 4, Step 3, into `KIT/marks/skill.json`. Then:
 
@@ -569,7 +576,7 @@ uv run --directory ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit --no-
 
 Expected: `0 flags still unread`, then 18 lines `<case> <passed>/5 PASS|FAIL`.
 
-- [ ] **Step 4: Record each failure**
+- [x] **Step 4: Record each failure**
 
 Write `KIT/notes/baseline-failures.md`: for each case that failed in at least one run, the case, the failed checks, how many runs failed each, and one line on what the replies did. Task 6's wording step may act only on these failures.
 
@@ -584,7 +591,7 @@ Write `KIT/notes/baseline-failures.md`: for each case that failed in at least on
 - Consumes: `KIT/upstream/ste-lint.py` (Task 2), `KIT/notes/baseline-failures.md` and `KIT/decisions/skill-baseline.json` (Task 5).
 - Produces: the committed skill, which Task 7 freezes through `--skill-source`. Lines that `rules/write-with-asd-ste100.md` (Task 8) repeats word for word: the standard line "Write prose for people about 80% of the way to ASD-STE100 Simplified Technical English.", the label line (three sentences), the literal-text sentence, "Change existing text only when the user asks." and the 10 bullets of the 80% rule set.
 
-- [ ] **Step 1: Write the failing linter test**
+- [x] **Step 1: Write the failing linter test**
 
 ```bash
 uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit/extract_plan_files.py specs/plans/52-write-with-asd-ste100.md . skills/write-with-asd-ste100/scripts/test_ste_lint.py
@@ -592,7 +599,7 @@ uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/write-wit
 
 Expected: `wrote skills/write-with-asd-ste100/scripts/test_ste_lint.py`.
 
-- [ ] **Step 2: Run it to see it fail**
+- [x] **Step 2: Run it to see it fail**
 
 ```bash
 uv run --directory skills/write-with-asd-ste100/scripts --python 3.13 --with pytest python -m pytest -q -rfs
@@ -600,7 +607,7 @@ uv run --directory skills/write-with-asd-ste100/scripts --python 3.13 --with pyt
 
 Expected: 5 failed, each because `ste-lint.py` does not exist (`FileNotFoundError`, or the self-test's `can't open file`).
 
-- [ ] **Step 3: Copy the linter unchanged**
+- [x] **Step 3: Copy the linter unchanged**
 
 ```bash
 cp ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit/upstream/ste-lint.py skills/write-with-asd-ste100/scripts/ste-lint.py
@@ -609,7 +616,7 @@ shasum -a 256 skills/write-with-asd-ste100/scripts/ste-lint.py
 
 Expected: `32263de1b6b74cc3f83846ae8545ba6c57994db0ba1ec1c8d842c310427886d1`.
 
-- [ ] **Step 4: Run the test to see it pass**
+- [x] **Step 4: Run the test to see it pass**
 
 ```bash
 uv run --directory skills/write-with-asd-ste100/scripts --python 3.13 --with pytest python -m pytest -q -rfs
@@ -617,7 +624,7 @@ uv run --directory skills/write-with-asd-ste100/scripts --python 3.13 --with pyt
 
 Expected: `5 passed` (+5, a new suite). Where `/usr/bin/python3` is missing, 4 passed and 1 skipped.
 
-- [ ] **Step 5: Write the skill text**
+- [x] **Step 5: Write the skill text**
 
 ```bash
 uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit/extract_plan_files.py specs/plans/52-write-with-asd-ste100.md . skills/write-with-asd-ste100/SKILL.md skills/write-with-asd-ste100/references/agent-mode.md skills/write-with-asd-ste100/references/strict.md skills/write-with-asd-ste100/references/document-rewrite.md skills/write-with-asd-ste100/references/examples.md
@@ -625,7 +632,7 @@ uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/write-wit
 
 Expected: five `wrote` lines.
 
-- [ ] **Step 6: Change wording only for recorded failures**
+- [x] **Step 6: Change wording only for recorded failures**
 
 For each failure in `KIT/notes/baseline-failures.md`, read the skill text that covers it. Where that text already gives the guidance, change nothing. Otherwise add or sharpen wording, inside these bounds:
 
@@ -637,7 +644,7 @@ For each failure in `KIT/notes/baseline-failures.md`, read the skill text that c
 
 Write each change into `KIT/notes/wording.md`: the case, the check, the text added. No change at all is a valid result.
 
-- [ ] **Step 7: Check for test-case words**
+- [x] **Step 7: Check for test-case words**
 
 ```bash
 uv run --directory ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit --no-project --python 3.13 python kit.py overlap "$PWD"/skills/write-with-asd-ste100/SKILL.md "$PWD"/skills/write-with-asd-ste100/references/*.md
@@ -645,7 +652,7 @@ uv run --directory ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit --no-
 
 Expected: `0 case words found`. A hit: reword that line.
 
-- [ ] **Step 8: Lint the skill's own prose**
+- [x] **Step 8: Lint the skill's own prose**
 
 ```bash
 python3 skills/write-with-asd-ste100/scripts/ste-lint.py skills/write-with-asd-ste100/SKILL.md
@@ -657,7 +664,7 @@ python3 skills/write-with-asd-ste100/scripts/ste-lint.py skills/write-with-asd-s
 
 Expected before any Step 6 change, as each summary line: `2 violations (1 hard, baseline 0), 1305 words` for `SKILL.md` (the passive "is known" inside the active-voice habit line, and the quoted "spin up"), `6 violations (6 hard, baseline 0), 483 words` for `agent-mode.md` (the quoted bad examples of the six-habit scan), `0 violations` for `strict.md` and `document-rewrite.md`, and `28 violations (9 hard, baseline 0), 830 words` for `examples.md` (Before texts, quoted words, and After texts that keep their source's passive or perfect tense under the meaning rules). The linter exits 1 when a file has a hard finding, which is expected here. Read every finding in text that Step 6 added, and fix any that is not of those kinds.
 
-- [ ] **Step 9: Write the license files**
+- [x] **Step 9: Write the license files**
 
 ```bash
 uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit/extract_plan_files.py specs/plans/52-write-with-asd-ste100.md . LICENSE-write-with-asd-ste100-sources
@@ -672,7 +679,7 @@ uv run --no-project --python 3.13 python -c "import pathlib; s = pathlib.Path('L
 
 Expected: `[('LICENSE.danyuchn', True), ('LICENSE.prithivrajmu', True)]`.
 
-- [ ] **Step 10: Record the provenance and the docs**
+- [x] **Step 10: Record the provenance and the docs**
 
 ```bash
 uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit/extract_plan_files.py specs/plans/52-write-with-asd-ste100.md . NOTICE:skill-block CLAUDE.md:sources CLAUDE.md:bullet CLAUDE.md:commands-moved CLAUDE.md:commands README.md:skill-row README.md:credits README.md:license
@@ -681,7 +688,7 @@ wc -l < CLAUDE.md
 
 Expected: eight `edited` lines, then `197`. A line `<KEY>: the old text occurs N times`, or a count of 200 or more, means that `CLAUDE.md` changed after planning: stop and ask the owner (Coupling (e)).
 
-- [ ] **Step 11: Run the checks**
+- [x] **Step 11: Run the checks**
 
 ```bash
 uv run --no-project --python 3.13 --with pyyaml python build/check_frontmatter.py
@@ -695,7 +702,7 @@ bash build/run_commit_lints.sh
 
 Expected: no output from the frontmatter, provenance and conformance checks, only the existing `WARN` lines from the snippet check, no `FAIL` from `cli.py lint` (`STALE` lines never fail it), and `commit lints passed`. If the frontmatter check flags `ste-lint.py` or the `python3` call, Coupling (a) is live: stop and ask the owner. The same holds for any new frontmatter rule from the portability plan.
 
-- [ ] **Step 12: Commit**
+- [x] **Step 12: Commit**
 
 ```bash
 git commit -m "feat(write-with-asd-ste100): add the skill, its linter and provenance" -m "Adds the skill bundle from the approved spec: SKILL.md, four references, danyuchn's ste-lint.py (copied unchanged at 3944283c), its test wrapper, the sources license and its copy. NOTICE, CLAUDE.md and README.md record the two MIT sources."
@@ -709,7 +716,7 @@ git commit -m "feat(write-with-asd-ste100): add the skill, its linter and proven
 - Consumes: the skill as Task 6 committed it, and `KIT/rules/chosen.md`.
 - Produces: `decisions/skill-skill.json` (and `skill-skill-r1.json` after a re-run), which Task 10 reports.
 
-- [ ] **Step 1: Run the skill arm**
+- [x] **Step 1: Run the skill arm**
 
 In the background:
 
@@ -719,7 +726,9 @@ uv run --directory ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit --no-
 
 Expected: 90 `ok` lines. The first call freezes a copy of the committed skill. `has uncommitted changes`: commit Task 6 first.
 
-- [ ] **Step 2: Judge, score, read and decide**
+- [x] **Step 2: Judge, score, read and decide**
+
+> Deviation: a second owner-approved amendment of the `V3` row covers the skill arm's read of the installed `writing-skills` `SKILL.md`, the skill's own hand-off. The 7 flags are `justified`. The test record, section 2, has the text.
 
 ```bash
 uv run --directory ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit --no-project --python 3.13 python kit.py judge skill
@@ -735,7 +744,7 @@ uv run --directory ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit --no-
 
 Expected: 17 judge lines, `182 runs scored, …`, `0 flags still unread`, and 18 lines `<case> <passed>/5 PASS|FAIL`. A case passes at 4 of 5 runs or more.
 
-- [ ] **Step 3: One wording fix for each failing case**
+- [x] **Step 3: One wording fix for each failing case**
 
 Skip this step when every case passes. Otherwise, for each failing case, make one wording fix under Task 6, Step 6's bounds, with this arm's failure in place of the baseline's, and log it in `KIT/notes/wording.md`. Then run Task 6, Steps 7, 8 and 11, and commit:
 
@@ -744,7 +753,9 @@ git add skills/write-with-asd-ste100
 git commit -m "fix(write-with-asd-ste100): sharpen <what> for the <case> case"
 ```
 
-- [ ] **Step 4: Re-run the failing cases**
+- [x] **Step 4: Re-run the failing cases**
+
+> Deviation: after the whole-branch review, four more text fixes followed (commit `a95900d`), and the owner approved a second re-run of the three agent cases as arm `skill-r2`. DF21 provides only `skill-r1`. All three cases passed 5 of 5 with no flags. The test record, sections 7 and 8, has the details.
 
 Skip this step when Step 3 was skipped.
 
@@ -773,7 +784,7 @@ Expected: a line for each re-run case. A case that fails again goes to the owner
 - Consumes: `KIT/rules/chosen.md` (Task 4) and the committed `SKILL.md` (Tasks 6 and 7).
 - Produces: `rules/write-with-asd-ste100.md`, which Task 9's installer places and its dependency test reads.
 
-- [ ] **Step 1: Write the failing drift test**
+- [x] **Step 1: Write the failing drift test**
 
 ```bash
 uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit/extract_plan_files.py specs/plans/52-write-with-asd-ste100.md . build/test_rule_habits.py
@@ -782,7 +793,7 @@ uv run --directory build --python 3.13 --with pytest python -m pytest -q -rfs te
 
 Expected: `wrote build/test_rule_habits.py`, then 2 failed with `FileNotFoundError` for `rules/write-with-asd-ste100.md`.
 
-- [ ] **Step 2: Add the rule that the tests chose**
+- [x] **Step 2: Add the rule that the tests chose**
 
 ```bash
 cp ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit/rules/chosen.md rules/write-with-asd-ste100.md
@@ -791,7 +802,7 @@ uv run --directory build --python 3.13 --with pytest python -m pytest -q -rfs te
 
 Expected: `2 passed` (+2, a new file). The rule text is the tested text: never edit it by hand.
 
-- [ ] **Step 3: Prove that the test bites**
+- [x] **Step 3: Prove that the test bites**
 
 ```bash
 cp rules/write-with-asd-ste100.md /tmp/ste-rule-backup.md
@@ -803,7 +814,7 @@ uv run --directory build --python 3.13 --with pytest python -m pytest -q test_ru
 
 Expected: `1 failed, 1 passed`, then `2 passed`. When the chosen rule has no label line, change another habit sentence instead.
 
-- [ ] **Step 4: Register the rule and document it**
+- [x] **Step 4: Register the rule and document it**
 
 ```bash
 uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit/extract_plan_files.py specs/plans/52-write-with-asd-ste100.md . build/cc_guide/conformance.toml:rule-paths-comment build/cc_guide/conformance.toml:always-on README.md:layout README.md:portable README.md:rules-intro README.md:rules-row README.md:rules-decision
@@ -811,7 +822,7 @@ uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/write-wit
 
 Expected: seven `edited` lines.
 
-- [ ] **Step 5: Run the checks**
+- [x] **Step 5: Run the checks**
 
 ```bash
 git add rules/write-with-asd-ste100.md build/test_rule_habits.py build/cc_guide/conformance.toml README.md
@@ -821,7 +832,7 @@ bash build/run_commit_lints.sh
 
 Expected: no output from the conformance check (the rule has no `paths`, and `always_on` lists it), then `commit lints passed`.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git commit -m "feat(rules): add the always-on write-with-asd-ste100 rule" -m "The rule form and its habit lines come from the rule arms (see the test record). A drift test keeps each habit line word for word in the skill."
@@ -837,7 +848,9 @@ git commit -m "feat(rules): add the always-on write-with-asd-ste100 rule" -m "Th
 - Consumes: `rules/write-with-asd-ste100.md` (Task 8).
 - Produces: `USER_RULES: dict[str, tuple[str, ...]]`, `rule_names() -> list[str]`, `selected_rules(requested: list[str]) -> list[str]`, a `rules: Collection[str] = ()` keyword on `runtime_items()` and `plan()`, and the `--rule NAME` option. Task 11 runs `python3 install.py claude --rule write-with-asd-ste100`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
+
+> Deviation: the final review added a guard assertion to `test_declared_dependencies_match_user_rule_text` (commit `eeb9250`). The loop in that test checked nothing when `USER_RULES` was empty.
 
 ```bash
 uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit/extract_plan_files.py specs/plans/52-write-with-asd-ste100.md . build/test_runtime_support.py:rule-tests
@@ -845,7 +858,7 @@ uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/write-wit
 
 Expected: `edited build/test_runtime_support.py:rule-tests`.
 
-- [ ] **Step 2: Run them to see them fail**
+- [x] **Step 2: Run them to see them fail**
 
 ```bash
 uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pytest -q -rfs test_runtime_support.py -k rule
@@ -853,7 +866,7 @@ uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pyt
 
 Expected: `8 failed, 1 passed`. The full install has no `.claude/rules/write-with-asd-ste100.md` symlink, each `--rule` call exits 2 with `unrecognized arguments: --rule write-with-asd-ste100`, and the dependency test raises `AttributeError: module 'install' has no attribute 'USER_RULES'`. The one pass is `test_skill_selection_alone_places_no_rule`, a guard: today's installer places no rule at all, and the test keeps it that way for `--skill` alone after the change.
 
-- [ ] **Step 3: Implement the allowlist and the flag**
+- [x] **Step 3: Implement the allowlist and the flag**
 
 ```bash
 uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit/extract_plan_files.py specs/plans/52-write-with-asd-ste100.md . install.py:citation install.py:docstring install.py:table install.py:functions install.py:runtime-items install.py:runtime-items-return install.py:plan install.py:rule-flag install.py:companions-help install.py:main install.py:plan-call
@@ -861,7 +874,7 @@ uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/write-wit
 
 Expected: eleven `edited` lines.
 
-- [ ] **Step 4: Run the tests to see them pass**
+- [x] **Step 4: Run the tests to see them pass**
 
 ```bash
 uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pytest -q -rfs test_runtime_support.py
@@ -869,7 +882,7 @@ uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pyt
 
 Expected: all pass, 9 more than Task 1 recorded.
 
-- [ ] **Step 5: Stamp the citation and check Python 3.9**
+- [x] **Step 5: Stamp the citation and check Python 3.9**
 
 ```bash
 uv run --no-project --python 3.13 python build/cc_guide/cli.py baseline cite install.py
@@ -880,7 +893,7 @@ mkdir -p /tmp/ste-install-check
 
 Expected: `stamped install.py @<version>`. Then two `would link` lines for Claude (the skill, then the rule), and one for Codex (the skill only).
 
-- [ ] **Step 6: Register and document the change**
+- [x] **Step 6: Register and document the change**
 
 ```bash
 uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit/extract_plan_files.py specs/plans/52-write-with-asd-ste100.md . build/cc_guide/conformance.toml:installer README.md:install-options README.md:install-rule-paragraph README.md:runtime-table README.md:claude-code-rules
@@ -888,7 +901,7 @@ uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/write-wit
 
 Expected: five `edited` lines.
 
-- [ ] **Step 7: Run the checks**
+- [x] **Step 7: Run the checks**
 
 ```bash
 git add install.py build/test_runtime_support.py build/cc_guide/conformance.toml README.md
@@ -900,7 +913,7 @@ uv run --directory build/cc_guide --python 3.13 --with pytest python -m pytest -
 
 Expected: no `FAIL` from `cli.py lint`, `commit lints passed`, and in the full `build/` suite 11 more passes than before this plan (9 here, 2 from Task 8). Only `test_verify_citations.py`'s ground-truth tests may fail, when the worktree has no `build/.scratch/`. The `build/cc_guide/` suite passes, because Tasks 8 and 9 edit `build/cc_guide/conformance.toml`.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git commit -m "feat(install): install user-level rules for Claude" -m "Adds a USER_RULES allowlist and --rule NAME. A full Claude install places each user-level rule as a symlink in ~/.claude/rules/, --rule also installs the skills the rule names, and Codex and Gemini installs place no rule. clean-code-python stays project-level."
@@ -915,7 +928,7 @@ git commit -m "feat(install): install user-level rules for Claude" -m "Adds a US
 - Consumes: `KIT/state.json`, `KIT/inherit.json`, `KIT/decisions/`, `KIT/flags/`, `KIT/notes/`, and the output of `kit.py report`.
 - Produces: the record that the spec's Records section and Done-when list require.
 
-- [ ] **Step 1: Collect the numbers**
+- [x] **Step 1: Collect the numbers**
 
 ```bash
 uv run --directory ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit --no-project --python 3.13 python kit.py report
@@ -927,7 +940,9 @@ uv run --directory ~/.cache/agent-skills/scratch/write-with-asd-ste100-kit --no-
 
 Add `kit.py decide-skill skill-r1` when Task 7 re-ran cases. `decide-rule` prints the same table as in Task 4, because `rules/chosen.md` already holds its text.
 
-- [ ] **Step 2: Write the record**
+- [x] **Step 2: Write the record**
+
+> Deviation: after the final review, the record gained the post-review fixes and the `skill-r2` result in sections 1, 2, 7, 8 and 9 (commits `2e53232` and `87941db`).
 
 Write `specs/write-with-asd-ste100-test-record.md` with these sections, in this order. Paste each command's output into a `text` block where the section says so.
 
@@ -942,7 +957,7 @@ Write `specs/write-with-asd-ste100-test-record.md` with these sections, in this 
 9. **Costs, voids and advisor calls.** `kit.py report`'s output (`text` block).
 10. **Raw replies.** One line: the replies stay outside the repository, in `~/.cache/agent-skills/scratch/write-with-asd-ste100-kit/out/`.
 
-- [ ] **Step 3: Check and commit**
+- [x] **Step 3: Check and commit**
 
 ```bash
 git add specs/write-with-asd-ste100-test-record.md
@@ -952,7 +967,9 @@ git commit -m "docs(specs): record the write-with-asd-ste100 test runs"
 
 Expected: `commit lints passed`.
 
-- [ ] **Step 4: Remove the run folders' empty traces**
+- [x] **Step 4: Remove the run folders' empty traces**
+
+> Deviation: ran a second time after `skill-r2`, which made new run folders.
 
 Each run's working folder left a folder under `~/.claude/projects/` whose name contains `ste-kit-runs`. List them first, and check that each holds only an empty `memory/` folder or the inherit probe's transcript:
 
@@ -971,6 +988,8 @@ Keep the kit folder: it holds the raw replies.
 
 ### Task 11: Live install and check (after the merge, owner gate)
 
+> Runs after the merge, from the main checkout (Task 11).
+
 This task runs after the owner merges the branch into `main` (Plan completion, then finishing-a-development-branch). The installer links into the checkout that runs it, and a link into a worktree breaks when the worktree goes.
 
 **Files:** none in the repository. `~/.claude/rules/write-with-asd-ste100.md` and `~/.claude/skills/write-with-asd-ste100` (symlinks into the main checkout).
@@ -980,6 +999,8 @@ This task runs after the owner merges the branch into `main` (Plan completion, t
 - Produces: the user-level install and the live check that the spec's Done-when list requires.
 
 - [ ] **Step 1: Owner gate: install now**
+
+> Note for this gate (found in the final review): the rule's pointer line sends "text for an agent reader" to the skill, and the skill's agent mode names subagent briefs. Once installed, a session may send this repo's own subagent dispatches through the skill, although the spec leaves agent mode for those dispatches out of scope. The rule file is a byte copy of the tested `KIT/rules/chosen.md`, so do not edit it by hand. Tell the owner before asking, and see the deferred item in section `52-write-with-asd-ste100` of `specs/deferred_items.md`.
 
 Check that the main checkout holds the merged work:
 

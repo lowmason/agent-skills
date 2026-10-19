@@ -28,7 +28,7 @@ agent-skills/
 ├── commands/    # slash commands (/deferred, /fix-issue, /license-audit — see Commands below)
 ├── runtimes/    # generated Codex/Gemini agent and command adapters
 ├── hooks/       # deterministic gates for Python/uv work repos (see Hooks below)
-├── rules/       # path-scoped rule files, loaded via .claude/rules/ (see Rules below)
+├── rules/       # rule files: path-scoped via .claude/rules/, one user-level (see Rules below)
 ├── build/       # citation-verification tooling for recommend-probabilistic-model
 ├── specs/       # design records + implementation plans (retired work under completed/)
 └── install.py   # safe installer for Claude, Codex, Gemini, or all three (idempotent when linking)
@@ -37,7 +37,7 @@ agent-skills/
 The canonical skill bodies are portable. Agent manifests are generated from
 [`agents/`](agents/) because the runtimes use different file formats and tool
 names; Gemini command TOML is generated from [`commands/`](commands/). Claude's
-hooks and path-scoped rules remain Claude-specific. See
+hooks and rules remain Claude-specific. See
 [Installation](#installation) and the compatibility notes below.
 
 ## Skills
@@ -68,6 +68,7 @@ hooks and path-scoped rules remain Claude-specific. See
 | [`describe-critique-methodology`](skills/describe-critique-methodology/) | Leg 1 of the methodology-critique loop: write a system- or module-level **methodological description** of a codebase — math and prose deliberately decoupled from the code (notation table, data-generating story, estimation procedure, assumptions, evaluation criteria, open questions) — carry it to a Claude Chat **Research** critique, then **synthesize** description + adjudicated critique into a house-format spec routed onward to `derive-roadmap`. Two modes (Describe / Synthesize) joined by routing headers in the artifacts themselves; bundles an advisory `check_decoupling.py`. Stats/Bayesian/nowcast scope in v1. |
 | [`derive-roadmap`](skills/derive-roadmap/) | Leg 2 of the methodology-critique loop: takes a synthesized spec and the system it describes and partitions the distance between them into staged spec→plan→implementation cycles. Runs a one-time gap analysis over every numbered requirement (`references/gap-rubric.md`: implemented-as-specified / implemented-differently / missing / in-code-but-not-in-spec), sequences stages by dependency and information order rather than the spec's own priority ranking, and — unless the gaps fit a single cycle, which gets no roadmap file at all — writes a brevity-budgeted `specs/<name>-roadmap.md` (`references/roadmap-format.md`) that cites spec §-refs instead of restating them. Every stage routes onward to `brainstorming` or `writing-plans` by bare name; this skill never designs a stage. Resumes via authoritative stage stamps, and supports a first-class PARKED exit that folds unticked stages into `specs/deferred_items.md`. |
 | [`prepare-handoff`](skills/prepare-handoff/) | The sending half of a handoff between sessions. Before a fresh session takes over a spec, a plan or a checkpoint, it sorts what that session needs into four bins: already in the artifact, recomputed by the receiver, amendable and committed now, or everything else. Only the last goes into a brief, never committed. Fact-checker and cold-reader templates review the brief, and the final message gives one launch line per runtime, with the model left to the owner. |
+| [`write-with-asd-ste100`](skills/write-with-asd-ste100/) | Write and rewrite in ASD-STE100 Simplified Technical English (STE), the controlled English of aircraft maintenance manuals. Human mode, the default, writes about 80% of the way to the standard, after a tip from Andrej Karpathy. Agent mode applies strict rules to prompts, tool descriptions, subagent briefs and error strings. The skill rewrites a text, or a whole file in place (left uncommitted) or as a `.ste` copy beside it. It also explains, summarizes and draws small Mermaid diagrams, and it never claims dictionary compliance. It bundles danyuchn's structural linter, unchanged. A user-level rule carries the everyday habits and a label rule into every session (see [Rules](#rules)). Adapted from danyuchn and prithivrajmu (MIT). |
 
 ### Clean-code family (rule catalog adapted from Robert C. Martin's *Clean Code*)
 
@@ -156,13 +157,16 @@ All three read the hook JSON payload from stdin with `jq`. Blocking takes **exit
 
 Rule files live in [`rules/`](rules/): standing conventions injected automatically, without a skill invocation. Claude Code loads a project's `.claude/rules/*.md` natively — a rule with a `paths:` frontmatter glob loads only when a matching file is read, written or edited; a rule without frontmatter loads at session start (native loading verified against Claude Code 2.1.218).
 
-This repo keeps rule sources in `rules/` and commits a relative symlink from `.claude/rules/` so the rules apply here too:
+This repo keeps rule sources in `rules/`. A path-scoped rule applies here through a committed relative symlink from `.claude/rules/`. The user-level rule applies here, as in every project, from `~/.claude/rules/`:
 
 | Rule | Scope | What it injects |
 |------|-------|-----------------|
 | [`clean-code-python.md`](rules/clean-code-python.md) | `**/*.py` | Python guardrails, loaded on `.py` reads, writes and edits — single quotes, 4-space indent, Polars-over-pandas, method-style Polars expressions, lazy evaluation, NumPyro+JAX, named constants (G25). Cross-references the `clean-code` catalog by rule code. |
+| [`write-with-asd-ste100.md`](rules/write-with-asd-ste100.md) | every session, user-level | The everyday writing habits of the `write-with-asd-ste100` skill for replies and for prose files written for people, the label rule, and a pointer to the skill for rewrites, agent-facing text and strict STE. |
 
-To use a rule in another project, copy it into that repo's `.claude/rules/` (rules here ship project-level only, by decision; user-level `~/.claude/rules/` also loaded in the 2.1.218 probe — see the rule's commit history).
+Rules here ship project-level, by the decision that commit `7aa454f` took when it added the Python rule. To use a path-scoped rule in another project, copy it into that repo's `.claude/rules/` (user-level `~/.claude/rules/` also loaded in the 2.1.218 probe; see that commit's message).
+
+`write-with-asd-ste100.md` is the one exception. It shapes every reply and every prose file, and an "all output" rule only works at user level. So `install.py` places it in `~/.claude/rules/`, for Claude Code only: Codex and Gemini get the skill without the rule. It is not linked into this repo's `.claude/rules/`, because a second copy there would load it twice in this repo.
 
 ## Installation
 
@@ -194,6 +198,7 @@ conflicting path at once. Useful options:
 python3 install.py codex --skill bayesian-workflow                # just this skill; repeat --skill as needed
 python3 install.py claude --skill finishing-a-development-branch  # plus its dependencies (see below)
 python3 install.py codex --skill bayesian-workflow --companions   # the skill plus Codex's agents
+python3 install.py claude --rule write-with-asd-ste100           # the user-level rule and the skill it names
 python3 install.py claude --no-companions                         # every skill, no agents or commands
 python3 install.py all --dry-run                                  # inspect without writing
 python3 install.py gemini --copy                                  # frozen copies instead of symlinks (see below)
@@ -210,6 +215,13 @@ and commands unless you add `--companions`. A full install includes every
 companion unless you add `--no-companions`, which leaves out all agents and
 commands, required ones included. The table is `DEPENDENCIES` in `install.py`.
 
+A full Claude install also places the user-level rules, today only
+`write-with-asd-ste100`, in `~/.claude/rules/`. `--rule NAME` installs one of
+them with the skills that it names and their dependencies. Like `--skill`, it
+skips the runtime's other agents and commands unless you add `--companions`.
+Codex and Gemini installs place no rule. The table is `USER_RULES` in
+`install.py`.
+
 `--copy` installs the same skills, agents, and commands a link install would,
 including any that git ignores whole; agents and commands are copied as they
 are. Within a skill it copies the files git keeps (tracked, or untracked and
@@ -222,11 +234,11 @@ repository or submodule, which it cannot copy file by file. It never replaces
 an existing destination, a previous copy included, so remove old copies before
 re-running it.
 
-| Runtime | Skills | Agents | Commands |
-|---------|--------|--------|----------|
-| Claude Code | `~/.claude/skills/` | `~/.claude/agents/*.md` | `~/.claude/commands/*.md` |
-| Codex | `~/.agents/skills/` | `~/.codex/agents/*.toml` | — |
-| Gemini CLI | `~/.agents/skills/` | `~/.gemini/agents/*.md` | `~/.gemini/commands/*.toml` |
+| Runtime | Skills | Agents | Commands | Rules |
+|---------|--------|--------|----------|-------|
+| Claude Code | `~/.claude/skills/` | `~/.claude/agents/*.md` | `~/.claude/commands/*.md` | `~/.claude/rules/*.md` (user-level rules only) |
+| Codex | `~/.agents/skills/` | `~/.codex/agents/*.toml` | — | — |
+| Gemini CLI | `~/.agents/skills/` | `~/.gemini/agents/*.md` | `~/.gemini/commands/*.toml` | — |
 
 Codex and Gemini deliberately share the cross-runtime `~/.agents/skills/`
 installation. This matches [Codex's local skill discovery](https://developers.openai.com/codex/skills)
@@ -272,7 +284,10 @@ Then merge the `hooks` block from [`hooks/README.md`](hooks/README.md) into that
 
 ### Claude Code rules
 
-Project-level, per repo:
+`write-with-asd-ste100.md` is user-level: a full `python3 install.py claude` places it, and
+`python3 install.py claude --rule write-with-asd-ste100` places it with its skill alone.
+
+The path-scoped rules are project-level, per repo:
 
 ```bash
 mkdir -p <target-repo>/.claude/rules
@@ -291,6 +306,7 @@ In this repo the committed `.claude/rules/clean-code-python.md` symlink already 
 - **llm-wiki** — my own work (MIT). It implements the LLM-wiki pattern from [Andrej Karpathy](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f)'s public idea file, and adopts a simplified per-claim citation-audit form from [kfchou/wiki-skills](https://github.com/kfchou/wiki-skills) — both **by reference to the idea only**; no external prose or code is reproduced and no copies are bundled. Its bundled `scripts/` are my own work under the same terms (see [`NOTICE`](NOTICE)).
 - **bayesian-workflow** — adapted from [Alexandre Andorra](https://alexandorra.github.io/)'s original **PyMC** Bayesian-workflow skill (MIT licensed). I ported it to **NumPyro + JAX** and expanded the visualization guidance.
 - **recommend-causal-design** — planning workflow selectively adapted from [Robson Tigre's causal-planner](https://github.com/RobsonTigre/everyday-causal-skills) and [Alexandre Andorra's causal-inference](https://github.com/Learning-Bayesian-Statistics/baygent-skills), both MIT licensed. Method references and the memo contract are newly written; primary literature is cited without reproducing or bundling it. Both full upstream notices are in [`LICENSE-causal-design-sources`](LICENSE-causal-design-sources); exact source commits and adaptation scope are in [`NOTICE`](NOTICE).
+- **write-with-asd-ste100** — adapted from [danyuchn/asd-ste100-skill](https://github.com/danyuchn/asd-ste100-skill) (Dustin Yuchen Teng) and [prithivrajmu/asd-ste100](https://github.com/prithivrajmu/asd-ste100) (Dustin Yuchen Teng and Prithiv M U), both MIT licensed. `scripts/ste-lint.py` is danyuchn's linter, copied unchanged. The 80% style follows [a post by Andrej Karpathy](https://x.com/karpathy/status/2105819303471976479), cited by idea only. The skill cites ASD-STE100 by issue and bundles nothing from the standard or its dictionary. The skill's test record under `specs/` credits prithivrajmu's eval cases. Both full upstream notices are in [`LICENSE-write-with-asd-ste100-sources`](LICENSE-write-with-asd-ste100-sources); exact source commits and adaptation scope are in [`NOTICE`](NOTICE).
 - **superpowers skills** — the 13 process skills are adapted from the [superpowers](https://github.com/obra/superpowers) project by [Jesse Vincent](https://github.com/obra), MIT licensed, © 2025; my modifications under the same MIT terms. The [`code-reviewer`](agents/code-reviewer.md) and [`task-reviewer`](agents/task-reviewer.md) agents are distilled from the adapted `requesting-code-review` and `subagent-driven-development` reviewer templates, same terms. See [`LICENSE-superpowers`](LICENSE-superpowers) and [`NOTICE`](NOTICE).
 
 ## License
@@ -299,5 +315,6 @@ Everything I wrote here is MIT licensed; per-skill attribution is tracked in [`N
 
 - **My original skills and `bayesian-workflow`** — MIT, © Lowell Mason; full text in [`LICENSE`](LICENSE). (`bayesian-workflow` is an adaptation of Alexandre Andorra's PyMC skill.)
 - **`recommend-causal-design`** — MIT; adaptations by Lowell Mason, with source copyrights and permission notices for Robson Tigre and Learning Bayesian Statistics retained in [`LICENSE-causal-design-sources`](LICENSE-causal-design-sources).
+- **`write-with-asd-ste100`** and its rule — MIT; adaptations by Lowell Mason, with source copyrights and permission notices for Dustin Yuchen Teng and Prithiv M U retained in [`LICENSE-write-with-asd-ste100-sources`](LICENSE-write-with-asd-ste100-sources).
 - **superpowers skills** — MIT, © 2025 Jesse Vincent ([superpowers](https://github.com/obra/superpowers)); full text in [`LICENSE-superpowers`](LICENSE-superpowers).
 - **Bundled U.S. Government data** — the verbatim `sources/` audit copies in `classification-codes` and `geographic-codes` are works of the United States Government, in the public domain under 17 U.S.C. § 105, and carry no license of mine; the `data/` tables derived from them, the build scripts, the seed tables, and all prose are MIT (see [`NOTICE`](NOTICE)).

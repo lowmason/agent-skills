@@ -4871,3 +4871,78 @@ moves to the registry's notes for the `build` suite.
       is never examined. Fix: a `--check` that warns on links into this repo whose source
       is gone. Size: quick-fix. Revisit if: a dangling link into this repo turns up in
       `~/.claude/skills` or `~/.agents/skills`.
+
+## 52-write-with-asd-ste100 — 2026-10-18
+- [ ] Agent mode for this repo's own agent-to-agent text: subagent dispatches, task briefs
+      and handoff briefs (the spec's Out of scope). Deferred because the spec's Decision 1
+      keeps every other skill unchanged. It would take a design pass over
+      subagent-driven-development, prepare-handoff and the agent prompts, using
+      `skills/write-with-asd-ste100/references/agent-mode.md`. Size: design. Revisit if: the
+      owner wants agent mode in the repo's own dispatches.
+- [ ] An always-on rule for Codex and Gemini (the spec's Out of scope, Decision 7). Codex
+      and Gemini installs get the skill without the rule. It would take each runtime's own
+      always-on mechanism and an `install.py` path for it. Size: design. Revisit if: the
+      owner uses Codex or Gemini for writing work.
+- [ ] A lint check for bare labels (the spec's Out of scope). Deferred because a regex
+      cannot tell "O6" from "S3", "EC2" or "Q4". Size: design. Revisit if: a rule can
+      separate labels from product and period names.
+- [ ] prithivrajmu's HTML and video guides (the spec's Out of scope, Decision 4). Size:
+      plan. Revisit if: the owner asks for HTML pages or explainer videos.
+- [ ] Restyling the repo's existing documents (the spec's Out of scope, Decision 3). The
+      rule changes existing text only when the user asks. Size: plan. Revisit if: the owner
+      asks for a restyle of named documents.
+- [ ] Portability work for this skill, if plan 53, the portability plan, lands second
+      (Couplings (a) and (c)). R3, the self-contained-scripts requirement: add
+      `skills/write-with-asd-ste100/scripts/ste-lint.py` to `VENDORED_SCRIPTS` in
+      `build/check_frontmatter.py`, because its bytes are pinned to danyuchn's commit
+      `3944283c`, and settle the skill's `python3` call against R3.5 and its `compatibility`
+      value. R4, the license-copies requirement: rename the skill's `LICENSE` copy to
+      `LICENSE-write-with-asd-ste100-sources`, add the root `LICENSE` copy and a
+      `BUNDLED_LICENSES` row, and re-point the Sources link. See
+      `specs/agent-skills-portability-spec.md` (R3.1, R3.5, R3.7, R4.1, R4.2). Size:
+      quick-fix. Done when: the portability plan has done each of these for this skill.
+- [ ] A drift review of both upstreams against the pinned commits (the spec's Consequences
+      to know): danyuchn/asd-ste100-skill at `3944283c` and prithivrajmu/asd-ste100 at
+      `d9323767`, both active. Size: quick-fix. Revisit if: either repository changes its
+      linter, rule sets or license.
+- [ ] The always-on rule's pointer line reaches work that the spec leaves out of scope
+      (final review). `rules/write-with-asd-ste100.md` ends "To rewrite a text or a
+      document, to write text for an agent reader, or to apply strict STE, use the
+      write-with-asd-ste100 skill", and the skill's agent mode names subagent briefs. Once
+      installed, a session may send this repo's own subagent dispatches and handoff briefs
+      through the skill. The spec's Out of scope keeps agent mode away from them, and the
+      rule's own boundary paragraph excludes agent-facing text. The rule file is a byte copy
+      of the tested `rules/chosen.md` in the run kit
+      (`~/.cache/agent-skills/scratch/write-with-asd-ste100-kit/`, outside the repo), so a
+      hand edit would void the test. It would take an owner decision: narrow the pointer to
+      human-facing rewrites and re-run the rule arms, narrow the skill's agent-mode trigger,
+      or accept the reach and record it. Size: design. Done when: the owner has chosen, and
+      the rule, the skill description and the spec say the same thing. Task 11, Step 1 of
+      specs/plans/completed/52-write-with-asd-ste100.md raises it again at the install gate.
+- [ ] `install.py` has no way to skip the always-on rule in a full Claude install, and
+      `--rule` says nothing on Codex and Gemini (final review). A full Claude install places
+      every rule in `USER_RULES`, and only `--skill` selection leaves it out (plan 52, DF1,
+      an owner-reviewed default). A Codex or Gemini install places no rule and prints no
+      notice when `--rule` is passed. It would take a `--no-rules` flag, a one-line notice
+      for `--rule` on a runtime without rules, and tests in `build/test_runtime_support.py`.
+      Size: quick-fix. Done when: both behaviors exist and the installer tests cover them.
+- [ ] `SKILL.md` has no line that keeps the strength of an obligation word such as "should"
+      (the `skill-r2` reading). In that re-run, 3 of the 5 `agent-instruction` replies
+      turned "should" into a bare command or "must". The case's pre-registered checks cover
+      the conditions and the "sometimes" hedge, not "should", so all five runs passed. The
+      rule "Keep modality" sits only in
+      `skills/write-with-asd-ste100/references/agent-mode.md`, and the no-tool agent cases
+      read `SKILL.md` alone (section 8 of `specs/write-with-asd-ste100-test-record.md`). It
+      would take one line in `SKILL.md`'s meaning rules, a pre-registered check for
+      obligation words in the kit's `cases.py`, and a re-run of the three agent cases. A
+      wording change to measured text needs the owner's go-ahead. Size: plan. Done when: a
+      pre-registered check covers obligation words and the three agent cases pass it at 4 of
+      5 or more.
+- [ ] Three review fixes have no test that would catch a regression (final review). They are
+      the `python3` call in `references/agent-mode.md`, the kept "should" in
+      `references/examples.md`, and the symbolic-link check in
+      `references/document-rewrite.md`, step 3. The re-run cases cannot open those files,
+      and the document cases use plain files, so no run reached the link branch. It would
+      take a document case in the kit's `cases.py` that names a tracked symbolic link, and a
+      run of the document cases. Size: plan. Revisit if: the skill's cases run again for any
+      reason, and add the case then.

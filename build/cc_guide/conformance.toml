@@ -93,9 +93,12 @@ sections = [
 ]
 
 [kinds.installer]
-description = 'install.py, which places skills, agents and commands for each runtime.'
+description = 'install.py, which places skills, agents and commands for each runtime, and user-level rules for Claude.'
 globs = ['install.py']
-sections = ['skills.locations', 'subagents.overview', 'commands.overview']
+sections = [
+    'skills.locations', 'subagents.overview', 'commands.overview', 'rules.rules-files',
+    'rules.hierarchy',
+]
 
 [kinds.skill-bundle]
 description = 'Every file kept under a skill directory: the SKILL.md plus its references, scripts and data.'
@@ -134,7 +137,7 @@ limit = 200
 
 # A rule without paths loads in every session. always_on lists the rules
 # that must persist past compaction, which the same section says should drop
-# paths instead; none does today.
+# paths instead: today, the user-level writing rule.
 [[check]]
 id = 'rule-paths'
 kind = 'rule'
@@ -142,7 +145,7 @@ sections = ['rules.rules-files']
 type = 'advice'
 rule = 'A rules file sets a non-empty paths list so it loads lazily, unless always_on lists it; a .claude/rules/ link, to a file or a directory, resolves inside the repo.'
 enforced_by = 'check_conformance'
-always_on = []
+always_on = ['rules/write-with-asd-ste100.md']
 
 # The guide's Pattern 1 double-quotes the project-dir variable, so a path with
 # spaces survives word splitting.
