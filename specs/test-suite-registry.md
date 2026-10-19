@@ -80,7 +80,7 @@ R2.2 Keys:
 
 | Key | Type | Required | Meaning |
 |---|---|---|---|
-| `name` | string | yes | The name that the runner takes. A skill's suite uses the skill's name; the others are `build`, `cc-guide` and `hooks`. |
+| `name` | string | yes | The name that the runner takes. A skill's suite uses the skill's name; the others take their directory's name: `build`, `cc_guide` and `hooks` (owner, plan 55, 2026-10-18). |
 | `dir` | string | yes | The repo-relative directory that pytest runs from. |
 | `with` | list of strings | yes | The default `--with` deps, in the order the current command gives them. It includes `pytest`. |
 | `extras` | list of strings | no | The deps that unlock skips. Only `--extras` adds them. |
@@ -95,7 +95,7 @@ survives; the only change is the form. The inventory, from `CLAUDE.md` at `456e3
 | `bayesian-workflow` | `skills/bayesian-workflow/scripts` | arviz, arviz-stats, numpy, xarray | matplotlib | default |
 | `brainstorming` | `skills/brainstorming/scripts` | — | — | default |
 | `build` | `build` | numpy, polars, pyyaml | arviz>=1.0, arviz-base, arviz-stats, arviz-plots, numpyro, jax, matplotlib | default |
-| `cc-guide` | `build/cc_guide` | — | — | default |
+| `cc_guide` (owner, plan 55, 2026-10-18) | `build/cc_guide` | — | — | default |
 | `classification-codes` | `skills/classification-codes/scripts` | polars | — | default |
 | `describe-critique-methodology` | `skills/describe-critique-methodology/scripts` | — | — | default |
 | `design-architecture` | `skills/design-architecture/scripts` | — | — | default |
@@ -142,7 +142,7 @@ R3.5 **`--extras`** adds each suite's `extras` after its `with` deps. Arguments 
 (a test node ID, `-k`, `-s`, `-rs`) in every run.
 
 R3.6 **`--all`** runs every suite except one whose `dir` lies inside another suite's `dir`. Today that is
-`cc-guide`: `cd build && pytest` collects `build/cc_guide` already. `--all` prints one line for each suite
+`cc_guide` (owner, plan 55, 2026-10-18): `cd build && pytest` collects `build/cc_guide` already. `--all` prints one line for each suite
 that it skips. A suite named on the command line always runs.
 
 R3.7 **Exit status:** 0 when every run exits 0; 1 when any run fails (pytest's exit 5, no tests collected,
@@ -183,7 +183,7 @@ R5.1 `CLAUDE.md`, from `main` at `456e3fb`:
 | 60 | Rewrite the intro paragraph. Drop "There is no root test runner" and the sentence that comments name the skip-unlocking deps. Keep the uv and Python 3.13 rule, the directory scope, and the `test_build.py` basename-collision reason. Name `build/suites.toml` and `build/run_suites.py`, and say that the runner prints a suite's notes before it runs. One line. |
 | 66–125 | Replace with one block: a comment, then the `--list`, `<name> [--extras] [-- <pytest args>]`, `--all` and `--check` commands. |
 | 127–132 | The commit-lint comment names the suite-registry check and says "nine". Same number of lines. Line 133 is not touched (plan 53's Task 7 edits it). |
-| 141–145 | Drop line 145, the `cd build/cc_guide && …` command. The comment names the suite `run_suites.py cc-guide` instead of "its suite". |
+| 141–145 | Drop line 145, the `cd build/cc_guide && …` command. The comment names the suite `cc_guide` instead of "its suite" (owner, plan 55, 2026-10-18): a bare `cc-guide` in `CLAUDE.md` names the manual-only `/cc-guide` skill, which the `dmi-handoff-consistency` check refuses. |
 
 The file ends at about 145 lines. The new text states no count of suites or tests (the
 `claude-md-count-claims` check).
