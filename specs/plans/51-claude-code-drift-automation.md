@@ -1,5 +1,7 @@
 # Claude Code Drift Automation: Pin `baseline rebaseline` to Its Packet's Head — Implementation Plan
 
+**Status: COMPLETE (2026-10-19)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Stop `baseline rebaseline` from recording hashes of docs text that no `/cc-guide` review read. `settle` prints each `rebaseline` with `--head <the packet's head>`, and `rebaseline` refuses when the latest fetch is at another release, naming both.
@@ -100,6 +102,8 @@ Plan 49's final review asked this of two `check --hook` runs. The answer covers 
 
 Closing that window needs `check` to write `latest/` as a whole, as a staged directory swapped in at once. That is spec-level (Layout, R6.3, R6.4) and goes beyond D1.
 
+> Correction (final review; the owner's decision at the completion gate, 2026-10-19): the window is wider than milliseconds. `live_docs` writes pages in place, so a check that dies mid-write (a full disk, or a kill from the refresh trap) leaves some pages at the newer text while `fetch.json` still names the older head, until the next check. A triage's `rebaseline --head <older head>` passes the pin in that time and can hash a newer page. Verify and audit packets stay protected by `copy_to_snapshot`. Task 4's test builds this state. The owner reversed DF5 and logged "Write `latest/` as a whole" as a deferred item (`specs/deferred_items.md`, section `51-claude-code-drift-automation`).
+
 **Answer: yes.** Two `check` runs can share `latest/`. An overlap's effects stay in the cache, and each is either visible or corrected by the next check. The one path into the repo is pinned by this plan.
 
 ### Settled defaults (your human partner reviews each)
@@ -108,7 +112,7 @@ Closing that window needs `check` to write `latest/` as a whole, as a staged dir
 - **DF2. The refusal comes first and writes nothing.** In `run_baseline` it comes right after the fetch record is read, and before `writable_snapshot`, `baseline.rebaseline` and `copy_to_snapshot`. It exits 2 (a `SetupError`) with one `cc-guide:` line that names both releases and says what to do: skip it, and the next check compares the blocks again. A `--head` that is not a release label gets the same refusal, which shows it beside the real head. There is no separate label check (YAGNI).
 - **DF3. After a refusal, the run skips that `rebaseline` and runs the rest**, and reports it to the owner. Task 3 writes this into the skill, and Task 1's A2 writes it into R8.8. The readers table shows why the rest still hold. The skill also says never to drop `--head` to get past the refusal: the flag is optional (DF1), so dropping it is one edit away. The alternative was to re-run the review at the newer head. Skipping costs nothing, since the next triage shows the blocks with the newer text anyway. If wrong: the skill stops at a refusal and asks the owner.
 - **DF4. O3 is settled without changing `check`'s writes.** The brief asks for a fix that only reads `changelog_head`, and D1 chose the pin over a separate cache for the hook. Task 4 pins the premise the pin rests on, that `fetch.json` comes last, with a test that a mutation is shown to break. Task 1's A3 records the sharing rule in R6.4, and it is optional. If wrong: a further task makes `live_docs` write each file under a temporary name and `os.replace` it, as `notice.py` already does. That removes half-written reads (not mixed heads), at the cost of changing `check.py`'s writes.
-- **DF5. The residual is recorded, not deferred.** If wrong: the completion protocol logs "Write `latest/` as a whole" as a deferred item, Size: design.
+- **DF5. The residual is recorded, not deferred.** If wrong: the completion protocol logs "Write `latest/` as a whole" as a deferred item, Size: design. **Reversed by the owner at the completion gate (2026-10-19): the item is logged.**
 - **DF6. The docs.** Task 2 adds the `--head` rule to `cli.py`'s docstring and `rebaseline --help`. Task 3 adds the pin to `settle.py`'s docstring, one sentence of `build/CLAUDE.md`, the skill's step 4 and its cross-group note, and the bookkeeping line in `references/formats.md`. The root `CLAUDE.md` is not edited.
 
 ### Prototype and replay
@@ -141,7 +145,7 @@ Stage 5 (probes: R10, R12.6 and `/cc-guide probes`) is the drift spec's last sta
 
 The spec's status line stays untouched. A3 is optional (DF4): skip Step 4 if the owner declined it at plan review.
 
-- [ ] **Step 1: Record the starting counts.** Task 5 compares against these. The build directory's suite takes about a minute.
+- [x] **Step 1: Record the starting counts.** Task 5 compares against these. The build directory's suite takes about a minute.
 
 Run: `uv run --directory build/cc_guide --python 3.13 --with pytest python -m pytest -q`
 
@@ -149,7 +153,7 @@ Run: `uv run --directory build --python 3.13 --with pytest --with numpy --with p
 
 Expected: note each summary line. In a worktree without the gitignored `build/.scratch/`, the build directory's suite has four `test_verify_citations.py` failures.
 
-- [ ] **Step 2: A1, R7's `rebaseline` bullet.** The flag goes into the bullet's signature, and the rule goes at its end.
+- [x] **Step 2: A1, R7's `rebaseline` bullet.** The flag goes into the bullet's signature, and the rule goes at its end.
 
 **Replace** in `specs/claude-code-drift-automation-spec.md`:
 
@@ -184,7 +188,7 @@ Expected: note each summary line. In a worktree without the gitignored `build/.s
   2026-10-17).
 ```
 
-- [ ] **Step 3: A2, R8.8 step 4's `rebaseline` bullet.**
+- [x] **Step 3: A2, R8.8 step 4's `rebaseline` bullet.**
 
 **Replace** in `specs/claude-code-drift-automation-spec.md`:
 
@@ -203,7 +207,7 @@ Expected: note each summary line. In a worktree without the gitignored `build/.s
      2026-10-18);
 ```
 
-- [ ] **Step 4: A3, R6.4 (optional).**
+- [x] **Step 4: A3, R6.4 (optional).**
 
 **Replace** in `specs/claude-code-drift-automation-spec.md`:
 
@@ -223,12 +227,16 @@ it, only `rebaseline` turns what it reads into baseline state, so it alone
 is pinned to a packet's head (R7) (owner, plan 51, 2026-10-18).
 ```
 
-- [ ] **Step 5: Run the gates.**
+> Deviation: the final review found A3's last sentence ("it alone is pinned") contradicted R7, which also pins `audited --to`. With the owner's go-ahead at the completion gate, commit 8386db4 reworded it: only `rebaseline` turns the docs text it reads into baseline state, so it is pinned to a packet's head (R7), as `audited` is through `--to`.
+
+- [x] **Step 5: Run the gates.**
 
 Run: `bash build/run_commit_lints.sh`
 Expected: all eight lints pass. The spec is under `specs/`, which the citation lint does not read.
 
-- [ ] **Step 6: Commit.**
+> Deviation: the runner now runs nine commit lints, not eight (`run_suites.py --check` was added after this plan was written). Every gate step in this plan that says eight means "all lints pass". All nine passed at each gate.
+
+- [x] **Step 6: Commit.**
 
 ```bash
 git add specs/claude-code-drift-automation-spec.md
@@ -246,7 +254,7 @@ git commit -m "docs(specs): pin rebaseline to its packet's head (drift R7, R8.8)
 **Interfaces:**
 - Produces: `cli.parser()`'s `baseline rebaseline` takes `--head RELEASE`, as `args.head`, default `None`; `settle` will print it after the refs. When `fetch.json`'s `changelog_head` R differs from H, `cli.main([..., 'baseline', 'rebaseline', GROUP, *REFS, '--head', H])` exits 2 and writes nothing. It prints `cc-guide: rebaseline --head H: the latest fetch is at R, so latest/ no longer holds the docs reviewed at H; skip this rebaseline, and the next check compares its blocks again` on stderr. With H equal to R, it runs as before. Task 3 prints this flag.
 
-- [ ] **Step 1: Write the failing tests.** The help test gains one assertion, and the refusal gets a new test.
+- [x] **Step 1: Write the failing tests.** The help test gains one assertion, and the refusal gets a new test.
 
 **Replace** in `build/cc_guide/test_cli.py`:
 
@@ -308,12 +316,12 @@ def test_rebaseline_head_refuses_a_latest_fetch_at_another_release(world, capsys
 def test_a_malformed_or_empty_cached_changelog_exits_two(world, capsys):
 ```
 
-- [ ] **Step 2: Run the two tests and see them fail.**
+- [x] **Step 2: Run the two tests and see them fail.**
 
 Run: `uv run --directory build/cc_guide --python 3.13 --with pytest python -m pytest -q test_cli.py -k "rebaseline_head or help_shows"`
 Expected: `2 failed`. The new test fails with `SystemExit: 2`: `parse_args` runs before `main`'s `try`, and argparse prints `cli.py: error: unrecognized arguments: --head 2.1.901`. The help test fails with an `AssertionError` on its new line.
 
-- [ ] **Step 3: Implement the flag, the refusal and the help text.**
+- [x] **Step 3: Implement the flag, the refusal and the help text.**
 
 **Replace** in `build/cc_guide/cli.py`:
 
@@ -392,7 +400,7 @@ baselined.'''
         writable_snapshot(cache, release)
 ```
 
-- [ ] **Step 4: Run the tests and see them pass.**
+- [x] **Step 4: Run the tests and see them pass.**
 
 Run: `uv run --directory build/cc_guide --python 3.13 --with pytest python -m pytest -q test_cli.py -k "rebaseline_head or help_shows"`
 Expected: `2 passed`.
@@ -400,7 +408,7 @@ Expected: `2 passed`.
 Run: `uv run --directory build/cc_guide --python 3.13 --with pytest python -m pytest -q`
 Expected: no failure, and +1 on the count before this task.
 
-- [ ] **Step 5: Run the gates and commit.**
+- [x] **Step 5: Run the gates and commit.**
 
 Run: `bash build/run_commit_lints.sh`
 Expected: all eight lints pass.
@@ -425,7 +433,7 @@ git commit -m "feat(cc_guide): rebaseline --head refuses docs fetched after the 
 
 Run this task after Task 2: before Task 2, a printed `--head` would be a flag `cli.py` rejects.
 
-- [ ] **Step 1: Write the failing test.** It settles a triage, a verify and an audit packet, and parses each printed `rebaseline` as `cli.py` would. It rewrites `fetch.json` to another head before settling: an implementation that read the cache at settle time, not the packet, would then print the wrong head.
+- [x] **Step 1: Write the failing test.** It settles a triage, a verify and an audit packet, and parses each printed `rebaseline` as `cli.py` would. It rewrites `fetch.json` to another head before settling: an implementation that read the cache at settle time, not the packet, would then print the wrong head.
 
 **Replace** in `build/cc_guide/test_settle.py`:
 
@@ -465,12 +473,12 @@ def test_every_rebaseline_settle_prints_names_its_packets_head(world, tmp_path):
         assert (args.action, args.group, args.refs, args.head) == ('rebaseline', 'alpha', ['tools › Tools'], '2.1.902')
 ```
 
-- [ ] **Step 2: Run it and see it fail.**
+- [x] **Step 2: Run it and see it fail.**
 
 Run: `uv run --directory build/cc_guide --python 3.13 --with pytest python -m pytest -q test_settle.py -k every_rebaseline_settle_prints`
 Expected: `1 failed`, an `AssertionError`: the printed lines parse, but `args.head` is `None` where `'2.1.902'` is expected.
 
-- [ ] **Step 3: Print the flag.**
+- [x] **Step 3: Print the flag.**
 
 **Replace** in `build/cc_guide/settle.py`:
 
@@ -511,12 +519,12 @@ refuses it once a later fetch has moved latest/.
         steps.append(command(p, 'baseline', 'rebaseline', index['group'], *refs, '--head', index['head']))
 ```
 
-- [ ] **Step 4: Run the file and see which old expectations break.**
+- [x] **Step 4: Run the file and see which old expectations break.**
 
 Run: `uv run --directory build/cc_guide --python 3.13 --with pytest python -m pytest -q test_settle.py`
 Expected: the new test passes, and `11 failed`. These are the eleven tests that pin a printed `rebaseline` without the flag: `test_a_complete_triage_advances_every_section_and_rebaselines_the_block`, `test_the_first_release_range_settles_the_block_findings`, `test_a_missing_pages_held_sections_are_saved_and_hold_their_groups_blocks`, `test_a_verify_report_lists_corrections_owners_calls_and_the_bookkeeping`, `test_a_discarded_row_outside_the_packet_holds_nothing`, `test_a_block_waits_until_every_candidate_is_resolved`, `test_a_correction_left_for_the_owner_holds_its_section`, `test_a_page_with_an_unresolved_changed_block_is_never_rebaselined`, `test_verify_never_advances_a_section_past_its_triages_target_backwards`, `test_an_audit_ends_with_audited_unless_a_section_is_held` and `test_a_packet_built_on_another_cache_names_it_in_every_command`.
 
-- [ ] **Step 5: Update those expectations.** Each expected `rebaseline` line gains ` --head 2.1.902`. That includes the ranged triages (`:191`, `:1023`, `--through 2.1.901`): the head is the fetch's 2.1.902, never the range's end or `advance_to`. Three lines (`:713`, `:886`, `:1035`) would pass the files' 121-column width, so they are rewrapped first. A replace-all then takes the other seven. The `:856` slice becomes a parse, so it reads the refs and the head as `cli.py` does.
+- [x] **Step 5: Update those expectations.** Each expected `rebaseline` line gains ` --head 2.1.902`. That includes the ranged triages (`:191`, `:1023`, `--through 2.1.901`): the head is the fetch's 2.1.902, never the range's end or `advance_to`. Three lines (`:713`, `:886`, `:1035`) would pass the files' 121-column width, so they are rewrapped first. A replace-all then takes the other seven. The `:856` slice becomes a parse, so it reads the refs and the head as `cli.py` does.
 
 **Replace** in `build/cc_guide/test_settle.py`:
 
@@ -602,7 +610,7 @@ baseline rebaseline alpha 'tools › Tools' --head 2.1.902"
                                     args.head)  # baseline refuses a page listed in part
 ```
 
-- [ ] **Step 6: Run the tests and see them pass.**
+- [x] **Step 6: Run the tests and see them pass.**
 
 Run: `uv run --directory build/cc_guide --python 3.13 --with pytest python -m pytest -q test_settle.py`
 Expected: no failure.
@@ -610,7 +618,7 @@ Expected: no failure.
 Run: `uv run --directory build/cc_guide --python 3.13 --with pytest python -m pytest -q`
 Expected: no failure, and +1 on the count before this task.
 
-- [ ] **Step 7: The skill and the docs.** Step 4 of the skill's "Dispatch, save, settle" gains the rule for a refusal (the planning record's DF3: skip it, run the rest, tell the owner, never drop the flag). The cross-group note keeps the flag. `formats.md` names the pin beside `audited --to`, and `build/CLAUDE.md` gains one sentence.
+- [x] **Step 7: The skill and the docs.** Step 4 of the skill's "Dispatch, save, settle" gains the rule for a refusal (the planning record's DF3: skip it, run the rest, tell the owner, never drop the flag). The cross-group note keeps the flag. `formats.md` names the pin beside `audited --to`, and `build/CLAUDE.md` gains one sentence.
 
 **Replace** in `.claude/skills/cc-guide/SKILL.md`:
 
@@ -663,7 +671,9 @@ and the packet's head, which refuses once a later `check` (a session start's
 `manifest.toml` edit first.
 ```
 
-- [ ] **Step 8: Run the gates and commit.** `check_conformance.py`, which the commit lints run, covers the skill's files.
+> Deviation: the final review found the skill's "Report to the owner" list (SKILL.md, "After any mode") did not name a refused `rebaseline`. With the owner's go-ahead at the completion gate, commit 8386db4 added "any `rebaseline` that refused because a later fetch moved the docs".
+
+- [x] **Step 8: Run the gates and commit.** `check_conformance.py`, which the commit lints run, covers the skill's files.
 
 Run: `bash build/run_commit_lints.sh`
 Expected: all eight lints pass.
@@ -687,7 +697,7 @@ git commit -m "feat(cc_guide): settle pins each rebaseline to its packet's head"
 
 The test pins behavior `check.py` already has, so it passes at once. Step 3 proves it can fail.
 
-- [ ] **Step 1: Write the test.** A directory at `env-vars.md`, the second mapped page, makes the page loop fail after `tools.md`, the first page, already holds the newer text. That is the mixed state the O3 answer rests on.
+- [x] **Step 1: Write the test.** A directory at `env-vars.md`, the second mapped page, makes the page loop fail after `tools.md`, the first page, already holds the newer text. That is the mixed state the O3 answer rests on.
 
 **Replace** in `build/cc_guide/test_check.py`:
 
@@ -731,12 +741,12 @@ def test_a_new_head_is_recorded_only_after_every_page_is_written(tmp_path, docs_
 def test_a_corrupt_fetch_record_is_a_setup_error(tmp_path, docs_dir):
 ```
 
-- [ ] **Step 2: Run it.**
+- [x] **Step 2: Run it.**
 
 Run: `uv run --directory build/cc_guide --python 3.13 --with pytest python -m pytest -q test_check.py -k new_head_is_recorded`
 Expected: `1 passed`.
 
-- [ ] **Step 3: Prove it bites.** Record the head before the pages are fetched, as a mutation, and run the test again.
+- [x] **Step 3: Prove it bites.** Record the head before the pages are fetched, as a mutation, and run the test again.
 
 **Replace** in `build/cc_guide/check.py` (a mutation, restored below):
 
@@ -762,12 +772,12 @@ Run: `git restore build/cc_guide/check.py`
 Run: `git status --porcelain`
 Expected: only ` M build/cc_guide/test_check.py`.
 
-- [ ] **Step 4: Run the suite.**
+- [x] **Step 4: Run the suite.**
 
 Run: `uv run --directory build/cc_guide --python 3.13 --with pytest python -m pytest -q`
 Expected: no failure, and +1 on the count before this task.
 
-- [ ] **Step 5: Run the gates and commit.**
+- [x] **Step 5: Run the gates and commit.**
 
 Run: `bash build/run_commit_lints.sh`
 Expected: all eight lints pass.
@@ -783,12 +793,12 @@ git commit -m "test(cc_guide): pin that check records a new head after its pages
 
 **Files:** none changed. This task produces the completion report's evidence. It runs no live `check`, `packets`, `settle` or `baseline rebaseline` (Global Constraints).
 
-- [ ] **Step 1: Every existing gate.** Record each outcome against Task 1 Step 1's counts:
+- [x] **Step 1: Every existing gate.** Record each outcome against Task 1 Step 1's counts:
   - the cc_guide suite: `uv run --directory build/cc_guide --python 3.13 --with pytest python -m pytest -q`: +3, no failure;
   - the build directory's suite, which collects the cc_guide suite too: `uv run --directory build --python 3.13 --with pytest --with numpy --with polars --with pyyaml python -m pytest -q`: the same +3. Its only failures or skips are the four `test_verify_citations.py` ground-truth tests, which need the gitignored `build/.scratch/`;
   - `bash build/run_commit_lints.sh`: all eight pass;
   - `uv run --python 3.13 --with pyyaml python build/sync_runtime_assets.py --check`: prints nothing, since no adapter changed.
-- [ ] **Step 2: Hygiene.**
+- [x] **Step 2: Hygiene.**
   - Run `git status --porcelain`: it prints nothing.
   - Run `git log --format=%B -n 4`: each of this plan's commits carries the session's trailer.
   - Run `uv run --python 3.13 python build/cc_guide/cli.py lint`: exit 0, and its `STALE` lines are the same ones `main` prints. It names none of the files this plan changed for a new reason.
@@ -799,6 +809,7 @@ git commit -m "test(cc_guide): pin that check records a new head after its pages
 
 - **Step 1, the gate.** Leftovers that need the owner go to them in one batch.
 - **Step 3, deferred items.** Tick "Pin `baseline rebaseline` to its packet's head" in section `49-claude-code-drift-automation — 2026-10-18` with: `→ done in plan 51: settle prints rebaseline --head <the packet's head>, and rebaseline refuses a fetch at another release, naming both (test_cli.py, test_settle.py); spec R7 and R8.8 state the rule; O3 is settled in plan 51's planning record: two check runs can share latest/, the head-after-pages order is pinned in test_check.py, and a triage's rebaseline during another run's page writes is the accepted residual.` A parallel routing session may append to `specs/deferred_items.md`, so expect a small merge there. Append items only for what execution deferred, plus DF5's item if the owner reverses it.
+  > Deviation: the owner reversed DF5, so the item is appended. The tick text also names the wider residual that the final review found (see the correction under "The residual, accepted").
 - **Step 4, triage.** Run `deferred_stats.py` and report its summary line. Bring the triage proposal when the backlog is over its threshold.
 - **Step 5, retire.** `git mv` this plan to `specs/plans/completed/`. The spec stays in `specs/`, since Stage 5 (probes) remains. Re-point this plan's relative links, if any, for the new depth.
 - **Merge.** The branch edits `.claude/skills/cc-guide/`. The app's sync-with-base refuses merges that touch `.claude/skills` until the pinned origin is confirmed, so plan 49 was merged with a terminal fast-forward instead. The owner merges. Nothing is pushed or merged without the owner's go-ahead.
