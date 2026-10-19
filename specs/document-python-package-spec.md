@@ -234,10 +234,14 @@ R4.2 **Pin.** Add the pin to `pyproject.toml`, then run `uv lock`:
 
 ```toml
 [dependency-groups]
-docs = ['great-docs>=0.17.0,<0.18']   # plus the completeness tool (S7)
+docs = ['great-docs>=0.17.0,<0.18', 'numpydoc>=1.11']   # (spike S7, plan 57, 2026-10-19)
 
 [tool.uv]
 default-groups = ['dev', 'docs']      # the package's existing groups, plus docs
+
+[tool.numpydoc_validation]            # (spike S7, plan 57, 2026-10-19)
+checks = ['PR01', 'RT01', 'GL08']
+exclude = ['\._\w+$']
 ```
 
 The pin's range equals the script's range (R3.3). uv's default for
@@ -261,15 +265,16 @@ R4.4 **Docstrings.**
   the numpy and completeness rules in the brief. When that agent is not
   installed, the agent in the session drafts directly.
 - If the package enables ruff's pydocstyle (`D`) rules and keeps `'''`
-  docstrings, ignore D300. Spike S6 settles when this note applies.
+  docstrings, ignore D300. A package that runs `ruff format` keeps them only
+  with `quote-style = 'preserve'` (spike S6, plan 57, 2026-10-19).
 
 R4.5 **The README as the homepage** (`homepage: index`). One README serves
 GitHub, PyPI and the site:
 
-- Put the badges in one block at the top. The site moves them into the hero
-  (S8).
+- Put the badges in one block at the top. The site shows the block as it
+  stands (spike S8, plan 57, 2026-10-19).
 - Make the first paragraph a plain summary of one or two sentences. It becomes
-  the site's SEO description (S8).
+  the site's meta description (spike S8, plan 57, 2026-10-19).
 - Use absolute URLs for images and links, because PyPI does not resolve
   relative paths.
 - Use no GitHub-only syntax, such as `> [!NOTE]` alerts or Mermaid blocks. PyPI
@@ -282,11 +287,11 @@ shapes the prose.
 
 R4.7 **Executed examples.**
 
-- Docstring examples run on every build (S3). Keep them fast and deterministic:
-  no MCMC, no network, fixed seeds.
+- Docstring examples run on every build (spike S3, plan 57, 2026-10-19).
+  Keep them fast and deterministic: no MCMC, no network, fixed seeds.
 - Put slow work, such as MCMC, in user-guide pages under `freeze: auto`. Commit
-  the `_freeze/` cache (its location comes from S4), so that CI renders the
-  pages without running the code again.
+  the `_freeze/` cache (spike S4, plan 57, 2026-10-19), so that CI
+  renders the pages without running the code again.
 - After the code on a frozen page changes, render locally and commit the new
   cache.
 
@@ -307,9 +312,11 @@ from the package root:
      - "API reference skipped (non-Python project)"
      - "No documentable exports found — skipping API reference"
      - "API reference disabled (reference: false), skipping"
-   - The built site has its API reference index page (the path comes from S2).
-3. the completeness check over the `__all__` exports (the tool and its command
-   come from S7)
+   - The built site has its API reference index page, `great-docs/_site/reference/index.html`
+     (spike S2, plan 57, 2026-10-19).
+3. `uv run numpydoc lint $(git ls-files '<package-dir>/*.py')`, the completeness check, where `<package-dir>` is
+   the folder that holds the package's `__init__.py`, so that it covers every
+   `__all__` export (spike S7, plan 57, 2026-10-19)
 
 After the gate, `uv run great-docs check-links` runs, and so does
 `uv run great-docs proofread` when `harper-cli` is installed. Both report
@@ -413,6 +420,11 @@ dated tag, before the next task starts.
 | S6 | Does `ruff format` rewrite `'''` docstrings? | R4.4's D300 note applies only to packages that do not run `ruff format` |
 | S7 | Which tool flags a missing parameter and a missing Returns section in a numpy docstring: pydoclint or numpydoc's validator? | R4.2 and R4.9 name the chosen tool, its version floor and its command |
 | S8 | On the built site, do the badges move into the hero, and does the first paragraph become the meta description? | R4.5's two site claims change to what the build shows |
+
+**Spike results** (spike S1–S8, plan 57, 2026-10-19). The spike answered
+all eight questions with great-docs 0.17.0 and Quarto 1.10.19.
+Its record is `specs/verification/57-great-docs-0.17.0.md`. Each requirement
+that an answer changed carries that answer's tag.
 
 **V2 — `preflight.py` tests.** They use pytest and the stdlib, with no network:
 
