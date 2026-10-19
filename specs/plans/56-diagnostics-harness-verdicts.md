@@ -30,6 +30,7 @@ Every task's requirements include these.
 
 - **D1** (owner, planning, 2026-10-18): Pareto-k, the option "Sample-size cutoff": "Cut at loo's current threshold, min(1 − 1/log10 S, 0.7). diagnose_model.py computes it from the draw count, so every ArviZ version still gives the same rating and the recorded reason holds. It stays 0.7 at 4×1000 draws and is about 0.656 at the 4×200 exploring size. reloo and loo_moment_match already default to it. The JSON carries it as good_k." The bands, as the option showed them: k ≤ good_k is reliable, so LOO rates excellent; good_k < k ≤ 0.7 is unreliable, so LOO rates fair with a "more draws may fix it" step; k > 0.7 or a non-finite k is unreliable, so LOO rates poor with the remedies named. Applied in: Task 4.
 - **D2** (owner, planning, 2026-10-18): checks that never ran, the option "All three": "Tree depth (no reached_max_tree_depth), E-BFMI (no energy, which NumPyro stores only if extra_fields asks for it) and divergences (no diverging, as on a hand-built BlackJAX InferenceData). Each writes checked: false, and the all-clear names it." Applied in: Tasks 2 and 3.
+- **D3** (owner, plan review, 2026-10-19): the two scope extras, the option "Keep as planned": "Keep both extras in plan 56 as planned: the E-BFMI next step (DF11) and the narrow writer verdict (DF12)." Applied in: Task 3 (DF11) and Task 1 (DF12), unchanged.
 
 ---
 
@@ -69,8 +70,8 @@ A script then replayed this plan's blocks in a fresh clone of `668b8c3`, one ste
 - **DF8, a `diagnostics.json` written before `good_k`.** Its `n_bad` counted only k > 0.7, so the reader reads it as `n_high`.
 - **DF9, how `good_k` is computed.** From the nominal S = chains × draws, as loo does, and rounded to four places in the JSON. The reader rates LOO from the counts, never by comparing `max` with the rounded `good_k`.
 - **DF10, quote style** follows each file: double quotes in both scripts and their tests.
-- **DF11, the E-BFMI fold-in.** A lone low E-BFMI gets its own next step (Task 3). This planning pass found it: the same function and the same false all-clear as tree depth. If the owner descopes it at plan review, drop the E-BFMI step and its test from Task 3, and log a backlog item at completion.
-- **DF12, the writer's verdict stays narrow.** `diagnose_model.py`'s overall verdict gains only the two issues X1 names: a failing MCSE and a LOO that did not run. A sampler check that never ran adds no issue, so Task 5's unchecked run still reads "Model is ready for interpretation." there. The reader's all-clear names the check (D2), and `SKILL.md`'s pipeline ends with the reader. If the owner wants the writer to name unchecked checks too, that is a small addition to Task 2.
+- **DF11, the E-BFMI fold-in.** A lone low E-BFMI gets its own next step (Task 3). This planning pass found it: the same function and the same false all-clear as tree depth. The owner kept it at plan review (D3).
+- **DF12, the writer's verdict stays narrow.** `diagnose_model.py`'s overall verdict gains only the two issues X1 names: a failing MCSE and a LOO that did not run. A sampler check that never ran adds no issue, so Task 5's unchecked run still reads "Model is ready for interpretation." there. The reader's all-clear names the check (D2), and `SKILL.md`'s pipeline ends with the reader. The owner kept it at plan review (D3).
 
 ### Section 34 (calibration-check verdicts): no item folded
 
@@ -2173,5 +2174,4 @@ Execute in a fresh session on Sonnet (the owner's routing: plan on Opus, execute
 Run the writing-plans Plan Completion Protocol after the final review, then:
 
 - **Tick the three backlog items.** In `specs/deferred_items.md`, section `audit-3-10-26 routing (no plan; re-verification pass, branch claude/quizzical-hermann-814d89) — 2026-10-18`, tick X1, X2 and F8 (`- [x] … → done in plan 56`). That section arrives with commit `4b683a4`: if it is not on `main` yet, ask the owner before you merge it here.
-- **If the owner descoped DF11** at plan review, append its backlog item (a lone low E-BFMI gets the all-clear's fallback step but no next step of its own) to this plan's section, with `Size: quick-fix` and a `Done when:`.
 - **Retire this plan.** There is no spec to retire with it.
