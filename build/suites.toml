@@ -143,6 +143,12 @@ notes = [
 ]
 
 [[suite]]
+name = 'write-with-asd-ste100'
+dir = 'skills/write-with-asd-ste100/scripts'
+with = ['pytest']
+notes = ['Tests for the vendored linter: its pinned bytes, its self-test under 3.13 and /usr/bin/python3, and its JSON report.']
+
+[[suite]]
 name = 'writing-plans'
 dir = 'skills/writing-plans/scripts'
 with = ['pytest']
