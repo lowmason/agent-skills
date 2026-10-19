@@ -573,8 +573,9 @@ to `~/.cache/agent-skills/cc-guide/latest/docs/`, overwriting, with the fetch
 time and changelog head recorded beside them after the last page, so a
 recorded head names a finished fetch. Every session and checkout shares this
 `latest/` (Decision 10), and the last fetch wins: of the commands that read
-it, only `rebaseline` turns what it reads into baseline state, so it alone
-is pinned to a packet's head (R7) (owner, plan 51, 2026-10-18).
+it, only `rebaseline` turns the docs text it reads into baseline state, so
+it is pinned to a packet's head (R7), as `audited` is through `--to` (owner,
+plan 51, 2026-10-18).
 
 R6.5 **Compare.** For each group, report its changed, missing and new blocks
 as findings, each with its candidate sections (R3.7), and its deselected

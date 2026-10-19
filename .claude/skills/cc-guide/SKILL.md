@@ -70,4 +70,4 @@ As verify, from `cli.py check --worktree` and then `cli.py packets --audit [<gro
 ## After any mode
 
 - A correction that resolves a conformance gap removes its `[[exception]]` from `build/cc_guide/conformance.toml`, or narrows its `artifacts`, in the same change; `check_conformance.py` must pass.
-- Report to the owner: the working-tree diff, split into fact corrections and owner's-call items; what settle held or left unverified; the B and C items; and lint's `STALE` lines for each section whose `changed` moved.
+- Report to the owner: the working-tree diff, split into fact corrections and owner's-call items; what settle held or left unverified; any `rebaseline` that refused because a later fetch moved the docs; the B and C items; and lint's `STALE` lines for each section whose `changed` moved.
