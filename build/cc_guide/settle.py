@@ -2,7 +2,9 @@
 steps 4-6, R8.8 steps 1-4, R8.10). It reads a packet's index.json beside
 the verifier's report.md, parses the report's rows, re-greps every quote
 (quotes.py), and prints what follows. It writes nothing but a settled
-triage's settled.json in the packet; `baseline` records the outcome.
+triage's settled.json in the packet; `baseline` records the outcome. Each
+rebaseline it prints ends with --head and the packet's head, so `baseline`
+refuses it once a later fetch has moved latest/.
 
 - triage fails safe: a block the report leaves out, a release with no
   coverage line and a row whose quote fails all become UNSURE, handled as
@@ -429,7 +431,8 @@ def settle_triage(p: Packet) -> Settled:
     out += [f'owner: {o}' for _, o in t.owner]
     if held:
         out.append(f"held, never advanced here: {' '.join(sorted(held, key=order.index))}")
-    steps = [command(p, 'baseline', 'rebaseline', gid, *refs) for gid, refs in rebaseline.items()]
+    steps = [command(p, 'baseline', 'rebaseline', gid, *refs, '--head', index['head'])
+             for gid, refs in rebaseline.items()]
     if advance and target:
         steps.append(command(p, 'baseline', 'advance', *advance, '--to', target))
     if steps:
@@ -618,7 +621,7 @@ def settle_review(p: Packet, hold: tuple[str, ...]) -> Settled:
     if fixed:
         steps.append(command(p, 'baseline', 'accept', *fixed, '--substantive') + '   # only the sections you changed')
     if refs:
-        steps.append(command(p, 'baseline', 'rebaseline', index['group'], *refs))
+        steps.append(command(p, 'baseline', 'rebaseline', index['group'], *refs, '--head', index['head']))
     # a section checked past the triage's target is not advanced backwards
     target, checked = index.get('advance_to'), index.get('checked', {})
     advance = [sid for sid in scope if sid not in held
