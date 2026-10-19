@@ -28,7 +28,7 @@ UV_NOISE = 'uv: noise before the reason'
 UV_REASON = 'Caused by: no cached Python 3.13 and uv is offline'
 CHECKS = {'check_frontmatter', 'check_provenance', 'check_snippets',
           'check_conformance', 'declared_dependencies', 'sync_runtime_assets', 'cc_guide_lint',
-          'critical_placement'}
+          'critical_placement', 'suite_registry'}
 
 
 def clean_env(**extra):
@@ -194,6 +194,21 @@ def test_late_heading_in_acknowledged_file_is_refused(clone):
     assert failed_names(result) == {'critical_placement'}, result.stderr
     assert ('FAILED test_check_conformance.py::test_real_skill_late_headings_match_the_acknowledged_set'
             '[skills/writing-skills/SKILL.md]') in result.stderr, result.stderr
+
+
+def test_unregistered_suite_is_refused(clone):
+    '''The ninth lint keeps build/suites.toml complete: a first test file in
+    tech-debt's scripts directory needs a [[suite]] entry before it can be committed.'''
+    test = clone / 'skills' / 'tech-debt' / 'scripts' / 'test_scan.py'
+    test.write_text('def test_scan():\n    assert True\n')
+    git(clone, 'add', 'skills/tech-debt/scripts/test_scan.py')
+    before = head(clone)
+    result = commit(clone, '-m', 'unregistered suite')
+    assert result.returncode != 0, result.stderr
+    assert head(clone) == before
+    assert failed_names(result) == {'suite_registry'}, result.stderr
+    assert ('skills/tech-debt/scripts: holds pytest files, but no suite in build/suites.toml '
+            'contains it') in result.stderr, result.stderr
 
 
 def test_hook_fails_open_without_uv(clone, tmp_path):

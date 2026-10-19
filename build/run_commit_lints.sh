@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# The eight commit lints that CLAUDE.md lists under Commands. Fails closed: exit 1
+# The nine commit lints that CLAUDE.md lists under Commands. Fails closed: exit 1
 # when any check fails or cannot run. Runs every check, then names the failures.
 # Run by build/githooks/pre-commit and by .github/workflows/lints.yml.
 set -uo pipefail
@@ -25,6 +25,7 @@ run declared_dependencies bash -c 'cd build && uv run --python 3.13 --with pytes
 run sync_runtime_assets uv run --python 3.13 --with pyyaml python build/sync_runtime_assets.py --check
 run cc_guide_lint uv run --python 3.13 python build/cc_guide/cli.py lint
 run critical_placement bash -c 'cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_conformance.py -k test_real_skill'
+run suite_registry uv run --python 3.13 python build/run_suites.py --check
 if [ "${#failed[@]}" -gt 0 ]; then
   echo "commit lints failed: ${failed[*]}" >&2
   exit 1

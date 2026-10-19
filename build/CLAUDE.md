@@ -20,11 +20,17 @@ are `../agents/*.md` and `../commands/*.md`; never edit `../runtimes/` by hand.
 (not READMEs or install guides) against `../install.py`'s `DEPENDENCIES`, so a
 skill edit can fail it.
 
-`run_commit_lints.sh` runs the eight commit lints that the root `CLAUDE.md`
+`run_commit_lints.sh` runs the nine commit lints that the root `CLAUDE.md`
 lists and fails closed. `githooks/pre-commit` runs it as a git hook, failing
 open only when uv cannot run, and `../.github/workflows/lints.yml` runs it in
 CI. `test_commit_lints.py` drives the runner and hook through throwaway
 clones and checks the workflow's triggers and pins.
+
+`suites.toml` registers every directory-scoped pytest suite, and
+`run_suites.py` lists, runs and checks them; its docstring gives the options.
+`run_suites.py --check` is a commit lint: it fails when a directory that holds
+pytest files is not registered, so a new suite adds its `[[suite]]` entry in
+the same change.
 
 `cc_guide/` holds two tools for `specs/guides/claude-code-customization-guide.md`.
 `conformance.toml` is the register `check_conformance.py` reads. The rest is
