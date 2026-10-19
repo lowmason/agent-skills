@@ -942,6 +942,13 @@ uv run --python 3.13 python build/run_suites.py build
 
 Expected: `24 passed` (+24), the drift test passes, and the `build` suite's passed count equals Task 1, Step 1's (+0), with the same 4 known failures.
 
+> **Deviation (final review, 2026-10-19).** Task 6 ran at `702b0d2`: the new suite showed `27 passed` (+27, the D6 deviation's count), the drift test passed, and the `build` suite showed 1146 passed (+0) with the same 4 known failures. The clean clone gave `commit lints passed` and `27 passed`. Then executing-plans' whole-branch review ran on `ca8bd46..702b0d2`. Codex (`gpt-6-astra`, the owner's per-run choice) found no actionable defect. The code-reviewer agent (Opus) found nothing Critical, two Important items and three Minor ones. Two fixes landed in one commit:
+>
+> - README's Credits list of originals now names `document-python-package`, as NOTICE and CLAUDE.md do.
+> - `test_an_unsupported_layout_stops_before_a_missing_quarto` pins DF4's order of the layout stop and the Quarto stop. A copy with the two stops swapped fails only this test. The suite now has 28 tests: Steps 1 and 2 expect `28 passed` (+28).
+>
+> Declined: a broken Quarto reported as missing (it still stops, and R5 has one Quarto stop), and a cache with `SOURCE` but no `skills/` (R3.6 defines a complete cache by `SOURCE`, and only a hand deletion makes that state). For the owner, under D7: gate check 3 lints every module and function in the package folder, so nested functions, public names in private modules and in-package test modules fail `GL08`. It fails closed, but on a typical package it asks for docstrings that the Docstrings section never mentions.
+
 - [ ] **Step 2: Run the commit lints on a clean clone**
 
 A clean clone has no untracked file that could hide a missing one. `run_commit_lints.sh` takes its root from the folder that it runs in, so the second command runs it from inside the clone.

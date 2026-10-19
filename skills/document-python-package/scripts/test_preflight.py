@@ -249,6 +249,16 @@ def test_quarto_missing_stops_with_the_install_page(tmp_path, capsys):
         quarto='missing', step='stop: quarto is missing; install it from https://quarto.org/docs/get-started/'))
 
 
+def test_an_unsupported_layout_stops_before_a_missing_quarto(pkg, tmp_path, capsys):
+    (pkg / 'docs').mkdir()
+    (pkg / 'docs' / 'great-docs.yml').write_text('parser: numpy\n')
+    (tmp_path / 'bin' / 'quarto').unlink()
+    assert run(capsys) == (1, report(
+        layout='docs', config='docs/great-docs.yml', quarto='missing',
+        step='stop: config layout docs (docs/great-docs.yml) is not supported; '
+             'great-docs 0.17.x reads great-docs.yml at the project root'))
+
+
 def test_the_cache_defaults_to_the_home_cache(monkeypatch, tmp_path):
     expected = tmp_path / 'home' / '.cache' / 'agent-skills' / 'great-docs'
     monkeypatch.setenv('HOME', str(tmp_path / 'home'))
