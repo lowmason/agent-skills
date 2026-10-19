@@ -1,8 +1,9 @@
 # document-python-package — Design Spec
 
-**Status: APPROVED (2026-10-19).** The owner approved the four design sections in
-a brainstorming session on 2026-10-19, and approved this written spec the same
-day. Next step: an implementation plan from the writing-plans skill.
+**Status: COMPLETE (2026-10-19)** — implemented by plan 57
+(`specs/plans/completed/57-document-python-package.md`) and retired here. The
+owner approved the four design sections in a brainstorming session on
+2026-10-19, and approved this written spec the same day.
 
 These changes were made after the sections were approved, while writing and in
 a review pass against the v0.17.0 source. The owner approved them with the
@@ -132,9 +133,12 @@ Validation V3 micro-tests the final wording. The draft:
 > Pages. Also triggers when a repo has a great-docs.yml file or a great-docs/
 > build folder.
 
-R1.4 **`compatibility`** (500 characters at most): "Requires uv, git, Quarto
-and great-docs >=0.17.0,<0.18. The preflight script needs Python >=3.11 and
-fetches Posit's official Great Docs skills from github.com."
+R1.4 **`compatibility`** (500 characters at most): "Requires uv to run bundled
+scripts (dependencies are declared inline); Python 3.11+. Also requires git,
+Quarto and great-docs >=0.17.0,<0.18, and the preflight script fetches Posit's
+official Great Docs skills from github.com." The first sentence is the
+portability spec's R3.6 string, with the floor that R3.1 sets here
+(owner, plan 57, 2026-10-19).
 
 R1.5 **Length.** SKILL.md stays under writing-skills' 500-line guideline. The
 target is about 250 lines.
@@ -231,10 +235,14 @@ R4.2 **Pin.** Add the pin to `pyproject.toml`, then run `uv lock`:
 
 ```toml
 [dependency-groups]
-docs = ['great-docs>=0.17.0,<0.18']   # plus the completeness tool (S7)
+docs = ['great-docs>=0.17.0,<0.18', 'numpydoc>=1.11']   # (spike S7, plan 57, 2026-10-19)
 
 [tool.uv]
 default-groups = ['dev', 'docs']      # the package's existing groups, plus docs
+
+[tool.numpydoc_validation]            # (spike S7, plan 57, 2026-10-19)
+checks = ['PR01', 'RT01', 'GL08']
+exclude = ['\._\w+$']
 ```
 
 The pin's range equals the script's range (R3.3). uv's default for
@@ -258,15 +266,16 @@ R4.4 **Docstrings.**
   the numpy and completeness rules in the brief. When that agent is not
   installed, the agent in the session drafts directly.
 - If the package enables ruff's pydocstyle (`D`) rules and keeps `'''`
-  docstrings, ignore D300. Spike S6 settles when this note applies.
+  docstrings, ignore D300. A package that runs `ruff format` keeps them only
+  with `quote-style = 'preserve'` (spike S6, plan 57, 2026-10-19).
 
 R4.5 **The README as the homepage** (`homepage: index`). One README serves
 GitHub, PyPI and the site:
 
-- Put the badges in one block at the top. The site moves them into the hero
-  (S8).
+- Put the badges in one block at the top. The site shows the block as it
+  stands (spike S8, plan 57, 2026-10-19).
 - Make the first paragraph a plain summary of one or two sentences. It becomes
-  the site's SEO description (S8).
+  the site's meta description (spike S8, plan 57, 2026-10-19).
 - Use absolute URLs for images and links, because PyPI does not resolve
   relative paths.
 - Use no GitHub-only syntax, such as `> [!NOTE]` alerts or Mermaid blocks. PyPI
@@ -279,11 +288,13 @@ shapes the prose.
 
 R4.7 **Executed examples.**
 
-- Docstring examples run on every build (S3). Keep them fast and deterministic:
-  no MCMC, no network, fixed seeds.
+- Docstring examples run when their docstring changes, and on any build with
+  no `_freeze/` cache, such as CI without a committed cache
+  (spike S3, plan 57, 2026-10-19). Keep them fast and deterministic: no MCMC,
+  no network, fixed seeds.
 - Put slow work, such as MCMC, in user-guide pages under `freeze: auto`. Commit
-  the `_freeze/` cache (its location comes from S4), so that CI renders the
-  pages without running the code again.
+  the `_freeze/` cache (spike S4, plan 57, 2026-10-19), so that CI
+  renders the pages without running the code again.
 - After the code on a frozen page changes, render locally and commit the new
   cache.
 
@@ -304,9 +315,13 @@ from the package root:
      - "API reference skipped (non-Python project)"
      - "No documentable exports found — skipping API reference"
      - "API reference disabled (reference: false), skipping"
-   - The built site has its API reference index page (the path comes from S2).
-3. the completeness check over the `__all__` exports (the tool and its command
-   come from S7)
+   - The built site has its API reference index page, `great-docs/_site/reference/index.html`
+     (spike S2, plan 57, 2026-10-19).
+3. `uv run numpydoc lint $(git ls-files --cached --others --exclude-standard '<package-dir>/*.py')`,
+   the completeness check, where `<package-dir>` is the folder that holds the
+   package's `__init__.py`, so that it covers every `__all__` export
+   (spike S7, plan 57, 2026-10-19). The `--others --exclude-standard` flags
+   add modules that git does not track yet (owner, plan 57, 2026-10-19).
 
 After the gate, `uv run great-docs check-links` runs, and so does
 `uv run great-docs proofread` when `harper-cli` is installed. Both report
@@ -327,6 +342,11 @@ problem.
   (preflight): the report gives git's error. The skill never falls back to main,
   the docs site or `skill install`.
 - **Quarto is missing** (preflight): the report points to Quarto's install page.
+- **`uv lock` fails because `requires-python` allows a Python below 3.11** (the
+  agent, at the pin, R4.2): great-docs 0.17.0 needs Python 3.11 or later. The
+  report gives uv's error. The skill never raises `requires-python` to make the
+  lock pass, because that drops Python versions that the package's users rely
+  on (owner, plan 57, 2026-10-19).
 - **A gate check fails** (the agent): the work is not done. The report names the
   check and gives its output. A build that skipped the API reference is a
   failed gate check (R4.9).
@@ -382,12 +402,15 @@ as hard (`DEPENDENCIES`) or soft (`SOFT_REFERENCES`, with a reason).
    the portability spec's R1–R4 from its first commit. Its script has a PEP 723
    header and runs with `uv run`, its folder carries a `LICENSE` copy, and its
    frontmatter carries `license`. Plan 53's planning record counts 17 runnable
-   scripts, and `preflight.py` makes 18. If this skill lands first, its plan
+   scripts. Plan 52's vendored `write-with-asd-ste100/scripts/ste-lint.py`
+   landed after that count and makes 18, so `preflight.py` makes 19
+   (owner, plan 57, 2026-10-19). If this skill lands first, its plan
    adds one dated line to plan 53's Global Constraints (D8). The line names
    `document-python-package/scripts/preflight.py` as a script that already
    conforms. It also says that the skill's `LICENSE` copy already exists and
-   that plan 53's executor should expect 18 scripts. If plan 53 lands first,
-   nothing extra is needed.
+   that plan 53's executor should expect 19 scripts
+   (owner, plan 57, 2026-10-19). If plan 53 lands first, nothing extra is
+   needed.
 
 ## Validation and acceptance
 
@@ -407,6 +430,11 @@ dated tag, before the next task starts.
 | S6 | Does `ruff format` rewrite `'''` docstrings? | R4.4's D300 note applies only to packages that do not run `ruff format` |
 | S7 | Which tool flags a missing parameter and a missing Returns section in a numpy docstring: pydoclint or numpydoc's validator? | R4.2 and R4.9 name the chosen tool, its version floor and its command |
 | S8 | On the built site, do the badges move into the hero, and does the first paragraph become the meta description? | R4.5's two site claims change to what the build shows |
+
+**Spike results** (spike S1–S8, plan 57, 2026-10-19). The spike answered
+all eight questions with great-docs 0.17.0 and Quarto 1.10.19.
+Its record is `specs/verification/57-great-docs-0.17.0.md`. Each requirement
+that an answer changed carries that answer's tag.
 
 **V2 — `preflight.py` tests.** They use pytest and the stdlib, with no network:
 

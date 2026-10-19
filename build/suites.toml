@@ -64,6 +64,12 @@ with = ['pytest']
 notes = ['ADR-scaffolder tests (stdlib only).']
 
 [[suite]]
+name = 'document-python-package'
+dir = 'skills/document-python-package/scripts'
+with = ['pytest']
+notes = ['Preflight tests, stdlib only. The fetch tests clone a local bare repository through a file:// URL.']
+
+[[suite]]
 name = 'explore-data'
 dir = 'skills/explore-data/scripts'
 with = ['pytest', 'polars']

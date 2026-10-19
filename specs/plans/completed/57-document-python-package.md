@@ -1,5 +1,7 @@
 # document-python-package Implementation Plan
 
+**Status: COMPLETE (2026-10-19)** — executed via executing-plans; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Ship `document-python-package`, an original skill that documents a public Python package with Great Docs 0.17.x as a thin layer over Posit's five official Great Docs skills.
@@ -8,7 +10,7 @@
 
 **Tech Stack:** `preflight.py` uses the Python 3.11+ stdlib, with a PEP 723 header, and runs with `uv run`. Its tests use pytest. The spike uses great-docs 0.17.0, Quarto 1.10.19, uv and git. The skill tests use Claude Code's `claude -p` (a held copy, 2.1.302 when planned) on Opus 5.5. The completeness check uses pydoclint or numpydoc, as S7 chooses. The kit and the lints run on Python 3.13 through `uv run`.
 
-**Spec:** [`specs/document-python-package-spec.md`](../document-python-package-spec.md)
+**Spec:** [`specs/completed/document-python-package-spec.md`](../../completed/document-python-package-spec.md)
 
 ## Global Constraints
 
@@ -38,6 +40,15 @@ These come from the spec unless a line says otherwise. Every task's requirements
 - **D2** (owner, brief, 2026-10-19): This plan is committed on `claude/great-docs-skill-design-19335c`, which also holds the spec's three unpushed commits (`475f5d0`, `3cdb38f` and `e72f284`). Applied in: Execution handoff.
 - **D3** (owner, plan review, 2026-10-19): Q1's option (c). The `compatibility` text is the portability spec's house string with Python 3.11+, then git, Quarto, the version range and the network fetch. The owner also approved amendments A1 (19 runnable scripts) and A2 (R1.4's new text) as worded. Applied in: Task 1 (spec amendment), Appendix B (SKILL.md).
 - **D4** (owner, plan review, 2026-10-19): The settled defaults DF1 to DF28 stand as written. Applied in: Planning record (Settled defaults), and the tasks that each default names.
+- **D5** (owner, brief, 2026-10-19): Inline Execution: "One Sonnet session runs Tasks 1 to 6 with the executing-plans skill." Applied in: Execution handoff.
+- **D6** (owner, brief, 2026-10-19): a code review of Task 3's bundle commit before Task 4: "After Task 3's bundle commit, the code-reviewer agent reviews that commit. Fixes that hold up land before Task 4, so GREEN measures the text that ships." Applied in: between Task 3 and Task 4.
+- **D7** (owner, brief, 2026-10-19): a SKILL.md change from the final whole-branch review, after GREEN: "The fix waits for you. You then choose: re-run GREEN for the scenarios it touches, or ship it with the skill-test record naming the text that GREEN did not measure." Applied in: the whole-branch review (executing-plans, Step 3).
+- **D8** (owner, brief, 2026-10-19): the execution model: "Since it is inline, run using opus." The execution session runs on Opus, in place of the Sonnet in D1 and D5. Applied in: Execution handoff.
+- **D9** (owner, execution session, 2026-10-19): the execution worktree. The app started the execution session in its own worktree, `keen-kilby-445f76`, on `claude/agent-skills-handoff-execution-187eb5`, where its Edit tool cannot write to a second worktree. The owner chose: "I run git merge --ff-only feat/document-python-package on this session's branch (it has no commits, so it moves to 407d1e0) and execute here. At the end you decide how feat/document-python-package gets the commits (a fast-forward of that worktree, or this branch as the PR branch)." So "the execution branch" in Task 1, Step 1 and "the execution worktree" in Global Constraints mean this worktree and branch, and `feat/document-python-package` stays at `407d1e0`. Applied in: every task, and finishing-a-development-branch.
+- **D10** (owner, execution session, 2026-10-19): the docstring-example sentence. A spike S3 probe on the scratch fixture showed that great-docs 0.17.0 freezes docstring examples by default (`Freeze mode: auto`). An example ran when its docstring changed and when no `_freeze/` existed. It did not run on an unchanged rebuild. So "Docstring examples run on every build" was wrong. The owner chose: "Before Step 6, I replace the sentence in the spec's R4.7 and in fill_slots.py's `yes` text (and its block in the plan), add the probe to the spike record's S3, and log it as D10. GREEN then measures the corrected text." Applied in: Appendix D (`fill_slots.py`), the spec's R4.7 and the spike record's S3. Deviation: R4.7 was corrected by hand after Task 1, Step 19, so Appendix C's `s3-docstrings-run` block keeps the text that Step 19 applied, not the text that ships.
+- **D11** (owner, execution session, 2026-10-19): the frozen-example gap. The same probe showed that after a change to a function's body, with its docstring unchanged, the build exits 0 and the page shows the stale frozen output. So a broken example can pass the gate's build check. The owner chose: "I record it in the spike record and add a deferred item (size: design). Plan 57 adds no gate change, because no RED reply showed this failure (DF14)." Applied in: the spike record's S3, and Plan completion.
+- **D12** (owner, execution session, 2026-10-19): a package whose `requires-python` allows Python below 3.11. The D6 review found that `uv lock` then fails on the pin, because great-docs 0.17.0 needs Python 3.11 or later, and uv's hint pushes the agent to raise `requires-python`. The owner chose: "One stop in SKILL.md's Pin section and spec R5: if `uv lock` fails because requires-python allows a Python below 3.11, stop and report it, and never raise requires-python to make the lock pass. Support for such packages (pins with python_version markers) goes to a deferred item. GREEN does not measure this (its scenarios use Python 3.13)." Applied in: SKILL.md (Pin), the spec's R5, and Plan completion.
+- **D13** (owner, execution session, 2026-10-19): the completeness command. `git ls-files` lists tracked files only, so a new module that the agent has not added escapes gate check 3. The owner chose: "Change COMPLETENESS_COMMAND to `uv run numpydoc lint $(git ls-files --cached --others --exclude-standard '<package-dir>/*.py')` in the spike record's Values table (gate.py reads it), spec R4.9 and SKILL.md. On the fixture it lists a new untracked module, nested folders too, and still honors .gitignore." Applied in: the spike record (Values and S7), the spec's R4.9 and SKILL.md (the gate). Task 1, Step 16's table keeps the planned command.
 
 ---
 
@@ -174,7 +185,9 @@ In the repository:
 - Consumes: nothing from other tasks.
 - Produces: the fixture repository `FIX` with two tags. `pristine` is the package before any great-docs change. `configured` adds the pin `great-docs==0.17.0` and the files that `init` wrote. Tasks 2 to 4 use both. The spike record's Values table, which `fill_slots.py` reads in Task 3 and `gate.py` reads in Task 4. `KIT/extract_plan_files.py` and `KIT/fill_slots.py`, which every later task runs.
 
-- [ ] **Step 1: Check the worktree, the tools and the baselines**
+- [x] **Step 1: Check the worktree, the tools and the baselines**
+
+> Deviation: the session ran in the app's worktree on `claude/agent-skills-handoff-execution-187eb5`, fast-forwarded to `feat/document-python-package`'s `407d1e0` (D9).
 
 ```bash
 git branch --show-current
@@ -191,7 +204,7 @@ bash build/run_commit_lints.sh
 
 Expected: the execution branch, no changes, and the commit that last changed this plan. Then the versions. Planning used uv 0.13.1, git 2.56.0, Quarto 1.10.19 and Claude Code 2.1.302. Another version is not a stop, but the spike record names it. Then `0`: no user-level copy of the skill exists. Any other number: stop and ask the owner. The `build` suite takes about a minute: write down its passed count for Task 6. Only the 4 ground-truth tests of `test_verify_citations.py` fail. Last, `commit lints passed`.
 
-- [ ] **Step 2: Check whether plan 53, the portability plan, has run**
+- [x] **Step 2: Check whether plan 53, the portability plan, has run**
 
 ```bash
 test -f specs/plans/53-agent-skills-portability.md && echo 'plan 53 is live'
@@ -201,7 +214,7 @@ git log --all -S SPEC_KEYS --oneline -- build/check_frontmatter.py
 
 Expected: `plan 53 is live`, then `0`, then no output. Plan 53 has not run, so Task 5 adds the D8 line (Coupling (a)). Any other result: plan 53 has run or is running. Tell the owner before Task 3, and skip Task 5, Step 2.
 
-- [ ] **Step 3: Cut the extractor out of this plan, and write the slot filler**
+- [x] **Step 3: Cut the extractor out of this plan, and write the slot filler**
 
 The extractor's block follows the commands. The `awk` command cuts it out of the plan, so nobody retypes it:
 
@@ -294,7 +307,7 @@ if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))
 ```
 
-- [ ] **Step 4: Amend the spec with A1 and A2**
+- [x] **Step 4: Amend the spec with A1 and A2**
 
 The owner approved both at plan review (Planning record, Amendments). The spec's status line stays as it is.
 
@@ -308,7 +321,7 @@ git commit -m "docs(specs): amend the document-python-package spec at plan 57's 
 
 Expected: two `edited` lines, `3` (A1 adds two tags and A2 one), and `commit lints passed`.
 
-- [ ] **Step 5: Write the fixture and the spike's tools**
+- [x] **Step 5: Write the fixture and the spike's tools**
 
 ```bash
 test -e ~/.cache/agent-skills/scratch/great-docs-spike && echo 'SPIKE EXISTS'
@@ -317,7 +330,7 @@ uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/document-
 
 Expected: no `SPIKE EXISTS` line, then nine `wrote` lines. If the folder existed, stop and ask the owner: an old fixture would mix two spikes.
 
-- [ ] **Step 6: Make the fixture a repository, and tag `pristine`**
+- [x] **Step 6: Make the fixture a repository, and tag `pristine`**
 
 ```bash
 git -C ~/.cache/agent-skills/scratch/great-docs-spike/gdfixture init --quiet --initial-branch main
@@ -330,7 +343,7 @@ git -C ~/.cache/agent-skills/scratch/great-docs-spike/gdfixture ls-files
 
 Expected: `uv lock` resolves a few packages. Then eight files: `.gitignore`, `.python-version`, `README.md`, `pyproject.toml`, `src/gdfixture/__init__.py`, `src/gdfixture/core.py`, `user_guide/00-introduction.qmd` and `uv.lock`.
 
-- [ ] **Step 7: Pin great-docs 0.17.0, and install it**
+- [x] **Step 7: Pin great-docs 0.17.0, and install it**
 
 The spike pins the exact version that the spec read (DF25).
 
@@ -344,7 +357,7 @@ uv run --directory ~/.cache/agent-skills/scratch/great-docs-spike/gdfixture grea
 
 Expected: `edited gdfixture/pyproject.toml:pin`. The first sync installs great-docs with Jupyter and can take minutes: give it a 10-minute timeout. Then `0.17.0`, and `init`'s help, which lists `--project-path` and `--force`. Another version, or no `--force`: stop and ask the owner.
 
-- [ ] **Step 8: S1, a non-interactive `init`**
+- [x] **Step 8: S1, a non-interactive `init`**
 
 ```bash
 uv run --directory ~/.cache/agent-skills/scratch/great-docs-spike/gdfixture great-docs init --force </dev/null > ~/.cache/agent-skills/scratch/great-docs-spike/s1-init.log 2>&1; echo "exit $?"
@@ -376,7 +389,7 @@ git -C ~/.cache/agent-skills/scratch/great-docs-spike/gdfixture show --stat --fo
 
 Expected: `configured`, with `.gitignore`, `great-docs.yml`, `pyproject.toml` and `uv.lock` changed.
 
-- [ ] **Step 9: S2, the build and the API reference index page**
+- [x] **Step 9: S2, the build and the API reference index page**
 
 ```bash
 uv run --directory ~/.cache/agent-skills/scratch/great-docs-spike/gdfixture great-docs build </dev/null > ~/.cache/agent-skills/scratch/great-docs-spike/s2-build.log 2>&1; echo "exit $?"
@@ -387,7 +400,9 @@ tail -5 ~/.cache/agent-skills/scratch/great-docs-spike/s2-build.log
 
 A build can take several minutes: give it a 10-minute timeout, or run it in the background. Expected: `exit 0`, no line from `grep`, and one path that ends in `great-docs/_site/reference/index.html`. `API_INDEX` is that path from the package root. A non-zero exit, or any of the four lines: stop and ask the owner (V1's S2 row). If the index page sits in another folder, Steps 10 to 17 use that site folder in place of `great-docs/_site`.
 
-- [ ] **Step 10: S3a, whether docstring examples run**
+- [x] **Step 10: S3a, whether docstring examples run**
+
+> Deviation: a freeze probe added to S3 showed that docstring examples are frozen too, so R4.7's sentence was corrected (D10) and the stale-example gap was deferred (D11).
 
 ```bash
 find ~/.cache/agent-skills/scratch/great-docs-spike/gdfixture/great-docs/_site/reference -name '*.html'
@@ -397,7 +412,7 @@ grep -n -F -e 'summarize(pl.DataFrame' -e "'mean': 20.0" ~/.cache/agent-skills/s
 
 The second command prints the page's text without its HTML tags. Expected: the list holds `summarize.html` (if the page has another name, use that name). `grep` prints the example's code line and its output line with `'mean': 20.0`. Then `DOCSTRING_CELLS_RUN` = `yes`. The code line alone: `no`. Neither line: stop and ask the owner.
 
-- [ ] **Step 11: S3b, a failing docstring cell**
+- [x] **Step 11: S3b, a failing docstring cell**
 
 ```bash
 uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/document-python-package-kit/extract_plan_files.py specs/plans/57-document-python-package.md ~/.cache/agent-skills/scratch/great-docs-spike gdfixture/src/gdfixture/core.py:failing-example
@@ -409,7 +424,7 @@ git -C ~/.cache/agent-skills/scratch/great-docs-spike/gdfixture checkout -- src/
 
 Expected: `edited gdfixture/src/gdfixture/core.py:failing-example`, the build's exit code, the log's error lines, and the pages that show the error. The record (Step 18) gets all three. The last command restores `core.py`. When `DOCSTRING_CELLS_RUN` is `no`, the cell never runs: record that, and only Step 12 decides `CELL_ERROR`.
 
-- [ ] **Step 12: S3b, a failing page cell, then a clean build**
+- [x] **Step 12: S3b, a failing page cell, then a clean build**
 
 ```bash
 uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/document-python-package-kit/extract_plan_files.py specs/plans/57-document-python-package.md ~/.cache/agent-skills/scratch/great-docs-spike gdfixture/user_guide/01-failing.qmd
@@ -431,7 +446,7 @@ Then decide `CELL_ERROR` from Steps 11 and 12. A "failing build" is one whose ce
 - `site`: a failing build exited 0, its log has no such line, and its pages hold `cell-output-error`, the class that Quarto gives an error output. `CELL_ERROR_MARKER` = `cell-output-error`.
 - Anything else: stop and ask the owner.
 
-- [ ] **Step 13: S4, where the freeze cache lands**
+- [x] **Step 13: S4, where the freeze cache lands**
 
 ```bash
 find ~/.cache/agent-skills/scratch/great-docs-spike/gdfixture -name _freeze -not -path '*/.venv/*'
@@ -440,7 +455,7 @@ git -C ~/.cache/agent-skills/scratch/great-docs-spike/gdfixture status --short -
 
 Expected: `…/gdfixture/_freeze`, and the status line `?? _freeze/`. The cache sits at the package root, and git does not ignore it. Then `FREEZE_DIR` = `_freeze/`. If the only `_freeze` sits inside `great-docs/`, if the status shows it after `!!`, or if no `_freeze` exists: stop and ask the owner (DF21).
 
-- [ ] **Step 14: S5, `default-groups` and the generated workflow**
+- [x] **Step 14: S5, `default-groups` and the generated workflow**
 
 ```bash
 uv sync --directory ~/.cache/agent-skills/scratch/great-docs-spike/gdfixture --no-default-groups --group dev
@@ -454,7 +469,7 @@ grep -rn -E 'uv sync|uv pip install' ~/.cache/agent-skills/scratch/great-docs-sp
 
 Expected: the first version check fails with `PackageNotFoundError`. That is the control: without the `docs` group, great-docs is absent. After the plain `uv sync`, the second check prints `0.17.0`. `setup-github-pages` exits 0 and writes a workflow under `.github/workflows/`, and `grep` shows a `uv sync` line and a `uv pip install great-docs` line. S5 then agrees with R4.2 and R4.8, and no Value changes. Stop and ask the owner (DF26) when the control prints a version, the plain sync does not install great-docs, `setup-github-pages` fails, or the workflow has no `uv pip install great-docs` line.
 
-- [ ] **Step 15: S6, `ruff format` and `'''` docstrings**
+- [x] **Step 15: S6, `ruff format` and `'''` docstrings**
 
 ```bash
 uv run --directory ~/.cache/agent-skills/scratch/great-docs-spike/gdfixture ruff --version
@@ -470,7 +485,9 @@ uv run --directory ~/.cache/agent-skills/scratch/great-docs-spike/gdfixture ruff
 - `preserve`: the first two counts are above 0, and the `preserve` count is 0.
 - `yes`: all three counts are above 0.
 
-- [ ] **Step 16: S7, the completeness tool**
+- [x] **Step 16: S7, the completeness tool**
+
+> Deviation: after the D6 review, a probe showed that plain `git ls-files` misses untracked modules, so COMPLETENESS_COMMAND gained `--cached --others --exclude-standard` (D13).
 
 ```bash
 uv run --directory ~/.cache/agent-skills/scratch/great-docs-spike/gdfixture --with pydoclint pydoclint --version
@@ -490,7 +507,7 @@ Choose the tool by DF20. With the planning results, numpydoc qualifies and also 
 | `numpydoc` | `numpydoc>=X.Y` | `uv run numpydoc lint $(git ls-files '<package-dir>/*.py')` |
 | `pydoclint` | `pydoclint>=X.Y` | `uv run pydoclint --style=numpy --skip-checking-short-docstrings=False <package-dir>` |
 
-- [ ] **Step 17: S8, the README on the built site**
+- [x] **Step 17: S8, the README on the built site**
 
 ```bash
 uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/great-docs-spike/inspect_site.py ~/.cache/agent-skills/scratch/great-docs-spike/gdfixture ~/.cache/agent-skills/scratch/great-docs-spike/gdfixture/great-docs/_site/index.html
@@ -504,7 +521,7 @@ Expected: two badge lines that say `in a hero`, then the meta description, the t
 - `meta source: module docstring`: `no` and `the package's module docstring`.
 - `meta source: other`: stop and ask the owner.
 
-- [ ] **Step 18: Write the spike record**
+- [x] **Step 18: Write the spike record**
 
 ```bash
 uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/document-python-package-kit/extract_plan_files.py specs/plans/57-document-python-package.md . specs/verification/57-great-docs-0.17.0.md
@@ -520,7 +537,7 @@ uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/document-
 
 Expected: `0`, `wrote skills/document-python-package/SKILL.md`, then `filled /tmp/dpp-fill-check/skills/document-python-package/SKILL.md`. An error names the key to fix in the table.
 
-- [ ] **Step 19: Amend the spec with the spike's answers**
+- [x] **Step 19: Amend the spec with the spike's answers**
 
 Apply the five blocks that every spike needs, then the blocks that the Values choose, in this table's order. Each key is `specs/document-python-package-spec.md:` and the label.
 
@@ -564,7 +581,7 @@ Expected: one `edited` line for each block, `filled specs/document-python-packag
 - Consumes: `FIX` at tag `pristine` (Task 1).
 - Produces: `KIT/run.py`, `KIT/build_prompts.py`, `KIT/show.py`, `KIT/transcript.py` and `KIT/gate.py`, which Task 4 runs. `KIT/RESULTS.md` with the RED verdicts, and the list of items that RED showed (decision rule 1), which Task 4's decision rules use.
 
-- [ ] **Step 1: Check that no skill text exists yet**
+- [x] **Step 1: Check that no skill text exists yet**
 
 ```bash
 test -e skills/document-python-package && echo 'SKILL FOLDER EXISTS'
@@ -573,7 +590,7 @@ ls ~/.claude/skills/ | grep -c document-python-package
 
 Expected: no `SKILL FOLDER EXISTS` line, then `0`. Otherwise stop and ask the owner: RED must run with no skill text anywhere (spec, Sequencing item 3).
 
-- [ ] **Step 2: Write the kit**
+- [x] **Step 2: Write the kit**
 
 ```bash
 uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/document-python-package-kit/extract_plan_files.py specs/plans/57-document-python-package.md ~/.cache/agent-skills/scratch/document-python-package-kit run.py build_prompts.py show.py transcript.py gate.py PREREGISTRATION.md RESULTS.md scenarios/answer-format.md scenarios/sc1-setup.md scenarios/sc2-deploy.md scenarios/sc3-done.md scenarios/sc4-mcmc.md scenarios/sc5-official-skills.md artifacts/pyproject-pinned.toml artifacts/docs-workflow.yml artifacts/build-tail.txt artifacts/lint-output.txt
@@ -583,7 +600,7 @@ git -C ~/.cache/agent-skills/scratch/great-docs-spike/gdfixture show pristine:sr
 
 Expected: 17 `wrote` lines, and no output from the two copies.
 
-- [ ] **Step 3: Check the scenarios for the skill's own words**
+- [x] **Step 3: Check the scenarios for the skill's own words**
 
 A scenario that holds the skill's words could meet its answer in the skill text.
 
@@ -593,7 +610,7 @@ grep -ril -e 'document-python-package' -e 'preflight' ~/.cache/agent-skills/scra
 
 Expected: no output.
 
-- [ ] **Step 4: Hold the binary, and probe it**
+- [x] **Step 4: Hold the binary, and probe it**
 
 ```bash
 uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/document-python-package-kit/run.py hold
@@ -602,7 +619,7 @@ uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/document-
 
 Expected: `held <version> from <path>`, then `result='OK' is_error=False`, a model list that holds `claude-opus-5-5`, and a cost of a few cents. Another result: stop and ask the owner. Every later call runs this held copy, so a Claude Code update during the tests changes nothing.
 
-- [ ] **Step 5: Build and run the RED arm**
+- [x] **Step 5: Build and run the RED arm**
 
 ```bash
 uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/document-python-package-kit/build_prompts.py red
@@ -611,7 +628,9 @@ uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/document-
 
 Expected: five lines `red/scN-….txt: N chars`, then 25 reply lines and `red: $X.XX so far`. Run the second command in the background: 25 calls take about 5 to 10 minutes and cost about $2 to $4. A `FAILED` line: run the same command again, which fills only the gaps.
 
-- [ ] **Step 6: Read every reply**
+- [x] **Step 6: Read every reply**
+
+> Deviation: reading notes for M1, M3, M4, M5 and X1 were written after the RED replies were read and before any GREEN reply existed. The skill-test record names the two RED verdicts that depend on them.
 
 ```bash
 uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/document-python-package-kit/show.py red sc1-setup
@@ -623,11 +642,11 @@ uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/document-
 
 Read each reply in full, as `KIT/PREREGISTRATION.md`'s Reading section says. Record every verdict in the RED table of `KIT/RESULTS.md`, with a quote for each `yes`. A reply marked `VOID`: delete its JSON file in `KIT/out/red/`, and run Step 5's second command again.
 
-- [ ] **Step 7: Apply decision rules 1 and 2**
+- [x] **Step 7: Apply decision rules 1 and 2**
 
 Fill the RED columns of `KIT/RESULTS.md`'s Summary table. If no M item shows (rule 1), stop and ask the owner. Otherwise note the items that showed. Task 4 checks that each of them flips.
 
-- [ ] **Step 8: Record RED, and commit**
+- [x] **Step 8: Record RED, and commit**
 
 ```bash
 uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/document-python-package-kit/extract_plan_files.py specs/plans/57-document-python-package.md . specs/verification/57-document-python-package-skill-tests.md
@@ -654,7 +673,7 @@ Expected: `commit lints passed`. The commit lands before SKILL.md exists, so the
 - Consumes: the spike record's Values table (Task 1), `KIT/fill_slots.py` and the RED commit (Task 2).
 - Produces: the committed skill, which Task 4 tests from `"$PWD"/skills/document-python-package`. `preflight.py`'s report: the keys `great-docs`, `range`, `in-range`, `layout`, `config`, `quarto` and `skills`, then `next:` with `pin`, `init`, `ready` or `stop: <reason>`. Exit 0, or 1 on a stop.
 
-- [ ] **Step 1: Check the inputs**
+- [x] **Step 1: Check the inputs**
 
 ```bash
 grep -c TO-RECORD specs/verification/57-great-docs-0.17.0.md
@@ -663,7 +682,7 @@ git log --oneline -4
 
 Expected: `0`, and the RED commit at the top, above the spike commit.
 
-- [ ] **Step 2: Register the suite, and write the failing test**
+- [x] **Step 2: Register the suite, and write the failing test**
 
 ```bash
 uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/document-python-package-kit/extract_plan_files.py specs/plans/57-document-python-package.md . build/suites.toml:suite skills/document-python-package/scripts/test_preflight.py
@@ -672,7 +691,7 @@ uv run --python 3.13 python build/run_suites.py document-python-package
 
 Expected: `edited build/suites.toml:suite` and `wrote skills/document-python-package/scripts/test_preflight.py`. Then the suite's note and `1 error`: collection fails with `ModuleNotFoundError: No module named 'preflight'`.
 
-- [ ] **Step 3: Write `preflight.py`**
+- [x] **Step 3: Write `preflight.py`**
 
 ```bash
 uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/document-python-package-kit/extract_plan_files.py specs/plans/57-document-python-package.md . skills/document-python-package/scripts/preflight.py
@@ -680,7 +699,7 @@ uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/document-
 
 Expected: `wrote skills/document-python-package/scripts/preflight.py`.
 
-- [ ] **Step 4: Run the tests on Python 3.13 and on the floor, 3.11**
+- [x] **Step 4: Run the tests on Python 3.13 and on the floor, 3.11**
 
 ```bash
 uv run --python 3.13 python build/run_suites.py document-python-package
@@ -689,7 +708,7 @@ uv run --directory skills/document-python-package/scripts --python 3.11 --with p
 
 Expected: `24 passed` twice (+24, a new suite). The second run checks the `requires-python` floor.
 
-- [ ] **Step 5: Run the real script on the fixture's two states**
+- [x] **Step 5: Run the real script on the fixture's two states**
 
 This run uses the real network fetch, which the tests replace with a local repository. `UV_CACHE_DIR` keeps uv's own cache, because a changed `XDG_CACHE_HOME` would move it.
 
@@ -734,7 +753,7 @@ exit 0
 
 Then `SOURCE` holds `tag: v0.17.0`, `commit: 1ce8eb88191df75405345b6ba2d35bea53a4f7f6` and a `fetched:` time, and `ls` shows `author-skills`, `configure-site`, `great-docs`, `revise-docstrings` and `write-user-guide`. The Quarto line shows the version on `PATH`. Another commit: stop and ask the owner, because the tag moved after the spec read it.
 
-- [ ] **Step 6: Write the skill text from the spike's Values**
+- [x] **Step 6: Write the skill text from the spike's Values**
 
 ```bash
 uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/document-python-package-kit/extract_plan_files.py specs/plans/57-document-python-package.md . skills/document-python-package/SKILL.md
@@ -746,7 +765,7 @@ cmp LICENSE skills/document-python-package/LICENSE
 
 Expected: `wrote skills/document-python-package/SKILL.md`, `filled skills/document-python-package/SKILL.md`, `0`, and no output from `cmp`. Read the filled SKILL.md once in full: each filled sentence must agree with the spike record.
 
-- [ ] **Step 7: Record the provenance**
+- [x] **Step 7: Record the provenance**
 
 ```bash
 uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/document-python-package-kit/extract_plan_files.py specs/plans/57-document-python-package.md . NOTICE:originals NOTICE:paragraph CLAUDE.md:originals
@@ -754,7 +773,7 @@ uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/document-
 
 Expected: three `edited` lines. NOTICE's new paragraph is the wording that the owner approved in R6.1.
 
-- [ ] **Step 8: Check the sizes**
+- [x] **Step 8: Check the sizes**
 
 ```bash
 wc -l skills/document-python-package/SKILL.md
@@ -763,7 +782,7 @@ uv run --no-project --python 3.13 python -c "import re, sys; t = open(sys.argv[1
 
 Expected: about 190 lines (the limit is 500) and about 8,000 characters (the limit is 20,000).
 
-- [ ] **Step 9: Run the checks**
+- [x] **Step 9: Run the checks**
 
 ```bash
 uv run --no-project --python 3.13 --with pyyaml python build/check_frontmatter.py
@@ -778,7 +797,7 @@ bash build/run_commit_lints.sh
 
 Expected: no output from the frontmatter, provenance and conformance checks. The snippet check prints only its five existing `WARN` lines. The drift test passes, so SKILL.md's hand-offs to `docs-writer` and `write-with-asd-ste100` need no `DEPENDENCIES` entry (R6.6). `cli.py lint` prints no `FAIL` (its `STALE` lines never fail it), and the last line is `commit lints passed`. If plan 53 has landed (Task 1, Step 2), its lints run here too: a finding on this bundle is a stop, so ask the owner.
 
-- [ ] **Step 10: Commit the bundle**
+- [x] **Step 10: Commit the bundle**
 
 ```bash
 git commit -m "feat(skills): add document-python-package" -m "A thin layer over Posit's five official Great Docs skills for great-docs 0.17.x. A tested stdlib preflight checks the locked version, finds the config and fetches the official skills from the matching release tag into a cache. SKILL.md adds the pin, init, README, executed-example and deploy conventions and a three-check done gate. NOTICE and CLAUDE.md record the skill as an original work, and build/suites.toml registers its tests."
@@ -786,6 +805,13 @@ git log -1 --format=%B
 ```
 
 Expected: one commit with the whole bundle, and the commit trailer at the end of the message.
+
+> **Deviation (D6 review, 2026-10-19).** The bundle commit is `945f22d`. The code-reviewer agent (Opus) reviewed `c020195..945f22d` against the spec, the spike record and this task. It found nothing Critical, one Important item and nine Minor ones. Three fixes landed inside D6's limits, in one commit after the bundle:
+> - `preflight.py` gets `GIT_TIMEOUT_S = 60`, and a timeout becomes a `stop:` line (R5: a fetch that fails stops). A new test stalls a fake git, and a mutation that drops the branch fails it.
+> - Two tests cover existing stop branches: no git, and a tag with no `skills/`.
+> - SKILL.md's version stop now follows R5: "Report the version and the range. The fix is to pin back into the range and run `uv lock`." Before, it told the agent to pin back, against its own "Stop and report the line".
+>
+> The suite now has 27 tests, not 24: Task 6 expects `27 passed` (+27). Declined: uncaught exceptions for a malformed `uv.lock`, an unwritable cache or two preflights at once (each fails closed with exit 1, and R5 lists none of them); the `default-groups` comment (it is R4.2's own text, imprecise but not wrong); `freeze: auto` in a page's front matter (a probe page with it built with `exit 0` and froze); NOTICE's "installed" (owner-approved R6.1 wording, and the locked version is the installed one). A uv workspace member, whose `uv.lock` sits at the workspace root, goes to Plan completion as a deferred item. Two items need the owner: a pin that fails `uv lock` when `requires-python` allows Python below 3.11, and a gate command that skips untracked modules (`git ls-files` lists tracked files only).
 
 ### Task 4: GREEN, the trigger test and the end-to-end run
 
@@ -798,7 +824,7 @@ Expected: one commit with the whole bundle, and the commit trailer at the end of
 - Consumes: the committed skill (Task 3), the kit and the RED verdicts (Task 2), the fixture's tags (Task 1).
 - Produces: the GREEN, trigger and end-to-end results in the skill-test record, which Task 6 reports.
 
-- [ ] **Step 1: Build and run the GREEN arm**
+- [x] **Step 1: Build and run the GREEN arm**
 
 ```bash
 ls ~/.claude/skills/ | grep -c document-python-package
@@ -808,11 +834,13 @@ uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/document-
 
 Expected: `0` (still no user-level copy), five `green/scN-….txt` lines, then 25 reply lines and the arm's cost. Run the last command in the background, as in Task 2.
 
-- [ ] **Step 2: Read every GREEN reply, and apply decision rule 3**
+- [x] **Step 2: Read every GREEN reply, and apply decision rule 3**
 
 Run `show.py green <scenario>` for each of the five scenarios, as in Task 2, Step 6. Record every verdict in the GREEN table of `KIT/RESULTS.md`, then fill the Summary's GREEN columns. Rule 3 passes when each item that RED showed occurs in 0 of its own scenario's 5 replies, and no item occurs where RED never had it. When it passes, skip Step 3.
 
 - [ ] **Step 3: REFACTOR, only when rule 3 fails**
+
+> Skipped: GREEN passed rule 3 in its first run, so no REFACTOR round ran.
 
 For each failing item, change the SKILL.md wording that covers it (rule 4). The change answers the replies that failed, stays inside the spec, and keeps the Global Constraints' frontmatter and length limits. Then run Task 3, Step 9's checks and commit:
 
@@ -825,7 +853,7 @@ uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/document-
 
 Write the commit's second line for the actual item. The last command runs only the failing scenarios: replace `sc3-done` with their names. Read and record the replies as in Step 2. A second failure gets one more round under the arm `green-r2`. A third: stop and ask the owner.
 
-- [ ] **Step 4: Run the trigger test**
+- [x] **Step 4: Run the trigger test**
 
 ```bash
 uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/document-python-package-kit/run.py trigger trigger "$PWD"/skills/document-python-package
@@ -836,7 +864,7 @@ Expected: five `tN.jsonl exit N` lines (a call that reaches `--max-turns` can ex
 
 If a query's result is wrong, revise the description once. The revision keeps every description rule in Global Constraints. Run Task 3, Step 9's checks, commit with the message `fix(document-python-package): revise the description after the trigger test`, and run both commands again with the arm `trigger-r1` in place of `trigger` (in the first command's first argument and in the five paths). A second failure: stop and ask the owner.
 
-- [ ] **Step 5: Run the end-to-end test**
+- [x] **Step 5: Run the end-to-end test**
 
 ```bash
 uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/document-python-package-kit/run.py e2e e2e-1 "$PWD"/skills/document-python-package
@@ -853,7 +881,7 @@ uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/document-
 
 Expected: the files that the run changed, and the gate's three lines. When the final message calls the docs done, all three say `PASS` and the exit is 0. Otherwise each check that the message names as failing says `FAIL`. Judge E1 to E7 (`PREREGISTRATION.md`) and record each in `KIT/RESULTS.md` with its evidence. A void run is repeated once as `e2e-2`. A second void run: stop and ask the owner. A failed criterion gets one wording change (as in Step 3) and one more run, `e2e-r1`. A second failure: stop and ask the owner.
 
-- [ ] **Step 6: Record and commit**
+- [x] **Step 6: Record and commit**
 
 Fill the skill-test record's remaining `TO-RECORD` markers from `KIT/RESULTS.md`: the GREEN row of Setup, then GREEN (each item's count against RED), REFACTOR ("None: GREEN passed in its first run" when no round ran), the trigger test, the end-to-end run, and a verdict of one or two sentences.
 
@@ -875,7 +903,7 @@ Expected: `0`, then `commit lints passed`.
 - Consumes: the committed skill (Task 3) and plan 53's status (Task 1, Step 2).
 - Produces: the README row (R6.3), the ADR bullet (R6.4, the spec's D6) and the D8 line (the spec's D8).
 
-- [ ] **Step 1: Add the README row and the ADR bullet**
+- [x] **Step 1: Add the README row and the ADR bullet**
 
 ```bash
 uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/document-python-package-kit/extract_plan_files.py specs/plans/57-document-python-package.md . README.md:row skills/design-architecture/SKILL.md:adr-bullet
@@ -883,7 +911,7 @@ uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/document-
 
 Expected: two `edited` lines. The ADR bullet is the spec's wording, word for word. `scripts/new_adr.py` does not change (R6.4).
 
-- [ ] **Step 2: Add the D8 line to plan 53, only when plan 53 has not run**
+- [x] **Step 2: Add the D8 line to plan 53, only when plan 53 has not run**
 
 Run Task 1, Step 2's three commands again. When they print `plan 53 is live`, `0` and nothing, add the line and give it today's date:
 
@@ -895,7 +923,7 @@ grep -n 'document-python-package landed first' specs/plans/53-agent-skills-porta
 
 Expected: `edited specs/plans/53-agent-skills-portability.md:d8-line`, no output from the second command, and one line in plan 53's Global Constraints with today's date. When plan 53 has run, skip this step, and write `> Skipped: plan 53 ran first, so the spec's D8 needs no line.` under it.
 
-- [ ] **Step 3: Run the checks, and commit**
+- [x] **Step 3: Run the checks, and commit**
 
 ```bash
 uv run --no-project --python 3.13 --with pyyaml python build/check_frontmatter.py
@@ -916,7 +944,7 @@ Expected: no output from the two checks, no `FAIL` from `cli.py lint`, and `comm
 - Consumes: every earlier task's commits.
 - Produces: the evidence for V4, the spec's repo gates, and the report to the owner.
 
-- [ ] **Step 1: Run the new suite, the drift test and the `build` suite**
+- [x] **Step 1: Run the new suite, the drift test and the `build` suite**
 
 ```bash
 uv run --python 3.13 python build/run_suites.py document-python-package
@@ -926,7 +954,14 @@ uv run --python 3.13 python build/run_suites.py build
 
 Expected: `24 passed` (+24), the drift test passes, and the `build` suite's passed count equals Task 1, Step 1's (+0), with the same 4 known failures.
 
-- [ ] **Step 2: Run the commit lints on a clean clone**
+> **Deviation (final review, 2026-10-19).** Task 6 ran at `702b0d2`: the new suite showed `27 passed` (+27, the D6 deviation's count), the drift test passed, and the `build` suite showed 1146 passed (+0) with the same 4 known failures. The clean clone gave `commit lints passed` and `27 passed`. Then executing-plans' whole-branch review ran on `ca8bd46..702b0d2`. Codex (`gpt-6-astra`, the owner's per-run choice) found no actionable defect. The code-reviewer agent (Opus) found nothing Critical, two Important items and three Minor ones. Two fixes landed in one commit:
+>
+> - README's Credits list of originals now names `document-python-package`, as NOTICE and CLAUDE.md do.
+> - `test_an_unsupported_layout_stops_before_a_missing_quarto` pins DF4's order of the layout stop and the Quarto stop. A copy with the two stops swapped fails only this test. The suite now has 28 tests: Steps 1 and 2 expect `28 passed` (+28).
+>
+> Declined: a broken Quarto reported as missing (it still stops, and R5 has one Quarto stop), and a cache with `SOURCE` but no `skills/` (R3.6 defines a complete cache by `SOURCE`, and only a hand deletion makes that state). For the owner, under D7: gate check 3 lints every module and function in the package folder, so nested functions, public names in private modules and in-package test modules fail `GL08`. It fails closed, but on a typical package it asks for docstrings that the Docstrings section never mentions.
+
+- [x] **Step 2: Run the commit lints on a clean clone**
 
 A clean clone has no untracked file that could hide a missing one. `run_commit_lints.sh` takes its root from the folder that it runs in, so the second command runs it from inside the clone.
 
@@ -939,7 +974,7 @@ uv run --python 3.13 python /tmp/dpp-v4/build/run_suites.py document-python-pack
 
 Expected: `commit lints passed`, then `24 passed`.
 
-- [ ] **Step 3: Report to the owner**
+- [x] **Step 3: Report to the owner**
 
 Give the owner, in plain words:
 
@@ -989,6 +1024,9 @@ Run writing-plans' Plan Completion Protocol after Task 6 and the final review, b
 
 - [ ] A new spike for great-docs 0.18 (the spec's Out of scope: the post-migration `docs/` layout). The skill stops on any version outside `>=0.17.0,<0.18` and on a `docs` or `both` layout. Widening the range takes a new spike against the new release, a new range in `skills/document-python-package/scripts/preflight.py` (`LOWEST`, `FIRST_EXCLUDED`, `RANGE`) and in SKILL.md, and a check of the five official skills at the new tag. Size: plan. Revisit if: PyPI publishes great-docs 0.18.0 or later.
 - [ ] Internal hosts and package indexes (the spec's D1 and Out of scope). The skill covers github.com, PyPI and GitHub Pages only. Size: design. Revisit if: the owner documents a package that is not public.
+- [ ] A gate check for stale frozen examples (D11). great-docs 0.17.0 freezes every executed page by default (`Freeze mode: auto`), docstring examples included. After a change to a function's body with its docstring unchanged, `uv run great-docs build` exits 0 and the page shows the stale frozen output, so the gate's build check passes a broken example. A fix might build with `freeze: false` in `great-docs.yml` inside the gate, or check the examples another way. Evidence: the spike record's S3 (`specs/verification/57-great-docs-0.17.0.md`). Size: design. Revisit if: an agent or a user ships a docstring example that no longer runs, or the owner wants the gate to prove that every example runs.
+- [ ] Packages whose `requires-python` allows Python below 3.11 (D12). great-docs 0.17.0 needs Python 3.11 or later, so the pin fails `uv lock` for them, and the skill now stops. Support could mark both pins with `; python_version >= '3.11'` (the D6 reviewer's probe resolved a `>=3.9` package that way) and run the docs commands on a 3.11+ interpreter. The local `uv run` path on an older interpreter is untested. Size: plan. Revisit if: the owner documents a public package that still supports Python 3.10 or older.
+- [ ] A uv workspace member (D6 review). `preflight.py` reads `uv.lock` only from the folder it runs in. In a uv workspace the lock sits at the workspace root, so a member package stays at `next: pin` after it is pinned and locked. The spec does not cover workspaces. Size: plan. Revisit if: the owner documents a package that is a member of a uv workspace.
 - [ ] Curating the package's published `SKILL.md` (the spec's D5 and Out of scope). Great Docs publishes one by default, and this skill keeps that default with no review step. Size: design. Revisit if: the owner wants to review or edit the generated skill.
 
 ---
@@ -2404,8 +2442,9 @@ VARIANTS = {
         'no': 'The site takes its meta description from {{META_SOURCE}}, not from this paragraph.',
     }),
     'DOCSTRING_EXAMPLES_BULLET': ('DOCSTRING_CELLS_RUN', {
-        'yes': '- Docstring examples run on every build. Keep them fast and deterministic: '
-               'no MCMC, no network, fixed seeds.',
+        'yes': '- Docstring examples run when their docstring changes, and on any build with no '
+               '`{{FREEZE_DIR}}` cache, such as CI without a committed cache. Keep them fast and '
+               'deterministic: no MCMC, no network, fixed seeds.',
         'no': '- The build shows docstring examples but never runs them. Run each one before '
               'you commit it, and keep it fast and deterministic: no MCMC, no network, fixed seeds.',
     }),

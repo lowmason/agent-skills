@@ -85,6 +85,8 @@ stack the conventions are `specs/` (active design, e.g. `alt-nfp/specs/`) plus M
   decision log and link from the nav. Add an `index.md` listing them.
 - **Use `specs/adr/` when the repo's design record already lives in `specs/`** (as `alt-nfp`
   does) — keep ADRs beside the specs and plans they formalize.
+- **Use `specs/adr/` when the repo publishes a Great Docs site.** The site serves the package's
+  users, and ADRs serve its maintainers.
 
 Name files `NNNN-kebab-slug.md` with a zero-padded sequence: `0001-record-architecture-decisions.md`,
 `0009-numpyro-jax-over-pymc-for-nowcasting.md`. Treat the number as permanent and never

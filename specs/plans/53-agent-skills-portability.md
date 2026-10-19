@@ -35,6 +35,7 @@
 - **Commit trailer.** Each commit message ends with the executing session's own `Co-Authored-By:` line (add it as a second `-m`); subagent-authored commits keep that same line. Check with `git log -1 --format=%B`.
 - **Couplings.** If `skills/write-with-asd-ste100/` exists on the execution branch, the conditional steps in Tasks 4, 8, 10, 11, 12 and 13 apply (Planning record, "Couplings with other work").
 - **Another plan landed first.** Plan 52 (write-with-asd-ste100) also edits `NOTICE`, `README.md`, `CLAUDE.md` and the register (`build/cc_guide/conformance.toml`). If an edit block below no longer matches because another plan changed the text around it, read the current text, make the same change by hand, and note it as a deviation; never restore the old text.
+- **document-python-package landed first** (plan 57, 2026-10-19, under D8 of that skill's spec). It adds a 39th skill and a 19th runnable script, `skills/document-python-package/scripts/preflight.py`. Plan 52's vendored `write-with-asd-ste100/scripts/ste-lint.py` is the 18th. The script already conforms: a PEP 723 header with `requires-python = '>=3.11'` and `dependencies = []`, a `uv run` invocation followed by R3.5's sentence, and a `compatibility` value that names uv. The skill's `LICENSE` copy already exists, byte-identical to the root file, so Task 8 writes the same bytes. The helpers in Tasks 10, 12 and 13 name their scripts and skills one by one, so they leave this skill alone.
 
 ## Decisions
 
