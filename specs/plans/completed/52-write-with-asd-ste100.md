@@ -10,7 +10,7 @@
 
 **Tech Stack:** Python 3.13 through `uv run` (kit, tests, lints); `install.py`, stdlib only and still runnable by `/usr/bin/python3` 3.9; Claude Code `claude -p` (a held copy, 2.1.302 when planned); pytest; danyuchn's `ste-lint.py`, pinned and unchanged.
 
-**Spec:** [`specs/write-with-asd-ste100.md`](../write-with-asd-ste100.md)
+**Spec:** [`specs/completed/write-with-asd-ste100.md`](../../completed/write-with-asd-ste100.md)
 
 ## Global Constraints
 

@@ -1,7 +1,9 @@
 # write-with-asd-ste100 — Design Spec
 
-**Status:** Design approved in brainstorming on 2026-10-18. Next step: an implementation plan from the
-writing-plans skill.
+**Status: COMPLETE (2026-10-18)** — implemented by plan 52 (`specs/plans/completed/52-write-with-asd-ste100.md`) and
+retired here. Design approved in brainstorming on 2026-10-18. The always-on rule's form and the skill's text were
+chosen by pre-registered test runs (`specs/write-with-asd-ste100-test-record.md`). Task 11 of the plan, the live
+install, runs after the merge.
 
 ## What this builds
 
