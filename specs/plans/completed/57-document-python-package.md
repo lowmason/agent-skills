@@ -10,7 +10,7 @@
 
 **Tech Stack:** `preflight.py` uses the Python 3.11+ stdlib, with a PEP 723 header, and runs with `uv run`. Its tests use pytest. The spike uses great-docs 0.17.0, Quarto 1.10.19, uv and git. The skill tests use Claude Code's `claude -p` (a held copy, 2.1.302 when planned) on Opus 5.5. The completeness check uses pydoclint or numpydoc, as S7 chooses. The kit and the lints run on Python 3.13 through `uv run`.
 
-**Spec:** [`specs/document-python-package-spec.md`](../document-python-package-spec.md)
+**Spec:** [`specs/completed/document-python-package-spec.md`](../../completed/document-python-package-spec.md)
 
 ## Global Constraints
 

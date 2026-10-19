@@ -1,7 +1,7 @@
 # Skill tests: document-python-package
 
 Plan 57, Tasks 2 and 4. This record covers validation item V3 of
-`specs/document-python-package-spec.md`: a RED baseline before the skill text
+`specs/completed/document-python-package-spec.md`: a RED baseline before the skill text
 existed, GREEN after it, a trigger test of the description and one end-to-end
 run. The pre-registered rules, the prompts and the raw replies stay in the
 test kit, `~/.cache/agent-skills/scratch/document-python-package-kit/`,

@@ -1,8 +1,9 @@
 # document-python-package — Design Spec
 
-**Status: APPROVED (2026-10-19).** The owner approved the four design sections in
-a brainstorming session on 2026-10-19, and approved this written spec the same
-day. Next step: an implementation plan from the writing-plans skill.
+**Status: COMPLETE (2026-10-19)** — implemented by plan 57
+(`specs/plans/completed/57-document-python-package.md`) and retired here. The
+owner approved the four design sections in a brainstorming session on
+2026-10-19, and approved this written spec the same day.
 
 These changes were made after the sections were approved, while writing and in
 a review pass against the v0.17.0 source. The owner approved them with the

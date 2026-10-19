@@ -1,7 +1,7 @@
 # Spike record: great-docs 0.17.0
 
 Plan 57, Task 1. This record answers the eight spike questions, S1 to S8, of
-validation item V1 in `specs/document-python-package-spec.md`. The fixture is
+validation item V1 in `specs/completed/document-python-package-spec.md`. The fixture is
 `gdfixture`, a scratch package outside this repository (plan 57, Appendix E).
 Logs and the fixture stay in `~/.cache/agent-skills/scratch/great-docs-spike/`
 and are not committed. Each answer quotes the lines it rests on.
