@@ -28,7 +28,7 @@ agent-skills/
 ├── commands/    # slash commands (/deferred, /fix-issue, /license-audit — see Commands below)
 ├── runtimes/    # generated Codex/Gemini agent and command adapters
 ├── hooks/       # deterministic gates for Python/uv work repos (see Hooks below)
-├── rules/       # path-scoped rule files, loaded via .claude/rules/ (see Rules below)
+├── rules/       # rule files: path-scoped via .claude/rules/, one user-level (see Rules below)
 ├── build/       # citation-verification tooling for recommend-probabilistic-model
 ├── specs/       # design records + implementation plans (retired work under completed/)
 └── install.py   # safe installer for Claude, Codex, Gemini, or all three (idempotent when linking)
@@ -37,7 +37,7 @@ agent-skills/
 The canonical skill bodies are portable. Agent manifests are generated from
 [`agents/`](agents/) because the runtimes use different file formats and tool
 names; Gemini command TOML is generated from [`commands/`](commands/). Claude's
-hooks and path-scoped rules remain Claude-specific. See
+hooks and rules remain Claude-specific. See
 [Installation](#installation) and the compatibility notes below.
 
 ## Skills
@@ -157,13 +157,16 @@ All three read the hook JSON payload from stdin with `jq`. Blocking takes **exit
 
 Rule files live in [`rules/`](rules/): standing conventions injected automatically, without a skill invocation. Claude Code loads a project's `.claude/rules/*.md` natively — a rule with a `paths:` frontmatter glob loads only when a matching file is read, written or edited; a rule without frontmatter loads at session start (native loading verified against Claude Code 2.1.218).
 
-This repo keeps rule sources in `rules/` and commits a relative symlink from `.claude/rules/` so the rules apply here too:
+This repo keeps rule sources in `rules/`. A path-scoped rule applies here through a committed relative symlink from `.claude/rules/`. The user-level rule applies here, as in every project, from `~/.claude/rules/`:
 
 | Rule | Scope | What it injects |
 |------|-------|-----------------|
 | [`clean-code-python.md`](rules/clean-code-python.md) | `**/*.py` | Python guardrails, loaded on `.py` reads, writes and edits — single quotes, 4-space indent, Polars-over-pandas, method-style Polars expressions, lazy evaluation, NumPyro+JAX, named constants (G25). Cross-references the `clean-code` catalog by rule code. |
+| [`write-with-asd-ste100.md`](rules/write-with-asd-ste100.md) | every session, user-level | The everyday writing habits of the `write-with-asd-ste100` skill for replies and for prose files written for people, the label rule, and a pointer to the skill for rewrites, agent-facing text and strict STE. |
 
-To use a rule in another project, copy it into that repo's `.claude/rules/` (rules here ship project-level only, by decision; user-level `~/.claude/rules/` also loaded in the 2.1.218 probe — see the rule's commit history).
+Rules here ship project-level, by the decision that commit `7aa454f` took when it added the Python rule. To use a path-scoped rule in another project, copy it into that repo's `.claude/rules/` (user-level `~/.claude/rules/` also loaded in the 2.1.218 probe; see that commit's message).
+
+`write-with-asd-ste100.md` is the one exception. It shapes every reply and every prose file, and an "all output" rule only works at user level. So `install.py` places it in `~/.claude/rules/`, for Claude Code only: Codex and Gemini get the skill without the rule. It is not linked into this repo's `.claude/rules/`, because a second copy there would load it twice in this repo.
 
 ## Installation
 
