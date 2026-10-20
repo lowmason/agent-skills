@@ -5468,7 +5468,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       the gate. See `specs/plans/completed/53-agent-skills-portability.md`. Size: plan.
       Revisit if: a later edit to `build/check_frontmatter.py` or `build/check_provenance.py`
       touches one of them. Done when: each is fixed, or the owner rules here that it stays.
-- [ ] Hold, owner-only: refresh each wiki's installed llm-wiki scripts after plan 53 merges
+- [x] Hold, owner-only: refresh each wiki's installed llm-wiki scripts after plan 53 merges
       (DF15). Plan 53's Task 10 gave `skills/llm-wiki/scripts/*.py` PEP 723 headers, but each
       wiki keeps the copies that `bootstrap_wiki.py` installed before that. Until the
       refresh they still run under `uv run`, but a run from inside a Python project binds to
@@ -5476,3 +5476,5 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       each wiki root. Deferred because only the owner reaches the wiki roots, and only after
       the merge. See `specs/plans/completed/53-agent-skills-portability.md` (DF15). Size:
       quick-fix. Done when: each wiki's copies carry headers.
+      → done 2026-10-20 (owner): `bootstrap_wiki.py ~/research-wiki --force` refreshed the
+      one wiki root, and `--check` reports `tooling is current`; all three scripts carry headers.
