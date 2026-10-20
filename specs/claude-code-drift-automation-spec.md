@@ -222,7 +222,8 @@ scripts were session-local (`/tmp/ccdrift-probe/`).
     changed, 2 missing and 20 new blocks on 2026-10-20. Of those, 78, 2 and
     11 were already pending before the change, 50 came from real docs edits
     in the same deploy, and 8 are 5 widget blocks the export now renders as
-    static text. Rejected:
+    static text. Triage packets work at once. Verify and audit packets, and
+    rebaselines, wait for a release past 2.1.304 (R3.2). Rejected:
     - a rebaseline of all six groups from the new fetch, with no code
       change: it accepts the deploy's real edits without triage, and the
       five platform.claude.com pages, still MDX, would churn again when that
@@ -441,10 +442,14 @@ while platform.claude.com and every older snapshot stay MDX (owner,
   hashes do not change.
 
 An interactive widget that the Markdown export renders as static text cannot
-be rewritten. A rebaseline settles it once (5 blocks on 2026-10-20). Then
-strip the leading "Documentation Index" blockquote: the `>` lines at the top
-of each page that point to `llms.txt`. Text after it and before the first
-heading becomes the `(intro)` block.
+be rewritten. A rebaseline settles it once (5 blocks on 2026-10-20). A
+rebaseline, or a verify or audit packet, refuses a page while the head
+release's snapshot holds the page's MDX bytes and `latest/` holds its
+Markdown. On 2026-10-20 that applied to every page of the 2.1.304 snapshot,
+so it lasts until the changelog head passes 2.1.304. Then strip the leading
+"Documentation Index" blockquote: the `>` lines at the top of each page that
+point to `llms.txt`. Text after it and before the first heading becomes the
+`(intro)` block.
 
 R3.3 **Headings.** Cut at every ATX heading outside code fences. A block runs
 from its heading to the next heading of any level, so a parent's block holds
