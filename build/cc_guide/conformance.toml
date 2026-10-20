@@ -577,7 +577,7 @@ enforced_by = 'check_conformance'
 
 # ---------------------------------------------------------------------------
 # Exceptions, decided by the owner at the plan 35 gate (2026-10-04) on the
-# audit in specs/claude-code-conformance-audit-2026-10-04.md. A deviation is
+# audit in specs/completed/claude-code-conformance-audit-2026-10-04.md. A deviation is
 # deliberate and names its revisit trigger; a gap is known non-conformance and
 # names where its fix lands. A waiver (check set) lists explicit paths, and
 # when its file stops violating, the lint fails until the entry is narrowed.

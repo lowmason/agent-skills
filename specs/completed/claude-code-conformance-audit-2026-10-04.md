@@ -1,5 +1,7 @@
 # Claude Code guide conformance audit — 2026-10-04
 
+**Status: RETIRED (2026-10-19)** — moved to `specs/completed/` on the owner's decision. The owner decided its findings at the plan 35 gate (section 10). The live record is the register, `build/cc_guide/conformance.toml`.
+
 ## 1. Header
 
 - **Date:** 2026-10-04.

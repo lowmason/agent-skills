@@ -17,9 +17,12 @@ and measurements fit into it. The owner then settled the points where the
 two sessions had decided differently (Decisions 10–14). This document
 supersedes both. It merged to `main` at `fe072a1`. The other branch is
 retired: `024d430` survives as the tag `archive/cc-guide-upkeep`, pushed to
-origin. Of this spec, only R1.1's anchors exist so far, added to the guide by
-the conformance plan (plan 35, `18b4a71`; see R1.1); nothing else has been
-implemented.
+origin. R1.1's anchors were added to the guide by the conformance plan
+(plan 35, `18b4a71`; see R1.1). Stages 1 to 4 are implemented: Stage 1 by
+plan 38, Stage 2 by plan 43, Stage 3 by plan 44 (with plan 45's verifier
+follow-up), and Stage 4 by plan 49 (with plan 51's rebaseline pin). All of
+those plans are in `specs/plans/completed/`. Stage 5 (probes: R10, R12.6 and
+`/cc-guide probes`) is not built, so this spec stays live.
 
 ## Purpose and scope
 
