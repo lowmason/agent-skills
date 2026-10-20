@@ -709,6 +709,14 @@ git commit -m "feat(build): API-surface tier; the class D2 belonged to"
 
 **Pinned vs floating — the tension, resolved two-tier.** Pinning is reproducible but goes blind to exactly the upstream drift audit Theme 1 is about; floating catches drift but makes the gate's verdict non-reproducible. So: the **pinned** run is the hard gate (exit 1); a **floating** run is advisory (stderr, exit 0). Pinned set verified 2026-09-08 — `arviz==1.3.0`, `arviz-stats==1.3.2`, `arviz-plots==1.3.1`, `numpyro==0.21.0`, `jax==0.11.1`. Record that provenance line beside the constant and refresh it deliberately.
 
+> Deviation (2026-10-19): the floating tier was never built, and the owner retired it on
+> 2026-10-19. Task 5 shipped only the pinned run (`--run`, which exits 1 on a failure).
+> `build/check_snippets.py` has no floating mode, and no test covers one. Read the two-tier
+> design above, and the "floating" in this task's title, as pinned-only. The pin bump (deferred
+> item F9 of audit 3-10-26) covers the lag that a floating run would have surfaced. The
+> Codex-bot P1 on PR #15 ("Implement the promised floating execution tier") had no reply. This
+> note is the answer (audit item B11).
+
 - [x] **Step 1: Write the failing test**
 
 Append to `build/test_check_snippets.py`:

@@ -36,7 +36,7 @@ with = ['pytest', 'numpy', 'polars', 'pyyaml']
 extras = ['arviz>=1.0', 'arviz-base', 'arviz-stats', 'arviz-plots', 'numpyro', 'jax', 'matplotlib']
 notes = [
     'Every build-directory test, build/cc_guide/ included. Without --extras, the snippet tests that need the stack skip.',
-    "A fresh clone or worktree lacks the gitignored build/.scratch/, so test_verify_citations.py's ground-truth tests fail or skip there.",
+    "A fresh clone or worktree lacks the gitignored build/.scratch/, so four of test_verify_citations.py's tests skip there with a reason that names it, and none fails.",
 ]
 
 [[suite]]

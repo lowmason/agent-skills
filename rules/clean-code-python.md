@@ -6,10 +6,10 @@ paths:
 
 # Python conventions (loaded on .py reads, writes and edits)
 
-Standing guardrails loaded when a Python file is read, written or edited. The full judgment-level
-catalog is the clean-code skill (open it for naming / function / comment /
-test decisions); cite fixes by rule code (e.g. G25). Opportunistic cleanup of
-code outside the task is gated by the clean-coder skill.
+Standing guardrails loaded when a Python file is read, written or edited. A compaction
+summarizes them away. The full judgment-level catalog is the clean-code skill (open it for
+naming / function / comment / test decisions); cite fixes by rule code (e.g. G25).
+Opportunistic cleanup of code outside the task is gated by the clean-coder skill.
 
 - Single quotes for strings; f-strings for interpolation.
 - 4-space indentation.

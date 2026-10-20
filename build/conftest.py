@@ -1,4 +1,5 @@
-"""Pytest fixtures for the build-tooling tests. `real_ref` pulls a genuinely-present
+"""Pytest fixtures for the build-tooling tests. `ground_truth` skips a test when the gitignored
+build/.scratch/ is absent (a fresh clone or worktree). `real_ref` pulls a genuinely-present
 (section, notebook) pair from build/.scratch/ so the true-positive test is not hard-coded."""
 from pathlib import Path
 
@@ -8,9 +9,13 @@ SCRATCH = Path(__file__).parent / ".scratch"
 
 
 @pytest.fixture
-def real_ref():
+def ground_truth():
     if not SCRATCH.is_dir():
         pytest.skip("build/.scratch missing — run extract_structure.py (needs local PDFs + gh)")
+
+
+@pytest.fixture
+def real_ref(ground_truth):
     sec = next(
         ln.split("\t")[0]
         for ln in (SCRATCH / "book1_sections.tsv").read_text().splitlines()

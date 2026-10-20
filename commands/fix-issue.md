@@ -15,13 +15,18 @@ is the bugfix lane only — it never implements features.
    enhancement, something that never existed) → stop and invoke the
    brainstorming skill with the issue as the idea; the spec gate stays
    intact. Genuinely ambiguous → ask the user which lane, don't guess.
-3. **Branch.** Create a fix branch off the default branch (e.g.
-   `fix/<issue-number>-<short-slug>`). Never fix on the default branch
-   directly.
+3. **Branch.** Offer an isolated worktree first (the using-git-worktrees
+   skill), so the fix does not disturb the current checkout. Then create a
+   fix branch off the default branch (e.g. `fix/<issue-number>-<short-slug>`)
+   in the worktree, or in place if the user declines. Never fix on the
+   default branch directly.
 4. **Fix under the house disciplines, by name:** systematic-debugging
    (reproduce before patching), test-driven-development (failing test
    first), verification-before-completion (run the relevant suite and
    confirm the output before claiming done). The suite run may dispatch
    the test-runner agent.
-5. **Ship.** Commit, push, and open the PR with `gh`, linking the issue
-   (`Fixes #<n>` in the PR body).
+5. **Ship.** Commit the fix, then hand off to the
+   finishing-a-development-branch skill and take its Option 2 (push and
+   create a PR). Its aged-backlog gate and its review step run before the
+   push; do not push or open the PR yourself. Link the issue in the PR
+   body (`Fixes #<n>`).

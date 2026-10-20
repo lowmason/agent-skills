@@ -647,7 +647,7 @@ A **Goal** gives supporting Codex builds a persistent objective within a chat; a
 
 ## Repository application
 
-This repository's canonical skill content remains under `skills/`. Its installer places Codex skills under `~/.agents/skills/` and generated agent adapters under `~/.codex/agents/`. Canonical agent definitions stay in `agents/`; files under `runtimes/` are generated. Edit the canonical definition, regenerate, and check adapters using the maintainer commands in [CLAUDE.md](../CLAUDE.md).
+This repository's canonical skill content remains under `skills/`. Its installer places Codex skills under `~/.agents/skills/` and generated agent adapters under `~/.codex/agents/`. Canonical agent definitions stay in `agents/`; files under `runtimes/` are generated. Edit the canonical definition, regenerate, and check adapters using the maintainer commands in [CLAUDE.md](../../CLAUDE.md).
 
 That arrangement preserves portable procedures while translating runtime-specific manifests. Model pins from Claude definitions do not carry into generated Codex agents here; the adapters inherit the active runtime model. The repository does not generate Codex command adapters: reusable Codex workflows are skills.
 

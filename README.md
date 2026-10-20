@@ -152,7 +152,7 @@ reusable workflows as skills.
 | Command | Description |
 |---------|-------------|
 | [`/deferred`](commands/deferred.md) | Triage `specs/deferred_items.md` in the current project. It groups the unticked items by theme. Then it sorts each item into retire, quick fix, plan, design, or hold, so that the ceremony matches the item. Only items that record an open design decision go to brainstorming. The triage itself is read-only. On the user's selection, the command retires or quick-fixes items, ticks them with a dated suffix, and routes the rest to writing-plans or brainstorming. The plan-completion protocol still ticks the items that a plan implements. |
-| [`/fix-issue`](commands/fix-issue.md) | Fix a GitHub issue end to end: `gh issue view` → classify → fix branch → systematic-debugging + TDD + verification → a PR that links `Fixes #N`. It fixes bugs only, and it routes a feature-shaped issue to `brainstorming`. Without `gh` or a GitHub remote, it stops gracefully. |
+| [`/fix-issue`](commands/fix-issue.md) | Fix a GitHub issue end to end: `gh issue view` → classify → an offered worktree and a fix branch → systematic-debugging + TDD + verification → a PR that links `Fixes #N`. It hands the last step to `finishing-a-development-branch` (the PR path), so the backlog gate and the review step run before the push. It fixes bugs only, and it routes a feature-shaped issue to `brainstorming`. Without `gh` or a GitHub remote, it stops gracefully. |
 | [`/license-audit`](commands/license-audit.md) | Audit the current repo's licensing and attribution. It runs the repo's mechanical gates where they exist. Then it makes judgment checks: NOTICE ↔ artifact sync, LICENSE consistency, flags for copyleft and NonCommercial (NC) compatibility, and the risk of uncredited adaptations. Read-only. |
 
 ## Hooks
@@ -198,7 +198,7 @@ This repo keeps rule sources in `rules/`. A path-scoped rule applies here throug
 
 | Rule | Scope | What it injects |
 |------|-------|-----------------|
-| [`clean-code-python.md`](rules/clean-code-python.md) | `**/*.py` | Python guardrails, loaded on `.py` reads, writes and edits: single quotes, 4-space indent, Polars over pandas, method-style Polars expressions, lazy evaluation, NumPyro+JAX, and named constants (G25). It cross-references the `clean-code` catalog by rule code. |
+| [`clean-code-python.md`](rules/clean-code-python.md) | `**/*.py` | Python guardrails, loaded on `.py` reads, writes and edits (a compaction summarizes them away): single quotes, 4-space indent, Polars over pandas, method-style Polars expressions, lazy evaluation, NumPyro+JAX, and named constants (G25). It cross-references the `clean-code` catalog by rule code. |
 | [`write-with-asd-ste100.md`](rules/write-with-asd-ste100.md) | every session, user-level | The everyday writing habits of the `write-with-asd-ste100` skill, for replies and for prose files written for people. It also carries the label rule, and a pointer to the skill for rewrites, agent-facing text and strict STE. |
 
 Rules here ship project-level. Commit `7aa454f` made that decision when it added the Python rule. To use a path-scoped rule in another project, copy it into that repo's `.claude/rules/`. (User-level `~/.claude/rules/` also loaded in the 2.1.218 probe. See that commit's message.)

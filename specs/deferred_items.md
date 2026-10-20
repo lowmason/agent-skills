@@ -4680,7 +4680,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       discipline skill, so the wording is micro-tested. Do with the D1 item in this section
       (same file). Size: plan. Done when: Step 4b offers the append, the caller list names it,
       and the micro-test record is kept.
-- [ ] Route `/fix-issue` through finishing-a-development-branch (audit-3-10-26 D4, found
+- [x] Route `/fix-issue` through finishing-a-development-branch (audit-3-10-26 D4, found
       2026-10-03; re-verified 2026-10-18). `commands/fix-issue.md` cuts its branch in the
       current checkout (`:18-20`) and then commits, pushes and opens a PR itself (`:26-27`), so
       it skips finishing's aged-backlog gate, its Codex review and any code review. The
@@ -4690,6 +4690,9 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       (`build/sync_runtime_assets.py`, then `--check`), update the README row
       (`README.md:132`), and run the dependency-drift test. Size: quick-fix. Done when: the
       command hands off to finishing, and the adapter and the README match it.
+      → done 2026-10-19 (/deferred quick fix): fix-issue offers a worktree before the branch and
+      hands its last step to finishing-a-development-branch, Option 2. The Gemini adapter is
+      regenerated, the README row matches, and the dependency-drift test passes.
 - [ ] Run `/fix-issue` live once, end to end (audit-3-10-26 B12, found 2026-10-03). The
       agents-and-commands spec deferred its live check "to first real use"
       (`specs/completed/agents-and-commands-expansion.md:233-234`), and plan 17 recorded it in
@@ -4698,7 +4701,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       interactive session on a real bug issue, so it is the owner's. Take the D4 item in this
       section first, so the run tests the final flow. Size: quick-fix. Done when: a real issue
       goes through `/fix-issue` and the resulting PR links it, with the run recorded here.
-- [ ] Build or retire plan 29's floating snippet tier (audit-3-10-26 B11, found 2026-10-03;
+- [x] Build or retire plan 29's floating snippet tier (audit-3-10-26 B11, found 2026-10-03;
       re-verified 2026-10-18). Plan 29 designed an advisory tier that runs the harnessed
       snippets on unpinned latest packages and only warns
       (`specs/plans/completed/29-snippet-execution-gate.md:693`, `:710`); it was never built
@@ -4710,6 +4713,8 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       (`build/snippet_preamble.py`; see F9 in this section). CLAUDE.md is at 146 of its
       200-line limit, so a new command line fits without a trim. Retire: a deviation note in
       plan 29's record. Size: quick-fix. Done when: the owner picks one and it lands.
+      → done 2026-10-19 (/deferred quick fix): owner chose "Retire it". Plan 29's record carries
+      a deviation note.
 - [x] Pin `task-brief`'s heading-level boundary with a test (audit-3-10-26 B10, found
       2026-10-03; first noted in a closure note in section `21-audit_9_2_26`, 2026-09-03).
       Changing `<= tlvl` to `< tlvl` at `skills/subagent-driven-development/scripts/task-brief:48`
@@ -4844,7 +4849,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       suggested sentence, the README does not say that Gemini's approval settings limit the
       risk, because nobody re-checked that. The generated Gemini policy file, which this item
       calls a later design question, is not addressed here.
-- [ ] Owner call: retire or verify the Gemini customization guide (audit-3-10-26 D5 and its
+- [x] Owner call: retire or verify the Gemini customization guide (audit-3-10-26 D5 and its
       Decision 8, found 2026-10-03; re-verified 2026-10-18).
       `specs/guides/gemini-customization-guide.md` (54 lines, unchanged since it was committed
       on 2026-10-03) carries 40 `[cite: N]`
@@ -4856,14 +4861,18 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       rewrite it with a verification header; at minimum, an UNVERIFIED banner and a struck
       §4. Size: quick-fix. Done when: the owner chooses, and the guide is retired or
       verified.
-- [ ] Say that compaction can drop the path-scoped Python rule (audit-3-10-26 D12, found
+      → done 2026-10-19 (/deferred quick fix): owner chose "Retire it". The guide moved to
+      specs/completed/ with a RETIRED banner.
+- [x] Say that compaction can drop the path-scoped Python rule (audit-3-10-26 D12, found
       2026-10-03; the relabel half was done in `afa33b6`, 2026-10-05).
       `rules/clean-code-python.md:7-9` and `README.md:157` now say the rule loads on `.py`
       reads, writes and edits, but not that a compaction summarizes it away (the guide,
       `specs/guides/claude-code-customization-guide.md:253`).
       The owner kept the rule path-scoped. Add one clause to both. Size: quick-fix. Done
       when: both mention it, or the owner declines the clause.
-- [ ] Correct CLAUDE.md's claim that each snippet tier includes the ones above it
+      → done 2026-10-19 (/deferred quick fix): rules/clean-code-python.md and README.md's rule
+      row say a compaction summarizes the rule away.
+- [x] Correct CLAUDE.md's claim that each snippet tier includes the ones above it
       (audit-3-10-26 D8, found 2026-10-03; re-verified 2026-10-18). `CLAUDE.md:106` says
       "three tiers, cheapest first, each including those above", and `:112` and `:114`
       ("Tier 2 (+ resolve …", "Tier 3 (+ execute …") read the same way, as does
@@ -4874,7 +4883,9 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       `--api` instead is a behaviour change with its own tests in
       `build/test_check_snippets.py`. Size: quick-fix. Done when: CLAUDE.md and the
       docstring describe the tiers as they run.
-- [ ] Fix CLAUDE.md's "Single test" example, which fails in every fresh worktree, and decide
+      → done 2026-10-19 (/deferred quick fix): CLAUDE.md and build/check_snippets.py's docstring
+      describe the tiers as separate commands, and a full check runs all three.
+- [x] Fix CLAUDE.md's "Single test" example, which fails in every fresh worktree, and decide
       how the citation tests behave without `build/.scratch` (audit-3-10-26 D9 and its
       Decision 6, found 2026-10-03; re-verified 2026-10-18). `CLAUDE.md:125-126` documents
       `test_verify_citations.py::test_true_negative_flags_bad_refs`, which fails without the
@@ -4890,6 +4901,11 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       expected baseline, so a skip changes their numbers and the `build` suite's notes in
       `build/suites.toml`. Size: quick-fix. Done when: the example passes in a fresh worktree,
       and the owner's choice is applied or recorded.
+      → done 2026-10-19 (/deferred quick fix): the example now names
+      test_missing_scratch_exits_2_with_actionable_message and passes in a fresh worktree. Owner
+      chose "Skip with a reason": four ground-truth tests skip and name build/.scratch/, and
+      test_empty_text_has_no_failures no longer needs ground truth. suites.toml's note and plan
+      53's Validation 1 match.
 - [x] Credit mancusolab/coding-skills in CLAUDE.md and the README (audit-3-10-26 D10, found
       2026-10-03; re-verified 2026-10-18; the "three sources" count was fixed in `26f7a52`).
       `LICENSE-coding-skills` (MIT, Mancuso Lab) sits at the root and NOTICE records three
@@ -4912,7 +4928,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       confirmed by the owner on 2026-10-19: Mancuso counts as a seventh, contributing source.
       Each of the other six owns whole skills and Mancuso owns none, so CLAUDE.md now reads
       "six sources with distinct attribution, and a seventh contributes to three skills".
-- [ ] Fix five one-line doc slips (audit-3-10-26 D11 and D15, found 2026-10-03, and a D13
+- [x] Fix five one-line doc slips (audit-3-10-26 D11 and D15, found 2026-10-03, and a D13
       banner that went stale later, found 2026-10-18; all re-verified 2026-10-18).
       (a) `README.md:32` still describes `build/` as "citation-verification tooling for
       recommend-probabilistic-model"; name its four parts (lints and commit gates, the adapter
@@ -4928,7 +4944,9 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       `specs/agent-skills-portability.md`, which `a00b080` (2026-10-12) renamed to
       `specs/agent-skills-portability-spec.md`. Size: quick-fix. Done when: all five read
       correctly.
-- [ ] Owner call: one root notice file for Learning Bayesian Statistics' MIT license, or a
+      → done 2026-10-19 (/deferred quick fix): (b), (c) and (e) fixed. (a) and (d) had landed in
+      5f46310.
+- [x] Owner call: one root notice file for Learning Bayesian Statistics' MIT license, or a
       separate `LICENSE-andorra` (audit-3-10-26 B7 and its Decision 5, found 2026-10-03;
       re-verified 2026-10-18). Plan 53 (portability, merged as PR #57, not executed) lists a
       separate root `LICENSE-andorra`, upstream's text verbatim, among its "settled defaults"
@@ -4938,6 +4956,8 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       block, so the default puts that text in two root files. Switching is cheap: one
       `BUNDLED_LICENSES` row and one file split. Size: quick-fix. Done when: the owner
       confirms or switches before plan 53's Task 9 runs, and Task 9 follows the choice.
+      → done 2026-10-19 (/deferred quick fix): owner chose "Separate LICENSE-andorra". Plan 53's
+      DF14 and Task 9 already say so.
 - [ ] Point bayesian-workflow's README at its upstream notice once plan 53's Task 9 lands
       (audit-3-10-26 B7 attribution note, found 2026-10-03; re-verified 2026-10-18).
       `skills/bayesian-workflow/README.md:46-47` and `:102-104` point only at `NOTICE` and the

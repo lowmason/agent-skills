@@ -3,7 +3,7 @@
 
 An opinionated [Agent Skill](https://agentskills.io) for building, diagnosing, and reporting on Bayesian statistical models using **NumPyro (JAX)** and **ArviZ**.
 
-Compatible with Claude Code, Kimi Code, Cursor, Gemini CLI, and any agent that supports the [Agent Skills spec](https://agentskills.io/specification).
+Compatible with Claude Code, Codex, Kimi Code, Cursor, Gemini CLI, and any agent that supports the [Agent Skills spec](https://agentskills.io/specification).
 
 This is the **NumPyro + JAX** variant of the workflow skill (the original targets PyMC + ArviZ).
 Full breakdown of the original [here](https://learnbayesstats.com/blog-posts/bayesian-workflow-agent-skill-pymc-arviz).
@@ -87,6 +87,7 @@ bayesian-workflow/
 │   ├── hierarchical.md               # Partial pooling, non-centered parameterization (reparam)
 │   ├── sensitivity.md                # Prior/likelihood sensitivity (power-scaling) + log_prior recipe
 │   ├── state-space.md                # State-space / time-series models (marginalize vs sample the path)
+│   ├── jax-numerics.md               # JAX precision and stability: float64 policy, silent downcasts, guarded divisions
 │   ├── publications.md               # Cited workflow papers and further reading
 │   ├── reporting.md                  # Report templates, audience adaptation
 │   └── visualize.md                  # Visualization across the workflow (Gabry et al. 2019 → ArviZ)
