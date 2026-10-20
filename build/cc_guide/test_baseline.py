@@ -11,7 +11,7 @@ import blocks
 import guide
 import lint
 import state
-from cc_fixtures import (DOCS, FIXTURE_CHANGED, GUIDE_IDS, MANIFEST_TOML, docs_dir,  # noqa: F401
+from cc_fixtures import (DOCS, FIXTURE_CHANGED, GUIDE_IDS, MANIFEST_TOML, MDX_PAGE, docs_dir,  # noqa: F401
                          fixture_snapshot, fixture_state, guide_text, isolated_home, write_tree)
 
 REPO = Path(__file__).resolve().parents[2]
@@ -356,6 +356,87 @@ def test_a_listed_ref_to_an_unmapped_page_drops_the_page_or_only_its_listed_bloc
     assert ('retired' in new['groups']['beta']['blocks'], 'retired' in new['groups']['beta']['snapshot']) == (
         False, False)
     assert (pages, notes) == ([], ['retired: no longer mapped to beta; dropped its baselined blocks'])
+
+
+MDX_RELEASE = '2.1.901'
+ALPHA_TERMS = set().union(*state.group_terms(MANIFEST, guide_text())['alpha'].values())
+
+
+def legacy(text, mark):
+    '''A page's selected alpha blocks as the parser before R3.2's MDX
+    rewrite stored them.'''
+    cut = {b.key: b.text for b in blocks.cut_page(text, rewrite_mdx=False)}
+    return {blocks.key_hash(k): blocks.block_hash(cut[k]) for k in blocks.select(cut, mark, ALPHA_TERMS)}
+
+
+def mdx_snapshot(page, release):
+    '''The 2.1.901 snapshot holds MDX_PAGE for every page; other releases
+    hold the Markdown fixture docs.'''
+    return MDX_PAGE if release == MDX_RELEASE else fixture_snapshot(page, release)
+
+
+def mdx_state(docs_dir):
+    '''The fixture baseline with alpha's two pages baselined by the old
+    parser from an MDX snapshot.'''
+    s = fixture_state(docs_dir)
+    s['groups']['alpha']['blocks'] = {'tools': legacy(MDX_PAGE, 'all'), 'env-vars': legacy(MDX_PAGE, 'terms')}
+    s['groups']['alpha']['snapshot'] = {'tools': MDX_RELEASE, 'env-vars': MDX_RELEASE}
+    return s
+
+
+def rewritten_hashes(*keys):
+    found = blocks.page_blocks(MDX_PAGE)
+    return {blocks.key_hash(k): blocks.block_hash(found[k]) for k in keys}
+
+
+def test_rehash_rederives_mdx_snapshots_and_keeps_which_blocks_are_baselined(docs_dir):
+    '''A block whose key both parses give keeps its membership. A block cut
+    at a rewritten HTML heading joins when it is selected and the old block
+    holding its first line was baselined. A key only the old parse gave
+    leaves (owner, 2026-10-20).'''
+    s = mdx_state(docs_dir)
+    assert list(s['groups']['alpha']['blocks']['tools']) == hashed(
+        '(intro)', 'Widgets', 'Widgets › Platforms', 'Widgets › Platforms › `max`')
+    new, notes = baseline.rehash(s, MANIFEST, guide_text(), mdx_snapshot)
+    alpha = new['groups']['alpha']['blocks']
+    assert alpha['tools'] == baseline.select_blocks(MDX_PAGE, 'all', ALPHA_TERMS)
+    assert list(alpha['tools']) == hashed(*blocks.page_blocks(MDX_PAGE))
+    assert alpha['env-vars'] == rewritten_hashes('Widgets', 'Widgets › Set up widgets', 'Widgets › Platforms')
+    assert list(alpha['env-vars']) == hashed('Widgets', 'Widgets › Set up widgets', 'Widgets › Platforms')
+    assert new['groups']['alpha']['snapshot'] == s['groups']['alpha']['snapshot']
+    assert new['groups']['beta'] == s['groups']['beta']
+    assert (new['sections'], new['llms']) == (s['sections'], s['llms'])
+    assert notes == ['tools in alpha: 3 block(s) added at rewritten headings, 2 block(s) gone after the rewrite',
+                     'env-vars in alpha: 1 block(s) added at rewritten headings, 0 block(s) gone after the rewrite']
+
+
+def test_rehash_leaves_a_split_off_block_out_when_its_host_was_not_baselined(docs_dir):
+    '''A selected block the baseline lacks is a pending `new` finding; the
+    blocks the rewrite cuts out of it stay pending too.'''
+    s = mdx_state(docs_dir)
+    del s['groups']['alpha']['blocks']['tools'][blocks.key_hash('Widgets')]
+    new, _ = baseline.rehash(s, MANIFEST, guide_text(), mdx_snapshot)
+    limits = 'Widgets › Platforms › Widget limits'
+    assert list(new['groups']['alpha']['blocks']['tools']) == hashed('Widgets › Platforms', limits, f'{limits} › `max`')
+
+
+def test_rehash_changes_nothing_on_markdown_snapshots_or_on_a_second_run(docs_dir):
+    s = fixture_state(docs_dir)
+    assert baseline.rehash(s, MANIFEST, guide_text(), fixture_snapshot) == (s, [])
+    once, _ = baseline.rehash(mdx_state(docs_dir), MANIFEST, guide_text(), mdx_snapshot)
+    assert baseline.rehash(once, MANIFEST, guide_text(), mdx_snapshot) == (once, [])
+
+
+def test_rehash_refuses_a_hash_neither_parse_gives_and_a_missing_snapshot(docs_dir):
+    s = mdx_state(docs_dir)
+    s['groups']['alpha']['blocks']['tools'][blocks.key_hash('Widgets')] = '0' * 16
+    with pytest.raises(state.SetupError) as err:
+        baseline.rehash(s, MANIFEST, guide_text(), mdx_snapshot)
+    assert str(err.value) == ('tools in alpha (2.1.901 snapshot): 1 baselined block(s) match neither parse of the'
+                              ' snapshot; rebaseline the page instead')
+    with pytest.raises(state.SetupError) as err:
+        baseline.rehash(mdx_state(docs_dir), MANIFEST, guide_text(), state.no_snapshot)
+    assert str(err.value) == 'tools in alpha: no 2.1.901 snapshot to re-derive its blocks from'
 
 
 def test_stamp_regenerates_only_the_region(docs_dir):

@@ -1,10 +1,10 @@
-'''Tests for blocks.py: fences, page splitting, keys, normalization, hashing
-and selection (drift spec R3).'''
+'''Tests for blocks.py: fences, the MDX rewrite, page splitting, keys,
+normalization, hashing and selection (drift spec R3).'''
 import hashlib
 
 import blocks
-from cc_fixtures import (ENV_PAGE, FENCE, FENCE4, PLATFORM_PAGE, TABLE_PAGE,  # noqa: F401
-                         TILDE, isolated_home)
+from cc_fixtures import (ENV_PAGE, FENCE, FENCE4, MARKDOWN_PAGE, MDX_PAGE, PLATFORM_PAGE,  # noqa: F401
+                         TABLE_PAGE, TILDE, isolated_home)
 
 ENV = 'Environment variables'
 
@@ -42,6 +42,84 @@ def test_the_documentation_index_preamble_is_dropped():
     assert blocks.strip_preamble(lines) == lines[3:]
     quote = ['> A plain blockquote.', '', '# T']
     assert blocks.strip_preamble(quote) == quote
+
+
+def rewritten(lines):
+    return [line for line, _ in blocks.as_markdown(lines)]
+
+
+def test_an_mdx_page_cuts_into_the_blocks_of_its_markdown_export():
+    '''R3.2 (owner, 2026-10-20): both export formats give the same keys and
+    the same normalized text, so the same hashes.'''
+    assert blocks.page_blocks(MDX_PAGE) == blocks.page_blocks(MARKDOWN_PAGE)
+
+
+def test_html_headings_cut_blocks_only_once_rewritten():
+    assert list(blocks.page_blocks(MDX_PAGE)) == [
+        'Widgets', 'Widgets › Set up widgets', 'Widgets › Platforms', 'Widgets › Platforms › Widget limits',
+        'Widgets › Platforms › Widget limits › `max`']
+    assert [b.key for b in blocks.cut_page(MDX_PAGE, rewrite_mdx=False)] == [
+        '(intro)', 'Widgets', 'Widgets › Platforms', 'Widgets › Platforms › `max`']
+
+
+def test_markdown_passes_through_the_rewrite_line_for_line():
+    for page in (MARKDOWN_PAGE, ENV_PAGE, TABLE_PAGE, PLATFORM_PAGE):
+        lines = page.split('\n')
+        assert blocks.as_markdown(lines) == [(line, i) for i, line in enumerate(lines)]
+
+
+def test_each_rewritten_line_carries_the_index_of_its_source_line():
+    lines = MDX_PAGE.split('\n')
+    out = blocks.as_markdown(lines)
+
+    def source(text):
+        return lines[next(i for line, i in out if line == text)].strip()
+    assert source('## Set up widgets') == '<h2 id="set-up">'
+    assert source('**2. Turn it on**') == '<Step title="Turn it on">'
+    image = '![A widget, step \\*one\\*](/images/widget-light.png)'
+    assert source(image).startswith('<img src="/images/widget-light.png"')
+    assert source('> systemctl status widget') == 'systemctl status widget'
+
+
+def test_a_block_records_the_source_lines_it_was_cut_from():
+    lines = MDX_PAGE.split('\n')
+    cut = {b.key: b for b in blocks.cut_page(MDX_PAGE)}
+    assert lines[cut['Widgets › Set up widgets'].lines[0]] == '<h2 id="set-up">'
+    assert lines[cut['Widgets › Platforms › Widget limits › `max`'].lines[0]] == '| `max` | 3 |'
+    raw = {b.key: b for b in blocks.cut_page(MDX_PAGE, rewrite_mdx=False)}
+    assert lines.index('<h2 id="set-up">') in raw['Widgets'].lines
+
+
+def test_tags_inside_a_fence_stay_code():
+    lines = ['<Note>', '  ' + FENCE + 'mdx', '  <Tip>not a callout</Tip>', '  export const X = () => {',
+             '  ' + FENCE, '</Note>']
+    assert rewritten(lines) == ['> [!NOTE]', '>', '> ' + FENCE + 'mdx', '> <Tip>not a callout</Tip>',
+                                '> export const X = () => {', '> ' + FENCE]
+
+
+def test_quoted_components_nest_and_steps_number_per_group():
+    lines = ['<Note>', '  <Accordion title="More">', '    Deep.', '  </Accordion>', '</Note>',
+             '<Steps>', '<Step title="A">', '</Step>', '<Step title="B">', '</Step>', '</Steps>',
+             '<Steps>', '<Step title="C">', '</Step>', '</Steps>']
+    assert rewritten(lines) == ['> [!NOTE]', '>', '> > **More**', '> >', '> > Deep.',
+                                '**1. A**', '**2. B**', '**1. C**']
+
+
+def test_an_export_without_a_closing_line_stays_page_text():
+    lines = ['export const Open = () => {', '  return 1', '# Next']
+    assert rewritten(lines) == lines
+
+
+def test_only_the_light_copy_of_a_light_and_dark_video_stays_without_its_styling():
+    lines = ['<video autoPlay muted src="/v/light.mp4" className="w-full dark:hidden" '
+             'style={{aspectRatio: "16 / 9"}} aria-label="A demo." data-path="images/light.mp4" />',
+             '<video autoPlay muted src="/v/dark.mp4" className="w-full hidden dark:block" aria-label="A demo." />']
+    assert rewritten(lines) == ['<video autoPlay muted src="/v/light.mp4" aria-label="A demo." />']
+
+
+def test_inline_anchors_go_and_a_line_holding_only_one_goes_whole():
+    lines = ['<a id="old" />', '<span id="x" />**Bold** text', '<div style={{margin: 0}}>', 'Kept.', '</div>']
+    assert rewritten(lines) == ['**Bold** text', 'Kept.']
 
 
 def test_page_blocks_in_page_order_with_rows_and_ordinals():

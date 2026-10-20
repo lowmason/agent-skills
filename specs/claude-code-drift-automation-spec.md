@@ -210,6 +210,26 @@ scripts were session-local (`/tmp/ccdrift-probe/`).
 16. **One staged spec, one plan per stage** (Sequencing). The detector, the
     wiring, the skill, the notice and the probes share one manifest and one set
     of section IDs; designing them together avoids a schema migration later.
+17. **Rewrite MDX as Markdown, then rehash from the snapshots** (owner,
+    2026-10-20). At about 14:00 on 2026-10-20, code.claude.com changed its
+    Markdown export from MDX components to plain Markdown. 37 of the 40
+    mapped pages changed, and a live `check` reported 358 changed, 109
+    missing and 142 new blocks, nearly all of them format churn. Every hash
+    in `baseline.json` came from MDX text, so every option rewrites it.
+    `blocks.py` rewrites MDX as the Markdown export renders it (R3.2), and
+    `baseline rehash` re-derives each page's baselined blocks from its own
+    snapshot (R7). The next `check` then reports only real drift: 127
+    changed, 2 missing and 20 new blocks on 2026-10-20. Of those, 78, 2 and
+    11 were already pending before the change, 50 came from real docs edits
+    in the same deploy, and 8 are 5 widget blocks the export now renders as
+    static text. Triage packets work at once. Verify and audit packets, and
+    rebaselines, wait for a release past 2.1.304 (R3.2). Rejected:
+    - a rebaseline of all six groups from the new fetch, with no code
+      change: it accepts the deploy's real edits without triage, and the
+      five platform.claude.com pages, still MDX, would churn again when that
+      site changes;
+    - the rewrite and a rebaseline, without `rehash`: it survives the
+      platform change, but it too accepts the real edits without triage.
 
 ## Requirements
 
@@ -234,7 +254,9 @@ scripts were session-local (`/tmp/ccdrift-probe/`).
 - `~/.cache/agent-skills/cc-guide/`, never inside a checkout, holds:
   - `2.1.288/`: the bootstrap snapshot, never written;
   - `latest/docs/`: the last fetch;
-  - `<release>/docs/`: the snapshots `baseline rebaseline` takes;
+  - `<release>/docs/`: the snapshots `baseline rebaseline` takes. Those
+    taken before about 14:00 on 2026-10-20 hold the MDX export, which R3.2
+    rewrites (owner, 2026-10-20);
   - `reports/<baseline-sha12>.json` (R6.8);
   - `notice.json` and its digest `notice.digest`, `notice-shown`,
     `last-check.json`, `unfinished` and the `lock/` directory (R9);
@@ -398,9 +420,36 @@ opener's. This is `build/fences.py`'s closing rule, extended to the indented
 openers docs pages use. The guide's section splitter (R1.1) uses the same
 rule.
 
-R3.2 **Preamble.** Strip the leading "Documentation Index" blockquote: the
-`>` lines at the top of each page that point to `llms.txt`. Text after it and
-before the first heading becomes the `(intro)` block.
+R3.2 **MDX, then the preamble.** First rewrite the page's MDX components as
+the docs site's Markdown export renders them (`blocks.as_markdown`), so that
+both formats cut into the same blocks. Until about 14:00 on 2026-10-20 the
+site exported every page as MDX. Since then code.claude.com exports Markdown,
+while platform.claude.com and every older snapshot stay MDX (owner,
+2026-10-20).
+- A callout (`<Note>`, `<Info>`, `<Tip>`, `<Warning>`, `<Danger>`) becomes a
+  blockquote under its `[!KIND]` marker. An `<Accordion>` or `<Card>` becomes
+  a blockquote under its bold title.
+- A `<Tab>` becomes its bold title, and a `<Step>` its bold, numbered title.
+  A grouping component such as `<Tabs>`, `<Steps>` or `<Frame>` leaves only
+  its contents.
+- An `<hN>` heading becomes an ATX heading, so it cuts a block (R3.3). An
+  image becomes `![alt](src)`, and the dark-mode copy of a light and dark
+  pair goes.
+- `export const` scripts, anchor tags and layout `<div>` lines go, and a
+  `<br />` becomes a space.
+- Fenced code is never read as MDX. Any other tag stays as it is, so a new
+  component shows as drift. A Markdown page comes back line for line, so its
+  hashes do not change.
+
+An interactive widget that the Markdown export renders as static text cannot
+be rewritten. A rebaseline settles it once (5 blocks on 2026-10-20). A
+rebaseline, or a verify or audit packet, refuses a page while the head
+release's snapshot holds the page's MDX bytes and `latest/` holds its
+Markdown. On 2026-10-20 that applied to every page of the 2.1.304 snapshot,
+so it lasts until the changelog head passes 2.1.304. Then strip the leading
+"Documentation Index" blockquote: the `>` lines at the top of each page that
+point to `llms.txt`. Text after it and before the first heading becomes the
+`(intro)` block.
 
 R3.3 **Headings.** Cut at every ATX heading outside code fences. A block runs
 from its heading to the next heading of any level, so a parent's block holds
@@ -702,6 +751,20 @@ that drops or remaps it, since `rebaseline` keeps a missing page's entries
 - `stamp`: regenerate the stamp region.
 - `cite <file>`: after a review, set the file's citation stamp to the highest
   `changed` among its cited sections.
+- `rehash`: re-derive every group's baselined blocks from each page's own
+  snapshot under R3.2's MDX rewrite, so that a `baseline.json` written by the
+  parser before the rewrite compares with rewritten pages. The pages, their
+  `snapshot` pointers and every other field stay.
+  - A block whose key both parses give keeps its membership.
+  - A block cut at a rewritten heading joins when it is selected now and the
+    old block that held its first line was baselined. So a pending *new*
+    block stays pending.
+  - A key that only the old parse gave leaves.
+  - It refuses a page whose snapshot is gone, and a stored hash that neither
+    parse of the snapshot gives.
+  - A second run changes nothing. So when a merge brings in a
+    `baseline.json` that the old parser wrote, take that file and run
+    `rehash` (owner, 2026-10-20).
 
 ### R8 — The `/cc-guide` skill and its verifier
 

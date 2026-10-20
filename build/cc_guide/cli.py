@@ -30,13 +30,18 @@ Run: uv run --python 3.13 python build/cc_guide/cli.py <subcommand>
   baseline accept ID [ID ...] (--substantive | --editorial)
   baseline stamp
   baseline cite FILE [FILE ...]
+  baseline rehash
       The only writer of baseline.json, the guide's stamp region and citation
       stamps (R7). cite stamps each file's citation at the highest `changed`
       among its cited sections, after a review; FILE is repo-relative, as
       lint and check print it. accept --substantive keeps a new `changed`
       above every citer's stamp (R2.4). audited records the newest cached
       release, or the release --to names, which settle sets to the audit
-      packet's head.
+      packet's head. rehash re-derives every baselined block from its page's
+      cached snapshot under R3.2's MDX rewrite and keeps which blocks are
+      baselined: run it on a baseline.json that the parser before the
+      rewrite wrote, as when a merge brings one in. A second run changes
+      nothing.
       Always the working tree; nothing is committed. rebaseline takes each
       KEY as check prints it, a key hash for a block check could not name.
       A listed rebaseline refuses while an unlisted baselined block on the
@@ -152,6 +157,7 @@ def parser() -> argparse.ArgumentParser:
     kind.add_argument('--editorial', action='store_true')
     b.add_parser('stamp')
     b.add_parser('cite').add_argument('files', nargs='+')
+    b.add_parser('rehash')
     k = sub.add_parser('packets')
     mode = k.add_mutually_exclusive_group(required=True)
     mode.add_argument('--triage', action='store_true')
@@ -303,6 +309,10 @@ def run_baseline(args, cache: Path, today: date) -> int:
     elif args.action == 'advance':
         labels = {r.label for r in newest_releases(cache)}
         new = baseline.advance(state, args.ids, args.to, labels, day)
+    elif args.action == 'rehash':
+        new, notes = baseline.rehash(state, manifest, guide_text, partial(snapshot_text, cache))
+        for line in notes:
+            print(f'note: {line}', file=sys.stderr)
     elif args.action == 'audited':
         releases = newest_releases(cache)
         release = args.to or releases[0].label

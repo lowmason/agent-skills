@@ -5,7 +5,7 @@ committed.'''
 import copy
 from pathlib import Path
 
-from blocks import SEP, block_hash, key_hash, key_names, page_blocks, select
+from blocks import SEP, block_hash, cut_page, key_hash, key_names, page_blocks, select
 from docs import is_platform, page_file, parse_llms, version_key
 from guide import (NO_STAMP, anchor_problems, file_citation, render_stamp, sections, stamp_bounds, text_hash,
                    with_stamp)
@@ -242,6 +242,61 @@ def rebaseline(state: dict, manifest: Manifest, guide_text: str, group: str, ref
             notes.append(_drop(g, page, None, group))
     new['llms'] = sorted(slugs)
     return new, snap, notes
+
+
+def rehash_page(stored: dict[str, str], text: str, mark: str | None, watched: set[str],
+                where: str) -> tuple[dict, int, int]:
+    '''One page's baselined blocks re-derived from its snapshot text under
+    R3.2's MDX rewrite: the new entries, how many joined and how many left.
+    `where` names the page and its snapshot in the refusal.'''
+    raw = cut_page(text, rewrite_mdx=False)
+    rewritten = cut_page(text)
+    raw_hashes = {key_hash(b.key): block_hash(b.text) for b in raw}
+    hashes = {key_hash(b.key): block_hash(b.text) for b in rewritten}
+    stale = [kh for kh, h in stored.items() if h not in (raw_hashes.get(kh), hashes.get(kh))]
+    if stale:
+        raise SetupError(f'{where}: {len(stale)} baselined block(s) match neither parse of the snapshot;'
+                         ' rebaseline the page instead')
+    holder = {i: key_hash(b.key) for b in raw for i in b.lines}
+    chosen = set(select({b.key: b.text for b in rewritten}, mark, watched)) if mark else set()
+    out = {}
+    for b in rewritten:
+        kh = key_hash(b.key)
+        cut_here = kh not in raw_hashes and b.key in chosen and holder.get(b.lines[0]) in stored
+        if kh in stored or cut_here:
+            out[kh] = hashes[kh]
+    return out, sum(1 for kh in out if kh not in stored), sum(1 for kh in stored if kh not in out)
+
+
+def rehash(state: dict, manifest: Manifest, guide_text: str, snapshot: Snapshot) -> tuple[dict, list[str]]:
+    '''R7 rehash (owner, 2026-10-20): re-derive every group's baselined
+    blocks from each page's own snapshot under R3.2's MDX rewrite, so a
+    baseline the parser before it wrote compares with the rewritten pages.
+    A block whose key both parses give keeps its membership. A block cut at a
+    rewritten heading joins when it is selected now and the old block that
+    held its first line was baselined; a key only the old parse gave leaves.
+    Snapshots and every other field stay. A second run changes nothing.
+    Refuses a page without its snapshot, and a stored hash that neither parse
+    of the snapshot gives. Returns the new state and a note per page whose
+    keys changed.'''
+    check_ids(manifest, guide_text)
+    terms = group_terms(manifest, guide_text)
+    new = copy.deepcopy(state)
+    notes = []
+    for gid, g in new['groups'].items():
+        mapped = manifest.groups[gid].pages if gid in manifest.groups else {}
+        watched = set().union(*terms.get(gid, {}).values())
+        for page, stored in g['blocks'].items():
+            release = g['snapshot'].get(page)
+            text = None if release is None else snapshot(page, release)
+            if text is None:
+                raise SetupError(f'{page} in {gid}: no {release} snapshot to re-derive its blocks from')
+            g['blocks'][page], joined, left = rehash_page(stored, text, mapped.get(page), watched,
+                                                          f'{page} in {gid} ({release} snapshot)')
+            if joined or left:
+                notes.append(f'{page} in {gid}: {joined} block(s) added at rewritten headings,'
+                             f' {left} block(s) gone after the rewrite')
+    return new, notes
 
 
 def stamp(guide_text: str, state: dict) -> str:
