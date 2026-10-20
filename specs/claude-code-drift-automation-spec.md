@@ -222,8 +222,11 @@ scripts were session-local (`/tmp/ccdrift-probe/`).
     changed, 2 missing and 20 new blocks on 2026-10-20. Of those, 78, 2 and
     11 were already pending before the change, 50 came from real docs edits
     in the same deploy, and 8 are 5 widget blocks the export now renders as
-    static text. Triage packets work at once. Verify and audit packets, and
-    rebaselines, wait for a release past 2.1.304 (R3.2). Rejected:
+    static text. A snapshot page whose blocks equal the new page's takes
+    the new bytes, so an MDX copy alone blocks no rebaseline or packet
+    (R7). A page with real edits at the same release still waits for the
+    next release. On 2026-10-20 that was 22 of the 39 pages, and every
+    group mapped at least one of them. Rejected:
     - a rebaseline of all six groups from the new fetch, with no code
       change: it accepts the deploy's real edits without triage, and the
       five platform.claude.com pages, still MDX, would churn again when that
@@ -443,10 +446,10 @@ while platform.claude.com and every older snapshot stay MDX (owner,
 
 An interactive widget that the Markdown export renders as static text cannot
 be rewritten. A rebaseline settles it once (5 blocks on 2026-10-20). A
-rebaseline, or a verify or audit packet, refuses a page while the head
-release's snapshot holds the page's MDX bytes and `latest/` holds its
-Markdown. On 2026-10-20 that applied to every page of the 2.1.304 snapshot,
-so it lasts until the changelog head passes 2.1.304. Then strip the leading
+snapshot page that holds a page's MDX export does not block a rebaseline or a
+verify or audit packet when its blocks equal those of the Markdown page in
+`latest/` (R7). A page with real edits at the same release still waits for
+the next release, as such edits always did. Then strip the leading
 "Documentation Index" blockquote: the `>` lines at the top of each page that
 point to `llms.txt`. Text after it and before the first heading becomes the
 `(intro)` block.
@@ -729,8 +732,12 @@ that drops or remaps it, since `rebaseline` keeps a missing page's entries
   refusal names it, and the run must list it too or take the whole page
   (owner ruling 7, plan 38). It snapshots those pages to
   `~/.cache/agent-skills/cc-guide/<release>/docs/`, refusing to overwrite a
-  snapshot page that holds different bytes, since another group's `snapshot`
-  pointer may name it. A key is listed as
+  snapshot page that cuts into other blocks, since another group's `snapshot`
+  pointer may name it. A snapshot page with the same blocks, such as the
+  page's MDX export (R3.2), takes the new bytes, because every group reads
+  the same baselined text from either copy and the verifier greps the
+  snapshot. The verify and audit packets copy pages under the same rule
+  (owner, 2026-10-20). A key is listed as
   `check` prints it, so a block `check` could name only by its key hash is
   listed by that hash (R2.3). `--head` names the release a review read the
   docs at: the run refuses, naming both releases and writing nothing, when

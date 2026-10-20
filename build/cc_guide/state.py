@@ -496,16 +496,26 @@ def writable_snapshot(cache: Path, release: str) -> Path:
     return target
 
 
+def same_blocks(held: bytes, body: bytes) -> bool:
+    '''Two copies of a page that cut into the same blocks (R3), such as its
+    MDX and Markdown exports (R3.2). Bytes that are not UTF-8 never match.'''
+    try:
+        return page_blocks(held.decode('utf-8')) == page_blocks(body.decode('utf-8'))
+    except UnicodeDecodeError:
+        return False
+
+
 def copy_to_snapshot(cache: Path, release: str, files: dict[str, str]) -> Path:
     '''Copy latest/docs files into <release>/docs, returning that directory.
     `files` maps the name a message gives each file to its cache file name.
-    A file already there with different bytes is never overwritten, since
-    another group's `snapshot` may name it. Every file is checked before any
-    is written.'''
+    A file already there that cuts into other blocks is never overwritten,
+    since another group's `snapshot` may name it; one with the same blocks
+    takes the new bytes, which the verifier greps (owner, 2026-10-20). Every
+    file is checked before any is written.'''
     target = writable_snapshot(cache, release)
     copies = [(label, target / name, (latest_docs(cache) / name).read_bytes()) for label, name in files.items()]
     for label, held, body in copies:
-        if held.is_file() and held.read_bytes() != body:
+        if held.is_file() and (old := held.read_bytes()) != body and not same_blocks(old, body):
             raise SetupError(f'{label}: {held} already holds different text, which another group may have '
                              'baselined; it is never overwritten')
     target.mkdir(parents=True, exist_ok=True)

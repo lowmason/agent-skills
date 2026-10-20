@@ -47,10 +47,11 @@ Run: uv run --python 3.13 python build/cc_guide/cli.py <subcommand>
       A listed rebaseline refuses while an unlisted baselined block on the
       same page has also changed or gone, since the page's snapshot would
       not hold that block's baselined text: list it too, or rebaseline the
-      whole page. It also refuses to overwrite a snapshot page that holds
-      other text. With --head, the release a review read the docs at, it
-      refuses when the latest fetch is at another release, so docs fetched
-      after the review are never baselined.
+      whole page. It also refuses to overwrite a snapshot page that cuts
+      into other blocks; one with the same blocks, such as the page's MDX
+      export, takes the new bytes. With --head, the release a review read
+      the docs at, it refuses when the latest fetch is at another release,
+      so docs fetched after the review are never baselined.
   packets (--triage [--through RELEASE] | --verify [ID ...] [--from DIR]
            | --audit [GROUP] | --files [FILE ...]) [--out DIR]
       Write the packets /cc-guide hands its verifier (R6.11), from check
@@ -114,8 +115,9 @@ PAGE / 'PAGE › KEY' refs) and snapshot those pages to the cache.
 
 A listed run refuses while an unlisted baselined block on the same page has
 also changed or gone since the baseline: list it too, or rebaseline the whole
-page. It also refuses to overwrite a snapshot page that holds different text.
-With --head, the release a review read the docs at, it refuses when the latest
+page. It also refuses to overwrite a snapshot page that cuts into other
+blocks; one with the same blocks, such as the page's MDX export, takes the new
+bytes. With --head, the release a review read the docs at, it refuses when the latest
 fetch is at another release, so docs fetched after the review are never
 baselined.'''
 

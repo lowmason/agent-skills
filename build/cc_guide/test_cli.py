@@ -11,7 +11,7 @@ import baseline
 import cli
 import notice
 import state
-from cc_fixtures import (DOCS, GUIDE_IDS, GUIDE_PATH, MANIFEST_TOML, MDX_PAGE, docs_dir,  # noqa: F401
+from cc_fixtures import (DOCS, GUIDE_IDS, GUIDE_PATH, MANIFEST_TOML, MARKDOWN_PAGE, MDX_PAGE, docs_dir,  # noqa: F401
                          drift_repo, fixture_repo, git, guide_text, isolated_home, prime_cache, write_tree)
 from guide import HASH_FORM, STAMP_CLOSE, STAMP_OPEN
 
@@ -382,6 +382,18 @@ def test_rebaseline_refuses_to_overwrite_a_snapshot_page_holding_other_text(worl
     write_tree(state.snapshot_docs(cache, '2.1.902'), {'tools.md': (latest / 'tools.md').read_text()})
     assert main(cache, 'baseline', 'rebaseline', 'alpha') == 0  # identical bytes are not a conflict
     assert (held.parent / 'env-vars.md').is_file()
+
+
+def test_rebaseline_overwrites_an_mdx_snapshot_page_with_the_same_blocks(world):
+    '''The 2.1.304 case (owner, 2026-10-20): the snapshot holds a page's MDX
+    export and latest/ its Markdown export at the same release.'''
+    repo, cache, _ = world
+    write_tree(state.latest_docs(cache), {'tools.md': MARKDOWN_PAGE})
+    held = state.snapshot_docs(cache, '2.1.902') / 'tools.md'
+    write_tree(held.parent, {'tools.md': MDX_PAGE})
+    assert main(cache, 'baseline', 'rebaseline', 'alpha', 'tools') == 0
+    assert held.read_text() == MARKDOWN_PAGE
+    assert dirty(repo) == [state.BASELINE]
 
 
 def test_rebaseline_names_a_gone_block_from_the_cached_snapshot(world, capsys):
