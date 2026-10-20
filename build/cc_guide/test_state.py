@@ -9,8 +9,8 @@ import pytest
 import blocks
 import guide
 import state
-from cc_fixtures import (MANIFEST_TOML, docs_dir, fixture_repo, fixture_snapshot, fixture_state, git,  # noqa: F401
-                         guide_text, isolated_home, write_tree)
+from cc_fixtures import (MANIFEST_TOML, MARKDOWN_PAGE, MDX_PAGE, docs_dir, fixture_repo, fixture_snapshot,  # noqa: F401
+                         fixture_state, git, guide_text, isolated_home, write_tree)
 
 STAMP = {'release': '2.1.900', 'date': '2026-09-02'}
 SECTION = {'checked': STAMP, 'changed': '2.1.900', 'audited': STAMP, 'text_hash': 'sha256:' + 'a' * 64}
@@ -285,6 +285,30 @@ def test_the_snapshot_copy_checks_every_file_before_it_writes_any(tmp_path):
     assert str(err.value) == (f"b: {held / 'b.md'} already holds different text, which another group may have "
                               'baselined; it is never overwritten')
     assert sorted(p.name for p in held.iterdir()) == ['b.md']
+
+
+def test_a_snapshot_page_with_the_same_blocks_is_no_conflict_and_takes_the_new_bytes(tmp_path):
+    '''R7 (owner, 2026-10-20): a page's MDX and Markdown exports cut into the
+    same blocks, so every group reads the same baselined text from either
+    copy. The new bytes are written, since the verifier greps the snapshot.'''
+    write_tree(state.latest_docs(tmp_path), {'a.md': MARKDOWN_PAGE, 'b.md': 'same b\n'})
+    held = state.snapshot_docs(tmp_path, '2.1.902')
+    write_tree(held, {'a.md': MDX_PAGE, 'b.md': '  same   b\n\n'})
+    assert blocks.page_blocks(MDX_PAGE) == blocks.page_blocks(MARKDOWN_PAGE)
+    assert state.copy_to_snapshot(tmp_path, '2.1.902', {'a': 'a.md', 'b': 'b.md'}) == held
+    assert ((held / 'a.md').read_text(), (held / 'b.md').read_text()) == (MARKDOWN_PAGE, 'same b\n')
+
+
+def test_a_snapshot_page_that_is_not_utf8_is_a_conflict(tmp_path):
+    write_tree(state.latest_docs(tmp_path), {'a.md': 'a\n'})
+    held = state.snapshot_docs(tmp_path, '2.1.902') / 'a.md'
+    held.parent.mkdir(parents=True)
+    held.write_bytes(b'a\xff\n')
+    with pytest.raises(state.SetupError) as err:
+        state.copy_to_snapshot(tmp_path, '2.1.902', {'a': 'a.md'})
+    assert str(err.value) == (f'a: {held} already holds different text, which another group may have '
+                              'baselined; it is never overwritten')
+    assert held.read_bytes() == b'a\xff\n'
 
 
 def test_the_default_cache_follows_home(isolated_home):
