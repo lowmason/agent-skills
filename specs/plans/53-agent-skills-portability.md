@@ -3842,7 +3842,33 @@ Run `uv run --no-project --python 3.13 python /tmp/portability-plan/runtime_chec
 
 ### R3.8 execution proof
 
-Task 13 records the log here.
+Run on 2026-10-19 with `/tmp/portability-plan/r38.sh` (root: this worktree; scratch: `/tmp/portability-r38`). The script differs from Task 13's in two places under D11: the vendored `ste-lint.py` is header-less, so it runs under `python3` (its interpreter shows on the next log line), and `preflight` runs once with no arguments from an empty directory, so the list holds 19 scripts. Its last stdout line was `next: pin`.
+
+```text
+bootstrap_wiki rc=0 Python 3.14.0
+lint_wiki rc=0 Python 3.14.0
+distill_sessions rc=0 Python 3.14.0
+distill_specs rc=0 Python 3.14.0
+new_adr rc=0 Python 3.14.0
+check_decoupling rc=0 Python 3.14.0
+deferred_stats rc=0 Python 3.14.0
+entry_check rc=0 Python 3.14.0
+profile rc=0 Python 3.14.0
+recommend rc=0 Python 3.14.0
+characterize rc=0 Python 3.14.0
+diagnose_model rc=0 Python 3.14.0
+calibration_check rc=0 Python 3.14.0
+check_diagnostics rc=0 Python 3.14.0
+compare_experiments rc=0 Python 3.14.0
+geographic_build rc=0 Python 3.14.0
+classification_build rc=0 Python 3.14.0
+ste_lint rc=0 interpreter not logged
+ste_lint interpreter: Python 3.15.0
+preflight rc=0 Python 3.14.0
+isolated_with_header rc=0 Python 3.14.0
+control_without_header rc=1 CPython 3.10.19
+uv: uv 0.13.1 (Homebrew 2026-10-14 aarch64-apple-darwin)
+```
 
 ### For the completion protocol
 
