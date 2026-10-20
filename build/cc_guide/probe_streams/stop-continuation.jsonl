@@ -1,0 +1,10 @@
+{"type": "system", "subtype": "init", "tools": ["Task", "Artifact", "ArtifactComments", "ArtifactData", "Bash", "CronCreate", "CronDelete", "CronList", "DesignSync", "Edit", "EnterWorktree", "ExitWorktree", "ListAgents", "Monitor", "NotebookEdit", "PushNotification", "Read", "RemoteTrigger", "ReportFindings", "ScheduleWakeup", "SendMessage", "Skill", "TaskStop", "ToolSearch", "WebFetch", "WebSearch", "Workflow", "Write"], "model": "claude-sonnet-5-5", "claude_code_version": "2.1.304"}
+{"type": "assistant", "parent_tool_use_id": null, "message": {"content": [{"type": "text", "text": "<text>"}], "model": "claude-sonnet-5-5"}}
+{"type": "system", "subtype": "hook_response", "hook_event": "Stop", "hook_name": "Stop", "exit_code": 2, "outcome": "error"}
+{"type": "user", "parent_tool_use_id": null, "message": {"content": [{"type": "text", "text": "<text>"}]}}
+{"type": "assistant", "parent_tool_use_id": null, "message": {"content": [{"type": "text", "text": "<text>"}], "model": "claude-sonnet-5-5"}}
+{"type": "system", "subtype": "hook_response", "hook_event": "Stop", "hook_name": "Stop", "exit_code": 2, "outcome": "error"}
+{"type": "user", "parent_tool_use_id": null, "message": {"content": [{"type": "text", "text": "<text>"}]}}
+{"type": "assistant", "parent_tool_use_id": null, "message": {"content": [{"type": "text", "text": "<text>"}], "model": "claude-sonnet-5-5"}}
+{"type": "system", "subtype": "hook_response", "hook_event": "Stop", "hook_name": "Stop", "exit_code": 0, "outcome": "success"}
+{"type": "result", "subtype": "success", "is_error": false, "num_turns": 3}
