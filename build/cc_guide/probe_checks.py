@@ -211,12 +211,23 @@ def tool_result_text(events: list[dict], tool_use_id: str) -> str | None:
     return None
 
 
+def tool_result_errors(events: list[dict], tool_use_ids: list[str]) -> list[bool]:
+    '''Whether each result of the given tool calls is flagged is_error.'''
+    return [bool(block.get('is_error')) for e in events if e.get('type') == 'user'
+            for block in (e.get('message') or {}).get('content') or []
+            if isinstance(block, dict) and block.get('type') == 'tool_result'
+            and block.get('tool_use_id') in tool_use_ids]
+
+
 def assess_guard_liveness(streams: list[list[dict] | None]) -> Verdict:
     '''guard-liveness: hooks/probe-readonly-guard.sh's three checks, read from
     the three streams it keeps. The read-only command must pass, and git
     fetch and git config --global must come back denied with the guard's
-    marker. A check whose agent never ran its command is ERROR: the hook had
-    nothing to judge.'''
+    marker on every attempt: a denied command that the agent then retries
+    successfully was not denied. A check whose agent never ran its command is
+    ERROR: the hook had nothing to judge. So is a read-only command whose
+    result is an error without the marker: it failed for another reason, so
+    the missing marker does not show that the guard let it through.'''
     if len(streams) != len(GUARD_CHECKS):
         return Verdict(ERROR, f'expected {len(GUARD_CHECKS)} streams, found {len(streams)}')
     failed = []
@@ -224,11 +235,17 @@ def assess_guard_liveness(streams: list[list[dict] | None]) -> Verdict:
         why = broken(events)
         if why:
             return Verdict(ERROR, f'check {n}: {why}')
-        results = [tool_result_text(events, tid) for tid, cmd in bash_calls(events) if command in cmd]
+        calls = [tid for tid, cmd in bash_calls(events) if command in cmd]
+        results = [tool_result_text(events, tid) for tid in calls]
         if not results or None in results:
             return Verdict(ERROR, f'check {n}: the agent never ran {command}, or its result is missing')
-        if any(GUARD_MARKER in r for r in results) != denied:
-            failed.append(f"{command} {'was not denied' if denied else 'was denied'}")
+        marked = [GUARD_MARKER in r for r in results]
+        if denied and not all(marked):
+            failed.append(f'{command} was not denied')
+        elif not denied and any(marked):
+            failed.append(f'{command} was denied')
+        elif not denied and any(tool_result_errors(events, calls)):
+            return Verdict(ERROR, f'check {n}: {command} failed without the guard marker')
     if failed:
         return Verdict(DIVERGES, '; '.join(failed))
     return Verdict(PASS, 'git status passed; git fetch and git config --global were denied')

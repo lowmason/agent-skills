@@ -149,13 +149,21 @@ def test_agent_model_pins_needs_a_forwarded_message_for_each_agent():
 DENIAL = 'PreToolUse:Bash hook error: readonly-agent-guard: the Explore agent is read-only on this checkout'
 
 
-def guard_run(command, output, model='claude-haiku-5-5'):
+def guard_run(command, output, model='claude-haiku-5-5', failed=False):
     return [init(('Read', 'Bash'), model), assistant(tool_use('toolu_g', 'Bash', command=command)),
-            tool_result('toolu_g', output, is_error=pc.GUARD_MARKER in output), result()]
+            tool_result('toolu_g', output, is_error=failed or pc.GUARD_MARKER in output), result()]
 
 
 def guard_streams(first='(Bash completed with no output)', second=DENIAL, third=DENIAL):
     return [guard_run(cmd, out) for (cmd, _), out in zip(pc.GUARD_CHECKS, (first, second, third))]
+
+
+def retried_fetch():
+    '''The agent runs git fetch twice: the guard denies the first, and the second runs.'''
+    command = 'git fetch --dry-run origin'
+    return [init(('Read', 'Bash')), assistant(tool_use('toolu_g1', 'Bash', command=command)),
+            tool_result('toolu_g1', DENIAL, is_error=True), assistant(tool_use('toolu_g2', 'Bash', command=command)),
+            tool_result('toolu_g2', 'Would fetch from origin'), result()]
 
 
 @pytest.mark.parametrize('streams, verdict', [
@@ -167,6 +175,12 @@ def guard_streams(first='(Bash completed with no output)', second=DENIAL, third=
     ([*guard_streams()[:2], None], (ERROR, 'check 3: no stream-json events')),
     ([*guard_streams()[:2], [init(), assistant({'type': 'text', 'text': 'I will not run that.'}), result()]],
      (ERROR, 'check 3: the agent never ran git config --global --list, or its result is missing')),
+    # A control that fails with no guard marker proves nothing about the guard: ERROR, never a pass.
+    ([guard_run('git status --porcelain', 'Permission denied', failed=True), *guard_streams()[1:]],
+     (ERROR, 'check 1: git status --porcelain failed without the guard marker')),
+    # A denied fetch that the agent then retries successfully was not denied.
+    ([guard_streams()[0], retried_fetch(), guard_streams()[2]],
+     (DIVERGES, 'git fetch --dry-run origin was not denied')),
 ])
 def test_guard_liveness(streams, verdict):
     assert pc.assess_guard_liveness(streams) == verdict
