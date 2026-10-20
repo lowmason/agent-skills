@@ -252,6 +252,16 @@ type = 'fact'
 rule = 'Descriptions stay within the listing cap; the repo enforces the stricter 1,024-character Agent Skills cap.'
 enforced_by = 'check_frontmatter'
 
+# Portability R1.7, mapped here by conformance spec R6 (P3). An advisory: the
+# lint prints one WARN line and the exit code does not change.
+[[check]]
+id = 'skill-body-size'
+kind = 'skill'
+sections = ['skills.overview']
+type = 'advice'
+rule = 'A SKILL.md body stays under 500 lines; check_frontmatter.py warns past that and does not fail.'
+enforced_by = 'check_frontmatter'
+
 # Compaction re-attaches only the first 5,000 tokens of an invoked skill, so
 # the body should fit and its critical sections should open it. The token
 # estimate is characters / chars_per_token, a rough gauge; headings is the

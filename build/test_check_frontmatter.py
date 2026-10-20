@@ -1,5 +1,6 @@
 import re
 import subprocess
+import sys
 from pathlib import Path
 
 import yaml
@@ -10,6 +11,7 @@ from check_frontmatter import (
     check_readonly_roster,
     check_skill,
     load_readonly_roster,
+    skill_body_warning,
     READONLY_HEADING,
     REPO,
 )
@@ -250,6 +252,34 @@ def test_an_unparseable_codex_policy_is_reported(tmp_path):
     d = _skill_with_dmi(tmp_path, 'broken-policy', 'true', 'policy: [unclosed\n')
     errs = check_skill(d)
     assert len(errs) == 1 and 'agents/openai.yaml: does not parse as YAML' in errs[0], errs
+
+
+def _skill_with_body_lines(tmp_path: Path, name: str, extra: int) -> Path:
+    '''make_skill's body is two lines (a blank line and "# Body"); add extra lines.'''
+    d = make_skill(tmp_path, name, f'name: {name}\ndescription: Use when testing.')
+    (d / 'SKILL.md').write_text((d / 'SKILL.md').read_text() + 'line\n' * extra)
+    return d
+
+
+def test_a_body_over_500_lines_warns_without_an_error(tmp_path):
+    # Portability R1.7: an advisory, so check_skill (the errors) stays clean.
+    at_limit = _skill_with_body_lines(tmp_path, 'at-limit', 498)
+    over = _skill_with_body_lines(tmp_path, 'over-limit', 499)
+    assert skill_body_warning(at_limit) is None
+    assert skill_body_warning(over) == (
+        f"WARN {over / 'SKILL.md'}: body is 501 lines; the guide keeps a SKILL.md body under 500")
+    assert check_skill(over) == []
+
+
+def test_the_body_warning_goes_to_stderr_and_keeps_exit_zero():
+    # writing-skills is the one body over 500 lines (portability baseline);
+    # revisit this test when it is split, a portability deferred item.
+    result = subprocess.run([sys.executable, str(REPO / 'build' / 'check_frontmatter.py')],
+                            capture_output=True, text=True)
+    assert result.returncode == 0, result.stdout
+    assert 'WARN' not in result.stdout
+    assert any(line.startswith('WARN ') and 'skills/writing-skills/SKILL.md: body is' in line
+               for line in result.stderr.splitlines()), result.stderr
 
 
 def make_agent(tmp_path: Path, name: str, description: str) -> Path:

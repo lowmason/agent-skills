@@ -17,6 +17,8 @@ Per <skill>/SKILL.md:
   (not portable across providers);
 - every relative markdown-link target and every backticked references/ or
   scripts/ path exists.
+A body (the lines after the closing frontmatter ---) over 500 lines prints one
+WARN line to stderr; the exit code does not change.
 
 Run: uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
 Exit 0 if clean; exit 1 with one line per violation.
@@ -44,6 +46,10 @@ HOST_KEYS = frozenset({'when_to_use', 'model', 'effort', 'context',
                        'disable-model-invocation', 'agent'})
 # The spec caps compatibility at 500 characters.
 COMPATIBILITY_CAP = 500
+# The guide's skills.overview keeps a SKILL.md body under 500 lines; past it,
+# the lint warns and does not fail (portability R1.7).
+BODY_LINE_ADVISORY = 500
+FRONTMATTER_RE = re.compile(r'^---\n(.*?)\n---\n', re.S)
 DMI_KEY = 'disable-model-invocation'
 # Codex reads a skill's invocation policy from this file
 # (developers.openai.com/codex/skills).
@@ -229,6 +235,20 @@ def check_skill(skill_dir: Path) -> list[str]:
     return errs
 
 
+def skill_body_warning(skill_dir: Path) -> str | None:
+    '''One WARN line for a SKILL.md body over BODY_LINE_ADVISORY lines, counted
+    as wc -l counts the lines after the closing frontmatter ---.'''
+    sk = skill_dir / 'SKILL.md'
+    text = sk.read_text()
+    m = FRONTMATTER_RE.match(text)
+    if not m:
+        return None  # check_skill reports the missing block
+    lines = text[m.end():].count('\n')
+    if lines <= BODY_LINE_ADVISORY:
+        return None
+    return f'WARN {sk}: body is {lines} lines; the guide keeps a SKILL.md body under {BODY_LINE_ADVISORY}'
+
+
 def _parse_frontmatter(md: Path) -> tuple[dict | None, list[str]]:
     text = md.read_text()
     m = re.match(r'^---\n(.*?)\n---\n', text, re.S)
@@ -340,6 +360,9 @@ def main() -> int:
     for d in sorted((REPO / 'skills').iterdir()):
         if d.is_dir() and (d / 'SKILL.md').exists():
             errs += check_skill(d)
+            warning = skill_body_warning(d)
+            if warning:
+                print(warning, file=sys.stderr)
     for md in sorted((REPO / 'agents').glob('*.md')):
         errs += check_agent_file(md)
     for md in sorted((REPO / 'commands').glob('*.md')):
