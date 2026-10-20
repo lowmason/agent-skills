@@ -646,6 +646,22 @@ Seasonal-adjustment issue at reweight:
 - Without adjustment, a change across the reweight quarter would combine economic cost change with a weight-change effect.
 - BLS applied an aggregation weight adjustment factor to December 2013 indirect seasonally adjusted indexes and subsequent quarters to remove the weight-change effect.
 
+#### 14.3.1 Current weight base: 2021 weights and 2018 SOC (BLS notice)
+
+Status: dated note. The BLS notice (page last modified June 15, 2023) was read 2026-10-19. It is the latest reweight record in this file, so check the current Handbook for any later reweight.
+
+Key facts:
+
+- With the January 2023 release of December 2022 data, the ECI introduced 2021 fixed employment weights. They replaced the 2012 OEWS weights used between December 2013 and September 2022.
+- The primary source of the 2021 weights is OEWS employment counts, benchmarked to QCEW employment totals by industry.
+- The same release moved the ECI from the 2010 SOC (used from 2013 through 2022) to the 2018 SOC. OEWS had fully transitioned to SOC 2018 with its 2021 data release in March 2022, which let the National Compensation Survey (NCS) begin using SOC 2018 in its products.
+- Series were tested for continuity across the SOC change. A series passed if at least 90 percent of its SOC 2010 employment also appeared in SOC 2018. A series that failed that test had to pass all three further comparisons of the old and new definitions (compensation level, change since the last reweight, and 12-month change).
+- Six occupation-group series failed: total compensation and wages and salaries for transportation and material moving workers (civilian and private industry), and for office and administrative support workers (private industry). The notice lists several variants of each, including current-dollar and constant-dollar IDs and, for the private-industry series, seasonally adjusted IDs.
+- For those six, the existing series IDs now carry SOC 2018 data for all history and for future releases. The estimates under SOC 2010 sit in separate archive series IDs with `2D` in the occupation field, for example `CIU1010000520000I` (SOC 2018) and `CIU101000052D000I` (SOC 2010 archive). The archive IDs include estimates through September 2022 and are not updated after that.
+- Series not listed as discontinuous keep their IDs.
+
+Agent rule: for those six occupation groups, do not join the archive ID and the live ID into one series across the 2022 change. The notice treats them as discontinuous.
+
 ### 14.4 2022 MLR: Linked ECI
 
 Status: BLS evaluation/potential replacement methodology as of the 2022 article. Do not assume adoption without checking current BLS methodology and releases.
@@ -762,5 +778,6 @@ Supplementary BLS articles and papers:
 - John W. Ruser, "The Employment Cost Index: what is it?" Monthly Labor Review, September 2001. https://www.bls.gov/opub/mlr/2001/09/art1full.pdf
 - Joana Allamani, Kirubel Aysheshim, Leland Righter, and Christopher J. Guciardo, "The Linked Employment Cost Index: a first look and estimation methodology," Monthly Labor Review, December 2022. https://www.bls.gov/opub/mlr/2022/article/the-linked-employment-cost-index.htm
 - E. Raphael Branch and David Zook, "Introducing 2012 fixed employment weights for the Employment Cost Index," Monthly Labor Review, August 2016. https://www.bls.gov/opub/mlr/2016/article/introducing-2012-fixed-employment-weights-for-the-employment-cost-index.htm
+- BLS, "Introducing 2021 fixed employment weights and 2018 SOC codes for the Employment Cost Index," notice, last modified June 15, 2023 (read 2026-10-19). https://www.bls.gov/eci/notices/2022/eci-2021-fixed-weights-and-2018-soc-update.htm
 - Gwyn R. Ferguson, Chester Ponikowski, and Joan Coleman, "Evaluating Sample Design Issues in the National Compensation Survey," BLS research paper, October 2010. https://www.bls.gov/osmr/research-papers/2010/pdf/st100220.pdf
 - Michael K. Lettau, "Seasonality in the Employment Cost Index," Monthly Labor Review, February 2024. https://www.bls.gov/opub/mlr/2024/article/seasonality-in-the-employment-cost-index.htm

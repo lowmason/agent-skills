@@ -40,7 +40,7 @@ anatomy, flat-file schema, and lookup codes — or ingest.md when building a pip
 | **QCEW** | Covered jobs, establishments, wages, avg weekly wage | Establishment · **place of work**, UI/UCFE near-census (~95–97%) | Monthly emp + quarterly wages | Nation→county, MSA, PR/VI | [references/qcew.md](references/qcew.md) |
 | **CES-N** | Nonfarm payroll jobs, hours, earnings | Establishment **sample** (QCEW/LDB frame) | Monthly | National | [references/ces.md](references/ces.md) |
 | **CES-SA / SAE** | State & metro payroll jobs, hours, earnings | Establishment sample + small-area model | Monthly | 50 states, DC, PR, VI, NYC, ~430 MSAs | [references/sae.md](references/sae.md) |
-| **JOLTS** | Job openings (stock), hires, separations (quits / layoffs / other) | Establishment sample (~21k, QCEW+FRA frame) | Monthly | Nation, region, **state = model-based** | [references/jolts.md](references/jolts.md) |
+| **JOLTS** | Job openings (stock), hires, separations (quits / layoffs / other) | Establishment sample (~21k, QCEW+FRA frame) | Monthly | Nation, region, **state = model-based, published annually** | [references/jolts.md](references/jolts.md) |
 | **BED / BDM** | Gross job gains/losses, openings/closings, births/deaths | QCEW-derived administrative · establishment | Quarterly | Nation, state | [references/bed.md](references/bed.md) |
 | **OEWS** | Occupational employment & wages by SOC | Establishment survey | Annual (May vintage) | Nation×industry; **state = cross-industry only** | [references/oews.md](references/oews.md) |
 | **ECI** | *Change* in employer labor cost (fixed-weight index) | NCS establishment · index, Dec 2005=100 | Quarterly | Nation, region/division, 15 MSAs | [references/eci.md](references/eci.md) |
@@ -103,7 +103,7 @@ clairvoyance in a backtest. Per-program revision behavior (load the reference fo
 | JOLTS | Prior month revised each release; **annual benchmark to CES** (SA & NSA ~5 yr). |
 | BED | Annual revision with Q1 data; death series lag ~3 quarters by construction. |
 | OEWS | Annual; each May release is a vintage. |
-| ECI | NSA final on publication; SA revised 5 yr; fixed weights reweighted ~every 10 yr. |
+| ECI | NSA final on publication; SA revised 5 yr; fixed weights reweighted ~every 10 yr (2021 weights since December 2022 data). |
 | ECEC | Cost levels final on publication; constant-dollar CPE revised annually. |
 | CPS | Annual January population-control updates shift *levels*; SA reestimated 5 yr. |
 
@@ -112,6 +112,19 @@ today's revised history. Pin inputs by release date / vintage, not "latest." The
 themselves are **overwritten in place** at each release (`Last-Modified` re-stamps at the embargo
 minute), so a vintage not captured at release time is permanently unobservable — archive snapshots;
 see [references/ingest.md](references/ingest.md).
+
+**The October 1–November 12, 2025 lapse in appropriations (dated note; BLS pages read 2026-10-19).**
+CPS collected nothing for October 2025, then or later: no October estimates, no public-use
+microdata, no reliable Q4 2025 estimates, and the 2025 CPS annual average (`M13`) is an 11-month
+average, not strictly comparable with other years. BLS issued no October Employment Situation, so
+October CES and SAE data came out with November's, and September JOLTS came out with October's;
+LAUS lost its October CPS input. A backtest that rebuilds the release calendar must model these
+merged releases, and the shifted dates the same page lists for a 2026 lapse (e.g. the January 2026
+Employment Situation on February 11, 2026). Sources:
+<https://www.bls.gov/cps/methods/2025-federal-government-shutdown-impact-cps.htm> and
+<https://www.bls.gov/bls/2025-lapse-revised-release-dates.htm>; detail in
+[cps.md](references/cps.md), [ces.md](references/ces.md), [sae.md](references/sae.md), and
+[jolts.md](references/jolts.md) §12.
 
 **Units & rounding traps.** CES and JOLTS **levels are in thousands**; QCEW is in **persons/jobs**
 (counts). A reconciliation off by almost exactly 1000× is a units bug, not a data problem. Rates
@@ -137,7 +150,9 @@ subsections of qcew.md, sae.md, and oews.md, and county compositions per bulleti
 `geographic-codes` skill.
 
 **Flat-file conventions (LABSTAT).** Files live at `download.bls.gov/pub/time.series/<prefix>/`
-(`en`/downloadable for QCEW, `ce`, `jt`, `bd`, `oe`, …). Data files are `series_id | year | period
+(`ce`, `jt`, `bd`, `oe`, …). **QCEW is the exception:** its `en/` directory returned 404 on
+2026-10-19, so take QCEW from the downloadable files and Open Data Access CSVs
+([references/qcew.md](references/qcew.md), "Downloadable files"). Data files are `series_id | year | period
 | value | footnote_codes`; a `<prefix>.series` file holds metadata; mapping files decode each
 dimension. Headers **and** cell values are space-padded — strip whitespace from both before
 joining, or a padded `series_id` matches nothing and the join empties silently. **Period codes vary by program *and* by datatype within a program** — check the

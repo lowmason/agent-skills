@@ -4505,7 +4505,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       Python 3.9 (the hooks suite also runs under `/usr/bin/python3`) and skipping when
       `jq` is absent. Restamp ruff-check.sh's cc-guide citation line. Size: plan. Done when:
       (a)–(c) land, with the new tests passing on both interpreters.
-- [ ] Add the Oct 1–Nov 12, 2025 lapse in appropriations to bls-data-context (audit-3-10-26 F1,
+- [x] Add the Oct 1–Nov 12, 2025 lapse in appropriations to bls-data-context (audit-3-10-26 F1,
       found 2026-10-03). Re-verified 2026-10-18: no commit has touched the skill since the audit,
       and a grep for lapse, appropriation, "October 2025" or "11-month" over it finds nothing
       relevant. The audit read two BLS pages
@@ -4524,7 +4524,9 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       the User-Agent, granted per session. Reference text, so no micro-test. One session can
       take this with F2, F6 and F7 (same skill). Size: quick-fix. Done when: the four
       references and the hub carry the dated note, citing both pages.
-- [ ] State JOLTS is now published once a year, but bls-data-context still describes monthly state
+      → done 2026-10-19 (/deferred quick fix): dated note in cps.md (three places), ces.md,
+      sae.md, jolts.md §12 and the hub, citing both BLS pages (re-read 2026-10-19).
+- [x] State JOLTS is now published once a year, but bls-data-context still describes monthly state
       releases (audit-3-10-26 F2, found 2026-10-03; re-verified 2026-10-18).
       `skills/bls-data-context/references/jolts.md:817` says state estimates come out "within
       about 2 weeks of national estimates", `:821` says the annual state estimates are
@@ -4536,7 +4538,9 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       ("updated annually in June"), and add "state published annually" to the hub row.
       Size: quick-fix. Done when: jolts.md and the hub row describe the annual state release
       and cite the notice.
-- [ ] Correct bls-data-context's QCEW pointers and API limits (audit-3-10-26 F6, found 2026-10-03;
+      → done 2026-10-19 (/deferred quick fix): jolts.md and the hub's JOLTS row describe the
+      annual state release and cite the notice.
+- [x] Correct bls-data-context's QCEW pointers and API limits (audit-3-10-26 F6, found 2026-10-03;
       re-verified 2026-10-18, all five parts open). (a) The hub
       (`skills/bls-data-context/SKILL.md:139-140`) still routes QCEW to
       `download.bls.gov/pub/time.series/<prefix>/` (`en`), which
@@ -4554,7 +4558,10 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       Look at the page in a browser before editing `:505` or citing it as the primary ENU
       source. Size: quick-fix.
       Done when: parts (a)–(d) are edited and part (e) is settled by a firsthand reading.
-- [ ] Record ECI's December 2022 move to 2021 fixed weights and SOC 2018 (audit-3-10-26 F7, found
+      → done 2026-10-19 (/deferred quick fix): parts (a) to (d) edited. Part (e) settled by a
+      browser reading on 2026-10-19: hlpforma.htm#EN documents the ENU format (sample
+      ENU04013105111150), so qcew.md now cites it and drops the "no longer documents" claim.
+- [x] Record ECI's December 2022 move to 2021 fixed weights and SOC 2018 (audit-3-10-26 F7, found
       2026-10-03; re-verified 2026-10-18). `skills/bls-data-context/references/eci.md` §14.3
       (`:623-647`) covers only the 2012 weights and the 2002→2010 SOC change; nothing records
       that the SOC 2010 series froze at September 2022
@@ -4564,6 +4571,10 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       employment weights (`:513-515`), so only the SOC half could apply there; check it.
       Size: quick-fix. Done when: eci.md names the 2021 weight base, the SOC 2018 switch and
       the frozen SOC 2010 series, with the notice cited.
+      → done 2026-10-19 (/deferred quick fix): eci.md §14.3.1 names the 2021 weight base, the
+      SOC 2018 switch and the SOC 2010 series archived through September 2022, citing the
+      notice. The hub's ECI row carries the date. ecec.md is unchanged, since the notice covers
+      ECI only.
 - [ ] Decide whether classification-codes bundles Census industry (IND) codes (audit-3-10-26 F5
       and its Decision 10, found 2026-10-03; re-verified 2026-10-18: `data/` holds
       `census_occ_*` files only, and no spec scopes IND out). CPS has used the 2022 Census
@@ -4577,7 +4588,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       description needs writing-skills' micro-test. Out-of-scope path, a quick fix: one body
       sentence at the boundary section (`SKILL.md:228-234`) pointing at the Census page.
       Size: design. Done when: the owner picks a path and it lands.
-- [ ] Add NAICS 2027's effective date to classification-codes (audit-3-10-26 F12, found 2026-10-03;
+- [x] Add NAICS 2027's effective date to classification-codes (audit-3-10-26 F12, found 2026-10-03;
       re-verified 2026-10-18). NAICS 2027 takes effect for reference periods from 2027-01-01
       (Federal Register document 2026-14086, 91 FR 42976, already cited at
       `skills/classification-codes/references/revision-process.md:228-229`). `SKILL.md:146`
@@ -4585,6 +4596,9 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       of 2026-09") give no date and do not say that the 2027 structure and concordance are not
       bundled. Size: quick-fix. Done when: the three places carry the date and the
       not-bundled note.
+      → done 2026-10-19 (/deferred quick fix): the three places give the proposed effective date
+      (periods beginning on or after 2027-01-01, 91 FR 42976) and say the 2027 structure and
+      concordance are not bundled.
 - [ ] Watch for the NAICS 2027 and SOC 2028 publications that would require a classification-codes
       rebuild (audit-3-10-26 F12, routed "watch" and never filed; found 2026-10-03). The data
       bundles NAICS 2022 and SOC 2018 only. Triggers: OMB's final NAICS 2027 notice; the Census

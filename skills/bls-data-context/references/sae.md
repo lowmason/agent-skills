@@ -601,6 +601,8 @@ Agent guidance:
 - Store release date, reference month, preliminary/final status, seasonal-adjustment status, and benchmark vintage.
 - Monitor BLS errata and special notices for corrections.
 
+Lapse in appropriations, October 1 to November 12, 2025 (dated note; BLS release-dates page, https://www.bls.gov/bls/2025-lapse-revised-release-dates.htm, read 2026-10-19). BLS issued neither the October 2025 State Employment and Unemployment news release nor the October 2025 Metropolitan Area Employment and Unemployment news release. The CES State and Area data for October 2025 were published with the November 2025 data: the November state release came on January 7, 2026 (originally December 19) and the November metropolitan release on January 16, 2026 (originally December 31). The September 2025 state release moved from October 21 to December 11, 2025, and the metropolitan release from October 29 to December 17, 2025. LAUS shares these releases (this file also covers LAUS). The page says the Current Population Survey data, the primary input to the LAUS models, were not collected for October 2025 and will not be collected retroactively, and that extra processing time was needed for the November data. It does not say whether LAUS published October 2025 estimates, so check the LAUS database before assuming either way. The same page lists a 2026 lapse that moved the December 2025 metropolitan release from February 4 to February 6, 2026. A backtest that rebuilds the release calendar must model the merged and shifted releases.
+
 ## 19. Current benchmark-specific notes: 2025 benchmark / January 2026 release
 
 The `BLS-SAE-BENCHMARK-2025` article is the benchmark-specific source for the latest details as of this file's review date.

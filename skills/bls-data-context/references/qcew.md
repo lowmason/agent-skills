@@ -476,7 +476,7 @@ Agent guidance:
 
 ### LABSTAT time-series datatype codes (`en.type`)
 
-The QCEW LABSTAT time-series directory `download.bls.gov/pub/time.series/en/` ships no loose mapping files, so there is no `en.datatype` path to fetch: its archived directory listing of 2019-11-15 (https://web.archive.org/web/20191115095820/https://download.bls.gov/pub/time.series/en/) shows only three archives — `en_data.zip`, `en_series.zip`, and `en_meta.zip`. The dimension lookups live inside `en_meta.zip`, which carries `en.area`, `en.footnote`, `en.industry`, `en.owner`, `en.size`, `en.state`, and `en.type`. Note the name: QCEW's datatype lookup is **`en.type`**, keyed on **`type_code`** — not `datatype_code` (the spelling OEWS uses) and not `data_type_code` (CES's). It is tab-separated with the columns `type_code`, `type_title`, `display_level`, `selectable`, `sort_sequence`, and defines five measures:
+The QCEW LABSTAT time-series directory `download.bls.gov/pub/time.series/en/` shipped no loose mapping files, so there was no `en.datatype` path to fetch: its archived directory listing of 2019-11-15 (https://web.archive.org/web/20191115095820/https://download.bls.gov/pub/time.series/en/) showed only three archives — `en_data.zip`, `en_series.zip`, and `en_meta.zip`. (The directory itself now 404s; see below.) The dimension lookups lived inside `en_meta.zip`, which carried `en.area`, `en.footnote`, `en.industry`, `en.owner`, `en.size`, `en.state`, and `en.type`. Note the name: QCEW's datatype lookup is **`en.type`**, keyed on **`type_code`** — not `datatype_code` (the spelling OEWS uses) and not `data_type_code` (CES's). It is tab-separated with the columns `type_code`, `type_title`, `display_level`, `selectable`, `sort_sequence`, and defines five measures:
 
 | type_code | type_title                 |
 | --------- | -------------------------- |
@@ -500,13 +500,17 @@ no counterpart in a series ID, so never build an ENU series ID with datatype `0`
 two tables as one code system where LABSTAT is merely a subset — they document different files
 that happen to agree on the five real measures.
 
-Two dead ends worth not re-walking (both checked 2026-09-03): `download.bls.gov/pub/time.series/en/`
-now 404s — there is no `en` directory in the time-series tree at all — and
-`bls.gov/help/hlpforma.htm` no longer documents the ENU series-ID format. Field positions come
-from the flat-file layout instead
-(`bls.gov/cew/about-data/downloadable-file-layouts/flat-text/naics-based-flat-file-layouts.htm`):
-prefix 1–3, `area_fips` 4–8, **datatype at position 9, one character**, size 10, ownership 11,
-industry 12+. So `ENUUS00050010` parses as `ENU|US000|5|0|0|10` — datatype `5`, not `05`.
+One dead end worth not re-walking (checked 2026-09-03): `download.bls.gov/pub/time.series/en/`
+now 404s — there is no `en` directory in the time-series tree at all. The ENU series-ID format
+itself is documented at `bls.gov/help/hlpforma.htm#EN` (read in a browser 2026-10-19; page last
+modified January 22, 2026; a 2026-09-03 note here wrongly said the page no longer covered it).
+Its sample `ENU04013105111150` reads: prefix `EN` 1–2, seasonal adjustment code 3, area code 4–8,
+**datatype at position 9, one character**, size 10, ownership 11, industry 12–17. Its code lists
+link to `bls.gov/cew/classifications/`. The flat-file layout
+(`bls.gov/cew/about-data/downloadable-file-layouts/flat-text/naics-based-flat-file-layouts.htm`)
+gives the same positions with `ENU` read as one prefix: prefix 1–3, `area_fips` 4–8, datatype 9,
+size 10, ownership 11, industry 12+. So `ENUUS00050010` parses as `ENU|US000|5|0|0|10` —
+datatype `5`, not `05`.
 
 `en.type` supplies labels only; it carries no period information, and `en_meta.zip` ships no `en.period` file. Which of these measures is monthly, quarterly, or annual comes from the series metadata (`en.series` begin/end periods), not from this file. Period-code rules per program are in the hub SKILL.md.
 

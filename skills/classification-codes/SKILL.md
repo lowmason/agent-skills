@@ -143,8 +143,10 @@ join through SOC — `census_occ_2010_to_soc_2010` → `soc_2010_to_2018` (route
   cross-country (US/Canada/Mexico) comparability holds only on rows flagged `trilateral`, which
   occur at levels 2–5 only (all 20 sectors; 466 of 689 five-digit industries in 2022) and never
   at six digits.
-- Vintages revise every 5 years: 1997, 2002, 2007, 2012, 2017, 2022, with 2027 in progress.
-  Datasets adopt a vintage years after it exists, program by program — which program is on which
+- Vintages revise every 5 years: 1997, 2002, 2007, 2012, 2017, 2022, with 2027 in progress
+  (proposed effective for establishment data for periods beginning on or after 2027-01-01, per
+  91 FR 42976; OMB's final decision is pending, and the 2027 structure and 2022-to-2027
+  concordance are not bundled). Datasets adopt a vintage years after it exists, program by program — which program is on which
   vintage for which reference period is a *program* fact: `bls-data-context`.
 - `999999` / "unclassified" appears in QCEW and admin data but is not part of the standard.
   PSP-style microdata carries NAICS assigned at client onboarding — codes go stale and vintages
@@ -220,7 +222,9 @@ same production process and be large enough to publish without disclosure at sub
 levels. SOC is task-based (work performed, not credentials); a new detailed occupation exists
 only if BLS or Census can collect data on it, and the residual "All Other" rule absorbs whatever
 the structure does not name. NAICS 2027 recommendations were published 2026-07-13 with OMB's
-final decisions pending; SOC 2028 is under review for use from reference year 2028, after which
+final decisions pending, and the proposed effective date is establishment data for periods
+beginning on or after 2027-01-01 (91 FR 42976); the 2027 structure and 2022-to-2027 concordance
+are not bundled. SOC 2028 is under review for use from reference year 2028, after which
 SOC revisions follow NAICS by one year on a ten-year cycle. Dates, citations, the ten SOC
 principles and six coding guidelines, and the per-vintage change-indicator legend:
 `references/revision-process.md`.

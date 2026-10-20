@@ -11,6 +11,8 @@ Primary BLS sources reviewed:
 - JOLTS Data Collection Forms page: https://www.bls.gov/jlt/jltcoll.htm
 - National JOLTS technical note PDF: https://www.bls.gov/news.release/pdf/jolts.pdf
 - State JOLTS technical note: https://www.bls.gov/news.release/jltst.tn.htm
+- Notice, Upcoming Change to the JOLTS State Estimates (state news release moves from monthly to annual; read 2026-10-19): https://www.bls.gov/jlt/notices/2025/jltst-upcoming-change.htm
+- Revised news release dates following the 2025 and 2026 lapses in appropriations (read 2026-10-19): https://www.bls.gov/bls/2025-lapse-revised-release-dates.htm
 - JOLTS public flat-file directory: https://download.bls.gov/pub/time.series/jt/
 
 Note on source conflicts and freshness: the current Handbook and technical notes describe a sample of about 21,000 establishments. The flat-file dictionary `jt.txt` still contains some legacy language referring to 16,000 establishments and ES-202. Use the Handbook and technical notes for current methodology. Use `jt.txt` for file layout and code schema. Also, the Handbook collection page says initial CATI collection occurs for about 5 months, while the data collection forms page says respondents are in CATI for the first 3 months before web collection. Treat collection-mode duration as an operational detail that can change; do not use it as a statistical assumption unless verified for the relevant period.
@@ -674,7 +676,7 @@ Limitations:
 
 - It is still model-based.
 - It reflects current economic trends at the CES industry by JOLTS region level, and state-specific current trends only to the extent sufficient JOLTS microdata exist.
-- Error measures are updated annually in June.
+- Error measures are updated annually (the state technical note names no month).
 
 ### 10.8 State variance estimates
 
@@ -814,11 +816,15 @@ JOLTS estimates are published monthly at 10:00 a.m. Eastern Time on preannounced
 Typical release timing:
 
 - National estimates are published in the first week of the month or the last week of the previous month.
-- State estimates are published within about 2 weeks of national estimates.
+- State estimates were published monthly, within about 2 weeks of national estimates, through the December 2025 reference month. The State JOLTS news release is now annual (see below).
 
 The national news release summarizes current preliminary data and revised previous-month data. It includes tables for total nonfarm, industry, region, and establishment size class depending on the table. State releases contain state-level total nonfarm estimates.
 
-Annual national estimates for hires, quits, layoffs and discharges, other separations, and total separations are released with the January news release, which is issued in March. Annual state estimates for hires, quits, layoffs and discharges, and total separations are released in June.
+Annual national estimates for hires, quits, layoffs and discharges, other separations, and total separations are released with the January news release, which is issued in March.
+
+The State JOLTS news release moved from monthly to annual (BLS notice, https://www.bls.gov/jlt/notices/2025/jltst-upcoming-change.htm, read 2026-10-19). The last monthly state release covered December 2025 data, published in February 2026. The notice says the first annual news release is in July 2026 and that each later annual release publishes the monthly estimates for the prior calendar year. The annual release incorporates benchmark revisions to the JOLTS national estimates, updated CES employment estimates, and updated QCEW data. This replaces the earlier statement that annual state estimates for hires, quits, layoffs and discharges, and total separations are released in June. The notice does not mention a separate June release, so check the BLS release calendar before assuming one.
+
+Lapse in appropriations, October 1 to November 12, 2025 (dated note; BLS release-dates page, https://www.bls.gov/bls/2025-lapse-revised-release-dates.htm, read 2026-10-19). BLS issued no September 2025 JOLTS news release. The September 2025 data were published with the October 2025 data, on December 9, 2025 (the October release was originally scheduled for December 2), so September and October 2025 share one first-print date. State JOLTS followed the same pattern: the August 2025 state release moved from October 22 to December 2, and September 2025 state data were published with the October 2025 state data, on December 30, 2025. The same page lists a 2026 lapse that moved the December 2025 national release from February 3 to February 5, 2026. A backtest that rebuilds the release calendar must model the merged releases and not assume one release per month.
 
 
 ## 13. Practical interpretation pitfalls for agents
