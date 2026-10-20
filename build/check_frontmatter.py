@@ -20,11 +20,17 @@ Per <skill>/SKILL.md:
 A body (the lines after the closing frontmatter ---) over 500 lines prints one
 WARN line to stderr; the exit code does not change.
 
-Run: uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
+--strict also fails a SKILL.md that carries a HOST_KEYS key or whose name
+contains claude or anthropic. It is not part of the commit gate: run it before
+a claude.ai upload or a spec-only validator run. Agents and commands are not
+Agent Skills, so it leaves them alone.
+
+Run: uv run --python 3.13 --with pyyaml python build/check_frontmatter.py [--strict]
 Exit 0 if clean; exit 1 with one line per violation.
 '''
 from __future__ import annotations
 
+import argparse
 import importlib.util
 import re
 import sys
@@ -51,6 +57,8 @@ COMPATIBILITY_CAP = 500
 BODY_LINE_ADVISORY = 500
 FRONTMATTER_RE = re.compile(r'^---\n(.*?)\n---\n', re.S)
 DMI_KEY = 'disable-model-invocation'
+# A skill name may not contain these words on claude.ai (portability R1.8).
+RESERVED_NAME_WORDS = ('claude', 'anthropic')
 # Codex reads a skill's invocation policy from this file
 # (developers.openai.com/codex/skills).
 CODEX_POLICY = Path('agents') / 'openai.yaml'
@@ -249,6 +257,21 @@ def skill_body_warning(skill_dir: Path) -> str | None:
     return f'WARN {sk}: body is {lines} lines; the guide keeps a SKILL.md body under {BODY_LINE_ADVISORY}'
 
 
+def strict_violations(skill_dir: Path) -> list[str]:
+    '''The --strict profile (portability R1.8): host keys and reserved name
+    words, which only a claude.ai upload or a spec-only validator rejects.'''
+    sk = skill_dir / 'SKILL.md'
+    fm, _ = _parse_frontmatter(sk)
+    if fm is None:
+        return []  # check_skill reports why
+    errs = [f'{sk}: {key!r} is a Claude Code extension, not an Agent Skills spec key (--strict)'
+            for key in sorted(set(fm) & HOST_KEYS)]
+    name = str(fm.get('name') or '').lower()
+    errs += [f'{sk}: name contains the reserved word {word!r} (--strict)'
+             for word in RESERVED_NAME_WORDS if word in name]
+    return errs
+
+
 def _parse_frontmatter(md: Path) -> tuple[dict | None, list[str]]:
     text = md.read_text()
     m = re.match(r'^---\n(.*?)\n---\n', text, re.S)
@@ -355,11 +378,18 @@ def check_readonly_roster(agents_dir: Path | None = None,
     return errs
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description='Lint skill, agent and command frontmatter.')
+    parser.add_argument('--strict', action='store_true',
+                        help='also fail host keys and the reserved words claude and anthropic in a '
+                             'SKILL.md; run before a claude.ai upload or a spec-only validator run')
+    args = parser.parse_args(argv)
     errs: list[str] = []
     for d in sorted((REPO / 'skills').iterdir()):
         if d.is_dir() and (d / 'SKILL.md').exists():
             errs += check_skill(d)
+            if args.strict:
+                errs += strict_violations(d)
             warning = skill_body_warning(d)
             if warning:
                 print(warning, file=sys.stderr)

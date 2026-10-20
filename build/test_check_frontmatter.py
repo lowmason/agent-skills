@@ -12,6 +12,7 @@ from check_frontmatter import (
     check_skill,
     load_readonly_roster,
     skill_body_warning,
+    strict_violations,
     READONLY_HEADING,
     REPO,
 )
@@ -280,6 +281,32 @@ def test_the_body_warning_goes_to_stderr_and_keeps_exit_zero():
     assert 'WARN' not in result.stdout
     assert any(line.startswith('WARN ') and 'skills/writing-skills/SKILL.md: body is' in line
                for line in result.stderr.splitlines()), result.stderr
+
+
+def test_strict_flags_host_keys_and_reserved_name_words(tmp_path):
+    # Portability R1.8: the keys pass the default gate and fail --strict.
+    hosted = make_skill(tmp_path, 'hosted',
+                        'name: hosted\ndescription: Use when testing.\neffort: xhigh\ncontext: fork')
+    assert check_skill(hosted) == []
+    note = 'is a Claude Code extension, not an Agent Skills spec key (--strict)'
+    assert strict_violations(hosted) == [f"{hosted / 'SKILL.md'}: 'context' {note}",
+                                         f"{hosted / 'SKILL.md'}: 'effort' {note}"]
+    named = make_skill(tmp_path, 'claude-helper', 'name: claude-helper\ndescription: Use when testing.')
+    assert strict_violations(named) == [
+        f"{named / 'SKILL.md'}: name contains the reserved word 'claude' (--strict)"]
+    plain = make_skill(tmp_path, 'plain', 'name: plain\ndescription: Use when testing.')
+    assert strict_violations(plain) == []
+
+
+def test_strict_is_off_by_default_and_on_with_the_flag():
+    # The default gate stays green; --strict adds only its own SKILL.md lines.
+    script = str(REPO / 'build' / 'check_frontmatter.py')
+    default = subprocess.run([sys.executable, script], capture_output=True, text=True)
+    strict = subprocess.run([sys.executable, script, '--strict'], capture_output=True, text=True)
+    assert default.returncode == 0, default.stdout
+    assert strict.returncode == 1, strict.stdout
+    lines = strict.stdout.splitlines()
+    assert lines and all(line.endswith('(--strict)') and '/SKILL.md: ' in line for line in lines), lines
 
 
 def make_agent(tmp_path: Path, name: str, description: str) -> Path:

@@ -79,7 +79,7 @@ uv run --python 3.13 python build/run_suites.py --check
 # (an owner step: git config core.hooksPath build/githooks writes repo config every worktree reads); the hook lints
 # the working tree, untracked drafts included except by the drift lint, which reads tracked files only.
 # .github/workflows/lints.yml runs them on PRs and main as an advisory check; the hook is the gate.
-# Frontmatter, provenance and guide-conformance lints (run before committing any Claude Code artifact)
+# Frontmatter, provenance and guide-conformance lints (run before committing any Claude Code artifact); add --strict to the first, a report and not a gate, when preparing a claude.ai upload or a spec-only validator run
 uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
 uv run --python 3.13 python build/check_provenance.py
 uv run --python 3.13 --with pyyaml python build/check_conformance.py
