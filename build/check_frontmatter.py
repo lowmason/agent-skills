@@ -11,6 +11,8 @@ Per <skill>/SKILL.md:
 - license is a non-empty string (repo policy, beyond the spec);
 - name and description contain no < or >; metadata maps strings to strings;
   compatibility is a string of 1-500 characters;
+- disable-model-invocation is a YAML boolean, and it is true exactly when the
+  skill's agents/openai.yaml sets Codex's policy.allow_implicit_invocation: false;
 - context is in CONTEXT_VALUES, and model is not haiku or a claude-haiku-* ID
   (not portable across providers);
 - every relative markdown-link target and every backticked references/ or
@@ -42,6 +44,10 @@ HOST_KEYS = frozenset({'when_to_use', 'model', 'effort', 'context',
                        'disable-model-invocation', 'agent'})
 # The spec caps compatibility at 500 characters.
 COMPATIBILITY_CAP = 500
+DMI_KEY = 'disable-model-invocation'
+# Codex reads a skill's invocation policy from this file
+# (developers.openai.com/codex/skills).
+CODEX_POLICY = Path('agents') / 'openai.yaml'
 ANGLE_BRACKET_RE = re.compile(r'[<>]')
 # `fork` is the only value Claude Code documents for `context` (run the skill in
 # an isolated subagent). Any other value is a typo that silently no-ops at
@@ -148,6 +154,34 @@ def _check_value_shapes(sk: Path, fm: dict) -> list[str]:
     return errs
 
 
+def _check_invocation_parity(skill_dir: Path, fm: dict) -> list[str]:
+    '''disable-model-invocation and Codex's policy.allow_implicit_invocation
+    agree (portability R1.6), so a manual-only skill cannot auto-fire in Codex.'''
+    sk = skill_dir / 'SKILL.md'
+    dmi = fm.get(DMI_KEY)
+    if DMI_KEY in fm and not isinstance(dmi, bool):
+        return [f'{sk}: {DMI_KEY} must be a YAML boolean, got {dmi!r}']
+    policy_file = skill_dir / CODEX_POLICY
+    if not policy_file.is_file():
+        if dmi is True:
+            return [f'{sk}: {DMI_KEY}: true needs {CODEX_POLICY} with '
+                    'policy.allow_implicit_invocation: false, so Codex keeps the skill manual-only too']
+        return []
+    try:
+        data = yaml.safe_load(policy_file.read_text())
+    except yaml.YAMLError as exc:
+        return [f'{policy_file}: does not parse as YAML ({type(exc).__name__})']
+    policy = data.get('policy') if isinstance(data, dict) else None
+    allow = policy.get('allow_implicit_invocation') if isinstance(policy, dict) else None
+    if dmi is True and allow is not False:
+        return [f'{policy_file}: must set policy.allow_implicit_invocation: false, '
+                f'because SKILL.md sets {DMI_KEY}: true']
+    if dmi is not True and allow is False:
+        return [f'{sk}: {CODEX_POLICY} sets policy.allow_implicit_invocation: false, '
+                f'so {DMI_KEY} must be true']
+    return []
+
+
 def check_skill(skill_dir: Path) -> list[str]:
     errs: list[str] = []
     sk = skill_dir / 'SKILL.md'
@@ -179,6 +213,7 @@ def check_skill(skill_dir: Path) -> list[str]:
     errs += _check_model_pin(sk, fm)
     errs += _check_license(sk, fm)
     errs += _check_value_shapes(sk, fm)
+    errs += _check_invocation_parity(skill_dir, fm)
     for key in fm:
         if key not in SPEC_KEYS | HOST_KEYS:
             errs.append(f'{sk}: unknown frontmatter key {key!r}')

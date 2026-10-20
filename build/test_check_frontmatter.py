@@ -201,6 +201,57 @@ def test_angle_brackets_in_a_description_are_rejected(tmp_path):
     assert check_skill(d) == [f"{d / 'SKILL.md'}: description contains < or >"]
 
 
+def _skill_with_dmi(tmp_path: Path, name: str, dmi: str, policy: str | None = None) -> Path:
+    '''A skill setting disable-model-invocation, optionally with Codex's policy file.'''
+    d = make_skill(tmp_path, name,
+                   f'name: {name}\ndescription: Use when testing.\ndisable-model-invocation: {dmi}')
+    if policy is not None:
+        (d / 'agents').mkdir()
+        (d / 'agents' / 'openai.yaml').write_text(policy)
+    return d
+
+
+FORBID_IMPLICIT = 'policy:\n  allow_implicit_invocation: false\n'
+
+
+def test_disable_model_invocation_must_be_a_yaml_boolean(tmp_path):
+    # Portability R1.6: a quoted 'true' is a string, which disables nothing.
+    d = _skill_with_dmi(tmp_path, 'quoted-dmi', "'true'")
+    assert check_skill(d) == [f"{d / 'SKILL.md'}: disable-model-invocation must be a YAML boolean, got 'true'"]
+
+
+def test_a_manual_only_skill_needs_the_codex_policy_file(tmp_path):
+    d = _skill_with_dmi(tmp_path, 'manual-skill', 'true')
+    assert check_skill(d) == [
+        f"{d / 'SKILL.md'}: disable-model-invocation: true needs agents/openai.yaml with "
+        'policy.allow_implicit_invocation: false, so Codex keeps the skill manual-only too']
+
+
+def test_a_manual_only_skill_with_the_codex_policy_passes(tmp_path):
+    assert check_skill(_skill_with_dmi(tmp_path, 'paired-skill', 'true', FORBID_IMPLICIT)) == []
+
+
+def test_the_codex_policy_must_forbid_implicit_invocation(tmp_path):
+    d = _skill_with_dmi(tmp_path, 'loose-skill', 'true', 'policy:\n  allow_implicit_invocation: true\n')
+    assert check_skill(d) == [
+        f"{d / 'agents' / 'openai.yaml'}: must set policy.allow_implicit_invocation: false, "
+        'because SKILL.md sets disable-model-invocation: true']
+
+
+def test_a_codex_manual_only_skill_needs_disable_model_invocation(tmp_path):
+    # The converse: manual-only in Codex but still auto-invoked by Claude Code.
+    d = _skill_with_dmi(tmp_path, 'codex-only', 'false', FORBID_IMPLICIT)
+    assert check_skill(d) == [
+        f"{d / 'SKILL.md'}: agents/openai.yaml sets policy.allow_implicit_invocation: false, "
+        'so disable-model-invocation must be true']
+
+
+def test_an_unparseable_codex_policy_is_reported(tmp_path):
+    d = _skill_with_dmi(tmp_path, 'broken-policy', 'true', 'policy: [unclosed\n')
+    errs = check_skill(d)
+    assert len(errs) == 1 and 'agents/openai.yaml: does not parse as YAML' in errs[0], errs
+
+
 def make_agent(tmp_path: Path, name: str, description: str) -> Path:
     md = tmp_path / f'{name}.md'
     md.write_text(
