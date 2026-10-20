@@ -112,5 +112,25 @@ reason = 'A launch post: a historical figure, and its HTML churns between fetche
 page = 'changelog'
 reason = 'Parsed release by release (R6.6), never hashed as blocks.'
 
-# The probe registry (R10.1) stays empty until Stage 5 registers its probes
-# as [[probe]] entries with an id, the sections they back, and optional files.
+# The probe registry (R10.1): each probe's id, the guide sections it backs, and
+# the files that rest on what it observes. A DIVERGES row sends both to
+# /cc-guide verify and files (R10.5). build/cc_guide/probes.py runs each one.
+
+[[probe]]
+id = 'guard-liveness'
+# The sections hooks/readonly-agent-guard.py cites (owner, plan 58 decision D1, 2026-10-20).
+sections = ['hooks.events', 'hooks.exit-codes', 'hooks.patterns']
+files = ['hooks/readonly-agent-guard.py', 'hooks/README.md']
+
+[[probe]]
+id = 'agent-tools'
+sections = ['subagents.tools']
+
+[[probe]]
+id = 'stop-continuation'
+sections = ['hooks.exit-codes', 'hooks.patterns']
+
+[[probe]]
+id = 'agent-model-pins'
+sections = ['subagents.frontmatter', 'subagents.models']
+files = ['agents/explore.md', 'agents/test-runner.md', 'agents/code-reviewer.md']
