@@ -8,6 +8,7 @@ import os
 import signal
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 from datetime import date, datetime, timezone
@@ -545,15 +546,30 @@ def test_a_setup_failure_is_an_error_never_a_pass(tmp_path, monkeypatch):
         ERROR, 'OSError: disk full')
 
 
-def test_save_fixtures_scrubs_a_recorded_run_and_the_replay_reads_it_like_the_run(tmp_path, isolated_home):
+def test_save_fixtures_scrubs_a_recorded_run_and_the_replay_reads_it_like_the_run(tmp_path, isolated_home,
+                                                                                   monkeypatch):
+    # The trim drops an init event's cwd and memory_paths, so those prove nothing. The private strings go where the
+    # trim keeps them, a Bash command, and each must come out as <private> on its own: a path that another entry
+    # covers by its prefix, as the temporary directory covers a home inside it, must not hide an uncovered one.
+    monkeypatch.setattr('getpass.getuser', lambda: 'zzlogin')
+    planted = [str(Path.home()), str(Path.home().resolve()), tempfile.gettempdir(),
+               os.path.realpath(tempfile.gettempdir()), 'zzlogin']
+    ran = {'type': 'assistant', 'parent_tool_use_id': None, 'message': {'model': 'm', 'content': [
+        {'type': 'tool_use', 'id': 't1', 'name': 'Bash', 'input': {'command': 'ls ' + ' '.join(planted)}}]}}
     run_dir, dest = tmp_path / 'run', tmp_path / 'fixtures'
-    with_bash = stream({**init(), 'cwd': str(isolated_home / 'work'), 'memory_paths': [str(isolated_home)]}, RESULT)
+    with_bash = stream({**init(), 'cwd': str(isolated_home / 'work'), 'memory_paths': [str(isolated_home)]}, ran,
+                       RESULT)
     write_tree(run_dir, {'probe-with-bash.jsonl': with_bash,
                          'probe-without-bash.jsonl': TOOLS_PASS['probe-without-bash']})
     probe = probes.PROBE_RUNS['agent-tools']
     written = probes.save_fixtures(run_dir, 'agent-tools', dest)
     assert sorted(p.name for p in written) == ['agent-tools.with-bash.jsonl', 'agent-tools.without-bash.jsonl']
-    assert str(isolated_home) not in (dest / 'agent-tools.with-bash.jsonl').read_text()
+    scrubbed = (dest / 'agent-tools.with-bash.jsonl').read_text()
+    assert str(isolated_home) not in scrubbed
+    for value in planted:
+        assert value not in scrubbed
+    assert '<private>' in scrubbed
+    assert f'"command": "ls {" ".join(["<private>"] * len(planted))}"' in scrubbed
     assert probe.assess(probes.reader(dest, probe.fixtures)) == probe.assess(probes.reader(run_dir))
     write_tree(run_dir, {'probe-with-bash.jsonl': 'not a stream\n{"broken": \n'})
     with pytest.raises(state.SetupError):
