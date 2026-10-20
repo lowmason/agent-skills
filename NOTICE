@@ -4,6 +4,13 @@ NOTICE
 This repository bundles agent skills from more than one source; skills live
 under skills/, one directory per skill. Attribution and licensing, by skill:
 
+Each skill directory carries copies of the license texts that apply to it:
+LICENSE in every skill, and each root LICENSE-* file whose source the skill
+adapts. A single-skill install (install.py --copy --skill, or a third-party
+installer) therefore keeps the notice the MIT license requires. The root files
+are canonical, and build/check_provenance.py checks that every copy is
+byte-identical to its root file.
+
 Files under runtimes/ are mechanically generated format adapters for the
 canonical agents/*.md and commands/*.md sources. They reproduce the source
 instruction bodies without changing their provenance or license; each adapter
@@ -78,9 +85,9 @@ and the bibliography are in the skill's references/sources.md.
 write-with-asd-ste100/ and rules/write-with-asd-ste100.md adapt two MIT
 licensed skills. Both full upstream notices, with the pinned commits, are in
 LICENSE-write-with-asd-ste100-sources, and a copy travels with the skill as
-write-with-asd-ste100/LICENSE. Both were retrieved on 2026-10-18. Both
-repositories are active, so the pins are the starting point for a later drift
-review.
+write-with-asd-ste100/LICENSE-write-with-asd-ste100-sources. Both were
+retrieved on 2026-10-18. Both repositories are active, so the pins are the
+starting point for a later drift review.
 
   - danyuchn/asd-ste100-skill (MIT, Copyright (c) 2026 Dustin Yuchen Teng;
     commit 3944283c183eea13fe5bd902b572da3b4de8bf44, 2026-10-14). Adapted:

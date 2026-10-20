@@ -28,5 +28,5 @@ Pinned source records and verified primary literature are in
 [sources.md](references/sources.md). The method guidance and memo template are
 newly written; no upstream estimators, book/paper copies or automated causal
 grading are included. Retained upstream MIT notices are bundled in
-[LICENSE](LICENSE); repository-level attribution is also recorded in `NOTICE`
-and `LICENSE-causal-design-sources`.
+[LICENSE-causal-design-sources](LICENSE-causal-design-sources), a copy of the
+repository's file of that name; repository-level attribution is in `NOTICE`.

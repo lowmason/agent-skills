@@ -312,7 +312,9 @@ enforced_by = 'check_conformance'
 # Tier three loads a bundled file only when the body points at it. A file is
 # named when another text file in its skill, tests aside, gives its file name
 # or its directory with a trailing slash. exempt files need no naming; tests
-# neither need it nor count as naming anything.
+# neither need it nor count as naming anything. The license copies each skill
+# carries (portability R4) are exempt because nothing names them: they travel
+# with a single-skill install and are never loaded.
 [[check]]
 id = 'orphan-bundled-file'
 kind = 'skill-bundle'
@@ -320,7 +322,7 @@ sections = ['skills.progressive-disclosure']
 type = 'advice'
 rule = 'A bundled file under a skill directory is named by a file in that skill.'
 enforced_by = 'check_conformance'
-exempt = ['SKILL.md', 'README.md', 'INSTALL.md']
+exempt = ['SKILL.md', 'README.md', 'INSTALL.md', 'LICENSE*']
 tests = ['test_*', '*_test.py', 'conftest.py', 'tests/*']
 
 # On a name collision the skill wins, so the command file would never run.

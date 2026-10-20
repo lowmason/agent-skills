@@ -36,7 +36,7 @@ Two invariants from that adaptation that must not silently regress:
 - **Cross-skill references use bare skill names** (`use the writing-plans skill`), never the upstream `superpowers:` plugin namespace.
 - `recommend-probabilistic-model` **cites** Murphy's PML books (CC-BY-NC-ND) and pyprobml/dynamax (MIT) but **redistributes no book prose and bundles no PDFs**. Keep summaries in original wording with §-number citations only.
 
-The user is meticulous about attribution and licensing — surface provenance/license implications proactively rather than assuming.
+The user is meticulous about attribution and licensing — surface provenance/license implications proactively rather than assuming. Each skill directory carries byte-identical copies of the root license files that apply to it (`LICENSE` in every skill, the rest per `BUNDLED_LICENSES` in `build/check_provenance.py`, which enforces the copies), so edit a root license file and its copies together.
 
 ## Editing skills and other Claude Code artifacts
 
