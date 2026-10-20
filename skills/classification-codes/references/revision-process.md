@@ -135,12 +135,15 @@ adoption date per program is a program fact and lives in `bls-data-context`.
 | 2012 | 2009-01-07, 74 FR 764 | 2010-05-12, 75 FR 26856 | 2011-08-17, 76 FR 51240 |
 | 2017 | 2014-05-22, 79 FR 29626 | 2015-08-04, 80 FR 46480 | 2016-08-08, 81 FR 52584 |
 | 2022 | 2020-02-26, 85 FR 11120 | 2021-07-02, 86 FR 35350 | 2021-12-21, 86 FR 72277 |
-| 2027 | 2024-12-20, 89 FR 104229 (comments to 2025-02-18) | 2026-07-13, 91 FR 42976 | **pending** as of 2026-09 |
+| 2027 | 2024-12-20, 89 FR 104229 (comments to 2025-02-18) | 2026-07-13, 91 FR 42976 (proposed effective for establishment data for periods beginning on or after 2027-01-01) | **pending** as of 2026-09 |
 
 Rule of thumb from the table: solicitation about three years before the vintage year,
 recommendations one to two years before, final decisions roughly a year before. The final notice
 is where the code list becomes authoritative; the Census structure and concordance workbooks
 follow it.
+
+The NAICS 2027 structure and the 2022-to-2027 concordance are not bundled: `data/` stops at
+NAICS 2022, so a 2027 code-to-title or concordance question cannot be answered from it.
 
 **SOC** was first issued in 1977 and revised in 1980, 2000, 2010, and 2018 (the 2000 SOC's
 final-decision notice, 64 FR 53136 of 1999-09-30, calls it the "1998 SOC"). From 2028 on OMB has

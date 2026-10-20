@@ -109,9 +109,12 @@ def _rate_convergence(conv: dict) -> tuple[str, list[str]]:
 
     Consumes the unified schema emitted by ``diagnose_model.check_convergence``
     — both the ``arviz_stats.diagnose`` and manual fallback paths share it, so
-    real parameter names flow through (no opaque placeholder).
+    real parameter names flow through (no opaque placeholder). An absent or empty
+    section never ran, so it rates "not computed", not "excellent".
     """
-    if not conv or conv.get("all_ok"):
+    if not conv:
+        return "not computed", []
+    if conv.get("all_ok"):
         return "excellent", []
 
     issues: list[str] = []
@@ -342,7 +345,9 @@ def _build_summary(report: dict) -> dict:
         r = report["convergence"]
         named, flags = _split_flags(r["problematic_params"])
         unchecked = r.get("unchecked", [])
-        if r["rating"] == "excellent":
+        if r["rating"] == "not computed":
+            s["convergence"] = "Convergence diagnostics: not computed."
+        elif r["rating"] == "excellent":
             passed = "R-hat ≤ 1.01, ESS adequate" + ("" if "divergences" in unchecked else ", no divergences")
             if unchecked:
                 s["convergence"] = (
@@ -562,6 +567,12 @@ def suggest_next_steps(report: dict) -> list[str]:
                 "az.plot_energy(idata), then work the escalation ladder in "
                 "references/diagnostics.md, starting from its Failure signatures table."
             )
+    elif conv.get("rating") == "not computed":
+        steps.append(
+            "Convergence was not checked — diagnostics.json has no convergence section, so "
+            "R-hat, ESS and the sampler checks never ran. Re-run diagnose_model.py, which "
+            "writes it, before interpreting the posterior."
+        )
 
     # ── Monte Carlo precision ─────────────────────────────────────────
     prec = report.get("precision", {})

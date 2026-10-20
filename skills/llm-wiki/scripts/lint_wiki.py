@@ -1,4 +1,7 @@
-'''Mechanical linter for the research-wiki (spec §10). Stdlib only; no yaml.'''
+'''Mechanical linter for the research-wiki (spec §10). Stdlib only; no yaml.
+
+Exit status: 0 clean, 1 on any ERROR (or a WARN under --strict), 2 on a usage
+error such as a root with no wiki/ directory.'''
 import argparse
 import os
 import re
@@ -417,6 +420,8 @@ def main(argv=None):
                   help='wiki root (default $LLM_WIKI_ROOT or ~/research-wiki)')
   args = ap.parse_args(argv)
   root = Path(args.root) if args.root else default_root()
+  if not (root / 'wiki').is_dir():
+    ap.error(f'{root} is not a wiki root: it has no wiki/ directory')
   findings = run_checks(root)
   errors = sum(1 for f in findings if f[0] == 'ERROR')
   warnings = sum(1 for f in findings if f[0] == 'WARN')

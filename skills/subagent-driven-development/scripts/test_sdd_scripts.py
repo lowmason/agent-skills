@@ -52,6 +52,10 @@ A heading deeper than the task's own is content, not a boundary.
 
 - [ ] **Step 1: other**
 
+### Notes
+
+A same-level heading that is not a Task still ends Task 2's brief.
+
 ## Verification
 
 This trailing section must not leak into Task 2's brief.
@@ -308,6 +312,19 @@ def test_task_brief_excludes_trailing_plan_sections(repo):
     assert '### Task 2: Second thing' in body
     assert 'Step 1: other' in body
     assert 'must not leak' not in body
+
+
+def test_task_brief_ends_at_a_same_level_heading_that_is_not_a_task(repo):
+    """'### Notes' sits at Task 2's own level but is not a Task heading. Only the
+    `<=` in task-brief's heading-level test ends the section there: with `<` the
+    heading and its text leak into the brief, and nothing else in this suite
+    notices, because '## Verification' is shallower and ends it either way."""
+    out = repo / 'brief.md'
+    run(TASK_BRIEF, repo / 'plan.md', 2, out, cwd=repo)
+    body = out.read_text()
+    assert 'Step 1: other' in body
+    assert '### Notes' not in body
+    assert 'still ends Task 2' not in body
 
 
 def test_task_brief_exits_3_on_a_missing_task(repo):

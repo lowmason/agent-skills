@@ -1,8 +1,15 @@
 """Tests for the Gate A citation verifier. The true-negative test is the important one:
-a verifier that passes everything is worse than none."""
+a verifier that passes everything is worse than none.
+
+The tests that read the gitignored build/.scratch/ ground truth skip, with a reason, when it
+is absent (a fresh clone or worktree). The verifier itself does not skip: its CLI exits 2
+without the ground truth, and test_missing_scratch_exits_2_with_actionable_message pins that."""
+import pytest
+
 from verify_citations import fallback_sections, verify_text
 
 
+@pytest.mark.usefixtures("ground_truth")
 def test_true_negative_flags_bad_refs():
     bad = "Use PML1 §99.9 and notebooks/book1/does_not_exist_xyz.ipynb."
     failures = verify_text(bad)
@@ -19,6 +26,7 @@ def test_empty_text_has_no_failures():
     assert verify_text("no citations here") == []
 
 
+@pytest.mark.usefixtures("ground_truth")
 def test_chapter_fallback_passes_gate_a_but_is_flagged():
     # chapter 11 exists in Book 1; §11.99.99 does not — Gate A passes on the chapter (documented
     # leniency), but fallback_sections surfaces it as a Gate-B worklist item.
@@ -27,6 +35,7 @@ def test_chapter_fallback_passes_gate_a_but_is_flagged():
     assert "PML1 §11.99.99" in fallback_sections(text)
 
 
+@pytest.mark.usefixtures("ground_truth")
 def test_known_good_fallback_is_not_flagged():
     # PML2 §2.2.1.4 resolves only via chapter-fallback (the sections index truncates at three
     # nesting levels) but was Gate-B verified 2026-07-20, so it is recorded as a known-good

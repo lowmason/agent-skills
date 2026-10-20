@@ -29,8 +29,13 @@ def overdispersion(s: pl.Series):
 
 
 def zero_fraction(s: pl.Series) -> float:
-    """Fraction of exact zeros — high values point to zero-inflated / hurdle models."""
+    """Fraction of exact zeros — high values point to zero-inflated / hurdle models.
+
+    A Boolean series counts its False values (Boolean has no eq operator, so it is cast first).
+    """
     s = s.drop_nulls()
+    if s.dtype == pl.Boolean:
+        s = s.cast(pl.Int8)
     return 0.0 if s.len() == 0 else round(float((s == 0).sum() / s.len()), 4)
 
 
@@ -95,19 +100,23 @@ def _read(path: str) -> pl.DataFrame:
     return pl.read_parquet(path)
 
 
-def main():
+def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("data", help="path to a csv/tsv/parquet dataset")
     ap.add_argument("--target", help="target/outcome column")
     ap.add_argument("--predictors", help="comma-separated predictor columns (default: all but target)")
     ap.add_argument("--time", help="treat numeric predictors as time series for a stationarity hint")
     ap.add_argument("--json", help="write JSON here instead of stdout")
-    a = ap.parse_args()
+    a = ap.parse_args(argv)
 
     df = _read(a.data)
     preds = a.predictors.split(",") if a.predictors else [c for c in df.columns if c != a.target]
+    for flag, names in (("--target", [a.target]), ("--predictors", preds), ("--time", [a.time])):
+        unknown = [c for c in names if c is not None and c not in df.columns]
+        if unknown:
+            ap.error(f"{flag}: no such column {', '.join(map(repr, unknown))}; columns are {df.columns}")
     out = {"n_rows": df.height, "n_predictors": len(preds), "n_over_p": n_over_p(df.height, len(preds))}
-    if a.target and a.target in df.columns:
+    if a.target:
         t = df[a.target]
         out["target"] = {
             "name": a.target,
@@ -115,7 +124,7 @@ def main():
             "zero_fraction": zero_fraction(t),
             "class_balance": class_balance(t),
         }
-    if a.time and a.time in df.columns:
+    if a.time:
         out["stationarity"] = stationarity_report(df, a.time, preds)
     js = json.dumps(out, indent=2)
     if a.json:

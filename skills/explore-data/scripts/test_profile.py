@@ -144,3 +144,33 @@ def test_scan_rejects_an_unsupported_extension(tmp_path):
     bad.write_bytes(b"not really a workbook")
     with pytest.raises(ValueError, match="Unsupported extension"):
         scan(str(bad))
+
+
+def test_scan_reads_a_csv_glob_as_csv(tmp_path):
+    """A glob used to go to scan_parquet before its suffix was tested, so a two-file CSV glob
+    failed with polars' "parquet: File out of specification"."""
+    (tmp_path / "a.csv").write_text("id,v\n1,10\n2,20\n")
+    (tmp_path / "b.csv").write_text("id,v\n3,30\n")
+    df = scan(str(tmp_path / "*.csv")).collect()
+    assert df.height == 3
+    assert df.columns == ["id", "v"]
+
+
+def test_scan_reads_an_ndjson_glob_as_ndjson(tmp_path):
+    (tmp_path / "a.ndjson").write_text('{"id": 1}\n{"id": 2}\n')
+    (tmp_path / "b.ndjson").write_text('{"id": 3}\n')
+    assert scan(str(tmp_path / "*.ndjson")).collect().height == 3
+
+
+def test_scan_still_reads_a_suffixless_glob_as_partitioned_parquet(tmp_path):
+    """Only a glob with no recognised suffix falls back to parquet, for partitioned data."""
+    for i in (0, 1):
+        pl.DataFrame({"id": [i]}).write_parquet(tmp_path / f"part-{i}")
+    assert scan(str(tmp_path / "part-*")).collect().height == 2
+
+
+def test_cli_profiles_a_csv_glob(tmp_path):
+    (tmp_path / "a.csv").write_text("id,v\n1,10\n2,20\n")
+    (tmp_path / "b.csv").write_text("id,v\n3,30\n")
+    summary = _run_json(tmp_path / "*.csv", tmp_path)
+    assert summary["n_rows"] == 3

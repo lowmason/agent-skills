@@ -79,7 +79,9 @@ back from `rg` to `grep -r` so they run anywhere.
 | Scratch notebooks | `scratchpad.ipynb`, `sandbox.ipynb`, `Untitled*.ipynb` beside `src/` | Hidden logic that can't be rerun or tested |
 | Hardcoded paths | `/Users/`, `/home/`, `read_parquet("/...")` | Breaks on every other machine; blocks reproduction |
 | Wall-clock leakage | `datetime.now()`, `date.today()`, `pl.*.now()` inside a pipeline | Same code → different output by day; kills as-of/vintage correctness |
-| Missing/weak seeds | `seed=42`, `PRNGKey(42)`, `np.random.seed(` | Non-reproducible inference (see `bayesian-workflow` for the seed convention) |
+| Missing/weak seeds | `seed=42`, `PRNGKey(42)`, `jax.random.key(42)`, `torch.manual_seed(42)`, `np.random.seed(` | Non-reproducible inference (see `bayesian-workflow` for the seed convention) |
+| Committed model artifacts | tracked `*.ckpt`, `*.pt`, `*.pth`, `*.safetensors`, `*.pkl`, `*.joblib` | Opaque binaries the code can't regenerate, heavy in history; pickle-based ones can also run code on load |
+| Migration debt | `import pandas`, `import pymc` (and `from … import`) | The stack is Polars / NumPyro, so each one is code still waiting to move, or a deliberate bridge to a library that needs it |
 | Type-silenced regions | `type: ignore`, `# noqa`, sprawling `Optional`/`Any` | A suppressed checker is a deferred decision, not a fixed one |
 | Untested complexity | source modules with no `test_*` counterpart | The load-bearing parts have no safety net |
 | Placeholder docs | empty `README.md`, `description = 'Add your description here'` | Onboarding tax; a sign the repo was never "finished" |

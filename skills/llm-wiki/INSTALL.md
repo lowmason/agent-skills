@@ -135,8 +135,18 @@ python3 "$LLM_WIKI_ROOT/scripts/distill_sessions.py" --source claude-code \
   ~/.claude/projects "$LLM_WIKI_ROOT/raw/sessions"
 ```
 
+It also reads a claude.ai data export. Use `--source claude-ai` and give the
+export's `conversations.json` as the source:
+
+```bash
+python3 "$LLM_WIKI_ROOT/scripts/distill_sessions.py" --source claude-ai \
+  ~/Downloads/conversations.json "$LLM_WIKI_ROOT/raw/sessions"
+```
+
 Redaction is always on and nothing leaves the machine, but on a work machine
 this reads **work** session transcripts and writes a second at-rest copy of
-that material outside `~/.claude`. Confirm that fits your employer's policy
-before running it. `--help` documents the optional `--project` and `--since`
-filters for scoping which sessions are distilled.
+that material outside `~/.claude`. A claude.ai export from a work account
+carries the same risk: the digests copy those conversations into the wiki.
+Confirm that fits your employer's policy before running either command.
+`--help` documents the optional `--since` filter and the `--project` filter.
+Both scope which sessions are distilled, and `--project` applies to claude-code only.

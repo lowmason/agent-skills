@@ -170,3 +170,33 @@ def test_cli_always_exits_zero(tmp_path):
     assert proc.returncode == 0
     assert 'kalman_ll' in proc.stdout
     assert 'ADVISORY' in proc.stdout
+
+
+def run_cli(*args):
+    return subprocess.run(
+        [sys.executable, str(Path(__file__).parent / 'check_decoupling.py'), *args],
+        capture_output=True, text=True,
+    )
+
+
+def test_cli_without_arguments_is_a_usage_error():
+    '''It used to print usage and exit 0, which a caller reads as "no findings".'''
+    proc = run_cli()
+    assert proc.returncode == 2
+    assert 'usage' in proc.stderr.lower()
+    assert 'ADVISORY' not in proc.stdout
+
+
+def test_cli_missing_file_is_a_clean_error_not_a_traceback(tmp_path):
+    missing = tmp_path / 'no-such-methodology.md'
+    proc = run_cli(str(missing))
+    assert proc.returncode == 2
+    assert str(missing) in proc.stderr
+    assert 'Traceback' not in proc.stderr
+
+
+def test_cli_help_prints_help_instead_of_reading_it_as_a_path():
+    proc = run_cli('--help')
+    assert proc.returncode == 0
+    assert 'usage' in proc.stdout.lower()
+    assert 'Traceback' not in proc.stderr

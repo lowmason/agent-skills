@@ -34,7 +34,8 @@ Every rule has one of three dispositions:
   `references/`.
 - **DEFER TO RUFF** — mechanically enforced. Do not spend review effort on these; if you
   fix one by hand, cite both codes.
-- **DROP** — Java-centric or irrelevant to a functional Polars/JAX stack.
+- **DROP** — Java-centric or irrelevant to this stack (functional Polars/JAX code, plus
+  framework-defined neural modules).
 
 **Scope of application:** for code you were asked to change, apply directly. For code you
 were *not* asked to change, the clean-coder skill's Confirmation Gate governs — read it
@@ -57,7 +58,7 @@ before touching anything adjacent.
 
 | Code | Rule (one line) |
 |---|---|
-| F2 | No output arguments — return values (free in functional JAX; keep it so) |
+| F2 | No output arguments — return values in functional JAX/NumPyro and Polars code (free there; keep it so). Carve-out: Flax NNX modules and optimizers update in place by design; Equinox stays functional |
 | G6 | Code at the right level of abstraction for its module |
 | G30 | Functions do one thing — **cohesion, never a line count**; no extraction purely to shorten |
 | G34 | Descend one level of abstraction per function |
@@ -131,7 +132,10 @@ number is still `(G25)` even though ruff flags it as `PLR2004`.
 - **E1–E2** — build/test-in-one-step is real but belongs to repo tooling (`uv`, `pytest`,
   CI), not a per-edit catalog.
 - **G1, G7, G18** — multiple languages per file, base-class-knows-derivative,
-  inappropriate static: rare-to-irrelevant in a functional Polars/JAX stack.
+  inappropriate static: rare-to-irrelevant in functional Polars/JAX code. Flax NNX and
+  Equinox modules are classes, but typically direct subclasses of the framework's base
+  (`nnx.Module`, `eqx.Module`) with no in-repo hierarchy, so the hierarchy concerns behind
+  G7 and G18 stay rare and both stay dropped.
 - **N6** — encodings/Hungarian: dead in typed Python; live slice is ruff `pep8-naming`.
 - **T2, T9** — coverage tooling and test speed: intent kept (see `references/tests.md`),
   mechanics belong to `pytest-cov` and duration budgets.

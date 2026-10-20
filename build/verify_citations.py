@@ -72,10 +72,10 @@ def verify_text(text: str) -> list[str]:
     for book, ref in CITE_RE.findall(text):
         if _section_status(_sections(book), ref) == "fail":
             failures.append(f"unresolved section: PML{book} §{ref}")
-    nbs = _notebooks()
-    for nb in NB_RE.findall(text):
-        if nb not in nbs:
-            failures.append(f"unresolved notebook: {nb}")
+    notebook_refs = NB_RE.findall(text)
+    if notebook_refs:  # load the notebook index only when a ref needs it
+        nbs = _notebooks()
+        failures += [f"unresolved notebook: {nb}" for nb in notebook_refs if nb not in nbs]
     return failures
 
 

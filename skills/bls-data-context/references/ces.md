@@ -396,6 +396,8 @@ For modeling and backtesting:
 - For current-month explanatory agents, always label whether values are first preliminary, second preliminary, final sample-based, or benchmark-revised.
 - Watch for unusual data-availability notes, such as missing collection-rate or real-earnings values during special events.
 
+Lapse in appropriations, October 1 to November 12, 2025 (dated note; BLS pages read October 19, 2026). BLS issued no October 2025 Employment Situation news release. The October 2025 CES data were published with the November 2025 data, in the release of December 16, 2025 (originally scheduled for December 5), so October and November 2025 share one first-print date. The September 2025 release moved from October 3 to November 20, 2025. For both the establishment and household surveys the November collection period was extended. December 2025 data came out on schedule, on January 9, 2026. The page also lists a 2026 lapse that moved the January 2026 release from February 6 to February 11, 2026, the benchmark release date given elsewhere in this file. A backtest that rebuilds the release calendar must model these merged and shifted releases and not assume one release per month. Sources: https://www.bls.gov/bls/2025-lapse-revised-release-dates.htm (release dates and the October note) and https://www.bls.gov/cps/methods/2025-federal-government-shutdown-impact-cps.htm (the September delay, the missing October release and the December schedule, as the Employment Situation covers both surveys).
+
 ## Reliability and error measures
 
 CES error has both sampling and nonsampling components.

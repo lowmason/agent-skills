@@ -9,7 +9,8 @@ description: >
   runs, ranking variants by ELPD/LOO, recording what changed between model versions,
   deciding which variant to ship, or knowing when to stop iterating. Sits above a
   per-variant analysis folder and complements bayesian-workflow's model comparison.
-  Not for tuning continuous ML hyperparameters (that is tune-hyperparameters).
+  Not for tuning continuous ML hyperparameters (that is tune-hyperparameters). Not for
+  neural runs or checkpoints (that is evaluate-deep-learning).
 license: MIT
 metadata:
   author: Lowell Mason
@@ -133,13 +134,20 @@ the ledger is the only durable record of what changed and why.
 
 Stop iterating — don't keep chasing ELPD — when either holds:
 
-- **ΔELPD < 2×dSE** between the top variants — statistically
-  indistinguishable; ship the simpler one.
+- **|ΔELPD| < 4** between the top variants — a small difference (`diag_diff`
+  flags it); ship the simpler one. Above 4, weigh ΔELPD against dSE only with
+  more than 100 observations and no badly misspecified variant.
 - **Conclusions are stable across every variant that passes its diagnostics**
-  — the multiverse view (Gelman et al. 2020, §8): once the story doesn't
-  change across passing models, which one is "best" matters less.
+  — the multiverse view (Gelman et al. 2026, §9.3 and §9.5): once the story
+  doesn't change across passing models, which one is "best" matters less.
 
-For the interpretation thresholds themselves (the 2×/4×dSE bands, when to
+A long ledger flatters its winner: picking the best of many variants by ELPD
+carries a selection-induced bias (McLatchie & Vehtari 2024). With a few
+variants it is usually negligible; with many, estimate it (nested CV, or
+their order-statistics correction) before claiming the winner beats a close
+runner-up.
+
+For the interpretation rule itself (|ΔELPD| < 4, the conditions on dSE, when to
 prefer stacking over selection), see
 `bayesian-workflow/references/model-comparison.md` — this skill points at
 that doctrine rather than restating it.

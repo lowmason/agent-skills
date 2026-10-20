@@ -18,12 +18,14 @@ capitalized distribution notation (N(0,1), LogNormal(0,1)) is exempt by
 design; URLs in citations may flag as paths — they are review input too.
 
 ADVISORY ONLY: output is review input, never a fix-until-clean gate.
-The CLI always exits 0.
+Findings never change the exit code: the CLI exits 0 once it has read the file,
+and 2 on a usage error or a file it cannot read.
 
 Run: python3 check_decoupling.py <methodology.md>
 '''
 from __future__ import annotations
 
+import argparse
 import re
 import sys
 from dataclasses import dataclass
@@ -160,19 +162,24 @@ def harvest(
     return findings
 
 
-def main(argv: list[str]) -> int:
-    if len(argv) != 2:
-        print('usage: check_decoupling.py <methodology.md>')
-        return 0
-    text = Path(argv[1]).read_text()
+def main(argv: list[str] | None = None) -> int:
+    ap = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    ap.add_argument('path', help='methodology markdown file')
+    args = ap.parse_args(argv)
+    try:
+        text = Path(args.path).read_text()
+    except (OSError, ValueError) as e:
+        ap.error(f'cannot read {args.path}: {getattr(e, "strerror", None) or e}')
     whitelist = notation_whitelist(text)
     findings = harvest(text, whitelist)
     for f in findings:
-        print(f'{argv[1]}:{f.line}: [{f.category}] {f.token}')
+        print(f'{args.path}:{f.line}: [{f.category}] {f.token}')
     suspicious = suspicious_notation(whitelist)
     for sym in suspicious:
         print(
-            f'{argv[1]}: [notation-table] {sym} — defined as a symbol '
+            f'{args.path}: [notation-table] {sym} — defined as a symbol '
             'but shaped like a code identifier'
         )
     print(
@@ -184,4 +191,4 @@ def main(argv: list[str]) -> int:
 
 
 if __name__ == '__main__':
-    sys.exit(main(sys.argv))
+    sys.exit(main())

@@ -197,17 +197,18 @@ def test_late_heading_in_acknowledged_file_is_refused(clone):
 
 
 def test_unregistered_suite_is_refused(clone):
-    '''The ninth lint keeps build/suites.toml complete: a first test file in
-    tech-debt's scripts directory needs a [[suite]] entry before it can be committed.'''
-    test = clone / 'skills' / 'tech-debt' / 'scripts' / 'test_scan.py'
+    '''The ninth lint keeps build/suites.toml complete: a first test file in a
+    directory that no suite contains needs a [[suite]] entry before it can be committed.'''
+    test = clone / 'tools' / 'scan' / 'test_scan.py'
+    test.parent.mkdir(parents=True)
     test.write_text('def test_scan():\n    assert True\n')
-    git(clone, 'add', 'skills/tech-debt/scripts/test_scan.py')
+    git(clone, 'add', 'tools/scan/test_scan.py')
     before = head(clone)
     result = commit(clone, '-m', 'unregistered suite')
     assert result.returncode != 0, result.stderr
     assert head(clone) == before
     assert failed_names(result) == {'suite_registry'}, result.stderr
-    assert ('skills/tech-debt/scripts: holds pytest files, but no suite in build/suites.toml '
+    assert ('tools/scan: holds pytest files, but no suite in build/suites.toml '
             'contains it') in result.stderr, result.stderr
 
 

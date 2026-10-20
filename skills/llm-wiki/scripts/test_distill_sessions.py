@@ -1337,3 +1337,87 @@ def test_write_digest_renders_the_compaction_marker(tmp_path):
   assert '**[02] user:** ordinary turn' in text
   assert text.count('[compaction summary]') == 1
   assert 'project:' not in text
+
+
+# --- Two session ids that share their first 8 characters ---------------------
+
+def _titled_session(sid, title, n_turns):
+  '''A session whose first user turn is `title`, so the title sets the slug.'''
+  return {
+    'session_id': sid, 'source': 'claude-code', 'project': None,
+    'turns': [{'n': i, 'role': 'user' if i % 2 else 'assistant',
+               'text': title if i == 1 else f'turn {i}', 'tools': '',
+               'compaction': False, 'ts': '2026-05-14T10:00:00Z'}
+              for i in range(1, n_turns + 1)],
+  }
+
+
+def _digest_sessions(out):
+  '''The session id each digest in `out` records in its frontmatter.'''
+  return sorted(line.split(': ', 1)[1]
+                for p in out.glob('*.md')
+                for line in p.read_text(encoding='utf-8').splitlines()
+                if line.startswith('session: '))
+
+
+def test_session_sharing_sess8_with_a_shorter_slug_is_not_skipped(tmp_path):
+  '''The filename carries only the first 8 characters of the id, and the
+  idempotence check used to match on that suffix alone, so a second session
+  with the same sess8 (and no more turns) was taken for the first and
+  skipped: its digest was never written.'''
+  out = tmp_path / 'sessions'
+  first = ds.write_digest(
+    _titled_session('abcd1234-aaaa', 'a fairly long opening line about priors', 4), out)
+  second = ds.write_digest(_titled_session('abcd1234-bbbb', 'short', 2), out)
+  assert first is not None
+  assert second is not None                      # not mistaken for `first`
+  assert second != first and first.exists()
+  assert _digest_sessions(out) == ['abcd1234-aaaa', 'abcd1234-bbbb']
+
+
+def test_session_sharing_sess8_with_a_longer_slug_does_not_delete_the_first(tmp_path):
+  '''With more turns, the second session was written, and then the stale-name
+  cleanup unlinked the first session's digest as "the same session, renamed".'''
+  out = tmp_path / 'sessions'
+  first = ds.write_digest(_titled_session('abcd1234-aaaa', 'short', 2), out)
+  second = ds.write_digest(
+    _titled_session('abcd1234-bbbb', 'a much longer opening line about likelihoods', 4), out)
+  assert first is not None and second is not None
+  assert first.exists() and second.exists()
+  assert _digest_sessions(out) == ['abcd1234-aaaa', 'abcd1234-bbbb']
+
+
+def test_sessions_sharing_sess8_each_skip_and_grow_on_their_own(tmp_path):
+  '''Idempotence and growth stay per session: a re-run of either is skipped,
+  and growing one replaces only its own digest.'''
+  out = tmp_path / 'sessions'
+  ds.write_digest(_titled_session('abcd1234-aaaa', 'first title', 3), out)
+  ds.write_digest(_titled_session('abcd1234-bbbb', 'second title', 3), out)
+  assert ds.write_digest(_titled_session('abcd1234-aaaa', 'first title', 3), out) is None
+  assert ds.write_digest(_titled_session('abcd1234-bbbb', 'second title', 3), out) is None
+  grown = ds.write_digest(_titled_session('abcd1234-aaaa', 'first title', 6), out)
+  assert grown is not None and 'turns: 6' in grown.read_text(encoding='utf-8')
+  assert _digest_sessions(out) == ['abcd1234-aaaa', 'abcd1234-bbbb']
+  other = next(p for p in out.glob('*.md') if 'second-title' in p.name)
+  assert 'turns: 3' in other.read_text(encoding='utf-8')
+
+
+def test_sessions_sharing_sess8_title_and_date_keep_separate_digests(tmp_path):
+  '''Two sessions with the same sess8, the same opening line (or none) and the
+  same first date compute the same filename. Matching the full id stops the
+  second from being skipped, but without a guard it would overwrite the first,
+  and each re-run would overwrite the other in turn.'''
+  out = tmp_path / 'sessions'
+  first = ds.write_digest(_titled_session('abcd1234-aaaa', 'same opening line', 2), out)
+  second = ds.write_digest(_titled_session('abcd1234-bbbb', 'same opening line', 2), out)
+  assert first is not None and second is not None
+  assert first != second and first.exists() and second.exists()
+  assert _digest_sessions(out) == ['abcd1234-aaaa', 'abcd1234-bbbb']
+  # Re-runs find their own digest under the second name, and leave both alone.
+  assert ds.write_digest(_titled_session('abcd1234-aaaa', 'same opening line', 2), out) is None
+  assert ds.write_digest(_titled_session('abcd1234-bbbb', 'same opening line', 2), out) is None
+  # Growth replaces only the digest that grew.
+  grown = ds.write_digest(_titled_session('abcd1234-bbbb', 'same opening line', 5), out)
+  assert grown == second and 'turns: 5' in grown.read_text(encoding='utf-8')
+  assert 'turns: 2' in first.read_text(encoding='utf-8')
+  assert _digest_sessions(out) == ['abcd1234-aaaa', 'abcd1234-bbbb']

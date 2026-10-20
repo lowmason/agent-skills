@@ -104,16 +104,17 @@ cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q
 # compaction-window exception goes, retire this lint and these tests with it
 cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_conformance.py -k test_real_skill
 
-# Snippet gate: three tiers, cheapest first, each including those above. Tier 1 covers all of skills/; Tiers 2 and 3
+# Snippet gate: three tiers, cheapest first, run as three separate commands. Every command runs the parse check, but
+# --run does not run the --api checks, so a full check runs all three. Tier 1 covers all of skills/; Tiers 2 and 3
 # only skills/bayesian-workflow, whose stack they import. build/check_snippets.py documents the fence markers (norun,
 # noparse, fixture=<name>); named fixtures live in build/snippet_preamble.py's NAMED_FIXTURES. If a block raises
 # under Tier 3, fix it: norun is for blocks that cannot run by design.
 # Tier 1 (parse-only, stdlib, instant) — run before committing any skill edit:
 uv run --python 3.13 python build/check_snippets.py skills/
-# Tier 2 (+ resolve dotted library chains from code and backticked prose; imports the stack, ~30s):
+# Tier 2 (--api: also resolve dotted library chains from code and backticked prose; imports the stack, ~30s):
 uv run --python 3.13 --with "arviz>=1.0" --with arviz-base --with arviz-stats --with arviz-plots --with numpyro --with jax python build/check_snippets.py --api skills/bayesian-workflow/
-# Tier 3 (+ execute the harnessed subset; minutes; the pins match build/snippet_preamble.py's PINNED, refresh deliberately):
-uv run --python 3.13 --with 'arviz==1.3.0' --with arviz-base --with 'arviz-stats==1.3.2' --with 'arviz-plots==1.3.1' --with 'numpyro==0.21.0' --with 'jax==0.11.1' --with numpy --with matplotlib python build/check_snippets.py --run skills/bayesian-workflow/
+# Tier 3 (--run: also execute the harnessed subset, without the Tier 2 checks; minutes; the pins match build/snippet_preamble.py's PINNED, refresh deliberately):
+uv run --python 3.13 --with 'arviz==1.3.0' --with arviz-base --with 'arviz-stats==1.3.3' --with 'arviz-plots==1.3.2' --with 'numpyro==0.22.0' --with 'jax==0.12.0' --with numpy --with matplotlib python build/check_snippets.py --run skills/bayesian-workflow/
 
 # CPU-example process-contract tests (stdlib + pytest only). The JAX run itself is the pinned command
 # below; it skips norun and noparse blocks and does not validate the surrounding prose
@@ -124,7 +125,7 @@ cd build && uv run --python 3.13 --with pytest python -m pytest -q test_check_ja
 JAX_PLATFORMS=cpu uv run --python 3.13 --with-requirements specs/verification/32-jax-cpu.txt python build/check_jax_examples.py skills/deep-learning/
 
 # Single test
-cd build && uv run --python 3.13 --with pytest --with numpy --with polars python -m pytest test_verify_citations.py::test_true_negative_flags_bad_refs
+cd build && uv run --python 3.13 --with pytest --with numpy --with polars python -m pytest test_verify_citations.py::test_missing_scratch_exits_2_with_actionable_message
 
 # End-to-end routing smoke test (no PDFs needed)
 uv run --python 3.13 --with numpy --with polars python build/smoke_test.py

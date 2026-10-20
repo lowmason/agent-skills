@@ -70,6 +70,26 @@ def test_main_exit_zero_on_clean_scaffold(tmp_path):
   assert lint_wiki.main([str(root)]) == 0
 
 
+def test_main_missing_root_is_a_usage_error_not_a_clean_report(tmp_path, capsys):
+  '''A mistyped root used to lint nothing and print "0 errors, 0 warnings, 0 info"
+  with exit 0, so a typo looked like a clean wiki.'''
+  missing = tmp_path / 'no-such-wiki'
+  with pytest.raises(SystemExit) as exc:
+    lint_wiki.main([str(missing)])
+  assert exc.value.code == 2
+  out = capsys.readouterr()
+  assert str(missing) in out.err and 'wiki/' in out.err
+  assert '0 errors' not in out.out
+
+
+def test_main_dir_without_wiki_subdir_is_a_usage_error(tmp_path, capsys):
+  (tmp_path / 'raw').mkdir()
+  with pytest.raises(SystemExit) as exc:
+    lint_wiki.main([str(tmp_path)])
+  assert exc.value.code == 2
+  assert 'wiki/' in capsys.readouterr().err
+
+
 def test_missing_required_key_is_error(tmp_path):
   root = make_wiki(tmp_path)
   write_page(root, 'samplers/x.md',

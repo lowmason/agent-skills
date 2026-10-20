@@ -4,8 +4,8 @@ description: >
   Use when tuning model hyperparameters and unsure how to do it without leaking or
   overfitting — searching regularization strength, tree depth, or learning rate for
   a nowcasting/tabular model, or setting inference knobs (NUTS target_accept /
-  max_tree_depth, SVI learning rate/steps, dynamax optax SGD). Trigger on: cross-
-  validation for time-series/temporal data, rolling-origin / walk-forward / purged /
+  max_tree_depth, SVI learning rate/steps, dynamax optax SGD). Trigger on:
+  cross-validation for time-series/temporal data, rolling-origin / walk-forward / purged /
   embargoed CV, "which hyperparameters", grid/random/Optuna search, avoiding future
   leakage in CV, when NOT to tune, or graduating a tuned model to a compared variant.
   Guards temporal leakage; revision/vintage leakage belongs to develop-testing-strategy.
@@ -79,9 +79,11 @@ max(embargo, label_horizon))` — embargo and purge carve the same pre-val regio
 so the binding one is `max`, not the sum. It duck-types sklearn's splitter API,
 so it drops straight into the objective below.
 
-**The search — a manual Optuna objective** (verified against Optuna 4.9.0). Keep
+**The search — a manual Optuna objective** (verified against Optuna 5.0.0). Keep
 the objective explicit: suggest the knobs, loop over `cv.split(X)`, return the
-mean CV score. A seeded `TPESampler` makes the run reproducible.
+mean CV score. A seeded `TPESampler` reproduces a run within one Optuna
+version, not across versions: 5.0 changed the sampler's defaults (among them
+`constant_liar=True`), so record the version beside the seed.
 
 ```python
 import numpy as np, optuna

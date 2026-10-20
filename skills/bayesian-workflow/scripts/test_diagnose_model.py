@@ -14,6 +14,13 @@ import pytest
 import check_diagnostics as cd
 import diagnose_model
 from diagnose_model import _json_default, check_precision, generate_report
+# The reader's inputs, shared with its own tests; check_diagnostics reads only the assessment.
+from test_check_diagnostics import LOW_PSENSE, WELL_CALIBRATED
+
+# Only the arviz_stats.diagnose path computes E-BFMI, so its tests skip without it.
+needs_diagnose = pytest.mark.skipif(
+    not diagnose_model.HAS_DIAGNOSE, reason="E-BFMI needs arviz_stats.diagnose (arviz-stats >= 1.0)"
+)
 
 
 def _idata(n_chains=4, n_draws=500, seed=0, extra=None, stats=None):
@@ -74,6 +81,25 @@ def test_check_precision_skips_constant_params():
     prec = check_precision(_idata(extra=const))
     assert "fixed" not in prec["params"]
     assert "mu" in prec["params"]
+
+
+def _posterior_only(post):
+    """InferenceData holding only ``post``, on classic ArviZ 0.23 and on 1.x alike."""
+    if az.__version__.startswith("0."):
+        return az.from_dict(posterior=post)
+    return az.from_dict({"posterior": post})
+
+
+def test_check_precision_keeps_a_small_scale_parameter():
+    # Classic ArviZ 0.23's az.summary rounds to three decimals by default, so sd 0.01
+    # showed mcse_mean 0.000 and the parameter was skipped. Run on both stacks.
+    small = 0.01 * np.random.default_rng(0).normal(size=(4, 500))
+    prec = check_precision(_posterior_only({"small": small}))
+    assert "small" in prec["params"], prec
+    assert 0.009 < prec["params"]["small"]["sd"] < 0.011
+    # 2000 i.i.d. draws: relative MCSE ~ 1/sqrt(2000), the same digit as a unit-scale parameter
+    assert 0.01 < prec["params"]["small"]["rel_mcse"] < 0.05
+    assert prec["params"]["small"]["stable_digits"] == 1
 
 
 def test_check_precision_empty_when_nothing_usable():
@@ -182,11 +208,38 @@ def test_no_energy_stat_marks_e_bfmi_not_checked(both_paths):
     assert diagnose_model.check_convergence(_idata())["bfmi"] == {"checked": False}
 
 
+@needs_diagnose
 def test_an_energy_stat_gives_a_checked_e_bfmi_block():
     # Only the arviz_stats.diagnose path computes E-BFMI; i.i.d. energy is far above 0.3.
     energy = np.random.default_rng(1).normal(size=(4, 500))
     conv = diagnose_model.check_convergence(_idata(stats={"diverging": CALM, "energy": energy}))
     assert conv["bfmi"] == {"checked": True, "ok": True, "failed_chains": []}
+
+
+@needs_diagnose
+def test_a_random_walk_energy_fails_e_bfmi_on_its_chain():
+    # A random-walk energy on chain 0 gives E-BFMI about 0.02, far below 0.3.
+    rng = np.random.default_rng(1)
+    energy = rng.normal(size=(4, 500))
+    energy[0] = np.cumsum(rng.normal(size=500))
+    conv = diagnose_model.check_convergence(_idata(stats={"diverging": CALM, "energy": energy}))
+    assert conv["bfmi"] == {"checked": True, "ok": False, "failed_chains": [0]}
+    assert conv["all_ok"] is False
+
+
+def test_no_sample_stats_group_marks_every_sampler_check_not_checked(both_paths):
+    conv = diagnose_model.check_convergence(az.from_dict({"posterior": {"mu": np.random.default_rng(2).normal(size=(4, 500))}}))
+    assert conv["divergences"] == conv["treedepth"] == conv["bfmi"] == {"checked": False}
+    assert conv["rhat"]["ok"] and conv["ess_bulk"]["ok"] and conv["ess_tail"]["ok"]
+    assert conv["all_ok"] is True
+
+
+def test_a_clean_run_carries_its_max_r_hat_on_both_paths(both_paths):
+    # arviz_stats.diagnose keeps only the flagged parameters' R-hat values, so on a
+    # clean run the writer must compute the maximum itself for the report's row.
+    rhat = diagnose_model.check_convergence(_idata())["rhat"]
+    assert rhat["ok"] is True and rhat["problematic_params"] == []
+    assert isinstance(rhat["max"], float) and 0.99 < rhat["max"] <= 1.01, rhat
 
 
 def test_a_diverging_stat_gives_a_checked_divergence_block(both_paths):
@@ -199,17 +252,6 @@ def test_no_diverging_stat_marks_divergences_not_checked(both_paths):
     conv = diagnose_model.check_convergence(_idata(stats={"lp": np.zeros((4, 500))}))
     assert conv["divergences"] == {"checked": False}
     assert conv["all_ok"] is True
-
-
-WELL_CALIBRATED = {
-    "assessment": {
-        "findings": [],
-        "well_calibrated": True,
-        "mean_coverage_deviation": 0.0012,
-        "calibration_diagnosis": "well-calibrated",
-    },
-}
-LOW_PSENSE = {"prior": {"mu": 0.01}, "likelihood": {"mu": 0.02}}
 
 
 def _complete_idata(**stats):
@@ -240,6 +282,16 @@ def test_a_complete_clean_run_reads_back_as_the_all_clear():
     # The control for the two tests below.
     _, steps = _read_back(_complete_idata())
     assert len(steps) == 1 and "proceed to interpretation" in steps[0], steps
+
+
+def test_a_complete_clean_run_on_the_fallback_path_reads_back_with_e_bfmi_not_checked(monkeypatch):
+    # The manual path end to end: writer, then reader. It never computes E-BFMI,
+    # so the all-clear must name it as not checked rather than pass it.
+    monkeypatch.setattr(diagnose_model, "HAS_DIAGNOSE", False)
+    report, steps = _read_back(_complete_idata())
+    assert report["convergence"]["rating"] == "excellent"
+    assert "proceed to interpretation" in steps[0], steps
+    assert len(steps) == 2 and steps[1].startswith("Not checked: E-BFMI"), steps
 
 
 def test_a_saturated_numpyro_run_reads_back_as_saturation():

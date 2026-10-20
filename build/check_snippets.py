@@ -37,9 +37,11 @@ SKILL.md naming `numpyro.infer.config_enumerate`, which lives in
 numpyro.contrib.funsor and has never been on numpyro.infer.
 
 Three tiers, cheapest first; see the root CLAUDE.md for the full invocations.
-  (default)  parse every block            stdlib, instant
-  --api      + resolve dotted API chains  imports the stack, ~30s
-  --run      + execute the harnessed set  minutes, pinned deps
+They are separate commands and every command runs the parse check. --run does
+not run the --api checks, so a full check runs all three commands.
+  (default)  parse every block               stdlib, instant
+  --api      also resolve dotted API chains  imports the stack, ~30s
+  --run      also execute the harnessed set  minutes, pinned deps
 
 Exit 0 clean, 1 violations (stdout, one line each), 2 environment failure
 with a remediation command. Advisories go to stderr prefixed WARN and never

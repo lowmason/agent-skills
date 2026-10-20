@@ -60,10 +60,21 @@ the layer whose vocabulary it speaks.
 
 ## F2 — No output arguments (free in functional JAX — keep it so)
 
-In NumPyro/JAX the pure style makes this automatic: functions take arrays,
-return new arrays, never mutate inputs (`x.at[i].set(v)` returns a copy).
-State it as the positive invariant it is — a function that mutates a passed
-DataFrame or buffer in this stack is not "efficient", it is a bug factory.
+Scope: functional code — JAX/NumPyro and Polars. There the pure style makes
+this automatic: functions take arrays or frames, return new ones, never mutate
+inputs (`x.at[i].set(v)` returns a copy). State it as the positive invariant
+it is — a function that mutates a passed DataFrame or buffer in this code is
+not "efficient", it is a bug factory.
+
+Carve-out — Flax NNX. NNX modules and `nnx.Optimizer` are stateful objects
+that update in place by design: in an `nnx.jit` train step,
+`optimizer.update(model, grads)` changes the model's parameters and the
+optimizer's state through the arguments it was passed. That is the
+framework's contract, not an F2 violation; the deep-learning skill governs
+that code. Equinox needs no carve-out: it updates out of place
+(`eqx.tree_at` returns a new PyTree and leaves its input unchanged, and a
+stateful layer's `State.set` returns the updated state), so F2 holds there as
+in plain JAX.
 
 ## Deferred to ruff
 

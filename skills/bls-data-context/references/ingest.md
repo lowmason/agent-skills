@@ -36,8 +36,16 @@ quota-limited to:
 ```text
 500 queries per day
 50 series per query
+20 years per query
 50 requests per 10 seconds
 ```
+
+The year window is 20 years on v2 and 10 on v1 (unregistered: 25 queries per day, 25 series per
+query), per the limits table at https://www.bls.gov/developers/api_faqs.htm (read 2026-10-19;
+page last modified August 30, 2023). A history longer than the window takes several queries,
+each counted against the daily quota. One answer further down the same page ("How do I format
+the year") still says a request must not exceed a 10 year period, which contradicts the table.
+This file uses the table's 20 years for v2, so re-verify the window live before relying on it.
 
 That is at most 25,000 series fetched per day — orders of magnitude short of a full-universe
 daily ingest for any major program (CES alone publishes thousands of series; the QCEW
@@ -46,7 +54,10 @@ universe runs to millions of cells). Consequences:
 - Use the API for narrow, interactive retrieval: a handful of headline series, a spot check,
   filling a small gap.
 - Use the LABSTAT flat files (`download.bls.gov/pub/time.series/<prefix>/`) for anything
-  full-universe, full-history, or on a schedule.
+  full-universe, full-history, or on a schedule. **QCEW is the exception**: its
+  `download.bls.gov/pub/time.series/en/` directory returned 404 on 2026-10-19 (see
+  [qcew.md](qcew.md), "LABSTAT time-series datatype codes"), so take full-universe QCEW from
+  the downloadable files or the Open Data Access CSVs (qcew.md, "Downloadable files").
 - Registered API keys expire annually. Build key renewal into any pipeline expected to run
   unattended for more than a year, and alert on auth-related messages rather than letting
   the key lapse silently.

@@ -6,10 +6,10 @@ paths:
 
 # Python conventions (loaded on .py reads, writes and edits)
 
-Standing guardrails loaded when a Python file is read, written or edited. The full judgment-level
-catalog is the clean-code skill (open it for naming / function / comment /
-test decisions); cite fixes by rule code (e.g. G25). Opportunistic cleanup of
-code outside the task is gated by the clean-coder skill.
+Standing guardrails loaded when a Python file is read, written or edited. A compaction
+summarizes them away. The full judgment-level catalog is the clean-code skill (open it for
+naming / function / comment / test decisions); cite fixes by rule code (e.g. G25).
+Opportunistic cleanup of code outside the task is gated by the clean-coder skill.
 
 - Single quotes for strings; f-strings for interpolation.
 - 4-space indentation.
@@ -20,8 +20,11 @@ code outside the task is gated by the clean-coder skill.
 - Lazy Polars: `pl.scan_parquet(...)` → transforms → one `.collect()` at the
   end; no intermediate collects. A fluent chain on one LazyFrame is idiomatic,
   not a Law-of-Demeter violation (G36 caveat in clean-code).
-- NumPyro + JAX for Bayesian code (not PyMC); pure functions — return new
-  arrays, never mutate inputs (F2).
+- NumPyro + JAX for Bayesian code (not PyMC). In functional JAX/NumPyro and
+  Polars code, pure functions — return new arrays or frames, never mutate
+  inputs (F2). Carve-out: Flax NNX modules and `nnx.Optimizer` update state
+  in place by design (`optimizer.update(model, grads)`); Equinox stays
+  functional, so F2 holds there.
 - Named constants over magic numbers (G25): HTTP codes, retry counts,
   thresholds. ruff PLR2004 flags these mechanically where configured.
 - Target the repo's pinned Python (agent-skills: 3.13; work repos: 3.12).

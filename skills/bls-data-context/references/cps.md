@@ -50,6 +50,14 @@ The CPS has a monthly reference week and interview week.
 
 When answering classification questions, always anchor the facts to the survey reference week, not the interview day or the whole month.
 
+**October 2025 was not collected (dated note; BLS-2025-SHUTDOWN-CPS and BLS-LAPSE-RELEASE-DATES in section 16, read 2026-10-19).** A lapse in appropriations from October 1 through November 12, 2025 suspended all CPS operations, including data collection. There are no CPS estimates for October 2025. The month was not collected retroactively, there is no October 2025 public-use microdata file, and BLS issued no October 2025 Employment Situation news release. The September 2025 release moved from October 3 to November 20, 2025. The November 2025 reference week was November 9-15 and collection ran from November 17 through November 30, longer than the usual 10 days. Missing October cells are marked, not zero:
+
+- BLS tables, including the household-survey "A" tables of the Employment Situation, show a dash.
+- The LN database shows a dash with footnote 9 ("Data unavailable due to the 2025 lapse in appropriations") in HTML, a blank cell with a footnote in XLSX, and a dash with no footnote in CSV and text files.
+- The BLS Public Data API returns a dash, without net or percent changes, and includes the footnote text.
+
+A parser must treat these as missing values. Sample rotation continued on schedule in November, so one-fourth of the November sample (the MIS-1 and MIS-2 panels) was interviewed for the first time, twice as many new households as in a typical month.
+
 ## 4. Sample design and rotation
 
 ### 4.1 Basic sample design
@@ -477,6 +485,8 @@ Important comparability issues:
 - 2015: professional certification and license questions added.
 - 2020: CPS adopted 2018 Census occupational classification.
 - 2025: CPS transitioned to 2022 Census industry classification and began introducing the 2020-Census-based sample redesign.
+- October 2025 (dated note; BLS-2025-SHUTDOWN-CPS, read 2026-10-19): the lapse in appropriations left no October 2025 estimates or microdata (section 3). The 2025 annual averages use the 11 months of available data, so BLS says they are not strictly comparable with other years' annual averages (in LABSTAT monthly files, the annual average is the `M13` period). BLS produced no fourth-quarter 2025 estimates, because one third of the quarter's data is missing. November 2025 used the usual AK composite estimation, but its difference term reflected the 2-month September-to-November change, so only 50 percent of the sample overlapped instead of the usual 75 percent. That raised the unemployment-rate standard error by a factor of 1.06 from weighting alone. The November response rate was 64.0 percent, a series low. BLS says the effect on unemployment standard errors was negligible from December. The seasonal-adjustment methodology did not change.
+- 2026 (dated note; same page): the annual population-control adjustments came in with the February 2026 data, released March 6, 2026, not with January data. The initial January 2026 estimates used short-term projections from the January 2025 controls (Vintage 2024 population estimates), and BLS revised all January 2026 estimates on March 6, 2026. This is an exception to the January timing in the next bullet and in section 10.3.
 - Annual January population-control adjustments can affect levels.
 - Annual seasonal-adjustment reestimation revises recent seasonally adjusted series.
 
@@ -547,6 +557,8 @@ User-requested sources examined:
 Linked official sources used for current context from the requested pages:
 
 - [BLS-2025-SAMPLE-REDESIGN] BLS, Redesign of the Sample for the Current Population Survey: https://www.bls.gov/cps/methods/sample_redesign_2025.htm
+- [BLS-2025-SHUTDOWN-CPS] BLS, 2025 federal government shutdown impact on the Current Population Survey (page last modified March 11, 2026; read 2026-10-19): https://www.bls.gov/cps/methods/2025-federal-government-shutdown-impact-cps.htm
+- [BLS-LAPSE-RELEASE-DATES] BLS, Revised news release dates following the 2025 and 2026 lapses in appropriations (page last modified February 12, 2026; read 2026-10-19): https://www.bls.gov/bls/2025-lapse-revised-release-dates.htm
 - [CENSUS-COLLECTING-DATA] Census CPS methodology, Collecting Data: https://www.census.gov/programs-surveys/cps/technical-documentation/methodology/collecting-data.html
 - [CENSUS-SAMPLING] Census CPS methodology, Sampling: https://www.census.gov/programs-surveys/cps/technical-documentation/methodology/sampling.html
 - [CENSUS-WEIGHTING] Census CPS methodology, Weighting: https://www.census.gov/programs-surveys/cps/technical-documentation/methodology/weighting.html
@@ -574,9 +586,10 @@ Linked official sources used for current context from the requested pages:
 | Rotation | 4 months in, 8 months out, 4 months in; total 8 interviews |
 | Sample overlap | About 75 percent month-to-month, 50 percent year-to-year |
 | Weights | Base weight, noninterview adjustment, ratio/raking to population controls |
-| Population controls | Census controls introduced by BLS each January |
+| Population controls | Census controls introduced by BLS each January (2026 exception: with February data, released 2026-03-06; BLS page read 2026-10-19) |
 | Seasonal adjustment | Concurrent current-month adjustment; annual reestimation revises prior 5 years |
 | Confidence convention | BLS commonly uses 90 percent confidence; estimate +/- 1.645 SE |
 | Current sample redesign | 2020-base sample phased in April 2025 to July 2026 |
 | Current occupation classification | 2018 Census occupation classification beginning Jan. 2020 |
 | Current industry classification | 2022 Census industry classification beginning Jan. 2025 |
+| October 2025 | No CPS data: all operations were suspended by the 2025 lapse in appropriations, nothing was collected later, and there is no public-use microdata file. 2025 annual averages use 11 months. No fourth-quarter 2025 estimates (BLS page read 2026-10-19; see sections 3 and 14) |

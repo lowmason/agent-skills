@@ -394,6 +394,49 @@ def test_all_places_the_rule_for_claude_only(tmp_path):
   }
 
 
+def test_no_rules_leaves_the_rule_out_of_a_full_claude_install(tmp_path):
+  result = run_install(tmp_path, 'claude', '--no-rules', skills=())
+  assert result.returncode == 0, result.stdout + result.stderr
+  links = installed_links(tmp_path)
+  assert f'.claude/rules/{USER_RULE}.md' not in links
+  assert not (tmp_path / '.claude/rules').exists()
+  # Only the rule is skipped: the skill it names and the companions still install.
+  assert f'.claude/skills/{USER_RULE}' in links
+  assert '.claude/agents/code-reviewer.md' in links
+
+
+def test_no_rules_cannot_be_combined_with_rule_and_nothing_installs(tmp_path):
+  result = run_install(tmp_path, 'claude', '--rule', USER_RULE, '--no-rules', skills=())
+  assert result.returncode == 2
+  assert '--no-rules: not allowed with argument --rule' in result.stderr
+  assert tree(tmp_path) == []
+
+
+@pytest.mark.parametrize('runtime', ['codex', 'gemini'])
+def test_rule_on_a_runtime_without_rules_prints_a_one_line_notice(tmp_path, runtime):
+  result = run_install(tmp_path, runtime, '--rule', USER_RULE, skills=())
+  assert result.returncode == 0, result.stdout + result.stderr
+  notice = [line for line in result.stderr.splitlines() if line.strip()]
+  assert len(notice) == 1, result.stderr
+  assert runtime in notice[0] and 'rule' in notice[0] and 'Claude' in notice[0]
+  # The notice changes nothing: the skill the rule names still installs.
+  assert installed_links(tmp_path) == {f'.agents/skills/{USER_RULE}'}
+
+
+@pytest.mark.parametrize('runtime', ['claude', 'all'])
+def test_rule_on_a_runtime_with_rules_prints_no_notice(tmp_path, runtime):
+  result = run_install(tmp_path, runtime, '--rule', USER_RULE, skills=())
+  assert result.returncode == 0, result.stdout + result.stderr
+  assert result.stderr == ''
+
+
+@pytest.mark.parametrize('runtime', ['codex', 'gemini'])
+def test_full_install_without_rule_prints_no_notice(tmp_path, runtime):
+  result = run_install(tmp_path, runtime, '--dry-run', skills=())
+  assert result.returncode == 0, result.stdout + result.stderr
+  assert result.stderr == ''
+
+
 def test_copy_copies_the_rule_file(tmp_path):
   result = run_install(tmp_path, 'claude', '--rule', USER_RULE, '--copy', skills=())
   assert result.returncode == 0, result.stdout + result.stderr

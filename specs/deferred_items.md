@@ -2423,25 +2423,39 @@ declined as YAGNI (zero instances in a one-page wiki).
       `build/cc_guide/conformance.toml` and red-first tests.
       → done 2026-10-05 (/deferred quick fix): `claude-md-count-claims` is in CHECKS
       with its [[check]] entry and red-first tests (originals note allow-listed).
-- [ ] Verify guide note S-108 with `/cc-guide verify skills.progressive-disclosure` once
+- [x] Verify guide note S-108 with `/cc-guide verify skills.progressive-disclosure` once
       drift lands (plan 35 audit §7): the guide's line 122 says the listing (name and
       description) is always loaded, which contradicts line 111, under which overflowing
       descriptions are dropped. Size: quick-fix. Done when: `/cc-guide verify
       skills.progressive-disclosure` (drift R8.5) has judged the note.
-- [ ] Verify guide note S-109 with `/cc-guide verify skills.listing-budget` once drift lands
+      → done 2026-10-19 (/deferred quick fix): verify judged line 126's always-loaded listing
+      CONFIRMED (skills.md:594). Settle listed two corrections to line 128 (the compaction
+      re-attach budget, and 2.1.304 re-sending the listing after compaction), both applied.
+- [x] Verify guide note S-109 with `/cc-guide verify skills.listing-budget` once drift lands
       (plan 35 audit §7): the guide's line 111 leaves the listing budget's unit unstated
       (the window is in tokens, the budget is called characters), so no threshold can be
       computed. Size: quick-fix. Done when: `/cc-guide verify skills.listing-budget` (drift
       R8.5) has judged the note.
-- [ ] Verify guide note S-110 with `/cc-guide verify mechanisms.overview` once drift lands
+      → done 2026-10-19 (/deferred quick fix): verify CONFIRMED the budget as 1% of the context
+      window, counted in characters (skills.md:1219). Line 118 now says skillListingMaxDescChars
+      changes the 1,536-character cap. Two omissions (SLASH_COMMAND_TOOL_CHAR_BUDGET, the
+      /skill-doctor caveat) are the owner's call.
+- [x] Verify guide note S-110 with `/cc-guide verify mechanisms.overview` once drift lands
       (plan 35 audit §7): the guide's line 45 calls a manual skill invocable without saying
       by whom, while line 91 says manual only; portability Decision 3's hand-off exception
       turns on the answer. Size: quick-fix. Done when: `/cc-guide verify
       mechanisms.overview` (drift R8.5) has judged the note.
-- [ ] Verify guide note A-52 with `/cc-guide verify subagents.frontmatter` once drift lands
+      → done 2026-10-19 (/deferred quick fix): verify CONFIRMED that a disable-model-invocation
+      skill stays invocable by the user as /name (skills.md:360). Two corrections to lines 44-45
+      applied. Settle held mechanisms.overview on two unparseable report lines, so the next run
+      takes the section up again.
+- [x] Verify guide note A-52 with `/cc-guide verify subagents.frontmatter` once drift lands
       (plan 35 audit §7): the guide's line 175 requires lowercase-hyphenated agent names,
       while line 214 defines a custom `Explore` with a capital E. Size: quick-fix. Done
       when: `/cc-guide verify subagents.frontmatter` (drift R8.5) has judged the note.
+      → done 2026-10-19 (/deferred quick fix): the name row no longer claims
+      lowercase-hyphenated names: verify CONFIRMED line 179 (at most 256 characters, no colon).
+      The background row (line 192) got settle's correction.
 - [x] Verify guide note A-53 with `/cc-guide verify subagents.models` once drift lands (plan
       35 audit §7): the guide's line 207 opens Haiku's retirement window on 2026-10-15 while
       lines 209 and 214 still recommend Haiku, and it leaves the alias's behaviour at
@@ -2461,11 +2475,16 @@ declined as YAGNI (zero instances in a one-page wiki).
       window and its retirement window, and the alias still meaning Haiku 4.5 on the other
       platforms. The line now says all of it, and the price table lists both models; H-57 was
       closed the same way in #42.
-- [ ] Verify guide note A-54 with `/cc-guide verify subagents.isolation` once drift lands
+- [x] Verify guide note A-54 with `/cc-guide verify subagents.isolation` once drift lands
       (plan 35 audit §7): the guide's line 219 says custom agents load CLAUDE.md and git
       status while the built-in Explore skips both, without saying which applies to line
       214's Explore override. Size: quick-fix. Done when: `/cc-guide verify
       subagents.isolation` (drift R8.5) has judged the note.
+      → done 2026-10-19 (/deferred quick fix): verify CONFIRMED line 224: custom agents load
+      CLAUDE.md and git status, and the built-in Explore and Plan skip both (sub-agents.md:1104,
+      :1113). Settle listed no correction. The report has no row on a custom `Explore` that
+      overrides the built-in, so which rule applies to it stays an open coverage question for
+      the owner. Two omissions are the owner's call.
 - [x] Verify guide note H-57 with `/cc-guide verify lean.model-routing` once drift lands
       (plan 35 audit §7): the guide's line 422 leaves open whether `enforceAvailableModels`
       is honoured only in managed settings; the enforce-available-models-project item waits
@@ -2486,16 +2505,21 @@ declined as YAGNI (zero instances in a one-page wiki).
       (line 369) sets out both choices, exiting on `stop_hook_active` or re-checking with a
       retry cap of the hook's own, and says the cap does not bound a re-checking loop. No
       verify of `hooks.patterns` ran; the owner judged one would only re-confirm that text.
-- [ ] Verify guide note C-40 with `/cc-guide verify mechanisms.overview` once drift lands
+- [x] Verify guide note C-40 with `/cc-guide verify mechanisms.overview` once drift lands
       (plan 35 audit §7): the guide's line 48 says a PostToolUse hook runs the linter every
       time, which overstates: line 369 says a Write/Edit matcher misses Bash rewrites, and
       line 371 says gates fail open. Size: quick-fix. Done when: `/cc-guide verify
       mechanisms.overview` (drift R8.5) has judged the note.
-- [ ] Verify guide note C-41 with `/cc-guide verify context.overview` once drift lands (plan
+      → done 2026-10-19 (/deferred quick fix): verify CONFIRMED line 52's every-time claim
+      (best-practices.md:228). Line 44's token cost got settle's correction. Settle held
+      mechanisms.overview (see S-110).
+- [x] Verify guide note C-41 with `/cc-guide verify context.overview` once drift lands (plan
       35 audit §7): the guide's line 33 calls CLAUDE.md the only always-loaded prose you
       control, while line 18 lists rules files without `paths` as always loaded too. Size:
       quick-fix. Done when: `/cc-guide verify context.overview` (drift R8.5) has judged the
       note.
+      → done 2026-10-19 (/deferred quick fix): verify rated line 37 PARTIAL. It now names rules
+      files with no paths field beside CLAUDE.md.
 - [ ] Codex and Gemini guide conformance (conformance spec, Out of scope): the register and
       lint cover the Claude Code guide only, and the register is per guide. Size: design.
       Revisit if: the owner wants the Codex or Gemini guide anchored and checked the same
@@ -3453,7 +3477,7 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       re-invoke instruction. Size: design. Done when: the owner rules on each, and each
       ruling is applied to the skill (micro-tested, as a discipline skill) or recorded as a
       deviation in `build/cc_guide/conformance.toml`.
-- [ ] writing-skills' Discovery Workflow (`skills/writing-skills/SKILL.md:690`) says
+- [x] writing-skills' Discovery Workflow (`skills/writing-skills/SKILL.md:690`) says
       future agents find a skill by grepping descriptions and browsing categories. Claude
       Code instead reads an always-loaded listing of each skill's name and description
       (`skills.description`). writing-skills is a discipline skill, so the rewording is
@@ -3461,6 +3485,9 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       `writing-skills-guide-gaps` gap that holds line 223. Size: quick-fix. Done when: the
       step describes the listing, with a micro-test showing no behaviour change, or Stage D
       takes the line over.
+      → done 2026-10-19 (/deferred quick fix): Discovery Workflow step 2 now describes the
+      always-loaded skill listing. A micro-test (5 reps per arm, claude -p from a fresh /tmp
+      folder) showed no change in the descriptions an agent writes.
 - [ ] Triage 48 not-covered rows from this pass: statements the guide does not address,
       each a possible coverage gap (spec R4.3) or a repo fact to leave alone. Settle lists
       them as the owner's call and never applies them. By file:
@@ -3858,7 +3885,7 @@ all 20 named a type.
       gap has a test, or the owner records it as not needed.
 
 ## 50-superpowers-upstream-fixes — 2026-10-18
-- [ ] find-polluter.sh still ends on its all-clear when the pollution exists before the
+- [x] find-polluter.sh still ends on its all-clear when the pollution exists before the
       first test (plan 50 code review, Minor 2). Every test is then skipped with a warning
       line, and the run ends "✅ No polluter found - all tests clean!" with exit 0. The
       documented '.git' check, run from a repository root, hits this. The behaviour was
@@ -3870,6 +3897,13 @@ all 20 named a type.
       divergence from upstream in NOTICE's plan 50 entry. Size: quick-fix. Done when: a run
       whose pollution exists before the first test exits non-zero without the all-clear
       line, and a test pins it.
+      → done 2026-10-19 (/deferred quick fix): find-polluter.sh exits 3 without the all-clear
+      when the pollution exists before the first test or appears between tests.
+      test_find_polluter.py pins the before-the-first-test case (RED 2 failed, GREEN 12 passed).
+      The between-tests case has no test, since it cannot be made deterministic. The exit-3
+      message says to confirm the path is pollution before removing it, and the usage examples
+      now check packages/core/.git, because a repository root always holds a .git. NOTICE's
+      plan 50 entry records both divergences.
 - [ ] skills/subagent-driven-development/SKILL.md does not say what review-package's exit
       3 means (plan 50 code review, recommendation). Since plan 50, review-package stops
       with exit 3 on an empty or non-descendant BASE..HEAD range: a DONE task with no
@@ -4113,7 +4147,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       The replaced wording drives behaviour, so micro-test it. Part of the G-A plan. Size:
       plan. Done when: the rows match bayesian-workflow, the rule is stated, and the
       micro-test record is kept.
-- [ ] `compare_experiments.py` reads diagnostics keys that `diagnose_model.py` never writes
+- [x] `compare_experiments.py` reads diagnostics keys that `diagnose_model.py` never writes
       (audit-3-10-26 X7, found 2026-10-03; re-verified 2026-10-18).
       `skills/track-model-experiments/scripts/compare_experiments.py:119`, `:123` and `:126`
       read flat `max_rhat`, `min_ess` and `divergences`, but bayesian-workflow's
@@ -4123,7 +4157,10 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       `convergence.ess_tail.min`, and `convergence.divergences.count`, or delete the read;
       add a fixture written by `diagnose_model.py`. Part of the G-A plan. Size: quick-fix.
       Done when: the read matches the writer's schema, with the fixture.
-- [ ] Two one-line text fixes in tune-hyperparameters and recommend-probabilistic-model
+      → done 2026-10-19 (/deferred quick fix): compare_experiments.py reads
+      convergence.rhat.max, the smaller ESS minimum and divergences.count, and recomputes only
+      what is missing. The test holds a fixture written by diagnose_model.py.
+- [x] Two one-line text fixes in tune-hyperparameters and recommend-probabilistic-model
       (audit-3-10-26 G-A one-liners, found 2026-10-03; re-verified 2026-10-18).
       (a) tune-hyperparameters' parsed description reads "cross- validation", a YAML fold
       (`skills/tune-hyperparameters/SKILL.md:7-8`); rejoin it. (b)
@@ -4134,7 +4171,10 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       rpm's sibling list and memo template) is in the rpm-wiring item (G10, I2, I3) in this
       section.
       Size: quick-fix. Done when: both read correctly.
-- [ ] Restamp tune-hyperparameters for Optuna 5 (audit-3-10-26 G5, its Optuna part, found
+      → done 2026-10-19 (/deferred quick fix): (a) the description reads "cross-validation"
+      again (no micro-test: it only rejoins a YAML fold). (b) the line names
+      tune-hyperparameters for a CV search and bayesian-workflow for Bayesian fits.
+- [x] Restamp tune-hyperparameters for Optuna 5 (audit-3-10-26 G5, its Optuna part, found
       2026-10-03; re-verified 2026-10-18). `skills/tune-hyperparameters/SKILL.md:82` says
       "verified against Optuna 4.9.0", and `:84` that a seeded `TPESampler` makes the run
       reproducible. Optuna 5.0.0 changed `TPESampler`'s defaults (`constant_liar=True`, and
@@ -4144,7 +4184,9 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       seed reproduces a run within one Optuna version, and fix `README.md:57` if it repeats
       the stamp. Size: quick-fix. Done when: the stamp and the reproducibility sentence match
       Optuna 5.
-- [ ] Add a neural boundary to track-model-experiments (audit-3-10-26 I3, found 2026-10-03;
+      → done 2026-10-19 (/deferred quick fix): stamped to Optuna 5.0.0. A seed now reproduces a
+      run within one Optuna version only. README.md carried no version number.
+- [x] Add a neural boundary to track-model-experiments (audit-3-10-26 I3, found 2026-10-03;
       re-verified 2026-10-18). Its description (`skills/track-model-experiments/SKILL.md:3-13`)
       triggers on an "experiment log or ledger of model runs" with no neural boundary,
       while evaluate-deep-learning owns the neural run record. Add "Not for neural runs or
@@ -4153,6 +4195,10 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       edit. The description change needs a micro-test. Size: quick-fix. Done when: the
       boundary is in the description and micro-tested, or the lifecycle spec has replaced
       it.
+      → done 2026-10-19 (/deferred quick fix): the boundary is in the description. A micro-test
+      (5 reps per arm) routed the Bayesian prompt to track and the neural prompt to
+      evaluate-deep-learning in both arms. The control was already correct, so the edit adds
+      clarity and no routing fix.
 - [x] `check_diagnostics.py` says "proceed to interpretation" when key checks never ran
       (audit-3-10-26 X1, found 2026-10-03; re-verified 2026-10-18 by probes on the pinned
       stack; the two post-audit commits to the script, `515254a` and `cbdee74`, touched only
@@ -4228,7 +4274,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       S, 0.7)`, computed from the draw count and carried in the JSON with `n_bad`, `n_high` and
       `n_nonfinite`. The 0.5 band and `n_marginal` are gone. The high-k step names `reloo`,
       `loo_kfold` and `loo_moment_match`. Commits `6043d59` and `d2c5a49`.
-- [ ] Align bayesian-workflow's ELPD-difference rules with current LOO guidance and its own
+- [x] Align bayesian-workflow's ELPD-difference rules with current LOO guidance and its own
       `diag_diff` (audit-3-10-26 F3, found 2026-10-03; re-verified 2026-10-18). (a)
       `skills/bayesian-workflow/references/model-comparison.md:81-83` reads "< 2×dse
       indistinguishable, > 4×dse strong", and the worked example (`:215-219`) calls ΔELPD 6.7
@@ -4247,7 +4293,11 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       The comparison code blocks run under the snippet gate (`fixture=comparison`). Size:
       quick-fix. Done when: both skills state the rule, the example matches it, and the two
       papers are listed.
-- [ ] Correct bayesian-workflow's censoring and hurdle guidance for the pinned NumPyro
+      → done 2026-10-19 (/deferred quick fix): both skills state the CV-FAQ rule (|Δ| < 4 is
+      small, dse only with n > 100 and no bad misspecification) tied to diag_diff, with a
+      selection-bias caveat. The worked example matches, the two papers are in publications.md,
+      and track cites Gelman et al. 2026, §9.3 and §9.5.
+- [x] Correct bayesian-workflow's censoring and hurdle guidance for the pinned NumPyro
       (audit-3-10-26 F4, found 2026-10-03; re-verified 2026-10-18 by probe). (a)
       `skills/bayesian-workflow/SKILL.md:314` and `references/priors.md:44`, `:52` say NumPyro
       has no built-in censored distribution; numpyro 0.21.0 (pinned) ships
@@ -4265,7 +4315,10 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       after the F9 pin bump in this section) and "positive only" (a hand-built zero-truncated
       likelihood). Size: quick-fix. Done when: the three are corrected and the new block
       runs under the snippet gate.
-- [ ] Bump the snippet gate's pinned stack (audit-3-10-26 F9, found 2026-10-03; re-verified
+      → done 2026-10-19 (/deferred quick fix): the censored built-ins, the survival term and the
+      split hurdle rows are corrected. A new runnable block in priors.md passes Tier 3 on the
+      new pins, and snippet_preamble.py's block counts are re-measured.
+- [x] Bump the snippet gate's pinned stack (audit-3-10-26 F9, found 2026-10-03; re-verified
       2026-10-18). `build/snippet_preamble.py:199-203` (`PINNED`, "Verified resolving
       2026-09-08") and CLAUDE.md's Tier 3 command (`:114-115`) still pin arviz 1.3.0,
       arviz-stats 1.3.2, arviz-plots 1.3.1, numpyro 0.21.0 and jax 0.11.1, with arviz-base
@@ -4276,6 +4329,10 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       the stack-gated build tests, and re-measure the block counts at
       `snippet_preamble.py:15-22`. Edit CLAUDE.md in place (146 of 200 lines). Size:
       quick-fix. Done when: Tier 3 passes on the new pins in both places.
+      → done 2026-10-19 (/deferred quick fix): PINNED and CLAUDE.md's Tier 3 command both pin
+      arviz-stats 1.3.3, arviz-plots 1.3.2, numpyro 0.22.0 and jax 0.12.0 (resolved 2026-10-19,
+      not the 0.11.2 the item expected). arviz stays at 1.3.0 and arviz-base stays floating.
+      Tier 3 passes on them. Still no check ties the two pin lists together.
 - [ ] Give Gaussian processes a home in bayesian-workflow and point recommend-probabilistic-model
       at it (audit-3-10-26 G11, found 2026-10-03; re-verified 2026-10-18; the rpm half
       re-raises audit_1_3_26's "drop PyMC from the GP handoff"). bayesian-workflow's GP row
@@ -4375,7 +4432,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       and `:232` (the conftest now lives in alt-nfp-stats). Size: plan. Done when: no
       present-tense claim names a retired repo, and the sketches span more than one project
       family.
-- [ ] Scope clean-code's F2 ("don't mutate arguments") to functional code, with a Flax NNX
+- [x] Scope clean-code's F2 ("don't mutate arguments") to functional code, with a Flax NNX
       carve-out (audit-3-10-26 G14, found 2026-10-03; re-verified 2026-10-18; the audit's
       trigger, the JAX merge, passed on 2026-10-04).
       `skills/clean-code/references/functions.md:61-66` calls mutating a passed buffer "a bug
@@ -4387,7 +4444,10 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       `:287`). Scope F2 to functional JAX/NumPyro and Polars code in all three places, add the
       NNX/Equinox carve-out, and revisit the G7/G18 drop rationale at `SKILL.md:133-134`.
       Size: quick-fix. Done when: all three statements carry the scope and the carve-out.
-- [ ] Widen tech-debt's scan for seeds, model artifacts and pandas/PyMC migration debt
+      → done 2026-10-19 (/deferred quick fix): F2 is scoped to functional JAX/NumPyro and Polars
+      code in functions.md, SKILL.md and the Python rule, with a Flax NNX carve-out. Equinox
+      updates out of place, so F2 still holds there. G7 and G18 stay dropped.
+- [x] Widen tech-debt's scan for seeds, model artifacts and pandas/PyMC migration debt
       (audit-3-10-26 G15 and B4's tech-debt sub-item, found 2026-10-03; re-verified
       2026-10-18 by running `scan.sh` on a fixture). The seed battery
       (`skills/tech-debt/scripts/scan.sh:43-44` rg arm, `:46-47` grep arm; `SKILL.md:82`)
@@ -4401,6 +4461,10 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       supervised targets (a path reference needs a SOFT_REFERENCES entry). No description
       changes, so no micro-test. Size: quick-fix. Done when: a fixture with each pattern is
       flagged.
+      → done 2026-10-19 (/deferred quick fix): both seed patterns are in both scan.sh arms and
+      the SKILL.md row, with new sections for committed model artifacts and pandas/PyMC
+      migration debt. The new test_scan.py (suite tech-debt) flags each pattern under rg and
+      under grep. The optional explore-data pointer was skipped.
 - [ ] Owner call: should Codex and Gemini session histories feed the research wiki?
       (audit-3-10-26 G16 and its Decision 12, found 2026-10-03; re-verified 2026-10-18.)
       `skills/llm-wiki/scripts/distill_sessions.py:16` reads only the `claude-code` and
@@ -4409,13 +4473,15 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       reader per runtime, with the same privacy redaction, through brainstorming. Size:
       design. Done when: the owner decides, and a yes has an approved spec or a no is
       recorded here.
-- [ ] Document `distill_sessions.py --source claude-ai` (audit-3-10-26 G16, found 2026-10-03;
+- [x] Document `distill_sessions.py --source claude-ai` (audit-3-10-26 G16, found 2026-10-03;
       re-verified 2026-10-18). The script accepts `--source claude-ai` with a
       `conversations.json` export (`skills/llm-wiki/scripts/distill_sessions.py:16`), but no
       Markdown file in the skill mentions it: `SKILL.md:71-77` and `INSTALL.md:130-136`
       document only `--source claude-code`. Add one sentence and an example to both, with the
       same privacy caveat. Size: quick-fix. Done when: both files document the source.
-- [ ] Stop recommending the dead `sts-jax` package (audit-3-10-26 F10, found 2026-10-03;
+      → done 2026-10-19 (/deferred quick fix): SKILL.md and INSTALL.md document --source
+      claude-ai with an example and the privacy caveat.
+- [x] Stop recommending the dead `sts-jax` package (audit-3-10-26 F10, found 2026-10-03;
       re-verified 2026-10-18: PyPI returns 404 for `sts-jax`, and its GitHub repository was
       last pushed 2024-05-08).
       `skills/recommend-probabilistic-model/references/families/timeseries-statespace.md:25`
@@ -4425,7 +4491,10 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       keeping the PML §29.12 citation and the notebook pointer; a bare-name hand-off adds no
       install dependency, a path citation needs a DEPENDENCIES or SOFT_REFERENCES entry.
       Size: quick-fix. Done when: neither file recommends sts-jax.
-- [ ] `characterize.py` crashes on a Boolean target and accepts misspelled columns
+      → done 2026-10-19 (/deferred quick fix): neither file recommends sts-jax. Both hand
+      structural time series to bayesian-workflow by bare name and keep PML §29.12 and the
+      notebook pointer.
+- [x] `characterize.py` crashes on a Boolean target and accepts misspelled columns
       (audit-3-10-26 X4, found 2026-10-03; re-verified 2026-10-18 by running it). In
       `skills/recommend-probabilistic-model/scripts/characterize.py`, a Boolean target raises
       `NotImplementedError: Series of type Boolean does not have eq operator` (`zero_fraction`,
@@ -4435,14 +4504,19 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       targets), call `ap.error()` on any unknown `--target`, `--predictors` or `--time` name,
       and add tests to `test_characterize.py`. Plan 53 adds a PEP 723 header to this file.
       Size: quick-fix. Done when: the three cases are handled and tested.
-- [ ] `profile.py` sends every glob to `scan_parquet`, so a CSV glob fails (audit-3-10-26 X5,
+      → done 2026-10-19 (/deferred quick fix): a Boolean target is counted, and an unknown
+      --target, --predictors or --time name exits 2. Tests in test_characterize.py (RED, then 16
+      passed).
+- [x] `profile.py` sends every glob to `scan_parquet`, so a CSV glob fails (audit-3-10-26 X5,
       found 2026-10-03; re-verified 2026-10-18: a two-file CSV glob raises polars'
       "parquet: File out of specification", exit 1). `skills/explore-data/scripts/profile.py:43`
       routes any path containing `*` or `?` to parquet before it tests the suffix, though the
       help (`:296`) advertises "parquet/csv/ndjson file or glob". Test the suffix first and
       fall back to parquet only for suffix-less globs; add a two-file CSV-glob test to
       `test_profile.py`. Size: quick-fix. Done when: a CSV glob profiles, with a test.
-- [ ] Three CLIs exit 0 or end in a traceback on bad input (audit-3-10-26 X6, found 2026-10-03;
+      → done 2026-10-19 (/deferred quick fix): profile.py tests the suffix first and falls back
+      to parquet only for suffix-less globs. A two-file CSV-glob test pins it.
+- [x] Three CLIs exit 0 or end in a traceback on bad input (audit-3-10-26 X6, found 2026-10-03;
       re-verified 2026-10-18 by running each). (a)
       `skills/recommend-visualization/scripts/recommend.py`: `--intent` is free text (`:471`),
       so an unknown intent ends in a ValueError traceback (`:434-436`), and an empty candidate
@@ -4456,6 +4530,10 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       findings non-fatal, since `test_check_decoupling.py:164-174` pins exit 0 when findings
       exist. One test each. Plan 53 adds PEP 723 headers to all three. Size: quick-fix. Done
       when: each bad input gets a clean message and its documented exit code, with tests.
+      → done 2026-10-19 (/deferred quick fix): recommend.py takes --intent from choices and
+      exits 1 on an empty list, lint_wiki.py errors out on a missing wiki/, and
+      check_decoupling.py uses argparse with clean exit-2 errors. Findings stay exit 0. One test
+      group each.
 - [ ] Fix and test the three hook templates (audit-3-10-26 X8, found 2026-10-03;
       re-verified 2026-10-18 by probes; its drift-spec coordination, R11.5, is done).
       (a) `hooks/ruff-check.sh` blocks Stop with exit 2 and "ruff check found issues" for any
@@ -4470,7 +4548,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       Python 3.9 (the hooks suite also runs under `/usr/bin/python3`) and skipping when
       `jq` is absent. Restamp ruff-check.sh's cc-guide citation line. Size: plan. Done when:
       (a)–(c) land, with the new tests passing on both interpreters.
-- [ ] Add the Oct 1–Nov 12, 2025 lapse in appropriations to bls-data-context (audit-3-10-26 F1,
+- [x] Add the Oct 1–Nov 12, 2025 lapse in appropriations to bls-data-context (audit-3-10-26 F1,
       found 2026-10-03). Re-verified 2026-10-18: no commit has touched the skill since the audit,
       and a grep for lapse, appropriation, "October 2025" or "11-month" over it finds nothing
       relevant. The audit read two BLS pages
@@ -4489,7 +4567,11 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       the User-Agent, granted per session. Reference text, so no micro-test. One session can
       take this with F2, F6 and F7 (same skill). Size: quick-fix. Done when: the four
       references and the hub carry the dated note, citing both pages.
-- [ ] State JOLTS is now published once a year, but bls-data-context still describes monthly state
+      → done 2026-10-19 (/deferred quick fix): dated note in cps.md (three places), ces.md,
+      sae.md, jolts.md §12 and the hub (both pages re-read 2026-10-19). Each file cites the page
+      that states its facts. cps.md, ces.md and the hub cite both pages. sae.md and jolts.md cite
+      the release-dates page only, because the CPS page says nothing on LAUS or JOLTS.
+- [x] State JOLTS is now published once a year, but bls-data-context still describes monthly state
       releases (audit-3-10-26 F2, found 2026-10-03; re-verified 2026-10-18).
       `skills/bls-data-context/references/jolts.md:817` says state estimates come out "within
       about 2 weeks of national estimates", `:821` says the annual state estimates are
@@ -4501,7 +4583,9 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       ("updated annually in June"), and add "state published annually" to the hub row.
       Size: quick-fix. Done when: jolts.md and the hub row describe the annual state release
       and cite the notice.
-- [ ] Correct bls-data-context's QCEW pointers and API limits (audit-3-10-26 F6, found 2026-10-03;
+      → done 2026-10-19 (/deferred quick fix): jolts.md and the hub's JOLTS row describe the
+      annual state release and cite the notice.
+- [x] Correct bls-data-context's QCEW pointers and API limits (audit-3-10-26 F6, found 2026-10-03;
       re-verified 2026-10-18, all five parts open). (a) The hub
       (`skills/bls-data-context/SKILL.md:139-140`) still routes QCEW to
       `download.bls.gov/pub/time.series/<prefix>/` (`en`), which
@@ -4519,7 +4603,10 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       Look at the page in a browser before editing `:505` or citing it as the primary ENU
       source. Size: quick-fix.
       Done when: parts (a)–(d) are edited and part (e) is settled by a firsthand reading.
-- [ ] Record ECI's December 2022 move to 2021 fixed weights and SOC 2018 (audit-3-10-26 F7, found
+      → done 2026-10-19 (/deferred quick fix): parts (a) to (d) edited. Part (e) settled by a
+      browser reading on 2026-10-19: hlpforma.htm#EN documents the ENU format (sample
+      ENU04013105111150), so qcew.md now cites it and drops the "no longer documents" claim.
+- [x] Record ECI's December 2022 move to 2021 fixed weights and SOC 2018 (audit-3-10-26 F7, found
       2026-10-03; re-verified 2026-10-18). `skills/bls-data-context/references/eci.md` §14.3
       (`:623-647`) covers only the 2012 weights and the 2002→2010 SOC change; nothing records
       that the SOC 2010 series froze at September 2022
@@ -4529,6 +4616,10 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       employment weights (`:513-515`), so only the SOC half could apply there; check it.
       Size: quick-fix. Done when: eci.md names the 2021 weight base, the SOC 2018 switch and
       the frozen SOC 2010 series, with the notice cited.
+      → done 2026-10-19 (/deferred quick fix): eci.md §14.3.1 names the 2021 weight base, the
+      SOC 2018 switch and the SOC 2010 series archived through September 2022, citing the
+      notice. The hub's ECI row carries the date. ecec.md is unchanged, since the notice covers
+      ECI only.
 - [ ] Decide whether classification-codes bundles Census industry (IND) codes (audit-3-10-26 F5
       and its Decision 10, found 2026-10-03; re-verified 2026-10-18: `data/` holds
       `census_occ_*` files only, and no spec scopes IND out). CPS has used the 2022 Census
@@ -4542,7 +4633,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       description needs writing-skills' micro-test. Out-of-scope path, a quick fix: one body
       sentence at the boundary section (`SKILL.md:228-234`) pointing at the Census page.
       Size: design. Done when: the owner picks a path and it lands.
-- [ ] Add NAICS 2027's effective date to classification-codes (audit-3-10-26 F12, found 2026-10-03;
+- [x] Add NAICS 2027's effective date to classification-codes (audit-3-10-26 F12, found 2026-10-03;
       re-verified 2026-10-18). NAICS 2027 takes effect for reference periods from 2027-01-01
       (Federal Register document 2026-14086, 91 FR 42976, already cited at
       `skills/classification-codes/references/revision-process.md:228-229`). `SKILL.md:146`
@@ -4550,6 +4641,9 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       of 2026-09") give no date and do not say that the 2027 structure and concordance are not
       bundled. Size: quick-fix. Done when: the three places carry the date and the
       not-bundled note.
+      → done 2026-10-19 (/deferred quick fix): the three places give the proposed effective date
+      (periods beginning on or after 2027-01-01, 91 FR 42976) and say the 2027 structure and
+      concordance are not bundled.
 - [ ] Watch for the NAICS 2027 and SOC 2028 publications that would require a classification-codes
       rebuild (audit-3-10-26 F12, routed "watch" and never filed; found 2026-10-03). The data
       bundles NAICS 2022 and SOC 2018 only. Triggers: OMB's final NAICS 2027 notice; the Census
@@ -4631,7 +4725,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       discipline skill, so the wording is micro-tested. Do with the D1 item in this section
       (same file). Size: plan. Done when: Step 4b offers the append, the caller list names it,
       and the micro-test record is kept.
-- [ ] Route `/fix-issue` through finishing-a-development-branch (audit-3-10-26 D4, found
+- [x] Route `/fix-issue` through finishing-a-development-branch (audit-3-10-26 D4, found
       2026-10-03; re-verified 2026-10-18). `commands/fix-issue.md` cuts its branch in the
       current checkout (`:18-20`) and then commits, pushes and opens a PR itself (`:26-27`), so
       it skips finishing's aged-backlog gate, its Codex review and any code review. The
@@ -4641,6 +4735,9 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       (`build/sync_runtime_assets.py`, then `--check`), update the README row
       (`README.md:132`), and run the dependency-drift test. Size: quick-fix. Done when: the
       command hands off to finishing, and the adapter and the README match it.
+      → done 2026-10-19 (/deferred quick fix): fix-issue offers a worktree before the branch and
+      hands its last step to finishing-a-development-branch, Option 2. The Gemini adapter is
+      regenerated, the README row matches, and the dependency-drift test passes.
 - [ ] Run `/fix-issue` live once, end to end (audit-3-10-26 B12, found 2026-10-03). The
       agents-and-commands spec deferred its live check "to first real use"
       (`specs/completed/agents-and-commands-expansion.md:233-234`), and plan 17 recorded it in
@@ -4649,7 +4746,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       interactive session on a real bug issue, so it is the owner's. Take the D4 item in this
       section first, so the run tests the final flow. Size: quick-fix. Done when: a real issue
       goes through `/fix-issue` and the resulting PR links it, with the run recorded here.
-- [ ] Build or retire plan 29's floating snippet tier (audit-3-10-26 B11, found 2026-10-03;
+- [x] Build or retire plan 29's floating snippet tier (audit-3-10-26 B11, found 2026-10-03;
       re-verified 2026-10-18). Plan 29 designed an advisory tier that runs the harnessed
       snippets on unpinned latest packages and only warns
       (`specs/plans/completed/29-snippet-execution-gate.md:693`, `:710`); it was never built
@@ -4661,7 +4758,9 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       (`build/snippet_preamble.py`; see F9 in this section). CLAUDE.md is at 146 of its
       200-line limit, so a new command line fits without a trim. Retire: a deviation note in
       plan 29's record. Size: quick-fix. Done when: the owner picks one and it lands.
-- [ ] Pin `task-brief`'s heading-level boundary with a test (audit-3-10-26 B10, found
+      → done 2026-10-19 (/deferred quick fix): owner chose "Retire it". Plan 29's record carries
+      a deviation note.
+- [x] Pin `task-brief`'s heading-level boundary with a test (audit-3-10-26 B10, found
       2026-10-03; first noted in a closure note in section `21-audit_9_2_26`, 2026-09-03).
       Changing `<= tlvl` to `< tlvl` at `skills/subagent-driven-development/scripts/task-brief:48`
       still passes all 28 tests in `test_sdd_scripts.py` (re-run on 2026-10-18 with the mutant
@@ -4670,7 +4769,9 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       there, the mutant leaks the heading into it. Add that case to the suite's `PLAN` fixture
       (`test_sdd_scripts.py:29-60`) and confirm it kills the mutant. Size: quick-fix. Done
       when: the test exists and fails under the mutant.
-- [ ] `distill_sessions.py` can skip or delete a digest when two session ids share their first
+      → done 2026-10-19 (/deferred quick fix): the `### Notes` case is in the PLAN fixture. Its
+      test fails under the `< tlvl` mutant (1 failed, 28 passed) and passes on the original.
+- [x] `distill_sessions.py` can skip or delete a digest when two session ids share their first
       8 characters (audit-3-10-26 B10, found 2026-10-03; first noted in a closure note in
       section `14-llm-wiki-distiller`, which called it "a separate, unrecorded item"). The
       idempotence check matches existing digests on `-<sess8>.md` alone
@@ -4683,6 +4784,9 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       Plan 53 (portability, not executed) adds a PEP 723 header to this file; land either
       first. Size: quick-fix. Done when: the full-id match and its test land, or the owner
       retires the item with the collision estimate recorded.
+      → done 2026-10-19 (/deferred quick fix): owner chose "Fix it". Digests match on the full
+      session id in their header, and a same-name collision gets a -2 suffix. RED-first tests in
+      test_distill_sessions.py.
 - [ ] Watch the `sbc_rank` recipe, which no gate runs (audit-3-10-26 B10, found 2026-10-03;
       first noted on 2026-09-03 in a closure note in section
       `20-bayesian-workflow-book-integration`: "Standing gap, not closed"). The sketch in
@@ -4790,7 +4894,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       suggested sentence, the README does not say that Gemini's approval settings limit the
       risk, because nobody re-checked that. The generated Gemini policy file, which this item
       calls a later design question, is not addressed here.
-- [ ] Owner call: retire or verify the Gemini customization guide (audit-3-10-26 D5 and its
+- [x] Owner call: retire or verify the Gemini customization guide (audit-3-10-26 D5 and its
       Decision 8, found 2026-10-03; re-verified 2026-10-18).
       `specs/guides/gemini-customization-guide.md` (54 lines, unchanged since it was committed
       on 2026-10-03) carries 40 `[cite: N]`
@@ -4802,14 +4906,18 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       rewrite it with a verification header; at minimum, an UNVERIFIED banner and a struck
       §4. Size: quick-fix. Done when: the owner chooses, and the guide is retired or
       verified.
-- [ ] Say that compaction can drop the path-scoped Python rule (audit-3-10-26 D12, found
+      → done 2026-10-19 (/deferred quick fix): owner chose "Retire it". The guide moved to
+      specs/completed/ with a RETIRED banner.
+- [x] Say that compaction can drop the path-scoped Python rule (audit-3-10-26 D12, found
       2026-10-03; the relabel half was done in `afa33b6`, 2026-10-05).
       `rules/clean-code-python.md:7-9` and `README.md:157` now say the rule loads on `.py`
       reads, writes and edits, but not that a compaction summarizes it away (the guide,
       `specs/guides/claude-code-customization-guide.md:253`).
       The owner kept the rule path-scoped. Add one clause to both. Size: quick-fix. Done
       when: both mention it, or the owner declines the clause.
-- [ ] Correct CLAUDE.md's claim that each snippet tier includes the ones above it
+      → done 2026-10-19 (/deferred quick fix): rules/clean-code-python.md and README.md's rule
+      row say a compaction summarizes the rule away.
+- [x] Correct CLAUDE.md's claim that each snippet tier includes the ones above it
       (audit-3-10-26 D8, found 2026-10-03; re-verified 2026-10-18). `CLAUDE.md:106` says
       "three tiers, cheapest first, each including those above", and `:112` and `:114`
       ("Tier 2 (+ resolve …", "Tier 3 (+ execute …") read the same way, as does
@@ -4820,7 +4928,9 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       `--api` instead is a behaviour change with its own tests in
       `build/test_check_snippets.py`. Size: quick-fix. Done when: CLAUDE.md and the
       docstring describe the tiers as they run.
-- [ ] Fix CLAUDE.md's "Single test" example, which fails in every fresh worktree, and decide
+      → done 2026-10-19 (/deferred quick fix): CLAUDE.md and build/check_snippets.py's docstring
+      describe the tiers as separate commands, and a full check runs all three.
+- [x] Fix CLAUDE.md's "Single test" example, which fails in every fresh worktree, and decide
       how the citation tests behave without `build/.scratch` (audit-3-10-26 D9 and its
       Decision 6, found 2026-10-03; re-verified 2026-10-18). `CLAUDE.md:125-126` documents
       `test_verify_citations.py::test_true_negative_flags_bad_refs`, which fails without the
@@ -4836,6 +4946,11 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       expected baseline, so a skip changes their numbers and the `build` suite's notes in
       `build/suites.toml`. Size: quick-fix. Done when: the example passes in a fresh worktree,
       and the owner's choice is applied or recorded.
+      → done 2026-10-19 (/deferred quick fix): the example now names
+      test_missing_scratch_exits_2_with_actionable_message and passes in a fresh worktree. Owner
+      chose "Skip with a reason": four ground-truth tests skip and name build/.scratch/, and
+      test_empty_text_has_no_failures no longer needs ground truth. suites.toml's note and plan
+      53's Validation 1 match.
 - [x] Credit mancusolab/coding-skills in CLAUDE.md and the README (audit-3-10-26 D10, found
       2026-10-03; re-verified 2026-10-18; the "three sources" count was fixed in `26f7a52`).
       `LICENSE-coding-skills` (MIT, Mancuso Lab) sits at the root and NOTICE records three
@@ -4858,7 +4973,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       confirmed by the owner on 2026-10-19: Mancuso counts as a seventh, contributing source.
       Each of the other six owns whole skills and Mancuso owns none, so CLAUDE.md now reads
       "six sources with distinct attribution, and a seventh contributes to three skills".
-- [ ] Fix five one-line doc slips (audit-3-10-26 D11 and D15, found 2026-10-03, and a D13
+- [x] Fix five one-line doc slips (audit-3-10-26 D11 and D15, found 2026-10-03, and a D13
       banner that went stale later, found 2026-10-18; all re-verified 2026-10-18).
       (a) `README.md:32` still describes `build/` as "citation-verification tooling for
       recommend-probabilistic-model"; name its four parts (lints and commit gates, the adapter
@@ -4874,7 +4989,9 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       `specs/agent-skills-portability.md`, which `a00b080` (2026-10-12) renamed to
       `specs/agent-skills-portability-spec.md`. Size: quick-fix. Done when: all five read
       correctly.
-- [ ] Owner call: one root notice file for Learning Bayesian Statistics' MIT license, or a
+      → done 2026-10-19 (/deferred quick fix): (b), (c) and (e) fixed. (a) and (d) had landed in
+      5f46310.
+- [x] Owner call: one root notice file for Learning Bayesian Statistics' MIT license, or a
       separate `LICENSE-andorra` (audit-3-10-26 B7 and its Decision 5, found 2026-10-03;
       re-verified 2026-10-18). Plan 53 (portability, merged as PR #57, not executed) lists a
       separate root `LICENSE-andorra`, upstream's text verbatim, among its "settled defaults"
@@ -4884,6 +5001,8 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       block, so the default puts that text in two root files. Switching is cheap: one
       `BUNDLED_LICENSES` row and one file split. Size: quick-fix. Done when: the owner
       confirms or switches before plan 53's Task 9 runs, and Task 9 follows the choice.
+      → done 2026-10-19 (/deferred quick fix): owner chose "Separate LICENSE-andorra". Plan 53's
+      DF14 and Task 9 already say so.
 - [ ] Point bayesian-workflow's README at its upstream notice once plan 53's Task 9 lands
       (audit-3-10-26 B7 attribution note, found 2026-10-03; re-verified 2026-10-18).
       `skills/bayesian-workflow/README.md:46-47` and `:102-104` point only at `NOTICE` and the
@@ -4969,13 +5088,16 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       or accept the reach and record it. Size: design. Done when: the owner has chosen, and
       the rule, the skill description and the spec say the same thing. Task 11, Step 1 of
       specs/plans/completed/52-write-with-asd-ste100.md raises it again at the install gate.
-- [ ] `install.py` has no way to skip the always-on rule in a full Claude install, and
+- [x] `install.py` has no way to skip the always-on rule in a full Claude install, and
       `--rule` says nothing on Codex and Gemini (final review). A full Claude install places
       every rule in `USER_RULES`, and only `--skill` selection leaves it out (plan 52, DF1,
       an owner-reviewed default). A Codex or Gemini install places no rule and prints no
       notice when `--rule` is passed. It would take a `--no-rules` flag, a one-line notice
       for `--rule` on a runtime without rules, and tests in `build/test_runtime_support.py`.
       Size: quick-fix. Done when: both behaviors exist and the installer tests cover them.
+      → done 2026-10-19 (/deferred quick fix): --no-rules leaves the user-level rules out of a
+      full Claude install, and --rule on Codex or Gemini prints a one-line notice. Tests in
+      build/test_runtime_support.py, and README.md documents both.
 - [ ] `SKILL.md` has no line that keeps the strength of an obligation word such as "should"
       (the `skill-r2` reading). In that re-run, 3 of the 5 `agent-instruction` replies
       turned "should" into a bare command or "must". The case's pre-registered checks cover
@@ -5072,7 +5194,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
 `4d53a78`). The owner chose which findings to fix. These are the rest. Line anchors are at
 `6043d59`.
 
-- [ ] `check_precision` drops a small-scale parameter on classic ArviZ 0.23 (Codex P2 in plan 56's
+- [x] `check_precision` drops a small-scale parameter on classic ArviZ 0.23 (Codex P2 in plan 56's
       final review, found 2026-10-19). In `skills/bayesian-workflow/scripts/diagnose_model.py`,
       `check_precision` reads `az.summary(idata)`. On arviz 0.23.4 that table rounds `mcse_mean` to
       three decimals, so a parameter with sd near 0.01 shows `mcse_mean` 0.000 and the function
@@ -5084,7 +5206,9 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       unrounded values (check the `round_to` option on both stacks) and add a small-scale test.
       Size: quick-fix. Done when: `check_precision` keeps a parameter with sd near 0.01 on arviz
       0.23 and a test pins it, or plan 53 drops the 0.23 path and this item closes with that reason.
-- [ ] A `diagnostics.json` with no `convergence` section gets the all-clear (final-review Minor,
+      → done 2026-10-19 (/deferred quick fix): check_precision calls az.summary with
+      round_to="none". A small-scale test fails on arviz 0.23.4 before the fix and passes after.
+- [x] A `diagnostics.json` with no `convergence` section gets the all-clear (final-review Minor,
       2026-10-19; departs from plan 56's DF2). `_rate_convergence` in
       `skills/bayesian-workflow/scripts/check_diagnostics.py` returns "excellent" when the section
       is empty, and the summary then says R-hat and ESS passed although they never ran. DF2 makes
@@ -5094,7 +5218,9 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       absent section "not computed", give it a summary line and add a test. Size: quick-fix. Done
       when: a file with no convergence section gets a next step and no all-clear, and a test pins
       it.
-- [ ] Two bayesian-workflow references still state a fixed 0.7 Pareto-k cutoff (final-review item
+      → done 2026-10-19 (/deferred quick fix): an absent section rates "not computed", with a
+      summary line and a next step instead of the all-clear. A test pins it.
+- [x] Two bayesian-workflow references still state a fixed 0.7 Pareto-k cutoff (final-review item
       G3, 2026-10-19). `skills/bayesian-workflow/references/model-comparison.md:220` has the
       worked-example sentence "No observations had Pareto k > 0.7." and
       `references/visualize.md:257` says "k > 0.7 (or > loo.good_k)". Plan 56 moved both scripts to
@@ -5102,6 +5228,8 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       Neither sentence is wrong at final-size runs, and both files sat outside plan 56's file list.
       Fix: name `good_k` first in both sentences. Size: quick-fix. Done when: both files name
       `good_k` as the cutoff and the Tier 1 snippet check passes.
+      → done 2026-10-19 (/deferred quick fix): both files name good_k as the cutoff. Tier 1
+      passes.
 - [ ] A run with R-hat flags and an unchecked sampler check never names the unchecked check
       (final-review item G4, 2026-10-19). Plan 56's "Not checked:" step comes only from
       `_closing_steps` in `skills/bayesian-workflow/scripts/check_diagnostics.py`, which runs when
@@ -5110,20 +5238,24 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       call: should a partial-run report also say what did not run? Size: design. Done when: the
       owner decides, and either every run's steps and summary name the unchecked checks, or the
       decision to keep D2's wording is recorded here.
-- [ ] `SKILL.md` calls `calibration_check.py` optional, but plan 56's DF1 withholds the all-clear
+- [x] `SKILL.md` calls `calibration_check.py` optional, but plan 56's DF1 withholds the all-clear
       without `--calibration` (final-review Minor, 2026-10-19).
       `skills/bayesian-workflow/SKILL.md:77` reads "(and optionally `calibration_check.py` …". The
       pipeline at `:335` passes the flag, so the main flow works. Plan 56 could not edit `SKILL.md`,
       because plan 53 edits it. Fix: drop "optionally" when plan 53 lands, or in the next pass over
       `SKILL.md`. Size: quick-fix. Done when: the sentence matches DF1.
-- [ ] `diagnostics.json` carries `convergence.rhat.max` as `null` on a clean run (plan 56 Task 5
+      → done 2026-10-19 (/deferred quick fix): SKILL.md:77 names calibration_check.py as
+      required, and psense_summary stays optional.
+- [x] `diagnostics.json` carries `convergence.rhat.max` as `null` on a clean run (plan 56 Task 5
       side note, 2026-10-19; it predates the plan). In the acceptance run on the unchecked, clean
       fit, `check_convergence` in `skills/bayesian-workflow/scripts/diagnose_model.py` wrote `null`,
       because `_max_from_dataset(d.get("rhat", {}).get("rhat_values"))` found no values. So the
       report's "Max R-hat" row cannot be filled from the JSON on a clean run. Size: quick-fix. Done
       when: the writer computes the maximum R-hat itself, as it already recomputes ESS, and a test
       pins a non-null value on a clean run.
-- [ ] Test gaps that plan 56's reviews left (Minor findings, 2026-10-19), all in
+      → done 2026-10-19 (/deferred quick fix): check_convergence computes the maximum R-hat over
+      every parameter. A test pins a non-null value on a clean run.
+- [x] Test gaps that plan 56's reviews left (Minor findings, 2026-10-19), all in
       `skills/bayesian-workflow/scripts/`. (a) `test_diagnose_model.py` has no test for a failing
       E-BFMI, an `energy` stat with a non-empty `failed_chains` and `ok` false. (b) No test runs the
       manual fallback path end to end, and none covers an InferenceData with no `sample_stats`
@@ -5131,6 +5263,9 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       no `skipif(not HAS_DIAGNOSE)`, so it fails without arviz-stats instead of skipping. (d)
       `WELL_CALIBRATED` and `LOW_PSENSE` are declared in both test files. Size: quick-fix. Done
       when: each gap has a test or is declined in writing here.
+      → done 2026-10-19 (/deferred quick fix): (a) and (b) have tests, proved by mutation since
+      the code already worked. (c) has a needs_diagnose skip. (d) test_diagnose_model.py imports
+      the shared constants.
 - [ ] The writer's verdict and the reader's rating can disagree in the reverse direction
       (final-review Minor, 2026-10-19). Plan 56's DF12 covers only a writer that says "ready" while
       the reader blocks. The reverse needs `all_ok` false with no flagged block: `_rate_convergence`
