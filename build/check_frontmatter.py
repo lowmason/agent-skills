@@ -16,7 +16,10 @@ Per <skill>/SKILL.md:
 - context is in CONTEXT_VALUES, and model is not haiku or a claude-haiku-* ID
   (not portable across providers);
 - every relative markdown-link target and every backticked references/ or
-  scripts/ path exists.
+  scripts/ path exists;
+- every runnable script (a scripts/*.py with a __main__ guard) carries a PEP 723
+  block with requires-python and dependencies, and declares every third-party
+  import outside a try that catches ImportError (VENDORED_SCRIPTS are exempt).
 A body (the lines after the closing frontmatter ---) over 500 lines prints one
 WARN line to stderr; the exit code does not change.
 
@@ -31,9 +34,11 @@ Exit 0 if clean; exit 1 with one line per violation.
 from __future__ import annotations
 
 import argparse
+import ast
 import importlib.util
 import re
 import sys
+import tomllib
 from pathlib import Path
 
 import yaml
@@ -56,6 +61,17 @@ COMPATIBILITY_CAP = 500
 # the lint warns and does not fail (portability R1.7).
 BODY_LINE_ADVISORY = 500
 FRONTMATTER_RE = re.compile(r'^---\n(.*?)\n---\n', re.S)
+# A scripts/*.py with this guard is runnable (portability R3.1).
+MAIN_GUARD_RE = re.compile(r'''^if __name__ == ['"]__main__['"]\s*:''', re.M)
+# PEP 723's reference regex for an inline script metadata block.
+PEP723_RE = re.compile(
+    r'(?m)^# /// (?P<type>[a-zA-Z0-9-]+)$\s(?P<content>(^#(| .*)$\s)+)^# ///$')
+# Import names whose distribution is named differently. Other names match once
+# both sides are normalized (PEP 503), so arviz_base matches arviz-base.
+IMPORT_DISTRIBUTIONS = {'yaml': 'pyyaml', 'sklearn': 'scikit-learn', 'PIL': 'pillow'}
+# Scripts copied byte for byte from upstream, which cannot carry a header. They
+# are exempt from the two header rules only. Keys are skills/<skill>/scripts/<file>.
+VENDORED_SCRIPTS: frozenset[str] = frozenset({'skills/write-with-asd-ste100/scripts/ste-lint.py'})
 DMI_KEY = 'disable-model-invocation'
 # A skill name may not contain these words on claude.ai (portability R1.8).
 RESERVED_NAME_WORDS = ('claude', 'anthropic')
@@ -196,6 +212,87 @@ def _check_invocation_parity(skill_dir: Path, fm: dict) -> list[str]:
     return []
 
 
+def runnable_scripts(skill_dir: Path) -> list[Path]:
+    '''The skill's scripts/*.py files that carry a __main__ guard.'''
+    return [p for p in sorted((skill_dir / 'scripts').glob('*.py'))
+            if MAIN_GUARD_RE.search(p.read_text())]
+
+
+def script_metadata(text: str) -> dict | None:
+    '''The parsed PEP 723 script block, or None when there is none. Raises
+    tomllib.TOMLDecodeError when the block does not parse.'''
+    block = next((m for m in PEP723_RE.finditer(text) if m.group('type') == 'script'), None)
+    if block is None:
+        return None
+    content = ''.join(line[2:] if line.startswith('# ') else line[1:]
+                      for line in block.group('content').splitlines(keepends=True))
+    return tomllib.loads(content)
+
+
+def _normalize_distribution(name: str) -> str:
+    return re.sub(r'[-_.]+', '-', name).lower()
+
+
+def _catches_import_error(handler: ast.ExceptHandler) -> bool:
+    caught = handler.type.elts if isinstance(handler.type, ast.Tuple) else [handler.type]
+    return any(isinstance(t, ast.Name) and t.id in ('ImportError', 'ModuleNotFoundError')
+               for t in caught)
+
+
+def required_imports(tree: ast.Module, siblings: set[str]) -> set[str]:
+    '''Top-level names of the third-party modules a script imports, at any depth,
+    except inside a try that catches ImportError or ModuleNotFoundError (portability
+    R3.4: those are optional). The stdlib and sibling modules are left out.'''
+    optional: set[int] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Try) and any(_catches_import_error(h) for h in node.handlers):
+            optional.update(id(sub) for stmt in node.body for sub in ast.walk(stmt))
+    names: set[str] = set()
+    for node in ast.walk(tree):
+        if id(node) in optional:
+            continue
+        if isinstance(node, ast.Import):
+            names.update(alias.name.split('.')[0] for alias in node.names)
+        elif isinstance(node, ast.ImportFrom) and node.level == 0 and node.module:
+            names.add(node.module.split('.')[0])
+    return {n for n in names if n not in sys.stdlib_module_names and n not in siblings}
+
+
+def check_script_headers(skill_dir: Path, vendored: frozenset[str] = VENDORED_SCRIPTS) -> list[str]:
+    '''Each runnable script carries a PEP 723 block with requires-python and a
+    dependencies list that declares every required third-party import
+    (portability R3.7), so `uv run <path>` builds the environment it needs.'''
+    errs: list[str] = []
+    for script in runnable_scripts(skill_dir):
+        if f'skills/{skill_dir.name}/scripts/{script.name}' in vendored:
+            continue
+        text = script.read_text()
+        try:
+            meta = script_metadata(text)
+        except tomllib.TOMLDecodeError as exc:
+            errs.append(f'{script}: the PEP 723 script block does not parse ({exc})')
+            continue
+        if meta is None:
+            errs.append(f'{script}: a runnable script needs a PEP 723 script block, '
+                        'so uv run can build its environment')
+            continue
+        if not isinstance(meta.get('requires-python'), str):
+            errs.append(f'{script}: the PEP 723 block needs requires-python')
+        deps = meta.get('dependencies')
+        if not (isinstance(deps, list) and all(isinstance(d, str) for d in deps)):
+            errs.append(f'{script}: the PEP 723 block needs a dependencies list ([] for a stdlib-only script)')
+            continue
+        declared = {_normalize_distribution(re.split(r'[\s<>=!~;\[(]', d.strip(), maxsplit=1)[0])
+                    for d in deps}
+        siblings = {p.stem for p in script.parent.glob('*.py')}
+        for name in sorted(required_imports(ast.parse(text), siblings)):
+            dist = IMPORT_DISTRIBUTIONS.get(name, name)
+            if _normalize_distribution(dist) not in declared:
+                alias = f' (as {dist})' if dist != name else ''
+                errs.append(f'{script}: imports {name}, which its PEP 723 dependencies do not declare{alias}')
+    return errs
+
+
 def check_skill(skill_dir: Path) -> list[str]:
     errs: list[str] = []
     sk = skill_dir / 'SKILL.md'
@@ -228,6 +325,7 @@ def check_skill(skill_dir: Path) -> list[str]:
     errs += _check_license(sk, fm)
     errs += _check_value_shapes(sk, fm)
     errs += _check_invocation_parity(skill_dir, fm)
+    errs += check_script_headers(skill_dir)
     for key in fm:
         if key not in SPEC_KEYS | HOST_KEYS:
             errs.append(f'{sk}: unknown frontmatter key {key!r}')

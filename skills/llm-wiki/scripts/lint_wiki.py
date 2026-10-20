@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+# /// script
+# requires-python = '>=3.11'
+# dependencies = []
+# ///
 '''Mechanical linter for the research-wiki (spec §10). Stdlib only; no yaml.
 
 Exit status: 0 clean, 1 on any ERROR (or a WARN under --strict), 2 on a usage

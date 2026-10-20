@@ -1,3 +1,10 @@
+#!/usr/bin/env python3
+# /// script
+# requires-python = '>=3.11'
+# dependencies = [
+#   'polars>=2.0',
+# ]
+# ///
 """Modeling-relevant data signals that explore-data's profile.py does NOT compute.
 
 profile.py already reports null %, cardinality (n_unique), dtypes, quartiles, key-uniqueness,

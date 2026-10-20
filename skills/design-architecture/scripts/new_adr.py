@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = '>=3.11'
+# dependencies = []
+# ///
 """Scaffold a new numbered ADR file.
 
 Scans the target directory for the highest ``NNNN-`` prefix, increments it, slugifies the

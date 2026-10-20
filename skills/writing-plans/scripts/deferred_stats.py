@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = '>=3.11'
+# dependencies = []
+# ///
 '''Report deferred-backlog health from specs/deferred_items.md.
 
 Parses the append-only backlog into per-section items, then reports open and

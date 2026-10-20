@@ -7,6 +7,7 @@ import yaml
 
 from check_frontmatter import (
     check_agent_file,
+    check_script_headers,
     check_command_file,
     check_readonly_roster,
     check_skill,
@@ -307,6 +308,80 @@ def test_strict_is_off_by_default_and_on_with_the_flag():
     assert strict.returncode == 1, strict.stdout
     lines = strict.stdout.splitlines()
     assert lines and all(line.endswith('(--strict)') and '/SKILL.md: ' in line for line in lines), lines
+
+
+def _skill_with_script(tmp_path: Path, name: str, script: str, filename: str = 'tool.py') -> Path:
+    d = make_skill(tmp_path, name, f'name: {name}\ndescription: Use when testing.')
+    (d / 'scripts').mkdir()
+    (d / 'scripts' / filename).write_text(script)
+    return d
+
+
+HEADER = "#!/usr/bin/env python3\n# /// script\n# requires-python = '>=3.11'\n# dependencies = []\n# ///\n"
+MAIN_GUARD = "\nif __name__ == '__main__':\n    pass\n"
+
+
+def test_a_runnable_script_needs_a_pep723_block(tmp_path):
+    # Portability R3.7: a scripts/*.py with a __main__ guard is runnable.
+    d = _skill_with_script(tmp_path, 'bare-script', 'import json\n' + MAIN_GUARD)
+    assert check_skill(d) == [
+        f"{d / 'scripts' / 'tool.py'}: a runnable script needs a PEP 723 script block, "
+        'so uv run can build its environment']
+
+
+def test_a_script_without_a_main_guard_is_a_library(tmp_path):
+    # Like tune-hyperparameters' time_series_cv.py: imported, never run (R3.1).
+    assert check_skill(_skill_with_script(tmp_path, 'library-script', 'import numpy\n')) == []
+
+
+def test_the_block_needs_requires_python_and_dependencies(tmp_path):
+    no_deps = _skill_with_script(tmp_path, 'no-deps', "# /// script\n# requires-python = '>=3.11'\n# ///\n" + MAIN_GUARD)
+    assert check_skill(no_deps) == [
+        f"{no_deps / 'scripts' / 'tool.py'}: the PEP 723 block needs a dependencies list ([] for a stdlib-only script)"]
+    no_floor = _skill_with_script(tmp_path, 'no-floor', '# /// script\n# dependencies = []\n# ///\n' + MAIN_GUARD)
+    assert check_skill(no_floor) == [f"{no_floor / 'scripts' / 'tool.py'}: the PEP 723 block needs requires-python"]
+
+
+def test_an_unparseable_block_is_reported(tmp_path):
+    d = _skill_with_script(tmp_path, 'bad-toml', '# /// script\n# dependencies = [\n# ///\n' + MAIN_GUARD)
+    errs = check_skill(d)
+    assert len(errs) == 1 and 'the PEP 723 script block does not parse' in errs[0], errs
+
+
+def test_every_third_party_import_is_declared(tmp_path):
+    # A function-level import counts; the stdlib and a sibling module need nothing.
+    body = 'import json\nimport helper\n\ndef read():\n    import polars as pl\n    return pl\n' + MAIN_GUARD
+    d = _skill_with_script(tmp_path, 'undeclared', HEADER + body)
+    (d / 'scripts' / 'helper.py').write_text('')
+    assert check_skill(d) == [
+        f"{d / 'scripts' / 'tool.py'}: imports polars, which its PEP 723 dependencies do not declare"]
+    declared = HEADER.replace('dependencies = []', "dependencies = ['polars>=2.0']")
+    d2 = _skill_with_script(tmp_path, 'declared', declared + body)
+    (d2 / 'scripts' / 'helper.py').write_text('')
+    assert check_skill(d2) == []
+
+
+def test_import_names_map_to_distribution_names(tmp_path):
+    # yaml ships as PyYAML (the alias table); arviz_base matches arviz-base once
+    # both are normalized.
+    header = HEADER.replace('dependencies = []', "dependencies = ['PyYAML>=6.0', 'arviz-base>=1.0']")
+    script = header + 'import yaml\nfrom arviz_base import from_dict\n' + MAIN_GUARD
+    assert check_skill(_skill_with_script(tmp_path, 'aliased', script)) == []
+    missing = _skill_with_script(tmp_path, 'alias-missing', HEADER + 'import yaml\n' + MAIN_GUARD)
+    assert check_skill(missing) == [
+        f"{missing / 'scripts' / 'tool.py'}: imports yaml, which its PEP 723 dependencies do not declare (as pyyaml)"]
+
+
+def test_an_import_guarded_by_import_error_is_optional(tmp_path):
+    # Portability R3.4's exemption: the script runs without it.
+    body = 'try:\n    import arviz_stats\nexcept (ImportError, ValueError):\n    arviz_stats = None\n' + MAIN_GUARD
+    assert check_skill(_skill_with_script(tmp_path, 'optional', HEADER + body)) == []
+
+
+def test_a_vendored_script_is_exempt_from_the_header_rules(tmp_path):
+    d = _skill_with_script(tmp_path, 'vendored', 'import json\n' + MAIN_GUARD, filename='upstream.py')
+    assert check_script_headers(d, vendored=frozenset({'skills/vendored/scripts/upstream.py'})) == []
+    assert len(check_script_headers(d)) == 1
 
 
 def make_agent(tmp_path: Path, name: str, description: str) -> Path:

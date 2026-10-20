@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = '>=3.11'
+# dependencies = [
+#   'polars>=2.0',
+# ]
+# ///
 """Profile a Polars-readable dataset: shape, schema, nulls, cardinality, numeric/categorical
 summaries, date ranges & gaps, duplicate-key detection, vintage/as-of checks, and quality flags.
 

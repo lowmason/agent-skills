@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+# /// script
+# requires-python = '>=3.11'
+# dependencies = []
+# ///
 '''Stage-1 session distiller (spec §16.4). Stdlib only; deterministic.
 
 Reads Claude Code / claude.ai conversation history and writes one redacted
