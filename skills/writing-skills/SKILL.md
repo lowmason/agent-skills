@@ -233,7 +233,11 @@ only when the body sends you there. Budget against the tier, not a single number
 **Targets by tier:**
 - `description` (always resident): the hard cap is 1024 chars, enforced by
   `build/check_frontmatter.py`. Spend it on triggers, not prose — it is the only text that
-  competes for context in conversations where the skill is never used.
+  competes for context in conversations where the skill is never used. Codex also shortens
+  descriptions once its skills listing passes its budget: with 105 skills listed, Codex 0.163 cut
+  this repo's longer descriptions to 316–320 characters (2026-10-19; Codex 0.154 cut to 156–164
+  with 93 listed, 2026-10-03). Re-measure with `codex debug prompt-input` from a directory outside
+  any repo, reading its Skills list.
 - SKILL.md body (loaded on trigger): keep it to the decision procedure. Observed range in this
   repo is roughly 450–4,000 words, median ~1,500 — length tracks how much irreducible procedure a skill
   carries, so treat a body pushing past ~2,000 words as a prompt to ask what belongs in

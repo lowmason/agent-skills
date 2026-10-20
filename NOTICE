@@ -525,6 +525,10 @@ Changes from upstream:
     change in references/deferred-backlog.md, and the two headers, are to
     the original works named above. Both SKILL.md files also gained a
     `compatibility` field naming uv (R3.6).
+  - writing-skills' Token Efficiency section gained a note that Codex
+    shortens long descriptions once its skills listing passes its budget,
+    with the cut measured on 2026-10-19 and how to re-measure it
+    (specs/agent-skills-portability-spec.md, R2.3).
 
     brainstorming/
     dispatching-parallel-agents/

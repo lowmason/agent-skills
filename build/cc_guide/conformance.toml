@@ -666,9 +666,9 @@ type = 'gap'
 sections = ['skills.overview', 'skills.listing-budget', 'skills.progressive-disclosure']
 artifacts = ['skills/writing-skills/SKILL.md']
 guide = 'A SKILL.md body stays well under 500 lines with critical rules near the top; overflowing descriptions are dropped from the listing; a bundled file loads only when the body points at it.'
-reason = 'writing-skills departs from the guide on body length, the listing budget, critical-rules-first and @ loading; its @ loading claim is unsupported rather than contradicted, and Stage D verifies or drops it.'
+reason = 'writing-skills departs from the guide on body length, the listing budget, critical-rules-first and @ loading; its @ loading claim is unsupported rather than contradicted, and the rewrite verifies or drops it.'
 evidence = 'Audit rows S-02, S-58, S-67, S-68, S-107; owner gate 2026-10-04.'
-tracked_in = 'portability Stage D'
+tracked_in = 'deferred item: split and rewrite writing-skills against the guide'
 
 [[exception]]
 id = 'writing-skills-tdd-for-docs'
@@ -678,7 +678,7 @@ artifacts = ['skills/writing-skills/SKILL.md']
 guide = 'Skip TDD for formatting, documentation and config changes.'
 reason = 'writing-skills treats skill documentation as behaviour-shaping, so it is tested first: tests written after the fact prove nothing.'
 evidence = 'Audit row S-97; owner gate 2026-10-04.'
-revisit = 'When portability Stage D revises writing-skills.'
+revisit = 'When writing-skills is split and rewritten against the guide (a deferred item).'
 
 [[exception]]
 id = 'description-second-person'
@@ -869,7 +869,7 @@ artifacts = ['skills/writing-skills/SKILL.md']
 guide = 'Put critical instructions near the top of a SKILL.md; compaction re-attaches only its first 5,000 tokens.'
 reason = 'The body is about 7,200 tokens, and two headings start past the first 5,000: STOP: Before Moving to Next Skill, a real critical section the owner accepted there, and Create Red Flags List, which is authoring advice and a false positive of the heading heuristic. The waiver is per check and file, so it also hides a new late heading; the critical_placement commit lint runs test_real_skill_late_headings_match_the_acknowledged_set in build/test_check_conformance.py, which fails unless exactly those two start past the window.'
 evidence = 'Audit §6 d2; owner decision at the /deferred pass, 2026-10-05.'
-tracked_in = 'portability Stage D, with writing-skills-guide-gaps'
+tracked_in = 'deferred item: split and rewrite writing-skills against the guide, with writing-skills-guide-gaps'
 
 [[exception]]
 id = 'descriptions-trigger-list-style'
