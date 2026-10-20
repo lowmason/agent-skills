@@ -2482,8 +2482,9 @@ declined as YAGNI (zero instances in a one-page wiki).
       subagents.isolation` (drift R8.5) has judged the note.
       → done 2026-10-19 (/deferred quick fix): verify CONFIRMED line 224: custom agents load
       CLAUDE.md and git status, and the built-in Explore and Plan skip both (sub-agents.md:1104,
-      :1113). The docs say nothing about an Explore override, so no correction. Two omissions
-      are the owner's call.
+      :1113). Settle listed no correction. The report has no row on a custom `Explore` that
+      overrides the built-in, so which rule applies to it stays an open coverage question for
+      the owner. Two omissions are the owner's call.
 - [x] Verify guide note H-57 with `/cc-guide verify lean.model-routing` once drift lands
       (plan 35 audit §7): the guide's line 422 leaves open whether `enforceAvailableModels`
       is honoured only in managed settings; the enforce-available-models-project item waits
