@@ -1,6 +1,8 @@
 # write-with-asd-ste100 test record
 
-Plan: [`plans/completed/52-write-with-asd-ste100.md`](plans/completed/52-write-with-asd-ste100.md). Spec: [`completed/write-with-asd-ste100.md`](completed/write-with-asd-ste100.md). First and last run: 2026-10-18 (every run took place on that day).
+**Status: RETIRED (2026-10-19)** — moved to `specs/completed/` on the owner's decision, after its plan and spec retired.
+
+Plan: [`plans/completed/52-write-with-asd-ste100.md`](../plans/completed/52-write-with-asd-ste100.md). Spec: [`completed/write-with-asd-ste100.md`](write-with-asd-ste100.md). First and last run: 2026-10-18 (every run took place on that day).
 
 This record holds the numbers and decisions of the test campaign that chose the always-on rule and checked the skill. The run kit, the raw replies and the notes stay outside the repository, in `~/.cache/agent-skills/scratch/write-with-asd-ste100-kit/` (the kit, called KIT below).
 

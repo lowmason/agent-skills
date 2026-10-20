@@ -10,7 +10,7 @@ brought it to v6.4.2; the first pass (2026-09-03, against v6.3.0) lived at
 `specs/superpowers-drift-2026-09-03.md` until that revision renamed it.
 Finding numbers never change, because other documents cite them (`NOTICE`,
 `specs/completed/sdd-hardening.md`, `specs/completed/handoff-briefs.md`,
-`specs/audit-3-10-26.md`).
+`specs/completed/audit-3-10-26.md`).
 Findings 1–8 are the first pass's, 9–15 came from v6.4.x, and findings from
 v7.0.0 start at 16.
 
@@ -387,7 +387,7 @@ stands.
   `<this-skill-dir>/find-polluter.sh`.
 
   The 2026-10-03 repo audit records this fix and finding 12's range guards
-  together as its item X3 (`specs/audit-3-10-26.md`). Neither has an entry in
+  together as its item X3 (`specs/completed/audit-3-10-26.md`). Neither has an entry in
   `specs/deferred_items.md`.
 - **Plan `Spec:` header pointer — adopted by plan 40.** Upstream has carried it
   since v6.3.0 (#2086). Our plan header now carries `**Spec:** <path>`, or

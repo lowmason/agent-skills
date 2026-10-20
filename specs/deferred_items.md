@@ -128,7 +128,7 @@
   DL/NLP template extension, synthesize-mode scenario verification); the
   latter's plan is `32-synthesize-mode-scenario-verification.md` on the unmerged
   `worktree-deferred-triage-2026-10-03`, awaiting the owner's launch. This branch
-  adds the findings-only repo audit (specs/audit-3-10-26.md); it touches neither
+  adds the findings-only repo audit (specs/completed/audit-3-10-26.md); it touches neither
   aged item.
 - 2026-10-04 — finished `feat/cc-guide-conformance` (plan 35) with 2 items aged
   >45d, carried on the partner's 2026-09-28 reason, which they chose again for
@@ -2586,7 +2586,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       drift passes.
 
 ## audit-3-10-26 follow-ups (no plan; branch claude/stoic-lewin-bcece7) — 2026-10-04
-- [x] Watch Haiku 4.5's retirement (specs/audit-3-10-26.md F13). As of the audit,
+- [x] Watch Haiku 4.5's retirement (specs/completed/audit-3-10-26.md F13). As of the audit,
       <https://platform.claude.com/docs/en/about-claude/model-deprecations> opens its
       retirement window "not sooner than October 15, 2026", and no newer Haiku exists.
       Exposed: the `model: haiku` pins on `agents/explore.md` and `agents/test-runner.md`,
@@ -3931,7 +3931,7 @@ all 20 named a type.
 
 ## audit-3-10-26 routing (no plan; re-verification pass, branch claude/quizzical-hermann-814d89) — 2026-10-18
 
-The repo audit of 2026-10-03 (`specs/audit-3-10-26.md`) was a findings document. `/deferred` and
+The repo audit of 2026-10-03 (`specs/completed/audit-3-10-26.md`) was a findings document. `/deferred` and
 `deferred_stats.py` read only this file, so the audit's open work was invisible to them, and its
 Decision 14, an `<N>-audit-3-10-26` remediation plan, was never written. This section takes that
 plan's place. On 2026-10-18 every finding was re-verified against `main@aca0f3d` in eight
@@ -5104,7 +5104,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       the conditions and the "sometimes" hedge, not "should", so all five runs passed. The
       rule "Keep modality" sits only in
       `skills/write-with-asd-ste100/references/agent-mode.md`, and the no-tool agent cases
-      read `SKILL.md` alone (section 8 of `specs/write-with-asd-ste100-test-record.md`). It
+      read `SKILL.md` alone (section 8 of `specs/completed/write-with-asd-ste100-test-record.md`). It
       would take one line in `SKILL.md`'s meaning rules, a pre-registered check for
       obligation words in the kit's `cases.py`, and a re-run of the three agent cases. A
       wording change to measured text needs the owner's go-ahead. Size: plan. Done when: a
