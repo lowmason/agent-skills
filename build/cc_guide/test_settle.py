@@ -92,7 +92,7 @@ def test_a_complete_triage_advances_every_section_and_rebaselines_the_block(worl
         'report: 1 item(s) answered, 2 of 2 release(s) covered; 0 quote(s) not found; 0 unparseable line(s); '
         '0 left out',
         'then, in this order (R8.8):',
-        f"  {CLI} baseline rebaseline alpha 'tools › Tools'",
+        f"  {CLI} baseline rebaseline alpha 'tools › Tools' --head 2.1.902",
         f'  {CLI} baseline advance alpha.overview alpha.reference beta.overview beta.reference --to 2.1.902',
         *TAIL]
     assert result.clean
@@ -188,7 +188,7 @@ def test_the_first_release_range_settles_the_block_findings(world, tmp_path):
     out = triage(world, tmp_path, '2.1.901')
     result = settled(out, 'B1 | NOISE | - | - | - | "runs alpha batches" | a wording change', '2.1.901 | none')
     assert result.lines[2:5] == [
-        'then, in this order (R8.8):', f"  {CLI} baseline rebaseline alpha 'tools › Tools'",
+        'then, in this order (R8.8):', f"  {CLI} baseline rebaseline alpha 'tools › Tools' --head 2.1.902",
         f'  {CLI} baseline advance alpha.overview alpha.reference beta.overview beta.reference --to 2.1.901']
     assert result.lines[-1] == f'next range, once these commands are run: {CLI} packets --triage --through 2.1.902'
 
@@ -206,7 +206,7 @@ def test_a_missing_pages_held_sections_are_saved_and_hold_their_groups_blocks(wo
                      'B2 | NOISE | - | - | - | "Turns on every beta" | a wording change', '2.1.901 | none',
                      '2.1.902 | none')
     assert [line for line in result.lines if 'baseline' in line][:2] == [
-        f"  {CLI} baseline rebaseline alpha 'tools › Tools'",
+        f"  {CLI} baseline rebaseline alpha 'tools › Tools' --head 2.1.902",
         f'  {CLI} baseline advance alpha.overview alpha.reference --to 2.1.902']
     assert json.loads((out / packets.SETTLED).read_text())['held'] == ['beta.overview', 'beta.reference']
 
@@ -531,7 +531,7 @@ def test_a_verify_report_lists_corrections_owners_calls_and_the_bookkeeping(worl
         'then, in this order (R8.8), once every correction is applied; for one you leave for the owner, settle '
         'again with --hold <section>, which holds the section and keeps its accept:',
         f'  {CLI} baseline accept alpha.overview --substantive   # only the sections you changed',
-        f"  {CLI} baseline rebaseline alpha 'tools › Tools'",
+        f"  {CLI} baseline rebaseline alpha 'tools › Tools' --head 2.1.902",
         f'  {CLI} baseline advance alpha.overview alpha.reference --to 2.1.902',
         *TAIL,
         "a correction that resolves a conformance gap removes its [[exception]] from build/cc_guide/conformance.toml "
@@ -710,8 +710,8 @@ def test_a_discarded_row_outside_the_packet_holds_nothing(world, tmp_path):
     result = settled(out, 'alpha.reference | none',
                      'L14 | Alpha uses ALPHA_TOOL | WRONG | tools.md:5 | "fabricated" | Else.')
     assert [line for line in result.lines if 'baseline' in line] == [
-        f"  {CLI} baseline rebaseline alpha 'tools › Tools'", f'  {CLI} baseline advance alpha.reference --to 2.1.902',
-        f'  {CLI} baseline stamp']
+        f"  {CLI} baseline rebaseline alpha 'tools › Tools' --head 2.1.902",
+        f'  {CLI} baseline advance alpha.reference --to 2.1.902', f'  {CLI} baseline stamp']
     assert not any(line.startswith('held') for line in result.lines)
 
 
@@ -722,7 +722,7 @@ def test_a_block_waits_until_every_candidate_is_resolved(world, tmp_path):
     out = packets.verify(load(world), tmp_path / 'v', ['beta.overview', 'beta.reference'], None)[0]
     (out / packets.REPORT).write_text('beta.overview | none\nbeta.reference | none\n')
     assert [line for line in settle.settle(out).lines if 'rebaseline' in line] == [
-        f"  {CLI} baseline rebaseline beta 'events › Events › Retry'"]
+        f"  {CLI} baseline rebaseline beta 'events › Events › Retry' --head 2.1.902"]
     assert not any('rebaseline' in line for line in settle.settle(out, ['beta.reference']).lines)
 
 
@@ -762,7 +762,7 @@ def test_a_correction_left_for_the_owner_holds_its_section(world, tmp_path):
     result = settled(out, near, GOOD)
     assert 'held, neither advanced nor audited: alpha.reference' in result.lines
     assert [line for line in result.lines if 'baseline' in line] == [
-        f"  {CLI} baseline rebaseline alpha 'tools › Tools'", f'  {CLI} baseline stamp']
+        f"  {CLI} baseline rebaseline alpha 'tools › Tools' --head 2.1.902", f'  {CLI} baseline stamp']
 
 
 def test_a_correction_outside_the_packet_never_claims_a_hold_its_triage_already_advanced(world, tmp_path):
@@ -852,10 +852,12 @@ def test_a_page_with_an_unresolved_changed_block_is_never_rebaselined(world, tmp
                                       '\nalpha.reference | none\n')
     assert not any('rebaseline' in line for line in settle.settle(out, hold=['alpha.overview']).lines)
     whole = [line for line in settle.settle(out).lines if 'rebaseline' in line]
-    assert whole == [f"  {CLI} baseline rebaseline alpha 'tools › Tools' 'tools › Tools › Options › `--fast`'"]
-    refs = shlex.split(whole[0])[shlex.split(whole[0]).index('rebaseline') + 2:]
-    new, _, _ = baseline.rebaseline(w.state, w.manifest, w.guide, 'alpha', refs, state.latest_docs(world[1]),
-                                    '2.1.902')  # baseline refuses a page listed in part
+    assert whole == [f"  {CLI} baseline rebaseline alpha 'tools › Tools' 'tools › Tools › Options › `--fast`'"
+                     ' --head 2.1.902']
+    words = shlex.split(whole[0])
+    args = cli.parser().parse_args(words[words.index('build/cc_guide/cli.py') + 1:])
+    new, _, _ = baseline.rebaseline(w.state, w.manifest, w.guide, 'alpha', args.refs, state.latest_docs(world[1]),
+                                    args.head)  # baseline refuses a page listed in part
     assert new != w.state
 
 
@@ -873,7 +875,7 @@ def test_verify_never_advances_a_section_past_its_triages_target_backwards(world
     v = packets.verify(load(world), tmp_path / 'v', [], out / packets.SETTLED)[0]
     result = settled(v, 'L14 | Alpha uses ALPHA_TOOL | CONFIRMED | tools.md:5 | "runs alpha batches" | -')
     assert not any(' advance ' in line for line in result.lines)
-    assert f"  {CLI} baseline rebaseline alpha 'tools › Tools'" in result.lines
+    assert f"  {CLI} baseline rebaseline alpha 'tools › Tools' --head 2.1.902" in result.lines
 
 
 def test_an_audit_ends_with_audited_unless_a_section_is_held(world, tmp_path):
@@ -883,9 +885,34 @@ def test_an_audit_ends_with_audited_unless_a_section_is_held(world, tmp_path):
                      'alpha.reference | none')
     assert result.lines[0] == f'cc-guide settle: audit alpha, {out}'
     assert [line for line in result.lines if 'baseline' in line][:2] == [
-        f"  {CLI} baseline rebaseline alpha 'tools › Tools'", f'  {CLI} baseline audited alpha --to 2.1.902']
+        f"  {CLI} baseline rebaseline alpha 'tools › Tools' --head 2.1.902",
+        f'  {CLI} baseline audited alpha --to 2.1.902']
     held = settled(out, 'L14 | Alpha uses ALPHA_TOOL | PARTIAL | tools.md:5 | "absent" | Partly.')
     assert not any('audited' in line for line in held.lines if line.startswith('  '))
+
+
+def test_every_rebaseline_settle_prints_names_its_packets_head(world, tmp_path):
+    '''Plan 49's decision D2: a check after a packet was built can refetch
+    latest/, so each rebaseline settle prints, from a triage, a verify or an
+    audit, ends with --head and the packet's head, and parses as cli.py
+    reads it. The head is the packet's, never the latest fetch at settle
+    time.'''
+    latest(world, {'tools.md': DOCS['tools.md'].replace('runs alpha jobs', 'runs alpha batches')})
+    t = triage(world, tmp_path)
+    v = packets.verify(load(world), tmp_path / 'v', ['alpha.overview', 'alpha.reference'], None)[0]
+    a = packets.audit(load(world), tmp_path / 'a', 'alpha')
+    state.fetch_record(world[1]).write_text(json.dumps({'fetched_at': '2026-10-05T12:00:00+00:00',
+                                                        'changelog_head': '2.1.903'}) + '\n')
+    reviewed = ('L14 | Alpha uses ALPHA_TOOL | CONFIRMED | tools.md:5 | "runs alpha batches" | -',
+                'alpha.reference | none')
+    results = [settled(t, 'B1 | NOISE | - | - | - | "runs alpha batches" | a wording change', '2.1.901 | none',
+                       '2.1.902 | none'), settled(v, *reviewed), settled(a, *reviewed)]
+    printed = [line for r in results for line in r.lines if ' baseline rebaseline ' in line]
+    assert len(printed) == 3
+    for line in printed:
+        words = shlex.split(line)
+        args = cli.parser().parse_args(words[words.index('build/cc_guide/cli.py') + 1:])
+        assert (args.action, args.group, args.refs, args.head) == ('rebaseline', 'alpha', ['tools › Tools'], '2.1.902')
 
 
 # ---- files -------------------------------------------------------------------
@@ -1020,7 +1047,7 @@ def test_a_packet_built_on_another_cache_names_it_in_every_command(world, tmp_pa
     named = f'{CLI} --cache {shlex.quote(str(other.resolve()))}'
     assert settled(out, *rows).lines[2:] == [
         'then, in this order (R8.8):',
-        f"  {named} baseline rebaseline alpha 'tools › Tools'",
+        f"  {named} baseline rebaseline alpha 'tools › Tools' --head 2.1.902",
         f'  {named} baseline advance alpha.overview alpha.reference beta.overview beta.reference --to 2.1.901',
         f'  {named} baseline stamp', f'  {named} lint', f'  {CONFORMANCE}',
         f'next range, once these commands are run: {named} packets --triage --through 2.1.902']
@@ -1032,7 +1059,8 @@ def test_a_packet_built_on_another_cache_names_it_in_every_command(world, tmp_pa
     v = packets.verify(packets.load(state.Source(world[0]), other, NOW), tmp_path / 'v', ['alpha.overview'], None)[0]
     assert [line for line in settled(v, GOOD).lines if line.startswith('  ') and 'cli.py' in line] == [
         f'  {named} baseline accept alpha.overview --substantive   # only the sections you changed',
-        f"  {named} baseline rebaseline alpha 'tools › Tools'", f'  {named} baseline stamp', f'  {named} lint']
+        f"  {named} baseline rebaseline alpha 'tools › Tools' --head 2.1.902", f'  {named} baseline stamp',
+        f'  {named} lint']
     (out / packets.INDEX).write_text(json.dumps({key: value for key, value in index.items() if key != 'cache'}))
     assert not any('--cache' in line for line in settled(out, *rows).lines)
     latest(world, {'tools.md': batches})

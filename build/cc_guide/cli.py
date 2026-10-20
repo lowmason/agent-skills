@@ -24,7 +24,7 @@ Run: uv run --python 3.13 python build/cc_guide/cli.py <subcommand>
       last-check.json in the cache instead (R9). notice.sh refresh passes
       --run, the ID it then looks for in last-check.json.
   baseline init [--docs DIR] [--release LABEL] [--date YYYY-MM-DD] [--force]
-  baseline rebaseline GROUP [PAGE | 'PAGE › KEY' ...]
+  baseline rebaseline GROUP [PAGE | 'PAGE › KEY' ...] [--head RELEASE]
   baseline advance ID [ID ...] --to RELEASE
   baseline audited GROUP [--to RELEASE]
   baseline accept ID [ID ...] (--substantive | --editorial)
@@ -43,7 +43,9 @@ Run: uv run --python 3.13 python build/cc_guide/cli.py <subcommand>
       same page has also changed or gone, since the page's snapshot would
       not hold that block's baselined text: list it too, or rebaseline the
       whole page. It also refuses to overwrite a snapshot page that holds
-      other text.
+      other text. With --head, the release a review read the docs at, it
+      refuses when the latest fetch is at another release, so docs fetched
+      after the review are never baselined.
   packets (--triage [--through RELEASE] | --verify [ID ...] [--from DIR]
            | --audit [GROUP] | --files [FILE ...]) [--out DIR]
       Write the packets /cc-guide hands its verifier (R6.11), from check
@@ -107,7 +109,10 @@ PAGE / 'PAGE › KEY' refs) and snapshot those pages to the cache.
 
 A listed run refuses while an unlisted baselined block on the same page has
 also changed or gone since the baseline: list it too, or rebaseline the whole
-page. It also refuses to overwrite a snapshot page that holds different text.'''
+page. It also refuses to overwrite a snapshot page that holds different text.
+With --head, the release a review read the docs at, it refuses when the latest
+fetch is at another release, so docs fetched after the review are never
+baselined.'''
 
 
 def parser() -> argparse.ArgumentParser:
@@ -132,6 +137,8 @@ def parser() -> argparse.ArgumentParser:
     rb = b.add_parser('rebaseline', formatter_class=argparse.RawDescriptionHelpFormatter, description=REBASELINE_HELP)
     rb.add_argument('group')
     rb.add_argument('refs', nargs='*')
+    rb.add_argument('--head', metavar='RELEASE', help='the release the review read the docs at; refuse when the '
+                    'latest fetch is at another')
     adv = b.add_parser('advance')
     adv.add_argument('ids', nargs='+')
     adv.add_argument('--to', required=True)
@@ -307,6 +314,10 @@ def run_baseline(args, cache: Path, today: date) -> int:
         if record is None:
             raise SetupError('no latest fetch: run check first')
         release = record['changelog_head']
+        if args.head is not None and args.head != release:
+            raise SetupError(f'rebaseline --head {args.head}: the latest fetch is at {release}, so latest/ no longer'
+                             f' holds the docs reviewed at {args.head}; skip this rebaseline, and the next check'
+                             ' compares its blocks again')
         writable_snapshot(cache, release)
         new, pages, notes = baseline.rebaseline(state, manifest, guide_text, args.group, args.refs,
                                                 latest_docs(cache), release, partial(snapshot_text, cache))

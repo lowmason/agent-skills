@@ -44,7 +44,10 @@ what it reports, record the review in this order: `baseline accept`,
 group, then `baseline stamp`; then run `cli.py lint` and
 `check_conformance.py`. A listed `rebaseline` refuses while an unlisted
 baselined block on the same page has also changed or gone: list it too, or
-rebaseline the whole page. A missing page needs a `manifest.toml` edit first.
+rebaseline the whole page. `settle` prints each `rebaseline` with `--head`
+and the packet's head, which refuses once a later `check` (a session start's
+`refresh` included) has refetched the docs. A missing page needs a
+`manifest.toml` edit first.
 A correction that resolves a conformance gap removes its `[[exception]]`, or
 narrows its `artifacts`, in the same change. Files whose correctness rests
 on a Claude Code fact carry a citation comment naming the guide sections

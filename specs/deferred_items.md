@@ -3741,7 +3741,7 @@ all 20 named a type.
       critical-placement lint after the edit. Size: quick-fix. Revisit at the next SDD edit.
 
 ## 49-claude-code-drift-automation — 2026-10-18
-- [ ] Pin `baseline rebaseline` to its packet's head (plan 49, Q1, owner decision D2). A
+- [x] Pin `baseline rebaseline` to its packet's head (plan 49, Q1, owner decision D2). A
       session start can now refetch the docs: `notice.sh refresh` runs `check --hook`
       once the hook's last good check is a day old, and when the changelog head has
       moved, that rewrites the shared `~/.cache/agent-skills/cc-guide/latest/`. A manual
@@ -3759,6 +3759,13 @@ all 20 named a type.
       when: `rebaseline --head` refuses a moved head with a test in
       `build/cc_guide/test_cli.py`, `settle` prints the flag with a test in
       `build/cc_guide/test_settle.py`, and the spec states the rule.
+      → done in plan 51 (2026-10-19): `settle` prints `rebaseline --head <the packet's head>`, and
+      `rebaseline` refuses a fetch at another release, naming both (`test_cli.py`,
+      `test_settle.py`). Spec R7 and R8.8 state the rule. O3 is settled in plan 51's planning
+      record: two `check` runs can share `latest/`, the head-after-pages order is pinned in
+      `test_check.py`, and the residual is a triage's `rebaseline` while another run writes pages,
+      or after a check that died mid-write and before the next check. Its fix is logged under
+      `51-claude-code-drift-automation`.
 - [ ] A Desktop-visible channel for the drift notice (plan 49, Task 10 and the final
       review; owner decision D4, option B). In the Desktop app (Claude Code 2.1.299,
       2026-10-18) the SessionStart hook runs and its `systemMessage` is recorded in the
@@ -5182,3 +5189,21 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       or a record of the text that GREEN did not measure. Size: design. Revisit if: an agent or a
       user hits check 3 on a nested function, a private module or an in-package test in a real
       package.
+
+## 51-claude-code-drift-automation — 2026-10-19
+- [ ] Write `latest/` as a whole, not page by page (plan 51 final review, Minor; the owner chose to
+      log it). `live_docs` in `build/cc_guide/check.py` writes each page in place, then
+      `changelog.md` and `llms.txt`, then `fetch.json` last. `rebaseline --head` trusts the head in
+      `fetch.json` to name the pages beside it, so it refuses once a fetch has finished at another
+      head. It cannot see a fetch in progress, or one that died mid-write (a full disk, or a kill
+      from the refresh trap): then some pages hold the newer text while `fetch.json` still names
+      the older head, until the next check. In that time a triage's `rebaseline --head <older
+      head>` passes the pin and can hash a newer page. Verify and audit packets stay protected,
+      because `copy_to_snapshot` in `build/cc_guide/state.py` refuses bytes that differ from the
+      packet's snapshot. `test_a_new_head_is_recorded_only_after_every_page_is_written` in
+      `build/cc_guide/test_check.py` builds this state. Fix: `live_docs` writes `latest/` into a
+      staged directory and swaps it in at once, as `notice.py` swaps its files with `os.replace`.
+      That is spec-level (Layout, R6.3, R6.4) and goes beyond plan 51's D1. See
+      `specs/plans/completed/51-claude-code-drift-automation.md`, "O3". Size: design. Done when: a
+      check that fails partway leaves `latest/` as it was, a test in `build/cc_guide/test_check.py`
+      pins it, and the spec's R6.3 and R6.4 state the whole-directory swap.

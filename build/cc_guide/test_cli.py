@@ -89,6 +89,7 @@ def test_help_shows_the_module_docstring_and_the_rebaseline_refusal(capsys):
         assert 'unlisted baselined block' in out
         assert 'also changed or gone' in out
         assert 'the whole page' in out
+        assert 'it refuses when the latest fetch is at another release' in out
     assert '  lint [--ref REF]\n' in outs[0]  # the docstring's line breaks survive
     assert 'Offline gate over the guide, manifest.toml, baseline.json and every' in outs[0]
     assert '  baseline cite FILE [FILE ...]\n' in outs[0]
@@ -421,6 +422,27 @@ def test_rebaseline_never_writes_the_bootstrap_snapshot(world, capsys):
                                        ' written (R2.6): run check to fetch a newer release first\n')
     assert not snapshot.exists()
     assert dirty(repo) == []
+
+
+def test_rebaseline_head_refuses_a_latest_fetch_at_another_release(world, capsys):
+    '''Plan 49's decision D2: a session start's refresh, or any other check,
+    can refetch latest/ after a packet was built. settle passes the packet's
+    head as --head, so rebaseline refuses to hash docs no review read: it
+    names both releases and writes nothing. At the packet's own head it runs
+    as before, with the flag after the refs, as settle prints it.'''
+    repo, cache, _ = world
+    write_tree(state.latest_docs(cache), {'tools.md': DOCS['tools.md'].replace('alpha jobs', 'alpha batches')})
+    before = (repo / state.BASELINE).read_bytes()
+    assert main(cache, 'baseline', 'rebaseline', 'alpha', 'tools › Tools', '--head', '2.1.901') == 2
+    assert capsys.readouterr() == ('', 'cc-guide: rebaseline --head 2.1.901: the latest fetch is at 2.1.902, so'
+                                       ' latest/ no longer holds the docs reviewed at 2.1.901; skip this rebaseline,'
+                                       ' and the next check compares its blocks again\n')
+    assert (repo / state.BASELINE).read_bytes() == before
+    assert not state.snapshot_docs(cache, '2.1.901').exists()
+    assert not state.snapshot_docs(cache, '2.1.902').exists()
+    assert main(cache, 'baseline', 'rebaseline', 'alpha', 'tools › Tools', '--head', '2.1.902') == 0
+    assert dirty(repo) == [state.BASELINE]
+    assert (state.snapshot_docs(cache, '2.1.902') / 'tools.md').is_file()
 
 
 def test_a_malformed_or_empty_cached_changelog_exits_two(world, capsys):

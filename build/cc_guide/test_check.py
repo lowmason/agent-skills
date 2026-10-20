@@ -296,6 +296,30 @@ def test_a_page_unmapped_by_a_head_move_is_refetched_when_mapped_again(tmp_path,
     assert got.pages['platform:pricing'] == 'Pricing text at head B.\n'
 
 
+def test_a_new_head_is_recorded_only_after_every_page_is_written(tmp_path, docs_dir):
+    '''Plan 49's final-review question O3: rebaseline --head trusts
+    fetch.json's head to name the pages beside it. So a run that dies while
+    writing the pages leaves the older head recorded, though a page already
+    holds the newer text, and the next run, seeing the changelog head differ,
+    refetches every page.'''
+    cache, log = tmp_path / 'cache', []
+    check.live_docs(MANIFEST, cache, serving(docs_dir), NOW)
+    write_tree(docs_dir, {'changelog.md': DOCS['changelog.md'].replace(
+        '<Update label="2.1.902"', '<Update label="2.1.903" description="October 3, 2026">\n</Update>\n'
+        '<Update label="2.1.902"'), 'tools.md': DOCS['tools.md'].replace('runs alpha jobs', 'runs alpha batches')})
+    blocked = state.latest_docs(cache) / 'env-vars.md'
+    blocked.unlink()
+    blocked.mkdir()  # the second mapped page: its write fails once tools.md, the first, is written
+    with pytest.raises(IsADirectoryError):
+        check.live_docs(MANIFEST, cache, serving(docs_dir), NOW)
+    assert 'runs alpha batches' in (state.latest_docs(cache) / 'tools.md').read_text()
+    assert state.read_fetch(cache)['changelog_head'] == '2.1.902'
+    blocked.rmdir()
+    check.live_docs(MANIFEST, cache, serving(docs_dir, log), NOW)
+    assert len(log) == 2 + len(MANIFEST.pages())
+    assert state.read_fetch(cache)['changelog_head'] == '2.1.903'
+
+
 def test_a_corrupt_fetch_record_is_a_setup_error(tmp_path, docs_dir):
     cache = tmp_path / 'cache'
     record = state.fetch_record(cache)
