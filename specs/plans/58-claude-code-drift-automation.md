@@ -81,6 +81,8 @@ Two parts were added after the spike and have not yet run live: Gate B's new fla
 
 All code in this plan was built and run in a throwaway clone of `5dae679`, with fixtures saved from the spike's streams. A script applied this plan's Replace and Create blocks, in order, to `5dae679` and compared the result with the clone: they match byte for byte. The same blocks were then applied to `73106b8`. In both clones the cc_guide suite gained 94 tests. At `73106b8` the `build/` suite gained 94 too, and the nine commit lints, `cli.py lint` and `check_conformance.py` all passed. Each task's RED step was checked at `73106b8` by running its new tests against the code before that task.
 
+After plan review, `main` moved to `82818ca` (lowmason/agent-skills#84), which changes `cli.py`, `state.py`, their tests and the spec. The blocks still apply there without change. Both suites again gain 94 tests, the same gates pass, and each RED step fails as before.
+
 ### Settled defaults (approved at plan review, D7)
 
 - **DF1.** The rows that Task 6's runs append to `PROBES.md` are committed with the branch. Without them, `main`'s notice would report four probes never run as soon as the registry merges.
