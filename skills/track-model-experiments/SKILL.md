@@ -9,7 +9,8 @@ description: >
   runs, ranking variants by ELPD/LOO, recording what changed between model versions,
   deciding which variant to ship, or knowing when to stop iterating. Sits above a
   per-variant analysis folder and complements bayesian-workflow's model comparison.
-  Not for tuning continuous ML hyperparameters (that is tune-hyperparameters).
+  Not for tuning continuous ML hyperparameters (that is tune-hyperparameters). Not for
+  neural runs or checkpoints (that is evaluate-deep-learning).
 license: MIT
 metadata:
   author: Lowell Mason

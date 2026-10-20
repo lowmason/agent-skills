@@ -3476,7 +3476,7 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       re-invoke instruction. Size: design. Done when: the owner rules on each, and each
       ruling is applied to the skill (micro-tested, as a discipline skill) or recorded as a
       deviation in `build/cc_guide/conformance.toml`.
-- [ ] writing-skills' Discovery Workflow (`skills/writing-skills/SKILL.md:690`) says
+- [x] writing-skills' Discovery Workflow (`skills/writing-skills/SKILL.md:690`) says
       future agents find a skill by grepping descriptions and browsing categories. Claude
       Code instead reads an always-loaded listing of each skill's name and description
       (`skills.description`). writing-skills is a discipline skill, so the rewording is
@@ -3484,6 +3484,9 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       `writing-skills-guide-gaps` gap that holds line 223. Size: quick-fix. Done when: the
       step describes the listing, with a micro-test showing no behaviour change, or Stage D
       takes the line over.
+      → done 2026-10-19 (/deferred quick fix): Discovery Workflow step 2 now describes the
+      always-loaded skill listing. A micro-test (5 reps per arm, claude -p from a fresh /tmp
+      folder) showed no change in the descriptions an agent writes.
 - [ ] Triage 48 not-covered rows from this pass: statements the guide does not address,
       each a possible coverage gap (spec R4.3) or a repo fact to leave alone. Settle lists
       them as the owner's call and never applies them. By file:
@@ -4164,7 +4167,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       seed reproduces a run within one Optuna version, and fix `README.md:57` if it repeats
       the stamp. Size: quick-fix. Done when: the stamp and the reproducibility sentence match
       Optuna 5.
-- [ ] Add a neural boundary to track-model-experiments (audit-3-10-26 I3, found 2026-10-03;
+- [x] Add a neural boundary to track-model-experiments (audit-3-10-26 I3, found 2026-10-03;
       re-verified 2026-10-18). Its description (`skills/track-model-experiments/SKILL.md:3-13`)
       triggers on an "experiment log or ledger of model runs" with no neural boundary,
       while evaluate-deep-learning owns the neural run record. Add "Not for neural runs or
@@ -4173,6 +4176,10 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       edit. The description change needs a micro-test. Size: quick-fix. Done when: the
       boundary is in the description and micro-tested, or the lifecycle spec has replaced
       it.
+      → done 2026-10-19 (/deferred quick fix): the boundary is in the description. A micro-test
+      (5 reps per arm) routed the Bayesian prompt to track and the neural prompt to
+      evaluate-deep-learning in both arms. The control was already correct, so the edit adds
+      clarity and no routing fix.
 - [x] `check_diagnostics.py` says "proceed to interpretation" when key checks never ran
       (audit-3-10-26 X1, found 2026-10-03; re-verified 2026-10-18 by probes on the pinned
       stack; the two post-audit commits to the script, `515254a` and `cbdee74`, touched only
@@ -4395,7 +4402,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       and `:232` (the conftest now lives in alt-nfp-stats). Size: plan. Done when: no
       present-tense claim names a retired repo, and the sketches span more than one project
       family.
-- [ ] Scope clean-code's F2 ("don't mutate arguments") to functional code, with a Flax NNX
+- [x] Scope clean-code's F2 ("don't mutate arguments") to functional code, with a Flax NNX
       carve-out (audit-3-10-26 G14, found 2026-10-03; re-verified 2026-10-18; the audit's
       trigger, the JAX merge, passed on 2026-10-04).
       `skills/clean-code/references/functions.md:61-66` calls mutating a passed buffer "a bug
@@ -4407,6 +4414,9 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       `:287`). Scope F2 to functional JAX/NumPyro and Polars code in all three places, add the
       NNX/Equinox carve-out, and revisit the G7/G18 drop rationale at `SKILL.md:133-134`.
       Size: quick-fix. Done when: all three statements carry the scope and the carve-out.
+      → done 2026-10-19 (/deferred quick fix): F2 is scoped to functional JAX/NumPyro and Polars
+      code in functions.md, SKILL.md and the Python rule, with a Flax NNX carve-out. Equinox
+      updates out of place, so F2 still holds there. G7 and G18 stay dropped.
 - [x] Widen tech-debt's scan for seeds, model artifacts and pandas/PyMC migration debt
       (audit-3-10-26 G15 and B4's tech-debt sub-item, found 2026-10-03; re-verified
       2026-10-18 by running `scan.sh` on a fixture). The seed battery

@@ -20,8 +20,11 @@ Opportunistic cleanup of code outside the task is gated by the clean-coder skill
 - Lazy Polars: `pl.scan_parquet(...)` → transforms → one `.collect()` at the
   end; no intermediate collects. A fluent chain on one LazyFrame is idiomatic,
   not a Law-of-Demeter violation (G36 caveat in clean-code).
-- NumPyro + JAX for Bayesian code (not PyMC); pure functions — return new
-  arrays, never mutate inputs (F2).
+- NumPyro + JAX for Bayesian code (not PyMC). In functional JAX/NumPyro and
+  Polars code, pure functions — return new arrays or frames, never mutate
+  inputs (F2). Carve-out: Flax NNX modules and `nnx.Optimizer` update state
+  in place by design (`optimizer.update(model, grads)`); Equinox stays
+  functional, so F2 holds there.
 - Named constants over magic numbers (G25): HTTP codes, retry counts,
   thresholds. ruff PLR2004 flags these mechanically where configured.
 - Target the repo's pinned Python (agent-skills: 3.13; work repos: 3.12).

@@ -687,7 +687,7 @@ Deploying untested skills = deploying untested code. It's a violation of quality
 How future agents find your skill:
 
 1. **Encounters problem** ("tests are flaky")
-2. **Searches skills** (greps descriptions, browses categories)
+2. **Scans the skill listing** (the always-loaded list of skill names and descriptions)
 3. **Finds SKILL** (description matches)
 4. **Scans overview** (is this relevant?)
 5. **Reads patterns** (quick reference table)
