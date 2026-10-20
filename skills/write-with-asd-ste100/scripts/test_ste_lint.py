@@ -1,6 +1,6 @@
 '''Tests for the vendored ste-lint.py. The file is danyuchn's linter, copied unchanged
-from the commit that ../LICENSE pins, so these tests pin its bytes and run its own
-self-test instead of testing its internals.
+from the commit that ../LICENSE-write-with-asd-ste100-sources pins, so these tests pin
+its bytes and run its own self-test instead of testing its internals.
 
 Run from this directory: uv run --python 3.13 --with pytest python -m pytest -q
 '''

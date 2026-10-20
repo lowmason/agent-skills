@@ -1,3 +1,18 @@
+#!/usr/bin/env python3
+# /// script
+# requires-python = '>=3.12'
+# dependencies = [
+#   'numpy>=2.0',
+#   'arviz-base>=1.0',
+#   'arviz-plots>=1.1',
+#   'arviz-stats>=1.1',
+#   'xarray>=2026.0',
+#   'scipy>=1.0',
+#   'h5netcdf>=1.0',
+#   'h5py>=3.0',
+#   'matplotlib>=3.0',
+# ]
+# ///
 """
 Calibration assessment for Bayesian models.
 

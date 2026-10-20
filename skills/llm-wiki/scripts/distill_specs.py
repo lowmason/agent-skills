@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+# /// script
+# requires-python = '>=3.11'
+# dependencies = []
+# ///
 '''Specs-harvest distiller (specs-harvest framework spec §4.1). Stdlib only.
 
 inventory <repo> --root <wiki>: walk the repo's specs/ corpus, seed-grep,

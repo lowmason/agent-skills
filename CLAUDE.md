@@ -25,7 +25,7 @@ The generator translates manifest syntax and Gemini tool names only. Codex and G
 Skills come from six sources with distinct attribution, and a seventh contributes to three skills, all tracked in `NOTICE`. **Read `NOTICE` before moving, renaming, or substantially rewriting any skill**, and keep it in sync:
 
 - **Lowell's originals** (MIT, `LICENSE`): `develop-testing-strategy`, `validate-data`, `explore-data`, `tech-debt`, `design-architecture`, `bls-data-context`, `recommend-probabilistic-model`, `recommend-visualization`, `track-model-experiments`, `tune-hyperparameters`, `creative-thinking`, `llm-wiki`, `describe-critique-methodology`, `derive-roadmap`, `classification-codes`, `geographic-codes`, `deep-learning`, `evaluate-deep-learning`, `optimize-jax`, `prepare-handoff`, `document-python-package`. (21 originals — keep in sync with `NOTICE`, which is authoritative.)
-- **`bayesian-workflow`** — adapted from Alexandre Andorra's PyMC skill, ported to NumPyro+JAX (MIT).
+- **`bayesian-workflow`** — adapted from Alexandre Andorra's PyMC skill, ported to NumPyro+JAX (MIT; upstream notice in `LICENSE-andorra`).
 - **`recommend-causal-design`** — planning workflow selectively adapted from Robson Tigre's `causal-planner` and Alexandre Andorra's `causal-inference` (MIT); newly written method references and memo contract, with both source notices in `LICENSE-causal-design-sources`.
 - **`write-with-asd-ste100`** and `rules/write-with-asd-ste100.md` — adapted from danyuchn's `asd-ste100-skill` and prithivrajmu's `asd-ste100` (MIT), with both notices in `LICENSE-write-with-asd-ste100-sources`; `scripts/ste-lint.py` is danyuchn's linter, copied unchanged, the one file exempt from the repo's Python style.
 - **superpowers skills** (MIT, © 2025 Jesse Vincent, `LICENSE-superpowers`): the 13 process skills (`brainstorming`, `writing-plans`, `test-driven-development`, etc.). These were adapted from the upstream `superpowers` plugin.
@@ -36,7 +36,7 @@ Two invariants from that adaptation that must not silently regress:
 - **Cross-skill references use bare skill names** (`use the writing-plans skill`), never the upstream `superpowers:` plugin namespace.
 - `recommend-probabilistic-model` **cites** Murphy's PML books (CC-BY-NC-ND) and pyprobml/dynamax (MIT) but **redistributes no book prose and bundles no PDFs**. Keep summaries in original wording with §-number citations only.
 
-The user is meticulous about attribution and licensing — surface provenance/license implications proactively rather than assuming.
+The user is meticulous about attribution and licensing — surface provenance/license implications proactively rather than assuming. Each skill directory carries byte-identical copies of the root license files that apply to it (`LICENSE` in every skill, the rest per `BUNDLED_LICENSES` in `build/check_provenance.py`, which enforces the copies), so edit a root license file and its copies together.
 
 ## Editing skills and other Claude Code artifacts
 
@@ -79,7 +79,7 @@ uv run --python 3.13 python build/run_suites.py --check
 # (an owner step: git config core.hooksPath build/githooks writes repo config every worktree reads); the hook lints
 # the working tree, untracked drafts included except by the drift lint, which reads tracked files only.
 # .github/workflows/lints.yml runs them on PRs and main as an advisory check; the hook is the gate.
-# Frontmatter, provenance and guide-conformance lints (run before committing any Claude Code artifact)
+# Frontmatter, provenance and guide-conformance lints (run before committing any Claude Code artifact); add --strict to the first, a report and not a gate, when preparing a claude.ai upload or a spec-only validator run
 uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
 uv run --python 3.13 python build/check_provenance.py
 uv run --python 3.13 --with pyyaml python build/check_conformance.py

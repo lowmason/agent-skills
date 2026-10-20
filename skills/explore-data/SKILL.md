@@ -13,6 +13,7 @@ description: >
   null/duplicate/quality checks, schema inspection, scan_parquet, .describe(), value_counts,
   .null_count(), n_unique, or "is this column a key?".
 license: MIT
+compatibility: Requires uv to run bundled scripts (dependencies are declared inline); Python 3.11+.
 metadata:
   author: Lowell Mason
   version: "1.0"
@@ -34,13 +35,15 @@ Lead with Polars' lazy API (`scan_parquet` / `scan_csv`) so a multi-GB partition
 lands in memory whole — collect only the small summary frames each check needs.
 
 ```bash
-uv run --python 3.13 --with polars python \
-    <this-skill-dir>/scripts/profile.py \
+uv run <this-skill-dir>/scripts/profile.py \
     data/qcew/qcew_estimates.parquet \
     --candidate-keys series_id,ref_date,vintage_date \
     --vintage-cols series_id,ref_date,vintage_date \
     --json profile.json
 ```
+
+Without uv, run the same path with `python3` in an environment that has the dependencies listed
+in the script's header.
 
 ## This skill vs. its siblings
 

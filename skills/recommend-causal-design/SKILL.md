@@ -147,6 +147,6 @@ skill. No estimator runtime or sibling-file dependency is required. See
 
 Workflow adaptation sources, pinned commits, and primary literature are in
 [sources.md](references/sources.md). Upstream MIT notices are bundled in
-[LICENSE](LICENSE), and recorded in the repository's
-`LICENSE-causal-design-sources` and `NOTICE`. No upstream code,
+[LICENSE-causal-design-sources](LICENSE-causal-design-sources), a copy of the
+repository's file of that name, and recorded in `NOTICE`. No upstream code,
 automated causal grading, book prose, figures, or document copies are bundled.

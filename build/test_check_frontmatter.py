@@ -1,22 +1,34 @@
+import re
 import subprocess
+import sys
 from pathlib import Path
 
 import yaml
 
 from check_frontmatter import (
+    bundled_invocations,
     check_agent_file,
+    check_invocations,
+    check_script_headers,
     check_command_file,
     check_readonly_roster,
     check_skill,
     load_readonly_roster,
+    skill_body_warning,
+    strict_violations,
     READONLY_HEADING,
     REPO,
 )
 
 
-def make_skill(tmp_path: Path, name: str, frontmatter: str) -> Path:
+def make_skill(tmp_path: Path, name: str, frontmatter: str, *, licensed: bool = True) -> Path:
+    '''A skill directory with this frontmatter. Every SKILL.md needs a license
+    (portability R1.4), so one is added unless the frontmatter sets its own or
+    the test passes licensed=False.'''
     d = tmp_path / name
     d.mkdir()
+    if licensed and not re.search(r'^license:', frontmatter, re.M):
+        frontmatter = f'license: MIT\n{frontmatter}'
     (d / 'SKILL.md').write_text(f'---\n{frontmatter}\n---\n\n# Body\n')
     return d
 
@@ -139,6 +151,363 @@ def test_compatibility_key_allowed(tmp_path):
     d = make_skill(tmp_path, 'compat-skill',
                    'name: compat-skill\ndescription: Use when testing.\ncompatibility: Requires Python 3.13')
     assert check_skill(d) == []
+
+
+def test_spec_and_host_keys_are_allowed(tmp_path):
+    # Portability R1.1: the spec's six fields and the host extensions this repo
+    # allows. disable-model-invocation is false here: true needs Codex's policy
+    # file (R1.6), which a later test covers.
+    d = make_skill(tmp_path, 'keyed-skill',
+                   'name: keyed-skill\ndescription: Use when testing.\nlicense: MIT\n'
+                   'compatibility: Requires uv.\nmetadata:\n  author: Someone\nallowed-tools: Read\n'
+                   'when_to_use: Testing.\ncontext: fork\nagent: Explore\n'
+                   'disable-model-invocation: false')
+    assert check_skill(d) == []
+
+
+def test_license_is_required(tmp_path):
+    # Portability R1.4: repo policy, beyond the spec, so a single-skill install
+    # still says how the skill is licensed.
+    msg = 'license is required, a non-empty string (repo policy, beyond the Agent Skills spec)'
+    missing = make_skill(tmp_path, 'no-license', 'name: no-license\ndescription: Use when testing.',
+                         licensed=False)
+    assert check_skill(missing) == [f"{missing / 'SKILL.md'}: {msg}"]
+    blank = make_skill(tmp_path, 'blank-license',
+                       "name: blank-license\ndescription: Use when testing.\nlicense: ' '")
+    assert check_skill(blank) == [f"{blank / 'SKILL.md'}: {msg}"]
+
+
+def test_metadata_must_map_strings_to_strings(tmp_path):
+    # Portability R1.2. An unquoted version: 1.0 parses as a float.
+    d = make_skill(tmp_path, 'meta-skill',
+                   'name: meta-skill\ndescription: Use when testing.\nmetadata:\n  version: 1.0')
+    assert check_skill(d) == [
+        f"{d / 'SKILL.md'}: metadata must map strings to strings (quote a value such as version: \"1.0\")"]
+    listed = make_skill(tmp_path, 'meta-list',
+                        'name: meta-list\ndescription: Use when testing.\nmetadata: [a, b]')
+    assert len(check_skill(listed)) == 1
+
+
+def test_compatibility_must_be_a_string_of_1_to_500_characters(tmp_path):
+    # Portability R1.3, both edges: 500 passes, 501 and a blank value fail.
+    ok = make_skill(tmp_path, 'compat-ok',
+                    "name: compat-ok\ndescription: Use when testing.\ncompatibility: '" + 'x' * 500 + "'")
+    assert check_skill(ok) == []
+    msg = 'compatibility must be a string of 1-500 characters'
+    for i, value in enumerate(["'" + 'x' * 501 + "'", "'   '", '42']):
+        d = make_skill(tmp_path, f'compat-bad-{i}',
+                       f'name: compat-bad-{i}\ndescription: Use when testing.\ncompatibility: {value}')
+        assert check_skill(d) == [f"{d / 'SKILL.md'}: {msg}"], value
+
+
+def test_angle_brackets_in_a_description_are_rejected(tmp_path):
+    # Portability R1.5: claude.ai rejects < and > in name and description.
+    d = make_skill(tmp_path, 'angle-skill',
+                   "name: angle-skill\ndescription: \"Use when asked to 'verify <page>'.\"")
+    assert check_skill(d) == [f"{d / 'SKILL.md'}: description contains < or >"]
+
+
+def _skill_with_dmi(tmp_path: Path, name: str, dmi: str, policy: str | None = None) -> Path:
+    '''A skill setting disable-model-invocation, optionally with Codex's policy file.'''
+    d = make_skill(tmp_path, name,
+                   f'name: {name}\ndescription: Use when testing.\ndisable-model-invocation: {dmi}')
+    if policy is not None:
+        (d / 'agents').mkdir()
+        (d / 'agents' / 'openai.yaml').write_text(policy)
+    return d
+
+
+FORBID_IMPLICIT = 'policy:\n  allow_implicit_invocation: false\n'
+
+
+def test_disable_model_invocation_must_be_a_yaml_boolean(tmp_path):
+    # Portability R1.6: a quoted 'true' is a string, which disables nothing.
+    d = _skill_with_dmi(tmp_path, 'quoted-dmi', "'true'")
+    assert check_skill(d) == [f"{d / 'SKILL.md'}: disable-model-invocation must be a YAML boolean, got 'true'"]
+
+
+def test_a_manual_only_skill_needs_the_codex_policy_file(tmp_path):
+    d = _skill_with_dmi(tmp_path, 'manual-skill', 'true')
+    assert check_skill(d) == [
+        f"{d / 'SKILL.md'}: disable-model-invocation: true needs agents/openai.yaml with "
+        'policy.allow_implicit_invocation: false, so Codex keeps the skill manual-only too']
+
+
+def test_a_manual_only_skill_with_the_codex_policy_passes(tmp_path):
+    assert check_skill(_skill_with_dmi(tmp_path, 'paired-skill', 'true', FORBID_IMPLICIT)) == []
+
+
+def test_the_codex_policy_must_forbid_implicit_invocation(tmp_path):
+    d = _skill_with_dmi(tmp_path, 'loose-skill', 'true', 'policy:\n  allow_implicit_invocation: true\n')
+    assert check_skill(d) == [
+        f"{d / 'agents' / 'openai.yaml'}: must set policy.allow_implicit_invocation: false, "
+        'because SKILL.md sets disable-model-invocation: true']
+
+
+def test_a_codex_manual_only_skill_needs_disable_model_invocation(tmp_path):
+    # The converse: manual-only in Codex but still auto-invoked by Claude Code.
+    d = _skill_with_dmi(tmp_path, 'codex-only', 'false', FORBID_IMPLICIT)
+    assert check_skill(d) == [
+        f"{d / 'SKILL.md'}: agents/openai.yaml sets policy.allow_implicit_invocation: false, "
+        'so disable-model-invocation must be true']
+
+
+def test_an_unparseable_codex_policy_is_reported(tmp_path):
+    d = _skill_with_dmi(tmp_path, 'broken-policy', 'true', 'policy: [unclosed\n')
+    errs = check_skill(d)
+    assert len(errs) == 1 and 'agents/openai.yaml: does not parse as YAML' in errs[0], errs
+
+
+def test_an_unparseable_codex_policy_is_reported_beside_a_non_boolean_flag(tmp_path):
+    # A non-boolean disable-model-invocation does not hide a broken policy file.
+    # The parity check needs a boolean, so a parseable policy adds nothing.
+    d = _skill_with_dmi(tmp_path, 'quoted-broken', "'true'", 'policy: [unclosed\n')
+    errs = check_skill(d)
+    assert len(errs) == 2, errs
+    assert errs[0] == f"{d / 'SKILL.md'}: disable-model-invocation must be a YAML boolean, got 'true'"
+    assert 'agents/openai.yaml: does not parse as YAML' in errs[1], errs
+    paired = _skill_with_dmi(tmp_path, 'quoted-paired', "'true'", FORBID_IMPLICIT)
+    assert check_skill(paired) == [
+        f"{paired / 'SKILL.md'}: disable-model-invocation must be a YAML boolean, got 'true'"]
+
+
+def _skill_with_body_lines(tmp_path: Path, name: str, extra: int) -> Path:
+    '''make_skill's body is two lines (a blank line and "# Body"); add extra lines.'''
+    d = make_skill(tmp_path, name, f'name: {name}\ndescription: Use when testing.')
+    (d / 'SKILL.md').write_text((d / 'SKILL.md').read_text() + 'line\n' * extra)
+    return d
+
+
+def test_a_body_over_500_lines_warns_without_an_error(tmp_path):
+    # Portability R1.7: an advisory, so check_skill (the errors) stays clean.
+    at_limit = _skill_with_body_lines(tmp_path, 'at-limit', 498)
+    over = _skill_with_body_lines(tmp_path, 'over-limit', 499)
+    assert skill_body_warning(at_limit) is None
+    assert skill_body_warning(over) == (
+        f"WARN {over / 'SKILL.md'}: body is 501 lines; the guide keeps a SKILL.md body under 500")
+    assert check_skill(over) == []
+
+
+def test_the_body_warning_goes_to_stderr_and_keeps_exit_zero():
+    # writing-skills is the one body over 500 lines (portability baseline);
+    # revisit this test when it is split, a portability deferred item.
+    result = subprocess.run([sys.executable, str(REPO / 'build' / 'check_frontmatter.py')],
+                            capture_output=True, text=True)
+    assert result.returncode == 0, result.stdout
+    assert 'WARN' not in result.stdout
+    assert any(line.startswith('WARN ') and 'skills/writing-skills/SKILL.md: body is' in line
+               for line in result.stderr.splitlines()), result.stderr
+
+
+def test_strict_flags_host_keys_and_reserved_name_words(tmp_path):
+    # Portability R1.8: the keys pass the default gate and fail --strict.
+    hosted = make_skill(tmp_path, 'hosted',
+                        'name: hosted\ndescription: Use when testing.\neffort: xhigh\ncontext: fork')
+    assert check_skill(hosted) == []
+    note = 'is a Claude Code extension, not an Agent Skills spec key (--strict)'
+    assert strict_violations(hosted) == [f"{hosted / 'SKILL.md'}: 'context' {note}",
+                                         f"{hosted / 'SKILL.md'}: 'effort' {note}"]
+    named = make_skill(tmp_path, 'claude-helper', 'name: claude-helper\ndescription: Use when testing.')
+    assert strict_violations(named) == [
+        f"{named / 'SKILL.md'}: name contains the reserved word 'claude' (--strict)"]
+    plain = make_skill(tmp_path, 'plain', 'name: plain\ndescription: Use when testing.')
+    assert strict_violations(plain) == []
+
+
+def test_strict_is_off_by_default_and_on_with_the_flag():
+    # The default gate stays green; --strict adds only its own SKILL.md lines.
+    script = str(REPO / 'build' / 'check_frontmatter.py')
+    default = subprocess.run([sys.executable, script], capture_output=True, text=True)
+    strict = subprocess.run([sys.executable, script, '--strict'], capture_output=True, text=True)
+    assert default.returncode == 0, default.stdout
+    assert strict.returncode == 1, strict.stdout
+    lines = strict.stdout.splitlines()
+    assert lines and all(line.endswith('(--strict)') and '/SKILL.md: ' in line for line in lines), lines
+
+
+def _skill_with_script(tmp_path: Path, name: str, script: str, filename: str = 'tool.py') -> Path:
+    d = make_skill(tmp_path, name, f'name: {name}\ndescription: Use when testing.')
+    (d / 'scripts').mkdir()
+    (d / 'scripts' / filename).write_text(script)
+    return d
+
+
+HEADER = "#!/usr/bin/env python3\n# /// script\n# requires-python = '>=3.11'\n# dependencies = []\n# ///\n"
+MAIN_GUARD = "\nif __name__ == '__main__':\n    pass\n"
+
+
+def test_a_runnable_script_needs_a_pep723_block(tmp_path):
+    # Portability R3.7: a scripts/*.py with a __main__ guard is runnable.
+    d = _skill_with_script(tmp_path, 'bare-script', 'import json\n' + MAIN_GUARD)
+    assert check_skill(d) == [
+        f"{d / 'scripts' / 'tool.py'}: a runnable script needs a PEP 723 script block, "
+        'so uv run can build its environment']
+
+
+def test_a_script_without_a_main_guard_is_a_library(tmp_path):
+    # Like tune-hyperparameters' time_series_cv.py: imported, never run (R3.1).
+    assert check_skill(_skill_with_script(tmp_path, 'library-script', 'import numpy\n')) == []
+
+
+def test_the_block_needs_requires_python_and_dependencies(tmp_path):
+    no_deps = _skill_with_script(tmp_path, 'no-deps', "# /// script\n# requires-python = '>=3.11'\n# ///\n" + MAIN_GUARD)
+    assert check_skill(no_deps) == [
+        f"{no_deps / 'scripts' / 'tool.py'}: the PEP 723 block needs a dependencies list ([] for a stdlib-only script)"]
+    no_floor = _skill_with_script(tmp_path, 'no-floor', '# /// script\n# dependencies = []\n# ///\n' + MAIN_GUARD)
+    assert check_skill(no_floor) == [f"{no_floor / 'scripts' / 'tool.py'}: the PEP 723 block needs requires-python"]
+
+
+def test_an_unparseable_block_is_reported(tmp_path):
+    d = _skill_with_script(tmp_path, 'bad-toml', '# /// script\n# dependencies = [\n# ///\n' + MAIN_GUARD)
+    errs = check_skill(d)
+    assert len(errs) == 1 and 'the PEP 723 script block does not parse' in errs[0], errs
+
+
+def test_a_script_that_does_not_parse_is_one_error_not_a_traceback(tmp_path):
+    # HEADER is five lines, so the broken def is line 6.
+    d = _skill_with_script(tmp_path, 'bad-python', HEADER + 'def broken(:\n' + MAIN_GUARD)
+    errs = check_skill(d)
+    assert len(errs) == 1, errs
+    assert re.fullmatch(rf"{re.escape(str(d / 'scripts' / 'tool.py'))}: does not parse as Python \(.+, line 6\)",
+                        errs[0]), errs
+
+
+def test_every_third_party_import_is_declared(tmp_path):
+    # A function-level import counts; the stdlib and a sibling module need nothing.
+    body = 'import json\nimport helper\n\ndef read():\n    import polars as pl\n    return pl\n' + MAIN_GUARD
+    d = _skill_with_script(tmp_path, 'undeclared', HEADER + body)
+    (d / 'scripts' / 'helper.py').write_text('')
+    assert check_skill(d) == [
+        f"{d / 'scripts' / 'tool.py'}: imports polars, which its PEP 723 dependencies do not declare"]
+    declared = HEADER.replace('dependencies = []', "dependencies = ['polars>=2.0']")
+    d2 = _skill_with_script(tmp_path, 'declared', declared + body)
+    (d2 / 'scripts' / 'helper.py').write_text('')
+    assert check_skill(d2) == []
+
+
+def test_import_names_map_to_distribution_names(tmp_path):
+    # yaml ships as PyYAML (the alias table); arviz_base matches arviz-base once
+    # both are normalized.
+    header = HEADER.replace('dependencies = []', "dependencies = ['PyYAML>=6.0', 'arviz-base>=1.0']")
+    script = header + 'import yaml\nfrom arviz_base import from_dict\n' + MAIN_GUARD
+    assert check_skill(_skill_with_script(tmp_path, 'aliased', script)) == []
+    missing = _skill_with_script(tmp_path, 'alias-missing', HEADER + 'import yaml\n' + MAIN_GUARD)
+    assert check_skill(missing) == [
+        f"{missing / 'scripts' / 'tool.py'}: imports yaml, which its PEP 723 dependencies do not declare (as pyyaml)"]
+
+
+def test_an_import_guarded_by_import_error_is_optional(tmp_path):
+    # Portability R3.4's exemption: the script runs without it.
+    body = 'try:\n    import arviz_stats\nexcept (ImportError, ValueError):\n    arviz_stats = None\n' + MAIN_GUARD
+    assert check_skill(_skill_with_script(tmp_path, 'optional', HEADER + body)) == []
+
+
+def test_a_vendored_script_is_exempt_from_the_header_rules(tmp_path):
+    d = _skill_with_script(tmp_path, 'vendored', 'import json\n' + MAIN_GUARD, filename='upstream.py')
+    assert check_script_headers(d, vendored=frozenset({'skills/vendored/scripts/upstream.py'})) == []
+    assert len(check_script_headers(d)) == 1
+
+
+RUNNABLE = HEADER + MAIN_GUARD
+
+
+def _skill_running(tmp_path: Path, name: str, body: str, md: str = 'SKILL.md') -> Path:
+    '''A skill with a runnable scripts/tool.py, whose markdown file md holds body.'''
+    d = _skill_with_script(tmp_path, name, RUNNABLE)
+    path = d / md
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text((path.read_text() if path.exists() else '') + body)
+    return d
+
+
+def test_python_before_a_bundled_script_is_flagged(tmp_path):
+    # Portability R3.5, R3.7: uv run <path> reads the header; python does not.
+    d = _skill_running(tmp_path, 'bare', '```bash\npython <this-skill-dir>/scripts/tool.py --x 1\n```\n')
+    assert check_invocations(d) == [
+        f"{d / 'SKILL.md'}: runs <this-skill-dir>/scripts/tool.py with python; "
+        "use uv run <this-skill-dir>/scripts/tool.py, which reads the script's PEP 723 header"]
+
+
+def test_python3_and_uv_run_python_are_flagged_too(tmp_path):
+    # uv run ... python <path> runs the project environment, not the header's.
+    body = ('Run `python3 scripts/tool.py`, or\n'
+            '`uv run --python 3.13 --with polars python <this-skill-dir>/scripts/tool.py`.\n')
+    runners = [runner for _, runner, _ in bundled_invocations(_skill_running(tmp_path, 'forms', body))]
+    assert runners == ['python3', 'python']
+
+
+def test_a_line_continued_invocation_is_joined_first(tmp_path):
+    d = _skill_running(tmp_path, 'continued', '```bash\npython \\\n    <this-skill-dir>/scripts/tool.py \\\n    --x 1\n```\n')
+    assert [runner for _, runner, _ in bundled_invocations(d)] == ['python']
+
+
+def test_uv_run_of_a_bundled_script_passes(tmp_path):
+    d = _skill_running(tmp_path, 'uv-form', '```bash\nuv run <this-skill-dir>/scripts/tool.py --x 1\n```\n')
+    assert check_invocations(d) == []
+    assert bundled_invocations(d) == [(d / 'SKILL.md', 'uv run', '<this-skill-dir>/scripts/tool.py')]
+
+
+def test_a_path_that_is_no_runnable_bundled_script_is_not_flagged(tmp_path):
+    # A teaching example (no such file) and a library (no __main__ guard).
+    d = _skill_running(tmp_path, 'examples', 'Run `python scripts/migrate.py`, then `python scripts/lib.py`.\n')
+    (d / 'scripts' / 'lib.py').write_text('X = 1\n')
+    assert bundled_invocations(d) == []
+
+
+def test_paths_resolve_across_skills_aliases_and_references(tmp_path):
+    # The R3.5 path forms: a sibling skill, the llm-wiki install root, a clone
+    # path, a repo-relative path, and an invocation in references/.
+    other = _skill_with_script(tmp_path, 'other', RUNNABLE)
+    wiki = _skill_with_script(tmp_path, 'llm-wiki', RUNNABLE, filename='lint_wiki.py')
+    body = ('`python <this-skill-dir>/../other/scripts/tool.py`\n'
+            '`python3 "$LLM_WIKI_ROOT/scripts/lint_wiki.py"`\n'
+            '`python3 ~/Projects/agent-skills/skills/other/scripts/tool.py`\n')
+    d = _skill_running(tmp_path, 'caller', body)
+    (d / 'references').mkdir()
+    (d / 'references' / 'usage.md').write_text('`python skills/other/scripts/tool.py`\n')
+    assert [(md.name, path) for md, _, path in bundled_invocations(d)] == [
+        ('SKILL.md', '<this-skill-dir>/../other/scripts/tool.py'),
+        ('SKILL.md', '$LLM_WIKI_ROOT/scripts/lint_wiki.py'),
+        ('SKILL.md', '~/Projects/agent-skills/skills/other/scripts/tool.py'),
+        ('usage.md', 'skills/other/scripts/tool.py')]
+    assert other.is_dir() and wiki.is_dir()
+
+
+def test_a_vendored_script_run_with_python3_passes(tmp_path):
+    # Owner decision D11: a vendored copy cannot carry a header, so its
+    # documented python3 call stays and the invocation rule skips it.
+    d = _skill_running(tmp_path, 'vendored-run', '```bash\npython3 <this-skill-dir>/scripts/tool.py\n```\n')
+    assert check_invocations(d, vendored=frozenset({'skills/vendored-run/scripts/tool.py'})) == []
+    assert len(check_invocations(d)) == 1
+
+
+UV_COMPATIBILITY = 'Requires uv to run bundled scripts (dependencies are declared inline); Python 3.11+.'
+
+
+def _uv_skill(tmp_path: Path, name: str, extra: str = '') -> Path:
+    '''A skill whose SKILL.md runs its bundled scripts/tool.py with uv run.'''
+    d = make_skill(tmp_path, name, f'name: {name}\ndescription: Use when testing.{extra}')
+    (d / 'scripts').mkdir()
+    (d / 'scripts' / 'tool.py').write_text(RUNNABLE)
+    with (d / 'SKILL.md').open('a') as f:
+        f.write('```bash\nuv run <this-skill-dir>/scripts/tool.py\n```\n')
+    return d
+
+
+def test_a_uv_run_invocation_needs_compatibility_naming_uv(tmp_path):
+    # Portability R3.6-R3.7. uv must be a word: cuvid does not name it.
+    for name, extra in (('no-compat', ''), ('no-uv', '\ncompatibility: Python 3.11+.'),
+                        ('uv-inside-a-word', '\ncompatibility: Needs cuvid.')):
+        d = _uv_skill(tmp_path, name, extra)
+        assert check_skill(d) == [
+            f"{d / 'SKILL.md'}: its markdown runs a bundled script with uv run, so compatibility must name uv"], name
+    assert check_skill(_uv_skill(tmp_path, 'named', f'\ncompatibility: {UV_COMPATIBILITY}')) == []
+
+
+def test_compatibility_is_optional_when_no_markdown_runs_a_script(tmp_path):
+    # A guard, green before and after: recommend-probabilistic-model bundles
+    # characterize.py but its markdown never runs it.
+    assert check_skill(_skill_with_script(tmp_path, 'unrun', RUNNABLE)) == []
 
 
 def make_agent(tmp_path: Path, name: str, description: str) -> Path:

@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = '>=3.11'
+# dependencies = []
+# ///
 '''Advisory decoupling check for methodology descriptions.
 
 Flags code-coupled tokens in a methodology markdown file:

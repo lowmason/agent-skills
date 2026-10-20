@@ -93,7 +93,7 @@ default.
 ## Stack notes
 
 - The skill is **markdown** — the common path needs no PDFs and no extra tooling.
-- `scripts/characterize.py` needs `polars` (Python ≥ 3.9).
+- `scripts/characterize.py` needs `polars` (Python ≥ 3.11).
 - The drill-down path (rare) uses `pdftotext`/`pdftoppm` (poppler) only if the book PDFs are present
   locally; otherwise it falls back to pyprobml + the public book site.
 

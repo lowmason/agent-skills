@@ -12,6 +12,7 @@ description: >
   plotly. Also when turning an explore-data profile into a chart, or picking encodings (which field
   maps to x / y / color / facet / size). Polars-first.
 license: MIT
+compatibility: Requires uv to run bundled scripts (dependencies are declared inline); Python 3.11+.
 metadata:
   author: Lowell Mason
   version: "1.0"
@@ -63,12 +64,13 @@ encoding map, which is the input to Phase 2.
 
 ```bash
 # profile -> ranked recommendation (signals like skew computed from the raw frame)
-uv run --python 3.13 --with polars python \
-    <this-skill-dir>/../explore-data/scripts/profile.py data.parquet --json profile.json
-uv run --python 3.13 --with polars python \
-    <this-skill-dir>/scripts/recommend.py data.parquet \
+uv run <this-skill-dir>/../explore-data/scripts/profile.py data.parquet --json profile.json
+uv run <this-skill-dir>/scripts/recommend.py data.parquet \
     --profile profile.json --intent correlation
 ```
+
+Without uv, run the same path with `python3` in an environment that has the dependencies listed
+in the script's header.
 
 ### Phase 2 — Code (route the library by purpose)
 The encoding map from Phase 1 is a near-direct spec. Pick the library by where the figure is going:
@@ -102,7 +104,7 @@ viridis for sequential.
 
 ## Stack notes
 
-- The skill is **markdown** — Phase 0/1 need only `polars` (and `recommend.py`, Python ≥ 3.9).
+- The skill is **markdown** — Phase 0/1 need only `polars` (and `recommend.py`, Python ≥ 3.11).
 - Phase 2 needs whichever library you route to: `altair` (+ `vl-convert-python` for static export,
   `vegafusion` for large raw data), `matplotlib`, or `plotly` (+ `kaleido` for static export). All
   three accept Polars frames either directly (Altair, plotly-express via narwhals) or via

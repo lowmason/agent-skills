@@ -5,6 +5,11 @@ description: >
   opening a PR, marking a task or todo complete, moving to the next task, or relaying a
   subagent's success report; also when tempted to say "should work now" or "looks correct", or to
   wrap up while tired.
+license: MIT
+metadata:
+  author: 'Jesse Vincent'
+  adapted_by: 'Lowell Mason'
+  source: 'https://github.com/obra/superpowers'
 ---
 
 # Verification Before Completion

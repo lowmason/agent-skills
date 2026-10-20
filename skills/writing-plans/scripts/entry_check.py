@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = '>=3.11'
+# dependencies = []
+# ///
 '''Report what a planning session checks before it plans a spec.
 
 Run from the repo root:

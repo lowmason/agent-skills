@@ -14,6 +14,7 @@ description: >
   mean", "is code X still valid", "when is the next revision". Codes and titles come from
   data/, never from model memory.
 license: MIT
+compatibility: Requires uv to run bundled scripts (dependencies are declared inline); Python 3.11+.
 metadata:
   author: Lowell Mason
   version: "0.2"
@@ -244,6 +245,9 @@ uv run skills/classification-codes/scripts/build.py            # download, parse
 uv run skills/classification-codes/scripts/build.py --offline  # rebuild from sources/ cache
 cd skills/classification-codes/scripts && uv run --python 3.13 --with pytest --with polars --with fastexcel python -m pytest -q
 ```
+
+Without uv, run the same path with `python3` in an environment that has the dependencies listed
+in the script's header.
 
 `scripts/build.py` pins the official Census/BLS URLs, handles the known layout quirks (preamble
 and legend rows, ranged sector codes, trilateral markers with trailing spaces, numeric code

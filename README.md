@@ -350,9 +350,11 @@ In this repo, the committed `.claude/rules/clean-code-python.md` symlink already
 
 Everything I wrote here is MIT licensed. [`NOTICE`](NOTICE) tracks the attribution for each skill:
 
-- **My original skills and `bayesian-workflow`** — MIT, © Lowell Mason; full text in [`LICENSE`](LICENSE). (`bayesian-workflow` is an adaptation of Alexandre Andorra's PyMC skill.)
+- **My original skills and `bayesian-workflow`** — MIT, © Lowell Mason; full text in [`LICENSE`](LICENSE). (`bayesian-workflow` is an adaptation of Alexandre Andorra's PyMC skill; its upstream notice is in [`LICENSE-andorra`](LICENSE-andorra).)
 - **`recommend-causal-design`** — MIT. The adaptations are by Lowell Mason. [`LICENSE-causal-design-sources`](LICENSE-causal-design-sources) keeps the source copyrights and permission notices for Robson Tigre and Learning Bayesian Statistics.
 - **`write-with-asd-ste100`** and its rule — MIT. The adaptations are by Lowell Mason. [`LICENSE-write-with-asd-ste100-sources`](LICENSE-write-with-asd-ste100-sources) keeps the source copyrights and permission notices for Dustin Yuchen Teng and Prithiv M U.
 - **superpowers skills** — MIT, © 2025 Jesse Vincent ([superpowers](https://github.com/obra/superpowers)). The full text is in [`LICENSE-superpowers`](LICENSE-superpowers).
 - **Mancuso Lab material** in `bayesian-workflow` and `clean-code` — MIT, © 2026 Mancuso Lab ([coding-skills](https://github.com/mancusolab/coding-skills)). The adaptations are by Lowell Mason. The full upstream text is in [`LICENSE-coding-skills`](LICENSE-coding-skills).
 - **Bundled U.S. Government data** — the verbatim `sources/` audit copies in `classification-codes` and `geographic-codes` are works of the United States Government, in the public domain under 17 U.S.C. § 105, and carry no license of mine; the `data/` tables derived from them, the build scripts, the seed tables, and all prose are MIT (see [`NOTICE`](NOTICE)).
+
+Each skill directory also carries copies of the license files that apply to it, so a skill installed on its own keeps its notices; the root files are canonical, and `build/check_provenance.py` checks the copies.

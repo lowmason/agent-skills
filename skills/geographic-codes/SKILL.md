@@ -14,6 +14,7 @@ description: >
   "which metro is Y in", "was this code valid in", delineation, county change, OMB bulletin,
   central / outlying county, commuting threshold.
 license: MIT
+compatibility: Requires uv to run bundled scripts (dependencies are declared inline); Python 3.11+.
 metadata:
   author: Lowell Mason
   version: "0.2"
@@ -230,6 +231,9 @@ uv run skills/geographic-codes/scripts/build.py            # download, synthesiz
 uv run skills/geographic-codes/scripts/build.py --offline  # from sources/ cache
 uv run skills/geographic-codes/scripts/build.py --list     # the pinned sources
 ```
+
+Without uv, run the same path with `python3` in an environment that has the dependencies listed
+in the script's header.
 
 `counties.csv` is *synthesized*: the current Census gazetteer supplies the live set, and
 `seeds/county_changes.csv` is played forward from 1990 to open and close intervals. The seed is

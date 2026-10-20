@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-'''Provenance lint: every skill directory is attributed in NOTICE, and no
-binary document assets (.pdf/.epub/.docx) are git-tracked.
+'''Provenance lint: every skill directory is attributed in NOTICE and carries
+byte-identical copies of the root license files that apply to it
+(BUNDLED_LICENSES), and no binary document assets (.pdf/.epub/.docx) are
+git-tracked.
 
 Run: uv run --python 3.13 python build/check_provenance.py
 Exit 0 if clean; exit 1 with one line per violation.
@@ -14,6 +16,25 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
 BINARY_SUFFIXES = ('.pdf', '.epub', '.docx')
+PLAIN_LICENSE = 'LICENSE'
+# Root license file -> the skills that carry a byte-identical copy of it under
+# the same name, so a single-skill install keeps the notice MIT requires
+# (portability R4). PLAIN_LICENSE goes to every skill and is not listed.
+BUNDLED_LICENSES: dict[str, tuple[str, ...]] = {
+    'LICENSE-superpowers': (
+        'brainstorming', 'dispatching-parallel-agents', 'executing-plans',
+        'finishing-a-development-branch', 'receiving-code-review',
+        'requesting-code-review', 'subagent-driven-development',
+        'systematic-debugging', 'test-driven-development', 'using-git-worktrees',
+        'verification-before-completion', 'writing-plans', 'writing-skills',
+    ),
+    # NOTICE records adapted Mancuso Lab content in these two; tech-debt took
+    # only an idea from it and carries no copy.
+    'LICENSE-coding-skills': ('bayesian-workflow', 'clean-code'),
+    'LICENSE-causal-design-sources': ('recommend-causal-design',),
+    'LICENSE-andorra': ('bayesian-workflow',),
+    'LICENSE-write-with-asd-ste100-sources': ('write-with-asd-ste100',),
+}
 
 
 def skill_dirs() -> list[str]:
@@ -21,6 +42,38 @@ def skill_dirs() -> list[str]:
         d.name for d in (REPO / 'skills').iterdir()
         if d.is_dir() and (d / 'SKILL.md').exists()
     )
+
+
+def bundled_license_violations(repo: Path, skills: list[str],
+                               table: dict[str, tuple[str, ...]]) -> list[str]:
+    '''Every skill holds a regular-file copy of PLAIN_LICENSE and of each root
+    license file the table maps to it, byte-identical to the root file, and no
+    other LICENSE* file; every root LICENSE* file is mapped (portability R4.2).'''
+    errs: list[str] = []
+    roots = sorted(p.name for p in repo.glob('LICENSE*') if p.is_file())
+    errs += [f'{name}: root license file is mapped to no skill in BUNDLED_LICENSES'
+             for name in roots if name != PLAIN_LICENSE and name not in table]
+    for name, owners in sorted(table.items()):
+        if name not in roots:
+            errs.append(f'BUNDLED_LICENSES: {name} is not a root license file')
+        errs += [f'BUNDLED_LICENSES: {name} names {skill}, which is not a skill directory'
+                 for skill in owners if skill not in skills]
+    for skill in skills:
+        d = repo / 'skills' / skill
+        wanted = {PLAIN_LICENSE} | {name for name, owners in table.items()
+                                    if skill in owners and name in roots}
+        for name in sorted(wanted):
+            copy, rel = d / name, f'skills/{skill}/{name}'
+            if copy.is_symlink():
+                errs.append(f'{rel}: a symlink, which install.py --copy refuses; '
+                            f'copy the root {name} as a regular file')
+            elif not copy.is_file():
+                errs.append(f'{rel}: missing; copy the root {name} here as a regular file')
+            elif copy.read_bytes() != (repo / name).read_bytes():
+                errs.append(f'{rel}: differs from the root {name}; copy it again')
+        errs += [f'skills/{skill}/{p.name}: not mapped to {skill} in BUNDLED_LICENSES'
+                 for p in sorted(d.glob('LICENSE*')) if p.name not in wanted]
+    return errs
 
 
 def find_binary_assets(tracked: list[str]) -> list[str]:
@@ -78,6 +131,7 @@ def main() -> int:
     notice = (REPO / 'NOTICE').read_text()
     for name in missing_attributions(skill_dirs(), notice):
         errs.append(f'NOTICE: missing attribution entry for skill {name}/')
+    errs += bundled_license_violations(REPO, skill_dirs(), BUNDLED_LICENSES)
     claude_md = (REPO / 'CLAUDE.md').read_text()
     missing, extra = originals_mismatch(claude_md_originals(claude_md), notice_originals(notice))
     if missing:

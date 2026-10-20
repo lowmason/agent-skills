@@ -2,22 +2,48 @@
 # cc-guide: skills.frontmatter commands.overview subagents.frontmatter subagents.tools subagents.models @2.1.219
 '''Frontmatter and bundled-path lint for every skill in the repo (Gate A pattern).
 
-Per <skill>/SKILL.md: the frontmatter must parse as YAML (catches unquoted-
-scalar breakage), name must equal the directory name (<=64 chars, lowercase
-letters/digits/hyphens), description must be present and <=1024 chars (Agent
-Skills spec cap), keys must be spec-valid, context must be in CONTEXT_VALUES,
-model must not be haiku or a claude-haiku-* ID (not portable across providers), and every
-relative markdown-link target plus every backticked references/ or scripts/
-path must exist.
+Per <skill>/SKILL.md:
+- the frontmatter parses as YAML (catches unquoted-scalar breakage);
+- name equals the directory name (<=64 chars, lowercase letters/digits/hyphens);
+- description is present and <=1024 chars (the Agent Skills spec cap);
+- every key is an Agent Skills spec key (SPEC_KEYS) or a host extension this
+  repo allows (HOST_KEYS);
+- license is a non-empty string (repo policy, beyond the spec);
+- name and description contain no < or >; metadata maps strings to strings;
+  compatibility is a string of 1-500 characters;
+- disable-model-invocation is a YAML boolean, and it is true exactly when the
+  skill's agents/openai.yaml sets Codex's policy.allow_implicit_invocation: false;
+- context is in CONTEXT_VALUES, and model is not haiku or a claude-haiku-* ID
+  (not portable across providers);
+- every relative markdown-link target and every backticked references/ or
+  scripts/ path exists;
+- every runnable script (a scripts/*.py with a __main__ guard) carries a PEP 723
+  block with requires-python and dependencies, and declares every third-party
+  import outside a try that catches ImportError (VENDORED_SCRIPTS are exempt);
+- no markdown in the skill runs a runnable bundled script with python or python3,
+  line continuations joined: the form is uv run <path> (VENDORED_SCRIPTS are
+  exempt);
+- a skill whose markdown runs a bundled script with uv run names uv in
+  compatibility.
+A body (the lines after the closing frontmatter ---) over 500 lines prints one
+WARN line to stderr; the exit code does not change.
 
-Run: uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
+--strict also fails a SKILL.md that carries a HOST_KEYS key or whose name
+contains claude or anthropic. It is not part of the commit gate: run it before
+a claude.ai upload or a spec-only validator run. Agents and commands are not
+Agent Skills, so it leaves them alone.
+
+Run: uv run --python 3.13 --with pyyaml python build/check_frontmatter.py [--strict]
 Exit 0 if clean; exit 1 with one line per violation.
 '''
 from __future__ import annotations
 
+import argparse
+import ast
 import importlib.util
 import re
 import sys
+import tomllib
 from pathlib import Path
 
 import yaml
@@ -25,8 +51,58 @@ import yaml
 from fences import strip_fenced_blocks
 
 REPO = Path(__file__).resolve().parent.parent
-ALLOWED_KEYS = {'name', 'description', 'license', 'allowed-tools', 'metadata',
-                'when_to_use', 'model', 'effort', 'context', 'compatibility'}
+# The Agent Skills spec's fields (agentskills.io/specification), which every
+# runtime that implements the spec accepts.
+SPEC_KEYS = frozenset({'name', 'description', 'license', 'compatibility', 'metadata',
+                       'allowed-tools'})
+# Claude Code extensions this repo allows beside them. Gemini CLI and Codex load
+# a skill that carries one; claude.ai uploads and spec-only validators reject
+# them, which is what --strict checks.
+HOST_KEYS = frozenset({'when_to_use', 'model', 'effort', 'context',
+                       'disable-model-invocation', 'agent'})
+# The spec caps compatibility at 500 characters.
+COMPATIBILITY_CAP = 500
+# The guide's skills.overview keeps a SKILL.md body under 500 lines; past it,
+# the lint warns and does not fail (portability R1.7).
+BODY_LINE_ADVISORY = 500
+FRONTMATTER_RE = re.compile(r'^---\n(.*?)\n---\n', re.S)
+# A scripts/*.py with this guard is runnable (portability R3.1).
+MAIN_GUARD_RE = re.compile(r'''^if __name__ == ['"]__main__['"]\s*:''', re.M)
+# PEP 723's reference regex for an inline script metadata block.
+PEP723_RE = re.compile(
+    r'(?m)^# /// (?P<type>[a-zA-Z0-9-]+)$\s(?P<content>(^#(| .*)$\s)+)^# ///$')
+# Import names whose distribution is named differently. Other names match once
+# both sides are normalized (PEP 503), so arviz_base matches arviz-base.
+IMPORT_DISTRIBUTIONS = {'yaml': 'pyyaml', 'sklearn': 'scikit-learn', 'PIL': 'pillow'}
+# Scripts copied byte for byte from upstream, which cannot carry a header. They
+# are exempt from the two header rules and the invocation rule (owner decision
+# D11, plan 53) only. Keys are skills/<skill>/scripts/<file>.
+VENDORED_SCRIPTS: frozenset[str] = frozenset({'skills/write-with-asd-ste100/scripts/ste-lint.py'})
+# A backslash line continuation, joined before the invocation scan so that
+# python \ with the path on the next line is caught (portability R3.7).
+CONTINUATION_RE = re.compile(r'\\\n[ \t]*')
+# A documented path to a bundled script: <owner>/scripts/<file>.py or scripts/<file>.py.
+SCRIPT_PATH_RE = re.compile(r'''(?:[^\s"'`()]*/)?scripts/[\w.-]+\.py''')
+# The runner word right before a script path, after an optional opening quote.
+# Accepted blind spots: a runner word not right before the path (python3 -u
+# <path>, uv run --no-project <path>) is not seen, and the path forms
+# ./scripts/, ../scripts/ and ${LLM_WIKI_ROOT} do not resolve, so neither is
+# checked. No skill markdown invoked a script in these forms at plan 53.
+RUNNER_RE = re.compile(r'''(?:^|[\s`(])(?P<runner>python3?|uv run)\s+["']?$''')
+# How a skill's markdown names its own directory.
+THIS_SKILL = '<this-skill-dir>'
+# Path owners that stand for a skill under another name: a wiki root's
+# scripts/ holds the copies llm-wiki's bootstrap_wiki.py installs.
+PATH_ALIASES = {'$LLM_WIKI_ROOT': 'llm-wiki'}
+# compatibility names uv as a word (portability R3.6).
+UV_WORD_RE = re.compile(r'\buv\b')
+DMI_KEY = 'disable-model-invocation'
+# A skill name may not contain these words on claude.ai (portability R1.8).
+RESERVED_NAME_WORDS = ('claude', 'anthropic')
+# Codex reads a skill's invocation policy from this file
+# (developers.openai.com/codex/skills).
+CODEX_POLICY = Path('agents') / 'openai.yaml'
+ANGLE_BRACKET_RE = re.compile(r'[<>]')
 # `fork` is the only value Claude Code documents for `context` (run the skill in
 # an isolated subagent). Any other value is a typo that silently no-ops at
 # runtime, so it fails here instead — widen this set if the spec grows one.
@@ -106,11 +182,208 @@ def _check_model_pin(md: Path, fm: dict) -> list[str]:
             'instead (specs/completed/skill-model-pin-removal.md)']
 
 
+def _check_license(sk: Path, fm: dict) -> list[str]:
+    '''Every SKILL.md names its license (portability R1.4: repo policy, beyond
+    the spec), so a single-skill install still says how the skill is licensed.'''
+    lic = fm.get('license')
+    if isinstance(lic, str) and lic.strip():
+        return []
+    return [f'{sk}: license is required, a non-empty string (repo policy, beyond the Agent Skills spec)']
+
+
+def _check_value_shapes(sk: Path, fm: dict) -> list[str]:
+    '''The value shapes the Agent Skills spec defines: no < or > in name or
+    description, metadata as a string-to-string map, compatibility as a string
+    of 1 to COMPATIBILITY_CAP characters.'''
+    errs = [f'{sk}: {key} contains < or >' for key in ('name', 'description')
+            if ANGLE_BRACKET_RE.search(str(fm.get(key) or ''))]
+    meta = fm.get('metadata', {})
+    if not (isinstance(meta, dict)
+            and all(isinstance(k, str) and isinstance(v, str) for k, v in meta.items())):
+        errs.append(f'{sk}: metadata must map strings to strings (quote a value such as version: "1.0")')
+    if 'compatibility' in fm:
+        compat = fm['compatibility']
+        if not (isinstance(compat, str) and 1 <= len(compat.strip()) <= COMPATIBILITY_CAP):
+            errs.append(f'{sk}: compatibility must be a string of 1-{COMPATIBILITY_CAP} characters')
+    return errs
+
+
+def _check_invocation_parity(skill_dir: Path, fm: dict) -> list[str]:
+    '''disable-model-invocation and Codex's policy.allow_implicit_invocation
+    agree (portability R1.6), so a manual-only skill cannot auto-fire in Codex.
+    A non-boolean value skips the parity check, but an unparseable policy file
+    is still reported.'''
+    sk = skill_dir / 'SKILL.md'
+    dmi = fm.get(DMI_KEY)
+    errs: list[str] = []
+    if DMI_KEY in fm and not isinstance(dmi, bool):
+        errs.append(f'{sk}: {DMI_KEY} must be a YAML boolean, got {dmi!r}')
+    policy_file = skill_dir / CODEX_POLICY
+    if not policy_file.is_file():
+        if dmi is True:
+            return [f'{sk}: {DMI_KEY}: true needs {CODEX_POLICY} with '
+                    'policy.allow_implicit_invocation: false, so Codex keeps the skill manual-only too']
+        return errs
+    try:
+        data = yaml.safe_load(policy_file.read_text())
+    except yaml.YAMLError as exc:
+        return errs + [f'{policy_file}: does not parse as YAML ({type(exc).__name__})']
+    if errs:
+        return errs
+    policy = data.get('policy') if isinstance(data, dict) else None
+    allow = policy.get('allow_implicit_invocation') if isinstance(policy, dict) else None
+    if dmi is True and allow is not False:
+        return [f'{policy_file}: must set policy.allow_implicit_invocation: false, '
+                f'because SKILL.md sets {DMI_KEY}: true']
+    if dmi is not True and allow is False:
+        return [f'{sk}: {CODEX_POLICY} sets policy.allow_implicit_invocation: false, '
+                f'so {DMI_KEY} must be true']
+    return []
+
+
+def runnable_scripts(skill_dir: Path) -> list[Path]:
+    '''The skill's scripts/*.py files that carry a __main__ guard.'''
+    return [p for p in sorted((skill_dir / 'scripts').glob('*.py'))
+            if MAIN_GUARD_RE.search(p.read_text())]
+
+
+def script_metadata(text: str) -> dict | None:
+    '''The parsed PEP 723 script block, or None when there is none. Raises
+    tomllib.TOMLDecodeError when the block does not parse.'''
+    block = next((m for m in PEP723_RE.finditer(text) if m.group('type') == 'script'), None)
+    if block is None:
+        return None
+    content = ''.join(line[2:] if line.startswith('# ') else line[1:]
+                      for line in block.group('content').splitlines(keepends=True))
+    return tomllib.loads(content)
+
+
+def _normalize_distribution(name: str) -> str:
+    return re.sub(r'[-_.]+', '-', name).lower()
+
+
+def _catches_import_error(handler: ast.ExceptHandler) -> bool:
+    caught = handler.type.elts if isinstance(handler.type, ast.Tuple) else [handler.type]
+    return any(isinstance(t, ast.Name) and t.id in ('ImportError', 'ModuleNotFoundError')
+               for t in caught)
+
+
+def required_imports(tree: ast.Module, siblings: set[str]) -> set[str]:
+    '''Top-level names of the third-party modules a script imports, at any depth,
+    except inside a try that catches ImportError or ModuleNotFoundError (portability
+    R3.4: those are optional). The stdlib and sibling modules are left out.'''
+    optional: set[int] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Try) and any(_catches_import_error(h) for h in node.handlers):
+            optional.update(id(sub) for stmt in node.body for sub in ast.walk(stmt))
+    names: set[str] = set()
+    for node in ast.walk(tree):
+        if id(node) in optional:
+            continue
+        if isinstance(node, ast.Import):
+            names.update(alias.name.split('.')[0] for alias in node.names)
+        elif isinstance(node, ast.ImportFrom) and node.level == 0 and node.module:
+            names.add(node.module.split('.')[0])
+    return {n for n in names if n not in sys.stdlib_module_names and n not in siblings}
+
+
+def check_script_headers(skill_dir: Path, vendored: frozenset[str] = VENDORED_SCRIPTS) -> list[str]:
+    '''Each runnable script carries a PEP 723 block with requires-python and a
+    dependencies list that declares every required third-party import
+    (portability R3.7), so `uv run <path>` builds the environment it needs.'''
+    errs: list[str] = []
+    for script in runnable_scripts(skill_dir):
+        if f'skills/{skill_dir.name}/scripts/{script.name}' in vendored:
+            continue
+        text = script.read_text()
+        try:
+            meta = script_metadata(text)
+        except tomllib.TOMLDecodeError as exc:
+            errs.append(f'{script}: the PEP 723 script block does not parse ({exc})')
+            continue
+        if meta is None:
+            errs.append(f'{script}: a runnable script needs a PEP 723 script block, '
+                        'so uv run can build its environment')
+            continue
+        if not isinstance(meta.get('requires-python'), str):
+            errs.append(f'{script}: the PEP 723 block needs requires-python')
+        deps = meta.get('dependencies')
+        if not (isinstance(deps, list) and all(isinstance(d, str) for d in deps)):
+            errs.append(f'{script}: the PEP 723 block needs a dependencies list ([] for a stdlib-only script)')
+            continue
+        declared = {_normalize_distribution(re.split(r'[\s<>=!~;\[(]', d.strip(), maxsplit=1)[0])
+                    for d in deps}
+        try:
+            tree = ast.parse(text)
+        except SyntaxError as exc:
+            errs.append(f'{script}: does not parse as Python ({exc.msg}, line {exc.lineno})')
+            continue
+        siblings = {p.stem for p in script.parent.glob('*.py')}
+        for name in sorted(required_imports(tree, siblings)):
+            dist = IMPORT_DISTRIBUTIONS.get(name, name)
+            if _normalize_distribution(dist) not in declared:
+                alias = f' (as {dist})' if dist != name else ''
+                errs.append(f'{script}: imports {name}, which its PEP 723 dependencies do not declare{alias}')
+    return errs
+
+
+def resolve_bundled_script(path: str, skill_dir: Path) -> Path | None:
+    '''The runnable bundled script a documented path names, or None. The owner
+    before scripts/ is THIS_SKILL, a PATH_ALIASES key or a skill directory
+    name; a bare scripts/<file>.py is this skill's.'''
+    parts = path.split('/')
+    owner = parts[-3] if len(parts) >= 3 else THIS_SKILL
+    skill = skill_dir.name if owner == THIS_SKILL else PATH_ALIASES.get(owner, owner)
+    script = skill_dir.parent / skill / 'scripts' / parts[-1]
+    if script.is_file() and MAIN_GUARD_RE.search(script.read_text()):
+        return script
+    return None
+
+
+def bundled_invocations(skill_dir: Path) -> list[tuple[Path, str, str]]:
+    '''(markdown file, runner, path) for each place the skill's markdown runs a
+    runnable bundled script with python, python3 or uv run, in file order.'''
+    found = []
+    for md in sorted(skill_dir.rglob('*.md')):
+        text = CONTINUATION_RE.sub(' ', md.read_text())
+        for m in SCRIPT_PATH_RE.finditer(text):
+            line_start = text.rfind('\n', 0, m.start()) + 1
+            runner = RUNNER_RE.search(text[line_start:m.start()])
+            if runner and resolve_bundled_script(m.group(), skill_dir):
+                found.append((md, runner.group('runner'), m.group()))
+    return found
+
+
+def check_invocations(skill_dir: Path, vendored: frozenset[str] = VENDORED_SCRIPTS) -> list[str]:
+    '''The skill's markdown runs each bundled script as uv run <path>, which
+    reads the script's header, never with python or python3 (portability R3.5).
+    A vendored script has no header, so its documented runner stands.'''
+    errs: list[str] = []
+    for md, runner, path in bundled_invocations(skill_dir):
+        script = resolve_bundled_script(path, skill_dir)
+        if runner == 'uv run' or f'skills/{script.parent.parent.name}/scripts/{script.name}' in vendored:
+            continue
+        errs.append(f'{md}: runs {path} with {runner}; use uv run {path}, '
+                    "which reads the script's PEP 723 header")
+    return errs
+
+
+def _check_compatibility_names_uv(skill_dir: Path, fm: dict) -> list[str]:
+    '''A skill whose markdown runs a bundled script with uv run names uv in
+    compatibility (portability R3.6-R3.7), so a host can tell it needs uv.'''
+    if not any(runner == 'uv run' for _, runner, _ in bundled_invocations(skill_dir)):
+        return []
+    if UV_WORD_RE.search(str(fm.get('compatibility') or '')):
+        return []
+    return [f"{skill_dir / 'SKILL.md'}: its markdown runs a bundled script with uv run, "
+            'so compatibility must name uv']
+
+
 def check_skill(skill_dir: Path) -> list[str]:
     errs: list[str] = []
     sk = skill_dir / 'SKILL.md'
     text = sk.read_text()
-    m = re.match(r'^---\n(.*?)\n---\n', text, re.S)
+    m = FRONTMATTER_RE.match(text)
     if not m:
         return [f'{sk}: no frontmatter block']
     try:
@@ -135,8 +408,14 @@ def check_skill(skill_dir: Path) -> list[str]:
     if ctx is not None and ctx not in CONTEXT_VALUES:
         errs.append(f'{sk}: context must be one of {sorted(CONTEXT_VALUES)}, got {ctx!r}')
     errs += _check_model_pin(sk, fm)
+    errs += _check_license(sk, fm)
+    errs += _check_value_shapes(sk, fm)
+    errs += _check_invocation_parity(skill_dir, fm)
+    errs += check_script_headers(skill_dir)
+    errs += check_invocations(skill_dir)
+    errs += _check_compatibility_names_uv(skill_dir, fm)
     for key in fm:
-        if key not in ALLOWED_KEYS:
+        if key not in SPEC_KEYS | HOST_KEYS:
             errs.append(f'{sk}: unknown frontmatter key {key!r}')
 
     # Scan links/paths in prose only — fenced code blocks hold teaching
@@ -150,9 +429,38 @@ def check_skill(skill_dir: Path) -> list[str]:
     return errs
 
 
+def skill_body_warning(skill_dir: Path) -> str | None:
+    '''One WARN line for a SKILL.md body over BODY_LINE_ADVISORY lines, counted
+    as wc -l counts the lines after the closing frontmatter ---.'''
+    sk = skill_dir / 'SKILL.md'
+    text = sk.read_text()
+    m = FRONTMATTER_RE.match(text)
+    if not m:
+        return None  # check_skill reports the missing block
+    lines = text[m.end():].count('\n')
+    if lines <= BODY_LINE_ADVISORY:
+        return None
+    return f'WARN {sk}: body is {lines} lines; the guide keeps a SKILL.md body under {BODY_LINE_ADVISORY}'
+
+
+def strict_violations(skill_dir: Path) -> list[str]:
+    '''The --strict profile (portability R1.8): host keys and reserved name
+    words, which only a claude.ai upload or a spec-only validator rejects.'''
+    sk = skill_dir / 'SKILL.md'
+    fm, _ = _parse_frontmatter(sk)
+    if fm is None:
+        return []  # check_skill reports why
+    errs = [f'{sk}: {key!r} is a Claude Code extension, not an Agent Skills spec key (--strict)'
+            for key in sorted(set(fm) & HOST_KEYS)]
+    name = str(fm.get('name') or '').lower()
+    errs += [f'{sk}: name contains the reserved word {word!r} (--strict)'
+             for word in RESERVED_NAME_WORDS if word in name]
+    return errs
+
+
 def _parse_frontmatter(md: Path) -> tuple[dict | None, list[str]]:
     text = md.read_text()
-    m = re.match(r'^---\n(.*?)\n---\n', text, re.S)
+    m = FRONTMATTER_RE.match(text)
     if not m:
         return None, [f'{md}: no frontmatter block']
     try:
@@ -256,11 +564,21 @@ def check_readonly_roster(agents_dir: Path | None = None,
     return errs
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description='Lint skill, agent and command frontmatter.')
+    parser.add_argument('--strict', action='store_true',
+                        help='also fail host keys and the reserved words claude and anthropic in a '
+                             'SKILL.md; run before a claude.ai upload or a spec-only validator run')
+    args = parser.parse_args(argv)
     errs: list[str] = []
     for d in sorted((REPO / 'skills').iterdir()):
         if d.is_dir() and (d / 'SKILL.md').exists():
             errs += check_skill(d)
+            if args.strict:
+                errs += strict_violations(d)
+            warning = skill_body_warning(d)
+            if warning:
+                print(warning, file=sys.stderr)
     for md in sorted((REPO / 'agents').glob('*.md')):
         errs += check_agent_file(md)
     for md in sorted((REPO / 'commands').glob('*.md')):

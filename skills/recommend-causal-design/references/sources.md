@@ -13,8 +13,8 @@ No book/paper prose, figures, PDFs, or upstream estimator code is redistributed.
 
 Both public HEAD/main commits were resolved with `git ls-remote`; each LICENSE
 was checked at that exact commit. Full MIT notices are retained inside this
-skill in [LICENSE](../LICENSE), also recorded in the repository's
-`LICENSE-causal-design-sources` and attribution in `NOTICE`.
+skill in [LICENSE-causal-design-sources](../LICENSE-causal-design-sources), a
+copy of the repository's file of that name, with attribution in `NOTICE`.
 
 Changes from those sources: recommendation-only endpoint; explicit
 requested/supported estimand and status fields; self-contained references;

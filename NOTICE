@@ -4,6 +4,13 @@ NOTICE
 This repository bundles agent skills from more than one source; skills live
 under skills/, one directory per skill. Attribution and licensing, by skill:
 
+Each skill directory carries copies of the license texts that apply to it:
+LICENSE in every skill, and each root LICENSE-* file whose source the skill
+adapts. A single-skill install (install.py --copy --skill, or a third-party
+installer) therefore keeps the notice the MIT license requires. The root files
+are canonical, and build/check_provenance.py checks that every copy is
+byte-identical to its root file.
+
 Files under runtimes/ are mechanically generated format adapters for the
 canonical agents/*.md and commands/*.md sources. They reproduce the source
 instruction bodies without changing their provenance or license; each adapter
@@ -15,6 +22,13 @@ bayesian-workflow/
     Adapted by Lowell Mason from Alexandre Andorra's original PyMC
     Bayesian-workflow skill. Ported to NumPyro + JAX with expanded
     visualization guidance. MIT licensed.
+    Upstream is the bayesian-workflow skill in
+    https://github.com/Learning-Bayesian-Statistics/baygent-skills, whose
+    LICENSE reads "Copyright (c) 2026 Learning Bayesian Statistics"; the
+    full upstream MIT text is in LICENSE-andorra. This repository imported
+    the skill on 2026-06-20 (2d99584), after upstream's v1.5 (1959ef6,
+    2026-06-07); which upstream version was ported is not recorded. That
+    LICENSE file is unchanged since upstream's first commit (3681125).
     references/model-comparison.md additionally documents four
     arviz_stats APIs (loo_expectations, loo_metrics, loo_r2,
     bayes_factor) whose existence was pointed out by the
@@ -78,9 +92,9 @@ and the bibliography are in the skill's references/sources.md.
 write-with-asd-ste100/ and rules/write-with-asd-ste100.md adapt two MIT
 licensed skills. Both full upstream notices, with the pinned commits, are in
 LICENSE-write-with-asd-ste100-sources, and a copy travels with the skill as
-write-with-asd-ste100/LICENSE. Both were retrieved on 2026-10-18. Both
-repositories are active, so the pins are the starting point for a later drift
-review.
+write-with-asd-ste100/LICENSE-write-with-asd-ste100-sources. Both were
+retrieved on 2026-10-18. Both repositories are active, so the pins are the
+starting point for a later drift review.
 
   - danyuchn/asd-ste100-skill (MIT, Copyright (c) 2026 Dustin Yuchen Teng;
     commit 3944283c183eea13fe5bd902b572da3b4de8bf44, 2026-10-14). Adapted:
@@ -494,6 +508,27 @@ Changes from upstream:
     <this-skill-dir>/ anchor the bundled-script-path entry above gave the
     other skills; upstream's #2301 prefixes bash but still resolves the
     path against the user's repository.
+  - All thirteen skills' SKILL.md files gained `license: MIT` and a
+    `metadata` block naming Jesse Vincent as author, Lowell Mason as
+    adapter and https://github.com/obra/superpowers as source, placed
+    above any `# cc-guide:` line so that line stays last
+    (specs/completed/agent-skills-portability-spec.md, R1.4). writing-skills' list of
+    the frontmatter keys build/check_frontmatter.py accepts was brought up
+    to date in the same change: `license` is required, and
+    `disable-model-invocation` and `agent` are accepted.
+  - writing-plans and finishing-a-development-branch ran the
+    deferred_stats.py and entry_check.py reporters as `uv run --no-project
+    --python 3.13 python <path>`. They now run `uv run <path>`, which
+    reads the PEP 723 header each script gained, and each SKILL.md gained
+    one sentence on running the same path with `python3` where uv is
+    absent (specs/completed/agent-skills-portability-spec.md, R3.5). The same
+    change in references/deferred-backlog.md, and the two headers, are to
+    the original works named above. Both SKILL.md files also gained a
+    `compatibility` field naming uv (R3.6).
+  - writing-skills' Token Efficiency section gained a note that Codex
+    shortens long descriptions once its skills listing passes its budget,
+    with the cut measured on 2026-10-19 and how to re-measure it
+    (specs/completed/agent-skills-portability-spec.md, R2.3).
 
     brainstorming/
     dispatching-parallel-agents/

@@ -1,8 +1,8 @@
 # Agent-skills portability — Design Spec
 
-**Status: APPROVED (2026-10-18).** The owner approved the design on 2026-10-03
-and the written spec on 2026-10-18. Next step: an implementation plan from the
-writing-plans skill.
+**Status: COMPLETE (2026-10-20)** — implemented by plan 53
+(`specs/plans/completed/53-agent-skills-portability.md`) and retired here. The
+owner approved the design on 2026-10-03 and the written spec on 2026-10-18.
 The owner approved all five design sections in a brainstorming pass over
 `specs/completed/agent-skills-best-practices.md` (a September 2026 survey of
 Agent Skills portability across Claude Code, Codex, Gemini CLI, Cursor, Copilot,
@@ -101,7 +101,9 @@ skill bodies; every command is `disable-model-invocation: true`.
 R1.1 **Key sets.** Replace `ALLOWED_KEYS` with two named sets and allow their
 union in a `SKILL.md`:
 - `SPEC_KEYS = {name, description, license, compatibility, metadata, allowed-tools}`
-- `HOST_KEYS = {when_to_use, model, effort, context, disable-model-invocation}`
+- `HOST_KEYS = {when_to_use, model, effort, context, disable-model-invocation, agent}`.
+  `agent`, the agent type a `context: fork` skill runs on, joins the set
+  (owner, plan 53, 2026-10-18).
 
 R1.2 **`metadata`.** When present, a mapping whose keys and values are all
 strings. All current values pass.
@@ -156,7 +158,8 @@ register").
 R2.1 **Review verdict (recorded here, no rewrites).** Criterion: within its first
 150 characters, a description names the skill's primary trigger, the task or
 symptom it exists for, so an agent shown only that prefix would load it for its
-canonical use. All 32 descriptions pass as of 2026-10-03. The closest calls are
+canonical use. All 32 descriptions pass as of 2026-10-03, and all 37 pass on
+2026-10-18 (owner, plan 53, 2026-10-18). The closest calls are
 `creative-thinking` (its quoted examples carry the "fuzzy target" trigger) and
 the `clean-code` / `clean-coder` pair, whose openings both lead with editing
 Python. Both pass, so neither is rewritten.
@@ -178,8 +181,10 @@ R2.2 **RED baseline micro-test for `writing-skills`.** Before any edit to
 R2.3 **Edit by outcome.**
 - **Baseline ≥ 4/5:** add only a factual note of 2–4 lines to `writing-skills`'
   "Token Efficiency" section. The note covers three points: Codex shortens every
-  description when its listing exceeds its budget; the measured cut (156–164
-  characters with 93 skills listed, Codex 0.154, 2026-10-03); and how to re-measure
+  description when its listing exceeds its budget; the measured cut, re-taken when
+  the note is written (on 2026-10-18: 316–320 characters with 105 skills listed,
+  Codex 0.163; on 2026-10-03: 156–164 with 93, Codex 0.154; owner, plan 53,
+  2026-10-18); and how to re-measure
   (`codex debug prompt-input` from a directory outside any repo, reading the
   Skills list). No new rule.
 - **Baseline ≤ 3/5:** also add one checklist line ("the primary trigger falls
@@ -189,7 +194,12 @@ R2.3 **Edit by outcome.**
 ### R3 — Self-contained scripts
 
 R3.1 **Inventory.** The runnable scripts are the `skills/*/scripts/*.py` files
-with a `__main__` guard. There are 16. Fourteen gain a header:
+with a `__main__` guard. There are 19 (owner, plan 53, 2026-10-19).
+`writing-plans/scripts/entry_check.py` came after 2026-10-03. Two more came
+after the plan's count of 2026-10-18. `write-with-asd-ste100/scripts/ste-lint.py` is copied
+unchanged from upstream and stays header-less.
+`document-python-package/scripts/preflight.py` already conforms. Fifteen gain
+a header:
 - `bayesian-workflow`: `calibration_check.py`, `check_diagnostics.py`,
   `diagnose_model.py`
 - `describe-critique-methodology`: `check_decoupling.py`
@@ -200,7 +210,7 @@ with a `__main__` guard. There are 16. Fourteen gain a header:
 - `recommend-probabilistic-model`: `characterize.py`
 - `recommend-visualization`: `recommend.py`
 - `track-model-experiments`: `compare_experiments.py`
-- `writing-plans`: `deferred_stats.py`
+- `writing-plans`: `deferred_stats.py`, `entry_check.py`
 
 The two `build.py` scripts (`classification-codes`, `geographic-codes`) already
 conform. `tune-hyperparameters/scripts/time_series_cv.py` has no `__main__`
@@ -235,9 +245,10 @@ R3.4 **`dependencies`.**
 
 R3.5 **Invocations.**
 - Every documented invocation in `skills/**/*.md` of a path that resolves to one
-  of the 16 scripts uses the form `uv run <path> [args]`, replacing `python`,
-  `python3`, `uv run --no-project --python 3.13 python`, and
-  `uv run --python 3.13 --with … python`.
+  of the 18 scripts (the 19 except the vendored `ste-lint.py`; see R3.7) uses
+  the form `uv run <path> [args]`, replacing `python`, `python3`,
+  `uv run --no-project --python 3.13 python`, and
+  `uv run --python 3.13 --with … python` (owner, plan 53, 2026-10-19).
 - Path forms in use: `<this-skill-dir>/scripts/x.py`,
   `<this-skill-dir>/../<skill>/scripts/x.py`, `$LLM_WIKI_ROOT/scripts/x.py` (the
   installed copies), `~/Projects/agent-skills/skills/llm-wiki/scripts/x.py`
@@ -265,16 +276,23 @@ R3.7 **Lint, in `check_frontmatter.py`.** Each rule gets a RED test first.
   - R3.4's optional-import exemption applies.
 - No skill markdown invokes a resolving bundled-script path with bare `python` or
   `python3`, including line-continued forms (`python \` followed by the path on
-  the next line). A path that does not resolve to a bundled script, such as
-  `writing-skills/anthropic-best-practices.md`'s teaching example
-  `scripts/migrate.py`, is not flagged.
+  the next line). A path that does not resolve to a bundled script, such as a
+  teaching example's `scripts/migrate.py` in a skill that bundles no such
+  script, is not flagged. (The example named here before,
+  `writing-skills/anthropic-best-practices.md`, was removed on 2026-10-11;
+  owner, plan 53, 2026-10-18.)
 - A skill whose markdown runs a bundled script via `uv run` declares a
   `compatibility` value containing `uv`.
+- Vendored scripts, listed in `VENDORED_SCRIPTS` (today only
+  `write-with-asd-ste100/scripts/ste-lint.py`, copied unchanged from upstream),
+  are exempt from the header, import and invocation rules above. Their
+  documented invocation keeps `python3` (owner, plan 53, 2026-10-20).
 
 R3.8 **Execution proof**, one time, recorded in the plan's completion notes.
 - From an empty scratch directory (a subdirectory such as `/tmp/bwprobe/`, never
-  `/tmp` itself), each of the 16 scripts runs `uv run <absolute-path>` on a
-  minimal real input that exercises its main code path.
+  `/tmp` itself), each of the 19 scripts runs `uv run <absolute-path>` on a
+  minimal real input that exercises its main code path, except the vendored
+  `ste-lint.py`, which runs under `python3` (owner, plan 53, 2026-10-19).
 - `--help` alone is enough only for a script with no input-reading path.
 - The three ArviZ-reading scripts (`diagnose_model.py`, `calibration_check.py`,
   `compare_experiments.py`) each read a small saved InferenceData fixture.
@@ -368,13 +386,12 @@ Constraints:
 - **State test changes as +N deltas** against the suite, never absolute totals.
 - **Before allocating the plan id**, check `specs/plans/` on every branch
   (`git ls-tree`); ids are allocated per branch and have collided.
-- **Coordinate with the in-flight JAX spec.** `specs/jax-deep-learning-skills.md`
-  is being implemented on `codex/jax-deep-learning-skills` and defines three
-  skills (`skills/deep-learning` is on that branch as of 2026-10-03).
-  R1.4's required `license`, R3's header and invocation rules, and R4's per-skill
-  license copies apply to them too. Whichever branch merges second brings the
-  other's skills into conformance in the same merge, or the new lints fail on
-  arrival.
+- **The JAX skills and `recommend-causal-design` have merged.** They are in
+  scope like every other skill: R1.4's required `license`, R3's header and
+  invocation rules, and R4's per-skill license copies apply to them. All four
+  already carry `license` and `metadata`, none bundles a runnable script, and
+  `recommend-causal-design`'s copy of its sources license takes the root file's
+  name (R4.1) (owner, plan 53, 2026-10-18).
 
 ## Validation and acceptance
 
@@ -391,15 +408,17 @@ Constraints:
    `tune-hyperparameters`, and `tech-debt`.
 3. Each new lint rule has a test that failed before its implementation and
    passes after.
-4. R3.8's execution proof is recorded for all 16 scripts.
+4. R3.8's execution proof is recorded for all 19 scripts (owner, plan 53, 2026-10-19).
 5. **Cross-runtime load check**, from a directory outside any repo:
    - `gemini skills list --all` shows every skill under `skills/` as `[Enabled]`;
    - `codex debug prompt-input` lists every skill under `skills/` by name.
 
    This shows the new `compatibility`, `license`, and `metadata` values and the
    bundled license files break loading in neither runtime.
-6. R2.2's red-baseline file exists, and `writing-skills` changed only as R2.3's
-   outcome branch allows.
+6. R2.2's red-baseline file exists, and `writing-skills`' description guidance
+   changed only as R2.3's outcome branch allows. Stage A's updates to its
+   frontmatter key list, template and checklist, which keep it accurate about
+   what `check_frontmatter.py` accepts, are outside R2 (owner, plan 53, 2026-10-18).
 
 ## Out of scope (deferred; logged to `specs/deferred_items.md` at plan completion)
 
@@ -416,7 +435,9 @@ Constraints:
   guidance). This needs a reliable detector first; a crude grep was not one.
 - **Splitting `writing-skills`** below 500 body lines (R1.7's warning).
 - **A versioning policy**: CHANGELOG, git tags, and `metadata.version` bumps.
-- **Skill security scanning** (e.g. Cisco's `skill-scanner`). The repo has no CI.
+- **Skill security scanning** (e.g. Cisco's `skill-scanner`). The repo's only CI,
+  `.github/workflows/lints.yml` (plan 41), runs the commit lints as an advisory
+  check (owner, plan 53, 2026-10-18).
 - **License travel for single-file agents.** `agents/code-reviewer.md` and
   `agents/task-reviewer.md` are distilled from superpowers and install as single
   files without `LICENSE-superpowers`: the same gap R4 closes for skills.

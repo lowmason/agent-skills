@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = '>=3.11'
+# dependencies = [
+#   'polars>=2.0',
+# ]
+# ///
 """Profile + intent -> ranked chart candidates, each carrying its encoding map.
 
 The sibling of recommend-probabilistic-model's recommender: that one maps (task x data-signal) to a

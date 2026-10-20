@@ -1134,7 +1134,8 @@ CRITICAL_SPANS = {
 # Late critical headings the owner accepted past the compaction window, by exact
 # text. The register's writing-skills waiver is per file, so it hides a new late
 # heading too; the equality test below fails on one, and on a heading that is
-# gone. Moving the STOP section inside the window is portability Stage D's work.
+# gone. Moving the STOP section inside the window is the work of the deferred
+# item "Split and rewrite writing-skills against the guide".
 ACKNOWLEDGED_LATE = {
     'skills/writing-skills/SKILL.md': ['### Create Red Flags List', '## STOP: Before Moving to Next Skill'],
 }

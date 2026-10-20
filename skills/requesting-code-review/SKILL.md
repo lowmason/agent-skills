@@ -5,6 +5,11 @@ description: >
   merging a branch or opening a PR, when reviewing a commit range (BASE..HEAD) against its plan
   or requirements, when stuck and wanting a fresh pass on recent commits, or after fixing a
   complex bug.
+license: MIT
+metadata:
+  author: 'Jesse Vincent'
+  adapted_by: 'Lowell Mason'
+  source: 'https://github.com/obra/superpowers'
 # cc-guide: subagents.frontmatter subagents.models subagents.isolation @2.1.302
 ---
 

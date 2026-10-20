@@ -1,3 +1,12 @@
+#!/usr/bin/env python3
+# /// script
+# requires-python = '>=3.12'
+# dependencies = [
+#   'arviz>=1.0',
+#   'h5netcdf>=1.0',
+#   'h5py>=3.0',
+# ]
+# ///
 '''Rank Bayesian model variants from their saved InferenceData.
 
 Sits above bayesian-workflow's per-variant slug folders; defers the ELPD

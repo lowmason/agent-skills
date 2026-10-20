@@ -5,6 +5,11 @@ description: >
   bot, or a reviewer agent (e.g. output of the requesting-code-review skill) — before
   implementing any suggested change, especially when items are unclear, conflict with prior
   decisions, or seem technically wrong for this codebase.
+license: MIT
+metadata:
+  author: 'Jesse Vincent'
+  adapted_by: 'Lowell Mason'
+  source: 'https://github.com/obra/superpowers'
 ---
 
 # Code Review Reception

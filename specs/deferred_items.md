@@ -1993,6 +1993,9 @@ declined as YAGNI (zero instances in a one-page wiki).
       effect in its body, and exception `side-effecting-skills-ungated` (narrowed to any
       skill still open) is removed from `build/cc_guide/conformance.toml` in the same
       change, with `build/check_conformance.py` passing.
+      → progress 2026-10-20 (plan 53): Stage A landed. `disable-model-invocation` passes
+      the lint, and a manual-only skill now needs `agents/openai.yaml` with
+      `policy.allow_implicit_invocation: false` (R1.6).
 - [ ] Rewrite seven skill descriptions in the third person (plan 35 audit rows S-21 to
       S-27): clean-coder, executing-plans, explore-data, recommend-visualization,
       systematic-debugging, validate-data and writing-plans use second person outside quoted
@@ -3412,7 +3415,7 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       in both files. Neither file is ready for `/cc-guide files` yet (this section's header):
       `check_frontmatter.py` still has the key-set item below, and `check_conformance.py` the
       stop-hook guard design and its not-covered rows.
-- [ ] `build/check_frontmatter.py`'s SKILL.md key set (`ALLOWED_KEYS`, line 28; the unknown-key
+- [x] `build/check_frontmatter.py`'s SKILL.md key set (`ALLOWED_KEYS`, line 28; the unknown-key
       report, lines 107 and 108). It is described as the spec-valid key set but omits the
       Agent Skills field `compatibility`, a plain bug. It also rejects two Claude Code fields
       the guide documents: `agent`, which names the agent type a `context: fork` skill runs
@@ -3431,7 +3434,7 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       stays open for the owner's call on `agent` and `disable-model-invocation`.
       The lint checks only that the key is allowed, not its value: portability R1.3
       (`specs/agent-skills-portability-spec.md`, a string of 1-500 characters) still needs its
-      Stage A check, and that spec's baseline row for the missing key (line 39) is now met.
+      Stage A check, and that spec's baseline row for the missing key (line 39) is now met. → done in plan 53
 - [x] Two `hook-scripts-executable` messages leave out the condition on failing open
       (`build/check_conformance.py:1023`, `:1028`). They say a non-executable hook script
       "fails open", but since 2.1.295 a hook that sets `"onFailure": "block"` blocks instead
@@ -3713,8 +3716,9 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       pins the wording, but only in the full suite, not in the `-k test_real_skill` commit
       lint. Fix: give `_late_headings` `root` and `params` arguments, and add a
       `test_real_skill_…` test on a `tmp_path` skill with a known late heading, so the
-      lint selects it. Size: quick-fix. Revisit if: portability Stage D empties a row while
-      its exception stays, or the check's message wording changes.
+      lint selects it. Size: quick-fix. Revisit if: the writing-skills rewrite (deferred
+      item "Split and rewrite writing-skills against the guide") empties a row while its
+      exception stays, or the check's message wording changes.
 
 ## fork-mode-fresh-dispatch (no plan; /cc-guide files follow-up, branch claude/elated-solomon-284dad) — 2026-10-18
 
@@ -5003,13 +5007,13 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       confirms or switches before plan 53's Task 9 runs, and Task 9 follows the choice.
       → done 2026-10-19 (/deferred quick fix): owner chose "Separate LICENSE-andorra". Plan 53's
       DF14 and Task 9 already say so.
-- [ ] Point bayesian-workflow's README at its upstream notice once plan 53's Task 9 lands
+- [x] Point bayesian-workflow's README at its upstream notice once plan 53's Task 9 lands
       (audit-3-10-26 B7 attribution note, found 2026-10-03; re-verified 2026-10-18).
       `skills/bayesian-workflow/README.md:46-47` and `:102-104` point only at `NOTICE` and the
       repo's own MIT license. Plan 53's Task 9 fixes `NOTICE`, the root README and CLAUDE.md
       for Alexandre Andorra's upstream (Learning-Bayesian-Statistics/baygent-skills), but it
       does not touch this README. Size: quick-fix. Revisit if: plan 53's Task 9 is merged.
-      Done when: the skill README names the upstream notice file.
+      Done when: the skill README names the upstream notice file. → done in plan 53
 - [ ] Owner call: keep the JAX trial artifacts tracked, or archive them (audit-3-10-26 I6
       and its Decision 9, found 2026-10-03; re-verified 2026-10-18). PR #20 (`110bd99`)
       landed `specs/verification/32-jax-trials/`, now 891 files and 10.97 MB, 39% of the
@@ -5060,7 +5064,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
 - [ ] Restyling the repo's existing documents (the spec's Out of scope, Decision 3). The
       rule changes existing text only when the user asks. Size: plan. Revisit if: the owner
       asks for a restyle of named documents.
-- [ ] Portability work for this skill, if plan 53, the portability plan, lands second
+- [x] Portability work for this skill, if plan 53, the portability plan, lands second
       (Couplings (a) and (c)). R3, the self-contained-scripts requirement: add
       `skills/write-with-asd-ste100/scripts/ste-lint.py` to `VENDORED_SCRIPTS` in
       `build/check_frontmatter.py`, because its bytes are pinned to danyuchn's commit
@@ -5069,7 +5073,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       `LICENSE-write-with-asd-ste100-sources`, add the root `LICENSE` copy and a
       `BUNDLED_LICENSES` row, and re-point the Sources link. See
       `specs/agent-skills-portability-spec.md` (R3.1, R3.5, R3.7, R4.1, R4.2). Size:
-      quick-fix. Done when: the portability plan has done each of these for this skill.
+      quick-fix. Done when: the portability plan has done each of these for this skill. → done in plan 53
 - [ ] A drift review of both upstreams against the pinned commits (the spec's Consequences
       to know): danyuchn/asd-ste100-skill at `3944283c` and prithivrajmu/asd-ste100 at
       `d9323767`, both active. Size: quick-fix. Revisit if: either repository changes its
@@ -5372,3 +5376,103 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       `/cc-guide verify` on its section. Size: quick-fix. Revisit if: the owner rules on any
       part, or a `/cc-guide verify` or audit next covers `skills.listing-budget` or
       `subagents.isolation`.
+
+## 53-agent-skills-portability — 2026-10-20
+- [ ] Trigger-eval suites (plan 53's spec, Out of scope): about 20 labeled queries per skill,
+      near-miss negatives and a train/validation split, starting with the overlapping
+      data-and-modeling skills. Deferred because they are expensive and need isolated
+      sessions. They are also the prerequisite for any future description rewrite. See
+      `specs/completed/agent-skills-portability-spec.md`, "Out of scope". Size: design. Done
+      when: the overlapping data-and-modeling skills have a trigger-eval suite with labeled
+      queries, near-miss negatives and a train/validation split.
+- [ ] Distribution channels (plan 53's spec, Out of scope): a Claude Code `marketplace.json`,
+      `npx skills`, `gh skill`, or a Codex plugin. Deferred because these are outward-facing,
+      and plugin namespacing (`/plugin:skill`) conflicts with the bare-name cross-reference
+      invariant (CLAUDE.md, "Provenance is load-bearing"). See
+      `specs/completed/agent-skills-portability-spec.md`, "Out of scope". Size: design.
+      Revisit if: the owner decides to publish the skills through one of these channels.
+- [ ] Codex adapters for `/deferred`, `/fix-issue` and `/license-audit` (plan 53's spec, Out
+      of scope), as manual-only skills with `agents/openai.yaml`. The commands are
+      `commands/deferred.md`, `commands/fix-issue.md` and `commands/license-audit.md`; Codex
+      has no command adapter here (CLAUDE.md, "Runtime adapters"). R1.6 is the groundwork:
+      `build/check_frontmatter.py` now requires `policy.allow_implicit_invocation: false` in
+      `agents/openai.yaml` beside `disable-model-invocation: true`. See
+      `specs/completed/agent-skills-portability-spec.md`, "Out of scope". Size: plan. Done
+      when: each of the three commands has a manual-only skill adapter for Codex, and
+      `build/check_frontmatter.py` passes on each.
+- [ ] Tables of contents for long `references/` files (plan 53's spec, Out of scope), after
+      Anthropic's partial-read guidance. Deferred because it needs a reliable detector
+      first; a crude grep was not one. See
+      `specs/completed/agent-skills-portability-spec.md`, "Out of scope". Size: design. Done
+      when: a detector for the `references/` files that need a table of contents exists, and
+      every file it flags has one.
+- [ ] A versioning policy (plan 53's spec, Out of scope): a CHANGELOG, git tags, and
+      `metadata.version` bumps. See `specs/completed/agent-skills-portability-spec.md`, "Out
+      of scope". Size: design. Done when: the owner records a versioning policy and the repo
+      follows it, or records that the repo needs none.
+- [ ] Skill security scanning (plan 53's spec, Out of scope), for example Cisco's
+      `skill-scanner`. "The repo has no CI" no longer holds: the repo now has advisory CI,
+      `.github/workflows/lints.yml` (plan 41), but it runs the commit lints only, so no
+      scanner runs on the skills. See `specs/completed/agent-skills-portability-spec.md`,
+      "Out of scope". Size: plan. Done when: a skill scanner runs on `skills/` from the commit
+      lints or from `.github/workflows/lints.yml`, and its first findings are triaged.
+- [ ] License travel for single-file agents (plan 53's spec, Out of scope).
+      `agents/code-reviewer.md` and `agents/task-reviewer.md` are distilled from superpowers
+      and install as single files without `LICENSE-superpowers`: the same gap R4 closes for
+      skills. See `specs/completed/agent-skills-portability-spec.md`, "Out of scope", and
+      `NOTICE`. Size: design. Done when: each installed superpowers-derived agent carries or
+      points to the superpowers notice, and `install.py` installs that notice with it.
+- [ ] Split and rewrite writing-skills against the guide (in place of plan 53's spec's
+      "Splitting writing-skills", Out of scope). `skills/writing-skills/SKILL.md`'s body is 701
+      lines, and `build/check_frontmatter.py` prints R1.7's WARN for it (a body over 500
+      lines). The work: split the body below 500 lines; close the register gaps
+      `writing-skills-guide-gaps` and `writing-skills-late-critical-headings` in
+      `build/cc_guide/conformance.toml`, whose `tracked_in` names this item (plan 53, Task 14,
+      DF20); close the deviation `writing-skills-tdd-for-docs`, whose `revisit` names it; and
+      verify or drop the skill's claim that `@` links force-load files ("Why no @ links").
+      Two tests change with the split:
+      `build/test_check_frontmatter.py::test_the_body_warning_goes_to_stderr_and_keeps_exit_zero`
+      expects writing-skills to be the one body over 500 lines, and `ACKNOWLEDGED_LATE` in
+      `build/test_check_conformance.py` names this item. The plan-48 item "Pin the
+      `_late_headings` parse with a positive control" (section
+      48-compaction-late-heading-ratchet) also names it in its revisit trigger. Deferred
+      because the split is a rewrite of the repo's meta-skill, beyond plan 53's scope. See
+      `specs/plans/completed/53-agent-skills-portability.md` (DF20, Task 14). Size: design.
+      Done when: the body is under 500 lines with no WARN, the two gaps and the deviation are
+      removed from `build/cc_guide/conformance.toml` with `build/check_conformance.py`
+      passing, and both tests are updated in the same change.
+- [ ] README line about uv (plan 53's completion gate, owner Q5, 2026-10-20): `README.md`'s
+      Installation section never says that uv is needed, but 12 skills now run their bundled
+      scripts with `uv run` and name uv in `compatibility` (R3.5, R3.6). Add one line under
+      Installation. Deferred by the owner at the gate. Size: quick-fix. Done when:
+      `README.md`'s Installation section says that skills with bundled scripts need uv.
+- [ ] Review Minors from plan 53's task reviews and final review, unfixed (the owner's gate
+      answer Q4, 2026-10-20: the five fixed now landed in 570afd2 and 2449c4d). In
+      `build/check_frontmatter.py`: (a) `_check_value_shapes` reports a null `metadata:` as
+      "must map strings to strings", untested, and that error line passes 100 characters;
+      (b) `_check_invocation_parity`'s `policy_file.read_text()` does not catch
+      `UnicodeDecodeError`, like the SKILL.md reads; (c) `_catches_import_error` ignores a
+      bare `except`, `except Exception` and `TryStar`, so it over-reports (it fails safe);
+      (d) the resolver and `RUNNER_RE` blind spots (`./scripts/`, `../scripts/`,
+      `${LLM_WIKI_ROOT}`, a flag between the runner and the path), accepted and documented
+      above `RUNNER_RE` in 570afd2 but not closed; (e) `check_invocations` resolves each
+      path twice, `bundled_invocations` runs twice per skill, and its `rglob('*.md')` also
+      reads `.pytest_cache`. In `build/test_check_frontmatter.py`: (f) no test for the
+      `ModuleNotFoundError` guard or a relative import; (g) the import order (the brief's
+      placement); (h) the vacuous `assert other.is_dir() and wiki.is_dir()`; (i) the
+      `--strict` subprocess test relies on a skill with a host key existing in the repo. In
+      `build/check_provenance.py`: (j) no test for a skill that holds a copy of a non-root
+      table name; (k) `main` calls `skill_dirs()` twice. In `NOTICE`: (l) the lead-in "by
+      skill:" now precedes two general paragraphs (Task 8's placement); (m) "Both SKILL.md
+      files also gained" sits at the end of a long bullet (Task 12). Deferred as one item at
+      the gate. See `specs/plans/completed/53-agent-skills-portability.md`. Size: plan.
+      Revisit if: a later edit to `build/check_frontmatter.py` or `build/check_provenance.py`
+      touches one of them. Done when: each is fixed, or the owner rules here that it stays.
+- [ ] Hold, owner-only: refresh each wiki's installed llm-wiki scripts after plan 53 merges
+      (DF15). Plan 53's Task 10 gave `skills/llm-wiki/scripts/*.py` PEP 723 headers, but each
+      wiki keeps the copies that `bootstrap_wiki.py` installed before that. Until the
+      refresh they still run under `uv run`, but a run from inside a Python project binds to
+      that project. Run `bootstrap_wiki.py "$LLM_WIKI_ROOT" --check`, then `--force`, for
+      each wiki root. Deferred because only the owner reaches the wiki roots, and only after
+      the merge. See `specs/plans/completed/53-agent-skills-portability.md` (DF15). Size:
+      quick-fix. Done when: each wiki's copies carry headers.

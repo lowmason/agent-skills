@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+# /// script
+# requires-python = '>=3.11'
+# dependencies = []
+# ///
 '''Scaffold or refresh a research-wiki root and install its runtime scripts.
 
 Creates the wiki skeleton (the directories and structural files lint_wiki.py
