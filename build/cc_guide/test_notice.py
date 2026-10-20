@@ -25,16 +25,16 @@ def test_the_spec_example_line():
     '''R9.4's own example, item for item.'''
     got = notice.due_message(report(
         findings=[('hooks.events',), ('rules.settings',)],
-        changelog={'releases': 9, 'oldest': '2.1.300', 'oldest_date': '2026-10-09', 'due': True},
+        changelog={'releases': 9, 'oldest': '2.1.300', 'last_triage': '2026-10-09', 'due': True},
         probes=[{'probe': 'p1'}, {'probe': 'p2'}],
         audit={'group': 'hooks', 'due': True}), TODAY)
     assert got == ('cc-guide · 2 docs blocks changed (hooks.events, rules.settings) · '
-                   '9 releases untriaged (oldest 8 d) · probes due 2 · audit due: hooks → /cc-guide')
+                   '9 releases untriaged (last triage 8 d ago) · probes due 2 · audit due: hooks → /cc-guide')
 
 
 def test_only_due_items_are_named_and_lint_comes_first():
     got = notice.due_message(report(
-        lint=1, changelog={'releases': 3, 'oldest': '2.1.300', 'oldest_date': '2026-10-15', 'due': False}), TODAY)
+        lint=1, changelog={'releases': 3, 'oldest': '2.1.300', 'last_triage': '2026-10-15', 'due': False}), TODAY)
     assert got == 'cc-guide · 1 lint violation → /cc-guide'
 
 
@@ -53,11 +53,11 @@ def test_a_report_at_todays_scale_stays_under_the_limit_and_counts_what_it_left_
     findings = [tuple(sections[(i + k) % 38] for k in range(3)) for i in range(172)]
     got = notice.due_message(report(
         findings=findings, lint=2,
-        changelog={'releases': 4, 'oldest': '2.1.299', 'oldest_date': '2026-10-14', 'due': True},
+        changelog={'releases': 4, 'oldest': '2.1.299', 'last_triage': '2026-10-14', 'due': True},
         audit={'group': 'overview', 'due': True}), date(2026, 10, 21))
     assert len(got) < notice.LIMIT
     assert got.startswith('cc-guide · 2 lint violations · 172 docs blocks changed (')
-    assert got.endswith(' more) · 4 releases untriaged (oldest 7 d) · audit due: overview → /cc-guide')
+    assert got.endswith(' more) · 4 releases untriaged (last triage 7 d ago) · audit due: overview → /cc-guide')
     named = re.search(r'changed \((.*), \+(\d+) more\)', got)
     assert len(named.group(1).split(', ')) + int(named.group(2)) == 38
 
@@ -140,10 +140,10 @@ def test_the_record_keeps_the_two_lines_notice_sh_reads(tmp_path):
 
 
 def test_after_check_writes_the_notice_for_each_exit_then_the_record(tmp_path):
-    due = report(changelog={'releases': 2, 'oldest': '2.1.901', 'oldest_date': '2026-10-10', 'due': True})
+    due = report(changelog={'releases': 2, 'oldest': '2.1.901', 'last_triage': '2026-10-10', 'due': True})
     notice.after_check(tmp_path, 1, due, NOW, TODAY, 'r1')
     assert json.loads((tmp_path / notice.NOTICE).read_text())['systemMessage'] == (
-        'cc-guide · 2 releases untriaged (oldest 7 d) → /cc-guide')
+        'cc-guide · 2 releases untriaged (last triage 7 d ago) → /cc-guide')
     notice.after_check(tmp_path, 0, report(), NOW, TODAY, 'r2')
     assert (tmp_path / notice.NOTICE).read_text() == ''
     failing = dict(report(), errors=['https://example.invalid/llms.txt: HTTP 503'])

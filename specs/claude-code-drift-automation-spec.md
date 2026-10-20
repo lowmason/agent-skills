@@ -600,7 +600,10 @@ ordering versions numerically. The parser reads two formats:
   release date.
 
 On 2026-10-20 the last `<Update>` copy and the first bold copy held the same
-424 labels, with the same bullets in the same order. For each section, list
+424 labels, with the same bullets in the same order. GitHub's `CHANGELOG.md`
+gives no dates either. So the parser reads no date from either format, and
+the changelog batch runs from the last triage instead (R6.7) (owner,
+2026-10-20). Triage packets name each release without a date. For each section, list
 the releases after its `checked`, with every bullet; term hits are marked as
 hints only.
 
@@ -610,7 +613,7 @@ R6.7 **Due rules.**
 |---|---|
 | A changed, missing or new block | Immediately |
 | A lint failure, including a `text_hash` or stamp-region mismatch | Immediately |
-| The changelog batch | Once the oldest release newer than some section's `checked` is at least `changelog_days` old |
+| The changelog batch | Once a section that some release is newer than was last triaged, its `checked` date, at least `changelog_days` ago. A section checked through the head starts no clock (owner, 2026-10-20) |
 | A probe | When it is registered but has no `PROBES.md` row, or when at least `probe_days` have passed since its last row and a release has shipped since that row's version |
 | A DIVERGES probe outcome | Immediately, until a later PASS row for that probe |
 | An audit | When at least `audit_days` have passed since the most recent audit of any group. It targets the group with the oldest `audited` date, ties broken in manifest order. This shared clock yields one group a month |
@@ -988,7 +991,7 @@ R9.3 **`refresh`**, async.
 R9.4 **The notice.**
 - Exit 0: the notice is empty, and `show` prints nothing.
 - Exit 1: one line under 300 characters naming every due item, for example
-  `cc-guide · 2 docs blocks changed (hooks.events, rules.settings) · 9 releases untriaged (oldest 8 d) · probes due 2 · audit due: hooks → /cc-guide`.
+  `cc-guide · 2 docs blocks changed (hooks.events, rules.settings) · 9 releases untriaged (last triage 8 d ago) · probes due 2 · audit due: hooks → /cc-guide`.
 - Exit 2, no `uv`, or three unfinished runs in a row (R9.3): an error line
   with the age of the last good check. `check --hook` writes it for an exit 2,
   a setup error or a crash; `refresh` writes it for the other two. A failure

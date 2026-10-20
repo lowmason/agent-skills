@@ -72,8 +72,8 @@ def due_message(report: dict, today: date) -> str | None:
         before.append(plural(due['lint'], 'lint violation'))
     batch = due.get('changelog') or {}
     if batch.get('due'):
-        days = (today - date.fromisoformat(batch['oldest_date'])).days
-        after.append(f"{plural(batch['releases'], 'release')} untriaged (oldest {days} d)")
+        days = (today - date.fromisoformat(batch['last_triage'])).days
+        after.append(f"{plural(batch['releases'], 'release')} untriaged (last triage {days} d ago)")
     if due.get('probes'):
         after.append(f"probes due {len(due['probes'])}")
     audit = due.get('audit') or {}

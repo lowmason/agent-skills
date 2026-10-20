@@ -1,7 +1,5 @@
 '''Tests for docs.py: release ordering, the changelog, llms.txt and page
 naming (drift spec R2.4, R6.5, R6.6).'''
-from datetime import date, datetime
-
 import pytest
 
 import docs
@@ -21,23 +19,23 @@ def test_version_key_rejects_what_is_not_a_label(label):
 
 def test_changelog_blocks_come_newest_first_with_their_bullets():
     releases = docs.parse_changelog(CHANGELOG_TEXT)
-    assert [(r.label, r.date) for r in releases] == [
-        ('2.1.902', date(2026, 10, 1)), ('2.1.901', date(2026, 9, 20)), ('2.1.900', date(2026, 9, 1))]
+    assert [r.label for r in releases] == ['2.1.902', '2.1.901', '2.1.900']
     assert releases[0].bullets == ['Changed how `BETA_ENV` is read', 'Fixed a crash in the fixture tool']
+
+
+def test_a_release_carries_no_date():
+    '''Nothing reads a release date since the bold format dropped it: the
+    changelog batch runs from the last triage (R6.7; owner, 2026-10-20). So
+    an <Update> description is not read.'''
+    assert docs.Release._fields == ('label', 'bullets')
+    text = '<Update label="2.1.9" description="2026-07-01">\n  * a\n</Update>\n'
+    assert docs.parse_changelog(text) == [docs.Release('2.1.9', ['a'])]
 
 
 def test_changelog_order_is_numeric_not_file_order():
     text = ('<Update label="2.1.9" description="July 1, 2026">\n  * a\n</Update>\n'
             '<Update label="2.1.10" description="July 2, 2026">\n  * b\n</Update>\n')
     assert [r.label for r in docs.parse_changelog(text)] == ['2.1.10', '2.1.9']
-
-
-def test_a_bad_release_date_names_its_line():
-    with pytest.raises(ValueError) as cause:
-        datetime.strptime('2026-07-01', '%B %d, %Y')
-    with pytest.raises(ValueError) as err:
-        docs.parse_changelog('\n<Update label="2.1.9" description="2026-07-01">\n</Update>\n')
-    assert str(err.value) == f'line 2: {cause.value}'
 
 
 @pytest.mark.parametrize('text, message', [
@@ -104,10 +102,9 @@ BOLD_TEXT = '\n'.join([
 ])
 
 
-def test_bold_labels_mark_releases_with_their_bullets_and_no_date():
-    releases = docs.parse_changelog(BOLD_TEXT)
-    assert [(r.label, r.date, r.bullets) for r in releases] == [
-        ('2.1.10', None, ['three', 'four']), ('2.1.9', None, ['one', 'two'])]
+def test_bold_labels_mark_releases_with_their_bullets():
+    assert docs.parse_changelog(BOLD_TEXT) == [
+        docs.Release('2.1.10', ['three', 'four']), docs.Release('2.1.9', ['one', 'two'])]
 
 
 @pytest.mark.parametrize('text, message', [
@@ -128,8 +125,7 @@ def test_both_formats_read_the_same_releases():
               '  <Expandable title="1 bug fix">\n    - four\n  </Expandable>\n</Update>\n\n'
               '<Update label="2.1.9" description="July 1, 2026">\n  **Added**\n\n  * one\n\n'
               '  <Expandable title="5 improvements">\n    - two\n  </Expandable>\n</Update>\n')
-    assert ([(r.label, r.bullets) for r in docs.parse_changelog(tagged)]
-            == [(r.label, r.bullets) for r in docs.parse_changelog(BOLD_TEXT)])
+    assert docs.parse_changelog(tagged) == docs.parse_changelog(BOLD_TEXT)
 
 
 def test_llms_lists_code_page_slugs():

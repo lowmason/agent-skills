@@ -237,22 +237,24 @@ def release_notes(releases: list[Release], pending: set[str], terms: dict) -> di
     '''Every bullet of each untriaged release, with the sections whose terms
     it contains marked as hints only (R6.6).'''
     flat = {sid: t for group in terms.values() for sid, t in group.items()}
-    return {r.label: {'date': r.date.isoformat(),
-                      'bullets': [{'text': b, 'hints': [sid for sid, t in flat.items() if any(x in b for x in t)]}
+    return {r.label: {'bullets': [{'text': b, 'hints': [sid for sid, t in flat.items() if any(x in b for x in t)]}
                                   for b in r.bullets]}
             for r in reversed(releases) if r.label in pending}
 
 
 def due_changelog(state: dict, releases: list[Release], days: int, today: date) -> dict | None:
-    '''R6.7: the batch is due once the oldest release newer than some
-    section's `checked` is at least `days` old.'''
-    floor = min(version_key(s['checked']['release']) for s in state['sections'].values())
-    pending = [r for r in releases if version_key(r.label) > floor]
-    if not pending:
+    '''R6.7: the batch is due once some section that a release is newer
+    than was last triaged, its `checked` date, at least `days` ago. The
+    changelog gives no release dates (owner, 2026-10-20).'''
+    newest = version_key(releases[0].label)
+    waiting = [s['checked'] for s in state['sections'].values() if version_key(s['checked']['release']) < newest]
+    if not waiting:
         return None
-    oldest = pending[-1]
-    due_from = oldest.date + timedelta(days=days)
-    return {'releases': len(pending), 'oldest': oldest.label, 'oldest_date': oldest.date.isoformat(),
+    floor = min(version_key(c['release']) for c in waiting)
+    pending = [r for r in releases if version_key(r.label) > floor]
+    last = min(date.fromisoformat(c['date']) for c in waiting)
+    due_from = last + timedelta(days=days)
+    return {'releases': len(pending), 'oldest': pending[-1].label, 'last_triage': last.isoformat(),
             'due_from': due_from.isoformat(), 'due': today >= due_from}
 
 
@@ -386,8 +388,9 @@ def summary(report: dict, path: Path) -> list[str]:
         lines.append(f"llms.txt since the baseline: {len(llms['added'])} added, {len(llms['removed'])} removed")
         batch = due['changelog']
         lines.append('changelog: nothing untriaged' if batch is None else
-                     f"changelog: {batch['releases']} release(s) untriaged, oldest {batch['oldest']} "
-                     f"({batch['oldest_date']}); batch due from {batch['due_from']}" + (', due' if batch['due'] else ''))
+                     f"changelog: {batch['releases']} release(s) untriaged, oldest {batch['oldest']}; "
+                     f"last triage {batch['last_triage']}; batch due from {batch['due_from']}"
+                     + (', due' if batch['due'] else ''))
         lines.append('probes: none due' if not due['probes'] else
                      'probes: ' + '; '.join(f"{p['probe']} ({p['why']})" for p in due['probes']))
     audit = due['audit']

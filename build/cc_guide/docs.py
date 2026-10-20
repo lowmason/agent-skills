@@ -6,7 +6,6 @@ A mapped page is a code.claude.com slug such as `hooks` or
 `plugins/components`, or a platform slug written `platform:<slug>`.
 '''
 import re
-from datetime import date, datetime
 from typing import NamedTuple
 
 CHANGELOG = 'changelog.md'
@@ -14,7 +13,7 @@ LLMS = 'llms.txt'
 PLATFORM = 'platform:'
 
 LABEL_RE = re.compile(r'[0-9]+(?:\.[0-9]+)+')
-UPDATE_RE = re.compile(r'^<Update label="([^"]*)" description="([^"]*)">\s*$')
+UPDATE_RE = re.compile(r'^<Update label="([^"]*)" description="[^"]*">\s*$')
 # A bold line that starts with a digit and holds no space: `**5 improvements**` is a heading.
 BOLD_LABEL_RE = re.compile(r'^\*\*([0-9]\S*)\*\*\s*$')
 BULLET_RE = re.compile(r'^\s*[*-] (.*)$')
@@ -31,35 +30,32 @@ def version_key(label: str) -> tuple[int, ...]:
 
 class Release(NamedTuple):
     label: str
-    date: date | None  # None where the page gives no date
     bullets: list[str]
 
 
 def parse_changelog(text: str) -> list[Release]:
     '''R6.6: the changelog's releases with their `* ` and `- ` bullets,
     newest first by version. A release is either an
-    <Update label="X" description="Month D, YYYY"> block, or, from about
-    2026-10-20, a bold `**X**` line that runs to the next one and gives no
-    date. Raises ValueError, naming the line, on an unparseable label or
-    date, an <Update> tag it cannot read, or a repeated label; the caller
-    names the file.'''
+    <Update label="X" description="..."> block, or, from about 2026-10-20, a
+    bold `**X**` line that runs to the next one. Neither date is read: the
+    bold format gives none. Raises ValueError, naming the line, on an
+    unparseable label, an <Update> tag it cannot read, or a repeated label;
+    the caller names the file.'''
     releases: list[Release] = []
     first: dict[str, int] = {}
     current: Release | None = None
     for n, line in enumerate(text.split('\n'), start=1):
-        m = UPDATE_RE.match(line)
-        bold = BOLD_LABEL_RE.match(line)
-        if m or bold:
-            label, described = m.groups() if m else (bold.group(1), None)
+        m = UPDATE_RE.match(line) or BOLD_LABEL_RE.match(line)
+        if m:
+            label = m.group(1)
             try:
                 version_key(label)
-                when = datetime.strptime(described, '%B %d, %Y').date() if m else None
             except ValueError as exc:
                 raise ValueError(f'line {n}: {exc}') from None
             if label in first:
                 raise ValueError(f'line {n}: release label {label} repeats line {first[label]}')
             first[label] = n
-            current = Release(label, when, [])
+            current = Release(label, [])
             releases.append(current)
         elif line.lstrip().startswith('<Update'):
             raise ValueError(f'line {n}: unrecognized <Update> tag')
