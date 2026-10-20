@@ -2423,25 +2423,39 @@ declined as YAGNI (zero instances in a one-page wiki).
       `build/cc_guide/conformance.toml` and red-first tests.
       → done 2026-10-05 (/deferred quick fix): `claude-md-count-claims` is in CHECKS
       with its [[check]] entry and red-first tests (originals note allow-listed).
-- [ ] Verify guide note S-108 with `/cc-guide verify skills.progressive-disclosure` once
+- [x] Verify guide note S-108 with `/cc-guide verify skills.progressive-disclosure` once
       drift lands (plan 35 audit §7): the guide's line 122 says the listing (name and
       description) is always loaded, which contradicts line 111, under which overflowing
       descriptions are dropped. Size: quick-fix. Done when: `/cc-guide verify
       skills.progressive-disclosure` (drift R8.5) has judged the note.
-- [ ] Verify guide note S-109 with `/cc-guide verify skills.listing-budget` once drift lands
+      → done 2026-10-19 (/deferred quick fix): verify judged line 126's always-loaded listing
+      CONFIRMED (skills.md:594). Settle listed two corrections to line 128 (the compaction
+      re-attach budget, and 2.1.304 re-sending the listing after compaction), both applied.
+- [x] Verify guide note S-109 with `/cc-guide verify skills.listing-budget` once drift lands
       (plan 35 audit §7): the guide's line 111 leaves the listing budget's unit unstated
       (the window is in tokens, the budget is called characters), so no threshold can be
       computed. Size: quick-fix. Done when: `/cc-guide verify skills.listing-budget` (drift
       R8.5) has judged the note.
-- [ ] Verify guide note S-110 with `/cc-guide verify mechanisms.overview` once drift lands
+      → done 2026-10-19 (/deferred quick fix): verify CONFIRMED the budget as 1% of the context
+      window, counted in characters (skills.md:1219). Line 118 now says skillListingMaxDescChars
+      changes the 1,536-character cap. Two omissions (SLASH_COMMAND_TOOL_CHAR_BUDGET, the
+      /skill-doctor caveat) are the owner's call.
+- [x] Verify guide note S-110 with `/cc-guide verify mechanisms.overview` once drift lands
       (plan 35 audit §7): the guide's line 45 calls a manual skill invocable without saying
       by whom, while line 91 says manual only; portability Decision 3's hand-off exception
       turns on the answer. Size: quick-fix. Done when: `/cc-guide verify
       mechanisms.overview` (drift R8.5) has judged the note.
-- [ ] Verify guide note A-52 with `/cc-guide verify subagents.frontmatter` once drift lands
+      → done 2026-10-19 (/deferred quick fix): verify CONFIRMED that a disable-model-invocation
+      skill stays invocable by the user as /name (skills.md:360). Two corrections to lines 44-45
+      applied. Settle held mechanisms.overview on two unparseable report lines, so the next run
+      takes the section up again.
+- [x] Verify guide note A-52 with `/cc-guide verify subagents.frontmatter` once drift lands
       (plan 35 audit §7): the guide's line 175 requires lowercase-hyphenated agent names,
       while line 214 defines a custom `Explore` with a capital E. Size: quick-fix. Done
       when: `/cc-guide verify subagents.frontmatter` (drift R8.5) has judged the note.
+      → done 2026-10-19 (/deferred quick fix): the name row no longer claims
+      lowercase-hyphenated names: verify CONFIRMED line 179 (at most 256 characters, no colon).
+      The background row (line 192) got settle's correction.
 - [x] Verify guide note A-53 with `/cc-guide verify subagents.models` once drift lands (plan
       35 audit §7): the guide's line 207 opens Haiku's retirement window on 2026-10-15 while
       lines 209 and 214 still recommend Haiku, and it leaves the alias's behaviour at
@@ -2461,11 +2475,15 @@ declined as YAGNI (zero instances in a one-page wiki).
       window and its retirement window, and the alias still meaning Haiku 4.5 on the other
       platforms. The line now says all of it, and the price table lists both models; H-57 was
       closed the same way in #42.
-- [ ] Verify guide note A-54 with `/cc-guide verify subagents.isolation` once drift lands
+- [x] Verify guide note A-54 with `/cc-guide verify subagents.isolation` once drift lands
       (plan 35 audit §7): the guide's line 219 says custom agents load CLAUDE.md and git
       status while the built-in Explore skips both, without saying which applies to line
       214's Explore override. Size: quick-fix. Done when: `/cc-guide verify
       subagents.isolation` (drift R8.5) has judged the note.
+      → done 2026-10-19 (/deferred quick fix): verify CONFIRMED line 224: custom agents load
+      CLAUDE.md and git status, and the built-in Explore and Plan skip both (sub-agents.md:1104,
+      :1113). The docs say nothing about an Explore override, so no correction. Two omissions
+      are the owner's call.
 - [x] Verify guide note H-57 with `/cc-guide verify lean.model-routing` once drift lands
       (plan 35 audit §7): the guide's line 422 leaves open whether `enforceAvailableModels`
       is honoured only in managed settings; the enforce-available-models-project item waits
@@ -2486,16 +2504,21 @@ declined as YAGNI (zero instances in a one-page wiki).
       (line 369) sets out both choices, exiting on `stop_hook_active` or re-checking with a
       retry cap of the hook's own, and says the cap does not bound a re-checking loop. No
       verify of `hooks.patterns` ran; the owner judged one would only re-confirm that text.
-- [ ] Verify guide note C-40 with `/cc-guide verify mechanisms.overview` once drift lands
+- [x] Verify guide note C-40 with `/cc-guide verify mechanisms.overview` once drift lands
       (plan 35 audit §7): the guide's line 48 says a PostToolUse hook runs the linter every
       time, which overstates: line 369 says a Write/Edit matcher misses Bash rewrites, and
       line 371 says gates fail open. Size: quick-fix. Done when: `/cc-guide verify
       mechanisms.overview` (drift R8.5) has judged the note.
-- [ ] Verify guide note C-41 with `/cc-guide verify context.overview` once drift lands (plan
+      → done 2026-10-19 (/deferred quick fix): verify CONFIRMED line 52's every-time claim
+      (best-practices.md:228). Line 44's token cost got settle's correction. Settle held
+      mechanisms.overview (see S-110).
+- [x] Verify guide note C-41 with `/cc-guide verify context.overview` once drift lands (plan
       35 audit §7): the guide's line 33 calls CLAUDE.md the only always-loaded prose you
       control, while line 18 lists rules files without `paths` as always loaded too. Size:
       quick-fix. Done when: `/cc-guide verify context.overview` (drift R8.5) has judged the
       note.
+      → done 2026-10-19 (/deferred quick fix): verify rated line 37 PARTIAL. It now names rules
+      files with no paths field beside CLAUDE.md.
 - [ ] Codex and Gemini guide conformance (conformance spec, Out of scope): the register and
       lint cover the Claude Code guide only, and the register is per guide. Size: design.
       Revisit if: the owner wants the Codex or Gemini guide anchored and checked the same

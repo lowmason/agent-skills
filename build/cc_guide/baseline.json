@@ -5,24 +5,24 @@
     "release": "2.1.302",
     "date": "2026-10-17"
    },
-   "changed": "2.1.288",
+   "changed": "2.1.304",
    "audited": {
     "release": "2.1.288",
     "date": "2026-10-03"
    },
-   "text_hash": "sha256:e59c09097336358831bded1636a0f3df430deb1488e9362c657588f5d3d94127"
+   "text_hash": "sha256:3b3b680a2c035bd898829535e2cd554bd616d6819fd0c0082540be3eaf1d66f2"
   },
   "mechanisms.overview": {
    "checked": {
     "release": "2.1.302",
     "date": "2026-10-17"
    },
-   "changed": "2.1.288",
+   "changed": "2.1.304",
    "audited": {
     "release": "2.1.288",
     "date": "2026-10-03"
    },
-   "text_hash": "sha256:5477678d5b6e7733bac4e0ca6fceae176db2a9276cbe38b4b9cb2796d6920acc"
+   "text_hash": "sha256:25bc7df4acc7a8fb0806cabe5f418bc3a0f85f42d0dd716c899d19d9fcde2f3f"
   },
   "skills.overview": {
    "checked": {
@@ -77,24 +77,24 @@
     "release": "2.1.302",
     "date": "2026-10-17"
    },
-   "changed": "2.1.288",
+   "changed": "2.1.304",
    "audited": {
     "release": "2.1.288",
     "date": "2026-10-03"
    },
-   "text_hash": "sha256:375ed02f5fbf4decaa70d07a528023bfd08070c8fa9a2ad68d6e801b8d08dfc8"
+   "text_hash": "sha256:eef60df3c58a75d0e954e5867fbff19ff9ab2dec6d505192dacb6e0c9b59a56a"
   },
   "skills.progressive-disclosure": {
    "checked": {
     "release": "2.1.302",
     "date": "2026-10-17"
    },
-   "changed": "2.1.288",
+   "changed": "2.1.304",
    "audited": {
     "release": "2.1.288",
     "date": "2026-10-03"
    },
-   "text_hash": "sha256:c4385c18deed926b6968fc757dfe06327ecbe9fdb7247b5aabfd0d74aca05080"
+   "text_hash": "sha256:e9fcc15e9effbd7e5b2bf9145530c60a8fb3c5d24854f8fe181ab5788775cffc"
   },
   "skills.arguments": {
    "checked": {
@@ -149,12 +149,12 @@
     "release": "2.1.302",
     "date": "2026-10-17"
    },
-   "changed": "2.1.302",
+   "changed": "2.1.304",
    "audited": {
     "release": "2.1.288",
     "date": "2026-10-03"
    },
-   "text_hash": "sha256:4b6b612431a4be53bde8476a0f9aa827d6356074b6c4044d50b619464eba32f2"
+   "text_hash": "sha256:7387151d508aea6f062dd9ff81fd6e63b7a9472eb0ae50aca8524d926005876d"
   },
   "subagents.tools": {
    "checked": {
@@ -722,7 +722,7 @@
      "4a8f1d01cea4adf6": "419f538968ba95d5",
      "43c57b12c50bae53": "53e16d6e744631d1",
      "3f689a117c0414d7": "55e0f735126eeb7e",
-     "41a57e015fe3796b": "71fd8311822ce640",
+     "41a57e015fe3796b": "ce9cad458b033b26",
      "f812f0604f0c35e3": "06495bcaeee93c5a",
      "8e3358c400432af0": "58e80bd2a68da195",
      "45635884bce2bf4e": "e1aaa52e155145d9",
@@ -797,7 +797,7 @@
     "statusline": "2.1.296",
     "interactive-mode": "2.1.296",
     "env-vars": "2.1.302",
-    "memory": "2.1.302",
+    "memory": "2.1.304",
     "skills": "2.1.302",
     "monitoring-usage": "2.1.302"
    }
@@ -1192,7 +1192,7 @@
      "50c045f8e6be7920": "0a0b1a5aba50f454",
      "91cd0b41a3668a49": "93cc344e79fa143f",
      "c7c5c12a232d4b16": "d73188e55c50e73a",
-     "f126fdee488667be": "269a05f112df8b5f"
+     "f126fdee488667be": "d5858749ec69659b"
     },
     "auto-mode-config": {
      "aa57b43ae1edbe33": "8aee0e9f8039aa81",
@@ -1272,7 +1272,7 @@
     "plugins/loading": "2.1.296",
     "claude-directory": "2.1.302",
     "settings-reference": "2.1.302",
-    "env-vars": "2.1.302",
+    "env-vars": "2.1.304",
     "auto-mode-config": "2.1.296",
     "model-config": "2.1.302"
    }
@@ -1431,7 +1431,7 @@
      "18412ef34667ab4d": "b8e920a812122a00",
      "4b77914c2831235e": "3e672dd8735609f5",
      "894852664f695946": "a68e954b656e758d",
-     "a22f38878b3db507": "3c09716ba3ec9c14",
+     "a22f38878b3db507": "29f90fbc0e62e129",
      "806ec2cd5061e710": "2f62dbb84cc54807",
      "044daf45efcde2f7": "4098062ca75af7db",
      "5e2db4dafc4fbfb4": "21822163e77c9e01",
@@ -1871,7 +1871,7 @@
     "agents": "2.1.296",
     "workflows": "2.1.302",
     "agent-teams": "2.1.302",
-    "model-config": "2.1.302",
+    "model-config": "2.1.304",
     "env-vars": "2.1.302",
     "tools-reference": "2.1.302",
     "prompt-caching": "2.1.302",

@@ -34,15 +34,15 @@ Each customization mechanism is, at bottom, a context-management tool:
 - **Skills** load knowledge only when it's relevant (progressive disclosure).
 - **Subagents** do heavy reading in an isolated window and return a short summary.
 - **Rules with `paths`** load only when matching files are touched.
-- **CLAUDE.md** is the only always-loaded prose you fully control — spend it like cash.
+- **CLAUDE.md**, with any rules file that has no `paths` field, is the always-loaded prose you control most directly. Spend it like cash.
 
 ## 2. Choosing the right mechanism
 <!-- cc: mechanisms.overview -->
 
 | The guidance is… | Put it in… | Why |
 |---|---|---|
-| Deterministic and machine-checkable ("always format", "never use pip") | A hook (plus linter config) | Runs every time, costs no tokens, can't be ignored |
-| A hard access boundary ("never read `.env`", "no destructive git") | Permission rules in `settings.json` | Checked before every tool call; add the sandbox where a shell command could read a file without naming it |
+| Deterministic and machine-checkable ("always format", "never use pip") | A hook (plus linter config) | Runs every time, costs no tokens unless it returns output, can't be ignored |
+| A hard access boundary ("never read `.env`", "no destructive git") | Permission rules in `settings.json` | Checked before every tool call. A shell-command rule matches the command text only, so back a must-never command with a `PreToolUse` hook or the sandbox. Add the sandbox where a shell command could read a file without naming it |
 | Short, always-true, not inferable from code (build commands, style deltas) | CLAUDE.md | Always loaded — reserve it for what's always relevant |
 | Relevant only when touching certain files | A rule file with `paths` | Lazy-loads on match |
 | Sometimes-relevant knowledge or a multi-step workflow | A skill | Loads on demand; can bundle scripts and references |
@@ -115,7 +115,7 @@ When deciding what to load, Claude sees only each skill's name and description �
 The always-loaded skill listing is budgeted at roughly **1% of the model's context window** (a character budget). Every skill's name always stays listed; when the descriptions overflow, Claude Code does not truncate them — it **drops entire descriptions, least-invoked skills first**. A skill whose description was dropped stays invocable by name but rarely auto-triggers.
 
 - `/doctor` estimates the listing cost and the biggest contributors; `/skill-doctor` shows each skill's cost and how often it's used; the `/context` Skills row shows the post-budget size.
-- `skillListingBudgetFraction` in settings raises the budget (e.g. `0.02` for 2%); each entry stays capped at 1,536 characters regardless.
+- `skillListingBudgetFraction` in settings raises the budget (e.g. `0.02` for 2%). Each entry's description and `when_to_use` text stays capped at 1,536 characters by default, however large the budget. `skillListingMaxDescChars` changes that cap, and lowering it fits more skills under the budget.
 - `disable-model-invocation: true` takes a skill out of the listing entirely — the cheapest home for manual-only workflows.
 - `skillOverrides` sets individual skills to `"name-only"` (listed without a description), `"user-invocable-only"` (hidden from Claude, still typable), or `"off"`. It doesn't reach plugin skills — manage those in `/plugin`.
 - Disable unused plugins — a plugin's whole skill set lands in the listing.
@@ -125,7 +125,7 @@ The always-loaded skill listing is budgeted at roughly **1% of the model's conte
 
 Three tiers keep skills nearly free until used: the listing (name + description, always loaded) → the `SKILL.md` body (loaded on invocation) → bundled files (loaded only when the body points at them). Exploit tier three deliberately: keep the body short and push depth into `references/`, named explicitly in prose ("For the edge cases, read `references/edge-cases.md`").
 
-Tier two is not free once paid: an invoked body enters the conversation and stays for the rest of the session. After compaction, Claude Code re-attaches only the first 5,000 tokens of each invoked skill (25,000 across all of them), so put the critical instructions near the top of `SKILL.md`. The docs' context walkthrough also says the listing itself is not re-injected after `/compact` ⚠.
+Tier two is not free once paid: an invoked body enters the conversation and stays for the rest of the session. After compaction, Claude Code re-attaches the most recent invocation of each skill and keeps the first 5,000 tokens of each, within a shared 25,000-token budget filled newest first. Older invoked skills can drop out entirely, so put the critical instructions near the top of `SKILL.md`. Since 2.1.304, compaction also sends Claude the skill listing again, and `/reload-skills` re-sends only new or changed skills.
 
 Write the body as **process, not prose**. A 2,000-word essay gets skimmed and paraphrased; a numbered workflow with steps, checkpoints, and exit criteria gets executed — and gives you something verifiable. Bundle deterministic logic as scripts in `scripts/` rather than describing it and hoping the model re-derives it correctly.
 
@@ -189,7 +189,7 @@ Subagent definitions are Markdown files in `~/.claude/agents/` (personal) or `.c
 | `mcpServers` | MCP servers available to the agent (inline defs or refs to the parent's); an inline server's tool descriptions stay out of the parent's context |
 | `hooks` | Lifecycle hooks active only while the agent runs |
 | `memory` | `user` \| `project` \| `local` — persistent memory scope for cross-session learning; auto-enables Read/Write/Edit and loads that MEMORY.md (first 200 lines / 25 KB) at every spawn |
-| `background` | `true` keeps it in the background even when Claude wants the result; unset, the main conversation's spawns already run in the background wherever fork mode is on: the terminal, and since 2.1.302 claude -p, the Agent SDK, the desktop app and VS Code (CLAUDE_CODE_FORK_SUBAGENT=0 turns fork mode off). In those four, a subagent's own Agent calls run in the foreground by default ⚠ |
+| `background` | `true` keeps it in the background even when Claude wants the result. Unset, a main-conversation spawn starts in the background wherever fork mode is on: the terminal, and since 2.1.302 claude -p, the Agent SDK, the desktop app and VS Code (CLAUDE_CODE_FORK_SUBAGENT=0 turns fork mode off). Only the terminal, the desktop app and VS Code then stop Claude from waiting for it. In claude -p and the Agent SDK, Claude may still choose to wait, so set the field to true there to keep it in the background. In claude -p, the Agent SDK, the desktop app and VS Code, a subagent's own Agent calls run in the foreground by default ⚠ |
 | `isolation` | `worktree` runs it in a disposable git worktree (auto-cleaned if unchanged), branched from `origin/<default-branch>` — unpushed commits are absent unless `worktree.baseRef` is `"head"` |
 | `omitClaudeMd` | `true` launches it without user, project, and local CLAUDE.md (managed files still load, except for managed subagents) — a cheaper spawn (2.1.271+). A subdirectory's CLAUDE.md and matching path-scoped rules still load when it works with files there, and the field is ignored when the agent runs as the session agent via `--agent` |
 | `experimental.cacheTtl` | `5m` or `1h` prompt-cache TTL for this agent's requests (2.1.248+) ⚠ |
