@@ -5,7 +5,7 @@
 # Gate A (test_readonly_agent_guard.py) can pass perfectly against a hook Claude
 # Code never invokes; this is the only test of the real claim.
 #
-# Three mechanics, all probed on 2.1.259 (see the README "Probe log"):
+# Three mechanics, all probed on 2.1.259 (see the README "Probe log"), and an isolation rule:
 #
 #  1. --allowedTools is variadic and swallows a trailing positional, so the
 #     prompt goes FIRST. `claude -p` also blocks on a piped stdin: < /dev/null.

@@ -75,9 +75,9 @@ cache that cannot be written, leave none. `notice.py` writes the notice, and
 its docstring lists the cache files the shell and Python share. The notice
 reads `main`, so it keeps naming work `/cc-guide` resolved until that work is
 committed on `main` and the next daily check runs. The `startup` matcher also
-fires under `claude -p` (checked on 2.1.304, 2026-10-20), so a `claude -p` run
-whose working directory is this repo or one of its worktrees runs `show` and
-`refresh` too.
+fires under `claude -p` (checked on 2.1.304, 2026-10-20, with a stand-in hook
+from `--settings`), so a `claude -p` run that loads this repo's project
+settings should run `show` and `refresh` too.
 `cli.py probes --claude <path>` runs the live probes that `manifest.toml`
 registers (spec R10): short `claude -p` runs that check behaviour the guide
 states, each from its own scratch directory under the system temp directory.
