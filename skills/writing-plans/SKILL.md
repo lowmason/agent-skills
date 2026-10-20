@@ -7,6 +7,7 @@ description: >
   or a separate execution session, or when an executed plan is to be completed, retired or merged
   ("complete the plan"), including a roadmap stage's handoff.
 license: MIT
+compatibility: Requires uv to run bundled scripts (dependencies are declared inline); Python 3.11+.
 metadata:
   author: 'Jesse Vincent'
   adapted_by: 'Lowell Mason'

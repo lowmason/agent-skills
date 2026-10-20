@@ -12,6 +12,7 @@ description: >
   Not for tuning continuous ML hyperparameters (that is tune-hyperparameters). Not for
   neural runs or checkpoints (that is evaluate-deep-learning).
 license: MIT
+compatibility: Requires uv to run bundled scripts (dependencies are declared inline); Python 3.12+.
 metadata:
   author: Lowell Mason
   version: "1.0"

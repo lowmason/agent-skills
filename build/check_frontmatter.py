@@ -22,7 +22,9 @@ Per <skill>/SKILL.md:
   import outside a try that catches ImportError (VENDORED_SCRIPTS are exempt);
 - no markdown in the skill runs a runnable bundled script with python or python3,
   line continuations joined: the form is uv run <path> (VENDORED_SCRIPTS are
-  exempt).
+  exempt);
+- a skill whose markdown runs a bundled script with uv run names uv in
+  compatibility.
 A body (the lines after the closing frontmatter ---) over 500 lines prints one
 WARN line to stderr; the exit code does not change.
 
@@ -88,6 +90,8 @@ THIS_SKILL = '<this-skill-dir>'
 # Path owners that stand for a skill under another name: a wiki root's
 # scripts/ holds the copies llm-wiki's bootstrap_wiki.py installs.
 PATH_ALIASES = {'$LLM_WIKI_ROOT': 'llm-wiki'}
+# compatibility names uv as a word (portability R3.6).
+UV_WORD_RE = re.compile(r'\buv\b')
 DMI_KEY = 'disable-model-invocation'
 # A skill name may not contain these words on claude.ai (portability R1.8).
 RESERVED_NAME_WORDS = ('claude', 'anthropic')
@@ -350,6 +354,17 @@ def check_invocations(skill_dir: Path, vendored: frozenset[str] = VENDORED_SCRIP
     return errs
 
 
+def _check_compatibility_names_uv(skill_dir: Path, fm: dict) -> list[str]:
+    '''A skill whose markdown runs a bundled script with uv run names uv in
+    compatibility (portability R3.6-R3.7), so a host can tell it needs uv.'''
+    if not any(runner == 'uv run' for _, runner, _ in bundled_invocations(skill_dir)):
+        return []
+    if UV_WORD_RE.search(str(fm.get('compatibility') or '')):
+        return []
+    return [f"{skill_dir / 'SKILL.md'}: its markdown runs a bundled script with uv run, "
+            'so compatibility must name uv']
+
+
 def check_skill(skill_dir: Path) -> list[str]:
     errs: list[str] = []
     sk = skill_dir / 'SKILL.md'
@@ -384,6 +399,7 @@ def check_skill(skill_dir: Path) -> list[str]:
     errs += _check_invocation_parity(skill_dir, fm)
     errs += check_script_headers(skill_dir)
     errs += check_invocations(skill_dir)
+    errs += _check_compatibility_names_uv(skill_dir, fm)
     for key in fm:
         if key not in SPEC_KEYS | HOST_KEYS:
             errs.append(f'{sk}: unknown frontmatter key {key!r}')

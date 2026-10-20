@@ -459,6 +459,35 @@ def test_a_vendored_script_run_with_python3_passes(tmp_path):
     assert len(check_invocations(d)) == 1
 
 
+UV_COMPATIBILITY = 'Requires uv to run bundled scripts (dependencies are declared inline); Python 3.11+.'
+
+
+def _uv_skill(tmp_path: Path, name: str, extra: str = '') -> Path:
+    '''A skill whose SKILL.md runs its bundled scripts/tool.py with uv run.'''
+    d = make_skill(tmp_path, name, f'name: {name}\ndescription: Use when testing.{extra}')
+    (d / 'scripts').mkdir()
+    (d / 'scripts' / 'tool.py').write_text(RUNNABLE)
+    with (d / 'SKILL.md').open('a') as f:
+        f.write('```bash\nuv run <this-skill-dir>/scripts/tool.py\n```\n')
+    return d
+
+
+def test_a_uv_run_invocation_needs_compatibility_naming_uv(tmp_path):
+    # Portability R3.6-R3.7. uv must be a word: cuvid does not name it.
+    for name, extra in (('no-compat', ''), ('no-uv', '\ncompatibility: Python 3.11+.'),
+                        ('uv-inside-a-word', '\ncompatibility: Needs cuvid.')):
+        d = _uv_skill(tmp_path, name, extra)
+        assert check_skill(d) == [
+            f"{d / 'SKILL.md'}: its markdown runs a bundled script with uv run, so compatibility must name uv"], name
+    assert check_skill(_uv_skill(tmp_path, 'named', f'\ncompatibility: {UV_COMPATIBILITY}')) == []
+
+
+def test_compatibility_is_optional_when_no_markdown_runs_a_script(tmp_path):
+    # A guard, green before and after: recommend-probabilistic-model bundles
+    # characterize.py but its markdown never runs it.
+    assert check_skill(_skill_with_script(tmp_path, 'unrun', RUNNABLE)) == []
+
+
 def make_agent(tmp_path: Path, name: str, description: str) -> Path:
     md = tmp_path / f'{name}.md'
     md.write_text(

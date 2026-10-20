@@ -14,6 +14,7 @@ description: >
   reviewing code or specs. The description is math and prose decoupled from
   code — not a code walkthrough, README, or analysis writeup.
 license: MIT
+compatibility: Requires uv to run bundled scripts (dependencies are declared inline); Python 3.11+.
 metadata:
   author: Lowell Mason
   version: "1.0"

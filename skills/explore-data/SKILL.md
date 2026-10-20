@@ -13,6 +13,7 @@ description: >
   null/duplicate/quality checks, schema inspection, scan_parquet, .describe(), value_counts,
   .null_count(), n_unique, or "is this column a key?".
 license: MIT
+compatibility: Requires uv to run bundled scripts (dependencies are declared inline); Python 3.11+.
 metadata:
   author: Lowell Mason
   version: "1.0"

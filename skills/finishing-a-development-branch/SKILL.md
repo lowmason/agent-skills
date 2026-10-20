@@ -7,6 +7,7 @@ description: >
   PR", "clean up this branch/worktree", deciding how to integrate a completed feature branch, or
   finishing work started with the using-git-worktrees skill.
 license: MIT
+compatibility: Requires uv to run bundled scripts (dependencies are declared inline); Python 3.11+.
 metadata:
   author: 'Jesse Vincent'
   adapted_by: 'Lowell Mason'

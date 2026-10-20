@@ -12,6 +12,7 @@ description: >
   plotly. Also when turning an explore-data profile into a chart, or picking encodings (which field
   maps to x / y / color / facet / size). Polars-first.
 license: MIT
+compatibility: Requires uv to run bundled scripts (dependencies are declared inline); Python 3.11+.
 metadata:
   author: Lowell Mason
   version: "1.0"
@@ -103,7 +104,7 @@ viridis for sequential.
 
 ## Stack notes
 
-- The skill is **markdown** — Phase 0/1 need only `polars` (and `recommend.py`, Python ≥ 3.9).
+- The skill is **markdown** — Phase 0/1 need only `polars` (and `recommend.py`, Python ≥ 3.11).
 - Phase 2 needs whichever library you route to: `altair` (+ `vl-convert-python` for static export,
   `vegafusion` for large raw data), `matplotlib`, or `plotly` (+ `kaleido` for static export). All
   three accept Polars frames either directly (Altair, plotly-express via narwhals) or via

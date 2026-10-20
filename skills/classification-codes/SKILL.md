@@ -14,6 +14,7 @@ description: >
   mean", "is code X still valid", "when is the next revision". Codes and titles come from
   data/, never from model memory.
 license: MIT
+compatibility: Requires uv to run bundled scripts (dependencies are declared inline); Python 3.11+.
 metadata:
   author: Lowell Mason
   version: "0.2"

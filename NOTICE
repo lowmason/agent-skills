@@ -523,7 +523,8 @@ Changes from upstream:
     one sentence on running the same path with `python3` where uv is
     absent (specs/agent-skills-portability-spec.md, R3.5). The same
     change in references/deferred-backlog.md, and the two headers, are to
-    the original works named above.
+    the original works named above. Both SKILL.md files also gained a
+    `compatibility` field naming uv (R3.6).
 
     brainstorming/
     dispatching-parallel-agents/

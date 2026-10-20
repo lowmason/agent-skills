@@ -10,6 +10,7 @@ description: >
   'harvest', 'harvest the specs', or turning a repo's specs/ corpus (specs,
   plans, deferred items) into wiki captures.
 license: MIT
+compatibility: Requires uv to run bundled scripts (dependencies are declared inline); Python 3.11+.
 metadata:
   author: Lowell Mason
   version: "1.2"

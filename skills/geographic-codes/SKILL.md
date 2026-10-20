@@ -14,6 +14,7 @@ description: >
   "which metro is Y in", "was this code valid in", delineation, county change, OMB bulletin,
   central / outlying county, commuting threshold.
 license: MIT
+compatibility: Requires uv to run bundled scripts (dependencies are declared inline); Python 3.11+.
 metadata:
   author: Lowell Mason
   version: "0.2"

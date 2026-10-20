@@ -11,6 +11,7 @@ description: >
   Pyro, BlackJAX, ArviZ, InferenceData, DataTree, credible intervals, HDI, posterior
   distributions, shrinkage, or uncertainty quantification.
 license: MIT
+compatibility: Requires uv to run bundled scripts (dependencies are declared inline); Python 3.12+.
 effort: xhigh
 metadata:
   author: "Alexandre Andorra (https://alexandorra.github.io/)"

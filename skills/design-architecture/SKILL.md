@@ -14,6 +14,7 @@ description: >
   decisions — especially when the same problem is solved more than one way across repos with no
   recorded rationale.
 license: MIT
+compatibility: Requires uv to run bundled scripts (dependencies are declared inline); Python 3.11+.
 metadata:
   author: Lowell Mason
   version: "1.0"
