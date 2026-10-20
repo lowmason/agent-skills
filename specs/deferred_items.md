@@ -3874,7 +3874,7 @@ all 20 named a type.
       gap has a test, or the owner records it as not needed.
 
 ## 50-superpowers-upstream-fixes — 2026-10-18
-- [ ] find-polluter.sh still ends on its all-clear when the pollution exists before the
+- [x] find-polluter.sh still ends on its all-clear when the pollution exists before the
       first test (plan 50 code review, Minor 2). Every test is then skipped with a warning
       line, and the run ends "✅ No polluter found - all tests clean!" with exit 0. The
       documented '.git' check, run from a repository root, hits this. The behaviour was
@@ -3886,6 +3886,10 @@ all 20 named a type.
       divergence from upstream in NOTICE's plan 50 entry. Size: quick-fix. Done when: a run
       whose pollution exists before the first test exits non-zero without the all-clear
       line, and a test pins it.
+      → done 2026-10-19 (/deferred quick fix): find-polluter.sh exits 3 without the all-clear
+      when the pollution exists before the first test or appears between tests.
+      test_find_polluter.py pins it (RED 2 failed, GREEN 12 passed), and NOTICE's plan 50 entry
+      records the divergence.
 - [ ] skills/subagent-driven-development/SKILL.md does not say what review-package's exit
       3 means (plan 50 code review, recommendation). Since plan 50, review-package stops
       with exit 3 on an empty or non-descendant BASE..HEAD range: a DONE task with no
@@ -4403,7 +4407,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       `:287`). Scope F2 to functional JAX/NumPyro and Polars code in all three places, add the
       NNX/Equinox carve-out, and revisit the G7/G18 drop rationale at `SKILL.md:133-134`.
       Size: quick-fix. Done when: all three statements carry the scope and the carve-out.
-- [ ] Widen tech-debt's scan for seeds, model artifacts and pandas/PyMC migration debt
+- [x] Widen tech-debt's scan for seeds, model artifacts and pandas/PyMC migration debt
       (audit-3-10-26 G15 and B4's tech-debt sub-item, found 2026-10-03; re-verified
       2026-10-18 by running `scan.sh` on a fixture). The seed battery
       (`skills/tech-debt/scripts/scan.sh:43-44` rg arm, `:46-47` grep arm; `SKILL.md:82`)
@@ -4417,6 +4421,10 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       supervised targets (a path reference needs a SOFT_REFERENCES entry). No description
       changes, so no micro-test. Size: quick-fix. Done when: a fixture with each pattern is
       flagged.
+      → done 2026-10-19 (/deferred quick fix): both seed patterns are in both scan.sh arms and
+      the SKILL.md row, with new sections for committed model artifacts and pandas/PyMC
+      migration debt. The new test_scan.py (suite tech-debt) flags each pattern under rg and
+      under grep. The optional explore-data pointer was skipped.
 - [ ] Owner call: should Codex and Gemini session histories feed the research wiki?
       (audit-3-10-26 G16 and its Decision 12, found 2026-10-03; re-verified 2026-10-18.)
       `skills/llm-wiki/scripts/distill_sessions.py:16` reads only the `claude-code` and
@@ -4425,12 +4433,14 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       reader per runtime, with the same privacy redaction, through brainstorming. Size:
       design. Done when: the owner decides, and a yes has an approved spec or a no is
       recorded here.
-- [ ] Document `distill_sessions.py --source claude-ai` (audit-3-10-26 G16, found 2026-10-03;
+- [x] Document `distill_sessions.py --source claude-ai` (audit-3-10-26 G16, found 2026-10-03;
       re-verified 2026-10-18). The script accepts `--source claude-ai` with a
       `conversations.json` export (`skills/llm-wiki/scripts/distill_sessions.py:16`), but no
       Markdown file in the skill mentions it: `SKILL.md:71-77` and `INSTALL.md:130-136`
       document only `--source claude-code`. Add one sentence and an example to both, with the
       same privacy caveat. Size: quick-fix. Done when: both files document the source.
+      → done 2026-10-19 (/deferred quick fix): SKILL.md and INSTALL.md document --source
+      claude-ai with an example and the privacy caveat.
 - [ ] Stop recommending the dead `sts-jax` package (audit-3-10-26 F10, found 2026-10-03;
       re-verified 2026-10-18: PyPI returns 404 for `sts-jax`, and its GitHub repository was
       last pushed 2024-05-08).
@@ -4441,7 +4451,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       keeping the PML §29.12 citation and the notebook pointer; a bare-name hand-off adds no
       install dependency, a path citation needs a DEPENDENCIES or SOFT_REFERENCES entry.
       Size: quick-fix. Done when: neither file recommends sts-jax.
-- [ ] `characterize.py` crashes on a Boolean target and accepts misspelled columns
+- [x] `characterize.py` crashes on a Boolean target and accepts misspelled columns
       (audit-3-10-26 X4, found 2026-10-03; re-verified 2026-10-18 by running it). In
       `skills/recommend-probabilistic-model/scripts/characterize.py`, a Boolean target raises
       `NotImplementedError: Series of type Boolean does not have eq operator` (`zero_fraction`,
@@ -4451,14 +4461,19 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       targets), call `ap.error()` on any unknown `--target`, `--predictors` or `--time` name,
       and add tests to `test_characterize.py`. Plan 53 adds a PEP 723 header to this file.
       Size: quick-fix. Done when: the three cases are handled and tested.
-- [ ] `profile.py` sends every glob to `scan_parquet`, so a CSV glob fails (audit-3-10-26 X5,
+      → done 2026-10-19 (/deferred quick fix): a Boolean target is counted, and an unknown
+      --target, --predictors or --time name exits 2. Tests in test_characterize.py (RED, then 16
+      passed).
+- [x] `profile.py` sends every glob to `scan_parquet`, so a CSV glob fails (audit-3-10-26 X5,
       found 2026-10-03; re-verified 2026-10-18: a two-file CSV glob raises polars'
       "parquet: File out of specification", exit 1). `skills/explore-data/scripts/profile.py:43`
       routes any path containing `*` or `?` to parquet before it tests the suffix, though the
       help (`:296`) advertises "parquet/csv/ndjson file or glob". Test the suffix first and
       fall back to parquet only for suffix-less globs; add a two-file CSV-glob test to
       `test_profile.py`. Size: quick-fix. Done when: a CSV glob profiles, with a test.
-- [ ] Three CLIs exit 0 or end in a traceback on bad input (audit-3-10-26 X6, found 2026-10-03;
+      → done 2026-10-19 (/deferred quick fix): profile.py tests the suffix first and falls back
+      to parquet only for suffix-less globs. A two-file CSV-glob test pins it.
+- [x] Three CLIs exit 0 or end in a traceback on bad input (audit-3-10-26 X6, found 2026-10-03;
       re-verified 2026-10-18 by running each). (a)
       `skills/recommend-visualization/scripts/recommend.py`: `--intent` is free text (`:471`),
       so an unknown intent ends in a ValueError traceback (`:434-436`), and an empty candidate
@@ -4472,6 +4487,10 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       findings non-fatal, since `test_check_decoupling.py:164-174` pins exit 0 when findings
       exist. One test each. Plan 53 adds PEP 723 headers to all three. Size: quick-fix. Done
       when: each bad input gets a clean message and its documented exit code, with tests.
+      → done 2026-10-19 (/deferred quick fix): recommend.py takes --intent from choices and
+      exits 1 on an empty list, lint_wiki.py errors out on a missing wiki/, and
+      check_decoupling.py uses argparse with clean exit-2 errors. Findings stay exit 0. One test
+      group each.
 - [ ] Fix and test the three hook templates (audit-3-10-26 X8, found 2026-10-03;
       re-verified 2026-10-18 by probes; its drift-spec coordination, R11.5, is done).
       (a) `hooks/ruff-check.sh` blocks Stop with exit 2 and "ruff check found issues" for any
@@ -4677,7 +4696,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       (`build/snippet_preamble.py`; see F9 in this section). CLAUDE.md is at 146 of its
       200-line limit, so a new command line fits without a trim. Retire: a deviation note in
       plan 29's record. Size: quick-fix. Done when: the owner picks one and it lands.
-- [ ] Pin `task-brief`'s heading-level boundary with a test (audit-3-10-26 B10, found
+- [x] Pin `task-brief`'s heading-level boundary with a test (audit-3-10-26 B10, found
       2026-10-03; first noted in a closure note in section `21-audit_9_2_26`, 2026-09-03).
       Changing `<= tlvl` to `< tlvl` at `skills/subagent-driven-development/scripts/task-brief:48`
       still passes all 28 tests in `test_sdd_scripts.py` (re-run on 2026-10-18 with the mutant
@@ -4686,7 +4705,9 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       there, the mutant leaks the heading into it. Add that case to the suite's `PLAN` fixture
       (`test_sdd_scripts.py:29-60`) and confirm it kills the mutant. Size: quick-fix. Done
       when: the test exists and fails under the mutant.
-- [ ] `distill_sessions.py` can skip or delete a digest when two session ids share their first
+      → done 2026-10-19 (/deferred quick fix): the `### Notes` case is in the PLAN fixture. Its
+      test fails under the `< tlvl` mutant (1 failed, 28 passed) and passes on the original.
+- [x] `distill_sessions.py` can skip or delete a digest when two session ids share their first
       8 characters (audit-3-10-26 B10, found 2026-10-03; first noted in a closure note in
       section `14-llm-wiki-distiller`, which called it "a separate, unrecorded item"). The
       idempotence check matches existing digests on `-<sess8>.md` alone
@@ -4699,6 +4720,9 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       Plan 53 (portability, not executed) adds a PEP 723 header to this file; land either
       first. Size: quick-fix. Done when: the full-id match and its test land, or the owner
       retires the item with the collision estimate recorded.
+      → done 2026-10-19 (/deferred quick fix): owner chose "Fix it". Digests match on the full
+      session id in their header, and a same-name collision gets a -2 suffix. RED-first tests in
+      test_distill_sessions.py.
 - [ ] Watch the `sbc_rank` recipe, which no gate runs (audit-3-10-26 B10, found 2026-10-03;
       first noted on 2026-09-03 in a closure note in section
       `20-bayesian-workflow-book-integration`: "Standing gap, not closed"). The sketch in
@@ -4985,13 +5009,16 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       or accept the reach and record it. Size: design. Done when: the owner has chosen, and
       the rule, the skill description and the spec say the same thing. Task 11, Step 1 of
       specs/plans/completed/52-write-with-asd-ste100.md raises it again at the install gate.
-- [ ] `install.py` has no way to skip the always-on rule in a full Claude install, and
+- [x] `install.py` has no way to skip the always-on rule in a full Claude install, and
       `--rule` says nothing on Codex and Gemini (final review). A full Claude install places
       every rule in `USER_RULES`, and only `--skill` selection leaves it out (plan 52, DF1,
       an owner-reviewed default). A Codex or Gemini install places no rule and prints no
       notice when `--rule` is passed. It would take a `--no-rules` flag, a one-line notice
       for `--rule` on a runtime without rules, and tests in `build/test_runtime_support.py`.
       Size: quick-fix. Done when: both behaviors exist and the installer tests cover them.
+      → done 2026-10-19 (/deferred quick fix): --no-rules leaves the user-level rules out of a
+      full Claude install, and --rule on Codex or Gemini prints a one-line notice. Tests in
+      build/test_runtime_support.py, and README.md documents both.
 - [ ] `SKILL.md` has no line that keeps the strength of an obligation word such as "should"
       (the `skill-r2` reading). In that re-run, 3 of the 5 `agent-instruction` replies
       turned "should" into a bare command or "must". The case's pre-registered checks cover

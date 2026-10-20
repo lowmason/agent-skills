@@ -296,3 +296,35 @@ def test_threshold_table_matches_constants():
         assert m, f'{name} not found in the chart-selection.md threshold table'
         assert float(m.group(1)) == float(getattr(R, name)), \
             f'{name}: doc says {m.group(1)} but recommend.py constant is {getattr(R, name)}'
+
+
+# ---- CLI: bad input gets a clean message and a non-zero exit --------------------------------------
+
+def _csv(tmp_path, text):
+    path = tmp_path / 'data.csv'
+    path.write_text(text)
+    return str(path)
+
+
+def test_cli_unknown_intent_is_a_usage_error_not_a_traceback(tmp_path, capsys):
+    path = _csv(tmp_path, 'x,y\n1,2\n3,4\n')
+    with pytest.raises(SystemExit) as exc:
+        R.main([path, '--intent', 'make-it-pretty'])
+    assert exc.value.code == 2
+    assert 'invalid choice' in capsys.readouterr().err
+
+
+def test_cli_still_accepts_the_intent_aliases(tmp_path, capsys):
+    path = _csv(tmp_path, 'x,y\n1,2\n3,4\n5,7\n')
+    assert R.main([path, '--intent', 'relationship']) == 0
+    assert 'chart recommendations' in capsys.readouterr().out
+
+
+def test_cli_exits_nonzero_when_no_chart_fits(tmp_path, capsys):
+    """A categorical-only frame has no pair to correlate: the list is empty, and the CLI used to
+    print its header over nothing and exit 0."""
+    path = _csv(tmp_path, 'c\na\nb\na\n')
+    assert R.main([path, '--intent', 'correlation']) == 1
+    out = capsys.readouterr()
+    assert 'no chart' in out.err.lower() and 'correlation' in out.err
+    assert 'chart recommendations' not in out.out

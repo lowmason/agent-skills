@@ -464,15 +464,17 @@ def _enrich_signals(fields: list[Field], df) -> None:
             f.outlier_ratio = outlier_ratio(df[f.name])
 
 
-def main() -> int:
+def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('data', nargs='?', help='raw csv/tsv/parquet — used to compute viz signals the profile omits')
     ap.add_argument('--profile', help='explore-data profile JSON (profile.py --json)')
-    ap.add_argument('--intent', required=True, help='one of: ' + ', '.join(sorted(VALID_INTENTS)))
+    ap.add_argument('--intent', required=True, choices=sorted(VALID_INTENTS | set(INTENT_ALIASES)),
+                    metavar='INTENT', help='one of: ' + ', '.join(sorted(VALID_INTENTS))
+                    + ' (aliases: ' + ', '.join(sorted(INTENT_ALIASES)) + ')')
     ap.add_argument('--fields', help='comma-separated columns to consider, in role order (default: all)')
     ap.add_argument('--top-n', type=int, default=15)
     ap.add_argument('--json', help='write the ranked candidates here as JSON')
-    a = ap.parse_args()
+    a = ap.parse_args(argv)
 
     df = _read(a.data) if a.data else None
     if a.profile:
@@ -497,6 +499,10 @@ def main() -> int:
         _enrich_signals(fields, df)
 
     cands = recommend(a.intent, fields, n_rows, top_n=a.top_n)
+    if not cands:
+        print(f"no chart candidates for intent '{a.intent}' with fields: "
+              + ', '.join(f'{f.name}({f.kind})' for f in fields), file=sys.stderr)
+        return 1
 
     print(f'\n=== chart recommendations: intent={a.intent}, n_rows={n_rows:,} ===')
     print('fields: ' + ', '.join(f'{f.name}({f.kind}'

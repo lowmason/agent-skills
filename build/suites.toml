@@ -130,6 +130,15 @@ with = ['pytest']
 notes = ['find-polluter.sh tests (stdlib only).']
 
 [[suite]]
+name = 'tech-debt'
+dir = 'skills/tech-debt/scripts'
+with = ['pytest']
+notes = [
+    'scan.sh tests (stdlib only): each report section runs once with rg and once with grep/find.',
+    'The rg tests skip where rg is not installed.',
+]
+
+[[suite]]
 name = 'track-model-experiments'
 dir = 'skills/track-model-experiments/scripts'
 with = ['pytest', 'numpy', 'polars', 'arviz', 'numpyro', 'h5netcdf', 'h5py']

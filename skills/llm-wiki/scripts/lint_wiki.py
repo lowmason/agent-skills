@@ -417,6 +417,8 @@ def main(argv=None):
                   help='wiki root (default $LLM_WIKI_ROOT or ~/research-wiki)')
   args = ap.parse_args(argv)
   root = Path(args.root) if args.root else default_root()
+  if not (root / 'wiki').is_dir():
+    ap.error(f'{root} is not a wiki root: it has no wiki/ directory')
   findings = run_checks(root)
   errors = sum(1 for f in findings if f[0] == 'ERROR')
   warnings = sum(1 for f in findings if f[0] == 'WARN')

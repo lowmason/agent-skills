@@ -470,7 +470,12 @@ Changes from upstream:
     top-level test files, which upstream's ./ prefix drops (this plan's
     Codex review found the drop). And when no test file matches it says no
     test ran and exits 2, where upstream reports "Found 0" and still ends
-    on its all-clear line with exit 0.
+    on its all-clear line with exit 0. And when the pollution already
+    exists before the first test it says so and exits 3 before any test
+    runs, where upstream (and this copy until 2026-10-19) skips every
+    test with a warning and still ends on its all-clear line with exit 0;
+    a marker that appears between tests stops the run with exit 3 as
+    well, rather than being skipped.
     sdd-workspace keeps this repo's .sdd/ rather than upstream's
     .superpowers/sdd/, and 19e54c0's CDPATH respelling is not taken,
     since this copy never sets CDPATH. And the tests are this repo's

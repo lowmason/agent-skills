@@ -324,6 +324,20 @@ def _digest_turns(path):
   return int(m.group(1)) if m else None
 
 
+_SESSION_HEADER_RE = re.compile(r'^session:[ \t]*(.+?)[ \t]*$', re.M)
+
+
+def _digest_session(path):
+  '''The full session id recorded in an existing digest's header, or None if it
+  is missing/unreadable. The filename carries only the first 8 characters, so
+  two sessions can share its suffix; the header is what tells them apart.'''
+  try:
+    m = _SESSION_HEADER_RE.search(path.read_text(encoding='utf-8'))
+  except (ValueError, OSError):
+    return None
+  return m.group(1) if m else None
+
+
 def write_digest(session, out):
   out.mkdir(parents=True, exist_ok=True)
   sess = session['session_id']
@@ -333,8 +347,11 @@ def write_digest(session, out):
   # skipped -- UNLESS the session has grown. Real sessions are appended to under
   # one id for up to 60 hours, and the literal skip rule would freeze a digest
   # written at hour 4 forever, permanently recording a truncated session.
+  # Match the full id from each digest's header, not the 8-character suffix
+  # alone: two sessions sharing their first 8 characters would otherwise be
+  # taken for one, the second skipped or the first deleted as "stale".
   existing = [p for p in sorted(out.glob('*.md'))
-              if p.name.endswith(f'-{sess8}.md')]
+              if f'-{sess8}' in p.name and _digest_session(p) == sess]
   if existing:
     previous = _digest_turns(existing[0])
     if previous is None or len(turns) <= previous:
@@ -374,7 +391,14 @@ def write_digest(session, out):
     '---',
     '',
   ]
-  path = out / f'{first_date}-{slug}-{sess8}.md'
+  base = f'{first_date}-{slug}-{sess8}'
+  path = out / f'{base}.md'
+  n = 1
+  # Another session with the same sess8, date and title would compute this very
+  # name: number it rather than overwrite that session's digest.
+  while path.exists() and _digest_session(path) != sess:
+    n += 1
+    path = out / f'{base}-{n}.md'
   body = ('\n' + '\n'.join(body_lines) + '\n') if body_lines else ''
   path.write_text('\n'.join(fm) + body, encoding='utf-8')  # blank line after ---
   # growth can change the date/slug parts of the name, so drop any stale digest

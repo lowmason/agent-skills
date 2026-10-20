@@ -14,8 +14,9 @@
 # several only the all-or-none variants are tried: run mixed ones separately.
 #
 # Exit status: 1 when a test creates the pollution (or on a usage error), 2
-# when no test file matches the pattern, so no test ran, 0 otherwise. A 0 is
-# clean only if no test was skipped because the pollution already existed.
+# when no test file matches the pattern, so no test ran, 3 when the pollution
+# already exists, so no test can be blamed for it, 0 when every test ran
+# clean. Only a 0 prints the all-clear.
 
 set -e
 
@@ -59,15 +60,24 @@ TOTAL=$(printf '%s\n' "$TEST_FILES" | wc -l | tr -d ' ')
 echo "Found $TOTAL test files"
 echo ""
 
+# Pollution that exists before the first test has no polluter to find, and a
+# run that skipped every test must not end on the all-clear.
+if [ -e "$POLLUTION_CHECK" ]; then
+  echo "❌ $POLLUTION_CHECK already exists before any test ran, so no test can be blamed for creating it."
+  echo "   Remove it and run again. This is not an all-clear."
+  exit 3
+fi
+
 COUNT=0
 for TEST_FILE in $TEST_FILES; do
   COUNT=$((COUNT + 1))
 
-  # Skip if pollution already exists
+  # Pollution that appears between two tests (a test that left a background
+  # process) cannot be blamed on either one. Stop rather than skip on.
   if [ -e "$POLLUTION_CHECK" ]; then
-    echo "⚠️  Pollution already exists before test $COUNT/$TOTAL"
-    echo "   Skipping: $TEST_FILE"
-    continue
+    echo "❌ $POLLUTION_CHECK appeared before test $COUNT/$TOTAL, after the previous test's check."
+    echo "   A background process may have created it. This is not an all-clear."
+    exit 3
   fi
 
   echo "[$COUNT/$TOTAL] Testing: $TEST_FILE"

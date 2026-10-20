@@ -235,6 +235,7 @@ python3 install.py codex --skill bayesian-workflow                # just this sk
 python3 install.py claude --skill finishing-a-development-branch  # plus its dependencies (see below)
 python3 install.py codex --skill bayesian-workflow --companions   # the skill plus Codex's agents
 python3 install.py claude --rule write-with-asd-ste100           # the user-level rule and the skill it names
+python3 install.py claude --no-rules                              # everything except the user-level rules
 python3 install.py claude --no-companions                         # every skill, no agents or commands
 python3 install.py all --dry-run                                  # inspect without writing
 python3 install.py gemini --copy                                  # frozen copies instead of symlinks (see below)
@@ -254,8 +255,9 @@ A full Claude install also places the user-level rules, today only
 `write-with-asd-ste100`, in `~/.claude/rules/`. `--rule NAME` installs one of
 them with the skills that it names and their dependencies. Like `--skill`, it
 skips the runtime's other agents and commands unless you add `--companions`.
-Codex and Gemini installs place no rule. The table is `USER_RULES` in
-`install.py`.
+`--no-rules` leaves the rules out of a full Claude install. Codex and Gemini
+installs place no rule. On those runtimes, `--rule` installs only the skills it
+names and prints a one-line notice. The table is `USER_RULES` in `install.py`.
 
 `--copy` installs the same skills, agents, and commands that a link install would, including any
 that git ignores whole. It copies agents and commands as they are. Within a skill, it copies the

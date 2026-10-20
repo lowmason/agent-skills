@@ -41,9 +41,11 @@ section() { printf '\n========== %s ==========\n' "$1"; }
 section "Magic seeds (prefer sum(map(ord, 'name')) — see bayesian-workflow)"
 if [ "$HAVE_RG" = 1 ]; then
   RG -e 'random_state\s*=\s*42' -e 'seed\s*=\s*42' -e 'PRNGKey\(42\)' \
+     -e 'random\.key\(42\)' -e 'manual_seed\(42\)' \
      -e 'np\.random\.seed\(' -e 'default_rng\(42\)' -g '!**/archive/**'
 else
   GREP -e 'random_state *= *42' -e 'seed *= *42' -e 'PRNGKey(42)' \
+       -e 'random.key(42)' -e 'manual_seed(42)' \
        -e 'np.random.seed(' -e 'default_rng(42)'
 fi
 
@@ -53,6 +55,17 @@ if [ "$HAVE_RG" = 1 ]; then
 else
   GREP -e '/Users/' -e '/home/' -e 'read_parquet("/' -e 'read_csv("/'
 fi
+
+section "Committed model artifacts (binary checkpoints and pickles; rebuild them, don't commit them)"
+# Opaque binaries the code cannot regenerate, heavy in history. Pickle-based
+# ones (.pkl, .joblib, torch .pt/.pth/.ckpt) can also run code when loaded.
+# 'Committed' is the predicate, so prefer git's index over a filesystem walk
+# (which would list a gitignored local checkpoint).
+if git rev-parse --git-dir >/dev/null 2>&1; then
+  git ls-files
+else
+  FILES
+fi | grep -iE '\.(ckpt|pt|pth|safetensors|pkl|joblib)$' || true
 
 section "as-of / vintage correctness (wall-clock time leaking into a pipeline)"
 # Wall-clock calls inside an ETL/model make the same code produce different
@@ -86,6 +99,15 @@ FILES | grep -iE '(_v[0-9]+|_old|_new|_final|_copy|_backup|_bak|/archive/|/scrat
 
 section "Scratch / scratchpad notebooks beside production code"
 FILES | grep -iE '(scratch|sandbox|playground|untitled|test_notebook).*\.ipynb$|scratchpad' || true
+
+section "Migration debt: pandas / PyMC imports (the stack is Polars / NumPyro)"
+# Each hit is code still waiting to move, or a deliberate bridge to a library
+# that needs pandas: a candidate, not a verdict.
+if [ "$HAVE_RG" = 1 ]; then
+  RG -g '*.py' -e '^\s*(import|from)\s+(pandas|pymc3?)([^A-Za-z0-9_]|$)'
+else
+  GREP --include='*.py' -E -e '^[[:space:]]*(import|from)[[:space:]]+(pandas|pymc3?)([^A-Za-z0-9_]|$)'
+fi
 
 section "Type-checker-silenced regions (an ignore is a deferred decision)"
 # These suppress the checker rather than fix the type. `Optional[...]` and

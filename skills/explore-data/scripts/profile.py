@@ -38,9 +38,10 @@ NUMERIC_SENTINELS = [-1.0, -9.0, -99.0, -999.0, -9999.0, 9999.0, 99999.0, 999999
 def scan(path: str) -> pl.LazyFrame:
     """Lazily scan parquet/csv/ndjson by extension; supports glob patterns for partitioned data."""
     lower = path.lower()
-    # Match parquet by suffix (or a glob, for partitioned data) — not a loose substring, which would
-    # misroute e.g. /data/snapshot.parquet.d/file.csv into scan_parquet.
-    if lower.endswith((".parquet", ".pq")) or "*" in path or "?" in path:
+    # Match by suffix — not a loose substring, which would misroute e.g.
+    # /data/snapshot.parquet.d/file.csv into scan_parquet. A glob is read by its suffix too
+    # (`*.csv` is csv); only a glob with no recognised suffix falls through to parquet.
+    if lower.endswith((".parquet", ".pq")):
         return pl.scan_parquet(path)
     if lower.endswith((".csv", ".tsv", ".txt")):
         sep = "\t" if lower.endswith(".tsv") else ","
@@ -48,6 +49,8 @@ def scan(path: str) -> pl.LazyFrame:
         return pl.scan_csv(path, separator=sep, infer_schema_length=None)
     if lower.endswith((".ndjson", ".jsonl")):
         return pl.scan_ndjson(path)
+    if "*" in path or "?" in path:  # suffix-less glob: partitioned parquet
+        return pl.scan_parquet(path)
     raise ValueError(f"Unsupported extension for {path!r}; use parquet, csv/tsv, or ndjson.")
 
 

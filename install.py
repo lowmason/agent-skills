@@ -12,11 +12,12 @@ Examples:
 Symlinks are the default, so edits to installed items are live; re-run after a
 pull that adds skills, agents, or commands.
 A full install also includes each runtime's companion agents and commands, and
-for Claude the user-level rules in USER_RULES.
+for Claude the user-level rules in USER_RULES; --no-rules leaves the rules out.
 --skill installs the named skills plus what they cannot work without (the
 DEPENDENCIES table in install.py); other companions only with --companions.
 --rule installs a user-level rule (Claude only) and the skills it names, in
-the same way.
+the same way. Codex and Gemini have no rules, so there it installs the skills
+and prints a notice.
 The installer never replaces a path it does not already manage, and a copy
 manages none, so --copy needs old copies removed first. It checks every
 destination before writing, so a conflict leaves nothing half-installed.
@@ -417,7 +418,8 @@ def main(argv: list[str] | None = None) -> int:
     'skills and commands it depends on; other companions are then skipped '
     'unless --companions is given',
   )
-  parser.add_argument(
+  rule_options = parser.add_mutually_exclusive_group()
+  rule_options.add_argument(
     '--rule',
     action='append',
     dest='rules',
@@ -425,6 +427,12 @@ def main(argv: list[str] | None = None) -> int:
     help='install this user-level rule (repeatable; Claude only) and the skills '
     'it names, instead of everything; other companions are then skipped unless '
     '--companions is given',
+  )
+  rule_options.add_argument(
+    '--no-rules',
+    action='store_true',
+    help='leave the user-level rules out of a full Claude install; skills, '
+    'agents and commands are unaffected',
   )
   parser.add_argument(
     '--companions',
@@ -450,6 +458,14 @@ def main(argv: list[str] | None = None) -> int:
   companions = not selective if args.companions is None else args.companions
   try:
     rules = selected_rules(args.rules or []) if selective else rule_names()
+    if args.no_rules:
+      rules = []
+    if args.rules and args.runtime in ('codex', 'gemini'):
+      print(
+        f'install: {args.runtime} has no rules, so --rule installs only the skills '
+        'it names; rules are Claude only',
+        file=sys.stderr,
+      )
     named = (args.skills or []) + [skill for rule in rules for skill in USER_RULES[rule]]
     skills = selected_skills(named if selective else None)
     commands: list[str] = []

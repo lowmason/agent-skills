@@ -128,3 +128,21 @@ def test_names_the_polluter_after_running_clean_tests_first(bash, project, tmp_p
     assert 'Test: ./src/top.test.ts' in result.stdout
     assert ran(log) == ['./src/sub/b.test.ts', './src/top.test.ts']
     assert result.returncode == 1
+
+
+@pytest.mark.parametrize('bash', BASHES)
+def test_pollution_that_exists_before_the_first_test_is_not_an_all_clear(bash, project, tmp_path):
+    """The documented '.git' check, run from a repository root, hits this: the
+    marker is there before any test runs. Before the fix every test was
+    skipped with a warning and the run ended on "No polluter found - all
+    tests clean!" with exit 0, the same all-clear a typo'd pattern once got.
+    No test can be blamed for a marker it did not create, so the script
+    stops before running any test, says why, and exits 3."""
+    (project / MARKER).write_text('left over\n')
+    runner, log = make_runner(tmp_path)
+    result = find_polluter(bash, project, 'src/**/*.test.ts', runner)
+    assert 'already exists' in result.stdout
+    assert 'No polluter found' not in result.stdout
+    assert 'all tests clean' not in result.stdout
+    assert ran(log) == []
+    assert result.returncode == 3

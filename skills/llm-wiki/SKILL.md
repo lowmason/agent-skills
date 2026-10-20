@@ -74,7 +74,13 @@ this skill stays generic — a second wiki can reuse it unchanged.
    ~/.claude/projects $LLM_WIKI_ROOT/raw/sessions` — `--source` (Claude Code
    session history), SRC (`~/.claude/projects`), and OUT_DIR (the root's
    `raw/sessions`) are all required, so digests can only land in the wiki you
-   name (`--help` for the optional `--project` / `--since` filters).
+   name (`--help` for the optional `--project` / `--since` filters). For a
+   claude.ai data export, pass `--source claude-ai` with its `conversations.json`
+   as SRC, as in `python3 $LLM_WIKI_ROOT/scripts/distill_sessions.py --source
+   claude-ai ~/Downloads/conversations.json $LLM_WIKI_ROOT/raw/sessions`
+   (`--project` filters claude-code sessions only). Either source writes a
+   second at-rest copy of conversations into the wiki: confirm it fits the
+   user's employer policy before running it on a work machine or account.
 
 ### query `<question>`
 1. Read `index.md`; select ≤5 pages; read them; answer with page references and
