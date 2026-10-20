@@ -5467,7 +5467,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       files also gained" sits at the end of a long bullet (Task 12). Deferred as one item at
       the gate. See `specs/plans/completed/53-agent-skills-portability.md`. Size: plan.
       Revisit if: a later edit to `build/check_frontmatter.py` or `build/check_provenance.py`
-      touches one of them. Done when: each is fixed or recorded as accepted.
+      touches one of them. Done when: each is fixed, or the owner rules here that it stays.
 - [ ] Hold, owner-only: refresh each wiki's installed llm-wiki scripts after plan 53 merges
       (DF15). Plan 53's Task 10 gave `skills/llm-wiki/scripts/*.py` PEP 723 headers, but each
       wiki keeps the copies that `bootstrap_wiki.py` installed before that. Until the

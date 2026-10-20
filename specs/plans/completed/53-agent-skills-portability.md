@@ -1823,7 +1823,7 @@ def bundled_license_violations(repo: Path, skills: list[str],
 
 - [x] **Step 4: Run the tests and see the lint catch the gap.** Same command as Step 2. Expected: `1 failed, 20 passed`. The failure is `test_real_repo_is_clean`: the repo lacks the copies until Step 6. Then `uv run --python 3.13 python build/check_provenance.py` exits 1, reporting 53 lines, one per gap: `LICENSE` is missing from 36 skills and differs from the root file in `recommend-causal-design`; `LICENSE-superpowers` is missing from the 13 superpowers skills, `LICENSE-coding-skills` from `bayesian-workflow` and `clean-code`, and `LICENSE-causal-design-sources` from `recommend-causal-design`.
 
-> Deviation: the lint reported 55 lines, not 53: 39 skills, not 37, and one line for `LICENSE-write-with-asd-ste100-sources`.
+> Deviation: the lint reported 55 lines, not 53: `write-with-asd-ste100`'s `LICENSE` also differed from the root file, because it held the sources text, and `LICENSE-write-with-asd-ste100-sources` was not yet in `BUNDLED_LICENSES`.
 
 - [x] **Step 5: Rename `recommend-causal-design`'s sources copy, and re-point its links.** Run `git mv skills/recommend-causal-design/LICENSE skills/recommend-causal-design/LICENSE-causal-design-sources`, then:
 
