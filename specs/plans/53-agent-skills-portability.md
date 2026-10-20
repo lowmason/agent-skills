@@ -1,5 +1,7 @@
 # Agent-Skills Portability Implementation Plan
 
+**Status: COMPLETE (2026-10-20)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Every skill in this repo installs and runs outside Claude Code: its frontmatter passes the Agent Skills spec's checks, its license texts travel with it, its scripts declare their own dependencies and run with `uv run`, and writing-skills' advice on description openings rests on a measured baseline.
@@ -15,10 +17,16 @@
 - **The spec's status block is not edited.** "The status-header change that records this is being landed separately, so do not edit that header." (brief; D1) It landed as `3bb71df`. Task 1's amendments start below it.
 - **Push or merge nothing without the owner's go-ahead** (brief; D2).
 - **The worktree.** Execute in a worktree whose branch holds this file's latest commit on `claude/intelligent-yonath-9539a3`: this plan's own worktree (`/Users/lowell/Projects/agent-skills/.claude/worktrees/intelligent-yonath-9539a3`), a worktree cut from that branch, or one cut from `main` once the owner fast-forwards or merges the branch into it. A session started from `main` before then lacks this file. Never in the shared checkout: the plan edits skills the executing session loads (writing-plans, finishing-a-development-branch, writing-skills), and `~/.claude/skills` resolves to the main checkout (spec Sequencing, "Work in a worktree"). Start the execution session with the worktree as its working directory. Every command below runs from the worktree root, and paths outside the repo are absolute. Never `cd`: a Bash `cd` persists across calls and moves the session.
+
+> Deviation: the owner ruled that a worktree cut from `main` is fine once the plan file is on `main` (2026-10-19), so execution ran in `recursing-tesla-a57271`, never in the shared checkout.
+
 - **Order.** Task 1 (amendments), Task 2 (Stage D's RED baseline, before any edit to writing-skills), Stage A (Tasks 3–7), Stage B (Tasks 8–9), Stage C (Tasks 10–13), Task 14 (Stage D's edit), Task 15 (acceptance). Each task leaves every gate green at its commit, so Stage A's rules are "green on arrival" (Sequencing) task by task.
 - **Gates before every commit.** `bash build/run_commit_lints.sh` runs the nine commit lints and ends `commit lints passed`. Its `STALE` lines never fail it.
 - **Test counts are deltas** (+N), never absolute totals. Each expected summary line below is what the replay printed on top of `d70e0b3`; on a later base the absolute counts may differ, the deltas may not.
 - **CLAUDE.md stays under 200 lines** (check `claude-md-size`, which fails at 200). It has 199 at `d70e0b3`, and this plan adds none: Task 7 names `--strict` in an existing comment (D7), and Tasks 8 and 9 extend existing lines. Plan 52 (write-with-asd-ste100, written in parallel) adds 4 and must make room itself; plan 51 (drift automation) leaves the file alone. If another plan lands first and the check fails, stop and ask the owner where to make room (the conformance spec's rule R6 P1: trim elsewhere, never raise the limit).
+
+> Deviation: CLAUDE.md was 148 lines, not 199, so this constraint did not bind (owner, 2026-10-19).
+
 - **A `# cc-guide:` citation stays last.** Fifteen SKILL.md files end their frontmatter with a `# cc-guide:` comment, the citation form that the drift-automation spec's R4 puts last. Two frontmatter edits land in such files, Task 4's metadata block (seven superpowers skills) and Task 12's `compatibility` line (`bayesian-workflow`, `track-model-experiments`, `writing-plans`), and both helper scripts insert above the citation.
 - **Values copied verbatim from the spec:**
   - R1.1: `SPEC_KEYS = {name, description, license, compatibility, metadata, allowed-tools}`; `HOST_KEYS = {when_to_use, model, effort, context, disable-model-invocation}`, plus `agent` (D5).
@@ -34,6 +42,9 @@
 - **Tick only step lines.** Some edit blocks quote writing-skills' own checklist, whose lines start `- [ ]` inside a code fence. Tick only this plan's step lines (`- [ ] **Step N…`), never a line inside a fence.
 - **Commit trailer.** Each commit message ends with the executing session's own `Co-Authored-By:` line (add it as a second `-m`); subagent-authored commits keep that same line. Check with `git log -1 --format=%B`.
 - **Couplings.** If `skills/write-with-asd-ste100/` exists on the execution branch, the conditional steps in Tasks 4, 8, 10, 11, 12 and 13 apply (Planning record, "Couplings with other work").
+
+> Deviation: plans 51 and 52 had landed, so the owner confirmed that the coupling steps apply (2026-10-19), as D11 and D12 narrow them.
+
 - **Another plan landed first.** Plan 52 (write-with-asd-ste100) also edits `NOTICE`, `README.md`, `CLAUDE.md` and the register (`build/cc_guide/conformance.toml`). If an edit block below no longer matches because another plan changed the text around it, read the current text, make the same change by hand, and note it as a deviation; never restore the old text.
 - **document-python-package landed first** (plan 57, 2026-10-19, under D8 of that skill's spec). It adds a 39th skill and a 19th runnable script, `skills/document-python-package/scripts/preflight.py`. Plan 52's vendored `write-with-asd-ste100/scripts/ste-lint.py` is the 18th. The script already conforms: a PEP 723 header with `requires-python = '>=3.11'` and `dependencies = []`, a `uv run` invocation followed by R3.5's sentence, and a `compatibility` value that names uv. The skill's `LICENSE` copy already exists, byte-identical to the root file, so Task 8 writes the same bytes. The helpers in Tasks 10, 12 and 13 name their scripts and skills one by one, so they leave this skill alone.
 
@@ -93,6 +104,9 @@
 - **DF4. Dependency floors** at the major version resolved on 2026-10-18 (R3.4): `polars>=2.0` for the three new polars headers (the two `build.py` headers keep `polars>=1.0`, untouched), `numpy>=2.0`, `arviz>=1.0`, `arviz-base>=1.0`, `xarray>=2026.0`, `scipy>=1.0`. Where the code states a higher minimum, the code wins: `arviz-plots>=1.1` and `arviz-stats>=1.1` in `calibration_check.py`.
 - **DF5. Declared beyond the imports:** `h5netcdf>=1.0` and `h5py>=3.0` for the three `.nc` readers (R3.4's backend clause; the execution proof fails without `h5py`); `matplotlib>=3.0` for `calibration_check.py`'s `--save-plots`, which the skill's documented invocation uses, and its `ImportError`-guarded imports, which that path needs.
 - **DF6. Vendored scripts** are exempt from the two header rules through `VENDORED_SCRIPTS` (empty today); the invocation rule still applies to them.
+
+> Deviation: D11 exempted VENDORED_SCRIPTS from the invocation rule too (owner, 2026-10-19); spec R3.7 records it (2026-10-20).
+
 - **DF7. The invocation rule flags any `python` or `python3` right before a resolving path,** `uv run --python 3.13 --with … python <path>` included, since that form ignores the header. This is stricter than R3.7's "bare `python`" and matches R3.5's single form.
 - **DF8. Where the fallback sentence goes:** once per skill, after its first fenced invocation; where the first mention is inline, right after that sentence (writing-plans' "Save plans to", llm-wiki's step 2), or, for design-architecture, after the Scaffolder block that documents the script. llm-wiki's INSTALL.md says the same in its Prerequisites in its own words, keeps `python3` for `install.py`, and loses a stale "test suite, below" clause.
 - **DF9. Prose floors are aligned, not removed** (R3.3): "Python ≥ 3.9" becomes "Python ≥ 3.11" in `recommend-visualization` and `recommend-probabilistic-model`, and llm-wiki's INSTALL.md moves from 3.12 to 3.11.
@@ -165,7 +179,9 @@ The other amendments (A2, A4–A9, A11) correct counts and facts the spec states
 
 Each edit is tagged `(owner, plan 53, 2026-10-18)`; the status block stays untouched (D1). A1, A10 and A3 carry the plan-review decisions D5, D6 and D8.
 
-- [ ] **Step 1: Apply the edits,** each an exact replace of the block shown.
+- [x] **Step 1: Apply the edits,** each an exact replace of the block shown.
+
+> Deviation: A4 states the 19 runnable scripts found at execution (D9, owner, 2026-10-19); A5, A7 and A9 kept 17 until Task 11 corrected them under D11.
 
 **A1 (Q1, option a).** R1.1: `agent` joins `HOST_KEYS`.
 
@@ -372,8 +388,8 @@ came after 2026-10-03. Fifteen gain a header (owner, plan 53, 2026-10-18):
   check (owner, plan 53, 2026-10-18).
 ```
 
-- [ ] **Step 2: Check.** Run `grep -c 'plan 53' specs/agent-skills-portability-spec.md`. Expected: `11`, one per amendment (A4's list edit carries no tag), one fewer for each amendment dropped at review. Run `sed -n '3p' specs/agent-skills-portability-spec.md`. Expected: `**Status: APPROVED (2026-10-18).** The owner approved the design on 2026-10-03`.
-- [ ] **Step 3: Gates and commit.**
+- [x] **Step 2: Check.** Run `grep -c 'plan 53' specs/agent-skills-portability-spec.md`. Expected: `11`, one per amendment (A4's list edit carries no tag), one fewer for each amendment dropped at review. Run `sed -n '3p' specs/agent-skills-portability-spec.md`. Expected: `**Status: APPROVED (2026-10-18).** The owner approved the design on 2026-10-03`.
+- [x] **Step 3: Gates and commit.**
 
 ```bash
 bash build/run_commit_lints.sh
@@ -398,8 +414,8 @@ git commit -m "docs(specs): amend the portability spec for plan 53"
 **Interfaces:**
 - Produces: the RED verdict, n of 5, which picks Task 14's branch (R2.3: at least 4/5, the note alone; at most 3/5, the note, a checklist line and a GREEN arm). Task 14 reuses the kit.
 
-- [ ] **Step 1: Run this task before Task 3,** the first task that edits `skills/writing-skills/SKILL.md`. Record the background that loads in every rep: run `claude --version` and `ls ~/.claude/rules/`. If `write-with-asd-ste100.md` is there, the asd rule loads in every rep, both arms.
-- [ ] **Step 2: Create the kit.**
+- [x] **Step 1: Run this task before Task 3,** the first task that edits `skills/writing-skills/SKILL.md`. Record the background that loads in every rep: run `claude --version` and `ls ~/.claude/rules/`. If `write-with-asd-ste100.md` is there, the asd rule loads in every rep, both arms.
+- [x] **Step 2: Create the kit.**
 
 **Create `/tmp/portability-stage-d/kit/build_prompt.py`:**
 
@@ -519,15 +535,15 @@ for path in sorted(Path(sys.argv[1]).glob('rep*.json'), key=lambda p: int(p.stem
 
 Run `chmod +x /tmp/portability-stage-d/kit/run_reps.sh`.
 
-- [ ] **Step 3: Pre-register the pass rule.** Copy it into the record (Step 7) before reading any reply:
+- [x] **Step 3: Pre-register the pass rule.** Copy it into the record (Step 7) before reading any reply:
   - **PASS:** the description's first 150 characters, as `show_reps.py` normalizes it (a stray `description:` key and quotes stripped, whitespace collapsed), name trigger 5: `EXPLAIN` or `EXPLAIN ANALYZE` output, a sequential scan, or row estimates far from the actual counts. Naming only the topic, slow PostgreSQL queries, does not pass.
   - **FAIL:** a description whose first 150 characters do not.
   - **VOID:** no description (a non-zero exit, `is_error: true`, a refusal or a question), or text other than the description first, so its start is unclear. Re-run each VOID rep, at most two extra reps in all, and record every rep.
   - `show_reps.py`'s `aid=` column is a reading aid. The verdict is read.
-- [ ] **Step 4: Build the prompt.** Run `uv run --no-project --python 3.13 python /tmp/portability-stage-d/kit/build_prompt.py . /tmp/portability-stage-d/red-prompt.txt`. Expected: `wrote /tmp/portability-stage-d/red-prompt.txt`. For the record, run `shasum -a 256 /tmp/portability-stage-d/red-prompt.txt` and `git rev-parse --short HEAD`.
-- [ ] **Step 5: Run the five reps,** in the background (each takes up to a minute): `/tmp/portability-stage-d/kit/run_reps.sh /tmp/portability-stage-d/red-prompt.txt /tmp/portability-stage-d/red 5`. Expected: `rep1 exit=0` through `rep5 exit=0`; a non-zero exit is a VOID rep.
-- [ ] **Step 6: Read.** Run `uv run --no-project --python 3.13 python /tmp/portability-stage-d/kit/show_reps.py /tmp/portability-stage-d/red`. Read each full reply and settle its verdict by Step 3's rule. `run_reps.sh` refuses an existing directory, so run a VOID rep's replacement into `/tmp/portability-stage-d/red-extra` (n = 1 or 2) and record it as rep6 or rep7.
-- [ ] **Step 7: Write the record** at `specs/red-baseline-description-openings-<run-date>.md`, in this form, with the measured values in place of each angle-bracketed slot:
+- [x] **Step 4: Build the prompt.** Run `uv run --no-project --python 3.13 python /tmp/portability-stage-d/kit/build_prompt.py . /tmp/portability-stage-d/red-prompt.txt`. Expected: `wrote /tmp/portability-stage-d/red-prompt.txt`. For the record, run `shasum -a 256 /tmp/portability-stage-d/red-prompt.txt` and `git rev-parse --short HEAD`.
+- [x] **Step 5: Run the five reps,** in the background (each takes up to a minute): `/tmp/portability-stage-d/kit/run_reps.sh /tmp/portability-stage-d/red-prompt.txt /tmp/portability-stage-d/red 5`. Expected: `rep1 exit=0` through `rep5 exit=0`; a non-zero exit is a VOID rep.
+- [x] **Step 6: Read.** Run `uv run --no-project --python 3.13 python /tmp/portability-stage-d/kit/show_reps.py /tmp/portability-stage-d/red`. Read each full reply and settle its verdict by Step 3's rule. `run_reps.sh` refuses an existing directory, so run a VOID rep's replacement into `/tmp/portability-stage-d/red-extra` (n = 1 or 2) and record it as rep6 or rep7.
+- [x] **Step 7: Write the record** at `specs/red-baseline-description-openings-<run-date>.md`, in this form, with the measured values in place of each angle-bracketed slot:
 
 ````markdown
 # RED baseline — description openings for `writing-skills`
@@ -562,7 +578,7 @@ Run `chmod +x /tmp/portability-stage-d/kit/run_reps.sh`.
 <At least 4/5: Task 14 adds only R2.3's factual note. At most 3/5: Task 14 adds the note and the checklist line, then runs the GREEN arm, recorded below.>
 ````
 
-- [ ] **Step 8: Gates and commit.**
+- [x] **Step 8: Gates and commit.**
 
 ```bash
 bash build/run_commit_lints.sh
@@ -588,7 +604,7 @@ git commit -m "docs(specs): RED baseline for description openings (portability R
 **Interfaces:**
 - Produces, in `check_frontmatter.py`: `SPEC_KEYS: frozenset[str]`; `HOST_KEYS: frozenset[str]`, which Task 7's `strict_violations` reads; `COMPATIBILITY_CAP = 500`; `ANGLE_BRACKET_RE`; `_check_value_shapes(sk: Path, fm: dict) -> list[str]`.
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
 
 **Edit `build/test_check_frontmatter.py`: insert before the line `def make_agent(tmp_path: Path, name: str, description: str) -> Path:`:**
 
@@ -637,8 +653,8 @@ def test_angle_brackets_in_a_description_are_rejected(tmp_path):
 
 ```
 
-- [ ] **Step 2: Run them to see them fail.** Run `uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_frontmatter.py`. Expected: `4 failed, 41 passed`, the four new tests.
-- [ ] **Step 3: Implement.**
+- [x] **Step 2: Run them to see them fail.** Run `uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_frontmatter.py`. Expected: `4 failed, 41 passed`, the four new tests.
+- [x] **Step 3: Implement.**
 
 **Edit `build/check_frontmatter.py`: replace**
 
@@ -738,8 +754,8 @@ def _check_value_shapes(sk: Path, fm: dict) -> list[str]:
 
 ```
 
-- [ ] **Step 4: See the rule catch the real violation.** Run `uv run --python 3.13 --with pyyaml python build/check_frontmatter.py`. Expected: exit 1, one line ending `skills/llm-wiki/SKILL.md: description contains < or >`.
-- [ ] **Step 5: Fix it, and keep the docs true.**
+- [x] **Step 4: See the rule catch the real violation.** Run `uv run --python 3.13 --with pyyaml python build/check_frontmatter.py`. Expected: exit 1, one line ending `skills/llm-wiki/SKILL.md: description contains < or >`.
+- [x] **Step 5: Fix it, and keep the docs true.**
 
 **Edit `skills/llm-wiki/SKILL.md`: replace**
 
@@ -792,8 +808,8 @@ def _check_value_shapes(sk: Path, fm: dict) -> list[str]:
 # change so the register maps them to the guide.
 ```
 
-- [ ] **Step 6: Run the tests.** Same command as Step 2. Expected: `45 passed` (+4).
-- [ ] **Step 7: Gates and commit.**
+- [x] **Step 6: Run the tests.** Same command as Step 2. Expected: `45 passed` (+4).
+- [x] **Step 7: Gates and commit.**
 
 ```bash
 bash build/run_commit_lints.sh
@@ -820,7 +836,7 @@ git commit -m "feat(build): spec and host frontmatter key sets and value shapes 
 - Consumes: Task 3's `check_skill` layout.
 - Produces: `_check_license(sk: Path, fm: dict) -> list[str]`; `make_skill(tmp_path, name, frontmatter, *, licensed=True)` in the tests, which later tasks' tests use.
 
-- [ ] **Step 1: Write the failing test.**
+- [x] **Step 1: Write the failing test.**
 
 **Edit `build/test_check_frontmatter.py`: replace**
 
@@ -879,8 +895,8 @@ def test_license_is_required(tmp_path):
 
 ```
 
-- [ ] **Step 2: Run it to see it fail.** Run `uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_frontmatter.py`. Expected: `1 failed, 45 passed`.
-- [ ] **Step 3: Implement.**
+- [x] **Step 2: Run it to see it fail.** Run `uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_frontmatter.py`. Expected: `1 failed, 45 passed`.
+- [x] **Step 3: Implement.**
 
 **Edit `build/check_frontmatter.py`: replace**
 
@@ -926,7 +942,7 @@ def _check_license(sk: Path, fm: dict) -> list[str]:
 
 ```
 
-- [ ] **Step 4: Keep writing-skills and NOTICE true.**
+- [x] **Step 4: Keep writing-skills and NOTICE true.**
 
 **Edit `skills/writing-skills/SKILL.md`: replace**
 
@@ -1001,7 +1017,7 @@ license: MIT
     `disable-model-invocation` and `agent` are accepted.
 ```
 
-- [ ] **Step 5: Give the superpowers skills their license and metadata.**
+- [x] **Step 5: Give the superpowers skills their license and metadata.**
 
 **Create `/tmp/portability-plan/add_superpowers_metadata.py`:**
 
@@ -1045,8 +1061,8 @@ Run `uv run --no-project --python 3.13 python /tmp/portability-plan/add_superpow
 
 If `skills/write-with-asd-ste100/` exists and the lint reports `skills/write-with-asd-ste100/SKILL.md: license is required…`, add `license: MIT` as its frontmatter's line after `description`.
 
-- [ ] **Step 6: Run the tests.** Same command as Step 2. Expected: `46 passed` (+1).
-- [ ] **Step 7: Gates and commit.**
+- [x] **Step 6: Run the tests.** Same command as Step 2. Expected: `46 passed` (+1).
+- [x] **Step 7: Gates and commit.**
 
 ```bash
 bash build/run_commit_lints.sh
@@ -1071,7 +1087,7 @@ git commit -m "feat(build): require a license in every SKILL.md; superpowers met
 **Interfaces:**
 - Produces: `_check_invocation_parity(skill_dir: Path, fm: dict) -> list[str]`, called from `check_skill`; `CODEX_POLICY = Path('agents') / 'openai.yaml'`.
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
 
 **Edit `build/test_check_frontmatter.py`: insert before the line `def make_agent(tmp_path: Path, name: str, description: str) -> Path:`:**
 
@@ -1129,8 +1145,8 @@ def test_an_unparseable_codex_policy_is_reported(tmp_path):
 
 ```
 
-- [ ] **Step 2: Run them to see them fail.** Run `uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_frontmatter.py`. Expected: `5 failed, 47 passed`. `test_a_manual_only_skill_with_the_codex_policy_passes` is a guard: it passes before and after.
-- [ ] **Step 3: Implement.**
+- [x] **Step 2: Run them to see them fail.** Run `uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_frontmatter.py`. Expected: `5 failed, 47 passed`. `test_a_manual_only_skill_with_the_codex_policy_passes` is a guard: it passes before and after.
+- [x] **Step 3: Implement.**
 
 **Edit `build/check_frontmatter.py`: replace**
 
@@ -1212,8 +1228,8 @@ def _check_invocation_parity(skill_dir: Path, fm: dict) -> list[str]:
 
 ```
 
-- [ ] **Step 4: Run the tests.** Same command as Step 2. Expected: `52 passed` (+6).
-- [ ] **Step 5: Gates and commit.**
+- [x] **Step 4: Run the tests.** Same command as Step 2. Expected: `52 passed` (+6).
+- [x] **Step 5: Gates and commit.**
 
 ```bash
 bash build/run_commit_lints.sh
@@ -1239,7 +1255,7 @@ git commit -m "feat(build): disable-model-invocation agrees with Codex's implici
 **Interfaces:**
 - Produces: `skill_body_warning(skill_dir: Path) -> str | None`; `FRONTMATTER_RE`, which Task 7 does not use and later code may.
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
 
 **Edit `build/test_check_frontmatter.py`: replace**
 
@@ -1306,8 +1322,8 @@ def test_the_body_warning_goes_to_stderr_and_keeps_exit_zero():
 
 ```
 
-- [ ] **Step 2: Run them to see them fail.** Run `uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_frontmatter.py`. Expected: `1 error`, a collection error: `ImportError: cannot import name 'skill_body_warning'`.
-- [ ] **Step 3: Implement, and map it in the register.**
+- [x] **Step 2: Run them to see them fail.** Run `uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_frontmatter.py`. Expected: `1 error`, a collection error: `ImportError: cannot import name 'skill_body_warning'`.
+- [x] **Step 3: Implement, and map it in the register.**
 
 **Edit `build/check_frontmatter.py`: replace**
 
@@ -1403,8 +1419,8 @@ rule = 'A SKILL.md body stays under 500 lines; check_frontmatter.py warns past t
 enforced_by = 'check_frontmatter'
 ```
 
-- [ ] **Step 4: Run the tests and the lint.** Same command as Step 2. Expected: `54 passed` (+2). Then `uv run --python 3.13 --with pyyaml python build/check_frontmatter.py` exits 0 and prints one stderr line, ending `skills/writing-skills/SKILL.md: body is 697 lines; the guide keeps a SKILL.md body under 500`.
-- [ ] **Step 5: Gates and commit.**
+- [x] **Step 4: Run the tests and the lint.** Same command as Step 2. Expected: `54 passed` (+2). Then `uv run --python 3.13 --with pyyaml python build/check_frontmatter.py` exits 0 and prints one stderr line, ending `skills/writing-skills/SKILL.md: body is 697 lines; the guide keeps a SKILL.md body under 500`.
+- [x] **Step 5: Gates and commit.**
 
 ```bash
 bash build/run_commit_lints.sh
@@ -1431,7 +1447,7 @@ git commit -m "feat(build): warn on a SKILL.md body over 500 lines (portability 
 - Consumes: Task 3's `HOST_KEYS`.
 - Produces: `strict_violations(skill_dir: Path) -> list[str]`; `main(argv: list[str] | None = None) -> int`.
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
 
 **Edit `build/test_check_frontmatter.py`: replace**
 
@@ -1479,8 +1495,10 @@ def test_strict_is_off_by_default_and_on_with_the_flag():
 
 ```
 
-- [ ] **Step 2: Run them to see them fail.** Run `uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_frontmatter.py`. Expected: `1 error`, a collection error: `ImportError: cannot import name 'strict_violations'`.
-- [ ] **Step 3: Implement, and document it.**
+- [x] **Step 2: Run them to see them fail.** Run `uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_frontmatter.py`. Expected: `1 error`, a collection error: `ImportError: cannot import name 'strict_violations'`.
+- [x] **Step 3: Implement, and document it.**
+
+> Deviation: CLAUDE.md was 148 lines, not 199 (owner ruling, 2026-10-19), so the line budget did not bind, and it stayed at 148; `main()` kept Task 6's `skill_body_warning` loop, which this step's replace block predates.
 
 **Edit `build/check_frontmatter.py`: replace**
 
@@ -1590,8 +1608,8 @@ def main(argv: list[str] | None = None) -> int:
 # Frontmatter, provenance and guide-conformance lints (run before committing any Claude Code artifact); add --strict to the first, a report and not a gate, when preparing a claude.ai upload or a spec-only validator run
 ```
 
-- [ ] **Step 4: Run the tests and the profile.** Same command as Step 2. Expected: `56 passed` (+2). Then `uv run --python 3.13 --with pyyaml python build/check_frontmatter.py --strict` exits 1. Its stdout has exactly three lines, for `bayesian-workflow` (`'effort'`), `tech-debt` (`'context'`) and `tune-hyperparameters` (`'effort'`), each ending `is a Claude Code extension, not an Agent Skills spec key (--strict)` (Validation 2); stderr carries Task 6's `WARN` line. `wc -l CLAUDE.md` still prints 199.
-- [ ] **Step 5: Gates and commit.**
+- [x] **Step 4: Run the tests and the profile.** Same command as Step 2. Expected: `56 passed` (+2). Then `uv run --python 3.13 --with pyyaml python build/check_frontmatter.py --strict` exits 1. Its stdout has exactly three lines, for `bayesian-workflow` (`'effort'`), `tech-debt` (`'context'`) and `tune-hyperparameters` (`'effort'`), each ending `is a Claude Code extension, not an Agent Skills spec key (--strict)` (Validation 2); stderr carries Task 6's `WARN` line. `wc -l CLAUDE.md` still prints 199.
+- [x] **Step 5: Gates and commit.**
 
 ```bash
 bash build/run_commit_lints.sh
@@ -1619,7 +1637,7 @@ git commit -m "feat(build): check_frontmatter.py --strict for claude.ai uploads 
 **Interfaces:**
 - Produces, in `check_provenance.py`: `PLAIN_LICENSE = 'LICENSE'`; `BUNDLED_LICENSES: dict[str, tuple[str, ...]]`, which Task 9 extends and the helper imports; `bundled_license_violations(repo: Path, skills: list[str], table: dict[str, tuple[str, ...]]) -> list[str]`.
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
 
 **Edit `build/test_check_provenance.py`: replace**
 
@@ -1710,8 +1728,8 @@ def test_bundled_licenses_table_names_no_plain_license():
 
 ```
 
-- [ ] **Step 2: Run them to see them fail.** Run `uv run --directory build --python 3.13 --with pytest python -m pytest -q test_check_provenance.py`. Expected: `1 error`, a collection error: `ImportError: cannot import name 'BUNDLED_LICENSES'`.
-- [ ] **Step 3: Implement.**
+- [x] **Step 2: Run them to see them fail.** Run `uv run --directory build --python 3.13 --with pytest python -m pytest -q test_check_provenance.py`. Expected: `1 error`, a collection error: `ImportError: cannot import name 'BUNDLED_LICENSES'`.
+- [x] **Step 3: Implement.**
 
 **Edit `build/check_provenance.py`: replace**
 
@@ -1803,8 +1821,11 @@ def bundled_license_violations(repo: Path, skills: list[str],
     errs += bundled_license_violations(REPO, skill_dirs(), BUNDLED_LICENSES)
 ```
 
-- [ ] **Step 4: Run the tests and see the lint catch the gap.** Same command as Step 2. Expected: `1 failed, 20 passed`. The failure is `test_real_repo_is_clean`: the repo lacks the copies until Step 6. Then `uv run --python 3.13 python build/check_provenance.py` exits 1, reporting 53 lines, one per gap: `LICENSE` is missing from 36 skills and differs from the root file in `recommend-causal-design`; `LICENSE-superpowers` is missing from the 13 superpowers skills, `LICENSE-coding-skills` from `bayesian-workflow` and `clean-code`, and `LICENSE-causal-design-sources` from `recommend-causal-design`.
-- [ ] **Step 5: Rename `recommend-causal-design`'s sources copy, and re-point its links.** Run `git mv skills/recommend-causal-design/LICENSE skills/recommend-causal-design/LICENSE-causal-design-sources`, then:
+- [x] **Step 4: Run the tests and see the lint catch the gap.** Same command as Step 2. Expected: `1 failed, 20 passed`. The failure is `test_real_repo_is_clean`: the repo lacks the copies until Step 6. Then `uv run --python 3.13 python build/check_provenance.py` exits 1, reporting 53 lines, one per gap: `LICENSE` is missing from 36 skills and differs from the root file in `recommend-causal-design`; `LICENSE-superpowers` is missing from the 13 superpowers skills, `LICENSE-coding-skills` from `bayesian-workflow` and `clean-code`, and `LICENSE-causal-design-sources` from `recommend-causal-design`.
+
+> Deviation: the lint reported 55 lines, not 53: 39 skills, not 37, and one line for `LICENSE-write-with-asd-ste100-sources`.
+
+- [x] **Step 5: Rename `recommend-causal-design`'s sources copy, and re-point its links.** Run `git mv skills/recommend-causal-design/LICENSE skills/recommend-causal-design/LICENSE-causal-design-sources`, then:
 
 **Edit `skills/recommend-causal-design/SKILL.md`: replace**
 
@@ -1935,7 +1956,9 @@ The user is meticulous about attribution and licensing — surface provenance/li
 The user is meticulous about attribution and licensing — surface provenance/license implications proactively rather than assuming. Each skill directory carries byte-identical copies of the root license files that apply to it (`LICENSE` in every skill, the rest per `BUNDLED_LICENSES` in `build/check_provenance.py`, which enforces the copies), so edit a root license file and its copies together.
 ```
 
-- [ ] **Step 6: Copy the license files.**
+- [x] **Step 6: Copy the license files.**
+
+> Deviation: the write-with-asd-ste100 conditional ran before `copy_licenses.py`, which would otherwise overwrite its sources copy; it added `BUNDLED_LICENSES`' 4th row, `LICENSE-write-with-asd-ste100-sources`, and re-pointed the skill's SKILL.md:123, `test_ste_lint.py`'s docstring and NOTICE; with 39 skills the helper printed 39 lines and wrote 56 copies (39 `LICENSE`, 13 superpowers, 2 coding-skills, 2 sources).
 
 **Create `/tmp/portability-plan/copy_licenses.py`:**
 
@@ -1964,7 +1987,7 @@ Run `uv run --no-project --python 3.13 python /tmp/portability-plan/copy_license
 
 If `skills/write-with-asd-ste100/` exists: when `cmp skills/write-with-asd-ste100/LICENSE LICENSE-write-with-asd-ste100-sources` reports no difference, run `git mv skills/write-with-asd-ste100/LICENSE skills/write-with-asd-ste100/LICENSE-write-with-asd-ste100-sources`; add `'LICENSE-write-with-asd-ste100-sources': ('write-with-asd-ste100',),` to `BUNDLED_LICENSES`; re-point any link in that skill's files to `LICENSE` that means the upstream notices; then re-run the helper.
 
-- [ ] **Step 7: Run the tests, then the gates, and commit.** Same command as Step 2. Expected: `21 passed` (+7). `uv run --python 3.13 python build/check_provenance.py` exits 0.
+- [x] **Step 7: Run the tests, then the gates, and commit.** Same command as Step 2. Expected: `21 passed` (+7). `uv run --python 3.13 python build/check_provenance.py` exits 0.
 
 ```bash
 bash build/run_commit_lints.sh
@@ -1991,9 +2014,9 @@ Planning found outcome 1 (DF14): upstream ships an MIT notice. "Never compose a 
 **Interfaces:**
 - Consumes: Task 8's `BUNDLED_LICENSES` and helper.
 
-- [ ] **Step 1: Fetch the notice.** Run `gh api 'repos/Learning-Bayesian-Statistics/baygent-skills/contents/LICENSE?ref=1959ef6f66e5189ab23bd27c83bdf39f94bab6a1' --jq .content > /tmp/portability-plan/andorra.b64`, then `base64 -d -i /tmp/portability-plan/andorra.b64 -o LICENSE-andorra`. Check: `shasum -a 256 LICENSE-andorra` prints `21f3fa613e8b7130156aec53c66616d176112066d08493aaad209e495534b5f5`, and `grep -c 'Copyright (c) 2026 Learning Bayesian Statistics' LICENSE-andorra` prints `1`. If either differs, stop and tell the owner.
-- [ ] **Step 2: See the lint fail.** Run `uv run --python 3.13 python build/check_provenance.py`. Expected: exit 1, `LICENSE-andorra: root license file is mapped to no skill in BUNDLED_LICENSES`.
-- [ ] **Step 3: Map it, and record it.**
+- [x] **Step 1: Fetch the notice.** Run `gh api 'repos/Learning-Bayesian-Statistics/baygent-skills/contents/LICENSE?ref=1959ef6f66e5189ab23bd27c83bdf39f94bab6a1' --jq .content > /tmp/portability-plan/andorra.b64`, then `base64 -d -i /tmp/portability-plan/andorra.b64 -o LICENSE-andorra`. Check: `shasum -a 256 LICENSE-andorra` prints `21f3fa613e8b7130156aec53c66616d176112066d08493aaad209e495534b5f5`, and `grep -c 'Copyright (c) 2026 Learning Bayesian Statistics' LICENSE-andorra` prints `1`. If either differs, stop and tell the owner.
+- [x] **Step 2: See the lint fail.** Run `uv run --python 3.13 python build/check_provenance.py`. Expected: exit 1, `LICENSE-andorra: root license file is mapped to no skill in BUNDLED_LICENSES`.
+- [x] **Step 3: Map it, and record it.**
 
 **Edit `build/check_provenance.py`: replace**
 
@@ -2084,8 +2107,8 @@ MIT - see [LICENSE](../../LICENSE).
 MIT - see [LICENSE](../../LICENSE). Upstream's notice: [LICENSE-andorra](LICENSE-andorra).
 ```
 
-- [ ] **Step 4: Copy it.** Run `uv run --no-project --python 3.13 python /tmp/portability-plan/copy_licenses.py .`. Then `uv run --python 3.13 python build/check_provenance.py` exits 0.
-- [ ] **Step 5: Gates and commit.**
+- [x] **Step 4: Copy it.** Run `uv run --no-project --python 3.13 python /tmp/portability-plan/copy_licenses.py .`. Then `uv run --python 3.13 python build/check_provenance.py` exits 0.
+- [x] **Step 5: Gates and commit.**
 
 ```bash
 bash build/run_commit_lints.sh
@@ -2111,7 +2134,7 @@ git commit -m "docs: bundle Alexandre Andorra's upstream notice with bayesian-wo
 **Interfaces:**
 - Produces: `MAIN_GUARD_RE`; `runnable_scripts(skill_dir: Path) -> list[Path]`; `script_metadata(text: str) -> dict | None` (raises `tomllib.TOMLDecodeError`); `required_imports(tree: ast.Module, siblings: set[str]) -> set[str]`; `check_script_headers(skill_dir: Path, vendored: frozenset[str] = VENDORED_SCRIPTS) -> list[str]`; `VENDORED_SCRIPTS: frozenset[str]`, keyed `skills/<skill>/scripts/<file>`. Task 11 uses `MAIN_GUARD_RE`.
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
 
 **Edit `build/test_check_frontmatter.py`: replace**
 
@@ -2207,8 +2230,10 @@ def test_a_vendored_script_is_exempt_from_the_header_rules(tmp_path):
 
 ```
 
-- [ ] **Step 2: Run them to see them fail.** Run `uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_frontmatter.py`. Expected: `1 error`, a collection error: `ImportError: cannot import name 'check_script_headers'`.
-- [ ] **Step 3: Implement.**
+- [x] **Step 2: Run them to see them fail.** Run `uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_frontmatter.py`. Expected: `1 error`, a collection error: `ImportError: cannot import name 'check_script_headers'`.
+- [x] **Step 3: Implement.**
+
+> Deviation: the module docstring's anchor text had changed, so the same edit was made by hand.
 
 **Edit `build/check_frontmatter.py`: replace**
 
@@ -2362,8 +2387,11 @@ def check_script_headers(skill_dir: Path, vendored: frozenset[str] = VENDORED_SC
     errs += check_script_headers(skill_dir)
 ```
 
-- [ ] **Step 4: See the rule catch the real gap.** Same command as Step 2. Expected: `3 failed, 61 passed`; the three are the real-repo tests (`test_real_repo_is_clean`, `test_the_body_warning_goes_to_stderr_and_keeps_exit_zero`, `test_strict_is_off_by_default_and_on_with_the_flag`), and the lint itself names exactly the 15 scripts in Step 5's table, each `a runnable script needs a PEP 723 script block, so uv run can build its environment`.
-- [ ] **Step 5: Add the headers** (floors and dependencies: DF3–DF5).
+- [x] **Step 4: See the rule catch the real gap.** Same command as Step 2. Expected: `3 failed, 61 passed`; the three are the real-repo tests (`test_real_repo_is_clean`, `test_the_body_warning_goes_to_stderr_and_keeps_exit_zero`, `test_strict_is_off_by_default_and_on_with_the_flag`), and the lint itself names exactly the 15 scripts in Step 5's table, each `a runnable script needs a PEP 723 script block, so uv run can build its environment`.
+
+> Deviation: the lint named 16 scripts, Step 5's 15 plus the vendored `ste-lint.py`, which went into `VENDORED_SCRIPTS` unedited (Step 5's conditional); `preflight.py` was not flagged.
+
+- [x] **Step 5: Add the headers** (floors and dependencies: DF3–DF5).
 
 **Create `/tmp/portability-plan/add_headers.py`:**
 
@@ -2423,7 +2451,7 @@ Run `uv run --no-project --python 3.13 python /tmp/portability-plan/add_headers.
 
 If `skills/write-with-asd-ste100/scripts/ste-lint.py` exists, add it to `VENDORED_SCRIPTS`: `VENDORED_SCRIPTS: frozenset[str] = frozenset({'skills/write-with-asd-ste100/scripts/ste-lint.py'})`.
 
-- [ ] **Step 6: Run the tests and every changed script suite.** Same command as Step 2. Expected: `64 passed` (+8). Then each suite below passes with the count it had before this task (2026-10-18's counts in brackets):
+- [x] **Step 6: Run the tests and every changed script suite.** Same command as Step 2. Expected: `64 passed` (+8). Then each suite below passes with the count it had before this task (2026-10-18's counts in brackets):
 
 ```bash
 uv run --directory skills/describe-critique-methodology/scripts --python 3.13 --with pytest python -m pytest -q
@@ -2463,7 +2491,7 @@ uv run --directory skills/track-model-experiments/scripts --python 3.13 --with p
 
 (22, 9, 27, 268, 7, 10, 29, 129 with 3 skipped, 11.)
 
-- [ ] **Step 7: Gates and commit.**
+- [x] **Step 7: Gates and commit.**
 
 ```bash
 bash build/run_commit_lints.sh
@@ -2490,7 +2518,9 @@ git commit -m "feat(build): PEP 723 headers on every runnable bundled script, an
 - Consumes: Task 10's `MAIN_GUARD_RE`.
 - Produces: `bundled_invocations(skill_dir: Path) -> list[tuple[Path, str, str]]`, giving (markdown file, runner, path) with runner one of `'python'`, `'python3'` or `'uv run'`; Task 12 reads it. `check_invocations(skill_dir: Path) -> list[str]`; `resolve_bundled_script(path: str, skill_dir: Path) -> Path | None`.
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
+
+> Deviation: D11 added a seventh test, for the `vendored=` keyword on `check_invocations`, written RED first (owner, 2026-10-19).
 
 **Edit `build/test_check_frontmatter.py`: replace**
 
@@ -2578,8 +2608,10 @@ def test_paths_resolve_across_skills_aliases_and_references(tmp_path):
 
 ````
 
-- [ ] **Step 2: Run them to see them fail.** Run `uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_frontmatter.py`. Expected: `1 error`, a collection error: `ImportError: cannot import name 'bundled_invocations'`.
-- [ ] **Step 3: Implement.**
+- [x] **Step 2: Run them to see them fail.** Run `uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_frontmatter.py`. Expected: `1 error`, a collection error: `ImportError: cannot import name 'bundled_invocations'`.
+- [x] **Step 3: Implement.**
+
+> Deviation: under D11 `check_invocations` takes a `vendored=` keyword and skips `VENDORED_SCRIPTS`; the insert anchor now held Task 10's `ste-lint.py` entry; the spec's R3.5 (17 to 18), R3.8 and Validation 4 (17 to 19) were amended in this task's commit, each tagged (owner, plan 53, 2026-10-19).
 
 **Edit `build/check_frontmatter.py`: replace**
 
@@ -2664,7 +2696,9 @@ def check_invocations(skill_dir: Path) -> list[str]:
     errs += check_invocations(skill_dir)
 ```
 
-- [ ] **Step 4: See the rule catch the real invocations.** Same command as Step 2. Expected: `3 failed, 67 passed` (the three real-repo tests). `uv run --python 3.13 --with pyyaml python build/check_frontmatter.py` reports 28 invocations:
+- [x] **Step 4: See the rule catch the real invocations.** Same command as Step 2. Expected: `3 failed, 67 passed` (the three real-repo tests). `uv run --python 3.13 --with pyyaml python build/check_frontmatter.py` reports 28 invocations:
+
+> Deviation: the lint reported 33 invocations before the D11 exemption and 30 after it, not 28: the 3 dropped are `ste-lint.py`'s `python3` calls, and the 2 extra are llm-wiki's `--source claude-ai` lines from 37011a5, which Step 5's edit blocks rewrite.
 
 | File | Lines |
 |---|---|
@@ -2681,7 +2715,7 @@ def check_invocations(skill_dir: Path) -> list[str]:
 | `skills/writing-plans/SKILL.md` | 2 (`python`) |
 | `skills/writing-plans/references/deferred-backlog.md` | 1 (`python`) |
 
-- [ ] **Step 5: Rewrite the invocations,** with R3.5's sentence once per skill (DF8). `geographic-codes` and `classification-codes` already use `uv run` and gain only the sentence.
+- [x] **Step 5: Rewrite the invocations,** with R3.5's sentence once per skill (DF8). `geographic-codes` and `classification-codes` already use `uv run` and gain only the sentence.
 
 **Edit `skills/bayesian-workflow/SKILL.md`: replace**
 
@@ -3195,7 +3229,7 @@ uv run <this-skill-dir>/scripts/deferred_stats.py
 
 If `skills/write-with-asd-ste100/` exists, the lint flags its `python3 <this-skill-dir>/scripts/ste-lint.py` call. Stop and ask the owner (Couplings, item 4) which of two changes to make. Either exempt vendored scripts from the invocation rule: in `check_invocations`, skip a path whose `resolve_bundled_script` result, as `skills/<skill>/scripts/<file>`, is in `VENDORED_SCRIPTS`, with a RED test first that a vendored copy run with `python3` passes. Or rewrite the call to `uv run <this-skill-dir>/scripts/ste-lint.py …`, with R3.5's sentence once, right after it.
 
-- [ ] **Step 6: Record the superpowers change in NOTICE.**
+- [x] **Step 6: Record the superpowers change in NOTICE.**
 
 **Edit `NOTICE`: replace**
 
@@ -3217,8 +3251,11 @@ If `skills/write-with-asd-ste100/` exists, the lint flags its `python3 <this-ski
     the original works named above.
 ```
 
-- [ ] **Step 7: Run the tests.** Same command as Step 2. Expected: `70 passed` (+6).
-- [ ] **Step 8: Gates and commit.** The dependency-drift lint passes unchanged (R3.9): no cross-skill reference was added or dropped.
+- [x] **Step 7: Run the tests.** Same command as Step 2. Expected: `70 passed` (+6).
+
+> Deviation: +7, not +6: D11's test.
+
+- [x] **Step 8: Gates and commit.** The dependency-drift lint passes unchanged (R3.9): no cross-skill reference was added or dropped.
 
 ```bash
 bash build/run_commit_lints.sh
@@ -3245,7 +3282,7 @@ git commit -m "feat(skills): run bundled scripts with uv run, and lint the form 
 - Consumes: Task 11's `bundled_invocations`.
 - Produces: `_check_compatibility_names_uv(skill_dir: Path, fm: dict) -> list[str]`, called from `check_skill`.
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
 
 **Edit `build/test_check_frontmatter.py`: insert before the line `def make_agent(tmp_path: Path, name: str, description: str) -> Path:`:**
 
@@ -3281,8 +3318,8 @@ def test_compatibility_is_optional_when_no_markdown_runs_a_script(tmp_path):
 
 ````
 
-- [ ] **Step 2: Run them to see them fail.** Run `uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_frontmatter.py`. Expected: `1 failed, 71 passed`. The new `test_compatibility_is_optional_when_no_markdown_runs_a_script` is a guard: it passes before and after.
-- [ ] **Step 3: Implement.**
+- [x] **Step 2: Run them to see them fail.** Run `uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_frontmatter.py`. Expected: `1 failed, 71 passed`. The new `test_compatibility_is_optional_when_no_markdown_runs_a_script` is a guard: it passes before and after.
+- [x] **Step 3: Implement.**
 
 **Edit `build/check_frontmatter.py`: replace**
 
@@ -3334,8 +3371,10 @@ def _check_compatibility_names_uv(skill_dir: Path, fm: dict) -> list[str]:
     errs += _check_compatibility_names_uv(skill_dir, fm)
 ```
 
-- [ ] **Step 4: See the rule catch the real gap.** Same command as Step 2. Expected: `3 failed, 69 passed`. The lint names the 11 skills in Step 5's helper, each `its markdown runs a bundled script with uv run, so compatibility must name uv`.
-- [ ] **Step 5: Declare `compatibility`.** 3.X is the highest `requires-python` floor among the scripts each skill runs (R3.6).
+- [x] **Step 4: See the rule catch the real gap.** Same command as Step 2. Expected: `3 failed, 69 passed`. The lint names the 11 skills in Step 5's helper, each `its markdown runs a bundled script with uv run, so compatibility must name uv`.
+- [x] **Step 5: Declare `compatibility`.** 3.X is the highest `requires-python` floor among the scripts each skill runs (R3.6).
+
+> Deviation: write-with-asd-ste100 gets no `compatibility` line: under D11 it keeps `python3`, and coupling 5 applies only with `uv run`.
 
 **Create `/tmp/portability-plan/add_compatibility.py`:**
 
@@ -3379,7 +3418,7 @@ Run `uv run --no-project --python 3.13 python /tmp/portability-plan/add_compatib
 
 If the owner chose `uv run` for write-with-asd-ste100's linter in Task 11, give that skill `compatibility: Requires uv to run bundled scripts (dependencies are declared inline); Python 3.9+.` on the line after its `license:` line (Couplings, item 5).
 
-- [ ] **Step 6: Align the prose floors, and extend NOTICE's entry.**
+- [x] **Step 6: Align the prose floors, and extend NOTICE's entry.**
 
 **Edit `skills/recommend-visualization/SKILL.md`: replace**
 
@@ -3420,8 +3459,8 @@ If the owner chose `uv run` for write-with-asd-ste100's linter in Task 11, give 
     `compatibility` field naming uv (R3.6).
 ```
 
-- [ ] **Step 7: Run the tests.** Same command as Step 2. Expected: `72 passed` (+2). `uv run --python 3.13 --with pyyaml python build/check_frontmatter.py --strict` still names exactly Task 7's three skills: `compatibility` is a spec key.
-- [ ] **Step 8: Gates and commit.**
+- [x] **Step 7: Run the tests.** Same command as Step 2. Expected: `72 passed` (+2). `uv run --python 3.13 --with pyyaml python build/check_frontmatter.py --strict` still names exactly Task 7's three skills: `compatibility` is a spec key.
+- [x] **Step 8: Gates and commit.**
 
 ```bash
 bash build/run_commit_lints.sh
@@ -3449,7 +3488,9 @@ Run once, and record the result in this plan's completion notes.
 - Consumes: Tasks 10–12's headers.
 - Produces: Validation 4's record.
 
-- [ ] **Step 1: Create the script.**
+- [x] **Step 1: Create the script.**
+
+> Deviation: under D11 `r38.sh` runs the vendored `ste-lint.py --selftest` under `python3`, with its interpreter on its own log line, and adds `preflight` under `uv run` from an empty directory; its comment says 19 scripts, not 17.
 
 **Create `/tmp/portability-plan/r38.sh`:**
 
@@ -3574,9 +3615,12 @@ echo "uv: $(uv --version)" | tee -a "$LOG"
 
 Run `chmod +x /tmp/portability-plan/r38.sh`.
 
-- [ ] **Step 2: Run it,** in the background (about two minutes with uv's cache warm, longer cold): `/tmp/portability-plan/r38.sh . /tmp/portability-r38`. Expected log (`/tmp/portability-r38/r38.log`): 17 script lines, each `rc=0 Python 3.x.y`; `isolated_with_header rc=0 Python 3.x.y`; `control_without_header rc=1 CPython 3.10.z` or another non-zero exit; and uv's version. With write-with-asd-ste100 present, an 18th script line, `ste_lint`, appears. Any script line that is not `rc=0` stops the task: read that script's `.err` file under `/tmp/portability-r38/` and fix the cause before going on.
-- [ ] **Step 3: Record it.** Copy `/tmp/portability-r38/r38.log` into this plan under "Plan completion notes", "R3.8 execution proof", in a text fence, with the run's date.
-- [ ] **Step 4: Commit.**
+- [x] **Step 2: Run it,** in the background (about two minutes with uv's cache warm, longer cold): `/tmp/portability-plan/r38.sh . /tmp/portability-r38`. Expected log (`/tmp/portability-r38/r38.log`): 17 script lines, each `rc=0 Python 3.x.y`; `isolated_with_header rc=0 Python 3.x.y`; `control_without_header rc=1 CPython 3.10.z` or another non-zero exit; and uv's version. With write-with-asd-ste100 present, an 18th script line, `ste_lint`, appears. Any script line that is not `rc=0` stops the task: read that script's `.err` file under `/tmp/portability-r38/` and fix the cause before going on.
+
+> Deviation: 19 script lines, not 17, all `rc=0`; `isolated_with_header rc=0`, `control_without_header rc=1 CPython 3.10.19`, uv 0.13.1.
+
+- [x] **Step 3: Record it.** Copy `/tmp/portability-r38/r38.log` into this plan under "Plan completion notes", "R3.8 execution proof", in a text fence, with the run's date.
+- [x] **Step 4: Commit.**
 
 ```bash
 git add specs/plans/53-agent-skills-portability.md
@@ -3598,7 +3642,9 @@ git commit -m "docs(specs): record plan 53's execution proof (portability R3.8)"
 **Interfaces:**
 - Consumes: Task 2's verdict and kit.
 
-- [ ] **Step 1: Re-measure the Codex cut** (D8), with the real HOME. Run `codex --version` and `mkdir -p /tmp/portability-stage-d/neutral`, then `env -C /tmp/portability-stage-d/neutral codex debug prompt-input > /tmp/portability-stage-d/codex-prompt.json`: `env -C` runs Codex from a directory outside every repository without moving this session. Then:
+- [x] **Step 1: Re-measure the Codex cut** (D8), with the real HOME. Run `codex --version` and `mkdir -p /tmp/portability-stage-d/neutral`, then `env -C /tmp/portability-stage-d/neutral codex debug prompt-input > /tmp/portability-stage-d/codex-prompt.json`: `env -C` runs Codex from a directory outside every repository without moving this session. Then:
+
+> Deviation: Codex 0.163.0 listed 105 skills (skill-creator twice) and 37 of this repo's 39, since document-python-package and write-with-asd-ste100 were not installed in `~/.agents/skills`; the cut was 28 descriptions at 316-320 characters (median 318).
 
 **Create `/tmp/portability-stage-d/kit/codex_cut.py`:**
 
@@ -3655,7 +3701,9 @@ else:
 ```
 
 Run `uv run --no-project --python 3.13 --with pyyaml python /tmp/portability-stage-d/kit/codex_cut.py . /tmp/portability-stage-d/codex-prompt.json`. On 2026-10-18 it printed `skills listed: 105 (listed twice: ['skill-creator']); this repo listed: 37 of 37; missing: none` and `cut: 28 descriptions, listed at 316-320 characters (median 318); whole: 9`. If `codex debug prompt-input` fails on Codex's configuration, ask the owner; never edit `~/.codex/config.toml`.
-- [ ] **Step 2: Write the note.** If Step 1's figures, date or Codex version differ from 2026-10-18's, put the new ones in the note below in their place, keeping the 2026-10-03 figures as they are.
+- [x] **Step 2: Write the note.** If Step 1's figures, date or Codex version differ from 2026-10-18's, put the new ones in the note below in their place, keeping the 2026-10-03 figures as they are.
+
+> Deviation: the note carries the 2026-10-19 figures and date, in place of 2026-10-18's.
 
 **Edit `skills/writing-skills/SKILL.md`: replace**
 
@@ -3693,6 +3741,8 @@ Run `uv run --no-project --python 3.13 --with pyyaml python /tmp/portability-sta
 
 - [ ] **Step 3, only on the at-most-3/5 branch: the checklist line and the GREEN arm.**
 
+> Skipped: RED was 5/5, so the at-least-4/5 branch applied (D12); nothing to defer.
+
 **Edit `skills/writing-skills/SKILL.md` (at-most-3/5 branch only): insert after the line `- [ ] Description starts with "Use when..." and includes specific triggers/symptoms`:**
 
 ```markdown
@@ -3716,7 +3766,7 @@ Run `uv run --no-project --python 3.13 --with pyyaml python /tmp/portability-sta
 ```
 
   Then build the GREEN prompt from the edited tree: `uv run --no-project --python 3.13 python /tmp/portability-stage-d/kit/build_prompt.py . /tmp/portability-stage-d/green-prompt.txt`; run `/tmp/portability-stage-d/kit/run_reps.sh /tmp/portability-stage-d/green-prompt.txt /tmp/portability-stage-d/green 5` in the background; read with `show_reps.py`, under Task 2's rule. At least 4/5 must pass (R2.3). Record the arm in the red-baseline file under a `## GREEN` heading, in the Result table's form, and update its Status line. If fewer than 4/5 pass, stop and ask the owner: R2.3 sets no fallback.
-- [ ] **Step 4: The register** (DF20). Stage D closes none of the writing-skills gaps, so their pointers move to the deferred item that completion logs.
+- [x] **Step 4: The register** (DF20). Stage D closes none of the writing-skills gaps, so their pointers move to the deferred item that completion logs.
 
 **Edit `build/cc_guide/conformance.toml`: replace**
 
@@ -3766,8 +3816,8 @@ reason = 'writing-skills departs from the guide on body length, the listing budg
 reason = 'writing-skills departs from the guide on body length, the listing budget, critical-rules-first and @ loading; its @ loading claim is unsupported rather than contradicted, and the rewrite verifies or drops it.'
 ```
 
-- [ ] **Step 5: Gates.** Run `bash build/run_commit_lints.sh`. Its `critical_placement` lint passes unchanged: the note lands above the compaction window's edge (Planning record).
-- [ ] **Step 6: Commit.**
+- [x] **Step 5: Gates.** Run `bash build/run_commit_lints.sh`. Its `critical_placement` lint passes unchanged: the note lands above the compaction window's edge (Planning record).
+- [x] **Step 6: Commit.**
 
 ```bash
 git add skills/writing-skills/SKILL.md NOTICE build/cc_guide/conformance.toml specs
@@ -3786,11 +3836,19 @@ git commit -m "docs(skills): writing-skills notes Codex's description cut (porta
 **Interfaces:**
 - Consumes: Tasks 1–14.
 
-- [ ] **Step 1: Validation 1, every gate.** Run `bash build/run_commit_lints.sh`: `commit lints passed`. Run `uv run --directory build --python 3.13 --with pytest --with numpy --with polars --with pyyaml python -m pytest -q`: +38 passed against the base, and no failure. In a worktree without the gitignored `build/.scratch/`, 4 `test_verify_citations.py` tests skip (run the same command on the base to compare). Re-run Task 10 Step 6's nine suites: unchanged counts. `uv run --python 3.13 --with pyyaml python build/check_frontmatter.py` exits 0 with one `WARN`, for writing-skills' body. `uv run --python 3.13 --with pyyaml python build/sync_runtime_assets.py --check` exits 0 (no adapter changed).
-- [ ] **Step 2: Validation 2.** `uv run --python 3.13 --with pyyaml python build/check_frontmatter.py --strict` names exactly `bayesian-workflow`, `tech-debt` and `tune-hyperparameters`.
-- [ ] **Step 3: Validation 3.** Each new rule's RED step in Tasks 3–6 and 8–12 is ticked, with the failure it predicted.
-- [ ] **Step 4: Validation 4.** Task 13's record is in this plan.
-- [ ] **Step 5: Validation 5, the cross-runtime load check,** against the branch's own files (DF18). Run `mkdir -p /tmp/portability-home/neutral`, then `HOME=/tmp/portability-home python3 install.py codex --copy --no-companions` (expected: one `copied …` line per skill). Then run both CLIs from the scratch HOME's `neutral` directory, which is outside every repository (`env -C` sets the directory without moving this session): `env -C /tmp/portability-home/neutral HOME=/tmp/portability-home gemini skills list --all > /tmp/portability-home/gemini.txt` and `env -C /tmp/portability-home/neutral HOME=/tmp/portability-home codex debug prompt-input > /tmp/portability-home/codex.json`. Then:
+- [x] **Step 1: Validation 1, every gate.** Run `bash build/run_commit_lints.sh`: `commit lints passed`. Run `uv run --directory build --python 3.13 --with pytest --with numpy --with polars --with pyyaml python -m pytest -q`: +38 passed against the base, and no failure. In a worktree without the gitignored `build/.scratch/`, 4 `test_verify_citations.py` tests skip (run the same command on the base to compare). Re-run Task 10 Step 6's nine suites: unchanged counts. `uv run --python 3.13 --with pyyaml python build/check_frontmatter.py` exits 0 with one `WARN`, for writing-skills' body. `uv run --python 3.13 --with pyyaml python build/sync_runtime_assets.py --check` exits 0 (no adapter changed).
+
+> Deviation: +39 passed (1158 to 1197), not +38: Task 11's D11 test.
+
+- [x] **Step 2: Validation 2.** `uv run --python 3.13 --with pyyaml python build/check_frontmatter.py --strict` names exactly `bayesian-workflow`, `tech-debt` and `tune-hyperparameters`.
+- [x] **Step 3: Validation 3.** Each new rule's RED step in Tasks 3–6 and 8–12 is ticked, with the failure it predicted.
+
+> Deviation: checked against the implementer reports, since no step was ticked during execution; the step ticks were added at this markup.
+
+- [x] **Step 4: Validation 4.** Task 13's record is in this plan.
+- [x] **Step 5: Validation 5, the cross-runtime load check,** against the branch's own files (DF18). Run `mkdir -p /tmp/portability-home/neutral`, then `HOME=/tmp/portability-home python3 install.py codex --copy --no-companions` (expected: one `copied …` line per skill). Then run both CLIs from the scratch HOME's `neutral` directory, which is outside every repository (`env -C` sets the directory without moving this session): `env -C /tmp/portability-home/neutral HOME=/tmp/portability-home gemini skills list --all > /tmp/portability-home/gemini.txt` and `env -C /tmp/portability-home/neutral HOME=/tmp/portability-home codex debug prompt-input > /tmp/portability-home/codex.json`. Then:
+
+> Deviation: 39/39 for both Gemini and Codex, not 37/37: document-python-package and write-with-asd-ste100 landed after planning.
 
 **Create `/tmp/portability-plan/runtime_check.py`:**
 
@@ -3833,8 +3891,11 @@ sys.exit(1 if no_gemini or no_codex else 0)
 ```
 
 Run `uv run --no-project --python 3.13 python /tmp/portability-plan/runtime_check.py . /tmp/portability-home/gemini.txt /tmp/portability-home/codex.json`. Expected: `gemini: 37/37 [Enabled]; missing: none` and `codex: 37/37 listed; missing: none` (38/38 with write-with-asd-ste100), exit 0.
-- [ ] **Step 6: Validation 6.** The red-baseline file exists. `git diff d70e0b3 HEAD -- skills/writing-skills/SKILL.md` shows only Tasks 3 and 4's edits (the frontmatter's `license` and `metadata`, the required-fields and optional-keys bullets, the template and the checklist's frontmatter item) and Task 14's note (and its checklist line, on that branch).
-- [ ] **Step 7: Hand over** to the plan-completion protocol (writing-plans): the notes below list what it logs and ticks.
+- [x] **Step 6: Validation 6.** The red-baseline file exists. `git diff d70e0b3 HEAD -- skills/writing-skills/SKILL.md` shows only Tasks 3 and 4's edits (the frontmatter's `license` and `metadata`, the required-fields and optional-keys bullets, the template and the checklist's frontmatter item) and Task 14's note (and its checklist line, on that branch).
+
+> Deviation: diffed from 4b5fb05, not d70e0b3 (the controller's ruling), because a62b9c2, an unrelated commit on main, changed writing-skills after d70e0b3.
+
+- [x] **Step 7: Hand over** to the plan-completion protocol (writing-plans): the notes below list what it logs and ticks.
 
 ---
 
@@ -3878,3 +3939,4 @@ uv: uv 0.13.1 (Homebrew 2026-10-14 aarch64-apple-darwin)
   - "Split and rewrite writing-skills against the guide", in place of the spec's "Splitting writing-skills": split the body below 500 lines (R1.7's warning) and close the register gaps `writing-skills-guide-gaps` and `writing-skills-late-critical-headings`, which Task 14 points at it (DF20), verifying or dropping the skill's `@` loading claim on the way.
 - **Backlog to tick:** "`build/check_frontmatter.py`'s SKILL.md key set" (section cc-guide-files-backlog), done in plan 53 under D5 (`agent` allowed beside `disable-model-invocation`). Add a progress note to "Gate or make manual-only the four ungated side-effecting skills" (section 35-claude-code-guide-conformance): Stage A landed, and a manual-only skill now needs `agents/openai.yaml` with `policy.allow_implicit_invocation: false` (R1.6). Also tick, under D9 and D10: "Portability work for this skill, if plan 53, the portability plan, lands second" (section 52-write-with-asd-ste100), which Tasks 8, 10, 11 and 12 do; and "Point bayesian-workflow's README at its upstream notice once plan 53's Task 9 lands", which Task 9 does.
 - **Owner steps after merge:** refresh each wiki's installed llm-wiki scripts (DF15).
+- **Final review:** code-reviewer (With fixes; fixed in 570afd2, 2449c4d, 883e27c) and `Codex reviewed 9db321f` (no actionable findings).
