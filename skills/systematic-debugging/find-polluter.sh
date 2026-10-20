@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # Bisection script to find which test creates unwanted files/state
 # Usage: ./find-polluter.sh <file_or_dir_to_check> <test_pattern>
-# Example: ./find-polluter.sh '.git' '*/test_*.py'
+# Example: ./find-polluter.sh 'packages/core/.git' '*/test_*.py'
 #
 # Test runner: defaults to `pytest`. Override with the TEST_CMD env var for
 # another stack — the matched test file is appended as the final argument:
-#   TEST_CMD=pytest        ./find-polluter.sh '.git' '*/test_*.py'   # default
-#   TEST_CMD='npm test'    ./find-polluter.sh '.git' 'src/**/*.test.ts'
-#   TEST_CMD='go test'     ./find-polluter.sh '.git' '*_test.go'
+#   TEST_CMD=pytest        ./find-polluter.sh 'packages/core/.git' '*/test_*.py'   # default
+#   TEST_CMD='npm test'    ./find-polluter.sh 'packages/core/.git' 'src/**/*.test.ts'
+#   TEST_CMD='go test'     ./find-polluter.sh 'packages/core/.git' '*_test.go'
 #
 # The pattern is matched with find -path from the current directory, with or
 # without a leading ./. Each '**/' may also match no directory, but with
@@ -22,7 +22,7 @@ set -e
 
 if [ $# -ne 2 ]; then
   echo "Usage: $0 <file_to_check> <test_pattern>"
-  echo "Example: $0 '.git' '*/test_*.py'"
+  echo "Example: $0 'packages/core/.git' '*/test_*.py'"
   echo "Override the runner with TEST_CMD (default: pytest)"
   exit 1
 fi
@@ -64,7 +64,9 @@ echo ""
 # run that skipped every test must not end on the all-clear.
 if [ -e "$POLLUTION_CHECK" ]; then
   echo "❌ $POLLUTION_CHECK already exists before any test ran, so no test can be blamed for creating it."
-  echo "   Remove it and run again. This is not an all-clear."
+  echo "   Confirm it is leftover pollution before you remove it. If it belongs there, as a"
+  echo "   repository's own .git does at its root, check a path that should not exist instead"
+  echo "   (for example packages/core/.git). This is not an all-clear."
   exit 3
 fi
 

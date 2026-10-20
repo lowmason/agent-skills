@@ -19,6 +19,10 @@ Handoff contract — fields keyed off what explore-data/scripts/profile.py --jso
   n_rows, columns[]={column, dtype(str), null_pct, n_unique, example}, dates{}, flags[], and
   optional duplicate_check / vintage_check / panel_balance.
 
+Exit status: 0 with at least one candidate, 1 when no chart fits the intent and
+fields, 2 on a usage error (an unknown --intent, no --profile or data path, or
+--fields not in the data).
+
 Usage:
     python recommend.py data.parquet --profile profile.json --intent correlation
     python recommend.py data.csv --intent distribution --fields wage

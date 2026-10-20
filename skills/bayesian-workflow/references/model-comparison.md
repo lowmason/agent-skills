@@ -222,9 +222,9 @@ Template:
 | Model 1 | -234.5 | 12.3 | 0.0 | — | 0.72 |
 | Model 2 | -241.2 | 11.8 | -6.7 | 3.1 | 0.28 |
 
-Model 1 is preferred by LOO. ΔELPD = 6.7 is above 4, and with 250 observations and
-neither model badly misspecified (`diag_diff` is empty), the SE of the difference (3.1)
-is a fair guide: the difference is about 2.2× its SE, clear but not overwhelming.
+Model 1 is preferred by LOO. ΔELPD = 6.7 is above 4, and with 250 observations
+(`diag_diff` is empty) and neither model badly misspecified (the PPC and LOO-PIT checks
+show no bad misfit), the SE of the difference (3.1) is a fair guide: the difference is about 2.2× its SE, clear but not overwhelming.
 Consider domain knowledge to choose one model, or use stacking weights to combine predictions.
 No observations had Pareto k > `good_k` (min(1 − 1/log10 S, 0.7); 0.7 at 4,000 draws).
 ```

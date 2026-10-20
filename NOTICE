@@ -475,7 +475,10 @@ Changes from upstream:
     runs, where upstream (and this copy until 2026-10-19) skips every
     test with a warning and still ends on its all-clear line with exit 0;
     a marker that appears between tests stops the run with exit 3 as
-    well, rather than being skipped.
+    well, rather than being skipped. That message tells the reader to
+    confirm the path is pollution before removing it, and the usage
+    examples check packages/core/.git where upstream checks .git, which a
+    repository root always holds.
     sdd-workspace keeps this repo's .sdd/ rather than upstream's
     .superpowers/sdd/, and 19e54c0's CDPATH respelling is not taken,
     since this copy never sets CDPATH. And the tests are this repo's

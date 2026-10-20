@@ -3892,8 +3892,11 @@ all 20 named a type.
       line, and a test pins it.
       → done 2026-10-19 (/deferred quick fix): find-polluter.sh exits 3 without the all-clear
       when the pollution exists before the first test or appears between tests.
-      test_find_polluter.py pins it (RED 2 failed, GREEN 12 passed), and NOTICE's plan 50 entry
-      records the divergence.
+      test_find_polluter.py pins the before-the-first-test case (RED 2 failed, GREEN 12 passed).
+      The between-tests case has no test, since it cannot be made deterministic. The exit-3
+      message says to confirm the path is pollution before removing it, and the usage examples
+      now check packages/core/.git, because a repository root always holds a .git. NOTICE's
+      plan 50 entry records both divergences.
 - [ ] skills/subagent-driven-development/SKILL.md does not say what review-package's exit
       3 means (plan 50 code review, recommendation). Since plan 50, review-package stops
       with exit 3 on an empty or non-descendant BASE..HEAD range: a DONE task with no
@@ -4321,7 +4324,8 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       quick-fix. Done when: Tier 3 passes on the new pins in both places.
       → done 2026-10-19 (/deferred quick fix): PINNED and CLAUDE.md's Tier 3 command both pin
       arviz-stats 1.3.3, arviz-plots 1.3.2, numpyro 0.22.0 and jax 0.12.0 (resolved 2026-10-19,
-      not the 0.11.2 the item expected). Tier 3 passes on them.
+      not the 0.11.2 the item expected). arviz stays at 1.3.0 and arviz-base stays floating.
+      Tier 3 passes on them. Still no check ties the two pin lists together.
 - [ ] Give Gaussian processes a home in bayesian-workflow and point recommend-probabilistic-model
       at it (audit-3-10-26 G11, found 2026-10-03; re-verified 2026-10-18; the rpm half
       re-raises audit_1_3_26's "drop PyMC from the GP handoff"). bayesian-workflow's GP row
@@ -4557,7 +4561,9 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       take this with F2, F6 and F7 (same skill). Size: quick-fix. Done when: the four
       references and the hub carry the dated note, citing both pages.
       → done 2026-10-19 (/deferred quick fix): dated note in cps.md (three places), ces.md,
-      sae.md, jolts.md §12 and the hub, citing both BLS pages (re-read 2026-10-19).
+      sae.md, jolts.md §12 and the hub (both pages re-read 2026-10-19). Each file cites the page
+      that states its facts. cps.md, ces.md and the hub cite both pages. sae.md and jolts.md cite
+      the release-dates page only, because the CPS page says nothing on LAUS or JOLTS.
 - [x] State JOLTS is now published once a year, but bls-data-context still describes monthly state
       releases (audit-3-10-26 F2, found 2026-10-03; re-verified 2026-10-18).
       `skills/bls-data-context/references/jolts.md:817` says state estimates come out "within

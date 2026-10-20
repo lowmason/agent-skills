@@ -1,4 +1,7 @@
-'''Mechanical linter for the research-wiki (spec §10). Stdlib only; no yaml.'''
+'''Mechanical linter for the research-wiki (spec §10). Stdlib only; no yaml.
+
+Exit status: 0 clean, 1 on any ERROR (or a WARN under --strict), 2 on a usage
+error such as a root with no wiki/ directory.'''
 import argparse
 import os
 import re

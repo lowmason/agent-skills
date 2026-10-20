@@ -2913,6 +2913,18 @@ in the script's header.
 **Edit `skills/llm-wiki/SKILL.md`: replace**
 
 ```markdown
+   as SRC, as in `python3 $LLM_WIKI_ROOT/scripts/distill_sessions.py --source
+```
+
+**with**
+
+```markdown
+   as SRC, as in `uv run $LLM_WIKI_ROOT/scripts/distill_sessions.py --source
+```
+
+**Edit `skills/llm-wiki/SKILL.md`: replace**
+
+```markdown
 1. **Mechanical:** run `python3 $LLM_WIKI_ROOT/scripts/lint_wiki.py` (add
 ```
 
@@ -3035,6 +3047,18 @@ python3 "$LLM_WIKI_ROOT/scripts/distill_sessions.py" --source claude-code \
 
 ```markdown
 uv run "$LLM_WIKI_ROOT/scripts/distill_sessions.py" --source claude-code \
+```
+
+**Edit `skills/llm-wiki/INSTALL.md`: replace**
+
+```markdown
+python3 "$LLM_WIKI_ROOT/scripts/distill_sessions.py" --source claude-ai \
+```
+
+**with**
+
+```markdown
+uv run "$LLM_WIKI_ROOT/scripts/distill_sessions.py" --source claude-ai \
 ```
 
 **Edit `skills/recommend-visualization/SKILL.md`: replace**
