@@ -149,11 +149,26 @@ def test_each_section_lists_the_releases_after_its_checked_oldest_first(docs_dir
         {'text': 'Fixed a crash in the fixture tool', 'hints': []}]
 
 
-@pytest.mark.parametrize('today, due', [(date(2026, 9, 26), False), (date(2026, 9, 27), True)])
-def test_the_changelog_batch_is_due_once_its_oldest_release_is_a_week_old(docs_dir, today, due):
+@pytest.mark.parametrize('today, due', [(date(2026, 9, 8), False), (date(2026, 9, 9), True)])
+def test_the_changelog_batch_is_due_a_week_after_the_last_triage(docs_dir, today, due):
+    '''Every fixture section was checked on 2026-09-02. The changelog's own
+    dates (2.1.901 on 2026-09-20) no longer count: the page stopped giving
+    them on 2026-10-20 (owner, 2026-10-20).'''
     releases = docs.parse_changelog(DOCS['changelog.md'])
     assert check.due_changelog(fixture_state(docs_dir), releases, 7, today) == {
-        'releases': 2, 'oldest': '2.1.901', 'oldest_date': '2026-09-20', 'due_from': '2026-09-27', 'due': due}
+        'releases': 2, 'oldest': '2.1.901', 'last_triage': '2026-09-02', 'due_from': '2026-09-09', 'due': due}
+
+
+def test_the_batch_clock_is_the_earliest_triage_of_a_section_that_waits(docs_dir):
+    '''A section checked through the head waits for nothing, so its older
+    date starts no clock.'''
+    s = fixture_state(docs_dir)
+    s['sections']['alpha.overview']['checked'] = {'release': '2.1.902', 'date': '2026-08-01'}
+    s['sections']['alpha.reference']['checked'] = {'release': '2.1.901', 'date': '2026-09-20'}
+    s['sections']['beta.overview']['checked'] = {'release': '2.1.901', 'date': '2026-09-12'}
+    s['sections']['beta.reference']['checked'] = {'release': '2.1.902', 'date': '2026-08-01'}
+    assert check.due_changelog(s, docs.parse_changelog(DOCS['changelog.md']), 7, date(2026, 9, 18)) == {
+        'releases': 1, 'oldest': '2.1.902', 'last_triage': '2026-09-12', 'due_from': '2026-09-19', 'due': False}
 
 
 def test_nothing_untriaged_means_no_batch(docs_dir):
@@ -388,23 +403,44 @@ def test_a_404_removes_the_stale_copy_and_reads_as_a_missing_page(tmp_path, docs
     assert [(f.kind, f.page) for f in found] == [('missing-page', 'platform:pricing')]
 
 
-def run_check(repo, cache, folder=None, today=date(2026, 9, 10), fetch=None):
+def run_check(repo, cache, folder=None, today=date(2026, 9, 5), fetch=None):
     return check.check(state.Source(repo), cache, docs_dir=folder, today=today, now=NOW, fetch=fetch)
 
 
-@pytest.mark.parametrize('today, code', [(date(2026, 9, 10), 0), (date(2026, 9, 27), 1)])
+@pytest.mark.parametrize('today, code', [(date(2026, 9, 8), 0), (date(2026, 9, 9), 1)])
 def test_exit_zero_when_nothing_is_due_and_one_when_something_is(tmp_path, docs_dir, today, code):
     repo = drift_repo(tmp_path / 'repo', docs_dir)
     assert run_check(repo, tmp_path / 'cache', docs_dir, today)[0] == code
 
 
+# The fixture changelog as the page has served it since 2026-10-20: bold
+# labels, no dates.
+BOLD_CHANGELOG = '\n'.join([
+    '# Fixture changelog', '',
+    '**2.1.902**', '', '**Changed**', '', '* Changed how `BETA_ENV` is read', '',
+    '**1 bug fix**', '', '* Fixed a crash in the fixture tool', '',
+    '**2.1.901**', '', '* Added `ALPHA_ENV` to the alpha tools', '',
+    '**2.1.900**', '', '* First fixture release', ''])
+
+
+@pytest.mark.parametrize('today', [date(2026, 9, 8), date(2026, 9, 9)])
+def test_a_bold_label_changelog_checks_as_the_tagged_one_does(tmp_path, docs_dir, today):
+    repo = drift_repo(tmp_path / 'repo', docs_dir)
+    tagged = run_check(repo, tmp_path / 'cache', docs_dir, today)
+    write_tree(docs_dir, {'changelog.md': BOLD_CHANGELOG})
+    bold = run_check(repo, tmp_path / 'cache', docs_dir, today)
+    assert bold[0] == tagged[0]
+    assert {k: bold[1][k] for k in ('latest_release', 'untriaged', 'releases', 'due', 'errors')} == {
+        k: tagged[1][k] for k in ('latest_release', 'untriaged', 'releases', 'due', 'errors')}
+
+
 @pytest.mark.parametrize('manifest, today, audit, probes', [
     # The audit clock came due on 2026-10-02. A 60-day changelog cadence keeps
-    # the batch, oldest release 2026-09-20, from coming due until 2026-11-19.
+    # the batch, last triaged 2026-09-02, from coming due until 2026-11-01.
     (MANIFEST_TOML.replace('changelog_days = 7', 'changelog_days = 60'), date(2026, 10, 4), True, []),
-    # A registered probe with no row is due at once (R6.7); on 2026-09-10
+    # A registered probe with no row is due at once (R6.7); on 2026-09-05
     # nothing else is.
-    (MANIFEST_TOML + "\n[[probe]]\nid = 'p1'\nsections = ['beta.reference']\n", date(2026, 9, 10), False,
+    (MANIFEST_TOML + "\n[[probe]]\nid = 'p1'\nsections = ['beta.reference']\n", date(2026, 9, 5), False,
      [{'probe': 'p1', 'why': 'never run'}]),
 ], ids=['audit', 'probe'])
 def test_a_due_audit_or_a_due_probe_alone_exits_one(tmp_path, docs_dir, manifest, today, audit, probes):
@@ -480,12 +516,10 @@ def test_a_failed_page_fetch_exits_two_without_comparing_that_page(tmp_path, doc
 
 def test_a_malformed_changelog_is_a_setup_error(tmp_path, docs_dir):
     repo = drift_repo(tmp_path / 'repo', docs_dir)
-    write_tree(docs_dir, {'changelog.md': DOCS['changelog.md'].replace('October 1, 2026', '2026-10-01')})
-    with pytest.raises(ValueError) as cause:
-        datetime.strptime('2026-10-01', '%B %d, %Y')
+    write_tree(docs_dir, {'changelog.md': DOCS['changelog.md'].replace('label="2.1.902"', 'label="2.1.x"')})
     with pytest.raises(state.SetupError) as err:
         run_check(repo, tmp_path / 'cache', docs_dir)
-    assert str(err.value) == f'changelog: line 8: {cause.value}'
+    assert str(err.value) == "changelog: line 8: not a release label: '2.1.x'"
 
 
 def test_the_report_is_keyed_by_the_baseline_hash_and_check_writes_only_its_cache_files(tmp_path, docs_dir):
@@ -563,5 +597,5 @@ def test_check_reads_citations_at_its_inputs_and_lints_them(tmp_path, docs_dir):
     assert (code, report['lint']['violations']) == (
         1, ['hooks/old.sh:3: a citation goes on a line before the first line of code (R4.1)'])
     code, report, _ = check.check(state.Source(repo, 'main'), tmp_path / 'cache', docs_dir=docs_dir,
-                                  today=date(2026, 9, 10), now=NOW, fetch=None)
+                                  today=date(2026, 9, 5), now=NOW, fetch=None)
     assert (code, report['lint']['violations'], report['stale']) == (0, [], {'alpha.overview': ['hooks/old.sh']})

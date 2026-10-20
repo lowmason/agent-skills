@@ -58,18 +58,18 @@ def test_a_triage_packet_holds_the_guide_and_every_bullet_of_each_untriaged_rele
     assert i['quotes'] == {'guide': ['guide.md'], 'source': ['blocks.md', 'releases.md']}
     assert i['groups'] == {'alpha': ['alpha.overview', 'alpha.reference'], 'beta': ['beta.overview', 'beta.reference']}
     assert i['releases'] == [
-        {'label': '2.1.901', 'date': '2026-09-20', 'pending': ALL, 'hits': ['alpha.reference'],
+        {'label': '2.1.901', 'pending': ALL, 'hits': ['alpha.reference'],
          'bullets': [{'item': '2.1.901#1', 'hints': ['alpha.reference'],
                       'text': 'Added `ALPHA_ENV` to the alpha tools'}]},
-        {'label': '2.1.902', 'date': '2026-10-01', 'pending': ALL, 'hits': ['beta.overview'],
+        {'label': '2.1.902', 'pending': ALL, 'hits': ['beta.overview'],
          'bullets': [{'item': '2.1.902#1', 'hints': ['beta.overview'], 'text': 'Changed how `BETA_ENV` is read'},
                      {'item': '2.1.902#2', 'hints': [], 'text': 'Fixed a crash in the fixture tool'}]}]
     assert (out / 'releases.md').read_text().split('\n') == [
         '# Untriaged releases', '',
-        '## 2.1.901 · 2026-09-20', '',
+        '## 2.1.901', '',
         'Untriaged for 4 section(s); term hits, as hints only: alpha.reference.', '',
         '- 2.1.901#1 · hints: alpha.reference · Added `ALPHA_ENV` to the alpha tools', '',
-        '## 2.1.902 · 2026-10-01', '',
+        '## 2.1.902', '',
         'Untriaged for 4 section(s); term hits, as hints only: beta.overview.', '',
         '- 2.1.902#1 · hints: beta.overview · Changed how `BETA_ENV` is read',
         '- 2.1.902#2 · hints: none · Fixed a crash in the fixture tool', '', '']

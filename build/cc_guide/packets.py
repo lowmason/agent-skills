@@ -188,9 +188,8 @@ def release_items(world: World, labels: list[str], pending: dict[str, list[str]]
         bullets = [{'item': f'{label}#{n}', 'hints': [h for h in b['hints'] if h in mine], 'text': b['text']}
                    for n, b in enumerate(notes[label]['bullets'], start=1)]
         hits = [sid for sid in mine if any(sid in b['hints'] for b in bullets)]
-        entries.append({'label': label, 'date': notes[label]['date'], 'pending': mine, 'hits': hits,
-                        'bullets': bullets})
-        lines += [f"## {label} · {notes[label]['date']}", '',
+        entries.append({'label': label, 'pending': mine, 'hits': hits, 'bullets': bullets})
+        lines += [f'## {label}', '',
                   f"Untriaged for {len(mine)} section(s); term hits, as hints only: {', '.join(hits) or 'none'}.", '']
         lines += [f"- {b['item']} · hints: {', '.join(b['hints']) or 'none'} · {b['text']}" for b in bullets] + ['']
     return entries, lines + ([] if labels else ['None.', ''])

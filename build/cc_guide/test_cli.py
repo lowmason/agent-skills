@@ -26,7 +26,7 @@ def world(tmp_path, docs_dir, monkeypatch):
     return repo, cache, docs_dir
 
 
-def main(cache, *argv, today=date(2026, 9, 10)):
+def main(cache, *argv, today=date(2026, 9, 5)):
     return cli.main(['--cache', str(cache), *argv], today=today)
 
 
@@ -126,10 +126,10 @@ def test_check_hook_prints_nothing_and_leaves_the_notice_then_the_record(world, 
     repo, cache, docs = world
     assert hook(cache, '--run', 'r1', '--docs', str(docs)) == 1
     assert capsys.readouterr() == ('', '')
-    assert shown(cache) == 'cc-guide · 2 releases untriaged (oldest 7 d) → /cc-guide'
+    assert shown(cache) == 'cc-guide · 2 releases untriaged (last triage 25 d ago) → /cc-guide'
     record = notice.read_last_check(cache)
     assert (record['run'], record['exit'], record['ok_epoch']) == ('r1', 1, int(HOOK_NOW.timestamp()))
-    assert hook(cache, '--run', 'r2', '--docs', str(docs), today=date(2026, 9, 10)) == 0
+    assert hook(cache, '--run', 'r2', '--docs', str(docs), today=date(2026, 9, 5)) == 0
     assert capsys.readouterr() == ('', '')
     assert (cache / notice.NOTICE).read_text() == ''
     assert git(repo, 'status', '--porcelain') == ''
@@ -448,14 +448,12 @@ def test_rebaseline_head_refuses_a_latest_fetch_at_another_release(world, capsys
 def test_a_malformed_or_empty_cached_changelog_exits_two(world, capsys):
     _, cache, _ = world
     changelog = state.latest_docs(cache) / 'changelog.md'
-    changelog.write_text(changelog.read_text().replace('October 1, 2026', '2026-10-01'))
+    changelog.write_text(changelog.read_text().replace('label="2.1.902"', 'label="2.1.x"'))
     assert main(cache, 'lint') == 2
-    with pytest.raises(ValueError) as cause:
-        datetime.strptime('2026-10-01', '%B %d, %Y')
-    assert capsys.readouterr() == ('', f'cc-guide: {changelog}: line 8: {cause.value}\n')
+    assert capsys.readouterr() == ('', f"cc-guide: {changelog}: line 8: not a release label: '2.1.x'\n")
     changelog.write_text('# Changelog\n')
     assert main(cache, 'lint') == 2
-    assert capsys.readouterr() == ('', f'cc-guide: {changelog}: no <Update> release blocks\n')
+    assert capsys.readouterr() == ('', f'cc-guide: {changelog}: no releases\n')
 
 
 def test_stamp_without_a_stamp_region_is_one_error_line(world, capsys):
