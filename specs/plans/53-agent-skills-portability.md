@@ -47,6 +47,10 @@
 - **D6** (owner, plan review, 2026-10-18): Validation 6 governs only writing-skills' description guidance; Stage A's key-list, template and checklist edits fall outside it. Applied in: Task 1 (spec amendment A10), Task 15.
 - **D7** (owner, plan review, 2026-10-18): Task 7 names `--strict` in the frontmatter lint's existing CLAUDE.md comment and adds no line. Applied in: Task 7.
 - **D8** (owner, plan review, 2026-10-18): writing-skills' note carries the Codex cut that Task 14 measures when it runs, with the 2026-10-03 figures kept as history, and amendment A3 records this in the spec's R2.3. Applied in: Task 1 (spec amendment A3), Task 14.
+- **D9** (owner, execution, 2026-10-19): A4 states the 19 runnable scripts found at execution (`ste-lint.py` and `preflight.py` came after planning's count), tagged 2026-10-19. A5, A7 and A9 stay at 17 until Task 11 and are corrected with D11. The completion tick list also names the plan 52 portability item. Applied in: Task 1 (A4), Task 11, Task 15's notes.
+- **D10** (owner, execution, 2026-10-19): Task 9 also points `skills/bayesian-workflow/README.md` at `LICENSE-andorra`, closing that backlog item. Applied in: Task 9, Task 15's notes.
+- **D11** (owner, execution, 2026-10-19; the owner answered "Approved" to the controller's recommendation): at Task 11, `VENDORED_SCRIPTS` are exempt from the invocation rule too, so `write-with-asd-ste100` keeps `python3 <this-skill-dir>/scripts/ste-lint.py`. Then A5's count is 18 (the 19 minus `ste-lint.py`), and A7's and A9's execution proof covers all 19: `ste-lint.py --selftest` under `python3`, `preflight.py` under `uv run`. Task 12 gives `write-with-asd-ste100` no `compatibility` line (coupling 5 applies only with `uv run`). The owner asked earlier to be asked at Task 11, so the executing session confirms D11 in one line there before it applies it. Applied in: Tasks 10–13.
+- **D12** (owner, execution, 2026-10-19): Task 15 runs no frontmatter-comment load probe, and Stage D keeps the 5/5 RED result despite the scenario naming its primary trigger. Applied in: Tasks 14, 15.
 
 ---
 
@@ -1982,7 +1986,7 @@ Planning found outcome 1 (DF14): upstream ships an MIT notice. "Never compose a 
 
 **Files:**
 - Create: `LICENSE-andorra` (upstream's text, verbatim) and its copy `skills/bayesian-workflow/LICENSE-andorra`
-- Modify: `build/check_provenance.py` (one `BUNDLED_LICENSES` row), `NOTICE` (`bayesian-workflow/` block), `README.md`, `CLAUDE.md`
+- Modify: `build/check_provenance.py` (one `BUNDLED_LICENSES` row), `NOTICE` (`bayesian-workflow/` block), `README.md`, `CLAUDE.md`, `skills/bayesian-workflow/README.md` (D10)
 
 **Interfaces:**
 - Consumes: Task 8's `BUNDLED_LICENSES` and helper.
@@ -2053,6 +2057,33 @@ Planning found outcome 1 (DF14): upstream ships an MIT notice. "Never compose a 
 - **`bayesian-workflow`** — adapted from Alexandre Andorra's PyMC skill, ported to NumPyro+JAX (MIT; upstream notice in `LICENSE-andorra`).
 ```
 
+The skill's own README (D10; backlog item "Point bayesian-workflow's README at its upstream notice once plan 53's Task 9 lands"). Its links resolve once Step 4 writes the copy.
+
+**Edit `skills/bayesian-workflow/README.md`: replace**
+
+```markdown
+original PyMC Bayesian-workflow skill (MIT) — see the repo-root NOTICE.
+```
+
+**with**
+
+```markdown
+original PyMC Bayesian-workflow skill (MIT) — see the repo-root NOTICE.
+Upstream's MIT notice travels with this skill as [`LICENSE-andorra`](LICENSE-andorra).
+```
+
+**Edit `skills/bayesian-workflow/README.md`: replace**
+
+```markdown
+MIT - see [LICENSE](../../LICENSE).
+```
+
+**with**
+
+```markdown
+MIT - see [LICENSE](../../LICENSE). Upstream's notice: [LICENSE-andorra](LICENSE-andorra).
+```
+
 - [ ] **Step 4: Copy it.** Run `uv run --no-project --python 3.13 python /tmp/portability-plan/copy_licenses.py .`. Then `uv run --python 3.13 python build/check_provenance.py` exits 0.
 - [ ] **Step 5: Gates and commit.**
 
@@ -2061,7 +2092,7 @@ bash build/run_commit_lints.sh
 ```
 
 ```bash
-git add LICENSE-andorra skills/bayesian-workflow/LICENSE-andorra build/check_provenance.py NOTICE README.md CLAUDE.md
+git add LICENSE-andorra skills/bayesian-workflow/LICENSE-andorra build/check_provenance.py NOTICE README.md CLAUDE.md skills/bayesian-workflow/README.md
 ```
 
 ```bash
@@ -3819,5 +3850,5 @@ Task 13 records the log here.
   - Trigger-eval suites; distribution channels; Codex adapters for `/deferred`, `/fix-issue` and `/license-audit`; tables of contents for long `references/` files; a versioning policy; license travel for single-file agents: as the spec words them.
   - Skill security scanning: "The repo has no CI" no longer holds; `.github/workflows/lints.yml` (plan 41's advisory CI) runs the commit lints only.
   - "Split and rewrite writing-skills against the guide", in place of the spec's "Splitting writing-skills": split the body below 500 lines (R1.7's warning) and close the register gaps `writing-skills-guide-gaps` and `writing-skills-late-critical-headings`, which Task 14 points at it (DF20), verifying or dropping the skill's `@` loading claim on the way.
-- **Backlog to tick:** "`build/check_frontmatter.py`'s SKILL.md key set" (section cc-guide-files-backlog), done in plan 53 under D5 (`agent` allowed beside `disable-model-invocation`). Add a progress note to "Gate or make manual-only the four ungated side-effecting skills" (section 35-claude-code-guide-conformance): Stage A landed, and a manual-only skill now needs `agents/openai.yaml` with `policy.allow_implicit_invocation: false` (R1.6).
+- **Backlog to tick:** "`build/check_frontmatter.py`'s SKILL.md key set" (section cc-guide-files-backlog), done in plan 53 under D5 (`agent` allowed beside `disable-model-invocation`). Add a progress note to "Gate or make manual-only the four ungated side-effecting skills" (section 35-claude-code-guide-conformance): Stage A landed, and a manual-only skill now needs `agents/openai.yaml` with `policy.allow_implicit_invocation: false` (R1.6). Also tick, under D9 and D10: "Portability work for this skill, if plan 53, the portability plan, lands second" (section 52-write-with-asd-ste100), which Tasks 8, 10, 11 and 12 do; and "Point bayesian-workflow's README at its upstream notice once plan 53's Task 9 lands", which Task 9 does.
 - **Owner steps after merge:** refresh each wiki's installed llm-wiki scripts (DF15).
