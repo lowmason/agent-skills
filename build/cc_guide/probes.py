@@ -342,9 +342,16 @@ def reader(folder: Path, names: dict[str, str] | None = None) -> Read:
 def private_strings() -> list[str]:
     '''What a committed probe file must not show: the home directory, the
     temporary directory, each as given and resolved, and the login name
-    (owner, plan 58 decision D3).'''
+    (owner, plan 58 decision D3). A machine with no login name makes getuser
+    raise, OSError on Python 3.13 and KeyError before; the login is then an
+    empty string, which redact skips, so the log row is not lost after the
+    probe has spent its tokens.'''
+    try:
+        login = getpass.getuser()
+    except (OSError, KeyError):
+        login = ''
     return [str(Path.home()), str(Path.home().resolve()), tempfile.gettempdir(),
-            os.path.realpath(tempfile.gettempdir()), getpass.getuser()]
+            os.path.realpath(tempfile.gettempdir()), login]
 
 
 def save_fixtures(run_dir: Path, pid: str, dest: Path) -> list[Path]:
@@ -423,8 +430,11 @@ def cell(text: str) -> str:
 def log_row(day: date, version: str, claude: Path, pid: str, verdict: Verdict, allow_old: bool) -> str:
     '''One log row. PROBES.md is committed to a public repo, and a finding can
     carry a home or temporary path, the login name or an MCP tool name, so
-    the finding is scrubbed as a fixture is (owner, plan 58 decision D3).'''
-    finding = MCP_TOKEN_RE.sub(probe_checks.MCP_MARK, probe_checks.redact(verdict.finding, private_strings()))
+    the finding is scrubbed as a fixture is (owner, plan 58 decision D3). The
+    MCP pass runs first: a private string inside an MCP name would otherwise
+    become <private>, and the pass would stop at its > and leave the rest of
+    the name in the log.'''
+    finding = probe_checks.redact(MCP_TOKEN_RE.sub(probe_checks.MCP_MARK, verdict.finding), private_strings())
     cells = [day.isoformat(), version, shown_path(claude), pid, verdict.outcome, finding,
              '--allow-old' if allow_old else '']
     return '| ' + ' | '.join(map(cell, cells)) + ' |'

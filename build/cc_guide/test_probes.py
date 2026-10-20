@@ -264,6 +264,25 @@ def test_the_log_row_holds_no_private_text_and_no_mcp_tool_name(isolated_home, m
     assert 'mcp__' not in row
     assert row == ('| 2026-10-20 | 2.1.902 | ~/bin/claude | agent-tools | ERROR | OSError: '
                    f"{' '.join(['<private>'] * len(planted))} refused '<mcp-tool>' for <mcp-tool> | --allow-old |")
+    # A private string inside an MCP name must not cut the MCP pass short at the > of <private>, which would leave
+    # the rest of the server or plugin name in the row.
+    nested = probes.Verdict(ERROR, 'refused mcp__plugin_zzlogin-tools__t for the call')
+    row = probes.log_row(TODAY, '2.1.902', isolated_home / 'bin' / 'claude', 'agent-tools', nested, False)
+    assert 'zzlogin' not in row and '-tools__t' not in row
+    assert row == '| 2026-10-20 | 2.1.902 | ~/bin/claude | agent-tools | ERROR | refused <mcp-tool> for the call |  |'
+
+
+@pytest.mark.parametrize('failure', [OSError('no login'), KeyError('getpwuid(): uid not found')])
+def test_a_missing_login_name_does_not_lose_the_log_row(isolated_home, monkeypatch, failure):
+    '''getpass.getuser raises when a machine has no login name: OSError on Python 3.13, KeyError before. The row is
+    written after a probe has spent tokens, so it must survive, with the other private strings still scrubbed.'''
+    def no_login():
+        raise failure
+    monkeypatch.setattr('getpass.getuser', no_login)
+    assert probes.private_strings()[-1] == ''
+    verdict = probes.Verdict(ERROR, f'OSError: {Path.home()}/x')
+    row = probes.log_row(TODAY, '2.1.902', isolated_home / 'bin' / 'claude', 'agent-tools', verdict, False)
+    assert row == '| 2026-10-20 | 2.1.902 | ~/bin/claude | agent-tools | ERROR | OSError: <private>/x |  |'
 
 
 def executable(path: Path, body: str) -> Path:
