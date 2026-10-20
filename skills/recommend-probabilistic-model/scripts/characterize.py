@@ -28,14 +28,18 @@ def overdispersion(s: pl.Series):
     return None if not m else round(float(s.var() / m), 3)
 
 
-def zero_fraction(s: pl.Series) -> float:
+def zero_fraction(s: pl.Series) -> float | None:
     """Fraction of exact zeros — high values point to zero-inflated / hurdle models.
 
     A Boolean series counts its False values (Boolean has no eq operator, so it is cast first).
+    Any other non-numeric series (Categorical, Enum, String, temporal) has no zeros to count, so
+    None. Casting a Categorical would count the first-encoded label as zero.
     """
     s = s.drop_nulls()
     if s.dtype == pl.Boolean:
         s = s.cast(pl.Int8)
+    if not s.dtype.is_numeric():
+        return None
     return 0.0 if s.len() == 0 else round(float((s == 0).sum() / s.len()), 4)
 
 
