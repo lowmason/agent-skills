@@ -242,6 +242,26 @@ def test_a_clean_run_carries_its_max_r_hat_on_both_paths(both_paths):
     assert isinstance(rhat["max"], float) and 0.99 < rhat["max"] <= 1.01, rhat
 
 
+def _offset_chains(offset=0.15, seed=0):
+    """Unit-normal chains centred, then shifted by +/-``offset``: raw R-hat 1.0113."""
+    z = np.random.default_rng(seed).normal(size=(4, 500))
+    z -= z.mean(axis=1, keepdims=True)
+    return z + offset * np.array([1.0, -1.0, 1.0, -1.0])[:, None]
+
+
+def test_an_r_hat_just_above_1_01_fails_on_the_fallback_path(monkeypatch):
+    # Classic ArviZ 0.23's az.summary rounds R-hat to two decimals, so 1.0113 read as
+    # 1.01 and passed the <= 1.01 gate. ArviZ 1.x's summary is unrounded already, so
+    # only the 0.23 run (the pinned command in the commit) fails without round_to="none".
+    monkeypatch.setattr(diagnose_model, "HAS_DIAGNOSE", False)
+    idata = _posterior_only({"drift": _offset_chains()})
+    raw = float(az.rhat(idata)["drift"])
+    assert 1.01 < raw < 1.015, raw  # the premise: two-decimal rounding gives 1.01
+    rhat = diagnose_model.check_convergence(idata)["rhat"]
+    assert rhat["ok"] is False and rhat["problematic_params"] == ["drift"], rhat
+    assert rhat["max"] == pytest.approx(raw), rhat
+
+
 def test_a_diverging_stat_gives_a_checked_divergence_block(both_paths):
     assert diagnose_model.check_convergence(_idata())["divergences"] == {
         "checked": True, "count": 0, "pct": 0.0, "ok": True,
