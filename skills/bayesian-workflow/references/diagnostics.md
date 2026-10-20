@@ -83,6 +83,8 @@ The number of independent-equivalent draws. Two flavors matter:
 - **ESS bulk**: Reliability of central tendency estimates (mean, median)
 - **ESS tail**: Reliability of tail estimates (credible intervals, quantiles)
 
+`diagnose_model.py` takes tail ESS on the 5% and 95% quantiles, as the smaller of their two ESS values. It passes `prob=(0.05, 0.95)` to `az.ess`. Without that argument, arviz-stats 1.x takes the quantiles from `stats.ci_prob`, so a display setting would move the gate.
+
 | ESS | Interpretation | Action |
 |---|---|---|
 | ≥ 100 * number of chains | Sufficient for most summaries | Proceed |

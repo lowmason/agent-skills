@@ -41,6 +41,11 @@ PARETO_K_MAX = 0.7
 # reads only the CmdStan-style reached_max_treedepth.
 TREEDEPTH_FLAGS = ("reached_max_tree_depth", "reached_max_treedepth")
 
+# Tail ESS on the 0.05 and 0.95 quantiles. Without an explicit prob, arviz-stats 1.x
+# takes the quantiles from stats.ci_prob (its 0.89 default gives 0.11 and 0.89), so a
+# display setting would move the gate. Classic ArviZ 0.23 uses 0.05 and 0.95 already.
+TAIL_ESS_PROB = (0.05, 0.95)
+
 
 def _json_default(o):
     """Coerce stray numpy scalars/arrays so json.dumps never chokes.
@@ -114,6 +119,15 @@ def _treedepth_block(stats):
     return {"checked": True, "ok": n_max == 0, "n_max": n_max, "pct": round(100 * n_max / int(hits.size), 2)}
 
 
+def _ess_block(idata, method, **kwargs):
+    """An ESS block by variable: ok against 100 * chains, the failing names and the minimum."""
+    ess = az.ess(idata, method=method, **kwargs)
+    thresh = 100 * int(idata.posterior.sizes["chain"])
+    mins = {str(v): float(ess[v].min()) for v in ess.data_vars}
+    bad = [v for v, m in mins.items() if m < thresh]
+    return {"ok": not bad, "problematic_params": bad, "min": int(min(mins.values()))}
+
+
 def _bfmi_block(diagnosed):
     """E-BFMI from arviz_stats.diagnose's results; {"checked": False} when it had no energy stat."""
     if "bfmi" not in diagnosed:
@@ -132,6 +146,9 @@ def check_convergence(idata):
     either of ``TREEDEPTH_FLAGS``; ``energy``) is just ``{"checked": False}``, so
     an unchecked block never reads as passed. Only the ``arviz_stats.diagnose``
     path computes E-BFMI; the fallback always marks it unchecked.
+    Both paths take tail ESS on the TAIL_ESS_PROB quantiles and name failing
+    variables (``beta``). The fallback's R-hat and bulk ESS come from
+    ``az.summary`` and name elements (``beta[0]``).
     No numpy scalars, numpy arrays, or xarray objects leak into the dict — those
     are not JSON-serializable and would crash the report writer.
     """
@@ -152,17 +169,7 @@ def check_convergence(idata):
         rhat_max = _max_from_dataset(az.rhat(idata))
         # diagnose()'s d['ess']['bad_params'] keys off ess_min_ratio (ESS/N<0.001),
         # NOT the ~100*chains threshold its printed report / has_errors use. Recompute
-        # ESS the same way the manual fallback does so failing param NAMES surface.
-        ess_bulk_vals = az.ess(idata, method="bulk")
-        ess_tail_vals = az.ess(idata, method="tail")
-        num_chains = int(idata.posterior.sizes["chain"])
-        thresh = 100 * num_chains
-        bad_bulk = [str(v) for v in ess_bulk_vals.data_vars
-                    if float(ess_bulk_vals[v].min()) < thresh]
-        bad_tail = [str(v) for v in ess_tail_vals.data_vars
-                    if float(ess_tail_vals[v].min()) < thresh]
-        min_bulk = int(min(float(ess_bulk_vals[v].min()) for v in ess_bulk_vals.data_vars))
-        min_tail = int(min(float(ess_tail_vals[v].min()) for v in ess_tail_vals.data_vars))
+        # ESS against 100 * chains so failing param NAMES surface.
         stats = _sample_stats(idata)
         results = {
             "method": "arviz_stats.diagnose",
@@ -171,8 +178,8 @@ def check_convergence(idata):
                 "max": rhat_max,
                 "problematic_params": rhat_bad,
             },
-            "ess_bulk": {"ok": len(bad_bulk) == 0, "problematic_params": bad_bulk, "min": min_bulk},
-            "ess_tail": {"ok": len(bad_tail) == 0, "problematic_params": bad_tail, "min": min_tail},
+            "ess_bulk": _ess_block(idata, "bulk"),
+            "ess_tail": _ess_block(idata, "tail", prob=TAIL_ESS_PROB),
             "divergences": _divergence_block(stats),
             "treedepth": _treedepth_block(stats),
             "bfmi": _bfmi_block(d),
@@ -204,13 +211,7 @@ def check_convergence(idata):
                 summary[summary["ess_bulk"] < 100 * num_chains].index
             ),
         },
-        "ess_tail": {
-            "min": int(summary["ess_tail"].min()),
-            "ok": bool((summary["ess_tail"] >= 100 * num_chains).all()),
-            "problematic_params": list(
-                summary[summary["ess_tail"] < 100 * num_chains].index
-            ),
-        },
+        "ess_tail": _ess_block(idata, "tail", prob=TAIL_ESS_PROB),
     }
 
     stats = _sample_stats(idata)

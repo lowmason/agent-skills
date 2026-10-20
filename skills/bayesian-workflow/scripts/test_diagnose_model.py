@@ -343,18 +343,16 @@ def test_a_run_without_the_tree_depth_flag_reads_back_as_not_checked():
     assert "not checked: tree depth" in report["summary"]["convergence"]
 
 
-def _bursty_tail_draws(n_chains=4, n_draws=500, seed=26, share=0.2, length=10, shift=4.0):
+def _bursty_tail_draws(n_chains=4, n_draws=500, seed=26, share=0.1, length=20, shift=4.0):
     """Draws whose extremes come in bursts while the centre mixes freely.
 
     A two-state Markov chain switches bursts on (stationary share ``share``, mean
     length ``length``). Each draw in a burst is a unit normal pushed out by
     ``shift`` times an i.i.d. random sign. The sign keeps the bulk ESS near
     n_chains * n_draws, and the bursts pull the tail ESS under 100 * n_chains.
-    At the defaults bulk ESS is 1753, tail ESS 283 and R-hat 1.004 (seed 26).
-    That tail ESS is arviz-stats 1.3.3's default, min(qess(0.11), qess(0.89)),
-    from its 0.89 ci_prob. Classic ArviZ 0.23 takes min(qess(0.05), qess(0.95)),
-    616 here, so CLASSIC_BURSTS gives 0.23 longer, rarer bursts: bulk ESS 2177,
-    tail ESS 306 and R-hat 1.0031.
+    At the defaults bulk ESS is 2177, tail ESS 306 and R-hat 1.0031 (seed 26),
+    with tail ESS on the 0.05 and 0.95 quantiles. On the 0.11 and 0.89 quantiles,
+    arviz-stats 1.3.3's unpinned default, the tail ESS would be 729 and pass.
     """
     rng = np.random.default_rng(seed)
     leave = 1 / length
@@ -368,13 +366,8 @@ def _bursty_tail_draws(n_chains=4, n_draws=500, seed=26, share=0.2, length=10, s
     return rng.normal(size=(n_chains, n_draws)) + shift * in_burst * sign
 
 
-# The burst settings that pull classic ArviZ 0.23's tail ESS under 100 * n_chains.
-CLASSIC_BURSTS = {"length": 20, "share": 0.1}
-
-
 def test_low_tail_ess_with_passing_bulk_ess_fails_all_ok_on_both_paths(both_paths):
-    bursts = CLASSIC_BURSTS if CLASSIC_ARVIZ else {}
-    idata = _idata(extra={"bursty": _bursty_tail_draws(**bursts)})
+    idata = _idata(extra={"bursty": _bursty_tail_draws()})
     if both_paths:
         # The premise: arviz_stats.diagnose rates this run clean, so only the tail ESS block can fail it.
         has_errors, _ = diagnose_model.azs.diagnose(idata, return_diagnostics=True, show_diagnostics=False)
@@ -393,6 +386,19 @@ def test_low_tail_ess_with_passing_bulk_ess_fails_all_ok_on_both_paths(both_path
     steps = cd.suggest_next_steps(report)
     assert not any("proceed to interpretation" in s for s in steps), steps
     assert any(s.startswith("R-hat or ESS flags on bursty") for s in steps), steps
+
+
+@pytest.mark.parametrize("ci_prob", [0.89, 0.94])
+def test_tail_ess_reads_the_5_and_95_percent_quantiles_whatever_the_ci_prob(both_paths, ci_prob):
+    # Without a prob, arviz-stats 1.3.3 takes the tail quantiles from stats.ci_prob:
+    # 0.89 gave 0.11 and 0.89, and 0.94 gave 0.06 and 0.94. A display setting must not
+    # move the gate. 0.95 is left out: unpinned, it already gave 0.05 and 0.95.
+    idata = _idata(extra={"bursty": _bursty_tail_draws()})
+    expected = min(float(az.ess(idata, method="quantile", prob=q)["bursty"]) for q in (0.05, 0.95))
+    with az.rc_context({"stats.ci_prob": ci_prob}):
+        conv = diagnose_model.check_convergence(idata)
+    assert conv["ess_tail"]["min"] == int(expected), conv["ess_tail"]
+    assert conv["ess_tail"]["problematic_params"] == ["bursty"], conv["ess_tail"]
 
 
 def test_the_pareto_k_threshold_follows_loo():
