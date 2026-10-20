@@ -6,6 +6,11 @@ description: >
   skill that fails to trigger or over-triggers, tightening a description, structuring references/
   and scripts/, pressure-testing a discipline skill, or micro-testing wording changes against a
   no-guidance baseline.
+license: MIT
+metadata:
+  author: 'Jesse Vincent'
+  adapted_by: 'Lowell Mason'
+  source: 'https://github.com/obra/superpowers'
 # cc-guide: skills.locations skills.frontmatter skills.description skills.listing-budget skills.progressive-disclosure subagents.isolation @2.1.219
 ---
 
@@ -99,9 +104,9 @@ skills/
 ## SKILL.md Structure
 
 **Frontmatter (YAML):**
-- Two required fields: `name` and `description` (see [agentskills.io/specification](https://agentskills.io/specification) for all supported fields)
+- Three required fields: `name` and `description`, the Agent Skills spec's two (see [agentskills.io/specification](https://agentskills.io/specification) for all supported fields), and `license`, this repo's rule, enforced by `build/check_frontmatter.py`
 - `description`: max 1024 characters — the Agent Skills spec cap, enforced by `build/check_frontmatter.py`. It applies to the description field, **not** to the whole frontmatter block; several shipped skills exceed 1024 chars of total frontmatter and pass the lint correctly.
-- Optional keys the lint accepts: `license`, `compatibility`, `metadata`, `allowed-tools`, `when_to_use`, the two delegation keys `model` and `effort` (per-skill overrides for the model tier and reasoning effort a skill runs at; a Haiku `model` is not portable, since auto mode drops Haiku 4.5 and the `haiku` alias means Haiku 5.5 on the Anthropic API but 4.5 on other providers, so the lint fails it, and cheap work belongs on a model-pinned subagent), `context` (sole value `fork`: runs the skill in an isolated subagent, so the main session sees only what the skill returns), `agent` (the agent type a `context: fork` skill runs on), and `disable-model-invocation` (a YAML boolean; `true` makes the skill manual-only). Any other key fails `build/check_frontmatter.py`. The spec's own keys are `name`, `description`, `license`, `compatibility`, `metadata` and `allowed-tools`; the rest are Claude Code extensions, which a claude.ai upload or a spec-only validator rejects.
+- Optional keys the lint accepts: `compatibility`, `metadata`, `allowed-tools`, `when_to_use`, the two delegation keys `model` and `effort` (per-skill overrides for the model tier and reasoning effort a skill runs at; a Haiku `model` is not portable, since auto mode drops Haiku 4.5 and the `haiku` alias means Haiku 5.5 on the Anthropic API but 4.5 on other providers, so the lint fails it, and cheap work belongs on a model-pinned subagent), `context` (sole value `fork`: runs the skill in an isolated subagent, so the main session sees only what the skill returns), `agent` (the agent type a `context: fork` skill runs on), and `disable-model-invocation` (a YAML boolean; `true` makes the skill manual-only). Any other key fails `build/check_frontmatter.py`. The spec's own keys are `name`, `description`, `license`, `compatibility`, `metadata` and `allowed-tools`; the rest are Claude Code extensions, which a claude.ai upload or a spec-only validator rejects.
 - Fork a skill whose value is a **verdict or artifact** you act on (`tech-debt` returns a prioritized backlog). Do **not** fork a skill whose value is **guidance** — it has to stay resident to shape what the main thread writes next — nor one that dispatches subagents itself, nor one with a mix of artifact and question-answering operations, since `context` is all-or-nothing per skill.
 - `name`: Use letters, numbers, and hyphens only (no parentheses, special chars)
 - `description`: Third-person, describes ONLY when to use (NOT what it does)
@@ -114,6 +119,7 @@ skills/
 ---
 name: Skill-Name-With-Hyphens
 description: Use when [specific triggering conditions and symptoms]
+license: MIT
 ---
 
 # Skill Name
@@ -652,7 +658,7 @@ Deploying untested skills = deploying untested code. It's a violation of quality
 
 **GREEN Phase - Write Minimal Skill:**
 - [ ] Name uses only letters, numbers, hyphens (no parentheses/special chars)
-- [ ] YAML frontmatter with required `name` and `description` fields (`description` max 1024 chars — the field, not the whole block; see [spec](https://agentskills.io/specification))
+- [ ] YAML frontmatter with required `name`, `description` and `license` fields (`description` max 1024 chars — the field, not the whole block; see [spec](https://agentskills.io/specification))
 - [ ] Description starts with "Use when..." and includes specific triggers/symptoms
 - [ ] Description written in third person
 - [ ] Keywords throughout for search (errors, symptoms, tools)

@@ -5,6 +5,11 @@ description: >
   worked sequentially: multiple test files failing with different root causes, several subsystems
   broken independently, or a batch of self-contained fixes or investigations that could run as
   parallel subagents.
+license: MIT
+metadata:
+  author: 'Jesse Vincent'
+  adapted_by: 'Lowell Mason'
+  source: 'https://github.com/obra/superpowers'
 # cc-guide: subagents.frontmatter subagents.models subagents.isolation @2.1.304
 ---
 

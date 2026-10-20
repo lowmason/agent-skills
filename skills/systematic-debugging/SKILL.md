@@ -6,6 +6,11 @@ description: >
   test pollution where state leaks between tests, errors deep in a stack trace,
   works-locally-but-fails-in-CI, a regression after a dependency or config change, or when
   previous fixes didn't stick and you're tempted to try one more quick change.
+license: MIT
+metadata:
+  author: 'Jesse Vincent'
+  adapted_by: 'Lowell Mason'
+  source: 'https://github.com/obra/superpowers'
 ---
 
 # Systematic Debugging

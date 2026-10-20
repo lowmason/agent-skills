@@ -5,6 +5,11 @@ description: >
   checkout — before executing an implementation plan, when the working tree has uncommitted
   changes to protect, when the user asks for a worktree, isolated workspace, or branch sandbox,
   or when parallel agents need separate checkouts of the same repo.
+license: MIT
+metadata:
+  author: 'Jesse Vincent'
+  adapted_by: 'Lowell Mason'
+  source: 'https://github.com/obra/superpowers'
 ---
 
 # Using Git Worktrees

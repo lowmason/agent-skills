@@ -8,6 +8,7 @@ Per <skill>/SKILL.md:
 - description is present and <=1024 chars (the Agent Skills spec cap);
 - every key is an Agent Skills spec key (SPEC_KEYS) or a host extension this
   repo allows (HOST_KEYS);
+- license is a non-empty string (repo policy, beyond the spec);
 - name and description contain no < or >; metadata maps strings to strings;
   compatibility is a string of 1-500 characters;
 - context is in CONTEXT_VALUES, and model is not haiku or a claude-haiku-* ID
@@ -121,6 +122,15 @@ def _check_model_pin(md: Path, fm: dict) -> list[str]:
             'instead (specs/completed/skill-model-pin-removal.md)']
 
 
+def _check_license(sk: Path, fm: dict) -> list[str]:
+    '''Every SKILL.md names its license (portability R1.4: repo policy, beyond
+    the spec), so a single-skill install still says how the skill is licensed.'''
+    lic = fm.get('license')
+    if isinstance(lic, str) and lic.strip():
+        return []
+    return [f'{sk}: license is required, a non-empty string (repo policy, beyond the Agent Skills spec)']
+
+
 def _check_value_shapes(sk: Path, fm: dict) -> list[str]:
     '''The value shapes the Agent Skills spec defines: no < or > in name or
     description, metadata as a string-to-string map, compatibility as a string
@@ -167,6 +177,7 @@ def check_skill(skill_dir: Path) -> list[str]:
     if ctx is not None and ctx not in CONTEXT_VALUES:
         errs.append(f'{sk}: context must be one of {sorted(CONTEXT_VALUES)}, got {ctx!r}')
     errs += _check_model_pin(sk, fm)
+    errs += _check_license(sk, fm)
     errs += _check_value_shapes(sk, fm)
     for key in fm:
         if key not in SPEC_KEYS | HOST_KEYS:

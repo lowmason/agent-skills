@@ -6,6 +6,11 @@ description: >
   worktree needs cleanup. Trigger on: "the feature is done", "ready to merge", "should I open a
   PR", "clean up this branch/worktree", deciding how to integrate a completed feature branch, or
   finishing work started with the using-git-worktrees skill.
+license: MIT
+metadata:
+  author: 'Jesse Vincent'
+  adapted_by: 'Lowell Mason'
+  source: 'https://github.com/obra/superpowers'
 ---
 
 # Finishing a Development Branch

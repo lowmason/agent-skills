@@ -1,3 +1,4 @@
+import re
 import subprocess
 from pathlib import Path
 
@@ -14,9 +15,14 @@ from check_frontmatter import (
 )
 
 
-def make_skill(tmp_path: Path, name: str, frontmatter: str) -> Path:
+def make_skill(tmp_path: Path, name: str, frontmatter: str, *, licensed: bool = True) -> Path:
+    '''A skill directory with this frontmatter. Every SKILL.md needs a license
+    (portability R1.4), so one is added unless the frontmatter sets its own or
+    the test passes licensed=False.'''
     d = tmp_path / name
     d.mkdir()
+    if licensed and not re.search(r'^license:', frontmatter, re.M):
+        frontmatter = f'license: MIT\n{frontmatter}'
     (d / 'SKILL.md').write_text(f'---\n{frontmatter}\n---\n\n# Body\n')
     return d
 
@@ -151,6 +157,18 @@ def test_spec_and_host_keys_are_allowed(tmp_path):
                    'when_to_use: Testing.\ncontext: fork\nagent: Explore\n'
                    'disable-model-invocation: false')
     assert check_skill(d) == []
+
+
+def test_license_is_required(tmp_path):
+    # Portability R1.4: repo policy, beyond the spec, so a single-skill install
+    # still says how the skill is licensed.
+    msg = 'license is required, a non-empty string (repo policy, beyond the Agent Skills spec)'
+    missing = make_skill(tmp_path, 'no-license', 'name: no-license\ndescription: Use when testing.',
+                         licensed=False)
+    assert check_skill(missing) == [f"{missing / 'SKILL.md'}: {msg}"]
+    blank = make_skill(tmp_path, 'blank-license',
+                       "name: blank-license\ndescription: Use when testing.\nlicense: ' '")
+    assert check_skill(blank) == [f"{blank / 'SKILL.md'}: {msg}"]
 
 
 def test_metadata_must_map_strings_to_strings(tmp_path):

@@ -494,6 +494,14 @@ Changes from upstream:
     <this-skill-dir>/ anchor the bundled-script-path entry above gave the
     other skills; upstream's #2301 prefixes bash but still resolves the
     path against the user's repository.
+  - All thirteen skills' SKILL.md files gained `license: MIT` and a
+    `metadata` block naming Jesse Vincent as author, Lowell Mason as
+    adapter and https://github.com/obra/superpowers as source, placed
+    above any `# cc-guide:` line so that line stays last
+    (specs/agent-skills-portability-spec.md, R1.4). writing-skills' list of
+    the frontmatter keys build/check_frontmatter.py accepts was brought up
+    to date in the same change: `license` is required, and
+    `disable-model-invocation` and `agent` are accepted.
 
     brainstorming/
     dispatching-parallel-agents/
