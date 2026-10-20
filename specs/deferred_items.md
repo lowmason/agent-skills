@@ -5342,3 +5342,33 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       `specs/plans/completed/51-claude-code-drift-automation.md`, "O3". Size: design. Done when: a
       check that fails partway leaves `latest/` as it was, a test in `build/cc_guide/test_check.py`
       pins it, and the spec's R6.3 and R6.4 state the whole-directory swap.
+
+## /deferred quick-fix pass (no plan; lowmason/agent-skills#73) — 2026-10-19
+- [ ] Rule on three guide-coverage questions that the 2026-10-19 verify runs left in the
+      done-notes of guide notes S-109 and A-54 (section 35-claude-code-guide-conformance,
+      ticked in lowmason/agent-skills#73). Ticked items drop out of the backlog counts, so this
+      item holds the questions. Settle never applies an owner's-call row, so none of them
+      reached `specs/guides/claude-code-customization-guide.md`.
+      (a) S-109, section `skills.listing-budget`. Should the guide name
+      `SLASH_COMMAND_TOOL_CHAR_BUDGET`, which sets the listing budget as a fixed character
+      count (the docs give a fallback of 8,000 characters; env-vars.md:516, skills.md:1225)?
+      And should it say that `/skill-doctor` needs Claude Code 2.1.252 or later and is missing
+      from sessions that skip feature-flag fetching (skills.md:945)?
+      (b) A-54, section `subagents.isolation`. Does a custom agent named `Explore`, which
+      overrides the built-in, load CLAUDE.md and the git-status snapshot like other custom
+      agents, or skip both like the built-in? The docs say only that the built-in Explore and
+      Plan skip both (sub-agents.md:1104, :1113), and the verify report had no row on an
+      override.
+      (c) A-54's two omissions. First, the guide gives only CLAUDE_CODE_FORK_SUBAGENT=0 to stop
+      forks. The docs also offer an `Agent(fork)` deny rule, which stops forks only, while =0
+      turns fork mode off (sub-agents.md:1266-1271). Second, the guide lists
+      subagentPromptCacheTtl and experimental.cacheTtl as equal alternatives. The docs rank
+      the controls: FORCE_PROMPT_CACHING_5M, then CLAUDE_CODE_SUBAGENT_PROMPT_CACHE_TTL, then
+      the setting, then the frontmatter value. They also ignore a frontmatter 1h while a
+      subscription uses usage credits (prompt-caching.md:286-291).
+      The full rows are in the settle output of the packets
+      `~/.cache/agent-skills/cc-guide/packets/20261019T194255-verify/skills` (S-109) and
+      `20261019T195735-verify/subagents` (A-54). An accepted part lands through
+      `/cc-guide verify` on its section. Size: quick-fix. Revisit if: the owner rules on any
+      part, or a `/cc-guide verify` or audit next covers `skills.listing-budget` or
+      `subagents.isolation`.
