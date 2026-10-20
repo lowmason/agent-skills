@@ -6,7 +6,9 @@ from pathlib import Path
 import yaml
 
 from check_frontmatter import (
+    bundled_invocations,
     check_agent_file,
+    check_invocations,
     check_script_headers,
     check_command_file,
     check_readonly_roster,
@@ -382,6 +384,79 @@ def test_a_vendored_script_is_exempt_from_the_header_rules(tmp_path):
     d = _skill_with_script(tmp_path, 'vendored', 'import json\n' + MAIN_GUARD, filename='upstream.py')
     assert check_script_headers(d, vendored=frozenset({'skills/vendored/scripts/upstream.py'})) == []
     assert len(check_script_headers(d)) == 1
+
+
+RUNNABLE = HEADER + MAIN_GUARD
+
+
+def _skill_running(tmp_path: Path, name: str, body: str, md: str = 'SKILL.md') -> Path:
+    '''A skill with a runnable scripts/tool.py, whose markdown file md holds body.'''
+    d = _skill_with_script(tmp_path, name, RUNNABLE)
+    path = d / md
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text((path.read_text() if path.exists() else '') + body)
+    return d
+
+
+def test_python_before_a_bundled_script_is_flagged(tmp_path):
+    # Portability R3.5, R3.7: uv run <path> reads the header; python does not.
+    d = _skill_running(tmp_path, 'bare', '```bash\npython <this-skill-dir>/scripts/tool.py --x 1\n```\n')
+    assert check_invocations(d) == [
+        f"{d / 'SKILL.md'}: runs <this-skill-dir>/scripts/tool.py with python; "
+        "use uv run <this-skill-dir>/scripts/tool.py, which reads the script's PEP 723 header"]
+
+
+def test_python3_and_uv_run_python_are_flagged_too(tmp_path):
+    # uv run ... python <path> runs the project environment, not the header's.
+    body = ('Run `python3 scripts/tool.py`, or\n'
+            '`uv run --python 3.13 --with polars python <this-skill-dir>/scripts/tool.py`.\n')
+    runners = [runner for _, runner, _ in bundled_invocations(_skill_running(tmp_path, 'forms', body))]
+    assert runners == ['python3', 'python']
+
+
+def test_a_line_continued_invocation_is_joined_first(tmp_path):
+    d = _skill_running(tmp_path, 'continued', '```bash\npython \\\n    <this-skill-dir>/scripts/tool.py \\\n    --x 1\n```\n')
+    assert [runner for _, runner, _ in bundled_invocations(d)] == ['python']
+
+
+def test_uv_run_of_a_bundled_script_passes(tmp_path):
+    d = _skill_running(tmp_path, 'uv-form', '```bash\nuv run <this-skill-dir>/scripts/tool.py --x 1\n```\n')
+    assert check_invocations(d) == []
+    assert bundled_invocations(d) == [(d / 'SKILL.md', 'uv run', '<this-skill-dir>/scripts/tool.py')]
+
+
+def test_a_path_that_is_no_runnable_bundled_script_is_not_flagged(tmp_path):
+    # A teaching example (no such file) and a library (no __main__ guard).
+    d = _skill_running(tmp_path, 'examples', 'Run `python scripts/migrate.py`, then `python scripts/lib.py`.\n')
+    (d / 'scripts' / 'lib.py').write_text('X = 1\n')
+    assert bundled_invocations(d) == []
+
+
+def test_paths_resolve_across_skills_aliases_and_references(tmp_path):
+    # The R3.5 path forms: a sibling skill, the llm-wiki install root, a clone
+    # path, a repo-relative path, and an invocation in references/.
+    other = _skill_with_script(tmp_path, 'other', RUNNABLE)
+    wiki = _skill_with_script(tmp_path, 'llm-wiki', RUNNABLE, filename='lint_wiki.py')
+    body = ('`python <this-skill-dir>/../other/scripts/tool.py`\n'
+            '`python3 "$LLM_WIKI_ROOT/scripts/lint_wiki.py"`\n'
+            '`python3 ~/Projects/agent-skills/skills/other/scripts/tool.py`\n')
+    d = _skill_running(tmp_path, 'caller', body)
+    (d / 'references').mkdir()
+    (d / 'references' / 'usage.md').write_text('`python skills/other/scripts/tool.py`\n')
+    assert [(md.name, path) for md, _, path in bundled_invocations(d)] == [
+        ('SKILL.md', '<this-skill-dir>/../other/scripts/tool.py'),
+        ('SKILL.md', '$LLM_WIKI_ROOT/scripts/lint_wiki.py'),
+        ('SKILL.md', '~/Projects/agent-skills/skills/other/scripts/tool.py'),
+        ('usage.md', 'skills/other/scripts/tool.py')]
+    assert other.is_dir() and wiki.is_dir()
+
+
+def test_a_vendored_script_run_with_python3_passes(tmp_path):
+    # Owner decision D11: a vendored copy cannot carry a header, so its
+    # documented python3 call stays and the invocation rule skips it.
+    d = _skill_running(tmp_path, 'vendored-run', '```bash\npython3 <this-skill-dir>/scripts/tool.py\n```\n')
+    assert check_invocations(d, vendored=frozenset({'skills/vendored-run/scripts/tool.py'})) == []
+    assert len(check_invocations(d)) == 1
 
 
 def make_agent(tmp_path: Path, name: str, description: str) -> Path:

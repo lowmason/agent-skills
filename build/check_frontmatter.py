@@ -19,7 +19,10 @@ Per <skill>/SKILL.md:
   scripts/ path exists;
 - every runnable script (a scripts/*.py with a __main__ guard) carries a PEP 723
   block with requires-python and dependencies, and declares every third-party
-  import outside a try that catches ImportError (VENDORED_SCRIPTS are exempt).
+  import outside a try that catches ImportError (VENDORED_SCRIPTS are exempt);
+- no markdown in the skill runs a runnable bundled script with python or python3,
+  line continuations joined: the form is uv run <path> (VENDORED_SCRIPTS are
+  exempt).
 A body (the lines after the closing frontmatter ---) over 500 lines prints one
 WARN line to stderr; the exit code does not change.
 
@@ -70,8 +73,21 @@ PEP723_RE = re.compile(
 # both sides are normalized (PEP 503), so arviz_base matches arviz-base.
 IMPORT_DISTRIBUTIONS = {'yaml': 'pyyaml', 'sklearn': 'scikit-learn', 'PIL': 'pillow'}
 # Scripts copied byte for byte from upstream, which cannot carry a header. They
-# are exempt from the two header rules only. Keys are skills/<skill>/scripts/<file>.
+# are exempt from the two header rules and the invocation rule (owner decision
+# D11, plan 53) only. Keys are skills/<skill>/scripts/<file>.
 VENDORED_SCRIPTS: frozenset[str] = frozenset({'skills/write-with-asd-ste100/scripts/ste-lint.py'})
+# A backslash line continuation, joined before the invocation scan so that
+# python \ with the path on the next line is caught (portability R3.7).
+CONTINUATION_RE = re.compile(r'\\\n[ \t]*')
+# A documented path to a bundled script: <owner>/scripts/<file>.py or scripts/<file>.py.
+SCRIPT_PATH_RE = re.compile(r'''(?:[^\s"'`()]*/)?scripts/[\w.-]+\.py''')
+# The runner word right before a script path, after an optional opening quote.
+RUNNER_RE = re.compile(r'''(?:^|[\s`(])(?P<runner>python3?|uv run)\s+["']?$''')
+# How a skill's markdown names its own directory.
+THIS_SKILL = '<this-skill-dir>'
+# Path owners that stand for a skill under another name: a wiki root's
+# scripts/ holds the copies llm-wiki's bootstrap_wiki.py installs.
+PATH_ALIASES = {'$LLM_WIKI_ROOT': 'llm-wiki'}
 DMI_KEY = 'disable-model-invocation'
 # A skill name may not contain these words on claude.ai (portability R1.8).
 RESERVED_NAME_WORDS = ('claude', 'anthropic')
@@ -293,6 +309,47 @@ def check_script_headers(skill_dir: Path, vendored: frozenset[str] = VENDORED_SC
     return errs
 
 
+def resolve_bundled_script(path: str, skill_dir: Path) -> Path | None:
+    '''The runnable bundled script a documented path names, or None. The owner
+    before scripts/ is THIS_SKILL, a PATH_ALIASES key or a skill directory
+    name; a bare scripts/<file>.py is this skill's.'''
+    parts = path.split('/')
+    owner = parts[-3] if len(parts) >= 3 else THIS_SKILL
+    skill = skill_dir.name if owner == THIS_SKILL else PATH_ALIASES.get(owner, owner)
+    script = skill_dir.parent / skill / 'scripts' / parts[-1]
+    if script.is_file() and MAIN_GUARD_RE.search(script.read_text()):
+        return script
+    return None
+
+
+def bundled_invocations(skill_dir: Path) -> list[tuple[Path, str, str]]:
+    '''(markdown file, runner, path) for each place the skill's markdown runs a
+    runnable bundled script with python, python3 or uv run, in file order.'''
+    found = []
+    for md in sorted(skill_dir.rglob('*.md')):
+        text = CONTINUATION_RE.sub(' ', md.read_text())
+        for m in SCRIPT_PATH_RE.finditer(text):
+            line_start = text.rfind('\n', 0, m.start()) + 1
+            runner = RUNNER_RE.search(text[line_start:m.start()])
+            if runner and resolve_bundled_script(m.group(), skill_dir):
+                found.append((md, runner.group('runner'), m.group()))
+    return found
+
+
+def check_invocations(skill_dir: Path, vendored: frozenset[str] = VENDORED_SCRIPTS) -> list[str]:
+    '''The skill's markdown runs each bundled script as uv run <path>, which
+    reads the script's header, never with python or python3 (portability R3.5).
+    A vendored script has no header, so its documented runner stands.'''
+    errs: list[str] = []
+    for md, runner, path in bundled_invocations(skill_dir):
+        script = resolve_bundled_script(path, skill_dir)
+        if runner == 'uv run' or f'skills/{script.parent.parent.name}/scripts/{script.name}' in vendored:
+            continue
+        errs.append(f'{md}: runs {path} with {runner}; use uv run {path}, '
+                    "which reads the script's PEP 723 header")
+    return errs
+
+
 def check_skill(skill_dir: Path) -> list[str]:
     errs: list[str] = []
     sk = skill_dir / 'SKILL.md'
@@ -326,6 +383,7 @@ def check_skill(skill_dir: Path) -> list[str]:
     errs += _check_value_shapes(sk, fm)
     errs += _check_invocation_parity(skill_dir, fm)
     errs += check_script_headers(skill_dir)
+    errs += check_invocations(skill_dir)
     for key in fm:
         if key not in SPEC_KEYS | HOST_KEYS:
             errs.append(f'{sk}: unknown frontmatter key {key!r}')

@@ -53,8 +53,11 @@ This is the last moment before the work leaves the building. Volume is
 reported; only the **aged tail** gates.
 
 ```bash
-uv run --no-project --python 3.13 python <this-skill-dir>/../writing-plans/scripts/deferred_stats.py
+uv run <this-skill-dir>/../writing-plans/scripts/deferred_stats.py
 ```
+
+Without uv, run the same path with `python3` in an environment that has the
+dependencies listed in the script's header.
 
 Run it without `--json`: this step needs the human-readable summary, and reading
 `aged >45d:` off that line is all the gate requires. If the script prints

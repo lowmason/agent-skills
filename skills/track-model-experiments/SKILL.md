@@ -95,15 +95,17 @@ ranks them with `az.compare`, and (optionally) rewrites the ledger's
 `<!-- COMPARISON -->` block in place.
 
 ```bash
-uv run --python 3.13 --with numpyro --with arviz --with arviz-stats --with numpy \
-  --with h5netcdf --with h5py python <this-skill-dir>/scripts/compare_experiments.py \
+uv run <this-skill-dir>/scripts/compare_experiments.py \
   --analysis-dir <analysis-dir> --ledger <analysis-dir>/experiments.md --output comparison.json
 ```
 
+Without uv, run the same path with `python3` in an environment that has the
+dependencies listed in the script's header. The header declares the
+`h5netcdf`/`h5py` pair because `az.from_netcdf` needs a netCDF backend that
+does not install transitively with `arviz`.
+
 Run `--help` for the rest (`--folders` compares an explicit subset instead of
-auto-discovering every `*/inference_data.nc` under `--analysis-dir`). The
-`h5netcdf`/`h5py` pair is required — `az.from_netcdf` needs a netCDF backend
-that does not install transitively with `arviz`.
+auto-discovering every `*/inference_data.nc` under `--analysis-dir`).
 
 Three guardrails, enforced before any ranking happens:
 - **Missing `log_likelihood` group** → hard error naming the variant and the

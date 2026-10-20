@@ -516,6 +516,14 @@ Changes from upstream:
     the frontmatter keys build/check_frontmatter.py accepts was brought up
     to date in the same change: `license` is required, and
     `disable-model-invocation` and `agent` are accepted.
+  - writing-plans and finishing-a-development-branch ran the
+    deferred_stats.py and entry_check.py reporters as `uv run --no-project
+    --python 3.13 python <path>`. They now run `uv run <path>`, which
+    reads the PEP 723 header each script gained, and each SKILL.md gained
+    one sentence on running the same path with `python3` where uv is
+    absent (specs/agent-skills-portability-spec.md, R3.5). The same
+    change in references/deferred-backlog.md, and the two headers, are to
+    the original works named above.
 
     brainstorming/
     dispatching-parallel-agents/

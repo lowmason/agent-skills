@@ -63,12 +63,13 @@ encoding map, which is the input to Phase 2.
 
 ```bash
 # profile -> ranked recommendation (signals like skew computed from the raw frame)
-uv run --python 3.13 --with polars python \
-    <this-skill-dir>/../explore-data/scripts/profile.py data.parquet --json profile.json
-uv run --python 3.13 --with polars python \
-    <this-skill-dir>/scripts/recommend.py data.parquet \
+uv run <this-skill-dir>/../explore-data/scripts/profile.py data.parquet --json profile.json
+uv run <this-skill-dir>/scripts/recommend.py data.parquet \
     --profile profile.json --intent correlation
 ```
+
+Without uv, run the same path with `python3` in an environment that has the dependencies listed
+in the script's header.
 
 ### Phase 2 — Code (route the library by purpose)
 The encoding map from Phase 1 is a near-direct spec. Pick the library by where the figure is going:

@@ -231,6 +231,9 @@ uv run skills/geographic-codes/scripts/build.py --offline  # from sources/ cache
 uv run skills/geographic-codes/scripts/build.py --list     # the pinned sources
 ```
 
+Without uv, run the same path with `python3` in an environment that has the dependencies listed
+in the script's header.
+
 `counties.csv` is *synthesized*: the current Census gazetteer supplies the live set, and
 `seeds/county_changes.csv` is played forward from 1990 to open and close intervals. The seed is
 hand-curated because Census publishes county changes as prose, one page per decade; rows carry

@@ -64,8 +64,11 @@ Describe mode.
    present; notation closed — every symbol used is defined). Then run:
 
    ```bash
-   python3 <this-skill-dir>/scripts/check_decoupling.py specs/<name>-methodology.md
+   uv run <this-skill-dir>/scripts/check_decoupling.py specs/<name>-methodology.md
    ```
+
+   Without uv, run the same path with `python3` in an environment that has the
+   dependencies listed in the script's header.
 
    Its output is review input: fix real smuggling, keep legitimate notation.
    Read its `[notation-table]` warnings too — a smuggled identifier does not

@@ -245,9 +245,9 @@ R3.4 **`dependencies`.**
 
 R3.5 **Invocations.**
 - Every documented invocation in `skills/**/*.md` of a path that resolves to one
-  of the 17 scripts uses the form `uv run <path> [args]`, replacing `python`,
+  of the 18 scripts uses the form `uv run <path> [args]`, replacing `python`,
   `python3`, `uv run --no-project --python 3.13 python`, and
-  `uv run --python 3.13 --with … python` (owner, plan 53, 2026-10-18).
+  `uv run --python 3.13 --with … python` (owner, plan 53, 2026-10-19).
 - Path forms in use: `<this-skill-dir>/scripts/x.py`,
   `<this-skill-dir>/../<skill>/scripts/x.py`, `$LLM_WIKI_ROOT/scripts/x.py` (the
   installed copies), `~/Projects/agent-skills/skills/llm-wiki/scripts/x.py`
@@ -285,8 +285,9 @@ R3.7 **Lint, in `check_frontmatter.py`.** Each rule gets a RED test first.
 
 R3.8 **Execution proof**, one time, recorded in the plan's completion notes.
 - From an empty scratch directory (a subdirectory such as `/tmp/bwprobe/`, never
-  `/tmp` itself), each of the 17 scripts runs `uv run <absolute-path>` on a
-  minimal real input that exercises its main code path (owner, plan 53, 2026-10-18).
+  `/tmp` itself), each of the 19 scripts runs `uv run <absolute-path>` on a
+  minimal real input that exercises its main code path, except the vendored
+  `ste-lint.py`, which runs under `python3` (owner, plan 53, 2026-10-19).
 - `--help` alone is enough only for a script with no input-reading path.
 - The three ArviZ-reading scripts (`diagnose_model.py`, `calibration_check.py`,
   `compare_experiments.py`) each read a small saved InferenceData fixture.
@@ -402,7 +403,7 @@ Constraints:
    `tune-hyperparameters`, and `tech-debt`.
 3. Each new lint rule has a test that failed before its implementation and
    passes after.
-4. R3.8's execution proof is recorded for all 17 scripts (owner, plan 53, 2026-10-18).
+4. R3.8's execution proof is recorded for all 19 scripts (owner, plan 53, 2026-10-19).
 5. **Cross-runtime load check**, from a directory outside any repo:
    - `gemini skills list --all` shows every skill under `skills/` as `[Enabled]`;
    - `codex debug prompt-input` lists every skill under `skills/` by name.

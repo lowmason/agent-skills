@@ -20,9 +20,12 @@ never land in the other by accident.
 
 ## Prerequisites
 
-- **Python 3.12 or newer** on `PATH` as `python3`. The wiki scripts are
-  standard-library only — nothing to `pip install` to *use* the wiki. (`uv` is
-  needed only to run the bundled test suite, below, which you can skip.)
+- **uv** on `PATH`. The commands below run each wiki script as `uv run <path>`;
+  the script's header gives uv its Python floor (3.11 or newer) and its
+  dependencies (none: the scripts are standard-library only). Without uv, run
+  the same path with `python3` 3.11 or newer.
+- **`python3`** on `PATH`, for the installer in step 2 (or link the skill by
+  hand, as step 2 shows).
 - **git**, to get and update the `agent-skills` repo.
 - **Claude Code, Codex, or Gemini CLI**, if you want the skill to load
   automatically.
@@ -70,7 +73,7 @@ Pick a root that signals which wiki it is (use a work-specific path on a work
 machine). The root is the only required argument:
 
 ```bash
-python3 ~/Projects/agent-skills/skills/llm-wiki/scripts/bootstrap_wiki.py ~/work-wiki
+uv run ~/Projects/agent-skills/skills/llm-wiki/scripts/bootstrap_wiki.py ~/work-wiki
 ```
 
 This scaffolds the skeleton, seeds `SCHEMA.md`, and installs `lint_wiki.py`,
@@ -81,7 +84,7 @@ To seed topic folders for this wiki's own subjects (instead of the personal
 default, which starts with no topic folders), add `--topic` once per subject:
 
 ```bash
-python3 ~/Projects/agent-skills/skills/llm-wiki/scripts/bootstrap_wiki.py ~/work-wiki \
+uv run ~/Projects/agent-skills/skills/llm-wiki/scripts/bootstrap_wiki.py ~/work-wiki \
   --topic forecasting --topic risk
 ```
 
@@ -93,7 +96,7 @@ writing.
 
 ```bash
 export LLM_WIKI_ROOT=~/work-wiki        # add to your shell profile to persist
-python3 "$LLM_WIKI_ROOT/scripts/lint_wiki.py" "$LLM_WIKI_ROOT"
+uv run "$LLM_WIKI_ROOT/scripts/lint_wiki.py" "$LLM_WIKI_ROOT"
 ```
 
 The lint must print `0 errors, 0 warnings, 0 info` and exit 0 — a freshly
@@ -112,10 +115,10 @@ after a `git pull` of `agent-skills` they can fall behind. Check and refresh:
 
 ```bash
 # report whether the installed scripts match the skill bundle (writes nothing)
-python3 ~/Projects/agent-skills/skills/llm-wiki/scripts/bootstrap_wiki.py "$LLM_WIKI_ROOT" --check
+uv run ~/Projects/agent-skills/skills/llm-wiki/scripts/bootstrap_wiki.py "$LLM_WIKI_ROOT" --check
 
 # refresh only the installed scripts that differ (never touches SCHEMA.md or content)
-python3 ~/Projects/agent-skills/skills/llm-wiki/scripts/bootstrap_wiki.py "$LLM_WIKI_ROOT" --force
+uv run ~/Projects/agent-skills/skills/llm-wiki/scripts/bootstrap_wiki.py "$LLM_WIKI_ROOT" --force
 ```
 
 `--check` exits non-zero when an installed script is missing or differs from the
@@ -131,7 +134,7 @@ does not fail. `--force` refreshes only the differing scripts and leaves your
 (`~/.claude/projects`) into redacted digests under `$LLM_WIKI_ROOT/raw/sessions/`:
 
 ```bash
-python3 "$LLM_WIKI_ROOT/scripts/distill_sessions.py" --source claude-code \
+uv run "$LLM_WIKI_ROOT/scripts/distill_sessions.py" --source claude-code \
   ~/.claude/projects "$LLM_WIKI_ROOT/raw/sessions"
 ```
 
@@ -139,7 +142,7 @@ It also reads a claude.ai data export. Use `--source claude-ai` and give the
 export's `conversations.json` as the source:
 
 ```bash
-python3 "$LLM_WIKI_ROOT/scripts/distill_sessions.py" --source claude-ai \
+uv run "$LLM_WIKI_ROOT/scripts/distill_sessions.py" --source claude-ai \
   ~/Downloads/conversations.json "$LLM_WIKI_ROOT/raw/sessions"
 ```
 

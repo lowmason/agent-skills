@@ -28,7 +28,9 @@ this skill stays generic — a second wiki can reuse it unchanged.
 2. **Root missing, or no `SCHEMA.md` in it?** The wiki is not installed — do
    not improvise a layout. Confirm the intended root with the human, then run
    this skill's `scripts/bootstrap_wiki.py` with that root as its only
-   argument: `python3 <this-skill-dir>/scripts/bootstrap_wiki.py <root>`.
+   argument: `uv run <this-skill-dir>/scripts/bootstrap_wiki.py <root>`.
+   Without uv, run the same path with `python3` in an environment that has the
+   dependencies listed in the script's header.
    The root is required — there is no default, so nothing is written to the
    wrong wiki by accident. It seeds the skeleton and `SCHEMA.md` and installs
    the runtime scripts — `lint_wiki.py`, `distill_sessions.py`,
@@ -52,7 +54,7 @@ this skill stays generic — a second wiki can reuse it unchanged.
   existing one keeps both (with locators) and appends to `open-questions.md`.
 - **Every mutating operation appends one line to `log.md`** using the grammar in
   `SCHEMA.md`: `## [YYYY-MM-DD] <op> | <subject> | <note>`.
-- Run `python3 $LLM_WIKI_ROOT/scripts/lint_wiki.py` (mechanical) before any
+- Run `uv run $LLM_WIKI_ROOT/scripts/lint_wiki.py` (mechanical) before any
   status flip and before a semantic pass; it must exit 0.
 
 ## Operations
@@ -70,13 +72,13 @@ this skill stays generic — a second wiki can reuse it unchanged.
    entry, or that entry is >30 days old, say so and offer to run one now.
 6. A session digest (`raw/sessions/…`) ingests the same way, but its source-page
    body is atomic capture notes (see `SCHEMA.md`), not prose. Produce digests
-   with `python3 $LLM_WIKI_ROOT/scripts/distill_sessions.py --source claude-code
+   with `uv run $LLM_WIKI_ROOT/scripts/distill_sessions.py --source claude-code
    ~/.claude/projects $LLM_WIKI_ROOT/raw/sessions` — `--source` (Claude Code
    session history), SRC (`~/.claude/projects`), and OUT_DIR (the root's
    `raw/sessions`) are all required, so digests can only land in the wiki you
    name (`--help` for the optional `--project` / `--since` filters). For a
    claude.ai data export, pass `--source claude-ai` with its `conversations.json`
-   as SRC, as in `python3 $LLM_WIKI_ROOT/scripts/distill_sessions.py --source
+   as SRC, as in `uv run $LLM_WIKI_ROOT/scripts/distill_sessions.py --source
    claude-ai ~/Downloads/conversations.json $LLM_WIKI_ROOT/raw/sessions`
    (`--project` filters claude-code sessions only). Either source writes a
    second at-rest copy of conversations into the wiki: confirm it fits the
@@ -93,7 +95,7 @@ this skill stays generic — a second wiki can reuse it unchanged.
    the visible prerequisite.
 
 ### lint
-1. **Mechanical:** run `python3 $LLM_WIKI_ROOT/scripts/lint_wiki.py` (add
+1. **Mechanical:** run `uv run $LLM_WIKI_ROOT/scripts/lint_wiki.py` (add
    `--strict` to fail on warnings). Fix errors before proceeding.
 2. **Semantic:** an agent pass over the whole wiki — contradictions not yet in
    `open-questions.md`; claims plausibly superseded by newer ingests; concepts
@@ -114,7 +116,7 @@ this skill stays generic — a second wiki can reuse it unchanged.
 Turn a repo's `specs/` corpus (specs, completed specs, completed plans,
 deferred items) into a `raw/specs/` digest. Supervised; one repo at a time.
 
-1. Inventory (mechanical): `python3 $LLM_WIKI_ROOT/scripts/distill_specs.py
+1. Inventory (mechanical): `uv run $LLM_WIKI_ROOT/scripts/distill_specs.py
    inventory <repo-path> --root $LLM_WIKI_ROOT` — walks `specs/`, seed-greps,
    builds per-file SHA tables, lists previously-seen captures, and writes the
    skeleton brief to `reports/harvest-<repo>-<date>.md` (`--help` for
@@ -133,7 +135,7 @@ deferred items) into a `raw/specs/` digest. Supervised; one repo at a time.
    lines; drop items already in prior briefs or existing digests.
 5. Human ticks `[x]` — the `raw/` gate. Unticked entries stay in the brief
    as the durable declined record.
-6. Assemble: `python3 $LLM_WIKI_ROOT/scripts/distill_specs.py assemble
+6. Assemble: `uv run $LLM_WIKI_ROOT/scripts/distill_specs.py assemble
    <brief> --root $LLM_WIKI_ROOT` — validates, redacts, writes the digest,
    stamps the brief, prints the source-page body. Then ingest the digest via
    the normal flow (capture-note body; `q-NN` entries append to

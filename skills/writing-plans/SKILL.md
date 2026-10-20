@@ -26,7 +26,7 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 
 **Context:** If working in an isolated worktree, it should have been created via the `using-git-worktrees` skill at execution time.
 
-**Save plans to:** `specs/plans/<id>-<spec-name>.md` — `<id>` is the `next free:` id that `uv run --no-project --python 3.13 python <this-skill-dir>/scripts/entry_check.py` prints under `plan ids:`, run from the repo root. It reads every branch, remote-tracking ref and worktree, untracked plans included, because ids are allocated per branch and collide. A collision it reports is your human partner's call. `<spec-name>` matches the spec the plan implements. When the plan is fully executed, run the Plan Completion Protocol (below).
+**Save plans to:** `specs/plans/<id>-<spec-name>.md` — `<id>` is the `next free:` id that `uv run <this-skill-dir>/scripts/entry_check.py` prints under `plan ids:`, run from the repo root. Without uv, run the same path with `python3` in an environment that has the dependencies listed in the script's header. The script reads every branch, remote-tracking ref and worktree, untracked plans included, because ids are allocated per branch and collide. A collision it reports is your human partner's call. `<spec-name>` matches the spec the plan implements. When the plan is fully executed, run the Plan Completion Protocol (below).
 - (User preferences for plan location override this default)
 
 **A roadmap stage you just finished is never planned past.** If this session
@@ -343,7 +343,7 @@ that cannot be committed goes to prepare-handoff.
 human partner rather than waiting to be asked for it. Run from the repo root:
 
 ```bash
-uv run --no-project --python 3.13 python <this-skill-dir>/scripts/deferred_stats.py
+uv run <this-skill-dir>/scripts/deferred_stats.py
 ```
 
 Surface its summary line — open count, closure rate, aged tail — in the
