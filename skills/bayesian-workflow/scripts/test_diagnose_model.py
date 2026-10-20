@@ -23,6 +23,17 @@ needs_diagnose = pytest.mark.skipif(
 )
 
 
+def _from_groups(groups):
+    """InferenceData from a dict of groups, on classic ArviZ 0.23 and on 1.x alike.
+
+    arviz 1.x from_dict takes ONE dict of groups. 0.23 takes each group as a keyword
+    and reads a positional dict as the posterior, which gives an object-dtype array.
+    """
+    if az.__version__.startswith("0."):
+        return az.from_dict(**groups)
+    return az.from_dict(groups)
+
+
 def _idata(n_chains=4, n_draws=500, seed=0, extra=None, stats=None):
     """Synthetic InferenceData with i.i.d. unit-normal draws (ESS ~ n_chains * n_draws).
 
@@ -37,8 +48,7 @@ def _idata(n_chains=4, n_draws=500, seed=0, extra=None, stats=None):
         post.update(extra)
     if stats is None:
         stats = {"diverging": np.zeros((n_chains, n_draws), dtype=bool)}
-    # arviz 1.x from_dict takes ONE dict of groups (the 0.23 kwargs form raises TypeError)
-    return az.from_dict({"posterior": post, "sample_stats": stats})
+    return _from_groups({"posterior": post, "sample_stats": stats})
 
 
 def test_check_precision_iid_draws_give_one_stable_digit():
@@ -85,9 +95,7 @@ def test_check_precision_skips_constant_params():
 
 def _posterior_only(post):
     """InferenceData holding only ``post``, on classic ArviZ 0.23 and on 1.x alike."""
-    if az.__version__.startswith("0."):
-        return az.from_dict(posterior=post)
-    return az.from_dict({"posterior": post})
+    return _from_groups({"posterior": post})
 
 
 def test_check_precision_keeps_a_small_scale_parameter():
@@ -103,7 +111,7 @@ def test_check_precision_keeps_a_small_scale_parameter():
 
 
 def test_check_precision_empty_when_nothing_usable():
-    prec = check_precision(az.from_dict({"posterior": {"fixed": np.ones((4, 500))}}))
+    prec = check_precision(_posterior_only({"fixed": np.ones((4, 500))}))
     assert prec["params"] == {}
     assert prec["max_rel_mcse"] == 0.0
     assert prec["max_rel_mcse_param"] is None
@@ -180,7 +188,12 @@ SATURATED = np.ones((4, 500), dtype=bool)
 
 @pytest.fixture(params=[True, False], ids=["diagnose", "fallback"])
 def both_paths(request, monkeypatch):
-    """Run check_convergence on the arviz_stats.diagnose path, then on the manual fallback."""
+    """Run check_convergence on the arviz_stats.diagnose path, then on the manual fallback.
+
+    The diagnose param skips where the module found no arviz_stats.diagnose (classic ArviZ 0.23).
+    """
+    if request.param and not diagnose_model.HAS_DIAGNOSE:
+        pytest.skip("the diagnose path needs arviz_stats.diagnose (arviz-stats >= 1.0)")
     monkeypatch.setattr(diagnose_model, "HAS_DIAGNOSE", request.param)
     return request.param
 
@@ -228,7 +241,7 @@ def test_a_random_walk_energy_fails_e_bfmi_on_its_chain():
 
 
 def test_no_sample_stats_group_marks_every_sampler_check_not_checked(both_paths):
-    conv = diagnose_model.check_convergence(az.from_dict({"posterior": {"mu": np.random.default_rng(2).normal(size=(4, 500))}}))
+    conv = diagnose_model.check_convergence(_posterior_only({"mu": np.random.default_rng(2).normal(size=(4, 500))}))
     assert conv["divergences"] == conv["treedepth"] == conv["bfmi"] == {"checked": False}
     assert conv["rhat"]["ok"] and conv["ess_bulk"]["ok"] and conv["ess_tail"]["ok"]
     assert conv["all_ok"] is True
@@ -282,7 +295,7 @@ def _complete_idata(**stats):
     mu = rng.normal(size=(4, 500))
     sample_stats = {"diverging": CALM, "reached_max_tree_depth": CALM, "energy": rng.normal(size=(4, 500))}
     sample_stats.update(stats)
-    return az.from_dict({
+    return _from_groups({
         "posterior": {"mu": mu},
         "sample_stats": {k: v for k, v in sample_stats.items() if v is not None},
         # a narrow log-likelihood keeps every Pareto k small
