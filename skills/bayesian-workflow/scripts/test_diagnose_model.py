@@ -22,6 +22,8 @@ needs_diagnose = pytest.mark.skipif(
     not diagnose_model.HAS_DIAGNOSE, reason="E-BFMI needs arviz_stats.diagnose (arviz-stats >= 1.0)"
 )
 
+CLASSIC_ARVIZ = az.__version__.startswith("0.")
+
 
 def _from_groups(groups):
     """InferenceData from a dict of groups, on classic ArviZ 0.23 and on 1.x alike.
@@ -29,7 +31,7 @@ def _from_groups(groups):
     arviz 1.x from_dict takes ONE dict of groups. 0.23 takes each group as a keyword
     and reads a positional dict as the posterior, which gives an object-dtype array.
     """
-    if az.__version__.startswith("0."):
+    if CLASSIC_ARVIZ:
         return az.from_dict(**groups)
     return az.from_dict(groups)
 
@@ -348,7 +350,11 @@ def _bursty_tail_draws(n_chains=4, n_draws=500, seed=26, share=0.2, length=10, s
     length ``length``). Each draw in a burst is a unit normal pushed out by
     ``shift`` times an i.i.d. random sign. The sign keeps the bulk ESS near
     n_chains * n_draws, and the bursts pull the tail ESS under 100 * n_chains.
-    At the defaults bulk ESS is 1753, tail ESS 283 and R-hat 1.004.
+    At the defaults bulk ESS is 1753, tail ESS 283 and R-hat 1.004 (seed 26).
+    That tail ESS is arviz-stats 1.3.3's default, min(qess(0.11), qess(0.89)),
+    from its 0.89 ci_prob. Classic ArviZ 0.23 takes min(qess(0.05), qess(0.95)),
+    616 here, so CLASSIC_BURSTS gives 0.23 longer, rarer bursts: bulk ESS 2177,
+    tail ESS 306 and R-hat 1.0031.
     """
     rng = np.random.default_rng(seed)
     leave = 1 / length
@@ -362,13 +368,20 @@ def _bursty_tail_draws(n_chains=4, n_draws=500, seed=26, share=0.2, length=10, s
     return rng.normal(size=(n_chains, n_draws)) + shift * in_burst * sign
 
 
+# The burst settings that pull classic ArviZ 0.23's tail ESS under 100 * n_chains.
+CLASSIC_BURSTS = {"length": 20, "share": 0.1}
+
+
 def test_low_tail_ess_with_passing_bulk_ess_fails_all_ok_on_both_paths(both_paths):
-    idata = _idata(extra={"bursty": _bursty_tail_draws()})
+    bursts = CLASSIC_BURSTS if CLASSIC_ARVIZ else {}
+    idata = _idata(extra={"bursty": _bursty_tail_draws(**bursts)})
     if both_paths:
         # The premise: arviz_stats.diagnose rates this run clean, so only the tail ESS block can fail it.
         has_errors, _ = diagnose_model.azs.diagnose(idata, return_diagnostics=True, show_diagnostics=False)
         assert not has_errors
     conv = diagnose_model.check_convergence(idata)
+    # R-hat must pass too, or all_ok below could fail on R-hat instead of the tail ESS.
+    assert conv["rhat"]["ok"] is True
     assert conv["ess_bulk"]["ok"] is True
     assert conv["ess_tail"]["ok"] is False
     assert conv["ess_tail"]["problematic_params"] == ["bursty"]
