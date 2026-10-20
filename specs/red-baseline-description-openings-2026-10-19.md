@@ -16,6 +16,7 @@
   - **FAIL:** a description whose first 150 characters do not.
   - **VOID:** no description (a non-zero exit, `is_error: true`, a refusal or a question), or text other than the description first, so its start is unclear. Re-run each VOID rep, at most two extra reps in all, and record every rep.
   - `show_reps.py`'s `aid=` column is a reading aid. The verdict is read.
+- The directory `red-baseline-description-openings-2026-10-19/` beside this file holds the prompt (`red-prompt.txt`) and the five full replies (`rep1.json` to `rep5.json`), byte for byte as the run wrote them.
 
 ## Scenario
 

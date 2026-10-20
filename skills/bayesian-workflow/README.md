@@ -103,4 +103,4 @@ bayesian-workflow/
 
 ## License
 
-MIT - see [LICENSE](../../LICENSE). Upstream's notice: [LICENSE-andorra](LICENSE-andorra).
+MIT - see [LICENSE](LICENSE). Upstream's notice: [LICENSE-andorra](LICENSE-andorra).

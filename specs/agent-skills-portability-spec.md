@@ -245,8 +245,9 @@ R3.4 **`dependencies`.**
 
 R3.5 **Invocations.**
 - Every documented invocation in `skills/**/*.md` of a path that resolves to one
-  of the 18 scripts uses the form `uv run <path> [args]`, replacing `python`,
-  `python3`, `uv run --no-project --python 3.13 python`, and
+  of the 18 scripts (the 19 except the vendored `ste-lint.py`; see R3.7) uses
+  the form `uv run <path> [args]`, replacing `python`, `python3`,
+  `uv run --no-project --python 3.13 python`, and
   `uv run --python 3.13 --with … python` (owner, plan 53, 2026-10-19).
 - Path forms in use: `<this-skill-dir>/scripts/x.py`,
   `<this-skill-dir>/../<skill>/scripts/x.py`, `$LLM_WIKI_ROOT/scripts/x.py` (the
@@ -282,6 +283,10 @@ R3.7 **Lint, in `check_frontmatter.py`.** Each rule gets a RED test first.
   owner, plan 53, 2026-10-18.)
 - A skill whose markdown runs a bundled script via `uv run` declares a
   `compatibility` value containing `uv`.
+- Vendored scripts, listed in `VENDORED_SCRIPTS` (today only
+  `write-with-asd-ste100/scripts/ste-lint.py`, copied unchanged from upstream),
+  are exempt from the header, import and invocation rules above. Their
+  documented invocation keeps `python3` (owner, plan 53, 2026-10-20).
 
 R3.8 **Execution proof**, one time, recorded in the plan's completion notes.
 - From an empty scratch directory (a subdirectory such as `/tmp/bwprobe/`, never

@@ -1,0 +1,109 @@
+You are writing the frontmatter description for a new agent skill. Follow this
+guidance from the skill-authoring guide you work from:
+
+<guidance>
+**Frontmatter (YAML):**
+- Two required fields: `name` and `description` (see [agentskills.io/specification](https://agentskills.io/specification) for all supported fields)
+- `description`: max 1024 characters — the Agent Skills spec cap, enforced by `build/check_frontmatter.py`. It applies to the description field, **not** to the whole frontmatter block; several shipped skills exceed 1024 chars of total frontmatter and pass the lint correctly.
+- Optional keys the lint accepts: `license`, `compatibility`, `metadata`, `allowed-tools`, `when_to_use`, the two delegation keys `model` and `effort` (per-skill overrides for the model tier and reasoning effort a skill runs at; a Haiku `model` is not portable, since auto mode drops Haiku 4.5 and the `haiku` alias means Haiku 5.5 on the Anthropic API but 4.5 on other providers, so the lint fails it, and cheap work belongs on a model-pinned subagent), and `context` (sole value `fork`: runs the skill in an isolated subagent, so the main session sees only what the skill returns). Any other key fails `build/check_frontmatter.py`.
+- Fork a skill whose value is a **verdict or artifact** you act on (`tech-debt` returns a prioritized backlog). Do **not** fork a skill whose value is **guidance** — it has to stay resident to shape what the main thread writes next — nor one that dispatches subagents itself, nor one with a mix of artifact and question-answering operations, since `context` is all-or-nothing per skill.
+- `name`: Use letters, numbers, and hyphens only (no parentheses, special chars)
+- `description`: Third-person, describes ONLY when to use (NOT what it does)
+  - Start with "Use when..." to focus on triggering conditions
+  - Include specific symptoms, situations, and contexts
+  - **NEVER summarize the skill's process or workflow** (see SDO section for why)
+  - Keep under 500 characters if possible
+
+## Skill Discovery Optimization (SDO)
+
+**Critical for discovery:** Future agents need to FIND your skill
+
+### 1. Rich Description Field
+
+**Purpose:** Your agent reads the description to decide which skills to load for a given task. Make it answer: "Should I read this skill right now?"
+
+**Format:** Start with "Use when..." to focus on triggering conditions
+
+**CRITICAL: Description = When to Use, NOT What the Skill Does**
+
+The description should ONLY describe triggering conditions. Do NOT summarize the skill's process or workflow in the description.
+
+**Why this matters:** Testing revealed that when a description summarizes the skill's workflow, an agent may follow the description instead of reading the full skill content. A description saying "code review between tasks" caused an agent to do ONE review, even though the skill's flowchart clearly showed TWO reviews (spec compliance then code quality).
+
+When the description was changed to just "Use when executing implementation plans with independent tasks" (no workflow summary), the agent correctly read the flowchart and followed the two-stage review process.
+
+**The trap:** Descriptions that summarize workflow create a shortcut agents will take. The skill body becomes documentation agents skip.
+
+```yaml
+# ❌ BAD: Summarizes workflow - agents may follow this instead of reading skill
+description: Use when executing plans - dispatches subagent per task with code review between tasks
+
+# ❌ BAD: Too much process detail
+description: Use for TDD - write test first, watch it fail, write minimal code, refactor
+
+# ✅ GOOD: Just triggering conditions, no workflow summary
+description: Use when executing implementation plans with independent tasks in the current session
+
+# ✅ GOOD: Triggering conditions only
+description: Use when implementing any feature or bugfix, before writing implementation code
+```
+
+**Content:**
+- Use concrete triggers, symptoms, and situations that signal this skill applies
+- Describe the *problem* (race conditions, inconsistent behavior) not *language-specific symptoms* (setTimeout, sleep)
+- Keep triggers technology-agnostic unless the skill itself is technology-specific
+- If skill is technology-specific, make that explicit in the trigger
+- Write in third person (injected into system prompt)
+- **NEVER summarize the skill's process or workflow**
+
+```yaml
+# ❌ BAD: Too abstract, vague, doesn't include when to use
+description: For async testing
+
+# ❌ BAD: First person
+description: I can help you with async tests when they're flaky
+
+# ❌ BAD: Mentions technology but skill isn't specific to it
+description: Use when tests use setTimeout/sleep and are flaky
+
+# ✅ GOOD: Starts with "Use when", describes problem, no workflow
+description: Use when tests have race conditions, timing dependencies, or pass/fail inconsistently
+
+# ✅ GOOD: Technology-specific skill with explicit trigger
+description: Use when using React Router and handling authentication redirects
+```
+
+### 2. Keyword Coverage
+
+Use words an agent would search for:
+- Error messages: "Hook timed out", "ENOTEMPTY", "race condition"
+- Symptoms: "flaky", "hanging", "zombie", "pollution"
+- Synonyms: "timeout/hang/freeze", "cleanup/teardown/afterEach"
+- Tools: Actual commands, library names, file types
+
+From the Token Efficiency section:
+- `description` (always resident): the hard cap is 1024 chars, enforced by
+  `build/check_frontmatter.py`. Spend it on triggers, not prose — it is the only text that
+  competes for context in conversations where the skill is never used.
+
+From the skill creation checklist:
+- [ ] Description starts with "Use when..." and includes specific triggers/symptoms
+- [ ] Description written in third person
+- [ ] Keywords throughout for search (errors, symptoms, tools)
+</guidance>
+
+The skill:
+
+pg-slow-query diagnoses slow PostgreSQL queries. It applies when any of these happen:
+1. a dashboard or API endpoint got slower after a deploy;
+2. pg_stat_statements shows a query's mean execution time rising;
+3. the connection pool runs out, or clients see "too many connections";
+4. autovacuum falls behind and tables bloat;
+5. EXPLAIN ANALYZE shows a sequential scan on a large table, or row estimates far from the actual counts;
+6. sessions wait on locks, or the log says "deadlock detected";
+7. a migration added an index that the planner does not use;
+8. a read replica lags the primary;
+9. queries time out only at production data volumes.
+The primary trigger, the case the skill exists for, is number 5.
+
+Reply with the description text only: no YAML key, no quotation marks, no commentary.

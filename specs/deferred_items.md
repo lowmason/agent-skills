@@ -3713,8 +3713,9 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       pins the wording, but only in the full suite, not in the `-k test_real_skill` commit
       lint. Fix: give `_late_headings` `root` and `params` arguments, and add a
       `test_real_skill_…` test on a `tmp_path` skill with a known late heading, so the
-      lint selects it. Size: quick-fix. Revisit if: portability Stage D empties a row while
-      its exception stays, or the check's message wording changes.
+      lint selects it. Size: quick-fix. Revisit if: the writing-skills rewrite (deferred
+      item "Split and rewrite writing-skills against the guide") empties a row while its
+      exception stays, or the check's message wording changes.
 
 ## fork-mode-fresh-dispatch (no plan; /cc-guide files follow-up, branch claude/elated-solomon-284dad) — 2026-10-18
 
