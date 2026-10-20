@@ -372,4 +372,7 @@ Two mechanics worth keeping with the row:
 
 The recorded payloads are frozen as `RECORDED_PAYLOAD` and
 `RECORDED_MAIN_SESSION_PAYLOAD` in `test_readonly_agent_guard.py`;
-`probe-readonly-guard.sh` re-checks the live behaviour end to end.
+`probe-readonly-guard.sh` re-checks the live behaviour end to end. The drift
+tool's `guard-liveness` probe runs that script (`build/cc_guide/cli.py probes`)
+and logs each run in `build/cc_guide/PROBES.md`; this table keeps the payload
+findings.
