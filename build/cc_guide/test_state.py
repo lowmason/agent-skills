@@ -197,6 +197,28 @@ def test_an_unreadable_probe_row_is_a_setup_error():
     assert str(err.value) == f"{state.PROBES}: unreadable row '| soon | 2.1.290 | x | PASS |'"
 
 
+def test_probe_rows_skip_a_legend_table_and_reject_an_unknown_outcome():
+    '''The probe registry's gaps, part (a): a second table, such as a legend, is
+    skipped rather than read as rows, and an outcome outside R10.5's words,
+    or an empty one, is a SetupError, never a row read as passed.'''
+    log = ['| Date | Version | Binary | Probe | Outcome | Finding | Flags |', '|---|---|---|---|---|---|---|',
+           '| 2026-10-10 | 2.1.290 | ~/bin/claude | agent-tools | ERROR | no init event | |']
+    legend = ['| Outcome | Meaning |', '|---|---|', '| ERROR | the mechanism never fired |']
+    text = '\n'.join(['# Probe log', '', *log, '', *legend, ''])
+    assert state.parse_probes(text) == [state.ProbeRow(date(2026, 10, 10), '2.1.290', 'agent-tools', 'ERROR')]
+    for outcome in ('DIVERGED', ''):
+        bad = log[2].replace('| ERROR |', f'| {outcome} |')
+        with pytest.raises(state.SetupError) as err:
+            state.parse_probes('\n'.join([*log[:2], bad, '']))
+        assert str(err.value) == f'{state.PROBES}: unreadable row {bad!r}'
+
+
+def test_the_probe_log_header_names_the_four_log_columns():
+    assert state.is_probe_header('| Date | Version | Binary | Probe | Outcome | Finding | Flags |')
+    assert not state.is_probe_header('| Outcome | Meaning |')
+    assert not state.is_probe_header('Date Version Probe Outcome')
+
+
 def test_a_source_reads_the_working_tree_or_a_commit(tmp_path):
     repo = fixture_repo(tmp_path / 'repo', {'a.txt': 'committed\n', 'sub/b.txt': 'b\n'})
     (repo / 'a.txt').write_text('edited\n')
