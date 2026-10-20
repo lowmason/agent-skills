@@ -22,6 +22,19 @@ needs_diagnose = pytest.mark.skipif(
     not diagnose_model.HAS_DIAGNOSE, reason="E-BFMI needs arviz_stats.diagnose (arviz-stats >= 1.0)"
 )
 
+CLASSIC_ARVIZ = az.__version__.startswith("0.")
+
+
+def _from_groups(groups):
+    """InferenceData from a dict of groups, on classic ArviZ 0.23 and on 1.x alike.
+
+    arviz 1.x from_dict takes ONE dict of groups. 0.23 takes each group as a keyword
+    and reads a positional dict as the posterior, which gives an object-dtype array.
+    """
+    if CLASSIC_ARVIZ:
+        return az.from_dict(**groups)
+    return az.from_dict(groups)
+
 
 def _idata(n_chains=4, n_draws=500, seed=0, extra=None, stats=None):
     """Synthetic InferenceData with i.i.d. unit-normal draws (ESS ~ n_chains * n_draws).
@@ -37,8 +50,7 @@ def _idata(n_chains=4, n_draws=500, seed=0, extra=None, stats=None):
         post.update(extra)
     if stats is None:
         stats = {"diverging": np.zeros((n_chains, n_draws), dtype=bool)}
-    # arviz 1.x from_dict takes ONE dict of groups (the 0.23 kwargs form raises TypeError)
-    return az.from_dict({"posterior": post, "sample_stats": stats})
+    return _from_groups({"posterior": post, "sample_stats": stats})
 
 
 def test_check_precision_iid_draws_give_one_stable_digit():
@@ -85,9 +97,7 @@ def test_check_precision_skips_constant_params():
 
 def _posterior_only(post):
     """InferenceData holding only ``post``, on classic ArviZ 0.23 and on 1.x alike."""
-    if az.__version__.startswith("0."):
-        return az.from_dict(posterior=post)
-    return az.from_dict({"posterior": post})
+    return _from_groups({"posterior": post})
 
 
 def test_check_precision_keeps_a_small_scale_parameter():
@@ -103,7 +113,7 @@ def test_check_precision_keeps_a_small_scale_parameter():
 
 
 def test_check_precision_empty_when_nothing_usable():
-    prec = check_precision(az.from_dict({"posterior": {"fixed": np.ones((4, 500))}}))
+    prec = check_precision(_posterior_only({"fixed": np.ones((4, 500))}))
     assert prec["params"] == {}
     assert prec["max_rel_mcse"] == 0.0
     assert prec["max_rel_mcse_param"] is None
@@ -180,7 +190,12 @@ SATURATED = np.ones((4, 500), dtype=bool)
 
 @pytest.fixture(params=[True, False], ids=["diagnose", "fallback"])
 def both_paths(request, monkeypatch):
-    """Run check_convergence on the arviz_stats.diagnose path, then on the manual fallback."""
+    """Run check_convergence on the arviz_stats.diagnose path, then on the manual fallback.
+
+    The diagnose param skips where the module found no arviz_stats.diagnose (classic ArviZ 0.23).
+    """
+    if request.param and not diagnose_model.HAS_DIAGNOSE:
+        pytest.skip("the diagnose path needs arviz_stats.diagnose (arviz-stats >= 1.0)")
     monkeypatch.setattr(diagnose_model, "HAS_DIAGNOSE", request.param)
     return request.param
 
@@ -228,7 +243,7 @@ def test_a_random_walk_energy_fails_e_bfmi_on_its_chain():
 
 
 def test_no_sample_stats_group_marks_every_sampler_check_not_checked(both_paths):
-    conv = diagnose_model.check_convergence(az.from_dict({"posterior": {"mu": np.random.default_rng(2).normal(size=(4, 500))}}))
+    conv = diagnose_model.check_convergence(_posterior_only({"mu": np.random.default_rng(2).normal(size=(4, 500))}))
     assert conv["divergences"] == conv["treedepth"] == conv["bfmi"] == {"checked": False}
     assert conv["rhat"]["ok"] and conv["ess_bulk"]["ok"] and conv["ess_tail"]["ok"]
     assert conv["all_ok"] is True
@@ -282,7 +297,7 @@ def _complete_idata(**stats):
     mu = rng.normal(size=(4, 500))
     sample_stats = {"diverging": CALM, "reached_max_tree_depth": CALM, "energy": rng.normal(size=(4, 500))}
     sample_stats.update(stats)
-    return az.from_dict({
+    return _from_groups({
         "posterior": {"mu": mu},
         "sample_stats": {k: v for k, v in sample_stats.items() if v is not None},
         # a narrow log-likelihood keeps every Pareto k small
@@ -335,7 +350,11 @@ def _bursty_tail_draws(n_chains=4, n_draws=500, seed=26, share=0.2, length=10, s
     length ``length``). Each draw in a burst is a unit normal pushed out by
     ``shift`` times an i.i.d. random sign. The sign keeps the bulk ESS near
     n_chains * n_draws, and the bursts pull the tail ESS under 100 * n_chains.
-    At the defaults bulk ESS is 1753, tail ESS 283 and R-hat 1.004.
+    At the defaults bulk ESS is 1753, tail ESS 283 and R-hat 1.004 (seed 26).
+    That tail ESS is arviz-stats 1.3.3's default, min(qess(0.11), qess(0.89)),
+    from its 0.89 ci_prob. Classic ArviZ 0.23 takes min(qess(0.05), qess(0.95)),
+    616 here, so CLASSIC_BURSTS gives 0.23 longer, rarer bursts: bulk ESS 2177,
+    tail ESS 306 and R-hat 1.0031.
     """
     rng = np.random.default_rng(seed)
     leave = 1 / length
@@ -349,13 +368,20 @@ def _bursty_tail_draws(n_chains=4, n_draws=500, seed=26, share=0.2, length=10, s
     return rng.normal(size=(n_chains, n_draws)) + shift * in_burst * sign
 
 
+# The burst settings that pull classic ArviZ 0.23's tail ESS under 100 * n_chains.
+CLASSIC_BURSTS = {"length": 20, "share": 0.1}
+
+
 def test_low_tail_ess_with_passing_bulk_ess_fails_all_ok_on_both_paths(both_paths):
-    idata = _idata(extra={"bursty": _bursty_tail_draws()})
+    bursts = CLASSIC_BURSTS if CLASSIC_ARVIZ else {}
+    idata = _idata(extra={"bursty": _bursty_tail_draws(**bursts)})
     if both_paths:
         # The premise: arviz_stats.diagnose rates this run clean, so only the tail ESS block can fail it.
         has_errors, _ = diagnose_model.azs.diagnose(idata, return_diagnostics=True, show_diagnostics=False)
         assert not has_errors
     conv = diagnose_model.check_convergence(idata)
+    # R-hat must pass too, or all_ok below could fail on R-hat instead of the tail ESS.
+    assert conv["rhat"]["ok"] is True
     assert conv["ess_bulk"]["ok"] is True
     assert conv["ess_tail"]["ok"] is False
     assert conv["ess_tail"]["problematic_params"] == ["bursty"]
