@@ -258,6 +258,19 @@ def test_an_unparseable_codex_policy_is_reported(tmp_path):
     assert len(errs) == 1 and 'agents/openai.yaml: does not parse as YAML' in errs[0], errs
 
 
+def test_an_unparseable_codex_policy_is_reported_beside_a_non_boolean_flag(tmp_path):
+    # A non-boolean disable-model-invocation does not hide a broken policy file.
+    # The parity check needs a boolean, so a parseable policy adds nothing.
+    d = _skill_with_dmi(tmp_path, 'quoted-broken', "'true'", 'policy: [unclosed\n')
+    errs = check_skill(d)
+    assert len(errs) == 2, errs
+    assert errs[0] == f"{d / 'SKILL.md'}: disable-model-invocation must be a YAML boolean, got 'true'"
+    assert 'agents/openai.yaml: does not parse as YAML' in errs[1], errs
+    paired = _skill_with_dmi(tmp_path, 'quoted-paired', "'true'", FORBID_IMPLICIT)
+    assert check_skill(paired) == [
+        f"{paired / 'SKILL.md'}: disable-model-invocation must be a YAML boolean, got 'true'"]
+
+
 def _skill_with_body_lines(tmp_path: Path, name: str, extra: int) -> Path:
     '''make_skill's body is two lines (a blank line and "# Body"); add extra lines.'''
     d = make_skill(tmp_path, name, f'name: {name}\ndescription: Use when testing.')
@@ -348,6 +361,15 @@ def test_an_unparseable_block_is_reported(tmp_path):
     d = _skill_with_script(tmp_path, 'bad-toml', '# /// script\n# dependencies = [\n# ///\n' + MAIN_GUARD)
     errs = check_skill(d)
     assert len(errs) == 1 and 'the PEP 723 script block does not parse' in errs[0], errs
+
+
+def test_a_script_that_does_not_parse_is_one_error_not_a_traceback(tmp_path):
+    # HEADER is five lines, so the broken def is line 6.
+    d = _skill_with_script(tmp_path, 'bad-python', HEADER + 'def broken(:\n' + MAIN_GUARD)
+    errs = check_skill(d)
+    assert len(errs) == 1, errs
+    assert re.fullmatch(rf"{re.escape(str(d / 'scripts' / 'tool.py'))}: does not parse as Python \(.+, line 6\)",
+                        errs[0]), errs
 
 
 def test_every_third_party_import_is_declared(tmp_path):

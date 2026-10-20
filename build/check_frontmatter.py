@@ -84,6 +84,10 @@ CONTINUATION_RE = re.compile(r'\\\n[ \t]*')
 # A documented path to a bundled script: <owner>/scripts/<file>.py or scripts/<file>.py.
 SCRIPT_PATH_RE = re.compile(r'''(?:[^\s"'`()]*/)?scripts/[\w.-]+\.py''')
 # The runner word right before a script path, after an optional opening quote.
+# Accepted blind spots: a runner word not right before the path (python3 -u
+# <path>, uv run --no-project <path>) is not seen, and the path forms
+# ./scripts/, ../scripts/ and ${LLM_WIKI_ROOT} do not resolve, so neither is
+# checked. No skill markdown invoked a script in these forms at plan 53.
 RUNNER_RE = re.compile(r'''(?:^|[\s`(])(?P<runner>python3?|uv run)\s+["']?$''')
 # How a skill's markdown names its own directory.
 THIS_SKILL = '<this-skill-dir>'
@@ -206,21 +210,26 @@ def _check_value_shapes(sk: Path, fm: dict) -> list[str]:
 
 def _check_invocation_parity(skill_dir: Path, fm: dict) -> list[str]:
     '''disable-model-invocation and Codex's policy.allow_implicit_invocation
-    agree (portability R1.6), so a manual-only skill cannot auto-fire in Codex.'''
+    agree (portability R1.6), so a manual-only skill cannot auto-fire in Codex.
+    A non-boolean value skips the parity check, but an unparseable policy file
+    is still reported.'''
     sk = skill_dir / 'SKILL.md'
     dmi = fm.get(DMI_KEY)
+    errs: list[str] = []
     if DMI_KEY in fm and not isinstance(dmi, bool):
-        return [f'{sk}: {DMI_KEY} must be a YAML boolean, got {dmi!r}']
+        errs.append(f'{sk}: {DMI_KEY} must be a YAML boolean, got {dmi!r}')
     policy_file = skill_dir / CODEX_POLICY
     if not policy_file.is_file():
         if dmi is True:
             return [f'{sk}: {DMI_KEY}: true needs {CODEX_POLICY} with '
                     'policy.allow_implicit_invocation: false, so Codex keeps the skill manual-only too']
-        return []
+        return errs
     try:
         data = yaml.safe_load(policy_file.read_text())
     except yaml.YAMLError as exc:
-        return [f'{policy_file}: does not parse as YAML ({type(exc).__name__})']
+        return errs + [f'{policy_file}: does not parse as YAML ({type(exc).__name__})']
+    if errs:
+        return errs
     policy = data.get('policy') if isinstance(data, dict) else None
     allow = policy.get('allow_implicit_invocation') if isinstance(policy, dict) else None
     if dmi is True and allow is not False:
@@ -304,8 +313,13 @@ def check_script_headers(skill_dir: Path, vendored: frozenset[str] = VENDORED_SC
             continue
         declared = {_normalize_distribution(re.split(r'[\s<>=!~;\[(]', d.strip(), maxsplit=1)[0])
                     for d in deps}
+        try:
+            tree = ast.parse(text)
+        except SyntaxError as exc:
+            errs.append(f'{script}: does not parse as Python ({exc.msg}, line {exc.lineno})')
+            continue
         siblings = {p.stem for p in script.parent.glob('*.py')}
-        for name in sorted(required_imports(ast.parse(text), siblings)):
+        for name in sorted(required_imports(tree, siblings)):
             dist = IMPORT_DISTRIBUTIONS.get(name, name)
             if _normalize_distribution(dist) not in declared:
                 alias = f' (as {dist})' if dist != name else ''
@@ -369,7 +383,7 @@ def check_skill(skill_dir: Path) -> list[str]:
     errs: list[str] = []
     sk = skill_dir / 'SKILL.md'
     text = sk.read_text()
-    m = re.match(r'^---\n(.*?)\n---\n', text, re.S)
+    m = FRONTMATTER_RE.match(text)
     if not m:
         return [f'{sk}: no frontmatter block']
     try:
@@ -446,7 +460,7 @@ def strict_violations(skill_dir: Path) -> list[str]:
 
 def _parse_frontmatter(md: Path) -> tuple[dict | None, list[str]]:
     text = md.read_text()
-    m = re.match(r'^---\n(.*?)\n---\n', text, re.S)
+    m = FRONTMATTER_RE.match(text)
     if not m:
         return None, [f'{md}: no frontmatter block']
     try:
