@@ -668,6 +668,7 @@ R6.7 **Due rules.**
 | The changelog batch | Once a section that some release is newer than was last triaged, its `checked` date, at least `changelog_days` ago. A section checked through the head starts no clock (owner, 2026-10-20) |
 | A probe | When it is registered but has no `PROBES.md` row, or when at least `probe_days` have passed since its last row and a release has shipped since that row's version |
 | A DIVERGES probe outcome | Immediately, until a later PASS row for that probe |
+| An ERROR probe outcome | Immediately, until a later PASS row for that probe (owner, plan 58, 2026-10-20) |
 | An audit | When at least `audit_days` have passed since the most recent audit of any group. It targets the group with the oldest `audited` date, ties broken in manifest order. This shared clock yields one group a month |
 | Stale citations | Never; reported for information |
 
@@ -1085,9 +1086,9 @@ R10.2 **The v1 probes.**
 
 | Probe | Mechanism | Asserts | Backs |
 |---|---|---|---|
-| `guard-liveness` | Wraps `hooks/probe-readonly-guard.sh`, which gains a `CLAUDE_BIN` override, run from a scratch git repo. Needs user settings, since the guard is installed globally | its three checks pass | files `hooks/readonly-agent-guard.py` and `hooks/README.md`; no section yet (R4.3) |
+| `guard-liveness` | Wraps `hooks/probe-readonly-guard.sh`, which gains a `CLAUDE_BIN` override, run from a scratch git repo. Needs user settings, since the guard is installed globally. The script keeps each check's raw stream in `PROBE_STREAM_DIR` when that is set (owner, plan 58, 2026-10-20) | its three checks pass | `hooks.events`, `hooks.exit-codes`, `hooks.patterns`, the nearest sections, since `agent_type` in PreToolUse payloads stays a coverage gap (R4.3); files `hooks/readonly-agent-guard.py` and `hooks/README.md` (owner, plan 58, 2026-10-20) |
 | `agent-tools` | A scratch agent with `tools: Read, Grep, Glob, Bash` and `omitClaudeMd: true`, run via `--agent`, plus a control agent without `Bash`; reads the init event's tool list. `--agent` stands in for subagent dispatch, since the docs state one rule for both (`tools-reference.md:298`) | on macOS, Linux and WSL: neither Grep nor Glob with Bash, both without. A control that lists neither is ERROR | `subagents.tools` |
-| `stop-continuation` | A scratch Stop hook, registered through the scratch project's settings or `--settings` (whichever the first recorded run proves loads), logs `stop_hook_active` and blocks on its first two calls | the log reads `false, true, true`; an empty log is ERROR | `hooks.exit-codes`, `hooks.patterns` |
+| `stop-continuation` | A scratch Stop hook, registered through the scratch project's `.claude/settings.json` and loaded with `--setting-sources project`, logs `stop_hook_active` and blocks on its first two calls. Both routes loaded on 2.1.303; `--include-hook-events` puts each Stop hook's exit code in the stream (owner, plan 58, 2026-10-20) | the log reads `false, true, true`; an empty log is ERROR, and so is that log with a stream whose Stop hooks did not exit 2, 2, 0 | `hooks.exit-codes`, `hooks.patterns` |
 | `agent-model-pins` | The production path: a parent `claude -p` session in auto mode dispatches `Explore` (through `agents/explore.md` shadowing the built-in), `test-runner` and `code-reviewer` with the Agent tool | Explore and test-runner are served Haiku; code-reviewer's `effort: xhigh` holds | `subagents.frontmatter`, `subagents.models`; files `agents/explore.md`, `agents/test-runner.md`, `agents/code-reviewer.md` |
 
 R10.3 **Binary.** `--claude <path>` is required. `binaries` lists candidates
@@ -1109,9 +1110,12 @@ R10.4 **Isolation.**
 - The permission mode is pinned through `--settings`, chosen per probe and
   recorded, with the probe's tools pre-allowed.
 - `--model sonnet` at low effort, except where that would mask what the probe
-  observes; `agent-model-pins` leaves the agents' own pins in force.
-- A bounded `--max-turns`; `--no-session-persistence`; the prompt first, with
-  stdin from `/dev/null`. `--bare` is used only where the probe's own
+  observes; `agent-model-pins` leaves the agents' own pins in force, and so
+  does `guard-liveness`, which runs `Explore` (owner, plan 58, 2026-10-20).
+- A bounded `--max-turns` and `--max-budget-usd`; `--no-session-persistence`,
+  except for `agent-model-pins`, which reads effort from its subagents'
+  transcripts because the stream lacks it (R10.5) (owner, plan 58,
+  2026-10-20); the prompt first, with stdin from `/dev/null`. `--bare` is used only where the probe's own
   mechanism survives it, since it skips hooks, skills, subagents and plugins.
 
 R10.5 **Assertions.**
@@ -1124,13 +1128,17 @@ R10.5 **Assertions.**
 - Outcomes: **PASS** matches the guide. **DIVERGES** means the behaviour
   differs; it is due (R6.7) and handled like a TOUCHES row for the probe's
   sections and files. **ERROR** means the mechanism never fired or the run
-  broke; it is never a pass.
+  broke; it is never a pass, and like DIVERGES it stays due until a later
+  PASS (owner, plan 58, 2026-10-20).
 
 R10.6 **Running and logging.** `probes` runs the due probes; `--only <id>`
 and `--force` override. Each result appends a row to
 `build/cc_guide/PROBES.md` (date, Claude Code version, binary path with `~`
 for the home directory, probe, outcome, finding, and `--allow-old` when used),
-left uncommitted. Raw streams stay under
+left uncommitted. `PROBES.md`'s log table is the one whose header names the
+date, version, probe and outcome columns; other tables, such as a legend,
+are skipped, and a log row whose outcome is not one of R10.5's three is a
+setup error (owner, plan 58, 2026-10-20). Raw streams stay under
 `~/.cache/agent-skills/cc-guide/probes/`. `hooks/README.md`'s Probe log keeps
 its 2026-09-03 row and gains a pointer to `PROBES.md`.
 
@@ -1248,7 +1256,10 @@ print a changed notice again, print only JSON, and always exit 0. A run that
 prints nothing at all fails, so a missing notice cannot pass as a quiet day.
 
 R12.6 **Probe assertions** are replayed against streams recorded from our own
-probe runs.
+probe runs. Before they are committed, the streams are cut down to the events
+the assertions read and scrubbed of paths, the login name, session and
+tool-use ids, and MCP tool names; a test fails on a path, an id or an MCP
+tool name that remains (owner, plan 58, 2026-10-20).
 
 R12.7 **Documentation.**
 - CLAUDE.md's Commands section gains the suite's command and the `lint`,
