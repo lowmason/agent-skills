@@ -1,5 +1,6 @@
 """Tests for the modeling-signal extractor."""
 import json
+from datetime import date
 
 import polars as pl
 import pytest
@@ -88,6 +89,32 @@ def test_main_boolean_target_is_characterized_not_a_crash(tmp_path, capsys):
 
 def test_zero_fraction_counts_false_in_a_boolean_series():
     assert zero_fraction(pl.Series([True, False, False, None])) == pytest.approx(0.6667)
+
+
+def test_main_categorical_target_is_characterized_not_a_crash(tmp_path, capsys):
+    """A Categorical target raised "cannot compare categorical with i64" in zero_fraction."""
+    labels = pl.Series(["a", "b", "b", "c", "b", "a"], dtype=pl.Categorical)
+    path = _write(tmp_path, y=labels, x1=[1, 2, 3, 4, 5, 6])
+    assert pl.read_parquet(path)["y"].dtype == pl.Categorical  # the premise: parquet keeps it
+    main([path, "--target", "y"])
+    target = json.loads(capsys.readouterr().out)["target"]
+    assert target["zero_fraction"] is None  # labels have no zeros to count
+    assert target["overdispersion"] is None  # not count-like
+    assert target["class_balance"]["n_classes"] == 3
+
+
+@pytest.mark.parametrize(
+    "series",
+    [
+        pl.Series(["a", "b", "a"], dtype=pl.Categorical),
+        pl.Series(["a", "b", "a"], dtype=pl.Enum(["a", "b"])),
+        pl.Series(["a", "b", "a"]),  # returned 0.0, a share of zeros among labels
+        pl.Series([date(2020, 1, 1)] * 3),
+    ],
+    ids=["categorical", "enum", "string", "date"],
+)
+def test_zero_fraction_is_none_for_a_non_numeric_series(series):
+    assert zero_fraction(series) is None
 
 
 @pytest.mark.parametrize(

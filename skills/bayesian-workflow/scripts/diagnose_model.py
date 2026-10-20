@@ -186,8 +186,9 @@ def check_convergence(idata):
         )
         return {"all_ok": all_ok, **results}
 
-    # Fallback for arviz-stats < 1.0.0 (classic ArviZ-only environments)
-    summary = az.summary(idata)
+    # Fallback for arviz-stats < 1.0.0 (classic ArviZ-only environments). round_to="none"
+    # keeps R-hat raw: 0.23 rounds it to two decimals, so 1.0109 read as 1.01 and passed.
+    summary = az.summary(idata, round_to="none")
     num_chains = int(idata.posterior.sizes["chain"])
 
     results = {
