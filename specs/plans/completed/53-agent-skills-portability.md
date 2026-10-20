@@ -10,7 +10,7 @@
 
 **Tech Stack:** Python 3.13 through `uv run` (stdlib `ast`, `tomllib`, `argparse`; PyYAML in `check_frontmatter.py`), pytest; PEP 723 inline script metadata; bash for the one-time execution proof and the micro-test runner; Claude Code's `claude -p` for Stage D's reps; Gemini CLI and Codex CLI for the load check; `gh` for one read-only fetch.
 
-**Spec:** `specs/agent-skills-portability-spec.md` (approved 2026-10-18): R1–R4, Sequencing, and Validation 1–6. Task 1 amends the spec where planning's measurements or the gate's answers differ from its text; your human partner approves that wording at plan review.
+**Spec:** `specs/completed/agent-skills-portability-spec.md` (approved 2026-10-18): R1–R4, Sequencing, and Validation 1–6. Task 1 amends the spec where planning's measurements or the gate's answers differ from its text; your human partner approves that wording at plan review.
 
 ## Global Constraints
 

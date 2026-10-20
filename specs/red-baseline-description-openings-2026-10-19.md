@@ -1,7 +1,7 @@
 # RED baseline — description openings for `writing-skills`
 
 **Date:** 2026-10-19 · **Status:** RED complete: 5/5, so R2.3's at least 4/5 branch applies. GREEN not needed.
-**Governs:** which branch of `specs/agent-skills-portability-spec.md` R2.3 applies to `writing-skills`' description guidance (plan 53, Tasks 2 and 14).
+**Governs:** which branch of `specs/completed/agent-skills-portability-spec.md` R2.3 applies to `writing-skills`' description guidance (plan 53, Tasks 2 and 14).
 
 > ⚠️ Quarantine this file and the folder `red-baseline-description-openings-2026-10-19/`
 > beside it during any later micro-test of writing-skills. The file names the scenario

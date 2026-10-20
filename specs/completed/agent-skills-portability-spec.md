@@ -1,8 +1,8 @@
 # Agent-skills portability — Design Spec
 
-**Status: APPROVED (2026-10-18).** The owner approved the design on 2026-10-03
-and the written spec on 2026-10-18. Next step: an implementation plan from the
-writing-plans skill.
+**Status: COMPLETE (2026-10-20)** — implemented by plan 53
+(`specs/plans/completed/53-agent-skills-portability.md`) and retired here. The
+owner approved the design on 2026-10-03 and the written spec on 2026-10-18.
 The owner approved all five design sections in a brainstorming pass over
 `specs/completed/agent-skills-best-practices.md` (a September 2026 survey of
 Agent Skills portability across Claude Code, Codex, Gemini CLI, Cursor, Copilot,
