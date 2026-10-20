@@ -34,6 +34,8 @@ GUARD_CHECKS = (('git status --porcelain', False), ('git fetch --dry-run origin'
 UUID_RE = re.compile(r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}')
 TOOL_ID_RE = re.compile(r'toolu_[A-Za-z0-9]+')
 MCP_PREFIX = 'mcp__'
+MCP_MARK = '<mcp-tool>'
+PRIVATE_MARK = '<private>'
 
 
 class Verdict(NamedTuple):
@@ -238,7 +240,7 @@ def _trim_block(block: dict) -> dict | None:
         kept = {k: v for k, v in (block.get('input') or {}).items() if k in ('subagent_type', 'command')}
         name = block.get('name')
         if isinstance(name, str) and name.startswith(MCP_PREFIX):
-            name = '<mcp-tool>'  # a call to an MCP tool names a server the recording machine has installed
+            name = MCP_MARK  # a call to an MCP tool names a server the recording machine has installed
         return {'type': kind, 'id': block.get('id'), 'name': name, 'input': kept}
     if kind == 'tool_result':
         marked = [line for line in result_body(block).split('\n') if GUARD_MARKER in line]
@@ -271,6 +273,15 @@ def _trim_event(event: dict) -> dict | None:
     return None
 
 
+def redact(text: str, private: list[str]) -> str:
+    '''`text` with each string in `private` replaced by <private>, longest
+    first, so a string that holds another is replaced whole. An empty string
+    is skipped, since it matches between every two characters.'''
+    for value in sorted(filter(None, private), key=len, reverse=True):
+        text = text.replace(value, PRIVATE_MARK)
+    return text
+
+
 def scrub_events(events: list[dict], private: list[str]) -> str:
     '''A recorded stream as a committable fixture (R12.6; owner, plan 58
     decision D3): cut to the fields the assertions read, so text blocks and
@@ -280,9 +291,7 @@ def scrub_events(events: list[dict], private: list[str]) -> str:
     becomes <private>, and uuids and tool-use ids become stable
     placeholders.'''
     kept = [t for t in map(_trim_event, events) if t is not None]
-    text = '\n'.join(json.dumps(e, ensure_ascii=False) for e in kept) + '\n'
-    for value in sorted(filter(None, private), key=len, reverse=True):
-        text = text.replace(value, '<private>')
+    text = redact('\n'.join(json.dumps(e, ensure_ascii=False) for e in kept) + '\n', private)
     ids: dict[str, str] = {}
     text = TOOL_ID_RE.sub(lambda m: ids.setdefault(m.group(0), f'toolu_fixture{len(ids) + 1}'), text)
     uuids: dict[str, str] = {}

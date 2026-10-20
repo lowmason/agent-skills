@@ -12,9 +12,11 @@ import pytest
 
 import probes
 from cc_fixtures import isolated_home  # noqa: F401
-from state import DIVERGES, ERROR, PASS
+from state import DIVERGES, ERROR, PASS, parse_probes
 
 FIXTURES = Path(__file__).resolve().parent / 'probe_streams'
+PROBES_LOG = Path(__file__).resolve().parent / 'PROBES.md'
+LOG_ROW_RE = re.compile(r'^\| \d{4}-\d{2}-\d{2} \|', re.MULTILINE)
 PRIVATE_RE = re.compile(r'/Users/|/home/|/private/|/var/folders/|/tmp/|toolu_0|mcp__|'
                         r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}')
 
@@ -102,3 +104,13 @@ def test_no_fixture_holds_a_path_or_an_id_from_the_recording_machine():
     for path in sorted(FIXTURES.iterdir()):
         found = PRIVATE_RE.search(path.read_text(encoding='utf-8'))
         assert found is None, f'{path.name} holds {found.group(0)!r}: re-record it through save_fixtures'
+
+
+def test_the_committed_probe_log_holds_no_private_text_and_is_one_table():
+    '''PROBES.md is public like the fixtures. parse_probes reads only the rows under the log table's header, so a
+    blank line inside the table would hide every later row from the due check without any error.'''
+    text = PROBES_LOG.read_text(encoding='utf-8')
+    found = PRIVATE_RE.search(text)
+    assert found is None, f'{PROBES_LOG.name} holds {found.group(0)!r}'
+    rows, parsed = len(LOG_ROW_RE.findall(text)), len(parse_probes(text))
+    assert parsed == rows, f'{rows} log rows, but parse_probes reads {parsed}: a row sits outside the log table'

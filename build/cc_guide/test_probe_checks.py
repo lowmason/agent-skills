@@ -172,6 +172,12 @@ def test_guard_liveness(streams, verdict):
     assert pc.assess_guard_liveness(streams) == verdict
 
 
+def test_redact_replaces_the_longest_string_first_and_skips_an_empty_one():
+    # Shortest first would leave '<private>/work' for the first path.
+    assert pc.redact('/home/me/work and /home/me', ['/home/me', '/home/me/work', '']) == '<private> and <private>'
+    assert pc.redact('abc', ['']) == 'abc'
+
+
 def test_scrub_keeps_what_the_assertions_read_and_drops_private_text():
     home, scratch = '/Users/someone', '/private/var/folders/xy/T/cc-guide-probe-pins-abc'
     events = [

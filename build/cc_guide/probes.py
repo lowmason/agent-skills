@@ -29,6 +29,8 @@ from probe_checks import Verdict
 from state import ERROR, MANIFEST, PASS, PROBES, SetupError, Source, is_probe_header, parse_manifest, parse_probes
 
 VERSION_RE = re.compile(r'(\d+(?:\.\d+)+) \(Claude Code\)')
+# A tool name that starts with the MCP prefix, up to white space, a quote or a closing bracket.
+MCP_TOKEN_RE = re.compile(re.escape(probe_checks.MCP_PREFIX) + r'''[^\s'"`)\]}>]*''')
 VERSION_TIMEOUT = 30  # seconds for `claude --version`
 PROBE_TIMEOUT = 600  # seconds for one probe invocation
 PINS_TIMEOUT = 1200  # agent-model-pins waits on three background agents
@@ -337,12 +339,20 @@ def reader(folder: Path, names: dict[str, str] | None = None) -> Read:
     return read
 
 
+def private_strings() -> list[str]:
+    '''What a committed probe file must not show: the home directory, the
+    temporary directory, each as given and resolved, and the login name
+    (owner, plan 58 decision D3).'''
+    return [str(Path.home()), str(Path.home().resolve()), tempfile.gettempdir(),
+            os.path.realpath(tempfile.gettempdir()), getpass.getuser()]
+
+
 def save_fixtures(run_dir: Path, pid: str, dest: Path) -> list[Path]:
     '''R12.6: turn one recorded run into the fixtures its replay test reads,
     each stream cut down and scrubbed of the home directory, the temporary
-    directory and the login name (owner, plan 58 decision D3).'''
-    private = [str(Path.home()), str(Path.home().resolve()), tempfile.gettempdir(),
-               os.path.realpath(tempfile.gettempdir()), getpass.getuser()]
+    directory and the login name, and each other file scrubbed of the same
+    (owner, plan 58 decision D3).'''
+    private = private_strings()
     written = []
     for name, fixture in PROBE_RUNS[pid].fixtures.items():
         text = (run_dir / name).read_text(encoding='utf-8')
@@ -351,6 +361,8 @@ def save_fixtures(run_dir: Path, pid: str, dest: Path) -> list[Path]:
             if events is None:
                 raise SetupError(f'{run_dir / name}: not a stream-json file')
             text = probe_checks.scrub_events(events, private)
+        else:
+            text = probe_checks.redact(text, private)
         dest.mkdir(parents=True, exist_ok=True)
         (dest / fixture).write_text(text, encoding='utf-8')
         written.append(dest / fixture)
@@ -409,7 +421,11 @@ def cell(text: str) -> str:
 
 
 def log_row(day: date, version: str, claude: Path, pid: str, verdict: Verdict, allow_old: bool) -> str:
-    cells = [day.isoformat(), version, shown_path(claude), pid, verdict.outcome, verdict.finding,
+    '''One log row. PROBES.md is committed to a public repo, and a finding can
+    carry a home or temporary path, the login name or an MCP tool name, so
+    the finding is scrubbed as a fixture is (owner, plan 58 decision D3).'''
+    finding = MCP_TOKEN_RE.sub(probe_checks.MCP_MARK, probe_checks.redact(verdict.finding, private_strings()))
+    cells = [day.isoformat(), version, shown_path(claude), pid, verdict.outcome, finding,
              '--allow-old' if allow_old else '']
     return '| ' + ' | '.join(map(cell, cells)) + ' |'
 

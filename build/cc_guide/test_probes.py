@@ -245,6 +245,27 @@ def test_the_log_shows_the_home_directory_as_a_tilde(isolated_home):
     assert probes.shown_path(Path('/opt/claude')) == '/opt/claude'
 
 
+def planted_privates(monkeypatch) -> list[str]:
+    '''The five strings a committed probe file must not show (owner, plan 58 decision D3), the login name set
+    to a value no path or word in a test holds.'''
+    monkeypatch.setattr('getpass.getuser', lambda: 'zzlogin')
+    return [str(Path.home()), str(Path.home().resolve()), tempfile.gettempdir(),
+            os.path.realpath(tempfile.gettempdir()), 'zzlogin']
+
+
+def test_the_log_row_holds_no_private_text_and_no_mcp_tool_name(isolated_home, monkeypatch):
+    '''A finding built from an OSError, a scratch path or a tool name reaches a public repo through PROBES.md.'''
+    planted = planted_privates(monkeypatch)
+    finding = f"OSError: {' '.join(planted)} refused 'mcp__srv__tool' for mcp__plug__other"
+    verdict = probes.Verdict(ERROR, finding)
+    row = probes.log_row(TODAY, '2.1.902', isolated_home / 'bin' / 'claude', 'agent-tools', verdict, True)
+    for value in planted:
+        assert value not in row
+    assert 'mcp__' not in row
+    assert row == ('| 2026-10-20 | 2.1.902 | ~/bin/claude | agent-tools | ERROR | OSError: '
+                   f"{' '.join(['<private>'] * len(planted))} refused '<mcp-tool>' for <mcp-tool> | --allow-old |")
+
+
 def executable(path: Path, body: str) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(body)
@@ -574,3 +595,21 @@ def test_save_fixtures_scrubs_a_recorded_run_and_the_replay_reads_it_like_the_ru
     write_tree(run_dir, {'probe-with-bash.jsonl': 'not a stream\n{"broken": \n'})
     with pytest.raises(state.SetupError):
         probes.save_fixtures(run_dir, 'agent-tools', dest)
+
+
+@pytest.mark.parametrize('pid, stream_name, side_name, template, fixture', [
+    ('agent-model-pins', 'pins.jsonl', 'transcripts.json', '{"Explore": [{"model": "@P@", "effort": "low"}]}',
+     'agent-model-pins.transcripts.json'),
+    ('stop-continuation', 'stop.jsonl', 'stop.log', 'false\n@P@\ntrue\n', 'stop-continuation.log'),
+])
+def test_save_fixtures_scrubs_a_side_file_as_well_as_a_stream(tmp_path, isolated_home, monkeypatch, pid, stream_name,
+                                                              side_name, template, fixture):
+    '''A transcripts.json or a stop.log is copied whole, so it needs the same scrub as a stream.'''
+    planted = planted_privates(monkeypatch)
+    run_dir, dest = tmp_path / 'run', tmp_path / 'fixtures'
+    write_tree(run_dir, {stream_name: stream(init(), RESULT), side_name: template.replace('@P@', ' '.join(planted))})
+    probes.save_fixtures(run_dir, pid, dest)
+    saved = (dest / fixture).read_text()
+    for value in planted:
+        assert value not in saved
+    assert saved == template.replace('@P@', ' '.join(['<private>'] * len(planted)))
