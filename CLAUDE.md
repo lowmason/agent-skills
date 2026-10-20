@@ -114,7 +114,7 @@ uv run --python 3.13 python build/check_snippets.py skills/
 # Tier 2 (--api: also resolve dotted library chains from code and backticked prose; imports the stack, ~30s):
 uv run --python 3.13 --with "arviz>=1.0" --with arviz-base --with arviz-stats --with arviz-plots --with numpyro --with jax python build/check_snippets.py --api skills/bayesian-workflow/
 # Tier 3 (--run: also execute the harnessed subset, without the Tier 2 checks; minutes; the pins match build/snippet_preamble.py's PINNED, refresh deliberately):
-uv run --python 3.13 --with 'arviz==1.3.0' --with arviz-base --with 'arviz-stats==1.3.2' --with 'arviz-plots==1.3.1' --with 'numpyro==0.21.0' --with 'jax==0.11.1' --with numpy --with matplotlib python build/check_snippets.py --run skills/bayesian-workflow/
+uv run --python 3.13 --with 'arviz==1.3.0' --with arviz-base --with 'arviz-stats==1.3.3' --with 'arviz-plots==1.3.2' --with 'numpyro==0.22.0' --with 'jax==0.12.0' --with numpy --with matplotlib python build/check_snippets.py --run skills/bayesian-workflow/
 
 # CPU-example process-contract tests (stdlib + pytest only). The JAX run itself is the pinned command
 # below; it skips norun and noparse blocks and does not validate the surrounding prose

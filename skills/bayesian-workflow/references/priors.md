@@ -41,7 +41,7 @@ with `obs=` for the likelihood. There is no `pm.Data` container — data are fun
 | `pm.ZeroInflatedNegativeBinomial(...)` | `dist.ZeroInflatedNegativeBinomial2(gate, mean, concentration)` | or `dist.ZeroInflatedDistribution(base, gate=...)` generically |
 | `pm.OrderedLogistic("x", eta, cutpoints)` | `dist.OrderedLogistic(eta, cutpoints)` | `predictor`, `cutpoints` |
 | `pm.Truncated(d, lower, upper)` | `dist.TruncatedNormal(loc, scale, low, high)` or `dist.TruncatedDistribution(base, low, high)` | base limited to Normal/StudentT/Cauchy/Laplace/Logistic |
-| `pm.Censored(d, lower, upper)` | no built-in — add log-CDF mass with `numpyro.factor` | see Censoring note below |
+| `pm.Censored(d, lower, upper)` | `dist.RightCensoredDistribution(base, censored=flag)` / `dist.LeftCensoredDistribution(base, censored=flag)` / `dist.IntervalCensoredDistribution(base, left_censored, right_censored)` | `flag` = 1 marks a censored row; see Censoring note below |
 | `pm.MvNormal("x", mu, chol=L)` | `dist.MultivariateNormal(mu, scale_tril=L)` | also `covariance_matrix=` / `precision_matrix=` |
 | `pm.LKJCholeskyCov(...)` | `dist.LKJCholesky(dim, eta)` + separate scales | combine into `scale_tril` (see below) |
 | `pm.ZeroSumNormal("x", sigma, dims)` | `dist.ZeroSumNormal(scale, event_shape=(k,))` | enforces sum-to-zero over the last `event_shape` |
@@ -49,10 +49,60 @@ with `obs=` for the likelihood. There is no `pm.Data` container — data are fun
 | `pm.Deterministic("x", expr)` | `numpyro.deterministic("x", expr)` | stored in the trace |
 | `pm.math.switch` / `pt.where` | `jax.numpy.where` (`jnp.where`) | no Python `if` on traced values |
 
-**Censoring** has no one-liner in NumPyro. Add the censored-observation log-mass by hand:
-for a right-censored point at `c`, the contribution is `log P(Y > c) = log(1 - cdf(c))`, added
-with `numpyro.factor("censored", base_dist.log_prob(...))` or an explicit survival term. For
-**truncation**, prefer the built-in `TruncatedNormal` / `TruncatedDistribution`.
+**Censoring** has built-in wrappers. `RightCensoredDistribution(base, censored=flag)` scores a
+row with `flag` = 1 at its censoring point `c` by the survival term
+`log P(Y > c) = jnp.log1p(-base.cdf(c))`, and a row with `flag` = 0 by the density.
+`LeftCensoredDistribution` uses `log base.cdf(c)`, and `IntervalCensoredDistribution` takes
+`(lower, upper)` rows. A hand-written censored term, added with `numpyro.factor`, is that survival
+term — never `base.log_prob(c)`, which is the density (−1.76394 where the survival term is
+−2.33510, for `Normal(0, 1)` at 1.3). For **truncation** of a continuous outcome, prefer the
+built-in `TruncatedNormal` / `TruncatedDistribution`; `TruncatedDistribution` rejects discrete
+bases.
+
+**Hurdle vs. zero-truncated counts.** When the zeros come from a separate process, use a hurdle:
+`HurdlePoisson(gate, rate)`, `HurdleNegativeBinomial2(gate, mean, concentration)` or
+`HurdleProbs(base, gate)` (NumPyro ≥ 0.22). `gate` = P(Y = 0), and every zero is structural: the
+count part is zero-truncated, unlike `ZeroInflated*`, whose count part makes zeros too. When the
+counts are positive only (a zero cannot occur), there is no gate: add a zero-truncated likelihood,
+built by hand, with `numpyro.factor`, one term per observation (unsummed, so the factor site
+lands in `log_likelihood` pointwise and LOO can use it).
+
+```python
+# Each likelihood checked against its closed form. HurdlePoisson needs NumPyro >= 0.22.
+from numpyro.infer.util import log_density
+
+base = dist.Normal(0.0, 1.0)
+c = 1.3
+right = dist.RightCensoredDistribution(base, censored=1)
+assert jnp.allclose(right.log_prob(c), jnp.log1p(-base.cdf(c)))  # survival term, -2.33510
+assert not jnp.allclose(right.log_prob(c), base.log_prob(c))  # the density, -1.76394
+left = dist.LeftCensoredDistribution(base, censored=1)
+assert jnp.allclose(left.log_prob(c), jnp.log(base.cdf(c)))
+
+
+def censored_model(y_c, flag):
+    mu = numpyro.sample("mu", dist.Normal(0, 5))
+    sigma = numpyro.sample("sigma", dist.HalfNormal(2))
+    with numpyro.plate("obs", y_c.shape[0]):
+        # flag 1: y_c holds the censoring point c, and only "y > c" is known
+        numpyro.sample("y_obs", dist.RightCensoredDistribution(dist.Normal(mu, sigma), censored=flag), obs=y_c)
+
+
+y_c, flag = jnp.array([0.4, 1.3, -0.2]), jnp.array([0, 1, 0])
+log_joint, _ = log_density(censored_model, (y_c, flag), {}, {"mu": 0.0, "sigma": 1.0})
+assert jnp.isfinite(log_joint)
+
+
+def zero_truncated_log_prob(count_dist, k):
+    """log P(Y = k | Y > 0) for k >= 1: the base log-pmf minus log P(Y > 0)."""
+    return count_dist.log_prob(k) - jnp.log(-jnp.expm1(count_dist.log_prob(0)))
+
+
+gate, rate, k = 0.3, 2.0, jnp.arange(1, 6)
+hurdle = dist.HurdlePoisson(gate=gate, rate=rate)
+assert jnp.allclose(hurdle.log_prob(0), jnp.log(gate))  # every zero comes from the gate
+assert jnp.allclose(hurdle.log_prob(k), jnp.log1p(-gate) + zero_truncated_log_prob(dist.Poisson(rate), k))
+```
 
 ## Weakly informative priors (the default)
 

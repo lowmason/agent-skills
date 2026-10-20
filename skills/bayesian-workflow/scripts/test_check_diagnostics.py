@@ -333,6 +333,21 @@ def _report_and_steps(diag):
     return report, suggest_next_steps(report)
 
 
+@pytest.mark.parametrize("convergence", [None, {}], ids=["no_section", "empty_section"])
+def test_convergence_that_never_ran_is_named_not_passed(convergence):
+    # diagnose_model.py always writes the section; a hand-edited or foreign file may not.
+    diag = _clean_diagnostics()
+    if convergence is None:
+        del diag["convergence"]
+    else:
+        diag["convergence"] = convergence
+    report, steps = _report_and_steps(diag)
+    assert report["convergence"]["rating"] == "not computed"
+    assert report["summary"]["convergence"] == "Convergence diagnostics: not computed."
+    assert "diagnose_model.py" in _one_step(steps, "Convergence was not checked")
+    assert not _proceeds(steps)
+
+
 def test_tree_depth_saturation_gets_a_step_not_the_all_clear():
     diag = _clean_diagnostics()
     diag["convergence"].update(all_ok=False, treedepth={"checked": True, "ok": False, "n_max": 8000, "pct": 100.0})

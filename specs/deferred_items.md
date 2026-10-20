@@ -4136,7 +4136,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       The replaced wording drives behaviour, so micro-test it. Part of the G-A plan. Size:
       plan. Done when: the rows match bayesian-workflow, the rule is stated, and the
       micro-test record is kept.
-- [ ] `compare_experiments.py` reads diagnostics keys that `diagnose_model.py` never writes
+- [x] `compare_experiments.py` reads diagnostics keys that `diagnose_model.py` never writes
       (audit-3-10-26 X7, found 2026-10-03; re-verified 2026-10-18).
       `skills/track-model-experiments/scripts/compare_experiments.py:119`, `:123` and `:126`
       read flat `max_rhat`, `min_ess` and `divergences`, but bayesian-workflow's
@@ -4146,7 +4146,10 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       `convergence.ess_tail.min`, and `convergence.divergences.count`, or delete the read;
       add a fixture written by `diagnose_model.py`. Part of the G-A plan. Size: quick-fix.
       Done when: the read matches the writer's schema, with the fixture.
-- [ ] Two one-line text fixes in tune-hyperparameters and recommend-probabilistic-model
+      → done 2026-10-19 (/deferred quick fix): compare_experiments.py reads
+      convergence.rhat.max, the smaller ESS minimum and divergences.count, and recomputes only
+      what is missing. The test holds a fixture written by diagnose_model.py.
+- [x] Two one-line text fixes in tune-hyperparameters and recommend-probabilistic-model
       (audit-3-10-26 G-A one-liners, found 2026-10-03; re-verified 2026-10-18).
       (a) tune-hyperparameters' parsed description reads "cross- validation", a YAML fold
       (`skills/tune-hyperparameters/SKILL.md:7-8`); rejoin it. (b)
@@ -4157,7 +4160,10 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       rpm's sibling list and memo template) is in the rpm-wiring item (G10, I2, I3) in this
       section.
       Size: quick-fix. Done when: both read correctly.
-- [ ] Restamp tune-hyperparameters for Optuna 5 (audit-3-10-26 G5, its Optuna part, found
+      → done 2026-10-19 (/deferred quick fix): (a) the description reads "cross-validation"
+      again (no micro-test: it only rejoins a YAML fold). (b) the line names
+      tune-hyperparameters for a CV search and bayesian-workflow for Bayesian fits.
+- [x] Restamp tune-hyperparameters for Optuna 5 (audit-3-10-26 G5, its Optuna part, found
       2026-10-03; re-verified 2026-10-18). `skills/tune-hyperparameters/SKILL.md:82` says
       "verified against Optuna 4.9.0", and `:84` that a seeded `TPESampler` makes the run
       reproducible. Optuna 5.0.0 changed `TPESampler`'s defaults (`constant_liar=True`, and
@@ -4167,6 +4173,8 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       seed reproduces a run within one Optuna version, and fix `README.md:57` if it repeats
       the stamp. Size: quick-fix. Done when: the stamp and the reproducibility sentence match
       Optuna 5.
+      → done 2026-10-19 (/deferred quick fix): stamped to Optuna 5.0.0. A seed now reproduces a
+      run within one Optuna version only. README.md carried no version number.
 - [x] Add a neural boundary to track-model-experiments (audit-3-10-26 I3, found 2026-10-03;
       re-verified 2026-10-18). Its description (`skills/track-model-experiments/SKILL.md:3-13`)
       triggers on an "experiment log or ledger of model runs" with no neural boundary,
@@ -4255,7 +4263,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       S, 0.7)`, computed from the draw count and carried in the JSON with `n_bad`, `n_high` and
       `n_nonfinite`. The 0.5 band and `n_marginal` are gone. The high-k step names `reloo`,
       `loo_kfold` and `loo_moment_match`. Commits `6043d59` and `d2c5a49`.
-- [ ] Align bayesian-workflow's ELPD-difference rules with current LOO guidance and its own
+- [x] Align bayesian-workflow's ELPD-difference rules with current LOO guidance and its own
       `diag_diff` (audit-3-10-26 F3, found 2026-10-03; re-verified 2026-10-18). (a)
       `skills/bayesian-workflow/references/model-comparison.md:81-83` reads "< 2×dse
       indistinguishable, > 4×dse strong", and the worked example (`:215-219`) calls ΔELPD 6.7
@@ -4274,7 +4282,11 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       The comparison code blocks run under the snippet gate (`fixture=comparison`). Size:
       quick-fix. Done when: both skills state the rule, the example matches it, and the two
       papers are listed.
-- [ ] Correct bayesian-workflow's censoring and hurdle guidance for the pinned NumPyro
+      → done 2026-10-19 (/deferred quick fix): both skills state the CV-FAQ rule (|Δ| < 4 is
+      small, dse only with n > 100 and no bad misspecification) tied to diag_diff, with a
+      selection-bias caveat. The worked example matches, the two papers are in publications.md,
+      and track cites Gelman et al. 2026, §9.3 and §9.5.
+- [x] Correct bayesian-workflow's censoring and hurdle guidance for the pinned NumPyro
       (audit-3-10-26 F4, found 2026-10-03; re-verified 2026-10-18 by probe). (a)
       `skills/bayesian-workflow/SKILL.md:314` and `references/priors.md:44`, `:52` say NumPyro
       has no built-in censored distribution; numpyro 0.21.0 (pinned) ships
@@ -4292,7 +4304,10 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       after the F9 pin bump in this section) and "positive only" (a hand-built zero-truncated
       likelihood). Size: quick-fix. Done when: the three are corrected and the new block
       runs under the snippet gate.
-- [ ] Bump the snippet gate's pinned stack (audit-3-10-26 F9, found 2026-10-03; re-verified
+      → done 2026-10-19 (/deferred quick fix): the censored built-ins, the survival term and the
+      split hurdle rows are corrected. A new runnable block in priors.md passes Tier 3 on the
+      new pins, and snippet_preamble.py's block counts are re-measured.
+- [x] Bump the snippet gate's pinned stack (audit-3-10-26 F9, found 2026-10-03; re-verified
       2026-10-18). `build/snippet_preamble.py:199-203` (`PINNED`, "Verified resolving
       2026-09-08") and CLAUDE.md's Tier 3 command (`:114-115`) still pin arviz 1.3.0,
       arviz-stats 1.3.2, arviz-plots 1.3.1, numpyro 0.21.0 and jax 0.11.1, with arviz-base
@@ -4303,6 +4318,9 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       the stack-gated build tests, and re-measure the block counts at
       `snippet_preamble.py:15-22`. Edit CLAUDE.md in place (146 of 200 lines). Size:
       quick-fix. Done when: Tier 3 passes on the new pins in both places.
+      → done 2026-10-19 (/deferred quick fix): PINNED and CLAUDE.md's Tier 3 command both pin
+      arviz-stats 1.3.3, arviz-plots 1.3.2, numpyro 0.22.0 and jax 0.12.0 (resolved 2026-10-19,
+      not the 0.11.2 the item expected). Tier 3 passes on them.
 - [ ] Give Gaussian processes a home in bayesian-workflow and point recommend-probabilistic-model
       at it (audit-3-10-26 G11, found 2026-10-03; re-verified 2026-10-18; the rpm half
       re-raises audit_1_3_26's "drop PyMC from the GP handoff"). bayesian-workflow's GP row
@@ -4451,7 +4469,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       same privacy caveat. Size: quick-fix. Done when: both files document the source.
       → done 2026-10-19 (/deferred quick fix): SKILL.md and INSTALL.md document --source
       claude-ai with an example and the privacy caveat.
-- [ ] Stop recommending the dead `sts-jax` package (audit-3-10-26 F10, found 2026-10-03;
+- [x] Stop recommending the dead `sts-jax` package (audit-3-10-26 F10, found 2026-10-03;
       re-verified 2026-10-18: PyPI returns 404 for `sts-jax`, and its GitHub repository was
       last pushed 2024-05-08).
       `skills/recommend-probabilistic-model/references/families/timeseries-statespace.md:25`
@@ -4461,6 +4479,9 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       keeping the PML §29.12 citation and the notebook pointer; a bare-name hand-off adds no
       install dependency, a path citation needs a DEPENDENCIES or SOFT_REFERENCES entry.
       Size: quick-fix. Done when: neither file recommends sts-jax.
+      → done 2026-10-19 (/deferred quick fix): neither file recommends sts-jax. Both hand
+      structural time series to bayesian-workflow by bare name and keep PML §29.12 and the
+      notebook pointer.
 - [x] `characterize.py` crashes on a Boolean target and accepts misspelled columns
       (audit-3-10-26 X4, found 2026-10-03; re-verified 2026-10-18 by running it). In
       `skills/recommend-probabilistic-model/scripts/characterize.py`, a Boolean target raises
@@ -5159,7 +5180,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
 `4d53a78`). The owner chose which findings to fix. These are the rest. Line anchors are at
 `6043d59`.
 
-- [ ] `check_precision` drops a small-scale parameter on classic ArviZ 0.23 (Codex P2 in plan 56's
+- [x] `check_precision` drops a small-scale parameter on classic ArviZ 0.23 (Codex P2 in plan 56's
       final review, found 2026-10-19). In `skills/bayesian-workflow/scripts/diagnose_model.py`,
       `check_precision` reads `az.summary(idata)`. On arviz 0.23.4 that table rounds `mcse_mean` to
       three decimals, so a parameter with sd near 0.01 shows `mcse_mean` 0.000 and the function
@@ -5171,7 +5192,9 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       unrounded values (check the `round_to` option on both stacks) and add a small-scale test.
       Size: quick-fix. Done when: `check_precision` keeps a parameter with sd near 0.01 on arviz
       0.23 and a test pins it, or plan 53 drops the 0.23 path and this item closes with that reason.
-- [ ] A `diagnostics.json` with no `convergence` section gets the all-clear (final-review Minor,
+      → done 2026-10-19 (/deferred quick fix): check_precision calls az.summary with
+      round_to="none". A small-scale test fails on arviz 0.23.4 before the fix and passes after.
+- [x] A `diagnostics.json` with no `convergence` section gets the all-clear (final-review Minor,
       2026-10-19; departs from plan 56's DF2). `_rate_convergence` in
       `skills/bayesian-workflow/scripts/check_diagnostics.py` returns "excellent" when the section
       is empty, and the summary then says R-hat and ESS passed although they never ran. DF2 makes
@@ -5181,7 +5204,9 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       absent section "not computed", give it a summary line and add a test. Size: quick-fix. Done
       when: a file with no convergence section gets a next step and no all-clear, and a test pins
       it.
-- [ ] Two bayesian-workflow references still state a fixed 0.7 Pareto-k cutoff (final-review item
+      → done 2026-10-19 (/deferred quick fix): an absent section rates "not computed", with a
+      summary line and a next step instead of the all-clear. A test pins it.
+- [x] Two bayesian-workflow references still state a fixed 0.7 Pareto-k cutoff (final-review item
       G3, 2026-10-19). `skills/bayesian-workflow/references/model-comparison.md:220` has the
       worked-example sentence "No observations had Pareto k > 0.7." and
       `references/visualize.md:257` says "k > 0.7 (or > loo.good_k)". Plan 56 moved both scripts to
@@ -5189,6 +5214,8 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       Neither sentence is wrong at final-size runs, and both files sat outside plan 56's file list.
       Fix: name `good_k` first in both sentences. Size: quick-fix. Done when: both files name
       `good_k` as the cutoff and the Tier 1 snippet check passes.
+      → done 2026-10-19 (/deferred quick fix): both files name good_k as the cutoff. Tier 1
+      passes.
 - [ ] A run with R-hat flags and an unchecked sampler check never names the unchecked check
       (final-review item G4, 2026-10-19). Plan 56's "Not checked:" step comes only from
       `_closing_steps` in `skills/bayesian-workflow/scripts/check_diagnostics.py`, which runs when
@@ -5197,20 +5224,24 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       call: should a partial-run report also say what did not run? Size: design. Done when: the
       owner decides, and either every run's steps and summary name the unchecked checks, or the
       decision to keep D2's wording is recorded here.
-- [ ] `SKILL.md` calls `calibration_check.py` optional, but plan 56's DF1 withholds the all-clear
+- [x] `SKILL.md` calls `calibration_check.py` optional, but plan 56's DF1 withholds the all-clear
       without `--calibration` (final-review Minor, 2026-10-19).
       `skills/bayesian-workflow/SKILL.md:77` reads "(and optionally `calibration_check.py` …". The
       pipeline at `:335` passes the flag, so the main flow works. Plan 56 could not edit `SKILL.md`,
       because plan 53 edits it. Fix: drop "optionally" when plan 53 lands, or in the next pass over
       `SKILL.md`. Size: quick-fix. Done when: the sentence matches DF1.
-- [ ] `diagnostics.json` carries `convergence.rhat.max` as `null` on a clean run (plan 56 Task 5
+      → done 2026-10-19 (/deferred quick fix): SKILL.md:77 names calibration_check.py as
+      required, and psense_summary stays optional.
+- [x] `diagnostics.json` carries `convergence.rhat.max` as `null` on a clean run (plan 56 Task 5
       side note, 2026-10-19; it predates the plan). In the acceptance run on the unchecked, clean
       fit, `check_convergence` in `skills/bayesian-workflow/scripts/diagnose_model.py` wrote `null`,
       because `_max_from_dataset(d.get("rhat", {}).get("rhat_values"))` found no values. So the
       report's "Max R-hat" row cannot be filled from the JSON on a clean run. Size: quick-fix. Done
       when: the writer computes the maximum R-hat itself, as it already recomputes ESS, and a test
       pins a non-null value on a clean run.
-- [ ] Test gaps that plan 56's reviews left (Minor findings, 2026-10-19), all in
+      → done 2026-10-19 (/deferred quick fix): check_convergence computes the maximum R-hat over
+      every parameter. A test pins a non-null value on a clean run.
+- [x] Test gaps that plan 56's reviews left (Minor findings, 2026-10-19), all in
       `skills/bayesian-workflow/scripts/`. (a) `test_diagnose_model.py` has no test for a failing
       E-BFMI, an `energy` stat with a non-empty `failed_chains` and `ok` false. (b) No test runs the
       manual fallback path end to end, and none covers an InferenceData with no `sample_stats`
@@ -5218,6 +5249,9 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       no `skipif(not HAS_DIAGNOSE)`, so it fails without arviz-stats instead of skipping. (d)
       `WELL_CALIBRATED` and `LOW_PSENSE` are declared in both test files. Size: quick-fix. Done
       when: each gap has a test or is declined in writing here.
+      → done 2026-10-19 (/deferred quick fix): (a) and (b) have tests, proved by mutation since
+      the code already worked. (c) has a needs_diagnose skip. (d) test_diagnose_model.py imports
+      the shared constants.
 - [ ] The writer's verdict and the reader's rating can disagree in the reverse direction
       (final-review Minor, 2026-10-19). Plan 56's DF12 covers only a writer that says "ready" while
       the reader blocks. The reverse needs `all_ok` false with no flagged block: `_rate_convergence`

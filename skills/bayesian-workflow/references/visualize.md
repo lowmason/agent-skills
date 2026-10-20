@@ -254,7 +254,7 @@ from the full-data one — i.e. **highly influential** observations.
 ```python
 loo = az.loo(idata, pointwise=True)
 az.plot_khat(loo)                       # pass the LOO object, not the InferenceData
-# points with k̂ > 0.7 (or > loo.good_k) are influential / unreliable for LOO
+# points with k̂ > loo.good_k (min(1 - 1/log10 S, 0.7); 0.7 above ~2,200 draws) are influential / unreliable for LOO
 ```
 
 The paper's Model 2 flags the single Mongolian observation (k̂ large); under the better-resolved

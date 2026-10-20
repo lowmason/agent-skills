@@ -61,9 +61,9 @@ def _json_default(o):
 def _max_from_dataset(ds):
     """Best-effort scalar maximum from an xarray Dataset of diagnostic values.
 
-    ``arviz_stats.diagnose`` returns the per-parameter R-hat values as an xarray
-    Dataset (not JSON-serializable). We only need the scalar max for rating, so
-    extract it defensively and drop the Dataset itself.
+    ``az.rhat`` returns the per-parameter R-hat values as an xarray Dataset (not
+    JSON-serializable). We only need the scalar max for rating, so extract it
+    defensively and drop the Dataset itself.
     """
     if ds is None:
         return None
@@ -72,8 +72,7 @@ def _max_from_dataset(ds):
         # robust to (a) modern xarray dropping Dataset.to_array() in favour of
         # to_dataarray(), and (b) variables with mismatched dims (scalar params
         # alongside a vector Deterministic) that break both to_array/to_dataarray.
-        # arviz_stats.diagnose only stores the *flagged* params here, so an empty
-        # Dataset (everything converged) correctly yields None — no max to report.
+        # An empty Dataset, or one whose maxima are all non-finite, yields None.
         data_vars = getattr(ds, "data_vars", None)
         if data_vars is not None:
             vals = [float(ds[v].max()) for v in data_vars]
@@ -148,6 +147,9 @@ def check_convergence(idata):
             idata, return_diagnostics=True, show_diagnostics=False
         )
         rhat_bad = [str(p) for p in d.get("rhat", {}).get("bad_params", [])]
+        # diagnose() keeps R-hat values for the flagged params only, so a clean run
+        # would carry no max; compute it over every parameter, as ESS is below.
+        rhat_max = _max_from_dataset(az.rhat(idata))
         # diagnose()'s d['ess']['bad_params'] keys off ess_min_ratio (ESS/N<0.001),
         # NOT the ~100*chains threshold its printed report / has_errors use. Recompute
         # ESS the same way the manual fallback does so failing param NAMES surface.
@@ -166,7 +168,7 @@ def check_convergence(idata):
             "method": "arviz_stats.diagnose",
             "rhat": {
                 "ok": len(rhat_bad) == 0,
-                "max": _max_from_dataset(d.get("rhat", {}).get("rhat_values")),
+                "max": rhat_max,
                 "problematic_params": rhat_bad,
             },
             "ess_bulk": {"ok": len(bad_bulk) == 0, "problematic_params": bad_bulk, "min": min_bulk},
@@ -359,7 +361,9 @@ def check_precision(idata):
     precise than the mean; check ``az.mcse(idata, method="quantile", prob=...)``
     separately before quoting a tail quantile to two digits.
     """
-    summary = az.summary(idata)  # has sd / mcse_mean / mcse_sd on arviz 0.23 and 1.x alike
+    # sd / mcse_mean / mcse_sd on arviz 0.23 and 1.x alike. round_to="none" keeps them raw:
+    # 0.23 rounds to three decimals, which zeroes the MCSE of a parameter with sd near 0.01.
+    summary = az.summary(idata, round_to="none")
     params = {}
     for name, row in summary.iterrows():
         sd = float(row["sd"])

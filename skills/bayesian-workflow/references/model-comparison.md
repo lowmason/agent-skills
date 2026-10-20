@@ -68,19 +68,27 @@ azp.plot_compare(comparison)
 - `weight`: Stacking weight (see below)
 - `diag_elpd` / `diag_diff`: Diagnostic strings — empty when clean, otherwise a short
   human-readable reason. `diag_elpd` is the ArviZ 1.x successor to the old boolean `warning`
-  column (high Pareto k); `diag_diff` flags conditions that make the *difference* untrustworthy
+  column (high Pareto k); `diag_diff` flags conditions that make the *difference* untrustworthy:
+  `N < 100` with fewer than 100 observations (it then shows only that), else `|elpd_diff| < 4`
   (verified: with 60 observations it reports `N < 100`; empty at 400). Print them rather than
   testing for a specific string. **ArviZ 0.23 and earlier had `warning` instead — it no longer
   exists, so don't branch on it.**
 
-**Interpreting differences**:
+**Interpreting differences** (the CV-FAQ rule, from Sivula et al. 2025; `diag_diff` applies it):
 
 `elpd_diff` is reported **relative to the top-ranked model, so it is ≤ 0** (the best model's is
 `0.0`). Compare magnitudes — `abs(elpd_diff)` — or the tests below invert:
 
-- If `abs(elpd_diff)` < 2×`dse` → Models are practically indistinguishable. Prefer the simpler one.
-- If `abs(elpd_diff)` > 4×`dse` → Strong evidence for the better model.
-- Between 2–4×`dse` → Moderate evidence. Consider domain knowledge.
+- If `abs(elpd_diff)` < 4 → the difference is small: the models predict about equally well
+  (`diag_diff` shows `|elpd_diff| < 4`). Prefer the simpler one. `dse` adds nothing here: when
+  models predict alike the normal approximation can fail, and the difference is small either way.
+- If `abs(elpd_diff)` > 4 → compare it with `dse`. `dse` is a reliable guide only when there are
+  more than 100 observations and no model is badly misspecified (check with PPC and LOO-PIT);
+  with fewer, `diag_diff` shows `N < 100`, and `dse` tends to be too small. Under those
+  conditions a difference many times `dse` is clear; one near `dse` is not.
+- Choosing the best of **many** models by ELPD flatters the winner (selection-induced bias,
+  McLatchie & Vehtari 2024). With a few models the bias is usually negligible; with many, it
+  can be large enough to matter.
 
 ## Stacking weights
 
@@ -214,8 +222,9 @@ Template:
 | Model 1 | -234.5 | 12.3 | 0.0 | — | 0.72 |
 | Model 2 | -241.2 | 11.8 | -6.7 | 3.1 | 0.28 |
 
-Model 1 is slightly preferred by LOO (ΔELPD = 6.7, ~2.2× the SE of the difference),
-suggesting moderate evidence. Consider domain knowledge to choose one model,
-or use stacking weights to combine predictions.
-No observations had Pareto k > 0.7.
+Model 1 is preferred by LOO. ΔELPD = 6.7 is above 4, and with 250 observations and
+neither model badly misspecified (`diag_diff` is empty), the SE of the difference (3.1)
+is a fair guide: the difference is about 2.2× its SE, clear but not overwhelming.
+Consider domain knowledge to choose one model, or use stacking weights to combine predictions.
+No observations had Pareto k > `good_k` (min(1 − 1/log10 S, 0.7); 0.7 at 4,000 draws).
 ```

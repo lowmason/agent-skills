@@ -117,6 +117,49 @@ def test_diagnostics_in_output(analysis_dir, tmp_path):
     assert top['max_rhat'] < 1.1   # fixture converges
 
 
+# The convergence section of a diagnostics.json written by diagnose_model.py (the
+# bayesian-workflow writer), copied verbatim from its run on this file's m-full fit
+# (2026-10-19; arviz 1.3.0, arviz-stats 1.3.3). compare_experiments reads only it.
+DIAGNOSE_MODEL_CONVERGENCE = {
+    'all_ok': True,
+    'method': 'arviz_stats.diagnose',
+    'rhat': {'ok': True, 'max': 1.0050849087659606, 'problematic_params': []},
+    'ess_bulk': {'ok': True, 'problematic_params': [], 'min': 280},
+    'ess_tail': {'ok': True, 'problematic_params': [], 'min': 235},
+    'divergences': {'checked': True, 'count': 0, 'pct': 0.0, 'ok': True},
+    'treedepth': {'checked': False},
+    'bfmi': {'checked': False},
+}
+
+
+def test_diagnose_model_output_is_read_not_recomputed(tmp_path, monkeypatch):
+    (tmp_path / 'diagnostics.json').write_text(
+        json.dumps({'convergence': DIAGNOSE_MODEL_CONVERGENCE}))
+
+    def recompute(*args, **kwargs):
+        raise AssertionError('recomputed although diagnostics.json carries the values')
+
+    monkeypatch.setattr(compare_experiments.az, 'summary', recompute)
+    diag = compare_experiments.extract_diagnostics(None, tmp_path)
+    assert diag['max_rhat'] == 1.0050849087659606
+    assert diag['min_ess'] == 235.0      # the smaller of ess_bulk.min and ess_tail.min
+    assert diag['divergences'] == 0
+
+
+def test_a_null_or_unchecked_diagnostic_is_recomputed(analysis_dir, tmp_path):
+    # rhat.max is null in files written before diagnose_model.py computed it on clean
+    # runs; a divergence block marked checked: false carries no count.
+    conv = {**DIAGNOSE_MODEL_CONVERGENCE,
+            'rhat': {'ok': True, 'max': None, 'problematic_params': []},
+            'divergences': {'checked': False}}
+    (tmp_path / 'diagnostics.json').write_text(json.dumps({'convergence': conv}))
+    idata = compare_experiments.load_idata(analysis_dir / 'm-full')
+    diag = compare_experiments.extract_diagnostics(idata, tmp_path)
+    assert diag['max_rhat'] is not None and diag['max_rhat'] < 1.1   # from az.summary
+    assert diag['divergences'] == 0                                  # from sample_stats
+    assert diag['min_ess'] == 235.0                                  # still read
+
+
 LEDGER = '''# Experiments — churn
 
 | id (slug) | parent | what changed | hypothesis | ELPD | ΔELPD | max R̂ | div | PPC | psense | status |

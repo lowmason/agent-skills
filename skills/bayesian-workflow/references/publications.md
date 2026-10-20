@@ -16,6 +16,10 @@ None are redistributed here (see the repo-root NOTICE).
   https://betanalpha.github.io/assets/case_studies/principled_bayesian_workflow.html (CC BY-NC 4.0)
 - Gabry et al. (2019), *Visualization in Bayesian workflow*, JRSS-A 182(2) —
   doi:10.1111/rssa.12378 / arXiv:1709.01449
+- McLatchie & Vehtari (2024), *Efficient estimation and correction of selection-induced bias
+  with order statistics*, Statistics and Computing 34(4), article 132 —
+  doi:10.1007/s11222-024-10442-4. Cited as "McLatchie & Vehtari 2024" for the selection-induced
+  bias of picking the best of many models by ELPD.
 - Modrák, Moon, Kim, Bürkner, Huurre, Faltejsková, Gelman & Vehtari (2025),
   *Simulation-based calibration checking for Bayesian computation: The choice of test
   quantities shapes sensitivity*, Bayesian Analysis 20, pp. 461–488. Cited as
@@ -27,6 +31,10 @@ None are redistributed here (see the repo-root NOTICE).
 - Säilynoja, Schmitt, Bürkner & Vehtari (2026), *Posterior SBC: Simulation-based
   calibration checking conditional on data*, Statistics and Computing 36(78). Cited as
   "Säilynoja, Schmitt et al. 2026".
+- Sivula, Magnusson, Matamoros & Vehtari (2025), *Uncertainty in Bayesian leave-one-out
+  cross-validation based model comparison*, Bayesian Analysis (advance publication) —
+  doi:10.1214/25-BA1569 / arXiv:2008.10296. Cited as "Sivula et al. 2025" for when `dse` describes
+  the uncertainty of an ELPD difference (|Δ| > 4, n > 100, no badly misspecified model).
 - Talts, Betancourt, Simpson, Vehtari & Gelman (2018), *Validating Bayesian inference
   algorithms with simulation-based calibration* — arXiv:1804.06788. Cited as "Talts et al.
   2018" after the preprint year; the book's reference list dates it 2020 and links the authors'

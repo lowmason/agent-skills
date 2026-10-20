@@ -113,22 +113,35 @@ def _read_json(folder: Path, name: str):
     return None
 
 
+def _convergence_reads(diag: dict) -> tuple:
+    '''(max R-hat, min ESS, divergence count) from diagnose_model.py's convergence section.
+
+    Each is None when the section does not carry it: a missing block, a null
+    rhat.max (written before diagnose_model.py computed it on clean runs), an ESS
+    block without its min, or a divergence block marked checked: false.
+    '''
+    conv = diag.get('convergence') or {}
+    max_rhat = (conv.get('rhat') or {}).get('max')
+    ess = [(conv.get(k) or {}).get('min') for k in ('ess_bulk', 'ess_tail')]
+    min_ess = None if None in ess else min(ess)
+    divergences = (conv.get('divergences') or {}).get('count')
+    return max_rhat, min_ess, divergences
+
+
 def extract_diagnostics(idata, folder: Path) -> dict:
     diag = _read_json(folder, 'diagnostics.json') or {}
-    summary = az.summary(idata)
-    max_rhat = diag.get('max_rhat')
-    if max_rhat is None and 'r_hat' in summary.columns:
-        max_rhat = float(summary['r_hat'].max())
-    ess_cols = [c for c in summary.columns if c.startswith('ess_')]
-    min_ess = diag.get('min_ess')
-    if min_ess is None and ess_cols:
-        min_ess = float(min(summary[c].min() for c in ess_cols))
-    divergences = diag.get('divergences')
-    names = [g.split('/')[-1] for g in _group_names(idata)]
-    if divergences is None and 'sample_stats' in names:
-        ss = idata.sample_stats
-        if 'diverging' in ss:
-            divergences = int(ss['diverging'].sum())
+    max_rhat, min_ess, divergences = _convergence_reads(diag)
+    if max_rhat is None or min_ess is None:
+        summary = az.summary(idata)
+        if max_rhat is None and 'r_hat' in summary.columns:
+            max_rhat = float(summary['r_hat'].max())
+        ess_cols = [c for c in summary.columns if c.startswith('ess_')]
+        if min_ess is None and ess_cols:
+            min_ess = float(min(summary[c].min() for c in ess_cols))
+    if divergences is None:
+        names = [g.split('/')[-1] for g in _group_names(idata)]
+        if 'sample_stats' in names and 'diverging' in idata.sample_stats:
+            divergences = int(idata.sample_stats['diverging'].sum())
     check = _read_json(folder, 'check_report.json') or {}
     # PPC column: prefer the interpreted calibration rating from check_report.json
     # (the real predictive-check quality signal — 'excellent'/'fair'/'poor'); fall

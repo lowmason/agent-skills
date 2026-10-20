@@ -25,7 +25,7 @@ All paths below are Gate-A-verified to exist on the `master` branch. Open via:
 - `notebooks/book2/29/sts.ipynb` — structural time series
 - `notebooks/book2/29/supplementary/hmm_poisson_changepoint_jax.ipynb` — HMM Poisson changepoint (JAX)
 - `notebooks/book1/15/lstm_jax.ipynb` — LSTM sequence model (JAX)
-- *(Execution library: [dynamax](https://github.com/probml/dynamax) for JAX HMM/LG-SSM; [sts-jax](https://github.com/probml/sts-jax) for STS.)*
+- *(Execution library: [dynamax](https://github.com/probml/dynamax) for JAX HMM/LG-SSM; for STS, hand to `bayesian-workflow`, which builds it in NumPyro.)*
 
 ### gaussian-processes
 - `notebooks/book1/17/gp_kernel_plot.ipynb` — GP kernels
