@@ -236,7 +236,10 @@ def _trim_block(block: dict) -> dict | None:
     kind = block.get('type')
     if kind == 'tool_use':
         kept = {k: v for k, v in (block.get('input') or {}).items() if k in ('subagent_type', 'command')}
-        return {'type': kind, 'id': block.get('id'), 'name': block.get('name'), 'input': kept}
+        name = block.get('name')
+        if isinstance(name, str) and name.startswith(MCP_PREFIX):
+            name = '<mcp-tool>'  # a call to an MCP tool names a server the recording machine has installed
+        return {'type': kind, 'id': block.get('id'), 'name': name, 'input': kept}
     if kind == 'tool_result':
         marked = [line for line in result_body(block).split('\n') if GUARD_MARKER in line]
         return {'type': kind, 'tool_use_id': block.get('tool_use_id'), 'is_error': block.get('is_error'),

@@ -182,6 +182,7 @@ def test_scrub_keeps_what_the_assertions_read_and_drops_private_text():
         assistant({'type': 'text', 'text': f'{home} holds secrets'}, parent='toolu_01AbC', model='claude-haiku-5-5'),
         tool_result('toolu_01AbC', f'drwx someone staff {scratch}/a.py'),
         tool_result('toolu_02', DENIAL + f'\nsee {home}/x', is_error=True),
+        assistant(tool_use('toolu_03', 'mcp__mine__search', query='x')),
         stop_response(2),
         {**result(), 'total_cost_usd': 0.2, 'modelUsage': {}, 'session_id': '364e6342-a957-4e26-a308-caa9e4b4bc69'},
     ]
@@ -190,7 +191,7 @@ def test_scrub_keeps_what_the_assertions_read_and_drops_private_text():
         assert leak not in text
     kept = pc.parse_stream(text)
     assert [e.get('subtype', e['type']) for e in kept] == [
-        'init', 'assistant', 'assistant', 'user', 'user', 'hook_response', 'success']
+        'init', 'assistant', 'assistant', 'user', 'user', 'assistant', 'hook_response', 'success']
     assert kept[0] == {'type': 'system', 'subtype': 'init', 'tools': ['Read', 'Bash'], 'model': 'claude-sonnet-5-5',
                        'claude_code_version': None}
     assert pc.dispatches(kept) == {'toolu_fixture1': 'Explore'}
