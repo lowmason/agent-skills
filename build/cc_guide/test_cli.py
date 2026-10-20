@@ -455,7 +455,7 @@ def test_a_malformed_or_empty_cached_changelog_exits_two(world, capsys):
     assert capsys.readouterr() == ('', f'cc-guide: {changelog}: line 8: {cause.value}\n')
     changelog.write_text('# Changelog\n')
     assert main(cache, 'lint') == 2
-    assert capsys.readouterr() == ('', f'cc-guide: {changelog}: no <Update> release blocks\n')
+    assert capsys.readouterr() == ('', f'cc-guide: {changelog}: no releases\n')
 
 
 def test_stamp_without_a_stamp_region_is_one_error_line(world, capsys):

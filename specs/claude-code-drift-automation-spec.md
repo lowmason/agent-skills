@@ -589,8 +589,18 @@ blocks for information.
 - `llms.txt` slugs added or removed since the baseline are listed for
   information.
 
-R6.6 **Changelog.** Parse the `<Update label="X" description="DATE">` blocks
-and their `* ` bullets, ordering versions numerically. For each section, list
+R6.6 **Changelog.** Parse the releases and their `* ` and `- ` bullets,
+ordering versions numerically. The parser reads two formats:
+
+- an `<Update label="X" description="DATE">` block, which can fold its long
+  lists into `<Expandable>` blocks. Some of those lists use `- ` bullets.
+- a bold `**X**` line, the format the page has had since about 14:00 on
+  2026-10-20. Each release runs to the next label line. Group headings such as
+  `**Added**` and `**5 improvements**` are not labels. This format gives no
+  release date.
+
+On 2026-10-20 the last `<Update>` copy and the first bold copy held the same
+424 labels, with the same bullets in the same order. For each section, list
 the releases after its `checked`, with every bullet; term hits are marked as
 hints only.
 

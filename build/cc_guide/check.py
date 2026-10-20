@@ -78,7 +78,7 @@ def releases_of(changelog_text: str, where: str = 'changelog') -> list[Release]:
     except ValueError as exc:
         raise SetupError(f'{where}: {exc}') from None
     if not releases:
-        raise SetupError(f'{where}: no <Update> release blocks')
+        raise SetupError(f'{where}: no releases')
     return releases
 
 
