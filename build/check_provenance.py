@@ -32,6 +32,7 @@ BUNDLED_LICENSES: dict[str, tuple[str, ...]] = {
     # only an idea from it and carries no copy.
     'LICENSE-coding-skills': ('bayesian-workflow', 'clean-code'),
     'LICENSE-causal-design-sources': ('recommend-causal-design',),
+    'LICENSE-andorra': ('bayesian-workflow',),
     'LICENSE-write-with-asd-ste100-sources': ('write-with-asd-ste100',),
 }
 

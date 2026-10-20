@@ -22,6 +22,13 @@ bayesian-workflow/
     Adapted by Lowell Mason from Alexandre Andorra's original PyMC
     Bayesian-workflow skill. Ported to NumPyro + JAX with expanded
     visualization guidance. MIT licensed.
+    Upstream is the bayesian-workflow skill in
+    https://github.com/Learning-Bayesian-Statistics/baygent-skills, whose
+    LICENSE reads "Copyright (c) 2026 Learning Bayesian Statistics"; the
+    full upstream MIT text is in LICENSE-andorra. This repository imported
+    the skill on 2026-06-20 (2d99584), after upstream's v1.5 (1959ef6,
+    2026-06-07); which upstream version was ported is not recorded. That
+    LICENSE file is unchanged since upstream's first commit (3681125).
     references/model-comparison.md additionally documents four
     arviz_stats APIs (loo_expectations, loo_metrics, loo_r2,
     bayes_factor) whose existence was pointed out by the

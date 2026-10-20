@@ -45,6 +45,7 @@ ln -s ~/agent-skills/skills/bayesian-workflow ~/.agents/skills/bayesian-workflow
 
 Provenance: adapted from [Alexandre Andorra](https://alexandorra.github.io/)'s
 original PyMC Bayesian-workflow skill (MIT) — see the repo-root NOTICE.
+Upstream's MIT notice travels with this skill as [`LICENSE-andorra`](LICENSE-andorra).
 
 ### NumPyro installation
 
@@ -102,4 +103,4 @@ bayesian-workflow/
 
 ## License
 
-MIT - see [LICENSE](../../LICENSE).
+MIT - see [LICENSE](../../LICENSE). Upstream's notice: [LICENSE-andorra](LICENSE-andorra).

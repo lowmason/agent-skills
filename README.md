@@ -350,7 +350,7 @@ In this repo, the committed `.claude/rules/clean-code-python.md` symlink already
 
 Everything I wrote here is MIT licensed. [`NOTICE`](NOTICE) tracks the attribution for each skill:
 
-- **My original skills and `bayesian-workflow`** — MIT, © Lowell Mason; full text in [`LICENSE`](LICENSE). (`bayesian-workflow` is an adaptation of Alexandre Andorra's PyMC skill.)
+- **My original skills and `bayesian-workflow`** — MIT, © Lowell Mason; full text in [`LICENSE`](LICENSE). (`bayesian-workflow` is an adaptation of Alexandre Andorra's PyMC skill; its upstream notice is in [`LICENSE-andorra`](LICENSE-andorra).)
 - **`recommend-causal-design`** — MIT. The adaptations are by Lowell Mason. [`LICENSE-causal-design-sources`](LICENSE-causal-design-sources) keeps the source copyrights and permission notices for Robson Tigre and Learning Bayesian Statistics.
 - **`write-with-asd-ste100`** and its rule — MIT. The adaptations are by Lowell Mason. [`LICENSE-write-with-asd-ste100-sources`](LICENSE-write-with-asd-ste100-sources) keeps the source copyrights and permission notices for Dustin Yuchen Teng and Prithiv M U.
 - **superpowers skills** — MIT, © 2025 Jesse Vincent ([superpowers](https://github.com/obra/superpowers)). The full text is in [`LICENSE-superpowers`](LICENSE-superpowers).
