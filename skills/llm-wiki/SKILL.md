@@ -3,7 +3,7 @@ name: llm-wiki
 description: >
   Use when maintaining or setting up the research wiki (Karpathy LLM-wiki
   pattern) at $LLM_WIKI_ROOT: 'ingest', 'add to the wiki', 'what does the wiki
-  say', 'wiki lint', 'verify <page>', 'file this into the wiki'; any reference
+  say', 'wiki lint', 'verify a page', 'file this into the wiki'; any reference
   to the research wiki, sampler literature notes, or nowcasting literature
   notes; a paper dropped into raw/ to process; and 'set up', 'bootstrap', or
   'install the research wiki' on a new machine or for a second wiki root; and

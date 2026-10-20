@@ -141,6 +141,48 @@ def test_compatibility_key_allowed(tmp_path):
     assert check_skill(d) == []
 
 
+def test_spec_and_host_keys_are_allowed(tmp_path):
+    # Portability R1.1: the spec's six fields and the host extensions this repo
+    # allows. disable-model-invocation is false here: true needs Codex's policy
+    # file (R1.6), which a later test covers.
+    d = make_skill(tmp_path, 'keyed-skill',
+                   'name: keyed-skill\ndescription: Use when testing.\nlicense: MIT\n'
+                   'compatibility: Requires uv.\nmetadata:\n  author: Someone\nallowed-tools: Read\n'
+                   'when_to_use: Testing.\ncontext: fork\nagent: Explore\n'
+                   'disable-model-invocation: false')
+    assert check_skill(d) == []
+
+
+def test_metadata_must_map_strings_to_strings(tmp_path):
+    # Portability R1.2. An unquoted version: 1.0 parses as a float.
+    d = make_skill(tmp_path, 'meta-skill',
+                   'name: meta-skill\ndescription: Use when testing.\nmetadata:\n  version: 1.0')
+    assert check_skill(d) == [
+        f"{d / 'SKILL.md'}: metadata must map strings to strings (quote a value such as version: \"1.0\")"]
+    listed = make_skill(tmp_path, 'meta-list',
+                        'name: meta-list\ndescription: Use when testing.\nmetadata: [a, b]')
+    assert len(check_skill(listed)) == 1
+
+
+def test_compatibility_must_be_a_string_of_1_to_500_characters(tmp_path):
+    # Portability R1.3, both edges: 500 passes, 501 and a blank value fail.
+    ok = make_skill(tmp_path, 'compat-ok',
+                    "name: compat-ok\ndescription: Use when testing.\ncompatibility: '" + 'x' * 500 + "'")
+    assert check_skill(ok) == []
+    msg = 'compatibility must be a string of 1-500 characters'
+    for i, value in enumerate(["'" + 'x' * 501 + "'", "'   '", '42']):
+        d = make_skill(tmp_path, f'compat-bad-{i}',
+                       f'name: compat-bad-{i}\ndescription: Use when testing.\ncompatibility: {value}')
+        assert check_skill(d) == [f"{d / 'SKILL.md'}: {msg}"], value
+
+
+def test_angle_brackets_in_a_description_are_rejected(tmp_path):
+    # Portability R1.5: claude.ai rejects < and > in name and description.
+    d = make_skill(tmp_path, 'angle-skill',
+                   "name: angle-skill\ndescription: \"Use when asked to 'verify <page>'.\"")
+    assert check_skill(d) == [f"{d / 'SKILL.md'}: description contains < or >"]
+
+
 def make_agent(tmp_path: Path, name: str, description: str) -> Path:
     md = tmp_path / f'{name}.md'
     md.write_text(

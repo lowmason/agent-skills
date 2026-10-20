@@ -2,13 +2,18 @@
 # cc-guide: skills.frontmatter commands.overview subagents.frontmatter subagents.tools subagents.models @2.1.219
 '''Frontmatter and bundled-path lint for every skill in the repo (Gate A pattern).
 
-Per <skill>/SKILL.md: the frontmatter must parse as YAML (catches unquoted-
-scalar breakage), name must equal the directory name (<=64 chars, lowercase
-letters/digits/hyphens), description must be present and <=1024 chars (Agent
-Skills spec cap), keys must be spec-valid, context must be in CONTEXT_VALUES,
-model must not be haiku or a claude-haiku-* ID (not portable across providers), and every
-relative markdown-link target plus every backticked references/ or scripts/
-path must exist.
+Per <skill>/SKILL.md:
+- the frontmatter parses as YAML (catches unquoted-scalar breakage);
+- name equals the directory name (<=64 chars, lowercase letters/digits/hyphens);
+- description is present and <=1024 chars (the Agent Skills spec cap);
+- every key is an Agent Skills spec key (SPEC_KEYS) or a host extension this
+  repo allows (HOST_KEYS);
+- name and description contain no < or >; metadata maps strings to strings;
+  compatibility is a string of 1-500 characters;
+- context is in CONTEXT_VALUES, and model is not haiku or a claude-haiku-* ID
+  (not portable across providers);
+- every relative markdown-link target and every backticked references/ or
+  scripts/ path exists.
 
 Run: uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
 Exit 0 if clean; exit 1 with one line per violation.
@@ -25,8 +30,18 @@ import yaml
 from fences import strip_fenced_blocks
 
 REPO = Path(__file__).resolve().parent.parent
-ALLOWED_KEYS = {'name', 'description', 'license', 'allowed-tools', 'metadata',
-                'when_to_use', 'model', 'effort', 'context', 'compatibility'}
+# The Agent Skills spec's fields (agentskills.io/specification), which every
+# runtime that implements the spec accepts.
+SPEC_KEYS = frozenset({'name', 'description', 'license', 'compatibility', 'metadata',
+                       'allowed-tools'})
+# Claude Code extensions this repo allows beside them. Gemini CLI and Codex load
+# a skill that carries one; claude.ai uploads and spec-only validators reject
+# them, which is what --strict checks.
+HOST_KEYS = frozenset({'when_to_use', 'model', 'effort', 'context',
+                       'disable-model-invocation', 'agent'})
+# The spec caps compatibility at 500 characters.
+COMPATIBILITY_CAP = 500
+ANGLE_BRACKET_RE = re.compile(r'[<>]')
 # `fork` is the only value Claude Code documents for `context` (run the skill in
 # an isolated subagent). Any other value is a typo that silently no-ops at
 # runtime, so it fails here instead — widen this set if the spec grows one.
@@ -106,6 +121,23 @@ def _check_model_pin(md: Path, fm: dict) -> list[str]:
             'instead (specs/completed/skill-model-pin-removal.md)']
 
 
+def _check_value_shapes(sk: Path, fm: dict) -> list[str]:
+    '''The value shapes the Agent Skills spec defines: no < or > in name or
+    description, metadata as a string-to-string map, compatibility as a string
+    of 1 to COMPATIBILITY_CAP characters.'''
+    errs = [f'{sk}: {key} contains < or >' for key in ('name', 'description')
+            if ANGLE_BRACKET_RE.search(str(fm.get(key) or ''))]
+    meta = fm.get('metadata', {})
+    if not (isinstance(meta, dict)
+            and all(isinstance(k, str) and isinstance(v, str) for k, v in meta.items())):
+        errs.append(f'{sk}: metadata must map strings to strings (quote a value such as version: "1.0")')
+    if 'compatibility' in fm:
+        compat = fm['compatibility']
+        if not (isinstance(compat, str) and 1 <= len(compat.strip()) <= COMPATIBILITY_CAP):
+            errs.append(f'{sk}: compatibility must be a string of 1-{COMPATIBILITY_CAP} characters')
+    return errs
+
+
 def check_skill(skill_dir: Path) -> list[str]:
     errs: list[str] = []
     sk = skill_dir / 'SKILL.md'
@@ -135,8 +167,9 @@ def check_skill(skill_dir: Path) -> list[str]:
     if ctx is not None and ctx not in CONTEXT_VALUES:
         errs.append(f'{sk}: context must be one of {sorted(CONTEXT_VALUES)}, got {ctx!r}')
     errs += _check_model_pin(sk, fm)
+    errs += _check_value_shapes(sk, fm)
     for key in fm:
-        if key not in ALLOWED_KEYS:
+        if key not in SPEC_KEYS | HOST_KEYS:
             errs.append(f'{sk}: unknown frontmatter key {key!r}')
 
     # Scan links/paths in prose only — fenced code blocks hold teaching
