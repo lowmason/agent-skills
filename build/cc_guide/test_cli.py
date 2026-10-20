@@ -11,8 +11,8 @@ import baseline
 import cli
 import notice
 import state
-from cc_fixtures import (DOCS, GUIDE_IDS, GUIDE_PATH, MANIFEST_TOML, docs_dir, drift_repo,  # noqa: F401
-                         fixture_repo, git, guide_text, isolated_home, prime_cache, write_tree)
+from cc_fixtures import (DOCS, GUIDE_IDS, GUIDE_PATH, MANIFEST_TOML, MDX_PAGE, docs_dir,  # noqa: F401
+                         drift_repo, fixture_repo, git, guide_text, isolated_home, prime_cache, write_tree)
 from guide import HASH_FORM, STAMP_CLOSE, STAMP_OPEN
 
 
@@ -93,6 +93,7 @@ def test_help_shows_the_module_docstring_and_the_rebaseline_refusal(capsys):
     assert '  lint [--ref REF]\n' in outs[0]  # the docstring's line breaks survive
     assert 'Offline gate over the guide, manifest.toml, baseline.json and every' in outs[0]
     assert '  baseline cite FILE [FILE ...]\n' in outs[0]
+    assert '  baseline rehash\n' in outs[0]
     assert ('A three-part guide release label newer than the cached changelog'
             in ' '.join(outs[0].split()))  # the label note is for a release only
 
@@ -404,6 +405,23 @@ def test_stamp_writes_only_the_guides_stamp_region(world):
                     'oldest full re-verification 2026-09-02, at 2.1.900.',
                     '+> Checked against the Claude Code docs and changelog through 2.1.902 on 2026-10-04; '
                     'oldest full re-verification 2026-09-02, at 2.1.900.']
+
+
+def test_rehash_reads_the_cached_snapshots_and_writes_only_the_baseline(world, capsys):
+    repo, cache, folder = world
+    assert main(cache, 'baseline', 'rehash') == 2
+    assert capsys.readouterr() == ('', 'cc-guide: tools in alpha: no 2.1.900 snapshot to re-derive its blocks'
+                                       ' from\n')
+    snapshot = state.snapshot_docs(cache, '2.1.900')
+    write_tree(snapshot, {**DOCS, 'tools.md': MDX_PAGE})
+    assert main(cache, 'baseline', 'rehash') == 2
+    assert capsys.readouterr().err == ('cc-guide: tools in alpha (2.1.900 snapshot): 3 baselined block(s) match'
+                                       ' neither parse of the snapshot; rebaseline the page instead\n')
+    write_tree(snapshot, DOCS)
+    assert main(cache, 'baseline', 'rehash') == 0
+    assert capsys.readouterr() == (f'updated {state.BASELINE}\n', '')
+    assert dirty(repo) == []
+    assert sorted(p.name for p in snapshot.iterdir()) == sorted(DOCS)
 
 
 def test_rebaseline_without_a_fetch_is_one_error_line(world, tmp_path, capsys):

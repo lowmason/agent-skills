@@ -47,7 +47,9 @@ baselined block on the same page has also changed or gone: list it too, or
 rebaseline the whole page. `settle` prints each `rebaseline` with `--head`
 and the packet's head, which refuses once a later `check` (a session start's
 `refresh` included) has refetched the docs. A missing page needs a
-`manifest.toml` edit first.
+`manifest.toml` edit first. When a merge brings in a `baseline.json` that the
+parser before the spec's R3.2 MDX rewrite wrote, take that file and run
+`baseline rehash`. A second run changes nothing.
 A correction that resolves a conformance gap removes its `[[exception]]`, or
 narrows its `artifacts`, in the same change. Files whose correctness rests
 on a Claude Code fact carry a citation comment naming the guide sections
