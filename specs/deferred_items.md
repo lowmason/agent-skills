@@ -5559,11 +5559,14 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       subagents itself; that advice may be stale, since nesting is on by default and a
       subagent can spawn subagents up to three layers deep (sub-agents.md:1051), so verify it,
       then fix or drop it.
-- [ ] README line about uv (plan 53's completion gate, owner Q5, 2026-10-20): `README.md`'s
+- [x] README line about uv (plan 53's completion gate, owner Q5, 2026-10-20): `README.md`'s
       Installation section never says that uv is needed, but 12 skills now run their bundled
       scripts with `uv run` and name uv in `compatibility` (R3.5, R3.6). Add one line under
       Installation. Deferred by the owner at the gate. Size: quick-fix. Done when:
       `README.md`'s Installation section says that skills with bundled scripts need uv.
+      → done 2026-10-21 (/deferred quick fix): a paragraph after the clone step says that skills
+      with bundled scripts run them with `uv run`, links uv's install page, and notes that the
+      installer itself needs only `python3`. The wording names no skill count.
 - [ ] Review Minors from plan 53's task reviews and final review, unfixed (the owner's gate
       answer Q4, 2026-10-20: the five fixed now landed in 570afd2 and 2449c4d). In
       `build/check_frontmatter.py`: (a) `_check_value_shapes` reports a null `metadata:` as
@@ -5898,7 +5901,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       Files: `build/cc_guide/baseline.py`, `build/cc_guide/lint.py`, drift spec R2.4. Size:
       design. Done when: the owner picks a remedy and a test shows that two such branches,
       merged in either order, leave the file STALE, or the owner records the gap as accepted.
-- [ ] Each probe run inherits the caller's whole environment (`probes.execute` passes
+- [x] Each probe run inherits the caller's whole environment (`probes.execute` passes
       `env={**os.environ, **inv.env}`). The guide says `CLAUDE_CODE_EFFORT_LEVEL` outranks an
       agent's `effort` field and a per-spawn effort (subagents.frontmatter, guide line 184). So
       if that variable is set in the shell that runs `cli.py probes`, the `agent-model-pins`
@@ -5909,6 +5912,32 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       in the pins run, test-first. Files: `build/cc_guide/probes.py` and its tests. Size:
       quick-fix. Done when: a test shows that the pins run ignores an inherited
       `CLAUDE_CODE_EFFORT_LEVEL`, or that its row records it.
+      → done 2026-10-21 (/deferred quick fix): `execute` drops every name in the new
+      `SCRUBBED_ENV` (today only `CLAUDE_CODE_EFFORT_LEVEL`) from the caller's environment before
+      it adds the invocation's own, so every probe run goes without the override, the pins run
+      included. `test_a_run_never_inherits_the_effort_override` in `test_probes.py` sets the
+      variable, runs a script through `execute` and sees it unset, while a variable the
+      invocation adds still arrives. It failed with `low` before the fix. The agent `model`
+      field needs no guard against `CLAUDE_CODE_SUBAGENT_MODEL`, which it outranks. The alias
+      remaps (`ANTHROPIC_DEFAULT_HAIKU_MODEL` and its siblings) are a separate item, in section
+      deferred-2026-10-21.
+
+## deferred-2026-10-21 (no plan; /deferred pass, branch claude/deferred-111d78) — 2026-10-21
+- [ ] A model-alias remap in the caller's shell can make the `agent-model-pins` probe report a
+      false DIVERGES. The guide says `ANTHROPIC_DEFAULT_OPUS_MODEL`, `_SONNET_MODEL`,
+      `_HAIKU_MODEL` and `_FABLE_MODEL` decide what each alias resolves to (section
+      `lean.model-routing`, guide line 431). The Explore and test-runner agents pin `model:
+      haiku`, and `assess_agent_model_pins` in `build/cc_guide/probe_checks.py` passes them only
+      when each served model's name contains `haiku`. So an `ANTHROPIC_DEFAULT_HAIKU_MODEL` that
+      points outside the Haiku family turns correct pins into DIVERGES. `probes.execute` drops
+      only `SCRUBBED_ENV` (today `CLAUDE_CODE_EFFORT_LEVEL`, the 2026-10-21 quick fix in section
+      cc-guide-files-2026-10-21) and passes the remaps through. Found while checking that quick
+      fix's note. Deferred because it is a decision: on Bedrock, Google Cloud or Foundry a remap
+      may be the owner's deliberate setup, and scrubbing it would test a model the owner does
+      not run. Options: add the four names to `SCRUBBED_ENV`, or record any that are set in the
+      probe's row. Files: `build/cc_guide/probes.py` and `build/cc_guide/test_probes.py`. Size:
+      design. Done when: the owner picks scrub or record, and a test shows that an inherited
+      remap is either absent from the run or named in its row.
 
 ## 61-hook-template-fixes — 2026-10-21
 - [ ] `hooks/uv-guard.sh` lets through more command shapes than `hooks/README.md` names (plan 61
