@@ -3135,6 +3135,12 @@ declined as YAGNI (zero instances in a one-page wiki).
       (`hooks/probe-readonly-guard.sh`, `commands/deferred.md`). Register gaps hold three:
       `skills/requesting-code-review/SKILL.md`, `skills/subagent-driven-development/SKILL.md`
       and `skills/writing-skills/SKILL.md`.
+      → progress 2026-10-21 (`/cc-guide files`, packets `20261021T092747-files`, branch
+      claude/cc-guide-probe-files): merging lowmason/agent-skills#88 made plan 58's
+      `build/cc_guide/probes.py` and `build/cc_guide/probe_checks.py` stale. Their review found
+      no contradiction and 10 new not-covered rows: run environment, stream format and
+      the pin overrides the probes test. The owner ruled all ten none, and both files are
+      cited. `cli.py lint` prints the same five STALE files as before.
 - [ ] Newline handling in the citation reader (plan 43's final review, issue 4, folding in the
       CRLF note from Task 5's review). `build/cc_guide/guide.py` (`file_citation`, near line
       306) strips both ends, so a trailing space or `\r` is reported as "an indented citation;

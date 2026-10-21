@@ -1,4 +1,4 @@
-# cc-guide: subagents.frontmatter subagents.isolation hooks.configuration @2.1.304
+# cc-guide: subagents.frontmatter subagents.isolation hooks.configuration @2.1.304.3
 '''`probes` and `binaries` (drift spec R10.3-R10.7). `probes` runs the
 registered probes that are due, the ones --only names, or every one with
 --force, against the binary --claude names. Each run starts in a fresh
