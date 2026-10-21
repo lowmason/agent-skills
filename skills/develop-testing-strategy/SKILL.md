@@ -84,8 +84,8 @@ parser is a pure function of an HTML string. Then feed it recorded fixtures:
   fields; weekend/last-business-day rollback. Each variant is a tiny fixture string and an
   expected parsed value.
 - Test the small pure helpers directly — date parsers, period mappers, link extractors —
-  exactly as `bls-stats` already does for `_parse_ref_date` and `_last_business_day`. These are
-  the highest-value, cheapest tests in a scraper.
+  exactly as the `bls-stats` package (now inside `alt-nfp-stats`) does for its period parser
+  and reference dates. These are the highest-value, cheapest tests in a scraper.
 
 **Mark the live test and exclude it from CI.** Keep *one* test that actually fetches, to prove
 the request still works, but gate it with `@pytest.mark.network` and deselect it in CI with
@@ -229,7 +229,7 @@ markers = [
   or a manual `pytest -m slow`.
 - **`network`** — the one live fetch and the canary. Scheduled, never in PR CI.
 - **`real_store`** — anything touching the real vintage store. Fail closed by default: an
-  *unmarked* test that reaches the store should be blocked (the `alt-nfp` conftest blanks
+  *unmarked* test that reaches the store should be blocked (the `alt-nfp-stats` conftest blanks
   credentials and severs the s3fs path for unmarked tests precisely so a stray write cannot
   destroy irreplaceable data). Opt in deliberately with the marker for read-only access.
 

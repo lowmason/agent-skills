@@ -11,9 +11,9 @@ copying anything.
 
 # Project tooling hooks
 
-Reusable Claude Code hook scripts for **your real Python/uv work repos** — `alt-nfp`,
-`bls-stats`, `bls-stats-aggregation`, `naics-embedder` (each has a `pyproject.toml` +
-ruff dev-dep). They convert advisory CLAUDE.md prose ("always run ruff", "use uv, not
+Reusable Claude Code hook scripts for **your real Python/uv work repos** — `alt-nfp-stats`,
+`alt-nfp-model`, `naics-embedder` (each has a `pyproject.toml` + ruff dev-dep). They
+convert advisory CLAUDE.md prose ("always run ruff", "use uv, not
 pip") into deterministic gates that fire every time for ~0 tokens.
 
 > **These three are templates, not wired into this repo.** This repo (`agent-skills`)
@@ -39,7 +39,7 @@ All three parse the hook JSON payload from stdin with `jq` (already on your mach
 
 ## Install into a work repo
 
-From the target repo (e.g. `~/Projects/bls-stats`):
+From the target repo (e.g. `~/Projects/alt-nfp-stats`):
 
 ```bash
 mkdir -p .claude/hooks
