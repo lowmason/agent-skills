@@ -446,6 +446,21 @@ def test_output_of_another_shape_is_an_error_never_a_crash(tmp_path, isolated_ho
         ERROR, "TypeError: unhashable type: 'dict'")
 
 
+# Prints the effort override, or "unset", then the variable its invocation adds.
+ENV_ECHO = '#!/bin/sh\nprintf "%s %s" "${CLAUDE_CODE_EFFORT_LEVEL-unset}" "${PROBE_ADDED-unset}"\n'
+
+
+def test_a_run_never_inherits_the_effort_override(tmp_path, monkeypatch):
+    '''CLAUDE_CODE_EFFORT_LEVEL outranks an agent's effort field
+    (subagents.frontmatter), so one set in the caller's shell would decide
+    the effort that agent-model-pins reads. A run goes without it, and still
+    gets what its invocation adds.'''
+    monkeypatch.setenv('CLAUDE_CODE_EFFORT_LEVEL', 'low')
+    inv = probes.Invocation('echo', [str(executable(tmp_path / 'echo', ENV_ECHO))], {'PROBE_ADDED': 'yes'}, 30)
+    assert probes.execute(inv, tmp_path, tmp_path / 'echo.out', tmp_path / 'echo.err') == 0
+    assert (tmp_path / 'echo.out').read_text(encoding='utf-8') == 'unset yes'
+
+
 # A run whose leader starts a child, as Gate B's bash starts claude. It writes "<leader> <child>" to $1.
 SLOW = '#!/bin/sh\nsleep 300 &\necho "$$ $!" > "$1"\nsleep 300\n'
 # The same, but the leader and its child ignore SIGTERM, as a stuck claude might, so only SIGKILL ends them.

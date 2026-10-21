@@ -44,6 +44,9 @@ EXIT_SIGNALS = tuple(getattr(signal, name) for name in ('SIGTERM', 'SIGHUP', 'SI
 HELD_SIGNALS = (signal.SIGINT, *EXIT_SIGNALS)  # held while a run starts or is stopped (held_signals)
 # A setup or output problem inside a probe: an ERROR row, never a crash (R10.5).
 PROBE_FAILURES = (OSError, subprocess.SubprocessError, ValueError, TypeError, KeyError, AttributeError)
+# Variables a run never inherits from the caller. CLAUDE_CODE_EFFORT_LEVEL outranks an agent's effort
+# field (subagents.frontmatter), so a value in the caller's shell would decide the effort agent-model-pins reads.
+SCRUBBED_ENV = frozenset({'CLAUDE_CODE_EFFORT_LEVEL'})
 BUDGET_USD = '0.50'  # --max-budget-usd for one probe invocation
 PINS_BUDGET_USD = '0.75'  # three agents, one of them Opus at xhigh
 TOOLS_TURNS, STOP_TURNS, PINS_TURNS = 1, 6, 8
@@ -64,7 +67,7 @@ LOG_TEXT = '\n'.join([
 class Invocation(NamedTuple):
     name: str             # its stdout goes to <name><suffix>, its stderr to <name>.err
     argv: list[str]
-    env: dict[str, str]   # added to the caller's environment
+    env: dict[str, str]   # added to the caller's environment, less SCRUBBED_ENV
     timeout: int          # seconds
     suffix: str = '.jsonl'
 
@@ -81,13 +84,16 @@ def execute(inv: Invocation, cwd: Path, out: Path, err: Path) -> int | None:
     waits on a piped stdin. The run gets its own process group, so a timeout
     or a stop ends everything it started, such as the claude under Gate B's
     bash: the group gets no terminal signal of its own. A stop signal while
-    the run starts is held until `proc` is bound, so it cannot orphan it.'''
+    the run starts is held until `proc` is bound, so it cannot orphan it.
+    The run inherits the caller's environment less SCRUBBED_ENV, then
+    takes what the invocation adds.'''
+    env = {name: value for name, value in os.environ.items() if name not in SCRUBBED_ENV} | inv.env
     with out.open('wb') as stdout, err.open('wb') as stderr:
         proc = None
         try:
             with held_signals():
                 proc = subprocess.Popen(inv.argv, cwd=cwd, stdin=subprocess.DEVNULL, stdout=stdout, stderr=stderr,
-                                        env={**os.environ, **inv.env}, start_new_session=True)
+                                        env=env, start_new_session=True)
             return proc.wait(timeout=inv.timeout)
         except subprocess.TimeoutExpired:
             stop_group(proc)

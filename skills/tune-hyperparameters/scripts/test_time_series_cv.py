@@ -113,3 +113,75 @@ def test_optuna_manual_objective_integration():
     study.optimize(objective, n_trials=15)
     assert np.isfinite(study.best_value)
     assert 1e-3 <= study.best_params['alpha'] <= 1e3
+
+
+def _panel_periods(n_entities=3, n_periods=20, entity_major=False):
+    '''Each row's period in a long-format panel of n_entities series.
+
+    Period-major rows run (t0 e0, t0 e1, ...); entity-major rows run
+    (e0 t0, e0 t1, ...), so the labels are not sorted.
+    '''
+    periods = np.arange(n_periods)
+    if entity_major:
+        return np.tile(periods, n_entities)
+    return np.repeat(periods, n_entities)
+
+
+@pytest.mark.parametrize('entity_major', [False, True])
+@pytest.mark.parametrize('embargo', [0, 1, 2])
+def test_panel_folds_split_whole_periods(embargo, entity_major):
+    period = _panel_periods(entity_major=entity_major)
+    X = np.zeros((period.size, 1))
+    folds = list(PurgedTimeSeriesSplit(n_splits=5, embargo=embargo).split(X, groups=period))
+    assert len(folds) == 5
+    for tr, va in folds:
+        assert not set(period[tr]) & set(period[va])                # no period on both sides
+        assert period[va].min() - period[tr].max() - 1 >= embargo   # the gap counts whole periods
+        assert len(va) == 3 * len(set(period[va]))                  # val holds every row of its periods
+
+
+def test_panel_sizes_count_periods():
+    period = _panel_periods(n_periods=20)
+    X = np.zeros((period.size, 1))
+    cv = PurgedTimeSeriesSplit(n_splits=4, test_size=2, min_train_size=13)
+    folds = list(cv.split(X, groups=period))
+    assert len(folds) == 3                                   # the fold with 12 train periods is pruned
+    for tr, va in folds:
+        assert len(set(period[va])) == 2                     # test_size counts periods
+        assert len(set(period[tr])) >= 13                    # min_train_size counts periods
+    assert cv.get_n_splits(X, groups=period) == len(folds)   # get_n_splits forwards groups
+
+
+def test_one_row_per_period_matches_row_mode():
+    X = np.arange(100).reshape(-1, 1)
+    cv = PurgedTimeSeriesSplit(n_splits=5, embargo=2, label_horizon=3, min_train_size=10)
+    rows = list(cv.split(X))
+    periods = list(cv.split(X, groups=np.arange(100)))
+    assert len(rows) == len(periods)
+    for (tr_r, va_r), (tr_p, va_p) in zip(rows, periods):
+        np.testing.assert_array_equal(tr_r, tr_p)
+        np.testing.assert_array_equal(va_r, va_p)
+
+
+def test_groups_length_must_match_rows():
+    X = np.zeros((10, 1))
+    with pytest.raises(ValueError, match='groups'):
+        list(PurgedTimeSeriesSplit(n_splits=2).split(X, groups=np.arange(9)))
+
+
+def test_sklearn_search_with_panel_groups():
+    pytest.importorskip('sklearn')
+    from sklearn.linear_model import Ridge
+    from sklearn.model_selection import GridSearchCV
+
+    rng = np.random.default_rng(0)
+    period = _panel_periods(n_periods=40)
+    X = rng.normal(size=(period.size, 2))
+    y = X @ np.array([1.0, -1.0]) + rng.normal(scale=0.3, size=period.size)
+    cv = PurgedTimeSeriesSplit(n_splits=5, embargo=1, min_train_size=15)
+    realized = len(list(cv.split(X, groups=period)))
+    assert realized == 4                                     # 9 train periods < 15: pruned
+    assert cv.get_n_splits(X, groups=period) == realized
+    gs = GridSearchCV(Ridge(), {'alpha': [0.1, 1.0, 10.0]}, cv=cv)
+    gs.fit(X, y, groups=period)                              # sklearn hands groups to split()
+    assert gs.n_splits_ == realized

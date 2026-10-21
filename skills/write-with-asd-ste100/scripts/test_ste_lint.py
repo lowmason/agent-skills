@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 
 LINTER = Path(__file__).resolve().parent / 'ste-lint.py'
-PINNED_SHA256 = '32263de1b6b74cc3f83846ae8545ba6c57994db0ba1ec1c8d842c310427886d1'
+PINNED_SHA256 = 'fff04bf85c1e8bd8dc69dcedc63a5d88ed513dfa24e505f9cb8318a4596c99cd'
 SYSTEM_PYTHON = Path('/usr/bin/python3')
 FENCE = '`' * 3
 

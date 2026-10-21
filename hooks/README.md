@@ -11,9 +11,9 @@ copying anything.
 
 # Project tooling hooks
 
-Reusable Claude Code hook scripts for **your real Python/uv work repos** — `alt-nfp`,
-`bls-stats`, `bls-stats-aggregation`, `naics-embedder` (each has a `pyproject.toml` +
-ruff dev-dep). They convert advisory CLAUDE.md prose ("always run ruff", "use uv, not
+Reusable Claude Code hook scripts for **your real Python/uv work repos** — `alt-nfp-stats`,
+`alt-nfp-model`, `naics-embedder` (each has a `pyproject.toml` + ruff dev-dep). They
+convert advisory CLAUDE.md prose ("always run ruff", "use uv, not
 pip") into deterministic gates that fire every time for ~0 tokens.
 
 > **These three are templates, not wired into this repo.** This repo (`agent-skills`)
@@ -32,14 +32,14 @@ pip") into deterministic gates that fire every time for ~0 tokens.
 | script | event | what it does |
 |---|---|---|
 | `ruff-fix.sh` | `PostToolUse` (`Write`/`Edit`) | `uv run ruff check --fix` + `ruff format` on the edited `*.py`. Best-effort (PostToolUse can't undo the edit). |
-| `ruff-check.sh` | `Stop` | `uv run ruff check .`; exit 2 feeds unfixable lint back to Claude. Guarded by `stop_hook_active` against loops. |
+| `ruff-check.sh` | `Stop` | `uv run ruff check .`; exit 2 feeds unfixable lint back to Claude. Guarded by `stop_hook_active` against loops. When ruff cannot run, it exits 1 with "ruff unavailable" and does not block. |
 | `uv-guard.sh` | `PreToolUse` (`Bash`) | Blocks `pip install`, bare `python`/`pytest`; injects the `uv …` form. Escape hatch: `no-uv-guard` in the command. |
 
 All three parse the hook JSON payload from stdin with `jq` (already on your machine).
 
 ## Install into a work repo
 
-From the target repo (e.g. `~/Projects/bls-stats`):
+From the target repo (e.g. `~/Projects/alt-nfp-stats`):
 
 ```bash
 mkdir -p .claude/hooks
@@ -72,7 +72,12 @@ Then trigger each blocking hook once to confirm it is wired: a hook command that
 not resolve fails open, so a typo in the path above disables the gate. The only sign is
 the error's first stderr line in the transcript. Ask Claude to run `python -c 'print(1)'`
 (uv-guard should block it) and to end a turn with a lint error in a `.py` file
-(ruff-check should block the stop).
+(ruff-check should block the stop). If the transcript shows "ruff unavailable" instead,
+ruff could not run in that repo. The exit status in that line names the cause:
+
+- 127: `uv` is not on the hook's `PATH`.
+- 1: the project does not sync.
+- 2: ruff is not one of the project's dev dependencies, or its ruff config is bad.
 
 Optionally pair with a permission allowlist in the same file so the `uv` forms don't
 prompt. The `uv run` rule holds in manual permission mode only: auto mode sets aside
@@ -85,13 +90,35 @@ broad allow rules for script runners such as `uv run`, so there that rule has no
 Prefer `cp` over symlinking so a hook change can't silently alter every repo at once;
 re-copy when you update a template here.
 
+## Tests
+
+`test_project_hooks.py` runs each template as Claude Code does: through its shebang,
+with a hook payload on stdin. A stub `uv` stands in for uv and ruff, so the tests need
+no network and no Python project. Each test runs twice: with the `bash` on the test's
+`PATH`, and with `/bin/bash`, which is bash 3.2 on macOS. So the templates must stay
+bash 3.2 compatible. Every test skips where `jq` is not installed. The tests that call
+the stub `uv` also skip where `/usr/bin` or `/bin` holds a real `uv`. The `/bin/bash`
+runs skip where there is no `/bin/bash`. Run the tests with the two commands under the
+guard's **Tests** below, which run every test in this directory.
+
 ## Limitations (by design — tune per repo)
 
 - **`uv-guard.sh` is a heuristic, not a shell parser.** It splits on `&& || ; | &` and
-  checks each subcommand's *first* token, so `uv run python x.py`, `echo python`, and
-  `which python` pass, while `python x.py` and `cat x | python -` are blocked. A
-  `python` invoked deeper inside a quoted string could slip through — acceptable for a
-  guardrail. Drop the `pytest)` case if you run pytest outside uv anywhere.
+  checks each subcommand's command word. That is its first token after any leading
+  `VAR=value` assignments and the prefix words `time`, `env` and `command`. A path
+  counts by its last part, so `.venv/bin/python` is `python`, and a version suffix
+  (`python3.13`) still matches. So `uv run python x.py`, `echo python`, `which python`
+  and `command -v python` pass, while `python x.py`, `FOO=1 python x.py`,
+  `time pytest -q` and `cat x | python -` are blocked. These can still slip through,
+  which is acceptable for a guardrail:
+  - an option of a prefix word: `env -i python x.py`, `time -p pytest`
+  - another prefix command: `exec`, `nohup`, `nice`, `sudo`, `xargs`
+  - an assignment whose quoted value holds a space: `FOO="a b" python x.py`
+  - a subshell, `$(…)` or backticks: `(python x.py)`
+  - a `python` inside a quoted string: `bash -c "python x.py"`
+
+  `DOCUMENTED_GAPS` in `test_project_hooks.py` pins this list. Drop the `pytest` branch
+  if you run pytest outside uv anywhere.
 - **`ruff-fix.sh` is best-effort.** PostToolUse runs *after* the write and cannot undo
   it; if `uv run ruff` errors (e.g. the file isn't in a uv project) it silently no-ops.
   `ruff-check.sh` (Stop) is the backstop for anything `--fix` can't resolve.
@@ -106,7 +133,8 @@ re-copy when you update a template here.
   except on a hook whose failure blocks (`onFailure: "block"` or that Windows case): there
   any exit other than 0 or 2 is a failure even with JSON that allows the action, so
   return JSON decisions with exit 0. `uv-guard.sh` and `ruff-check.sh` block with exit 2;
-  `ruff-fix.sh` never blocks.
+  `ruff-fix.sh` never blocks. When ruff cannot run, `ruff-check.sh` exits 1, so it reports
+  the failure and does not block.
 
 # Agent contract hooks
 

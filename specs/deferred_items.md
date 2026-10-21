@@ -4172,7 +4172,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       recommend-probabilistic-model, deep-learning and evaluate-deep-learning. The audit's
       "before the JAX merge" order is moot: that merge landed 2026-10-04. Size: design.
       Done when: the spec is approved in `specs/`.
-- [ ] Stop the experiment comparator from dropping non-Bayesian winners in silence
+- [x] Stop the experiment comparator from dropping non-Bayesian winners in silence
       (audit-3-10-26 G1, found 2026-10-03; re-verified 2026-10-18 by re-running the audit's
       fixture; the script is unchanged since 2026-07-05). tune-hyperparameters' Graduation
       section (`skills/tune-hyperparameters/SKILL.md:125-132`) sends a tuned winner to a
@@ -4198,7 +4198,15 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       X7 together, with no spec. Plan 53 (not executed) adds a header to this script and
       rewrites track's `SKILL.md:96-105`, so restate anchors after it. Size: plan. Done when:
       (a)–(e) are fixed, with tests.
-- [ ] Make tune-hyperparameters' purged splitter split periods, not rows, so panels stop
+      → done in plan 59 (2026-10-21; `specs/plans/completed/59-model-skill-comparator-and-cv-fixes.md`):
+      (a) the comparator names each ledger row it did not rank, on stderr, in `comparison.json`'s
+      `not_compared` and under the COMPARISON table, and while one exists the top row reads "best
+      among ELPD-compared variants"; (b) a folder with no `inference_data.nc` and `az.compare`'s
+      TypeError exit through `error:`; (c) tune's Graduation and track's When to use send a
+      non-Bayesian winner to the Decision log; (d) six new tests; (e) the comparator fills ELPD,
+      ΔELPD, max R̂, div, PPC and psense in each ranked row. The final review's fix wave also made
+      it keep escaped pipes in ledger cells.
+- [x] Make tune-hyperparameters' purged splitter split periods, not rows, so panels stop
       leaking (audit-3-10-26 G2, found 2026-10-03; re-verified 2026-10-18 on two panel
       fixtures). `skills/tune-hyperparameters/scripts/time_series_cv.py` takes no time or
       groups argument (`:28-38`) and slices row positions (`:54-71`), so on a long-format
@@ -4214,7 +4222,13 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       `<this-skill-dir>/scripts` on `sys.path`, or copy the file); a panel test asserting
       that no period is in both train and validation. Part of the G-A plan. Size: plan.
       Done when: the panel test passes and the SKILL.md claims match the code.
-- [ ] Guard the experiment comparator against bayesian-workflow's state-space shapes
+      → done in plan 59 (2026-10-21; `specs/plans/completed/59-model-skill-comparator-and-cv-fixes.md`):
+      `split(X, groups=period)` splits the sorted unique periods, with `test_size`, `embargo`,
+      `label_horizon` and `min_train_size` counted in periods. Without `groups` the folds are
+      unchanged. SKILL.md limits "already suffices" to a single series and gives an import that
+      resolves. A panel test and a `GridSearchCV` test were added. The docs say that period labels
+      must sort in time order.
+- [x] Guard the experiment comparator against bayesian-workflow's state-space shapes
       (audit-3-10-26 G3, guards half, found 2026-10-03; re-verified 2026-10-18 on fixtures).
       bayesian-workflow's state-space reference adds the likelihood with `numpyro.factor`
       (`skills/bayesian-workflow/references/state-space.md:69`, `:93`, `:103`, `:254`) and
@@ -4234,7 +4248,13 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       K-fold for forecast decisions) is in the lifecycle-spec item in this section. Part of
       the G-A plan. Size: plan. Done when: both shapes are refused with a named remedy, with
       tests, and state-space.md carries the warning.
-- [ ] Align tune-hyperparameters' Regime B router with bayesian-workflow (audit-3-10-26 G4,
+      → done in plan 59 (2026-10-21; `specs/plans/completed/59-model-skill-comparator-and-cv-fixes.md`):
+      the guards half only. The comparator refuses a log-likelihood with no observation dimension
+      and several log-likelihood variables, and names the remedy. `pointwise_count` replaces
+      `observation_count`, so a per-step `numpyro.factor` now counts. `state-space.md` warns beside
+      both `factor` routes and in Common gotchas, and says that the sources need one shared
+      observation dimension. The criterion half stays in the lifecycle-spec item in this section.
+- [x] Align tune-hyperparameters' Regime B router with bayesian-workflow (audit-3-10-26 G4,
       found 2026-10-03; re-verified 2026-10-18). (a) The `target_accept` row
       (`skills/tune-hyperparameters/SKILL.md:141`) says "eliminate divergences | 0
       divergences", while bayesian-workflow raises `target_accept_prob` only when
@@ -4255,6 +4275,12 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       The replaced wording drives behaviour, so micro-test it. Part of the G-A plan. Size:
       plan. Done when: the rows match bayesian-workflow, the rule is stated, and the
       micro-test record is kept.
+      → done in plan 59 (2026-10-21; `specs/plans/completed/59-model-skill-comparator-and-cv-fixes.md`):
+      the NUTS rows point at `diagnostics.md`'s escalation ladder and its tree-depth check. The SVI
+      row points at a new `skills/bayesian-workflow/references/svi.md`. The optax row reads "no
+      skill owns this yet". Step 0 states the rule (a neural network's learning rate is Regime A).
+      The micro-test record is `specs/verification/59-regime-b-router-microtest.md`: arm B failed
+      2 of 5 on S1, arm C failed 0 of 5, and both pre-registered bars were met. Only S1 was red.
 - [x] `compare_experiments.py` reads diagnostics keys that `diagnose_model.py` never writes
       (audit-3-10-26 X7, found 2026-10-03; re-verified 2026-10-18).
       `skills/track-model-experiments/scripts/compare_experiments.py:119`, `:123` and `:126`
@@ -4525,7 +4551,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       collision probes against recommend-probabilistic-model, recommend-causal-design and
       deep-learning. Size: plan. Done when: the hand-offs land, with any description change
       micro-tested.
-- [ ] Recast design-architecture's alt-nfp framing and refresh stale repo names (audit-3-10-26
+- [x] Recast design-architecture's alt-nfp framing and refresh stale repo names (audit-3-10-26
       G13, found 2026-10-03; re-verified 2026-10-18: no commit since). The skill still says
       "the same NFP-nowcasting problem is currently solved three ways" across `alt-nfp`,
       `alt_nfp` and `oi-indices` (`skills/design-architecture/SKILL.md:31-35`), which the
@@ -4539,7 +4565,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       `bls-stats`, `bls-stats-aggregation`) and `skills/develop-testing-strategy/SKILL.md:87`
       and `:232` (the conftest now lives in alt-nfp-stats). Size: plan. Done when: no
       present-tense claim names a retired repo, and the sketches span more than one project
-      family.
+      family. → done in plan 62
 - [x] Scope clean-code's F2 ("don't mutate arguments") to functional code, with a Flax NNX
       carve-out (audit-3-10-26 G14, found 2026-10-03; re-verified 2026-10-18; the audit's
       trigger, the JAX merge, passed on 2026-10-04).
@@ -4642,7 +4668,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       exits 1 on an empty list, lint_wiki.py errors out on a missing wiki/, and
       check_decoupling.py uses argparse with clean exit-2 errors. Findings stay exit 0. One test
       group each.
-- [ ] Fix and test the three hook templates (audit-3-10-26 X8, found 2026-10-03;
+- [x] Fix and test the three hook templates (audit-3-10-26 X8, found 2026-10-03;
       re-verified 2026-10-18 by probes; its drift-spec coordination, R11.5, is done).
       (a) `hooks/ruff-check.sh` blocks Stop with exit 2 and "ruff check found issues" for any
       non-zero status (`:21`, `:26`), so a missing `uv` (127) or a ruff that cannot start
@@ -4655,7 +4681,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       templates; add `hooks/test_*.py` that runs them by subprocess, compatible with
       Python 3.9 (the hooks suite also runs under `/usr/bin/python3`) and skipping when
       `jq` is absent. Restamp ruff-check.sh's cc-guide citation line. Size: plan. Done when:
-      (a)–(c) land, with the new tests passing on both interpreters.
+      (a)–(c) land, with the new tests passing on both interpreters. → done in plan 61
 - [x] Add the Oct 1–Nov 12, 2025 lapse in appropriations to bls-data-context (audit-3-10-26 F1,
       found 2026-10-03). Re-verified 2026-10-18: no commit has touched the skill since the audit,
       and a grep for lapse, appropriation, "October 2025" or "11-month" over it finds nothing
@@ -5190,10 +5216,20 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       `BUNDLED_LICENSES` row, and re-point the Sources link. See
       `specs/agent-skills-portability-spec.md` (R3.1, R3.5, R3.7, R4.1, R4.2). Size:
       quick-fix. Done when: the portability plan has done each of these for this skill. → done in plan 53
-- [ ] A drift review of both upstreams against the pinned commits (the spec's Consequences
+- [x] A drift review of both upstreams against the pinned commits (the spec's Consequences
       to know): danyuchn/asd-ste100-skill at `3944283c` and prithivrajmu/asd-ste100 at
       `d9323767`, both active. Size: quick-fix. Revisit if: either repository changes its
       linter, rule sets or license.
+      → done 2026-10-21 (branch claude/deferred-unblocked-3): reviewed danyuchn's 8 commits
+      through `cd62d297` (long-sentence word-count fixes in the linter and a README note; the
+      license is unchanged) and prithivrajmu's repository (unchanged at `d9323767`). The
+      owner chose to re-pin the linter: `scripts/ste-lint.py` is now byte-identical to
+      `cd62d297` (its pin test and self-test pass under 3.13 and `/usr/bin/python3`), and
+      `NOTICE` and both sources files credit Yuri Perin's fixes (upstream PRs #25 and #26).
+- [ ] The next drift review of both upstreams: danyuchn/asd-ste100-skill against `cd62d297`
+      for the vendored linter and `3944283c` for the adapted text, and prithivrajmu/asd-ste100
+      against `d9323767`. Size: quick-fix. Revisit if: either repository changes its linter,
+      rule sets or license after those commits.
 - [ ] The always-on rule's pointer line reaches work that the spec leaves out of scope
       (final review). `rules/write-with-asd-ste100.md` ends "To rewrite a text or a
       document, to write text for an agent reader, or to apply strict STE, use the
@@ -5571,11 +5607,14 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       subagents itself; that advice may be stale, since nesting is on by default and a
       subagent can spawn subagents up to three layers deep (sub-agents.md:1051), so verify it,
       then fix or drop it.
-- [ ] README line about uv (plan 53's completion gate, owner Q5, 2026-10-20): `README.md`'s
+- [x] README line about uv (plan 53's completion gate, owner Q5, 2026-10-20): `README.md`'s
       Installation section never says that uv is needed, but 12 skills now run their bundled
       scripts with `uv run` and name uv in `compatibility` (R3.5, R3.6). Add one line under
       Installation. Deferred by the owner at the gate. Size: quick-fix. Done when:
       `README.md`'s Installation section says that skills with bundled scripts need uv.
+      → done 2026-10-21 (/deferred quick fix): a paragraph after the clone step says that skills
+      with bundled scripts run them with `uv run`, links uv's install page, and notes that the
+      installer itself needs only `python3`. The wording names no skill count.
 - [ ] Review Minors from plan 53's task reviews and final review, unfixed (the owner's gate
       answer Q4, 2026-10-20: the five fixed now landed in 570afd2 and 2449c4d). In
       `build/check_frontmatter.py`: (a) `_check_value_shapes` reports a null `metadata:` as
@@ -5910,7 +5949,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       Files: `build/cc_guide/baseline.py`, `build/cc_guide/lint.py`, drift spec R2.4. Size:
       design. Done when: the owner picks a remedy and a test shows that two such branches,
       merged in either order, leave the file STALE, or the owner records the gap as accepted.
-- [ ] Each probe run inherits the caller's whole environment (`probes.execute` passes
+- [x] Each probe run inherits the caller's whole environment (`probes.execute` passes
       `env={**os.environ, **inv.env}`). The guide says `CLAUDE_CODE_EFFORT_LEVEL` outranks an
       agent's `effort` field and a per-spawn effort (subagents.frontmatter, guide line 184). So
       if that variable is set in the shell that runs `cli.py probes`, the `agent-model-pins`
@@ -5921,6 +5960,174 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       in the pins run, test-first. Files: `build/cc_guide/probes.py` and its tests. Size:
       quick-fix. Done when: a test shows that the pins run ignores an inherited
       `CLAUDE_CODE_EFFORT_LEVEL`, or that its row records it.
+      → done 2026-10-21 (/deferred quick fix): `execute` drops every name in the new
+      `SCRUBBED_ENV` (today only `CLAUDE_CODE_EFFORT_LEVEL`) from the caller's environment before
+      it adds the invocation's own, so every probe run goes without the override, the pins run
+      included. `test_a_run_never_inherits_the_effort_override` in `test_probes.py` sets the
+      variable, runs a script through `execute` and sees it unset, while a variable the
+      invocation adds still arrives. It failed with `low` before the fix. The agent `model`
+      field needs no guard against `CLAUDE_CODE_SUBAGENT_MODEL`, which it outranks. The alias
+      remaps (`ANTHROPIC_DEFAULT_HAIKU_MODEL` and its siblings) are a separate item, in section
+      deferred-2026-10-21.
+
+## deferred-2026-10-21 (no plan; /deferred pass, branch claude/deferred-111d78) — 2026-10-21
+- [ ] A model-alias remap in the caller's shell can make the `agent-model-pins` probe report a
+      false DIVERGES. The guide says `ANTHROPIC_DEFAULT_OPUS_MODEL`, `_SONNET_MODEL`,
+      `_HAIKU_MODEL` and `_FABLE_MODEL` decide what each alias resolves to (section
+      `lean.model-routing`, guide line 431). The Explore and test-runner agents pin `model:
+      haiku`, and `assess_agent_model_pins` in `build/cc_guide/probe_checks.py` passes them only
+      when each served model's name contains `haiku`. So an `ANTHROPIC_DEFAULT_HAIKU_MODEL` that
+      points outside the Haiku family turns correct pins into DIVERGES. `probes.execute` drops
+      only `SCRUBBED_ENV` (today `CLAUDE_CODE_EFFORT_LEVEL`, the 2026-10-21 quick fix in section
+      cc-guide-files-2026-10-21) and passes the remaps through. Found while checking that quick
+      fix's note. Deferred because it is a decision: on Bedrock, Google Cloud or Foundry a remap
+      may be the owner's deliberate setup, and scrubbing it would test a model the owner does
+      not run. Options: add the four names to `SCRUBBED_ENV`, or record any that are set in the
+      probe's row. Files: `build/cc_guide/probes.py` and `build/cc_guide/test_probes.py`. Size:
+      design. Done when: the owner picks scrub or record, and a test shows that an inherited
+      remap is either absent from the run or named in its row.
+
+## 61-hook-template-fixes — 2026-10-21
+- [ ] `hooks/uv-guard.sh` lets through more command shapes than `hooks/README.md` names (plan 61
+      final review, Minor; the owner chose to defer). Under `/bin/bash` these exit 0: a command
+      after a shell keyword (`if true; then python x.py; fi`, `for f in *; do pytest $f; done`),
+      a prefix word given as a path (`/usr/bin/env python x.py`, `/usr/bin/time pytest -q`), a
+      backslash escape (`\python x.py`) and the free-threaded name `python3.13t`. The prefix words
+      match by exact word, while the final command word matches by its last path part, so the
+      header comment "A path counts by its last part" can mislead. The README text and plan 61's
+      defaults P3 and P4 fix today's behaviour, so a change needs the owner's go-ahead. For each
+      shape, either close it (add `then`, `do`, `else`, `elif` and a last-path-part match to the
+      skip set, or widen `python_re`) or name it in `hooks/README.md` and in `DOCUMENTED_GAPS` in
+      `hooks/test_project_hooks.py`. See specs/plans/completed/61-hook-template-fixes.md. Size:
+      design. Done when: each of the four shapes is closed in the script with a test, or is named
+      in the README and pinned in `DOCUMENTED_GAPS`.
+- [ ] `hooks/uv-guard.sh` splits a command on `&& || ; | &` without reading quotes or redirects
+      (plan 61 final review, Minor, older than plan 61; the owner chose to defer). Three
+      effects: `python x.py 2>&1 | tee log` suggests `uv run python x.py 2>` (the `&` of `2>&1`
+      splits it), a trailing `&` leaves a trailing space in the suggestion, and
+      `echo "a; python x.py"` is a false-positive block (`no-uv-guard` is the escape). Block and
+      allow results stay right for common commands. Plan 61's Global Constraints keep the README
+      sentence "It splits on `&& || ; | &`", so a fix must change that sentence, with the owner's
+      go-ahead. Size: design. Done when: a split that reads quotes and `>&` lands with tests that
+      pass under bash 3.2, or the README names these three effects as limits.
+- [x] Small cleanups from plan 61's reviews, one batch (the owner chose to defer). (a)
+      `hooks/README.md` (the "Tests" section) and the second `hooks` note in `build/suites.toml`
+      say the tests skip where `jq` is missing. The `ruff_shim` tests also skip where `/usr/bin`
+      or `/bin` holds a `uv`, and the `system-bash` runs skip where `/bin/bash` is absent.
+      (b) The install-check text in `hooks/README.md` ("If the transcript shows "ruff
+      unavailable" instead ...") starts a sentence with "Then", which reads as a time order, and
+      its cause list leaves out a bad ruff config (exit 2). (c) `hooks/ruff-check.sh` cites
+      `hooks.events hooks.exit-codes hooks.patterns`. Its comment calls exit 1 a non-blocking
+      error, and for a `Stop` hook that also rests on `hooks.pitfalls` (`onFailure: "block"` has
+      no effect on `Stop`). Add `hooks.pitfalls`, then restamp with
+      `uv run --python 3.13 python build/cc_guide/cli.py baseline cite hooks/ruff-check.sh`.
+      (d) `child_env` in `hooks/test_project_hooks.py` passes the caller's whole environment to
+      the hook; drop `BASH_ENV` and `SHELLOPTS` so an exported value cannot change the child
+      bash. Run it after plan 61 merges: it edits files that plan changes. Size: quick-fix. Done
+      when: the four edits land and the hooks suite passes on both interpreters.
+      → done 2026-10-21 (quick fix, branch claude/deferred-unblocked-3): (a) both texts now
+      name all three skips; (b) the install check lists the cause for each exit status
+      (127, 1, 2) and no sentence starts with "Then"; (c) the citation adds `hooks.pitfalls`,
+      and its stamp stayed at 2.1.306; (d) `child_env` drops the names in `SCRUBBED_ENV`
+      (`BASH_ENV`, `SHELLOPTS`). `test_the_caller_environment_cannot_change_the_hook_bash`
+      failed 4 of 4 runs before the fix. The hooks suite passes 400 on both interpreters.
+- [ ] Hold, owner-only: check whether the Claude Desktop app shows the first stderr line of a hook
+      that exits 1 (plan 61's default P1, not verified). `hooks/ruff-check.sh` exits 1 with
+      "ruff-check: ruff unavailable (exit N), so lint was not checked." when ruff cannot run, and
+      the install check in `hooks/README.md` tells the reader to look for that line in the
+      transcript. The guide says an exit-1 hook's first stderr line shows in the transcript
+      (`hooks.exit-codes`); only the CLI was considered, and the Desktop app was not tested. To
+      do: in a Desktop session, in a repo where `uv` is not on the hook's `PATH`, end a turn with
+      `ruff-check.sh` installed as a `Stop` hook and look for the line. Size: quick-fix. Done
+      when: the result is recorded in `hooks/README.md`'s install check (the line shows, or the
+      README names the Desktop gap and a different signal).
+
+## 59-model-skill-comparator-and-cv-fixes — 2026-10-21
+
+Plan 59 ticked the audit-3-10-26 items G1, G2, G3 (guards half) and G4. The items below are what its
+per-task reviews and its final review (an Opus code-reviewer and a Codex run) left unfixed, triaged
+defer. Anchors are at the end of plan 59's fix wave.
+
+- [ ] Harden `skills/track-model-experiments/scripts/compare_experiments.py` after plan 59's final
+      review. (a) `_cells` strips every outer pipe with `.strip('|')`, so a last cell that ends in
+      `\|` right against the closing pipe loses its escape, and a row written `|| b |` loses its
+      empty first cell. Remove exactly one outer pipe on each side. (b) The over-wide-row backstop
+      in `update_ledger` skips the row. If that row is the top-ranked variant, no row gets the best
+      marker. If it holds a stale `**best**`, the ledger can show two. Make the note say so, or
+      pick a rule. (c) A ranked winner with no Variants-table row clears every marker with no
+      note: name the ranked ids that the table lacks. (d) `main()` reads `--ledger` before it
+      writes `--output`, so a mistyped ledger path gives a `FileNotFoundError` traceback and no
+      `comparison.json`: check `args.ledger.is_file()` first and exit through `error:`. (e) The
+      metric-column lookup is case-sensitive, so a header such as `elpd` gets no fill and no
+      message: print one note when no column matched. (f) Test gaps in
+      `test_compare_experiments.py`: the winner row's cells and marker; the `None` divergence
+      rendering; the `count == 0` branch of `pointwise_count`; a row shorter than the header; a
+      Variants header with no `status`; an unterminated `COMPARISON:BEGIN`; the over-wide-row test
+      should assert that the other rows still get their marker and metric cells; `_row` reads the
+      first line that starts with the id, so it depends on the block sitting below the table; the
+      escaped-pipe asserts use double-quoted f-strings, where the file uses single quotes, and the
+      helper `_unescaped_cells` copies `_cells`' regex. Size: plan. Done when: (a) to (e) are fixed
+      or dropped on purpose, each with a test, and the (f) gaps are filled.
+- [ ] Three nits in the splitter's tests (plan 59 final review).
+      `skills/tune-hyperparameters/scripts/test_time_series_cv.py`:
+      `test_panel_folds_split_whole_periods` asserts a gap `>= embargo`, where `== embargo` pins the
+      gap (the acceptance run showed exact gaps); `test_one_row_per_period_matches_row_mode` sends
+      both paths through `_period_index`, so the baseline tests are what pin row mode; a 0-d
+      `groups` raises `IndexError` at `labels.shape[0]`, not the `ValueError` that the length check
+      gives. Size: quick-fix. Revisit if: someone edits `time_series_cv.py` again, or a panel run
+      shows a leak.
+- [ ] Two doc nits left by plan 59's final review. (a) The root `README.md` row for
+      track-model-experiments lists the inputs the comparator refuses but omits several
+      log-likelihood variables. (b) tune's Graduation (`skills/tune-hyperparameters/SKILL.md`) and
+      track's When to use (`skills/track-model-experiments/SKILL.md`) still give "tuned `<class>`
+      via Optuna" as the `what changed` example, while the next sentence sends a non-Bayesian
+      winner to the Decision log. Tighten (b) after the O1 owner call on track's scope (the
+      lifecycle-spec item in section `audit-3-10-26 routing`). Size: quick-fix. Done when: the
+      README row names the refusal, and the two Graduation texts agree with the O1 ruling.
+- [ ] Polish `skills/bayesian-workflow/references/svi.md` (plan 59 final review). (a) Check 3 says
+      to set `num_svi_steps` to what check 1 showed is enough, but check 1 runs 3000 steps and the
+      VSBC call uses 2000: reuse one number, or add a comment that 2000 is a runtime shortcut. (b)
+      ELBO, VSBC, KS and PSIS-LOO are not expanded at first mention, here and in the Samplers
+      paragraph in `skills/bayesian-workflow/SKILL.md` that points to this file (the repo's
+      plain-English rule asks for the plain meaning at first mention). (c) Add one sentence that
+      VSBC needs a generative model with continuous latent sites only. Size: quick-fix. Done when:
+      (a) to (c) are edited, snippet Tiers 1 to 3 pass, and no `WARN` line names `svi.md`.
+- [ ] State in `skills/bayesian-workflow/references/diagnostics.md` that NumPyro prints no warning
+      when `max_tree_depth` is reached (plan 59 final review). tune's `max_tree_depth` router row
+      says "NumPyro prints no warning", and the arm C micro-test answers repeat it, but no
+      bayesian-workflow file states it. Check the claim against NumPyro 0.22.0's source or a run,
+      then add one sentence beside the tree-depth text (`diagnostics.md:46-50`). Size: quick-fix.
+      Done when: the sentence is in `diagnostics.md`, with the source check named.
+- [ ] tune-hyperparameters' frontmatter `description` still triggers on "dynamax optax SGD", which
+      no skill owns after plan 59 (the optax router row reads "no skill owns this yet"). Descriptions
+      are G5 work, gated on the O1 to O3 owner calls (see the lifecycle-spec item in section
+      `audit-3-10-26 routing`). Each description change needs writing-skills' micro-test with
+      collision probes. Size: plan. Done when: the G5 description pass either drops the trigger or
+      gives the optax knob an owner, with a micro-tested wording.
+- [ ] Watch tune's Regime B router wording for over-deferral (plan 59 micro-test,
+      `specs/verification/59-regime-b-router-microtest.md`). Only S1 was red (arm B 2 of 5, arm C 0
+      of 5, one-sided Fisher p about 0.22), and that rests on the literal "any listed action"
+      grading rule. On S2, the control, arm C listed no refit in 3 of 5 reps and deferred the raise
+      to the ladder, where arms A and B listed a refit at 0.9 or 0.95 in all 10. No rep ruled a
+      raise out, and the ladder says to raise at 1% or less, so all passed. Size: quick-fix.
+      Revisit if: an agent that loads the router declines a justified `target_accept` raise
+      (divergences at 1% or less, healthy R-hat and ESS), or a later micro-test that grades the
+      first action shows the same drift. Then use the fallback row in plan 59's Task 6 text
+      (`specs/plans/completed/59-model-skill-comparator-and-cv-fixes.md`), which states the 1%
+      threshold.
+
+## 62-design-architecture-recast — 2026-10-21
+- [x] `skills/develop-testing-strategy/references/scraper-tests.md:81` still imports
+      `_parse_ref_date` and `_last_business_day` in its illustrative test, while
+      `skills/develop-testing-strategy/SKILL.md:87`, reworded in plan 62 (default P7), now
+      names no function and says the `bls-stats` package tests "its period parser and
+      reference dates". The two now read differently. Plan 62 kept the reference out of scope
+      (default P1), and its final review raised it as a follow-up. See
+      specs/plans/completed/62-design-architecture-recast.md. Size: quick-fix. Done when: the
+      illustrative import uses generic names that match SKILL.md:87, or the reference says
+      the names are illustrative. → done 2026-10-21 (owner-requested quick fix): the
+      reference's intro now says its module path and helper names are illustrative, which
+      covers both the section 0 path comment and the section 2 import.
 
 ## 60-finishing-branch-worktree-isolation — 2026-10-21
 
