@@ -1,4 +1,4 @@
-# cc-guide: subagents.frontmatter subagents.tools subagents.models hooks.events hooks.exit-codes hooks.patterns @2.1.304
+# cc-guide: subagents.frontmatter subagents.tools subagents.models hooks.events hooks.exit-codes hooks.patterns @2.1.304.3
 '''The probe assertions (drift spec R10.2, R10.5): pure functions over a probe
 run's raw stream-json events and the side files the run leaves, each giving
 an outcome and a one-line finding. They read event fields, never the model's
