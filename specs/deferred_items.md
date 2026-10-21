@@ -4796,7 +4796,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       finishing-a-development-branch are micro-tested. The aged-tail gate is quiet today and
       re-arms on 2026-11-13. Size: design. Done when: the spec is approved, or the owner
       records each rule as declined.
-- [ ] Make finishing-a-development-branch work under Claude Code's worktree isolation
+- [x] Make finishing-a-development-branch work under Claude Code's worktree isolation
       (audit-3-10-26 D1, found 2026-10-03; re-verified 2026-10-18: the skill is
       byte-identical to the audit's copy, and using-git-worktrees is unchanged since
       2026-07-04). (a) Option 1 (`skills/finishing-a-development-branch/SKILL.md:233-247`),
@@ -4822,7 +4822,15 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       the wording and add NOTICE change-list lines. Plan 53 (portability, not executed)
       edits the same file in Tasks 11 and 12; do the B8 item in this section in the same
       change. Size: plan. Done when: (a)–(d) are fixed and micro-tested, with NOTICE lines.
-- [ ] Record what finishing-a-development-branch's Step 4b review leaves unfixed
+      → done in plan 60 (2026-10-21): finishing's Step 2 now detects MAIN_GIT and MADE_BY, and
+      Steps 5 and 6 branch on them. Options 1 and 4 and Step 6 no longer run refused commands
+      or remove a worktree the session did not make. A refused removal names the cause and
+      asks, and the agent hands over any force or unlock command instead of running it.
+      using-git-worktrees' Step 1a now runs a base check and makes the worktree with git when a
+      native tool would leave out unpushed commits. Micro-tested, with NOTICE lines: see
+      `specs/completed/finishing-worktree-isolation-micro-tests.md`. Wording gaps found in
+      review are in the `60-finishing-branch-worktree-isolation` section below.
+- [x] Record what finishing-a-development-branch's Step 4b review leaves unfixed
       (audit-3-10-26 B8, found 2026-10-03; re-verified 2026-10-18 — the skill is unchanged
       since 2026-09-27). Step 4b's Codex review runs after the plan-completion protocol has
       already collected unfixed findings, and it ends by showing the partner what was left
@@ -4833,6 +4841,10 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       discipline skill, so the wording is micro-tested. Do with the D1 item in this section
       (same file). Size: plan. Done when: Step 4b offers the append, the caller list names it,
       and the micro-test record is kept.
+      → done in plan 60 (2026-10-21): Step 4b now offers to record the findings the partner
+      carries, as a dated section `## <name> Step 4b review — <YYYY-MM-DD>` committed with the
+      branch. The caller list in `deferred-backlog.md` names Step 4b. Micro-tested as S8
+      (control 0 of 5, treatment 5 of 5) in the same record.
 - [x] Route `/fix-issue` through finishing-a-development-branch (audit-3-10-26 D4, found
       2026-10-03; re-verified 2026-10-18). `commands/fix-issue.md` cuts its branch in the
       current checkout (`:18-20`) and then commits, pushes and opens a PR itself (`:26-27`), so
@@ -5909,3 +5921,69 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       in the pins run, test-first. Files: `build/cc_guide/probes.py` and its tests. Size:
       quick-fix. Done when: a test shows that the pins run ignores an inherited
       `CLAUDE_CODE_EFFORT_LEVEL`, or that its row records it.
+
+## 60-finishing-branch-worktree-isolation — 2026-10-21
+
+- [ ] Test and guard the normal-repo path of finishing Options 1 and 4 (plan 60 final review,
+      found by the Opus code-reviewer and Codex). No scenario covers a normal repo, one with no
+      linked worktree. So the branch deletion that plan 60's last fix restored has no test.
+      Option 4 there runs `git checkout <base-branch>` before `git branch -D`. That checkout
+      carries uncommitted changes that do not conflict onto the base branch after a discard,
+      and the text sets no rule for a partner who then asks to force it. A status check before
+      the checkout would show the changes: list them and ask, as Step 6 does for a refused
+      removal. Files: `skills/finishing-a-development-branch/SKILL.md` (Options 1 and 4), the
+      micro-test kit outside the repo at `~/.cache/agent-skills/scratch/plan60-micro/` (two new
+      fixtures, their pre-registration rows, prompts via `build.py`), and
+      `specs/completed/finishing-worktree-isolation-micro-tests.md`. About $1 for the runs.
+      Size: plan. Done when: a normal-repo scenario for Option 1 and one for Option 4 each pass
+      at least 4 of 5 reps with a control arm beside them, Option 4 checks `git status` before
+      the checkout, and the record says so.
+- [ ] Fix wording gaps in `skills/finishing-a-development-branch/SKILL.md` in one edit (plan 60
+      reviews, none fixed because each needs the S1 to S8 re-run, about $2.5). (a) The force
+      sentence ends Step 6's refusal paragraph with "give them the commands from that step
+      through the branch deletion". It should name the unlock or the forced removal, then the
+      prune and the branch deletion, and say to wait for the partner's result. (b) Step 6 says
+      "Done." for a normal repo, which a literal reader may take as the end of Option 1 before
+      the branch deletion. (c) Option 4's confirmation list names "Worktree at <path>", which
+      is the main checkout in a normal repo. (d) Step 2's table says "No cleanup (externally
+      managed)" for a detached HEAD, an inference that the detect-never-infer rule
+      contradicts, and Step 6 never mentions a detached HEAD. (e) Step 4b says "Option 2
+      pushes", but on the detached-HEAD menu the push is Option 1. (f) Step 4b's record
+      paragraph does not say that the items are unticked `- [ ]` lines at column 0, which
+      `deferred_stats.py` counts. (g) "Before Option 1 leaves the worktree" does not name the
+      partner's merge. (h) Step 6 says "Run these from MAIN_ROOT." before the hand-off
+      exception. Size: quick-fix. Done when: the points are fixed, S1 to S8 pass at least 4 of
+      5 each on the edited text, and the micro-test record says so.
+- [ ] Fix wording gaps in `skills/using-git-worktrees/SKILL.md` in one edit (plan 60 reviews).
+      (a) Common Mistakes says "Step 1a defers to native tools" and Always says "Prefer native
+      tools over git fallback". Neither carries the base-check route that the Overview, the
+      Core principle and the Never list now carry. (b) Step 0 detects isolation with
+      `GIT_DIR=$(cd "$(git rev-parse --git-dir)" ... && pwd -P)`. An isolated session refuses
+      `$(...)` and `cd ... &&` forms, so the first call fails and needs a retry. This predates
+      plan 60. (c) Step 1a has no branch for a partner who declines the approval prompt that
+      `EnterWorktree` with `path` raises outside `.claude/worktrees/`. (d) The base check
+      measures "behind the origin default", not strictly "unpushed". (e) The Common Mistakes
+      entry says "such as the plan you are about to execute", which echoes scenario S9's
+      fixture. All 5 S9 answers took the git route anyway, so the risk is low. Size:
+      quick-fix. Done when: the points are fixed, S9 and S10 pass at least 4 of 5 each on the
+      edited text (about $0.7), and the micro-test record says so.
+- [ ] Update the section prose in `skills/writing-plans/references/deferred-backlog.md` for
+      Step 4b's sections (plan 60 Task 3 review). Step 4b now writes a dated section, named
+      `## <name> Step 4b review — <YYYY-MM-DD>`, where `<name>` may be a branch name. The
+      "Age comes from each item's `## <plan> — <YYYY-MM-DD>` section header, which the Plan
+      Completion Protocol has always written" paragraph and the triage's "source plan" wording
+      name only plans. `deferred_stats.py` already parses the Step 4b form. Size: quick-fix.
+      Done when: both passages cover Step 4b's sections and a test or a run of
+      `deferred_stats.py` on a Step 4b section shows the age counted.
+- [ ] Decide whether the Claude Code guide covers worktree isolation (plan 60 requirement
+      R4.3, the owner's decision D9). `specs/guides/claude-code-customization-guide.md` has no
+      section on these facts, which plan 60 measured on Claude Code 2.1.304. An isolated
+      session refuses `git -C <main>`, `$(...)` and `cd <main> && git`. ExitWorktree `keep`
+      works for EnterWorktree and `--worktree` launches and is a no-op for app-launched
+      worktrees. EnterWorktree branches from the remote's default branch unless
+      `worktree.baseRef` is `head`, and it keeps unpushed commits only when no remote exists.
+      Desktop app sessions are not isolated. Evidence: the Ground truth section of
+      `specs/completed/finishing-worktree-isolation-micro-tests.md` and the probe files under
+      `~/.cache/agent-skills/scratch/plan60-micro/probe/`. The skills carry no `# cc-guide:`
+      citation for these facts. Size: design. Done when: the owner adds a guide section,
+      verified through `/cc-guide`, or records the facts as deliberately uncovered.

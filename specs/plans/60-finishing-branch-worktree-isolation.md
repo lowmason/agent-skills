@@ -1,5 +1,7 @@
 # finishing-a-development-branch under worktree isolation Implementation Plan
 
+**Status: COMPLETE (2026-10-21)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Make finishing-a-development-branch detect a worktree-isolated session and who made its worktree, then merge, discard and clean up without running refused commands or removing worktrees it does not own. Make its Step 4b review record the findings the partner carries. Make using-git-worktrees keep unpushed commits when it uses a native worktree tool.
@@ -145,7 +147,7 @@ The owner approved D5–D13 at plan review with "Approve all nine defaults as re
 
 In every command below, write `KIT` out in full as `/Users/lowell/.cache/agent-skills/scratch/plan60-micro`, and `REPO` as the worktree's absolute path.
 
-- [ ] **Step 1: Pin BASE and save the control text**
+- [x] **Step 1: Pin BASE and save the control text**
 
 Run `git merge-base HEAD main` and record the SHA as BASE. It should be `0fd27b6…`. If it differs, check that `git diff 0fd27b6 <BASE> -- skills/finishing-a-development-branch skills/using-git-worktrees skills/writing-plans/references/deferred-backlog.md` prints nothing. If it prints anything, stop and tell the owner: main has changed these files since planning.
 
@@ -159,7 +161,7 @@ git show <BASE>:skills/using-git-worktrees/SKILL.md > /Users/lowell/.cache/agent
 
 Expected: `head -3` of each file shows `---` and its `name:` line.
 
-- [ ] **Step 2: Write the probe files**
+- [x] **Step 2: Write the probe files**
 
 `KIT/probe/prompt.txt`:
 
@@ -251,7 +253,7 @@ for name in ('stream.jsonl', 'noop.jsonl'):
         print('REFUSED' if error else 'ALLOWED', '|', command[:90], '|', ' '.join(text.split())[:240])
 ```
 
-- [ ] **Step 3: Write the fixtures and the tool list**
+- [x] **Step 3: Write the fixtures and the tool list**
 
 Each fixture has header lines (`skill:`, `main:`, `worktree:`, `message:`), a `---` line, then the situation. `build.py` replaces `{redirect}` and `{noop}` with the probe's real Claude Code texts, with the paths changed to the fixture's own.
 
@@ -415,7 +417,9 @@ message: Set up a worktree and start executing plan 21.
 You are in /work/atlas, a normal checkout (not a linked worktree, not a submodule), on branch main. You just ran `git pull`, which brought in specs/plans/21-cache-warmup.md, and `git status -sb` printed "## main...origin/main". Your partner has asked you to work in an isolated worktree, and you have the EnterWorktree tool.
 ```
 
-- [ ] **Step 4: Write the kit scripts**
+- [x] **Step 4: Write the kit scripts**
+
+> Deviation: run.py and pilot.py gained `--strict-mcp-config` and the variable `CLAUDE_CODE_DISABLE_ADVISOR_TOOL=1`. A run whose usage shows a non-message iteration or a second model is excluded. The kit also gained helper scripts the plan does not list (record deviations a, c and e).
 
 `KIT/build.py`:
 
@@ -628,7 +632,7 @@ for line in proc.stdout.splitlines():
         print(record.get('result', ''))
 ```
 
-- [ ] **Step 5: Re-run the probes on this binary**
+- [x] **Step 5: Re-run the probes on this binary**
 
 Run these three commands, one per call:
 
@@ -646,7 +650,9 @@ Expected, matching the planning run on Claude Code 2.1.304:
 
 If any step differs, stop and tell the owner which one and what it printed. The wording in Tasks 2–4 rests on these results. Cost: about $0.50.
 
-- [ ] **Step 6: Write the pre-registration**
+- [x] **Step 6: Write the pre-registration**
+
+> Deviation: the pre-registration has three hashes, not one. `62327b0f…` was superseded before any graded run. `1aae8a4e…` covers the 50 control runs. `01b9ec31…` covers every later run (record deviation e).
 
 `KIT/PREREGISTRATION.md`:
 
@@ -695,7 +701,9 @@ Stop rules (the owner's decision D6 at plan review, 2026-10-21, on a control tha
 
 Record its hash: `shasum -a 256 /Users/lowell/.cache/agent-skills/scratch/plan60-micro/PREREGISTRATION.md`.
 
-- [ ] **Step 7: Build the control prompts and run the answer-key gate**
+- [x] **Step 7: Build the control prompts and run the answer-key gate**
+
+> Deviation: this step ran before Step 6, so that a fixture rename could not change the hashed pre-registration. The answer-key grep also ran on the treatment text (record deviations b and g).
 
 ```bash
 python3 /Users/lowell/.cache/agent-skills/scratch/plan60-micro/build.py control <REPO>
@@ -704,7 +712,9 @@ grep -n -i -E 'atlas|quiet-heron|amber-finch|calm-otter|ledger|csv-header|date-p
 
 Expected: `build.py` prints ten `S…-control.txt` names with sizes. `grep` prints nothing and exits 1. If grep prints a line, a fixture identifier is in the skill text. Rename it in the fixture, not in the skill, and rebuild.
 
-- [ ] **Step 8: Pilot one run**
+- [x] **Step 8: Pilot one run**
+
+> Deviation: the pilot ran in stream-json mode and found 33 MCP tools under `--tools ""`. The flag `--strict-mcp-config` removed them (record deviation a).
 
 ```bash
 python3 /Users/lowell/.cache/agent-skills/scratch/plan60-micro/pilot.py S3-exit-noop-control
@@ -712,7 +722,9 @@ python3 /Users/lowell/.cache/agent-skills/scratch/plan60-micro/pilot.py S3-exit-
 
 Expected: `cwd:` is `/tmp/plan60-micro/run` or `/private/tmp/plan60-micro/run`. `tools:` is empty. `turns:` is 1. The answer is a numbered list in the RUN/TOOL/EDIT/ASK/REPORT form. Note whether `skills:` lists finishing-a-development-branch. A listed name is harmless, because no tool can load its body, but the record says so. If `tools:` is not empty, or the answer quotes a file the prompt does not carry, stop: the run is not isolated.
 
-- [ ] **Step 9: Run the control arm**
+- [x] **Step 9: Run the control arm**
+
+> Deviation: the arm ran in four calls by scenario group, because one Bash call is capped at 10 minutes. S9 rep 1 was excluded for an advisor call and re-run (record deviations d and e).
 
 ```bash
 python3 /Users/lowell/.cache/agent-skills/scratch/plan60-micro/run.py control red 5
@@ -720,7 +732,7 @@ python3 /Users/lowell/.cache/agent-skills/scratch/plan60-micro/run.py control re
 
 Expected: 50 lines ending in a cost, then `spent so far $…`, about $4–6. Re-run the same command to retry any `exit` line. It keeps the files that exist.
 
-- [ ] **Step 10: Grade the control arm by hand**
+- [x] **Step 10: Grade the control arm by hand**
 
 ```bash
 python3 /Users/lowell/.cache/agent-skills/scratch/plan60-micro/show.py 'S*-control-red-*.json'
@@ -728,11 +740,11 @@ python3 /Users/lowell/.cache/agent-skills/scratch/plan60-micro/show.py 'S*-contr
 
 Read every answer. In `KIT/RESULTS.md`, write one line per rep: `S3-exit-noop control red 2: FAIL: "RUN cd /work/atlas && git checkout main"`. Each line gives the verdict and a short quote that shows it. Apply the PASS/FAIL table exactly, and note any answer that fits neither column.
 
-- [ ] **Step 11: Apply the stop rules**
+- [x] **Step 11: Apply the stop rules**
 
 Count PASS per scenario. If S8's control passed 5 of 5, stop and ask the owner whether the Step 4b change goes ahead. If a decoy's control failed, report it to the owner before Task 2.
 
-- [ ] **Step 12: Write the record**
+- [x] **Step 12: Write the record**
 
 Create `specs/completed/finishing-worktree-isolation-micro-tests.md`:
 
@@ -780,7 +792,9 @@ session's own worktree <kept or lost> its `locked claude session` line. Pilot: <
 
 Every `<…>` here is a value this task produces. Write each one in.
 
-- [ ] **Step 13: Commit**
+- [x] **Step 13: Commit**
+
+> Deviation: Task 1 made three commits, 94bc6ea, bd7547f and 66f32fc. Review rounds closed the advisor channel, corrected an S3 row and made the run screen fail closed.
 
 ```bash
 bash build/run_commit_lints.sh
@@ -803,7 +817,7 @@ Expected: the lints print no failure, and the commit lands.
 - Consumes: the kit from Task 1.
 - Produces: the recorded values MAIN_GIT (`allowed`, `blocked`, `ask`) and MADE_BY (`this session`, `launcher`) in Step 2. Task 3 leaves them alone. Task 3 inserts its NOTICE bullet after the one this task adds.
 
-- [ ] **Step 1: Replace Step 2 and Step 3**
+- [x] **Step 1: Replace Step 2 and Step 3**
 
 Replace from `### Step 2: Detect Environment` (`:124`) through `ask instead: "This branch split from main - is that correct?"` (`:157`) with:
 
@@ -868,7 +882,7 @@ gh repo view --json defaultBranchRef -q .defaultBranchRef.name
 ask instead: "This branch split from main - is that correct?"
 ````
 
-- [ ] **Step 2: Point Step 4b at the new exit**
+- [x] **Step 2: Point Step 4b at the new exit**
 
 In Step 4b (`:200`), replace:
 
@@ -882,7 +896,9 @@ with:
 Run it from the feature worktree, before Option 1 leaves it — from
 ```
 
-- [ ] **Step 3: Replace Option 1**
+- [x] **Step 3: Replace Option 1**
+
+> Deviation: owner-approved wording changes E1 and E6 apply here. After the final review, Option 1 deletes the branch in a normal repo or once Step 6 removed the worktree. That changes plan line 913 (record deviations j, k and q).
 
 Replace from `#### Option 1: Merge Locally` (`:235`) through the `git branch -d <feature-branch>` block and its closing fence (`:262`) with:
 
@@ -917,7 +933,9 @@ git branch -d <feature-branch>
 ```
 ````
 
-- [ ] **Step 4: Replace Option 4 and Step 6**
+- [x] **Step 4: Replace Option 4 and Step 6**
+
+> Deviation: owner-approved changes E3, E7 and E8 apply here. After the final review, Option 4 checks out the base branch first in a normal repo. Step 6 hands the partner the force or unlock commands and runs none. The hand-over paragraph covers only MADE_BY `this session`. The launcher messages no longer say who made the worktree. Together these change plan lines 937, 941, 969 and 971 (record deviations j, k, q, r and s).
 
 Replace from `#### Option 4: Discard` (`:318`) through `ExitWorktree), use it. Otherwise, leave the workspace in place.` (`:365`) with:
 
@@ -971,7 +989,9 @@ Then ask what to do, and wait. Delete the branch only once the worktree is gone.
 **If Step 2 recorded MADE_BY `launcher`:** the tool that started this session owns the worktree. Do NOT remove it, and leave its branch: git refuses to delete a branch that a worktree has checked out. Tell your partner where the worktree is and what removes it. The desktop app cleans up or reuses a session's worktree when the session is archived. Anywhere else, your partner can run `git worktree remove <WORKTREE_PATH>` from MAIN_ROOT and then delete the branch.
 ````
 
-- [ ] **Step 5: Update Common Mistakes**
+- [x] **Step 5: Update Common Mistakes**
+
+> Deviation: the Common Mistakes list moved verbatim to `references/common-mistakes.md`, because the SKILL.md body reached 20,169 characters against the 20,000 cap. The owner chose the move. E10 changed the discard entry (record deviations k and l).
 
 Replace (`:386-388`):
 
@@ -1021,7 +1041,9 @@ with:
 - **Fix:** Name the cause and ask (Step 6)
 ```
 
-- [ ] **Step 6: Update Red Flags**
+- [x] **Step 6: Update Red Flags**
+
+> Deviation: owner-approved E4 changed the force and unlock Red Flag to a plain never. E9 added typed confirmation for Option 4 to the Always list. Both lie outside the plan's line ranges (record deviations j and k).
 
 Replace (`:427-428`):
 
@@ -1051,7 +1073,7 @@ with:
 - Remove worktrees from MAIN_ROOT
 ```
 
-- [ ] **Step 7: Check that nothing still contradicts the new rules**
+- [x] **Step 7: Check that nothing still contradicts the new rules**
 
 ```bash
 grep -n -E 'cd "\$MAIN_ROOT"|=\$\(|worktrees/` or `worktrees/|workspace-exit|main repo root' skills/finishing-a-development-branch/SKILL.md
@@ -1059,7 +1081,9 @@ grep -n -E 'cd "\$MAIN_ROOT"|=\$\(|worktrees/` or `worktrees/|workspace-exit|mai
 
 Expected: no output, exit 1. At base, this grep hits lines 129–153, 243–245, 334–335, 354–364, 404, 408 and 438, all inside the ranges Steps 1–6 replace. A hit is a line the new rules contradict. Fix it to match Steps 2, 5 and 6 before going on.
 
-- [ ] **Step 8: Add the NOTICE bullet**
+- [x] **Step 8: Add the NOTICE bullet**
+
+> Deviation: the finishing bullet gained one sentence about the Common Mistakes move (record deviation l).
 
 In `NOTICE`, after the line `    (specs/completed/agent-skills-portability-spec.md, R2.3).` (`:531`), insert:
 
@@ -1079,7 +1103,9 @@ In `NOTICE`, after the line `    (specs/completed/agent-skills-portability-spec.
     records. That idea is credited here, and no upstream text was taken.
 ```
 
-- [ ] **Step 9: Run the GREEN arm for S1–S7**
+- [x] **Step 9: Run the GREEN arm for S1–S7**
+
+> Deviation: S1 to S7 ran in five rounds. Round 1 is in 755b993 and round 2 in 246778f. Round 3 was never committed. Round 4 is in 2de7113, and round 5 ran on 26329b3 after the final review. The kit command differs from the plan's text, and the texts are named by blob id (record deviations f, h and t).
 
 ```bash
 python3 /Users/lowell/.cache/agent-skills/scratch/plan60-micro/build.py treatment <REPO>
@@ -1091,6 +1117,8 @@ Expected: 35 runs, about $3. Grade every answer by hand in `KIT/RESULTS.md`, in 
 
 - [ ] **Step 10: Refactor if a scenario is below 4 of 5**
 
+> Skipped: no scenario fell below 4 of 5 on the main count, so no refactor round ran. The extra rounds were owner-approved wording changes, not refactors.
+
 For each scenario below 4 of 5 PASS:
 1. Read its failing answers and name the line of skill text they followed or skipped.
 2. Change that wording in the form writing-skills' "Match the Form to the Failure" gives. Use a conditional keyed to an observable value, and add no nuance clause.
@@ -1098,11 +1126,13 @@ For each scenario below 4 of 5 PASS:
 
 Stop after two rounds and ask the owner. Re-run every scenario of this task with the final tag once the wording changed, so all of S1–S7 are graded on one text.
 
-- [ ] **Step 11: Record GREEN for S1–S7**
+- [x] **Step 11: Record GREEN for S1–S7**
 
 In the record's `## GREEN: treatment arm` section, add a table row per scenario: its id, the PASS count of 5 for control and for treatment, and the commit the treatment ran on. Add one line per refactor round. Give the round, the scenario, what failed and the wording change. Update `## Cost`.
 
-- [ ] **Step 12: Run the gates and commit**
+- [x] **Step 12: Run the gates and commit**
+
+> Deviation: Task 2 made three commits, 755b993, 246778f and 2de7113. Review rounds applied owner-approved wording changes E1 to E10.
 
 ```bash
 uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_runtime_support.py -k declared_dependencies
@@ -1127,7 +1157,9 @@ Expected: the drift test passes, the lints print no failure, and the commit land
 - Consumes: Task 2's NOTICE bullet, which this task's bullet follows. The kit.
 - Produces: the Step 4b section form `## <name> Step 4b review — <YYYY-MM-DD>`.
 
-- [ ] **Step 1: Replace Step 4b's last paragraph**
+- [x] **Step 1: Replace Step 4b's last paragraph**
+
+> Deviation: the plan's line anchors had moved after Task 2, so the edit was found by the text it quotes. The Step 3 diff check held: one hunk, inside Step 4b (record deviation m).
 
 Replace (`:228-231`):
 
@@ -1168,7 +1200,7 @@ yes:
 Record only the findings your partner carries.
 ```
 
-- [ ] **Step 2: Name Step 4b in the caller list**
+- [x] **Step 2: Name Step 4b in the caller list**
 
 In `skills/writing-plans/references/deferred-backlog.md`, replace (`:9`):
 
@@ -1184,7 +1216,7 @@ with:
   partner carries.
 ```
 
-- [ ] **Step 3: Check that the diff stays inside Step 4b**
+- [x] **Step 3: Check that the diff stays inside Step 4b**
 
 ```bash
 git diff -U0 HEAD -- skills/finishing-a-development-branch/SKILL.md
@@ -1192,7 +1224,7 @@ git diff -U0 HEAD -- skills/finishing-a-development-branch/SKILL.md
 
 Expected: one hunk, inside Step 4b, at or after the old `:228`. A hunk anywhere else would make Task 2's GREEN results stale. Remove it, or re-run S1–S7 under Task 2 Step 10's last rule.
 
-- [ ] **Step 4: Add the NOTICE bullet**
+- [x] **Step 4: Add the NOTICE bullet**
 
 After the bullet Task 2 added, insert:
 
@@ -1204,7 +1236,7 @@ After the bullet Task 2 added, insert:
     original work named above.
 ```
 
-- [ ] **Step 5: Run and grade the GREEN arm for S8**
+- [x] **Step 5: Run and grade the GREEN arm for S8**
 
 ```bash
 python3 /Users/lowell/.cache/agent-skills/scratch/plan60-micro/build.py treatment <REPO>
@@ -1214,11 +1246,11 @@ python3 /Users/lowell/.cache/agent-skills/scratch/plan60-micro/show.py 'S8-carry
 
 Grade by hand in `KIT/RESULTS.md`. Below 4 of 5: refactor as Task 2 Step 10 says, for S8 only.
 
-- [ ] **Step 6: Record GREEN for S8**
+- [x] **Step 6: Record GREEN for S8**
 
 Add S8's row and any refactor lines to the record's GREEN section. Update `## Cost`.
 
-- [ ] **Step 7: Run the gates and commit**
+- [x] **Step 7: Run the gates and commit**
 
 ```bash
 uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_runtime_support.py -k declared_dependencies
@@ -1240,7 +1272,9 @@ git commit -m "feat(finishing): offer to record the Step 4b findings the partner
 - Consumes: Task 3's NOTICE bullet. The kit.
 - Produces: nothing a later task uses.
 
-- [ ] **Step 1: Replace Step 1a and Step 1b's opening line**
+- [x] **Step 1: Replace Step 1a and Step 1b's opening line**
+
+> Deviation: the owner decided that a failed base check goes to Step 1b's git commands, not to the native tool (F1). F2 and F3 also changed the Overview and Core principle lines, which lie outside the plan's line ranges. This changes the plan wording at lines 1259 and 1283 (record deviation n).
 
 Replace from `### 1a. Native Worktree Tools (preferred)` (`:60`) through `**Only use this if Step 1a does not apply** — you have no native worktree tool available. Create a worktree manually using git.` (`:70`) with:
 
@@ -1267,7 +1301,9 @@ Go to Step 1b on your own only if you have no native worktree tool available.
 **Only use this if Step 1a does not apply** — you have no native worktree tool available, or Step 1a's base check sent you here. Create a worktree manually using git.
 ````
 
-- [ ] **Step 2: Update the Quick Reference**
+- [x] **Step 2: Update the Quick Reference**
+
+> Deviation: F4 changed the Quick Reference row that this step adds, to match F1 (record deviation n).
 
 Replace (`:157-158`):
 
@@ -1284,7 +1320,7 @@ with:
 | No native tool | Git worktree fallback (Step 1b) |
 ```
 
-- [ ] **Step 3: Update Common Mistakes**
+- [x] **Step 3: Update Common Mistakes**
 
 Replace (`:170-173`):
 
@@ -1309,7 +1345,7 @@ with:
 - **Fix:** Step 1a's base check
 ```
 
-- [ ] **Step 4: Update Red Flags**
+- [x] **Step 4: Update Red Flags**
 
 Replace (`:199-200`):
 
@@ -1326,7 +1362,9 @@ with:
 - Create a worktree with a native tool before Step 1a's base check
 ```
 
-- [ ] **Step 5: Add the NOTICE bullet**
+- [x] **Step 5: Add the NOTICE bullet**
+
+> Deviation: Task 5 widened this bullet's sentence to "or the check fails", to match F1. This changes the plan wording at lines 1334 and 1337 (record deviation o).
 
 After the bullet Task 3 added, insert:
 
@@ -1338,7 +1376,9 @@ After the bullet Task 3 added, insert:
     the worktree with git and then enters it with the native tool.
 ```
 
-- [ ] **Step 6: Run and grade the GREEN arm for S9 and S10**
+- [x] **Step 6: Run and grade the GREEN arm for S9 and S10**
+
+> Deviation: S9 and S10 ran again as round 2, after F1 to F4 changed the text (record deviation n).
 
 ```bash
 python3 /Users/lowell/.cache/agent-skills/scratch/plan60-micro/build.py treatment <REPO>
@@ -1349,11 +1389,11 @@ python3 /Users/lowell/.cache/agent-skills/scratch/plan60-micro/show.py 'S10-even
 
 Grade S9 and S10 by hand in `KIT/RESULTS.md`, with S9's EnterWorktree-path tally. Below 4 of 5: refactor as Task 2 Step 10 says, for these two only.
 
-- [ ] **Step 7: Record GREEN for S9 and S10**
+- [x] **Step 7: Record GREEN for S9 and S10**
 
 Add both rows and any refactor lines to the record's GREEN section. Update `## Cost`.
 
-- [ ] **Step 8: Run the gates and commit**
+- [x] **Step 8: Run the gates and commit**
 
 ```bash
 bash build/run_commit_lints.sh
@@ -1372,7 +1412,9 @@ git commit -m "fix(using-git-worktrees): keep unpushed commits when a native too
 - Consumes: Tasks 1–4.
 - Produces: the record the Plan Completion Protocol cites, and the coverage-gap note for the owner.
 
-- [ ] **Step 1: Add the summary and the limits**
+- [x] **Step 1: Add the summary and the limits**
+
+> Deviation: Limits states two observations of the app's isolation behavior, on 2026-10-18 and 2026-10-21, as the Global Constraints say. The Summary table also carries the strict and stricter counts (record deviation p).
 
 Add a `## Summary` section after `## Design`. It holds one table with these columns: scenario, control PASS of 5, treatment PASS of 5, and "shown necessary" (yes where the control failed more often than the treatment). Add a `## Limits` section with these lines:
 - Decision-only single turns, not multi-turn pressure runs (the owner's decision D8, test scope).
@@ -1380,7 +1422,7 @@ Add a `## Summary` section after `## Design`. It holds one table with these colu
 - Option 4 shares Option 1's exit path and has no scenario of its own.
 - The worktree facts are a coverage gap in the Claude Code guide (the owner's decision D9).
 
-- [ ] **Step 2: Check the overlap with the sibling plans**
+- [x] **Step 2: Check the overlap with the sibling plans**
 
 ```bash
 uv run --no-project --python 3.13 python skills/writing-plans/scripts/entry_check.py
@@ -1388,7 +1430,7 @@ uv run --no-project --python 3.13 python skills/writing-plans/scripts/entry_chec
 
 Expected: `collisions: none`, and no path shared with plans 59 or 61 under `overlapping files`. A shared path is the owner's call. Report it and do not merge it.
 
-- [ ] **Step 3: Run the full gate**
+- [x] **Step 3: Run the full gate**
 
 ```bash
 bash build/run_commit_lints.sh
@@ -1396,14 +1438,18 @@ bash build/run_commit_lints.sh
 
 Expected: exit 0, with all nine lints passing.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
+
+> Deviation: Task 5 also edited NOTICE, outside its file list, and made a review-fix commit, a4e3e50 (record deviation o).
 
 ```bash
 git add specs/completed/finishing-worktree-isolation-micro-tests.md
 git commit -m "test(finishing): close the plan 60 micro-test record" -m "Co-Authored-By: <the session's trailer>"
 ```
 
-- [ ] **Step 5: Leave the completion notes for the Plan Completion Protocol**
+- [x] **Step 5: Leave the completion notes for the Plan Completion Protocol**
+
+> Deviation: after Task 5, a final whole-branch review found that Options 1 and 4 kept the branch in a normal repo. An Opus code-reviewer and a Codex review (`Codex reviewed a4e3e50`) both found it. The fix wave is 26329b3 for the skill text, with record commits fb2da46, 54a71e9 and 622c122 (record deviations q to t).
 
 In the execution ledger (or the final report to the owner), write two notes:
 1. The coverage gap, per R4.3. These Claude Code facts have no guide section: the isolation checks, ExitWorktree's scope, and EnterWorktree's base ref. The owner either adds a guide section, verified like any `/cc-guide verify` run, or leaves them uncovered.
