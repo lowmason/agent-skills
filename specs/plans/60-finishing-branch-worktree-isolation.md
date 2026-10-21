@@ -97,19 +97,17 @@ fatal: '../wt-untracked' contains modified or untracked files, use --force to de
 - **D3** (owner, brief, 2026-10-21): During execution, read skill text from the main checkout and edit in the worktree. Applied in: Global Constraints.
 - **D4** (owner, brief, 2026-10-21): The wording rests on the owner's recorded facts. ExitWorktree is a no-op for harness- and app-launched worktrees. EnterWorktree branches from `origin/<default>`. An app session in `.claude/worktrees/` was not isolated on 2026-10-18. Archiving cleans up or reuses the worktree. Detect isolation and ownership. On a removal refusal, name the cause and ask. Applied in: Global Constraints, Tasks 2 and 4.
 
-## Defaults for review
+The owner approved D5–D13 at plan review with "Approve all nine defaults as recommended."
 
-The plan settles these defaults. At plan review, the owner confirms or changes each one, and it becomes a Decision.
-
-1. **Instruction-level ban.** The probe runs, but the session's instructions say to stay in the worktree (the desktop app's notes do). Then Step 2 records MAIN_GIT `ask`, and Option 1 or 4 asks the partner before running git in the main checkout. A yes takes the `allowed` path and a no the `blocked` path. Options 2 and 3 never ask. (Task 2, scenario S4.)
-2. **A control that already passes.** writing-skills says to stop when the no-guidance control shows no failure. Here, factual corrections ship even when the control passes: the Step 2 commands, the exit path, ownership, and the Step 1a base check (S1–S4, S9). So does the refusal rule, which is the owner's instruction (S5, S6). The record says "not shown necessary" for those. If the control passes 5 of 5 on S8 (the Step 4b offer), Task 1 stops for the owner. That rule is neither a fact nor an owner's instruction.
-3. **Upstream credit for the refusal rule.** Finding 8 of `specs/superpowers-drift-spec.md` records that upstream stops, names the files and asks when untracked files block a removal. It was read at `bb92a77` (v7.0.0). The rule is written here. NOTICE credits upstream's idea and takes no upstream text. No new read of upstream.
-4. **Test scope.** Decision-only micro-tests only, with pressure (time, git's own `--force` hint) written into the fixtures. There is no separate multi-turn pressure-scenario run. writing-skills calls those the final gate for discipline skills. The two items ask for micro-tests.
-5. **Coverage gap.** No `# cc-guide:` line on either skill. The worktree facts go to the owner at completion as an R4.3 coverage gap.
-6. **Step 4b section name.** Step 4b appends under a new section, `## <name> Step 4b review — <YYYY-MM-DD>`. `<name>` is the executed plan's file name without `.md`, or the branch name when no plan ran. It is a separate section even when the protocol wrote one for the plan that day. The em dash lets `deferred_stats.py` date it.
-7. **Step 3 and Option 2.** Step 3 becomes plain commands, because the probe refused its `$(…)` form. Option 2's `get-url | sed` pipe stays, because the probe allowed it.
-8. **A worktree the session did not make.** After Option 1, a `launcher` worktree and its branch stay. Step 6 tells the partner what removes them and does not delete the branch, because git refuses while the worktree has the branch checked out. Option 4 says the same in its confirmation.
-9. **Test size.** 10 scenarios, 5 reps per arm: 50 control calls in Task 1, 50 treatment calls across Tasks 2–4.
+- **D5** (owner, plan review, 2026-10-21): Instruction-level ban. The probe runs, but the session's instructions say to stay in the worktree (the desktop app's notes do). Then Step 2 records MAIN_GIT `ask`, and Option 1 or 4 asks the partner before running git in the main checkout. A yes takes the `allowed` path and a no the `blocked` path. Options 2 and 3 never ask. Applied in: Task 2 (Steps 1 and 3), scenario S4.
+- **D6** (owner, plan review, 2026-10-21): A control that already passes. writing-skills says to stop when the no-guidance control shows no failure. Here, factual corrections ship even when the control passes: the Step 2 commands, the exit path, ownership, and the Step 1a base check (S1–S4, S9). So does the refusal rule, which is the owner's instruction (S5, S6). The record says "not shown necessary" for those. If the control passes 5 of 5 on S8 (the Step 4b offer), Task 1 stops for the owner, because that rule is neither a fact nor an owner's instruction. Applied in: Task 1 (Steps 6 and 11).
+- **D7** (owner, plan review, 2026-10-21): Upstream credit for the refusal rule. Finding 8 of `specs/superpowers-drift-spec.md` records that upstream stops, names the files and asks when untracked files block a removal, read at `bb92a77` (v7.0.0). The rule is written here. NOTICE credits upstream's idea and takes no upstream text. No new read of upstream. Applied in: Task 2 (Step 8).
+- **D8** (owner, plan review, 2026-10-21): Test scope. Decision-only micro-tests only, with pressure (time, git's own `--force` hint) written into the fixtures. There is no separate multi-turn pressure-scenario run, which writing-skills calls the final gate for discipline skills. The two items ask for micro-tests. Applied in: Global Constraints, Tasks 1 and 5.
+- **D9** (owner, plan review, 2026-10-21): Coverage gap. No `# cc-guide:` line on either skill. The worktree facts go to the owner at completion as an R4.3 coverage gap. Applied in: Global Constraints, Task 5 (Step 5).
+- **D10** (owner, plan review, 2026-10-21): Step 4b section name. Step 4b appends under a new section, `## <name> Step 4b review — <YYYY-MM-DD>`. `<name>` is the executed plan's file name without `.md`, or the branch name when no plan ran. It is a separate section even when the protocol wrote one for the plan that day. The em dash lets `deferred_stats.py` date it. Applied in: Task 3 (Step 1).
+- **D11** (owner, plan review, 2026-10-21): Step 3 and Option 2. Step 3 becomes plain commands, because the probe refused its `$(…)` form. Option 2's `get-url | sed` pipe stays, because the probe allowed it. Applied in: Task 2 (Step 1).
+- **D12** (owner, plan review, 2026-10-21): A worktree the session did not make. After Option 1, a `launcher` worktree and its branch stay. Step 6 tells the partner what removes them and does not delete the branch, because git refuses while the worktree has the branch checked out. Option 4 says the same in its confirmation. Applied in: Task 2 (Step 4).
+- **D13** (owner, plan review, 2026-10-21): Test size. 10 scenarios, 5 reps per arm: 50 control calls in Task 1 and 50 treatment calls across Tasks 2–4, with a stop at $25. Applied in: Global Constraints, Tasks 1–4.
 
 ---
 
@@ -686,7 +684,7 @@ Predictions. Control: FAIL in S1, S2, S3, S4, S8 and S9; PASS in the decoys S7 a
 unsure in S5 and S6. Treatment: PASS in at least 4 of 5 reps per scenario, decoys included.
 A rule is shown to matter where the control fails more often than the treatment.
 
-Stop rules (owner decisions at plan review; see the plan's Defaults for review 2):
+Stop rules (the owner's decision D6 at plan review, 2026-10-21, on a control that already passes):
 - A control that already passes 5 of 5 in S1–S6 or S9 is recorded as "not shown
   necessary"; the wording ships. In S8 it stops the run for the owner.
 - A control that fails a decoy (S7, S10) is recorded and reported to the owner. The
@@ -1377,10 +1375,10 @@ git commit -m "fix(using-git-worktrees): keep unpushed commits when a native too
 - [ ] **Step 1: Add the summary and the limits**
 
 Add a `## Summary` section after `## Design`. It holds one table with these columns: scenario, control PASS of 5, treatment PASS of 5, and "shown necessary" (yes where the control failed more often than the treatment). Add a `## Limits` section with these lines:
-- Decision-only single turns, not multi-turn pressure runs (Defaults for review 4).
+- Decision-only single turns, not multi-turn pressure runs (the owner's decision D8, test scope).
 - The desktop app's isolation behavior is the one observation on 2026-10-21, which a later app version may change.
 - Option 4 shares Option 1's exit path and has no scenario of its own.
-- The worktree facts are a coverage gap in the Claude Code guide (Defaults for review 5).
+- The worktree facts are a coverage gap in the Claude Code guide (the owner's decision D9).
 
 - [ ] **Step 2: Check the overlap with the sibling plans**
 
