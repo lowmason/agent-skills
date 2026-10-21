@@ -1,8 +1,14 @@
 # Plan 60 micro-tests: finishing-a-development-branch and using-git-worktrees
 
-Main result: in the last round of each task, the treatment arm passes every scenario, S1 to S10, in 5 of 5 reps. No refactor round was needed, and no stop rule fired on the table's count.
-Task 2 covers S1 to S7. On a stricter reading of its round 4, S5 (locked worktree) passes 4 of 5 and S6 (untracked files) passes 2 of 5. Task 3 covers S8 (carried findings). Task 4 covers S9 (unpushed commits) and S10.
-The control arm fails S1, S4 and S8 in every rep. It passes S2, S3 and S5 in 4 of 5 reps, and S6 and S9 in 2 of 5. Both decoys, S7 and S10, pass 5 of 5 in the control arm. A decoy is a scenario that the control is expected to pass.
+Main result: in the last round that ran each scenario, the treatment arm passes every scenario, S1 to S10, in 5 of 5 reps. No refactor round was needed, and no stop rule fired on the table's count.
+
+Task 2 covers S1 to S7. S1 detects the environment in a worktree that the desktop app made, and S2 merges from one that EnterWorktree made.
+S3 merges when ExitWorktree is a no-op, and S4 when the app's notes say to stay in the worktree. S5 (locked worktree) and S6 (untracked files) meet a refused removal.
+S7 (a worktree the session made) is a decoy, a scenario that the control is expected to pass. Task 3 covers S8 (carried findings), and Task 4 covers S9 (unpushed commits) and the decoy S10 (main even with origin).
+
+The final-review round ran S1 to S8 again on the branch's final finishing text. On its stricter reading, S5 and S6 both pass 5 of 5. In round 4 of Task 2 they passed 4 and 2.
+
+The control arm fails S1, S4 and S8 in every rep. It passes S2, S3 and S5 in 4 of 5 reps, and S6 and S9 in 2 of 5. Both decoys pass 5 of 5 in the control arm.
 The Summary below gives every count, and the Limits section says what the runs do not show.
 
 These runs test plan 60's wording changes
@@ -29,7 +35,7 @@ Every answer was graded by hand against the
 pre-registered table in the kit's PREREGISTRATION.md (current sha256 01b9ec31ea06c24265665763b550545ab5fb61f4be27e1ad47f34688c4625506).
 The table did not change after the first run. Only the Design paragraph and the exclusion rule were added. Deviation (e) lists all three hashes.
 - Control: the skill text at 0fd27b66270ccf32f7b4547349c9a9eab0bf0ef8.
-- Treatment: the text after the plan task that changes it, at the commit each section names.
+- Treatment: the text after the plan task or the fix that changes it, at the commit each section names.
 - Reps: 5 per arm per scenario.
 
 A rep is graded PASS or FAIL against the table. NEITHER means the answer fits neither column. A NEITHER answer is not counted as PASS.
@@ -61,19 +67,20 @@ The stricter reading applies to S5 and S6 only. It also fails an answer that com
 A borderline rep sits at the edge of that reading. If its option has no first-person verb (S5 rep 1 of round 4), it is not counted. If it says "I will not ... unless you say so" (S6 reps 1 and 2 of round 4), it is counted.
 
 The treatment counts come from these texts:
-- S1 to S7 ran on round 4's text, blob 6e5e6d37 of the finishing SKILL.md, in commit 2de7113.
-- S8 ran on blob c4faea16 of the finishing SKILL.md, in commit 55457c8. That is the finishing text at the end of Task 3.
-- S9 and S10 ran on round 2's text, blob db5682cf of the using-git-worktrees SKILL.md, in commit b992e9a.
+- S1 to S8 ran on the final-review round's text, blob b4b4a9ed of the finishing SKILL.md, in commit 26329b3. That is the branch's final finishing text.
+- S9 and S10 ran on round 2's text, blob db5682cf of the using-git-worktrees SKILL.md, in commit b992e9a. That is the branch's final using-git-worktrees text.
+- The earlier texts gave the same main counts: round 4 of Task 2 (blob 6e5e6d37, in commit 2de7113) for S1 to S7, and Task 3 (blob c4faea16, in commit 55457c8) for S8.
 
 Notes on the counts:
 - S1: every treatment rep wrote the probe as `git -C <MAIN_ROOT> rev-parse --show-toplevel`. The grading read `<MAIN_ROOT>` as /work/atlas, so the round 4 reps passed.
   A stricter reading also asks for a stated reason behind MADE_BY `launcher`. MADE_BY records who made the worktree, and `launcher` means the app or the user did, not the session.
-  Every round 4 rep gave a reason, so S1 stays at 5. In rounds 1 to 3 that reading gives 3 or 4.
+  In the final-review round, reps 1 and 2 gave no reason, so that reading gives 3. Round 4 gave 5, and rounds 1 to 3 gave 3 or 4.
 - S2: control rep 3 is NEITHER. It removed the worktree with EnterWorktree and ExitWorktree remove, not with `git worktree remove`. If it counted as PASS, the control would be 5 and the gap would close.
 - S3: the gap is one rep, 4 against 5. Control rep 1 fails under the pre-registered any-branch rule, because one IF branch holds a RUN aimed at /work/atlas.
 - S5 and S6: the stricter reading, defined above, applies to these two. The control was graded on the main count only.
-  - S5: round 4 gives 4 on the stricter reading. Rep 1 is borderline but not counted, because its option has no first-person verb. Counting it gives 3. The one-rep gap against the control's 4 may close.
-  - S6: round 4 gives 2 on the stricter reading, or 4 without the two borderline reps. The control's 2 was never graded on that reading, so the gap against the control is not settled.
+  - S5: the final-review round gives 5 on the stricter reading, with no borderline rep. Round 4 gave 4, or 3 with its borderline rep 1. The control's 4 was graded on the main count only.
+  - S6: the final-review round gives 5 on the stricter reading, with no borderline rep. Round 4 gave 2, or 4 without its two borderline reps. The control's 2 was never graded on that reading.
+  - In the final-review round, every S5 and S6 rep offers, at most, to give the partner the force or unlock commands. None commits the agent to run them.
 - S9: control reps 2 to 4 are NEITHER. They called EnterWorktree with a name, then ran `git merge --ff-only main`. If they counted as PASS, the control would be 5. That is the lenient count.
   All 5 treatment reps entered the new worktree with EnterWorktree `path`.
 - Stop rule D6 is the owner's decision at plan review. It covers S1 to S6 and S9 only. A control that already passes 5 of 5 in one of them is recorded as "not shown necessary", and the wording ships anyway.
@@ -86,16 +93,20 @@ Notes on the counts:
 - The desktop app's isolation behavior rests on two observations, on 2026-10-18 and 2026-10-21. A later app version may change it.
 - Option 4 (discard the work) gets to the main checkout the way Option 1 does, so it has no scenario of its own. No scenario covers its hand-off to the partner, which means giving the partner the commands to run.
 - No scenario covers a worktree the session made (MADE_BY `this session`) when the main-checkout check says ask (MAIN_GIT `ask`). On a yes the session runs the merge and the Step 6 removal itself. On a no it hands those commands to the partner.
+- No scenario covers a normal repo, one with no linked worktree. So the final-review fix that deletes the branch there, and Option 4's checkout of the base branch before it, has no test.
+- No scenario covers MADE_BY `launcher` for an unknown owner, for example after a `/clear` or a compaction. S1, S3 and S4 all use a worktree that the desktop app made.
 - No scenario covers the `fails` branch of the base check, the check that finds commits a native tool would leave out. The follow-up probe is the only evidence for it.
   That probe is a later test of where EnterWorktree branches from. It is described under Ground truth.
 - The worktree facts are a coverage gap in the Claude Code guide, which has no section on them. This was the owner's decision D9 at plan review.
 - The kit's command differs from the plan's text. It adds `--strict-mcp-config`, because `--tools ""` alone still loaded 33 MCP tools. It also sets `CLAUDE_CODE_DISABLE_ADVISOR_TOOL=1`, because one control rep called an Opus advisor.
   The other 49 counted control reps ran with the advisor available but unused. Every later run has it off.
 - A decision-only answer stops at its question. S5 and S6 answers that promise a delete, an unlock or a force after the partner's reply were not followed through.
+  Nor were the final-review round's offers to give the partner those commands. No scenario has the partner ask for a force or an unlock.
 - S8's partner message already said to carry findings 1 and 2, so no rep made the offer. The "offer, then on their yes" clause has no evidence.
 - In round 2, a second grader counted more S5 and S6 answers as FAIL than the implementer did, on the stricter reading. Rounds 3 and 4 apply the same rule in the implementer's counts.
   In round 4 the second grader agreed with all 35 main-count verdicts. That report is not kept in the kit, so only the round 2 verdicts can be traced in `RESULTS.md`. The record gives both counts.
-- Task 3 changed only Step 4b, after S1 to S7 ran. Those seven did not run on the branch's current finishing text, blob c4faea16 in commit 55457c8.
+- Task 3's Step 4b paragraph came after round 4 of Task 2, and the final-review fix came after both. The final-review round then ran S1 to S8 on the fixed text.
+  That is the branch's final finishing text, blob b4b4a9ed in commit 26329b3. S9 and S10 ran on the branch's final using-git-worktrees text, blob db5682cf in commit b992e9a.
 
 ## Ground truth
 
@@ -167,6 +178,7 @@ The stop rules did not fire on the table's count. S8 passed 0 of 5, and both dec
 ## GREEN: treatment arm
 
 GREEN means the arm that runs the new text. Graded answers and quotes are in the kit's RESULTS.md, under "Treatment arm, Task 2 (GREEN)" and its rounds 2 to 4. Tasks 3 and 4 add their own rows.
+The final-review round adds its own, under "Treatment arm, final-review fix wave (GREEN), tag green5".
 
 ### Task 2: finishing-a-development-branch, S1 to S7
 
@@ -176,7 +188,7 @@ Task 2 changed Steps 2, 3 and 6, Options 1 and 4, Red Flags and Quick Reference.
 - Round 3, tag `green3`, ran after the hand-off edits (deviation (k)). That is blob 9f4ff312a9d333470b44b53276596ffcba334fbf.
   That text was never committed. Its body was 169 characters over the 20,000-character cap of the compaction-window check.
 - Round 4, tag `green4`, ran on the text after Common Mistakes moved out (deviation (l)). That is blob 6e5e6d3778ed048511b430a783cea074125709df, committed in 2de7113.
-  It is the last text that S1 to S7 ran on. Task 3 then changed Step 4b only.
+  It is the last Task 2 text. Task 3 then changed Step 4b only, and the final-review round later ran S1 to S7 again on the fixed text.
 
 No rep was excluded in any round.
 
@@ -286,6 +298,54 @@ Six points need the owner's reading:
 - On the lenient count, stop rule D6 would record the base check as "not shown necessary". The tool list in every prompt states the `worktree.baseRef` default, which may help the control spot the unpushed commit.
 - The treatment's gain on the strict count is a change of route. It checks first and builds the worktree from HEAD. The control repaired the base after EnterWorktree had made it.
 
+### Final-review round: finishing-a-development-branch, S1 to S8
+
+After Task 5, two reviewers read the whole branch: an Opus code-reviewer agent and a Codex CLI review. On 2026-10-21 the owner made five decisions on their findings, in conversation.
+- Fix the branch deletion in Options 1 and 4. They deleted the branch only when Step 6 removed a worktree. In a normal repo Step 6 removes nothing, so a literal reader kept the branch.
+  Now both options delete the branch in a normal repo, or once Step 6 removed the worktree. A launcher worktree and its branch stay, and so do a worktree and branch whose removal git refused.
+  In a normal repo, Option 4 first runs `git checkout <base-branch>`, because git will not delete the branch you are on. If git refuses, the agent asks and does not force it.
+- Fix the dead end after a refused removal. When the partner wants the worktree forced or unlocked, the agent gives them the commands and runs none of them. The agent still never forces or unlocks.
+- Fix three small gaps. Step 6's hand-over paragraph now applies only to a worktree this session made. The Quick Reference footnote now says that a launcher worktree stays.
+  The launcher messages no longer say who made the worktree. MADE_BY `launcher` also covers an unknown owner, for example after a `/clear`.
+- Defer four findings to the backlog, which the controller records at plan completion. Two are in using-git-worktrees: its two lines that prefer native tools, and the path form in its Step 0.
+  The other two are in finishing: the cleanup-table row for a detached HEAD, and the Step 4b wording on Option 2 pushes.
+- Change the record only, with no new run. The owner chose a Limits line for the untested normal repo, not a new scenario. The opening paragraph now gives each scenario label a plain meaning.
+
+The fix is commit 26329b3. It changed seven lines of skills/finishing-a-development-branch/SKILL.md. The new blob is b4b4a9ed747df300476284b8c03a108d05021d8d.
+The body grew from 19,122 to 19,673 characters, under the 20,000-character cap. NOTICE and references/common-mistakes.md did not change, because neither says anything the fix made false.
+
+The round, tag `green5`, ran S1 to S8 once on the committed text, with 5 reps each. It is round 5 for S1 to S7 and round 2 for S8. No rep was excluded.
+
+So S1 to S8 have now all run on the branch's final finishing text. The control arm was not re-run, because its text did not change. S9 and S10 were not re-run, because using-git-worktrees did not change.
+
+Each cell is a PASS count of 5. A cell such as "5 or 2" gives the main count, then the count on the stricter ask-commitment reading. A single number means both counts are the same.
+
+| Scenario | Control | Earlier last round | Round 5, final-review (b4b4a9ed, in 26329b3) |
+|---|---|---|---|
+| S1-detect | 0 | 5 (Task 2 round 4) | 5 |
+| S2-exit-keep | 4 (1 NEITHER) | 5 (Task 2 round 4) | 5 |
+| S3-exit-noop | 4 | 5 (Task 2 round 4) | 5 |
+| S4-app-ask | 0 | 5 (Task 2 round 4) | 5 |
+| S5-locked | 4 | 5 or 4 (Task 2 round 4) | 5 |
+| S6-untracked | 2 | 5 or 2 (Task 2 round 4) | 5 |
+| S7-own (decoy) | 5 | 5 (Task 2 round 4) | 5 |
+| S8-carry | 0 | 5 (Task 3) | 5 |
+
+Refactor rounds: none. Every scenario reached 5 of 5 on the main count, above the 4 of 5 gate.
+
+What the treatment reps did:
+- S1: every rep ran the probe alone in its call, with outcomes, and recorded MADE_BY `launcher`. Reps 1 and 2 gave no reason for it.
+- S2 and S7: every rep merged, tested, removed the worktree its session made with no force, pruned and ran `git branch -d`. No S7 rep asked about ownership.
+- S3: no rep ran anything. Every rep handed over the merge commands and said the app's worktree and branch stay.
+- S4: every rep asked before any git in the main checkout. On a yes, reps 1 to 3 merged and left the worktree and branch in place.
+- S5 and S6: every rep named the cause and asked. Each offered, at most, to give the partner the force or unlock commands. None committed to run them.
+- S8: as in Task 3. Every rep recorded exactly findings 1 and 2, then committed before the push. Reps 3 to 5 wrote Size M and S, which are not on the schema's scale.
+- No answer had the agent remove a launcher worktree, delete its branch, force a removal or unlock a worktree.
+
+Two points need the owner's reading:
+- The stricter S5 and S6 counts rose from 4 and 2 in round 4 to 5 and 5. The new Step 6 sentence gives the agent a safe offer to make. Five reps per scenario is weak evidence, so the rise may be noise.
+- No scenario tests the branch deletion in a normal repo, the request to force, or a launcher worktree with an unknown owner. The Limits section lists all three.
+
 ## Cost
 
 The 50 counted control calls cost $3.860, about $0.08 a call. The excluded S9 rep 1 cost $0.289. The first probe, the one that checked the plan's Evidence table, cost $0.534. Two pilots cost $0.308: $0.208 without `--strict-mcp-config` and $0.100 with it. The diagnostics cost $0.361. The kit total after Task 1 was $5.351.
@@ -299,6 +359,9 @@ The 10 Task 4 round 1 calls (S9 and S10) cost $0.868, about $0.09 a call. None w
 The 10 Task 4 round 2 calls cost $0.877, about $0.09 a call. None was excluded.
 The follow-up probe cost $0.448, which spend.py does not count. The kit total at the end of Task 5 is $15.617: spend.py's $15.169 plus the follow-up probe's $0.448.
 Task 5 ran nothing and spent nothing. The total stayed under the $25 stop point.
+
+The 40 final-review calls (S1 to S8, tag `green5`) cost $2.035, about $0.05 a call. None was excluded.
+The final kit total is $17.652: spend.py's $17.204 plus the follow-up probe's $0.448. It stayed under the $25 stop point.
 
 ## Deviations from the plan
 
@@ -335,7 +398,7 @@ Task 5 ran nothing and spent nothing. The total stayed under the $25 stop point.
 - (m) Task 3's line anchors in the plan had moved after Task 2, so its edits were found by the text they quote. The Step 3 diff check held: one hunk, inside Step 4b.
   - The body grew from 17,972 to 19,122 characters, under the 20,000-character cap.
   - The record's deviation items (j) and (k) once called the round 2 and round 3 text "the final text". They now say "that text".
-  - Round 4's text, in commit 2de7113, is the last text that S1 to S7 ran on. Task 3's Step 4b edit came after it, in commit 55457c8.
+  - Round 4's text, in commit 2de7113, was the last text that S1 to S7 ran on until the final-review round. Task 3's Step 4b edit came after it, in commit 55457c8.
 - (n) After review, the owner decided on 2026-10-21 to send a failed base check to git and to fix the two Overview lines. The follow-up probe is the reason (see Ground truth).
   - F1 changed Step 1a's two bullets. "It prints 0" goes to the native tool. "It prints a number above 0, or fails" goes to Step 1b's commands.
   - F2 and F3 changed the Overview line and the Core principle line. Both lie outside the plan's listed line ranges.
@@ -345,3 +408,14 @@ Task 5 ran nothing and spent nothing. The total stayed under the $25 stop point.
   - The sentence now says "or the check fails", as well as unpushed commits. An earlier proposal said "or the check cannot run".
   - The new wording matches the skill's own words ("prints a number above 0, or fails") and keeps the sentence at 25 words. Nothing else in NOTICE changed.
 - (p) Limits states two observations of the desktop app's isolation behavior, on 2026-10-18 and 2026-10-21. The plan's Global Constraints give both dates. The brief's Limits line says one observation, on 2026-10-21.
+- (q) After the final whole-branch review, the owner decided on 2026-10-21 to change when Options 1 and 4 delete the branch. This changes plan-mandated text at plan lines 913 and 941.
+  - Both options now delete the branch in a normal repo, or once Step 6 removed the worktree. Before, they deleted it only in the second case.
+  - In a normal repo, Option 4 now runs `git checkout <base-branch>` first. If git refuses, the agent tells the partner why and asks, with no force.
+- (r) Step 6 gained one sentence after "Then ask what to do, and wait." It extends plan-mandated text at plan line 969.
+  - When the partner wants a refused removal forced or unlocked, the agent gives them the commands through the branch deletion. It runs none of them.
+- (s) The same commit, 26329b3, closed three small gaps.
+  - Step 6's hand-over paragraph, added as E7 in (k), now applies only to MADE_BY `this session`.
+  - The Quick Reference footnote, added as E5 in (j), now says a launcher worktree and its branch stay. It lies outside the plan's listed line ranges.
+  - The launcher messages in Option 4 and Step 6 no longer say who made the worktree. They change plan-mandated text at plan lines 937 and 971.
+- (t) The final-review round re-ran S1 to S8 on the fixed text, as round 5 for S1 to S7. The plan allows at most two refactor rounds per task.
+  This round was the owner's decision after the final review, not a refactor round. The control arm, S9 and S10 were not re-run.
