@@ -31,6 +31,10 @@ Every task's requirements include these.
 ## Decisions
 
 - **D1** (owner, brief, 2026-10-21): in a `/deferred` pass the owner selected four items with disposition Plan, to be planned without a spec and named for the theme: G1, G2, G3's guards half and G4. Applied in: Global Constraints (the scope fence) and Tasks 1–6.
+- **D2** (owner, plan review, 2026-10-21): the best marker, the option "Label it": "DF1. The top row reads '**best among ELPD-compared variants**' and the run exits 0 with a note naming the unranked rows. A new row waiting for its first fit does not block the run." Applied in: Task 2, unchanged.
+- **D3** (owner, plan review, 2026-10-21): the metric cells, the option "Fill the cells": "DF2. The comparator writes ELPD, ΔELPD, max R̂, div, PPC and psense into each ranked row, by the template's exact column names. Unranked rows keep their cells." Applied in: Task 3, unchanged.
+- **D4** (owner, plan review, 2026-10-21): the SVI reference, the option "Write svi.md": "DF3. Task 5 adds bayesian-workflow/references/svi.md: a flat ELBO trace across seeds, loo_approximate_posterior and vsbc_diagnostic, with a block that Tier 3 runs. The optax row reads 'no skill owns this yet'." Applied in: Tasks 5 and 6, unchanged.
+- **D5** (owner, plan review, 2026-10-21): the rest of the plan, the option "Approve as written": "The other defaults (DF4–DF12) stand: the soft tune → bayesian-workflow edge, period labels as groups, the micro-test on Sonnet, no NOTICE change, and the rest." The question named Task 6's micro-test as 75 `claude -p` calls on Sonnet, about $10–15. Applied in: Tasks 1–7, unchanged.
 
 ---
 
@@ -61,7 +65,7 @@ On 2026-10-21, Tasks 1–6 (all but the micro-test runs) were written test-first
 
 The micro-test's measured runs (Task 6, Steps 4, 5, 9 and 10) have not happened: planning ran only the one smoke call above. Task 6's scenarios, grading rules and pass bars are the micro-test's pre-registration.
 
-### Settled defaults (the owner reviews these)
+### Settled defaults (the owner approved these at plan review: D2–D5)
 
 - **DF1, the best marker is labelled, not frozen** (G1 a). While a ledger row went uncompared, the top row's status reads `**best among ELPD-compared variants**`, and the run exits 0 with a note on stderr. The alternative is to refuse to move `**best**` at all. Refusing would block every run while a newly opened row waits for its first fit, which the ledger's own workflow creates.
 - **DF2, the comparator fills the metric cells** (G1 e), matched by the template's exact column names (`ELPD`, `ΔELPD`, `max R̂`, `div`, `PPC`, `psense`). The alternative is to correct track's SKILL.md to say the comparator writes only the COMPARISON block and the marker. A row the comparator did not rank keeps its cells.
