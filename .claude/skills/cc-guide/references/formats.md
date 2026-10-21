@@ -24,14 +24,14 @@ A triage range counts the untriaged releases after the newest release any sectio
 
 ## Reports
 
-The verifier returns one report, saved as `report.md` in its packet. Every row is one line, its fields separated by ` | `, each quote inside double quotes, `-` for an empty field. Settle splits a row on `|`, but a quote field that opens with `"` runs to the first `"` followed by `|` or the end of the line, so a quote may hold `|` and `"`; any other field ends at the next `|`, and the last field takes the rest of the line. A leading list marker (`- `, `* `, `+ `, `1. `, `1) `) and a Markdown table's outer pipes are no part of a row, and a line without `|` is prose, never a row. Settle drops these lines without listing them, so they never move its exit to 1:
+The verifier returns one report, saved as `report.md` in its packet. Every row is one line, its fields separated by ` | `, each quote inside double quotes, `-` for an empty field. Settle splits a row on `|`, but a quote field that opens with `"` runs to the first `"` followed by `|` or the end of the line, so a quote may hold `|` and `"`; any other field ends at the next `|`, and the last field takes the rest of the line. In a verify, audit or files row, the second field, its claim or statement, may hold `|` too: when the fields after it do not fit the row, it runs to the first `|` after which they do (a verdict, then `doc:line` or `-`, in verify and audit; a cited section, a quote and a verdict in files), and with no such `|` the plain split stands. A files row may give a range of lines, `file:first-last`, as its `file:line`. A leading list marker (`- `, `* `, `+ `, `1. `, `1) `) and a Markdown table's outer pipes are no part of a row, and a line without `|` is prose, never a row. Settle drops these lines without listing them, so they never move its exit to 1:
 - separator rows: a line of only `|`, `-`, `:` and spaces;
 - header rows, in any letter case, which are of two kinds:
   - a line whose first field is a column name no row starts with: `item`, `release`, `L<line>`, `file:line`, `file line` or `section`;
   - a line whose every field is a column name of the formats below, or one of `Line`, `Claim`, `Verdict`, `Doc`, `Quote`, `Wording` and `File`. That takes in a table's own header row and an echoed template, among them a C row whose only text is one column name (`C | statement`) and a B row shaped like the template (`B | version | one line | changelog.md:line`);
 - in verify and audit, a well-formed `<section> | none` line for a section outside the packet.
 
-Any other line holding `|` that is no row is listed as unparseable.
+Any other line holding `|` that is no row is listed as unparseable. That takes in a none line with other words after its `|` than `none`, since settle never reads prose as none.
 
 Triage, one row per block (at least) and per bullet that touches a section, and one coverage line per release:
 

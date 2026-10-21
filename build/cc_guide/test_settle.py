@@ -651,6 +651,34 @@ def test_a_dash_is_no_proposed_wording(world, tmp_path):
     assert 'held, neither advanced nor audited: alpha.overview' in result.lines
 
 
+def test_a_claim_may_hold_pipes_when_a_verdict_follows_them(world, tmp_path):
+    '''Guide line 145's row in the 2026-10-20 round-2 verify held `||` in its
+    claim, did not parse and held its section. The claim runs to the first
+    `|` that a verdict and a doc reference follow; the proposed wording, the
+    last field, keeps its own pipes.'''
+    out = review(world, tmp_path)
+    confirmed = 'L19 | append || true, or pipe it | to cat | CONFIRMED | changelog.md:14 | "Added `ALPHA_ENV`" | -'
+    stale = 'L14 | Alpha uses a || b | STALE | tools.md:5 | "runs alpha batches" | Alpha batches `a | b`.'
+    result = settled(out, confirmed, stale)
+    assert result.lines[1:5] == [
+        "report: 1 confirmed, 1 correction(s), 0 owner's call, 0 unverified",
+        'corrections, to apply to the guide in the working tree:',
+        '  L14 alpha.overview STALE: Alpha uses a || b → Alpha batches `a | b`. (tools.md:5: "runs alpha batches")',
+        "owner's call, never applied:"]
+    assert not any(line.startswith(('held', 'left out')) for line in result.lines)
+    assert result.clean
+
+
+@pytest.mark.parametrize('line', ['L19 | a || b | MAYBE | tools.md:5 | "runs alpha batches" | -',
+                                  'L19 | a || b | CONFIRMED | tools | "runs alpha batches" | -'],
+                         ids=['no-verdict', 'no-doc-reference'])
+def test_a_claim_with_pipes_and_no_verdict_and_doc_reference_after_them_holds_its_section(world, tmp_path, line):
+    out = review(world, tmp_path)
+    result = settled(out, GOOD, line)
+    assert f'  unparseable: {line}' in result.lines
+    assert 'held, neither advanced nor audited: alpha.reference' in result.lines
+
+
 def test_a_broken_b_or_c_row_is_unparseable_and_holds_nothing(world, tmp_path):
     '''Review finding 12.'''
     out = review(world, tmp_path)
@@ -948,6 +976,38 @@ def test_a_statement_that_opens_with_a_quote_still_parses(world, tmp_path):
     assert result.clean
 
 
+@pytest.mark.parametrize('row', [
+    # build/check_conformance.py:1130 in the 2026-10-20 files pass: the statement holds `||`, `|&` and `|`.
+    'hooks/gate.sh:2 | separators are &&, ||, |&, ;, |, & and newline | alpha.overview | "## 1. Alpha" | consistent',
+    # hooks/probe-readonly-guard.sh and commands/deferred.md in the same pass: a line range for one line.
+    'hooks/gate.sh:1-3 | a shell script that exits 0 | alpha.overview | "## 1. Alpha" | consistent',
+], ids=['pipes', 'range'])
+def test_a_statement_with_pipes_or_a_line_range_still_parses(world, tmp_path, row):
+    out = packets.files(load(world), tmp_path / 'f', [])[0]
+    result = settled(out, row)
+    assert result.lines[1] == 'report: 1 consistent, 0 contradiction(s), 0 not covered, 0 unverified'
+    assert f'  {CLI} baseline cite hooks/gate.sh' in result.lines
+    assert result.clean
+
+
+def test_a_contradiction_keeps_its_line_range_and_its_statements_pipes(world, tmp_path):
+    out = packets.files(load(world), tmp_path / 'f', [])[0]
+    result = settled(out, 'hooks/gate.sh:2-3 | exits 0 || 1 | alpha.overview | "Alpha uses `ALPHA_TOOL`" | contradicts')
+    assert '  hooks/gate.sh:2-3 (alpha.overview): exits 0 || 1 (guide: "Alpha uses `ALPHA_TOOL`")' in result.lines
+
+
+@pytest.mark.parametrize('row', [
+    'hooks/gate.sh:1 | a || b | beta.reference | "`BetaEvent` fires." | contradicts',  # no cited section follows
+    'hooks/gate.sh:1- | a shell script | alpha.overview | "## 1. Alpha" | consistent',  # half a range
+    'hooks/gate.sh:1-x | a shell script | alpha.overview | "## 1. Alpha" | consistent',
+], ids=['uncited-section', 'half-range', 'word-range'])
+def test_a_widened_statement_or_a_range_still_needs_the_rest_of_its_row(world, tmp_path, row):
+    out = packets.files(load(world), tmp_path / 'f', [])[0]
+    result = settled(out, 'alpha.overview | none', row)
+    assert f'  unparseable: {row}' in result.lines
+    assert 'held, not cited: hooks/gate.sh: a discarded or unparseable row might have changed it' in result.lines
+
+
 def test_a_discarded_contradiction_holds_the_file_uncited(world, tmp_path):
     out = packets.files(load(world), tmp_path / 'f', [])[0]
     result = settled(out, 'hooks/gate.sh:3 | exits 0 | alpha.overview | "not in the guide" | contradicts',
@@ -965,7 +1025,9 @@ CONSISTENT = 'hooks/gate.sh:1 | a shell script | alpha.overview | "## 1. Alpha" 
     ('hooks/gate.sh:3 | exits 0 | alpha.overview | "not in the guide" | contradicts', True),  # discarded contradicts
     ('hooks/gate.sh:3 | exits 0 | alpha.overview | "not in the guide" | consistent', False),  # discarded consistent
     ('alpha.overview | some', True),  # a none line that does not say none
-], ids=['discarded-contradicts', 'discarded-consistent', 'broken-none'])
+    # agents/debugger.md in the 2026-10-20 files pass: prose is never read as none.
+    ('alpha.overview | no other statement in the file rests on it: it sets no other field', True),
+], ids=['discarded-contradicts', 'discarded-consistent', 'broken-none', 'prose-none'])
 def test_each_files_hold_rule_alone_holds_the_file(world, tmp_path, extra, held):
     '''I3 (final review): a consistent row answers alpha.overview, so the
     rule under test is the only thing that holds the file.'''
