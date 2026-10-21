@@ -1,5 +1,7 @@
 # Claude Code Drift Automation Stage 5: Live Probes — Implementation Plan
 
+**Status: COMPLETE (2026-10-20)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Build `cli.py probes` and `cli.py binaries` (drift spec R10) with four registered probes. Each probe checks, on a `claude` binary the owner names, a behaviour the guide states, so a change shows before the docs say so. Their assertions are replayed in tests against recorded, scrubbed streams (R12.6), and the `/cc-guide` skill gains its `probes` mode (R8.9).
@@ -116,7 +118,7 @@ Task 1 makes five amendments, each tagged `(owner, plan 58, 2026-10-20)`:
 
 The spec's status line stays untouched.
 
-- [ ] **Step 1: Record the starting counts.** Task 9 compares against these. The `build/` suite takes about a minute.
+- [x] **Step 1: Record the starting counts.** Task 9 compares against these. The `build/` suite takes about a minute.
 
 Run: `uv run --directory build/cc_guide --python 3.13 --with pytest python -m pytest -q`
 
@@ -124,7 +126,7 @@ Run: `uv run --directory build --python 3.13 --with pytest --with numpy --with p
 
 Expected: note each summary line. In a worktree without the gitignored `build/.scratch/`, the `build/` suite may show `test_verify_citations.py` failures; they are not this plan's.
 
-- [ ] **Step 2: Hold the binary (D2).** Find the PATH `claude` and the file it links to, copy that file, and read the copy's version.
+- [x] **Step 2: Hold the binary (D2).** Find the PATH `claude` and the file it links to, copy that file, and read the copy's version.
 
 Run: `which claude`
 
@@ -138,7 +140,7 @@ Run: `~/.cache/agent-skills/scratch/plan58-bin/claude --version`
 
 Expected: a line such as `2.1.303 (Claude Code)`. Note the version for Tasks 6 and 8. Then read `~/.cache/agent-skills/cc-guide/latest/fetch.json` with the Read tool: its `changelog_head` is the newest cached release (2.1.304 while planning). If the held version is older, expect `probes` to need `--allow-old` (Global Constraints, "The binary").
 
-- [ ] **Step 3: A1 and A2, R10.2's table.**
+- [x] **Step 3: A1 and A2, R10.2's table.**
 
 **Replace** in `specs/claude-code-drift-automation-spec.md`:
 
@@ -164,7 +166,7 @@ Expected: a line such as `2.1.303 (Claude Code)`. Note the version for Tasks 6 a
 | `stop-continuation` | A scratch Stop hook, registered through the scratch project's `.claude/settings.json` and loaded with `--setting-sources project`, logs `stop_hook_active` and blocks on its first two calls. Both routes loaded on 2.1.303; `--include-hook-events` puts each Stop hook's exit code in the stream (owner, plan 58, 2026-10-20) | the log reads `false, true, true`; an empty log is ERROR, and so is that log with a stream whose Stop hooks did not exit 2, 2, 0 | `hooks.exit-codes`, `hooks.patterns` |
 ```
 
-- [ ] **Step 4: A3, R10.4.**
+- [x] **Step 4: A3, R10.4.**
 
 **Replace** in `specs/claude-code-drift-automation-spec.md`:
 
@@ -187,7 +189,7 @@ Expected: a line such as `2.1.303 (Claude Code)`. Note the version for Tasks 6 a
   2026-10-20); the prompt first, with stdin from `/dev/null`.
 ```
 
-- [ ] **Step 5: A4, R6.7, R10.5 and R10.6.**
+- [x] **Step 5: A4, R6.7, R10.5 and R10.6.**
 
 **Replace** in `specs/claude-code-drift-automation-spec.md`:
 
@@ -236,7 +238,7 @@ setup error (owner, plan 58, 2026-10-20). Raw streams stay under
 `~/.cache/agent-skills/cc-guide/probes/`.
 ```
 
-- [ ] **Step 6: A5, R12.6.**
+- [x] **Step 6: A5, R12.6.**
 
 **Replace** in `specs/claude-code-drift-automation-spec.md`:
 
@@ -255,12 +257,12 @@ tool-use ids, and MCP tool names; a test fails on a path, an id or an MCP
 tool name that remains (owner, plan 58, 2026-10-20).
 ```
 
-- [ ] **Step 7: Run the gates.**
+- [x] **Step 7: Run the gates.**
 
 Run: `bash build/run_commit_lints.sh`
 Expected: `commit lints passed`. The spec is under `specs/`, which the citation lint does not read.
 
-- [ ] **Step 8: Commit.**
+- [x] **Step 8: Commit.**
 
 ```bash
 git add specs/claude-code-drift-automation-spec.md
@@ -279,7 +281,7 @@ git commit -m "docs(specs): settle Stage 5's open probe details (drift R6.7, R10
 **Interfaces:**
 - Produces: in `state.py`, `PASS, DIVERGES, ERROR = 'PASS', 'DIVERGES', 'ERROR'`, `OUTCOMES`, `PROBE_COLUMNS: frozenset[str]`, `table_cells(line: str) -> list[str]` and `is_probe_header(line: str) -> bool`. `parse_probes` raises `SetupError(f'{PROBES}: unreadable row {s!r}')` on an unknown or empty outcome. `check.due_probes` reports `'ERROR with no later PASS'`.
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
 
 **Replace** in `build/cc_guide/test_state.py`:
 
@@ -344,12 +346,12 @@ def test_probe_due_rules(history, today, why):
 
 <!-- red:task2 test_state.py test_check.py -->
 
-- [ ] **Step 2: Run the tests to verify they fail.**
+- [x] **Step 2: Run the tests to verify they fail.**
 
 Run: `uv run --directory build/cc_guide --python 3.13 --with pytest python -m pytest -q test_state.py test_check.py`
 Expected: 4 failed. The legend test fails because the legend's rows raise `SetupError`, the header test with `AttributeError: module 'state' has no attribute 'is_probe_header'`, and the two due cases that end on ERROR with `None` in place of `'ERROR with no later PASS'`. The `[ERROR, PASS]` case passes before and after: it guards that a later PASS settles an ERROR.
 
-- [ ] **Step 3: Write the implementation in `state.py`.**
+- [x] **Step 3: Write the implementation in `state.py`.**
 
 **Replace** in `build/cc_guide/state.py`:
 
@@ -446,7 +448,7 @@ def parse_probes(text: str | None) -> list[ProbeRow]:
     return rows
 ```
 
-- [ ] **Step 4: Write the implementation in `check.py`.**
+- [x] **Step 4: Write the implementation in `check.py`.**
 
 **Replace** in `build/cc_guide/check.py`:
 
@@ -505,12 +507,12 @@ from state import (BASELINE, DIVERGES, ERROR, MANIFEST, PASS, PROBES, Manifest, 
             out.append({'probe': pid, 'why': f'{word} with no later PASS'})
 ```
 
-- [ ] **Step 5: Run the tests to verify they pass.**
+- [x] **Step 5: Run the tests to verify they pass.**
 
 Run: `uv run --directory build/cc_guide --python 3.13 --with pytest python -m pytest -q`
 Expected: all pass, +5 against Task 1 Step 1.
 
-- [ ] **Step 6: Run the gates and commit.**
+- [x] **Step 6: Run the gates and commit.**
 
 Run: `bash build/run_commit_lints.sh`
 Expected: `commit lints passed`.
@@ -534,7 +536,9 @@ git commit -m "fix(cc_guide): read only R10.5's probe outcomes and keep ERROR du
 
 The assertions read only raw stream-json fields, never the model's prose (R10.5). Each one returns ERROR, not PASS, when its mechanism never fired: no init event, no result event, an error result, no logged hook call, an agent never dispatched, or a command never run.
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
+
+> Deviation: `test_probe_checks.py` differs from the Create block: the scrub test gained an `mcp__` tool_use event (56315a4), and two guard-liveness cases and a `redact` test were added (a260566, dd28a43). The owner accepted these deviations at the plan 58 gate, 2026-10-20.
 
 **Create** `build/cc_guide/test_probe_checks.py`:
 
@@ -742,12 +746,14 @@ def test_scrub_keeps_what_the_assertions_read_and_drops_private_text():
 
 <!-- red:task3 test_probe_checks.py -->
 
-- [ ] **Step 2: Run the tests to verify they fail.**
+- [x] **Step 2: Run the tests to verify they fail.**
 
 Run: `uv run --directory build/cc_guide --python 3.13 --with pytest python -m pytest -q test_probe_checks.py`
 Expected: a collection error, `ModuleNotFoundError: No module named 'probe_checks'`.
 
-- [ ] **Step 3: Write the implementation.**
+- [x] **Step 3: Write the implementation.**
+
+> Deviation: `probe_checks.py` differs from the Create block: `_trim_block` writes a `tool_use` name that starts with `mcp__` as `<mcp-tool>` (56315a4); `redact()` was extracted from `scrub_events` (a260566); `assess_guard_liveness` returns ERROR for a failed control and needs every forbidden attempt denied (dd28a43). Accepted by the owner at the gate, 2026-10-20.
 
 **Create** `build/cc_guide/probe_checks.py`:
 
@@ -1040,19 +1046,19 @@ def scrub_events(events: list[dict], private: list[str]) -> str:
     return UUID_RE.sub(lambda m: uuids.setdefault(m.group(0), f'uuid-{len(uuids) + 1}'), text)
 ```
 
-- [ ] **Step 4: Stamp the citation.** The lint reads only tracked files, so stage the file first.
+- [x] **Step 4: Stamp the citation.** The lint reads only tracked files, so stage the file first.
 
 Run: `git add build/cc_guide/probe_checks.py build/cc_guide/test_probe_checks.py`
 
 Run: `uv run --python 3.13 python build/cc_guide/cli.py baseline cite build/cc_guide/probe_checks.py`
 Expected: `stamped build/cc_guide/probe_checks.py @<release>`, where the release is the newest `changed` among the cited sections.
 
-- [ ] **Step 5: Run the tests to verify they pass.**
+- [x] **Step 5: Run the tests to verify they pass.**
 
 Run: `uv run --directory build/cc_guide --python 3.13 --with pytest python -m pytest -q`
 Expected: all pass, +38 against Task 2.
 
-- [ ] **Step 6: Run the gates and commit.**
+- [x] **Step 6: Run the gates and commit.**
 
 Run: `bash build/run_commit_lints.sh`
 Expected: `commit lints passed`.
@@ -1078,7 +1084,9 @@ git commit -m "feat(cc_guide): add the probe assertions and the fixture scrubber
 
 `run` raises `SetupError` (exit 2) for a registered probe that `PROBE_RUNS` lacks, an unknown `--only` id, a binary that is not an executable file, or a binary older than `newest` without `allow_old`. A timeout, a setup failure inside a probe, or unreadable output is an ERROR row, never a pass.
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
+
+> Deviation: The `save_fixtures` test plants the private strings in a Bash tool_use command, which the trim keeps; the plan's version passed with an empty private list (fd3faa5). Later tests cover the log-row scrub, the side-file scrub, a missing login name and an MCP name inside a finding (a260566, bdd4f11).
 
 **Create** `build/cc_guide/test_probes.py`:
 
@@ -1647,12 +1655,14 @@ def test_save_fixtures_scrubs_a_recorded_run_and_the_replay_reads_it_like_the_ru
 
 <!-- red:task4 test_probes.py -->
 
-- [ ] **Step 2: Run the tests to verify they fail.**
+- [x] **Step 2: Run the tests to verify they fail.**
 
 Run: `uv run --directory build/cc_guide --python 3.13 --with pytest python -m pytest -q test_probes.py`
 Expected: a collection error, `ModuleNotFoundError: No module named 'probes'`.
 
-- [ ] **Step 3: Give Gate B a binary override and a stream directory (R10.2), and R10.4's flags.**
+- [x] **Step 3: Give Gate B a binary override and a stream directory (R10.2), and R10.4's flags.**
+
+> Deviation: Line 8 of the Gate B header now reads "... and an isolation rule:" because item 4 is not a mechanic (d74069b).
 
 **Replace** in `hooks/probe-readonly-guard.sh`:
 
@@ -1750,7 +1760,9 @@ The `mktemp` template gains `.XXXXXX` because GNU `mktemp` refuses a template wi
 Run: `bash -n hooks/probe-readonly-guard.sh`
 Expected: no output.
 
-- [ ] **Step 4: Write the implementation.**
+- [x] **Step 4: Write the implementation.**
+
+> Deviation: `probes.py` gained `private_strings()` (with a fallback when the login name is missing), `log_row` scrubs the Finding cell and `mcp__` names, and `save_fixtures` scrubs the non-stream fixtures (a260566, bdd4f11).
 
 **Create** `build/cc_guide/probes.py`:
 
@@ -2278,19 +2290,19 @@ def describe(c: Candidate) -> str:
     return f"{c.version or 'version unknown'}  {shown_path(c.path)}{target}  ({c.where})"
 ```
 
-- [ ] **Step 5: Stamp the citation.**
+- [x] **Step 5: Stamp the citation.**
 
 Run: `git add build/cc_guide/probes.py build/cc_guide/test_probes.py hooks/probe-readonly-guard.sh`
 
 Run: `uv run --python 3.13 python build/cc_guide/cli.py baseline cite build/cc_guide/probes.py`
 Expected: `stamped build/cc_guide/probes.py @<release>`.
 
-- [ ] **Step 6: Run the tests to verify they pass.**
+- [x] **Step 6: Run the tests to verify they pass.**
 
 Run: `uv run --directory build/cc_guide --python 3.13 --with pytest python -m pytest -q`
 Expected: all pass, +31 against Task 3. `test_the_guard_probe_runs_the_real_script_and_reads_its_three_kept_streams` runs the real `hooks/probe-readonly-guard.sh` against a fake `claude`, so it checks Step 3's flags and stream copies. The process tests take a few seconds, and their `pids` fixture kills any `sleep` a failing one leaves.
 
-- [ ] **Step 7: Run the gates and commit.**
+- [x] **Step 7: Run the gates and commit.**
 
 Run: `bash build/run_commit_lints.sh`
 Expected: `commit lints passed`.
@@ -2313,7 +2325,7 @@ git commit -m "feat(cc_guide): add the probe runner and Gate B's stream director
 - Consumes: Task 4's `probes.run`, `probes.binaries`, `probes.describe` and `probes.PROBE_RUNS`; `cli.newest_releases(cache)`, which raises `SetupError('no cached changelog: run check, or restore the 2.1.288 snapshot')`.
 - Produces: `cli.py probes --claude PATH [--only ID [ID ...] | --force] [--allow-old]` and `cli.py binaries`.
 
-- [ ] **Step 1: Write the failing tests.**
+- [x] **Step 1: Write the failing tests.**
 
 **Replace** in `build/cc_guide/test_cli.py`:
 
@@ -2388,12 +2400,12 @@ def test_the_registry_names_exactly_the_probes_that_probes_py_runs():
 
 <!-- red:task5 test_cli.py -->
 
-- [ ] **Step 2: Run the tests to verify they fail.**
+- [x] **Step 2: Run the tests to verify they fail.**
 
 Run: `uv run --directory build/cc_guide --python 3.13 --with pytest python -m pytest -q test_cli.py`
 Expected: 4 failed. `probes` and `binaries` are unknown subcommands, so argparse exits 2 where three tests expect a return value, and the registry test finds no `[[probe]]` in `manifest.toml`. The two `test_probes_needs_claude_and_takes_only_or_force_not_both` cases pass before and after, since argparse also exits 2 on an unknown subcommand: they guard the flag rules once the subcommand exists.
 
-- [ ] **Step 3: Write the implementation in `cli.py`.**
+- [x] **Step 3: Write the implementation in `cli.py`.**
 
 **Replace** in `build/cc_guide/cli.py`:
 
@@ -2545,7 +2557,7 @@ def main(
         return run_baseline(args, cache, today)
 ```
 
-- [ ] **Step 4: Register the four probes (R10.1, D1).**
+- [x] **Step 4: Register the four probes (R10.1, D1).**
 
 **Replace** in `build/cc_guide/manifest.toml`:
 
@@ -2581,7 +2593,7 @@ sections = ['subagents.frontmatter', 'subagents.models']
 files = ['agents/explore.md', 'agents/test-runner.md', 'agents/code-reviewer.md']
 ```
 
-- [ ] **Step 5: Run the tests to verify they pass.**
+- [x] **Step 5: Run the tests to verify they pass.**
 
 Run: `uv run --directory build/cc_guide --python 3.13 --with pytest python -m pytest -q`
 Expected: all pass, +6 against Task 4.
@@ -2589,7 +2601,7 @@ Expected: all pass, +6 against Task 4.
 Run: `uv run --python 3.13 python build/cc_guide/cli.py binaries`
 Expected: exit 0, one line per binary, the PATH `claude` first with `-> <its target>` and `(PATH)`. This reads only `--version` from each binary.
 
-- [ ] **Step 6: Run the gates and commit.**
+- [x] **Step 6: Run the gates and commit.**
 
 Run: `bash build/run_commit_lints.sh`
 Expected: `commit lints passed`.
@@ -2613,7 +2625,9 @@ git commit -m "feat(cc_guide): add the probes and binaries subcommands and regis
 
 This task spends about $0.35 and makes the plan's only commits of recorded data. Run the live commands exactly as written: each one is the whole budget for its step. If a probe's live run comes back DIVERGES, stop and report it to your human partner with the row and the raw output folder: the behaviour the guide states has changed, which is a `/cc-guide` finding, not a fixture to save. If one comes back ERROR, read its raw output (`*.err` and the streams) and use the systematic-debugging skill before running it again with `--only <id>`.
 
-- [ ] **Step 1: Write the failing test.**
+- [x] **Step 1: Write the failing test.**
+
+> Deviation: `test_probe_replay.py` gained a test that parses the committed `PROBES.md` and scans it for private text (a260566).
 
 **Create** `build/cc_guide/test_probe_replay.py`:
 
@@ -2726,12 +2740,12 @@ def test_no_fixture_holds_a_path_or_an_id_from_the_recording_machine():
 
 <!-- red:task6 test_probe_replay.py -->
 
-- [ ] **Step 2: Run the test to verify it fails.**
+- [x] **Step 2: Run the test to verify it fails.**
 
 Run: `uv run --directory build/cc_guide --python 3.13 --with pytest python -m pytest -q test_probe_replay.py`
 Expected: 14 failed, since no fixture folder exists yet. `test_every_registered_probe_has_its_fixtures` fails with "is missing; record it with save_fixtures", and each `test_the_recorded_run_passes` case gets ERROR in place of PASS. The four cases that edit a stream through `edited()` alone (both `agent-tools` cases and both `guard-liveness` cases), and the privacy test, raise `FileNotFoundError`. The `agent-model-pins` DIVERGES case raises `TypeError: 'NoneType' object is not iterable` first, from `dispatches(None)` in `explore_ids()`. The `stop-continuation` DIVERGES case and the two ERROR cases that change no stream fail their assertions: a missing stream is ERROR with the finding `no stream-json events`.
 
-- [ ] **Step 3: Make the broken binary (DF2).**
+- [x] **Step 3: Make the broken binary (DF2).**
 
 **Create** `~/.cache/agent-skills/scratch/plan58-bin/broken-claude` with the Write tool:
 
@@ -2746,7 +2760,7 @@ exit 3
 
 Run: `chmod +x ~/.cache/agent-skills/scratch/plan58-bin/broken-claude`
 
-- [ ] **Step 4: A broken setup yields ERROR (Validation 5).** Add `--allow-old` if `probes` refuses the binary as older.
+- [x] **Step 4: A broken setup yields ERROR (Validation 5).** Add `--allow-old` if `probes` refuses the binary as older.
 
 Run: `uv run --python 3.13 python build/cc_guide/cli.py probes --claude ~/.cache/agent-skills/scratch/plan58-bin/broken-claude --only agent-tools`
 Expected: exit 1, and these lines:
@@ -2760,7 +2774,7 @@ appended 1 row(s) to build/cc_guide/PROBES.md; nothing is committed
 
 `build/cc_guide/PROBES.md` now exists, with one ERROR row.
 
-- [ ] **Step 5: Check what the live runs will load.** These are read-only.
+- [x] **Step 5: Check what the live runs will load.** These are read-only.
 
 Run: `git -C ~/Projects/agent-skills branch --show-current`
 Expected: `main`.
@@ -2779,7 +2793,7 @@ Expected: no output, or changes outside the sections the probes back (`hooks.eve
 
 If the shared checkout is on another branch or has changes there, stop and tell your human partner: another session may be using it, so do not switch it yourself. If a backed section now states a behaviour differently from what its probe asserts, stop and ask whether the assertion changes first.
 
-- [ ] **Step 6: The full run on the held binary (Validation 5).** `agent-model-pins` waits on three background agents, so this can take several minutes: run it with the Bash tool's `run_in_background`, and wait for its notification. Add `--allow-old` if `probes` refuses the binary as older.
+- [x] **Step 6: The full run on the held binary (Validation 5).** `agent-model-pins` waits on three background agents, so this can take several minutes: run it with the Bash tool's `run_in_background`, and wait for its notification. Add `--allow-old` if `probes` refuses the binary as older.
 
 Run: `uv run --python 3.13 python build/cc_guide/cli.py probes --claude ~/.cache/agent-skills/scratch/plan58-bin/claude --force`
 Expected: exit 0, and four PASS lines, each followed by its `raw output:` folder:
@@ -2793,12 +2807,14 @@ agent-model-pins: PASS: Explore and test-runner served claude-haiku-5-5; code-re
 
 A finding's tool or model names may differ on a newer binary while the outcome is still PASS: record the finding as printed. Note the four `raw output:` folders for Step 8.
 
-- [ ] **Step 7: The ERROR row is settled by the later PASS.** Add `--allow-old` if `probes` refuses the binary as older.
+- [x] **Step 7: The ERROR row is settled by the later PASS.** Add `--allow-old` if `probes` refuses the binary as older.
 
 Run: `uv run --python 3.13 python build/cc_guide/cli.py probes --claude ~/.cache/agent-skills/scratch/plan58-bin/claude`
 Expected: exit 0 and `probes: none due`. It runs only `--version`.
 
-- [ ] **Step 8: Save the fixtures (D3).** One command per probe, each with its folder from Step 6. `save_fixtures` cuts each stream to the fields the assertions read and scrubs the home folder, the temporary folder and the login name.
+- [x] **Step 8: Save the fixtures (D3).** One command per probe, each with its folder from Step 6. `save_fixtures` cuts each stream to the fields the assertions read and scrubs the home folder, the temporary folder and the login name.
+
+> Deviation: The nine fixtures total 17,367 bytes, not the "about 50 KB" the plan expected.
 
 Run: `uv run --directory build/cc_guide --python 3.13 python -c "import probes; from pathlib import Path; print(probes.save_fixtures(Path('<guard-liveness folder>'), 'guard-liveness', Path('probe_streams')))"`
 
@@ -2813,12 +2829,12 @@ Expected: nine paths in all under `build/cc_guide/probe_streams/`, about 50 KB t
 Run: `grep -rn "$USER" build/cc_guide/probe_streams`
 Expected: no output (exit 1). Read one fixture of each probe with the Read tool and confirm it holds no path, email address or session id.
 
-- [ ] **Step 9: Run the tests to verify they pass.**
+- [x] **Step 9: Run the tests to verify they pass.**
 
 Run: `uv run --directory build/cc_guide --python 3.13 --with pytest python -m pytest -q`
 Expected: all pass, +14 against Task 5.
 
-- [ ] **Step 10: Run the gates and commit (DF1).**
+- [x] **Step 10: Run the gates and commit (DF1).**
 
 Run: `bash build/run_commit_lints.sh`
 Expected: `commit lints passed`.
@@ -2840,7 +2856,9 @@ git commit -m "test(cc_guide): record the four probes and replay their assertion
 
 The skill is project-local and Claude-only, so `check_frontmatter.py` does not read it (spec, Out of scope). Its description still starts with "Use when" and names the new trigger.
 
-- [ ] **Step 1: The skill.**
+- [x] **Step 1: The skill.**
+
+> Deviation: The `## probes` section has a new step 2 that checks the shared checkout's branch and its `agents` and `hooks` status before a paid run (owner choice B at the gate; d74069b, b34c0c5); the later steps are renumbered 3 to 5.
 
 **Replace** in `.claude/skills/cc-guide/SKILL.md`:
 
@@ -2903,7 +2921,7 @@ Live probes check behaviour the guide states before the docs change (spec R10). 
 ## After any mode
 ```
 
-- [ ] **Step 2: `build/CLAUDE.md`.**
+- [x] **Step 2: `build/CLAUDE.md`.**
 
 **Replace** in `build/CLAUDE.md`:
 
@@ -2932,7 +2950,7 @@ session ids.
 Nothing is committed for you.
 ```
 
-- [ ] **Step 3: The root `CLAUDE.md`'s Commands section (R12.7).**
+- [x] **Step 3: The root `CLAUDE.md`'s Commands section (R12.7).**
 
 **Replace** in `CLAUDE.md`:
 
@@ -2956,7 +2974,7 @@ uv run --python 3.13 python build/cc_guide/cli.py probes --claude <path>
 Run: `wc -l CLAUDE.md`
 Expected: 153, under the `claude-md-size` check's 200.
 
-- [ ] **Step 4: `hooks/README.md`'s Probe log (R10.6).**
+- [x] **Step 4: `hooks/README.md`'s Probe log (R10.6).**
 
 **Replace** in `hooks/README.md`:
 
@@ -2975,7 +2993,7 @@ and logs each run in `build/cc_guide/PROBES.md`; this table keeps the payload
 findings.
 ```
 
-- [ ] **Step 5: Run the gates and commit.**
+- [x] **Step 5: Run the gates and commit.**
 
 Run: `uv run --python 3.13 python build/cc_guide/cli.py lint`
 Expected: exit 0. Any `STALE` lines name files this plan did not touch.
@@ -3000,7 +3018,7 @@ git commit -m "docs(cc_guide): add the /cc-guide probes mode and document the pr
 
 The check runs the held binary once from a fresh temporary directory, with a stand-in SessionStart hook on this repo's matcher, `startup`, passed through `--settings` (DF5). No project settings exist there, so this repo's `notice.sh` cannot load: nothing is fetched and no notice is marked shown. The spike loaded a `--settings` hook the same way. The run costs a few cents.
 
-- [ ] **Step 1: Write the check script.**
+- [x] **Step 1: Write the check script.**
 
 **Create** `~/.cache/agent-skills/scratch/plan58-bin/startup_check.py` with the Write tool:
 
@@ -3030,12 +3048,14 @@ print('hook responses:', ', '.join(filter(None, names)) or 'none')
 print('stand-in log:', LOG.read_text(encoding='utf-8').strip() if LOG.exists() else 'absent')
 ```
 
-- [ ] **Step 2: Run the check once.**
+- [x] **Step 2: Run the check once.**
 
 Run: `uv run --python 3.13 python ~/.cache/agent-skills/scratch/plan58-bin/startup_check.py`
 Expected: `exit 0`, `hook responses:` naming `SessionStart:startup`, and `stand-in log: startup`. That means the hook fired under `claude -p`. `stand-in log: absent` means it did not.
 
-- [ ] **Step 3: Record the answer.** Put the held binary's version from Task 1 Step 2 and today's date in place of `2.1.303, 2026-10-20` where they differ.
+- [x] **Step 3: Record the answer.** Put the held binary's version from Task 1 Step 2 and today's date in place of `2.1.303, 2026-10-20` where they differ.
+
+> Deviation: The sentence says a `claude -p` run that loads this repo's project settings "should run" `show` and `refresh`, and notes that the stand-in hook came from `--settings` (owner choice A3; d74069b). The version is the held binary's, 2.1.304.
 
 If the hook fired:
 
@@ -3058,7 +3078,7 @@ whose working directory is this repo or one of its worktrees runs `show` and
 
 If it did not fire, put this sentence in the same place instead: "The `startup` matcher does not fire under `claude -p` (checked on 2.1.303, 2026-10-20), so a `claude -p` run in this repo runs neither `show` nor `refresh`."
 
-- [ ] **Step 4: Run the gates and commit.**
+- [x] **Step 4: Run the gates and commit.**
 
 Run: `bash build/run_commit_lints.sh`
 Expected: `commit lints passed`.
@@ -3074,7 +3094,9 @@ If the hook did not fire, the commit message says "does not fire".
 
 ### Task 9: Validation (Validation 5 and 6)
 
-- [ ] **Step 1: The suites.**
+- [x] **Step 1: The suites.**
+
+> Deviation: Each suite gained +103 tests, not +94: +9 came from the final-review fix waves (+7 in a260566 and dd28a43, +2 in bdd4f11). Final counts: cc_guide 632 passed; build/ 1328 passed, 16 skipped.
 
 Run: `uv run --directory build/cc_guide --python 3.13 --with pytest python -m pytest -q`
 Expected: all pass, +94 against Task 1 Step 1.
@@ -3082,7 +3104,7 @@ Expected: all pass, +94 against Task 1 Step 1.
 Run: `uv run --directory build --python 3.13 --with pytest --with numpy --with polars --with pyyaml python -m pytest -q`
 Expected: +94 passed against Task 1 Step 1, with the same skips and the same pre-existing failures, if any.
 
-- [ ] **Step 2: Every existing gate (Validation 6).**
+- [x] **Step 2: Every existing gate (Validation 6).**
 
 Run: `bash build/run_commit_lints.sh`
 Expected: `commit lints passed`. It runs the frontmatter, provenance and conformance lints, Tier 1 snippets, the dependency-drift test, `sync_runtime_assets.py --check`, `cli.py lint`, the placement tests and the suite-registry check.
@@ -3090,7 +3112,7 @@ Expected: `commit lints passed`. It runs the frontmatter, provenance and conform
 Run: `uv run --python 3.13 --with pyyaml python build/sync_runtime_assets.py --check`
 Expected: exit 0: no adapter changed.
 
-- [ ] **Step 3: The acceptance evidence (Validation 5).** Read `build/cc_guide/PROBES.md` with the Read tool.
+- [x] **Step 3: The acceptance evidence (Validation 5).** Read `build/cc_guide/PROBES.md` with the Read tool.
 Expected: one ERROR row for `agent-tools` from `broken-claude`, then four PASS rows from the held binary, each with the version and, where used, `--allow-old`.
 
 Run: `git ls-files build/cc_guide/probe_streams`
