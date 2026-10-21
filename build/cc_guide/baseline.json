@@ -314,15 +314,15 @@
   },
   "hooks.configuration": {
    "checked": {
-    "release": "2.1.304",
-    "date": "2026-10-20"
+    "release": "2.1.306",
+    "date": "2026-10-21"
    },
    "changed": "2.1.306",
    "audited": {
     "release": "2.1.288",
     "date": "2026-10-03"
    },
-   "text_hash": "sha256:82b1f9abb74c28799fefc52045ef45fd99ddf5d5f9af51042e8c67b9d360dc0c"
+   "text_hash": "sha256:5ca681ae7b03e24edd2f8389649b80d923d51b3bf2e2b54b5ba142f9f05dd7c8"
   },
   "hooks.patterns": {
    "checked": {
@@ -338,8 +338,8 @@
   },
   "hooks.pitfalls": {
    "checked": {
-    "release": "2.1.304",
-    "date": "2026-10-20"
+    "release": "2.1.306",
+    "date": "2026-10-21"
    },
    "changed": "2.1.304.1",
    "audited": {
@@ -2098,6 +2098,7 @@
      "ee46dfa0a70f2150": "5e0ef92fd3cce996",
      "f14e3a68dc357140": "e4ddce7c47b5e469",
      "6159df67da95073b": "690c4eaf98d9e2de",
+     "e6c1899060972ff6": "0cd42b8a2a0ce2a0",
      "4328c9840e084367": "5292f76ea8d6dd0b",
      "d17aa2dfd48c52f3": "11a05e6c13b5451d",
      "9c3ddc092b2fd498": "9abafed1b902d8d3",
@@ -3232,7 +3233,7 @@
      "0c32c93a42ea5056": "ff63bd1ad39ad930",
      "cb16279fb76490a7": "66da86cdb7ffab05",
      "cfb12f09ce287433": "b122f04a67669e2f",
-     "fceb1a02ef0c9159": "16b8679c1959a1ff",
+     "fceb1a02ef0c9159": "da2c2c5945e9464c",
      "19a4759fc94c4de2": "4da012f06baaac1a",
      "77cde2abea93b9de": "1440a81f2a8f30c0",
      "03a98ce2a2b3979f": "2d80360e6f733c5c",
@@ -3246,7 +3247,7 @@
      "a8703abd86fed232": "61411d6cbd755efd",
      "8ab1db1868d2b57c": "e9c64a2604620cca",
      "219fd6154695eaaf": "15cada1531a3d3d2",
-     "11ff24f8bbc62b4d": "48f265ec23ac1622",
+     "11ff24f8bbc62b4d": "38da979a6eefffcc",
      "10175c7df86bf077": "181eacdf7513a7ce",
      "a445905fe3a28d87": "d1d8b0b39339c750",
      "c5b2c7561a43c83f": "a48d1d8b11cc2b85",
@@ -3275,8 +3276,8 @@
      "5a43168e867fbaf9": "db1ab9f79ddfdc44",
      "6f4003d5571773f0": "b40e09b398fffa27",
      "b97ca6a76a9fb190": "660d478e7d4c4113",
-     "2f159046e00cc1b0": "3fdd6ee3d1f52343",
-     "c672a8757cffdbc4": "7a7a16fbcfee2baf",
+     "2f159046e00cc1b0": "a3dbe7106865e0fe",
+     "c672a8757cffdbc4": "30554d6e9f918288",
      "66a8b5a8162acf09": "3c543f647db43309",
      "eff2f8c616cc60db": "3818d991468477c1",
      "5e9fbbffd32f4301": "2725a7ec2b612102",
@@ -3365,7 +3366,7 @@
    "snapshot": {
     "hooks": "2.1.304",
     "hooks-guide": "2.1.304",
-    "settings-reference": "2.1.304",
+    "settings-reference": "2.1.306",
     "env-vars": "2.1.304"
    }
   },
