@@ -131,7 +131,7 @@ Arm C met both bars. Bar 1 holds because arm C failed 0 of 5 on every scenario. 
 What the arm C answers converged on:
 
 - **S1 and S2:** all ten reps open by reading the escalation ladder in `bayesian-workflow/references/diagnostics.md`. All ten also run `diagnose_model.py` to see where the divergences sit (C-S2-3 runs it after a refit). None of the five S1 reps lists a raise of `target_accept_prob`.
-- **S3:** all five say to collect `num_steps` in `extra_fields` and to read the `treedepth` block of `diagnose_model.py`. All five also say that NumPyro prints no warning at the limit.
+- **S3:** all five say to collect `num_steps` in `extra_fields`. All five also say to run `diagnose_model.py` or to check `reached_max_tree_depth`. All five also say that NumPyro prints no warning at the limit.
 - **S4:** all five score on mean held-out error from forward-chaining CV. Four of the five call the learning rate Regime A.
 - **S5:** all five use the three checks in `bayesian-workflow/references/svi.md` and none scores on a held-out metric.
 

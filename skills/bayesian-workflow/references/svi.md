@@ -35,8 +35,9 @@ time on the model, prefer it.
 3. **VSBC (Yao et al. 2018).** `numpyro.infer.calibration.vsbc_diagnostic` simulates data sets from
    the model, refits the guide on each one, and tests whether the guide's posterior puts each
    parameter's true value at the middle on average. A small KS p-value for a parameter means the
-   guide's estimate of it is biased. `ks_pvalues` is a dict keyed by site name. The check refits the
-   guide `num_simulations` times, so set `num_svi_steps` to what check 1 showed is enough.
+   guide's estimate of it is biased. `ks_pvalues` is a dict keyed by site name, and a vector site
+   gives one p-value per component. The check refits the guide `num_simulations` times, so set
+   `num_svi_steps` to what check 1 showed is enough.
 
 ## Running the checks
 
@@ -76,5 +77,5 @@ print(loo_svi)                       # Pareto k above loo_svi.good_k: unstable w
 vsbc = vsbc_diagnostic(jax.random.PRNGKey(20), model, AutoNormal(model), Adam(0.01), Trace_ELBO(), x,
                        observed_sites=["y_obs"], num_simulations=50, num_svi_steps=2000,
                        num_samples=500)
-print(vsbc.ks_pvalues)               # {site: p-value}; a small one marks a biased estimate
+print(vsbc.ks_pvalues)  # {site: array of p-values, one per component}; a small one marks a biased estimate
 ```
