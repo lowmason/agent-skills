@@ -373,26 +373,36 @@ def is_probe_header(line: str) -> bool:
     return line.strip().startswith('|') and PROBE_COLUMNS <= {c.lower() for c in table_cells(line)}
 
 
+def is_separator(line: str) -> bool:
+    '''Whether a stripped line is a Markdown table's separator row.'''
+    return line.startswith('|') and set(line) <= set('|-: ')
+
+
 def parse_probes(text: str | None) -> list[ProbeRow]:
     '''PROBES.md's rows (R10.6), in file order. The log table is any table
     whose header names the date, version, probe and outcome columns; another
-    table, such as a legend, is skipped. A row needs a release label, a
-    date, a probe and one of R10.5's outcomes, so a typo such as `DIVERGED`
-    is a SetupError, never a row read as passed. An absent file has no rows:
-    the first `probes` run creates it.'''
+    table, such as a legend, is skipped. A table opens with a header and a
+    separator row, as in Markdown, so a row that a blank line, prose or a
+    merge marker cuts off from its table is a SetupError, never skipped. A
+    row needs a release label, a date, a probe and one of R10.5's outcomes,
+    so a typo such as `DIVERGED` is a SetupError, never a row read as
+    passed. An absent file has no rows: the first `probes` run creates it.'''
     if text is None:
         return []
     rows: list[ProbeRow] = []
     header: list[str] | None = None
-    for line in text.split('\n'):
-        s = line.strip()
+    lines = [line.strip() for line in text.split('\n')]
+    for n, s in enumerate(lines):
         if not s.startswith('|'):
             header = None
             continue
         if header is None:
+            if not is_separator(lines[n + 1] if n + 1 < len(lines) else ''):
+                raise SetupError(f'{PROBES}: row {s!r} stands outside a table, so it would be skipped: '
+                                 'a blank or other line above it ends the log table')
             header = [c.lower() for c in table_cells(s)]
             continue
-        if set(s) <= set('|-: ') or not PROBE_COLUMNS <= set(header):
+        if is_separator(s) or not PROBE_COLUMNS <= set(header):
             continue
         row = dict(zip(header, table_cells(s)))
         try:

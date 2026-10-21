@@ -213,6 +213,22 @@ def test_probe_rows_skip_a_legend_table_and_reject_an_unknown_outcome():
         assert str(err.value) == f'{state.PROBES}: unreadable row {bad!r}'
 
 
+@pytest.mark.parametrize('split', ['', 'A note from a hand edit.', '<<<<<<< HEAD'])
+def test_a_log_row_cut_off_from_its_table_is_a_setup_error(split):
+    '''A blank line, prose or a merge marker inside the log table ends the
+    table, as Markdown shows it. The next row was read as a new table's
+    header and the rest skipped, so a DIVERGES among them left its probe
+    not due.'''
+    log = ['| Date | Version | Binary | Probe | Outcome | Finding | Flags |', '|---|---|---|---|---|---|---|',
+           '| 2026-10-10 | 2.1.290 | ~/bin/claude | agent-tools | PASS | ok | |']
+    cut = ['| 2026-10-11 | 2.1.290 | ~/bin/claude | agent-tools | DIVERGES | no Grep | |',
+           '| 2026-10-12 | 2.1.290 | ~/bin/claude | stop-continuation | PASS | ok | |']
+    with pytest.raises(state.SetupError) as err:
+        state.parse_probes('\n'.join(['# Probe log', '', *log, split, *cut, '']))
+    assert str(err.value) == (f'{state.PROBES}: row {cut[0]!r} stands outside a table, so it would be skipped: '
+                              'a blank or other line above it ends the log table')
+
+
 def test_the_probe_log_header_names_the_four_log_columns():
     assert state.is_probe_header('| Date | Version | Binary | Probe | Outcome | Finding | Flags |')
     assert not state.is_probe_header('| Outcome | Meaning |')

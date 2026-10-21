@@ -5797,7 +5797,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       ("<agent> forwarded a message with no model field"), and so is a code-reviewer transcript
       line with no `effort` ("a code-reviewer transcript line has no effort field"), checked
       before any DIVERGES. `test_probe_checks.py` pins both findings.
-- [ ] A log row after a blank line is silently skipped (final review, Minor). In
+- [x] A log row after a blank line is silently skipped (final review, Minor). In
       `build/cc_guide/state.py`, `parse_probes` resets the header on any non-table line, so the
       next `|` line is read as a new header and skipped as "another table". A hand edit or a merge
       resolution that splits `build/cc_guide/PROBES.md` hides later rows, and a DIVERGES row among
@@ -5805,6 +5805,10 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       `test_probe_replay.py`'s check of the committed file guards this, and the commit lints do not
       run that suite. Size: quick-fix. Done when: `parse_probes` raises `SetupError` for a log-table
       data row it would otherwise skip, with a test; or the cc_guide suite joins the commit lints.
+      → done 2026-10-21 (/deferred quick fix): a table opens only with a header and a
+      separator row, as in Markdown, so a `|` line that opens a block without one raises
+      `SetupError` ("row … stands outside a table, so it would be skipped"). A test cuts the log
+      table with a blank line, prose and a merge marker. The committed log still parses.
 - [ ] `hook_response.hook_name` may carry an MCP name into a fixture (final review, Minor).
       `probe_checks._trim_event` keeps `hook_name` verbatim, so a PreToolUse hook with an `mcp__`
       matcher in the owner's user settings would appear as `PreToolUse:mcp__...` in a fixture. Only
