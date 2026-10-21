@@ -6,6 +6,13 @@ period, which fits a single series. For a long-format panel (several series
 observed at the same periods), pass each row's period as groups: the folds then
 split whole periods, so no period lands in both train and validation.
 
+The splitter orders the periods by sorting the labels in groups, so the labels
+must sort in time order. Integers, datetime64, pandas Period and zero-padded ISO
+strings such as '2020-09' do. '2020-9' does not: it sorts after '2020-12', so a
+fold would train on later periods than it validates on. Embargo, label_horizon
+and the sizes count the periods present in groups, not calendar periods. A
+missing calendar period leaves a wider real gap.
+
 For a single series with a point-in-time target, sklearn's
 TimeSeriesSplit(gap=embargo) already suffices. It splits rows, so on a panel it
 leaks the way this splitter does without groups. Reach for the purge
@@ -42,10 +49,15 @@ class PurgedTimeSeriesSplit:
 
     In periods: train = [0, s_k - max(embargo, label_horizon)); val = [s_k,
     s_k + test_size). test_size, embargo, label_horizon and min_train_size all
-    count periods; split(X, groups=period) maps them back to rows, and without
-    groups each row is one period. Yields NumPy row-index arrays; duck-types
-    sklearn's splitter API (split / get_n_splits) so it drops into a manual
-    Optuna objective or sklearn search (GridSearchCV.fit(X, y, groups=period)).
+    count periods present in groups, not calendar periods; split(X,
+    groups=period) maps them back to rows, and without groups each row is one
+    period. The groups labels must sort in time order (integers, datetime64,
+    pandas Period and zero-padded ISO strings such as '2020-09' do; '2020-9'
+    does not), because the splitter orders periods by sorting the labels. A
+    missing calendar period leaves a wider real gap. Yields NumPy row-index
+    arrays; duck-types sklearn's splitter API (split / get_n_splits) so it
+    drops into a manual Optuna objective or sklearn search
+    (GridSearchCV.fit(X, y, groups=period)).
     '''
 
     def __init__(self, n_splits=5, test_size=None, embargo=0, label_horizon=0,
@@ -68,7 +80,8 @@ class PurgedTimeSeriesSplit:
         n_splits. Passing X keeps sklearn's splitter contract
         (get_n_splits(X) == len(list(split(X)))), so GridSearchCV /
         cross_validate work despite pruning. With X=None there is no data to
-        measure against, so it falls back to the requested n_splits.
+        measure against, so it falls back to the requested n_splits. It forwards
+        groups to split, so pass the same groups that split gets.
         '''
         if X is None:
             return self.n_splits

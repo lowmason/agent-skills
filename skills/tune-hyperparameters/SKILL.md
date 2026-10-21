@@ -72,7 +72,9 @@ always precedes validation.
 - **Panel** (several series observed at the same periods, one row per series
   and period): split periods, not rows. `TimeSeriesSplit` splits rows, so the
   same period lands in both train and validation. Use this skill's splitter
-  (below) and pass each row's period: `cv.split(X, groups=period)`.
+  (below) and pass each row's period: `cv.split(X, groups=period)`. The period
+  labels must sort in time order, because the splitter sorts them. Integers,
+  dates and zero-padded strings such as `'2020-09'` do. `'2020-9'` does not.
 - **Multi-period target** (label at row `i` spans `[i, i+h]`, e.g. an
   `h`-period-ahead return or a rolling outcome): the naive split still leaks,
   because a train row near the boundary has a label window reaching *into* the
@@ -92,7 +94,9 @@ max(embargo, label_horizon))` — embargo and purge carve the same pre-val regio
 so the binding one is `max`, not the sum. `test_size`, `embargo`,
 `label_horizon` and `min_train_size` all count periods: on a panel, pass
 `groups=period` to `split` (and to `GridSearchCV.fit`), and without it each row
-is one period. It duck-types sklearn's splitter API, so it drops straight into
+is one period. The labels in `groups` must sort in time order, and the sizes
+count the periods present in `groups`, so a missing calendar period leaves a
+wider real gap. It duck-types sklearn's splitter API, so it drops straight into
 the objective below.
 
 **The search — a manual Optuna objective** (verified against Optuna 5.0.0). Keep
