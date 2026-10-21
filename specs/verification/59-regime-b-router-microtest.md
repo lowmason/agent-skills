@@ -8,6 +8,8 @@ Each rep is one decision-only call with no tools (`claude -p --model sonnet --to
 
 Regime A is a knob whose right value is the one that predicts held-out data best. Regime B is a knob whose right value is set by how well the sampler or optimizer reached what the model already defines. A "bar" is a pass condition fixed before arm C ran. A "void" is a rep that errored or refused.
 
+Isolation check. The kit did not pass `--strict-mcp-config` or set `CLAUDE_CODE_DISABLE_ADVISOR_TOOL=1`. On Claude Code 2.1.304, `--tools ""` alone can still list MCP tools, and the advisor tool runs on the server and does not show in the tool list. So the controller screened every saved answer afterwards. All 75 answers came from one model (`claude-sonnet-5-5`), took one turn, and hold only `message` iterations. No rep called a tool or the advisor.
+
 ## Scenarios, grading rules and pass bars
 
 The five scenarios (S1 to S5) in `scenarios.json`:
