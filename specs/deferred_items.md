@@ -5715,7 +5715,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       `hooks/README.md` auto-mode sentence to the `uv run` rule and keeps the mode names that
       `check_conformance.py` reads. All ten held files are cited without a new verifier.
       `cli.py lint` prints 5 STALE files.
-- [ ] Settle cannot parse three row shapes that the verifier writes, and each unparseable
+- [x] Settle cannot parse three row shapes that the verifier writes, and each unparseable
       row holds its file or section. The shapes: a claim that contains `||`
       (`build/check_conformance.py:1130` in the 2026-10-20 files pass, guide line 145 in the
       round-2 verify, which held `skills.arguments` until the next verify); a line range in place of one line
@@ -5728,6 +5728,28 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       a test for each shape. Size: quick-fix. Done when: rows of all three shapes settle, or
       the verifier no longer writes them, and a re-settle of the affected packets parses every
       row.
+      → done 2026-10-21 (branch `claude/practical-cori-e90322`): settle parses the first two
+      shapes, and the verifier contract covers the third. In a verify, audit or files row, the
+      claim may hold `|`. When the fields after the claim do not fit, it runs to the first `|`
+      after which a verdict and a doc reference follow (verify, audit), or a cited section,
+      a quote and a verdict (files). A row whose claim holds no `|` splits as before. A files
+      row may give `file:first-last`. A verify row's `L<line>` stays one line, since no saved
+      report gives a range there. The third shape has no safe parser fix: the debugger line
+      never says none, and settle must not read prose as none. So the contract now says that a
+      none line is exactly `<section> | none`, beside its rule that no other line holds `|`.
+      A micro-test (`claude -p`, Sonnet, no tools, the two packets whose real runs wrote prose,
+      5 reps each) found no failure in the control (0/10), against 3 field cases, so it shows
+      only that the sentence does no harm. A first wording that offered notes a line of their
+      own drew prose notes in 8 of 10 reps and moved a gap from a not-covered row into prose,
+      so it was cut. The committed wording gave 0/10 notes and 0/10 unparseable lines. Kit and
+      results: `~/.cache/agent-skills/scratch/settle-none-micro/` ($3.30).
+      Re-settles parse every row of `hooks/probe-readonly-guard.sh` (5),
+      `commands/deferred.md` (8), `build/check_conformance.py`,
+      `skills/tune-hyperparameters/SKILL.md` and the round-2 verify. The debugger line still
+      holds its file, as intended. `commands/deferred.md` is cited at @2.1.304.3. Its one
+      not-covered row is its stamp line, the kind round 3 ruled none as P8.
+      `hooks/probe-readonly-guard.sh` stays uncited: plan 58 changed the file after its
+      packet was built, so it needs a new files pass. `cli.py lint` prints 6 STALE files.
 
 ## 58-claude-code-drift-automation — 2026-10-20
 - [ ] Two runs of one probe in the same second share a run directory (final reviews: Codex P2,

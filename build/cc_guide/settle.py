@@ -35,10 +35,16 @@ refuses it once a later fetch has moved latest/.
 
 A row's fields are split on `|`. A quote field that opens with `"` runs to
 the first `"` followed by `|` or the end of the line, so a quote may hold `|`
-and `"`; the last field takes the rest of the line. `-` marks an empty
-field. A leading list marker and a Markdown table's outer pipes are no part
-of a row, and a line without `|` is prose, never a row. Settle drops these
-lines without listing them, so they never move the exit to 1:
+and `"`; the last field takes the rest of the line. In verify, audit and
+files, a row's second field, its claim, may hold `|` too: when the fields
+after it do not fit, it runs to the first `|` after which they do (a verdict
+and a doc reference, or a cited section, a quote and a verdict), and with no
+such `|` the plain split stands. A files row may give a range of lines,
+`file:first-last`. `-` marks an empty field. A `<section> | none` line says
+`none` and nothing else, since prose is never read as none. A leading list
+marker and a Markdown table's outer pipes are no part of a row, and a line
+without `|` is prose, never a row. Settle drops these lines without listing
+them, so they never move the exit to 1:
 - separator rows: a line of only `|`, `-`, `:` and spaces;
 - header rows, in any letter case: a line whose first field is a header
   word (HEADERS), or whose every field is a column name (COLUMNS). The
@@ -53,7 +59,7 @@ Any other line holding `|` that is no row is listed as unparseable.
 import json
 import re
 import shlex
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from pathlib import Path
 from typing import NamedTuple
 
@@ -94,6 +100,8 @@ CLOSE_QUOTE_RE = re.compile(r'"[ \t]*(?:\||$)')
 SEPARATOR_RE = re.compile(r'^[\s|:-]+$')
 LINE_REF_RE = re.compile(r'L(\d+)')
 DOC_REF_RE = re.compile(r'(.+):(\d+)')
+# A files row's `file:line`, or a range of lines, `file:first-last`.
+FILE_REF_RE = re.compile(r'(.+):(\d+)(?:-\d+)?')
 CHANGELOG_REF_RE = re.compile(re.escape(CHANGELOG) + r':[1-9][0-9]*')
 # A broken triage line's words that may name a section, a block, a bullet (`2.1.297#3`, never its release) or a release.
 NAME_RE = re.compile(r'[\w.#-]+')
@@ -105,14 +113,33 @@ COLUMNS = frozenset(f.strip().strip('"').lower() for form in FORMATS for f in fo
 LEFT_OUT = 'left out (no surviving row, no none line)'
 
 
-def split_row(line: str, count: int, quoted: tuple[int, ...] = ()) -> list[str] | None:
+def split_row(line: str, count: int, quoted: tuple[int, ...] = (),
+              fits: Callable[[list[str]], bool] | None = None) -> list[str] | None:
     '''A report row's first `count` fields, or None when it has fewer. A
     field at a `quoted` index that opens with `"` runs to the first `"`
     followed by `|` or the end of the line; any other field ends at the next
-    `|`. The last field takes the rest of the line.'''
+    `|`. The last field takes the rest of the line. With `fits`, the second
+    field, a claim, may hold `|` too: when the fields after the claim do not
+    fit, the claim runs to the first `|` after which they do, and with none
+    the plain split stands. A claim without `|` thus splits as before.'''
     s = line.strip()
     s = s[1:] if s.startswith('|') else s
     s = s[:-1] if s.endswith('|') else s
+    row = fields(s, count, quoted)
+    if fits is None or (row is not None and fits(row[2:])):
+        return row
+    first = s.find('|')
+    end = s.find('|', first + 1) if first >= 0 else -1
+    while end >= 0:
+        rest = fields(s[end + 1:], count - 2, tuple(q - 2 for q in quoted))
+        if rest is not None and fits(rest):
+            return [s[:first].strip(), s[first + 1:end].strip(), *rest]
+        end = s.find('|', end + 1)
+    return row
+
+
+def fields(s: str, count: int, quoted: tuple[int, ...]) -> list[str] | None:
+    '''split_row's split of a row whose outer pipes are already dropped.'''
     out: list[str] = []
     i = 0
     while len(out) < count - 1:
@@ -498,6 +525,17 @@ def todo_reaches(guide: str) -> list[tuple[int, int]]:
     return out
 
 
+def review_verdict(field: str) -> str:
+    '''A verify or audit row's verdict, in VERIFY_VERDICTS' letter case.'''
+    return field.upper().replace('(MECHANISM STALE)', '(mechanism STALE)')
+
+
+def review_fits(rest: list[str]) -> bool:
+    '''Whether a verify or audit row's fields after its claim open with a
+    verdict and a doc reference, or `-` for none.'''
+    return review_verdict(rest[0]) in VERIFY_VERDICTS and (not given(rest[1]) or bool(DOC_REF_RE.fullmatch(rest[1])))
+
+
 def settle_review(p: Packet, hold: tuple[str, ...]) -> Settled:
     '''verify and audit: R8.5's A/B/C report under R8.8's discard rule.'''
     index = p.index
@@ -555,8 +593,8 @@ def settle_review(p: Packet, hold: tuple[str, ...]) -> Settled:
             # one for a section outside the packet's sections says nothing this run reviews, so it holds nothing
             continue
         m = LINE_REF_RE.fullmatch(first)
-        row = split_row(line, 6, VERIFY_QUOTES) if m else None
-        verdict = row[2].upper().replace('(MECHANISM STALE)', '(mechanism STALE)') if row else ''
+        row = split_row(line, 6, VERIFY_QUOTES, review_fits) if m else None
+        verdict = review_verdict(row[2]) if row else ''
         n = int(m.group(1)) if m else 0
         sid = section_at(p, n) if m else None
         if row is None or verdict not in VERIFY_VERDICTS or sid is None:
@@ -650,6 +688,12 @@ def settle_files(p: Packet, hold: tuple[str, ...]) -> Settled:
     consistent = 0
     answered: set[str] = set()
     discarded = False
+
+    def fits(rest: list[str]) -> bool:
+        '''Whether a row's fields after its statement are a section the file
+        cites, a quote and a verdict.'''
+        return rest[0] in index['sections'] and rest[2].strip().lower() in FILES_VERDICTS
+
     for line in report_lines(p.report):
         first = (split_row(line, 2) or [''])[0]
         if first in index['sections']:  # `<section> | none`: no statement in the file rests on it
@@ -659,8 +703,8 @@ def settle_files(p: Packet, hold: tuple[str, ...]) -> Settled:
                 unverified.append(f'unparseable: {line}')
                 discarded = True
             continue
-        row = split_row(line, 5, FILES_QUOTES)
-        ref = DOC_REF_RE.fullmatch(row[0]) if row else None
+        row = split_row(line, 5, FILES_QUOTES, fits)
+        ref = FILE_REF_RE.fullmatch(row[0]) if row else None
         verdict = row[4].strip().lower() if row else ''
         if ref is None or ref.group(1) != path or verdict not in FILES_VERDICTS or row[2] not in index['sections']:
             unverified.append(f'unparseable: {line}')
