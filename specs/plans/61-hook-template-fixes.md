@@ -46,10 +46,11 @@ Labels used below, each expanded here once:
 
 - **D1** (owner, brief, 2026-10-13): `ruff-check.sh` keeps one attempt per turn. When `stop_hook_active` is set, it exits 0 without re-running ruff, and its comment says so. Applied in: Global Constraints, Task 1.
 - **D2** (owner, brief, 2026-10-21): the item's disposition is Plan, with no brainstorming and no spec. The item's text is the requirement, and its Done when is the bar. Applied in: header.
+- **D3** (owner, plan review, 2026-10-21): the seven defaults below, P1 to P7, the option "All stand": "All seven defaults P1 to P7 stand as written." Applied in: Task 1 (P1, P2), Task 2 (P3, P4, P5), Tasks 1 to 3 (P6), Tasks 1 and 2 (P7).
 
 ## Defaults for review
 
-This plan settles these defaults. The owner approves or changes each at plan review, and an approved default becomes a Decision.
+This plan settles these defaults. The owner approves or changes each at plan review, and an approved default becomes a Decision. D3 approved all seven as written.
 
 - **P1. "ruff unavailable" exits 1.** Exit 1 is a non-blocking error, and the guide says its first stderr line "surfaces in the transcript" (`hooks.exit-codes`). Exit 0 would hide the message. A JSON `systemMessage` reaches the user only in the CLI, not in the Desktop app. Not verified: whether the Desktop app shows the exit-1 line.
 - **P2. The `uv run ruff --version` probe runs only after an exit 1.** A clean tree costs no extra call.
