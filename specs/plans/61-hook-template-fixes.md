@@ -1,5 +1,7 @@
 # Hook Template Fixes Implementation Plan
 
+**Status: COMPLETE (2026-10-21)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Make the three project tooling hook templates tell lint from a ruff that cannot run, close `uv-guard.sh`'s leaks past prefixes, versioned names and paths, and drive all three templates from subprocess tests on both interpreters.
@@ -109,7 +111,9 @@ Not touched: `hooks/ruff-fix.sh` (tests only), `hooks/test_readonly_agent_guard.
   - `uv_calls(shim) -> list` of those lines, `[]` when uv never ran.
 - Produces, in `hooks/ruff-check.sh`: exit 0 when clean or inside a hook-driven continuation; exit 2 with first stderr line `ruff check found issues that need a human/Claude fix (not auto-fixable):` on lint; exit 1 with first stderr line `ruff-check: ruff unavailable (exit <N>), so lint was not checked.` otherwise, where `<N>` is the exit status of `uv run ruff check .`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
+
+> Deviation: the final whole-branch review (commit 29b0454) changed `test_ruff_check_confirms_an_exit_1_with_ruff_version` below. It now keeps the hook result and asserts `returncode == 2` and the stderr marker `ruff check found issues`, because the Global Constraint "Assert exit codes on every path" governs over this block. The test count stays 16 for this task.
 
 Create `hooks/test_project_hooks.py` with exactly this content:
 
@@ -283,7 +287,7 @@ def test_ruff_check_reports_a_missing_uv(ruff_shim):
         'ruff-check: ruff unavailable (exit 127), so lint was not checked.')
 ```
 
-- [ ] **Step 2: Run the tests to verify the predicted failures**
+- [x] **Step 2: Run the tests to verify the predicted failures**
 
 Run: `uv run --directory hooks --python 3.13 --with pytest python -m pytest -q -rfs test_project_hooks.py`
 
@@ -294,7 +298,7 @@ Expected: `8 failed, 8 passed`, and no skips. The 8 failures are these four test
 
 Read each failure. A failure for any other reason (an import error, a skip, a stub that did not run) means the harness is wrong: fix it before Step 3. A test that passes here and is not in the 8 is expected: it pins behaviour the current hook already has.
 
-- [ ] **Step 3: Replace `hooks/ruff-check.sh`**
+- [x] **Step 3: Replace `hooks/ruff-check.sh`**
 
 Replace the whole file with exactly this content. The `stop_hook_active` lines and the "One attempt per turn" comment are unchanged (D1).
 
@@ -345,7 +349,7 @@ exit 2
 
 Then run `git diff --summary hooks/ruff-check.sh`. Expected: no output, so the mode is still `100755`.
 
-- [ ] **Step 4: Run the tests on both interpreters**
+- [x] **Step 4: Run the tests on both interpreters**
 
 Run: `uv run --directory hooks --python 3.13 --with pytest python -m pytest -q -rfs test_project_hooks.py`
 Expected: `16 passed`.
@@ -353,7 +357,7 @@ Expected: `16 passed`.
 Run: `uv run --directory hooks --python /usr/bin/python3 --with pytest python -m pytest -q -rfs test_project_hooks.py`
 Expected: `16 passed`.
 
-- [ ] **Step 5: Update the docs**
+- [x] **Step 5: Update the docs**
 
 In `hooks/README.md`, replace:
 
@@ -412,7 +416,7 @@ with:
 
 Each old block occurs exactly once. Then run `uv run --python 3.13 --with pyyaml python build/check_conformance.py`. Expected: exit 0.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add hooks/test_project_hooks.py hooks/ruff-check.sh hooks/README.md README.md
@@ -435,7 +439,7 @@ Expected: the pre-commit lints pass and the commit lands. Hooks suite: +16 tests
 - Consumes from Task 1: fixture `shim`, `run_hook(script, payload, shim)`, `UV_GUARD`.
 - Produces, in `hooks/uv-guard.sh`: exit 2 with stderr `uv-guard: <message>\n` for a blocked command, and exit 0 with empty stderr otherwise. The messages are `use '<skipped words>uv run <last path part><args>' instead of bare '<command word>' (uv-managed project).` for python, and `use '<skipped words>uv run pytest<args>' instead of bare '<command word>'.` for pytest. The pip message is unchanged.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append this block to the end of `hooks/test_project_hooks.py`, after two blank lines:
 
@@ -553,7 +557,7 @@ def test_uv_guard_suggests_the_uv_form(shim, command, message):
     assert proc.stderr == f'uv-guard: {message}\n'
 ```
 
-- [ ] **Step 2: Run the tests to verify the predicted failures**
+- [x] **Step 2: Run the tests to verify the predicted failures**
 
 Run: `uv run --directory hooks --python 3.13 --with pytest python -m pytest -q -rfs test_project_hooks.py -k uv_guard`
 
@@ -563,7 +567,7 @@ Expected: `28 failed, 66 passed`, and no skips. The failures, each once per bash
 
 Read each failure. Every `BLOCKED_BY_FIRST_TOKEN`, `ALLOWED` and `DOCUMENTED_GAPS` case passes here, and so do the `python` and `pytest` message cases: they pin behaviour the current hook has.
 
-- [ ] **Step 3: Replace `hooks/uv-guard.sh`**
+- [x] **Step 3: Replace `hooks/uv-guard.sh`**
 
 Replace the whole file with exactly this content:
 
@@ -640,7 +644,7 @@ exit 0
 
 Then run `git diff --summary hooks/uv-guard.sh`. Expected: no output.
 
-- [ ] **Step 4: Run the tests on both interpreters**
+- [x] **Step 4: Run the tests on both interpreters**
 
 Run: `uv run --directory hooks --python 3.13 --with pytest python -m pytest -q -rfs test_project_hooks.py`
 Expected: `110 passed`.
@@ -648,7 +652,7 @@ Expected: `110 passed`.
 Run: `uv run --directory hooks --python /usr/bin/python3 --with pytest python -m pytest -q -rfs test_project_hooks.py`
 Expected: `110 passed`.
 
-- [ ] **Step 5: Update the docs**
+- [x] **Step 5: Update the docs**
 
 In `hooks/README.md`, replace:
 
@@ -695,7 +699,7 @@ and each script's known limits. One notable limit: `uv-guard.sh` is a command-wo
 
 Each old block occurs exactly once. Then run `uv run --python 3.13 --with pyyaml python build/check_conformance.py`. Expected: exit 0.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add hooks/test_project_hooks.py hooks/uv-guard.sh hooks/README.md README.md
@@ -704,7 +708,7 @@ git commit -m "fix(hooks): find uv-guard's command word past prefixes, versions 
 
 Expected: the commit lands. Hooks suite: +94 tests on each interpreter.
 
-- [ ] **Step 7: Mutation check (no commit)**
+- [x] **Step 7: Mutation check (no commit)**
 
 This proves that the allow-path tests catch a crashed hook. Change the last line of `hooks/uv-guard.sh` from `exit 0` to `exit 1`. Then run: `uv run --directory hooks --python 3.13 --with pytest python -m pytest -q test_project_hooks.py -k uv_guard`
 
@@ -727,7 +731,7 @@ These are characterization tests: `ruff-fix.sh` does not change, so they pass at
 - Consumes from Task 1: fixture `ruff_shim`, `run_hook`, `write_uv_stub`, `uv_calls`, `RUFF_FIX`.
 - Produces: nothing that a later task uses.
 
-- [ ] **Step 1: Write the tests**
+- [x] **Step 1: Write the tests**
 
 Append this block to the end of `hooks/test_project_hooks.py`, after two blank lines:
 
@@ -787,7 +791,7 @@ def test_ruff_fix_never_fails_the_turn_without_uv(ruff_shim, tmp_path):
     assert proc.returncode == 0, proc.stderr
 ```
 
-- [ ] **Step 2: Run the tests on both interpreters**
+- [x] **Step 2: Run the tests on both interpreters**
 
 Run: `uv run --directory hooks --python 3.13 --with pytest python -m pytest -q -rfs test_project_hooks.py`
 Expected: `122 passed`.
@@ -795,7 +799,7 @@ Expected: `122 passed`.
 Run: `uv run --directory hooks --python /usr/bin/python3 --with pytest python -m pytest -q -rfs test_project_hooks.py`
 Expected: `122 passed`.
 
-- [ ] **Step 3: Mutation check (no commit)**
+- [x] **Step 3: Mutation check (no commit)**
 
 Change the last line of `hooks/ruff-fix.sh` from `exit 0` to `exit 1`. Then run: `uv run --directory hooks --python 3.13 --with pytest python -m pytest -q test_project_hooks.py -k ruff_fix`
 
@@ -803,7 +807,7 @@ Expected: `6 failed, 6 passed`. The 6 are the three tests whose hook reaches its
 
 Then restore the file: `git restore hooks/ruff-fix.sh`, and check that `git diff --stat hooks/ruff-fix.sh` prints nothing.
 
-- [ ] **Step 4: Update the docs and the suite notes**
+- [x] **Step 4: Update the docs and the suite notes**
 
 In `hooks/README.md`, replace:
 
@@ -851,7 +855,7 @@ Each old block occurs exactly once. Then run:
 - `uv run --python 3.13 --with pyyaml python build/check_conformance.py`. Expected: exit 0.
 - `uv run --python 3.13 python build/run_suites.py --list`. Expected: the `hooks` entry prints both new notes.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add hooks/test_project_hooks.py hooks/README.md build/suites.toml
@@ -873,25 +877,25 @@ Run this task after the per-task reviews of Tasks 1 to 3. If the final review ch
 - Consumes: the committed files of Tasks 1 to 3. `baseline cite` refuses an untracked file.
 - Produces: nothing that a later task uses.
 
-- [ ] **Step 1: Restamp each reviewed citing file**
+- [x] **Step 1: Restamp each reviewed citing file**
 
 Run: `uv run --python 3.13 python build/cc_guide/cli.py baseline cite hooks/ruff-check.sh hooks/uv-guard.sh hooks/README.md README.md hooks/test_project_hooks.py`
 
 Expected: five lines `stamped <path> @<release>`. `<release>` is the newest `changed` release among the file's cited sections: `2.1.306` while planning.
 
-- [ ] **Step 2: See whether a stamp moved**
+- [x] **Step 2: See whether a stamp moved**
 
 Run: `git status --short`
 
 Expected: no output when every stamp was already current. Otherwise `git diff` shows only `@<release>` changes on the citation lines.
 
-- [ ] **Step 3: Check the file modes**
+- [x] **Step 3: Check the file modes**
 
 Run: `git ls-files -s hooks/ruff-check.sh hooks/ruff-fix.sh hooks/uv-guard.sh hooks/test_project_hooks.py`
 
 Expected: `100755` for the three `.sh` files and `100644` for the test file.
 
-- [ ] **Step 4: Run the drift lint and the conformance lint**
+- [x] **Step 4: Run the drift lint and the conformance lint**
 
 Run: `uv run --python 3.13 python build/cc_guide/cli.py lint`
 Expected: exit 0. No `STALE` line names any of the five files. `STALE` lines go to stderr, so read the whole output.
@@ -899,18 +903,18 @@ Expected: exit 0. No `STALE` line names any of the five files. `STALE` lines go 
 Run: `uv run --python 3.13 --with pyyaml python build/check_conformance.py`
 Expected: exit 0.
 
-- [ ] **Step 5: Run the hooks suite on both interpreters**
+- [x] **Step 5: Run the hooks suite on both interpreters**
 
 Run: `uv run --python 3.13 python build/run_suites.py hooks -- -rfs`
 
 Expected: both runs pass, with +122 tests each against the base. On macOS no test skips. Elsewhere, a `system-bash` skip or a launchd-PATH skip prints its reason.
 
-- [ ] **Step 6: Run the nine commit lints**
+- [x] **Step 6: Run the nine commit lints**
 
 Run: `bash build/run_commit_lints.sh`
 Expected: exit 0.
 
-- [ ] **Step 7: Commit, only if Step 2 showed a change**
+- [x] **Step 7: Commit, only if Step 2 showed a change**
 
 ```bash
 git add hooks/ruff-check.sh hooks/uv-guard.sh hooks/README.md README.md hooks/test_project_hooks.py
@@ -918,3 +922,5 @@ git commit -m "chore(cc-guide): restamp the hook template citations after review
 ```
 
 When Step 2 showed no change, there is nothing to commit. Report that the stamps were already current at `<release>`.
+
+> Note: Step 2 showed no change, so Step 7 made no commit, as the step allows. All five stamps were already current at 2.1.306. The final-review fix (29b0454) re-ran `baseline cite` on `hooks/test_project_hooks.py` and left the stamp unchanged.

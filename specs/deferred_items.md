@@ -4642,7 +4642,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       exits 1 on an empty list, lint_wiki.py errors out on a missing wiki/, and
       check_decoupling.py uses argparse with clean exit-2 errors. Findings stay exit 0. One test
       group each.
-- [ ] Fix and test the three hook templates (audit-3-10-26 X8, found 2026-10-03;
+- [x] Fix and test the three hook templates (audit-3-10-26 X8, found 2026-10-03;
       re-verified 2026-10-18 by probes; its drift-spec coordination, R11.5, is done).
       (a) `hooks/ruff-check.sh` blocks Stop with exit 2 and "ruff check found issues" for any
       non-zero status (`:21`, `:26`), so a missing `uv` (127) or a ruff that cannot start
@@ -4655,7 +4655,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       templates; add `hooks/test_*.py` that runs them by subprocess, compatible with
       Python 3.9 (the hooks suite also runs under `/usr/bin/python3`) and skipping when
       `jq` is absent. Restamp ruff-check.sh's cc-guide citation line. Size: plan. Done when:
-      (a)–(c) land, with the new tests passing on both interpreters.
+      (a)–(c) land, with the new tests passing on both interpreters. → done in plan 61
 - [x] Add the Oct 1–Nov 12, 2025 lapse in appropriations to bls-data-context (audit-3-10-26 F1,
       found 2026-10-03). Re-verified 2026-10-18: no commit has touched the skill since the audit,
       and a grep for lapse, appropriation, "October 2025" or "11-month" over it finds nothing
@@ -5909,3 +5909,52 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       in the pins run, test-first. Files: `build/cc_guide/probes.py` and its tests. Size:
       quick-fix. Done when: a test shows that the pins run ignores an inherited
       `CLAUDE_CODE_EFFORT_LEVEL`, or that its row records it.
+
+## 61-hook-template-fixes — 2026-10-21
+- [ ] `hooks/uv-guard.sh` lets through more command shapes than `hooks/README.md` names (plan 61
+      final review, Minor; the owner chose to defer). Under `/bin/bash` these exit 0: a command
+      after a shell keyword (`if true; then python x.py; fi`, `for f in *; do pytest $f; done`),
+      a prefix word given as a path (`/usr/bin/env python x.py`, `/usr/bin/time pytest -q`), a
+      backslash escape (`\python x.py`) and the free-threaded name `python3.13t`. The prefix words
+      match by exact word, while the final command word matches by its last path part, so the
+      header comment "A path counts by its last part" can mislead. The README text and plan 61's
+      defaults P3 and P4 fix today's behaviour, so a change needs the owner's go-ahead. For each
+      shape, either close it (add `then`, `do`, `else`, `elif` and a last-path-part match to the
+      skip set, or widen `python_re`) or name it in `hooks/README.md` and in `DOCUMENTED_GAPS` in
+      `hooks/test_project_hooks.py`. See specs/plans/completed/61-hook-template-fixes.md. Size:
+      design. Done when: each of the four shapes is closed in the script with a test, or is named
+      in the README and pinned in `DOCUMENTED_GAPS`.
+- [ ] `hooks/uv-guard.sh` splits a command on `&& || ; | &` without reading quotes or redirects
+      (plan 61 final review, Minor, older than plan 61; the owner chose to defer). Three
+      effects: `python x.py 2>&1 | tee log` suggests `uv run python x.py 2>` (the `&` of `2>&1`
+      splits it), a trailing `&` leaves a trailing space in the suggestion, and
+      `echo "a; python x.py"` is a false-positive block (`no-uv-guard` is the escape). Block and
+      allow results stay right for common commands. Plan 61's Global Constraints keep the README
+      sentence "It splits on `&& || ; | &`", so a fix must change that sentence, with the owner's
+      go-ahead. Size: design. Done when: a split that reads quotes and `>&` lands with tests that
+      pass under bash 3.2, or the README names these three effects as limits.
+- [ ] Small cleanups from plan 61's reviews, one batch (the owner chose to defer). (a)
+      `hooks/README.md` (the "Tests" section) and the second `hooks` note in `build/suites.toml`
+      say the tests skip where `jq` is missing. The `ruff_shim` tests also skip where `/usr/bin`
+      or `/bin` holds a `uv`, and the `system-bash` runs skip where `/bin/bash` is absent.
+      (b) The install-check text in `hooks/README.md` ("If the transcript shows "ruff
+      unavailable" instead ...") starts a sentence with "Then", which reads as a time order, and
+      its cause list leaves out a bad ruff config (exit 2). (c) `hooks/ruff-check.sh` cites
+      `hooks.events hooks.exit-codes hooks.patterns`. Its comment calls exit 1 a non-blocking
+      error, and for a `Stop` hook that also rests on `hooks.pitfalls` (`onFailure: "block"` has
+      no effect on `Stop`). Add `hooks.pitfalls`, then restamp with
+      `uv run --python 3.13 python build/cc_guide/cli.py baseline cite hooks/ruff-check.sh`.
+      (d) `child_env` in `hooks/test_project_hooks.py` passes the caller's whole environment to
+      the hook; drop `BASH_ENV` and `SHELLOPTS` so an exported value cannot change the child
+      bash. Run it after plan 61 merges: it edits files that plan changes. Size: quick-fix. Done
+      when: the four edits land and the hooks suite passes on both interpreters.
+- [ ] Hold, owner-only: check whether the Claude Desktop app shows the first stderr line of a hook
+      that exits 1 (plan 61's default P1, not verified). `hooks/ruff-check.sh` exits 1 with
+      "ruff-check: ruff unavailable (exit N), so lint was not checked." when ruff cannot run, and
+      the install check in `hooks/README.md` tells the reader to look for that line in the
+      transcript. The guide says an exit-1 hook's first stderr line shows in the transcript
+      (`hooks.exit-codes`); only the CLI was considered, and the Desktop app was not tested. To
+      do: in a Desktop session, in a repo where `uv` is not on the hook's `PATH`, end a turn with
+      `ruff-check.sh` installed as a `Stop` hook and look for the line. Size: quick-fix. Done
+      when: the result is recorded in `hooks/README.md`'s install check (the line shows, or the
+      README names the Desktop gap and a different signal).
