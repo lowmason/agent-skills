@@ -6105,7 +6105,7 @@ defer. Anchors are at the end of plan 59's fix wave.
       threshold.
 
 ## 62-design-architecture-recast — 2026-10-21
-- [ ] `skills/develop-testing-strategy/references/scraper-tests.md:81` still imports
+- [x] `skills/develop-testing-strategy/references/scraper-tests.md:81` still imports
       `_parse_ref_date` and `_last_business_day` in its illustrative test, while
       `skills/develop-testing-strategy/SKILL.md:87`, reworded in plan 62 (default P7), now
       names no function and says the `bls-stats` package tests "its period parser and
@@ -6113,4 +6113,6 @@ defer. Anchors are at the end of plan 59's fix wave.
       (default P1), and its final review raised it as a follow-up. See
       specs/plans/completed/62-design-architecture-recast.md. Size: quick-fix. Done when: the
       illustrative import uses generic names that match SKILL.md:87, or the reference says
-      the names are illustrative.
+      the names are illustrative. → done 2026-10-21 (owner-requested quick fix): the
+      reference's intro now says its module path and helper names are illustrative, which
+      covers both the section 0 path comment and the section 2 import.

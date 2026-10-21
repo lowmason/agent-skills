@@ -4,6 +4,10 @@ Copy-paste starting points for testing BLS-style scrapers. The organizing idea: 
 is a pure function of an HTML string**, so it can be tested with recorded fixtures and never
 touches the network. Only one marked test and a marked canary ever fetch.
 
+The module path `bls_stats.release_dates.scraper` and the helper names below (`_parse_ref_date`,
+`_last_business_day` and the rest) are illustrative. Point each import at your own scraper's
+module and helpers. No package is guaranteed to export these names.
+
 ## 0. Architecture prerequisite — split fetch from parse
 
 If `scrape_schedule()` both fetches and parses, you cannot test the parse hermetically. Refactor
