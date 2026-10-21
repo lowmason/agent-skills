@@ -196,6 +196,16 @@ def test_redact_replaces_the_longest_string_first_and_skips_an_empty_one():
     assert pc.redact('abc', ['']) == 'abc'
 
 
+def test_scrub_masks_an_mcp_tool_name_in_a_hook_name():
+    '''A PreToolUse hook with an mcp__ matcher in the owner's user settings
+    is named for the tool it matched, which names an installed server.'''
+    hook = {'type': 'system', 'subtype': 'hook_response', 'hook_event': 'PreToolUse',
+            'hook_name': 'PreToolUse:mcp__mine__search', 'exit_code': 0, 'outcome': 'success'}
+    text = pc.scrub_events([init(), hook, result()], [])
+    assert 'mcp__' not in text and 'mine' not in text
+    assert pc.parse_stream(text)[1]['hook_name'] == f'PreToolUse:{pc.MCP_MARK}'
+
+
 def test_scrub_keeps_what_the_assertions_read_and_drops_private_text():
     home, scratch = '/Users/someone', '/private/var/folders/xy/T/cc-guide-probe-pins-abc'
     events = [

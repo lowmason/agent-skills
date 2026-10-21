@@ -5809,13 +5809,17 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       separator row, as in Markdown, so a `|` line that opens a block without one raises
       `SetupError` ("row … stands outside a table, so it would be skipped"). A test cuts the log
       table with a blank line, prose and a merge marker. The committed log still parses.
-- [ ] `hook_response.hook_name` may carry an MCP name into a fixture (final review, Minor).
+- [x] `hook_response.hook_name` may carry an MCP name into a fixture (final review, Minor).
       `probe_checks._trim_event` keeps `hook_name` verbatim, so a PreToolUse hook with an `mcp__`
       matcher in the owner's user settings would appear as `PreToolUse:mcp__...` in a fixture. Only
       `PRIVATE_RE` in `build/cc_guide/test_probe_replay.py` backstops it, and that suite is not a
       commit lint. Size: quick-fix. Revisit if: a probe's recording shows a hook name with `mcp__`,
       or the owner wires an MCP-matched hook in user settings. Done when: `_trim_event` passes the
       name through the same `mcp__` replacement as tool names.
+      → done 2026-10-21 (/deferred quick fix): `MCP_TOKEN_RE` moved from `probes.py` to
+      `probe_checks.py`, and `_trim_event` replaces each `mcp__` token in `hook_name` with
+      `<mcp-tool>`, as the log row does, so `PreToolUse:mcp__x__y` becomes
+      `PreToolUse:<mcp-tool>`. A scrub test pins it.
 - [ ] Review Minors from the per-task and final reviews of plan 58, one batch (the owner chose to
       defer). In `build/cc_guide/state.py`: (a) the log-table header test is written twice
       (`is_probe_header` and `parse_probes`'s `PROBE_COLUMNS <= set(header)`); (b) the empty-probe

@@ -35,6 +35,8 @@ UUID_RE = re.compile(r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
 TOOL_ID_RE = re.compile(r'toolu_[A-Za-z0-9]+')
 MCP_PREFIX = 'mcp__'
 MCP_MARK = '<mcp-tool>'
+# A tool name that starts with the MCP prefix, up to white space, a quote or a closing bracket.
+MCP_TOKEN_RE = re.compile(re.escape(MCP_PREFIX) + r'''[^\s'"`)\]}>]*''')
 PRIVATE_MARK = '<private>'
 
 
@@ -282,7 +284,11 @@ def _trim_event(event: dict) -> dict | None:
         return {'type': kind, 'subtype': sub, 'tools': tools, 'model': event.get('model'),
                 'claude_code_version': event.get('claude_code_version')}
     if kind == 'system' and sub == 'hook_response':
-        return {k: event.get(k) for k in ('type', 'subtype', 'hook_event', 'hook_name', 'exit_code', 'outcome')}
+        kept = {k: event.get(k) for k in ('type', 'subtype', 'hook_event', 'hook_name', 'exit_code', 'outcome')}
+        if isinstance(kept['hook_name'], str):
+            # A hook's name carries what it matched, so a hook matched on an MCP tool names an installed server.
+            kept['hook_name'] = MCP_TOKEN_RE.sub(MCP_MARK, kept['hook_name'])
+        return kept
     if kind == 'result':
         return {k: event.get(k) for k in ('type', 'subtype', 'is_error', 'num_turns')}
     if kind in ('assistant', 'user'):
@@ -309,7 +315,8 @@ def scrub_events(events: list[dict], private: list[str]) -> str:
     '''A recorded stream as a committable fixture (R12.6; owner, plan 58
     decision D3): cut to the fields the assertions read, so text blocks and
     tool output lose their text, and stripped of what must stay out of a
-    public repo: MCP tool names leave the init tool list, each string in
+    public repo: MCP tool names leave the init tool list and become
+    <mcp-tool> in a tool call and in a hook's name, each string in
     `private` (home and scratch paths, the login name), longest first,
     becomes <private>, and uuids and tool-use ids become stable
     placeholders.'''

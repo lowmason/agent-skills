@@ -30,8 +30,6 @@ from probe_checks import Verdict
 from state import ERROR, MANIFEST, PASS, PROBES, SetupError, Source, is_probe_header, parse_manifest, parse_probes
 
 VERSION_RE = re.compile(r'(\d+(?:\.\d+)+) \(Claude Code\)')
-# A tool name that starts with the MCP prefix, up to white space, a quote or a closing bracket.
-MCP_TOKEN_RE = re.compile(re.escape(probe_checks.MCP_PREFIX) + r'''[^\s'"`)\]}>]*''')
 VERSION_TIMEOUT = 30  # seconds for `claude --version`
 PROBE_TIMEOUT = 600  # seconds for one probe invocation
 PINS_TIMEOUT = 1200  # agent-model-pins waits on three background agents
@@ -453,7 +451,8 @@ def log_row(day: date, version: str, claude: Path, pid: str, verdict: Verdict, a
     MCP pass runs first: a private string inside an MCP name would otherwise
     become <private>, and the pass would stop at its > and leave the rest of
     the name in the log.'''
-    finding = probe_checks.redact(MCP_TOKEN_RE.sub(probe_checks.MCP_MARK, verdict.finding), private_strings())
+    finding = probe_checks.redact(probe_checks.MCP_TOKEN_RE.sub(probe_checks.MCP_MARK, verdict.finding),
+                                  private_strings())
     cells = [day.isoformat(), version, shown_path(claude), pid, verdict.outcome, finding,
              '--allow-old' if allow_old else '']
     return '| ' + ' | '.join(map(cell, cells)) + ' |'
