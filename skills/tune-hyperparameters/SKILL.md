@@ -34,10 +34,17 @@ the right leakage guard.**
 
 ## Step 0 — classify the regime
 
+The rule: a knob is **Regime B** only when its correct value is defined by the
+fidelity of the fit — whether the sampler or optimizer reached what the model
+already defines (its posterior, or its optimum). Every other knob is
+**Regime A**: its correct value is the one that predicts held-out data best.
+
 - **Regime A — predictive search.** You're choosing a knob that trades bias for
   variance on *held-out prediction*: `alpha`/`C` (regularization), tree depth /
   `min_child_weight`, learning rate + `n_estimators` for a boosting/tabular
-  model, `k` for kNN. Evaluate on a held-out metric. Leakage is the enemy.
+  model, `k` for kNN. A neural network's learning rate is Regime A too: it
+  shapes which solution the network finds, and only held-out data can say
+  which one is best. Evaluate on a held-out metric. Leakage is the enemy.
 - **Regime B — inference / optimization diagnostic.** You're setting a knob that
   controls whether the *fit itself* is trustworthy: NUTS `target_accept` /
   `max_tree_depth`, SVI learning rate / steps, a dynamax optax schedule.
@@ -151,13 +158,14 @@ and stop there — do **not** tune them to a held-out predictive metric.
 
 | Knob | Objective | Stopping rule | Owned by |
 |---|---|---|---|
-| NUTS `target_accept` | eliminate divergences | 0 divergences, healthy E-BFMI | `bayesian-workflow` diagnostics |
-| NUTS `max_tree_depth` | avoid tree saturation | no `reached_max_treedepth` warnings | `bayesian-workflow` |
-| SVI learning rate / `num_steps` | ELBO convergence | ELBO plateaus, stable across seeds | `bayesian-workflow` |
-| dynamax optax learning rate | training-loss convergence | loss plateaus, no divergence | `bayesian-workflow` |
+| NUTS `target_accept` | clear divergences that come from step size | rung 1 of the escalation ladder: the divergence fraction decides whether raising it helps or hides a model problem | `bayesian-workflow/references/diagnostics.md`, "When sampling fails: the escalation ladder" |
+| NUTS `max_tree_depth` | avoid tree saturation | the `reached_max_tree_depth` sample stat is false on every draw: collect `num_steps` in `extra_fields`, and `diagnose_model.py`'s `treedepth` block reads it. NumPyro prints no warning | `bayesian-workflow/references/diagnostics.md` |
+| SVI learning rate / `num_steps` | the approximation converged | the three checks: a flat ELBO trace that every seed reaches, PSIS-LOO for the approximation, VSBC | `bayesian-workflow/references/svi.md` |
+| dynamax optax learning rate | training-loss convergence | loss plateaus, no divergence | no skill owns this yet |
 
-The mechanics and thresholds live in `bayesian-workflow` — this table is the
-router, not the doctrine.
+The mechanics and thresholds live in the files each row names — this table is
+the router, not the doctrine. The optax row has no owner, so its stopping rule
+is all the guidance there is until one exists.
 
 ## Boundary
 

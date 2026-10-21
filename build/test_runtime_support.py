@@ -493,6 +493,9 @@ SOFT_REFERENCES = {
   # Names SDD's Model Selection but gives the review tiers and aliases inline;
   # SDD's review-package and task-reviewer prompt apply only when SDD calls.
   ('skill:requesting-code-review', 'skill:subagent-driven-development'),
+  # Routes Regime B knobs to bayesian-workflow's diagnostics and SVI files; the
+  # search loop (Regime A) runs without them.
+  ('skill:tune-hyperparameters', 'skill:bayesian-workflow'),
   # Hands a tuned model on to the experiments ledger; a next step.
   ('skill:tune-hyperparameters', 'skill:track-model-experiments'),
   # Quotes an @-path as an example of what not to write.
