@@ -1,5 +1,7 @@
 # design-architecture Recast Implementation Plan
 
+**Status: COMPLETE (2026-10-21)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Make `design-architecture` stop presenting the retired `alt-nfp` trio as the present, move its five decision sketches into a reference with three new ones from other project families, and refresh the stale repo names in `hooks/README.md` and `develop-testing-strategy`.
@@ -54,6 +56,8 @@ This plan settles these defaults. The owner approves or changes each at plan rev
 
 ## Planning record
 
+> Deviation: three lines of this record (the split's description and the first two `alt-nfp-stats` facts) were reworded at the completion gate (owner, 2026-10-21) to say no more about the private repo than the shipped text does. The branch history was rewritten before any push, so no commit carries the earlier wording.
+
 Facts measured on 2026-10-21 at `234d41b`:
 
 - The stale-name check below found 51 matching lines across `skills`, `hooks`, `README.md` and `rules`. In the files this plan edits, it found `hooks/README.md:14`, `:15`, `:42`; `skills/design-architecture/SKILL.md:33`, `:82`, `:87`, `:110`, `:172`; `skills/develop-testing-strategy/SKILL.md:87`, `:232`; and 15 lines in the example ADR (intro line 4 and the dated body).
@@ -95,13 +99,13 @@ Not touched: `skills/design-architecture/scripts/`, the frontmatter of either sk
 - Consumes: nothing.
 - Produces: nothing that a later task uses.
 
-- [ ] **Step 1: Run the stale-name check on this task's two files to see RED**
+- [x] **Step 1: Run the stale-name check on this task's two files to see RED**
 
 Run: `git grep -n -E 'alt_nfp|oi-indices|bls-stats-aggregation|alt-nfp([^-]|$)|~/Projects/bls-stats|_parse_ref_date|_last_business_day' -- hooks/README.md skills/develop-testing-strategy/SKILL.md`
 
 Expected: exactly 5 lines: `hooks/README.md:14`, `hooks/README.md:15`, `hooks/README.md:42`, `skills/develop-testing-strategy/SKILL.md:87`, `skills/develop-testing-strategy/SKILL.md:232`.
 
-- [ ] **Step 2: Edit `hooks/README.md`**
+- [x] **Step 2: Edit `hooks/README.md`**
 
 Replace:
 
@@ -131,7 +135,7 @@ with:
 From the target repo (e.g. `~/Projects/alt-nfp-stats`):
 ```
 
-- [ ] **Step 3: Edit `skills/develop-testing-strategy/SKILL.md`**
+- [x] **Step 3: Edit `skills/develop-testing-strategy/SKILL.md`**
 
 Replace:
 
@@ -161,17 +165,17 @@ with:
   *unmarked* test that reaches the store should be blocked (the `alt-nfp-stats` conftest blanks
 ```
 
-- [ ] **Step 4: Run the check again to see GREEN**
+- [x] **Step 4: Run the check again to see GREEN**
 
 Run the Step 1 command. Expected: no output (exit 1).
 
-- [ ] **Step 5: Run the lints**
+- [x] **Step 5: Run the lints**
 
 Run: `uv run --python 3.13 --with pyyaml python build/check_conformance.py` — expected exit 0.
 Run: `uv run --python 3.13 --with pyyaml python build/check_frontmatter.py` — expected exit 0.
 Run: `uv run --python 3.13 python build/check_snippets.py skills/develop-testing-strategy/` — expected exit 0.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add hooks/README.md skills/develop-testing-strategy/SKILL.md
@@ -193,13 +197,13 @@ Expected: the pre-commit lints pass and the commit lands.
 - Consumes: nothing.
 - Produces, for Task 3: `references/decision-examples.md` ending with the `alt-nfp` group's fifth sketch, and a "Decision examples" pointer section in `SKILL.md` whose project list has one bullet, starting `- **NFP nowcasting**`.
 
-- [ ] **Step 1: Run the stale-name check on SKILL.md to see RED**
+- [x] **Step 1: Run the stale-name check on SKILL.md to see RED**
 
 Run: `git grep -n -E 'alt_nfp|oi-indices|bls-stats-aggregation|alt-nfp([^-]|$)|~/Projects/bls-stats|_parse_ref_date|_last_business_day' -- skills/design-architecture/SKILL.md`
 
 Expected: exactly 5 lines: `:33`, `:82`, `:87`, `:110`, `:172`.
 
-- [ ] **Step 2: Recast "Why this exists"**
+- [x] **Step 2: Recast "Why this exists"**
 
 In `skills/design-architecture/SKILL.md`, replace:
 
@@ -224,7 +228,7 @@ accidental drift. An ADR turns such a fork from a mystery into a decision you ca
 superseding ADR.)
 ```
 
-- [ ] **Step 3: Update "Where ADRs live" and the template's example**
+- [x] **Step 3: Update "Where ADRs live" and the template's example**
 
 Replace:
 
@@ -264,7 +268,9 @@ with:
 - **Blast radius:** <packages/repos affected, e.g. nfp-model only | whole uv workspace | alt-nfp-stats + alt-nfp-model>
 ```
 
-- [ ] **Step 4: Create `references/decision-examples.md` with the five dated sketches**
+- [x] **Step 4: Create `references/decision-examples.md` with the five dated sketches**
+
+> Deviation: after the final review, the owner approved one correction to this block (completion gate, 2026-10-21): sketch 1 names `example-inference-engine-adr.md` instead of "the reference file", which pointed nowhere once the sketch moved out of `SKILL.md`.
 
 Create `skills/design-architecture/references/decision-examples.md` with exactly this content. Sketches 1 to 5 are the current `SKILL.md` text (lines 171-211), moved unchanged except that sketch 1's "runs" becomes "ran".
 
@@ -329,7 +335,7 @@ Then compare the moved block with the original, before Step 5 removes it from `S
 `diff <(awk '/^\*\*1\. Inference engine/,/imports drift\)\.$/' skills/design-architecture/SKILL.md) <(awk '/^\*\*1\. Inference engine/,/imports drift\)\.$/' skills/design-architecture/references/decision-examples.md)`.
 Expected: one changed line, sketch 1's first line (`runs` against `ran`).
 
-- [ ] **Step 5: Replace the "Decision examples" section with a pointer**
+- [x] **Step 5: Replace the "Decision examples" section with a pointer**
 
 In `skills/design-architecture/SKILL.md`, replace everything from the line `## Decision examples (this stack)` through the last line of sketch 5 (`(rejected — discipline isn't enforceable; imports drift).`), keeping the blank line before `## Evaluating a proposal`, with:
 
@@ -350,7 +356,7 @@ The flagship inference-engine ADR is worked in full in
 doubles as a copy-paste starting point.
 ```
 
-- [ ] **Step 6: Date the "Solving one problem N ways" anti-pattern**
+- [x] **Step 6: Date the "Solving one problem N ways" anti-pattern**
 
 Replace:
 
@@ -370,7 +376,9 @@ with:
   they read as drift and get "fixed" by someone unifying them and breaking a cross-check.
 ```
 
-- [ ] **Step 7: Add the dated note to the example ADR's intro**
+- [x] **Step 7: Add the dated note to the example ADR's intro**
+
+> Deviation: the expected check output was worded wrong. Default diff context runs past the `---` line, so the hunk does not end before it. The edit was right: `git diff -U0` shows one hunk (`@@ -3,5 +3,10 @@`), and the body from the first `---` line on is byte-identical.
 
 In `skills/design-architecture/references/example-inference-engine-adr.md`, replace:
 
@@ -399,13 +407,13 @@ superseding ADR, not as an edit to this one.
 
 Then run `git diff --stat skills/design-architecture/references/example-inference-engine-adr.md` and `git diff skills/design-architecture/references/example-inference-engine-adr.md | grep '^@@'`. Expected: one hunk, which starts at or before line 3 and ends before the first `---` line.
 
-- [ ] **Step 8: Run the check again to see GREEN**
+- [x] **Step 8: Run the check again to see GREEN**
 
 Run the Step 1 command. Expected: exactly 5 lines, each in dated history. Four are in the second paragraph of `## Why this exists`: the line with `` `alt-nfp`, and PyMC in both `alt_nfp` and ``, the line starting `` `oi-indices`, with no recorded rationale ``, the line starting `(That trio is history`, and the line starting `` `alt-nfp-model` and archived `alt_nfp` ``. The fifth is the pointer's bullet, `- **NFP nowcasting** (the \`alt-nfp\` family, late 2025)`.
 
 Then check the frontmatter: `git show HEAD:skills/design-architecture/SKILL.md | sed -n 1,21p | diff - <(sed -n 1,21p skills/design-architecture/SKILL.md) && echo frontmatter-unchanged`. Expected: `frontmatter-unchanged`.
 
-- [ ] **Step 9: Run the lints and the skill's suite**
+- [x] **Step 9: Run the lints and the skill's suite**
 
 Run: `uv run --python 3.13 --with pyyaml python build/check_frontmatter.py` — expected exit 0.
 Run: `uv run --python 3.13 --with pyyaml python build/check_conformance.py` — expected exit 0.
@@ -414,7 +422,7 @@ Run: `uv run --python 3.13 python build/check_provenance.py` — expected exit 0
 Run: `uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_runtime_support.py -k declared_dependencies` — expected all passed.
 Run: `uv run --python 3.13 python build/run_suites.py design-architecture` — expected the suite passes.
 
-- [ ] **Step 10: Commit**
+- [x] **Step 10: Commit**
 
 ```bash
 git add skills/design-architecture/SKILL.md skills/design-architecture/references/decision-examples.md skills/design-architecture/references/example-inference-engine-adr.md
@@ -437,12 +445,14 @@ Each sketch summarizes one public source. The reviewer checks every factual clau
 - Consumes from Task 2: `references/decision-examples.md` ending with sketch 5; the pointer section's one-bullet list.
 - Produces: nothing that a later task uses.
 
-- [ ] **Step 1: See the Done-when gap**
+- [x] **Step 1: See the Done-when gap**
 
 Run: `grep -c '^## ' skills/design-architecture/references/decision-examples.md`
 Expected: `1` (one project family). The item's Done when needs more than one.
 
-- [ ] **Step 2: Append the three sketches**
+- [x] **Step 2: Append the three sketches**
+
+> Deviation: after the final review, the owner approved three corrections to this block (completion gate, 2026-10-21). Sketch 7 cites Req 15, the source of "persistent". Sketch 8's Trade-off states the spec's own trade-off (a large blast radius that buys nothing the installer's links do not already give) instead of a cost every option shares, its Alternatives drop that clause so it is said once, and its citation names `agent-skills` and the spec's path.
 
 Append this block to the end of `skills/design-architecture/references/decision-examples.md`, after one blank line:
 
@@ -492,7 +502,7 @@ later move means re-pointing the installer, the tests and every machine's links.
 portability spec, Decisions 1 and 2.)
 ```
 
-- [ ] **Step 3: Extend the pointer's project list**
+- [x] **Step 3: Extend the pointer's project list**
 
 In `skills/design-architecture/SKILL.md`, replace:
 
@@ -511,14 +521,16 @@ with:
 - **Repo tooling** (`agent-skills`): one canonical skills tree, linked into each runtime.
 ```
 
-- [ ] **Step 4: See the gap close**
+- [x] **Step 4: See the gap close**
 
 Run the Step 1 command. Expected: `4`.
 
 Run: `git grep -n -E 'alt_nfp|oi-indices|alt-nfp([^-]|$)' -- skills/design-architecture/references/decision-examples.md`
 Expected: exactly 3 lines, all in the `## NFP nowcasting (the \`alt-nfp\` family, late 2025)` group: its heading, its intro's first line, and sketch 1's second line.
 
-- [ ] **Step 5: Check the sources**
+- [x] **Step 5: Check the sources**
+
+> Deviation: two clauses rested on text outside the named sources (sketch 7's "persistent" on Req 15, sketch 8's install step on the README and `install.py`). The implementer reported them as concerns and committed instead of stopping. The task review and the completion gate settled both.
 
 For each new sketch, open its source and confirm each clause:
 - Sketch 6: `/Users/lowell/Projects/earnings-themes/docs/adr/0004-use-a-local-open-weight-model-for-the-extractors-live-test.md` (Context, Decision, Consequences, Alternatives considered, Trade-offs & reversibility).
@@ -527,11 +539,11 @@ For each new sketch, open its source and confirm each clause:
 
 If a clause is not in its source, stop and report it (NEEDS_CONTEXT) instead of rewording.
 
-- [ ] **Step 6: Run the lints and the skill's suite**
+- [x] **Step 6: Run the lints and the skill's suite**
 
 Run the six commands of Task 2 Step 9. Expected: each exits 0 or passes. Then run the frontmatter check from Task 2 Step 8. Expected: `frontmatter-unchanged`.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add skills/design-architecture/references/decision-examples.md skills/design-architecture/SKILL.md

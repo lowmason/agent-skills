@@ -4525,7 +4525,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       collision probes against recommend-probabilistic-model, recommend-causal-design and
       deep-learning. Size: plan. Done when: the hand-offs land, with any description change
       micro-tested.
-- [ ] Recast design-architecture's alt-nfp framing and refresh stale repo names (audit-3-10-26
+- [x] Recast design-architecture's alt-nfp framing and refresh stale repo names (audit-3-10-26
       G13, found 2026-10-03; re-verified 2026-10-18: no commit since). The skill still says
       "the same NFP-nowcasting problem is currently solved three ways" across `alt-nfp`,
       `alt_nfp` and `oi-indices` (`skills/design-architecture/SKILL.md:31-35`), which the
@@ -4539,7 +4539,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       `bls-stats`, `bls-stats-aggregation`) and `skills/develop-testing-strategy/SKILL.md:87`
       and `:232` (the conftest now lives in alt-nfp-stats). Size: plan. Done when: no
       present-tense claim names a retired repo, and the sketches span more than one project
-      family.
+      family. → done in plan 62
 - [x] Scope clean-code's F2 ("don't mutate arguments") to functional code, with a Flax NNX
       carve-out (audit-3-10-26 G14, found 2026-10-03; re-verified 2026-10-18; the audit's
       trigger, the JAX merge, passed on 2026-10-04).
@@ -6003,3 +6003,14 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       `ruff-check.sh` installed as a `Stop` hook and look for the line. Size: quick-fix. Done
       when: the result is recorded in `hooks/README.md`'s install check (the line shows, or the
       README names the Desktop gap and a different signal).
+
+## 62-design-architecture-recast — 2026-10-21
+- [ ] `skills/develop-testing-strategy/references/scraper-tests.md:81` still imports
+      `_parse_ref_date` and `_last_business_day` in its illustrative test, while
+      `skills/develop-testing-strategy/SKILL.md:87`, reworded in plan 62 (default P7), now
+      names no function and says the `bls-stats` package tests "its period parser and
+      reference dates". The two now read differently. Plan 62 kept the reference out of scope
+      (default P1), and its final review raised it as a follow-up. See
+      specs/plans/completed/62-design-architecture-recast.md. Size: quick-fix. Done when: the
+      illustrative import uses generic names that match SKILL.md:87, or the reference says
+      the names are illustrative.
