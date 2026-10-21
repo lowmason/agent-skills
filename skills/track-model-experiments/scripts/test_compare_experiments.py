@@ -262,3 +262,86 @@ def test_update_ledger_appends_when_no_markers(analysis_dir, tmp_path):
     assert '<!-- COMPARISON:BEGIN -->' in first        # appended
     assert _run(*args).returncode == 0
     assert ledger.read_text() == first                 # idempotent on rerun
+
+
+# --- Rows the comparator cannot rank (audit-3-10-26 G1) ---
+
+def _ledger_with(*rows):
+    head = ('# Experiments — churn\n\n'
+            '| id (slug) | parent | what changed | hypothesis | ELPD | ΔELPD | max R̂ | div | PPC | psense | status |\n'
+            '|---|---|---|---|---|---|---|---|---|---|---|\n')
+    body = ''.join(f'| {r} | — | {r} | h | | | | | | | candidate |\n' for r in rows)
+    return head + body + '\n## Decision log\n- prose\n'
+
+
+def _row(text, variant_id):
+    return next(ln for ln in text.splitlines() if ln.startswith(f'| {variant_id} '))
+
+
+def test_folder_without_inference_data_exits_through_error(analysis_dir, tmp_path):
+    ridge = tmp_path / 'ridge-tuned'
+    ridge.mkdir()
+    r = _run('--analysis-dir', str(analysis_dir),
+             '--folders', str(analysis_dir / 'm-full'), str(ridge))
+    assert r.returncode == 1
+    assert r.stderr.startswith('error: ')
+    assert 'Traceback' not in r.stderr
+    assert 'ridge-tuned' in r.stderr and 'Decision log' in r.stderr
+
+
+def test_uncompared_ledger_row_is_reported_and_best_is_qualified(analysis_dir, tmp_path):
+    ledger = tmp_path / 'experiments.md'
+    ledger.write_text(_ledger_with('m-full', 'm-intercept', 'ridge-tuned'))
+    out = tmp_path / 'comparison.json'
+    r = _run('--analysis-dir', str(analysis_dir), '--ledger', str(ledger), '--output', str(out))
+    assert r.returncode == 0, r.stderr
+    assert 'ridge-tuned' in r.stderr                          # reported, not silent
+    assert json.loads(out.read_text())['not_compared'] == ['ridge-tuned']
+    text = ledger.read_text()
+    assert '**best among ELPD-compared variants**' in _row(text, 'm-full')
+    assert _row(text, 'ridge-tuned').endswith('| candidate |')
+    assert 'Not compared: ridge-tuned' in text
+    assert text.count('**best') == 1
+
+
+def test_qualified_marker_resets_once_every_row_is_compared(analysis_dir, tmp_path):
+    ledger = tmp_path / 'experiments.md'
+    ledger.write_text(_ledger_with('m-full', 'm-intercept', 'ridge-tuned'))
+    args = ('--analysis-dir', str(analysis_dir), '--ledger', str(ledger))
+    assert _run(*args).returncode == 0
+    assert '**best among ELPD-compared variants**' in _row(ledger.read_text(), 'm-full')
+    ledger.write_text('\n'.join(ln for ln in ledger.read_text().splitlines()
+                                if not ln.startswith('| ridge-tuned ')) + '\n')
+    r = _run(*args)
+    assert r.returncode == 0, r.stderr
+    text = ledger.read_text()
+    assert '**best**' in _row(text, 'm-full')
+    assert 'ELPD-compared' not in text
+    assert 'Not compared' not in text
+    assert text.count('**best') == 1
+
+
+def test_az_compare_type_error_becomes_value_error(analysis_dir, monkeypatch):
+    def fail(models):
+        raise TypeError('Encountered error trying to compute ELPD from model m-full.')
+
+    monkeypatch.setattr(compare_experiments.az, 'compare', fail)
+    with pytest.raises(ValueError, match='az.compare'):
+        compare_experiments.compare(analysis_dir, None)
+
+
+def test_ledger_ids_read_only_the_variants_table():
+    text = (_ledger_with('m-full', 'm-intercept')
+            + '\n| other | table |\n|---|---|\n| x | y |\n'
+            + '<!-- COMPARISON:BEGIN -->\n| id | ELPD |\n|---|---|\n| m-old | 1.0 |\n'
+            '<!-- COMPARISON:END -->\n')
+    assert compare_experiments.ledger_ids(text) == ['m-full', 'm-intercept']
+
+
+def test_ledger_without_a_variants_table_is_noted(analysis_dir, tmp_path):
+    ledger = tmp_path / 'experiments.md'
+    ledger.write_text('# Experiments\n\nprose, no table\n')
+    r = _run('--analysis-dir', str(analysis_dir), '--ledger', str(ledger))
+    assert r.returncode == 0, r.stderr
+    assert 'no Variants table' in r.stderr
+    assert '<!-- COMPARISON:BEGIN -->' in ledger.read_text()

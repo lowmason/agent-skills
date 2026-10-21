@@ -139,8 +139,10 @@ A tuning study answers "best knob for *this* model family." When a tuned model
 becomes a contender you want to compare against structurally different models,
 it graduates to one variant row in `track-model-experiments`' `experiments.md`
 (`what changed` = "tuned `<class>` via Optuna, `<n>` trials, `<space>`"). The
-trial history stays in Optuna's store (`optuna-dashboard` to browse); the ledger
-records only the winner and why it earned a seat.
+comparator ranks variant rows by ELPD only, so until a non-ELPD mode exists, a
+non-Bayesian winner goes in the ledger's Decision log with its CV score, not in
+a variant row. The trial history stays in Optuna's store (`optuna-dashboard` to
+browse); the ledger records only the winner and why it earned a seat.
 
 ## Regime B — inference hyperparameters
 

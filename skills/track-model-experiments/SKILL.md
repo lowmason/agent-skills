@@ -45,7 +45,9 @@ and stamps the result back into the ledger).
   remembered.
 - A hyperparameter search in `tune-hyperparameters` produced a winner worth
   comparing against structurally different models — graduate it to a variant
-  row here (`what changed` = "tuned `<class>` via Optuna").
+  row here (`what changed` = "tuned `<class>` via Optuna"). Until a non-ELPD
+  mode exists, a non-Bayesian winner (no `inference_data.nc` to rank) goes in
+  the Decision log with its CV score instead.
 
 Not for:
 - **A single model, no iteration** — follow `bayesian-workflow` alone;
@@ -108,14 +110,22 @@ does not install transitively with `arviz`.
 Run `--help` for the rest (`--folders` compares an explicit subset instead of
 auto-discovering every `*/inference_data.nc` under `--analysis-dir`).
 
-Three guardrails, enforced before any ranking happens:
+Guardrails, enforced before any ranking happens:
+- **A folder with no `inference_data.nc`** (named in `--folders`) → error
+  naming it; the comparator ranks Bayesian fits by ELPD only.
 - **Missing `log_likelihood` group** → hard error naming the variant and the
   fix (refit with `az.from_numpyro(..., log_likelihood=True)`).
 - **Mismatched observation counts across variants** → refused outright; LOO
   only compares predictions of the *same* held-out observations.
+
+After ranking:
 - **High Pareto-k / other `az.compare` diagnostic warnings** → surfaced as a
   `warning` flag per variant in `comparison.json` and a `⚠` in the ledger
   table, not silently dropped.
+- **A ledger row the comparator did not rank** (no fit, or left out of
+  `--folders`) → named on stderr, in `comparison.json`'s `not_compared` list
+  and under the COMPARISON table. While one exists, the top row's status reads
+  `**best among ELPD-compared variants**`, not `**best**`.
 
 ## Fresh session per variant
 
