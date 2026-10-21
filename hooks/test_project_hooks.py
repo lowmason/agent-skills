@@ -139,7 +139,9 @@ def test_ruff_check_blocks_on_lint(ruff_shim):
 
 def test_ruff_check_confirms_an_exit_1_with_ruff_version(ruff_shim):
     write_uv_stub(ruff_shim, check_status=1, check_output=LINT)
-    run_hook(RUFF_CHECK, stop_payload(), ruff_shim)
+    proc = run_hook(RUFF_CHECK, stop_payload(), ruff_shim)
+    assert proc.returncode == 2, proc.stderr
+    assert proc.stderr.startswith('ruff check found issues')
     assert uv_calls(ruff_shim) == ['run ruff check .', 'run ruff --version']
 
 
