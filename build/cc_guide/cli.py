@@ -406,7 +406,7 @@ def run_quotes(args) -> int:
 
 
 def run_settle(args) -> int:
-    result = settle(args.folder, args.hold)
+    result = settle(args.folder, args.hold, REPO)
     print('\n'.join(result.lines))
     return 0 if result.clean else 1
 

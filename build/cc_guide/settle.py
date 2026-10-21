@@ -27,11 +27,16 @@ refuses it once a later fetch has moved latest/.
   held, neither advanced nor audited, when it is left out, when a discarded
   row would have changed it, when a correction to it is left for the owner,
   when its triage held it, or when `--hold` names it; a file is held, not
-  cited, the same way. A row outside the packet's sections holds nothing:
-  the run neither reviews nor advances that section, and its triage may
-  have advanced it already. A row whose guide line is in no section, past
-  the guide's last line included, holds every section in the packet. A
-  hold keeps `accept`, for the text the run changed.
+  cited, the same way, and when the file in the checkout settle runs from
+  no longer matches the packet's copy, which the verifier read, apart from
+  its citation's stamp, the one thing `baseline cite` rewrites: a changed
+  list of cited sections holds it too. So settle a files report before
+  fixing a contradiction it lists, and run the cite it printed then: a
+  settle after the fix holds the file. A row outside the packet's sections
+  holds nothing: the run neither reviews nor advances that section, and its
+  triage may have advanced it already. A row whose guide line is in no
+  section, past the guide's last line included, holds every section in the
+  packet. A hold keeps `accept`, for the text the run changed.
 
 A row's fields are split on `|`. A quote field that opens with `"` runs to
 the first `"` followed by `|` or the end of the line, so a quote may hold `|`
@@ -65,12 +70,14 @@ from typing import NamedTuple
 
 from blocks import fenced_lines
 from docs import CHANGELOG, LABEL_RE, version_key
-from guide import sections
+from guide import CITE_SHAPED_RE, STAMP_PATTERN, sections
 from lint import CLI
 from packets import BLOCKS, GUIDE, INDEX, REPORT, SETTLED, section_lines
 from quotes import QuoteFiles
-from state import SetupError, default_cache
+from state import SetupError, Source, default_cache, read_utf8
 
+# The checkout this file sits in, as cli.py's REPO: the one whose files `baseline cite` stamps.
+REPO = Path(__file__).resolve().parents[2]
 # The report formats, as the verifier's contract (.claude/agents/cc-guide-verifier.md)
 # and the skill's references/formats.md state them; a test pins all three together.
 TRIAGE_ROW = 'item | TOUCHES / NOISE / UNSURE | section | guide line | "guide quote" | "source quote" | why'
@@ -680,7 +687,24 @@ def settle_review(p: Packet, hold: tuple[str, ...]) -> Settled:
 
 # ---- files (R8.7, R8.8) -----------------------------------------------------
 
-def settle_files(p: Packet, hold: tuple[str, ...]) -> Settled:
+STAMP_RE = re.compile(rf'@{STAMP_PATTERN}')
+
+
+def unstamped(text: str) -> list[str]:
+    '''A file's lines, each citation-shaped line's stamp masked: the one
+    thing `baseline cite` rewrites.'''
+    return [STAMP_RE.sub('@', line) if CITE_SHAPED_RE.match(line) else line for line in text.split('\n')]
+
+
+def same_file(p: Packet, repo: Path) -> bool:
+    '''Whether the file in the checkout at repo is still the packet's copy,
+    which the verifier read, apart from its citation's stamp.'''
+    copy = p.folder / p.index['copy']
+    text = Source(repo).read(p.index['file'])
+    return copy.is_file() and text is not None and unstamped(text) == unstamped(read_utf8(copy))
+
+
+def settle_files(p: Packet, hold: tuple[str, ...], repo: Path) -> Settled:
     index = p.index
     files = QuoteFiles(p.folder)
     path = index['file']
@@ -724,7 +748,8 @@ def settle_files(p: Packet, hold: tuple[str, ...]) -> Settled:
             owner.append(f'{row[0]} ({row[2]}, not covered; a coverage gap?): {row[1]}')
     left = [sid for sid in index['sections'] if sid not in answered]
     reasons = (['a discarded or unparseable row might have changed it'] if discarded else []) + (
-        ['a cited section was left out'] if left else []) + (['held by --hold'] if hold else [])
+        ['a cited section was left out'] if left else []) + (['held by --hold'] if hold else []) + (
+        [] if same_file(p, repo) else ['the file changed after its packet was built'])
     out = [f'cc-guide settle: files {path}, {p.folder}',
            f'report: {consistent} consistent, {len(fixes)} contradiction(s), {len(owner)} not covered, '
            f'{len(unverified)} unverified']
@@ -745,11 +770,13 @@ def settle_files(p: Packet, hold: tuple[str, ...]) -> Settled:
     return Settled(out, not unverified and not left, None)
 
 
-def settle(folder: Path, hold: Iterable[str] = ()) -> Settled:
+def settle(folder: Path, hold: Iterable[str] = (), repo: Path | None = None) -> Settled:
     '''Settle the packet in folder against its report.md. A triage also
     writes settled.json there, which `packets --verify --from` reads.
     `hold` names the sections, or the file, the session leaves for the
-    owner: they are held as a discarded correction holds them.'''
+    owner: they are held as a discarded correction holds them. A files
+    packet's copy is compared with its file in the checkout at repo,
+    REPO by default.'''
     p = read_packet(folder)
     mode = p.index.get('mode')
     hold = tuple(dict.fromkeys(hold))
@@ -769,5 +796,5 @@ def settle(folder: Path, hold: Iterable[str] = ()) -> Settled:
         other = [h for h in hold if h != p.index['file']]
         if other:
             raise SetupError(f"--hold {' '.join(other)}: a files packet holds only its file, {p.index['file']}")
-        return settle_files(p, hold)
+        return settle_files(p, hold, repo or REPO)
     raise SetupError(f'{folder / INDEX}: unknown mode {mode!r}')
