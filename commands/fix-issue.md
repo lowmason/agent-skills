@@ -1,7 +1,7 @@
 ---
 description: Fix a GitHub issue end-to-end — bugs only; feature-shaped issues route to brainstorming. Usage — /fix-issue <number|url>
 disable-model-invocation: true
-# cc-guide: skills.frontmatter commands.overview @2.1.304.3
+# cc-guide: skills.frontmatter commands.overview @2.1.306
 ---
 
 Fix the GitHub issue given as the argument (an issue number or URL). This

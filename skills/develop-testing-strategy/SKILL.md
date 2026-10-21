@@ -16,7 +16,7 @@ license: MIT
 metadata:
   author: Lowell Mason
   version: "1.0"
-# cc-guide: lean.session-hygiene lean.model-routing @2.1.304.2
+# cc-guide: lean.session-hygiene lean.model-routing @2.1.306
 ---
 
 # Develop a Testing Strategy

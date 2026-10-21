@@ -10,7 +10,7 @@ metadata:
   author: 'Jesse Vincent'
   adapted_by: 'Lowell Mason'
   source: 'https://github.com/obra/superpowers'
-# cc-guide: subagents.frontmatter subagents.models subagents.isolation @2.1.304.3
+# cc-guide: subagents.frontmatter subagents.models subagents.isolation @2.1.306
 ---
 
 # Dispatching Parallel Agents
