@@ -25,12 +25,14 @@ RETRY = '## Retry\n\nA retry resends `BETA_ENV` with each `BetaEvent`.\n'
 
 
 @pytest.fixture
-def world(tmp_path, docs_dir, isolated_home):
-    '''A committed fixture repo, and a cache at the default path under the
-    isolated HOME, so settle's commands name no --cache (CX-1).'''
+def world(tmp_path, docs_dir, isolated_home, monkeypatch):
+    '''A committed fixture repo, which settle compares a files packet's copy
+    with, and a cache at the default path under the isolated HOME, so
+    settle's commands name no --cache (CX-1).'''
     repo = fixture_repo(tmp_path / 'repo', {GUIDE_PATH: guide_text(), state.MANIFEST: MANIFEST_TOML,
                                             state.BASELINE: state.dump_baseline(fixture_state(docs_dir)),
                                             'hooks/gate.sh': CITER})
+    monkeypatch.setattr(settle, 'REPO', repo)
     cache = state.default_cache()
     write_tree(state.snapshot_docs(cache, FIXTURE_RELEASE), DOCS)
     prime_cache(cache, docs_dir)
@@ -1010,6 +1012,42 @@ def test_a_not_covered_rows_quote_is_checked_when_given_and_hold_holds_the_file(
     with pytest.raises(state.SetupError) as err:
         settle.settle(out, hold=['alpha.overview'])
     assert str(err.value) == '--hold alpha.overview: a files packet holds only its file, hooks/gate.sh'
+
+
+@pytest.mark.parametrize('old, new', [
+    ('exit 0', 'exit 1'),  # a line the verifier never read
+    ('alpha.overview @', 'alpha.overview beta.overview @'),  # a cited section the packet never sent
+], ids=['a-line', 'a-cited-section'])
+def test_a_file_changed_after_its_packet_was_built_is_held_uncited(world, tmp_path, old, new):
+    '''2026-10-21: a 2026-10-20 files packet's copy of
+    hooks/probe-readonly-guard.sh predated plan 58's change to 31 of its
+    lines, and settle printed a cite for text no verifier read. The report
+    itself is clean, so the exit stays 0, as with --hold.'''
+    out = packets.files(load(world), tmp_path / 'f', [])[0]
+    gate = world[0] / 'hooks/gate.sh'
+    gate.write_text(gate.read_text().replace(old, new))
+    result = settled(out, CONSISTENT)
+    assert 'held, not cited: hooks/gate.sh: the file changed after its packet was built' in result.lines
+    assert not any('cite' in line for line in result.lines if line.startswith('  '))
+    assert result.clean
+
+
+def test_a_file_gone_after_its_packet_was_built_is_held_uncited(world, tmp_path):
+    out = packets.files(load(world), tmp_path / 'f', [])[0]
+    (world[0] / 'hooks/gate.sh').unlink()
+    result = settled(out, CONSISTENT)
+    assert 'held, not cited: hooks/gate.sh: the file changed after its packet was built' in result.lines
+
+
+def test_a_file_whose_citation_stamp_alone_changed_is_still_cited(world, tmp_path):
+    '''`baseline cite` rewrites the stamp, so a settle after a cite still
+    cites.'''
+    out = packets.files(load(world), tmp_path / 'f', [])[0]
+    gate = world[0] / 'hooks/gate.sh'
+    gate.write_text(gate.read_text().replace('@2.1.899', '@2.1.901'))
+    result = settled(out, CONSISTENT)
+    assert f'  {CLI} baseline cite hooks/gate.sh' in result.lines
+    assert not any(line.startswith('held') for line in result.lines)
 
 
 # ---- the CLI -----------------------------------------------------------------
