@@ -16,6 +16,9 @@ None are redistributed here (see the repo-root NOTICE).
   https://betanalpha.github.io/assets/case_studies/principled_bayesian_workflow.html (CC BY-NC 4.0)
 - Gabry et al. (2019), *Visualization in Bayesian workflow*, JRSS-A 182(2) —
   doi:10.1111/rssa.12378 / arXiv:1709.01449
+- Magnusson, Riis Andersen, Jonasson & Vehtari (2019), *Bayesian leave-one-out
+  cross-validation for large data*, ICML 2019, PMLR 97:4244–4253 — arXiv:1904.10679. Cited as
+  "Magnusson et al. 2019" for PSIS-LOO with an approximate posterior (svi.md).
 - McLatchie & Vehtari (2024), *Efficient estimation and correction of selection-induced bias
   with order statistics*, Statistics and Computing 34(4), article 132 —
   doi:10.1007/s11222-024-10442-4. Cited as "McLatchie & Vehtari 2024" for the selection-induced
@@ -42,3 +45,6 @@ None are redistributed here (see the repo-root NOTICE).
 - Tesso & Vehtari (2026), *LOO-PIT predictive model checking* — arXiv:2603.02928. Cited as
   "Tesso & Vehtari 2026" for the `pot_c` uniformity test behind ArviZ's default PIT plots
   (`plot_ppc_pit`, `plot_loo_pit`, `plot_ecdf_pit`) and `scripts/calibration_check.py`'s verdicts.
+- Yao, Vehtari, Simpson & Gelman (2018), *Yes, but did it work?: Evaluating variational
+  inference*, ICML 2018, PMLR 80:5581–5590 — arXiv:1802.02538. Cited as "Yao et al. 2018" for
+  VSBC, the check behind NumPyro's `vsbc_diagnostic` (svi.md).
