@@ -29,11 +29,14 @@ reasoning behind it** at the moment it is made. The value is not the document �
 *audit trail*. Without it, a choice like "nowcast in NumPyro/JAX, not PyMC" survives only as
 tribal memory, and every new session re-derives, re-argues, or quietly contradicts it.
 
-This is a live cost in practice: the **same NFP-nowcasting problem is currently solved three
-ways** — NumPyro/JAX in `alt-nfp`, and PyMC in both `alt_nfp` and `oi-indices` — with no
-recorded rationale for the split. An agent reading any one repo cannot tell whether the other
-engines are deliberate (parity cross-checks, GPU vs ergonomics) or accidental drift. An ADR
-turns that fork from a mystery into a decision you can build on.
+The cost is real, and this skill grew out of it. In late 2025 the **same NFP-nowcasting
+problem was solved three ways**: NumPyro/JAX in `alt-nfp`, and PyMC in both `alt_nfp` and
+`oi-indices`, with no recorded rationale for the split. An agent reading any one repo could not
+tell whether the other engines were deliberate (parity cross-checks, GPU vs ergonomics) or
+accidental drift. An ADR turns such a fork from a mystery into a decision you can build on.
+(That trio is history: a 2026-09 split turned `alt-nfp` into `alt-nfp-stats` and
+`alt-nfp-model` and archived `alt_nfp`. In a real decision log, the split is itself a
+superseding ADR.)
 
 Two modes, both first-class:
 
@@ -79,13 +82,13 @@ Proposed ──► Accepted ──► Deprecated          (no longer relevant; n
 ## Where ADRs live
 
 Follow the repo's existing design-record culture rather than inventing a new home. In this
-stack the conventions are `specs/` (active design, e.g. `alt-nfp/specs/`) plus MkDocs + per-package
+stack the conventions are `specs/` (active design, e.g. `alt-nfp-stats/specs/`) plus MkDocs + per-package
 `CLAUDE.md`. So:
 
 - **Default to `docs/adr/` when the repo publishes a MkDocs site** — ADRs render as a browsable
   decision log and link from the nav. Add an `index.md` listing them.
-- **Use `specs/adr/` when the repo's design record already lives in `specs/`** (as `alt-nfp`
-  does) — keep ADRs beside the specs and plans they formalize.
+- **Use `specs/adr/` when the repo's design record already lives in `specs/`** (as
+  `alt-nfp-stats` does) — keep ADRs beside the specs and plans they formalize.
 - **Use `specs/adr/` when the repo publishes a Great Docs site.** The site serves the package's
   users, and ADRs serve its maintainers.
 
@@ -107,7 +110,7 @@ Keep ADRs short — one decision, one page. Prose over bullet soup; a reader sho
 - **Status:** Proposed | Accepted | Deprecated | Superseded by NNNN
 - **Date:** YYYY-MM-DD
 - **Deciders:** <who agreed>
-- **Blast radius:** <packages/repos affected, e.g. nfp-model only | whole uv workspace | alt-nfp + oi-indices>
+- **Blast radius:** <packages/repos affected, e.g. nfp-model only | whole uv workspace | alt-nfp-stats + alt-nfp-model>
 
 ## Context
 
@@ -161,54 +164,20 @@ bottleneck, the JAX cost may no longer pay for itself."
 8. **Link it.** Reference the ADR from the relevant `CLAUDE.md` / `ARCHITECTURE.md` / spec so
    future readers find it. If it supersedes another, flip the old one's status and name it here.
 
-## Decision examples (this stack)
+## Decision examples
 
-Compact sketches — decision + the trade-off that actually drives it + the real alternatives.
-Tune to the repo you're in. The flagship inference-engine ADR is worked in full in
+Compact sketches of real decisions are in
+[references/decision-examples.md](references/decision-examples.md): the decision, the trade-off
+that actually drives it, and the real alternatives. Read them when you need a model for a
+Decision or Alternatives section, or a check that your own sketch is honest. They come from
+these projects:
+
+- **NFP nowcasting** (the `alt-nfp` family, late 2025): the inference engine, the parquet store
+  layout, scraper resilience, as-of censoring, and workspace boundaries.
+
+The flagship inference-engine ADR is worked in full in
 [references/example-inference-engine-adr.md](references/example-inference-engine-adr.md) and
 doubles as a copy-paste starting point.
-
-**1. Inference engine: NumPyro/JAX over PyMC (the flagship).** The same nowcast runs three ways
-across repos (NumPyro/JAX in `alt-nfp`; PyMC in `alt_nfp` and `oi-indices`). `alt-nfp` chose JAX
-for `vmap`-batched fitting over the as-of grid, GPU as the speed lever, and float64 parity gates
-against the frozen PyMC reference. Cost: a full rewrite, an ongoing parity-gate maintenance
-burden, and a familiarity split across the three repos. Alternatives: stay on PyMC (ergonomics,
-`nutpie`, team fluency — rejected for batching/GPU); Stan (fast but a second language and weaker
-Python data interop); BlackJAX (same JAX upside, more boilerplate than NumPyro). Worked in full
-in the reference file — this is the decision whose absence motivated the whole skill.
-
-**2. Parquet store layout & dedup/vintage policy.** Decision: store **levels only**, partitioned
-Hive-style by `(source, seasonally_adj)`, with `vintage_date` / `revision` tags; derive log-growth
-at *read* time per cohort. Trade-off: read-time derivation costs CPU on every panel build, but
-keeps the store small, append-friendly, and free of precomputed-growth staleness bugs.
-Alternatives: store growth precomputed (rejected — every revision invalidates it, and the growth
-convention is still an open scoring question); one flat file (rejected — no partition pruning,
-forces full scans). Dedup: last-writer-wins on `(series_id, ref_date, vintage_date)`; never
-mutate in place — rebuild to a scratch prefix and promote.
-
-**3. Scraper resilience: retry policy + recorded fixtures.** Decision: bounded exponential backoff
-with jitter on the BLS/FRED HTTP layer (`httpx`/`curl-cffi`), plus checked-in HTML/JSON **fixtures**
-so parsers (`BeautifulSoup`/`lxml`) are tested offline and CI runs without network. Trade-off:
-fixtures go stale when BLS changes page structure, so you need a refresh path — but the alternative
-(live-network tests) is flaky and unrunnable in CI. Alternatives: retry-only, no fixtures (rejected
-— can't test the parser, can't run in CI); full VCR-style cassettes (rejected — heavier than the
-handful of pages warrant). Mark live tests `network` and exclude them in CI.
-
-**4. As-of / vintage data model: two-layer censoring.** Decision: every backtest sees only what
-was knowable on date D via **combined** filtering — `vintage_date ≤ D` *and* `ref_date < D` — then
-rank-based revision selection per series. Trade-off: two filters plus a rank are more complex than
-one date cut, but each single-filter shortcut leaks future information in a documented way.
-Alternatives: `vintage_date`-only or `ref_date`-only (both rejected — settled empirically to leak).
-This is a one-way door: get it wrong and every backtest number is silently optimistic. (The
-per-program publication lags this censoring depends on are catalogued in `bls-data-context`.)
-
-**5. Multi-package workspace boundaries.** Decision: a `uv` workspace of 5 packages with a
-**one-directional import graph** — the data chain (`lookups → download → ingest → vintages`) and a
-model package that imports **no `nfp_*`**, consuming a content-hashed `.npz` snapshot as the only
-boundary. Trade-off: the artifact seam adds a serialize/hash step, but it makes "the model never
-sees a `vintage_date`" a *structural* guarantee (test-enforced), lets the model develop offline
-against fixtures, and runs identically on CPU/GPU. Alternative: one package with module discipline
-(rejected — discipline isn't enforceable; imports drift).
 
 ## Evaluating a proposal
 
@@ -250,10 +219,10 @@ half": demand the second alternative, the negative consequence, or the reversibi
 - **Documenting the obvious / over-ADR-ing.** An ADR per function or plot style buries the
   load-bearing decisions in noise and teaches readers to skip the folder. Reserve ADRs for the
   costly, cross-cutting calls.
-- **Solving one problem N ways with zero ADRs.** The motivating failure: NumPyro/JAX vs PyMC
-  across three repos with no record. Multiple implementations are *fine* — as a deliberate,
-  documented choice (e.g. PyMC as a parity reference). Undocumented, they read as drift and get
-  "fixed" by someone unifying them and breaking a cross-check.
+- **Solving one problem N ways with zero ADRs.** The failure that motivated this skill: in late
+  2025, NumPyro/JAX vs PyMC across three repos with no record. Multiple implementations are
+  *fine* — as a deliberate, documented choice (e.g. PyMC as a parity reference). Undocumented,
+  they read as drift and get "fixed" by someone unifying them and breaking a cross-check.
 - **The compound decision.** Bundling several choices into one ADR so none can be superseded
   independently. Split them; each gets its own number and lifecycle.
 - **Context that keeps growing.** If you find yourself appending to an Accepted ADR's Context,

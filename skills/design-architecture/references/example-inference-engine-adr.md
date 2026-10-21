@@ -1,10 +1,15 @@
 # Worked example: the inference-engine ADR
 
-This is a fully-filled ADR for the decision whose *absence* motivated this skill — the same NFP
-nowcast solved three ways (NumPyro/JAX in `alt-nfp`, PyMC in `alt_nfp` and `oi-indices`). Read it
-as the exemplar of what "good" looks like, and copy it as a starting point for a real ADR. It is
-written as a snapshot dated to when the choice was made; the bracketed notes `[like this]` are
-authoring guidance, not part of the record — delete them when you adapt it.
+This is a fully-filled ADR for the decision whose *absence* motivated this skill — in late 2025
+the same NFP nowcast was solved three ways (NumPyro/JAX in `alt-nfp`, PyMC in `alt_nfp` and
+`oi-indices`). Read it as the exemplar of what "good" looks like, and copy it as a starting point
+for a real ADR. It is written as a snapshot dated to when the choice was made; the bracketed notes
+`[like this]` are authoring guidance, not part of the record — delete them when you adapt it.
+
+The record below is dated 2025-11-03 and stays as written, because an Accepted ADR is immutable.
+The repos it names have changed since: a 2026-09 split turned `alt-nfp` into `alt-nfp-stats` and
+`alt-nfp-model` and archived `alt_nfp`. In a real decision log that change arrives as a
+superseding ADR, not as an edit to this one.
 
 ---
 
