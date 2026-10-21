@@ -278,3 +278,58 @@ def test_uv_guard_suggests_the_uv_form(shim, command, message):
     proc = run_hook(UV_GUARD, bash_payload(command), shim)
     assert proc.returncode == 2, proc.stderr
     assert proc.stderr == f'uv-guard: {message}\n'
+
+
+# --- ruff-fix.sh (PostToolUse on Write|Edit) ------------------------------------
+
+def edit_payload(file_path):
+    return {'hook_event_name': 'PostToolUse', 'tool_name': 'Edit',
+            'tool_input': {'file_path': str(file_path)}}
+
+
+def test_ruff_fix_fixes_then_formats_an_edited_python_file(ruff_shim, tmp_path):
+    target = tmp_path / 'mod.py'
+    target.write_text('import os\n')
+    write_uv_stub(ruff_shim)
+    proc = run_hook(RUFF_FIX, edit_payload(target), ruff_shim)
+    assert proc.returncode == 0, proc.stderr
+    assert uv_calls(ruff_shim) == [f'run ruff check --fix --quiet {target}',
+                                   f'run ruff format --quiet {target}']
+
+
+@pytest.mark.parametrize('name, exists', [
+    pytest.param('notes.md', True, id='not-python'),
+    pytest.param('gone.py', False, id='deleted'),
+])
+def test_ruff_fix_leaves_other_files_alone(ruff_shim, tmp_path, name, exists):
+    target = tmp_path / name
+    if exists:
+        target.write_text('x\n')
+    write_uv_stub(ruff_shim)
+    proc = run_hook(RUFF_FIX, edit_payload(target), ruff_shim)
+    assert proc.returncode == 0, proc.stderr
+    assert uv_calls(ruff_shim) == []
+
+
+def test_ruff_fix_ignores_a_payload_without_a_path(ruff_shim):
+    write_uv_stub(ruff_shim)
+    proc = run_hook(RUFF_FIX, {'hook_event_name': 'PostToolUse', 'tool_name': 'Write',
+                               'tool_input': {}}, ruff_shim)
+    assert proc.returncode == 0, proc.stderr
+    assert uv_calls(ruff_shim) == []
+
+
+def test_ruff_fix_never_fails_the_turn_when_ruff_fails(ruff_shim, tmp_path):
+    target = tmp_path / 'mod.py'
+    target.write_text('x = 1\n')
+    write_uv_stub(ruff_shim, check_status=2, check_output='error: stub failure\n')
+    proc = run_hook(RUFF_FIX, edit_payload(target), ruff_shim)
+    assert proc.returncode == 0, proc.stderr
+    assert len(uv_calls(ruff_shim)) == 2
+
+
+def test_ruff_fix_never_fails_the_turn_without_uv(ruff_shim, tmp_path):
+    target = tmp_path / 'mod.py'
+    target.write_text('x = 1\n')
+    proc = run_hook(RUFF_FIX, edit_payload(target), ruff_shim)  # no stub, so no uv on PATH
+    assert proc.returncode == 0, proc.stderr

@@ -87,6 +87,15 @@ broad allow rules for script runners such as `uv run`, so there that rule has no
 Prefer `cp` over symlinking so a hook change can't silently alter every repo at once;
 re-copy when you update a template here.
 
+## Tests
+
+`test_project_hooks.py` runs each template as Claude Code does: through its shebang,
+with a hook payload on stdin. A stub `uv` stands in for uv and ruff, so the tests need
+no network and no Python project. Each test runs twice: with the `bash` on the test's
+`PATH`, and with `/bin/bash`, which is bash 3.2 on macOS. So the templates must stay
+bash 3.2 compatible. The tests skip where `jq` is not installed. Run them with the two
+commands under the guard's **Tests** below, which run every test in this directory.
+
 ## Limitations (by design — tune per repo)
 
 - **`uv-guard.sh` is a heuristic, not a shell parser.** It splits on `&& || ; | &` and
