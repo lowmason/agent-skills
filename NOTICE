@@ -94,14 +94,19 @@ licensed skills. Both full upstream notices, with the pinned commits, are in
 LICENSE-write-with-asd-ste100-sources, and a copy travels with the skill as
 write-with-asd-ste100/LICENSE-write-with-asd-ste100-sources. Both were
 retrieved on 2026-10-18. Both repositories are active, so the pins are the
-starting point for a later drift review.
+starting point for each drift review. The review of 2026-10-21 found
+prithivrajmu/asd-ste100 unchanged and re-pinned only the linter below.
 
   - danyuchn/asd-ste100-skill (MIT, Copyright (c) 2026 Dustin Yuchen Teng;
     commit 3944283c183eea13fe5bd902b572da3b4de8bf44, 2026-10-14). Adapted:
     the strict rule set, the scan checklist, the rewrite output contract and
-    the meaning rules. Copied unchanged: scripts/ste-lint.py, which keeps
-    upstream's double quotes and layout so that a comparison with upstream
-    stays clean. Its three agent-facing examples (Examples A to C of
+    the meaning rules. Copied unchanged: scripts/ste-lint.py, from the later
+    commit cd62d297d5ef7cf9f59718cadc233ab2876ea013 (2026-10-21, retrieved
+    the same day). It keeps upstream's double quotes and layout so that a
+    comparison with upstream stays clean. That version includes long-sentence
+    word-count fixes by Yuri Perin (https://github.com/yupasik), merged
+    upstream as pull requests #25 and #26. The repository's three
+    agent-facing examples (Examples A to C of
     examples/before-after.md: a tool description, an error message and an
     inter-agent instruction) are test cases in the skill's test record, not
     skill text.

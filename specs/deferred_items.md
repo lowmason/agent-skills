@@ -5178,10 +5178,20 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       `BUNDLED_LICENSES` row, and re-point the Sources link. See
       `specs/agent-skills-portability-spec.md` (R3.1, R3.5, R3.7, R4.1, R4.2). Size:
       quick-fix. Done when: the portability plan has done each of these for this skill. → done in plan 53
-- [ ] A drift review of both upstreams against the pinned commits (the spec's Consequences
+- [x] A drift review of both upstreams against the pinned commits (the spec's Consequences
       to know): danyuchn/asd-ste100-skill at `3944283c` and prithivrajmu/asd-ste100 at
       `d9323767`, both active. Size: quick-fix. Revisit if: either repository changes its
       linter, rule sets or license.
+      → done 2026-10-21 (branch claude/deferred-unblocked-3): reviewed danyuchn's 8 commits
+      through `cd62d297` (long-sentence word-count fixes in the linter and a README note; the
+      license is unchanged) and prithivrajmu's repository (unchanged at `d9323767`). The
+      owner chose to re-pin the linter: `scripts/ste-lint.py` is now byte-identical to
+      `cd62d297` (its pin test and self-test pass under 3.13 and `/usr/bin/python3`), and
+      `NOTICE` and both sources files credit Yuri Perin's fixes (upstream PRs #25 and #26).
+- [ ] The next drift review of both upstreams: danyuchn/asd-ste100-skill against `cd62d297`
+      for the vendored linter and `3944283c` for the adapted text, and prithivrajmu/asd-ste100
+      against `d9323767`. Size: quick-fix. Revisit if: either repository changes its linter,
+      rule sets or license after those commits.
 - [ ] The always-on rule's pointer line reaches work that the spec leaves out of scope
       (final review). `rules/write-with-asd-ste100.md` ends "To rewrite a text or a
       document, to write text for an agent reader, or to apply strict STE, use the
