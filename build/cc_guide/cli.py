@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 '''cc_guide: the drift detector for specs/guides/claude-code-customization-guide.md,
 the citations that point at it, the deterministic half of /cc-guide, and
-the live probes (Stages 1 to 5 of specs/claude-code-drift-automation-spec.md).
+the live probes (Stages 1 to 5 of specs/completed/claude-code-drift-automation-spec.md).
 
 Run: uv run --python 3.13 python build/cc_guide/cli.py <subcommand>
 

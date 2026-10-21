@@ -1,6 +1,9 @@
 # Claude Code drift automation — Design Spec
 
-**Status: DESIGN APPROVED (2026-10-03).** The owner reviewed the merged
+**Status: COMPLETE (2026-10-20)** — all five stages are built: plans 38, 43, 44, 49 and 58, with the
+follow-ups 45 and 51, in `specs/plans/completed/`. Retired here by plan 58, the Stage 5 plan.
+
+**Earlier status: DESIGN APPROVED (2026-10-03).** The owner reviewed the merged
 spec and approved it as written, including the merge-time choices neither
 session's approvals had covered: the stage order, the `build/` test
 collection, the fetch gate, DIVERGES staying due, discarding failed verify
@@ -22,7 +25,7 @@ origin. R1.1's anchors were added to the guide by the conformance plan
 plan 38, Stage 2 by plan 43, Stage 3 by plan 44 (with plan 45's verifier
 follow-up), and Stage 4 by plan 49 (with plan 51's rebaseline pin). All of
 those plans are in `specs/plans/completed/`. Stage 5 (probes: R10, R12.6 and
-`/cc-guide probes`) is not built, so this spec stays live.
+`/cc-guide probes`) is built by plan 58, so this spec is complete.
 
 ## Purpose and scope
 

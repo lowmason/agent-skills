@@ -13,7 +13,7 @@ disable-model-invocation: true
 
 # /cc-guide
 
-Acts on what `check` reports for `specs/guides/claude-code-customization-guide.md`, the guide. Each mode but `probes` builds packets, dispatches the `cc-guide-verifier` agent on them, and settles every report with a script before anything is applied. The design is `specs/claude-code-drift-automation-spec.md`, R8, and R10 for `probes`; `references/formats.md` holds the packet layout and the report formats.
+Acts on what `check` reports for `specs/guides/claude-code-customization-guide.md`, the guide. Each mode but `probes` builds packets, dispatches the `cc-guide-verifier` agent on them, and settles every report with a script before anything is applied. The design is `specs/completed/claude-code-drift-automation-spec.md`, R8, and R10 for `probes`; `references/formats.md` holds the packet layout and the report formats.
 
 `cli.py` below stands for `uv run --python 3.13 python build/cc_guide/cli.py`, run from the repo root.
 

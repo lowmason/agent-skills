@@ -34,7 +34,7 @@ the same change.
 
 `cc_guide/` holds two tools for `specs/guides/claude-code-customization-guide.md`.
 `conformance.toml` is the register `check_conformance.py` reads. The rest is
-the drift detector (`specs/claude-code-drift-automation-spec.md`): `manifest.toml`
+the drift detector (`specs/completed/claude-code-drift-automation-spec.md`): `manifest.toml`
 is the owner's configuration, `baseline.json` its state, written only by
 `cli.py baseline`, and `cli.py --help` lists the subcommands. `check` fetches
 the docs into `~/.cache/agent-skills/cc-guide/`, never into the repo, and

@@ -3,7 +3,7 @@
 # Which docs pages back which guide sections, and how often each kind of
 # check comes due. Edited by hand, on the owner's decisions; no tool writes
 # it (baseline.json is the tool's state). build/cc_guide/cli.py reads it with
-# tomllib. Design: specs/claude-code-drift-automation-spec.md (R2).
+# tomllib. Design: specs/completed/claude-code-drift-automation-spec.md (R2).
 #
 # A page is a code.claude.com slug (`hooks`, `plugins/components`) or a
 # platform slug written `platform:<slug>`. On an `all` page every block

@@ -3154,7 +3154,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       variable `name`; `CLAUDE.md`'s long comment line is reflowed (187 lines). The double parse
       is re-deferred below, under the 2026-10-13 /deferred pass.
 - [x] Drift spec R5 and the `lint` help lag the label-note rule (plan 43, completion gate
-      decision (a), 2026-10-12). `specs/claude-code-drift-automation-spec.md` R5 (near lines
+      decision (a), 2026-10-12). `specs/completed/claude-code-drift-automation-spec.md` R5 (near lines
       523-526) still says every `2.1.NNN` in the guide must be a changelog release label.
       `build/cc_guide/lint.py` now treats a three-part label newer than the cached changelog's
       newest release as a `note:` on stderr (exit unchanged), and any other unlisted token,
