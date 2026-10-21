@@ -544,6 +544,11 @@ Changes from upstream:
     records. That idea is credited here, and no upstream text was taken.
     The Common Mistakes list moved to references/common-mistakes.md, so the
     body stays inside the compaction window.
+  - finishing-a-development-branch's Step 4b now offers to record the review
+    findings that the partner carries, as items in specs/deferred_items.md in
+    the deferred-backlog schema (plan 60). The matching line in the caller
+    list of writing-plans/references/deferred-backlog.md is a change to an
+    original work named above.
 
     brainstorming/
     dispatching-parallel-agents/

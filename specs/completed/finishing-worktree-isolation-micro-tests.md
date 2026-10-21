@@ -1,6 +1,6 @@
 # Plan 60 micro-tests: finishing-a-development-branch and using-git-worktrees
 
-Main result so far: on Task 2's final text, the treatment arm passes S1 to S7 in 5 of 5 reps each. On a stricter reading, S5 passes 4 of 5 and S6 2 of 5. No refactor round was needed. The control arm fails S1, S4 and S8 in every rep. It passes S2, S3 and S5 in 4 of 5 reps. Both decoys pass 5 of 5 in the control arm. No stop rule fired.
+Main result so far: on Task 2's final text, the treatment arm passes S1 to S7 in 5 of 5 reps each. On a stricter reading, S5 passes 4 of 5 and S6 2 of 5. No refactor round was needed. On Task 3's text, the treatment arm passes S8 in 5 of 5 reps. The control arm fails S1, S4 and S8 in every rep. It passes S2, S3 and S5 in 4 of 5 reps. Both decoys pass 5 of 5 in the control arm. No stop rule fired.
 
 These runs test plan 60's wording changes
 (specs/plans/completed/60-finishing-branch-worktree-isolation.md) against the text they replace. The kit is outside the repo, at
@@ -153,11 +153,39 @@ Four points need the owner's reading:
   - Step 6 and the Red Flag forbid the force. Some S6 answers still offer it after the partner's answer. The owner's rule makes this no refactor trigger.
 - S2, S3 and S5 moved from 4 to 5 of 5 on the main count. A gain of one rep in five is weak evidence that those rules matter. S1, S4 and S6 gained 5, 5 and 2 or 3 reps.
 
+### Task 3: finishing-a-development-branch, S8
+
+Task 3 added the Step 4b record paragraph to SKILL.md and a caller line to writing-plans/references/deferred-backlog.md. It ran S8 once, with 5 reps and tag `green`.
+- The text is blob c4faea16a771c48799f3f05b644c8a7f6a3d0241 of skills/finishing-a-development-branch/SKILL.md, committed with this record. Its body is 19,122 characters.
+- The prompt carries the SKILL.md body only. The new caller line in deferred-backlog.md was not in it.
+- No rep was excluded.
+
+| Scenario | Control | Task 3 text (c4faea16) |
+|---|---|---|
+| S8-carry | 0 | 5 |
+
+Refactor rounds: none. S8 reached 5 of 5, above the 4 of 5 gate.
+
+What the treatment reps did:
+- Every rep edited at once and asked nothing first. The partner's message already says to carry findings 1 and 2 and drop 3.
+- Every rep appended exactly findings 1 and 2 under `## 19-quota-window Step 4b review — 2026-10-21`, with the em dash.
+- Every item has a Size and a `Done when:` or `Revisit if:`. Rep 1 writes Size M and Size S, which are not on the schema's scale (quick-fix, plan, design).
+- Reps 2 to 5 name a Size without a value, because a decision-only answer has not read the schema.
+- Every rep committed before the push. Reps 3, 4 and 5 also checked that `git status` was clean before the push.
+- No rep recorded finding 3 in specs/deferred_items.md.
+
+Three points need the owner's reading:
+- No rep made the offer that the new text asks for. Each took the partner's "Carry 1 and 2" as the yes and edited at once. The table allows that, so the 5 of 5 stands. The "offer, then on their yes" clause has no evidence from this scenario.
+- Every rep says in its PR text or closing report that finding 3 is dropped. That is not a deferred record, because the record is specs/deferred_items.md. So I graded all five as not recorded.
+- The table asks only for a Size, so rep 1's Size values pass. If the schema's scale were required, rep 1 would fail.
+
 ## Cost
 
 The 50 counted control calls cost $3.860, about $0.08 a call. The excluded S9 rep 1 cost $0.289. The probe cost $0.534. Two pilots cost $0.308: $0.208 without `--strict-mcp-config` and $0.100 with it. The diagnostics cost $0.361. The kit total after Task 1 was $5.351.
 
-The 35 Task 2 round 1 calls cost $1.864, about $0.05 a call. Round 2 cost $1.955, round 3 cost $1.978 and round 4 cost $1.734, 35 calls each. None was excluded. The kit total so far is $12.882, from the kit's spend.py.
+The 35 Task 2 round 1 calls cost $1.864, about $0.05 a call. Round 2 cost $1.955, round 3 cost $1.978 and round 4 cost $1.734, 35 calls each. None was excluded.
+
+The 5 Task 3 calls (S8) cost $0.543, about $0.11 a call. None was excluded. The kit total so far is $13.424, from the kit's spend.py.
 
 ## Deviations from the plan
 
@@ -173,13 +201,13 @@ The 35 Task 2 round 1 calls cost $1.864, about $0.05 a call. Round 2 cost $1.955
 - (g) Before the treatment build, the answer-key grep also ran on the treatment text of both skills. The plan runs it on the base text only (Task 1 Step 7). It printed nothing and exited 1.
 - (h) Task 2's runs used run.py's command, as (a) and (e) describe. The plan's Global Constraints still quote the older command.
 - (i) Task 2 added two kit helpers. verify_task2_edits.py checks that the plan's replacement blocks are in the files verbatim. check_quotes_green.py checks that each treatment quote in RESULTS.md is verbatim in its answer.
-- (j) After review, the owner approved five wording changes beyond the brief's text, on 2026-10-21. The treatment was then re-run on the final text as round 2.
+- (j) After review, the owner approved five wording changes beyond the brief's text, on 2026-10-21. The treatment was then re-run on that text, as round 2.
   - E1: in Option 1, a no to the `ask` question now means "give your partner the commands", as the no-op case does.
   - E2: Step 6's own-worktree cleanup begins each call with `cd <MAIN_ROOT> &&` on `allowed`. It hands the cleanup commands over when Option 1 or 4 did.
   - E3: in Option 4, MADE_BY `launcher` now gets the message and a stop, with no list and no confirmation.
   - E4: the Red Flag on force and unlock now says never. The words "without your partner's say" are gone.
   - E5: a line under the Quick Reference table says when Options 1 and 4 delete the branch. It lies outside the plan's listed line ranges.
-- (k) After the second review, the owner's earlier go-ahead was applied to complete the hand-off. The treatment was then re-run on the final text as round 3.
+- (k) After the second review, the owner's earlier go-ahead was applied to complete the hand-off. The treatment was then re-run on that text, as round 3.
   - E6: Step 6's own-worktree lead now says to begin each call with `cd <MAIN_ROOT> &&` on `allowed` or after a yes to the `ask` question.
   - E7: a new Step 6 paragraph covers the hand-off. The partner then runs the removal, the prune and the branch command.
   - E8: Option 4 skips the merge where Option 1 would hand it over. It hands over Step 6's commands and the branch command instead.
@@ -191,3 +219,6 @@ The 35 Task 2 round 1 calls cost $1.864, about $0.05 a call. Round 2 cost $1.955
   - On 2026-10-21 the owner chose to move Common Mistakes into references/common-mistakes.md. The list moved verbatim, E10 included.
   - The body keeps a heading and a one-line pointer. After the move the body is 17,972 characters. Task 3 needs about 1,150 more.
   - NOTICE's finishing bullet gained one sentence on the move. The treatment was re-run on the final text as round 4.
+- (m) Task 3's line anchors in the plan had moved after Task 2, so its edits were found by the text they quote. The Step 3 diff check held: one hunk, inside Step 4b.
+  - The body grew from 17,972 to 19,122 characters, under the 20,000-character cap.
+  - The record's deviation items (j) and (k) once called the round 2 and round 3 text "the final text". They now say "that text". Round 4 is the final text.
