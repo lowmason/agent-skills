@@ -5880,3 +5880,21 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       `~/.claude/projects/` whose folder names start `-private-tmp-plan58-spike-` or hold
       `cc-guide-probe-agent-model-pins-`. Size: quick-fix. Done when: they are removed, or the owner
       decides to keep them.
+
+## cc-guide-files-2026-10-21 (no plan; /cc-guide files, lowmason/agent-skills#94 and branch claude/cc-guide-hooks-files-2.1.306) — 2026-10-21
+
+- [ ] Two branches can give a section's `changed` and a citing file's stamp the same release,
+      and `cli.py lint` then calls the file fresh though no verifier read the newer text. On
+      2026-10-21, #93 ran `baseline accept --substantive` for `hooks.configuration` on its branch.
+      No citer there carried a 2.1.306 stamp, so `next_changed` set `changed` to 2.1.306. On
+      another branch, #94 stamped `build/cc_guide/notice.sh` @2.1.306 after a review against the
+      guide before #93's line 328 edits. After both merged, the stamp equalled `changed`, so lint
+      did not list the file as STALE. R2.4's rule that `accept` stays above every citer's stamp
+      reads only the stamps on its own branch (`baseline.accept`, `citer_stamps`). The second
+      files pass on branch claude/cc-guide-hooks-files-2.1.306 reviewed `notice.sh` against #93's
+      text, so nothing is missed now. Options: record each cited section's `text_hash` in the
+      citation or beside it at `cite` time and let lint compare hashes; or a merge-time check
+      that flags a section whose `changed` equals a stamp that another merged branch wrote.
+      Files: `build/cc_guide/baseline.py`, `build/cc_guide/lint.py`, drift spec R2.4. Size:
+      design. Done when: the owner picks a remedy and a test shows that two such branches,
+      merged in either order, leave the file STALE, or the owner records the gap as accepted.

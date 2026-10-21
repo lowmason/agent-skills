@@ -1,4 +1,4 @@
-<!-- cc-guide: subagents.frontmatter rules.settings hooks.events hooks.exit-codes hooks.configuration hooks.patterns hooks.pitfalls @2.1.304.3 -->
+<!-- cc-guide: subagents.frontmatter rules.settings hooks.events hooks.exit-codes hooks.configuration hooks.patterns hooks.pitfalls @2.1.306 -->
 # Hooks
 
 Two categories live here, and they install differently. Read the category before
