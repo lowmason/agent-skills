@@ -6,7 +6,9 @@ how to triage the backlog, and when the aged tail blocks a branch finish.
 Three callers read this file:
 - **writing-plans** § Plan Completion Protocol — writes items (schema below)
   and runs the read-only triage at completion.
-- **finishing-a-development-branch** § Step 1b — runs the aged-tail gate.
+- **finishing-a-development-branch** § Step 1b — runs the aged-tail gate;
+  § Step 4b — writes items (schema below) for the review findings the
+  partner carries.
 - **`/deferred`** — runs the full triage and is the only caller that may
   execute a disposition.
 
