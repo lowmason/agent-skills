@@ -18,7 +18,8 @@ against the frozen PyMC reference. Cost: a full rewrite, an ongoing parity-gate 
 burden, and a familiarity split across the three repos. Alternatives: stay on PyMC (ergonomics,
 `nutpie`, team fluency — rejected for batching/GPU); Stan (fast but a second language and weaker
 Python data interop); BlackJAX (same JAX upside, more boilerplate than NumPyro). Worked in full
-in the reference file — this is the decision whose absence motivated the whole skill.
+in `example-inference-engine-adr.md` — this is the decision whose absence motivated the whole
+skill.
 
 **2. Parquet store layout & dedup/vintage policy.** Decision: store **levels only**, partitioned
 Hive-style by `(source, seasonally_adj)`, with `vintage_date` / `revision` tags; derive log-growth
@@ -82,17 +83,19 @@ recoverable from about 40 annual points, and reporting them as primary invites m
 horseshoe over the separate slow covariates as the primary model (rejected for the same reason);
 pooling government shutdowns with annual funding (rejected — shutdowns are case studies or timing
 interventions). When the question is whether the data can identify an effect at all, the
-recommend-causal-design skill goes deeper. (`ces-revisions` design spec, Req 13 and Req 19.)
+recommend-causal-design skill goes deeper. (`ces-revisions` design spec, Req 13, Req 15 and
+Req 19.)
 
 ## Repo tooling (`agent-skills`, 2026-10)
 
 **8. One canonical skills tree, linked into each runtime.** Decision: keep every skill in the
 repo's `skills/` directory and let the installer link it into each runtime's discovery path
 (`~/.claude/skills/` for Claude Code, `~/.agents/skills/` for Codex and Gemini CLI). Trade-off:
-one tree and one installer serve three runtimes, and each machine needs an install step.
-Alternatives: move the tree to a cross-runtime `.agents/skills/` layout (rejected — a large blast
-radius through the installer, the tests, `CLAUDE.md` and the symlinks, and it buys nothing the
-installer's links do not already give); add an in-repo `.claude/skills` link as well (rejected —
-the skills already load user-level from the same checkout, so each would be listed twice). A
-later move means re-pointing the installer, the tests and every machine's links. (This repo's
-portability spec, Decisions 1 and 2.)
+the repo departs from the cross-runtime `.agents/skills/` convention and relies on the
+installer's links, and in return it avoids a move whose large blast radius would buy nothing
+those links do not already give. Alternatives: move the tree to a cross-runtime
+`.agents/skills/` layout (rejected — a large blast radius through the installer, the tests,
+`CLAUDE.md` and the symlinks); add an in-repo `.claude/skills` link as well (rejected — the
+skills already load user-level from the same checkout, so each would be listed twice). A later
+move means re-pointing the installer, the tests and every machine's links. (`agent-skills`
+portability spec, `specs/completed/agent-skills-portability-spec.md`, Decisions 1 and 2.)
