@@ -94,6 +94,11 @@ cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q
 uv run --python 3.13 python build/cc_guide/cli.py lint
 uv run --python 3.13 python build/cc_guide/cli.py check
 
+# Live probes (spec R10): binaries lists the claude binaries installed; probes runs the due probes against the one named
+# (about $0.05-0.30 each), appends rows to build/cc_guide/PROBES.md and commits nothing; /cc-guide probes drives both
+uv run --python 3.13 python build/cc_guide/cli.py binaries
+uv run --python 3.13 python build/cc_guide/cli.py probes --claude <path>
+
 # Dependency drift: skill and command text vs install.py's DEPENDENCIES (run before committing a skill
 # change that adds or drops a cross-skill or /command reference)
 cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_runtime_support.py -k declared_dependencies

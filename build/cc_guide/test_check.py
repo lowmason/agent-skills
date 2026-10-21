@@ -192,6 +192,11 @@ def rows(*specs):
     ([('2026-10-01', '2.1.902', 'DIVERGES'), ('2026-10-02', '2.1.902', 'ERROR')], date(2026, 10, 2),
      'DIVERGES with no later PASS'),
     ([('2026-10-01', '2.1.902', 'DIVERGES'), ('2026-10-02', '2.1.902', 'PASS')], date(2026, 10, 2), None),
+    # R10.5: ERROR is never a pass, so it stays due until a later PASS (the probe registry's gaps, part a).
+    ([('2026-10-01', '2.1.902', 'ERROR')], date(2026, 10, 1), 'ERROR with no later PASS'),
+    ([('2026-10-01', '2.1.902', 'PASS'), ('2026-10-02', '2.1.902', 'ERROR')], date(2026, 10, 2),
+     'ERROR with no later PASS'),
+    ([('2026-10-01', '2.1.902', 'ERROR'), ('2026-10-02', '2.1.902', 'PASS')], date(2026, 10, 2), None),
 ])
 def test_probe_due_rules(history, today, why):
     manifest = MANIFEST._replace(probes={'p1': (['beta.reference'], [])})

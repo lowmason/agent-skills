@@ -4,16 +4,16 @@ description: >
   Use when acting on what this repo's Claude Code drift check reports about
   specs/guides/claude-code-customization-guide.md: "triage the changelog",
   "verify these guide sections", "audit a group", "review the stale citations",
-  or a check summary that names releases untriaged, changed docs blocks, an
-  audit due or stale citing files.
-argument-hint: 'triage | verify <ids> | audit [<group>] | files [<paths>]'
+  "run the probes", or a check summary that names releases untriaged, changed
+  docs blocks, an audit due, probes due or stale citing files.
+argument-hint: 'triage | verify <ids> | audit [<group>] | files [<paths>] | probes'
 disable-model-invocation: true
 # cc-guide: skills.frontmatter skills.arguments subagents.isolation @2.1.304.3
 ---
 
 # /cc-guide
 
-Acts on what `check` reports for `specs/guides/claude-code-customization-guide.md`, the guide. Each mode builds packets, dispatches the `cc-guide-verifier` agent on them, and settles every report with a script before anything is applied. The design is `specs/claude-code-drift-automation-spec.md`, R8; `references/formats.md` holds the packet layout and the report formats.
+Acts on what `check` reports for `specs/guides/claude-code-customization-guide.md`, the guide. Each mode but `probes` builds packets, dispatches the `cc-guide-verifier` agent on them, and settles every report with a script before anything is applied. The design is `specs/completed/claude-code-drift-automation-spec.md`, R8, and R10 for `probes`; `references/formats.md` holds the packet layout and the report formats.
 
 `cli.py` below stands for `uv run --python 3.13 python build/cc_guide/cli.py`, run from the repo root.
 
@@ -30,7 +30,7 @@ Acts on what `check` reports for `specs/guides/claude-code-customization-guide.m
 
 ## Pick the mode
 
-The typed words arrive on the ARGUMENTS line: `triage`, `verify <ids>`, `audit [<group>]` or `files [<paths>]`. With none, run `cli.py check --worktree` and offer the mode its due items call for. Probes arrive with Stage 5.
+The typed words arrive on the ARGUMENTS line: `triage`, `verify <ids>`, `audit [<group>]`, `files [<paths>]` or `probes`. With none, run `cli.py check --worktree` and offer the mode its due items call for.
 
 ## Dispatch, save, settle
 
@@ -66,6 +66,16 @@ As verify, from `cli.py check --worktree` and then `cli.py packets --audit [<gro
 1. Run `cli.py packets --files [<paths>]`: no paths means the stale backlog. It writes one packet per file; dispatch them in batches under the ask-above-6 rule.
 2. For each, settle, then fix each contradiction it lists, in that file only, and run its commands. `baseline cite <file>` runs only for a file settle does not hold: settle again with `--hold <file>` before running anything when you leave a contradiction for the owner. Lint and `check_conformance.py` run either way. A held file stays in the backlog.
 3. A not-covered row is the owner's call, and may be a coverage gap the guide could gain (spec R4.3). While a file's report has a not-covered row the owner has not ruled on (a guide addition, a register entry or no action), settle again with `--hold <file>` and skip its `baseline cite`: a verifier can rate a statement not covered where it missed drift, and a restamp hides that until the section next changes. Cite the file once the owner has ruled on each such row.
+
+## probes
+
+Live probes check behaviour the guide states before the docs change (spec R10). Each one is a short `claude -p` run that spends tokens, so they run only in this mode or by the owner's hand, never from the session-start hook.
+
+1. Run `cli.py binaries` and ask the owner which binary to probe. `probes` takes no default, since with several versions installed a default would probe the wrong one (spec Decision 15).
+2. Check the checkout that the installed agents and guard come from. `guard-liveness` and `agent-model-pins` load user settings, so they run the files under `~/.claude/`, which link into the shared checkout and not into this worktree. Run `readlink ~/.claude/agents/explore.md`; the checkout is the folder that holds the `agents/` directory its path names, not `agents/` itself. Then run `git -C <that checkout> branch --show-current` and `git -C <that checkout> status --short -- agents hooks`. If the branch is not `main` or the status prints anything, stop and ask the owner: a row would describe other agents than the ones on `main`.
+3. Run `cli.py probes --claude <path>`, which runs the due probes. `--only <ids>` names others, and `--force` runs every one. State the count first: a live probe costs about \$0.05–0.30. A binary older than the newest cached changelog release is refused; pass `--allow-old` only on the owner's word, and each row records it. Exit 2 is a setup error to fix first.
+4. Each probe appends one row to `build/cc_guide/PROBES.md`, uncommitted, and keeps its raw output under `~/.cache/agent-skills/cc-guide/probes/`. `agent-model-pins` also leaves its session under `~/.claude/projects/`, since it reads effort from the transcripts. That output holds home paths and session ids: copy nothing from it into the repo.
+5. A DIVERGES row is handled like a TOUCHES row: the probe's `[[probe]]` entry in `build/cc_guide/manifest.toml` names its sections and files. Run the `verify <ids>` mode on those sections and the `files [<paths>]` mode on those files. An ERROR row says nothing about the behaviour: read its raw output, then report it to the owner. DIVERGES and ERROR stay due until a later PASS.
 
 ## After any mode
 

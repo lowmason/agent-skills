@@ -34,7 +34,7 @@ the same change.
 
 `cc_guide/` holds two tools for `specs/guides/claude-code-customization-guide.md`.
 `conformance.toml` is the register `check_conformance.py` reads. The rest is
-the drift detector (`specs/claude-code-drift-automation-spec.md`): `manifest.toml`
+the drift detector (`specs/completed/claude-code-drift-automation-spec.md`): `manifest.toml`
 is the owner's configuration, `baseline.json` its state, written only by
 `cli.py baseline`, and `cli.py --help` lists the subcommands. `check` fetches
 the docs into `~/.cache/agent-skills/cc-guide/`, never into the repo, and
@@ -74,7 +74,23 @@ or fails to finish three runs in a row; the first two unfinished runs, and a
 cache that cannot be written, leave none. `notice.py` writes the notice, and
 its docstring lists the cache files the shell and Python share. The notice
 reads `main`, so it keeps naming work `/cc-guide` resolved until that work is
-committed on `main` and the next daily check runs.
+committed on `main` and the next daily check runs. The `startup` matcher also
+fires under `claude -p` (checked on 2.1.304, 2026-10-20, with a stand-in hook
+from `--settings`), so a `claude -p` run that loads this repo's project
+settings should run `show` and `refresh` too.
+`cli.py probes --claude <path>` runs the live probes that `manifest.toml`
+registers (spec R10): short `claude -p` runs that check behaviour the guide
+states, each from its own scratch directory under the system temp directory.
+`cli.py binaries` lists the binaries to choose from. A probe keeps its raw
+output under `~/.cache/agent-skills/cc-guide/probes/` and appends one row to
+`cc_guide/PROBES.md`; a DIVERGES or ERROR row stays due until a later PASS.
+`agent-model-pins` also leaves its session under `~/.claude/projects/`, since
+it reads effort from the subagents' transcripts.
+`probe_checks.py` holds the assertions, which read the raw stream-json.
+`probe_streams/` holds recorded runs, cut down and scrubbed by
+`probes.save_fixtures`, which `test_probe_replay.py` replays (R12.6); re-record
+them only through `save_fixtures`, since a raw stream holds home paths and
+session ids.
 Nothing is committed for you.
 `cd build && pytest` collects this suite too, so module and test basenames
 stay unique across `build/`.
