@@ -9,6 +9,7 @@ working tree, which nothing commits. `binaries` lists the candidate
 binaries with their versions.'''
 import contextlib
 import getpass
+import itertools
 import json
 import os
 import re
@@ -29,8 +30,6 @@ from probe_checks import Verdict
 from state import ERROR, MANIFEST, PASS, PROBES, SetupError, Source, is_probe_header, parse_manifest, parse_probes
 
 VERSION_RE = re.compile(r'(\d+(?:\.\d+)+) \(Claude Code\)')
-# A tool name that starts with the MCP prefix, up to white space, a quote or a closing bracket.
-MCP_TOKEN_RE = re.compile(re.escape(probe_checks.MCP_PREFIX) + r'''[^\s'"`)\]}>]*''')
 VERSION_TIMEOUT = 30  # seconds for `claude --version`
 PROBE_TIMEOUT = 600  # seconds for one probe invocation
 PINS_TIMEOUT = 1200  # agent-model-pins waits on three background agents
@@ -120,10 +119,13 @@ def stop_group(proc: subprocess.Popen) -> None:
 def held_signals():
     '''Record the stop signals instead of acting on them, then act on the
     first once the block is done, through the handler in force before it.
-    Starting a run and stopping one must not be cut short. Main thread only,
-    as signal.signal requires.'''
+    Starting a run and stopping one must not be cut short. A signal already
+    ignored, as nohup ignores SIGHUP, stays ignored and is not recorded, so
+    a stop after it is still acted on. Main thread only, as signal.signal
+    requires.'''
     got: list[int] = []
-    previous = {s: signal.signal(s, lambda signum, frame: got.append(signum)) for s in HELD_SIGNALS}
+    held = [s for s in HELD_SIGNALS if signal.getsignal(s) is not signal.SIG_IGN]
+    previous = {s: signal.signal(s, lambda signum, frame: got.append(signum)) for s in held}
     try:
         yield
     finally:
@@ -381,6 +383,21 @@ def inside_a_repo(path: Path) -> bool:
     return proc.returncode == 0 and proc.stdout.strip() == 'true'
 
 
+def new_run_dir(parent: Path, stem: str) -> Path:
+    '''A run directory of its own under parent: stem, or stem-2, stem-3 and
+    so on once a run in the same second has taken it. mkdir without
+    exist_ok claims a name or fails, so two runs, from two worktrees or a
+    scripted loop, never share one.'''
+    parent.mkdir(parents=True, exist_ok=True)
+    for n in itertools.count(1):
+        path = parent / (stem if n == 1 else f'{stem}-{n}')
+        try:
+            path.mkdir()
+        except FileExistsError:
+            continue
+        return path
+
+
 def run_probe(pid: str, claude: str, repo: Path, run_dir: Path, execute: Execute = execute) -> Verdict:
     '''One probe, from a fresh temporary directory that is removed after the
     verdict; its raw output stays in run_dir. A setup failure, a timeout or
@@ -434,7 +451,8 @@ def log_row(day: date, version: str, claude: Path, pid: str, verdict: Verdict, a
     MCP pass runs first: a private string inside an MCP name would otherwise
     become <private>, and the pass would stop at its > and leave the rest of
     the name in the log.'''
-    finding = probe_checks.redact(MCP_TOKEN_RE.sub(probe_checks.MCP_MARK, verdict.finding), private_strings())
+    finding = probe_checks.redact(probe_checks.MCP_TOKEN_RE.sub(probe_checks.MCP_MARK, verdict.finding),
+                                  private_strings())
     cells = [day.isoformat(), version, shown_path(claude), pid, verdict.outcome, finding,
              '--allow-old' if allow_old else '']
     return '| ' + ' | '.join(map(cell, cells)) + ' |'
@@ -508,7 +526,7 @@ def run(repo: Path, cache: Path, claude: Path, *, only: list[str] | None, force:
     lines, outcomes = [f'probes: {version} at {shown_path(claude)}'], []
     with term_as_exit():
         for pid in dict.fromkeys(chosen):
-            run_dir = cache / 'probes' / f"{now.strftime('%Y%m%dT%H%M%S')}-{pid}"
+            run_dir = new_run_dir(cache / 'probes', f"{now.strftime('%Y%m%dT%H%M%S')}-{pid}")
             verdict = run_probe(pid, str(claude), repo, run_dir, execute)
             append_row(repo / PROBES, log_row(today, version, claude, pid, verdict, allow_old))
             outcomes.append(verdict.outcome)

@@ -136,6 +136,10 @@ TRANSCRIPTS = {'Explore': [{'model': 'claude-haiku-5-5', 'effort': 'low'}],
      (ERROR, 'code-reviewer hit an API error: a message from model <synthetic>')),
     (pins_run({'Explore': '<synthetic>'}), TRANSCRIPTS,
      (ERROR, 'Explore hit an API error: a message from model <synthetic>')),
+    # A field missing from the undocumented transcript layout is a broken mechanism, never a divergence (R10.5).
+    (pins_run({'Explore': None}), TRANSCRIPTS, (ERROR, 'Explore forwarded a message with no model field')),
+    (pins_run(), {**TRANSCRIPTS, 'code-reviewer': [{'model': 'claude-opus-5-5'}]},
+     (ERROR, 'a code-reviewer transcript line has no effort field')),
 ])
 def test_agent_model_pins(events, transcripts, verdict):
     assert pc.assess_agent_model_pins(events, transcripts) == verdict
@@ -190,6 +194,16 @@ def test_redact_replaces_the_longest_string_first_and_skips_an_empty_one():
     # Shortest first would leave '<private>/work' for the first path.
     assert pc.redact('/home/me/work and /home/me', ['/home/me', '/home/me/work', '']) == '<private> and <private>'
     assert pc.redact('abc', ['']) == 'abc'
+
+
+def test_scrub_masks_an_mcp_tool_name_in_a_hook_name():
+    '''A PreToolUse hook with an mcp__ matcher in the owner's user settings
+    is named for the tool it matched, which names an installed server.'''
+    hook = {'type': 'system', 'subtype': 'hook_response', 'hook_event': 'PreToolUse',
+            'hook_name': 'PreToolUse:mcp__mine__search', 'exit_code': 0, 'outcome': 'success'}
+    text = pc.scrub_events([init(), hook, result()], [])
+    assert 'mcp__' not in text and 'mine' not in text
+    assert pc.parse_stream(text)[1]['hook_name'] == f'PreToolUse:{pc.MCP_MARK}'
 
 
 def test_scrub_keeps_what_the_assertions_read_and_drops_private_text():

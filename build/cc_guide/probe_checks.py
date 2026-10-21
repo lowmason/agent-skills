@@ -35,6 +35,8 @@ UUID_RE = re.compile(r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
 TOOL_ID_RE = re.compile(r'toolu_[A-Za-z0-9]+')
 MCP_PREFIX = 'mcp__'
 MCP_MARK = '<mcp-tool>'
+# A tool name that starts with the MCP prefix, up to white space, a quote or a closing bracket.
+MCP_TOKEN_RE = re.compile(re.escape(MCP_PREFIX) + r'''[^\s'"`)\]}>]*''')
 PRIVATE_MARK = '<private>'
 
 
@@ -154,8 +156,10 @@ def assess_agent_model_pins(events: list[dict] | None, transcripts: dict[str, li
     Each subagent's model is read from its forwarded messages; its effort,
     which the stream lacks, from its transcript lines (R10.5). A message of
     model <synthetic>, in either, means an API error broke the run: ERROR.
-    `transcripts` maps an agent type to its lines, each {'model': ...,
-    'effort': ...}.'''
+    So does a forwarded message with no model, or a code-reviewer line with
+    no effort: the transcript layout is undocumented, so a missing field is
+    a broken mechanism, not a divergence. `transcripts` maps an agent type
+    to its lines, each {'model': ..., 'effort': ...}.'''
     why = broken(events)
     if why:
         return Verdict(ERROR, why)
@@ -172,10 +176,14 @@ def assess_agent_model_pins(events: list[dict] | None, transcripts: dict[str, li
             return Verdict(ERROR, f'no transcript lines for {agent}')
         if SYNTHETIC in forwarded | {line.get('model') for line in transcripts[agent]}:
             return Verdict(ERROR, f'{agent} hit an API error: a message from model {SYNTHETIC}')
+        if None in forwarded:
+            return Verdict(ERROR, f'{agent} forwarded a message with no model field')
         models[agent] = forwarded
+    efforts = {line.get('effort') for line in transcripts[REVIEWER]}
+    if None in efforts:
+        return Verdict(ERROR, f'a {REVIEWER} transcript line has no effort field')
     wrong = [f"{agent} served {', '.join(sorted(map(str, models[agent])))}" for agent in HAIKU_AGENTS
              if not all('haiku' in str(m) for m in models[agent])]
-    efforts = {line.get('effort') for line in transcripts[REVIEWER]}
     if efforts != {REVIEWER_EFFORT}:
         wrong.append(f"{REVIEWER} effort {', '.join(sorted(map(str, efforts)))}")
     if wrong:
@@ -276,7 +284,11 @@ def _trim_event(event: dict) -> dict | None:
         return {'type': kind, 'subtype': sub, 'tools': tools, 'model': event.get('model'),
                 'claude_code_version': event.get('claude_code_version')}
     if kind == 'system' and sub == 'hook_response':
-        return {k: event.get(k) for k in ('type', 'subtype', 'hook_event', 'hook_name', 'exit_code', 'outcome')}
+        kept = {k: event.get(k) for k in ('type', 'subtype', 'hook_event', 'hook_name', 'exit_code', 'outcome')}
+        if isinstance(kept['hook_name'], str):
+            # A hook's name carries what it matched, so a hook matched on an MCP tool names an installed server.
+            kept['hook_name'] = MCP_TOKEN_RE.sub(MCP_MARK, kept['hook_name'])
+        return kept
     if kind == 'result':
         return {k: event.get(k) for k in ('type', 'subtype', 'is_error', 'num_turns')}
     if kind in ('assistant', 'user'):
@@ -303,7 +315,8 @@ def scrub_events(events: list[dict], private: list[str]) -> str:
     '''A recorded stream as a committable fixture (R12.6; owner, plan 58
     decision D3): cut to the fields the assertions read, so text blocks and
     tool output lose their text, and stripped of what must stay out of a
-    public repo: MCP tool names leave the init tool list, each string in
+    public repo: MCP tool names leave the init tool list and become
+    <mcp-tool> in a tool call and in a hook's name, each string in
     `private` (home and scratch paths, the login name), longest first,
     becomes <private>, and uuids and tool-use ids become stable
     placeholders.'''

@@ -3266,7 +3266,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       to verify both groups, settle the other group's packet first, and leave the block out of
       its own group's `rebaseline` while that section is held or deferred. Carrying the block
       into every flagged group's verify packet (design (b)) was declined.
-- [ ] Split settle.py's report grammar into its own module (plan 44's fix wave, item 14; owner
+- [x] Split settle.py's report grammar into its own module (plan 44's fix wave, item 14; owner
       deferred 2026-10-13). `build/cc_guide/settle.py` is 726 lines and holds the report grammar
       (`split_row`, `unquote`, `given`, `report_lines`, `header_row`, `none_line`, the `FORMATS`,
       `HEADERS` and `COLUMNS` constants and the row regexes) beside the three modes. Deferred
@@ -3276,6 +3276,10 @@ declined as YAGNI (zero instances in a one-page wiki).
       lines. Done when: settle.py imports the grammar from its own module (for example
       `report_grammar.py`), the grammar tests move with it, the `FORMATS` pin still resolves, and
       the cc_guide suite passes with no expected string changed.
+      → done 2026-10-21 (/deferred quick fix): `build/cc_guide/report_grammar.py` holds the
+      grammar and settle.py imports it (800 to 666 lines). The three grammar tests moved to
+      `test_report_grammar.py`, `test_skill_files.py` pins `report_grammar.FORMATS`, and no
+      expected string changed.
 - [ ] `packets --files` with no paths refuses the whole batch for one bad citer (plan 44's fix
       wave re-review, Minor). `build/cc_guide/packets.py`'s `files` pre-check (near lines
       371-375) raises a `SetupError` when any citing file names a section ID in neither the
@@ -5758,7 +5762,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       packet was built, so it needs a new files pass. `cli.py lint` prints 6 STALE files.
 
 ## 58-claude-code-drift-automation — 2026-10-20
-- [ ] Two runs of one probe in the same second share a run directory (final reviews: Codex P2,
+- [x] Two runs of one probe in the same second share a run directory (final reviews: Codex P2,
       and the code-reviewer's Minor M6, which it ranked not worth tracking; the owner chose to
       defer). `probes.run` names the raw-output folder `<cache>/probes/<YYYYmmddTHHMMSS>-<probe id>`,
       and `probes.run_probe` creates it with `exist_ok=True`. Two invocations in one second (two
@@ -5766,14 +5770,22 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       the other run's output. Only the log append is locked. Files: `build/cc_guide/probes.py`.
       Size: quick-fix. Done when: the folder is created with a unique suffix (`mkdir(exist_ok=False)`
       with a counter, or `tempfile.mkdtemp` under `probes/`) and a test starts two runs in one second.
-- [ ] `held_signals` drops a real stop that follows an ignored signal (final review, Minor M2).
+      → done 2026-10-21 (/deferred quick fix): `probes.new_run_dir` claims the folder with
+      `mkdir` and no `exist_ok`, and adds `-2`, `-3` and so on when a run in the same second
+      holds the name. A test runs one probe twice in one second and checks that each folder
+      keeps its own stream.
+- [x] `held_signals` drops a real stop that follows an ignored signal (final review, Minor M2).
       In `build/cc_guide/probes.py`, `held_signals` records every held signal, even one whose
       previous handler is `SIG_IGN`, and then acts only on the first. A `nohup`-started run that
       gets SIGHUP and then SIGTERM inside one held window acts on neither; in the timeout branch of
       `execute` (up to 10 s) the run then goes on to the next probe and keeps spending. Size:
       quick-fix. Done when: a signal whose previous handler is `SIG_IGN` is not recorded, and a
       process test sends an ignored SIGHUP then SIGTERM and sees the stop acted on once.
-- [ ] A missing transcript field reads DIVERGES, not ERROR (final review, Minor). In
+      → done 2026-10-21 (/deferred quick fix): `held_signals` leaves a signal whose handler is
+      `SIG_IGN` alone, as `term_as_exit` does, so it is neither recorded nor raised. A child
+      Python that ignores SIGHUP gets SIGHUP then SIGTERM in a held window, and its SIGTERM
+      handler runs once.
+- [x] A missing transcript field reads DIVERGES, not ERROR (final review, Minor). In
       `build/cc_guide/probe_checks.py`, `assess_agent_model_pins` reports a forwarded message with no
       `model`, or a code-reviewer transcript with no `effort`, as DIVERGES ("served None", "effort
       None"). Drift spec R10.5 reserves DIVERGES for behaviour that differs from the guide, and ERROR
@@ -5781,7 +5793,11 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       field rename would send the owner on a paid `verify` run. Size: quick-fix. Done when: a `None`
       model or effort is ERROR with a finding that names the field, and `test_probe_checks.py` pins it.
       Revisit if: Claude Code documents the subagent transcript format.
-- [ ] A log row after a blank line is silently skipped (final review, Minor). In
+      → done 2026-10-21 (/deferred quick fix): a forwarded message with no `model` is ERROR
+      ("<agent> forwarded a message with no model field"), and so is a code-reviewer transcript
+      line with no `effort` ("a code-reviewer transcript line has no effort field"), checked
+      before any DIVERGES. `test_probe_checks.py` pins both findings.
+- [x] A log row after a blank line is silently skipped (final review, Minor). In
       `build/cc_guide/state.py`, `parse_probes` resets the header on any non-table line, so the
       next `|` line is read as a new header and skipped as "another table". A hand edit or a merge
       resolution that splits `build/cc_guide/PROBES.md` hides later rows, and a DIVERGES row among
@@ -5789,13 +5805,21 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       `test_probe_replay.py`'s check of the committed file guards this, and the commit lints do not
       run that suite. Size: quick-fix. Done when: `parse_probes` raises `SetupError` for a log-table
       data row it would otherwise skip, with a test; or the cc_guide suite joins the commit lints.
-- [ ] `hook_response.hook_name` may carry an MCP name into a fixture (final review, Minor).
+      → done 2026-10-21 (/deferred quick fix): a table opens only with a header and a
+      separator row, as in Markdown, so a `|` line that opens a block without one raises
+      `SetupError` ("row … stands outside a table, so it would be skipped"). A test cuts the log
+      table with a blank line, prose and a merge marker. The committed log still parses.
+- [x] `hook_response.hook_name` may carry an MCP name into a fixture (final review, Minor).
       `probe_checks._trim_event` keeps `hook_name` verbatim, so a PreToolUse hook with an `mcp__`
       matcher in the owner's user settings would appear as `PreToolUse:mcp__...` in a fixture. Only
       `PRIVATE_RE` in `build/cc_guide/test_probe_replay.py` backstops it, and that suite is not a
       commit lint. Size: quick-fix. Revisit if: a probe's recording shows a hook name with `mcp__`,
       or the owner wires an MCP-matched hook in user settings. Done when: `_trim_event` passes the
       name through the same `mcp__` replacement as tool names.
+      → done 2026-10-21 (/deferred quick fix): `MCP_TOKEN_RE` moved from `probes.py` to
+      `probe_checks.py`, and `_trim_event` replaces each `mcp__` token in `hook_name` with
+      `<mcp-tool>`, as the log row does, so `PreToolUse:mcp__x__y` becomes
+      `PreToolUse:<mcp-tool>`. A scrub test pins it.
 - [ ] Review Minors from the per-task and final reviews of plan 58, one batch (the owner chose to
       defer). In `build/cc_guide/state.py`: (a) the log-table header test is written twice
       (`is_probe_header` and `parse_probes`'s `PROBE_COLUMNS <= set(header)`); (b) the empty-probe
