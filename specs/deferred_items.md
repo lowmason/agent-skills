@@ -5774,13 +5774,17 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       `mkdir` and no `exist_ok`, and adds `-2`, `-3` and so on when a run in the same second
       holds the name. A test runs one probe twice in one second and checks that each folder
       keeps its own stream.
-- [ ] `held_signals` drops a real stop that follows an ignored signal (final review, Minor M2).
+- [x] `held_signals` drops a real stop that follows an ignored signal (final review, Minor M2).
       In `build/cc_guide/probes.py`, `held_signals` records every held signal, even one whose
       previous handler is `SIG_IGN`, and then acts only on the first. A `nohup`-started run that
       gets SIGHUP and then SIGTERM inside one held window acts on neither; in the timeout branch of
       `execute` (up to 10 s) the run then goes on to the next probe and keeps spending. Size:
       quick-fix. Done when: a signal whose previous handler is `SIG_IGN` is not recorded, and a
       process test sends an ignored SIGHUP then SIGTERM and sees the stop acted on once.
+      → done 2026-10-21 (/deferred quick fix): `held_signals` leaves a signal whose handler is
+      `SIG_IGN` alone, as `term_as_exit` does, so it is neither recorded nor raised. A child
+      Python that ignores SIGHUP gets SIGHUP then SIGTERM in a held window, and its SIGTERM
+      handler runs once.
 - [ ] A missing transcript field reads DIVERGES, not ERROR (final review, Minor). In
       `build/cc_guide/probe_checks.py`, `assess_agent_model_pins` reports a forwarded message with no
       `model`, or a code-reviewer transcript with no `effort`, as DIVERGES ("served None", "effort

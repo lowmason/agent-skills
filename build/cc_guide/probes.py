@@ -121,10 +121,13 @@ def stop_group(proc: subprocess.Popen) -> None:
 def held_signals():
     '''Record the stop signals instead of acting on them, then act on the
     first once the block is done, through the handler in force before it.
-    Starting a run and stopping one must not be cut short. Main thread only,
-    as signal.signal requires.'''
+    Starting a run and stopping one must not be cut short. A signal already
+    ignored, as nohup ignores SIGHUP, stays ignored and is not recorded, so
+    a stop after it is still acted on. Main thread only, as signal.signal
+    requires.'''
     got: list[int] = []
-    previous = {s: signal.signal(s, lambda signum, frame: got.append(signum)) for s in HELD_SIGNALS}
+    held = [s for s in HELD_SIGNALS if signal.getsignal(s) is not signal.SIG_IGN]
+    previous = {s: signal.signal(s, lambda signum, frame: got.append(signum)) for s in held}
     try:
         yield
     finally:

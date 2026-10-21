@@ -592,6 +592,30 @@ def test_held_signals_act_once_the_block_is_done():
     assert reached == ['end of block']
 
 
+# Run in a child Python, started as nohup starts it: SIGHUP ignored.
+HELD_CHECK = """
+import os, signal, time
+import probes
+signal.signal(signal.SIGHUP, signal.SIG_IGN)
+acted = []
+signal.signal(signal.SIGTERM, lambda signum, frame: acted.append(signum))
+with probes.held_signals():
+    os.kill(os.getpid(), signal.SIGHUP)
+    os.kill(os.getpid(), signal.SIGTERM)
+    time.sleep(0.2)
+print(acted, signal.getsignal(signal.SIGHUP) is signal.SIG_IGN)
+"""
+
+
+def test_an_ignored_signal_is_not_held_so_a_stop_after_it_is_acted_on_once():
+    '''A SIGHUP that nohup ignores, landing in a held window, is not
+    recorded: the SIGTERM after it is acted on once when the window ends,
+    and SIGHUP stays ignored.'''
+    proc = subprocess.run([sys.executable, '-c', HELD_CHECK], cwd=Path(__file__).parent,
+                          capture_output=True, text=True, timeout=30)
+    assert (proc.returncode, proc.stdout, proc.stderr) == (0, f'[{int(signal.SIGTERM)}] True\n', '')
+
+
 def test_a_setup_failure_is_an_error_never_a_pass(tmp_path, monkeypatch):
     def broken(scratch, claude, repo):
         raise OSError('disk full')
