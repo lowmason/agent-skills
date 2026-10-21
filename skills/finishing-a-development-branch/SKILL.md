@@ -123,17 +123,38 @@ taking the override on your partner's behalf defeats the whole mechanism.
 
 ### Step 2: Detect Environment
 
-**Determine workspace state before presenting options:**
+**Determine workspace state before presenting options.** Run each command as its own Bash call, exactly as written. A session that Claude Code isolates in a worktree refuses `git -C`, `$(…)` and `cd … &&` forms, so the commands this skill runs inside the worktree avoid them:
 
 ```bash
-GIT_DIR=$(cd "$(git rev-parse --git-dir)" 2>/dev/null && pwd -P)
-GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)
-WORKTREE_PATH=$(git rev-parse --show-toplevel)
-MAIN_ROOT=$(git -C "$(git rev-parse --git-common-dir)/.." rev-parse --show-toplevel)
+git rev-parse --path-format=absolute --git-dir
+git rev-parse --path-format=absolute --git-common-dir
+git rev-parse --show-toplevel
+git worktree list --porcelain
 ```
-**Record all four values in the conversation now.** Shell state does not
-persist across tool calls, and Step 6 consumes the values recorded here —
-re-detecting after Options 1/4 have cd-ed to MAIN_ROOT always reports
+
+From the output, record GIT_DIR (the first command), GIT_COMMON (the second), WORKTREE_PATH (the third) and MAIN_ROOT, the path on the first `worktree` line of the list.
+
+**If GIT_DIR != GIT_COMMON, record two more values.** Detect both. Never infer either from the worktree's path.
+
+**MAIN_GIT** — whether this session may run git in the main checkout. Run this probe as its own call, with the recorded MAIN_ROOT written out in place of `<MAIN_ROOT>`:
+
+```bash
+git -C <MAIN_ROOT> rev-parse --show-toplevel
+```
+
+- Refused, with a message that says the session is isolated in this worktree: MAIN_GIT is `blocked`.
+- It prints MAIN_ROOT, and your instructions do not tell you to stay in the worktree: MAIN_GIT is `allowed`.
+- It prints MAIN_ROOT, but your instructions tell you to stay in the worktree or not to `cd` to the main checkout: MAIN_GIT is `ask`.
+- It fails any other way, a permission denial included: MAIN_GIT is `ask`.
+
+**MADE_BY** — who created this worktree, from this conversation's record:
+
+- `this session`: the conversation shows the call that created it, a `git worktree add` or EnterWorktree with `name`.
+- `launcher`: anything else. The session started inside the worktree (the desktop app, `claude --worktree`, another harness), or the conversation no longer shows how the worktree was made, after a `/clear` or a compaction for example.
+
+**Record every value in the conversation now.** Shell state does not
+persist across tool calls, and Steps 5 and 6 consume the values recorded here —
+re-detecting after Options 1/4 have moved to MAIN_ROOT always reports
 "normal repo" and orphans the worktree.
 
 This determines which menu to show and how cleanup works:
@@ -141,19 +162,22 @@ This determines which menu to show and how cleanup works:
 | State | Menu | Cleanup |
 |-------|------|---------|
 | `GIT_DIR == GIT_COMMON` (normal repo) | Standard 4 options | No worktree to clean up |
-| `GIT_DIR != GIT_COMMON`, named branch | Standard 4 options | Provenance-based (see Step 6) |
+| `GIT_DIR != GIT_COMMON`, named branch | Standard 4 options | By MADE_BY (see Step 6) |
 | `GIT_DIR != GIT_COMMON`, detached HEAD | Reduced 3 options (no merge) | No cleanup (externally managed) |
 
 ### Step 3: Determine Base Branch
 
 ```bash
-BASE_BRANCH=$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's|^origin/||')
-# Fallback when origin/HEAD is unset (fresh clone or no remote). Both probes
-# fail silently, so a missing `gh` just leaves BASE_BRANCH empty:
-[ -n "$BASE_BRANCH" ] || BASE_BRANCH=$(gh repo view --json defaultBranchRef -q .defaultBranchRef.name 2>/dev/null)
+git symbolic-ref --short refs/remotes/origin/HEAD
 ```
 
-**If `BASE_BRANCH` is still empty** — no `origin/HEAD`, and no `gh` to ask —
+BASE_BRANCH is its output without the `origin/` prefix. If it fails (no `origin/HEAD`: a fresh clone or no remote), ask `gh`, which also fails when `gh` is not installed:
+
+```bash
+gh repo view --json defaultBranchRef -q .defaultBranchRef.name
+```
+
+**If both fail** — no `origin/HEAD`, and no `gh` to ask —
 ask instead: "This branch split from main - is that correct?"
 
 ### Step 4: Present Options
@@ -197,7 +221,7 @@ branch as it will ship. For the same reason
 you go on: commit what is part of the work, and ask your
 partner about anything else.
 
-Run it from the feature worktree, before Option 1's `cd` and `checkout` — from
+Run it from the feature worktree, before Option 1 leaves it — from
 the base branch there is nothing left to review. If nothing reviewed this
 branch before finishing — it did not come through executing-plans or
 subagent-driven-development — first offer your partner a code-reviewer pass
@@ -237,13 +261,15 @@ after they have seen it.
 **Aged-tail gate (Step 1b):** if aged items were reported, resolve them before
 merging — a `/deferred` pass or a logged acknowledgement.
 
-**Codex review (Step 4b):** done from the feature worktree before the `cd` below.
+**Codex review (Step 4b):** done from the feature worktree, before you leave it.
+
+**Get to the main checkout.** The merge runs in MAIN_ROOT. Your partner's choice of this option is their request to leave the worktree. Go by the MAIN_GIT that Step 2 recorded:
+
+- **Normal repo, or `allowed`:** run each command below from MAIN_ROOT. A Bash call can start back in the worktree, so begin each call with `cd <MAIN_ROOT> &&`.
+- **`ask`:** ask your partner, "Finishing runs git in the main checkout at <MAIN_ROOT>. May I?" A yes is `allowed`. A no is `blocked`.
+- **`blocked`:** call ExitWorktree with `action: "keep"`. Never use `"remove"`: it deletes the branch before the merge. If ExitWorktree returns the session to MAIN_ROOT, run the commands below there. If it reports a no-op, this session cannot run git in the main checkout. Do not rewrite a refused command to get round the check. Give your partner the commands below with every value written out, ask them to run the commands in a terminal and tell you the test result, and wait.
 
 ```bash
-# Get main repo root for CWD safety
-MAIN_ROOT=$(git -C "$(git rev-parse --git-common-dir)/.." rev-parse --show-toplevel)
-cd "$MAIN_ROOT"
-
 # Merge first — verify success before removing anything
 git checkout <base-branch>
 git pull
@@ -251,11 +277,9 @@ git merge <feature-branch>
 
 # Verify tests on merged result
 <test command>
-
-# Only after merge succeeds: cleanup worktree (Step 6), then delete branch
 ```
 
-Then: Cleanup worktree (Step 6), then delete branch:
+Then: Cleanup worktree (Step 6). If Step 6 removed the worktree, delete the branch. git refuses while a worktree still has it checked out:
 
 ```bash
 git branch -d <feature-branch>
@@ -327,15 +351,11 @@ This will permanently delete:
 Type 'discard' to confirm.
 ```
 
+If Step 2 recorded MADE_BY `launcher`, Step 6 cannot remove the worktree, and git cannot delete a branch that a worktree has checked out. Say so in place of the list above: "<path> and its branch <name> belong to the tool that started this session, so I can't delete them. They stay until it removes the worktree, or you run `git worktree remove <path>` and then `git branch -D <name>` from <MAIN_ROOT>."
+
 Wait for exact confirmation.
 
-If confirmed:
-```bash
-MAIN_ROOT=$(git -C "$(git rev-parse --git-common-dir)/.." rev-parse --show-toplevel)
-cd "$MAIN_ROOT"
-```
-
-Then: Cleanup worktree (Step 6), then force-delete branch:
+If confirmed, get to the main checkout as Option 1 does, by the MAIN_GIT that Step 2 recorded. Then: Cleanup worktree (Step 6). If Step 6 removed the worktree, force-delete the branch:
 ```bash
 git branch -D <feature-branch>
 ```
@@ -345,24 +365,27 @@ git branch -D <feature-branch>
 **Only runs for Options 1 and 4.** Options 2 and 3 always preserve the worktree.
 
 **Use the values recorded in Step 2** (GIT_DIR, GIT_COMMON, WORKTREE_PATH,
-MAIN_ROOT). Do NOT re-run detection here — after Options 1/4 cd to
+MAIN_ROOT, MAIN_GIT, MADE_BY). Do NOT re-run detection here — after Options 1/4 move to
 MAIN_ROOT, re-detection reports a normal repo and skips cleanup, orphaning
 the worktree and making the branch deletion below fail.
 
 **If Step 2 recorded `GIT_DIR == GIT_COMMON`:** Normal repo, no worktree to clean up. Done.
 
-**If the recorded WORKTREE_PATH is under `.worktrees/` or `worktrees/`:** the
-using-git-worktrees skill (or you) created this worktree — we own cleanup.
+**If Step 2 recorded MADE_BY `this session`:** you own cleanup. Run these from MAIN_ROOT, where Option 1 or 4 took you:
 
 ```bash
-cd "$MAIN_ROOT"
-git worktree remove "$WORKTREE_PATH"
+git worktree remove <WORKTREE_PATH>
 git worktree prune  # Self-healing: clean up any stale registrations
 ```
 
-**Otherwise:** The host environment (harness) owns this workspace. Do NOT
-remove it. If your platform provides a workspace-exit tool (e.g.
-ExitWorktree), use it. Otherwise, leave the workspace in place.
+**If `git worktree remove` refuses, stop.** Do not add `--force` or `-f -f`, and do not run `git worktree unlock`, whatever git's message suggests. A lock can belong to a session that is still running, and modified or untracked files can be work that exists nowhere else. Tell your partner the cause:
+
+- **Locked:** quote the lock reason from git's message.
+- **Modified or untracked files:** list them, from `git -C <WORKTREE_PATH> status --porcelain --untracked-files=all`.
+
+Then ask what to do, and wait. Delete the branch only once the worktree is gone.
+
+**If Step 2 recorded MADE_BY `launcher`:** the tool that started this session owns the worktree. Do NOT remove it, and leave its branch: git refuses to delete a branch that a worktree has checked out. Tell your partner where the worktree is and what removes it. The desktop app cleans up or reuses a session's worktree when the session is archived. Anywhere else, your partner can run `git worktree remove <WORKTREE_PATH>` from MAIN_ROOT and then delete the branch.
 
 ## Quick Reference
 
@@ -385,7 +408,7 @@ ExitWorktree), use it. Otherwise, leave the workspace in place.
 
 **Running the Codex review after Option 1's checkout**
 - **Problem:** On the base branch the merge base is HEAD itself — Codex reviews an empty diff
-- **Fix:** Run Step 4b from the feature worktree, before any `cd` or `checkout`
+- **Fix:** Run Step 4b from the feature worktree, before Option 1 leaves it
 
 **Open-ended questions**
 - **Problem:** "What should I do next?" is ambiguous
@@ -401,11 +424,19 @@ ExitWorktree), use it. Otherwise, leave the workspace in place.
 
 **Running git worktree remove from inside the worktree**
 - **Problem:** Command fails silently when CWD is inside the worktree being removed
-- **Fix:** Always `cd` to main repo root before `git worktree remove`
+- **Fix:** Run it from MAIN_ROOT, where Option 1 or 4 takes you
 
-**Cleaning up harness-owned worktrees**
-- **Problem:** Removing a worktree the harness created causes phantom state
-- **Fix:** Only clean up worktrees under `.worktrees/` or `worktrees/`
+**Cleaning up a worktree you did not make**
+- **Problem:** Removing a worktree the harness or the desktop app created causes phantom state, and a path proves nothing: Claude Code and the app put their worktrees under `.claude/worktrees/`
+- **Fix:** Remove only a worktree Step 2 recorded as MADE_BY `this session`
+
+**Running git in the main checkout from an isolated session**
+- **Problem:** Claude Code refuses `cd <MAIN_ROOT> &&`, `git -C <MAIN_ROOT>` and `$(…)` forms there, and a rewritten command is not a safe one
+- **Fix:** On MAIN_GIT `blocked`, leave with ExitWorktree `keep`, or give your partner the commands (Option 1)
+
+**Forcing a refused removal**
+- **Problem:** git's message suggests `--force`, `-f -f` or unlocking, but a lock can belong to a running session, and untracked files can be the only copy of work
+- **Fix:** Name the cause and ask (Step 6)
 
 **No confirmation for discard**
 - **Problem:** Accidentally delete work
@@ -424,8 +455,10 @@ ExitWorktree), use it. Otherwise, leave the workspace in place.
 - Delete work without confirmation
 - Force-push without explicit request
 - Remove a worktree before confirming merge success
-- Clean up worktrees you didn't create (provenance check)
+- Remove a worktree that Step 2 did not record as MADE_BY `this session`, or judge who made it from its path
 - Run `git worktree remove` from inside the worktree
+- Add `--force` or `-f -f` to a refused `git worktree remove`, or unlock the worktree, without your partner's say
+- Rewrite a command an isolated session refused, to get round the refusal
 
 **Always:**
 - Verify tests before offering options
@@ -435,5 +468,5 @@ ExitWorktree), use it. Otherwise, leave the workspace in place.
 - Run the Codex review (Step 4b) before merging or pushing
 - Get typed confirmation for Option 4
 - Clean up worktree for Options 1 & 4 only
-- `cd` to main repo root before worktree removal
+- Remove worktrees from MAIN_ROOT
 - Run `git worktree prune` after removal
