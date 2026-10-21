@@ -355,7 +355,7 @@ If Step 2 recorded MADE_BY `launcher`, Step 6 cannot remove the worktree, and gi
 
 Otherwise, wait for exact confirmation.
 
-If confirmed, get to the main checkout as Option 1 does, by the MAIN_GIT that Step 2 recorded. Then: Cleanup worktree (Step 6). If Step 6 removed the worktree, force-delete the branch:
+If confirmed, get to the main checkout as Option 1 does, by the MAIN_GIT that Step 2 recorded. Where Option 1 would hand the merge commands to your partner, skip the merge and hand over Step 6's commands and the branch command below. Then: Cleanup worktree (Step 6). If Step 6 removed the worktree, force-delete the branch:
 ```bash
 git branch -D <feature-branch>
 ```
@@ -371,12 +371,14 @@ the worktree and making the branch deletion below fail.
 
 **If Step 2 recorded `GIT_DIR == GIT_COMMON`:** Normal repo, no worktree to clean up. Done.
 
-**If Step 2 recorded MADE_BY `this session`:** you own cleanup. Run these from MAIN_ROOT, where Option 1 or 4 took you. On `allowed`, begin each call with `cd <MAIN_ROOT> &&`. If Option 1 or 4 handed the commands to your partner, give them these commands too, with every value written out, and wait for their result:
+**If Step 2 recorded MADE_BY `this session`:** you own cleanup. Run these from MAIN_ROOT. On `allowed`, or after a yes to the `ask` question, begin each call with `cd <MAIN_ROOT> &&`:
 
 ```bash
 git worktree remove <WORKTREE_PATH>
 git worktree prune  # Self-healing: clean up any stale registrations
 ```
+
+**If your partner runs the commands** (Option 1 handed them the merge commands, or Option 4 handed over Step 6): give them these two commands and the branch command that the option gives, with every value written out, and wait for their result. For Option 1, give them only once they report that the merge and tests passed.
 
 **If `git worktree remove` refuses, stop.** Do not add `--force` or `-f -f`, and do not run `git worktree unlock`, whatever git's message suggests. A lock can belong to a session that is still running, and modified or untracked files can be work that exists nowhere else. Tell your partner the cause:
 
@@ -400,49 +402,7 @@ Options 1 and 4 delete the branch only when Step 6 removed the worktree. They do
 
 ## Common Mistakes
 
-**Skipping test verification**
-- **Problem:** Merge broken code, create failing PR
-- **Fix:** Always verify tests before offering options
-
-**Taking the aged-tail override unasked**
-- **Problem:** Writing the acknowledgement yourself turns a gate meant to force a conscious decision back into a silent default
-- **Fix:** Present both options and wait; log only the reason your partner gives
-
-**Running the Codex review after Option 1's checkout**
-- **Problem:** On the base branch the merge base is HEAD itself — Codex reviews an empty diff
-- **Fix:** Run Step 4b from the feature worktree, before Option 1 leaves it
-
-**Open-ended questions**
-- **Problem:** "What should I do next?" is ambiguous
-- **Fix:** Present exactly 4 structured options (or 3 for detached HEAD)
-
-**Cleaning up worktree for Option 2**
-- **Problem:** Remove worktree user needs for PR iteration
-- **Fix:** Only cleanup for Options 1 and 4
-
-**Deleting branch before removing worktree**
-- **Problem:** `git branch -d` fails because worktree still references the branch
-- **Fix:** Merge first, remove worktree, then delete branch
-
-**Running git worktree remove from inside the worktree**
-- **Problem:** Command fails silently when CWD is inside the worktree being removed
-- **Fix:** Run it from MAIN_ROOT, where Option 1 or 4 takes you
-
-**Cleaning up a worktree you did not make**
-- **Problem:** Removing a worktree the harness or the desktop app created causes phantom state, and a path proves nothing: Claude Code and the app put their worktrees under `.claude/worktrees/`
-- **Fix:** Remove only a worktree Step 2 recorded as MADE_BY `this session`
-
-**Running git in the main checkout from an isolated session**
-- **Problem:** Claude Code refuses `cd <MAIN_ROOT> &&`, `git -C <MAIN_ROOT>` and `$(…)` forms there, and a rewritten command is not a safe one
-- **Fix:** On MAIN_GIT `blocked`, leave with ExitWorktree `keep`, or give your partner the commands (Option 1)
-
-**Forcing a refused removal**
-- **Problem:** git's message suggests `--force`, `-f -f` or unlocking, but a lock can belong to a running session, and untracked files can be the only copy of work
-- **Fix:** Name the cause and ask (Step 6)
-
-**No confirmation for discard**
-- **Problem:** Accidentally delete work
-- **Fix:** Require typed "discard" confirmation
+When a step above fails, or before you depart from one, read [references/common-mistakes.md](references/common-mistakes.md).
 
 ## Red Flags
 
@@ -468,7 +428,7 @@ Options 1 and 4 delete the branch only when Step 6 removed the worktree. They do
 - Detect environment before presenting menu
 - Present exactly 4 options (or 3 for detached HEAD)
 - Run the Codex review (Step 4b) before merging or pushing
-- Get typed confirmation for Option 4
+- Get typed confirmation for Option 4 before it deletes anything
 - Clean up worktree for Options 1 & 4 only
 - Remove worktrees from MAIN_ROOT
 - Run `git worktree prune` after removal

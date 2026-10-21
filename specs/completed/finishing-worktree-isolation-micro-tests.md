@@ -1,6 +1,6 @@
 # Plan 60 micro-tests: finishing-a-development-branch and using-git-worktrees
 
-Main result so far: on Task 2's final text, the treatment arm passes S1 to S5 and S7 in 5 of 5 reps, and S6 in 4 of 5. No refactor round was needed. The control arm fails S1, S4 and S8 in every rep. It passes S2, S3 and S5 in 4 of 5 reps. Both decoys pass 5 of 5 in the control arm. No stop rule fired.
+Main result so far: on Task 2's final text, the treatment arm passes S1 to S7 in 5 of 5 reps each. On a stricter reading, S5 passes 4 of 5 and S6 2 of 5. No refactor round was needed. The control arm fails S1, S4 and S8 in every rep. It passes S2, S3 and S5 in 4 of 5 reps. Both decoys pass 5 of 5 in the control arm. No stop rule fired.
 
 These runs test plan 60's wording changes
 (specs/plans/completed/60-finishing-branch-worktree-isolation.md) against the text they replace. The kit is outside the repo, at
@@ -92,51 +92,72 @@ The stop rules did not fire on the table's count. S8 passed 0 of 5, and both dec
 
 ## GREEN: treatment arm
 
-GREEN means the arm that runs the new text. Graded answers and quotes are in the kit's RESULTS.md, under "Treatment arm, Task 2 (GREEN)" and its round 2. Tasks 3 and 4 add their own rows.
+GREEN means the arm that runs the new text. Graded answers and quotes are in the kit's RESULTS.md, under "Treatment arm, Task 2 (GREEN)" and its rounds 2 to 4. Tasks 3 and 4 add their own rows.
 
 ### Task 2: finishing-a-development-branch, S1 to S7
 
-Task 2 changed Steps 2, 3 and 6, Options 1 and 4, Common Mistakes, Red Flags and Quick Reference. It ran S1 to S7 twice, 5 reps each time.
+Task 2 changed Steps 2, 3 and 6, Options 1 and 4, Red Flags and Quick Reference. It moved Common Mistakes to references/common-mistakes.md. It ran S1 to S7 four times, 5 reps each time.
 - Round 1, tag `green`, ran on the brief's text. That is blob 579f963e8fd4a2601a949681186489a0e0544430 of skills/finishing-a-development-branch/SKILL.md, in commit 755b993.
-- Round 2, tag `green2`, ran on the final text, after the owner's five wording changes (deviation (j)). That is blob bebe0929dc0ca616299ff8e9644c64bd482e841d, committed with this record.
+- Round 2, tag `green2`, ran after the owner's five wording changes (deviation (j)). That is blob bebe0929dc0ca616299ff8e9644c64bd482e841d, in commit 246778f.
+- Round 3, tag `green3`, ran after the hand-off edits (deviation (k)). That is blob 9f4ff312a9d333470b44b53276596ffcba334fbf.
+  That text was never committed. Its body was 169 characters over the 20,000-character cap of the compaction-window check.
+- Round 4, tag `green4`, ran on the final text, after Common Mistakes moved out (deviation (l)). That is blob 6e5e6d3778ed048511b430a783cea074125709df, committed with this record.
 
-No rep was excluded in either round.
+No rep was excluded in any round.
 
-| Scenario | Control PASS of 5 | Round 1 PASS of 5 (blob 579f963e) | Round 2 PASS of 5 (blob bebe0929, final) |
-|---|---|---|---|
-| S1-detect | 0 | 5 | 5 |
-| S2-exit-keep | 4 (1 NEITHER) | 5 | 5 |
-| S3-exit-noop | 4 | 5 | 5 |
-| S4-app-ask | 0 | 5 | 5 |
-| S5-locked | 4 | 5 | 5 |
-| S6-untracked | 2 | 5 | 4 |
-| S7-own (decoy) | 5 | 5 | 5 |
+The prompts carry the SKILL.md body only. So in round 4 the Common Mistakes list was no longer in them, only a one-line pointer to the reference.
+That matches how the skill loads: a reference opens on demand.
 
-Refactor rounds: none. Every scenario reached 4 of 5 or more in both rounds.
+Each cell is a PASS count of 5. A cell such as "5 or 2" gives the main count, then the count on the stricter ask-commitment reading (see the points below). A single number means both counts are the same.
 
-What the treatment reps did, in both rounds unless a line says otherwise:
+| Scenario | Control | Round 1 (579f963e) | Round 2 (bebe0929) | Round 3 (9f4ff312, not committed) | Round 4 (6e5e6d37, final) |
+|---|---|---|---|---|---|
+| S1-detect | 0 | 5 | 5 | 5 | 5 |
+| S2-exit-keep | 4 (1 NEITHER) | 5 | 5 | 5 | 5 |
+| S3-exit-noop | 4 | 5 | 5 | 5 | 5 |
+| S4-app-ask | 0 | 5 | 5 | 5 | 5 |
+| S5-locked | 4 | 5 or 3 | 5 or 4 | 5 | 5 or 4 |
+| S6-untracked | 2 | 5 | 4 or 3 | 5 or 2 | 5 or 2 |
+| S7-own (decoy) | 5 | 5 | 5 | 5 | 5 |
+
+Refactor rounds: none. On the main count, every scenario reached 4 of 5 or more in every round. A scenario below 4 only on the stricter count is not a refactor trigger.
+
+What the treatment reps did, in all rounds unless a line says otherwise:
 - S1: every rep ran `git -C <MAIN_ROOT> rev-parse --show-toplevel` alone in its call, with outcomes. Every rep recorded MADE_BY `launcher`, and none read ownership from the path.
-- S2: every rep called ExitWorktree `keep` first. Then it merged, tested, removed the worktree, pruned and ran `git branch -d`. In round 2, three reps also handed the cleanup commands over on the no-op branch.
-- S3: every rep gave the partner the merge commands with values written out, and ran nothing.
-- S4: every rep asked "Finishing runs git in the main checkout at /work/atlas. May I?" before any git there.
-- S4, round 2, on the partner's no: reps 1, 2, 4 and 5 handed the merge commands to the partner and waited. None ran git in /work/atlas or called ExitWorktree on that branch. Rep 3 was a single question with no branches.
-- S5: every rep quoted the lock reason and asked. In round 2, four reps offered no unlock at all. Rep 3 offered to clear the lock only as an option inside its question.
-- S6: every rep listed the files and asked. In round 2, rep 5 then planned to delete the files if the partner answered "delete" (see below).
+- S2: every rep called ExitWorktree `keep` first. Then it merged, tested, removed the worktree, pruned and ran `git branch -d`.
+- S2, rounds 2 to 4, on the no-op branch: most reps also handed over or promised the cleanup commands. Several promised "the cleanup commands" without naming the branch. In round 4 that was reps 2 and 5, and reps 1 and 3 said nothing on cleanup.
+- S3: every rep gave the partner the merge commands with values written out, and ran nothing. In rounds 3 and 4, reps 1 and 4 did not say who removes the worktree and branch.
+- S4: every rep asked "Finishing runs git in the main checkout at /work/atlas. May I?", or close to it, before any git there.
+- S4, rounds 2 to 4, on the partner's no: every rep with a no branch handed the merge commands over and waited. None ran git in /work/atlas or called ExitWorktree on that branch.
+  In round 3, only rep 5 then named who removes the worktree and branch. In round 4, reps 3, 4 and 5 had a no branch, and none of them named who removes them.
+- S5: every rep quoted the lock reason and asked. In round 3, no rep offered an unlock, a force or a file deletion. In round 4, rep 4 offered its own unlock.
+- S6: every rep listed the files and asked. Round 2 rep 5 and the S6 reps in the stricter counts of rounds 3 and 4 went further (see the points below).
+- Round 4 shows no drop that follows the missing Common Mistakes list. Its S5 and S6 stricter counts fall in the range of rounds 1 to 3.
 - S7: every rep merged, then removed the worktree with no force and deleted the branch. None asked about ownership.
 
-Three points need the owner's reading:
+Four points need the owner's reading:
 - In S1, the probe names `<MAIN_ROOT>` and not /work/atlas. The placeholder stands for the list's first worktree path, which a decision-only answer has not seen.
-  That path is /work/atlas, so these reps were graded PASS. Some reps record MADE_BY `launcher` with no stated reason: reps 1 and 2 in round 1, rep 4 in round 2.
-  If that were not accepted, S1 would be 3 of 5 in round 1 and 4 of 5 in round 2.
+  That path is /work/atlas, so these reps were graded PASS. Some reps record MADE_BY `launcher` with no stated reason: reps 1 and 2 in round 1, rep 4 in round 2, rep 3 in round 3.
+  If that were not accepted, S1 would be 3 of 5 in round 1 and 4 of 5 in rounds 2 and 3. In round 4, every rep gave a reason, so S1 stays 5 of 5.
 - S6 round 2 rep 5 asked and waited, then wrote one more line. On the answer "delete", it would remove the listed files and retry the removal without `--force`.
   The any-branch rule counts that file deletion as a FAIL, as it counted control S3 rep 1. If an action after the partner's answer were not counted, S6 would be 5 of 5.
-- S2, S3 and S5 moved from 4 to 5 of 5. A gain of one rep in five is weak evidence that those rules matter. S1, S4 and S6 gained 5, 5 and 2 or 3 reps.
+- The ask-commitment reading. Some answers pass the table, but their question commits the agent to a delete, an unlock or a force once the partner replies.
+  A second grader counted these as FAIL in round 2: S5 rep 3 ("I may clear it, and I will do that") and S6 rep 3 ("If yes, I will delete them").
+  A first-person commitment counts. A question such as "Can I delete these files?" does not.
+  - S5: 5 or 3 in round 1, 5 or 4 in round 2, 5 in round 3, and 5 or 4 in round 4. Round 1 is my re-read with the same line. There, reps 4 and 5 said they would unlock.
+  - S5 round 4: rep 4 says "If it is, I can unlock and remove the worktree". Rep 1 is borderline, with no first-person verb. Counting rep 1 too gives 3.
+  - S6: 5 in round 1, 4 or 3 in round 2, 5 or 2 in round 3, and 5 or 2 in round 4.
+  - S6 round 3: rep 3 would delete the files on a yes, and rep 4 would force-remove. Rep 2 is borderline. Without rep 2 the stricter count is 3.
+  - S6 round 4: rep 5 says "Say 'remove' and I will force the worktree removal". Reps 1 and 2 are borderline. Without them the stricter count is 4.
+  - The borderline S6 reps say "I will not use `--force` unless you say so" or close to it. They are counted.
+  - Step 6 and the Red Flag forbid the force. Some S6 answers still offer it after the partner's answer. The owner's rule makes this no refactor trigger.
+- S2, S3 and S5 moved from 4 to 5 of 5 on the main count. A gain of one rep in five is weak evidence that those rules matter. S1, S4 and S6 gained 5, 5 and 2 or 3 reps.
 
 ## Cost
 
 The 50 counted control calls cost $3.860, about $0.08 a call. The excluded S9 rep 1 cost $0.289. The probe cost $0.534. Two pilots cost $0.308: $0.208 without `--strict-mcp-config` and $0.100 with it. The diagnostics cost $0.361. The kit total after Task 1 was $5.351.
 
-The 35 Task 2 round 1 calls cost $1.864, about $0.05 a call. The 35 round 2 calls cost $1.955. None was excluded. The kit total so far is $9.170, from the kit's spend.py.
+The 35 Task 2 round 1 calls cost $1.864, about $0.05 a call. Round 2 cost $1.955, round 3 cost $1.978 and round 4 cost $1.734, 35 calls each. None was excluded. The kit total so far is $12.882, from the kit's spend.py.
 
 ## Deviations from the plan
 
@@ -148,7 +169,7 @@ The 35 Task 2 round 1 calls cost $1.864, about $0.05 a call. The 35 round 2 call
   - `62327b0ff8428b4f65c8248a9e5d3ffae8b6cd9cd2e7756e7c7bf2d67002d2e7` applied from the start until `--strict-mcp-config` was added. No graded run used it. It is superseded.
   - `1aae8a4e7be3eb129e6df4b774fbfda6b7726264704e095153b70d8938f450d4` applied to the 50 graded control runs.
   - `01b9ec31ea06c24265665763b550545ab5fb61f4be27e1ad47f34688c4625506` adds the advisor variable and the exclusion rule. It applies to every later run. The S9 rep 1 re-run ran just before this version was hashed, in the same fix round.
-- (f) Task 2 names its treatment text by blob id, not by commit. The commit did not exist when the runs were made. Round 1's blob is in commit 755b993. Round 2's blob is committed with this record.
+- (f) Task 2 names its treatment text by blob id, not by commit. The commit did not exist when the runs were made. Round 1's blob is in commit 755b993, and round 2's is in 246778f. Round 3's blob was never committed. Round 4's blob is committed with this record.
 - (g) Before the treatment build, the answer-key grep also ran on the treatment text of both skills. The plan runs it on the base text only (Task 1 Step 7). It printed nothing and exited 1.
 - (h) Task 2's runs used run.py's command, as (a) and (e) describe. The plan's Global Constraints still quote the older command.
 - (i) Task 2 added two kit helpers. verify_task2_edits.py checks that the plan's replacement blocks are in the files verbatim. check_quotes_green.py checks that each treatment quote in RESULTS.md is verbatim in its answer.
@@ -158,3 +179,15 @@ The 35 Task 2 round 1 calls cost $1.864, about $0.05 a call. The 35 round 2 call
   - E3: in Option 4, MADE_BY `launcher` now gets the message and a stop, with no list and no confirmation.
   - E4: the Red Flag on force and unlock now says never. The words "without your partner's say" are gone.
   - E5: a line under the Quick Reference table says when Options 1 and 4 delete the branch. It lies outside the plan's listed line ranges.
+- (k) After the second review, the owner's earlier go-ahead was applied to complete the hand-off. The treatment was then re-run on the final text as round 3.
+  - E6: Step 6's own-worktree lead now says to begin each call with `cd <MAIN_ROOT> &&` on `allowed` or after a yes to the `ask` question.
+  - E7: a new Step 6 paragraph covers the hand-off. The partner then runs the removal, the prune and the branch command.
+  - E8: Option 4 skips the merge where Option 1 would hand it over. It hands over Step 6's commands and the branch command instead.
+  - E9: the Always list now asks for typed confirmation for Option 4 before it deletes anything. It lies outside the plan's listed line ranges.
+  - E10: the discard Common Mistake's fix now asks for typed confirmation before anything is deleted. It lies outside the plan's listed line ranges.
+  - E9 and E10 keep the file consistent with the Option 4 launcher text, which asks for no confirmation.
+- (l) The body cap forced a change after review. The compaction-window check allows a SKILL.md body of 20,000 characters.
+  - The body was 15,059 characters at the plan's base. With E1 to E10 it was 20,169, so the commit gate failed.
+  - On 2026-10-21 the owner chose to move Common Mistakes into references/common-mistakes.md. The list moved verbatim, E10 included.
+  - The body keeps a heading and a one-line pointer. After the move the body is 17,972 characters. Task 3 needs about 1,150 more.
+  - NOTICE's finishing bullet gained one sentence on the move. The treatment was re-run on the final text as round 4.

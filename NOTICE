@@ -542,6 +542,8 @@ Changes from upstream:
     unlock. Upstream at bb92a77 (v7.0.0) also stops and asks when untracked
     files block a removal, as finding 8 of specs/superpowers-drift-spec.md
     records. That idea is credited here, and no upstream text was taken.
+    The Common Mistakes list moved to references/common-mistakes.md, so the
+    body stays inside the compaction window.
 
     brainstorming/
     dispatching-parallel-agents/
