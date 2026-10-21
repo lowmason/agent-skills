@@ -16,9 +16,9 @@ metadata:
 
 ## Overview
 
-Ensure work happens in an isolated workspace. Prefer your platform's native worktree tools. Fall back to manual git worktrees only when no native tool is available.
+Ensure work happens in an isolated workspace. Prefer your platform's native worktree tools. Fall back to manual git worktrees only when no native tool is available, or when Step 1a's base check sends you there.
 
-**Core principle:** Detect existing isolation first. Then use native tools. Then fall back to git. Never fight the harness.
+**Core principle:** Detect existing isolation first. Then use native tools, unless Step 1a's base check sends you to git. Then fall back to git. Never fight the harness.
 
 **Announce at start:** "I'm using the using-git-worktrees skill to set up an isolated workspace."
 
@@ -67,8 +67,8 @@ The user has asked for an isolated workspace (Step 0 consent). Do you already ha
 git rev-list --count origin/HEAD..HEAD
 ```
 
-- **It prints 0, or fails** (no `origin/HEAD`): create the worktree with the native tool and skip to Step 2.
-- **It prints a number above 0:** HEAD has unpushed commits. Create the worktree with Step 1b's commands, which branch from HEAD. In place of Step 1b's `cd`, switch the session into the new worktree with the native tool's form for an existing worktree (`EnterWorktree` with `path`). Claude Code asks your partner to approve a path outside `.claude/worktrees/`. Then skip to Step 2.
+- **It prints 0:** create the worktree with the native tool and skip to Step 2.
+- **It prints a number above 0, or fails** (no `origin/HEAD`, because the remote never set it or there is no remote): HEAD may have commits the native tool leaves out. Create the worktree with Step 1b's commands, which branch from HEAD. In place of Step 1b's `cd`, switch the session into the new worktree with the native tool's form for an existing worktree (`EnterWorktree` with `path`). Claude Code asks your partner to approve a path outside `.claude/worktrees/`. Then skip to Step 2.
 
 Native tools handle directory placement, branch creation, and cleanup automatically. A `git worktree add` worktree that the native tool never enters is phantom state your harness can't see or manage, which is why the base check ends by entering it.
 
@@ -164,7 +164,7 @@ Ready to implement <feature-name>
 | Already in linked worktree | Skip creation (Step 0) |
 | In a submodule | Treat as normal repo (Step 0 guard) |
 | Native worktree tool available | Base check, then use it (Step 1a) |
-| Native tool, HEAD has unpushed commits | Step 1b's git commands, then enter with the native tool (Step 1a) |
+| Native tool, base check prints above 0 or fails | Step 1b's git commands, then enter with the native tool (Step 1a) |
 | No native tool | Git worktree fallback (Step 1b) |
 | `.worktrees/` exists | Use it (verify ignored) |
 | `worktrees/` exists | Use it (verify ignored) |

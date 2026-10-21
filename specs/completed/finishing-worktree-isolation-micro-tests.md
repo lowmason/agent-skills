@@ -52,6 +52,13 @@ Advisor positive control (fix round 1), run from /tmp/plan60-micro/run with the 
 - A second switch also worked: `--settings '{"advisorModel":""}'` gave `['message']` and one model. The switch `{"advisorModel":null}` did not. The variable is the one in use.
 - The audit of all 50 control answers found 1 advisor call (S9 rep 1). The other 49 held only `message` iterations and one model.
 
+Follow-up probe (2026-10-21, Claude Code 2.1.304) with the kit's probe/base_probe.sh. It asks where EnterWorktree branches from when `origin/HEAD` is missing.
+The script builds three scratch repos under /tmp/plan60-probe2, each with one unpushed commit. Each repo got one `claude -p` session that called EnterWorktree with a name and printed `git log --oneline`.
+- No remote at all: EnterWorktree kept the unpushed commit.
+- A remote with `origin/HEAD` never set: it left the commit out. This is the state in which `git rev-list --count origin/HEAD..HEAD` fails.
+- A remote with `origin/HEAD` set: it left the commit out.
+The three calls cost $0.448, $0.149 each. spend.py does not count them. A failed base check does not show that the native tool is safe, so the skill sends it to git.
+
 ## Scenarios
 
 An app-launched worktree is one that the Claude desktop app made. An own worktree is one that the session made itself with `git worktree add`. A decoy is a scenario where the current text should already be right. The new wording must not break it.
@@ -181,26 +188,30 @@ Three points need the owner's reading:
 
 ### Task 4: using-git-worktrees, S9 and S10
 
-Task 4 added a base check to Step 1a of using-git-worktrees. It also changed the Quick Reference, Common Mistakes and Red Flags. It ran S9 and S10 once, with 5 reps each and tag `green`.
-- The text is blob 15e0a60fe29c1c0695cd649ec189d956ed6c8251 of skills/using-git-worktrees/SKILL.md, committed with this record. Its body is 8,567 characters, up from 7,222.
-- The prompt carries the SKILL.md body only.
-- No rep was excluded.
+Task 4 added a base check to Step 1a of using-git-worktrees. It also changed the Quick Reference, Common Mistakes and Red Flags. It ran S9 and S10 twice, with 5 reps each.
+- Round 1, tag `green`, ran on blob 15e0a60fe29c1c0695cd649ec189d956ed6c8251 of skills/using-git-worktrees/SKILL.md, committed in 247b3a5. Its body is 8,567 characters, up from 7,222.
+- Round 2, tag `green2`, ran on blob db5682cf96aaaad531b29637ae4b62668cb0453a, committed with this record. Its body is 8,746 characters. It follows the follow-up probe (deviation (n)).
+- The prompts carry the SKILL.md body only.
+- No rep was excluded in either round.
 
-| Scenario | Control | Task 4 text (15e0a60f) |
-|---|---|---|
-| S9-ahead | 2 (3 NEITHER) | 5 |
-| S10-even (decoy) | 5 | 5 |
+| Scenario | Control | Round 1 (15e0a60f) | Round 2 (db5682cf, final) |
+|---|---|---|---|
+| S9-ahead | 2 (3 NEITHER) | 5 | 5 |
+| S10-even (decoy) | 5 | 5 | 5 |
 
-Refactor rounds: none. Both scenarios reached 5 of 5, above the 4 of 5 gate.
+Refactor rounds: none. Both scenarios reached 5 of 5 in both rounds, above the 4 of 5 gate.
 
-What the treatment reps did:
-- Every rep ran `git rev-list --count origin/HEAD..HEAD` first, as Step 1a says.
+What the treatment reps did, in both rounds:
+- Every rep ran the base check before it created a worktree. In S9 rep 1 of round 1, the Step 0 detection command came first.
 - S9: every rep took the branch for a number above 0. It made the worktree with `git worktree add` from HEAD, then entered it with EnterWorktree `path`. No rep called EnterWorktree `name` on that branch.
-- S9: reps 4 and 5 gave the reason. A native `name` worktree would leave out the unpushed plan commit.
-- S9: the EnterWorktree `path` tally is 5 of 5 in the treatment. In the control, the 2 PASS reps entered with `path` and the 3 NEITHER reps used `name`.
+- S9: some reps gave the reason. A native `name` worktree would leave out the unpushed plan commit. Round 1 reps 4 and 5 did, and round 2 reps 1, 3 and 5 did.
+- S9: the EnterWorktree `path` tally is 5 of 5 in each round. In the control, the 2 PASS reps entered with `path` and the 3 NEITHER reps used `name`.
 - S10: every rep took the branch for 0 and called EnterWorktree `name`. The `git worktree add` lines sit on the other branch only.
+- Round 2: every rep restated the new rule. A number above 0 or a failed check goes to git. The change moved no count.
 
-Four points need the owner's reading:
+Six points need the owner's reading:
+- Limit: no scenario covers the "fails" branch. S9 prints a number above 0 and S10 prints 0. The follow-up probe is the only evidence for that branch.
+- Limit: S10 holds only on the prints-0 reading. If `origin/HEAD` were unset in that checkout, the new rule would send S10 to git, and the table would grade that FAIL.
 - The control's S9 count has 3 NEITHER answers. They called EnterWorktree `name`, then ran `git merge --ff-only main`. That handles the unpushed commit by another route and runs no `git worktree add`.
 - Strict count: control 2 of 5, treatment 5 of 5. Lenient count, where those 3 NEITHER answers pass: control 5 of 5, treatment 5 of 5.
 - On the lenient count, stop rule D6 would record the base check as "not shown necessary". The tool list in every prompt states the `worktree.baseRef` default, which may help the control spot the unpushed commit.
@@ -214,7 +225,9 @@ The 35 Task 2 round 1 calls cost $1.864, about $0.05 a call. Round 2 cost $1.955
 
 The 5 Task 3 calls (S8) cost $0.543, about $0.11 a call. None was excluded. The kit total after Task 3 was $13.424.
 
-The 10 Task 4 calls (S9 and S10) cost $0.868, about $0.09 a call. None was excluded. The kit total so far is $14.293, from the kit's spend.py.
+The 10 Task 4 round 1 calls (S9 and S10) cost $0.868, about $0.09 a call. None was excluded. The kit total after round 1 was $14.293.
+
+The 10 Task 4 round 2 calls cost $0.877, about $0.09 a call. None was excluded. The follow-up probe cost $0.448, which spend.py does not count. The kit total so far is $15.617: spend.py's $15.169 plus the probe's $0.448.
 
 ## Deviations from the plan
 
@@ -251,3 +264,8 @@ The 10 Task 4 calls (S9 and S10) cost $0.868, about $0.09 a call. None was exclu
 - (m) Task 3's line anchors in the plan had moved after Task 2, so its edits were found by the text they quote. The Step 3 diff check held: one hunk, inside Step 4b.
   - The body grew from 17,972 to 19,122 characters, under the 20,000-character cap.
   - The record's deviation items (j) and (k) once called the round 2 and round 3 text "the final text". They now say "that text". Round 4 is the final text.
+- (n) After review, the owner decided on 2026-10-21 to send a failed base check to git and to fix the two Overview lines. The follow-up probe is the reason (see Ground truth).
+  - F1 changed Step 1a's two bullets. "It prints 0" goes to the native tool. "It prints a number above 0, or fails" goes to Step 1b's commands.
+  - F2 and F3 changed the Overview line and the Core principle line. Both lie outside the plan's listed line ranges.
+  - F4 changed the Quick Reference row that Task 4 added.
+  - F1 changed two lines and F2 to F4 one line each. The body grew from 8,567 to 8,746 characters. S9 and S10 were re-run as round 2.
