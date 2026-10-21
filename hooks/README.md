@@ -97,7 +97,7 @@ with a hook payload on stdin. A stub `uv` stands in for uv and ruff, so the test
 no network and no Python project. Each test runs twice: with the `bash` on the test's
 `PATH`, and with `/bin/bash`, which is bash 3.2 on macOS. So the templates must stay
 bash 3.2 compatible. Every test skips where `jq` is not installed. The tests that call
-the stub `uv` also skip where `/usr/bin` or `/bin` holds a real `uv`, and the `/bin/bash`
+the stub `uv` also skip where `/usr/bin` or `/bin` holds a real `uv`. The `/bin/bash`
 runs skip where there is no `/bin/bash`. Run the tests with the two commands under the
 guard's **Tests** below, which run every test in this directory.
 
