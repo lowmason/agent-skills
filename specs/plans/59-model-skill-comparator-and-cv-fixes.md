@@ -14,7 +14,7 @@
 
 Every task's requirements include these.
 
-- **Scope fence: the four items only.** G1 parts (a)–(e), G2, G3's guards half and G4. Out of scope: G3's criterion half (leave-future-out or blocked K-fold for forecast decisions, and a precomputed-score mode for the comparator), the model-lifecycle spec, and everything gated on the owner calls O1–O3 (track's scope, and who evaluates models that are neither Bayesian nor neural), including G5's graduation clause and both skills' descriptions. X7, which the audit's G-A plan also took, closed on 2026-10-19 in commit `4326341`.
+- **Scope fence: the four items only.** G1 parts (a)–(e), G2, G3's guards half and G4. Out of scope: G3's criterion half (leave-future-out or blocked K-fold for forecast decisions, and a precomputed-score mode for the comparator), the model-lifecycle spec, and everything gated on the owner calls O1–O3 (track's scope, and who evaluates models that are neither Bayesian nor neural), including G5's graduation clause and both skills' descriptions. X7 (the audit finding that the comparator read diagnostics keys `diagnose_model.py` never writes), which the audit's G-A plan also took, closed on 2026-10-19 in commit `4326341`.
 - **Leave these alone:** `specs/deferred_items.md` (only the plan completion protocol edits it, and plans 60 and 61 edit it too), the frontmatter `description` of every skill, `skills/bayesian-workflow/references/model-comparison.md`, `install.py`'s `DEPENDENCIES` (DF4) and `CLAUDE.md`.
 - **One shared file.** Plan 61 (hook-template fixes) also edits the root `README.md`, in its hook rows (`ruff-check.sh`, "first-token heuristic"). This plan edits only the track-model-experiments and tune-hyperparameters rows, so the two merge cleanly. Whichever plan lands second re-reads `README.md` on the new base before its README step.
 - **Red first.** Write each task's tests, run them, and read each failure reason before you write code. Each task lists its expected failures and their reasons. A red run that fails for another reason stops the task.
@@ -198,7 +198,7 @@ Run (scikit-learn and Optuna come with `--extras`):
 uv run --python 3.13 python build/run_suites.py tune-hyperparameters --extras -- -rf --tb=line
 ```
 
-Expected: `9 failed, 9 passed`. Without `groups` support, `split()` ignores the labels and splits rows:
+Expected: 9 of the 10 new tests fail, and the baseline's tests still pass (`9 failed, 9 passed` at `0fd27b6`). Without `groups` support, `split()` ignores the labels and splits rows:
 - `test_panel_folds_split_whole_periods[0-False]`: a period sits on both sides (`assert not ({0, 1, 2, 3} & {3, 4, 5, 6})`).
 - `[1-False]` and `[2-False]`: the whole-period gap is 0 (`assert ((3 - 2) - 1) >= 1`, and `>= 2`).
 - `[0-True]`, `[1-True]`, `[2-True]` (entity-major rows): each validation fold holds 10 rows of 10 periods, not every row of its periods (`assert 10 == (3 * 10)`).
@@ -363,13 +363,13 @@ Replace it with:
 uv run --python 3.13 python build/run_suites.py tune-hyperparameters --extras -- -rf --tb=line
 ```
 
-Expected: `18 passed` (+10). Then without the extras:
+Expected: +10 passed over the baseline (`18 passed` at `0fd27b6`). Then without the extras:
 
 ```bash
 uv run --python 3.13 python build/run_suites.py tune-hyperparameters
 ```
 
-Expected: `15 passed, 3 skipped` (+9 passed, +1 skipped: the new sklearn test skips without scikit-learn).
+Expected: +9 passed and +1 skipped over the bare baseline (`15 passed, 3 skipped` at `0fd27b6`). The new sklearn test skips without scikit-learn.
 
 - [ ] **Step 5: Make the skill text match the code**
 
@@ -592,7 +592,7 @@ def test_ledger_without_a_variants_table_is_noted(analysis_dir, tmp_path):
 uv run --python 3.13 python build/run_suites.py track-model-experiments -- -rf --tb=line
 ```
 
-Expected: `6 failed, 13 passed` (about 80 s):
+Expected: the 6 new tests fail, and the baseline's tests still pass (`6 failed, 13 passed` at `0fd27b6`, about 80 s):
 - `test_folder_without_inference_data_exits_through_error`: `assert False` on `r.stderr.startswith('error: ')`, because stderr holds a `Traceback` ending in h5py's `FileNotFoundError`.
 - `test_uncompared_ledger_row_is_reported_and_best_is_qualified`: `assert 'ridge-tuned' in ''` (stderr is empty).
 - `test_qualified_marker_resets_once_every_row_is_compared`: `assert '**best among ELPD-compared variants**' in '| m-full | — | m-full | h |  |  |  |  |  |  | **best** |'`.
@@ -866,7 +866,7 @@ Replace it with:
 uv run --python 3.13 python build/run_suites.py track-model-experiments -- -rf --tb=line
 ```
 
-Expected: `19 passed` (+6).
+Expected: +6 passed over the baseline (`19 passed` at `0fd27b6`).
 
 - [ ] **Step 5: Say where a non-Bayesian winner goes, and list the new guardrails**
 
@@ -974,7 +974,7 @@ Expected: exit 0.
 uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_runtime_support.py -k declared_dependencies
 ```
 
-Expected: `2 passed`. The new text names `track-model-experiments' `experiments.md``, an edge `SOFT_REFERENCES` already holds.
+Expected: `2 passed`. The new text names track-model-experiments' `experiments.md`, an edge that `SOFT_REFERENCES` already holds.
 
 - [ ] **Step 7: Commit**
 
@@ -1025,7 +1025,7 @@ def test_metric_cells_are_filled_from_the_ranking(analysis_dir, tmp_path):
 uv run --python 3.13 python build/run_suites.py track-model-experiments -- -rf --tb=line
 ```
 
-Expected: `1 failed, 19 passed`. `test_metric_cells_are_filled_from_the_ranking` fails on its ELPD cell, which is empty: `assert '' == '-390.0'` in the replay (the number is the fixture's ELPD for `m-intercept`).
+Expected: the new test fails, and every earlier test passes (`1 failed, 19 passed` at `0fd27b6`). `test_metric_cells_are_filled_from_the_ranking` fails on its ELPD cell, which is empty: `assert '' == '-390.0'` in the replay (the number is the fixture's ELPD for `m-intercept`).
 
 - [ ] **Step 3: Fill the cells**
 
@@ -1152,7 +1152,7 @@ Replace it with:
 uv run --python 3.13 python build/run_suites.py track-model-experiments -- -rf --tb=line
 ```
 
-Expected: `20 passed` (+1).
+Expected: +7 passed over the baseline, +1 over Task 2 (`20 passed` at `0fd27b6`).
 
 - [ ] **Step 5: Say how the comparator finds and fills the table**
 
@@ -1282,7 +1282,7 @@ def test_several_log_likelihood_variables_are_refused(tmp_path):
 uv run --python 3.13 python build/run_suites.py track-model-experiments -- -rf --tb=line
 ```
 
-Expected: `3 failed, 20 passed`:
+Expected: the 3 new tests fail, and every earlier test passes (`3 failed, 20 passed` at `0fd27b6`):
 - `test_summed_factor_is_refused_with_its_remedy`: `assert 0 == 1`, because the summed factor is ranked.
 - `test_per_step_factor_terms_are_ranked`: the remedy is refused, `error: variants were fit to different numbers of observations {'f-full': 0, 'm-intercept': 200}`, because the count reads the empty `observed_data` entry.
 - `test_several_log_likelihood_variables_are_refused`: `Regex pattern did not match`, because Task 2's wrapper raises `az.compare could not rank the variants: …`, not the named refusal.
@@ -1366,7 +1366,7 @@ Replace it with:
 uv run --python 3.13 python build/run_suites.py track-model-experiments -- -rf --tb=line
 ```
 
-Expected: `23 passed` (+3).
+Expected: +10 passed over the baseline, +3 over Task 3 (`23 passed` at `0fd27b6`).
 
 - [ ] **Step 5: Warn beside both `factor` routes, and list the refusal**
 
@@ -2075,19 +2075,19 @@ git commit -m "fix(tune-hyperparameters): align the Regime B router with bayesia
 uv run --python 3.13 python build/run_suites.py track-model-experiments -- -rf --tb=line
 ```
 
-Expected: `23 passed` (+10 from the baseline).
+Expected: +10 passed over the baseline (`23 passed` at `0fd27b6`).
 
 ```bash
 uv run --python 3.13 python build/run_suites.py tune-hyperparameters --extras -- -rf --tb=line
 ```
 
-Expected: `18 passed` (+10).
+Expected: +10 passed over the baseline (`18 passed` at `0fd27b6`).
 
 ```bash
 uv run --python 3.13 python build/run_suites.py tune-hyperparameters
 ```
 
-Expected: `15 passed, 3 skipped`.
+Expected: +9 passed and +1 skipped over the bare baseline (`15 passed, 3 skipped` at `0fd27b6`).
 
 - [ ] **Step 2: Run snippet Tier 3**
 
