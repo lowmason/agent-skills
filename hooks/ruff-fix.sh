@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# cc-guide: hooks.events hooks.patterns @2.1.289
+# cc-guide: hooks.events hooks.patterns @2.1.306
 # PostToolUse(Write|Edit) — auto-fix + format an edited Python file with the
 # *project's* ruff (via `uv run`, so it picks up that repo's pyproject config).
 #

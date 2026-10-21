@@ -1,4 +1,4 @@
-<!-- cc-guide: skills.locations @2.1.288 -->
+<!-- cc-guide: skills.locations @2.1.306 -->
 # bayesian-workflow
 
 An opinionated [Agent Skill](https://agentskills.io) for building, diagnosing, and reporting on Bayesian statistical models using **NumPyro (JAX)** and **ArviZ**.

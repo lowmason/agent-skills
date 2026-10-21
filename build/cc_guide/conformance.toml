@@ -1,4 +1,4 @@
-# cc-guide: context.overview mechanisms.overview skills.overview skills.locations skills.frontmatter skills.description skills.listing-budget skills.progressive-disclosure skills.arguments skills.iterating commands.overview subagents.overview subagents.frontmatter subagents.tools subagents.models subagents.isolation rules.overview rules.claude-md rules.hierarchy rules.rules-files rules.auto-memory rules.settings hooks.overview hooks.events hooks.exit-codes hooks.handlers hooks.configuration hooks.patterns hooks.pitfalls lean.overview lean.measure lean.session-hygiene lean.caching lean.model-routing lean.mcp lean.ceremony lean.expensive-ops reading.overview @2.1.304.3
+# cc-guide: context.overview mechanisms.overview skills.overview skills.locations skills.frontmatter skills.description skills.listing-budget skills.progressive-disclosure skills.arguments skills.iterating commands.overview subagents.overview subagents.frontmatter subagents.tools subagents.models subagents.isolation rules.overview rules.claude-md rules.hierarchy rules.rules-files rules.auto-memory rules.settings hooks.overview hooks.events hooks.exit-codes hooks.handlers hooks.configuration hooks.patterns hooks.pitfalls lean.overview lean.measure lean.session-hygiene lean.caching lean.model-routing lean.mcp lean.ceremony lean.expensive-ops reading.overview @2.1.306
 # Claude Code guide conformance register.
 #
 # Links the guide's anchored sections to the repo's Claude Code artifact
@@ -370,8 +370,8 @@ fields = [
     'compatibility', 'metadata',
 ]
 
-# The three built-ins the guide names; a skill with a built-in's name replaces
-# it in a local terminal session.
+# The three built-ins commands.overview names; a skill with a built-in's name
+# replaces it in a local terminal session.
 [[check]]
 id = 'builtin-name-shadow'
 kind = ['skill', 'command']

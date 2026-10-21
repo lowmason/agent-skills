@@ -18,7 +18,7 @@ metadata:
   sources: >
     Cites Kevin P. Murphy, Probabilistic Machine Learning (Book 1 © 2022 MIT; Book 2 © 2023
     K. P. Murphy) under CC-BY-NC-ND (summarized, not reproduced). Links pyprobml and dynamax (MIT).
-# cc-guide: lean.session-hygiene lean.model-routing @2.1.304.2
+# cc-guide: lean.session-hygiene lean.model-routing @2.1.306
 ---
 
 # Recommend a Probabilistic Model

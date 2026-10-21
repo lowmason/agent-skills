@@ -8,7 +8,7 @@ description: >
   docs blocks, an audit due, probes due or stale citing files.
 argument-hint: 'triage | verify <ids> | audit [<group>] | files [<paths>] | probes'
 disable-model-invocation: true
-# cc-guide: skills.frontmatter skills.arguments subagents.isolation @2.1.304.3
+# cc-guide: skills.frontmatter skills.arguments subagents.isolation @2.1.306
 ---
 
 # /cc-guide

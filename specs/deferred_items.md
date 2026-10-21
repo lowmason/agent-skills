@@ -5898,3 +5898,14 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       Files: `build/cc_guide/baseline.py`, `build/cc_guide/lint.py`, drift spec R2.4. Size:
       design. Done when: the owner picks a remedy and a test shows that two such branches,
       merged in either order, leave the file STALE, or the owner records the gap as accepted.
+- [ ] Each probe run inherits the caller's whole environment (`probes.execute` passes
+      `env={**os.environ, **inv.env}`). The guide says `CLAUDE_CODE_EFFORT_LEVEL` outranks an
+      agent's `effort` field and a per-spawn effort (subagents.frontmatter, guide line 184). So
+      if that variable is set in the shell that runs `cli.py probes`, the `agent-model-pins`
+      probe reads the variable's effort. Any other value can report DIVERGES for
+      code-reviewer's `xhigh` pin, and `xhigh` itself lets the probe pass when the pin is
+      broken. Found by the second 2026-10-21 files pass (packet `20261021T110556-files`,
+      `build/cc_guide/probes.py:90`), owner ruling R19. Remedy: clear or record that variable
+      in the pins run, test-first. Files: `build/cc_guide/probes.py` and its tests. Size:
+      quick-fix. Done when: a test shows that the pins run ignores an inherited
+      `CLAUDE_CODE_EFFORT_LEVEL`, or that its row records it.
