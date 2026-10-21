@@ -179,13 +179,42 @@ Three points need the owner's reading:
 - Every rep says in its PR text or closing report that finding 3 is dropped. That is not a deferred record, because the record is specs/deferred_items.md. So I graded all five as not recorded.
 - The table asks only for a Size, so rep 1's Size values pass. If the schema's scale were required, rep 1 would fail.
 
+### Task 4: using-git-worktrees, S9 and S10
+
+Task 4 added a base check to Step 1a of using-git-worktrees. It also changed the Quick Reference, Common Mistakes and Red Flags. It ran S9 and S10 once, with 5 reps each and tag `green`.
+- The text is blob 15e0a60fe29c1c0695cd649ec189d956ed6c8251 of skills/using-git-worktrees/SKILL.md, committed with this record. Its body is 8,567 characters, up from 7,222.
+- The prompt carries the SKILL.md body only.
+- No rep was excluded.
+
+| Scenario | Control | Task 4 text (15e0a60f) |
+|---|---|---|
+| S9-ahead | 2 (3 NEITHER) | 5 |
+| S10-even (decoy) | 5 | 5 |
+
+Refactor rounds: none. Both scenarios reached 5 of 5, above the 4 of 5 gate.
+
+What the treatment reps did:
+- Every rep ran `git rev-list --count origin/HEAD..HEAD` first, as Step 1a says.
+- S9: every rep took the branch for a number above 0. It made the worktree with `git worktree add` from HEAD, then entered it with EnterWorktree `path`. No rep called EnterWorktree `name` on that branch.
+- S9: reps 4 and 5 gave the reason. A native `name` worktree would leave out the unpushed plan commit.
+- S9: the EnterWorktree `path` tally is 5 of 5 in the treatment. In the control, the 2 PASS reps entered with `path` and the 3 NEITHER reps used `name`.
+- S10: every rep took the branch for 0 and called EnterWorktree `name`. The `git worktree add` lines sit on the other branch only.
+
+Four points need the owner's reading:
+- The control's S9 count has 3 NEITHER answers. They called EnterWorktree `name`, then ran `git merge --ff-only main`. That handles the unpushed commit by another route and runs no `git worktree add`.
+- Strict count: control 2 of 5, treatment 5 of 5. Lenient count, where those 3 NEITHER answers pass: control 5 of 5, treatment 5 of 5.
+- On the lenient count, stop rule D6 would record the base check as "not shown necessary". The tool list in every prompt states the `worktree.baseRef` default, which may help the control spot the unpushed commit.
+- The treatment's gain on the strict count is a change of route. It checks first and builds the worktree from HEAD. The control repaired the base after EnterWorktree had made it.
+
 ## Cost
 
 The 50 counted control calls cost $3.860, about $0.08 a call. The excluded S9 rep 1 cost $0.289. The probe cost $0.534. Two pilots cost $0.308: $0.208 without `--strict-mcp-config` and $0.100 with it. The diagnostics cost $0.361. The kit total after Task 1 was $5.351.
 
 The 35 Task 2 round 1 calls cost $1.864, about $0.05 a call. Round 2 cost $1.955, round 3 cost $1.978 and round 4 cost $1.734, 35 calls each. None was excluded.
 
-The 5 Task 3 calls (S8) cost $0.543, about $0.11 a call. None was excluded. The kit total so far is $13.424, from the kit's spend.py.
+The 5 Task 3 calls (S8) cost $0.543, about $0.11 a call. None was excluded. The kit total after Task 3 was $13.424.
+
+The 10 Task 4 calls (S9 and S10) cost $0.868, about $0.09 a call. None was excluded. The kit total so far is $14.293, from the kit's spend.py.
 
 ## Deviations from the plan
 

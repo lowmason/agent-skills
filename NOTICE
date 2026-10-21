@@ -549,6 +549,11 @@ Changes from upstream:
     the deferred-backlog schema (plan 60). The matching line in the caller
     list of writing-plans/references/deferred-backlog.md is a change to an
     original work named above.
+  - using-git-worktrees' Step 1a gained a base check (plan 60). Claude
+    Code's EnterWorktree branches from the remote's default branch unless
+    the worktree.baseRef setting is "head", so a new worktree can leave out
+    unpushed commits. When HEAD has unpushed commits, the skill now makes
+    the worktree with git and then enters it with the native tool.
 
     brainstorming/
     dispatching-parallel-agents/
