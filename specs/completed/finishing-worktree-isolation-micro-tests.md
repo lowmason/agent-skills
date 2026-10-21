@@ -427,14 +427,14 @@ The kit total at the end of the final-review round is $17.652: spend.py's $17.20
   - The sentence now says "or the check fails", as well as unpushed commits. An earlier proposal said "or the check cannot run".
   - The new wording matches the skill's own words ("prints a number above 0, or fails") and keeps the sentence at 25 words. Nothing else in NOTICE changed.
 - (p) Limits states two observations of the desktop app's isolation behavior, on 2026-10-18 and 2026-10-21. The plan's Global Constraints give both dates. The brief's Limits line says one observation, on 2026-10-21.
-- (q) After the final whole-branch review, the owner decided on 2026-10-21 to change when Options 1 and 4 delete the branch. This changes plan-mandated text at plan lines 913 and 941.
+- (q) After the final whole-branch review, the owner decided on 2026-10-21 to change when Options 1 and 4 delete the branch. This changes plan-mandated text at plan lines 913 and 941, counted in the plan as of commit 9ba94a5.
   - Both options now delete the branch in a normal repo, or once Step 6 removed the worktree. Before, they deleted it only in the second case.
   - In a normal repo, Option 4 now runs `git checkout <base-branch>` first. If git refuses, the agent tells the partner why and asks, with no force.
-- (r) Step 6 gained one sentence after "Then ask what to do, and wait." It extends plan-mandated text at plan line 969.
+- (r) Step 6 gained one sentence after "Then ask what to do, and wait." It extends plan-mandated text at plan line 969, counted as of commit 9ba94a5.
   - When the partner wants a refused removal forced or unlocked, the agent gives them the commands through the branch deletion. It runs none of them.
 - (s) The same commit, 26329b3, closed three small gaps.
   - Step 6's hand-over paragraph, added as E7 in (k), now applies only to MADE_BY `this session`.
   - The Quick Reference footnote, added as E5 in (j), now says a launcher worktree and its branch stay. It lies outside the plan's listed line ranges.
-  - The launcher messages in Option 4 and Step 6 no longer say who made the worktree. They change plan-mandated text at plan lines 937 and 971.
+  - The launcher messages in Option 4 and Step 6 no longer say who made the worktree. They change plan-mandated text at plan lines 937 and 971, counted as of commit 9ba94a5.
 - (t) The final-review round re-ran S1 to S8 on the fixed text, as round 5 for S1 to S7. The plan allows at most two refactor rounds per task.
   This round was the owner's decision after the final review, not a refactor round. The control arm, S9 and S10 were not re-run.

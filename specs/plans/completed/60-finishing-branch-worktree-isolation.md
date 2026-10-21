@@ -898,7 +898,7 @@ Run it from the feature worktree, before Option 1 leaves it — from
 
 - [x] **Step 3: Replace Option 1**
 
-> Deviation: owner-approved wording changes E1 and E6 apply here. After the final review, Option 1 deletes the branch in a normal repo or once Step 6 removed the worktree. That changes plan line 913 (record deviations j, k and q).
+> Deviation: owner-approved wording changes E1 and E6 apply here. After the final review, Option 1 deletes the branch in a normal repo or once Step 6 removed the worktree. That changes plan line 913, counted as of commit 9ba94a5 (record deviations j, k and q).
 
 Replace from `#### Option 1: Merge Locally` (`:235`) through the `git branch -d <feature-branch>` block and its closing fence (`:262`) with:
 
@@ -935,7 +935,7 @@ git branch -d <feature-branch>
 
 - [x] **Step 4: Replace Option 4 and Step 6**
 
-> Deviation: owner-approved changes E3, E7 and E8 apply here. After the final review, Option 4 checks out the base branch first in a normal repo. Step 6 hands the partner the force or unlock commands and runs none. The hand-over paragraph covers only MADE_BY `this session`. The launcher messages no longer say who made the worktree. Together these change plan lines 937, 941, 969 and 971 (record deviations j, k, q, r and s).
+> Deviation: owner-approved changes E3, E7 and E8 apply here. After the final review, Option 4 checks out the base branch first in a normal repo. Step 6 hands the partner the force or unlock commands and runs none. The hand-over paragraph covers only MADE_BY `this session`. The launcher messages no longer say who made the worktree. Together these change plan lines 937, 941, 969 and 971, counted as of commit 9ba94a5 (record deviations j, k, q, r and s).
 
 Replace from `#### Option 4: Discard` (`:318`) through `ExitWorktree), use it. Otherwise, leave the workspace in place.` (`:365`) with:
 
@@ -1274,7 +1274,7 @@ git commit -m "feat(finishing): offer to record the Step 4b findings the partner
 
 - [x] **Step 1: Replace Step 1a and Step 1b's opening line**
 
-> Deviation: the owner decided that a failed base check goes to Step 1b's git commands, not to the native tool (F1). F2 and F3 also changed the Overview and Core principle lines, which lie outside the plan's line ranges. This changes the plan wording at lines 1259 and 1283 (record deviation n).
+> Deviation: the owner decided that a failed base check goes to Step 1b's git commands, not to the native tool (F1). F2 and F3 also changed the Overview and Core principle lines, which lie outside the plan's line ranges. This changes the plan wording at lines 1259 and 1283, counted as of commit 9ba94a5 (record deviation n).
 
 Replace from `### 1a. Native Worktree Tools (preferred)` (`:60`) through `**Only use this if Step 1a does not apply** — you have no native worktree tool available. Create a worktree manually using git.` (`:70`) with:
 
@@ -1364,7 +1364,7 @@ with:
 
 - [x] **Step 5: Add the NOTICE bullet**
 
-> Deviation: Task 5 widened this bullet's sentence to "or the check fails", to match F1. This changes the plan wording at lines 1334 and 1337 (record deviation o).
+> Deviation: Task 5 widened this bullet's sentence to "or the check fails", to match F1. This changes the plan wording at lines 1334 and 1337, counted as of commit 9ba94a5 (record deviation o).
 
 After the bullet Task 3 added, insert:
 
