@@ -24,7 +24,7 @@ The dispatch names your mode and the packet directory. Read the packet's `index.
 
 ## The report
 
-Return only the report. Every row is one line, its fields separated by ` | `, each quote inside double quotes, `-` for an empty field. Put `|` in no other line.
+Return only the report. Every row is one line, its fields separated by ` | `, each quote inside double quotes, `-` for an empty field. A none line is exactly `<section> | none`: settle reads other words after the `|` as no answer, which holds the section or file. Put `|` in no other line.
 
 ### triage
 

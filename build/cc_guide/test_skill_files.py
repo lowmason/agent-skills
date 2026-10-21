@@ -51,6 +51,19 @@ def test_the_verifier_reports_a_todo_reach_with_its_usual_verdict():
     assert 'usual verdict' in rule and 'JUDGMENT' not in rule
 
 
+def test_the_verifier_writes_a_none_line_exactly_and_no_other_line_with_a_pipe():
+    '''Settle never reads prose as none, so a sentence-form none line or a
+    `<section> | note` line (2026-10-20: agents/debugger.md and
+    recommend-probabilistic-model in files, mechanisms.overview in verify)
+    holds its section or file. The verifier gets the exact form. A sentence
+    that offered notes a line of their own drew prose notes in 8 of 10
+    micro-test reps and was cut, so the pipe rule beside it keeps notes out
+    of rows.'''
+    lines = (REPO / AGENT).read_text(encoding='utf-8').split('\n')
+    (rule,) = [line for line in lines if 'none line is exactly' in line]
+    assert '`<section> | none`' in rule and 'Put `|` in no other line.' in rule
+
+
 @pytest.mark.parametrize('form', settle.FORMATS)
 def test_the_skill_and_the_verifier_state_the_report_formats_settle_parses(form):
     for path in (AGENT, FORMATS):
