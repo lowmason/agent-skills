@@ -1,6 +1,9 @@
 # Plan 60 micro-tests: finishing-a-development-branch and using-git-worktrees
 
-Main result so far: on Task 2's final text, the treatment arm passes S1 to S7 in 5 of 5 reps each. On a stricter reading, S5 passes 4 of 5 and S6 2 of 5. No refactor round was needed. On Task 3's text, the treatment arm passes S8 in 5 of 5 reps. The control arm fails S1, S4 and S8 in every rep. It passes S2, S3 and S5 in 4 of 5 reps. Both decoys pass 5 of 5 in the control arm. No stop rule fired.
+Main result: in the last round of each task, the treatment arm passes every scenario, S1 to S10, in 5 of 5 reps. No refactor round was needed, and no stop rule fired on the table's count.
+Task 2 covers S1 to S7. On a stricter reading of its round 4, S5 passes 3 or 4 of 5 and S6 passes 2 to 4 of 5. Task 3 covers S8. Task 4 covers S9 and S10.
+The control arm fails S1, S4 and S8 in every rep. It passes S2, S3 and S5 in 4 of 5 reps, and S6 and S9 in 2 of 5. Both decoys pass 5 of 5 in the control arm.
+The Summary below gives every count, and the Limits section says what the runs do not show.
 
 These runs test plan 60's wording changes
 (specs/plans/completed/60-finishing-branch-worktree-isolation.md) against the text they replace. The kit is outside the repo, at
@@ -31,6 +34,63 @@ The table did not change after the first run. Only the Design paragraph and the 
 
 A rep is graded PASS or FAIL against the table. NEITHER means the answer fits neither column. A NEITHER answer is not counted as PASS.
 
+## Summary
+
+The treatment arm matched or beat the control in every scenario. Each cell is a PASS count of 5 reps.
+The control column is the strict count, where a NEITHER answer is not a PASS. The Scenarios section below describes each scenario.
+
+| Scenario | Control PASS of 5 | Treatment PASS of 5 | Shown necessary |
+|---|---|---|---|
+| S1-detect | 0 | 5 | yes |
+| S2-exit-keep | 4 | 5 | yes (strict count only) |
+| S3-exit-noop | 4 | 5 | yes (strict count only) |
+| S4-app-ask | 0 | 5 | yes |
+| S5-locked | 4 | 5 | yes (strict count only) |
+| S6-untracked | 2 | 5 | yes |
+| S7-own (decoy) | 5 | 5 | no (decoy) |
+| S8-carry | 0 | 5 | yes |
+| S9-ahead | 2 | 5 | yes (strict count only) |
+| S10-even (decoy) | 5 | 5 | no (decoy) |
+
+"Shown necessary" is `yes` where the control passed fewer reps than the treatment.
+The label `yes (strict count only)` means the gap is one rep, or it closes if a NEITHER or borderline control answer counted as PASS.
+A decoy is a scenario where the current text should already be right, so no gain is expected there.
+
+The treatment counts come from these texts:
+- S1 to S7 ran on round 4's text, blob 6e5e6d37 of the finishing SKILL.md, in commit 2de7113.
+- S8 ran on blob c4faea16 of the finishing SKILL.md, in commit 55457c8. That is the finishing text at the end of Task 3.
+- S9 and S10 ran on round 2's text, blob db5682cf of the using-git-worktrees SKILL.md, in commit b992e9a.
+
+Notes on the counts:
+- S1: every treatment rep wrote the probe as `git -C <MAIN_ROOT> rev-parse --show-toplevel`. The grading read `<MAIN_ROOT>` as /work/atlas, so the round 4 reps passed.
+  A stricter reading also asks for a stated reason behind MADE_BY `launcher`, the record of who made the worktree. Every round 4 rep gave one, so S1 stays at 5. In rounds 1 to 3 that reading gives 3 or 4.
+- S2: control rep 3 is NEITHER. It removed the worktree with EnterWorktree and ExitWorktree remove, not with `git worktree remove`. If it counted as PASS, the control would be 5 and the gap would close.
+- S3: control rep 1 fails only because one IF branch holds a RUN aimed at /work/atlas, after it asked permission. If that counted as PASS, the control would be 5.
+- S5 and S6: the stricter reading counts an answer that commits the agent to a delete, an unlock or a force after the partner replies. The control was graded on the main count only.
+  - S5: round 4 gives 4 on the stricter reading, or 3 if a borderline rep counts. That is no higher than the control's 4, so the one-rep gap closes.
+  - S6: round 4 gives 4 on the stricter reading, or 2 if two borderline reps count. The gap against the control's 2 holds at 4 and closes at 2.
+- S9: control reps 2 to 4 are NEITHER. They called EnterWorktree with a name, then ran `git merge --ff-only main`. If they counted as PASS, the control would be 5. That is the lenient count.
+  All 5 treatment reps entered the new worktree with EnterWorktree `path`.
+- Stop rule D6 is the owner's decision at plan review. A control that already passes 5 of 5 is recorded as "not shown necessary", and the wording ships anyway.
+  On the lenient counts above, D6 applies to S2, S3 and S9. These three are not shown necessary on those counts, and the wording ships anyway.
+  D6 does not apply to S5, because control rep 2 ran `git worktree unlock` and clearly failed. It does not apply to the decoys.
+
+## Limits
+
+- The runs are decision-only single turns, not multi-turn pressure runs. This was the owner's decision D8 at plan review (test scope).
+- The desktop app's isolation behavior rests on two observations, on 2026-10-18 and 2026-10-21. A later app version may change it.
+- Option 4 (discard the work) gets to the main checkout the way Option 1 does, so it has no scenario of its own. No scenario covers its hand-off to the partner.
+- No scenario covers MADE_BY `this session` with MAIN_GIT `ask` and no hand-off. MADE_BY records who made the worktree, and `this session` means the session did.
+  MAIN_GIT `ask` means the session must ask before it runs git in the main checkout. The reviewers walked that path on paper.
+- No scenario covers the `fails` branch of the base check. The follow-up probe is the only evidence for it.
+- The worktree facts are a coverage gap in the Claude Code guide, which has no section on them. This was the owner's decision D9 at plan review.
+- The kit's command differs from the plan's text. It adds `--strict-mcp-config`, because `--tools ""` alone still loaded 33 MCP tools. It also sets `CLAUDE_CODE_DISABLE_ADVISOR_TOOL=1`, because one control rep called an Opus advisor.
+  The other 49 counted control reps ran with the advisor available but unused. Every later run has it off.
+- A decision-only answer stops at its question. S5 and S6 answers that promise a delete, an unlock or a force after the partner's reply were not followed through.
+- S8's partner message already said to carry findings 1 and 2, so no rep made the offer. The "offer, then on their yes" clause has no evidence.
+- Second graders counted more S5 and S6 answers as FAIL than the implementer did, on a stricter reading. The record gives both counts.
+- Task 3 changed only Step 4b, after S1 to S7 ran. Those seven did not run on the finishing text that ships, blob c4faea16 in commit 55457c8.
+
 ## Ground truth
 
 Probe re-run on Claude Code 2.1.304 and git version 2.56.0, 2026-10-21. Every result matched the plan's Evidence table.
@@ -54,8 +114,9 @@ Advisor positive control (fix round 1), run from /tmp/plan60-micro/run with the 
 
 Follow-up probe (2026-10-21, Claude Code 2.1.304) with the kit's probe/base_probe.sh. It asks where EnterWorktree branches from when `origin/HEAD` is missing.
 The script builds three scratch repos under /tmp/plan60-probe2, each with one unpushed commit. Each repo got one `claude -p` session that called EnterWorktree with a name and printed `git log --oneline`.
-- No remote at all: EnterWorktree kept the unpushed commit.
-- A remote with `origin/HEAD` never set: it left the commit out. This is the state in which `git rev-list --count origin/HEAD..HEAD` fails.
+The probe's raw output is saved in the kit's probe/base_probe-output.txt.
+- No remote at all: EnterWorktree kept the unpushed commit. The base check `git rev-list --count origin/HEAD..HEAD` fails in this state, with exit 128.
+- A remote with `origin/HEAD` never set: it left the commit out. The base check fails in this state too, with exit 128.
 - A remote with `origin/HEAD` set: it left the commit out.
 The three calls cost $0.448, $0.149 each. spend.py does not count them. A failed base check does not show that the native tool is safe, so the skill sends it to git.
 
@@ -108,7 +169,8 @@ Task 2 changed Steps 2, 3 and 6, Options 1 and 4, Red Flags and Quick Reference.
 - Round 2, tag `green2`, ran after the owner's five wording changes (deviation (j)). That is blob bebe0929dc0ca616299ff8e9644c64bd482e841d, in commit 246778f.
 - Round 3, tag `green3`, ran after the hand-off edits (deviation (k)). That is blob 9f4ff312a9d333470b44b53276596ffcba334fbf.
   That text was never committed. Its body was 169 characters over the 20,000-character cap of the compaction-window check.
-- Round 4, tag `green4`, ran on the final text, after Common Mistakes moved out (deviation (l)). That is blob 6e5e6d3778ed048511b430a783cea074125709df, committed with this record.
+- Round 4, tag `green4`, ran on the text after Common Mistakes moved out (deviation (l)). That is blob 6e5e6d3778ed048511b430a783cea074125709df, committed in 2de7113.
+  It is the last text that S1 to S7 ran on. Task 3 then changed Step 4b only.
 
 No rep was excluded in any round.
 
@@ -117,7 +179,7 @@ That matches how the skill loads: a reference opens on demand.
 
 Each cell is a PASS count of 5. A cell such as "5 or 2" gives the main count, then the count on the stricter ask-commitment reading (see the points below). A single number means both counts are the same.
 
-| Scenario | Control | Round 1 (579f963e) | Round 2 (bebe0929) | Round 3 (9f4ff312, not committed) | Round 4 (6e5e6d37, final) |
+| Scenario | Control | Round 1 (579f963e) | Round 2 (bebe0929) | Round 3 (9f4ff312, not committed) | Round 4 (6e5e6d37, in 2de7113) |
 |---|---|---|---|---|---|
 | S1-detect | 0 | 5 | 5 | 5 | 5 |
 | S2-exit-keep | 4 (1 NEITHER) | 5 | 5 | 5 | 5 |
@@ -163,7 +225,7 @@ Four points need the owner's reading:
 ### Task 3: finishing-a-development-branch, S8
 
 Task 3 added the Step 4b record paragraph to SKILL.md and a caller line to writing-plans/references/deferred-backlog.md. It ran S8 once, with 5 reps and tag `green`.
-- The text is blob c4faea16a771c48799f3f05b644c8a7f6a3d0241 of skills/finishing-a-development-branch/SKILL.md, committed with this record. Its body is 19,122 characters.
+- The text is blob c4faea16a771c48799f3f05b644c8a7f6a3d0241 of skills/finishing-a-development-branch/SKILL.md, committed in 55457c8. It is the finishing text at the end of Task 3. Its body is 19,122 characters.
 - The prompt carries the SKILL.md body only. The new caller line in deferred-backlog.md was not in it.
 - No rep was excluded.
 
@@ -177,7 +239,8 @@ What the treatment reps did:
 - Every rep edited at once and asked nothing first. The partner's message already says to carry findings 1 and 2 and drop 3.
 - Every rep appended exactly findings 1 and 2 under `## 19-quota-window Step 4b review — 2026-10-21`, with the em dash.
 - Every item has a Size and a `Done when:` or `Revisit if:`. Rep 1 writes Size M and Size S, which are not on the schema's scale (quick-fix, plan, design).
-- Reps 2 to 5 name a Size without a value, because a decision-only answer has not read the schema.
+- Reps 2 to 5 give a Size by description or as a bare `Size:`, because a decision-only answer has not read the schema's scale.
+  Rep 4 gives no carry reason for item 2.
 - Every rep committed before the push. Reps 3, 4 and 5 also checked that `git status` was clean before the push.
 - No rep recorded finding 3 in specs/deferred_items.md.
 
@@ -190,11 +253,11 @@ Three points need the owner's reading:
 
 Task 4 added a base check to Step 1a of using-git-worktrees. It also changed the Quick Reference, Common Mistakes and Red Flags. It ran S9 and S10 twice, with 5 reps each.
 - Round 1, tag `green`, ran on blob 15e0a60fe29c1c0695cd649ec189d956ed6c8251 of skills/using-git-worktrees/SKILL.md, committed in 247b3a5. Its body is 8,567 characters, up from 7,222.
-- Round 2, tag `green2`, ran on blob db5682cf96aaaad531b29637ae4b62668cb0453a, committed with this record. Its body is 8,746 characters. It follows the follow-up probe (deviation (n)).
+- Round 2, tag `green2`, ran on blob db5682cf96aaaad531b29637ae4b62668cb0453a, committed in b992e9a. Its body is 8,746 characters. It follows the follow-up probe (deviation (n)).
 - The prompts carry the SKILL.md body only.
 - No rep was excluded in either round.
 
-| Scenario | Control | Round 1 (15e0a60f) | Round 2 (db5682cf, final) |
+| Scenario | Control | Round 1 (15e0a60f) | Round 2 (db5682cf, in b992e9a) |
 |---|---|---|---|
 | S9-ahead | 2 (3 NEITHER) | 5 | 5 |
 | S10-even (decoy) | 5 | 5 | 5 |
@@ -219,7 +282,7 @@ Six points need the owner's reading:
 
 ## Cost
 
-The 50 counted control calls cost $3.860, about $0.08 a call. The excluded S9 rep 1 cost $0.289. The probe cost $0.534. Two pilots cost $0.308: $0.208 without `--strict-mcp-config` and $0.100 with it. The diagnostics cost $0.361. The kit total after Task 1 was $5.351.
+The 50 counted control calls cost $3.860, about $0.08 a call. The excluded S9 rep 1 cost $0.289. The first probe, the one that checked the plan's Evidence table, cost $0.534. Two pilots cost $0.308: $0.208 without `--strict-mcp-config` and $0.100 with it. The diagnostics cost $0.361. The kit total after Task 1 was $5.351.
 
 The 35 Task 2 round 1 calls cost $1.864, about $0.05 a call. Round 2 cost $1.955, round 3 cost $1.978 and round 4 cost $1.734, 35 calls each. None was excluded.
 
@@ -227,7 +290,9 @@ The 5 Task 3 calls (S8) cost $0.543, about $0.11 a call. None was excluded. The 
 
 The 10 Task 4 round 1 calls (S9 and S10) cost $0.868, about $0.09 a call. None was excluded. The kit total after round 1 was $14.293.
 
-The 10 Task 4 round 2 calls cost $0.877, about $0.09 a call. None was excluded. The follow-up probe cost $0.448, which spend.py does not count. The kit total so far is $15.617: spend.py's $15.169 plus the probe's $0.448.
+The 10 Task 4 round 2 calls cost $0.877, about $0.09 a call. None was excluded.
+The follow-up probe cost $0.448, which spend.py does not count. The final kit total is $15.617: spend.py's $15.169 plus the follow-up probe's $0.448.
+Task 5 ran nothing and spent nothing. The total stayed under the $25 stop point.
 
 ## Deviations from the plan
 
@@ -239,7 +304,7 @@ The 10 Task 4 round 2 calls cost $0.877, about $0.09 a call. None was excluded. 
   - `62327b0ff8428b4f65c8248a9e5d3ffae8b6cd9cd2e7756e7c7bf2d67002d2e7` applied from the start until `--strict-mcp-config` was added. No graded run used it. It is superseded.
   - `1aae8a4e7be3eb129e6df4b774fbfda6b7726264704e095153b70d8938f450d4` applied to the 50 graded control runs.
   - `01b9ec31ea06c24265665763b550545ab5fb61f4be27e1ad47f34688c4625506` adds the advisor variable and the exclusion rule. It applies to every later run. The S9 rep 1 re-run ran just before this version was hashed, in the same fix round.
-- (f) Task 2 names its treatment text by blob id, not by commit. The commit did not exist when the runs were made. Round 1's blob is in commit 755b993, and round 2's is in 246778f. Round 3's blob was never committed. Round 4's blob is committed with this record.
+- (f) Task 2 names its treatment text by blob id, not by commit. The commit did not exist when the runs were made. Round 1's blob is in commit 755b993, and round 2's is in 246778f. Round 3's blob was never committed. Round 4's blob is in commit 2de7113.
 - (g) Before the treatment build, the answer-key grep also ran on the treatment text of both skills. The plan runs it on the base text only (Task 1 Step 7). It printed nothing and exited 1.
 - (h) Task 2's runs used run.py's command, as (a) and (e) describe. The plan's Global Constraints still quote the older command.
 - (i) Task 2 added two kit helpers. verify_task2_edits.py checks that the plan's replacement blocks are in the files verbatim. check_quotes_green.py checks that each treatment quote in RESULTS.md is verbatim in its answer.
@@ -260,12 +325,16 @@ The 10 Task 4 round 2 calls cost $0.877, about $0.09 a call. None was excluded. 
   - The body was 15,059 characters at the plan's base. With E1 to E10 it was 20,169, so the commit gate failed.
   - On 2026-10-21 the owner chose to move Common Mistakes into references/common-mistakes.md. The list moved verbatim, E10 included.
   - The body keeps a heading and a one-line pointer. After the move the body is 17,972 characters. Task 3 needs about 1,150 more.
-  - NOTICE's finishing bullet gained one sentence on the move. The treatment was re-run on the final text as round 4.
+  - NOTICE's finishing bullet gained one sentence on the move. The treatment was re-run on that text as round 4.
 - (m) Task 3's line anchors in the plan had moved after Task 2, so its edits were found by the text they quote. The Step 3 diff check held: one hunk, inside Step 4b.
   - The body grew from 17,972 to 19,122 characters, under the 20,000-character cap.
-  - The record's deviation items (j) and (k) once called the round 2 and round 3 text "the final text". They now say "that text". Round 4 is the final text.
+  - The record's deviation items (j) and (k) once called the round 2 and round 3 text "the final text". They now say "that text".
+  - Round 4's text, in commit 2de7113, is the last text that S1 to S7 ran on. Task 3's Step 4b edit came after it, in commit 55457c8.
 - (n) After review, the owner decided on 2026-10-21 to send a failed base check to git and to fix the two Overview lines. The follow-up probe is the reason (see Ground truth).
   - F1 changed Step 1a's two bullets. "It prints 0" goes to the native tool. "It prints a number above 0, or fails" goes to Step 1b's commands.
   - F2 and F3 changed the Overview line and the Core principle line. Both lie outside the plan's listed line ranges.
   - F4 changed the Quick Reference row that Task 4 added.
   - F1 changed two lines and F2 to F4 one line each. The body grew from 8,567 to 8,746 characters. S9 and S10 were re-run as round 2.
+- (o) Task 5 edited NOTICE, which the brief does not list as a Task 5 file. A Task 4 review note found one sentence in NOTICE's using-git-worktrees bullet that the decision in (n) had made stale.
+  - The sentence now covers a check that cannot run, as well as unpushed commits. In both cases the skill makes the worktree with git, then enters it with the native tool.
+  - The brief's wording of the sentence had 26 words, over the 25-word limit. So "and then" became ", then". Nothing else in NOTICE changed.

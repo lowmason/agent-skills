@@ -552,8 +552,9 @@ Changes from upstream:
   - using-git-worktrees' Step 1a gained a base check (plan 60). Claude
     Code's EnterWorktree branches from the remote's default branch unless
     the worktree.baseRef setting is "head", so a new worktree can leave out
-    unpushed commits. When HEAD has unpushed commits, the skill now makes
-    the worktree with git and then enters it with the native tool.
+    unpushed commits. When HEAD has unpushed commits, or the check cannot
+    run, the skill now makes the worktree with git, then enters it with the
+    native tool.
 
     brainstorming/
     dispatching-parallel-agents/
