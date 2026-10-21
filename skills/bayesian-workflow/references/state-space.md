@@ -102,7 +102,17 @@ need state estimates afterward.
 **Pure-NumPyro alternative (no dependency):** you can also write the Kalman recursion yourself inside
 `scan`, accumulating the per-step log predictive density and adding it with `numpyro.factor` — same
 marginalization, no dynamax. It is more code but keeps the stack to NumPyro/JAX; reach for it when a
-new dependency is unwelcome.
+new dependency is unwelcome, or when you will compare variants (next paragraph).
+
+**Comparing variants needs per-step terms, not their sum.** LOO, `az.compare` and track-model-experiments'
+comparator leave out one log-likelihood term at a time, so they need one term per time step. Both
+`factor` routes above add a single summed term: `marginal_log_prob` returns only the sum, and a summed
+`numpyro.factor` stores one term per draw. `az.compare` then ranks such variants with SE 0 and weights
+of 1 and 0, and the comparator refuses them. For a variant you will compare, keep the hand-written
+recursion's per-step log predictive densities as one vector, `numpyro.factor("ll", per_step_logp)`, and
+map its time axis when you convert (`dims={"ll": ["time"]}`). These terms are one-step-ahead predictive
+densities, `log p(y_t | y_{1:t-1}, θ)`, so PSIS-LOO over them is not exact leave-one-out: each later
+term still conditions on `y_t`.
 
 **Sample θ on a stable reparameterization**, never raw matrix entries:
 
@@ -253,6 +263,16 @@ you get latent-state credible intervals *after* marginalizing: run `lgssm.smooth
 - **Don't NUTS the path when you can marginalize.** This is the #1 mistake. If the model is
   linear-Gaussian, integrate the states out with the Kalman filter (`numpyro.factor` + dynamax or a
   hand-written recursion) and sample only `θ`. Sampling `T` correlated states is slower and funnels.
+- **A summed `numpyro.factor` cannot be compared, and neither can two log-likelihood variables.** LOO
+  and the comparators need one pointwise variable with a time dimension. The sampled path gives it
+  (`y_obs` inside `scan` comes back shaped `(draw, T)`); a marginalized model gives it only as a vector
+  `factor` of per-step terms (see "Marginalize" above). A model with two observed sources stores one
+  variable per source. Convert both over one shared time dimension,
+  `dims={"y_a": ["time"], "y_b": ["time"]}`. Without it each source keeps its own dimension, and the
+  sum builds a grid of T x T terms, not T. With it, sum them per time step into one before comparing,
+  with `ll = idata["log_likelihood"]` and then
+  `idata["log_likelihood"] = (ll["y_a"] + ll["y_b"]).to_dataset(name="y")`. A `factor` that is a
+  penalty or a Jacobian, not data, has no place in the comparison: drop its variable from the group.
 - **Center the innovations and you get a funnel.** Sample `eps_t ~ Normal(0, 1)` and build
   `x_t = x_{t-1} + sigma * eps_t` deterministically; do not write `x_t ~ Normal(x_{t-1}, sigma)`. Same
   pathology, same fix as centered hierarchical models. Check the usual sampler diagnostics —

@@ -4172,7 +4172,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       recommend-probabilistic-model, deep-learning and evaluate-deep-learning. The audit's
       "before the JAX merge" order is moot: that merge landed 2026-10-04. Size: design.
       Done when: the spec is approved in `specs/`.
-- [ ] Stop the experiment comparator from dropping non-Bayesian winners in silence
+- [x] Stop the experiment comparator from dropping non-Bayesian winners in silence
       (audit-3-10-26 G1, found 2026-10-03; re-verified 2026-10-18 by re-running the audit's
       fixture; the script is unchanged since 2026-07-05). tune-hyperparameters' Graduation
       section (`skills/tune-hyperparameters/SKILL.md:125-132`) sends a tuned winner to a
@@ -4198,7 +4198,15 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       X7 together, with no spec. Plan 53 (not executed) adds a header to this script and
       rewrites track's `SKILL.md:96-105`, so restate anchors after it. Size: plan. Done when:
       (a)–(e) are fixed, with tests.
-- [ ] Make tune-hyperparameters' purged splitter split periods, not rows, so panels stop
+      → done in plan 59 (2026-10-21; `specs/plans/completed/59-model-skill-comparator-and-cv-fixes.md`):
+      (a) the comparator names each ledger row it did not rank, on stderr, in `comparison.json`'s
+      `not_compared` and under the COMPARISON table, and while one exists the top row reads "best
+      among ELPD-compared variants"; (b) a folder with no `inference_data.nc` and `az.compare`'s
+      TypeError exit through `error:`; (c) tune's Graduation and track's When to use send a
+      non-Bayesian winner to the Decision log; (d) six new tests; (e) the comparator fills ELPD,
+      ΔELPD, max R̂, div, PPC and psense in each ranked row. The final review's fix wave also made
+      it keep escaped pipes in ledger cells.
+- [x] Make tune-hyperparameters' purged splitter split periods, not rows, so panels stop
       leaking (audit-3-10-26 G2, found 2026-10-03; re-verified 2026-10-18 on two panel
       fixtures). `skills/tune-hyperparameters/scripts/time_series_cv.py` takes no time or
       groups argument (`:28-38`) and slices row positions (`:54-71`), so on a long-format
@@ -4214,7 +4222,13 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       `<this-skill-dir>/scripts` on `sys.path`, or copy the file); a panel test asserting
       that no period is in both train and validation. Part of the G-A plan. Size: plan.
       Done when: the panel test passes and the SKILL.md claims match the code.
-- [ ] Guard the experiment comparator against bayesian-workflow's state-space shapes
+      → done in plan 59 (2026-10-21; `specs/plans/completed/59-model-skill-comparator-and-cv-fixes.md`):
+      `split(X, groups=period)` splits the sorted unique periods, with `test_size`, `embargo`,
+      `label_horizon` and `min_train_size` counted in periods. Without `groups` the folds are
+      unchanged. SKILL.md limits "already suffices" to a single series and gives an import that
+      resolves. A panel test and a `GridSearchCV` test were added. The docs say that period labels
+      must sort in time order.
+- [x] Guard the experiment comparator against bayesian-workflow's state-space shapes
       (audit-3-10-26 G3, guards half, found 2026-10-03; re-verified 2026-10-18 on fixtures).
       bayesian-workflow's state-space reference adds the likelihood with `numpyro.factor`
       (`skills/bayesian-workflow/references/state-space.md:69`, `:93`, `:103`, `:254`) and
@@ -4234,7 +4248,13 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       K-fold for forecast decisions) is in the lifecycle-spec item in this section. Part of
       the G-A plan. Size: plan. Done when: both shapes are refused with a named remedy, with
       tests, and state-space.md carries the warning.
-- [ ] Align tune-hyperparameters' Regime B router with bayesian-workflow (audit-3-10-26 G4,
+      → done in plan 59 (2026-10-21; `specs/plans/completed/59-model-skill-comparator-and-cv-fixes.md`):
+      the guards half only. The comparator refuses a log-likelihood with no observation dimension
+      and several log-likelihood variables, and names the remedy. `pointwise_count` replaces
+      `observation_count`, so a per-step `numpyro.factor` now counts. `state-space.md` warns beside
+      both `factor` routes and in Common gotchas, and says that the sources need one shared
+      observation dimension. The criterion half stays in the lifecycle-spec item in this section.
+- [x] Align tune-hyperparameters' Regime B router with bayesian-workflow (audit-3-10-26 G4,
       found 2026-10-03; re-verified 2026-10-18). (a) The `target_accept` row
       (`skills/tune-hyperparameters/SKILL.md:141`) says "eliminate divergences | 0
       divergences", while bayesian-workflow raises `target_accept_prob` only when
@@ -4255,6 +4275,12 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       The replaced wording drives behaviour, so micro-test it. Part of the G-A plan. Size:
       plan. Done when: the rows match bayesian-workflow, the rule is stated, and the
       micro-test record is kept.
+      → done in plan 59 (2026-10-21; `specs/plans/completed/59-model-skill-comparator-and-cv-fixes.md`):
+      the NUTS rows point at `diagnostics.md`'s escalation ladder and its tree-depth check. The SVI
+      row points at a new `skills/bayesian-workflow/references/svi.md`. The optax row reads "no
+      skill owns this yet". Step 0 states the rule (a neural network's learning rate is Regime A).
+      The micro-test record is `specs/verification/59-regime-b-router-microtest.md`: arm B failed
+      2 of 5 on S1, arm C failed 0 of 5, and both pre-registered bars were met. Only S1 was red.
 - [x] `compare_experiments.py` reads diagnostics keys that `diagnose_model.py` never writes
       (audit-3-10-26 X7, found 2026-10-03; re-verified 2026-10-18).
       `skills/track-model-experiments/scripts/compare_experiments.py:119`, `:123` and `:126`
@@ -5987,3 +6013,77 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       `ruff-check.sh` installed as a `Stop` hook and look for the line. Size: quick-fix. Done
       when: the result is recorded in `hooks/README.md`'s install check (the line shows, or the
       README names the Desktop gap and a different signal).
+
+## 59-model-skill-comparator-and-cv-fixes — 2026-10-21
+
+Plan 59 ticked the audit-3-10-26 items G1, G2, G3 (guards half) and G4. The items below are what its
+per-task reviews and its final review (an Opus code-reviewer and a Codex run) left unfixed, triaged
+defer. Anchors are at the end of plan 59's fix wave.
+
+- [ ] Harden `skills/track-model-experiments/scripts/compare_experiments.py` after plan 59's final
+      review. (a) `_cells` strips every outer pipe with `.strip('|')`, so a last cell that ends in
+      `\|` right against the closing pipe loses its escape, and a row written `|| b |` loses its
+      empty first cell. Remove exactly one outer pipe on each side. (b) The over-wide-row backstop
+      in `update_ledger` skips the row. If that row is the top-ranked variant, no row gets the best
+      marker. If it holds a stale `**best**`, the ledger can show two. Make the note say so, or
+      pick a rule. (c) A ranked winner with no Variants-table row clears every marker with no
+      note: name the ranked ids that the table lacks. (d) `main()` reads `--ledger` before it
+      writes `--output`, so a mistyped ledger path gives a `FileNotFoundError` traceback and no
+      `comparison.json`: check `args.ledger.is_file()` first and exit through `error:`. (e) The
+      metric-column lookup is case-sensitive, so a header such as `elpd` gets no fill and no
+      message: print one note when no column matched. (f) Test gaps in
+      `test_compare_experiments.py`: the winner row's cells and marker; the `None` divergence
+      rendering; the `count == 0` branch of `pointwise_count`; a row shorter than the header; a
+      Variants header with no `status`; an unterminated `COMPARISON:BEGIN`; the over-wide-row test
+      should assert that the other rows still get their marker and metric cells; `_row` reads the
+      first line that starts with the id, so it depends on the block sitting below the table; the
+      escaped-pipe asserts use double-quoted f-strings, where the file uses single quotes, and the
+      helper `_unescaped_cells` copies `_cells`' regex. Size: plan. Done when: (a) to (e) are fixed
+      or dropped on purpose, each with a test, and the (f) gaps are filled.
+- [ ] Three nits in the splitter's tests (plan 59 final review).
+      `skills/tune-hyperparameters/scripts/test_time_series_cv.py`:
+      `test_panel_folds_split_whole_periods` asserts a gap `>= embargo`, where `== embargo` pins the
+      gap (the acceptance run showed exact gaps); `test_one_row_per_period_matches_row_mode` sends
+      both paths through `_period_index`, so the baseline tests are what pin row mode; a 0-d
+      `groups` raises `IndexError` at `labels.shape[0]`, not the `ValueError` that the length check
+      gives. Size: quick-fix. Revisit if: someone edits `time_series_cv.py` again, or a panel run
+      shows a leak.
+- [ ] Two doc nits left by plan 59's final review. (a) The root `README.md` row for
+      track-model-experiments lists the inputs the comparator refuses but omits several
+      log-likelihood variables. (b) tune's Graduation (`skills/tune-hyperparameters/SKILL.md`) and
+      track's When to use (`skills/track-model-experiments/SKILL.md`) still give "tuned `<class>`
+      via Optuna" as the `what changed` example, while the next sentence sends a non-Bayesian
+      winner to the Decision log. Tighten (b) after the O1 owner call on track's scope (the
+      lifecycle-spec item in section `audit-3-10-26 routing`). Size: quick-fix. Done when: the
+      README row names the refusal, and the two Graduation texts agree with the O1 ruling.
+- [ ] Polish `skills/bayesian-workflow/references/svi.md` (plan 59 final review). (a) Check 3 says
+      to set `num_svi_steps` to what check 1 showed is enough, but check 1 runs 3000 steps and the
+      VSBC call uses 2000: reuse one number, or add a comment that 2000 is a runtime shortcut. (b)
+      ELBO, VSBC, KS and PSIS-LOO are not expanded at first mention, here and in the Samplers
+      paragraph in `skills/bayesian-workflow/SKILL.md` that points to this file (the repo's
+      plain-English rule asks for the plain meaning at first mention). (c) Add one sentence that
+      VSBC needs a generative model with continuous latent sites only. Size: quick-fix. Done when:
+      (a) to (c) are edited, snippet Tiers 1 to 3 pass, and no `WARN` line names `svi.md`.
+- [ ] State in `skills/bayesian-workflow/references/diagnostics.md` that NumPyro prints no warning
+      when `max_tree_depth` is reached (plan 59 final review). tune's `max_tree_depth` router row
+      says "NumPyro prints no warning", and the arm C micro-test answers repeat it, but no
+      bayesian-workflow file states it. Check the claim against NumPyro 0.22.0's source or a run,
+      then add one sentence beside the tree-depth text (`diagnostics.md:46-50`). Size: quick-fix.
+      Done when: the sentence is in `diagnostics.md`, with the source check named.
+- [ ] tune-hyperparameters' frontmatter `description` still triggers on "dynamax optax SGD", which
+      no skill owns after plan 59 (the optax router row reads "no skill owns this yet"). Descriptions
+      are G5 work, gated on the O1 to O3 owner calls (see the lifecycle-spec item in section
+      `audit-3-10-26 routing`). Each description change needs writing-skills' micro-test with
+      collision probes. Size: plan. Done when: the G5 description pass either drops the trigger or
+      gives the optax knob an owner, with a micro-tested wording.
+- [ ] Watch tune's Regime B router wording for over-deferral (plan 59 micro-test,
+      `specs/verification/59-regime-b-router-microtest.md`). Only S1 was red (arm B 2 of 5, arm C 0
+      of 5, one-sided Fisher p about 0.22), and that rests on the literal "any listed action"
+      grading rule. On S2, the control, arm C listed no refit in 3 of 5 reps and deferred the raise
+      to the ladder, where arms A and B listed a refit at 0.9 or 0.95 in all 10. No rep ruled a
+      raise out, and the ladder says to raise at 1% or less, so all passed. Size: quick-fix.
+      Revisit if: an agent that loads the router declines a justified `target_accept` raise
+      (divergences at 1% or less, healthy R-hat and ESS), or a later micro-test that grades the
+      first action shows the same drift. Then use the fallback row in plan 59's Task 6 text
+      (`specs/plans/completed/59-model-skill-comparator-and-cv-fixes.md`), which states the 1%
+      threshold.

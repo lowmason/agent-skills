@@ -283,6 +283,10 @@ idata = az.from_dict(
 (Compute `log_likelihood` and posterior predictive for BlackJAX runs with `numpyro.infer.log_likelihood`
 and `Predictive(model, posterior_samples=...)`, then add them as groups — see model-comparison.md.)
 
+**SVI as the final fit.** When SVI (stochastic variational inference) replaces NUTS rather than
+warm-starting it, check it before you trust it: a flat ELBO trace that every seed reaches, PSIS-LOO
+for the approximation, and VSBC. See [references/svi.md](references/svi.md).
+
 **Why not nutpie?** The PyMC-ecosystem sampler nutpie compiles **PyMC and Stan** models, not
 NumPyro — there is no NumPyro entry point. With NumPyro you do not need it: native NUTS is
 already JAX-JIT-compiled, and BlackJAX is the genuine "swap the sampler" alternative.

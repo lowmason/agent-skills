@@ -10,8 +10,9 @@
 '''Rank Bayesian model variants from their saved InferenceData.
 
 Sits above bayesian-workflow's per-variant slug folders; defers the ELPD
-statistics to bayesian-workflow/references/model-comparison.md. Run --help
-for usage.
+statistics to bayesian-workflow/references/model-comparison.md. A ledger row it
+cannot rank (no inference_data.nc) is reported, never dropped in silence. Run
+--help for usage.
 '''
 import argparse
 import json
@@ -21,6 +22,13 @@ import sys
 from pathlib import Path
 
 import arviz as az
+
+# The status cell of the top-ranked Variants-table row. While a ledger row went
+# uncompared, the marker says the ranking covers the ELPD-compared rows only.
+BEST = '**best**'
+QUALIFIED_BEST = '**best among ELPD-compared variants**'
+# The sample dimensions of a log-likelihood variable; every other dimension is an observation.
+SAMPLE_DIMS = ('chain', 'draw')
 
 
 def discover_variants(analysis_dir: Path) -> list[Path]:
@@ -50,11 +58,39 @@ def check_log_likelihood(idata, name: str) -> None:
             f'(see bayesian-workflow/references/model-comparison.md).')
 
 
-def observation_count(idata) -> int:
-    obs = idata.observed_data
-    ds = obs.to_dataset() if hasattr(obs, 'to_dataset') else obs
-    var = next(iter(ds.data_vars.values()))
-    return int(var.size)
+def pointwise_count(idata, name: str) -> int:
+    '''How many pointwise terms the variant's one log-likelihood variable holds.
+
+    LOO leaves out one term at a time, so it needs exactly one variable with an
+    observation dimension. bayesian-workflow's state-space routes can give
+    neither: a summed numpyro.factor stores one term per draw, and a
+    multi-source model stores one variable per source. The count comes from the
+    log-likelihood, not observed_data: a per-step numpyro.factor, the remedy,
+    has an empty observed_data entry.
+    '''
+    ll = idata.log_likelihood
+    ds = ll.to_dataset() if hasattr(ll, 'to_dataset') else ll
+    names = list(ds.data_vars)
+    if len(names) != 1:
+        raise ValueError(
+            f'variant {name!r} has {len(names)} log-likelihood variables '
+            f'({", ".join(names)}); the comparator ranks one, and ranking a '
+            'multi-source model on one source would mislead. Sum the sources\' '
+            'terms for each observation into one pointwise variable and drop the '
+            'rest. The sources must share one observation dimension, or the sum '
+            'builds a grid of terms. A factor that is a penalty or a Jacobian, not '
+            'data, leaves the group instead (see '
+            'bayesian-workflow/references/state-space.md).')
+    var = ds[names[0]]
+    obs_dims = [d for d in var.dims if d not in SAMPLE_DIMS]
+    count = math.prod(var.sizes[d] for d in obs_dims)
+    if not obs_dims or count == 0:
+        raise ValueError(
+            f'variant {name!r} stores {names[0]!r} with no observation dimension, '
+            'so LOO has no pointwise terms to leave out. Store one term per '
+            'observation (per time step for a state-space model), not one summed '
+            'numpyro.factor (see bayesian-workflow/references/state-space.md).')
+    return count
 
 
 def _elpd_column(comparison):
@@ -66,7 +102,11 @@ def _elpd_column(comparison):
 
 
 def run_comparison(models: dict):
-    comparison = az.compare(models)
+    try:
+        comparison = az.compare(models)
+    except TypeError as exc:
+        cause = f' ({exc.__cause__})' if exc.__cause__ else ''
+        raise ValueError(f'az.compare could not rank the variants: {exc}{cause}') from exc
     col = _elpd_column(comparison)
     if col != 'elpd':
         comparison = comparison.rename(columns={col: 'elpd'})
@@ -185,58 +225,134 @@ def extract_diagnostics(idata, folder: Path) -> dict:
     }
 
 
-def render_comparison_block(ranking: list[dict]) -> str:
+def metric_cells(r: dict) -> dict[str, str]:
+    '''One ranked variant's metrics, keyed by the ledger's column names.'''
+    return {
+        'ELPD': f"{r['elpd']:.1f}",
+        'ΔELPD': f"{r['elpd_diff']:.1f}",
+        'max R̂': '' if r.get('max_rhat') is None else f"{r['max_rhat']:.3f}",
+        'div': '' if r.get('divergences') is None else str(r['divergences']),
+        'PPC': r['ppc'],
+        'psense': r['psense'],
+    }
+
+
+def render_comparison_block(ranking: list[dict], not_compared: list[str]) -> str:
     header = '| id | ELPD | ΔELPD | dSE | weight | max R̂ | div | warn |'
     sep = '|---|---|---|---|---|---|---|---|'
     rows = []
     for r in ranking:
-        rhat = '' if r.get('max_rhat') is None else f"{r['max_rhat']:.3f}"
+        m = metric_cells(r)
         rows.append(
-            f"| {r['id']} | {r['elpd']:.1f} | {r['elpd_diff']:.1f} | "
-            f"{r['dse']:.1f} | {r['weight']:.2f} | {rhat} | "
-            f"{r.get('divergences', '')} | {'⚠' if r['warning'] else ''} |")
+            f"| {r['id']} | {m['ELPD']} | {m['ΔELPD']} | "
+            f"{r['dse']:.1f} | {r['weight']:.2f} | {m['max R̂']} | "
+            f"{m['div']} | {'⚠' if r['warning'] else ''} |")
     table = '\n'.join([header, sep, *rows])
+    if not_compared:
+        table += (f'\n\nNot compared: {", ".join(not_compared)}. '
+                  'The best marker covers the ELPD-compared variants only.')
     return f'<!-- COMPARISON:BEGIN -->\n{table}\n<!-- COMPARISON:END -->'
 
 
 _BLOCK_RE = re.compile(r'<!-- COMPARISON:BEGIN -->.*?<!-- COMPARISON:END -->', re.S)
 
 
-def update_ledger(ledger_path: Path, block: str, best_id: str) -> None:
-    '''Rewrite the COMPARISON block in place and toggle the **best** marker.
+def _cells(line: str) -> list[str]:
+    '''The row's cells. A pipe splits cells only when no backslash escapes it.'''
+    return [c.strip() for c in re.split(r'(?<!\\)\|', line.strip().strip('|'))]
 
-    Only the region between the COMPARISON markers is replaced (or appended if
-    absent); human prose outside it is preserved. Any Variants-table row this
-    touches to move the **best** marker is re-joined with '| '/' |' spacing, so
-    pre-existing cell padding in those rows is normalized — this is intentional.
+
+def _variants_table(lines: list[str]) -> tuple[list[str], list[int]] | None:
+    '''The Variants table's header cells and the line numbers of its data rows.
+
+    It is the first table outside the COMPARISON block whose header starts with
+    an id column and has a status column; None when the ledger has none.
+    '''
+    in_block = False
+    i = 0
+    while i < len(lines):
+        stripped = lines[i].strip()
+        if stripped == '<!-- COMPARISON:BEGIN -->':
+            in_block = True
+        elif stripped == '<!-- COMPARISON:END -->':
+            in_block = False
+        elif not in_block and stripped.startswith('|'):
+            start = i
+            while i < len(lines) and lines[i].strip().startswith('|'):
+                i += 1
+            names = [c.lower() for c in _cells(lines[start])]
+            if names[0].startswith('id') and 'status' in names:
+                return _cells(lines[start]), list(range(start + 2, i))
+            continue
+        i += 1
+    return None
+
+
+def ledger_ids(text: str) -> list[str] | None:
+    '''The ids of the ledger's Variants-table rows in table order; None without the table.'''
+    lines = text.splitlines()
+    table = _variants_table(lines)
+    if table is None:
+        return None
+    return [_cells(lines[i])[0] for i in table[1]]
+
+
+def update_ledger(ledger_path: Path, block: str, ranking: list[dict],
+                  not_compared: list[str]) -> None:
+    '''Rewrite the COMPARISON block, fill the metric cells and move the best marker.
+
+    Only the COMPARISON block (replaced, or appended if absent) and the Variants
+    table's metric and status cells change; human prose and the table's left
+    half are preserved. Each ranked row is re-joined with '| '/' |' spacing, so
+    its cell padding is normalized — this is intentional. An unranked row keeps
+    its cells, except that a stale best marker returns to candidate. A row with
+    more cells than the header does not line up with it, so it is left as it is
+    and a note names it.
     '''
     text = ledger_path.read_text()
     if _BLOCK_RE.search(text):
         text = _BLOCK_RE.sub(lambda _: block, text)
     else:
         text = text.rstrip() + '\n\n' + block + '\n'
-    lines = []
-    in_block = False
-    for line in text.splitlines():
-        stripped = line.strip()
-        if stripped == '<!-- COMPARISON:BEGIN -->':
-            in_block = True
-        elif stripped == '<!-- COMPARISON:END -->':
-            in_block = False
-        elif not in_block and line.lstrip().startswith('|'):
-            cells = [c.strip() for c in line.strip().strip('|').split('|')]
-            if cells and cells[-1] == '**best**':
-                cells[-1] = 'candidate'
-                line = '| ' + ' | '.join(cells) + ' |'
-            if cells and cells[0] == best_id:
-                cells[-1] = '**best**'
-                line = '| ' + ' | '.join(cells) + ' |'
-        lines.append(line)
+    lines = text.splitlines()
+    table = _variants_table(lines)
+    if table is not None:
+        header, rows = table
+        status = [c.lower() for c in header].index('status')
+        ranked = {r['id']: r for r in ranking}
+        marker = QUALIFIED_BEST if not_compared else BEST
+        for i in rows:
+            cells = _cells(lines[i])
+            if len(cells) > len(header):
+                print(f'note: ledger row {cells[0]} has {len(cells)} cells against '
+                      f'{len(header)} in the header, so its cells do not line up with '
+                      'the header and the row was left unchanged. Escape a literal '
+                      'pipe in a cell as \\|.', file=sys.stderr)
+                continue
+            cells += [''] * (len(header) - len(cells))
+            entry = ranked.get(cells[0])
+            if entry is None and cells[status] not in (BEST, QUALIFIED_BEST):
+                continue
+            if cells[status] in (BEST, QUALIFIED_BEST):
+                cells[status] = 'candidate'
+            if entry is not None:
+                for column, value in metric_cells(entry).items():
+                    if column in header:
+                        cells[header.index(column)] = value
+                if entry['id'] == ranking[0]['id']:
+                    cells[status] = marker
+            lines[i] = '| ' + ' | '.join(cells) + ' |'
     ledger_path.write_text('\n'.join(lines) + ('\n' if text.endswith('\n') else ''))
 
 
 def compare(analysis_dir: Path, folders: list[Path] | None):
     variants = folders or discover_variants(analysis_dir)
+    missing = [f.name for f in variants if not (f / 'inference_data.nc').is_file()]
+    if missing:
+        raise ValueError(
+            f'no inference_data.nc in {", ".join(missing)}; the comparator ranks '
+            'Bayesian fits by ELPD only. Until a non-ELPD mode exists, record a '
+            "non-Bayesian winner and its CV score in the ledger's Decision log.")
     if len(variants) < 2:
         raise ValueError('need at least two variants to compare '
                          f'(found {len(variants)} in {analysis_dir}).')
@@ -246,7 +362,7 @@ def compare(analysis_dir: Path, folders: list[Path] | None):
         idata = load_idata(folder)
         check_log_likelihood(idata, name)
         models[name] = idata
-        counts[name] = observation_count(idata)
+        counts[name] = pointwise_count(idata, name)
     distinct = set(counts.values())
     if len(distinct) > 1:
         raise ValueError(
@@ -269,7 +385,7 @@ def main(argv=None):
     ap.add_argument('--folders', type=Path, nargs='*', default=None,
                     help='explicit variant folders (overrides discovery)')
     ap.add_argument('--ledger', type=Path, default=None,
-                    help='experiments.md to update (COMPARISON block + best marker)')
+                    help='experiments.md to update (COMPARISON block, metric cells, best marker)')
     ap.add_argument('--output', type=Path, default=None,
                     help='write comparison.json here')
     args = ap.parse_args(argv)
@@ -280,12 +396,26 @@ def main(argv=None):
         print(f'error: {exc}', file=sys.stderr)
         return 1
     print(comparison.to_string())
-    payload = {'ranking': ranking}
+    not_compared = []
+    if args.ledger:
+        ids = ledger_ids(args.ledger.read_text())
+        if ids is None:
+            print(f'note: {args.ledger} has no Variants table (a header that starts '
+                  'with id and has a status column), so no metric cell or best '
+                  'marker was written.', file=sys.stderr)
+        ranked = {r['id'] for r in ranking}
+        not_compared = [i for i in ids or [] if i not in ranked]
+        if not_compared:
+            print(f'note: ledger rows not compared: {", ".join(not_compared)}. The '
+                  'ranking and the best marker cover the ELPD-compared variants only; '
+                  'until a non-ELPD mode exists, record a non-Bayesian winner and its '
+                  'CV score in the Decision log.', file=sys.stderr)
+    payload = {'ranking': ranking, 'not_compared': not_compared}
     if args.output:
         args.output.write_text(json.dumps(payload, indent=2))
     if args.ledger:
-        block = render_comparison_block(ranking)
-        update_ledger(args.ledger, block, ranking[0]['id'])
+        block = render_comparison_block(ranking, not_compared)
+        update_ledger(args.ledger, block, ranking, not_compared)
     return 0
 
 

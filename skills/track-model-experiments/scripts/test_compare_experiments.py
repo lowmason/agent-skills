@@ -1,4 +1,5 @@
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -262,3 +263,232 @@ def test_update_ledger_appends_when_no_markers(analysis_dir, tmp_path):
     assert '<!-- COMPARISON:BEGIN -->' in first        # appended
     assert _run(*args).returncode == 0
     assert ledger.read_text() == first                 # idempotent on rerun
+
+
+# --- Rows the comparator cannot rank (audit-3-10-26 G1) ---
+
+def _ledger_with(*rows):
+    head = ('# Experiments — churn\n\n'
+            '| id (slug) | parent | what changed | hypothesis | ELPD | ΔELPD | max R̂ | div | PPC | psense | status |\n'
+            '|---|---|---|---|---|---|---|---|---|---|---|\n')
+    body = ''.join(f'| {r} | — | {r} | h | | | | | | | candidate |\n' for r in rows)
+    return head + body + '\n## Decision log\n- prose\n'
+
+
+def _row(text, variant_id):
+    return next(ln for ln in text.splitlines() if ln.startswith(f'| {variant_id} '))
+
+
+def test_folder_without_inference_data_exits_through_error(analysis_dir, tmp_path):
+    ridge = tmp_path / 'ridge-tuned'
+    ridge.mkdir()
+    r = _run('--analysis-dir', str(analysis_dir),
+             '--folders', str(analysis_dir / 'm-full'), str(ridge))
+    assert r.returncode == 1
+    assert r.stderr.startswith('error: ')
+    assert 'Traceback' not in r.stderr
+    assert 'ridge-tuned' in r.stderr and 'Decision log' in r.stderr
+
+
+def test_uncompared_ledger_row_is_reported_and_best_is_qualified(analysis_dir, tmp_path):
+    ledger = tmp_path / 'experiments.md'
+    ledger.write_text(_ledger_with('m-full', 'm-intercept', 'ridge-tuned'))
+    out = tmp_path / 'comparison.json'
+    r = _run('--analysis-dir', str(analysis_dir), '--ledger', str(ledger), '--output', str(out))
+    assert r.returncode == 0, r.stderr
+    assert 'ridge-tuned' in r.stderr                          # reported, not silent
+    assert json.loads(out.read_text())['not_compared'] == ['ridge-tuned']
+    text = ledger.read_text()
+    assert '**best among ELPD-compared variants**' in _row(text, 'm-full')
+    assert _row(text, 'ridge-tuned').endswith('| candidate |')
+    assert 'Not compared: ridge-tuned' in text
+    assert text.count('**best') == 1
+
+
+def test_qualified_marker_resets_once_every_row_is_compared(analysis_dir, tmp_path):
+    ledger = tmp_path / 'experiments.md'
+    ledger.write_text(_ledger_with('m-full', 'm-intercept', 'ridge-tuned'))
+    args = ('--analysis-dir', str(analysis_dir), '--ledger', str(ledger))
+    assert _run(*args).returncode == 0
+    assert '**best among ELPD-compared variants**' in _row(ledger.read_text(), 'm-full')
+    ledger.write_text('\n'.join(ln for ln in ledger.read_text().splitlines()
+                                if not ln.startswith('| ridge-tuned ')) + '\n')
+    r = _run(*args)
+    assert r.returncode == 0, r.stderr
+    text = ledger.read_text()
+    assert '**best**' in _row(text, 'm-full')
+    assert 'ELPD-compared' not in text
+    assert 'Not compared' not in text
+    assert text.count('**best') == 1
+
+
+def test_az_compare_type_error_becomes_value_error(analysis_dir, monkeypatch):
+    def fail(models):
+        raise TypeError('Encountered error trying to compute ELPD from model m-full.')
+
+    monkeypatch.setattr(compare_experiments.az, 'compare', fail)
+    with pytest.raises(ValueError, match='az.compare'):
+        compare_experiments.compare(analysis_dir, None)
+
+
+def test_ledger_ids_read_only_the_variants_table():
+    text = (_ledger_with('m-full', 'm-intercept')
+            + '\n| other | table |\n|---|---|\n| x | y |\n'
+            + '<!-- COMPARISON:BEGIN -->\n| id | ELPD |\n|---|---|\n| m-old | 1.0 |\n'
+            '<!-- COMPARISON:END -->\n')
+    assert compare_experiments.ledger_ids(text) == ['m-full', 'm-intercept']
+
+
+def test_ledger_without_a_variants_table_is_noted(analysis_dir, tmp_path):
+    ledger = tmp_path / 'experiments.md'
+    ledger.write_text('# Experiments\n\nprose, no table\n')
+    r = _run('--analysis-dir', str(analysis_dir), '--ledger', str(ledger))
+    assert r.returncode == 0, r.stderr
+    assert 'no Variants table' in r.stderr
+    assert '<!-- COMPARISON:BEGIN -->' in ledger.read_text()
+
+
+# --- The metric cells (G1 part e) ---
+
+def test_metric_cells_are_filled_from_the_ranking(analysis_dir, tmp_path):
+    ledger = tmp_path / 'experiments.md'
+    ledger.write_text(LEDGER)
+    out = tmp_path / 'comparison.json'
+    r = _run('--analysis-dir', str(analysis_dir), '--ledger', str(ledger), '--output', str(out))
+    assert r.returncode == 0, r.stderr
+    rank = {e['id']: e for e in json.loads(out.read_text())['ranking']}
+    cells = [c.strip() for c in _row(ledger.read_text(), 'm-intercept').strip('|').split('|')]
+    elpd, d_elpd, rhat, div, ppc, psense = cells[4:10]
+    assert elpd == f"{rank['m-intercept']['elpd']:.1f}"
+    assert d_elpd == f"{rank['m-intercept']['elpd_diff']:.1f}"
+    assert rhat == f"{rank['m-intercept']['max_rhat']:.3f}"
+    assert div == str(rank['m-intercept']['divergences'])
+    assert (ppc, psense) == ('unknown', 'unknown')       # no check_report.json in the fixture
+    assert cells[2:4] == ['drop slope', 'slope noise']   # the human half is untouched
+
+
+# --- Log-likelihood shapes from bayesian-workflow's state-space routes (G3) ---
+
+def _summed_factor(x, y=None):
+    a = numpyro.sample('a', dist.Normal(0, 5))
+    sigma = numpyro.sample('sigma', dist.HalfNormal(2))
+    numpyro.factor('ll', dist.Normal(a, sigma).log_prob(y).sum())
+
+
+def _per_step_factor(x, y=None):
+    a = numpyro.sample('a', dist.Normal(0, 5))
+    b = numpyro.sample('b', dist.Normal(0, 5))
+    sigma = numpyro.sample('sigma', dist.HalfNormal(2))
+    numpyro.factor('ll', dist.Normal(a + b * x, sigma).log_prob(y))
+
+
+def _fit_factor(folder, model, x, y, seed, dims=None):
+    mcmc = MCMC(NUTS(model), num_warmup=200, num_samples=200, num_chains=2,
+                chain_method='sequential', progress_bar=False)
+    mcmc.run(jax.random.PRNGKey(seed), x, y)
+    idata = az.from_numpyro(mcmc, log_likelihood=True,
+                            coords={'obs': np.arange(len(y))}, dims=dims or {})
+    folder.mkdir(parents=True, exist_ok=True)
+    idata.to_netcdf(str(folder / 'inference_data.nc'))
+
+
+def test_summed_factor_is_refused_with_its_remedy(data, tmp_path):
+    x, y = data
+    _fit_factor(tmp_path / 'f-a', _summed_factor, x, y, seed=5)
+    _fit_factor(tmp_path / 'f-b', _summed_factor, x, y, seed=6)
+    r = _run('--analysis-dir', str(tmp_path))
+    assert r.returncode == 1
+    assert r.stderr.startswith('error: ')
+    assert 'observation dimension' in r.stderr and 'numpyro.factor' in r.stderr
+
+
+def test_per_step_factor_terms_are_ranked(data, tmp_path):
+    x, y = data
+    _fit_factor(tmp_path / 'f-full', _per_step_factor, x, y, seed=7, dims={'ll': ['obs']})
+    _make_variant(tmp_path / 'm-intercept', _intercept, x, y, seed=2)
+    out = tmp_path / 'comparison.json'
+    r = _run('--analysis-dir', str(tmp_path), '--output', str(out))
+    assert r.returncode == 0, r.stderr
+    ranking = json.loads(out.read_text())['ranking']
+    assert ranking[0]['id'] == 'f-full'
+    assert ranking[0]['se'] > 0                       # 200 pointwise terms, not one
+
+
+def _two_source_variant(folder, n_draws=100, seed=0):
+    rng = np.random.default_rng(seed)
+    obs = np.arange(50)
+    idata = az.from_dict({
+        'posterior': {'a': rng.normal(size=(2, n_draws))},
+        'log_likelihood': {'y_a': rng.normal(-1, 0.1, size=(2, n_draws, 50)),
+                           'y_b': rng.normal(-1, 0.1, size=(2, n_draws, 50))},
+        'observed_data': {'y_a': rng.normal(size=50), 'y_b': rng.normal(size=50)},
+    }, coords={'obs': obs}, dims={'y_a': ['obs'], 'y_b': ['obs']})
+    folder.mkdir(parents=True, exist_ok=True)
+    idata.to_netcdf(str(folder / 'inference_data.nc'))
+
+
+def test_several_log_likelihood_variables_are_refused(tmp_path):
+    _two_source_variant(tmp_path / 's-1', seed=1)
+    _two_source_variant(tmp_path / 's-2', seed=2)
+    with pytest.raises(ValueError, match='2 log-likelihood variables') as exc:
+        compare_experiments.compare(tmp_path, None)
+    assert 'y_a' in str(exc.value) and 'one pointwise variable' in str(exc.value)
+
+
+# --- Cells that hold an escaped pipe (final review) ---
+
+ESCAPED_HYPOTHESIS = 'p(y \\| x) depends on x'
+
+
+def _unescaped_cells(row):
+    return [c.strip() for c in re.split(r'(?<!\\)\|', row.strip().strip('|'))]
+
+
+def test_an_escaped_pipe_stays_inside_its_cell(analysis_dir, tmp_path):
+    text = _ledger_with('m-full', 'm-intercept')
+    row = _row(text, 'm-intercept')
+    ledger = tmp_path / 'experiments.md'
+    ledger.write_text(text.replace(row, row.replace('| h |', f'| {ESCAPED_HYPOTHESIS} |')))
+    before = _row(ledger.read_text(), 'm-intercept')
+    out = tmp_path / 'comparison.json'
+    r = _run('--analysis-dir', str(analysis_dir), '--ledger', str(ledger), '--output', str(out))
+    assert r.returncode == 0, r.stderr
+    rank = {e['id']: e for e in json.loads(out.read_text())['ranking']}
+    after = _row(ledger.read_text(), 'm-intercept')
+    left_half = before[:before.index(ESCAPED_HYPOTHESIS) + len(ESCAPED_HYPOTHESIS)]
+    assert after.startswith(left_half)                       # the human cells are byte-identical
+    cells = _unescaped_cells(after)
+    assert len(cells) == 11                                  # one cell per header column
+    assert cells[3] == ESCAPED_HYPOTHESIS
+    assert cells[4] == f"{rank['m-intercept']['elpd']:.1f}"
+    assert cells[5] == f"{rank['m-intercept']['elpd_diff']:.1f}"
+    assert cells[-1] == 'candidate'
+
+
+def test_an_unranked_row_keeps_its_hand_written_cells(analysis_dir, tmp_path):
+    # Pins decision D3: a row the comparator cannot rank keeps every cell it holds.
+    text = _ledger_with('m-full', 'm-intercept', 'ridge-tuned')
+    row = _row(text, 'ridge-tuned')
+    written = row.replace('| h | | | | | | | candidate |',
+                          '| h | -120.5 | -3.2 | 1.002 | 0 | fair | ok | candidate |')
+    assert written != row
+    ledger = tmp_path / 'experiments.md'
+    ledger.write_text(text.replace(row, written))
+    r = _run('--analysis-dir', str(analysis_dir), '--ledger', str(ledger))
+    assert r.returncode == 0, r.stderr
+    assert _row(ledger.read_text(), 'ridge-tuned') == written
+
+
+def test_a_row_with_more_cells_than_the_header_is_left_alone(analysis_dir, tmp_path):
+    text = _ledger_with('m-full', 'm-intercept')
+    row = _row(text, 'm-intercept')
+    stray = row.replace('| h |', '| h | x |')                # a stray pipe splits the hypothesis
+    assert stray != row
+    ledger = tmp_path / 'experiments.md'
+    ledger.write_text(text.replace(row, stray))
+    r = _run('--analysis-dir', str(analysis_dir), '--ledger', str(ledger))
+    assert r.returncode == 0, r.stderr
+    assert _row(ledger.read_text(), 'm-intercept') == stray
+    notes = [ln for ln in r.stderr.splitlines()
+             if ln.startswith('note: ') and 'do not line up' in ln]
+    assert len(notes) == 1 and 'm-intercept' in notes[0]
