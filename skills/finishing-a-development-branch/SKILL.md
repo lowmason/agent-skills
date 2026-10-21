@@ -266,7 +266,7 @@ merging — a `/deferred` pass or a logged acknowledgement.
 **Get to the main checkout.** The merge runs in MAIN_ROOT. Your partner's choice of this option is their request to leave the worktree. Go by the MAIN_GIT that Step 2 recorded:
 
 - **Normal repo, or `allowed`:** run each command below from MAIN_ROOT. A Bash call can start back in the worktree, so begin each call with `cd <MAIN_ROOT> &&`.
-- **`ask`:** ask your partner, "Finishing runs git in the main checkout at <MAIN_ROOT>. May I?" A yes is `allowed`. A no is `blocked`.
+- **`ask`:** ask your partner, "Finishing runs git in the main checkout at <MAIN_ROOT>. May I?" A yes is `allowed`. On a no, give your partner the commands, as the no-op case under `blocked` does.
 - **`blocked`:** call ExitWorktree with `action: "keep"`. Never use `"remove"`: it deletes the branch before the merge. If ExitWorktree returns the session to MAIN_ROOT, run the commands below there. If it reports a no-op, this session cannot run git in the main checkout. Do not rewrite a refused command to get round the check. Give your partner the commands below with every value written out, ask them to run the commands in a terminal and tell you the test result, and wait.
 
 ```bash
@@ -351,9 +351,9 @@ This will permanently delete:
 Type 'discard' to confirm.
 ```
 
-If Step 2 recorded MADE_BY `launcher`, Step 6 cannot remove the worktree, and git cannot delete a branch that a worktree has checked out. Say so in place of the list above: "<path> and its branch <name> belong to the tool that started this session, so I can't delete them. They stay until it removes the worktree, or you run `git worktree remove <path>` and then `git branch -D <name>` from <MAIN_ROOT>."
+If Step 2 recorded MADE_BY `launcher`, Step 6 cannot remove the worktree, and git cannot delete a branch that a worktree has checked out. Do not show the list above and do not ask for confirmation. Tell your partner this, then stop: "<path> and its branch <name> belong to the tool that started this session, so I can't delete them. They stay until it removes the worktree, or you run `git worktree remove <path>` and then `git branch -D <name>` from <MAIN_ROOT>."
 
-Wait for exact confirmation.
+Otherwise, wait for exact confirmation.
 
 If confirmed, get to the main checkout as Option 1 does, by the MAIN_GIT that Step 2 recorded. Then: Cleanup worktree (Step 6). If Step 6 removed the worktree, force-delete the branch:
 ```bash
@@ -371,7 +371,7 @@ the worktree and making the branch deletion below fail.
 
 **If Step 2 recorded `GIT_DIR == GIT_COMMON`:** Normal repo, no worktree to clean up. Done.
 
-**If Step 2 recorded MADE_BY `this session`:** you own cleanup. Run these from MAIN_ROOT, where Option 1 or 4 took you:
+**If Step 2 recorded MADE_BY `this session`:** you own cleanup. Run these from MAIN_ROOT, where Option 1 or 4 took you. On `allowed`, begin each call with `cd <MAIN_ROOT> &&`. If Option 1 or 4 handed the commands to your partner, give them these commands too, with every value written out, and wait for their result:
 
 ```bash
 git worktree remove <WORKTREE_PATH>
@@ -395,6 +395,8 @@ Then ask what to do, and wait. Delete the branch only once the worktree is gone.
 | 2. Create PR | yes | - | yes | yes | - |
 | 3. Keep as-is | - | - | - | yes | - |
 | 4. Discard | - | - | - | - | yes (force) |
+
+Options 1 and 4 delete the branch only when Step 6 removed the worktree. They do not when Step 2 recorded MADE_BY `launcher`.
 
 ## Common Mistakes
 
@@ -457,7 +459,7 @@ Then ask what to do, and wait. Delete the branch only once the worktree is gone.
 - Remove a worktree before confirming merge success
 - Remove a worktree that Step 2 did not record as MADE_BY `this session`, or judge who made it from its path
 - Run `git worktree remove` from inside the worktree
-- Add `--force` or `-f -f` to a refused `git worktree remove`, or unlock the worktree, without your partner's say
+- Add `--force` or `-f -f` to a refused `git worktree remove`, or unlock the worktree
 - Rewrite a command an isolated session refused, to get round the refusal
 
 **Always:**

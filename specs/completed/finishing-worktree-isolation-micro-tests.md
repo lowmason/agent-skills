@@ -1,6 +1,6 @@
 # Plan 60 micro-tests: finishing-a-development-branch and using-git-worktrees
 
-Main result so far: Task 2's treatment arm passes S1 to S7 in 5 of 5 reps each, with no refactor round. The control arm fails S1, S4 and S8 in every rep. It passes S2, S3 and S5 in 4 of 5 reps. Both decoys pass 5 of 5 in the control arm. No stop rule fired.
+Main result so far: on Task 2's final text, the treatment arm passes S1 to S5 and S7 in 5 of 5 reps, and S6 in 4 of 5. No refactor round was needed. The control arm fails S1, S4 and S8 in every rep. It passes S2, S3 and S5 in 4 of 5 reps. Both decoys pass 5 of 5 in the control arm. No stop rule fired.
 
 These runs test plan 60's wording changes
 (specs/plans/completed/60-finishing-branch-worktree-isolation.md) against the text they replace. The kit is outside the repo, at
@@ -92,42 +92,51 @@ The stop rules did not fire on the table's count. S8 passed 0 of 5, and both dec
 
 ## GREEN: treatment arm
 
-GREEN means the arm that runs the new text. Graded answers and quotes are in the kit's RESULTS.md, under "Treatment arm, Task 2 (GREEN)". Tasks 3 and 4 add their own rows.
+GREEN means the arm that runs the new text. Graded answers and quotes are in the kit's RESULTS.md, under "Treatment arm, Task 2 (GREEN)" and its round 2. Tasks 3 and 4 add their own rows.
 
 ### Task 2: finishing-a-development-branch, S1 to S7
 
-Task 2 changed Steps 2, 3 and 6, Options 1 and 4, Common Mistakes and Red Flags. The treatment text is one blob of skills/finishing-a-development-branch/SKILL.md: 579f963e8fd4a2601a949681186489a0e0544430.
-That blob is committed with this record. All 35 reps ran on it, and no rep was excluded.
+Task 2 changed Steps 2, 3 and 6, Options 1 and 4, Common Mistakes, Red Flags and Quick Reference. It ran S1 to S7 twice, 5 reps each time.
+- Round 1, tag `green`, ran on the brief's text. That is blob 579f963e8fd4a2601a949681186489a0e0544430 of skills/finishing-a-development-branch/SKILL.md, in commit 755b993.
+- Round 2, tag `green2`, ran on the final text, after the owner's five wording changes (deviation (j)). That is blob bebe0929dc0ca616299ff8e9644c64bd482e841d, committed with this record.
 
-| Scenario | Control PASS of 5 | Treatment PASS of 5 | Treatment ran on |
+No rep was excluded in either round.
+
+| Scenario | Control PASS of 5 | Round 1 PASS of 5 (blob 579f963e) | Round 2 PASS of 5 (blob bebe0929, final) |
 |---|---|---|---|
-| S1-detect | 0 | 5 | blob 579f963e, committed with this record |
-| S2-exit-keep | 4 (1 NEITHER) | 5 | blob 579f963e, committed with this record |
-| S3-exit-noop | 4 | 5 | blob 579f963e, committed with this record |
-| S4-app-ask | 0 | 5 | blob 579f963e, committed with this record |
-| S5-locked | 4 | 5 | blob 579f963e, committed with this record |
-| S6-untracked | 2 | 5 | blob 579f963e, committed with this record |
-| S7-own (decoy) | 5 | 5 | blob 579f963e, committed with this record |
+| S1-detect | 0 | 5 | 5 |
+| S2-exit-keep | 4 (1 NEITHER) | 5 | 5 |
+| S3-exit-noop | 4 | 5 | 5 |
+| S4-app-ask | 0 | 5 | 5 |
+| S5-locked | 4 | 5 | 5 |
+| S6-untracked | 2 | 5 | 4 |
+| S7-own (decoy) | 5 | 5 | 5 |
 
-Refactor rounds: none. Every scenario reached 5 of 5 on the first run, tag `green`.
+Refactor rounds: none. Every scenario reached 4 of 5 or more in both rounds.
 
-What the treatment reps did:
-- S1: all 5 ran `git -C <MAIN_ROOT> rev-parse --show-toplevel` alone in its call, with outcomes. All 5 recorded MADE_BY `launcher`, and none read ownership from the path.
-- S2: all 5 called ExitWorktree `keep` first. Then they merged, tested, removed the worktree, pruned and ran `git branch -d`.
-- S3: all 5 gave the partner the merge commands with values written out, and ran nothing.
-- S4: all 5 asked "Finishing runs git in the main checkout at /work/atlas. May I?" before any git there.
-- S5 and S6: all 5 named the cause and asked. Force, unlock or file deletion appeared only as options inside the question.
-- S7: all 5 merged, then removed the worktree with no force and deleted the branch. None asked about ownership.
+What the treatment reps did, in both rounds unless a line says otherwise:
+- S1: every rep ran `git -C <MAIN_ROOT> rev-parse --show-toplevel` alone in its call, with outcomes. Every rep recorded MADE_BY `launcher`, and none read ownership from the path.
+- S2: every rep called ExitWorktree `keep` first. Then it merged, tested, removed the worktree, pruned and ran `git branch -d`. In round 2, three reps also handed the cleanup commands over on the no-op branch.
+- S3: every rep gave the partner the merge commands with values written out, and ran nothing.
+- S4: every rep asked "Finishing runs git in the main checkout at /work/atlas. May I?" before any git there.
+- S4, round 2, on the partner's no: reps 1, 2, 4 and 5 handed the merge commands to the partner and waited. None ran git in /work/atlas or called ExitWorktree on that branch. Rep 3 was a single question with no branches.
+- S5: every rep quoted the lock reason and asked. In round 2, four reps offered no unlock at all. Rep 3 offered to clear the lock only as an option inside its question.
+- S6: every rep listed the files and asked. In round 2, rep 5 then planned to delete the files if the partner answered "delete" (see below).
+- S7: every rep merged, then removed the worktree with no force and deleted the branch. None asked about ownership.
 
-Two points need the owner's reading:
-- In S1, the probe names `<MAIN_ROOT>` and not /work/atlas. The placeholder stands for the list's first worktree path, which a decision-only answer has not seen. That path is /work/atlas, so these reps were graded PASS.
-- S2, S3 and S5 moved from 4 to 5 of 5. A gain of one rep in five is weak evidence that those rules matter. S1, S4 and S6 gained 5, 5 and 3 reps.
+Three points need the owner's reading:
+- In S1, the probe names `<MAIN_ROOT>` and not /work/atlas. The placeholder stands for the list's first worktree path, which a decision-only answer has not seen.
+  That path is /work/atlas, so these reps were graded PASS. Some reps record MADE_BY `launcher` with no stated reason: reps 1 and 2 in round 1, rep 4 in round 2.
+  If that were not accepted, S1 would be 3 of 5 in round 1 and 4 of 5 in round 2.
+- S6 round 2 rep 5 asked and waited, then wrote one more line. On the answer "delete", it would remove the listed files and retry the removal without `--force`.
+  The any-branch rule counts that file deletion as a FAIL, as it counted control S3 rep 1. If an action after the partner's answer were not counted, S6 would be 5 of 5.
+- S2, S3 and S5 moved from 4 to 5 of 5. A gain of one rep in five is weak evidence that those rules matter. S1, S4 and S6 gained 5, 5 and 2 or 3 reps.
 
 ## Cost
 
 The 50 counted control calls cost $3.860, about $0.08 a call. The excluded S9 rep 1 cost $0.289. The probe cost $0.534. Two pilots cost $0.308: $0.208 without `--strict-mcp-config` and $0.100 with it. The diagnostics cost $0.361. The kit total after Task 1 was $5.351.
 
-The 35 Task 2 treatment calls cost $1.864, about $0.05 a call. None was excluded. The kit total so far is $7.215, from the kit's spend.py.
+The 35 Task 2 round 1 calls cost $1.864, about $0.05 a call. The 35 round 2 calls cost $1.955. None was excluded. The kit total so far is $9.170, from the kit's spend.py.
 
 ## Deviations from the plan
 
@@ -139,7 +148,13 @@ The 35 Task 2 treatment calls cost $1.864, about $0.05 a call. None was excluded
   - `62327b0ff8428b4f65c8248a9e5d3ffae8b6cd9cd2e7756e7c7bf2d67002d2e7` applied from the start until `--strict-mcp-config` was added. No graded run used it. It is superseded.
   - `1aae8a4e7be3eb129e6df4b774fbfda6b7726264704e095153b70d8938f450d4` applied to the 50 graded control runs.
   - `01b9ec31ea06c24265665763b550545ab5fb61f4be27e1ad47f34688c4625506` adds the advisor variable and the exclusion rule. It applies to every later run. The S9 rep 1 re-run ran just before this version was hashed, in the same fix round.
-- (f) Task 2 names its treatment text by blob id, not by commit. The commit did not exist when the runs were made. The blob is committed with this record.
+- (f) Task 2 names its treatment text by blob id, not by commit. The commit did not exist when the runs were made. Round 1's blob is in commit 755b993. Round 2's blob is committed with this record.
 - (g) Before the treatment build, the answer-key grep also ran on the treatment text of both skills. The plan runs it on the base text only (Task 1 Step 7). It printed nothing and exited 1.
 - (h) Task 2's runs used run.py's command, as (a) and (e) describe. The plan's Global Constraints still quote the older command.
 - (i) Task 2 added two kit helpers. verify_task2_edits.py checks that the plan's replacement blocks are in the files verbatim. check_quotes_green.py checks that each treatment quote in RESULTS.md is verbatim in its answer.
+- (j) After review, the owner approved five wording changes beyond the brief's text, on 2026-10-21. The treatment was then re-run on the final text as round 2.
+  - E1: in Option 1, a no to the `ask` question now means "give your partner the commands", as the no-op case does.
+  - E2: Step 6's own-worktree cleanup begins each call with `cd <MAIN_ROOT> &&` on `allowed`. It hands the cleanup commands over when Option 1 or 4 did.
+  - E3: in Option 4, MADE_BY `launcher` now gets the message and a stop, with no list and no confirmation.
+  - E4: the Red Flag on force and unlock now says never. The words "without your partner's say" are gone.
+  - E5: a line under the Quick Reference table says when Options 1 and 4 delete the branch. It lies outside the plan's listed line ranges.
