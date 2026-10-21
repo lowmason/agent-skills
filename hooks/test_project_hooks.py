@@ -165,3 +165,116 @@ def test_ruff_check_reports_a_missing_uv(ruff_shim):
     assert proc.returncode == 1, proc.stderr
     assert proc.stderr.splitlines()[0] == (
         'ruff-check: ruff unavailable (exit 127), so lint was not checked.')
+
+
+# --- uv-guard.sh (PreToolUse on Bash) -------------------------------------------
+
+def bash_payload(command):
+    return {'hook_event_name': 'PreToolUse', 'tool_name': 'Bash',
+            'tool_input': {'command': command}}
+
+
+# Blocked before this plan: the first token of a subcommand is python, python3 or
+# pytest, or the command holds a pip install.
+BLOCKED_BY_FIRST_TOKEN = [
+    'python x.py',
+    'python3 -c "print(1)"',
+    'pytest -q',
+    'cd src && python x.py',
+    'cat x | python -',
+    'pip install requests',
+    'uv run python -m pip install requests',
+]
+# The leaks: a versioned name, a path, or a prefix before the command word.
+BLOCKED_PAST_PREFIXES = [
+    'python3.13 x.py',
+    '.venv/bin/python x.py',
+    '/usr/bin/python3 x.py',
+    '.venv/bin/pytest -q',
+    'FOO=1 python x.py',
+    'FOO=1 BAR=2 pytest',
+    'time pytest -q',
+    'env python x.py',
+    'env FOO=1 python x.py',
+    'command python x.py',
+    'ls && time python3.12 x.py',
+]
+ALLOWED = [
+    'uv run python x.py',
+    'uv run pytest -q',
+    'uvx ruff check .',
+    'FOO=1 uv run python x.py',
+    'time uv run pytest -q',
+    'echo python',
+    'which python',
+    'command -v python',
+    'command -V python3',
+    'env',
+    'env | grep PATH',
+    'ls python/ && cat pytest.ini',
+    'ipython',
+    'python3-config --prefix',
+    './tools/python-lint.sh',
+    'git commit -m "python fix"',
+    'python x.py  # no-uv-guard',
+]
+
+
+@pytest.mark.parametrize('command', BLOCKED_BY_FIRST_TOKEN + BLOCKED_PAST_PREFIXES)
+def test_uv_guard_blocks(shim, command):
+    proc = run_hook(UV_GUARD, bash_payload(command), shim)
+    assert proc.returncode == 2, proc.stderr
+    assert proc.stderr.startswith('uv-guard: ')
+
+
+@pytest.mark.parametrize('command', ALLOWED)
+def test_uv_guard_allows(shim, command):
+    proc = run_hook(UV_GUARD, bash_payload(command), shim)
+    assert proc.returncode == 0, proc.stderr
+    assert proc.stderr == ''
+
+
+def test_uv_guard_allows_a_payload_without_a_command(shim):
+    proc = run_hook(UV_GUARD, {'hook_event_name': 'PreToolUse', 'tool_name': 'Bash',
+                               'tool_input': {}}, shim)
+    assert proc.returncode == 0, proc.stderr
+    assert proc.stderr == ''
+
+
+# hooks/README.md names these gaps. When one closes, move it to BLOCKED_PAST_PREFIXES
+# and drop it from the README's list.
+DOCUMENTED_GAPS = [
+    'env -i python x.py',
+    'time -p pytest',
+    'nohup python x.py',
+    'FOO="a b" python x.py',
+    '(python x.py)',
+    'bash -c "python x.py"',
+]
+
+
+@pytest.mark.parametrize('command', DOCUMENTED_GAPS)
+def test_uv_guard_lets_the_documented_gaps_through(shim, command):
+    proc = run_hook(UV_GUARD, bash_payload(command), shim)
+    assert proc.returncode == 0, proc.stderr
+
+
+@pytest.mark.parametrize('command, message', [
+    pytest.param('python x.py',
+                 "use 'uv run python x.py' instead of bare 'python' (uv-managed project).",
+                 id='python'),
+    pytest.param('pytest -q', "use 'uv run pytest -q' instead of bare 'pytest'.", id='pytest'),
+    pytest.param('FOO=1 python x.py',
+                 "use 'FOO=1 uv run python x.py' instead of bare 'python' (uv-managed project).",
+                 id='assignment'),
+    pytest.param('.venv/bin/python x.py',
+                 "use 'uv run python x.py' instead of bare '.venv/bin/python' "
+                 '(uv-managed project).',
+                 id='path'),
+    pytest.param('time pytest -q', "use 'time uv run pytest -q' instead of bare 'pytest'.",
+                 id='time'),
+])
+def test_uv_guard_suggests_the_uv_form(shim, command, message):
+    proc = run_hook(UV_GUARD, bash_payload(command), shim)
+    assert proc.returncode == 2, proc.stderr
+    assert proc.stderr == f'uv-guard: {message}\n'

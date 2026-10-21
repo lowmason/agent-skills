@@ -188,7 +188,7 @@ fails open.
 [`hooks/README.md`](hooks/README.md) has the details for both groups. It gives the copy-in
 procedure, the settings JSON to merge, and an optional permission allowlist that stops the `uv`
 forms from prompting in manual permission mode. It also gives the guard's global install and tests,
-and each script's known limits. One notable limit: `uv-guard.sh` is a first-token heuristic, not a
+and each script's known limits. One notable limit: `uv-guard.sh` is a command-word heuristic, not a
 shell parser.
 
 ## Rules

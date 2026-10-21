@@ -90,10 +90,21 @@ re-copy when you update a template here.
 ## Limitations (by design — tune per repo)
 
 - **`uv-guard.sh` is a heuristic, not a shell parser.** It splits on `&& || ; | &` and
-  checks each subcommand's *first* token, so `uv run python x.py`, `echo python`, and
-  `which python` pass, while `python x.py` and `cat x | python -` are blocked. A
-  `python` invoked deeper inside a quoted string could slip through — acceptable for a
-  guardrail. Drop the `pytest)` case if you run pytest outside uv anywhere.
+  checks each subcommand's command word. That is its first token after any leading
+  `VAR=value` assignments and the prefix words `time`, `env` and `command`. A path
+  counts by its last part, so `.venv/bin/python` is `python`, and a version suffix
+  (`python3.13`) still matches. So `uv run python x.py`, `echo python`, `which python`
+  and `command -v python` pass, while `python x.py`, `FOO=1 python x.py`,
+  `time pytest -q` and `cat x | python -` are blocked. These can still slip through,
+  which is acceptable for a guardrail:
+  - an option of a prefix word: `env -i python x.py`, `time -p pytest`
+  - another prefix command: `exec`, `nohup`, `nice`, `sudo`, `xargs`
+  - an assignment whose quoted value holds a space: `FOO="a b" python x.py`
+  - a subshell, `$(…)` or backticks: `(python x.py)`
+  - a `python` inside a quoted string: `bash -c "python x.py"`
+
+  `DOCUMENTED_GAPS` in `test_project_hooks.py` pins this list. Drop the `pytest` branch
+  if you run pytest outside uv anywhere.
 - **`ruff-fix.sh` is best-effort.** PostToolUse runs *after* the write and cannot undo
   it; if `uv run ruff` errors (e.g. the file isn't in a uv project) it silently no-ops.
   `ruff-check.sh` (Stop) is the backstop for anything `--fix` can't resolve.
