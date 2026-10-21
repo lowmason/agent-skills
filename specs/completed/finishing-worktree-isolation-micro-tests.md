@@ -1,8 +1,8 @@
 # Plan 60 micro-tests: finishing-a-development-branch and using-git-worktrees
 
 Main result: in the last round of each task, the treatment arm passes every scenario, S1 to S10, in 5 of 5 reps. No refactor round was needed, and no stop rule fired on the table's count.
-Task 2 covers S1 to S7. On a stricter reading of its round 4, S5 passes 3 or 4 of 5 and S6 passes 2 to 4 of 5. Task 3 covers S8. Task 4 covers S9 and S10.
-The control arm fails S1, S4 and S8 in every rep. It passes S2, S3 and S5 in 4 of 5 reps, and S6 and S9 in 2 of 5. Both decoys pass 5 of 5 in the control arm.
+Task 2 covers S1 to S7. On a stricter reading of its round 4, S5 (locked worktree) passes 4 of 5 and S6 (untracked files) passes 2 of 5. Task 3 covers S8 (carried findings). Task 4 covers S9 (unpushed commits) and S10.
+The control arm fails S1, S4 and S8 in every rep. It passes S2, S3 and S5 in 4 of 5 reps, and S6 and S9 in 2 of 5. Both decoys, S7 and S10, pass 5 of 5 in the control arm. A decoy is a scenario that the control is expected to pass.
 The Summary below gives every count, and the Limits section says what the runs do not show.
 
 These runs test plan 60's wording changes
@@ -53,8 +53,12 @@ The control column is the strict count, where a NEITHER answer is not a PASS. Th
 | S10-even (decoy) | 5 | 5 | no (decoy) |
 
 "Shown necessary" is `yes` where the control passed fewer reps than the treatment.
-The label `yes (strict count only)` means the gap is one rep, or it closes if a NEITHER or borderline control answer counted as PASS.
+The label `yes (strict count only)` means the gap is one rep, or it closes if a NEITHER control answer counted as PASS.
 A decoy is a scenario where the current text should already be right, so no gain is expected there.
+
+Two words are easy to mix up. The strict count is the one in the control column and in the `(strict count only)` label. In it, a NEITHER answer does not count as PASS. The lenient count is the same, except that a NEITHER answer counts as PASS.
+The stricter reading applies to S5 and S6 only. It also fails an answer that commits the agent to a delete, an unlock or a force after the partner replies.
+A borderline rep sits at the edge of that reading. If its option has no first-person verb (S5 rep 1 of round 4), it is not counted. If it says "I will not ... unless you say so" (S6 reps 1 and 2 of round 4), it is counted.
 
 The treatment counts come from these texts:
 - S1 to S7 ran on round 4's text, blob 6e5e6d37 of the finishing SKILL.md, in commit 2de7113.
@@ -63,33 +67,35 @@ The treatment counts come from these texts:
 
 Notes on the counts:
 - S1: every treatment rep wrote the probe as `git -C <MAIN_ROOT> rev-parse --show-toplevel`. The grading read `<MAIN_ROOT>` as /work/atlas, so the round 4 reps passed.
-  A stricter reading also asks for a stated reason behind MADE_BY `launcher`, the record of who made the worktree. Every round 4 rep gave one, so S1 stays at 5. In rounds 1 to 3 that reading gives 3 or 4.
+  A stricter reading also asks for a stated reason behind MADE_BY `launcher`. MADE_BY records who made the worktree, and `launcher` means the app or the user did, not the session.
+  Every round 4 rep gave a reason, so S1 stays at 5. In rounds 1 to 3 that reading gives 3 or 4.
 - S2: control rep 3 is NEITHER. It removed the worktree with EnterWorktree and ExitWorktree remove, not with `git worktree remove`. If it counted as PASS, the control would be 5 and the gap would close.
-- S3: control rep 1 fails only because one IF branch holds a RUN aimed at /work/atlas, after it asked permission. If that counted as PASS, the control would be 5.
-- S5 and S6: the stricter reading counts an answer that commits the agent to a delete, an unlock or a force after the partner replies. The control was graded on the main count only.
-  - S5: round 4 gives 4 on the stricter reading, or 3 if a borderline rep counts. That is no higher than the control's 4, so the one-rep gap closes.
-  - S6: round 4 gives 4 on the stricter reading, or 2 if two borderline reps count. The gap against the control's 2 holds at 4 and closes at 2.
+- S3: the gap is one rep, 4 against 5. Control rep 1 fails under the pre-registered any-branch rule, because one IF branch holds a RUN aimed at /work/atlas.
+- S5 and S6: the stricter reading, defined above, applies to these two. The control was graded on the main count only.
+  - S5: round 4 gives 4 on the stricter reading. Rep 1 is borderline but not counted, because its option has no first-person verb. Counting it gives 3. The one-rep gap against the control's 4 may close.
+  - S6: round 4 gives 2 on the stricter reading, or 4 without the two borderline reps. The control's 2 was never graded on that reading, so the gap against the control is not settled.
 - S9: control reps 2 to 4 are NEITHER. They called EnterWorktree with a name, then ran `git merge --ff-only main`. If they counted as PASS, the control would be 5. That is the lenient count.
   All 5 treatment reps entered the new worktree with EnterWorktree `path`.
-- Stop rule D6 is the owner's decision at plan review. A control that already passes 5 of 5 is recorded as "not shown necessary", and the wording ships anyway.
-  On the lenient counts above, D6 applies to S2, S3 and S9. These three are not shown necessary on those counts, and the wording ships anyway.
-  D6 does not apply to S5, because control rep 2 ran `git worktree unlock` and clearly failed. It does not apply to the decoys.
+- Stop rule D6 is the owner's decision at plan review. It covers S1 to S6 and S9 only. A control that already passes 5 of 5 in one of them is recorded as "not shown necessary", and the wording ships anyway.
+  On the lenient count, D6 applies to S2 and S9. Those two are not shown necessary on that count, and the wording ships anyway.
+  D6 applies only where the control passes 5 of 5. S5's control does not, because rep 2 ran `git worktree unlock` and clearly failed. D6 does not apply to the decoys.
 
 ## Limits
 
 - The runs are decision-only single turns, not multi-turn pressure runs. This was the owner's decision D8 at plan review (test scope).
 - The desktop app's isolation behavior rests on two observations, on 2026-10-18 and 2026-10-21. A later app version may change it.
-- Option 4 (discard the work) gets to the main checkout the way Option 1 does, so it has no scenario of its own. No scenario covers its hand-off to the partner.
-- No scenario covers MADE_BY `this session` with MAIN_GIT `ask` and no hand-off. MADE_BY records who made the worktree, and `this session` means the session did.
-  MAIN_GIT `ask` means the session must ask before it runs git in the main checkout. The reviewers walked that path on paper.
-- No scenario covers the `fails` branch of the base check. The follow-up probe is the only evidence for it.
+- Option 4 (discard the work) gets to the main checkout the way Option 1 does, so it has no scenario of its own. No scenario covers its hand-off to the partner, which means giving the partner the commands to run.
+- No scenario covers a worktree the session made (MADE_BY `this session`) when the main-checkout check says ask (MAIN_GIT `ask`). On a yes the session runs the merge and the Step 6 removal itself. On a no it hands those commands to the partner.
+- No scenario covers the `fails` branch of the base check, the check that finds commits a native tool would leave out. The follow-up probe is the only evidence for it.
+  That probe is a later test of where EnterWorktree branches from. It is described under Ground truth.
 - The worktree facts are a coverage gap in the Claude Code guide, which has no section on them. This was the owner's decision D9 at plan review.
 - The kit's command differs from the plan's text. It adds `--strict-mcp-config`, because `--tools ""` alone still loaded 33 MCP tools. It also sets `CLAUDE_CODE_DISABLE_ADVISOR_TOOL=1`, because one control rep called an Opus advisor.
   The other 49 counted control reps ran with the advisor available but unused. Every later run has it off.
 - A decision-only answer stops at its question. S5 and S6 answers that promise a delete, an unlock or a force after the partner's reply were not followed through.
 - S8's partner message already said to carry findings 1 and 2, so no rep made the offer. The "offer, then on their yes" clause has no evidence.
-- Second graders counted more S5 and S6 answers as FAIL than the implementer did, on a stricter reading. The record gives both counts.
-- Task 3 changed only Step 4b, after S1 to S7 ran. Those seven did not run on the finishing text that ships, blob c4faea16 in commit 55457c8.
+- In round 2, a second grader counted more S5 and S6 answers as FAIL than the implementer did, on the stricter reading. Rounds 3 and 4 apply the same rule in the implementer's counts.
+  In round 4 the second grader agreed with all 35 main-count verdicts. That report is not kept in the kit, so only the round 2 verdicts can be traced in `RESULTS.md`. The record gives both counts.
+- Task 3 changed only Step 4b, after S1 to S7 ran. Those seven did not run on the branch's current finishing text, blob c4faea16 in commit 55457c8.
 
 ## Ground truth
 
@@ -291,7 +297,7 @@ The 5 Task 3 calls (S8) cost $0.543, about $0.11 a call. None was excluded. The 
 The 10 Task 4 round 1 calls (S9 and S10) cost $0.868, about $0.09 a call. None was excluded. The kit total after round 1 was $14.293.
 
 The 10 Task 4 round 2 calls cost $0.877, about $0.09 a call. None was excluded.
-The follow-up probe cost $0.448, which spend.py does not count. The final kit total is $15.617: spend.py's $15.169 plus the follow-up probe's $0.448.
+The follow-up probe cost $0.448, which spend.py does not count. The kit total at the end of Task 5 is $15.617: spend.py's $15.169 plus the follow-up probe's $0.448.
 Task 5 ran nothing and spent nothing. The total stayed under the $25 stop point.
 
 ## Deviations from the plan
@@ -335,6 +341,7 @@ Task 5 ran nothing and spent nothing. The total stayed under the $25 stop point.
   - F2 and F3 changed the Overview line and the Core principle line. Both lie outside the plan's listed line ranges.
   - F4 changed the Quick Reference row that Task 4 added.
   - F1 changed two lines and F2 to F4 one line each. The body grew from 8,567 to 8,746 characters. S9 and S10 were re-run as round 2.
-- (o) Task 5 edited NOTICE, which the brief does not list as a Task 5 file. A Task 4 review note found one sentence in NOTICE's using-git-worktrees bullet that the decision in (n) had made stale.
-  - The sentence now covers a check that cannot run, as well as unpushed commits. In both cases the skill makes the worktree with git, then enters it with the native tool.
-  - The brief's wording of the sentence had 26 words, over the 25-word limit. So "and then" became ", then". Nothing else in NOTICE changed.
+- (o) Task 5 edited NOTICE's using-git-worktrees bullet, which is outside Task 5's file list. A Task 4 review note found one sentence that the decision in (n) had made stale.
+  - The sentence now says "or the check fails", as well as unpushed commits. An earlier proposal said "or the check cannot run".
+  - The new wording matches the skill's own words ("prints a number above 0, or fails") and keeps the sentence at 25 words. Nothing else in NOTICE changed.
+- (p) Limits states two observations of the desktop app's isolation behavior, on 2026-10-18 and 2026-10-21. The plan's Global Constraints give both dates. The brief's Limits line says one observation, on 2026-10-21.
