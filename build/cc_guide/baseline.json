@@ -322,7 +322,7 @@
     "release": "2.1.288",
     "date": "2026-10-03"
    },
-   "text_hash": "sha256:5ca681ae7b03e24edd2f8389649b80d923d51b3bf2e2b54b5ba142f9f05dd7c8"
+   "text_hash": "sha256:d85ccb859e999fe788e5ae517c5902969f71f0a6d13b8edd619f5bc615256463"
   },
   "hooks.patterns": {
    "checked": {
