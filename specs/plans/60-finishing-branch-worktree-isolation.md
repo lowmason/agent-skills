@@ -181,7 +181,8 @@ This is a test of command behavior in a scratch repository. Use the Bash tool fo
 11. git status --porcelain --untracked-files=normal
 12. Call the ExitWorktree tool with action "keep".
 13. git -C /private/tmp/plan60-probe/main rev-parse --show-toplevel
-14. pwd
+14. git worktree list --porcelain
+15. pwd
 
 Finally, print one line per step: the step number, ALLOWED or REFUSED, and the first 300 characters of the tool result, verbatim.
 ```
@@ -640,7 +641,8 @@ python3 /Users/lowell/.cache/agent-skills/scratch/plan60-micro/probe/summary.py
 ```
 
 Expected, matching the planning run on Claude Code 2.1.304:
-- In `stream.jsonl`, the Bash calls for steps 1, 5, 6, 7 and 10 are REFUSED. Step 1's text starts "This session is isolated in the worktree". Steps 2–4, 8, 9, 11, 13 and 14 are ALLOWED, and so is ExitWorktree (step 12), whose text says the session is back in `/private/tmp/plan60-probe/main`.
+- In `stream.jsonl`, the Bash calls for steps 1, 5, 6, 7 and 10 are REFUSED. Step 1's text starts "This session is isolated in the worktree". Steps 2–4, 8, 9, 11 and 13–15 are ALLOWED, and so is ExitWorktree (step 12), whose text says the session is back in `/private/tmp/plan60-probe/main`.
+- Step 14 is new since planning. Note whether its list still shows `locked claude session probe` on the `.claude/worktrees/probe` entry after the exit. Either result is acceptable. If the lock stays, a finish from an EnterWorktree worktree ends at Step 6's refusal ask, and the record says so.
 - In `noop.jsonl`, ExitWorktree is REFUSED, with text that starts "<tool_use_error>No-op: there is no active EnterWorktree session to exit."
 - In `git-refusals.txt`, `wt-lock` ends `use 'remove -f -f' to override or unlock first`, and `wt-untracked` and `wt-mod` each end `use --force to delete it`.
 
@@ -739,8 +741,8 @@ Create `specs/completed/finishing-worktree-isolation-micro-tests.md`:
 ```markdown
 # Plan 60 micro-tests: finishing-a-development-branch and using-git-worktrees
 
-These runs test plan 60's wording changes (specs/plans/60-finishing-branch-worktree-isolation.md)
-against the text they replace. The kit is outside the repo, at
+These runs test plan 60's wording changes
+(specs/plans/completed/60-finishing-branch-worktree-isolation.md) against the text they replace. The kit is outside the repo, at
 ~/.cache/agent-skills/scratch/plan60-micro/.
 
 ## Design
@@ -756,7 +758,8 @@ pre-registered table in the kit's PREREGISTRATION.md (sha256 <hash from Step 6>)
 ## Ground truth
 
 Probe re-run on <claude --version output> and <git --version output>, <date>: <one line per step
-that says it matched the plan's Evidence table, or what differed>. Pilot: <tools, turns, skills>.
+that says it matched the plan's Evidence table, or what differed>. After ExitWorktree keep, the
+session's own worktree <kept or lost> its `locked claude session` line. Pilot: <tools, turns, skills>.
 
 ## Scenarios
 
