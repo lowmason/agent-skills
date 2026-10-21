@@ -123,6 +123,20 @@ def test_a_pass_appends_a_row_from_a_fresh_scratch_directory_that_is_then_remove
                      f'  raw output: {run_dir}', f'appended 1 row(s) to {state.PROBES}; nothing is committed']
 
 
+def test_two_runs_in_one_second_each_get_a_run_directory_of_their_own(repo, tmp_path, claude):
+    '''Two runs that start in the same second, from two worktrees or a
+    scripted loop, must not share a run directory: the second would
+    truncate the first's streams, and assess could read the other run's.'''
+    other = {**TOOLS_PASS, 'probe-with-bash': stream(init(session='s-2'), RESULT)}
+    lines = [line for fake in (FakeRuns(TOOLS_PASS), FakeRuns(other))
+             for line in run(repo, tmp_path, claude, fake, only=['agent-tools'])[1]]
+    dirs = [Path(line.removeprefix('  raw output: ')) for line in lines if line.startswith('  raw output: ')]
+    probes_dir = tmp_path / 'cache' / 'probes'
+    assert dirs == [probes_dir / '20261020T140000-agent-tools', probes_dir / '20261020T140000-agent-tools-2']
+    assert [(d / 'probe-with-bash.jsonl').read_text() for d in dirs] == [TOOLS_PASS['probe-with-bash'],
+                                                                         other['probe-with-bash']]
+
+
 def test_a_divergence_or_an_error_exits_one_and_is_logged(repo, tmp_path, claude):
     fake = FakeRuns({'stop': STOP_PASS, **TOOLS_PASS}, side={'stop': stop_log('false', 'false', 'true')},
                     timeout=['probe-with-bash'])

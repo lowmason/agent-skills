@@ -9,6 +9,7 @@ working tree, which nothing commits. `binaries` lists the candidate
 binaries with their versions.'''
 import contextlib
 import getpass
+import itertools
 import json
 import os
 import re
@@ -381,6 +382,21 @@ def inside_a_repo(path: Path) -> bool:
     return proc.returncode == 0 and proc.stdout.strip() == 'true'
 
 
+def new_run_dir(parent: Path, stem: str) -> Path:
+    '''A run directory of its own under parent: stem, or stem-2, stem-3 and
+    so on once a run in the same second has taken it. mkdir without
+    exist_ok claims a name or fails, so two runs, from two worktrees or a
+    scripted loop, never share one.'''
+    parent.mkdir(parents=True, exist_ok=True)
+    for n in itertools.count(1):
+        path = parent / (stem if n == 1 else f'{stem}-{n}')
+        try:
+            path.mkdir()
+        except FileExistsError:
+            continue
+        return path
+
+
 def run_probe(pid: str, claude: str, repo: Path, run_dir: Path, execute: Execute = execute) -> Verdict:
     '''One probe, from a fresh temporary directory that is removed after the
     verdict; its raw output stays in run_dir. A setup failure, a timeout or
@@ -508,7 +524,7 @@ def run(repo: Path, cache: Path, claude: Path, *, only: list[str] | None, force:
     lines, outcomes = [f'probes: {version} at {shown_path(claude)}'], []
     with term_as_exit():
         for pid in dict.fromkeys(chosen):
-            run_dir = cache / 'probes' / f"{now.strftime('%Y%m%dT%H%M%S')}-{pid}"
+            run_dir = new_run_dir(cache / 'probes', f"{now.strftime('%Y%m%dT%H%M%S')}-{pid}")
             verdict = run_probe(pid, str(claude), repo, run_dir, execute)
             append_row(repo / PROBES, log_row(today, version, claude, pid, verdict, allow_old))
             outcomes.append(verdict.outcome)

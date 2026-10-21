@@ -5762,7 +5762,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       packet was built, so it needs a new files pass. `cli.py lint` prints 6 STALE files.
 
 ## 58-claude-code-drift-automation — 2026-10-20
-- [ ] Two runs of one probe in the same second share a run directory (final reviews: Codex P2,
+- [x] Two runs of one probe in the same second share a run directory (final reviews: Codex P2,
       and the code-reviewer's Minor M6, which it ranked not worth tracking; the owner chose to
       defer). `probes.run` names the raw-output folder `<cache>/probes/<YYYYmmddTHHMMSS>-<probe id>`,
       and `probes.run_probe` creates it with `exist_ok=True`. Two invocations in one second (two
@@ -5770,6 +5770,10 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       the other run's output. Only the log append is locked. Files: `build/cc_guide/probes.py`.
       Size: quick-fix. Done when: the folder is created with a unique suffix (`mkdir(exist_ok=False)`
       with a counter, or `tempfile.mkdtemp` under `probes/`) and a test starts two runs in one second.
+      → done 2026-10-21 (/deferred quick fix): `probes.new_run_dir` claims the folder with
+      `mkdir` and no `exist_ok`, and adds `-2`, `-3` and so on when a run in the same second
+      holds the name. A test runs one probe twice in one second and checks that each folder
+      keeps its own stream.
 - [ ] `held_signals` drops a real stop that follows an ignored signal (final review, Minor M2).
       In `build/cc_guide/probes.py`, `held_signals` records every held signal, even one whose
       previous handler is `SIG_IGN`, and then acts only on the first. A `nohup`-started run that
