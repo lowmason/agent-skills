@@ -136,6 +136,10 @@ TRANSCRIPTS = {'Explore': [{'model': 'claude-haiku-5-5', 'effort': 'low'}],
      (ERROR, 'code-reviewer hit an API error: a message from model <synthetic>')),
     (pins_run({'Explore': '<synthetic>'}), TRANSCRIPTS,
      (ERROR, 'Explore hit an API error: a message from model <synthetic>')),
+    # A field missing from the undocumented transcript layout is a broken mechanism, never a divergence (R10.5).
+    (pins_run({'Explore': None}), TRANSCRIPTS, (ERROR, 'Explore forwarded a message with no model field')),
+    (pins_run(), {**TRANSCRIPTS, 'code-reviewer': [{'model': 'claude-opus-5-5'}]},
+     (ERROR, 'a code-reviewer transcript line has no effort field')),
 ])
 def test_agent_model_pins(events, transcripts, verdict):
     assert pc.assess_agent_model_pins(events, transcripts) == verdict

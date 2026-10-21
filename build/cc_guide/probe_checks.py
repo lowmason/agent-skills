@@ -154,8 +154,10 @@ def assess_agent_model_pins(events: list[dict] | None, transcripts: dict[str, li
     Each subagent's model is read from its forwarded messages; its effort,
     which the stream lacks, from its transcript lines (R10.5). A message of
     model <synthetic>, in either, means an API error broke the run: ERROR.
-    `transcripts` maps an agent type to its lines, each {'model': ...,
-    'effort': ...}.'''
+    So does a forwarded message with no model, or a code-reviewer line with
+    no effort: the transcript layout is undocumented, so a missing field is
+    a broken mechanism, not a divergence. `transcripts` maps an agent type
+    to its lines, each {'model': ..., 'effort': ...}.'''
     why = broken(events)
     if why:
         return Verdict(ERROR, why)
@@ -172,10 +174,14 @@ def assess_agent_model_pins(events: list[dict] | None, transcripts: dict[str, li
             return Verdict(ERROR, f'no transcript lines for {agent}')
         if SYNTHETIC in forwarded | {line.get('model') for line in transcripts[agent]}:
             return Verdict(ERROR, f'{agent} hit an API error: a message from model {SYNTHETIC}')
+        if None in forwarded:
+            return Verdict(ERROR, f'{agent} forwarded a message with no model field')
         models[agent] = forwarded
+    efforts = {line.get('effort') for line in transcripts[REVIEWER]}
+    if None in efforts:
+        return Verdict(ERROR, f'a {REVIEWER} transcript line has no effort field')
     wrong = [f"{agent} served {', '.join(sorted(map(str, models[agent])))}" for agent in HAIKU_AGENTS
              if not all('haiku' in str(m) for m in models[agent])]
-    efforts = {line.get('effort') for line in transcripts[REVIEWER]}
     if efforts != {REVIEWER_EFFORT}:
         wrong.append(f"{REVIEWER} effort {', '.join(sorted(map(str, efforts)))}")
     if wrong:

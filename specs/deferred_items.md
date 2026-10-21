@@ -5785,7 +5785,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       `SIG_IGN` alone, as `term_as_exit` does, so it is neither recorded nor raised. A child
       Python that ignores SIGHUP gets SIGHUP then SIGTERM in a held window, and its SIGTERM
       handler runs once.
-- [ ] A missing transcript field reads DIVERGES, not ERROR (final review, Minor). In
+- [x] A missing transcript field reads DIVERGES, not ERROR (final review, Minor). In
       `build/cc_guide/probe_checks.py`, `assess_agent_model_pins` reports a forwarded message with no
       `model`, or a code-reviewer transcript with no `effort`, as DIVERGES ("served None", "effort
       None"). Drift spec R10.5 reserves DIVERGES for behaviour that differs from the guide, and ERROR
@@ -5793,6 +5793,10 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       field rename would send the owner on a paid `verify` run. Size: quick-fix. Done when: a `None`
       model or effort is ERROR with a finding that names the field, and `test_probe_checks.py` pins it.
       Revisit if: Claude Code documents the subagent transcript format.
+      → done 2026-10-21 (/deferred quick fix): a forwarded message with no `model` is ERROR
+      ("<agent> forwarded a message with no model field"), and so is a code-reviewer transcript
+      line with no `effort` ("a code-reviewer transcript line has no effort field"), checked
+      before any DIVERGES. `test_probe_checks.py` pins both findings.
 - [ ] A log row after a blank line is silently skipped (final review, Minor). In
       `build/cc_guide/state.py`, `parse_probes` resets the header on any non-table line, so the
       next `|` line is read as a new header and skipped as "another table". A hand edit or a merge
