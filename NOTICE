@@ -105,8 +105,11 @@ prithivrajmu/asd-ste100 unchanged and re-pinned only the linter below.
     the same day). It keeps upstream's double quotes and layout so that a
     comparison with upstream stays clean. That version includes long-sentence
     word-count fixes by Yuri Perin (https://github.com/yupasik), merged
-    upstream as pull requests #25 and #26. The repository's three
-    agent-facing examples (Examples A to C of
+    upstream as pull requests #25 and #26. Upstream, tim kennedy
+    (https://github.com/tksunw) wrote the linter's first version, and
+    kidego5150 (https://github.com/kidego5150) and Lloyd Douglass
+    (https://github.com/theamericandrm) changed it later. The repository's
+    three agent-facing examples (Examples A to C of
     examples/before-after.md: a tool description, an error message and an
     inter-agent instruction) are test cases in the skill's test record, not
     skill text.

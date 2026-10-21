@@ -11,6 +11,9 @@ scripts/ste-lint.py is copied unchanged from a later commit,
 cd62d297d5ef7cf9f59718cadc233ab2876ea013 (2026-10-21, retrieved the same day).
 That version includes long-sentence word-count fixes by Yuri Perin
 (https://github.com/yupasik), merged upstream as pull requests #25 and #26.
+Upstream, tim kennedy (https://github.com/tksunw) wrote the linter's first
+version, and kidego5150 (https://github.com/kidego5150) and Lloyd Douglass
+(https://github.com/theamericandrm) changed it later.
 
 MIT License
 
