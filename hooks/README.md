@@ -69,9 +69,10 @@ Then add to that repo's `.claude/settings.json` (merge if it exists):
 ```
 
 Then trigger each blocking hook once to confirm it is wired: a hook command that does
-not resolve fails open, so a typo in the path above disables the gate silently. Ask
-Claude to run `python -c 'print(1)'` (uv-guard should block it) and to end a turn with
-a lint error in a `.py` file (ruff-check should block the stop).
+not resolve fails open, so a typo in the path above disables the gate. The only sign is
+the error's first stderr line in the transcript. Ask Claude to run `python -c 'print(1)'`
+(uv-guard should block it) and to end a turn with a lint error in a `.py` file
+(ruff-check should block the stop).
 
 Optionally pair with a permission allowlist in the same file so the `uv` forms don't
 prompt. The `uv run` rule holds in manual permission mode only: auto mode sets aside
