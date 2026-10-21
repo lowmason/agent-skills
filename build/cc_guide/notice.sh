@@ -9,7 +9,7 @@
 # languages share, and the order they are written and read in.
 # Test seams: CC_GUIDE_UV_FALLBACK, colon-separated directories searched for uv after PATH,
 # and CC_GUIDE_BUDGET, the seconds the check may run.
-# cc-guide: hooks.events hooks.exit-codes hooks.configuration hooks.patterns hooks.pitfalls lean.model-routing rules.settings @2.1.304.2
+# cc-guide: hooks.events hooks.exit-codes hooks.configuration hooks.patterns hooks.pitfalls lean.model-routing rules.settings @2.1.306
 
 DAY=86400             # seconds; notice.py measures a day the same way
 LOCK_MINUTES=60       # R9.3: a lock older than an hour is broken
