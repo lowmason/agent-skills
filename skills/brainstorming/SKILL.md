@@ -11,7 +11,7 @@ metadata:
   author: 'Jesse Vincent'
   adapted_by: 'Lowell Mason'
   source: 'https://github.com/obra/superpowers'
-# cc-guide: lean.session-hygiene @2.1.302
+# cc-guide: lean.session-hygiene @2.1.304.2
 ---
 
 # Brainstorming Ideas Into Designs

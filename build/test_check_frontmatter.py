@@ -690,7 +690,20 @@ def test_unknown_frontmatter_key_still_rejected(tmp_path):
         'name: bogus-skill\ndescription: Use when testing.\nbogus-key: nope',
     )
     errs = '\n'.join(check_skill(d))
-    assert "unknown frontmatter key 'bogus-key'" in errs
+    assert "frontmatter key 'bogus-key' is not allowed by this repo's lint" in errs
+
+
+def test_documented_but_disallowed_key_is_not_called_unknown(tmp_path):
+    # `paths` is a Claude Code skill field the guide documents; the repo's
+    # lint still refuses it, so the message names the lint, not ignorance.
+    d = make_skill(
+        tmp_path,
+        'scoped-skill',
+        "name: scoped-skill\ndescription: Use when testing.\npaths: ['*.py']",
+    )
+    errs = '\n'.join(check_skill(d))
+    assert "frontmatter key 'paths' is not allowed by this repo's lint" in errs
+    assert 'unknown frontmatter key' not in errs
 
 
 def test_agent_name_case_differs_from_filename_is_allowed(tmp_path):

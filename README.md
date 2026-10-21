@@ -1,4 +1,4 @@
-<!-- cc-guide: skills.locations commands.overview subagents.overview subagents.models rules.rules-files hooks.events hooks.exit-codes hooks.configuration @2.1.302 -->
+<!-- cc-guide: skills.locations commands.overview subagents.overview subagents.models rules.rules-files hooks.events hooks.exit-codes hooks.configuration @2.1.304.1 -->
 # agent-skills
 
 This repo is my personal collection of [Agent Skills](https://agentskills.io/specification) for
@@ -179,7 +179,8 @@ Python and needs no `jq`. To block, a hook uses **exit 2**, which feeds stderr b
 it prints a JSON deny decision, as the guard does. Exit 1 only logs, unless the hook sets
 `"onFailure": "block"` (2.1.295+). That setting has no effect on a `Stop` hook such as
 `ruff-check.sh`. A shell-form `PreToolUse` or `PermissionRequest` command hook on Windows without
-Git Bash (2.1.299+) also blocks when it fails.
+Git Bash (2.1.299+) also blocks when it fails, unless it sets `shell` to powershell, which still
+fails open.
 
 > [!WARNING]
 > **Do not install the project tooling hooks globally, and do not wire them into this repo.** A hook registered in `~/.claude/settings.json` fires in *every* project, including non-Python ones. Also, `agent-skills` itself has no root `pyproject.toml`. Its bundled scripts run on `uv run --with` inline deps. So `ruff check` would have no config to run against, and `uv-guard.sh` would fight the very invocation that the repo intends. Install them per work repo instead. The read-only agent guard is the exception: it is global by design, and it acts only on the five read-only agents.

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# cc-guide: skills.frontmatter skills.arguments commands.overview subagents.frontmatter subagents.tools rules.hierarchy rules.rules-files rules.settings hooks.exit-codes hooks.configuration hooks.patterns hooks.pitfalls lean.model-routing @2.1.288
+# cc-guide: skills.frontmatter skills.arguments commands.overview subagents.frontmatter subagents.tools rules.hierarchy rules.rules-files rules.settings hooks.exit-codes hooks.configuration hooks.patterns hooks.pitfalls lean.model-routing @2.1.304.3
 '''Claude Code guide conformance lint.
 
 Checks the repo's Claude Code artifacts against the register,
@@ -360,7 +360,10 @@ def check_readonly_agent_tools(root: Path, files: list[str], params: dict) -> li
             continue
         fm = frontmatter(text) or {}
         tools = tool_list(fm)
-        if tools is None:
+        if tools is None and 'disallowedTools' in fm:
+            out.append(Finding(f, 'read-only agent sets no tools list; disallowedTools removes only '
+                                  'the tools it names, so list its tools'))
+        elif tools is None:
             out.append(Finding(f, 'read-only agent sets no tools list, so it inherits every tool'))
         else:
             editing = [t for t in params['forbidden_tools'] if t in tools]
@@ -582,8 +585,10 @@ INLINE_CODE_RE = re.compile(r'(`+)(.+?)\1')
 ANY_HEADING_RE = re.compile(r'#{1,6}[ \t]')
 # The substitutions the guide lists that need no declaration: $ARGUMENTS, a
 # positional $0, $1, ..., and a ${CLAUDE_...} session variable. A leading
-# backslash escapes one. Declared argument names are added per file.
+# backslash escapes an argument token but not a ${CLAUDE_...} one, which has
+# no escape. Declared argument names are added per file.
 SUBSTITUTION_BASE = r'ARGUMENTS\b|\d+|\{CLAUDE_\w+\}'
+CLAUDE_TOKEN_RE = re.compile(r'\$\{CLAUDE_\w+\}')
 INLINE_SHELL_RE = re.compile(r'!`[^`\n]+`')
 SHELL_FENCE_RE = re.compile(r'^[ \t]*`{3,}!')
 SKILL_PATH_RE = re.compile(r'(?:\.claude/)?skills/([^/]+)/SKILL\.md')
@@ -667,9 +672,15 @@ def check_substitution_hazard(root: Path, files: list[str], params: dict) -> lis
         token = re.compile(r'(?<!\\)\$(?:' + '|'.join([SUBSTITUTION_BASE, *names]) + ')')
         for n, line in enumerate(body.split('\n'), start=1):
             where = f'line {first + n}'
-            for m in token.finditer(line):
-                out.append(Finding(f, f'{where}: {m.group(0)!r} is substituted when the skill loads; '
-                                      f'escape it as \\{m.group(0)}'))
+            hits = {m.start(): m.group(0) for m in token.finditer(line)}
+            hits.update({m.start(): m.group(0) for m in CLAUDE_TOKEN_RE.finditer(line)})
+            for _, text in sorted(hits.items()):
+                if CLAUDE_TOKEN_RE.fullmatch(text):
+                    out.append(Finding(f, f'{where}: {text!r} is substituted when the skill loads, '
+                                          'and a backslash does not stop it; drop the $'))
+                else:
+                    out.append(Finding(f, f'{where}: {text!r} is substituted when the skill loads; '
+                                          f'escape it as \\{text}'))
             for m in INLINE_SHELL_RE.finditer(line):
                 out.append(Finding(f, f'{where}: {m.group(0)!r} runs a shell command at render time, '
                                       'before Claude sees the body'))

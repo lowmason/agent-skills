@@ -16,7 +16,7 @@ compatibility: Requires uv to run bundled scripts (dependencies are declared inl
 metadata:
   author: Lowell Mason
   version: "1.0"
-# cc-guide: lean.session-hygiene @2.1.302
+# cc-guide: lean.session-hygiene @2.1.304.2
 ---
 
 # Track Model Experiments

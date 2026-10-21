@@ -2,7 +2,7 @@
 name: write-with-asd-ste100
 description: Use when a request names ASD-STE100, Simplified Technical English, STE, "80% STE", or strict or full STE. Also use it for a request for Karpathy-style writing or plain technical English, or for a rewrite of a text or a file in STE. Use it too for text that another agent or a program must parse. Examples are a prompt, a tool description, a subagent brief and an error string. Trigger on "rewrite this in STE", "make this 80% STE", "agent mode", "strict STE" and "plain technical English". Not for everyday replies, which the always-on rule shapes.
 license: MIT
-# cc-guide: skills.description skills.arguments skills.progressive-disclosure @2.1.302
+# cc-guide: skills.description skills.arguments skills.progressive-disclosure @2.1.304.3
 ---
 
 # Write with ASD-STE100

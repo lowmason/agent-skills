@@ -1,4 +1,4 @@
-<!-- cc-guide: subagents.frontmatter rules.settings hooks.events hooks.exit-codes hooks.configuration hooks.patterns hooks.pitfalls @2.1.304 -->
+<!-- cc-guide: subagents.frontmatter rules.settings hooks.events hooks.exit-codes hooks.configuration hooks.patterns hooks.pitfalls @2.1.304.3 -->
 # Hooks
 
 Two categories live here, and they install differently. Read the category before
@@ -74,8 +74,8 @@ Claude to run `python -c 'print(1)'` (uv-guard should block it) and to end a tur
 a lint error in a `.py` file (ruff-check should block the stop).
 
 Optionally pair with a permission allowlist in the same file so the `uv` forms don't
-prompt. This holds in manual permission mode only: auto mode sets aside broad allow
-rules for script runners such as `uv run`, so there the allowlist has no effect:
+prompt. The `uv run` rule holds in manual permission mode only: auto mode sets aside
+broad allow rules for script runners such as `uv run`, so there that rule has no effect:
 
 ```json
 { "permissions": { "allow": ["Bash(uv run:*)", "Bash(uv add:*)", "Bash(uv sync:*)"] } }
@@ -100,8 +100,11 @@ re-copy when you update a template here.
   unless the hook sets `"onFailure": "block"` (2.1.295+), which makes it act as exit 2
   does on that event, though not on `Stop`. A shell-form `PreToolUse` or
   `PermissionRequest` command hook on Windows without Git Bash (2.1.299+) also blocks
-  when it fails, and an exit other than 0 or 2 that prints schema-valid JSON is decided
-  by that JSON instead. `uv-guard.sh` and `ruff-check.sh` block with exit 2;
+  when it fails, unless it sets `shell` to powershell, which still fails open. An exit
+  other than 0 or 2 that prints schema-valid JSON is decided by that JSON instead,
+  except on a hook whose failure blocks (`onFailure: "block"` or that Windows case): there
+  any exit other than 0 or 2 is a failure even with JSON that allows the action, so
+  return JSON decisions with exit 0. `uv-guard.sh` and `ruff-check.sh` block with exit 2;
   `ruff-fix.sh` never blocks.
 
 # Agent contract hooks

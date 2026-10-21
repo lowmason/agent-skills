@@ -4,7 +4,7 @@ description: Checks this repo's Claude Code guide against the docs, from a packe
 tools: Read, Grep, Glob
 model: sonnet
 omitClaudeMd: true
-# cc-guide: subagents.frontmatter subagents.tools subagents.models @2.1.304
+# cc-guide: subagents.frontmatter subagents.tools subagents.models @2.1.304.3
 ---
 
 You check `specs/guides/claude-code-customization-guide.md`, the guide, against the Claude Code docs, working from a packet that /cc-guide built. You read files and return one report. You never edit, write or create a file.

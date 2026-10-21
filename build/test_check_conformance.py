@@ -653,6 +653,17 @@ def test_readonly_agent_tools_flag_editing_tools_memory_and_no_allowlist(tmp_pat
     ]
 
 
+def test_readonly_agent_tools_disallowed_tools_alone_still_needs_allowlist(tmp_path):
+    write_tree(tmp_path, {
+        'agents/subtractive.md': '---\nname: subtractive\ndisallowedTools: Write, Edit\n---\n' + READ_ONLY,
+    })
+    params = {'forbidden_tools': ['Write', 'Edit', 'NotebookEdit']}
+    assert cc.check_readonly_agent_tools(tmp_path, ['agents/subtractive.md'], params) == [
+        cc.Finding('agents/subtractive.md', 'read-only agent sets no tools list; disallowedTools '
+                                            'removes only the tools it names, so list its tools'),
+    ]
+
+
 def test_unreadable_artifacts_are_unwaivable_findings(tmp_path):
     (tmp_path / 'agents').mkdir()
     (tmp_path / 'agents/gone.md').symlink_to('nowhere.md')
@@ -1274,12 +1285,25 @@ def test_substitution_hazard_flags_each_substitution_and_shell_token(tmp_path):
         "line 6: '$ARGUMENTS' is substituted when the skill loads; escape it as \\$ARGUMENTS",
         "line 7: '$0' is substituted when the skill loads; escape it as \\$0",
         "line 7: '$1' is substituted when the skill loads; escape it as \\$1",
-        "line 8: '${CLAUDE_SKILL_DIR}' is substituted when the skill loads; escape it as \\${CLAUDE_SKILL_DIR}",
-        "line 8: '${CLAUDE_SESSION_ID}' is substituted when the skill loads; escape it as \\${CLAUDE_SESSION_ID}",
+        "line 8: '${CLAUDE_SKILL_DIR}' is substituted when the skill loads, and a backslash does not "
+        'stop it; drop the $',
+        "line 8: '${CLAUDE_SESSION_ID}' is substituted when the skill loads, and a backslash does not "
+        'stop it; drop the $',
         "line 9: '$issue' is substituted when the skill loads; escape it as \\$issue",
         "line 10: '!`git status`' runs a shell command at render time, before Claude sees the body",
         'line 11: a ```! fence runs a shell command at render time, before Claude sees the body',
         "line 15: '$ARGUMENTS' is substituted when the skill loads; escape it as \\$ARGUMENTS",
+    ]
+
+
+def test_substitution_hazard_flags_a_claude_token_behind_a_backslash(tmp_path):
+    # The guide: a backslash escapes only an argument token; ${CLAUDE_*} has no escape.
+    write_tree(tmp_path, {'skills/a/SKILL.md': skill_md(
+        body='Dir \\${CLAUDE_SKILL_DIR}/x and cost \\$1.00.\n')})
+    found = cc.check_substitution_hazard(tmp_path, ['skills/a/SKILL.md'], {})
+    assert [f.message for f in found] == [
+        "line 5: '${CLAUDE_SKILL_DIR}' is substituted when the skill loads, and a backslash does not "
+        'stop it; drop the $',
     ]
 
 
