@@ -5962,7 +5962,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       sentence "It splits on `&& || ; | &`", so a fix must change that sentence, with the owner's
       go-ahead. Size: design. Done when: a split that reads quotes and `>&` lands with tests that
       pass under bash 3.2, or the README names these three effects as limits.
-- [ ] Small cleanups from plan 61's reviews, one batch (the owner chose to defer). (a)
+- [x] Small cleanups from plan 61's reviews, one batch (the owner chose to defer). (a)
       `hooks/README.md` (the "Tests" section) and the second `hooks` note in `build/suites.toml`
       say the tests skip where `jq` is missing. The `ruff_shim` tests also skip where `/usr/bin`
       or `/bin` holds a `uv`, and the `system-bash` runs skip where `/bin/bash` is absent.
@@ -5977,6 +5977,12 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       the hook; drop `BASH_ENV` and `SHELLOPTS` so an exported value cannot change the child
       bash. Run it after plan 61 merges: it edits files that plan changes. Size: quick-fix. Done
       when: the four edits land and the hooks suite passes on both interpreters.
+      → done 2026-10-21 (quick fix, branch claude/deferred-unblocked-3): (a) both texts now
+      name all three skips; (b) the install check lists the cause for each exit status
+      (127, 1, 2) and no sentence starts with "Then"; (c) the citation adds `hooks.pitfalls`,
+      and its stamp stayed at 2.1.306; (d) `child_env` drops the names in `SCRUBBED_ENV`
+      (`BASH_ENV`, `SHELLOPTS`). `test_the_caller_environment_cannot_change_the_hook_bash`
+      failed 4 of 4 runs before the fix. The hooks suite passes 400 on both interpreters.
 - [ ] Hold, owner-only: check whether the Claude Desktop app shows the first stderr line of a hook
       that exits 1 (plan 61's default P1, not verified). `hooks/ruff-check.sh` exits 1 with
       "ruff-check: ruff unavailable (exit N), so lint was not checked." when ruff cannot run, and

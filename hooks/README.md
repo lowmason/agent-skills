@@ -73,8 +73,11 @@ not resolve fails open, so a typo in the path above disables the gate. The only 
 the error's first stderr line in the transcript. Ask Claude to run `python -c 'print(1)'`
 (uv-guard should block it) and to end a turn with a lint error in a `.py` file
 (ruff-check should block the stop). If the transcript shows "ruff unavailable" instead,
-ruff could not run in that repo. Then `uv` is not on the hook's `PATH`, the project does
-not sync, or ruff is not one of its dev dependencies.
+ruff could not run in that repo. The exit status in that line names the cause:
+
+- 127: `uv` is not on the hook's `PATH`.
+- 1: the project does not sync.
+- 2: ruff is not one of the project's dev dependencies, or its ruff config is bad.
 
 Optionally pair with a permission allowlist in the same file so the `uv` forms don't
 prompt. The `uv run` rule holds in manual permission mode only: auto mode sets aside
@@ -93,8 +96,10 @@ re-copy when you update a template here.
 with a hook payload on stdin. A stub `uv` stands in for uv and ruff, so the tests need
 no network and no Python project. Each test runs twice: with the `bash` on the test's
 `PATH`, and with `/bin/bash`, which is bash 3.2 on macOS. So the templates must stay
-bash 3.2 compatible. The tests skip where `jq` is not installed. Run them with the two
-commands under the guard's **Tests** below, which run every test in this directory.
+bash 3.2 compatible. Every test skips where `jq` is not installed. The tests that call
+the stub `uv` also skip where `/usr/bin` or `/bin` holds a real `uv`, and the `/bin/bash`
+runs skip where there is no `/bin/bash`. Run the tests with the two commands under the
+guard's **Tests** below, which run every test in this directory.
 
 ## Limitations (by design — tune per repo)
 

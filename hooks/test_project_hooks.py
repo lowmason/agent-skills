@@ -63,8 +63,14 @@ def ruff_shim(shim):
     return shim
 
 
+# bash reads these at startup, so an exported value would change every hook run.
+SCRUBBED_ENV = ('BASH_ENV', 'SHELLOPTS')
+
+
 def child_env(shim):
-    return dict(os.environ, PATH=f'{shim}:{SYSTEM_PATH}')
+    env = {key: value for key, value in os.environ.items() if key not in SCRUBBED_ENV}
+    env['PATH'] = f'{shim}:{SYSTEM_PATH}'
+    return env
 
 
 def run_hook(script, payload, shim):
@@ -103,6 +109,22 @@ def test_the_shebang_runs_the_shim_bash(shim, tmp_path):
     got = subprocess.run([str(probe)], capture_output=True, text=True,
                          env=child_env(shim), check=True).stdout
     assert got == want
+
+
+@pytest.mark.parametrize('name, value', [
+    pytest.param('BASH_ENV', 'leak.sh', id='bash-env'),
+    pytest.param('SHELLOPTS', 'xtrace', id='shellopts'),
+])
+def test_the_caller_environment_cannot_change_the_hook_bash(shim, monkeypatch, name, value):
+    if name == 'BASH_ENV':
+        startup = shim.parent / value
+        startup.write_text('echo "BASH_ENV ran" >&2\n')
+        value = str(startup)
+    monkeypatch.setenv(name, value)
+    proc = run_hook(UV_GUARD, {'hook_event_name': 'PreToolUse', 'tool_name': 'Bash',
+                               'tool_input': {'command': 'ls'}}, shim)
+    assert proc.returncode == 0, proc.stderr
+    assert proc.stderr == ''
 
 
 # --- ruff-check.sh (Stop) -------------------------------------------------------
