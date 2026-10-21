@@ -170,7 +170,7 @@ fall into two groups, which install differently:
 | Hook | Event | What it does |
 |------|-------|--------------|
 | [`ruff-fix.sh`](hooks/ruff-fix.sh) | `PostToolUse` (`Write`/`Edit`) | Runs `uv run ruff check --fix` + `ruff format` on the edited `*.py`. It is best-effort: `PostToolUse` fires *after* the write and cannot undo it. |
-| [`ruff-check.sh`](hooks/ruff-check.sh) | `Stop` | Runs `uv run ruff check .`. Exit 2 feeds back to Claude whatever `--fix` could not resolve. `stop_hook_active` guards it against loops. |
+| [`ruff-check.sh`](hooks/ruff-check.sh) | `Stop` | Runs `uv run ruff check .`. Exit 2 feeds back to Claude whatever `--fix` could not resolve. `stop_hook_active` guards it against loops. When ruff cannot run, it exits 1 with "ruff unavailable", which does not block. |
 | [`uv-guard.sh`](hooks/uv-guard.sh) | `PreToolUse` (`Bash`) | Blocks `pip install` and bare `python` / `pytest`, and injects the `uv …` form instead. Escape hatch: `no-uv-guard` anywhere in the command. |
 | [`readonly-agent-guard.py`](hooks/readonly-agent-guard.py) | `PreToolUse` (`Bash`) | For the five read-only agents, denies Bash commands that change files or git state, such as `git checkout`, `git stash`, `git reset`, and `sed -i`. For every other agent, and for the main session, it exits at once and does nothing. Install it globally, by symlink. Then run [`probe-readonly-guard.sh`](hooks/probe-readonly-guard.sh) once, because a wrong path or a missing execute bit fails open. |
 

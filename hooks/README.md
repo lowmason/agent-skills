@@ -32,7 +32,7 @@ pip") into deterministic gates that fire every time for ~0 tokens.
 | script | event | what it does |
 |---|---|---|
 | `ruff-fix.sh` | `PostToolUse` (`Write`/`Edit`) | `uv run ruff check --fix` + `ruff format` on the edited `*.py`. Best-effort (PostToolUse can't undo the edit). |
-| `ruff-check.sh` | `Stop` | `uv run ruff check .`; exit 2 feeds unfixable lint back to Claude. Guarded by `stop_hook_active` against loops. |
+| `ruff-check.sh` | `Stop` | `uv run ruff check .`; exit 2 feeds unfixable lint back to Claude. Guarded by `stop_hook_active` against loops. When ruff cannot run, it exits 1 with "ruff unavailable" and does not block. |
 | `uv-guard.sh` | `PreToolUse` (`Bash`) | Blocks `pip install`, bare `python`/`pytest`; injects the `uv …` form. Escape hatch: `no-uv-guard` in the command. |
 
 All three parse the hook JSON payload from stdin with `jq` (already on your machine).
@@ -72,7 +72,9 @@ Then trigger each blocking hook once to confirm it is wired: a hook command that
 not resolve fails open, so a typo in the path above disables the gate. The only sign is
 the error's first stderr line in the transcript. Ask Claude to run `python -c 'print(1)'`
 (uv-guard should block it) and to end a turn with a lint error in a `.py` file
-(ruff-check should block the stop).
+(ruff-check should block the stop). If the transcript shows "ruff unavailable" instead,
+ruff could not run in that repo. Then `uv` is not on the hook's `PATH`, the project does
+not sync, or ruff is not one of its dev dependencies.
 
 Optionally pair with a permission allowlist in the same file so the `uv` forms don't
 prompt. The `uv run` rule holds in manual permission mode only: auto mode sets aside
@@ -106,7 +108,8 @@ re-copy when you update a template here.
   except on a hook whose failure blocks (`onFailure: "block"` or that Windows case): there
   any exit other than 0 or 2 is a failure even with JSON that allows the action, so
   return JSON decisions with exit 0. `uv-guard.sh` and `ruff-check.sh` block with exit 2;
-  `ruff-fix.sh` never blocks.
+  `ruff-fix.sh` never blocks. When ruff cannot run, `ruff-check.sh` exits 1, so it reports
+  the failure and does not block.
 
 # Agent contract hooks
 
