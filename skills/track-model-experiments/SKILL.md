@@ -117,8 +117,14 @@ Guardrails, enforced before any ranking happens:
   naming it; the comparator ranks Bayesian fits by ELPD only.
 - **Missing `log_likelihood` group** → hard error naming the variant and the
   fix (refit with `az.from_numpyro(..., log_likelihood=True)`).
+- **A log-likelihood that LOO cannot leave terms out of** → refused, with the
+  remedy. One summed `numpyro.factor` has no observation dimension: store one
+  term per time step. Several log-likelihood variables (one per source) must
+  become one pointwise variable.
+  `bayesian-workflow/references/state-space.md` shows both.
 - **Mismatched observation counts across variants** → refused outright; LOO
-  only compares predictions of the *same* held-out observations.
+  only compares predictions of the *same* held-out observations. The count is
+  the number of pointwise log-likelihood terms.
 
 After ranking:
 - **High Pareto-k / other `az.compare` diagnostic warnings** → surfaced as a

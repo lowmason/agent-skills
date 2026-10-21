@@ -27,6 +27,7 @@ import arviz as az
 # uncompared, the marker says the ranking covers the ELPD-compared rows only.
 BEST = '**best**'
 QUALIFIED_BEST = '**best among ELPD-compared variants**'
+SAMPLE_DIMS = ('chain', 'draw')
 
 
 def discover_variants(analysis_dir: Path) -> list[Path]:
@@ -56,11 +57,37 @@ def check_log_likelihood(idata, name: str) -> None:
             f'(see bayesian-workflow/references/model-comparison.md).')
 
 
-def observation_count(idata) -> int:
-    obs = idata.observed_data
-    ds = obs.to_dataset() if hasattr(obs, 'to_dataset') else obs
-    var = next(iter(ds.data_vars.values()))
-    return int(var.size)
+def pointwise_count(idata, name: str) -> int:
+    '''How many pointwise terms the variant's one log-likelihood variable holds.
+
+    LOO leaves out one term at a time, so it needs exactly one variable with an
+    observation dimension. bayesian-workflow's state-space routes can give
+    neither: a summed numpyro.factor stores one term per draw, and a
+    multi-source model stores one variable per source. The count comes from the
+    log-likelihood, not observed_data: a per-step numpyro.factor, the remedy,
+    has an empty observed_data entry.
+    '''
+    ll = idata.log_likelihood
+    ds = ll.to_dataset() if hasattr(ll, 'to_dataset') else ll
+    names = list(ds.data_vars)
+    if len(names) != 1:
+        raise ValueError(
+            f'variant {name!r} has {len(names)} log-likelihood variables '
+            f'({", ".join(names)}); the comparator ranks one, and ranking a '
+            'multi-source model on one source would mislead. Sum the sources\' '
+            'terms for each observation into one pointwise variable and drop the '
+            'rest; a factor that is a penalty or a Jacobian, not data, leaves the '
+            'group instead (see bayesian-workflow/references/state-space.md).')
+    var = ds[names[0]]
+    obs_dims = [d for d in var.dims if d not in SAMPLE_DIMS]
+    count = math.prod(var.sizes[d] for d in obs_dims)
+    if not obs_dims or count == 0:
+        raise ValueError(
+            f'variant {name!r} stores {names[0]!r} with no observation dimension, '
+            'so LOO has no pointwise terms to leave out. Store one term per '
+            'observation (per time step for a state-space model), not one summed '
+            'numpyro.factor (see bayesian-workflow/references/state-space.md).')
+    return count
 
 
 def _elpd_column(comparison):
@@ -323,7 +350,7 @@ def compare(analysis_dir: Path, folders: list[Path] | None):
         idata = load_idata(folder)
         check_log_likelihood(idata, name)
         models[name] = idata
-        counts[name] = observation_count(idata)
+        counts[name] = pointwise_count(idata, name)
     distinct = set(counts.values())
     if len(distinct) > 1:
         raise ValueError(

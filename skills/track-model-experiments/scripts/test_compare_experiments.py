@@ -364,3 +364,71 @@ def test_metric_cells_are_filled_from_the_ranking(analysis_dir, tmp_path):
     assert div == str(rank['m-intercept']['divergences'])
     assert (ppc, psense) == ('unknown', 'unknown')       # no check_report.json in the fixture
     assert cells[2:4] == ['drop slope', 'slope noise']   # the human half is untouched
+
+
+# --- Log-likelihood shapes from bayesian-workflow's state-space routes (G3) ---
+
+def _summed_factor(x, y=None):
+    a = numpyro.sample('a', dist.Normal(0, 5))
+    sigma = numpyro.sample('sigma', dist.HalfNormal(2))
+    numpyro.factor('ll', dist.Normal(a, sigma).log_prob(y).sum())
+
+
+def _per_step_factor(x, y=None):
+    a = numpyro.sample('a', dist.Normal(0, 5))
+    b = numpyro.sample('b', dist.Normal(0, 5))
+    sigma = numpyro.sample('sigma', dist.HalfNormal(2))
+    numpyro.factor('ll', dist.Normal(a + b * x, sigma).log_prob(y))
+
+
+def _fit_factor(folder, model, x, y, seed, dims=None):
+    mcmc = MCMC(NUTS(model), num_warmup=200, num_samples=200, num_chains=2,
+                chain_method='sequential', progress_bar=False)
+    mcmc.run(jax.random.PRNGKey(seed), x, y)
+    idata = az.from_numpyro(mcmc, log_likelihood=True,
+                            coords={'obs': np.arange(len(y))}, dims=dims or {})
+    folder.mkdir(parents=True, exist_ok=True)
+    idata.to_netcdf(str(folder / 'inference_data.nc'))
+
+
+def test_summed_factor_is_refused_with_its_remedy(data, tmp_path):
+    x, y = data
+    _fit_factor(tmp_path / 'f-a', _summed_factor, x, y, seed=5)
+    _fit_factor(tmp_path / 'f-b', _summed_factor, x, y, seed=6)
+    r = _run('--analysis-dir', str(tmp_path))
+    assert r.returncode == 1
+    assert r.stderr.startswith('error: ')
+    assert 'observation dimension' in r.stderr and 'numpyro.factor' in r.stderr
+
+
+def test_per_step_factor_terms_are_ranked(data, tmp_path):
+    x, y = data
+    _fit_factor(tmp_path / 'f-full', _per_step_factor, x, y, seed=7, dims={'ll': ['obs']})
+    _make_variant(tmp_path / 'm-intercept', _intercept, x, y, seed=2)
+    out = tmp_path / 'comparison.json'
+    r = _run('--analysis-dir', str(tmp_path), '--output', str(out))
+    assert r.returncode == 0, r.stderr
+    ranking = json.loads(out.read_text())['ranking']
+    assert ranking[0]['id'] == 'f-full'
+    assert ranking[0]['se'] > 0                       # 200 pointwise terms, not one
+
+
+def _two_source_variant(folder, n_draws=100, seed=0):
+    rng = np.random.default_rng(seed)
+    obs = np.arange(50)
+    idata = az.from_dict({
+        'posterior': {'a': rng.normal(size=(2, n_draws))},
+        'log_likelihood': {'y_a': rng.normal(-1, 0.1, size=(2, n_draws, 50)),
+                           'y_b': rng.normal(-1, 0.1, size=(2, n_draws, 50))},
+        'observed_data': {'y_a': rng.normal(size=50), 'y_b': rng.normal(size=50)},
+    }, coords={'obs': obs}, dims={'y_a': ['obs'], 'y_b': ['obs']})
+    folder.mkdir(parents=True, exist_ok=True)
+    idata.to_netcdf(str(folder / 'inference_data.nc'))
+
+
+def test_several_log_likelihood_variables_are_refused(tmp_path):
+    _two_source_variant(tmp_path / 's-1', seed=1)
+    _two_source_variant(tmp_path / 's-2', seed=2)
+    with pytest.raises(ValueError, match='2 log-likelihood variables') as exc:
+        compare_experiments.compare(tmp_path, None)
+    assert 'y_a' in str(exc.value) and 'one pointwise variable' in str(exc.value)
