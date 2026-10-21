@@ -214,6 +214,10 @@ Clone the repository somewhere stable:
 git clone https://github.com/lowmason/agent-skills.git ~/agent-skills
 ```
 
+Skills that bundle scripts run them with `uv run`, which reads each script's dependencies from its
+own header. Install [uv](https://docs.astral.sh/uv/) before you use those skills. Each one names uv
+in its `compatibility` field. The installer itself needs only `python3`.
+
 Then run the installer for one runtime or for all three. It installs every skill, plus that
 runtime's supported agents and commands:
 
