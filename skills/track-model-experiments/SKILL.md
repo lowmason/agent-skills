@@ -88,8 +88,10 @@ observation counts).
 `id`, `parent`, `what changed`, `hypothesis`, and `status` are yours to write —
 the reasoning trail no script can reconstruct after the fact. `ELPD` through
 `psense` are metric columns the comparator overwrites each run; don't
-hand-edit them. The Decision log is free-form prose: record the call and the
-reason, not just the winner.
+hand-edit them. It finds this table by its header (the first one that starts
+with `id` and has a `status` column), fills a column only under the names
+shown here, and moves the best marker in `status`. The Decision log is
+free-form prose: record the call and the reason, not just the winner.
 
 ## The comparator
 

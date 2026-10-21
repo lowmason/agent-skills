@@ -345,3 +345,22 @@ def test_ledger_without_a_variants_table_is_noted(analysis_dir, tmp_path):
     assert r.returncode == 0, r.stderr
     assert 'no Variants table' in r.stderr
     assert '<!-- COMPARISON:BEGIN -->' in ledger.read_text()
+
+
+# --- The metric cells (G1 part e) ---
+
+def test_metric_cells_are_filled_from_the_ranking(analysis_dir, tmp_path):
+    ledger = tmp_path / 'experiments.md'
+    ledger.write_text(LEDGER)
+    out = tmp_path / 'comparison.json'
+    r = _run('--analysis-dir', str(analysis_dir), '--ledger', str(ledger), '--output', str(out))
+    assert r.returncode == 0, r.stderr
+    rank = {e['id']: e for e in json.loads(out.read_text())['ranking']}
+    cells = [c.strip() for c in _row(ledger.read_text(), 'm-intercept').strip('|').split('|')]
+    elpd, d_elpd, rhat, div, ppc, psense = cells[4:10]
+    assert elpd == f"{rank['m-intercept']['elpd']:.1f}"
+    assert d_elpd == f"{rank['m-intercept']['elpd_diff']:.1f}"
+    assert rhat == f"{rank['m-intercept']['max_rhat']:.3f}"
+    assert div == str(rank['m-intercept']['divergences'])
+    assert (ppc, psense) == ('unknown', 'unknown')       # no check_report.json in the fixture
+    assert cells[2:4] == ['drop slope', 'slope noise']   # the human half is untouched

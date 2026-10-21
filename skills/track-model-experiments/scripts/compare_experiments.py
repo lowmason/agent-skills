@@ -195,16 +195,28 @@ def extract_diagnostics(idata, folder: Path) -> dict:
     }
 
 
+def metric_cells(r: dict) -> dict[str, str]:
+    '''One ranked variant's metrics, keyed by the ledger's column names.'''
+    return {
+        'ELPD': f"{r['elpd']:.1f}",
+        'ΔELPD': f"{r['elpd_diff']:.1f}",
+        'max R̂': '' if r.get('max_rhat') is None else f"{r['max_rhat']:.3f}",
+        'div': '' if r.get('divergences') is None else str(r['divergences']),
+        'PPC': r['ppc'],
+        'psense': r['psense'],
+    }
+
+
 def render_comparison_block(ranking: list[dict], not_compared: list[str]) -> str:
     header = '| id | ELPD | ΔELPD | dSE | weight | max R̂ | div | warn |'
     sep = '|---|---|---|---|---|---|---|---|'
     rows = []
     for r in ranking:
-        rhat = '' if r.get('max_rhat') is None else f"{r['max_rhat']:.3f}"
+        m = metric_cells(r)
         rows.append(
-            f"| {r['id']} | {r['elpd']:.1f} | {r['elpd_diff']:.1f} | "
-            f"{r['dse']:.1f} | {r['weight']:.2f} | {rhat} | "
-            f"{r.get('divergences', '')} | {'⚠' if r['warning'] else ''} |")
+            f"| {r['id']} | {m['ELPD']} | {m['ΔELPD']} | "
+            f"{r['dse']:.1f} | {r['weight']:.2f} | {m['max R̂']} | "
+            f"{m['div']} | {'⚠' if r['warning'] else ''} |")
     table = '\n'.join([header, sep, *rows])
     if not_compared:
         table += (f'\n\nNot compared: {", ".join(not_compared)}. '
@@ -256,12 +268,13 @@ def ledger_ids(text: str) -> list[str] | None:
 
 def update_ledger(ledger_path: Path, block: str, ranking: list[dict],
                   not_compared: list[str]) -> None:
-    '''Rewrite the COMPARISON block in place and move the best marker.
+    '''Rewrite the COMPARISON block, fill the metric cells and move the best marker.
 
     Only the COMPARISON block (replaced, or appended if absent) and the Variants
-    table's status cells change; human prose is preserved. A row whose marker
-    moves is re-joined with '| '/' |' spacing, so its cell padding is
-    normalized — this is intentional.
+    table's metric and status cells change; human prose and the table's left
+    half are preserved. Each ranked row is re-joined with '| '/' |' spacing, so
+    its cell padding is normalized — this is intentional. An unranked row keeps
+    its cells, except that a stale best marker returns to candidate.
     '''
     text = ledger_path.read_text()
     if _BLOCK_RE.search(text):
@@ -273,14 +286,22 @@ def update_ledger(ledger_path: Path, block: str, ranking: list[dict],
     if table is not None:
         header, rows = table
         status = [c.lower() for c in header].index('status')
+        ranked = {r['id']: r for r in ranking}
         marker = QUALIFIED_BEST if not_compared else BEST
         for i in rows:
             cells = _cells(lines[i])
             cells += [''] * (len(header) - len(cells))
-            is_best = cells[0] == ranking[0]['id']
-            if not is_best and cells[status] not in (BEST, QUALIFIED_BEST):
+            entry = ranked.get(cells[0])
+            if entry is None and cells[status] not in (BEST, QUALIFIED_BEST):
                 continue
-            cells[status] = marker if is_best else 'candidate'
+            if cells[status] in (BEST, QUALIFIED_BEST):
+                cells[status] = 'candidate'
+            if entry is not None:
+                for column, value in metric_cells(entry).items():
+                    if column in header:
+                        cells[header.index(column)] = value
+                if entry['id'] == ranking[0]['id']:
+                    cells[status] = marker
             lines[i] = '| ' + ' | '.join(cells) + ' |'
     ledger_path.write_text('\n'.join(lines) + ('\n' if text.endswith('\n') else ''))
 
@@ -325,7 +346,7 @@ def main(argv=None):
     ap.add_argument('--folders', type=Path, nargs='*', default=None,
                     help='explicit variant folders (overrides discovery)')
     ap.add_argument('--ledger', type=Path, default=None,
-                    help='experiments.md to update (COMPARISON block + best marker)')
+                    help='experiments.md to update (COMPARISON block, metric cells, best marker)')
     ap.add_argument('--output', type=Path, default=None,
                     help='write comparison.json here')
     args = ap.parse_args(argv)
