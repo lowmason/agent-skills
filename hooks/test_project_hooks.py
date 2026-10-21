@@ -63,8 +63,17 @@ def ruff_shim(shim):
     return shim
 
 
+# bash reads these at startup, so an exported value would change every hook run.
+SCRUBBED_ENV = ('BASH_ENV', 'SHELLOPTS', 'BASHOPTS')
+# An exported bash function arrives as BASH_FUNC_<name>%% and shadows that command.
+EXPORTED_FUNCTION_PREFIX = 'BASH_FUNC_'
+
+
 def child_env(shim):
-    return dict(os.environ, PATH=f'{shim}:{SYSTEM_PATH}')
+    env = {key: value for key, value in os.environ.items()
+           if key not in SCRUBBED_ENV and not key.startswith(EXPORTED_FUNCTION_PREFIX)}
+    env['PATH'] = f'{shim}:{SYSTEM_PATH}'
+    return env
 
 
 def run_hook(script, payload, shim):
@@ -99,10 +108,32 @@ def test_the_shebang_runs_the_shim_bash(shim, tmp_path):
     probe.write_text('#!/usr/bin/env bash\necho "$BASH_VERSION"\n')
     probe.chmod(0o755)
     want = subprocess.run([str(shim / 'bash'), '-c', 'echo "$BASH_VERSION"'],
-                          capture_output=True, text=True, check=True).stdout
+                          capture_output=True, text=True, env=child_env(shim), check=True).stdout
     got = subprocess.run([str(probe)], capture_output=True, text=True,
                          env=child_env(shim), check=True).stdout
     assert got == want
+
+
+@pytest.mark.parametrize('name, value, command', [
+    pytest.param('BASH_ENV', 'leak.sh', 'ls', id='bash-env'),
+    pytest.param('SHELLOPTS', 'xtrace', 'ls', id='shellopts'),
+    # bash 4.1+ only; nocasematch would let the guard's python pattern match Python.
+    pytest.param('BASHOPTS', 'nocasematch', 'Python --version', id='bashopts'),
+    # An exported function named jq shadows the jq the hook reads its payload with.
+    pytest.param('BASH_FUNC_jq%%', '() {  echo "exported jq ran" >&2; }', 'ls',
+                 id='exported-function'),
+])
+def test_the_caller_environment_cannot_change_the_hook_bash(shim, monkeypatch, name, value,
+                                                            command):
+    if name == 'BASH_ENV':
+        startup = shim.parent / value
+        startup.write_text('echo "BASH_ENV ran" >&2\n')
+        value = str(startup)
+    monkeypatch.setenv(name, value)
+    proc = run_hook(UV_GUARD, {'hook_event_name': 'PreToolUse', 'tool_name': 'Bash',
+                               'tool_input': {'command': command}}, shim)
+    assert proc.returncode == 0, proc.stderr
+    assert proc.stderr == ''
 
 
 # --- ruff-check.sh (Stop) -------------------------------------------------------

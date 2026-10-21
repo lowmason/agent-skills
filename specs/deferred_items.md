@@ -4551,7 +4551,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       collision probes against recommend-probabilistic-model, recommend-causal-design and
       deep-learning. Size: plan. Done when: the hand-offs land, with any description change
       micro-tested.
-- [ ] Recast design-architecture's alt-nfp framing and refresh stale repo names (audit-3-10-26
+- [x] Recast design-architecture's alt-nfp framing and refresh stale repo names (audit-3-10-26
       G13, found 2026-10-03; re-verified 2026-10-18: no commit since). The skill still says
       "the same NFP-nowcasting problem is currently solved three ways" across `alt-nfp`,
       `alt_nfp` and `oi-indices` (`skills/design-architecture/SKILL.md:31-35`), which the
@@ -4565,7 +4565,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       `bls-stats`, `bls-stats-aggregation`) and `skills/develop-testing-strategy/SKILL.md:87`
       and `:232` (the conftest now lives in alt-nfp-stats). Size: plan. Done when: no
       present-tense claim names a retired repo, and the sketches span more than one project
-      family.
+      family. → done in plan 62
 - [x] Scope clean-code's F2 ("don't mutate arguments") to functional code, with a Flax NNX
       carve-out (audit-3-10-26 G14, found 2026-10-03; re-verified 2026-10-18; the audit's
       trigger, the JAX merge, passed on 2026-10-04).
@@ -5204,10 +5204,20 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       `BUNDLED_LICENSES` row, and re-point the Sources link. See
       `specs/agent-skills-portability-spec.md` (R3.1, R3.5, R3.7, R4.1, R4.2). Size:
       quick-fix. Done when: the portability plan has done each of these for this skill. → done in plan 53
-- [ ] A drift review of both upstreams against the pinned commits (the spec's Consequences
+- [x] A drift review of both upstreams against the pinned commits (the spec's Consequences
       to know): danyuchn/asd-ste100-skill at `3944283c` and prithivrajmu/asd-ste100 at
       `d9323767`, both active. Size: quick-fix. Revisit if: either repository changes its
       linter, rule sets or license.
+      → done 2026-10-21 (branch claude/deferred-unblocked-3): reviewed danyuchn's 8 commits
+      through `cd62d297` (long-sentence word-count fixes in the linter and a README note; the
+      license is unchanged) and prithivrajmu's repository (unchanged at `d9323767`). The
+      owner chose to re-pin the linter: `scripts/ste-lint.py` is now byte-identical to
+      `cd62d297` (its pin test and self-test pass under 3.13 and `/usr/bin/python3`), and
+      `NOTICE` and both sources files credit Yuri Perin's fixes (upstream PRs #25 and #26).
+- [ ] The next drift review of both upstreams: danyuchn/asd-ste100-skill against `cd62d297`
+      for the vendored linter and `3944283c` for the adapted text, and prithivrajmu/asd-ste100
+      against `d9323767`. Size: quick-fix. Revisit if: either repository changes its linter,
+      rule sets or license after those commits.
 - [ ] The always-on rule's pointer line reaches work that the spec leaves out of scope
       (final review). `rules/write-with-asd-ste100.md` ends "To rewrite a text or a
       document, to write text for an agent reader, or to apply strict STE, use the
@@ -5988,7 +5998,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       sentence "It splits on `&& || ; | &`", so a fix must change that sentence, with the owner's
       go-ahead. Size: design. Done when: a split that reads quotes and `>&` lands with tests that
       pass under bash 3.2, or the README names these three effects as limits.
-- [ ] Small cleanups from plan 61's reviews, one batch (the owner chose to defer). (a)
+- [x] Small cleanups from plan 61's reviews, one batch (the owner chose to defer). (a)
       `hooks/README.md` (the "Tests" section) and the second `hooks` note in `build/suites.toml`
       say the tests skip where `jq` is missing. The `ruff_shim` tests also skip where `/usr/bin`
       or `/bin` holds a `uv`, and the `system-bash` runs skip where `/bin/bash` is absent.
@@ -6003,6 +6013,12 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       the hook; drop `BASH_ENV` and `SHELLOPTS` so an exported value cannot change the child
       bash. Run it after plan 61 merges: it edits files that plan changes. Size: quick-fix. Done
       when: the four edits land and the hooks suite passes on both interpreters.
+      → done 2026-10-21 (quick fix, branch claude/deferred-unblocked-3): (a) both texts now
+      name all three skips; (b) the install check lists the cause for each exit status
+      (127, 1, 2) and no sentence starts with "Then"; (c) the citation adds `hooks.pitfalls`,
+      and its stamp stayed at 2.1.306; (d) `child_env` drops the names in `SCRUBBED_ENV`
+      (`BASH_ENV`, `SHELLOPTS`). `test_the_caller_environment_cannot_change_the_hook_bash`
+      failed 4 of 4 runs before the fix. The hooks suite passes 400 on both interpreters.
 - [ ] Hold, owner-only: check whether the Claude Desktop app shows the first stderr line of a hook
       that exits 1 (plan 61's default P1, not verified). `hooks/ruff-check.sh` exits 1 with
       "ruff-check: ruff unavailable (exit N), so lint was not checked." when ruff cannot run, and
@@ -6087,3 +6103,14 @@ defer. Anchors are at the end of plan 59's fix wave.
       first action shows the same drift. Then use the fallback row in plan 59's Task 6 text
       (`specs/plans/completed/59-model-skill-comparator-and-cv-fixes.md`), which states the 1%
       threshold.
+
+## 62-design-architecture-recast — 2026-10-21
+- [ ] `skills/develop-testing-strategy/references/scraper-tests.md:81` still imports
+      `_parse_ref_date` and `_last_business_day` in its illustrative test, while
+      `skills/develop-testing-strategy/SKILL.md:87`, reworded in plan 62 (default P7), now
+      names no function and says the `bls-stats` package tests "its period parser and
+      reference dates". The two now read differently. Plan 62 kept the reference out of scope
+      (default P1), and its final review raised it as a follow-up. See
+      specs/plans/completed/62-design-architecture-recast.md. Size: quick-fix. Done when: the
+      illustrative import uses generic names that match SKILL.md:87, or the reference says
+      the names are illustrative.
