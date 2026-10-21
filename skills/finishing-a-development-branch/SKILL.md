@@ -300,7 +300,7 @@ git merge <feature-branch>
 <test command>
 ```
 
-Then: Cleanup worktree (Step 6). If Step 6 removed the worktree, delete the branch. git refuses while a worktree still has it checked out:
+Then: Cleanup worktree (Step 6). Leave the branch while a worktree still has it checked out, since git refuses to delete it. Delete it if Step 2 recorded a normal repo or Step 6 removed the worktree:
 
 ```bash
 git branch -d <feature-branch>
@@ -372,11 +372,11 @@ This will permanently delete:
 Type 'discard' to confirm.
 ```
 
-If Step 2 recorded MADE_BY `launcher`, Step 6 cannot remove the worktree, and git cannot delete a branch that a worktree has checked out. Do not show the list above and do not ask for confirmation. Tell your partner this, then stop: "<path> and its branch <name> belong to the tool that started this session, so I can't delete them. They stay until it removes the worktree, or you run `git worktree remove <path>` and then `git branch -D <name>` from <MAIN_ROOT>."
+If Step 2 recorded MADE_BY `launcher`, Step 6 cannot remove the worktree, and git cannot delete a branch that a worktree has checked out. Do not show the list above and do not ask for confirmation. Tell your partner this, then stop: "I did not record that this session made <path>, so I won't delete it or its branch <name>. They stay until you run `git worktree remove <path>` and then `git branch -D <name>` from <MAIN_ROOT>, unless the tool that made the worktree removes it first."
 
 Otherwise, wait for exact confirmation.
 
-If confirmed, get to the main checkout as Option 1 does, by the MAIN_GIT that Step 2 recorded. Where Option 1 would hand the merge commands to your partner, skip the merge and hand over Step 6's commands and the branch command below. Then: Cleanup worktree (Step 6). If Step 6 removed the worktree, force-delete the branch:
+If confirmed, get to the main checkout as Option 1 does, by the MAIN_GIT that Step 2 recorded. Where Option 1 would hand the merge commands to your partner, skip the merge and hand over Step 6's commands and the branch command below. Then: Cleanup worktree (Step 6). In a normal repo, first run `git checkout <base-branch>`, since git will not delete the branch you are on. If it refuses, tell your partner why and ask, without forcing it. Force-delete the branch if Step 2 recorded a normal repo or Step 6 removed the worktree:
 ```bash
 git branch -D <feature-branch>
 ```
@@ -399,16 +399,16 @@ git worktree remove <WORKTREE_PATH>
 git worktree prune  # Self-healing: clean up any stale registrations
 ```
 
-**If your partner runs the commands** (Option 1 handed them the merge commands, or Option 4 handed over Step 6): give them these two commands and the branch command that the option gives, with every value written out, and wait for their result. For Option 1, give them only once they report that the merge and tests passed.
+**If MADE_BY is `this session` and your partner runs the commands** (Option 1 handed them the merge commands, or Option 4 handed over Step 6): give them these two commands and the branch command that the option gives, with every value written out, and wait for their result. For Option 1, give them only once they report that the merge and tests passed.
 
 **If `git worktree remove` refuses, stop.** Do not add `--force` or `-f -f`, and do not run `git worktree unlock`, whatever git's message suggests. A lock can belong to a session that is still running, and modified or untracked files can be work that exists nowhere else. Tell your partner the cause:
 
 - **Locked:** quote the lock reason from git's message.
 - **Modified or untracked files:** list them, from `git -C <WORKTREE_PATH> status --porcelain --untracked-files=all`.
 
-Then ask what to do, and wait. Delete the branch only once the worktree is gone.
+Then ask what to do, and wait. If your partner wants it forced or unlocked, give them the commands from that step through the branch deletion, with every value written out, and run none of them yourself. Delete the branch only once the worktree is gone.
 
-**If Step 2 recorded MADE_BY `launcher`:** the tool that started this session owns the worktree. Do NOT remove it, and leave its branch: git refuses to delete a branch that a worktree has checked out. Tell your partner where the worktree is and what removes it. The desktop app cleans up or reuses a session's worktree when the session is archived. Anywhere else, your partner can run `git worktree remove <WORKTREE_PATH>` from MAIN_ROOT and then delete the branch.
+**If Step 2 recorded MADE_BY `launcher`:** you did not record that this session made the worktree. Do NOT remove it, and leave its branch: git refuses to delete a branch that a worktree has checked out. Tell your partner where the worktree is and what removes it. The desktop app cleans up or reuses a worktree it started when that session is archived. Anywhere else, your partner can run `git worktree remove <WORKTREE_PATH>` from MAIN_ROOT and then delete the branch.
 
 ## Quick Reference
 
@@ -419,7 +419,7 @@ Then ask what to do, and wait. Delete the branch only once the worktree is gone.
 | 3. Keep as-is | - | - | - | yes | - |
 | 4. Discard | - | - | - | - | yes (force) |
 
-Options 1 and 4 delete the branch only when Step 6 removed the worktree. They do not when Step 2 recorded MADE_BY `launcher`.
+Options 1 and 4 delete the branch in a normal repo or once Step 6 removed the worktree, and keep both the worktree and the branch under MADE_BY `launcher` or after a refused removal.
 
 ## Common Mistakes
 
