@@ -35,10 +35,12 @@ Labels used below, each expanded here once:
 ## Decisions
 
 - **D1** (owner, session, 2026-10-21): run this item now, in this session, on Opus ("Do the unblocked items ...", then "This session then"). Applied in: header.
+- **D2** (owner, plan review, 2026-10-21): the seven defaults below, P1 to P7, the option "Approve all": log them as a decision and execute the plan with subagent-driven-development in this session. Applied in: Global Constraints (P1, P2, P5, P6), Task 1 (P1, P3, P7), Tasks 2 and 3 (P2, P4, P5).
+- **D3** (owner, plan review, 2026-10-21): the final review's Codex seat runs `codex exec review` read-only with the per-run override `-c 'model="gpt-6-astra"'`, one retry if it fails, then the code-reviewer seat stands alone. The Codex config is not edited. Applied in: the final whole-branch review.
 
 ## Defaults for review
 
-This plan settles these defaults. The owner approves or changes each at plan review, and an approved default becomes a Decision.
+This plan settles these defaults. The owner approves or changes each at plan review, and an approved default becomes a Decision. D2 approved all seven as written.
 
 - **P1. Scope.** The item's files, plus `hooks/README.md:42` (its `~/Projects/bls-stats` example path names the archived repo). The Global Constraints' out-of-scope list stays as is.
 - **P2. The example ADR's body stays untouched.** Only its intro gains a dated note that names the split and says a real log would record it as a superseding ADR.
