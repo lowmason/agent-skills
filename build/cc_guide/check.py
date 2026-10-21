@@ -18,9 +18,9 @@ from blocks import SEP, block_hash, candidates, key_hash, key_names, page_blocks
 from docs import CHANGELOG, LLMS, Release, is_platform, page_file, page_url, parse_changelog, parse_llms, version_key
 from guide import by_section, read_citations
 from lint import lint, stale_by_section
-from state import (BASELINE, MANIFEST, PROBES, Manifest, ProbeRow, SetupError, Snapshot, Source, block_namer,
-                   citing_files, fetch_record, group_terms, latest_docs, no_snapshot, parse_baseline,
-                   parse_manifest, parse_probes, read_fetch, read_utf8, snapshot_text)
+from state import (BASELINE, DIVERGES, ERROR, MANIFEST, PASS, PROBES, Manifest, ProbeRow, SetupError, Snapshot,
+                   Source, block_namer, citing_files, fetch_record, group_terms, latest_docs, no_snapshot,
+                   parse_baseline, parse_manifest, parse_probes, read_fetch, read_utf8, snapshot_text)
 
 USER_AGENT = 'agent-skills-cc-guide/1 (Claude Code docs drift check)'
 TIMEOUT = 30
@@ -259,21 +259,22 @@ def due_changelog(state: dict, releases: list[Release], days: int, today: date) 
 
 
 def due_probes(manifest: Manifest, rows: list[ProbeRow], newest: str, days: int, today: date) -> list[dict]:
-    '''R6.7: a registered probe is due with no row; with a DIVERGES row and no
-    later PASS; or `days` after its last row once a release has shipped past
-    that row's version.'''
+    '''R6.7: a registered probe is due with no row; with a DIVERGES or ERROR
+    row and no later PASS, since ERROR is never a pass (R10.5); or `days`
+    after its last row once a release has shipped past that row's version.'''
     out = []
     for pid in manifest.probes:
         mine = [r for r in rows if r.probe == pid]
         if not mine:
             out.append({'probe': pid, 'why': 'never run'})
             continue
-        diverged = False
+        unsettled: list[str] = []
         for r in mine:
-            diverged = True if r.outcome == 'DIVERGES' else False if r.outcome == 'PASS' else diverged
+            unsettled = [] if r.outcome == PASS else unsettled + [r.outcome]
         last = mine[-1]
-        if diverged:
-            out.append({'probe': pid, 'why': 'DIVERGES with no later PASS'})
+        if unsettled:
+            word = DIVERGES if DIVERGES in unsettled else ERROR
+            out.append({'probe': pid, 'why': f'{word} with no later PASS'})
         elif (today - last.date).days >= days and version_key(newest) > version_key(last.version):
             out.append({'probe': pid, 'why': f'last run {last.date.isoformat()} at {last.version}'})
     return out

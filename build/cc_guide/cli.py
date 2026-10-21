@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 '''cc_guide: the drift detector for specs/guides/claude-code-customization-guide.md,
-the citations that point at it, and the deterministic half of /cc-guide
-(Stages 1 to 4 of specs/claude-code-drift-automation-spec.md).
+the citations that point at it, the deterministic half of /cc-guide, and
+the live probes (Stages 1 to 5 of specs/completed/claude-code-drift-automation-spec.md).
 
 Run: uv run --python 3.13 python build/cc_guide/cli.py <subcommand>
 
@@ -76,6 +76,20 @@ Run: uv run --python 3.13 python build/cc_guide/cli.py <subcommand>
       triage's DIR/settled.json. Exit 0 when every row parsed and every quote
       was found, with nothing discarded or left out; 1 otherwise; 2 on an
       error.
+  probes --claude PATH [--only ID [ID ...] | --force] [--allow-old]
+      Run the registered probes that are due (R6.7), or those --only names, or
+      every one with --force, against the binary PATH names, and append one
+      row each to build/cc_guide/PROBES.md, uncommitted (R10). Each probe runs
+      from a fresh temporary directory outside every repo and keeps its raw
+      output under the cache's probes/. A binary older than the newest cached
+      changelog release is refused unless --allow-old is given, which each row
+      records. Live runs spend about $0.05-0.30 a probe. Exit 0 when every
+      probe passed or none was due, 1 when any DIVERGES or is ERROR, 2 on a
+      setup error.
+  binaries
+      List each claude on PATH with its symlink target and version, then the
+      Desktop app's bundled binaries, an observed layout the docs do not
+      document (R10.3). Exit 0, or 2 when none is found.
 
 After reviewing what check reported, record it in R8.8's order: accept,
 rebaseline, advance, then audited for an audited group, then stamp; then run
@@ -86,6 +100,7 @@ and `audited` record the day the check or audit was done, not the
 release's date.
 '''
 import argparse
+import os
 import subprocess
 import sys
 import traceback
@@ -96,6 +111,7 @@ from pathlib import Path
 import baseline
 import notice
 import packets
+import probes
 from check import check, due_audit, http_get, releases_of, summary
 from docs import page_file
 from guide import CITE_SHAPED_RE, by_section, read_citations, render_stamp
@@ -173,6 +189,13 @@ def parser() -> argparse.ArgumentParser:
     s = sub.add_parser('settle')
     s.add_argument('folder', type=Path)
     s.add_argument('--hold', nargs='+', default=[], metavar='ID')
+    pr = sub.add_parser('probes')
+    pr.add_argument('--claude', type=Path, required=True, metavar='PATH')
+    which = pr.add_mutually_exclusive_group()
+    which.add_argument('--only', nargs='+', metavar='ID')
+    which.add_argument('--force', action='store_true')
+    pr.add_argument('--allow-old', action='store_true')
+    sub.add_parser('binaries')
     return p
 
 
@@ -388,6 +411,21 @@ def run_settle(args) -> int:
     return 0 if result.clean else 1
 
 
+def run_probes(args, cache: Path, today: date, now: datetime) -> int:
+    code, lines = probes.run(REPO, cache, args.claude.expanduser().absolute(), only=args.only, force=args.force,
+                             allow_old=args.allow_old, newest=newest_releases(cache)[0].label, today=today, now=now)
+    print('\n'.join(lines))
+    return code
+
+
+def run_binaries() -> int:
+    found = probes.binaries(os.environ.get('PATH', ''), Path.home())
+    if not found:
+        raise SetupError('no claude binary on PATH or in the Desktop app bundle')
+    print('\n'.join(map(probes.describe, found)))
+    return 0
+
+
 def main(argv=None, *, today: date | None = None, now: datetime | None = None, fetch=None) -> int:
     args = parser().parse_args(argv)
     hook = args.command == 'check' and args.hook
@@ -406,6 +444,10 @@ def main(argv=None, *, today: date | None = None, now: datetime | None = None, f
             return run_quotes(args)
         if args.command == 'settle':
             return run_settle(args)
+        if args.command == 'probes':
+            return run_probes(args, cache, today, now)
+        if args.command == 'binaries':
+            return run_binaries()
         return run_baseline(args, cache, today)
     except SetupError as exc:
         if hook:

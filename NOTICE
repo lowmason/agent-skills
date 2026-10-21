@@ -457,7 +457,7 @@ Changes from upstream:
     `# cc-guide:` YAML comment as the last frontmatter line on 2026-10-12.
     It names the sections of this repo's Claude Code guide that the file
     rests on, so a docs change flags it for review
-    (specs/claude-code-drift-automation-spec.md, R4). No parsed field changed.
+    (specs/completed/claude-code-drift-automation-spec.md, R4). No parsed field changed.
   - Five fixes were later adopted FROM upstream (plan 50, 2026-10-18),
     each read at the upstream commit named here and each shown failing
     here, by a test or a probe, before it was ported. 6015d37 and c8921b5

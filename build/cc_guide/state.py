@@ -27,6 +27,10 @@ CADENCE_KEYS = ('changelog_days', 'probe_days', 'audit_days')
 TABLES = ('guide', 'sources', 'cadence', 'groups', 'sections', 'exclusion', 'probe')
 GROUP_RE = re.compile(r'[a-z0-9-]+')
 DATE_RE = re.compile(r'\d{4}-\d{2}-\d{2}')
+# R10.5's outcomes, and the columns that mark PROBES.md's log table (R10.6).
+PASS, DIVERGES, ERROR = 'PASS', 'DIVERGES', 'ERROR'
+OUTCOMES = (PASS, DIVERGES, ERROR)
+PROBE_COLUMNS = frozenset({'date', 'version', 'probe', 'outcome'})
 
 # The bootstrap snapshot (R2.6): the 2026-10-03 refresh read the docs at
 # 2.1.288 and checked them that day. 2.1.288 itself shipped on 2026-10-02.
@@ -358,10 +362,24 @@ class ProbeRow(NamedTuple):
     outcome: str
 
 
+def table_cells(line: str) -> list[str]:
+    '''A Markdown table line's cells, stripped; an escaped pipe stays in its cell.'''
+    return [c.strip() for c in CELL_SPLIT_RE.split(line.strip().strip('|'))]
+
+
+def is_probe_header(line: str) -> bool:
+    '''Whether the line heads PROBES.md's log table: a table line naming the
+    date, version, probe and outcome columns.'''
+    return line.strip().startswith('|') and PROBE_COLUMNS <= {c.lower() for c in table_cells(line)}
+
+
 def parse_probes(text: str | None) -> list[ProbeRow]:
-    '''PROBES.md's rows (R10.6), in file order. The table's header names the
-    columns; date, version, probe and outcome are read. An absent file has no
-    rows: Stage 5 creates it, and until then no probe is registered.'''
+    '''PROBES.md's rows (R10.6), in file order. The log table is any table
+    whose header names the date, version, probe and outcome columns; another
+    table, such as a legend, is skipped. A row needs a release label, a
+    date, a probe and one of R10.5's outcomes, so a typo such as `DIVERGED`
+    is a SetupError, never a row read as passed. An absent file has no rows:
+    the first `probes` run creates it.'''
     if text is None:
         return []
     rows: list[ProbeRow] = []
@@ -371,17 +389,18 @@ def parse_probes(text: str | None) -> list[ProbeRow]:
         if not s.startswith('|'):
             header = None
             continue
-        cells = [c.strip() for c in CELL_SPLIT_RE.split(s.strip('|'))]
         if header is None:
-            header = [c.lower() for c in cells]
+            header = [c.lower() for c in table_cells(s)]
             continue
-        if set(s) <= set('|-: '):
+        if set(s) <= set('|-: ') or not PROBE_COLUMNS <= set(header):
             continue
-        row = dict(zip(header, cells))
+        row = dict(zip(header, table_cells(s)))
         try:
             version_key(row['version'])
-            rows.append(ProbeRow(date.fromisoformat(row['date']), row['version'],
-                                 row['probe'], row['outcome'].upper()))
+            outcome = row['outcome'].upper()
+            if outcome not in OUTCOMES or not row['probe']:
+                raise ValueError(outcome)
+            rows.append(ProbeRow(date.fromisoformat(row['date']), row['version'], row['probe'], outcome))
         except (KeyError, ValueError):
             raise SetupError(f'{PROBES}: unreadable row {s!r}') from None
     return rows

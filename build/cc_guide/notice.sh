@@ -1,5 +1,5 @@
 #!/bin/sh
-# notice.sh: the drift check's session-start pair (specs/claude-code-drift-automation-spec.md, R9).
+# notice.sh: the drift check's session-start pair (specs/completed/claude-code-drift-automation-spec.md, R9).
 #   notice.sh show     synchronous: print the notice check --hook left, once a day per notice (R9.2)
 #   notice.sh refresh  async: run cli.py check --hook once the last good check is a day old (R9.3)
 # Both exit 0 and print nothing but show's notice. .claude/settings.json wires the pair on

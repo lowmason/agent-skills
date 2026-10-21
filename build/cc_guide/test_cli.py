@@ -10,6 +10,7 @@ import pytest
 import baseline
 import cli
 import notice
+import probes
 import state
 from cc_fixtures import (DOCS, GUIDE_IDS, GUIDE_PATH, MANIFEST_TOML, MARKDOWN_PAGE, MDX_PAGE, docs_dir,  # noqa: F401
                          drift_repo, fixture_repo, git, guide_text, isolated_home, prime_cache, write_tree)
@@ -712,3 +713,43 @@ def test_a_two_part_stamp_is_a_lint_violation_so_no_accept_reaches_it(world, cap
     assert capsys.readouterr() == ('', 'cc-guide: a substantive accept needs every citation to parse (R2.4);'
                                        f' fix these first:\n{malformed}')
     assert dirty(repo) == [GUIDE_PATH]
+
+
+def test_probes_passes_the_newest_cached_release_and_its_flags(world, monkeypatch, capsys):
+    repo, cache, _ = world
+    seen = {}
+
+    def fake_run(root, cache_dir, claude, **given):
+        seen.update(root=root, cache=cache_dir, claude=claude, **given)
+        return 1, ['agent-tools: ERROR: no init event']
+    monkeypatch.setattr(probes, 'run', fake_run)
+    assert main(cache, 'probes', '--claude', 'bin/claude', '--only', 'agent-tools', '--allow-old') == 1
+    assert (seen['root'], seen['cache'], seen['claude'], seen['newest']) == (
+        repo, cache, Path.cwd() / 'bin' / 'claude', '2.1.902')
+    assert (seen['only'], seen['force'], seen['allow_old']) == (['agent-tools'], False, True)
+    assert capsys.readouterr().out == 'agent-tools: ERROR: no init event\n'
+
+
+@pytest.mark.parametrize('argv', [['probes'], ['probes', '--claude', 'c', '--only', 'a', '--force']])
+def test_probes_needs_claude_and_takes_only_or_force_not_both(world, argv, capsys):
+    with pytest.raises(SystemExit) as exit_:
+        main(world[1], *argv)
+    assert exit_.value.code == 2
+
+
+def test_probes_without_a_cached_changelog_is_a_setup_error(tmp_path, capsys):
+    assert main(tmp_path / 'empty-cache', 'probes', '--claude', 'c') == 2
+    assert capsys.readouterr().err == 'cc-guide: no cached changelog: run check, or restore the 2.1.288 snapshot\n'
+
+
+def test_binaries_exits_two_when_no_claude_is_found(tmp_path, monkeypatch, capsys):
+    monkeypatch.setenv('PATH', str(tmp_path))
+    assert main(tmp_path / 'cache', 'binaries') == 2
+    assert capsys.readouterr().err == 'cc-guide: no claude binary on PATH or in the Desktop app bundle\n'
+
+
+def test_the_registry_names_exactly_the_probes_that_probes_py_runs():
+    '''R10.1: manifest.toml registers each probe, and probes.py runs it. One
+    registered on either side alone fails here, before a live run finds it.'''
+    manifest = state.parse_manifest((cli.REPO / state.MANIFEST).read_text(encoding='utf-8'))
+    assert sorted(manifest.probes) == sorted(probes.PROBE_RUNS)

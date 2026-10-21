@@ -2727,7 +2727,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       caller's `GIT_*` variables, and `Source` is unchanged because the pre-commit lint
       relies on git's environment; (c) `check` runs the audit due rule when the fetch
       fails.
-- [ ] The probe registry's gaps, for Stage 5 (owner rulings 6 and 9, plan 38). (a)
+- [x] The probe registry's gaps, for Stage 5 (owner rulings 6 and 9, plan 38). (a)
       `state.parse_probes` accepts any outcome word, and `check.due_probes` schedules
       ERROR and unknown words like PASS, so an ERROR-only probe reads as passed (drift
       spec R10.5: ERROR "is never a pass") and a typo such as `DIVERGED` reads as
@@ -2737,6 +2737,10 @@ declined as YAGNI (zero instances in a one-page wiki).
       `build/cc_guide/state.py`, `build/cc_guide/check.py`. Size: plan. Done when:
       Stage 5's plan validates outcomes against R10's vocabulary, schedules ERROR as not
       passed, and settles R10.1 against R10.2.
+      → done in plan 58 (2026-10-20): part (a) by Task 2 (`state.parse_probes` reads only R10.5's three
+      outcomes and skips a legend table, and `check.due_probes` keeps ERROR due until a later PASS);
+      part (b) by D1, Task 1 (spec amendment A1) and Task 5 (`guard-liveness` backs `hooks.events`,
+      `hooks.exit-codes` and `hooks.patterns`). See `specs/plans/completed/58-claude-code-drift-automation.md`.
 - [x] Test coverage and edge cases in `build/cc_guide/` (plan 38's final review triage:
       each regression would surface as an error or a visible finding, or has no
       realistic trigger today). Coverage: `test_blocks.py` pins neither sha256[:16] nor
@@ -3150,7 +3154,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       variable `name`; `CLAUDE.md`'s long comment line is reflowed (187 lines). The double parse
       is re-deferred below, under the 2026-10-13 /deferred pass.
 - [x] Drift spec R5 and the `lint` help lag the label-note rule (plan 43, completion gate
-      decision (a), 2026-10-12). `specs/claude-code-drift-automation-spec.md` R5 (near lines
+      decision (a), 2026-10-12). `specs/completed/claude-code-drift-automation-spec.md` R5 (near lines
       523-526) still says every `2.1.NNN` in the guide must be a changelog release label.
       `build/cc_guide/lint.py` now treats a three-part label newer than the cached changelog's
       newest release as a `note:` on stderr (exit unchanged), and any other unlisted token,
@@ -3814,7 +3818,7 @@ all 20 named a type.
       `build/CLAUDE.md`. Size: design. Done when: the owner decides the channel, and a new
       Desktop session shows the notice at its start, or terminal-only is recorded as the
       accepted scope.
-- [ ] Does `startup` fire under `claude -p`? (plan 49 Task 1 Step 5, skipped by the owner;
+- [x] Does `startup` fire under `claude -p`? (plan 49 Task 1 Step 5, skipped by the owner;
       a Stage 5 probe candidate.) If it does, every `claude -p` run with this repo or one of
       its worktrees as the working directory runs `show` and `refresh`: a live docs
       fetch and writes to the shared cache. To check, from a terminal in the
@@ -3824,6 +3828,10 @@ all 20 named a type.
       Size: quick-fix. Done when: the answer and `claude --version` are recorded as a
       Stage 5 probe (in the registry that stage creates) or in the `notice.sh` paragraph
       of `build/CLAUDE.md`.
+      → done in plan 58 (2026-10-20): Task 8 ran the held binary 2.1.304 once from a fresh temporary
+      directory with a stand-in SessionStart hook on the `startup` matcher, passed through `--settings`.
+      The hook fired under `claude -p`. The answer and the version are in the `notice.sh` paragraph of
+      `build/CLAUDE.md`. See `specs/plans/completed/58-claude-code-drift-automation.md` (D5).
 - [ ] Guide coverage for what `notice.sh` relies on (plan 49, coverage gaps G1 to G5, drift
       spec R4.3, plus the gaps execution found). No guide section covers: G1 the
       `startup` value of SessionStart's matcher (seen: CLI and Desktop both ran the hook
@@ -5478,3 +5486,103 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       quick-fix. Done when: each wiki's copies carry headers.
       → done 2026-10-20 (owner): `bootstrap_wiki.py ~/research-wiki --force` refreshed the
       one wiki root, and `--check` reports `tooling is current`; all three scripts carry headers.
+
+## 58-claude-code-drift-automation — 2026-10-20
+- [ ] Two runs of one probe in the same second share a run directory (final reviews: Codex P2,
+      and the code-reviewer's Minor M6, which it ranked not worth tracking; the owner chose to
+      defer). `probes.run` names the raw-output folder `<cache>/probes/<YYYYmmddTHHMMSS>-<probe id>`,
+      and `probes.run_probe` creates it with `exist_ok=True`. Two invocations in one second (two
+      worktrees, or a scripted loop) then truncate each other's stream files, and `assess` can read
+      the other run's output. Only the log append is locked. Files: `build/cc_guide/probes.py`.
+      Size: quick-fix. Done when: the folder is created with a unique suffix (`mkdir(exist_ok=False)`
+      with a counter, or `tempfile.mkdtemp` under `probes/`) and a test starts two runs in one second.
+- [ ] `held_signals` drops a real stop that follows an ignored signal (final review, Minor M2).
+      In `build/cc_guide/probes.py`, `held_signals` records every held signal, even one whose
+      previous handler is `SIG_IGN`, and then acts only on the first. A `nohup`-started run that
+      gets SIGHUP and then SIGTERM inside one held window acts on neither; in the timeout branch of
+      `execute` (up to 10 s) the run then goes on to the next probe and keeps spending. Size:
+      quick-fix. Done when: a signal whose previous handler is `SIG_IGN` is not recorded, and a
+      process test sends an ignored SIGHUP then SIGTERM and sees the stop acted on once.
+- [ ] A missing transcript field reads DIVERGES, not ERROR (final review, Minor). In
+      `build/cc_guide/probe_checks.py`, `assess_agent_model_pins` reports a forwarded message with no
+      `model`, or a code-reviewer transcript with no `effort`, as DIVERGES ("served None", "effort
+      None"). Drift spec R10.5 reserves DIVERGES for behaviour that differs from the guide, and ERROR
+      for a broken mechanism. The subagent transcript layout is undocumented (a coverage gap), so a
+      field rename would send the owner on a paid `verify` run. Size: quick-fix. Done when: a `None`
+      model or effort is ERROR with a finding that names the field, and `test_probe_checks.py` pins it.
+      Revisit if: Claude Code documents the subagent transcript format.
+- [ ] A log row after a blank line is silently skipped (final review, Minor). In
+      `build/cc_guide/state.py`, `parse_probes` resets the header on any non-table line, so the
+      next `|` line is read as a new header and skipped as "another table". A hand edit or a merge
+      resolution that splits `build/cc_guide/PROBES.md` hides later rows, and a DIVERGES row among
+      them leaves the probe not due while a PASS is under `probe_days` old. Only
+      `test_probe_replay.py`'s check of the committed file guards this, and the commit lints do not
+      run that suite. Size: quick-fix. Done when: `parse_probes` raises `SetupError` for a log-table
+      data row it would otherwise skip, with a test; or the cc_guide suite joins the commit lints.
+- [ ] `hook_response.hook_name` may carry an MCP name into a fixture (final review, Minor).
+      `probe_checks._trim_event` keeps `hook_name` verbatim, so a PreToolUse hook with an `mcp__`
+      matcher in the owner's user settings would appear as `PreToolUse:mcp__...` in a fixture. Only
+      `PRIVATE_RE` in `build/cc_guide/test_probe_replay.py` backstops it, and that suite is not a
+      commit lint. Size: quick-fix. Revisit if: a probe's recording shows a hook name with `mcp__`,
+      or the owner wires an MCP-matched hook in user settings. Done when: `_trim_event` passes the
+      name through the same `mcp__` replacement as tool names.
+- [ ] Review Minors from the per-task and final reviews of plan 58, one batch (the owner chose to
+      defer). In `build/cc_guide/state.py`: (a) the log-table header test is written twice
+      (`is_probe_header` and `parse_probes`'s `PROBE_COLUMNS <= set(header)`); (b) the empty-probe
+      branch of `parse_probes` has no test. In `build/cc_guide/probe_checks.py`: (c) `scrub_events`
+      replaces private strings after `json.dumps`, so a value with a quote or backslash would not
+      match; (d) the dict check in `parse_stream` cannot run; (e) no test for the `None in results`
+      branch of `assess_guard_liveness`, the `Task` alias in `DISPATCH_TOOLS`, or scrubbing a
+      JSON-escaped value; (f) `broken()` keys only on `is_error`; (g) the MCP token regex in
+      `probes.py` swallows a trailing comma, semicolon or colon (appearance only); (h) the Binary
+      cell of a log row shows `~` only for the home path as given, not the resolved home or the
+      login. In `build/cc_guide/probes.py`: (i) `run_probe` creates `run_dir` and the scratch
+      directory before its `try`, so an `OSError` there aborts with a traceback instead of an ERROR
+      row; (j) the `stop_group` docstring overstates the grace, and nothing sweeps the process group
+      after a normal exit; (k) no test for the scratch-directory-inside-a-git-work-tree ERROR path,
+      or for scratch removal on the ERROR and timeout paths; (l) the file has five jobs in about 550
+      lines (process control, probe definitions, fixtures, the log, binary discovery), so split
+      process control out if it grows; (m) `probes.run` prints the unscrubbed finding to the
+      terminal (it never reaches the repo); (n) the three-line private-string test setup is
+      repeated in `test_probes.py` between `planted_privates` and the `save_fixtures` test. In
+      `build/cc_guide/test_cli.py`: (o) `test_probes_needs_claude_and_takes_only_or_force_not_both`
+      takes an unused `capsys` and both cases pass before the subcommand exists; (p) no test of the
+      `~` expansion of `--claude` or of the success path of `run_binaries`; (q) `main` computes a
+      cache for `binaries`, which does not use it. In `build/cc_guide/test_probe_replay.py`: (r) the
+      DIVERGES cases do not pin their finding; (s) no replay case for a changed code-reviewer effort,
+      the test-runner model, the control half of the agent-tools DIVERGES, the stop-continuation
+      exit-code ERROR, or guard check 1 denied; (t) `PRIVATE_RE` has no `msg_` or `req_` pattern;
+      (u) the test reaches `dispatches` through `probes.probe_checks`; (v) one fixture keeps a random
+      scratch-folder suffix and the fixtures keep Bash command text for probes that never read it;
+      (w) `home` and `home.resolve()` are the same string under `isolated_home`, so dropping one
+      `private` entry goes unseen. In `.claude/skills/cc-guide/SKILL.md` and `build/CLAUDE.md`: (x)
+      the `probes` mode says "State the count first" but has no way to learn the count (no dry run;
+      the due list is the `probes:` line of `cli.py check --worktree`); (y) Ground rules and "After
+      any mode" still describe guide edits and settle for every mode; (z) the mode never says that
+      exit 1 means a probe DIVERGED or ERRORed; (aa) the `build/CLAUDE.md` probes paragraph is one
+      hard-wrapped block with "Nothing is committed for you." after it. See
+      `specs/plans/completed/58-claude-code-drift-automation.md` and its Deviation notes. Size: plan. Revisit if: a later edit to `build/cc_guide/probes.py`, `probe_checks.py`,
+      `state.py` or one of the test modules above touches one of them. Done when: each is fixed, or
+      the owner rules here that it stays.
+- [ ] The Stop-hook block cap probe (drift spec, Out of scope; logged at plan completion, as the
+      spec's heading says). Size: plan. Revisit if: drift #2 (the Stop-hook continuation reading) is
+      resolved toward re-checking.
+- [ ] Probes for behavioural claims the repo does not depend on, such as the fork-mode and
+      `background` defaults (drift spec, Out of scope). Size: plan. Revisit if: a skill, agent or hook
+      comes to depend on one of them.
+- [ ] Line-level citations, and anchors for single rows of the guide's tables (drift spec, Out of
+      scope). Size: design. Revisit if: a section-level citation proves too coarse to tell a stale
+      file from a current one.
+- [ ] Widening `build/check_frontmatter.py` to `.claude/skills` and `.claude/agents` (drift spec, Out
+      of scope). Size: design. Revisit if: a project-local skill or agent ships a frontmatter defect
+      the lint would have caught.
+- [ ] Hold, owner-only: remove plan 58's scratch files once the branch has merged (plan completion
+      notes). They sit outside the repo: `~/.cache/agent-skills/scratch/plan58-bin/` (the held
+      `claude` 2.1.304, `broken-claude`, `startup_check.py`, `startup.log`; keep the held binary if
+      you want to re-record the fixtures later), `~/.cache/agent-skills/scratch/plan58-spike/`, the
+      planning proof folders (`plan58-gen/`, `plan58-full/`, `plan58-main/`, `plan58-head/`,
+      `plan58-proto/`), the raw probe output folders
+      `~/.cache/agent-skills/cc-guide/probes/20261020T190242-*`, and the persisted sessions under
+      `~/.claude/projects/` whose folder names start `-private-tmp-plan58-spike-` or hold
+      `cc-guide-probe-agent-model-pins-`. Size: quick-fix. Done when: they are removed, or the owner
+      decides to keep them.
