@@ -1,5 +1,7 @@
 # Model-Skill Comparator and CV Fixes Implementation Plan
 
+**Status: COMPLETE (2026-10-21)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Fix four audited defects in the model-lifecycle skills: track-model-experiments' comparator drops non-Bayesian winners in silence and mis-ranks or crashes on state-space log-likelihoods, tune-hyperparameters' purged splitter leaks on panels, and tune's Regime B router contradicts bayesian-workflow.
@@ -117,7 +119,7 @@ The micro-test's measured runs (Task 6, Steps 4, 5, 9 and 10) have not happened:
 - Consumes: nothing from other tasks.
 - Produces: `PurgedTimeSeriesSplit.split(X, y=None, groups=None)` and `get_n_splits(X=None, y=None, groups=None)`. `groups` holds one period label per row, of any sortable type. `test_size`, `embargo`, `label_horizon` and `min_train_size` count periods. Without `groups` each row is one period, so the folds are unchanged. A `groups` whose length differs from the row count raises `ValueError`. A private helper `_period_index(n, groups) -> (np.ndarray, int)` gives each row's period index and the period count.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append this block to the end of `skills/tune-hyperparameters/scripts/test_time_series_cv.py`, with two blank lines between the file's last line and the block:
 
@@ -194,7 +196,7 @@ def test_sklearn_search_with_panel_groups():
     assert gs.n_splits_ == realized
 ```
 
-- [ ] **Step 2: Run them and check that they fail for the stated reasons**
+- [x] **Step 2: Run them and check that they fail for the stated reasons**
 
 Run (scikit-learn and Optuna come with `--extras`):
 
@@ -212,7 +214,7 @@ Expected: 9 of the 10 new tests fail, and the baseline's tests still pass (`9 fa
 
 `test_one_row_per_period_matches_row_mode` passes now and must still pass after Step 3: it pins that the change leaves row mode alone.
 
-- [ ] **Step 3: Split periods**
+- [x] **Step 3: Split periods**
 
 In `skills/tune-hyperparameters/scripts/time_series_cv.py`, find:
 
@@ -361,7 +363,7 @@ Replace it with:
                 f'no folds could be formed (periods={n_periods}, n_splits={self.n_splits}, '
 ```
 
-- [ ] **Step 4: Run the tests and check that they pass**
+- [x] **Step 4: Run the tests and check that they pass**
 
 ```bash
 uv run --python 3.13 python build/run_suites.py tune-hyperparameters --extras -- -rf --tb=line
@@ -375,7 +377,7 @@ uv run --python 3.13 python build/run_suites.py tune-hyperparameters
 
 Expected: +9 passed and +1 skipped over the bare baseline (`15 passed, 3 skipped` at `0fd27b6`). The new sklearn test skips without scikit-learn.
 
-- [ ] **Step 5: Make the skill text match the code**
+- [x] **Step 5: Make the skill text match the code**
 
 The point-in-time bullet now says what it covers (a single series), a panel bullet says how to split one, and the import resolves from outside `scripts/`.
 
@@ -460,7 +462,7 @@ Replace it with:
 It gives forward-chaining cross-validation with an embargo gap and an optional label-horizon *purge*. It splits whole periods, so it also works on a panel.
 ```
 
-- [ ] **Step 6: Run the snippet and frontmatter lints**
+- [x] **Step 6: Run the snippet and frontmatter lints**
 
 ```bash
 uv run --python 3.13 python build/check_snippets.py skills/
@@ -474,7 +476,7 @@ uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
 
 Expected: exit 0.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add skills/tune-hyperparameters/scripts/time_series_cv.py skills/tune-hyperparameters/scripts/test_time_series_cv.py skills/tune-hyperparameters/SKILL.md README.md
@@ -502,7 +504,7 @@ git commit -m "fix(tune-hyperparameters): split periods, not rows, in the purged
   - a `not_compared` list in `comparison.json`.
   - Task 3 replaces the loop in `update_ledger`, and Task 4 adds a constant after `QUALIFIED_BEST`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append this block to the end of `skills/track-model-experiments/scripts/test_compare_experiments.py`, with two blank lines between the file's last line and the block:
 
@@ -590,7 +592,7 @@ def test_ledger_without_a_variants_table_is_noted(analysis_dir, tmp_path):
     assert '<!-- COMPARISON:BEGIN -->' in ledger.read_text()
 ```
 
-- [ ] **Step 2: Run them and check that they fail for the stated reasons**
+- [x] **Step 2: Run them and check that they fail for the stated reasons**
 
 ```bash
 uv run --python 3.13 python build/run_suites.py track-model-experiments -- -rf --tb=line
@@ -604,7 +606,7 @@ Expected: the 6 new tests fail, and the baseline's tests still pass (`6 failed, 
 - `test_ledger_ids_read_only_the_variants_table`: `AttributeError: module 'compare_experiments' has no attribute 'ledger_ids'`.
 - `test_ledger_without_a_variants_table_is_noted`: `assert 'no Variants table' in ''`.
 
-- [ ] **Step 3: Report unranked rows, qualify the marker, and route both errors through `error:`**
+- [x] **Step 3: Report unranked rows, qualify the marker, and route both errors through `error:`**
 
 In `skills/track-model-experiments/scripts/compare_experiments.py`, find:
 
@@ -864,7 +866,7 @@ Replace it with:
     return 0
 ```
 
-- [ ] **Step 4: Run the tests and check that they pass**
+- [x] **Step 4: Run the tests and check that they pass**
 
 ```bash
 uv run --python 3.13 python build/run_suites.py track-model-experiments -- -rf --tb=line
@@ -872,7 +874,7 @@ uv run --python 3.13 python build/run_suites.py track-model-experiments -- -rf -
 
 Expected: +6 passed over the baseline (`19 passed` at `0fd27b6`).
 
-- [ ] **Step 5: Say where a non-Bayesian winner goes, and list the new guardrails**
+- [x] **Step 5: Say where a non-Bayesian winner goes, and list the new guardrails**
 
 The Graduation sentence and the When-to-use sentence state the interim rule only ("until a non-ELPD mode exists"), so they decide nothing for G5 or O1.
 
@@ -966,7 +968,7 @@ Replace it with:
 It graduates a tuned winner to a `track-model-experiments` variant row, or to that ledger's Decision log when the winner is not Bayesian, and
 ```
 
-- [ ] **Step 6: Run the frontmatter and dependency-drift checks**
+- [x] **Step 6: Run the frontmatter and dependency-drift checks**
 
 ```bash
 uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
@@ -980,7 +982,7 @@ uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pyt
 
 Expected: `2 passed`. The new text names track-model-experiments' `experiments.md`, an edge that `SOFT_REFERENCES` already holds.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add skills/track-model-experiments/scripts/compare_experiments.py skills/track-model-experiments/scripts/test_compare_experiments.py skills/track-model-experiments/SKILL.md skills/tune-hyperparameters/SKILL.md README.md
@@ -999,7 +1001,7 @@ git commit -m "fix(track-model-experiments): name the ledger rows the comparator
 - Consumes: Task 2's `_variants_table`, `update_ledger` and `render_comparison_block`.
 - Produces: `metric_cells(r: dict) -> dict[str, str]`, one ranked entry's cells keyed by the ledger's column names, which both the Variants table and the COMPARISON block use. A divergence count of `None` now renders as an empty cell in the block, not `None`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append this block to the end of `skills/track-model-experiments/scripts/test_compare_experiments.py`, with two blank lines between the file's last line and the block:
 
@@ -1023,7 +1025,7 @@ def test_metric_cells_are_filled_from_the_ranking(analysis_dir, tmp_path):
     assert cells[2:4] == ['drop slope', 'slope noise']   # the human half is untouched
 ```
 
-- [ ] **Step 2: Run it and check that it fails for the stated reason**
+- [x] **Step 2: Run it and check that it fails for the stated reason**
 
 ```bash
 uv run --python 3.13 python build/run_suites.py track-model-experiments -- -rf --tb=line
@@ -1031,7 +1033,7 @@ uv run --python 3.13 python build/run_suites.py track-model-experiments -- -rf -
 
 Expected: the new test fails, and every earlier test passes (`1 failed, 19 passed` at `0fd27b6`). `test_metric_cells_are_filled_from_the_ranking` fails on its ELPD cell, which is empty: `assert '' == '-390.0'` in the replay (the number is the fixture's ELPD for `m-intercept`).
 
-- [ ] **Step 3: Fill the cells**
+- [x] **Step 3: Fill the cells**
 
 In `skills/track-model-experiments/scripts/compare_experiments.py`, find:
 
@@ -1150,7 +1152,7 @@ Replace it with:
                     help='experiments.md to update (COMPARISON block, metric cells, best marker)')
 ```
 
-- [ ] **Step 4: Run the tests and check that they pass**
+- [x] **Step 4: Run the tests and check that they pass**
 
 ```bash
 uv run --python 3.13 python build/run_suites.py track-model-experiments -- -rf --tb=line
@@ -1158,7 +1160,7 @@ uv run --python 3.13 python build/run_suites.py track-model-experiments -- -rf -
 
 Expected: +7 passed over the baseline, +1 over Task 2 (`20 passed` at `0fd27b6`).
 
-- [ ] **Step 5: Say how the comparator finds and fills the table**
+- [x] **Step 5: Say how the comparator finds and fills the table**
 
 In `skills/track-model-experiments/SKILL.md`, find:
 
@@ -1178,7 +1180,7 @@ shown here, and moves the best marker in `status`. The Decision log is
 free-form prose: record the call and the reason, not just the winner.
 ```
 
-- [ ] **Step 6: Run the frontmatter lint**
+- [x] **Step 6: Run the frontmatter lint**
 
 ```bash
 uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
@@ -1186,7 +1188,7 @@ uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
 
 Expected: exit 0.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add skills/track-model-experiments/scripts/compare_experiments.py skills/track-model-experiments/scripts/test_compare_experiments.py skills/track-model-experiments/SKILL.md
@@ -1207,7 +1209,7 @@ git commit -m "fix(track-model-experiments): fill the ledger's metric cells (aud
 - Consumes: Task 2's `QUALIFIED_BEST` line (the new constant goes after it) and `compare()`.
 - Produces: `SAMPLE_DIMS = ('chain', 'draw')` and `pointwise_count(idata, name: str) -> int`, which replaces `observation_count(idata)`. It raises `ValueError` unless the variant has exactly one log-likelihood variable with an observation dimension of nonzero size. The mismatched-count guard now compares these pointwise counts.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append this block to the end of `skills/track-model-experiments/scripts/test_compare_experiments.py`, with two blank lines between the file's last line and the block:
 
@@ -1280,7 +1282,7 @@ def test_several_log_likelihood_variables_are_refused(tmp_path):
     assert 'y_a' in str(exc.value) and 'one pointwise variable' in str(exc.value)
 ```
 
-- [ ] **Step 2: Run them and check that they fail for the stated reasons**
+- [x] **Step 2: Run them and check that they fail for the stated reasons**
 
 ```bash
 uv run --python 3.13 python build/run_suites.py track-model-experiments -- -rf --tb=line
@@ -1291,7 +1293,7 @@ Expected: the 3 new tests fail, and every earlier test passes (`3 failed, 20 pas
 - `test_per_step_factor_terms_are_ranked`: the remedy is refused, `error: variants were fit to different numbers of observations {'f-full': 0, 'm-intercept': 200}`, because the count reads the empty `observed_data` entry.
 - `test_several_log_likelihood_variables_are_refused`: `Regex pattern did not match`, because Task 2's wrapper raises `az.compare could not rank the variants: …`, not the named refusal.
 
-- [ ] **Step 3: Count pointwise log-likelihood terms, and refuse the two shapes**
+- [x] **Step 3: Count pointwise log-likelihood terms, and refuse the two shapes**
 
 In `skills/track-model-experiments/scripts/compare_experiments.py`, find:
 
@@ -1364,7 +1366,7 @@ Replace it with:
         counts[name] = pointwise_count(idata, name)
 ```
 
-- [ ] **Step 4: Run the tests and check that they pass**
+- [x] **Step 4: Run the tests and check that they pass**
 
 ```bash
 uv run --python 3.13 python build/run_suites.py track-model-experiments -- -rf --tb=line
@@ -1372,7 +1374,7 @@ uv run --python 3.13 python build/run_suites.py track-model-experiments -- -rf -
 
 Expected: +10 passed over the baseline, +3 over Task 3 (`23 passed` at `0fd27b6`).
 
-- [ ] **Step 5: Warn beside both `factor` routes, and list the refusal**
+- [x] **Step 5: Warn beside both `factor` routes, and list the refusal**
 
 The warning goes after the pure-NumPyro paragraph, so it follows both `factor` routes (the dynamax sketch and the hand-written recursion). It does not claim exact LOO (DF10).
 
@@ -1454,7 +1456,7 @@ Replace it with:
 It refuses the inputs that make a comparison silently wrong: variants fit to different observations, a missing `log_likelihood` group, or a log-likelihood with no pointwise terms.
 ```
 
-- [ ] **Step 6: Run the lints**
+- [x] **Step 6: Run the lints**
 
 ```bash
 uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
@@ -1480,7 +1482,7 @@ uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pyt
 
 Expected: `2 passed`.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add skills/track-model-experiments/scripts/compare_experiments.py skills/track-model-experiments/scripts/test_compare_experiments.py skills/track-model-experiments/SKILL.md skills/bayesian-workflow/references/state-space.md README.md
@@ -1500,7 +1502,7 @@ git commit -m "fix(track-model-experiments): refuse log-likelihoods that LOO can
 - Consumes: the snippet preamble's running example (`model`, `x` and `y`, with the sites `beta`, `sigma` and `y_obs`), which Tier 3 binds before the block runs.
 - Produces: `skills/bayesian-workflow/references/svi.md`, which Task 6's SVI row cites.
 
-- [ ] **Step 1: Write the reference**
+- [x] **Step 1: Write the reference**
 
 Create `skills/bayesian-workflow/references/svi.md` with this content. It is newly written, in original wording. It cites two papers by author and year and ports no code.
 
@@ -1587,7 +1589,7 @@ print(vsbc.ks_pvalues)               # {site: p-value}; a small one marks a bias
 ```
 ````
 
-- [ ] **Step 2: Cite its two papers, point to it, and list it**
+- [x] **Step 2: Cite its two papers, point to it, and list it**
 
 In `skills/bayesian-workflow/references/publications.md`, find:
 
@@ -1648,7 +1650,7 @@ Replace it with:
 │   ├── svi.md                        # SVI as the final fit: ELBO across seeds, approximate-posterior LOO, VSBC
 ```
 
-- [ ] **Step 3: Run the snippet tiers**
+- [x] **Step 3: Run the snippet tiers**
 
 ```bash
 uv run --python 3.13 python build/check_snippets.py skills/
@@ -1668,7 +1670,7 @@ uv run --python 3.13 --with 'arviz==1.3.0' --with arviz-base --with 'arviz-stats
 
 Expected: exit 0 after a few minutes, and no `WARN` line names `svi.md`, so the block executed.
 
-- [ ] **Step 4: Run the frontmatter lint and the placement tests**
+- [x] **Step 4: Run the frontmatter lint and the placement tests**
 
 ```bash
 uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
@@ -1682,7 +1684,7 @@ uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pyt
 
 Expected: `6 passed`. The new paragraph sits after `## Critical rules` and `## Common gotchas`, the two sections these tests pin inside the compaction window.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/bayesian-workflow/references/svi.md skills/bayesian-workflow/references/publications.md skills/bayesian-workflow/SKILL.md skills/bayesian-workflow/README.md
@@ -1729,7 +1731,7 @@ Fallback row:
 | NUTS `target_accept` | clear divergences that come from step size | rung 1 of the escalation ladder: raise it only while divergences stay at or below about 1% of transitions with healthy R-hat and ESS; above that it hides a model problem, so follow the ladder instead | `bayesian-workflow/references/diagnostics.md`, "When sampling fails: the escalation ladder" |
 ````
 
-- [ ] **Step 1: Build the kit**
+- [x] **Step 1: Build the kit**
 
 Create `~/.cache/agent-skills/scratch/plan59-micro/scenarios.json`:
 
@@ -1839,7 +1841,7 @@ if __name__ == '__main__':
     main()
 ```
 
-- [ ] **Step 2: Copy the current router as arm B's skill**
+- [x] **Step 2: Copy the current router as arm B's skill**
 
 ```bash
 cp skills/tune-hyperparameters/SKILL.md ~/.cache/agent-skills/scratch/plan59-micro/arm-b-skill.md
@@ -1847,7 +1849,7 @@ cp skills/tune-hyperparameters/SKILL.md ~/.cache/agent-skills/scratch/plan59-mic
 
 Record `git rev-parse --short HEAD` for the record's Design section.
 
-- [ ] **Step 3: Build the prompts for arms A and B**
+- [x] **Step 3: Build the prompts for arms A and B**
 
 ```bash
 uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/plan59-micro/build.py ~/.cache/agent-skills/scratch/plan59-micro A none
@@ -1859,7 +1861,9 @@ uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/plan59-mi
 
 Expected: `arm A: 5 prompts in …/prompts`, then the same for arm B.
 
-- [ ] **Step 4: Run arms A and B (red)**
+- [x] **Step 4: Run arms A and B (red)**
+
+> Deviation: arms A and B ran at the same time as two background commands, not one after the other. 0 voids, $3.07.
 
 ```bash
 uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/plan59-micro/run.py ~/.cache/agent-skills/scratch/plan59-micro A 5
@@ -1871,11 +1875,13 @@ uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/plan59-mi
 
 Expected: 25 answer files per arm in `out/`, one line per rep, and a cost line per run (about $0.15 a call). Run these in the background if they take longer than two minutes. A line with `exit` instead of an answer is a void: rerun the same command, which skips answers already saved.
 
-- [ ] **Step 5: Grade arms A and B**
+- [x] **Step 5: Grade arms A and B**
+
+> Deviation: a subagent graded the reps, and the controller then regraded all 75 answers on its own (arms A and B here, arm C in Step 10). The two sets of grades agree on every rep.
 
 Read every answer in `~/.cache/agent-skills/scratch/plan59-micro/out/A-*.json` and `B-*.json` (the `result` field). In `~/.cache/agent-skills/scratch/plan59-micro/RESULTS.md`, write one line per rep: arm, scenario, rep, PASS or FAIL by the grading rules above, and a quote of at most 15 words. Total the fails per arm and scenario.
 
-- [ ] **Step 6: Change Step 0 and the Regime B rows**
+- [x] **Step 6: Change Step 0 and the Regime B rows**
 
 In `skills/tune-hyperparameters/SKILL.md`, find:
 
@@ -1943,7 +1949,7 @@ Replace it with:
 For regime B, a thin decision table routes the NUTS and SVI knobs to `bayesian-workflow`, and it says that no skill owns the dynamax optax knob yet.
 ```
 
-- [ ] **Step 7: Run the dependency-drift test and check that it fails for the stated reason**
+- [x] **Step 7: Run the dependency-drift test and check that it fails for the stated reason**
 
 ```bash
 uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pytest -q test_runtime_support.py -k declared_dependencies
@@ -1951,7 +1957,7 @@ uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pyt
 
 Expected: `1 failed, 1 passed`. The failure lists `('skill:tune-hyperparameters', 'skill:bayesian-workflow')`, the edge the new paths create.
 
-- [ ] **Step 8: Declare the edge soft (DF4)**
+- [x] **Step 8: Declare the edge soft (DF4)**
 
 In `build/test_runtime_support.py`, find:
 
@@ -1978,7 +1984,7 @@ uv run --directory build --python 3.13 --with pytest --with pyyaml python -m pyt
 
 Expected: `2 passed`.
 
-- [ ] **Step 9: Copy the new router as arm C's skill, build its prompts, and run it (green)**
+- [x] **Step 9: Copy the new router as arm C's skill, build its prompts, and run it (green)**
 
 ```bash
 cp skills/tune-hyperparameters/SKILL.md ~/.cache/agent-skills/scratch/plan59-micro/arm-c-skill.md
@@ -1994,11 +2000,13 @@ uv run --no-project --python 3.13 python ~/.cache/agent-skills/scratch/plan59-mi
 
 Expected: 25 answer files for arm C.
 
-- [ ] **Step 10: Grade arm C and apply the pass bars**
+- [x] **Step 10: Grade arm C and apply the pass bars**
 
 Grade arm C as in Step 5, then check both pass bars. Follow "When a bar fails" above if one is missed.
 
-- [ ] **Step 11: Write the record**
+- [x] **Step 11: Write the record**
+
+> Deviation: the template line "So arms B and C differ only in Step 0's rule and the Regime B rows" was reworded, because Step 6 also adds the Regime A neural-network clause and the paragraph after the table. The Disposition adds three limits (only S1 was red, arm A was not a pure control, and the S1 grades rest on the literal "any listed action" rule) and the S2 behaviour shift.
 
 Create `specs/verification/59-regime-b-router-microtest.md` from this template, with every `<…>` filled from the kit:
 
@@ -2035,7 +2043,7 @@ Per rep (a quote of at most 15 words from each answer):
 <Whether arm C met both bars. Whether the fallback row was used. What the passing answers converged on. Anything an answer did that the skills should say and do not. Voids: <n>.>
 ```
 
-- [ ] **Step 12: Run the lints**
+- [x] **Step 12: Run the lints**
 
 ```bash
 uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
@@ -2061,7 +2069,9 @@ uv run --python 3.13 python build/cc_guide/cli.py lint
 
 Expected: exit 0. Its `STALE` lines for requesting-code-review, subagent-driven-development and writing-skills predate this plan.
 
-- [ ] **Step 13: Commit**
+- [x] **Step 13: Commit**
+
+> Deviation: the implementer subagent's `git commit` was blocked by the auto-mode classifier (no reason given). The owner approved committing from the controller session, which made commit `914efea` with the plan's message.
 
 ```bash
 git add skills/tune-hyperparameters/SKILL.md build/test_runtime_support.py README.md specs/verification/59-regime-b-router-microtest.md
@@ -2073,7 +2083,9 @@ git commit -m "fix(tune-hyperparameters): align the Regime B router with bayesia
 
 **Files:** none change. The acceptance script lives in `/tmp/p59accept/` and is never committed.
 
-- [ ] **Step 1: Run the two suites**
+- [x] **Step 1: Run the two suites**
+
+> Deviation: the "at `0fd27b6`" in the three expected-count lines below is a label slip. `23 passed`, `18 passed` and `15 passed, 3 skipped` are the totals after Tasks 1 to 6 (the baseline plus the new tests), not the counts at `0fd27b6`. After the final-review fix wave (Step 5's note), the track suite reads `26 passed`; the tune suite still reads `18 passed` and `15 passed, 3 skipped`.
 
 ```bash
 uv run --python 3.13 python build/run_suites.py track-model-experiments -- -rf --tb=line
@@ -2093,7 +2105,7 @@ uv run --python 3.13 python build/run_suites.py tune-hyperparameters
 
 Expected: +9 passed and +1 skipped over the bare baseline (`15 passed, 3 skipped` at `0fd27b6`).
 
-- [ ] **Step 2: Run snippet Tier 3**
+- [x] **Step 2: Run snippet Tier 3**
 
 ```bash
 uv run --python 3.13 --with 'arviz==1.3.0' --with arviz-base --with 'arviz-stats==1.3.3' --with 'arviz-plots==1.3.2' --with 'numpyro==0.22.0' --with 'jax==0.12.0' --with numpy --with matplotlib python build/check_snippets.py --run skills/bayesian-workflow/
@@ -2101,7 +2113,7 @@ uv run --python 3.13 --with 'arviz==1.3.0' --with arviz-base --with 'arviz-stats
 
 Expected: exit 0, and no `WARN` line names `svi.md`.
 
-- [ ] **Step 3: Re-run the audit's fixtures**
+- [x] **Step 3: Re-run the audit's fixtures**
 
 Create `/tmp/p59accept/acceptance.py`:
 
@@ -2234,7 +2246,7 @@ G2 embargo=1: folds sharing a period 0/5; gaps [1, 1, 1, 1, 1]
 G2 embargo=2: folds sharing a period 0/5; gaps [2, 2, 2, 2, 2]
 ```
 
-- [ ] **Step 4: Run the nine commit lints**
+- [x] **Step 4: Run the nine commit lints**
 
 ```bash
 bash build/run_commit_lints.sh
@@ -2242,7 +2254,9 @@ bash build/run_commit_lints.sh
 
 Expected: every lint passes and the runner exits 0.
 
-- [ ] **Step 5: Check each Done-when**
+- [x] **Step 5: Check each Done-when**
+
+> Deviation: the final whole-branch review (an Opus code-reviewer, plus a Codex run on `gpt-6-astra` that the owner approved for this one review) found three defects in plan-supplied code and text. A fix wave of three commits resolved them: `cb2c190` (an escaped pipe in a ledger cell no longer shifts the cells that the metric fill overwrites, an over-wide row is skipped with a note, and the multi-source remedy now says to share one observation dimension, in `state-space.md`, the comparator's error and track's SKILL.md), `3a428a4` (period labels must sort in time order, in the splitter docstrings, tune's SKILL.md and the README) and `879025a` (the `ks_pvalues` shape note in `svi.md` and one line of the micro-test record). A scoped re-review found all seven findings addressed. The fix wave changes plan-supplied text and stays inside the scope fence. The suites, the acceptance script and the nine commit lints were run again on `879025a`.
 
 | Item | Done when | Evidence |
 |---|---|---|
