@@ -1,6 +1,7 @@
-'''Tests for settle.py and `cli.py settle`: the report grammar, triage's
-completeness and fail-safe rules, the discard rule for verify, audit and
-files, and the bookkeeping each prints (drift spec R8.4-R8.8, R11.5).'''
+'''Tests for settle.py and `cli.py settle`: triage's completeness and
+fail-safe rules, the discard rule for verify, audit and files, and the
+bookkeeping each prints (drift spec R8.4-R8.8, R11.5). The report
+grammar's tests are in test_report_grammar.py.'''
 import json
 import shlex
 from datetime import datetime, timezone
@@ -10,6 +11,7 @@ import pytest
 import baseline
 import cli
 import packets
+import report_grammar
 import settle
 import state
 from cc_fixtures import (DOCS, FIXTURE_RELEASE, GUIDE_PATH, MANIFEST_TOML, docs_dir, fixture_repo,  # noqa: F401
@@ -56,37 +58,10 @@ def triage(world, tmp_path, through=None):
     return packets.triage(load(world), tmp_path / 'p', through)
 
 
-@pytest.mark.parametrize('line, count, quoted, fields', [
-    ('B1 | NOISE | - | - | - | "a | b "c"" | why | it has a pipe', 7, settle.TRIAGE_QUOTES,
-     ['B1', 'NOISE', '-', '-', '-', '"a | b "c""', 'why | it has a pipe']),
-    ('| B1 | TOUCHES | x.y | 4 | "g" | "s" | why |', 7, settle.TRIAGE_QUOTES,
-     ['B1', 'TOUCHES', 'x.y', '4', '"g"', '"s"', 'why']),
-    ('2.1.901 | none', 2, (), ['2.1.901', 'none']),
-    ('B1 | NOISE | why', 7, settle.TRIAGE_QUOTES, None),
-    ('B1 | NOISE | - | - | "unclosed | why', 7, settle.TRIAGE_QUOTES, None),
-    # A free-text field that opens with a quote ends at the next pipe, as in
-    # the 2026-10-12 skill probe's files row.
-    ('a.md:22 | "no edit tools": no Write | x.y | "a | b" | consistent', 5, settle.FILES_QUOTES,
-     ['a.md:22', '"no edit tools": no Write', 'x.y', '"a | b"', 'consistent']),
-])
-def test_a_row_splits_on_pipes_but_a_quote_field_holds_pipes_and_quotes(line, count, quoted, fields):
-    assert settle.split_row(line, count, quoted) == fields
-
-
-def test_a_quote_field_drops_its_outer_quotes_and_a_dash_is_no_quote():
-    assert [settle.unquote(f) for f in ('"a "b" c"', '-', '', 'bare')] == ['a "b" c', '', '', 'bare']
-
-
-def test_table_separators_header_rows_and_prose_are_no_rows():
-    text = '\n'.join(['# Report', 'Prose without a pipe.', settle.TRIAGE_ROW, '|---|---|', '| item | verdict |',
-                      'B1 | NOISE | - | - | - | "s" | why'])
-    assert settle.report_lines(text) == ['B1 | NOISE | - | - | - | "s" | why']
-
-
 def test_a_complete_triage_advances_every_section_and_rebaselines_the_block(world, tmp_path):
     latest(world, {'tools.md': DOCS['tools.md'].replace('runs alpha jobs', 'runs alpha batches')})
     out = triage(world, tmp_path)
-    result = settled(out, settle.TRIAGE_ROW,
+    result = settled(out, report_grammar.TRIAGE_ROW,
                      'B1 | NOISE | - | - | - | "runs alpha batches" | a wording change; the guide claims nothing here',
                      '2.1.901 | none', '2.1.902 | none')
     assert result.lines == [
@@ -450,7 +425,7 @@ def test_a_report_written_as_a_list_parses_as_rows(world, tmp_path):
         *TAIL,
         f'verify: /cc-guide verify alpha.overview; {VERIFY_LINE}']
     assert result.clean
-    assert settle.report_lines('+ alpha.overview | none\n2. B | 2.1.901 | x | changelog.md:14') == [
+    assert report_grammar.report_lines('+ alpha.overview | none\n2. B | 2.1.901 | x | changelog.md:14') == [
         'alpha.overview | none', 'B | 2.1.901 | x | changelog.md:14']
 
 
@@ -511,7 +486,7 @@ def test_a_verify_report_lists_corrections_owners_calls_and_the_bookkeeping(worl
     write_tree(tmp_path / 't', {packets.SETTLED: json.dumps(
         {'mode': 'triage', 'advance_to': '2.1.902', 'verify': ['alpha.overview'], 'cleared': [], 'rows': {}})})
     out = review(world, tmp_path, settled_triage=tmp_path / 't' / packets.SETTLED)
-    result = settled(out, settle.VERIFY_ROW, GOOD,
+    result = settled(out, report_grammar.VERIFY_ROW, GOOD,
                      'L19 | Set ALPHA_ENV | CONFIRMED | changelog.md:14 | "Added `ALPHA_ENV`" | -',
                      'L19 | the tick span | NOT FOUND | - | - | -',
                      'L14 | prefer alpha | JUDGMENT | - | - | -',
@@ -949,7 +924,7 @@ def test_every_rebaseline_settle_prints_names_its_packets_head(world, tmp_path):
 
 def test_a_files_report_lists_contradictions_and_cites_the_file(world, tmp_path):
     out = packets.files(load(world), tmp_path / 'f', [])[0]
-    result = settled(out, settle.FILES_ROW,
+    result = settled(out, report_grammar.FILES_ROW,
                      'hooks/gate.sh:3 | exits 0 always | alpha.overview | "Alpha uses `ALPHA_TOOL`" | contradicts',
                      'hooks/gate.sh:1 | a shell script | alpha.overview | "## 1. Alpha" | consistent',
                      'hooks/gate.sh:2 | the launchd PATH | alpha.overview | - | not covered')

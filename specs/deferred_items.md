@@ -3266,7 +3266,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       to verify both groups, settle the other group's packet first, and leave the block out of
       its own group's `rebaseline` while that section is held or deferred. Carrying the block
       into every flagged group's verify packet (design (b)) was declined.
-- [ ] Split settle.py's report grammar into its own module (plan 44's fix wave, item 14; owner
+- [x] Split settle.py's report grammar into its own module (plan 44's fix wave, item 14; owner
       deferred 2026-10-13). `build/cc_guide/settle.py` is 726 lines and holds the report grammar
       (`split_row`, `unquote`, `given`, `report_lines`, `header_row`, `none_line`, the `FORMATS`,
       `HEADERS` and `COLUMNS` constants and the row regexes) beside the three modes. Deferred
@@ -3276,6 +3276,10 @@ declined as YAGNI (zero instances in a one-page wiki).
       lines. Done when: settle.py imports the grammar from its own module (for example
       `report_grammar.py`), the grammar tests move with it, the `FORMATS` pin still resolves, and
       the cc_guide suite passes with no expected string changed.
+      → done 2026-10-21 (/deferred quick fix): `build/cc_guide/report_grammar.py` holds the
+      grammar and settle.py imports it (800 to 666 lines). The three grammar tests moved to
+      `test_report_grammar.py`, `test_skill_files.py` pins `report_grammar.FORMATS`, and no
+      expected string changed.
 - [ ] `packets --files` with no paths refuses the whole batch for one bad citer (plan 44's fix
       wave re-review, Minor). `build/cc_guide/packets.py`'s `files` pre-check (near lines
       371-375) raises a `SetupError` when any citing file names a section ID in neither the
