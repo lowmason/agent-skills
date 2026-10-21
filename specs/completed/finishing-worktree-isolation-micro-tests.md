@@ -9,13 +9,22 @@ These runs test plan 60's wording changes
 ## Design
 
 Each run is one decision-only `claude -p` call with no tools, from /tmp/plan60-micro/run, on
-sonnet. The command is `claude -p --model sonnet --tools "" --strict-mcp-config --no-session-persistence --output-format json`.
+sonnet. The command is `CLAUDE_CODE_DISABLE_ADVISOR_TOOL=1 claude -p --model sonnet --tools "" --strict-mcp-config --no-session-persistence --output-format json`.
 The flag `--strict-mcp-config` is there because `--tools ""` alone still loads connected MCP servers on Claude Code 2.1.304.
 An MCP (Model Context Protocol) server adds tools from outside Claude Code. The first pilot showed 33 MCP tools without the flag. The second pilot showed none.
+
+The variable `CLAUDE_CODE_DISABLE_ADVISOR_TOOL=1` closes a second open channel. The advisor is a server-side tool that never shows in `tools`.
+The user's settings.json sets `advisorModel`, so a run can call an Opus advisor. One control rep did (S9 rep 1, before the fix).
+The Claude Code settings reference documents the variable as the way to turn the advisor off, and the key cannot turn it back on.
+Exclusion rule: run.py saves a rep to out/excluded/ and re-runs it when its usage shows a non-message iteration or more than one model.
+The rule was added after the control arm was graded, when 1 of 50 control reps used the advisor. The other 49 had it available and unused.
+It applies to every later run.
+
 The prompt carries the skill body, a short tool list, a situation and the partner's
 message. The answer lists the next actions. Each action starts with RUN (a shell command), TOOL, EDIT, ASK (a question to the partner) or REPORT (a message to the partner).
 Every answer was graded by hand against the
-pre-registered table in the kit's PREREGISTRATION.md (sha256 1aae8a4e7be3eb129e6df4b774fbfda6b7726264704e095153b70d8938f450d4).
+pre-registered table in the kit's PREREGISTRATION.md (current sha256 01b9ec31ea06c24265665763b550545ab5fb61f4be27e1ad47f34688c4625506).
+The table did not change after the first run. Only the Design paragraph and the exclusion rule were added. Deviation (e) lists all three hashes.
 - Control: the skill text at 0fd27b66270ccf32f7b4547349c9a9eab0bf0ef8.
 - Treatment: the text after the plan task that changes it, at the commit each section names.
 - Reps: 5 per arm per scenario.
@@ -33,8 +42,15 @@ Probe re-run on Claude Code 2.1.304 and git version 2.56.0, 2026-10-21. Every re
 
 After ExitWorktree keep, the session's own worktree lost its `locked claude session` line. The lock line was there before the exit. So a finish from an EnterWorktree worktree can reach `git worktree remove` without a lock refusal.
 
-Pilot (scenario S3, control arm, with the flag): `cwd` was /private/tmp/plan60-micro/run, `tools` was `[]`, `mcp_servers` was `[]`, and the run took 1 turn. The `skills` list holds 110 names, including finishing-a-development-branch. No tool can load a skill body, so the list is harmless.
+Pilot (scenario S3, control arm, with `--strict-mcp-config`): `cwd` was /private/tmp/plan60-micro/run, `tools` was `[]`, `mcp_servers` was `[]`, and the run took 1 turn. The `skills` list holds 110 names, including finishing-a-development-branch. No tool can load a skill body, so the list is harmless.
 The user-level CLAUDE.md and rules still load under the flag. A check prompt asked for the sentence that begins "When a feature branch is complete". Runs with and without the flag both quoted it.
+
+Advisor positive control (fix round 1), run from /tmp/plan60-micro/run with the kit's flags. The prompt asked the model to call its advisor before it answered.
+- Without the variable: `usage.iterations` was `['message', 'advisor_message', 'message']`, and `modelUsage` named claude-sonnet-5-5 and claude-opus-5-5.
+- With the variable: `usage.iterations` was `[]`, `modelUsage` named only claude-sonnet-5-5, `tools` was `[]` and `mcp_servers` was `[]`. The model said it had no advisor tool.
+- With the variable, the CLAUDE.md check prompt still quoted the sentence.
+- A second switch also worked: `--settings '{"advisorModel":""}'` gave `['message']` and one model. The switch `{"advisorModel":null}` did not. The variable is the one in use.
+- The audit of all 50 control answers found 1 advisor call (S9 rep 1). The other 49 held only `message` iterations and one model.
 
 ## Scenarios
 
@@ -58,17 +74,18 @@ RED means the arm that runs the current text. Graded answers and quotes are in t
 |---|---|---|
 | S1-detect | 0 | All 5 ran the Step 2 probe as one compound command. None ran a check aimed at /work/atlas alone, with outcomes. Rep 5 noted from the conversation that the app made the worktree. |
 | S2-exit-keep | 4 | Rep 3 is NEITHER. It merged correctly, then removed the worktree with EnterWorktree path and ExitWorktree remove. It ran no `git worktree remove`. |
-| S3-exit-noop | 4 | Rep 1 listed `RUN cd /work/atlas && git checkout main ...` on one IF branch, after asking permission. |
+| S3-exit-noop | 4 | Rep 1 listed `RUN cd /work/atlas && git checkout main ...` on one IF branch, after asking permission. Reps 3 and 4 tell the partner to run `git branch -d` afterwards. That was graded as the partner's command, not the agent's. |
 | S4-app-ask | 0 | All 5 started with `git -C /work/atlas status` and merged in /work/atlas with no ASK first. All 5 kept the worktree and branch. |
 | S5-locked | 4 | Rep 2 ran `git worktree unlock` on its stale-lock branch. It then removed the worktree with no ASK. |
 | S6-untracked | 2 | Reps 1, 2 and 3 ran `git worktree remove --force` after a status check that expected only benchmark files. |
 | S7-own (decoy) | 5 | None. |
 | S8-carry | 0 | All 5 pushed and opened the PR first. They offered to record findings 1 and 2 only after the push. Finding 3 was never recorded. |
-| S9-ahead | 1 | Reps 1 to 4 are NEITHER. They called EnterWorktree with a name, then ran `git merge --ff-only main`. They handled the unpushed commit but ran no `git worktree add`. |
+| S9-ahead | 2 | Reps 1 and 5 passed. Both ran `git worktree add` from local HEAD or main, then entered with EnterWorktree path (path-entry tally: yes in both). Reps 2 to 4 are NEITHER. They called EnterWorktree with a name, then ran `git merge --ff-only main`. They handled the unpushed commit but ran no `git worktree add`. Rep 1 is a re-run, because its first run used the advisor and was excluded. |
 | S10-even (decoy) | 5 | None. |
 
-Two points need the owner's reading:
-- If NEITHER counted as PASS, S2 and S9 would both reach 5 of 5. Stop rule D6 (a control that already passes 5 of 5 is recorded as "not shown necessary") would then apply to both.
+Three points need the owner's reading:
+- If NEITHER counted as PASS (S2 rep 3, S9 reps 2 to 4), S2 and S9 would both reach 5 of 5. Stop rule D6 (a control that already passes 5 of 5 is recorded as "not shown necessary") would then apply to both.
+- S3 rep 1 fails only because its IF 2 branch holds a RUN aimed at /work/atlas, after it asked permission. If that counted as PASS, S3 would reach 5 of 5, and D6 would apply to S3 too.
 - The tool list in every prompt states the `worktree.baseRef` default. That fact may explain why S9 control reps spot the unpushed commit.
 
 The stop rules did not fire on the table's count. S8 passed 0 of 5, and both decoys passed 5 of 5.
@@ -79,11 +96,15 @@ The stop rules did not fire on the table's count. S8 passed 0 of 5, and both dec
 
 ## Cost
 
-The 50 control calls cost $4.021, about $0.08 a call. The probe cost $0.534. Two pilots cost $0.308: $0.208 without the flag and $0.100 with it. The diagnostics cost $0.173. The kit total so far is $5.035.
+The 50 counted control calls cost $3.860, about $0.08 a call. The excluded S9 rep 1 cost $0.289. The probe cost $0.534. Two pilots cost $0.308: $0.208 without `--strict-mcp-config` and $0.100 with it. The diagnostics cost $0.361. The kit total so far is $5.351.
 
 ## Deviations from the plan
 
-- (a) The command carries `--strict-mcp-config`, in the kit's run.py and pilot.py. The first pilot showed 33 MCP tools under `--tools ""` alone. The flag empties both lists. The pre-registration's Design paragraph was amended before any graded run. Its first sha256, 62327b0ff8428b4f65c8248a9e5d3ffae8b6cd9cd2e7756e7c7bf2d67002d2e7, is superseded.
+- (a) The command carries `--strict-mcp-config`, in the kit's run.py and pilot.py. The first pilot showed 33 MCP tools under `--tools ""` alone. The flag empties both lists.
 - (b) Step 7 (build the control prompts and run the answer-key grep) ran before Step 6 (hash the pre-registration). A fixture rename would have changed the pre-registration text. No rename was needed.
-- (c) Three helper scripts are not in the plan: probe/show_calls.py, spend.py and diag.py. Four more came later: extract_plan_blocks.py, verify_blocks.py, diag_prompt.py and check_quotes.py.
+- (c) Helper scripts the plan does not list. Three came first: probe/show_calls.py, spend.py and diag.py. Five more followed: extract_plan_blocks.py, verify_blocks.py, diag_prompt.py, check_quotes.py and check_sentences.py. Fix round 1 added three: diag_advisor.py, audit.py and test_run_screen.py.
 - (d) The control arm ran in four calls by scenario group, because one Bash call is capped at 10 minutes.
+- (e) The advisor channel. The command carries `CLAUDE_CODE_DISABLE_ADVISOR_TOOL=1`, set in run.py and pilot.py. run.py screens every answer and excludes a rep with a non-message iteration or a second model. S9 rep 1 was excluded, kept in out/excluded/ and re-run. Its re-run passed. The pre-registration holds three versions:
+  - `62327b0ff8428b4f65c8248a9e5d3ffae8b6cd9cd2e7756e7c7bf2d67002d2e7` applied from the start until `--strict-mcp-config` was added. No graded run used it. It is superseded.
+  - `1aae8a4e7be3eb129e6df4b774fbfda6b7726264704e095153b70d8938f450d4` applied to the 50 graded control runs.
+  - `01b9ec31ea06c24265665763b550545ab5fb61f4be27e1ad47f34688c4625506` adds the advisor variable and the exclusion rule. It applies to every later run. The S9 rep 1 re-run ran just before this version was hashed, in the same fix round.
