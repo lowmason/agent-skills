@@ -1,4 +1,5 @@
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -432,3 +433,62 @@ def test_several_log_likelihood_variables_are_refused(tmp_path):
     with pytest.raises(ValueError, match='2 log-likelihood variables') as exc:
         compare_experiments.compare(tmp_path, None)
     assert 'y_a' in str(exc.value) and 'one pointwise variable' in str(exc.value)
+
+
+# --- Cells that hold an escaped pipe (final review) ---
+
+ESCAPED_HYPOTHESIS = 'p(y \\| x) depends on x'
+
+
+def _unescaped_cells(row):
+    return [c.strip() for c in re.split(r'(?<!\\)\|', row.strip().strip('|'))]
+
+
+def test_an_escaped_pipe_stays_inside_its_cell(analysis_dir, tmp_path):
+    text = _ledger_with('m-full', 'm-intercept')
+    row = _row(text, 'm-intercept')
+    ledger = tmp_path / 'experiments.md'
+    ledger.write_text(text.replace(row, row.replace('| h |', f'| {ESCAPED_HYPOTHESIS} |')))
+    before = _row(ledger.read_text(), 'm-intercept')
+    out = tmp_path / 'comparison.json'
+    r = _run('--analysis-dir', str(analysis_dir), '--ledger', str(ledger), '--output', str(out))
+    assert r.returncode == 0, r.stderr
+    rank = {e['id']: e for e in json.loads(out.read_text())['ranking']}
+    after = _row(ledger.read_text(), 'm-intercept')
+    left_half = before[:before.index(ESCAPED_HYPOTHESIS) + len(ESCAPED_HYPOTHESIS)]
+    assert after.startswith(left_half)                       # the human cells are byte-identical
+    cells = _unescaped_cells(after)
+    assert len(cells) == 11                                  # one cell per header column
+    assert cells[3] == ESCAPED_HYPOTHESIS
+    assert cells[4] == f"{rank['m-intercept']['elpd']:.1f}"
+    assert cells[5] == f"{rank['m-intercept']['elpd_diff']:.1f}"
+    assert cells[-1] == 'candidate'
+
+
+def test_an_unranked_row_keeps_its_hand_written_cells(analysis_dir, tmp_path):
+    # Pins decision D3: a row the comparator cannot rank keeps every cell it holds.
+    text = _ledger_with('m-full', 'm-intercept', 'ridge-tuned')
+    row = _row(text, 'ridge-tuned')
+    written = row.replace('| h | | | | | | | candidate |',
+                          '| h | -120.5 | -3.2 | 1.002 | 0 | fair | ok | candidate |')
+    assert written != row
+    ledger = tmp_path / 'experiments.md'
+    ledger.write_text(text.replace(row, written))
+    r = _run('--analysis-dir', str(analysis_dir), '--ledger', str(ledger))
+    assert r.returncode == 0, r.stderr
+    assert _row(ledger.read_text(), 'ridge-tuned') == written
+
+
+def test_a_row_with_more_cells_than_the_header_is_left_alone(analysis_dir, tmp_path):
+    text = _ledger_with('m-full', 'm-intercept')
+    row = _row(text, 'm-intercept')
+    stray = row.replace('| h |', '| h | x |')                # a stray pipe splits the hypothesis
+    assert stray != row
+    ledger = tmp_path / 'experiments.md'
+    ledger.write_text(text.replace(row, stray))
+    r = _run('--analysis-dir', str(analysis_dir), '--ledger', str(ledger))
+    assert r.returncode == 0, r.stderr
+    assert _row(ledger.read_text(), 'm-intercept') == stray
+    notes = [ln for ln in r.stderr.splitlines()
+             if ln.startswith('note: ') and 'do not line up' in ln]
+    assert len(notes) == 1 and 'm-intercept' in notes[0]

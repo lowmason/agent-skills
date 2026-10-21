@@ -88,7 +88,7 @@ observation counts).
 `id`, `parent`, `what changed`, `hypothesis`, and `status` are yours to write —
 the reasoning trail no script can reconstruct after the fact. `ELPD` through
 `psense` are metric columns the comparator overwrites each run; don't
-hand-edit them. It finds this table by its header (the first one that starts
+hand-edit them. The comparator finds this table by its header (the first one that starts
 with `id` and has a `status` column), fills a column only under the names
 shown here, and moves the best marker in `status`. The Decision log is
 free-form prose: record the call and the reason, not just the winner.
@@ -120,7 +120,7 @@ Guardrails, enforced before any ranking happens:
 - **A log-likelihood that LOO cannot leave terms out of** → refused, with the
   remedy. One summed `numpyro.factor` has no observation dimension: store one
   term per time step. Several log-likelihood variables (one per source) must
-  become one pointwise variable.
+  become one pointwise variable, summed over one shared observation dimension.
   `bayesian-workflow/references/state-space.md` shows both.
 - **Mismatched observation counts across variants** → refused outright; LOO
   only compares predictions of the *same* held-out observations. The count is
@@ -132,7 +132,8 @@ After ranking:
   table, not silently dropped.
 - **A ledger row the comparator did not rank** (no fit, or left out of
   `--folders`) → named on stderr, in `comparison.json`'s `not_compared` list
-  and under the COMPARISON table. While one exists, the top row's status reads
+  and under the COMPARISON table. The list is filled only when you pass
+  `--ledger`. While one exists, the top row's status reads
   `**best among ELPD-compared variants**`, not `**best**`.
 
 ## Fresh session per variant

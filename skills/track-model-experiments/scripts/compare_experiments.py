@@ -27,6 +27,7 @@ import arviz as az
 # uncompared, the marker says the ranking covers the ELPD-compared rows only.
 BEST = '**best**'
 QUALIFIED_BEST = '**best among ELPD-compared variants**'
+# The sample dimensions of a log-likelihood variable; every other dimension is an observation.
 SAMPLE_DIMS = ('chain', 'draw')
 
 
@@ -76,8 +77,10 @@ def pointwise_count(idata, name: str) -> int:
             f'({", ".join(names)}); the comparator ranks one, and ranking a '
             'multi-source model on one source would mislead. Sum the sources\' '
             'terms for each observation into one pointwise variable and drop the '
-            'rest; a factor that is a penalty or a Jacobian, not data, leaves the '
-            'group instead (see bayesian-workflow/references/state-space.md).')
+            'rest. The sources must share one observation dimension, or the sum '
+            'builds a grid of terms. A factor that is a penalty or a Jacobian, not '
+            'data, leaves the group instead (see '
+            'bayesian-workflow/references/state-space.md).')
     var = ds[names[0]]
     obs_dims = [d for d in var.dims if d not in SAMPLE_DIMS]
     count = math.prod(var.sizes[d] for d in obs_dims)
@@ -255,7 +258,8 @@ _BLOCK_RE = re.compile(r'<!-- COMPARISON:BEGIN -->.*?<!-- COMPARISON:END -->', r
 
 
 def _cells(line: str) -> list[str]:
-    return [c.strip() for c in line.strip().strip('|').split('|')]
+    '''The row's cells. A pipe splits cells only when no backslash escapes it.'''
+    return [c.strip() for c in re.split(r'(?<!\\)\|', line.strip().strip('|'))]
 
 
 def _variants_table(lines: list[str]) -> tuple[list[str], list[int]] | None:
@@ -301,7 +305,9 @@ def update_ledger(ledger_path: Path, block: str, ranking: list[dict],
     table's metric and status cells change; human prose and the table's left
     half are preserved. Each ranked row is re-joined with '| '/' |' spacing, so
     its cell padding is normalized — this is intentional. An unranked row keeps
-    its cells, except that a stale best marker returns to candidate.
+    its cells, except that a stale best marker returns to candidate. A row with
+    more cells than the header does not line up with it, so it is left as it is
+    and a note names it.
     '''
     text = ledger_path.read_text()
     if _BLOCK_RE.search(text):
@@ -317,6 +323,12 @@ def update_ledger(ledger_path: Path, block: str, ranking: list[dict],
         marker = QUALIFIED_BEST if not_compared else BEST
         for i in rows:
             cells = _cells(lines[i])
+            if len(cells) > len(header):
+                print(f'note: ledger row {cells[0]} has {len(cells)} cells against '
+                      f'{len(header)} in the header, so its cells do not line up with '
+                      'the header and the row was left unchanged. Escape a literal '
+                      'pipe in a cell as \\|.', file=sys.stderr)
+                continue
             cells += [''] * (len(header) - len(cells))
             entry = ranked.get(cells[0])
             if entry is None and cells[status] not in (BEST, QUALIFIED_BEST):

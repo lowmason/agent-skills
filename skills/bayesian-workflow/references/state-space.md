@@ -267,8 +267,10 @@ you get latent-state credible intervals *after* marginalizing: run `lgssm.smooth
   and the comparators need one pointwise variable with a time dimension. The sampled path gives it
   (`y_obs` inside `scan` comes back shaped `(draw, T)`); a marginalized model gives it only as a vector
   `factor` of per-step terms (see "Marginalize" above). A model with two observed sources stores one
-  variable per source: sum them per time step into one before comparing, with
-  `ll = idata["log_likelihood"]` and then
+  variable per source. Convert both over one shared time dimension,
+  `dims={"y_a": ["time"], "y_b": ["time"]}`. Without it each source keeps its own dimension, and the
+  sum builds a grid of T x T terms, not T. With it, sum them per time step into one before comparing,
+  with `ll = idata["log_likelihood"]` and then
   `idata["log_likelihood"] = (ll["y_a"] + ll["y_b"]).to_dataset(name="y")`. A `factor` that is a
   penalty or a Jacobian, not data, has no place in the comparison: drop its variable from the group.
 - **Center the innovations and you get a funnel.** Sample `eps_t ~ Normal(0, 1)` and build
