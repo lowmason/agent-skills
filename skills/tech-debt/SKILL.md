@@ -16,7 +16,7 @@ context: fork
 metadata:
   author: Lowell Mason
   version: "1.1"
-# cc-guide: skills.frontmatter subagents.isolation @2.1.302
+# cc-guide: skills.frontmatter subagents.isolation @2.1.304.3
 ---
 
 # Tech Debt (research & data codebases)

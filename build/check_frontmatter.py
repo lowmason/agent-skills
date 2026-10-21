@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# cc-guide: skills.frontmatter commands.overview subagents.frontmatter subagents.tools subagents.models @2.1.219
+# cc-guide: skills.frontmatter commands.overview subagents.frontmatter subagents.tools subagents.models @2.1.304.3
 '''Frontmatter and bundled-path lint for every skill in the repo (Gate A pattern).
 
 Per <skill>/SKILL.md:
@@ -416,7 +416,7 @@ def check_skill(skill_dir: Path) -> list[str]:
     errs += _check_compatibility_names_uv(skill_dir, fm)
     for key in fm:
         if key not in SPEC_KEYS | HOST_KEYS:
-            errs.append(f'{sk}: unknown frontmatter key {key!r}')
+            errs.append(f"{sk}: frontmatter key {key!r} is not allowed by this repo's lint")
 
     # Scan links/paths in prose only — fenced code blocks hold teaching
     # examples and template snippets whose paths are not real files.

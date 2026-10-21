@@ -3091,6 +3091,50 @@ declined as YAGNI (zero instances in a one-page wiki).
       `hooks/ruff-check.sh`). `cli.py lint` now prints 33 `STALE` lines: the 41 at the start,
       less those nine, plus `.claude/agents/cc-guide-verifier.md`, which the audit's
       `subagents.models` change made stale.
+      → progress 2026-10-20 (`/cc-guide` upkeep, branch claude/serene-jemison-00b275): six
+      files were re-reviewed (packets `20261020T143604-files`). `build/check_frontmatter.py`,
+      `skills/requesting-code-review/SKILL.md` and `skills/write-with-asd-ste100/SKILL.md` were
+      cited once the owner had ruled their not-covered rows; the guide additions that followed
+      made all three STALE again. `build/check_conformance.py` is fixed for one contradiction
+      (the `${CLAUDE_*}` escape) and carries deviation `stop-hook-guard-literal` for the other,
+      so a re-review can cite it. `skills/subagent-driven-development/SKILL.md` and
+      `skills/writing-skills/SKILL.md` stay held by contradictions their register gaps cover.
+      The day's guide changes leave `cli.py lint` printing 38 STALE files under 20 sections.
+      → progress 2026-10-20 (`/cc-guide files`, packets `20261020T153548-files`, branch
+      claude/serene-jemison-00b275): 39 STALE files were re-reviewed, all but
+      `skills/writing-skills/SKILL.md` and `skills/subagent-driven-development/SKILL.md`. 10 are
+      cited: `agents/code-reviewer.md`, `commands/license-audit.md`, `commands/deferred.md`,
+      `.claude/skills/cc-guide/SKILL.md`, `hooks/ruff-check.sh`, `hooks/uv-guard.sh`,
+      `rules/write-with-asd-ste100.md`, and the skills `derive-roadmap`,
+      `recommend-probabilistic-model` and `tech-debt`. Six contradictions are fixed in three
+      non-skill files: `hooks/README.md` (4) and `README.md` (1), on the Windows fail-closed
+      case and JSON decisions, and a comment in `build/cc_guide/conformance.toml` on the agent
+      `name` rule. 29 files stay held. Most wait on not-covered rows not yet ruled (remedy
+      R1 (a)); four also hold a row settle cannot parse; three hold a contradiction for the
+      owner (E5, E7) or a register gap (E6). The round-3 rulings item (section
+      cc-drift-upkeep-2026-10-20) covers them. Once it lands, one more files pass over the 29
+      should cite most. `cli.py lint` prints 31 STALE files.
+      → progress 2026-10-20 (round-3 rulings, same branch): four held files were cited once
+      their rows were ruled none (`README.md`, `install.py`, `hooks/readonly-agent-guard.py`,
+      `hooks/test_readonly_agent_guard.py`). The round-3 guide changes made more citers
+      stale, so `cli.py lint` prints 34 STALE files.
+      → progress 2026-10-20 (round-4 files pass, same branch): 32 of the 34 STALE files were
+      re-reviewed, all but `skills/writing-skills/SKILL.md` and
+      `skills/subagent-driven-development/SKILL.md`. 19 are cited: the seven agents in
+      `agents/`, `.claude/skills/cc-guide/SKILL.md`, `build/cc_guide/notice.sh`,
+      `commands/fix-issue.md`, and the skills brainstorming, derive-roadmap,
+      develop-testing-strategy, dispatching-parallel-agents, executing-plans,
+      recommend-probabilistic-model, track-model-experiments, tune-hyperparameters and
+      write-with-asd-ste100. 13 stay held. Rows that settle cannot parse hold two
+      (`hooks/probe-readonly-guard.sh`, `commands/deferred.md`). Gap
+      `reviewers-flag-beyond-correctness` holds `skills/requesting-code-review/SKILL.md`.
+      Owner's-call rows hold the other ten, and the round-5 rulings item covers them.
+      `cli.py lint` prints 15 STALE files.
+      → progress 2026-10-20 (round-5 rulings, same branch): the ten were cited once their rows
+      were ruled. Five STALE files remain. The settle-parse item holds two
+      (`hooks/probe-readonly-guard.sh`, `commands/deferred.md`). Register gaps hold three:
+      `skills/requesting-code-review/SKILL.md`, `skills/subagent-driven-development/SKILL.md`
+      and `skills/writing-skills/SKILL.md`.
 - [ ] Newline handling in the citation reader (plan 43's final review, issue 4, folding in the
       CRLF note from Task 5's review). `build/cc_guide/guide.py` (`file_citation`, near line
       306) strips both ends, so a trailing space or `\r` is reported as "an indented citation;
@@ -3484,6 +3528,9 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       re-invoke instruction. Size: design. Done when: the owner rules on each, and each
       ruling is applied to the skill (micro-tested, as a discipline skill) or recorded as a
       deviation in `build/cc_guide/conformance.toml`.
+      → progress 2026-10-20 (owner ruling E3, `/cc-guide` upkeep): the 2026-10-20 files pass
+      found (1) again, now at line 244, as a contradiction with `subagents.models`. Ruled: fix
+      the file in the SDD restructure, micro-tested. (2) and (3) are not yet ruled.
 - [x] writing-skills' Discovery Workflow (`skills/writing-skills/SKILL.md:690`) says
       future agents find a skill by grepping descriptions and browsing categories. Claude
       Code instead reads an always-loaded listing of each skill's name and description
@@ -3495,7 +3542,7 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       → done 2026-10-19 (/deferred quick fix): Discovery Workflow step 2 now describes the
       always-loaded skill listing. A micro-test (5 reps per arm, claude -p from a fresh /tmp
       folder) showed no change in the descriptions an agent writes.
-- [ ] Triage 48 not-covered rows from this pass: statements the guide does not address,
+- [x] Triage 48 not-covered rows from this pass: statements the guide does not address,
       each a possible coverage gap (spec R4.3) or a repo fact to leave alone. Settle lists
       them as the owner's call and never applies them. By file:
       `build/cc_guide/conformance.toml` (13: lines 115, 143, 240, 243, 250, 297, 325, 417,
@@ -3511,6 +3558,23 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       design (a triage pass). Done when: each row is ruled a guide addition (through
       `/cc-guide`'s accept and stamp), a register entry, or no action, with the rulings
       recorded on this item.
+      → done 2026-10-20 (owner, each row as recommended; `/cc-guide` upkeep, branch
+      claude/serene-jemison-00b275): the 2026-10-20 files pass re-reviewed five of these
+      files (packets `20261020T143604-files`), and its 29 rows replace their 33 rows here, so
+      44 rows were ruled: the 15 still standing for `build/cc_guide/conformance.toml` and
+      `hooks/ruff-fix.sh`, and the 29 new ones. Guide additions (5): a backslash does not stop
+      a `${CLAUDE_*}` substitution (`skills.arguments`); with no placeholder, Claude Code
+      appends `ARGUMENTS: <value>` (`skills.arguments`); import parsing skips code spans and
+      fenced code blocks, and a relative import resolves from the importing file
+      (`rules.hierarchy`, two rows); `name` and `description` are both required
+      (`subagents.frontmatter`). The first addition made `check_conformance.py`'s
+      substitution-hazard advice wrong, so its message, its test and the register rule now
+      say a `${CLAUDE_*}` token must lose its `$`. Register (1): deviation
+      `readonly-agents-hold-bash` gained a clause on agent-frontmatter hooks. Fix in the file
+      later (1): writing-skills:110's advice not to fork a skill that dispatches subagents may
+      be stale, recorded on "Split and rewrite writing-skills against the guide". No action
+      (37): repo facts, repo policy, house style or a register entry that already covers the
+      row; writing-skills:109's `haiku` claim is noted on the same rewrite item.
 
 ## 45-claude-code-drift-automation — 2026-10-14
 - [ ] A files verifier may rate one of two checkable statements on a source line and leave
@@ -3524,7 +3588,7 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       record's Diagnosis. Size: design. Done when: the owner has decided whether files rows go
       one per checkable statement, and, if so, the rule is in the verifier's files contract
       with a test in `build/cc_guide/test_skill_files.py` and a scored run on the README packet.
-- [ ] A files-mode miss that settle does not hold leads to `baseline cite`, which clears the
+- [x] A files-mode miss that settle does not hold leads to `baseline cite`, which clears the
       file's STALE flag and hides the miss until its guide section changes again (plan 45,
       deferred at planning; Planning record, "Diagnosis" in
       `specs/plans/completed/45-claude-code-drift-automation.md`). The 2026-10-13 files pass
@@ -3533,6 +3597,12 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       costs more than a hold. Possible remedies: hold a file whose report has any not-covered
       row, a check before `baseline cite`, or a skill step in `.claude/skills/cc-guide/SKILL.md`.
       Size: design. Done when: the owner has chosen a remedy and it is applied.
+      → done 2026-10-20 (owner chose remedy (a), a skill step; `/cc-guide` upkeep, branch
+      claude/serene-jemison-00b275): step 3 of files mode in `.claude/skills/cc-guide/SKILL.md`
+      now holds a file (`settle --hold <file>`, no `baseline cite`) while its report has a
+      not-covered row the owner has not ruled on, and cites it once each row is ruled. A
+      micro-test of the step (5 reps per arm, claude -p from a fresh /tmp folder) held the
+      file in 5 of 5 runs with the new step and 0 of 5 with the old one.
 - [ ] The audit verifier writes no B row for the changelog entries behind P11 (`deniedModels`
       beside `availableModels`, the audit packet's `changelog.md:1288`) and P8 (a top-level
       `effortLevel` no longer counting for Opus 5.5, `changelog.md:1702`), though the packet's
@@ -3828,11 +3898,14 @@ all 20 named a type.
       Size: quick-fix. Done when: the answer and `claude --version` are recorded as a
       Stage 5 probe (in the registry that stage creates) or in the `notice.sh` paragraph
       of `build/CLAUDE.md`.
+      → progress 2026-10-20 (owner ruling G6, `/cc-guide` upkeep): no guide change. The docs
+      name only `--init-only` for this case (hooks.md:1399), so the question stays a Stage 5
+      probe.
       → done in plan 58 (2026-10-20): Task 8 ran the held binary 2.1.304 once from a fresh temporary
       directory with a stand-in SessionStart hook on the `startup` matcher, passed through `--settings`.
       The hook fired under `claude -p`. The answer and the version are in the `notice.sh` paragraph of
       `build/CLAUDE.md`. See `specs/plans/completed/58-claude-code-drift-automation.md` (D5).
-- [ ] Guide coverage for what `notice.sh` relies on (plan 49, coverage gaps G1 to G5, drift
+- [x] Guide coverage for what `notice.sh` relies on (plan 49, coverage gaps G1 to G5, drift
       spec R4.3, plus the gaps execution found). No guide section covers: G1 the
       `startup` value of SessionStart's matcher (seen: CLI and Desktop both ran the hook
       as `SessionStart:startup`); G2 where a hook's `systemMessage` is shown (seen: the
@@ -3849,6 +3922,19 @@ all 20 named a type.
       Size: design. Done when: the owner decides, per gap, whether the guide
       covers it, and each covered gap has a section citing the docs, or is recorded as
       left uncovered.
+      → done 2026-10-20 (owner, each gap as recommended; `/cc-guide` upkeep, branch
+      claude/serene-jemison-00b275): G1 is in `hooks.configuration` (SessionStart's sources:
+      startup, resume, clear, compact and fork). G2 is in `hooks.exit-codes`: `systemMessage`
+      is a warning shown to the user, which some events discard or deliver elsewhere; the
+      Desktop app's record-only display stays in `build/CLAUDE.md`, as the docs do not give
+      it. G3 and G4 are in `hooks.pitfalls`: an async hook's output is delivered on the next
+      conversation turn (an idle session waits for the next user interaction), and its
+      `timeout` is not enforced (it is on `asyncRewake`). Of the second execution gap, the docs
+      half is in `hooks.pitfalls` too (claude -p kills an async hook still running at
+      teardown and finalizes it as cancelled), and the signal goes to a Stage 5 probe (section
+      cc-drift-upkeep-2026-10-20). G5 is left uncovered: launchd's `PATH` is a macOS fact,
+      not a Claude Code one. The first execution gap stays the probe item above. The
+      2026-10-20 verify confirmed each added statement.
 - [ ] Observe the once-a-day half of the notice in real sessions (plan 49 Task 10 Step 4,
       skipped: never observed live, and the owner chose to finish as built). Nothing is
       due on `main`, so the real `refresh` leaves an empty notice, and the plan's
@@ -5356,7 +5442,7 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       pins it, and the spec's R6.3 and R6.4 state the whole-directory swap.
 
 ## /deferred quick-fix pass (no plan; lowmason/agent-skills#73) — 2026-10-19
-- [ ] Rule on three guide-coverage questions that the 2026-10-19 verify runs left in the
+- [x] Rule on three guide-coverage questions that the 2026-10-19 verify runs left in the
       done-notes of guide notes S-109 and A-54 (section 35-claude-code-guide-conformance,
       ticked in lowmason/agent-skills#73). Ticked items drop out of the backlog counts, so this
       item holds the questions. Settle never applies an owner's-call row, so none of them
@@ -5384,6 +5470,13 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       `/cc-guide verify` on its section. Size: quick-fix. Revisit if: the owner rules on any
       part, or a `/cc-guide verify` or audit next covers `skills.listing-budget` or
       `subagents.isolation`.
+      → done 2026-10-20 (owner, each part as recommended; `/cc-guide` upkeep, branch
+      claude/serene-jemison-00b275): (a) is in `skills.listing-budget`, both halves. (c) is in
+      `subagents.isolation`: an `Agent(fork)` deny rule stops only the forks while
+      CLAUDE_CODE_FORK_SUBAGENT=0 turns fork mode off, and the TTL controls' order, with a
+      frontmatter 1h ignored on usage credits. (b) stays out of the guide, as the docs are
+      silent; it is a Stage 5 probe (section cc-drift-upkeep-2026-10-20). The 2026-10-20
+      verify confirmed each added statement.
 
 ## 53-agent-skills-portability — 2026-10-20
 - [ ] Trigger-eval suites (plan 53's spec, Out of scope): about 20 labeled queries per skill,
@@ -5449,6 +5542,13 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       Done when: the body is under 500 lines with no WARN, the two gaps and the deviation are
       removed from `build/cc_guide/conformance.toml` with `build/check_conformance.py`
       passing, and both tests are updated in the same change.
+      → progress 2026-10-20 (owner rulings D2.22 and D2.24, `/cc-guide` upkeep): two more
+      inputs for the rewrite. Line 109 says the `haiku` alias means Haiku 4.5 on other
+      providers; the guide says so in `subagents.models`, which the file does not cite, so add
+      that section to its citation. Line 110 says not to fork a skill that dispatches
+      subagents itself; that advice may be stale, since nesting is on by default and a
+      subagent can spawn subagents up to three layers deep (sub-agents.md:1051), so verify it,
+      then fix or drop it.
 - [ ] README line about uv (plan 53's completion gate, owner Q5, 2026-10-20): `README.md`'s
       Installation section never says that uv is needed, but 12 skills now run their bundled
       scripts with `uv run` and name uv in `compatibility` (R3.5, R3.6). Add one line under
@@ -5486,6 +5586,148 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       quick-fix. Done when: each wiki's copies carry headers.
       → done 2026-10-20 (owner): `bootstrap_wiki.py ~/research-wiki --force` refreshed the
       one wiki root, and `--check` reports `tooling is current`; all three scripts carry headers.
+
+## cc-drift-upkeep-2026-10-20 (no plan; /cc-guide verify, triage and files, branch claude/serene-jemison-00b275) — 2026-10-20
+
+- [ ] Two Stage 5 probe candidates from the 2026-10-20 rulings, where the docs are silent.
+      (a) Does a custom agent named `Explore`, which overrides the built-in, load CLAUDE.md
+      and the git-status snapshot like other custom agents, or skip both like the built-in?
+      The docs say only that the built-in Explore and Plan skip both (sub-agents.md:33), and
+      this repo ships `agents/explore.md` (owner ruling B2). (b) How does Claude Code end an
+      async hook still running at teardown? The docs say claude -p kills it and finalizes it
+      as `cancelled` (hooks.md:4077), but not by what signal, and `build/cc_guide/notice.sh`'s
+      trap assumes one (owner ruling on the G7 gap). Size: quick-fix each. Done when: each
+      answer and `claude --version` are recorded as a Stage 5 probe, in the registry that
+      stage creates.
+- [x] Rule on the owner's-call rows of the second 2026-10-20 verify run (packets
+      `~/.cache/agent-skills/cc-guide/packets/20261020T150226-verify/{overview,skills,subagents,rules,hooks,models}`;
+      `cli.py settle <packet>` re-prints each row). 20 omissions (C rows), among them: a skill
+      with `disable-model-invocation: true` cannot be preloaded through an agent's `skills`
+      field (sub-agents.md:627), which collides with the guide's advice to set that flag on
+      side-effecting skills; the advisor also goes off under DISABLE_TELEMETRY, DO_NOT_TRACK
+      and DISABLE_GROWTHBOOK (env-vars.md:576-578); an `asyncRewake` hook that exits 2 wakes
+      an idle session at once (hooks.md:4150); CLAUDE_CODE_SUBPROCESS_ENV_SCRUB turns sandbox
+      `autoAllowBashIfSandboxed` off (settings-reference.md:1833); a subscription session on
+      usage credits drops to the five-minute TTL (prompt-caching.md:275). 4 changelog items
+      the guide does not carry, among them the 32-skill preload cap (2.1.295). 9 NOT FOUND
+      rows, two with no docs source at all: guide line 45 (permission rules are checked
+      before every tool call) and line 313 (a top-level `additionalContext` is silently
+      ignored); two others (the "2.1.299+" stamps on lines 84 and 98) are verifier misses,
+      backed by the 2.1.299 changelog. The 2026-10-20 rulings sheet (round 2, with a
+      recommendation per row) proposes a bar: add only what corrects or qualifies advice the
+      guide already gives. Once the adds land, run one `/cc-guide verify` on them together
+      with the eight sections triage packet `20261020T151511-triage` routed
+      (`packets --verify <ids> --from <that packet>`, plus a plain `--verify` for any models
+      section the triage cleared), then the files pass on the STALE backlog. That verify
+      works only while the docs cache is at 2.1.304; after a refetch its rebaselines refuse
+      and the triage repeats. Size: design. Done when: each row is ruled an addition (landed
+      through `/cc-guide`), a fix, or no action, with the rulings recorded on this item.
+      → done 2026-10-20 (owner, bar 1: add H1, H2, H14 and H17, the rest none; `/cc-guide`
+      upkeep, branch claude/serene-jemison-00b275): H1 is in `subagents.frontmatter` (the
+      `skills` row), H2 in `lean.model-routing`, H14 in `hooks.pitfalls` and H17 in
+      `rules.settings`. The routed verify (packets `20261020T152521-verify` and
+      `20261020T152528-verify/models`) confirmed them and rated seven guide claims PARTIAL,
+      which settle listed as corrections and the session applied. Two of those reverse
+      round-2 "none" rulings: H10
+      (an agent in a dynamic workflow waits for a forked skill's result) and H16 (deny rules
+      hold over a mod under managed settings or a Team/Enterprise login). The round-3 item
+      below offers a revert. `cli.py check` then reported nothing untriaged, and the files
+      pass followed (section 43-claude-code-drift-automation).
+- [x] Rule on the round-3 owner's-call rows of 2026-10-20: the routed verify (packets
+      `~/.cache/agent-skills/cc-guide/packets/20261020T152521-verify/{hooks,skills,subagents,overview,rules}`
+      and `20261020T152528-verify/models`) and the files pass (`20261020T153548-files`);
+      `cli.py settle <packet>` re-prints each row. 17 omissions, among them: a forked skill
+      that runs in the background gets the narrower background tool set, and `/rewind` does
+      not undo its edits (skills.md:808, 810); CLAUDE_CODE_AUTO_COMPACT_WINDOW overrides
+      `/autocompact`, --autocompact and `autoCompactWindow` (model-config.md:788); a timed-out
+      gate continues through the normal permission flow (hooks.md:883); alias targets differ
+      off the Anthropic API (model-config.md:47-49). 2 NOT FOUND rows: guide line 91 (effort
+      as a per-turn override) and line 433 (the price date). 22 grouped files-pass rows, among
+      them: hooks read `agent_type` from their input (hooks.md:745), `xhigh` is an effort level
+      (model-config.md:600), and `/model` saves the default for new sessions
+      (model-config.md:126). Two contradictions for the owner: the read-only check in
+      `build/check_conformance.py` ignores `disallowedTools` (E5), and the imperative
+      description of `skills/write-with-asd-ste100/SKILL.md` (E7). Also: hooks.pitfalls lines
+      380-381 disagree with hooks.configuration line 328 on the Windows `shell` case (Q2), and
+      `skills.arguments` is still held (Q3). The round-3 rulings sheet gives a recommendation
+      per row and a one-line answer that takes them all. Once the rulings land, apply the adds
+      through `/cc-guide verify` on the sections they touch, then run one files pass over the
+      29 held files. Size: design. Done when: each row is ruled, with the rulings recorded on
+      this item.
+      → done 2026-10-20 (owner: bar 1 as recommended, P none except P10 and P20, E5 fix, E7
+      none, Q2 fix, Q3 verify, revert nothing; `/cc-guide` upkeep, branch
+      claude/serene-jemison-00b275): the nine bar-1 adds (N1-N5, N7, N10, N13, N16), N15, Q2,
+      K3.1 and P20 are in the guide. A verify of the seven changed sections (packets
+      `20261020T170226-verify`) confirmed them, and the session applied the seven PARTIAL
+      corrections it listed (guide lines 89, 94 twice, 137, 402, 426). `skills.arguments` now
+      settles (Q3). E5 is fixed test-first in `build/check_conformance.py`. P10 adds
+      `agents/test-runner.md` to deviation `readonly-agents-hold-bash`. Four held files were
+      cited without a new verifier, their rows all ruled none: `README.md`, `install.py`,
+      `hooks/readonly-agent-guard.py` and `hooks/test_readonly_agent_guard.py`. The branch was
+      then rebased onto main 7b35fd4 (with lowmason/agent-skills#83, #84 and #85), keeping its
+      own `baseline.json` and running `cli.py baseline rehash` (exit 0; a second run changes
+      nothing). The work stays uncommitted. `cli.py check` reports nothing due. The verify's
+      new omissions are the round-4 item below.
+- [x] Rule on the round-4 owner's-call rows of 2026-10-20 (packets
+      `~/.cache/agent-skills/cc-guide/packets/20261020T170226-verify/{overview,skills,subagents,rules,hooks,models}`;
+      `cli.py settle <packet>` re-prints each row): 12 new omissions, among them: the `/model`
+      picker's `s` key switches for the session only (model-config.md:131), which qualifies
+      the round-3 P20 sentence; a `disallowedTools` entry with a specifier removes the whole
+      tool (sub-agents.md:498); a mistyped Stop-gate script fails open (hooks.md:802); and
+      `defaultMode: auto` in project settings falls back to the built-in default
+      (permission-modes.md:72). The round-4 rulings sheet offers a choice. "Close" adds only
+      the `/model` picker row, verifies the models section (about 0.2M Sonnet tokens) and ends
+      the omission rounds. "Bar 1" adds 8 rows and verifies five sections (about 0.7M). Either
+      way, the files pass on the 34 STALE files follows (about 1.2M). Run any verify before
+      the session-start refresh from about 13:42 on 2026-10-21: after it, whole-group verify
+      packets wait for a release past 2.1.304. Size: design. Done when: each row is ruled,
+      with the rulings recorded on this item.
+      → done 2026-10-20 (owner: close, add V1 only, the rest none; same branch): V1 is in
+      lean.model-routing (guide line 424). It says the picker's `s` key switches the current
+      session only. A verify of the models section (packets `20261020T181242-verify/models`)
+      confirmed all 73 checkable claims and listed no correction, and `baseline stamp` ran. Its
+      NOT FOUND row (line 431) repeats a round-4 ruling. Its three new omissions are in the
+      round-5 item below. The files pass then covered 32 of the 34 STALE files (packets
+      `20261020T181309-files`, and `20261020T182240-files` for the seven citers of
+      lean.model-routing): 19 are cited and 13 held. Cost: about 1.4M Sonnet tokens (verify
+      0.20M, files pass 1.21M).
+- [x] Rule on the round-5 owner's-call rows of 2026-10-20 (files packets
+      `~/.cache/agent-skills/cc-guide/packets/20261020T181309-files/` and
+      `20261020T182240-files/`, models verify `20261020T181242-verify/models`; the round-5
+      rulings sheet lists each row). Four rows need a decision: the "unknown frontmatter key"
+      message in `build/check_frontmatter.py:419`, now a contradiction after round 3's P18
+      none; `model: sonnet` in `.claude/agents/cc-guide-verifier.md:5`, now a contradiction
+      after round 3's P12 none; the 64-name `arguments` cap in
+      `build/check_conformance.py:669`; and the auto-mode sentence in `hooks/README.md:78`,
+      which implies that narrow allow rules stop working. 17 more new rows are trivial, with
+      Rec none. One of them is `skills/tech-debt/SKILL.md:15`, which runs as a background fork:
+      the docs list Bash in the background tool set (sub-agents.md:444), so its sweep works.
+      The models verify adds three omissions, with Rec none under the round-4 close. With the
+      recommended answers, the ten files held for these rows can be cited without a new
+      verifier. Size: design. Done when: each row is ruled, with the rulings recorded on this
+      item.
+      → done 2026-10-20 (owner: F1 fix, F2 register, F3 none, F4 fix, the rest none; same
+      branch): F1 changes the `check_frontmatter.py` message to "frontmatter key ... is not
+      allowed by this repo's lint", test-first (one more test). F2 registers deviation
+      `verifier-on-sonnet` in `build/cc_guide/conformance.toml`. Its evidence is the drift
+      spec's decision 9 and R8.1, not plan 45: plan 45 held the pin fixed during its test, and
+      the earlier sheets said wrongly that it chose Sonnet on gate evidence. F4 limits the
+      `hooks/README.md` auto-mode sentence to the `uv run` rule and keeps the mode names that
+      `check_conformance.py` reads. All ten held files are cited without a new verifier.
+      `cli.py lint` prints 5 STALE files.
+- [ ] Settle cannot parse three row shapes that the verifier writes, and each unparseable
+      row holds its file or section. The shapes: a claim that contains `||`
+      (`build/check_conformance.py:1130` in the 2026-10-20 files pass, guide line 145 in the
+      round-2 verify, which held `skills.arguments` until the next verify); a line range in place of one line
+      (`skills/tune-hyperparameters/SKILL.md:2-16`, all six rows of
+      `hooks/probe-readonly-guard.sh`, `commands/deferred.md:1-4` and `:17-21`); and a
+      sentence-form "none" line
+      (`agents/debugger.md`). Either tighten the verifier contract
+      (`.claude/agents/cc-guide-verifier.md`: one line number per row, "or" in place of `||`,
+      the exact form of a "none" line) or make `cli.py settle` split a row from both ends, with
+      a test for each shape. Size: quick-fix. Done when: rows of all three shapes settle, or
+      the verifier no longer writes them, and a re-settle of the affected packets parses every
+      row.
 
 ## 58-claude-code-drift-automation — 2026-10-20
 - [ ] Two runs of one probe in the same second share a run directory (final reviews: Codex P2,

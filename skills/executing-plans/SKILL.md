@@ -9,7 +9,7 @@ metadata:
   author: 'Jesse Vincent'
   adapted_by: 'Lowell Mason'
   source: 'https://github.com/obra/superpowers'
-# cc-guide: subagents.frontmatter @2.1.304
+# cc-guide: subagents.frontmatter @2.1.304.3
 ---
 
 # Executing Plans

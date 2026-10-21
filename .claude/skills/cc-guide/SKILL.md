@@ -8,7 +8,7 @@ description: >
   docs blocks, an audit due, probes due or stale citing files.
 argument-hint: 'triage | verify <ids> | audit [<group>] | files [<paths>] | probes'
 disable-model-invocation: true
-# cc-guide: skills.frontmatter skills.arguments subagents.isolation @2.1.302
+# cc-guide: skills.frontmatter skills.arguments subagents.isolation @2.1.304.3
 ---
 
 # /cc-guide
@@ -65,7 +65,7 @@ As verify, from `cli.py check --worktree` and then `cli.py packets --audit [<gro
 
 1. Run `cli.py packets --files [<paths>]`: no paths means the stale backlog. It writes one packet per file; dispatch them in batches under the ask-above-6 rule.
 2. For each, settle, then fix each contradiction it lists, in that file only, and run its commands. `baseline cite <file>` runs only for a file settle does not hold: settle again with `--hold <file>` before running anything when you leave a contradiction for the owner. Lint and `check_conformance.py` run either way. A held file stays in the backlog.
-3. A not-covered row is the owner's call, and may be a coverage gap the guide could gain (spec R4.3).
+3. A not-covered row is the owner's call, and may be a coverage gap the guide could gain (spec R4.3). While a file's report has a not-covered row the owner has not ruled on (a guide addition, a register entry or no action), settle again with `--hold <file>` and skip its `baseline cite`: a verifier can rate a statement not covered where it missed drift, and a restamp hides that until the section next changes. Cite the file once the owner has ruled on each such row.
 
 ## probes
 

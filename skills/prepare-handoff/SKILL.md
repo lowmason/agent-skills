@@ -9,7 +9,7 @@ license: MIT
 metadata:
   author: Lowell Mason
   version: "1.0"
-# cc-guide: subagents.isolation rules.auto-memory lean.session-hygiene lean.model-routing @2.1.302
+# cc-guide: subagents.isolation rules.auto-memory lean.session-hygiene lean.model-routing @2.1.304.2
 ---
 
 # prepare-handoff
