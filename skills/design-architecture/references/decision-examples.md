@@ -52,3 +52,47 @@ boundary. Trade-off: the artifact seam adds a serialize/hash step, but it makes 
 sees a `vintage_date`" a *structural* guarantee (test-enforced), lets the model develop offline
 against fixtures, and runs identically on CPU/GPU. Alternative: one package with module discipline
 (rejected — discipline isn't enforceable; imports drift).
+
+## LLM evidence extraction (`earnings-themes`, 2026-10)
+
+**6. Live-test model: a local open-weight model.** Decision: run the extractor's live test on
+Gemma 4 31B-it (QAT Q4_0 weights), served on the developer's machine by llama.cpp's
+`llama-server` with JSON-schema output, and pin the model ID, the weights' SHA-256 and the
+runtime version. The requirements limit the required path to open-weight, self-hosted models, so
+no billable call is made. Trade-off: the stronger dense model beats a mixture of experts that is
+about twice as fast, because the test must finish both windows, and the 36 GB machine holds it.
+Every cached reply's key names the model, the weights' hash and the runtime, so a change to any
+of them misses the cache. Alternatives: Gemma 4 26B-A4B-it (faster, more memory headroom, but
+weaker); Qwen3.8-27B (the newest, but its thinking is on by default and its card gives settings
+against repetition, and either could leave a reply unfinished within the 2048-token limit);
+Gemma 4 12B-it (a fallback for memory and speed that this machine does not need). Reversible:
+another model is a new configuration and a new ADR, and no committed file stores a reply.
+(`earnings-themes`, ADR 0004.)
+
+## Revision research (`ces-revisions`, 2026-09)
+
+**7. Causal design: decline the causal claim the data cannot identify.** Decision: fold the
+Bureau's operational capacity (real enacted budget authority, appropriation-funded FTE and, where
+the definitions match, CES workyears) into one persistent annual latent factor, and report its
+effect on revision scale as an association with its prior sensitivity, never as a causal effect.
+Trade-off: the report cannot say how many jobs of revision one more BLS employee prevents, and it
+says so. In exchange it claims nothing the data cannot carry. Alternatives: unrestricted separate
+slopes for budget, FTE, headcount, sample size and mode mix (rejected — separate slopes are not
+recoverable from about 40 annual points, and reporting them as primary invites misreading); a
+horseshoe over the separate slow covariates as the primary model (rejected for the same reason);
+pooling government shutdowns with annual funding (rejected — shutdowns are case studies or timing
+interventions). When the question is whether the data can identify an effect at all, the
+recommend-causal-design skill goes deeper. (`ces-revisions` design spec, Req 13 and Req 19.)
+
+## Repo tooling (`agent-skills`, 2026-10)
+
+**8. One canonical skills tree, linked into each runtime.** Decision: keep every skill in the
+repo's `skills/` directory and let the installer link it into each runtime's discovery path
+(`~/.claude/skills/` for Claude Code, `~/.agents/skills/` for Codex and Gemini CLI). Trade-off:
+one tree and one installer serve three runtimes, and each machine needs an install step.
+Alternatives: move the tree to a cross-runtime `.agents/skills/` layout (rejected — a large blast
+radius through the installer, the tests, `CLAUDE.md` and the symlinks, and it buys nothing the
+installer's links do not already give); add an in-repo `.claude/skills` link as well (rejected —
+the skills already load user-level from the same checkout, so each would be listed twice). A
+later move means re-pointing the installer, the tests and every machine's links. (This repo's
+portability spec, Decisions 1 and 2.)

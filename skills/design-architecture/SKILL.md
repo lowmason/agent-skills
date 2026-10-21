@@ -174,6 +174,9 @@ these projects:
 
 - **NFP nowcasting** (the `alt-nfp` family, late 2025): the inference engine, the parquet store
   layout, scraper resilience, as-of censoring, and workspace boundaries.
+- **LLM evidence extraction** (`earnings-themes`): which open-weight model a live test runs.
+- **Revision research** (`ces-revisions`): declining a causal claim the data cannot identify.
+- **Repo tooling** (`agent-skills`): one canonical skills tree, linked into each runtime.
 
 The flagship inference-engine ADR is worked in full in
 [references/example-inference-engine-adr.md](references/example-inference-engine-adr.md) and
