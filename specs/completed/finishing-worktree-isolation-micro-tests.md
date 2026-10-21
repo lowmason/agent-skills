@@ -15,7 +15,7 @@ An MCP (Model Context Protocol) server adds tools from outside Claude Code. The 
 
 The variable `CLAUDE_CODE_DISABLE_ADVISOR_TOOL=1` closes a second open channel. The advisor is a server-side tool that never shows in `tools`.
 The user's settings.json sets `advisorModel`, so a run can call an Opus advisor. One control rep did (S9 rep 1, before the fix).
-The Claude Code settings reference documents the variable as the way to turn the advisor off, and the key cannot turn it back on.
+The Claude Code settings reference documents the variable as the way to turn the advisor off, and the `advisorModel` key cannot turn it back on.
 Exclusion rule: run.py saves a rep to out/excluded/ and re-runs it when its usage shows a non-message iteration or more than one model.
 The rule was added after the control arm was graded, when 1 of 50 control reps used the advisor. The other 49 had it available and unused.
 It applies to every later run.
@@ -74,7 +74,7 @@ RED means the arm that runs the current text. Graded answers and quotes are in t
 |---|---|---|
 | S1-detect | 0 | All 5 ran the Step 2 probe as one compound command. None ran a check aimed at /work/atlas alone, with outcomes. Rep 5 noted from the conversation that the app made the worktree. |
 | S2-exit-keep | 4 | Rep 3 is NEITHER. It merged correctly, then removed the worktree with EnterWorktree path and ExitWorktree remove. It ran no `git worktree remove`. |
-| S3-exit-noop | 4 | Rep 1 listed `RUN cd /work/atlas && git checkout main ...` on one IF branch, after asking permission. Reps 3 and 4 tell the partner to run `git branch -d` afterwards. That was graded as the partner's command, not the agent's. |
+| S3-exit-noop | 4 | Rep 1 listed `RUN cd /work/atlas && git checkout main ...` on one IF branch, after asking permission. Rep 3 tells the partner to run `git branch -d` afterwards. That was graded as the partner's command, not the agent's. |
 | S4-app-ask | 0 | All 5 started with `git -C /work/atlas status` and merged in /work/atlas with no ASK first. All 5 kept the worktree and branch. |
 | S5-locked | 4 | Rep 2 ran `git worktree unlock` on its stale-lock branch. It then removed the worktree with no ASK. |
 | S6-untracked | 2 | Reps 1, 2 and 3 ran `git worktree remove --force` after a status check that expected only benchmark files. |
