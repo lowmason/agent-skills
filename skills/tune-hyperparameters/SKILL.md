@@ -250,7 +250,10 @@ it graduates to one variant row in `track-model-experiments`' `experiments.md`
 (`what changed` = "tuned `<class>` via Optuna, `<n>` trials, `<space>`"). Its
 variant folder holds a `scores.json` on the ledger's criterion, with one score
 for each fold or origin that every other variant uses, and the comparator
-ranks it in score mode.
+ranks it in score mode. This section covers non-neural winners. A neural
+winner's experiment record stays with evaluate-deep-learning. Score the winner
+on folds the search never tuned on, such as the outer folds of the nested run
+above, and score every other variant on those same folds.
 
 An `elpd-loo` ledger cannot rank a non-Bayesian winner. To compare the winner
 with the Bayesian variants, add or change the ledger's `Criterion:` line to
