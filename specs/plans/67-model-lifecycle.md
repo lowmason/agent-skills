@@ -50,7 +50,8 @@ None.
 9. **V2's fixtures.** The audit records only the probe's shape (all 5 paired differences share a sign, mean/SE 2.8), not its numbers, and no audit kit survives. So this plan builds them. The `V2-real` fixture has per-fold differences 0.02, 0.06, 0.01, 0.08, 0.02 (mean 0.038, SE 0.0136, mean/SE 2.80). The default's fold-to-fold standard deviation is 0.233, so today's rule (spread against gap) calls it noise. A second fixture, `V2-noise`, has differences 0.04, −0.03, 0.05, 0.01, 0.03 (mean/SE 1.41), so a rule that calls every gain real fails.
 10. **V1's design.** The listing has six skills: tune and its five probes (spec V1). Three triggers: a grouped-CV search, a mixture-K sweep and a neural trial budget. One near-miss for each probe. Control descriptions come from `7a8fbaa`.
 11. **Description wording.** The draft says "grouped, spatial, or independent rows", not "i.i.d.". The `description-person` lint reads the "i" in "i.i.d." as a first-person pronoun and fails it (plan-time run).
-12. **Gate A in a worktree.** `verify_citations.py` reads `build/.scratch/` beside itself, and that directory exists only in the main checkout. Task 4 copies it into the worktree (a real copy, never a symlink) and never commits it.
+12. **V2's bar.** Spec V2 says the agent "must" call the difference real. This plan reads that as at least 4 of 5 reps, after plan 59's bars, and adds the same bar for the `V2-noise` fixture. A stricter reading is 5 of 5.
+13. **Gate A in a worktree.** `verify_citations.py` reads `build/.scratch/` beside itself, and that directory exists only in the main checkout. Task 4 copies it into the worktree (a real copy, never a symlink) and never commits it.
 
 **Open question for plan review:** plan 64 deferred "Add a survival row to rpm's per-family knob table" (`specs/deferred_items.md` section `64-bayesian-rpm-routing`), because R12a owns that table. That row is outside the Stage 2 Spec refs, so this plan leaves it out by default. Fold it into Task 4?
 
@@ -767,9 +768,10 @@ The fixtures, as per-fold differences d = default − tuned (lower MSE is better
 
 - [ ] **Step 2: Pilot the isolation**
 
+Run each micro-test command from the worktree root, as one self-contained command (shell state does not carry across Bash calls, and the script finds its kit from its own path):
+
 ```bash
-REPO="$(git rev-parse --show-toplevel)"
-cd ~/.cache/agent-skills/scratch/plan67-micro && uv run run_microtest.py "$REPO" v1-pilot; cd -
+uv run ~/.cache/agent-skills/scratch/plan67-micro/run_microtest.py "$(git rev-parse --show-toplevel)" v1-pilot
 ```
 
 Expected: one line ending `clean=True`, and `results-v1-pilot.json` shows `"tools": []` and `"mcp": []`. If `clean` is False, stop: the run is not isolated, so fix the flags before you spend more.
@@ -777,8 +779,8 @@ Expected: one line ending `clean=True`, and `results-v1-pilot.json` shows `"tool
 - [ ] **Step 3: Run both V2 arms**
 
 ```bash
-cd ~/.cache/agent-skills/scratch/plan67-micro && uv run run_microtest.py "$REPO" v2-control; cd -
-cd ~/.cache/agent-skills/scratch/plan67-micro && uv run run_microtest.py "$REPO" v2-variant; cd -
+uv run ~/.cache/agent-skills/scratch/plan67-micro/run_microtest.py "$(git rev-parse --show-toplevel)" v2-control
+uv run ~/.cache/agent-skills/scratch/plan67-micro/run_microtest.py "$(git rev-parse --show-toplevel)" v2-variant
 ```
 
 Run each arm in the background and wait for its completion notice. Expected: 10 reps per arm, about $0.6 for both arms.
@@ -971,9 +973,8 @@ for n in creative-thinking deep-learning evaluate-deep-learning recommend-probab
 Record the result in the record's Design section. A `CHANGED` line means another change moved a probe description since the base. The kit still uses the base text, as the spec asks ("taken from the files at plan time"); note the drift in the record.
 
 ```bash
-REPO="$(git rev-parse --show-toplevel)"
-cd ~/.cache/agent-skills/scratch/plan67-micro && uv run run_microtest.py "$REPO" v1-control; cd -
-cd ~/.cache/agent-skills/scratch/plan67-micro && uv run run_microtest.py "$REPO" v1-variant; cd -
+uv run ~/.cache/agent-skills/scratch/plan67-micro/run_microtest.py "$(git rev-parse --show-toplevel)" v1-control
+uv run ~/.cache/agent-skills/scratch/plan67-micro/run_microtest.py "$(git rev-parse --show-toplevel)" v1-variant
 ```
 
 Run each arm in the background (40 calls in a row) and wait for its completion notice. Expected: 40 reps per arm, about $0.02 each (about $1.60 in total).
@@ -1046,4 +1047,4 @@ Check each item of the roadmap's Stage 2 Exit, and write the evidence into the e
 - `specs/verification/67-tune-description-microtest.md` (V1 tune) and `specs/verification/67-tune-noise-rule-probe.md` (V2) exist with a pass verdict;
 - the deferred-item ticks are left to the Plan Completion Protocol (step 3), in section `59-model-skill-comparator-and-cv-fixes`: tick the optax-description item (`→ done in plan 67`); tick "Two doc nits left by plan 59's final review" (part (a) was done in plan 65, part (b) in plan 67: tune's Graduation now agrees with track's When to use); add a progress note to "Watch tune's Regime B router wording" (the `target_accept` row and the router sentence are byte-identical, so the item stays open). "Three nits in the splitter's tests" stays open.
 
-Then run the Plan Completion Protocol (writing-plans). Its step 3a writes `## Handoff to later stages` for Stage 3, which consumes only `skills/track-model-experiments/references/predictive-evaluation.md`. That path is unchanged by this stage, so its bullet is expected to say that nothing differs.
+Then run the Plan Completion Protocol (writing-plans). At its step 5, retire the plan only: leave `specs/model-lifecycle.md` in place. Stage 3 still implements that spec, and the roadmap's § Completion retires it after the last stage. Its step 3a writes `## Handoff to later stages` for Stage 3, which consumes only `skills/track-model-experiments/references/predictive-evaluation.md`. That path is unchanged by this stage, so its bullet is expected to say that nothing differs.
