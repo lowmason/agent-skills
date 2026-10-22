@@ -14,6 +14,11 @@ None are redistributed here (see the repo-root NOTICE).
   differ from the book's (e.g. the folk theorem is paper §5, book §12.4).
 - Betancourt (2020), *Towards a Principled Bayesian Workflow* —
   https://betanalpha.github.io/assets/case_studies/principled_bayesian_workflow.html (CC BY-NC 4.0)
+- Bürkner, Gabry & Vehtari (2021), *Efficient leave-one-out cross-validation for Bayesian
+  non-factorized normal and Student-t models*, Computational Statistics 36(2), pp. 1243–1261 —
+  doi:10.1007/s00180-020-01045-4 / arXiv:1810.10559. Cited as "Bürkner, Gabry and Vehtari 2021"
+  for the closed-form leave-one-out densities of a joint Gaussian, the route to pointwise LOO for
+  the exact GP (gaussian-processes.md).
 - Gabry et al. (2019), *Visualization in Bayesian workflow*, JRSS-A 182(2) —
   doi:10.1111/rssa.12378 / arXiv:1709.01449
 - Magnusson, Riis Andersen, Jonasson & Vehtari (2019), *Bayesian leave-one-out

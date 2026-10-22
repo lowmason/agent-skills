@@ -37,8 +37,9 @@ GP covariance algebra loses accuracy in float32 (see [jax-numerics.md](jax-numer
   Compare kernel families with LOO ([model-comparison.md](model-comparison.md)). The exact GP
   template needs care first: its `MultivariateNormal` returns one joint log density per draw, so
   ArviZ sees one observation and cannot estimate pointwise LOO. For the exact GP, compute the
-  conditional densities p(y_i | y_-i, θ) per draw (closed form for a Gaussian marginal) and
-  attach them as the pointwise log-likelihood, or compare kernels by held-out refits. The HSGP
+  conditional densities p(y_i | y_-i, θ) per draw (closed form for a Gaussian marginal; Bürkner,
+  Gabry and Vehtari 2021) and attach them as the pointwise log-likelihood, or compare kernels by
+  held-out refits. The HSGP
   template's `Normal` likelihood sits in the `obs_gp` plate, so it is pointwise and the standard
   recipe applies.
 
@@ -136,7 +137,10 @@ assert f_new.shape == (300, 50), f_new.shape  # f recomputed at x_new, not reuse
 For a Matérn kernel use `hsgp_matern(x=x, nu=1.5, alpha=amplitude, length=length_scale,
 ell=ell, m=m)`. For D > 1, pass `x` with shape (n, D) and a list for `ell` and `m`. The
 functions sample an internal site named `beta` (the basis weights), so do not name a site of
-your own `beta` in the same model.
+your own `beta` in the same model. Two HSGP terms in one model (a trend plus a seasonal term,
+say) would both sample `beta` and clash: wrap each term in
+`numpyro.handlers.scope(prefix='trend')` or a similar prefix. `hsgp_periodic_non_centered`
+samples `beta_cos` and `beta_sin` instead, so it clashes only with a second periodic term.
 
 ## Off-stack GP libraries
 
