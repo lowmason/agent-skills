@@ -72,7 +72,7 @@ No behaviour in code is outside the spec.
 
 ## Stages
 
-- [ ] Stage 1 (spec Stage B): track score mode and predictive evaluation
+- [x] Stage 1 (spec Stage B): track score mode and predictive evaluation
       Objective: track ranks score-criterion variants from `scores.json` beside the unchanged ELPD mode.
       Spec: § Stage B (R13–R24); § Verification V1 (track arm), V3 (Stage B); § Coordination (plan 64); deferred item "Harden `compare_experiments.py`" (a)–(f), section `59-model-skill-comparator-and-cv-fixes`
       Gap closed: R13–R24; V1 track; the comparator-hardening item; doc-nits part (a)
@@ -80,6 +80,8 @@ No behaviour in code is outside the spec.
       Produces: the R13 `scores.json` contract; `skills/track-model-experiments/references/predictive-evaluation.md`; `--mode score`; the ledger Criterion line; the R22 soft-reference reasons
       Exit: the track suite passes with every existing test unedited, plus the R24 tests and a test for each hardening part (a)–(e); snippet Tiers 1–3 pass on `model-comparison.md`; the dependency-drift test, `check_conformance.py` and `build/run_commit_lints.sh` pass; the V1 track record is under `specs/verification/`; the hardening item and doc-nits part (a) are ticked, and the doc-nits item stays open for part (b)
       ROUTING: writing-plans
+      > Stage 1: COMPLETE (2026-10-22) — implemented by plan 65 (specs/plans/completed/65-model-lifecycle.md). Its Handoff section names what Stage 2 and Stage 3 consume.
+      > Next: resume the roadmap.
 
 - [ ] Stage 2 (spec Stage A): tune-hyperparameters as the model-agnostic search loop
       Objective: tune covers three regimes, any producer's knobs and graduation to a score-mode ledger.

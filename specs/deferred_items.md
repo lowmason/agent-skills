@@ -6072,7 +6072,7 @@ Plan 59 ticked the audit-3-10-26 items G1, G2, G3 (guards half) and G4. The item
 per-task reviews and its final review (an Opus code-reviewer and a Codex run) left unfixed, triaged
 defer. Anchors are at the end of plan 59's fix wave.
 
-- [ ] Harden `skills/track-model-experiments/scripts/compare_experiments.py` after plan 59's final
+- [x] Harden `skills/track-model-experiments/scripts/compare_experiments.py` after plan 59's final
       review. (a) `_cells` strips every outer pipe with `.strip('|')`, so a last cell that ends in
       `\|` right against the closing pipe loses its escape, and a row written `|| b |` loses its
       empty first cell. Remove exactly one outer pipe on each side. (b) The over-wide-row backstop
@@ -6091,7 +6091,7 @@ defer. Anchors are at the end of plan 59's fix wave.
       first line that starts with the id, so it depends on the block sitting below the table; the
       escaped-pipe asserts use double-quoted f-strings, where the file uses single quotes, and the
       helper `_unescaped_cells` copies `_cells`' regex. Size: plan. Done when: (a) to (e) are fixed
-      or dropped on purpose, each with a test, and the (f) gaps are filled.
+      or dropped on purpose, each with a test, and the (f) gaps are filled. → done in plan 65
 - [ ] Three nits in the splitter's tests (plan 59 final review).
       `skills/tune-hyperparameters/scripts/test_time_series_cv.py`:
       `test_panel_folds_split_whole_periods` asserts a gap `>= embargo`, where `== embargo` pins the
@@ -6112,6 +6112,8 @@ defer. Anchors are at the end of plan 59's fix wave.
       (b) is unblocked; tighten it with the lifecycle spec's G5 and G8 text.
       → progress 2026-10-21: `specs/model-lifecycle.md` specifies the fix. Part (b) is R11 (tune
       Graduation) and R21 (track's When to use), and part (a) is R23 (track's README row).
+      → progress 2026-10-22: part (a) is done in plan 65 (R23, track's README row). Part (b) stays
+      open: track's When to use is fixed (R21), and tune's Graduation (R11) lands in Stage 2.
 - [x] Polish `skills/bayesian-workflow/references/svi.md` (plan 59 final review). (a) Check 3 says
       to set `num_svi_steps` to what check 1 showed is enough, but check 1 runs 3000 steps and the
       VSBC call uses 2000: reuse one number, or add a comment that 2000 is a runtime shortcut. (b)
@@ -6320,3 +6322,57 @@ defer. Anchors are at the end of plan 59's fix wave.
       to recommend-causal-design, both accepted). A causal request without "cause" or "did" would
       be one probe. Evidence: `specs/verification/64-routing-microtests.md`. Size: quick-fix.
       Revisit if: either description is next edited and its effect needs evidence.
+
+## 65-model-lifecycle — 2026-10-22
+
+Plan 65 (model-lifecycle Stage 1) ticked the comparator-hardening item and part (a) of the doc-nits
+item. The items below are what its per-task reviews and its final review (an Opus code-reviewer and a
+Codex run) left unfixed, triaged defer. Both plan-mandated findings the owner chose to fix were fixed
+(commit `caad7c6`). Anchors are at the end of plan 65.
+
+- [ ] Comparator ledger-guard nits (plan 65 Task 1 review). (a) `ledger_problem` counts a marker as a
+      substring anywhere in the text, while `_variants_table` matches a marker only as a whole stripped
+      line, so a prose mention of a marker next to a real pair is refused, and a mid-line BEGIN passes.
+      (b) The marker guard lives only in `main()`, so a library caller of `update_ledger` can still
+      rewrite a malformed ledger. (c) The marker-pair test lacks the lone-END (0,1) and BEGIN-BEGIN-END
+      (2,1) cases. (d) The empty-analysis-dir marker test is meaningful only through its
+      `'one pair of markers'` assert: rebuild it on two `scores.json` variants plus a score ledger.
+      In `skills/track-model-experiments/scripts/compare_experiments.py` and its test file. Size:
+      quick-fix. Revisit if: `update_ledger` gains a caller outside `main()`, or a ledger loses prose.
+- [ ] Comparator robustness (plan 65 Task 2 and final reviews). (a) A huge JSON integer or a
+      near-1e308 float makes `math.isfinite` or `statistics.fmean` raise `OverflowError`, which skips
+      the `ValueError` handling in `load_scores` and `compare_scores` and prints a traceback instead of
+      `error:`. (b) Two `--folders` paths with the same basename overwrite each other in the dict, as
+      the ELPD path also does. (c) `update_ledger` writes with a plain `write_text`, not a temp file and
+      rename. (d) `load_scores` refusals with no test: invalid JSON, a non-object, a missing
+      criterion, a bad orientation, `units` that is not an object, string or bool values (one
+      parametrized test covers them). Size: quick-fix. Done when: (a) and (b) fail through `error:`,
+      or are dropped on purpose, and (d) has a test.
+- [ ] Comparator contract gaps (plan 65 Task 2 and final reviews). (a) A `scores.json` that declares
+      `criterion: elpd-loo` can never match a score ledger, because a ledger that declares `elpd-loo`
+      forces ELPD mode. `predictive-evaluation.md` now says so in one sentence. Decide whether
+      `load_scores` should refuse the name. (b) `comparison.json` carries `mode` and `criterion` but
+      not `orientation`, so a consumer reads the direction from the sign of Δscore. (c) `mode_problem`
+      does not say that the `Criterion:` line must sit above the Variants table, so a user who put it
+      below sees "reads as elpd-loo". Size: quick-fix. Done when: each of (a) to (c) is fixed or
+      dropped on purpose.
+- [ ] Track doc polish (plan 65 reviews). (a) `skills/track-model-experiments/SKILL.md`'s When-to-use
+      re-declare step does not say to swap the ELPD columns for `score`, `Δscore` and `SE(Δ)`, so stale
+      ELPD cells stay and only a stderr note warns. (b) Two sections still assume ELPD and
+      bayesian-workflow: "Each variant wraps a full `bayesian-workflow` … loop" and selection-induced
+      bias "by ELPD". Both apply to score-mode ledgers too. (c) The `elpd-loo` sentence in
+      `references/predictive-evaluation.md` is dense: split it in two. (d) The V1 record
+      `specs/verification/65-track-description-microtest.md` could say that the init record's `skills`
+      array is metadata only (about 5,900 cache-creation tokens rule out a leaked listing). (e) The
+      new description drops the old trigger "comparing many NumPyro/ArviZ model versions" (R20 widened
+      it on purpose, and the ELPD prompt T3 still routed 5/5); restore it if a routing miss shows.
+      Size: quick-fix. Done when: (a) to (d) are edited, and (e) is either restored or dropped on
+      purpose.
+- [ ] bayesian-workflow model-comparison polish (plan 65 reviews). (a) The sentence "It cannot mix
+      model classes" in the "Ranking the variants" paragraph can read as "`az.compare` cannot compare
+      an AR(1) with an AR(2)", which is false. The intent is a Bayesian variant against one with no
+      InferenceData: say so. (b) The Contents entry "Time-series and forecast comparison: LFO and
+      blocked K-fold" carries words that no other entry has (the plan mandated it). (c) The
+      `in_block` ledger fixture in `test_compare_experiments.py` holds two COMPARISON blocks, where
+      a real ledger has one. (d) The new wide-row-note test covers only the plain `**best**` marker.
+      Size: quick-fix. Revisit if: someone edits `model-comparison.md` or those tests again.
