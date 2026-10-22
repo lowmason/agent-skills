@@ -8,8 +8,9 @@ description: >
   hierarchical/multilevel models, count regressions, logistic regression with uncertainty,
   state-space or latent time-series models, prior sensitivity analysis, calibration
   (PIT/LOO-PIT), presenting Bayesian results to non-technical audiences, or mentions of NumPyro,
-  Pyro, BlackJAX, ArviZ, InferenceData, DataTree, credible intervals, HDI, posterior
-  distributions, shrinkage, or uncertainty quantification.
+  BlackJAX, ArviZ, InferenceData, DataTree, credible intervals, HDI, posterior
+  distributions, shrinkage, or posterior uncertainty. NumPyro only; Pyro/PyTorch fits go
+  elsewhere.
 license: MIT
 compatibility: Requires uv to run bundled scripts (dependencies are declared inline); Python 3.12+.
 effort: xhigh
@@ -40,6 +41,14 @@ Every Bayesian analysis follows this sequence. Do not skip steps -- especially m
 For the visual side of every step above — EDA, prior predictive, MCMC diagnostics, posterior predictive, calibration, model comparison — see [references/visualize.md](references/visualize.md), which translates the Gabry et al. (2019) *Visualization in Bayesian workflow* paper into ArviZ.
 
 Before step 3 (fit), set the numerics policy: JAX defaults to **float32**, and `numpyro.enable_x64()` must run before the first JAX op or a float64 cast at the array boundary is silently discarded. This matters most for latent-process models — filtering recursions, covariance updates, log-determinants — where single precision degrades accuracy without producing a visible error. Division guards, nonfinite checks, and device/platform selection are covered in [references/jax-numerics.md](references/jax-numerics.md).
+
+## Scope and sibling skills
+
+This skill fits by NUTS posterior inference; SVI is a warm start, or the final fit only under the checks in [references/svi.md](references/svi.md). Bayesian neural networks are in scope when posterior inference is the task.
+
+- Upstream: explore-data profiles the data; recommend-probabilistic-model picks the model family; recommend-causal-design picks the design and the estimand for a causal question.
+- Downstream: validate-data gates a result before it leaves; track-model-experiments keeps the ledger of fitted model variants and compares them.
+- Not here: point-estimate neural training (deep-learning) and JAX speed, memory or compilation problems (optimize-jax).
 
 ## Installation
 
@@ -323,7 +332,7 @@ time-series / state-space models, settle **marginalize the latent path vs. sampl
 | High-dimensional / sparse regression | `Normal` / `StudentT` with sparsity prior on coefficients | Regularized Horseshoe or R2-D2 on coeffs | [references/priors.md](references/priors.md) |
 | Hierarchical / multilevel | Varies | See partial pooling + `LocScaleReparam` | [references/hierarchical.md](references/hierarchical.md) |
 | Time series / state space | Latent path via `scan` (non-Gaussian/non-linear) or Kalman marginalization (linear-Gaussian) | Non-centered innovations; stationary init | [references/state-space.md](references/state-space.md) |
-| Gaussian processes | GP prior over the latent function | Kernel hyperpriors (lengthscale, amplitude) | [references/priors.md](references/priors.md) |
+| Gaussian processes | Exact GP (`MultivariateNormal` over the inputs) for small n; HSGP (`numpyro.contrib.hsgp.approximation`) for large n in 1–3 input dims | `InverseGamma` on the length-scale, `HalfNormal` on the amplitude | [references/gaussian-processes.md](references/gaussian-processes.md) |
 
 ## Utility scripts
 

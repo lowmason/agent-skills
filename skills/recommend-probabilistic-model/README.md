@@ -10,10 +10,11 @@ model (that's [`bayesian-workflow`](../bayesian-workflow/)'s job, or yours for n
 ## How it works
 
 - A thin **decision-map router** ([`references/decision-map.md`](references/decision-map.md)) maps
-  *task × data signal* to one of **eight deep families** (`references/families/*.md`): regression /
+  *task × data signal* to one of **nine deep families** (`references/families/*.md`): regression /
   GLMs / counts, hierarchical, time-series & state-space, Gaussian processes, dimensionality
-  reduction & factor models, classification, mixtures & clustering, and graphical models. Anything
-  off-map routes to [`references/drill-down.md`](references/drill-down.md).
+  reduction & factor models, classification, mixtures & clustering, graphical models, and
+  survival & time-to-event. Anything off-map routes to
+  [`references/drill-down.md`](references/drill-down.md).
 - **Regularization & model selection** is a cross-cutting Step 6
   ([`references/model-selection-regularization.md`](references/model-selection-regularization.md)),
   conditional on the chosen family — not a family of its own.

@@ -4490,7 +4490,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       arviz-stats 1.3.3, arviz-plots 1.3.2, numpyro 0.22.0 and jax 0.12.0 (resolved 2026-10-19,
       not the 0.11.2 the item expected). arviz stays at 1.3.0 and arviz-base stays floating.
       Tier 3 passes on them. Still no check ties the two pin lists together.
-- [ ] Give Gaussian processes a home in bayesian-workflow and point recommend-probabilistic-model
+- [x] Give Gaussian processes a home in bayesian-workflow and point recommend-probabilistic-model
       at it (audit-3-10-26 G11, found 2026-10-03; re-verified 2026-10-18; the rpm half
       re-raises audit_1_3_26's "drop PyMC from the GP handoff"). bayesian-workflow's GP row
       (`skills/bayesian-workflow/SKILL.md:319`) points at `references/priors.md`, which has no
@@ -4504,8 +4504,8 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       repoint `:319`; make rpm name it as the default, mark GPyTorch and tinygp off-stack,
       and drop PyMC. A path citation from rpm needs a DEPENDENCIES or SOFT_REFERENCES entry.
       Size: plan. Done when: the reference exists with runnable examples and both skills
-      point at it.
-- [ ] Give bayesian-workflow a siblings block and a stated scope (audit-3-10-26 G12, with the
+      point at it. → done in plan 64
+- [x] Give bayesian-workflow a siblings block and a stated scope (audit-3-10-26 G12, with the
       bayesian-workflow parts of I2 and I3, found 2026-10-03; re-verified 2026-10-18). Its
       only cross-skill link is track-model-experiments (`skills/bayesian-workflow/SKILL.md:36`),
       against inbound routes from recommend-probabilistic-model, recommend-causal-design,
@@ -4523,8 +4523,8 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       the compaction window (the open 46-sdd-bundle item), and a critical span may not cross
       20,000 characters. Plan 53 edits other lines of the same file. Size: plan. Done when:
       the block and the scope sentence land, the description edit is micro-tested, and the
-      owner's Pyro call is recorded.
-- [ ] Route four common model classes in recommend-probabilistic-model (audit-3-10-26 G10,
+      owner's Pyro call is recorded. → done in plan 64
+- [x] Route four common model classes in recommend-probabilistic-model (audit-3-10-26 G10,
       found 2026-10-03; re-verified 2026-10-18: a grep over the skill for surviv, censor,
       hazard, ordinal, quantile, beta regression or proportion finds 0). The decision map
       (`skills/recommend-probabilistic-model/references/decision-map.md`, task table `:11-22`,
@@ -4535,8 +4535,8 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       (`skills/bayesian-workflow/SKILL.md:313-314`). Add the rows and family notes. PML
       §-citations must pass `build/verify_citations.py`, which needs the gitignored
       `build/.scratch`; record any non-PML source in NOTICE. Size: plan. Done when: each class
-      routes to a family note with verified citations.
-- [ ] Wire recommend-probabilistic-model to the skills that arrived after it (audit-3-10-26
+      routes to a family note with verified citations. → done in plan 64
+- [x] Wire recommend-probabilistic-model to the skills that arrived after it (audit-3-10-26
       G10's causal part, I2, I3 and the G-A one-liner on rpm's siblings, found 2026-10-03;
       re-verified 2026-10-18). `afa33b6` (2026-10-05) pointed rpm's decision map
       (`references/decision-map.md:21`) and drill-down (`references/drill-down.md:8-10`) at
@@ -4553,7 +4553,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       and deep-ensemble rows. Bare names add no install dependency. Micro-test the
       description edit, with collision probes against recommend-causal-design and
       deep-learning. Size: plan. Done when: the pointers land and the micro-test record is
-      kept.
+      kept. → done in plan 64
 - [x] Add recommend-causal-design to explore-data's pre-flight list (audit-3-10-26 I2, found
       2026-10-03; re-verified 2026-10-18). explore-data calls itself the pre-flight before
       bayesian-workflow, recommend-probabilistic-model or recommend-visualization
@@ -4563,7 +4563,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       change with one micro-test. Size: quick-fix. Done when: the pre-flight list names
       recommend-causal-design and the description change is micro-tested.
       → done in plan 63 (2026-10-21): explore-data's description and next steps name recommend-causal-design, micro-tested (t7).
-- [ ] Add causal-design and deep-learning hand-offs to creative-thinking (audit-3-10-26 G14 and
+- [x] Add causal-design and deep-learning hand-offs to creative-thinking (audit-3-10-26 G14 and
       I2, found 2026-10-03; re-verified 2026-10-18). creative-thinking triggers on "what
       should I even be estimating", but its description (`skills/creative-thinking/SKILL.md:3-10`)
       and its "Scope and handoff" list (`:112-124`) name only brainstorming,
@@ -4574,7 +4574,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       the description if wanted; a description change needs a routing micro-test with
       collision probes against recommend-probabilistic-model, recommend-causal-design and
       deep-learning. Size: plan. Done when: the hand-offs land, with any description change
-      micro-tested.
+      micro-tested. → done in plan 64
 - [x] Recast design-architecture's alt-nfp framing and refresh stale repo names (audit-3-10-26
       G13, found 2026-10-03; re-verified 2026-10-18: no commit since). The skill still says
       "the same NFP-nowcasting problem is currently solved three ways" across `alt-nfp`,
@@ -6267,3 +6267,56 @@ defer. Anchors are at the end of plan 59's fix wave.
       run leaked prompts through stdin, so its 8/15 vs 0/15 may be contaminated. The kit is in the
       scratch folder `~/.cache/agent-skills/scratch/plan63-micro/`. Size: quick-fix. Done when: the
       pushes-unasked counts (control vs variant) are recorded and the gate wording stands or is revised.
+
+## 64-bayesian-rpm-routing — 2026-10-21
+- [ ] Add a survival row to rpm's per-family knob table
+      (`skills/recommend-probabilistic-model/references/model-selection-regularization.md`,
+      "Per-family knobs"). Plan 64 created `families/survival.md` but left the table alone,
+      because the model-lifecycle spec (`specs/model-lifecycle.md`, R12a) owns it. Size:
+      quick-fix. Done when: the table has a survival row matching `families/survival.md`'s
+      "Selection & regularization" subsection.
+- [ ] Add Beta / BetaBinomial and quantile (`AsymmetricLaplaceQuantile`) rows to
+      bayesian-workflow's "Common model families" table (`skills/bayesian-workflow/SKILL.md`),
+      which rpm's bounded and quantile handoffs now point at (owner decision D9, plan 64).
+      Size: quick-fix. Done when: both rows land with a priors pointer.
+- [ ] Add `KNOWN_GOOD_FALLBACKS` entries for PML1 §13.2.4.4 and PML2 §14.3.2.1 in
+      `build/verify_citations.py`, with dated comments in the form of the existing PML2 §2.2.1.4
+      entry. Plan 64's Gate B reads confirmed both refs (commit body of 97a8525), but Gate A
+      prints a chapter-fallback WARN for each on every run. Outside plan 64's no-script scope.
+      Size: quick-fix. Done when: `build/verify_citations.py skills/recommend-probabilistic-model/`
+      prints neither WARN and still exits 0.
+- [ ] Add an exact-GP prediction recipe to `skills/bayesian-workflow/references/gaussian-processes.md`.
+      The exact template marginalizes f, so `Predictive` cannot return f at new inputs (the HSGP
+      block can). A user needs the GP conditional at `x_new`. Found by plan 64's final review.
+      Size: quick-fix. Done when: the reference has a runnable block that predicts at new
+      inputs and passes the Tier 3 snippet gate.
+- [ ] Probe bayesian-workflow's description with a stack-neutral request, and consider
+      rewording "NumPyro only" to "NumPyro models only (BlackJAX can sample them)". Plan 64's M1
+      pass probes (B3, B4) both name NumPyro, so M1 cannot show whether "NumPyro only; Pyro/PyTorch
+      fits go elsewhere." (owner-approved after C1 missed bar 1) hurts a generic Bayesian
+      request, and BlackJAX and Bayesian neural networks sit awkwardly beside it. Evidence:
+      `specs/verification/64-routing-microtests.md`. Any reword needs its own micro-test.
+      Size: quick-fix. Revisit if: bayesian-workflow's description is next edited, or a generic
+      Bayesian request misroutes.
+- [ ] Tidy plan 64's cosmetics. `build/test_runtime_support.py` puts the new rpm-to-bayesian-workflow
+      `SOFT_REFERENCES` entry after `explore-data`, but entries are sorted by target within a
+      source. `skills/recommend-probabilistic-model/references/families/survival.md` writes
+      "Rpm's" where the skills say "This skill's". rpm `SKILL.md` has one description-adjacent line
+      near 130 columns. The `NOTICE` clause for Bürkner, Gabry and Vehtari (2021) is about 100
+      columns against a 72-column neighbourhood. `skills/bayesian-workflow/references/gaussian-processes.md`
+      has a short orphan line after a reflow. The size thresholds disagree ("a few thousand" in rpm
+      `families/gaussian-processes.md` against "about 1,000 to 2,000" in the bayesian-workflow
+      reference). The snippet-preamble docstring's "3 of the 38 are def-only" was checked by
+      inspection only. Size: quick-fix. Done when: each is fixed or recorded as intended.
+- [ ] Fix the PML index gaps that hid Gate B candidates in plan 64. `build/.scratch/book1_sections.tsv`
+      (from `build/extract_structure.py`) has no chapters 1–2, and many PML1 subsections have no
+      title, so title-only searches miss them. PML1 §2.6.3 supports the distributional-regression
+      claim but cannot pass Gate A for that reason. Needs the local PDFs, so it is an owner step.
+      Size: plan. Done when: the index covers chapters 1–2 and untitled subsections, or
+      `build/CLAUDE.md` records the limit.
+- [ ] Give rpm and creative-thinking harder routing scenarios. Plan 64's M2 and M3 had zero baseline
+      failures, so bar 2 was vacuous and neither test can show that the new class names or the
+      causal and neural hand-off sentences drive routing (M3's T1 shifted from creative-thinking
+      to recommend-causal-design, both accepted). A causal request without "cause" or "did" would
+      be one probe. Evidence: `specs/verification/64-routing-microtests.md`. Size: quick-fix.
+      Revisit if: either description is next edited and its effect needs evidence.

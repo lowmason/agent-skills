@@ -96,6 +96,7 @@ Sections marked **[IF …]** are optional — include them only when the relevan
 | Sample size | <N> |
 | Key variables | <comma-separated list with brief descriptions> |
 | Question | <one-sentence statement of what we want to learn> |
+| Estimand (if causal) | <the causal quantity and population, e.g. ATT for treated counties; the identifying design from recommend-causal-design> |
 
 <Brief description of any notable features: missingness, outliers, grouping structure, or transformations applied before modeling.>
 

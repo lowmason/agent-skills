@@ -14,6 +14,11 @@ None are redistributed here (see the repo-root NOTICE).
   differ from the book's (e.g. the folk theorem is paper §5, book §12.4).
 - Betancourt (2020), *Towards a Principled Bayesian Workflow* —
   https://betanalpha.github.io/assets/case_studies/principled_bayesian_workflow.html (CC BY-NC 4.0)
+- Bürkner, Gabry & Vehtari (2021), *Efficient leave-one-out cross-validation for Bayesian
+  non-factorized normal and Student-t models*, Computational Statistics 36(2), pp. 1243–1261 —
+  doi:10.1007/s00180-020-01045-4 / arXiv:1810.10559. Cited as "Bürkner, Gabry and Vehtari 2021"
+  for the closed-form leave-one-out densities of a joint Gaussian, the route to pointwise LOO for
+  the exact GP (gaussian-processes.md).
 - Gabry et al. (2019), *Visualization in Bayesian workflow*, JRSS-A 182(2) —
   doi:10.1111/rssa.12378 / arXiv:1709.01449
 - Magnusson, Riis Andersen, Jonasson & Vehtari (2019), *Bayesian leave-one-out
@@ -27,6 +32,10 @@ None are redistributed here (see the repo-root NOTICE).
   *Simulation-based calibration checking for Bayesian computation: The choice of test
   quantities shapes sensitivity*, Bayesian Analysis 20, pp. 461–488. Cited as
   "Modrák et al. 2025" for SBC test quantities.
+- Riutort-Mayol, Bürkner, Andersen, Solin & Vehtari (2023), *Practical Hilbert space
+  approximate Bayesian Gaussian processes for probabilistic programming*, Statistics and
+  Computing 33(1), article 17 — doi:10.1007/s11222-022-10167-2 / arXiv:2004.11408. Cited as
+  "Riutort-Mayol et al. 2023" for HSGP's boundary and basis-size settings (gaussian-processes.md).
 - Säilynoja, Bürkner & Vehtari (2022), *Graphical test for discrete uniformity and its
   applications in goodness-of-fit evaluation and multiple sample comparison*,
   Statistics and Computing 32(32). The Δ-ECDF simultaneous-band construction behind
@@ -38,6 +47,10 @@ None are redistributed here (see the repo-root NOTICE).
   cross-validation based model comparison*, Bayesian Analysis (advance publication) —
   doi:10.1214/25-BA1569 / arXiv:2008.10296. Cited as "Sivula et al. 2025" for when `dse` describes
   the uncertainty of an ELPD difference (|Δ| > 4, n > 100, no badly misspecified model).
+- Solin & Särkkä (2020), *Hilbert space methods for reduced-rank Gaussian process regression*,
+  Statistics and Computing 30(2), pp. 419–446 — doi:10.1007/s11222-019-09886-w /
+  arXiv:1401.5508. Cited as "Solin and Särkkä 2020" for the Hilbert-space basis-function
+  approximation behind HSGP (gaussian-processes.md).
 - Talts, Betancourt, Simpson, Vehtari & Gelman (2018), *Validating Bayesian inference
   algorithms with simulation-based calibration* — arXiv:1804.06788. Cited as "Talts et al.
   2018" after the preprint year; the book's reference list dates it 2020 and links the authors'

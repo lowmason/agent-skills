@@ -69,6 +69,11 @@ bayesian-workflow/
     2019 (JRSS-A / arXiv:1709.01449) are likewise cited by author-year
     only; the skill reproduces no text and bundles no copies of any of
     them.
+    references/gaussian-processes.md cites Solin and Särkkä (2020) and
+    Riutort-Mayol et al. (2023) for the Hilbert-space approximation, and
+    Bürkner, Gabry and Vehtari (2021) for leave-one-out with a joint
+    Gaussian likelihood, by author-year only and in original wording; its examples are original
+    and were run against the snippet gate's pinned NumPyro.
 
 recommend-causal-design/ selectively adapts the planning workflows of
 Robson Tigre's causal-planner in everyday-causal-skills (MIT, Copyright (c)
@@ -205,6 +210,10 @@ it CITES and SUMMARIZES external material it does not redistribute:
   - pyprobml (https://github.com/probml/pyprobml) and dynamax
     (https://github.com/probml/dynamax) are MIT licensed (Copyright (c) 2020,
     2022 Probabilistic machine learning); the skill links to them.
+  - The survival, ordinal, bounded-outcome and quantile rows also cite
+    Kalbfleisch and Prentice (2002), McCullagh (1980), Ferrari and
+    Cribari-Neto (2004) and Koenker and Bassett (1978) by author-year
+    only, in original wording; no text is reproduced.
 
 llm-wiki/ is an original work by Lowell Mason (MIT). It implements the LLM-wiki
 pattern from Andrej Karpathy's public idea file (gist

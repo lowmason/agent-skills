@@ -1,5 +1,7 @@
 # Bayesian and RPM Routing Implementation Plan
 
+**Status: COMPLETE (2026-10-21)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md (section 64-bayesian-rpm-routing)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Close five routing gaps from the 2026-10-03 audit (re-verified 2026-10-18) in bayesian-workflow, recommend-probabilistic-model (rpm) and creative-thinking: a home for Gaussian processes, a siblings block and scope for bayesian-workflow, four missing model classes in rpm, rpm's links to the skills that arrived after it, and creative-thinking's causal and neural hand-offs.
@@ -100,7 +102,7 @@ Facts verified while planning (2026-10-21, NumPyro and JAX at `PINNED`):
 - In float32 the HSGP fit below diverged on all 300 draws at n = 2,000 (13 of 300 at n = 200). With `numpyro.enable_x64()` it gave 0 divergences and recovered the noise scale (0.199 against a true 0.2). The x64 line is load-bearing.
 - Both blocks below are runnable under `check_snippets.py --run` (no fixture variables, no unbound names). Extracted from this plan, they passed Tiers 1, 2 and 3, and a planted `assert` failure in the HSGP block was reported (exit 1), so the gate does execute them. `Predictive` recomputes the deterministic `f` at `x_new` (shape (300, 50)); it does not reuse the fitted values.
 
-- [ ] **Step 1: Write the failing check.** Tier 1 on a missing file proves nothing, so the failing check is the SKILL.md link. Run:
+- [x] **Step 1: Write the failing check.** Tier 1 on a missing file proves nothing, so the failing check is the SKILL.md link. Run:
 
 ```bash
 grep -c 'references/gaussian-processes.md' skills/bayesian-workflow/SKILL.md
@@ -108,7 +110,7 @@ grep -c 'references/gaussian-processes.md' skills/bayesian-workflow/SKILL.md
 
 Expected: `0`.
 
-- [ ] **Step 2: Create the reference.** Write `skills/bayesian-workflow/references/gaussian-processes.md` with exactly this content:
+- [x] **Step 2: Create the reference.** Write `skills/bayesian-workflow/references/gaussian-processes.md` with exactly this content:
 
 ````markdown
 # Gaussian Processes
@@ -250,7 +252,7 @@ GPyTorch (PyTorch) and tinygp (JAX) are outside this skill's stack: name them on
 user's project already uses them. Sparse variational GPs (inducing points) are not covered here.
 ````
 
-- [ ] **Step 3: Repoint the SKILL.md row.** In `skills/bayesian-workflow/SKILL.md`, replace the line
+- [x] **Step 3: Repoint the SKILL.md row.** In `skills/bayesian-workflow/SKILL.md`, replace the line
 
 ```text
 | Gaussian processes | GP prior over the latent function | Kernel hyperpriors (lengthscale, amplitude) | [references/priors.md](references/priors.md) |
@@ -262,7 +264,7 @@ with
 | Gaussian processes | Exact GP (`MultivariateNormal` over the inputs) for small n; HSGP (`numpyro.contrib.hsgp.approximation`) for large n in 1–3 input dims | `InverseGamma` on the length-scale, `HalfNormal` on the amplitude | [references/gaussian-processes.md](references/gaussian-processes.md) |
 ```
 
-- [ ] **Step 4: Run the checks.** Run each, from the worktree root:
+- [x] **Step 4: Run the checks.** Run each, from the worktree root:
 
 ```bash
 grep -c 'references/gaussian-processes.md' skills/bayesian-workflow/SKILL.md
@@ -280,9 +282,11 @@ print([c._unrunnable_reason(b) for b in c.iter_code_blocks(p.read_text())])"
 
 Expected: `['', '']`.
 
-- [ ] **Step 5: Re-measure the snippet docstring.** `build/snippet_preamble.py:15-22` states block counts "Measured against the skill on 2026-10-19". Recount with the same method (all fenced python blocks under `skills/bayesian-workflow/`, how many parse, how many are norun-exempt, advisory by reason, and executed). Expected change: +2 blocks, +2 parse, +2 executed, 0 new advisories. Update the date and numbers in place.
+- [x] **Step 5: Re-measure the snippet docstring.** `build/snippet_preamble.py:15-22` states block counts "Measured against the skill on 2026-10-19". Recount with the same method (all fenced python blocks under `skills/bayesian-workflow/`, how many parse, how many are norun-exempt, advisory by reason, and executed). Expected change: +2 blocks, +2 parse, +2 executed, 0 new advisories. Update the date and numbers in place.
 
-- [ ] **Step 6: NOTICE.** In NOTICE's bayesian-workflow paragraph, after the sentence ending "the skill reproduces no text and bundles no copies of any of them." (`:68-71`), add:
+> Deviation: the docstring was already one block stale at the base (79/35 against a measured 80/36, after the SVI commit 8a33e61); it now reads 82 blocks, 82 parse, 38 executed.
+
+- [x] **Step 6: NOTICE.** In NOTICE's bayesian-workflow paragraph, after the sentence ending "the skill reproduces no text and bundles no copies of any of them." (`:68-71`), add:
 
 ```text
     references/gaussian-processes.md cites Solin and Särkkä (2020) and
@@ -293,7 +297,9 @@ Expected: `['', '']`.
 
 Then run `uv run --python 3.13 python build/check_provenance.py`. Expected: exit 0.
 
-- [ ] **Step 7: Lints and commit.**
+- [x] **Step 7: Lints and commit.**
+
+> Deviation: every commit in this run ends with `Co-Authored-By: Claude Sonnet 5.5`, the session trailer, not the Opus text the plan names.
 
 ```bash
 build/run_commit_lints.sh
@@ -314,7 +320,7 @@ Item (G11), rpm half: "make rpm name it as the default, mark GPyTorch and tinygp
 **Interfaces:**
 - Consumes: `skills/bayesian-workflow/references/gaussian-processes.md` (Task 1).
 
-- [ ] **Step 1: Failing check.**
+- [x] **Step 1: Failing check.**
 
 ```bash
 grep -c 'PyMC' skills/recommend-probabilistic-model/references/families/gaussian-processes.md
@@ -322,7 +328,7 @@ grep -c 'PyMC' skills/recommend-probabilistic-model/references/families/gaussian
 
 Expected: `1`.
 
-- [ ] **Step 2: Sparse row.** In the "Sparse / scalable GP" row, replace the cell text `Inducing-point (SVGP) approximation, O(nm²); use GPyTorch for GPU MVM-based inference` with:
+- [x] **Step 2: Sparse row.** In the "Sparse / scalable GP" row, replace the cell text `Inducing-point (SVGP) approximation, O(nm²); use GPyTorch for GPU MVM-based inference` with:
 
 ```text
 In-stack: HSGP (Hilbert-space basis functions) for 1–3 input dimensions, O(n·m^D). Inducing-point (SVGP) approximation, O(nm²), for higher D; GPyTorch and tinygp implement it but are off-stack
@@ -330,7 +336,7 @@ In-stack: HSGP (Hilbert-space basis functions) for 1–3 input dimensions, O(n·
 
 Keep the row's PML and pyprobml cells unchanged.
 
-- [ ] **Step 3: Handoff.** Replace the first sentence of `## Handoff`,
+- [x] **Step 3: Handoff.** Replace the first sentence of `## Handoff`,
 
 ```text
 Route to **bayesian-workflow / GPyTorch** for fitting (GPyTorch for scalable GPU inference; PyMC/NumPyro for fully-Bayesian hyperparameter treatment). C4 memo payload if Bayesian:
@@ -344,7 +350,7 @@ Route to **bayesian-workflow** for fitting. Its GP reference, `bayesian-workflow
 
 Under Q4 (c), write `bayesian-workflow's GP reference` in place of the backticked path and skip Step 4.
 
-- [ ] **Step 4: SOFT_REFERENCES.** Run the drift test first to see it fail:
+- [x] **Step 4: SOFT_REFERENCES.** Run the drift test first to see it fail:
 
 ```bash
 cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_runtime_support.py -k declared_dependencies; cd ..
@@ -359,7 +365,7 @@ Expected: FAIL, naming `('skill:recommend-probabilistic-model', 'skill:bayesian-
 
 Under Q4 (b), add `'skill:bayesian-workflow'` to `install.py`'s `DEPENDENCIES` entry for `'skill:recommend-probabilistic-model'` instead (create the entry if absent).
 
-- [ ] **Step 5: Run the checks.**
+- [x] **Step 5: Run the checks.**
 
 ```bash
 grep -c 'PyMC' skills/recommend-probabilistic-model/references/families/gaussian-processes.md
@@ -369,7 +375,7 @@ uv run --python 3.13 python /Users/lowell/Projects/agent-skills/build/verify_cit
 
 Expected: `0`; all pass; `gate A exit=0`.
 
-- [ ] **Step 6: Lints and commit.**
+- [x] **Step 6: Lints and commit.**
 
 ```bash
 build/run_commit_lints.sh
@@ -392,11 +398,11 @@ Item (G12), Done when: "the block and the scope sentence land, the description e
 **Interfaces:**
 - Produces: the micro-test kit `~/.cache/agent-skills/scratch/plan64-micro/` (`run_arm.py`, `grade.py`), reused by Tasks 5 and 6; the record file, which Tasks 5 and 6 append to.
 
-- [ ] **Step 1: Record the baseline commit and build the kit.** Run `git rev-parse HEAD` and note it as `BASE3`. Create the kit from Appendix A (both scripts and `M1.json`).
+- [x] **Step 1: Record the baseline commit and build the kit.** Run `git rev-parse HEAD` and note it as `BASE3`. Create the kit from Appendix A (both scripts and `M1.json`).
 
-- [ ] **Step 2: Pilot and baseline arm.** Run the pilot (Appendix A). Expected: the init record's `tools` is `[]` and no MCP server is listed. Then run arm B (baseline): `P64_REPO=$PWD uv run ~/.cache/agent-skills/scratch/plan64-micro/run_arm.py --test M1 --arm B --base $BASE3`. Grade it with `grade.py --test M1 --arm B`.
+- [x] **Step 2: Pilot and baseline arm.** Run the pilot (Appendix A). Expected: the init record's `tools` is `[]` and no MCP server is listed. Then run arm B (baseline): `P64_REPO=$PWD uv run ~/.cache/agent-skills/scratch/plan64-micro/run_arm.py --test M1 --arm B --base $BASE3`. Grade it with `grade.py --test M1 --arm B`.
 
-- [ ] **Step 3: Insert the siblings block.** Insert this section between the numerics paragraph (`:42`) and `## Installation`. It shows the Q2 (a) scope sentence; under Q2 (b) use the item's sentence instead: "NUTS posterior inference is in scope, Bayesian neural networks included when posterior inference is the task; SVI-only fits are not."
+- [x] **Step 3: Insert the siblings block.** Insert this section between the numerics paragraph (`:42`) and `## Installation`. It shows the Q2 (a) scope sentence; under Q2 (b) use the item's sentence instead: "NUTS posterior inference is in scope, Bayesian neural networks included when posterior inference is the task; SVI-only fits are not."
 
 ```markdown
 ## Scope and sibling skills
@@ -408,15 +414,17 @@ This skill fits by NUTS posterior inference; SVI is a warm start, or the final f
 - Not here: point-estimate neural training (deep-learning) and JAX speed, memory or compilation problems (optimize-jax).
 ```
 
-- [ ] **Step 4: Edit the description.** In the frontmatter description, under Q1 (a) replace `Pyro, BlackJAX` with `BlackJAX` (under Q1 (b) leave it). In all cases replace `or uncertainty quantification.` with `or posterior uncertainty.` Keep the YAML folding (lines under 100 characters).
+- [x] **Step 4: Edit the description.** In the frontmatter description, under Q1 (a) replace `Pyro, BlackJAX` with `BlackJAX` (under Q1 (b) leave it). In all cases replace `or uncertainty quantification.` with `or posterior uncertainty.` Keep the YAML folding (lines under 100 characters).
 
-- [ ] **Step 5: Estimand row (Q6 a).** In `references/reporting.md`'s "Data and Question" table, after the `| Question | … |` row, add:
+> Deviation: bayesian-workflow's description also gained "NumPyro only; Pyro/PyTorch fits go elsewhere." (801 characters, not 755). The first candidate (C1) failed M1 bar 1 on probe B1 (2 of 5 reps); the owner approved the reword in chat and arm C was rerun (C2, 0 of 5). Both candidates are in the record.
+
+- [x] **Step 5: Estimand row (Q6 a).** In `references/reporting.md`'s "Data and Question" table, after the `| Question | … |` row, add:
 
 ```text
 | Estimand (if causal) | <the causal quantity and population, e.g. ATT for treated counties; the identifying design from recommend-causal-design> |
 ```
 
-- [ ] **Step 6: Placement and dependency checks.**
+- [x] **Step 6: Placement and dependency checks.**
 
 ```bash
 cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_conformance.py -k test_real_skill; cd ..
@@ -426,9 +434,11 @@ uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
 
 Expected: all pass. If the critical-span test fails, the block is too long: shorten it, do not move it below `## Common gotchas`. The `references/svi.md` link is inside the skill and adds no edge.
 
-- [ ] **Step 7: Candidate arm and record.** Run arm C (`--arm C --base $BASE3`, same command), grade it, and check the pass bars in `M1.json`. Write `specs/verification/64-routing-microtests.md` in the form of `specs/verification/59-regime-b-router-microtest.md`: date, model, Claude Code version (`claude --version`), kit path, cost; design; scenarios and pass bars (copied from `M1.json`, written before any run); results table; a per-rep table with a quote of at most 15 words; the isolation screen from `grade.py`. Record Q1's answer in the record's first paragraph. If a bar fails, stop and bring the failing reps to the owner; do not reword and rerun without the owner's go-ahead.
+- [x] **Step 7: Candidate arm and record.** Run arm C (`--arm C --base $BASE3`, same command), grade it, and check the pass bars in `M1.json`. Write `specs/verification/64-routing-microtests.md` in the form of `specs/verification/59-regime-b-router-microtest.md`: date, model, Claude Code version (`claude --version`), kit path, cost; design; scenarios and pass bars (copied from `M1.json`, written before any run); results table; a per-rep table with a quote of at most 15 words; the isolation screen from `grade.py`. Record Q1's answer in the record's first paragraph. If a bar fails, stop and bring the failing reps to the owner; do not reword and rerun without the owner's go-ahead.
 
-- [ ] **Step 8: Lints and commit.**
+> Deviation: see Step 4: the stop rule fired once and the owner approved one reword; the record documents C1 and C2.
+
+- [x] **Step 8: Lints and commit.**
 
 ```bash
 build/run_commit_lints.sh
@@ -452,7 +462,7 @@ Item (G10), Done when: "each class routes to a family note with verified citatio
 **Interfaces:**
 - Produces: `families/survival.md`, and the four class names that Task 5's description adds ("ordinal, proportion, quantile and censored or time-to-event outcomes").
 
-- [ ] **Step 1: Failing check.**
+- [x] **Step 1: Failing check.**
 
 ```bash
 grep -r -i -c -E 'surviv|censor|ordinal|quantile regression|beta regression' skills/recommend-probabilistic-model/ | grep -v ':0$' | wc -l
@@ -460,7 +470,7 @@ grep -r -i -c -E 'surviv|censor|ordinal|quantile regression|beta regression' ski
 
 Expected: `0` (the item's re-verified grep).
 
-- [ ] **Step 2: Find and Gate-B-read the PML sections.** For each class, search the local index from the main checkout:
+- [x] **Step 2: Find and Gate-B-read the PML sections.** For each class, search the local index from the main checkout:
 
 ```bash
 grep -n -i -E 'ordinal|censor|surviv|hazard|quantile|pinball|beta|bounded|proportion' /Users/lowell/Projects/agent-skills/build/.scratch/book1_sections.tsv /Users/lowell/Projects/agent-skills/build/.scratch/book2_sections.tsv
@@ -468,7 +478,7 @@ grep -n -i -E 'ordinal|censor|surviv|hazard|quantile|pinball|beta|bounded|propor
 
 Known at planning: PML2 §15.4.4 is titled for ordinal probit regression. For each candidate section, read its text in `book{1,2}_full.txt` and confirm it supports the claim the row makes (Gate B). Use a §-ref only when it does. Do not copy any of that text into the repo, the plan, the record or a commit message. List each accepted and rejected ref, with one line of your own words on why, in the commit message body.
 
-- [ ] **Step 3: Decision-map rows.** In `decision-map.md`, add this row to the task table after the "Outcome indexed by time" row:
+- [x] **Step 3: Decision-map rows.** In `decision-map.md`, add this row to the task table after the "Outcome indexed by time" row:
 
 ```text
 | Time until an event, with some subjects not yet observed to have it (censored) | Survival & time-to-event | `families/survival.md` |
@@ -483,7 +493,9 @@ Add these rows to the signal table after the "Continuous target, heavy tails / o
 | Durations, some still running or lost to follow-up | Censored likelihood: AFT / piecewise-exponential | survival |
 ```
 
-- [ ] **Step 4: regression-glm rows.** Append three rows to the methods table (after "Zero-inflated (ZIP) / hurdle"). Fill each PML cell with the refs Step 2 accepted, formatted `PML1 §x / PML2 §y`, or `—`. Fill the pyprobml cell only with a path present in `/Users/lowell/Projects/agent-skills/build/.scratch/pyprobml_files.txt`, else `—`. Under Q3 (a), name the non-PML source in the "Default recommendation" cell as shown:
+- [x] **Step 4: regression-glm rows.** Append three rows to the methods table (after "Zero-inflated (ZIP) / hurdle"). Fill each PML cell with the refs Step 2 accepted, formatted `PML1 §x / PML2 §y`, or `—`. Fill the pyprobml cell only with a path present in `/Users/lowell/Projects/agent-skills/build/.scratch/pyprobml_files.txt`, else `—`. Under Q3 (a), name the non-PML source in the "Default recommendation" cell as shown:
+
+> Deviation: only PML2 §15.4.4 (ordinal), PML2 §14.3.2.1 and PML1 §13.2.4.4 (quantile and distributional) passed Gate B; the Beta and all survival PML cells are "—", and every new pyprobml cell is "—".
 
 ```text
 | Ordinal regression (cumulative logit / probit) | Ordered categories where gaps between levels are unknown | One latent continuous score cut by ordered thresholds; proportional-odds (cumulative logit) is the default (McCullagh 1980). Never treat the levels as equally spaced numbers | <PML cell> | <pyprobml cell> |
@@ -505,7 +517,7 @@ Append to `## Handoff` (as a new last paragraph):
 Bayesian fits of these three go to **bayesian-workflow**: `OrderedLogistic` (ordinal), `Beta` / `BetaProportion` / `BetaBinomial` (bounded), `AsymmetricLaplaceQuantile` (one quantile). Frequentist alternatives: statsmodels `OrderedModel`, statsmodels `QuantReg`, sklearn's `QuantileRegressor` or gradient boosting with a quantile loss.
 ```
 
-- [ ] **Step 5: Survival family file.** Create `families/survival.md`. Its sections follow the other family files exactly: a "When this family fits" line, `## Methods & defaults`, `## Selection & regularization (Step 6, family-specific)`, `## Gotchas`, `## Handoff`. Fill the PML cells per Step 2's verdicts (`—` when none):
+- [x] **Step 5: Survival family file.** Create `families/survival.md`. Its sections follow the other family files exactly: a "When this family fits" line, `## Methods & defaults`, `## Selection & regularization (Step 6, family-specific)`, `## Gotchas`, `## Handoff`. Fill the PML cells per Step 2's verdicts (`—` when none):
 
 ````markdown
 # Survival & time-to-event
@@ -538,9 +550,9 @@ Bayesian fits go to **bayesian-workflow**: wrap the base duration distribution i
 - **Regularization/selection plan:** LOO-ELPD across hazard families; shrinkage on predictors.
 ````
 
-- [ ] **Step 6: Family count.** In rpm `SKILL.md`'s reference map, replace `per-family depth (8)` with `per-family depth (9)`.
+- [x] **Step 6: Family count.** In rpm `SKILL.md`'s reference map, replace `per-family depth (8)` with `per-family depth (9)`.
 
-- [ ] **Step 7: NOTICE (Q3 a).** In NOTICE's rpm paragraph, after the pyprobml/dynamax bullet (ends "the skill links to them.", `:207`), add:
+- [x] **Step 7: NOTICE (Q3 a).** In NOTICE's rpm paragraph, after the pyprobml/dynamax bullet (ends "the skill links to them.", `:207`), add:
 
 ```text
   - The survival, ordinal, bounded-outcome and quantile rows also cite
@@ -551,7 +563,7 @@ Bayesian fits go to **bayesian-workflow**: wrap the base duration distribution i
 
 Under Q3 (b), skip this step and remove the author-year names from Steps 4 and 5.
 
-- [ ] **Step 8: Verify.**
+- [x] **Step 8: Verify.**
 
 ```bash
 grep -r -i -c -E 'surviv|censor|ordinal|quantile regression|beta regression' skills/recommend-probabilistic-model/ | grep -v ':0$' | wc -l
@@ -563,7 +575,7 @@ uv run --python 3.13 --with numpy --with polars python build/smoke_test.py
 
 Expected: a non-zero count; `gate A exit=0` (WARN lines on stderr for chapter fallbacks are Gate B worklist items: each must be one Step 2 read); provenance exit 0; drift test passes; smoke test passes.
 
-- [ ] **Step 9: Lints and commit.** Put Step 2's accepted and rejected refs in the commit body.
+- [x] **Step 9: Lints and commit.** Put Step 2's accepted and rejected refs in the commit body.
 
 ```bash
 build/run_commit_lints.sh
@@ -587,11 +599,11 @@ Item (G10 causal part, I2, I3), Done when: "the pointers land and the micro-test
 **Interfaces:**
 - Consumes: the kit and record from Task 3; Task 4's class names.
 
-- [ ] **Step 1: Baseline.** Note `BASE5=$(git rev-parse HEAD)`. Write `M2.json` (Appendix A). Run and grade arm B.
+- [x] **Step 1: Baseline.** Note `BASE5=$(git rev-parse HEAD)`. Write `M2.json` (Appendix A). Run and grade arm B.
 
-- [ ] **Step 2: Description.** In the description, replace `Covers regression / GLMs / counts, classification,` with `Covers regression / GLMs / counts, ordinal, proportion, quantile and censored or time-to-event outcomes, classification,` and append the sentence `A causal-effect question goes to recommend-causal-design first.` at the end. Re-fold lines under 100 characters. Measured at planning: 1,005 characters. Run `uv run --python 3.13 --with pyyaml python build/check_frontmatter.py`; expected exit 0.
+- [x] **Step 2: Description.** In the description, replace `Covers regression / GLMs / counts, classification,` with `Covers regression / GLMs / counts, ordinal, proportion, quantile and censored or time-to-event outcomes, classification,` and append the sentence `A causal-effect question goes to recommend-causal-design first.` at the end. Re-fold lines under 100 characters. Measured at planning: 1,005 characters. Run `uv run --python 3.13 --with pyyaml python build/check_frontmatter.py`; expected exit 0.
 
-- [ ] **Step 3: Siblings.** In `## This skill vs. its siblings`, add after the `bayesian-workflow` bullet:
+- [x] **Step 3: Siblings.** In `## This skill vs. its siblings`, add after the `bayesian-workflow` bullet:
 
 ```text
 - **`recommend-causal-design`** comes first when the question is causal (did X change Y): it picks the design and the estimand, and returns here only for the outcome model inside that design.
@@ -600,17 +612,17 @@ Item (G10 causal part, I2, I3), Done when: "the pointers land and the micro-test
 - **`track-model-experiments`** keeps the ledger of fitted model variants and compares them.
 ```
 
-- [ ] **Step 4: Step 1.** In Procedure step 1, after `inference vs. causal vs. sequential decision).` add: ` A causal question goes to recommend-causal-design before this procedure continues.`
+- [x] **Step 4: Step 1.** In Procedure step 1, after `inference vs. causal vs. sequential decision).` add: ` A causal question goes to recommend-causal-design before this procedure continues.`
 
-- [ ] **Step 5: Memo template.** In `references/reporting.md`'s `## 8. Next steps / handoff`, add after the `**Bracketing skills:**` line (leave `**Runs next:**` untouched):
+- [x] **Step 5: Memo template.** In `references/reporting.md`'s `## 8. Next steps / handoff`, add after the `**Bracketing skills:**` line (leave `**Runs next:**` untouched):
 
 ```text
 - **Iterate:** <tune-hyperparameters to search the knobs from §5; track-model-experiments to log and compare the fitted variants>
 ```
 
-- [ ] **Step 6: Neural hand-offs.** In `graphical-models.md`'s Graph neural network row, append to the "Default recommendation" cell: `; build and train it with deep-learning, compare variants with evaluate-deep-learning`. In its `## Handoff`, add the sentence: `A graph neural network goes to deep-learning (evaluate-deep-learning for comparisons), not bayesian-workflow.` In `classification.md`'s Deep ensembles row, append to the "Default recommendation" cell: `; train with deep-learning, compare with evaluate-deep-learning`. In its `## Handoff`, add: `Deep ensembles and other neural classifiers go to deep-learning (evaluate-deep-learning for comparisons).`
+- [x] **Step 6: Neural hand-offs.** In `graphical-models.md`'s Graph neural network row, append to the "Default recommendation" cell: `; build and train it with deep-learning, compare variants with evaluate-deep-learning`. In its `## Handoff`, add the sentence: `A graph neural network goes to deep-learning (evaluate-deep-learning for comparisons), not bayesian-workflow.` In `classification.md`'s Deep ensembles row, append to the "Default recommendation" cell: `; train with deep-learning, compare with evaluate-deep-learning`. In its `## Handoff`, add: `Deep ensembles and other neural classifiers go to deep-learning (evaluate-deep-learning for comparisons).`
 
-- [ ] **Step 7: Checks.**
+- [x] **Step 7: Checks.**
 
 ```bash
 grep -c 'recommend-causal-design' skills/recommend-probabilistic-model/SKILL.md
@@ -621,9 +633,11 @@ uv run --python 3.13 python /Users/lowell/Projects/agent-skills/build/verify_cit
 
 Expected: `3` or more; both files; pass (bare names add no edge); `gate A exit=0`.
 
-- [ ] **Step 8: Candidate arm and record.** Run and grade arm C; check M2's bars; append an "M2: recommend-probabilistic-model" section to the record in the same form. Same stop rule as Task 3.
+- [x] **Step 8: Candidate arm and record.** Run and grade arm C; check M2's bars; append an "M2: recommend-probabilistic-model" section to the record in the same form. Same stop rule as Task 3.
 
-- [ ] **Step 9: Lints and commit.**
+> Deviation: arm B already routed all six scenarios correctly, so bar 2 was vacuous and M2 shows no regression but no gain.
+
+- [x] **Step 9: Lints and commit.**
 
 ```bash
 build/run_commit_lints.sh
@@ -641,9 +655,9 @@ Item (G14, I2), Done when: "the hand-offs land, with any description change micr
 - Modify: `skills/creative-thinking/SKILL.md` (description `:3-10`, under Q5 (a); "Scope and handoff" list `:112-124`)
 - Modify: `specs/verification/64-routing-microtests.md` (append M3, under Q5 (a))
 
-- [ ] **Step 1: Baseline.** `BASE6=$(git rev-parse HEAD)`. Under Q5 (a), write `M3.json` (Appendix A); run and grade arm B.
+- [x] **Step 1: Baseline.** `BASE6=$(git rev-parse HEAD)`. Under Q5 (a), write `M3.json` (Appendix A); run and grade arm B.
 
-- [ ] **Step 2: Body.** In `## Scope and handoff`, replace the bullet beginning `- A picked target that is an objective to search over goes to` with:
+- [x] **Step 2: Body.** In `## Scope and handoff`, replace the bullet beginning `- A picked target that is an objective to search over goes to` with:
 
 ```text
 - A picked target that is an objective to search over goes to
@@ -657,9 +671,9 @@ Item (G14, I2), Done when: "the hand-offs land, with any description change micr
   comparing neural models goes to evaluate-deep-learning.
 ```
 
-- [ ] **Step 3: Description (Q5 a).** Append to the description: ` Causal question to frame: recommend-causal-design. Neural target: deep-learning.` (576 characters at planning). Run `check_frontmatter.py`; expected exit 0.
+- [x] **Step 3: Description (Q5 a).** Append to the description: ` Causal question to frame: recommend-causal-design. Neural target: deep-learning.` (576 characters at planning). Run `check_frontmatter.py`; expected exit 0.
 
-- [ ] **Step 4: Checks.**
+- [x] **Step 4: Checks.**
 
 ```bash
 grep -c -E 'recommend-causal-design|deep-learning' skills/creative-thinking/SKILL.md
@@ -668,9 +682,13 @@ cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q
 
 Expected: 3 or more (2 without Q5 a); pass.
 
-- [ ] **Step 5: Candidate arm and record (Q5 a).** Run and grade arm C; check M3's bars; append "M3: creative-thinking" to the record. Same stop rule.
+- [x] **Step 5: Candidate arm and record (Q5 a).** Run and grade arm C; check M3's bars; append "M3: creative-thinking" to the record. Same stop rule.
 
-- [ ] **Step 6: Final checks, lints and commit.** Run the whole set once:
+> Deviation: same as M2: arm B failed nothing. T1 moved from creative-thinking (3 of 5) to recommend-causal-design (4 of 5), both accepted.
+
+- [x] **Step 6: Final checks, lints and commit.** Run the whole set once:
+
+> Deviation: the three descriptions grew +250 characters folded (bayesian-workflow +35, rpm +134, creative-thinking +81), not +202, because of the C2 phrase. Total micro-test cost $6.22 of the $25 cap. After the tasks, the final review (an Opus code-reviewer and a Codex review, `Codex reviewed 944ac33`) led to two fix commits, f17791d and 326e0b9. With the owner's approval they corrected four wording errors in text this plan dictated (survival.md's "as the mask" and AFT row, the InverseGamma tail claim, the exact-GP LOO caveat) and the tinygp claim, and added the README, bibliography and record fixes.
 
 ```bash
 uv run --python 3.13 python build/check_snippets.py skills/

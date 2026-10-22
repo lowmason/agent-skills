@@ -14,6 +14,7 @@ If a problem doesn't fit any row, it's the long tail → `drill-down.md`.
 | Predict a categorical outcome / probability | Classification & discriminative | `families/classification.md` |
 | Outcome with grouped / nested / repeated structure | Hierarchical / multilevel | `families/hierarchical.md` |
 | Outcome indexed by time; forecast / latent state | Time series & state-space | `families/timeseries-statespace.md` |
+| Time until an event, with some subjects not yet observed to have it (censored) | Survival & time-to-event | `families/survival.md` |
 | Smooth nonlinear function, small-n, need uncertainty | Gaussian processes | `families/gaussian-processes.md` |
 | Many correlated variables → compress / common signal | Dimensionality reduction & factor models | `families/factor-models.md` |
 | Discover unlabeled groups / regimes / density | Mixtures & clustering | `families/mixtures-clustering.md` |
@@ -31,6 +32,10 @@ The signal (from `characterize.py` / `explore-data`) usually decides *which memb
 | Count target, `var ≫ mean` (overdispersion) | NegativeBinomial | regression-glm |
 | Count target, high zero-fraction | Zero-inflated / hurdle | regression-glm |
 | Continuous target, heavy tails / outliers | Robust (Student-t) regression | regression-glm |
+| Target is an ordered category (ratings, grades, stages) | Ordinal regression (cumulative logit / probit) | regression-glm |
+| Target bounded in (0, 1): a proportion or rate | Beta regression; BetaBinomial for k-of-n counts | regression-glm |
+| Question is about a quantile or the whole conditional distribution, not the mean | Quantile / distributional regression | regression-glm |
+| Durations, some still running or lost to follow-up | Censored likelihood: AFT / piecewise-exponential | survival |
 | `p` large vs `n`; many candidate predictors | Sparse / regularized (lasso/horseshoe) | regression-glm + Step 6 |
 | Group / panel columns; few obs per group | Partial pooling | hierarchical |
 | Time index + autocorrelation / trend | LG-SSM / structural TS | timeseries-statespace |
