@@ -1,6 +1,6 @@
 # Package versions: one source for every pinned or cited version
 
-**Status:** design agreed with the owner section by section on 2026-10-21. The written spec awaits the owner's review. Next skill: writing-plans.
+**Status:** approved by the owner on 2026-10-21, after a section-by-section design review and a review of the written text. Next skill: writing-plans.
 
 ## Problem
 
