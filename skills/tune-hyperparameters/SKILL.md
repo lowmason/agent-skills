@@ -83,11 +83,16 @@ be. Pick the splitter from how the rows depend on each other:
 | Grouped, or predicting new entities | `GroupKFold` or `LeaveOneGroupOut` |
 | Spatial | `GroupKFold` over spatial blocks |
 | Temporal | the bundled `PurgedTimeSeriesSplit` (the protocol below) |
-| Random forests | out-of-bag error |
+| Random forests, independent rows only | out-of-bag error |
 
-All but the temporal splitter are sklearn's. A panel is temporal: use the
-bundled splitter with `groups=period`. The rest of this section is the temporal
-protocol.
+All but the temporal splitter are sklearn's. A panel forecast for the same
+entities is temporal: use the bundled splitter with `groups=period`. A panel
+that must also predict new entities needs two guards. Hold out whole entities,
+and keep train periods before validation periods. The bundled splitter does only
+the second. Hold out the entities yourself: filter the rows of each forward
+split by entity. The protocol that follows applies to every splitter: the
+objective table, the search, early stopping and nested CV. Only the nested-CV
+snippet is written for the temporal case.
 
 **The trap.** Naive k-fold ignores time order, so most folds train on rows that
 come *after* the validation block (shuffling makes it worse, but plain
@@ -172,7 +177,8 @@ in-memory study by default, or `storage='sqlite:///study.db'` to persist. If you
 persist it, `.gitignore` the store; it's a local artifact, not source.
 
 **Early stopping.** Take the stopping split from inside the training fold (the
-last periods of `tr` for temporal data), never from the CV validation fold. A
+last periods of the fold's training rows, `fit` in the nested search below, for
+temporal data), never from the CV validation fold. A
 fit that stops on the validation fold has seen it, so that fold's score is no
 longer held out.
 
@@ -247,8 +253,8 @@ for each fold or origin that every other variant uses, and the comparator
 ranks it in score mode.
 
 An `elpd-loo` ledger cannot rank a non-Bayesian winner. To compare the winner
-with the Bayesian variants, re-declare the ledger's `Criterion:` line as a
-score criterion, and swap its ELPD columns for `score`, `Δscore` and `SE(Δ)`.
+with the Bayesian variants, add or change the ledger's `Criterion:` line to
+a score criterion, and swap its ELPD metric columns for `score`, `Δscore` and `SE(Δ)`.
 Each Bayesian variant then writes `scores.json` on the same units, for example
 a per-fold log score or the MSE of the posterior-predictive mean. Until that is
 done, the comparator names the new row as not compared. It never drops the
