@@ -640,10 +640,11 @@ artifacts = [
     'skills/describe-critique-methodology/SKILL.md',
     'skills/llm-wiki/SKILL.md',
     'skills/derive-roadmap/SKILL.md',
+    'skills/subagent-driven-development/SKILL.md',
 ]
 guide = 'A side-effecting workflow sets disable-model-invocation: true.'
 reason = 'Other skills hand off to these by bare name, which a manual-only skill cannot receive; their bodies gate the side effects, some only in part.'
-evidence = 'Portability spec Decision 3; audit rows S-81 to S-87 and S-92.'
+evidence = 'Portability spec Decision 3; audit rows S-81 to S-87 and S-92. subagent-driven-development joined by owner decision Q1, plan 63, 2026-10-21 (entry gate).'
 revisit = 'When the guide documents a way for one skill to hand off to a manual-only skill.'
 
 # Side-effecting skills that Decision 3 does not cover.
@@ -652,7 +653,6 @@ id = 'side-effecting-skills-ungated'
 type = 'gap'
 sections = ['commands.overview', 'skills.frontmatter']
 artifacts = [
-    'skills/subagent-driven-development/SKILL.md',
     'skills/requesting-code-review/SKILL.md',
 ]
 guide = 'A side-effecting workflow sets disable-model-invocation: true.'

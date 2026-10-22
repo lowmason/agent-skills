@@ -568,6 +568,8 @@ Changes from upstream:
     subagents (plan 63).
   - writing-skills' deployment checklist pushes to a fork only on the partner's word
     (plan 63).
+  - subagent-driven-development asks once before its first dispatch unless
+    the partner asked for execution (plan 63).
 
     brainstorming/
     dispatching-parallel-agents/
