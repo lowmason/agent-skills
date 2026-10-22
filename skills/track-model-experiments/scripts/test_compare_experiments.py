@@ -1,5 +1,4 @@
 import json
-import re
 import subprocess
 import sys
 from pathlib import Path
@@ -276,7 +275,11 @@ def _ledger_with(*rows):
 
 
 def _row(text, variant_id):
-    return next(ln for ln in text.splitlines() if ln.startswith(f'| {variant_id} '))
+    '''A Variants-table row, read from the table itself, so a COMPARISON block or
+    another table above it cannot shadow the row.'''
+    lines = text.splitlines()
+    _, _, rows = compare_experiments._variants_table(lines)
+    return next(lines[i] for i in rows if compare_experiments._cells(lines[i])[0] == variant_id)
 
 
 def test_folder_without_inference_data_exits_through_error(analysis_dir, tmp_path):
@@ -359,9 +362,9 @@ def test_metric_cells_are_filled_from_the_ranking(analysis_dir, tmp_path):
     rank = {e['id']: e for e in json.loads(out.read_text())['ranking']}
     cells = [c.strip() for c in _row(ledger.read_text(), 'm-intercept').strip('|').split('|')]
     elpd, d_elpd, rhat, div, ppc, psense = cells[4:10]
-    assert elpd == f"{rank['m-intercept']['elpd']:.1f}"
-    assert d_elpd == f"{rank['m-intercept']['elpd_diff']:.1f}"
-    assert rhat == f"{rank['m-intercept']['max_rhat']:.3f}"
+    assert elpd == f'{rank["m-intercept"]["elpd"]:.1f}'
+    assert d_elpd == f'{rank["m-intercept"]["elpd_diff"]:.1f}'
+    assert rhat == f'{rank["m-intercept"]["max_rhat"]:.3f}'
     assert div == str(rank['m-intercept']['divergences'])
     assert (ppc, psense) == ('unknown', 'unknown')       # no check_report.json in the fixture
     assert cells[2:4] == ['drop slope', 'slope noise']   # the human half is untouched
@@ -440,10 +443,6 @@ def test_several_log_likelihood_variables_are_refused(tmp_path):
 ESCAPED_HYPOTHESIS = 'p(y \\| x) depends on x'
 
 
-def _unescaped_cells(row):
-    return [c.strip() for c in re.split(r'(?<!\\)\|', row.strip().strip('|'))]
-
-
 def test_an_escaped_pipe_stays_inside_its_cell(analysis_dir, tmp_path):
     text = _ledger_with('m-full', 'm-intercept')
     row = _row(text, 'm-intercept')
@@ -457,11 +456,11 @@ def test_an_escaped_pipe_stays_inside_its_cell(analysis_dir, tmp_path):
     after = _row(ledger.read_text(), 'm-intercept')
     left_half = before[:before.index(ESCAPED_HYPOTHESIS) + len(ESCAPED_HYPOTHESIS)]
     assert after.startswith(left_half)                       # the human cells are byte-identical
-    cells = _unescaped_cells(after)
+    cells = compare_experiments._cells(after)
     assert len(cells) == 11                                  # one cell per header column
     assert cells[3] == ESCAPED_HYPOTHESIS
-    assert cells[4] == f"{rank['m-intercept']['elpd']:.1f}"
-    assert cells[5] == f"{rank['m-intercept']['elpd_diff']:.1f}"
+    assert cells[4] == f'{rank["m-intercept"]["elpd"]:.1f}'
+    assert cells[5] == f'{rank["m-intercept"]["elpd_diff"]:.1f}'
     assert cells[-1] == 'candidate'
 
 
@@ -492,3 +491,408 @@ def test_a_row_with_more_cells_than_the_header_is_left_alone(analysis_dir, tmp_p
     notes = [ln for ln in r.stderr.splitlines()
              if ln.startswith('note: ') and 'do not line up' in ln]
     assert len(notes) == 1 and 'm-intercept' in notes[0]
+    full = compare_experiments._cells(_row(ledger.read_text(), 'm-full'))
+    assert full[-1] == '**best**'                            # the other row still gets the marker
+    assert full[4] and full[5]                               # and its metric cells
+
+
+# --- Hardening after plan 59's final review (plan 65 Task 1) ---
+
+def _elpd_entry(variant_id, elpd, **extra):
+    '''A ranked ELPD-mode entry with the keys update_ledger and metric_cells read.'''
+    return {'id': variant_id, 'elpd': elpd, 'se': 10.0, 'elpd_diff': 0.0, 'dse': 0.0,
+            'weight': 0.5, 'warning': False, 'diag_diff': '', 'diag_elpd': '',
+            'max_rhat': 1.002, 'min_ess': 400.0, 'divergences': 0, 'ppc': 'fair',
+            'psense': 'ok', **extra}
+
+
+RANKED = [_elpd_entry('m-full', -280.4),
+          _elpd_entry('m-intercept', -391.7, elpd_diff=-111.3, max_rhat=None,
+                      divergences=None)]
+
+
+def _stamp(ledger, ranking, not_compared=()):
+    block = compare_experiments.render_comparison_block(ranking, list(not_compared))
+    compare_experiments.update_ledger(ledger, block, ranking, list(not_compared))
+    return ledger.read_text()
+
+
+def _table_cells(text, variant_id):
+    '''A Variants-table row's cells, read through the comparator's own parser.'''
+    return compare_experiments._cells(_row(text, variant_id))
+
+
+def test_cells_keep_an_empty_first_cell():
+    assert compare_experiments._cells('|| b |') == ['', 'b']
+
+
+def test_cells_keep_an_escaped_pipe_that_ends_the_last_cell():
+    assert compare_experiments._cells('| m | x \\||') == ['m', 'x \\|']
+
+
+def test_winner_row_gets_its_cells_and_the_marker(tmp_path):
+    ledger = tmp_path / 'experiments.md'
+    ledger.write_text(_ledger_with('m-full', 'm-intercept'))
+    cells = _table_cells(_stamp(ledger, RANKED), 'm-full')
+    assert cells[4:] == ['-280.4', '0.0', '1.002', '0', 'fair', 'ok', '**best**']
+
+
+def test_missing_diagnostics_render_as_blank_cells(tmp_path):
+    ledger = tmp_path / 'experiments.md'
+    ledger.write_text(_ledger_with('m-full', 'm-intercept'))
+    cells = _table_cells(_stamp(ledger, RANKED), 'm-intercept')
+    assert cells[4:8] == ['-391.7', '-111.3', '', '']
+
+
+def test_an_empty_observation_dimension_is_refused():
+    import types
+
+    import xarray as xr
+    ll = xr.Dataset({'y': (('chain', 'draw', 'obs'), np.zeros((2, 10, 0)))})
+    idata = types.SimpleNamespace(log_likelihood=ll)
+    with pytest.raises(ValueError, match='no observation dimension'):
+        compare_experiments.pointwise_count(idata, 'm-empty')
+
+
+def test_a_short_row_is_padded_and_filled(tmp_path):
+    text = _ledger_with('m-full', 'm-intercept')
+    ledger = tmp_path / 'experiments.md'
+    ledger.write_text(text.replace(_row(text, 'm-intercept'), '| m-intercept | m-full | drop slope |'))
+    cells = _table_cells(_stamp(ledger, RANKED), 'm-intercept')
+    assert len(cells) == 11
+    assert (cells[2], cells[4], cells[-1]) == ('drop slope', '-391.7', '')   # padded, not invented
+
+
+def test_a_header_without_status_is_not_the_variants_table():
+    assert compare_experiments.ledger_ids('| id | ELPD |\n|---|---|\n| m-full | |\n') is None
+
+
+def test_a_wide_top_row_note_says_no_row_carries_the_marker(tmp_path, capsys):
+    text = _ledger_with('m-full', 'm-intercept')
+    row = _row(text, 'm-full')
+    wide = row.replace('| h |', '| h | x |')
+    ledger = tmp_path / 'experiments.md'
+    ledger.write_text(text.replace(row, wide))
+    out = _stamp(ledger, RANKED)
+    notes = [ln for ln in capsys.readouterr().err.splitlines() if 'do not line up' in ln]
+    assert len(notes) == 1 and 'no row carries the best marker' in notes[0]
+    assert _row(out, 'm-full') == wide
+    assert '**best' not in out
+
+
+def test_a_wide_row_holding_a_stale_marker_is_named(tmp_path, capsys):
+    text = _ledger_with('m-full', 'm-intercept')
+    row = _row(text, 'm-intercept')
+    stale = row.replace('| h |', '| h | x |').replace('| candidate |', '| **best** |')
+    ledger = tmp_path / 'experiments.md'
+    ledger.write_text(text.replace(row, stale))
+    out = _stamp(ledger, RANKED)
+    notes = [ln for ln in capsys.readouterr().err.splitlines() if 'do not line up' in ln]
+    assert len(notes) == 1 and 'still holds a best marker' in notes[0]
+    assert out.count('**best**') == 2                 # the note is the remedy, not a rewrite
+
+
+def test_ranked_variants_without_a_row_are_named(tmp_path, capsys):
+    ledger = tmp_path / 'experiments.md'
+    ledger.write_text(_ledger_with('m-intercept'))
+    out = _stamp(ledger, RANKED)
+    err = capsys.readouterr().err
+    assert 'ranked variants with no Variants-table row: m-full.' in err
+    assert 'no row carries the best marker' in err
+    assert '**best' not in out
+
+
+def test_a_table_with_no_matching_metric_column_is_noted(tmp_path, capsys):
+    ledger = tmp_path / 'experiments.md'
+    ledger.write_text('| id | elpd | status |\n|---|---|---|\n'
+                      '| m-full | | candidate |\n| m-intercept | | candidate |\n')
+    _stamp(ledger, RANKED)
+    assert capsys.readouterr().err.count('none of the metric columns') == 1
+
+
+def test_a_missing_ledger_exits_through_error_before_any_output(tmp_path, capsys):
+    out = tmp_path / 'comparison.json'
+    code = compare_experiments.main(['--analysis-dir', str(tmp_path), '--ledger',
+                                     str(tmp_path / 'typo.md'), '--output', str(out)])
+    err = capsys.readouterr().err
+    assert code == 1 and err.startswith('error: ') and 'typo.md' in err
+    assert not out.exists()
+
+
+@pytest.mark.parametrize('markers', [
+    '<!-- COMPARISON:BEGIN -->\nstale\n',
+    '<!-- COMPARISON:END -->\nstale\n<!-- COMPARISON:BEGIN -->\n',
+    '<!-- COMPARISON:BEGIN -->\na\n<!-- COMPARISON:END -->\n' * 2,
+])
+def test_unpaired_or_repeated_markers_are_refused_before_anything_is_written(
+        tmp_path, capsys, markers):
+    text = _ledger_with('m-full', 'm-intercept') + markers
+    ledger = tmp_path / 'experiments.md'
+    ledger.write_text(text)
+    out = tmp_path / 'comparison.json'
+    code = compare_experiments.main(['--analysis-dir', str(tmp_path), '--ledger', str(ledger),
+                                     '--output', str(out)])
+    err = capsys.readouterr().err
+    assert code == 1 and err.startswith('error: ') and 'one pair of markers' in err
+    assert ledger.read_text() == text
+    assert not out.exists()
+
+
+# --- Score mode: ranking and refusals (plan 65 Task 2; spec R13, R16, R17, R24) ---
+
+def _scores(folder, units, criterion='cv-mse', orientation='lower'):
+    folder.mkdir(parents=True, exist_ok=True)
+    (folder / 'scores.json').write_text(json.dumps(
+        {'criterion': criterion, 'orientation': orientation, 'units': units}))
+    return folder
+
+
+# Hand-computed: d = b - a = [0.5, 0.0, 1.0, 0.5], so the paired difference is 0.5.
+# Its sample sd (ddof=1) is sqrt(0.5 / 3), so SE = 0.2041; ddof=0 would give 0.1768.
+A_UNITS = {'fold-1': 1.0, 'fold-2': 2.0, 'fold-3': 3.0, 'fold-4': 4.0}
+B_UNITS = {'fold-1': 1.5, 'fold-2': 2.0, 'fold-3': 4.0, 'fold-4': 4.5}
+
+
+def test_lower_is_better_ranks_the_smallest_mean_first(tmp_path):
+    _scores(tmp_path / 'b', B_UNITS)
+    _scores(tmp_path / 'a', A_UNITS)
+    ranking, criterion, orientation = compare_experiments.compare_scores(tmp_path, None)
+    assert [r['id'] for r in ranking] == ['a', 'b']
+    assert (criterion, orientation) == ('cv-mse', 'lower')
+    assert [r['score'] for r in ranking] == [pytest.approx(2.5), pytest.approx(3.0)]
+
+
+def test_higher_is_better_ranks_the_largest_mean_first(tmp_path):
+    _scores(tmp_path / 'a', A_UNITS, 'lfo-elpd', 'higher')
+    _scores(tmp_path / 'b', B_UNITS, 'lfo-elpd', 'higher')
+    ranking, _, orientation = compare_experiments.compare_scores(tmp_path, None)
+    assert orientation == 'higher'
+    assert [r['id'] for r in ranking] == ['b', 'a']
+    assert ranking[1]['score_diff'] == pytest.approx(-0.5)
+
+
+def test_paired_difference_and_its_se_match_the_hand_computation(tmp_path):
+    _scores(tmp_path / 'a', A_UNITS)
+    _scores(tmp_path / 'b', B_UNITS)
+    top, other = compare_experiments.compare_scores(tmp_path, None)[0]
+    assert (top['score_diff'], top['se_diff']) == (0.0, 0.0)
+    assert other['score_diff'] == pytest.approx(0.5)
+    assert other['se_diff'] == pytest.approx(np.sqrt(0.5 / 3) / 2)
+    assert other['se_diff'] != pytest.approx(np.sqrt(0.125) / 2)    # not ddof=0
+    assert other['n_units'] == 4
+
+
+def _score_refusal(tmp_path, capsys, *extra):
+    code = compare_experiments.main(['--analysis-dir', str(tmp_path), '--mode', 'score', *extra])
+    err = capsys.readouterr().err
+    assert code == 1 and err.startswith('error: ') and 'Traceback' not in err
+    return err
+
+
+def test_a_folder_without_scores_json_is_refused(tmp_path, capsys):
+    _scores(tmp_path / 'a', A_UNITS)
+    (tmp_path / 'b').mkdir()
+    err = _score_refusal(tmp_path, capsys, '--folders', str(tmp_path / 'a'), str(tmp_path / 'b'))
+    assert 'no scores.json in b' in err
+
+
+def test_a_criterion_that_differs_across_variants_is_refused(tmp_path, capsys):
+    _scores(tmp_path / 'a', A_UNITS)
+    _scores(tmp_path / 'b', B_UNITS, criterion='cv-mae')
+    err = _score_refusal(tmp_path, capsys)
+    assert "'b': 'cv-mae'" in err and 'one criterion' in err
+
+
+def test_an_orientation_that_differs_across_variants_is_refused(tmp_path, capsys):
+    _scores(tmp_path / 'a', A_UNITS)
+    _scores(tmp_path / 'b', B_UNITS, orientation='higher')
+    err = _score_refusal(tmp_path, capsys)
+    assert 'orientation differs' in err and "'b': 'higher'" in err
+
+
+def test_unit_keys_that_differ_across_variants_are_refused(tmp_path, capsys):
+    _scores(tmp_path / 'a', A_UNITS)
+    _scores(tmp_path / 'b', {**{k: v for k, v in B_UNITS.items() if k != 'fold-4'},
+                              'fold-5': 4.5})
+    err = _score_refusal(tmp_path, capsys)
+    assert "variant 'b'" in err and 'fold-5' in err and 'fold-4' in err
+
+
+@pytest.mark.parametrize('value', [float('nan'), float('inf')])
+def test_a_non_finite_score_is_refused(tmp_path, capsys, value):
+    _scores(tmp_path / 'a', A_UNITS)
+    _scores(tmp_path / 'b', {**B_UNITS, 'fold-2': value})
+    err = _score_refusal(tmp_path, capsys)
+    assert "variant 'b'" in err and 'non-finite' in err and 'fold-2' in err
+
+
+def test_fewer_than_two_units_is_refused(tmp_path, capsys):
+    _scores(tmp_path / 'a', {'fold-1': 1.0})
+    _scores(tmp_path / 'b', {'fold-1': 1.5})
+    err = _score_refusal(tmp_path, capsys)
+    assert "variant 'a'" in err and 'at least 2' in err
+
+
+def test_fewer_than_two_score_variants_is_refused(tmp_path, capsys):
+    _scores(tmp_path / 'a', A_UNITS)
+    err = _score_refusal(tmp_path, capsys)
+    assert 'at least two variants' in err
+
+
+# --- Score mode: the ledger (plan 65 Task 2; spec R15, R16, R24) ---
+
+SCORE_LEDGER = '''# Experiments — county nowcast
+
+Criterion: cv-mse
+
+| id (slug) | parent | what changed | hypothesis | score | Δscore | SE(Δ) | status |
+|---|---|---|---|---|---|---|---|
+| a | — | ridge on lagged features | sets a floor | | | | candidate |
+| b | a | add county effects | pooling helps | | | | candidate |
+
+<!-- COMPARISON:BEGIN -->
+<!-- COMPARISON:END -->
+
+## Decision log
+- Criterion: elpd-loo here is prose and never sets the mode.
+'''
+ROW_C = '| c | a | gradient boosting | nonlinearity matters | | | | candidate |\n'
+
+
+def _score_ledger(tmp_path, text=SCORE_LEDGER):
+    ledger = tmp_path / 'experiments.md'
+    ledger.write_text(text)
+    return ledger
+
+
+def _with_row_c(text=SCORE_LEDGER):
+    row_b = '| b | a | add county effects | pooling helps | | | | candidate |\n'
+    return text.replace(row_b, row_b + ROW_C)
+
+
+def test_ledger_criterion_reads_the_line_above_the_variants_table():
+    assert compare_experiments.ledger_criterion(SCORE_LEDGER) == 'cv-mse'
+    assert compare_experiments.ledger_criterion(LEDGER) == 'elpd-loo'
+    undeclared = SCORE_LEDGER.replace('Criterion: cv-mse\n', '')
+    assert compare_experiments.ledger_criterion(undeclared) == 'elpd-loo'
+
+
+def test_score_mode_against_an_elpd_ledger_is_refused(tmp_path, capsys):
+    ledger = _score_ledger(tmp_path, LEDGER)
+    err = _score_refusal(tmp_path, capsys, '--ledger', str(ledger))
+    assert 'Criterion: elpd-loo' in err and '--mode elpd' in err
+    assert ledger.read_text() == LEDGER
+
+
+def test_elpd_mode_against_a_score_ledger_is_refused(tmp_path, capsys):
+    ledger = _score_ledger(tmp_path)
+    code = compare_experiments.main(['--analysis-dir', str(tmp_path), '--ledger', str(ledger)])
+    err = capsys.readouterr().err
+    assert code == 1 and err.startswith('error: ')
+    assert 'Criterion: cv-mse' in err and '--mode score' in err
+
+
+def test_a_variant_criterion_that_differs_from_the_ledger_is_refused(tmp_path, capsys):
+    runs = tmp_path / 'runs'
+    _scores(runs / 'a', A_UNITS)
+    _scores(runs / 'b', B_UNITS)
+    ledger = _score_ledger(tmp_path, SCORE_LEDGER.replace('Criterion: cv-mse', 'Criterion: cv-mae'))
+    err = _score_refusal(runs, capsys, '--ledger', str(ledger))
+    assert "Criterion: line" in err and "'cv-mae'" in err and "'a': 'cv-mse'" in err
+
+
+def test_score_cells_qualified_marker_and_comparison_json(tmp_path, capsys):
+    runs = tmp_path / 'runs'
+    _scores(runs / 'a', A_UNITS)
+    _scores(runs / 'b', B_UNITS)
+    ledger = _score_ledger(tmp_path, _with_row_c())
+    out = tmp_path / 'comparison.json'
+    code = compare_experiments.main(['--analysis-dir', str(runs), '--mode', 'score',
+                                     '--ledger', str(ledger), '--output', str(out)])
+    assert code == 0, capsys.readouterr().err
+    assert 'ledger rows not compared: c.' in capsys.readouterr().err
+    payload = json.loads(out.read_text())
+    assert (payload['mode'], payload['criterion'], payload['not_compared']) == (
+        'score', 'cv-mse', ['c'])
+    text = ledger.read_text()
+    assert _table_cells(text, 'a')[4:] == ['2.5', '0', '0', '**best among score-compared variants**']
+    assert _table_cells(text, 'b')[4:] == ['3', '0.5', '0.2041', 'candidate']
+    assert _table_cells(text, 'c')[4:] == ['', '', '', 'candidate']
+    assert 'Not compared: c. The best marker covers the score-compared variants only.' in text
+    assert 'Ranked on cv-mse (lower is better).' in text
+    assert '- Criterion: elpd-loo here is prose and never sets the mode.' in text
+
+
+def test_score_marker_resets_once_every_row_is_compared_and_reruns_are_idempotent(tmp_path):
+    runs = tmp_path / 'runs'
+    _scores(runs / 'a', A_UNITS)
+    _scores(runs / 'b', B_UNITS)
+    ledger = _score_ledger(tmp_path, _with_row_c())
+    args = ['--analysis-dir', str(runs), '--mode', 'score', '--ledger', str(ledger)]
+    assert compare_experiments.main(args) == 0
+    ledger.write_text(ledger.read_text().replace(ROW_C, ''))
+    assert compare_experiments.main(args) == 0
+    first = ledger.read_text()
+    assert compare_experiments.main(args) == 0
+    assert ledger.read_text() == first
+    assert _table_cells(first, 'a')[-1] == '**best**'
+    assert 'score-compared' not in first
+
+
+def test_elpd_comparison_json_carries_mode_and_criterion(analysis_dir, tmp_path):
+    out = tmp_path / 'comparison.json'
+    r = _run('--analysis-dir', str(analysis_dir), '--output', str(out))
+    assert r.returncode == 0, r.stderr
+    payload = json.loads(out.read_text())
+    assert (payload['mode'], payload['criterion']) == ('elpd', 'elpd-loo')
+
+
+def test_ledger_criterion_ignores_a_bare_line_below_the_variants_table():
+    below = SCORE_LEDGER.replace(
+        '- Criterion: elpd-loo here is prose and never sets the mode.',
+        'Criterion: elpd-loo')
+    assert 'Criterion: elpd-loo\n' in below
+    assert compare_experiments.ledger_criterion(below) == 'cv-mse'
+    # Inverted: a bare line below the table must not set the mode when none sits above it.
+    only_below = below.replace('Criterion: cv-mse\n', '').replace(
+        'Criterion: elpd-loo', 'Criterion: cv-mse')
+    assert compare_experiments.ledger_criterion(only_below) == 'elpd-loo'
+
+
+def test_ledger_criterion_skips_a_bare_line_inside_the_comparison_block():
+    in_block = SCORE_LEDGER.replace(
+        'Criterion: cv-mse\n',
+        '<!-- COMPARISON:BEGIN -->\nCriterion: elpd-loo\n<!-- COMPARISON:END -->\n\n'
+        'Criterion: cv-mse\n', 1)
+    assert in_block.index('Criterion: elpd-loo') < in_block.index('Criterion: cv-mse')
+    assert in_block.index('Criterion: cv-mse') < in_block.index('| id (slug)')
+    assert compare_experiments.ledger_criterion(in_block) == 'cv-mse'
+
+
+# --- Final-review fixes (plan 65): the header-area scan and the wide-row note ---
+
+def test_ledger_criterion_reads_a_header_line_when_there_is_no_variants_table():
+    text = '# Experiments — county nowcast\n\nCriterion: cv-mse\n\n## Decision log\n- prose\n'
+    assert compare_experiments._variants_table(text.splitlines()) is None
+    assert compare_experiments.ledger_criterion(text) == 'cv-mse'
+
+
+def test_ledger_criterion_stops_at_the_decision_log_when_there_is_no_variants_table():
+    text = ('# Experiments — county nowcast\n\n## Decision log\n'
+            '- prose\n\nCriterion: cv-mse\n')
+    assert compare_experiments._variants_table(text.splitlines()) is None
+    assert compare_experiments.ledger_criterion(text) == 'elpd-loo'
+
+
+def test_a_wide_top_row_that_holds_a_marker_gets_one_consistent_note(tmp_path, capsys):
+    text = _ledger_with('m-full', 'm-intercept')
+    row = _row(text, 'm-full')
+    wide = row.replace('| h |', '| h | x |').replace('| candidate |', '| **best** |')
+    ledger = tmp_path / 'experiments.md'
+    ledger.write_text(text.replace(row, wide))
+    _stamp(ledger, RANKED)
+    err = capsys.readouterr().err
+    assert ('It is the top-ranked variant and keeps its best marker, but its metric '
+            'cells were not updated.') in err
+    assert 'the ledger can show two' not in err
+    assert 'no row carries the best marker' not in err

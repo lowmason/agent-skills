@@ -6,6 +6,7 @@
 - LOO-CV comparison
 - Stacking weights
 - Pointwise comparison
+- Time-series and forecast comparison: LFO and blocked K-fold
 - Predictive accuracy on one model: `loo_expectations`, `loo_metrics`, `loo_r2`
 - Bayes factors (and the reference-value trap)
 - WAIC (and why LOO)
@@ -121,6 +122,141 @@ plt.xlabel("observation"); plt.ylabel("ELPD(m1) − ELPD(m2)")
 
 A few observations dominating the difference is a signal to inspect those points (often outliers
 or high-leverage cases). Pair with `az.plot_khat(loo_a)` to see which points are influential.
+
+## Time-series and forecast comparison
+
+PSIS-LOO leaves out one observation and predicts it from all the others, past and future
+alike. That is the right question for interpolation and for structure: which likelihood, which
+hierarchy, which covariates explain the data. It is the wrong question for a forecast
+decision. A nowcast model predicts the next period from the past only, and LOO lets it lean on
+neighbours from a future it will not have.
+
+Rank forecasting variants by one of two routes:
+
+- **Leave-future-out (LFO).** Fit on the data up to a forecast origin, score the next
+  `forecast_horizon` observations, move the origin forward, repeat (Bürkner, Gabry & Vehtari
+  2020; the loo package's LFO vignette, https://mc-stan.org/loo/articles/loo2-lfo.html).
+  `azs.lfo_cv` with `method="approx"` carries the last fit forward by PSIS and refits only
+  when Pareto k passes `k_threshold`.
+- **Blocked K-fold with a joint log score.** Leave out one contiguous block of time at a
+  time, refit on the rest, and score each block as a whole. `azs.loo_kfold` with a `folds`
+  array does the refits. It scores each held-out step on its own, so the joint score of a
+  block takes one more step (below). It suits a model whose dependence is short-range, so
+  that a block's neighbours on both sides leak little (CV-FAQ,
+  https://users.aalto.fi/~ave/CV-FAQ.html).
+
+Both routes refit the model, so both need a `SamplingWrapper`: four methods that tell ArviZ
+how to split the data, refit, convert a fit, and score held-out terms. This one wraps an AR(1)
+model. Each of its log-likelihood terms scores `y[t]` given the observed `y[t-1]`. A refit
+drops the held-out steps and the step after each block, because that step is scored given a
+held-out value:
+
+```python
+# An AR(1) series and a wrapper that refits it on a subset of time steps.
+# Each term scores y[t] given the observed y[t-1]. A refit drops the held-out
+# steps and the step after each block, because that step is scored given a
+# held-out value; lfo_cv and loo_kfold both call these four methods.
+T = 80
+rng_ts = np.random.default_rng(1)
+series = np.zeros(T)
+for t in range(1, T):
+    series[t] = 0.7 * series[t - 1] + rng_ts.normal(0, 0.5)
+y_lag, y_now = series[:-1], series[1:]
+steps = np.arange(1, T)                      # the time coordinate of each term
+
+def ar1(y_lag, y=None):
+    mu = numpyro.sample("mu", dist.Normal(0, 2))
+    phi = numpyro.sample("phi", dist.Uniform(-1, 1))
+    s = numpyro.sample("s", dist.HalfNormal(1))
+    with numpyro.plate("time", y_lag.shape[0]):
+        numpyro.sample("y", dist.Normal(mu + phi * (y_lag - mu), s), obs=y)
+
+def fit_ar1(y_lag, y, key=jax.random.PRNGKey(3)):
+    run = MCMC(NUTS(ar1), num_warmup=200, num_samples=200, num_chains=1, progress_bar=False)
+    run.run(key, y_lag, y=y)
+    return run
+
+idata_ts = az.from_numpyro(fit_ar1(y_lag, y_now), log_likelihood=True,
+                           coords={"time": steps}, dims={"y": ["time"]})
+
+class AR1Wrapper(azs.SamplingWrapper):
+    def sel_observations(self, idx):
+        idx = np.asarray(idx)
+        keep = np.setdiff1d(np.arange(y_now.size), np.concatenate([idx, idx + 1]))
+        return ({"y_lag": y_lag[keep], "y": y_now[keep]},
+                {"y_lag": y_lag[idx], "y": y_now[idx], "time": steps[idx]})
+
+    def sample(self, train):
+        return fit_ar1(train["y_lag"], train["y"])
+
+    def get_inference_data(self, run):
+        return az.from_numpyro(run)
+
+    def log_likelihood__i(self, test, idata_i):
+        post = idata_i.posterior
+        mu, phi, s = (post[name].values[:, :, None] for name in ("mu", "phi", "s"))
+        mean = mu + phi * (test["y_lag"] - mu)
+        ll = dist.Normal(mean, s).log_prob(test["y"])        # (chain, draw, n_test)
+        return xr.DataArray(np.asarray(ll), dims=["chain", "draw", "time"],
+                            coords={"time": test["time"]})
+
+wrapper = AR1Wrapper(model=ar1, idata_orig=idata_ts)
+```
+
+Leave-future-out, one step ahead from origin 50 on. Each forecast origin is one unit:
+
+```python fixture=time_series
+import json
+from pathlib import Path
+
+lfo = azs.lfo_cv(idata_ts, wrapper, min_observations=50, forecast_horizon=1,
+                 pointwise=True)
+print(lfo.elpd, lfo.se, lfo.n_refits)        # n_refits: origins where PSIS gave out
+
+units = {f"origin-{t}": float(v)
+         for t, v in zip(lfo.elpd_i["time"].values, lfo.elpd_i.values)}
+Path("ar1").mkdir(exist_ok=True)
+Path("ar1/scores.json").write_text(json.dumps(
+    {"criterion": "lfo-elpd-h1", "orientation": "higher", "units": units}))
+```
+
+With `forecast_horizon` above 1, `lfo_cv` scores the next steps jointly, each one given the
+observed steps before it. Its docstring names the other convention, which simulates those
+steps instead; results from the two do not compare.
+
+Blocked K-fold, five contiguous blocks. Each block is one unit:
+
+```python fixture=time_series
+import json
+from pathlib import Path
+
+from scipy.special import logsumexp
+
+folds = np.repeat(np.arange(1, 6), int(np.ceil(y_now.size / 5)))[: y_now.size]
+kf = azs.loo_kfold(idata_ts, wrapper, folds=folds, save_fits=True)
+
+# loo_kfold scores each step on its own. The joint log score of a block sums the
+# block's terms under each draw, then averages the likelihood over draws.
+units = {}
+for k, saved in kf.fold_fits.items():
+    _, test = wrapper.sel_observations(saved["test_indices"])
+    per_draw = wrapper.log_likelihood__i(test, saved["fit"]).values.sum(axis=-1).ravel()
+    units[f"block-{k}"] = float(logsumexp(per_draw) - np.log(per_draw.size))
+Path("ar1").mkdir(exist_ok=True)
+Path("ar1/scores.json").write_text(json.dumps(
+    {"criterion": "kfold5-joint-elpd", "orientation": "higher", "units": units}))
+```
+
+**Ranking the variants.** The two blocks above are alternative routes. Both write
+`ar1/scores.json`, so pick one route per ledger. `az.compare` runs PSIS-LOO on InferenceData.
+It also ranks precomputed `lfo_cv(..., pointwise=True)` results that share one
+`forecast_horizon` and `min_observations`. It cannot take the joint block scores of the
+blocked-K-fold route, because they are plain numbers and not `ELPDData`. It cannot mix model
+classes, and it cannot stamp an experiments ledger. For those cases, write each variant's
+per-unit scores to its own `scores.json`, as both blocks above do, and rank them with
+track-model-experiments' score mode. [track-model-experiments/references/predictive-evaluation.md](../../track-model-experiments/references/predictive-evaluation.md)
+gives the file's contract, the paired-difference rule, and its limits. Every variant in one
+ledger uses the same origins or blocks and the same criterion string.
 
 ## Predictive accuracy on one model: `loo_expectations`, `loo_metrics`, `loo_r2`
 

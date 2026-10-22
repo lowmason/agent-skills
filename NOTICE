@@ -54,6 +54,13 @@ bayesian-workflow/
     practices unprompted (5/5 each), so the upstream
     jit/PyTree/control-flow reference and the Equinox material were
     not ported. Prose and examples are original.
+    references/model-comparison.md's "Time-series and forecast
+    comparison" section is original text. It documents arviz_stats'
+    lfo_cv and loo_kfold as established by running them against
+    arviz-stats 1.3.3, and it cites by URL only the loo R package's
+    leave-future-out vignette (Bürkner, Gabry and Vehtari; the package
+    is licensed GPL (>= 3)) and the CV-FAQ. It reproduces no text or
+    code from either.
     The skill cites Gelman, Vehtari, McElreath et al. (2026), "Bayesian
     Workflow" (Chapman & Hall/CRC; (c) 2020-2026 by the authors; the
     electronic edition at users.aalto.fi/~ave/Bayesian-Workflow.pdf is

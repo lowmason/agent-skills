@@ -1,5 +1,7 @@
 # Model-lifecycle Stage 1: track score mode and predictive evaluation — Implementation Plan
 
+**Status: COMPLETE (2026-10-22)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md (section 65-model-lifecycle)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 > Roadmap: specs/model-lifecycle-roadmap.md, Stage 1 — on plan completion, tick the stage and re-validate later stages against what shipped.
@@ -91,7 +93,7 @@ Closes deferred item parts (a)–(e), D2 and D3, and adds the (f) gap tests that
   - `update_ledger(ledger_path, block, ranking, not_compared) -> None` (Task 2 adds a `mode` keyword)
   - test helpers `_elpd_entry`, `RANKED`, `_stamp`, `_table_cells(text, variant_id) -> list[str]`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to the end of `test_compare_experiments.py`:
 
@@ -243,13 +245,13 @@ def test_unpaired_or_repeated_markers_are_refused_before_anything_is_written(
     assert not out.exists()
 ```
 
-- [ ] **Step 2: Run the new tests to verify they fail**
+- [x] **Step 2: Run the new tests to verify they fail**
 
 Run: `uv run --python 3.13 python build/run_suites.py track-model-experiments -- -k "cells_keep or winner_row or missing_diagnostics or empty_observation or short_row or header_without or wide_ or ranked_variants or no_matching or missing_ledger or unpaired" -rf`
 
 Expected: `13 failed, 2 passed`. The two that pass are coverage pins of behaviour that is already right (`test_an_empty_observation_dimension_is_refused`, `test_a_header_without_status_is_not_the_variants_table`). Three of the failures (`winner_row`, `missing_diagnostics`, `short_row`) are also coverage pins. They fail only because `_table_cells` unpacks the three-item return that this task gives `_variants_table` (`ValueError: not enough values to unpack`). Read each failure and check that it is one of these causes.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 In `compare_experiments.py`:
 
@@ -436,12 +438,12 @@ with
     try:
 ```
 
-- [ ] **Step 4: Run the whole suite to verify it passes**
+- [x] **Step 4: Run the whole suite to verify it passes**
 
 Run: `uv run --python 3.13 python build/run_suites.py track-model-experiments`
 Expected: every test passes, 15 more than before this task (the 26 existing tests plus 15 new; the scratch run at plan time gave `41 passed`). If an existing test fails, stop: R18 forbids editing it, so the implementation is wrong.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/track-model-experiments/scripts/compare_experiments.py skills/track-model-experiments/scripts/test_compare_experiments.py
@@ -471,7 +473,7 @@ Implements R13, R15 (parsing), R16, R17, the script half of R21, and R24.
   - CLI: `--mode {elpd,score}`. `comparison.json` keys `mode`, `criterion`, `ranking`, `not_compared`.
   - Task 3 documents these names, and Task 4's snippets write `scores.json` files that `load_scores` accepts.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to the end of `test_compare_experiments.py`:
 
@@ -687,12 +689,12 @@ def test_elpd_comparison_json_carries_mode_and_criterion(analysis_dir, tmp_path)
     assert (payload['mode'], payload['criterion']) == ('elpd', 'elpd-loo')
 ```
 
-- [ ] **Step 2: Run the suite to verify the new tests fail**
+- [x] **Step 2: Run the suite to verify the new tests fail**
 
 Run: `uv run --python 3.13 python build/run_suites.py track-model-experiments -- -rf`
 Expected: the 18 new tests fail and every earlier test passes (`18 failed, 41 passed` at plan time). Causes: `compare_scores` and `ledger_criterion` do not exist (`AttributeError`), `--mode` is not an argument (`SystemExit: 2` from argparse), and `comparison.json` has no `mode` key (`KeyError`).
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 In `compare_experiments.py`:
 
@@ -1036,7 +1038,7 @@ def main(argv=None):
     return 0
 ```
 
-- [ ] **Step 4: Run the whole suite and the script's help**
+- [x] **Step 4: Run the whole suite and the script's help**
 
 Run: `uv run --python 3.13 python build/run_suites.py track-model-experiments`
 Expected: every test passes, 18 more than after Task 1 (`59 passed` at plan time).
@@ -1047,7 +1049,7 @@ Expected: no output (R21's last bullet).
 Run: `uv run skills/track-model-experiments/scripts/compare_experiments.py --help`
 Expected: the new docstring, then `--mode {elpd,score}` in the usage line.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/track-model-experiments/scripts/compare_experiments.py skills/track-model-experiments/scripts/test_compare_experiments.py
@@ -1057,6 +1059,8 @@ git commit -m "feat(track): add the comparator's score mode" -m "Ranks variants 
 ---
 
 ### Task 3: Predictive-evaluation reference, track's body, README row and install dependency
+
+> Deviation: added one sentence to `references/predictive-evaluation.md`'s `scores.json` contract saying a score criterion must not be named `elpd-loo` (reserved for ELPD mode), from a Task 2 review finding.
 
 Implements R14, R21 (body), R22 (track → bayesian-workflow) and R23. R23 also closes part (a) of the plan-59 doc-nits item.
 
@@ -1071,7 +1075,7 @@ Implements R14, R21 (body), R22 (track → bayesian-workflow) and R23. R23 also 
 - Consumes (Task 2): the CLI flags, the R17 refusals, the marker strings and the column names, exactly as Task 2 implements them.
 - Produces: the path `skills/track-model-experiments/references/predictive-evaluation.md` and its section names. Task 4 links to it. Stage 2 (R7, R11) and Stage 3 (R25–R27) point to it.
 
-- [ ] **Step 1: Write the failing check**
+- [x] **Step 1: Write the failing check**
 
 The installer test pins the closure. Change the track case in `build/test_runtime_support.py`'s `test_skill_brings_its_hard_dependencies` parametrize list from
 
@@ -1094,7 +1098,7 @@ to
 Run: `cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_runtime_support.py -k "hard_dependencies and track"`
 Expected: FAIL. The installed set still includes `.claude/skills/bayesian-workflow`.
 
-- [ ] **Step 2: Move the dependency to a soft reference**
+- [x] **Step 2: Move the dependency to a soft reference**
 
 In `install.py`, delete the line
 
@@ -1113,7 +1117,7 @@ In `build/test_runtime_support.py`'s `SOFT_REFERENCES`, add this entry directly 
 Run: `cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_runtime_support.py`
 Expected: PASS, the drift test `test_declared_dependencies_match_skill_and_command_text` included.
 
-- [ ] **Step 3: Create the predictive-evaluation reference**
+- [x] **Step 3: Create the predictive-evaluation reference**
 
 Create `skills/track-model-experiments/references/predictive-evaluation.md`:
 
@@ -1306,7 +1310,7 @@ Point losses score a point forecast only: MSE targets the mean, MAE the median. 
 probabilities, use log-loss or the Brier score. Accuracy alone is not proper.
 ````
 
-- [ ] **Step 4: Rewrite track's body (R21)**
+- [x] **Step 4: Rewrite track's body (R21)**
 
 Make these replacements in `skills/track-model-experiments/SKILL.md`. Each old text is quoted exactly from the file at the base commit.
 
@@ -1537,7 +1541,7 @@ and after the `**|ΔELPD| < 4**` bullet (it ends `no badly misspecified variant.
 Run: `grep -n 'non-ELPD mode' skills/track-model-experiments/SKILL.md`
 Expected: no output.
 
-- [ ] **Step 5: Rewrite track's README row (R23)**
+- [x] **Step 5: Rewrite track's README row (R23)**
 
 In `README.md`, replace the whole line that starts `| [\`track-model-experiments\`](skills/track-model-experiments/) |` with:
 
@@ -1545,7 +1549,7 @@ In `README.md`, replace the whole line that starts `| [\`track-model-experiments
 | [`track-model-experiments`](skills/track-model-experiments/) | Keep a ledger of model variants for each analysis, and rank the variants on one declared criterion. A human-written `experiments.md` records *what changed and why* across `v1 → v2 → v3`. A bundled `compare_experiments.py` ranks the variants and stamps the winner back into the ledger. ELPD mode loads each Bayesian variant's saved InferenceData, ranks the variants with `az.compare`, and extracts convergence diagnostics. Score mode ranks any variants (tabular cross-validation, forecast backtests, or Bayesian leave-future-out) from each variant's `scores.json` of per-fold or per-origin scores. It reports each variant's paired difference from the top variant and its standard error. The comparator refuses the inputs that make a comparison silently wrong. In ELPD mode, it refuses variants fit to different observations, a missing `log_likelihood` group, several log-likelihood variables (one per source in a multi-source model), or a log-likelihood with no pointwise terms. In score mode, it refuses mixed criteria or orientations, unit sets that differ, non-finite scores, or fewer than two units. In both modes, it refuses a mode that does not match the ledger's criterion. It names each ledger row that it could not rank. `references/predictive-evaluation.md` holds the backtest protocol, the paired-difference rule and its limits, benchmark baselines, and proper scores. The skill owns the variant ledger and the stopping rule. `bayesian-workflow`'s `model-comparison.md` owns the ELPD statistics. Neural runs stay with `evaluate-deep-learning`. |
 ```
 
-- [ ] **Step 6: Run the gates**
+- [x] **Step 6: Run the gates**
 
 ```bash
 uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
@@ -1563,7 +1567,7 @@ cd build && uv run --python 3.13 --with pytest --with pyyaml python -c "import t
 
 Expected: `[('skill:track-model-experiments', 'skill:bayesian-workflow'), ('skill:tune-hyperparameters', 'skill:track-model-experiments')]`. If the scan prints another edge, the new text has a path or a named-section reference that the plan did not intend. Reword it to a bare skill name, or stop and report it.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add skills/track-model-experiments/references/predictive-evaluation.md skills/track-model-experiments/SKILL.md README.md install.py build/test_runtime_support.py
@@ -1573,6 +1577,8 @@ git commit -m "docs(track): add the predictive-evaluation reference and describe
 ---
 
 ### Task 4: Time-series comparison in bayesian-workflow (R19)
+
+> Deviation: plan 64 had already merged to main, so the coverage counts were re-measured (85 blocks, 41 run, 4 exempt, 40 advisory) and every edit anchored by content.
 
 **Files:**
 - Modify: `skills/bayesian-workflow/references/model-comparison.md` (Contents list; a new section before `## Predictive accuracy on one model`)
@@ -1585,7 +1591,7 @@ git commit -m "docs(track): add the predictive-evaluation reference and describe
 - Consumes: Task 3's path `skills/track-model-experiments/references/predictive-evaluation.md`. The new section links to it. No lint checks links in reference files (`check_frontmatter.py` reads `SKILL.md` prose only), so Step 6 checks the target with `test -f`. Also Task 2's `scores.json` contract, which the blocks write.
 - Produces: the section title "Time-series and forecast comparison". Task 3's reference already cites that title.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `build/test_check_snippets.py`:
 
@@ -1622,7 +1628,7 @@ def test_the_time_series_blocks_select_the_time_series_fixture():
 Run: `cd build && uv run --python 3.13 --with pytest --with numpy --with polars --with pyyaml python -m pytest -q test_check_snippets.py -k time_series; cd ..`
 Expected: `2 failed`, each with `StopIteration` (no block holds the needle yet).
 
-- [ ] **Step 2: Add the section to `model-comparison.md`**
+- [x] **Step 2: Add the section to `model-comparison.md`**
 
 In the `## Contents` list, after `- Pointwise comparison`, add the line `- Time-series and forecast comparison: LFO and blocked K-fold`.
 
@@ -1761,7 +1767,7 @@ ledger uses the same origins or blocks and the same criterion string.
 
 Do not write `values[..., None]` in the setup block: the gate reads any `...` as an elision and would skip the block (found at plan time).
 
-- [ ] **Step 3: Add the `time_series` fixture**
+- [x] **Step 3: Add the `time_series` fixture**
 
 In `build/snippet_preamble.py`, directly before the line `# Per-block fixtures, keyed by the name a block selects. Only the blocks that`, add the fixture below. Its body is the setup block's code from Step 2, character for character. The pin test from Step 1 compares the two, so if you edit one, edit the other.
 
@@ -1832,7 +1838,7 @@ In `NAMED_FIXTURES`, after the `'comparison'` entry, add:
 
 `variables` is empty because no block names a fixture variable as a string literal on an InferenceData group.
 
-- [ ] **Step 4: Run the tests and snippet Tiers 1–3**
+- [x] **Step 4: Run the tests and snippet Tiers 1–3**
 
 ```bash
 cd build && uv run --python 3.13 --with pytest --with numpy --with polars --with pyyaml --with "arviz>=1.0" --with arviz-base --with arviz-stats --with arviz-plots --with numpyro --with jax --with matplotlib python -m pytest -q test_check_snippets.py; cd ..
@@ -1843,7 +1849,7 @@ uv run --python 3.13 --with 'arviz==1.3.0' --with arviz-base --with 'arviz-stats
 
 Expected: the pytest run passes, including the two new tests and `test_every_named_fixture_var_is_carried_by_the_fixtures_idata[time_series]` (53 passed in the plan-time scratch run, 2 more than before). Each `check_snippets.py` run exits 0. On the Tier 3 run, no `WARN` line names a `model-comparison.md` line inside the new section. The two remaining `model-comparison.md` WARNs are the existing `loo_expectations` and `bayes_factor` blocks. In zsh, write each `--with` on the command line as shown. Never put the flags in a variable: zsh does not word-split `$VAR`, and uv then rejects the run.
 
-- [ ] **Step 5: Re-measure the preamble's coverage claim**
+- [x] **Step 5: Re-measure the preamble's coverage claim**
 
 Write this to `/tmp/p65-measure/measure.py` (outside the repo):
 
@@ -1893,7 +1899,7 @@ hierarchical.md's centered, model-criticism.md's expected_calibration_error
 and ranked_probability_score).
 ```
 
-- [ ] **Step 6: Add the soft reference and the NOTICE line**
+- [x] **Step 6: Add the soft reference and the NOTICE line**
 
 In `build/test_runtime_support.py`'s `SOFT_REFERENCES`, add this entry directly above the `# Says where the plan-completion protocol retires specs; never runs it.` entry (the first entry, so the set stays in order by source):
 
@@ -1926,7 +1932,7 @@ test -f skills/bayesian-workflow/references/../../track-model-experiments/refere
 
 Expected: the first three exit 0, and the last prints `link-ok`. The drift test now finds `('skill:bayesian-workflow', 'skill:track-model-experiments')` and excuses it.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add skills/bayesian-workflow/references/model-comparison.md build/snippet_preamble.py build/test_check_snippets.py build/test_runtime_support.py NOTICE
@@ -1936,6 +1942,8 @@ git commit -m "docs(bayesian-workflow): add time-series and forecast comparison"
 ---
 
 ### Task 5: track's description and its micro-test (R20, V1 track arm)
+
+> Deviation: the commit message carries the attribution trailer, which the plan's commit command omitted. The V1 pass is a ceiling result (control and variant both routed T1-T3 5/5), and the record says so.
 
 The description ships only after the V1 track arm passes. Until then, the edit stays uncommitted in the working tree.
 
@@ -1948,7 +1956,7 @@ The description ships only after the V1 track arm passes. Until then, the edit s
 - Consumes: Tasks 2–4 (the description names what they built).
 - Produces: nothing a later task reads.
 
-- [ ] **Step 1: Write the draft description**
+- [x] **Step 1: Write the draft description**
 
 Replace the frontmatter `description: >` block (the folded lines under it, up to `license: MIT`) with:
 
@@ -1974,7 +1982,7 @@ description: >
 Run: `uv run --python 3.13 --with pyyaml python build/check_frontmatter.py`
 Expected: exit 0. Do not commit yet.
 
-- [ ] **Step 2: Build the kit**
+- [x] **Step 2: Build the kit**
 
 Record the CLI version: `claude --version` (2.1.304 at plan time). Write `~/.cache/agent-skills/scratch/plan65-micro/run_microtest.py`:
 
@@ -2131,7 +2139,7 @@ if __name__ == '__main__':
 
 The prompts and the pass rule are fixed here, before any arm runs. The trigger prompts follow spec V1 (a CV-ranked tabular ledger, a Bayesian LFO ranking, ELPD variants). There is one near-miss for each probe.
 
-- [ ] **Step 3: Pilot the isolation, then run both arms**
+- [x] **Step 3: Pilot the isolation, then run both arms**
 
 ```bash
 REPO="$(git rev-parse --show-toplevel)"
@@ -2155,7 +2163,7 @@ uv run run_microtest.py "$REPO" variant
 
 Run each arm in the background (it makes 35 calls in a row and takes well over 2 minutes), and wait for its completion notice before you start grading. Expected: 35 reps per arm, about $0.02 each (about $1.50 in total at plan time).
 
-- [ ] **Step 4: Grade by hand against the pre-registered rule**
+- [x] **Step 4: Grade by hand against the pre-registered rule**
 
 Read every answer in `results-control.json` and `results-variant.json`. The script's `routed` flag is a convenience. Grade each answer yourself, and quote any answer that is more than a bare skill name.
 
@@ -2166,7 +2174,7 @@ Pass rule (spec V1, fixed before the runs):
 
 If the variant fails, reword the description once. Aim at the failing prompt and keep every R20 trigger. Then rerun the variant arm only, and record both runs. If the second run also fails, stop and bring both runs to your human partner. The description does not ship on a failed run.
 
-- [ ] **Step 5: Write the record**
+- [x] **Step 5: Write the record**
 
 Create `specs/verification/65-track-description-microtest.md` in the shape of `specs/verification/59-regime-b-router-microtest.md`:
 
@@ -2180,7 +2188,7 @@ Create `specs/verification/65-track-description-microtest.md` in the shape of `s
 
 Use generic wording only. The prompts are already public-safe.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 Commit only when the record's verdict is pass:
 
@@ -2193,6 +2201,8 @@ git commit -m "docs(track): widen the description to score-mode variants" -m "Re
 
 ### Task 6: Prove R18, then tidy the existing tests (deferred part (f))
 
+> Deviation: also removed the `import re` that deleting `_unescaped_cells` left unused.
+
 **Files:**
 - Modify: `skills/track-model-experiments/scripts/test_compare_experiments.py` (existing helpers and tests)
 
@@ -2200,7 +2210,7 @@ git commit -m "docs(track): widen the description to score-mode variants" -m "Re
 - Consumes: the final comparator (Task 2) and the Task 1 helper `_table_cells`.
 - Produces: nothing a later task reads.
 
-- [ ] **Step 1: Run the base-commit tests against the final comparator (R18, D1)**
+- [x] **Step 1: Run the base-commit tests against the final comparator (R18, D1)**
 
 ```bash
 rm -rf /tmp/p65-r18 && mkdir -p /tmp/p65-r18
@@ -2211,7 +2221,7 @@ cd /tmp/p65-r18 && uv run --python 3.13 --with pytest --with numpy --with polars
 
 Expected: every base-commit test passes, with none skipped (26 tests at plan time). The test file sits next to the final script because it locates the script with `Path(__file__).parent`. Record the summary line for Task 7. If any test fails, stop: ELPD behaviour changed, and Tasks 1–2 must be fixed first.
 
-- [ ] **Step 2: Make the (f) edits to existing helpers and tests**
+- [x] **Step 2: Make the (f) edits to existing helpers and tests**
 
 (1) Replace `_row`:
 
@@ -2282,12 +2292,12 @@ Expected: no output. (The pattern skips `elpd_diff"`, whose `f"` is not an f-str
     assert full[4] and full[5]                               # and its metric cells
 ```
 
-- [ ] **Step 3: Run the suite**
+- [x] **Step 3: Run the suite**
 
 Run: `uv run --python 3.13 python build/run_suites.py track-model-experiments`
 Expected: every test passes, with the same count as after Task 2 (this task adds no test; `59 passed` in the plan-time scratch run of these exact edits).
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add skills/track-model-experiments/scripts/test_compare_experiments.py
@@ -2298,9 +2308,11 @@ git commit -m "test(track): tidy the comparator tests (plan 59 part f)" -m "Scop
 
 ### Task 7: Stage gates
 
+> Deviation: the final review (code-reviewer and Codex) found work beyond the plan, fixed in two commits. `0276133`: the blocked K-fold refit no longer trains on the row after a held-out block (Codex P2), the `az.compare` claim in `model-comparison.md` now matches arviz-stats 1.3.3, two real Decision-log guard tests for `ledger_criterion` (the plan's test was vacuous), and the Diebold-Mariano ddof wording. `caad7c6` (the owner chose to fix both plan-mandated findings): `ledger_criterion` stops at the first level-2 heading when a ledger has no Variants table, and the wide-row note's two consequence sentences are mutually exclusive.
+
 **Files:** none changed, unless a gate fails.
 
-- [ ] **Step 1: Run every V3 Stage B gate and the commit lints**
+- [x] **Step 1: Run every V3 Stage B gate and the commit lints**
 
 ```bash
 uv run --python 3.13 python build/run_suites.py track-model-experiments
@@ -2315,7 +2327,7 @@ build/run_commit_lints.sh
 
 Expected: each exits 0. The `build` suite may skip four `test_verify_citations.py` tests for the missing `build/.scratch/`, as its notes say.
 
-- [ ] **Step 2: Check the scope fence and the roadmap Exit**
+- [x] **Step 2: Check the scope fence and the roadmap Exit**
 
 ```bash
 git fetch -q origin
@@ -2332,3 +2344,12 @@ Check each item of the roadmap's Stage 1 Exit, and write the evidence into the e
 - the deferred-item ticks are left to the Plan Completion Protocol (step 3). It ticks the hardening item (`→ done in plan 65`) and adds a progress note to the doc-nits item: part (a) is done in plan 65, and the item stays open for part (b), which Stage 2 closes.
 
 Then run the Plan Completion Protocol (writing-plans). Its step 3a writes `## Handoff to later stages` for Stage 2 (R7's pointer path and the R11 `scores.json` contract as built) and Stage 3 (the reference path).
+
+## Handoff to later stages
+
+- **Stage 2 (tune-hyperparameters as the model-agnostic search loop; spec § Stage A).**
+  - Consumes as built: `skills/track-model-experiments/references/predictive-evaluation.md` (R7's pointer path), and the R13 `scores.json` contract: `{"criterion": ..., "orientation": "higher"|"lower", "units": {<fold or origin id>: <finite number>}}`. A score criterion must not be named `elpd-loo` (reserved for ELPD mode). A ledger declares one criterion on a bare `Criterion: <name>` line above its Variants table, and its metric columns are `score`, `Δscore` and `SE(Δ)`. The comparator runs `--mode score` and refuses a mode that does not match the ledger's criterion. This matches the roadmap's `Produces`.
+  - Differs from `Produces`: nothing.
+  - Traps: `skills/tune-hyperparameters/SKILL.md:153-155` still says "until a non-ELPD mode exists, a non-Bayesian winner goes in the ledger's Decision log", and the README's tune row (README.md:63) says the same. The comparator now says "do not park the variant in the Decision log" and track's When to use agrees, so main holds two opposite instructions until Stage 2's R11 and R12b land. The R7 soft pair tune → track already exists in `build/test_runtime_support.py`; Stage 2 rewrites its reason. This plan also added the soft pair bayesian-workflow → track and dropped the hard track → bayesian-workflow edge in `install.py` (R22).
+  - Deferred into this stage: part (b) of the deferred item "Two doc nits left by plan 59's final review" (section `59-model-skill-comparator-and-cv-fixes`), and the optax-description item. Both are named in the roadmap's Stage 2 entry.
+- **Stage 3 (thin routes and rpm's "Runs next"; spec § Stage C).** Consumes only the path `skills/track-model-experiments/references/predictive-evaluation.md`, as built. Plan 64 is already on main, so the hard gate on plan 63 holds. Nothing differs and no trap applies.

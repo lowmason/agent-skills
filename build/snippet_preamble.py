@@ -12,15 +12,16 @@ Sized to be fast: 1 chain, 100 warmup / 200 draws, purely so `mcmc` and
 `idata` exist with realistic structure -- it is NOT a model worth
 interpreting. 200 draws is chosen to keep LOO's Pareto-k estimates sane.
 
-Measured against the skill on 2026-10-21 (re-measure whenever this file or
-the skill changes; a stale coverage claim is worse than none): 82 fenced
-python blocks, all 82 parse. 4 are norun-exempt and 40 are advisory --
+Measured against the skill on 2026-10-22 (re-measure whenever this file or
+the skill changes; a stale coverage claim is worse than none): 85 fenced
+python blocks, all 85 parse. 4 are norun-exempt and 40 are advisory --
 18 name-incomplete, 9 naming variables outside the fixtures, 7 model-body
-fragments, 6 elided with `...`. That leaves 38 blocks that --run executes,
-5 of them through the `comparison` fixture. 3 of the 38 are def-only: they
-define functions they never call, so they show only that the definitions
-compile (diagnostics.md's run_diagnostics, hierarchical.md's centered,
-model-criticism.md's expected_calibration_error and ranked_probability_score).
+fragments, 6 elided with `...`. That leaves 41 blocks that --run executes,
+5 of them through the `comparison` fixture and 2 through `time_series`. 3 of
+the 41 are def-only: they define functions they never call, so they show only
+that the definitions compile (diagnostics.md's run_diagnostics,
+hierarchical.md's centered, model-criticism.md's expected_calibration_error
+and ranked_probability_score).
 
 THIS FILE IS A SECOND SOURCE OF TRUTH and can go green wrongly: a fixture
 simpler than the doc's example can make a doc-level error pass. Keep the
@@ -190,10 +191,66 @@ idata_m2, idata_m3 = idata_2, idata_3
 del model_wide, model_robust, fit
 '''
 
+# Copied VERBATIM from references/model-comparison.md (the AR(1) setup block of
+# "Time-series and forecast comparison"); the LFO and blocked K-fold blocks select
+# it, and test_the_time_series_fixture_copies_the_doc_setup_block pins the two equal.
+TIME_SERIES_FIXTURE = '''
+# An AR(1) series and a wrapper that refits it on a subset of time steps.
+# Each term scores y[t] given the observed y[t-1]. A refit drops the held-out
+# steps and the step after each block, because that step is scored given a
+# held-out value; lfo_cv and loo_kfold both call these four methods.
+T = 80
+rng_ts = np.random.default_rng(1)
+series = np.zeros(T)
+for t in range(1, T):
+    series[t] = 0.7 * series[t - 1] + rng_ts.normal(0, 0.5)
+y_lag, y_now = series[:-1], series[1:]
+steps = np.arange(1, T)                      # the time coordinate of each term
+
+def ar1(y_lag, y=None):
+    mu = numpyro.sample("mu", dist.Normal(0, 2))
+    phi = numpyro.sample("phi", dist.Uniform(-1, 1))
+    s = numpyro.sample("s", dist.HalfNormal(1))
+    with numpyro.plate("time", y_lag.shape[0]):
+        numpyro.sample("y", dist.Normal(mu + phi * (y_lag - mu), s), obs=y)
+
+def fit_ar1(y_lag, y, key=jax.random.PRNGKey(3)):
+    run = MCMC(NUTS(ar1), num_warmup=200, num_samples=200, num_chains=1, progress_bar=False)
+    run.run(key, y_lag, y=y)
+    return run
+
+idata_ts = az.from_numpyro(fit_ar1(y_lag, y_now), log_likelihood=True,
+                           coords={"time": steps}, dims={"y": ["time"]})
+
+class AR1Wrapper(azs.SamplingWrapper):
+    def sel_observations(self, idx):
+        idx = np.asarray(idx)
+        keep = np.setdiff1d(np.arange(y_now.size), np.concatenate([idx, idx + 1]))
+        return ({"y_lag": y_lag[keep], "y": y_now[keep]},
+                {"y_lag": y_lag[idx], "y": y_now[idx], "time": steps[idx]})
+
+    def sample(self, train):
+        return fit_ar1(train["y_lag"], train["y"])
+
+    def get_inference_data(self, run):
+        return az.from_numpyro(run)
+
+    def log_likelihood__i(self, test, idata_i):
+        post = idata_i.posterior
+        mu, phi, s = (post[name].values[:, :, None] for name in ("mu", "phi", "s"))
+        mean = mu + phi * (test["y_lag"] - mu)
+        ll = dist.Normal(mean, s).log_prob(test["y"])        # (chain, draw, n_test)
+        return xr.DataArray(np.asarray(ll), dims=["chain", "draw", "time"],
+                            coords={"time": test["time"]})
+
+wrapper = AR1Wrapper(model=ar1, idata_orig=idata_ts)
+'''
+
 # Per-block fixtures, keyed by the name a block selects. Only the blocks that
 # select one pay for its extra fits; the shared PREAMBLE stays fast.
 NAMED_FIXTURES: dict[str, Fixture] = {
     'comparison': Fixture(code=COMPARISON_FIXTURE, variables=frozenset()),
+    'time_series': Fixture(code=TIME_SERIES_FIXTURE, variables=frozenset()),
 }
 
 PINNED = (

@@ -328,9 +328,9 @@ def installed_links(root: Path) -> set[str]:
       '.claude/skills/writing-plans',
       '.claude/commands/deferred.md',
     }),
+    # Score mode works without bayesian-workflow, so it is a soft reference (R22).
     ('claude', 'track-model-experiments', (), {
       '.claude/skills/track-model-experiments',
-      '.claude/skills/bayesian-workflow',
     }),
   ],
 )
@@ -476,6 +476,9 @@ HUMAN_DOCS = {'README.md', 'INSTALL.md'}
 # without the target installed. An entry excuses its whole edge, so a hard
 # reference added later between the same two skills passes unnoticed.
 SOFT_REFERENCES = {
+  # Points a forecast ranking at track's score-mode reference; the time-series
+  # section's snippets run without track installed.
+  ('skill:bayesian-workflow', 'skill:track-model-experiments'),
   # Says where the plan-completion protocol retires specs; never runs it.
   ('skill:brainstorming', 'skill:writing-plans'),
   # Names the routing header its input spec carries; never reads the file.
@@ -495,6 +498,9 @@ SOFT_REFERENCES = {
   # Names SDD's Model Selection but gives the review tiers and aliases inline;
   # SDD's review-package and task-reviewer prompt apply only when SDD calls.
   ('skill:requesting-code-review', 'skill:subagent-driven-development'),
+  # ELPD mode reads bayesian-workflow's model-comparison doctrine; score mode
+  # works without it.
+  ('skill:track-model-experiments', 'skill:bayesian-workflow'),
   # Routes Regime B knobs to bayesian-workflow's diagnostics and SVI files; the
   # search loop (Regime A) runs without them.
   ('skill:tune-hyperparameters', 'skill:bayesian-workflow'),
