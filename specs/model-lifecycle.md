@@ -3,8 +3,8 @@
 > For agentic workers: REQUIRED NEXT SKILL: derive-roadmap — do not plan
 > this spec directly and do not split it into per-subsystem plans.
 
-**Status:** design approved section by section by the owner on 2026-10-21 in a brainstorming
-session; the written spec is under owner review. Next step, once approved: run
+**Status:** approved by the owner on 2026-10-21: the design section by section in a
+brainstorming session, then the written spec. Next step: run
 derive-roadmap against this file in a fresh session. It stages the work into the three
 stages in § Staging, and each stage then gets its own writing-plans cycle.
 
