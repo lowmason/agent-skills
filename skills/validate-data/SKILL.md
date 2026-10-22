@@ -2,7 +2,7 @@
 name: validate-data
 description: >
   Use when QA-ing a dataset or an analysis before it is shared, published, or fed downstream —
-  the last gate before a number leaves your laptop. Trigger on: "is this ready to publish",
+  the last gate before a number leaves the analyst's laptop. Trigger on: "is this ready to publish",
   "sanity-check this dataset/parquet", "review my analysis", "do the numbers reconcile", "why
   doesn't this match the official total", validating an ETL output, pre-publish review, "I can't
   reproduce yesterday's run", a silent cache or fallback masking a failure, a coverage ratio that

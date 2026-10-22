@@ -133,6 +133,8 @@ KNOWN_AGENT_TOOLS = {
 AGENT_RESTRICTION_RE = re.compile(r'Agent(\([^()]*\))?')
 MCP_TOOL_PREFIX = 'mcp__'
 GUARD_PATH = REPO / 'hooks' / 'readonly-agent-guard.py'
+# Its PINNED_AGENTS must equal the frontmatter names of the agents/*.md that set model:.
+DISPATCH_GUARD_PATH = REPO / 'hooks' / 'dispatch-model-guard.py'
 # Load-bearing marker, not a label: an agents/*.md carrying this heading is
 # asserted to be in the guard's roster, and vice versa. debugger.md and
 # docs-writer.md use a plain '## Contract' because theirs are not read-only.
@@ -564,6 +566,49 @@ def check_readonly_roster(agents_dir: Path | None = None,
     return errs
 
 
+def load_pinned_roster(guard_path: Path | None = None) -> frozenset[str]:
+    '''Import PINNED_AGENTS from the dispatch-model hook, as load_readonly_roster does.'''
+    path = guard_path or DISPATCH_GUARD_PATH
+    spec = importlib.util.spec_from_file_location('dispatch_model_guard', path)
+    if spec is None or spec.loader is None:
+        raise FileNotFoundError(path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return frozenset(module.PINNED_AGENTS)
+
+
+def check_pinned_roster(agents_dir: Path | None = None,
+                        roster: frozenset[str] | None = None) -> list[str]:
+    '''Assert the dispatch guard's PINNED_AGENTS and the model-pinned agents agree, both ways.
+
+    Forward: an agent that pins `model:` but is missing from the roster would be
+    denied a model-less dispatch it does not need. Reverse: a roster name with no
+    pinned agent file would let a model-less dispatch inherit the session model.
+    '''
+    d = agents_dir or (REPO / 'agents')
+    if roster is None:
+        try:
+            roster = load_pinned_roster()
+        except (FileNotFoundError, OSError, SyntaxError, AttributeError) as exc:
+            return [f'{DISPATCH_GUARD_PATH}: cannot load PINNED_AGENTS '
+                    f'({type(exc).__name__}: {exc})']
+    errs: list[str] = []
+    pinned: dict[str, Path] = {}
+    for md in sorted(d.glob('*.md')):
+        fm, _ = _parse_frontmatter(md)
+        if (fm or {}).get('model') not in (None, '', 'inherit'):
+            pinned[str(fm.get('name') or md.stem)] = md
+    for name, md in sorted(pinned.items()):
+        if name not in roster:
+            errs.append(f'{md}: agent pins model but is missing from PINNED_AGENTS '
+                        'in hooks/dispatch-model-guard.py')
+    for name in sorted(roster):
+        if name not in pinned:
+            errs.append(f'hooks/dispatch-model-guard.py: PINNED_AGENTS names {name!r}, '
+                        'which no agents/*.md pins')
+    return errs
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description='Lint skill, agent and command frontmatter.')
     parser.add_argument('--strict', action='store_true',
@@ -584,6 +629,7 @@ def main(argv: list[str] | None = None) -> int:
     for md in sorted((REPO / 'commands').glob('*.md')):
         errs += check_command_file(md)
     errs += check_readonly_roster()
+    errs += check_pinned_roster()
     for e in errs:
         print(e)
     return 1 if errs else 0

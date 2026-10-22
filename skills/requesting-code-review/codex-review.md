@@ -6,6 +6,8 @@ work against its plan or requirements; Codex's review preset is defect-first —
 it hunts bugs in the diff and never sees the plan. Two lenses, two model
 families.
 
+**Approval first.** Codex sends the diff, and every file it reads, to OpenAI. Run it when your human partner has approved Codex review for this repository: in this session, in the request, or in the repo's CLAUDE.md. Otherwise ask once per session before the first run.
+
 **You run it, as the controller.** Never ask a reviewer subagent to run Codex —
 code-reviewer's contract forbids it from spawning further reviewers.
 
@@ -13,6 +15,7 @@ code-reviewer's contract forbids it from spawning further reviewers.
 
 - `command -v codex` prints nothing. Say "Codex CLI not installed — second
   review skipped" and continue without it.
+- Your partner declined the run. Say the Codex seat was skipped at their word, write no `Codex reviewed` line, record the decline in the progress ledger if the run keeps one, and go on with code-reviewer's review.
 - You are Codex. A second opinion from the same model family isn't one; say so
   and continue.
 

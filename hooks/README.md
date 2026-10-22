@@ -386,6 +386,61 @@ unguarded, and a roster entry cannot outlive the agent it names. That heading is
 load-bearing marker, not a label; `debugger.md` and `docs-writer.md` keep a plain
 `## Contract` because theirs are not read-only contracts.
 
+## `dispatch-model-guard.py`
+
+`PreToolUse` (`Agent`). The hook denies an agent dispatch that does not name a model,
+because subagent-driven-development's Model Selection treats an omitted model as no tier
+choice: an unpinned agent inherits the session's model, usually the most expensive one.
+A call with a non-empty `model` passes. A call with no `model` (or an empty one) passes
+only when its `subagent_type` is one of these:
+
+- an agent in `PINNED_AGENTS`, the seven agents in `agents/` that set `model:`:
+  `code-reviewer`, `debugger`, `docs-writer`, `Explore`, `security-auditor`,
+  `task-reviewer` and `test-runner`;
+- a built-in agent in `BUILTIN_PINNED` that pins its own model: `claude-code-guide`
+  (plan 63's probe on Claude Code 2.1.304 saw it run on Haiku with no model passed);
+- `fork`, which ignores `model`.
+
+Every other type is denied, with a reason that starts with the `dispatch-model-guard:`
+marker. That covers `general-purpose`, `Plan` and `statusline-setup` (all three ran on
+the session model in the probe), a missing type (the guard reads it as
+`general-purpose`), and plugin agents. The guard cannot tell when a pinned reviewer
+needed escalating to a stronger model: that choice stays with the controller. Any
+other tool, and a payload it cannot read (including a `tool_input` that is not an
+object), passes untouched. A `subagent_type` that is not a string counts as missing.
+
+**Limitation:** the exemption matches the agent type name only. A project-level agent
+that shares a name with a pinned agent (for example `debugger`) but sets no `model:` is
+exempted too, because a project agent outranks a user-level one.
+
+**Install — globally, and by symlink**, for the reasons given for the read-only guard above:
+
+```bash
+ln -s ~/Projects/agent-skills/hooks/dispatch-model-guard.py \
+      ~/.claude/hooks/dispatch-model-guard.py
+```
+
+then add to `~/.claude/settings.json`'s `hooks.PreToolUse` array:
+
+```json
+{ "matcher": "Agent", "hooks": [
+  { "type": "command", "command": "\"$HOME\"/.claude/hooks/dispatch-model-guard.py" } ] }
+```
+
+Then trigger it once: from an empty directory, ask `claude -p` to dispatch a
+`general-purpose` subagent without a model, and check the stream for the
+`dispatch-model-guard:` marker. A wrong path or a missing execute bit fails open.
+
+**Roster drift is a lint failure.** `build/check_frontmatter.py` imports
+`PINNED_AGENTS` and asserts it in both directions against the frontmatter `name` of
+every `agents/*.md` that sets `model:`. `BUILTIN_PINNED` is kept apart because no agent
+file backs it. Recheck it when Claude Code changes a built-in agent's model.
+
+**Tests.** `test_dispatch_model_guard.py` drives the script as a subprocess.
+Every allow-path test asserts the return code, because a crashed `PreToolUse` hook
+exits 1 and fails open. The two commands under the read-only guard's **Tests** run it
+under 3.13 and under `/usr/bin/python3` (3.9), since the hook keeps the same 3.9 floor.
+
 ## Probe log
 
 `readonly-agent-guard.py` depends on Claude Code putting the dispatched agent's

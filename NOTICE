@@ -563,6 +563,22 @@ Changes from upstream:
     unpushed commits. When HEAD has unpushed commits, or the check fails,
     the skill now makes the worktree with git and then enters it with the
     native tool.
+  - dispatching-parallel-agents is manual-only (disable-model-invocation:
+    true, and agents/openai.yaml for Codex), since it fans out paid
+    subagents (plan 63).
+  - writing-skills' deployment checklist pushes to a fork only on the partner's word
+    (plan 63).
+  - subagent-driven-development asks once before its first dispatch unless
+    the partner asked for execution (plan 63).
+  - requesting-code-review runs its Codex second opinion only with the
+    partner's approval, and finishing-a-development-branch accepts a
+    declined run (plan 63).
+  - requesting-code-review allows skipping review for a small change the
+    partner watched and waived (plan 63).
+  - subagent-driven-development points at a PreToolUse hook that denies a
+    model-less dispatch to an unpinned agent (plan 63).
+  - executing-plans, systematic-debugging and writing-plans word their
+    descriptions in the third person (plan 63).
 
     brainstorming/
     dispatching-parallel-agents/

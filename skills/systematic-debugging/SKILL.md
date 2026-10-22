@@ -5,7 +5,7 @@ description: >
   including flaky or intermittent tests, race conditions or arbitrary sleeps/timeouts in tests,
   test pollution where state leaks between tests, errors deep in a stack trace,
   works-locally-but-fails-in-CI, a regression after a dependency or config change, or when
-  previous fixes didn't stick and you're tempted to try one more quick change.
+  previous fixes didn't stick and one more quick change is tempting.
 license: MIT
 metadata:
   author: 'Jesse Vincent'

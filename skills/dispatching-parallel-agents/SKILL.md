@@ -5,6 +5,7 @@ description: >
   worked sequentially: multiple test files failing with different root causes, several subsystems
   broken independently, or a batch of self-contained fixes or investigations that could run as
   parallel subagents.
+disable-model-invocation: true
 license: MIT
 metadata:
   author: 'Jesse Vincent'

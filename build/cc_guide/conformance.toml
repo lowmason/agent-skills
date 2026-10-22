@@ -315,7 +315,8 @@ enforced_by = 'check_conformance'
 # or its directory with a trailing slash. exempt files need no naming; tests
 # neither need it nor count as naming anything. The license copies each skill
 # carries (portability R4) are exempt because nothing names them: they travel
-# with a single-skill install and are never loaded.
+# with a single-skill install and are never loaded. agents/openai.yaml is the
+# Codex policy file for a manual-only skill: Codex reads it, the agent never does.
 [[check]]
 id = 'orphan-bundled-file'
 kind = 'skill-bundle'
@@ -323,7 +324,7 @@ sections = ['skills.progressive-disclosure']
 type = 'advice'
 rule = 'A bundled file under a skill directory is named by a file in that skill.'
 enforced_by = 'check_conformance'
-exempt = ['SKILL.md', 'README.md', 'INSTALL.md', 'LICENSE*']
+exempt = ['SKILL.md', 'README.md', 'INSTALL.md', 'LICENSE*', 'agents/openai.yaml']
 tests = ['test_*', '*_test.py', 'conftest.py', 'tests/*']
 
 # On a name collision the skill wins, so the command file would never run.
@@ -624,8 +625,7 @@ reason = 'writing-skills requires trigger-only Use when descriptions, on tested 
 evidence = 'writing-skills, Skill Discovery Optimization; portability spec Decision 4; audit rows S-28 to S-52 and S-54.'
 revisit = 'When trigger-eval suites exist (a portability deferred item).'
 
-# Other skills hand off to these by bare name. artifacts is seat S's list,
-# less the four the owner split out as a gap (side-effecting-skills-ungated).
+# Side-effecting skills that other skills hand off to by bare name, gated in their bodies. Plan 63 added subagent-driven-development and requesting-code-review; dispatching-parallel-agents went manual-only and writing-skills to side-effecting-skills-body-gated.
 [[exception]]
 id = 'side-effecting-skills-invocable'
 type = 'deviation'
@@ -639,27 +639,24 @@ artifacts = [
     'skills/describe-critique-methodology/SKILL.md',
     'skills/llm-wiki/SKILL.md',
     'skills/derive-roadmap/SKILL.md',
+    'skills/subagent-driven-development/SKILL.md',
+    'skills/requesting-code-review/SKILL.md',
 ]
 guide = 'A side-effecting workflow sets disable-model-invocation: true.'
 reason = 'Other skills hand off to these by bare name, which a manual-only skill cannot receive; their bodies gate the side effects, some only in part.'
-evidence = 'Portability spec Decision 3; audit rows S-81 to S-87 and S-92.'
+evidence = 'Portability spec Decision 3; audit rows S-81 to S-87 and S-92. subagent-driven-development joined by owner decision Q1, plan 63, 2026-10-21 (entry gate). requesting-code-review joined by owner decision Q1, plan 63, 2026-10-21 (Codex approval gate).'
 revisit = 'When the guide documents a way for one skill to hand off to a manual-only skill.'
 
-# Side-effecting skills that Decision 3 does not cover.
+# A side-effecting skill that CLAUDE.md tells every runtime to follow, gated in its body (owner Q1, plan 63).
 [[exception]]
-id = 'side-effecting-skills-ungated'
-type = 'gap'
+id = 'side-effecting-skills-body-gated'
+type = 'deviation'
 sections = ['commands.overview', 'skills.frontmatter']
-artifacts = [
-    'skills/subagent-driven-development/SKILL.md',
-    'skills/requesting-code-review/SKILL.md',
-    'skills/writing-skills/SKILL.md',
-    'skills/dispatching-parallel-agents/SKILL.md',
-]
+artifacts = ['skills/writing-skills/SKILL.md']
 guide = 'A side-effecting workflow sets disable-model-invocation: true.'
-reason = 'These four act with side effects but lack a body gate or an inbound bare-name handoff, so portability Decision 3 does not cover them.'
-evidence = 'Audit rows S-88 to S-91; owner gate 2026-10-04.'
-tracked_in = 'deferred item: gate or make manual-only the four ungated side-effecting skills'
+reason = 'CLAUDE.md tells every runtime to follow writing-skills when editing a skill, which a manual-only skill cannot serve; its one side effect, a push to a fork, waits on the partner in its body.'
+evidence = 'Audit row S-90; owner decision Q1, plan 63, 2026-10-21; micro-test record in plan 63 Task 2.'
+revisit = 'When the guide documents a way for an instruction file or another skill to hand off to a manual-only skill.'
 
 # writing-skills' departures from the guide go to its rewrite.
 [[exception]]
@@ -683,25 +680,6 @@ evidence = 'Audit row S-97; owner gate 2026-10-04.'
 revisit = 'When writing-skills is split and rewritten against the guide (a deferred item).'
 
 [[exception]]
-id = 'description-second-person'
-type = 'gap'
-check = 'description-person'
-sections = ['skills.description']
-artifacts = [
-    'skills/clean-coder/SKILL.md',
-    'skills/executing-plans/SKILL.md',
-    'skills/explore-data/SKILL.md',
-    'skills/recommend-visualization/SKILL.md',
-    'skills/systematic-debugging/SKILL.md',
-    'skills/validate-data/SKILL.md',
-    'skills/writing-plans/SKILL.md',
-]
-guide = 'Write a skill description in the third person.'
-reason = 'Seven descriptions use second person outside quoted trigger phrases; rewording waits for its own change, since descriptions drive routing.'
-evidence = 'Audit rows S-21 to S-27; owner gate 2026-10-04.'
-tracked_in = 'deferred item: rewrite seven skill descriptions in the third person'
-
-[[exception]]
 id = 'skill-body-past-compaction'
 type = 'gap'
 check = 'compaction-window'
@@ -716,16 +694,6 @@ evidence = 'Audit rows S-69, S-70; owner gate 2026-10-04; owner decision D1, pla
 tracked_in = 'deferred item: fit the subagent-driven-development and bayesian-workflow bodies inside the compaction window'
 
 [[exception]]
-id = 'dispatch-model-in-prose'
-type = 'gap'
-sections = ['mechanisms.overview']
-artifacts = ['skills/subagent-driven-development/SKILL.md']
-guide = 'A deterministic, machine-checkable rule belongs in a hook, not in prose.'
-reason = 'The rule to name a model on every dispatch is machine-checkable but enforced only by prose.'
-evidence = 'Audit row S-94; owner gate 2026-10-04.'
-tracked_in = 'deferred item: enforce the model-on-dispatch rule with a hook'
-
-[[exception]]
 id = 'brainstorming-every-project'
 type = 'gap'
 sections = ['lean.ceremony']
@@ -734,16 +702,6 @@ guide = 'Skip brainstorming when the solution can already be described.'
 reason = "brainstorming applies to every project, while the owner's proportional-process rule in /deferred reserves it for open design decisions."
 evidence = 'Audit row S-96; owner gate 2026-10-04.'
 tracked_in = "deferred item: make brainstorming's scope proportional"
-
-[[exception]]
-id = 'review-before-every-merge'
-type = 'gap'
-sections = ['lean.ceremony']
-artifacts = ['skills/requesting-code-review/SKILL.md']
-guide = 'Skip review for a small change you watched being made.'
-reason = 'requesting-code-review requires review before every merge to main.'
-evidence = 'Audit row S-99; owner gate 2026-10-04.'
-tracked_in = "deferred item: reconcile requesting-code-review with the guide's skip for small watched changes"
 
 [[exception]]
 id = 'readonly-agents-hold-bash'
