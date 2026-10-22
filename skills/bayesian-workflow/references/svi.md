@@ -20,24 +20,27 @@ time on the model, prefer it.
 
 ## Three checks before you trust it
 
-1. **The ELBO trace is flat at the end, and every seed reaches the same value.** `svi.run` returns
-   the loss (the negative ELBO) at each step in `losses`. Run SVI from four seeds. Over the last few
+1. **The ELBO (evidence lower bound) trace is flat at the end, and every seed reaches the same
+   value.** `svi.run` returns the loss (the negative ELBO) at each step in `losses`. Run SVI from four seeds. Over the last few
    hundred steps the loss should not drift, and the seeds' final means should agree within the
    loss's own step-to-step noise. A trace that still falls: raise `num_steps`. A trace that
    oscillates or turns `nan`: lower the learning rate. A seed that settles at a different value found
    another optimum, which more steps will not fix: look at the model or the guide.
-2. **PSIS-LOO for the approximate posterior.** `arviz_stats.loo_approximate_posterior` takes the log
+2. **PSIS-LOO (Pareto-smoothed importance sampling leave-one-out cross-validation) for the
+   approximate posterior.** `arviz_stats.loo_approximate_posterior` takes the log
    joint density `log p(θ, y)` and the guide's log density `log q(θ)` at each guide draw, and it
    corrects LOO for the gap between the guide and the posterior (Magnusson et al. 2019). Read its
    Pareto k values as for ordinary LOO ([references/model-criticism.md](model-criticism.md)). Values
    above `good_k` mean the importance weights are unstable at those observations, so the ELPD there
    is not reliable. A richer guide (`AutoMultivariateNormal`) or NUTS is the next step.
-3. **VSBC (Yao et al. 2018).** `numpyro.infer.calibration.vsbc_diagnostic` simulates data sets from
+3. **VSBC (variational simulation-based calibration, Yao et al. 2018).** `numpyro.infer.calibration.vsbc_diagnostic` simulates data sets from
    the model, refits the guide on each one, and tests whether the guide's posterior puts each
-   parameter's true value at the middle on average. A small KS p-value for a parameter means the
+   parameter's true value at the middle on average. A small KS (Kolmogorov-Smirnov test) p-value for a parameter means the
    guide's estimate of it is biased. `ks_pvalues` is a dict keyed by site name, and a vector site
    gives one p-value per component. The check refits the guide `num_simulations` times, so set
-   `num_svi_steps` to what check 1 showed is enough.
+   `num_svi_steps` to what check 1 showed is enough. VSBC needs a generative model, one that samples
+   its data from the prior predictive when the observed sites are cleared, and it supports
+   continuous latent sites only.
 
 ## Running the checks
 
@@ -52,8 +55,9 @@ from numpyro.optim import Adam
 
 # 1. The ELBO trace: flat at the end, and the same value from every seed.
 guide = AutoNormal(model)
+num_steps = 3000                     # check 3 reuses the step count this check shows is enough
 svi = SVI(model, guide, Adam(0.01), Trace_ELBO())
-runs = [svi.run(jax.random.PRNGKey(seed), 3000, x, y=y, progress_bar=False) for seed in range(4)]
+runs = [svi.run(jax.random.PRNGKey(seed), num_steps, x, y=y, progress_bar=False) for seed in range(4)]
 tails = [np.asarray(run.losses[-500:]) for run in runs]
 print("final loss by seed:", [round(float(t.mean()), 1) for t in tails])
 print("drift over the tail:", [round(float(t[:250].mean() - t[250:].mean()), 2) for t in tails])
@@ -75,7 +79,7 @@ print(loo_svi)                       # Pareto k above loo_svi.good_k: unstable w
 
 # 3. VSBC: is the guide biased, averaged over data the model simulates?
 vsbc = vsbc_diagnostic(jax.random.PRNGKey(20), model, AutoNormal(model), Adam(0.01), Trace_ELBO(), x,
-                       observed_sites=["y_obs"], num_simulations=50, num_svi_steps=2000,
+                       observed_sites=["y_obs"], num_simulations=50, num_svi_steps=num_steps,
                        num_samples=500)
 print(vsbc.ks_pvalues)  # {site: array of p-values, one per component}; a small one marks a biased estimate
 ```

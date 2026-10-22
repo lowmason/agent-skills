@@ -104,7 +104,7 @@ These are battle-tested lessons that save hours of debugging:
 - **`az.from_numpyro` does not compute `log_prior`, and `log_likelihood` is off by default.** Pass `log_likelihood=True` to get the LOO group. For prior sensitivity (`psense_summary`) you additionally need a `log_prior` group, which NumPyro never produces — compute it by tracing the model at each posterior draw and attach it (full `add_log_prior` recipe in [references/sensitivity.md](references/sensitivity.md)).
 - **`plot_energy` needs `extra_fields`.** NumPyro only stores the energy statistic if you ask for it: `mcmc.run(..., extra_fields=("energy", "diverging", "num_steps", "accept_prob"))`. Divergences (`diverging`) are stored by default, but energy is not — without it `az.plot_energy(idata)` raises `AttributeError: ... has no attribute 'energy'`.
 - **Divergences are marked automatically in ArviZ 1.x plots.** `az.plot_pair(idata, var_names=[...])` and `az.plot_parallel(idata)` highlight divergent draws by default (control with `visuals={"divergence": ...}`). The old `divergences=True` kwarg is ArviZ-0.23-only.
-- **Convert to NumPy before `az.loo`.** `idata.map_over_datasets(lambda ds: ds.as_numpy())` (or reload from netCDF). PSIS-LOO does in-place array updates that JAX arrays reject.
+- **Convert to NumPy before `az.loo`.** `idata.map_over_datasets(lambda ds: ds.as_numpy())` (or reload from netCDF). PSIS-LOO (Pareto-smoothed importance sampling leave-one-out cross-validation) does in-place array updates that JAX arrays reject.
 - **Python conditionals don't work inside a NumPyro model** (`if x > 0`). Use `jax.numpy.where` (`jnp.where`) — JAX traces the function, so data-dependent Python branches won't execute.
 - **Heavy-tailed or near-flat priors on scale parameters** worsen funnels in hierarchical models. `HalfCauchy` is *proper* — the classic weakly-informative choice (Gelman 2006), not an improper flat prior — but its heavy tail lets the scale run very large (~6% of its mass sits above 10× the scale, versus effectively none for `HalfNormal`), which stretches the funnel, and its nonzero density at 0 does nothing to exclude the neck. Genuinely improper flat priors are worse still. Use `Gamma(2, ...)`, `HalfNormal`, or `Exponential` — but for the right reason: `HalfNormal`/`Exponential` help by cutting the tail (both actually have *more* mass near 0 than `HalfCauchy`, not less), while `Gamma(2, ...)` is the one that vanishes at 0 and so actively pushes the scale off the neck. If there's no group-level variation to detect, you don't need the hierarchy. (`HalfCauchy` remains correct for horseshoe `tau`/`lam` — see [references/priors.md](references/priors.md).)
 - **Non-centering is one line in NumPyro.** Wrap the model with `numpyro.handlers.reparam(model, config={"a": LocScaleReparam(0)})` instead of hand-coding the offset. The reparameterized site is named `a_decentered` in the trace; the original `a` becomes a deterministic. See [references/hierarchical.md](references/hierarchical.md).
@@ -284,8 +284,9 @@ idata = az.from_dict(
 and `Predictive(model, posterior_samples=...)`, then add them as groups — see model-comparison.md.)
 
 **SVI as the final fit.** When SVI (stochastic variational inference) replaces NUTS rather than
-warm-starting it, check it before you trust it: a flat ELBO trace that every seed reaches, PSIS-LOO
-for the approximation, and VSBC. See [references/svi.md](references/svi.md).
+warm-starting it, check it before you trust it: a flat ELBO (evidence lower bound) trace that every
+seed reaches, PSIS-LOO for the approximation, and VSBC (variational simulation-based calibration).
+See [references/svi.md](references/svi.md).
 
 **Why not nutpie?** The PyMC-ecosystem sampler nutpie compiles **PyMC and Stan** models, not
 NumPyro — there is no NumPyro entry point. With NumPyro you do not need it: native NUTS is
