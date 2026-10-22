@@ -323,7 +323,7 @@ time-series / state-space models, settle **marginalize the latent path vs. sampl
 | High-dimensional / sparse regression | `Normal` / `StudentT` with sparsity prior on coefficients | Regularized Horseshoe or R2-D2 on coeffs | [references/priors.md](references/priors.md) |
 | Hierarchical / multilevel | Varies | See partial pooling + `LocScaleReparam` | [references/hierarchical.md](references/hierarchical.md) |
 | Time series / state space | Latent path via `scan` (non-Gaussian/non-linear) or Kalman marginalization (linear-Gaussian) | Non-centered innovations; stationary init | [references/state-space.md](references/state-space.md) |
-| Gaussian processes | GP prior over the latent function | Kernel hyperpriors (lengthscale, amplitude) | [references/priors.md](references/priors.md) |
+| Gaussian processes | Exact GP (`MultivariateNormal` over the inputs) for small n; HSGP (`numpyro.contrib.hsgp.approximation`) for large n in 1–3 input dims | `InverseGamma` on the length-scale, `HalfNormal` on the amplitude | [references/gaussian-processes.md](references/gaussian-processes.md) |
 
 ## Utility scripts
 

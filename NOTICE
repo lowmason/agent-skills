@@ -69,6 +69,10 @@ bayesian-workflow/
     2019 (JRSS-A / arXiv:1709.01449) are likewise cited by author-year
     only; the skill reproduces no text and bundles no copies of any of
     them.
+    references/gaussian-processes.md cites Solin and Särkkä (2020) and
+    Riutort-Mayol et al. (2023) for the Hilbert-space approximation, by
+    author-year only and in original wording; its examples are original
+    and were run against the snippet gate's pinned NumPyro.
 
 recommend-causal-design/ selectively adapts the planning workflows of
 Robson Tigre's causal-planner in everyday-causal-skills (MIT, Copyright (c)

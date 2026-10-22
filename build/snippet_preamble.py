@@ -12,12 +12,12 @@ Sized to be fast: 1 chain, 100 warmup / 200 draws, purely so `mcmc` and
 `idata` exist with realistic structure -- it is NOT a model worth
 interpreting. 200 draws is chosen to keep LOO's Pareto-k estimates sane.
 
-Measured against the skill on 2026-10-19 (re-measure whenever this file or
-the skill changes; a stale coverage claim is worse than none): 79 fenced
-python blocks, all 79 parse. 4 are norun-exempt and 40 are advisory --
+Measured against the skill on 2026-10-21 (re-measure whenever this file or
+the skill changes; a stale coverage claim is worse than none): 82 fenced
+python blocks, all 82 parse. 4 are norun-exempt and 40 are advisory --
 18 name-incomplete, 9 naming variables outside the fixtures, 7 model-body
-fragments, 6 elided with `...`. That leaves 35 blocks that --run executes,
-5 of them through the `comparison` fixture. 3 of the 35 are def-only: they
+fragments, 6 elided with `...`. That leaves 38 blocks that --run executes,
+5 of them through the `comparison` fixture. 3 of the 38 are def-only: they
 define functions they never call, so they show only that the definitions
 compile (diagnostics.md's run_diagnostics, hierarchical.md's centered,
 model-criticism.md's expected_calibration_error and ranked_probability_score).
