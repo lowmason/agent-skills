@@ -27,6 +27,9 @@ import arviz as az
 # uncompared, the marker says the ranking covers the ELPD-compared rows only.
 BEST = '**best**'
 QUALIFIED_BEST = '**best among ELPD-compared variants**'
+MARKERS = (BEST, QUALIFIED_BEST)
+BLOCK_BEGIN = '<!-- COMPARISON:BEGIN -->'
+BLOCK_END = '<!-- COMPARISON:END -->'
 # The sample dimensions of a log-likelihood variable; every other dimension is an observation.
 SAMPLE_DIMS = ('chain', 'draw')
 
@@ -251,19 +254,28 @@ def render_comparison_block(ranking: list[dict], not_compared: list[str]) -> str
     if not_compared:
         table += (f'\n\nNot compared: {", ".join(not_compared)}. '
                   'The best marker covers the ELPD-compared variants only.')
-    return f'<!-- COMPARISON:BEGIN -->\n{table}\n<!-- COMPARISON:END -->'
+    return f'{BLOCK_BEGIN}\n{table}\n{BLOCK_END}'
 
 
-_BLOCK_RE = re.compile(r'<!-- COMPARISON:BEGIN -->.*?<!-- COMPARISON:END -->', re.S)
+_BLOCK_RE = re.compile(f'{re.escape(BLOCK_BEGIN)}.*?{re.escape(BLOCK_END)}', re.S)
 
 
 def _cells(line: str) -> list[str]:
-    '''The row's cells. A pipe splits cells only when no backslash escapes it.'''
-    return [c.strip() for c in re.split(r'(?<!\\)\|', line.strip().strip('|'))]
+    '''The row's cells. A pipe splits cells only when no backslash escapes it.
+
+    Exactly one outer pipe comes off each end, so an empty first cell and an
+    escaped pipe that ends the last cell survive.
+    '''
+    row = line.strip()
+    if row.startswith('|'):
+        row = row[1:]
+    if row.endswith('|') and not row.endswith('\\|'):
+        row = row[:-1]
+    return [c.strip() for c in re.split(r'(?<!\\)\|', row)]
 
 
-def _variants_table(lines: list[str]) -> tuple[list[str], list[int]] | None:
-    '''The Variants table's header cells and the line numbers of its data rows.
+def _variants_table(lines: list[str]) -> tuple[int, list[str], list[int]] | None:
+    '''The Variants table's header line number, header cells and data-row line numbers.
 
     It is the first table outside the COMPARISON block whose header starts with
     an id column and has a status column; None when the ledger has none.
@@ -272,9 +284,9 @@ def _variants_table(lines: list[str]) -> tuple[list[str], list[int]] | None:
     i = 0
     while i < len(lines):
         stripped = lines[i].strip()
-        if stripped == '<!-- COMPARISON:BEGIN -->':
+        if stripped == BLOCK_BEGIN:
             in_block = True
-        elif stripped == '<!-- COMPARISON:END -->':
+        elif stripped == BLOCK_END:
             in_block = False
         elif not in_block and stripped.startswith('|'):
             start = i
@@ -282,7 +294,7 @@ def _variants_table(lines: list[str]) -> tuple[list[str], list[int]] | None:
                 i += 1
             names = [c.lower() for c in _cells(lines[start])]
             if names[0].startswith('id') and 'status' in names:
-                return _cells(lines[start]), list(range(start + 2, i))
+                return start, _cells(lines[start]), list(range(start + 2, i))
             continue
         i += 1
     return None
@@ -294,7 +306,34 @@ def ledger_ids(text: str) -> list[str] | None:
     table = _variants_table(lines)
     if table is None:
         return None
-    return [_cells(lines[i])[0] for i in table[1]]
+    return [_cells(lines[i])[0] for i in table[2]]
+
+
+def ledger_problem(ledger_path: Path) -> str | None:
+    '''Why the comparator cannot update this ledger safely; None when it can.'''
+    if not ledger_path.is_file():
+        return f'no ledger file at {ledger_path}; check the --ledger path.'
+    text = ledger_path.read_text()
+    begins, ends = text.count(BLOCK_BEGIN), text.count(BLOCK_END)
+    if (begins, ends) == (0, 0):
+        return None
+    if (begins, ends) != (1, 1) or text.index(BLOCK_BEGIN) > text.index(BLOCK_END):
+        return (f'{ledger_path} holds {begins} {BLOCK_BEGIN} and {ends} {BLOCK_END} '
+                'markers. The comparator rewrites the text from a BEGIN marker to the '
+                'next END marker, so an unpaired or repeated marker would overwrite the '
+                "ledger's prose. Leave one pair of markers, or none, and rerun.")
+    return None
+
+
+def _wide_row_note(cells: list[str], width: int, top_id: str) -> str:
+    note = (f'note: ledger row {cells[0]} has {len(cells)} cells against {width} in the '
+            'header, so its cells do not line up with the header and the row was left '
+            'unchanged. Escape a literal pipe in a cell as \\|.')
+    if cells[0] == top_id:
+        note += ' It is the top-ranked variant, so no row carries the best marker.'
+    if any(c in MARKERS for c in cells):
+        note += ' It still holds a best marker, so the ledger can show two.'
+    return note
 
 
 def update_ledger(ledger_path: Path, block: str, ranking: list[dict],
@@ -307,7 +346,8 @@ def update_ledger(ledger_path: Path, block: str, ranking: list[dict],
     its cell padding is normalized — this is intentional. An unranked row keeps
     its cells, except that a stale best marker returns to candidate. A row with
     more cells than the header does not line up with it, so it is left as it is
-    and a note names it.
+    and a note names it. Notes also name ranked variants that have no row, and a
+    table with none of the metric columns.
     '''
     text = ledger_path.read_text()
     if _BLOCK_RE.search(text):
@@ -317,31 +357,43 @@ def update_ledger(ledger_path: Path, block: str, ranking: list[dict],
     lines = text.splitlines()
     table = _variants_table(lines)
     if table is not None:
-        header, rows = table
+        _, header, rows = table
         status = [c.lower() for c in header].index('status')
         ranked = {r['id']: r for r in ranking}
+        top_id = ranking[0]['id']
         marker = QUALIFIED_BEST if not_compared else BEST
+        columns = list(metric_cells(ranking[0]))
+        if not set(columns) & set(header):
+            print(f'note: the Variants table has none of the metric columns '
+                  f'{", ".join(columns)}. Names match exactly, case and symbols '
+                  'included, so no metric cell was written.', file=sys.stderr)
+        table_ids = set()
         for i in rows:
             cells = _cells(lines[i])
+            table_ids.add(cells[0])
             if len(cells) > len(header):
-                print(f'note: ledger row {cells[0]} has {len(cells)} cells against '
-                      f'{len(header)} in the header, so its cells do not line up with '
-                      'the header and the row was left unchanged. Escape a literal '
-                      'pipe in a cell as \\|.', file=sys.stderr)
+                print(_wide_row_note(cells, len(header), top_id), file=sys.stderr)
                 continue
             cells += [''] * (len(header) - len(cells))
             entry = ranked.get(cells[0])
-            if entry is None and cells[status] not in (BEST, QUALIFIED_BEST):
+            if entry is None and cells[status] not in MARKERS:
                 continue
-            if cells[status] in (BEST, QUALIFIED_BEST):
+            if cells[status] in MARKERS:
                 cells[status] = 'candidate'
             if entry is not None:
                 for column, value in metric_cells(entry).items():
                     if column in header:
                         cells[header.index(column)] = value
-                if entry['id'] == ranking[0]['id']:
+                if entry['id'] == top_id:
                     cells[status] = marker
             lines[i] = '| ' + ' | '.join(cells) + ' |'
+        missing = [r['id'] for r in ranking if r['id'] not in table_ids]
+        if missing:
+            consequence = (' The top-ranked variant is among them, so no row carries '
+                           'the best marker.' if top_id in missing else '')
+            print(f'note: ranked variants with no Variants-table row: '
+                  f'{", ".join(missing)}. Add a row for each to record it.{consequence}',
+                  file=sys.stderr)
     ledger_path.write_text('\n'.join(lines) + ('\n' if text.endswith('\n') else ''))
 
 
@@ -390,6 +442,10 @@ def main(argv=None):
                     help='write comparison.json here')
     args = ap.parse_args(argv)
 
+    problem = ledger_problem(args.ledger) if args.ledger else None
+    if problem:
+        print(f'error: {problem}', file=sys.stderr)
+        return 1
     try:
         ranking, comparison = compare(args.analysis_dir, args.folders)
     except ValueError as exc:

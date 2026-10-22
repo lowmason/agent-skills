@@ -492,3 +492,148 @@ def test_a_row_with_more_cells_than_the_header_is_left_alone(analysis_dir, tmp_p
     notes = [ln for ln in r.stderr.splitlines()
              if ln.startswith('note: ') and 'do not line up' in ln]
     assert len(notes) == 1 and 'm-intercept' in notes[0]
+
+
+# --- Hardening after plan 59's final review (plan 65 Task 1) ---
+
+def _elpd_entry(variant_id, elpd, **extra):
+    '''A ranked ELPD-mode entry with the keys update_ledger and metric_cells read.'''
+    return {'id': variant_id, 'elpd': elpd, 'se': 10.0, 'elpd_diff': 0.0, 'dse': 0.0,
+            'weight': 0.5, 'warning': False, 'diag_diff': '', 'diag_elpd': '',
+            'max_rhat': 1.002, 'min_ess': 400.0, 'divergences': 0, 'ppc': 'fair',
+            'psense': 'ok', **extra}
+
+
+RANKED = [_elpd_entry('m-full', -280.4),
+          _elpd_entry('m-intercept', -391.7, elpd_diff=-111.3, max_rhat=None,
+                      divergences=None)]
+
+
+def _stamp(ledger, ranking, not_compared=()):
+    block = compare_experiments.render_comparison_block(ranking, list(not_compared))
+    compare_experiments.update_ledger(ledger, block, ranking, list(not_compared))
+    return ledger.read_text()
+
+
+def _table_cells(text, variant_id):
+    '''A Variants-table row's cells, read through the comparator's own parser.'''
+    lines = text.splitlines()
+    _, _, rows = compare_experiments._variants_table(lines)
+    return next(cells for cells in (compare_experiments._cells(lines[i]) for i in rows)
+                if cells[0] == variant_id)
+
+
+def test_cells_keep_an_empty_first_cell():
+    assert compare_experiments._cells('|| b |') == ['', 'b']
+
+
+def test_cells_keep_an_escaped_pipe_that_ends_the_last_cell():
+    assert compare_experiments._cells('| m | x \\||') == ['m', 'x \\|']
+
+
+def test_winner_row_gets_its_cells_and_the_marker(tmp_path):
+    ledger = tmp_path / 'experiments.md'
+    ledger.write_text(_ledger_with('m-full', 'm-intercept'))
+    cells = _table_cells(_stamp(ledger, RANKED), 'm-full')
+    assert cells[4:] == ['-280.4', '0.0', '1.002', '0', 'fair', 'ok', '**best**']
+
+
+def test_missing_diagnostics_render_as_blank_cells(tmp_path):
+    ledger = tmp_path / 'experiments.md'
+    ledger.write_text(_ledger_with('m-full', 'm-intercept'))
+    cells = _table_cells(_stamp(ledger, RANKED), 'm-intercept')
+    assert cells[4:8] == ['-391.7', '-111.3', '', '']
+
+
+def test_an_empty_observation_dimension_is_refused():
+    import types
+
+    import xarray as xr
+    ll = xr.Dataset({'y': (('chain', 'draw', 'obs'), np.zeros((2, 10, 0)))})
+    idata = types.SimpleNamespace(log_likelihood=ll)
+    with pytest.raises(ValueError, match='no observation dimension'):
+        compare_experiments.pointwise_count(idata, 'm-empty')
+
+
+def test_a_short_row_is_padded_and_filled(tmp_path):
+    text = _ledger_with('m-full', 'm-intercept')
+    ledger = tmp_path / 'experiments.md'
+    ledger.write_text(text.replace(_row(text, 'm-intercept'), '| m-intercept | m-full | drop slope |'))
+    cells = _table_cells(_stamp(ledger, RANKED), 'm-intercept')
+    assert len(cells) == 11
+    assert (cells[2], cells[4], cells[-1]) == ('drop slope', '-391.7', '')   # padded, not invented
+
+
+def test_a_header_without_status_is_not_the_variants_table():
+    assert compare_experiments.ledger_ids('| id | ELPD |\n|---|---|\n| m-full | |\n') is None
+
+
+def test_a_wide_top_row_note_says_no_row_carries_the_marker(tmp_path, capsys):
+    text = _ledger_with('m-full', 'm-intercept')
+    row = _row(text, 'm-full')
+    wide = row.replace('| h |', '| h | x |')
+    ledger = tmp_path / 'experiments.md'
+    ledger.write_text(text.replace(row, wide))
+    out = _stamp(ledger, RANKED)
+    notes = [ln for ln in capsys.readouterr().err.splitlines() if 'do not line up' in ln]
+    assert len(notes) == 1 and 'no row carries the best marker' in notes[0]
+    assert _row(out, 'm-full') == wide
+    assert '**best' not in out
+
+
+def test_a_wide_row_holding_a_stale_marker_is_named(tmp_path, capsys):
+    text = _ledger_with('m-full', 'm-intercept')
+    row = _row(text, 'm-intercept')
+    stale = row.replace('| h |', '| h | x |').replace('| candidate |', '| **best** |')
+    ledger = tmp_path / 'experiments.md'
+    ledger.write_text(text.replace(row, stale))
+    out = _stamp(ledger, RANKED)
+    notes = [ln for ln in capsys.readouterr().err.splitlines() if 'do not line up' in ln]
+    assert len(notes) == 1 and 'still holds a best marker' in notes[0]
+    assert out.count('**best**') == 2                 # the note is the remedy, not a rewrite
+
+
+def test_ranked_variants_without_a_row_are_named(tmp_path, capsys):
+    ledger = tmp_path / 'experiments.md'
+    ledger.write_text(_ledger_with('m-intercept'))
+    out = _stamp(ledger, RANKED)
+    err = capsys.readouterr().err
+    assert 'ranked variants with no Variants-table row: m-full.' in err
+    assert 'no row carries the best marker' in err
+    assert '**best' not in out
+
+
+def test_a_table_with_no_matching_metric_column_is_noted(tmp_path, capsys):
+    ledger = tmp_path / 'experiments.md'
+    ledger.write_text('| id | elpd | status |\n|---|---|---|\n'
+                      '| m-full | | candidate |\n| m-intercept | | candidate |\n')
+    _stamp(ledger, RANKED)
+    assert capsys.readouterr().err.count('none of the metric columns') == 1
+
+
+def test_a_missing_ledger_exits_through_error_before_any_output(tmp_path, capsys):
+    out = tmp_path / 'comparison.json'
+    code = compare_experiments.main(['--analysis-dir', str(tmp_path), '--ledger',
+                                     str(tmp_path / 'typo.md'), '--output', str(out)])
+    err = capsys.readouterr().err
+    assert code == 1 and err.startswith('error: ') and 'typo.md' in err
+    assert not out.exists()
+
+
+@pytest.mark.parametrize('markers', [
+    '<!-- COMPARISON:BEGIN -->\nstale\n',
+    '<!-- COMPARISON:END -->\nstale\n<!-- COMPARISON:BEGIN -->\n',
+    '<!-- COMPARISON:BEGIN -->\na\n<!-- COMPARISON:END -->\n' * 2,
+])
+def test_unpaired_or_repeated_markers_are_refused_before_anything_is_written(
+        tmp_path, capsys, markers):
+    text = _ledger_with('m-full', 'm-intercept') + markers
+    ledger = tmp_path / 'experiments.md'
+    ledger.write_text(text)
+    out = tmp_path / 'comparison.json'
+    code = compare_experiments.main(['--analysis-dir', str(tmp_path), '--ledger', str(ledger),
+                                     '--output', str(out)])
+    err = capsys.readouterr().err
+    assert code == 1 and err.startswith('error: ') and 'one pair of markers' in err
+    assert ledger.read_text() == text
+    assert not out.exists()
