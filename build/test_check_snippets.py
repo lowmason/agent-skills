@@ -560,3 +560,30 @@ def test_the_comparison_fixtures_helpers_are_gone_at_run_time(tmp_path):
                           capture_output=True, text=True, timeout=300,
                           env={**os.environ, 'MPLBACKEND': 'Agg'})
     assert proc.returncode == 0, proc.stderr[-2000:]
+
+
+TIME_SERIES_BLOCKS = (
+    ('references/model-comparison.md', 'lfo = azs.lfo_cv(idata_ts'),
+    ('references/model-comparison.md', 'kf = azs.loo_kfold(idata_ts'),
+)
+
+
+def test_the_time_series_fixture_copies_the_doc_setup_block():
+    '''The time_series fixture embeds model-comparison.md's AR(1) setup block
+    verbatim, so the LFO and K-fold blocks run against the documented wrapper.
+    The setup block also runs on its own, without the fixture.'''
+    from snippet_preamble import NAMED_FIXTURES
+    block = _skill_block('references/model-comparison.md', 'class AR1Wrapper')
+    assert block.code.strip() == NAMED_FIXTURES['time_series'].code.strip(), (
+        'snippet_preamble.TIME_SERIES_FIXTURE drifted from model-comparison.md')
+    assert check_snippets.fixture_name(block) is None
+    assert check_snippets.runnable(block), check_snippets._unrunnable_reason(block)
+
+
+def test_the_time_series_blocks_select_the_time_series_fixture():
+    '''A block the gate cannot admit only gets a WARN, so pin that both route
+    blocks are admitted through the fixture and --run executes them.'''
+    for relpath, needle in TIME_SERIES_BLOCKS:
+        block = _skill_block(relpath, needle)
+        assert check_snippets.fixture_name(block) == 'time_series', needle
+        assert check_snippets.runnable(block), check_snippets._unrunnable_reason(block)

@@ -476,6 +476,9 @@ HUMAN_DOCS = {'README.md', 'INSTALL.md'}
 # without the target installed. An entry excuses its whole edge, so a hard
 # reference added later between the same two skills passes unnoticed.
 SOFT_REFERENCES = {
+  # Points a forecast ranking at track's score-mode reference; the time-series
+  # section's snippets run without track installed.
+  ('skill:bayesian-workflow', 'skill:track-model-experiments'),
   # Says where the plan-completion protocol retires specs; never runs it.
   ('skill:brainstorming', 'skill:writing-plans'),
   # Names the routing header its input spec carries; never reads the file.
