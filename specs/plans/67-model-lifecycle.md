@@ -35,9 +35,11 @@
 
 ## Decisions
 
-None.
+- **D1** (owner, plan review, 2026-10-22): Leave plan 64's survival row for rpm's knob table out of this plan. It stays in `specs/deferred_items.md` section `64-bayesian-rpm-routing`. Applied in: Task 4.
+- **D2** (owner, plan review, 2026-10-22): Accept defaults 1-11 and 13 below as the plan states them. Applied in: Task 2 (defaults 1-5), Tasks 1-2 (default 7), Task 1 (default 8), Task 3 (default 9), Task 4 (defaults 6 and 13), Task 5 (defaults 10 and 11).
+- **D3** (owner, plan review, 2026-10-22): Default 12 stands at 4 of 5 repetitions, not 5 of 5, for both `V2-real` and `V2-noise`. Applied in: Task 3.
 
-**Defaults this plan settles (for the owner's review at plan review):**
+**Defaults this plan settles (settled at plan review by D2 and D3):**
 
 1. **R7's soft reference already exists.** The spec says Stage 2 "adds the entry", but the pair `('skill:tune-hyperparameters', 'skill:track-model-experiments')` is already in `SOFT_REFERENCES`, and the drift test keys on skill pairs. Task 2 rewrites the entry's reason and adds no entry. This follows the test, as R22's clause allows ("If the drift test classifies a path otherwise, the plan follows the test and records why").
 2. **R7's pointer is a full path.** tune writes `track-model-experiments/references/predictive-evaluation.md`. The scanner matches it, so the tune → track pair stays referenced even if a later edit drops Graduation's `experiments.md` mention.
@@ -53,7 +55,7 @@ None.
 12. **V2's bar.** Spec V2 says the agent "must" call the difference real. This plan reads that as at least 4 of 5 reps, after plan 59's bars, and adds the same bar for the `V2-noise` fixture. A stricter reading is 5 of 5.
 13. **Gate A in a worktree.** `verify_citations.py` reads `build/.scratch/` beside itself, and that directory exists only in the main checkout. Task 4 copies it into the worktree (a real copy, never a symlink) and never commits it.
 
-**Open question for plan review:** plan 64 deferred "Add a survival row to rpm's per-family knob table" (`specs/deferred_items.md` section `64-bayesian-rpm-routing`), because R12a owns that table. That row is outside the Stage 2 Spec refs, so this plan leaves it out by default. Fold it into Task 4?
+**Open question for plan review (settled by D1):** plan 64 deferred "Add a survival row to rpm's per-family knob table" (`specs/deferred_items.md` section `64-bayesian-rpm-routing`), because R12a owns that table. That row is outside the Stage 2 Spec refs, so this plan leaves it out by default. Fold it into Task 4?
 
 ---
 
