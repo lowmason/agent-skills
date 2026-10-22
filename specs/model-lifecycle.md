@@ -58,8 +58,6 @@ also takes two open items from section `59-model-skill-comparator-and-cv-fixes`:
 
 ## Staging
 
-| Stage | Covers | Description micro-test | Lands after |
-|---|---|---|---|
 The stages land in the order B, A, C. The letters follow the skill order of the audit, not
 the landing order.
 
