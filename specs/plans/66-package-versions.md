@@ -80,8 +80,8 @@ The design still holds. The root `uv.toml` still reaches script headers, `skills
 - **Default:** Task 13 rewrites the two `CLAUDE.md` places to point at `build/versions.toml`. R6.8 handles the rules file. `README.md` stays as it is, because the `check` lint reads `skills/` only. You change the README by hand when the dev Python changes.
 - **Alternative:** also point the README at the file.
 
-**Q8. What "retire" means for `specs/verification/32-jax-cpu.in` and `.txt` (Task 12).** Four dated records link to these files and quote their SHA-256 sums. Deleting the files breaks the links.
-- **Default:** `git mv` both files to a new `specs/verification/completed/` directory (the repo's convention for retired files). Content stays byte-identical, so the sums stay valid. Task 12 re-points the record links.
+**Q8. What "retire" means for `specs/verification/32-jax-cpu.in` and `.txt` (Task 12).** Four dated records quote their SHA-256 sums, and two of them (`32-deep-learning.md` and `32-jax-integration.md`) link to the files with five links. Deleting the files breaks those links.
+- **Default:** `git mv` both files to a new `specs/verification/completed/` directory (the repo's convention for retired files). Content stays byte-identical, so the sums stay valid. Task 12 re-points the five links.
 - **Alternative:** `git rm` both files and turn the four links into plain text.
 
 ## Defaults for your review
@@ -3296,10 +3296,10 @@ Expected: PASS, +49 tests (the `test_versions_check.py` count).
 - [ ] **Step 6: Run the lint on the real tree and keep the output.** It is the task list for Tasks 11 and 13.
 
 ```bash
-uv run python build/versions.py check | tee /tmp/66-first-run.txt | tail -3; grep -c "spells an interpreter" /tmp/66-first-run.txt; grep -v "spells an interpreter" /tmp/66-first-run.txt
+uv run python build/versions.py check > /tmp/66-first-run.txt; echo "check exit $?"; grep -c "spells an interpreter" /tmp/66-first-run.txt; grep -v "spells an interpreter" /tmp/66-first-run.txt
 ```
 
-Expected: exit 1. About 80 interpreter-literal lines in about 41 files (Task 13 removes them) and the stale citations (Task 11 handles them). The draft run on 2026-10-21 listed these citations. The values depend on the day of the bump. `model-comparison.md` (arviz-stats). `model-criticism.md` (arviz-plots). `frameworks.md` (JAXlib, Orbax checkpoint, NumPy, Python 3.13.8). `explore-data/SKILL.md` (Polars 1.38). Five lines that cite Polars 1.42 in `recommend-visualization`. No floors finding and no sync finding. If other findings appear, read each one before going on.
+Expected: `check exit 1`. About 80 interpreter-literal lines in about 41 files (Task 13 removes them) and the stale citations (Task 11 handles them). The draft run on 2026-10-21 listed these citations. The values depend on the day of the bump. `model-comparison.md` (arviz-stats). `model-criticism.md` (arviz-plots). `frameworks.md` (JAXlib, Orbax checkpoint, NumPy, Python 3.13.8). `explore-data/SKILL.md` (Polars 1.38). Five lines that cite Polars 1.42 in `recommend-visualization`. No floors finding and no sync finding. If other findings appear, read each one before going on.
 
 - [ ] **Step 7: Commit.** The lint is not wired yet, so the commit lints pass.
 
@@ -3348,10 +3348,10 @@ Expected: a line such as `polars pin 2.0.0 PyPI latest 2.0.0`, then no error. A 
 - [ ] **Step 3: Run `verify`.** It takes several minutes and it needs the network. Run it in the background and keep the output.
 
 ```bash
-uv run python build/versions.py verify 2>&1 | tee /tmp/66-verify.txt
+uv run python build/versions.py verify > /tmp/66-verify.txt 2>&1; echo "verify exit $?"; tail -20 /tmp/66-verify.txt
 ```
 
-Expected: four `== <step>` headers (`tier 2 (--api)`, `tier 3 (--run)`, `jax cpu examples`, `suites`) and the last line `verify passed`, exit 0.
+Expected: `verify exit 0`. The file holds four `== <step>` headers (`tier 2 (--api)`, `tier 3 (--run)`, `jax cpu examples`, `suites`) and the last line `verify passed`.
 
 `verify` runs every step even when one fails. On failure, the last line is `verify failed: <labels>`.
 - If only `jax cpu examples` failed, do Step 4.
@@ -3417,10 +3417,10 @@ If plan 64 or plan 65 rewrote one of these lines, the finding may have gone. Ste
 - [ ] **Step 2: List the findings.**
 
 ```bash
-uv run python build/versions.py check | tee /tmp/66-check.txt | grep -v 'spells an interpreter'
+uv run python build/versions.py check > /tmp/66-check.txt; echo "check exit $?"; grep -v 'spells an interpreter' /tmp/66-check.txt
 ```
 
-Expected: exit 1 from `check` and findings only of these kinds. The first four rows depend on the day's pins, so the versions in the messages differ.
+Expected: `check exit 1` and findings only of these kinds. The first four rows depend on the day's pins, so the versions in the messages differ.
 
 | Finding | Step |
 |---|---|
@@ -3583,7 +3583,7 @@ Expected on 0.22.0: three lines (`hmc.py` about `num_steps` and `trajectory_leng
     'Polars 1.42': 'verified on Polars 1.42, not re-checked on <pin>; plan 66 deferred item',
 ```
 
-Append to `specs/deferred_items.md`, in the section of Task 10 (same heading, today's date):
+Append to `specs/deferred_items.md`, in the section `## 66-package-versions — <today, YYYY-MM-DD>`. Create that heading if Task 10 did not:
 
 ```markdown
 - [ ] Re-check the recommend-visualization library claims on the pinned Polars (plan 66, Task 11, deferred): the five `Polars 1.42` citations under `skills/recommend-visualization/` were verified on 1.42. Re-running them needs real charts in Altair, matplotlib and plotly. Size: plan. Done when: each claim is re-run on the pinned versions, the five citations name them, and `HISTORICAL` in `build/versions_check.py` has no `Polars 1.42` entry.
@@ -3649,7 +3649,7 @@ PYEOF
 grep -n 'completed/32-jax-cpu' specs/verification/*.md
 ```
 
-Expected: four lines that hold five links (on 2026-10-21: lines 60 and 98 in `32-deep-learning.md`, lines 143 and 145 in `32-jax-integration.md`). The records `32-optimize-jax.md` and `32-evaluate-deep-learning.md` name the files in plain text, as history. Leave them.
+Expected: four lines that hold five links (on 2026-10-21: lines 60 and 98 in `32-deep-learning.md`, lines 143 and 145 in `32-jax-integration.md`). The JAX command in `CLAUDE.md` still names the old path after this step. Task 13 Step 4 rewrites it to the runner form, because that edit was validated against the text after the Task 13 sweep. The records `32-optimize-jax.md` and `32-evaluate-deep-learning.md` name the files in plain text, as history. Leave them.
 
 - [ ] **Step 3: Check that no link broke and the bytes did not change.**
 
@@ -3662,9 +3662,8 @@ from pathlib import Path
 base = Path('specs/verification')
 for record in ('32-deep-learning.md', '32-jax-integration.md'):
     for target in re.findall(r'\]\(([^)#]+)\)', (base / record).read_text()):
-        if target.startswith('http'):
-            continue
-        assert (base / target).exists(), f'{record}: broken link {target}'
+        if '32-jax-cpu' in target:  # other links in these records are line-anchored and not files; leave them
+            assert (base / target).exists(), f'{record}: broken link {target}'
 sums = {'32-jax-cpu.in': 'b464a7e53420e93a7d11dd209ed47238674d951f64b74292a53faa1c4f1b7ccd',
         '32-jax-cpu.txt': 'c8bd73640ca1d2cd1f86a211554e9ceac244054d629370a931738a8b5b10258c'}
 for name, expected in sums.items():
@@ -3673,7 +3672,7 @@ print('links resolve and both SHA-256 sums match the records')
 PYEOF
 ```
 
-Expected: the printed line. `git status --short specs/verification` must show two renames (`R`) and two modified records.
+Expected: the printed line. `git status --short specs/verification` must show two renames (`R`) and two modified records. The records hold other links of the form `../../skills/...:58` that were never files. The check leaves them alone on purpose.
 
 - [ ] **Step 4: Point the rules file at the file (R6.8).** In `rules/clean-code-python.md`, replace:
 
@@ -3718,10 +3717,10 @@ uv reads `.python-version` from the repo root, so `uv run python ...` already gi
 - [ ] **Step 1: Watch the lint fail (RED).**
 
 ```bash
-uv run python build/versions.py check | grep -c 'spells an interpreter'; uv run python build/versions.py check | grep -vc 'spells an interpreter'
+uv run python build/versions.py check > /tmp/66-red.txt; echo "check exit $?"; grep -c 'spells an interpreter' /tmp/66-red.txt; grep -vc 'spells an interpreter' /tmp/66-red.txt
 ```
 
-Expected: about 80 for the first count and 0 for the second (Task 11 settled the citations). Exit 1 from `check`.
+Expected: `check exit 1`, then about 80 for the first count and 0 for the second (Task 11 settled the citations).
 
 - [ ] **Step 2: Write and run the sweep.** It removes the flag text from every live file that the lint reads and prints the changed files. The sweep needs no `.py` test, because Step 5 runs the lint over the result and the lint is the test.
 
@@ -3754,6 +3753,20 @@ uv run python /tmp/66-sweep.py
 ```
 
 Expected: about 41 file names and `41 files changed` (the count can differ by a few). Then `git diff --stat | tail -1`. A line in the diff must differ from its old text only by the removed `--python 3.13`.
+
+- [ ] **Step 2b: Look for literals in list form.** The sweep and the lint match `--python 3.13` as one piece of text. A test can spell it as list items, such as `'--python', '3.13'`.
+
+```bash
+grep -rn "'--python', '3\." build hooks skills .claude/skills
+```
+
+Expected on 2026-10-21, after Task 7: hits in four files. All of them are test input on purpose, so leave them.
+- `build/test_versions.py`: six lines that use the fake dev Python of the test's own versions file.
+- `build/test_run_suites.py`: two lines for the `--python 3.99` override test.
+- `build/test_check_conformance.py`: a sample command for a command parser.
+- `hooks/test_readonly_agent_guard.py`: a command that the guard must judge.
+
+The grep also finds `build/cc_guide/test_notice_sh.py`, which Step 3 rewrites. Task 7 already rewrote the other two list-form hits in `build/test_run_suites.py` (R7). The sweep also changed the sample command text in `build/test_check_frontmatter.py` (R7 names its line 434). That test checks only the runner word, so it keeps passing. If the grep finds another hit, decide the same way. A test input stays. A command that a person runs loses the flag.
 
 - [ ] **Step 3: `notice.sh` runs outside the repo, so it names the project directory.** `cc_guide/notice.sh` can run from any directory. Without the flag, uv would read `.python-version` from the wrong directory. Apply these two edits.
 
@@ -4136,7 +4149,7 @@ Expected: PASS, +4 tests.
 - [ ] **Step 5: Run `drift` by hand once.** It needs the network and takes minutes (two passes of the re-verify set).
 
 ```bash
-uv run python build/versions.py drift | tee /tmp/66-drift.txt; echo "drift exit ${PIPESTATUS[0]}"
+uv run python build/versions.py drift > /tmp/66-drift.txt; echo "drift exit $?"; head -40 /tmp/66-drift.txt
 ```
 
 Expected: a report with one row for each `[packages]` and `[cited]` entry, in two passes, and one result for each gate and pass. Exit 0, 1 or 2 are all valid outcomes (R3.5). A red gate here is information for the owner, not a failure of this task. Exit 2 means the network or the resolve failed. Record the exit code and the first lines of the report in your hand-over.
@@ -4197,11 +4210,20 @@ Run by the plan's author on 2026-10-21, after the last edit.
 
 | Spec item | Task |
 |---|---|
-| R1 versions file, schema, `stack()`, overrides | 2, 3, 4 |
+| R1.1 the file and its tables | 2 (schema), 4 (values) |
+| R1.2, R1.3 table membership | 4 (Q2) |
+| R1.4 overrides | 2 (`stack`), 10 (the JAX case) |
+| R1.5 no script floors in the file | Global Constraints, 9 (the floors rule) |
 | R2.1 synced outputs (`.python-version`, `uv.toml`, `skills/uv.toml`) | 2, 4 |
-| R2.3 readers (`check_snippets.py`, `run_suites.py`, `suites.toml`) | 6, 7 |
+| R2.2 the values that build scripts read (`dev_python`, `cutoff`, `stack`) | 2 |
+| R2.3 readers (`check_snippets.py`, `run_suites.py`, `suites.toml`, `notice.sh`, the JAX command) | 6, 7, 13 |
 | R2.4 no literals in documented commands | 13 |
-| R3 subcommands `sync`, `run`, `verify`, `bump`, `drift`, `check` and the exit codes | 2, 3, 5, 8, 9 |
+| R3.1 subcommands `sync`, `run`, `verify`, `bump`, `drift`, `check` | 2, 3, 5, 8, 9 |
+| R3.2 `bump` leaves `[cited]` alone | 3 |
+| R3.3 `--pin` | 5, 7, 8 |
+| R3.4 the bump steps | 10, 11, 13 (the `CLAUDE.md` block) |
+| R3.5 exit codes | 3, 5, 8 |
+| R3.6 errors name the cause | 2, 3, 5 |
 | R4 the `check` lint (four rules, `HISTORICAL`) | 9, 11, 13 |
 | R5.1 tenth commit lint | 14 |
 | R5.2 `lints.yml` takes `.python-version` | 14, 15 |
@@ -4209,8 +4231,9 @@ Run by the plan's author on 2026-10-21, after the last edit.
 | R6.1 re-probe | 1 |
 | R6.2, R6.3, R6.4 bump, verify, JAX, Polars | 4, 10 |
 | R6.5 stale citations | 11 |
-| R6.6, R6.7, R6.8 | 12 |
-| R7 tests (units, `check` positive controls, readers, exit codes) | 2, 3, 5, 7, 8, 9, 14, 15 |
+| R6.6, R6.8 | 12 |
+| R6.7 retire the lock files, point readers at the file | 12 (move), 13 (the `CLAUDE.md` reader) |
+| R7 tests (units, `check` positive controls, readers, exit codes, no `3.13` literal in tests) | 2, 3, 5, 7, 8, 9, 13, 14, 15 |
 
 **Placeholder scan.** The only angle-bracket values are execution-time values that cannot be known now (today's date, the day's pins, the first error line of a failing example). Each is named where it is used.
 
