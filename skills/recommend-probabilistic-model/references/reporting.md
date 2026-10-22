@@ -53,6 +53,7 @@ For a Bayesian recommendation, carry all four so the next skill starts cold:
 ## 8. Next steps / handoff
 - **Runs next:** <bayesian-workflow | sklearn/other | drill-down>
 - **Bracketing skills:** <explore-data upstream; validate-data downstream>
+- **Iterate:** <tune-hyperparameters to search the knobs from §5; track-model-experiments to log and compare the fitted variants>
 - **Open questions:** <what to resolve before/while fitting>
 ```
 

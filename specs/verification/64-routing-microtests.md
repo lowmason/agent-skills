@@ -108,3 +108,116 @@ Quote: the first 15 words of each REASON line. The last column is the isolation 
 ## Isolation screen
 
 `grade.py` screened every saved answer. All 60 answers took one turn, ended without error, hold only `message` iterations (no tool or advisor call) and came from one model. The screen column reads `ok` for every rep. No rep was voided, and no FAIL rep was ambiguous after reading the full reply.
+
+---
+
+# Plan 64 micro-test M2: recommend-probabilistic-model's description and routing
+
+**Date:** 2026-10-21. **Model:** `claude-sonnet-5-5` through `claude -p` (Claude Code 2.1.304). **Kit:** `~/.cache/agent-skills/scratch/plan64-micro/` (`run_arm.py`, `grade.py`, `M2.json`, raw answers under `raw/M2/`). **Cost:** $2.20 of the $25 cap for M2 (pilot $0.04, arm B $1.08, arm C $1.08). With M1 ($2.24) the plan has spent $4.44.
+
+The edit under test is Task 5's description change: the phrase "ordinal, proportion, quantile and censored or time-to-event outcomes" after "Covers regression / GLMs / counts," and the closing sentence "A causal-effect question goes to recommend-causal-design first." It carries Task 4's class names. Description length: 871 characters at `97a8525`, 1,005 after the edit. The same commit adds sibling pointers, a Step 1 sentence, a memo line and neural hand-offs. The routing prompt uses only the description, so those do not enter the test.
+
+## Design
+
+Each rep is one decision-only call with no tools (`claude -p --model sonnet --tools "" --strict-mcp-config`, with `CLAUDE_CODE_DISABLE_ADVISOR_TOOL=1`), run from its own new folder under `/tmp/p64micro/`. The prompt lists the descriptions of 10 competing skills and asks for one `SKILL:` line and one `REASON:` line. Arm B uses every description as it stood at commit `97a8525` (read with `--base 97a8525`, so edits to the working tree could not touch it). Arm C differs only in recommend-probabilistic-model's description, read from the working tree. Five reps per arm and scenario. The `run_arm.py` and `grade.py` files match Appendix A byte for byte.
+
+The pilot (one rep, stream-json) printed `tools: []` and `mcp_servers: []` before any arm ran. A "void" is a rep that errored or refused. There were 0 voids.
+
+## Scenarios, grading rules and pass bars
+
+Fixed in `M2.json` before any run. Each scenario has a `pass` list, and a rep passes when its SKILL is in the list.
+
+- **R1, minimum-wage causal question** (pass: recommend-causal-design): "Did the 2024 minimum-wage increase cause job losses in these counties? Which model should I fit?"
+- **R2, censored churn times** (pass: recommend-probabilistic-model): "Customer churn: I have each customer's time to cancellation, but 60% are still active. Which model family fits?"
+- **R3, ordinal rating** (pass: recommend-probabilistic-model): "My outcome is a 1-5 satisfaction rating with a dozen predictors. Which model should I use?"
+- **R4, graph neural network training** (pass: deep-learning): "I want to train a graph neural network in Flax on molecule graphs. How should I set up training?"
+- **R5, overdispersed counts** (pass: recommend-probabilistic-model): "My counts have variance 8 times the mean. Poisson or negative binomial?"
+- **R6, bounded share** (pass: recommend-probabilistic-model): "My outcome is each county's share of workers in manufacturing, between 0 and 1. Which model fits?"
+
+Pass bars. Arm C meets the bar when both hold:
+1. On every scenario it fails at most 1 of 5 reps.
+2. On every scenario where arm B fails 2 or more of 5, it fails fewer than arm B.
+
+## Results
+
+| Scenario | B fails | C fails | C bars met |
+|---|---|---|---|
+| R1 | 0/5 | 0/5 | yes |
+| R2 | 0/5 | 0/5 | yes |
+| R3 | 0/5 | 0/5 | yes |
+| R4 | 0/5 | 0/5 | yes |
+| R5 | 0/5 | 0/5 | yes |
+| R6 | 0/5 | 0/5 | yes |
+
+Arm C meets both bars on every scenario. Bar 2 does not apply, since arm B failed no scenario. The test therefore shows that the edit does not harm routing. It does not show a gain, because arm B already routed all six requests correctly. Reading the replies by hand: in both arms R1 went to recommend-causal-design on the "did X cause Y" wording, R2, R3 and R6 went to recommend-probabilistic-model on model-family wording (arm C replies name "censored time-to-event" and "bounded proportion" outcomes), and R4 went to deep-learning on "design and train a neural model" wording.
+
+## Per-rep results
+
+Quote: the first 15 words of each REASON line. The last column is the isolation screen.
+
+| Arm | Scenario | Rep | Verdict | Skill | Quote | Screen |
+|---|---|---|---|---|---|---|
+| B | R1 | 1 | PASS | recommend-causal-design | "The question asks whether a policy caused an outcome, so you must pick an identification" | ok |
+| B | R1 | 2 | PASS | recommend-causal-design | "The question asks whether a policy caused an outcome, so the research design (such as" | ok |
+| B | R1 | 3 | PASS | recommend-causal-design | "The question asks whether the increase caused job losses, so you must first choose an" | ok |
+| B | R1 | 4 | PASS | recommend-causal-design | "The question "did the minimum-wage increase cause job losses" is about identifying a causal effect," | ok |
+| B | R1 | 5 | PASS | recommend-causal-design | "This is a "did X cause Y" policy-impact question, so the identification design (such as" | ok |
+| B | R2 | 1 | PASS | recommend-probabilistic-model | "The request is to choose a model family before fitting, and the right-censored time-to-cancellation data" | ok |
+| B | R2 | 2 | PASS | recommend-probabilistic-model | "The user needs to choose a model family for time-to-event data with 60% censoring, which" | ok |
+| B | R2 | 3 | PASS | recommend-probabilistic-model | "The user asks which model family fits right-censored time-to-cancellation data, which is a model-selection question" | ok |
+| B | R2 | 4 | PASS | recommend-probabilistic-model | "The user needs to choose a model family for right-censored time-to-cancellation data before fitting, which" | ok |
+| B | R2 | 5 | PASS | recommend-probabilistic-model | "The user asks which model family fits censored time-to-event data (60% still active) before fitting," | ok |
+| B | R3 | 1 | PASS | recommend-probabilistic-model | "The user asks which model fits an ordinal 1-5 outcome with about twelve predictors, which" | ok |
+| B | R3 | 2 | PASS | recommend-probabilistic-model | "You ask which model fits an ordinal 1-5 outcome with a dozen predictors, and this" | ok |
+| B | R3 | 3 | PASS | recommend-probabilistic-model | "The user asks which model fits an ordinal 1-5 outcome with about a dozen predictors," | ok |
+| B | R3 | 4 | PASS | recommend-probabilistic-model | "You are choosing a model for an ordinal 1-5 outcome with several predictors before fitting," | ok |
+| B | R3 | 5 | PASS | recommend-probabilistic-model | "The user wants to choose a model family for an ordinal 1-5 outcome before fitting," | ok |
+| B | R4 | 1 | PASS | deep-learning | "The request is about designing and training a neural model (a graph neural network) in" | ok |
+| B | R4 | 2 | PASS | deep-learning | "Setting up training for a graph neural network in Flax on molecule graphs is designing" | ok |
+| B | R4 | 3 | PASS | deep-learning | "Designing and training a graph neural network in Flax on molecule graphs is a neural" | ok |
+| B | R4 | 4 | PASS | deep-learning | "Setting up training for a graph neural network in Flax on molecule graphs is neural" | ok |
+| B | R4 | 5 | PASS | deep-learning | "Designing and training a graph neural network in Flax (geometric/scientific model on molecule graphs) is" | ok |
+| B | R5 | 1 | PASS | recommend-probabilistic-model | "The user is choosing between Poisson and negative binomial for overdispersed counts, which is a" | ok |
+| B | R5 | 2 | PASS | recommend-probabilistic-model | "The user is choosing between Poisson and negative binomial for overdispersed counts before fitting, which" | ok |
+| B | R5 | 3 | PASS | recommend-probabilistic-model | "This is a model-selection question about overdispersed counts (Poisson vs negative binomial) before any fitting," | ok |
+| B | R5 | 4 | PASS | recommend-probabilistic-model | "Choosing between Poisson and negative binomial for overdispersed counts is a model-selection question to settle" | ok |
+| B | R5 | 5 | PASS | recommend-probabilistic-model | "The user is choosing between Poisson and negative binomial for overdispersed counts before fitting, which" | ok |
+| B | R6 | 1 | PASS | recommend-probabilistic-model | "The user asks which model fits a bounded 0-to-1 share outcome, which is a model-selection" | ok |
+| B | R6 | 2 | PASS | recommend-probabilistic-model | "The question asks which model fits a bounded 0-to-1 share outcome, which is model selection" | ok |
+| B | R6 | 3 | PASS | recommend-probabilistic-model | "The question asks which model fits a bounded 0-to-1 share outcome (for example beta, fractional" | ok |
+| B | R6 | 4 | PASS | recommend-probabilistic-model | "The user asks which model fits a bounded 0-to-1 share outcome, which is model selection" | ok |
+| B | R6 | 5 | PASS | recommend-probabilistic-model | "The user needs to pick a model for a bounded 0-to-1 share outcome (such as" | ok |
+| C | R1 | 1 | PASS | recommend-causal-design | "The question asks whether a policy caused job losses, so a causal research design (such" | ok |
+| C | R1 | 2 | PASS | recommend-causal-design | ""Did the increase cause job losses" is a causal-effect question, so pick an identification design" | ok |
+| C | R1 | 3 | PASS | recommend-causal-design | "This is a causal question ("did X cause Y"), so the research design must be" | ok |
+| C | R1 | 4 | PASS | recommend-causal-design | "The question asks whether a minimum-wage increase caused job losses, which is a causal-effect question," | ok |
+| C | R1 | 5 | PASS | recommend-causal-design | "This is a causal question ("did the increase cause job losses"), so you must pick" | ok |
+| C | R2 | 1 | PASS | recommend-probabilistic-model | "The user needs to choose a model family for a censored time-to-event outcome (60% still" | ok |
+| C | R2 | 2 | PASS | recommend-probabilistic-model | "The user is choosing a model family for right-censored time-to-cancellation data (60% still active), which" | ok |
+| C | R2 | 3 | PASS | recommend-probabilistic-model | "The user asks which model family fits censored time-to-event data (60% still active), which is" | ok |
+| C | R2 | 4 | PASS | recommend-probabilistic-model | "The user is choosing a model family for a right-censored time-to-event outcome (60% still active)" | ok |
+| C | R2 | 5 | PASS | recommend-probabilistic-model | "The question asks which model family fits right-censored time-to-cancellation data (60% still active) before any" | ok |
+| C | R3 | 1 | PASS | recommend-probabilistic-model | "The user wants to pick a modeling approach for an ordinal 1-5 outcome before fitting," | ok |
+| C | R3 | 2 | PASS | recommend-probabilistic-model | "The user wants to choose a model for a 1-5 ordinal outcome before fitting, which" | ok |
+| C | R3 | 3 | PASS | recommend-probabilistic-model | "The user needs a model choice for an ordinal 1-5 outcome before any fitting, which" | ok |
+| C | R3 | 4 | PASS | recommend-probabilistic-model | "The user is choosing a modeling approach for an ordinal 1-5 outcome with about a" | ok |
+| C | R3 | 5 | PASS | recommend-probabilistic-model | "The user is choosing a model for an ordinal 1-5 outcome with about a dozen" | ok |
+| C | R4 | 1 | PASS | deep-learning | "The request is to design and train a graph neural network (a geometric neural model)" | ok |
+| C | R4 | 2 | PASS | deep-learning | "Setting up training for a graph neural network in Flax (molecule graphs, masking, losses, optimizers)" | ok |
+| C | R4 | 3 | PASS | deep-learning | "Training a graph neural network in Flax (NNX) on molecule graphs is neural model design" | ok |
+| C | R4 | 4 | PASS | deep-learning | "The request is to design and set up training for a graph neural network (a" | ok |
+| C | R4 | 5 | PASS | deep-learning | "Designing and setting up training for a graph neural network on molecule graphs in Flax" | ok |
+| C | R5 | 1 | PASS | recommend-probabilistic-model | "Choosing between Poisson and negative binomial for overdispersed counts is a model-selection question to settle" | ok |
+| C | R5 | 2 | PASS | recommend-probabilistic-model | "Choosing between Poisson and negative binomial for overdispersed counts is a model-selection question to settle" | ok |
+| C | R5 | 3 | PASS | recommend-probabilistic-model | "Choosing between Poisson and negative binomial for overdispersed counts is a model-selection question to settle" | ok |
+| C | R5 | 4 | PASS | recommend-probabilistic-model | "Choosing between Poisson and negative binomial for overdispersed counts (variance 8x the mean) is a" | ok |
+| C | R5 | 5 | PASS | recommend-probabilistic-model | "The question is which count model fits overdispersed data (variance 8 times the mean), which" | ok |
+| C | R6 | 1 | PASS | recommend-probabilistic-model | "The user asks which model fits a bounded proportion outcome (county manufacturing share) before any" | ok |
+| C | R6 | 2 | PASS | recommend-probabilistic-model | "The user is asking which model fits a bounded proportion outcome, which is model selection" | ok |
+| C | R6 | 3 | PASS | recommend-probabilistic-model | "The user is choosing a model family for a bounded 0-to-1 proportion outcome (county manufacturing" | ok |
+| C | R6 | 4 | PASS | recommend-probabilistic-model | "The user is choosing a model family for a proportion outcome (county manufacturing share between" | ok |
+| C | R6 | 5 | PASS | recommend-probabilistic-model | "The user is choosing a model for a bounded proportion outcome before any fitting, which" | ok |
+
+## Isolation screen
+
+`grade.py` screened every saved answer. All 60 answers took one turn, ended without error, hold only `message` iterations (no tool or advisor call) and came from one model. The screen column reads `ok` for every rep. No rep was voided, and no FAIL rep exists to review.

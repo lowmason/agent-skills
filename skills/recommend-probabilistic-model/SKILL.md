@@ -4,13 +4,14 @@ description: >
   Use when choosing a modeling approach for a problem and its data — "which model/method should I
   use", "what approach fits this dataset", "recommend a model", "is this Poisson or negative
   binomial", "how do I handle overdispersion / zero-inflation / panel data / many predictors".
-  Covers regression / GLMs / counts, classification, hierarchical/multilevel, time series &
-  state-space, Gaussian processes, dimensionality reduction & (dynamic) factor models, mixtures &
-  clustering, and probabilistic graphical models, grounded in Kevin Murphy's Probabilistic
-  Machine Learning (PML) books. Trigger on model selection, "which method for X", recommending an
-  approach before fitting, or deciding between Poisson/NB/zero-inflated, pooled vs hierarchical,
-  GP vs parametric, PCA vs factor model, HMM vs state-space. Consult BEFORE fitting a model — not
-  for executing the fit itself.
+  Covers regression / GLMs / counts, ordinal, proportion, quantile and censored or time-to-event
+  outcomes, classification, hierarchical/multilevel, time series & state-space, Gaussian processes,
+  dimensionality reduction & (dynamic) factor models, mixtures & clustering, and probabilistic
+  graphical models, grounded in Kevin Murphy's Probabilistic Machine Learning (PML) books. Trigger
+  on model selection, "which method for X", recommending an approach before fitting, or deciding
+  between Poisson/NB/zero-inflated, pooled vs hierarchical, GP vs parametric, PCA vs factor model,
+  HMM vs state-space. Consult BEFORE fitting a model — not for executing the fit itself. A
+  causal-effect question goes to recommend-causal-design first.
 license: MIT
 metadata:
   author: Lowell Mason
@@ -33,6 +34,10 @@ and points — it does not fit, evaluate, or report on a fitted model.**
 - **`explore-data`** *discovers* the data's shape (nulls, cardinality, distributions) — upstream of here.
 - **`recommend-probabilistic-model`** (this) turns *shape × task* into a modeling **decision**.
 - **`bayesian-workflow`** *executes* when the recommendation is "fit a Bayesian model" (NumPyro/JAX).
+- **`recommend-causal-design`** comes first when the question is causal (did X change Y): it picks the design and the estimand, and returns here only for the outcome model inside that design.
+- **`deep-learning`** *trains* neural models when the recommendation is a network (GNN, deep ensemble); **`evaluate-deep-learning`** compares them; **`optimize-jax`** fixes JAX speed, memory or compilation problems.
+- **`tune-hyperparameters`** searches a model's knobs (regularization, depth, learning rate, inference settings) without leaking the future.
+- **`track-model-experiments`** keeps the ledger of fitted model variants and compares them.
 - **`bls-data-context`** supplies official-statistics / benchmark data that informs priors & pooling.
 - **`validate-data`** *gates* the downstream result.
 
@@ -40,7 +45,7 @@ and points — it does not fit, evaluate, or report on a fitted model.**
 
 1. **Frame the problem.** Task type (regression / classification / counts / clustering / dim-reduction
    / time-series / structured / decision) **and the question** (point prediction vs. uncertainty /
-   inference vs. causal vs. sequential decision).
+   inference vs. causal vs. sequential decision). A causal question goes to recommend-causal-design before this procedure continues.
 2. **Characterize the data.** Profile the primary dataset (`explore-data`; then `scripts/characterize.py`
    for modeling signals it omits — overdispersion, zero-fraction, n/p, class balance, stationarity).
    **Inventory external/auxiliary information** (official statistics, benchmarks, related series,
