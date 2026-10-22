@@ -625,8 +625,7 @@ reason = 'writing-skills requires trigger-only Use when descriptions, on tested 
 evidence = 'writing-skills, Skill Discovery Optimization; portability spec Decision 4; audit rows S-28 to S-52 and S-54.'
 revisit = 'When trigger-eval suites exist (a portability deferred item).'
 
-# Other skills hand off to these by bare name. artifacts is seat S's list,
-# less the four the owner split out as a gap (side-effecting-skills-ungated).
+# Side-effecting skills that other skills hand off to by bare name, gated in their bodies. Plan 63 added subagent-driven-development and requesting-code-review; dispatching-parallel-agents went manual-only and writing-skills to side-effecting-skills-body-gated.
 [[exception]]
 id = 'side-effecting-skills-invocable'
 type = 'deviation'
@@ -641,24 +640,12 @@ artifacts = [
     'skills/llm-wiki/SKILL.md',
     'skills/derive-roadmap/SKILL.md',
     'skills/subagent-driven-development/SKILL.md',
-]
-guide = 'A side-effecting workflow sets disable-model-invocation: true.'
-reason = 'Other skills hand off to these by bare name, which a manual-only skill cannot receive; their bodies gate the side effects, some only in part.'
-evidence = 'Portability spec Decision 3; audit rows S-81 to S-87 and S-92. subagent-driven-development joined by owner decision Q1, plan 63, 2026-10-21 (entry gate).'
-revisit = 'When the guide documents a way for one skill to hand off to a manual-only skill.'
-
-# Side-effecting skills that Decision 3 does not cover.
-[[exception]]
-id = 'side-effecting-skills-ungated'
-type = 'gap'
-sections = ['commands.overview', 'skills.frontmatter']
-artifacts = [
     'skills/requesting-code-review/SKILL.md',
 ]
 guide = 'A side-effecting workflow sets disable-model-invocation: true.'
-reason = 'These four act with side effects but lack a body gate or an inbound bare-name handoff, so portability Decision 3 does not cover them.'
-evidence = 'Audit rows S-88 to S-91; owner gate 2026-10-04. Plan 63 Task 1 (owner Q1, 2026-10-21): dispatching-parallel-agents made manual-only.'
-tracked_in = 'deferred item: gate or make manual-only the four ungated side-effecting skills'
+reason = 'Other skills hand off to these by bare name, which a manual-only skill cannot receive; their bodies gate the side effects, some only in part.'
+evidence = 'Portability spec Decision 3; audit rows S-81 to S-87 and S-92. subagent-driven-development joined by owner decision Q1, plan 63, 2026-10-21 (entry gate). requesting-code-review joined by owner decision Q1, plan 63, 2026-10-21 (Codex approval gate).'
+revisit = 'When the guide documents a way for one skill to hand off to a manual-only skill.'
 
 # Side-effecting skills with no inbound handoff, gated in their bodies (owner Q1, plan 63).
 [[exception]]

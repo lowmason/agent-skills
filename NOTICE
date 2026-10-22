@@ -570,6 +570,9 @@ Changes from upstream:
     (plan 63).
   - subagent-driven-development asks once before its first dispatch unless
     the partner asked for execution (plan 63).
+  - requesting-code-review runs its Codex second opinion only with the
+    partner's approval, and finishing-a-development-branch accepts a
+    declined run (plan 63).
 
     brainstorming/
     dispatching-parallel-agents/

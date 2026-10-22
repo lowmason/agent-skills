@@ -6,6 +6,8 @@ work against its plan or requirements; Codex's review preset is defect-first —
 it hunts bugs in the diff and never sees the plan. Two lenses, two model
 families.
 
+**Approval first.** Run Codex only after the approval that requesting-code-review's **Mandatory** list names.
+
 **You run it, as the controller.** Never ask a reviewer subagent to run Codex —
 code-reviewer's contract forbids it from spawning further reviewers.
 
