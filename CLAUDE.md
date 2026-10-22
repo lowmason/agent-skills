@@ -51,6 +51,7 @@ A skill's references into other skills and to commands are install dependencies;
 ## Conventions
 
 - **Python style**: Polars over pandas; single quotes over double; NumPyro + JAX (not PyMC) for Bayesian code; target Python 3.13.
+- **Codex review**: the owner approves Codex second-opinion reviews for this repository. The requesting-code-review skill's approval gate treats this line as that approval, so agents run the Codex seat without asking. A Codex run sends the diff, and every file Codex reads, to OpenAI.
 - **Specs & plans**: design records live in `specs/` (retired ones in `specs/completed/`). Implementation plans go to `specs/plans/<id>-<spec-name>.md` where `<id>` is the next integer (max existing id across `specs/plans/` and `specs/plans/completed/`, +1). At completion, the plan-completion protocol (writing-plans § Plan Completion Protocol) gates leftovers past the user, marks up the plan, appends consciously-deferred work to `specs/deferred_items.md`, and retires the plan (and, when no other live plan shares it, the spec) to the `completed/` dirs.
 
 ## Build tooling (`build/`)
