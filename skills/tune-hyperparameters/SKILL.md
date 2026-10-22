@@ -22,8 +22,10 @@ metadata:
 ## Overview
 
 Hyperparameters are the knobs set *before* the fit — regularization strength,
-tree depth, learning rate, a sampler's `target_accept`. Tuning is the loop above
-a single fit: propose a value, score it, keep the best. Two things break that
+tree depth, learning rate, a sampler's `target_accept`, the number of mixture
+components. Tuning is the loop above a single fit: propose a value, score it,
+keep the best. The loop is the same for any producer: sklearn and boosting,
+statsmodels, NumPyro, dynamax or a neural net. Two things break that
 loop: tuning the wrong *kind* of knob against the wrong objective (a held-out
 metric for a sampler setting overfits the approximation), and scoring on data the
 model shouldn't have seen yet (temporal leakage inflates every candidate equally,
@@ -34,10 +36,15 @@ the right leakage guard.**
 
 ## Step 0 — classify the regime
 
-The rule: a knob is **Regime B** only when its correct value is defined by the
-fidelity of the fit — whether the sampler or optimizer reached what the model
-already defines (its posterior, or its optimum). Every other knob is
+The rule puts each knob in exactly one regime. A knob is **Regime B** when its
+correct value is defined by the fidelity of the fit — whether the sampler or
+optimizer reached what the model already defines (its posterior, or its
+optimum). A knob is **Regime C** when it picks the structure of a probabilistic
+model from a discrete set: how many components, factors, states or lags the
+model has, or the form of its kernel or basis. Every other knob is
 **Regime A**: its correct value is the one that predicts held-out data best.
+A knob that sets one predictor's flexibility (a penalty, tree depth, `k` for
+kNN) is Regime A, even when its values are discrete.
 
 - **Regime A — predictive search.** You're choosing a knob that trades bias for
   variance on *held-out prediction*: `alpha`/`C` (regularization), tree depth /
@@ -47,14 +54,36 @@ already defines (its posterior, or its optimum). Every other knob is
   which one is best. Evaluate on a held-out metric. Leakage is the enemy.
 - **Regime B — inference / optimization diagnostic.** You're setting a knob that
   controls whether the *fit itself* is trustworthy: NUTS `target_accept` /
-  `max_tree_depth`, SVI learning rate / steps, a dynamax optax schedule.
+  `max_tree_depth`, SVI learning rate / steps, the optax learning rate of a
+  non-neural point fit such as a dynamax MLE.
   Evaluate on convergence diagnostics, **not** on a held-out predictive metric.
+- **Regime C — structural choice.** You're choosing among model structures:
+  the number of mixture components `K`, of factors or of HMM states, the AR
+  order, spline knots, a GP kernel form. Each candidate is a separate model,
+  so score it on a criterion that compares whole models (Regime C, below).
 
 The stakes of getting this wrong: a regime-B knob tuned to a held-out score
 overfits the inference approximation to your validation split — you get a
 sampler that looks good on one metric and is miscalibrated everywhere else.
 
 ## Regime A — leakage-safe predictive search
+
+### Step 0b — choose the splitter by dependence structure
+
+Validation rows must be as independent of the training rows as new data will
+be. Pick the splitter from how the rows depend on each other:
+
+| Data | Splitter |
+|---|---|
+| i.i.d. | `KFold`, or `StratifiedKFold` for classes |
+| Grouped, or predicting new entities | `GroupKFold` or `LeaveOneGroupOut` |
+| Spatial | `GroupKFold` over spatial blocks |
+| Temporal | the bundled `PurgedTimeSeriesSplit` (the protocol below) |
+| Random forests | out-of-bag error |
+
+All but the temporal splitter are sklearn's. A panel is temporal: use the
+bundled splitter with `groups=period`. The rest of this section is the temporal
+protocol.
 
 **The trap.** Naive k-fold ignores time order, so most folds train on rows that
 come *after* the validation block (shuffling makes it worse, but plain
@@ -99,6 +128,15 @@ count the periods present in `groups`, so a missing calendar period leaves a
 wider real gap. It duck-types sklearn's splitter API, so it drops straight into
 the objective below.
 
+**What to score.** Match the objective to what the model emits:
+
+| Model emits | Objective |
+|---|---|
+| Point predictions | MSE or MAE, or a loss that matches the decision |
+| Predictive distributions | log score or CRPS (strictly proper) |
+| Class probabilities | log-loss or Brier, never accuracy alone |
+| Forecasts | per-origin loss differences |
+
 **The search — a manual Optuna objective** (verified against Optuna 5.0.0). Keep
 the objective explicit: suggest the knobs, loop over `cv.split(X)`, return the
 mean CV score. A seeded `TPESampler` reproduces a run within one Optuna
@@ -129,11 +167,40 @@ Prefer the manual objective over `OptunaSearchCV` (moved to the separate
 in-memory study by default, or `storage='sqlite:///study.db'` to persist. If you
 persist it, `.gitignore` the store; it's a local artifact, not source.
 
-**Guard against validation-set overfitting.** A large search over one held-out
-split finds a knob that flatters *that split*. For big searches or high-stakes
-decisions, wrap it in nested CV — an outer forward-chaining split whose training
-half runs the whole study — so the reported score comes from folds the search
-never touched.
+**Early stopping.** Take the stopping split from inside the training fold (the
+last periods of `tr` for temporal data), never from the CV validation fold. A
+fit that stops on the validation fold has seen it, so that fold's score is no
+longer held out.
+
+**Guard against validation-set overfitting.** A large search over one set of
+folds finds a knob that flatters *those folds*. For big searches or high-stakes
+decisions, nest it: an outer forward-chaining split runs the whole study on
+each training half and scores the winner on the outer validation fold, which
+the search never touched (verified against Optuna 5.0.0 and scikit-learn
+1.9.1):
+
+```python
+outer = PurgedTimeSeriesSplit(n_splits=4, embargo=2)
+outer_scores = []
+for tr, te in outer.split(X):            # a panel: outer.split(X, groups=period)
+    X_tr, y_tr = X[tr], y[tr]
+    inner = PurgedTimeSeriesSplit(n_splits=5, embargo=2)
+
+    def objective(trial):
+        alpha = trial.suggest_float('alpha', 1e-3, 1e3, log=True)
+        scores = []
+        for fit, va in inner.split(X_tr):  # a panel: groups=period[tr]
+            model = Ridge(alpha=alpha).fit(X_tr[fit], y_tr[fit])
+            scores.append(mean_squared_error(y_tr[va], model.predict(X_tr[va])))
+        return float(np.mean(scores))
+
+    study = optuna.create_study(direction='minimize',
+                                sampler=optuna.samplers.TPESampler(seed=0))
+    study.optimize(objective, n_trials=50)
+    winner = Ridge(**study.best_params).fit(X_tr, y_tr)
+    outer_scores.append(mean_squared_error(y[te], winner.predict(X[te])))
+float(np.mean(outer_scores))             # report this, not study.best_value
+```
 
 ### When not to tune
 
