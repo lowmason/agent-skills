@@ -7,7 +7,7 @@
 | Method | Use when | Default recommendation | PML §ref (Book 1 / Book 2) | pyprobml |
 |--------|----------|------------------------|----------------------------|----------|
 | Censored parametric likelihood (Weibull / LogNormal / Gamma) | A smooth hazard shape is plausible; you want predictions of whole duration distributions | Start here for a Bayesian fit: the censored subjects contribute their survival probability past the censoring time, the observed ones their density (Kalbfleisch and Prentice 2002) | — | — |
-| Accelerated failure time (AFT) | Predictors should stretch or shrink time | Log-time is linear in predictors with a Weibull, LogNormal or log-logistic error; coefficients read as time ratios | — | — |
+| Accelerated failure time (AFT) | Predictors should stretch or shrink time | Log-time is linear in predictors. A Weibull, LogNormal or log-logistic duration means an extreme-value (minimum), Normal or logistic error on log-time. Exponentiated coefficients are time ratios | — | — |
 | Piecewise-exponential (Poisson trick) | The hazard shape is unknown or changes over time; time-varying predictors | Split time into intervals with a constant hazard each; fits as a Poisson GLM with a log-exposure offset, so hierarchical and spline priors carry over | — | — |
 | Cox proportional hazards | Only relative risks matter and the baseline hazard is a nuisance | The frequentist default (partial likelihood); check proportional hazards before reporting one hazard ratio | — | — |
 
@@ -21,7 +21,7 @@ Complexity knobs: the hazard shape (parametric family, or the number of piecewis
 - **Competing risks.** When another event prevents the one of interest (job exit by retirement vs. layoff), a plain survival curve for one cause misleads; model the causes jointly.
 
 ## Handoff
-Bayesian fits go to **bayesian-workflow**: wrap the base duration distribution in `RightCensoredDistribution` (or `LeftCensoredDistribution` / `IntervalCensoredDistribution`) with the censoring flag as the mask, as in its censored-data row. Frequentist alternatives: lifelines (`CoxPHFitter`, `WeibullAFTFitter`) or statsmodels `PHReg`. C4 memo payload if Bayesian:
+Bayesian fits go to **bayesian-workflow**: wrap the base duration distribution in `RightCensoredDistribution` or `LeftCensoredDistribution` and pass the censoring flag as their `censored` argument, as in its censored-data row. `IntervalCensoredDistribution` takes `left_censored` and `right_censored` flags instead, and its observed values are (lower, upper) pairs. Do not pass the flag as a mask: a NumPyro mask drops the log-probability terms where it is false, and does not turn them into survival terms. Frequentist alternatives: lifelines (`CoxPHFitter`, `WeibullAFTFitter`) or statsmodels `PHReg`. C4 memo payload if Bayesian:
 - **Likelihood family:** censored Weibull / LogNormal, or piecewise-exponential as a Poisson GLM with offset.
 - **Candidate priors:** on log-scale shape and scale; shrinkage on predictor coefficients.
 - **Structure:** censoring type and flag; time-varying predictors; any grouping (hierarchical frailty).

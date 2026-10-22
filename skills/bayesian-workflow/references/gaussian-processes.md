@@ -25,15 +25,22 @@ GP covariance algebra loses accuracy in float32 (see [jax-numerics.md](jax-numer
 
 - **Length-scale.** The data cannot inform length-scales shorter than the smallest gap between
   inputs or longer than the input range. Put most prior mass between those two numbers. An
-  `InverseGamma` has light left and right tails there; choose its two parameters so that about
-  1% of the mass falls below the smallest gap and about 1% above the range, and check with a
-  prior predictive draw of functions.
+  `InverseGamma` has a very light left tail, which keeps mass off length-scales shorter than the
+  data can inform. Its right tail is heavier (it decays polynomially). Choose its two parameters
+  so that about 1% of the mass falls below the smallest gap and about 1% above the range. Then
+  check the long length-scales with a prior predictive draw of functions.
 - **Amplitude** (the marginal standard deviation of f). On a standardized outcome, `HalfNormal(1)`
   is a sound default. Shrink it when f should explain only part of the variance.
 - **Noise.** `HalfNormal` on the observation scale, as for any regression.
 - Fix the kernel family before fitting: squared exponential for very smooth functions, Matérn
   3/2 or 5/2 (`hsgp_matern`, `nu=1.5` or `nu=2.5`) for rougher ones, periodic for seasonal terms.
-  Compare kernel families with LOO ([model-comparison.md](model-comparison.md)).
+  Compare kernel families with LOO ([model-comparison.md](model-comparison.md)). The exact GP
+  template needs care first: its `MultivariateNormal` returns one joint log density per draw, so
+  ArviZ sees one observation and cannot estimate pointwise LOO. For the exact GP, compute the
+  conditional densities p(y_i | y_-i, θ) per draw (closed form for a Gaussian marginal) and
+  attach them as the pointwise log-likelihood, or compare kernels by held-out refits. The HSGP
+  template's `Normal` likelihood sits in the `obs_gp` plate, so it is pointwise and the standard
+  recipe applies.
 
 ## Exact GP template
 

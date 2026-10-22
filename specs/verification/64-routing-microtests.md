@@ -6,7 +6,7 @@ The owner answered Q1 with option (a) (decision D3): "Pyro" is dropped from baye
 
 ## Design
 
-Each rep is one decision-only call with no tools (`claude -p --model sonnet --tools "" --strict-mcp-config`, with `CLAUDE_CODE_DISABLE_ADVISOR_TOOL=1`), run from its own new folder under `/tmp/p64micro/`. The prompt lists the descriptions of 10 competing skills and asks for one `SKILL:` line and one `REASON:` line. Arm B uses every description as it stood at commit `1aa0f9f` (the start of Task 3). Arms C1 and C2 differ from arm B only in bayesian-workflow's description. C1 is the description after the Pyro edit. C2 is C1 plus the scope sentence. Description length: 766 characters at `1aa0f9f`, 755 for C1, 801 for C2. Five reps per arm and scenario.
+Each rep is one decision-only call with no tools (`claude -p --model sonnet --tools "" --strict-mcp-config`, with `CLAUDE_CODE_DISABLE_ADVISOR_TOOL=1`), run from its own new folder under `/tmp/p64micro/`. The prompt lists the descriptions of 10 competing skills and asks for one `SKILL:` line and one `REASON:` line. Arm B uses every description as it stood at commit `1aa0f9f` (the start of Task 3). Arms C1 and C2 differ from arm B only in bayesian-workflow's description. C1 is the description after the Pyro edit. C2 is C1 plus the description scope phrase. In this record, "description scope phrase" means the description sentence "NumPyro only; Pyro/PyTorch fits go elsewhere." It is not the plan's D4 "scope sentence", which is the SKILL.md body sentence under "Scope and sibling skills". Description length: 766 characters at `1aa0f9f`, 755 for C1, 801 for C2. Five reps per arm and scenario. M1 counts description characters with the YAML value's trailing newline (766, 755 and 801), while M2 and M3 count with whitespace folded (871, 1,005, 495 and 576), so the folded M1 equivalents are 765, 754 and 800. Raw answers: arm B under `raw/M1/B`, C1 under `raw/M1/C1`, and C2 under `raw/M1/C` (in the kit folder `~/.cache/agent-skills/scratch/plan64-micro/`).
 
 The pilot (one rep, stream-json) printed `tools: []` and `mcp_servers: []` before any arm ran.
 
@@ -36,7 +36,9 @@ Pass bars. An arm C candidate meets the bar when both hold:
 
 C1 fails bar 1 on B1 (2 of 5, limit 1). Bar 2 holds for C1 (2 is fewer than 5). C2 meets both bars on every scenario.
 
-Reading the B1 reps by hand. Arm B: all 5 picked bayesian-workflow because the description named Pyro and SVI. C1: B1-2 and B1-3 still picked bayesian-workflow and said it was the closest match although it targets NumPyro. B1-4 and B1-5 picked tune-hyperparameters, and B1-1 picked none. C2: all 5 reps picked none, and each reply cites the new scope sentence or says the skills cover only NumPyro and JAX. No B2 to B4 rep changed its pick between arms.
+Reading the B1 reps by hand. Arm B: all 5 picked bayesian-workflow because the description named Pyro and SVI. C1: B1-2 and B1-3 still picked bayesian-workflow and said it was the closest match although it targets NumPyro. B1-4 and B1-5 picked tune-hyperparameters, and B1-1 picked none. C2: all 5 reps picked none, and each reply cites the new description scope phrase or says the skills cover only NumPyro and JAX. No B2 to B4 rep changed its pick between arms.
+
+M1's two pass probes (B3, B4) both name NumPyro, so M1 does not test whether "NumPyro only" affects a Bayesian request that names no stack.
 
 ## Per-rep results
 
@@ -322,3 +324,9 @@ Quote: the first 15 words of each REASON line. The last column is the isolation 
 ## Isolation screen
 
 `grade.py` screened every saved answer. All 50 answers took one turn, ended without error, hold only `message` iterations (no tool or advisor call) and came from one model. The screen column reads `ok` for every rep. No rep was voided, and no FAIL rep exists to review.
+
+---
+
+# Description length budget
+
+The three description edits change the total by +250 characters (whitespace folded): bayesian-workflow +35 (765 to 800), recommend-probabilistic-model +134 (871 to 1,005) and creative-thinking +81 (495 to 576). The plan estimated +202. The difference comes from the C2 description scope phrase and the refold.

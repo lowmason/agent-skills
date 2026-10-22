@@ -88,6 +88,7 @@ bayesian-workflow/
 │   ├── hierarchical.md               # Partial pooling, non-centered parameterization (reparam)
 │   ├── sensitivity.md                # Prior/likelihood sensitivity (power-scaling) + log_prior recipe
 │   ├── state-space.md                # State-space / time-series models (marginalize vs sample the path)
+│   ├── gaussian-processes.md         # Exact GP and HSGP templates, length-scale priors, off-stack GP libraries
 │   ├── svi.md                        # SVI as the final fit: ELBO across seeds, approximate-posterior LOO, VSBC
 │   ├── jax-numerics.md               # JAX precision and stability: float64 policy, silent downcasts, guarded divisions
 │   ├── publications.md               # Cited workflow papers and further reading
