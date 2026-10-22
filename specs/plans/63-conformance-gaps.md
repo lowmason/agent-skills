@@ -28,6 +28,7 @@ Each question has a recommended default. The tasks are written for the default. 
 **Q2. Item D: requesting-code-review versus the guide's "skip review for a small change you watched being made" (`lean.ceremony`).**
 - **(a) Recommended:** add a narrow skip clause and remove exception `review-before-every-merge` (Task 5). The clause covers only a small change made in this session in front of the partner, with the partner's say-so. It never covers subagent-written work or a plan's final review. It is reconciled with RCR's own Red Flag "Skip review because 'it's simple'", and micro-tested.
 - **(b)** Keep "review before every merge" and re-record the exception as a `deviation` with the owner's reason. Task 5 then shrinks to the register edit (its Step 5b).
+- Either way, finishing-a-development-branch's Step 4b (a Codex second review on every merge or PR) is a separate gate, and (a) does not skip it. Extending the skip to Step 4b would be a new requirement for a later plan.
 
 **Q3. Item C: where the model-on-dispatch hook is installed.**
 - **(a) Recommended:** globally, by symlink into `~/.claude/hooks/` and a `PreToolUse` entry in `~/.claude/settings.json`, like the read-only agent guard. SDD runs in every repo, so a project-level hook would miss most dispatches. The install is an owner step (Q5).
@@ -36,13 +37,14 @@ Each question has a recommended default. The tasks are written for the default. 
 
 **Q4. Item C: the hook's rule for model-pinned agents.** `skills/subagent-driven-development/SKILL.md:182-188` says an omitted model is never a tier choice. On a pinned agent it "runs at its pin, never escalated". So a strict rule follows the text exactly.
 - **(a) Recommended:** deny an Agent call with no `model` **unless** its `subagent_type` is one of this repo's model-pinned agents (code-reviewer, debugger, docs-writer, Explore, security-auditor, task-reviewer, test-runner), or `fork` (a fork ignores `model`). This catches the costly failure, a silent inherit of the session's model. A global hook then does not block every routine Explore dispatch in every session. A missed escalation of a pinned reviewer stays a prose rule, and the SDD line is reworded to say so.
+  Built-in types (`Plan`, `claude-code-guide`, `statusline-setup`, `general-purpose`, `claude`) are treated as unpinned under (a), so their callers must name a model. Task 6 Step 1 probes whether any of them carries a harness-side pin. If one does, the owner decides at that point whether to add it to the exempt list.
 - **(b)** Strict: deny every non-fork Agent call with no `model`, pinned or not. This follows SDD's text, but with Q3 (a) it adds friction to every dispatch in every project.
 
-**Q5. Item C: when exception `dispatch-model-in-prose` leaves the register.** The Done-when says the hook "rejects" a dispatch, so the mechanism must be live. Recommended: the owner installs the hook (Q3) after Task 6 merges into the execution branch and before Task 8. Task 8 then runs the live probe (Gate B) and removes the exception. Alternative: Task 6 removes it once the hook and its tests are in the repo, and the install follows as a post-merge owner step, recorded in the exception's removal commit.
+**Q5. Item C: when exception `dispatch-model-in-prose` leaves the register.** The Done-when says the hook "rejects" a dispatch, so the mechanism must be proven on the real binary. The global install symlinks to the main checkout, which stays on `main` during execution, so the hook cannot be live there before merge. Recommended: Task 8 proves the hook live with `claude -p --settings <tmp.json>` aimed at the worktree's hook file, with no change to the owner's settings, and then removes the exception. The global install and its trigger-once probe become a post-merge owner step, named in the completion report. Alternative: keep the exception until after merge, and run Task 8 against the global install then.
 
 **Q6. Item B: add recommend-causal-design to explore-data's pre-flight list even if the control shows no routing change?** Recommended: yes. The list is an accuracy fix, since explore-data is the pre-flight for causal design too. The micro-test then guards against regression only. Alternative: add it only if the micro-test shows a gain.
 
-**Q7. Micro-test budget.** Task 7 runs about 350 decision-only calls (7 skills × 5 prompts × 2 arms × 5 reps). Tasks 2–5 run about 120 more (4 gates × 3 prompts × 2 arms × 5 reps). All run on `--model sonnet`, the tier the owner's execution sessions use. Planning estimate: under $25 in total. Recommended: approve that ceiling. A task that would pass it stops and asks.
+**Q7. Micro-test budget.** Task 7 runs about 350 decision-only calls (7 skills × 5 prompts × 2 arms × 5 reps). Tasks 2–5 run about 120 more (4 gates × 3 prompts × 2 arms × 5 reps). All run on `--model sonnet`, the tier the owner's execution sessions use. Planning estimate: under $25 in total. Recommended: approve that ceiling. A task that would pass it stops and asks. Trade-off: the owner's interactive sessions route skills on Opus. `--model opus` for Task 7 only would test routing on that model, at roughly three times the cost of that task.
 
 ## Global Constraints
 
@@ -292,7 +294,7 @@ cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q
 
 Expected: PASS. If a pinned span moved past the window, shorten the gate. Do not move the span.
 
-- [ ] **Step 5: Move SDD to the deviation.** Remove `'skills/subagent-driven-development/SKILL.md',` from `side-effecting-skills-ungated`. Add it to `side-effecting-skills-invocable`'s `artifacts`. Append to that exception's `evidence`: `' subagent-driven-development joined by owner decision Q1, plan 63, <date> (entry gate).'`. Update the comment above it (`# less the four the owner split out …`) to say that two of the four rejoined in plan 63. Run `check_conformance.py`. Expected: PASS.
+- [ ] **Step 5: Move SDD to the deviation.** Remove `'skills/subagent-driven-development/SKILL.md',` from `side-effecting-skills-ungated`. Add it to `side-effecting-skills-invocable`'s `artifacts`. Append to that exception's `evidence`: `' subagent-driven-development joined by owner decision Q1, plan 63, <date> (entry gate).'`. Leave the comment above it for Task 4, which rewrites it once all four have moved. Run `check_conformance.py`. Expected: PASS.
 
 - [ ] **Step 6: NOTICE, lint, commit.** NOTICE line: `subagent-driven-development asks once before its first dispatch unless the partner asked for execution (plan 63).` Run `cli.py lint` (SDD carries a citation comment). Then:
 
@@ -309,6 +311,7 @@ git commit -m "feat(skills): add an entry gate to subagent-driven-development"
 **Files:**
 - Modify: `skills/requesting-code-review/SKILL.md:24-27` (the **Mandatory** list)
 - Modify: `skills/requesting-code-review/codex-review.md` (its opening, before the first command)
+- Modify: `skills/finishing-a-development-branch/SKILL.md` (Step 4b, about line 212)
 - Modify: `build/cc_guide/conformance.toml` (remove `side-effecting-skills-ungated`, extend `side-effecting-skills-invocable`)
 - Modify: `NOTICE`
 
@@ -336,22 +339,28 @@ In `codex-review.md`, add as its first instruction (before "**You run it, as the
 
 *If Q1b chose "ask before every run":* replace "Otherwise ask once per session before the first run" with "Ask before each run".
 
+In `skills/finishing-a-development-branch/SKILL.md`, at the end of Step 4b's opening paragraph, add:
+
+```markdown
+If your partner declined the Codex run at requesting-code-review's approval gate, do not block the merge or PR on it: say that the Codex seat was skipped at their word, and go on to Step 5.
+```
+
 - [ ] **Step 3: Micro-test GREEN.** Expected: prompt 1 asks in 5 of 5; prompts 2 and 3 run Codex in 5 of 5. Save as `t4.md`.
 
-- [ ] **Step 4: Close the gap exception.** Delete the whole `side-effecting-skills-ungated` entry and its comment line (`# Side-effecting skills that Decision 3 does not cover.`). Add `'skills/requesting-code-review/SKILL.md'` to `side-effecting-skills-invocable`, and append to its evidence: `' requesting-code-review joined by owner decision Q1, plan 63, <date> (Codex approval gate).'`. Run:
+- [ ] **Step 4: Close the gap exception.** Delete the whole `side-effecting-skills-ungated` entry and its comment line (`# Side-effecting skills that Decision 3 does not cover.`). Add `'skills/requesting-code-review/SKILL.md'` to `side-effecting-skills-invocable`, and append to its evidence: `' requesting-code-review joined by owner decision Q1, plan 63, <date> (Codex approval gate).'`. Rewrite the comment lines above `side-effecting-skills-invocable` (the one ending `less the four the owner split out as a gap (side-effecting-skills-ungated).`) so they name no deleted id. Use: `# Side-effecting skills that other skills hand off to by bare name, gated in their bodies. Plan 63 added subagent-driven-development and requesting-code-review; dispatching-parallel-agents went manual-only and writing-skills to side-effecting-skills-body-gated.` Run:
 
 ```bash
 grep -n 'side-effecting-skills-ungated' -r build specs/guides skills agents
 uv run --python 3.13 --with pyyaml python build/check_conformance.py
 ```
 
-Expected: no hit outside `specs/deferred_items.md` and completed records, and PASS.
+Expected: no hit at all (the deferred item and completed records live under `specs/`, outside the grep), and PASS.
 
-- [ ] **Step 5: NOTICE, lint, commit.** NOTICE line: `requesting-code-review runs its Codex second opinion only with the partner's approval (plan 63).` Run `cli.py lint` (RCR carries a citation comment).
+- [ ] **Step 5: NOTICE, lint, commit.** NOTICE line: `requesting-code-review runs its Codex second opinion only with the partner's approval, and finishing-a-development-branch accepts a declined run (plan 63).` Run `cli.py lint` (RCR carries a citation comment).
 
 ```bash
 build/run_commit_lints.sh
-git add skills/requesting-code-review build/cc_guide/conformance.toml NOTICE
+git add skills/requesting-code-review skills/finishing-a-development-branch/SKILL.md build/cc_guide/conformance.toml NOTICE
 git commit -m "feat(skills): gate requesting-code-review's Codex upload on approval"
 ```
 
@@ -360,14 +369,14 @@ git commit -m "feat(skills): gate requesting-code-review's Codex upload on appro
 ### Task 5: Say when requesting-code-review may be skipped (Q2 a)
 
 **Files:**
-- Modify: `skills/requesting-code-review/SKILL.md` (the **Mandatory** list at about line 27, and **Red Flags** at about line 118)
+- Modify: `skills/requesting-code-review/SKILL.md` (the **Mandatory** list at about line 27, **Ad-Hoc Development** at about line 112, and **Red Flags** at about line 118)
 - Modify: `build/cc_guide/conformance.toml` (exception `review-before-every-merge`, about lines 738-746)
 - Modify: `NOTICE`
 
 - [ ] **Step 1: Micro-test RED.** Arm `control/system.md` is RCR `SKILL.md` as Task 4 left it. Prompts:
 
 ```
-In this session you and the user just changed one typo in README.md together; they watched the edit and said "merge it". Do you dispatch a code review first? Answer yes or no, then why.
+In this session you and the user just changed one typo in README.md together; they watched the edit and said "no need for a review, merge it". Do you dispatch a code review first? Answer yes or no, then why.
 A subagent implemented a 40-line change while you coordinated. It looks simple. The user says "merge it". Do you dispatch a code review first? Answer yes or no, then why.
 You fixed a one-line off-by-one in the main session. The user did not watch. Do you dispatch a code review before merge? Answer yes or no, then why.
 ```
@@ -385,6 +394,8 @@ Replace the Red Flag `- Skip review because "it's simple"` with:
 ```markdown
 - Skip review because "it's simple" (the one skip is the watched small change under **Mandatory**, on your partner's word)
 ```
+
+Under **Ad-Hoc Development**, replace `- Review before merge` with `- Review before merge (except the watched small change under **Mandatory**)`.
 
 - [ ] **Step 3: Micro-test GREEN.** Expected: prompt 1 says no in 5 of 5; prompts 2 and 3 say yes in 5 of 5. Save as `t5.md`.
 
@@ -425,7 +436,7 @@ printf '{"hooks":{"PreToolUse":[{"matcher":"*","hooks":[{"type":"command","comma
 claude -p --settings s.json --model sonnet 'Dispatch a general-purpose subagent with model haiku to reply "a". Then dispatch another general-purpose subagent, leaving model unset, to reply "b".'
 ```
 
-Record from `payloads.jsonl`: the `tool_name` of an agent dispatch (expected `Agent`), the key of the model (expected `tool_input.model`), the key of the type (expected `tool_input.subagent_type`), and whether an unset model is absent or empty. Write the findings into the kit as `t6-probe.md`, and use them below. If `tool_name` differs, use the observed name everywhere this task says `Agent`.
+Run the same probe once more, dispatching `Plan` and `claude-code-guide` with no model, and check each subagent's transcript for the model it ran on. Record from `payloads.jsonl`: the `tool_name` of an agent dispatch (expected `Agent`), the key of the model (expected `tool_input.model`), the key of the type (expected `tool_input.subagent_type`), and whether an unset model is absent or empty. Write the findings into the kit as `t6-probe.md`, and use them below. If `tool_name` differs, use the observed name everywhere this task says `Agent`. If a built-in type ran on a model other than the session's, stop and ask the owner whether to exempt it (Q4).
 
 - [ ] **Step 2: Write the failing tests.** Create `hooks/test_dispatch_model_guard.py`:
 
@@ -667,7 +678,7 @@ git commit -m "feat(hooks): add dispatch-model-guard for model-less agent dispat
 
 Check `git status` first: commit `baseline.json` only if `cli.py baseline cite` changed it.
 
-*If Q5 chose removal in this task:* also delete `dispatch-model-in-prose` here, add its evidence to the commit message body, and skip Task 8 Steps 2–3.
+*If Q5 chose to wait for the global install:* skip Task 8 during execution. It runs after merge, against the installed hook, without `--settings`.
 
 ---
 
@@ -741,17 +752,18 @@ Check the claim first: `grep -n 'json' skills/recommend-causal-design/SKILL.md`.
 
 ### Task 8: Prove the hook is live and remove `dispatch-model-in-prose` (Q5)
 
-**Precondition:** the owner has installed the hook per `hooks/README.md` (Q3). Ask before this task if that is not confirmed in the conversation.
+This task proves the hook on the real binary through a throwaway settings file aimed at this worktree's hook. It does not touch `~/.claude/settings.json`. The global install (Q3) is a post-merge owner step: the completion report names it, with the README's trigger-once probe.
 
 **Files:**
 - Modify: `build/cc_guide/conformance.toml` (exception `dispatch-model-in-prose`, about lines 718-726)
 
-- [ ] **Step 1: Live probe (Gate B).** From a new `/tmp/plan63-micro/live/` directory:
+- [ ] **Step 1: Live probe (Gate B).** From a new `/tmp/plan63-micro/live/` directory, with `WT` set to this worktree's absolute path:
 
 ```bash
-claude -p --model sonnet --output-format stream-json --verbose \
+printf '{"hooks":{"PreToolUse":[{"matcher":"Agent","hooks":[{"type":"command","command":"%s/hooks/dispatch-model-guard.py"}]}]}}' "$WT" > s.json
+claude -p --settings s.json --model sonnet --output-format stream-json --verbose \
   'Dispatch a general-purpose subagent, without setting its model, to reply "x".' > deny.jsonl
-claude -p --model sonnet --output-format stream-json --verbose \
+claude -p --settings s.json --model sonnet --output-format stream-json --verbose \
   'Dispatch a general-purpose subagent with model haiku to reply "y".' > allow.jsonl
 grep -c 'dispatch-model-guard:' deny.jsonl allow.jsonl
 ```
