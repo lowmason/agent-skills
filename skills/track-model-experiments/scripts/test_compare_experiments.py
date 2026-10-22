@@ -637,3 +637,212 @@ def test_unpaired_or_repeated_markers_are_refused_before_anything_is_written(
     assert code == 1 and err.startswith('error: ') and 'one pair of markers' in err
     assert ledger.read_text() == text
     assert not out.exists()
+
+
+# --- Score mode: ranking and refusals (plan 65 Task 2; spec R13, R16, R17, R24) ---
+
+def _scores(folder, units, criterion='cv-mse', orientation='lower'):
+    folder.mkdir(parents=True, exist_ok=True)
+    (folder / 'scores.json').write_text(json.dumps(
+        {'criterion': criterion, 'orientation': orientation, 'units': units}))
+    return folder
+
+
+# Hand-computed: d = b - a = [0.5, 0.0, 1.0, 0.5], so the paired difference is 0.5.
+# Its sample sd (ddof=1) is sqrt(0.5 / 3), so SE = 0.2041; ddof=0 would give 0.1768.
+A_UNITS = {'fold-1': 1.0, 'fold-2': 2.0, 'fold-3': 3.0, 'fold-4': 4.0}
+B_UNITS = {'fold-1': 1.5, 'fold-2': 2.0, 'fold-3': 4.0, 'fold-4': 4.5}
+
+
+def test_lower_is_better_ranks_the_smallest_mean_first(tmp_path):
+    _scores(tmp_path / 'b', B_UNITS)
+    _scores(tmp_path / 'a', A_UNITS)
+    ranking, criterion, orientation = compare_experiments.compare_scores(tmp_path, None)
+    assert [r['id'] for r in ranking] == ['a', 'b']
+    assert (criterion, orientation) == ('cv-mse', 'lower')
+    assert [r['score'] for r in ranking] == [pytest.approx(2.5), pytest.approx(3.0)]
+
+
+def test_higher_is_better_ranks_the_largest_mean_first(tmp_path):
+    _scores(tmp_path / 'a', A_UNITS, 'lfo-elpd', 'higher')
+    _scores(tmp_path / 'b', B_UNITS, 'lfo-elpd', 'higher')
+    ranking, _, orientation = compare_experiments.compare_scores(tmp_path, None)
+    assert orientation == 'higher'
+    assert [r['id'] for r in ranking] == ['b', 'a']
+    assert ranking[1]['score_diff'] == pytest.approx(-0.5)
+
+
+def test_paired_difference_and_its_se_match_the_hand_computation(tmp_path):
+    _scores(tmp_path / 'a', A_UNITS)
+    _scores(tmp_path / 'b', B_UNITS)
+    top, other = compare_experiments.compare_scores(tmp_path, None)[0]
+    assert (top['score_diff'], top['se_diff']) == (0.0, 0.0)
+    assert other['score_diff'] == pytest.approx(0.5)
+    assert other['se_diff'] == pytest.approx(np.sqrt(0.5 / 3) / 2)
+    assert other['se_diff'] != pytest.approx(np.sqrt(0.125) / 2)    # not ddof=0
+    assert other['n_units'] == 4
+
+
+def _score_refusal(tmp_path, capsys, *extra):
+    code = compare_experiments.main(['--analysis-dir', str(tmp_path), '--mode', 'score', *extra])
+    err = capsys.readouterr().err
+    assert code == 1 and err.startswith('error: ') and 'Traceback' not in err
+    return err
+
+
+def test_a_folder_without_scores_json_is_refused(tmp_path, capsys):
+    _scores(tmp_path / 'a', A_UNITS)
+    (tmp_path / 'b').mkdir()
+    err = _score_refusal(tmp_path, capsys, '--folders', str(tmp_path / 'a'), str(tmp_path / 'b'))
+    assert 'no scores.json in b' in err
+
+
+def test_a_criterion_that_differs_across_variants_is_refused(tmp_path, capsys):
+    _scores(tmp_path / 'a', A_UNITS)
+    _scores(tmp_path / 'b', B_UNITS, criterion='cv-mae')
+    err = _score_refusal(tmp_path, capsys)
+    assert "'b': 'cv-mae'" in err and 'one criterion' in err
+
+
+def test_an_orientation_that_differs_across_variants_is_refused(tmp_path, capsys):
+    _scores(tmp_path / 'a', A_UNITS)
+    _scores(tmp_path / 'b', B_UNITS, orientation='higher')
+    err = _score_refusal(tmp_path, capsys)
+    assert 'orientation differs' in err and "'b': 'higher'" in err
+
+
+def test_unit_keys_that_differ_across_variants_are_refused(tmp_path, capsys):
+    _scores(tmp_path / 'a', A_UNITS)
+    _scores(tmp_path / 'b', {**{k: v for k, v in B_UNITS.items() if k != 'fold-4'},
+                              'fold-5': 4.5})
+    err = _score_refusal(tmp_path, capsys)
+    assert "variant 'b'" in err and 'fold-5' in err and 'fold-4' in err
+
+
+@pytest.mark.parametrize('value', [float('nan'), float('inf')])
+def test_a_non_finite_score_is_refused(tmp_path, capsys, value):
+    _scores(tmp_path / 'a', A_UNITS)
+    _scores(tmp_path / 'b', {**B_UNITS, 'fold-2': value})
+    err = _score_refusal(tmp_path, capsys)
+    assert "variant 'b'" in err and 'non-finite' in err and 'fold-2' in err
+
+
+def test_fewer_than_two_units_is_refused(tmp_path, capsys):
+    _scores(tmp_path / 'a', {'fold-1': 1.0})
+    _scores(tmp_path / 'b', {'fold-1': 1.5})
+    err = _score_refusal(tmp_path, capsys)
+    assert "variant 'a'" in err and 'at least 2' in err
+
+
+def test_fewer_than_two_score_variants_is_refused(tmp_path, capsys):
+    _scores(tmp_path / 'a', A_UNITS)
+    err = _score_refusal(tmp_path, capsys)
+    assert 'at least two variants' in err
+
+
+# --- Score mode: the ledger (plan 65 Task 2; spec R15, R16, R24) ---
+
+SCORE_LEDGER = '''# Experiments — county nowcast
+
+Criterion: cv-mse
+
+| id (slug) | parent | what changed | hypothesis | score | Δscore | SE(Δ) | status |
+|---|---|---|---|---|---|---|---|
+| a | — | ridge on lagged features | sets a floor | | | | candidate |
+| b | a | add county effects | pooling helps | | | | candidate |
+
+<!-- COMPARISON:BEGIN -->
+<!-- COMPARISON:END -->
+
+## Decision log
+- Criterion: elpd-loo here is prose and never sets the mode.
+'''
+ROW_C = '| c | a | gradient boosting | nonlinearity matters | | | | candidate |\n'
+
+
+def _score_ledger(tmp_path, text=SCORE_LEDGER):
+    ledger = tmp_path / 'experiments.md'
+    ledger.write_text(text)
+    return ledger
+
+
+def _with_row_c(text=SCORE_LEDGER):
+    row_b = '| b | a | add county effects | pooling helps | | | | candidate |\n'
+    return text.replace(row_b, row_b + ROW_C)
+
+
+def test_ledger_criterion_reads_the_line_above_the_variants_table():
+    assert compare_experiments.ledger_criterion(SCORE_LEDGER) == 'cv-mse'
+    assert compare_experiments.ledger_criterion(LEDGER) == 'elpd-loo'
+    undeclared = SCORE_LEDGER.replace('Criterion: cv-mse\n', '')
+    assert compare_experiments.ledger_criterion(undeclared) == 'elpd-loo'
+
+
+def test_score_mode_against_an_elpd_ledger_is_refused(tmp_path, capsys):
+    ledger = _score_ledger(tmp_path, LEDGER)
+    err = _score_refusal(tmp_path, capsys, '--ledger', str(ledger))
+    assert 'Criterion: elpd-loo' in err and '--mode elpd' in err
+    assert ledger.read_text() == LEDGER
+
+
+def test_elpd_mode_against_a_score_ledger_is_refused(tmp_path, capsys):
+    ledger = _score_ledger(tmp_path)
+    code = compare_experiments.main(['--analysis-dir', str(tmp_path), '--ledger', str(ledger)])
+    err = capsys.readouterr().err
+    assert code == 1 and err.startswith('error: ')
+    assert 'Criterion: cv-mse' in err and '--mode score' in err
+
+
+def test_a_variant_criterion_that_differs_from_the_ledger_is_refused(tmp_path, capsys):
+    runs = tmp_path / 'runs'
+    _scores(runs / 'a', A_UNITS)
+    _scores(runs / 'b', B_UNITS)
+    ledger = _score_ledger(tmp_path, SCORE_LEDGER.replace('Criterion: cv-mse', 'Criterion: cv-mae'))
+    err = _score_refusal(runs, capsys, '--ledger', str(ledger))
+    assert "Criterion: line" in err and "'cv-mae'" in err and "'a': 'cv-mse'" in err
+
+
+def test_score_cells_qualified_marker_and_comparison_json(tmp_path, capsys):
+    runs = tmp_path / 'runs'
+    _scores(runs / 'a', A_UNITS)
+    _scores(runs / 'b', B_UNITS)
+    ledger = _score_ledger(tmp_path, _with_row_c())
+    out = tmp_path / 'comparison.json'
+    code = compare_experiments.main(['--analysis-dir', str(runs), '--mode', 'score',
+                                     '--ledger', str(ledger), '--output', str(out)])
+    assert code == 0, capsys.readouterr().err
+    assert 'ledger rows not compared: c.' in capsys.readouterr().err
+    payload = json.loads(out.read_text())
+    assert (payload['mode'], payload['criterion'], payload['not_compared']) == (
+        'score', 'cv-mse', ['c'])
+    text = ledger.read_text()
+    assert _table_cells(text, 'a')[4:] == ['2.5', '0', '0', '**best among score-compared variants**']
+    assert _table_cells(text, 'b')[4:] == ['3', '0.5', '0.2041', 'candidate']
+    assert _table_cells(text, 'c')[4:] == ['', '', '', 'candidate']
+    assert 'Not compared: c. The best marker covers the score-compared variants only.' in text
+    assert 'Ranked on cv-mse (lower is better).' in text
+    assert '- Criterion: elpd-loo here is prose and never sets the mode.' in text
+
+
+def test_score_marker_resets_once_every_row_is_compared_and_reruns_are_idempotent(tmp_path):
+    runs = tmp_path / 'runs'
+    _scores(runs / 'a', A_UNITS)
+    _scores(runs / 'b', B_UNITS)
+    ledger = _score_ledger(tmp_path, _with_row_c())
+    args = ['--analysis-dir', str(runs), '--mode', 'score', '--ledger', str(ledger)]
+    assert compare_experiments.main(args) == 0
+    ledger.write_text(ledger.read_text().replace(ROW_C, ''))
+    assert compare_experiments.main(args) == 0
+    first = ledger.read_text()
+    assert compare_experiments.main(args) == 0
+    assert ledger.read_text() == first
+    assert _table_cells(first, 'a')[-1] == '**best**'
+    assert 'score-compared' not in first
+
+
+def test_elpd_comparison_json_carries_mode_and_criterion(analysis_dir, tmp_path):
+    out = tmp_path / 'comparison.json'
+    r = _run('--analysis-dir', str(analysis_dir), '--output', str(out))
+    assert r.returncode == 0, r.stderr
+    payload = json.loads(out.read_text())
+    assert (payload['mode'], payload['criterion']) == ('elpd', 'elpd-loo')

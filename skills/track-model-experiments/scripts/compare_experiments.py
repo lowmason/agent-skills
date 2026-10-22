@@ -7,29 +7,42 @@
 #   'h5py>=3.0',
 # ]
 # ///
-'''Rank Bayesian model variants from their saved InferenceData.
+'''Rank model variants and stamp the result into their experiments ledger.
 
-Sits above bayesian-workflow's per-variant slug folders; defers the ELPD
-statistics to bayesian-workflow/references/model-comparison.md. A ledger row it
-cannot rank (no inference_data.nc) is reported, never dropped in silence. Run
---help for usage.
+ELPD mode (--mode elpd, the default) ranks Bayesian fits by PSIS-LOO from each
+variant's inference_data.nc and defers the ELPD statistics to
+bayesian-workflow/references/model-comparison.md. Score mode (--mode score)
+ranks any variants by the per-unit scores in each variant's scores.json (CV
+folds or forecast origins); references/predictive-evaluation.md gives the
+file's contract. A ledger declares one criterion, and a run in the other mode
+is refused. A ledger row the comparator cannot rank is reported, never dropped
+in silence. Run --help for usage.
 '''
 import argparse
 import json
 import math
 import re
+import statistics
 import sys
 from pathlib import Path
 
 import arviz as az
 
 # The status cell of the top-ranked Variants-table row. While a ledger row went
-# uncompared, the marker says the ranking covers the ELPD-compared rows only.
+# uncompared, the marker says the ranking covers the compared rows only.
 BEST = '**best**'
 QUALIFIED_BEST = '**best among ELPD-compared variants**'
-MARKERS = (BEST, QUALIFIED_BEST)
+SCORE_QUALIFIED_BEST = '**best among score-compared variants**'
+MARKERS = (BEST, QUALIFIED_BEST, SCORE_QUALIFIED_BEST)
 BLOCK_BEGIN = '<!-- COMPARISON:BEGIN -->'
 BLOCK_END = '<!-- COMPARISON:END -->'
+MODES = ('elpd', 'score')
+# A ledger without a Criterion: line reads as this, so ELPD ledgers need none.
+ELPD_CRITERION = 'elpd-loo'
+SCORE_FILE = 'scores.json'
+ORIENTATIONS = ('higher', 'lower')
+# The paired difference needs a spread, so a variant needs two units at least.
+MIN_UNITS = 2
 # The sample dimensions of a log-likelihood variable; every other dimension is an observation.
 SAMPLE_DIMS = ('chain', 'draw')
 
@@ -240,6 +253,15 @@ def metric_cells(r: dict) -> dict[str, str]:
     }
 
 
+def score_cells(r: dict) -> dict[str, str]:
+    '''One score-ranked variant's metrics, keyed by a score ledger's column names.'''
+    return {
+        'score': f"{r['score']:.4g}",
+        'Δscore': f"{r['score_diff']:.4g}",
+        'SE(Δ)': f"{r['se_diff']:.4g}",
+    }
+
+
 def render_comparison_block(ranking: list[dict], not_compared: list[str]) -> str:
     header = '| id | ELPD | ΔELPD | dSE | weight | max R̂ | div | warn |'
     sep = '|---|---|---|---|---|---|---|---|'
@@ -257,7 +279,28 @@ def render_comparison_block(ranking: list[dict], not_compared: list[str]) -> str
     return f'{BLOCK_BEGIN}\n{table}\n{BLOCK_END}'
 
 
+def render_score_table(ranking: list[dict], criterion: str, orientation: str) -> str:
+    rows = []
+    for r in ranking:
+        m = score_cells(r)
+        rows.append(f"| {r['id']} | {m['score']} | {m['Δscore']} | {m['SE(Δ)']} | "
+                    f"{r['n_units']} |")
+    return '\n'.join([f'Ranked on {criterion} ({orientation} is better).', '',
+                      '| id | score | Δscore | SE(Δ) | units |',
+                      '|---|---|---|---|---|', *rows])
+
+
+def render_score_block(ranking: list[dict], not_compared: list[str], criterion: str,
+                       orientation: str) -> str:
+    table = render_score_table(ranking, criterion, orientation)
+    if not_compared:
+        table += (f'\n\nNot compared: {", ".join(not_compared)}. '
+                  'The best marker covers the score-compared variants only.')
+    return f'{BLOCK_BEGIN}\n{table}\n{BLOCK_END}'
+
+
 _BLOCK_RE = re.compile(f'{re.escape(BLOCK_BEGIN)}.*?{re.escape(BLOCK_END)}', re.S)
+_CRITERION_RE = re.compile(r'Criterion:\s*(\S(?:.*\S)?)')
 
 
 def _cells(line: str) -> list[str]:
@@ -309,6 +352,26 @@ def ledger_ids(text: str) -> list[str] | None:
     return [_cells(lines[i])[0] for i in table[2]]
 
 
+def ledger_criterion(text: str) -> str:
+    '''The criterion the ledger declares above its Variants table; elpd-loo without one.
+
+    Only a line outside the COMPARISON block and above the table counts, so a
+    Criterion: line in the Decision log or in the block never sets the mode.
+    '''
+    lines = text.splitlines()
+    table = _variants_table(lines)
+    in_block = False
+    for line in lines[:table[0] if table else len(lines)]:
+        stripped = line.strip()
+        if stripped == BLOCK_BEGIN:
+            in_block = True
+        elif stripped == BLOCK_END:
+            in_block = False
+        elif not in_block and (m := _CRITERION_RE.fullmatch(stripped)):
+            return m.group(1)
+    return ELPD_CRITERION
+
+
 def ledger_problem(ledger_path: Path) -> str | None:
     '''Why the comparator cannot update this ledger safely; None when it can.'''
     if not ledger_path.is_file():
@@ -325,6 +388,17 @@ def ledger_problem(ledger_path: Path) -> str | None:
     return None
 
 
+def mode_problem(mode: str, criterion: str, ledger_path: Path) -> str | None:
+    '''Why --mode cannot fill a ledger on this criterion; None when it can.'''
+    wanted = 'elpd' if criterion == ELPD_CRITERION else 'score'
+    if mode == wanted:
+        return None
+    return (f'{ledger_path} reads as Criterion: {criterion} (a ledger without a '
+            f'Criterion: line reads as {ELPD_CRITERION}), which --mode {mode} cannot '
+            f'rank. Run --mode {wanted}, or re-declare the ledger\'s criterion: a '
+            'ledger holds one criterion.')
+
+
 def _wide_row_note(cells: list[str], width: int, top_id: str) -> str:
     note = (f'note: ledger row {cells[0]} has {len(cells)} cells against {width} in the '
             'header, so its cells do not line up with the header and the row was left '
@@ -337,7 +411,7 @@ def _wide_row_note(cells: list[str], width: int, top_id: str) -> str:
 
 
 def update_ledger(ledger_path: Path, block: str, ranking: list[dict],
-                  not_compared: list[str]) -> None:
+                  not_compared: list[str], mode: str = 'elpd') -> None:
     '''Rewrite the COMPARISON block, fill the metric cells and move the best marker.
 
     Only the COMPARISON block (replaced, or appended if absent) and the Variants
@@ -347,7 +421,7 @@ def update_ledger(ledger_path: Path, block: str, ranking: list[dict],
     its cells, except that a stale best marker returns to candidate. A row with
     more cells than the header does not line up with it, so it is left as it is
     and a note names it. Notes also name ranked variants that have no row, and a
-    table with none of the metric columns.
+    table with none of the mode's metric columns.
     '''
     text = ledger_path.read_text()
     if _BLOCK_RE.search(text):
@@ -361,8 +435,10 @@ def update_ledger(ledger_path: Path, block: str, ranking: list[dict],
         status = [c.lower() for c in header].index('status')
         ranked = {r['id']: r for r in ranking}
         top_id = ranking[0]['id']
-        marker = QUALIFIED_BEST if not_compared else BEST
-        columns = list(metric_cells(ranking[0]))
+        cells_of = score_cells if mode == 'score' else metric_cells
+        qualified = SCORE_QUALIFIED_BEST if mode == 'score' else QUALIFIED_BEST
+        marker = qualified if not_compared else BEST
+        columns = list(cells_of(ranking[0]))
         if not set(columns) & set(header):
             print(f'note: the Variants table has none of the metric columns '
                   f'{", ".join(columns)}. Names match exactly, case and symbols '
@@ -381,7 +457,7 @@ def update_ledger(ledger_path: Path, block: str, ranking: list[dict],
             if cells[status] in MARKERS:
                 cells[status] = 'candidate'
             if entry is not None:
-                for column, value in metric_cells(entry).items():
+                for column, value in cells_of(entry).items():
                     if column in header:
                         cells[header.index(column)] = value
                 if entry['id'] == top_id:
@@ -402,9 +478,10 @@ def compare(analysis_dir: Path, folders: list[Path] | None):
     missing = [f.name for f in variants if not (f / 'inference_data.nc').is_file()]
     if missing:
         raise ValueError(
-            f'no inference_data.nc in {", ".join(missing)}; the comparator ranks '
-            'Bayesian fits by ELPD only. Until a non-ELPD mode exists, record a '
-            "non-Bayesian winner and its CV score in the ledger's Decision log.")
+            f'no inference_data.nc in {", ".join(missing)}; ELPD mode ranks Bayesian '
+            'fits only. To rank a non-Bayesian variant, give every variant a '
+            'scores.json on one criterion and run --mode score against a score '
+            'ledger; do not park the variant in the Decision log.')
     if len(variants) < 2:
         raise ValueError('need at least two variants to compare '
                          f'(found {len(variants)} in {analysis_dir}).')
@@ -429,6 +506,112 @@ def compare(analysis_dir: Path, folders: list[Path] | None):
     return ranking, comparison
 
 
+def discover_score_variants(analysis_dir: Path) -> list[Path]:
+    return sorted(p.parent for p in analysis_dir.glob(f'*/{SCORE_FILE}'))
+
+
+def load_scores(folder: Path) -> dict:
+    '''A variant's scores.json, checked against the contract in references/predictive-evaluation.md.'''
+    name, path = folder.name, folder / SCORE_FILE
+    if not path.is_file():
+        raise ValueError(
+            f'no {SCORE_FILE} in {name}; score mode ranks each variant from it. Write '
+            '{"criterion": ..., "orientation": "higher" or "lower", "units": {unit: score}} '
+            'from its CV folds or forecast origins (references/predictive-evaluation.md).')
+    try:
+        data = json.loads(path.read_text())
+    except ValueError as exc:
+        raise ValueError(f'{name}/{SCORE_FILE} is not valid JSON: {exc}') from exc
+    if not isinstance(data, dict):
+        raise ValueError(f'{name}/{SCORE_FILE} must hold a JSON object.')
+    criterion, orientation, units = (data.get(k) for k in ('criterion', 'orientation', 'units'))
+    if not isinstance(criterion, str) or not criterion.strip():
+        raise ValueError(f'{name}/{SCORE_FILE} has no criterion string; name the score '
+                         'and its protocol, for example cv-mse or lfo-elpd.')
+    if orientation not in ORIENTATIONS:
+        raise ValueError(f'{name}/{SCORE_FILE} has orientation {orientation!r}; write '
+                         '"higher" or "lower", whichever is better for this score.')
+    if not isinstance(units, dict):
+        raise ValueError(f'{name}/{SCORE_FILE} has no units object; map each fold or '
+                         'forecast origin to its score.')
+    bad = sorted(str(k) for k, v in units.items()
+                 if isinstance(v, bool) or not isinstance(v, int | float)
+                 or not math.isfinite(v))
+    if bad:
+        raise ValueError(f'variant {name!r} has a non-finite or non-numeric score for '
+                         f'units {", ".join(bad)}; every unit needs one finite number. '
+                         'Fix or rerun those units.')
+    if len(units) < MIN_UNITS:
+        raise ValueError(f'variant {name!r} has {len(units)} unit(s); the paired '
+                         f'difference needs at least {MIN_UNITS} folds or forecast origins.')
+    return {'criterion': criterion, 'orientation': orientation,
+            'units': {str(k): float(v) for k, v in units.items()}}
+
+
+def compare_scores(analysis_dir: Path, folders: list[Path] | None,
+                   declared: str | None = None) -> tuple[list[dict], str, str]:
+    '''Rank variants by mean score, with each one's paired difference from the top.
+
+    `declared` is the ledger's criterion, when a ledger is given. Returns the
+    ranking, the criterion and the orientation. A variant's
+    score_diff is the mean over units of its score minus the top variant's, and
+    se_diff is that difference's sample standard deviation over the square root
+    of the number of units.
+    '''
+    variants = folders or discover_score_variants(analysis_dir)
+    scores = {f.name: load_scores(f) for f in variants}
+    if len(scores) < 2:
+        raise ValueError('need at least two variants to compare '
+                         f'(found {len(scores)} {SCORE_FILE} in {analysis_dir}).')
+    criterion = declared or next(iter(scores.values()))['criterion']
+    source = 'the ledger\'s Criterion: line' if declared else 'the first variant'
+    wrong = {n: s['criterion'] for n, s in scores.items() if s['criterion'] != criterion}
+    if wrong:
+        raise ValueError(f'criterion {criterion!r} (from {source}) differs in {wrong}; '
+                         'a ledger ranks one criterion. Rescore those variants on '
+                         f'{criterion!r}, or start a ledger for the other criterion.')
+    orientations = {n: s['orientation'] for n, s in scores.items()}
+    if len(set(orientations.values())) > 1:
+        raise ValueError(f'orientation differs across variants {orientations}; one '
+                         'criterion has one orientation. Fix the files that are wrong.')
+    names = list(scores)
+    keys = set(scores[names[0]]['units'])
+    for n in names[1:]:
+        other = set(scores[n]['units'])
+        if other != keys:
+            raise ValueError(
+                f'variant {n!r} has different units from {names[0]!r} (only in {n}: '
+                f'{sorted(other - keys)}; only in {names[0]}: {sorted(keys - other)}). '
+                'Score every variant on the same folds or forecast origins.')
+    orientation = orientations[names[0]]
+    means = {n: statistics.fmean(s['units'].values()) for n, s in scores.items()}
+    order = sorted(names, key=means.__getitem__, reverse=orientation == 'higher')
+    top = scores[order[0]]['units']
+    ranking = []
+    for n in order:
+        d = [scores[n]['units'][u] - top[u] for u in sorted(keys)]
+        ranking.append({
+            'id': n,
+            'score': means[n],
+            'score_diff': statistics.fmean(d),
+            'se_diff': statistics.stdev(d) / math.sqrt(len(d)),
+            'n_units': len(d),
+        })
+    return ranking, criterion, orientation
+
+
+def _not_compared_note(not_compared: list[str], mode: str) -> str:
+    if mode == 'score':
+        remedy = ('give each a scores.json on the ledger\'s criterion to rank it.')
+        compared = 'score-compared'
+    else:
+        remedy = ('a variant with no inference_data.nc ranks only in a score ledger '
+                  '(--mode score), where every variant writes scores.json.')
+        compared = 'ELPD-compared'
+    return (f'note: ledger rows not compared: {", ".join(not_compared)}. The ranking and '
+            f'the best marker cover the {compared} variants only; {remedy}')
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -436,22 +619,35 @@ def main(argv=None):
                     help='directory containing the variant slug folders')
     ap.add_argument('--folders', type=Path, nargs='*', default=None,
                     help='explicit variant folders (overrides discovery)')
+    ap.add_argument('--mode', choices=MODES, default='elpd',
+                    help='elpd: rank Bayesian fits by PSIS-LOO from inference_data.nc; '
+                         'score: rank any variants from scores.json (default: elpd)')
     ap.add_argument('--ledger', type=Path, default=None,
                     help='experiments.md to update (COMPARISON block, metric cells, best marker)')
     ap.add_argument('--output', type=Path, default=None,
                     help='write comparison.json here')
     args = ap.parse_args(argv)
 
-    problem = ledger_problem(args.ledger) if args.ledger else None
-    if problem:
-        print(f'error: {problem}', file=sys.stderr)
-        return 1
+    criterion = ELPD_CRITERION
+    if args.ledger:
+        problem = ledger_problem(args.ledger)
+        if problem is None:
+            criterion = ledger_criterion(args.ledger.read_text())
+            problem = mode_problem(args.mode, criterion, args.ledger)
+        if problem:
+            print(f'error: {problem}', file=sys.stderr)
+            return 1
     try:
-        ranking, comparison = compare(args.analysis_dir, args.folders)
+        if args.mode == 'score':
+            ranking, criterion, orientation = compare_scores(
+                args.analysis_dir, args.folders, criterion if args.ledger else None)
+            print(render_score_table(ranking, criterion, orientation))
+        else:
+            ranking, comparison = compare(args.analysis_dir, args.folders)
+            print(comparison.to_string())
     except ValueError as exc:
         print(f'error: {exc}', file=sys.stderr)
         return 1
-    print(comparison.to_string())
     not_compared = []
     if args.ledger:
         ids = ledger_ids(args.ledger.read_text())
@@ -462,16 +658,17 @@ def main(argv=None):
         ranked = {r['id'] for r in ranking}
         not_compared = [i for i in ids or [] if i not in ranked]
         if not_compared:
-            print(f'note: ledger rows not compared: {", ".join(not_compared)}. The '
-                  'ranking and the best marker cover the ELPD-compared variants only; '
-                  'until a non-ELPD mode exists, record a non-Bayesian winner and its '
-                  'CV score in the Decision log.', file=sys.stderr)
-    payload = {'ranking': ranking, 'not_compared': not_compared}
+            print(_not_compared_note(not_compared, args.mode), file=sys.stderr)
+    payload = {'mode': args.mode, 'criterion': criterion, 'ranking': ranking,
+               'not_compared': not_compared}
     if args.output:
         args.output.write_text(json.dumps(payload, indent=2))
     if args.ledger:
-        block = render_comparison_block(ranking, not_compared)
-        update_ledger(args.ledger, block, ranking, not_compared)
+        if args.mode == 'score':
+            block = render_score_block(ranking, not_compared, criterion, orientation)
+        else:
+            block = render_comparison_block(ranking, not_compared)
+        update_ledger(args.ledger, block, ranking, not_compared, args.mode)
     return 0
 
 
