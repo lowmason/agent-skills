@@ -1,9 +1,8 @@
 ---
 name: executing-plans
 description: >
-  Use when you have a written implementation plan to execute yourself, task by task, in the
-  current session — e.g. a plan file from writing-plans in specs/plans/ — because tasks are
-  tightly coupled or your human partner asked for direct execution rather than subagent dispatch
+  Use when a written implementation plan is to be executed directly, task by task, in the current session — e.g. a plan file from writing-plans in specs/plans/ — because tasks are
+  tightly coupled or the human partner asked for direct execution rather than subagent dispatch
 license: MIT
 metadata:
   author: 'Jesse Vincent'
