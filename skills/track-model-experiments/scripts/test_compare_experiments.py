@@ -1,5 +1,4 @@
 import json
-import re
 import subprocess
 import sys
 from pathlib import Path
@@ -276,7 +275,11 @@ def _ledger_with(*rows):
 
 
 def _row(text, variant_id):
-    return next(ln for ln in text.splitlines() if ln.startswith(f'| {variant_id} '))
+    '''A Variants-table row, read from the table itself, so a COMPARISON block or
+    another table above it cannot shadow the row.'''
+    lines = text.splitlines()
+    _, _, rows = compare_experiments._variants_table(lines)
+    return next(lines[i] for i in rows if compare_experiments._cells(lines[i])[0] == variant_id)
 
 
 def test_folder_without_inference_data_exits_through_error(analysis_dir, tmp_path):
@@ -359,9 +362,9 @@ def test_metric_cells_are_filled_from_the_ranking(analysis_dir, tmp_path):
     rank = {e['id']: e for e in json.loads(out.read_text())['ranking']}
     cells = [c.strip() for c in _row(ledger.read_text(), 'm-intercept').strip('|').split('|')]
     elpd, d_elpd, rhat, div, ppc, psense = cells[4:10]
-    assert elpd == f"{rank['m-intercept']['elpd']:.1f}"
-    assert d_elpd == f"{rank['m-intercept']['elpd_diff']:.1f}"
-    assert rhat == f"{rank['m-intercept']['max_rhat']:.3f}"
+    assert elpd == f'{rank["m-intercept"]["elpd"]:.1f}'
+    assert d_elpd == f'{rank["m-intercept"]["elpd_diff"]:.1f}'
+    assert rhat == f'{rank["m-intercept"]["max_rhat"]:.3f}'
     assert div == str(rank['m-intercept']['divergences'])
     assert (ppc, psense) == ('unknown', 'unknown')       # no check_report.json in the fixture
     assert cells[2:4] == ['drop slope', 'slope noise']   # the human half is untouched
@@ -440,10 +443,6 @@ def test_several_log_likelihood_variables_are_refused(tmp_path):
 ESCAPED_HYPOTHESIS = 'p(y \\| x) depends on x'
 
 
-def _unescaped_cells(row):
-    return [c.strip() for c in re.split(r'(?<!\\)\|', row.strip().strip('|'))]
-
-
 def test_an_escaped_pipe_stays_inside_its_cell(analysis_dir, tmp_path):
     text = _ledger_with('m-full', 'm-intercept')
     row = _row(text, 'm-intercept')
@@ -457,11 +456,11 @@ def test_an_escaped_pipe_stays_inside_its_cell(analysis_dir, tmp_path):
     after = _row(ledger.read_text(), 'm-intercept')
     left_half = before[:before.index(ESCAPED_HYPOTHESIS) + len(ESCAPED_HYPOTHESIS)]
     assert after.startswith(left_half)                       # the human cells are byte-identical
-    cells = _unescaped_cells(after)
+    cells = compare_experiments._cells(after)
     assert len(cells) == 11                                  # one cell per header column
     assert cells[3] == ESCAPED_HYPOTHESIS
-    assert cells[4] == f"{rank['m-intercept']['elpd']:.1f}"
-    assert cells[5] == f"{rank['m-intercept']['elpd_diff']:.1f}"
+    assert cells[4] == f'{rank["m-intercept"]["elpd"]:.1f}'
+    assert cells[5] == f'{rank["m-intercept"]["elpd_diff"]:.1f}'
     assert cells[-1] == 'candidate'
 
 
@@ -492,6 +491,9 @@ def test_a_row_with_more_cells_than_the_header_is_left_alone(analysis_dir, tmp_p
     notes = [ln for ln in r.stderr.splitlines()
              if ln.startswith('note: ') and 'do not line up' in ln]
     assert len(notes) == 1 and 'm-intercept' in notes[0]
+    full = compare_experiments._cells(_row(ledger.read_text(), 'm-full'))
+    assert full[-1] == '**best**'                            # the other row still gets the marker
+    assert full[4] and full[5]                               # and its metric cells
 
 
 # --- Hardening after plan 59's final review (plan 65 Task 1) ---
@@ -517,10 +519,7 @@ def _stamp(ledger, ranking, not_compared=()):
 
 def _table_cells(text, variant_id):
     '''A Variants-table row's cells, read through the comparator's own parser.'''
-    lines = text.splitlines()
-    _, _, rows = compare_experiments._variants_table(lines)
-    return next(cells for cells in (compare_experiments._cells(lines[i]) for i in rows)
-                if cells[0] == variant_id)
+    return compare_experiments._cells(_row(text, variant_id))
 
 
 def test_cells_keep_an_empty_first_cell():
