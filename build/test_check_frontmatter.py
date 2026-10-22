@@ -11,6 +11,7 @@ from check_frontmatter import (
     check_invocations,
     check_script_headers,
     check_command_file,
+    check_pinned_roster,
     check_readonly_roster,
     check_skill,
     load_readonly_roster,
@@ -774,6 +775,31 @@ def test_load_readonly_roster_reads_the_real_guard():
 def test_real_roster_matches_the_real_agents():
     # The bidirectional assert against the shipped guard and agents/.
     assert check_readonly_roster() == []
+
+
+def _pinned_agent(dir_path: Path, filename: str, name: str, model: str | None) -> Path:
+    md = dir_path / filename
+    model_line = f'model: {model}\n' if model else ''
+    md.write_text(f'---\nname: {name}\ndescription: x\n{model_line}---\n\nBody.\n')
+    return md
+
+
+def test_pinned_roster_catches_a_pinned_agent_missing_from_the_hook(tmp_path):
+    # Forward direction: an agent pins model: but the dispatch guard would deny it.
+    _pinned_agent(tmp_path, 'alpha.md', 'alpha', 'haiku')
+    _pinned_agent(tmp_path, 'beta.md', 'beta', None)
+    errs = check_pinned_roster(tmp_path, frozenset())
+    assert errs == [f'{tmp_path / "alpha.md"}: agent pins model but is missing from '
+                    'PINNED_AGENTS in hooks/dispatch-model-guard.py']
+
+
+def test_pinned_roster_catches_a_roster_name_with_no_pinned_agent(tmp_path):
+    # Reverse direction: a roster name whose agent file is gone or unpinned.
+    _pinned_agent(tmp_path, 'alpha.md', 'alpha', 'haiku')
+    _pinned_agent(tmp_path, 'beta.md', 'beta', None)
+    errs = check_pinned_roster(tmp_path, frozenset({'alpha', 'beta'}))
+    assert errs == ["hooks/dispatch-model-guard.py: PINNED_AGENTS names 'beta', "
+                    'which no agents/*.md pins']
 
 
 CITATION_PREFIX = '#' + ' cc-guide:'

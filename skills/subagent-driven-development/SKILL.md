@@ -188,6 +188,7 @@ tier choice: on Claude Code a model-pinned agent runs at its pin, never
 escalated, and any other agent inherits your session's model — usually the most
 capable and most expensive; the Codex and Gemini adapters drop the pins, so
 there every omission inherits. Either way it silently defeats this section.
+On Claude Code, `hooks/dispatch-model-guard.py` (this repo) denies a dispatch with no model to an unpinned agent, once installed. It cannot tell when a pinned reviewer needed escalating: that choice stays yours.
 
 When nothing clearly fires, default to **standard**. **Reviews** floor at
 **standard** and scale up with the diff: a small mechanical diff reviews at

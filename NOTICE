@@ -575,6 +575,8 @@ Changes from upstream:
     declined run (plan 63).
   - requesting-code-review allows skipping review for a small change the
     partner watched and waived (plan 63).
+  - subagent-driven-development points at a PreToolUse hook that denies a
+    model-less dispatch to an unpinned agent (plan 63).
 
     brainstorming/
     dispatching-parallel-agents/
