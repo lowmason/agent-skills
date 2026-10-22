@@ -202,10 +202,31 @@ for tr, te in outer.split(X):            # a panel: outer.split(X, groups=period
 float(np.mean(outer_scores))             # report this, not study.best_value
 ```
 
+### Neural search
+
+deep-learning and evaluate-deep-learning hand a neural search to this loop. A
+neural learning rate stays Regime A.
+
+- **Trial budget.** Fix the number of trials, and the epochs each trial may
+  use, before the search starts.
+- **Pruners.** Stop weak trials early with `optuna.pruners.MedianPruner`, or
+  `SuccessiveHalvingPruner` for successive halving. The objective calls
+  `trial.report(score, epoch)` each epoch and raises `optuna.TrialPruned()`
+  when `trial.should_prune()` is true.
+- **Early stopping** takes its split from inside the training fold (above).
+- **Seeds.** One seed per trial ranks luck as much as the knob. Re-run the
+  finalists over several seeds before you choose.
+
+deep-learning owns schedule and state mechanics. evaluate-deep-learning owns
+comparable-budget rules and the experiment record.
+
 ### When not to tune
 
-- **Fold-to-fold variance swamps the effect** — if the metric's spread across
-  folds exceeds the gap between candidates, you're tuning noise; ship a default.
+- **The paired difference is noise** — score both candidates on the same folds
+  and take the per-fold differences d. When |Δ|, the absolute mean of d, is
+  under 2·SE(Δ) = 2·sd(d)/√K over K folds, ship the default. This is a screen.
+  The protocol, and the corrections that widen the SE for high-stakes calls,
+  are in `track-model-experiments/references/predictive-evaluation.md`.
 - **A prior already pins it** — if regularization is set by a domain prior (or
   is *part of* a Bayesian model), tune the model, not a CV knob.
 - **A coarse grid is already flat** — a flat landscape on one pass is a valid
@@ -216,11 +237,19 @@ float(np.mean(outer_scores))             # report this, not study.best_value
 A tuning study answers "best knob for *this* model family." When a tuned model
 becomes a contender you want to compare against structurally different models,
 it graduates to one variant row in `track-model-experiments`' `experiments.md`
-(`what changed` = "tuned `<class>` via Optuna, `<n>` trials, `<space>`"). The
-comparator ranks variant rows by ELPD only, so until a non-ELPD mode exists, a
-non-Bayesian winner goes in the ledger's Decision log with its CV score, not in
-a variant row. The trial history stays in Optuna's store (`optuna-dashboard` to
-browse); the ledger records only the winner and why it earned a seat.
+(`what changed` = "tuned `<class>` via Optuna, `<n>` trials, `<space>`"). Its
+variant folder holds a `scores.json` on the ledger's criterion, with one score
+for each fold or origin that every other variant uses, and the comparator
+ranks it in score mode.
+
+An `elpd-loo` ledger cannot rank a non-Bayesian winner. To compare the winner
+with the Bayesian variants, re-declare the ledger's `Criterion:` line as a
+score criterion, and swap its ELPD columns for `score`, `Δscore` and `SE(Δ)`.
+Each Bayesian variant then writes `scores.json` on the same units, for example
+a per-fold log score or the MSE of the posterior-predictive mean. Until that is
+done, the comparator names the new row as not compared. It never drops the
+row in silence. The trial history stays in Optuna's store (`optuna-dashboard`
+to browse); the ledger records only the winner and why it earned a seat.
 
 ## Regime B — inference hyperparameters
 
@@ -232,11 +261,42 @@ and stop there — do **not** tune them to a held-out predictive metric.
 | NUTS `target_accept` | clear divergences that come from step size | rung 1 of the escalation ladder: the divergence fraction decides whether raising it helps or hides a model problem | `bayesian-workflow/references/diagnostics.md`, "When sampling fails: the escalation ladder" |
 | NUTS `max_tree_depth` | avoid tree saturation | the `reached_max_tree_depth` sample stat is false on every draw: collect `num_steps` in `extra_fields`, and `diagnose_model.py`'s `treedepth` block reads it. NumPyro prints no warning | `bayesian-workflow/references/diagnostics.md` |
 | SVI learning rate / `num_steps` | the approximation converged | the three checks: a flat ELBO trace that every seed reaches, PSIS-LOO for the approximation, VSBC | `bayesian-workflow/references/svi.md` |
-| dynamax optax learning rate | training-loss convergence | loss plateaus, no divergence | no skill owns this yet |
+| optax learning rate of a non-neural point fit (dynamax MLE) | the optimizer reached the optimum | the training loss plateaus, and restarts from several initializations reach the same optimum within a stated tolerance | this skill |
 
 The mechanics and thresholds live in the files each row names — this table is
-the router, not the doctrine. The optax row has no owner, so its stopping rule
-is all the guidance there is until one exists.
+the router, not the doctrine.
+
+## Regime C — structural choices
+
+Score each candidate on one of these criteria, on the same data, folds or
+origins for every candidate:
+
+- the type-II marginal likelihood, where it is exact (a GP kernel form);
+- BIC or AIC, a quick screen of point fits;
+- LOO, or LFO for forecasts, over the discrete index (`K = 1, 2, 3, …`);
+- a rolling-CV log score.
+
+This skill runs the sweep: a loop over the index, not an Optuna study. When
+the candidate set is small and each candidate carries its own hypothesis (two
+regimes or three, a seasonal term or none), record the candidates as rows in
+track-model-experiments' ledger instead, so each one keeps its reason.
+
+GP hyperparameters fit by type-II marginal likelihood (lengthscales,
+amplitude, noise) are set inside the fit, not tuned. Regime C covers only the
+choice of kernel form.
+
+## Producers
+
+The loop is the same whoever produced the model. The regime and the
+objective change:
+
+| Producer | Regime | Objective |
+|---|---|---|
+| recommend-probabilistic-model | A or C: it names the knob and its criterion | the criterion it names |
+| bayesian-workflow | B for sampler and SVI knobs; C for structure | convergence diagnostics; LOO, or LFO for forecasts |
+| deep-learning | A | a held-out loss or metric (Neural search, above) |
+| evaluate-deep-learning | A, under its comparable-budget rules | its declared primary metric |
+| recommend-causal-design | A, for nuisance learners only | predictive CV inside cross-fitting folds (Boundary, below) |
 
 ## Boundary
 
@@ -246,8 +306,13 @@ is all the guidance there is until one exists.
 - `develop-testing-strategy` — leakage as a *permanent test invariant* (a
   no-future-leakage assertion that guards the pipeline forever).
 - `bayesian-workflow` — inference diagnostics (regime B's mechanics).
-- **This skill** — the *search loop*: the CV protocol, regime classification,
-  the Optuna objective, and graduation.
+- `recommend-causal-design` — the design, the adjustment set, an RD bandwidth,
+  synthetic-control weights and the effect estimate. Predictive CV is the
+  right objective only for nuisance learners (propensity and outcome models)
+  tuned inside cross-fitting folds, and it never selects any of those.
+- **This skill** — the *search loop*: regime classification, the splitter, the
+  CV protocol, the Optuna objective, structural sweeps, neural search, and
+  graduation.
 
 ## Scope caveat
 
