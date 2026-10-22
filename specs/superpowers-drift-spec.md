@@ -63,11 +63,11 @@ guide (`4efba4e`) shifted anchors by one.
 | 4 | Brainstorming ceremony does not scale | Open; upstream rebuilt the skill (v7.0.0) and loosened its gate, so the finding is rewritten |
 | 5 | Every task gets its own dispatch | **Adopted** — plan 22 |
 | 6 | SDD review loop has no round cap | **Adopted** — plan 22, with a deliberate ladder divergence |
-| 7 | Pre-flight conflicts stall for a human | Partly adopted (fix-round rulings); premise corrected; still a decision |
+| 7 | Pre-flight conflicts stall for a human | Partly adopted (fix-round rulings); premise corrected; decided 2026-10-21: rulings mid-run only |
 | 8 | Smaller items | `find-polluter.sh` **fixed** — plan 50; two items partly covered; the `Spec:` pointer adopted by plan 40 |
 | 9 | writing-plans asks for code transcripts | Open; both plans written since that implement their own spec show the pattern; its tier premise re-sourced |
 | 10 | Reviewers grade the spec's silence | Open; upstream unchanged |
-| 11 | executing-plans was rebuilt as a ledgered native mode | Handoff half adopted by plan 40; the port is open and waits on 7; upstream has since fixed `task-done` |
+| 11 | executing-plans was rebuilt as a ledgered native mode | Handoff half adopted by plan 40; the port goes to its own spec (7 decided 2026-10-21); upstream has since fixed `task-done` |
 | 12 | SDD script hardening | `review-package` range guards and v7.0.0's create-only `.gitignore` **adopted** — plan 50; the basename collision stays decided (M2) |
 | 13 | TDD does not say what "other tests" means | Open; travels with 11 |
 | 14 | Nested controller on Claude Code | Not adopted; premise narrowed to non-fork subagents |
@@ -346,8 +346,17 @@ forward is a guess.
 
 **Why it matters more now.** Two v6.4.1 features assume rulings-not-stalls: the
 executing-plans rebuild (finding 11) and the nested controller (finding 14).
-Adopting either means settling this first. **Decide, don't assume** still
-stands.
+Adopting either means settling this first.
+
+**Decided 2026-10-21 (owner): rulings mid-run only.** Pre-flight keeps its one
+batched question, asked while the partner is present at launch. A mid-run
+reviewer finding that conflicts with plan text takes a recorded `Ruling: <what
+you decided> — <why> — <what it costs if wrong>`, and the run continues.
+Upstream's four stops still stop the run, and so does the explicit scope fence.
+Consequences: finding 11's executing-plans port and finding 13's TDD wording go
+to one spec (logged in `specs/deferred_items.md`, section
+`owner-calls-2026-10-21`); finding 14 stays declined, since pre-flight still
+asks.
 
 ### 8. Smaller items
 
@@ -693,7 +702,8 @@ It does not fit here, for two reasons:
 from every subagent. The docs exempt forks, at 2.1.288 as at 2.1.302. The
 conclusion stands on the narrower premise.
 
-This stays a function of finding 7.
+This stays a function of finding 7, which was decided on 2026-10-21 as rulings
+mid-run only, so this finding stays declined.
 
 ### 15. diagnosing-superpowers — not adopted
 
@@ -775,11 +785,12 @@ Under this repo's proportional-process rule:
   tune v7.0.0 after first use, so re-read upstream when the spec starts. It is
   micro-tested before deployment against its own RED baseline, since upstream
   published none.
-- **Decide first:** finding 7. Two items hang on it:
-  - Finding 11's executing-plans port, which merits its own spec once 7 is
-    settled; its handoff half was adopted by plan 40. Finding 13's TDD wording
-    travels with it, micro-tested.
-  - Finding 14, which stays declined unless 7 goes to rulings.
+- **Decided 2026-10-21:** finding 7, as rulings mid-run only. The two items
+  that hung on it:
+  - Finding 11's executing-plans port, which gets its own spec; its handoff
+    half was adopted by plan 40. Finding 13's TDD wording travels with it,
+    micro-tested.
+  - Finding 14, which stays declined.
 - **Prospective only:** finding 3. Adopt the falsifiability material if you
   want the guidance; do not take the compression without clearing upstream's
   measured bar.

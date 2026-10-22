@@ -4067,7 +4067,7 @@ CLAUDE.md lines or its 199-line limit: D8 (the snippet-tier wording), D9 (the "S
 example), D10 (the Mancuso credit), F9 (the snippet pin bump) and B11 (the floating snippet
 tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the `build` suite.
 
-- [ ] Decide superpowers drift finding 7: may a plan conflict take a recorded ruling so execution
+- [x] Decide superpowers drift finding 7: may a plan conflict take a recorded ruling so execution
       continues, instead of stopping for the owner? (audit-3-10-26 B5, found 2026-10-03; drift
       spec `specs/superpowers-drift-spec.md` finding 7, "Decide first", re-verified there
       2026-10-18 against upstream v7.0.0.) Today `skills/subagent-driven-development/SKILL.md`'s
@@ -4084,6 +4084,11 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       goes to rulings). Size: design. Done when: the owner's decision on finding 7 is recorded in
       the drift spec, and findings 11 and 13 are each logged as a design item (a spec for the
       executing-plans port) or recorded as declined there.
+      → done 2026-10-21 (owner decision, in conversation): rulings mid-run only. Pre-flight keeps
+      its one batched question; a mid-run conflict with plan text takes a recorded `Ruling:` and the
+      run continues, and upstream's four stops and the scope-fence ask still stop it. Recorded in
+      `specs/superpowers-drift-spec.md` finding 7. Findings 11 and 13 are logged as one design item
+      (section `owner-calls-2026-10-21`); finding 14 stays declined.
 - [ ] Open the planning-surface spec for superpowers drift findings 9 and 10 (audit-3-10-26 B5,
       found 2026-10-03; drift spec "Spec candidate, planning surface", re-verified 2026-10-18).
       Finding 9: upstream v6.4.2 (#2333) rewrote writing-plans around "a plan records decisions;
@@ -4124,7 +4129,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       platform choice nobody asked about (#2482). Size: design. Done when: the spec is approved
       in `specs/`, or the owner records finding 4 as declined in the drift spec and one of the
       two files is changed so they no longer contradict each other.
-- [ ] Owner calls that gate the model-lifecycle spec (audit-3-10-26 O1–O3 and its Decision 2,
+- [x] Owner calls that gate the model-lifecycle spec (audit-3-10-26 O1–O3 and its Decision 2,
       found 2026-10-03; re-verified 2026-10-18: no answer is recorded in this file, a spec,
       a plan, a commit, a PR or a handoff brief). The JAX spec, approved the same day, went
       the other way for track (`specs/completed/jax-deep-learning-skills.md:162-167`, `:200`;
@@ -4141,6 +4146,13 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       answer. O3: does the 2026-10-03 generality request override R7 for
       develop-testing-strategy, validate-data and recommend-visualization? Size: design.
       Done when: the owner answers O1, O2 and O3, recorded here or in the lifecycle spec.
+      → done 2026-10-21 (owner decision, in conversation): O1 (ii), track-model-experiments covers
+      Bayesian variants plus a tabular-CV mode, and neural records stay with
+      evaluate-deep-learning, so the JAX spec's R7 holds for track. O2 (b), a predictive-evaluation
+      reference owned by track-model-experiments (backtest protocol, paired per-fold difference
+      against its SE, benchmark comparison); tune-hyperparameters keeps the search loop. O3, R7
+      stands: develop-testing-strategy, validate-data and recommend-visualization get thin routing
+      lines to the owning skills (G9) and no widened scope.
 - [ ] Write the model-lifecycle spec: re-scope tune-hyperparameters as the model-agnostic
       search loop and draw its boundaries (audit-3-10-26 G5–G9 and G3's criterion half,
       found 2026-10-03; re-verified 2026-10-18: no such spec exists on any ref, and no
@@ -4172,6 +4184,9 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       recommend-probabilistic-model, deep-learning and evaluate-deep-learning. The audit's
       "before the JAX merge" order is moot: that merge landed 2026-10-04. Size: design.
       Done when: the spec is approved in `specs/`.
+      → progress 2026-10-21: the O1–O3 gate is answered (the owner-calls item above), so the
+      gated parts can be specified: G5's graduation clause sends a tuned non-Bayesian winner to
+      track's new CV mode; G8 widens track to Bayesian plus tabular CV; G9 is routing lines only.
 - [x] Stop the experiment comparator from dropping non-Bayesian winners in silence
       (audit-3-10-26 G1, found 2026-10-03; re-verified 2026-10-18 by re-running the audit's
       fixture; the script is unchanged since 2026-07-05). tune-hyperparameters' Graduation
@@ -6084,6 +6099,8 @@ defer. Anchors are at the end of plan 59's fix wave.
       winner to the Decision log. Tighten (b) after the O1 owner call on track's scope (the
       lifecycle-spec item in section `audit-3-10-26 routing`). Size: quick-fix. Done when: the
       README row names the refusal, and the two Graduation texts agree with the O1 ruling.
+      → progress 2026-10-21: O1 is answered (track: Bayesian plus a tabular-CV mode), so part
+      (b) is unblocked; tighten it with the lifecycle spec's G5 and G8 text.
 - [x] Polish `skills/bayesian-workflow/references/svi.md` (plan 59 final review). (a) Check 3 says
       to set `num_svi_steps` to what check 1 showed is enough, but check 1 runs 3000 steps and the
       VSBC call uses 2000: reuse one number, or add a comment that 2000 is a runtime shortcut. (b)
@@ -6104,6 +6121,8 @@ defer. Anchors are at the end of plan 59's fix wave.
       `audit-3-10-26 routing`). Each description change needs writing-skills' micro-test with
       collision probes. Size: plan. Done when: the G5 description pass either drops the trigger or
       gives the optax knob an owner, with a micro-tested wording.
+      → progress 2026-10-21: O1–O3 are answered (the owner-calls item in section
+      `audit-3-10-26 routing`), so the G5 description pass is no longer gated.
 - [ ] Watch tune's Regime B router wording for over-deferral (plan 59 micro-test,
       `specs/verification/59-regime-b-router-microtest.md`). Only S1 was red (arm B 2 of 5, arm C 0
       of 5, one-sided Fisher p about 0.22), and that rests on the literal "any listed action"
@@ -6194,3 +6213,17 @@ defer. Anchors are at the end of plan 59's fix wave.
       `~/.cache/agent-skills/scratch/plan60-micro/probe/`. The skills carry no `# cc-guide:`
       citation for these facts. Size: design. Done when: the owner adds a guide section,
       verified through `/cc-guide`, or records the facts as deliberately uncovered.
+
+## owner-calls-2026-10-21 (no plan; owner decisions on drift finding 7 and audit O1–O3, branch claude/owner-calls-2026-10-21) — 2026-10-21
+- [ ] Write the executing-plans port spec (superpowers drift findings 11 and 13; finding 7
+      decided 2026-10-21 as rulings mid-run only). Finding 11: port upstream's ledgered
+      native-mode executing-plans, with new `task-start` and `task-done` scripts (take
+      `task-done` as fixed in v7.0.0, #2388, `907ad21`), so a mid-run conflict takes a recorded
+      `Ruling:` as subagent-driven-development will. Finding 13: TDD says the project's
+      documented suite defines green, micro-tested, travelling with 11. Both shape discipline
+      skills (`skills/executing-plans/SKILL.md`, `skills/test-driven-development/SKILL.md`,
+      `skills/subagent-driven-development/SKILL.md` mid-run conflict text near `:320-324`), so
+      the spec plans writing-skills' pressure-test and micro-test, and each ported change gets a
+      NOTICE change-list line. See `specs/superpowers-drift-spec.md` findings 7, 11 and 13.
+      Size: design. Done when: the spec is approved in `specs/`, or the owner records findings
+      11 and 13 as declined in the drift spec.
