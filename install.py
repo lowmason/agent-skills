@@ -62,7 +62,6 @@ DEPENDENCIES: dict[str, tuple[str, ...]] = {
     'skill:requesting-code-review',
     'skill:writing-plans',
   ),
-  'skill:track-model-experiments': ('skill:bayesian-workflow',),
   'skill:writing-plans': ('command:deferred',),
 }
 

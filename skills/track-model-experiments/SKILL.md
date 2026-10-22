@@ -30,10 +30,21 @@ hierarchical level — each attempt lands in its own slug folder
 memory fails: you can rank them by eye but can't say what changed between v2
 and v3, or why v5 was abandoned.
 
-This skill is the iteration layer above single-model workflow. Core
-principle: one file records *what changed and why* (a human-authored ledger);
-one script records *which won* (an ArviZ-based comparator that ranks variants
-and stamps the result back into the ledger).
+The same holds for a cross-validated regression that gains a feature set, or a
+forecaster that meets a rival in a backtest.
+
+This skill is the iteration layer above single-model work. Core principle: one
+file records *what changed and why* (a human-authored ledger); one script
+records *which won* (a comparator that ranks variants and stamps the result
+back into the ledger). The comparator has two modes, and a ledger uses one:
+
+- **ELPD mode** ranks Bayesian fits by PSIS-LOO from each variant's
+  `inference_data.nc`.
+- **Score mode** ranks any variants (tabular cross-validation, forecast
+  backtests, or Bayesian fits scored by leave-future-out) from each variant's
+  `scores.json`: one score per fold or forecast origin, on one shared
+  criterion. `references/predictive-evaluation.md` holds the protocol and the
+  file's contract.
 
 ## When to use
 
@@ -43,11 +54,18 @@ and stamps the result back into the ledger).
   forking, not after.
 - Deciding which variant to ship and want the decision recorded, not just
   remembered.
+- Ranking cross-validated or backtested variants of any model class on one
+  criterion (fold MSE, log-loss, CRPS, leave-future-out ELPD) — score mode.
 - A hyperparameter search in `tune-hyperparameters` produced a winner worth
   comparing against structurally different models — graduate it to a variant
-  row here (`what changed` = "tuned `<class>` via Optuna"). Until a non-ELPD
-  mode exists, a non-Bayesian winner (no `inference_data.nc` to rank) goes in
-  the Decision log with its CV score instead.
+  row here (`what changed` = "tuned `<class>` via Optuna"), with a
+  `scores.json` on the ledger's criterion. A non-Bayesian winner has no
+  `inference_data.nc`, so it ranks only in a score ledger. To compare it with
+  the variants of an existing `elpd-loo` ledger, first re-declare that
+  ledger's criterion as a score criterion. Each Bayesian variant then writes
+  `scores.json` on the same units, for example a per-fold log score or the MSE
+  of the posterior-predictive mean. Until that is done, the comparator names
+  the new row as not compared.
 
 Not for:
 - **A single model, no iteration** — follow `bayesian-workflow` alone;
@@ -55,6 +73,8 @@ Not for:
 - **Tuning continuous ML hyperparameters** (learning rate, tree depth,
   regularization) — that's `tune-hyperparameters`, a search over a continuous
   space rather than discrete, hypothesis-driven model variants.
+- **Neural runs or checkpoints** — `evaluate-deep-learning` owns their
+  experiment record.
 
 ## The ledger (experiments.md)
 
@@ -90,17 +110,49 @@ the reasoning trail no script can reconstruct after the fact. `ELPD` through
 `psense` are metric columns the comparator overwrites each run; don't
 hand-edit them. The comparator finds this table by its header (the first one that starts
 with `id` and has a `status` column), fills a column only under the names
-shown here, and moves the best marker in `status`. The Decision log is
-free-form prose: record the call and the reason, not just the winner.
+shown here (case and symbols included; a note says when none match), and moves
+the best marker in `status`. The Decision log is free-form prose: record the
+call and the reason, not just the winner.
+
+**One criterion per ledger.** A ledger declares its criterion in one
+`Criterion: <name>` line above the Variants table. A ledger without that line
+reads as `elpd-loo`, so the ELPD ledger above needs none. The comparator
+refuses a run whose mode does not match the criterion, and a variant whose
+`scores.json` names another criterion. A score ledger swaps the ELPD metric
+columns for `score`, `Δscore` and `SE(Δ)`:
+
+```markdown
+# Experiments — county-nowcast
+
+Criterion: backtest-mse-h1
+
+All variants below are scored on the SAME 24 forecast origins (required for the
+paired difference — the comparator refuses variants with different unit keys).
+
+| id (slug) | parent | what changed | hypothesis | score | Δscore | SE(Δ) | status |
+|---|---|---|---|---|---|---|---|
+| naive-last | — | last value carried forward | the floor every variant must beat | | | | candidate |
+| ridge-lags | naive-last | ridge on 12 lags | lags carry the signal | | | | candidate |
+| gbm-tuned | ridge-lags | tuned `HistGradientBoostingRegressor` via Optuna | lag effects are nonlinear | | | | candidate |
+
+<!-- COMPARISON:BEGIN -->
+(populated by compare_experiments.py --mode score)
+<!-- COMPARISON:END -->
+```
 
 ## The comparator
 
-`scripts/compare_experiments.py` loads each variant's `inference_data.nc`,
-ranks them with `az.compare`, and (optionally) rewrites the ledger's
-`<!-- COMPARISON -->` block in place.
+`scripts/compare_experiments.py` ranks the variants and (optionally) rewrites
+the ledger's `<!-- COMPARISON -->` block in place. ELPD mode, the default,
+loads each variant's `inference_data.nc` and ranks with `az.compare`. Score
+mode (`--mode score`) loads each variant's `scores.json`, ranks by mean score
+with the file's orientation, and reports each variant's paired difference from
+the top variant (Δscore) with its standard error (SE(Δ)).
 
 ```bash
 uv run <this-skill-dir>/scripts/compare_experiments.py \
+  --analysis-dir <analysis-dir> --ledger <analysis-dir>/experiments.md --output comparison.json
+uv run <this-skill-dir>/scripts/compare_experiments.py --mode score \
   --analysis-dir <analysis-dir> --ledger <analysis-dir>/experiments.md --output comparison.json
 ```
 
@@ -110,11 +162,22 @@ dependencies listed in the script's header. The header declares the
 does not install transitively with `arviz`.
 
 Run `--help` for the rest (`--folders` compares an explicit subset instead of
-auto-discovering every `*/inference_data.nc` under `--analysis-dir`).
+auto-discovering every `*/inference_data.nc`, or every `*/scores.json` in
+score mode, under `--analysis-dir`). `comparison.json` records the `mode` and
+the `criterion` beside the ranking.
 
-Guardrails, enforced before any ranking happens:
+Guardrails in both modes, before any ranking and before anything is written:
+- **A `--ledger` path that is not a file**, or a ledger whose COMPARISON
+  markers are unpaired, repeated or out of order → refused. The comparator
+  rewrites the text from one BEGIN marker to the next END marker, so a stray
+  marker would overwrite the ledger's prose.
+- **A mode that does not match the ledger's criterion** → refused, naming the
+  mode to run.
+
+ELPD-mode guardrails:
 - **A folder with no `inference_data.nc`** (named in `--folders`) → error
-  naming it; the comparator ranks Bayesian fits by ELPD only.
+  naming it; ELPD mode ranks Bayesian fits only, and a variant without a fit
+  belongs in a score ledger.
 - **Missing `log_likelihood` group** → hard error naming the variant and the
   fix (refit with `az.from_numpyro(..., log_likelihood=True)`).
 - **A log-likelihood that LOO cannot leave terms out of** → refused, with the
@@ -126,15 +189,27 @@ Guardrails, enforced before any ranking happens:
   only compares predictions of the *same* held-out observations. The count is
   the number of pointwise log-likelihood terms.
 
+Score-mode guardrails, each through `error:` with the variant and the fix:
+- a folder with no `scores.json` (named in `--folders`);
+- a `criterion` that differs from the ledger's or from another variant's;
+- an `orientation` that differs across variants;
+- unit keys that differ across variants (the paired difference compares the
+  same folds or origins);
+- a non-finite value, or fewer than two units.
+
 After ranking:
-- **High Pareto-k / other `az.compare` diagnostic warnings** → surfaced as a
-  `warning` flag per variant in `comparison.json` and a `⚠` in the ledger
-  table, not silently dropped.
-- **A ledger row the comparator did not rank** (no fit, or left out of
-  `--folders`) → named on stderr, in `comparison.json`'s `not_compared` list
-  and under the COMPARISON table. The list is filled only when you pass
-  `--ledger`. While one exists, the top row's status reads
-  `**best among ELPD-compared variants**`, not `**best**`.
+- **High Pareto-k / other `az.compare` diagnostic warnings** (ELPD mode) →
+  surfaced as a `warning` flag per variant in `comparison.json` and a `⚠` in
+  the ledger table, not silently dropped.
+- **A ledger row the comparator did not rank** (no fit or no `scores.json`, or
+  left out of `--folders`) → named on stderr, in `comparison.json`'s
+  `not_compared` list and under the COMPARISON table. The list is filled only
+  when you pass `--ledger`. While one exists, the top row's status reads
+  `**best among ELPD-compared variants**` (score mode:
+  `**best among score-compared variants**`), not `**best**`.
+- **A ranked variant with no ledger row, a row with more cells than the
+  header, or a table with none of the mode's metric columns** → a note on
+  stderr says so, and what it means for the best marker.
 
 ## Fresh session per variant
 
@@ -154,11 +229,16 @@ the ledger is the only durable record of what changed and why.
 
 ## Stopping rule
 
-Stop iterating — don't keep chasing ELPD — when either holds:
+Stop iterating — don't keep chasing the criterion — when any of these holds:
 
 - **|ΔELPD| < 4** between the top variants — a small difference (`diag_diff`
   flags it); ship the simpler one. Above 4, weigh ΔELPD against dSE only with
   more than 100 observations and no badly misspecified variant.
+- **Score mode: |Δscore| < 2·SE(Δ)** between the top variants — the
+  difference is noise; ship the simpler one. The plain SE(Δ) is optimistic:
+  training sets overlap across folds and origins, and h-step forecast errors
+  are autocorrelated. For a high-stakes call, apply the corrections in
+  `references/predictive-evaluation.md`.
 - **Conclusions are stable across every variant that passes its diagnostics**
   — the multiverse view (Gelman et al. 2026, §9.3 and §9.5): once the story
   doesn't change across passing models, which one is "best" matters less.
@@ -183,3 +263,11 @@ that doctrine rather than restating it.
 - **`bayesian-workflow`'s `reporting.md`** owns the *per-variant slug folder*
   — the fixed-shape artifact set (`inference_data.nc`, `report.md`, etc.) that
   each row of the ledger points to.
+- **`references/predictive-evaluation.md`** (this skill) owns the *score-mode
+  protocol*: backtests, the `scores.json` contract, the paired difference and
+  its limits, benchmark baselines and proper scores. `bayesian-workflow`'s
+  `model-comparison.md` shows how a Bayesian variant writes leave-future-out
+  or blocked K-fold scores for it.
+- **`tune-hyperparameters`** owns the *search* inside one model class; its
+  winner graduates to a row here. **`evaluate-deep-learning`** owns neural
+  runs and their experiment record.

@@ -328,9 +328,9 @@ def installed_links(root: Path) -> set[str]:
       '.claude/skills/writing-plans',
       '.claude/commands/deferred.md',
     }),
+    # Score mode works without bayesian-workflow, so it is a soft reference (R22).
     ('claude', 'track-model-experiments', (), {
       '.claude/skills/track-model-experiments',
-      '.claude/skills/bayesian-workflow',
     }),
   ],
 )
@@ -495,6 +495,9 @@ SOFT_REFERENCES = {
   # Names SDD's Model Selection but gives the review tiers and aliases inline;
   # SDD's review-package and task-reviewer prompt apply only when SDD calls.
   ('skill:requesting-code-review', 'skill:subagent-driven-development'),
+  # ELPD mode reads bayesian-workflow's model-comparison doctrine; score mode
+  # works without it.
+  ('skill:track-model-experiments', 'skill:bayesian-workflow'),
   # Routes Regime B knobs to bayesian-workflow's diagnostics and SVI files; the
   # search loop (Regime A) runs without them.
   ('skill:tune-hyperparameters', 'skill:bayesian-workflow'),
