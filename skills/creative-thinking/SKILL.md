@@ -7,7 +7,8 @@ description: >
   stands in", every design a flavor of one idea, or brainstorming's
   propose-approaches step running thin. Named goal: brainstorming. Objective
   chosen: tune-hyperparameters. Model-family or chart choice for a defined
-  question: recommend-probabilistic-model, recommend-visualization.
+  question: recommend-probabilistic-model, recommend-visualization. Causal
+  question to frame: recommend-causal-design. Neural target: deep-learning.
 license: MIT
 metadata:
   author: Lowell Mason
@@ -122,6 +123,11 @@ This skill ends when the user picks a target:
   tune-hyperparameters; a defined question choosing a model family goes to
   recommend-probabilistic-model; a defined dataset choosing a chart goes
   to recommend-visualization.
+- A picked target that is a causal question (did X change Y, for whom)
+  goes to recommend-causal-design, which fixes the estimand and the
+  design before any model is chosen.
+- A picked target that a neural model must learn goes to deep-learning;
+  comparing neural models goes to evaluate-deep-learning.
 - When a candidate's sketch needs data facts (does the join exist, is the
   panel balanced), state them as one-line assumptions on that candidate
   rather than blocking the map; explore-data profiles unfamiliar data and

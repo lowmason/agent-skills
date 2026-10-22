@@ -221,3 +221,104 @@ Quote: the first 15 words of each REASON line. The last column is the isolation 
 ## Isolation screen
 
 `grade.py` screened every saved answer. All 60 answers took one turn, ended without error, hold only `message` iterations (no tool or advisor call) and came from one model. The screen column reads `ok` for every rep. No rep was voided, and no FAIL rep exists to review.
+
+---
+
+# Plan 64 micro-test M3: creative-thinking's description and hand-offs
+
+**Date:** 2026-10-21. **Model:** `claude-sonnet-5-5` through `claude -p` (Claude Code 2.1.304). **Kit:** `~/.cache/agent-skills/scratch/plan64-micro/` (`run_arm.py`, `grade.py`, `M3.json`, raw answers under `raw/M3/`). **Cost:** $1.78 of the $25 cap for M3 (pilot $0.04, arm B $0.87, arm C $0.87). With M1 ($2.24) and M2 ($2.20) the plan has spent $6.22.
+
+The edit under test is Task 6's description change under Q5 (a): the sentences "Causal question to frame: recommend-causal-design. Neural target: deep-learning." appended to creative-thinking's description. Description length: 495 characters at `2161060`, 576 after the edit (whitespace folded, trailing newline not counted). The same commit adds two bullets to SKILL.md's "Scope and handoff" list (a causal target goes to recommend-causal-design, a neural target goes to deep-learning or evaluate-deep-learning). The routing prompt uses only the description, so the bullets do not enter the test.
+
+## Design
+
+Each rep is one decision-only call with no tools (`claude -p --model sonnet --tools "" --strict-mcp-config`, with `CLAUDE_CODE_DISABLE_ADVISOR_TOOL=1`), run from its own new folder under `/tmp/p64micro/`. The prompt lists the descriptions of 9 competing skills and asks for one `SKILL:` line and one `REASON:` line. Arm B uses every description as it stood at commit `2161060` (read with `--base 2161060`, so the working-tree edit could not touch it). Arm C differs only in creative-thinking's description, read from the working tree. Five reps per arm and scenario. `M3.json` matches Appendix A of the plan.
+
+The pilot (one rep, stream-json) printed `tools: []` and `mcp_servers: []` before any arm ran. A "void" is a rep that errored or refused. There were 0 voids.
+
+## Scenarios, grading rules and pass bars
+
+Fixed in `M3.json` before any run. Each scenario has a `pass` list, and a rep passes when its SKILL is in the list.
+
+- **T1, fuzzy causal target** (pass: creative-thinking or recommend-causal-design): "We changed onboarding last spring and I suspect it mattered, but I can't say what effect to estimate or for whom."
+- **T2, defined causal design** (pass: recommend-causal-design): "Did the onboarding change raise 90-day retention? We have before/after cohorts and a holdout region. Which design?"
+- **T3, neural architecture** (pass: deep-learning): "Which architecture should I train in JAX for a 10,000-sequence classification task?"
+- **T4, fuzzy analysis target** (pass: creative-thinking): "There's something interesting in this panel of county wages but I can't articulate the analysis."
+- **T5, count model family** (pass: recommend-probabilistic-model): "Poisson or negative binomial for these overdispersed counts?"
+
+Pass bars. Arm C meets the bar when both hold:
+1. On every scenario it fails at most 1 of 5 reps.
+2. On every scenario where arm B fails 2 or more of 5, it fails fewer than arm B.
+
+## Results
+
+| Scenario | B fails | C fails | C bars met |
+|---|---|---|---|
+| T1 | 0/5 | 0/5 | yes |
+| T2 | 0/5 | 0/5 | yes |
+| T3 | 0/5 | 0/5 | yes |
+| T4 | 0/5 | 0/5 | yes |
+| T5 | 0/5 | 0/5 | yes |
+
+Arm C meets both bars on every scenario. Bar 2 does not apply, since arm B failed no scenario. The test therefore shows that the edit does not harm routing (T4 still goes to creative-thinking in 5 of 5 reps, so the new sentences did not pull fuzzy-target requests away, and T2 and T3 did not move to creative-thinking). It does not show a gain, because arm B already routed all five requests to an accepted skill. One shift is worth noting: on T1, arm B picked creative-thinking in 3 of 5 reps and recommend-causal-design in 2, while arm C picked creative-thinking in 1 and recommend-causal-design in 4. Both picks are in the pass list. The shift is consistent with the new "Causal question to frame" sentence pointing causal wording to recommend-causal-design, and the five-rep sample is too small to call it a trend.
+
+## Per-rep results
+
+Quote: the first 15 words of each REASON line. The last column is the isolation screen.
+
+| Arm | Scenario | Rep | Verdict | Skill | Quote | Screen |
+|---|---|---|---|---|---|---|
+| B | T1 | 1 | PASS | recommend-causal-design | "This is a causal question about an onboarding change, and choosing the effect (ATE, ATT," | ok |
+| B | T1 | 2 | PASS | creative-thinking | "The user cannot yet say which effect to estimate or for whom, so the target" | ok |
+| B | T1 | 3 | PASS | recommend-causal-design | "The onboarding change is an intervention whose effect they suspect, and choosing the estimand (which" | ok |
+| B | T1 | 4 | PASS | creative-thinking | "The user cannot yet say which effect to estimate or for whom, so the target" | ok |
+| B | T1 | 5 | PASS | creative-thinking | "The user cannot yet say which effect to estimate or for whom, so the target" | ok |
+| B | T2 | 1 | PASS | recommend-causal-design | "This is a causal "did X cause Y" question that needs a research design, and" | ok |
+| B | T2 | 2 | PASS | recommend-causal-design | "This is a causal "did X cause Y" question, and before/after cohorts with a holdout" | ok |
+| B | T2 | 3 | PASS | recommend-causal-design | "This is a causal question about an onboarding change on retention, and the design choice" | ok |
+| B | T2 | 4 | PASS | recommend-causal-design | "This is a causal-effect question about choosing an identification design (likely difference-in-differences using the holdout" | ok |
+| B | T2 | 5 | PASS | recommend-causal-design | "This is a causal question ("did the onboarding change raise retention") with before/after cohorts and" | ok |
+| B | T3 | 1 | PASS | deep-learning | "The request asks which neural architecture to design and train in JAX for a sequence" | ok |
+| B | T3 | 2 | PASS | deep-learning | "Choosing and implementing a neural architecture for sequence classification in JAX is a model-design task" | ok |
+| B | T3 | 3 | PASS | deep-learning | "The request asks which neural architecture to design and train in JAX for a sequence" | ok |
+| B | T3 | 4 | PASS | deep-learning | "The request asks which neural sequence architecture to design and train in JAX, which this" | ok |
+| B | T3 | 5 | PASS | deep-learning | "The question asks which neural architecture to design and train in JAX for a sequence" | ok |
+| B | T4 | 1 | PASS | creative-thinking | "The user senses something interesting in the data but cannot yet state the analysis, so" | ok |
+| B | T4 | 2 | PASS | creative-thinking | "The user senses something interesting in the data but cannot yet state the analysis, so" | ok |
+| B | T4 | 3 | PASS | creative-thinking | "The user senses something interesting in the county wage panel but cannot yet state the" | ok |
+| B | T4 | 4 | PASS | creative-thinking | "The user senses something interesting in the county wage panel but cannot yet state the" | ok |
+| B | T4 | 5 | PASS | creative-thinking | "The user senses something interesting in the data but cannot yet state the analysis, so" | ok |
+| B | T5 | 1 | PASS | recommend-probabilistic-model | "The user is choosing between Poisson and negative binomial for overdispersed counts, which is a" | ok |
+| B | T5 | 2 | PASS | recommend-probabilistic-model | "The question is a model-family choice for overdispersed count data (Poisson vs negative binomial), which" | ok |
+| B | T5 | 3 | PASS | recommend-probabilistic-model | "The user is choosing between Poisson and negative binomial for overdispersed counts, which is a" | ok |
+| B | T5 | 4 | PASS | recommend-probabilistic-model | "Choosing between Poisson and negative binomial for overdispersed counts is a model-selection question to settle" | ok |
+| B | T5 | 5 | PASS | recommend-probabilistic-model | "The user must choose between Poisson and negative binomial for overdispersed counts, which is a" | ok |
+| C | T1 | 1 | PASS | recommend-causal-design | "This is a causal question about whether the onboarding change had an effect, and choosing" | ok |
+| C | T1 | 2 | PASS | recommend-causal-design | "This is a causal question about whether the onboarding change had an effect, and choosing" | ok |
+| C | T1 | 3 | PASS | recommend-causal-design | "This is a causal question about whether the onboarding change had an effect, and choosing" | ok |
+| C | T1 | 4 | PASS | recommend-causal-design | "The onboarding change is a dated intervention with a suspected effect, and the user still" | ok |
+| C | T1 | 5 | PASS | creative-thinking | "The estimand and the target population are still undefined ("what effect, for whom"), so the" | ok |
+| C | T2 | 1 | PASS | recommend-causal-design | "The user asks which research design identifies whether the onboarding change caused higher 90-day retention," | ok |
+| C | T2 | 2 | PASS | recommend-causal-design | "This is a causal question about whether the onboarding change raised retention, and it needs" | ok |
+| C | T2 | 3 | PASS | recommend-causal-design | "The user asks which research design can identify whether the onboarding change caused higher 90-day" | ok |
+| C | T2 | 4 | PASS | recommend-causal-design | "This is a causal question about an onboarding change, and the before/after cohorts and holdout" | ok |
+| C | T2 | 5 | PASS | recommend-causal-design | "This is a causal question ("did the onboarding change raise retention") that needs a research" | ok |
+| C | T3 | 1 | PASS | deep-learning | "The request asks which neural architecture to design and train in JAX for sequence classification," | ok |
+| C | T3 | 2 | PASS | deep-learning | "Choosing and training a neural architecture in JAX for a sequence classification task is a" | ok |
+| C | T3 | 3 | PASS | deep-learning | "Choosing and training a neural architecture for sequence classification in JAX is neural model design," | ok |
+| C | T3 | 4 | PASS | deep-learning | "The request asks for a neural architecture choice to design and train in JAX for" | ok |
+| C | T3 | 5 | PASS | deep-learning | "The request asks which neural architecture to design and train in JAX for a sequence" | ok |
+| C | T4 | 1 | PASS | creative-thinking | "The user senses something interesting in the county wage panel but cannot yet state the" | ok |
+| C | T4 | 2 | PASS | creative-thinking | "The user senses something interesting in the county wage panel but cannot yet state the" | ok |
+| C | T4 | 3 | PASS | creative-thinking | "The user senses something interesting in the data but cannot yet say what the analysis" | ok |
+| C | T4 | 4 | PASS | creative-thinking | "The user senses a pattern in the county wage panel but cannot yet state the" | ok |
+| C | T4 | 5 | PASS | creative-thinking | "The user senses something interesting in the data but cannot yet state the analysis, so" | ok |
+| C | T5 | 1 | PASS | recommend-probabilistic-model | "Choosing between Poisson and negative binomial for overdispersed counts is a model-selection question, which this" | ok |
+| C | T5 | 2 | PASS | recommend-probabilistic-model | "Choosing between Poisson and negative binomial for overdispersed counts is a model-selection question to settle" | ok |
+| C | T5 | 3 | PASS | recommend-probabilistic-model | "Choosing between Poisson and negative binomial for overdispersed counts is a model-selection question to settle" | ok |
+| C | T5 | 4 | PASS | recommend-probabilistic-model | "Choosing between Poisson and negative binomial for overdispersed counts is a model-selection question to settle" | ok |
+| C | T5 | 5 | PASS | recommend-probabilistic-model | "Choosing between Poisson and negative binomial for overdispersed counts is a model-selection question to settle" | ok |
+
+## Isolation screen
+
+`grade.py` screened every saved answer. All 50 answers took one turn, ended without error, hold only `message` iterations (no tool or advisor call) and came from one model. The screen column reads `ok` for every rep. No rep was voided, and no FAIL rep exists to review.
