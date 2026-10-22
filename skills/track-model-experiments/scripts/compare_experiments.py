@@ -357,11 +357,16 @@ def ledger_criterion(text: str) -> str:
 
     Only a line outside the COMPARISON block and above the table counts, so a
     Criterion: line in the Decision log or in the block never sets the mode.
+    Without a table, the scan stops at the first level-2 heading.
     '''
     lines = text.splitlines()
     table = _variants_table(lines)
+    if table:
+        end = table[0]
+    else:
+        end = next((i for i, ln in enumerate(lines) if ln.startswith('## ')), len(lines))
     in_block = False
-    for line in lines[:table[0] if table else len(lines)]:
+    for line in lines[:end]:
         stripped = line.strip()
         if stripped == BLOCK_BEGIN:
             in_block = True
@@ -403,9 +408,14 @@ def _wide_row_note(cells: list[str], width: int, top_id: str) -> str:
     note = (f'note: ledger row {cells[0]} has {len(cells)} cells against {width} in the '
             'header, so its cells do not line up with the header and the row was left '
             'unchanged. Escape a literal pipe in a cell as \\|.')
-    if cells[0] == top_id:
+    is_top = cells[0] == top_id
+    has_marker = any(c in MARKERS for c in cells)
+    if is_top and has_marker:
+        note += (' It is the top-ranked variant and keeps its best marker, but its '
+                 'metric cells were not updated.')
+    elif is_top:
         note += ' It is the top-ranked variant, so no row carries the best marker.'
-    if any(c in MARKERS for c in cells):
+    elif has_marker:
         note += ' It still holds a best marker, so the ledger can show two.'
     return note
 

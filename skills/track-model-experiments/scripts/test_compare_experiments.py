@@ -867,3 +867,32 @@ def test_ledger_criterion_skips_a_bare_line_inside_the_comparison_block():
     assert in_block.index('Criterion: elpd-loo') < in_block.index('Criterion: cv-mse')
     assert in_block.index('Criterion: cv-mse') < in_block.index('| id (slug)')
     assert compare_experiments.ledger_criterion(in_block) == 'cv-mse'
+
+
+# --- Final-review fixes (plan 65): the header-area scan and the wide-row note ---
+
+def test_ledger_criterion_reads_a_header_line_when_there_is_no_variants_table():
+    text = '# Experiments — county nowcast\n\nCriterion: cv-mse\n\n## Decision log\n- prose\n'
+    assert compare_experiments._variants_table(text.splitlines()) is None
+    assert compare_experiments.ledger_criterion(text) == 'cv-mse'
+
+
+def test_ledger_criterion_stops_at_the_decision_log_when_there_is_no_variants_table():
+    text = ('# Experiments — county nowcast\n\n## Decision log\n'
+            '- prose\n\nCriterion: cv-mse\n')
+    assert compare_experiments._variants_table(text.splitlines()) is None
+    assert compare_experiments.ledger_criterion(text) == 'elpd-loo'
+
+
+def test_a_wide_top_row_that_holds_a_marker_gets_one_consistent_note(tmp_path, capsys):
+    text = _ledger_with('m-full', 'm-intercept')
+    row = _row(text, 'm-full')
+    wide = row.replace('| h |', '| h | x |').replace('| candidate |', '| **best** |')
+    ledger = tmp_path / 'experiments.md'
+    ledger.write_text(text.replace(row, wide))
+    _stamp(ledger, RANKED)
+    err = capsys.readouterr().err
+    assert ('It is the top-ranked variant and keeps its best marker, but its metric '
+            'cells were not updated.') in err
+    assert 'the ledger can show two' not in err
+    assert 'no row carries the best marker' not in err
