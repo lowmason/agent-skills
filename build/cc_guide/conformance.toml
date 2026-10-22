@@ -685,7 +685,6 @@ type = 'gap'
 check = 'description-person'
 sections = ['skills.description']
 artifacts = [
-    'skills/clean-coder/SKILL.md',
     'skills/executing-plans/SKILL.md',
     'skills/explore-data/SKILL.md',
     'skills/recommend-visualization/SKILL.md',

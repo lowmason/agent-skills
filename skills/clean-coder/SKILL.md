@@ -2,10 +2,9 @@
 name: clean-coder
 description: >
   Use when editing, fixing, or refactoring existing Python — before touching code near the
-  task. Trigger on: applying cleanups to code you are already editing; noticing adjacent
+  task. Trigger on: applying cleanups to code already being edited; noticing adjacent
   code that could be improved; "while you're at it", "any quick wins", "clean this up too",
-  "anything else obviously wrong", "just make it clean"; the urge to fix a smell you
-  spotted outside the task's scope; deciding whether a cleanup shares a commit with a
+  "anything else obviously wrong", "just make it clean"; the urge to fix a smell spotted outside the task's scope; deciding whether a cleanup shares a commit with a
   behavior change; or a small tidying starting to cascade into further tidyings.
 license: MIT
 metadata:
