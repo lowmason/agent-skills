@@ -4153,7 +4153,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       against its SE, benchmark comparison); tune-hyperparameters keeps the search loop. O3, R7
       stands: develop-testing-strategy, validate-data and recommend-visualization get thin routing
       lines to the owning skills (G9) and no widened scope.
-- [ ] Write the model-lifecycle spec: re-scope tune-hyperparameters as the model-agnostic
+- [x] Write the model-lifecycle spec: re-scope tune-hyperparameters as the model-agnostic
       search loop and draw its boundaries (audit-3-10-26 G5–G9 and G3's criterion half,
       found 2026-10-03; re-verified 2026-10-18: no such spec exists on any ref, and no
       commit since the audit has touched tune, track or the consumers beyond citation
@@ -4187,6 +4187,10 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       → progress 2026-10-21: the O1–O3 gate is answered (the owner-calls item above), so the
       gated parts can be specified: G5's graduation clause sends a tuned non-Bayesian winner to
       track's new CV mode; G8 widens track to Bayesian plus tabular CV; G9 is routing lines only.
+      → done 2026-10-21: the owner approved `specs/model-lifecycle.md` (requirements R1–R29,
+      design calls D1–D4). It is staged for derive-roadmap into three stages that land in the
+      order B (track score mode and predictive-evaluation reference), A (tune re-scope), C (thin
+      routes). The implementation is not started.
 - [x] Stop the experiment comparator from dropping non-Bayesian winners in silence
       (audit-3-10-26 G1, found 2026-10-03; re-verified 2026-10-18 by re-running the audit's
       fixture; the script is unchanged since 2026-07-05). tune-hyperparameters' Graduation
@@ -6101,6 +6105,8 @@ defer. Anchors are at the end of plan 59's fix wave.
       README row names the refusal, and the two Graduation texts agree with the O1 ruling.
       → progress 2026-10-21: O1 is answered (track: Bayesian plus a tabular-CV mode), so part
       (b) is unblocked; tighten it with the lifecycle spec's G5 and G8 text.
+      → progress 2026-10-21: `specs/model-lifecycle.md` specifies the fix. Part (b) is R11 (tune
+      Graduation) and R21 (track's When to use), and part (a) is R23 (track's README row).
 - [x] Polish `skills/bayesian-workflow/references/svi.md` (plan 59 final review). (a) Check 3 says
       to set `num_svi_steps` to what check 1 showed is enough, but check 1 runs 3000 steps and the
       VSBC call uses 2000: reuse one number, or add a comment that 2000 is a runtime shortcut. (b)
@@ -6123,6 +6129,9 @@ defer. Anchors are at the end of plan 59's fix wave.
       gives the optax knob an owner, with a micro-tested wording.
       → progress 2026-10-21: O1–O3 are answered (the owner-calls item in section
       `audit-3-10-26 routing`), so the G5 description pass is no longer gated.
+      → progress 2026-10-21: `specs/model-lifecycle.md` specifies the fix. D4 gives tune the optax
+      knob for non-neural point fits, R1 drops the trigger, R9 rewrites the router row, and V1
+      plans the micro-test.
 - [ ] Watch tune's Regime B router wording for over-deferral (plan 59 micro-test,
       `specs/verification/59-regime-b-router-microtest.md`). Only S1 was red (arm B 2 of 5, arm C 0
       of 5, one-sided Fisher p about 0.22), and that rests on the literal "any listed action"
