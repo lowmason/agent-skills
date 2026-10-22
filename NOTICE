@@ -209,6 +209,10 @@ it CITES and SUMMARIZES external material it does not redistribute:
   - pyprobml (https://github.com/probml/pyprobml) and dynamax
     (https://github.com/probml/dynamax) are MIT licensed (Copyright (c) 2020,
     2022 Probabilistic machine learning); the skill links to them.
+  - The survival, ordinal, bounded-outcome and quantile rows also cite
+    Kalbfleisch and Prentice (2002), McCullagh (1980), Ferrari and
+    Cribari-Neto (2004) and Koenker and Bassett (1978) by author-year
+    only, in original wording; no text is reproduced.
 
 llm-wiki/ is an original work by Lowell Mason (MIT). It implements the LLM-wiki
 pattern from Andrej Karpathy's public idea file (gist

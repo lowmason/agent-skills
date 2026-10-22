@@ -82,7 +82,7 @@ default.
 | File | Role |
 |------|------|
 | [references/decision-map.md](references/decision-map.md) | thin router: task × signal → family |
-| `references/families/*.md` | per-family depth (8): methods, defaults, §refs, notebooks, gotchas, handoff |
+| `references/families/*.md` | per-family depth (9): methods, defaults, §refs, notebooks, gotchas, handoff |
 | [references/model-selection-regularization.md](references/model-selection-regularization.md) | cross-cutting Step 6 |
 | [references/pyprobml-index.md](references/pyprobml-index.md) | verified notebook map |
 | [references/external-data-and-priors.md](references/external-data-and-priors.md) | external info → priors/pooling/constraints |
