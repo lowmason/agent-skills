@@ -119,7 +119,16 @@ Every task's requirements include this section.
 
 ## Decisions
 
-None. The owner has not yet answered Q1 to Q8. Log each answer here as `- **D<n>** (owner, plan review, YYYY-MM-DD): <decision>. Applied in: <Task N>.`
+The owner approved the default for each of Q1 to Q8 at plan review ("Approve defaults"). Spec-level decisions (D1, D2, D6) are applied as amendment tasks, each tagged `(owner, plan 66, 2026-10-21)`. The spec's status line stays untouched.
+
+- **D1** (owner, plan review, 2026-10-21): Q1. Task 1 re-runs the uv probe. If its table matches the forecast, apply amendment A1 and go on without a second stop. Applied in: Task 1 (spec amendment).
+- **D2** (owner, plan review, 2026-10-21): Q2. Use the package table in Q2. Optuna moves from `[cited]` to `[packages]` in the R1.1 example. Applied in: Task 4 (spec amendment A2).
+- **D3** (owner, plan review, 2026-10-21): Q3. Re-check the stale citations where a check is cheap and update the text. Move the five `Polars 1.42` citations in `recommend-visualization` to `HISTORICAL` and log a deferred item. Applied in: Task 11.
+- **D4** (owner, plan review, 2026-10-21): Q4. The floors rule fails when a script needs a higher Python than its skill promises or than the dev Python. A lower script floor passes. Applied in: Task 9.
+- **D5** (owner, plan review, 2026-10-21): Q5. The word `dev` in a suite's `pythons` list means the dev Python. A suite without `pythons` gets `['dev']`. Applied in: Task 7.
+- **D6** (owner, plan review, 2026-10-21): Q6. Tier 2 of the snippet gate runs on the pinned `snippets` stack, and the documented command uses the runner. Applied in: Task 6 (spec amendment A3).
+- **D7** (owner, plan review, 2026-10-21): Q7. Rewrite the two prose copies in `CLAUDE.md` to point at `build/versions.toml`. Leave `README.md:23`. Applied in: Task 13.
+- **D8** (owner, plan review, 2026-10-21): Q8. Move `32-jax-cpu.in` and `32-jax-cpu.txt` with `git mv` to `specs/verification/completed/` and re-point the five record links. Applied in: Task 12.
 
 ## Order with other work
 
