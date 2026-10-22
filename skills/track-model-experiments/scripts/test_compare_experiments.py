@@ -845,3 +845,25 @@ def test_elpd_comparison_json_carries_mode_and_criterion(analysis_dir, tmp_path)
     assert r.returncode == 0, r.stderr
     payload = json.loads(out.read_text())
     assert (payload['mode'], payload['criterion']) == ('elpd', 'elpd-loo')
+
+
+def test_ledger_criterion_ignores_a_bare_line_below_the_variants_table():
+    below = SCORE_LEDGER.replace(
+        '- Criterion: elpd-loo here is prose and never sets the mode.',
+        'Criterion: elpd-loo')
+    assert 'Criterion: elpd-loo\n' in below
+    assert compare_experiments.ledger_criterion(below) == 'cv-mse'
+    # Inverted: a bare line below the table must not set the mode when none sits above it.
+    only_below = below.replace('Criterion: cv-mse\n', '').replace(
+        'Criterion: elpd-loo', 'Criterion: cv-mse')
+    assert compare_experiments.ledger_criterion(only_below) == 'elpd-loo'
+
+
+def test_ledger_criterion_skips_a_bare_line_inside_the_comparison_block():
+    in_block = SCORE_LEDGER.replace(
+        'Criterion: cv-mse\n',
+        '<!-- COMPARISON:BEGIN -->\nCriterion: elpd-loo\n<!-- COMPARISON:END -->\n\n'
+        'Criterion: cv-mse\n', 1)
+    assert in_block.index('Criterion: elpd-loo') < in_block.index('Criterion: cv-mse')
+    assert in_block.index('Criterion: cv-mse') < in_block.index('| id (slug)')
+    assert compare_experiments.ledger_criterion(in_block) == 'cv-mse'

@@ -124,8 +124,9 @@ cases:
 - **Forecasts `h` steps ahead.** Forecasts from neighbouring origins share `h − 1` periods,
   so `d` is autocorrelated up to lag `h − 1`. Use a Diebold–Mariano test: the mean of `d`
   over an autocorrelation-robust (HAC) standard error (Diebold & Mariano 1995). At `h = 1`
-  with no serial correlation it equals the plain rule. With few origins, the normal
-  reference is too liberal.
+  with no serial correlation it matches the plain rule up to the `sqrt(K / (K − 1))` factor
+  between the two standard errors (`dm_statistic` divides by `K`, the plain rule by `K − 1`).
+  With few origins, the normal reference is too liberal.
 
 ```python
 import numpy as np

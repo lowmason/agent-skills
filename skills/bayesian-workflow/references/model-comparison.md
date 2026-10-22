@@ -147,13 +147,15 @@ Rank forecasting variants by one of two routes:
 
 Both routes refit the model, so both need a `SamplingWrapper`: four methods that tell ArviZ
 how to split the data, refit, convert a fit, and score held-out terms. This one wraps an AR(1)
-model. Each of its log-likelihood terms scores `y[t]` given the observed `y[t-1]`, so a refit
-can leave out any set of steps:
+model. Each of its log-likelihood terms scores `y[t]` given the observed `y[t-1]`. A refit
+drops the held-out steps and the step after each block, because that step is scored given a
+held-out value:
 
 ```python
 # An AR(1) series and a wrapper that refits it on a subset of time steps.
-# Each term scores y[t] given the observed y[t-1], so a refit can leave out any
-# set of steps; lfo_cv and loo_kfold both call these four methods.
+# Each term scores y[t] given the observed y[t-1]. A refit drops the held-out
+# steps and the step after each block, because that step is scored given a
+# held-out value; lfo_cv and loo_kfold both call these four methods.
 T = 80
 rng_ts = np.random.default_rng(1)
 series = np.zeros(T)
@@ -180,7 +182,7 @@ idata_ts = az.from_numpyro(fit_ar1(y_lag, y_now), log_likelihood=True,
 class AR1Wrapper(azs.SamplingWrapper):
     def sel_observations(self, idx):
         idx = np.asarray(idx)
-        keep = np.setdiff1d(np.arange(y_now.size), idx)
+        keep = np.setdiff1d(np.arange(y_now.size), np.concatenate([idx, idx + 1]))
         return ({"y_lag": y_lag[keep], "y": y_now[keep]},
                 {"y_lag": y_lag[idx], "y": y_now[idx], "time": steps[idx]})
 
@@ -245,10 +247,14 @@ Path("ar1/scores.json").write_text(json.dumps(
     {"criterion": "kfold5-joint-elpd", "orientation": "higher", "units": units}))
 ```
 
-**Ranking the variants.** `az.compare` ranks PSIS-LOO results only. To rank LFO or
-blocked-K-fold variants in an experiments ledger, write each variant's per-unit scores to its
-own `scores.json`, as both blocks above do, and rank them with track-model-experiments' score
-mode. [track-model-experiments/references/predictive-evaluation.md](../../track-model-experiments/references/predictive-evaluation.md)
+**Ranking the variants.** The two blocks above are alternative routes. Both write
+`ar1/scores.json`, so pick one route per ledger. `az.compare` runs PSIS-LOO on InferenceData.
+It also ranks precomputed `lfo_cv(..., pointwise=True)` results that share one
+`forecast_horizon` and `min_observations`. It cannot take the joint block scores of the
+blocked-K-fold route, because they are plain numbers and not `ELPDData`. It cannot mix model
+classes, and it cannot stamp an experiments ledger. For those cases, write each variant's
+per-unit scores to its own `scores.json`, as both blocks above do, and rank them with
+track-model-experiments' score mode. [track-model-experiments/references/predictive-evaluation.md](../../track-model-experiments/references/predictive-evaluation.md)
 gives the file's contract, the paired-difference rule, and its limits. Every variant in one
 ledger uses the same origins or blocks and the same criterion string.
 

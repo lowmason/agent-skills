@@ -196,8 +196,9 @@ del model_wide, model_robust, fit
 # it, and test_the_time_series_fixture_copies_the_doc_setup_block pins the two equal.
 TIME_SERIES_FIXTURE = '''
 # An AR(1) series and a wrapper that refits it on a subset of time steps.
-# Each term scores y[t] given the observed y[t-1], so a refit can leave out any
-# set of steps; lfo_cv and loo_kfold both call these four methods.
+# Each term scores y[t] given the observed y[t-1]. A refit drops the held-out
+# steps and the step after each block, because that step is scored given a
+# held-out value; lfo_cv and loo_kfold both call these four methods.
 T = 80
 rng_ts = np.random.default_rng(1)
 series = np.zeros(T)
@@ -224,7 +225,7 @@ idata_ts = az.from_numpyro(fit_ar1(y_lag, y_now), log_likelihood=True,
 class AR1Wrapper(azs.SamplingWrapper):
     def sel_observations(self, idx):
         idx = np.asarray(idx)
-        keep = np.setdiff1d(np.arange(y_now.size), idx)
+        keep = np.setdiff1d(np.arange(y_now.size), np.concatenate([idx, idx + 1]))
         return ({"y_lag": y_lag[keep], "y": y_now[keep]},
                 {"y_lag": y_lag[idx], "y": y_now[idx], "time": steps[idx]})
 
