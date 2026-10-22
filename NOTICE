@@ -563,6 +563,9 @@ Changes from upstream:
     unpushed commits. When HEAD has unpushed commits, or the check fails,
     the skill now makes the worktree with git and then enters it with the
     native tool.
+  - dispatching-parallel-agents is manual-only (disable-model-invocation:
+    true, and agents/openai.yaml for Codex), since it fans out paid
+    subagents (plan 63).
 
     brainstorming/
     dispatching-parallel-agents/

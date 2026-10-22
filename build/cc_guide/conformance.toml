@@ -315,7 +315,8 @@ enforced_by = 'check_conformance'
 # or its directory with a trailing slash. exempt files need no naming; tests
 # neither need it nor count as naming anything. The license copies each skill
 # carries (portability R4) are exempt because nothing names them: they travel
-# with a single-skill install and are never loaded.
+# with a single-skill install and are never loaded. agents/openai.yaml is the
+# Codex policy file for a manual-only skill: Codex reads it, the agent never does.
 [[check]]
 id = 'orphan-bundled-file'
 kind = 'skill-bundle'
@@ -323,7 +324,7 @@ sections = ['skills.progressive-disclosure']
 type = 'advice'
 rule = 'A bundled file under a skill directory is named by a file in that skill.'
 enforced_by = 'check_conformance'
-exempt = ['SKILL.md', 'README.md', 'INSTALL.md', 'LICENSE*']
+exempt = ['SKILL.md', 'README.md', 'INSTALL.md', 'LICENSE*', 'agents/openai.yaml']
 tests = ['test_*', '*_test.py', 'conftest.py', 'tests/*']
 
 # On a name collision the skill wins, so the command file would never run.
@@ -654,11 +655,10 @@ artifacts = [
     'skills/subagent-driven-development/SKILL.md',
     'skills/requesting-code-review/SKILL.md',
     'skills/writing-skills/SKILL.md',
-    'skills/dispatching-parallel-agents/SKILL.md',
 ]
 guide = 'A side-effecting workflow sets disable-model-invocation: true.'
 reason = 'These four act with side effects but lack a body gate or an inbound bare-name handoff, so portability Decision 3 does not cover them.'
-evidence = 'Audit rows S-88 to S-91; owner gate 2026-10-04.'
+evidence = 'Audit rows S-88 to S-91; owner gate 2026-10-04. Plan 63 Task 1 (owner Q1, 2026-10-21): dispatching-parallel-agents made manual-only.'
 tracked_in = 'deferred item: gate or make manual-only the four ungated side-effecting skills'
 
 # writing-skills' departures from the guide go to its rewrite.
