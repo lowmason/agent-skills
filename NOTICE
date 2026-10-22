@@ -566,6 +566,8 @@ Changes from upstream:
   - dispatching-parallel-agents is manual-only (disable-model-invocation:
     true, and agents/openai.yaml for Codex), since it fans out paid
     subagents (plan 63).
+  - writing-skills' deployment checklist pushes to a fork only on the partner's word
+    (plan 63).
 
     brainstorming/
     dispatching-parallel-agents/

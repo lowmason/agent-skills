@@ -654,12 +654,22 @@ sections = ['commands.overview', 'skills.frontmatter']
 artifacts = [
     'skills/subagent-driven-development/SKILL.md',
     'skills/requesting-code-review/SKILL.md',
-    'skills/writing-skills/SKILL.md',
 ]
 guide = 'A side-effecting workflow sets disable-model-invocation: true.'
 reason = 'These four act with side effects but lack a body gate or an inbound bare-name handoff, so portability Decision 3 does not cover them.'
 evidence = 'Audit rows S-88 to S-91; owner gate 2026-10-04. Plan 63 Task 1 (owner Q1, 2026-10-21): dispatching-parallel-agents made manual-only.'
 tracked_in = 'deferred item: gate or make manual-only the four ungated side-effecting skills'
+
+# Side-effecting skills with no inbound handoff, gated in their bodies (owner Q1, plan 63).
+[[exception]]
+id = 'side-effecting-skills-body-gated'
+type = 'deviation'
+sections = ['commands.overview', 'skills.frontmatter']
+artifacts = ['skills/writing-skills/SKILL.md']
+guide = 'A side-effecting workflow sets disable-model-invocation: true.'
+reason = 'CLAUDE.md tells every runtime to follow writing-skills when editing a skill, which a manual-only skill cannot serve; its one side effect, a push to a fork, waits on the partner in its body.'
+evidence = 'Audit row S-90; owner decision Q1, plan 63, 2026-10-21; micro-test record in plan 63 Task 2.'
+revisit = 'When the guide documents a way for an instruction file or another skill to hand off to a manual-only skill.'
 
 # writing-skills' departures from the guide go to its rewrite.
 [[exception]]
