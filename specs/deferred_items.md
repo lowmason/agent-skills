@@ -1981,7 +1981,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       `build/check_conformance.py` passing.
       → done in plan 38: CLAUDE.md is 177 lines, and Task 2 removed both exceptions
       with `build/check_conformance.py` passing.
-- [ ] Gate or make manual-only the four ungated side-effecting skills (plan 35 audit rows
+- [x] Gate or make manual-only the four ungated side-effecting skills (plan 35 audit rows
       S-88 to S-91): `skills/subagent-driven-development/SKILL.md`,
       `skills/requesting-code-review/SKILL.md`, `skills/writing-skills/SKILL.md` and
       `skills/dispatching-parallel-agents/SKILL.md` act with side effects (commits, paid
@@ -1996,7 +1996,8 @@ declined as YAGNI (zero instances in a one-page wiki).
       → progress 2026-10-20 (plan 53): Stage A landed. `disable-model-invocation` passes
       the lint, and a manual-only skill now needs `agents/openai.yaml` with
       `policy.allow_implicit_invocation: false` (R1.6).
-- [ ] Rewrite seven skill descriptions in the third person (plan 35 audit rows S-21 to
+      → done in plan 63 (2026-10-21): dispatching-parallel-agents is manual-only, writing-skills, subagent-driven-development and requesting-code-review gate their side effects in their bodies, and `side-effecting-skills-ungated` is removed.
+- [x] Rewrite seven skill descriptions in the third person (plan 35 audit rows S-21 to
       S-27): clean-coder, executing-plans, explore-data, recommend-visualization,
       systematic-debugging, validate-data and writing-plans use second person outside quoted
       trigger phrases, against `skills.description` and writing-skills' own third-person
@@ -2005,6 +2006,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       third person, and exception `description-second-person` is removed from
       `build/cc_guide/conformance.toml` in the same change, with
       `build/check_conformance.py` passing.
+      → done in plan 63 (2026-10-21): all seven descriptions are third person and `description-second-person` is removed.
 - [x] Move critical sections above the compaction cut in two skills (plan 35 audit rows
       S-69, S-70): compaction re-attaches only the first 5,000 tokens of a SKILL.md body
       (`skills.progressive-disclosure`), but the Red Flags section of
@@ -2023,7 +2025,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       still over 20,000 characters, so the exception stays, renamed
       `skill-body-past-compaction`; moving the body text out is the first item of the
       `46-sdd-bundle` section below.
-- [ ] Enforce the model-on-dispatch rule with a hook (plan 35 audit row S-94):
+- [x] Enforce the model-on-dispatch rule with a hook (plan 35 audit row S-94):
       `skills/subagent-driven-development/SKILL.md` says to always specify the model
       explicitly when dispatching. The rule is machine-checkable (the Agent tool's `model`
       parameter) but enforced only by prose, where `mechanisms.overview` puts such rules in
@@ -2031,6 +2033,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       Agent dispatch with no explicit model, and exception `dispatch-model-in-prose` is
       removed from `build/cc_guide/conformance.toml` in the same change, with
       `build/check_conformance.py` passing.
+      → done in plan 63 (2026-10-21): `hooks/dispatch-model-guard.py` denies a model-less dispatch to an unpinned agent, and `dispatch-model-in-prose` is removed. Owner steps remain: global install and a trigger-once probe (hooks/README.md).
 - [ ] Make brainstorming's scope proportional (plan 35 audit row S-96):
       `skills/brainstorming/SKILL.md` says every project goes through it, while the guide
       (`lean.ceremony`) and the owner's proportional-process rule in `commands/deferred.md`
@@ -2040,7 +2043,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       proportional rule, and exception `brainstorming-every-project` is removed from
       `build/cc_guide/conformance.toml` in the same change, with
       `build/check_conformance.py` passing.
-- [ ] Reconcile requesting-code-review with the guide's skip for small watched changes (plan
+- [x] Reconcile requesting-code-review with the guide's skip for small watched changes (plan
       35 audit row S-99): `skills/requesting-code-review/SKILL.md` requires review before
       every merge to main, where `lean.ceremony` skips review for a small change you watched
       being made. Size: plan. Done when: the skill states when review may be skipped, and
@@ -2048,6 +2051,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       `build/cc_guide/conformance.toml` in the same change; or the owner re-records that
       exception as a deviation with a reason. Either way, `build/check_conformance.py`
       passes.
+      → done in plan 63 (2026-10-21): requesting-code-review states when review may be skipped, and `review-before-every-merge` is removed.
 - [x] Gate the geographic-codes and classification-codes network rebuilds (plan 35 audit
       rows S-104, S-105): both SKILL.md files (line 37 each) rebuild `data/` from the
       network when it is missing, with no manual gate (`lean.expensive-ops`). Size:
@@ -4550,7 +4554,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       description edit, with collision probes against recommend-causal-design and
       deep-learning. Size: plan. Done when: the pointers land and the micro-test record is
       kept. → done in plan 64
-- [ ] Add recommend-causal-design to explore-data's pre-flight list (audit-3-10-26 I2, found
+- [x] Add recommend-causal-design to explore-data's pre-flight list (audit-3-10-26 I2, found
       2026-10-03; re-verified 2026-10-18). explore-data calls itself the pre-flight before
       bayesian-workflow, recommend-probabilistic-model or recommend-visualization
       (`skills/explore-data/SKILL.md:11-12`, next steps `:237-241`) and never names
@@ -4558,6 +4562,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       "Rewrite seven skill descriptions in the third person" also rewrites, so do both in one
       change with one micro-test. Size: quick-fix. Done when: the pre-flight list names
       recommend-causal-design and the description change is micro-tested.
+      → done in plan 63 (2026-10-21): explore-data's description and next steps name recommend-causal-design, micro-tested (t7).
 - [x] Add causal-design and deep-learning hand-offs to creative-thinking (audit-3-10-26 G14 and
       I2, found 2026-10-03; re-verified 2026-10-18). creative-thinking triggers on "what
       should I even be estimating", but its description (`skills/creative-thinking/SKILL.md:3-10`)
@@ -6236,6 +6241,32 @@ defer. Anchors are at the end of plan 59's fix wave.
       NOTICE change-list line. See `specs/superpowers-drift-spec.md` findings 7, 11 and 13.
       Size: design. Done when: the spec is approved in `specs/`, or the owner records findings
       11 and 13 as declined in the drift spec.
+
+## 63-conformance-gaps — 2026-10-21
+- [ ] Probe `BUILTIN_PINNED` and the Agent payload shape in the drift detector (plan 63 Task 6, review
+      Minor, triaged defer). `hooks/dispatch-model-guard.py` relies on `tool_name` `Agent`, with
+      `tool_input.model` absent when unset, and on `BUILTIN_PINNED` (built-in `claude-code-guide` pins
+      haiku). Add a probe beside `agent-model-pins` in `build/cc_guide/manifest.toml`, and a Probe-log
+      row in `hooks/README.md` with the Task 6 findings (CC 2.1.304, 2026-10-21). If CC renamed the
+      tool, the matcher would stop firing and the guard would fail open without a sign. See
+      `specs/plans/completed/63-conformance-gaps.md`. Size: plan. Done when: the probe runs and
+      fails when a built-in's pin or the payload shape changes.
+- [ ] Roster-lint test symmetry (plan 63 Task 6, review Minor): `check_pinned_roster` in
+      `build/check_frontmatter.py` has no "missing guard file" test and no "real agents" test to
+      match the read-only roster's tests in `build/test_check_frontmatter.py`. Size: quick-fix.
+      Done when: both tests exist and pass.
+- [ ] Re-wrap the long single-line `description` scalars in `skills/clean-coder/SKILL.md`,
+      `skills/executing-plans/SKILL.md`, `skills/explore-data/SKILL.md` and
+      `skills/writing-plans/SKILL.md` (not re-wrapped when made third person; explore-data's is
+      1005 of 1024 characters). Also reword "(this repo)" at the hook sentence in
+      `skills/subagent-driven-development/SKILL.md` (about line 191) to "the agent-skills repo's".
+      The SDD edit needs the placement tests rerun (`test_check_conformance.py -k test_real_skill`).
+      Plan 63 final review, Minor. Size: quick-fix. Revisit if: another edit touches those
+      descriptions or SDD.
+- [ ] Re-run the writing-skills t2 micro-test (push gate) with the fixed `run_arm.sh`; the plan 63
+      run leaked prompts through stdin, so its 8/15 vs 0/15 may be contaminated. The kit is in the
+      scratch folder `~/.cache/agent-skills/scratch/plan63-micro/`. Size: quick-fix. Done when: the
+      pushes-unasked counts (control vs variant) are recorded and the gate wording stands or is revised.
 
 ## 64-bayesian-rpm-routing — 2026-10-21
 - [ ] Add a survival row to rpm's per-family knob table

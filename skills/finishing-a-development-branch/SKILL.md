@@ -249,6 +249,8 @@ this way:
   executed there) that is an empty range, a review of nothing: ask your
   partner which commit the work starts after, and use that.
 
+If your partner declined the Codex run at its approval gate, skip the Codex run, say the Codex seat was skipped at their word, and continue. The code-reviewer offer above still applies. When no review remains, go on to Step 5.
+
 Work its findings — merged with code-reviewer's, if that ran — with the
 receiving-code-review skill: fix what holds up, re-run the tests, commit. Show
 your partner anything you left unfixed, and execute the chosen option only

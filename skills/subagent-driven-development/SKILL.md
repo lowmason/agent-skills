@@ -27,6 +27,8 @@ ledger and the tool results carry the record.
 
 **Continuous execution:** Do not pause to check in with your human partner between tasks. Execute tasks without stopping for permission. The only reasons to stop are: BLOCKED status you cannot resolve, ambiguity that genuinely prevents progress, a **context checkpoint** (see Context Checkpoints — a durable handoff to a fresh session, not a check-in), or all tasks complete. "Should I continue?" prompts and progress summaries waste their time — they asked you to execute the plan, so execute it.
 
+**Start gate:** Start only on an explicit request to execute this plan: your human partner's choice of Subagent-Driven at writing-plans' handoff, or their own words ("execute the plan"). If you reached the plan any other way (you found the file, or another skill suggested it), ask once before the first dispatch: execution commits on the branch and spends on subagents. Once started, the no-check-in rule above holds.
+
 ## When to Use
 
 You have an implementation plan whose tasks are mostly independent and you
@@ -186,6 +188,7 @@ tier choice: on Claude Code a model-pinned agent runs at its pin, never
 escalated, and any other agent inherits your session's model — usually the most
 capable and most expensive; the Codex and Gemini adapters drop the pins, so
 there every omission inherits. Either way it silently defeats this section.
+On Claude Code, `hooks/dispatch-model-guard.py` (this repo) denies a dispatch with no model to an unpinned agent, once installed. It cannot tell when a pinned reviewer needed escalating: that choice stays yours.
 
 When nothing clearly fires, default to **standard**. **Reviews** floor at
 **standard** and scale up with the diff: a small mechanical diff reviews at
