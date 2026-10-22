@@ -1,5 +1,7 @@
 # Model-lifecycle Stage 2: tune-hyperparameters as the model-agnostic search loop — Implementation Plan
 
+**Status: COMPLETE (2026-10-22)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md (section 67-model-lifecycle)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 > Roadmap: specs/model-lifecycle-roadmap.md, Stage 2 — on plan completion, tick the stage and re-validate later stages against what shipped.
@@ -86,7 +88,7 @@ Each edit below is an exact replacement: find the "Old" block in the file (it oc
 - Consumes: nothing.
 - Produces: the Step 0 bullet "**Regime C — structural choice.**", which ends "(Regime C, below)". Task 2 adds the `## Regime C — structural choices` section it points to. The `### Step 0b — choose the splitter by dependence structure` heading and the early-stopping paragraph, which Task 2's "Neural search" calls "(above)".
 
-- [ ] **Step 1: Confirm the anchors (the failing check)**
+- [x] **Step 1: Confirm the anchors (the failing check)**
 
 ```bash
 grep -c -F 'Tuning is the loop above' skills/tune-hyperparameters/SKILL.md
@@ -98,7 +100,7 @@ grep -c 'Regime C\|Step 0b\|What to score\|Early stopping' skills/tune-hyperpara
 
 Expected: each of the first four lines prints `1`. The last command prints `0`: none of the new text exists yet.
 
-- [ ] **Step 2: Name the producers in the Overview**
+- [x] **Step 2: Name the producers in the Overview**
 
 Old:
 
@@ -116,7 +118,7 @@ keep the best. The loop is the same for any producer: sklearn and boosting,
 statsmodels, NumPyro, dynamax or a neural net. Two things break that
 ```
 
-- [ ] **Step 3: Restate Step 0's rule (R2)**
+- [x] **Step 3: Restate Step 0's rule (R2)**
 
 Old:
 
@@ -141,7 +143,7 @@ A knob that sets one predictor's flexibility (a penalty, tree depth, `k` for
 kNN) is Regime A, even when its values are discrete.
 ```
 
-- [ ] **Step 4: Move optax into Regime B's bullet and add Regime C's bullet (R2, D4)**
+- [x] **Step 4: Move optax into Regime B's bullet and add Regime C's bullet (R2, D4)**
 
 Old:
 
@@ -164,7 +166,9 @@ New:
   so score it on a criterion that compares whole models (Regime C, below).
 ```
 
-- [ ] **Step 5: Add Step 0b, the splitter table (R3)**
+- [x] **Step 5: Add Step 0b, the splitter table (R3)**
+
+> Deviation: the final review (commit 9b3b511) rewrote the panel paragraph under the table, because a panel that must also predict new entities needs held-out entities as well as forward periods, and the claim "the rest of this section is the temporal protocol" was wrong. It also qualified the out-of-bag row as "independent rows only", which Codex and the code-reviewer each raised. Both change plan and spec R3 text. The owner has not ruled on the out-of-bag qualifier.
 
 Old:
 
@@ -199,7 +203,7 @@ protocol.
 **The trap.**
 ```
 
-- [ ] **Step 6: Add the objective table before the search (R6)**
+- [x] **Step 6: Add the objective table before the search (R6)**
 
 Old:
 
@@ -222,7 +226,9 @@ New:
 **The search — a manual Optuna objective** (verified against Optuna 5.0.0). Keep
 ```
 
-- [ ] **Step 7: Add the early-stopping rule (R5) and replace the nested-CV prose with a snippet (R4)**
+- [x] **Step 7: Add the early-stopping rule (R5) and replace the nested-CV prose with a snippet (R4)**
+
+> Deviation: the final review (commit 9b3b511) reworded the early-stopping parenthesis, because `tr` named the outer training half in the nested snippet and the fit's own training rows in the rule.
 
 Old:
 
@@ -275,7 +281,7 @@ float(np.mean(outer_scores))             # report this, not study.best_value
 
 The snippet reuses the imports of the two code blocks above it (`PurgedTimeSeriesSplit`, `np`, `optuna`, `Ridge`, `mean_squared_error`).
 
-- [ ] **Step 8: Check the size, the snippet gate and the lints**
+- [x] **Step 8: Check the size, the snippet gate and the lints**
 
 ```bash
 python3 -c "t=open('skills/tune-hyperparameters/SKILL.md').read(); print(len(t.split('---\n',2)[2]))"
@@ -286,7 +292,7 @@ cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q
 
 Expected: the body is about 12,820 characters (under 20,000). Each command exits 0. The snippet check may print its two existing WARN lines (`state-space.md`, `model-tests.md`), and none names tune.
 
-- [ ] **Step 9: Run the R4 snippet once on synthetic data**
+- [x] **Step 9: Run the R4 snippet once on synthetic data**
 
 ```bash
 rm -rf /tmp/p67-r4 && mkdir -p /tmp/p67-r4
@@ -309,7 +315,7 @@ cd /tmp/p67-r4 && uv run --python 3.13 --with 'optuna==5.0.0' --with 'scikit-lea
 
 Expected: one float near 1.1 (1.13 in the plan-time run of this exact harness). A traceback means the snippet is wrong: fix the snippet in the SKILL.md, not the harness.
 
-- [ ] **Step 10: Commit**
+- [x] **Step 10: Commit**
 
 ```bash
 git add skills/tune-hyperparameters/SKILL.md
@@ -328,7 +334,7 @@ git commit -m "docs(tune): add Regime C, the splitter and objective tables, and 
 - Consumes: Task 1's Step 0 bullet "(Regime C, below)", and its early-stopping paragraph.
 - Produces: the R7 rule sentence that Task 3 probes, and the final tune body that Task 5's description summarizes.
 
-- [ ] **Step 1: Confirm the anchors (the failing check)**
+- [x] **Step 1: Confirm the anchors (the failing check)**
 
 ```bash
 grep -c 'Fold-to-fold variance swamps the effect' skills/tune-hyperparameters/SKILL.md
@@ -341,7 +347,7 @@ git show 7a8fbaa:skills/tune-hyperparameters/SKILL.md | grep -F '| NUTS `target_
 
 Expected: `1`, `1`, `1`, `1`, then `0`.
 
-- [ ] **Step 2: Add the neural-search section (R8) and replace the noise rule (R7)**
+- [x] **Step 2: Add the neural-search section (R8) and replace the noise rule (R7)**
 
 Old:
 
@@ -384,7 +390,9 @@ comparable-budget rules and the experiment record.
 
 (The pruner names and `trial.report`, `trial.should_prune` and `optuna.TrialPruned` were checked against Optuna 5.0.0 at plan time.)
 
-- [ ] **Step 3: Rewrite Graduation (R11)**
+- [x] **Step 3: Rewrite Graduation (R11)**
+
+> Deviation: the final review changed Graduation twice. Commit 9b3b511 wrote "add or change the ledger's `Criterion:` line" and "ELPD metric columns" to match track. Commit 6a3fc03 (owner chose to implement) scoped the section to non-neural winners and told the reader to score the winner on folds the search never tuned on.
 
 Old:
 
@@ -414,7 +422,7 @@ row in silence. The trial history stays in Optuna's store (`optuna-dashboard`
 to browse); the ledger records only the winner and why it earned a seat.
 ```
 
-- [ ] **Step 4: Give the optax row an owner (R9)**
+- [x] **Step 4: Give the optax row an owner (R9)**
 
 Old:
 
@@ -441,7 +449,7 @@ New:
 the router, not the doctrine.
 ```
 
-- [ ] **Step 5: Add the Regime C section and the producers router (R2, R10)**
+- [x] **Step 5: Add the Regime C section and the producers router (R2, R10)**
 
 Old:
 
@@ -487,7 +495,7 @@ objective change:
 ## Boundary
 ```
 
-- [ ] **Step 6: Add the causal boundary (R12, tune side)**
+- [x] **Step 6: Add the causal boundary (R12, tune side)**
 
 Old:
 
@@ -510,7 +518,7 @@ New:
   graduation.
 ```
 
-- [ ] **Step 7: Rewrite the soft pair's reason (R7)**
+- [x] **Step 7: Rewrite the soft pair's reason (R7)**
 
 In `build/test_runtime_support.py`, Old:
 
@@ -528,7 +536,7 @@ New:
   ('skill:tune-hyperparameters', 'skill:track-model-experiments'),
 ```
 
-- [ ] **Step 8: Check the edits, the size, the watch-item text and the lints**
+- [x] **Step 8: Check the edits, the size, the watch-item text and the lints**
 
 ```bash
 grep -c 'Fold-to-fold variance swamps\|until a non-ELPD mode exists\|no skill owns this yet\|The optax row has no owner' skills/tune-hyperparameters/SKILL.md
@@ -542,7 +550,7 @@ cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q
 
 Expected: `0`; `target_accept row unchanged`; `1`; a body of about 16,237 characters (under 20,000); each lint exits 0, and the drift test reports `2 passed`. If the drift test fails with a new pair, a cross-skill mention in the new text matched the scanner: reword it to a bare name (see Global Constraints) rather than adding an entry.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add skills/tune-hyperparameters/SKILL.md build/test_runtime_support.py
@@ -563,7 +571,7 @@ Run this right after Task 2, so that a failed rule is reworded before the descri
 - Consumes: tune's `SKILL.md` at HEAD after Task 2 (the variant arm), and at `7a8fbaa` (the control arm).
 - Produces: `run_microtest.py` in the kit, which Task 5 reuses for V1.
 
-- [ ] **Step 1: Build the kit**
+- [x] **Step 1: Build the kit**
 
 Record the CLI version: `claude --version` (2.1.304 at plan time). Write `~/.cache/agent-skills/scratch/plan67-micro/run_microtest.py`:
 
@@ -768,7 +776,7 @@ The fixtures, as per-fold differences d = default − tuned (lower MSE is better
 | `V2-real` | 0.02, 0.06, 0.01, 0.08, 0.02 | 0.038 | 0.0136 | 2.80 | 0.233 |
 | `V2-noise` | 0.04, −0.03, 0.05, 0.01, 0.03 | 0.020 | 0.0141 | 1.41 | 0.233 |
 
-- [ ] **Step 2: Pilot the isolation**
+- [x] **Step 2: Pilot the isolation**
 
 Run each micro-test command from the worktree root, as one self-contained command (shell state does not carry across Bash calls, and the script finds its kit from its own path):
 
@@ -778,7 +786,7 @@ uv run ~/.cache/agent-skills/scratch/plan67-micro/run_microtest.py "$(git rev-pa
 
 Expected: one line ending `clean=True`, and `results-v1-pilot.json` shows `"tools": []` and `"mcp": []`. If `clean` is False, stop: the run is not isolated, so fix the flags before you spend more.
 
-- [ ] **Step 3: Run both V2 arms**
+- [x] **Step 3: Run both V2 arms**
 
 ```bash
 uv run ~/.cache/agent-skills/scratch/plan67-micro/run_microtest.py "$(git rev-parse --show-toplevel)" v2-control
@@ -787,7 +795,7 @@ uv run ~/.cache/agent-skills/scratch/plan67-micro/run_microtest.py "$(git rev-pa
 
 Run each arm in the background and wait for its completion notice. Expected: 10 reps per arm, about $0.6 for both arms.
 
-- [ ] **Step 4: Grade by hand against the pre-registered rule**
+- [x] **Step 4: Grade by hand against the pre-registered rule**
 
 Read every answer in `results-v2-control.json` and `results-v2-variant.json`. The script's `verdict` field is a convenience: grade each first line yourself.
 
@@ -800,7 +808,7 @@ The control is expected to answer `NOISE` on `V2-real` (spec V2). Record its cou
 
 If the variant fails, reword the R7 sentence in `SKILL.md` once, keeping the pinned rule (2·SE(Δ), the plain SE). Rerun the variant arm only, record both runs, and commit the rewording on its own (`docs(tune): reword the noise rule after V2`). If the second run also fails, stop and bring both runs to your human partner.
 
-- [ ] **Step 5: Write the record**
+- [x] **Step 5: Write the record**
 
 Create `specs/verification/67-tune-noise-rule-probe.md` in the shape of `specs/verification/65-track-description-microtest.md`:
 
@@ -812,7 +820,7 @@ Create `specs/verification/67-tune-noise-rule-probe.md` in the shape of `specs/v
 - **Per rep:** arm, prompt, rep, the first line, and a quote of at most 15 words from the reason;
 - **Verdict:** pass or fail, with any rewording and its rerun.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 Commit only when the record's verdict is pass:
 
@@ -834,7 +842,7 @@ git commit -m "test(tune): record the V2 noise-rule probe" -m "An agent that loa
 - Consumes: Tasks 1–2 (the README row describes them).
 - Produces: nothing a later task reads.
 
-- [ ] **Step 1: Confirm the anchors (the failing check)**
+- [x] **Step 1: Confirm the anchors (the failing check)**
 
 ```bash
 grep -c 'tune-hyperparameters' skills/recommend-causal-design/SKILL.md
@@ -844,7 +852,7 @@ grep -c 'no skill owns the dynamax optax knob yet' README.md
 
 Expected: `0`, `0`, `1`.
 
-- [ ] **Step 2: Add causal's sibling line (R12)**
+- [x] **Step 2: Add causal's sibling line (R12)**
 
 In `skills/recommend-causal-design/SKILL.md`, Old:
 
@@ -864,7 +872,7 @@ New:
   the effect estimate.
 ```
 
-- [ ] **Step 3: Add rpm's spline-knot and AR-order rows (R12a)**
+- [x] **Step 3: Add rpm's spline-knot and AR-order rows (R12a)**
 
 In `skills/recommend-probabilistic-model/references/model-selection-regularization.md`, Old:
 
@@ -892,7 +900,9 @@ New:
 | `timeseries-statespace` (AR terms) | AR order `p` | rolling-origin CV or LFO over `p = 0, 1, 2, …`; AIC/BIC as a quick screen of point fits |
 ```
 
-- [ ] **Step 4: Rewrite tune's README row (R12b)**
+- [x] **Step 4: Rewrite tune's README row (R12b)**
+
+> Deviation: the final review (commit 9b3b511) changed "The skill guards temporal leakage only" to "The bundled splitter guards temporal leakage only", because the row also describes grouped and spatial splitters.
 
 In `README.md`, replace the whole line that starts `| [`tune-hyperparameters`](skills/tune-hyperparameters/) |` with:
 
@@ -900,7 +910,7 @@ In `README.md`, replace the whole line that starts `| [`tune-hyperparameters`](s
 | [`tune-hyperparameters`](skills/tune-hyperparameters/) | Tune any model's knobs without leakage or overfitting: sklearn, boosting, statsmodels, NumPyro, dynamax and neural models. First classify the *regime*: predictive search (regime A), inference diagnostic (regime B) or structural choice (regime C), such as the number of mixture components or an AR order. Then tune the right objective with the right guard. For regime A, a table picks the cross-validation splitter from the data's dependence structure: independent, grouped, spatial or temporal. For temporal data, the skill bundles a `PurgedTimeSeriesSplit` (`time_series_cv.py`). It gives forward-chaining cross-validation with an embargo gap and an optional label-horizon *purge*. Given each row's period, it splits whole periods, so it also works on a panel. It feeds a manual, seeded **Optuna** objective (verified against the installed version), with nested cross-validation for large searches and a neural search loop: a trial budget, pruners, early stopping inside the training fold, and seed replication. A paired per-fold rule says when a gain is noise. For regime B, a thin decision table routes the NUTS and SVI knobs to `bayesian-workflow`, and the skill owns the optax learning rate of non-neural point fits. The skill guards **temporal** leakage only. It graduates a tuned winner to a `track-model-experiments` variant row with a `scores.json` that the comparator ranks in score mode, and it leaves revision and vintage leakage to `develop-testing-strategy`. |
 ```
 
-- [ ] **Step 5: Run Gate A and the lints**
+- [x] **Step 5: Run Gate A and the lints**
 
 `verify_citations.py` reads `build/.scratch/` beside itself, and that directory exists only in the main checkout. Copy it in (a real copy, never a symlink), then check that git ignores it:
 
@@ -915,7 +925,7 @@ cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q
 
 Expected: `git status` prints nothing for `build/`. `verify_citations.py` exits 0. It prints two existing chapter-fallback WARN lines for `families/regression-glm.md` (PML1 §13.2.4.4, PML2 §14.3.2.1, plan 64's deferred item), and no line names `model-selection-regularization.md`. The other two lints exit 0. If the main checkout has no `build/.scratch/`, stop and ask: rebuilding it needs the owner's local PDFs.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add skills/recommend-causal-design/SKILL.md skills/recommend-probabilistic-model/references/model-selection-regularization.md README.md
@@ -937,7 +947,7 @@ The description ships only after the V1 tune arm passes. Until then, the edit st
 - Consumes: Tasks 1–2 (the description names what they built), Task 3's kit.
 - Produces: nothing a later task reads.
 
-- [ ] **Step 1: Write the draft description**
+- [x] **Step 1: Write the draft description**
 
 Replace the frontmatter `description: >` block (the folded lines under it, up to `license: MIT`) with:
 
@@ -966,7 +976,7 @@ uv run --python 3.13 --with pyyaml python build/check_conformance.py
 
 Expected: both exit 0 (`check_frontmatter.py` may print its existing WARN for `writing-skills`). Do not commit yet.
 
-- [ ] **Step 2: Check that the probes have not moved, then run both V1 arms**
+- [x] **Step 2: Check that the probes have not moved, then run both V1 arms**
 
 ```bash
 for n in creative-thinking deep-learning evaluate-deep-learning recommend-probabilistic-model track-model-experiments; do git diff --quiet 7a8fbaa HEAD -- skills/$n/SKILL.md && echo "$n same" || echo "$n CHANGED"; done
@@ -981,7 +991,7 @@ uv run ~/.cache/agent-skills/scratch/plan67-micro/run_microtest.py "$(git rev-pa
 
 Run each arm in the background (40 calls in a row) and wait for its completion notice. Expected: 40 reps per arm, about $0.02 each (about $1.60 in total).
 
-- [ ] **Step 3: Grade by hand against the pre-registered rule**
+- [x] **Step 3: Grade by hand against the pre-registered rule**
 
 Read every answer in `results-v1-control.json` and `results-v1-variant.json`. Grade each answer yourself, and quote any answer that is more than a bare skill name.
 
@@ -992,7 +1002,7 @@ Pass rule (spec V1, fixed before the runs):
 
 If the variant fails, reword the description once. Aim at the failing prompt, and keep every R1 trigger. Rerun the variant arm only, and record both runs. If the second run also fails, stop and bring both runs to your human partner. The description does not ship on a failed run.
 
-- [ ] **Step 4: Write the record**
+- [x] **Step 4: Write the record**
 
 Create `specs/verification/67-tune-description-microtest.md` in the shape of `specs/verification/65-track-description-microtest.md`:
 
@@ -1004,7 +1014,7 @@ Create `specs/verification/67-tune-description-microtest.md` in the shape of `sp
 - **Per rep:** arm, prompt, rep and answer (an answer is a skill name, so quote it whole);
 - **Verdict:** pass or fail, with any rewording and its rerun.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 Commit only when the record's verdict is pass:
 
@@ -1019,7 +1029,7 @@ git commit -m "docs(tune): widen the description to any model's knobs" -m "Rewri
 
 **Files:** none changed, unless a gate fails.
 
-- [ ] **Step 1: Run every V3 Stage A gate and the commit lints**
+- [x] **Step 1: Run every V3 Stage A gate and the commit lints**
 
 ```bash
 uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
@@ -1033,7 +1043,7 @@ build/run_commit_lints.sh
 
 Expected: each exits 0. The tune suite passes with the same count as on the base commit (this plan adds no test, +0), and `tune scripts unchanged` prints. Gate A prints only its two existing WARN lines.
 
-- [ ] **Step 2: Check the scope fence and the roadmap Exit**
+- [x] **Step 2: Check the scope fence and the roadmap Exit**
 
 ```bash
 git fetch -q origin
@@ -1050,3 +1060,11 @@ Check each item of the roadmap's Stage 2 Exit, and write the evidence into the e
 - the deferred-item ticks are left to the Plan Completion Protocol (step 3), in section `59-model-skill-comparator-and-cv-fixes`: tick the optax-description item (`→ done in plan 67`); tick "Two doc nits left by plan 59's final review" (part (a) was done in plan 65, part (b) in plan 67: tune's Graduation now agrees with track's When to use); add a progress note to "Watch tune's Regime B router wording" (the `target_accept` row and the router sentence are byte-identical, so the item stays open). "Three nits in the splitter's tests" stays open.
 
 Then run the Plan Completion Protocol (writing-plans). At its step 5, retire the plan only: leave `specs/model-lifecycle.md` in place. Stage 3 still implements that spec, and the roadmap's § Completion retires it after the last stage. Its step 3a writes `## Handoff to later stages` for Stage 3, which consumes only `skills/track-model-experiments/references/predictive-evaluation.md`. That path is unchanged by this stage, so its bullet is expected to say that nothing differs.
+
+## Handoff to later stages
+
+- **Stage 3 (thin routes and rpm's "Runs next"; spec § Stage C).** It consumes only `skills/track-model-experiments/references/predictive-evaluation.md`. This stage did not change that path or the file, and Stage 3's roadmap `Consumes` and `Produces` hold as written.
+  - Traps: tune's `description` changed in this stage (860 characters, commit `88c2094`). A Stage 3 micro-test listing that names tune must use the new text, not the one at `7a8fbaa`. The kit at `~/.cache/agent-skills/scratch/plan67-micro/` holds the six-skill V1 listing and a positive isolation screen (`screen_v2.py`). `run_microtest.py` does not retry a rep that is not clean.
+  - Traps: tune's body now names `track-model-experiments/references/predictive-evaluation.md` by its full path (default 2), so the tune → track edge in the dependency-drift scanner no longer depends on Graduation's `experiments.md` mention.
+  - Traps: rpm's `references/model-selection-regularization.md` Output paragraph still says tune runs a knob and criterion pair only "when the criterion is a CV search". tune now sweeps structural choices on BIC, marginal likelihood and LOO (Regime C). Stage 3's R28 edits only `reporting.md`, so the paragraph is deferred, in section `67-model-lifecycle`.
+  - Deferred into this stage: nothing.

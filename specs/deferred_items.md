@@ -6100,7 +6100,7 @@ defer. Anchors are at the end of plan 59's fix wave.
       `groups` raises `IndexError` at `labels.shape[0]`, not the `ValueError` that the length check
       gives. Size: quick-fix. Revisit if: someone edits `time_series_cv.py` again, or a panel run
       shows a leak.
-- [ ] Two doc nits left by plan 59's final review. (a) The root `README.md` row for
+- [x] Two doc nits left by plan 59's final review. (a) The root `README.md` row for
       track-model-experiments lists the inputs the comparator refuses but omits several
       log-likelihood variables. (b) tune's Graduation (`skills/tune-hyperparameters/SKILL.md`) and
       track's When to use (`skills/track-model-experiments/SKILL.md`) still give "tuned `<class>`
@@ -6114,6 +6114,7 @@ defer. Anchors are at the end of plan 59's fix wave.
       Graduation) and R21 (track's When to use), and part (a) is R23 (track's README row).
       → progress 2026-10-22: part (a) is done in plan 65 (R23, track's README row). Part (b) stays
       open: track's When to use is fixed (R21), and tune's Graduation (R11) lands in Stage 2.
+      → done in plan 67 (part (b): tune's Graduation now agrees with track's When to use, R11)
 - [x] Polish `skills/bayesian-workflow/references/svi.md` (plan 59 final review). (a) Check 3 says
       to set `num_svi_steps` to what check 1 showed is enough, but check 1 runs 3000 steps and the
       VSBC call uses 2000: reuse one number, or add a comment that 2000 is a runtime shortcut. (b)
@@ -6128,7 +6129,7 @@ defer. Anchors are at the end of plan 59's fix wave.
       bayesian-workflow file states it. Check the claim against NumPyro 0.22.0's source or a run,
       then add one sentence beside the tree-depth text (`diagnostics.md:46-50`). Size: quick-fix.
       Done when: the sentence is in `diagnostics.md`, with the source check named. → done 2026-10-21 (/deferred quick fix)
-- [ ] tune-hyperparameters' frontmatter `description` still triggers on "dynamax optax SGD", which
+- [x] tune-hyperparameters' frontmatter `description` still triggers on "dynamax optax SGD", which
       no skill owns after plan 59 (the optax router row reads "no skill owns this yet"). Descriptions
       are G5 work, gated on the O1 to O3 owner calls (see the lifecycle-spec item in section
       `audit-3-10-26 routing`). Each description change needs writing-skills' micro-test with
@@ -6138,7 +6139,8 @@ defer. Anchors are at the end of plan 59's fix wave.
       `audit-3-10-26 routing`), so the G5 description pass is no longer gated.
       → progress 2026-10-21: `specs/model-lifecycle.md` specifies the fix. D4 gives tune the optax
       knob for non-neural point fits, R1 drops the trigger, R9 rewrites the router row, and V1
-      plans the micro-test.
+      plans the micro-test. → done in plan 67 (R1 drops the trigger, R9 gives the optax knob an owner,
+      V1 micro-test passed, `specs/verification/67-tune-description-microtest.md`)
 - [ ] Watch tune's Regime B router wording for over-deferral (plan 59 micro-test,
       `specs/verification/59-regime-b-router-microtest.md`). Only S1 was red (arm B 2 of 5, arm C 0
       of 5, one-sided Fisher p about 0.22), and that rests on the literal "any listed action"
@@ -6150,6 +6152,9 @@ defer. Anchors are at the end of plan 59's fix wave.
       first action shows the same drift. Then use the fallback row in plan 59's Task 6 text
       (`specs/plans/completed/59-model-skill-comparator-and-cv-fixes.md`), which states the 1%
       threshold.
+      → progress 2026-10-22: plan 67 edited the optax row and Step 0's Regime B bullet. The
+      `target_accept` row and the router sentence are byte-identical to `7a8fbaa`, and no rep of the
+      plan 67 micro-tests exercised them, so the item stays open.
 
 ## 62-design-architecture-recast — 2026-10-21
 - [x] `skills/develop-testing-strategy/references/scraper-tests.md:81` still imports
@@ -6277,6 +6282,8 @@ defer. Anchors are at the end of plan 59's fix wave.
       because the model-lifecycle spec (`specs/model-lifecycle.md`, R12a) owns it. Size:
       quick-fix. Done when: the table has a survival row matching `families/survival.md`'s
       "Selection & regularization" subsection.
+      → progress 2026-10-22: the owner left it out of plan 67 (D1). Plan 67 added only the spline-knot
+      and AR-order rows to the same table.
 - [ ] Add Beta / BetaBinomial and quantile (`AsymmetricLaplaceQuantile`) rows to
       bayesian-workflow's "Common model families" table (`skills/bayesian-workflow/SKILL.md`),
       which rpm's bounded and quantile handoffs now point at (owner decision D9, plan 64).
@@ -6376,3 +6383,38 @@ Codex run) left unfixed, triaged defer. Both plan-mandated findings the owner ch
       `in_block` ledger fixture in `test_compare_experiments.py` holds two COMPARISON blocks, where
       a real ledger has one. (d) The new wide-row-note test covers only the plain `**best**` marker.
       Size: quick-fix. Revisit if: someone edits `model-comparison.md` or those tests again.
+
+## 67-model-lifecycle — 2026-10-22
+
+Plan 67 (model-lifecycle Stage 2) ticked the optax-description item and the doc-nits item, and added a
+progress note to the Regime B watch item. The items below are what its per-task reviews and its final
+review (an Opus code-reviewer and a Codex run) left unfixed, triaged defer. Both seats' leakage findings
+and the owner-chosen Graduation additions were fixed (commits `9b3b511` and `6a3fc03`). Anchors are at
+the end of plan 67.
+
+- [ ] Check the claim that predictive CV never selects synthetic-control weights. It is spec R12 text,
+      in `skills/recommend-causal-design/SKILL.md` (the tune sibling line) and in
+      `skills/tune-hyperparameters/SKILL.md` (Boundary). Abadie, Diamond and Hainmueller (2015) may
+      pick predictor weights with a pre-period train and validation split. `design-map.md` does not
+      contradict the claim. Size: quick-fix. Done when: the claim is checked against the paper and
+      Abadie (2021), and kept, or softened to "tune's search never selects …" in both files.
+- [ ] Update the Output paragraph of `skills/recommend-probabilistic-model/references/model-selection-regularization.md`
+      (about lines 56-59). It says tune runs a knob and criterion pair only "when the criterion is a CV
+      search". tune now sweeps structural choices on BIC, marginal likelihood and LOO (Regime C), and its
+      Producers row says so. Stage 3 edits only `reporting.md`, so no stage covers this paragraph. Size:
+      quick-fix. Done when: the paragraph names Regime C sweeps, and the rpm citations lint passes.
+- [ ] Build a V2 fixture that separates the arms (plan 67 final review). The plan 67 `V2-real` fixture
+      let the old rule answer REAL in 4 of 5 reps, because all five paired differences were positive.
+      The pass shows the rule is applied correctly, not that it changes the call. Record in
+      `specs/verification/67-tune-noise-rule-probe.md`. A fixture with a real mean gain and one
+      opposite-sign fold is the likely separator. Size: plan. Revisit if: the noise rule is edited
+      again, or an agent keeps a gain under 2·SE(Δ) in practice.
+- [ ] Reword the noise rule's "|Δ|, the absolute mean of d" in `skills/tune-hyperparameters/SKILL.md`
+      (the "paired difference is noise" bullet) as "the absolute value of the mean of d". Read as the
+      mean of |d|, `V2-noise` flips to REAL (0.032 against 2·SE = 0.0283). All five variant reps
+      read it correctly. Size: quick-fix. Done when: the sentence is reworded and the V2 record says its
+      probe ran on the earlier wording.
+- [ ] Out-of-bag qualifier is a spec change. Plan 67's final review qualified the splitter table's
+      "Random forests" row as "independent rows only" (commit `9b3b511`), where spec R3 gives the row
+      without a condition. Two seats raised it. Size: quick-fix. Done when: the owner confirms the
+      qualifier, and `specs/model-lifecycle.md` R3 is amended to match or the row is reverted.

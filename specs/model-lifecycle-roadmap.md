@@ -83,7 +83,7 @@ No behaviour in code is outside the spec.
       > Stage 1: COMPLETE (2026-10-22) — implemented by plan 65 (specs/plans/completed/65-model-lifecycle.md). Its Handoff section names what Stage 2 and Stage 3 consume.
       > Next: resume the roadmap.
 
-- [ ] Stage 2 (spec Stage A): tune-hyperparameters as the model-agnostic search loop
+- [x] Stage 2 (spec Stage A): tune-hyperparameters as the model-agnostic search loop
       Objective: tune covers three regimes, any producer's knobs and graduation to a score-mode ledger.
       Spec: § Stage A (R1–R12b); § Verification V1 (tune arm), V2, V3 (Stage A); R7's soft reference per the R7 row above
       Gap closed: R1–R12b; V1 tune; V2; the optax-description item; doc-nits part (b)
@@ -91,6 +91,8 @@ No behaviour in code is outside the spec.
       Produces: tune's new description and body; rpm's knob rows; causal's sibling line
       Exit: `check_frontmatter.py`, snippet Tier 1, the tune suite with `test_time_series_cv.py` unchanged, `verify_citations.py` Gate A, the dependency-drift test and `build/run_commit_lints.sh` pass; the V1 tune and V2 records are under `specs/verification/`; the optax and doc-nits items are ticked
       ROUTING: writing-plans
+      > Stage 2: COMPLETE (2026-10-22) — implemented by plan 67 (specs/plans/completed/67-model-lifecycle.md). Its Handoff section names what Stage 3 consumes.
+      > Next: resume the roadmap.
 
 - [ ] Stage 3 (spec Stage C): thin routes and rpm's "Runs next"
       Objective: three skills route model evaluation to its owners, and rpm names tune then track.
