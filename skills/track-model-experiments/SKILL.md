@@ -1,16 +1,19 @@
 ---
 name: track-model-experiments
 description: >
-  Use when iterating over multiple Bayesian/probabilistic model variants and losing
-  track of them — trying different priors, likelihoods, distribution parameters, or
-  hierarchical structure across churn-logistic → v2 → v3 and unable to reconstruct
-  what changed or why one won. Trigger on: comparing many NumPyro/ArviZ model
-  versions, "which model fits best", keeping an experiment log or ledger of model
-  runs, ranking variants by ELPD/LOO, recording what changed between model versions,
-  deciding which variant to ship, or knowing when to stop iterating. Sits above a
-  per-variant analysis folder and complements bayesian-workflow's model comparison.
-  Not for tuning continuous ML hyperparameters (that is tune-hyperparameters). Not for
-  neural runs or checkpoints (that is evaluate-deep-learning).
+  Use when iterating over several model variants and losing track of them — Bayesian
+  variants that try different priors, likelihoods, or hierarchical structure, or
+  tabular-CV and forecast-backtest variants scored on one shared criterion — and
+  unable to reconstruct what changed or why one won. Trigger on: keeping an
+  experiment log or ledger of model runs, "which model fits best", ranking variants
+  by ELPD/LOO, ranking variants by cross-validation fold scores or backtest scores,
+  leave-future-out (LFO) comparison of forecasting models, comparing variants against
+  a naive or seasonal-naive benchmark baseline, recording what changed between model
+  versions, deciding which variant to ship, or knowing when to stop iterating. Sits
+  above per-variant analysis folders and complements bayesian-workflow's model
+  comparison. Not for tuning continuous hyperparameters (that is
+  tune-hyperparameters). Not for neural runs or checkpoints (that is
+  evaluate-deep-learning).
 license: MIT
 compatibility: Requires uv to run bundled scripts (dependencies are declared inline); Python 3.12+.
 metadata:
