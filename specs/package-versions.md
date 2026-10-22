@@ -92,9 +92,15 @@ A floating gate would have changed today: jax 0.12.0.1 was uploaded on 2026-10-2
 
 1. `uv run --exclude-newer <date> --with jax` respects the cutoff. With 2026-10-20 it gave jax 0.12.0, not 0.12.0.1.
 2. For a PEP 723 script (`uv run script.py`), the command-line `--exclude-newer` and `UV_EXCLUDE_NEWER` did not limit the header's dependencies. With a 2026-10-01 cutoff it still installed polars 2.0.0 (uploaded 2026-10-06). A `[tool.uv] exclude-newer = "..."` table inside the script header did limit them (polars 1.44.2).
-3. With no `--python`, uv picked Python 3.14 for a script, and a bare `polars` header resolved to 1.44.2, not 2.0.0. Under `--python 3.13` it resolved to 2.0.0. So "latest" depends on the interpreter as well as the date.
+3. With no `--python`, uv picked Python 3.14 for a script, and a bare `polars` header resolved to 1.44.2, not 2.0.0. Under `--python 3.13` it resolved to 2.0.0. But `uv run --python 3.14 --with 'polars>=2.0'` also resolved to 2.0.0, so the three `polars>=2.0` scripts work on 3.14. The cause of the 1.44.2 result is unknown.
+4. A `uv.toml` with `exclude-newer` at the repo root reached `--with` deps and script headers in every subdirectory. `constraint-dependencies` and `override-dependencies` in `uv.toml` did not affect `uv run --with`, and neither did `UV_CONSTRAINT`. A command-line `--exclude-newer` or `UV_EXCLUDE_NEWER` overrode the `uv.toml` date. A `--with 'polars==X'` on a script run overrode the script header's range.
+5. A script run by its real path inside the repo picked up the repo's `uv.toml`, even from another working directory. The same script run through a symlink, which is how `~/.claude/skills` reaches this repo, did not.
+6. A `.python-version` file was found from subdirectories, also with `--no-project`.
+7. uv compares the date with the upload time of each file, not of the release. It reads a bare date (`2026-10-19`) in the machine's local time zone, and an RFC 3339 timestamp (`2026-10-20T00:00:00Z`) as written.
 
-The plan must re-check items 2 and 3 before it relies on them.
+The plan must re-check items 2 to 6 before it relies on them.
+
+Nested worktrees: this repo's worktrees live inside the main checkout, at `.claude/worktrees/<name>/`. uv searches parent directories for `uv.toml` and `.python-version`. So after the change merges, a worktree on a branch that lacks those files inherits the main checkout's freeze date and interpreter, with no sign of it.
 
 ### Related live work
 
@@ -165,7 +171,7 @@ R2.1. `build/versions.py sync` writes three files from `build/versions.toml`, an
 | Output | Content | Effect |
 |---|---|---|
 | `.python-version` (repo root) | the `[python] dev` value | Every `uv run` in the repo uses the dev interpreter with no `--python` flag, from any subdirectory |
-| `uv.toml` (repo root) | `exclude-newer` set to the freeze date | Every `uv run` from the repo root resolves as of the freeze date, script headers included |
+| `uv.toml` (repo root) | `exclude-newer` set to the RFC 3339 timestamp of 00:00:00Z on the day after the freeze date | Every `uv run` from the repo root resolves as of the freeze date, script headers included. Files uploaded on the freeze date itself (UTC) are included. CI and a local machine resolve alike, because uv reads a bare date in local time (Inventory, uv item 7) |
 | `skills/uv.toml` | no settings, and a comment that names `build/versions.toml` | It shadows the root date under `skills/`, so a skill script that a user runs floats within its floors (D8), whatever the path form |
 
 `skills/uv.toml` is a file, not a skill. `install.py:97-101`, `build/check_frontmatter.py:574-575` and `build/check_provenance.py:40-44` read only directories that hold a `SKILL.md`, so they skip it. The plan confirms that Claude Code, Codex and Gemini also ignore a plain file in a skills directory.
@@ -193,8 +199,8 @@ R3.1. `build/versions.py` has these subcommands:
 | `sync [--check]` | no | Writes or checks the R2.1 outputs |
 | `run <gate> [--pin pkg==X ...] -- <cmd>` | yes | Runs `<cmd>` under `uv run` with the gate's stack and the freeze date |
 | `verify [--pin pkg==X ...]` | yes | Runs the re-verify set on the file's versions: Tier 2, Tier 3, the JAX CPU examples, and `run_suites.py --all --extras` |
-| `bump [--date D] [--only pkg ...]` | yes | Sets the freeze date (default: today), re-resolves each `[packages]` entry as of that date, rewrites `[packages]` and runs `sync`. `--only` limits the change to the named packages |
-| `drift [--pin pkg==X ...]` | yes | Resolves the newest releases with no freeze date, no pins and the newest stable Python. It reports the pinned version, the latest version and its upload date for each `[packages]` and `[cited]` entry, then runs the re-verify set on the latest versions and reports each gate's result |
+| `bump [--date D] [--only pkg ...]` | yes | Sets the freeze date (default: today, UTC) and does one joint resolve, as of that date and on the dev Python, of every `[packages]` entry together. It rewrites `[packages]` from the result and runs `sync`. With `--only`, the other entries stay at their pins in the joint resolve |
+| `drift [--pin pkg==X ...]` | yes | Does the same joint resolve as `bump`, with no freeze date and no pins, in two passes: first on the dev Python, then on the newest stable Python. For each pass it reports, for each `[packages]` and `[cited]` entry, the pinned version, the resolved version, the newest release and its upload date. It flags each package that resolves below its newest release. It then runs the re-verify set on each pass's versions and reports each gate's result for each pass |
 | `check` | no | The R4 lint |
 
 R3.2. `bump` never changes `[cited]`. A person changes a `[cited]` entry only after re-checking the cited behavior.
@@ -218,6 +224,7 @@ R3.6. Errors name their cause:
 - An unknown package in `[gates]` or `[[override]]` names the package.
 - An invalid date names the value.
 - A pin uploaded after the freeze date names the package and the date.
+- A joint resolve that fails in `bump` or `drift` names the packages in conflict. This is how a conflict under D2 (one version per package) becomes visible.
 
 ### R4. The `check` lint
 
@@ -253,7 +260,7 @@ R5.4. Known limit: GitHub disables scheduled workflows in a public repository af
 ### R6. Migration
 
 The first plan does these, in order:
-1. Re-probe the four uv behaviors in the Inventory (date reach to script headers, the command-line flag's miss on headers, the shadow file, and `.python-version` discovery from subdirectories) on the uv version of the day. Record the results in `specs/verification/`. If a behavior changed, stop and bring the change to the owner before going on.
+1. Re-probe the uv behaviors in the Inventory (items 2 to 6, the shadow file under `skills/`, and nested-worktree inheritance) on the uv version of the day. Record the results in `specs/verification/`. If a behavior changed, stop and bring the change to the owner before going on.
 2. Write `build/versions.toml`, then run `bump` and `verify` on the day of execution.
 3. Use one JAX version for both gates. The JAX CPU examples must pass on it. If they fail, add a temporary `[[override]]` for `jax-cpu` with its reason, and log a deferred item to remove it.
 4. Pin Polars at the latest release (2.0.0 on 2026-10-21). This keeps the `polars>=2.0` floors that the portability plan set on purpose (`specs/plans/completed/53-agent-skills-portability.md`, decision DF4).
