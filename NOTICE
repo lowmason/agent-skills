@@ -577,6 +577,8 @@ Changes from upstream:
     partner watched and waived (plan 63).
   - subagent-driven-development points at a PreToolUse hook that denies a
     model-less dispatch to an unpinned agent (plan 63).
+  - executing-plans, systematic-debugging and writing-plans word their
+    descriptions in the third person (plan 63).
 
     brainstorming/
     dispatching-parallel-agents/

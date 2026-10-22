@@ -680,19 +680,6 @@ evidence = 'Audit row S-97; owner gate 2026-10-04.'
 revisit = 'When writing-skills is split and rewritten against the guide (a deferred item).'
 
 [[exception]]
-id = 'description-second-person'
-type = 'gap'
-check = 'description-person'
-sections = ['skills.description']
-artifacts = [
-    'skills/writing-plans/SKILL.md',
-]
-guide = 'Write a skill description in the third person.'
-reason = 'Seven descriptions use second person outside quoted trigger phrases; rewording waits for its own change, since descriptions drive routing.'
-evidence = 'Audit rows S-21 to S-27; owner gate 2026-10-04.'
-tracked_in = 'deferred item: rewrite seven skill descriptions in the third person'
-
-[[exception]]
 id = 'skill-body-past-compaction'
 type = 'gap'
 check = 'compaction-window'
