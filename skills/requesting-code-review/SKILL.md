@@ -23,9 +23,9 @@ Dispatch a code reviewer subagent to catch issues before they cascade. The revie
 
 **Mandatory:**
 - The final whole-branch review in subagent-driven development (per-task reviews there use subagent-driven-development's own task-reviewer-prompt.md), and the whole-plan review in executing-plans — both pair this reviewer with a Codex second opinion ([codex-review.md](codex-review.md))
-  - The Codex run sends the diff, and every file Codex reads, to OpenAI. Run it when your human partner has approved Codex review for this repository: in this session, in the request, or in the repo's CLAUDE.md. Otherwise ask once per session before the first run. If they decline, say in the review report that the Codex seat was skipped at their word.
+  - The Codex run sends the diff, and every file Codex reads, to OpenAI. Run it when your human partner has approved Codex review for this repository: in this session, in the request, or in the repo's CLAUDE.md. Otherwise ask once per session before the first run. If they decline, say in the review report that the Codex seat was skipped at their word, write no `Codex reviewed` line, and go on with this reviewer.
 - After completing major feature
-- Before merge to main, except for a small change your human partner watched being made in this session and told you to merge without review. Subagent-written work and a plan's final review never qualify.
+- Before merge to main, except for a small change your human partner watched being made in this session and told you to merge without review. Subagent-written work and a plan's final review never qualify. The waiver covers the code-reviewer pass only: the Codex second-opinion gate at merge or PR (see Integration with Workflows) still applies.
 
 **Optional but valuable:**
 - When stuck (fresh perspective)
@@ -110,13 +110,13 @@ You: [Fix progress indicators]
 - A Codex second opinion gates merge and PR — skipped when Codex already reviewed the same code
 
 **Ad-Hoc Development:**
-- Review before merge (except the watched small change under **Mandatory**)
+- Review before merge (except the watched small change under **Mandatory**, which still meets the Codex gate at merge or PR)
 - Review when stuck
 
 ## Red Flags
 
 **Never:**
-- Skip review because "it's simple" (the one skip is the watched small change under **Mandatory**, on your partner's word)
+- Skip review because "it's simple" (the one skip is the watched small change under **Mandatory**, on your partner's word, and the Codex gate at merge or PR still applies)
 - Ignore Critical issues
 - Proceed with unfixed Important issues
 - Argue with valid technical feedback

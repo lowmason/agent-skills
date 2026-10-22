@@ -431,7 +431,7 @@ Then trigger it once: from an empty directory, ask `claude -p` to dispatch a
 every `agents/*.md` that sets `model:`. `BUILTIN_PINNED` is kept apart because no agent
 file backs it. Recheck it when Claude Code changes a built-in agent's model.
 
-**Tests.** `test_dispatch_model_guard.py` (17 tests) drives the script as a subprocess.
+**Tests.** `test_dispatch_model_guard.py` drives the script as a subprocess.
 Every allow-path test asserts the return code, because a crashed `PreToolUse` hook
 exits 1 and fails open. The two commands under the read-only guard's **Tests** run it
 under 3.13 and under `/usr/bin/python3` (3.9), since the hook keeps the same 3.9 floor.

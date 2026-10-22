@@ -220,7 +220,6 @@ branch as it will ship. For the same reason
 `git status --porcelain --untracked-files=normal` must print nothing before
 you go on: commit what is part of the work, and ask your
 partner about anything else.
-If your partner declined the Codex run at requesting-code-review's approval gate, do not block the merge or PR on it: say that the Codex seat was skipped at their word, and go on to Step 5.
 
 Run it from the feature worktree, before Option 1 leaves it — from
 the base branch there is nothing left to review. If nothing reviewed this
@@ -249,6 +248,8 @@ this way:
   `--base <base-branch>`, the whole branch. On the base branch itself (a plan
   executed there) that is an empty range, a review of nothing: ask your
   partner which commit the work starts after, and use that.
+
+If your partner declined the Codex run at its approval gate, skip the Codex run, say the Codex seat was skipped at their word, and continue. The code-reviewer offer above still applies. When no review remains, go on to Step 5.
 
 Work its findings — merged with code-reviewer's, if that ran — with the
 receiving-code-review skill: fix what holds up, re-run the tests, commit. Show

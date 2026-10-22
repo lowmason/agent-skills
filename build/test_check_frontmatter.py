@@ -802,6 +802,12 @@ def test_pinned_roster_catches_a_roster_name_with_no_pinned_agent(tmp_path):
                     'which no agents/*.md pins']
 
 
+def test_pinned_roster_treats_model_inherit_as_unpinned(tmp_path):
+    # `model: inherit` pins nothing, so the dispatch guard needs no roster entry for it.
+    _pinned_agent(tmp_path, 'alpha.md', 'alpha', 'inherit')
+    assert check_pinned_roster(tmp_path, frozenset()) == []
+
+
 CITATION_PREFIX = '#' + ' cc-guide:'
 CITATION = CITATION_PREFIX + ' skills.frontmatter @2.1.219'
 

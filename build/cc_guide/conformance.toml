@@ -647,7 +647,7 @@ reason = 'Other skills hand off to these by bare name, which a manual-only skill
 evidence = 'Portability spec Decision 3; audit rows S-81 to S-87 and S-92. subagent-driven-development joined by owner decision Q1, plan 63, 2026-10-21 (entry gate). requesting-code-review joined by owner decision Q1, plan 63, 2026-10-21 (Codex approval gate).'
 revisit = 'When the guide documents a way for one skill to hand off to a manual-only skill.'
 
-# Side-effecting skills with no inbound handoff, gated in their bodies (owner Q1, plan 63).
+# A side-effecting skill that CLAUDE.md tells every runtime to follow, gated in its body (owner Q1, plan 63).
 [[exception]]
 id = 'side-effecting-skills-body-gated'
 type = 'deviation'

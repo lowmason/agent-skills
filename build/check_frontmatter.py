@@ -596,7 +596,7 @@ def check_pinned_roster(agents_dir: Path | None = None,
     pinned: dict[str, Path] = {}
     for md in sorted(d.glob('*.md')):
         fm, _ = _parse_frontmatter(md)
-        if (fm or {}).get('model'):
+        if (fm or {}).get('model') not in (None, '', 'inherit'):
             pinned[str(fm.get('name') or md.stem)] = md
     for name, md in sorted(pinned.items()):
         if name not in roster:
