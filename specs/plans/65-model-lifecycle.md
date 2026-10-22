@@ -29,6 +29,7 @@
 - **Public repo.** `specs/` is public. Examples use generic nowcast and panel names, with no private-repo detail.
 - **Leave alone in this plan:** every file under `skills/tune-hyperparameters/` (Stage 2), the Stage C files (`develop-testing-strategy`, `validate-data`, `recommend-visualization`, rpm's `references/reporting.md`), and `time_series_cv.py`. The deferred item "Three nits in the splitter's tests" is out of scope.
 - **Plan 64 coordination** (`specs/plans/64-bayesian-rpm-routing.md`, merged to main as a plan, not yet executed). It also edits four places this plan edits: `build/snippet_preamble.py`'s coverage docstring, NOTICE's bayesian-workflow paragraph, `build/test_runtime_support.py`'s `SOFT_REFERENCES`, and bayesian-workflow's `SKILL.md` (this plan does not touch that file). This plan anchors each edit by content, never by line number. Whichever plan executes second re-reads those places after syncing with main, and re-measures the coverage counts.
+- **Long commands.** The Bash tool's default timeout is 2 minutes. Run every command that can take longer with the 10-minute timeout, or in the background. That covers the track suite (77–103 s at plan time), the snippet pytest with the stack (about 85 s plus installs), snippet Tier 3, `run_suites.py build --extras`, and each V1 arm (35 `claude -p` calls).
 - Every commit passes `build/run_commit_lints.sh`. The pre-commit hook (`core.hooksPath` is set to `build/githooks`) runs it. If a commit is refused, fix the cause. Never pass `--no-verify`.
 - Commit messages end with the executing session's attribution trailer.
 
@@ -1101,7 +1102,7 @@ In `install.py`, delete the line
   'skill:track-model-experiments': ('skill:bayesian-workflow',),
 ```
 
-In `build/test_runtime_support.py`'s `SOFT_REFERENCES`, add this entry directly above the `# Quotes an @-path as an example of what not to write.` entry, keeping the set's alphabetical order by source:
+In `build/test_runtime_support.py`'s `SOFT_REFERENCES`, add this entry directly above the `# Routes Regime B knobs to bayesian-workflow's diagnostics and SVI files; the` entry, keeping the set's alphabetical order by source (track sorts before tune):
 
 ```python
   # ELPD mode reads bayesian-workflow's model-comparison doctrine; score mode
@@ -2152,7 +2153,7 @@ uv run run_microtest.py "$REPO" control
 uv run run_microtest.py "$REPO" variant
 ```
 
-Expected: 35 reps per arm, about $0.02 each (about $1.50 in total at plan time).
+Run each arm in the background (it makes 35 calls in a row and takes well over 2 minutes), and wait for its completion notice before you start grading. Expected: 35 reps per arm, about $0.02 each (about $1.50 in total at plan time).
 
 - [ ] **Step 4: Grade by hand against the pre-registered rule**
 
@@ -2270,8 +2271,8 @@ with
     assert cells[5] == f'{rank["m-intercept"]["elpd_diff"]:.1f}'
 ```
 
-Run: `grep -n 'f"' skills/track-model-experiments/scripts/test_compare_experiments.py`
-Expected: no output.
+Run: `grep -nE '(^|[^[:alnum:]_])f"' skills/track-model-experiments/scripts/test_compare_experiments.py`
+Expected: no output. (The pattern skips `elpd_diff"`, whose `f"` is not an f-string.)
 
 (5) At the end of `test_a_row_with_more_cells_than_the_header_is_left_alone`, add:
 
@@ -2284,7 +2285,7 @@ Expected: no output.
 - [ ] **Step 3: Run the suite**
 
 Run: `uv run --python 3.13 python build/run_suites.py track-model-experiments`
-Expected: every test passes, with the same count as after Task 2 (this task adds no test).
+Expected: every test passes, with the same count as after Task 2 (this task adds no test; `59 passed` in the plan-time scratch run of these exact edits).
 
 - [ ] **Step 4: Commit**
 
@@ -2317,10 +2318,11 @@ Expected: each exits 0. The `build` suite may skip four `test_verify_citations.p
 - [ ] **Step 2: Check the scope fence and the roadmap Exit**
 
 ```bash
-git diff --stat 7603e69 HEAD -- skills/tune-hyperparameters skills/develop-testing-strategy skills/validate-data skills/recommend-visualization skills/recommend-probabilistic-model
+git fetch -q origin
+git diff --stat origin/main...HEAD -- skills/tune-hyperparameters skills/develop-testing-strategy skills/validate-data skills/recommend-visualization skills/recommend-probabilistic-model
 ```
 
-Expected: no output.
+Expected: no output. The three-dot form diffs this branch's own commits only, so plan 64's edits on main (if it landed first) do not show.
 
 Check each item of the roadmap's Stage 1 Exit, and write the evidence into the execution ledger:
 - the track suite passes, and the base-commit tests passed unedited (Task 6, Step 1), plus the R24 tests and a test for each hardening part (a)–(e);
