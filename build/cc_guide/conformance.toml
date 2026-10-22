@@ -733,16 +733,6 @@ evidence = 'Audit row S-96; owner gate 2026-10-04.'
 tracked_in = "deferred item: make brainstorming's scope proportional"
 
 [[exception]]
-id = 'review-before-every-merge'
-type = 'gap'
-sections = ['lean.ceremony']
-artifacts = ['skills/requesting-code-review/SKILL.md']
-guide = 'Skip review for a small change you watched being made.'
-reason = 'requesting-code-review requires review before every merge to main.'
-evidence = 'Audit row S-99; owner gate 2026-10-04.'
-tracked_in = "deferred item: reconcile requesting-code-review with the guide's skip for small watched changes"
-
-[[exception]]
 id = 'readonly-agents-hold-bash'
 type = 'deviation'
 sections = ['subagents.tools', 'mechanisms.overview']

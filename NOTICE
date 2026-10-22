@@ -573,6 +573,8 @@ Changes from upstream:
   - requesting-code-review runs its Codex second opinion only with the
     partner's approval, and finishing-a-development-branch accepts a
     declined run (plan 63).
+  - requesting-code-review allows skipping review for a small change the
+    partner watched and waived (plan 63).
 
     brainstorming/
     dispatching-parallel-agents/
