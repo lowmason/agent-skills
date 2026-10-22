@@ -44,6 +44,10 @@ not as passed.
   `recommendation.md` when `recommend-probabilistic-model` chose the model.
 - Use `develop-testing-strategy` for downstream computational/model tests;
   use `validate-data` for data/result QA.
+- Use `tune-hyperparameters` only to tune nuisance learners (propensity and
+  outcome models) inside cross-fitting folds. Predictive CV never selects the
+  design, the adjustment set, an RD bandwidth, synthetic-control weights or
+  the effect estimate.
 
 The common path is intervention-effect evaluation. Causal discovery, mediation,
 transportability, and interference may require specialist designs; acknowledge
