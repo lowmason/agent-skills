@@ -685,7 +685,6 @@ type = 'gap'
 check = 'description-person'
 sections = ['skills.description']
 artifacts = [
-    'skills/explore-data/SKILL.md',
     'skills/writing-plans/SKILL.md',
 ]
 guide = 'Write a skill description in the third person.'
