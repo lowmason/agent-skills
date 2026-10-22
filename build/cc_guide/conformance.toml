@@ -694,16 +694,6 @@ evidence = 'Audit rows S-69, S-70; owner gate 2026-10-04; owner decision D1, pla
 tracked_in = 'deferred item: fit the subagent-driven-development and bayesian-workflow bodies inside the compaction window'
 
 [[exception]]
-id = 'dispatch-model-in-prose'
-type = 'gap'
-sections = ['mechanisms.overview']
-artifacts = ['skills/subagent-driven-development/SKILL.md']
-guide = 'A deterministic, machine-checkable rule belongs in a hook, not in prose.'
-reason = 'The rule to name a model on every dispatch is machine-checkable but enforced only by prose.'
-evidence = 'Audit row S-94; owner gate 2026-10-04.'
-tracked_in = 'deferred item: enforce the model-on-dispatch rule with a hook'
-
-[[exception]]
 id = 'brainstorming-every-project'
 type = 'gap'
 sections = ['lean.ceremony']
