@@ -486,6 +486,8 @@ SOFT_REFERENCES = {
   ('skill:dispatching-parallel-agents', 'skill:subagent-driven-development'),
   # A docstring contrasting its signals with profile.py's; never calls it.
   ('skill:recommend-probabilistic-model', 'skill:explore-data'),
+  # Points the fitting session at bayesian-workflow's GP reference; never reads it.
+  ('skill:recommend-probabilistic-model', 'skill:bayesian-workflow'),
   # Routes posterior plots to bayesian-workflow's own guide instead.
   ('skill:recommend-visualization', 'skill:bayesian-workflow'),
   # Likens its extra signals to characterize.py's; never runs it.
