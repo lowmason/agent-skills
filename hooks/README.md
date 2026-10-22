@@ -406,7 +406,12 @@ marker. That covers `general-purpose`, `Plan` and `statusline-setup` (all three 
 the session model in the probe), a missing type (the guard reads it as
 `general-purpose`), and plugin agents. The guard cannot tell when a pinned reviewer
 needed escalating to a stronger model: that choice stays with the controller. Any
-other tool, and a payload it cannot read, passes untouched.
+other tool, and a payload it cannot read (including a `tool_input` that is not an
+object), passes untouched. A `subagent_type` that is not a string counts as missing.
+
+**Limitation:** the exemption matches the agent type name only. A project-level agent
+that shares a name with a pinned agent (for example `debugger`) but sets no `model:` is
+exempted too, because a project agent outranks a user-level one.
 
 **Install — globally, and by symlink**, for the reasons given for the read-only guard above:
 

@@ -40,12 +40,22 @@ MARKER = 'dispatch-model-guard:'
 
 
 def decide(payload: dict) -> str | None:
+    """Return a deny reason, or None to allow.
+
+    A `tool_input` that is not a dict is unreadable, so the call is allowed. A
+    `subagent_type` that is not a non-empty string counts as missing, so it is
+    read as `general-purpose` and a model-less call is denied.
+    """
     if payload.get('tool_name') != AGENT_TOOL:
         return None
-    tool_input = payload.get('tool_input') or {}
+    tool_input = payload.get('tool_input', {})
+    if not isinstance(tool_input, dict):
+        return None
     if tool_input.get('model'):
         return None
-    kind = tool_input.get('subagent_type') or 'general-purpose'
+    kind = tool_input.get('subagent_type')
+    if not isinstance(kind, str) or not kind:
+        kind = 'general-purpose'
     if kind in PINNED_AGENTS or kind in BUILTIN_PINNED or kind in UNPINNABLE:
         return None
     return (f'{MARKER} name the model for this {kind!r} dispatch: pass model '

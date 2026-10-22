@@ -96,3 +96,19 @@ def test_unreadable_payload_is_allowed():
 def test_reason_names_the_fix():
     reason = guard.decide(agent('general-purpose'))
     assert 'model' in reason and 'haiku' in reason and 'sonnet' in reason and 'opus' in reason
+
+
+@pytest.mark.parametrize('tool_input', [[1], 'x', 7, None])
+def test_non_dict_tool_input_is_allowed(tool_input):
+    assert_allowed(run({'hook_event_name': 'PreToolUse', 'tool_name': 'Agent',
+                        'tool_input': tool_input}))
+
+
+@pytest.mark.parametrize('kind', [['a'], 7, {'a': 1}])
+def test_non_string_subagent_type_without_model_is_denied(kind):
+    assert_denied(run(agent(kind)))
+
+
+@pytest.mark.parametrize('kind', [['a'], 7, {'a': 1}])
+def test_non_string_subagent_type_with_model_is_allowed(kind):
+    assert_allowed(run(agent(kind, model='sonnet')))
