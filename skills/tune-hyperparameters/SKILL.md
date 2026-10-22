@@ -1,14 +1,18 @@
 ---
 name: tune-hyperparameters
 description: >
-  Use when tuning model hyperparameters and unsure how to do it without leaking or
-  overfitting — searching regularization strength, tree depth, or learning rate for
-  a nowcasting/tabular model, or setting inference knobs (NUTS target_accept /
-  max_tree_depth, SVI learning rate/steps, dynamax optax SGD). Trigger on:
-  cross-validation for time-series/temporal data, rolling-origin / walk-forward / purged /
-  embargoed CV, "which hyperparameters", grid/random/Optuna search, avoiding future
-  leakage in CV, when NOT to tune, or graduating a tuned model to a compared variant.
-  Guards temporal leakage; revision/vintage leakage belongs to develop-testing-strategy.
+  Use when tuning any model's knobs without leaking or overfitting — sklearn and
+  boosting models, statsmodels, NumPyro and dynamax fits, or neural nets from
+  deep-learning. Trigger on: "which hyperparameters", searching regularization
+  strength, tree depth, or learning rate; grid/random/Optuna search; choosing a
+  CV splitter for grouped, spatial, or independent rows; temporal data —
+  rolling-origin / walk-forward / purged / embargoed CV and future leakage;
+  structural choices such as the number of mixture components, factors, or HMM
+  states, AR order, spline knots, or kernel form; inference knobs (NUTS
+  target_accept / max_tree_depth, SVI learning rate/steps); early stopping,
+  pruning, or a trial budget; when NOT to tune; or graduating a tuned winner to
+  a compared variant. Guards temporal leakage; revision/vintage leakage belongs
+  to develop-testing-strategy.
 license: MIT
 effort: xhigh
 metadata:
