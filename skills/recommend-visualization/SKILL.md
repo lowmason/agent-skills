@@ -1,7 +1,7 @@
 ---
 name: recommend-visualization
 description: >
-  Use when you need to choose — and then build — the right chart for a dataset: "which chart should
+  Use when the right chart for a dataset must be chosen — and then built: "which chart should
   I use", "how do I visualize this", "what's the best plot for X", "recommend a visualization", or
   building a figure in Altair / matplotlib / plotly. Trigger on a visualization intent (trend over
   time, comparison, distribution, correlation / relationship, part-to-whole, ranking, geographic,
