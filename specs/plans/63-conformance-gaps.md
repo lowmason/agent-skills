@@ -12,6 +12,8 @@
 
 ## Owner questions (answer at plan review, before execution)
 
+**Answered 2026-10-21: the owner accepted every recommended default (Decisions D1-D8).** The tasks' "If Q… chose" alternative branches do not apply. Skip them.
+
 Each question has a recommended default. The tasks are written for the default. The alternative's changes are listed in the task, so an answer edits the plan, not the work.
 
 **Q1. Item A: gate each side-effecting skill in its body, or make it manual-only?** Background: "manual-only" means `disable-model-invocation: true` in the SKILL.md frontmatter plus `agents/openai.yaml` with `policy.allow_implicit_invocation: false` (the Codex equivalent, required by `build/check_frontmatter.py` since plan 53). A manual-only skill leaves the skill listing, and Claude cannot invoke it. So another skill cannot hand off to it by bare name, and an agent cannot preload it. A body gate does **not** meet the guide line "A side-effecting workflow sets disable-model-invocation: true". So a body-gated skill leaves the `gap` exception only by moving into a `deviation` exception, which is the owner's decision (CLAUDE.md, "Editing skills"). `check_conformance.py` passes either way, because these exceptions carry no `check` key. The lint is no evidence here.
@@ -65,7 +67,14 @@ Each question has a recommended default. The tasks are written for the default. 
 
 ## Decisions
 
-None.
+- **D1** (owner, plan review, 2026-10-21): Q1 default. dispatching-parallel-agents becomes manual-only. writing-skills gets a body gate and the new deviation `side-effecting-skills-body-gated`. subagent-driven-development and requesting-code-review get body gates and join deviation `side-effecting-skills-invocable`. Applied in: Tasks 1, 2, 3, 4.
+- **D2** (owner, plan review, 2026-10-21): Q1b default. Codex runs when the partner approved it in the session, the request or the repo's CLAUDE.md; otherwise the agent asks once per session. A declined run is recorded, and finishing-a-development-branch accepts it. Applied in: Task 4.
+- **D3** (owner, plan review, 2026-10-21): Q2 (a). requesting-code-review gets a narrow skip clause for a small change the partner watched and waived, and exception `review-before-every-merge` is removed. Applied in: Task 5 (Steps 1-5; Step 5b does not apply).
+- **D4** (owner, plan review, 2026-10-21): Q3 (a). The hook is installed globally by symlink, like the read-only agent guard; the install is a post-merge owner step. Applied in: Task 6 (README), Task 8.
+- **D5** (owner, plan review, 2026-10-21): Q4 (a). The hook denies an Agent call with no model unless the type is a model-pinned agent or `fork`; the pinned roster is asserted by `check_frontmatter.py`. Applied in: Task 6.
+- **D6** (owner, plan review, 2026-10-21): Q5 default. Task 8 proves the hook live through a `--settings` file aimed at the worktree, then removes `dispatch-model-in-prose`. Applied in: Task 8.
+- **D7** (owner, plan review, 2026-10-21): Q6 yes. recommend-causal-design is added to explore-data's pre-flight list unless the micro-test shows a regression. Applied in: Task 7.
+- **D8** (owner, plan review, 2026-10-21): Q7 default. Micro-tests run on `--model sonnet` with a $25 ceiling for the whole plan; a task that would pass it stops and asks. Applied in: Global Constraints, Tasks 0, 2-5, 7.
 
 ## Requirements
 
@@ -177,7 +186,7 @@ cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q
 
 Expected: PASS. If `install.py` copies only named files from a skill dir, so that `agents/openai.yaml` would not reach `~/.agents/skills/`, stop and report.
 
-- [ ] **Step 5: Narrow the register.** In `conformance.toml`, remove `'skills/dispatching-parallel-agents/SKILL.md',` from `side-effecting-skills-ungated`'s `artifacts`. Append to its `evidence`: `' Plan 63 Task 1 (owner Q1, <date>): dispatching-parallel-agents made manual-only.'`. Run `uv run --python 3.13 --with pyyaml python build/check_conformance.py`. Expected: PASS.
+- [ ] **Step 5: Narrow the register.** In `conformance.toml`, remove `'skills/dispatching-parallel-agents/SKILL.md',` from `side-effecting-skills-ungated`'s `artifacts`. Append to its `evidence`: `' Plan 63 Task 1 (owner Q1, 2026-10-21): dispatching-parallel-agents made manual-only.'`. Run `uv run --python 3.13 --with pyyaml python build/check_conformance.py`. Expected: PASS.
 
 - [ ] **Step 6: NOTICE.** Add to the superpowers "Changes from upstream" list:
 
@@ -243,7 +252,7 @@ sections = ['commands.overview', 'skills.frontmatter']
 artifacts = ['skills/writing-skills/SKILL.md']
 guide = 'A side-effecting workflow sets disable-model-invocation: true.'
 reason = 'CLAUDE.md tells every runtime to follow writing-skills when editing a skill, which a manual-only skill cannot serve; its one side effect, a push to a fork, waits on the partner in its body.'
-evidence = 'Audit row S-90; owner decision Q1, plan 63, <date>; micro-test record in plan 63 Task 2.'
+evidence = 'Audit row S-90; owner decision Q1, plan 63, 2026-10-21; micro-test record in plan 63 Task 2.'
 revisit = 'When the guide documents a way for an instruction file or another skill to hand off to a manual-only skill.'
 ```
 
@@ -294,7 +303,7 @@ cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q
 
 Expected: PASS. If a pinned span moved past the window, shorten the gate. Do not move the span.
 
-- [ ] **Step 5: Move SDD to the deviation.** Remove `'skills/subagent-driven-development/SKILL.md',` from `side-effecting-skills-ungated`. Add it to `side-effecting-skills-invocable`'s `artifacts`. Append to that exception's `evidence`: `' subagent-driven-development joined by owner decision Q1, plan 63, <date> (entry gate).'`. Leave the comment above it for Task 4, which rewrites it once all four have moved. Run `check_conformance.py`. Expected: PASS.
+- [ ] **Step 5: Move SDD to the deviation.** Remove `'skills/subagent-driven-development/SKILL.md',` from `side-effecting-skills-ungated`. Add it to `side-effecting-skills-invocable`'s `artifacts`. Append to that exception's `evidence`: `' subagent-driven-development joined by owner decision Q1, plan 63, 2026-10-21 (entry gate).'`. Leave the comment above it for Task 4, which rewrites it once all four have moved. Run `check_conformance.py`. Expected: PASS.
 
 - [ ] **Step 6: NOTICE, lint, commit.** NOTICE line: `subagent-driven-development asks once before its first dispatch unless the partner asked for execution (plan 63).` Run `cli.py lint` (SDD carries a citation comment). Then:
 
@@ -347,7 +356,7 @@ If your partner declined the Codex run at requesting-code-review's approval gate
 
 - [ ] **Step 3: Micro-test GREEN.** Expected: prompt 1 asks in 5 of 5; prompts 2 and 3 run Codex in 5 of 5. Save as `t4.md`.
 
-- [ ] **Step 4: Close the gap exception.** Delete the whole `side-effecting-skills-ungated` entry and its comment line (`# Side-effecting skills that Decision 3 does not cover.`). Add `'skills/requesting-code-review/SKILL.md'` to `side-effecting-skills-invocable`, and append to its evidence: `' requesting-code-review joined by owner decision Q1, plan 63, <date> (Codex approval gate).'`. Rewrite the comment lines above `side-effecting-skills-invocable` (the one ending `less the four the owner split out as a gap (side-effecting-skills-ungated).`) so they name no deleted id. Use: `# Side-effecting skills that other skills hand off to by bare name, gated in their bodies. Plan 63 added subagent-driven-development and requesting-code-review; dispatching-parallel-agents went manual-only and writing-skills to side-effecting-skills-body-gated.` Run:
+- [ ] **Step 4: Close the gap exception.** Delete the whole `side-effecting-skills-ungated` entry and its comment line (`# Side-effecting skills that Decision 3 does not cover.`). Add `'skills/requesting-code-review/SKILL.md'` to `side-effecting-skills-invocable`, and append to its evidence: `' requesting-code-review joined by owner decision Q1, plan 63, 2026-10-21 (Codex approval gate).'`. Rewrite the comment lines above `side-effecting-skills-invocable` (the one ending `less the four the owner split out as a gap (side-effecting-skills-ungated).`) so they name no deleted id. Use: `# Side-effecting skills that other skills hand off to by bare name, gated in their bodies. Plan 63 added subagent-driven-development and requesting-code-review; dispatching-parallel-agents went manual-only and writing-skills to side-effecting-skills-body-gated.` Run:
 
 ```bash
 grep -n 'side-effecting-skills-ungated' -r build specs/guides skills agents
