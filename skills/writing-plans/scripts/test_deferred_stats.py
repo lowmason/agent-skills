@@ -75,6 +75,18 @@ def test_oldest_open_reports_days_and_section():
     assert stats['oldest_open_section'] == '11-delegation-frontmatter-rollout'
 
 
+def test_step_4b_review_section_is_dated():
+    # finishing-a-development-branch Step 4b writes `## <name> Step 4b review — <date>`,
+    # where <name> may be a branch name rather than a plan.
+    text = '# Deferred items\n\n## claude/fix-thing Step 4b review — 2026-07-01\n- [ ] Carried finding.\n'
+    sections = parse_sections(text)
+    assert sections[0]['name'] == 'claude/fix-thing Step 4b review'
+    assert sections[0]['date'] == dt.date(2026, 7, 1)
+    stats = compute_stats(sections, TODAY, aged_days=45)
+    assert stats['aged_open'] == 1
+    assert stats['oldest_open_days'] == 69
+
+
 def test_age_histogram_buckets_open_items_only():
     stats = compute_stats(parse_sections(SAMPLE), TODAY)
     buckets = {b['label']: b['count'] for b in stats['age_histogram']}

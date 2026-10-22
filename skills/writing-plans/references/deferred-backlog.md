@@ -20,7 +20,10 @@ Three callers read this file:
 | Volume | **20 or more** open items | the soft one-line backlog status |
 
 Age comes from each item's `## <plan> — <YYYY-MM-DD>` section header, which the
-Plan Completion Protocol has always written. Do not add a per-item date field:
+Plan Completion Protocol has always written. The Step 4b review (in
+finishing-a-development-branch) writes `## <name> Step 4b review — <YYYY-MM-DD>`, where `<name>` is the
+plan or, when no plan ran, the branch; the stats date it the same way. Any
+heading that ends in ` — <YYYY-MM-DD>` is dated. Do not add a per-item date field:
 a new field would only exist on new items, and the aged tail is by definition
 made of old ones.
 
@@ -90,8 +93,9 @@ the human's, and runs only under `/deferred`.
    exist, or it contains no unticked items, report that nothing is deferred
    and stop.
 2. Group the unticked items by theme — related items from different plan
-   sections belong together. Keep each item's source plan and date (from
-   its `## <plan> — <date>` section header) attached.
+   sections belong together. Keep each item's source (the plan, or the
+   branch for a Step 4b review section) and date (from its `## <name> — <date>`
+   section header) attached.
 3. Sort every item or group into exactly one disposition. When the item
    records a `Size:`, that is the disposition unless its closure condition
    has already been met (then it is **Retire**) or is still unmet and

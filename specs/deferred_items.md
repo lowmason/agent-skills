@@ -6084,20 +6084,20 @@ defer. Anchors are at the end of plan 59's fix wave.
       winner to the Decision log. Tighten (b) after the O1 owner call on track's scope (the
       lifecycle-spec item in section `audit-3-10-26 routing`). Size: quick-fix. Done when: the
       README row names the refusal, and the two Graduation texts agree with the O1 ruling.
-- [ ] Polish `skills/bayesian-workflow/references/svi.md` (plan 59 final review). (a) Check 3 says
+- [x] Polish `skills/bayesian-workflow/references/svi.md` (plan 59 final review). (a) Check 3 says
       to set `num_svi_steps` to what check 1 showed is enough, but check 1 runs 3000 steps and the
       VSBC call uses 2000: reuse one number, or add a comment that 2000 is a runtime shortcut. (b)
       ELBO, VSBC, KS and PSIS-LOO are not expanded at first mention, here and in the Samplers
       paragraph in `skills/bayesian-workflow/SKILL.md` that points to this file (the repo's
       plain-English rule asks for the plain meaning at first mention). (c) Add one sentence that
       VSBC needs a generative model with continuous latent sites only. Size: quick-fix. Done when:
-      (a) to (c) are edited, snippet Tiers 1 to 3 pass, and no `WARN` line names `svi.md`.
-- [ ] State in `skills/bayesian-workflow/references/diagnostics.md` that NumPyro prints no warning
+      (a) to (c) are edited, snippet Tiers 1 to 3 pass, and no `WARN` line names `svi.md`. → done 2026-10-21 (/deferred quick fix)
+- [x] State in `skills/bayesian-workflow/references/diagnostics.md` that NumPyro prints no warning
       when `max_tree_depth` is reached (plan 59 final review). tune's `max_tree_depth` router row
       says "NumPyro prints no warning", and the arm C micro-test answers repeat it, but no
       bayesian-workflow file states it. Check the claim against NumPyro 0.22.0's source or a run,
       then add one sentence beside the tree-depth text (`diagnostics.md:46-50`). Size: quick-fix.
-      Done when: the sentence is in `diagnostics.md`, with the source check named.
+      Done when: the sentence is in `diagnostics.md`, with the source check named. → done 2026-10-21 (/deferred quick fix)
 - [ ] tune-hyperparameters' frontmatter `description` still triggers on "dynamax optax SGD", which
       no skill owns after plan 59 (the optax router row reads "no skill owns this yet"). Descriptions
       are G5 work, gated on the O1 to O3 owner calls (see the lifecycle-spec item in section
@@ -6174,14 +6174,14 @@ defer. Anchors are at the end of plan 59's fix wave.
       fixture. All 5 S9 answers took the git route anyway, so the risk is low. Size:
       quick-fix. Done when: the points are fixed, S9 and S10 pass at least 4 of 5 each on the
       edited text (about $0.7), and the micro-test record says so.
-- [ ] Update the section prose in `skills/writing-plans/references/deferred-backlog.md` for
+- [x] Update the section prose in `skills/writing-plans/references/deferred-backlog.md` for
       Step 4b's sections (plan 60 Task 3 review). Step 4b now writes a dated section, named
       `## <name> Step 4b review — <YYYY-MM-DD>`, where `<name>` may be a branch name. The
       "Age comes from each item's `## <plan> — <YYYY-MM-DD>` section header, which the Plan
       Completion Protocol has always written" paragraph and the triage's "source plan" wording
       name only plans. `deferred_stats.py` already parses the Step 4b form. Size: quick-fix.
       Done when: both passages cover Step 4b's sections and a test or a run of
-      `deferred_stats.py` on a Step 4b section shows the age counted.
+      `deferred_stats.py` on a Step 4b section shows the age counted. → done 2026-10-21 (/deferred quick fix)
 - [ ] Decide whether the Claude Code guide covers worktree isolation (plan 60 requirement
       R4.3, the owner's decision D9). `specs/guides/claude-code-customization-guide.md` has no
       section on these facts, which plan 60 measured on Claude Code 2.1.304. An isolated
