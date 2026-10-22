@@ -90,7 +90,7 @@ Item (G11), Done when: "the reference exists with runnable examples and both ski
 Facts verified while planning (2026-10-21, NumPyro and JAX at `PINNED`):
 - `numpyro.contrib.hsgp` exports nothing at package level. Import from `numpyro.contrib.hsgp.approximation`: `hsgp_squared_exponential(x, alpha, length, ell, m, non_centered=True)`, `hsgp_matern(x, nu, alpha, length, ell, m, non_centered=True)`, `hsgp_periodic_non_centered`, `hsgp_rational_quadratic`. The functions sample an internal site named `beta`.
 - In float32 the HSGP fit below diverged on all 300 draws at n = 2,000 (13 of 300 at n = 200). With `numpyro.enable_x64()` it gave 0 divergences and recovered the noise scale (0.199 against a true 0.2). The x64 line is load-bearing.
-- Both blocks below are runnable under `check_snippets.py --run` (no fixture variables, no unbound names). They passed Tier 3, and a planted `assert` failure in the HSGP block was reported (exit 1), so the gate does execute them.
+- Both blocks below are runnable under `check_snippets.py --run` (no fixture variables, no unbound names). Extracted from this plan, they passed Tiers 1, 2 and 3, and a planted `assert` failure in the HSGP block was reported (exit 1), so the gate does execute them. `Predictive` recomputes the deterministic `f` at `x_new` (shape (300, 50)); it does not reuse the fitted values.
 
 - [ ] **Step 1: Write the failing check.** Tier 1 on a missing file proves nothing, so the failing check is the SKILL.md link. Run:
 
@@ -228,6 +228,7 @@ assert n_divergent == 0, n_divergent
 # Predict at new inputs: apply the same shift, and keep `ell` and `m` unchanged.
 x_new = np.linspace(0, 10, 50) - x_shift
 f_new = Predictive(hsgp_model, hsgp_mcmc.get_samples())(jax.random.PRNGKey(3), x_new)['f']
+assert f_new.shape == (300, 50), f_new.shape  # f recomputed at x_new, not reused
 ```
 
 For a Matérn kernel use `hsgp_matern(x=x, nu=1.5, alpha=amplitude, length=length_scale,
@@ -671,13 +672,22 @@ git add skills/creative-thinking/SKILL.md specs/verification/64-routing-microtes
 git commit -m "feat(creative-thinking): hand off causal and neural targets"
 ```
 
-Expected: all pass. Then report total micro-test cost against the Q8 cap, and the three descriptions' total character change (+139 at planning: rpm +133, bayesian-workflow −11, creative-thinking +80 — `skill-listing-budget` headroom is the owner's to judge).
+Expected: all pass. Then report total micro-test cost against the Q8 cap, and the three descriptions' total character change (+202 at planning: rpm +133, bayesian-workflow −11, creative-thinking +80; the owner judges the skill-listing budget headroom).
 
 ---
+
+## Completion notes (for the Plan Completion Protocol)
+
+At step 3 of the protocol, append these to `specs/deferred_items.md` under a `## 64-bayesian-rpm-routing` section (owner's call at the completion gate whether either is resolved instead):
+
+- Add a survival row to rpm's per-family knob table (`skills/recommend-probabilistic-model/references/model-selection-regularization.md`, "Per-family knobs"). Plan 64 created `families/survival.md` but left the table alone, since the model-lifecycle spec (`specs/model-lifecycle.md`, R12a) owns it and was written before the survival family existed. Size: quick-fix. Done when: the table has a survival row matching `families/survival.md`'s "Selection & regularization" subsection.
+- Under Q7 (a) only: add Beta / BetaBinomial and quantile (`AsymmetricLaplaceQuantile`) rows to bayesian-workflow's "Common model families" table (`skills/bayesian-workflow/SKILL.md`), which rpm's bounded and quantile handoffs now point at. Size: quick-fix. Done when: both rows land with a priors pointer.
 
 ## Appendix A: Routing micro-test kit
 
 Kit folder: `~/.cache/agent-skills/scratch/plan64-micro/` (outside the repo; never committed). Each rep is one decision-only `claude -p` call with no tools, run from its own new folder under `/tmp/p64micro/`, with the isolation recipe from the micro-test notes: `--tools ""`, `--strict-mcp-config`, `CLAUDE_CODE_DISABLE_ADVISOR_TOOL=1`, and a pilot that reads the init record's `tools`. The prompt lists the competing skills' descriptions. Arm B uses every description at the baseline commit. Arm C differs only in the edited skill's description, read from the working tree.
+
+**Verdicts.** A scenario with a `pass` list passes a rep whose SKILL is in the list. A collision probe with a `fail` list fails a rep only when its SKILL is in that list (the edited skill stealing the request); any other pick passes. Each collision probe contains the trigger term its edit removes or adds.
 
 **Pass bars (all tests, fixed before any run).** Arm C meets the bar when (1) on every scenario it fails at most 1 of 5 reps, and (2) on every scenario where arm B fails 2 or more of 5, arm C fails fewer than arm B. A rep that errors or refuses is void: rerun it and count the voids.
 
@@ -775,26 +785,44 @@ KIT = Path(__file__).parent
 QUOTE_WORDS = 15
 
 
+def verdict(skill, scenario):
+    if skill == 'VOID':
+        return 'VOID'
+    if 'fail' in scenario:
+        return 'FAIL' if skill in scenario['fail'] else 'PASS'
+    return 'PASS' if skill in scenario['pass'] else 'FAIL'
+
+
+def screen(record):
+    '''One turn, no error, message iterations only (no tool or advisor call), one model.'''
+    kinds = {i.get('type') for i in record.get('usage', {}).get('iterations') or []}
+    one_turn = record.get('num_turns') == 1 and not record.get('is_error')
+    return 'ok' if one_turn and kinds <= {'message'} and len(record.get('modelUsage', {})) == 1 else 'SCREEN'
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--test', required=True)
     parser.add_argument('--arm', required=True, choices=['B', 'C'])
     args = parser.parse_args()
     spec = json.loads((KIT / f'{args.test}.json').read_text())
-    passes = {s['id']: set(s['pass']) for s in spec['scenarios']}
-    fails, cost = {}, 0.0
+    scenarios = {s['id']: s for s in spec['scenarios']}
+    fails, voids, cost = {}, 0, 0.0
     for path in sorted((KIT / 'raw' / args.test / args.arm).glob('*.json')):
         scenario = path.stem.rsplit('-', 1)[0]
-        record = json.loads(path.read_text())
+        try:
+            record = json.loads(path.read_text())
+        except json.JSONDecodeError:
+            record = {}
         text = record.get('result', '')
         skill = (re.search(r'SKILL:\s*([\w-]+)', text) or [None, 'VOID'])[1]
         reason = ' '.join(text.split('REASON:', 1)[-1].split()[:QUOTE_WORDS])
-        screen = 'ok' if record.get('num_turns') == 1 and not record.get('is_error') else 'SCREEN'
-        verdict = 'PASS' if skill in passes[scenario] else ('VOID' if skill == 'VOID' else 'FAIL')
-        fails[scenario] = fails.get(scenario, 0) + (verdict == 'FAIL')
+        result = verdict(skill, scenarios[scenario])
+        fails[scenario] = fails.get(scenario, 0) + (result == 'FAIL')
+        voids += result == 'VOID'
         cost += record.get('total_cost_usd', 0.0)
-        print(f'| {args.arm} | {path.stem} | {verdict} | {skill} | "{reason}" | {screen} |')
-    print('fails by scenario:', fails, f'cost ${cost:.2f}')
+        print(f'| {args.arm} | {path.stem} | {result} | {skill} | "{reason}" | {screen(record)} |')
+    print('fails by scenario:', fails, 'voids:', voids, f'cost ${cost:.2f}')
 
 
 if __name__ == '__main__':
@@ -812,8 +840,8 @@ Pilot (once per test, before arm B): `P64_REPO=$PWD uv run ~/.cache/agent-skills
               "evaluate-deep-learning", "optimize-jax", "track-model-experiments", "tune-hyperparameters",
               "explore-data", "validate-data"],
   "scenarios": [
-    {"id": "B1", "request": "I have a Pyro model in PyTorch with an AutoNormal guide. The SVI loss plateaus after 2,000 steps. How do I fix the training?", "pass": ["none", "deep-learning", "optimize-jax"]},
-    {"id": "B2", "request": "My Flax MLP forecasts weekly demand. I need prediction intervals from a deep ensemble of 5 networks. Where do I start?", "pass": ["deep-learning", "evaluate-deep-learning"]},
+    {"id": "B1", "request": "I have a Pyro model in PyTorch with an AutoNormal guide. The SVI loss plateaus after 2,000 steps. How do I fix the training?", "fail": ["bayesian-workflow"]},
+    {"id": "B2", "request": "My Flax MLP forecasts weekly demand. I need uncertainty quantification from a deep ensemble of 5 networks. Where do I start?", "fail": ["bayesian-workflow"]},
     {"id": "B3", "request": "My NumPyro hierarchical model gives 40 divergences out of 4,000 draws. What do I check first?", "pass": ["bayesian-workflow"]},
     {"id": "B4", "request": "I fitted a NumPyro logistic regression with NUTS and need credible intervals for a report to managers.", "pass": ["bayesian-workflow"]}
   ]
