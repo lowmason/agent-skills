@@ -10,9 +10,9 @@
 
 **Spec:** none. The requirements are the five open items in `specs/deferred_items.md`, section `## audit-3-10-26 routing (no plan; re-verification pass, branch claude/quizzical-hermann-814d89) — 2026-10-18` (the `/deferred` "Plan" disposition, picked as group P2 at the 2026-10-21 triage). Each task quotes its item's Done-when.
 
-## Owner questions (answer before execution)
+## Owner questions (answered 2026-10-21)
 
-Each question has a recommended default. The executor applies the answer and logs it in `## Decisions`. Tasks that depend on a question say so.
+The owner took the recommended default, option (a), for all eight questions at plan review on 2026-10-21. They are logged as D3–D10 in `## Decisions`. The tasks keep their non-default branches only as a record: execute option (a) everywhere.
 
 - **Q1 — "Pyro" in bayesian-workflow's description (Task 3).** The description triggers on "Pyro" (`skills/bayesian-workflow/SKILL.md:11`), but the body is NumPyro-only. A PyTorch Pyro user would get NumPyro code. Options: (a) **drop "Pyro"** (recommended); (b) keep it. The deferred item requires your call to be recorded.
 - **Q2 — bayesian-workflow's scope sentence (Task 3).** The recorded item says "SVI-only fits are not" in scope. Plan 59 has since added `references/svi.md`, "When SVI is the fit", and SKILL.md `:286-289` ("SVI as the final fit"). The recorded sentence now contradicts the skill. Options: (a) **NUTS is the default, SVI as the final approximation is in scope under `svi.md`'s checks, and BNNs are in scope when posterior inference is the task** (recommended); (b) keep the recorded sentence and narrow `svi.md` (outside this plan).
@@ -46,6 +46,14 @@ Each question has a recommended default. The executor applies the answer and log
 
 - **D1** (owner, brief, 2026-10-21): O1 (ii) — track-model-experiments covers Bayesian variants plus a tabular-CV mode; neural records stay with evaluate-deep-learning. O2 (b) — a predictive-evaluation reference owned by track. Recorded on main in `specs/deferred_items.md` (`7612c6e`). Applied in: Global Constraints (the tune and track phrasings, the leave-alone list).
 - **D2** (owner, plan writing, 2026-10-21): a package version policy for all skills (latest release or version as a parameter, JAX and Python included) goes to its own brainstorming session, not this plan. Applied in: Global Constraints (version numbers).
+- **D3** (owner, plan review, 2026-10-21): Q1 (a) — drop "Pyro" from bayesian-workflow's description. Applied in: Task 3 (Steps 4 and 7; M1 keeps probe B1).
+- **D4** (owner, plan review, 2026-10-21): Q2 (a) — the scope sentence says NUTS is the default, SVI as the final approximation is in scope under `references/svi.md`'s checks, and BNNs are in scope when posterior inference is the task. Applied in: Task 3 (Step 3).
+- **D5** (owner, plan review, 2026-10-21): Q3 (a) — where PML has no supporting section, cite Kalbfleisch and Prentice (2002), Ferrari and Cribari-Neto (2004), Koenker and Bassett (1978) and McCullagh (1980) by author-year only, with a NOTICE line; a PML §-ref goes in only after a Gate B read. Applied in: Task 4 (Steps 4, 5 and 7).
+- **D6** (owner, plan review, 2026-10-21): Q4 (a) — rpm cites the path `bayesian-workflow/references/gaussian-processes.md` and gets a `SOFT_REFERENCES` entry. Applied in: Task 2 (Steps 3 and 4).
+- **D7** (owner, plan review, 2026-10-21): Q5 (a) — add one sentence to creative-thinking's description and micro-test it (M3). Applied in: Task 6 (Steps 1, 3 and 5).
+- **D8** (owner, plan review, 2026-10-21): Q6 (a) — add the "Estimand (if causal)" row to bayesian-workflow's report template. Applied in: Task 3 (Step 5).
+- **D9** (owner, plan review, 2026-10-21): Q7 (a) — leave bayesian-workflow's model-family table as is, and log the Beta and quantile rows as a deferred item. Applied in: Completion notes.
+- **D10** (owner, plan review, 2026-10-21): Q8 (a) — run the micro-tests on Sonnet, with a $25 cap across M1–M3. Applied in: Tasks 3, 5 and 6; Appendix A.
 
 ---
 
@@ -681,7 +689,7 @@ Expected: all pass. Then report total micro-test cost against the Q8 cap, and th
 At step 3 of the protocol, append these to `specs/deferred_items.md` under a `## 64-bayesian-rpm-routing` section (owner's call at the completion gate whether either is resolved instead):
 
 - Add a survival row to rpm's per-family knob table (`skills/recommend-probabilistic-model/references/model-selection-regularization.md`, "Per-family knobs"). Plan 64 created `families/survival.md` but left the table alone, since the model-lifecycle spec (`specs/model-lifecycle.md`, R12a) owns it and was written before the survival family existed. Size: quick-fix. Done when: the table has a survival row matching `families/survival.md`'s "Selection & regularization" subsection.
-- Under Q7 (a) only: add Beta / BetaBinomial and quantile (`AsymmetricLaplaceQuantile`) rows to bayesian-workflow's "Common model families" table (`skills/bayesian-workflow/SKILL.md`), which rpm's bounded and quantile handoffs now point at. Size: quick-fix. Done when: both rows land with a priors pointer.
+- Add Beta / BetaBinomial and quantile (`AsymmetricLaplaceQuantile`) rows to bayesian-workflow's "Common model families" table (`skills/bayesian-workflow/SKILL.md`), which rpm's bounded and quantile handoffs now point at. Size: quick-fix. Done when: both rows land with a priors pointer.
 
 ## Appendix A: Routing micro-test kit
 
