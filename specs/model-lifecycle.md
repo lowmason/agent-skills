@@ -3,7 +3,8 @@
 > For agentic workers: REQUIRED NEXT SKILL: derive-roadmap — do not plan
 > this spec directly and do not split it into per-subsystem plans.
 
-**Status:** approved by the owner on 2026-10-21 in a brainstorming session. Next step: run
+**Status:** design approved section by section by the owner on 2026-10-21 in a brainstorming
+session; the written spec is under owner review. Next step, once approved: run
 derive-roadmap against this file in a fresh session. It stages the work into the three
 stages in § Staging, and each stage then gets its own writing-plans cycle.
 
@@ -31,7 +32,7 @@ also takes two open items from section `59-model-skill-comparator-and-cv-fixes`:
 
 **Design decisions (owner, this brainstorming session, 2026-10-21):**
 
-- **D1.** One spec, staged by derive-roadmap into three stages (A, B, C below).
+- **D1.** One spec, staged by derive-roadmap into three stages (A, B, C below), which land in the order B, A, C.
 - **D2.** The comparator ranks non-ELPD variants from one keyed per-unit score file
   (`scores.json`). One mechanism serves tabular-CV folds and Bayesian leave-future-out (LFO)
   origins. The PSIS-LOO path does not change.
@@ -59,12 +60,14 @@ also takes two open items from section `59-model-skill-comparator-and-cv-fixes`:
 
 | Stage | Covers | Description micro-test | Lands after |
 |---|---|---|---|
-| A | R1–R12a: tune's re-scope (G5, G6, G7, D4), rpm knob rows, causal sibling line | tune | — |
-| B | R13–R24: score mode, predictive-evaluation reference, G3 time-series section, track's scope (G8), install dependencies, README | track | A (tune's Graduation names score mode) |
-| C | R25–R29: G9 thin routes, rpm "Runs next" | none (body text only) | B, and plan 63 |
+The stages land in the order B, A, C. The letters follow the skill order of the audit, not
+the landing order.
 
-Stages A and B may run in either order if Stage A's Graduation text (R11) is written against
-the R13 contract. The planner of the first stage decides.
+| Order | Stage | Covers | Description micro-test | Lands after |
+|---|---|---|---|---|
+| 1 | B | R13–R24: score mode, predictive-evaluation reference, G3 time-series section, track's scope (G8), install dependencies, track's README row | track | — |
+| 2 | A | R1–R12b: tune's re-scope (G5, G6, G7, D4), rpm knob rows, causal sibling line, tune's README row | tune | B: R7 points to B's reference, and R11 sends winners to B's `scores.json` |
+| 3 | C | R25–R29: G9 thin routes, rpm "Runs next" | none (body text only) | B, and plan 63 |
 
 ## Stage A — tune-hyperparameters as the model-agnostic search loop
 
@@ -126,8 +129,13 @@ from inside the training fold, never from the CV validation fold.
 
 **R7 — Paired noise rule.** Replace "Fold-to-fold variance swamps the effect" (`:140-141`).
 The new rule: compute the paired per-fold Δ between candidates. When |Δ| is under 2·SE(Δ), the
-difference is noise, and the default ships. Tune states the rule in one sentence. It points
-to track's `references/predictive-evaluation.md` (R14) for the protocol and the SE's limits.
+difference is noise, and the default ships. The rule uses the plain `SE(Δ) = sd(d) / √K`
+from § Terms. It is a screening rule. R14's corrections (overlapping training sets, a HAC SE
+for h-step forecasts) make it more conservative, and they apply only to high-stakes calls.
+Tune states the rule in one sentence. It points to track's
+`references/predictive-evaluation.md` (R14) for the protocol and the SE's limits. That
+pointer is a soft reference in `SOFT_REFERENCES`, with the reason "tune states the rule
+itself". This stage adds the entry, so the dependency-drift test passes on its first commit.
 
 **R8 — Neural search (G6).** A short section on the generic loop that deep-learning and
 evaluate-deep-learning already hand to tune (`skills/deep-learning/SKILL.md:144-145`,
@@ -156,6 +164,12 @@ becomes a contender graduates to a track ledger row. It writes `scores.json` (R1
 ledger's criterion. The text "until a non-ELPD mode exists… goes in the ledger's Decision
 log" is removed. The `what changed` example and the next sentence then agree.
 
+An existing `elpd-loo` ledger cannot rank a non-Bayesian winner (D3). To compare it with the
+Bayesian variants, re-declare the ledger's criterion as a score criterion. Each Bayesian
+variant then writes `scores.json` on the same units, for example a per-fold log score or the
+MSE of the posterior-predictive mean. Until that is done, the comparator names the new row as
+not compared. It never drops the row in silence.
+
 **R12 — Causal boundary (G7).** tune's Boundary (`:174-183`) gains one bullet. Predictive CV
 is the right objective for nuisance learners (propensity and outcome models) tuned inside
 cross-fitting folds. It never selects the design, the adjustment set, an RD bandwidth,
@@ -167,6 +181,10 @@ nuisance-learner tuning inside cross-fitting. These are bare-name handoffs.
 (`skills/recommend-probabilistic-model/references/model-selection-regularization.md:39-50`).
 A row cites only a PML section that `build/verify_citations.py` Gate A resolves, or it gives
 no § reference. No book prose.
+
+**R12b — tune's README row.** The root `README.md` row for `tune-hyperparameters` (`:63`)
+describes the new scope: three regimes, the splitter table, the neural search loop, and
+graduation to a score-mode ledger.
 
 ## Stage B — track-model-experiments: score mode and predictive evaluation
 
@@ -257,7 +275,8 @@ The section is original text. It cites the loo LFO vignette and the CV-FAQ by UR
 - Overview and the comparator section describe both modes.
 - The ledger section shows the Criterion line and both column sets.
 - When to use (`:46-50`), plan-59 nit (b): a non-Bayesian winner gets a variant row with
-  `scores.json`, not a Decision-log entry.
+  `scores.json`, not a Decision-log entry. In an existing `elpd-loo` ledger, the ledger first
+  re-declares its criterion, with the same rule as R11.
 - Stopping rule: score mode ships the simpler variant when the paired |Δ| is under 2·SE(Δ).
 - Relationship section names `references/predictive-evaluation.md`.
 - The comparator's docstring and its `error:` and `note:` texts that say "until a non-ELPD
@@ -270,15 +289,16 @@ The section is original text. It cites the loo LFO vignette and the CV-FAQ by UR
 - `skill:track-model-experiments` → `skill:bayesian-workflow` (`install.py:65`) moves from
   `DEPENDENCIES` to `SOFT_REFERENCES`. Reason: ELPD mode reads its doctrine, and score mode
   works without it.
-- tune → `track-model-experiments/references/predictive-evaluation.md` (R7) is soft. Reason:
-  tune states the rule itself.
 - bayesian-workflow → track's reference or score mode (R19) is soft. Reason: it names where
   the score is ranked.
 
 If the drift test classifies a path otherwise, the plan follows the test and records why.
 
-**R23 — README.** The root `README.md` rows for `track-model-experiments` and
-`tune-hyperparameters` (`:62-63`) describe the new scope. The track row also names the refusal
+tune's soft reference to track's reference lands with Stage A (R7).
+
+**R23 — track's README row.** The root `README.md` row for `track-model-experiments` (`:62`)
+describes the new scope. tune's row changes in Stage A (R12b). The track row also names the
+refusal
 of several log-likelihood variables, which closes part (a) of the plan-59 doc-nits item.
 
 **R24 — Tests.** New tests in `test_compare_experiments.py` for score mode:
@@ -341,13 +361,14 @@ the two changed descriptions (R1, R20).
 
 **V2 — Noise-rule probe (Stage A).** The audit's fixture: all 5 paired fold differences share
 a sign, and mean/SE is 2.8. An agent that loads the new tune text must call the difference
-real. The control (today's `:140-141`) is expected to call it noise. Same isolation as V1.
+real. That verdict follows from R7's pinned rule, because 2.8 is above the threshold of 2. The
+control (today's `:140-141`) is expected to call it noise. Same isolation as V1.
 
 **V3 — Gates for each stage.**
 
 - **Stage A:** `check_frontmatter.py`, snippet Tier 1, the tune suite (existing
-  `test_time_series_cv.py` unchanged), `verify_citations.py` Gate A for R12a, and
-  `build/run_commit_lints.sh`.
+  `test_time_series_cv.py` unchanged), `verify_citations.py` Gate A for R12a, the
+  dependency-drift test (R7's soft reference), and `build/run_commit_lints.sh`.
 - **Stage B:** the track suite (R18, R24), snippet Tiers 1–3 on `model-comparison.md`, the
   dependency-drift test, `check_conformance.py` and the commit lints.
 - **Stage C:** the dependency-drift test and the commit lints.
