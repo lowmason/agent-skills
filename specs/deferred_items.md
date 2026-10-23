@@ -6423,3 +6423,29 @@ the end of plan 67.
       "Random forests" row as "independent rows only" (commit `9b3b511`), where spec R3 gives the row
       without a condition. Two seats raised it. Size: quick-fix. Done when: the owner confirms the
       qualifier, and `specs/model-lifecycle.md` R3 is amended to match or the row is reverted.
+
+## 68-model-lifecycle — 2026-10-23
+
+Plan 68 (model-lifecycle Stage 3) ticked nothing: the spec's Done when items were ticked in earlier
+stages, and the open items that name rpm's `reporting.md` or the three skills are not closed by
+R25-R28. The two items below are what its final review (an Opus code-reviewer and a Codex run) left
+unfixed, triaged defer by the owner on 2026-10-23. Both are optional wording on text the plan's D1
+accepted. They are visible to the roadmap's Completion gap-rubric pass.
+
+- [ ] Narrow validate-data's R26 route so it does not read as handing off the independent check.
+      `skills/validate-data/SKILL.md:46-49` says "A model result's evaluation is checked by its
+      producer", near ":27 That checker is you." The track reference covers "the scoring, not the
+      leakage audit", so the as-of check (§2) and the revision-effects check (§4) still run in this
+      skill. Fix: say "evaluation protocol" in place of "evaluation", or add a clause that §2's as-of
+      check and §4's revision-effects check still run here. Bare names only, so no drift-test effect.
+      Size: quick-fix. Revisit if: the roadmap's Completion pass finds R26 unmet, or an agent skips
+      the as-of check on a model result because a producer is named in §4 "Conclusions supported".
+- [ ] Add a clause to recommend-visualization's R27 bullet that this skill still renders the chart.
+      `skills/recommend-visualization/SKILL.md:44-47` routes model-output charts to three owners,
+      and only bayesian-workflow has chart guidance (`references/visualize.md`).
+      `predictive-evaluation.md` and evaluate-deep-learning have none, and a calibration curve for a
+      non-neural classifier outside CV folds fits no branch. Plan default 4 foresaw this and D1
+      accepted it. Fix: add a clause that the owning skill decides what to show and this skill
+      draws it. Size: quick-fix. Revisit if: a chart request for CV folds or a backtest is sent away
+      and never drawn.
+
