@@ -94,7 +94,7 @@ No behaviour in code is outside the spec.
       > Stage 2: COMPLETE (2026-10-22) — implemented by plan 67 (specs/plans/completed/67-model-lifecycle.md). Its Handoff section names what Stage 3 consumes.
       > Next: resume the roadmap.
 
-- [ ] Stage 3 (spec Stage C): thin routes and rpm's "Runs next"
+- [x] Stage 3 (spec Stage C): thin routes and rpm's "Runs next"
       Objective: three skills route model evaluation to its owners, and rpm names tune then track.
       Spec: § Stage C (R25–R29); § Verification V3 (Stage C); § Coordination (plans 63, 64)
       Gap closed: R25–R29
@@ -102,6 +102,8 @@ No behaviour in code is outside the spec.
       Produces: none for later stages
       Exit: the dependency-drift test passes with the R29 soft pairs; `build/run_commit_lints.sh` passes; no description in the three skills changed (`git diff` of their frontmatter is empty)
       ROUTING: writing-plans
+      > Stage 3: COMPLETE (2026-10-23) — implemented by plan 68 (specs/plans/completed/68-model-lifecycle.md).
+      > Next: resume the roadmap.
 
 ## Stage-spec stamp
 

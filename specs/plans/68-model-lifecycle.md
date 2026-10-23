@@ -1,5 +1,7 @@
 # Model-lifecycle Stage 3: thin routes and rpm's "Runs next" — Implementation Plan
 
+**Status: COMPLETE (2026-10-23)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md (section 68-model-lifecycle)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 > Roadmap: specs/model-lifecycle-roadmap.md, Stage 3 — on plan completion, tick the stage and re-validate later stages against what shipped.
@@ -79,7 +81,7 @@ Each edit below is an exact replacement: find the "Old" block in the file (it oc
 - Consumes: `skills/track-model-experiments/references/predictive-evaluation.md` (Stage 1, unchanged since).
 - Produces: three dependency edges, `skill:develop-testing-strategy`, `skill:validate-data` and `skill:recommend-visualization` to `skill:track-model-experiments`, each declared soft. Task 3 reads them.
 
-- [ ] **Step 1: Confirm the baseline**
+- [x] **Step 1: Confirm the baseline**
 
 ```bash
 cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_runtime_support.py -k declared_dependencies; cd ..
@@ -88,7 +90,7 @@ grep -c 'predictive-evaluation' skills/develop-testing-strategy/SKILL.md skills/
 
 Expected: the drift tests pass. Each file prints `0`.
 
-- [ ] **Step 2: Add develop-testing-strategy's route (R25)**
+- [x] **Step 2: Add develop-testing-strategy's route (R25)**
 
 In `skills/develop-testing-strategy/SKILL.md`, Old:
 
@@ -111,7 +113,7 @@ or to `evaluate-deep-learning` for a neural model.
 You cannot assert an exact posterior
 ```
 
-- [ ] **Step 3: Add validate-data's route (R26)**
+- [x] **Step 3: Add validate-data's route (R26)**
 
 In `skills/validate-data/SKILL.md`, Old:
 
@@ -129,7 +131,7 @@ New:
   line names the producer that checked it.
 ```
 
-- [ ] **Step 4: Add recommend-visualization's route (R27)**
+- [x] **Step 4: Add recommend-visualization's route (R27)**
 
 In `skills/recommend-visualization/SKILL.md`, Old:
 
@@ -147,7 +149,7 @@ New:
   `evaluate-deep-learning` for neural runs.
 ```
 
-- [ ] **Step 5: Run the drift test to see the three new edges (the failing check)**
+- [x] **Step 5: Run the drift test to see the three new edges (the failing check)**
 
 ```bash
 cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_runtime_support.py -k declared_dependencies; cd ..
@@ -163,7 +165,7 @@ Expected: `test_declared_dependencies_match_skill_and_command_text` FAILS at `as
 
 If a pair is missing, its line did not match the scanner: check the path string. If any other pair appears, a bare name was followed by a file, a path, a `§` or a possessive and a capitalized word. Fix the wording, not the test.
 
-- [ ] **Step 6: Declare the three soft pairs (R29)**
+- [x] **Step 6: Declare the three soft pairs (R29)**
 
 In `build/test_runtime_support.py`, Old:
 
@@ -214,7 +216,7 @@ New:
   ('skill:validate-data', 'skill:track-model-experiments'),
 ```
 
-- [ ] **Step 7: Run the drift test and the conformance lint (passing)**
+- [x] **Step 7: Run the drift test and the conformance lint (passing)**
 
 ```bash
 cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_runtime_support.py -k declared_dependencies; cd ..
@@ -228,7 +230,7 @@ for s in ['develop-testing-strategy', 'validate-data', 'recommend-visualization'
 
 Expected: the drift tests pass with the same count as Step 1 (+0 tests). `check_conformance.py` exits 0. Each body is under 20,000 characters (the plan-time replay printed 17,795, 18,731 and 6,036).
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add skills/develop-testing-strategy/SKILL.md skills/validate-data/SKILL.md skills/recommend-visualization/SKILL.md build/test_runtime_support.py
@@ -246,7 +248,7 @@ git commit -m "docs: route model evaluation from three skills to its owners" -m 
 - Consumes: nothing from Task 1.
 - Produces: nothing a later task reads.
 
-- [ ] **Step 1: Confirm the anchor (the failing check)**
+- [x] **Step 1: Confirm the anchor (the failing check)**
 
 ```bash
 grep -c 'sklearn/other' skills/recommend-probabilistic-model/references/reporting.md
@@ -255,7 +257,7 @@ grep -c 'then track-model-experiments (score mode)' skills/recommend-probabilist
 
 Expected: `1`, then `0`.
 
-- [ ] **Step 2: Edit the line**
+- [x] **Step 2: Edit the line**
 
 In `skills/recommend-probabilistic-model/references/reporting.md`, Old:
 
@@ -269,7 +271,7 @@ New:
 - **Runs next:** <bayesian-workflow | tune-hyperparameters, then track-model-experiments (score mode) | drill-down>
 ```
 
-- [ ] **Step 3: Check the edit and that it adds no edge**
+- [x] **Step 3: Check the edit and that it adds no edge**
 
 ```bash
 grep -c 'sklearn/other' skills/recommend-probabilistic-model/references/reporting.md
@@ -279,7 +281,7 @@ cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q
 
 Expected: `0`, then `1`. The drift tests pass: the line names both skills by bare name, so it adds no edge.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add skills/recommend-probabilistic-model/references/reporting.md
@@ -292,7 +294,7 @@ git commit -m "docs(rpm): name tune then track as the non-Bayesian next step" -m
 
 **Files:** none changed, unless a gate fails.
 
-- [ ] **Step 1: Run the V3 Stage C gates**
+- [x] **Step 1: Run the V3 Stage C gates**
 
 ```bash
 cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_runtime_support.py -k declared_dependencies; cd ..
@@ -301,7 +303,7 @@ build/run_commit_lints.sh
 
 Expected: both exit 0.
 
-- [ ] **Step 2: Check the scope fence and the roadmap Exit**
+- [x] **Step 2: Check the scope fence and the roadmap Exit**
 
 ```bash
 git fetch -q origin
@@ -325,7 +327,7 @@ Check each item of the roadmap's Stage 3 Exit, and write the evidence into the e
 - `build/run_commit_lints.sh` passes (Step 1);
 - no description in the three skills changed (the three `frontmatter unchanged` lines).
 
-- [ ] **Step 3: Run the Plan Completion Protocol (writing-plans)**
+- [x] **Step 3: Run the Plan Completion Protocol (writing-plans)**
 
 This is the roadmap's last stage, so three parts of the protocol differ from Stages 1 and 2:
 - **Step 5 (retire).** Retire the plan only. Leave `specs/model-lifecycle.md` and `specs/model-lifecycle-roadmap.md` in place, even though no other live plan implements the spec. The roadmap's § Completion has derive-roadmap re-run the gap rubric over R1–R29 and V1–V3 first, and only then retire both.
@@ -338,3 +340,7 @@ This is the roadmap's last stage, so three parts of the protocol differ from Sta
   ```
 
 Step 3's ticking pass is expected to tick nothing: the spec's § Done when items were ticked in earlier stages. At plan time, a grep of `specs/deferred_items.md` for `sklearn/other`, `Runs next`, `G9`, `reporting.md` and the three skill names found two items that name R28's line or the G9 routes (section `audit-3-10-26 routing`: the O1–O3 owner calls and the lifecycle-spec item), and both are already ticked. The open hits are not closed by R25–R28: the P2-tier owner pick (the item that starts "Owner picks the keepers from audit_1_3_26's never-logged P2 tier") and the item about rpm's `model-selection-regularization.md` Output paragraph (section `67-model-lifecycle`). Both stay open.
+
+## Handoff to later stages
+
+None: last stage.
