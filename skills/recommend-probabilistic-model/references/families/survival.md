@@ -12,7 +12,7 @@
 | Cox proportional hazards | Only relative risks matter and the baseline hazard is a nuisance | The frequentist default (partial likelihood); check proportional hazards before reporting one hazard ratio | — | — |
 
 ## Selection & regularization (Step 6, family-specific)
-Complexity knobs: the hazard shape (parametric family, or the number of piecewise intervals) and which predictors enter. Compare parametric families with LOO-ELPD on the censored likelihood; regularize many predictors with the same shrinkage priors as `regression-glm.md`. Rpm's per-family knob table (`references/model-selection-regularization.md`) has no survival row yet: until it does, this subsection is the knob specification.
+Complexity knobs: the hazard shape (parametric family, or the number of piecewise intervals) and which predictors enter. Compare parametric families with LOO-ELPD on the censored likelihood; regularize many predictors with the same shrinkage priors as `regression-glm.md`. This skill's per-family knob table (`references/model-selection-regularization.md`) carries the same knobs in its `survival` row.
 
 ## Gotchas
 - **Censoring is information, not missingness.** A customer still active at month 18 says the duration exceeds 18; drop them and you overstate churn.

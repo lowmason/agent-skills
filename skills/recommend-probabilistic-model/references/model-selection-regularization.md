@@ -50,6 +50,7 @@ likelihood already penalizes complexity (Occam's razor) — PML1 §5.2.
 | `classification` | features; penalty; tree depth | L1/L2; tree pruning / boosting shrinkage; CV |
 | `mixtures-clustering` | number of components `K` | BIC / LOO — PML1 §21.3.7; Dirichlet-process mixture auto-selects `K` — PML2 §31 |
 | `graphical-models` | edge count / density | graphical lasso (L1 on precision); CV/IC, or edge-stability if the graph is the deliverable |
+| `survival` | hazard shape (parametric family, or the number of piecewise intervals); which predictors | LOO-ELPD on the censored likelihood across families; shrinkage priors as in `regression-glm` for many predictors |
 
 ## Output (feeds reporting.md §5 and the C4 handoff)
 
