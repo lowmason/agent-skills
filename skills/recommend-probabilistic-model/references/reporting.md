@@ -51,7 +51,7 @@ For a Bayesian recommendation, carry all four so the next skill starts cold:
 - pyprobml: <notebooks/bookN/<nb>.ipynb>
 
 ## 8. Next steps / handoff
-- **Runs next:** <bayesian-workflow | sklearn/other | drill-down>
+- **Runs next:** <bayesian-workflow | tune-hyperparameters, then track-model-experiments (score mode) | drill-down>
 - **Bracketing skills:** <explore-data upstream; validate-data downstream>
 - **Iterate:** <tune-hyperparameters to search the knobs from §5; track-model-experiments to log and compare the fitted variants>
 - **Open questions:** <what to resolve before/while fitting>
