@@ -1,10 +1,13 @@
 # model-lifecycle — Roadmap
 
+**Status: COMPLETE (2026-10-23)** — all 3 stages complete (plans 65, 67 and 68). The
+completion review is below. Retired with its spec to `specs/completed/`.
+
 > For agentic workers: REQUIRED SKILL: derive-roadmap — resume via its
 > reconcile step; route each unticked stage per its ROUTING line; never plan
 > this document wholesale.
 
-**Source:** `specs/model-lifecycle.md` (approved 2026-10-21, merged to main as 94d1786).
+**Source:** `specs/completed/model-lifecycle.md` (approved 2026-10-21, merged to main as 94d1786).
 **Partition approved** by the owner on 2026-10-21, in conversation.
 
 The roadmap numbers stages 1–3 in landing order. The spec letters them A, B, C in audit
@@ -133,7 +136,7 @@ of plan 68 (#118). Re-run gates at that commit: the track suite (64 passed), the
 |---|---|---|
 | R1 | implemented-as-specified | plan 67 Task 5 (`88c2094`); V1 tune record passes |
 | R2 | implemented-as-specified | plan 67 Task 1, Task 2; tune § Step 0, § Regime C |
-| R3 | implemented-differently | plan 67 Task 1 Deviation (`9b3b511`): the out-of-bag row reads "independent rows only", and the panel paragraph was rewritten. The owner has not ruled; deferred item "Out-of-bag qualifier is a spec change", section `67-model-lifecycle` |
+| R3 | implemented-as-specified | plan 67 Task 1 Deviation (`9b3b511`): the out-of-bag row reads "independent rows only", and the panel paragraph was rewritten. The owner confirmed the qualifier (2026-10-23), and spec R3 was amended to match; the deferred out-of-bag item is ticked |
 | R4 | implemented-as-specified | plan 67 Task 1; tune § Regime A nested snippet; snippet Tier 1 |
 | R5 | implemented-as-specified | plan 67 Task 1 Deviation (`9b3b511`) rewords the parenthesis only |
 | R6 | implemented-as-specified | plan 67 Task 1; tune objective table |
@@ -169,4 +172,4 @@ of plan 68 (#118). Re-run gates at that commit: the track suite (64 passed), the
 **Done when.** The lifecycle-spec, optax-description and plan-59 doc-nits items are ticked in
 `specs/deferred_items.md`. Plan 68 changed no description in the three Stage C skills.
 
-**Unmet.** R3 only. It has a written deferral, but its exit is an owner call on the spec text.
+**Unmet.** None. R3 was the only open item, and it closed at this review by the owner's call.

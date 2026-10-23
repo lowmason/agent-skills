@@ -6419,10 +6419,13 @@ the end of plan 67.
       mean of |d|, `V2-noise` flips to REAL (0.032 against 2·SE = 0.0283). All five variant reps
       read it correctly. Size: quick-fix. Done when: the sentence is reworded and the V2 record says its
       probe ran on the earlier wording.
-- [ ] Out-of-bag qualifier is a spec change. Plan 67's final review qualified the splitter table's
+- [x] Out-of-bag qualifier is a spec change. Plan 67's final review qualified the splitter table's
       "Random forests" row as "independent rows only" (commit `9b3b511`), where spec R3 gives the row
       without a condition. Two seats raised it. Size: quick-fix. Done when: the owner confirms the
       qualifier, and `specs/model-lifecycle.md` R3 is amended to match or the row is reverted.
+      → done 2026-10-23 (owner confirmed the qualifier at the roadmap completion review): spec R3
+      now reads "Random forests, independent rows only". The spec is retired to
+      `specs/completed/model-lifecycle.md`.
 
 ## 68-model-lifecycle — 2026-10-23
 
