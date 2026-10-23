@@ -6276,7 +6276,7 @@ defer. Anchors are at the end of plan 59's fix wave.
       pushes-unasked counts (control vs variant) are recorded and the gate wording stands or is revised.
 
 ## 64-bayesian-rpm-routing — 2026-10-21
-- [ ] Add a survival row to rpm's per-family knob table
+- [x] Add a survival row to rpm's per-family knob table
       (`skills/recommend-probabilistic-model/references/model-selection-regularization.md`,
       "Per-family knobs"). Plan 64 created `families/survival.md` but left the table alone,
       because the model-lifecycle spec (`specs/model-lifecycle.md`, R12a) owns it. Size:
@@ -6284,6 +6284,9 @@ defer. Anchors are at the end of plan 59's fix wave.
       "Selection & regularization" subsection.
       → progress 2026-10-22: the owner left it out of plan 67 (D1). Plan 67 added only the spline-knot
       and AR-order rows to the same table.
+      → done 2026-10-23 (owner-requested quick fix, branch claude/rpm-survival-knob-row): the table
+      has a `survival` row, and `families/survival.md` now points to it instead of saying the row is
+      missing.
 - [ ] Add Beta / BetaBinomial and quantile (`AsymmetricLaplaceQuantile`) rows to
       bayesian-workflow's "Common model families" table (`skills/bayesian-workflow/SKILL.md`),
       which rpm's bounded and quantile handoffs now point at (owner decision D9, plan 64).
@@ -6317,6 +6320,8 @@ defer. Anchors are at the end of plan 59's fix wave.
       `families/gaussian-processes.md` against "about 1,000 to 2,000" in the bayesian-workflow
       reference). The snippet-preamble docstring's "3 of the 38 are def-only" was checked by
       inspection only. Size: quick-fix. Done when: each is fixed or recorded as intended.
+      → progress 2026-10-23: the "Rpm's" wording in `families/survival.md` is gone (branch
+      claude/rpm-survival-knob-row, with the survival knob row). The other parts stay open.
 - [ ] Fix the PML index gaps that hid Gate B candidates in plan 64. `build/.scratch/book1_sections.tsv`
       (from `build/extract_structure.py`) has no chapters 1–2, and many PML1 subsections have no
       title, so title-only searches miss them. PML1 §2.6.3 supports the distributional-regression
