@@ -41,8 +41,10 @@ likelihood already penalizes complexity (Occam's razor) — PML1 §5.2.
 | Family | Complexity knob | Regularizer / selection |
 |--------|-----------------|-------------------------|
 | `regression-glm` | which predictors; penalty λ | ridge/lasso/elastic-net/horseshoe; CV or LOO-ELPD |
+| `regression-glm` (spline terms) | number and placement of knots | more knots fit closer, then overfit: choose the count by CV or LOO-ELPD, or put a knot at every point and add an ℓ2 penalty (smoothing spline) — PML1 §11.5.2, PML1 §11.5.3 |
 | `hierarchical` | which effects vary; pooling strength | partial pooling is intrinsic; LOO-ELPD + prior-sensitivity |
 | `timeseries-statespace` | latent dim, STS components, HMM `K`; `Q`/`σ²` | noise variances as smoothing; **rolling-origin** CV / marginal lik |
+| `timeseries-statespace` (AR terms) | AR order `p` | rolling-origin CV or LFO over `p = 0, 1, 2, …`; AIC/BIC as a quick screen of point fits |
 | `gaussian-processes` | kernel form; ARD lengthscales | marginal-likelihood (empirical Bayes); compositional-kernel search |
 | `factor-models` | number of factors `L` | ARD on loadings; CV/LOO-ELPD held-out loglik (scree elbow if PCA) — PML1 §20.1.4 |
 | `classification` | features; penalty; tree depth | L1/L2; tree pruning / boosting shrinkage; CV |

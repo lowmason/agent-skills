@@ -504,7 +504,9 @@ SOFT_REFERENCES = {
   # Routes Regime B knobs to bayesian-workflow's diagnostics and SVI files; the
   # search loop (Regime A) runs without them.
   ('skill:tune-hyperparameters', 'skill:bayesian-workflow'),
-  # Hands a tuned model on to the experiments ledger; a next step.
+  # Graduates a tuned winner to the experiments ledger and points to its
+  # predictive-evaluation reference for the protocol; tune states the paired
+  # noise rule itself, so the search loop runs without either.
   ('skill:tune-hyperparameters', 'skill:track-model-experiments'),
   # Quotes an @-path as an example of what not to write.
   ('skill:writing-skills', 'skill:writing-plans'),
