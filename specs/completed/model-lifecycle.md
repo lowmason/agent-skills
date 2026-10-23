@@ -1,5 +1,9 @@
 # model-lifecycle — Design Spec
 
+**Status: COMPLETE (2026-10-23)** — implemented by plans 65, 67 and 68 (`specs/plans/completed/`)
+through the roadmap `specs/completed/model-lifecycle-roadmap.md`, and retired here. R3 was
+amended at the completion review (owner, 2026-10-23).
+
 > For agentic workers: REQUIRED NEXT SKILL: derive-roadmap — do not plan
 > this spec directly and do not split it into per-subsystem plans.
 
@@ -105,7 +109,7 @@ protocol:
 | Grouped, or predicting new entities | `GroupKFold` or `LeaveOneGroupOut` |
 | Spatial | `GroupKFold` over spatial blocks |
 | Temporal | the bundled `PurgedTimeSeriesSplit` (existing text, `:65-100`) |
-| Random forests | out-of-bag error |
+| Random forests, independent rows only | out-of-bag error |
 
 No new splitter code.
 
