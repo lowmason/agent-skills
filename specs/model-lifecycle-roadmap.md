@@ -120,3 +120,53 @@ are ticked: the optax-description and plan-59 doc-nits items tick in Stage 2, an
 lifecycle-spec item was ticked when the spec was approved (2026-10-21). An unmet
 requirement becomes a new stage or a written deferral. Then retire this roadmap and the spec
 to `specs/completed/`.
+
+## Completion review (2026-10-23)
+
+Every stage is ticked. The gap rubric was re-run over R1–R29 and V1–V3 at `ff00f16`, the merge
+of plan 68 (#118). Re-run gates at that commit: the track suite (64 passed), the tune suite
+(18 passed), `test_runtime_support.py` with the dependency-drift test (82 passed), and
+`verify_citations.py` Gate A on rpm (exit 0; its 2 chapter-fallback WARNs are in
+`families/regression-glm.md`, not in the R12a rows).
+
+| Req | Verdict | Evidence |
+|---|---|---|
+| R1 | implemented-as-specified | plan 67 Task 5 (`88c2094`); V1 tune record passes |
+| R2 | implemented-as-specified | plan 67 Task 1, Task 2; tune § Step 0, § Regime C |
+| R3 | implemented-differently | plan 67 Task 1 Deviation (`9b3b511`): the out-of-bag row reads "independent rows only", and the panel paragraph was rewritten. The owner has not ruled; deferred item "Out-of-bag qualifier is a spec change", section `67-model-lifecycle` |
+| R4 | implemented-as-specified | plan 67 Task 1; tune § Regime A nested snippet; snippet Tier 1 |
+| R5 | implemented-as-specified | plan 67 Task 1 Deviation (`9b3b511`) rewords the parenthesis only |
+| R6 | implemented-as-specified | plan 67 Task 1; tune objective table |
+| R7 | implemented-as-specified | plan 67 Task 2; the tune → track soft-pair reason. A wording fix is deferred (the "\|Δ\|" item, section `67-model-lifecycle`) |
+| R8 | implemented-as-specified | plan 67 Task 2; tune § Neural search |
+| R9 | implemented-as-specified | plan 67 Task 2; tune Regime B optax row; "has no owner" removed |
+| R10 | implemented-as-specified | plan 67 Task 2; tune § Producers, five rows |
+| R11 | implemented-as-specified | plan 67 Task 2 Deviation: owner-chosen scope to non-neural winners and fresh folds (`6a3fc03`) |
+| R12 | implemented-as-specified | plan 67 Task 2, Task 4; tune § Boundary; causal sibling line. A claim check is deferred (synthetic-control item, section `67-model-lifecycle`) |
+| R12a | implemented-as-specified | plan 67 Task 4; rpm knob rows; Gate A. The rpm Output paragraph is deferred (section `67-model-lifecycle`) |
+| R12b | implemented-as-specified | plan 67 Task 4; `README.md` tune row |
+| R13 | implemented-as-specified | plan 65 Task 2, Task 3; `predictive-evaluation.md` § contract |
+| R14 | implemented-as-specified | plan 65 Task 3 (Deviation adds the reserved-name sentence) |
+| R15 | implemented-as-specified | plan 65 Task 2, Task 3; track § ledger |
+| R16 | implemented-as-specified | plan 65 Task 2; `--mode`; `comparison.json` keys |
+| R17 | implemented-as-specified | plan 65 Task 2; R24 refusal tests |
+| R18 | implemented-as-specified | plan 65 D1: the base-commit tests passed unedited against the final comparator, then part (f) tidied them (`7470df4`) |
+| R19 | implemented-as-specified | plan 65 Task 4 (Deviation re-measured coverage); snippet Tiers 1–3 |
+| R20 | implemented-as-specified | plan 65 Task 3; V1 track record passes |
+| R21 | implemented-as-specified | plan 65 Task 3; "until a non-ELPD mode exists" is gone from the repo |
+| R22 | implemented-as-specified | plan 65 Task 3; no track entry in `install.py`; two soft pairs |
+| R23 | implemented-as-specified | plan 65 Task 3; `README.md` track row |
+| R24 | implemented-as-specified | plan 65 Task 1, Task 2; the track suite |
+| R25 | implemented-as-specified | plan 68 Task 1 (default 2) |
+| R26 | implemented-as-specified | plan 68 Task 1 (default 3); the report template is unchanged |
+| R27 | implemented-as-specified | plan 68 Task 1 (default 4); `VALID_INTENTS` is unchanged |
+| R28 | implemented-as-specified | plan 68 Task 2 (default 6) |
+| R29 | implemented-as-specified | plan 68 Task 1 (default 5); the drift test |
+| V1 | implemented-as-specified | `specs/verification/65-track-description-microtest.md`, `67-tune-description-microtest.md`: both pass |
+| V2 | implemented-as-specified | `specs/verification/67-tune-noise-rule-probe.md` passes. The control also answered REAL in 4 of 5 reps, so the probe does not separate the arms; deferred V2-fixture item, section `67-model-lifecycle` |
+| V3 | implemented-as-specified | the gates in each plan's stage-gates task, and the re-run above |
+
+**Done when.** The lifecycle-spec, optax-description and plan-59 doc-nits items are ticked in
+`specs/deferred_items.md`. Plan 68 changed no description in the three Stage C skills.
+
+**Unmet.** R3 only. It has a written deferral, but its exit is an owner call on the spec text.
