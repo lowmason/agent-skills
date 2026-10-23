@@ -139,6 +139,11 @@ example: [references/pipeline-tests.md](references/pipeline-tests.md).
 
 ## Step 4 — Bayesian models (NumPyro / PyMC)
 
+A model that is not Bayesian (sklearn, boosting, statsmodels, a neural net) applies Step 1's
+invariant groups like any other unit. Its evaluation protocol — cross-validation, backtests,
+benchmark comparison — belongs to `track-model-experiments/references/predictive-evaluation.md`,
+or to `evaluate-deep-learning` for a neural model.
+
 You cannot assert an exact posterior — MCMC is stochastic and the true posterior is unknown. So
 "smoke test only" (it sampled without crashing) is where most model packages stop, and it
 catches almost nothing. Replace it with four checks that *are* falsifiable:

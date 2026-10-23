@@ -485,6 +485,9 @@ SOFT_REFERENCES = {
   ('skill:derive-roadmap', 'skill:describe-critique-methodology'),
   # Likens a stage to writing-plans' Scope Check; an analogy, not a step.
   ('skill:derive-roadmap', 'skill:writing-plans'),
+  # Routes a model package's evaluation protocol to track's predictive-evaluation
+  # reference; the test plan never reads it.
+  ('skill:develop-testing-strategy', 'skill:track-model-experiments'),
   # Names SDD's Model Selection but gives the tier aliases inline.
   ('skill:dispatching-parallel-agents', 'skill:subagent-driven-development'),
   # A docstring contrasting its signals with profile.py's; never calls it.
@@ -495,6 +498,9 @@ SOFT_REFERENCES = {
   ('skill:recommend-visualization', 'skill:bayesian-workflow'),
   # Likens its extra signals to characterize.py's; never runs it.
   ('skill:recommend-visualization', 'skill:recommend-probabilistic-model'),
+  # Routes CV and backtest charts to track's predictive-evaluation reference;
+  # never reads it.
+  ('skill:recommend-visualization', 'skill:track-model-experiments'),
   # Names SDD's Model Selection but gives the review tiers and aliases inline;
   # SDD's review-package and task-reviewer prompt apply only when SDD calls.
   ('skill:requesting-code-review', 'skill:subagent-driven-development'),
@@ -508,6 +514,9 @@ SOFT_REFERENCES = {
   # predictive-evaluation reference for the protocol; tune states the paired
   # noise rule itself, so the search loop runs without either.
   ('skill:tune-hyperparameters', 'skill:track-model-experiments'),
+  # Names track's predictive-evaluation reference as the producer that checks a
+  # CV or backtest result; the QA pass runs without it.
+  ('skill:validate-data', 'skill:track-model-experiments'),
   # Quotes an @-path as an example of what not to write.
   ('skill:writing-skills', 'skill:writing-plans'),
 }

@@ -43,6 +43,10 @@ Decide which you are doing; they share machinery but answer different questions.
 - **Analysis QA** — "Are these conclusions trustworthy as an output?" Run sections 3–4 (accuracy,
   methodology/bias) on top of 1–2, because an analysis is only as sound as its inputs. Typical
   trigger: a nowcast, a provider-vs-official comparison, anything headed for a slide or a doc.
+  A model result's evaluation is checked by its producer — `bayesian-workflow` for a Bayesian
+  fit, `track-model-experiments/references/predictive-evaluation.md` for CV or backtest scores,
+  `evaluate-deep-learning` for a neural model — and the report's §4 "Conclusions supported"
+  line names the producer that checked it.
 
 Section 5 (fail loudly) is cross-cutting — apply it throughout. Section 6 is the report you emit.
 

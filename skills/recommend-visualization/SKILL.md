@@ -41,6 +41,10 @@ the implementation.
   visualization *inside* a Bayesian analysis (prior/posterior predictive, MCMC diagnostics, LOO-PIT)
   in ArviZ. This skill is general chart selection for any tabular dataset. Use that one when the
   thing you're plotting is a fitted model's draws; use this one for the data.
+- **Model-output charts** (intervals, CV metrics, calibration curves) go to the skill that owns
+  the evaluation: `bayesian-workflow` for posterior draws,
+  `track-model-experiments/references/predictive-evaluation.md` for CV folds and backtests, and
+  `evaluate-deep-learning` for neural runs.
 - **`validate-data`** *gates* the result downstream.
 
 ## Procedure
