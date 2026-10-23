@@ -38,9 +38,9 @@
 
 ## Decisions
 
-None.
+- **D1** (owner, plan review, 2026-10-23): Accept defaults 1-6 below as the plan states them. Applied in: Tasks 1-3 (default 1), Task 1 (defaults 2-5), Task 2 (default 6).
 
-**Defaults this plan settles (for plan review):**
+**Defaults this plan settles (settled at plan review by D1):**
 
 1. **Task shape.** Three tasks: the three routes with their soft pairs (one drift-test cycle), R28, and the stage gates. A per-skill split would give three reviews of a five-line edit each, under one spec section and one test.
 2. **R25 placement.** The line goes directly under the Step 4 heading (`SKILL.md:140`), before "You cannot assert an exact posterior". A reader with a model that is not Bayesian sees the route before Step 4's Bayesian-only checks. The alternative is a closing paragraph before Step 5.
