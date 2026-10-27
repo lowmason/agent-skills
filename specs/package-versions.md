@@ -179,7 +179,7 @@ R2.1. `build/versions.py sync` writes three files from `build/versions.toml`, an
 R2.2. `build/versions.py` gives the other build scripts these values: the dev Python, the freeze date, and `stack(gate)`, the list of `pkg==version` strings for a gate after overrides.
 
 R2.3. These readers take their versions from R2.2 and from no literal:
-- `build/check_snippets.py`: `PINNED` (moved out of `build/snippet_preamble.py`), `RUN_REMEDIATION` and `API_REMEDIATION`. Tier 2 (`--api`) stays unpinned for named packages and gets the freeze date.
+- `build/check_snippets.py`: `PINNED` (moved out of `build/snippet_preamble.py`), `RUN_REMEDIATION` and `API_REMEDIATION`. Tier 2 (`--api`) runs on the same pinned `snippets` stack as Tier 3 (owner, plan 66, 2026-10-21), so no documented command spells a package version (R2.4).
 - `build/check_jax_examples.py` and its documented command: they install `stack('jax-cpu')` in place of `--with-requirements specs/verification/32-jax-cpu.txt`.
 - `build/run_suites.py`: `DEFAULT_PYTHONS` comes from the dev Python. A `with` or `extras` package that `[packages]` names gets its pin. Each run passes `--exclude-newer <date>` explicitly, because suites under `skills/` sit below the shadow file. The `hooks` suite keeps its explicit `/usr/bin/python3` run.
 - `build/cc_guide/notice.sh:114` and `build/githooks/pre-commit:15`: they can run outside the repo's working directory, so they take the interpreter from the file and not from a literal.

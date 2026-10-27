@@ -252,9 +252,3 @@ NAMED_FIXTURES: dict[str, Fixture] = {
     'comparison': Fixture(code=COMPARISON_FIXTURE, variables=frozenset()),
     'time_series': Fixture(code=TIME_SERIES_FIXTURE, variables=frozenset()),
 }
-
-PINNED = (
-    # Verified resolving 2026-10-19. Refresh deliberately and re-record.
-    'arviz==1.3.0', 'arviz-base', 'arviz-stats==1.3.3', 'arviz-plots==1.3.2',
-    'numpyro==0.22.0', 'jax==0.12.0', 'numpy', 'matplotlib',
-)
