@@ -9,6 +9,21 @@ import tomllib
 import pytest
 
 import run_suites as rs
+import versions
+
+V = versions.load()   # the dev interpreter and the cutoff come from the file, never from a literal here
+DEV = V.dev_python
+PINS = rs.Pins(python=DEV, cutoff=V.cutoff, packages={'polars': '9.9.9'})
+VERSIONS_TOML = '''\
+[python]
+dev = '3.13'
+[freeze]
+date = 2026-10-19
+[packages]
+polars = '9.9.9'
+[gates]
+snippets = ['polars']
+'''
 
 FIXTURE = '''\
 [[suite]]
@@ -27,7 +42,7 @@ with = ['pytest']
 name = 'tools-inner'
 dir = 'tools/inner'
 with = ['pytest']
-pythons = ['3.13', '/usr/bin/python3']
+pythons = ['dev', '/usr/bin/python3']
 '''
 ONE = "[[suite]]\nname = 'a'\ndir = 'x'\n"  # a suite table without its `with` line
 
@@ -72,24 +87,50 @@ def test_validate_refuses(text, problem):
 
 
 def test_a_default_run_has_the_form_claude_md_used():
-    [run] = rs.runs(fixture_suites()[0])
-    assert run.label == 'alpha (3.13)'
-    assert run.argv == ('uv', 'run', '--python', '3.13', '--with', 'pytest', '--with', 'polars',
-                        'python', '-m', 'pytest', '-q')
-    assert run.shell() == ('cd skills/alpha/scripts && uv run --python 3.13 --with pytest '
-                           '--with polars python -m pytest -q')
+    [run] = rs.runs(fixture_suites()[0], PINS)
+    assert run.label == f'alpha ({DEV})'
+    assert run.argv == ('uv', 'run', '--python', DEV, '--exclude-newer', V.cutoff, '--with', 'pytest',
+                        '--with', 'polars==9.9.9', 'python', '-m', 'pytest', '-q')
+    assert run.shell() == (f'cd skills/alpha/scripts && uv run --python {DEV} --exclude-newer {V.cutoff} '
+                           '--with pytest --with polars==9.9.9 python -m pytest -q')
 
 
 def test_extras_and_pytest_args_follow_the_deps_and_are_quoted():
-    [run] = rs.runs(fixture_suites()[0], extras=True, pytest_args=('-k', 'a and b'))
-    assert run.shell() == ("cd skills/alpha/scripts && uv run --python 3.13 --with pytest "
-                           "--with polars --with 'arviz>=1.0' python -m pytest -q -k 'a and b'")
+    [run] = rs.runs(fixture_suites()[0], PINS, extras=True, pytest_args=('-k', 'a and b'))
+    assert run.shell() == (f"cd skills/alpha/scripts && uv run --python {DEV} --exclude-newer {V.cutoff} "
+                           "--with pytest --with polars==9.9.9 --with 'arviz>=1.0' python -m pytest -q -k 'a and b'")
 
 
 def test_each_python_gets_its_own_run_in_order():
-    first, second = rs.runs(fixture_suites()[2])
-    assert (first.python, second.python) == ('3.13', '/usr/bin/python3')
-    assert second.shell() == 'cd tools/inner && uv run --python /usr/bin/python3 --with pytest python -m pytest -q'
+    first, second = rs.runs(fixture_suites()[2], PINS)
+    assert (first.python, second.python) == (DEV, '/usr/bin/python3')
+    assert second.shell() == (f'cd tools/inner && uv run --python /usr/bin/python3 --exclude-newer {V.cutoff} '
+                              '--with pytest python -m pytest -q')
+
+
+def test_the_dev_entry_follows_the_python_override_and_no_other_entry_does():
+    first, second = rs.runs(fixture_suites()[2], rs.Pins(python='3.99', cutoff=None))
+    assert (first.python, second.python) == ('3.99', '/usr/bin/python3')
+
+
+def test_a_pins_object_without_a_cutoff_leaves_out_exclude_newer():
+    [run] = rs.runs(fixture_suites()[0], rs.Pins(python=DEV, cutoff=None, packages={}))
+    assert '--exclude-newer' not in run.argv
+    assert run.argv == ('uv', 'run', '--python', DEV, '--with', 'pytest', '--with', 'polars',
+                        'python', '-m', 'pytest', '-q')
+
+
+def test_pins_pin_only_the_packages_the_file_names():
+    assert PINS.spec('polars') == 'polars==9.9.9'
+    assert PINS.spec('Polars>=1.0') == 'Polars==9.9.9'
+    assert PINS.spec('pytest') == 'pytest'
+    assert PINS.spec('arviz>=1.0') == 'arviz>=1.0'
+
+
+def test_pins_from_versions_read_the_file_and_take_the_options():
+    assert rs.Pins.from_versions(V) == rs.Pins(DEV, V.cutoff, V.pins())
+    custom = rs.Pins.from_versions(V, python='3.99', freeze=False, user_pins={'numpy': '0.1'})
+    assert (custom.python, custom.cutoff) == ('3.99', None) and custom.packages['numpy'] == '0.1'
 
 
 def test_container_is_the_suite_whose_directory_holds_this_one():
@@ -201,53 +242,83 @@ class FakeRuns:
 def repo(tmp_path):
     (tmp_path / 'build').mkdir()
     (tmp_path / 'build' / 'suites.toml').write_text(FIXTURE)
+    (tmp_path / 'build' / 'versions.toml').write_text(VERSIONS_TOML)
     return tmp_path
 
 
 def test_a_named_suite_runs_once_per_python(repo, capsys):
     fake = FakeRuns()
-    assert rs.main(['tools-inner'], root=repo, run_one=fake) == 0
-    assert fake.labels == ['tools-inner (3.13)', 'tools-inner (/usr/bin/python3)']
+    assert rs.main(['tools-inner'], root=repo, run_one=fake, pins=PINS) == 0
+    assert fake.labels == [f'tools-inner ({DEV})', 'tools-inner (/usr/bin/python3)']
     assert capsys.readouterr().out.splitlines()[-1] == 'suite runs passed'
 
 
 def test_a_failed_run_does_not_stop_the_next(repo, capsys):
-    fake = FakeRuns({'tools-inner (3.13)': 1})
-    assert rs.main(['tools-inner', 'alpha'], root=repo, run_one=fake) == 1
-    assert fake.labels == ['tools-inner (3.13)', 'tools-inner (/usr/bin/python3)', 'alpha (3.13)']
-    assert capsys.readouterr().err.splitlines()[-1] == 'suite runs failed: tools-inner (3.13)'
+    fake = FakeRuns({f'tools-inner ({DEV})': 1})
+    assert rs.main(['tools-inner', 'alpha'], root=repo, run_one=fake, pins=PINS) == 1
+    assert fake.labels == [f'tools-inner ({DEV})', 'tools-inner (/usr/bin/python3)', f'alpha ({DEV})']
+    assert capsys.readouterr().err.splitlines()[-1] == f'suite runs failed: tools-inner ({DEV})'
 
 
 def test_no_tests_collected_counts_as_a_failure(repo):
-    assert rs.main(['alpha'], root=repo, run_one=FakeRuns({'alpha (3.13)': 5})) == 1
+    assert rs.main(['alpha'], root=repo, run_one=FakeRuns({f'alpha ({DEV})': 5}), pins=PINS) == 1
 
 
 def test_the_notes_follow_the_first_header(repo, capsys):
-    rs.main(['alpha'], root=repo, run_one=FakeRuns())
-    assert capsys.readouterr().out.splitlines()[:2] == ['== alpha (3.13)', 'note: Reads a pilot wiki, else skips.']
+    rs.main(['alpha'], root=repo, run_one=FakeRuns(), pins=PINS)
+    assert capsys.readouterr().out.splitlines()[:2] == [f'== alpha ({DEV})', 'note: Reads a pilot wiki, else skips.']
 
 
 def test_extras_and_pytest_args_reach_the_run(repo):
     fake = FakeRuns()
-    rs.main(['alpha', '--extras', '--', '-k', 'x'], root=repo, run_one=fake)
-    assert fake.argvs == [('uv', 'run', '--python', '3.13', '--with', 'pytest', '--with', 'polars',
-                           '--with', 'arviz>=1.0', 'python', '-m', 'pytest', '-q', '-k', 'x')]
+    rs.main(['alpha', '--extras', '--', '-k', 'x'], root=repo, run_one=fake, pins=PINS)
+    assert fake.argvs == [('uv', 'run', '--python', DEV, '--exclude-newer', V.cutoff, '--with', 'pytest',
+                           '--with', 'polars==9.9.9', '--with', 'arviz>=1.0', 'python', '-m', 'pytest', '-q',
+                           '-k', 'x')]
+
+
+def test_the_options_build_the_pins_from_the_repos_file(repo):
+    fake = FakeRuns()
+    args = ['alpha', '--pin', 'polars==8.8.8', '--python', '3.99', '--no-freeze']
+    assert rs.main(args, root=repo, run_one=fake) == 0
+    assert fake.argvs == [('uv', 'run', '--python', '3.99', '--with', 'pytest', '--with', 'polars==8.8.8',
+                           'python', '-m', 'pytest', '-q')]
+
+
+def test_a_pin_the_file_does_not_name_exits_2(repo, capsys):
+    assert rs.main(['alpha', '--pin', 'zeta==1.0'], root=repo, run_one=FakeRuns()) == 2
+    assert 'zeta has no [packages] entry' in capsys.readouterr().err
+
+
+def test_a_missing_versions_file_exits_2(repo, capsys):
+    (repo / 'build' / 'versions.toml').unlink()
+    assert rs.main(['alpha'], root=repo, run_one=FakeRuns()) == 2
+    assert 'build/versions.toml: cannot read' in capsys.readouterr().err
+
+
+def test_check_takes_no_pin_options(repo, capsys):
+    for option in (['--pin', 'polars==1.0'], ['--python', DEV], ['--no-freeze']):
+        with pytest.raises(SystemExit) as err:
+            rs.main(['--check', *option], root=repo)
+        assert err.value.code == 2
+        assert '--check takes no' in capsys.readouterr().err   # not argparse's "unrecognized arguments"
 
 
 def test_all_skips_a_suite_inside_another(repo, capsys):
     fake = FakeRuns()
-    assert rs.main(['--all'], root=repo, run_one=fake) == 0
-    assert fake.labels == ['alpha (3.13)', 'outer (3.13)']
+    assert rs.main(['--all'], root=repo, run_one=fake, pins=PINS) == 0
+    assert fake.labels == [f'alpha ({DEV})', f'outer ({DEV})']
     assert 'skip tools-inner: the outer suite collects tools/inner' in capsys.readouterr().out
 
 
 def test_list_prints_commands_extras_and_notes_and_runs_nothing(repo, capsys):
     fake = FakeRuns()
-    assert rs.main(['--list', 'alpha'], root=repo, run_one=fake) == 0
+    assert rs.main(['--list', 'alpha'], root=repo, run_one=fake, pins=PINS) == 0
     assert fake.labels == []
     assert capsys.readouterr().out.splitlines() == [
         'alpha: skills/alpha/scripts',
-        '  cd skills/alpha/scripts && uv run --python 3.13 --with pytest --with polars python -m pytest -q',
+        f'  cd skills/alpha/scripts && uv run --python {DEV} --exclude-newer {V.cutoff} --with pytest '
+        '--with polars==9.9.9 python -m pytest -q',
         '  extras: arviz>=1.0',
         '  note: Reads a pilot wiki, else skips.',
     ]
@@ -294,9 +365,9 @@ def test_check_mode_prints_each_finding_and_exits_1(tmp_path, capsys):
 
 
 def test_a_run_that_cannot_start_fails(tmp_path, capsys):
-    [run] = rs.runs(rs.Suite('ghost', 'missing', ('pytest',)))
+    [run] = rs.runs(rs.Suite('ghost', 'missing', ('pytest',)), PINS)
     assert rs.run_subprocess(tmp_path, run) == 1
-    assert 'ghost (3.13): cannot start' in capsys.readouterr().err
+    assert f'ghost ({DEV}): cannot start' in capsys.readouterr().err
 
 
 # --- the real registry ---

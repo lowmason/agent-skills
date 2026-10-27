@@ -7,7 +7,8 @@
 #   dir      the repo-relative directory pytest runs from
 #   with     the default --with deps, in the order a run passes them; includes pytest
 #   extras   optional: the deps that unlock skips, added only by --extras
-#   pythons  optional: one run per interpreter, in order (default ['3.13'])
+#   pythons  optional: one run per interpreter, in order (default ['dev']); `dev` stands for the
+#            dev interpreter of build/versions.toml, and any other entry is passed to uv as written
 #   notes    optional: what the suite covers or needs; --list prints them, and a run
 #            prints them after its first header
 
@@ -33,7 +34,7 @@ notes = ['Server tests (stdlib only); they need node, else skip.']
 name = 'build'
 dir = 'build'
 with = ['pytest', 'numpy', 'polars', 'pyyaml']
-extras = ['arviz>=1.0', 'arviz-base', 'arviz-stats', 'arviz-plots', 'numpyro', 'jax', 'matplotlib']
+extras = ['arviz', 'arviz-base', 'arviz-stats', 'arviz-plots', 'numpyro', 'jax', 'matplotlib']
 notes = [
     'Every build-directory test, build/cc_guide/ included. Without --extras, the snippet tests that need the stack skip.',
     "A fresh clone or worktree lacks the gitignored build/.scratch/, so four of test_verify_citations.py's tests skip there with a reason that names it, and none fails.",
@@ -88,7 +89,7 @@ notes = ['Build tests; the per-vintage workbook tests read the committed sources
 name = 'hooks'
 dir = 'hooks'
 with = ['pytest']
-pythons = ['3.13', '/usr/bin/python3']
+pythons = ['dev', '/usr/bin/python3']
 notes = [
     'Read-only agent guard tests (Gate A: classifier units, payload contract), the project hook template tests (test_project_hooks.py), and the dispatch-model guard tests (test_dispatch_model_guard.py).',
     'The template tests run each template through its shebang against a stub uv, once with the bash on PATH and once with /bin/bash (bash 3.2 on macOS). They skip where jq is not installed. The tests that call the stub uv also skip where /usr/bin or /bin holds a real uv, and the /bin/bash runs skip where there is no /bin/bash.',

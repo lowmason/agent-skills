@@ -3,10 +3,10 @@
 Each suite runs pytest from its own directory through uv, with its own inline deps;
 the root CLAUDE.md says why. From any directory in the repo:
 
-    uv run --python 3.13 python build/run_suites.py --list [NAME ...]
-    uv run --python 3.13 python build/run_suites.py NAME [NAME ...] [--extras] [-- PYTEST_ARGS]
-    uv run --python 3.13 python build/run_suites.py --all [--extras] [-- PYTEST_ARGS]
-    uv run --python 3.13 python build/run_suites.py --check
+    uv run python build/run_suites.py --list [NAME ...]
+    uv run python build/run_suites.py NAME [NAME ...] [--extras] [-- PYTEST_ARGS]
+    uv run python build/run_suites.py --all [--extras] [-- PYTEST_ARGS]
+    uv run python build/run_suites.py --check
 
 --list prints each suite's exact shell commands, its extras and its notes; --extras and
 the arguments after -- apply there too. A run prints its suite's notes after its first
@@ -15,24 +15,34 @@ another suite's, since pytest collects it there. --check is a commit lint: it va
 the registry and fails when a directory that holds pytest files lies inside no
 registered suite directory.
 
+Each run passes the dev interpreter (the `dev` entry in a suite's `pythons`) and the freeze
+cutoff from build/versions.toml to uv, and pins every `with` or extras package that
+[packages] names, because a suite under skills/ sits below skills/uv.toml, which shadows the
+root date. --pin PKG==X changes one pin for one run, --python replaces the dev interpreter and
+--no-freeze leaves out the cutoff; `versions.py drift` uses all three.
+
 Exit status: 0 when everything passes; 1 when a run fails or --check finds a problem;
 2 for a usage error, an unknown suite name or an invalid registry.
 Design: specs/completed/test-suite-registry.md.
 '''
 import argparse
 import os
+import re
 import shlex
 import subprocess
 import sys
 import tomllib
-from collections.abc import Callable, Sequence
-from dataclasses import dataclass
+from collections.abc import Callable, Mapping, Sequence
+from dataclasses import dataclass, field
 from fnmatch import fnmatchcase
 from pathlib import Path, PurePosixPath
 
+import versions
+
 REPO = Path(__file__).resolve().parent.parent
 REGISTRY = 'build/suites.toml'  # relative to the repo root
-DEFAULT_PYTHONS = ('3.13',)
+DEV = 'dev'  # in a suite's `pythons`: the dev interpreter of build/versions.toml
+DEFAULT_PYTHONS = (DEV,)
 TEST_FILE_PATTERNS = ('test_*.py', '*_test.py')  # pytest's default python_files
 REQUIRED_KEYS = ('name', 'dir', 'with')
 OPTIONAL_KEYS = ('extras', 'pythons', 'notes')
@@ -48,6 +58,26 @@ class Suite:
     extras: tuple[str, ...] = ()
     pythons: tuple[str, ...] = DEFAULT_PYTHONS
     notes: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class Pins:
+    '''What a run resolves against: the interpreter for the `dev` entry, the --exclude-newer
+    cutoff (None leaves it out) and the exact version of each package, by normalised name.'''
+    python: str
+    cutoff: str | None
+    packages: Mapping[str, str] = field(default_factory=dict)
+
+    @classmethod
+    def from_versions(cls, v: versions.Versions, python: str | None = None, freeze: bool = True,
+                      user_pins: Mapping[str, str] | None = None) -> 'Pins':
+        return cls(python or v.dev_python, v.cutoff if freeze else None, {**v.pins(), **(user_pins or {})})
+
+    def spec(self, dep: str) -> str:
+        '''`dep` as `name==version` when [packages] pins that name, else as written.'''
+        name = re.match(r'[A-Za-z0-9][A-Za-z0-9._-]*', dep)
+        key = versions.normalize(name.group(0)) if name else ''
+        return f'{name.group(0)}=={self.packages[key]}' if key in self.packages else dep
 
 
 @dataclass(frozen=True)
@@ -125,13 +155,15 @@ def parse(data: dict) -> list[Suite]:
             for t in data['suite']]
 
 
-def runs(suite: Suite, extras: bool = False, pytest_args: Sequence[str] = ()) -> list[Run]:
-    '''One run per interpreter, in the suite's order; --extras adds the extras.'''
+def runs(suite: Suite, pins: Pins, extras: bool = False, pytest_args: Sequence[str] = ()) -> list[Run]:
+    '''One run per interpreter, in the suite's order; --extras adds the extras. The `dev`
+    entry runs on pins.python.'''
     deps = suite.deps + (suite.extras if extras else ())
-    withs = tuple(word for dep in deps for word in ('--with', dep))
-    return [Run(suite, python, ('uv', 'run', '--python', python, *withs,
+    withs = tuple(word for dep in deps for word in ('--with', pins.spec(dep)))
+    cutoff = ('--exclude-newer', pins.cutoff) if pins.cutoff else ()
+    return [Run(suite, python, ('uv', 'run', '--python', python, *cutoff, *withs,
                                 'python', '-m', 'pytest', '-q', *pytest_args))
-            for python in suite.pythons]
+            for python in (pins.python if entry == DEV else entry for entry in suite.pythons)]
 
 
 def container(suite: Suite, suites: Sequence[Suite]) -> Suite | None:
@@ -201,12 +233,12 @@ def run_subprocess(root: Path, run: Run) -> int:
         return 1
 
 
-def execute(root: Path, suites: Sequence[Suite], extras: bool, pytest_args: Sequence[str],
+def execute(root: Path, suites: Sequence[Suite], pins: Pins, extras: bool, pytest_args: Sequence[str],
             run_one: RunOne) -> int:
     '''Every run of every suite, in order; a failure does not stop the next run.'''
     failed: list[str] = []
     for suite in suites:
-        for i, run in enumerate(runs(suite, extras, pytest_args)):
+        for i, run in enumerate(runs(suite, pins, extras, pytest_args)):
             print(f'== {run.label}', flush=True)
             if i == 0:
                 for note in suite.notes:
@@ -220,10 +252,10 @@ def execute(root: Path, suites: Sequence[Suite], extras: bool, pytest_args: Sequ
     return 0
 
 
-def list_suites(suites: Sequence[Suite], extras: bool, pytest_args: Sequence[str]) -> None:
+def list_suites(suites: Sequence[Suite], pins: Pins, extras: bool, pytest_args: Sequence[str]) -> None:
     for suite in suites:
         print(f'{suite.name}: {suite.dir}')
-        for run in runs(suite, extras, pytest_args):
+        for run in runs(suite, pins, extras, pytest_args):
             print(f'  {run.shell()}')
         if suite.extras:
             print(f'  extras: {" ".join(suite.extras)}')
@@ -249,10 +281,14 @@ def parse_args(argv: list[str]) -> tuple[argparse.Namespace, tuple[str, ...]]:
                       help='validate the registry and its coverage (a commit lint)')
     parser.add_argument('--extras', action='store_true',
                         help='add the deps that unlock skips')
+    parser.add_argument('--pin', action='append', default=[], metavar='PKG==X',
+                        help='use this version for this run (repeatable)')
+    parser.add_argument('--python', help='run the dev entries on this interpreter')
+    parser.add_argument('--no-freeze', action='store_true', help='leave out the freeze cutoff')
     parser.add_argument('names', nargs='*', metavar='NAME', help='a suite to run or list')
     args = parser.parse_args(argv)
-    if args.check and (args.names or args.extras or pytest_args):
-        parser.error('--check takes no suite names, --extras or pytest arguments')
+    if args.check and (args.names or args.extras or pytest_args or args.pin or args.python or args.no_freeze):
+        parser.error('--check takes no suite names, --extras, --pin, --python, --no-freeze or pytest arguments')
     if args.all and args.names:
         parser.error('--all takes no suite names')
     if not (args.list or args.all or args.check or args.names):
@@ -261,7 +297,7 @@ def parse_args(argv: list[str]) -> tuple[argparse.Namespace, tuple[str, ...]]:
 
 
 def main(argv: Sequence[str] | None = None, root: Path = REPO,
-         run_one: RunOne = run_subprocess) -> int:
+         run_one: RunOne = run_subprocess, pins: Pins | None = None) -> int:
     args, pytest_args = parse_args(list(sys.argv[1:] if argv is None else argv))
     try:
         data = tomllib.loads((root / REGISTRY).read_text(encoding='utf-8'))
@@ -288,8 +324,15 @@ def main(argv: Sequence[str] | None = None, root: Path = REPO,
         print(f'unknown suite: {", ".join(unknown)} (--list names them all)', file=sys.stderr)
         return 2
     chosen = [by_name[name] for name in args.names] or suites
+    if pins is None:
+        try:
+            v = versions.load(root)
+            pins = Pins.from_versions(v, args.python, not args.no_freeze, versions.parse_pins(v, args.pin))
+        except versions.VersionsError as exc:
+            print(f'run_suites: {exc}', file=sys.stderr)
+            return 2
     if args.list:
-        list_suites(chosen, args.extras, pytest_args)
+        list_suites(chosen, pins, args.extras, pytest_args)
         return 0
     if args.all:
         chosen = []
@@ -298,7 +341,7 @@ def main(argv: Sequence[str] | None = None, root: Path = REPO,
                 print(f'skip {suite.name}: the {outer.name} suite collects {suite.dir}')
             else:
                 chosen.append(suite)
-    return execute(root, chosen, args.extras, pytest_args, run_one)
+    return execute(root, chosen, pins, args.extras, pytest_args, run_one)
 
 
 if __name__ == '__main__':
