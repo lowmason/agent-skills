@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# The ten commit lints that CLAUDE.md lists under Commands. Fails closed: exit 1
+# The commit lints that CLAUDE.md lists under Commands. Fails closed: exit 1
 # when any check fails or cannot run. Runs every check, then names the failures.
 # Run by build/githooks/pre-commit and by .github/workflows/lints.yml.
 set -uo pipefail

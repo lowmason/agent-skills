@@ -76,7 +76,7 @@ uv run python build/run_suites.py --check
 
 # Commit lints: these three, the suite-registry check (run_suites.py --check, above), the dependency-drift test,
 # snippet Tier 1, sync_runtime_assets.py --check, the drift lint (cli.py lint, below), the placement tests (below)
-# and the versions check (versions.py check, below) make ten. build/run_commit_lints.sh runs all ten; build/githooks/pre-commit runs it on each commit once enabled
+# and the versions check (versions.py check, below). build/run_commit_lints.sh runs all of them; build/githooks/pre-commit runs it on each commit once enabled
 # (an owner step: git config core.hooksPath build/githooks writes repo config every worktree reads); the hook lints
 # the working tree, untracked drafts included except by the drift lint, which reads tracked files only.
 # .github/workflows/lints.yml runs them on PRs and main as an advisory check; the hook is the gate.
