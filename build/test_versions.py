@@ -2,6 +2,8 @@
 bump, verify and drift flows against a stub uv. Nothing here uses the network or a real uv: the stub
 is a script first on PATH, as hooks/test_project_hooks.py does it.'''
 import datetime
+import json
+import sys
 
 import pytest
 
@@ -172,3 +174,114 @@ def test_an_invalid_file_exits_2_with_the_cause(tmp_path, capsys):
     root = make_root(tmp_path, GOOD.replace("'1.2.0'", "'oops'"))
     assert versions.main(['sync'], root=root) == 2
     assert "[packages] alpha: invalid version 'oops'" in capsys.readouterr().err
+
+
+STUB = '''\
+#!{python}
+import json, sys
+cfg = json.load(open({config!r}))
+args = sys.argv[1:]
+with open({log!r}, 'a') as log:
+    log.write(json.dumps(args) + '\\n')
+if 'compile' in args:
+    sys.stdout.write(cfg.get('compile_out', ''))
+    sys.stderr.write(cfg.get('compile_err', ''))
+    sys.exit(cfg.get('compile_rc', 0))
+if args[:2] == ['python', 'list']:
+    print(json.dumps(cfg.get('pythons', [])))
+    sys.exit(0)
+sys.exit(cfg.get('run_rc', 0))
+'''
+
+
+@pytest.fixture
+def stub_uv(tmp_path, monkeypatch):
+    bin_dir = tmp_path / 'stub-bin'
+    bin_dir.mkdir()
+    config, log = tmp_path / 'stub.json', tmp_path / 'uv.log'
+    uv = bin_dir / 'uv'
+    uv.write_text(STUB.format(python=sys.executable, config=str(config), log=str(log)))
+    uv.chmod(0o755)
+    monkeypatch.setenv('PATH', f'{bin_dir}:/usr/bin:/bin')
+
+    class Stub:
+        def set(self, **cfg):
+            config.write_text(json.dumps(cfg))
+
+        def calls(self):
+            return [json.loads(line) for line in log.read_text().splitlines()] if log.exists() else []
+
+    stub = Stub()
+    stub.set()
+    return stub
+
+
+def test_requirements_leave_only_the_named_packages_free():
+    v = versions.parse(GOOD)
+    assert versions.requirements(v) == ['alpha', 'beta-two', 'gamma']
+    assert versions.requirements(v, only=['gamma']) == ['alpha==1.2.0', 'beta-two==2.0.0', 'gamma']
+    assert versions.requirements(v, pins={'beta-two': '1.0'}) == ['alpha', 'beta-two==1.0', 'gamma']
+    with pytest.raises(VersionsError, match=r'--only names zeta'):
+        versions.requirements(v, only=['zeta'])
+
+
+def test_bump_rewrites_the_file_and_the_outputs(tmp_path):
+    root = make_root(tmp_path)
+    seen = {}
+
+    def resolver(reqs, python, cutoff):
+        seen.update(reqs=reqs, python=python, cutoff=cutoff)
+        return {'alpha': '1.3.0', 'beta-two': '2.0.0', 'gamma': '0.5', 'extra': '1.0'}
+
+    changes = versions.bump(root, datetime.date(2026, 11, 2), resolver=resolver)
+    assert seen == {'reqs': ['alpha', 'beta-two', 'gamma'], 'python': '3.13', 'cutoff': '2026-11-03T00:00:00Z'}
+    assert changes == ['freeze: 2026-10-19 -> 2026-11-02', 'alpha: 1.2.0 -> 1.3.0']
+    v = versions.load(root)
+    assert v.freeze == datetime.date(2026, 11, 2) and v.packages['alpha'] == '1.3.0'
+    assert 'exclude-newer = "2026-11-03T00:00:00Z"' in (root / 'uv.toml').read_text()
+    assert v.cited == {'delta': '6.2'}
+
+
+def test_bump_fails_when_the_resolve_misses_a_package(tmp_path):
+    root = make_root(tmp_path)
+    with pytest.raises(VersionsError, match=r'resolve step: the joint resolve did not return gamma'):
+        versions.bump(root, datetime.date(2026, 11, 2), resolver=lambda *a: {'alpha': '1', 'beta-two': '2'})
+    assert versions.load(root).freeze == datetime.date(2026, 10, 19)   # nothing was written
+
+
+def test_resolve_passes_the_requirements_on_stdin_and_parses_the_pins(stub_uv):
+    stub_uv.set(compile_out='alpha==1.3.0\nBeta_Two==2.0.0 ; python_version > "3"\ntransitive==4.0\n')
+    got = versions.resolve(['alpha', 'beta-two'], '3.13', '2026-11-03T00:00:00Z')
+    assert got == {'alpha': '1.3.0', 'beta-two': '2.0.0', 'transitive': '4.0'}
+    assert stub_uv.calls() == [['pip', 'compile', '-', '--python-version', '3.13', '--no-header', '--no-annotate',
+                                '--quiet', '--exclude-newer', '2026-11-03T00:00:00Z']]
+
+
+def test_resolve_without_a_cutoff_ignores_the_config(stub_uv):
+    stub_uv.set(compile_out='alpha==1.3.0\n')
+    versions.resolve(['alpha'], '3.14', None)
+    assert stub_uv.calls()[0][:3] == ['--no-config', 'pip', 'compile']
+    assert '--exclude-newer' not in stub_uv.calls()[0]
+
+
+def test_a_failed_resolve_names_the_step_the_packages_and_uvs_reason(stub_uv):
+    stub_uv.set(compile_rc=1, compile_err='Because alpha and gamma conflict, no solution\n')
+    with pytest.raises(VersionsError) as err:
+        versions.resolve(['alpha', 'gamma'], '3.13', None)
+    assert 'resolve step' in str(err.value) and 'alpha, gamma' in str(err.value)
+    assert 'Because alpha and gamma conflict' in str(err.value)
+
+
+def test_bump_exits_2_and_names_the_step_when_the_resolve_fails(tmp_path, stub_uv, capsys):
+    root = make_root(tmp_path)
+    stub_uv.set(compile_rc=1, compile_err='no network\n')
+    assert versions.main(['bump', '--date', '2026-11-02'], root=root) == 2
+    assert capsys.readouterr().err.startswith('bump: resolve step:')
+    assert versions.load(root).freeze == datetime.date(2026, 10, 19)
+
+
+def test_bump_rejects_an_invalid_date(tmp_path, capsys):
+    with pytest.raises(SystemExit) as err:
+        versions.main(['bump', '--date', '2026-13-40'], root=make_root(tmp_path))
+    assert err.value.code == 2
+    assert "invalid date '2026-13-40'" in capsys.readouterr().err

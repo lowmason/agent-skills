@@ -22,10 +22,11 @@ Design: specs/package-versions.md.
 import argparse
 import datetime
 import re
+import subprocess
 import sys
 import tomllib
-from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from collections.abc import Callable, Iterable, Mapping, Sequence
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
@@ -221,6 +222,65 @@ def sync(root: Path, check: bool = False) -> list[str]:
     return problems
 
 
+RESOLVED_LINE = re.compile(r'^([A-Za-z0-9][A-Za-z0-9._-]*)==([0-9][^\s;]*)', re.M)
+
+
+def resolve(requirements: Sequence[str], python_version: str, cutoff: str | None) -> dict[str, str]:
+    '''One joint `uv pip compile` of the requirements; {normalised name: version}, transitive ones too.
+    With no cutoff it ignores the repo's uv.toml, so it sees the newest releases.'''
+    argv = ['uv'] + ([] if cutoff else ['--no-config']) + [
+        'pip', 'compile', '-', '--python-version', python_version, '--no-header', '--no-annotate', '--quiet']
+    if cutoff:
+        argv += ['--exclude-newer', cutoff]
+    try:
+        done = subprocess.run(argv, input='\n'.join(requirements) + '\n', capture_output=True, text=True)
+    except OSError as exc:
+        raise VersionsError(f'resolve step: cannot start uv: {exc}') from exc
+    if done.returncode != 0:
+        raise VersionsError(f'resolve step: joint resolve of {", ".join(requirements)} on Python '
+                            f'{python_version} failed:\n{done.stderr.strip()}')
+    return {normalize(name): version for name, version in RESOLVED_LINE.findall(done.stdout)}
+
+
+def requirements(v: Versions, only: Iterable[str] = (), pins: Mapping[str, str] | None = None) -> list[str]:
+    '''The joint resolve's input: a bare name where it may move, `name==pin` where it may not.'''
+    only = {normalize(name) for name in only}
+    unknown = only - {normalize(name) for name in v.packages}
+    if unknown:
+        raise VersionsError(f'--only names {", ".join(sorted(unknown))}, which has no [packages] entry')
+    pins = pins or {}
+    out = []
+    for name, pin in v.packages.items():
+        key = normalize(name)
+        if key in pins:
+            out.append(f'{name}=={pins[key]}')
+        elif only and key not in only:
+            out.append(f'{name}=={pin}')
+        else:
+            out.append(name)
+    return out
+
+
+def bump(root: Path, date: datetime.date, only: Iterable[str] = (),
+         resolver: Callable[..., dict[str, str]] | None = None) -> list[str]:
+    '''Move the freeze date and re-pin [packages] by one joint resolve; the changed lines.'''
+    resolver = resolver or resolve
+    v = load(root)
+    moved = replace(v, freeze=date)
+    resolved = resolver(requirements(v, only), v.dev_python, moved.cutoff)
+    missing = [name for name in v.packages if normalize(name) not in resolved]
+    if missing:
+        raise VersionsError(f'resolve step: the joint resolve did not return {", ".join(missing)}')
+    new = {name: resolved[normalize(name)] for name in v.packages}
+    path = root / VERSIONS_FILE
+    path.write_text(rewrite(path.read_text(encoding='utf-8'), date, new), encoding='utf-8')
+    sync(root)
+    changes = [f'{name}: {old} -> {new[name]}' for name, old in v.packages.items() if new[name] != old]
+    if date != v.freeze:
+        changes.insert(0, f'freeze: {v.freeze.isoformat()} -> {date.isoformat()}')
+    return changes
+
+
 # ---- command line -----------------------------------------------------------
 
 def add_sync(sub) -> None:
@@ -235,8 +295,29 @@ def cmd_sync(args, root: Path, tail: Sequence[str]) -> int:
     return 1 if problems else 0
 
 
+def parse_date(text: str) -> datetime.date:
+    try:
+        return datetime.date.fromisoformat(text)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError(f'invalid date {text!r}; write YYYY-MM-DD') from exc
+
+
+def add_bump(sub) -> None:
+    parser = sub.add_parser('bump', help='move the freeze date and re-pin [packages]')
+    parser.add_argument('--date', type=parse_date, help='the new freeze date (default: today, UTC)')
+    parser.add_argument('--only', nargs='+', default=[], metavar='PKG', help='move only these packages')
+
+
+def cmd_bump(args, root: Path, tail: Sequence[str]) -> int:
+    date = args.date or datetime.datetime.now(datetime.timezone.utc).date()
+    for line in bump(root, date, args.only):
+        print(line)
+    return 0
+
+
 SUBCOMMANDS = {
     'sync': (add_sync, cmd_sync),
+    'bump': (add_bump, cmd_bump),
 }
 
 
