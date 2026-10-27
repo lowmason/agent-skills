@@ -57,7 +57,7 @@ The exact gate, run from the checkout root, is:
 JAX_PLATFORMS=cpu uv run --python 3.13 --with-requirements specs/verification/32-jax-cpu.txt python build/check_jax_examples.py skills/deep-learning/
 ```
 
-The [nine-name input](32-jax-cpu.in) and [compiled full profile](32-jax-cpu.txt)
+The [nine-name input](completed/32-jax-cpu.in) and [compiled full profile](completed/32-jax-cpu.txt)
 record exact resolution. Parser, finite-gradient, mathematical-reference,
 learning, and recovery gates answer different questions; an import smoke test
 or parser success does not replace these numerical checks. Tolerances are tied
@@ -95,7 +95,7 @@ macOS-26.6.2-arm64-arm-64bit-Mach-O, one `CpuDevice(id=0)`,
 `JAX_PLATFORMS=cpu`. Direct versions: JAX/JAXlib 0.11.2; Flax 0.12.10;
 Optax 0.2.8; Orbax checkpoint 0.12.6; Equinox 0.13.8; Diffrax 0.7.2;
 e3nn-jax 0.21.0; NumPy 2.5.3. Full transitive pins are in
-[32-jax-cpu.txt](32-jax-cpu.txt), SHA-256 `c8bd73640ca1d2cd1f86a211554e9ceac244054d629370a931738a8b5b10258c`.
+[32-jax-cpu.txt](completed/32-jax-cpu.txt), SHA-256 `c8bd73640ca1d2cd1f86a211554e9ceac244054d629370a931738a8b5b10258c`.
 
 The public API probe confirmed Optimizer.update takes `(model, grads)`,
 State replacement mutates/returns None, StandardCheckpointer supports
