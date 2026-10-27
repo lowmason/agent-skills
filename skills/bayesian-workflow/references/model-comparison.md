@@ -263,7 +263,7 @@ ledger uses the same origins or blocks and the same criterion string.
 `az.compare` ranks models against each other. These three answer a different question —
 *how well does this one model predict?* — on the LOO scale, so the answer is not inflated by
 in-sample fit. All three live in `arviz_stats` and are re-exported by the `arviz` umbrella,
-so `azs.` and `az.` both work (verified on arviz 1.3.0 / arviz-stats 1.3.1).
+so `azs.` and `az.` both work (verified on arviz 1.3.0 / arviz-stats 1.3.3).
 
 **All three require a `posterior_predictive` group.** `az.from_numpyro(mcmc,
 log_likelihood=True)` does *not* create one, and the failure is a `ValueError: Can not

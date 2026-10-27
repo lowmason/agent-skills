@@ -46,7 +46,7 @@ mentioned tree-depth here. Tree-depth is the one check `diagnose` skips on the
 numpyro/`az.from_numpyro` path: it looks for a `reached_max_treedepth` sample stat, but
 `az.from_numpyro` emits `reached_max_tree_depth` instead, so the tree-depth branch never fires.
 `scripts/diagnose_model.py` reads either flag itself and reports saturation in its `treedepth`
-block. NumPyro itself prints no warning when a draw reaches `max_tree_depth` (checked in the 0.22.0
+block. NumPyro itself prints no warning when a draw reaches `max_tree_depth` (checked in the NumPyro 0.22.0
 source: the only `warnings.warn` calls in `infer/hmc.py`, `infer/hmc_util.py` and `infer/mcmc.py` concern
 `num_steps` with `trajectory_length`, devices and the progress bar), so saturation shows only in that
 flag. `az.from_numpyro` writes the flag only when `num_steps` is in `extra_fields`, as in our

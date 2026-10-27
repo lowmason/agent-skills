@@ -90,9 +90,9 @@ precision, allocator behavior, distributed collectives or performance.
 
 ## Version and verification boundary
 
-The six `cpu-example` blocks are verified together under a compiled profile:
-JAX/JAXlib 0.11.2, Flax 0.12.10, Optax 0.2.8, Orbax checkpoint 0.12.6,
-Equinox 0.13.8, Diffrax 0.7.2, e3nn-jax 0.21.0, NumPy 2.5.3, Python 3.13.8.
+The six `cpu-example` blocks are verified together on the `jax-cpu` stack of `build/versions.toml`:
+JAX 0.12.0.1, JAXlib 0.12.0.1, Flax 0.12.12, Optax 0.2.8, Orbax checkpoint 0.12.8,
+Equinox 0.13.8, Diffrax 0.7.2, e3nn-jax 0.21.0, NumPy 2.5.4, Python 3.13.
 These are the examples' tested versions, not a prescription to replace an
 existing project's lockfile. The e3nn docs currently display an older version
 banner; the Equinox Linear call is additionally exercised against the pinned

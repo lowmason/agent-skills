@@ -6452,3 +6452,15 @@ accepted. They are visible to the roadmap's Completion gap-rubric pass.
       draws it. Size: quick-fix. Revisit if: a chart request for CV folds or a backtest is sent away
       and never drawn.
 
+## 66-package-versions — 2026-10-27
+
+Plan 66 (package versions) Task 11 settled the stale version citations in the skills. It updated eight
+flagged citations: three re-run in that task and five from the `verify` run of Task 10. It also
+re-checked the NumPyro tree-depth sentence. It moved one phrase, `Polars 1.42`, which five citations
+use, to `HISTORICAL` in `build/versions_check.py`. Task 11 adds the first item below.
+
+- [ ] Re-check the recommend-visualization library claims on the pinned Polars (plan 66, Task 11,
+      deferred): the five `Polars 1.42` citations under `skills/recommend-visualization/` were verified
+      on 1.42. Re-running them needs real charts in Altair, matplotlib and plotly. Size: plan. Done
+      when: each claim is re-run on the pinned versions, the five citations name them, and `HISTORICAL`
+      in `build/versions_check.py` has no `Polars 1.42` entry.

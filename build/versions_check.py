@@ -26,6 +26,7 @@ from versions import Versions, compare, normalize, version_tuple
 HISTORICAL: dict[str, str] = {
     'ArviZ 0.23': 'the classic stack, named so the porting tables can map from it to ArviZ 1',
     'arviz-stats < 1.0.0': 'the releases that have no azs.diagnose, which the fallback in diagnostics.md is for',
+    'Polars 1.42': 'verified on Polars 1.42, not re-checked on 2.1.0; plan 66 deferred item',
 }
 LIVE_FILES = ('CLAUDE.md', 'AGENTS.md', 'GEMINI.md')
 LIVE_DIRS = ('build/', 'hooks/', 'skills/', '.claude/skills/')
