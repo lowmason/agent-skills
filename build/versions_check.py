@@ -94,7 +94,7 @@ def judge(current: str, match: re.Match) -> str | None:
         ok, kind = compare(current, ver) > 0, 'range'
     elif op == '<':
         ok, kind = compare(current, ver) < 0, 'range'
-    elif op == '<=':
+    elif op in ('<=', '≤'):
         ok, kind = compare(current, ver) <= 0, 'range'
     else:
         cited = version_tuple(ver)

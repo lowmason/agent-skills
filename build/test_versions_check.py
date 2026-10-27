@@ -82,6 +82,7 @@ def test_a_name_without_a_version_next_to_it_is_ignored(tmp_path):
 @pytest.mark.parametrize('text', [
     'polars>=1.0', 'polars >= 2.0', 'polars≥2.0', 'Polars ≥ 2', 'numpyro >= 0.22', 'Python 3.11+', 'Python ≥ 3.11',
     'Python 3.12 or later', 'great-docs>=0.17.0,<0.18', 'great-docs >=0.17.0,<0.18', 'polars<3', 'arviz-stats < 2.0.0',
+    'polars<=2.0', 'polars ≤ 3',
 ])
 def test_a_range_that_holds_the_files_version_passes(tmp_path, text):
     assert cite(tmp_path, text + '\n') == []
@@ -89,7 +90,7 @@ def test_a_range_that_holds_the_files_version_passes(tmp_path, text):
 
 @pytest.mark.parametrize('text', [
     'polars>=2.1', 'numpyro >= 0.23', 'Python 3.14+', 'Python ≥ 3.14', 'great-docs>=0.17.0,<0.17.0', 'polars<2',
-    'arviz-stats < 1.0.0', 'polars>2.0',
+    'arviz-stats < 1.0.0', 'polars>2.0', 'polars<=1.0', 'polars ≤ 1.0',
 ])
 def test_a_range_that_misses_the_files_version_fails(tmp_path, text):
     findings = cite(tmp_path, text + '\n')
