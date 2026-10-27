@@ -600,12 +600,26 @@ def cmd_drift(args, root: Path, tail: Sequence[str]) -> int:
     return status
 
 
+def add_check(sub) -> None:
+    sub.add_parser('check', help='the offline commit lint')
+
+
+def cmd_check(args, root: Path, tail: Sequence[str]) -> int:
+    import versions_check
+    problems = versions_check.check(root)
+    for problem in problems:
+        print(problem)
+    print(f'{len(problems)} problem(s)' if problems else 'versions ok')
+    return 1 if problems else 0
+
+
 SUBCOMMANDS = {
     'sync': (add_sync, cmd_sync),
     'bump': (add_bump, cmd_bump),
     'run': (add_run, cmd_run),
     'verify': (add_verify, cmd_verify),
     'drift': (add_drift, cmd_drift),
+    'check': (add_check, cmd_check),
 }
 
 
