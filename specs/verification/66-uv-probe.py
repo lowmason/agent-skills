@@ -1,4 +1,4 @@
-'''Re-probe the uv behaviors that specs/package-versions.md relies on, on the uv of the day.
+'''Re-probe the uv behaviors that specs/completed/package-versions.md relies on, on the uv of the day.
 
     uv run --no-project python specs/verification/66-uv-probe.py [--keep]
 
@@ -9,8 +9,8 @@ table: one row for each probe, with the spec's expected result, the observed one
 Exit status 1 when a probe FAILs, 2 when the setup cannot run.
 
 The probes use polars 2.0.0 (uploaded 2026-10-06) and jax 0.12.0 / 0.12.0.1 (the latter uploaded 2026-10-21),
-whose upload times do not change. Design: specs/package-versions.md, Inventory ("uv behavior that constrains
-the design"); plan: specs/plans/66-package-versions.md, Task 1.
+whose upload times do not change. Design: specs/completed/package-versions.md, Inventory ("uv behavior that constrains
+the design"); plan: specs/plans/completed/66-package-versions.md, Task 1.
 '''
 import argparse
 import datetime

@@ -1,6 +1,6 @@
 '''The offline lint behind `versions.py check`, the repo's tenth commit lint.
 
-It fails on four things (design: specs/package-versions.md, R4):
+It fails on four things (design: specs/completed/package-versions.md, R4):
   sync       an output of `versions.py sync` differs from build/versions.toml;
   literals   a live file spells an interpreter flag with a version, where uv reads .python-version;
   citations  skills/**/*.md and the script headers under skills/*/scripts/ state a version next to a

@@ -10,7 +10,7 @@
 
 **Tech Stack:** Python standard library (`tomllib`), uv, pytest, GitHub Actions. No new third-party package.
 
-**Spec:** `specs/package-versions.md` (approved by the owner on 2026-10-21, on main since lowmason/agent-skills#109). Read it first. This plan argues from it.
+**Spec:** `specs/completed/package-versions.md` (retired with this plan; approved by the owner on 2026-10-21, on main since lowmason/agent-skills#109). Read it first. This plan argues from it.
 
 **Plan id:** 66. It was claimed on 2026-10-21 with `skills/writing-plans/scripts/entry_check.py` (plans 63 and 64 are live, and 65 is the model-lifecycle plan).
 

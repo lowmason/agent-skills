@@ -18,7 +18,7 @@ same resolve with no freeze date and reports it. check is the offline commit lin
 Exit status: 0 on success; 1 when a check, a gate or a sync comparison fails, and when `check` cannot
 load the versions file (it reports the load error as a finding); 2 for a usage error, an invalid
 versions file in any other subcommand, or a network or resolve failure (the message names the cause).
-Design: specs/package-versions.md.
+Design: specs/completed/package-versions.md.
 '''
 import argparse
 import datetime

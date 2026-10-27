@@ -27,7 +27,7 @@ CI. `test_commit_lints.py` drives the runner and hook through throwaway
 clones and checks the workflow's triggers and pins.
 
 `versions.toml` is the one file where a person sets the dev Python, the freeze date, each pinned
-package version and each cited-only version (design: `specs/package-versions.md`). `versions.py` reads
+package version and each cited-only version (design: `specs/completed/package-versions.md`). `versions.py` reads
 it: `sync` writes `.python-version`, `uv.toml` and `skills/uv.toml`, `run` and `verify` install a
 gate's pinned stack, `bump` re-pins by one joint resolve, `drift` resolves with no freeze date, and
 `check` is the tenth commit lint. `versions_check.py` holds the lint's four rules and its

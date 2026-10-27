@@ -1,5 +1,5 @@
 # The one place where a person sets a package version, the dev interpreter or the freeze date.
-# Design: specs/package-versions.md. Do not copy a value into another file by hand.
+# Design: specs/completed/package-versions.md. Do not copy a value into another file by hand.
 # `uv run python build/versions.py bump` rewrites the freeze date and the [packages] values, and keeps
 # these comments. A person edits [cited] only after re-checking the cited behavior.
 # `uv run python build/versions.py sync` writes .python-version, uv.toml and skills/uv.toml from this file.
