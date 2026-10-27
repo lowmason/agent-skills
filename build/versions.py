@@ -273,7 +273,12 @@ def bump(root: Path, date: datetime.date, only: Iterable[str] = (),
         raise VersionsError(f'resolve step: the joint resolve did not return {", ".join(missing)}')
     new = {name: resolved[normalize(name)] for name in v.packages}
     path = root / VERSIONS_FILE
-    path.write_text(rewrite(path.read_text(encoding='utf-8'), date, new), encoding='utf-8')
+    text = rewrite(path.read_text(encoding='utf-8'), date, new)
+    written = parse(text).packages
+    for name, version in new.items():
+        if written.get(name) != version:
+            raise VersionsError(f'cannot rewrite [packages] {name}; write its value in single quotes')
+    path.write_text(text, encoding='utf-8')
     sync(root)
     changes = [f'{name}: {old} -> {new[name]}' for name, old in v.packages.items() if new[name] != old]
     if date != v.freeze:

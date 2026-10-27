@@ -285,3 +285,24 @@ def test_bump_rejects_an_invalid_date(tmp_path, capsys):
         versions.main(['bump', '--date', '2026-13-40'], root=make_root(tmp_path))
     assert err.value.code == 2
     assert "invalid date '2026-13-40'" in capsys.readouterr().err
+
+
+def test_bump_refuses_a_move_it_cannot_write_and_leaves_the_file_alone(tmp_path, stub_uv, capsys):
+    root = make_root(tmp_path, GOOD.replace("alpha = '1.2.0'", 'alpha = "1.2.0"'))
+    before = (root / 'build' / 'versions.toml').read_bytes()
+    stub_uv.set(compile_out='alpha==1.3.0\nbeta-two==2.0.0\ngamma==0.5\n')
+    assert versions.main(['bump', '--date', '2026-11-02'], root=root) == 2
+    assert 'bump: cannot rewrite [packages] alpha; write its value in single quotes' in capsys.readouterr().err
+    assert (root / 'build' / 'versions.toml').read_bytes() == before
+    assert not (root / 'uv.toml').exists()   # sync did not run either
+
+
+def test_bump_refuses_a_resolved_version_the_file_would_reject_and_leaves_the_file_alone(tmp_path, stub_uv, capsys):
+    root = make_root(tmp_path)
+    before = (root / 'build' / 'versions.toml').read_bytes()
+    stub_uv.set(compile_out='alpha==1.0.post1\nbeta-two==2.0.0\ngamma==0.5\n')
+    assert versions.main(['bump', '--date', '2026-11-02'], root=root) == 2
+    err = capsys.readouterr().err
+    assert err.startswith('bump: ') and "[packages] alpha: invalid version '1.0.post1'" in err
+    assert (root / 'build' / 'versions.toml').read_bytes() == before
+    assert not (root / 'uv.toml').exists()
