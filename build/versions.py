@@ -132,7 +132,7 @@ def parse(text: str, where: str = VERSIONS_FILE) -> Versions:
     if not isinstance(date, datetime.date) or isinstance(date, datetime.datetime):
         raise VersionsError(f'{where}: [freeze] date must be a TOML date such as 2026-10-19, got {date!r}')
     packages = dict(_table(data, 'packages', where))
-    cited = dict(data.get('cited', {}))
+    cited = dict(_table(data, 'cited', where)) if 'cited' in data else {}
     for table, entries in (('packages', packages), ('cited', cited)):
         for name, version in entries.items():
             if not isinstance(version, str) or not VERSION_RE.fullmatch(version):
@@ -148,8 +148,11 @@ def parse(text: str, where: str = VERSIONS_FILE) -> Versions:
             if member not in packages:
                 raise VersionsError(f'{where}: [gates] {gate} names {member}, which has no [packages] entry')
         gates[gate] = tuple(members)
+    tables = data.get('override', [])
+    if not isinstance(tables, list) or not all(isinstance(table, dict) for table in tables):
+        raise VersionsError(f'{where}: override must be written [[override]]')
     overrides = []
-    for i, table in enumerate(data.get('override', []), start=1):
+    for i, table in enumerate(tables, start=1):
         for key in OVERRIDE_KEYS:
             if not isinstance(table.get(key), str) or not table[key]:
                 raise VersionsError(f'{where}: [[override]] {i}: missing key {key!r}')

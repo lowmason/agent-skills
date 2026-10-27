@@ -110,6 +110,19 @@ def test_invalid_overrides(mutate, expected):
         versions.parse(mutate(WITH_OVERRIDE))
 
 
+def test_an_override_not_written_as_an_array_of_tables_names_the_cause():
+    single_bracket = WITH_OVERRIDE.replace('[[override]]', '[override]')
+    for text in (single_bracket, "override = 'x'\n" + GOOD, "override = ['x']\n" + GOOD):
+        with pytest.raises(VersionsError, match=r'build/versions\.toml: override must be written \[\[override\]\]'):
+            versions.parse(text)
+
+
+def test_cited_that_is_not_a_table_names_the_key():
+    text = "cited = 5\n" + GOOD.replace("[cited]\ndelta = '6.2'\n\n", '')
+    with pytest.raises(VersionsError, match=r'\[cited\]'):
+        versions.parse(text)
+
+
 def test_a_missing_file_names_the_path(tmp_path):
     with pytest.raises(VersionsError, match=r'build/versions\.toml: cannot read'):
         versions.load(tmp_path)
