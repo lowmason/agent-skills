@@ -5187,8 +5187,9 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       branch); 74 files under `specs/verification/` embed `/Users/lowell` paths. The repo
       is public and the files are in pushed history, so untracking them now shrinks
       neither clones nor the exposure of those paths; only a history rewrite would. Keep
-      them, or keep the five durable records plus `32-jax-cpu.in` and `.txt` (which
-      CLAUDE.md's commands use) and archive the rest; trimming is plan-sized, because
+      them, or keep the five durable records plus `32-jax-cpu.in` and `.txt` (plan 66 moved
+      both to `specs/verification/completed/`, and `build/versions.toml` now supplies the
+      pins that CLAUDE.md's commands use) and archive the rest; trimming is plan-sized, because
       `specs/verification/32-jax-integration.md` links into the tree and its review checked
       759 manifest hashes. Size: design. Done when: the owner decides, and the decision is
       applied or recorded here.
@@ -5325,12 +5326,13 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       stdlib-only. The fix is one stdlib-only module in `build/`. `check_conformance.py` and
       `run_suites.py` would import it. `install.py` can stay standalone. Size: plan. Revisit
       if: a fourth copy appears, or `check_conformance.py` changes its git helpers.
-- [ ] Replace the commit-lint count "nine" with count-free wording (final review of plan
+- [x] Replace the commit-lint count "nine" with count-free wording (final review of plan
       55). The count is written in four places: `CLAUDE.md:77`, `build/CLAUDE.md:23`,
       `build/run_commit_lints.sh:2` and `build/githooks/pre-commit:2`. A tenth lint needs
       all four edits. Plan 55 found the hook's comment stale only because a task reviewer
       asked. Each place can say "the commit lints" instead. Size: quick-fix. Revisit if: a
-      tenth lint is added. Make the wording count-free in that change.
+      tenth lint is added. Make the wording count-free in that change. → done in plan 66 (D15:
+      CLAUDE.md, build/CLAUDE.md, run_commit_lints.sh and the hook now say "the commit lints")
 - [ ] Harden `build/run_suites.py` (final review of plan 55, Minors). No defect shows in the
       tree today. (a) `--check` counts any test file under a registered suite directory.
       Pytest's default `norecursedirs` skips some directory names while it recurses: `.*`,
@@ -6457,10 +6459,71 @@ accepted. They are visible to the roadmap's Completion gap-rubric pass.
 Plan 66 (package versions) Task 11 settled the stale version citations in the skills. It updated eight
 flagged citations: three re-run in that task and five from the `verify` run of Task 10. It also
 re-checked the NumPyro tree-depth sentence. It moved one phrase, `Polars 1.42`, which five citations
-use, to `HISTORICAL` in `build/versions_check.py`. Task 11 adds the first item below.
+use, to `HISTORICAL` in `build/versions_check.py`. Task 11 adds the first item below. The final
+review and the Plan Completion gate (2026-10-27) add the others.
 
 - [ ] Re-check the recommend-visualization library claims on the pinned Polars (plan 66, Task 11,
       deferred): the five `Polars 1.42` citations under `skills/recommend-visualization/` were verified
       on 1.42. Re-running them needs real charts in Altair, matplotlib and plotly. Size: plan. Done
       when: each claim is re-run on the pinned versions, the five citations name them, and `HISTORICAL`
       in `build/versions_check.py` has no `Polars 1.42` entry.
+- [ ] Make `build/cc_guide/test_probes.py::test_output_of_another_shape_is_an_error_never_a_crash`
+      accept Python 3.15's error text (plan 66, Task 15, the first `drift` run). The test pins
+      `unhashable type: 'dict'`. Python 3.15 words the same error as `cannot use 'dict' as a set
+      element (unhashable type: 'dict')`, so the `cc_guide` suite fails on 3.15. `drift` runs the
+      suites on the newest stable Python, so it reports this failure each week. Match the part
+      that both texts share. Size: quick-fix. Done when: the test passes on the dev Python and
+      on 3.15.
+- [ ] Decide whether the weekly `drift` job should fail on the newest-Python pass (plan 66, D14).
+      The pass fails today because `tensorstore` (through `orbax-checkpoint`) and `h5py` publish
+      no cp315 wheels, so the `jax-cpu` gate and the suites cannot install on 3.15. The owner
+      kept spec R3.5 as built: either pass can set exit 1. Changing it means amending R3.5 in
+      `specs/completed/package-versions.md` and the exit handling in `build/versions.py`.
+      Size: design. Revisit if: the job is red from the 3.15 pass alone for a month, or both
+      wheels ship and the failure clears.
+- [ ] Run `.github/workflows/versions-drift.yml` once by hand after the branch merges (plan 66,
+      Task 15; owner step, because it needs the merged workflow on the default branch). Only
+      unit tests have exercised the workflow so far. Dispatch it from the Actions tab. Size:
+      quick-fix. Done when: one dispatched run finished, and its report matches
+      `uv run python build/versions.py drift` run locally (an exit 1 from the 3.15 pass is
+      expected until the item above clears).
+- [ ] Fill the test gaps that the plan 66 reviews listed as Minors. `build/test_versions_check.py`:
+      the lower-bound half of `~=` (`~=0.22.1`, `~=0.23`), the two-part major wildcard miss
+      (`polars~=1.0` against a 2.x pin), `!=` at coarser precision (`!=2.1` against a
+      three-part pin), the `v` prefix (`Polars v1.42`), `or newer` and `or above`, and the
+      dev-Python lookup (a test file whose dev Python differs from 3.13). `build/test_versions.py`:
+      the bad-JSON message of `newest_stable_python`, an empty `first_upload` file list, the
+      `fetch_json` failure wrapper, `run_process` when uv cannot start, `--no-freeze` and the
+      interpreter option through `main`, an unknown gate, the case where `drift` skips the second
+      pass because both Pythons are the same, and the stdin that `resolve` sends to uv.
+      `build/test_commit_lints.py`: a hook-level refusal test for the versions check, and
+      stricter workflow tests (a job-level `permissions` override, a weekly cron, `pipefail` set
+      before the pipe). Size: plan. Done when: each listed case has a test.
+- [ ] Harden `build/versions.py` against the rough edges that the plan 66 reviews found. (a)
+      `verify` checks upload dates only for versions in a gate, not for the seven `[packages]`
+      entries in no gate (`fastexcel`, `h5netcdf`, `h5py`, `optuna`, `polars`, `scikit-learn`,
+      `xarray`). uv still refuses a late pin through the cutoff, but the message loses the R3.6
+      form. (b) A network failure inside a `verify` step exits 1 (a gate failed), where the spec
+      asks for exit 2. (c) `drift` marks a `[cited]` row "a newer release exists" when the cited
+      value is above PyPI's newest. It fetches PyPI once per package per pass (about 50
+      requests in a row). One version string that PEP 440 cannot compare aborts the whole
+      report. (d) `--pin` for a `[packages]` entry outside the gate is ignored without a
+      message. A missing PyPI release reports "cannot reach" where the cause is a 404.
+      `first_upload` raises KeyError when a file lacks `upload_time_iso_8601`. `run` and
+      `verify` with `--no-freeze` still read the root `uv.toml` cutoff, since only `drift` sets
+      `UV_NO_CONFIG=1`. The help text now says so. (e) The final review noted that the weekly
+      job's summary repeats uv's progress text next to the report, and that a run which hits
+      the 90-minute timeout loses the report. Size: plan. Done when: each point is fixed or
+      ruled out with a reason.
+- [ ] Harden `build/versions_check.py` (plan 66 reviews, Minors). `SCRIPT_FLOOR_RE` searches the
+      whole script instead of the PEP 723 header. `check_floors` raises when `skills/` is
+      missing. The `PYTHON_RE` message spells `3.13`. The `HISTORICAL` reason for `Polars 1.42`
+      names 2.1.0, so it goes stale without notice at the next Polars bump. Size: quick-fix.
+      Done when: the first three are fixed or ruled out, and the `Polars 1.42` reason names no
+      version that a bump can move.
+- [ ] A fourth copy of the git file listing now exists (plan 66, Task 9): `build/versions_check.py`
+      runs `git ls-files --cached --others --exclude-standard -z`, as `build/run_suites.py`,
+      `build/check_conformance.py` and `install.py` do. This fires the Revisit trigger of the
+      earlier item "Share the git helpers that `build/run_suites.py`, `build/check_conformance.py`
+      and `install.py` each carry" (plan 55). Size: plan. Done when: that item is done and
+      `versions_check.py` imports the shared helper.

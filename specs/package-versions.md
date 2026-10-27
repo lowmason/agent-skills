@@ -1,6 +1,6 @@
 # Package versions: one source for every pinned or cited version
 
-**Status:** approved by the owner on 2026-10-21, after a section-by-section design review and a review of the written text. Next skill: writing-plans.
+**Status: COMPLETE (2026-10-27)** — implemented by plan 66 (`specs/plans/completed/66-package-versions.md`) and retired here. Approved by the owner on 2026-10-21, after a section-by-section design review and a review of the written text.
 
 ## Problem
 
@@ -179,7 +179,7 @@ R2.1. `build/versions.py sync` writes three files from `build/versions.toml`, an
 R2.2. `build/versions.py` gives the other build scripts these values: the dev Python, the freeze date, and `stack(gate)`, the list of `pkg==version` strings for a gate after overrides.
 
 R2.3. These readers take their versions from R2.2 and from no literal:
-- `build/check_snippets.py`: `PINNED` (moved out of `build/snippet_preamble.py`), `RUN_REMEDIATION` and `API_REMEDIATION`. Tier 2 (`--api`) runs on the same pinned `snippets` stack as Tier 3 (owner, plan 66, 2026-10-21), so no documented command spells a package version (R2.4).
+- `build/check_snippets.py`: the `PINNED` table is removed (it lived in `build/snippet_preamble.py`) and the `snippets` stack takes its place. `RUN_REMEDIATION` and `API_REMEDIATION` read that stack. Tier 2 (`--api`) runs on the same pinned `snippets` stack as Tier 3 (owner, plan 66, 2026-10-21), so no documented command spells a package version (R2.4).
 - `build/check_jax_examples.py` and its documented command: they install `stack('jax-cpu')` in place of `--with-requirements specs/verification/32-jax-cpu.txt`.
 - `build/run_suites.py`: `DEFAULT_PYTHONS` comes from the dev Python. A `with` or `extras` package that `[packages]` names gets its pin. Each run passes `--exclude-newer <date>` explicitly, because suites under `skills/` sit below the shadow file. The `hooks` suite keeps its explicit `/usr/bin/python3` run.
 - `build/cc_guide/notice.sh:114` and `build/githooks/pre-commit:15`: they can run outside the repo's working directory, so they take the interpreter from the file and not from a literal.
@@ -239,7 +239,7 @@ R4.1. `versions.py check` runs offline. It fails on any of these:
 
 R4.2. `HISTORICAL` is keyed by the literal phrase, not by file and line, and each entry gives its reason. It follows the model of `DOCUMENTED_ABSENT` in `build/check_snippets.py`.
 
-R4.3. `check` does not read `specs/`, `LICENSE*` files, `data/` directories or test fixtures. Illustrative text, such as the run manifest at `skills/evaluate-deep-learning/references/experiments.md:86-87`, goes on `HISTORICAL` with a reason.
+R4.3. `check` does not read `specs/`, `LICENSE*` files, `data/` directories or test fixtures. It also matches only the citation forms of R4.1. A `name: version` pair, such as the run manifest at `skills/evaluate-deep-learning/references/experiments.md:86-87`, is outside its reach and needs no `HISTORICAL` entry (owner, plan 66, D13, 2026-10-27).
 
 R4.4. Known limit: `check` sees only the package names that the file lists. The `drift` report states this limit.
 
