@@ -1861,7 +1861,7 @@ def test_hook_scripts_executable_judge_an_untracked_script_by_its_execute_bit(tm
 
 
 @pytest.mark.parametrize('command', [
-    'uv run hooks/guard.py', 'python3 hooks/guard.py', 'python3.13 -u hooks/guard.py'])
+    'uv run --with pyyaml hooks/guard.py', 'python3 hooks/guard.py', 'python3.13 -u hooks/guard.py'])
 def test_hook_scripts_executable_check_a_script_behind_a_runner(tmp_path, command):
     files = {'hooks/guard.py': '#!/usr/bin/env python3\n',
              'hooks/README.md': json_block(hooks_tree('PreToolUse', command))}
