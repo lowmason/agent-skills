@@ -11,7 +11,7 @@ from cc_fixtures import (CHANGELOG_TEXT, FENCE, GUIDE_IDS, MANIFEST_TOML, docs_d
 
 MANIFEST = state.parse_manifest(MANIFEST_TOML)
 LABELS = {r.label for r in docs.parse_changelog(CHANGELOG_TEXT)}
-CLI = 'uv run --python 3.13 python build/cc_guide/cli.py'
+CLI = 'uv run python build/cc_guide/cli.py'
 
 
 def run(text, s, labels=LABELS, manifest=MANIFEST, files=None):

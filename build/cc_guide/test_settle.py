@@ -19,7 +19,7 @@ from cc_fixtures import (DOCS, FIXTURE_RELEASE, GUIDE_PATH, MANIFEST_TOML, docs_
 from lint import CLI
 
 NOW = datetime(2026, 10, 4, 12, 0, tzinfo=timezone.utc)
-CONFORMANCE = 'uv run --python 3.13 --with pyyaml python build/check_conformance.py'
+CONFORMANCE = 'uv run --with pyyaml python build/check_conformance.py'
 TAIL = [f'  {CLI} baseline stamp', f'  {CLI} lint', f'  {CONFORMANCE}']
 CITER = '#!/bin/sh\n' + '#' + ' cc-guide: alpha.overview @2.1.899\nexit 0\n'
 # A new events.md block that names both beta sections' terms.

@@ -47,9 +47,9 @@ def test_lint_exits_zero_clean_one_on_a_violation_and_two_on_a_setup_error(world
     assert main(cache, 'lint') == 1
     assert capsys.readouterr() == (
         'section alpha.overview: text differs from its text_hash; record it with'
-        ' `uv run --python 3.13 python build/cc_guide/cli.py baseline accept alpha.overview --substantive`'
+        ' `uv run python build/cc_guide/cli.py baseline accept alpha.overview --substantive`'
         ' (flags its citers) or'
-        ' `uv run --python 3.13 python build/cc_guide/cli.py baseline accept alpha.overview --editorial`\n', '')
+        ' `uv run python build/cc_guide/cli.py baseline accept alpha.overview --editorial`\n', '')
     assert main(cache, 'lint', '--ref', 'main') == 0
     (repo / state.BASELINE).unlink()
     assert main(cache, 'lint') == 2

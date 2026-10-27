@@ -187,7 +187,7 @@ def test_refresh_runs_check_hook_through_uv_by_absolute_path_and_show_follows(fa
     home, env = fake_uv
     quiet(sh(home, 'refresh', shell=shell, env=env))
     args = (home / 'uv-args').read_text().splitlines()
-    assert args[:-1] == ['run', '--python', '3.13', 'python', str(HERE / 'cli.py'), 'check', '--hook', '--run']
+    assert args[:-1] == ['run', '--directory', str(HERE / '..' / '..'), 'python', str(HERE / 'cli.py'), 'check', '--hook', '--run']
     assert re.fullmatch(r'\d+\.\d+', args[-1])
     cache = cache_of(home)
     assert notice.read_last_check(cache)['run'] == args[-1]

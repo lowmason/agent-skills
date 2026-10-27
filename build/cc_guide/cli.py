@@ -3,7 +3,7 @@
 the citations that point at it, the deterministic half of /cc-guide, and
 the live probes (Stages 1 to 5 of specs/completed/claude-code-drift-automation-spec.md).
 
-Run: uv run --python 3.13 python build/cc_guide/cli.py <subcommand>
+Run: uv run python build/cc_guide/cli.py <subcommand>
 
   lint [--ref REF]
       Offline gate over the guide, manifest.toml, baseline.json and every

@@ -9,7 +9,7 @@ from guide import (NO_STAMP, Citation, anchor_problems, file_citation, render_st
                    stamp_content, text_hash)
 from state import Manifest
 
-CLI = 'uv run --python 3.13 python build/cc_guide/cli.py'
+CLI = 'uv run python build/cc_guide/cli.py'
 # A 2.1.NNN version, not inside a longer number; a trailing period is prose.
 VERSION_RE = re.compile(r'(?<![\d.])2\.1\.\d+(?:\.\d+)*(?!\d)')
 # Claude Code ships three-part releases. A fourth part is baseline's own counter (R2.4).
