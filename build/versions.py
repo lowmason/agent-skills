@@ -264,6 +264,14 @@ def requirements(v: Versions, only: Iterable[str] = (), pins: Mapping[str, str] 
     return out
 
 
+def resolved_pins(v: Versions, resolved: Mapping[str, str]) -> dict[str, str]:
+    '''The joint resolve's version for each [packages] entry, keyed by the name as the file writes it.'''
+    missing = [name for name in v.packages if normalize(name) not in resolved]
+    if missing:
+        raise VersionsError(f'resolve step: the joint resolve did not return {", ".join(missing)}')
+    return {name: resolved[normalize(name)] for name in v.packages}
+
+
 def bump(root: Path, date: datetime.date, only: Iterable[str] = (),
          resolver: Callable[..., dict[str, str]] | None = None) -> list[str]:
     '''Move the freeze date and re-pin [packages] by one joint resolve; the changed lines.'''
@@ -271,10 +279,7 @@ def bump(root: Path, date: datetime.date, only: Iterable[str] = (),
     v = load(root)
     moved = replace(v, freeze=date)
     resolved = resolver(requirements(v, only), v.dev_python, moved.cutoff)
-    missing = [name for name in v.packages if normalize(name) not in resolved]
-    if missing:
-        raise VersionsError(f'resolve step: the joint resolve did not return {", ".join(missing)}')
-    new = {name: resolved[normalize(name)] for name in v.packages}
+    new = resolved_pins(v, resolved)
     path = root / VERSIONS_FILE
     text = rewrite(path.read_text(encoding='utf-8'), date, new)
     written = parse(text)
@@ -451,10 +456,14 @@ def drift_rows(v: Versions, resolved: Mapping[str, str], fetch: Fetch | None = N
             uploaded = f'{first_upload(data.get("urls", []), name):%Y-%m-%d}'
             got = resolved.get(normalize(name), '-') if table == 'packages' else '-'
             flag = ''
-            if table == 'packages' and got != '-' and compare(got, newest) < 0:
-                flag = 'resolves below its newest release'
-            elif table == 'cited' and version_tuple(newest)[:len(version_tuple(pinned))] != version_tuple(pinned):
-                flag = 'a newer release exists'
+            try:
+                if table == 'packages' and got != '-' and compare(got, newest) < 0:
+                    flag = 'resolves below its newest release'
+                elif table == 'cited' and version_tuple(newest)[:len(version_tuple(pinned))] != version_tuple(pinned):
+                    flag = 'a newer release exists'
+            except ValueError as exc:
+                raise VersionsError(f'{name}: cannot compare version {got!r} / {newest!r} with {pinned!r}; '
+                                    'a version must be dotted integers') from exc
             rows.append(Row(name, pinned, got, newest, uploaded, flag))
     return rows
 
@@ -487,8 +496,9 @@ def drift(root: Path, user_pins: Mapping[str, str] | None = None, fetch: Fetch |
         failed_any = False
         for python in passes:
             resolved = resolver(requirements(v, pins=user_pins), python, None)
+            found = resolved_pins(v, resolved)
             rows = drift_rows(v, resolved, fetch)
-            pins = {normalize(name): resolved[normalize(name)] for name in v.packages}
+            pins = {normalize(name): version for name, version in found.items()}
             steps = verify_steps(v, pins, python=python, freeze=False, user_pins=pins)
             failed = run_steps(steps, root, {**os.environ, 'UV_NO_CONFIG': '1'}, runner)
             failed_any = failed_any or bool(failed)

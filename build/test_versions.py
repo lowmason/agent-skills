@@ -513,3 +513,24 @@ def test_verify_with_no_freeze_and_a_python_skips_the_upload_check_and_the_cutof
     assert len(calls) == 4 and all(call[:3] == ['run', '--python', '3.14'] for call in calls)
     assert all('--exclude-newer' not in call for call in calls)
     assert calls[3][-4:] == ['--extras', '--python', '3.14', '--no-freeze']
+
+
+@pytest.mark.parametrize('package', ['alpha', 'delta'])   # a [packages] row and a [cited] row
+def test_drift_exits_2_when_a_version_cannot_be_compared(package, tmp_path, stub_uv, monkeypatch):
+    drift_world(stub_uv, monkeypatch)
+    good, bad = fake_pypi(newest='1.5.0'), fake_pypi(newest='1.6.0.post1')
+    monkeypatch.setattr(versions, 'fetch_json', lambda url: (bad if f'/{package}/' in url else good)(url))
+    status, report = versions.drift(make_root(tmp_path))
+    assert status == 2
+    assert f'{package}: cannot compare version' in report and '1.6.0.post1' in report
+    assert 'a version must be dotted integers' in report
+    assert [call for call in stub_uv.calls() if call[0] == 'run'] == []   # no gate ran
+
+
+def test_drift_exits_2_when_the_resolve_omits_a_package(tmp_path, stub_uv, monkeypatch):
+    drift_world(stub_uv, monkeypatch)
+    stub_uv.set(compile_out='alpha==1.5.0\nbeta-two==2.0.0\n', pythons=[python_item('3.14.1'), python_item('3.13.9')])
+    status, report = versions.drift(make_root(tmp_path))
+    assert status == 2
+    assert 'drift could not finish: resolve step: the joint resolve did not return gamma' in report
+    assert [call for call in stub_uv.calls() if call[0] == 'run'] == []   # no gate ran
