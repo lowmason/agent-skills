@@ -139,12 +139,12 @@ date = 2026-10-19            # a TOML date; every check resolves as of this date
 arviz = '1.3.0'
 numpyro = '0.22.0'
 jax = '0.12.0'
+optuna = '5.0.0'             # the tune-hyperparameters suite installs it and its SKILL.md cites it (R1.2)
 # ... every package that a [gates] entry or a skill citation names and a check runs
 
 [cited]                      # prose cites these, but no check runs them
 altair = '6.2'
 plotly = '6.8'
-optuna = '5.0.0'
 great-docs = '0.17.0'
 
 [gates]                      # the packages each check installs, pinned from [packages]
@@ -154,7 +154,7 @@ jax-cpu = ['jax', 'jaxlib', 'flax', 'optax', 'orbax-checkpoint', 'equinox', 'dif
 # [[override]]               # gate, package, version, reason; empty at the start
 ```
 
-The values above are the 2026-10-21 state. The plan sets the real values with `bump` (R3).
+The values above are the 2026-10-21 state. The plan sets the real values with `bump` (R3). (owner, plan 66, 2026-10-21)
 
 R1.2. A package gets a `[packages]` entry in two cases. The first is when a `[gates]` list names it. The second is when a check installs it and skill text or a script header states a version for it. Polars is in `[packages]` by the second case: the suites install it, and three headers floor it. Other packages (pytest, pyyaml, scipy, tensorstore and the rest) get no entry, and the freeze date fixes them.
 

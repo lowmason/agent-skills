@@ -1,0 +1,46 @@
+# The one place where a person sets a package version, the dev interpreter or the freeze date.
+# Design: specs/package-versions.md. Do not copy a value into another file by hand.
+# `uv run python build/versions.py bump` rewrites the freeze date and the [packages] values, and keeps
+# these comments. A person edits [cited] only after re-checking the cited behavior.
+# `uv run python build/versions.py sync` writes .python-version, uv.toml and skills/uv.toml from this file.
+
+[python]
+dev = '3.13'                 # repo checks and documented commands; sync writes it to .python-version
+
+[freeze]
+date = 2026-10-27            # every check resolves as of this date; bump moves it
+
+[packages]                   # one exact version each; a check installs these and a skill states a version for them
+arviz = '1.3.0'
+arviz-base = '1.3.1'
+arviz-plots = '1.3.2'
+arviz-stats = '1.3.3'
+diffrax = '0.7.2'
+e3nn-jax = '0.21.0'
+equinox = '0.13.8'
+fastexcel = '0.21.0'
+flax = '0.12.12'
+h5netcdf = '1.8.2'
+h5py = '3.16.0'
+jax = '0.12.0.1'
+jaxlib = '0.12.0.1'
+matplotlib = '3.11.2'
+numpy = '2.5.4'
+numpyro = '0.22.0'
+optax = '0.2.8'
+optuna = '5.0.0'
+orbax-checkpoint = '0.12.8'
+polars = '2.1.0'
+scikit-learn = '1.9.1'
+xarray = '2026.9.0'
+
+[cited]                      # prose cites these and no check runs them; bump never changes them
+altair = '6.2'
+plotly = '6.8'
+great-docs = '0.17.0'
+
+[gates]                      # the packages each check installs, pinned from [packages]
+snippets = ['arviz', 'arviz-base', 'arviz-stats', 'arviz-plots', 'numpyro', 'jax', 'numpy', 'matplotlib']
+jax-cpu = ['jax', 'jaxlib', 'flax', 'optax', 'orbax-checkpoint', 'equinox', 'diffrax', 'e3nn-jax', 'numpy']
+
+# [[override]]               # gate, package, version, reason; empty at the start

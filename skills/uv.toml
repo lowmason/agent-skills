@@ -1,0 +1,4 @@
+# Written by build/versions.py sync from build/versions.toml. Do not edit.
+# No settings. This file stops uv from reading the repo-root uv.toml for scripts under
+# skills/, so a skill script that a user runs floats within its own dependency floors.
+# The repo's checks pass --exclude-newer themselves (build/versions.py run, build/run_suites.py).
