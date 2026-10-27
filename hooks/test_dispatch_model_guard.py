@@ -2,7 +2,7 @@
 """Contract tests for dispatch-model-guard.py: run from hooks/, both ways.
 
 cd hooks
-uv run --python 3.13 --with pytest python -m pytest -q test_dispatch_model_guard.py
+uv run --with pytest python -m pytest -q test_dispatch_model_guard.py
 uv run --python /usr/bin/python3 --with pytest python -m pytest -q test_dispatch_model_guard.py
 
 A crashed PreToolUse hook exits 1, which fails open, so every allow-path test

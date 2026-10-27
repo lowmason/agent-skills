@@ -1,6 +1,6 @@
 """Tests for diagnose_model.py — run from this directory (bare imports).
 
-cd skills/bayesian-workflow/scripts && uv run --python 3.13 --with pytest --with arviz \
+cd skills/bayesian-workflow/scripts && uv run --with pytest --with arviz \
   --with arviz-stats --with numpy --with xarray python -m pytest -q
 """
 

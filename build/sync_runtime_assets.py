@@ -6,8 +6,8 @@ script translates only the runtime manifest layer: file format, tool names,
 argument injection, and read-only sandbox declarations.
 
 Run:
-  uv run --python 3.13 --with pyyaml python build/sync_runtime_assets.py
-  uv run --python 3.13 --with pyyaml python build/sync_runtime_assets.py --check
+  uv run --with pyyaml python build/sync_runtime_assets.py
+  uv run --with pyyaml python build/sync_runtime_assets.py --check
 '''
 from __future__ import annotations
 

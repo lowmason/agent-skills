@@ -33,7 +33,7 @@ contains claude or anthropic. It is not part of the commit gate: run it before
 a claude.ai upload or a spec-only validator run. Agents and commands are not
 Agent Skills, so it leaves them alone.
 
-Run: uv run --python 3.13 --with pyyaml python build/check_frontmatter.py [--strict]
+Run: uv run --with pyyaml python build/check_frontmatter.py [--strict]
 Exit 0 if clean; exit 1 with one line per violation.
 '''
 from __future__ import annotations

@@ -3,7 +3,7 @@ Census / BLS workbook layouts (preamble rows, legend rows, ranged sector codes, 
 titles, trilateral markers, one-code-column-per-row SOC sheets).
 
 Run from this directory:
-  uv run --python 3.13 --with pytest --with polars --with fastexcel python -m pytest -q
+  uv run --with pytest --with polars --with fastexcel python -m pytest -q
 
 The parsers take an already-read raw frame (every cell Utf8, no header), so no workbook is
 needed here; end-to-end parsing of the real sources is exercised by test_real_sources.py when

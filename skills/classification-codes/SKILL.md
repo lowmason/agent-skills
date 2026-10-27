@@ -243,7 +243,7 @@ redundant.
 ```bash
 uv run skills/classification-codes/scripts/build.py            # download, parse, validate
 uv run skills/classification-codes/scripts/build.py --offline  # rebuild from sources/ cache
-cd skills/classification-codes/scripts && uv run --python 3.13 --with pytest --with polars --with fastexcel python -m pytest -q
+cd skills/classification-codes/scripts && uv run --with pytest --with polars --with fastexcel python -m pytest -q
 ```
 
 Without uv, run the same path with `python3` in an environment that has the dependencies listed

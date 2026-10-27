@@ -4,7 +4,7 @@ byte-identical copies of the root license files that apply to it
 (BUNDLED_LICENSES), and no binary document assets (.pdf/.epub/.docx) are
 git-tracked.
 
-Run: uv run --python 3.13 python build/check_provenance.py
+Run: uv run python build/check_provenance.py
 Exit 0 if clean; exit 1 with one line per violation.
 '''
 from __future__ import annotations

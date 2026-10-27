@@ -8,7 +8,7 @@ specs/guides/claude-code-customization-guide.md to the artifact kinds it
 governs, to mechanical checks, and to recorded exceptions. Design:
 specs/completed/claude-code-guide-conformance.md.
 
-Run: uv run --python 3.13 --with pyyaml python build/check_conformance.py
+Run: uv run --with pyyaml python build/check_conformance.py
 Exit 0 when clean; 1 with one `<file>: <check> (<section>): <message>` line per
 violation on stdout; 2 when the guide or the register is missing, unreadable or
 is not valid TOML, or git cannot list the repo's files, so a broken setup never looks

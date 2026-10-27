@@ -289,7 +289,7 @@ You: Searching...
 wc -w skills/path/SKILL.md
 # Body past ~2,000 words? Ask what should move to references/.
 # The number that actually matters is the description's char count, capped at 1024:
-uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
+uv run --with pyyaml python build/check_frontmatter.py
 ```
 
 **Name by what you DO or core insight:**

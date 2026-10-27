@@ -17,15 +17,15 @@ run() {
     failed+=("$name")
   fi
 }
-run check_frontmatter uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
-run check_provenance uv run --python 3.13 python build/check_provenance.py
-run check_snippets uv run --python 3.13 python build/check_snippets.py skills/
-run check_conformance uv run --python 3.13 --with pyyaml python build/check_conformance.py
-run declared_dependencies bash -c 'cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_runtime_support.py -k declared_dependencies'
-run sync_runtime_assets uv run --python 3.13 --with pyyaml python build/sync_runtime_assets.py --check
-run cc_guide_lint uv run --python 3.13 python build/cc_guide/cli.py lint
-run critical_placement bash -c 'cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_conformance.py -k test_real_skill'
-run suite_registry uv run --python 3.13 python build/run_suites.py --check
+run check_frontmatter uv run --with pyyaml python build/check_frontmatter.py
+run check_provenance uv run python build/check_provenance.py
+run check_snippets uv run python build/check_snippets.py skills/
+run check_conformance uv run --with pyyaml python build/check_conformance.py
+run declared_dependencies bash -c 'cd build && uv run --with pytest --with pyyaml python -m pytest -q test_runtime_support.py -k declared_dependencies'
+run sync_runtime_assets uv run --with pyyaml python build/sync_runtime_assets.py --check
+run cc_guide_lint uv run python build/cc_guide/cli.py lint
+run critical_placement bash -c 'cd build && uv run --with pytest --with pyyaml python -m pytest -q test_check_conformance.py -k test_real_skill'
+run suite_registry uv run python build/run_suites.py --check
 if [ "${#failed[@]}" -gt 0 ]; then
   echo "commit lints failed: ${failed[*]}" >&2
   exit 1

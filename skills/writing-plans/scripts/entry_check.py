@@ -7,7 +7,7 @@
 
 Run from the repo root:
 
-    uv run --no-project --python 3.13 python <this-skill-dir>/scripts/entry_check.py [SPEC] [--plan PLAN]
+    uv run --no-project python <this-skill-dir>/scripts/entry_check.py [SPEC] [--plan PLAN]
 
 It reads every branch and remote-tracking ref (symbolic refs such as
 ``origin/HEAD`` skipped) and every worktree's ``specs/plans/``, untracked

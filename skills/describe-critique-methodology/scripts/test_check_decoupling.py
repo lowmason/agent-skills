@@ -1,7 +1,7 @@
 '''Tests for the advisory decoupling checker.
 
 Bare imports, directory-scoped — run from this directory:
-uv run --python 3.13 --with pytest python -m pytest -q
+uv run --with pytest python -m pytest -q
 '''
 import subprocess
 import sys

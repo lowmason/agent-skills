@@ -1,6 +1,6 @@
 """Tests for profile.py — run from this directory (bare imports).
 
-cd skills/explore-data/scripts && uv run --python 3.13 --with pytest --with polars \
+cd skills/explore-data/scripts && uv run --with pytest --with polars \
   python -m pytest -q
 
 Note on the import: this directory's profile.py shadows Python's stdlib `profile`

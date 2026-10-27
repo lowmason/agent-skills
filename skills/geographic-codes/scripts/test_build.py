@@ -3,7 +3,7 @@ gazetteer and delineation readers, and the cross-file referential check.
 
 Run from this directory (bare import, directory-scoped, like the other skill test suites):
 
-    cd skills/geographic-codes/scripts && uv run --python 3.13 --with pytest --with polars \
+    cd skills/geographic-codes/scripts && uv run --with pytest --with polars \
         --with fastexcel python -m pytest -q
 '''
 

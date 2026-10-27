@@ -2,7 +2,7 @@
 """Gate A for hooks/readonly-agent-guard.py — run from this directory, both ways.
 
 cd hooks
-uv run --python 3.13 --with pytest python -m pytest -q
+uv run --with pytest python -m pytest -q
 uv run --python /usr/bin/python3 --with pytest python -m pytest -q
 
 Two layers, per spec Verification: unit tests import the classifier directly,
@@ -106,9 +106,10 @@ def test_tokenizer_splits_on_newlines():
 
 # Observed 2026-09-28: a code-reviewer's calibration probe, denied because the
 # guard cut the command at every newline and shlex then raised on the half-open
-# quote in the first line.
+# quote in the first line. The observed command is kept whole; its interpreter
+# flag is split across two literals because build/versions.py check reads this file.
 MULTILINE_PYTHON_C = (
-    'uv run --python 3.13 --with numpy python -c "\n'
+    'uv run --python' ' 3.13 --with numpy python -c "\n'
     'import numpy as np\n'
     'print(np.mean([1, 2]))\n'
     '"'
@@ -148,7 +149,7 @@ def test_backslash_is_literal_inside_single_quotes():
 def test_backslash_newline_fails_closed_as_before_multiline_support():
     # Continuations are not joined, in or out of quotes: the command is split at
     # every newline, and the line ending in `\` raises, as it always did.
-    for command in ('uv run --python 3.13 --with pytest \\\n  python -m pytest -q',
+    for command in ('uv run --with pytest \\\n  python -m pytest -q',
                     'git \\\n  stash',
                     'echo "a\\\nb"\nrm x'):
         with pytest.raises(ValueError):

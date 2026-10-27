@@ -1,6 +1,6 @@
 """Tests for find-polluter.sh — run from this directory.
 
-cd skills/systematic-debugging && uv run --python 3.13 --with pytest python -m pytest -q
+cd skills/systematic-debugging && uv run --with pytest python -m pytest -q
 
 The script is bash, so each test drives it as a subprocess in a throwaway git
 project and asserts on the exit code, stdout, and the files a stub test runner
