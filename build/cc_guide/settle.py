@@ -107,7 +107,7 @@ def command(p: Packet, *words: str) -> str:
     return CLI + ' ' + ' '.join(shlex.quote(w) for w in (*root, *words))
 
 
-CONFORMANCE = 'uv run --python 3.13 --with pyyaml python build/check_conformance.py'
+CONFORMANCE = 'uv run --with pyyaml python build/check_conformance.py'
 
 
 class Settled(NamedTuple):

@@ -27,4 +27,4 @@ Opportunistic cleanup of code outside the task is gated by the clean-coder skill
   functional, so F2 holds there.
 - Named constants over magic numbers (G25): HTTP codes, retry counts,
   thresholds. ruff PLR2004 flags these mechanically where configured.
-- Target the repo's pinned Python (agent-skills: 3.13; work repos: 3.12).
+- Target the repo's pinned Python (agent-skills: the dev Python in `build/versions.toml`; work repos: 3.12).

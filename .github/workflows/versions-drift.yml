@@ -1,0 +1,29 @@
+name: versions-drift
+
+# Advisory only (specs/completed/package-versions.md, R5.3). Weekly, it resolves build/versions.toml with no
+# freeze date and reports which pins have fallen behind and whether each gate still passes. The job
+# may go red. It is not a required check, and it opens no issue or PR and commits nothing. GitHub
+# disables a scheduled workflow after 60 days without repository activity (R5.4), and it runs the
+# schedule from the default branch only.
+
+on:
+  schedule:
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+      - name: Report drift
+        run: |
+          set -o pipefail
+          uv run python build/versions.py drift | tee -a "$GITHUB_STEP_SUMMARY"

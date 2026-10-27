@@ -1,6 +1,6 @@
 """Tests for the visual companion's server.cjs — run from this directory.
 
-cd skills/brainstorming/scripts && uv run --python 3.13 --with pytest python -m pytest -q
+cd skills/brainstorming/scripts && uv run --with pytest python -m pytest -q
 
 server.cjs is Node, so the test drives node as a subprocess. wrapInFrame is
 not exported, so a small harness compiles the module with one export line

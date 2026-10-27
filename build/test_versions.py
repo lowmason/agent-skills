@@ -1,0 +1,551 @@
+'''Tests for build/versions.py: the file's schema, the synced outputs, the uv argv it builds, and the
+bump, verify and drift flows against a stub uv. Nothing here uses the network or a real uv: the stub
+is a script first on PATH, as hooks/test_project_hooks.py does it.'''
+import datetime
+import json
+import sys
+
+import pytest
+
+import versions
+from versions import VersionsError
+
+
+GOOD = '''\
+[python]
+dev = '3.13'                 # repo checks
+
+[freeze]
+date = 2026-10-19            # every check resolves as of this date
+
+[packages]
+alpha = '1.2.0'
+beta-two = '2.0.0'
+gamma = '0.5'
+
+[cited]
+delta = '6.2'
+
+[gates]
+snippets = ['alpha', 'beta-two']
+jax-cpu = ['alpha', 'gamma']
+'''
+
+
+WITH_OVERRIDE = GOOD + '''
+[[override]]
+gate = 'jax-cpu'
+package = 'alpha'
+version = '1.1.0'
+reason = 'jax-cpu needs the older alpha'
+'''
+
+
+def make_root(tmp_path, text=GOOD):
+    (tmp_path / 'build').mkdir()
+    (tmp_path / 'build' / 'versions.toml').write_text(text)
+    (tmp_path / 'skills').mkdir()
+    return tmp_path
+
+
+def test_parse_reads_every_table():
+    v = versions.parse(WITH_OVERRIDE)
+    assert (v.dev_python, v.freeze) == ('3.13', datetime.date(2026, 10, 19))
+    assert v.packages == {'alpha': '1.2.0', 'beta-two': '2.0.0', 'gamma': '0.5'}
+    assert v.cited == {'delta': '6.2'}
+    assert v.gates == {'snippets': ('alpha', 'beta-two'), 'jax-cpu': ('alpha', 'gamma')}
+    assert v.overrides == (versions.Override('jax-cpu', 'alpha', '1.1.0', 'jax-cpu needs the older alpha'),)
+
+
+def test_cutoff_is_midnight_utc_on_the_day_after_the_freeze_date():
+    assert versions.parse(GOOD).cutoff == '2026-10-20T00:00:00Z'
+    assert versions.parse(GOOD.replace('2026-10-19', '2026-12-31')).cutoff == '2027-01-01T00:00:00Z'
+
+
+def test_stack_without_an_override():
+    v = versions.parse(GOOD)
+    assert v.stack('snippets') == ['alpha==1.2.0', 'beta-two==2.0.0']
+    assert v.stack('jax-cpu') == ['alpha==1.2.0', 'gamma==0.5']
+
+
+def test_stack_with_an_override_changes_only_its_gate():
+    v = versions.parse(WITH_OVERRIDE)
+    assert v.stack('snippets') == ['alpha==1.2.0', 'beta-two==2.0.0']
+    assert v.stack('jax-cpu') == ['alpha==1.1.0', 'gamma==0.5']
+
+
+def test_a_pin_beats_an_override_and_matches_a_normalised_name():
+    v = versions.parse(WITH_OVERRIDE)
+    assert v.stack('jax-cpu', {'alpha': '9.9'}) == ['alpha==9.9', 'gamma==0.5']
+    assert v.stack('snippets', {'beta_two': '3.0'}) == ['alpha==1.2.0', 'beta-two==3.0']
+
+
+def test_stack_of_an_unknown_gate_names_the_gates():
+    with pytest.raises(VersionsError, match=r"unknown gate 'third'.*snippets, jax-cpu"):
+        versions.parse(GOOD).stack('third')
+
+
+@pytest.mark.parametrize('old, new, expected', [
+    ("dev = '3.13'", "dev = 3.13", r"\[python\] dev must be a string"),
+    ("dev = '3.13'", "dev = 'three'", r"'three'"),
+    ('date = 2026-10-19', "date = '2026-10-19'", r"\[freeze\] date must be a TOML date.*'2026-10-19'"),
+    ('date = 2026-10-19', 'date = 2026-10-19T12:00:00Z', r"\[freeze\] date must be a TOML date"),
+    ("alpha = '1.2.0'", "alpha = '1.2.x'", r"\[packages\] alpha: invalid version '1\.2\.x'"),
+    ("delta = '6.2'", "alpha = '6.2'", r"alpha is in both \[packages\] and \[cited\]"),
+    ("['alpha', 'beta-two']", "['alpha', 'zeta']", r"\[gates\] snippets names zeta, which has no \[packages\] entry"),
+    ("['alpha', 'beta-two']", "[]", r"\[gates\] snippets must be a non-empty list"),
+    ('[cited]', '[cites]', r"unknown table 'cites'"),
+])
+def test_invalid_files_name_their_cause(old, new, expected):
+    with pytest.raises(VersionsError, match=expected):
+        versions.parse(GOOD.replace(old, new))
+
+
+@pytest.mark.parametrize('mutate, expected', [
+    (lambda t: t.replace("gate = 'jax-cpu'", "gate = 'third'"), r"unknown gate 'third'"),
+    (lambda t: t.replace("package = 'alpha'", "package = 'gamma2'"), r"gamma2 is not in gate jax-cpu"),
+    (lambda t: t.replace("reason = 'jax-cpu needs the older alpha'", "reason = ''"), r"missing key 'reason'"),
+    (lambda t: t.replace("version = '1.1.0'", "version = 'old'"), r"invalid version 'old'"),
+])
+def test_invalid_overrides(mutate, expected):
+    with pytest.raises(VersionsError, match=expected):
+        versions.parse(mutate(WITH_OVERRIDE))
+
+
+def test_an_override_not_written_as_an_array_of_tables_names_the_cause():
+    single_bracket = WITH_OVERRIDE.replace('[[override]]', '[override]')
+    for text in (single_bracket, "override = 'x'\n" + GOOD, "override = ['x']\n" + GOOD):
+        with pytest.raises(VersionsError, match=r'build/versions\.toml: override must be written \[\[override\]\]'):
+            versions.parse(text)
+
+
+def test_cited_that_is_not_a_table_names_the_key():
+    text = "cited = 5\n" + GOOD.replace("[cited]\ndelta = '6.2'\n\n", '')
+    with pytest.raises(VersionsError, match=r'\[cited\]'):
+        versions.parse(text)
+
+
+def test_a_missing_file_names_the_path(tmp_path):
+    with pytest.raises(VersionsError, match=r'build/versions\.toml: cannot read'):
+        versions.load(tmp_path)
+
+
+def test_invalid_toml_names_the_file():
+    with pytest.raises(VersionsError, match=r'build/versions\.toml: invalid TOML'):
+        versions.parse('[python\n')
+
+
+def test_outputs_are_exactly_these_files():
+    out = versions.outputs(versions.parse(GOOD))
+    assert out['.python-version'] == '3.13\n'
+    assert out['uv.toml'].endswith('exclude-newer = "2026-10-20T00:00:00Z"\n')
+    assert out['uv.toml'].startswith('# Written by build/versions.py sync from build/versions.toml. Do not edit.\n')
+    settings = [line for line in out['skills/uv.toml'].splitlines() if line and not line.startswith('#')]
+    assert settings == []  # the shadow file sets nothing
+    assert 'build/versions.toml' in out['skills/uv.toml']
+    assert set(out) == {'.python-version', 'uv.toml', 'skills/uv.toml'}
+
+
+def test_sync_writes_the_outputs_and_check_then_passes(tmp_path):
+    root = make_root(tmp_path)
+    assert versions.main(['sync', '--check'], root=root) == 1
+    assert versions.main(['sync'], root=root) == 0
+    assert (root / '.python-version').read_text() == '3.13\n'
+    assert versions.main(['sync', '--check'], root=root) == 0
+
+
+def test_sync_check_names_a_file_that_differs(tmp_path, capsys):
+    root = make_root(tmp_path)
+    versions.sync(root)
+    (root / 'uv.toml').write_text('exclude-newer = "2020-01-01T00:00:00Z"\n')
+    assert versions.sync(root, check=True) == ['uv.toml: differs; run build/versions.py sync']
+
+
+def test_rewrite_changes_the_date_and_the_package_values_only():
+    text = versions.rewrite(GOOD, datetime.date(2026, 11, 2), {'alpha': '1.3.0', 'gamma': '0.6'})
+    assert "alpha = '1.3.0'" in text and "gamma = '0.6'" in text
+    assert 'date = 2026-11-02            # every check resolves as of this date' in text
+    assert "beta-two = '2.0.0'" in text and "delta = '6.2'" in text   # [cited] never moves
+    assert "dev = '3.13'                 # repo checks" in text
+    assert versions.rewrite(text, datetime.date(2026, 10, 19), {'alpha': '1.2.0', 'gamma': '0.5'}) == GOOD
+
+
+def test_an_invalid_file_exits_2_with_the_cause(tmp_path, capsys):
+    root = make_root(tmp_path, GOOD.replace("'1.2.0'", "'oops'"))
+    assert versions.main(['sync'], root=root) == 2
+    assert "[packages] alpha: invalid version 'oops'" in capsys.readouterr().err
+
+
+STUB = '''\
+#!{python}
+import json, sys
+cfg = json.load(open({config!r}))
+args = sys.argv[1:]
+with open({log!r}, 'a') as log:
+    log.write(json.dumps(args) + '\\n')
+if 'compile' in args:
+    sys.stdout.write(cfg.get('compile_out', ''))
+    sys.stderr.write(cfg.get('compile_err', ''))
+    sys.exit(cfg.get('compile_rc', 0))
+if args[:2] == ['python', 'list']:
+    sys.stderr.write(cfg.get('list_err', ''))
+    if not cfg.get('list_rc', 0):
+        print(json.dumps(cfg.get('pythons', [])))
+    sys.exit(cfg.get('list_rc', 0))
+sys.exit(cfg.get('run_rc', 0))
+'''
+
+
+@pytest.fixture
+def stub_uv(tmp_path, monkeypatch):
+    bin_dir = tmp_path / 'stub-bin'
+    bin_dir.mkdir()
+    config, log = tmp_path / 'stub.json', tmp_path / 'uv.log'
+    uv = bin_dir / 'uv'
+    uv.write_text(STUB.format(python=sys.executable, config=str(config), log=str(log)))
+    uv.chmod(0o755)
+    monkeypatch.setenv('PATH', f'{bin_dir}:/usr/bin:/bin')
+
+    class Stub:
+        def set(self, **cfg):
+            config.write_text(json.dumps(cfg))
+
+        def calls(self):
+            return [json.loads(line) for line in log.read_text().splitlines()] if log.exists() else []
+
+    stub = Stub()
+    stub.set()
+    return stub
+
+
+def test_requirements_leave_only_the_named_packages_free():
+    v = versions.parse(GOOD)
+    assert versions.requirements(v) == ['alpha', 'beta-two', 'gamma']
+    assert versions.requirements(v, only=['gamma']) == ['alpha==1.2.0', 'beta-two==2.0.0', 'gamma']
+    assert versions.requirements(v, pins={'beta-two': '1.0'}) == ['alpha', 'beta-two==1.0', 'gamma']
+    with pytest.raises(VersionsError, match=r'--only names zeta'):
+        versions.requirements(v, only=['zeta'])
+
+
+def test_bump_rewrites_the_file_and_the_outputs(tmp_path):
+    root = make_root(tmp_path)
+    seen = {}
+
+    def resolver(reqs, python, cutoff):
+        seen.update(reqs=reqs, python=python, cutoff=cutoff)
+        return {'alpha': '1.3.0', 'beta-two': '2.0.0', 'gamma': '0.5', 'extra': '1.0'}
+
+    changes = versions.bump(root, datetime.date(2026, 11, 2), resolver=resolver)
+    assert seen == {'reqs': ['alpha', 'beta-two', 'gamma'], 'python': '3.13', 'cutoff': '2026-11-03T00:00:00Z'}
+    assert changes == ['freeze: 2026-10-19 -> 2026-11-02', 'alpha: 1.2.0 -> 1.3.0']
+    v = versions.load(root)
+    assert v.freeze == datetime.date(2026, 11, 2) and v.packages['alpha'] == '1.3.0'
+    assert 'exclude-newer = "2026-11-03T00:00:00Z"' in (root / 'uv.toml').read_text()
+    assert v.cited == {'delta': '6.2'}
+
+
+def test_bump_fails_when_the_resolve_misses_a_package(tmp_path):
+    root = make_root(tmp_path)
+    with pytest.raises(VersionsError, match=r'resolve step: the joint resolve did not return gamma'):
+        versions.bump(root, datetime.date(2026, 11, 2), resolver=lambda *a: {'alpha': '1', 'beta-two': '2'})
+    assert versions.load(root).freeze == datetime.date(2026, 10, 19)   # nothing was written
+
+
+def test_resolve_passes_the_requirements_on_stdin_and_parses_the_pins(stub_uv):
+    stub_uv.set(compile_out='alpha==1.3.0\nBeta_Two==2.0.0 ; python_version > "3"\ntransitive==4.0\n')
+    got = versions.resolve(['alpha', 'beta-two'], '3.13', '2026-11-03T00:00:00Z')
+    assert got == {'alpha': '1.3.0', 'beta-two': '2.0.0', 'transitive': '4.0'}
+    assert stub_uv.calls() == [['pip', 'compile', '-', '--python-version', '3.13', '--no-header', '--no-annotate',
+                                '--quiet', '--exclude-newer', '2026-11-03T00:00:00Z']]
+
+
+def test_resolve_without_a_cutoff_ignores_the_config(stub_uv):
+    stub_uv.set(compile_out='alpha==1.3.0\n')
+    versions.resolve(['alpha'], '3.14', None)
+    assert stub_uv.calls()[0][:3] == ['--no-config', 'pip', 'compile']
+    assert '--exclude-newer' not in stub_uv.calls()[0]
+
+
+def test_a_failed_resolve_names_the_step_the_packages_and_uvs_reason(stub_uv):
+    stub_uv.set(compile_rc=1, compile_err='Because alpha and gamma conflict, no solution\n')
+    with pytest.raises(VersionsError) as err:
+        versions.resolve(['alpha', 'gamma'], '3.13', None)
+    assert 'resolve step' in str(err.value) and 'alpha, gamma' in str(err.value)
+    assert 'Because alpha and gamma conflict' in str(err.value)
+
+
+def test_bump_exits_2_and_names_the_step_when_the_resolve_fails(tmp_path, stub_uv, capsys):
+    root = make_root(tmp_path)
+    stub_uv.set(compile_rc=1, compile_err='no network\n')
+    assert versions.main(['bump', '--date', '2026-11-02'], root=root) == 2
+    assert capsys.readouterr().err.startswith('bump: resolve step:')
+    assert versions.load(root).freeze == datetime.date(2026, 10, 19)
+
+
+def test_bump_rejects_an_invalid_date(tmp_path, capsys):
+    with pytest.raises(SystemExit) as err:
+        versions.main(['bump', '--date', '2026-13-40'], root=make_root(tmp_path))
+    assert err.value.code == 2
+    assert "invalid date '2026-13-40'" in capsys.readouterr().err
+
+
+def test_bump_refuses_a_move_it_cannot_write_and_leaves_the_file_alone(tmp_path, stub_uv, capsys):
+    root = make_root(tmp_path, GOOD.replace("alpha = '1.2.0'", 'alpha = "1.2.0"'))
+    before = (root / 'build' / 'versions.toml').read_bytes()
+    stub_uv.set(compile_out='alpha==1.3.0\nbeta-two==2.0.0\ngamma==0.5\n')
+    assert versions.main(['bump', '--date', '2026-11-02'], root=root) == 2
+    assert 'bump: cannot rewrite [packages] alpha; write its value in single quotes' in capsys.readouterr().err
+    assert (root / 'build' / 'versions.toml').read_bytes() == before
+    assert not (root / 'uv.toml').exists()   # sync did not run either
+
+
+def test_bump_refuses_a_resolved_version_the_file_would_reject_and_leaves_the_file_alone(tmp_path, stub_uv, capsys):
+    root = make_root(tmp_path)
+    before = (root / 'build' / 'versions.toml').read_bytes()
+    stub_uv.set(compile_out='alpha==1.0.post1\nbeta-two==2.0.0\ngamma==0.5\n')
+    assert versions.main(['bump', '--date', '2026-11-02'], root=root) == 2
+    err = capsys.readouterr().err
+    assert err.startswith('bump: ') and "[packages] alpha: invalid version '1.0.post1'" in err
+    assert (root / 'build' / 'versions.toml').read_bytes() == before
+    assert not (root / 'uv.toml').exists()
+
+
+def test_bump_refuses_a_freeze_date_it_cannot_write_and_leaves_the_file_alone(tmp_path, stub_uv, capsys):
+    inline = 'freeze = {date = 2026-10-19}\n' + GOOD.replace(
+        '[freeze]\ndate = 2026-10-19            # every check resolves as of this date\n\n', '')
+    assert versions.parse(inline).freeze == datetime.date(2026, 10, 19)   # the fixture is a valid file
+    root = make_root(tmp_path, inline)
+    before = (root / 'build' / 'versions.toml').read_bytes()
+    stub_uv.set(compile_out='alpha==1.2.0\nbeta-two==2.0.0\ngamma==0.5\n')
+    assert versions.main(['bump', '--date', '2026-11-02'], root=root) == 2
+    assert 'bump: cannot rewrite [freeze] date; write it as date = YYYY-MM-DD under [freeze]' in capsys.readouterr().err
+    assert (root / 'build' / 'versions.toml').read_bytes() == before
+    assert not (root / 'uv.toml').exists()
+
+
+def test_bump_with_the_same_date_still_moves_packages(tmp_path):
+    root = make_root(tmp_path)
+    changes = versions.bump(root, datetime.date(2026, 10, 19),
+                            resolver=lambda *a: {'alpha': '1.3.0', 'beta-two': '2.0.0', 'gamma': '0.5'})
+    assert changes == ['alpha: 1.2.0 -> 1.3.0']
+    assert versions.load(root).packages['alpha'] == '1.3.0'
+
+
+def test_parse_pins():
+    v = versions.parse(GOOD)
+    assert versions.parse_pins(v, ['beta_two==3.1', 'alpha==1.0']) == {'beta-two': '3.1', 'alpha': '1.0'}
+    with pytest.raises(VersionsError, match=r"--pin 'alpha': write it as package==version"):
+        versions.parse_pins(v, ['alpha'])
+    with pytest.raises(VersionsError, match=r"--pin 'zeta==1\.0': zeta has no \[packages\] entry"):
+        versions.parse_pins(v, ['zeta==1.0'])
+
+
+def fake_pypi(uploaded='2026-10-01T10:00:00.000000Z', newest='9.9.9'):
+    def fetch(url):
+        return {'info': {'version': newest}, 'urls': [{'upload_time_iso_8601': uploaded}]}
+    return fetch
+
+
+def test_a_pin_uploaded_after_the_cutoff_names_the_package_and_the_dates():
+    v = versions.parse(GOOD)
+    late = versions.late_pins(v, ['alpha==1.2.0'], fake_pypi('2026-10-20T00:00:00.000000Z'))
+    assert late == ['alpha 1.2.0: uploaded 2026-10-20, after the freeze date 2026-10-19']
+    assert versions.late_pins(v, ['alpha==1.2.0'], fake_pypi('2026-10-19T23:59:59.000000Z')) == []
+
+
+def test_uv_run_argv_orders_python_cutoff_stack_command():
+    v = versions.parse(GOOD)
+    argv = versions.uv_run_argv(v, 'snippets', ['python', 'x.py'])
+    assert argv == ['uv', 'run', '--python', '3.13', '--exclude-newer', '2026-10-20T00:00:00Z',
+                    '--with', 'alpha==1.2.0', '--with', 'beta-two==2.0.0', 'python', 'x.py']
+    argv = versions.uv_run_argv(v, 'snippets', ['python', 'x.py'], {'alpha': '1.0'}, python='3.14', freeze=False)
+    assert argv == ['uv', 'run', '--python', '3.14', '--with', 'alpha==1.0', '--with', 'beta-two==2.0.0',
+                    'python', 'x.py']
+    assert versions.uv_run_argv(v, None, ['python', 'y.py']) == [
+        'uv', 'run', '--python', '3.13', '--exclude-newer', '2026-10-20T00:00:00Z', 'python', 'y.py']
+
+
+def test_runner_command_is_the_documented_form():
+    assert versions.runner_command('snippets', 'python build/check_snippets.py --run skills/') == (
+        'uv run python build/versions.py run snippets -- python build/check_snippets.py --run skills/')
+
+
+def test_run_builds_the_uv_command_and_returns_its_status(tmp_path, stub_uv, monkeypatch):
+    root = make_root(tmp_path)
+    monkeypatch.setattr(versions, 'fetch_json', fake_pypi())
+    stub_uv.set(run_rc=3)
+    assert versions.main(['run', 'snippets', '--pin', 'alpha==1.0', '--', 'python', 'x.py'], root=root) == 3
+    assert stub_uv.calls() == [['run', '--python', '3.13', '--exclude-newer', '2026-10-20T00:00:00Z',
+                                '--with', 'alpha==1.0', '--with', 'beta-two==2.0.0', 'python', 'x.py']]
+
+
+def test_run_refuses_a_pin_uploaded_after_the_freeze_date(tmp_path, stub_uv, monkeypatch, capsys):
+    root = make_root(tmp_path)
+    monkeypatch.setattr(versions, 'fetch_json', fake_pypi('2026-10-25T00:00:00.000000Z'))
+    assert versions.main(['run', 'snippets', '--', 'python', 'x.py'], root=root) == 2
+    assert 'alpha 1.2.0: uploaded 2026-10-25, after the freeze date 2026-10-19' in capsys.readouterr().err
+    assert stub_uv.calls() == []
+
+
+def test_run_needs_a_command(tmp_path, capsys):
+    with pytest.raises(SystemExit) as err:
+        versions.main(['run', 'snippets'], root=make_root(tmp_path))
+    assert err.value.code == 2
+    assert 'run needs a command after --' in capsys.readouterr().err
+
+
+def python_item(version, variant='default', implementation='cpython'):
+    major, minor, patch = (int(''.join(c for c in p if c.isdigit())) for p in version.split('.')[:3])
+    return {'version': version, 'variant': variant, 'implementation': implementation,
+            'version_parts': {'major': major, 'minor': minor, 'patch': patch}}
+
+
+def test_newest_stable_python_skips_prereleases_and_free_threaded_builds(stub_uv):
+    stub_uv.set(pythons=[python_item('3.16.0a1'), python_item('3.15.0', variant='freethreaded'),
+                         python_item('3.14.2'), python_item('3.13.9'), python_item('3.15.0', implementation='pypy')])
+    assert versions.newest_stable_python() == '3.14'
+
+
+def test_newest_stable_python_reports_uvs_stderr_when_the_listing_fails(stub_uv):
+    stub_uv.set(list_rc=2, list_err='error: network is unreachable\n')
+    with pytest.raises(VersionsError, match=r'python step: uv python list failed:\nerror: network is unreachable'):
+        versions.newest_stable_python()
+
+
+def test_verify_runs_every_step_and_exits_1_when_one_fails(tmp_path, stub_uv, monkeypatch, capsys):
+    root = make_root(tmp_path)
+    monkeypatch.setattr(versions, 'fetch_json', fake_pypi())
+    stub_uv.set(run_rc=1)
+    assert versions.main(['verify'], root=root) == 1
+    assert len(stub_uv.calls()) == 4          # a failure does not stop the next step
+    err = capsys.readouterr().err
+    assert 'verify failed: tier 2 (--api), tier 3 (--run), jax cpu examples, suites' in err
+
+
+def test_verify_passes_when_every_step_passes(tmp_path, stub_uv, monkeypatch, capsys):
+    root = make_root(tmp_path)
+    monkeypatch.setattr(versions, 'fetch_json', fake_pypi())
+    assert versions.main(['verify', '--pin', 'gamma==0.4'], root=root) == 0
+    assert capsys.readouterr().out.rstrip().endswith('verify passed')
+    assert stub_uv.calls()[3][-5:] == ['build/run_suites.py', '--all', '--extras', '--pin', 'gamma==0.4']
+
+
+def test_verify_runs_the_cpu_examples_of_all_three_jax_skills(tmp_path, stub_uv, monkeypatch):
+    monkeypatch.setattr(versions, 'fetch_json', fake_pypi())
+    assert versions.main(['verify'], root=make_root(tmp_path)) == 0
+    assert stub_uv.calls()[2][-4:] == ['build/check_jax_examples.py', 'skills/deep-learning/',
+                                       'skills/evaluate-deep-learning/', 'skills/optimize-jax/']
+
+
+def drift_world(stub_uv, monkeypatch, run_rc=0, compile_rc=0):
+    stub_uv.set(compile_out='alpha==1.5.0\nbeta-two==2.0.0\ngamma==0.5\n', compile_rc=compile_rc,
+                compile_err='no route to host\n', run_rc=run_rc,
+                pythons=[python_item('3.14.1'), python_item('3.13.9')])
+    monkeypatch.setattr(versions, 'fetch_json', fake_pypi(newest='1.5.0'))
+
+
+def test_drift_exits_0_when_every_gate_passes_on_both_pythons(tmp_path, stub_uv, monkeypatch):
+    drift_world(stub_uv, monkeypatch)
+    status, report = versions.drift(make_root(tmp_path))
+    assert status == 0
+    assert '## Python 3.13' in report and '## Python 3.14' in report
+    assert '| alpha | 1.2.0 | 1.5.0 | 1.5.0 |' in report
+    assert '| delta | 6.2 | - | 1.5.0 |' in report and 'a newer release exists' in report
+    assert report.count('| suites | pass |') == 2 and 'FAIL' not in report
+    assert versions.DRIFT_LIMIT in report
+
+
+def test_drift_runs_the_steps_with_the_resolved_pins_and_no_freeze(tmp_path, stub_uv, monkeypatch):
+    drift_world(stub_uv, monkeypatch)
+    versions.drift(make_root(tmp_path))
+    runs = [call for call in stub_uv.calls() if call[0] == 'run']
+    assert len(runs) == 8                        # four steps in each of two passes
+    first = runs[0]
+    assert first[:3] == ['run', '--python', '3.13'] and '--exclude-newer' not in first
+    assert 'alpha==1.5.0' in first
+    assert runs[3][-5:] == ['--pin', 'gamma==0.5', '--python', '3.13', '--no-freeze']
+
+
+def test_drift_exits_1_when_a_gate_fails(tmp_path, stub_uv, monkeypatch):
+    drift_world(stub_uv, monkeypatch, run_rc=1)
+    status, report = versions.drift(make_root(tmp_path))
+    assert status == 1 and '| suites | FAIL |' in report
+
+
+def test_drift_exits_2_when_it_cannot_resolve(tmp_path, stub_uv, monkeypatch):
+    drift_world(stub_uv, monkeypatch, compile_rc=1)
+    status, report = versions.drift(make_root(tmp_path))
+    assert status == 2 and 'drift could not finish: resolve step' in report
+
+
+def test_drift_exits_2_when_pypi_is_unreachable(tmp_path, stub_uv, monkeypatch):
+    drift_world(stub_uv, monkeypatch)
+
+    def down(url):
+        raise VersionsError(f'cannot reach {url}: timed out')
+
+    monkeypatch.setattr(versions, 'fetch_json', down)
+    status, report = versions.drift(make_root(tmp_path))
+    assert status == 2 and 'cannot reach https://pypi.org/pypi/' in report
+
+
+def test_drift_main_prints_the_report_and_returns_its_status(tmp_path, stub_uv, monkeypatch, capsys):
+    drift_world(stub_uv, monkeypatch, run_rc=1)
+    assert versions.main(['drift'], root=make_root(tmp_path)) == 1
+    assert '# Package drift' in capsys.readouterr().out
+
+
+def test_drift_gives_each_step_its_interpreter_and_the_no_config_environment(tmp_path, stub_uv, monkeypatch):
+    drift_world(stub_uv, monkeypatch)
+    seen = []
+
+    def runner(argv, root, env):
+        seen.append((argv, env))
+        return 0
+
+    versions.drift(make_root(tmp_path), runner=runner)
+    assert len(seen) == 8
+    for index, (argv, env) in enumerate(seen):
+        assert argv[:3] == ('uv', 'run', '--python') and argv[3] == ('3.13', '3.14')[index // 4]
+        assert env['UV_NO_CONFIG'] == '1'
+
+
+def test_verify_refuses_a_pin_uploaded_after_the_freeze_date(tmp_path, stub_uv, monkeypatch, capsys):
+    root = make_root(tmp_path)
+    monkeypatch.setattr(versions, 'fetch_json', fake_pypi('2026-10-25T00:00:00.000000Z'))
+    assert versions.main(['verify'], root=root) == 2
+    assert 'alpha 1.2.0: uploaded 2026-10-25, after the freeze date 2026-10-19' in capsys.readouterr().err
+    assert stub_uv.calls() == []
+
+
+def test_verify_with_no_freeze_and_a_python_skips_the_upload_check_and_the_cutoff(tmp_path, stub_uv, monkeypatch):
+    def offline(url):
+        raise AssertionError(f'verify --no-freeze must not fetch {url}')
+
+    monkeypatch.setattr(versions, 'fetch_json', offline)
+    assert versions.main(['verify', '--python', '3.14', '--no-freeze'], root=make_root(tmp_path)) == 0
+    calls = stub_uv.calls()
+    assert len(calls) == 4 and all(call[:3] == ['run', '--python', '3.14'] for call in calls)
+    assert all('--exclude-newer' not in call for call in calls)
+    assert calls[3][-4:] == ['--extras', '--python', '3.14', '--no-freeze']
+
+
+@pytest.mark.parametrize('package', ['alpha', 'delta'])   # a [packages] row and a [cited] row
+def test_drift_exits_2_when_a_version_cannot_be_compared(package, tmp_path, stub_uv, monkeypatch):
+    drift_world(stub_uv, monkeypatch)
+    good, bad = fake_pypi(newest='1.5.0'), fake_pypi(newest='1.6.0.post1')
+    monkeypatch.setattr(versions, 'fetch_json', lambda url: (bad if f'/{package}/' in url else good)(url))
+    status, report = versions.drift(make_root(tmp_path))
+    assert status == 2
+    assert f'{package}: cannot compare version' in report and '1.6.0.post1' in report
+    assert 'a version must be dotted integers' in report
+    assert [call for call in stub_uv.calls() if call[0] == 'run'] == []   # no gate ran
+
+
+def test_drift_exits_2_when_the_resolve_omits_a_package(tmp_path, stub_uv, monkeypatch):
+    drift_world(stub_uv, monkeypatch)
+    stub_uv.set(compile_out='alpha==1.5.0\nbeta-two==2.0.0\n', pythons=[python_item('3.14.1'), python_item('3.13.9')])
+    status, report = versions.drift(make_root(tmp_path))
+    assert status == 2
+    assert 'drift could not finish: resolve step: the joint resolve did not return gamma' in report
+    assert [call for call in stub_uv.calls() if call[0] == 'run'] == []   # no gate ran

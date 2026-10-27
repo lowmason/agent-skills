@@ -192,7 +192,7 @@ system Python 3.9. So the source stays 3.9-compatible.
 **Tests.** Gate A is `test_readonly_agent_guard.py`, run both ways:
 
 ```bash
-cd hooks && uv run --python 3.13 --with pytest python -m pytest -q \
+cd hooks && uv run --with pytest python -m pytest -q \
   && uv run --python /usr/bin/python3 --with pytest python -m pytest -q
 ```
 
@@ -439,7 +439,7 @@ file backs it. Recheck it when Claude Code changes a built-in agent's model.
 **Tests.** `test_dispatch_model_guard.py` drives the script as a subprocess.
 Every allow-path test asserts the return code, because a crashed `PreToolUse` hook
 exits 1 and fails open. The two commands under the read-only guard's **Tests** run it
-under 3.13 and under `/usr/bin/python3` (3.9), since the hook keeps the same 3.9 floor.
+under the dev Python and under `/usr/bin/python3` (3.9), since the hook keeps the same 3.9 floor.
 
 ## Probe log
 

@@ -587,3 +587,18 @@ def test_the_time_series_blocks_select_the_time_series_fixture():
         block = _skill_block(relpath, needle)
         assert check_snippets.fixture_name(block) == 'time_series', needle
         assert check_snippets.runnable(block), check_snippets._unrunnable_reason(block)
+
+
+def test_the_remediation_commands_use_the_runner_and_spell_no_version():
+    import versions
+    assert check_snippets.API_REMEDIATION == versions.runner_command(
+        'snippets', 'python build/check_snippets.py --api <paths>')
+    assert check_snippets.RUN_REMEDIATION == versions.runner_command(
+        'snippets', 'python build/check_snippets.py --run <paths>')
+    for command in (check_snippets.API_REMEDIATION, check_snippets.RUN_REMEDIATION):
+        assert not any(mark in command for mark in ('==', '>=', '--python', '--with'))
+
+
+def test_the_preamble_module_no_longer_pins_packages():
+    import snippet_preamble
+    assert not hasattr(snippet_preamble, 'PINNED')

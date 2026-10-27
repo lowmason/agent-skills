@@ -1,0 +1,4 @@
+# Written by build/versions.py sync from build/versions.toml. Do not edit.
+# Every uv run in this repo resolves packages as of this cutoff: 00:00:00Z on the day after
+# the freeze date, 2026-10-27, so files uploaded on the freeze date itself are included.
+exclude-newer = "2026-10-28T00:00:00Z"

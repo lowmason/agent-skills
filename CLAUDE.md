@@ -14,8 +14,8 @@ A personal collection of coding-agent configuration, centered on the portable [A
 `agents/*.md` and `commands/*.md` are canonical. Never hand-edit files under `runtimes/`. After changing a canonical agent or command, regenerate and check the adapters:
 
 ```bash
-uv run --python 3.13 --with pyyaml python build/sync_runtime_assets.py
-uv run --python 3.13 --with pyyaml python build/sync_runtime_assets.py --check
+uv run --with pyyaml python build/sync_runtime_assets.py
+uv run --with pyyaml python build/sync_runtime_assets.py --check
 ```
 
 The generator translates manifest syntax and Gemini tool names only. Codex and Gemini agents inherit the active runtime model; Claude-specific model pins do not cross runtimes. Gemini gets TOML command adapters. Codex has no command adapter here; reusable Codex workflows are skills.
@@ -50,7 +50,7 @@ A skill's references into other skills and to commands are install dependencies;
 
 ## Conventions
 
-- **Python style**: Polars over pandas; single quotes over double; NumPyro + JAX (not PyMC) for Bayesian code; target Python 3.13.
+- **Python style**: Polars over pandas; single quotes over double; NumPyro + JAX (not PyMC) for Bayesian code; target the dev Python in `build/versions.toml`.
 - **Codex review**: the owner approves Codex second-opinion reviews for this repository. The requesting-code-review skill's approval gate treats this line as that approval, so agents run the Codex seat without asking. A Codex run sends the diff, and every file Codex reads, to OpenAI.
 - **Specs & plans**: design records live in `specs/` (retired ones in `specs/completed/`). Implementation plans go to `specs/plans/<id>-<spec-name>.md` where `<id>` is the next integer (max existing id across `specs/plans/` and `specs/plans/completed/`, +1). At completion, the plan-completion protocol (writing-plans § Plan Completion Protocol) gates leftovers past the user, marks up the plan, appends consciously-deferred work to `specs/deferred_items.md`, and retires the plan (and, when no other live plan shares it, the spec) to the `completed/` dirs.
 
@@ -60,55 +60,55 @@ A skill's references into other skills and to commands are install dependencies;
 
 ## Commands
 
-There is no repo-wide `pyproject`, and the scientific deps (numpy, polars, pytest) aren't installed into the interpreter directly. Run everything through `uv run` pinned to the Homebrew Python 3.13, supplying deps inline. Tests use **bare imports** and are **directory-scoped** — each suite runs pytest from inside its own directory with its own inline deps, never from the repo root: a repo-root collection fails outright, since `geographic-codes` and `classification-codes` both ship a `test_build.py` whose basenames collide under pytest's prepend import mode with no `__init__.py`. `build/suites.toml` registers each suite (its directory, its `--with` deps, the extras that unlock its skips, and its notes), and `build/run_suites.py` runs them, printing a suite's notes before its output; pytest's summary line gives the counts.
+There is no repo-wide `pyproject`, and the scientific deps (numpy, polars, pytest) aren't installed into the interpreter directly. Run everything through `uv run`, supplying deps inline. `build/versions.toml` is the one place that sets the dev Python, the freeze date and each pinned package version. `build/versions.py sync` writes `.python-version` and `uv.toml` from it. A command run from the repo root or from `build/` inherits both. A script or test run from inside `skills/` reads `skills/uv.toml`, which sets no freeze date, so it gets `.python-version` but not the freeze date. `build/run_suites.py` passes the cutoff itself. Tests use **bare imports** and are **directory-scoped** — each suite runs pytest from inside its own directory with its own inline deps, never from the repo root: a repo-root collection fails outright, since `geographic-codes` and `classification-codes` both ship a `test_build.py` whose basenames collide under pytest's prepend import mode with no `__init__.py`. `build/suites.toml` registers each suite (its directory, its `--with` deps, the extras that unlock its skips, and its notes), and `build/run_suites.py` runs them, printing a suite's notes before its output; pytest's summary line gives the counts.
 
 ```bash
 # Cross-runtime adapters, installer, and DEPENDENCIES drift
-cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_runtime_support.py
+cd build && uv run --with pytest --with pyyaml python -m pytest -q test_runtime_support.py
 
 # Directory suites (build/suites.toml): --list prints each suite's exact command, extras and notes; name one or more
 # suites to run them (--extras adds the deps that unlock skips; arguments after -- go to pytest, e.g. a test node ID),
 # or --all for every suite. --check, a commit lint, fails when a directory holding tests is not registered
-uv run --python 3.13 python build/run_suites.py --list
-uv run --python 3.13 python build/run_suites.py <name> [--extras] [-- <pytest args>]
-uv run --python 3.13 python build/run_suites.py --all
-uv run --python 3.13 python build/run_suites.py --check
+uv run python build/run_suites.py --list
+uv run python build/run_suites.py <name> [--extras] [-- <pytest args>]
+uv run python build/run_suites.py --all
+uv run python build/run_suites.py --check
 
 # Commit lints: these three, the suite-registry check (run_suites.py --check, above), the dependency-drift test,
-# snippet Tier 1, sync_runtime_assets.py --check, the drift lint (cli.py lint, below) and the placement tests (below)
-# make nine. build/run_commit_lints.sh runs all nine; build/githooks/pre-commit runs it on each commit once enabled
+# snippet Tier 1, sync_runtime_assets.py --check, the drift lint (cli.py lint, below), the placement tests (below)
+# and the versions check (versions.py check, below). build/run_commit_lints.sh runs all of them; build/githooks/pre-commit runs it on each commit once enabled
 # (an owner step: git config core.hooksPath build/githooks writes repo config every worktree reads); the hook lints
 # the working tree, untracked drafts included except by the drift lint, which reads tracked files only.
 # .github/workflows/lints.yml runs them on PRs and main as an advisory check; the hook is the gate.
 # Frontmatter, provenance and guide-conformance lints (run before committing any Claude Code artifact); add --strict to the first, a report and not a gate, when preparing a claude.ai upload or a spec-only validator run
-uv run --python 3.13 --with pyyaml python build/check_frontmatter.py
-uv run --python 3.13 python build/check_provenance.py
-uv run --python 3.13 --with pyyaml python build/check_conformance.py
+uv run --with pyyaml python build/check_frontmatter.py
+uv run python build/check_provenance.py
+uv run --with pyyaml python build/check_conformance.py
 
 # Commit-lint runner, hook and workflow tests: the clean and refusal tests run the full lint set in clones (about 15 s warm)
-cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_commit_lints.py
+cd build && uv run --with pytest --with pyyaml python -m pytest -q test_commit_lints.py
 
 # Claude Code guide drift detector (build/cc_guide/): suite cc_guide; lint, run before committing a change to the guide, to
 # build/cc_guide/ or to a file carrying a citation (its STALE lines never fail it); check, which fetches the docs and
 # reports what is due (exit 1 = due; reads main unless --worktree); /cc-guide acts on what it reports; a SessionStart
 # hook (build/cc_guide/notice.sh) runs check --hook once the last good check is a day old; its notice shows in terminal sessions only
-uv run --python 3.13 python build/cc_guide/cli.py lint
-uv run --python 3.13 python build/cc_guide/cli.py check
+uv run python build/cc_guide/cli.py lint
+uv run python build/cc_guide/cli.py check
 
 # Live probes (spec R10): binaries lists the claude binaries installed; probes runs the due probes against the one named
 # (about $0.05-0.30 each), appends rows to build/cc_guide/PROBES.md and commits nothing; /cc-guide probes drives both
-uv run --python 3.13 python build/cc_guide/cli.py binaries
-uv run --python 3.13 python build/cc_guide/cli.py probes --claude <path>
+uv run python build/cc_guide/cli.py binaries
+uv run python build/cc_guide/cli.py probes --claude <path>
 
 # Dependency drift: skill and command text vs install.py's DEPENDENCIES (run before committing a skill
 # change that adds or drops a cross-skill or /command reference)
-cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_runtime_support.py -k declared_dependencies
+cd build && uv run --with pytest --with pyyaml python -m pytest -q test_runtime_support.py -k declared_dependencies
 
 # Critical-section placement: compaction-window exceptions waive per file, heading findings included, so these tests
 # pin the critical sections of two skills (CRITICAL_SPANS) and the late headings the owner accepted in writing-skills
 # (ACKNOWLEDGED_LATE), both in test_check_conformance.py. Removing an exception removes its files' rows; when the last
 # compaction-window exception goes, retire this lint and these tests with it
-cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q test_check_conformance.py -k test_real_skill
+cd build && uv run --with pytest --with pyyaml python -m pytest -q test_check_conformance.py -k test_real_skill
 
 # Snippet gate: three tiers, cheapest first, run as three separate commands. Every command runs the parse check, but
 # --run does not run the --api checks, so a full check runs all three. Tier 1 covers all of skills/; Tiers 2 and 3
@@ -116,25 +116,35 @@ cd build && uv run --python 3.13 --with pytest --with pyyaml python -m pytest -q
 # noparse, fixture=<name>); named fixtures live in build/snippet_preamble.py's NAMED_FIXTURES. If a block raises
 # under Tier 3, fix it: norun is for blocks that cannot run by design.
 # Tier 1 (parse-only, stdlib, instant) — run before committing any skill edit:
-uv run --python 3.13 python build/check_snippets.py skills/
-# Tier 2 (--api: also resolve dotted library chains from code and backticked prose; imports the stack, ~30s):
-uv run --python 3.13 --with "arviz>=1.0" --with arviz-base --with arviz-stats --with arviz-plots --with numpyro --with jax python build/check_snippets.py --api skills/bayesian-workflow/
-# Tier 3 (--run: also execute the harnessed subset, without the Tier 2 checks; minutes; the pins match build/snippet_preamble.py's PINNED, refresh deliberately):
-uv run --python 3.13 --with 'arviz==1.3.0' --with arviz-base --with 'arviz-stats==1.3.3' --with 'arviz-plots==1.3.2' --with 'numpyro==0.22.0' --with 'jax==0.12.0' --with numpy --with matplotlib python build/check_snippets.py --run skills/bayesian-workflow/
+uv run python build/check_snippets.py skills/
+# Tier 2 (--api: also resolve dotted library chains from code and backticked prose; imports the stack, ~30s). Tiers 2 and 3 run on the snippets stack of build/versions.toml:
+uv run python build/versions.py run snippets -- python build/check_snippets.py --api skills/bayesian-workflow/
+# Tier 3 (--run: also execute the harnessed subset, without the Tier 2 checks; minutes):
+uv run python build/versions.py run snippets -- python build/check_snippets.py --run skills/bayesian-workflow/
 
 # CPU-example process-contract tests (stdlib + pytest only). The JAX run itself is the pinned command
 # below; it skips norun and noparse blocks and does not validate the surrounding prose
-cd build && uv run --python 3.13 --with pytest python -m pytest -q test_check_jax_examples.py
+cd build && uv run --with pytest python -m pytest -q test_check_jax_examples.py
 
-# Verified deep-learning CPU examples (canonical Markdown blocks, no preamble), pinned by specs/verification/32-jax-cpu.in
-# -> 32-jax-cpu.txt: refresh deliberately, then rerun. Hardware and checkpoint recipes in references state their own limits
-JAX_PLATFORMS=cpu uv run --python 3.13 --with-requirements specs/verification/32-jax-cpu.txt python build/check_jax_examples.py skills/deep-learning/
+# Verified CPU examples of deep-learning, evaluate-deep-learning and optimize-jax (canonical Markdown blocks, no preamble),
+# run on the jax-cpu stack of build/versions.toml. Hardware and checkpoint recipes in references state their own limits
+uv run python build/versions.py run jax-cpu -- python build/check_jax_examples.py skills/deep-learning/ skills/evaluate-deep-learning/ skills/optimize-jax/
+
+# Package versions. build/versions.toml is the one source of the dev Python, the freeze date and every pin; sync writes
+# .python-version and uv.toml from it. sync --check and check are offline, and check is a commit lint. A bump runs
+# bump, verify (minutes), check, then a fix or a HISTORICAL entry for each stale citation, then one commit. drift is the
+# on-demand form of the weekly advisory workflow: it resolves with no freeze date on the dev and the newest stable Python
+uv run python build/versions.py sync [--check]
+uv run python build/versions.py bump [--date YYYY-MM-DD] [--only <package> ...]
+uv run python build/versions.py verify [--pin <package>==<version> ...]
+uv run python build/versions.py drift
+uv run python build/versions.py check
 
 # Single test
-cd build && uv run --python 3.13 --with pytest --with numpy --with polars python -m pytest test_verify_citations.py::test_missing_scratch_exits_2_with_actionable_message
+cd build && uv run --with pytest --with numpy --with polars python -m pytest test_verify_citations.py::test_missing_scratch_exits_2_with_actionable_message
 
 # End-to-end routing smoke test (no PDFs needed)
-uv run --python 3.13 --with numpy --with polars python build/smoke_test.py
+uv run --with numpy --with polars python build/smoke_test.py
 
 # Rebuild geographic-codes data/ from the pinned Census/OMB sources (network) or the sources/ cache
 uv run skills/geographic-codes/scripts/build.py
@@ -147,8 +157,8 @@ uv run skills/classification-codes/scripts/build.py --offline
 
 # Verify citations across the whole skill (Gate A; exit 0 = all resolve; chapter-fallback WARNs on
 # stderr are non-fatal — confirm those via Gate B)
-uv run --python 3.13 python build/verify_citations.py skills/recommend-probabilistic-model/
+uv run python build/verify_citations.py skills/recommend-probabilistic-model/
 
 # Rebuild citation ground truth (needs local PDFs + gh; writes gitignored build/.scratch/)
-uv run --python 3.13 python build/extract_structure.py
+uv run python build/extract_structure.py
 ```

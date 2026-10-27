@@ -140,9 +140,9 @@ for this plan. All selected JAX CPU blocks were executed separately below.
 
 ## CPU profile, exact blocks and captured stdout
 
-The unchanged [input profile](32-jax-cpu.in) has SHA-256
+The unchanged [input profile](completed/32-jax-cpu.in) has SHA-256
 `b464a7e53420e93a7d11dd209ed47238674d951f64b74292a53faa1c4f1b7ccd`;
-the unchanged [resolved profile](32-jax-cpu.txt) has SHA-256
+the unchanged [resolved profile](completed/32-jax-cpu.txt) has SHA-256
 `c8bd73640ca1d2cd1f86a211554e9ceac244054d629370a931738a8b5b10258c`.
 All 39 exact installed pins were reconciled to that resolved file. The only
 additional environment distributions were bootstrap `pip==25.2` and

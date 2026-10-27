@@ -1,6 +1,6 @@
 """Tests for the three bundled bash scripts — run from this directory.
 
-cd skills/subagent-driven-development/scripts && uv run --python 3.13 --with pytest \
+cd skills/subagent-driven-development/scripts && uv run --with pytest \
   python -m pytest -q
 
 These are bash, not Python, so each test drives the script as a subprocess and

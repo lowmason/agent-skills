@@ -77,7 +77,7 @@ This skill owns **discovery**: it is the canonical place for "is this column act
 
 ## Polars idioms
 
-These are verified on Polars 1.38. Prefer the lazy form; collect only the summary frame.
+These are verified on Polars 2.1. Prefer the lazy form; collect only the summary frame.
 
 ```python
 import polars as pl

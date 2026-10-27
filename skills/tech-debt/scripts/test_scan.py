@@ -1,6 +1,6 @@
 """Tests for scan.sh, the tech-debt sweep — run from this directory.
 
-cd skills/tech-debt/scripts && uv run --python 3.13 --with pytest python -m pytest -q
+cd skills/tech-debt/scripts && uv run --with pytest python -m pytest -q
 
 scan.sh is bash and greps for planted signals, so each test builds a small git
 project that carries them, runs the script as a subprocess, and reads one

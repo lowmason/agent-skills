@@ -247,5 +247,5 @@ catches a 2023 file coded with Connecticut's retired counties. Commit `data/`, `
 tests for the synthesizer, readers, and checks are in `scripts/test_build.py`:
 
 ```bash
-cd skills/geographic-codes/scripts && uv run --python 3.13 --with pytest --with polars --with fastexcel python -m pytest -q
+cd skills/geographic-codes/scripts && uv run --with pytest --with polars --with fastexcel python -m pytest -q
 ```

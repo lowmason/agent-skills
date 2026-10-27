@@ -1,5 +1,7 @@
 # Package versions Implementation Plan
 
+**Status: COMPLETE (2026-10-27)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Put the dev Python, one freeze date and every pinned or cited package version in one file, `build/versions.toml`. Make every check, command and lint read them from that file.
@@ -8,7 +10,7 @@
 
 **Tech Stack:** Python standard library (`tomllib`), uv, pytest, GitHub Actions. No new third-party package.
 
-**Spec:** `specs/package-versions.md` (approved by the owner on 2026-10-21, on main since lowmason/agent-skills#109). Read it first. This plan argues from it.
+**Spec:** `specs/completed/package-versions.md` (retired with this plan; approved by the owner on 2026-10-21, on main since lowmason/agent-skills#109). Read it first. This plan argues from it.
 
 **Plan id:** 66. It was claimed on 2026-10-21 with `skills/writing-plans/scripts/entry_check.py` (plans 63 and 64 are live, and 65 is the model-lifecycle plan).
 
@@ -129,6 +131,13 @@ The owner approved the default for each of Q1 to Q8 at plan review ("Approve def
 - **D6** (owner, plan review, 2026-10-21): Q6. Tier 2 of the snippet gate runs on the pinned `snippets` stack, and the documented command uses the runner. Applied in: Task 6 (spec amendment A3).
 - **D7** (owner, plan review, 2026-10-21): Q7. Rewrite the two prose copies in `CLAUDE.md` to point at `build/versions.toml`. Leave `README.md:23`. Applied in: Task 13.
 - **D8** (owner, plan review, 2026-10-21): Q8. Move `32-jax-cpu.in` and `32-jax-cpu.txt` with `git mv` to `specs/verification/completed/` and re-point the five record links. Applied in: Task 12.
+- **D9** (owner, 2026-10-27): scikit-learn is pinned. Plan 67 added "scikit-learn 1.9.1" to `tune-hyperparameters` after D2 was approved, and D2's table leaves scikit-learn unlisted. The owner chose "Pin in [packages]". This overrides D2's scikit-learn row and follows spec R1.2: a check installs it and a skill cites a version. Task 4 Step 1 adds `scikit-learn = '0'` to the `[packages]` block, so Step 2 expects 22 packages, not 21. The Q2 text above (the "Not listed anywhere" line) is superseded. Spec amendment A2 does not change. Applied in: Task 4.
+- **D10** (owner, 2026-10-27): how Task 11 settles the `tune-hyperparameters` citations. If the bump makes "Optuna 5.0.0" (`skills/tune-hyperparameters/SKILL.md` :149 or :189) or "scikit-learn 1.9.1" (:189-190) stale, re-run the nested-CV block (`SKILL.md` :192-212) on the pinned stack with small synthetic data, then update the versions. The block needs `X`, `y` and `PurgedTimeSeriesSplit` from the skill's `scripts/time_series_cv.py`. If the block does not run as written, use `HISTORICAL` with a reason and a deferred item (Task 11 Step 8). Applied in: Task 11.
+- **D11** (owner, 2026-10-27): execution mode is Subagent-Driven. A fresh subagent runs each task, with a task review between tasks, and each task commits on its own. Applied in: the progress ledger's opening entry.
+- **D12** (owner, 2026-10-27): at the Plan Completion gate the owner chose "Widen now". The `jax-cpu` gate runs all ten CPU examples, those of `deep-learning`, `evaluate-deep-learning` and `optimize-jax`, where the plan's Task 10 command ran only the six in `deep-learning`. All ten passed on the pinned stack. Applied in: `build/versions.py` (the gate step), `CLAUDE.md` and `specs/package-versions.md` (commit `7eaf8cd`).
+- **D13** (owner, 2026-10-27): the lint stays as built. The run manifest at `skills/evaluate-deep-learning/references/experiments.md:86-87` uses a `name: version` form that the lint never matches, so it needs no `HISTORICAL` entry. Spec R4.3 is reworded to say so. Applied in: the spec, at retirement.
+- **D14** (owner, 2026-10-27): the weekly `drift` exit status stays as built. Either pass can set exit 1 (spec R3.5). A deferred item says to revisit it if the job is red from the Python 3.15 pass alone for a month. Applied in: `specs/deferred_items.md`.
+- **D15** (owner, 2026-10-27): the commit-lint count wording becomes count-free now. Plan 66 had written "ten" in four places. This closes the deferred item whose trigger Task 14 fired. Applied in: `CLAUDE.md`, `build/CLAUDE.md`, `build/run_commit_lints.sh` and `build/githooks/pre-commit` (commit `feec6fb`).
 
 ## Order with other work
 
@@ -203,7 +212,7 @@ The spec's R6 (migration) fixes an order. First re-probe uv. Then write the file
 
 The probe never writes `uv.toml` or `.python-version` inside this repository. Every sibling worktree under `.claude/worktrees/` would inherit them at once. It builds its tree in the system temp directory. Every uv call runs with `--no-cache`, because uv reuses a cached environment whose requirements match, whatever freeze date built it.
 
-- [ ] **Step 1: Create the probe script.** Write this file exactly.
+- [x] **Step 1: Create the probe script.** Write this file exactly.
 
 ```python
 '''Re-probe the uv behaviors that specs/package-versions.md relies on, on the uv of the day.
@@ -440,7 +449,7 @@ if __name__ == '__main__':
     sys.exit(main())
 ```
 
-- [ ] **Step 2: Run the probe.** It needs the network and takes about one minute.
+- [x] **Step 2: Run the probe.** It needs the network and takes about one minute.
 
 ```bash
 uv run --no-project python specs/verification/66-uv-probe.py | tee /tmp/66-uv-probe.out
@@ -448,9 +457,9 @@ uv run --no-project python specs/verification/66-uv-probe.py | tee /tmp/66-uv-pr
 
 Expected: exit status 1 (two FAIL rows) and a Markdown table of about 40 rows. The first line names the uv version.
 
-- [ ] **Step 3: Compare the table with the forecast.** The forecast is in "Forecast for Task 1". If the table is as forecast, go on. If any other row FAILs, or P2a or P2b PASS, or the uv version has changed in a way that explains the difference, **stop**. Report the table to the owner and wait. Do not go on to Task 2.
+- [x] **Step 3: Compare the table with the forecast.** The forecast is in "Forecast for Task 1". If the table is as forecast, go on. If any other row FAILs, or P2a or P2b PASS, or the uv version has changed in a way that explains the difference, **stop**. Report the table to the owner and wait. Do not go on to Task 2.
 
-- [ ] **Step 4: Check that `setup-uv` leaves the interpreter to uv (spec R5.2).** The workflow pins the action by SHA. Read the action's inputs at that SHA.
+- [x] **Step 4: Check that `setup-uv` leaves the interpreter to uv (spec R5.2).** The workflow pins the action by SHA. Read the action's inputs at that SHA.
 
 ```bash
 sha=$(grep -o 'setup-uv@[0-9a-f]*' .github/workflows/lints.yml | cut -d@ -f2)
@@ -459,7 +468,7 @@ gh api "repos/astral-sh/setup-uv/contents/action.yml?ref=$sha" --jq .content | b
 
 Expected: an optional input whose description says it sets `UV_PYTHON`. When `lints.yml` does not pass it, uv reads `.python-version` itself (probe row P6a). So `lints.yml` needs no change. If the action reads `.python-version` another way or the input is required, stop and report.
 
-- [ ] **Step 5: Check that a plain file in a skills directory is ignored (spec R2.1).** `skills/uv.toml` is a file, not a skill.
+- [x] **Step 5: Check that a plain file in a skills directory is ignored (spec R2.1).** `skills/uv.toml` is a file, not a skill.
   1. Repo readers: `install.py:97-101`, `build/check_frontmatter.py:574-575` and `build/check_provenance.py:40-44` list only directories that hold a `SKILL.md`. Confirm with `sed -n 92,102p install.py`.
   2. The installer links each skill on its own into `~/.claude/skills`, so no runtime sees `skills/uv.toml` through an install. Confirm with `ls -la ~/.claude/skills | head -5`. Expected: one symlink for each skill, and no `uv.toml`.
   3. Claude Code, live. A user can also point a runtime at the whole `skills/` directory, so check the loader. It costs about $0.05.
@@ -484,9 +493,9 @@ cd - > /dev/null
 Expected: `demo loaded: True | a uv.toml skill: False`.
   4. Codex and Gemini. Open each runtime's current skills documentation and find the sentence that says a skill is a directory with a `SKILL.md`. Quote it in the record. If a runtime's documentation does not say so, record "not confirmed" and ask the owner before Task 4.
 
-- [ ] **Step 6: Write the record.** Create `specs/verification/66-uv-probe.md`. It holds the date, the output of `uv --version`, the full probe table (paste `/tmp/66-uv-probe.out`) and the results of step 4 and step 5. It ends with one paragraph that says which spec items the run changed (items 2 and 3, by the forecast). End with the line `Probes run with uv --no-cache; uv reuses a cached environment whose requirements match, whatever freeze date built it.`
+- [x] **Step 6: Write the record.** Create `specs/verification/66-uv-probe.md`. It holds the date, the output of `uv --version`, the full probe table (paste `/tmp/66-uv-probe.out`) and the results of step 4 and step 5. It ends with one paragraph that says which spec items the run changed (items 2 and 3, by the forecast). End with the line `Probes run with uv --no-cache; uv reuses a cached environment whose requirements match, whatever freeze date built it.`
 
-- [ ] **Step 7: Apply amendment A1 to the spec.** Edit `specs/package-versions.md` with these exact replacements. Leave the status line untouched.
+- [x] **Step 7: Apply amendment A1 to the spec.** Edit `specs/package-versions.md` with these exact replacements. Leave the status line untouched.
 
 Replace item 2 of "uv behavior that constrains the design":
 
@@ -512,7 +521,7 @@ with:
 3. With no `--python` and no `.python-version`, uv picked Python 3.14 for a script. A bare `polars` header then resolved to 2.0.0, as it does under `--python 3.13` and as `uv run --python 3.14 --with 'polars>=2.0'` does. So the three `polars>=2.0` scripts work on 3.14. The 1.44.2 result of the first probe came from a cached environment (item 2), not from the interpreter. (owner, plan 66, 2026-10-21)
 ````
 
-- [ ] **Step 8: Commit.**
+- [x] **Step 8: Commit.**
 
 ```bash
 git add specs/verification/66-uv-probe.py specs/verification/66-uv-probe.md specs/package-versions.md
@@ -534,7 +543,7 @@ git commit -m "docs(specs): re-probe uv for package-versions (plan 66 task 1)"
   - `SUBCOMMANDS` (name -> `(add_parser, handler)`), `build_parser()`, `main(argv=None, root=REPO) -> int`.
   - Later tasks insert library code above the line `# ---- command line` and command code above `SUBCOMMANDS = {`.
 
-- [ ] **Step 1: Write the failing tests.** Create `build/test_versions.py`.
+- [x] **Step 1: Write the failing tests.** Create `build/test_versions.py`.
 
 ```python
 '''Tests for build/versions.py: the file's schema, the synced outputs, the uv argv it builds, and the
@@ -700,7 +709,7 @@ def test_an_invalid_file_exits_2_with_the_cause(tmp_path, capsys):
     assert "[packages] alpha: invalid version 'oops'" in capsys.readouterr().err
 ```
 
-- [ ] **Step 2: Run them and watch them fail.**
+- [x] **Step 2: Run them and watch them fail.**
 
 ```bash
 cd build && uv run --with pytest python -m pytest -q test_versions.py
@@ -708,7 +717,9 @@ cd build && uv run --with pytest python -m pytest -q test_versions.py
 
 Expected: FAIL at collection with `ModuleNotFoundError: No module named 'versions'`.
 
-- [ ] **Step 3: Write the module.** Create `build/versions.py`.
+- [x] **Step 3: Write the module.** Create `build/versions.py`.
+
+> Deviation: `parse()` also checks the shape of `[override]` and `[cited]` (review fix). The block above crashes on `[override]` or `cited = 5`.
 
 ```python
 '''One source for every pinned or cited package version, the dev interpreter and the freeze date.
@@ -981,7 +992,7 @@ if __name__ == '__main__':
     sys.exit(main())
 ```
 
-- [ ] **Step 4: Run the tests.**
+- [x] **Step 4: Run the tests.**
 
 ```bash
 cd build && uv run --with pytest python -m pytest -q test_versions.py
@@ -989,7 +1000,7 @@ cd build && uv run --with pytest python -m pytest -q test_versions.py
 
 Expected: PASS, +26 tests.
 
-- [ ] **Step 5: Commit.**
+- [x] **Step 5: Commit.**
 
 ```bash
 git add build/versions.py build/test_versions.py
@@ -1006,7 +1017,7 @@ git commit -m "feat(build): versions.py core, schema and sync (plan 66 task 2)"
 - Consumes: Task 2's `load`, `parse`, `rewrite`, `sync`, `Versions`, `normalize`, `SUBCOMMANDS`.
 - Produces: `resolve(requirements, python_version, cutoff) -> dict[str, str]` (a joint `uv pip compile`, normalised name to version, transitive pins included, and with `cutoff=None` it runs `uv --no-config` so the repo's `uv.toml` does not apply). `requirements(v, only=(), pins=None) -> list[str]`. `bump(root, date, only=(), resolver=None) -> list[str]`. `parse_date(text) -> datetime.date`. The `bump` subcommand.
 
-- [ ] **Step 1: Write the failing tests.** In `build/test_versions.py`, make this import edit, then append the tests below.
+- [x] **Step 1: Write the failing tests.** In `build/test_versions.py`, make this import edit, then append the tests below.
 
 In `build/test_versions.py`, replace:
 
@@ -1141,7 +1152,7 @@ def test_bump_rejects_an_invalid_date(tmp_path, capsys):
     assert "invalid date '2026-13-40'" in capsys.readouterr().err
 ```
 
-- [ ] **Step 2: Run them and watch them fail.**
+- [x] **Step 2: Run them and watch them fail.**
 
 ```bash
 cd build && uv run --with pytest python -m pytest -q test_versions.py
@@ -1149,7 +1160,7 @@ cd build && uv run --with pytest python -m pytest -q test_versions.py
 
 Expected: the new tests FAIL with `AttributeError: module 'versions' has no attribute 'requirements'` (or `resolve`, or `bump`). The Task 2 tests still pass.
 
-- [ ] **Step 3: Edit the imports of `build/versions.py`.**
+- [x] **Step 3: Edit the imports of `build/versions.py`.**
 
 In `build/versions.py`, replace:
 
@@ -1181,7 +1192,9 @@ import sys
 ```
 
 
-- [ ] **Step 4: Add the library code.** Insert this block immediately above the line `# ---- command line`.
+- [x] **Step 4: Add the library code.** Insert this block immediately above the line `# ---- command line`.
+
+> Deviation: `bump()` parses its rewritten text and refuses to write when `[packages]` or the freeze date did not take effect. The block above printed false moves for double-quoted values.
 
 ```python
 RESOLVED_LINE = re.compile(r'^([A-Za-z0-9][A-Za-z0-9._-]*)==([0-9][^\s;]*)', re.M)
@@ -1243,7 +1256,7 @@ def bump(root: Path, date: datetime.date, only: Iterable[str] = (),
     return changes
 ```
 
-- [ ] **Step 5: Add the command code.** Insert this block immediately above the line `SUBCOMMANDS = {`.
+- [x] **Step 5: Add the command code.** Insert this block immediately above the line `SUBCOMMANDS = {`.
 
 ```python
 def parse_date(text: str) -> datetime.date:
@@ -1275,7 +1288,7 @@ SUBCOMMANDS = {
 }
 ```
 
-- [ ] **Step 6: Run the tests.**
+- [x] **Step 6: Run the tests.**
 
 ```bash
 cd build && uv run --with pytest python -m pytest -q test_versions.py
@@ -1283,7 +1296,7 @@ cd build && uv run --with pytest python -m pytest -q test_versions.py
 
 Expected: PASS, +8 tests.
 
-- [ ] **Step 7: Commit.**
+- [x] **Step 7: Commit.**
 
 ```bash
 git add build/versions.py build/test_versions.py
@@ -1302,7 +1315,9 @@ git commit -m "feat(build): versions.py bump and joint resolve (plan 66 task 3)"
 
 R6 step 2 says to write the file and then run `bump` and `verify` on the day of execution. `verify` does not exist yet. This task writes the file and runs the first `bump`. Task 10 runs `verify` and a second `bump` if the day has changed. The package values below are `0` placeholders. `bump` replaces them in step 2. Do not commit a `0`.
 
-- [ ] **Step 1: Create `build/versions.toml`.**
+- [x] **Step 1: Create `build/versions.toml`.**
+
+> Deviation: D9 adds `scikit-learn` to `[packages]`, so the first `bump` resolved 22 packages, not 21.
 
 ```toml
 # The one place where a person sets a package version, the dev interpreter or the freeze date.
@@ -1354,7 +1369,7 @@ jax-cpu = ['jax', 'jaxlib', 'flax', 'optax', 'orbax-checkpoint', 'equinox', 'dif
 
 If the owner answered Q2 with the alternative, delete the `optuna` line and add `optuna = '5.0.0'` under `[cited]`.
 
-- [ ] **Step 2: Run the first `bump`.** It needs the network. It sets the freeze date to today (UTC), resolves all `[packages]` together on the dev Python, rewrites the file and runs `sync`.
+- [x] **Step 2: Run the first `bump`.** It needs the network. It sets the freeze date to today (UTC), resolves all `[packages]` together on the dev Python, rewrites the file and runs `sync`.
 
 ```bash
 uv run python build/versions.py bump
@@ -1362,7 +1377,7 @@ uv run python build/versions.py bump
 
 Expected: a line `freeze: 2026-10-21 -> <today>` (or no such line when today is 2026-10-21), then one line `<package>: 0 -> <version>` for each of the 21 packages. Exit 0. If it exits 2, read the message. A conflict names the packages. Do not edit the placeholders by hand to get around it. Report the conflict (it is the case that D2, one version for each package, makes visible).
 
-- [ ] **Step 3: Check the result.**
+- [x] **Step 3: Check the result.**
 
 ```bash
 git status --short && cat .python-version uv.toml && uv run python build/versions.py sync --check && echo sync ok && grep -c "= '0'" build/versions.toml
@@ -1370,7 +1385,7 @@ git status --short && cat .python-version uv.toml && uv run python build/version
 
 Expected: the four files changed or new, `3.13`, a `uv.toml` with `exclude-newer = "<day after freeze>T00:00:00Z"`, `sync ok`, and `0` for the last count (no placeholder left). `skills/uv.toml` holds comments only.
 
-- [ ] **Step 4: Check that the repo's own readers skip `skills/uv.toml`.**
+- [x] **Step 4: Check that the repo's own readers skip `skills/uv.toml`.**
 
 ```bash
 uv run --with pyyaml python build/check_frontmatter.py && uv run python build/check_provenance.py && uv run --with pyyaml python build/check_conformance.py
@@ -1379,7 +1394,7 @@ cd build && uv run --with pytest --with pyyaml python -m pytest -q test_runtime_
 
 Expected: all pass. `install.py` and the two lints read only directories that hold a `SKILL.md`.
 
-- [ ] **Step 5: Apply amendment A2 to the spec** (only with Q2's default). In `specs/package-versions.md`, section R1.1, replace:
+- [x] **Step 5: Apply amendment A2 to the spec** (only with Q2's default). In `specs/package-versions.md`, section R1.1, replace:
 
 ````text
 [packages]                   # one exact version each; a check runs these
@@ -1413,7 +1428,7 @@ great-docs = '0.17.0'
 
 Append `(owner, plan 66, 2026-10-21)` to the line `The values above are the 2026-10-21 state. The plan sets the real values with `bump` (R3).`
 
-- [ ] **Step 6: Commit.**
+- [x] **Step 6: Commit.**
 
 ```bash
 git add build/versions.toml .python-version uv.toml skills/uv.toml specs/package-versions.md
@@ -1431,7 +1446,9 @@ After this commit every `uv run` in the repo resolves packages as of the freeze 
 - Consumes: Tasks 2 and 4 (`Versions.stack`, the real file).
 - Produces: `RUNNER` (`'uv run python build/versions.py run'`), `runner_command(gate, tail) -> str` (the documented form of a pinned command), `uv_run_argv(v, gate, command, pins=None, python=None, freeze=True) -> list[str]` (`gate=None` leaves out the `--with` list), `parse_pins(v, specs) -> dict[str, str]` (names normalised, each must be a `[packages]` entry), `late_pins(v, specs, fetch=None) -> list[str]` (the specs whose release was first uploaded at or after the cutoff), `fetch_json(url) -> dict`, `run_process(argv, root, env) -> int`, `add_pin_options`, and the `run` subcommand.
 
-- [ ] **Step 1: Write the failing tests.** Append to `build/test_versions.py`.
+- [x] **Step 1: Write the failing tests.** Append to `build/test_versions.py`.
+
+> Deviation: `test_run_needs_a_command` asserts the error message.
 
 ```python
 def test_parse_pins():
@@ -1496,7 +1513,7 @@ def test_run_needs_a_command(tmp_path):
     assert err.value.code == 2
 ```
 
-- [ ] **Step 2: Run them and watch them fail.**
+- [x] **Step 2: Run them and watch them fail.**
 
 ```bash
 cd build && uv run --with pytest python -m pytest -q test_versions.py
@@ -1504,7 +1521,7 @@ cd build && uv run --with pytest python -m pytest -q test_versions.py
 
 Expected: the new tests FAIL with `AttributeError: module 'versions' has no attribute 'parse_pins'` (or another new name).
 
-- [ ] **Step 3: Edit the imports of `build/versions.py`.**
+- [x] **Step 3: Edit the imports of `build/versions.py`.**
 
 In `build/versions.py`, replace:
 
@@ -1535,7 +1552,7 @@ import urllib.request
 ```
 
 
-- [ ] **Step 4: Add the library code.** Insert immediately above the line `# ---- command line`.
+- [x] **Step 4: Add the library code.** Insert immediately above the line `# ---- command line`.
 
 ```python
 RUNNER = 'uv run python build/versions.py run'
@@ -1618,7 +1635,7 @@ def run_process(argv: Sequence[str], root: Path = REPO, env: Mapping[str, str] |
         return 2
 ```
 
-- [ ] **Step 5: Add the command code.** Insert immediately above `SUBCOMMANDS = {`.
+- [x] **Step 5: Add the command code.** Insert immediately above `SUBCOMMANDS = {`.
 
 ```python
 def add_pin_options(parser: argparse.ArgumentParser, drift_only: bool = False) -> None:
@@ -1656,7 +1673,7 @@ SUBCOMMANDS = {
 }
 ```
 
-- [ ] **Step 6: Run the tests.**
+- [x] **Step 6: Run the tests.**
 
 ```bash
 cd build && uv run --with pytest python -m pytest -q test_versions.py
@@ -1664,7 +1681,7 @@ cd build && uv run --with pytest python -m pytest -q test_versions.py
 
 Expected: PASS, +7 tests.
 
-- [ ] **Step 7: Smoke test against the real file.** It needs the network.
+- [x] **Step 7: Smoke test against the real file.** It needs the network.
 
 ```bash
 uv run python build/versions.py run snippets -- python -c "import importlib.metadata as m; print(m.version('numpyro'))"
@@ -1673,7 +1690,7 @@ grep '^numpyro' build/versions.toml
 
 Expected: the two lines show the same version.
 
-- [ ] **Step 8: Commit.**
+- [x] **Step 8: Commit.**
 
 ```bash
 git add build/versions.py build/test_versions.py
@@ -1689,7 +1706,7 @@ git commit -m "feat(build): versions.py run, pins and upload-date check (plan 66
 - Consumes: `versions.runner_command` (Task 5).
 - Produces: `check_snippets.API_REMEDIATION` and `RUN_REMEDIATION` as runner commands. `snippet_preamble.PINNED` no longer exists.
 
-- [ ] **Step 1: Write the failing tests.** Append to `build/test_check_snippets.py`.
+- [x] **Step 1: Write the failing tests.** Append to `build/test_check_snippets.py`.
 
 ```python
 def test_the_remediation_commands_use_the_runner_and_spell_no_version():
@@ -1707,7 +1724,7 @@ def test_the_preamble_module_no_longer_pins_packages():
     assert not hasattr(snippet_preamble, 'PINNED')
 ```
 
-- [ ] **Step 2: Run them and watch them fail.**
+- [x] **Step 2: Run them and watch them fail.**
 
 ```bash
 cd build && uv run --with pytest python -m pytest -q test_check_snippets.py -k "remediation_commands or no_longer_pins"
@@ -1715,7 +1732,7 @@ cd build && uv run --with pytest python -m pytest -q test_check_snippets.py -k "
 
 Expected: 2 FAIL (`AssertionError`).
 
-- [ ] **Step 3: Make the edits.**
+- [x] **Step 3: Make the edits.**
 
 In `build/check_snippets.py`, replace:
 
@@ -1766,7 +1783,7 @@ with nothing (delete it).
 
 The comment "Verified resolving ..." that sat above `PINNED` moves to the freeze date: `bump` sets it.
 
-- [ ] **Step 4: Run the tests.**
+- [x] **Step 4: Run the tests.**
 
 ```bash
 cd build && uv run --with pytest --with numpy --with polars --with pyyaml python -m pytest -q test_check_snippets.py
@@ -1774,7 +1791,7 @@ cd build && uv run --with pytest --with numpy --with polars --with pyyaml python
 
 Expected: PASS, +2 tests. The tests that need the stack skip without `--with` for it.
 
-- [ ] **Step 5: Smoke test the gate through the runner.** It needs the network.
+- [x] **Step 5: Smoke test the gate through the runner.** It needs the network.
 
 ```bash
 uv run python build/check_snippets.py skills/
@@ -1783,7 +1800,7 @@ uv run python build/versions.py run snippets -- python build/check_snippets.py -
 
 Expected: both exit 0. (Tier 3 runs in Task 10.)
 
-- [ ] **Step 6: Apply amendment A3 to the spec** (only with Q6's default). In `specs/package-versions.md`, section R2.3, replace:
+- [x] **Step 6: Apply amendment A3 to the spec** (only with Q6's default). In `specs/package-versions.md`, section R2.3, replace:
 
 ````text
 `PINNED` (moved out of `build/snippet_preamble.py`), `RUN_REMEDIATION` and `API_REMEDIATION`. Tier 2 (`--api`) stays unpinned for named packages and gets the freeze date.
@@ -1797,7 +1814,7 @@ with:
 
 (The first line of the old text starts with `- `build/check_snippets.py`: ` in the spec. Replace only the quoted part.)
 
-- [ ] **Step 7: Run the lints that apply, then commit.**
+- [x] **Step 7: Run the lints that apply, then commit.**
 
 ```bash
 uv run --with pyyaml python build/check_frontmatter.py && uv run python build/check_provenance.py
@@ -1814,7 +1831,9 @@ git commit -m "feat(build): check_snippets reads its stack from versions.toml (p
 - Consumes: `versions.load`, `Versions.pins`, `Versions.cutoff`, `versions.parse_pins`, `versions.normalize`.
 - Produces: `run_suites.Pins(python, cutoff, packages)` with `Pins.from_versions(v, python=None, freeze=True, user_pins=None)` and `Pins.spec(dep)`. `run_suites.DEV == 'dev'`. `runs(suite, pins, extras=False, pytest_args=())`, `execute(root, suites, pins, extras, pytest_args, run_one)`, `list_suites(suites, pins, extras, pytest_args)` and `main(argv, root, run_one, pins=None)`. The options `--pin`, `--python` and `--no-freeze`. In `suites.toml`, `dev` stands for the dev Python.
 
-- [ ] **Step 1: Write the failing tests.** Edit `build/test_run_suites.py`.
+- [x] **Step 1: Write the failing tests.** Edit `build/test_run_suites.py`.
+
+> Deviation: `test_check_takes_no_pin_options` loops over `--pin`, `--python` and `--no-freeze` and asserts the message. The brief's replace for `test_container_compares_path_parts_not_string_prefixes` was a no-op and was skipped.
 
 In `build/test_run_suites.py`, replace:
 
@@ -2122,7 +2141,7 @@ with:
 ```
 
 
-- [ ] **Step 2: Run them and watch them fail.**
+- [x] **Step 2: Run them and watch them fail.**
 
 ```bash
 cd build && uv run --with pytest --with numpy --with polars --with pyyaml python -m pytest -q test_run_suites.py
@@ -2130,7 +2149,7 @@ cd build && uv run --with pytest --with numpy --with polars --with pyyaml python
 
 Expected: FAIL. `rs.Pins` does not exist, and `rs.runs` does not take `pins`.
 
-- [ ] **Step 3: Edit the runner and the registry.**
+- [x] **Step 3: Edit the runner and the registry.**
 
 In `build/run_suites.py`, replace:
 
@@ -2441,7 +2460,7 @@ extras = ['arviz', 'arviz-base', 'arviz-stats', 'arviz-plots', 'numpyro', 'jax',
 ```
 
 
-- [ ] **Step 4: Run the tests.**
+- [x] **Step 4: Run the tests.**
 
 ```bash
 cd build && uv run --with pytest --with numpy --with polars --with pyyaml python -m pytest -q test_run_suites.py
@@ -2449,7 +2468,7 @@ cd build && uv run --with pytest --with numpy --with polars --with pyyaml python
 
 Expected: PASS, +8 tests.
 
-- [ ] **Step 5: Smoke test.**
+- [x] **Step 5: Smoke test.**
 
 ```bash
 uv run python build/run_suites.py --list hooks
@@ -2459,7 +2478,7 @@ uv run python build/run_suites.py write-with-asd-ste100
 
 Expected: `--list` shows two commands for `hooks`. The first has `--python <dev> --exclude-newer <cutoff>` and the second has `--python /usr/bin/python3 --exclude-newer <cutoff>`. `--check` prints `suite registry ok`. The last run passes.
 
-- [ ] **Step 6: Commit.**
+- [x] **Step 6: Commit.**
 
 ```bash
 git add build/run_suites.py build/suites.toml build/test_run_suites.py
@@ -2475,7 +2494,7 @@ git commit -m "feat(build): run_suites reads the dev Python, the cutoff and the 
 - Consumes: Tasks 3, 5 and 7 (`resolve`, `requirements`, `uv_run_argv`, `run_process`, `run_suites.py --pin/--python/--no-freeze`).
 - Produces: `Step(label, argv)`, `verify_steps(v, pins=None, python=None, freeze=True, user_pins=None) -> list[Step]` (four steps: `tier 2 (--api)`, `tier 3 (--run)`, `jax cpu examples`, `suites`), `run_steps(steps, root, env, runner) -> list[str]` (labels of failed steps), `newest_stable_python() -> str`, `Row`, `drift_rows`, `render_pass`, `DRIFT_LIMIT`, `drift(root, user_pins=None, fetch=None, resolver=None, newest_python=None, runner=None) -> tuple[int, str]`, and the `verify` and `drift` subcommands.
 
-- [ ] **Step 1: Write the failing tests.** Append to `build/test_versions.py`.
+- [x] **Step 1: Write the failing tests.** Append to `build/test_versions.py`.
 
 ```python
 def python_item(version, variant='default', implementation='cpython'):
@@ -2566,7 +2585,7 @@ def test_drift_main_prints_the_report_and_returns_its_status(tmp_path, stub_uv, 
     assert '# Package drift' in capsys.readouterr().out
 ```
 
-- [ ] **Step 2: Run them and watch them fail.**
+- [x] **Step 2: Run them and watch them fail.**
 
 ```bash
 cd build && uv run --with pytest python -m pytest -q test_versions.py
@@ -2574,7 +2593,7 @@ cd build && uv run --with pytest python -m pytest -q test_versions.py
 
 Expected: the new tests FAIL with `AttributeError: module 'versions' has no attribute 'newest_stable_python'` (or `drift`, or `verify_steps`).
 
-- [ ] **Step 3: Edit the imports of `build/versions.py`.**
+- [x] **Step 3: Edit the imports of `build/versions.py`.**
 
 In `build/versions.py`, replace:
 
@@ -2592,7 +2611,9 @@ import re
 ```
 
 
-- [ ] **Step 4: Add the library code.** Insert immediately above the line `# ---- command line`.
+- [x] **Step 4: Add the library code.** Insert immediately above the line `# ---- command line`.
+
+> Deviation: `drift_rows` wraps `ValueError` into `VersionsError` (exit 2), and a `resolved_pins` helper above `bump` serves both `bump` and `drift`.
 
 ```python
 @dataclass(frozen=True)
@@ -2724,7 +2745,7 @@ def drift(root: Path, user_pins: Mapping[str, str] | None = None, fetch: Fetch |
     return (1 if failed_any else 0), '\n'.join(report) + '\n'
 ```
 
-- [ ] **Step 5: Add the command code.** Insert immediately above `SUBCOMMANDS = {`.
+- [x] **Step 5: Add the command code.** Insert immediately above `SUBCOMMANDS = {`.
 
 ```python
 def add_verify(sub) -> None:
@@ -2770,7 +2791,7 @@ SUBCOMMANDS = {
 }
 ```
 
-- [ ] **Step 6: Run the tests.**
+- [x] **Step 6: Run the tests.**
 
 ```bash
 cd build && uv run --with pytest python -m pytest -q test_versions.py
@@ -2778,7 +2799,7 @@ cd build && uv run --with pytest python -m pytest -q test_versions.py
 
 Expected: PASS, +9 tests.
 
-- [ ] **Step 7: Commit.** (`verify` and `drift` run for real in Task 10 and in the weekly job.)
+- [x] **Step 7: Commit.** (`verify` and `drift` run for real in Task 10 and in the weekly job.)
 
 ```bash
 git add build/versions.py build/test_versions.py
@@ -2797,7 +2818,9 @@ git commit -m "feat(build): versions.py verify and drift (plan 66 task 8)"
 
 The four rules (R4.1): sync, interpreter literals, prose citations (equality, range, history) and floors. Q4's default applies to floors. The two `HISTORICAL` entries below came from the draft run on today's tree. Each phrase is still in skill text.
 
-- [ ] **Step 1: Write the failing tests.** Create `build/test_versions_check.py`.
+- [x] **Step 1: Write the failing tests.** Create `build/test_versions_check.py`.
+
+> Deviation: the live-files test gets one added `git add` line, so dropping `--cached` from `git ls-files` fails it.
 
 ```python
 '''Tests for build/versions_check.py, the lint behind `versions.py check`. Every rule has a positive
@@ -3060,7 +3083,7 @@ def test_the_check_command_prints_ok_or_each_finding(tmp_path, monkeypatch, caps
     assert out[0].startswith('CLAUDE.md:1:') and out[-1] == '1 problem(s)'
 ```
 
-- [ ] **Step 2: Run them and watch them fail.**
+- [x] **Step 2: Run them and watch them fail.**
 
 ```bash
 cd build && uv run --with pytest python -m pytest -q test_versions_check.py
@@ -3068,7 +3091,9 @@ cd build && uv run --with pytest python -m pytest -q test_versions_check.py
 
 Expected: FAIL at collection with `ModuleNotFoundError: No module named 'versions_check'`.
 
-- [ ] **Step 3: Write the module.** Create `build/versions_check.py`.
+- [x] **Step 3: Write the module.** Create `build/versions_check.py`.
+
+> Deviation: `judge()` handles `≤` as `<=`. After the final review it also evaluates `!=` and `~=` in full, through a `starts_with` helper.
 
 ```python
 '''The offline lint behind `versions.py check`, the repo's tenth commit lint.
@@ -3265,7 +3290,7 @@ def check(root: Path = versions.REPO, historical: Mapping[str, str] | None = Non
             + check_citations(root, v, historical) + check_floors(root, v))
 ```
 
-- [ ] **Step 4: Add the subcommand.** In `build/versions.py`, insert immediately above `SUBCOMMANDS = {`:
+- [x] **Step 4: Add the subcommand.** In `build/versions.py`, insert immediately above `SUBCOMMANDS = {`:
 
 ```python
 def add_check(sub) -> None:
@@ -3294,7 +3319,7 @@ SUBCOMMANDS = {
 }
 ```
 
-- [ ] **Step 5: Run the tests.**
+- [x] **Step 5: Run the tests.**
 
 ```bash
 cd build && uv run --with pytest python -m pytest -q test_versions.py test_versions_check.py
@@ -3302,7 +3327,7 @@ cd build && uv run --with pytest python -m pytest -q test_versions.py test_versi
 
 Expected: PASS, +49 tests (the `test_versions_check.py` count).
 
-- [ ] **Step 6: Run the lint on the real tree and keep the output.** It is the task list for Tasks 11 and 13.
+- [x] **Step 6: Run the lint on the real tree and keep the output.** It is the task list for Tasks 11 and 13.
 
 ```bash
 uv run python build/versions.py check > /tmp/66-first-run.txt; echo "check exit $?"; grep -c "spells an interpreter" /tmp/66-first-run.txt; grep -v "spells an interpreter" /tmp/66-first-run.txt
@@ -3310,7 +3335,7 @@ uv run python build/versions.py check > /tmp/66-first-run.txt; echo "check exit 
 
 Expected: `check exit 1`. About 80 interpreter-literal lines in about 41 files (Task 13 removes them) and the stale citations (Task 11 handles them). The draft run on 2026-10-21 listed these citations. The values depend on the day of the bump. `model-comparison.md` (arviz-stats). `model-criticism.md` (arviz-plots). `frameworks.md` (JAXlib, Orbax checkpoint, NumPy, Python 3.13.8). `explore-data/SKILL.md` (Polars 1.38). Five lines that cite Polars 1.42 in `recommend-visualization`. No floors finding and no sync finding. If other findings appear, read each one before going on.
 
-- [ ] **Step 7: Commit.** The lint is not wired yet, so the commit lints pass.
+- [x] **Step 7: Commit.** The lint is not wired yet, so the commit lints pass.
 
 ```bash
 git add build/versions.py build/versions_check.py build/test_versions_check.py
@@ -3329,7 +3354,7 @@ git commit -m "feat(build): versions.py check lint (plan 66 task 9)"
 
 Task 4 ran the first `bump`. Tasks 5 to 9 may have taken days. This task makes the pins and the verification belong to the same day.
 
-- [ ] **Step 1: Re-bump if the UTC day changed.**
+- [x] **Step 1: Re-bump if the UTC day changed.**
 
 ```bash
 date -u +%F && grep -n '^date' build/versions.toml
@@ -3337,7 +3362,7 @@ date -u +%F && grep -n '^date' build/versions.toml
 
 If the two dates differ, run `uv run python build/versions.py bump` and then `uv run python build/versions.py sync --check`. If they match, go on.
 
-- [ ] **Step 2: Check Polars (R6.4).** The pin must be at least 2.0, because three script headers floor it at `polars>=2.0` (plan 53, decision DF4). It should equal the newest PyPI release.
+- [x] **Step 2: Check Polars (R6.4).** The pin must be at least 2.0, because three script headers floor it at `polars>=2.0` (plan 53, decision DF4). It should equal the newest PyPI release.
 
 ```bash
 uv run python - <<'PYEOF'
@@ -3354,7 +3379,7 @@ PYEOF
 
 Expected: a line such as `polars pin 2.0.0 PyPI latest 2.0.0`, then no error. A latest release that differs from the pin is fine only when that release came out after the freeze cutoff. If the pin is below 2.0, stop and report it.
 
-- [ ] **Step 3: Run `verify`.** It takes several minutes and it needs the network. Run it in the background and keep the output.
+- [x] **Step 3: Run `verify`.** It takes several minutes and it needs the network. Run it in the background and keep the output.
 
 ```bash
 uv run python build/versions.py verify > /tmp/66-verify.txt 2>&1; echo "verify exit $?"; tail -20 /tmp/66-verify.txt
@@ -3367,6 +3392,8 @@ Expected: `verify exit 0`. The file holds four `== <step>` headers (`tier 2 (--a
 - If any other step failed, stop and follow the systematic-debugging skill. Use `--pin <package>==<version>` (R3.3) to find the package that caused it, for example `verify --pin numpyro==0.22.0`. R6.3 allows a temporary override for JAX only. Bring any other failure to the owner and do not work around it.
 
 - [ ] **Step 4: Only if the JAX examples failed: add a temporary override (R6.3).** `jax` and `jaxlib` must move together. Use the versions of the retired profile (`jax==0.11.2`, `jaxlib==0.11.2`), which passed these examples. Append to `build/versions.toml`:
+
+> Skipped: not needed. R6.3 resolved one JAX version (0.12.0.1) for both gates, so no override was written → nothing deferred.
 
 ```toml
 [[override]]
@@ -3391,6 +3418,8 @@ Run `uv run python build/versions.py verify` again. Expected: `verify passed`. T
 
 - [ ] **Step 5: Commit.** Skip this step when Steps 1 and 4 changed nothing.
 
+> Skipped: Steps 1 and 4 changed nothing, so Task 10 made no commit → nothing deferred.
+
 ```bash
 git add build/versions.toml .python-version uv.toml specs/deferred_items.md
 git commit -m "chore(build): bump and verify pins on <today> (plan 66 task 10)"
@@ -3409,7 +3438,7 @@ git commit -m "chore(build): bump and verify pins on <today> (plan 66 task 10)"
 
 R6.5 gives two options for each stale citation. Option 1: re-check the cited behavior on the file's version and update the text. Option 2: move the phrase to `HISTORICAL` with the reason "verified on X, not re-checked on Y", and log a deferred item. Never change a version in a citation without the re-check. The re-check scripts below ran on 2026-10-21 against the draft pins and passed. Run them again on the real pins.
 
-- [ ] **Step 1: Gate. Bring the branch up to date and re-find the anchors.** Plans 63 and 64 and the model-lifecycle work edit the same files.
+- [x] **Step 1: Gate. Bring the branch up to date and re-find the anchors.** Plans 63 and 64 and the model-lifecycle work edit the same files.
 
 ```bash
 git fetch origin && git log --oneline HEAD..origin/main
@@ -3423,7 +3452,7 @@ grep -rnE 'arviz-stats 1\.|arviz-plots 1\.|Polars 1\.[0-9]+|JAX/JAXlib|checked i
 
 If plan 64 or plan 65 rewrote one of these lines, the finding may have gone. Step 2 shows what remains.
 
-- [ ] **Step 2: List the findings.**
+- [x] **Step 2: List the findings.**
 
 ```bash
 uv run python build/versions.py check > /tmp/66-check.txt; echo "check exit $?"; grep -v 'spells an interpreter' /tmp/66-check.txt
@@ -3442,7 +3471,7 @@ Expected: `check exit 1` and findings only of these kinds. The first four rows d
 
 Treat a finding that is not in this table in one of two ways. If a cheap re-check is possible, do it and update the text. Otherwise follow Step 8, as for Polars 1.42. Print the pins you need with `grep -nE '^(arviz|arviz-stats|arviz-plots|polars|numpyro|matplotlib) ' build/versions.toml`.
 
-- [ ] **Step 3: `model-comparison.md`.** The claim: `loo_expectations`, `loo_metrics` and `loo_r2` live in `arviz_stats` and the `arviz` umbrella re-exports them. Re-check it on the pinned stack:
+- [x] **Step 3: `model-comparison.md`.** The claim: `loo_expectations`, `loo_metrics` and `loo_r2` live in `arviz_stats` and the `arviz` umbrella re-exports them. Re-check it on the pinned stack:
 
 ```bash
 uv run python build/versions.py run snippets -- python - <<'PYEOF'
@@ -3458,7 +3487,7 @@ PYEOF
 
 Expected: one `ok` line and no `AssertionError`. Replace the flagged number in the sentence `(verified on arviz 1.3.0 / arviz-stats 1.3.1)` with the version that the script printed. If an assertion fails, the claim is wrong on the new pin. Stop and report it.
 
-- [ ] **Step 4: `model-criticism.md`.** The claim is in the paragraph "What that call actually draws". `azp.plot_ecdf_pit` draws a dashed zero line and a step line. It draws no shaded band. It prints the p-value text `p=0.16(α=0.01)` in the corner. Re-run the call from the block above that paragraph:
+- [x] **Step 4: `model-criticism.md`.** The claim is in the paragraph "What that call actually draws". `azp.plot_ecdf_pit` draws a dashed zero line and a step line. It draws no shaded band. It prints the p-value text `p=0.16(α=0.01)` in the corner. Re-run the call from the block above that paragraph:
 
 ```bash
 uv run python build/versions.py run snippets -- python - <<'PYEOF'
@@ -3484,7 +3513,7 @@ PYEOF
 
 Expected: `arviz-plots <pin> ok`. Replace `arviz-plots 1.3.1` in the paragraph with the printed version. If an assertion fails, the doc is wrong on the new pin. Do not edit the version. Move the phrase `arviz-plots 1.3.1` to `HISTORICAL` with the reason "verified on 1.3.1, not re-checked on <pin>" and log a deferred item (Step 8 shows the form).
 
-- [ ] **Step 5: `frameworks.md`.** `verify` (Task 10, Step 3) ran the six CPU examples on the `jax-cpu` stack, so the sentence may name that stack. This script rewrites it from the file, with any override. It fills lines by whole items, so a name such as "Orbax checkpoint" never wraps. The lint reads one name at a time:
+- [x] **Step 5: `frameworks.md`.** `verify` (Task 10, Step 3) ran the six CPU examples on the `jax-cpu` stack, so the sentence may name that stack. This script rewrites it from the file, with any override. It fills lines by whole items, so a name such as "Orbax checkpoint" never wraps. The lint reads one name at a time:
 
 ```python
 '''Rewrite the version sentence in frameworks.md from build/versions.toml (plan 66, Task 11).'''
@@ -3522,7 +3551,7 @@ print('\n'.join(lines))
 
 Save it as `/tmp/66-frameworks-edit.py` and run it from the repo root with `uv run python /tmp/66-frameworks-edit.py`. Expected: it prints the two lines it wrote. `git diff skills/deep-learning/references/frameworks.md` must show only the head line and the version lines changed. The head line now says "on the `jax-cpu` stack of `build/versions.toml`", because the compiled profile it named is retired in Task 12.
 
-- [ ] **Step 6: `explore-data/SKILL.md`.** The claim: the two code blocks of "Polars idioms" run as written. Save this check as `/tmp/66-polars-idioms-check.py` (outside the repo), and run it on the pinned Polars:
+- [x] **Step 6: `explore-data/SKILL.md`.** The claim: the two code blocks of "Polars idioms" run as written. Save this check as `/tmp/66-polars-idioms-check.py` (outside the repo), and run it on the pinned Polars:
 
 ````python
 '''Run the python blocks of the "Polars idioms" section of explore-data/SKILL.md on a synthetic file.'''
@@ -3567,7 +3596,7 @@ uv run --with "polars==$POLARS" python /tmp/66-polars-idioms-check.py skills/exp
 
 Expected: `Polars <pin> ok: both blocks run and give the expected frames`. Replace `These are verified on Polars 1.38.` with the same sentence naming the pin at its cited precision (the lint compares at the precision you write, so `Polars 2.0` matches 2.0.0).
 
-- [ ] **Step 7: `diagnostics.md`.** The sentence says NumPyro prints no warning at `max_tree_depth` "(checked in the 0.22.0 source: ...)". The lint does not see it, because no package name stands next to the number. Re-check the claim on the pinned NumPyro:
+- [x] **Step 7: `diagnostics.md`.** The sentence says NumPyro prints no warning at `max_tree_depth` "(checked in the 0.22.0 source: ...)". The lint does not see it, because no package name stands next to the number. Re-check the claim on the pinned NumPyro:
 
 ```bash
 uv run python build/versions.py run snippets -- python - <<'PYEOF'
@@ -3586,7 +3615,7 @@ PYEOF
 
 Expected on 0.22.0: three lines (`hmc.py` about `num_steps` and `trajectory_length`, `mcmc.py` about devices, and `mcmc.py` about the progress bar) and no warning about tree depth. If the set differs on the pin, the sentence is wrong. Stop and report. If it holds, change `checked in the 0.22.0` to `checked in the NumPyro <pin>` (the sentence breaks the line after the number, so keep the line break where it is). The lint then compares it with the file from now on.
 
-- [ ] **Step 8: `recommend-visualization` and any finding without a cheap re-check.** The Polars 1.42 claims (five lines in `README.md`, `SKILL.md`, `references/plotly.md`, `references/altair.md` and `references/matplotlib.md`) need real charts in four libraries. Do not re-check them here. In `build/versions_check.py`, add one entry to `HISTORICAL` for each such phrase:
+- [x] **Step 8: `recommend-visualization` and any finding without a cheap re-check.** The Polars 1.42 claims (five lines in `README.md`, `SKILL.md`, `references/plotly.md`, `references/altair.md` and `references/matplotlib.md`) need real charts in four libraries. Do not re-check them here. In `build/versions_check.py`, add one entry to `HISTORICAL` for each such phrase:
 
 ```python
     'Polars 1.42': 'verified on Polars 1.42, not re-checked on <pin>; plan 66 deferred item',
@@ -3600,7 +3629,7 @@ Append to `specs/deferred_items.md`, in the section `## 66-package-versions — 
 
 Do the same, with its own phrase and reason, for any other finding that Step 2 listed and that has no cheap re-check.
 
-- [ ] **Step 9: Run the lints.**
+- [x] **Step 9: Run the lints.**
 
 ```bash
 uv run python build/versions.py check | grep -v 'spells an interpreter'
@@ -3613,7 +3642,7 @@ cd build && uv run --with pytest --with pyyaml python -m pytest -q test_runtime_
 
 Expected: the first command prints nothing (only interpreter literals remain). The rest pass. A `HISTORICAL entry ... matches no text` finding means a phrase in Step 8 does not match the text. Copy the phrase from the finding.
 
-- [ ] **Step 10: Commit.**
+- [x] **Step 10: Commit.**
 
 ```bash
 git add skills build/versions_check.py specs/deferred_items.md
@@ -3634,13 +3663,15 @@ git commit -m "docs(skills): settle stale version citations (plan 66 task 11)"
 
 - [ ] **Step 1: Correct the Gaussian-process item (R6.6).** Skip this step if plan 64 already ticked that item (`grep -n 'hsgp' specs/deferred_items.md`). First re-check the names it lists on the pinned NumPyro:
 
+> Skipped: plan 64 already ticked that item (`specs/deferred_items.md:4493` is `- [x]`) → nothing deferred.
+
 ```bash
 uv run python build/versions.py run snippets -- python -c "import numpyro.contrib.hsgp.approximation as a; print([n for n in dir(a) if n.startswith('hsgp')])"
 ```
 
 Expected: a list that holds `hsgp_squared_exponential` and `hsgp_matern`. Then, in `specs/deferred_items.md`, replace `(`numpyro.contrib.hsgp`, on the pinned 0.21.0:` with `(`numpyro.contrib.hsgp`, on the NumPyro pinned in `build/versions.toml`:`. The line is in the Gaussian-process item (near line 4496 on 2026-10-21).
 
-- [ ] **Step 2: Retire the two lock files (R6.7, Q8's default).**
+- [x] **Step 2: Retire the two lock files (R6.7, Q8's default).**
 
 ```bash
 mkdir specs/verification/completed
@@ -3660,7 +3691,7 @@ grep -n 'completed/32-jax-cpu' specs/verification/*.md
 
 Expected: four lines that hold five links (on 2026-10-21: lines 60 and 98 in `32-deep-learning.md`, lines 143 and 145 in `32-jax-integration.md`). The JAX command in `CLAUDE.md` still names the old path after this step. Task 13 Step 4 rewrites it to the runner form, because that edit was validated against the text after the Task 13 sweep. The records `32-optimize-jax.md` and `32-evaluate-deep-learning.md` name the files in plain text, as history. Leave them.
 
-- [ ] **Step 3: Check that no link broke and the bytes did not change.**
+- [x] **Step 3: Check that no link broke and the bytes did not change.**
 
 ```bash
 python3 - <<'PYEOF'
@@ -3683,7 +3714,7 @@ PYEOF
 
 Expected: the printed line. `git status --short specs/verification` must show two renames (`R`) and two modified records. The records hold other links of the form `../../skills/...:58` that were never files. The check leaves them alone on purpose.
 
-- [ ] **Step 4: Point the rules file at the file (R6.8).** In `rules/clean-code-python.md`, replace:
+- [x] **Step 4: Point the rules file at the file (R6.8).** In `rules/clean-code-python.md`, replace:
 
 ```text
 - Target the repo's pinned Python (agent-skills: 3.13; work repos: 3.12).
@@ -3695,7 +3726,9 @@ with:
 - Target the repo's pinned Python (agent-skills: the dev Python in `build/versions.toml`; work repos: 3.12).
 ```
 
-- [ ] **Step 5: Run the lints that read these files, then commit.**
+- [x] **Step 5: Run the lints that read these files, then commit.**
+
+> Deviation: the commit subject drops "fix the GP item", because Step 1 was skipped.
 
 ```bash
 uv run python build/versions.py check | grep -v 'spells an interpreter'
@@ -3723,7 +3756,7 @@ git commit -m "docs(specs): retire the jax-cpu lock files and fix the GP item (p
 
 uv reads `.python-version` from the repo root, so `uv run python ...` already gives the dev Python. The flag only repeats it.
 
-- [ ] **Step 1: Watch the lint fail (RED).**
+- [x] **Step 1: Watch the lint fail (RED).**
 
 ```bash
 uv run python build/versions.py check > /tmp/66-red.txt; echo "check exit $?"; grep -c 'spells an interpreter' /tmp/66-red.txt; grep -vc 'spells an interpreter' /tmp/66-red.txt
@@ -3731,7 +3764,9 @@ uv run python build/versions.py check > /tmp/66-red.txt; echo "check exit $?"; g
 
 Expected: `check exit 1`, then about 80 for the first count and 0 for the second (Task 11 settled the citations).
 
-- [ ] **Step 2: Write and run the sweep.** It removes the flag text from every live file that the lint reads and prints the changed files. The sweep needs no `.py` test, because Step 5 runs the lint over the result and the lint is the test.
+- [x] **Step 2: Write and run the sweep.** It removes the flag text from every live file that the lint reads and prints the changed files. The sweep needs no `.py` test, because Step 5 runs the lint over the result and the lint is the test.
+
+> Deviation: `hooks/test_readonly_agent_guard.py:111-112` was rebuilt from two string pieces, so the guard test judges the same input after the sweep.
 
 ```python
 '''Remove the interpreter flag from every live file that spells it (plan 66, Task 13).'''
@@ -3763,7 +3798,7 @@ uv run python /tmp/66-sweep.py
 
 Expected: about 41 file names and `41 files changed` (the count can differ by a few). Then `git diff --stat | tail -1`. A line in the diff must differ from its old text only by the removed `--python 3.13`.
 
-- [ ] **Step 2b: Look for literals in list form.** The sweep and the lint match `--python 3.13` as one piece of text. A test can spell it as list items, such as `'--python', '3.13'`.
+- [x] **Step 2b: Look for literals in list form.** The sweep and the lint match `--python 3.13` as one piece of text. A test can spell it as list items, such as `'--python', '3.13'`.
 
 ```bash
 grep -rn "'--python', '3\." build hooks skills .claude/skills
@@ -3777,7 +3812,7 @@ Expected on 2026-10-21, after Task 7: hits in four files. All of them are test i
 
 The grep also finds `build/cc_guide/test_notice_sh.py`, which Step 3 rewrites. Task 7 already rewrote the other two list-form hits in `build/test_run_suites.py` (R7). The sweep also changed the sample command text in `build/test_check_frontmatter.py` (R7 names its line 434). That test checks only the runner word, so it keeps passing. If the grep finds another hit, decide the same way. A test input stays. A command that a person runs loses the flag.
 
-- [ ] **Step 3: `notice.sh` runs outside the repo, so it names the project directory.** `cc_guide/notice.sh` can run from any directory. Without the flag, uv would read `.python-version` from the wrong directory. Apply these two edits.
+- [x] **Step 3: `notice.sh` runs outside the repo, so it names the project directory.** `cc_guide/notice.sh` can run from any directory. Without the flag, uv would read `.python-version` from the wrong directory. Apply these two edits.
 
 In `build/cc_guide/notice.sh`, replace:
 
@@ -3804,7 +3839,7 @@ with:
 ```
 
 
-- [ ] **Step 4: Edit `CLAUDE.md`.** The first edit and the second are the prose copies (Q7). The next two put the Tier 2, Tier 3 and JAX commands in runner form (A3 and R2.4). The last adds the `versions.py` commands block.
+- [x] **Step 4: Edit `CLAUDE.md`.** The first edit and the second are the prose copies (Q7). The next two put the Tier 2, Tier 3 and JAX commands in runner form (A3 and R2.4). The last adds the `versions.py` commands block.
 
 In `CLAUDE.md`, replace:
 
@@ -3887,7 +3922,7 @@ uv run python build/versions.py check
 ```
 
 
-- [ ] **Step 5: Check the result.**
+- [x] **Step 5: Check the result.**
 
 ```bash
 uv run python build/versions.py check; echo "check exit $?"
@@ -3897,7 +3932,7 @@ wc -l CLAUDE.md
 
 Expected: `check exit 0` with the line `versions ok`, the conformance lint passes, and `CLAUDE.md` is under 200 lines (153 before this plan, about 165 after).
 
-- [ ] **Step 6: Run the lints and the suites that the sweep touched.** The `test_notice_sh.py` test and the runner tests read the changed text. This runs several minutes. Run it in the background.
+- [x] **Step 6: Run the lints and the suites that the sweep touched.** The `test_notice_sh.py` test and the runner tests read the changed text. This runs several minutes. Run it in the background.
 
 ```bash
 bash build/run_commit_lints.sh && uv run python build/run_suites.py --all
@@ -3905,7 +3940,9 @@ bash build/run_commit_lints.sh && uv run python build/run_suites.py --all
 
 Expected: no failure line from the first command (nine lints, the tenth is not wired yet) and no failed suite. Some suites skip when `jq`, `rg` or `/usr/bin/python3` are missing. That is normal.
 
-- [ ] **Step 7: Commit in two commits.** The sweep is mechanical, so a reviewer reads it apart from the hand edits.
+- [x] **Step 7: Commit in two commits.** The sweep is mechanical, so a reviewer reads it apart from the hand edits.
+
+> Deviation: three commits, not two. A review round added `2be6d98`, which gives `profile.py` and `entry_check.py` the `uv run <this-skill-dir>/scripts/<script>` form, so their PEP 723 floor still applies.
 
 ```bash
 git add -u -- ':!CLAUDE.md' ':!build/cc_guide'
@@ -3923,7 +3960,7 @@ git commit -m "docs: CLAUDE.md and notice.sh read the dev Python from build/vers
 - Consumes: `versions.py check` (Task 9), which exits 0 on the tree from Task 13.
 - Produces: `versions_check` as the tenth lint of `run_commit_lints.sh`, in the pre-commit hook and in CI (`lints.yml` runs the runner).
 
-- [ ] **Step 1: Write the failing test.** `test_commit_lints.py` compares the lints that the runner reports with `CHECKS`. Add the new name:
+- [x] **Step 1: Write the failing test.** `test_commit_lints.py` compares the lints that the runner reports with `CHECKS`. Add the new name:
 
 In `build/test_commit_lints.py`, replace:
 
@@ -3938,7 +3975,7 @@ with:
 ```
 
 
-- [ ] **Step 2: Run it and watch it fail.**
+- [x] **Step 2: Run it and watch it fail.**
 
 ```bash
 cd build && uv run --with pytest --with pyyaml python -m pytest -q test_commit_lints.py
@@ -3946,7 +3983,7 @@ cd build && uv run --with pytest --with pyyaml python -m pytest -q test_commit_l
 
 Expected: the tests that compare `failed_names(result)` with `CHECKS` FAIL, because the runner has no `versions_check` entry yet. The tests take about 30 seconds.
 
-- [ ] **Step 3: Wire the lint and update the counts.** Four edits to the runner, the hook and the two `CLAUDE.md` files:
+- [x] **Step 3: Wire the lint and update the counts.** Four edits to the runner, the hook and the two `CLAUDE.md` files:
 
 In `build/run_commit_lints.sh`, replace:
 
@@ -4035,7 +4072,7 @@ gate's pinned stack, `bump` re-pins by one joint resolve, `drift` resolves with 
 ```
 
 
-- [ ] **Step 4: Run the tests and the lints.**
+- [x] **Step 4: Run the tests and the lints.**
 
 ```bash
 cd build && uv run --with pytest --with pyyaml python -m pytest -q test_commit_lints.py
@@ -4045,7 +4082,7 @@ uv run --with pyyaml python build/check_conformance.py && wc -l CLAUDE.md
 
 Expected: the tests pass (the same count as before, no new test in this step), `ten lints pass`, the conformance lint passes, and `CLAUDE.md` is under 200 lines.
 
-- [ ] **Step 5: Commit.**
+- [x] **Step 5: Commit.**
 
 ```bash
 git add build/test_commit_lints.py build/run_commit_lints.sh build/githooks/pre-commit CLAUDE.md build/CLAUDE.md
@@ -4062,7 +4099,7 @@ git commit -m "feat(build): versions check becomes the tenth commit lint (plan 6
 - Consumes: `versions.py drift` (Task 8). The `WORKFLOW`, `PINNED`, `workflow()` helpers already in `test_commit_lints.py`.
 - Produces: a scheduled job that reports drift to the job summary. It never edits the repo, opens no issue or PR, and is not a required check.
 
-- [ ] **Step 1: Write the failing tests.** Append to `build/test_commit_lints.py`. The first test guards R5.2 (`lints.yml` takes the interpreter from `.python-version`) and passes at once. The other three fail until the workflow exists.
+- [x] **Step 1: Write the failing tests.** Append to `build/test_commit_lints.py`. The first test guards R5.2 (`lints.yml` takes the interpreter from `.python-version`) and passes at once. The other three fail until the workflow exists.
 
 ```python
 DRIFT_WORKFLOW = REPO / '.github' / 'workflows' / 'versions-drift.yml'
@@ -4105,7 +4142,7 @@ def test_drift_workflow_reports_to_the_summary_and_changes_nothing():
     assert not re.search(r'git (commit|push)|gh (issue|pr)|issues:|pull-requests:', text)
 ```
 
-- [ ] **Step 2: Run them and watch them fail.**
+- [x] **Step 2: Run them and watch them fail.**
 
 ```bash
 cd build && uv run --with pytest --with pyyaml python -m pytest -q test_commit_lints.py -k 'drift_workflow or lints_workflow'
@@ -4113,7 +4150,7 @@ cd build && uv run --with pytest --with pyyaml python -m pytest -q test_commit_l
 
 Expected: 3 FAIL with `FileNotFoundError` for `versions-drift.yml`, and 1 PASS (`test_lints_workflow_takes_the_interpreter_from_python_version`).
 
-- [ ] **Step 3: Create the workflow.** It pins its actions by the same SHAs as `lints.yml`. Read the SHAs from `lints.yml` again before you write the file, in case another change updated them. Use the same two SHAs here. The test fails if they differ.
+- [x] **Step 3: Create the workflow.** It pins its actions by the same SHAs as `lints.yml`. Read the SHAs from `lints.yml` again before you write the file, in case another change updated them. Use the same two SHAs here. The test fails if they differ.
 
 ```yaml
 name: versions-drift
@@ -4147,7 +4184,7 @@ jobs:
           uv run python build/versions.py drift | tee -a "$GITHUB_STEP_SUMMARY"
 ```
 
-- [ ] **Step 4: Run the tests.**
+- [x] **Step 4: Run the tests.**
 
 ```bash
 cd build && uv run --with pytest --with pyyaml python -m pytest -q test_commit_lints.py
@@ -4155,7 +4192,9 @@ cd build && uv run --with pytest --with pyyaml python -m pytest -q test_commit_l
 
 Expected: PASS, +4 tests.
 
-- [ ] **Step 5: Run `drift` by hand once.** It needs the network and takes minutes (two passes of the re-verify set).
+- [x] **Step 5: Run `drift` by hand once.** It needs the network and takes minutes (two passes of the re-verify set).
+
+> Deviation: `drift` exited 1, not 0. The Python 3.15 pass fails (`tensorstore` and `h5py` have no cp315 wheels, and one `cc_guide` test pins the old error text). The 3.13 pass passed all four gates. See D14 and the deferred items.
 
 ```bash
 uv run python build/versions.py drift > /tmp/66-drift.txt; echo "drift exit $?"; head -40 /tmp/66-drift.txt
@@ -4163,7 +4202,7 @@ uv run python build/versions.py drift > /tmp/66-drift.txt; echo "drift exit $?";
 
 Expected: a report with one row for each `[packages]` and `[cited]` entry, in two passes, and one result for each gate and pass. Exit 0, 1 or 2 are all valid outcomes (R3.5). A red gate here is information for the owner, not a failure of this task. Exit 2 means the network or the resolve failed. Record the exit code and the first lines of the report in your hand-over.
 
-- [ ] **Step 6: Commit.**
+- [x] **Step 6: Commit.**
 
 ```bash
 git add .github/workflows/versions-drift.yml build/test_commit_lints.py
@@ -4177,7 +4216,9 @@ Known limits (R5.4): GitHub runs a schedule only from the default branch, so thi
 **Files:**
 - Modify: nothing, unless a check fails.
 
-- [ ] **Step 1: Run every gate once on the final tree.**
+- [x] **Step 1: Run every gate once on the final tree.**
+
+> Deviation: after the final review, commits `fc539fb` (F1 to F6), `7eaf8cd` (D12) and `feec6fb` (D15) followed. The gates were re-run on the final tree.
 
 ```bash
 bash build/run_commit_lints.sh && echo "ten lints pass"
@@ -4189,7 +4230,7 @@ wc -l CLAUDE.md
 
 Expected: every command passes. `verify` takes minutes. `CLAUDE.md` is under 200 lines. This also covers the `jax-cpu` command: `verify` runs the same step.
 
-- [ ] **Step 2: Check the branch state.**
+- [x] **Step 2: Check the branch state.**
 
 ```bash
 git log --oneline main..HEAD
@@ -4199,7 +4240,7 @@ git status --short
 
 Expected: one commit for each of Tasks 1 to 15, a clean tree, and no change under `skills/` except the text that Tasks 11 and 13 name. Task 13 has two commits. Task 10 has none when it changed nothing.
 
-- [ ] **Step 3: Write the hand-over.** Tell the owner:
+- [x] **Step 3: Write the hand-over.** Tell the owner:
 1. The result of each gate, and the exit code and first lines of the Task 15 `drift` run.
 2. Which stale citations were re-checked and which went to `HISTORICAL`, and the deferred items logged (Tasks 10 and 11).
 3. Whether the Task 10 JAX override was needed.
@@ -4207,7 +4248,7 @@ Expected: one commit for each of Tasks 1 to 15, a clean tree, and no change unde
 5. `run`, `verify`, `bump` and `drift` make network calls. `check` and `sync` do not.
 6. Nothing is pushed. The branch is ready for the owner's go-ahead to push and open a PR.
 
-- [ ] **Step 4: Run the Plan Completion Protocol** (the writing-plans skill) before merging. Resolve or defer each leftover. Mark up this plan. Update `specs/deferred_items.md`. Retire this plan and `specs/package-versions.md` to their `completed/` directories. Retiring the spec is correct because no other live plan implements it. Re-point the relative links of both files for their new depth.
+- [x] **Step 4: Run the Plan Completion Protocol** (the writing-plans skill) before merging. Resolve or defer each leftover. Mark up this plan. Update `specs/deferred_items.md`. Retire this plan and `specs/package-versions.md` to their `completed/` directories. Retiring the spec is correct because no other live plan implements it. Re-point the relative links of both files for their new depth.
 
 ---
 

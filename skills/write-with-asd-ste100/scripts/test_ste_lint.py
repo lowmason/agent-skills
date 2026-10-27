@@ -2,7 +2,7 @@
 from the commit that ../LICENSE-write-with-asd-ste100-sources pins, so these tests pin
 its bytes and run its own self-test instead of testing its internals.
 
-Run from this directory: uv run --python 3.13 --with pytest python -m pytest -q
+Run from this directory: uv run --with pytest python -m pytest -q
 '''
 import hashlib
 import json

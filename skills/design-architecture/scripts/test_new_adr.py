@@ -1,6 +1,6 @@
 """Tests for new_adr.py — run from this directory (bare imports).
 
-cd skills/design-architecture/scripts && uv run --python 3.13 --with pytest python -m pytest -q
+cd skills/design-architecture/scripts && uv run --with pytest python -m pytest -q
 
 Stdlib only: new_adr.py imports nothing outside the standard library, so this
 suite needs no scientific deps.

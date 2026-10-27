@@ -97,7 +97,7 @@ def main(argv: list[str]) -> int:
     if not SCRATCH.is_dir():
         print(
             "ground truth missing: run "
-            "`uv run --python 3.13 python build/extract_structure.py` "
+            "`uv run python build/extract_structure.py` "
             "(requires local PDFs + gh) to rebuild build/.scratch/",
             file=sys.stderr,
         )

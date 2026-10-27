@@ -20,11 +20,20 @@ are `../agents/*.md` and `../commands/*.md`; never edit `../runtimes/` by hand.
 (not READMEs or install guides) against `../install.py`'s `DEPENDENCIES`, so a
 skill edit can fail it.
 
-`run_commit_lints.sh` runs the nine commit lints that the root `CLAUDE.md`
+`run_commit_lints.sh` runs the commit lints that the root `CLAUDE.md`
 lists and fails closed. `githooks/pre-commit` runs it as a git hook, failing
 open only when uv cannot run, and `../.github/workflows/lints.yml` runs it in
 CI. `test_commit_lints.py` drives the runner and hook through throwaway
 clones and checks the workflow's triggers and pins.
+
+`versions.toml` is the one file where a person sets the dev Python, the freeze date, each pinned
+package version and each cited-only version (design: `specs/completed/package-versions.md`). `versions.py` reads
+it: `sync` writes `.python-version`, `uv.toml` and `skills/uv.toml`, `run` and `verify` install a
+gate's pinned stack, `bump` re-pins by one joint resolve, `drift` resolves with no freeze date, and
+`check` is the tenth commit lint. `versions_check.py` holds the lint's four rules and its
+`HISTORICAL` allowlist. A test source must not spell a flag and a Python version together, because
+`check` reads this directory too: build the seeded text from parts.
+`.github/workflows/versions-drift.yml` runs `drift` weekly as an advisory job.
 
 `suites.toml` registers every directory-scoped pytest suite, and
 `run_suites.py` lists, runs and checks them; its docstring gives the options.

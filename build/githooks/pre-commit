@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Pre-commit: run the nine commit lints (build/run_commit_lints.sh) on the working
+# Pre-commit: run the commit lints (build/run_commit_lints.sh) on the working
 # tree. Enabling it is the owner's step: git config core.hooksPath build/githooks
 # writes the repo config, which every worktree reads.
 # Fails open, with a warning, only when uv itself cannot run here (missing, or a
@@ -12,7 +12,7 @@ if ! command -v uv >/dev/null 2>&1; then
   echo 'pre-commit: uv not found; commit lints skipped (CI still runs them)' >&2
   exit 0
 fi
-if ! probe="$(cd "$root" && uv run --no-project --python 3.13 python -c pass 2>&1 >/dev/null)"; then
+if ! probe="$(cd "$root" && uv run --no-project python -c pass 2>&1 >/dev/null)"; then
   reason="${probe##*$'\n'}" # bash builtins only: the hook's PATH may lack tail
   reason="${reason#"${reason%%[![:space:]]*}"}" # uv indents a closing "Caused by:" line
   echo "pre-commit: uv cannot run here${reason:+ ($reason)}; commit lints skipped (CI still runs them)" >&2

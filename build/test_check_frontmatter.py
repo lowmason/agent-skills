@@ -432,7 +432,7 @@ def test_python_before_a_bundled_script_is_flagged(tmp_path):
 def test_python3_and_uv_run_python_are_flagged_too(tmp_path):
     # uv run ... python <path> runs the project environment, not the header's.
     body = ('Run `python3 scripts/tool.py`, or\n'
-            '`uv run --python 3.13 --with polars python <this-skill-dir>/scripts/tool.py`.\n')
+            '`uv run --with polars python <this-skill-dir>/scripts/tool.py`.\n')
     runners = [runner for _, runner, _ in bundled_invocations(_skill_running(tmp_path, 'forms', body))]
     assert runners == ['python3', 'python']
 

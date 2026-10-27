@@ -2,7 +2,7 @@
 """Contract tests for the project tooling hook templates — run from this directory, both ways.
 
 cd hooks
-uv run --python 3.13 --with pytest python -m pytest -q
+uv run --with pytest python -m pytest -q
 uv run --python /usr/bin/python3 --with pytest python -m pytest -q
 
 Each test drives a template as Claude Code does: through its own

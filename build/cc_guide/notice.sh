@@ -111,7 +111,7 @@ check_now() {
     count=$((before + 1))
     { printf '%s\n' "$count" > "$cache/.unfinished.$$.tmp" && mv -f "$cache/.unfinished.$$.tmp" "$cache/unfinished"; } 2>/dev/null || rm -f "$cache/.unfinished.$$.tmp" 2>/dev/null
     id="$$.$(date +%s)"
-    "$1" run --python 3.13 python "$here/cli.py" check --hook --run "$id" </dev/null >/dev/null 2>&1 &
+    "$1" run --directory "$here/../.." python "$here/cli.py" check --hook --run "$id" </dev/null >/dev/null 2>&1 &
     pid=$!
     trap 'kill "$pid" 2>/dev/null; exit 0' HUP INT TERM   # a signalled refresh takes its check with it
     waited=0

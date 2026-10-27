@@ -1,6 +1,6 @@
 # Package versions: one source for every pinned or cited version
 
-**Status:** approved by the owner on 2026-10-21, after a section-by-section design review and a review of the written text. Next skill: writing-plans.
+**Status: COMPLETE (2026-10-27)** — implemented by plan 66 (`specs/plans/completed/66-package-versions.md`) and retired here. Approved by the owner on 2026-10-21, after a section-by-section design review and a review of the written text.
 
 ## Problem
 
@@ -23,7 +23,7 @@ This work is not part of plan 64 (bayesian-workflow and recommend-probabilistic-
 | `build/check_snippets.py:87-90` | `RUN_REMEDIATION` builds the Tier 3 command from `PINNED` | Already a single source in code |
 | `CLAUDE.md:122` | The Tier 3 command, with the `PINNED` versions copied by hand | No check compares it with `PINNED` (deferred item F9, done 2026-10-19, says so) |
 | `build/check_snippets.py:84-86`, `CLAUDE.md:120` | Tier 2 (`--api`, which resolves library names) floats: `arviz>=1.0` and unpinned rest | Floats by design |
-| `specs/verification/32-jax-cpu.in` -> `32-jax-cpu.txt` | Full lock for the deep-learning CPU examples: jax==0.11.2, jaxlib==0.11.2, flax==0.12.10, optax==0.2.8, orbax-checkpoint==0.12.6, equinox==0.13.8, diffrax==0.7.2, e3nn-jax==0.21.0, numpy==2.5.3, plus transitive pins | Made by `uv pip compile --python-version 3.13`. Run by `CLAUDE.md:130` (`check_jax_examples.py`) |
+| `specs/verification/32-jax-cpu.in` -> `32-jax-cpu.txt` | Full lock for the CPU examples of `deep-learning`, `evaluate-deep-learning` and `optimize-jax`: jax==0.11.2, jaxlib==0.11.2, flax==0.12.10, optax==0.2.8, orbax-checkpoint==0.12.6, equinox==0.13.8, diffrax==0.7.2, e3nn-jax==0.21.0, numpy==2.5.3, plus transitive pins | Made by `uv pip compile --python-version 3.13`. Run by `CLAUDE.md:130` (`check_jax_examples.py`) |
 | `build/suites.toml` | `with` and `extras` deps for each test suite, all unpinned (`build` extras: `arviz>=1.0` and the rest bare) | Float |
 
 Conflict: the two gates pin different JAX releases. The CPU lock has 0.11.2 and `PINNED` has 0.12.0.
@@ -91,8 +91,8 @@ A floating gate would have changed today: jax 0.12.0.1 was uploaded on 2026-10-2
 ### uv behavior that constrains the design (uv 0.13.1, probed 2026-10-21 in `/tmp/vprobe`)
 
 1. `uv run --exclude-newer <date> --with jax` respects the cutoff. With 2026-10-20 it gave jax 0.12.0, not 0.12.0.1.
-2. For a PEP 723 script (`uv run script.py`), the command-line `--exclude-newer` and `UV_EXCLUDE_NEWER` did not limit the header's dependencies. With a 2026-10-01 cutoff it still installed polars 2.0.0 (uploaded 2026-10-06). A `[tool.uv] exclude-newer = "..."` table inside the script header did limit them (polars 1.44.2).
-3. With no `--python`, uv picked Python 3.14 for a script, and a bare `polars` header resolved to 1.44.2, not 2.0.0. Under `--python 3.13` it resolved to 2.0.0. But `uv run --python 3.14 --with 'polars>=2.0'` also resolved to 2.0.0, so the three `polars>=2.0` scripts work on 3.14. The cause of the 1.44.2 result is unknown.
+2. For a PEP 723 script (`uv run script.py`), the command-line `--exclude-newer`, `UV_EXCLUDE_NEWER` and a `[tool.uv] exclude-newer = "..."` table inside the script header each limit the header's dependencies (polars 1.44.2 with a 2026-10-01 cutoff; polars 2.0.0 was uploaded 2026-10-06). The first probe said the first two did not. That probe ran with uv's environment cache on, and uv reuses a cached environment whose requirements match, whatever freeze date built it. Every probe runs with `--no-cache` now. (owner, plan 66, 2026-10-21)
+3. With no `--python` and no `.python-version`, uv picked Python 3.14 for a script. A bare `polars` header then resolved to 2.0.0, as it does under `--python 3.13` and as `uv run --python 3.14 --with 'polars>=2.0'` does. So the three `polars>=2.0` scripts work on 3.14. The 1.44.2 result of the first probe came from a cached environment (item 2), not from the interpreter. (owner, plan 66, 2026-10-21)
 4. A `uv.toml` with `exclude-newer` at the repo root reached `--with` deps and script headers in every subdirectory. `constraint-dependencies` and `override-dependencies` in `uv.toml` did not affect `uv run --with`, and neither did `UV_CONSTRAINT`. A command-line `--exclude-newer` or `UV_EXCLUDE_NEWER` overrode the `uv.toml` date. A `--with 'polars==X'` on a script run overrode the script header's range.
 5. A script run by its real path inside the repo picked up the repo's `uv.toml`, even from another working directory. The same script run through a symlink, which is how `~/.claude/skills` reaches this repo, did not.
 6. A `.python-version` file was found from subdirectories, also with `--no-project`.
@@ -139,12 +139,12 @@ date = 2026-10-19            # a TOML date; every check resolves as of this date
 arviz = '1.3.0'
 numpyro = '0.22.0'
 jax = '0.12.0'
+optuna = '5.0.0'             # the tune-hyperparameters suite installs it and its SKILL.md cites it (R1.2)
 # ... every package that a [gates] entry or a skill citation names and a check runs
 
 [cited]                      # prose cites these, but no check runs them
 altair = '6.2'
 plotly = '6.8'
-optuna = '5.0.0'
 great-docs = '0.17.0'
 
 [gates]                      # the packages each check installs, pinned from [packages]
@@ -154,7 +154,7 @@ jax-cpu = ['jax', 'jaxlib', 'flax', 'optax', 'orbax-checkpoint', 'equinox', 'dif
 # [[override]]               # gate, package, version, reason; empty at the start
 ```
 
-The values above are the 2026-10-21 state. The plan sets the real values with `bump` (R3).
+The values above are the 2026-10-21 state. The plan sets the real values with `bump` (R3). (owner, plan 66, 2026-10-21)
 
 R1.2. A package gets a `[packages]` entry in two cases. The first is when a `[gates]` list names it. The second is when a check installs it and skill text or a script header states a version for it. Polars is in `[packages]` by the second case: the suites install it, and three headers floor it. Other packages (pytest, pyyaml, scipy, tensorstore and the rest) get no entry, and the freeze date fixes them.
 
@@ -179,7 +179,7 @@ R2.1. `build/versions.py sync` writes three files from `build/versions.toml`, an
 R2.2. `build/versions.py` gives the other build scripts these values: the dev Python, the freeze date, and `stack(gate)`, the list of `pkg==version` strings for a gate after overrides.
 
 R2.3. These readers take their versions from R2.2 and from no literal:
-- `build/check_snippets.py`: `PINNED` (moved out of `build/snippet_preamble.py`), `RUN_REMEDIATION` and `API_REMEDIATION`. Tier 2 (`--api`) stays unpinned for named packages and gets the freeze date.
+- `build/check_snippets.py`: the `PINNED` table is removed (it lived in `build/snippet_preamble.py`) and the `snippets` stack takes its place. `RUN_REMEDIATION` and `API_REMEDIATION` read that stack. Tier 2 (`--api`) runs on the same pinned `snippets` stack as Tier 3 (owner, plan 66, 2026-10-21), so no documented command spells a package version (R2.4).
 - `build/check_jax_examples.py` and its documented command: they install `stack('jax-cpu')` in place of `--with-requirements specs/verification/32-jax-cpu.txt`.
 - `build/run_suites.py`: `DEFAULT_PYTHONS` comes from the dev Python. A `with` or `extras` package that `[packages]` names gets its pin. Each run passes `--exclude-newer <date>` explicitly, because suites under `skills/` sit below the shadow file. The `hooks` suite keeps its explicit `/usr/bin/python3` run.
 - `build/cc_guide/notice.sh:114` and `build/githooks/pre-commit:15`: they can run outside the repo's working directory, so they take the interpreter from the file and not from a literal.
@@ -239,7 +239,7 @@ R4.1. `versions.py check` runs offline. It fails on any of these:
 
 R4.2. `HISTORICAL` is keyed by the literal phrase, not by file and line, and each entry gives its reason. It follows the model of `DOCUMENTED_ABSENT` in `build/check_snippets.py`.
 
-R4.3. `check` does not read `specs/`, `LICENSE*` files, `data/` directories or test fixtures. Illustrative text, such as the run manifest at `skills/evaluate-deep-learning/references/experiments.md:86-87`, goes on `HISTORICAL` with a reason.
+R4.3. `check` does not read `specs/`, `LICENSE*` files, `data/` directories or test fixtures. It also matches only the citation forms of R4.1. A `name: version` pair, such as the run manifest at `skills/evaluate-deep-learning/references/experiments.md:86-87`, is outside its reach and needs no `HISTORICAL` entry (owner, plan 66, D13, 2026-10-27).
 
 R4.4. Known limit: `check` sees only the package names that the file lists. The `drift` report states this limit.
 

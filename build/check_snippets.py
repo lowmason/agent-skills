@@ -62,7 +62,8 @@ from typing import NamedTuple
 
 from fences import (CodeBlock, iter_code_blocks,  # noqa: F401  (re-exported)
                     strip_fenced_blocks)
-from snippet_preamble import FIXTURE_VARS, NAMED_FIXTURES, PINNED, PREAMBLE
+import versions
+from snippet_preamble import FIXTURE_VARS, NAMED_FIXTURES, PREAMBLE
 
 NORUN = 'norun'
 NOPARSE = 'noparse'
@@ -81,13 +82,8 @@ DOCUMENTED_ABSENT = {
     'az.plot_ppc': 'removed from the ArviZ 1.x umbrella; SKILL.md porting table',
     'az.waic': 'removed from ArviZ 1.x, use LOO; SKILL.md Stack compatibility table, model-comparison.md',
 }
-API_REMEDIATION = ('uv run --python 3.13 --with "arviz>=1.0" --with arviz-base '
-                   '--with arviz-stats --with arviz-plots --with numpyro '
-                   '--with jax python build/check_snippets.py --api <paths>')
-RUN_REMEDIATION = ('uv run --python 3.13 ' +
-                   ' '.join(f'--with {d!r}'.replace("'", '\"')
-                            for d in PINNED) +
-                   ' python build/check_snippets.py --run <paths>')
+API_REMEDIATION = versions.runner_command('snippets', 'python build/check_snippets.py --api <paths>')
+RUN_REMEDIATION = versions.runner_command('snippets', 'python build/check_snippets.py --run <paths>')
 
 
 def _iter_md(paths):

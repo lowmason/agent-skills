@@ -28,7 +28,7 @@ UV_NOISE = 'uv: noise before the reason'
 UV_REASON = 'Caused by: no cached Python 3.13 and uv is offline'
 CHECKS = {'check_frontmatter', 'check_provenance', 'check_snippets',
           'check_conformance', 'declared_dependencies', 'sync_runtime_assets', 'cc_guide_lint',
-          'critical_placement', 'suite_registry'}
+          'critical_placement', 'suite_registry', 'versions_check'}
 
 
 def clean_env(**extra):
@@ -273,3 +273,43 @@ def test_workflow_bounds_the_job_and_drops_checkout_credentials():
     assert checkouts, 'no actions/checkout step'
     assert all(step.get('with', {}).get('persist-credentials') is False
                for step in checkouts), checkouts
+
+
+DRIFT_WORKFLOW = REPO / '.github' / 'workflows' / 'versions-drift.yml'
+
+
+def drift_workflow():
+    return yaml.safe_load(DRIFT_WORKFLOW.read_text())
+
+
+def test_lints_workflow_takes_the_interpreter_from_python_version():
+    text = WORKFLOW.read_text()
+    assert 'python-version' not in text and 'UV_PYTHON' not in text
+
+
+def test_drift_workflow_triggers_and_permissions():
+    wf = drift_workflow()
+    on = wf.get('on', wf.get(True))
+    assert set(on) == {'schedule', 'workflow_dispatch'}
+    assert len(on['schedule']) == 1 and on['schedule'][0]['cron']
+    assert wf['permissions'] == {'contents': 'read'}
+
+
+def test_drift_workflow_pins_actions_bounds_the_job_and_matches_lints():
+    jobs = drift_workflow()['jobs'].values()
+    steps = [step for job in jobs for step in job['steps']]
+    uses = [step['uses'] for step in steps if 'uses' in step]
+    assert uses and all(PINNED.match(u) for u in uses), uses
+    assert set(uses) == {step['uses'] for job in workflow()['jobs'].values() for step in job['steps']
+                         if 'uses' in step}
+    assert all(job.get('timeout-minutes') for job in jobs)
+    checkouts = [step for step in steps if step.get('uses', '').startswith('actions/checkout@')]
+    assert checkouts and all(step.get('with', {}).get('persist-credentials') is False for step in checkouts)
+
+
+def test_drift_workflow_reports_to_the_summary_and_changes_nothing():
+    text = DRIFT_WORKFLOW.read_text()
+    runs = [step['run'] for job in drift_workflow()['jobs'].values() for step in job['steps'] if 'run' in step]
+    assert any('build/versions.py drift' in run and 'GITHUB_STEP_SUMMARY' in run and 'pipefail' in run
+               for run in runs), runs
+    assert not re.search(r'git (commit|push)|gh (issue|pr)|issues:|pull-requests:', text)
