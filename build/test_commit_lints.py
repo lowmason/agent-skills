@@ -28,7 +28,7 @@ UV_NOISE = 'uv: noise before the reason'
 UV_REASON = 'Caused by: no cached Python 3.13 and uv is offline'
 CHECKS = {'check_frontmatter', 'check_provenance', 'check_snippets',
           'check_conformance', 'declared_dependencies', 'sync_runtime_assets', 'cc_guide_lint',
-          'critical_placement', 'suite_registry'}
+          'critical_placement', 'suite_registry', 'versions_check'}
 
 
 def clean_env(**extra):

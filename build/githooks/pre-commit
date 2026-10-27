@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Pre-commit: run the nine commit lints (build/run_commit_lints.sh) on the working
+# Pre-commit: run the ten commit lints (build/run_commit_lints.sh) on the working
 # tree. Enabling it is the owner's step: git config core.hooksPath build/githooks
 # writes the repo config, which every worktree reads.
 # Fails open, with a warning, only when uv itself cannot run here (missing, or a
