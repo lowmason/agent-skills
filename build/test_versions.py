@@ -188,8 +188,10 @@ if 'compile' in args:
     sys.stderr.write(cfg.get('compile_err', ''))
     sys.exit(cfg.get('compile_rc', 0))
 if args[:2] == ['python', 'list']:
-    print(json.dumps(cfg.get('pythons', [])))
-    sys.exit(0)
+    sys.stderr.write(cfg.get('list_err', ''))
+    if not cfg.get('list_rc', 0):
+        print(json.dumps(cfg.get('pythons', [])))
+    sys.exit(cfg.get('list_rc', 0))
 sys.exit(cfg.get('run_rc', 0))
 '''
 
@@ -402,6 +404,12 @@ def test_newest_stable_python_skips_prereleases_and_free_threaded_builds(stub_uv
     stub_uv.set(pythons=[python_item('3.16.0a1'), python_item('3.15.0', variant='freethreaded'),
                          python_item('3.14.2'), python_item('3.13.9'), python_item('3.15.0', implementation='pypy')])
     assert versions.newest_stable_python() == '3.14'
+
+
+def test_newest_stable_python_reports_uvs_stderr_when_the_listing_fails(stub_uv):
+    stub_uv.set(list_rc=2, list_err='error: network is unreachable\n')
+    with pytest.raises(VersionsError, match=r'python step: uv python list failed:\nerror: network is unreachable'):
+        versions.newest_stable_python()
 
 
 def test_verify_runs_every_step_and_exits_1_when_one_fails(tmp_path, stub_uv, monkeypatch, capsys):

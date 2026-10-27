@@ -8,8 +8,8 @@ It fails on four things (design: specs/package-versions.md, R4):
   floors     a script's requires-python is above the Python floor its SKILL.md promises, or above the dev Python.
 
 A citation has one of three forms. Equality ("Polars 1.42", numpyro==0.22.0) must equal the file's
-value at the cited precision. A range (>=, >, <, 3.11+, "or later", ,<0.18) must contain the file's
-value. History passes only when its phrase is a key of HISTORICAL. The lint sees only the package
+value at the cited precision. A range (>=, >, <, <=, ~=, !=, 3.11+, "or later", ,<0.18) must contain
+the file's value. History passes only when its phrase is a key of HISTORICAL. The lint sees only the package
 names that the file lists.
 '''
 import re
@@ -84,12 +84,22 @@ def current_versions(v: Versions) -> dict[str, str]:
     return current
 
 
+def starts_with(current: str, cited: str) -> bool:
+    '''Whether `current` begins with `cited` at the precision written: 2.0.0 matches 2 and 2.0, not 2.1.'''
+    wanted = version_tuple(cited)
+    return (version_tuple(current) + (0,) * len(wanted))[:len(wanted)] == wanted
+
+
 def judge(current: str, match: re.Match) -> str | None:
     '''Why the file's value disagrees with one citation, or None.'''
     op, ver, plus = match.group('op') or '', match.group('ver'), match.group('plus')
     if op == '!=':
-        return None
-    if op in ('>=', '≥', '~=') or plus:
+        ok, kind = not starts_with(current, ver), 'range'
+    elif op == '~=':
+        # Compatible release: >= the cited version and == its version without the last part, then `.*`.
+        prefix = '.'.join(ver.split('.')[:-1])
+        ok, kind = compare(current, ver) >= 0 and (not prefix or starts_with(current, prefix)), 'range'
+    elif op in ('>=', '≥') or plus:
         ok, kind = compare(current, ver) >= 0, 'range'
     elif op == '>':
         ok, kind = compare(current, ver) > 0, 'range'
@@ -98,9 +108,7 @@ def judge(current: str, match: re.Match) -> str | None:
     elif op in ('<=', '≤'):
         ok, kind = compare(current, ver) <= 0, 'range'
     else:
-        cited = version_tuple(ver)
-        have = (version_tuple(current) + (0,) * len(cited))[:len(cited)]
-        ok, kind = cited == have, 'equality'
+        ok, kind = starts_with(current, ver), 'equality'
     if ok and match.group('ub'):
         ok, kind = compare(current, match.group('ubver')) < 0, 'range'
     if ok:

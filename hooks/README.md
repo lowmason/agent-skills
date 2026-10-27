@@ -439,7 +439,7 @@ file backs it. Recheck it when Claude Code changes a built-in agent's model.
 **Tests.** `test_dispatch_model_guard.py` drives the script as a subprocess.
 Every allow-path test asserts the return code, because a crashed `PreToolUse` hook
 exits 1 and fails open. The two commands under the read-only guard's **Tests** run it
-under 3.13 and under `/usr/bin/python3` (3.9), since the hook keeps the same 3.9 floor.
+under the dev Python and under `/usr/bin/python3` (3.9), since the hook keeps the same 3.9 floor.
 
 ## Probe log
 

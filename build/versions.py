@@ -15,8 +15,9 @@ re-verify set. bump moves the freeze date and re-pins [packages] by one joint re
 same resolve with no freeze date and reports it. check is the offline commit lint.
 --python and --no-freeze on run and verify exist for drift's second pass.
 
-Exit status: 0 on success; 1 when a check, a gate or a sync comparison fails; 2 for a usage error, an
-invalid versions file or a network or resolve failure (the message names the cause).
+Exit status: 0 on success; 1 when a check, a gate or a sync comparison fails, and when `check` cannot
+load the versions file (it reports the load error as a finding); 2 for a usage error, an invalid
+versions file in any other subcommand, or a network or resolve failure (the message names the cause).
 Design: specs/package-versions.md.
 '''
 import argparse
@@ -422,11 +423,14 @@ def newest_stable_python() -> str:
     try:
         done = subprocess.run(['uv', 'python', 'list', '--only-downloads', '--output-format', 'json'],
                               capture_output=True, text=True)
-        items = json.loads(done.stdout)
-    except (OSError, ValueError) as exc:
+    except OSError as exc:
         raise VersionsError(f'python step: cannot list the Python releases: {exc}') from exc
     if done.returncode != 0:
         raise VersionsError(f'python step: uv python list failed:\n{done.stderr.strip()}')
+    try:
+        items = json.loads(done.stdout)
+    except ValueError as exc:
+        raise VersionsError(f'python step: cannot read the Python release list: {exc}') from exc
     found = [(item['version_parts']['major'], item['version_parts']['minor']) for item in items
              if item.get('implementation') == 'cpython' and item.get('variant') == 'default'
              and re.fullmatch(r'\d+\.\d+\.\d+', item.get('version', ''))]
@@ -549,7 +553,9 @@ def add_pin_options(parser: argparse.ArgumentParser, drift_only: bool = False) -
                         help='use this version for one run; the file stays as it is')
     if not drift_only:
         parser.add_argument('--python', help="another interpreter, for drift's second pass")
-        parser.add_argument('--no-freeze', action='store_true', help='leave out the freeze date, for drift')
+        parser.add_argument('--no-freeze', action='store_true',
+                            help='leave out the --exclude-newer flag; the root uv.toml still applies '
+                                 'unless UV_NO_CONFIG=1 is set, as drift sets it')
 
 
 def add_run(sub) -> None:

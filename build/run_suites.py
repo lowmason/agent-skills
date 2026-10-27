@@ -22,7 +22,8 @@ root date. --pin PKG==X changes one pin for one run, --python replaces the dev i
 --no-freeze leaves out the cutoff; `versions.py drift` uses all three.
 
 Exit status: 0 when everything passes; 1 when a run fails or --check finds a problem;
-2 for a usage error, an unknown suite name or an invalid registry.
+2 for a usage error, an unknown suite name, an invalid registry, a missing or invalid
+build/versions.toml, or a bad --pin.
 Design: specs/completed/test-suite-registry.md.
 '''
 import argparse
