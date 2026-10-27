@@ -22,6 +22,7 @@ Design: specs/package-versions.md.
 import argparse
 import datetime
 import json
+import os
 import re
 import subprocess
 import sys
@@ -370,6 +371,135 @@ def run_process(argv: Sequence[str], root: Path = REPO, env: Mapping[str, str] |
         return 2
 
 
+@dataclass(frozen=True)
+class Step:
+    label: str
+    argv: tuple[str, ...]
+
+
+def verify_steps(v: Versions, pins: Mapping[str, str] | None = None, python: str | None = None,
+                 freeze: bool = True, user_pins: Mapping[str, str] | None = None) -> list[Step]:
+    '''The re-verify set. `pins` pins the gates' stacks; `user_pins` are the --pin values that the
+    suite runner repeats (it reads the rest of its pins from the file).'''
+    def gate_step(label: str, gate: str, tail: list[str]) -> Step:
+        return Step(label, tuple(uv_run_argv(v, gate, tail, pins, python, freeze)))
+    suites = ['python', 'build/run_suites.py', '--all', '--extras']
+    for name, version in (user_pins if user_pins is not None else (pins or {})).items():
+        suites += ['--pin', f'{name}=={version}']
+    if python:
+        suites += ['--python', python]
+    if not freeze:
+        suites.append('--no-freeze')
+    return [
+        gate_step('tier 2 (--api)', 'snippets',
+                  ['python', 'build/check_snippets.py', '--api', 'skills/bayesian-workflow/']),
+        gate_step('tier 3 (--run)', 'snippets',
+                  ['python', 'build/check_snippets.py', '--run', 'skills/bayesian-workflow/']),
+        gate_step('jax cpu examples', 'jax-cpu',
+                  ['python', 'build/check_jax_examples.py', 'skills/deep-learning/']),
+        Step('suites', tuple(uv_run_argv(v, None, suites, None, python, freeze))),
+    ]
+
+
+def run_steps(steps: Sequence[Step], root: Path = REPO, env: Mapping[str, str] | None = None,
+              runner: Callable[..., int] = run_process) -> list[str]:
+    '''Run every step, in order, whatever fails; the labels of the failed ones.'''
+    failed = []
+    for step in steps:
+        print(f'== {step.label}', flush=True)
+        if runner(step.argv, root, env) != 0:
+            failed.append(step.label)
+    return failed
+
+
+def newest_stable_python() -> str:
+    '''The newest CPython that uv can download, as `3.<minor>`, prereleases and free-threaded builds left out.'''
+    try:
+        done = subprocess.run(['uv', 'python', 'list', '--only-downloads', '--output-format', 'json'],
+                              capture_output=True, text=True)
+        items = json.loads(done.stdout)
+    except (OSError, ValueError) as exc:
+        raise VersionsError(f'python step: cannot list the Python releases: {exc}') from exc
+    if done.returncode != 0:
+        raise VersionsError(f'python step: uv python list failed:\n{done.stderr.strip()}')
+    found = [(item['version_parts']['major'], item['version_parts']['minor']) for item in items
+             if item.get('implementation') == 'cpython' and item.get('variant') == 'default'
+             and re.fullmatch(r'\d+\.\d+\.\d+', item.get('version', ''))]
+    if not found:
+        raise VersionsError('python step: uv lists no stable CPython release')
+    major, minor = max(found)
+    return f'{major}.{minor}'
+
+
+@dataclass(frozen=True)
+class Row:
+    package: str
+    pinned: str
+    resolved: str
+    newest: str
+    uploaded: str
+    flag: str
+
+
+def drift_rows(v: Versions, resolved: Mapping[str, str], fetch: Fetch | None = None) -> list[Row]:
+    fetch = fetch or fetch_json
+    rows = []
+    for table, entries in (('packages', v.packages), ('cited', v.cited)):
+        for name, pinned in entries.items():
+            data = fetch(f'https://pypi.org/pypi/{name}/json')
+            newest = data['info']['version']
+            uploaded = f'{first_upload(data.get("urls", []), name):%Y-%m-%d}'
+            got = resolved.get(normalize(name), '-') if table == 'packages' else '-'
+            flag = ''
+            if table == 'packages' and got != '-' and compare(got, newest) < 0:
+                flag = 'resolves below its newest release'
+            elif table == 'cited' and version_tuple(newest)[:len(version_tuple(pinned))] != version_tuple(pinned):
+                flag = 'a newer release exists'
+            rows.append(Row(name, pinned, got, newest, uploaded, flag))
+    return rows
+
+
+def render_pass(python: str, rows: Sequence[Row], results: Sequence[tuple[str, bool]]) -> str:
+    lines = [f'## Python {python}', '', '| package | pinned | resolved | newest | uploaded | flag |',
+             '|---|---|---|---|---|---|']
+    lines += [f'| {r.package} | {r.pinned} | {r.resolved} | {r.newest} | {r.uploaded} | {r.flag} |' for r in rows]
+    lines += ['', '| gate | result |', '|---|---|']
+    lines += [f'| {label} | {"pass" if ok else "FAIL"} |' for label, ok in results]
+    return '\n'.join(lines) + '\n'
+
+
+DRIFT_LIMIT = ('Limit: `check` and this report see only the package names that build/versions.toml lists. '
+               'A package that a skill cites and the file omits is invisible to both.')
+
+
+def drift(root: Path, user_pins: Mapping[str, str] | None = None, fetch: Fetch | None = None,
+          resolver: Callable[..., dict[str, str]] | None = None,
+          newest_python: Callable[[], str] | None = None,
+          runner: Callable[..., int] | None = None) -> tuple[int, str]:
+    '''The drift run: (exit status, report). Status 0 when every gate passes on the newest versions,
+    1 when a gate fails, 2 when it cannot resolve or reach the network.'''
+    resolver, newest_python, runner = resolver or resolve, newest_python or newest_stable_python, runner or run_process
+    v = load(root)
+    report = ['# Package drift', '', f'Freeze date {v.freeze.isoformat()}; dev Python {v.dev_python}.', '']
+    try:
+        newest = newest_python()
+        passes = [v.dev_python] + ([newest] if newest != v.dev_python else [])
+        failed_any = False
+        for python in passes:
+            resolved = resolver(requirements(v, pins=user_pins), python, None)
+            rows = drift_rows(v, resolved, fetch)
+            pins = {normalize(name): resolved[normalize(name)] for name in v.packages}
+            steps = verify_steps(v, pins, python=python, freeze=False, user_pins=pins)
+            failed = run_steps(steps, root, {**os.environ, 'UV_NO_CONFIG': '1'}, runner)
+            failed_any = failed_any or bool(failed)
+            report.append(render_pass(python, rows, [(s.label, s.label not in failed) for s in steps]))
+    except VersionsError as exc:
+        report += ['', f'drift could not finish: {exc}', '', DRIFT_LIMIT]
+        return 2, '\n'.join(report) + '\n'
+    report += [DRIFT_LIMIT]
+    return (1 if failed_any else 0), '\n'.join(report) + '\n'
+
+
 # ---- command line -----------------------------------------------------------
 
 def add_sync(sub) -> None:
@@ -429,10 +559,43 @@ def cmd_run(args, root: Path, tail: Sequence[str]) -> int:
     return run_process(uv_run_argv(v, args.gate, tail, pins, args.python, not args.no_freeze), root)
 
 
+def add_verify(sub) -> None:
+    add_pin_options(sub.add_parser('verify', help="run the re-verify set on the file's versions"))
+
+
+def cmd_verify(args, root: Path, tail: Sequence[str]) -> int:
+    v = load(root)
+    pins = parse_pins(v, args.pin)
+    if not args.no_freeze:
+        late = late_pins(v, sorted({spec for gate in v.gates for spec in v.stack(gate, pins)}))
+        if late:
+            print('\n'.join(late), file=sys.stderr)
+            return 2
+    failed = run_steps(verify_steps(v, pins, args.python, not args.no_freeze), root)
+    if failed:
+        print(f'verify failed: {", ".join(failed)}', file=sys.stderr)
+        return 1
+    print('verify passed')
+    return 0
+
+
+def add_drift(sub) -> None:
+    add_pin_options(sub.add_parser('drift', help='resolve with no freeze date and run the re-verify set'),
+                    drift_only=True)
+
+
+def cmd_drift(args, root: Path, tail: Sequence[str]) -> int:
+    status, report = drift(root, parse_pins(load(root), args.pin))
+    print(report)
+    return status
+
+
 SUBCOMMANDS = {
     'sync': (add_sync, cmd_sync),
     'bump': (add_bump, cmd_bump),
     'run': (add_run, cmd_run),
+    'verify': (add_verify, cmd_verify),
+    'drift': (add_drift, cmd_drift),
 }
 
 

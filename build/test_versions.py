@@ -390,3 +390,126 @@ def test_run_needs_a_command(tmp_path, capsys):
         versions.main(['run', 'snippets'], root=make_root(tmp_path))
     assert err.value.code == 2
     assert 'run needs a command after --' in capsys.readouterr().err
+
+
+def python_item(version, variant='default', implementation='cpython'):
+    major, minor, patch = (int(''.join(c for c in p if c.isdigit())) for p in version.split('.')[:3])
+    return {'version': version, 'variant': variant, 'implementation': implementation,
+            'version_parts': {'major': major, 'minor': minor, 'patch': patch}}
+
+
+def test_newest_stable_python_skips_prereleases_and_free_threaded_builds(stub_uv):
+    stub_uv.set(pythons=[python_item('3.16.0a1'), python_item('3.15.0', variant='freethreaded'),
+                         python_item('3.14.2'), python_item('3.13.9'), python_item('3.15.0', implementation='pypy')])
+    assert versions.newest_stable_python() == '3.14'
+
+
+def test_verify_runs_every_step_and_exits_1_when_one_fails(tmp_path, stub_uv, monkeypatch, capsys):
+    root = make_root(tmp_path)
+    monkeypatch.setattr(versions, 'fetch_json', fake_pypi())
+    stub_uv.set(run_rc=1)
+    assert versions.main(['verify'], root=root) == 1
+    assert len(stub_uv.calls()) == 4          # a failure does not stop the next step
+    err = capsys.readouterr().err
+    assert 'verify failed: tier 2 (--api), tier 3 (--run), jax cpu examples, suites' in err
+
+
+def test_verify_passes_when_every_step_passes(tmp_path, stub_uv, monkeypatch, capsys):
+    root = make_root(tmp_path)
+    monkeypatch.setattr(versions, 'fetch_json', fake_pypi())
+    assert versions.main(['verify', '--pin', 'gamma==0.4'], root=root) == 0
+    assert capsys.readouterr().out.rstrip().endswith('verify passed')
+    assert stub_uv.calls()[3][-5:] == ['build/run_suites.py', '--all', '--extras', '--pin', 'gamma==0.4']
+
+
+def drift_world(stub_uv, monkeypatch, run_rc=0, compile_rc=0):
+    stub_uv.set(compile_out='alpha==1.5.0\nbeta-two==2.0.0\ngamma==0.5\n', compile_rc=compile_rc,
+                compile_err='no route to host\n', run_rc=run_rc,
+                pythons=[python_item('3.14.1'), python_item('3.13.9')])
+    monkeypatch.setattr(versions, 'fetch_json', fake_pypi(newest='1.5.0'))
+
+
+def test_drift_exits_0_when_every_gate_passes_on_both_pythons(tmp_path, stub_uv, monkeypatch):
+    drift_world(stub_uv, monkeypatch)
+    status, report = versions.drift(make_root(tmp_path))
+    assert status == 0
+    assert '## Python 3.13' in report and '## Python 3.14' in report
+    assert '| alpha | 1.2.0 | 1.5.0 | 1.5.0 |' in report
+    assert '| delta | 6.2 | - | 1.5.0 |' in report and 'a newer release exists' in report
+    assert report.count('| suites | pass |') == 2 and 'FAIL' not in report
+    assert versions.DRIFT_LIMIT in report
+
+
+def test_drift_runs_the_steps_with_the_resolved_pins_and_no_freeze(tmp_path, stub_uv, monkeypatch):
+    drift_world(stub_uv, monkeypatch)
+    versions.drift(make_root(tmp_path))
+    runs = [call for call in stub_uv.calls() if call[0] == 'run']
+    assert len(runs) == 8                        # four steps in each of two passes
+    first = runs[0]
+    assert first[:3] == ['run', '--python', '3.13'] and '--exclude-newer' not in first
+    assert 'alpha==1.5.0' in first
+    assert runs[3][-5:] == ['--pin', 'gamma==0.5', '--python', '3.13', '--no-freeze']
+
+
+def test_drift_exits_1_when_a_gate_fails(tmp_path, stub_uv, monkeypatch):
+    drift_world(stub_uv, monkeypatch, run_rc=1)
+    status, report = versions.drift(make_root(tmp_path))
+    assert status == 1 and '| suites | FAIL |' in report
+
+
+def test_drift_exits_2_when_it_cannot_resolve(tmp_path, stub_uv, monkeypatch):
+    drift_world(stub_uv, monkeypatch, compile_rc=1)
+    status, report = versions.drift(make_root(tmp_path))
+    assert status == 2 and 'drift could not finish: resolve step' in report
+
+
+def test_drift_exits_2_when_pypi_is_unreachable(tmp_path, stub_uv, monkeypatch):
+    drift_world(stub_uv, monkeypatch)
+
+    def down(url):
+        raise VersionsError(f'cannot reach {url}: timed out')
+
+    monkeypatch.setattr(versions, 'fetch_json', down)
+    status, report = versions.drift(make_root(tmp_path))
+    assert status == 2 and 'cannot reach https://pypi.org/pypi/' in report
+
+
+def test_drift_main_prints_the_report_and_returns_its_status(tmp_path, stub_uv, monkeypatch, capsys):
+    drift_world(stub_uv, monkeypatch, run_rc=1)
+    assert versions.main(['drift'], root=make_root(tmp_path)) == 1
+    assert '# Package drift' in capsys.readouterr().out
+
+
+def test_drift_gives_each_step_its_interpreter_and_the_no_config_environment(tmp_path, stub_uv, monkeypatch):
+    drift_world(stub_uv, monkeypatch)
+    seen = []
+
+    def runner(argv, root, env):
+        seen.append((argv, env))
+        return 0
+
+    versions.drift(make_root(tmp_path), runner=runner)
+    assert len(seen) == 8
+    for index, (argv, env) in enumerate(seen):
+        assert argv[:3] == ('uv', 'run', '--python') and argv[3] == ('3.13', '3.14')[index // 4]
+        assert env['UV_NO_CONFIG'] == '1'
+
+
+def test_verify_refuses_a_pin_uploaded_after_the_freeze_date(tmp_path, stub_uv, monkeypatch, capsys):
+    root = make_root(tmp_path)
+    monkeypatch.setattr(versions, 'fetch_json', fake_pypi('2026-10-25T00:00:00.000000Z'))
+    assert versions.main(['verify'], root=root) == 2
+    assert 'alpha 1.2.0: uploaded 2026-10-25, after the freeze date 2026-10-19' in capsys.readouterr().err
+    assert stub_uv.calls() == []
+
+
+def test_verify_with_no_freeze_and_a_python_skips_the_upload_check_and_the_cutoff(tmp_path, stub_uv, monkeypatch):
+    def offline(url):
+        raise AssertionError(f'verify --no-freeze must not fetch {url}')
+
+    monkeypatch.setattr(versions, 'fetch_json', offline)
+    assert versions.main(['verify', '--python', '3.14', '--no-freeze'], root=make_root(tmp_path)) == 0
+    calls = stub_uv.calls()
+    assert len(calls) == 4 and all(call[:3] == ['run', '--python', '3.14'] for call in calls)
+    assert all('--exclude-newer' not in call for call in calls)
+    assert calls[3][-4:] == ['--extras', '--python', '3.14', '--no-freeze']
