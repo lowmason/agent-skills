@@ -23,7 +23,7 @@ This work is not part of plan 64 (bayesian-workflow and recommend-probabilistic-
 | `build/check_snippets.py:87-90` | `RUN_REMEDIATION` builds the Tier 3 command from `PINNED` | Already a single source in code |
 | `CLAUDE.md:122` | The Tier 3 command, with the `PINNED` versions copied by hand | No check compares it with `PINNED` (deferred item F9, done 2026-10-19, says so) |
 | `build/check_snippets.py:84-86`, `CLAUDE.md:120` | Tier 2 (`--api`, which resolves library names) floats: `arviz>=1.0` and unpinned rest | Floats by design |
-| `specs/verification/32-jax-cpu.in` -> `32-jax-cpu.txt` | Full lock for the deep-learning CPU examples: jax==0.11.2, jaxlib==0.11.2, flax==0.12.10, optax==0.2.8, orbax-checkpoint==0.12.6, equinox==0.13.8, diffrax==0.7.2, e3nn-jax==0.21.0, numpy==2.5.3, plus transitive pins | Made by `uv pip compile --python-version 3.13`. Run by `CLAUDE.md:130` (`check_jax_examples.py`) |
+| `specs/verification/32-jax-cpu.in` -> `32-jax-cpu.txt` | Full lock for the CPU examples of `deep-learning`, `evaluate-deep-learning` and `optimize-jax`: jax==0.11.2, jaxlib==0.11.2, flax==0.12.10, optax==0.2.8, orbax-checkpoint==0.12.6, equinox==0.13.8, diffrax==0.7.2, e3nn-jax==0.21.0, numpy==2.5.3, plus transitive pins | Made by `uv pip compile --python-version 3.13`. Run by `CLAUDE.md:130` (`check_jax_examples.py`) |
 | `build/suites.toml` | `with` and `extras` deps for each test suite, all unpinned (`build` extras: `arviz>=1.0` and the rest bare) | Float |
 
 Conflict: the two gates pin different JAX releases. The CPU lock has 0.11.2 and `PINNED` has 0.12.0.

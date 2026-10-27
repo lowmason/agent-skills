@@ -402,7 +402,8 @@ def verify_steps(v: Versions, pins: Mapping[str, str] | None = None, python: str
         gate_step('tier 3 (--run)', 'snippets',
                   ['python', 'build/check_snippets.py', '--run', 'skills/bayesian-workflow/']),
         gate_step('jax cpu examples', 'jax-cpu',
-                  ['python', 'build/check_jax_examples.py', 'skills/deep-learning/']),
+                  ['python', 'build/check_jax_examples.py', 'skills/deep-learning/',
+                   'skills/evaluate-deep-learning/', 'skills/optimize-jax/']),
         Step('suites', tuple(uv_run_argv(v, None, suites, None, python, freeze))),
     ]
 

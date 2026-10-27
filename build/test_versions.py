@@ -430,6 +430,13 @@ def test_verify_passes_when_every_step_passes(tmp_path, stub_uv, monkeypatch, ca
     assert stub_uv.calls()[3][-5:] == ['build/run_suites.py', '--all', '--extras', '--pin', 'gamma==0.4']
 
 
+def test_verify_runs_the_cpu_examples_of_all_three_jax_skills(tmp_path, stub_uv, monkeypatch):
+    monkeypatch.setattr(versions, 'fetch_json', fake_pypi())
+    assert versions.main(['verify'], root=make_root(tmp_path)) == 0
+    assert stub_uv.calls()[2][-4:] == ['build/check_jax_examples.py', 'skills/deep-learning/',
+                                       'skills/evaluate-deep-learning/', 'skills/optimize-jax/']
+
+
 def drift_world(stub_uv, monkeypatch, run_rc=0, compile_rc=0):
     stub_uv.set(compile_out='alpha==1.5.0\nbeta-two==2.0.0\ngamma==0.5\n', compile_rc=compile_rc,
                 compile_err='no route to host\n', run_rc=run_rc,

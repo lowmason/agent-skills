@@ -126,9 +126,9 @@ uv run python build/versions.py run snippets -- python build/check_snippets.py -
 # below; it skips norun and noparse blocks and does not validate the surrounding prose
 cd build && uv run --with pytest python -m pytest -q test_check_jax_examples.py
 
-# Verified deep-learning CPU examples (canonical Markdown blocks, no preamble), run on the jax-cpu stack of build/versions.toml.
-# Hardware and checkpoint recipes in references state their own limits
-uv run python build/versions.py run jax-cpu -- python build/check_jax_examples.py skills/deep-learning/
+# Verified CPU examples of deep-learning, evaluate-deep-learning and optimize-jax (canonical Markdown blocks, no preamble),
+# run on the jax-cpu stack of build/versions.toml. Hardware and checkpoint recipes in references state their own limits
+uv run python build/versions.py run jax-cpu -- python build/check_jax_examples.py skills/deep-learning/ skills/evaluate-deep-learning/ skills/optimize-jax/
 
 # Package versions. build/versions.toml is the one source of the dev Python, the freeze date and every pin; sync writes
 # .python-version and uv.toml from it. sync --check and check are offline, and check is a commit lint. A bump runs
