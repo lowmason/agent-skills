@@ -21,10 +21,12 @@ Design: specs/package-versions.md.
 '''
 import argparse
 import datetime
+import json
 import re
 import subprocess
 import sys
 import tomllib
+import urllib.request
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass, replace
 from pathlib import Path
@@ -288,6 +290,86 @@ def bump(root: Path, date: datetime.date, only: Iterable[str] = (),
     return changes
 
 
+RUNNER = 'uv run python build/versions.py run'
+
+
+Fetch = Callable[[str], dict]
+
+
+def fetch_json(url: str) -> dict:
+    request = urllib.request.Request(url, headers={'User-Agent': 'agent-skills-versions'})
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response:
+            return json.load(response)
+    except (OSError, ValueError) as exc:
+        raise VersionsError(f'cannot reach {url}: {exc}') from exc
+
+
+def parse_time(text: str) -> datetime.datetime:
+    return datetime.datetime.fromisoformat(text.replace('Z', '+00:00'))
+
+
+def first_upload(urls: Sequence[Mapping], what: str) -> datetime.datetime:
+    times = [parse_time(entry['upload_time_iso_8601']) for entry in urls]
+    if not times:
+        raise VersionsError(f'{what}: PyPI lists no files')
+    return min(times)
+
+
+def late_pins(v: Versions, specs: Iterable[str], fetch: Fetch | None = None) -> list[str]:
+    '''The specs whose release was first uploaded at or after the freeze cutoff.'''
+    fetch = fetch or fetch_json
+    cutoff = parse_time(v.cutoff)
+    problems = []
+    for spec in specs:
+        package, _, version = spec.partition('==')
+        uploaded = first_upload(fetch(f'https://pypi.org/pypi/{package}/{version}/json').get('urls', []),
+                                spec)
+        if uploaded >= cutoff:
+            problems.append(f'{package} {version}: uploaded {uploaded:%Y-%m-%d}, after the freeze date '
+                            f'{v.freeze.isoformat()}')
+    return problems
+
+
+def parse_pins(v: Versions, specs: Sequence[str]) -> dict[str, str]:
+    '''`--pin pkg==X` values as {name: version}; each must name a [packages] entry.'''
+    known = {normalize(name) for name in v.packages}
+    pins = {}
+    for spec in specs:
+        name, eq, version = spec.partition('==')
+        if not eq or not VERSION_RE.fullmatch(version):
+            raise VersionsError(f'--pin {spec!r}: write it as package==version')
+        if normalize(name) not in known:
+            raise VersionsError(f'--pin {spec!r}: {name} has no [packages] entry')
+        pins[normalize(name)] = version
+    return pins
+
+
+def uv_run_argv(v: Versions, gate: str | None, command: Sequence[str], pins: Mapping[str, str] | None = None,
+                python: str | None = None, freeze: bool = True) -> list[str]:
+    '''`uv run` with the interpreter, the freeze cutoff and the gate's pinned stack, then the command.'''
+    argv = ['uv', 'run', '--python', python or v.dev_python]
+    if freeze:
+        argv += ['--exclude-newer', v.cutoff]
+    if gate is not None:
+        for spec in v.stack(gate, pins):
+            argv += ['--with', spec]
+    return argv + list(command)
+
+
+def runner_command(gate: str, tail: str) -> str:
+    '''The documented form of a pinned-stack command.'''
+    return f'{RUNNER} {gate} -- {tail}'
+
+
+def run_process(argv: Sequence[str], root: Path = REPO, env: Mapping[str, str] | None = None) -> int:
+    try:
+        return subprocess.run(list(argv), cwd=root, env=None if env is None else dict(env)).returncode
+    except OSError as exc:
+        print(f'cannot start {argv[0]}: {exc}', file=sys.stderr, flush=True)
+        return 2
+
+
 # ---- command line -----------------------------------------------------------
 
 def add_sync(sub) -> None:
@@ -322,9 +404,35 @@ def cmd_bump(args, root: Path, tail: Sequence[str]) -> int:
     return 0
 
 
+def add_pin_options(parser: argparse.ArgumentParser, drift_only: bool = False) -> None:
+    parser.add_argument('--pin', action='append', default=[], metavar='PKG==X',
+                        help='use this version for one run; the file stays as it is')
+    if not drift_only:
+        parser.add_argument('--python', help="another interpreter, for drift's second pass")
+        parser.add_argument('--no-freeze', action='store_true', help='leave out the freeze date, for drift')
+
+
+def add_run(sub) -> None:
+    parser = sub.add_parser('run', help="run a command under a gate's pinned stack; the command follows --")
+    parser.add_argument('gate')
+    add_pin_options(parser)
+
+
+def cmd_run(args, root: Path, tail: Sequence[str]) -> int:
+    v = load(root)
+    pins = parse_pins(v, args.pin)
+    if not args.no_freeze:
+        late = late_pins(v, v.stack(args.gate, pins))
+        if late:
+            print('\n'.join(late), file=sys.stderr)
+            return 2
+    return run_process(uv_run_argv(v, args.gate, tail, pins, args.python, not args.no_freeze), root)
+
+
 SUBCOMMANDS = {
     'sync': (add_sync, cmd_sync),
     'bump': (add_bump, cmd_bump),
+    'run': (add_run, cmd_run),
 }
 
 

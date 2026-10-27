@@ -327,3 +327,66 @@ def test_bump_with_the_same_date_still_moves_packages(tmp_path):
                             resolver=lambda *a: {'alpha': '1.3.0', 'beta-two': '2.0.0', 'gamma': '0.5'})
     assert changes == ['alpha: 1.2.0 -> 1.3.0']
     assert versions.load(root).packages['alpha'] == '1.3.0'
+
+
+def test_parse_pins():
+    v = versions.parse(GOOD)
+    assert versions.parse_pins(v, ['beta_two==3.1', 'alpha==1.0']) == {'beta-two': '3.1', 'alpha': '1.0'}
+    with pytest.raises(VersionsError, match=r"--pin 'alpha': write it as package==version"):
+        versions.parse_pins(v, ['alpha'])
+    with pytest.raises(VersionsError, match=r"--pin 'zeta==1\.0': zeta has no \[packages\] entry"):
+        versions.parse_pins(v, ['zeta==1.0'])
+
+
+def fake_pypi(uploaded='2026-10-01T10:00:00.000000Z', newest='9.9.9'):
+    def fetch(url):
+        return {'info': {'version': newest}, 'urls': [{'upload_time_iso_8601': uploaded}]}
+    return fetch
+
+
+def test_a_pin_uploaded_after_the_cutoff_names_the_package_and_the_dates():
+    v = versions.parse(GOOD)
+    late = versions.late_pins(v, ['alpha==1.2.0'], fake_pypi('2026-10-20T00:00:00.000000Z'))
+    assert late == ['alpha 1.2.0: uploaded 2026-10-20, after the freeze date 2026-10-19']
+    assert versions.late_pins(v, ['alpha==1.2.0'], fake_pypi('2026-10-19T23:59:59.000000Z')) == []
+
+
+def test_uv_run_argv_orders_python_cutoff_stack_command():
+    v = versions.parse(GOOD)
+    argv = versions.uv_run_argv(v, 'snippets', ['python', 'x.py'])
+    assert argv == ['uv', 'run', '--python', '3.13', '--exclude-newer', '2026-10-20T00:00:00Z',
+                    '--with', 'alpha==1.2.0', '--with', 'beta-two==2.0.0', 'python', 'x.py']
+    argv = versions.uv_run_argv(v, 'snippets', ['python', 'x.py'], {'alpha': '1.0'}, python='3.14', freeze=False)
+    assert argv == ['uv', 'run', '--python', '3.14', '--with', 'alpha==1.0', '--with', 'beta-two==2.0.0',
+                    'python', 'x.py']
+    assert versions.uv_run_argv(v, None, ['python', 'y.py']) == [
+        'uv', 'run', '--python', '3.13', '--exclude-newer', '2026-10-20T00:00:00Z', 'python', 'y.py']
+
+
+def test_runner_command_is_the_documented_form():
+    assert versions.runner_command('snippets', 'python build/check_snippets.py --run skills/') == (
+        'uv run python build/versions.py run snippets -- python build/check_snippets.py --run skills/')
+
+
+def test_run_builds_the_uv_command_and_returns_its_status(tmp_path, stub_uv, monkeypatch):
+    root = make_root(tmp_path)
+    monkeypatch.setattr(versions, 'fetch_json', fake_pypi())
+    stub_uv.set(run_rc=3)
+    assert versions.main(['run', 'snippets', '--pin', 'alpha==1.0', '--', 'python', 'x.py'], root=root) == 3
+    assert stub_uv.calls() == [['run', '--python', '3.13', '--exclude-newer', '2026-10-20T00:00:00Z',
+                                '--with', 'alpha==1.0', '--with', 'beta-two==2.0.0', 'python', 'x.py']]
+
+
+def test_run_refuses_a_pin_uploaded_after_the_freeze_date(tmp_path, stub_uv, monkeypatch, capsys):
+    root = make_root(tmp_path)
+    monkeypatch.setattr(versions, 'fetch_json', fake_pypi('2026-10-25T00:00:00.000000Z'))
+    assert versions.main(['run', 'snippets', '--', 'python', 'x.py'], root=root) == 2
+    assert 'alpha 1.2.0: uploaded 2026-10-25, after the freeze date 2026-10-19' in capsys.readouterr().err
+    assert stub_uv.calls() == []
+
+
+def test_run_needs_a_command(tmp_path, capsys):
+    with pytest.raises(SystemExit) as err:
+        versions.main(['run', 'snippets'], root=make_root(tmp_path))
+    assert err.value.code == 2
+    assert 'run needs a command after --' in capsys.readouterr().err
