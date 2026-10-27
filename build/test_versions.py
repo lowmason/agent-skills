@@ -306,3 +306,24 @@ def test_bump_refuses_a_resolved_version_the_file_would_reject_and_leaves_the_fi
     assert err.startswith('bump: ') and "[packages] alpha: invalid version '1.0.post1'" in err
     assert (root / 'build' / 'versions.toml').read_bytes() == before
     assert not (root / 'uv.toml').exists()
+
+
+def test_bump_refuses_a_freeze_date_it_cannot_write_and_leaves_the_file_alone(tmp_path, stub_uv, capsys):
+    inline = 'freeze = {date = 2026-10-19}\n' + GOOD.replace(
+        '[freeze]\ndate = 2026-10-19            # every check resolves as of this date\n\n', '')
+    assert versions.parse(inline).freeze == datetime.date(2026, 10, 19)   # the fixture is a valid file
+    root = make_root(tmp_path, inline)
+    before = (root / 'build' / 'versions.toml').read_bytes()
+    stub_uv.set(compile_out='alpha==1.2.0\nbeta-two==2.0.0\ngamma==0.5\n')
+    assert versions.main(['bump', '--date', '2026-11-02'], root=root) == 2
+    assert 'bump: cannot rewrite [freeze] date; write it as date = YYYY-MM-DD under [freeze]' in capsys.readouterr().err
+    assert (root / 'build' / 'versions.toml').read_bytes() == before
+    assert not (root / 'uv.toml').exists()
+
+
+def test_bump_with_the_same_date_still_moves_packages(tmp_path):
+    root = make_root(tmp_path)
+    changes = versions.bump(root, datetime.date(2026, 10, 19),
+                            resolver=lambda *a: {'alpha': '1.3.0', 'beta-two': '2.0.0', 'gamma': '0.5'})
+    assert changes == ['alpha: 1.2.0 -> 1.3.0']
+    assert versions.load(root).packages['alpha'] == '1.3.0'

@@ -274,10 +274,12 @@ def bump(root: Path, date: datetime.date, only: Iterable[str] = (),
     new = {name: resolved[normalize(name)] for name in v.packages}
     path = root / VERSIONS_FILE
     text = rewrite(path.read_text(encoding='utf-8'), date, new)
-    written = parse(text).packages
+    written = parse(text)
     for name, version in new.items():
-        if written.get(name) != version:
+        if written.packages.get(name) != version:
             raise VersionsError(f'cannot rewrite [packages] {name}; write its value in single quotes')
+    if written.freeze != date:
+        raise VersionsError('cannot rewrite [freeze] date; write it as date = YYYY-MM-DD under [freeze]')
     path.write_text(text, encoding='utf-8')
     sync(root)
     changes = [f'{name}: {old} -> {new[name]}' for name, old in v.packages.items() if new[name] != old]
