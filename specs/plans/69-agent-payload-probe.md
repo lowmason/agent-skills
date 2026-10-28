@@ -54,7 +54,9 @@ The Task 6 findings, from the plan 63 kit's `t6-probe.md` (scratch folder `~/.ca
 
 ## Decisions
 
-None.
+- **D1** (owner, plan review, 2026-10-28): O1, default kept. The probe's guide sections are `hooks.events`, `hooks.configuration`, `hooks.patterns` and `subagents.models`. Applied in: Task 4.
+- **D2** (owner, plan review, 2026-10-28): O2, default kept. The unset-model test mirrors the guard's `decide()`, which reads `tool_input.get('model')`. An absent, empty or null model passes, and any value is DIVERGES. Applied in: Task 1.
+- **D3** (owner, plan review, 2026-10-28): O3, default kept. The probe dispatches only the `BUILTIN_PINNED` members and one control. It does not dispatch `Plan` or `statusline-setup`. Applied in: Task 1, Task 2.
 
 ## Related open items (taken into account, not absorbed)
 
