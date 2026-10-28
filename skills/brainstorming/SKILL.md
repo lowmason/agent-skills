@@ -77,9 +77,9 @@ Move the work forward, with one of these:
 - **They haven't:** one open question, in their own terms, about the
   biggest thing their request leaves unsettled. Say why you're asking:
   what the answer would change about what you build. For "a website for
-  my bakery": "If it's mostly for people deciding whether to stop by,
-  I'd lead with hours and what's in the case today; taking orders is a
-  different site. What do you want someone to do when they land on it?"
+  my bakery": "What the site is for decides what the front page leads
+  with and how big it needs to be. What do you want someone to do when
+  they land on it?"
 
 How the message ends depends on whether they asked for brainstorming:
 
@@ -99,10 +99,12 @@ That's the whole message.
 ## The Conversation
 
 Each message ends with one question: a single sentence with no list of
-example answers hanging off it. Use plain language, pitched just a little
-above where your human partner is. Match their vocabulary; never use
-process jargon. You never need to quote this skill to your human
-partner.
+example answers hanging off it. Don't set out your guesses at the answer
+("this could mean A, B or C"), or where each would lead, before it
+either; that's a menu too (see Get them describing). Use plain language,
+pitched just a little above where your human partner is. Match their
+vocabulary; never use process jargon. You never need to quote this skill
+to your human partner.
 
 Be clear and concise. Lead with what matters. Avoid jargon. When you
 report what you found, give them the most important findings and offer
