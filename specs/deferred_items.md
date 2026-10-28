@@ -2955,11 +2955,18 @@ declined as YAGNI (zero instances in a one-page wiki).
       Consumes met. Size: plan. Done when: both are specified in the skill and
       `references/roadmap-format.md` and a fixture shows each behaving as
       specified.
-- [ ] `skills/prepare-handoff/references/cold-reader.md` has no output form for a
+- [x] `skills/prepare-handoff/references/cold-reader.md` has no output form for a
       clean read (`fact-checker.md` has `VERIFIED OK`), so a sender cannot tell a
       clean read from a truncated one. Add a "NO FINDINGS" line after the report
       blocks. Size: quick-fix. Done when: added and a `cr` run (5 reps, planted
       probe) still passes both criteria.
+      → done 2026-10-27 (/deferred quick fix): the NO FINDINGS line was already in 59584fe. A
+      `cr` run on kit k-nf (from 615e67d) passed both criteria: P-rt0 5/5 and P-rt13 5/5
+      (r276-r280, 0 voids, about $8.16). The scores are in
+      `~/.cache/agent-skills/handoffs/red/scores/nofindings-cr/`, and the kit's `changes.log`
+      records the run. A scorer subagent scored it, as the kit's protocol says. The controller
+      typed the launch command into the owner's terminal, which `changes.log` discloses. No rep
+      wrote NO FINDINGS, because the brief carries planted defects.
 - [x] `skills/prepare-handoff/SKILL.md` §1 says "Amend and commit it", but one
       listed home is a deviation line in the subagent-driven-development ledger,
       which is gitignored (`.gitignore`) and deleted at completion; the wording is
@@ -6260,10 +6267,14 @@ defer. Anchors are at the end of plan 59's fix wave.
       tool, the matcher would stop firing and the guard would fail open without a sign. See
       `specs/plans/completed/63-conformance-gaps.md`. Size: plan. Done when: the probe runs and
       fails when a built-in's pin or the payload shape changes.
-- [ ] Roster-lint test symmetry (plan 63 Task 6, review Minor): `check_pinned_roster` in
+- [x] Roster-lint test symmetry (plan 63 Task 6, review Minor): `check_pinned_roster` in
       `build/check_frontmatter.py` has no "missing guard file" test and no "real agents" test to
       match the read-only roster's tests in `build/test_check_frontmatter.py`. Size: quick-fix.
       Done when: both tests exist and pass.
+      → done 2026-10-27 (/deferred quick fix): added
+      `test_pinned_roster_reports_a_missing_guard_instead_of_raising` and
+      `test_real_pinned_roster_matches_the_real_agents` to `build/test_check_frontmatter.py`. A
+      mutation that drops the guard's exception handling fails the first.
 - [ ] Re-wrap the long single-line `description` scalars in `skills/clean-coder/SKILL.md`,
       `skills/executing-plans/SKILL.md`, `skills/explore-data/SKILL.md` and
       `skills/writing-plans/SKILL.md` (not re-wrapped when made third person; explore-data's is
@@ -6272,10 +6283,16 @@ defer. Anchors are at the end of plan 59's fix wave.
       The SDD edit needs the placement tests rerun (`test_check_conformance.py -k test_real_skill`).
       Plan 63 final review, Minor. Size: quick-fix. Revisit if: another edit touches those
       descriptions or SDD.
-- [ ] Re-run the writing-skills t2 micro-test (push gate) with the fixed `run_arm.sh`; the plan 63
+- [x] Re-run the writing-skills t2 micro-test (push gate) with the fixed `run_arm.sh`; the plan 63
       run leaked prompts through stdin, so its 8/15 vs 0/15 may be contaminated. The kit is in the
       scratch folder `~/.cache/agent-skills/scratch/plan63-micro/`. Size: quick-fix. Done when: the
       pushes-unasked counts (control vs variant) are recorded and the gate wording stands or is revised.
+      → done 2026-10-27 (/deferred quick fix): reran with the fixed `run_arm.sh` (stdin from
+      /dev/null), with the same arms, prompts and model. Control: 0/15 push unasked (2/15 if
+      commands handed to the user count). Variant: 0/15. The original 8/15 came from the stdin
+      leak, and without it p3 never reaches git. The gate wording at
+      `skills/writing-skills/SKILL.md:692` stands, but its RED evidence is weak. The record is
+      appended to the kit's `t2.md`. Cost: about $2.52.
 
 ## 64-bayesian-rpm-routing — 2026-10-21
 - [x] Add a survival row to rpm's per-family knob table
@@ -6289,21 +6306,32 @@ defer. Anchors are at the end of plan 59's fix wave.
       → done 2026-10-23 (owner-requested quick fix, branch claude/rpm-survival-knob-row): the table
       has a `survival` row, and `families/survival.md` now points to it instead of saying the row is
       missing.
-- [ ] Add Beta / BetaBinomial and quantile (`AsymmetricLaplaceQuantile`) rows to
+- [x] Add Beta / BetaBinomial and quantile (`AsymmetricLaplaceQuantile`) rows to
       bayesian-workflow's "Common model families" table (`skills/bayesian-workflow/SKILL.md`),
       which rpm's bounded and quantile handoffs now point at (owner decision D9, plan 64).
       Size: quick-fix. Done when: both rows land with a priors pointer.
-- [ ] Add `KNOWN_GOOD_FALLBACKS` entries for PML1 §13.2.4.4 and PML2 §14.3.2.1 in
+      → done 2026-10-27 (/deferred quick fix): added a bounded-outcome row (`BetaProportion`,
+      `BetaBinomial`) and a one-quantile row (`AsymmetricLaplaceQuantile`), each pointing at
+      `references/priors.md`. The signatures were checked on NumPyro 0.22.0. The body grows by
+      two table rows, which the plan-46 compaction-window item should count.
+- [x] Add `KNOWN_GOOD_FALLBACKS` entries for PML1 §13.2.4.4 and PML2 §14.3.2.1 in
       `build/verify_citations.py`, with dated comments in the form of the existing PML2 §2.2.1.4
       entry. Plan 64's Gate B reads confirmed both refs (commit body of 97a8525), but Gate A
       prints a chapter-fallback WARN for each on every run. Outside plan 64's no-script scope.
       Size: quick-fix. Done when: `build/verify_citations.py skills/recommend-probabilistic-model/`
       prints neither WARN and still exits 0.
-- [ ] Add an exact-GP prediction recipe to `skills/bayesian-workflow/references/gaussian-processes.md`.
+      → done 2026-10-27 (/deferred quick fix): added both entries with a dated comment that
+      cites the Gate B reads in 97a8525. Gate A over `skills/recommend-probabilistic-model/`,
+      run against the main checkout's `build/.scratch/`, prints neither WARN and exits 0.
+- [x] Add an exact-GP prediction recipe to `skills/bayesian-workflow/references/gaussian-processes.md`.
       The exact template marginalizes f, so `Predictive` cannot return f at new inputs (the HSGP
       block can). A user needs the GP conditional at `x_new`. Found by plan 64's final review.
       Size: quick-fix. Done when: the reference has a runnable block that predicts at new
       inputs and passes the Tier 3 snippet gate.
+      → done 2026-10-27 (/deferred quick fix): the exact-GP template now ends with `predict_f`,
+      which draws f at `x_new` from the GP conditional once per posterior draw, and a note says
+      why `Predictive` cannot do this. Tier 3 runs the block and it passes. A planted wrong
+      shape assert made it fail.
 - [ ] Probe bayesian-workflow's description with a stack-neutral request, and consider
       rewording "NumPyro only" to "NumPyro models only (BlackJAX can sample them)". Plan 64's M1
       pass probes (B3, B4) both name NumPyro, so M1 cannot show whether "NumPyro only; Pyro/PyTorch
@@ -6312,7 +6340,7 @@ defer. Anchors are at the end of plan 59's fix wave.
       `specs/verification/64-routing-microtests.md`. Any reword needs its own micro-test.
       Size: quick-fix. Revisit if: bayesian-workflow's description is next edited, or a generic
       Bayesian request misroutes.
-- [ ] Tidy plan 64's cosmetics. `build/test_runtime_support.py` puts the new rpm-to-bayesian-workflow
+- [x] Tidy plan 64's cosmetics. `build/test_runtime_support.py` puts the new rpm-to-bayesian-workflow
       `SOFT_REFERENCES` entry after `explore-data`, but entries are sorted by target within a
       source. `skills/recommend-probabilistic-model/references/families/survival.md` writes
       "Rpm's" where the skills say "This skill's". rpm `SKILL.md` has one description-adjacent line
@@ -6324,6 +6352,12 @@ defer. Anchors are at the end of plan 59's fix wave.
       inspection only. Size: quick-fix. Done when: each is fixed or recorded as intended.
       → progress 2026-10-23: the "Rpm's" wording in `families/survival.md` is gone (branch
       claude/rpm-survival-knob-row, with the survival knob row). The other parts stay open.
+      → done 2026-10-27 (/deferred quick fix): the rest are fixed. `SOFT_REFERENCES` lists
+      bayesian-workflow before explore-data. rpm `SKILL.md` line 48 is rewrapped, and so is the
+      NOTICE clause (72 columns). The GP reference's orphan line is reflowed. rpm's GP family
+      file now says about 1,000 to 2,000 points, as bayesian-workflow does. A script re-took
+      the snippet-preamble def-only count: it is 4 of 41, not 3 (state-space.md's `local_level`
+      was missing), and the docstring now says so.
 - [ ] Fix the PML index gaps that hid Gate B candidates in plan 64. `build/.scratch/book1_sections.tsv`
       (from `build/extract_structure.py`) has no chapters 1–2, and many PML1 subsections have no
       title, so title-only searches miss them. PML1 §2.6.3 supports the distributional-regression
@@ -6399,28 +6433,40 @@ review (an Opus code-reviewer and a Codex run) left unfixed, triaged defer. Both
 and the owner-chosen Graduation additions were fixed (commits `9b3b511` and `6a3fc03`). Anchors are at
 the end of plan 67.
 
-- [ ] Check the claim that predictive CV never selects synthetic-control weights. It is spec R12 text,
+- [x] Check the claim that predictive CV never selects synthetic-control weights. It is spec R12 text,
       in `skills/recommend-causal-design/SKILL.md` (the tune sibling line) and in
       `skills/tune-hyperparameters/SKILL.md` (Boundary). Abadie, Diamond and Hainmueller (2015) may
       pick predictor weights with a pre-period train and validation split. `design-map.md` does not
       contradict the claim. Size: quick-fix. Done when: the claim is checked against the paper and
       Abadie (2021), and kept, or softened to "tune's search never selects …" in both files.
-- [ ] Update the Output paragraph of `skills/recommend-probabilistic-model/references/model-selection-regularization.md`
+      → done 2026-10-27 (/deferred quick fix): softened. Abadie (2021, §3.2, pp. 396-397)
+      describes, after Abadie, Diamond and Hainmueller (2015), choosing the predictor weights V
+      by a pre-period training and validation split; its footnote 7 cites Klößner et al. (2018)
+      on those weights not being unique. Both files now say tune's search never selects
+      synthetic-control weights, and that a method's own selection step stays inside that
+      method. The spec's R12 text was not edited.
+- [x] Update the Output paragraph of `skills/recommend-probabilistic-model/references/model-selection-regularization.md`
       (about lines 56-59). It says tune runs a knob and criterion pair only "when the criterion is a CV
       search". tune now sweeps structural choices on BIC, marginal likelihood and LOO (Regime C), and its
       Producers row says so. Stage 3 edits only `reporting.md`, so no stage covers this paragraph. Size:
       quick-fix. Done when: the paragraph names Regime C sweeps, and the rpm citations lint passes.
+      → done 2026-10-27 (/deferred quick fix): the paragraph now names tune's Regime C
+      structural sweeps (BIC, the marginal likelihood or LOO). Gate A over rpm exits 0 with no
+      WARN.
 - [ ] Build a V2 fixture that separates the arms (plan 67 final review). The plan 67 `V2-real` fixture
       let the old rule answer REAL in 4 of 5 reps, because all five paired differences were positive.
       The pass shows the rule is applied correctly, not that it changes the call. Record in
       `specs/verification/67-tune-noise-rule-probe.md`. A fixture with a real mean gain and one
       opposite-sign fold is the likely separator. Size: plan. Revisit if: the noise rule is edited
       again, or an agent keeps a gain under 2·SE(Δ) in practice.
-- [ ] Reword the noise rule's "|Δ|, the absolute mean of d" in `skills/tune-hyperparameters/SKILL.md`
+- [x] Reword the noise rule's "|Δ|, the absolute mean of d" in `skills/tune-hyperparameters/SKILL.md`
       (the "paired difference is noise" bullet) as "the absolute value of the mean of d". Read as the
       mean of |d|, `V2-noise` flips to REAL (0.032 against 2·SE = 0.0283). All five variant reps
       read it correctly. Size: quick-fix. Done when: the sentence is reworded and the V2 record says its
       probe ran on the earlier wording.
+      → done 2026-10-27 (/deferred quick fix): reworded to "the absolute value of the mean of
+      d". `specs/verification/67-tune-noise-rule-probe.md` now notes that its probe ran on the
+      earlier wording.
 - [x] Out-of-bag qualifier is a spec change. Plan 67's final review qualified the splitter table's
       "Random forests" row as "independent rows only" (commit `9b3b511`), where spec R3 gives the row
       without a condition. Two seats raised it. Size: quick-fix. Done when: the owner confirms the
@@ -6467,13 +6513,16 @@ review and the Plan Completion gate (2026-10-27) add the others.
       on 1.42. Re-running them needs real charts in Altair, matplotlib and plotly. Size: plan. Done
       when: each claim is re-run on the pinned versions, the five citations name them, and `HISTORICAL`
       in `build/versions_check.py` has no `Polars 1.42` entry.
-- [ ] Make `build/cc_guide/test_probes.py::test_output_of_another_shape_is_an_error_never_a_crash`
+- [x] Make `build/cc_guide/test_probes.py::test_output_of_another_shape_is_an_error_never_a_crash`
       accept Python 3.15's error text (plan 66, Task 15, the first `drift` run). The test pins
       `unhashable type: 'dict'`. Python 3.15 words the same error as `cannot use 'dict' as a set
       element (unhashable type: 'dict')`, so the `cc_guide` suite fails on 3.15. `drift` runs the
       suites on the newest stable Python, so it reports this failure each week. Match the part
       that both texts share. Size: quick-fix. Done when: the test passes on the dev Python and
       on 3.15.
+      → done 2026-10-27 (/deferred quick fix): the test now pins the outcome, the `TypeError: `
+      prefix and the shared `unhashable type: 'dict'` text. It failed on 3.15 before the edit
+      and passes on 3.13 and 3.15 after.
 - [ ] Decide whether the weekly `drift` job should fail on the newest-Python pass (plan 66, D14).
       The pass fails today because `tensorstore` (through `orbax-checkpoint`) and `h5py` publish
       no cp315 wheels, so the `jax-cpu` gate and the suites cannot install on 3.15. The owner

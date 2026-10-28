@@ -79,8 +79,9 @@ bayesian-workflow/
     references/gaussian-processes.md cites Solin and Särkkä (2020) and
     Riutort-Mayol et al. (2023) for the Hilbert-space approximation, and
     Bürkner, Gabry and Vehtari (2021) for leave-one-out with a joint
-    Gaussian likelihood, by author-year only and in original wording; its examples are original
-    and were run against the snippet gate's pinned NumPyro.
+    Gaussian likelihood, by author-year only and in original wording; its
+    examples are original and were run against the snippet gate's pinned
+    NumPyro.
 
 recommend-causal-design/ selectively adapts the planning workflows of
 Robson Tigre's causal-planner in everyday-causal-skills (MIT, Copyright (c)

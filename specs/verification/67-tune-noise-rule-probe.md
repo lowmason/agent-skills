@@ -10,6 +10,7 @@ The system prompt is the whole tune-hyperparameters `SKILL.md`, after one line t
 
 - **Control arm:** the `SKILL.md` at the base commit `7a8fbaa` (10,541 characters of system prompt). That text has no paired noise rule.
 - **Variant arm:** the `SKILL.md` at HEAD after Task 2 (`ea78829`, 17,162 characters of system prompt). Its "When not to tune" list holds the rule: when |Δ|, the absolute mean of the per-fold differences d, is under 2·SE(Δ) = 2·sd(d)/√K over K folds, ship the default.
+  - Note (2026-10-27): this probe ran on that earlier wording. The skill now says "the absolute value of the mean of d", because "the absolute mean of d" can be read as the mean of |d|, which flips `V2-noise` to REAL (0.032 against 2·SE = 0.0283). All five variant reps read it correctly. No rep has run on the new wording.
 
 Each arm runs the two prompts below, 5 reps each, so 10 reps per arm.
 

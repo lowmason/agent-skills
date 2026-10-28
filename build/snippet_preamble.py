@@ -17,11 +17,13 @@ the skill changes; a stale coverage claim is worse than none): 85 fenced
 python blocks, all 85 parse. 4 are norun-exempt and 40 are advisory --
 18 name-incomplete, 9 naming variables outside the fixtures, 7 model-body
 fragments, 6 elided with `...`. That leaves 41 blocks that --run executes,
-5 of them through the `comparison` fixture and 2 through `time_series`. 3 of
+5 of them through the `comparison` fixture and 2 through `time_series`. 4 of
 the 41 are def-only: they define functions they never call, so they show only
 that the definitions compile (diagnostics.md's run_diagnostics,
 hierarchical.md's centered, model-criticism.md's expected_calibration_error
-and ranked_probability_score).
+and ranked_probability_score, state-space.md's local_level). The def-only
+count was re-taken on 2026-10-27 by script, not by inspection: a runnable
+block whose top-level code names none of the functions it defines.
 
 THIS FILE IS A SECOND SOURCE OF TRUTH and can go green wrongly: a fixture
 simpler than the doc's example can make a doc-level error pass. Keep the

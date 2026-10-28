@@ -45,7 +45,8 @@ and points — it does not fit, evaluate, or report on a fitted model.**
 
 1. **Frame the problem.** Task type (regression / classification / counts / clustering / dim-reduction
    / time-series / structured / decision) **and the question** (point prediction vs. uncertainty /
-   inference vs. causal vs. sequential decision). A causal question goes to recommend-causal-design before this procedure continues.
+   inference vs. causal vs. sequential decision). A causal question goes to recommend-causal-design
+   before this procedure continues.
 2. **Characterize the data.** Profile the primary dataset (`explore-data`; then `scripts/characterize.py`
    for modeling signals it omits — overdispersion, zero-fraction, n/p, class balance, stationarity).
    **Inventory external/auxiliary information** (official statistics, benchmarks, related series,

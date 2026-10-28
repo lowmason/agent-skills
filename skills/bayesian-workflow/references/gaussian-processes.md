@@ -39,9 +39,8 @@ GP covariance algebra loses accuracy in float32 (see [jax-numerics.md](jax-numer
   ArviZ sees one observation and cannot estimate pointwise LOO. For the exact GP, compute the
   conditional densities p(y_i | y_-i, θ) per draw (closed form for a Gaussian marginal; Bürkner,
   Gabry and Vehtari 2021) and attach them as the pointwise log-likelihood, or compare kernels by
-  held-out refits. The HSGP
-  template's `Normal` likelihood sits in the `obs_gp` plate, so it is pointwise and the standard
-  recipe applies.
+  held-out refits. The HSGP template's `Normal` likelihood sits in the `obs_gp` plate, so it is
+  pointwise and the standard recipe applies.
 
 ## Exact GP template
 
@@ -76,11 +75,36 @@ def gp_model(x, y=None):
 gp_mcmc = MCMC(NUTS(gp_model), num_warmup=300, num_samples=300, num_chains=1, progress_bar=False)
 gp_mcmc.run(jax.random.PRNGKey(1), x_gp, y=y_gp)
 gp_draws = gp_mcmc.get_samples()
+
+
+def predict_f(rng_key, x, y, x_new, length_scale, amplitude, noise):
+    '''One draw of f at x_new from the GP conditional, given the data and one posterior draw.'''
+    k_xx = rbf_kernel(x, x, amplitude, length_scale) + (noise**2 + 1e-6) * jnp.eye(x.shape[0])
+    k_nx = rbf_kernel(x_new, x, amplitude, length_scale)
+    k_nn = rbf_kernel(x_new, x_new, amplitude, length_scale)
+    chol = jnp.linalg.cholesky(k_xx)
+    mean = k_nx @ jax.scipy.linalg.cho_solve((chol, True), y)
+    v = jax.scipy.linalg.solve_triangular(chol, k_nx.T, lower=True)
+    cov = k_nn - v.T @ v + 1e-6 * jnp.eye(x_new.shape[0])
+    return mean + jnp.linalg.cholesky(cov) @ jax.random.normal(rng_key, (x_new.shape[0],))
+
+
+# Predict at new inputs: one conditional draw of f per posterior draw.
+x_new = np.linspace(0, 10, 50)
+keys = jax.random.split(jax.random.PRNGKey(3), gp_draws['noise'].shape[0])
+f_new = jax.vmap(predict_f, in_axes=(0, None, None, None, 0, 0, 0))(
+    keys, x_gp, y_gp, x_new, gp_draws['length_scale'], gp_draws['amplitude'], gp_draws['noise'])
+assert f_new.shape == (300, 50), f_new.shape
 ```
 
 The `1e-6` jitter keeps the Cholesky factorization stable. Replace the `InverseGamma(5.0, 5.0)`
 with one tuned to your input spacing and range (see the priors section). The template uses one
 chain to stay short; a real fit uses four (SKILL.md, step 5).
+
+The model marginalizes f, so it has no `f` site, and `Predictive` cannot return f at new inputs.
+`predict_f` draws f at `x_new` from the GP conditional given the observed (x, y), once per
+posterior draw of the hyperparameters. To predict a new observation rather than f, add
+`Normal(0, noise)` noise to each draw.
 
 ## Hilbert-space approximation (HSGP)
 
