@@ -5,9 +5,9 @@ decide *what, if anything, becomes a spec*.
 
 It is a living record: each review re-baselines it in place rather than adding
 a dated copy. This revision (2026-10-28) brings it to upstream v7.0.1 for
-every skill except brainstorming. Finding 4 (brainstorming) belongs to the
-brainstorming rebuild spec, `specs/brainstorming-proportional-rebuild.md`.
-The owner approved that spec, and it is not yet merged. This revision re-takes the line anchors
+every skill except brainstorming. Plan 70 (2026-10-28) re-baselined finding 4
+(brainstorming) to v7.0.1 (`2ce8aa1`) when it adopted that finding. The
+2026-10-28 revision re-takes the line anchors
 of the findings it edits (8, 9, 10, 11, 14, 15 and the new 17) and of the
 method section's example. The other anchors date from
 the 2026-10-18 revision, which brought the document to v7.0.0 and re-took
@@ -25,13 +25,13 @@ and findings from v7.0.1 start at 17.
 | | |
 |---|---|
 | Vendored baseline | `896224c` (v6.0.3, 2026-06-18), per `NOTICE` |
-| Adoption baselines | `b36e082` (v6.3.0) for the four pieces plan 22 (SDD hardening) adopted: findings 1, 2, 5, 6. `8ca22db` (v6.4.2) for the two pieces plan 40 (handoff briefs) adopted: finding 8's `Spec:` pointer and finding 11's handoff half |
+| Adoption baselines | `b36e082` (v6.3.0) for the four pieces plan 22 (SDD hardening) adopted: findings 1, 2, 5, 6. `8ca22db` (v6.4.2) for the two pieces plan 40 (handoff briefs) adopted: finding 8's `Spec:` pointer and finding 11's handoff half. `2ce8aa1` (v7.0.1) for finding 4, which plan 70 adopted |
 | Previous review | `bb92a77` (v7.0.0, 2026-10-09), reviewed 2026-10-18 |
 | Upstream HEAD | `2ce8aa1` (v7.0.1, 2026-10-21), still `main` on 2026-10-28 |
 | Commits since previous review | 2 on `main`: `b739a8a`, the contribution templates (its title cites #2570, the release notes cite #2569), and the release squash merge `2ce8aa1` (#2581). Upstream's `dev` branch keeps one commit per pull request |
 | Files changed under `skills/` since previous review | 22 (+705 / −667). Without brainstorming's `SKILL.md`: 21 (+594 / −625) |
 | Unreleased skill work | None: on 2026-10-28 `dev` differs from `2ce8aa1` in 11 files (hooks, the Pi extension, the Muse manifest, docs and release notes), none under `skills/` |
-| Next review starts from | `2ce8aa1` for every skill except brainstorming. Brainstorming starts from `bb92a77` until the brainstorming rebuild plan re-baselines finding 4 at `2ce8aa1` |
+| Next review starts from | `2ce8aa1` |
 
 Comparison is **per behavioral claim, not per diff hunk**. `NOTICE` records that
 most vendored files were adapted on the way in, so neither baseline is a true
@@ -67,7 +67,7 @@ guide (`4efba4e`) shifted anchors by one.
 | 1 | SDD workspace has no plan identity | **Adopted** — plan 22 |
 | 2 | Implementers can spawn duplicate reviewers | **Adopted** — plan 22 |
 | 3 | TDD reference has no falsifiability discipline | Open, prospective only; upstream unchanged |
-| 4 | Brainstorming ceremony does not scale | Open; upstream rebuilt the skill (v7.0.0) and loosened its gate, so the finding is rewritten |
+| 4 | Brainstorming ceremony does not scale | **Adopted** — plan 70, rebased on v7.0.1 (`2ce8aa1`) |
 | 5 | Every task gets its own dispatch | **Adopted** — plan 22 |
 | 6 | SDD review loop has no round cap | **Adopted** — plan 22, with a deliberate ladder divergence |
 | 7 | Pre-flight conflicts stall for a human | Partly adopted (fix-round rulings); premise corrected; decided 2026-10-21: rulings mid-run only |
@@ -216,108 +216,66 @@ that regression.** Any compression pass here has to clear the bar upstream set.
 
 Upstream's only TDD change since v6.3.0 is finding 13.
 
-### 4. Brainstorming ceremony does not scale — open; upstream rebuilt the skill
+### 4. Brainstorming ceremony does not scale — adopted (plan 70), rebased on v7.0.1
 
-Our side is unchanged. `brainstorming/SKILL.md:22` still carries
-*"Anti-Pattern: This Is Too Simple To Need A Design"*, and the nine-step
-checklist (`:26-38`) ends in a committed spec, a user review, and a
-fresh-session handoff for every request, including a config change. The
-proportional-process policy recorded for this repo (brainstorming and specs
-only for open design decisions; minor work fixed directly) still lives in
-`/deferred` while this skill argues the opposite.
+**Adopted by plan 70 (2026-10-28).** `skills/brainstorming/SKILL.md` now follows
+upstream v7.0.1 (`2ce8aa1`, 2026-10-21). `NOTICE` names what was taken and each
+deliberate divergence. The behavior record is
+`specs/red-baseline-brainstorming-2026-10-28.md`.
 
-**What earlier passes compared against is gone.** The 2026-10-03 text measured
-us against v6.3.0's three-path router (#2063) and v6.4.1's additions to it
-(#2258). v7.0.0 replaced both with a rewrite from scratch (#2463, `9e63918`).
-Its design record
-(`docs/superpowers/specs/2026-10-05-brainstorming-rebuild-design.md`) says the
-old skill had grown to about 2,600 words, mostly routing, approval gates, and
-the spec-to-plan handoff. The new SKILL.md is 225 lines. The earlier pieces map
-onto it like this:
+**Before plan 70,** our copy sent every request, "a config change — all of them",
+through a design, a committed spec, a review and a fresh-session handoff. That
+contradicted the proportional-process rule in `/deferred` and the guide's
+`lean.ceremony` section. Conformance exception `brainstorming-every-project`
+recorded the gap, and plan 70 removed it.
 
-- **The router becomes sizing.** The spike / bounded / architectural
-  classification, made up front, becomes three sizes chosen once intent is
-  clear. A quick, clear task is done at once, a small change is agreed in
-  chat, and a project gets a written design and then a plan. The skill names
-  the size in plain words, and the partner can override it. The one-way
-  ratchet survives: "If it grows mid-task, stop, say so, and step up a size."
-- **Shared Understanding becomes describing and playback.** The first message
-  offers to skip the questions, then asks one open question about "a real
-  moment or a concrete picture". A menu comes only when the partner is stuck.
-  Each part is played back in 200–300 words as soon as it is understood, with
-  guesses marked as guesses, before the questions move on. #2258's write-back
-  note becomes continuous. Ours asks about "purpose/constraints/success
-  criteria" (`:32`) but plays back only the design (`:34`), never the
-  understanding.
-- **Stage-scoped approval becomes one gate.** Nothing gets built until the
-  partner approves the full description: in chat for a small change, the
-  document for a project. #2258's stage-by-stage list is gone. Its failure,
-  approval of scope read as approval to build, survives as a Red Flags row:
-  "Approval covers what you showed them." Ours already stages approval: the
-  design (`:34`), then the written spec (`:37`), then the fresh-session
-  handoff.
-- **The spec-document reviewer becomes a builder check.** A fresh subagent
-  (`builder-check-prompt.md`) reads the design as the person who will build it
-  and lists what it would still need to ask. Brainstorming answers what it
-  can, settles minor points itself and marks them as its own calls, and brings
-  the rest to the partner in one round.
-- **Context exploration becomes an offer.** Ours explores the project first,
-  unasked (`:30`). v7.0.0 offers to look at the project, the partner's files,
-  or the web once there is some grounding, and the partner decides.
+**Upstream at v7.0.1.** v7.0.0 (#2463, `9e63918`) rebuilt the skill from scratch,
+and v7.0.1 (`2ce8aa1`) retuned it. At `2ce8aa1` the skill works like this:
 
-Two pieces are new:
+- **Sizing.** A quick, clear task is done at once. Every size above it gets a
+  design doc: a short one for a small change, without the builder check, and the
+  full one for a project (#2571). The skill names the size in plain words, and
+  the partner can override it. Work that grows steps up a size.
+- **Look before you ask.** The skill reads the project and what the partner
+  pointed at before its first message (#2560). v7.0.0 made this an offer.
+- **The first message.** It echoes a detailed request back, or asks one open
+  question. It offers to skip the questions only when the skill started on its
+  own, never when the partner invoked it (#2560). v7.0.0 always offered.
+- **Describing and playback.** Open questions come first, and a menu comes only
+  when the partner is stuck. The first Red Flags row is "Options steer. Ask them
+  to describe it first." Each part is played back in 200 to 300 words.
+- **How it gets made (#2482, #2483).** The skill finds out early which platform,
+  language, library or medium choices the partner wants to make. It records each
+  choice it makes as its own call.
+- **Laid-out approaches (#2571).** Two or three approaches go in a message of
+  their own, with a recommendation, and the partner picks before the doc is
+  written. v7.0.0 compared ideas privately.
+- **One gate, a builder check, spikes.** Nothing is built before the design doc is
+  approved. A fresh subagent reads the doc as its builder and lists what it would
+  still need to ask. An accepted spike may be built, and keeping it is a new
+  request.
 
-- **How it gets made (#2482, #2483).** Find out early which choices of
-  platform, language, libraries, or medium the partner wants to make. State
-  defaults in plain words, and record a choice the agent made "as your call,
-  never as something they agreed to", on the skip path too. The motivating
-  failure: a session designed an iOS app, never asked about platform, and
-  built a web app.
-- **Spikes.** A throwaway build the partner says yes to skips tests, plan,
-  and review. Keeping what it produced is a new request that goes back through
-  the gate.
+**The measured bar.** v7.0.0 published no numbers, and #2571 did. In its Gallery
+scenario (24 runs over three variants: explicit, auto-triggered and a quiet
+persona), "skipped a step without consent" fell from 24 of 24 runs to 3 of 24.
+"Design doc approved before building" rose from 1 of 24 to 23 of 24. Its final
+matrix held 176 blind-graded conversations over seven scenarios, on Opus and
+Sonnet. The scenarios are in `prime-radiant-inc/superpowers-evals`, which has no
+license, so this repo cites them by name only.
 
-**v7.0.0 loosens the gate.** The 2026-10-03 text recorded that #2063 did not
-weaken the gate. v7.0.0 does, in three ways: a quick, clear task is done
-without a design step; a partner who opts out of the questions ends the skill,
-"and the gate goes with it"; and an accepted spike may be built. The first
-matches this repo's proportional-process policy. The opt-out and the spike
-exemption are the owner's decision, not a free port.
+**What plan 70 took, and where it diverges.** Plan 70 took v7.0.1's text and order,
+and `builder-check-prompt.md` unchanged. `NOTICE` lists the divergences: our
+`Use when…` description, our software guidance, the `specs/` lifecycle with its
+fresh-session handoff, a small change designed and approved in chat and built in
+the same session, caller sizing, the split between open questions and options,
+spikes kept off the working branch, the visual-companion token-cost warning, the
+builder check's `model: opus` pin, the quick-task exit in the HARD-GATE, and the
+dropped spec self-review. It also records the Red Flags row the pressure test
+added and the first-question wording changed after the first GREEN round. Plan
+70 ran its own RED baseline, pressure test, GREEN and trigger test, all newly
+written.
 
-**Two rules contradict ours outright.**
-
-- v7.0.0's first Red Flags row is "Options steer. Ask them to describe it
-  first." Ours says "Prefer multiple choice questions when possible" (`:77`)
-  and keeps "Multiple choice preferred" as a key principle (`:151`).
-- v7.0.0 generates several ideas privately and shows the comparison "only when
-  it helps them decide". Ours proposes 2-3 approaches every time (`:33`,
-  `:153`).
-
-**There is no measured bar this time.** v6.4.1 and v6.4.2 shipped eval
-numbers. v7.0.0's release notes report none, the design record's last section
-is "Will be tuned after first use", and the two evals it names for rewriting
-(`brainstorming-todo-purpose-discovery`, `brainstorming-todo-shared-intent`)
-are not in the repository. A port needs its own RED baseline.
-
-**What a port keeps:**
-
-- Our `Use when…` description (`:2-8`). Upstream's "You MUST use this before
-  any creative work" fails this repo's frontmatter rule.
-- Our software-specific guidance (`:95-106`: design for isolation, working in
-  existing codebases). v7.0.0 went domain-general, to "a talk, a business, a
-  renovation".
-- The repo lifecycle: `specs/<name>.md`, the `deferred_items.md` check
-  (`:30`), and the fresh-session handoff to writing-plans (`:38`). v7.0.0
-  invokes writing-plans with no fresh-session step, and writes to
-  `docs/superpowers/specs/`.
-
-v7.0.0 also drops the visual-companion offer's token-cost warning, which ours
-keeps (`:162`).
-
-A port is a rewrite of our skill, and brainstorming is a discipline skill, so
-it gets writing-skills' pressure-test and micro-test. Its RED cases should
-include the two failures upstream named: approval of scope read as approval to
-build (#2258), and a platform choice nobody asked about (#2482).
+**The other v7.0.1 changes** are reviewed in finding 17.
 
 ### 5. Every task gets its own dispatch — adopted
 
@@ -1064,12 +1022,9 @@ Under this repo's proportional-process rule:
   discipline-skill behavior, so they need writing-skills' pressure-test and
   micro-test. Upstream's planted-defect probe and its unnamed-input crash eval
   are ready controls.
-- **Spec candidate, brainstorming:** finding 4, now against v7.0.0 rather than
-  the v6.x router. The spec has to carry the owner's calls on the opt-out, the
-  spike exemption, and open questions over multiple choice. Upstream expects to
-  tune v7.0.0 after first use, so re-read upstream when the spec starts. It is
-  micro-tested before deployment against its own RED baseline, since upstream
-  published none.
+- **Done, brainstorming:** finding 4, through plan 70 (2026-10-28): the skill
+  was rebased on v7.0.1 (`2ce8aa1`) and tested against its own RED baseline,
+  `specs/red-baseline-brainstorming-2026-10-28.md`.
 - **Decided 2026-10-21:** finding 7, as rulings mid-run only. The two items
   that hung on it:
   - Finding 11's executing-plans port, which gets its own spec; its handoff

@@ -12,7 +12,7 @@ the task, or when you invoke the skill explicitly.
 > [!IMPORTANT]
 > **These skills have strong opinions about my environment and my process.** They work best if you share those opinions, or if you choose to adopt them. Read a skill's `SKILL.md` before you install it, and edit what does not fit. It is all plain Markdown. Know these three assumptions:
 >
-> - **The process skills impose a spec-driven lifecycle.** `brainstorming`, `writing-plans`, `executing-plans`, and `subagent-driven-development`, with the `/deferred` command, drive every feature through spec → plan → implementation → retirement. They create and maintain this structure in your project:
+> - **The process skills impose a spec-driven lifecycle.** `brainstorming`, `writing-plans`, `executing-plans`, and `subagent-driven-development`, with the `/deferred` command, drive each project-sized feature through spec → plan → implementation → retirement. A small change gets a short design in chat and is built in the same session. They create and maintain this structure in your project:
 >   - specs, as Markdown files in `specs/`
 >   - plans, in `specs/plans/<id>-<spec-name>.md`, numbered automatically
 >   - finished work, retired to `specs/completed/` and `specs/plans/completed/`
