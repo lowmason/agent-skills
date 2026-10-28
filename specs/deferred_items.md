@@ -3700,6 +3700,9 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       sections. They move about 11,200 characters, but pointers bring the body back to about
       20,400, so File Handoffs or Context Checkpoints must move too. Port the map and our own
       text, not upstream's files, which differ from ours in five ways that finding 17 lists.
+      → progress 2026-10-28 (owner decision, "I approve your recommendations"): this item runs
+      first, as a plan without a spec on upstream's map. The item "Split writing-skills along
+      upstream v7.0.1's map" follows it. No execution starts before plan 69's execution ends.
 - [x] Run the placement tests in a commit lint (plan 46 review): `apply_waivers`
       (`build/check_conformance.py`) waives per check and file, so exception
       `skill-body-past-compaction` also covers a critical heading that slips past the window
@@ -5509,6 +5512,11 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       and about 400 lines. That clears the 500-line WARN and both late headings, so exception
       `writing-skills-late-critical-headings` can go. It does not touch the guide gaps, the
       tdd-for-docs deviation or the `@`-link claim.
+      → progress 2026-10-28 (owner decision, "I approve your recommendations"): the split runs
+      first as its own plan without a spec. It is the item "Split writing-skills along upstream
+      v7.0.1's map" (section `superpowers-drift-v7.0.1`). Once it lands, this item keeps the rewrite:
+      the `writing-skills-guide-gaps` gap, the `writing-skills-tdd-for-docs` deviation, and the
+      `@`-link claim. The split closes the WARN, the late-heading exception and both tests.
 - [x] README line about uv (plan 53's completion gate, owner Q5, 2026-10-20): `README.md`'s
       Installation section never says that uv is needed, but 12 skills now run their bundled
       scripts with `uv run` and name uv in `compatibility` (R3.5, R3.6). Add one line under
@@ -6527,6 +6535,32 @@ review and the Plan Completion gate (2026-10-27) add the others.
       with a forced compaction. Size: plan. Done when: the probe runs and records where the cut
       falls, and the register's window (and the guide, through `/cc-guide`) matches what it
       shows.
+      → progress 2026-10-28 (owner decision, "I approve your recommendations"): upstream's
+      whole-file byte bar is not adopted. This probe decides the measure: if the cut counts
+      the frontmatter, correct the register's window. No execution starts before plan 69's
+      execution has ended. Plan 69 adds a probe to the same `build/cc_guide/` files.
+- [ ] Split writing-skills along upstream v7.0.1's map (#2564, superpowers drift finding 17).
+      The owner decided on 2026-10-28 ("I approve your recommendations") to run the split
+      first as a plan without a spec. It runs after the subagent-driven-development compaction
+      plan. Move four parts of `skills/writing-skills/SKILL.md` verbatim into `references/`,
+      each behind a pointer at the step that needs it. The parts are SKILL.md Structure
+      (`:104-153`) with Skill Discovery Optimization (`:154-316`), Flowchart Usage
+      (`:317-350`), and Bulletproofing Skills Against Rationalization (`:503-578`). Keep the description rule (triggers, never the
+      workflow) in SKILL.md, as upstream did. Port our text, not upstream's references.
+      Finding 17 measures the result at about 17,000 body characters and about 400 lines. In
+      the same change, remove exception `writing-skills-late-critical-headings` from
+      `build/cc_guide/conformance.toml`, empty `ACKNOWLEDGED_LATE` in
+      `build/test_check_conformance.py`, and update
+      `build/test_check_frontmatter.py::test_the_body_warning_goes_to_stderr_and_keeps_exit_zero`,
+      which expects writing-skills to be the one body over 500 lines. If this removes the last
+      `compaction-window` exception, retire the `critical_placement` lint as the item "Fit the
+      subagent-driven-development and bayesian-workflow bodies inside the compaction window"
+      describes. writing-skills is the discipline meta-skill, so micro-test that an agent
+      reads each reference at its step. The plan edits the skill that governs its own tests,
+      so run the controller tooling from the main checkout. No execution starts before plan
+      69's execution has ended. Size: plan. Done when: the body is at most 20,000 characters
+      and under 500 lines, the exception is removed with `build/check_conformance.py`
+      passing, and the micro-test shows each reference read at its step.
 
 ## spec-reading-test-check (no plan; owner-approved local design idea from session "Obra superpowers writing-plans mechanism") — 2026-10-28
 - [ ] Spec-reading test check (local design, not an upstream finding, owner-approved

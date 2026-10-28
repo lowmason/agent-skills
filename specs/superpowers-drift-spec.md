@@ -79,7 +79,7 @@ guide (`4efba4e`) shifted anchors by one.
 | 13 | TDD does not say what "other tests" means | Open; travels with 11 |
 | 14 | Nested controller on Claude Code | Not adopted; premise narrowed to non-fork subagents |
 | 15 | diagnosing-superpowers | Not adopted. v7.0.1 changed only the issues it drafts |
-| 17 | Skill bodies run past the compaction re-attach cut | Size bar **already covered** by the compaction lint. The SDD move goes to its open deferred item as a plan. The writing-skills move is a spec candidate (owner call) |
+| 17 | Skill bodies run past the compaction re-attach cut | Size bar **already covered** by the compaction lint. Decided 2026-10-28: no byte bar until the probe, the SDD move runs first as a plan, and the writing-skills split follows as a plan without a spec |
 
 ## Dismissed without further review
 
@@ -873,7 +873,8 @@ probe under `build/cc_guide/` could settle that, and `specs/deferred_items.md`
 logs it (section `superpowers-drift-v7.0.1`). Until then our check stays the
 gate. The next edit that grows this body fails the commit lint, and plan 60 has
 already moved this skill's Common Mistakes into `references/` once. No action
-now. Adopting upstream's stricter bar is an owner call.
+now. The owner decided on 2026-10-28 not to adopt upstream's stricter bar
+until the probe has run.
 
 **The SDD move (#2565) — prior art for an open deferred item.** Upstream moved
 seven parts of subagent-driven-development into `references/`, each behind a
@@ -995,18 +996,27 @@ links. Only the skill itself links its support files
 **Disposition, per claim unit:**
 
 - **#2481 and the size test: already covered** by the `compaction-window`
-  check. Whether to add upstream's whole-file byte bar is an owner call.
+  check. Decided 2026-10-28 (owner): do not add upstream's whole-file byte bar
+  now. The logged probe runs first. If it shows that Claude Code counts the
+  frontmatter toward the cut, correct the register's window.
 - **#2565: fix directly, no spec.** It runs as a plan through the open item
   "Fit the subagent-driven-development and bayesian-workflow bodies inside the
   compaction window" (section `46-sdd-bundle`, Size: plan). Upstream's map is
   the skeleton, plus about 400 characters from our own sections. The
   bayesian-workflow half has no upstream counterpart, but the same pattern
-  applies.
-- **#2564: spec candidate**, logged already as the open item "Split and
-  rewrite writing-skills against the guide" (Size: design). Its split could
-  instead run first as a plan without a spec, leaving the rewrite to the
-  spec. Owner call.
+  applies. Decided 2026-10-28 (owner): this plan runs before the
+  writing-skills split.
+- **#2564: fix directly, no spec, for the split.** Decided 2026-10-28
+  (owner): the split runs first as a plan without a spec, after the SDD plan
+  (`specs/deferred_items.md`, item "Split writing-skills along upstream
+  v7.0.1's map"). The rest of the open item "Split and rewrite writing-skills
+  against the guide" stays a spec candidate (Size: design).
 - **#2563: already covered** for our file. It constrains finding 11's port.
+
+No execution of the items above starts before plan 69's execution has ended.
+The owner set that order on 2026-10-28, while another session was executing
+plan 69. Plan 69 also edits the `build/cc_guide/` probe files that the probe
+item would touch.
 
 ## Suggested disposition
 
@@ -1027,6 +1037,10 @@ Under this repo's proportional-process rule:
 
   Through plan 60 (2026-10-21), finding 8's untracked-file guard, as an idea
   credited in `NOTICE` with no upstream text.
+- **Decided 2026-10-28 (owner):** finding 17's three calls, approved as
+  recommended. Execution of each waits until plan 69's execution has ended.
+  The SDD plan runs first, then the writing-skills split. Upstream's byte bar
+  is not adopted until the probe has run.
 - **Fix directly, no spec, through an open deferred item:** finding 17's SDD
   half (#2565). The item "Fit the subagent-driven-development and
   bayesian-workflow bodies inside the compaction window" is already sized as a
@@ -1036,15 +1050,14 @@ Under this repo's proportional-process rule:
   re-read pointer under writing-skills. Part 3 of "Three
   subagent-driven-development decisions" (re-invoke after compaction) still
   needs the owner's ruling, and upstream's step pointers are prior art for it.
-- **Spec candidate, already logged:** finding 17's writing-skills half
-  (#2564), inside the item "Split and rewrite writing-skills against the
-  guide". Upstream's map fits ours and clears the 500-line WARN and the late
-  headings. The owner decides whether that split runs first as a plan without
-  a spec, or stays inside the rewrite's spec.
-- **Owner call, no action until decided:** whether to add upstream's
-  whole-file byte bar beside our `compaction-window` check (finding 17).
-  finishing-a-development-branch is the one skill that passes our check and
-  fails the stricter bar.
+- **Fix directly, no spec, after the SDD plan:** finding 17's writing-skills
+  split (#2564), as the new item "Split writing-skills along upstream v7.0.1's
+  map". Upstream's map fits ours and clears the 500-line WARN and the late
+  headings. The rest of "Split and rewrite writing-skills against the guide"
+  stays a spec candidate.
+- **Not adopted until the probe has run:** upstream's whole-file byte bar
+  (finding 17). finishing-a-development-branch is the one skill that passes
+  our check and fails the stricter bar. The probe item decides the measure.
 - **Spec candidate, planning surface:** findings 9 and 10. They share the
   writing-plans plan template and self-review, and finding 10 also reaches
   the four reviewer surfaces. Both shape
