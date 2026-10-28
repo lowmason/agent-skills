@@ -434,7 +434,7 @@ Then trigger it once: from an empty directory, ask `claude -p` to dispatch a
 **Roster drift is a lint failure.** `build/check_frontmatter.py` imports
 `PINNED_AGENTS` and asserts it in both directions against the frontmatter `name` of
 every `agents/*.md` that sets `model:`. `BUILTIN_PINNED` is kept apart because no agent
-file backs it. Recheck it when Claude Code changes a built-in agent's model.
+file backs it. The drift tool's `agent-payload` probe rechecks it (see **Probe log** below).
 
 **Tests.** `test_dispatch_model_guard.py` drives the script as a subprocess.
 Every allow-path test asserts the return code, because a crashed `PreToolUse` hook
@@ -444,12 +444,15 @@ under the dev Python and under `/usr/bin/python3` (3.9), since the hook keeps th
 ## Probe log
 
 `readonly-agent-guard.py` depends on Claude Code putting the dispatched agent's
-name in the `PreToolUse` payload. That is version-sensitive API surface, so it is
-probed rather than assumed — re-run the probe after a binary update.
+name in the `PreToolUse` payload. `dispatch-model-guard.py` depends on the payload of
+an agent dispatch and on the model each built-in agent runs on. These are
+version-sensitive API surface, so they are probed rather than assumed — re-run the
+probes after a binary update.
 
 | date | Claude Code | finding |
 |---|---|---|
 | 2026-09-03 | 2.1.259 | `agent_type` arrives **top-level** on `PreToolUse(Bash)` payloads and is **absent** for main-session calls. Confirmed on the production path (an Agent-tool dispatch of `Explore`), which additionally carries a per-dispatch `agent_id`. The `claude -p --agent <name>` route populates `agent_type` too, without `agent_id` — so Gate B can use it. |
+| 2026-10-21 | 2.1.304 | An agent dispatch reaches `PreToolUse` with `tool_name` `Agent`. Its type is at `tool_input.subagent_type` and its model at `tool_input.model`. An unset model is **absent**, not empty. A call made inside a subagent also carries `agent_id` and `agent_type`. With no model passed, the built-in `claude-code-guide` ran on Haiku (`claude-haiku-5-5`), and `general-purpose`, `Plan` and `statusline-setup` ran on the session model. Plan 63 Task 6 recorded this with a logging hook on `claude -p`. |
 
 Two mechanics worth keeping with the row:
 
@@ -463,3 +466,10 @@ The recorded payloads are frozen as `RECORDED_PAYLOAD` and
 tool's `guard-liveness` probe runs that script (`build/cc_guide/cli.py probes`)
 and logs each run in `build/cc_guide/PROBES.md`; this table keeps the payload
 findings.
+
+The `agent-payload` probe re-checks the 2026-10-21 row. Two logging `PreToolUse`
+hooks record each dispatch's payload: one matches every tool, and one matches
+`Agent` as the install above does. In the same run, the probe also dispatches
+`general-purpose` with `model: haiku`. It compares the model that `claude-code-guide`
+is served with the model that this control is served. It fails when the tool's
+name, the matcher, the model field or a pin in `BUILTIN_PINNED` changes.
