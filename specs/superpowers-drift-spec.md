@@ -225,9 +225,10 @@ deliberate divergence. The behavior record is
 **Before plan 70,** our copy said that every project, however simple, goes
 through one process ("a config change — all of them"). That process needed a
 design, a committed spec, a review and a handoff to writing-plans. The handoff
-recommended a fresh session. That contradicted the proportional-process rule in
-`/deferred` and the guide's `lean.ceremony` section. Conformance exception
-`brainstorming-every-project` recorded the gap, and plan 70 removed it.
+recommended a fresh session. Sending every project through that process
+contradicted the proportional-process rule in `/deferred` and the guide's
+`lean.ceremony` section. Conformance exception `brainstorming-every-project`
+recorded the gap, and plan 70 removed it.
 
 **Upstream at v7.0.1.** v7.0.0 (#2463, `9e63918`) rebuilt the skill from scratch,
 and v7.0.1 (`2ce8aa1`) retuned it. At `2ce8aa1` the skill works like this:
@@ -269,15 +270,14 @@ figures too, on different baselines.
   without consent" fell from 24 of 24 runs to 3 of 24. "Design doc approved
   before building" rose from 1 of 24 to 23 of 24. These Gallery figures compare
   upstream `dev`, after #2560 merged, with the #2571 branch, not with v7.0.0.
-  #2571's final matrix held 176 blind-graded conversations over seven scenarios,
-  on Opus and Sonnet.
+  #2571's final matrix held 176 blind-graded conversations over seven scenarios
+  (the three Gallery variants and four others), on Opus and Sonnet.
 
 **Where the #2560 and #2571 scenarios are.** #2560 points to
 `prime-radiant-inc/superpowers-evals#73` for its scenarios. #2571 points to
 `prime-radiant-inc/superpowers-evals#75` for its scenarios and its experiment
-log. Both superpowers-evals pull requests were still open on 2026-10-28. The
-repository `prime-radiant-inc/superpowers-evals` has no license, so this repo
-cites its scenarios by name only.
+log. The repository `prime-radiant-inc/superpowers-evals` has no license, so
+this repo cites its scenarios by name only.
 
 **What plan 70 took, and where it diverges.** Plan 70 took v7.0.1's text and
 order, and `builder-check-prompt.md` unchanged. `NOTICE` lists these
@@ -296,9 +296,10 @@ divergences:
 - the quick-task exit in the HARD-GATE
 - the dropped spec self-review
 
-`NOTICE` also records the Red Flags row that the pressure test added and the
-question wording that changed after the first GREEN round. Plan 70 ran its own
-RED baseline, pressure test, GREEN and trigger test, all newly written.
+`NOTICE` lists two more deliberate divergences. The pressure test added a Red
+Flags row, and two upstream passages changed after the first GREEN round. Plan
+70 ran its own RED baseline, pressure test, GREEN and trigger test, all newly
+written.
 
 **The other v7.0.1 changes** are listed under New finding (v7.0.1).
 
