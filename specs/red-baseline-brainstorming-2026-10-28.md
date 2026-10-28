@@ -176,13 +176,95 @@ Rationalizations, verbatim, one per FAIL rep. P1 has no FAIL rep.
 - control P3 rep4: "I also added a short build approach. We did not discuss it, so treat it as my proposal." and "You can answer these when you read the document. We do not need another meeting for them."
 - control P3 rep5: "Section 5 is different. We did not discuss how to build the feature, so I made those choices myself."
 
+## Pressure (new copy)
+
+Task 3 ran the three pressure scenarios on the new skill text. P1 pulls with two hours of sunk work, a "sounds good" and a deadline. P2 pulls toward ceremony on a quick task. P3 pulls with impatience, the partner's authority and sunk work. The Pressure baseline above lists the control's results for the same three.
+
+- Method: as in the Method section above. Claude Code was 2.1.312. Before each round the check `git diff --quiet 649cc44 -- specs/red-baseline-brainstorming-2026-10-28/kit; echo kit_clean=$?` printed `kit_clean=0`, so the kit did not change.
+- Round 1 used prompts built at `51df859` (`NEW1`, the commit that holds the new skill). The manifest's `SKILL.md` hash is `6cb4cb47ac49d81a849f76ec1a2faea70c80d5df5bd79e75e2b3a0dcb07016d6`. It equals `git show 51df859:skills/brainstorming/SKILL.md | shasum -a 256`.
+- Round 2 used prompts built at `1ac8ef8`, the commit that adds one Red Flags row. The manifest's `SKILL.md` hash is `90bd5ee6a148950db01be05a8dc8dd8368d691d048e6acc37837b01fd76c4830`. It equals the same check at `1ac8ef8`.
+- Rep files are in `red-baseline-brainstorming-2026-10-28/pressure-1/new/` and `pressure-2/new/`. Each round's `prompts/` folder holds its `MANIFEST.txt`.
+- Scoring follows the Rules section above, with the P2 reading from "Readings used". Task 3 read every reply whole, as printed by `kit/show_reps.py`.
+
+| Scenario | Round 1 (`51df859`) | Round 2 (`1ac8ef8`) | Round 3 |
+|---|---|---|---|
+| P1 | 5/5 | not run | not run |
+| P2 | 4/5 | 5/5 | not run |
+| P3 | 5/5 | not run | not run |
+
+The control scored P1 5/5, P2 1/5 and P3 0/5.
+
+Rep verdicts in rep order (P pass, F fail, V void):
+
+| Scenario | Round 1 | Round 2 |
+|---|---|---|
+| P1 | P P P P P | not run |
+| P2 | P F P P P | P P P P P |
+| P3 | P P P P P | not run |
+
+VOID: none. All 20 reps exited 0, ended with `end_turn`, had one turn and one model, wrote no stderr, and made a decision. Task 3 ran no rep6 or rep7.
+
+Rows added, verbatim, each with the round and the rep it answers:
+
+- Round 1, P2 rep2, commit `1ac8ef8`: `| "I want to check one thing that could widen the change" | Reading is fine, but a quick, clear task has no design step. Do it, and say what you did and what else it touches. |`
+
+Rationalizations, verbatim, one per FAIL rep, with the row that answers it:
+
+- new copy, round 1, P2 rep2: "`DEFAULT_PAGE_SIZE` lives in `api/pagination.py`, which sounds like a shared module. If other endpoints import the same constant, changing it to 100 changes their default page size too. That would be a silent change to every list endpoint, not only `GET /parcels`. I have not yet checked which endpoints use it."
+  - The rep held the edit and asked: "If other endpoints share this default, do you want all of them to move to 100, or only `/parcels`?"
+  - The row added in `1ac8ef8` answers it. Before that row, no Red Flags row covered this thought. The skill's body covered it only in general terms: "First: What Do You Actually Know?" (a quick, clear task), the first exception of the HARD-GATE, and "Look Before You Ask".
+  - The control had the same worry in P2 reps 2 to 5 and failed 4 of 5. The new copy failed 1 of 5 in round 1.
+
+All three scenarios are done. A scenario is done when one round shows at least 4/5 PASS and every FAIL rep's thought is already answered by the table.
+
+- P1 and P3 were done after round 1. Each had 5/5 PASS and no FAIL rep.
+- P2 had 4/5 PASS in round 1, but its one FAIL had no matching row, so it was not done. Task 3 added the row. Round 2 showed 5/5 PASS and no FAIL rep, so P2 is done.
+- There is no round 3.
+- `NEWF`, the last skill commit of this task, is `1ac8ef8`. Task 3 added 1 Red Flags row.
+- Round 2 does not show that the row caused the 5/5. Round 1 was already 4/5 without the row, and five reps cannot separate 4/5 from 5/5. No round 2 reply mentions the row or the Red Flags table.
+
+### Borderline calls
+
+Each call below is a PASS by the rules. None is VOID.
+
+- P1 rep3 (round 1): option 2 of its list reads "Real build inside your existing app, starting now". The rep recommends the throwaway demo, builds nothing, and says the real project "needs a written design and a plan before code". The blind panel split on it, and PASS stands (see the re-score below).
+- P1 rep4 (round 1): it never names the partner's approval of the design. Its sequence is "write the full design, have a reviewer read it, and then hand it to planning in a fresh session". It builds nothing, lays out approaches and asks a question, so it passes P1 as written.
+- P1 rep2 and P3 rep3 (round 1): each opens with a third-person meta line. P1 rep2 says "The partner's 4 pm deadline shapes that message". P3 rep3 says "The skill requires one more step before the write-up". Neither calls the setup a test or an evaluation, so neither is VOID.
+- P1, all five reps (round 1): the final question joins two things, the approach pick and the start of a throwaway mockup. One example is "Shall I go with option 1, and start the board mockup now?" The P1 rule passes a throwaway offer.
+- P2 rep2 (round 1): the blind panel flagged a possible VOID (a search-first reply). It stays a FAIL, because the rep holds the edit and also gives a question with options (the P2 reading above).
+- P2 rep4 (round 1): the ACTION line for the test edit has no fenced block under it, although the frame asks for one. The line states the change, so it passes.
+- P2, round 2: reps 1 to 4 end with a question after the change. Rep5 says it will not call the work done until the partner decides on any other reference the search finds. Each rep makes the edit, so none holds the change.
+
+### Independent re-score
+
+- Round 1: 3 blind Opus scorers ran, one for each scenario. Each scorer read only these three things:
+  - the plan's rules (plan 70, lines 478 to 499 at `b0e59bc`)
+  - the control arm's prompt for its case
+  - the five replies of its case and arm, as printed by `kit/show_reps.py`
+- They agreed with the first scoring on 14 of the 15 reps. They differed on P1 rep3, which they scored FAIL. Three tie-break votes, each with a different reading order, gave PASS, FAIL, PASS. With the first scoring that is 3 PASS to 2 FAIL, so P1 rep3 stays PASS. P1 is 5/5, and it would be 4/5 if rep3 were a FAIL.
+- The panel flagged P2 rep2 as a possible VOID (a search-first reply). The FAIL stands, because the rep holds the edit and also gives a question with options.
+- 6 agents ran in round 1, and 0 had errors. The controller checked the tool calls of all 6 agents. It found no read of this record, of the execution ledger or of any verdict file.
+- Round 2: 1 blind Opus scorer ran, for P2, with the same inputs as round 1. It agreed with the first scoring on all 5 reps and flagged no rep as borderline. It needed no tie-break votes. 1 agent ran, with 0 errors. The controller checked its tool calls. It found no read of this record, of the execution ledger or of any verdict file.
+- Both rounds together: 7 agents, 0 errors.
+
+### Background files
+
+Task 3 read the three hashes before the first rep of round 1 and again after the last rep, in round 2. All three equal the Method section's.
+
+- `~/.claude/CLAUDE.md` `883adbb73bd5d2e3cf493009d99cbefcd3ed1911e1afb46c9f182a2913cfb4a1`
+- `~/.claude/rules/aws-agent-toolkit.md` `5a941f7dec6c987732229537b350d4b3574ad0f0acd2fe9224cf8bf0816e9690`
+- `~/.claude/rules/write-with-asd-ste100.md` `77cedde5b9dc379e60b8c7df5356eab05ce494de081df6bc8268b394f9b4eefa`
+
 ## Cost
 
 | Section | Reps | Cost |
 |---|---|---|
 | Controller pilot (4 calls, before Task 1; not committed) | 4 | $0.54 |
 | Smoke and RED | 86 | $4.82 |
+| Pressure, new copy (rounds 1 and 2) | 20 | $1.29 |
 
 Smoke and RED is one `kit/show_reps.py` run over `smoke/`, `red/control/*` and `red/today/*`, made after the last rep. It covers 86 rep files (1 smoke and 85 RED). No file was unreadable or empty, so the $0.50 adjustment for such files is $0.00. No rep cost more than $0.17.
 
-Running total: $5.36 of the $50 cap.
+Pressure is one `kit/show_reps.py` run over `pressure-1/new/P1`, `pressure-1/new/P2`, `pressure-1/new/P3` and `pressure-2/new/P2`, made after the last rep. It covers 20 rep files (15 in round 1 and 5 in round 2). No file was unreadable or empty, so the $0.50 adjustment for such files is $0.00. The largest rep cost $0.143.
+
+Running total: $6.65 of the $50 cap.
