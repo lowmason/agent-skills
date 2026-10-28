@@ -10,6 +10,7 @@ from pathlib import Path
 
 import pytest
 
+import probe_checks
 import probes
 from cc_fixtures import isolated_home  # noqa: F401
 from state import DIVERGES, ERROR, PASS, parse_probes
@@ -79,6 +80,21 @@ def unmarked(event):
     return event
 
 
+def payloads_with(edit) -> dict[str, str]:
+    '''The recorded payload log with `edit` applied to each payload; an edit that returns None drops the payload.'''
+    probe = probes.PROBE_RUNS['agent-payload']
+    saved = json.loads((FIXTURES / probe.fixtures['payloads.json']).read_text(encoding='utf-8'))
+    return {'payloads.json': json.dumps([p for p in (edit(dict(q)) for q in saved) if p is not None])}
+
+
+def served_by(agent: str, model: str) -> dict[str, str]:
+    '''The recorded dispatch stream with each message that `agent` forwarded served by `model`.'''
+    probe = probes.PROBE_RUNS['agent-payload']
+    events = probes.stream_of(probes.reader(FIXTURES, probe.fixtures)('dispatch.jsonl'))
+    ids = {tid: model for tid, kind in probe_checks.dispatches(events).items() if kind == agent}
+    return edited('agent-payload', 'dispatch.jsonl', model_of(ids))
+
+
 # Each ERROR case names its finding, so a missing fixture, which is ERROR for
 # another reason, cannot pass it.
 @pytest.mark.parametrize('pid, changes, outcome, finding', [
@@ -93,6 +109,22 @@ def unmarked(event):
     ('guard-liveness', lambda: edited('guard-liveness', 'guard-2.jsonl', unmarked), DIVERGES, None),
     ('guard-liveness', lambda: edited('guard-liveness', 'guard-3.jsonl', drop('init')), ERROR,
      'check 3: no init event'),
+    # agent-payload's cases pin their findings, DIVERGES included.
+    ('agent-payload', lambda: payloads_with(lambda p: {**p, 'tool_name': 'Task'}), DIVERGES,
+     'a subagent dispatch reaches PreToolUse as Task, not Agent'),
+    ('agent-payload', lambda: payloads_with(lambda p: None if p['matcher'] == 'Agent' else p), DIVERGES,
+     'the Agent matcher did not fire for general-purpose, claude-code-guide'),
+    ('agent-payload', lambda: payloads_with(lambda p: {**p, 'model': p['model'] or 'inherit'}), DIVERGES,
+     "a dispatch sent with no model (claude-code-guide) arrives with model 'inherit', so the guard would pass a "
+     'model-less dispatch of any type'),
+    ('agent-payload', lambda: served_by('claude-code-guide', 'claude-sonnet-5-5'), DIVERGES,
+     'claude-code-guide was served the session model claude-sonnet-5-5'),
+    ('agent-payload', lambda: served_by('claude-code-guide', 'claude-opus-5-5'), DIVERGES,
+     'claude-code-guide was served claude-opus-5-5, not the claude-haiku-5-5 the haiku control was served'),
+    ('agent-payload', lambda: served_by('general-purpose', 'claude-sonnet-5-5'), ERROR,
+     'the general-purpose control with model haiku was served the session model claude-sonnet-5-5, so a pin '
+     'cannot be told from it'),
+    ('agent-payload', lambda: {'payloads.json': '[]'}, ERROR, 'the PreToolUse hooks logged no subagent dispatch'),
 ])
 def test_a_changed_behaviour_diverges_and_a_broken_run_is_an_error(pid, changes, outcome, finding):
     verdict = replay(pid, changes())

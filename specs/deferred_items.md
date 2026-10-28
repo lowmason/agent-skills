@@ -6138,14 +6138,15 @@ defer. Anchors are at the end of plan 59's fix wave.
       11 and 13 as declined in the drift spec.
 
 ## 63-conformance-gaps — 2026-10-21
-- [ ] Probe `BUILTIN_PINNED` and the Agent payload shape in the drift detector (plan 63 Task 6, review
+- [x] Probe `BUILTIN_PINNED` and the Agent payload shape in the drift detector (plan 63 Task 6, review
       Minor, triaged defer). `hooks/dispatch-model-guard.py` relies on `tool_name` `Agent`, with
       `tool_input.model` absent when unset, and on `BUILTIN_PINNED` (built-in `claude-code-guide` pins
       haiku). Add a probe beside `agent-model-pins` in `build/cc_guide/manifest.toml`, and a Probe-log
       row in `hooks/README.md` with the Task 6 findings (CC 2.1.304, 2026-10-21). If CC renamed the
       tool, the matcher would stop firing and the guard would fail open without a sign. See
       `specs/plans/completed/63-conformance-gaps.md`. Size: plan. Done when: the probe runs and
-      fails when a built-in's pin or the payload shape changes.
+      fails when a built-in's pin or the payload shape changes. → done in plan 69 (probe `agent-payload`;
+      first live run PASS on Claude Code 2.1.308 with `--allow-old`, 2026-10-28).
 - [x] Roster-lint test symmetry (plan 63 Task 6, review Minor): `check_pinned_roster` in
       `build/check_frontmatter.py` has no "missing guard file" test and no "real agents" test to
       match the read-only roster's tests in `build/test_check_frontmatter.py`. Size: quick-fix.
@@ -6495,3 +6496,38 @@ review and the Plan Completion gate (2026-10-27) add the others.
       earlier item "Share the git helpers that `build/run_suites.py`, `build/check_conformance.py`
       and `install.py` each carry" (plan 55). Size: plan. Done when: that item is done and
       `versions_check.py` imports the shared helper.
+
+## 69-agent-payload-probe — 2026-10-28
+- [ ] The `agent-payload` probe cannot tell a parent session that disobeyed its prompt from real drift
+      (plan 69 final review: the Codex P2 and the code-reviewer's Minors 1 and 2, one defect). In
+      `check_payloads` in `build/cc_guide/probe_checks.py`, the control check says the `general-purpose`
+      dispatch "passed model 'haiku'", and the built-in check says a dispatch was "sent with no model".
+      The code reads neither fact from the stream's `tool_use` inputs. If the parent leaves `haiku` off the
+      control, or gives `claude-code-guide` a model, the probe reports DIVERGES. Plan 69's live run had a human
+      check of the parent's Agent calls (Task 4 Step 3), and later `/cc-guide probes` runs have none. That live
+      run was sound: its parent sent `haiku` to the control and no model to `claude-code-guide`. The same
+      function returns the ERROR "the PreToolUse hooks logged no subagent dispatch" when the hooks logged
+      payloads and `trim_payload` dropped them all (a renamed `subagent_type`, a moved `tool_input`, or
+      main-session payloads that carry `agent_id`). To fix it: make `_trim_block`
+      (`build/cc_guide/probe_checks.py`, which open items of the plan 58 Minors batch, section
+      `58-claude-code-drift-automation — 2026-10-20`, also cover) keep `model` in the parent's `tool_use`
+      inputs, give `assess_agent_payload` a check that returns ERROR when those inputs differ from what the
+      prompt asked for, count the raw payloads before trimming, re-save the fixtures from the raw run, and add
+      replay cases. See `specs/plans/completed/69-agent-payload-probe.md` (D6). Size: plan. Done when: a parent
+      that skips the requested model gives ERROR, not DIVERGES, with a replay case that proves it, and the
+      empty-log ERROR names the stage that dropped the payloads.
+- [ ] Review Minors from plan 69's final review (code, triaged defer). `first_by_type` in
+      `build/cc_guide/probe_checks.py` takes the first payload of a type, but `collect_payload` in
+      `build/cc_guide/probes.py` sorts the payload files by a random `mktemp` suffix, so "first" is arbitrary
+      when the parent dispatches one type twice with different inputs. The control-model check in
+      `check_payloads` also fires if Claude Code starts to normalise `'haiku'` to a full model id, which
+      `decide()` in `hooks/dispatch-model-guard.py` would not mind. `check_payloads` reads the model from the
+      `*`-matcher payload, not from the `Agent`-matcher payload that the installed guard receives.
+      `first_by_type` is annotated `dict[str, dict]`, but its key can be `None`. `assess_agent_payload`
+      compares the served model sets for equality, so a control served by two Haiku ids would flag a matching
+      built-in. The `bad_payload` test in `build/cc_guide/test_probes.py` plants its bad file only in the `any`
+      folder. The string `'Agent'` appears three times in `probe_checks.py` (`DISPATCH_TOOLS[0]`,
+      `GUARDED_TOOL`, `GUARD_MATCHER`), and the guard-constants test ties only two. See
+      `specs/plans/completed/69-agent-payload-probe.md` (D8). Size: quick-fix. Revisit if: a real run gives a
+      false DIVERGES or ERROR that traces to one of these, or the first item of this section lands (then fix
+      these in the same change).

@@ -134,3 +134,11 @@ sections = ['hooks.exit-codes', 'hooks.patterns']
 id = 'agent-model-pins'
 sections = ['subagents.frontmatter', 'subagents.models']
 files = ['agents/explore.md', 'agents/test-runner.md', 'agents/code-reviewer.md']
+
+[[probe]]
+id = 'agent-payload'
+# What hooks/dispatch-model-guard.py reads: a dispatch's PreToolUse payload, the Agent matcher, and the pins of
+# the built-ins in BUILTIN_PINNED. The guide states neither the payload's fields nor claude-code-guide's pin
+# (coverage gaps, plan 69).
+sections = ['hooks.events', 'hooks.configuration', 'hooks.patterns', 'subagents.models']
+files = ['hooks/dispatch-model-guard.py', 'hooks/README.md']
