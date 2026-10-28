@@ -37,8 +37,8 @@ PINS_TIMEOUT = 1200  # agent-model-pins waits on three background agents
 # says otherwise. 15 minutes is above PROBE_TIMEOUT and below PINS_TIMEOUT, so
 # claude ends its own wait before the harness stops it (plan 58, decision D4).
 PINS_CEILING_MS = 900_000
-# agent-payload's two dispatches start in the background too. This ceiling sits under PROBE_TIMEOUT, so claude ends
-# its own wait before the harness stops the run.
+# agent-payload's two dispatches may run in the background too. This ceiling sits under PROBE_TIMEOUT, so claude
+# ends its own wait before the harness stops the run.
 PAYLOAD_CEILING_MS = 300_000
 KILL_GRACE = 5  # seconds between SIGTERM and SIGKILL when a run is stopped, and for each reap after
 # SystemExit while probes run (term_as_exit). SIGHUP and SIGQUIT are POSIX-only, and cli.py imports this
