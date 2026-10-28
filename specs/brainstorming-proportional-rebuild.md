@@ -1,7 +1,7 @@
 # Brainstorming: proportional scope, rebuilt on superpowers v7.0.1
 
-**Status:** written 2026-10-28, awaiting the owner's review of the text. The design was approved
-section by section in the design session the same day.
+**Status: APPROVED (2026-10-28)** by the owner, after a section-by-section design review and a
+review of the written text.
 **Next skill:** writing-plans, in a fresh session, against this file.
 
 This spec closes two items in `specs/deferred_items.md`:
