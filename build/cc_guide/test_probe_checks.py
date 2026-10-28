@@ -2,13 +2,17 @@
 hand-built events shaped like the streams recorded while planning (Claude
 Code 2.1.303, 2026-10-20), and the fixture scrubber (drift spec R10.2,
 R10.5, R12.6).'''
+import importlib.util
 import json
+from pathlib import Path
 
 import pytest
 
 import probe_checks as pc
 from cc_fixtures import isolated_home  # noqa: F401
 from state import DIVERGES, ERROR, PASS
+
+GUARD = Path(__file__).resolve().parents[2] / 'hooks' / 'dispatch-model-guard.py'
 
 
 def init(tools=('Read', 'Bash'), model='claude-sonnet-5-5'):
@@ -148,6 +152,105 @@ def test_agent_model_pins(events, transcripts, verdict):
 def test_agent_model_pins_needs_a_forwarded_message_for_each_agent():
     events = [e for e in pins_run() if e.get('parent_tool_use_id') != 'toolu_2']
     assert pc.assess_agent_model_pins(events, TRANSCRIPTS) == (ERROR, 'code-reviewer forwarded no message')
+
+
+def payload_log(changes=None):
+    '''Both logging hooks' trimmed payloads for the control and each pinned
+    built-in, as collect_payload writes them; changes maps an agent type to
+    the fields that replace its payloads'.'''
+    log = []
+    for matcher in (pc.ANY_MATCHER, pc.GUARD_MATCHER):
+        for agent in pc.PAYLOAD_AGENTS:
+            model = pc.CONTROL_MODEL if agent == pc.CONTROL_AGENT else None
+            keys = sorted(['description', 'prompt', 'subagent_type', *(['model'] if model else [])])
+            log.append({'matcher': matcher, 'tool_name': 'Agent', 'input_keys': keys, 'subagent_type': agent,
+                        'model': model, **(changes or {}).get(agent, {})})
+    return log
+
+
+def payload_run(served=None):
+    '''A parent on Sonnet that dispatches the haiku control and each pinned
+    built-in in one message, each forwarding one message from the model
+    given for it.'''
+    served = {agent: 'claude-haiku-5-5' for agent in pc.PAYLOAD_AGENTS} | (served or {})
+    sent = [tool_use(f'toolu_{n}', 'Agent', subagent_type=agent, prompt='p')
+            for n, agent in enumerate(pc.PAYLOAD_AGENTS)]
+    forwarded = [assistant({'type': 'text', 'text': 'OK'}, parent=f'toolu_{n}', model=served[agent])
+                 for n, agent in enumerate(pc.PAYLOAD_AGENTS)]
+    return [init(), assistant(*sent), *forwarded, result()]
+
+
+@pytest.mark.parametrize('events, payloads, verdict', [
+    (payload_run(), payload_log(),
+     (PASS, 'dispatches reach PreToolUse as Agent, with no model when unset; claude-code-guide served '
+            'claude-haiku-5-5, as the haiku control was')),
+    # A renamed tool still reaches the hook that matches every tool, so the rename is named, not an ERROR.
+    (payload_run(), [{**p, 'tool_name': 'Task'} for p in payload_log()],
+     (DIVERGES, 'a subagent dispatch reaches PreToolUse as Task, not Agent')),
+    (payload_run(), [p for p in payload_log() if p['subagent_type'] != 'claude-code-guide'],
+     (ERROR, 'no PreToolUse payload dispatches claude-code-guide')),
+    (payload_run(), [p for p in payload_log() if p['matcher'] != pc.GUARD_MATCHER],
+     (DIVERGES, 'the Agent matcher did not fire for general-purpose, claude-code-guide')),
+    (payload_run(), payload_log({'general-purpose': {
+        'model': None, 'input_keys': ['description', 'model_name', 'prompt', 'subagent_type']}}),
+     (DIVERGES, "the general-purpose dispatch passed model 'haiku', but its payload holds model None "
+                '(tool_input keys: description, model_name, prompt, subagent_type)')),
+    # The guard reads tool_input.get('model'): a value on a dispatch sent without one lets every such call through.
+    (payload_run(), payload_log({'claude-code-guide': {'model': 'inherit'}}),
+     (DIVERGES, "a dispatch sent with no model (claude-code-guide) arrives with model 'inherit', so the guard "
+                'would pass a model-less dispatch of any type')),
+    (payload_run()[:-1], payload_log(), (ERROR, 'no result event')),
+    (payload_run(), [], (ERROR, 'the PreToolUse hooks logged no subagent dispatch')),
+    ([init(model=None), *payload_run()[1:]], payload_log(), (ERROR, 'the init event names no session model')),
+    ([e for e in payload_run() if e.get('parent_tool_use_id') != 'toolu_1'], payload_log(),
+     (ERROR, 'claude-code-guide forwarded no message')),
+    (payload_run({'claude-code-guide': '<synthetic>'}), payload_log(),
+     (ERROR, 'claude-code-guide hit an API error: a message from model <synthetic>')),
+    (payload_run({'general-purpose': None}), payload_log(),
+     (ERROR, 'general-purpose forwarded a message with no model field')),
+    # Under a remap that sends haiku to the session model, a pin and inheritance look the same.
+    (payload_run({'general-purpose': 'claude-sonnet-5-5'}), payload_log(),
+     (ERROR, 'the general-purpose control with model haiku was served the session model claude-sonnet-5-5, '
+             'so a pin cannot be told from it')),
+    (payload_run({'claude-code-guide': 'claude-sonnet-5-5'}), payload_log(),
+     (DIVERGES, 'claude-code-guide was served the session model claude-sonnet-5-5')),
+    # A pin that moves off Haiku also breaks the guard's purpose: an exempt built-in on Opus runs a tier nobody chose.
+    (payload_run({'claude-code-guide': 'claude-opus-5-5'}), payload_log(),
+     (DIVERGES, 'claude-code-guide was served claude-opus-5-5, not the claude-haiku-5-5 the haiku control was '
+                'served')),
+])
+def test_agent_payload(events, payloads, verdict):
+    assert pc.assess_agent_payload(events, payloads) == verdict
+
+
+def test_trim_payload_keeps_a_main_session_dispatch_and_drops_the_rest():
+    '''The kept fields hold no path, id or prompt text, so payloads.json is
+    committed as save_fixtures copies it, with no scrub of its own.'''
+    main = {'session_id': '364e6342-a957-4e26-a308-caa9e4b4bc69', 'cwd': '/private/tmp/cc-guide-probe-x',
+            'transcript_path': '/Users/someone/.claude/projects/x/364e6342.jsonl', 'hook_event_name': 'PreToolUse',
+            'tool_name': 'Agent', 'tool_use_id': 'toolu_01AbC',
+            'tool_input': {'description': 'd', 'prompt': 'List /Users/someone', 'subagent_type': 'claude-code-guide',
+                           'run_in_background': False}}
+    kept = pc.trim_payload(main, '*')
+    assert kept == {'matcher': '*', 'tool_name': 'Agent', 'subagent_type': 'claude-code-guide', 'model': None,
+                    'input_keys': ['description', 'prompt', 'run_in_background', 'subagent_type']}
+    for leak in ('364e6342', '/private/', '/Users/', 'toolu_', 'List'):
+        assert leak not in json.dumps(kept)
+    assert pc.trim_payload({**main, 'agent_id': 'a5287d9d575e'}, '*') is None  # made inside a subagent
+    assert pc.trim_payload({**main, 'tool_name': 'Read', 'tool_input': {'file_path': '/Users/someone/a'}}, '*') is None
+    assert pc.trim_payload({**main, 'tool_input': 'not an object'}, '*') is None
+    assert pc.trim_payload(['not', 'a', 'payload'], '*') is None
+
+
+def test_the_payload_probe_checks_what_the_dispatch_guard_reads():
+    '''The guard's tool name and its pinned built-ins, loaded as
+    check_frontmatter.load_pinned_roster loads its roster. A built-in added
+    to BUILTIN_PINNED needs a dispatch in this probe as well.'''
+    spec = importlib.util.spec_from_file_location('dispatch_model_guard', GUARD)
+    guard = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(guard)
+    assert guard.AGENT_TOOL == pc.GUARDED_TOOL == pc.GUARD_MATCHER
+    assert guard.BUILTIN_PINNED == frozenset(pc.HAIKU_BUILTINS)
 
 
 DENIAL = 'PreToolUse:Bash hook error: readonly-agent-guard: the Explore agent is read-only on this checkout'
