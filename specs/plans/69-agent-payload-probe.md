@@ -1,5 +1,7 @@
 # Agent Payload Probe Implementation Plan
 
+**Status: COMPLETE (2026-10-28)** — executed via subagent-driven-development; deferred items in specs/deferred_items.md
+
 > **For agentic workers:** REQUIRED SUB-SKILL: implement this plan task-by-task via subagent-driven-development (the default) — or executing-plans when your human partner chose inline execution at the handoff. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add a live drift probe, `agent-payload`, that fails when Claude Code changes what `hooks/dispatch-model-guard.py` relies on: the dispatch tool's name, the payload's model field, the `Agent` matcher, or a built-in agent's model pin.
@@ -58,6 +60,10 @@ The Task 6 findings, from the plan 63 kit's `t6-probe.md` (scratch folder `~/.ca
 - **D2** (owner, plan review, 2026-10-28): O2, default kept. The unset-model test mirrors the guard's `decide()`, which reads `tool_input.get('model')`. An absent, empty or null model passes, and any value is DIVERGES. Applied in: Task 1.
 - **D3** (owner, plan review, 2026-10-28): O3, default kept. The probe dispatches only the `BUILTIN_PINNED` members and one control. It does not dispatch `Plan` or `statusline-setup`. Applied in: Task 1, Task 2.
 - **D4** (owner, execution, 2026-10-28): the live run uses Claude Code 2.1.308 from the Desktop app bundle (`~/Library/Application Support/Claude/claude-code/2.1.308/a93ded4b1b47/claude.app/Contents/MacOS/claude`), one run, with `--allow-old` (the newest changelog release is 2.1.311 and no binary that new is installed; the first attempt without the flag was refused and spent nothing, and the owner approved the flag in a second answer). Applied in: Task 4.
+- **D5** (owner, execution, 2026-10-28): the final review's Codex seat runs with the per-run override `-c 'model="gpt-6-astra"'`, because the config model `gpt-6.1-sol` is rejected for the ChatGPT login. One retry, then the code-reviewer alone. This approval covers that one seat. Applied in: the final review.
+- **D6** (owner, execution, 2026-10-28): the Codex P2 and the code-reviewer's Minors 1 and 2 are one defect. A parent session that disobeys the prompt would look like drift, and one ERROR text misnames its cause. They are deferred as one plan-size item, not fixed in this plan, because the fix needs `_trim_block` in `probe_checks.py`, which Global Constraints fence off. Applied in: the deferred section `69-agent-payload-probe`.
+- **D7** (owner, execution, 2026-10-28): the stale comment above `PAYLOAD_CEILING_MS` (code-reviewer Minor 3) is fixed now, in commit f2c7d55. Applied in: Task 2.
+- **D8** (owner, execution, 2026-10-28): the other code Minors (final review 4 and 5, and the per-task Minors) are deferred as one quick-fix item. The README wording Minor (final review 6) is dropped, since that text is the plan text the owner approved on 2026-10-28. Applied in: the deferred section `69-agent-payload-probe`.
 
 ## Related open items (taken into account, not absorbed)
 
@@ -99,7 +105,7 @@ The Task 6 findings, from the plan 63 kit's `t6-probe.md` (scratch folder `~/.ca
   - `check_payloads(payloads: list[dict]) -> Verdict | None`.
   - `assess_agent_payload(events: list[dict] | None, payloads: list[dict]) -> Verdict`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 In `build/cc_guide/test_probe_checks.py`, change the imports at the top to:
 
@@ -219,12 +225,12 @@ def test_the_payload_probe_checks_what_the_dispatch_guard_reads():
     assert guard.BUILTIN_PINNED == frozenset(pc.HAIKU_BUILTINS)
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `uv run python build/run_suites.py cc_guide -- test_probe_checks.py`
 Expected: the module fails to collect, with `AttributeError: module 'probe_checks' has no attribute 'PAYLOAD_AGENTS'` (the parametrize list calls `payload_run()` at import). No test in the file runs.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 In `build/cc_guide/probe_checks.py`, insert after line 27 (`PIN_AGENTS = (*HAIKU_AGENTS, REVIEWER)`):
 
@@ -350,7 +356,7 @@ def assess_agent_payload(events: list[dict] | None, payloads: list[dict]) -> Ver
                          f"{', '.join(HAIKU_BUILTINS)} served {control}, as the {CONTROL_MODEL} control was")
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run: `uv run python build/run_suites.py cc_guide -- test_probe_checks.py`
 Expected: PASS, with +17 tests against the file's count before this task (15 `test_agent_payload` cases, the trim test and the guard-constants test).
@@ -358,7 +364,7 @@ Expected: PASS, with +17 tests against the file's count before this task (15 `te
 Then run the whole suite: `uv run python build/run_suites.py cc_guide`
 Expected: PASS, +17.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 Run `build/run_commit_lints.sh` (expected: exit 0), then:
 
@@ -396,7 +402,7 @@ EOF
   - `PAYLOAD_PROBE: Probe`, whose fixtures map is `{'dispatch.jsonl': 'agent-payload.jsonl', 'payloads.json': 'agent-payload.payloads.json'}`.
   - Constants `PAYLOAD_TURNS = 6`, `PAYLOAD_CEILING_MS = 300_000`, `PAYLOAD_HOOK`, `PAYLOAD_LOGS = {'any': '*', 'agent': 'Agent'}` and `PAYLOAD_PROMPT`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 In `build/cc_guide/test_probes.py`, add `import shlex` to the stdlib imports, between `import os` and `import signal`. Then insert after `test_output_of_another_shape_is_an_error_never_a_crash`:
 
@@ -490,12 +496,14 @@ def test_the_payload_probe_reads_its_run_like_a_live_one(tmp_path, monkeypatch, 
     assert verdict.outcome == outcome and verdict.finding.startswith(finding)
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `uv run python build/run_suites.py cc_guide -- test_probes.py -k payload_probe`
 Expected: 3 failed, with `AttributeError: module 'probes' has no attribute 'prepare_payload'` in the first and `... no attribute 'PAYLOAD_PROBE'` in the two parametrized cases.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
+
+> Deviation: after the final review, the comment above `PAYLOAD_CEILING_MS` says the dispatches "may run in the background too", not "start in the background too" (D7, commit f2c7d55).
 
 In `build/cc_guide/probes.py`, insert after line 39 (`PINS_CEILING_MS = 900_000`):
 
@@ -576,7 +584,7 @@ PAYLOAD_PROBE = Probe(prepare_payload, collect_payload, assess_payload,
 
 Do not add `PAYLOAD_PROBE` to `PROBE_RUNS` yet. `test_cli.py` requires the manifest's probes to equal `PROBE_RUNS`, and `test_probe_replay.py` requires fixtures for each entry. Task 4 adds all three together.
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run: `uv run python build/run_suites.py cc_guide -- test_probes.py -k payload_probe`
 Expected: 3 passed.
@@ -584,7 +592,7 @@ Expected: 3 passed.
 Then run the whole suite: `uv run python build/run_suites.py cc_guide`
 Expected: PASS, +3 against the end of Task 1.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 Run `build/run_commit_lints.sh` (expected: exit 0), then:
 
@@ -615,7 +623,7 @@ EOF
 - Consumes: the probe id `agent-payload` and its two hooks, from Tasks 1 and 2.
 - Produces: nothing code reads.
 
-- [ ] **Step 1: Point the roster paragraph at the probe**
+- [x] **Step 1: Point the roster paragraph at the probe**
 
 In the paragraph that starts `**Roster drift is a lint failure.**`, replace the sentence `Recheck it when Claude Code changes a built-in agent's model.` with:
 
@@ -623,7 +631,7 @@ In the paragraph that starts `**Roster drift is a lint failure.**`, replace the 
 The drift tool's `agent-payload` probe rechecks it (see **Probe log** below).
 ````
 
-- [ ] **Step 2: Widen the Probe-log intro**
+- [x] **Step 2: Widen the Probe-log intro**
 
 Replace the intro paragraph under `## Probe log`:
 
@@ -643,7 +651,7 @@ version-sensitive API surface, so they are probed rather than assumed — re-run
 probes after a binary update.
 ````
 
-- [ ] **Step 3: Add the row**
+- [x] **Step 3: Add the row**
 
 Add this row under the table's existing 2026-09-03 row:
 
@@ -651,7 +659,7 @@ Add this row under the table's existing 2026-09-03 row:
 | 2026-10-21 | 2.1.304 | An agent dispatch reaches `PreToolUse` with `tool_name` `Agent`. Its type is at `tool_input.subagent_type` and its model at `tool_input.model`. An unset model is **absent**, not empty. A call made inside a subagent also carries `agent_id` and `agent_type`. With no model passed, the built-in `claude-code-guide` ran on Haiku (`claude-haiku-5-5`), and `general-purpose`, `Plan` and `statusline-setup` ran on the session model. Plan 63 Task 6 recorded this with a logging hook on `claude -p`. |
 ````
 
-- [ ] **Step 4: Name the probe in a closing paragraph**
+- [x] **Step 4: Name the probe in a closing paragraph**
 
 The section's last paragraph is also the file's last. It ends with the words `this table keeps the payload findings.`, wrapped across its last two lines. After it, add a blank line and this new paragraph, so the file still ends with one newline:
 
@@ -664,7 +672,7 @@ is served with the model that this control is served. It fails when the tool's
 name, the matcher, the model field or a pin in `BUILTIN_PINNED` changes.
 ````
 
-- [ ] **Step 5: Check and commit**
+- [x] **Step 5: Check and commit**
 
 Run: `uv run python build/cc_guide/cli.py lint` (expected: exit 0; any `STALE` line is reported, not a failure) and `uv run --with pyyaml python build/check_conformance.py` (expected: exit 0). Then run `build/run_commit_lints.sh` (expected: exit 0), and:
 
@@ -701,7 +709,9 @@ The controller runs this task itself, not a subagent: it needs the owner's answe
 - Consumes: `PAYLOAD_PROBE` (Task 2), the `assess_agent_payload` findings (Task 1).
 - Produces: the registered probe `agent-payload`.
 
-- [ ] **Step 1: Owner gate: stop and ask**
+- [x] **Step 1: Owner gate: stop and ask**
+
+> Deviation: D4 changed once. The first answer chose 2.1.308 with no `--allow-old`. Step 3 was then refused, and the owner's second answer approved `--allow-old`. D4 now says so.
 
 Run: `uv run python build/cc_guide/cli.py binaries`. Show the owner the list and ask, as one question:
 - which binary to probe (`probes` has no default, by drift spec Decision 15);
@@ -709,7 +719,7 @@ Run: `uv run python build/cc_guide/cli.py binaries`. Show the owner the list and
 
 Say that a binary older than the newest cached changelog release is refused unless the owner approves `--allow-old`, which the row then records. Do not go on until the owner answers. Log the answer in this plan's `## Decisions` under the next free number, as `- **D<n>** (owner, execution, YYYY-MM-DD): <the binary, and --allow-old or not>. Applied in: Task 4.` Plan review may already have used D1 and later numbers.
 
-- [ ] **Step 2: Register the probe in both places**
+- [x] **Step 2: Register the probe in both places**
 
 In `build/cc_guide/probes.py`, add the last entry to `PROBE_RUNS`, after the `'agent-model-pins'` entry:
 
@@ -735,7 +745,9 @@ In `build/cc_guide/test_probes.py`, delete the line `monkeypatch.setitem(probes.
 Run: `uv run python build/run_suites.py cc_guide -- test_cli.py test_probes.py test_probe_replay.py`
 Expected: `test_cli.py` and `test_probes.py` pass. In `test_probe_replay.py`, exactly two tests fail: `test_every_registered_probe_has_its_fixtures` (`agent-payload: agent-payload.jsonl is missing; record it with save_fixtures`) and `test_the_recorded_run_passes[agent-payload]`. Read both failures. Any other failure is a stop.
 
-- [ ] **Step 3: Run the live probe**
+- [x] **Step 3: Run the live probe**
+
+> Deviation: the first run, without `--allow-old`, exited 2 and spent nothing, because 2.1.311 was the newest changelog release. The second run used `--allow-old` after the owner approved it (D4). The row records the flag.
 
 From the repo root, with the binary the owner named:
 
@@ -755,7 +767,7 @@ If the finding names another Haiku model id, that is still a PASS. Use the recor
 
 If the outcome is DIVERGES or ERROR, stop. First read the parent's `Agent` calls in `dispatch.jsonl`. If the parent itself left out the control's `model` or gave `claude-code-guide` one, the run tested nothing: report that, not drift. List the raw output folder (`dispatch.jsonl`, `dispatch.err`, `payloads-any.raw.jsonl`, `payloads-agent.raw.jsonl`, `payloads.json`) and report the finding to the owner. A DIVERGES may be real drift in what the guard relies on. Do not rerun without the owner's word, and do not commit the appended row until the owner rules on it.
 
-- [ ] **Step 4: Save the fixtures**
+- [x] **Step 4: Save the fixtures**
 
 Run: `uv run --directory build/cc_guide --python 3.13 python -c "import probes; from pathlib import Path; print(probes.save_fixtures(Path('<raw output folder>'), 'agent-payload', Path('probe_streams')))"`
 Expected: a list of two paths, `probe_streams/agent-payload.jsonl` and `probe_streams/agent-payload.payloads.json`.
@@ -767,7 +779,7 @@ Check what was saved:
 Run: `uv run python build/run_suites.py cc_guide -- test_probe_replay.py`
 Expected: PASS, +1 (`test_the_recorded_run_passes[agent-payload]`). `test_no_fixture_holds_a_path_or_an_id_from_the_recording_machine` also passes. If it fails, delete the two fixture files and stop: re-record only through `save_fixtures`.
 
-- [ ] **Step 5: Write the replay cases**
+- [x] **Step 5: Write the replay cases**
 
 In `build/cc_guide/test_probe_replay.py`, add `import probe_checks` before `import probes`. Insert these helpers after `unmarked` (before the comment `# Each ERROR case names its finding`):
 
@@ -810,12 +822,14 @@ Append these cases to the end of the parametrize list of `test_a_changed_behavio
 
 These cases replay the recorded fixtures, which Step 4 already saved, so they pass as soon as they are written. Check that each one can fail: in the first case, change the expected finding's `Task` to `Tusk`, run the test, and see it fail on the finding. Then revert the change.
 
-- [ ] **Step 6: Run the replay cases**
+- [x] **Step 6: Run the replay cases**
 
 Run: `uv run python build/run_suites.py cc_guide -- test_probe_replay.py`
 Expected: PASS, +7 against Step 4. If a finding differs only in a model id the recording used (Step 4), fix that string to the recorded id and add a `> Deviation:` note. Any other difference is a defect: stop and report it.
 
-- [ ] **Step 7: Run the suite and commit**
+- [x] **Step 7: Run the suite and commit**
+
+> Deviation: the commit message adds one sentence on `--allow-old`. The plan file went into its own commit, 641d41e, since the `git add` list does not name it.
 
 Run: `uv run python build/run_suites.py cc_guide`
 Expected: PASS, +8 against the end of Task 2.
@@ -847,12 +861,12 @@ EOF
 
 **Files:** none changed, unless a check fails.
 
-- [ ] **Step 1: Run the suites**
+- [x] **Step 1: Run the suites**
 
 Run: `uv run python build/run_suites.py cc_guide build hooks`
 Expected: all PASS. Against the plan's base commit: `cc_guide` +28 (17 + 3 + 8), `build` +28, since it collects `build/cc_guide/`, and `hooks` +0 on each of its two runs.
 
-- [ ] **Step 2: Run the lints**
+- [x] **Step 2: Run the lints**
 
 Run, from the repo root:
 - `build/run_commit_lints.sh` (expected: exit 0)
@@ -860,12 +874,12 @@ Run, from the repo root:
 - `uv run --with pyyaml python build/check_conformance.py` (expected: exit 0)
 - `uv run python build/run_suites.py --check` (expected: exit 0; no new test directory)
 
-- [ ] **Step 3: Check the scope fence**
+- [x] **Step 3: Check the scope fence**
 
 Run: `git diff --stat "$(git merge-base main HEAD)"..HEAD`
 Expected: only the files in this plan's File map, plus the plan file itself. In particular, nothing under `hooks/` but `README.md`, no `specs/deferred_items.md` (until the Completion Protocol), no `.claude/skills/`, and no guide.
 
-- [ ] **Step 4: Completion**
+- [x] **Step 4: Completion**
 
 Then run the Plan Completion Protocol (writing-plans). Its ticking pass marks this item in `specs/deferred_items.md`, section `63-conformance-gaps — 2026-10-21`: `- [x] Probe \`BUILTIN_PINNED\` and the Agent payload shape … → done in plan 69`. Re-read the file just before that edit, since another session may have changed it. The completion report names:
 - the R4.3 coverage gaps (the payload fields and `claude-code-guide`'s pin);
