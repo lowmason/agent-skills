@@ -23,8 +23,10 @@ import functools
 import json
 import operator
 import os
+import re
 import sys
 from collections import Counter
+from pathlib import Path
 
 import arviz_stats as azs
 import numpy as np
@@ -760,3 +762,18 @@ def test_acceptance_sweep_meets_the_pre_registered_thresholds(use_loo):
         split = Counter(' and '.join(findings) or 'well-calibrated' for findings in _sweep(_skewed_model, use_loo))
         print(f'{path} skewed (a known limit, recorded with no threshold): {dict(split.most_common())}')
     assert not misses, misses
+
+
+# Below arviz-stats 1.3.1, pot_c raises on a super-uniform PIT, so the script's old floor of 1.1
+# gave an error where a verdict was due. The owner raised the floor on 2026-10-28 (deferred item
+# of plan 34); the header, the docstring and the import error must all say the same thing.
+FLOOR = '1.3.1'
+
+
+def test_the_version_floor_reads_the_same_in_the_header_the_docstring_and_the_import_error():
+    source = Path(calibration_check.__file__).read_text(encoding='utf-8')
+    pinned = dict(re.findall(r"^#\s+'(arviz-(?:plots|stats))>=([\d.]+)',", source, re.M))
+    assert pinned == {'arviz-plots': FLOOR, 'arviz-stats': FLOOR}
+    assert f'Requires arviz-stats >= {FLOOR} and arviz-plots >= {FLOOR}.' in source
+    assert f'arviz-plots >= {FLOOR}, arviz-stats >= {FLOOR} and arviz-base are required.' in source
+    assert f"pip install 'arviz-plots>={FLOOR}' 'arviz-stats>={FLOOR}' arviz-base" in source

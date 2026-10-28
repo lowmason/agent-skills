@@ -1735,7 +1735,7 @@ declined as YAGNI (zero instances in a one-page wiki).
       it `shape mismatch`.
       Size: design. Revisit if: a real model's shape failure is reported as a shift or a
       spread error.
-- [ ] Below arviz-stats 1.3.1, a super-uniform PIT gets an error instead of a verdict. On
+- [x] Below arviz-stats 1.3.1, a super-uniform PIT gets an error instead of a verdict. On
       arviz-stats 1.1.0–1.3.0, `pot_c` raises `ValueError: Cannot compute truncated Cauchy
       combination test. No p-values below 0.5 found.` on super-uniform PITs (exact grids,
       near-perfect fits, and typical n = 2–3).
@@ -1748,6 +1748,12 @@ declined as YAGNI (zero instances in a one-page wiki).
       Size: quick-fix: raise the floor in the module docstring and the import error. Revisit
       if: a run on an older stack reports that error, or every stack the skill runs on reaches
       arviz-stats ≥ 1.3.1.
+      → done 2026-10-28 (/deferred quick fix): the owner reversed plan 34's Q1 in this session and
+      confirmed a floor of arviz-stats ≥ 1.3.1 and arviz-plots ≥ 1.3.1. The script's inline
+      dependency header, its docstring and its import error now say so, and a new test pins the
+      three to one floor (it failed first). The floor run on arviz-base, arviz-plots and
+      arviz-stats 1.3.1 gave 103 passed, 2 skipped, 0 failed in `test_calibration_check.py`. A
+      floor on arviz-stats alone cannot resolve: arviz-plots 1.1.0 needs arviz-stats below 1.2.
 - [ ] The saved calibration figures crop their x-label. `save_pit_plot` in
       `skills/bayesian-workflow/scripts/calibration_check.py` calls `pc.savefig(output_path)`,
       and arviz-plots' default layout puts the `PIT` / `ETI %` label below the figure's bottom
@@ -6285,8 +6291,7 @@ Codex run) left unfixed, triaged defer. Both plan-mandated findings the owner ch
       (largest cache write 5,887). (e) dropped on purpose: no routing miss has shown since the
       description changed, T3 routed 5 of 5, and the description still names ELPD/LOO ranking,
       experiment ledgers and "which model fits best". A restored trigger would need a new
-      routing micro-test. Revisit if a prompt about comparing NumPyro or ArviZ model versions
-      misses the skill.
+      routing micro-test.
 - [ ] bayesian-workflow model-comparison polish (plan 65 reviews). (a) The sentence "It cannot mix
       model classes" in the "Ranking the variants" paragraph can read as "`az.compare` cannot compare
       an AR(1) with an AR(2)", which is false. The intent is a Bayesian variant against one with no

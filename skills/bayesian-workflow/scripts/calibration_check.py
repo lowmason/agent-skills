@@ -4,8 +4,8 @@
 # dependencies = [
 #   'numpy>=2.0',
 #   'arviz-base>=1.0',
-#   'arviz-plots>=1.1',
-#   'arviz-stats>=1.1',
+#   'arviz-plots>=1.3.1',
+#   'arviz-stats>=1.3.1',
 #   'xarray>=2026.0',
 #   'scipy>=1.0',
 #   'h5netcdf>=1.0',
@@ -20,7 +20,7 @@ Computes one set of PIT values per run, judges them with the pot_c uniformity te
 (Tesso & Vehtari 2026) that ArviZ's PIT plots print, names every failing calibration
 component, and draws the PIT Δ-ECDF and coverage figures from the same values, so the
 p-value printed on each figure is the one the JSON records. Supports both PPC-PIT and
-LOO-PIT. Requires arviz-stats >= 1.1 and arviz-plots >= 1.1.
+LOO-PIT. Requires arviz-stats >= 1.3.1 and arviz-plots >= 1.3.1.
 
 Usage:
     python calibration_check.py --idata path/to/inference_data.nc
@@ -50,8 +50,8 @@ except ImportError:
         json.dumps(
             {
                 "error": (
-                    "arviz-plots >= 1.1, arviz-stats >= 1.1 and arviz-base are required. "
-                    "Install with: pip install 'arviz-plots>=1.1' 'arviz-stats>=1.1' arviz-base"
+                    "arviz-plots >= 1.3.1, arviz-stats >= 1.3.1 and arviz-base are required. "
+                    "Install with: pip install 'arviz-plots>=1.3.1' 'arviz-stats>=1.3.1' arviz-base"
                 )
             }
         )
