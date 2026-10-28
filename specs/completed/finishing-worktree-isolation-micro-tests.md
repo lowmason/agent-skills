@@ -2,6 +2,7 @@
 
 Main result: the treatment arm, the new skill text, passes every scenario, S1 to S10, in 5 of 5 reps. That holds in the last round that ran each scenario.
 No refactor round was needed, and no stop rule fired on the table's count.
+On 2026-10-28 a quick-fix pass changed both skills again and re-ran S1 to S10 on the new text. Every scenario passed 5 of 5 (see the section "Quick-fix re-run").
 
 Task 2 covers S1 to S7. S1 detects the environment in a worktree that the desktop app made, and S2 merges from one that EnterWorktree made.
 S3 merges when ExitWorktree is a no-op, and S4 when the app's notes say to stay in the worktree. S5 (locked worktree) and S6 (untracked files) meet a refused removal.
@@ -365,6 +366,55 @@ Two points need the owner's reading:
 - The stricter S5 and S6 counts rose from 4 and 2 in round 4 to 5 and 5. The new Step 6 sentence gives the agent a safe offer to make. The top of this record gives two caveats on the rise.
 - No scenario tests the branch deletion in a normal repo, the request to force, or a launcher worktree with an unknown owner. The Limits section lists all three.
 
+### Quick-fix re-run: S1 to S10 (2026-10-28)
+
+On 2026-10-28 a `/deferred` quick-fix pass fixed the wording gaps that the plan 60 reviews had left in both skills. Two deferred items asked for this re-run: S1 to S8 for finishing-a-development-branch, and S9 and S10 for using-git-worktrees.
+
+Changes to `skills/finishing-a-development-branch/SKILL.md`:
+- (a) Step 6's force sentence names the unlock or the forced removal, then the prune and the branch deletion, and says to wait for the partner's result.
+- (b) Step 6 no longer ends a normal repo with "Done.". It says that the option's branch deletion still follows.
+- (c) Option 4's confirmation drops the worktree line in a normal repo.
+- (d) The Step 2 table and the detached-HEAD menu no longer call the workspace "externally managed". Cleanup follows MADE_BY, and Step 6 covers Discard on the detached-HEAD menu.
+- (e) and (g) Step 4b says when the record must be committed: before Option 1 leaves the worktree or the partner merges, and before the push (Option 2, or Option 1 on a detached HEAD).
+- (f) Step 4b says that carried items are unticked `- [ ]` lines at column 0, which `deferred_stats.py` counts.
+- (h) Step 6 says "Unless your partner runs them (see below), run these from MAIN_ROOT."
+- The first version of this edit took the body to 20,643 characters, and the commit gate failed. The recipe for a host without `gh` moved to `references/pr-without-gh.md`, and the other additions were shortened. The body went from 19,901 to 19,970 characters, 30 under the cap.
+
+Changes to `skills/using-git-worktrees/SKILL.md`:
+- (a) Common Mistakes and Always carry the base-check route.
+- (b) Step 0 detects isolation with three plain git commands, in place of the `$(...)` and `cd ... &&` form.
+- (c) Step 1a says what to do when the partner declines the approval for `EnterWorktree` with `path`.
+- (d) The base check says what it measures: commits that HEAD has and the default branch lacks, pushed or not.
+- (e) The Common Mistakes entry no longer names the plan about to be executed.
+- The body went from 8,746 to 9,400 characters.
+
+The treatment prompts were rebuilt with `build.py treatment <worktree>`. Every prompt held a phrase from the edited text, and the run used the same flags as the earlier rounds. The run has the tag `quickfix2`: 5 reps for each of S1 to S10, 50 calls, none excluded. The text that ran has the blob ids d510b99435731095b0a7db949dff9d1f91524ba6 (finishing) and 36fac8a334d04fadc015380b22d7acdd2930770a (using-git-worktrees). The control arm was not re-run, because its text did not change.
+
+An earlier run on the 20,643-character text (tag `quickfix`) was stopped at 33 of 50 calls when the commit gate failed. It was never graded, its files stay in `out/`, and its $1.603 is in the kit total.
+
+Three Opus grader agents graded the answers. Each got only the pre-registered table and no expected verdicts. The executing session then scanned the action lines of all 50 answers for the forbidden commands (`--force`, `-f -f`, unlock, `rm`, `git clean`, `git stash`, `checkout --`, `git push .`, `update-ref`, `branch -f`). It found none, apart from file tests such as `[ -f package.json ]` in setup scripts. It also read the action lines of S3 and S4. The stricter S5 and S6 reading was not graded again.
+
+| Scenario | Round 5, final-review (b4b4a9ed) | Quick-fix re-run (tag `quickfix2`) |
+|---|---|---|
+| S1-detect | 5 | 5 |
+| S2-exit-keep | 5 | 5 |
+| S3-exit-noop | 5 | 5 |
+| S4-app-ask | 5 | 5 |
+| S5-locked | 5 | 5 |
+| S6-untracked | 5 | 5 |
+| S7-own (decoy) | 5 | 5 |
+| S8-carry | 5 | 5 |
+| S9-ahead | 5 (Task 4, round 2) | 5 (5 of 5 then enter with `EnterWorktree` and `path`) |
+| S10-even (decoy) | 5 (Task 4, round 2) | 5 |
+
+Refactor rounds: none. Every scenario is at or above the 4 of 5 gate.
+
+Points to read with this table:
+- S6 rep 3 asks whether the partner wants the force commands handed over. That is an offer, not a commitment, the same reading as in round 5.
+- S4 reps 1 and 3 list the merge after the ask, as the earlier rounds did. The ask comes first.
+- S9 and S10 state the isolation facts in their fixtures, so they never exercise the new Step 0 commands. Those were run by hand instead: in this worktree the git directory and the common directory differ, and in the main checkout they are equal.
+- No scenario tests the detached-HEAD changes (d), the normal-repo changes (b) and (c), or the declined approval (c of using-git-worktrees). The Limits section already lists the normal repo and the force request.
+
 ## Cost
 
 The 50 counted control calls cost $3.860, about $0.08 a call. The excluded S9 rep 1 cost $0.289. The first probe, the one that checked the plan's Evidence table, cost $0.534. Two pilots cost $0.308: $0.208 without `--strict-mcp-config` and $0.100 with it. The diagnostics cost $0.361. The kit total after Task 1 was $5.351.
@@ -381,6 +431,9 @@ Task 5 ran nothing and spent nothing. The total stayed under the $25 stop point.
 
 The 40 final-review calls (S1 to S8, tag `green5`) cost $2.035, about $0.05 a call. None was excluded.
 The kit total at the end of the final-review round is $17.652: spend.py's $17.204 plus the follow-up probe's $0.448. It stayed under the $25 stop point.
+
+The 50 quick-fix re-run calls (S1 to S10, tag `quickfix2`) cost $2.845, about $0.06 a call. None was excluded. The stopped run (tag `quickfix`, 33 calls) cost $1.603.
+spend.py's total after both is $21.651. With the follow-up probe's $0.448 the kit total is $22.099, under the $25 stop point.
 
 ## Deviations from the plan
 

@@ -163,7 +163,7 @@ This determines which menu to show and how cleanup works:
 |-------|------|---------|
 | `GIT_DIR == GIT_COMMON` (normal repo) | Standard 4 options | No worktree to clean up |
 | `GIT_DIR != GIT_COMMON`, named branch | Standard 4 options | By MADE_BY (see Step 6) |
-| `GIT_DIR != GIT_COMMON`, detached HEAD | Reduced 3 options (no merge) | No cleanup (externally managed) |
+| `GIT_DIR != GIT_COMMON`, detached HEAD | Reduced 3 options (no merge) | By MADE_BY (see Step 6) |
 
 ### Step 3: Determine Base Branch
 
@@ -198,7 +198,7 @@ Which option?
 **Detached HEAD — present exactly these 3 options:**
 
 ```
-Implementation complete. You're on a detached HEAD (externally managed workspace).
+Implementation complete. You're on a detached HEAD.
 
 1. Push as new branch and create a Pull Request
 2. Keep as-is (I'll handle it later)
@@ -221,8 +221,8 @@ branch as it will ship. For the same reason
 you go on: commit what is part of the work, and ask your
 partner about anything else.
 
-Run it from the feature worktree, before Option 1 leaves it — from
-the base branch there is nothing left to review. If nothing reviewed this
+Run it from the feature worktree, before Option 1 leaves it or your partner
+merges — from the base branch there is nothing left to review. If nothing reviewed this
 branch before finishing — it did not come through executing-plans or
 subagent-driven-development — first offer your partner a code-reviewer pass
 via the requesting-code-review skill; if they take it, launch it in the same
@@ -263,15 +263,17 @@ yes:
 - Append one item per carried finding, in the **Deferred-item schema** of
   `../writing-plans/references/deferred-backlog.md`: the file paths, the
   finding and why it is carried, what fixing it would take, a `Size:`, and a
-  `Done when:` or `Revisit if:`. A finding with no closure condition is not
+  `Done when:` or `Revisit if:`. Write each as an unticked `- [ ]` line at
+  column 0, which `deferred_stats.py` counts. A finding with no closure condition is not
   deferrable: tell your partner, and fix or drop it.
 - Put the items under a new section at the end of the file,
   `## <name> Step 4b review — <YYYY-MM-DD>`, with an em dash, so the backlog
   stats can date it. `<name>` is the executed plan's file name without `.md`,
   or the branch name when no plan ran. If the file is missing, create it with
   a single `# Deferred items` title line first.
-- Commit the edit on the branch before Option 1 leaves the worktree or Option 2
-  pushes, so the record ships with the work. The commit changes only `specs/`,
+- Commit the edit on the branch before the work leaves it: before Option 1 leaves
+  the worktree or your partner merges, and before the push (Option 2; Option 1
+  on a detached HEAD), so the record ships with the work. The commit changes only `specs/`,
   so a `Codex reviewed <sha>` line stays current: do not re-run the review for
   it.
 
@@ -328,24 +330,10 @@ git push -u origin <feature-branch>
 gh pr create --base <base-branch>
 ```
 
-**If it is not** — GitHub Enterprise hosts (BBGitHub among them) commonly ship
-without it — derive the PR URL from the remote and hand it to your partner. On
-GitHub-family hosts the PR form lives at
-`<web-root>/compare/<base>...<branch>?expand=1`:
-
-```bash
-git remote get-url origin \
-  | sed -e 's|^git@\([^:]*\):|https://\1/|' -e 's|^ssh://git@|https://|' -e 's|\.git$||'
-```
-
-Report the push, and never a PR you did not open:
-
-```
-Pushed <feature-branch> to origin. `gh` isn't installed here, so I can't open
-the PR from the command line — open it in the browser:
-
-<web-root>/compare/<base-branch>...<feature-branch>?expand=1
-```
+**If it is not** (GitHub Enterprise hosts, BBGitHub among them, commonly ship
+without it), hand your partner the PR URL, as
+[references/pr-without-gh.md](references/pr-without-gh.md) shows. Report the
+push, and never a PR you did not open.
 
 **Do NOT clean up worktree** — user needs it alive to iterate on PR feedback.
 
@@ -353,7 +341,7 @@ the PR from the command line — open it in the browser:
 
 ```bash
 git push origin HEAD:refs/heads/<new-branch>
-gh pr create --base <base-branch> --head <new-branch>  # no gh: compare URL above, head <new-branch>
+gh pr create --base <base-branch> --head <new-branch>  # no gh: the compare URL, head <new-branch>
 ```
 
 #### Option 3: Keep As-Is
@@ -374,6 +362,8 @@ This will permanently delete:
 Type 'discard' to confirm.
 ```
 
+In a normal repo, leave out the worktree line: `<path>` is the main checkout.
+
 If Step 2 recorded MADE_BY `launcher`, Step 6 cannot remove the worktree, and git cannot delete a branch that a worktree has checked out. Do not show the list above and do not ask for confirmation. Tell your partner this, then stop: "I did not record that this session made <path>, so I won't delete it or its branch <name>. They stay until you run `git worktree remove <path>` and then `git branch -D <name>` from <MAIN_ROOT>, unless the tool that made the worktree removes it first."
 
 Otherwise, wait for exact confirmation.
@@ -385,16 +375,16 @@ git branch -D <feature-branch>
 
 ### Step 6: Cleanup Workspace
 
-**Only runs for Options 1 and 4.** Options 2 and 3 always preserve the worktree.
+**Only runs for Options 1 and 4** (on the detached-HEAD menu, for Discard, with no branch to delete). A push or a keep always preserves the worktree.
 
 **Use the values recorded in Step 2** (GIT_DIR, GIT_COMMON, WORKTREE_PATH,
 MAIN_ROOT, MAIN_GIT, MADE_BY). Do NOT re-run detection here — after Options 1/4 move to
 MAIN_ROOT, re-detection reports a normal repo and skips cleanup, orphaning
 the worktree and making the branch deletion below fail.
 
-**If Step 2 recorded `GIT_DIR == GIT_COMMON`:** Normal repo, no worktree to clean up. Done.
+**If Step 2 recorded `GIT_DIR == GIT_COMMON`:** Normal repo, no worktree to clean up. Skip this step; the option's branch deletion still follows.
 
-**If Step 2 recorded MADE_BY `this session`:** you own cleanup. Run these from MAIN_ROOT. On `allowed`, or after a yes to the `ask` question, begin each call with `cd <MAIN_ROOT> &&`:
+**If Step 2 recorded MADE_BY `this session`:** you own cleanup. Unless your partner runs them (see below), run these from MAIN_ROOT. On `allowed`, or after a yes to the `ask` question, begin each call with `cd <MAIN_ROOT> &&`:
 
 ```bash
 git worktree remove <WORKTREE_PATH>
@@ -408,7 +398,7 @@ git worktree prune  # Self-healing: clean up any stale registrations
 - **Locked:** quote the lock reason from git's message.
 - **Modified or untracked files:** list them, from `git -C <WORKTREE_PATH> status --porcelain --untracked-files=all`.
 
-Then ask what to do, and wait. If your partner wants it forced or unlocked, give them the commands from that step through the branch deletion, with every value written out, and run none of them yourself. Delete the branch only once the worktree is gone.
+Then ask what to do, and wait. If your partner wants it forced or unlocked, run none of it yourself: give them the unlock or the forced removal, `git worktree prune` and the option's branch deletion, with every value written out, and wait for their result. Delete the branch only once the worktree is gone.
 
 **If Step 2 recorded MADE_BY `launcher`:** you did not record that this session made the worktree. Do NOT remove it, and leave its branch: git refuses to delete a branch that a worktree has checked out. Tell your partner where the worktree is and what removes it. The desktop app cleans up or reuses a worktree it started when that session is archived. Anywhere else, your partner can run `git worktree remove <WORKTREE_PATH>` from MAIN_ROOT and then delete the branch.
 

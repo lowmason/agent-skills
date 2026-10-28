@@ -5542,9 +5542,24 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       this repo ships `agents/explore.md` (owner ruling B2). (b) How does Claude Code end an
       async hook still running at teardown? The docs say claude -p kills it and finalizes it
       as `cancelled` (hooks.md:4077), but not by what signal, and `build/cc_guide/notice.sh`'s
-      trap assumes one (owner ruling on the G7 gap). Size: quick-fix each. Done when: each
-      answer and `claude --version` are recorded as a Stage 5 probe, in the registry that
-      stage creates.
+      trap assumes one (owner ruling on the G7 gap). Size: plan (re-sized 2026-10-28 from
+      quick-fix each, see below). Done when: each answer and `claude --version` are recorded
+      as a Stage 5 probe, in the registry that stage creates.
+      → 2026-10-28 (/deferred quick fix): not done, and re-sized. A registered probe needs a
+      `[[probe]]` entry in `build/cc_guide/manifest.toml`, a `Probe` in `probes.py`, an assess
+      function in `probe_checks.py`, fixtures through `save_fixtures`, unit and replay tests,
+      and a decision on what each probe asserts. Both docs are silent, so a PASS would encode
+      the observed behavior. Two scratch spikes answered the questions on Claude Code 2.1.304
+      (three `claude -p` runs, $0.13 in all, no registry rows). (a) A project agent named
+      `Explore` loaded CLAUDE.md and did not get the git-status snapshot (one rep). A control
+      agent with another name got both. So the override reads CLAUDE.md like a custom agent
+      and skips git status like the built-in. The canary design was a CLAUDE.md line, an
+      untracked file name for git status, and the same prompt to both agents. A run is void if
+      the parent's Agent prompt names a canary. (b) An async SessionStart hook still running
+      when `claude -p` ended got SIGTERM and finalized as `cancelled`. A hook that trapped and
+      ignored SIGTERM was gone within 1 s, and its `sleep` child died too, so SIGKILL follows
+      at once, probably to the process group. `build/cc_guide/notice.sh` traps HUP, INT and
+      TERM, so its TERM path is the one that runs. The plan must run more than one rep for (a).
 - [x] Rule on the owner's-call rows of the second 2026-10-20 verify run (packets
       `~/.cache/agent-skills/cc-guide/packets/20261020T150226-verify/{overview,skills,subagents,rules,hooks,models}`;
       `cli.py settle <packet>` re-prints each row). 20 omissions (C rows), among them: a skill
@@ -6046,7 +6061,7 @@ defer. Anchors are at the end of plan 59's fix wave.
       Size: plan. Done when: a normal-repo scenario for Option 1 and one for Option 4 each pass
       at least 4 of 5 reps with a control arm beside them, Option 4 checks `git status` before
       the checkout, and the record says so.
-- [ ] Fix wording gaps in `skills/finishing-a-development-branch/SKILL.md` in one edit (plan 60
+- [x] Fix wording gaps in `skills/finishing-a-development-branch/SKILL.md` in one edit (plan 60
       reviews, none fixed because each needs the S1 to S8 re-run, about $2.5). (a) The force
       sentence ends Step 6's refusal paragraph with "give them the commands from that step
       through the branch deletion". It should name the unlock or the forced removal, then the
@@ -6062,7 +6077,12 @@ defer. Anchors are at the end of plan 59's fix wave.
       partner's merge. (h) Step 6 says "Run these from MAIN_ROOT." before the hand-off
       exception. Size: quick-fix. Done when: the points are fixed, S1 to S8 pass at least 4 of
       5 each on the edited text, and the micro-test record says so.
-- [ ] Fix wording gaps in `skills/using-git-worktrees/SKILL.md` in one edit (plan 60 reviews).
+      → done 2026-10-28 (/deferred quick fix): (a) to (h) fixed in one edit, with the NOTICE
+      change-list line. The first version took the body to 20,643 characters, over the 20,000
+      cap, so the recipe for a host without `gh` moved to `references/pr-without-gh.md`. The body
+      is 19,970 characters. S1 to S8 passed 5 of 5 each on the edited text (50 calls with S9
+      and S10, tag `quickfix2`, $2.85), and the record's "Quick-fix re-run" section says so.
+- [x] Fix wording gaps in `skills/using-git-worktrees/SKILL.md` in one edit (plan 60 reviews).
       (a) Common Mistakes says "Step 1a defers to native tools" and Always says "Prefer native
       tools over git fallback". Neither carries the base-check route that the Overview, the
       Core principle and the Never list now carry. (b) Step 0 detects isolation with
@@ -6075,6 +6095,11 @@ defer. Anchors are at the end of plan 59's fix wave.
       fixture. All 5 S9 answers took the git route anyway, so the risk is low. Size:
       quick-fix. Done when: the points are fixed, S9 and S10 pass at least 4 of 5 each on the
       edited text (about $0.7), and the micro-test record says so.
+      → done 2026-10-28 (/deferred quick fix): (a) to (e) fixed in one edit. (b) uses three
+      single git calls, `git rev-parse --path-format=absolute --git-dir` and `--git-common-dir`
+      and `git branch --show-current`; run by hand, they differ in a linked worktree and match
+      in the main checkout. S9 and S10 passed 5 of 5 each on the edited text, and the record's
+      "Quick-fix re-run" section says so.
 - [x] Update the section prose in `skills/writing-plans/references/deferred-backlog.md` for
       Step 4b's sections (plan 60 Task 3 review). Step 4b now writes a dated section, named
       `## <name> Step 4b review — <YYYY-MM-DD>`, where `<name>` may be a branch name. The
@@ -6406,12 +6431,22 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `specs/completed/package-versions.md` and the exit handling in `build/versions.py`.
       Size: design. Revisit if: the job is red from the 3.15 pass alone for a month, or both
       wheels ship and the failure clears.
-- [ ] Run `.github/workflows/versions-drift.yml` once by hand after the branch merges (plan 66,
+- [x] Run `.github/workflows/versions-drift.yml` once by hand after the branch merges (plan 66,
       Task 15; owner step, because it needs the merged workflow on the default branch). Only
       unit tests have exercised the workflow so far. Dispatch it from the Actions tab. Size:
       quick-fix. Done when: one dispatched run finished, and its report matches
       `uv run python build/versions.py drift` run locally (an exit 1 from the 3.15 pass is
       expected until the item above clears).
+      → done 2026-10-28 (/deferred quick fix): run 40598003175 (workflow_dispatch on `main` at
+      615e67d, 2026-10-27T22:51:57Z, Linux) failed on the 3.15 pass, as expected. The local run
+      (2026-10-28, macOS, 21 minutes) exited 1, and its "# Package drift" report is identical
+      to the run's, line for line: 22 pinned packages and 3 cited rows per pass, no pin behind
+      PyPI, `altair` 6.2 and `plotly` 6.8 flagged "a newer release exists" (6.3.0 and 7.1.0),
+      every gate green on 3.13, and `jax cpu examples` and `suites` red on 3.15. The two logs
+      differ in why the 3.15 suites fail. CI failed `build` and `track-model-experiments` on
+      3.15, and `build` included the `cc_guide` text test that 9905e4d fixed afterwards. The
+      local `build` failure was `test_check_conformance.py::test_repo_passes`, caused by an
+      edit made to the working tree during the run, so it is no drift finding.
 - [ ] Fill the test gaps that the plan 66 reviews listed as Minors. `build/test_versions_check.py`:
       the lower-bound half of `~=` (`~=0.22.1`, `~=0.23`), the two-part major wildcard miss
       (`polars~=1.0` against a 2.x pin), `!=` at coarser precision (`!=2.1` against a

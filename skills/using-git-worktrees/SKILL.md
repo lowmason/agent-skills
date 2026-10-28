@@ -24,13 +24,15 @@ Ensure work happens in an isolated workspace. Prefer your platform's native work
 
 ## Step 0: Detect Existing Isolation
 
-**Before creating anything, check if you are already in an isolated workspace.**
+**Before creating anything, check if you are already in an isolated workspace.** Run each command as its own Bash call, exactly as written. A session that Claude Code isolates in a worktree refuses `$(…)` and `cd … &&` forms.
 
 ```bash
-GIT_DIR=$(cd "$(git rev-parse --git-dir)" 2>/dev/null && pwd -P)
-GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)
-BRANCH=$(git branch --show-current)
+git rev-parse --path-format=absolute --git-dir
+git rev-parse --path-format=absolute --git-common-dir
+git branch --show-current
 ```
+
+Record the three outputs as GIT_DIR, GIT_COMMON and BRANCH.
 
 **Submodule guard:** `GIT_DIR != GIT_COMMON` is also true inside git submodules. Before concluding "already in a worktree," verify you are not in a submodule:
 
@@ -61,14 +63,14 @@ Honor any existing declared preference without asking. If the user declines cons
 
 The user has asked for an isolated workspace (Step 0 consent). Do you already have a way to create a worktree? It might be a tool with a name like `EnterWorktree`, `WorktreeCreate`, a `/worktree` command, or a `--worktree` flag. If you do, run the base check below, then follow it.
 
-**Base check.** A native tool can branch from the remote's default branch instead of your HEAD, which leaves out every commit you have not pushed. Claude Code's `EnterWorktree` does this unless its `worktree.baseRef` setting is `"head"`. Run:
+**Base check.** A native tool can branch from the remote's default branch instead of your HEAD, which leaves out every commit that HEAD has and that branch lacks, your unpushed commits among them. Claude Code's `EnterWorktree` does this unless its `worktree.baseRef` setting is `"head"`. Run:
 
 ```bash
 git rev-list --count origin/HEAD..HEAD
 ```
 
-- **It prints 0:** create the worktree with the native tool and skip to Step 2.
-- **It prints a number above 0, or fails** (no `origin/HEAD`, because the remote never set it or there is no remote): HEAD may have commits the native tool leaves out. Create the worktree with Step 1b's commands, which branch from HEAD. In place of Step 1b's `cd`, switch the session into the new worktree with the native tool's form for an existing worktree (`EnterWorktree` with `path`). Claude Code asks your partner to approve a path outside `.claude/worktrees/`. Then skip to Step 2.
+- **It prints 0:** HEAD has nothing that the default branch lacks. Create the worktree with the native tool and skip to Step 2.
+- **It prints a number above 0, or fails** (no `origin/HEAD`, because the remote never set it or there is no remote): HEAD may have commits that the default branch lacks, whether pushed or not, and the native tool leaves them out. Create the worktree with Step 1b's commands, which branch from HEAD. In place of Step 1b's `cd`, switch the session into the new worktree with the native tool's form for an existing worktree (`EnterWorktree` with `path`). Claude Code asks your partner to approve a path outside `.claude/worktrees/`. Then skip to Step 2. If your partner declines the approval, this session is not inside the new worktree: tell them it exists at `<path>`, ask whether to retry the approval, remove it with `git worktree remove <path>`, or work in place, and wait.
 
 Native tools handle directory placement, branch creation, and cleanup automatically. A `git worktree add` worktree that the native tool never enters is phantom state your harness can't see or manage, which is why the base check ends by entering it.
 
@@ -180,11 +182,11 @@ Ready to implement <feature-name>
 ### Fighting the harness
 
 - **Problem:** Using `git worktree add` when the platform already provides isolation
-- **Fix:** Step 0 detects existing isolation. Step 1a defers to native tools.
+- **Fix:** Step 0 detects existing isolation. Step 1a defers to native tools, unless its base check sends you to Step 1b's git commands.
 
 ### Losing unpushed commits
 
-- **Problem:** A native tool that branches from the remote makes a worktree without your unpushed commits, such as the plan you are about to execute
+- **Problem:** A native tool that branches from the remote's default branch makes a worktree without the commits that HEAD has and that branch lacks
 - **Fix:** Step 1a's base check
 
 ### Skipping detection
@@ -220,7 +222,7 @@ Ready to implement <feature-name>
 
 **Always:**
 - Run Step 0 detection first
-- Prefer native tools over git fallback
+- Prefer native tools over git fallback, except where Step 1a's base check sends you to git
 - Follow directory priority: explicit instructions > existing project-local directory > default
 - Verify directory is ignored for project-local
 - Auto-detect and run project setup

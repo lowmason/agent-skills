@@ -580,6 +580,21 @@ Changes from upstream:
   - writing-skills' example of skills with many references names
     bayesian-workflow and deep-learning, since bls-data-context was archived
     (2026-10-27).
+  - finishing-a-development-branch and using-git-worktrees received the wording
+    fixes that the plan 60 reviews listed (2026-10-28, a /deferred quick fix).
+    In finishing-a-development-branch, Step 6's forced-removal sentence names
+    the unlock or forced removal, the prune and the branch deletion, and says
+    to wait for the partner's result. A normal repo no longer ends Step 6 with
+    "Done.", and Option 4's confirmation drops the worktree line there. Step 2's
+    table and menu no longer call a detached HEAD "externally managed", so
+    Step 6 decides its cleanup by MADE_BY. Step 4b names the partner's merge,
+    the detached-HEAD push and the item form that deferred_stats.py counts. The
+    recipe for a host without gh moved to references/pr-without-gh.md, so the
+    body stays inside the compaction window. In using-git-worktrees, Step 0
+    detects isolation with plain git commands, since an isolated session
+    refuses `$(...)` and `cd ... &&` forms. Step 1a says what to do when the
+    partner declines the approval, and what its base check measures. Common
+    Mistakes and Always carry the base-check route.
 
     brainstorming/
     dispatching-parallel-agents/
