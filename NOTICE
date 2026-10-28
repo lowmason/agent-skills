@@ -598,46 +598,52 @@ Changes from upstream:
   - brainstorming was rebased on upstream v7.0.1 (plan 70, 2026-10-28),
     read at upstream 2ce8aa1 (2026-10-21). Its SKILL.md now follows
     v7.0.1's text and order. That text is the v7.0.0 rebuild (#2463):
-    three sizes in place of the checklist, playback, laid-out
-    approaches, one approval gate, spikes, and a builder check in place
-    of the spec self-review. It also carries three later changes. The
-    skill asks early which platform, language or medium choices the
-    partner wants to make (#2482, #2483). It looks before it asks, and
-    it offers to skip the questions only when it started on its own
-    (#2560). And it lays out the approaches in a message of their own,
-    with a short design for a small change (#2571).
-    builder-check-prompt.md is new, copied from 2ce8aa1 unchanged.
-    Upstream's examples stay, with one wording change noted below.
-    Thirteen parts diverge deliberately. The description keeps this
-    repo's `Use when…` form, which the frontmatter lint requires, and
-    drops "however simple it looks". The Written Design keeps this
-    repo's software guidance: design for isolation and clarity, work in
-    existing codebases, and YAGNI. A project keeps the specs/ lifecycle.
-    Its design goes to specs/<name>.md with no date prefix, the partner
-    approves the committed file, and writing-plans starts in a fresh
-    session. Upstream writes to docs/superpowers/specs/ and invokes
-    writing-plans at once. Look Before You Ask also checks
-    specs/deferred_items.md. A small change is designed and approved in
-    chat and built in the same session, where upstream writes it a short
-    design doc and goes on to a plan. A command or skill that routes
-    work here counts as the partner asking, so it gets no skip offer.
-    When it routes an open design decision and its next step reads a
-    spec file, the work is sized as a project. Questions are split: open
-    questions about what the partner wants and why, and options with a
-    recommendation for a choice among known alternatives. The "Options
-    steer" Red Flags row now says so. After the first GREEN round, two
-    upstream passages changed. The example first message now gives its
-    reason without walking through each possible answer. And a list of
-    guesses before the question counts as a menu too. Spike code stays
-    off the working branch. The visual-companion offer keeps its
-    token-cost warning. The builder check dispatches with `model: opus`.
-    The HARD-GATE names the quick-task exit as a third exception. And
-    the inline spec self-review is dropped, as upstream dropped its own,
-    because the builder check replaces it. The pressure test added 1 Red
-    Flags row. The RED, GREEN, pressure and trigger scenarios are this
-    repo's own (specs/red-baseline-brainstorming-2026-10-28.md). No text
-    comes from upstream's eval repository,
-    prime-radiant-inc/superpowers-evals, which carries no license.
+    three sizes in place of the checklist, playback, one approval gate,
+    spikes, and a builder check in place of the spec self-review. It
+    also carries three changes made after #2463: one more from v7.0.0
+    and two from v7.0.1. The skill asks early which platform, language
+    or medium choices the partner wants to make (#2482, #2483). It looks
+    before it asks, and it offers to skip the questions only when the
+    partner's message did not ask for brainstorming (#2560). And it lays
+    out the approaches in a message of their own, with a short design
+    for a small change (#2571). It also lists, in order, what must come
+    before implementing (#2571). builder-check-prompt.md is new, copied
+    from 2ce8aa1 unchanged. Upstream's examples stay, with one wording
+    change noted below. Thirteen parts diverge deliberately. The
+    description keeps this repo's own `Use when…` text, which
+    writing-skills requires. It triggers on new functionality. It leaves
+    out upstream's "planning anything new, in software or out of it",
+    and it drops "however simple it looks" from this repo's earlier
+    description. The Written Design keeps this repo's software guidance:
+    design for isolation and clarity, work in existing codebases, and
+    YAGNI. A project keeps the specs/ lifecycle. Its design goes to
+    specs/<name>.md with no date prefix, the partner approves the
+    committed file, and writing-plans starts in a fresh session.
+    Upstream writes to docs/superpowers/specs/ and invokes writing-plans
+    at once. Look Before You Ask also checks specs/deferred_items.md. A
+    small change is designed and approved in chat and built in the same
+    session, with a plan only when several files make one worth it.
+    Upstream writes it a short design doc and goes on to a plan. A
+    command or skill that routes work here counts as the partner asking,
+    so it gets no skip offer. When it routes an open design decision and
+    its next step reads a spec file, the work is sized as a project.
+    Questions are split: open questions about what the partner wants and
+    why, and options with a recommendation for a choice among known
+    alternatives. The "Options steer" Red Flags row now says so. After
+    the first GREEN round, two upstream passages changed. The example
+    first message now gives its reason without walking through each
+    possible answer. And setting out guesses at the answer, or where
+    each would lead, before the question counts as a menu too. Spike
+    code stays off the working branch. The visual-companion offer keeps
+    its token-cost warning. The builder check dispatches with
+    `model: opus`. The HARD-GATE names the quick-task exit as a third
+    exception. And the inline spec self-review is dropped, as upstream
+    dropped its own, because the builder check replaces it. The pressure
+    test added 1 Red Flags row. The RED, GREEN, pressure and trigger
+    scenarios are this repo's own
+    (specs/red-baseline-brainstorming-2026-10-28.md). No text comes from
+    upstream's eval repository, prime-radiant-inc/superpowers-evals,
+    which carries no license.
 
     brainstorming/
     dispatching-parallel-agents/

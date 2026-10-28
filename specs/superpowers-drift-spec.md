@@ -238,9 +238,9 @@ and v7.0.1 (`2ce8aa1`) retuned it. At `2ce8aa1` the skill works like this:
   the partner can override it. Work that grows steps up a size.
 - **Look before you ask.** The skill reads the project and what the partner
   pointed at before its first message (#2560). v7.0.0 made this an offer.
-- **The first message.** It echoes a detailed request back, or asks one open
-  question. It offers to skip the questions only when the skill started on its
-  own, never when the partner invoked it (#2560). v7.0.0 always offered.
+- **The first message.** It echoes a detailed request back (#2571), or asks one
+  open question. It offers to skip the questions only when the partner's message
+  did not ask for brainstorming (#2560). v7.0.0 always offered.
 - **Describing and playback.** Open questions come first, and a menu comes only
   when the partner is stuck. The first Red Flags row is "Options steer. Ask them
   to describe it first." Each part is played back in 200 to 300 words.
@@ -252,16 +252,21 @@ and v7.0.1 (`2ce8aa1`) retuned it. At `2ce8aa1` the skill works like this:
   written. v7.0.0 compared ideas privately.
 - **One gate, a builder check, spikes.** Nothing is built before the design doc is
   approved. A fresh subagent reads the doc as its builder and lists what it would
-  still need to ask. An accepted spike may be built, and keeping it is a new
+  still need to ask. If the partner takes the skip offer, the skill ends and the
+  gate goes with it. An accepted spike may be built, and keeping it is a new
   request.
 
-**The measured bar.** v7.0.0 published no numbers, and #2571 did. In its Gallery
+**The measured bar.** v7.0.0's release notes give no brainstorming numbers, but
+its pull requests do (#2463, #2482). #2571 published figures too. In its Gallery
 scenario (24 runs over three variants: explicit, auto-triggered and a quiet
 persona), "skipped a step without consent" fell from 24 of 24 runs to 3 of 24.
 "Design doc approved before building" rose from 1 of 24 to 23 of 24. Its final
 matrix held 176 blind-graded conversations over seven scenarios, on Opus and
-Sonnet. The scenarios are in `prime-radiant-inc/superpowers-evals`, which has no
-license, so this repo cites them by name only.
+Sonnet. All of these compare upstream `dev`, after #2560 merged, with the #2571
+branch, not with v7.0.0. As of 2026-10-28 the brainstorming scenarios are on
+open pull requests of `prime-radiant-inc/superpowers-evals` (#72 and #75), not
+on its main branch. That repository has no license, so this repo cites them by
+name only.
 
 **What plan 70 took, and where it diverges.** Plan 70 took v7.0.1's text and order,
 and `builder-check-prompt.md` unchanged. `NOTICE` lists the divergences: our
@@ -270,12 +275,12 @@ fresh-session handoff, a small change designed and approved in chat and built in
 the same session, caller sizing, the split between open questions and options,
 spikes kept off the working branch, the visual-companion token-cost warning, the
 builder check's `model: opus` pin, the quick-task exit in the HARD-GATE, and the
-dropped spec self-review. It also records the Red Flags row the pressure test
-added and the first-question wording changed after the first GREEN round. Plan
-70 ran its own RED baseline, pressure test, GREEN and trigger test, all newly
-written.
+dropped spec self-review. It also records the Red Flags row that the pressure
+test added and the question wording that changed after the first GREEN round.
+Plan 70 ran its own RED baseline, pressure test, GREEN and trigger test, all
+newly written.
 
-**The other v7.0.1 changes** are reviewed in finding 17.
+**The other v7.0.1 changes** are listed under New finding (v7.0.1).
 
 ### 5. Every task gets its own dispatch — adopted
 
@@ -732,9 +737,10 @@ template. The disposition does not change.
 
 ## New findings (v7.0.0)
 
-v7.0.0's main change, the brainstorming rebuild, is finding 4's new upstream
-baseline, and finding 4 is rewritten above. Its `task-done` and `sdd-workspace`
-fixes join findings 11 and 12. One finding is new.
+v7.0.0's main change, the brainstorming rebuild, was finding 4's upstream
+baseline until plan 70 rebased the finding on v7.0.1, and finding 4 is rewritten
+above. Its `task-done` and `sdd-workspace` fixes join findings 11 and 12. One
+finding is new.
 
 ### 16. Two v7.0.0 bug fixes apply to our copies as they stand — adopted
 
@@ -771,9 +777,9 @@ micro-test.
 
 ## New finding (v7.0.1)
 
-v7.0.1's main change, the brainstorming retune (#2560, #2571), is finding 4's
-and belongs to the brainstorming rebuild plan. Its #2563 joins finding 11, and
-#2569 joins finding 15 and the dismissed list. One finding is new.
+v7.0.1's main change, the brainstorming retune (#2560, #2571), is finding 4's,
+and plan 70 adopted it. Its #2563 joins finding 11, and #2569 joins finding 15
+and the dismissed list. One finding is new.
 
 ### 17. Skill bodies run past the compaction re-attach cut
 
