@@ -13,7 +13,7 @@ the arguments after -- apply there too. A run prints its suite's notes after its
 header and keeps going after a failure. --all skips a suite whose directory lies inside
 another suite's, since pytest collects it there. --check is a commit lint: it validates
 the registry and fails when a directory that holds pytest files lies inside no
-registered suite directory.
+registered suite directory. It skips archive/, whose retired skills no suite runs.
 
 Each run passes the dev interpreter (the `dev` entry in a suite's `pythons`) and the freeze
 cutoff from build/versions.toml to uv, and pins every `with` or extras package that

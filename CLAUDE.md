@@ -5,7 +5,7 @@ This file is the canonical maintainer guide for Claude Code, Codex, and Gemini C
 
 ## What this repo is
 
-A personal collection of coding-agent configuration, centered on the portable [Agent Skills specification](https://agentskills.io/specification). Skills live under `skills/` — each subdirectory is **one self-contained skill**: a `SKILL.md` plus optional `references/` (loaded on demand) and `scripts/` (executable helpers). Sibling top-level dirs hold the other config types: `agents/` (canonical Claude-format subagent definitions), `commands/` (canonical Claude slash commands), `runtimes/` (generated Codex and Gemini adapters), `hooks/` (Claude Code hook templates and its read-only-agent guard), and `rules/` (Claude Code path-scoped rules). There is no application here to run — the "product" is the skill text, companion configuration, and bundled scripts. `archive/skills/` keeps retired skills whole for a later restore (`archive/README.md`); nothing installs, lints or tests them.
+A personal collection of coding-agent configuration, centered on the portable [Agent Skills specification](https://agentskills.io/specification). Skills live under `skills/` — each subdirectory is **one self-contained skill**: a `SKILL.md` plus optional `references/` (loaded on demand) and `scripts/` (executable helpers). Sibling top-level dirs hold the other config types: `agents/` (canonical Claude-format subagent definitions), `commands/` (canonical Claude slash commands), `runtimes/` (generated Codex and Gemini adapters), `hooks/` (Claude Code hook templates and its read-only-agent guard), and `rules/` (Claude Code path-scoped rules). There is no application here to run — the "product" is the skill text, companion configuration, and bundled scripts. `archive/skills/` keeps retired skills whole for a later restore (`archive/README.md`). `install.py` does not install them, no suite runs their tests, and the skill lints skip them; only repo-wide scans such as the binary-asset check still cover the folder.
 
 `install.py` installs skills and companion assets for Claude, Codex, Gemini, or all three. Claude uses `~/.claude/skills/`; Codex and Gemini share `~/.agents/skills/`. This repo *is* the user's symlinked source, so edits here are live.
 
@@ -68,7 +68,7 @@ cd build && uv run --with pytest --with pyyaml python -m pytest -q test_runtime_
 
 # Directory suites (build/suites.toml): --list prints each suite's exact command, extras and notes; name one or more
 # suites to run them (--extras adds the deps that unlock skips; arguments after -- go to pytest, e.g. a test node ID),
-# or --all for every suite. --check, a commit lint, fails when a directory holding tests is not registered
+# or --all for every suite. --check, a commit lint, fails when a directory holding tests outside archive/ is not registered
 uv run python build/run_suites.py --list
 uv run python build/run_suites.py <name> [--extras] [-- <pytest args>]
 uv run python build/run_suites.py --all

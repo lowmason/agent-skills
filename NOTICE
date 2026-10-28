@@ -599,10 +599,10 @@ Archived skills
 ---------------
 
 archive/skills/ keeps retired skills whole so that one can be restored;
-archive/README.md gives the steps. install.py does not install them, and no
-lint or suite reads them. They were archived on 2026-10-27. All three are
-Lowell Mason's original works under this repository's MIT license, and each
-keeps its LICENSE copy:
+archive/README.md gives the steps. install.py does not install them, no suite
+runs their tests, and the skill lints skip them. They were archived on
+2026-10-27. All three are Lowell Mason's original works under this
+repository's MIT license, and each keeps its LICENSE copy:
 
     bls-data-context/   (including its ten BLS references: nine program
                         references plus the cross-program ingest reference)

@@ -226,7 +226,7 @@
 
 ## 11-delegation-frontmatter-rollout — 2026-07-19
 - [x] Haiku-pinned `Explore` override agent (fork-isolation upgrade; plan "Out of
-      scope"): the direct `model: haiku` pins on `explore-data` and others
+      scope"): the direct `model: haiku` pins on `explore-data` and a skill since archived
       only cover the *invoking* turn (a skill `model` override is per-turn). A single
       haiku-pinned `agents/Explore.md` would keep a whole multi-turn profiling
       workflow on Haiku via `context: fork` + `agent: Explore`, and double as a global
@@ -4027,7 +4027,7 @@ unless it says otherwise, not on this section's date, and names its audit ID; an
 re-taken at `aca0f3d`. Routes follow the audit's: its "direct fix" is Size quick-fix, its "spec"
 is Size design, a watch item has a Revisit if, and an owner call opens the Done when. Items run
 in theme order: superpowers drift; the model lifecycle (tune, track and the comparator);
-bayesian-workflow; producers and routing; script bugs; data skills; process; docs; licensing and
+bayesian-workflow; producers and routing; script bugs; process; docs; licensing and
 repository hygiene. After this pass, PR #61 added the test-suite registry plan, which PR #62
 renumbered to plan 55 (`specs/plans/completed/55-test-suite-registry.md`). Plan 55 ran on
 2026-10-18. It replaced CLAUDE.md's per-suite commands (lines 66–125) and cut the file from 199
@@ -4684,7 +4684,8 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       (`commands/deferred.md:36`); (c) nothing archives fully ticked sections — 25 of them,
       1,732 of this file's 3,875 lines on 2026-10-18 — and `specs/completed/deferred_items.md`
       was last touched 2026-07-06; (d) `deferred_stats.py:111-112` assumes no item is ever
-      deleted, so the 6 archived items fall out of its ever-closed count. Rules to weigh: a
+      deleted, so the 6 archived items, and the 11 items removed on 2026-10-27 (3 open, 8
+      closed), fall out of its ever-closed count. Rules to weigh: a
       deferral sentence appends an item or says it was dropped; a closure note naming
       follow-up work does the same; a re-filed finding cites its original source and date; an
       acknowledgement cites the last `/deferred` pass; a Hold writes a dated `→ held <date>:
@@ -4861,7 +4862,9 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       one in `specs/completed/red-baseline-*.md` and `specs/verification/`. Options: a central
       ledger convention with a backfill for the ported skills, or declare the per-skill
       records enough. (b) No skill covers building scrapers and ingest pipelines, or analysis
-      write-ups; since the old audit, the `docs-writer` agent has covered write-ups. Options: new
+      write-ups; since the old audit, the `docs-writer` agent has covered write-ups. Acquisition
+      mechanics lost their only partial cover when a skill was archived on 2026-10-27, so
+      scrapers and ingest are now uncovered. Options: new
       skills, or accept those. Size: design. Done when: the owner decides each, recorded here,
       and a "build" answer has a brainstorming item or a spec.
 - [x] Make the root README agree with the read-only agent guard's global install
@@ -5052,6 +5055,9 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       is never examined. Fix: a `--check` that warns on links into this repo whose source
       is gone. Size: quick-fix. Revisit if: a dangling link into this repo turns up in
       `~/.claude/skills` or `~/.agents/skills`.
+      → 2026-10-27: the trigger fired. Archiving three skills to `archive/skills/` leaves
+      six such links (three in each directory) once `main` has the move; `install.py`
+      did not report them.
 
 ## 52-write-with-asd-ste100 — 2026-10-18
 - [ ] Agent mode for this repo's own agent-to-agent text: subagent dispatches, task briefs

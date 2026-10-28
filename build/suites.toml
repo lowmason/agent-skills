@@ -1,7 +1,7 @@
 # Test-suite registry: one [[suite]] table for each directory-scoped pytest suite,
 # sorted by name. build/run_suites.py reads it, and `run_suites.py --check`, a
 # commit lint, fails when a directory that holds pytest files lies inside no
-# registered suite directory. Design: specs/completed/test-suite-registry.md (R2).
+# registered suite directory (archive/ excepted). Design: specs/completed/test-suite-registry.md (R2).
 #
 #   name     the name run_suites.py takes
 #   dir      the repo-relative directory pytest runs from
