@@ -36,7 +36,18 @@
 
 ## Decisions
 
-None.
+The owner approved the plan at review on 2026-10-28: "Plan 70 approved as written, with the planning defaults as listed. Leave the spec's #2571 table as history." D1 to D9 are the defaults that approval covers.
+
+- **D1** (owner, plan review, 2026-10-28): the `NOTICE` entry follows the shape of the entry at `NOTICE:428`. It names what was taken, from which release, and each deliberate divergence. Applied in: Task 6 Step 2.
+- **D2** (owner, plan review, 2026-10-28): `README.md:15` is edited, though R6 does not list the file. The spec's decision D1 (a small change is designed in chat and built in the same session) makes its "every feature through spec" claim false. Applied in: Task 6 Step 4.
+- **D3** (owner, plan review, 2026-10-28): T8 and T9 run on the new copy only (R10.1 marks them "GREEN only"), so the RED arms run T1 to T7. Applied in: Task 1 Steps 7 and 9, Task 4 Step 1.
+- **D4** (owner, plan review, 2026-10-28): T8 is scored as two halves, T8a (auto-triggered) and T8b (invoked by name), and passes only when each half reaches 4/5. Applied in: Task 1 Step 6, Task 4 Step 3.
+- **D5** (owner, plan review, 2026-10-28): the pressure baseline runs on the no-guidance control only. Applied in: Task 1 Step 7.
+- **D6** (owner, plan review, 2026-10-28): `NOTICE` lists eleven deliberate divergences: R7.2's ten, plus the HARD-GATE's quick-task exception. Applied in: Task 6 Step 2.
+- **D7** (owner, plan review, 2026-10-28): the micro-test kit is committed inside the record folder, `specs/red-baseline-brainstorming-<run-date>/kit/`. Applied in: Task 1.
+- **D8** (owner, plan review, 2026-10-28): when the smoke rep shows a live skills listing, every rep in every arm adds `--disable-slash-commands`, and a listing that the flag does not clear stops the run for the owner. Applied in: Task 1 Step 4.
+- **D9** (owner, plan review, 2026-10-28): the micro-test spend stops for the owner before it passes $50. Applied in: Global Constraints.
+- **D10** (owner, plan review, 2026-10-28): the approved spec's upstream table, which merges #2571's Gallery figures with the 176-conversation total, stays as history. No amendment task. New text written by this plan uses the Gallery reading. Applied in: Global Constraints.
 
 ---
 
@@ -1150,7 +1161,7 @@ Set the Status line to `Complete: RED, pressure test, GREEN and trigger test.` C
 
 - [ ] **Step 1: The license check** (R7.3). Fetch upstream's `LICENSE` at `2ce8aa1` into a new, empty directory (`gh api "repos/obra/superpowers/contents/LICENSE?ref=2ce8aa1" -H "Accept: application/vnd.github.raw" > "$D/LICENSE"`), confirm its sha256 is `a37e0e9697144819e1d965176ac4ae5bc3fa02d11e7812036bbcadf6dafe2400`, and run `cmp "$D/LICENSE" LICENSE-superpowers && cmp "$D/LICENSE" skills/brainstorming/LICENSE-superpowers && echo identical`. Expected: `identical`. If not, stop and ask the owner.
 
-- [ ] **Step 2: The `NOTICE` entry** (R7). Its shape follows the entry at `NOTICE:428` (planning default, listed for the plan review): it names what was taken, from which release, and each deliberate divergence. Insert it after the line `    Mistakes and Always carry the base-check route.` and before the blank line that precedes `    brainstorming/`. Fill `<YYYY-MM-DD>` and `<run-date>`. When Task 3 added rows, change "Eleven" to "Twelve" and add, before "The RED, GREEN", the sentence `The pressure test added <n> Red Flags rows.`
+- [ ] **Step 2: The `NOTICE` entry** (R7). Its shape follows the entry at `NOTICE:428` (D1): it names what was taken, from which release, and each deliberate divergence. Insert it after the line `    Mistakes and Always carry the base-check route.` and before the blank line that precedes `    brainstorming/`. Fill `<YYYY-MM-DD>` and `<run-date>`. When Task 3 added rows, change "Eleven" to "Twelve" and add, before "The RED, GREEN", the sentence `The pressure test added <n> Red Flags rows.`
 
 ```text
   - brainstorming was rebased on upstream v7.0.1 (plan 70, <YYYY-MM-DD>),
@@ -1343,7 +1354,7 @@ them.
 
   Check: `grep -c 'adopted (plan 70)' specs/superpowers-drift-spec.md` prints `1`, `grep -n '### 5. Every task' specs/superpowers-drift-spec.md` still finds finding 5, and no `<YYYY-MM-DD>` or `<run-date>` slot is left in the file (`grep -c -F -e '<YYYY-MM-DD>' -e '<run-date>' specs/superpowers-drift-spec.md NOTICE` prints `0` for each).
 
-- [ ] **Step 4: `README.md:15`** (planning default, listed for the plan review: R6 does not list the file, but D1 makes its claim false). Replace `drive every feature through spec → plan → implementation → retirement.` with `drive each project-sized feature through spec → plan → implementation → retirement. A small change gets a short design in chat and is built in the same session.` Leave the rest of the line unchanged.
+- [ ] **Step 4: `README.md:15`** (D2: R6 does not list the file, but the spec's D1 makes its claim false). Replace `drive every feature through spec → plan → implementation → retirement.` with `drive each project-sized feature through spec → plan → implementation → retirement. A small change gets a short design in chat and is built in the same session.` Leave the rest of the line unchanged.
 
 - [ ] **Step 5: `/fix-issue`** (R2.3). In `commands/fix-issue.md`, change `the spec gate stays` (line 16) to `the design gate stays`. Then regenerate and check the adapters:
 
