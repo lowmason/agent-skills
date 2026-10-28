@@ -226,7 +226,7 @@
 
 ## 11-delegation-frontmatter-rollout — 2026-07-19
 - [x] Haiku-pinned `Explore` override agent (fork-isolation upgrade; plan "Out of
-      scope"): the direct `model: haiku` pins on `explore-data`/`bls-data-context`
+      scope"): the direct `model: haiku` pins on `explore-data` and a skill since archived
       only cover the *invoking* turn (a skill `model` override is per-turn). A single
       haiku-pinned `agents/Explore.md` would keep a whole multi-turn profiling
       workflow on Haiku via `context: fork` + `agent: Explore`, and double as a global
@@ -244,8 +244,8 @@
       superseded 2026-08-10 by Opus-default at auto effort, so the "before" baseline it
       would compare against no longer exists. What stays open is the indicator check
       alone, whose premise was re-confirmed 2026-09-08: the pins are still there to
-      observe (`model: haiku` on bls-data-context / classification-codes / explore-data
-      / geographic-codes; `effort: xhigh` on bayesian-workflow / tune-hyperparameters).
+      observe (`model: haiku` on explore-data and three skills since archived;
+      `effort: xhigh` on bayesian-workflow / tune-hyperparameters).
       Owner-only — needs an interactive terminal — and still the backlog's whole aged
       tail, so the finishing-a-development-branch merge/PR gate stays bound.
       → done in plan 31: superseded, not run. The 2026-09-28 transcript sweep answered
@@ -304,26 +304,6 @@
       then it draws review attention on every pass.
       → done 2026-09-02 (/deferred quick fix): recorded in KNOWN_GOOD_FALLBACKS in
       build/verify_citations.py, test-first; Gate A now runs with no stderr.
-- [x] QCEW datatype-05 label unverified (final-review Minor (f), partially resolved):
-      the hub's claim that datatype 05 is "average annual pay" was dropped to the verified
-      "its annual-only datatype carries `A01`" (period structure confirmed live via BLS API
-      v1: `ENUUS00050010` returns only `A01`). The *label* remains unconfirmed because
-      `download.bls.gov` returns 403 from this environment and `references/qcew.md` documents
-      no datatype codes. Restore the specific label once BLS is reachable, or add a datatype
-      table to `qcew.md` so the hub has a quotable line to derive from.
-      → done 2026-09-03 (/deferred quick fix): verified and restored. The owner authorised
-      using their contact email in the User-Agent, which cleared the 403. Two independent
-      sources agree that **datatype 5 = Average Annual Pay**: the live CEW classifications
-      table (bls.gov/cew/classifications/datatype/datatype-titles.htm, fetched 2026-09-03)
-      and `en.type` inside the archived `en_meta.zip`. `references/qcew.md` gained a datatype
-      table with both sources, and the hub's reference index advertises it. The hub now names
-      average annual pay as the annual-only datatype, code `5`, whose cells carry `A01` — the
-      datatype and the period code are deliberately kept distinct, since `A01` is a period code
-      and an earlier draft of this fix conflated the two. Two corrections the item did not anticipate:
-      the code is `5`, **one character at series-ID position 9, not the zero-padded `05`**;
-      and the old routes are gone, not merely blocked — `/pub/time.series/en/` 404s (no `en`
-      directory at all, and Wayback has no `en.datatype` capture) and `help/hlpforma.htm` no
-      longer documents the ENU format.
 
 ## 13-llm-wiki — 2026-07-22
 Deferred from the final adversarial linter audit (all in the plan's verbatim regexes;
@@ -1112,18 +1092,6 @@ Residual lint false positive (real corpus, precise, deliberately not chased furt
       returns 18 files across ~10 skills — broader than the three named here, and
       each is cross-referenced by path from its SKILL.md, so normalizing them is
       churn with no behaviour change. Accepted as the repo's layout.
-- [x] Audit H2 — `skills/geographic-codes/scripts/build.py:210` emits 7 polars
-      `FutureWarning`s through the fastexcel engine (`pl.read_excel(...).select(...)`;
-      polars 2.0 changes the `from_arrow` return type). Harmless until then; the 7
-      `test_parse_each_bundled_delineation_workbook[*]` cases are the canary.
-      Re-run the suite when polars 2.0 lands.
-      → retired 2026-09-04: both halves of the premise are gone. `c2a4567` (2026-09-04)
-      added `warnings.filterwarnings('ignore', message='from_arrow', category=FutureWarning)`
-      inside `read_sheet` (`skills/geographic-codes/scripts/build.py:214`), clearing all 7;
-      and that commit's body records the latent-2.0-break the canary existed for as
-      investigated and dismissed — `read_excel` is declared `-> DataFrame` and relies on one
-      internally (it sets `df.columns` and drops null rows/cols two lines later), so polars
-      must fix it upstream and the `data/` rebuilds were never at risk.
 - [x] Audit W1 — the skill-listing budget is near its cap (32 descriptions
       ≈ 4,940 est. tokens against ≈ 5,000 at `skillListingBudgetFraction`
       0.025). All 32 fit today; the next skill likely tips it into
@@ -2052,16 +2020,6 @@ declined as YAGNI (zero instances in a one-page wiki).
       exception as a deviation with a reason. Either way, `build/check_conformance.py`
       passes.
       → done in plan 63 (2026-10-21): requesting-code-review states when review may be skipped, and `review-before-every-merge` is removed.
-- [x] Gate the geographic-codes and classification-codes network rebuilds (plan 35 audit
-      rows S-104, S-105): both SKILL.md files (line 37 each) rebuild `data/` from the
-      network when it is missing, with no manual gate (`lean.expensive-ops`). Size:
-      quick-fix. Done when: each rebuild asks first or runs only from a manual entry point,
-      and exception `network-rebuild-ungated` is removed from
-      `build/cc_guide/conformance.toml` in the same change, with
-      `build/check_conformance.py` passing.
-      → done 2026-10-05 (/deferred quick fix): both skills ask before a network
-      rebuild and name the --offline cache rebuild (owner: ask first); exception
-      removed.
 - [x] Give debugger Write or record why not (plan 35 audit row A-18): `agents/debugger.md`
       has Edit and Bash but not Write, yet its body tells it to create a failing test when
       none exists; the recorded archetype reason
@@ -2955,11 +2913,18 @@ declined as YAGNI (zero instances in a one-page wiki).
       Consumes met. Size: plan. Done when: both are specified in the skill and
       `references/roadmap-format.md` and a fixture shows each behaving as
       specified.
-- [ ] `skills/prepare-handoff/references/cold-reader.md` has no output form for a
+- [x] `skills/prepare-handoff/references/cold-reader.md` has no output form for a
       clean read (`fact-checker.md` has `VERIFIED OK`), so a sender cannot tell a
       clean read from a truncated one. Add a "NO FINDINGS" line after the report
       blocks. Size: quick-fix. Done when: added and a `cr` run (5 reps, planted
       probe) still passes both criteria.
+      → done 2026-10-27 (/deferred quick fix): the NO FINDINGS line was already in 59584fe. A
+      `cr` run on kit k-nf (from 615e67d) passed both criteria: P-rt0 5/5 and P-rt13 5/5
+      (r276-r280, 0 voids, about $8.16). The scores are in
+      `~/.cache/agent-skills/handoffs/red/scores/nofindings-cr/`, and the kit's `changes.log`
+      records the run. A scorer subagent scored it, as the kit's protocol says. The controller
+      typed the launch command into the owner's terminal, which `changes.log` discloses. No rep
+      wrote NO FINDINGS, because the brief carries planted defects.
 - [x] `skills/prepare-handoff/SKILL.md` §1 says "Amend and commit it", but one
       listed home is a deviation line in the subagent-driven-development ledger,
       which is gitignored (`.gitignore`) and deleted at completion; the wording is
@@ -4062,7 +4027,7 @@ unless it says otherwise, not on this section's date, and names its audit ID; an
 re-taken at `aca0f3d`. Routes follow the audit's: its "direct fix" is Size quick-fix, its "spec"
 is Size design, a watch item has a Revisit if, and an owner call opens the Done when. Items run
 in theme order: superpowers drift; the model lifecycle (tune, track and the comparator);
-bayesian-workflow; producers and routing; script bugs; data skills; process; docs; licensing and
+bayesian-workflow; producers and routing; script bugs; process; docs; licensing and
 repository hygiene. After this pass, PR #61 added the test-suite registry plan, which PR #62
 renumbered to plan 55 (`specs/plans/completed/55-test-suite-registry.md`). Plan 55 ran on
 2026-10-18. It replaced CLAUDE.md's per-suite commands (lines 66–125) and cut the file from 199
@@ -4706,124 +4671,6 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       Python 3.9 (the hooks suite also runs under `/usr/bin/python3`) and skipping when
       `jq` is absent. Restamp ruff-check.sh's cc-guide citation line. Size: plan. Done when:
       (a)–(c) land, with the new tests passing on both interpreters. → done in plan 61
-- [x] Add the Oct 1–Nov 12, 2025 lapse in appropriations to bls-data-context (audit-3-10-26 F1,
-      found 2026-10-03). Re-verified 2026-10-18: no commit has touched the skill since the audit,
-      and a grep for lapse, appropriation, "October 2025" or "11-month" over it finds nothing
-      relevant. The audit read two BLS pages
-      (<https://www.bls.gov/cps/methods/2025-federal-government-shutdown-impact-cps.htm> and
-      <https://www.bls.gov/bls/2025-lapse-revised-release-dates.htm>): CPS was not collected for
-      October 2025, then or later; there is no October 2025 public-use microdata; the 2025
-      annual averages use 11 months; there are no reliable Q4 2025 estimates; there was no
-      October Employment Situation, so October CES and SAE data came out with November's, and
-      September JOLTS with October's; and LAUS lost its October CPS input. Add a dated note to
-      `skills/bls-data-context/references/cps.md` (survey timing near `:42-51`, the breakpoint
-      list near `:479`, the quick-reference table near `:580-582`); one paragraph each to
-      `ces.md`, `sae.md` (which also covers LAUS, as LAUS has no file of its own) and `jolts.md`
-      §12 (`:810-821`); and a hub line in `SKILL.md` (`:94-114` or `:145`): the 2025 CPS M13
-      is an 11-month average, and a backtest that rebuilds the release calendar must model the
-      merged releases. Re-read both pages first; bls.gov needs the owner's contact email in
-      the User-Agent, granted per session. Reference text, so no micro-test. One session can
-      take this with F2, F6 and F7 (same skill). Size: quick-fix. Done when: the four
-      references and the hub carry the dated note, citing both pages.
-      → done 2026-10-19 (/deferred quick fix): dated note in cps.md (three places), ces.md,
-      sae.md, jolts.md §12 and the hub (both pages re-read 2026-10-19). Each file cites the page
-      that states its facts. cps.md, ces.md and the hub cite both pages. sae.md and jolts.md cite
-      the release-dates page only, because the CPS page says nothing on LAUS or JOLTS.
-- [x] State JOLTS is now published once a year, but bls-data-context still describes monthly state
-      releases (audit-3-10-26 F2, found 2026-10-03; re-verified 2026-10-18).
-      `skills/bls-data-context/references/jolts.md:817` says state estimates come out "within
-      about 2 weeks of national estimates", `:821` says the annual state estimates are
-      "released in June", and the hub's JOLTS row (`SKILL.md:43`) has no note on state
-      frequency. Per <https://www.bls.gov/jlt/notices/2025/jltst-upcoming-change.htm> (read by
-      the audit on 2026-10-03), the last monthly state release covered December 2025 data, and
-      the first annual news release, in July 2026, carries the prior year's monthly estimates.
-      Rewrite the two sentences, add the notice to the sources list (`:3-14`), check `:677`
-      ("updated annually in June"), and add "state published annually" to the hub row.
-      Size: quick-fix. Done when: jolts.md and the hub row describe the annual state release
-      and cite the notice.
-      → done 2026-10-19 (/deferred quick fix): jolts.md and the hub's JOLTS row describe the
-      annual state release and cite the notice.
-- [x] Correct bls-data-context's QCEW pointers and API limits (audit-3-10-26 F6, found 2026-10-03;
-      re-verified 2026-10-18, all five parts open). (a) The hub
-      (`skills/bls-data-context/SKILL.md:139-140`) still routes QCEW to
-      `download.bls.gov/pub/time.series/<prefix>/` (`en`), which
-      `references/qcew.md:503-504` itself records as a 404; repoint it to the downloadable
-      files and Open Data CSVs that qcew.md already recommends (`:18`, `:41`, `:446`,
-      `:471-473`). (b) `references/ingest.md:48-49` sends every full-universe pull to that
-      tree; add a QCEW exception. (c) The API quota block (`ingest.md:36-40`) lacks the
-      per-query year windows (20 years on v2, 10 on v1;
-      <https://www.bls.gov/developers/api_faqs.htm>). (d) `qcew.md:479` still says, in the
-      present tense, that the tree "ships no loose mapping files"; put it in the past tense.
-      (e) `qcew.md:505` says `hlpforma.htm` "no longer documents" ENU series IDs. Two readings
-      disagree: the 2026-09-03 quick fix behind that note (the ticked "QCEW datatype-05 label"
-      item, section `12-audit_7_20_26`) and the audit's 2026-10-03 fetch of `hlpforma.htm#EN`
-      through a summarizer, which found an ENU section with a sample ID and a field table.
-      Look at the page in a browser before editing `:505` or citing it as the primary ENU
-      source. Size: quick-fix.
-      Done when: parts (a)–(d) are edited and part (e) is settled by a firsthand reading.
-      → done 2026-10-19 (/deferred quick fix): parts (a) to (d) edited. Part (e) settled by a
-      browser reading on 2026-10-19: hlpforma.htm#EN documents the ENU format (sample
-      ENU04013105111150), so qcew.md now cites it and drops the "no longer documents" claim.
-- [x] Record ECI's December 2022 move to 2021 fixed weights and SOC 2018 (audit-3-10-26 F7, found
-      2026-10-03; re-verified 2026-10-18). `skills/bls-data-context/references/eci.md` §14.3
-      (`:623-647`) covers only the 2012 weights and the 2002→2010 SOC change; nothing records
-      that the SOC 2010 series froze at September 2022
-      (<https://www.bls.gov/eci/notices/2022/eci-2021-fixed-weights-and-2018-soc-update.htm>).
-      Add a dated "current weight base" subsection between `:647` and §14.4 (`:649`), and
-      check whether `SKILL.md:106` and `eci.md:273` need the same date. `ecec.md` uses current
-      employment weights (`:513-515`), so only the SOC half could apply there; check it.
-      Size: quick-fix. Done when: eci.md names the 2021 weight base, the SOC 2018 switch and
-      the frozen SOC 2010 series, with the notice cited.
-      → done 2026-10-19 (/deferred quick fix): eci.md §14.3.1 names the 2021 weight base, the
-      SOC 2018 switch and the SOC 2010 series archived through September 2022, citing the
-      notice. The hub's ECI row carries the date. ecec.md is unchanged, since the notice covers
-      ECI only.
-- [ ] Decide whether classification-codes bundles Census industry (IND) codes (audit-3-10-26 F5
-      and its Decision 10, found 2026-10-03; re-verified 2026-10-18: `data/` holds
-      `census_occ_*` files only, and no spec scopes IND out). CPS has used the 2022 Census
-      industry classification since January 2025 (`skills/bls-data-context/references/cps.md:309`),
-      and Census publishes the 2017 and 2022 industry code lists with crosswalks
-      (<https://www.census.gov/topics/employment/industry-occupation/guidance/code-lists.html>).
-      Bundle path, a plan: mirror the OCC pattern in `skills/classification-codes/scripts/build.py`
-      (`parse_census_occ` `:599`, `validate_census_occ` `:651`, `expand_census_occ` `:664`,
-      build entries `:812-841`) with `census_ind_2017`, `census_ind_2022` and a NAICS
-      expansion, and update the file table (`SKILL.md:41-56`) and recipes; adding "IND" to the
-      description needs writing-skills' micro-test. Out-of-scope path, a quick fix: one body
-      sentence at the boundary section (`SKILL.md:228-234`) pointing at the Census page.
-      Size: design. Done when: the owner picks a path and it lands.
-- [x] Add NAICS 2027's effective date to classification-codes (audit-3-10-26 F12, found 2026-10-03;
-      re-verified 2026-10-18). NAICS 2027 takes effect for reference periods from 2027-01-01
-      (Federal Register document 2026-14086, 91 FR 42976, already cited at
-      `skills/classification-codes/references/revision-process.md:228-229`). `SKILL.md:146`
-      ("with 2027 in progress"), `SKILL.md:222-224` and `revision-process.md:138` ("pending as
-      of 2026-09") give no date and do not say that the 2027 structure and concordance are not
-      bundled. Size: quick-fix. Done when: the three places carry the date and the
-      not-bundled note.
-      → done 2026-10-19 (/deferred quick fix): the three places give the proposed effective date
-      (periods beginning on or after 2027-01-01, 91 FR 42976) and say the 2027 structure and
-      concordance are not bundled.
-- [ ] Watch for the NAICS 2027 and SOC 2028 publications that would require a classification-codes
-      rebuild (audit-3-10-26 F12, routed "watch" and never filed; found 2026-10-03). The data
-      bundles NAICS 2022 and SOC 2018 only. Triggers: OMB's final NAICS 2027 notice; the Census
-      2027 structure and 2022→2027 concordance workbooks; the SOC 2028 second Federal Register
-      notice (still "TBD" on bls.gov/soc/2028 when the audit read it,
-      `revision-process.md:154`). A rebuild should land the count test from the H3 item in this
-      section first. Size: plan. Revisit if: any of those three publications appears.
-- [ ] Add tests for the classification-codes and geographic-codes builds (audit-3-10-26 H3, found
-      2026-10-03; re-verified 2026-10-18, all three parts open). (a) Three validators have no
-      test: `validate_naics_concordance` (`skills/classification-codes/scripts/build.py:380`),
-      `validate_soc_crosswalk` (`:581`) and `validate_census_occ` (`:651`); write RED-first
-      tests for their row-count bands, duplicates and SOC levels. (b) No test covers an offline
-      fetch: classification-codes' fetch tests (`test_build.py:661`, `:668`) never pass
-      `offline=True`, so the missing-cache error at `build.py:110-111` is untested, and
-      geographic-codes' `fetch` (`skills/geographic-codes/scripts/build.py:183-206`) has no test;
-      `read_sheet` (`:209`) is tested only indirectly. (c) Nothing ties the counts in the
-      SKILL.md file tables (classification-codes `SKILL.md:45-56`, "2,125 (1,012 six-digit)";
-      geographic-codes `SKILL.md:44-51`, "3,222 current plus 21 closed") to `data/` or
-      `MANIFEST.md`; they match today. Plan 53 (portability, not executed) edits both skills'
-      "Rebuilding the data" blocks and adds PEP 723 headers to both `build.py` files, so
-      sequence this around it. Size: plan. Done when: the tests in (a)–(c) exist and pass, and
-      (c) fails when a count drifts.
 - [ ] Write the backlog-protocol spec: deferrals outside this file get lost, and the file
       only grows (audit-3-10-26 B1 and B6, found 2026-10-03; re-verified 2026-10-18 — no
       commit has touched `skills/writing-plans/references/deferred-backlog.md`,
@@ -4837,7 +4684,8 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       (`commands/deferred.md:36`); (c) nothing archives fully ticked sections — 25 of them,
       1,732 of this file's 3,875 lines on 2026-10-18 — and `specs/completed/deferred_items.md`
       was last touched 2026-07-06; (d) `deferred_stats.py:111-112` assumes no item is ever
-      deleted, so the 6 archived items fall out of its ever-closed count. Rules to weigh: a
+      deleted, so the 6 archived items, and the 11 items removed on 2026-10-27 (3 open, 8
+      closed), fall out of its ever-closed count. Rules to weigh: a
       deferral sentence appends an item or says it was dropped; a closure note naming
       follow-up work does the same; a re-filed finding cites its original source and date; an
       acknowledgement cites the last `/deferred` pass; a Hold writes a dated `→ held <date>:
@@ -4983,21 +4831,16 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       installs with bare `pip install` lines (`SKILL.md:48-57`, `:113`, `:120`, and its README
       and two references); the owner decides whether they stay as an environment recipe or
       become `uv`. (7) validate-data still says "For PyMC: pass `random_seed`"
-      (`SKILL.md:144`, `:148-149`). (8) bls-data-context's `references/oews.md` is still a
-      downloader build-spec ("Build a repeatable downloader…" `:5`; "## 12. Acceptance
-      criteria" `:458`) with no panel, vintage or series-ID anatomy. (9) Research-session
-      residue: `qcew.md:5` ("Primary pages provided by the user:"), `cps.md:537-538` (an
-      unused `[CENSUS-TP66-USER-URL]` tag) and `oews.md:45` (first person). (10) LAUS is a
-      description trigger (`SKILL.md:9`) with no selector row (`:36-48`). (11)
+      (`SKILL.md:144`, `:148-149`). (8)
       systematic-debugging points at a nonexistent "Phase 4.5" (`SKILL.md:237`; the target is
-      Phase 4, step 5). (12) Narrative blocks that upstream has removed:
+      Phase 4, step 5). (9) Narrative blocks that upstream has removed:
       `skills/verification-before-completion/SKILL.md:112-119` ("If you lie, you'll be
       replaced.") and `skills/dispatching-parallel-agents/SKILL.md:188-195` (upstream keeps
-      that skill's "Real Example from Session", `:146-171`). (13) explore-data says its
+      that skill's "Real Example from Session", `:146-171`). (10) explore-data says its
       `--json` output is "a machine-readable version of all three" outputs that rpm
       consumes "directly" (`SKILL.md:240-245`), but the JSON omits the numeric summary and the
       top categoricals (`scripts/profile.py:341-347`), and rpm's `characterize.py` takes only
-      a data path. (14) Cross-skill wiring: design-architecture links to neither brainstorming
+      a data path. (11) Cross-skill wiring: design-architecture links to neither brainstorming
       nor writing-plans; brainstorming never names creative-thinking (its propose-approaches
       step, `:33`, `:81-83`); tech-debt names neither develop-testing-strategy nor
       validate-data (`SKILL.md:136`, `:103`). The same "your human partner's" wording,
@@ -5019,8 +4862,9 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       one in `specs/completed/red-baseline-*.md` and `specs/verification/`. Options: a central
       ledger convention with a backfill for the ported skills, or declare the per-skill
       records enough. (b) No skill covers building scrapers and ingest pipelines, or analysis
-      write-ups; since the old audit, the `docs-writer` agent has covered write-ups and
-      `skills/bls-data-context/references/ingest.md` acquisition mechanics. Options: new
+      write-ups; since the old audit, the `docs-writer` agent has covered write-ups. Acquisition
+      mechanics lost their only partial cover when a skill was archived on 2026-10-27, so
+      scrapers and ingest are now uncovered. Options: new
       skills, or accept those. Size: design. Done when: the owner decides each, recorded here,
       and a "build" answer has a brainstorming item or a spec.
 - [x] Make the root README agree with the read-only agent guard's global install
@@ -5211,6 +5055,9 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       is never examined. Fix: a `--check` that warns on links into this repo whose source
       is gone. Size: quick-fix. Revisit if: a dangling link into this repo turns up in
       `~/.claude/skills` or `~/.agents/skills`.
+      → 2026-10-27: the trigger fired. Archiving three skills to `archive/skills/` leaves
+      six such links (three in each directory) once `main` has the move; `install.py`
+      did not report them.
 
 ## 52-write-with-asd-ste100 — 2026-10-18
 - [ ] Agent mode for this repo's own agent-to-agent text: subagent dispatches, task briefs
@@ -6260,10 +6107,14 @@ defer. Anchors are at the end of plan 59's fix wave.
       tool, the matcher would stop firing and the guard would fail open without a sign. See
       `specs/plans/completed/63-conformance-gaps.md`. Size: plan. Done when: the probe runs and
       fails when a built-in's pin or the payload shape changes.
-- [ ] Roster-lint test symmetry (plan 63 Task 6, review Minor): `check_pinned_roster` in
+- [x] Roster-lint test symmetry (plan 63 Task 6, review Minor): `check_pinned_roster` in
       `build/check_frontmatter.py` has no "missing guard file" test and no "real agents" test to
       match the read-only roster's tests in `build/test_check_frontmatter.py`. Size: quick-fix.
       Done when: both tests exist and pass.
+      → done 2026-10-27 (/deferred quick fix): added
+      `test_pinned_roster_reports_a_missing_guard_instead_of_raising` and
+      `test_real_pinned_roster_matches_the_real_agents` to `build/test_check_frontmatter.py`. A
+      mutation that drops the guard's exception handling fails the first.
 - [ ] Re-wrap the long single-line `description` scalars in `skills/clean-coder/SKILL.md`,
       `skills/executing-plans/SKILL.md`, `skills/explore-data/SKILL.md` and
       `skills/writing-plans/SKILL.md` (not re-wrapped when made third person; explore-data's is
@@ -6272,10 +6123,16 @@ defer. Anchors are at the end of plan 59's fix wave.
       The SDD edit needs the placement tests rerun (`test_check_conformance.py -k test_real_skill`).
       Plan 63 final review, Minor. Size: quick-fix. Revisit if: another edit touches those
       descriptions or SDD.
-- [ ] Re-run the writing-skills t2 micro-test (push gate) with the fixed `run_arm.sh`; the plan 63
+- [x] Re-run the writing-skills t2 micro-test (push gate) with the fixed `run_arm.sh`; the plan 63
       run leaked prompts through stdin, so its 8/15 vs 0/15 may be contaminated. The kit is in the
       scratch folder `~/.cache/agent-skills/scratch/plan63-micro/`. Size: quick-fix. Done when: the
       pushes-unasked counts (control vs variant) are recorded and the gate wording stands or is revised.
+      → done 2026-10-27 (/deferred quick fix): reran with the fixed `run_arm.sh` (stdin from
+      /dev/null), with the same arms, prompts and model. Control: 0/15 push unasked (2/15 if
+      commands handed to the user count). Variant: 0/15. The original 8/15 came from the stdin
+      leak, and without it p3 never reaches git. The gate wording at
+      `skills/writing-skills/SKILL.md:692` stands, but its RED evidence is weak. The record is
+      appended to the kit's `t2.md`. Cost: about $2.52.
 
 ## 64-bayesian-rpm-routing — 2026-10-21
 - [x] Add a survival row to rpm's per-family knob table
@@ -6289,21 +6146,32 @@ defer. Anchors are at the end of plan 59's fix wave.
       → done 2026-10-23 (owner-requested quick fix, branch claude/rpm-survival-knob-row): the table
       has a `survival` row, and `families/survival.md` now points to it instead of saying the row is
       missing.
-- [ ] Add Beta / BetaBinomial and quantile (`AsymmetricLaplaceQuantile`) rows to
+- [x] Add Beta / BetaBinomial and quantile (`AsymmetricLaplaceQuantile`) rows to
       bayesian-workflow's "Common model families" table (`skills/bayesian-workflow/SKILL.md`),
       which rpm's bounded and quantile handoffs now point at (owner decision D9, plan 64).
       Size: quick-fix. Done when: both rows land with a priors pointer.
-- [ ] Add `KNOWN_GOOD_FALLBACKS` entries for PML1 §13.2.4.4 and PML2 §14.3.2.1 in
+      → done 2026-10-27 (/deferred quick fix): added a bounded-outcome row (`BetaProportion`,
+      `BetaBinomial`) and a one-quantile row (`AsymmetricLaplaceQuantile`), each pointing at
+      `references/priors.md`. The signatures were checked on NumPyro 0.22.0. The body grows by
+      two table rows, which the plan-46 compaction-window item should count.
+- [x] Add `KNOWN_GOOD_FALLBACKS` entries for PML1 §13.2.4.4 and PML2 §14.3.2.1 in
       `build/verify_citations.py`, with dated comments in the form of the existing PML2 §2.2.1.4
       entry. Plan 64's Gate B reads confirmed both refs (commit body of 97a8525), but Gate A
       prints a chapter-fallback WARN for each on every run. Outside plan 64's no-script scope.
       Size: quick-fix. Done when: `build/verify_citations.py skills/recommend-probabilistic-model/`
       prints neither WARN and still exits 0.
-- [ ] Add an exact-GP prediction recipe to `skills/bayesian-workflow/references/gaussian-processes.md`.
+      → done 2026-10-27 (/deferred quick fix): added both entries with a dated comment that
+      cites the Gate B reads in 97a8525. Gate A over `skills/recommend-probabilistic-model/`,
+      run against the main checkout's `build/.scratch/`, prints neither WARN and exits 0.
+- [x] Add an exact-GP prediction recipe to `skills/bayesian-workflow/references/gaussian-processes.md`.
       The exact template marginalizes f, so `Predictive` cannot return f at new inputs (the HSGP
       block can). A user needs the GP conditional at `x_new`. Found by plan 64's final review.
       Size: quick-fix. Done when: the reference has a runnable block that predicts at new
       inputs and passes the Tier 3 snippet gate.
+      → done 2026-10-27 (/deferred quick fix): the exact-GP template now ends with `predict_f`,
+      which draws f at `x_new` from the GP conditional once per posterior draw, and a note says
+      why `Predictive` cannot do this. Tier 3 runs the block and it passes. A planted wrong
+      shape assert made it fail.
 - [ ] Probe bayesian-workflow's description with a stack-neutral request, and consider
       rewording "NumPyro only" to "NumPyro models only (BlackJAX can sample them)". Plan 64's M1
       pass probes (B3, B4) both name NumPyro, so M1 cannot show whether "NumPyro only; Pyro/PyTorch
@@ -6312,7 +6180,7 @@ defer. Anchors are at the end of plan 59's fix wave.
       `specs/verification/64-routing-microtests.md`. Any reword needs its own micro-test.
       Size: quick-fix. Revisit if: bayesian-workflow's description is next edited, or a generic
       Bayesian request misroutes.
-- [ ] Tidy plan 64's cosmetics. `build/test_runtime_support.py` puts the new rpm-to-bayesian-workflow
+- [x] Tidy plan 64's cosmetics. `build/test_runtime_support.py` puts the new rpm-to-bayesian-workflow
       `SOFT_REFERENCES` entry after `explore-data`, but entries are sorted by target within a
       source. `skills/recommend-probabilistic-model/references/families/survival.md` writes
       "Rpm's" where the skills say "This skill's". rpm `SKILL.md` has one description-adjacent line
@@ -6324,6 +6192,12 @@ defer. Anchors are at the end of plan 59's fix wave.
       inspection only. Size: quick-fix. Done when: each is fixed or recorded as intended.
       → progress 2026-10-23: the "Rpm's" wording in `families/survival.md` is gone (branch
       claude/rpm-survival-knob-row, with the survival knob row). The other parts stay open.
+      → done 2026-10-27 (/deferred quick fix): the rest are fixed. `SOFT_REFERENCES` lists
+      bayesian-workflow before explore-data. rpm `SKILL.md` line 48 is rewrapped, and so is the
+      NOTICE clause (72 columns). The GP reference's orphan line is reflowed. rpm's GP family
+      file now says about 1,000 to 2,000 points, as bayesian-workflow does. A script re-took
+      the snippet-preamble def-only count: it is 4 of 41, not 3 (state-space.md's `local_level`
+      was missing), and the docstring now says so.
 - [ ] Fix the PML index gaps that hid Gate B candidates in plan 64. `build/.scratch/book1_sections.tsv`
       (from `build/extract_structure.py`) has no chapters 1–2, and many PML1 subsections have no
       title, so title-only searches miss them. PML1 §2.6.3 supports the distributional-regression
@@ -6399,28 +6273,40 @@ review (an Opus code-reviewer and a Codex run) left unfixed, triaged defer. Both
 and the owner-chosen Graduation additions were fixed (commits `9b3b511` and `6a3fc03`). Anchors are at
 the end of plan 67.
 
-- [ ] Check the claim that predictive CV never selects synthetic-control weights. It is spec R12 text,
+- [x] Check the claim that predictive CV never selects synthetic-control weights. It is spec R12 text,
       in `skills/recommend-causal-design/SKILL.md` (the tune sibling line) and in
       `skills/tune-hyperparameters/SKILL.md` (Boundary). Abadie, Diamond and Hainmueller (2015) may
       pick predictor weights with a pre-period train and validation split. `design-map.md` does not
       contradict the claim. Size: quick-fix. Done when: the claim is checked against the paper and
       Abadie (2021), and kept, or softened to "tune's search never selects …" in both files.
-- [ ] Update the Output paragraph of `skills/recommend-probabilistic-model/references/model-selection-regularization.md`
+      → done 2026-10-27 (/deferred quick fix): softened. Abadie (2021, §3.2, pp. 396-397)
+      describes, after Abadie, Diamond and Hainmueller (2015), choosing the predictor weights V
+      by a pre-period training and validation split; its footnote 7 cites Klößner et al. (2018)
+      on those weights not being unique. Both files now say tune's search never selects
+      synthetic-control weights, and that a method's own selection step stays inside that
+      method. The spec's R12 text was not edited.
+- [x] Update the Output paragraph of `skills/recommend-probabilistic-model/references/model-selection-regularization.md`
       (about lines 56-59). It says tune runs a knob and criterion pair only "when the criterion is a CV
       search". tune now sweeps structural choices on BIC, marginal likelihood and LOO (Regime C), and its
       Producers row says so. Stage 3 edits only `reporting.md`, so no stage covers this paragraph. Size:
       quick-fix. Done when: the paragraph names Regime C sweeps, and the rpm citations lint passes.
+      → done 2026-10-27 (/deferred quick fix): the paragraph now names tune's Regime C
+      structural sweeps (BIC, the marginal likelihood or LOO). Gate A over rpm exits 0 with no
+      WARN.
 - [ ] Build a V2 fixture that separates the arms (plan 67 final review). The plan 67 `V2-real` fixture
       let the old rule answer REAL in 4 of 5 reps, because all five paired differences were positive.
       The pass shows the rule is applied correctly, not that it changes the call. Record in
       `specs/verification/67-tune-noise-rule-probe.md`. A fixture with a real mean gain and one
       opposite-sign fold is the likely separator. Size: plan. Revisit if: the noise rule is edited
       again, or an agent keeps a gain under 2·SE(Δ) in practice.
-- [ ] Reword the noise rule's "|Δ|, the absolute mean of d" in `skills/tune-hyperparameters/SKILL.md`
+- [x] Reword the noise rule's "|Δ|, the absolute mean of d" in `skills/tune-hyperparameters/SKILL.md`
       (the "paired difference is noise" bullet) as "the absolute value of the mean of d". Read as the
       mean of |d|, `V2-noise` flips to REAL (0.032 against 2·SE = 0.0283). All five variant reps
       read it correctly. Size: quick-fix. Done when: the sentence is reworded and the V2 record says its
       probe ran on the earlier wording.
+      → done 2026-10-27 (/deferred quick fix): reworded to "the absolute value of the mean of
+      d". `specs/verification/67-tune-noise-rule-probe.md` now notes that its probe ran on the
+      earlier wording.
 - [x] Out-of-bag qualifier is a spec change. Plan 67's final review qualified the splitter table's
       "Random forests" row as "independent rows only" (commit `9b3b511`), where spec R3 gives the row
       without a condition. Two seats raised it. Size: quick-fix. Done when: the owner confirms the
@@ -6467,13 +6353,16 @@ review and the Plan Completion gate (2026-10-27) add the others.
       on 1.42. Re-running them needs real charts in Altair, matplotlib and plotly. Size: plan. Done
       when: each claim is re-run on the pinned versions, the five citations name them, and `HISTORICAL`
       in `build/versions_check.py` has no `Polars 1.42` entry.
-- [ ] Make `build/cc_guide/test_probes.py::test_output_of_another_shape_is_an_error_never_a_crash`
+- [x] Make `build/cc_guide/test_probes.py::test_output_of_another_shape_is_an_error_never_a_crash`
       accept Python 3.15's error text (plan 66, Task 15, the first `drift` run). The test pins
       `unhashable type: 'dict'`. Python 3.15 words the same error as `cannot use 'dict' as a set
       element (unhashable type: 'dict')`, so the `cc_guide` suite fails on 3.15. `drift` runs the
       suites on the newest stable Python, so it reports this failure each week. Match the part
       that both texts share. Size: quick-fix. Done when: the test passes on the dev Python and
       on 3.15.
+      → done 2026-10-27 (/deferred quick fix): the test now pins the outcome, the `TypeError: `
+      prefix and the shared `unhashable type: 'dict'` text. It failed on 3.15 before the edit
+      and passes on 3.13 and 3.15 after.
 - [ ] Decide whether the weekly `drift` job should fail on the newest-Python pass (plan 66, D14).
       The pass fails today because `tensorstore` (through `orbax-checkpoint`) and `h5py` publish
       no cp315 wheels, so the `jax-cpu` gate and the suites cannot install on 3.15. The owner

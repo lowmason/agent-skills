@@ -27,7 +27,10 @@ NB_RE = re.compile(r"notebooks/book[12]/[^\s)`\"']+\.ipynb")
 # fallback only because book2_sections.tsv truncates at three nesting levels (2.2.1 is
 # indexed, no 2.2.1.x is). Keyed by the same "PML{book} §{ref}" string fallback_sections()
 # emits, so an entry here is greppable against the WARN line it silences.
-KNOWN_GOOD_FALLBACKS: frozenset[str] = frozenset({"PML2 §2.2.1.4"})
+# PML2 §14.3.2.1 (quantile regression with the pinball loss) and PML1 §13.2.4.4 (a network
+# with separate mean and spread heads): Gate-B verified 2026-10-21 for regression-glm.md's
+# quantile row (plan 64, commit 97a8525). Both fall back for the same three-level truncation.
+KNOWN_GOOD_FALLBACKS: frozenset[str] = frozenset({"PML2 §2.2.1.4", "PML2 §14.3.2.1", "PML1 §13.2.4.4"})
 
 
 def _iter_md(paths: list[str]) -> list[Path]:

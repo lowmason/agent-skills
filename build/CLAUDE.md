@@ -38,7 +38,7 @@ gate's pinned stack, `bump` re-pins by one joint resolve, `drift` resolves with 
 `suites.toml` registers every directory-scoped pytest suite, and
 `run_suites.py` lists, runs and checks them; its docstring gives the options.
 `run_suites.py --check` is a commit lint: it fails when a directory that holds
-pytest files is not registered, so a new suite adds its `[[suite]]` entry in
+pytest files outside `../archive/` is not registered, so a new suite adds its `[[suite]]` entry in
 the same change.
 
 `cc_guide/` holds two tools for `specs/guides/claude-code-customization-guide.md`.

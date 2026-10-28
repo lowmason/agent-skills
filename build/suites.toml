@@ -1,7 +1,7 @@
 # Test-suite registry: one [[suite]] table for each directory-scoped pytest suite,
 # sorted by name. build/run_suites.py reads it, and `run_suites.py --check`, a
 # commit lint, fails when a directory that holds pytest files lies inside no
-# registered suite directory. Design: specs/completed/test-suite-registry.md (R2).
+# registered suite directory (archive/ excepted). Design: specs/completed/test-suite-registry.md (R2).
 #
 #   name     the name run_suites.py takes
 #   dir      the repo-relative directory pytest runs from
@@ -47,12 +47,6 @@ with = ['pytest']
 notes = ["The Claude Code guide drift detector's tests. The build suite collects them too, so --all runs them there."]
 
 [[suite]]
-name = 'classification-codes'
-dir = 'skills/classification-codes/scripts'
-with = ['pytest', 'polars']
-notes = ['Build tests (fixtures are in-memory frames, so no workbook reader is needed).']
-
-[[suite]]
 name = 'describe-critique-methodology'
 dir = 'skills/describe-critique-methodology/scripts'
 with = ['pytest']
@@ -78,12 +72,6 @@ notes = [
     "profile.py tests (its --json contract is recommend-visualization's input).",
     "profile.py shadows the stdlib profile module, but the repo-wide reason in CLAUDE.md's Commands section is why it runs from its own directory.",
 ]
-
-[[suite]]
-name = 'geographic-codes'
-dir = 'skills/geographic-codes/scripts'
-with = ['pytest', 'polars', 'fastexcel']
-notes = ['Build tests; the per-vintage workbook tests read the committed sources/.']
 
 [[suite]]
 name = 'hooks'

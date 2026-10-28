@@ -808,6 +808,22 @@ def test_pinned_roster_treats_model_inherit_as_unpinned(tmp_path):
     assert check_pinned_roster(tmp_path, frozenset()) == []
 
 
+def test_pinned_roster_reports_a_missing_guard_instead_of_raising(tmp_path, monkeypatch):
+    # As for the read-only roster: a missing dispatch guard is one violation line,
+    # not a traceback that takes the whole gate with it.
+    import check_frontmatter
+
+    monkeypatch.setattr(check_frontmatter, 'DISPATCH_GUARD_PATH', tmp_path / 'nope.py')
+    errs = check_frontmatter.check_pinned_roster(tmp_path, None)
+    assert len(errs) == 1
+    assert 'cannot load PINNED_AGENTS' in errs[0]
+
+
+def test_real_pinned_roster_matches_the_real_agents():
+    # The bidirectional assert against the shipped dispatch guard and agents/.
+    assert check_pinned_roster() == []
+
+
 CITATION_PREFIX = '#' + ' cc-guide:'
 CITATION = CITATION_PREFIX + ' skills.frontmatter @2.1.219'
 

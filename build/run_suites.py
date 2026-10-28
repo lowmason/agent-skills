@@ -13,7 +13,7 @@ the arguments after -- apply there too. A run prints its suite's notes after its
 header and keeps going after a failure. --all skips a suite whose directory lies inside
 another suite's, since pytest collects it there. --check is a commit lint: it validates
 the registry and fails when a directory that holds pytest files lies inside no
-registered suite directory.
+registered suite directory. It skips archive/, whose retired skills no suite runs.
 
 Each run passes the dev interpreter (the `dev` entry in a suite's `pythons`) and the freeze
 cutoff from build/versions.toml to uv, and pins every `with` or extras package that
@@ -45,6 +45,7 @@ REGISTRY = 'build/suites.toml'  # relative to the repo root
 DEV = 'dev'  # in a suite's `pythons`: the dev interpreter of build/versions.toml
 DEFAULT_PYTHONS = (DEV,)
 TEST_FILE_PATTERNS = ('test_*.py', '*_test.py')  # pytest's default python_files
+ARCHIVE = 'archive'  # retired skills; their tests are kept but no suite runs them
 REQUIRED_KEYS = ('name', 'dir', 'with')
 OPTIONAL_KEYS = ('extras', 'pythons', 'notes')
 STRING_KEYS = ('name', 'dir')
@@ -184,7 +185,7 @@ def git_env() -> dict[str, str]:
 
 def pytest_dirs(root: Path) -> set[str] | None:
     '''The directories that hold a pytest file, among the files git keeps under root
-    (tracked, or untracked and not ignored); None when git fails.'''
+    (tracked, or untracked and not ignored) outside ARCHIVE; None when git fails.'''
     try:
         listing = subprocess.run(
             ['git', 'ls-files', '--cached', '--others', '--exclude-standard', '-z'],
@@ -195,6 +196,7 @@ def pytest_dirs(root: Path) -> set[str] | None:
     # --cached also lists tracked files deleted from the working tree.
     return {str(PurePosixPath(p).parent) for p in paths
             if any(fnmatchcase(PurePosixPath(p).name, pattern) for pattern in TEST_FILE_PATTERNS)
+            and not PurePosixPath(p).is_relative_to(ARCHIVE)
             and (root / p).is_file()}
 
 

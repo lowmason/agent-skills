@@ -56,5 +56,6 @@ likelihood already penalizes complexity (Occam's razor) — PML1 §5.2.
 
 State two things explicitly: the **knob** (what controls complexity for this family) and the
 **criterion** (how you'll set it). That pair is what `tune-hyperparameters` executes when the
-criterion is a CV search, and what `bayesian-workflow` executes for a Bayesian fit (or the user
-runs either).
+criterion is a CV search, or a structural sweep (its Regime C: the number of components, factors
+or states, or a kernel form, scored on BIC, the marginal likelihood or LOO), and what
+`bayesian-workflow` executes for a Bayesian fit (or the user runs either).

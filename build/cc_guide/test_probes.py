@@ -440,10 +440,13 @@ def test_the_pins_probe_persists_its_session_and_reads_effort_from_the_transcrip
 
 def test_output_of_another_shape_is_an_error_never_a_crash(tmp_path, isolated_home):
     '''An effort recorded as an object, as hooks receive it, makes the
-    assessment raise TypeError: the row is ERROR, and the run goes on.'''
+    assessment raise TypeError: the row is ERROR, and the run goes on. Python
+    3.15 words the error as "cannot use 'dict' as a set element (unhashable
+    type: 'dict')", so only the part both wordings share is pinned.'''
     fake = FakeRuns({'pins': pins_stream()}, side={'pins': leave_transcripts(isolated_home, {'level': 'xhigh'})})
-    assert probes.run_probe('agent-model-pins', 'claude', REPO, tmp_path / 'run', fake) == (
-        ERROR, "TypeError: unhashable type: 'dict'")
+    outcome, finding = probes.run_probe('agent-model-pins', 'claude', REPO, tmp_path / 'run', fake)
+    assert outcome == ERROR
+    assert finding.startswith('TypeError: ') and "unhashable type: 'dict'" in finding
 
 
 # Prints the effort override, or "unset", then the variable its invocation adds.

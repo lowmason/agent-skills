@@ -38,14 +38,14 @@ and points — it does not fit, evaluate, or report on a fitted model.**
 - **`deep-learning`** *trains* neural models when the recommendation is a network (GNN, deep ensemble); **`evaluate-deep-learning`** compares them; **`optimize-jax`** fixes JAX speed, memory or compilation problems.
 - **`tune-hyperparameters`** searches a model's knobs (regularization, depth, learning rate, inference settings) without leaking the future.
 - **`track-model-experiments`** keeps the ledger of fitted model variants and compares them.
-- **`bls-data-context`** supplies official-statistics / benchmark data that informs priors & pooling.
 - **`validate-data`** *gates* the downstream result.
 
 ## Procedure (8 steps)
 
 1. **Frame the problem.** Task type (regression / classification / counts / clustering / dim-reduction
    / time-series / structured / decision) **and the question** (point prediction vs. uncertainty /
-   inference vs. causal vs. sequential decision). A causal question goes to recommend-causal-design before this procedure continues.
+   inference vs. causal vs. sequential decision). A causal question goes to recommend-causal-design
+   before this procedure continues.
 2. **Characterize the data.** Profile the primary dataset (`explore-data`; then `scripts/characterize.py`
    for modeling signals it omits — overdispersion, zero-fraction, n/p, class balance, stationarity).
    **Inventory external/auxiliary information** (official statistics, benchmarks, related series,

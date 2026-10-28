@@ -10,7 +10,7 @@
 | Matérn / ARD kernels | Response is rougher than SE assumes, or inputs differ in relevance | Matérn-3/2 or 5/2 for less-smooth functions; per-dimension ARD length-scales to down-weight uninformative inputs | PML1 §17.1.2 / PML2 §18.2.1 | notebooks/book2/18/gpr_demo_ard.ipynb |
 | GP classification / non-Gaussian likelihood | Binary/multiclass labels, counts (Poisson/Cox) | Swap the Gaussian likelihood; posterior is non-conjugate so use Laplace/VI/MCMC approximation | — / PML2 §18.4 | notebooks/book2/18/gpc_demo_2d.ipynb |
 | Compositional / structured kernels | Trend + seasonality + noise (e.g. time series) | Build additive/product kernels (SE × Periodic + linear); automatic search can propose structure | — / PML2 §18.6.4 | notebooks/book2/29/gp_mauna_loa.ipynb |
-| Sparse / scalable GP | n more than ~a few thousand (exact GP is O(n³)) | In-stack: HSGP (Hilbert-space basis functions) for 1–3 input dimensions, O(n·m^D). Inducing-point (SVGP) approximation, O(nm²), for higher D; GPyTorch implements it but is off-stack | — / PML2 §18.5.3 | notebooks/book2/18/gpr_demo_ard.ipynb |
+| Sparse / scalable GP | n more than about 1,000 to 2,000 (exact GP is O(n³)) | In-stack: HSGP (Hilbert-space basis functions) for 1–3 input dimensions, O(n·m^D). Inducing-point (SVGP) approximation, O(nm²), for higher D; GPyTorch implements it but is off-stack | — / PML2 §18.5.3 | notebooks/book2/18/gpr_demo_ard.ipynb |
 
 ## Selection & regularization (Step 6, family-specific)
 The kernel and its hyperparameters (length-scale, signal variance, noise variance) ARE the complexity knobs. Specializes `references/model-selection-regularization.md`: GPs select hyperparameters by maximizing the log marginal likelihood (empirical Bayes), which has a built-in data-fit vs. complexity tradeoff — no separate CV is needed (PML1 §17.2.6, PML2 §18.6.1). This is the key advantage over kernel regression, which must tune bandwidth by cross-validation (PML1 §17.2.3). For full uncertainty over kernel hyperparameters, put priors on them and marginalize via MCMC rather than point-estimating (PML2 §18.6.2). Choose between competing kernel structures by comparing marginal likelihood or LOO-ELPD.
@@ -18,7 +18,7 @@ The kernel and its hyperparameters (length-scale, signal variance, noise varianc
 ## Gotchas
 - Marginal-likelihood optimization is non-convex: multiple restarts help, and a too-large fitted noise variance signals an underfit kernel (over-smoothing) rather than genuine noise.
 - Default kernels assume stationarity and a constant output scale; standardize inputs/outputs and consider non-stationary or compositional kernels when the function's wiggliness varies across the domain.
-- Exact GPs scale O(n³) in time and O(n²) in memory — cross the few-thousand-point mark and you must move to an approximation: HSGP (see bayesian-workflow's GP reference) for 1–3 input dimensions, inducing-point / variational approximations (off-stack) for higher dimensions (PML2 §18.5.3–18.5.4).
+- Exact GPs scale O(n³) in time and O(n²) in memory — past about 1,000 to 2,000 points you must move to an approximation: HSGP (see bayesian-workflow's GP reference) for 1–3 input dimensions, inducing-point / variational approximations (off-stack) for higher dimensions (PML2 §18.5.3–18.5.4).
 - The SE kernel encodes very strong smoothness (infinitely differentiable sample paths); for real-world rough signals Matérn usually fits better and gives more honest uncertainty.
 
 ## Handoff

@@ -205,8 +205,8 @@ both sides of the join match your expectation.
 in thousands, QCEW in persons; rates as 0.034 vs 3.4; dollars vs thousands of dollars. Align
 units *before* comparing, and assert sign where the domain demands it (employment ≥ 0, an
 unemployment rate in [0, 1] or [0, 100] — know which). A reconciliation that is off by almost
-exactly 1000× is a units bug, not a data problem. (`bls-data-context` has the per-program units and
-the reconciliation rules — CES↔QCEW March benchmarking, JOLTS rates on CES denominators.)
+exactly 1000× is a units bug, not a data problem. (Each program's own documentation gives its units and
+reconciliation rules — CES↔QCEW March benchmarking, JOLTS rates on CES denominators.)
 
 **Edge periods.** Errors hide at the boundaries: the first and last period (partial windows,
 not-yet-revised tails), pandemic months (2020Q2 breaks every YoY comparison), series breaks

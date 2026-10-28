@@ -2,7 +2,9 @@ NOTICE
 ======
 
 This repository bundles agent skills from more than one source; skills live
-under skills/, one directory per skill. Attribution and licensing, by skill:
+under skills/, one directory per skill. Retired skills are kept under
+archive/skills/ and are described at the end of this file. Attribution and
+licensing, by skill:
 
 Each skill directory carries copies of the license texts that apply to it:
 LICENSE in every skill, and each root LICENSE-* file whose source the skill
@@ -79,8 +81,9 @@ bayesian-workflow/
     references/gaussian-processes.md cites Solin and Särkkä (2020) and
     Riutort-Mayol et al. (2023) for the Hilbert-space approximation, and
     Bürkner, Gabry and Vehtari (2021) for leave-one-out with a joint
-    Gaussian likelihood, by author-year only and in original wording; its examples are original
-    and were run against the snippet gate's pinned NumPyro.
+    Gaussian likelihood, by author-year only and in original wording; its
+    examples are original and were run against the snippet gate's pinned
+    NumPyro.
 
 recommend-causal-design/ selectively adapts the planning workflows of
 Robson Tigre's causal-planner in everyday-causal-skills (MIT, Copyright (c)
@@ -152,8 +155,6 @@ The following skills are original works by Lowell Mason, MIT licensed:
     explore-data/
     tech-debt/
     design-architecture/
-    bls-data-context/   (including its ten BLS references: nine program
-                        references plus the cross-program ingest reference)
     recommend-probabilistic-model/
     recommend-visualization/
     track-model-experiments/
@@ -162,8 +163,6 @@ The following skills are original works by Lowell Mason, MIT licensed:
     llm-wiki/
     describe-critique-methodology/
     derive-roadmap/
-    classification-codes/
-    geographic-codes/
     deep-learning/
     evaluate-deep-learning/
     optimize-jax/
@@ -183,23 +182,6 @@ model weights or datasets are bundled. Neural-run records introduce no
 posterior artifact or external tracking-service requirement. Optimization
 fixtures establish their small CPU math/placement/timing contracts only;
 real-checkpoint and accelerator recipes retain explicit verification limits.
-
-classification-codes/ and geographic-codes/ are original works by Lowell
-Mason (MIT) whose bundled data/ tables are derived from U.S. Census Bureau,
-U.S. Bureau of Labor Statistics, and Office of Management and Budget
-publications (NAICS and SOC structure and concordance workbooks; the Census
-occupation code lists; the county gazetteer; the "List 1" CBSA delineation
-workbooks). Those publications are
-works of the United States Government and are in the public domain under
-17 U.S.C. § 105. Each skill's scripts/build.py downloads the exact source
-bytes into sources/ (kept verbatim as the audit copy, with URL, sha256, and
-retrieval time in MANIFEST.md) and derives data/ from them; the parsing
-code, the seed tables, the hand-curated county change log, and all prose
-are Lowell Mason's own work. geographic-codes' seeds/county_changes.csv
-was verified row by row against the Census Bureau's "Substantial Changes
-to Counties and County Equivalent Entities" pages and, for Connecticut,
-87 FR 34235; the OMB bulletin dates were read from the bulletins
-themselves (13-01, 15-01, 17-01, 18-03, 18-04, 20-01, 23-01).
 
 recommend-visualization/ is an original work by Lowell Mason (MIT). It CITES
 standard visualization literature by author-year only (Cleveland & McGill 1984;
@@ -595,6 +577,9 @@ Changes from upstream:
     model-less dispatch to an unpinned agent (plan 63).
   - executing-plans, systematic-debugging and writing-plans word their
     descriptions in the third person (plan 63).
+  - writing-skills' example of skills with many references names
+    bayesian-workflow and deep-learning, since bls-data-context was archived
+    (2026-10-27).
 
     brainstorming/
     dispatching-parallel-agents/
@@ -609,3 +594,34 @@ Changes from upstream:
     verification-before-completion/
     writing-plans/
     writing-skills/
+
+Archived skills
+---------------
+
+archive/skills/ keeps retired skills whole so that one can be restored;
+archive/README.md gives the steps. install.py does not install them, no suite
+runs their tests, and the skill lints skip them. They were archived on
+2026-10-27. All three are Lowell Mason's original works under this
+repository's MIT license, and each keeps its LICENSE copy:
+
+    bls-data-context/   (including its ten BLS references: nine program
+                        references plus the cross-program ingest reference)
+    classification-codes/
+    geographic-codes/
+
+classification-codes/ and geographic-codes/ are original works by Lowell
+Mason (MIT) whose bundled data/ tables are derived from U.S. Census Bureau,
+U.S. Bureau of Labor Statistics, and Office of Management and Budget
+publications (NAICS and SOC structure and concordance workbooks; the Census
+occupation code lists; the county gazetteer; the "List 1" CBSA delineation
+workbooks). Those publications are
+works of the United States Government and are in the public domain under
+17 U.S.C. § 105. Each skill's scripts/build.py downloads the exact source
+bytes into sources/ (kept verbatim as the audit copy, with URL, sha256, and
+retrieval time in MANIFEST.md) and derives data/ from them; the parsing
+code, the seed tables, the hand-curated county change log, and all prose
+are Lowell Mason's own work. geographic-codes' seeds/county_changes.csv
+was verified row by row against the Census Bureau's "Substantial Changes
+to Counties and County Equivalent Entities" pages and, for Connecticut,
+87 FR 34235; the OMB bulletin dates were read from the bulletins
+themselves (13-01, 15-01, 17-01, 18-03, 18-04, 20-01, 23-01).

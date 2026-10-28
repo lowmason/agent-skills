@@ -156,7 +156,7 @@ Each flag points at a likely problem and where it comes from:
 Revised BLS series (QCEW, CES, SAE, BED) carry the same `(series_id, ref_date)` at multiple
 `vintage_date`s — that's the revision history, and it's correct. The profiling job is to confirm
 the *layout* before any tagging or join. (For each program's actual revision cadence and series-ID
-layout, consult the `bls-data-context` skill.)
+layout, consult the program's own documentation.)
 
 - **`(series_id, ref_date, vintage_date)` should be a clean unique key — but inspect a failure
   before calling it a bug.** Non-uniqueness has two very different causes. (a) A genuine

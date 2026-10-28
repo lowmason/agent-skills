@@ -233,8 +233,8 @@ comparable-budget rules and the experiment record.
 ### When not to tune
 
 - **The paired difference is noise** — score both candidates on the same folds
-  and take the per-fold differences d. When |Δ|, the absolute mean of d, is
-  under 2·SE(Δ) = 2·sd(d)/√K over K folds, ship the default. This is a screen.
+  and take the per-fold differences d. When |Δ|, the absolute value of the
+  mean of d, is under 2·SE(Δ) = 2·sd(d)/√K over K folds, ship the default. This is a screen.
   The protocol, and the corrections that widen the SE for high-stakes calls,
   are in `track-model-experiments/references/predictive-evaluation.md`.
 - **A prior already pins it** — if regularization is set by a domain prior (or
@@ -322,7 +322,9 @@ objective change:
 - `recommend-causal-design` — the design, the adjustment set, an RD bandwidth,
   synthetic-control weights and the effect estimate. Predictive CV is the
   right objective only for nuisance learners (propensity and outcome models)
-  tuned inside cross-fitting folds, and it never selects any of those.
+  tuned inside cross-fitting folds, and this skill's search never selects any
+  of those. A method's own selection step, such as synthetic control's
+  pre-period validation of its predictor weights, stays inside that method.
 - **This skill** — the *search loop*: regime classification, the splitter, the
   CV protocol, the Optuna objective, structural sweeps, neural search, and
   graduation.
