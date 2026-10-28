@@ -3516,6 +3516,10 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       → progress 2026-10-20 (owner ruling E3, `/cc-guide` upkeep): the 2026-10-20 files pass
       found (1) again, now at line 244, as a contradiction with `subagents.models`. Ruled: fix
       the file in the SDD restructure, micro-tested. (2) and (3) are not yet ruled.
+      → progress 2026-10-28 (superpowers drift review): prior art for (3). Upstream v7.0.1
+      (#2565) does not re-invoke the skill. It re-reads each step's reference from disk at
+      that step. Claude Code's truncation marker already tells the model to read the file, and
+      upstream's #2481 controller never did. See drift finding 17. (3) is still not ruled.
 - [x] writing-skills' Discovery Workflow (`skills/writing-skills/SKILL.md:690`) says
       future agents find a skill by grepping descriptions and browsing categories. Claude
       Code instead reads an always-loaded listing of each skill's name and description
@@ -3689,6 +3693,16 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       and `ACKNOWLEDGED_LATE`, and set the lint count back to seven. Size: plan.
       Done when: both bodies are at most 20,000 characters and the exception is removed with
       `build/check_conformance.py` passing.
+      → progress 2026-10-28 (superpowers drift review, branch claude/practical-hugle-86bb56):
+      upstream v7.0.1 (#2565) did the subagent-driven-development half for its own copy. It
+      moved seven situational parts into `references/`, each read from disk at the step that
+      needs it. Drift finding 17 (`specs/superpowers-drift-spec.md`) maps them onto our
+      sections. They move about 11,200 characters, but pointers bring the body back to about
+      20,400, so File Handoffs or Context Checkpoints must move too. Port the map and our own
+      text, not upstream's files, which differ from ours in five ways that finding 17 lists.
+      → progress 2026-10-28 (owner decision, "I approve your recommendations"): this item runs
+      first, as a plan without a spec on upstream's map. The item "Split writing-skills along
+      upstream v7.0.1's map" follows it. No execution starts before plan 69's execution ends.
 - [x] Run the placement tests in a commit lint (plan 46 review): `apply_waivers`
       (`build/check_conformance.py`) waives per check and file, so exception
       `skill-body-past-compaction` also covers a critical heading that slips past the window
@@ -5492,6 +5506,17 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       subagents itself; that advice may be stale, since nesting is on by default and a
       subagent can spawn subagents up to three layers deep (sub-agents.md:1051), so verify it,
       then fix or drop it.
+      → progress 2026-10-28 (superpowers drift review): upstream v7.0.1 (#2564) split its own
+      writing-skills into `references/` (template and discovery, bulletproofing, flowcharts).
+      Drift finding 17 measures that map on ours: the body falls to about 17,000 characters
+      and about 400 lines. That clears the 500-line WARN and both late headings, so exception
+      `writing-skills-late-critical-headings` can go. It does not touch the guide gaps, the
+      tdd-for-docs deviation or the `@`-link claim.
+      → progress 2026-10-28 (owner decision, "I approve your recommendations"): the split runs
+      first as its own plan without a spec. It is the item "Split writing-skills along upstream
+      v7.0.1's map" (section `superpowers-drift-v7.0.1`). Once it lands, this item keeps the rewrite:
+      the `writing-skills-guide-gaps` gap, the `writing-skills-tdd-for-docs` deviation, and the
+      `@`-link claim. The split closes the WARN, the late-heading exception and both tests.
 - [x] README line about uv (plan 53's completion gate, owner Q5, 2026-10-20): `README.md`'s
       Installation section never says that uv is needed, but 12 skills now run their bundled
       scripts with `uv run` and name uv in `compatibility` (R3.5, R3.6). Add one line under
@@ -6138,14 +6163,15 @@ defer. Anchors are at the end of plan 59's fix wave.
       11 and 13 as declined in the drift spec.
 
 ## 63-conformance-gaps — 2026-10-21
-- [ ] Probe `BUILTIN_PINNED` and the Agent payload shape in the drift detector (plan 63 Task 6, review
+- [x] Probe `BUILTIN_PINNED` and the Agent payload shape in the drift detector (plan 63 Task 6, review
       Minor, triaged defer). `hooks/dispatch-model-guard.py` relies on `tool_name` `Agent`, with
       `tool_input.model` absent when unset, and on `BUILTIN_PINNED` (built-in `claude-code-guide` pins
       haiku). Add a probe beside `agent-model-pins` in `build/cc_guide/manifest.toml`, and a Probe-log
       row in `hooks/README.md` with the Task 6 findings (CC 2.1.304, 2026-10-21). If CC renamed the
       tool, the matcher would stop firing and the guard would fail open without a sign. See
       `specs/plans/completed/63-conformance-gaps.md`. Size: plan. Done when: the probe runs and
-      fails when a built-in's pin or the payload shape changes.
+      fails when a built-in's pin or the payload shape changes. → done in plan 69 (probe `agent-payload`;
+      first live run PASS on Claude Code 2.1.308 with `--allow-old`, 2026-10-28).
 - [x] Roster-lint test symmetry (plan 63 Task 6, review Minor): `check_pinned_roster` in
       `build/check_frontmatter.py` has no "missing guard file" test and no "real agents" test to
       match the read-only roster's tests in `build/test_check_frontmatter.py`. Size: quick-fix.
@@ -6495,3 +6521,122 @@ review and the Plan Completion gate (2026-10-27) add the others.
       earlier item "Share the git helpers that `build/run_suites.py`, `build/check_conformance.py`
       and `install.py` each carry" (plan 55). Size: plan. Done when: that item is done and
       `versions_check.py` imports the shared helper.
+
+## 69-agent-payload-probe — 2026-10-28
+- [ ] The `agent-payload` probe cannot tell a parent session that disobeyed its prompt from real drift
+      (plan 69 final review: the Codex P2 and the code-reviewer's Minors 1 and 2, one defect). In
+      `check_payloads` in `build/cc_guide/probe_checks.py`, the control check says the `general-purpose`
+      dispatch "passed model 'haiku'", and the built-in check says a dispatch was "sent with no model".
+      The code reads neither fact from the stream's `tool_use` inputs. If the parent leaves `haiku` off the
+      control, or gives `claude-code-guide` a model, the probe reports DIVERGES. Plan 69's live run had a human
+      check of the parent's Agent calls (Task 4 Step 3), and later `/cc-guide probes` runs have none. That live
+      run was sound: its parent sent `haiku` to the control and no model to `claude-code-guide`. The same
+      function returns the ERROR "the PreToolUse hooks logged no subagent dispatch" when the hooks logged
+      payloads and `trim_payload` dropped them all (a renamed `subagent_type`, a moved `tool_input`, or
+      main-session payloads that carry `agent_id`). To fix it: make `_trim_block`
+      (`build/cc_guide/probe_checks.py`, which open items of the plan 58 Minors batch, section
+      `58-claude-code-drift-automation — 2026-10-20`, also cover) keep `model` in the parent's `tool_use`
+      inputs, give `assess_agent_payload` a check that returns ERROR when those inputs differ from what the
+      prompt asked for, count the raw payloads before trimming, re-save the fixtures from the raw run, and add
+      replay cases. See `specs/plans/completed/69-agent-payload-probe.md` (D6). Size: plan. Done when: a parent
+      that skips the requested model gives ERROR, not DIVERGES, with a replay case that proves it, and the
+      empty-log ERROR names the stage that dropped the payloads.
+- [ ] Review Minors from plan 69's final review (code, triaged defer). `first_by_type` in
+      `build/cc_guide/probe_checks.py` takes the first payload of a type, but `collect_payload` in
+      `build/cc_guide/probes.py` sorts the payload files by a random `mktemp` suffix, so "first" is arbitrary
+      when the parent dispatches one type twice with different inputs. The control-model check in
+      `check_payloads` also fires if Claude Code starts to normalise `'haiku'` to a full model id, which
+      `decide()` in `hooks/dispatch-model-guard.py` would not mind. `check_payloads` reads the model from the
+      `*`-matcher payload, not from the `Agent`-matcher payload that the installed guard receives.
+      `first_by_type` is annotated `dict[str, dict]`, but its key can be `None`. `assess_agent_payload`
+      compares the served model sets for equality, so a control served by two Haiku ids would flag a matching
+      built-in. The `bad_payload` test in `build/cc_guide/test_probes.py` plants its bad file only in the `any`
+      folder. The string `'Agent'` appears three times in `probe_checks.py` (`DISPATCH_TOOLS[0]`,
+      `GUARDED_TOOL`, `GUARD_MATCHER`), and the guard-constants test ties only two. See
+      `specs/plans/completed/69-agent-payload-probe.md` (D8). Size: quick-fix. Revisit if: a real run gives a
+      false DIVERGES or ERROR that traces to one of these, or the first item of this section lands (then fix
+      these in the same change).
+
+## superpowers-drift-v7.0.1 (no plan; drift review of upstream v7.0.1, branch claude/practical-hugle-86bb56) — 2026-10-28
+- [ ] Probe how Claude Code cuts a re-attached skill after compaction (superpowers drift finding
+      17, `specs/superpowers-drift-spec.md`). The guide says each invoked skill keeps its first
+      5,000 tokens (`specs/guides/claude-code-customization-guide.md:128`). Upstream's #2481
+      transcript shows a cut at exactly 20,000 characters, with a marker that points at the
+      file. The `compaction-window` check in `build/cc_guide/conformance.toml` measures the
+      body after the frontmatter, at 5,000 × 4 characters. Nobody has checked whether the cut
+      counts frontmatter or a header Claude Code adds. That matters now:
+      `skills/finishing-a-development-branch/SKILL.md` has a body of 19,970 characters, 30
+      inside the check, and its last section is Red Flags. Deferred because it needs a live
+      probe beside the others in `build/cc_guide/manifest.toml`, which costs a `claude -p` run
+      with a forced compaction. Size: plan. Done when: the probe runs and records where the cut
+      falls, and the register's window (and the guide, through `/cc-guide`) matches what it
+      shows.
+      → progress 2026-10-28 (owner decision, "I approve your recommendations"): upstream's
+      whole-file byte bar is not adopted. This probe decides the measure: if the cut counts
+      the frontmatter, correct the register's window. No execution starts before plan 69's
+      execution has ended. Plan 69 adds a probe to the same `build/cc_guide/` files.
+- [ ] Split writing-skills along upstream v7.0.1's map (#2564, superpowers drift finding 17).
+      The owner decided on 2026-10-28 ("I approve your recommendations") to run the split
+      first as a plan without a spec. It runs after the subagent-driven-development compaction
+      plan. Move four parts of `skills/writing-skills/SKILL.md` verbatim into `references/`,
+      each behind a pointer at the step that needs it. The parts are SKILL.md Structure
+      (`:104-153`) with Skill Discovery Optimization (`:154-316`), Flowchart Usage
+      (`:317-350`), and Bulletproofing Skills Against Rationalization (`:503-578`). Keep the description rule (triggers, never the
+      workflow) in SKILL.md, as upstream did. Port our text, not upstream's references.
+      Finding 17 measures the result at about 17,000 body characters and about 400 lines. In
+      the same change, remove exception `writing-skills-late-critical-headings` from
+      `build/cc_guide/conformance.toml`, empty `ACKNOWLEDGED_LATE` in
+      `build/test_check_conformance.py`, and update
+      `build/test_check_frontmatter.py::test_the_body_warning_goes_to_stderr_and_keeps_exit_zero`,
+      which expects writing-skills to be the one body over 500 lines. If this removes the last
+      `compaction-window` exception, retire the `critical_placement` lint as the item "Fit the
+      subagent-driven-development and bayesian-workflow bodies inside the compaction window"
+      describes. writing-skills is the discipline meta-skill, so micro-test that an agent
+      reads each reference at its step. The plan edits the skill that governs its own tests,
+      so run the controller tooling from the main checkout. No execution starts before plan
+      69's execution has ended. Size: plan. Done when: the body is at most 20,000 characters
+      and under 500 lines, the exception is removed with `build/check_conformance.py`
+      passing, and the micro-test shows each reference read at its step.
+
+## spec-reading-test-check (no plan; owner-approved local design idea from session "Obra superpowers writing-plans mechanism") — 2026-10-28
+- [ ] Spec-reading test check (local design, not an upstream finding, owner-approved
+      2026-10-28): no step from writing-plans through subagent-driven-development checks the
+      plan's test assertions against the spec. The planner writes the tests and the code
+      (`skills/writing-plans/SKILL.md:134-152`, enforced by `:167-181`). Its self-review
+      (`:185-193`) checks that each spec requirement has a task, not that the assertions match
+      the spec. The task reviewer compares the diff to the brief (`agents/task-reviewer.md:87-89`).
+      The final code-reviewer gets the plan, not the spec (`skills/executing-plans/SKILL.md:65-66`).
+      The Codex seat never sees the plan (`skills/requesting-code-review/codex-review.md:5-6`).
+      A planner's misread therefore passes every gate, and only the owner's plan review can
+      catch it. Superpowers drift findings 9 and 10 do not close it. Neither does upstream
+      v7.0.1's pre-flight scan (finding 7). It checks a task's tests against that task's
+      code, so a misread that test and code share passes it. Five layers, in the order a
+      misread can enter:
+      (1) Spec: owner-approved worked examples with exact values (inputs, outputs,
+      boundaries). They are the only reference that no model produced. This lands in
+      brainstorming, so coordinate with the brainstorming rebuild.
+      (2) Plan: adopt findings 9 and 10 as the base. They separate the code from the tests,
+      but not one reading of the spec from another.
+      (3) Plan review: Codex writes acceptance tests from the spec and the plan's Interfaces
+      blocks only, never from the plan's tests or approach lines. The owner gets a table of
+      the disagreements (spec quote, plan assertion, Codex assertion). Each ruling becomes a
+      `## Decisions` entry, or a spec-amendment task when the spec was unclear.
+      (4) Execution: the implementer brief carries the relevant spec excerpts. The implementer
+      reports a conflict between a test and the spec as DONE_WITH_CONCERNS, and never edits a
+      plan test to fit its own reading.
+      (5) End of run: before the final review, run the reconciled acceptance tests, which the
+      implementer never saw. Triage each failure as code wrong, acceptance test wrong, or spec
+      unclear (the owner rules). Pass the spec path to code-reviewer with the plan. That part
+      is a quick fix that can land alone.
+      Rules: no agent resolves a disagreement between two readings. Only the owner does. Add no
+      further Claude reviewers that start from the plan. Mutation testing is out of scope,
+      because it measures test strength, not correctness.
+      Probes before building: take two or three specs and plans from `specs/completed/` and
+      `specs/plans/completed/`. Plant misreads in the plans (an inclusive bound made exclusive,
+      a wrong unit, a wrong default), and check that the current pipeline misses them. That
+      is the failing baseline. Then add each layer, and keep only the layers that catch
+      something. The design expects Codex to share fewer errors with the planner, but nobody
+      has measured that, and the probes measure it. Codex runs send the spec and the plan to
+      OpenAI, so a private project needs owner approval beyond this repository. Sequence: after
+      the owner decides findings 9 and 10. Size: design. Done when: a brainstorming spec
+      decides the layers and records the baseline probe results.

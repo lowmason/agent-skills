@@ -4,15 +4,21 @@
 decide *what, if anything, becomes a spec*.
 
 It is a living record: each review re-baselines it in place rather than adding
-a dated copy. This revision (2026-10-18) brings it to upstream v7.0.0 and
-re-takes every line anchor against the current tree. The 2026-10-03 revision
+a dated copy. This revision (2026-10-28) brings it to upstream v7.0.1 for
+every skill except brainstorming. Finding 4 (brainstorming) belongs to the
+brainstorming rebuild spec, `specs/brainstorming-proportional-rebuild.md`.
+The owner approved that spec, and it is not yet merged. This revision re-takes the line anchors
+of the findings it edits (8, 9, 10, 11, 14, 15 and the new 17) and of the
+method section's example. The other anchors date from
+the 2026-10-18 revision, which brought the document to v7.0.0 and re-took
+every anchor. The 2026-10-03 revision
 brought it to v6.4.2; the first pass (2026-09-03, against v6.3.0) lived at
 `specs/superpowers-drift-2026-09-03.md` until that revision renamed it.
 Finding numbers never change, because other documents cite them (`NOTICE`,
 `specs/completed/sdd-hardening.md`, `specs/completed/handoff-briefs.md`,
 `specs/completed/audit-3-10-26.md`).
-Findings 1–8 are the first pass's, 9–15 came from v6.4.x, and findings from
-v7.0.0 start at 16.
+Findings 1–8 are the first pass's, 9–15 came from v6.4.x, 16 came from v7.0.0,
+and findings from v7.0.1 start at 17.
 
 ## Scope and method
 
@@ -20,19 +26,19 @@ v7.0.0 start at 16.
 |---|---|
 | Vendored baseline | `896224c` (v6.0.3, 2026-06-18), per `NOTICE` |
 | Adoption baselines | `b36e082` (v6.3.0) for the four pieces plan 22 (SDD hardening) adopted: findings 1, 2, 5, 6. `8ca22db` (v6.4.2) for the two pieces plan 40 (handoff briefs) adopted: finding 8's `Spec:` pointer and finding 11's handoff half |
-| Previous review | `8ca22db` (v6.4.2, 2026-09-25), reviewed 2026-10-03 |
-| Upstream HEAD | `bb92a77` (v7.0.0, 2026-10-09) |
-| Commits since previous review | 1 squash merge, `bb92a77`; upstream's `dev` branch keeps one commit per pull request |
-| Files changed under `skills/` since previous review | 8 (+240 / −321) |
-| Unreleased skill work | None: `dev`'s `skills/` tree matches `main`. Of the branches new since the last pass, two hold older drafts of v7.0.0's brainstorming text and one matches `main` |
-| Next review starts from | `bb92a77` |
+| Previous review | `bb92a77` (v7.0.0, 2026-10-09), reviewed 2026-10-18 |
+| Upstream HEAD | `2ce8aa1` (v7.0.1, 2026-10-21), still `main` on 2026-10-28 |
+| Commits since previous review | 2 on `main`: `b739a8a`, the contribution templates (its title cites #2570, the release notes cite #2569), and the release squash merge `2ce8aa1` (#2581). Upstream's `dev` branch keeps one commit per pull request |
+| Files changed under `skills/` since previous review | 22 (+705 / −667). Without brainstorming's `SKILL.md`: 21 (+594 / −625) |
+| Unreleased skill work | None: on 2026-10-28 `dev` differs from `2ce8aa1` in 11 files (hooks, the Pi extension, the Muse manifest, docs and release notes), none under `skills/` |
+| Next review starts from | `2ce8aa1` for every skill except brainstorming. Brainstorming starts from `bb92a77` until the brainstorming rebuild plan re-baselines finding 4 at `2ce8aa1` |
 
 Comparison is **per behavioral claim, not per diff hunk**. `NOTICE` records that
 most vendored files were adapted on the way in, so neither baseline is a true
 ancestor of our copies and a mechanical three-way merge produces noise. Each
 upstream RELEASE-NOTES entry was instead read as a claim and checked against our
-tree: *does our copy already satisfy the intent?* v6.4.1, v6.4.2, and v7.0.0
-each landed as one squash commit, so commit counts say nothing about scope. The
+tree: *does our copy already satisfy the intent?* v6.4.1, v6.4.2, v7.0.0 and
+v7.0.1 each landed as one squash commit, so commit counts say nothing about scope. The
 claim units are the release notes' pull-request numbers (obra/superpowers pull
 requests, written #NNNN below), and `dev`'s per-PR commits are cited where a
 port would start from the diff. Where a claim is about script behavior, a probe
@@ -41,13 +47,14 @@ in a scratch repository decided it rather than a reading.
 That distinction is load-bearing. Upstream's `0b47219` (2026-07-05) fixes a
 worktree path recomputed after `cd`, which made cleanup silently no-op. It
 landed after our vendoring, so a diff-driven read flags us as behind. We are
-not: `finishing-a-development-branch/SKILL.md:339` carries an equivalent guard
+not: `finishing-a-development-branch/SKILL.md:381` carries an equivalent guard
 ("Do NOT re-run detection here"), present since the layout move (`5fee1d7`).
 **Already covered.** Whether that guard arrived as adaptation or the vendoring
 record is imprecise about this file is undetermined, and does not change the
 disposition.
 
-Most line anchors moved since the last pass. Plan 40 rewrote parts of
+The 2026-10-18 revision found that most line anchors had moved since the pass
+before it. Plan 40 rewrote parts of
 `writing-plans/SKILL.md`, and plan 46 (the SDD bundle, 2026-10-15)
 restructured `subagent-driven-development/SKILL.md`. Elsewhere, the `cc-guide`
 citation line added near the top of every file that rests on the Claude Code
@@ -55,7 +62,7 @@ guide (`4efba4e`) shifted anchors by one.
 
 ## Status of earlier findings
 
-| # | Finding | Status at 2026-10-18 |
+| # | Finding | Status at 2026-10-28 |
 |---|---|---|
 | 1 | SDD workspace has no plan identity | **Adopted** — plan 22 |
 | 2 | Implementers can spawn duplicate reviewers | **Adopted** — plan 22 |
@@ -64,14 +71,15 @@ guide (`4efba4e`) shifted anchors by one.
 | 5 | Every task gets its own dispatch | **Adopted** — plan 22 |
 | 6 | SDD review loop has no round cap | **Adopted** — plan 22, with a deliberate ladder divergence |
 | 7 | Pre-flight conflicts stall for a human | Partly adopted (fix-round rulings); premise corrected; decided 2026-10-21: rulings mid-run only |
-| 8 | Smaller items | `find-polluter.sh` **fixed** — plan 50; two items partly covered; the `Spec:` pointer adopted by plan 40 |
+| 8 | Smaller items | `find-polluter.sh` **fixed** — plan 50; the untracked-file guard **adopted** as an idea — plan 60; one item partly covered; the `Spec:` pointer adopted by plan 40 |
 | 9 | writing-plans asks for code transcripts | Open; both plans written since that implement their own spec show the pattern; its tier premise re-sourced |
 | 10 | Reviewers grade the spec's silence | Open; upstream unchanged |
-| 11 | executing-plans was rebuilt as a ledgered native mode | Handoff half adopted by plan 40; the port goes to its own spec (7 decided 2026-10-21); upstream has since fixed `task-done` |
+| 11 | executing-plans was rebuilt as a ledgered native mode | Handoff half adopted by plan 40; the port goes to its own spec (7 decided 2026-10-21); upstream has since fixed `task-done`, and v7.0.1 cut its Example Workflow to fit the compaction window |
 | 12 | SDD script hardening | `review-package` range guards and v7.0.0's create-only `.gitignore` **adopted** — plan 50; the basename collision stays decided (M2) |
 | 13 | TDD does not say what "other tests" means | Open; travels with 11 |
 | 14 | Nested controller on Claude Code | Not adopted; premise narrowed to non-fork subagents |
-| 15 | diagnosing-superpowers | Not adopted |
+| 15 | diagnosing-superpowers | Not adopted. v7.0.1 changed only the issues it drafts |
+| 17 | Skill bodies run past the compaction re-attach cut | Size bar **already covered** by the compaction lint. Decided 2026-10-28: no byte bar until the probe, the SDD move runs first as a plan, and the writing-skills split follows as a plan without a spec |
 
 ## Dismissed without further review
 
@@ -107,6 +115,16 @@ two hook fixes harden upstream's own bootstrap hooks, which we don't ship.
 `proving-it-works-with-a-movie` still has not shipped: it is on neither `main`
 nor `dev`.
 
+**v7.0.1.** Version bumps across the plugin manifests and install docs, the
+removal of 17 old plan documents from `docs/superpowers/plans/`, and an edit to
+diagnosing-superpowers' design record. The contribution-policy changes (#2569)
+are **declined** too. The issue and PR templates now ask who is filing, what
+their human partner asked for, and for a summary that a human wrote. `AGENTS.md`
+and the README now refuse agent-written PRs that fix someone else's issue.
+These rules govern contributions to upstream's own repository, and this
+repository has no issue or PR templates. #2569's change to
+diagnosing-superpowers is under finding 15.
+
 **Already covered, no action:**
 
 - **`plan-document-reviewer-prompt.md` removed (v6.4.2).** We deleted ours as
@@ -131,8 +149,13 @@ nor `dev`.
   `<this-skill-dir>/scripts/...` anchors already supersede. v7.0.0 left
   `visual-companion.md` alone and changed one line of `server.cjs`, finding
   16's content-insertion fix. No network call or telemetry toggle returns.
+  v7.0.1 changed neither file. Its one change near the companion is
+  test-only, and the release notes do not list it.
+  `tests/brainstorm-server/server.test.js` now polls for `fs.watch` events
+  instead of sleeping a fixed time, because macOS can deliver them late. Our `brainstorming/scripts/test_server.py` tests
+  only `wrapInFrame` and watches no files, so the fix has no counterpart here.
 - **`LICENSE`.** Unchanged since the vendoring, and byte-identical to our
-  `LICENSE-superpowers` (re-checked at v7.0.0).
+  `LICENSE-superpowers` (re-checked at v7.0.1 with `cmp`).
 
 ## Findings 1–8 (first pass), re-verified
 
@@ -405,23 +428,25 @@ asks.
   one, so rulings made without it are marked provisional; that half belongs to
   finding 11's port.
 - **`finishing-a-development-branch` still advertises "Discard this work"** in
-  both completion menus, now `:160` (4-option) and `:172` (detached HEAD).
+  both completion menus, now `:193` (4-option) and `:205` (detached HEAD).
   Upstream demoted discard to explicit-request-only, on the grounds that
   advertising it next to "Merge" offers to destroy finished, passing work, and
   has not changed it since. We have the typed-confirmation ritual; the issue is
   the menu placement.
-- **Untracked-file guard on worktree removal — partly covered since `51fb8e4`
-  (2026-09-27).** Step 4b now requires
+- **Untracked-file guard on worktree removal — adopted by plan 60
+  (2026-10-21), as an idea only.** Step 4b still requires
   `git status --porcelain --untracked-files=normal` to print nothing before
-  merge or PR (`:187`), so Option 1 normally reaches `git worktree remove`
-  (`:350`) clean. A refusal caused by files created after Step 4b is still
-  unhandled; upstream stops, names the files, and asks instead of reaching for
-  `--force`.
+  merge or PR (`:220`), so Option 1 normally reaches `git worktree remove`
+  (`:390`) clean. For a refusal caused by files created later, Step 6 now
+  stops, names the cause, and lists the modified or untracked files. It never
+  adds `--force` and never unlocks the worktree (`:396-399`). `NOTICE` credits
+  upstream's idea, read at `bb92a77`, and plan 60 took no upstream text
+  (decision D7).
 - **`using-git-worktrees` guard content** is still in the Problem/Fix form
-  (`:163-188`), not the house Excuse/Reality table. Format convergence only.
+  (`:180-211`), not the house Excuse/Reality table. Format convergence only.
 - **PR creation is no longer `gh`-only.** `f8b96c0` (2026-09-08) made `gh`
-  optional with a compare-URL fallback (`:269-300`); Step 3's `gh repo view`
-  probe (`:144`) fails silently into the ask path. Upstream's forge-agnostic
+  optional with a compare-URL fallback (`:313-346`); Step 3's `gh repo view`
+  probe (`:177`) fails silently into the ask path. Upstream's forge-agnostic
   rewrite adds little now.
 
 ## Findings 9–15 (v6.4.1 and v6.4.2), re-verified
@@ -437,7 +462,7 @@ Planning here runs on Opus, the owner's session default, so this is the
 configuration upstream named. The skill text no longer says so: plan 40
 (`34cf7f8`) deleted the handoff's "planning belongs on the stronger tier" line,
 and the handoff now leaves the execution model to launch time
-(`writing-plans/SKILL.md:219-224`).
+(`writing-plans/SKILL.md:224-230`).
 
 The upstream changes:
 
@@ -461,10 +486,10 @@ The upstream changes:
   full-code plans.
 
 Our copy still has every replaced line. The overview at
-`writing-plans/SKILL.md:16` keeps "zero context ... questionable taste". `:73`
-keeps "one action (2-5 minutes)". "No Placeholders" (`:162-170`) requires code
-blocks for code steps, and `:174` says "Complete code in every step — if a step
-changes code, show the code". The handoff repeats the premise (`:192-193`: "a
+`writing-plans/SKILL.md:21` keeps "zero context ... questionable taste". `:78`
+keeps "one action (2-5 minutes)". "No Placeholders" (`:167-175`) requires code
+blocks for code steps, and `:179` says "Complete code in every step — if a step
+changes code, show the code". The handoff repeats the premise (`:196-197`: "a
 complete, zero-context handoff").
 
 **Our plans show the pattern, including the two written since.** Below are
@@ -517,6 +542,12 @@ This is a behavior-shaping change to a discipline skill, so it needs
 writing-skills' pressure-test and micro-test before deployment. Upstream's
 planted-defect probe is a ready bar.
 
+**What adopting it would not close.** No step checks the plan's test
+assertions against the spec, and this finding adds none. The planner still
+writes the tests and the code, so a planner's misread of the spec passes every
+later gate. A local design for that gap, not an upstream finding, is deferred
+in `specs/deferred_items.md`, item "Spec-reading test check".
+
 ### 10. Reviewers grade the spec's silence, not the user's experience
 
 **Verified gap.** v6.4.1 (#2319) is a three-part change. Its motivating eval:
@@ -549,6 +580,12 @@ The failure class fits the stack these skills serve. Scrapers and ETL pipelines
 meet inputs no spec enumerates: relayouts, malformed rows, empty pulls. It
 composes with finding 9 through the shared plan template.
 
+Adopting this finding does not check the plan's test assertions against the
+spec either. Its reviewers judge behavior the spec is silent on. A misread of
+what the spec does say lands in the tests and the code alike, so it passes
+them. The same local design covers that gap (`specs/deferred_items.md`, item
+"Spec-reading test check").
+
 ### 11. executing-plans was rebuilt as a ledgered native mode
 
 **A port, not a merge.** v6.4.1 (#2318) rebuilt upstream's 64-line
@@ -575,16 +612,16 @@ adopted this handoff half without Native mode
 (`specs/completed/handoff-briefs.md` R2.2–R2.4); the executing-plans port below
 stays open.
 
-Ours (`executing-plans/SKILL.md`, 142 lines) has no workspace or ledger.
+Ours (`executing-plans/SKILL.md`, 146 lines) has no workspace or ledger.
 Progress lives in todos, so a `/clear` or compaction mid-plan loses its place —
 the failure plan 22 fixed for SDD. It stops on any unclear instruction, and its
 description routes it to tightly coupled plans rather than to cost.
 
 It also carries local work upstream lacks:
 
-- Step 1's record of the base-branch start (item 5, `:27-37`).
+- Step 1's record of the base-branch start (item 5, `:31-41`).
 - Step 3's two-seat whole-plan review (code-reviewer plus Codex, worked through
-  receiving-code-review; `:47-73`).
+  receiving-code-review; `:51-77`).
 - The plan-completion protocol (Step 4) and the roadmap-stage handoff (Step 6,
   added by plan 40).
 
@@ -599,6 +636,18 @@ finding 13 for what "tests pass" means.
 script's last-line `grep` fail, so it exited 1 without writing the ledger line,
 and a finished task looked unfinished. The fix records `→ (no output)`. A
 port's test covers that silent pass.
+
+**Port from v7.0.1, and budget the compaction window (#2563).** v7.0.1 deleted
+the rebuilt skill's 52-line Example Workflow, which repeated rules stated above
+it and left the file 405 bytes over 20,000. Its eval found no change: 8 of 8
+inline runs passed on each arm, on Opus 5.5. Our copy is the pre-rebuild file
+and never had that section, so #2563 needs no action on it. It does constrain
+the port. Upstream's body is now 17,783 characters. Our local pieces above
+(Step 1's item 5 and Steps 3, 4 and 6) come to about 3,600 more, about 21,400
+in all. Our two-seat review would replace part of upstream's 3,248-character
+Final Review, which wins some of that back, but the port has little headroom
+or none. Its spec should plan a `references/` split from the start (finding
+17).
 
 Native mode on a mid-tier session model matches this repo's routing, where
 execution runs in a fresh session on a model chosen at launch.
@@ -688,7 +737,7 @@ It does not fit here, for two reasons:
 
 - **The saving is already taken another way.** writing-plans' handoff
   recommends a fresh session for execution, with the model chosen at launch
-  (`writing-plans/SKILL.md:219-224`).
+  (`writing-plans/SKILL.md:224-230`).
 - **A nested controller cannot hold our human checkpoints.** Claude Code
   removes `AskUserQuestion` from every non-fork subagent (`sub-agents.md`,
   "Available tools"; re-checked at 2.1.302). The pre-flight batched question
@@ -717,6 +766,11 @@ against `obra/superpowers`. Adopting it would mean de-branding, choosing who
 receives the report, and a `NOTICE` entry. Recorded for awareness. Its evidence
 rule ("Every finding cites `path:line`. No citation, no finding.") is the
 transferable idea.
+
+v7.0.1 (#2569) changes only the issues it drafts. They gain two sections, who
+is filing and a summary that a human wrote, and the skill files nothing while
+the summary is a placeholder. Its prefilled link now opens the Bug Report
+template. The disposition does not change.
 
 ## New findings (v7.0.0)
 
@@ -757,6 +811,213 @@ Both are small and mechanical. The second edits a discipline skill, but it
 corrects example code rather than wording that steers behavior, so it needs no
 micro-test.
 
+## New finding (v7.0.1)
+
+v7.0.1's main change, the brainstorming retune (#2560, #2571), is finding 4's
+and belongs to the brainstorming rebuild plan. Its #2563 joins finding 11, and
+#2569 joins finding 15 and the dismissed list. One finding is new.
+
+### 17. Skill bodies run past the compaction re-attach cut
+
+**The upstream claim (#2481).** After a compaction, Claude Code re-attaches
+each invoked skill cut at 20,000 characters. Text past the cut is gone for the
+rest of the session. The issue's transcript (Claude Code 2.1.285 to 2.1.292)
+shows four things:
+
+- Each re-attached copy of subagent-driven-development was cut at exactly
+  20,000 characters. Each ended with a marker that tells the model to Read the
+  skill file for the full text.
+- The five-round cap sat past the cut, at character 22,573 of v6.4.1's file.
+- After later compactions, the skill dropped out of the re-attached list
+  altogether.
+- The model never re-read the file, and one task ran 18 fix rounds.
+
+That matches what this repository assumes. The guide says compaction keeps
+the first 5,000 tokens of each invoked skill
+(`specs/guides/claude-code-customization-guide.md:128`). The
+`compaction-window` check in `build/cc_guide/conformance.toml` turns that into
+5,000 × 4 = 20,000 body characters. Two facts in the transcript are not in the
+guide: the cut counts characters, not tokens, and the marker points the model
+at the file. The second bears on the re-invoke question below.
+
+**The size bar (#2481, `tests/skill-size/test-skill-size.sh`) — already
+covered.** Upstream's new test fails any `SKILL.md` of 20,000 bytes or more.
+Our `compaction-window` check gates the same limit. `build/check_conformance.py`
+runs it as a commit lint, and any finding it does not waive fails the commit.
+It also does a thing upstream's test does not: it flags a critical-sounding
+heading that starts past the window. The two bars measure different things:
+
+| | Upstream's test | Our check |
+|---|---|---|
+| Measures | the whole file, frontmatter included | the body after the frontmatter |
+| Unit | bytes | characters |
+| Fails at | 20,000 or more | more than 20,000 |
+| Late critical headings | not checked | checked |
+
+Probe, 2026-10-28. This session does not run downloaded code, so it applied
+the test's rule with a local loop. The loop ran `wc -c` on each of our 36
+`skills/*/SKILL.md` files and failed any at 20,000 bytes or more. Four fail:
+
+| Skill | Bytes | Body characters | Our check |
+|---|---|---|---|
+| bayesian-workflow | 36,550 | 35,223 | waived by `skill-body-past-compaction` |
+| subagent-driven-development | 31,206 | 30,268 | waived by `skill-body-past-compaction` |
+| writing-skills | 30,575 | 29,717 | waived by `writing-skills-late-critical-headings`, which waives the whole check for that file |
+| finishing-a-development-branch | 20,787 | 19,970 | passes, 30 characters inside |
+
+finishing-a-development-branch is the one file where the two bars disagree.
+Its last section, Red Flags, starts at body character 18,671. Nothing read for
+this pass shows whether Claude Code counts the frontmatter, or any header it
+adds, toward the cut. If it does, the end of Red Flags is cut already. A live
+probe under `build/cc_guide/` could settle that, and `specs/deferred_items.md`
+logs it (section `superpowers-drift-v7.0.1`). Until then our check stays the
+gate. The next edit that grows this body fails the commit lint, and plan 60 has
+already moved this skill's Common Mistakes into `references/` once. No action
+now. The owner decided on 2026-10-28 not to adopt upstream's stricter bar
+until the probe has run.
+
+**The SDD move (#2565) — prior art for an open deferred item.** Upstream moved
+seven parts of subagent-driven-development into `references/`, each behind a
+pointer at the step that needs it: `fix-loop.md`, `final-review.md` (Finish
+included), `handling-reports.md`, `resuming.md`, `preflight.md`, `batching.md`
+and `cannot-verify.md`. The fix-loop pointer is the strongest. It tells the
+controller to read the file again before every round, because its memory of
+the file does not survive compaction. The file fell from 32,577 bytes to
+19,506. The PR moved the text verbatim and checked that every old line
+survives.
+
+The PR rejected two alternatives. Compressing the prose would rewrite tuned
+text. A cap reminder near the top had already failed. The process graph inside
+the first 20,000 characters named the cap, and the controller still ran 18
+rounds. The PR also names the limit of any fix in the skill file. Nothing in
+the file helps when the skill drops out of the re-attached list.
+
+**There is no measured bar.** Upstream's eval runs one headless turn after a
+simulated compaction, at round 5 with a finding still open. Each arm parked
+the finding instead of starting round 6, in 10 of 10 runs (5 each on Opus 5.5
+and Sonnet 5.5). The arms were v7.0.0 cut at 20,000, v7.0.0 whole, and the
+split. The split arm read `fix-loop.md` in 10 of 10 runs. The PR calls this a
+regression check, not a reproduction, because a short, clean context does not
+show the long-session failure.
+
+**How it maps onto ours.** Our body is 30,268 characters. Plan 46 already
+moved our fix-round cap inside the window: Fix Rounds starts at character
+13,856. Our risk is the text past character 20,000, near line 326. That is the
+end of Constructing Reviewer Prompts (with the two final-review bullets the
+deferred item names), then File Handoffs, Durable Progress and Context
+Checkpoints. Upstream's seven parts map onto these parts of
+`subagent-driven-development/SKILL.md`:
+
+| Upstream reference | Our text | Characters |
+|---|---|---|
+| `batching.md` | The Process, batching paragraphs (`:128-154`) | 1,706 |
+| `preflight.md` | Pre-Flight Plan Review (`:156-169`) | 661 |
+| `handling-reports.md` | Handling Implementer Status, all but DONE (`:204-215`) | 1,033 |
+| `cannot-verify.md` | Handling Reviewer ⚠️ Items (`:216-226`) | 594 |
+| `fix-loop.md` | Fix Rounds (`:227-255`) and three fix bullets (`:323-339`) | 2,897 |
+| `final-review.md` | Plan Completion (`:256-294`) and the final-review bullets (`:340-355`) | 3,339 |
+| `resuming.md` | Durable Progress, the resume bullets (`:405-417`) | 985 |
+| Total | | 11,215 |
+
+Moving all of it leaves 19,053 characters. Upstream's seven pointers come to
+1,354 characters, and pointers of that length bring our body back to about
+20,400. **Upstream's map alone does not clear our window.** The last 400
+characters or more must come from parts upstream does not have. File Handoffs
+(`:356-394`, 2,518 characters) and Context Checkpoints (`:439-461`, 1,258) are
+the candidates.
+
+**A port takes the map, not upstream's files.** Upstream's references differ
+from our text in ways a copy would bring in silently:
+
+- They put the workspace under `.superpowers/sdd/`, where ours uses `.sdd/`
+  (finding 1), and they name skills with the `superpowers:` prefix.
+- `preflight.md` rules on each conflict. Ours asks the partner one batched
+  question (`:164-168`), which finding 7's decision of 2026-10-21 keeps.
+- `fix-loop.md` rules on a plan-mandated finding. Ours still calls it the
+  human's decision (`:328-332`). Finding 7's decision changes that to a
+  ruling, and the open executing-plans port spec item carries the change.
+- `fix-loop.md` escalates to a stronger model at round 4. Ours escalates
+  context, then effort, then model (finding 6).
+- `final-review.md` has one review seat and lists the rulings in the final
+  message. Ours has two seats, code-reviewer and Codex, and hands the rulings
+  to the plan-completion gate.
+
+So a port moves our own text verbatim behind pointers at upstream's places,
+and takes upstream's re-read wording for the fix loop. That wording steers
+behavior in a discipline skill, so writing-skills' micro-test applies, as the
+deferred item already says.
+
+**It also bears on a second deferred item.** Part 3 of "Three
+subagent-driven-development decisions" asks whether the skill should tell the
+controller to re-invoke it after compaction. Upstream does not re-invoke.
+It re-reads each step's reference from disk at that step. Claude Code's own
+marker already points at the file, and #2481's controller still never read
+it. Upstream therefore puts the pointer at the step. Nothing measured shows
+which works better.
+
+**The writing-skills move (#2564) — prior art for an open deferred item.**
+Upstream moved three parts into new references, each behind a pointer: the
+SKILL.md template with all of Skill Discovery Optimization (`discovery.md`),
+bulletproofing (`bulletproofing.md`), and flowchart conventions
+(`flowcharts.md`). It also moved its supporting files into `references/`. The
+rule that a description names triggers, never the workflow, stays in
+SKILL.md. The file fell from 26,623 bytes to 16,738. Its eval found no change
+between the arms. On each arm, 12 of 12 written skills had a description in
+the required form, and 6 of 6 discipline skills tabled every rationalization.
+Every split-arm run read the reference its scenario called for.
+
+The same map fits ours, with room to spare:
+
+| Moved part | Our text (`writing-skills/SKILL.md`) | Characters | Lines |
+|---|---|---|---|
+| Template | SKILL.md Structure (`:104-153`) | 3,000 | 50 |
+| Discovery | Skill Discovery Optimization (`:154-316`) | 7,263 | 163 |
+| Flowcharts | Flowchart Usage (`:317-350`) | 1,156 | 34 |
+| Bulletproofing | Bulletproofing Skills Against Rationalization (`:503-578`) | 2,360 | 76 |
+| Total | | 13,779 | 323 |
+
+The body falls from 29,717 characters to about 15,900, or about 17,000 with
+pointers as long as upstream's. The file falls from 716 lines to about 400.
+That closes three parts of the open item "Split and rewrite writing-skills
+against the guide":
+
+- The body drops below 500 lines, which clears `check_frontmatter.py`'s WARN.
+- The late heading Create Red Flags List moves out with bulletproofing.
+- STOP: Before Moving to Next Skill starts near character 13,700, inside the
+  window. With both late headings gone, exception
+  `writing-skills-late-critical-headings` can go.
+
+It does not close the rest of that item: the `writing-skills-guide-gaps` gap,
+the `writing-skills-tdd-for-docs` deviation, and the skill's claim about `@`
+links. Only the skill itself links its support files
+(`persuasion-principles.md`, `testing-skills-with-subagents.md`,
+`graphviz-conventions.dot`), so moving them changes no install dependency.
+
+**Disposition, per claim unit:**
+
+- **#2481 and the size test: already covered** by the `compaction-window`
+  check. Decided 2026-10-28 (owner): do not add upstream's whole-file byte bar
+  now. The logged probe runs first. If it shows that Claude Code counts the
+  frontmatter toward the cut, correct the register's window.
+- **#2565: fix directly, no spec.** It runs as a plan through the open item
+  "Fit the subagent-driven-development and bayesian-workflow bodies inside the
+  compaction window" (section `46-sdd-bundle`, Size: plan). Upstream's map is
+  the skeleton, plus about 400 characters from our own sections. The
+  bayesian-workflow half has no upstream counterpart, but the same pattern
+  applies. Decided 2026-10-28 (owner): this plan runs before the
+  writing-skills split.
+- **#2564: fix directly, no spec, for the split.** Decided 2026-10-28
+  (owner): the split runs first as a plan without a spec, after the SDD plan
+  (`specs/deferred_items.md`, item "Split writing-skills along upstream
+  v7.0.1's map"). The rest of the open item "Split and rewrite writing-skills
+  against the guide" stays a spec candidate (Size: design).
+- **#2563: already covered** for our file. It constrains finding 11's port.
+
+No execution of the items above starts before plan 69's execution has ended.
+The owner set that order on 2026-10-28, while another session was executing
+plan 69. Plan 69 also edits the `build/cc_guide/` probe files that the probe
+item would touch.
+
 ## Suggested disposition
 
 Under this repo's proportional-process rule:
@@ -773,6 +1034,30 @@ Under this repo's proportional-process rule:
     debugging example.
   - Finding 12's create-only `.gitignore` in `sdd-workspace`, the optional
     item.
+
+  Through plan 60 (2026-10-21), finding 8's untracked-file guard, as an idea
+  credited in `NOTICE` with no upstream text.
+- **Decided 2026-10-28 (owner):** finding 17's three calls, approved as
+  recommended. Execution of each waits until plan 69's execution has ended.
+  The SDD plan runs first, then the writing-skills split. Upstream's byte bar
+  is not adopted until the probe has run.
+- **Fix directly, no spec, through an open deferred item:** finding 17's SDD
+  half (#2565). The item "Fit the subagent-driven-development and
+  bayesian-workflow bodies inside the compaction window" is already sized as a
+  plan. Use upstream's seven-reference map as its skeleton, and move our own
+  text verbatim. The map leaves the body about 400 characters over, so the plan
+  also moves File Handoffs or Context Checkpoints. Micro-test the fix-loop
+  re-read pointer under writing-skills. Part 3 of "Three
+  subagent-driven-development decisions" (re-invoke after compaction) still
+  needs the owner's ruling, and upstream's step pointers are prior art for it.
+- **Fix directly, no spec, after the SDD plan:** finding 17's writing-skills
+  split (#2564), as the new item "Split writing-skills along upstream v7.0.1's
+  map". Upstream's map fits ours and clears the 500-line WARN and the late
+  headings. The rest of "Split and rewrite writing-skills against the guide"
+  stays a spec candidate.
+- **Not adopted until the probe has run:** upstream's whole-file byte bar
+  (finding 17). finishing-a-development-branch is the one skill that passes
+  our check and fails the stricter bar. The probe item decides the measure.
 - **Spec candidate, planning surface:** findings 9 and 10. They share the
   writing-plans plan template and self-review, and finding 10 also reaches
   the four reviewer surfaces. Both shape
@@ -789,14 +1074,20 @@ Under this repo's proportional-process rule:
   that hung on it:
   - Finding 11's executing-plans port, which gets its own spec; its handoff
     half was adopted by plan 40. Finding 13's TDD wording travels with it,
-    micro-tested.
+    micro-tested. Port from v7.0.1, which drops the Example Workflow (#2563).
+    With our local steps, the body has little or no room under the compaction
+    window, so the spec plans a `references/` split from the start.
   - Finding 14, which stays declined.
 - **Prospective only:** finding 3. Adopt the falsifiability material if you
   want the guidance; do not take the compression without clearing upstream's
   measured bar.
 - **Not adopted, recorded:** finding 12's basename collision (decided as M2,
   with v7.0.0's Git Bash marker fix) and interpreter prefixes, finding 14, and
-  finding 15.
+  finding 15, which v7.0.1's #2569 does not change.
+- **Declined:** v7.0.1's contribution templates and policy (#2569), which
+  govern contributions to upstream's own repository.
+- **Already covered, no action:** finding 17's size bar (#2481, the skill-size
+  test) and #2563 for our executing-plans.
 
 Any adoption needs a `NOTICE` change-list entry. The two existing "adopted
 FROM upstream" entries are the model: name what was taken, from which release,
