@@ -814,3 +814,147 @@ def test_help_keeps_docstring_examples_on_their_own_lines():
   assert '\n  python3 install.py gemini --skill bayesian-workflow --companions\n' in (
     result.stdout
   )
+
+
+def make_link(home: Path, relative: str, target: Path | str) -> Path:
+  link = home / relative
+  link.parent.mkdir(parents=True, exist_ok=True)
+  link.symlink_to(target)
+  return link
+
+
+def test_check_reports_a_managed_link_whose_source_is_gone_and_removes_nothing(tmp_path):
+  source = REPO / 'skills' / 'retired-skill'
+  gone = make_link(tmp_path, '.claude/skills/retired-skill', source)
+  live = make_link(tmp_path, '.claude/skills/brainstorming', REPO / 'skills' / 'brainstorming')
+  foreign = make_link(tmp_path, '.claude/skills/foreign', tmp_path / 'not-this-repo')
+  result = run_install(tmp_path, 'claude', '--check', skills=())
+  assert result.returncode == 1, result.stdout + result.stderr
+  assert f'dangling {gone} -> {source}' in result.stdout.splitlines()
+  assert str(live) not in result.stdout
+  assert str(foreign) not in result.stdout
+  assert gone.is_symlink() and live.is_symlink() and foreign.is_symlink()
+
+
+def test_check_reports_a_relative_link_into_this_repo(tmp_path):
+  source = REPO / 'skills' / 'retired-skill'
+  link = tmp_path / '.claude/skills/retired-skill'
+  link.parent.mkdir(parents=True)
+  link.symlink_to(os.path.relpath(source, link.parent))
+  result = run_install(tmp_path, 'claude', '--check', skills=())
+  assert result.returncode == 1, result.stdout + result.stderr
+  assert f'dangling {link} -> {source}' in result.stdout.splitlines()
+
+
+@pytest.mark.parametrize(
+  ('runtime', 'relative'),
+  [
+    ('claude', '.claude/skills/old'),
+    ('claude', '.claude/agents/old.md'),
+    ('claude', '.claude/commands/old.md'),
+    ('claude', '.claude/rules/old.md'),
+    ('codex', '.agents/skills/old'),
+    ('codex', '.codex/agents/old.toml'),
+    ('gemini', '.agents/skills/old'),
+    ('gemini', '.gemini/agents/old.md'),
+    ('gemini', '.gemini/commands/old.toml'),
+    ('all', '.claude/skills/old'),
+    ('all', '.codex/agents/old.toml'),
+    ('all', '.gemini/commands/old.toml'),
+  ],
+)
+def test_check_scans_every_directory_the_runtime_installs_into(tmp_path, runtime, relative):
+  link = make_link(tmp_path, relative, REPO / 'skills' / 'retired')
+  result = run_install(tmp_path, runtime, '--check', skills=())
+  assert result.returncode == 1, result.stdout + result.stderr
+  assert f'dangling {link} -> ' in result.stdout
+
+
+def test_check_leaves_the_other_runtimes_directories_alone(tmp_path):
+  make_link(tmp_path, '.codex/agents/old.toml', REPO / 'skills' / 'retired')
+  result = run_install(tmp_path, 'claude', '--check', skills=())
+  assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_check_passes_on_a_clean_or_empty_home(tmp_path):
+  empty = run_install(tmp_path, 'all', '--check', skills=())
+  assert empty.returncode == 0, empty.stdout + empty.stderr
+  assert run_install(tmp_path, 'all', skills=('brainstorming',)).returncode == 0
+  (tmp_path / '.claude/skills/hand-made.md').write_text('not a link\n')
+  clean = run_install(tmp_path, 'all', '--check', skills=())
+  assert clean.returncode == 0, clean.stdout + clean.stderr
+  assert 'dangling' not in clean.stdout
+
+
+def test_check_lists_a_link_once_when_two_roots_are_one_directory(tmp_path):
+  (tmp_path / '.agents/skills').mkdir(parents=True)
+  (tmp_path / '.claude').mkdir()
+  (tmp_path / '.claude/skills').symlink_to('../.agents/skills', target_is_directory=True)
+  make_link(tmp_path, '.agents/skills/retired', REPO / 'skills' / 'retired')
+  result = run_install(tmp_path, 'all', '--check', skills=())
+  assert result.returncode == 1, result.stdout + result.stderr
+  assert result.stdout.count('dangling ') == 1
+
+
+@pytest.mark.parametrize(
+  'option',
+  [
+    ('--skill', 'brainstorming'),
+    ('--rule', USER_RULE),
+    ('--no-rules',),
+    ('--companions',),
+    ('--no-companions',),
+    ('--copy',),
+    ('--dry-run',),
+  ],
+)
+def test_check_refuses_to_combine_with_install_options(tmp_path, option):
+  result = run_install(tmp_path, 'claude', '--check', *option, skills=())
+  assert result.returncode == 2
+  assert '--check' in result.stderr
+  assert tree(tmp_path) == []
+
+
+def git_in(root: Path, *args: str) -> None:
+  subprocess.run(
+    ['git', '-C', str(root), '-c', 'user.name=t', '-c', 'user.email=t@example.com', *args],
+    check=True,
+    capture_output=True,
+  )
+
+
+def test_check_counts_the_main_checkout_of_a_worktree_as_this_repo(tmp_path, monkeypatch):
+  install = load_install(monkeypatch)
+  main = tmp_path / 'main'
+  main.mkdir()
+  git_in(main, 'init', '-q')
+  git_in(main, 'commit', '-q', '--allow-empty', '-m', 'init')
+  worktree = tmp_path / 'worktree'
+  git_in(main, 'worktree', 'add', '-q', str(worktree))
+  home = tmp_path / 'home'
+  into_main = make_link(home, '.claude/skills/retired', main / 'skills' / 'retired')
+  into_worktree = make_link(home, '.claude/skills/removed', worktree / 'skills' / 'removed')
+  foreign = make_link(home, '.claude/skills/foreign', tmp_path / 'elsewhere')
+  monkeypatch.setattr(install, 'REPO', worktree)
+  found = install.dangling_links('claude', home)
+  assert found == [
+    (into_worktree, worktree / 'skills' / 'removed'),
+    (into_main, main / 'skills' / 'retired'),
+  ]
+  assert foreign not in [link for link, _ in found]
+
+
+@pytest.mark.parametrize('runtime', ['claude', 'codex', 'gemini'])
+def test_check_scans_exactly_the_directories_the_installer_writes_into(
+  tmp_path, monkeypatch, runtime
+):
+  install = load_install(monkeypatch)
+  items = install.runtime_items(
+    runtime,
+    tmp_path,
+    install.skill_names(),
+    companions=True,
+    rules=install.rule_names(),
+  )
+  written = {str(item.destination.parent.relative_to(tmp_path)) for item in items}
+  assert written == set(install.RUNTIME_DIRECTORIES[runtime])

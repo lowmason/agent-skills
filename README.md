@@ -242,7 +242,13 @@ python3 install.py claude --no-rules                              # everything e
 python3 install.py claude --no-companions                         # every skill, no agents or commands
 python3 install.py all --dry-run                                  # inspect without writing
 python3 install.py gemini --copy                                  # frozen copies instead of symlinks (see below)
+python3 install.py all --check                                    # list links into this repo whose source is gone
 ```
+
+`--check` installs nothing. A renamed, archived or removed skill leaves its link behind, and a
+normal install never looks at it. `--check` lists each link in the runtime's directories that points
+into this repository at a source that is gone. It exits 1 when it finds one. It never removes a
+link, so you delete the stale ones yourself.
 
 `--skill` also installs what the named skills cannot work without, and what those need in turn.
 That means the sibling skills whose scripts or files they use, and the `/deferred` command where

@@ -5047,7 +5047,7 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       reading here. If a description is dropped, use `skillOverrides` or prune plugins; do
       not trim descriptions. The open plan-35 items `listing-aggregate` and guide note S-109
       cover the lint, not this reading. Size: quick-fix. Done when: the reading is recorded.
-- [ ] `install.py` never reports a managed link whose source is gone (audit-3-10-26 H2,
+- [x] `install.py` never reports a managed link whose source is gone (audit-3-10-26 H2,
       found 2026-10-03). The audit's dangling `recommend-causal-design` links resolved
       themselves when that branch merged (none on 2026-10-18), but `install.py` has no
       check for them: `plan()` (`:166`) visits only current repo items, so a link left by a
@@ -5058,6 +5058,12 @@ tier). D9's pointer to `CLAUDE.md:66-68` now names the registry's notes for the 
       → 2026-10-27: the trigger fired. Archiving three skills to `archive/skills/` leaves
       six such links (three in each directory) once `main` has the move; `install.py`
       did not report them.
+      → done 2026-10-28 (/deferred quick fix): `python3 install.py <runtime> --check` lists the
+      links in the runtime's install directories that point into this repo, or into the main
+      checkout when run from a worktree, at a source that is gone. It exits 1 when it finds any
+      and never removes one. The new tests in `build/test_runtime_support.py` failed first.
+      A run against the real home on 2026-10-28 found no dangling link in any runtime
+      directory: the six links from 2026-10-27 are already gone.
 
 ## 52-write-with-asd-ste100 — 2026-10-18
 - [ ] Agent mode for this repo's own agent-to-agent text: subagent dispatches, task briefs

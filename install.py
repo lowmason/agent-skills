@@ -8,6 +8,7 @@ Examples:
   python3 install.py gemini --skill bayesian-workflow --companions
   python3 install.py claude --rule write-with-asd-ste100
   python3 install.py all --copy
+  python3 install.py all --check
 
 Symlinks are the default, so edits to installed items are live; re-run after a
 pull that adds skills, agents, or commands.
@@ -21,6 +22,9 @@ and prints a notice.
 The installer never replaces a path it does not already manage, and a copy
 manages none, so --copy needs old copies removed first. It checks every
 destination before writing, so a conflict leaves nothing half-installed.
+--check installs nothing. It lists the links in the runtime's directories that
+point into this repository at a source that is gone, as a renamed, archived or
+removed skill leaves them, and exits 1 when it finds any. It never removes one.
 '''
 from __future__ import annotations
 
@@ -72,6 +76,15 @@ DEPENDENCIES: dict[str, tuple[str, ...]] = {
 # the skill names in its rule's text.
 USER_RULES: dict[str, tuple[str, ...]] = {
   'write-with-asd-ste100': ('write-with-asd-ste100',),
+}
+
+# Where each runtime's links live, under the home directory: the parents of
+# runtime_items()' destinations, which build/test_runtime_support.py checks.
+# --check scans these.
+RUNTIME_DIRECTORIES: dict[str, tuple[str, ...]] = {
+  'claude': ('.claude/skills', '.claude/agents', '.claude/commands', '.claude/rules'),
+  'codex': ('.agents/skills', '.codex/agents'),
+  'gemini': ('.agents/skills', '.gemini/agents', '.gemini/commands'),
 }
 
 # .gitignore's generic entries, fixed here, for --copy where git keeps none of
@@ -300,6 +313,77 @@ def preflight(
       )
 
 
+def repo_roots() -> list[Path]:
+  '''This checkout, plus the main checkout when this one is a linked worktree:
+  the links in a home directory usually point at the main checkout.'''
+  roots = [REPO]
+  try:
+    common = subprocess.run(
+      ['git', 'rev-parse', '--git-common-dir'],
+      cwd=REPO,
+      env=git_env(),
+      capture_output=True,
+      text=True,
+      check=True,
+    ).stdout.strip()
+  except (OSError, subprocess.CalledProcessError):
+    return roots
+  git_dir = (REPO / common).resolve()
+  if git_dir.name == '.git' and git_dir.parent != REPO:
+    roots.append(git_dir.parent)
+  return roots
+
+
+def dangling_links(runtime: str, home: Path) -> list[tuple[Path, Path]]:
+  '''The links in the runtime's directories that point into this repository at a
+  source that is gone, each with the path it points at.
+
+  plan() visits only the repository's current items, so a link left by a renamed,
+  archived or removed skill, or one into a removed worktree, never reaches it.
+  '''
+  by_runtime = (
+    RUNTIME_DIRECTORIES if runtime == 'all' else {runtime: RUNTIME_DIRECTORIES[runtime]}
+  )
+  roots = repo_roots()
+  seen: set[Path] = set()
+  found: list[tuple[Path, Path]] = []
+  for relatives in by_runtime.values():
+    for relative in relatives:
+      directory = home / relative
+      if not directory.is_dir():
+        continue
+      for entry in sorted(directory.iterdir()):
+        location = physical_location(entry)  # two roots can be one directory
+        if location in seen or not entry.is_symlink():
+          continue
+        seen.add(location)
+        if entry.exists():
+          continue
+        try:
+          target = entry.resolve()
+        except (OSError, RuntimeError):  # a symlink loop is not a gone source
+          continue
+        if any(target.is_relative_to(root) for root in roots):
+          found.append((entry, target))
+  return found
+
+
+def check_links(runtime: str, home: Path) -> int:
+  found = dangling_links(runtime, home)
+  for link, target in found:
+    print(f'dangling {link} -> {target}')
+  if not found:
+    print('ok: no link into this repository is broken')
+    return 0
+  noun = 'link' if len(found) == 1 else 'links'
+  print(
+    f'install: {len(found)} dangling {noun} into this repository; '
+    'install never removes a link, so delete each stale one with rm',
+    file=sys.stderr,
+  )
+  return 1
+
+
 def git_env() -> dict[str, str]:
   # A hook or shell may export GIT_DIR, GIT_INDEX_FILE, and the like, which
   # would point git at another repository's index.
@@ -447,12 +531,25 @@ def main(argv: list[str] | None = None) -> int:
   )
   parser.add_argument('--dry-run', action='store_true', help='show actions without writing')
   parser.add_argument(
+    '--check',
+    action='store_true',
+    help='install nothing; list the links into this repository whose source is '
+    'gone and exit 1 if there are any (takes no other option)',
+  )
+  parser.add_argument(
     '--home',
     type=Path,
     default=Path.home(),
     help=argparse.SUPPRESS,
   )
   args = parser.parse_args(argv)
+  if args.check:
+    if (
+      args.skills or args.rules or args.no_rules or args.companions is not None
+      or args.copy or args.dry_run
+    ):
+      parser.error('--check installs nothing, so it takes no option besides the runtime')
+    return check_links(args.runtime, args.home.expanduser())
   selective = bool(args.skills or args.rules)
   companions = not selective if args.companions is None else args.companions
   try:
