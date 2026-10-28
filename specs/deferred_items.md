@@ -3516,6 +3516,10 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       → progress 2026-10-20 (owner ruling E3, `/cc-guide` upkeep): the 2026-10-20 files pass
       found (1) again, now at line 244, as a contradiction with `subagents.models`. Ruled: fix
       the file in the SDD restructure, micro-tested. (2) and (3) are not yet ruled.
+      → progress 2026-10-28 (superpowers drift review): prior art for (3). Upstream v7.0.1
+      (#2565) does not re-invoke the skill. It re-reads each step's reference from disk at
+      that step. Claude Code's truncation marker already tells the model to read the file, and
+      upstream's #2481 controller never did. See drift finding 17. (3) is still not ruled.
 - [x] writing-skills' Discovery Workflow (`skills/writing-skills/SKILL.md:690`) says
       future agents find a skill by grepping descriptions and browsing categories. Claude
       Code instead reads an always-loaded listing of each skill's name and description
@@ -3689,6 +3693,13 @@ contradiction, run `/cc-guide files <file>` so the file is cited.
       and `ACKNOWLEDGED_LATE`, and set the lint count back to seven. Size: plan.
       Done when: both bodies are at most 20,000 characters and the exception is removed with
       `build/check_conformance.py` passing.
+      → progress 2026-10-28 (superpowers drift review, branch claude/practical-hugle-86bb56):
+      upstream v7.0.1 (#2565) did the subagent-driven-development half for its own copy. It
+      moved seven situational parts into `references/`, each read from disk at the step that
+      needs it. Drift finding 17 (`specs/superpowers-drift-spec.md`) maps them onto our
+      sections. They move about 11,200 characters, but pointers bring the body back to about
+      20,400, so File Handoffs or Context Checkpoints must move too. Port the map and our own
+      text, not upstream's files, which differ from ours in five ways that finding 17 lists.
 - [x] Run the placement tests in a commit lint (plan 46 review): `apply_waivers`
       (`build/check_conformance.py`) waives per check and file, so exception
       `skill-body-past-compaction` also covers a critical heading that slips past the window
@@ -5492,6 +5503,12 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       subagents itself; that advice may be stale, since nesting is on by default and a
       subagent can spawn subagents up to three layers deep (sub-agents.md:1051), so verify it,
       then fix or drop it.
+      → progress 2026-10-28 (superpowers drift review): upstream v7.0.1 (#2564) split its own
+      writing-skills into `references/` (template and discovery, bulletproofing, flowcharts).
+      Drift finding 17 measures that map on ours: the body falls to about 17,000 characters
+      and about 400 lines. That clears the 500-line WARN and both late headings, so exception
+      `writing-skills-late-critical-headings` can go. It does not touch the guide gaps, the
+      tdd-for-docs deviation or the `@`-link claim.
 - [x] README line about uv (plan 53's completion gate, owner Q5, 2026-10-20): `README.md`'s
       Installation section never says that uv is needed, but 12 skills now run their bundled
       scripts with `uv run` and name uv in `compatibility` (R3.5, R3.6). Add one line under
