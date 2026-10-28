@@ -414,6 +414,7 @@ Points to read with this table:
 - S4 reps 1 and 3 list the merge after the ask, as the earlier rounds did. The ask comes first.
 - S9 and S10 state the isolation facts in their fixtures, so they never exercise the new Step 0 commands. Those were run by hand instead: in this worktree the git directory and the common directory differ, and in the main checkout they are equal.
 - No scenario tests the detached-HEAD changes (d), the normal-repo changes (b) and (c), or the declined approval (c of using-git-worktrees). The Limits section already lists the normal repo and the force request.
+- The prompts hold only the SKILL.md body, so no scenario exercises `references/pr-without-gh.md`, the recipe that moved out of the body.
 
 ## Cost
 

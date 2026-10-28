@@ -5549,8 +5549,10 @@ From the final review of plan 56 (the code-reviewer and Codex seats at `6043d59`
       `[[probe]]` entry in `build/cc_guide/manifest.toml`, a `Probe` in `probes.py`, an assess
       function in `probe_checks.py`, fixtures through `save_fixtures`, unit and replay tests,
       and a decision on what each probe asserts. Both docs are silent, so a PASS would encode
-      the observed behavior. Two scratch spikes answered the questions on Claude Code 2.1.304
-      (three `claude -p` runs, $0.13 in all, no registry rows). (a) A project agent named
+      the observed behavior. The plan's default: a PASS asserts what 2.1.304 showed, and a
+      DIVERGES row sends the cited sections to `/cc-guide verify`. Two scratch spikes answered
+      the questions on Claude Code 2.1.304 (three
+      `claude -p` runs, $0.13 in all, no registry rows). (a) A project agent named
       `Explore` loaded CLAUDE.md and did not get the git-status snapshot (one rep). A control
       agent with another name got both. So the override reads CLAUDE.md like a custom agent
       and skips git status like the built-in. The canary design was a CLAUDE.md line, an
