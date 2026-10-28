@@ -704,7 +704,7 @@ Run: `uv run python build/cc_guide/cli.py binaries`. Show the owner the list and
 - which binary to probe (`probes` has no default, by drift spec Decision 15);
 - whether to spend one live run, about $0.10–0.40, capped at $0.50 by `--max-budget-usd`.
 
-Say that a binary older than the newest cached changelog release is refused unless the owner approves `--allow-old`, which the row then records. Do not go on until the owner answers. Log the answer in this plan's `## Decisions` under the next free number, as `- **D<n>** (owner, execution, YYYY-MM-DD): …`. Plan review may already have used D1 and later numbers.
+Say that a binary older than the newest cached changelog release is refused unless the owner approves `--allow-old`, which the row then records. Do not go on until the owner answers. Log the answer in this plan's `## Decisions` under the next free number, as `- **D<n>** (owner, execution, YYYY-MM-DD): <the binary, and --allow-old or not>. Applied in: Task 4.` Plan review may already have used D1 and later numbers.
 
 - [ ] **Step 2: Register the probe in both places**
 
