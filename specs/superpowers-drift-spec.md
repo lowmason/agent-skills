@@ -222,10 +222,11 @@ upstream v7.0.1 (`2ce8aa1`, 2026-10-21). `NOTICE` names what was taken and each
 deliberate divergence. The behavior record is
 `specs/red-baseline-brainstorming-2026-10-28.md`.
 
-**Before plan 70,** our copy required every project, "a config change — all of
-them", to go through a design, a committed spec, a review and a fresh-session
-handoff. That contradicted the proportional-process rule in `/deferred` and the
-guide's `lean.ceremony` section. Conformance exception
+**Before plan 70,** our copy said that every project, however simple, goes
+through one process ("a config change — all of them"). That process needed a
+design, a committed spec, a review and a handoff to writing-plans. The handoff
+recommended a fresh session. That contradicted the proportional-process rule in
+`/deferred` and the guide's `lean.ceremony` section. Conformance exception
 `brainstorming-every-project` recorded the gap, and plan 70 removed it.
 
 **Upstream at v7.0.1.** v7.0.0 (#2463, `9e63918`) rebuilt the skill from scratch,
@@ -260,36 +261,44 @@ no figures, but its pull requests do (#2463, #2482). #2560 and #2571 published
 figures too, on different baselines.
 
 - **#2560** compared v7.0.0 with its branch. On v7.0.0, Opus offered to skip the
-  questions on 10 of 10 runs of the explicit and phased requests. On the branch,
-  Opus and Sonnet made that offer on 0 of 12 runs whose request asked for
-  brainstorming and on 12 of 12 runs whose request did not.
+  questions on 10 of 10 runs whose request asked for brainstorming. On the
+  branch, Opus and Sonnet made that offer on 0 of 12 such runs. They made it on
+  12 of 12 runs whose request did not ask for brainstorming.
 - **#2571** published figures from its Gallery scenario (24 runs over three
   variants: explicit, auto-triggered and a quiet persona). "Skipped a step
   without consent" fell from 24 of 24 runs to 3 of 24. "Design doc approved
   before building" rose from 1 of 24 to 23 of 24. These Gallery figures compare
   upstream `dev`, after #2560 merged, with the #2571 branch, not with v7.0.0.
-  Its final matrix held 176 blind-graded conversations over seven scenarios, on
-  Opus and Sonnet.
+  #2571's final matrix held 176 blind-graded conversations over seven scenarios,
+  on Opus and Sonnet.
 
-**Where the scenarios are.** #2560 points to
+**Where the #2560 and #2571 scenarios are.** #2560 points to
 `prime-radiant-inc/superpowers-evals#73` for its scenarios. #2571 points to
 `prime-radiant-inc/superpowers-evals#75` for its scenarios and its experiment
-log. Both pull requests were still open on 2026-10-28. The repository
-`prime-radiant-inc/superpowers-evals` has no license, so this repo cites its
-scenarios by name only.
+log. Both superpowers-evals pull requests were still open on 2026-10-28. The
+repository `prime-radiant-inc/superpowers-evals` has no license, so this repo
+cites its scenarios by name only.
 
 **What plan 70 took, and where it diverges.** Plan 70 took v7.0.1's text and
-order, and `builder-check-prompt.md` unchanged. `NOTICE` lists the divergences:
-our `Use when…` description, our software guidance, the `specs/` lifecycle with
-its fresh-session handoff and the `specs/deferred_items.md` check in Look Before
-You Ask, a small change designed and approved in chat and built in the same
-session, caller sizing with no skip offer for routed work, the split between
-open questions and options, spikes kept off the working branch, the
-visual-companion token-cost warning, the builder check's `model: opus` pin, the
-quick-task exit in the HARD-GATE, and the dropped spec self-review. It also
-records the Red Flags row that the pressure test added and the question wording
-that changed after the first GREEN round. Plan 70 ran its own RED baseline,
-pressure test, GREEN and trigger test, all newly written.
+order, and `builder-check-prompt.md` unchanged. `NOTICE` lists these
+divergences:
+
+- our `Use when…` description
+- the condensed software guidance carried from upstream v6.0.3
+- the `specs/` lifecycle with its fresh-session handoff and the
+  `specs/deferred_items.md` check in Look Before You Ask
+- a small change designed and approved in chat and built in the same session
+- caller sizing with no skip offer for routed work
+- the split between open questions and options
+- spikes kept off the working branch
+- the visual-companion token-cost warning
+- the builder check's `model: opus` pin
+- the quick-task exit in the HARD-GATE
+- the dropped spec self-review
+
+`NOTICE` also records the Red Flags row that the pressure test added and the
+question wording that changed after the first GREEN round. Plan 70 ran its own
+RED baseline, pressure test, GREEN and trigger test, all newly written.
 
 **The other v7.0.1 changes** are listed under New finding (v7.0.1).
 
