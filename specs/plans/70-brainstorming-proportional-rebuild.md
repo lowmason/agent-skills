@@ -10,7 +10,7 @@
 
 **Spec:** `specs/brainstorming-proportional-rebuild.md` (approved 2026-10-28).
 
-> **Execution base.** The spec and this plan exist only on the local, unpushed branch `claude/objective-booth-e14bb4`. An execution worktree must contain that branch: merge `refs/heads/claude/objective-booth-e14bb4` into it first, and confirm `specs/plans/70-brainstorming-proportional-rebuild.md` and `specs/brainstorming-proportional-rebuild.md` both exist. Never execute on `main`.
+> **Execution base.** The spec and this plan exist only on the local, unpushed branch `claude/objective-booth-e14bb4`, which also carries `main` at `ffc521d` (the v7.0.1 drift review, pushed to `origin/main` on 2026-10-28). An execution worktree, which usually branches from `origin/main`, must contain that branch: merge `refs/heads/claude/objective-booth-e14bb4` into it first, and confirm `specs/plans/70-brainstorming-proportional-rebuild.md` and `specs/brainstorming-proportional-rebuild.md` both exist, and that `specs/superpowers-drift-spec.md` has `### 17. Skill bodies run past the compaction re-attach cut`. Never execute on `main`.
 >
 > **Quarantine.** This plan holds the frozen conversations, the prompts and the pass rules. Quarantine it, with the record and its folder, during any later micro-test of brainstorming.
 
@@ -48,6 +48,7 @@ The owner approved the plan at review on 2026-10-28: "Plan 70 approved as writte
 - **D8** (owner, plan review, 2026-10-28): when the smoke rep shows a live skills listing, every rep in every arm adds `--disable-slash-commands`, and a listing that the flag does not clear stops the run for the owner. Applied in: Task 1 Step 4.
 - **D9** (owner, plan review, 2026-10-28): the micro-test spend stops for the owner before it passes $50. Applied in: Global Constraints.
 - **D10** (owner, plan review, 2026-10-28): the approved spec's upstream table, which merges #2571's Gallery figures with the 176-conversation total, stays as history. No amendment task. New text written by this plan uses the Gallery reading. Applied in: Global Constraints.
+- **D11** (owner, in the session "Re-baseline the drift spec to superpowers v7.0.1", relayed to this session, 2026-10-28): the spec's R9.2 (the row "`bb92a77`, with brainstorming at `2ce8aa1`") and R9.3 ("the other v7.0.1 changes stay unreviewed") assumed that no drift pass would land first. One did: the v7.0.1 drift review, merged into local `main` as `ffc521d`, reviews every other v7.0.1 change in finding 17. So this branch merges `ffc521d` (`7643f5c`), and Task 6 Step 3 sets the Next review row to `2ce8aa1` and points finding 4 at finding 17. The owner's words: "Yes: integrate this branch into main first, then send the plan 70 session the exact Task 6 Step 3 amendments." Applied in: Task 6 Step 3.
 
 ---
 
@@ -1207,25 +1208,27 @@ Set the Status line to `Complete: RED, pressure test, GREEN and trigger test.` C
 
   Then `uv run python build/check_provenance.py` passes.
 
-- [ ] **Step 3: The drift spec** (R9). Five exact replacements in `specs/superpowers-drift-spec.md`, each old text found once, with `<YYYY-MM-DD>` and `<run-date>` filled in:
+- [ ] **Step 3: The drift spec** (R9, as D11 amends it). Five exact replacements in `specs/superpowers-drift-spec.md`, each old text found once, with `<YYYY-MM-DD>` and `<run-date>` filled in. The line numbers are those before any edit, in the file as merged from local `main` at `ffc521d`:
 
-  1. The revision note (lines 7-8). Old:
+  1. The revision note (lines 7-10). Old:
 
 ```text
-a dated copy. This revision (2026-10-18) brings it to upstream v7.0.0 and
-re-takes every line anchor against the current tree. The 2026-10-03 revision
+a dated copy. This revision (2026-10-28) brings it to upstream v7.0.1 for
+every skill except brainstorming. Finding 4 (brainstorming) belongs to the
+brainstorming rebuild spec, `specs/brainstorming-proportional-rebuild.md`.
+The owner approved that spec, and it is not yet merged. This revision re-takes the line anchors
 ```
 
   New:
 
 ```text
-a dated copy. This revision (2026-10-18) brings it to upstream v7.0.0 and
-re-takes every line anchor against the current tree. Plan 70 (<YYYY-MM-DD>)
-re-baselined finding 4 alone to v7.0.1 (`2ce8aa1`) when it adopted that finding.
-The 2026-10-03 revision
+a dated copy. This revision (2026-10-28) brings it to upstream v7.0.1 for
+every skill except brainstorming. Plan 70 (<YYYY-MM-DD>) re-baselined finding 4
+(brainstorming) to v7.0.1 (`2ce8aa1`) when it adopted that finding. The
+2026-10-28 revision re-takes the line anchors
 ```
 
-  2. The Adoption baselines row (line 22). Old:
+  2. The Adoption baselines row (line 28). Old:
 
 ```text
 | Adoption baselines | `b36e082` (v6.3.0) for the four pieces plan 22 (SDD hardening) adopted: findings 1, 2, 5, 6. `8ca22db` (v6.4.2) for the two pieces plan 40 (handoff briefs) adopted: finding 8's `Spec:` pointer and finding 11's handoff half |
@@ -1237,19 +1240,19 @@ The 2026-10-03 revision
 | Adoption baselines | `b36e082` (v6.3.0) for the four pieces plan 22 (SDD hardening) adopted: findings 1, 2, 5, 6. `8ca22db` (v6.4.2) for the two pieces plan 40 (handoff briefs) adopted: finding 8's `Spec:` pointer and finding 11's handoff half. `2ce8aa1` (v7.0.1) for finding 4, which plan 70 adopted |
 ```
 
-  3. The Next review row (line 28, R9.2). Old:
+  3. The Next review row (line 34; R9.2, as D11 amends it). Old:
 
 ```text
-| Next review starts from | `bb92a77` |
+| Next review starts from | `2ce8aa1` for every skill except brainstorming. Brainstorming starts from `bb92a77` until the brainstorming rebuild plan re-baselines finding 4 at `2ce8aa1` |
 ```
 
   New:
 
 ```text
-| Next review starts from | `bb92a77`, with brainstorming at `2ce8aa1` (v7.0.1). The rest of v7.0.1 is unreviewed (finding 4) |
+| Next review starts from | `2ce8aa1` |
 ```
 
-  4. Status row 4 (line 63). Old:
+  4. Status row 4 (line 70). Old:
 
 ```text
 | 4 | Brainstorming ceremony does not scale | Open; upstream rebuilt the skill (v7.0.0) and loosened its gate, so the finding is rewritten |
@@ -1261,7 +1264,7 @@ The 2026-10-03 revision
 | 4 | Brainstorming ceremony does not scale | **Adopted** — plan 70, rebased on v7.0.1 (`2ce8aa1`) |
 ```
 
-  5. The disposition bullet (lines 782-787). Old:
+  5. The disposition bullet (lines 1067-1072). Old:
 
 ```text
 - **Spec candidate, brainstorming:** finding 4, now against v7.0.0 rather than
@@ -1280,7 +1283,7 @@ The 2026-10-03 revision
   `specs/red-baseline-brainstorming-<run-date>.md`.
 ```
 
-  Then replace all of finding 4, from its heading `### 4. Brainstorming ceremony does not scale — open; upstream rebuilt the skill` up to the blank line before `### 5. Every task gets its own dispatch — adopted`, with the block between the `finding4:begin` and `finding4:end` markers below. Run, with both dates filled in:
+  Then replace all of finding 4, from its heading `### 4. Brainstorming ceremony does not scale — open; upstream rebuilt the skill` (line 219) up to the blank line before `### 5. Every task gets its own dispatch — adopted` (line 322), with the block between the `finding4:begin` and `finding4:end` markers below. Run, with both dates filled in:
 
 ```bash
 uv run python -c "import pathlib, sys; plan = pathlib.Path('specs/plans/70-brainstorming-proportional-rebuild.md').read_text(); new = plan.split('<!-- finding4:begin -->\n\`\`\`\`markdown\n', 1)[1].split('\n\`\`\`\`\n<!-- finding4:end -->', 1)[0].replace('<YYYY-MM-DD>', sys.argv[1]).replace('<run-date>', sys.argv[2]); f = pathlib.Path('specs/superpowers-drift-spec.md'); t = f.read_text(); a = t.index('### 4. Brainstorming ceremony does not scale'); b = t.index('### 5. Every task gets its own dispatch'); assert t.count('### 4. Brainstorming ceremony') == 1; f.write_text(t[:a] + new + '\n\n' + t[b:])" <YYYY-MM-DD> <run-date>
@@ -1345,10 +1348,7 @@ builder check's `model: opus` pin, the quick-task exit in the HARD-GATE, and the
 dropped spec self-review. Plan 70 ran its own RED baseline, pressure test, GREEN
 and trigger test, all newly written.
 
-**Not reviewed here.** The other v7.0.1 changes stay unreviewed: the
-`references/` moves in subagent-driven-development and writing-skills, the
-executing-plans trim, and upstream's skill-size test. The next drift pass takes
-them.
+**The other v7.0.1 changes** are reviewed in finding 17.
 ````
 <!-- finding4:end -->
 
