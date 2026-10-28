@@ -17,6 +17,8 @@ Each arm runs the seven prompts below, 5 reps each, so 35 reps per arm.
 
 Two channels still reach every rep in both arms. Three user-level SessionStart hooks run, and two of them add output-style context (the "learning" and "explanatory" styles). The user's global `CLAUDE.md` and rules also load. This context is the same in both arms and names none of the five listed skills. So it does not change the contrast between the arms.
 
+Each init record also carries a `skills` array with 110 names. That array is session metadata, not prompt text, and it does not mean that a listing reached the model. The whole prompt of a rep held 5,835 tokens at the median (5,775 at the least), and the largest cache write was 5,887 tokens. The 110 descriptions alone would be larger: this repo's 37 descriptions total 21,505 characters (the 2026-10-18 count in `specs/deferred_items.md`). The raw records are in the kit's `raw/` folder.
+
 **Probe drift check.** The plan checked that the four probe descriptions at HEAD still equal those at the base commit:
 
 ```

@@ -47,15 +47,17 @@ Each variant folder holds one `scores.json`:
 - `criterion`: a free string that names the score and the protocol, for example `cv-mse`,
   `cv-logloss`, `lfo-elpd-h1` or `backtest-crps-h3`. Every variant in a ledger writes the
   same string, and it matches the ledger's `Criterion:` line.
-  Do not name a score criterion `elpd-loo`. That name is reserved for ELPD mode, and a
-  ledger that declares it, or declares no criterion, always runs in ELPD mode.
+  Do not name a score criterion `elpd-loo`. That name is reserved for ELPD mode, and the
+  comparator refuses a `scores.json` that uses it.
+  A ledger that declares `elpd-loo`, or declares no criterion, always runs in ELPD mode.
 - `orientation`: `higher` or `lower`, whichever is better for this score.
 - `units`: a map from each fold id or forecast origin to one finite number. Every variant
   uses the same keys.
 
 The comparator refuses a variant folder with no `scores.json`, a criterion that differs
 from the ledger's or from another variant's, mixed orientations, unit keys that differ
-across variants, a non-finite value, and fewer than two units.
+across variants, a non-finite or non-numeric value, a value above 1e300 in magnitude, and
+fewer than two units. It also refuses two `--folders` paths with one folder name.
 
 ## Writing `scores.json`
 

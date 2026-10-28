@@ -6233,7 +6233,7 @@ Codex run) left unfixed, triaged defer. Both plan-mandated findings the owner ch
       `'one pair of markers'` assert: rebuild it on two `scores.json` variants plus a score ledger.
       In `skills/track-model-experiments/scripts/compare_experiments.py` and its test file. Size:
       quick-fix. Revisit if: `update_ledger` gains a caller outside `main()`, or a ledger loses prose.
-- [ ] Comparator robustness (plan 65 Task 2 and final reviews). (a) A huge JSON integer or a
+- [x] Comparator robustness (plan 65 Task 2 and final reviews). (a) A huge JSON integer or a
       near-1e308 float makes `math.isfinite` or `statistics.fmean` raise `OverflowError`, which skips
       the `ValueError` handling in `load_scores` and `compare_scores` and prints a traceback instead of
       `error:`. (b) Two `--folders` paths with the same basename overwrite each other in the dict, as
@@ -6242,7 +6242,15 @@ Codex run) left unfixed, triaged defer. Both plan-mandated findings the owner ch
       criterion, a bad orientation, `units` that is not an object, string or bool values (one
       parametrized test covers them). Size: quick-fix. Done when: (a) and (b) fail through `error:`,
       or are dropped on purpose, and (d) has a test.
-- [ ] Comparator contract gaps (plan 65 Task 2 and final reviews). (a) A `scores.json` that declares
+      → done 2026-10-28 (/deferred quick fix): (a) `load_scores` now refuses a score above
+      `MAX_SCORE` (1e300) in magnitude, which covers the 400-digit integer and the near-1e308
+      float and keeps sums and paired differences finite. It fails through `error:`. (b)
+      `check_distinct_names` refuses two `--folders` paths with one name in both modes. (c)
+      dropped on purpose: a temp file and rename would swap a symlinked ledger for a plain file
+      and reset its mode, and a crash during the write leaves a ledger that git restores. (d)
+      ten parametrized cases in `test_compare_experiments.py`. Every new test that targets a fix
+      failed before the edit.
+- [x] Comparator contract gaps (plan 65 Task 2 and final reviews). (a) A `scores.json` that declares
       `criterion: elpd-loo` can never match a score ledger, because a ledger that declares `elpd-loo`
       forces ELPD mode. `predictive-evaluation.md` now says so in one sentence. Decide whether
       `load_scores` should refuse the name. (b) `comparison.json` carries `mode` and `criterion` but
@@ -6250,7 +6258,14 @@ Codex run) left unfixed, triaged defer. Both plan-mandated findings the owner ch
       does not say that the `Criterion:` line must sit above the Variants table, so a user who put it
       below sees "reads as elpd-loo". Size: quick-fix. Done when: each of (a) to (c) is fixed or
       dropped on purpose.
-- [ ] Track doc polish (plan 65 reviews). (a) `skills/track-model-experiments/SKILL.md`'s When-to-use
+      → done 2026-10-28 (/deferred quick fix): (a) fixed: `load_scores` refuses the criterion
+      `elpd-loo` and names `lfo-elpd` and `cv-logloss` as usable names, so the error comes from
+      the `scores.json` and not from a ledger mismatch two edits later. (b) fixed:
+      `comparison.json` carries `orientation` (`higher` for every ELPD run). (c) fixed: when a
+      ledger reads as `elpd-loo`, `mode_problem` says that a `Criterion:` line counts only above
+      the Variants table and outside the COMPARISON block. `SKILL.md` and
+      `references/predictive-evaluation.md` record all three.
+- [x] Track doc polish (plan 65 reviews). (a) `skills/track-model-experiments/SKILL.md`'s When-to-use
       re-declare step does not say to swap the ELPD columns for `score`, `Δscore` and `SE(Δ)`, so stale
       ELPD cells stay and only a stderr note warns. (b) Two sections still assume ELPD and
       bayesian-workflow: "Each variant wraps a full `bayesian-workflow` … loop" and selection-induced
@@ -6262,6 +6277,16 @@ Codex run) left unfixed, triaged defer. Both plan-mandated findings the owner ch
       it on purpose, and the ELPD prompt T3 still routed 5/5); restore it if a routing miss shows.
       Size: quick-fix. Done when: (a) to (d) are edited, and (e) is either restored or dropped on
       purpose.
+      → done 2026-10-28 (/deferred quick fix): (a) to (d) edited. (a) the re-declare step in
+      `SKILL.md` now says to swap the ELPD columns for `score`, `Δscore` and `SE(Δ)`. (b) the
+      fresh-session section and the selection-bias paragraph cover score ledgers. (c) the
+      `elpd-loo` sentence in `predictive-evaluation.md` is split in two. (d) the V1 record says
+      that the `skills` array is metadata: 110 names, against a median prompt of 5,835 tokens
+      (largest cache write 5,887). (e) dropped on purpose: no routing miss has shown since the
+      description changed, T3 routed 5 of 5, and the description still names ELPD/LOO ranking,
+      experiment ledgers and "which model fits best". A restored trigger would need a new
+      routing micro-test. Revisit if a prompt about comparing NumPyro or ArviZ model versions
+      misses the skill.
 - [ ] bayesian-workflow model-comparison polish (plan 65 reviews). (a) The sentence "It cannot mix
       model classes" in the "Ranking the variants" paragraph can read as "`az.compare` cannot compare
       an AR(1) with an AR(2)", which is false. The intent is a Bayesian variant against one with no

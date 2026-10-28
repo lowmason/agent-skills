@@ -39,12 +39,28 @@ BLOCK_END = '<!-- COMPARISON:END -->'
 MODES = ('elpd', 'score')
 # A ledger without a Criterion: line reads as this, so ELPD ledgers need none.
 ELPD_CRITERION = 'elpd-loo'
+# A larger ELPD is better, so an ELPD ledger's orientation is fixed.
+ELPD_ORIENTATION = 'higher'
 SCORE_FILE = 'scores.json'
 ORIENTATIONS = ('higher', 'lower')
 # The paired difference needs a spread, so a variant needs two units at least.
 MIN_UNITS = 2
+# A unit score may not exceed this in magnitude. It sits far below the float limit
+# (about 1.8e308), so sums and paired differences of the scores stay finite.
+MAX_SCORE = 1e300
 # The sample dimensions of a log-likelihood variable; every other dimension is an observation.
 SAMPLE_DIMS = ('chain', 'draw')
+
+
+def check_distinct_names(variants: list[Path]) -> None:
+    '''Refuse two variant folders with one name: ids come from folder names.'''
+    names = [f.name for f in variants]
+    repeated = sorted({n for n in names if names.count(n) > 1})
+    if repeated:
+        raise ValueError(
+            f'--folders holds two paths with the same name ({", ".join(map(repr, repeated))}); '
+            'a variant is identified by its folder name, so the later one would replace the '
+            'earlier. Rename one folder.')
 
 
 def discover_variants(analysis_dir: Path) -> list[Path]:
@@ -398,10 +414,13 @@ def mode_problem(mode: str, criterion: str, ledger_path: Path) -> str | None:
     wanted = 'elpd' if criterion == ELPD_CRITERION else 'score'
     if mode == wanted:
         return None
+    where = (' A Criterion: line counts only above the Variants table and outside the '
+             'COMPARISON block; one placed elsewhere is ignored.'
+             if criterion == ELPD_CRITERION else '')
     return (f'{ledger_path} reads as Criterion: {criterion} (a ledger without a '
             f'Criterion: line reads as {ELPD_CRITERION}), which --mode {mode} cannot '
             f'rank. Run --mode {wanted}, or re-declare the ledger\'s criterion: a '
-            'ledger holds one criterion.')
+            f'ledger holds one criterion.{where}')
 
 
 def _wide_row_note(cells: list[str], width: int, top_id: str) -> str:
@@ -485,6 +504,7 @@ def update_ledger(ledger_path: Path, block: str, ranking: list[dict],
 
 def compare(analysis_dir: Path, folders: list[Path] | None):
     variants = folders or discover_variants(analysis_dir)
+    check_distinct_names(variants)
     missing = [f.name for f in variants if not (f / 'inference_data.nc').is_file()]
     if missing:
         raise ValueError(
@@ -544,12 +564,19 @@ def load_scores(folder: Path) -> dict:
     if not isinstance(units, dict):
         raise ValueError(f'{name}/{SCORE_FILE} has no units object; map each fold or '
                          'forecast origin to its score.')
+    if criterion.strip() == ELPD_CRITERION:
+        raise ValueError(f'{name}/{SCORE_FILE} names its criterion {ELPD_CRITERION!r}, which '
+                         'is reserved for ELPD mode. Name the score and its protocol instead, '
+                         'for example lfo-elpd or cv-logloss.')
+    # abs() <= MAX_SCORE also rejects NaN and infinity, and compares a huge integer
+    # exactly where math.isfinite would raise OverflowError.
     bad = sorted(str(k) for k, v in units.items()
                  if isinstance(v, bool) or not isinstance(v, int | float)
-                 or not math.isfinite(v))
+                 or not abs(v) <= MAX_SCORE)
     if bad:
-        raise ValueError(f'variant {name!r} has a non-finite or non-numeric score for '
-                         f'units {", ".join(bad)}; every unit needs one finite number. '
+        raise ValueError(f'variant {name!r} has a non-finite, out-of-range or non-numeric '
+                         f'score for units {", ".join(bad)}; every unit needs one finite '
+                         f'number no larger than {MAX_SCORE:g} in magnitude. '
                          'Fix or rerun those units.')
     if len(units) < MIN_UNITS:
         raise ValueError(f'variant {name!r} has {len(units)} unit(s); the paired '
@@ -569,6 +596,7 @@ def compare_scores(analysis_dir: Path, folders: list[Path] | None,
     of the number of units.
     '''
     variants = folders or discover_score_variants(analysis_dir)
+    check_distinct_names(variants)
     scores = {f.name: load_scores(f) for f in variants}
     if len(scores) < 2:
         raise ValueError('need at least two variants to compare '
@@ -654,6 +682,7 @@ def main(argv=None):
             print(render_score_table(ranking, criterion, orientation))
         else:
             ranking, comparison = compare(args.analysis_dir, args.folders)
+            orientation = ELPD_ORIENTATION
             print(comparison.to_string())
     except ValueError as exc:
         print(f'error: {exc}', file=sys.stderr)
@@ -669,8 +698,8 @@ def main(argv=None):
         not_compared = [i for i in ids or [] if i not in ranked]
         if not_compared:
             print(_not_compared_note(not_compared, args.mode), file=sys.stderr)
-    payload = {'mode': args.mode, 'criterion': criterion, 'ranking': ranking,
-               'not_compared': not_compared}
+    payload = {'mode': args.mode, 'criterion': criterion, 'orientation': orientation,
+               'ranking': ranking, 'not_compared': not_compared}
     if args.output:
         args.output.write_text(json.dumps(payload, indent=2))
     if args.ledger:

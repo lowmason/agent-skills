@@ -896,3 +896,114 @@ def test_a_wide_top_row_that_holds_a_marker_gets_one_consistent_note(tmp_path, c
             'cells were not updated.') in err
     assert 'the ledger can show two' not in err
     assert 'no row carries the best marker' not in err
+
+
+# --- Score mode: load_scores refusals and the comparator's contract edges (deferred items:
+# comparator robustness and contract gaps, plan 65 reviews) ---
+
+def _write_scores_text(folder, text):
+    folder.mkdir(parents=True, exist_ok=True)
+    (folder / 'scores.json').write_text(text)
+    return folder
+
+
+def _scores_json(**changes):
+    body = {'criterion': 'cv-mse', 'orientation': 'lower', 'units': dict(A_UNITS)}
+    body.update(changes)
+    return json.dumps(body)
+
+
+@pytest.mark.parametrize(('text', 'expected'), [
+    ('{not json', 'is not valid JSON'),
+    ('[1, 2, 3]', 'must hold a JSON object'),
+    (_scores_json(criterion=None), 'no criterion string'),
+    (_scores_json(criterion='  '), 'no criterion string'),
+    (_scores_json(orientation='best'), "orientation 'best'"),
+    (_scores_json(orientation=None), 'orientation None'),
+    (_scores_json(units=[1.0, 2.0]), 'no units object'),
+    (_scores_json(units='fold-1'), 'no units object'),
+    (_scores_json(units={**A_UNITS, 'fold-2': 'low'}), 'non-numeric'),
+    (_scores_json(units={**A_UNITS, 'fold-2': True}), 'non-numeric'),
+], ids=['invalid-json', 'not-an-object', 'no-criterion', 'blank-criterion', 'bad-orientation',
+        'no-orientation', 'units-list', 'units-string', 'string-value', 'bool-value'])
+def test_a_malformed_scores_file_is_refused_through_error(tmp_path, capsys, text, expected):
+    _scores(tmp_path / 'a', B_UNITS)
+    _write_scores_text(tmp_path / 'b', text)
+    err = _score_refusal(tmp_path, capsys)
+    assert 'b' in err and expected in err
+
+
+@pytest.mark.parametrize('value_text', ['1' + '0' * 400, '1.7e308', '-1.7e308', '1e301'])
+def test_a_score_too_large_for_float_arithmetic_is_refused_through_error(
+        tmp_path, capsys, value_text):
+    # A 400-digit integer makes math.isfinite raise OverflowError, and scores near 1e308
+    # make statistics.fmean raise it or a paired difference reach infinity. All of them
+    # must reach the user as error:, never a traceback or a cryptic message.
+    _scores(tmp_path / 'a', B_UNITS)
+    units = ', '.join(f'"fold-{k}": {B_UNITS[f"fold-{k}"]}' for k in (1, 2, 3))
+    _write_scores_text(
+        tmp_path / 'b',
+        '{"criterion": "cv-mse", "orientation": "lower", '
+        f'"units": {{{units}, "fold-4": {value_text}}}}}')
+    err = _score_refusal(tmp_path, capsys)
+    assert "variant 'b'" in err and 'fold-4' in err and 'non-finite' in err
+
+
+def test_two_large_but_allowed_scores_still_rank(tmp_path):
+    _scores(tmp_path / 'a', {'fold-1': 1e299, 'fold-2': 1e299})
+    _scores(tmp_path / 'b', {'fold-1': -1e299, 'fold-2': 1e299})
+    ranking, _, _ = compare_experiments.compare_scores(tmp_path, None)
+    assert [r['id'] for r in ranking] == ['b', 'a']
+
+
+def test_the_elpd_loo_name_is_refused_in_a_scores_file(tmp_path, capsys):
+    _scores(tmp_path / 'a', A_UNITS, criterion='elpd-loo', orientation='higher')
+    _scores(tmp_path / 'b', B_UNITS, criterion='elpd-loo', orientation='higher')
+    err = _score_refusal(tmp_path, capsys)
+    assert "'elpd-loo'" in err and 'reserved' in err and 'ELPD mode' in err
+    assert 'lfo-elpd' in err      # the error names a usable criterion
+
+
+@pytest.mark.parametrize('mode', ['score', 'elpd'])
+def test_two_folders_paths_with_one_name_are_refused_through_error(tmp_path, capsys, mode):
+    _scores(tmp_path / 'one' / 'ridge', A_UNITS)
+    _scores(tmp_path / 'two' / 'ridge', B_UNITS)
+    code = compare_experiments.main([
+        '--analysis-dir', str(tmp_path), '--mode', mode, '--folders',
+        str(tmp_path / 'one' / 'ridge'), str(tmp_path / 'two' / 'ridge')])
+    err = capsys.readouterr().err
+    assert code == 1 and err.startswith('error: ') and 'Traceback' not in err
+    assert "'ridge'" in err and 'same name' in err
+
+
+def test_score_comparison_json_carries_the_orientation(tmp_path, capsys):
+    runs = tmp_path / 'runs'
+    _scores(runs / 'a', A_UNITS, 'lfo-elpd', 'higher')
+    _scores(runs / 'b', B_UNITS, 'lfo-elpd', 'higher')
+    out = tmp_path / 'comparison.json'
+    code = compare_experiments.main(['--analysis-dir', str(runs), '--mode', 'score',
+                                     '--output', str(out)])
+    assert code == 0, capsys.readouterr().err
+    payload = json.loads(out.read_text())
+    assert (payload['mode'], payload['criterion'], payload['orientation']) == (
+        'score', 'lfo-elpd', 'higher')
+
+
+def test_elpd_comparison_json_carries_the_orientation(analysis_dir, tmp_path):
+    out = tmp_path / 'comparison.json'
+    r = _run('--analysis-dir', str(analysis_dir), '--output', str(out))
+    assert r.returncode == 0, r.stderr
+    assert json.loads(out.read_text())['orientation'] == 'higher'
+
+
+def test_a_criterion_line_below_the_variants_table_is_explained(tmp_path, capsys):
+    below = SCORE_LEDGER.replace('Criterion: cv-mse\n', '').replace(
+        '- Criterion: elpd-loo here is prose and never sets the mode.', 'Criterion: cv-mse')
+    runs = tmp_path / 'runs'
+    _scores(runs / 'a', A_UNITS)
+    _scores(runs / 'b', B_UNITS)
+    ledger = _score_ledger(tmp_path, below)
+    err = _score_refusal(runs, capsys, '--ledger', str(ledger))
+    assert 'reads as Criterion: elpd-loo' in err
+    assert 'above the Variants table' in err
+    assert 'outside the COMPARISON block' in err

@@ -65,10 +65,12 @@ back into the ledger). The comparator has two modes, and a ledger uses one:
   `scores.json` on the ledger's criterion. A non-Bayesian winner has no
   `inference_data.nc`, so it ranks only in a score ledger. To compare it with
   the variants of an existing `elpd-loo` ledger, first re-declare that
-  ledger's criterion as a score criterion. Each Bayesian variant then writes
-  `scores.json` on the same units, for example a per-fold log score or the MSE
-  of the posterior-predictive mean. Until that is done, the comparator names
-  the new row as not compared.
+  ledger's criterion as a score criterion and swap its ELPD metric columns
+  for `score`, `Δscore` and `SE(Δ)`. The comparator writes only the columns
+  under those names, so ELPD cells left in the table stay stale. Each Bayesian
+  variant then writes `scores.json` on the same units, for example a per-fold
+  log score or the MSE of the posterior-predictive mean. Until that is done,
+  the comparator names the new row as not compared.
 
 Not for:
 - **A single model, no iteration** — follow `bayesian-workflow` alone;
@@ -166,10 +168,13 @@ does not install transitively with `arviz`.
 
 Run `--help` for the rest (`--folders` compares an explicit subset instead of
 auto-discovering every `*/inference_data.nc`, or every `*/scores.json` in
-score mode, under `--analysis-dir`). `comparison.json` records the `mode` and
-the `criterion` beside the ranking.
+score mode, under `--analysis-dir`). `comparison.json` records the `mode`, the
+`criterion` and the `orientation` (`higher` or `lower` is better) beside the
+ranking. An ELPD run always reads `higher`.
 
 Guardrails in both modes, before any ranking and before anything is written:
+- **Two `--folders` paths with one folder name** → refused. A variant's id is
+  its folder name, so the later path would replace the earlier.
 - **A `--ledger` path that is not a file**, or a ledger whose COMPARISON
   markers are unpaired, repeated or out of order → refused. The comparator
   rewrites the text from one BEGIN marker to the next END marker, so a stray
@@ -194,11 +199,13 @@ ELPD-mode guardrails:
 
 Score-mode guardrails, each through `error:` with the variant and the fix:
 - a folder with no `scores.json` (named in `--folders`);
-- a `criterion` that differs from the ledger's or from another variant's;
+- a `criterion` that differs from the ledger's or from another variant's, or
+  that is `elpd-loo`, the name reserved for ELPD mode;
 - an `orientation` that differs across variants;
 - unit keys that differ across variants (the paired difference compares the
   same folds or origins);
-- a non-finite value, or fewer than two units.
+- a non-finite or non-numeric value, one above 1e300 in magnitude, or fewer
+  than two units.
 
 After ranking:
 - **High Pareto-k / other `az.compare` diagnostic warnings** (ELPD mode) →
@@ -216,8 +223,9 @@ After ranking:
 
 ## Fresh session per variant
 
-Each variant wraps a full `bayesian-workflow` fit/diagnose/report loop — long,
-and it accumulates in your session. Once a variant's row is stamped by the
+Each variant wraps a full fit, diagnose and report loop — a Bayesian
+variant's `bayesian-workflow` loop, or a score variant's cross-validation or
+backtest run. It is long, and it accumulates in your session. Once a variant's row is stamped by the
 comparator and its decision-log entry written, the ledger holds everything the
 next variant needs: what every prior variant changed, why, and how it scored.
 Carrying the prior variant's fitting conversation forward re-reads that history
@@ -247,9 +255,10 @@ Stop iterating — don't keep chasing the criterion — when any of these holds:
   doesn't change across passing models, which one is "best" matters less.
 
 A long ledger flatters its winner: picking the best of many variants by ELPD
-carries a selection-induced bias (McLatchie & Vehtari 2024). With a few
-variants it is usually negligible; with many, estimate it (nested CV, or
-their order-statistics correction) before claiming the winner beats a close
+carries a selection-induced bias (McLatchie & Vehtari 2024), and picking by a
+cross-validated score is optimistic in the same way. With a few variants it is
+usually negligible; with many, estimate it (nested CV, or for ELPD their
+order-statistics correction) before claiming the winner beats a close
 runner-up.
 
 For the interpretation rule itself (|ΔELPD| < 4, the conditions on dSE, when to
