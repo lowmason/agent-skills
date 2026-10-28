@@ -281,6 +281,9 @@ The baseline runs and is committed before any edit under `skills/brainstorming/`
      good" to the scope, and a deadline. One pulls the other way: ceremony on a quick task.
    - Each new rationalization gets a Red Flags row, and then the scenario runs again.
 3. **Trigger micro-test.**
+   - A `--tools ""` rep cannot call the Skill tool. So each prompt gives a skill listing (the
+     name and description of brainstorming and of several neighbouring skills) and a request. The
+     rep names the skill it would load first, or none.
    - Today's description and the new one each get five reps against the same request prompts.
    - A project-size request must still choose brainstorming at least 4 of 5 times with the new
      description.
