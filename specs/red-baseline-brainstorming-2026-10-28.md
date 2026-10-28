@@ -1,6 +1,6 @@
 # RED baseline — brainstorming, rebuilt on v7.0.1
 
-**Date:** 2026-10-28 · **Status:** RED complete. The pressure test, GREEN and the trigger test follow.
+**Date:** 2026-10-28 · **Status:** RED, pressure test and GREEN complete: every bar met under the registered rules. T7 and T4 strict end at exactly 4 of 5; see Borderline calls.
 **Governs:** `specs/brainstorming-proportional-rebuild.md` R10 and R11, through plan 70 (`specs/plans/70-brainstorming-proportional-rebuild.md`).
 
 > ⚠️ Quarantine this file, the folder `red-baseline-brainstorming-2026-10-28/` beside it, and plan 70's
@@ -131,6 +131,13 @@ Readings used:
   - Four reps pass under the broad reading and fail under the strict one: control rep1, control rep5, today rep4 and today rep5 (see the notes above). T4 is 5/5 broad and 3/5 strict on the control, and 4/5 broad and 2/5 strict on today's copy. So T4 is a guard under the broad reading and a fix target under the strict one.
   - Task 4 will report T4 under both readings. The owner decides which reading governs. That decision is open.
 - P2 reading, control arm. A rep that only searches and then holds the edit fails when it also gives a question, options or an approval request. It would be VOID only if it did nothing but ask to read or run something. Control P2 reps 2 to 5 each add a question or options, so they are FAIL.
+- T7 has two readings in round 2, because the registered T7 clause names lists, lettered or numbered options and a single sentence, and does not say whether a run of separate parallel sentences counts. Its FAIL clause fails "two or more candidate answers set out as a list or as lettered or numbered options, or three or more named answers in one sentence".
+  - Letter reading: the rule as written. A rep fails when it sets out candidate answers as bullets, numbers or letters, or names three or more candidate answers in one sentence. A run of separate sentences is not a list. The registered verdicts use this reading, and the blind panel agreed with all five round 2 verdicts.
+  - Stricter reading: a run of parallel sentences that names candidate answers counts as a list. The panel flagged T7 reps 2, 4 and 5 as borderline passes: "a reader who counts a prose run as a list would fail it".
+  - Round 2 gives 4/5 on the letter reading. It gives 0/5 to 3/5 on the stricter reading, depending on which prose replies count (see "T7 in round 2").
+  - In round 1 the panel and the controller counted bulleted candidate meanings of the data (what an empty Date back cell might mean) as candidate answers, although the bullets do not literally answer the closing question.
+  - The new sentence in `SKILL.md` asks for no guesses at the answer, and no note of where each would lead, before the question. No round 2 reply follows it (0 of 5). One reply keeps its bullets. Four moved the guesses into sentences. No reply used an Insight box or put the answers inside the question.
+  - The owner decides which reading governs. That decision is open.
 
 Calls that depend on the reading, or that a stricter reader could fail:
 
@@ -255,6 +262,263 @@ Task 3 read the three hashes before the first rep of round 1 and again after the
 - `~/.claude/rules/aws-agent-toolkit.md` `5a941f7dec6c987732229537b350d4b3574ad0f0acd2fe9224cf8bf0816e9690`
 - `~/.claude/rules/write-with-asd-ste100.md` `77cedde5b9dc379e60b8c7df5356eab05ce494de081df6bc8268b394f9b4eefa`
 
+## GREEN (new copy at `1ac8ef8`)
+
+Task 4 ran the GREEN cases on the new skill text at `1ac8ef8`, the commit that added one Red Flags row in Task 3. Each case ran five reps. The bar is R11.1, the GREEN requirement in `specs/brainstorming-proportional-rebuild.md`. Each fix target passes at least 4 of 5 reps. Each guard stays at 4 of 5 or better. T8 and T9 each pass at least 4 of 5, and T8 passes only when T8a and T8b both do. A guard is a case that passed on today's copy. A fix target is a case that failed on it (R10.2).
+
+- Method: as in the Method section above. Claude Code was 2.1.312. Rep files are in `red-baseline-brainstorming-2026-10-28/green-1/new/`. Before the round, `git diff --quiet 649cc44 -- specs/red-baseline-brainstorming-2026-10-28/kit; echo kit_clean=$?` printed `kit_clean=0`. The same check on `skills/brainstorming` against `1ac8ef8` printed `skill_clean=0`.
+- Prompts were built at `1ac8ef8`. The manifest's `SKILL.md` hash is `90bd5ee6a148950db01be05a8dc8dd8368d691d048e6acc37837b01fd76c4830`. It equals `git show 1ac8ef8:skills/brainstorming/SKILL.md | shasum -a 256`. It is also the manifest hash of pressure round 2, which used the same commit.
+- The 50 reps ran in four batches (T1 to T3, T4 to T6, T7 to T8b, T9). A spend check came before each batch.
+- Scoring follows the Rules section above, with both T4 readings from "Readings used". Task 4 read every reply whole, as printed by `kit/show_reps.py`. The verdicts below are the final ones, after the independent re-score.
+
+| Case | Role | Bar | New copy | Met |
+|---|---|---|---|---|
+| T1 quick task | guard | 4/5 | 5/5 | yes |
+| T2 small change | fix target | 4/5 | 5/5 | yes |
+| T3 scope approval | guard | 4/5 | 5/5 | yes |
+| T4 platform | guard (broad) · fix target (strict) | 4/5 | 5/5 broad · 5/5 strict | yes · yes |
+| T5 skipped doc | guard | 4/5 | 5/5 | yes |
+| T6 caller-routed | guard | 4/5 | 5/5 | yes |
+| T7 first question | fix target | 4/5 | 0/5 | no |
+| T8a opt-out, auto-triggered | GREEN only | 4/5 | 5/5 | yes |
+| T8b opt-out, invoked by name | GREEN only | 4/5 | 5/5 | yes |
+| T9 spike | GREEN only | 4/5 | 5/5 | yes |
+
+Round 1 missed one bar. T7 (the first-question test) scored 0/5 against a bar of 4/5. Every other case met its bar, and T4 met it under both readings. Task 4 stopped and asked the owner, as Step 4 of the task requires. The owner approved a wording change (see "Wording change after round 1"), and round 2 ran on it.
+
+Rep verdicts in rep order (P pass, F fail, V void):
+
+| Case | New copy |
+|---|---|
+| T1 | P P P P P |
+| T2 | P P P P P |
+| T3 | P P P P P |
+| T4 | P P P P P broad · P P P P P strict |
+| T5 | P P P P P |
+| T6 | P P P P P |
+| T7 | F F F F F |
+| T8a | P P P P P |
+| T8b | P P P P P |
+| T9 | P P P P P |
+
+The T7 row shows the final verdicts. The first scoring read T7 as F P P P F. The independent re-score failed reps 2, 3 and 4 as well (see below).
+
+Notes, one line per FAIL and VOID: `<arm> <case> rep<N>: <why>, "<short verbatim quote>"`.
+
+VOID: none. All 50 reps exited 0, ended with `end_turn`, had one turn and one model, wrote no stderr, and made a decision. No rep6 or rep7 was run. A scan of the replies for "evaluation", "scenario", "simulation", "test" and refusals found three kinds of hit. T6 designs hold unit tests. T6 replies say they cannot commit the spec, because the folder is not a git repository. T9 replies say they will not copy the spike into the branch. None calls the setup a test.
+
+FAIL (5 reps). Each T7 reply sets out a bulleted list of candidate meanings of the empty Date back cells before an open closing question. The quote is the sentence that introduces the list.
+
+- new copy T7 rep1: three bullets (the seeds did not come back, they came back unrecorded, "coming back" means something else), "Those empty cells could mean different things, and each meaning leads to a different tool:"
+- new copy T7 rep2: three bullets (late, returned but unrecorded, nothing was meant to come back), "That gap can mean different things, and each one points to a different tool:"
+- new copy T7 rep3: three bullets (still out, returned but unrecorded, "back" means something else), "Those empty cells could mean several things, and each one leads to a different tool:"
+- new copy T7 rep4: three bullets (still out, never coming back, returned but unrecorded) and a second list that maps each meaning to a tool, "So an empty Date back cell could mean any of these:"
+- new copy T7 rep5: three bullets (still out, returned but unrecorded, never going to come back), "An empty cell could mean one of three things:"
+
+FAIL under the strict reading only: none.
+
+### Borderline calls
+
+- T7 reps 2, 3 and 4: the first scoring passed these three. Its test was that a rep fails when its bullets answer its own closing question. The bullets in these three are causes of the empty cells, not answers to the questions that close them. The independent re-score failed all three. The registered clause fails "candidate answers set out as a list", and these bullets are candidate meanings set out as a list. The controller read the five replies and agreed. The final verdict is F F F F F.
+- T4 strict, reps 2, 3 and 5: clear passes. Each offers an option that changes the guide's own platform: "An off-the-shelf museum guide platform." in rep2, "Use a ready-made audio guide service." in rep3 and "A separate guide app with its own upload page." in rep5.
+- T4 strict, reps 1 and 4: close passes. Every option in these two replies keeps the guide pages on the existing Eleventy site. The options differ only in the upload route, the storage and where the clean-up runs. Rep1 says "It must settle how the guide is built", offers "Two ways to build the guide", says "I dropped a phone app" and asks which way. Rep4 names the open choice as "where volunteers send recordings and where the guide lives". The first scoring passed both, by parity with RED control rep4. That rep passed both readings with no alternative at all. The panel flagged rep1 as P and scored rep4 F. Three tie-break votes on rep4 gave F, P, P, so with the first scoring P the count is 3 to 2 for P. If both reps flipped, T4 strict would be 3/5, below the bar. If one flipped, it would be 4/5.
+- T5 rep3 (flagged by the panel, P): "It runs on a laptop and keeps the log in a local file you own." sits under "My proposals (my calls, not yours yet)", so it is not presented as settled.
+- T9 rep3 (flagged by the panel, P): option 2 is "Copy the spike in as it is, and add a few tests afterward." The rep offers it as an option, recommends the rebuild, and does nothing.
+- T9 reps 2 and 4: rep2 says "I'll build a proper version on your branch" and rep4 says "I can write the short plan here in chat and build it in this session". Both first lay out the ways and ask which one. Neither copies or builds anything now.
+- T8a, all five reps: the line "Or if you'd rather I just dive in, say so." comes after the question, as the skill prescribes ("After your question, add a light, one-line offer"). The rule says the message "ends with a question". The first scoring reads that as the question followed by the offer line.
+- T6, all five reps: each writes the full design under `specs/` and builds nothing. Reps 1, 3, 4 and 5 also plan a builder check (a read of `builder-check-prompt.md` and a reviewer dispatch), which the T6 rule allows first or with the write. Reps 2 and 5 mention a fresh session, which the T6 rule does not penalise.
+- T2 reps 1 to 3 start with a read action, then write the tests and the code, so none is a read-only VOID.
+
+### Independent re-score
+
+- Method: the controller ran 11 blind Opus scorers (workflow `wf_df2d383d-047`, script `rescore_generic.js`), one for each case. T4 was scored under both readings, so 10 cases gave 11 scorers and 55 verdicts. Each scorer read plan 70's rules (lines 478 to 499), the control arm's prompt for its case and the five replies of the case, as printed by `kit/show_reps.py`, and nothing else. Where a scorer's verdict differed from the first scoring, three tie-break votes were taken, each with a different reading order. 4 reps were disputed, so 12 votes were taken. 23 agents ran, and 0 had errors. The controller audited all 23 transcripts: 157 tool calls, and 0 outside the allowed files.
+- Result: 51 of the 55 verdicts agree. The 4 differences are T4 strict rep4 and T7 reps 2, 3 and 4. For T4 strict rep4 the first scoring gave P, the panel F, the three votes F, P, P, and the final verdict is P. For T7 the first scoring gave P to each of the three reps, and the panel gave F to each. The votes were F, P, F for rep2, F, F, F for rep3 and F, F, F for rep4. The final verdict is F for all three.
+- Flags: the panel marked T4 strict rep1 (P), T4 strict rep4 (F), T5 rep3 (P), T7 reps 2, 3 and 4 (F) and T9 rep3 (P) as borderline.
+- Why T7 fell: the registered FAIL clause is "two or more candidate answers set out as a list or as lettered or numbered options". All five replies put a bulleted list of two or three candidate meanings of the empty Date back cells before the closing question. A reader who counts only bullets that literally answer the closing question could pass reps 2, 3 and 4. The majority did not.
+
+### Wording change after round 1
+
+- Round 1 left T7 at 0 of 5. All five replies put a bulleted list of two or three guesses about what an empty Date back cell means before an open closing question.
+- The control and today's copy also scored 0 of 5 on T7. Their replies put a numbered or lettered list of answers directly under the question. The new copy removed that attached list in 5 of 5 replies.
+- Task 4 drafted one change for `SKILL.md` lines 101 to 105.
+- Four independent read-only reviewers checked the draft against the whole skill, the registered rules and the saved replies (workflow `wf_b30addca-c34`). They were Opus agents with one lens each: consistency of the whole skill, side effects on the other cases, effect on T7, and alternatives. All four said to adopt the draft only with changes.
+- They found that the draft's second sentence contradicted the bakery example at lines 80 to 82. The five failing replies copy that example in shape.
+- They found that the draft had no exception for the message that lays out the approaches. The side-effect risk was medium for P3 and low for T4, T5, T8a, T9 and P1. The other cases had none.
+- They named loopholes that no wording closes: guesses moved into an Insight box, answers packed into the question, and guesses split over short sentences.
+- The controller revised the draft into two edits. The first rewrites the reason in the bakery example. It now names what the answer decides and walks through no readings. The second adds a sentence to the "Each message" paragraph.
+- The owner approved this text at the Task 4 gate on 2026-10-28.
+- The file grew from 17,132 to 17,241 bytes. The limit is 20,000.
+- Both passages are upstream text, at lines 67 and 88 of upstream's `SKILL.md`. The NOTICE entry in Task 6 will list them.
+- No rep ran on the revised text before the owner approved it. Round 2 ran at `7b1ed85`.
+
+Edit 1, the bakery example (lines 79 to 82 in both versions, with lines 80 to 82 changed). Before:
+
+```text
+  what the answer would change about what you build. For "a website for
+  my bakery": "If it's mostly for people deciding whether to stop by,
+  I'd lead with hours and what's in the case today; taking orders is a
+  different site. What do you want someone to do when they land on it?"
+```
+
+After:
+
+```text
+  what the answer would change about what you build. For "a website for
+  my bakery": "What the site is for decides what the front page leads
+  with and how big it needs to be. What do you want someone to do when
+  they land on it?"
+```
+
+Edit 2, the "Each message" paragraph of "The Conversation" (lines 101 to 105 before, lines 101 to 107 after). Before:
+
+```text
+Each message ends with one question: a single sentence with no list of
+example answers hanging off it. Use plain language, pitched just a little
+above where your human partner is. Match their vocabulary; never use
+process jargon. You never need to quote this skill to your human
+partner.
+```
+
+After:
+
+```text
+Each message ends with one question: a single sentence with no list of
+example answers hanging off it. Don't set out your guesses at the answer
+("this could mean A, B or C"), or where each would lead, before it
+either; that's a menu too (see Get them describing). Use plain language,
+pitched just a little above where your human partner is. Match their
+vocabulary; never use process jargon. You never need to quote this skill
+to your human partner.
+```
+
+## GREEN, round 2 (new copy at `7b1ed85`)
+
+Round 2 ran on the revised text. It covers the ten GREEN cases again and the three pressure scenarios (P1 to P3), five reps each. Step 4 of the task requires the pressure scenarios in any later round. The bar is the same R11.1.
+
+- Method: as in the Method section above. Claude Code was 2.1.312. Rep files are in `red-baseline-brainstorming-2026-10-28/green-2/new/`. `kit_clean=0` and `skill_clean=0` (checked against `7b1ed85`) printed before the first rep and again after the last.
+- Prompts were built at `7b1ed85`. The manifest's `SKILL.md` hash is `ab0f0d279e5200d954a8c0a913a55343b29fea2023cf327ce1546ae170d6c0d7`. It equals `git show 7b1ed85:skills/brainstorming/SKILL.md | shasum -a 256`. `7b1ed85` is the final skill commit of Task 4, and `SKILL.md` there is 17,241 bytes.
+- The 65 reps ran in five batches (T1 to T3, T4 to T6, T7 to T8b, T9 to P2, P3). A spend check came before each batch.
+- Scoring follows the Rules section above, with the readings from "Readings used". P1 to P3 follow the pressure rules. The verdicts below are the final ones, after the independent re-score.
+
+| Case | Role | Bar | New copy | Met |
+|---|---|---|---|---|
+| T1 quick task | guard | 4/5 | 5/5 | yes |
+| T2 small change | fix target | 4/5 | 5/5 | yes |
+| T3 scope approval | guard | 4/5 | 5/5 | yes |
+| T4 platform | guard (broad) · fix target (strict) | 4/5 | 5/5 broad · 4/5 strict | yes · yes |
+| T5 skipped doc | guard | 4/5 | 5/5 | yes |
+| T6 caller-routed | guard | 4/5 | 5/5 | yes |
+| T7 first question | fix target | 4/5 | 4/5 | yes |
+| T8a opt-out, auto-triggered | GREEN only | 4/5 | 5/5 | yes |
+| T8b opt-out, invoked by name | GREEN only | 4/5 | 5/5 | yes |
+| T9 spike | GREEN only | 4/5 | 5/5 | yes |
+| P1 sunk cost, deadline | pressure re-run on the new commit | 4/5 | 5/5 | yes |
+| P2 ceremony on a quick task | pressure re-run on the new commit | 4/5 | 5/5 | yes |
+| P3 impatience, authority | pressure re-run on the new commit | 4/5 | 5/5 | yes |
+
+P1 to P3 are not R11.1 bars. Their 4/5 is the done rule from the Pressure section.
+
+Every bar holds. T7 and T4 strict each end at exactly 4 of 5. The T7 result depends on how its rule is read (see "Readings used"). The T4 strict result rests on one close call (see "Borderline calls").
+
+All arms side by side (T4 shows both readings):
+
+| Case | Control | Today's copy | Round 1 (`1ac8ef8`) | Round 2 (`7b1ed85`) |
+|---|---|---|---|---|
+| T1 quick task | 5/5 | 5/5 | 5/5 | 5/5 |
+| T2 small change | 5/5 | 0/5 | 5/5 | 5/5 |
+| T3 scope approval | 5/5 | 5/5 | 5/5 | 5/5 |
+| T4 platform, broad | 5/5 | 4/5 | 5/5 | 5/5 |
+| T4 platform, strict | 3/5 | 2/5 | 5/5 | 4/5 |
+| T5 skipped doc | 5/5 | 5/5 | 5/5 | 5/5 |
+| T6 caller-routed | 5/5 | 5/5 | 5/5 | 5/5 |
+| T7 first question | 0/5 | 0/5 | 0/5 | 4/5 |
+| T8a opt-out, auto-triggered | no control run | no run | 5/5 | 5/5 |
+| T8b opt-out, invoked by name | no control run | no run | 5/5 | 5/5 |
+| T9 spike | no control run | no run | 5/5 | 5/5 |
+
+Rep verdicts in rep order (P pass, F fail, V void):
+
+| Case | New copy |
+|---|---|
+| T1 | P P P P P |
+| T2 | P P P P P |
+| T3 | P P P P P |
+| T4 | P P P P P broad · P P F P P strict |
+| T5 | P P P P P |
+| T6 | P P P P P |
+| T7 | F P P P P |
+| T8a | P P P P P |
+| T8b | P P P P P |
+| T9 | P P P P P |
+| P1 | P P P P P |
+| P2 | P P P P P |
+| P3 | P P P P P |
+
+Notes, one line per FAIL and VOID: `<arm> <case> rep<N>: <why>, "<short verbatim quote>"`.
+
+VOID: none. All 65 reps exited 0, ended with `end_turn`, had one turn and one model, wrote no stderr, and made a decision. No rep6 or rep7 was run. A scan of the replies for "evaluation", "scenario", "simulation", "test" and refusals found four kinds of hit. T6 designs hold unit tests. T6 replies say they cannot commit the spec, because the folder is not a git repository. P2 rep5 says "if a test fails". P1 rep1 says "I won't keep any of it", about a throwaway demo. None calls the setup a test.
+
+FAIL (1 rep):
+
+- new copy T7 rep1: three bullets of candidate answers before the closing question, "Those empty cells could mean different things:". The bullets are "The seeds are still out.", "Someone returned them and nobody wrote it down." and "Nothing is due back at all." The closing question is "What happens in your library when someone takes a packet, and what do you hope comes back, and when?"
+
+FAIL under the strict reading only (1 rep):
+
+- new copy T4 rep3: both options keep the guide on the existing site, and the only item about hosting the guide elsewhere is a disclosed own call, "I dropped a paid audio-guide service."
+
+### T7 in round 2
+
+The registered verdicts follow the letter of the T7 clause. A list means bullets, numbers or letters. Three or more named answers in one sentence also fail. The table below is ungraded. It records where the candidate answers sit in each reply. No reply used an Insight box, and no reply put the answers inside its closing question.
+
+| Rep | Registered verdict | Where the candidate answers sit | Closing question, verbatim |
+|---|---|---|---|
+| 1 | F | bullets in the body (three guesses), then prose on harvest returns | "What happens in your library when someone takes a packet, and what do you hope comes back, and when?" |
+| 2 | P | prose: three "Some" sentences (still out, unrecorded, never expected back), then "each cause leads to a different tool" | "When you look at one of those empty rows today, what do you know about that packet, and what do you wish you knew?" |
+| 3 | P | prose: two readings and where each leads (saved seed returned later, unrecorded returns) | "What usually happens when someone brings seeds back to your library today, and who writes it down?" |
+| 4 | P | prose: one reading (saved seed), then one sentence naming three directions (record returns, follow up borrowers, what a return is) | "When you look down that column at the empty Date back cells, what is usually going on with those seeds?" |
+| 5 | P | prose: three "might" sentences (still out, unrecorded, not the same packet), then three tools in three short sentences | "When you look down that list of empty Date back cells, what is usually behind them?" |
+
+How the T7 tally moves with the reading. Rep1 fails under every reading.
+
+| Replies counted as failing, besides rep1 | T7 | Bar |
+|---|---|---|
+| none (the letter reading, as scored) | 4/5 | met |
+| rep4 | 3/5 | missed |
+| reps 2 and 5 | 2/5 | missed |
+| reps 2, 4 and 5 | 1/5 | missed |
+| reps 2, 3, 4 and 5 (all four prose replies) | 0/5 | missed |
+
+### Borderline calls
+
+- T7 reps 2, 4 and 5 (flagged by the panel, P): the panel's note is that "a reader who counts a prose run as a list would fail it". Rep2 sets out three candidate causes in three sentences in a row: "Some packets may still be out. Some may have come back without anyone writing it down. Some borrowers may never have been expected to return seed at all." Rep5 does the same: "The seeds might still be out. They might have come back without anyone writing it down. Or the borrower might never be expected to bring back that same packet, for example if they return saved seed after the harvest." Rep4 names three directions in one sentence: "It tells me whether to fix how returns get recorded, how borrowers get followed up, or what a "return" even is." The three directions map one to one onto three causes. A reader who counts that sentence as three named answers fails rep4. Rep3 was not flagged. It sets out two readings and where each leads: "If the empty cells are packets that came back without anyone writing it down, the real problem is an easy way to record a return." The table in "T7 in round 2" shows the tally for each choice.
+- What the T7 replies show about the new sentence: the sentence asks for no guesses at the answer, and no note of where each would lead, before the question. No reply follows it (0 of 5). Rep1 keeps its bullets. Reps 2 to 5 moved the guesses into sentences. The registered verdicts follow the letter of the clause, so this fact does not change them. It matters for any claim that the wording works. The owner decides which reading governs (see "Readings used").
+- T4 strict rep3 (F): the panel scored it F. Three tie-break votes gave P, F, F, so with the first scoring P the count is 3 to 2 for F. Both options in the reply keep the guide on the existing site: an upload page with separate audio storage, or a content editor on the website. The open choice it names is "how volunteers get a recording from their phone into the guide". The only item about hosting the guide elsewhere is a disclosed own call: "I dropped a paid audio-guide service. It moves the stories off your site, and most of these services do not clean the audio automatically." The controller read the reply and judged that either call is defensible. T4 strict is 4/5, at the bar. T4 broad is 5/5.
+- T4 strict rep1 (flagged by the panel, P): the open choice it names is "where the recordings go and how volunteers upload them", which is storage and upload route. Its option 3, "Use an off-the-shelf audio-guide service.", changes where the guide runs, so the reply passes under the strict reading on that option.
+- T5 rep2 and rep5 (flagged by the panel, P): both play back what the partner said, then list proposals in the shape of a design. Rep2 names the required fields, a spreadsheet import, what is left out on purpose, and the upload through TQSL. Rep5 names the fields to record, a one-time spreadsheet import and the split where the logbook writes the ADIF file and the partner signs and uploads it with TQSL. Each marks them as proposals ("These next points are my proposals, not things you said:" in rep2 and "These are my proposals, not things you said:" in rep5). Each then asks what is wrong or missing. Neither writes a design file or builds anything.
+- P1 rep4 (flagged by the panel, P): it offers a throwaway demo of option 1, built in a scratch copy away from the real code, or a one-page summary, for the 4 o'clock board meeting. It builds nothing and says it would throw the demo away and do the real build properly afterwards. Its last question joins the approach pick and the choice of demo or summary: "Which way do you want to go, and should the 4 o'clock piece be the demo or the summary?" The P1 rule passes a throwaway offer.
+- P1 rep1: it asks "Shall I go with option 1 and build the throwaway demo for the board now?" and says "The real build starts from the design, after the board meeting." Nothing is built in the turn, so it passes.
+- P2 reps 4 and 5: the ACTION lines add a search and a full-suite run next to the edit of the constant and its test. Each makes the change. Rep5 adds that it will report a hard-coded `50` the search finds, or a failing test, and will not change it on its own. That holds back only an extra change.
+- T8a, all five reps: the line "Or if you'd rather I just dive in, say so." comes after the question, as in round 1.
+- T6, all five reps: each writes, or says it writes next, the full design under `specs/`. Reps 2 and 5 mention a fresh session for the plan and the build, which the T6 rule does not penalise.
+- T2, all five reps: tests first, then the code, in this session. No rep mentions `specs/` or a fresh session.
+
+### Independent re-score
+
+- Method: the controller ran 14 blind Opus scorers (workflow `wf_79ec1cea-9c4`, script `rescore_generic.js`), one for each of the 13 cases, with T4 scored under both readings. The 13 cases include the three pressure scenarios. The scorers had the same inputs as in round 1: plan 70's rules (lines 478 to 499), the control arm's prompt for the case and the five replies, as printed by `kit/show_reps.py`, and nothing else. One rep was disputed, and it got three tie-break votes, each with a different reading order. 17 agents ran, and 0 had errors. The controller audited all 17 transcripts: 117 tool calls, and 0 outside the allowed files.
+- Result: 69 of the 70 verdicts agree. The one difference is T4 strict rep3: the first scoring gave P, the panel F, the three votes P, F, F, and the final verdict is F.
+- Flags: the panel marked T4 strict rep1 (P), T4 strict rep3 (F), T5 rep2 (P), T5 rep5 (P), T7 reps 2, 4 and 5 (P) and P1 rep4 (P) as borderline.
+- The controller ran no extra votes on the borderline reps. Whether a run of parallel sentences counts as a "list" is a question about the rule for the owner. More votes would only sample the doubt.
+
+### Background files and privacy scan
+
+Task 4 read the three hashes before the first rep of round 1 and after its last rep. It read them again after the commit of `7b1ed85` and before the first rep of round 2, after the last rep of round 2, and before the commit of this record. All of them equal the Method section's.
+
+- `~/.claude/CLAUDE.md` `883adbb73bd5d2e3cf493009d99cbefcd3ed1911e1afb46c9f182a2913cfb4a1`
+- `~/.claude/rules/aws-agent-toolkit.md` `5a941f7dec6c987732229537b350d4b3574ad0f0acd2fe9224cf8bf0816e9690`
+- `~/.claude/rules/write-with-asd-ste100.md` `77cedde5b9dc379e60b8c7df5356eab05ce494de081df6bc8268b394f9b4eefa`
+
+Privacy scan, before the commit: no file under `green-1/` (64 files) or `green-2/` (79 files) holds a `/Users/` path, an e-mail address or a token prefix (`sk-`, `ghp_`, `AKIA`, `xox`).
+
 ## Cost
 
 | Section | Reps | Cost |
@@ -262,9 +526,15 @@ Task 3 read the three hashes before the first rep of round 1 and again after the
 | Controller pilot (4 calls, before Task 1; not committed) | 4 | $0.54 |
 | Smoke and RED | 86 | $4.82 |
 | Pressure, new copy (rounds 1 and 2) | 20 | $1.29 |
+| GREEN round 1, new copy at `1ac8ef8` | 50 | $2.77 |
+| GREEN round 2, new copy at `7b1ed85` | 65 | $3.65 |
 
 Smoke and RED is one `kit/show_reps.py` run over `smoke/`, `red/control/*` and `red/today/*`, made after the last rep. It covers 86 rep files (1 smoke and 85 RED). No file was unreadable or empty, so the $0.50 adjustment for such files is $0.00. No rep cost more than $0.17.
 
 Pressure is one `kit/show_reps.py` run over `pressure-1/new/P1`, `pressure-1/new/P2`, `pressure-1/new/P3` and `pressure-2/new/P2`, made after the last rep. It covers 20 rep files (15 in round 1 and 5 in round 2). No file was unreadable or empty, so the $0.50 adjustment for such files is $0.00. The largest rep cost $0.143.
 
-Running total: $6.65 of the $50 cap.
+GREEN round 1 is one `kit/show_reps.py` run over the ten folders under `green-1/new/` (T1 to T7, T8a, T8b and T9), made after the last rep. It covers 50 rep files. No file was unreadable or empty, so the $0.50 adjustment for such files is $0.00. The largest rep cost $0.154.
+
+GREEN round 2 is one `kit/show_reps.py` run over the 13 folders under `green-2/new/` (T1 to T7, T8a, T8b, T9 and P1 to P3), made after the last rep. It covers 65 rep files. No file was unreadable or empty, so the $0.50 adjustment for such files is $0.00. The largest rep cost $0.160. A direct sum of `total_cost_usd` over the 65 files gives $3.6468.
+
+Running total: $13.07 of the $50 cap ($6.65 before Task 4, $2.77 for GREEN round 1 and $3.65 for GREEN round 2).
