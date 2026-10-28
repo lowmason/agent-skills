@@ -857,7 +857,8 @@ finishing-a-development-branch is the one file where the two bars disagree.
 Its last section, Red Flags, starts at body character 18,671. Nothing read for
 this pass shows whether Claude Code counts the frontmatter, or any header it
 adds, toward the cut. If it does, the end of Red Flags is cut already. A live
-probe under `build/cc_guide/` could settle that. Until then our check stays the
+probe under `build/cc_guide/` could settle that, and `specs/deferred_items.md`
+logs it (section `superpowers-drift-v7.0.1`). Until then our check stays the
 gate. The next edit that grows this body fails the commit lint, and plan 60 has
 already moved this skill's Common Mistakes into `references/` once. No action
 now. Adopting upstream's stricter bar is an owner call.

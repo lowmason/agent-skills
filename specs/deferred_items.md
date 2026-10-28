@@ -6512,3 +6512,18 @@ review and the Plan Completion gate (2026-10-27) add the others.
       earlier item "Share the git helpers that `build/run_suites.py`, `build/check_conformance.py`
       and `install.py` each carry" (plan 55). Size: plan. Done when: that item is done and
       `versions_check.py` imports the shared helper.
+
+## superpowers-drift-v7.0.1 (no plan; drift review of upstream v7.0.1, branch claude/practical-hugle-86bb56) — 2026-10-28
+- [ ] Probe how Claude Code cuts a re-attached skill after compaction (superpowers drift finding
+      17, `specs/superpowers-drift-spec.md`). The guide says each invoked skill keeps its first
+      5,000 tokens (`specs/guides/claude-code-customization-guide.md:128`). Upstream's #2481
+      transcript shows a cut at exactly 20,000 characters, with a marker that points at the
+      file. The `compaction-window` check in `build/cc_guide/conformance.toml` measures the
+      body after the frontmatter, at 5,000 × 4 characters. Nobody has checked whether the cut
+      counts frontmatter or a header Claude Code adds. That matters now:
+      `skills/finishing-a-development-branch/SKILL.md` has a body of 19,970 characters, 30
+      inside the check, and its last section is Red Flags. Deferred because it needs a live
+      probe beside the others in `build/cc_guide/manifest.toml`, which costs a `claude -p` run
+      with a forced compaction. Size: plan. Done when: the probe runs and records where the cut
+      falls, and the register's window (and the guide, through `/cc-guide`) matches what it
+      shows.
