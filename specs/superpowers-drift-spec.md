@@ -3,17 +3,16 @@
 **Status:** findings only. No skill files were edited. This document exists to
 decide *what, if anything, becomes a spec*.
 
-It is a living record: each review re-baselines it in place rather than adding
-a dated copy. This revision (2026-10-28) brings it to upstream v7.0.1 for
-every skill except brainstorming. Plan 70 (2026-10-28) re-baselined finding 4
-(brainstorming) to v7.0.1 (`2ce8aa1`) when it adopted that finding. The
-2026-10-28 revision re-takes the line anchors
-of the findings it edits (8, 9, 10, 11, 14, 15 and the new 17) and of the
-method section's example. The other anchors date from
-the 2026-10-18 revision, which brought the document to v7.0.0 and re-took
-every anchor. The 2026-10-03 revision
-brought it to v6.4.2; the first pass (2026-09-03, against v6.3.0) lived at
-`specs/superpowers-drift-2026-09-03.md` until that revision renamed it.
+It is a living record: each review re-baselines it in place rather than adding a
+dated copy. This revision (2026-10-28) brings it to upstream v7.0.1 for every
+skill except brainstorming. It re-takes the line anchors of the findings it
+edits (8, 9, 10, 11, 14, 15 and the new 17) and of the method section's example.
+Plan 70 (2026-10-28) re-baselined finding 4 (brainstorming) to v7.0.1
+(`2ce8aa1`) when it adopted that finding. The other anchors date from the
+2026-10-18 revision, which brought the document to v7.0.0 and re-took every
+anchor. The 2026-10-03 revision brought it to v6.4.2; the first pass
+(2026-09-03, against v6.3.0) lived at `specs/superpowers-drift-2026-09-03.md`
+until that revision renamed it.
 Finding numbers never change, because other documents cite them (`NOTICE`,
 `specs/completed/sdd-hardening.md`, `specs/completed/handoff-briefs.md`,
 `specs/completed/audit-3-10-26.md`).
@@ -223,11 +222,11 @@ upstream v7.0.1 (`2ce8aa1`, 2026-10-21). `NOTICE` names what was taken and each
 deliberate divergence. The behavior record is
 `specs/red-baseline-brainstorming-2026-10-28.md`.
 
-**Before plan 70,** our copy sent every request, "a config change — all of them",
-through a design, a committed spec, a review and a fresh-session handoff. That
-contradicted the proportional-process rule in `/deferred` and the guide's
-`lean.ceremony` section. Conformance exception `brainstorming-every-project`
-recorded the gap, and plan 70 removed it.
+**Before plan 70,** our copy required every project, "a config change — all of
+them", to go through a design, a committed spec, a review and a fresh-session
+handoff. That contradicted the proportional-process rule in `/deferred` and the
+guide's `lean.ceremony` section. Conformance exception
+`brainstorming-every-project` recorded the gap, and plan 70 removed it.
 
 **Upstream at v7.0.1.** v7.0.0 (#2463, `9e63918`) rebuilt the skill from scratch,
 and v7.0.1 (`2ce8aa1`) retuned it. At `2ce8aa1` the skill works like this:
@@ -243,42 +242,54 @@ and v7.0.1 (`2ce8aa1`) retuned it. At `2ce8aa1` the skill works like this:
   did not ask for brainstorming (#2560). v7.0.0 always offered.
 - **Describing and playback.** Open questions come first, and a menu comes only
   when the partner is stuck. The first Red Flags row is "Options steer. Ask them
-  to describe it first." Each part is played back in 200 to 300 words.
+  to describe it first." Each part is played back in about 200 to 300 words.
 - **How it gets made (#2482, #2483).** The skill finds out early which platform,
   language, library or medium choices the partner wants to make. It records each
   choice it makes as its own call.
 - **Laid-out approaches (#2571).** Two or three approaches go in a message of
   their own, with a recommendation, and the partner picks before the doc is
   written. v7.0.0 compared ideas privately.
-- **One gate, a builder check, spikes.** Nothing is built before the design doc is
-  approved. A fresh subagent reads the doc as its builder and lists what it would
-  still need to ask. If the partner takes the skip offer, the skill ends and the
-  gate goes with it. An accepted spike may be built, and keeping it is a new
-  request.
+- **One gate, a builder check, spikes.** Nothing is built before the design doc
+  is approved. A fresh subagent reads the doc as its builder and lists what it
+  would still need to ask. If the partner opts out of the questions, the skill
+  ends and the gate goes with it. An accepted spike may be built, and keeping it
+  is a new request.
 
-**The measured bar.** v7.0.0's release notes give no brainstorming numbers, but
-its pull requests do (#2463, #2482). #2571 published figures too. In its Gallery
-scenario (24 runs over three variants: explicit, auto-triggered and a quiet
-persona), "skipped a step without consent" fell from 24 of 24 runs to 3 of 24.
-"Design doc approved before building" rose from 1 of 24 to 23 of 24. Its final
-matrix held 176 blind-graded conversations over seven scenarios, on Opus and
-Sonnet. All of these compare upstream `dev`, after #2560 merged, with the #2571
-branch, not with v7.0.0. As of 2026-10-28 the brainstorming scenarios are on
-open pull requests of `prime-radiant-inc/superpowers-evals` (#72 and #75), not
-on its main branch. That repository has no license, so this repo cites them by
-name only.
+**The measured bar.** The Brainstorming section of v7.0.0's release notes gives
+no figures, but its pull requests do (#2463, #2482). #2560 and #2571 published
+figures too, on different baselines.
 
-**What plan 70 took, and where it diverges.** Plan 70 took v7.0.1's text and order,
-and `builder-check-prompt.md` unchanged. `NOTICE` lists the divergences: our
-`Use when…` description, our software guidance, the `specs/` lifecycle with its
-fresh-session handoff, a small change designed and approved in chat and built in
-the same session, caller sizing, the split between open questions and options,
-spikes kept off the working branch, the visual-companion token-cost warning, the
-builder check's `model: opus` pin, the quick-task exit in the HARD-GATE, and the
-dropped spec self-review. It also records the Red Flags row that the pressure
-test added and the question wording that changed after the first GREEN round.
-Plan 70 ran its own RED baseline, pressure test, GREEN and trigger test, all
-newly written.
+- **#2560** compared v7.0.0 with its branch. On v7.0.0, Opus offered to skip the
+  questions on 10 of 10 runs of the explicit and phased requests. On the branch,
+  Opus and Sonnet made that offer on 0 of 12 runs whose request asked for
+  brainstorming and on 12 of 12 runs whose request did not.
+- **#2571** published figures from its Gallery scenario (24 runs over three
+  variants: explicit, auto-triggered and a quiet persona). "Skipped a step
+  without consent" fell from 24 of 24 runs to 3 of 24. "Design doc approved
+  before building" rose from 1 of 24 to 23 of 24. These Gallery figures compare
+  upstream `dev`, after #2560 merged, with the #2571 branch, not with v7.0.0.
+  Its final matrix held 176 blind-graded conversations over seven scenarios, on
+  Opus and Sonnet.
+
+**Where the scenarios are.** #2560 points to
+`prime-radiant-inc/superpowers-evals#73` for its scenarios. #2571 points to
+`prime-radiant-inc/superpowers-evals#75` for its scenarios and its experiment
+log. Both pull requests were still open on 2026-10-28. The repository
+`prime-radiant-inc/superpowers-evals` has no license, so this repo cites its
+scenarios by name only.
+
+**What plan 70 took, and where it diverges.** Plan 70 took v7.0.1's text and
+order, and `builder-check-prompt.md` unchanged. `NOTICE` lists the divergences:
+our `Use when…` description, our software guidance, the `specs/` lifecycle with
+its fresh-session handoff and the `specs/deferred_items.md` check in Look Before
+You Ask, a small change designed and approved in chat and built in the same
+session, caller sizing with no skip offer for routed work, the split between
+open questions and options, spikes kept off the working branch, the
+visual-companion token-cost warning, the builder check's `model: opus` pin, the
+quick-task exit in the HARD-GATE, and the dropped spec self-review. It also
+records the Red Flags row that the pressure test added and the question wording
+that changed after the first GREEN round. Plan 70 ran its own RED baseline,
+pressure test, GREEN and trigger test, all newly written.
 
 **The other v7.0.1 changes** are listed under New finding (v7.0.1).
 
