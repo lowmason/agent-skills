@@ -6435,12 +6435,18 @@ review and the Plan Completion gate (2026-10-27) add the others.
       job's summary repeats uv's progress text next to the report, and that a run which hits
       the 90-minute timeout loses the report. Size: plan. Done when: each point is fixed or
       ruled out with a reason.
-- [ ] Harden `build/versions_check.py` (plan 66 reviews, Minors). `SCRIPT_FLOOR_RE` searches the
+- [x] Harden `build/versions_check.py` (plan 66 reviews, Minors). `SCRIPT_FLOOR_RE` searches the
       whole script instead of the PEP 723 header. `check_floors` raises when `skills/` is
       missing. The `PYTHON_RE` message spells `3.13`. The `HISTORICAL` reason for `Polars 1.42`
       names 2.1.0, so it goes stale without notice at the next Polars bump. Size: quick-fix.
       Done when: the first three are fixed or ruled out, and the `Polars 1.42` reason names no
       version that a bump can move.
+      → done 2026-10-28 (/deferred quick fix): all four fixed. `check_floors` reads the PEP 723
+      header through `header_text`, so a `requires-python` spelled in a docstring is ignored,
+      and it returns no finding when `skills/` is missing. The `PYTHON_RE` message lives in
+      `build/versions.py`, and it now says `'3.N'` where it said `'3.13'`. The `Polars 1.42`
+      reason says "the pinned Polars", and a new test fails when any `HISTORICAL` reason names
+      a pinned, cited or dev version. Each new test failed first.
 - [ ] A fourth copy of the git file listing now exists (plan 66, Task 9): `build/versions_check.py`
       runs `git ls-files --cached --others --exclude-standard -z`, as `build/run_suites.py`,
       `build/check_conformance.py` and `install.py` do. This fires the Revisit trigger of the

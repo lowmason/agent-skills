@@ -3,6 +3,7 @@ bump, verify and drift flows against a stub uv. Nothing here uses the network or
 is a script first on PATH, as hooks/test_project_hooks.py does it.'''
 import datetime
 import json
+import re
 import sys
 
 import pytest
@@ -99,6 +100,13 @@ def test_stack_of_an_unknown_gate_names_the_gates():
 def test_invalid_files_name_their_cause(old, new, expected):
     with pytest.raises(VersionsError, match=expected):
         versions.parse(GOOD.replace(old, new))
+
+
+def test_the_dev_python_message_spells_no_concrete_version():
+    # A version in the example goes stale at the next bump of the dev Python.
+    with pytest.raises(VersionsError) as caught:
+        versions.parse(GOOD.replace("dev = '3.13'", "dev = 'three'"))
+    assert not re.search(r'\d\.\d', str(caught.value))
 
 
 @pytest.mark.parametrize('mutate, expected', [

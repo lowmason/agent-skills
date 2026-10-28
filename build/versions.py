@@ -132,7 +132,7 @@ def parse(text: str, where: str = VERSIONS_FILE) -> Versions:
             raise VersionsError(f'{where}: unknown table {key!r}')
     dev = _table(data, 'python', where).get('dev')
     if not isinstance(dev, str) or not PYTHON_RE.fullmatch(dev):
-        raise VersionsError(f"{where}: [python] dev must be a string such as '3.13', got {dev!r}")
+        raise VersionsError(f"{where}: [python] dev must be a string of the form '3.N', got {dev!r}")
     date = _table(data, 'freeze', where).get('date')
     if not isinstance(date, datetime.date) or isinstance(date, datetime.datetime):
         raise VersionsError(f'{where}: [freeze] date must be a TOML date such as 2026-10-19, got {date!r}')

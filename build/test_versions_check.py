@@ -1,6 +1,7 @@
 '''Tests for build/versions_check.py, the lint behind `versions.py check`. Every rule has a positive
 control: a seeded stale literal, citation or floor that must fail. The seeded flag text is built from
 parts, because the lint reads this file too.'''
+import re
 import subprocess
 import textwrap
 from pathlib import Path
@@ -179,6 +180,35 @@ def test_a_floor_above_the_dev_python_fails_twice_over(tmp_path):
     findings = vc.check_floors(root, V)
     assert any('promises Python 3.14, above the dev Python 3.13' in f for f in findings)
     assert any('requires Python 3.14, above the dev Python 3.13' in f for f in findings)
+
+
+def script_floor_findings(tmp_path, script_text):
+    files = skill('compatibility: Python 3.11+.')
+    files['skills/demo/scripts/tool.py'] = script_text
+    return vc.check_floors(skill_tree(tmp_path, files), V)
+
+
+def test_a_floor_spelled_in_a_script_without_a_header_is_not_read(tmp_path):
+    text = "'''Docs: the header says requires-python = '>=3.14' here.'''\n"
+    assert script_floor_findings(tmp_path, text) == []
+
+
+def test_a_floor_spelled_before_the_header_is_not_read(tmp_path):
+    text = ("'''Docs: the header says requires-python = '>=3.14' below.'''\n"
+            "# /// script\n# requires-python = '>=3.11'\n# ///\n")
+    assert script_floor_findings(tmp_path, text) == []
+
+
+def test_a_tree_without_a_skills_directory_has_no_floor_findings(tmp_path):
+    assert vc.check_floors(tmp_path, V) == []
+
+
+def test_a_historical_reason_names_no_version_a_bump_can_move():
+    v = versions.load(versions.REPO)
+    moving = {*v.packages.values(), *v.cited.values(), v.dev_python}
+    for phrase, reason in vc.HISTORICAL.items():
+        named = set(re.findall(r'\d+(?:\.\d+)+', reason)) & moving
+        assert not named, f'{phrase!r}: the reason names {sorted(named)}, which the next bump can change'
 
 
 # ---- interpreter literals ------------------------------------------------------------------

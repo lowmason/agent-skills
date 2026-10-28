@@ -26,7 +26,7 @@ from versions import Versions, compare, normalize, version_tuple
 HISTORICAL: dict[str, str] = {
     'ArviZ 0.23': 'the classic stack, named so the porting tables can map from it to ArviZ 1',
     'arviz-stats < 1.0.0': 'the releases that have no azs.diagnose, which the fallback in diagnostics.md is for',
-    'Polars 1.42': 'verified on Polars 1.42, not re-checked on 2.1.0; plan 66 deferred item',
+    'Polars 1.42': 'verified on Polars 1.42, not re-checked on the pinned Polars; plan 66 deferred item',
 }
 LIVE_FILES = ('CLAUDE.md', 'AGENTS.md', 'GEMINI.md')
 LIVE_DIRS = ('build/', 'hooks/', 'skills/', '.claude/skills/')
@@ -172,14 +172,17 @@ def compat_floor(skill_md: str) -> str | None:
 
 
 def check_floors(root: Path, v: Versions) -> list[str]:
+    skills = root / 'skills'
+    if not skills.is_dir():
+        return []
     findings = []
-    for skill in sorted(p for p in (root / 'skills').iterdir() if (p / 'SKILL.md').is_file()):
+    for skill in sorted(p for p in skills.iterdir() if (p / 'SKILL.md').is_file()):
         promised = compat_floor(read_text(skill / 'SKILL.md') or '')
         if promised and compare(promised, v.dev_python) > 0:
             findings.append(f'{skill.relative_to(root)}/SKILL.md: promises Python {promised}, above the dev Python '
                             f'{v.dev_python}')
         for script in sorted((skill / 'scripts').glob('*.py')):
-            found = SCRIPT_FLOOR_RE.search(read_text(script) or '')
+            found = SCRIPT_FLOOR_RE.search(header_text(read_text(script) or ''))
             if not found:
                 continue
             floor = found.group(1)
