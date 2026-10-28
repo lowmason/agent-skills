@@ -5,175 +5,347 @@ description: >
   analysis, or behavior change — and no approved design or spec exists yet; before writing any
   code, scaffolding a project, or invoking an implementation skill. Trigger on "let's build",
   "add a feature", "create a tool", "I have an idea", or any request that would otherwise jump
-  straight to implementation, however simple it looks.
+  straight to implementation.
 license: MIT
 metadata:
   author: 'Jesse Vincent'
   adapted_by: 'Lowell Mason'
   source: 'https://github.com/obra/superpowers'
-# cc-guide: lean.session-hygiene @2.1.306
+# cc-guide: lean.session-hygiene lean.ceremony @2.1.306
 ---
 
-# Brainstorming Ideas Into Designs
+# Brainstorming
 
-Help turn ideas into fully formed designs and specs through natural collaborative dialogue.
+You are very good at building. You build what you believe your human
+partner wants, and that belief is usually thinner than it feels. This
+skill is for finding out what they actually want, and why, before
+anything gets built.
 
-Start by understanding the current project context, then ask questions one at a time to refine the idea. Once you understand what you're building, present the design and get user approval.
+People often haven't finished working out what they want. Good questions
+help them think it through. When you understand the why, you make the
+hundred decisions they never mention the way they would have made them.
+
+## First: What Do You Actually Know?
+
+Before you reply, ask yourself: what do I know about what they want, and
+why?
+
+- **Everything that matters is in the request** ("make the icon cornflower
+  blue"). This is a quick, clear task. Do it, and say what you did.
+- **Something non-trivial is missing.** Start the conversation.
+
+Before you start implementing, you must, in order:
+
+1. Lay out the approaches in a message of their own, and have your
+   human partner pick one (see Lay out the approaches).
+2. Write the design, short or full (see Size the Work).
+3. Get their approval of it.
+4. Go on by size: build a small change in this session; hand a project
+   to writing-plans in a fresh session (see The Written Design).
+
+Two things aren't implementing: a spike they said yes to (see Spike to
+feel things out), and doing what they asked once they've opted out of
+the questions.
+
+## Look Before You Ask
+
+In an existing project, or when they've given you context (a spec, a plan,
+a handoff, files they pointed at, earlier conversation), dig in before your
+first message. Read what they referred to and the code or material it
+connects to, and keep reading until you can explain how the relevant
+parts work today and what this change would touch. If the project has
+a `specs/deferred_items.md`, check it for deferred work the idea touches.
+Never ask what the project or their context already answers.
+
+## Your First Message
+
+Move the work forward, with one of these:
+
+- **They've already said what they want** (a spec, a plan, a detailed
+  request): aim for about 200 words for the whole message. Echo their
+  request back in your own words, so they can see whether you've got its
+  shape: what they want, who it's for, and why, as far as they've said.
+  Add what you found that bears on it: how the relevant parts work today
+  and what the change would touch. If you found something they may not
+  have considered that would change what they're asking for or how it
+  has to be built, like a constraint, a conflict, or a cheaper path, say
+  so plainly. How to build it comes later, once you understand what they
+  want (see Lay out the approaches). End with one line inviting
+  corrections, then one question about what they want: the thing their
+  request leaves open whose answer would most change what gets built.
+  Specs are often incomplete, so confirm before you build on one.
+- **They haven't:** one open question, in their own terms, about the
+  biggest thing their request leaves unsettled. Say why you're asking:
+  what the answer would change about what you build. For "a website for
+  my bakery": "If it's mostly for people deciding whether to stop by,
+  I'd lead with hours and what's in the case today; taking orders is a
+  different site. What do you want someone to do when they land on it?"
+
+How the message ends depends on whether they asked for brainstorming:
+
+- **They asked for it** (by name, by invoking it, or by asking for a
+  design discussion): end with your question. They want this
+  conversation. A command or skill that routed the work here counts as
+  asking for it.
+- **It started on its own:** they may not want a conversation at all. After your
+  question, add a light, one-line offer to just get going instead, like
+  "Or if you'd rather I just dive in, say so." If they take you up on
+  it, this skill is done: state any significant how-it-gets-made choice
+  (platform, language, medium) in one plain line, then do what they
+  asked through the normal workflow.
+
+That's the whole message.
+
+## The Conversation
+
+Each message ends with one question: a single sentence with no list of
+example answers hanging off it. Use plain language, pitched just a little
+above where your human partner is. Match their vocabulary; never use
+process jargon. You never need to quote this skill to your human
+partner.
+
+Be clear and concise. Lead with what matters. Avoid jargon. When you
+report what you found, give them the most important findings and offer
+the rest.
+
+**Get them describing.** Open questions come first: what they want and
+why, their goals, prior art, what would make it a failure. Their own
+words carry intent that your options can't. Offer a short menu only when
+they're stuck. When they say "just guess" or "what do you think?",
+propose something concrete. A choice among known alternatives is
+different: for the approach pick, a size override, or a named decision,
+give the options with your recommendation.
+
+**How it gets made.** Every project rests on choices about medium, tools,
+materials, and resources: the platform, programming language, and
+libraries for an app; the medium for a piece of art. Find out early which
+of those choices they want to make, which they're handing to you, and what
+they already have to work with. Someone with strong views or skills will
+want to talk it through. Someone counting on you needs sensible defaults,
+said in plain words. When there's existing work, build on what it already
+uses. Any choice you make goes in the design as your call, never as
+something they agreed to.
+
+**Ground to cover.** This is territory, not a script. Never read these
+out as questions:
+
+- what kind of thing this is, and what makes it special
+- why now, and what success looks like to them
+- goals, non-goals, and anti-goals (what would make this a failure even
+  if it technically works)
+- prior art: what they've seen elsewhere, loved or hated
+- current state: what exists now, what they've tried
+- the details they care about
+
+**Make every question specific** to their project and what they've told
+you. Ask Socratically, the way a sharp colleague would: build each
+question on their last answer or on something you found, so it helps
+them think through a consequence or a case they may have missed
+("Voting closes before the meeting, and two members joined this month.
+Does someone who joins mid-round get a vote?"). When the reason isn't
+already plain, say what you're hoping to learn or what the answer would
+change. A proposal they can correct, plus your reason for it, often
+beats a question.
+
+**Offer recon.** Once you have a bit of grounding and looking further
+would help, offer to go look: deeper into their codebase or project,
+their own files and data, or the web. Say what you'd look for. They
+decide whether you go.
+
+**Lay out the approaches.** Once you understand what they want, and
+before you write anything up, put the ways of building it in a message
+of its own. Come up with several real alternatives and drop the weak
+ones, including any that work against why they want it and any the
+existing work rules out. Present the two or three that remain, grounding
+each in what the project actually does and saying what it trades off.
+Recommend one and say why, then ask which way they want to go. When
+there's genuinely one sensible way, say so and explain why the others
+don't fit. This is for how it gets built; for what they want, get them
+describing first.
+
+**Show, don't tell.** Offer the visual companion (below) whenever seeing
+would help more than reading:
+
+- something they'll look at: a screen, a page, a printout, a sign
+- a layout or arrangement: of a screen, a room, a schedule
+- a flow or a sequence of steps
+- options that would look different from each other
+- a structure that's easier to see than read: a diagram, a timeline, a map
+
+Once they've accepted, use it for mockups to react to, side-by-side
+options, and throwaway prototypes they can click.
+
+**Spike to feel things out.** Agentic work is waterfall, but very, very
+fast. A quick throwaway build is often the cheapest way to learn what
+they want or whether something works. Offer one when it would help.
+When they just want to spike, get out of the way. Spikes get no tests
+or minimal ones, aren't bulletproof, and skip the plan, implementation,
+and review process. Spike code lives outside the working branch, in a
+scratch directory or a throwaway branch, and is never committed to the
+branch being designed for. Bring what the spike taught you back into the
+conversation.
+
+## Play It Back
+
+Play back as you go. As soon as you understand one part well enough to
+describe it (what it's for and who it serves, say, or how one piece
+behaves), describe that part back in about 200-300 words, then return to
+questions about the next part. Playback and questions alternate through
+the whole conversation; the last chunk covers whatever is left.
+
+Only what they said goes in as theirs. Anything you filled in goes in
+as your proposal, with your reason. End each chunk by asking what's wrong
+or missing.
+
+Before you send a chunk, check it: does it describe something they'll
+look at, like a page, a screen, a schedule, or a printout? If so, and
+they haven't seen the visual companion offer yet, send the offer instead
+(its own message, below) and hold the chunk for the next message. Once
+they've accepted, put a mockup next to the description.
+
+## Size the Work
+
+Once you understand what they want and they've picked an approach, say
+how big the work is in plain words. They can override it.
+
+| Size | The design | After they approve it |
+|------|------------|-----------------------|
+| A small change | a short one in chat: what you already covered together, written down | build it in this session |
+| A project | the full written design, committed to `specs/` (below) | writing-plans, in a fresh session |
+
+Short or full, the design has an **Approaches** part: the two or
+three ways you considered building it, what each trades off, which one
+they picked, and why. They pick in the conversation, before you write
+the design.
+
+**A small change stays here.** Play the short design back in chat (the
+approaches, the pick, the how) and get their approval there. Then build
+it in this session through the normal workflow: test-driven-development,
+verification-before-completion, and writing-plans only when several
+files make a plan worth it. No `specs/` file, no fresh session.
+
+**When a command or skill routed the work here** because a design
+decision is open, and its next step reads a spec file, size it as a
+project.
+
+If it grows mid-task, stop, say so, and step up a size.
+
+If this is really several independent projects, say so, agree on an
+order, and brainstorm them one at a time.
+
+## The Written Design
+
+Write a plain document a talented builder in the domain could plan
+from without going back to your human partner. Cover:
+
+- intent and the why
+- goals, non-goals, anti-goals
+- constraints
+- approaches (above)
+- the parts of the how they decided, as they decided them
+- what's left to the builder
+
+For a small change, the short design covers the same points in a line
+or two each and goes straight to your human partner in chat, without
+the builder check.
+
+**In software, design for isolation and clarity.** Break the system into
+smaller units that each have one clear purpose, communicate through
+well-defined interfaces, and can be understood and tested independently.
+For each unit, you should be able to answer: what does it do, how do you
+use it, and what does it depend on? Smaller, well-bounded units are also
+easier for you to work with: you reason better about code you can hold
+in context at once.
+
+**In an existing codebase,** explore the structure first and follow its
+patterns. Where existing code has problems that affect the work (a file
+that's grown too large, unclear boundaries, tangled responsibilities),
+include targeted improvements in the design. Don't propose unrelated
+refactoring.
+
+**YAGNI ruthlessly:** remove unnecessary features from every design.
+
+**Where it goes:** in a software repo, `specs/<descriptive-name>.md`
+(no date prefix), committed. Otherwise, ask. Your human partner's
+preferences override both. When its work is done, the plan-completion
+protocol (writing-plans § Plan Completion Protocol) retires it to
+`specs/completed/`.
+
+**Builder check** (for a project): dispatch a fresh general-purpose
+subagent with `model: opus` and the prompt in `builder-check-prompt.md`
+in this directory. When you tell your human
+partner you're writing it up, say a reviewer will read it first and you
+may come back once with a few questions. Don't hand over the document
+until the check is back. Sort what the builder asks into three piles:
+
+- **Answered already** by the conversation or the project: put the answer
+  in the document.
+- **Minor:** a sensible builder could settle it without changing what gets
+  built. Settle it yourself and mark it in the document as your call.
+- **Theirs:** only your human partner can answer it, and the answer changes
+  what gets built.
+
+Bring the "theirs" pile in one message, most important first. Update the
+document with their answers, then hand it over with a short list of the
+calls you made so they can check those while reading. That's the only
+round of questions the check produces. Without a subagent tool, read the
+document as that builder yourself.
+
+**Hand it over** (for a project): commit the spec and ask them to review
+the committed file. Once they approve it, recommend they `/clear` (or
+open a new session) and run writing-plans there against the file, then
+stop. The committed spec is the whole handoff: a fresh session drops
+this conversation, and any visual-companion browser session, which
+planning would otherwise re-read every turn.
 
 <HARD-GATE>
-Do NOT invoke any implementation skill, write any code, scaffold any project, or take any implementation action until you have presented a design and the user has approved it. This applies to EVERY project regardless of perceived simplicity.
+Nothing gets built until your human partner approves the design:
+the short one in chat for a small change, the committed spec for a
+project.
+Building includes writing product code, scaffolding, installing
+dependencies, creating projects, and invoking an implementation skill.
+Reading and exploring are fine.
+
+Three exceptions. A quick, clear task has no design step: do it, and
+say what you did. If they opted out of the questions, the skill is done
+and the gate goes with it. A spike they said yes to may be built,
+outside the working branch; it stays labeled throwaway, and keeping
+what it produced is a new request that comes back through this gate.
+
+After a small change's design is approved, build it in this session.
+After a project's spec is approved, the next step is the plan:
+writing-plans, in a fresh session, and no other skill.
 </HARD-GATE>
 
-## Anti-Pattern: "This Is Too Simple To Need A Design"
+## Red Flags
 
-Every project goes through this process. A todo list, a single-function utility, a config change — all of them. "Simple" projects are where unexamined assumptions cause the most wasted work. The design can be short (a few sentences for truly simple projects), but you MUST present it and get approval.
-
-## Checklist
-
-You MUST create a task for each of these items and complete them in order:
-
-1. **Explore project context** — check files, docs, recent commits, and `specs/deferred_items.md` (if present) for previously deferred work the new idea touches
-2. **Offer the visual companion just-in-time** — NOT upfront. The first time a question would genuinely be clearer shown than described, offer it then (its own message); on approval its browser tab opens for you. If no visual question ever arises, never offer it. See the Visual Companion section below.
-3. **Ask clarifying questions** — one at a time, understand purpose/constraints/success criteria
-4. **Propose 2-3 approaches** — with trade-offs and your recommendation
-5. **Present design** — in sections scaled to their complexity, get user approval after each section
-6. **Write design doc** — save the spec to `specs/<descriptive-name>.md` and commit
-7. **Spec self-review** — quick inline check for placeholders, contradictions, ambiguity, scope (see below)
-8. **User reviews written spec** — ask user to review the spec file before proceeding
-9. **Hand off to planning in a fresh session** — the spec is committed and approved; recommend the user `/clear` and invoke writing-plans against the spec file (the committed spec is the handoff — the brainstorming dialogue is not), then stop
-
-## Process Flow
-
-```dot
-digraph brainstorming {
-    "Explore project context" [shape=box];
-    "Ask clarifying questions" [shape=box];
-    "Propose 2-3 approaches" [shape=box];
-    "Present design sections" [shape=box];
-    "User approves design?" [shape=diamond];
-    "Write design doc" [shape=box];
-    "Spec self-review\n(fix inline)" [shape=box];
-    "User reviews spec?" [shape=diamond];
-    "Recommend /clear +\nfresh writing-plans session" [shape=doublecircle];
-
-    "Explore project context" -> "Ask clarifying questions";
-    "Ask clarifying questions" -> "Propose 2-3 approaches";
-    "Propose 2-3 approaches" -> "Present design sections";
-    "Present design sections" -> "User approves design?";
-    "User approves design?" -> "Present design sections" [label="no, revise"];
-    "User approves design?" -> "Write design doc" [label="yes"];
-    "Write design doc" -> "Spec self-review\n(fix inline)";
-    "Spec self-review\n(fix inline)" -> "User reviews spec?";
-    "User reviews spec?" -> "Write design doc" [label="changes requested"];
-    "User reviews spec?" -> "Recommend /clear +\nfresh writing-plans session" [label="approved"];
-}
-```
-
-**The terminal state is handing off to writing-plans in a fresh session.** Once the spec is committed and approved, recommend the user `/clear` and invoke writing-plans against the spec file, then stop — the committed spec is a complete handoff, so planning needs neither this brainstorming dialogue nor its (token-intensive) visual-companion browser session. Do NOT invoke any implementation skill; writing-plans is the only skill after brainstorming, and it belongs in that fresh session.
-
-## The Process
-
-**Understanding the idea:**
-
-- Check out the current project state first (files, docs, recent commits — and `specs/deferred_items.md`, if present, for deferred work related to this idea)
-- Before asking detailed questions, assess scope: if the request describes multiple independent subsystems (e.g., "build a platform with chat, file storage, billing, and analytics"), flag this immediately. Don't spend questions refining details of a project that needs to be decomposed first.
-- If the project is too large for a single spec, help the user decompose into sub-projects: what are the independent pieces, how do they relate, what order should they be built? Then brainstorm the first sub-project through the normal design flow. Each sub-project gets its own spec → plan → implementation cycle.
-- For appropriately-scoped projects, ask questions one at a time to refine the idea
-- Prefer multiple choice questions when possible, but open-ended is fine too
-- Only one question per message - if a topic needs more exploration, break it into multiple questions
-- Focus on understanding: purpose, constraints, success criteria
-
-**Exploring approaches:**
-
-- Propose 2-3 different approaches with trade-offs
-- Present options conversationally with your recommendation and reasoning
-- Lead with your recommended option and explain why
-
-**Presenting the design:**
-
-- Once you believe you understand what you're building, present the design
-- Scale each section to its complexity: a few sentences if straightforward, up to 200-300 words if nuanced
-- Ask after each section whether it looks right so far
-- Cover: architecture, components, data flow, error handling, testing
-- Be ready to go back and clarify if something doesn't make sense
-
-**Design for isolation and clarity:**
-
-- Break the system into smaller units that each have one clear purpose, communicate through well-defined interfaces, and can be understood and tested independently
-- For each unit, you should be able to answer: what does it do, how do you use it, and what does it depend on?
-- Can someone understand what a unit does without reading its internals? Can you change the internals without breaking consumers? If not, the boundaries need work.
-- Smaller, well-bounded units are also easier for you to work with - you reason better about code you can hold in context at once, and your edits are more reliable when files are focused. When a file grows large, that's often a signal that it's doing too much.
-
-**Working in existing codebases:**
-
-- Explore the current structure before proposing changes. Follow existing patterns.
-- Where existing code has problems that affect the work (e.g., a file that's grown too large, unclear boundaries, tangled responsibilities), include targeted improvements as part of the design - the way a good developer improves code they're working in.
-- Don't propose unrelated refactoring. Stay focused on what serves the current goal.
-
-## After the Design
-
-**Documentation:**
-
-- Write the validated design (spec) to `specs/<descriptive-name>.md` (a descriptive name, no date prefix)
-  - (User preferences for spec location override this default)
-  - When the spec's work is complete it is retired to `specs/completed/` by the plan-completion protocol (writing-plans § Plan Completion Protocol), which guards against retiring specs other live plans still implement
-- Write the spec clearly and concisely; cut filler
-- Commit the design document to git
-
-**Spec Self-Review:**
-After writing the spec document, look at it with fresh eyes:
-
-1. **Placeholder scan:** Any "TBD", "TODO", incomplete sections, or vague requirements? Fix them.
-2. **Internal consistency:** Do any sections contradict each other? Does the architecture match the feature descriptions?
-3. **Scope check:** Is this focused enough for a single implementation plan, or does it need decomposition?
-4. **Ambiguity check:** Could any requirement be interpreted two different ways? If so, pick one and make it explicit.
-
-Fix any issues inline. No need to re-review — just fix and move on.
-
-**User Review Gate:**
-After the spec review loop passes, ask the user to review the written spec before proceeding:
-
-> "Spec written and committed to `<path>`. Please review it and let me know if you want to make any changes before we start writing out the implementation plan."
-
-Wait for the user's response. If they request changes, make them and re-run the spec review loop. Only proceed once the user approves.
-
-**Handoff to planning:**
-
-- The spec is committed and the user has approved it — it is a complete,
-  self-sufficient handoff (that is what the self-review's ambiguity/consistency
-  checks are for). The brainstorming dialogue is not needed downstream.
-- **Recommend the user `/clear` and invoke writing-plans in a fresh session**
-  against the spec file, then stop. A fresh session drops this brainstorming
-  conversation (and any token-intensive visual-companion browser session) that
-  planning would otherwise re-read every turn.
-- Continuing in this session also works but carries the whole dialogue into
-  planning. Either way writing-plans is the only next skill — do NOT invoke any
-  other.
-
-## Key Principles
-
-- **One question at a time** - Don't overwhelm with multiple questions
-- **Multiple choice preferred** - Easier to answer than open-ended when possible
-- **YAGNI ruthlessly** - Remove unnecessary features from all designs
-- **Explore alternatives** - Always propose 2-3 approaches before settling
-- **Incremental validation** - Present design, get approval before moving on
-- **Be flexible** - Go back and clarify when something doesn't make sense
+| Thought | Reality |
+|---------|---------|
+| "I'll offer a menu of what they might want" | Options steer. Ask them to describe it first. Options are for a choice among known alternatives: the approach, a size override, a named decision. |
+| "I'll fill in sensible defaults" | Good. Say them out loud. A default they never heard is one they couldn't reject. |
+| "I've answered their questions, so I'll write the doc" | Lay out the approaches first, in a message of their own. |
+| "I should explain the process first" | Ask your question. The process shows itself. |
+| "They said 'sounds good' to the idea" | Approval covers what you showed them. A design doc you haven't written isn't approved. |
+| "The spike works, I'll keep building on it" | Keeping it is a new request. Back through the gate. |
 
 ## Visual Companion
 
-A browser-based companion for showing mockups, diagrams, and visual options during brainstorming. Available as a tool — not a mode. Accepting the companion means it's available for questions that benefit from visual treatment; it does NOT mean every question goes through the browser.
+A browser tab for showing mockups, diagrams, and prototypes. It's a
+tool, not a mode: accepting it doesn't send every question to the
+browser.
 
-**Offering the companion (just-in-time):** Do NOT offer it upfront. Wait until a question would genuinely be clearer shown than told — a real mockup / layout / diagram question, not merely a UI *topic*. The first time that happens, offer it then, as its own message:
-> "This next part might be easier if I show you — I can put together mockups, diagrams, and comparisons in a browser tab as we go. It's still new and can be token-intensive. Want me to? I'll open it for you."
+**Offer it just-in-time.** Offer it the first time one of the moments
+above comes up, never upfront. The offer is its own message with nothing
+else in it:
 
-**This offer MUST be its own message.** Only the offer — no clarifying question, summary, or other content. Wait for the user's response. If they accept, start the server with `--open` so their browser opens to the first screen automatically. If they decline, continue text-only and don't offer again unless they raise it.
+> "This might be easier if I show you. Want me to open a browser tab with some mockups? It's still new and can be token-intensive."
 
-**Per-question decision:** Even after the user accepts, decide FOR EACH QUESTION whether to use the browser or the terminal. The test: **would the user understand this better by seeing it than reading it?**
+If they decline, stay in text and don't offer again unless they raise it.
 
-- **Use the browser** for content that IS visual — mockups, wireframes, layout comparisons, architecture diagrams, side-by-side visual designs
-- **Use the terminal** for content that is text — requirements questions, conceptual choices, tradeoff lists, A/B/C/D text options, scope decisions
+**Per question, ask: would they understand this better by seeing it?**
+Mockups, layouts, diagrams, and side-by-side designs go in the browser.
+Requirements, scope, tradeoffs, and conceptual choices stay in text. A
+question about a UI topic isn't automatically a visual question.
 
-A question about a UI topic is not automatically a visual question. "What does personality mean in this context?" is a conceptual question — use the terminal. "Which wizard layout works better?" is a visual question — use the browser.
-
-If they agree to the companion, read the detailed guide before proceeding:
-[visual-companion.md](visual-companion.md) (in this skill's directory)
+If they accept, read `visual-companion.md` in this directory before
+starting the server.
