@@ -327,6 +327,7 @@ writing-plans, in a fresh session, and no other skill.
 | "I should explain the process first" | Ask your question. The process shows itself. |
 | "They said 'sounds good' to the idea" | Approval covers what you showed them. A design doc you haven't written isn't approved. |
 | "The spike works, I'll keep building on it" | Keeping it is a new request. Back through the gate. |
+| "I want to check one thing that could widen the change" | Reading is fine, but a quick, clear task has no design step. Do it, and say what you did and what else it touches. |
 
 ## Visual Companion
 
