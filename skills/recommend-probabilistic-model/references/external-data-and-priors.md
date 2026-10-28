@@ -5,7 +5,7 @@ series, and domain constraints are a **first-class input** to the recommendation
 determine the prior, the pooling target, or a hard constraint more than the data itself does. This
 is procedure Step 2's "inventory external/auxiliary information," made concrete.
 
-This reference bridges `bls-data-context` (where the external numbers come from) and
+This reference bridges official statistics and benchmarks (where the external numbers come from) and
 `bayesian-workflow` (where priors are elicited and checked — e.g. with PreliZ).
 
 ## Four ways external information enters a model
@@ -43,8 +43,8 @@ This reference bridges `bls-data-context` (where the external numbers come from)
 - **Don't double-count.** If a benchmark already informs the prior, don't *also* fit to it as data —
   you'd use the same information twice and overshrink.
 - **Match the estimand.** Place-of-work vs. place-of-residence, jobs vs. persons, vintage/as-of
-  timing — an external number on a different basis is a biased prior. Check `bls-data-context` for
-  the program's exact definition before borrowing its numbers.
+  timing — an external number on a different basis is a biased prior. Check the publishing
+  program's exact definition before borrowing its numbers.
 - **Widen for transfer.** An external estimate's own SE understates the uncertainty about *your*
   unit; inflate the prior width to reflect that the external population isn't yours.
 - **Pass it on.** Every external-derived prior/constraint belongs in the C4 handoff payload so it's

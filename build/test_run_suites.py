@@ -203,6 +203,11 @@ def test_check_ignores_gitignored_trees(tmp_path):
     assert findings(root) == []
 
 
+def test_check_ignores_archived_skills(tmp_path):
+    root = git_repo(tmp_path, {**COVERED, 'archive/skills/beta/scripts/test_b.py': ''})
+    assert findings(root) == []
+
+
 def test_check_reports_registry_problems_alone(tmp_path):
     root = git_repo(tmp_path, {**COVERED, 'build/suites.toml': FIXTURE.replace('with', 'wtih', 1),
                                'skills/beta/scripts/test_b.py': ''})

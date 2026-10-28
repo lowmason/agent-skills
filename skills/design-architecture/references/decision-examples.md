@@ -44,7 +44,7 @@ rank-based revision selection per series. Trade-off: two filters plus a rank are
 one date cut, but each single-filter shortcut leaks future information in a documented way.
 Alternatives: `vintage_date`-only or `ref_date`-only (both rejected — settled empirically to leak).
 This is a one-way door: get it wrong and every backtest number is silently optimistic. (The
-per-program publication lags this censoring depends on are catalogued in `bls-data-context`.)
+per-program publication lags this censoring depends on come from each program's release calendar.)
 
 **5. Multi-package workspace boundaries.** Decision: a `uv` workspace of 5 packages with a
 **one-directional import graph** — the data chain (`lookups → download → ingest → vintages`) and a

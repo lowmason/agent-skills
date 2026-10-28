@@ -130,9 +130,9 @@ This skill ends when the user picks a target:
   comparing neural models goes to evaluate-deep-learning.
 - When a candidate's sketch needs data facts (does the join exist, is the
   panel balanced), state them as one-line assumptions on that candidate
-  rather than blocking the map; explore-data profiles unfamiliar data and
-  bls-data-context supplies program facts — point to them rather than
-  loading them mid-map, since each is heavy enough to be the user's call.
+  rather than blocking the map; explore-data profiles unfamiliar data —
+  point to it rather than loading it mid-map, since it is heavy enough to
+  be the user's call.
 
 ## Worked example — choosing a stand-in objective
 

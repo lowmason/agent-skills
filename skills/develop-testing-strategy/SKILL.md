@@ -190,7 +190,7 @@ Determinism, SBC-lite recovery, and parity scaffolds for both NumPyro and PyMC:
 
 For nowcasting and vintage work, "the same inputs produce the same outputs" is a correctness
 property of equal standing to any schema check — and as-of correctness is a property nothing
-else will catch. See `bls-data-context` for each BLS program's revision cadence. Plan explicit
+else will catch. Take each source's revision cadence from its publisher's documentation. Plan explicit
 tests for:
 
 - **Seeds.** Every stochastic step takes an explicit, descriptive seed (derive it, e.g.

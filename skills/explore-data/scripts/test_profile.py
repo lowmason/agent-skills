@@ -11,8 +11,8 @@ directory.
 
 The directory-scoped convention is repo-wide: each scripts/ suite declares its own
 inline deps (there's no root pyproject or test runner), and a repo-root collection
-fails outright, since geographic-codes and classification-codes both ship a
-test_build.py, whose basenames collide under pytest's prepend import mode with no
+fails outright, since the two archived code skills under archive/skills/ both
+ship a test_build.py, whose basenames collide under pytest's prepend import mode with no
 __init__.py.
 """
 
