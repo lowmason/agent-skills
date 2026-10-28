@@ -1,6 +1,6 @@
 # RED baseline — brainstorming, rebuilt on v7.0.1
 
-**Date:** 2026-10-28 · **Status:** RED, pressure test and GREEN complete: every bar met under the registered rules. T7 and T4 strict end at exactly 4 of 5; see Borderline calls.
+**Date:** 2026-10-28 · **Status:** Complete: RED, pressure test, GREEN and trigger test. Every bar is met under the registered rules. T7 and T4 strict end GREEN round 2 at exactly 4 of 5, and their readings are open (see Readings used).
 **Governs:** `specs/brainstorming-proportional-rebuild.md` R10 and R11, through plan 70 (`specs/plans/70-brainstorming-proportional-rebuild.md`).
 
 > ⚠️ Quarantine this file, the folder `red-baseline-brainstorming-2026-10-28/` beside it, and plan 70's
@@ -519,6 +519,83 @@ Task 4 read the three hashes before the first rep of round 1 and after its last 
 
 Privacy scan, before the commit: no file under `green-1/` (64 files) or `green-2/` (79 files) holds a `/Users/` path, an e-mail address or a token prefix (`sk-`, `ghp_`, `AKIA`, `xox`).
 
+## Trigger
+
+Task 5 tested the description in brainstorming's frontmatter. The frontmatter is the header block of `SKILL.md`. The description in that block tells an agent when to load the skill. R11.3 is the trigger requirement in `specs/brainstorming-proportional-rebuild.md`. It asks that a project-size request still choose brainstorming at least 4 of 5 times with the new description. The new description chose it 5 of 5 times, so R11.3 is met.
+
+The test uses two requests:
+
+- Q-proj is the project-size request: "I want to build a service that collects readings from the weather stations at our three sailing clubs and publishes a daily conditions page for members. Nothing exists yet."
+- Q-quick is the one-line edit: "In `config/server.toml`, change `port` from 8080 to 8081."
+
+| Request | Today's description (`ff4a4f2`) | New description (`7b1ed85`) |
+|---|---|---|
+| Q-proj (graded: brainstorming at least 4/5 on the new description) | brainstorming ×5 | brainstorming ×5 |
+| Q-quick (recorded only) | none ×5 | none ×5 |
+
+Each cell gives the first line of the five replies. `none` means the agent would load no skill.
+
+- Method: as in the Method section above. Claude Code was 2.1.312. Each rep is a decision-only run: the agent has no tools, so it can only name its choice. The trigger test has two arms and no control.
+- Rep files are in `red-baseline-brainstorming-2026-10-28/trigger/today/` and `trigger/new/`. Each of the two folders holds `prompts/` (with `MANIFEST.txt`), `Q-proj/` and `Q-quick/`.
+- The prompt frame is `TRIGGER_FRAME` in `kit/cases.py`. It lists seven skills with their descriptions, shows one request, and asks which skill the agent would load first. The reply gives the skill's name alone on its first line, or `none`, and then one sentence of reason.
+- The smoke check found no skill listing in a rep's context (see Smoke). So the frame's listing is the only skill listing a rep sees.
+- The seven skills are brainstorming and six neighbors: `creative-thinking`, `design-architecture`, `executing-plans`, `systematic-debugging`, `test-driven-development` and `writing-plans`. Both arms read the six neighbors' descriptions at `7b1ed85`. Only brainstorming's description differs between the arms.
+- Today's arm reads brainstorming's description at `ff4a4f2`. The new arm reads it at `7b1ed85`.
+- `NEWF` is the plan's name for the final skill commit. The Pressure section names `1ac8ef8` as `NEWF`, which was true then. Task 4 later added `7b1ed85`, so `NEWF` is now `7b1ed85`.
+- Brainstorming's description is the same at `51df859`, `1ac8ef8` and `7b1ed85`. In `SKILL.md` the description is a folded block under `description: >`. So the `description:` line alone holds no text and proves nothing. The check parsed each commit's frontmatter with PyYAML and hashed the description with its whitespace normalised, as `kit/build_prompts.py` does:
+
+| Commit | sha256 of the parsed description | Characters |
+|---|---|---|
+| `ff4a4f2` (today's) | `0ef2092924e1a91295e97f1cc8369ac2c569ab51b6454ab1edb977481fa363d7` | 426 |
+| `51df859` | `ce4d648c0e5dc8e7c899131b8e24414b3d88a9a746a58e6f05498cfd8f3fe8db` | 401 |
+| `1ac8ef8` | `ce4d648c0e5dc8e7c899131b8e24414b3d88a9a746a58e6f05498cfd8f3fe8db` | 401 |
+| `7b1ed85` | `ce4d648c0e5dc8e7c899131b8e24414b3d88a9a746a58e6f05498cfd8f3fe8db` | 401 |
+
+- A character diff of today's and the new description finds one change. The new description drops ", however simple it looks" (25 characters) from its last sentence.
+- The two `Q-proj.txt` files differ on line 4 only, which is brainstorming's description line. The two `Q-quick.txt` files differ the same way.
+- The manifests give different listing hashes. A listing hash is the sha256 of the skill listing in the prompt. Today's arm has `e44baf5a8304a1f7ffc9876276ad69e52f90f9a51156d8dca89cb1b580041d0c`. The new arm has `f0e175c511325a039afee7db6b23726542340363cad82b2da183dbf4ea3d77fc`.
+- The 20 reps ran in four calls of `kit/run_reps.sh`, one call for each arm and request. Three calls ran together, then the fourth ran alone.
+- Scoring follows the Rules section above. Task 1 registered the Q-proj and Q-quick rules there before anyone read a reply. Q-proj passes when the reply's first line names brainstorming. Task 5 recorded the Q-quick first lines and did not grade them. Task 5 read every reply whole, as printed by `kit/show_reps.py`, and checked each first line.
+
+Rep verdicts in rep order (P pass, F fail, V void). Q-quick is not graded.
+
+| Request | Today's description | New description |
+|---|---|---|
+| Q-proj | P P P P P | P P P P P |
+| Q-quick | not graded | not graded |
+
+Q-proj names brainstorming 5 of 5 times on the new description, and R11.3 asks for 4 of 5. A score below 4 of 5 would have stopped Task 5 for an owner decision. Today's description also scored 5 of 5.
+
+Notes, one line per FAIL and VOID: `<arm> <case> rep<N>: <why>, "<short verbatim quote>"`.
+
+VOID: none. All 20 reps exited 0, ended with `end_turn`, had one turn and one model, wrote no stderr, and made a decision. Task 5 ran no rep6 or rep7. A scan of the replies for "evaluation", "scenario", "simulation", "test" and refusals found one hit. Today's Q-quick rep2 says "test-driven development", the name of a neighbor skill. No reply calls the setup a test.
+
+FAIL: none.
+
+### Observations
+
+- Both arms scored 5 of 5 on Q-proj. So the test found no loss of triggering from the new description. Five reps cannot rank the two descriptions.
+- All 10 Q-proj replies give one reason: new functionality with no design or spec yet. That reason matches the "Use when" clause of the description, and both arms share that clause.
+- Q-quick chose `none` 5 of 5 times on both arms. Today's description, with the phrase "however simple it looks", already left the one-line edit alone. So this test shows no effect from dropping the phrase.
+- Today's Q-proj rep4 holds an Insight box (an aside added by the output-style hooks) with a numbered list of four open questions. It is the only Insight box among the 20 replies. The rules ignore Insight boxes, and its first line names brainstorming.
+- The frame lists seven skills, and a real session lists more. This test covers brainstorming's description against six neighbors only.
+
+### Background files and privacy scan
+
+Task 5 read the three hashes before the first rep and again after the last rep. Both reads equal the Method section's.
+
+- `~/.claude/CLAUDE.md` `883adbb73bd5d2e3cf493009d99cbefcd3ed1911e1afb46c9f182a2913cfb4a1`
+- `~/.claude/rules/aws-agent-toolkit.md` `5a941f7dec6c987732229537b350d4b3574ad0f0acd2fe9224cf8bf0816e9690`
+- `~/.claude/rules/write-with-asd-ste100.md` `77cedde5b9dc379e60b8c7df5356eab05ce494de081df6bc8268b394f9b4eefa`
+
+`git diff --quiet 649cc44 -- specs/red-baseline-brainstorming-2026-10-28/kit; echo kit_clean=$?` printed `kit_clean=0` before the first rep and again after the last. The same check on `skills/brainstorming` against `7b1ed85` printed `skill_clean=0` both times.
+
+Privacy scan, before the commit: no file under `trigger/` (26 files) holds a `/Users/` path, an e-mail address or a token prefix (`sk-`, `ghp_`, `AKIA`, `xox`).
+
+## Disposition
+
+RED, the pressure test and GREEN round 2 met every bar under the registered rules. RED's bar was R10, and the baseline commit (`649cc44`) came before the first skill edit (`51df859`). T7 (first question) and T4 strict (platform case) end GREEN round 2 at exactly 4 of 5, and their readings are open (see Readings used). Task 3 added one Red Flags row, and the owner approved the two wording edits that Task 4 made after GREEN round 1. The trigger test found that the new description still chooses brainstorming for a project-size request, 5 of 5 against a bar of 4 of 5. The runs cost $13.53 in total against the $50 cap.
+
 ## Cost
 
 | Section | Reps | Cost |
@@ -528,6 +605,7 @@ Privacy scan, before the commit: no file under `green-1/` (64 files) or `green-2
 | Pressure, new copy (rounds 1 and 2) | 20 | $1.29 |
 | GREEN round 1, new copy at `1ac8ef8` | 50 | $2.77 |
 | GREEN round 2, new copy at `7b1ed85` | 65 | $3.65 |
+| Trigger test, today's and new descriptions | 20 | $0.46 |
 
 Smoke and RED is one `kit/show_reps.py` run over `smoke/`, `red/control/*` and `red/today/*`, made after the last rep. It covers 86 rep files (1 smoke and 85 RED). No file was unreadable or empty, so the $0.50 adjustment for such files is $0.00. No rep cost more than $0.17.
 
@@ -537,4 +615,6 @@ GREEN round 1 is one `kit/show_reps.py` run over the ten folders under `green-1/
 
 GREEN round 2 is one `kit/show_reps.py` run over the 13 folders under `green-2/new/` (T1 to T7, T8a, T8b, T9 and P1 to P3), made after the last rep. It covers 65 rep files. No file was unreadable or empty, so the $0.50 adjustment for such files is $0.00. The largest rep cost $0.160. A direct sum of `total_cost_usd` over the 65 files gives $3.6468.
 
-Running total: $13.07 of the $50 cap ($6.65 before Task 4, $2.77 for GREEN round 1 and $3.65 for GREEN round 2).
+The trigger test is one `kit/show_reps.py` run over the four folders `trigger/today/Q-proj`, `trigger/today/Q-quick`, `trigger/new/Q-proj` and `trigger/new/Q-quick`, made after the last rep. It covers 20 rep files. No file was unreadable or empty, so the $0.50 adjustment for such files is $0.00. The largest rep cost $0.062. A direct sum of `total_cost_usd` over the 20 files gives $0.4627. With every rep at the $0.50 cap, the worst case was $13.07 + 20 × $0.50 = $23.07. That is under the $50 cap, so no stop was due.
+
+Running total: $13.53 of the $50 cap. The parts are $6.65 before Task 4, $2.77 for GREEN round 1, $3.65 for GREEN round 2 and $0.46 for the trigger test.

@@ -1,0 +1,6 @@
+arm trigger
+sha 7b1ed85
+neighbor sha 7b1ed85
+listing sha256 f0e175c511325a039afee7db6b23726542340363cad82b2da183dbf4ea3d77fc
+Q-proj.txt sha256 9650a08f7c54ed0bef8a4dcae534aad842c8af0045b99893e873fcb7cd117cc7
+Q-quick.txt sha256 dbd4abf175de75ae7f54ec21b0a531b3db1795ec19d9b70659dd78d6626f984a

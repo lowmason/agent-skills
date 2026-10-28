@@ -1,0 +1,19 @@
+You are an AI coding agent. These skills are available. Each one loads its full instructions when you choose it.
+
+<skills>
+- brainstorming: Use when the user proposes new functionality — a feature, component, script, scraper, pipeline, analysis, or behavior change — and no approved design or spec exists yet; before writing any code, scaffolding a project, or invoking an implementation skill. Trigger on "let's build", "add a feature", "create a tool", "I have an idea", or any request that would otherwise jump straight to implementation, however simple it looks.
+- creative-thinking: Use when the target itself is fuzzy: "something interesting in this data but I can't articulate the analysis", "what should I even be estimating", "the true objective is too expensive to evaluate — what cheap target stands in", every design a flavor of one idea, or brainstorming's propose-approaches step running thin. Named goal: brainstorming. Objective chosen: tune-hyperparameters. Model-family or chart choice for a defined question: recommend-probabilistic-model, recommend-visualization. Causal question to frame: recommend-causal-design. Neural target: deep-learning.
+- design-architecture: Use when authoring or evaluating Architecture Decision Records (ADRs) for data and modeling systems — choosing between technologies (NumPyro/JAX vs PyMC, Polars vs pandas, Trino vs DuckDB, one parquet layout vs another), when a design decision spans multiple packages or repos, when reviewing a design proposal or spec for whether its trade-offs are honest, or when a past decision keeps getting re-explained or re-litigated. Trigger on: ADR, architecture decision, design record, design doc/spec review, "should we use X or Y", "document this decision", "why did we pick", trade-off analysis, alternatives considered, reversibility / blast radius, superseding a prior decision, parquet store layout and dedup/vintage policy, scraper resilience (retry/backoff/fixtures), as-of / vintage / point-in-time data modeling, multi-package workspace boundaries, inference engine choice, or determinism/seed/parity decisions — especially when the same problem is solved more than one way across repos with no recorded rationale.
+- executing-plans: Use when a written implementation plan is to be executed directly, task by task, in the current session — e.g. a plan file from writing-plans in specs/plans/ — because tasks are tightly coupled or the human partner asked for direct execution rather than subagent dispatch
+- systematic-debugging: Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes — including flaky or intermittent tests, race conditions or arbitrary sleeps/timeouts in tests, test pollution where state leaks between tests, errors deep in a stack trace, works-locally-but-fails-in-CI, a regression after a dependency or config change, or when previous fixes didn't stick and one more quick change is tempting.
+- test-driven-development: Use when implementing any feature or bugfix, before writing implementation code
+- writing-plans: Use when a spec, design doc, or requirements for a multi-step task exist and an implementation plan is needed before touching code — "write a plan", "plan this feature", "break this into tasks", a finished spec in specs/ awaiting its plan, before handing work to subagents or a separate execution session, or when an executed plan is to be completed, retired or merged ("complete the plan"), including a roadmap stage's handoff.
+</skills>
+
+Your partner's message:
+
+<message>
+I want to build a service that collects readings from the weather stations at our three sailing clubs and publishes a daily conditions page for members. Nothing exists yet.
+</message>
+
+Which skill would you load first, before you do anything else? Reply with the skill's name alone on the first line, or `none` if you would load no skill. Then write one sentence saying why.
