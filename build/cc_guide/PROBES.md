@@ -11,3 +11,4 @@ output under `~/.cache/agent-skills/cc-guide/probes/`.
 | 2026-10-20 | 2.1.304 | ~/.cache/agent-skills/scratch/plan58-bin/claude | agent-tools | PASS | with Bash: Bash, Read; without Bash: Glob, Grep, Read |  |
 | 2026-10-20 | 2.1.304 | ~/.cache/agent-skills/scratch/plan58-bin/claude | stop-continuation | PASS | stop_hook_active read false, true, true |  |
 | 2026-10-20 | 2.1.304 | ~/.cache/agent-skills/scratch/plan58-bin/claude | agent-model-pins | PASS | Explore and test-runner served claude-haiku-5-5; code-reviewer effort xhigh |  |
+| 2026-10-28 | 2.1.308 | ~/Library/Application Support/Claude/claude-code/2.1.308/a93ded4b1b47/claude.app/Contents/MacOS/claude | agent-payload | PASS | dispatches reach PreToolUse as Agent, with no model when unset; claude-code-guide served claude-haiku-5-5, as the haiku control was | --allow-old |

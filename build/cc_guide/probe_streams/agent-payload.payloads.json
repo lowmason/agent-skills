@@ -1,0 +1,52 @@
+[
+ {
+  "matcher": "*",
+  "tool_name": "Agent",
+  "input_keys": [
+   "description",
+   "prompt",
+   "run_in_background",
+   "subagent_type"
+  ],
+  "subagent_type": "claude-code-guide",
+  "model": null
+ },
+ {
+  "matcher": "*",
+  "tool_name": "Agent",
+  "input_keys": [
+   "description",
+   "model",
+   "prompt",
+   "run_in_background",
+   "subagent_type"
+  ],
+  "subagent_type": "general-purpose",
+  "model": "haiku"
+ },
+ {
+  "matcher": "Agent",
+  "tool_name": "Agent",
+  "input_keys": [
+   "description",
+   "prompt",
+   "run_in_background",
+   "subagent_type"
+  ],
+  "subagent_type": "claude-code-guide",
+  "model": null
+ },
+ {
+  "matcher": "Agent",
+  "tool_name": "Agent",
+  "input_keys": [
+   "description",
+   "model",
+   "prompt",
+   "run_in_background",
+   "subagent_type"
+  ],
+  "subagent_type": "general-purpose",
+  "model": "haiku"
+ }
+]

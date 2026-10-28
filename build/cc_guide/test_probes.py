@@ -530,10 +530,9 @@ def bad_payload(cwd):
                                           'claude-code-guide served claude-haiku-5-5, as the haiku control was'),
     (bad_payload, ERROR, 'JSONDecodeError: '),
 ])
-def test_the_payload_probe_reads_its_run_like_a_live_one(tmp_path, monkeypatch, side, outcome, finding):
+def test_the_payload_probe_reads_its_run_like_a_live_one(tmp_path, side, outcome, finding):
     '''From prepare to the verdict through run_probe, with the hooks fired on
     the scratch settings; a payload that is not JSON is an ERROR row.'''
-    monkeypatch.setitem(probes.PROBE_RUNS, 'agent-payload', probes.PAYLOAD_PROBE)
     fake = FakeRuns({'dispatch': payload_stream()}, side={'dispatch': side})
     verdict = probes.run_probe('agent-payload', 'claude', REPO, tmp_path / 'run', fake)
     assert verdict.outcome == outcome and verdict.finding.startswith(finding)

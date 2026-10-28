@@ -398,6 +398,7 @@ PROBE_RUNS = {
     'agent-model-pins': Probe(prepare_pins, collect_pins, assess_pins,
                               {'pins.jsonl': 'agent-model-pins.jsonl',
                                'transcripts.json': 'agent-model-pins.transcripts.json'}),
+    'agent-payload': PAYLOAD_PROBE,
 }
 
 
