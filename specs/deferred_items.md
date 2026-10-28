@@ -6527,3 +6527,46 @@ review and the Plan Completion gate (2026-10-27) add the others.
       with a forced compaction. Size: plan. Done when: the probe runs and records where the cut
       falls, and the register's window (and the guide, through `/cc-guide`) matches what it
       shows.
+
+## spec-reading-test-check (no plan; owner-approved local design idea from session "Obra superpowers writing-plans mechanism") — 2026-10-28
+- [ ] Spec-reading test check (local design, not an upstream finding, owner-approved
+      2026-10-28): no step from writing-plans through subagent-driven-development checks the
+      plan's test assertions against the spec. The planner writes the tests and the code
+      (`skills/writing-plans/SKILL.md:134-152`, enforced by `:167-181`). Its self-review
+      (`:185-193`) checks that each spec requirement has a task, not that the assertions match
+      the spec. The task reviewer compares the diff to the brief (`agents/task-reviewer.md:87-89`).
+      The final code-reviewer gets the plan, not the spec (`skills/executing-plans/SKILL.md:65-66`).
+      The Codex seat never sees the plan (`skills/requesting-code-review/codex-review.md:5-6`).
+      A planner's misread therefore passes every gate, and only the owner's plan review can
+      catch it. Superpowers drift findings 9 and 10 do not close it. Neither does upstream
+      v7.0.1's pre-flight scan (finding 7). It checks a task's tests against that task's
+      code, so a misread that test and code share passes it. Five layers, in the order a
+      misread can enter:
+      (1) Spec: owner-approved worked examples with exact values (inputs, outputs,
+      boundaries). They are the only reference that no model produced. This lands in
+      brainstorming, so coordinate with the brainstorming rebuild.
+      (2) Plan: adopt findings 9 and 10 as the base. They separate the code from the tests,
+      but not one reading of the spec from another.
+      (3) Plan review: Codex writes acceptance tests from the spec and the plan's Interfaces
+      blocks only, never from the plan's tests or approach lines. The owner gets a table of
+      the disagreements (spec quote, plan assertion, Codex assertion). Each ruling becomes a
+      `## Decisions` entry, or a spec-amendment task when the spec was unclear.
+      (4) Execution: the implementer brief carries the relevant spec excerpts. The implementer
+      reports a conflict between a test and the spec as DONE_WITH_CONCERNS, and never edits a
+      plan test to fit its own reading.
+      (5) End of run: before the final review, run the reconciled acceptance tests, which the
+      implementer never saw. Triage each failure as code wrong, acceptance test wrong, or spec
+      unclear (the owner rules). Pass the spec path to code-reviewer with the plan. That part
+      is a quick fix that can land alone.
+      Rules: no agent resolves a disagreement between two readings. Only the owner does. Add no
+      further Claude reviewers that start from the plan. Mutation testing is out of scope,
+      because it measures test strength, not correctness.
+      Probes before building: take two or three specs and plans from `specs/completed/` and
+      `specs/plans/completed/`. Plant misreads in the plans (an inclusive bound made exclusive,
+      a wrong unit, a wrong default), and check that the current pipeline misses them. That
+      is the failing baseline. Then add each layer, and keep only the layers that catch
+      something. The design expects Codex to share fewer errors with the planner, but nobody
+      has measured that, and the probes measure it. Codex runs send the spec and the plan to
+      OpenAI, so a private project needs owner approval beyond this repository. Sequence: after
+      the owner decides findings 9 and 10. Size: design. Done when: a brainstorming spec
+      decides the layers and records the baseline probe results.

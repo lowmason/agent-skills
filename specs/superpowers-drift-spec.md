@@ -8,8 +8,8 @@ a dated copy. This revision (2026-10-28) brings it to upstream v7.0.1 for
 every skill except brainstorming. Finding 4 (brainstorming) belongs to the
 brainstorming rebuild spec, `specs/brainstorming-proportional-rebuild.md`.
 The owner approved that spec, and it is not yet merged. This revision re-takes the line anchors
-of the findings it edits (8, 11, 15 and the new 17) and of the method
-section's example. The other anchors date from
+of the findings it edits (8, 9, 10, 11, 14, 15 and the new 17) and of the
+method section's example. The other anchors date from
 the 2026-10-18 revision, which brought the document to v7.0.0 and re-took
 every anchor. The 2026-10-03 revision
 brought it to v6.4.2; the first pass (2026-09-03, against v6.3.0) lived at
@@ -462,7 +462,7 @@ Planning here runs on Opus, the owner's session default, so this is the
 configuration upstream named. The skill text no longer says so: plan 40
 (`34cf7f8`) deleted the handoff's "planning belongs on the stronger tier" line,
 and the handoff now leaves the execution model to launch time
-(`writing-plans/SKILL.md:219-224`).
+(`writing-plans/SKILL.md:224-230`).
 
 The upstream changes:
 
@@ -486,10 +486,10 @@ The upstream changes:
   full-code plans.
 
 Our copy still has every replaced line. The overview at
-`writing-plans/SKILL.md:16` keeps "zero context ... questionable taste". `:73`
-keeps "one action (2-5 minutes)". "No Placeholders" (`:162-170`) requires code
-blocks for code steps, and `:174` says "Complete code in every step — if a step
-changes code, show the code". The handoff repeats the premise (`:192-193`: "a
+`writing-plans/SKILL.md:21` keeps "zero context ... questionable taste". `:78`
+keeps "one action (2-5 minutes)". "No Placeholders" (`:167-175`) requires code
+blocks for code steps, and `:179` says "Complete code in every step — if a step
+changes code, show the code". The handoff repeats the premise (`:196-197`: "a
 complete, zero-context handoff").
 
 **Our plans show the pattern, including the two written since.** Below are
@@ -542,6 +542,12 @@ This is a behavior-shaping change to a discipline skill, so it needs
 writing-skills' pressure-test and micro-test before deployment. Upstream's
 planted-defect probe is a ready bar.
 
+**What adopting it would not close.** No step checks the plan's test
+assertions against the spec, and this finding adds none. The planner still
+writes the tests and the code, so a planner's misread of the spec passes every
+later gate. A local design for that gap, not an upstream finding, is deferred
+in `specs/deferred_items.md`, item "Spec-reading test check".
+
 ### 10. Reviewers grade the spec's silence, not the user's experience
 
 **Verified gap.** v6.4.1 (#2319) is a three-part change. Its motivating eval:
@@ -573,6 +579,12 @@ or it applies to only one dispatch path.
 The failure class fits the stack these skills serve. Scrapers and ETL pipelines
 meet inputs no spec enumerates: relayouts, malformed rows, empty pulls. It
 composes with finding 9 through the shared plan template.
+
+Adopting this finding does not check the plan's test assertions against the
+spec either. Its reviewers judge behavior the spec is silent on. A misread of
+what the spec does say lands in the tests and the code alike, so it passes
+them. The same local design covers that gap (`specs/deferred_items.md`, item
+"Spec-reading test check").
 
 ### 11. executing-plans was rebuilt as a ledgered native mode
 
@@ -725,7 +737,7 @@ It does not fit here, for two reasons:
 
 - **The saving is already taken another way.** writing-plans' handoff
   recommends a fresh session for execution, with the model chosen at launch
-  (`writing-plans/SKILL.md:219-224`).
+  (`writing-plans/SKILL.md:224-230`).
 - **A nested controller cannot hold our human checkpoints.** Claude Code
   removes `AskUserQuestion` from every non-fork subagent (`sub-agents.md`,
   "Available tools"; re-checked at 2.1.302). The pre-flight batched question
