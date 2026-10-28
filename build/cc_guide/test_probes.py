@@ -5,6 +5,7 @@ fake, so no test spends a token or reads the real ~/.claude.'''
 import contextlib
 import json
 import os
+import shlex
 import signal
 import subprocess
 import sys
@@ -447,6 +448,95 @@ def test_output_of_another_shape_is_an_error_never_a_crash(tmp_path, isolated_ho
     outcome, finding = probes.run_probe('agent-model-pins', 'claude', REPO, tmp_path / 'run', fake)
     assert outcome == ERROR
     assert finding.startswith('TypeError: ') and "unhashable type: 'dict'" in finding
+
+
+def dispatch_payload(agent, model=None):
+    '''An agent dispatch's PreToolUse payload, shaped like plan 63's recordings (Claude Code 2.1.304).'''
+    tool_input = {'description': 'd', 'prompt': 'Reply with the word OK.', 'subagent_type': agent,
+                  **({'model': model} if model else {})}
+    return {'session_id': '364e6342-a957-4e26-a308-caa9e4b4bc69', 'cwd': '/private/tmp/cc-guide-probe-x',
+            'hook_event_name': 'PreToolUse', 'tool_name': 'Agent', 'tool_input': tool_input,
+            'tool_use_id': 'toolu_01AbC'}
+
+
+# The control, the pinned built-in, a dispatch made inside a subagent, and a call to another tool.
+PAYLOADS = [dispatch_payload('general-purpose', 'haiku'), dispatch_payload('claude-code-guide'),
+            {**dispatch_payload('general-purpose'), 'agent_id': 'a5287d9d575e'},
+            {**dispatch_payload('x'), 'tool_name': 'Read', 'tool_input': {'file_path': '/private/tmp/x/a.py'}}]
+TRIMMED = [{'matcher': matcher, 'tool_name': 'Agent', 'subagent_type': agent, 'model': model, 'input_keys': keys}
+           for matcher in ('*', 'Agent')
+           for agent, model, keys in (('claude-code-guide', None, ['description', 'prompt', 'subagent_type']),
+                                      ('general-purpose', 'haiku', ['description', 'model', 'prompt',
+                                                                    'subagent_type']))]
+
+
+def fire_payload_hooks(*payloads):
+    '''A side effect that runs each PreToolUse hook in the scratch project
+    settings on each payload whose tool its matcher matches, as Claude Code
+    would.'''
+    def side(cwd):
+        settings = json.loads((cwd / '.claude' / 'settings.json').read_text())
+        for group in settings['hooks']['PreToolUse']:
+            for payload in payloads:
+                if group['matcher'] in ('*', payload['tool_name']):
+                    subprocess.run(shlex.split(group['hooks'][0]['command']), input=json.dumps(payload), text=True,
+                                   check=True)
+    return side
+
+
+def payload_stream() -> str:
+    '''A parent on Sonnet that dispatches the haiku control and
+    claude-code-guide in one message, each forwarding one Haiku message.'''
+    sent = [{'type': 'tool_use', 'id': f't{n}', 'name': 'Agent', 'input': {'subagent_type': agent}}
+            for n, agent in enumerate(('general-purpose', 'claude-code-guide'))]
+    parent = {'type': 'assistant', 'parent_tool_use_id': None,
+              'message': {'model': 'claude-sonnet-5-5', 'content': sent}}
+    forwarded = [{'type': 'assistant', 'parent_tool_use_id': f't{n}',
+                  'message': {'model': 'claude-haiku-5-5', 'content': []}} for n in range(len(sent))]
+    return stream({**init(), 'model': 'claude-sonnet-5-5'}, parent, *forwarded, RESULT)
+
+
+def test_the_payload_probe_logs_each_dispatch_through_both_matchers(tmp_path):
+    '''Project settings only, two logging hooks, one file a payload, since
+    the hooks and the two dispatches can run at once; collect keeps each
+    hook's raw log beside the trimmed payloads.json.'''
+    (inv,) = probes.prepare_payload(tmp_path, 'claude', REPO)
+    settings = json.loads((tmp_path / '.claude' / 'settings.json').read_text())
+    assert [g['matcher'] for g in settings['hooks']['PreToolUse']] == ['*', 'Agent']
+    assert inv.name == 'dispatch' and inv.timeout == probes.PROBE_TIMEOUT
+    assert inv.env == {'CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS': '300000'}
+    assert probes.PAYLOAD_CEILING_MS < probes.PROBE_TIMEOUT * 1000  # claude ends its own wait first
+    assert inv.argv[inv.argv.index('--setting-sources') + 1] == 'project'
+    assert json.loads(inv.argv[inv.argv.index('--settings') + 1]) == {'permissions': {'defaultMode': 'default',
+                                                                                      'allow': ['Agent']}}
+    assert '--forward-subagent-text' in inv.argv and inv.argv[-1] == '--no-session-persistence'
+    for agent in ('"general-purpose" with model "haiku"', '"claude-code-guide", passing no model'):
+        assert agent in inv.argv[1]
+    fire_payload_hooks(*PAYLOADS)(tmp_path)
+    run_dir = tmp_path / 'run'
+    run_dir.mkdir()
+    probes.collect_payload(tmp_path, run_dir)
+    assert json.loads((run_dir / 'payloads.json').read_text()) == TRIMMED
+    assert len((run_dir / 'payloads-any.raw.jsonl').read_text().splitlines()) == 4
+    assert len((run_dir / 'payloads-agent.raw.jsonl').read_text().splitlines()) == 3
+
+
+def bad_payload(cwd):
+    (cwd / 'payloads' / 'any' / 'payload.bad').write_text('not json\n', encoding='utf-8')
+
+
+@pytest.mark.parametrize('side, outcome, finding', [
+    (fire_payload_hooks(*PAYLOADS), PASS, 'dispatches reach PreToolUse as Agent, with no model when unset; '
+                                          'claude-code-guide served claude-haiku-5-5, as the haiku control was'),
+    (bad_payload, ERROR, 'JSONDecodeError: '),
+])
+def test_the_payload_probe_reads_its_run_like_a_live_one(tmp_path, monkeypatch, side, outcome, finding):
+    '''From prepare to the verdict through run_probe, with the hooks fired on
+    the scratch settings; a payload that is not JSON is an ERROR row.'''
+    monkeypatch.setitem(probes.PROBE_RUNS, 'agent-payload', probes.PAYLOAD_PROBE)
+    fake = FakeRuns({'dispatch': payload_stream()}, side={'dispatch': side})
+    verdict = probes.run_probe('agent-payload', 'claude', REPO, tmp_path / 'run', fake)
+    assert verdict.outcome == outcome and verdict.finding.startswith(finding)
 
 
 # Prints the effort override, or "unset", then the variable its invocation adds.
