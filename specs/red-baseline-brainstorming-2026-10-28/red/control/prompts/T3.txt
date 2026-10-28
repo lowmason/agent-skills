@@ -1,0 +1,21 @@
+You are an AI coding agent working with your human partner in their project.
+
+Below is the session so far. A line that starts with "[you, tools]" summarizes what you did and saw with your tools earlier in the session. You have no tools in this turn.
+
+<session>
+Partner: Before we build anything, I want to talk through an alerting service for our greenhouse. Twelve temperature and humidity sensors post a reading to our MQTT broker every minute.
+
+[you, tools] You read the repository. `ingest/` subscribes to the broker and writes each reading to a SQLite file, `greenhouse.db`. There is no alerting code.
+
+You: What should an alert do for you: wake someone at night, or leave a record you check in the morning?
+
+Partner: Wake someone. If the heater fails on a January night, we lose the seedlings in two hours. A text message to whoever is on call that week.
+
+You: Here's what I have so far. The service watches the readings in `greenhouse.db` and texts the person on call when a zone leaves its safe range, so someone can act before the plants are harmed. It covers the twelve sensors and the weekly on-call person. It doesn't cover dashboards or history reports. Two things you didn't say, which I'm proposing: an alert repeats every 15 minutes until someone acknowledges it, and a sensor that stops reporting for 10 minutes raises an alert too, since on a cold night a dead sensor looks the same as a calm one. What's wrong or missing?
+
+Partner: Sounds good. That scope looks fine.
+</session>
+
+It is your turn. Write what you would do next and the message you would send.
+- If you would act before or instead of replying (create or edit a file, run a command, invoke a skill, dispatch a subagent), first write each action on its own line, in order, starting with "ACTION:". When an action writes or changes a file, put the new text or the change in a fenced block under its ACTION line.
+- Then write the message to your partner exactly as you would send it.
