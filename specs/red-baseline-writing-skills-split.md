@@ -1,6 +1,7 @@
 # Plan 72 micro-tests: the writing-skills split
 
-Kit: `specs/red-baseline-writing-skills-split/kit/`. 5 reps per arm. Every verdict is read by
+Kit: `specs/red-baseline-writing-skills-split/kit/`. The first run used `kit/run_reps.sh` as it
+is at `d3ca946`. The isolated re-run at the end used the fixed script. 5 reps per arm. Every verdict is read by
 hand from the full reply. Pass rules and bars registered 2026-10-29 at b6bd294, before the split
 existed and before any rep was run.
 
@@ -54,7 +55,8 @@ no create or edit ACTION. Only 8 reps tested the order of a read before a write:
 The `claude -p` reps received some user-level context: "Insight" boxes appear in every reply of
 both arms (45 of 45), and W1 Sonnet rep 2 quotes the owner's global notes back. So the kit does
 not fully isolate the reps, and this may make the absolute `t3` bars easier to meet than a
-clean run would. The kit fix is deferred.
+clean run would. The section "Re-run with the isolated kit" at the end records the kit fix and
+a clean re-run of the `t3` arms.
 
 ### W1, `t3`, `claude-opus-5-5`
 
@@ -177,3 +179,55 @@ ran one turn with no tools. A `t3` rep that wrote an ACTION line reading discove
 text back and drafted without the moved text, but a `base` rep had that text in its context, so
 the W1 literal-reading split and the `t3` Sonnet arm's zero drafts may come from this design and
 not from the split.
+
+## Re-run with the isolated kit
+
+Run 2026-10-29 on Claude Code 2.1.312, after the plan 72 merge (`d3ca946`). The prompts are the
+`t3` files above, unchanged: their hashes match `t3/MANIFEST.txt`. The output is in
+`t3-isolated/`. The reading rule and the bars are the registered ones above.
+
+**The leak.** A context probe (`kit/isolation_probe.txt`) asks a rep to report what its context
+holds. Under the first run's flags, one Sonnet rep reported four user-level sources: the global
+`~/.claude/CLAUDE.md`, the `Explanatory` output style from the user `settings.json`, the two
+`~/.claude/rules/` files, and SessionStart hook text from the two output-style plugins. Its init
+record showed `output_style: Explanatory` and every user plugin. `--tools ""` removes tools only.
+It does not stop context that the settings load.
+
+**The fix.** `kit/run_reps.sh` now passes `--setting-sources ""`, which loads no settings file,
+and sets `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1`, which drops the auto-memory section from the
+system prompt. Each rep also gets its own `/tmp` directory. Before, one directory served all the
+reps of a call. With the fix, the same probe reported none of the five sources, and the init
+record showed `output_style: default` and only built-in plugins. A two-rep pilot of the fixed
+kit gave the same result. `--bare` also skips these sources, but it needs `ANTHROPIC_API_KEY`.
+
+**Result: every `t3` arm meets its bar again, 5/5 on each case and each model.** All 30 reps
+exited 0. No rep was VOID: every header shows `turns=1`, no extra iterations and one model. No
+reply has an "Insight" box or quotes a user-level file. Spend: **$0.97** for the 30 reps, plus
+about $0.08 for the probes and the pilot.
+
+| Case | `t3` Opus, first run | `t3` Opus, isolated | `t3` Sonnet, first run | `t3` Sonnet, isolated | Bar |
+|---|---|---|---|---|---|
+| W1 (`references/discovery.md`) | 5/5 | 5/5 | 5/5 | 5/5 | ≥ 4/5 |
+| W2 (`references/flowcharts.md`) | 5/5 | 5/5 | 5/5 | 5/5 | ≥ 4/5 |
+| W3 (`references/bulletproofing.md`) | 5/5 | 5/5 | 5/5 | 5/5 | ≥ 4/5 |
+
+Each rep's deciding ACTION, read by hand from the full reply:
+
+- **W1 Opus.** Every rep reads `discovery.md` as its 1st ACTION. Reps 1, 3, 4 and 5 then create
+  the target as the 4th ACTION. Rep 2 writes no create ACTION.
+- **W1 Sonnet.** Every rep reads `discovery.md` 1st. Rep 3 creates the target as the 4th ACTION.
+  Reps 1, 2, 4 and 5 write no create ACTION.
+- **W2, both models.** All 10 reps read `flowcharts.md` and write no edit ACTION. It is the 1st
+  ACTION in every rep except Sonnet rep 5, where it is the 3rd.
+- **W3 Opus.** Every rep reads `bulletproofing.md` 1st. Rep 1 edits the target as the 4th ACTION.
+  Reps 2 to 5 write no edit ACTION.
+- **W3 Sonnet.** All 5 reps read `bulletproofing.md` and write no edit ACTION. It is the 1st
+  ACTION in reps 1 and 2 and the 3rd in reps 3, 4 and 5.
+
+24 of the 30 passes come from the no-edit clause. Only 6 reps test the order of a read before a
+write: W1 Opus reps 1, 3, 4 and 5, W1 Sonnet rep 3, and W3 Opus rep 1. The first run had 8 such
+reps.
+
+So the leaked context did not make these bars pass: the passes hold without it. The deferred
+item "The `t3` micro-test passes show less than they appear to" still applies, because a
+single-turn rep with no tools never gets the reference text back.

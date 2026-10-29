@@ -6846,7 +6846,7 @@ review and the Plan Completion gate (2026-10-27) add the others.
       zero links, counts links with single-quoted or parenthesized titles, compares file names
       case-sensitively, and parses reference-style definitions and percent-encoded targets, and
       `build/test_check_links.py` has a test for each.
-- [ ] The micro-test kit lets user-level context into its `claude -p` reps (plan 72 final review,
+- [x] The micro-test kit lets user-level context into its `claude -p` reps (plan 72 final review,
       Minor; triaged defer). All 45 replies of plan 72's micro-test show an "Insight" box, and
       W1 Sonnet rep 2 quotes the user's global notes back. So
       `specs/red-baseline-writing-skills-split/kit/run_reps.sh`, copied from plan 71's kit
@@ -6858,6 +6858,14 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `specs/red-baseline-writing-skills-split.md`. Size: plan. Done when: a kit run shows no
       Insight box and no quoted user-level file in any reply, plan 72's `t3` arms (30 reps, about
       $2) re-run under it, and the pass counts are recorded beside the first run's.
+      → done on branch claude/what-is-next-2ccb0d (2026-10-29): the cause is the user setting
+      source, which loads the output style, the output-style plugins' SessionStart hooks,
+      `~/.claude/CLAUDE.md` and `~/.claude/rules/`. `run_reps.sh` now passes
+      `--setting-sources ""` and sets `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1`, with one `/tmp`
+      directory per rep, and `kit/isolation_probe.txt` checks it. The 30 `t3` reps re-ran in
+      `t3-isolated/` with no Insight box and no user-level quote, still 5/5 on every arm ($0.97),
+      recorded under "Re-run with the isolated kit". Earlier kits are unchanged. The open item
+      under micro-test-kit-isolation tracks the results they may have lifted.
 - [ ] The `t3` micro-test passes show less than they appear to (plan 72 final review, Minor;
       triaged defer). The reps run one turn with no tools, so a read ACTION never returns the
       reference text. 22 of the 30 `t3` passes came from the registered no-edit clause, and only
@@ -6866,3 +6874,20 @@ review and the Plan Completion gate (2026-10-27) add the others.
       `specs/red-baseline-writing-skills-split.md`. Size: design. Revisit if: an agent is seen
       skipping a writing-skills reference in real use, or a later pointer change needs evidence
       beyond "reads first".
+
+## micro-test-kit-isolation (no plan; kit fix, branch claude/what-is-next-2ccb0d) — 2026-10-29
+- [ ] Earlier micro-test kits leaked user-level context too (found while fixing plan 72's kit).
+      Every `claude -p --tools ""` kit before plan 72's fix ran without `--setting-sources ""`.
+      So the reps got the owner's output style, the output-style plugins' SessionStart hooks,
+      `~/.claude/CLAUDE.md` and `~/.claude/rules/`. Kits and records that show it include
+      `specs/red-baseline-sdd-compaction/kit/run_reps.sh` (plan 71),
+      `specs/red-baseline-brainstorming-2026-10-28/kit/run_reps.sh` (plan 70) and the
+      `specs/verification/` micro-test records of plans 57, 59, 64, 65 and 67. An arm contrast is
+      protected, because both arms got the same context. An absolute result in a single arm is
+      not. The global CLAUDE.md tells agents to check for a relevant skill, so it can lift a
+      control arm. The verdict most at risk is plan 71's ruling (3): the stop rule dropped it
+      because the control arm recovered 5/5. Plan 72's `t3` arms re-ran clean and held 5/5
+      (`specs/red-baseline-writing-skills-split.md`, "Re-run with the isolated kit"). Size:
+      plan. Done when: plan 71's control arm for ruling (3), and each plan 70 arm whose verdict
+      decided a ruling or a stop rule, re-run under plan 72's fixed kit, and each record states
+      whether its verdict holds.
