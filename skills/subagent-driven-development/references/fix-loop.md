@@ -42,9 +42,11 @@ human partner only when every path forward is a guess.
   tell your partner why, and dispatch the fix subagent in the same turn.
 - Dispatch fix subagents for Critical and Important findings — rounds 1-3
   resume the same implementer, rounds 4-5 dispatch a fresh one (see **Fix
-  Rounds**). Record Minor findings in the progress ledger as you go, and
-  point the final whole-branch review at that list so it can triage which
-  must be fixed before merge. A roll-up nobody reads is a silent discard.
+  Rounds**). Rule on each Declined to judge line from a task review as you
+  go: make it a finding, or ledger why it stays out
+  (`Ruling: <what you decided> — <why> — <what it costs if wrong>`). Point
+  the final whole-branch review at these `Ruling:` lines; a ruling it
+  disagrees with comes back as a finding.
 - A finding labeled plan-mandated — or any finding that conflicts with
   what the plan's text requires — is the human's decision, like any plan
   contradiction: present the finding and the plan text, ask which governs.

@@ -692,6 +692,12 @@ Changes from upstream:
     upstream's eval repository, prime-radiant-inc/superpowers-evals, which
     carries no license; its unnamed-input crash eval is credited as the idea
     behind case R1 (specs/red-baseline-reviewer-planning-contract.md).
+  - The executors pass the spec path and the plan's Review Focus section to
+    the final code-reviewer (plan 73), the idea of upstream PR #2319's
+    executing-plans hunk (5feaa15). This repo's own work: the split of
+    Declined to judge rulings, where the controller rules on per-task lines
+    and the partner rules on the final review's lines at the plan-completion
+    gate.
 
     brainstorming/
     dispatching-parallel-agents/
