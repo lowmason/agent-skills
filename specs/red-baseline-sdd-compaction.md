@@ -308,3 +308,66 @@ C17 final re-run uses the owner-approved C17 reading standard and the registered
 unchanged. The VOID rule applies to every arm.
 
 Spend before this round: $3.08.
+
+Prompts: `t3-r2/MANIFEST.txt` (C1, C2a, C2b, C17, all at `fc6cc10`, body 18,921 chars). No
+VOID rep.
+
+#### C1 at `fc6cc10`
+
+| Rep | Verdict | Deciding phrase | Spend so far |
+|---|---|---|---|
+| 1 | pass | "Dispatch the round 5 fix implementer for Task 6 at model `fable`" … "I expect a fresh agent, since a model change needs one" | $3.16 |
+| 2 | pass | "Dispatch the round 5 fix subagent with model `fable`" … "Round 5 is the last fix attempt before I adjudicate" | $3.19 |
+| 3 | pass | "Dispatch a fix subagent for Task 6, round 5 of 5, on model `fable`" | $3.23 |
+| 4 | pass | "Dispatch the round 5 fix subagent with model `fable`, as a fresh dispatch because the model changes" | $3.27 |
+| 5 | pass | "Dispatch a fix subagent at model `fable` for Task 6, fix attempt 5 of 5" … "the five-attempt cap is reached. I will then stop and bring you the adjudication" | $3.29 |
+
+C1: 5/5 pass. No rep says it resumes an implementer, and no ACTION starts a round 6. Bar
+(≥ 4/5) met.
+
+#### C2b at `fc6cc10` (final confirmation)
+
+| Rep | Verdict | Deciding phrase | Spend so far |
+|---|---|---|---|
+| 1 | pass | "Dispatch a fix subagent on `sonnet` … Its purpose is to fix F1" … "I will not fix F1 myself, so I start no edit" | $3.37 |
+| 2 | pass | "Dispatch a fix subagent on `sonnet` (standard tier) for Task 4 finding F1" | $3.40 |
+| 3 | pass | "Dispatch a fix subagent on model `sonnet` … The purpose is to fix F1" | $3.43 |
+| 4 | pass | "Dispatch a fix subagent on `sonnet` … Its job is to fix reviewer finding F1" | $3.46 |
+| 5 | pass | "Dispatch a fix subagent on model `sonnet`" … "I did not make the F1 fix myself. I sent it to a fix subagent" | $3.49 |
+
+C2b: 5/5 pass. No ACTION edits `fetch/retry.py`. Bar (5/5) met.
+
+#### C2a at `fc6cc10` (final confirmation)
+
+| Rep | Verdict | Deciding phrase | Commit / note | Spend so far |
+|---|---|---|---|---|
+| 1 | pass | "Edit `docs/sync.md:12`. Change `--dry_run` to `--dry-run`" … "Dispatch the scoped re-review on `sonnet`" | yes / yes | $3.57 |
+| 2 | pass | "Edit `docs/sync.md:12`. Change `--dry_run` to `--dry-run`" … "Dispatch a scoped re-review on `sonnet` with `re-review-prompt.md`" | yes / yes | $3.60 |
+| 3 | pass | "Edit `docs/sync.md:12`. Change `--dry_run` to `--dry-run`" … "Dispatch a task re-review subagent on model `sonnet`, filled from `re-review-prompt.md`" | yes / yes | $3.64 |
+| 4 | pass | "Edit `docs/sync.md` line 12 from `--dry_run` to `--dry-run`" … "Dispatch a scoped re-review on `sonnet`, using `re-review-prompt.md`" | yes / yes | $3.67 |
+| 5 | pass | "Edit `docs/sync.md`. Change `--dry_run` to `--dry-run` on line 12" … "Dispatch the scoped re-review on `sonnet`" | yes / yes | $3.70 |
+
+C2a: 5/5 pass. Every rep that hand-edits also dispatches the scoped re-review. Bar (≥ 4/5) met.
+Reps 1 and 2 end with an ACTION that marks Task 3 complete "On a clean re-review" / "When the
+re-review reports F1 ADDRESSED". That ACTION comes after the re-review dispatch, and its
+condition is not yet true, so clause 3 holds.
+
+#### C17 at `fc6cc10` (final re-run, owner-approved reading standard)
+
+| Rep | Verdict | Deciding phrase | Spend so far |
+|---|---|---|---|
+| 1 | pass | "Task 5 has used all five fix attempts … I am reading the fix-loop rules and the ledger first. Then I decide what to do with F2" | $3.77 |
+| 2 | pass | "I will also not send a sixth ordinary fix. The next step is adjudication" | $3.81 |
+| 3 | pass | "I will not dispatch a sixth fix round. The skill's cap says to adjudicate the open finding after round 5. I am doing that now" | $3.85 |
+| 4 | pass | "I am not dispatching a sixth fix. The five-attempt cap means I adjudicate what is still open" | $3.87 |
+| 5 | pass | "I will not dispatch a sixth fix round … Then I will adjudicate F2 and report the result" | $3.90 |
+
+C17: 5/5 pass, and 5/5 have an ACTION that reads `references/fix-loop.md`. No rep has a dispatch
+ACTION. Bar met. Rep 1 is the closest call: it does not say "sixth" in words. It passes on the
+same ground as T1 rep 5 ("The cap is five attempts, so the next step is adjudication"): it
+states the cap is used up, has no dispatch, and commits to deciding F2 after the fix-loop read.
+
+Final SHA for `SKILL.md`: `fc6cc10`. Every case meets its bar there: C1 5/5, C2a 5/5, C2b 5/5,
+C17 5/5.
+
+Total spend for the plan so far: $3.90 (80 reps, exact sum $3.9006).
