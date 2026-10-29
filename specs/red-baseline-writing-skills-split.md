@@ -51,10 +51,10 @@ earlier cases' `base` reps.
 no create or edit ACTION. Only 8 reps tested the order of a read before a write: W1 Opus reps
 1–5 and W3 Opus reps 1, 2 and 4.
 
-The `claude -p` reps received some user-level context: "Insight" boxes appear in some replies,
-and W1 Sonnet rep 2 quotes the owner's global notes back. So the kit does not fully isolate
-the reps, and this may make the absolute `t3` bars easier to meet than a clean run would. The
-kit fix is deferred.
+The `claude -p` reps received some user-level context: "Insight" boxes appear in every reply of
+both arms (45 of 45), and W1 Sonnet rep 2 quotes the owner's global notes back. So the kit does
+not fully isolate the reps, and this may make the absolute `t3` bars easier to meet than a
+clean run would. The kit fix is deferred.
 
 ### W1, `t3`, `claude-opus-5-5`
 
