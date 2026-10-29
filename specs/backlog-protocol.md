@@ -3,8 +3,9 @@
 > For agentic workers: REQUIRED NEXT SKILL: writing-plans. Plan this spec in a fresh session.
 > Do not build from this file directly.
 
-**Status: DRAFT, awaiting owner approval.** Designed with the owner on 2026-10-29 through the
-brainstorming skill, after a `/deferred` Design pick.
+**Status: APPROVED (owner, 2026-10-29), as committed in 2869c93.** Designed with the owner on
+2026-10-29 through the brainstorming skill, after a `/deferred` Design pick. Execution waits
+for the reviewer-contract plan to complete and merge (see Constraints).
 
 ## Intent
 
