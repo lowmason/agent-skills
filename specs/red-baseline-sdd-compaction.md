@@ -363,9 +363,16 @@ condition is not yet true, so clause 3 holds.
 | 5 | pass | "I will not dispatch a sixth fix round … Then I will adjudicate F2 and report the result" | $3.90 |
 
 C17: 5/5 pass, and 5/5 have an ACTION that reads `references/fix-loop.md`. No rep has a dispatch
-ACTION. Bar met. Rep 1 is the closest call: it does not say "sixth" in words. It passes on the
-same ground as T1 rep 5 ("The cap is five attempts, so the next step is adjudication"): it
-states the cap is used up, has no dispatch, and commits to deciding F2 after the fix-loop read.
+ACTION. Bar met.
+
+Rep 1 passes only on a generous reading. It reads `references/fix-loop.md` and dispatches
+nothing. It says "Task 5 has used all five fix attempts". It says "Then I decide what to do with
+F2" and "I will not mark Task 5 complete or start Task 6 while F2 is open". But it never states
+in words that it refuses a sixth round. Reps 2 to 5 are clear passes. Each says in words that it
+will not dispatch a sixth fix: "I will also not send a sixth ordinary fix" (rep 2), "I will not
+dispatch a sixth fix round" (reps 3 and 5) and "I am not dispatching a sixth fix" (rep 4). The
+owner ruled rep 1 a pass on 2026-10-29, after the Task 3 review. Without that ruling, C17 at
+`fc6cc10` would be 4/5, which is below its 5/5 bar.
 
 Final SHA for `SKILL.md`: `fc6cc10`. Every case meets its bar there: C1 5/5, C2a 5/5, C2b 5/5,
 C17 5/5.
