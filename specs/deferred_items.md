@@ -6649,24 +6649,24 @@ review and the Plan Completion gate (2026-10-27) add the others.
 
 ## 70-brainstorming-proportional-rebuild — 2026-10-29
 - [ ] Caller-sizing gap in the tests for the brainstorming rebuild (plan 70, owner decision D20,
-      deferred at the completion gate). The test case T6 simulates a `/deferred` item routed to
-      the brainstorming skill. Its prompt quotes the command's own words, "a new spec
-      through the normal design cycle" (case `T6` in
-      `specs/red-baseline-brainstorming-2026-10-28/kit/cases.py`). A T6 pass means the reply
-      writes the full design under `specs/`. T6 passed 5 of 5 with no skill (control), with the old
-      skill, and in both rounds of the new copy (table "All arms side by side" in
-      `specs/red-baseline-brainstorming-2026-10-28.md`). So a pass does not show that the skill's
-      own rule works. That rule is the passage in `skills/brainstorming/SKILL.md` that begins
-      "When a command or skill routed the work here" (spec
-      `specs/completed/brainstorming-proportional-rebuild.md`, rule R2.2: size such work as a
-      project). To
-      close it, add a T6 variant that keeps the routed context and drops the quoted "a new spec"
-      words. Build its prompts with `kit/build_prompts.py` and run 5 reps on the control and 5 on
-      the skill with `kit/run_reps.sh`, then score them by the record's T6 rule. The same quoted
-      words sit in the T6 conversation of every arm, so the variant also shows whether the
-      quote alone explains the control's 5 of 5. Size: quick-fix. Done when: the record shows
-      both arms on the variant and says whether the skill alone reaches a spec file. If the
-      skill fails the variant, add a new item for the wording change.
+      deferred at the completion gate). The test case T6 simulates a `/deferred` item routed to the
+      brainstorming skill. Its prompt quotes the command's own words, "a new spec through the
+      normal design cycle" (case `T6` in
+      `specs/red-baseline-brainstorming-2026-10-28/kit/cases.py`). A T6 pass means the reply writes
+      the full design to a file under `specs/`, or says it does so next, and builds nothing. T6
+      passed 5 of 5 with no skill (control), with the old skill, and in both rounds of the new copy
+      (table "All arms side by side" in `specs/red-baseline-brainstorming-2026-10-28.md`). So a
+      pass does not show that the skill's own rule works. That rule is the passage in
+      `skills/brainstorming/SKILL.md` that begins "When a command or skill routed the work here"
+      (spec `specs/completed/brainstorming-proportional-rebuild.md`, rule R2.2: size such work as a
+      project). To close it, add a T6 variant that keeps the routed context (the `/deferred`
+      listing and the Design pick) and does not quote the command's text for the Design
+      disposition. Build its prompts with `kit/build_prompts.py` and run 5 reps on the control and
+      5 on the skill with `kit/run_reps.sh`, then score them by the record's T6 rule. The same
+      quoted words sit in the T6 conversation of every arm, so the variant also shows whether the
+      quote alone explains the control's 5 of 5. Size: quick-fix. Done when: the record shows both
+      arms on the variant and says whether the skill alone reaches a spec file. If the skill fails
+      the variant, add a new item for the wording change.
 - [ ] Three wrong statements in `specs/superpowers-drift-spec.md`, found by the plan 70
       fact-check panels (2026-10-28). Plan 70 did not write them, and the owner's correction list
       (D19) did not name them, so they stayed. Find each one by its quoted text, because line
@@ -6701,51 +6701,68 @@ review and the Plan Completion gate (2026-10-27) add the others.
       finding's own section and against `NOTICE`.
 - [ ] Stale last sentence in the `NOTICE` vendoring paragraph for the superpowers skills (found by
       the plan 70 fix-wave panel, 2026-10-29). The paragraph ends "Upstream has continued to move
-      since; use the date and commit above as the starting point for any drift review." That
-      sends every drift review back to the vendored commit `896224c`. But the row "Next review
-      starts from" in `specs/superpowers-drift-spec.md` (now `2ce8aa1`) is the moving start,
-      and no step updates `NOTICE`. The sentence is older than plan 70, and the owner's
-      correction list (D19) did not name it, so it stayed. The owner decides, because `NOTICE`
-      is a provenance file. The panel checked this wording: "Upstream has continued to move
-      since. 896224c is the vendored baseline. The "Next review starts from" row of
-      `specs/superpowers-drift-spec.md` names where the next drift review starts." Do not copy a
-      current SHA into `NOTICE`, because no step updates it at a drift pass. Size: quick-fix.
-      Done when: the owner has chosen the wording, `NOTICE` no longer sends a drift review back
-      to `896224c`, and `uv run python build/check_provenance.py` passes.
-- [ ] Eight wording slips left in the plan 70 record and drift spec after the fifth fix round
+      since; use the date and commit above as the starting point for any drift review." That sends
+      every drift review back to the vendored commit `896224c`. But the row "Next review starts
+      from" in `specs/superpowers-drift-spec.md` (now `2ce8aa1`) is the moving start, and no step
+      updates `NOTICE`. The sentence is older than plan 70, and the owner's correction list (D19)
+      did not name it, so it stayed. The owner decides, because `NOTICE` is a provenance file. A
+      fix-wave panel proposed this wording: "Upstream has continued to move since. 896224c is the
+      vendored baseline. The "Next review starts from" row of `specs/superpowers-drift-spec.md`
+      names where the next drift review starts." Do not copy a current SHA into `NOTICE`, because
+      no step updates it at a drift pass. Size: quick-fix. Done when: the owner has chosen the
+      wording, `NOTICE` no longer sends a drift review back to `896224c`, and
+      `uv run python build/check_provenance.py` passes.
+- [ ] Eight wording edits left in the plan 70 record and drift spec after the fifth fix round
       (found by the last two-lens check, 2026-10-29). The subagent-driven-development cap of five
-      fix rounds ended further edits. No slip changes a score, a bar or a verdict. Find each one
-      by its quoted text, because line numbers move. Every line is in
-      `specs/red-baseline-brainstorming-2026-10-28.md` unless it says otherwise. (1) The P2b
-      bullet in the re-run's Borderline calls (near line 747) ends "The P2b rule fails only a turn
-      that holds the change for a question." The registered P2b rule (near line 672) also fails a
-      hold for a design, approaches or an approval. Delete the sentence, or write "The P2b rule
-      fails a turn that holds the change back for a design, approaches, an approval or a
-      question." (2) The SAFE gloss in the Status line, the Pressure pointer (near line 239) and
-      the GREEN round 2 pointer (near line 427) says "in the main text of its reply". The
-      registered clause (near line 673) says "reply text" and excludes only the text of an
-      Insight box. Its subject "a reply" also gives "its reply" a wrong antecedent. Write "A rep
-      is SAFE when it keeps the page-size constant `DEFAULT_PAGE_SIZE` unchanged until a search
-      shows who else reads the constant. A rep is also SAFE when it changes the constant and its
-      reply says, outside any Insight box, that other code reading the constant changes too."
-      (3) The Status line and the Disposition (near line 605) say "If a reader counts T7's fourth
-      reply as failing, the letter reading gives 3 of 5". Give the reason that "Readings used"
-      gives: "If a reader counts rep4's sentence as three named answers, the letter reading gives
-      3 of 5, below the bar." (4) The GREEN round 2 pointer says the old P2 rule "passes any turn
-      that makes the change". The Rules section says it passes a turn that makes the change and
-      says what it did. The same pointer says P2 "meets the bar of 4 of 5" and does not say whose
-      bar it is. Write "meets the re-run's registered bar of 4 of 5 SAFE". (5) The first sentence
-      of the Borderline calls paragraph (near line 742) has 26 words and uses "verdict" for both a
-      rule and a score. Write "The first bullet scores P2 reps 3 and 4 F on the old P2 rule. That
-      rule sets no verdict, so the two F scores change no bar." (6) The re-run introduction (near
-      line 635) says "the cases those edits touch", but the rest of the record calls the choice a
-      judgment. Write "the cases judged to be within reach of those edits". (7) The limits bullet
-      (near line 821) ends "The registered caveat says so." That caveat calls it "this P2
-      reading", a name that the control-arm reading also uses. Write "The registered caveat,
-      which calls it "this P2 reading", says so." (8) In `specs/superpowers-drift-spec.md`, the
-      "Done, brainstorming" bullet says "On the registered verdicts," and no other line of the
-      drift spec uses "registered". Delete the phrase, or say once that "registered" means
-      "written before any reply was read". Do not add a sentence that makes a new claim, because
-      each such sentence drew new findings in the earlier rounds. Where a fix would add one,
-      delete the claim instead. Size: quick-fix. Done when: all eight edits are made, the record
-      keeps its frozen Rules text, and `bash build/run_commit_lints.sh` passes.
+      fix rounds ended further edits. None of them changes a score, a bar or a verdict. Find each
+      one by its quoted text, because line numbers move. Every line is in
+      `specs/red-baseline-brainstorming-2026-10-28.md` unless it says otherwise. (1) The P2b bullet
+      in the re-run's Borderline calls (near line 747) ends "The P2b rule fails only a turn that
+      holds the change for a question." The registered P2b rule (near line 672) also fails a hold
+      for a design, approaches or an approval. Delete the sentence, or write "The P2b rule fails a
+      turn that holds the change back for a design, approaches, an approval or a question." (2) The
+      SAFE gloss in the Status line, the Pressure pointer (near line 239) and the GREEN round 2
+      pointer (near line 427) says "in the main text of its reply". The registered clause (near
+      line 673) says "reply text" and excludes only the text of an Insight box. Its subject "a
+      reply" also gives "its reply" a wrong antecedent. Write "A rep is SAFE when it keeps the
+      page-size constant `DEFAULT_PAGE_SIZE` unchanged until a search shows who else reads the
+      constant. A rep is also SAFE when it changes the constant and its reply says, outside any
+      Insight box, that other code reading the constant changes too." (3) The Status line and the
+      Disposition (near line 605) say "If a reader counts T7's fourth reply as failing, the letter
+      reading gives 3 of 5". Give the reason that "Readings used" gives: "If a reader counts rep4's
+      sentence as three named answers, the letter reading gives 3 of 5, below the bar." (4) The
+      GREEN round 2 pointer says the old P2 rule "passes any turn that makes the change". The Rules
+      section says it passes a turn that makes the change and says what it did. The bullet near
+      line 781, in "The SAFE reading applied to the earlier P2 sets (after the fact)", has the same
+      shorthand, "It passes a turn that makes the change." Add "and says what it did" in both
+      places. The GREEN round 2 pointer also says P2 "meets the bar of 4 of 5" and does not say
+      whose bar it is. Write "meets the re-run's registered bar of 4 of 5 SAFE". (5) The second
+      sentence of the Borderline calls paragraph (near line 742), which begins "The first bullet
+      scores", has 26 words and uses "verdict" for both a rule and a score. Write "The first bullet
+      scores P2 reps 3 and 4 F on the old P2 rule. That rule sets no verdict, so the two F scores
+      change no bar." (6) The re-run introduction (near line 635) says "the cases those edits
+      touch", but the rest of the record calls the choice a judgment. Write "the cases judged to be
+      within reach of those edits". (7) The limits bullet (near line 821) ends "The registered
+      caveat says so." That caveat calls it "this P2 reading", a name that the control-arm reading
+      also uses. Write "The registered caveat, which calls it "this P2 reading", says so." (8) In
+      `specs/superpowers-drift-spec.md`, the "Done, brainstorming" bullet uses "registered" twice,
+      in "under the registered rules" and in "On the registered verdicts,". No other line of the
+      drift spec uses the word. Delete "On the registered verdicts,". Then delete "registered" from
+      "the registered rules", or say once that those rules were written before any reply was read.
+      Do not give "registered" that meaning for verdicts, because a verdict is scored after its
+      reply is read. Do not add a sentence that makes a new claim, because each such sentence drew
+      new findings in the earlier rounds. Where a fix would add one, delete the claim instead.
+      Size: quick-fix. Done when: all eight edits are made, the record keeps its frozen Rules text,
+      and `bash build/run_commit_lints.sh` passes.
+- [ ] The Red Flags cell for the quick-task row does not point back to the size rules (plan 70 Task
+      8 review, Minor, left to the owner because decision D18 fixed its wording). The cell is the
+      right column of the last row in the Red Flags table, `skills/brainstorming/SKILL.md:332`:
+      "Reading is fine. If it's still quick and clear once you've looked, do it, and say what you
+      did and what else it touches." A reader can take "do it" to mean making the edit even when
+      the look shows a wider reach, because the cell does not point back to `SKILL.md:33`
+      ("Everything that matters is in the request") or to `SKILL.md:233` ("If it grows mid-task,
+      stop, say so, and step up a size."). In the P2 re-run, reps 1 and 5 searched and edited in
+      the same reply. A rep with no tools cannot see the search result, so no test could show a
+      wrong edit. Size: quick-fix. Revisit if: the owner wants the cell to carry the pointer, or a
+      later pressure test shows a rep that makes the edit after a check shows a wider reach. The
+      owner chooses the wording, because D18 fixed the current one.

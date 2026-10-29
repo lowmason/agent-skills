@@ -5,27 +5,36 @@
 the owner on 2026-10-28, after a section-by-section design review and a review of the written
 text.
 
-**Erratum (2026-10-29), added at retirement.** Two statements in this spec are wrong. The spec
-stays as it was approved, and the plan followed the facts below.
+**Erratum (2026-10-29), added at retirement.** Three statements in this spec need a correction.
+The spec stays as it was approved.
 
 1. The paragraph that begins "These parts did not change from v7.0.0" (section "Upstream since
-   the drift spec") is wrong for three parts. The upstream diff from v7.0.0 to v7.0.1 shows this:
-   - Sizing changed. v7.0.0's "Size the Work" table has three rows: a quick, clear task, a small
-     change and a project. v7.0.1's table has two rows, a small change and a project. It adds an
-     Approaches part. The spec's own table row "A small change is agreed in chat" says so.
+   the drift spec") is wrong for four parts. The upstream diff from v7.0.0 to v7.0.1 shows this:
+   - Sizing changed. v7.0.0's "Size the Work" table has three rows: "A quick, clear task", "A small
+     change" and "A project with a written design". v7.0.1's table has two rows: "A small change"
+     and "A project". Below the table, v7.0.1 adds an Approaches part to the design doc. The
+     spec's own table row "A small change is agreed in chat" says so.
    - Playback changed. v7.0.0 says "Mark anything you're guessing as your guess". v7.0.1 says
      "Anything you filled in goes in as your proposal, with your reason".
    - The first Red Flags row changed in its first cell. v7.0.0 has "I'll offer options to save
      them effort". v7.0.1 has "I'll offer a menu of what they might want". The cell that the
      paragraph quotes, "Options steer. Ask them to describe it first.", did not change.
+   - The approval gate changed in two sentences. It is still one gate, but it now names the
+     design doc, short or full. After approval, v7.0.0 named the plan as the next step only for a
+     project's document. v7.0.1 names it for every approved design doc, a small change's short
+     one too.
 
-   The approval gate is still one gate, but its sentence changed its words. It now names the
-   design doc, short or full. The other parts that the paragraph names did not change.
-   `builder-check-prompt.md` and `visual-companion.md` have the same blob sha in the two releases.
+   The other parts that the paragraph names did not change. `builder-check-prompt.md` and
+   `visual-companion.md` have the same blob sha in the two releases.
 2. Call C3 says the builder check replaces the inline spec self-review, "as upstream did".
-   Upstream's v7.0.0 release notes say the builder check replaces the spec-document reviewer.
-   They do not mention the self-review. `NOTICE` no longer gives this reason (decision D19 of
-   plan 70).
+   Upstream's diff shows that change: pull request #2463 removed the inline Spec Self-Review and
+   added the builder check. But upstream's v7.0.0 release notes say the builder check replaces
+   the spec-document reviewer. They do not mention the self-review. `NOTICE` no longer gives a
+   reason for dropping it (decision D19 of plan 70).
+3. The table row "There is no measured bar" sets the Gallery figures of #2571 (24 runs over three
+   variants) beside "176 blind-graded conversations", as if the 176 produced them. The 176 is the
+   total over seven scenarios. Finding 4 of the drift spec gives the two apart. Plan 70's
+   decision D10 left the table as history.
 
 Requirements R9.2 and R9.3 were superseded before the plan ran. A v7.0.1 drift review landed
 first and reviewed every other v7.0.1 change (decision D11 of plan 70).
