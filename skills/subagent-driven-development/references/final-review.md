@@ -7,7 +7,7 @@ Read this when the last task's review resolves, before you dispatch the final wh
 - The final whole-branch review has two seats, launched in the same message:
   the code-reviewer subagent (requesting-code-review's code-reviewer.md) and
   the Codex second opinion in requesting-code-review's
-  [codex-review.md](../requesting-code-review/codex-review.md), `--base` at
+  [codex-review.md](../../requesting-code-review/codex-review.md), `--base` at
   the same merge base. When the Codex run completes, the recipe has you write
   `Codex reviewed <sha>` into the conversation, where
   finishing-a-development-branch reads it after this workspace is gone. Copy

@@ -21,4 +21,4 @@ Without uv, run the same path with `python3` in an environment that has the depe
 
 Step 3 is what powers the `report.md` Assessment lines and Suggested Next Steps section — never hand-roll those interpretations from raw R-hat / ESS / pareto-k numbers when the harness can produce them consistently.
 
-See [scripts/](scripts/) for all available utilities.
+See [scripts/](../scripts/) for all available utilities.

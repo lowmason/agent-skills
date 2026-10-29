@@ -11,7 +11,7 @@ is not itself an attempt.
 | 4-5 | Dispatch a **fresh** implementer with the task brief and the findings. Raise reasoning effort when the prior rounds show a thorough attempt rather than a missing-context failure. |
 | after 5 | The cap is reached. Adjudicate every still-open finding; dispatch no further fix rounds for this task. |
 
-Re-review each round with the scoped [re-review-prompt.md](re-review-prompt.md),
+Re-review each round with the scoped [re-review-prompt.md](../re-review-prompt.md),
 not a fresh full review — the task review already happened, and re-reading the
 whole task every round is the cost this cap exists to bound.
 

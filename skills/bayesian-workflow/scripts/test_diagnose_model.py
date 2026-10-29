@@ -308,7 +308,7 @@ def _complete_idata(**stats):
 
 
 def _read_back(idata):
-    """diagnose_model's report read by check_diagnostics, as step 3 of SKILL.md's pipeline does."""
+    """diagnose_model's report read by check_diagnostics, as the pipeline in references/utility-scripts.md does."""
     report = cd.check_diagnostics(diagnostics=generate_report(idata), calibration=WELL_CALIBRATED, psense=LOW_PSENSE)
     return report, cd.suggest_next_steps(report)
 

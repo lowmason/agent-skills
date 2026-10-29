@@ -8,5 +8,5 @@ review, but you must resolve each one yourself before marking the task
 complete: you hold the plan and cross-task context the reviewer
 lacks. If you confirm an item is a real gap, treat it as a failed spec
 review — send it back to the implementer and re-review. That send-back is a
-fix round: it uses the scoped [re-review-prompt.md](re-review-prompt.md) and
+fix round: it uses the scoped [re-review-prompt.md](../re-review-prompt.md) and
 counts against the five (see **Fix Rounds**).
