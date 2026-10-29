@@ -403,7 +403,8 @@ R2 green note: three remarks fit no registered category; the verdicts above do n
 - The RED R2 reps carry the same two remarks (by a regex aid, not a verdict: `page < 1` in 20 of
   20, the special-case note in 18 of 20), and the RED reading did not count them.
 - All 5 R2-task reps flag the head SHA mismatch under ⚠️ (the kit artifact in the RED R2 note).
-- R2 misses on R2-task under every count, so none of these changes the case result.
+- R2 misses on R2-task under every count, so none of these changes the case result. The counts
+  still matter for R2-final and for the D16 trim; see "Contested remarks and the gating reading".
 
 #### R4-task
 
@@ -446,7 +447,7 @@ each), R1-final (2-4 lines each), R2-task (all "None.") and R2-final (2-4 lines 
 is in no list. R3 met. The `control` and `base` arms have no such list in any of their 40 R1 and R2
 reps. Two near-misses were checked against the R1 crash rule and neither counts: R1-final rep 1's
 line that each file is read fully into memory (which could exhaust memory on very large logs)
-names no read failure and no effect on the run, and R1-final rep 2's line on partial lines from a
+names no read failure, and R1-final rep 2's line on partial lines from a
 file being appended to is not a failure.
 
 #### P12 (P1 and P2)
@@ -527,8 +528,10 @@ not change correctness" as not a finding.
 | "the `n_items == 0` branch becomes redundant or unneeded" (10 of 10 R2 green reps) | optimisation or cleanup with no effect on correctness; polish | literal 2/5, gating 0/5 | literal 4/5, gating 0/5 | n/a |
 | "retry" or "before you retry" has two readings (R4-final reps 3 and 5) | an instruction with two readings; a correctness defect, not a style point | n/a | n/a | gating 5/5; 3/5 if counted as wording |
 
-The RED reps carry the same remarks; the RED reading did not count them, and RED R2 stays 0/5 on
-the registered polish points either way. The gating count is also the stricter one for R2. A bar
-is met only on the gating count. Round 1 therefore targets R2 on both reviewers and R4 on the
-task reviewer, and, because R2-final misses on the gating count, runs the D16 trim of
-`requesting-code-review/code-reviewer.md`'s "What to Check" list (Task 8 Step 5, item 1).
+The RED reps carry the same remarks. The RED reading did not count them, and RED R2 stays 0/5 on
+the registered polish points either way. The registered catch-all ("any other style, naming,
+formatting, optimisation or documentation remark also counts as polish") arguably covers the
+redundancy remark already. If so, 0/5 is the registered count for R2 and 4/5 is the lenient one.
+A bar is met only on the gating count. Round 1 therefore targets R2 on both reviewers and R4 on
+the task reviewer. Because R2-final misses on the gating count, round 1 also runs the D16 trim of
+the "What to Check" list in `requesting-code-review/code-reviewer.md` (Task 8 Step 5, item 1).
