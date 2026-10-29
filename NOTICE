@@ -702,6 +702,13 @@ Changes from upstream:
     upstream PR #2319 (5feaa15) (plan 73). The sentence for a plan with no
     spec is this repo's own. The deferred-item example names a declined
     review line in place of the retired Minor tier.
+  - writing-plans' step recipe comes from upstream PR #2333 (7106932)
+    (plan 73): the capable reader, Step Granularity, What a Step Contains,
+    the template's code step, the Step scan and the Proportion check. This
+    repo's own work: the Remember list drops "Complete code in every step",
+    and the Proportion check keeps micro-tested wording as exact copy. The
+    F1 comparison takes only the idea of upstream's planted-defect probe in
+    prime-radiant-inc/superpowers-evals, and no text.
 
     brainstorming/
     dispatching-parallel-agents/
