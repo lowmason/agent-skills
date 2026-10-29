@@ -24,7 +24,7 @@ and findings from v7.0.1 start at 17.
 | | |
 |---|---|
 | Vendored baseline | `896224c` (v6.0.3, 2026-06-18), per `NOTICE` |
-| Adoption baselines | `b36e082` (v6.3.0) for the four pieces plan 22 (SDD hardening) adopted: findings 1, 2, 5, 6. `8ca22db` (v6.4.2) for the two pieces plan 40 (handoff briefs) adopted: finding 8's `Spec:` pointer and finding 11's handoff half. `2ce8aa1` (v7.0.1) for finding 4, which plan 70 adopted. `2ce8aa1` also for finding 17's SDD file map, which plan 71 adopted |
+| Adoption baselines | `b36e082` (v6.3.0) for the four pieces plan 22 (SDD hardening) adopted: findings 1, 2, 5, 6. `8ca22db` (v6.4.2) for the two pieces plan 40 (handoff briefs) adopted: finding 8's `Spec:` pointer and finding 11's handoff half. `2ce8aa1` (v7.0.1) for finding 4, which plan 70 adopted. `2ce8aa1` also for finding 17's SDD file map, which plan 71 adopted, and for its writing-skills file map, which plan 72 adopted |
 | Previous review | `bb92a77` (v7.0.0, 2026-10-09), reviewed 2026-10-18 |
 | Upstream HEAD | `2ce8aa1` (v7.0.1, 2026-10-21), still `main` on 2026-10-28 |
 | Commits since previous review | 2 on `main`: `b739a8a`, the contribution templates (its title cites #2570, the release notes cite #2569), and the release squash merge `2ce8aa1` (#2581). Upstream's `dev` branch keeps one commit per pull request |
@@ -1039,11 +1039,15 @@ Under this repo's proportional-process rule:
   recovery line was dropped because the control already recovered (D3).
   Results: `specs/red-baseline-sdd-compaction.md`. Exception
   `skill-body-past-compaction` is gone.
-- **Fix directly, no spec, after the SDD plan:** finding 17's writing-skills
-  split (#2564), as the new item "Split writing-skills along upstream v7.0.1's
-  map". Upstream's map fits ours and clears the 500-line WARN and the late
-  headings. The rest of "Split and rewrite writing-skills against the guide"
-  stays a spec candidate.
+- **Done, writing-skills half of finding 17:** through plan 72 (2026-10-29).
+  Our own text moved verbatim into upstream's three references
+  (`discovery.md`, `flowcharts.md`, `bulletproofing.md`); the description
+  rule and the supporting files stay beside SKILL.md. The body fits the
+  window and is under 500 lines, so exception
+  `writing-skills-late-critical-headings` and the `critical_placement`
+  lint are gone. Results: `specs/red-baseline-writing-skills-split.md`. The
+  rest of "Split and rewrite writing-skills against the guide" stays a spec
+  candidate.
 - **Not adopted until the probe has run:** upstream's whole-file byte bar
   (finding 17). finishing-a-development-branch is the one skill that passes
   our check and fails the stricter bar. The probe item decides the measure.

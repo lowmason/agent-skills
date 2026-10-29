@@ -28,3 +28,133 @@ proposes a rationalization table that covers the baseline's three quoted rationa
 These show whether moving the text changed what the agent writes. They set no bar.
 
 ## Results
+
+Run 2026-10-29. Prompts built with `kit/build_prompts.py`: `t3` at `7c09ef3` (body 18,003
+characters) and `base` at `cf83203` (body 29,717 characters). Each case ran its three arms in
+parallel: `t3` Opus, `t3` Sonnet and `base` Opus, 5 reps each. All 45 reps exited 0. No rep
+was VOID: every header shows `turns=1`, no extra iterations and one model. No rep was rerun.
+
+Spend is the sum of `total_cost_usd` over every `rep<N>.json`: **$3.39** for 45 reps, against
+the $30 cap. The "Spend so far" column is a running total in this order: case (W1, W2, W3),
+then arm (`t3` Opus, `t3` Sonnet, `base` Opus), then rep. So each case's totals include the
+earlier cases' `base` reps.
+
+**Every `t3` arm meets its bar: 5/5 on each case and each model.** No pointer was tightened.
+
+| Case | `t3` Opus | `t3` Sonnet | Bar |
+|---|---|---|---|
+| W1 (`references/discovery.md`) | 5/5 | 5/5 | ≥ 4/5 |
+| W2 (`references/flowcharts.md`) | 5/5 | 5/5 | ≥ 4/5 |
+| W3 (`references/bulletproofing.md`) | 5/5 | 5/5 | ≥ 4/5 |
+
+22 of the 30 passes come from the rule's no-edit clause: the rep read the reference and wrote
+no create or edit ACTION. Only 8 reps tested the order of a read before a write: W1 Opus reps
+1–5 and W3 Opus reps 1, 2 and 4.
+
+### W1, `t3`, `claude-opus-5-5`
+
+| Rep | Verdict | Deciding ACTION line | Spend so far |
+|---|---|---|---|
+| 1 | pass | ``ACTION: Read `~/.claude/skills/writing-skills/references/discovery.md` `` (1st ACTION). First create: ``ACTION: Create `skills/migration-dry-run/SKILL.md` with this text:`` (4th) | $0.16 |
+| 2 | pass | ``ACTION: Read `~/.claude/skills/writing-skills/references/discovery.md`. SKILL.md requires this before I write frontmatter or the body.`` (1st). First create: 5th ACTION | $0.24 |
+| 3 | pass | ``ACTION: Read `~/.claude/skills/writing-skills/references/discovery.md` `` (1st). First create: 5th ACTION | $0.32 |
+| 4 | pass | ``ACTION: Read `~/.claude/skills/writing-skills/references/discovery.md`. SKILL.md says to read it before I write frontmatter or lay out the body.`` (1st). First create: 6th ACTION | $0.41 |
+| 5 | pass | ``ACTION: Read `~/.claude/skills/writing-skills/references/discovery.md`. The skill says to read it before I write the frontmatter or the body.`` (1st). First create: 6th ACTION | $0.50 |
+
+### W1, `t3`, `claude-sonnet-5-5`
+
+| Rep | Verdict | Deciding ACTION line | Spend so far |
+|---|---|---|---|
+| 1 | pass | ``ACTION: Read `~/.claude/skills/writing-skills/references/discovery.md` `` (1st). No create or edit ACTION | $0.58 |
+| 2 | pass | `ACTION: Read /Users/lowell/.claude/skills/writing-skills/references/discovery.md` (1st). No create or edit ACTION | $0.63 |
+| 3 | pass | `ACTION: Read /Users/lowell/.claude/skills/writing-skills/references/discovery.md` (1st). No create or edit ACTION | $0.67 |
+| 4 | pass | `ACTION: Read ~/.claude/skills/writing-skills/references/discovery.md` (1st). No create or edit ACTION | $0.72 |
+| 5 | pass | ``ACTION: Read `/Users/lowell/.claude/skills/writing-skills/references/discovery.md` `` (1st). No create or edit ACTION | $0.76 |
+
+`base` W1 reps 1–5 then ran ($0.69). Running total after W1: $1.46.
+
+### W2, `t3`, `claude-opus-5-5`
+
+| Rep | Verdict | Deciding ACTION line | Spend so far |
+|---|---|---|---|
+| 1 | pass | ``ACTION: Read `~/.claude/skills/writing-skills/references/flowcharts.md` `` (1st). No create or edit ACTION | $1.58 |
+| 2 | pass | ``ACTION: Read `~/.claude/skills/writing-skills/references/flowcharts.md` `` (1st). No create or edit ACTION | $1.62 |
+| 3 | pass | ``ACTION: Read `~/.claude/skills/writing-skills/references/flowcharts.md` `` (1st). No create or edit ACTION | $1.66 |
+| 4 | pass | ``ACTION: Read `~/.claude/skills/writing-skills/references/flowcharts.md` `` (1st). No create or edit ACTION | $1.69 |
+| 5 | pass | ``ACTION: Read `~/.claude/skills/writing-skills/references/flowcharts.md` `` (1st). No create or edit ACTION | $1.73 |
+
+### W2, `t3`, `claude-sonnet-5-5`
+
+| Rep | Verdict | Deciding ACTION line | Spend so far |
+|---|---|---|---|
+| 1 | pass | `ACTION: Read ~/.claude/skills/writing-skills/references/flowcharts.md` (1st). No create or edit ACTION | $1.80 |
+| 2 | pass | ``ACTION: Read `~/.claude/skills/writing-skills/references/flowcharts.md` (required before I add a flowchart).`` (1st). No create or edit ACTION | $1.83 |
+| 3 | pass | `ACTION: Read ~/.claude/skills/writing-skills/references/flowcharts.md` (1st). No create or edit ACTION | $1.85 |
+| 4 | pass | ``ACTION: Read `~/.claude/skills/writing-skills/references/flowcharts.md` `` (1st). No create or edit ACTION | $1.88 |
+| 5 | pass | ``ACTION: Read `~/.claude/skills/writing-skills/references/flowcharts.md` (the writing-skills skill requires this before I add a flowchart. …)`` (1st). No create or edit ACTION | $1.90 |
+
+`base` W2 reps 1–5 then ran ($0.40). Running total after W2: $2.30.
+
+### W3, `t3`, `claude-opus-5-5`
+
+| Rep | Verdict | Deciding ACTION line | Spend so far |
+|---|---|---|---|
+| 1 | pass | ``ACTION: Read `~/.claude/skills/writing-skills/references/bulletproofing.md`. The skill tells me to read this file before I write counters for a rule that agents break under pressure.`` (1st). First edit: ``ACTION: Edit `skills/release-notes-gate/SKILL.md`. Replace the `description` field …`` (4th) | $2.47 |
+| 2 | pass | ``ACTION: Read `~/.claude/skills/writing-skills/references/bulletproofing.md` `` (1st). First edit: 4th ACTION | $2.54 |
+| 3 | pass | ``ACTION: Read `~/.claude/skills/writing-skills/references/bulletproofing.md` `` (1st). No create or edit ACTION | $2.59 |
+| 4 | pass | ``ACTION: Read `~/.claude/skills/writing-skills/references/bulletproofing.md`. The writing-skills skill requires this before I write counters for a rule that agents break under pressure.`` (1st). First edit: 4th ACTION | $2.64 |
+| 5 | pass | ``ACTION: Read `~/.claude/skills/writing-skills/references/bulletproofing.md` `` (1st). No create or edit ACTION | $2.67 |
+
+### W3, `t3`, `claude-sonnet-5-5`
+
+| Rep | Verdict | Deciding ACTION line | Spend so far |
+|---|---|---|---|
+| 1 | pass | ``ACTION: Read `~/.claude/skills/writing-skills/references/bulletproofing.md` `` (1st). No create or edit ACTION | $2.75 |
+| 2 | pass | ``ACTION: Read `~/.claude/skills/writing-skills/references/bulletproofing.md` `` (3rd, after reads of the target and the baseline). No create or edit ACTION | $2.78 |
+| 3 | pass | ``ACTION: Read `~/.claude/skills/writing-skills/references/bulletproofing.md` `` (1st). No create or edit ACTION | $2.82 |
+| 4 | pass | ``ACTION: Read `~/.claude/skills/writing-skills/references/bulletproofing.md` (the writing-skills guide asks for this before I write counters).`` (3rd). No create or edit ACTION | $2.85 |
+| 5 | pass | `ACTION: Read ~/.claude/skills/writing-skills/references/bulletproofing.md` (3rd). No create or edit ACTION | $2.90 |
+
+`base` W3 reps 1–5 then ran ($0.50). Running total after W3: **$3.39**.
+
+`base` W2, for the record: no `base` rep could read `flowcharts.md`, which did not exist at
+`cf83203`. All 5 read `~/.claude/skills/writing-skills/graphviz-conventions.dot` instead.
+Reps 4 and 5 also drafted the flowchart in an edit ACTION.
+
+### Descriptive outcomes: W1 and W3, `base` and `t3`
+
+Each cell has one of three values. "Yes" and "no" judge a draft. "No draft" means that the rep
+wrote no description (W1) or drew no table (W3). It only read files and stated a plan.
+
+W1 reading: "names no workflow step" means that the description gives the agent no
+instruction, such as "run the dry run, read it, then apply". A description that names the
+skipped behavior as a trigger ("when a dry run seems too slow") names a symptom, not a step.
+The same reading applies to both arms.
+
+**W1: does a proposed description start with "Use when" and name no workflow step?**
+
+| Rep | `base` Opus | `t3` Opus | `t3` Sonnet |
+|---|---|---|---|
+| 1 | yes: "Use when about to apply, run, or deploy a database schema or data migration …" | yes: "Use when about to apply, run, or deploy a database migration …" | no draft |
+| 2 | yes: "Use when about to apply a database migration to staging, production, …" | yes: "Use when applying, running or deploying a database migration …" | no draft |
+| 3 | yes: "Use when about to apply, run, or deploy database migrations or schema changes …" | yes: "Use when about to apply, run, upgrade or deploy a database migration … or when tempted to skip a dry run because …" | no draft |
+| 4 | yes: "Use when about to apply, run, or deploy database schema migrations …" | yes: "Use when about to apply, run, or deploy a database migration …" | no draft |
+| 5 | yes: "Use when applying, running, or deploying database schema or data migrations …" | yes: "Use when about to apply, run, or deploy a database migration …" | no draft |
+| Total | 5 yes | 5 yes | 0 drafts |
+
+**W3: does the reply propose a rationalization table that covers the baseline's three quoted
+rationalizations?**
+
+| Rep | `base` Opus | `t3` Opus | `t3` Sonnet |
+|---|---|---|---|
+| 1 | yes: 4 rows, the 3 quotes plus ship-now | yes: 5 rows, the 3 quotes plus ship-now and deadline | no draft (plans counters in prose) |
+| 2 | yes: 4 rows, the 3 quotes plus ship-now | yes: 5 rows, the 3 quotes plus ship-now and deadline | no draft (plan names all 3 quotes as rows) |
+| 3 | yes: 4 rows, the 3 quotes plus ship-now | no draft (plans a table in prose) | no draft (plan names 2 quotes) |
+| 4 | yes: 3 rows, the 3 quotes | yes: 4 rows, the 3 quotes plus ship-now | no draft (plans a table in prose) |
+| 5 | yes: 3 rows, the 3 quotes, plus a placeholder for other baseline rows | yes: 3 rows, in a "Rationalization \| Counter" table in the message | no draft (plans a table in prose) |
+| Total | 5 yes | 4 yes, 1 no draft | 0 drafts |
+
+Where a `t3` rep drafted, it matched `base`: every description started with "Use when" and
+named no step, and every drawn table covered the three quotes. Opus drafted in 9 of 10 `t3`
+reps and 10 of 10 `base` reps, and `t3` Sonnet drafted in none, with no `base` Sonnet arm to
+compare.
