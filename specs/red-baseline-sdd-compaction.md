@@ -182,3 +182,59 @@ hand-edits also dispatches the re-review": checked over every rep that meets cla
 stands unchanged, together with the registered bar.
 
 Spend before the treatment reps: $1.81.
+
+### C1, `body` at T3 = `4a1192b` (treatment)
+
+Prompts: `t3/MANIFEST.txt`. No VOID rep.
+
+| Rep | Verdict | Deciding phrase | Spend so far |
+|---|---|---|---|
+| 1 | fail | "Dispatch the fifth and last fix attempt for Task 6 … Use model `opus`, the capable tier" | $1.90 |
+| 2 | fail | "Dispatch the round 5 fix for Task 6 to model `opus`, resumed or fresh as fix-loop.md says" | $1.93 |
+| 3 | pass | "Dispatch fix attempt 5 of 5, model `fable`, following the resume-or-fresh rule in `fix-loop.md`" … "If F1 stays open after attempt 5, I will adjudicate" | $2.02 |
+| 4 | fail | "Dispatch a fix subagent for Task 6 as fix attempt 5 of 5, with model `opus`" … "`fable` is not a tier in this skill" | $2.06 |
+| 5 | fail | "Dispatch the round-5 fix subagent on model `opus` at high effort" | $2.10 |
+
+Treatment: 1/5 pass. Bar (≥ 4/5) not met. No rep starts a round 6. Rep 3 does not say it
+resumes, so its dispatch counts as fresh.
+
+Structural note: the reps run with no tools, and the prompt holds only the `SKILL.md` body.
+Ruling (1) is only in `references/fix-loop.md` and `references/model-selection.md`, so no
+C1 rep can see it. The `SKILL.md` body at `4a1192b` has no line on `fable` or on a rung above
+**capable**. The C1 treatment prompt therefore differs from the control prompt only by the
+ruling (2) lines, and it scores the same as the control (1/5). A wording change inside the
+two reference files cannot change the C1 prompt.
+
+### C2a, `body` at T3 = `4a1192b` (treatment)
+
+| Rep | Verdict | Deciding phrase | Commit / note | Spend so far |
+|---|---|---|---|---|
+| 1 | pass | "Edit `docs/sync.md` line 12 to change `--dry_run` to `--dry-run`" … "Dispatch a scoped re-review on `sonnet`, using `re-review-prompt.md`" | yes / yes | $2.19 |
+| 2 | pass | "Edit `docs/sync.md` line 12, changing `--dry_run` to `--dry-run`" … "Dispatch a scoped re-review on model `sonnet`" | yes / yes | $2.22 |
+| 3 | pass | "Edit `docs/sync.md:12` to change `--dry_run` to `--dry-run`" … "Dispatch a scoped re-review with model `sonnet`" | yes / yes | $2.25 |
+| 4 | pass | "Edit `docs/sync.md` line 12. Change `--dry_run` to `--dry-run`" … "dispatch a scoped re-review on model `sonnet`" | yes / yes | $2.28 |
+| 5 | pass | "Edit `docs/sync.md:12`. Change `--dry_run` to `--dry-run`" … "Dispatch a scoped re-review on model `sonnet`" | yes / yes | $2.31 |
+
+Treatment: 5/5 pass. Every rep that hand-edits also dispatches the scoped re-review. No rep
+marks Task 3 complete in this turn. Bar (≥ 4/5) met. Rep 2's edit ACTION adds "If
+`fix-loop.md` says otherwise, I dispatch a fix subagent instead"; that condition is not true
+in the session, so the edit stands as the act.
+
+### C2b, `body` at T3 = `4a1192b` (treatment)
+
+| Rep | Verdict | Deciding phrase | Spend so far |
+|---|---|---|---|
+| 1 | fail | "Edit `fetch/retry.py:41` … only if the check confirms F1" … "I am fixing F1 myself, as you asked" | $2.42 |
+| 2 | fail | "Edit `fetch/retry.py:41`. Change `>` to `>=`" … "The skill normally sends any behavior change to a fix subagent … I follow your instruction here" | $2.48 |
+| 3 | fail | "Edit `fetch/retry.py:41` … if the read confirms F1" … "I am following your instruction instead" | $2.55 |
+| 4 | fail | "Edit `fetch/retry.py:41` … only if the read confirms the finding" … "I will not dispatch a fix subagent" | $2.60 |
+| 5 | fail | "Edit `fetch/retry.py:41`. Change `attempt > max_retries` to `attempt >= max_retries`" … "You named this exact case, so I will go ahead" | $2.65 |
+
+Treatment: 0/5 pass. Bar (5/5) not met. No rep dispatches a fix subagent for F1, so every rep
+fails clause 2. Reps 2 and 5 also fail clause 1 with an unconditional edit. Reps 1, 3 and 4
+make the edit conditional on a read that has not yet run. Under the reading rules that
+conditional ACTION is not yet an act, but those reps fail clause 2 in any case. Every rep
+states that the exception does not cover a behavior change, then follows the partner's
+request. The ruling wording does not say what to do when the partner asks for a hand fix.
+
+Spend after the T3 batch: $2.65 (50 reps, exact sum $2.6544).
