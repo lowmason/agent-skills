@@ -24,7 +24,7 @@ and findings from v7.0.1 start at 17.
 | | |
 |---|---|
 | Vendored baseline | `896224c` (v6.0.3, 2026-06-18), per `NOTICE` |
-| Adoption baselines | `b36e082` (v6.3.0) for the four pieces plan 22 (SDD hardening) adopted: findings 1, 2, 5, 6. `8ca22db` (v6.4.2) for the two pieces plan 40 (handoff briefs) adopted: finding 8's `Spec:` pointer and finding 11's handoff half. `2ce8aa1` (v7.0.1) for finding 4, which plan 70 adopted |
+| Adoption baselines | `b36e082` (v6.3.0) for the four pieces plan 22 (SDD hardening) adopted: findings 1, 2, 5, 6. `8ca22db` (v6.4.2) for the two pieces plan 40 (handoff briefs) adopted: finding 8's `Spec:` pointer and finding 11's handoff half. `2ce8aa1` (v7.0.1) for finding 4, which plan 70 adopted. `2ce8aa1` also for finding 17's SDD file map, which plan 71 adopted |
 | Previous review | `bb92a77` (v7.0.0, 2026-10-09), reviewed 2026-10-18 |
 | Upstream HEAD | `2ce8aa1` (v7.0.1, 2026-10-21), still `main` on 2026-10-28 |
 | Commits since previous review | 2 on `main`: `b739a8a`, the contribution templates (its title cites #2570, the release notes cite #2569), and the release squash merge `2ce8aa1` (#2581). Upstream's `dev` branch keeps one commit per pull request |
@@ -1031,15 +1031,14 @@ Under this repo's proportional-process rule:
   recommended. Execution of each waits until plan 69's execution has ended.
   The SDD plan runs first, then the writing-skills split. Upstream's byte bar
   is not adopted until the probe has run.
-- **Fix directly, no spec, through an open deferred item:** finding 17's SDD
-  half (#2565). The item "Fit the subagent-driven-development and
-  bayesian-workflow bodies inside the compaction window" is already sized as a
-  plan. Use upstream's seven-reference map as its skeleton, and move our own
-  text verbatim. The map leaves the body about 400 characters over, so the plan
-  also moves File Handoffs or Context Checkpoints. Micro-test the fix-loop
-  re-read pointer under writing-skills. Part 3 of "Three
-  subagent-driven-development decisions" (re-invoke after compaction) still
-  needs the owner's ruling, and upstream's step pointers are prior art for it.
+- **Done, SDD half of finding 17:** through plan 71 (2026-10-29). Our own text
+  moved verbatim into upstream's seven references plus `file-handoffs.md` and
+  the Context Checkpoints section, with the fix-loop re-read pointer. Plan 71
+  also applied the owner's three rulings on "Three subagent-driven-development
+  decisions": the Fable round-5 rung and the trivial-fix exception; the
+  recovery line was dropped because the control already recovered (D3).
+  Results: `specs/red-baseline-sdd-compaction.md`. Exception
+  `skill-body-past-compaction` is gone.
 - **Fix directly, no spec, after the SDD plan:** finding 17's writing-skills
   split (#2564), as the new item "Split writing-skills along upstream v7.0.1's
   map". Upstream's map fits ours and clears the 500-line WARN and the late
