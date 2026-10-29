@@ -180,13 +180,10 @@ as it says before you mark the task complete.
 ## Fix Rounds
 
 A task gets at most **five fix attempts**; adjudication follows the fifth.
-**Before every fix round, and before you adjudicate, read
-[references/fix-loop.md](references/fix-loop.md) again**, even when you remember
-it. Your memory of it does not survive compaction, and it decides who fixes this
-round, how the re-review runs, and when you stop to adjudicate. At the cap,
-adjudicate right after that read, without deferring: write a `Ruling:` line in
-the ledger for each still-open finding, recording it as work or parking it with
-your reason.
+**Before every fix round, read [references/fix-loop.md](references/fix-loop.md)
+again**, even when you remember it. Your memory of it does not survive
+compaction, and it decides who fixes this round, how the re-review runs, and
+when you stop to adjudicate.
 
 ## Plan Completion
 
