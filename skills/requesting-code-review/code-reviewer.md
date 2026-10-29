@@ -131,7 +131,7 @@ Subagent (code-reviewer if defined, else general-purpose):
 
     ## Declined to judge
 
-    Before your verdict, list each behavior you considered and set aside as
+    Before your Assessment, list each behavior you considered and set aside as
     outside your requirements, one line each, with the reason. Whoever
     dispatched you rules on each line, so nothing you set aside is dropped
     silently. An empty list means you set nothing aside. A behavior that would
