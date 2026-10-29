@@ -33,8 +33,8 @@ and findings from v7.0.1 start at 17.
 | Next review starts from | `2ce8aa1` |
 
 Comparison is **per behavioral claim, not per diff hunk**. `NOTICE` records that
-most vendored files were adapted on the way in, so neither baseline is a true
-ancestor of our copies and a mechanical three-way merge produces noise. Each
+most vendored files came in byte-identical to `896224c`. Local changes since
+then mean a mechanical three-way merge still produces noise. Each
 upstream RELEASE-NOTES entry was instead read as a claim and checked against our
 tree: *does our copy already satisfy the intent?* v6.4.1, v6.4.2, v7.0.0 and
 v7.0.1 each landed as one squash commit, so commit counts say nothing about scope. The
@@ -48,9 +48,8 @@ worktree path recomputed after `cd`, which made cleanup silently no-op. It
 landed after our vendoring, so a diff-driven read flags us as behind. We are
 not: `finishing-a-development-branch/SKILL.md:381` carries an equivalent guard
 ("Do NOT re-run detection here"), present since the layout move (`5fee1d7`).
-**Already covered.** Whether that guard arrived as adaptation or the vendoring
-record is imprecise about this file is undetermined, and does not change the
-disposition.
+**Already covered.** The file came in byte-identical at the vendoring, so we
+added the guard ourselves (`46423d5`).
 
 The 2026-10-18 revision found that most line anchors had moved since the pass
 before it. Plan 40 rewrote parts of
