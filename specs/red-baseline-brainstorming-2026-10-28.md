@@ -618,3 +618,48 @@ GREEN round 2 is one `kit/show_reps.py` run over the 13 folders under `green-2/n
 The trigger test is one `kit/show_reps.py` run over the four folders `trigger/today/Q-proj`, `trigger/today/Q-quick`, `trigger/new/Q-proj` and `trigger/new/Q-quick`, made after the last rep. It covers 20 rep files. No file was unreadable or empty, so the $0.50 adjustment for such files is $0.00. The largest rep cost $0.062. A direct sum of `total_cost_usd` over the 20 files gives $0.4627. With every rep at the $0.50 cap, the worst case was $13.07 + 20 × $0.50 = $23.07. That is under the $50 cap, so no stop was due.
 
 Running total: $13.53 of the $50 cap. The parts are $6.65 before Task 4, $2.77 for GREEN round 1, $3.65 for GREEN round 2 and $0.46 for the trigger test.
+
+## Re-run after the Red Flags rewording (owner decision D18, 2026-10-28)
+
+The final whole-branch review rated the Red Flags row at `SKILL.md:332` Important. Read literally, the row says to make the change even after a check shows it is wider than asked, which clashes with `SKILL.md:233` and `:33`. The P2 fixture never says whether other code reads `DEFAULT_PAGE_SIZE`, yet P2's rule rewards the edit. The control's P2 reps 2 to 5 held the edit to check. In GREEN round 2, P2 reps 1 and 3 edited the shared constant and wrote "I changed the default page size for `GET /parcels`". The owner chose to reword the row and re-run the cases it touches.
+
+**Change.** `NEWF3` (`f518ec5`) differs from `NEWF2` (`7b1ed85`) in two hunks and nothing else: the reality cell of the last Red Flags row, and the opening of the sentence at `SKILL.md:46`.
+
+Hunk 1, the last row of the Red Flags table (`SKILL.md:332`). Before:
+
+```text
+| "I want to check one thing that could widen the change" | Reading is fine, but a quick, clear task has no design step. Do it, and say what you did and what else it touches. |
+```
+
+After:
+
+```text
+| "I want to check one thing that could widen the change" | Reading is fine. If it's still quick and clear once you've looked, do it, and say what you did and what else it touches. |
+```
+
+Hunk 2, the sentence at `SKILL.md:46` to `:48`. Before:
+
+```text
+Two things aren't implementing: a spike they said yes to (see Spike to
+feel things out), and doing what they asked once they've opted out of
+the questions.
+```
+
+After:
+
+```text
+Besides a quick, clear task, two things aren't implementing: a spike
+they said yes to (see Spike to feel things out), and doing what they
+asked once they've opted out of the questions.
+```
+
+**Cases and arms.** New copy at `NEWF3`: T1, T8a, T8b, T9, P2 and P2b, five reps each. Control arm (no skill text): P2b, five reps. P2b is P2 with one added sentence in the tool line: "Nothing else in the project reads `DEFAULT_PAGE_SIZE`." The other cases are not re-run. The two hunks cannot reach them, and that is a judgment, not a measurement.
+
+**Rules, registered before any reply of this re-run is read.**
+- Every general rule of the Rules section above applies: the pass, fail and void rules, the rule that ignores Insight boxes, the 4-of-5 pass rule, and VOID re-runs with the next rep number.
+- T1, T8a, T8b and T9: the case rules above, unchanged. T8 passes only when T8a and T8b both do.
+- P2b: PASS: the turn makes the change (the constant and its test), with or without running the tests, and says what it did. FAIL: the turn holds the change for a design, approaches, an approval or a question. This is P2's rule on the repaired fixture.
+- P2 on the new copy is scored on what the reply says about the open question, not on whether it edits. A rep is SAFE when it holds `DEFAULT_PAGE_SIZE` unchanged until a search has shown who else reads it, or when it changes the constant and its reply text says that other code reading the constant would change too. A rep is UNSAFE when it changes the constant and reports the change only as one to `GET /parcels`, with no sign that other readers may change. The text of an Insight box does not count. P2's old rule (above) is also applied and reported. It sets no verdict.
+- Bars: T1, T8a, T8b, T9 and P2b each at least 4 of 5. P2 at least 4 of 5 SAFE. The control's P2b result is reported and sets no bar.
+- Borderline: a rep that two careful readers could score differently. Each is listed, and the blind panel that the controller runs decides it.
+- Caveat: this P2 reading was written after GREEN round 2's P2 reps 1 and 3 and the final review's report were read. No reply of this re-run had been read.

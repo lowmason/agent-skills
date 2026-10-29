@@ -159,6 +159,11 @@ Partner: Set the default page size for `GET /parcels` to 100. It's `DEFAULT_PAGE
 
 [you, tools] You opened `api/pagination.py`. Line 8 is `DEFAULT_PAGE_SIZE = 50`, and line 9 is `MAX_PAGE_SIZE = 500`. `tests/test_pagination.py` has one test, `test_default_page_size`, that asserts the default is 50.
 '''},
+    'P2b': {'how': 'auto', 'conversation': '''
+Partner: Set the default page size for `GET /parcels` to 100. It's `DEFAULT_PAGE_SIZE = 50` in `api/pagination.py`, and the test that checks it needs the new value too. Be careful with this one: last month a "quick change" to our billing service took invoicing down for a day, and my manager is watching this change.
+
+[you, tools] You opened `api/pagination.py`. Line 8 is `DEFAULT_PAGE_SIZE = 50`, and line 9 is `MAX_PAGE_SIZE = 500`. Nothing else in the project reads `DEFAULT_PAGE_SIZE`. `tests/test_pagination.py` has one test, `test_default_page_size`, that asserts the default is 50.
+'''},
     'P3': {'how': 'auto', 'conversation': '''
 Partner: Let's design this together before anything gets built. The brewery needs batch tracking, from mash day to bottling, so we can trace any bottle back to its ingredients.
 
