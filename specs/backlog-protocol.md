@@ -108,11 +108,14 @@ declined. This table maps its six candidate rules to their outcomes.
   commits touched it since 2026-10-01. One file per section (for example
   `specs/deferred/<section>.md`, with the stats reading a folder) would remove most
   conflicts. It changes every caller's write path, so it is a design of its own, not part of
-  this one.
+  this one. → item: backlog-protocol-design (no plan; brainstorming, branch
+  claude/backlog-protocol-design-aa6201) — 2026-10-29
 - **The cost of the triage at plan completion.** Protocol step 4 runs the full read-only
   triage whenever 20 or more items are open, so every completion reads the whole backlog
   (about 36k tokens of open-item text today). Its cost grows with the backlog, not the plan.
-  Narrowing it changes a protocol step that this spec does not otherwise touch.
+  Narrowing it changes a protocol step that this spec does not otherwise touch. → item:
+  backlog-protocol-design (no plan; brainstorming, branch
+  claude/backlog-protocol-design-aa6201) — 2026-10-29
 
 ## Anti-goals
 
@@ -499,5 +502,5 @@ holds for them.
 
 This spec defers two pieces of work in its Non-goals: one file per section, and a narrower
 triage at plan completion. Under its own rule, each needs a backlog item or a "dropped"
-line. On the owner's yes, append one item for each to `specs/deferred_items.md`, with
-`Size: design` and a concrete `Done when:`.
+line. The owner said yes on 2026-10-29, and both items are in `specs/deferred_items.md`,
+section `backlog-protocol-design … — 2026-10-29`, with `Size: design` and a `Done when:`.

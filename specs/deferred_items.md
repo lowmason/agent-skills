@@ -6905,3 +6905,25 @@ review and the Plan Completion gate (2026-10-27) add the others.
       plan. Done when: plan 71's control arm for ruling (3), and each plan 70 arm whose verdict
       decided a ruling or a stop rule, re-run under plan 72's fixed kit, and each record states
       whether its verdict holds.
+
+## backlog-protocol-design (no plan; brainstorming, branch claude/backlog-protocol-design-aa6201) — 2026-10-29
+- [ ] Split `specs/deferred_items.md` into one file per section, to cut merge conflicts
+      (non-goal of `specs/backlog-protocol.md`, approved 2026-10-29). Every session appends to
+      the one file's tail, and 181 commits touched it from 2026-10-01 to 2026-10-29, so it is
+      the repo's largest merge-conflict surface while parallel sessions run. One file per
+      section (for example `specs/deferred/<section>.md`, archived by moving the file to
+      `specs/completed/deferred/`) would let each plan write its own file. It changes every
+      caller's write path: the Plan Completion Protocol, finishing-a-development-branch's Step
+      4b, `/deferred`, `deferred_stats.py` and the backlog-protocol plan's archive and scan
+      scripts. So it was kept out of that spec. Size: design. Done when: the owner approves a
+      spec for the split, or records it as declined.
+- [ ] Narrow the read-only triage at plan completion (non-goal of `specs/backlog-protocol.md`,
+      approved 2026-10-29). Plan Completion Protocol step 4 (`skills/writing-plans/SKILL.md`)
+      runs triage steps 1–4 whenever 20 or more items are open. So every completion reads the
+      whole backlog (about 36k tokens of open-item text on 2026-10-29) and hands the owner a
+      full triage, even when the plan deferred two items. Its cost grows with the backlog, not
+      the plan. One option: completion prints the stats line and the plan's new items, and the
+      full triage runs under `/deferred` or when the aged tail is non-zero. Changing step 4 is a
+      discipline-skill edit (micro-test it), and it touches the same file as the
+      backlog-protocol plan, so it executes after that plan. Size: design. Done when: the owner
+      approves a change to step 4, or records it as declined.
