@@ -172,3 +172,8 @@ On W1, every Opus description started with "Use when", but the step question spl
 reading: literal `base` 3 or 4 of 5 against `t3` 0 of 5, symptom 5 of 5 on both arms. On W3,
 every drawn table covered the three quotes, and across both cases Opus drafted in 9 of 10
 `t3` reps against 10 of 10 `base` reps, while `t3` Sonnet drafted in none and has no `base` arm to compare.
+The comparison of `t3` against `base` is confounded by design (plan decision D9), because each rep
+ran one turn with no tools. A `t3` rep that wrote "ACTION: Read discovery.md" never got the file
+text back and drafted without the moved text, but a `base` rep had that text in its context, so
+the W1 literal-reading split and the `t3` Sonnet arm's zero drafts may come from this design and
+not from the split.

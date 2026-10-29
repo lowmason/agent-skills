@@ -1042,8 +1042,8 @@ Under this repo's proportional-process rule:
 - **Done, writing-skills half of finding 17:** through plan 72 (2026-10-29).
   Our own text moved verbatim into upstream's three references
   (`discovery.md`, `flowcharts.md`, `bulletproofing.md`); the description
-  rule and the supporting files stay beside SKILL.md. The body fits the
-  window and is under 500 lines, so exception
+  rule stays in SKILL.md, and the supporting files stay beside it. The
+  body fits the window and is under 500 lines, so exception
   `writing-skills-late-critical-headings` and the `critical_placement`
   lint are gone. Results: `specs/red-baseline-writing-skills-split.md`. The
   rest of "Split and rewrite writing-skills against the guide" stays a spec

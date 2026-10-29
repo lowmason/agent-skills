@@ -266,6 +266,9 @@ enforced_by = 'check_frontmatter'
 # the body should fit and its critical sections should open it. The token
 # estimate is characters / chars_per_token, a rough gauge; headings is the
 # critical-sounding words (matched whole, any case) that flag a heading.
+# An exception waives this whole check for its files, late headings included.
+# Pair any new exception with a guard. Plan 47 added the lint critical_placement
+# for that, and plan 72 retired it because no exception was left.
 [[check]]
 id = 'compaction-window'
 kind = 'skill'
