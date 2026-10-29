@@ -67,8 +67,8 @@ would take to do, plus:
       DSN decision. See specs/plans/completed/7-rate-limiter.md; touches
       src/limiter/store.py. Size: design. Done when: the DSN decision is
       recorded and the store lands behind it.
-- [ ] Review Minor: retry jitter is fixed-seed in tests only (reviewer
-      report, triaged defer). Size: quick-fix. Revisit if: a flake in
+- [ ] Declined review line: retry jitter is fixed-seed in tests only
+      (final review, owner ruled defer). Size: quick-fix. Revisit if: a flake in
       tests/test_limiter.py traces to jitter.
 ```
 

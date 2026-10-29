@@ -698,6 +698,10 @@ Changes from upstream:
     Declined to judge rulings, where the controller rules on per-task lines
     and the partner rules on the final review's lines at the plan-completion
     gate.
+  - writing-plans' Review Focus section and self-review item 4 come from
+    upstream PR #2319 (5feaa15) (plan 73). The sentence for a plan with no
+    spec is this repo's own. The deferred-item example names a declined
+    review line in place of the retired Minor tier.
 
     brainstorming/
     dispatching-parallel-agents/
