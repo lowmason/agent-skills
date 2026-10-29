@@ -63,6 +63,28 @@ Each line records what the owner chose, in the owner's terms.
 - **D12. New watch items name one concrete signal.** A new `Revisit if:` names a signal that
   a triage can answer yes or no. It is only for work nobody wants until that signal. Old
   items stay as written. The owner accepted this rule as recommended.
+- **D13. The committing session writes `→ planned`.** The session that commits the spec
+  (brainstorming) or the plan (writing-plans) for a `/deferred` Plan or Design pick writes the
+  note on the picked items. It records the earlier pick and is not a new disposition. When
+  writing-plans commits the plan, it changes the note's path from the spec to the plan. The
+  owner accepted this as recommended.
+- **D14. The rule "an acknowledgement cites the last `/deferred` pass" is declined.** The
+  one-carry limit (D6, D10) does its job more directly. The owner confirmed the decline
+  ("Is fine").
+
+## The item's candidate rules
+
+The backlog item is done when the spec is approved or the owner records each rule as
+declined. This table maps its six candidate rules to their outcomes.
+
+| Candidate rule | Outcome | Decided by |
+|---|---|---|
+| A deferral sentence appends an item, or says it was dropped | Adopted, checked at retirement (section 6) | Owner: D7, D9 |
+| A closure note naming follow-up work does the same | Adopted, checked at the tick and at archive time (sections 5 and 6) | Owner: D7, D9 |
+| A re-filed finding cites its original source and date | Adopted, as a phrase in the item's text (section 8) | My call |
+| An acknowledgement cites the last `/deferred` pass | Declined: the one-carry limit replaces it (section 3) | Owner: D14 |
+| A Hold writes a dated `→ held` note that the gate respects | Adopted as modified: `→ held` for outside conditions, `→ owner-only` for work waiting on the owner, which keeps pressing | Owner: D5 |
+| Archiving is codified and read by the stats, or July is a one-off | Codified, per item, and both files read by the stats | Owner: D4, D8, D11 |
 
 ## Goals
 
@@ -129,7 +151,7 @@ the existing `→ done` and `→ retired` notes do. New forms:
 | `→ held <date>: <condition>` | `/deferred` step 5, on the owner's Hold | Blocked by a condition outside the owner and the agent. The gate skips the item from that date until a `→ triggered` note. |
 | `→ owner-only <date>: <what the owner must do>` | `/deferred` step 5, on the owner's Hold of an owner-only item | A record only. The item keeps aging and pressing (D5). |
 | `→ triggered <date>: <what happened>` | `/deferred` step 5 | The watch or held condition has fired. The item ages from this date like work. |
-| `→ planned <date>: <path>` | `/deferred` step 5, once the Plan or Design pick's plan or spec file is committed | The item is in a live plan or spec. The gate skips it while `<path>` sits in `specs/` or `specs/plans/`. When the file retires to a `completed/` folder without ticking the item, the item ages from its section date again (D10). |
+| `→ planned <date>: <path>` | The session that commits the spec or plan for a `/deferred` Plan or Design pick (D13); writing-plans updates the path from spec to plan | The item is in a live plan or spec. The gate skips it while `<path>` sits in `specs/` or `specs/plans/`. When the file retires to a `completed/` folder without ticking the item, the item ages from its section date again (D10). |
 | `→ acknowledged <date> (<branch>): <reason>` | finishing Step 1b, on the owner's word | The one carry past the gate (D6). |
 | `- [x] … → removed <date>: <why>` | whoever removes an item | The item left the backlog without being done or retired. It moves to the archive file (section 5). |
 
@@ -191,8 +213,8 @@ Reasons for putting the note on the item:
 - The note leaves the live file when its item is archived, so nothing grows without bound
   (B6a).
 
-The candidate rule "an acknowledgement cites the last `/deferred` pass" is **declined**. The
-one-carry limit does its job more directly. That is my call; the owner can reverse it.
+The candidate rule "an acknowledgement cites the last `/deferred` pass" is **declined** (D14).
+The one-carry limit does its job more directly.
 
 ### 4. `/deferred` changes
 
@@ -207,8 +229,10 @@ these ways:
   Use `→ owner-only` when only the owner can discharge it. Today a Hold makes no edit, so it
   leaves no trace (B6b).
 - **Step 5, triggered.** On the owner's selection, write the `→ triggered` note.
-- **Step 5, Plan and Design.** Once the pick's plan or spec file is committed, write
-  `→ planned <date>: <path>` on each selected item.
+- **Step 5, Plan and Design.** The hand-off to writing-plans or brainstorming names the
+  picked items, so the session that commits the plan or spec can write `→ planned` on them
+  (D13). `/deferred` itself writes the note only when that file is committed inside the
+  same pass.
 - **End of pass: archive.** Run the archive script (section 5) and commit its moves with
   the pass's other edits.
 
@@ -286,6 +310,11 @@ skill). It has two modes:
   - the Plan Completion Protocol's own status header ("deferred items in
     specs/deferred_items.md" and "nothing deferred");
   - its `> Skipped: <why> → deferred` lines, because step 3 always appends those as items.
+- The scan ignores fenced code blocks and inline code spans, so note forms and quoted
+  phrases in backticks never count.
+- **This spec and its plan are fixtures.** Both retire into the completed folders, off the
+  baseline, and both are full of deferral words. Each must pass the lint when it retires,
+  with markers only where a real deferral stands.
 - **Burden check (my call).** Run the scan over the five most recently retired plans and their
   specs. If the median document has more than 3 unmarked candidates, tighten the list
   before landing. Ten markers per retirement would be the noise that teaches people to
@@ -343,11 +372,14 @@ The plan's last task does these, so the change is visible at once:
 | `skills/writing-plans/references/deferred-backlog.md` | Note forms, the aging rules, the one-carry gate text (moved here from finishing), triage steps 3 and 5, archive and removal, markers, re-filed citation, a new caller (the archive script) | No limit, but keep it a reference |
 | `skills/writing-plans/SKILL.md`, Plan Completion Protocol steps 3 and 5 | Step 3: closure-note markers. "Never delete items" becomes "removal moves the item to the archive". Step 5: run the scan before the `git mv` and resolve each hit | **Net zero or less in the body.** The sibling plan uses the body's room (see Constraints). Put detail in the reference |
 | `skills/finishing-a-development-branch/SKILL.md`, Step 1b | The note on the item, one carry, `/deferred` only for items already acknowledged | **Net zero or less.** The body is 19,970 characters against a 20,000-character window. Move the acknowledgement example and its paragraph to the reference, and keep a pointer |
-| `commands/deferred.md` | Step 5's Hold and triggered notes, the archive run | Regenerate `runtimes/` |
+| `skills/brainstorming/SKILL.md`, The Written Design | One line: when the spec comes from a `/deferred` Design pick, write `→ planned` on the picked items in the spec's commit (D13) | Body is 16,634 characters, so it has room. Rebuilt in plan 70: keep the edit to that one line |
+| `skills/writing-plans/SKILL.md`, Plan Document Header or Execution Handoff | When the plan settles `/deferred` items, write or update their `→ planned` notes in the plan's commit (D13) | Counts against the same net-zero body budget as the protocol edits |
+| `commands/deferred.md` | Step 5's Hold, triggered and planned notes, the archive run | Regenerate `runtimes/` |
+| `install.py` `DEPENDENCIES` or `build/test_runtime_support.py` `SOFT_REFERENCES` | Only if brainstorming gains a path into `writing-plans/references/` | The dependency-drift test decides |
 | `skills/writing-plans/scripts/deferred_stats.py` and its tests | Continuation lines, aging rules, two files, new output | Test first |
 | New scan and archive scripts and their tests, in `skills/writing-plans/scripts/` | Sections 5 and 6 | Test first, with PEP 723 headers like `deferred_stats.py` |
 | `build/` lint entry, `build/run_commit_lints.sh`, `build/test_commit_lints.py`, `.github/workflows/lints.yml` if needed, `CLAUDE.md` Commands | The lint mode | |
-| `NOTICE` | Change-list lines for writing-plans and finishing-a-development-branch, both superpowers ports | |
+| `NOTICE` | Change-list lines for writing-plans, finishing-a-development-branch and brainstorming, all superpowers ports | |
 | `specs/deferred_items.md`, `specs/completed/deferred_items.md` | The migration (section 9) | |
 
 ## Constraints
@@ -363,8 +395,11 @@ The plan's last task does these, so the change is visible at once:
     `references/step-recipe.md` to fit the compaction window.
   - So the planner for this spec re-reads both files after that merge, measures the
     writing-plans body again, and leaves the relabelled example alone.
-- **Micro-tests.** writing-plans and finishing-a-development-branch are discipline skills.
-  Every wording change is micro-tested with a no-guidance control, under the writing-skills
+  - The sibling spec does not name finishing-a-development-branch. The planner still
+    measures that body again before planning, because it has only 30 characters of room.
+- **Micro-tests.** writing-plans, finishing-a-development-branch and brainstorming are
+  discipline skills. Every wording change is micro-tested with a no-guidance control, under
+  the writing-skills
   skill. Cases:
   - **R1, retirement.** A fixture plan holds an unmarked "deferred to a future plan" sentence
     and one deferral inside a task's prose. The scan output is pasted into the prompt. Pass:
@@ -380,6 +415,9 @@ The plan's last task does these, so the change is visible at once:
     acknowledged one, and it writes nothing without the owner's word.
   - **R4, triage.** A watch item whose trigger has fired, with the evidence in the fixture.
     Pass: the triage proposes `→ triggered`.
+  - **R5, planned note.** A brainstorming session whose request names a `/deferred` Design
+    pick reaches the spec's commit. Pass: the commit writes `→ planned` on the picked item,
+    and on no other item.
   - Arms: the new wording against the current wording, 5 runs each. A stop at $40 for the
     whole kit (my call, the same figure as the sibling spec).
 - **Isolated micro-test kits.** Use `claude -p --tools "" --setting-sources ""` with
@@ -427,7 +465,7 @@ holds for them.
   - a live heading removed when its last item leaves;
   - the scan hold-back and the history cutoff;
   - dry run, and date order in the archive file.
-- R1 to R4 pass on the new wording and show a difference from the control, or the plan
+- R1 to R5 pass on the new wording and show a difference from the control, or the plan
   records why a case could not discriminate.
 - The migration is done, and the stats before and after are in the completion report.
 - All commit lints pass.
@@ -443,7 +481,6 @@ holds for them.
 
 ## My calls (for the owner to check)
 
-- Declining the "acknowledgement cites the last `/deferred` pass" rule (section 3).
 - The `→ owner-only` note form beside `→ held` (section 1).
 - A triggered item ages from its note's date, not its section's date (section 2).
 - An item with both `Done when:` and `Revisit if:` counts as work, not watch (section 2).
