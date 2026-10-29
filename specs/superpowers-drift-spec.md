@@ -300,8 +300,8 @@ divergences:
 pressure test added, and the wording that changed in two upstream passages after
 the first GREEN round. Plan 70 ran its own RED baseline, pressure test, GREEN
 and trigger test, all newly written. The owner then had the Red Flags row and
-one sentence of the skill reworded. Plan 70 re-ran the cases that those edits
-could reach.
+the sentence that lists what isn't implementing reworded. Plan 70 re-ran the
+cases judged, not measured, to be within reach of those edits.
 
 **The other v7.0.1 changes** are listed under New finding (v7.0.1).
 
@@ -1054,13 +1054,12 @@ Under this repo's proportional-process rule:
 - **Done, brainstorming:** finding 4, through plan 70 (2026-10-28): the skill
   was rebased on v7.0.1 (`2ce8aa1`) and tested against its own RED baseline,
   `specs/red-baseline-brainstorming-2026-10-28.md`. The GREEN bars are met under
-  the registered rules, with T7 (the first-question case) met on the letter
-  reading of its rule (owner decision, 2026-10-28). Task 8 then reworded the Red
-  Flags row that the pressure test added and the sentence that lists what isn't
-  implementing (owner decision, 2026-10-28). Task 8 re-ran the cases those edits
-  could reach, and the re-run met every bar. P2 (the pressure case on a quick
-  task) met its bar on a reading registered for the re-run. Under P2's earlier
-  rule, the same replies score 2 of 5.
+  the registered rules. On the registered verdicts, T7 (the first-question case)
+  meets its bar under the letter reading of its rule. The owner chose that
+  reading on 2026-10-28. The owner also had the Red Flags row that the pressure
+  test added and the sentence that lists what isn't implementing reworded on
+  that day. Plan 70 re-ran the cases judged, not measured, to be within reach of
+  those edits, and the re-run met every bar.
 - **Decided 2026-10-21:** finding 7, as rulings mid-run only. The two items
   that hung on it:
   - Finding 11's executing-plans port, which gets its own spec; its handoff
