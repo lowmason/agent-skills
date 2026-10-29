@@ -6659,8 +6659,8 @@ review and the Plan Completion gate (2026-10-27) add the others.
       pass does not show that the skill's own rule works. That rule is the passage in
       `skills/brainstorming/SKILL.md` that begins "When a command or skill routed the work here"
       (spec `specs/completed/brainstorming-proportional-rebuild.md`, rule R2.2: size such work as a
-      project). To close it, add a T6 variant that keeps the routed context (the `/deferred`
-      listing and the Design pick) and does not quote the command's text for the Design
+      project). To close it, add a T6 variant that keeps the routed context: the `/deferred`
+      listing and the Design pick. The variant does not quote the command's text for the Design
       disposition. Build its prompts with `kit/build_prompts.py` and run 5 reps on the control and
       5 on the skill with `kit/run_reps.sh`, then score them by the record's T6 rule. The same
       quoted words sit in the T6 conversation of every arm, so the variant also shows whether the
@@ -6705,17 +6705,17 @@ review and the Plan Completion gate (2026-10-27) add the others.
       every drift review back to the vendored commit `896224c`. But the row "Next review starts
       from" in `specs/superpowers-drift-spec.md` (now `2ce8aa1`) is the moving start, and no step
       updates `NOTICE`. The sentence is older than plan 70, and the owner's correction list (D19)
-      did not name it, so it stayed. The owner decides, because `NOTICE` is a provenance file. A
-      fix-wave panel proposed this wording: "Upstream has continued to move since. 896224c is the
-      vendored baseline. The "Next review starts from" row of `specs/superpowers-drift-spec.md`
-      names where the next drift review starts." Do not copy a current SHA into `NOTICE`, because
-      no step updates it at a drift pass. Size: quick-fix. Done when: the owner has chosen the
-      wording, `NOTICE` no longer sends a drift review back to `896224c`, and
-      `uv run python build/check_provenance.py` passes.
+      did not name it, so it stayed. The owner decides, because `NOTICE` is a provenance file. The
+      panel that found the sentence proposed this wording: "Upstream has continued to move since.
+      896224c is the vendored baseline. The "Next review starts from" row of
+      `specs/superpowers-drift-spec.md` names where the next drift review starts." Do not copy a
+      current SHA into `NOTICE`, because no step updates it at a drift pass. Size: quick-fix. Done
+      when: the owner has chosen the wording, `NOTICE` no longer sends a drift review back to
+      `896224c`, and `uv run python build/check_provenance.py` passes.
 - [ ] Eight wording edits left in the plan 70 record and drift spec after the fifth fix round
-      (found by the last two-lens check, 2026-10-29). The subagent-driven-development cap of five
-      fix rounds ended further edits. None of them changes a score, a bar or a verdict. Find each
-      one by its quoted text, because line numbers move. Every line is in
+      (found by that round's light check, 2026-10-29). The subagent-driven-development cap of five
+      fix rounds ended further edits. None of the eight edits changes a score, a bar or a verdict.
+      Find each one by its quoted text, because line numbers move. Every line is in
       `specs/red-baseline-brainstorming-2026-10-28.md` unless it says otherwise. (1) The P2b bullet
       in the re-run's Borderline calls (near line 747) ends "The P2b rule fails only a turn that
       holds the change for a question." The registered P2b rule (near line 672) also fails a hold
@@ -6736,33 +6736,35 @@ review and the Plan Completion gate (2026-10-27) add the others.
       line 781, in "The SAFE reading applied to the earlier P2 sets (after the fact)", has the same
       shorthand, "It passes a turn that makes the change." Add "and says what it did" in both
       places. The GREEN round 2 pointer also says P2 "meets the bar of 4 of 5" and does not say
-      whose bar it is. Write "meets the re-run's registered bar of 4 of 5 SAFE". (5) The second
-      sentence of the Borderline calls paragraph (near line 742), which begins "The first bullet
-      scores", has 26 words and uses "verdict" for both a rule and a score. Write "The first bullet
-      scores P2 reps 3 and 4 F on the old P2 rule. That rule sets no verdict, so the two F scores
-      change no bar." (6) The re-run introduction (near line 635) says "the cases those edits
-      touch", but the rest of the record calls the choice a judgment. Write "the cases judged to be
-      within reach of those edits". (7) The limits bullet (near line 821) ends "The registered
-      caveat says so." That caveat calls it "this P2 reading", a name that the control-arm reading
-      also uses. Write "The registered caveat, which calls it "this P2 reading", says so." (8) In
-      `specs/superpowers-drift-spec.md`, the "Done, brainstorming" bullet uses "registered" twice,
-      in "under the registered rules" and in "On the registered verdicts,". No other line of the
-      drift spec uses the word. Delete "On the registered verdicts,". Then delete "registered" from
-      "the registered rules", or say once that those rules were written before any reply was read.
-      Do not give "registered" that meaning for verdicts, because a verdict is scored after its
-      reply is read. Do not add a sentence that makes a new claim, because each such sentence drew
-      new findings in the earlier rounds. Where a fix would add one, delete the claim instead.
-      Size: quick-fix. Done when: all eight edits are made, the record keeps its frozen Rules text,
-      and `bash build/run_commit_lints.sh` passes.
+      whose bar it is. Write "meets the re-run's registered bar of 4 of 5 SAFE". (5) The Borderline
+      calls paragraph (near line 742) has a second sentence of 26 words, which begins "The first
+      bullet scores". That sentence uses "verdict" for both a rule and a score. Write "The first
+      bullet scores P2 reps 3 and 4 F on the old P2 rule. That rule sets no verdict, so the two F
+      scores change no bar." (6) The re-run introduction (near line 635) says "the cases those
+      edits touch", but the rest of the record calls the choice a judgment. Write "the cases judged
+      to be within reach of those edits". (7) The limits bullet (near line 821) ends "The
+      registered caveat says so." That caveat calls it "this P2 reading", a name that the
+      control-arm reading also uses. Write "The registered caveat, which calls it "this P2
+      reading", says so." (8) In `specs/superpowers-drift-spec.md`, the "Done, brainstorming"
+      bullet uses "registered" twice, in "the registered rules" and in "On the registered
+      verdicts,". No other line of the drift spec uses the word. Delete "On the registered
+      verdicts,". Then delete "registered" from "the registered rules", or say once that those
+      rules were written before any reply was read. Do not give "registered" that meaning for
+      verdicts, because a verdict is scored after its reply is read. Do not add a sentence that
+      makes a new claim, because each such sentence drew new findings in the earlier rounds. Where
+      a fix would add one, delete the claim instead. Size: quick-fix. Done when: each numbered edit
+      is made in every place it says to change, the record keeps its frozen Rules text, and
+      `bash build/run_commit_lints.sh` passes.
 - [ ] The Red Flags cell for the quick-task row does not point back to the size rules (plan 70 Task
-      8 review, Minor, left to the owner because decision D18 fixed its wording). The cell is the
-      right column of the last row in the Red Flags table, `skills/brainstorming/SKILL.md:332`:
-      "Reading is fine. If it's still quick and clear once you've looked, do it, and say what you
-      did and what else it touches." A reader can take "do it" to mean making the edit even when
-      the look shows a wider reach, because the cell does not point back to `SKILL.md:33`
-      ("Everything that matters is in the request") or to `SKILL.md:233` ("If it grows mid-task,
-      stop, say so, and step up a size."). In the P2 re-run, reps 1 and 5 searched and edited in
-      the same reply. A rep with no tools cannot see the search result, so no test could show a
-      wrong edit. Size: quick-fix. Revisit if: the owner wants the cell to carry the pointer, or a
-      later pressure test shows a rep that makes the edit after a check shows a wider reach. The
-      owner chooses the wording, because D18 fixed the current one.
+      8 review, Minor). The cell is the right column of the last row in the Red Flags table,
+      `skills/brainstorming/SKILL.md:332`: "Reading is fine. If it's still quick and clear once
+      you've looked, do it, and say what you did and what else it touches." A reader can take "do
+      it" to mean making the edit even when the look shows a wider reach. The cell does not point
+      back to `SKILL.md:33` ("Everything that matters is in the request") or to `SKILL.md:233` ("If
+      it grows mid-task, stop, say so, and step up a size."). In the re-run of P2 (the pressure
+      case on a quick task), reps 1 and 5 wrote a search and the edit in one reply. A rep with no
+      tools writes both before any result exists, so the order of search then edit is only the
+      rep's plan. That order does not show what those reps would do once they see who else reads
+      the constant. Size: quick-fix. Revisit if: the owner wants the pointer, or a later pressure
+      test shows a rep that edits after a check found a wider reach. The owner chooses the wording.
+      Owner decision D18 set the current wording in Task 8.
