@@ -707,6 +707,8 @@ Changes from upstream:
     the template's code step, the Step scan and the Proportion check. This
     repo's own work: the Remember list drops "Complete code in every step",
     and the Proportion check keeps micro-tested wording as exact copy. The
+    Proportion check also names a threshold of about five times, where
+    upstream keeps "several times" (plan 73, wording round 1 of case P2). The
     F1 comparison takes only the idea of upstream's planted-defect probe in
     prime-radiant-inc/superpowers-evals, and no text.
 
